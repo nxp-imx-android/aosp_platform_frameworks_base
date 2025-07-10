@@ -13,9 +13,6 @@
       "name": "FunctionalTestsDesktopMode-AltTabSwitchOutDesktopModeTest"
     },
     {
-      "name": "FunctionalTestsDesktopMode-BringDesktopAppsToFrontTest"
-    },
-    {
       "name": "FunctionalTestsDesktopMode-CatchAll"
     },
     {

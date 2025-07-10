@@ -32,6 +32,7 @@ import androidx.test.filters.SmallTest
 import com.android.app.displaylib.DisplayDecorationListener
 import com.android.app.displaylib.DisplayRepository.PendingDisplay
 import com.android.app.displaylib.DisplaysWithDecorationsRepositoryCompat
+import com.android.app.displaylib.ExternalDisplayConnectionType
 import com.android.server.display.feature.flags.Flags.FLAG_ENABLE_DISPLAY_CONTENT_MODE_MANAGEMENT
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.coroutines.FlowValue
@@ -257,6 +258,51 @@ class DisplayRepositoryTest : SysuiTestCase() {
         }
 
     @Test
+    fun onPendingDisplay_propagatesCorrectConnectionPreference() =
+        testScope.runTest {
+            val testDisplayId = 42
+            val testConnectionType = ExternalDisplayConnectionType.MIRROR
+            val pendingDisplay by lastPendingDisplay()
+
+            whenever(displayManager.getExternalDisplayConnectionPreference(any()))
+                .thenReturn(testConnectionType.preference)
+
+            sendOnDisplayConnected(testDisplayId)
+
+            assertThat(pendingDisplay).isNotNull()
+            assertThat(pendingDisplay!!.id).isEqualTo(testDisplayId)
+            assertThat(pendingDisplay!!.connectionType).isEqualTo(testConnectionType)
+        }
+
+    @Test
+    fun onPendingDisplay_displayIdNotCached_findsUsingDisplayManager() =
+        testScope.runTest {
+            val pendingDisplay by lastPendingDisplay()
+            val displayId = 123
+            val mockDisplay = display(id = displayId, type = TYPE_EXTERNAL)
+
+            whenever(displayManager.getDisplay(eq(displayId))).thenReturn(mockDisplay)
+            connectedDisplayListener.value.onDisplayConnected(displayId)
+
+            verify(displayManager, times(2)).getDisplay(displayId)
+            assertThat(pendingDisplay).isNotNull()
+            assertThat(pendingDisplay!!.id).isEqualTo(displayId)
+        }
+
+    @Test
+    fun onPendingDisplay_displayIdDoesNotExist_returnNull() =
+        testScope.runTest {
+            val pendingDisplay by lastPendingDisplay()
+            val testDisplayId = 99
+
+            whenever(displayManager.getDisplay(eq(testDisplayId))).thenReturn(null)
+            connectedDisplayListener.value.onDisplayConnected(testDisplayId)
+
+            verify(displayManager).getDisplay(testDisplayId)
+            assertThat(pendingDisplay).isNull()
+        }
+
+    @Test
     fun onPendingDisplay_enableBySysui_disabledBySomeoneElse_pendingDisplayStillIgnored() =
         testScope.runTest {
             val pendingDisplay by lastPendingDisplay()
@@ -440,7 +486,7 @@ class DisplayRepositoryTest : SysuiTestCase() {
             val pendingDisplay by lastPendingDisplay()
 
             sendOnDisplayConnected(1, TYPE_EXTERNAL)
-            sendOnDisplayConnected(2, Display.TYPE_INTERNAL)
+            sendOnDisplayConnected(2, TYPE_INTERNAL)
 
             assertThat(pendingDisplay!!.id).isEqualTo(1)
         }

@@ -36,8 +36,6 @@ import android.content.Context;
 import android.multiuser.Flags;
 import android.os.UserManager;
 import android.os.storage.DiskInfo;
-import android.os.storage.ICeStorageLockEventListener;
-import android.os.storage.StorageManagerInternal;
 import android.os.storage.VolumeInfo;
 import android.platform.test.flag.junit.SetFlagsRule;
 

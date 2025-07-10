@@ -26,21 +26,19 @@ import android.util.SparseArray
 import android.view.Display.INVALID_DISPLAY
 import android.window.DesktopExperienceFlags
 import android.window.DesktopModeFlags
-import android.window.WindowContainerToken
 import androidx.core.util.forEach
 import androidx.core.util.valueIterator
 import com.android.internal.annotations.VisibleForTesting
 import com.android.internal.protolog.ProtoLog
-import com.android.wm.shell.desktopmode.persistence.DesktopPersistentRepository
+import com.android.wm.shell.desktopmode.data.Desk
+import com.android.wm.shell.desktopmode.data.TopTransparentFullscreenTaskData
+import com.android.wm.shell.desktopmode.data.persistence.DesktopPersistentRepository
 import com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_DESKTOP_MODE
 import com.android.wm.shell.shared.annotations.ShellMainThread
 import com.android.wm.shell.shared.desktopmode.DesktopConfig
 import java.io.PrintWriter
 import java.util.concurrent.Executor
 import java.util.function.Consumer
-import kotlin.collections.component1
-import kotlin.collections.component2
-import kotlin.collections.forEach
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
@@ -58,84 +56,8 @@ class DesktopRepository(
         var activeDeskId: Int? = null
     }
 
-    /** Specific [TaskInfo] data related to top transparent fullscreen task handling. */
-    data class TopTransparentFullscreenTaskData(val taskId: Int, val token: WindowContainerToken)
-
     /** Tiling data preserved after a display got disconnected. */
     data class PreservedTiledAppData(val leftTiledTask: Int?, val rightTiledTask: Int?)
-
-    /**
-     * Task data tracked per desk.
-     *
-     * @property activeTasks task ids of active tasks currently or previously visible in the desk.
-     *   Tasks become inactive when task closes or when the desk becomes inactive.
-     * @property visibleTasks task ids for active freeform tasks that are currently visible. There
-     *   might be other active tasks in a desk that are not visible.
-     * @property minimizedTasks task ids for active freeform tasks that are currently minimized.
-     * @property closingTasks task ids for tasks that are going to close, but are currently visible.
-     * @property freeformTasksInZOrder list of current freeform task ids ordered from top to bottom
-     * @property fullImmersiveTaskId the task id of the desk's task that is in full-immersive mode.
-     * @property topTransparentFullscreenTaskId the task id of any current top transparent
-     *   fullscreen task launched on top of the desk. Cleared when the transparent task is closed or
-     *   sent to back. (top is at index 0).
-     * @property leftTiledTaskId task id of the task tiled on the left.
-     * @property rightTiledTaskId task id of the task tiled on the right.
-     */
-    private data class Desk(
-        val deskId: Int,
-        var displayId: Int,
-        // TODO: b/421928445 - Refactor these and boundsByTaskId into a new data class.
-        val activeTasks: ArraySet<Int> = ArraySet(),
-        val visibleTasks: ArraySet<Int> = ArraySet(),
-        val minimizedTasks: ArraySet<Int> = ArraySet(),
-        // TODO(b/332682201): Remove when the repository state is updated via TransitionObserver
-        val closingTasks: ArraySet<Int> = ArraySet(),
-        val freeformTasksInZOrder: ArrayList<Int> = ArrayList(),
-        var fullImmersiveTaskId: Int? = null,
-        var topTransparentFullscreenTaskData: TopTransparentFullscreenTaskData? = null,
-        var leftTiledTaskId: Int? = null,
-        var rightTiledTaskId: Int? = null,
-    ) {
-        // TODO: b/417907552 - Add these variables to persistent repository.
-        // The display's unique id that will remain the same across reboots.
-        var uniqueDisplayId: String? = null
-        // Bounds of tasks in this desk mapped to their respective task ids. Used for reconnect.
-        var boundsByTaskId: MutableMap<Int, Rect> = mutableMapOf()
-
-        fun deepCopy(): Desk =
-            Desk(
-                    deskId = deskId,
-                    displayId = displayId,
-                    activeTasks = ArraySet(activeTasks),
-                    visibleTasks = ArraySet(visibleTasks),
-                    minimizedTasks = ArraySet(minimizedTasks),
-                    closingTasks = ArraySet(closingTasks),
-                    freeformTasksInZOrder = ArrayList(freeformTasksInZOrder),
-                    fullImmersiveTaskId = fullImmersiveTaskId,
-                    topTransparentFullscreenTaskData = topTransparentFullscreenTaskData,
-                    leftTiledTaskId = leftTiledTaskId,
-                    rightTiledTaskId = rightTiledTaskId,
-                )
-                .also {
-                    it.uniqueDisplayId = uniqueDisplayId
-                    it.boundsByTaskId = boundsByTaskId.toMutableMap()
-                }
-
-        // TODO: b/362720497 - remove when multi-desktops is enabled where instances aren't
-        //  reusable.
-        fun clear() {
-            activeTasks.clear()
-            visibleTasks.clear()
-            minimizedTasks.clear()
-            closingTasks.clear()
-            freeformTasksInZOrder.clear()
-            fullImmersiveTaskId = null
-            topTransparentFullscreenTaskData = null
-            leftTiledTaskId = null
-            rightTiledTaskId = null
-            boundsByTaskId.clear()
-        }
-    }
 
     private val deskChangeListeners = ArrayMap<DeskChangeListener, Executor>()
     private val activeTasksListeners = ArraySet<ActiveTasksListener>()
@@ -198,6 +120,7 @@ class DesktopRepository(
 
     /** Stores the last state of the given display, along with the bounds of the tasks on it. */
     fun preserveDisplay(displayId: Int, uniqueId: String) {
+        logD("preserveDisplay for displayId=%d, uniqueId=%s", displayId, uniqueId)
         val orderedDesks = desktopData.getOrderedDesks(displayId)
         // Do not preserve the display if there are no active tasks on it.
         if (!orderedDesks.any { it.activeTasks.isNotEmpty() }) return

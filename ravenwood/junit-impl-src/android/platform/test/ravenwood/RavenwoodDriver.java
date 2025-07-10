@@ -29,6 +29,7 @@ import static org.junit.Assert.assertThrows;
 import android.annotation.Nullable;
 import android.app.ActivityManager;
 import android.app.AppCompatCallbacks;
+import android.app.RavenwoodAppDriver;
 import android.app.UiAutomation_ravenwood;
 import android.content.Context;
 import android.content.pm.ApplicationInfo;
@@ -319,7 +320,8 @@ public class RavenwoodDriver {
 
         RavenwoodUtils.sPendingExceptionThrower =
                 RavenwoodDriver::maybeThrowPendingRecoverableUncaughtExceptionNoClear;
-        Handler_ravenwood.sPendingExceptionThrower = (a, b, c) -> {
+        Handler_ravenwood.sOnBeforeEnqueue = (queue, msg, uptimeMillis) -> {
+            RavenwoodMessageTracker.getInstance().trackMessagePoster(msg);
             maybeThrowPendingRecoverableUncaughtExceptionNoClear();
             return null;
         };
@@ -522,6 +524,9 @@ public class RavenwoodDriver {
             var desc = String.format("Detected %s on looper thread %s", th.getClass().getName(),
                     Thread.currentThread());
             sStdErr.println(desc);
+
+            // If it's a tracked message, attach the stacktrace where we posted it as a cause.
+            RavenwoodMessageTracker.getInstance().injectPosterAsCause(th, msg);
             if (isThrowableRecoverable(th)) {
                 setPendingRecoverableUncaughtException(th);
                 return;

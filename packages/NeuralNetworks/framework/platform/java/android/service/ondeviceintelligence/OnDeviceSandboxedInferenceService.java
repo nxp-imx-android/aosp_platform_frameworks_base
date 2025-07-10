@@ -146,26 +146,27 @@ public abstract class OnDeviceSandboxedInferenceService extends Service {
      */
     public static final String MODEL_UNLOADED_BROADCAST_INTENT =
         "android.service.ondeviceintelligence.MODEL_UNLOADED";
+
     /**
-     * Defines keys for the {@link #updateProcessingState(Bundle, OutcomeReceiver)}
-     * bundle in {@link #onUpdateProcessingState(Bundle, OutcomeReceiver)}.
+     * Key for the {@code processingState} bundle in
+     * {@link #onUpdateProcessingState(Bundle, OutcomeReceiver)}, where the value is a
+     * {@link PersistableBundle} containing the device config flags matching the
+     * configured device-config namespace under
+     * {@link com.android.internal.R.string#config_defaultOnDeviceIntelligenceDeviceConfigNamespace}.
      *
      * @hide
      */
     @FlaggedApi(FLAG_ON_DEVICE_INTELLIGENCE_25Q4)
     @SystemApi
-    public static final class UpdateProcessingStateKeys {
-        private UpdateProcessingStateKeys() {}
+    public static final String KEY_DEVICE_CONFIG_UPDATE =
+            "android.service.ondeviceintelligence.KEY_DEVICE_CONFIG_UPDATE";
 
-        /**
-         * Key for the {@code processingState} bundle in
-         * {@link #onUpdateProcessingState(Bundle, OutcomeReceiver)}, where the value is a
-         * {@link PersistableBundle} containing the device config flags matching the
-         * configured device-config namespace under
-         * {@link R.string.config_defaultOnDeviceIntelligenceDeviceConfigNamespace}.
-         */
-        public static final String KEY_DEVICE_CONFIG_UPDATE = "device_config_update";
-    }
+    /**
+     * @deprecated Use {@link #KEY_DEVICE_CONFIG_UPDATE} instead.
+     * @hide
+     */
+    @Deprecated
+    public static final String DEPRECATED_KEY_DEVICE_CONFIG_UPDATE = "device_config_update";
 
     /**
      * Listener for inference service lifecycle events.
@@ -425,11 +426,10 @@ public abstract class OnDeviceSandboxedInferenceService extends Service {
      * configuration, files or state.
      *
      * @param processingState contains updated state and params that are to be applied to the
-     *                        processing environment.
-     *                        The expected keys are constants defined
-     *                        in {@link UpdateProcessingStateKeys}.
-     *                        There can be other custom keys sent via
-     *                        {@link OnDeviceIntelligenceService} but these would be
+     *                        processing environment. The expected keys are constants defined in
+     *                        this class, for e.g. {@link #KEY_DEVICE_CONFIG_UPDATE}.
+     *                        There can be other custom keys sent via {@link
+     *                        OnDeviceIntelligenceService} but these would be
      *                        specific to configured remote package implementation.
      * @param callback        callback to populate the update status and if there are params
      *                        associated with the status.

@@ -23,13 +23,13 @@ import android.annotation.Size;
 import android.annotation.SuppressLint;
 import android.compat.annotation.UnsupportedAppUsage;
 import android.icu.util.ULocale;
+import android.util.ArraySet;
 
 import com.android.internal.annotations.GuardedBy;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 
@@ -184,29 +184,45 @@ public final class LocaleList implements Parcelable {
         if (list.length == 0) {
             mList = sEmptyList;
             mStringRepresentation = "";
-        } else {
-            final ArrayList<Locale> localeList = new ArrayList<>();
-            final HashSet<Locale> seenLocales = new HashSet<Locale>();
-            final StringBuilder sb = new StringBuilder();
-            for (int i = 0; i < list.length; i++) {
-                final Locale l = list[i];
-                if (l == null) {
-                    throw new NullPointerException("list[" + i + "] is null");
-                } else if (seenLocales.contains(l)) {
-                    // Dropping duplicated locale entries.
-                } else {
-                    final Locale localeClone = (Locale) l.clone();
-                    localeList.add(localeClone);
-                    sb.append(localeClone.toLanguageTag());
-                    if (i < list.length - 1) {
-                        sb.append(',');
-                    }
-                    seenLocales.add(localeClone);
-                }
-            }
-            mList = localeList.toArray(new Locale[localeList.size()]);
-            mStringRepresentation = sb.toString();
+            return;
         }
+
+        // Ensure capacity is large enough to avoid resizing
+        final ArraySet<Locale> seenLocales = new ArraySet(list.length);
+        final List<Locale> localeList = new ArrayList<>(list.length);
+
+        // Ensure capacity for all language tags in string representation
+        int stringRepresentationLen = 0;
+
+        for (int i = 0; i < list.length; i++) {
+            final Locale l = list[i];
+            if (l == null) {
+                throw new NullPointerException("list[" + i + "] is null");
+            }
+
+            final Locale localeClone = (Locale) l.clone();
+            // Dedupe locales
+            if (seenLocales.add(localeClone)) {
+                localeList.add(localeClone);
+                stringRepresentationLen += localeClone.toLanguageTag().length();
+            }
+        }
+        Locale[] localeArray = new Locale[localeList.size()];
+        localeList.toArray(localeArray);
+        mList = localeArray;
+
+        // Add capacity for comma delimiters
+        stringRepresentationLen += mList.length - 1;
+
+
+        final StringBuilder sb = new StringBuilder(stringRepresentationLen);
+        for (int i = 0; i < localeArray.length; i++) {
+            sb.append(localeArray[i].toLanguageTag());
+            if (i < localeArray.length - 1) {
+                sb.append(',');
+            }
+        }
+        mStringRepresentation = sb.toString();
     }
 
     /**

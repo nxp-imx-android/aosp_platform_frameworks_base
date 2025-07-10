@@ -72,7 +72,11 @@ constructor(private val viewModelFactory: SmallScreenCaptureRecordViewModel.Fact
                             /* show nothing */
                         }
                         RecordDetailsPopupType.Settings -> RecordDetailsSettings()
-                        RecordDetailsPopupType.AppSelector -> RecordDetailsAppSelector()
+                        RecordDetailsPopupType.AppSelector ->
+                            RecordDetailsAppSelector(
+                                viewModel = viewModel.recordDetailsAppSelectorViewModel,
+                                onBackPressed = { viewModel.showSettings() },
+                            )
                         RecordDetailsPopupType.MarkupColorSelector ->
                             RecordDetailsMarkupColorSelector()
                     }

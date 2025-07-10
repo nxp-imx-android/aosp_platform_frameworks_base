@@ -68,8 +68,7 @@ public class AndroidPlatformServices implements Platform {
     }
 
     @Override
-    @Nullable
-    public float[] pathToFloatArray(@NonNull Object path) {
+    public @Nullable float[] pathToFloatArray(@NonNull Object path) {
         //        if (path is RemotePath) {
         //            return path.createFloatArray()
         //        }
@@ -82,7 +81,7 @@ public class AndroidPlatformServices implements Platform {
     }
 
     @Override
-    public void log(LogCategory category, String message) {
+    public void log(@NonNull LogCategory category, @NonNull String message) {
         switch (category) {
             case DEBUG:
                 Log.d(LOG_TAG, message);

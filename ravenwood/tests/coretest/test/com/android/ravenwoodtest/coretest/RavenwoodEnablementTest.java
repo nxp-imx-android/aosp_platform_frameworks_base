@@ -23,6 +23,7 @@ import static org.junit.Assert.fail;
 import android.platform.test.annotations.DisabledOnRavenwood;
 import android.platform.test.annotations.EnabledOnRavenwood;
 import android.platform.test.annotations.NoRavenizer;
+import android.platform.test.ravenwood.RavenwoodEnablementChecker;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 
@@ -37,6 +38,28 @@ import java.util.regex.Pattern;
 
 @NoRavenizer
 public class RavenwoodEnablementTest extends RavenwoodRunnerTestBase {
+
+    private static final String ENABLEMENT_POLICY = """
+            # Enable all tests by default
+            * true  # inline comments should work
+
+            # Disable only the method TestPolicy#testDisabled
+            com.android.ravenwoodtest.coretest.RavenwoodEnablementTest$TestPolicy#testDisabled false
+
+            # Disable the entire TestPolicyDisableClass class
+            com.android.ravenwoodtest.coretest.RavenwoodEnablementTest$TestPolicyDisableClass false
+            """;
+
+    @BeforeClass
+    public static void beforeClass() {
+        RavenwoodEnablementChecker.setTestEnablementPolicy(ENABLEMENT_POLICY);
+    }
+
+    @AfterClass
+    public static void afterClass() {
+        // Clear the test enablement policy
+        RavenwoodEnablementChecker.setTestEnablementPolicy("");
+    }
 
     @RunWith(AndroidJUnit4.class)
     // CHECKSTYLE:OFF
@@ -222,6 +245,66 @@ public class RavenwoodEnablementTest extends RavenwoodRunnerTestBase {
         @DisabledOnRavenwood
         public void testReallyDisabled() {
             fail("This should not run");
+        }
+    }
+
+    @RunWith(AndroidJUnit4.class)
+    // CHECKSTYLE:OFF
+    @Expected("""
+    testRunStarted: classes
+    testSuiteStarted: classes
+    testSuiteStarted: com.android.ravenwoodtest.coretest.RavenwoodEnablementTest$TestPolicy
+    testStarted: testEnabled(com.android.ravenwoodtest.coretest.RavenwoodEnablementTest$TestPolicy)
+    testFinished: testEnabled(com.android.ravenwoodtest.coretest.RavenwoodEnablementTest$TestPolicy)
+    testStarted: testDisabled(com.android.ravenwoodtest.coretest.RavenwoodEnablementTest$TestPolicy)
+    testAssumptionFailure: got: <false>, expected: is <true>
+    testFinished: testDisabled(com.android.ravenwoodtest.coretest.RavenwoodEnablementTest$TestPolicy)
+    testStarted: testDisabledByAnnotation(com.android.ravenwoodtest.coretest.RavenwoodEnablementTest$TestPolicy)
+    testAssumptionFailure: got: <false>, expected: is <true>
+    testFinished: testDisabledByAnnotation(com.android.ravenwoodtest.coretest.RavenwoodEnablementTest$TestPolicy)
+    testSuiteFinished: com.android.ravenwoodtest.coretest.RavenwoodEnablementTest$TestPolicy
+    testSuiteFinished: classes
+    testRunFinished: 3,0,2,0
+    """)
+    // CHECKSTYLE:ON
+    public static class TestPolicy {
+        @Test
+        public void testDisabled() {
+            fail("This should be disabled by policy file");
+        }
+
+        @Test
+        @DisabledOnRavenwood
+        public void testDisabledByAnnotation() {
+            fail("This should be disabled by policy file");
+        }
+
+        @Test
+        public void testEnabled() {
+        }
+    }
+
+    @RunWith(AndroidJUnit4.class)
+    //CHECKSTYLE:OFF
+    @Expected("""
+    testRunStarted: classes
+    testSuiteStarted: classes
+    testSuiteStarted: TestPolicyDisableClass(com.android.ravenwoodtest.coretest.RavenwoodEnablementTest$TestPolicyDisableClass)
+    testIgnored: TestPolicyDisableClass(com.android.ravenwoodtest.coretest.RavenwoodEnablementTest$TestPolicyDisableClass)
+    testSuiteFinished: TestPolicyDisableClass(com.android.ravenwoodtest.coretest.RavenwoodEnablementTest$TestPolicyDisableClass)
+    testSuiteFinished: classes
+    testRunFinished: 0,0,0,1
+    """)
+    //CHECKSTYLE:ON
+    public static class TestPolicyDisableClass {
+        @Test
+        public void testDisabled() {
+            fail("This should be disabled by policy file");
+        }
+
+        @Test
+        public void testEnabled() {
+            fail("This should be disabled by policy file");
         }
     }
 }

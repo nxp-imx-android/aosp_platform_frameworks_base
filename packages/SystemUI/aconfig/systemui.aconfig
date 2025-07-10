@@ -266,6 +266,18 @@ flag {
 }
 
 flag {
+   name: "no_expansion_on_overscroll"
+   namespace: "systemui"
+   description: "Enable the fix where QS Expansion is set to zero on overscroll. This should"
+        "prevent unnecessary work and remove jank when overscrolling."
+   bug: "414346597"
+  metadata {
+      purpose: PURPOSE_BUGFIX
+  }
+}
+
+
+flag {
    name: "flashlight_strength"
    namespace: "systemui"
    description: "Enable the flashlight strength feature in systemui, allowing QS flashlight tile to"
@@ -1923,6 +1935,13 @@ flag {
 }
 
 flag {
+    name: "desktop_screen_capture_app_window"
+    namespace: "systemui"
+    description: "Enables the app window region option for desktop screen capture."
+    bug: "422833825"
+}
+
+flag {
     name: "new_screen_record_toolbar"
     namespace: "systemui"
     description: "Enables the new screen record flow."
@@ -2052,6 +2071,16 @@ flag {
     namespace: "systemui"
     description: "Make sure keyguard and low-light clock show the same charging status."
     bug: "424297980"
+    metadata {
+      purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
+    name: "gesture_between_hub_and_lockscreen_motion"
+    namespace: "systemui"
+    description: "Motion update when gestures into and out of glanceable hub from lockscreen."
+    bug: "404535174"
     metadata {
       purpose: PURPOSE_BUGFIX
     }

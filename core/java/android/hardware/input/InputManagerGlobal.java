@@ -1716,6 +1716,28 @@ public final class InputManagerGlobal {
     }
 
     /**
+     * @see InputManager#createVirtualKeyboard(VirtualKeyboardConfig)
+     */
+    @NonNull
+    @RequiresPermission(anyOf = {
+            Manifest.permission.INJECT_KEY_EVENTS,
+            Manifest.permission.INJECT_EVENTS
+    })
+    public VirtualKeyboard createVirtualKeyboard(@NonNull VirtualKeyboardConfig config) {
+        IVirtualInputDevice virtualInputDevice;
+        try {
+            // Pass a token to the server so that the server can be notified when the calling
+            // process has died and therefore clean up the virtual device.
+            final IBinder token = new Binder(
+                    "android.hardware.input.VirtualKeyboard:" + config.getInputDeviceName());
+            virtualInputDevice = mIm.createVirtualKeyboard(token, config);
+            return new VirtualKeyboard(config, virtualInputDevice);
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    /**
      * @see InputManager#setPointerIcon(PointerIcon, int, int, int, IBinder)
      */
     public boolean setPointerIcon(PointerIcon icon, int displayId, int deviceId, int pointerId,

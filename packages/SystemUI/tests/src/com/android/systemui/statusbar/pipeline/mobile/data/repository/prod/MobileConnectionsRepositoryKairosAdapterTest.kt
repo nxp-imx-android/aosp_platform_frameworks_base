@@ -97,6 +97,7 @@ class MobileConnectionsRepositoryKairosAdapterTest :
                         mergedRepoFactory =
                             CarrierMergedConnectionRepositoryKairos.Factory(
                                 telephonyManager,
+                                carrierConfigRepo,
                                 wifiRepository,
                             ),
                     )

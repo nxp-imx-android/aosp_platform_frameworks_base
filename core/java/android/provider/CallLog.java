@@ -419,7 +419,9 @@ public class CallLog {
         public static final Uri CONTENT_FILTER_URI = Uri.parse("content://call_log/calls/filter");
 
         /**
-         * The content:// style URL for VoIP applications to query the data belongs to them
+         * The content:// style URL for VoIP applications to query the data belongs to them.
+         * <p>
+         * Applications granted the MANAGE_OWN_CALLS permission can access their own logs.
          */
         @FlaggedApi(Flags.FLAG_INTEGRATED_CALL_LOGS)
         @NonNull
@@ -1137,9 +1139,7 @@ public class CallLog {
          * using {@link android.telecom.CallControl#getCallId()} during the call session.
          *
          * <p>Type: TEXT</p>
-         * @hide
          */
-        @SystemApi
         @FlaggedApi(Flags.FLAG_INTEGRATED_CALL_LOGS)
         public static final String UUID = "uuid";
 

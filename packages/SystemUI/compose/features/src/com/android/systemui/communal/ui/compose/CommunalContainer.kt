@@ -44,6 +44,7 @@ import com.android.compose.animation.scene.MutableSceneTransitionLayoutState
 import com.android.compose.animation.scene.SceneKey
 import com.android.compose.animation.scene.SceneTransitionLayout
 import com.android.compose.animation.scene.Swipe
+import com.android.compose.animation.scene.UserActionDistance
 import com.android.compose.animation.scene.UserActionResult
 import com.android.compose.animation.scene.observableTransitionState
 import com.android.compose.animation.scene.rememberMutableSceneTransitionLayoutState
@@ -115,7 +116,15 @@ val sceneTransitionsV2 = transitions {
     to(CommunalScenes.Communal, key = CommunalTransitionKeys.Swipe) {
         spec = tween(durationMillis = TransitionDuration.TO_GLANCEABLE_HUB_DURATION_MS)
         translate(Communal.Elements.Grid, Edge.End)
-        timestampRange(startMillis = 167, endMillis = 334) { fade(AllElements) }
+        if (Flags.gestureBetweenHubAndLockscreenMotion()) {
+            distance = UserActionDistance { fromContent, _, _ ->
+                val fromContentSize = checkNotNull(fromContent.targetSize())
+                fromContentSize.width * 0.5f
+            }
+            timestampRange(startMillis = 167, endMillis = 334) { fade(Communal.Elements.StatusBar) }
+        } else {
+            timestampRange(startMillis = 167, endMillis = 334) { fade(AllElements) }
+        }
     }
     to(CommunalScenes.Blank) {
         spec = tween(durationMillis = TO_GONE_DURATION.toInt(DurationUnit.MILLISECONDS))
@@ -139,15 +148,17 @@ val sceneTransitionsV2 = transitions {
     to(CommunalScenes.Blank, key = CommunalTransitionKeys.Swipe) {
         spec = tween(durationMillis = TransitionDuration.TO_GLANCEABLE_HUB_DURATION_MS)
         translate(Communal.Elements.Grid, Edge.End)
-        timestampRange(endMillis = 167) {
-            fade(Communal.Elements.Grid)
-            fade(Communal.Elements.IndicationArea)
-            fade(Communal.Elements.LockIcon)
-            if (!Flags.glanceableHubV2()) {
-                fade(Communal.Elements.StatusBar)
+        if (!Flags.gestureBetweenHubAndLockscreenMotion()) {
+            timestampRange(endMillis = 167) {
+                fade(Communal.Elements.Grid)
+                fade(Communal.Elements.IndicationArea)
+                fade(Communal.Elements.LockIcon)
+                if (!Flags.glanceableHubV2()) {
+                    fade(Communal.Elements.StatusBar)
+                }
             }
+            timestampRange(startMillis = 167, endMillis = 334) { fade(Communal.Elements.Scrim) }
         }
-        timestampRange(startMillis = 167, endMillis = 334) { fade(Communal.Elements.Scrim) }
     }
     to(CommunalScenes.Blank, key = CommunalTransitionKeys.ToEditMode) {
         spec = tween(durationMillis = TransitionDuration.BETWEEN_HUB_AND_EDIT_MODE_MS)

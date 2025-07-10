@@ -79,7 +79,7 @@ public final class RemoteTask implements Parcelable {
         mSourceDeviceName = in.readString();
         mLastUsedTimestampMillis = in.readLong();
         if (in.readInt() != 0) {
-            mIcon = in.readParcelable(Icon.class.getClassLoader(), Icon.class);
+            mIcon = in.readParcelable(Icon.class.getClassLoader(), android.graphics.drawable.Icon.class);
         } else {
             mIcon = null;
         }
@@ -186,7 +186,7 @@ public final class RemoteTask implements Parcelable {
         dest.writeLong(mLastUsedTimestampMillis);
         if (mIcon != null) {
             dest.writeInt(1);
-            mIcon.writeToParcel(dest, flags);
+            dest.writeParcelable(mIcon, flags);
         } else {
             dest.writeInt(0);
         }

@@ -3510,8 +3510,16 @@ public class Notification implements Parcelable
         return cs.toString();
     }
 
-    @Nullable
     private static CharSequence stripNonStyleSpans(@Nullable CharSequence text) {
+        // Keep Strikethrough spans for MessagingStyle notifications.
+        // Strikethrough can be an important part of the meaning of the message
+        // e.g.the corrections, cancelations etc.
+        return stripNonStyleSpans(text, /* keepStrikethrough= */ true);
+    }
+
+    @Nullable
+    private static CharSequence stripNonStyleSpans(@Nullable CharSequence text,
+        boolean keepStrikethrough) {
         if (text == null) return null;
 
         if (text instanceof Spanned) {
@@ -3521,7 +3529,7 @@ public class Notification implements Parcelable
             for (Object span : spans) {
                 final Object resultSpan;
                 if (span instanceof StyleSpan
-                        || span instanceof StrikethroughSpan
+                        || (keepStrikethrough && (span instanceof StrikethroughSpan))
                         || span instanceof UnderlineSpan) {
                     resultSpan = span;
                 } else if (span instanceof TextAppearanceSpan) {
@@ -6043,7 +6051,7 @@ public class Notification implements Parcelable
             contentView.setDrawableTint(
                     R.id.phishing_alert,
                     false /* targetBackground */,
-                    getColors(p).getErrorColor(),
+                    getPrimaryTextColor(p),
                     PorterDuff.Mode.SRC_ATOP);
         }
 
@@ -7514,8 +7522,10 @@ public class Notification implements Parcelable
         public CharSequence ensureColorSpanContrastOrStripStyling(CharSequence cs,
                 int buttonFillColor) {
             if ( mN.isPromotedOngoing()) {
-                // RON keeps non style spans just like MessagingStyle
-                return stripNonStyleSpans(cs);
+                // RON keeps non style spans just like MessagingStyle but disallow strikethrough
+                // as that could change the text's meaning between promoted (which allows spans)
+                // and demoted (which removes spans).
+                return stripNonStyleSpans(cs, /* keepStrikethrough= */ false);
             } else if (Flags.cleanUpSpansAndNewLines()) {
                 return stripStyling(cs);
             }

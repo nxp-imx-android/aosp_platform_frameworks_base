@@ -204,7 +204,7 @@ public class DrawTextAnchored extends PaintOperation implements VariableSupport,
                 .field(DocumentedOperation.INT, "flags", "Change the behaviour");
     }
 
-    @NonNull float[] mBounds = new float[4];
+    @NonNull float [] mBounds = new float[4];
 
     private float getHorizontalOffset() {
         // TODO scale  TextSize / BaseTextSize;
@@ -231,7 +231,9 @@ public class DrawTextAnchored extends PaintOperation implements VariableSupport,
                         : 0;
 
         String str = context.getText(mTextID);
-        if (str != mLastString || (mFlags & MEASURE_EVERY_TIME) != 0) {
+        // we are ok to do a pointer check here as the string is immutable in this context.
+        // we cast to (Object) to keep the linter happy.
+        if ((Object) str != (Object) mLastString || (mFlags & MEASURE_EVERY_TIME) != 0) {
             mLastString = str;
             context.getTextBounds(mTextID, 0, -1, flags, mBounds);
         }
@@ -242,7 +244,7 @@ public class DrawTextAnchored extends PaintOperation implements VariableSupport,
     }
 
     @Override
-    public void serialize(MapSerializer serializer) {
+    public void serialize(@NonNull MapSerializer serializer) {
         serializer
                 .addType(CLASS_NAME)
                 .add("textId", mTextID)

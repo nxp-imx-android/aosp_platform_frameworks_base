@@ -57,6 +57,8 @@ public class RavenwoodUtils {
         var result = new AtomicReference<T>();
         var thrown = new AtomicReference<Throwable>();
         var latch = new CountDownLatch(1);
+
+        var postedHere = new MessageWasPostedHereStackTrace();
         h.post(() -> {
             try {
                 result.set(c.call());
@@ -72,6 +74,8 @@ public class RavenwoodUtils {
         }
         var th = thrown.get();
         if (th != null) {
+            // Inject the current stacktrace as a cause for easier debugging.
+            postedHere.injectAsCause(th);
             SneakyThrow.sneakyThrow(th);
         }
         return result.get();

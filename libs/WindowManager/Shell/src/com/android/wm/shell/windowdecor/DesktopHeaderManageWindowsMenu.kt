@@ -66,8 +66,8 @@ class DesktopHeaderManageWindowsMenu(
 
     init {
         createMenu(snapshotList, onIconClickListener, onOutsideClickListener)
-        menuView.rootView.pivotX = 0f
-        menuView.rootView.pivotY = 0f
+        menuView.scrollableMenuView.pivotX = 0f
+        menuView.scrollableMenuView.pivotY = 0f
         animateOpen()
     }
 
@@ -95,10 +95,10 @@ class DesktopHeaderManageWindowsMenu(
             x = position.x,
             y = position.y,
             width = menuView.menuWidth,
-            height = menuView.menuHeight,
+            height = menuView.scrollableMenuHeight,
             flags = flags,
             forciblyShownTypes = systemBars(),
-            view = menuView.rootView
+            view = menuView.scrollableMenuView
         )
     }
 
@@ -111,7 +111,7 @@ class DesktopHeaderManageWindowsMenu(
             .build()
         val lp = WindowManager.LayoutParams(
             menuView.menuWidth,
-            menuView.menuHeight,
+            menuView.scrollableMenuHeight,
             WindowManager.LayoutParams.TYPE_APPLICATION,
             flags,
             PixelFormat.TRANSPARENT
@@ -126,7 +126,7 @@ class DesktopHeaderManageWindowsMenu(
             displayController.getDisplay(callerTaskInfo.displayId), windowManager,
             "MaximizeMenu"
         )
-        menuView.let { viewHost.setView(it.rootView, lp) }
+        menuView.let { viewHost.setView(it.scrollableMenuView, lp) }
         val t = surfaceControlTransactionSupplier.get()
         t.setLayer(leash, TaskConstants.TASK_CHILD_LAYER_FLOATING_MENU)
             .setPosition(leash, position.x.toFloat(), position.y.toFloat())

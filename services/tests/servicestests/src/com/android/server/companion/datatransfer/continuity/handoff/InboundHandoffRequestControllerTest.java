@@ -36,6 +36,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.mock;
+import static org.mockito.AdditionalMatchers.aryEq;
 
 import android.app.HandoffActivityData;
 import android.companion.CompanionDeviceManager;
@@ -53,6 +54,7 @@ import androidx.test.platform.app.InstrumentationRegistry;
 import com.android.server.companion.datatransfer.continuity.messages.HandoffRequestMessage;
 import com.android.server.companion.datatransfer.continuity.messages.HandoffRequestResultMessage;
 import com.android.server.companion.datatransfer.continuity.messages.TaskContinuityMessage;
+import com.android.server.companion.datatransfer.continuity.messages.TaskContinuityMessageSerializer;
 import com.android.server.wm.ActivityTaskManagerInternal;
 import com.android.server.LocalServices;
 
@@ -128,21 +130,14 @@ public class InboundHandoffRequestControllerTest {
         List<HandoffActivityData> handoffData = List.of(handoffActivityData);
         mInboundHandoffRequestController.onHandoffTaskDataRequestSucceeded(taskId, handoffData);
 
-        ArgumentCaptor<byte[]> messageCaptor = ArgumentCaptor.forClass(byte[].class);
+        HandoffRequestResultMessage expectedMessage = new HandoffRequestResultMessage(
+                taskId,
+                HANDOFF_REQUEST_RESULT_SUCCESS,
+                List.of(handoffActivityData));
         verify(mMockCompanionDeviceManagerService).sendMessage(
                 eq(MESSAGE_ONEWAY_TASK_CONTINUITY),
-                messageCaptor.capture(),
+                aryEq(TaskContinuityMessageSerializer.serialize(expectedMessage)),
                 any());
-
-        TaskContinuityMessage sentMessage = new TaskContinuityMessage(messageCaptor.getValue());
-        assertThat(sentMessage.getData()).isInstanceOf(HandoffRequestResultMessage.class);
-        HandoffRequestResultMessage resultMessage =
-                (HandoffRequestResultMessage) sentMessage.getData();
-        assertThat(resultMessage.taskId()).isEqualTo(taskId);
-        assertThat(resultMessage.statusCode()).isEqualTo(HANDOFF_REQUEST_RESULT_SUCCESS);
-        assertThat(resultMessage.activities()).hasSize(1);
-        assertThat(resultMessage.activities().get(0).getComponentName())
-                .isEqualTo(handoffActivityData.getComponentName());
     }
 
     @Test
@@ -169,26 +164,14 @@ public class InboundHandoffRequestControllerTest {
         List<HandoffActivityData> handoffData = List.of(handoffActivityData);
         mInboundHandoffRequestController.onHandoffTaskDataRequestSucceeded(taskId, handoffData);
 
-        ArgumentCaptor<byte[]> messageCaptor = ArgumentCaptor.forClass(byte[].class);
-        ArgumentCaptor<int[]> associationIdsCaptor = ArgumentCaptor.forClass(int[].class);
-
+        HandoffRequestResultMessage expectedMessage = new HandoffRequestResultMessage(
+            taskId,
+            HANDOFF_REQUEST_RESULT_SUCCESS,
+            List.of(handoffActivityData));
         verify(mMockCompanionDeviceManagerService).sendMessage(
                 eq(MESSAGE_ONEWAY_TASK_CONTINUITY),
-                messageCaptor.capture(),
-                associationIdsCaptor.capture());
-
-        TaskContinuityMessage sentMessage = new TaskContinuityMessage(messageCaptor.getValue());
-        assertThat(sentMessage.getData()).isInstanceOf(HandoffRequestResultMessage.class);
-        HandoffRequestResultMessage resultMessage =
-                (HandoffRequestResultMessage) sentMessage.getData();
-        assertThat(resultMessage.taskId()).isEqualTo(taskId);
-        assertThat(resultMessage.statusCode()).isEqualTo(HANDOFF_REQUEST_RESULT_SUCCESS);
-        assertThat(resultMessage.activities()).hasSize(1);
-        assertThat(resultMessage.activities().get(0).getComponentName())
-                .isEqualTo(handoffActivityData.getComponentName());
-
-        assertThat(associationIdsCaptor.getValue()).asList()
-                .containsExactly(firstAssociationId, secondAssociationId);
+                eq(TaskContinuityMessageSerializer.serialize(expectedMessage)),
+                aryEq(new int[]{firstAssociationId, secondAssociationId}));
     }
 
     @Test
@@ -249,18 +232,11 @@ public class InboundHandoffRequestControllerTest {
 
         mInboundHandoffRequestController.onHandoffTaskDataRequestFailed(taskId, receiverErrorCode);
 
-        ArgumentCaptor<byte[]> messageCaptor = ArgumentCaptor.forClass(byte[].class);
+        HandoffRequestResultMessage expectedMessage = new HandoffRequestResultMessage(
+                taskId, expectedStatusCode, List.of());
         verify(mMockCompanionDeviceManagerService).sendMessage(
                 eq(MESSAGE_ONEWAY_TASK_CONTINUITY),
-                messageCaptor.capture(),
-                eq(new int[]{associationId}));
-
-        TaskContinuityMessage sentMessage = new TaskContinuityMessage(messageCaptor.getValue());
-        assertThat(sentMessage.getData()).isInstanceOf(HandoffRequestResultMessage.class);
-        HandoffRequestResultMessage resultMessage =
-                (HandoffRequestResultMessage) sentMessage.getData();
-        assertThat(resultMessage.taskId()).isEqualTo(taskId);
-        assertThat(resultMessage.statusCode()).isEqualTo(expectedStatusCode);
-        assertThat(resultMessage.activities()).isEmpty();
+                eq(TaskContinuityMessageSerializer.serialize(expectedMessage)),
+                aryEq(new int[]{associationId}));
     }
 }

@@ -198,18 +198,21 @@ constructor(
     }
 
     /**
-     * Initializes the LifecycleRegistry if it hasn't been initialized yet. It sets the initial
-     * state of the LifecycleRegistry to Lifecycle.State.CREATED.
+     * Initializes the LifecycleRegistry. It sets the initial state of the LifecycleRegistry to
+     * Lifecycle.State.CREATED.
      */
     fun initializeLifecycle() {
-        if (!::lifecycleRegistry.isInitialized) {
-            lifecycleOwner =
-                object : LifecycleOwner {
-                    override val lifecycle: Lifecycle
-                        get() = lifecycleRegistry
-                }
-            lifecycleRegistry = LifecycleRegistry(lifecycleOwner!!)
+        // If a lifecycle already exists, destroy it before creating a new one.
+        if (::lifecycleRegistry.isInitialized) {
+            lifecycleRegistry.currentState = Lifecycle.State.DESTROYED
         }
+
+        lifecycleOwner =
+            object : LifecycleOwner {
+                override val lifecycle: Lifecycle
+                    get() = lifecycleRegistry
+            }
+        lifecycleRegistry = LifecycleRegistry(lifecycleOwner!!)
         lifecycleRegistry.currentState = Lifecycle.State.CREATED
     }
 

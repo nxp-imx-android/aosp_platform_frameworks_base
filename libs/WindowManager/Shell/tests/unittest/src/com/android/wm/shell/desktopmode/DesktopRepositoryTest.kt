@@ -35,8 +35,8 @@ import com.android.wm.shell.TestRunningTaskInfoBuilder
 import com.android.wm.shell.TestShellExecutor
 import com.android.wm.shell.common.ShellExecutor
 import com.android.wm.shell.desktopmode.DesktopRepository.Companion.INVALID_DESK_ID
-import com.android.wm.shell.desktopmode.persistence.Desktop
-import com.android.wm.shell.desktopmode.persistence.DesktopPersistentRepository
+import com.android.wm.shell.desktopmode.data.persistence.Desktop
+import com.android.wm.shell.desktopmode.data.persistence.DesktopPersistentRepository
 import com.android.wm.shell.shared.desktopmode.FakeDesktopConfig
 import com.android.wm.shell.sysui.ShellInit
 import com.google.common.truth.Truth.assertThat

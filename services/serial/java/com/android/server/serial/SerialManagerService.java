@@ -22,7 +22,7 @@ import static android.hardware.serial.SerialPort.OPEN_FLAG_SYNC;
 import static android.hardware.serial.SerialPort.OPEN_FLAG_READ_ONLY;
 import static android.hardware.serial.SerialPort.OPEN_FLAG_WRITE_ONLY;
 import static android.hardware.serial.SerialPort.OPEN_FLAG_READ_WRITE;
-import static android.hardware.serial.flags.Flags.enableSerialApi;
+import static android.hardware.serial.flags.Flags.enableWiredSerialApi;
 
 import static com.android.server.serial.SerialConstants.DEV_DIR;
 
@@ -279,7 +279,7 @@ public class SerialManagerService extends ISerialManager.Stub {
 
         @Override
         public void onStart() {
-            if (enableSerialApi()) {
+            if (enableWiredSerialApi()) {
                 publishBinderService(Context.SERIAL_SERVICE, new SerialManagerService());
             }
         }

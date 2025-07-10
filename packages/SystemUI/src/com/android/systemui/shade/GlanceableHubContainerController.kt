@@ -39,11 +39,13 @@ import com.android.app.tracing.coroutines.launchTraced as launch
 import com.android.compose.theme.PlatformTheme
 import com.android.internal.annotations.VisibleForTesting
 import com.android.keyguard.UserActivityNotifier
+import com.android.systemui.Flags
 import com.android.systemui.ambient.touch.SURFACE_HUB
 import com.android.systemui.ambient.touch.TouchMonitor
 import com.android.systemui.ambient.touch.dagger.AmbientTouchComponent
 import com.android.systemui.communal.dagger.Communal
 import com.android.systemui.communal.domain.interactor.CommunalInteractor
+import com.android.systemui.communal.domain.interactor.CommunalSceneInteractor
 import com.android.systemui.communal.domain.interactor.CommunalSettingsInteractor
 import com.android.systemui.communal.ui.compose.CommunalContainer
 import com.android.systemui.communal.ui.compose.CommunalContent
@@ -85,6 +87,7 @@ class GlanceableHubContainerController
 @Inject
 constructor(
     private val communalInteractor: CommunalInteractor,
+    private val communalSceneInteractor: CommunalSceneInteractor,
     private val communalSettingsInteractor: CommunalSettingsInteractor,
     private val communalViewModel: CommunalViewModel,
     private val keyguardInteractor: KeyguardInteractor,
@@ -423,6 +426,20 @@ constructor(
         communalContainerWrapper =
             CommunalWrapper(containerView.context, communalSettingsInteractor)
         communalContainerWrapper?.addView(communalContainerView)
+
+        if (communalContainerWrapper != null && Flags.gestureBetweenHubAndLockscreenMotion()) {
+            collectFlow(
+                communalContainerWrapper!!,
+                communalSceneInteractor.isCommunalSceneTransitioning,
+                { isTransitioning ->
+                    // Elevate up hub on top of other siblings in shade, so it can appear above
+                    // keyguard root view and notifications during the animation.
+                    // Reset once animation ends.
+                    communalContainerWrapper!!.translationZ = if (isTransitioning) 1f else 0f
+                },
+            )
+        }
+
         logger.d("Hub container initialized")
         return communalContainerWrapper!!
     }

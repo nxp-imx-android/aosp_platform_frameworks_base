@@ -62,6 +62,15 @@ constructor(
             onFinish = { 1f },
         )
 
+    val zoomOut: Flow<Float> =
+        transitionAnimation.sharedFlow(
+            onStep = { 1f - it },
+            // reset zoom out on wallpaper and keyguard view
+            onFinish = { 0f },
+            onCancel = { 1f },
+            name = "GLANCEABLE_HUB->AOD: zoomOut",
+        )
+
     override val deviceEntryParentViewAlpha: Flow<Float> =
         deviceEntryUdfpsInteractor.isUdfpsEnrolledAndEnabled.flatMapLatest { udfpsEnrolledAndEnabled
             ->

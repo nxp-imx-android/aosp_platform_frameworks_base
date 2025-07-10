@@ -34,7 +34,6 @@ import android.hardware.camera2.CameraCaptureSession;
 import android.hardware.camera2.CameraCharacteristics;
 import android.hardware.camera2.CaptureRequest;
 import android.hardware.camera2.impl.CameraMetadataNative;
-import android.os.IBinder;
 import android.os.Parcel;
 import android.os.RemoteException;
 import android.util.Slog;
@@ -94,22 +93,8 @@ public final class VirtualCameraConversionUtil {
                         captureRequest = convertToCaptureRequest(sessionParameters);
                     }
 
-                    android.companion.virtual.camera.ICaptureResultConsumer consumer =
-                            new android.companion.virtual.camera.ICaptureResultConsumer() {
-                                @Override
-                                public void sendCaptureResult(long timestamp,
-                                        CameraMetadataNative captureResult) throws RemoteException {
-                                    captureResultConsumer.sendCaptureResult(timestamp,
-                                            convertToVirtualCameraMetadata(captureResult));
-                                }
-
-                                @Override
-                                public IBinder asBinder() {
-                                    return null;
-                                }
-                            };
-
-                    camera.onConfigureSession(captureRequest, consumer);
+                    camera.onConfigureSession(captureRequest,
+                            convertToVdmCaptureResultConsumer(captureResultConsumer));
                 }
             }
             @Override
@@ -222,6 +207,22 @@ public final class VirtualCameraConversionUtil {
                     "" /* logicalCameraId */, null /* physicalCameraIdSet */).build();
         }
 
+        return null;
+    }
+
+    private static @Nullable android.companion.virtual.camera.ICaptureResultConsumer
+            convertToVdmCaptureResultConsumer(
+                @Nullable ICaptureResultConsumer serviceCaptureResultConsumer) {
+        if (serviceCaptureResultConsumer != null) {
+            return new android.companion.virtual.camera.ICaptureResultConsumer.Stub() {
+                @Override
+                public void acceptCaptureResult(long timestamp, CameraMetadataNative captureResult)
+                        throws RemoteException {
+                    serviceCaptureResultConsumer.acceptCaptureResult(timestamp,
+                            convertToVirtualCameraMetadata(captureResult));
+                }
+            };
+        }
         return null;
     }
 }

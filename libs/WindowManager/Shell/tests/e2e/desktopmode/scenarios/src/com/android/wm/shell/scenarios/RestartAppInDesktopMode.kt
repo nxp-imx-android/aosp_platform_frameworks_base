@@ -18,10 +18,7 @@ package com.android.wm.shell.scenarios
 
 import android.platform.test.annotations.RequiresFlagsEnabled
 import android.platform.test.flag.junit.DeviceFlagsValueProvider
-import android.tools.NavBar
-import android.tools.Rotation
 import com.android.window.flags.Flags
-import com.android.wm.shell.Utils
 import org.junit.After
 import org.junit.Assume.assumeTrue
 import org.junit.Before
@@ -42,9 +39,7 @@ abstract class RestartAppInDesktopMode(
 ) : DesktopScenarioCustomAppTestBase(isResizable, isLandscapeApp) {
 
     @get:Rule(order = 0) val checkFlagsRule = DeviceFlagsValueProvider.createCheckFlagsRule()
-    @get:Rule(order = 1)
-    val testSetupRule = Utils.testSetupRule(NavBar.MODE_GESTURAL, Rotation.ROTATION_0)
-    @get:Rule(order = 2) val connectedDisplayRule = SimulatedConnectedDisplayTestRule()
+    @get:Rule(order = 1) val connectedDisplayRule = SimulatedConnectedDisplayTestRule()
 
     @Before
     fun setup() {

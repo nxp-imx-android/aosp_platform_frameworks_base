@@ -31,8 +31,7 @@ public interface OperationInterface {
     void apply(@NonNull RemoteContext context);
 
     /** Debug utility to display an operation + indentation */
-    @NonNull
-    String deepToString(@NonNull String indent);
+    @NonNull String deepToString(@NonNull String indent);
 
     /**
      * Returns true if the operation is marked as "dirty"

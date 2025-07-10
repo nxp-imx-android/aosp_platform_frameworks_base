@@ -840,7 +840,23 @@ public class GroupHelper {
                     Log.i(TAG, "isGroupChildWithoutSummary OR isGroupSummaryWithoutChild"
                             + record);
                 }
-                addToUngroupedAndMaybeAggregate(record, fullAggregateGroupKey, sectioner);
+
+                boolean aggregated =
+                        addToUngroupedAndMaybeAggregate(record, fullAggregateGroupKey, sectioner);
+                if (android.service.notification.Flags.notificationClassification()) {
+                    if (!aggregated && isSummaryWithAllChildrenBundled(record, notificationList,
+                            new ArrayList<>())) {
+                        // Cancel the summary and cache it if does not get aggregated
+                        // in order to avoid empty summaries
+                        if (DEBUG) {
+                            Slog.i(TAG,
+                                    "Empty group summary to be canceled and cached: " + record);
+                        }
+                        mCallback.removeAppProvidedSummary(record.getKey());
+                        cacheCanceledSummary(record);
+                    }
+                }
+
                 return;
             }
 
@@ -1660,7 +1676,7 @@ public class GroupHelper {
         // Find all posted children for this summary
         for (NotificationRecord r : postedNotificationsList) {
             if (!r.getNotification().isGroupSummary()
-                    && groupKey.equals(r.getSbn().getGroup())) {
+                    && groupKey.equals(r.getSbn().getNotification().getGroup())) {
                 numChildren++;
                 if (isInBundleSection(r)) {
                     numBundledChildren++;
@@ -1670,7 +1686,7 @@ public class GroupHelper {
         // Find all enqueued children for this summary
         for (NotificationRecord r : enqueuedNotificationsList) {
             if (!r.getNotification().isGroupSummary()
-                    && groupKey.equals(r.getSbn().getGroup())) {
+                    && groupKey.equals(r.getSbn().getNotification().getGroup())) {
                 numChildren++;
                 if (isInBundleSection(r)) {
                     numBundledChildren++;

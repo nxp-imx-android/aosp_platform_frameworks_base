@@ -107,7 +107,7 @@ public class ShaderData extends Operation implements VariableSupport, Serializab
      * @param name name of uniform
      * @return value of uniform
      */
-    public @NonNull float[] getUniformFloats(@NonNull String name) {
+    public @NonNull float [] getUniformFloats(@NonNull String name) {
         return mUniformFloatMap != null ? mUniformFloatMap.get(name) : new float[0];
     }
 
@@ -128,7 +128,7 @@ public class ShaderData extends Operation implements VariableSupport, Serializab
      * @param name Name of uniform
      * @return value of uniform
      */
-    public @NonNull int[] getUniformInts(@NonNull String name) {
+    public @NonNull int [] getUniformInts(@NonNull String name) {
         return mUniformIntMap != null ? mUniformIntMap.get(name) : new int[0];
     }
 
@@ -174,10 +174,10 @@ public class ShaderData extends Operation implements VariableSupport, Serializab
 
     @Override
     public void updateVariables(@NonNull RemoteContext context) {
-        if (mUniformRawFloatMap == null) {
+        if (mUniformRawFloatMap == null || mUniformFloatMap == null) {
             return;
         }
-        for (String name : mUniformRawFloatMap.keySet()) { // TODO: potential npe
+        for (String name : mUniformRawFloatMap.keySet()) {
             float[] value = mUniformRawFloatMap.get(name);
             float[] out = null;
             for (int i = 0; i < value.length; i++) {
@@ -194,10 +194,10 @@ public class ShaderData extends Operation implements VariableSupport, Serializab
 
     @Override
     public void registerListening(@NonNull RemoteContext context) {
-        if (mUniformFloatMap == null) {
+        if (mUniformRawFloatMap == null || mUniformFloatMap == null) {
             return;
         }
-        for (String name : mUniformRawFloatMap.keySet()) { // TODO: potential npe
+        for (String name : mUniformRawFloatMap.keySet()) {
             float[] value = mUniformRawFloatMap.get(name);
             for (float v : value) {
                 if (Float.isNaN(v)) {
@@ -388,7 +388,7 @@ public class ShaderData extends Operation implements VariableSupport, Serializab
     }
 
     @Override
-    public void serialize(MapSerializer serializer) {
+    public void serialize(@NonNull MapSerializer serializer) {
         serializer
                 .addType(CLASS_NAME)
                 .add("shaderTextId", mShaderTextId)

@@ -70,7 +70,7 @@ public class ConditionalOperations extends PaintOperation
     private static final String[] TYPE_STR = {"EQ", "NEQ", "LT", "LTE", "GT", "GTE"};
 
     @Override
-    public void registerListening(RemoteContext context) {
+    public void registerListening(@NonNull RemoteContext context) {
         if (Float.isNaN(mVarA)) {
             context.listensTo(Utils.idFromNan(mVarA), this);
         }
@@ -80,7 +80,7 @@ public class ConditionalOperations extends PaintOperation
     }
 
     @Override
-    public void updateVariables(RemoteContext context) {
+    public void updateVariables(@NonNull RemoteContext context) {
         mVarAOut = Float.isNaN(mVarA) ? context.getFloat(Utils.idFromNan(mVarA)) : mVarA;
         mVarBOut = Float.isNaN(mVarB) ? context.getFloat(Utils.idFromNan(mVarB)) : mVarB;
         for (Operation op : mList) {
@@ -234,7 +234,7 @@ public class ConditionalOperations extends PaintOperation
     }
 
     @Override
-    public void serialize(MapSerializer serializer) {
+    public void serialize(@NonNull MapSerializer serializer) {
         serializer
                 .addType(CLASS_NAME)
                 .add("type", mType)

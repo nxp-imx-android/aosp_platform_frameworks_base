@@ -17,6 +17,7 @@
 package com.android.settingslib.spa.widget.button
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -104,15 +105,16 @@ fun ActionButtons(actionButtons: List<ActionButton>) {
 private fun RowScope.ActionButton(actionButton: ActionButton) {
     if (isSpaExpressiveEnabled) {
         Column(
-            horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier
                 .weight(1f)
+                .clickable(onClick = actionButton.onClick)
         ) {
             IconButton(actionButton)
             Spacer(Modifier.height(SettingsSpace.extraSmall3))
             Text(
                 text = actionButton.text,
                 modifier = Modifier
-                    .clearAndSetSemantics {} // semantics set in IconButton
                     .padding(horizontal = SettingsSpace.extraSmall4),
                 style = MaterialTheme.typography.titleSmallEmphasized,
                 textAlign = TextAlign.Center,
@@ -171,7 +173,8 @@ private fun IconButton(actionButton: ActionButton) {
                     IconButtonDefaults.mediumContainerSize(
                         IconButtonDefaults.IconButtonWidthOption.Wide
                     )
-                ),
+                )
+                .clearAndSetSemantics {}, // semantics set in IconButton
         enabled = actionButton.enabled,
         // Because buttons could appear, disappear or change positions, reset the interaction source
         // to prevent highlight the wrong button.

@@ -126,13 +126,12 @@ public final class AppWidgetEvent implements Parcelable {
         return mScrolledIds;
     }
 
-    private AppWidgetEvent(int appWidgetId, @NonNull Duration visibleDuration,
-            @NonNull Instant start, @NonNull Instant end, @Nullable Rect position,
-            @Nullable int[] clickedIds, @Nullable int[] scrolledIds) {
+    private AppWidgetEvent(int appWidgetId, long visibleDurationMillis, long start, long end,
+            @Nullable Rect position, @Nullable int[] clickedIds, @Nullable int[] scrolledIds) {
         mAppWidgetId = appWidgetId;
-        mVisibleDuration = visibleDuration;
-        mStart = start;
-        mEnd = end;
+        mVisibleDuration = Duration.ofMillis(visibleDurationMillis);
+        mStart = Instant.ofEpochMilli(start);
+        mEnd = Instant.ofEpochMilli(end);
         mPosition = position;
         mClickedIds = clickedIds;
         mScrolledIds = scrolledIds;
@@ -218,11 +217,9 @@ public final class AppWidgetEvent implements Parcelable {
         PersistableBundle extras = usageEvent.getExtras();
         int appWidgetId = extras.getInt(AppWidgetManager.EXTRA_APPWIDGET_ID,
                 AppWidgetManager.INVALID_APPWIDGET_ID);
-        Duration duration = Duration.ofMillis(extras.getLong(
-                AppWidgetManager.EXTRA_EVENT_DURATION_MS, 0L));
-        Instant start = Instant.ofEpochMilli(extras.getLong(AppWidgetManager.EXTRA_EVENT_START,
-                0L));
-        Instant end = Instant.ofEpochMilli(extras.getLong(AppWidgetManager.EXTRA_EVENT_END, 0L));
+        long durationMillis = extras.getLong(AppWidgetManager.EXTRA_EVENT_DURATION_MS, 0L);
+        long start = extras.getLong(AppWidgetManager.EXTRA_EVENT_START, 0L);
+        long end = extras.getLong(AppWidgetManager.EXTRA_EVENT_END, 0L);
         Rect position = null;
         int[] clickedIds = null;
         int[] scrolledIds = null;
@@ -239,7 +236,7 @@ public final class AppWidgetEvent implements Parcelable {
         if (extras.containsKey(AppWidgetManager.EXTRA_EVENT_SCROLLED_VIEWS)) {
             scrolledIds = extras.getIntArray(AppWidgetManager.EXTRA_EVENT_SCROLLED_VIEWS);
         }
-        return new AppWidgetEvent(appWidgetId, duration, start, end, position, clickedIds,
+        return new AppWidgetEvent(appWidgetId, durationMillis, start, end, position, clickedIds,
             scrolledIds);
     }
 
@@ -272,9 +269,9 @@ public final class AppWidgetEvent implements Parcelable {
         @NonNull
         private final ArraySet<Integer> mScrolledIds = new ArraySet<>(MAX_NUM_ITEMS);
         private int mAppWidgetId = AppWidgetManager.INVALID_APPWIDGET_ID;
-        private Instant mStart = Instant.MAX;
-        private Instant mEnd = Instant.MIN;
-        private Duration mDuration = Duration.ZERO;
+        private long mStart = Long.MAX_VALUE;
+        private long mEnd = Long.MIN_VALUE;
+        private long mDurationMillis = 0L;
         private long mLastVisibilityChangeMillis = 0L;
         @Nullable
         private Rect mPosition = null;
@@ -291,8 +288,8 @@ public final class AppWidgetEvent implements Parcelable {
          * Start a new visibility duration for this event.
          */
         public Builder startVisibility() {
-            Instant now = Instant.now();
-            if (now.isBefore(mStart)) {
+            long now = System.currentTimeMillis();
+            if (now < mStart) {
                 mStart = now;
             }
             mLastVisibilityChangeMillis = SystemClock.uptimeMillis();
@@ -303,12 +300,11 @@ public final class AppWidgetEvent implements Parcelable {
          * End the visibility duration, and add the duration to this event's total duration.
          */
         public Builder endVisibility() {
-            Instant now = Instant.now();
-            if (now.isAfter(mEnd)) {
+            long now = System.currentTimeMillis();
+            if (now > mEnd) {
                 mEnd = now;
             }
-            mDuration = mDuration.plusMillis(
-                SystemClock.uptimeMillis() - mLastVisibilityChangeMillis);
+            mDurationMillis += SystemClock.uptimeMillis() - mLastVisibilityChangeMillis;
             return this;
         }
 
@@ -345,13 +341,13 @@ public final class AppWidgetEvent implements Parcelable {
                 throw new IllegalArgumentException("Trying to merge events with different app "
                     + "widget IDs: " + mAppWidgetId + " != " + event.getAppWidgetId());
             }
-            if (event.getStart().isBefore(mStart)) {
-                mStart = event.getStart();
+            if (event.getStart().toEpochMilli() < mStart) {
+                mStart = event.getStart().toEpochMilli();
             }
-            if (event.getEnd().isAfter(mEnd)) {
-                mEnd = event.getEnd();
+            if (event.getEnd().toEpochMilli() > mEnd) {
+                mEnd = event.getEnd().toEpochMilli();
             }
-            mDuration = mDuration.plus(event.getVisibleDuration());
+            mDurationMillis += event.getVisibleDuration().toMillis();
             setPosition(event.getPosition());
             addAllUntilMax(mClickedIds, event.getClickedIds());
             addAllUntilMax(mScrolledIds, event.getScrolledIds());
@@ -362,23 +358,23 @@ public final class AppWidgetEvent implements Parcelable {
          * event yet.
          */
         public boolean isEmpty() {
-            return mAppWidgetId <= 0 || mDuration.isZero();
+            return mAppWidgetId <= 0 || mDurationMillis == 0;
         }
 
         /**
          * Resets the event data fields.
          */
         public void clear() {
-            mDuration = Duration.ZERO;
-            mStart = Instant.MAX;
-            mEnd = Instant.MIN;
+            mDurationMillis = 0L;
+            mStart = Long.MAX_VALUE;
+            mEnd = Long.MIN_VALUE;
             mPosition = null;
             mClickedIds.clear();
             mScrolledIds.clear();
         }
 
         public AppWidgetEvent build() {
-            return new AppWidgetEvent(mAppWidgetId, mDuration, mStart, mEnd, mPosition,
+            return new AppWidgetEvent(mAppWidgetId, mDurationMillis, mStart, mEnd, mPosition,
                     toIntArray(mClickedIds), toIntArray(mScrolledIds));
         }
 

@@ -43,9 +43,9 @@ import com.android.wm.shell.common.ShellExecutor
 import com.android.wm.shell.desktopmode.DesktopModeEventLogger.Companion.MinimizeReason
 import com.android.wm.shell.desktopmode.DesktopModeEventLogger.Companion.UnminimizeReason
 import com.android.wm.shell.desktopmode.DesktopTestHelpers.createFreeformTask
+import com.android.wm.shell.desktopmode.data.DesktopRepositoryInitializer
+import com.android.wm.shell.desktopmode.data.persistence.DesktopPersistentRepository
 import com.android.wm.shell.desktopmode.multidesks.DesksOrganizer
-import com.android.wm.shell.desktopmode.persistence.DesktopPersistentRepository
-import com.android.wm.shell.desktopmode.persistence.DesktopRepositoryInitializer
 import com.android.wm.shell.shared.desktopmode.FakeDesktopConfig
 import com.android.wm.shell.shared.desktopmode.FakeDesktopState
 import com.android.wm.shell.sysui.ShellController

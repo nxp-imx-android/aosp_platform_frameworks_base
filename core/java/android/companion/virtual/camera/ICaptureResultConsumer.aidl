@@ -28,5 +28,5 @@ oneway interface ICaptureResultConsumer {
      * Injects the CameraMetadataNative part of the CaptureResult to be sent for the timestamp
      * on all streams for the associated session.
      */
-    void sendCaptureResult(long timestamp, in CameraMetadataNative captureResult);
+    void acceptCaptureResult(long timestamp, in CameraMetadataNative captureResult);
 }

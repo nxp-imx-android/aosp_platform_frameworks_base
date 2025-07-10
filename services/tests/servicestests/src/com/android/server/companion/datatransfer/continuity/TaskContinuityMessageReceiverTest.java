@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 The Android Open Source Project
+ * Copyright (C) 2025 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,6 +41,7 @@ import androidx.test.platform.app.InstrumentationRegistry;
 import com.android.server.companion.datatransfer.continuity.messages.ContinuityDeviceConnected;
 import com.android.server.companion.datatransfer.continuity.messages.RemoteTaskInfo;
 import com.android.server.companion.datatransfer.continuity.messages.TaskContinuityMessage;
+import com.android.server.companion.datatransfer.continuity.messages.TaskContinuityMessageSerializer;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -118,24 +119,15 @@ public class TaskContinuityMessageReceiverTest {
 
         // Send a message to the listener.
         int expectedAssociationId = 1;
-        int expectedForegroundTaskId = 1;
-        TaskContinuityMessage expectedMessage = new TaskContinuityMessage.Builder()
-            .setData(
-                new ContinuityDeviceConnected(
-                    expectedForegroundTaskId,
-                    new ArrayList<RemoteTaskInfo>()))
-            .build();
+        ContinuityDeviceConnected expectedMessage = new ContinuityDeviceConnected(
+                    List.of(new RemoteTaskInfo(1, "label", 1000, new byte[0])));
 
-        listener.onMessageReceived(expectedAssociationId, expectedMessage.toBytes());
+        listener.onMessageReceived(
+            expectedAssociationId,
+            TaskContinuityMessageSerializer.serialize(expectedMessage));
         TestableLooper.get(this).processAllMessages();
         assertThat(receivedMessages).hasSize(1);
-        TaskContinuityMessage receivedMessage = receivedMessages.get(0);
-        assertThat(receivedMessage.getData()).isInstanceOf(ContinuityDeviceConnected.class);
-        ContinuityDeviceConnected actualData
-            = (ContinuityDeviceConnected) receivedMessage.getData();
-
-        assertThat(actualData.getCurrentForegroundTaskId())
-            .isEqualTo(expectedForegroundTaskId);
+        assertThat(receivedMessages.get(0)).isEqualTo(expectedMessage);
 
         // Stop listening, verifying the message listener is removed.
         mTaskContinuityMessageReceiver.stopListening();

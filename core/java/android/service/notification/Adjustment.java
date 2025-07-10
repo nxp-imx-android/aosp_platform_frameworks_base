@@ -280,6 +280,16 @@ public final class Adjustment implements Parcelable {
     }
 
     /**
+     * Create a deep copy of a {@link Adjustment}
+     * @hide
+     */
+    public Adjustment(Adjustment src) {
+        this(src.mPackage, src.mKey, src.mSignals != null ? src.mSignals.deepCopy() : new Bundle(),
+                src.mExplanation, src.mUser);
+        this.mIssuer = src.mIssuer;
+    }
+
+    /**
      * @hide
      */
     @SystemApi

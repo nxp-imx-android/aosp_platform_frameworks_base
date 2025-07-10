@@ -1454,6 +1454,29 @@ public final class DisplayManagerGlobal {
     }
 
     /**
+     * @see DisplayManager#setExternalDisplayConnectionPreference(String, int)
+     */
+    @RequiresPermission(MANAGE_DISPLAYS)
+    public void setExternalDisplayConnectionPreference(String uniqueId, int connectionPreference) {
+        try {
+            mDm.setConnectionPreference(uniqueId, connectionPreference);
+        } catch (RemoteException ex) {
+            throw ex.rethrowFromSystemServer();
+        }
+    }
+
+    /**
+     * @see DisplayManager#getExternalDisplayConnectionPreference(String)
+     */
+    public int getExternalDisplayConnectionPreference(String uniqueId) {
+        try {
+            return mDm.getConnectionPreference(uniqueId);
+        } catch (RemoteException ex) {
+            throw ex.rethrowFromSystemServer();
+        }
+    }
+
+    /**
      * @see DisplayManager#getDisplayTopology
      */
     @Nullable

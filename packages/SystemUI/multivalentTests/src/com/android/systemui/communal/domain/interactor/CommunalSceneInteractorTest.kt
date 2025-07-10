@@ -298,6 +298,57 @@ class CommunalSceneInteractorTest(flags: FlagsParameterization) : SysuiTestCase(
 
     @DisableSceneContainer
     @Test
+    fun isCommunalSceneTransitioning_isFalse_idleOnCommunalScene() =
+        testScope.runTest {
+            val isCommunalSceneTransitioning by
+                collectLastValue(underTest.isCommunalSceneTransitioning)
+            val transitionState: MutableStateFlow<ObservableTransitionState> =
+                MutableStateFlow(ObservableTransitionState.Idle(CommunalScenes.Communal))
+
+            repository.setTransitionState(transitionState)
+
+            assertThat(isCommunalSceneTransitioning).isEqualTo(false)
+        }
+
+    @DisableSceneContainer
+    @Test
+    fun isCommunalSceneTransitioning_isFalse_idleOnBlankScene() =
+        testScope.runTest {
+            val isCommunalSceneTransitioning by
+                collectLastValue(underTest.isCommunalSceneTransitioning)
+            val transitionState: MutableStateFlow<ObservableTransitionState> =
+                MutableStateFlow(ObservableTransitionState.Idle(CommunalScenes.Blank))
+
+            repository.setTransitionState(transitionState)
+
+            assertThat(isCommunalSceneTransitioning).isEqualTo(false)
+        }
+
+    @DisableSceneContainer
+    @Test
+    fun isCommunalSceneTransitioning_isTrue_userInitiatedTransition() =
+        testScope.runTest {
+            val isCommunalSceneTransitioning by
+                collectLastValue(underTest.isCommunalSceneTransitioning)
+            val transitionState: MutableStateFlow<ObservableTransitionState> =
+                MutableStateFlow(ObservableTransitionState.Idle(CommunalScenes.Blank))
+
+            repository.setTransitionState(transitionState)
+            transitionState.value =
+                ObservableTransitionState.Transition(
+                    fromScene = CommunalScenes.Blank,
+                    toScene = CommunalScenes.Communal,
+                    currentScene = flowOf(CommunalScenes.Blank),
+                    progress = flowOf(0.1f),
+                    isInitiatedByUserInput = true,
+                    isUserInputOngoing = flowOf(false),
+                )
+
+            assertThat(isCommunalSceneTransitioning).isEqualTo(true)
+        }
+
+    @DisableSceneContainer
+    @Test
     fun isTransitioningToOrIdleOnCommunal() =
         testScope.runTest {
             // isIdleOnCommunal is false when not on communal.

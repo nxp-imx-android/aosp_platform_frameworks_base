@@ -23,13 +23,10 @@ import com.android.systemui.kairos.ExperimentalKairosApi
 import com.android.systemui.kairos.launchKairosNetwork
 import com.android.systemui.kairos.stateOf
 import com.android.systemui.kosmos.testScope
-import com.android.systemui.statusbar.pipeline.mobile.data.model.SystemUiCarrierConfig
-import com.android.systemui.statusbar.pipeline.mobile.data.model.testCarrierConfig
 import com.android.systemui.statusbar.pipeline.wifi.data.repository.fake
 import com.android.systemui.statusbar.pipeline.wifi.data.repository.wifiRepository
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
-import org.junit.Ignore
 import org.junit.runner.RunWith
 import org.mockito.Mockito
 
@@ -37,7 +34,6 @@ import org.mockito.Mockito
 @SmallTest
 @RunWith(AndroidJUnit4::class)
 @android.platform.test.annotations.EnabledOnRavenwood
-@Ignore("b/423686800") // Re-enable once carrier merged inflation is implemented in Kairos
 class CarrierMergedConnectionRepositoryKairosAdapterTest :
     CarrierMergedConnectionRepositoryTestBase() {
 
@@ -56,15 +52,12 @@ class CarrierMergedConnectionRepositoryKairosAdapterTest :
                             SUB_ID,
                             logger,
                             telephonyManager,
+                            systemUiCarrierConfig,
                             kosmos.wifiRepository.fake,
                             isInEcmMode = stateOf(false),
                         )
                     }
-                    adapter =
-                        MobileConnectionRepositoryKairosAdapter(
-                            repo,
-                            SystemUiCarrierConfig(SUB_ID, testCarrierConfig()),
-                        )
+                    adapter = MobileConnectionRepositoryKairosAdapter(repo)
                     Unit
                 }
             }

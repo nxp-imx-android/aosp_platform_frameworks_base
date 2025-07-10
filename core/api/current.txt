@@ -9282,11 +9282,12 @@ package android.app.backup {
     method public abstract void onBackup(android.os.ParcelFileDescriptor, android.app.backup.BackupDataOutput, android.os.ParcelFileDescriptor) throws java.io.IOException;
     method public void onCreate();
     method public void onDestroy();
+    method @FlaggedApi("com.android.server.backup.enable_cross_platform_transfer") public long onEstimateFullBackupBytes(long, int) throws java.io.IOException;
     method public void onFullBackup(android.app.backup.FullBackupDataOutput) throws java.io.IOException;
-    method @FlaggedApi("com.android.server.backup.enable_cross_platform_transfer") public long onMeasureFullBackup(long, int) throws java.io.IOException;
     method public void onQuotaExceeded(long, long);
     method public abstract void onRestore(android.app.backup.BackupDataInput, int, android.os.ParcelFileDescriptor) throws java.io.IOException;
     method public void onRestore(android.app.backup.BackupDataInput, long, android.os.ParcelFileDescriptor) throws java.io.IOException;
+    method @FlaggedApi("com.android.server.backup.enable_cross_platform_transfer") public void onRestoreFile(@NonNull android.app.backup.FullRestoreDataInput) throws java.io.IOException;
     method public void onRestoreFile(android.os.ParcelFileDescriptor, long, java.io.File, int, long, long) throws java.io.IOException;
     method public void onRestoreFinished();
     field public static final int FLAG_CLIENT_SIDE_ENCRYPTION_ENABLED = 1; // 0x1
@@ -9348,6 +9349,18 @@ package android.app.backup {
   public class FullBackupDataOutput {
     method public long getQuota();
     method public int getTransportFlags();
+  }
+
+  @FlaggedApi("com.android.server.backup.enable_cross_platform_transfer") public class FullRestoreDataInput {
+    method public long getAppVersionCode();
+    method @NonNull public String getContentVersion();
+    method @NonNull public android.os.ParcelFileDescriptor getData();
+    method @NonNull public java.io.File getDestination();
+    method public long getMode();
+    method public long getModificationTimeSeconds();
+    method public long getSize();
+    method public int getTransportFlags();
+    method public int getType();
   }
 
   public abstract class RestoreObserver {
@@ -11372,7 +11385,7 @@ package android.content {
     field public static final String SEARCH_SERVICE = "search";
     field @FlaggedApi("android.os.security_state_service") public static final String SECURITY_STATE_SERVICE = "security_state";
     field public static final String SENSOR_SERVICE = "sensor";
-    field @FlaggedApi("android.hardware.serial.flags.enable_serial_api") public static final String SERIAL_SERVICE = "serial";
+    field @FlaggedApi("android.hardware.serial.flags.enable_wired_serial_api") public static final String SERIAL_SERVICE = "serial";
     field public static final String SHORTCUT_SERVICE = "shortcut";
     field public static final String STATUS_BAR_SERVICE = "statusbar";
     field public static final String STORAGE_SERVICE = "storage";
@@ -21320,13 +21333,13 @@ package android.hardware.lights {
 
 package android.hardware.serial {
 
-  @FlaggedApi("android.hardware.serial.flags.enable_serial_api") public final class SerialManager {
+  @FlaggedApi("android.hardware.serial.flags.enable_wired_serial_api") public final class SerialManager {
     method @NonNull public java.util.List<android.hardware.serial.SerialPort> getSerialPorts();
     method public void registerSerialPortListener(@NonNull java.util.concurrent.Executor, @NonNull android.hardware.serial.SerialPortListener);
     method public void unregisterSerialPortListener(@NonNull android.hardware.serial.SerialPortListener);
   }
 
-  @FlaggedApi("android.hardware.serial.flags.enable_serial_api") public final class SerialPort {
+  @FlaggedApi("android.hardware.serial.flags.enable_wired_serial_api") public final class SerialPort {
     method @NonNull public String getName();
     method public int getProductId();
     method public int getVendorId();
@@ -21340,12 +21353,12 @@ package android.hardware.serial {
     field public static final int OPEN_FLAG_WRITE_ONLY = 1; // 0x1
   }
 
-  @FlaggedApi("android.hardware.serial.flags.enable_serial_api") public interface SerialPortListener {
+  @FlaggedApi("android.hardware.serial.flags.enable_wired_serial_api") public interface SerialPortListener {
     method public void onSerialPortConnected(@NonNull android.hardware.serial.SerialPort);
     method public void onSerialPortDisconnected(@NonNull android.hardware.serial.SerialPort);
   }
 
-  @FlaggedApi("android.hardware.serial.flags.enable_serial_api") public final class SerialPortResponse {
+  @FlaggedApi("android.hardware.serial.flags.enable_wired_serial_api") public final class SerialPortResponse {
     method @NonNull public android.os.ParcelFileDescriptor getFileDescriptor();
     method @NonNull public android.hardware.serial.SerialPort getPort();
   }
@@ -37206,6 +37219,7 @@ package android.provider {
     field public static final long USER_MISSED_NO_ANSWER = 65536L; // 0x10000L
     field public static final long USER_MISSED_NO_VIBRATE = 1048576L; // 0x100000L
     field public static final long USER_MISSED_SHORT_RING = 131072L; // 0x20000L
+    field @FlaggedApi("com.android.server.telecom.flags.integrated_call_logs") public static final String UUID = "uuid";
     field public static final String VIA_NUMBER = "via_number";
     field public static final int VOICEMAIL_TYPE = 4; // 0x4
     field public static final String VOICEMAIL_URI = "voicemail_uri";
@@ -44130,6 +44144,7 @@ package android.telecom {
     field public static final int PROPERTY_IS_EXTERNAL_CALL = 64; // 0x40
     field @FlaggedApi("com.android.server.telecom.flags.voip_app_actions_support") public static final int PROPERTY_IS_TRANSACTIONAL = 32768; // 0x8000
     field public static final int PROPERTY_NETWORK_IDENTIFIED_EMERGENCY_CALL = 2048; // 0x800
+    field @FlaggedApi("com.android.server.telecom.flags.remotely_hosted_property") public static final int PROPERTY_REMOTELY_HOSTED = 65536; // 0x10000
     field public static final int PROPERTY_RTT = 1024; // 0x400
     field public static final int PROPERTY_SELF_MANAGED = 256; // 0x100
     field public static final int PROPERTY_VOIP_AUDIO_MODE = 4096; // 0x1000

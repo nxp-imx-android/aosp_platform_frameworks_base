@@ -23,9 +23,11 @@ import android.graphics.BitmapShader;
 import android.graphics.BlendMode;
 import android.graphics.Canvas;
 import android.graphics.LinearGradient;
+import android.graphics.Matrix;
 import android.graphics.Outline;
 import android.graphics.Paint;
 import android.graphics.Path;
+import android.graphics.PathMeasure;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffColorFilter;
 import android.graphics.RadialGradient;
@@ -37,11 +39,16 @@ import android.graphics.RuntimeShader;
 import android.graphics.Shader;
 import android.graphics.SweepGradient;
 import android.graphics.Typeface;
+import android.graphics.fonts.Font;
+import android.graphics.fonts.FontFamily;
+import android.graphics.fonts.FontStyle;
+import android.graphics.fonts.FontVariationAxis;
 import android.text.Layout;
 import android.text.StaticLayout;
 import android.text.TextPaint;
 import android.text.TextUtils;
 
+import com.android.internal.widget.remotecompose.core.MatrixAccess;
 import com.android.internal.widget.remotecompose.core.PaintContext;
 import com.android.internal.widget.remotecompose.core.Platform;
 import com.android.internal.widget.remotecompose.core.RemoteContext;
@@ -53,18 +60,25 @@ import com.android.internal.widget.remotecompose.core.operations.layout.modifier
 import com.android.internal.widget.remotecompose.core.operations.paint.PaintBundle;
 import com.android.internal.widget.remotecompose.core.operations.paint.PaintChanges;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
+import java.util.Objects;
 
 /**
  * An implementation of PaintContext for the Android Canvas. This is used to play the RemoteCompose
  * operations on Android.
  */
 public class AndroidPaintContext extends PaintContext {
+    private static final String SYSTEM_FONTS_PATH = "/system/fonts/";
     Paint mPaint = new Paint();
     List<Paint> mPaintList = new ArrayList<>();
     Canvas mCanvas;
+    Canvas mMainCanvas = null;
     Rect mTmpRect = new Rect(); // use in calculation of bounds
     RenderNode mNode = null;
     Canvas mPreviousCanvas = null;
@@ -79,7 +93,7 @@ public class AndroidPaintContext extends PaintContext {
     }
 
     public void setCanvas(Canvas canvas) {
-        this.mCanvas = canvas;
+        this.mCanvas = mMainCanvas = canvas;
     }
 
     @Override
@@ -349,7 +363,7 @@ public class AndroidPaintContext extends PaintContext {
     }
 
     @Override
-    public void replacePaint(PaintBundle paintBundle) {
+    public void replacePaint(@NonNull PaintBundle paintBundle) {
         mPaint.reset();
         applyPaint(paintBundle);
     }
@@ -401,7 +415,7 @@ public class AndroidPaintContext extends PaintContext {
     }
 
     @Override
-    public Platform.ComputedTextLayout layoutComplexText(
+    public @Nullable Platform.ComputedTextLayout layoutComplexText(
             int textId,
             int start,
             int end,
@@ -482,7 +496,7 @@ public class AndroidPaintContext extends PaintContext {
     }
 
     @Override
-    public void drawComplexText(Platform.ComputedTextLayout computedTextLayout) {
+    public void drawComplexText(@Nullable Platform.ComputedTextLayout computedTextLayout) {
         if (computedTextLayout == null) {
             return;
         }
@@ -495,7 +509,7 @@ public class AndroidPaintContext extends PaintContext {
         mCanvas.drawPath(getPath(path1Id, path2Id, tween, start, end), mPaint);
     }
 
-    private static PorterDuff.Mode origamiToPorterDuffMode(int mode) {
+    private static PorterDuff.Mode remoteToAndroidPorterDuffMode(int mode) {
         switch (mode) {
             case PaintBundle.BLEND_MODE_CLEAR:
                 return PorterDuff.Mode.CLEAR;
@@ -537,7 +551,7 @@ public class AndroidPaintContext extends PaintContext {
         return PorterDuff.Mode.SRC_OVER;
     }
 
-    public static BlendMode origamiToBlendMode(int mode) {
+    private static BlendMode remoteToAndroidBlendMode(int mode) {
         switch (mode) {
             case PaintBundle.BLEND_MODE_CLEAR:
                 return BlendMode.CLEAR;
@@ -605,6 +619,9 @@ public class AndroidPaintContext extends PaintContext {
 
     PaintChanges mCachedPaintChanges =
             new PaintChanges() {
+                private Font.Builder mFontBuilder;
+                final Matrix mTmpMatrix = new Matrix();
+
                 @Override
                 public void setTextSize(float size) {
                     mPaint.setTextSize(size);
@@ -653,7 +670,119 @@ public class AndroidPaintContext extends PaintContext {
                             }
 
                             break;
+                        default: // font data
+                            RemoteContext.FontInfo fi =
+                                    (RemoteContext.FontInfo) mContext.getObject(fontType);
+                            Font.Builder builder = (Font.Builder) fi.fontBuilder;
+                            if (builder == null) {
+                                fi.fontBuilder =
+                                        builder = createFontBuilder(fi.mFontData, weight, italic);
+                            }
+                            mFontBuilder = builder;
+                            setAxis(null);
+
+                            break;
                     }
+                }
+
+                @Override
+                public void setShaderMatrix(float matrixId) {
+                    int id = Utils.idFromNan(matrixId);
+                    if (id == 0) {
+                        mPaint.getShader().setLocalMatrix(null);
+                        return;
+                    }
+                    MatrixAccess matAccess = (MatrixAccess) mContext.getObject(id);
+                    mTmpMatrix.setValues(MatrixAccess.to3x3(matAccess.get()));
+                    Shader s = mPaint.getShader();
+                    s.setLocalMatrix(mTmpMatrix);
+                }
+
+                /**
+                 * @param fontType String to be looked up in system
+                 * @param weight the weight of the font
+                 * @param italic if the font is italic
+                 */
+                @Override
+                public void setTypeFace(@NonNull String fontType, int weight, boolean italic) {
+                    String path = getFontPath(fontType);
+                    mFontBuilder = new Font.Builder(new File(path));
+                    mFontBuilder.setWeight(weight);
+                    mFontBuilder.setSlant(
+                            (italic) ? FontStyle.FONT_SLANT_ITALIC : FontStyle.FONT_SLANT_UPRIGHT);
+                    setAxis(null);
+                }
+
+                private Font.Builder createFontBuilder(byte[] data, int weight, boolean italic) {
+                    ByteBuffer buffer = ByteBuffer.allocateDirect(data.length);
+
+                    // 2. Put the fontBytes into the direct buffer.
+                    buffer.put(data);
+                    buffer.rewind();
+                    mFontBuilder = new Font.Builder(buffer);
+                    mFontBuilder.setWeight(weight);
+                    mFontBuilder.setSlant(
+                            (italic) ? FontStyle.FONT_SLANT_ITALIC : FontStyle.FONT_SLANT_UPRIGHT);
+                    setAxis(null);
+                    return mFontBuilder;
+                }
+
+                private void setAxis(FontVariationAxis[] axis) {
+                    Font font = null;
+                    try {
+                        if (axis != null) {
+                            mFontBuilder.setFontVariationSettings(axis);
+                        }
+                        font = mFontBuilder.build();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                        throw new RuntimeException(e);
+                    }
+
+                    FontFamily.Builder fontFamilyBuilder = new FontFamily.Builder(font);
+                    FontFamily fontFamily = fontFamilyBuilder.build();
+                    Typeface typeface =
+                            new Typeface.CustomFallbackBuilder(fontFamily)
+                                    .setSystemFallback("sans-serif")
+                                    .build();
+                    mPaint.setTypeface(typeface);
+                }
+
+                private String getFontPath(String fontName) {
+                    File fontsDir = new File(SYSTEM_FONTS_PATH);
+                    if (!fontsDir.exists() || !fontsDir.isDirectory()) {
+                        System.err.println("System fonts directory not found");
+                        return null;
+                    }
+
+                    File[] fontFiles = fontsDir.listFiles();
+                    if (fontFiles == null) {
+                        System.err.println("Unable to list font files");
+                        return null;
+                    }
+                    fontName = fontName.toLowerCase(Locale.ROOT);
+                    for (File fontFile : fontFiles) {
+                        if (fontFile.getName().toLowerCase(Locale.ROOT).contains(fontName)) {
+                            return fontFile.getAbsolutePath();
+                        }
+                    }
+                    System.err.println("font \"" + fontName + "\" not found");
+                    return null;
+                }
+
+                /**
+                 * Set the font variation axes
+                 *
+                 * @param tags tags
+                 * @param values values
+                 */
+                @Override
+                public void setFontVariationAxes(@NonNull String[] tags, @NonNull float[] values) {
+                    FontVariationAxis[] axes = new FontVariationAxis[tags.length];
+                    for (int i = 0; i < tags.length; i++) {
+                        axes[i] = new FontVariationAxis(tags[i], values[i]);
+                    }
+                    setAxis(axes);
                 }
 
                 @Override
@@ -717,13 +846,12 @@ public class AndroidPaintContext extends PaintContext {
 
                 @Override
                 public void setImageFilterQuality(int quality) {
-                    Utils.log(" quality =" + quality);
                     mPaint.setFilterBitmap(quality == 1);
                 }
 
                 @Override
                 public void setBlendMode(int mode) {
-                    mPaint.setBlendMode(origamiToBlendMode(mode));
+                    mPaint.setBlendMode(remoteToAndroidBlendMode(mode));
                 }
 
                 @Override
@@ -807,7 +935,7 @@ public class AndroidPaintContext extends PaintContext {
 
                 @Override
                 public void setColorFilter(int color, int mode) {
-                    PorterDuff.Mode pmode = origamiToPorterDuffMode(mode);
+                    PorterDuff.Mode pmode = remoteToAndroidPorterDuffMode(mode);
                     if (pmode != null) {
                         mPaint.setColorFilter(new PorterDuffColorFilter(color, pmode));
                     }
@@ -929,6 +1057,10 @@ public class AndroidPaintContext extends PaintContext {
 
     @Override
     public void reset() {
+        // With out calling setTypeface before or after paint is reset()
+        // Variable type fonts corrupt memory resulting in a
+        // segmentation violation
+        mPaint.setTypeface(Typeface.DEFAULT);
         mPaint.reset();
     }
 
@@ -987,5 +1119,43 @@ public class AndroidPaintContext extends PaintContext {
 
     private ShaderData getShaderData(int id) {
         return (ShaderData) mContext.mRemoteComposeState.getFromId(id);
+    }
+
+    @Override
+    public void matrixFromPath(int pathId, float fraction, float vOffset, int flags) {
+        Path path = getPath(pathId, 0, 1);
+        PathMeasure measure = new PathMeasure(path, false);
+        float len = measure.getLength();
+        Matrix matrix = new Matrix();
+        measure.getMatrix((len * fraction) % len, matrix, flags);
+        mCanvas.concat(matrix);
+    }
+
+    HashMap<Bitmap, Canvas> mCCache = new HashMap<>();
+
+    @Override
+    public void drawToBitmap(int bitmapId, int mode, int color) {
+        if (mMainCanvas == null) {
+            mMainCanvas = mCanvas;
+        }
+        if (bitmapId == 0) {
+            mCanvas = mMainCanvas;
+            return;
+        }
+        Bitmap bitmap = (Bitmap) mContext.mRemoteComposeState.getFromId(bitmapId);
+        Objects.requireNonNull(bitmap);
+        if (mCCache.containsKey(bitmap)) {
+            mCanvas = Objects.requireNonNull(mCCache.get(bitmap));
+
+            if ((mode & 1) == 0) {
+                bitmap.eraseColor(color);
+            }
+            return;
+        }
+        mCanvas = new Canvas(bitmap);
+        if ((mode & 1) == 0) {
+            bitmap.eraseColor(color);
+        }
+        mCCache.put(bitmap, mCanvas);
     }
 }

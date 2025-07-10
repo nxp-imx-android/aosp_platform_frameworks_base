@@ -31,6 +31,7 @@ import android.annotation.RequiresPermission;
 import android.annotation.SdkConstant;
 import android.annotation.SdkConstant.SdkConstantType;
 import android.annotation.SuppressLint;
+import android.annotation.SystemApi;
 import android.annotation.SystemService;
 import android.annotation.TestApi;
 import android.annotation.UserHandleAware;
@@ -996,6 +997,27 @@ public final class InputManager {
     @RequiresPermission(Manifest.permission.INJECT_EVENTS)
     public boolean injectInputEvent(InputEvent event, int mode, int targetUid) {
         return mGlobal.injectInputEvent(event, mode, targetUid);
+    }
+
+    /**
+     * Returns a {@link VirtualKeyboard} to the caller.
+     * See {@link android.hardware.input.VirtualKeyboardConfig} for additional configurations
+     * available, e.g. display association, layout, and language.
+     *
+     * @param config the keyboard configuration
+     * @return VirtualKeyboard a virtual keyboard device
+     *
+     * @hide
+     */
+    @SystemApi
+    @RequiresPermission(anyOf = {
+            Manifest.permission.INJECT_KEY_EVENTS,
+            Manifest.permission.INJECT_EVENTS
+    })
+    @FlaggedApi(com.android.hardware.input.Flags.FLAG_CREATE_VIRTUAL_KEYBOARD_API)
+    @NonNull
+    public VirtualKeyboard createVirtualKeyboard(@NonNull VirtualKeyboardConfig config) {
+        return mGlobal.createVirtualKeyboard(config);
     }
 
     /**

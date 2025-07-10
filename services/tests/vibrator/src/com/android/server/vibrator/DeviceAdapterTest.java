@@ -142,11 +142,12 @@ public class DeviceAdapterTest {
 
     @Test
     public void testPrebakedAndPrimitiveSegments_supportedEffects_returnsOriginalSegment() {
-        mFallbackEffects.put(EFFECT_THUD, VibrationEffect.createOneShot(10, 100));
+        // Fallback ignored, effect supported.
+        mFallbackEffects.put(EFFECT_TICK, VibrationEffect.createOneShot(10, 100));
         VibrationEffect.Composed effect = new VibrationEffect.Composed(Arrays.asList(
                 new PrebakedSegment(EFFECT_CLICK, false, VibrationEffect.EFFECT_STRENGTH_LIGHT),
                 new PrimitiveSegment(PRIMITIVE_TICK, 1, 10),
-                new PrebakedSegment(EFFECT_THUD, true, VibrationEffect.EFFECT_STRENGTH_STRONG),
+                new PrebakedSegment(EFFECT_TICK, true, VibrationEffect.EFFECT_STRENGTH_STRONG),
                 new PrimitiveSegment(PRIMITIVE_SPIN, 0.5f, 100)),
                 /* repeatIndex= */ -1);
 
@@ -264,11 +265,10 @@ public class DeviceAdapterTest {
 
     @Test
     public void testMonoCombinedVibration_returnsSameVibrationWhenEffectsUnchanged() {
+        // Only on-off effects are supported by all vibrators.
         VibrationEffect.Composed effect = new VibrationEffect.Composed(Arrays.asList(
-                new PrebakedSegment(EFFECT_CLICK, false, VibrationEffect.EFFECT_STRENGTH_LIGHT),
                 new StepSegment(1, 0, 10),
-                new PrebakedSegment(EFFECT_THUD, true, VibrationEffect.EFFECT_STRENGTH_STRONG),
-                new StepSegment(1, 0, 10)),
+                new StepSegment(1, 0, 100)),
                 /* repeatIndex= */ -1);
 
         CombinedVibration expected = CombinedVibration.createParallel(effect);

@@ -130,6 +130,14 @@ public abstract class LockSettingsInternal {
      */
     public abstract boolean unlockUserWithToken(long tokenHandle, byte[] token, int userId);
 
+
+    /**
+     * Lock the specified user, i.e. storage, keystore state, and strong auth flags.
+     *
+     * @param userId the ID of the user being locked.
+     */
+    public abstract void lockUser(@UserIdInt int userId);
+
     /**
      * Returns PasswordMetrics object corresponding to the given user's lockscreen password.
      * If the user has a password but its metrics isn't known yet (for example if the device

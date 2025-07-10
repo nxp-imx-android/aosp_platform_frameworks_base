@@ -5072,6 +5072,10 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
             setLayoutNeeded();
         }
 
+        if (android.view.inputmethod.Flags.setServerVisibilityOnprelayout()) {
+            mInsetsStateController.onPreLayout();
+        }
+
         // Perform a layout, if needed.
         performLayout(true /* initial */, false /* updateInputWindows */);
         pendingLayoutChanges = 0;

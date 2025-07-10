@@ -16,6 +16,9 @@
 
 package com.android.systemui.statusbar.pipeline.mobile.data.repository.prod
 
+import android.platform.test.annotations.DisableFlags
+import android.platform.test.annotations.EnableFlags
+import android.telephony.CarrierConfigManager.KEY_INFLATE_SIGNAL_STRENGTH_BOOL
 import android.telephony.TelephonyManager
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
@@ -29,9 +32,13 @@ import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.Kosmos.Fixture
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
 import com.android.systemui.log.table.logcatTableLogBuffer
+import com.android.systemui.statusbar.pipeline.StatusBarInflateCarrierMerged
 import com.android.systemui.statusbar.pipeline.mobile.data.model.DataConnectionState
 import com.android.systemui.statusbar.pipeline.mobile.data.model.NetworkNameModel
 import com.android.systemui.statusbar.pipeline.mobile.data.model.ResolvedNetworkType
+import com.android.systemui.statusbar.pipeline.mobile.data.model.SystemUiCarrierConfig
+import com.android.systemui.statusbar.pipeline.mobile.data.model.testCarrierConfig
+import com.android.systemui.statusbar.pipeline.mobile.data.model.testCarrierConfigWithOverride
 import com.android.systemui.statusbar.pipeline.shared.data.model.DataActivityModel
 import com.android.systemui.statusbar.pipeline.wifi.data.repository.fakeWifiRepository
 import com.android.systemui.statusbar.pipeline.wifi.data.repository.wifiRepository
@@ -50,11 +57,14 @@ import org.mockito.kotlin.stub
 @android.platform.test.annotations.EnabledOnRavenwood
 class CarrierMergedConnectionRepositoryKairosTest : SysuiTestCase() {
 
+    private val systemUiCarrierConfig = SystemUiCarrierConfig(SUB_ID, testCarrierConfig())
+
     private val Kosmos.underTest by ActivatedKairosFixture {
         CarrierMergedConnectionRepositoryKairos(
             subId = SUB_ID,
             tableLogBuffer = logcatTableLogBuffer(this),
             telephonyManager = telephonyManager,
+            systemUiCarrierConfig = systemUiCarrierConfig,
             wifiRepository = wifiRepository,
             isInEcmMode = stateOf(false),
         )
@@ -185,6 +195,78 @@ class CarrierMergedConnectionRepositoryKairosTest : SysuiTestCase() {
         )
 
         assertThat(latest).isEqualTo(6)
+    }
+
+    @Test
+    @EnableFlags(StatusBarInflateCarrierMerged.FLAG_NAME)
+    fun numberOfLevels_comesFromCarrierMerged_andInflated() = runTest {
+        val latest by underTest.numberOfLevels.collectLastValue()
+
+        fakeWifiRepository.setWifiNetwork(
+            WifiNetworkModel.CarrierMerged.of(
+                subscriptionId = SUB_ID,
+                level = 1,
+                numberOfLevels = 6,
+            )
+        )
+        systemUiCarrierConfig.processNewCarrierConfig(
+            testCarrierConfigWithOverride(KEY_INFLATE_SIGNAL_STRENGTH_BOOL, true)
+        )
+
+        assertThat(latest).isEqualTo(7)
+    }
+
+    @Test
+    @DisableFlags(StatusBarInflateCarrierMerged.FLAG_NAME)
+    fun numberOfLevels_flagDisabled_ignoresInflated() = runTest {
+        val latest by underTest.numberOfLevels.collectLastValue()
+
+        fakeWifiRepository.setWifiNetwork(
+            WifiNetworkModel.CarrierMerged.of(
+                subscriptionId = SUB_ID,
+                level = 1,
+                numberOfLevels = 6,
+            )
+        )
+        systemUiCarrierConfig.processNewCarrierConfig(
+            testCarrierConfigWithOverride(KEY_INFLATE_SIGNAL_STRENGTH_BOOL, true)
+        )
+
+        assertThat(latest).isEqualTo(6)
+    }
+
+    @Test
+    @DisableFlags(StatusBarInflateCarrierMerged.FLAG_NAME)
+    fun inflateSignalStrength_flagDisabled_alwaysFalse() = runTest {
+        val latest by underTest.inflateSignalStrength.collectLastValue()
+
+        assertThat(latest).isEqualTo(false)
+
+        systemUiCarrierConfig.processNewCarrierConfig(
+            testCarrierConfigWithOverride(KEY_INFLATE_SIGNAL_STRENGTH_BOOL, true)
+        )
+
+        assertThat(latest).isEqualTo(false)
+    }
+
+    @Test
+    @EnableFlags(StatusBarInflateCarrierMerged.FLAG_NAME)
+    fun inflateSignalStrength_usesCarrierConfig() = runTest {
+        val latest by underTest.inflateSignalStrength.collectLastValue()
+
+        assertThat(latest).isEqualTo(false)
+
+        systemUiCarrierConfig.processNewCarrierConfig(
+            testCarrierConfigWithOverride(KEY_INFLATE_SIGNAL_STRENGTH_BOOL, true)
+        )
+
+        assertThat(latest).isEqualTo(true)
+
+        systemUiCarrierConfig.processNewCarrierConfig(
+            testCarrierConfigWithOverride(KEY_INFLATE_SIGNAL_STRENGTH_BOOL, false)
+        )
+
+        assertThat(latest).isEqualTo(false)
     }
 
     @Test

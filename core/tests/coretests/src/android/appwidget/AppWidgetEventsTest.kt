@@ -204,8 +204,8 @@ class AppWidgetEventsTest {
         val remoteViews = RemoteViews(context.packageName, R.layout.remote_views_test)
         hostView.updateAppWidget(remoteViews)
         assertThat(hostView.interactionLogger.event.visibleDuration.toMillis()).isEqualTo(0)
-        assertThat(hostView.interactionLogger.event.start).isEqualTo(Instant.MAX)
-        assertThat(hostView.interactionLogger.event.end).isEqualTo(Instant.MIN)
+        assertThat(hostView.interactionLogger.event.start).isEqualTo(Instant.ofEpochMilli(Long.MAX_VALUE))
+        assertThat(hostView.interactionLogger.event.end).isEqualTo(Instant.ofEpochMilli(Long.MIN_VALUE))
 
         ActivityScenario<Activity>.launch(EmptyActivity::class.java).use { scenario ->
             val start = Instant.now()

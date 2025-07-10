@@ -231,3 +231,11 @@ flag {
   # Being read only because this is used in the performance critical path.
   is_fixed_read_only: true
 }
+
+flag {
+  name: "custom_fallback_for_customization"
+  namespace: "text"
+  description: "Add fallback attribute for custom fallback for customization"
+  bug: "430485331"
+}
+

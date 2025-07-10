@@ -16,96 +16,26 @@
 
 package com.android.server.companion.datatransfer.continuity.messages;
 
-import android.util.proto.ProtoInputStream;
 import android.util.proto.ProtoOutputStream;
 
 import java.io.IOException;
 
 /**
- * Serialized version of the {@link TaskContinuityMessage} proto, allowing for
- * serialization and deserialization from bytes.
+ * Represents a possible type for the "data" field on the
+ * {@link TaskContinuityMessage} proto. This interface may be implemented by
+ * message subclasses to support serialization and deserialization as part of
+ * {@link TaskContinuityMessage}.
  */
-public final class TaskContinuityMessage {
-
-    private TaskContinuityMessageData mData;
-
-    TaskContinuityMessage(Builder builder) {
-        mData = builder.mData;
-    }
-
-    public TaskContinuityMessage(byte[] data) throws IOException {
-
-        ProtoInputStream pis = new ProtoInputStream(data);
-        if (pis.nextField() == ProtoInputStream.NO_MORE_FIELDS) {
-            return;
-        }
-
-        int fieldNumber = pis.getFieldNumber();
-        final long dataToken = pis.start(fieldNumber);
-        switch (fieldNumber) {
-            case (int) android.companion.TaskContinuityMessage.DEVICE_CONNECTED:
-                mData = ContinuityDeviceConnected.readFromProto(pis);
-                break;
-            case (int) android.companion.TaskContinuityMessage.REMOTE_TASK_ADDED:
-                mData = RemoteTaskAddedMessage.readFromProto(pis);
-                break;
-            case (int) android.companion.TaskContinuityMessage.REMOTE_TASK_REMOVED:
-                mData = RemoteTaskRemovedMessage.readFromProto(pis);
-                break;
-            case (int) android.companion.TaskContinuityMessage.REMOTE_TASK_UPDATED:
-                mData = new RemoteTaskUpdatedMessage(pis);
-                break;
-            case (int) android.companion.TaskContinuityMessage.HANDOFF_REQUEST:
-                mData = HandoffRequestMessage.readFromProto(pis);
-                break;
-            case (int) android.companion.TaskContinuityMessage.HANDOFF_REQUEST_RESULT:
-                mData = HandoffRequestResultMessage.readFromProto(pis);
-                break;
-        }
-
-        pis.end(dataToken);
-    }
+public interface TaskContinuityMessage {
 
     /**
-     * Returns the value of the data field.
+     * Returns the proto field number for this message type.
      */
-    public TaskContinuityMessageData getData() {
-        return mData;
-    }
+    long getFieldNumber();
 
     /**
-     * Serializes this message to bytes.
+     * Writes this object to a proto output stream.
      */
-    public byte[] toBytes() throws IOException {
-        ProtoOutputStream pos = new ProtoOutputStream();
-        long dataToken = pos.start(mData.getFieldNumber());
-        mData.writeToProto(pos);
-        pos.end(dataToken);
-        return pos.getBytes();
-    }
+    void writeToProto(ProtoOutputStream pos) throws IOException;
 
-    /**
-     * Builder for {@link TaskContinuityMessage}.
-     */
-    public static final class Builder {
-        private TaskContinuityMessageData mData;
-
-        public Builder() {
-        }
-
-        /**
-         * Sets the value of the data field.
-         */
-        public Builder setData(TaskContinuityMessageData data) {
-            mData = data;
-            return this;
-        }
-
-        /**
-         * Builds a {@link TaskContinuityMessage}.
-         */
-        public TaskContinuityMessage build() {
-            return new TaskContinuityMessage(this);
-        }
-    }
 }

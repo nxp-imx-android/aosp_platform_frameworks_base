@@ -369,6 +369,12 @@ constructor(
                 initialValue = false,
             )
 
+    /** Flow that emits a boolean if user is swiping between two scenes. */
+    val isCommunalSceneTransitioning: Flow<Boolean> =
+        transitionState
+            .map { it is ObservableTransitionState.Transition && it.isInitiatedByUserInput }
+            .distinctUntilChanged()
+
     private companion object {
         const val TAG = "CommunalSceneInteractor"
     }

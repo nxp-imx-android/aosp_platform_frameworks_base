@@ -30,9 +30,13 @@ import com.android.systemui.kairos.stateOf
 import com.android.systemui.kairos.util.nameTag
 import com.android.systemui.kairosBuilder
 import com.android.systemui.log.table.TableLogBuffer
+import com.android.systemui.statusbar.pipeline.StatusBarInflateCarrierMerged
 import com.android.systemui.statusbar.pipeline.mobile.data.model.DataConnectionState
 import com.android.systemui.statusbar.pipeline.mobile.data.model.NetworkNameModel
 import com.android.systemui.statusbar.pipeline.mobile.data.model.ResolvedNetworkType
+import com.android.systemui.statusbar.pipeline.mobile.data.model.SystemUiCarrierConfig
+import com.android.systemui.statusbar.pipeline.mobile.data.repository.CarrierConfigRepository
+import com.android.systemui.statusbar.pipeline.mobile.data.repository.MobileConnectionRepository.Companion.createNumberOfLevelsState
 import com.android.systemui.statusbar.pipeline.mobile.data.repository.MobileConnectionRepositoryKairos
 import com.android.systemui.statusbar.pipeline.mobile.data.repository.MobileConnectionRepositoryKairos.Companion.DEFAULT_NUM_LEVELS
 import com.android.systemui.statusbar.pipeline.shared.data.model.DataActivityModel
@@ -55,6 +59,7 @@ class CarrierMergedConnectionRepositoryKairos(
     override val subId: Int,
     override val tableLogBuffer: TableLogBuffer,
     private val telephonyManager: TelephonyManager,
+    systemUiCarrierConfig: SystemUiCarrierConfig,
     val wifiRepository: WifiRepository,
     override val isInEcmMode: State<Boolean>,
 ) : MobileConnectionRepositoryKairos, KairosBuilder by kairosBuilder() {
@@ -118,13 +123,31 @@ class CarrierMergedConnectionRepositoryKairos(
     override val carrierName: State<NetworkNameModel>
         get() = networkName
 
-    override val numberOfLevels: State<Int> =
+    private val defaultNumberOfLevels: State<Int> =
         wifiNetwork.map {
             if (it is WifiNetworkModel.CarrierMerged) {
                 it.numberOfLevels
             } else {
                 DEFAULT_NUM_LEVELS
             }
+        }
+
+    override val inflateSignalStrength: State<Boolean> =
+        if (StatusBarInflateCarrierMerged.isEnabled) {
+            buildState {
+                systemUiCarrierConfig.shouldInflateSignalStrength.toState(
+                    nameTag("CarrierMergedConnectionRepositoryKairos.inflateSignalStrength")
+                )
+            }
+        } else {
+            stateOf(false)
+        }
+
+    override val numberOfLevels: State<Int> =
+        if (StatusBarInflateCarrierMerged.isEnabled) {
+            createNumberOfLevelsState(inflateSignalStrength, defaultNumberOfLevels)
+        } else {
+            defaultNumberOfLevels
         }
 
     override val primaryLevel: State<Int> =
@@ -159,7 +182,6 @@ class CarrierMergedConnectionRepositoryKairos(
 
     override val isRoaming: State<Boolean> = stateOf(false)
     override val carrierId: State<Int> = stateOf(INVALID_SUBSCRIPTION_ID)
-    override val inflateSignalStrength: State<Boolean> = stateOf(false)
     override val allowNetworkSliceIndicator: State<Boolean> = stateOf(false)
     override val isEmergencyOnly: State<Boolean> = stateOf(false)
     override val operatorAlphaShort: State<String?> = stateOf(null)
@@ -196,6 +218,7 @@ class CarrierMergedConnectionRepositoryKairos(
     @Inject
     constructor(
         private val telephonyManager: TelephonyManager,
+        private val carrierConfigRepository: CarrierConfigRepository,
         private val wifiRepository: WifiRepository,
     ) {
         fun build(
@@ -207,6 +230,7 @@ class CarrierMergedConnectionRepositoryKairos(
                 subId,
                 mobileLogger,
                 telephonyManager.createForSubscriptionId(subId),
+                carrierConfigRepository.getOrCreateConfigForSubId(subId),
                 wifiRepository,
                 mobileRepo.isInEcmMode,
             )

@@ -74,6 +74,14 @@ constructor(
         )
     }
 
+    val zoomOut: Flow<Float> =
+        transitionAnimation.sharedFlow(
+            onStep = { it },
+            onFinish = { 1f },
+            onCancel = { 0f },
+            name = "AOD->GLANCEABLE_HUB: zoomOut",
+        )
+
     override val windowBlurRadius: Flow<Float> =
         blurFactory.create(transitionAnimation).getBlurProvider().enterBlurRadius
 }

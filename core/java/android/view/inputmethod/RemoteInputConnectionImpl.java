@@ -1130,8 +1130,7 @@ final class RemoteInputConnectionImpl extends IRemoteInputConnection.Stub {
             Log.w(TAG, "requestCursorUpdates on inactive InputConnection");
             return false;
         }
-        if (mParentInputMethodManager.mRequestCursorUpdateDisplayIdCheck.get()
-                && mParentInputMethodManager.getDisplayId() != imeDisplayId) {
+        if (mParentInputMethodManager.getDisplayId() != imeDisplayId) {
             // requestCursorUpdates() is not currently supported across displays.
             return false;
         }

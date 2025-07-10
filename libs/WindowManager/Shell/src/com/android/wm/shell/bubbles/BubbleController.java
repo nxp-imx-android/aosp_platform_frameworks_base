@@ -493,6 +493,7 @@ public class BubbleController implements ConfigurationChangeListener,
                 bubble.setPendingIntentCanceled();
                 return;
             }
+            ProtoLog.d(WM_SHELL_BUBBLES, "Removing bubble due to pending intent cancellation");
             mMainExecutor.execute(() -> removeBubble(bubble.getKey(), DISMISS_INVALID_INTENT));
         });
 

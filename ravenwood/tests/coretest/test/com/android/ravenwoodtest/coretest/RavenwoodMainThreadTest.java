@@ -21,6 +21,7 @@ import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeTrue;
 
+import android.platform.test.ravenwood.MessageWasPostedHereStackTrace;
 import android.platform.test.ravenwood.RavenwoodUtils;
 
 import org.junit.Test;
@@ -77,10 +78,49 @@ public class RavenwoodMainThreadTest {
      */
     @Test
     public void testRunOnMainThreadSync() {
-        assertThrows(AssertionError.class, () -> {
+        var th = assertThrows(AssertionError.class, () -> {
             RavenwoodUtils.runOnMainThreadSync(() -> {
                 fail("Assertion failure on main thread!");
             });
         });
+
+        // Also make sure the cause is set correctly.
+        assertHasMessageWasPostedHereStackTraceAsCause(th, "testRunOnMainThreadSync");
+    }
+
+    /**
+     * Ensure a given {@link Throwable} is an instance of MessageWasPostedHereStackTrace,
+     * has the current thread, and its stacktrace contains a give method name.
+     */
+    public static void assertHasMessageWasPostedHereStackTraceAsCause(
+            Throwable th, String expectedMethodNameInStacktrace) {
+        MessageWasPostedHereStackTrace cause = null;
+
+        var current = th;
+        for (;;) {
+            if (current instanceof MessageWasPostedHereStackTrace) {
+                cause = (MessageWasPostedHereStackTrace) current;
+                break;
+            }
+            var next = current.getCause();
+            if (next == null || next == th) {
+                break;
+            }
+            current = next;
+        }
+        if (cause == null) {
+            fail("Exception did't have MessageWasPostedHereStackTrace as cause: " + th);
+        }
+
+        assertThat(cause.getPostedThread()).isEqualTo(Thread.currentThread());
+
+        // Make sure the stacktrace contains a given method name.
+        for (var ste : cause.getStackTrace()) {
+            if (ste.getMethodName().equals(expectedMethodNameInStacktrace)) {
+                return; // Found
+            }
+        }
+        fail("Expected method '" + expectedMethodNameInStacktrace
+                + "' in stack trace, but not found");
     }
 }

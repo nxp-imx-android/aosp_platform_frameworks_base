@@ -78,20 +78,12 @@ test_module_config {
 }
 
 test_module_config {
-    name: "FunctionalTestsDesktopMode-BringDesktopAppsToFrontTest",
-    base: "FunctionalTestsDesktopMode",
-    test_suites: ["device-tests"],
-    include_filters: ["com.android.wm.shell.functional.BringDesktopAppsToFrontTest"],
-}
-
-test_module_config {
     name: "FunctionalTestsDesktopMode-CatchAll",
     base: "FunctionalTestsDesktopMode",
     test_suites: ["device-tests"],
     exclude_filters: [
         "com.android.wm.shell.functional.AltTabSwitchInDesktopModeTest",
         "com.android.wm.shell.functional.AltTabSwitchOutDesktopModeTest",
-        "com.android.wm.shell.functional.BringDesktopAppsToFrontTest",
         "com.android.wm.shell.functional.ChromeNewTabAtWindowLimitTest",
         "com.android.wm.shell.functional.CloseAllAppsWithAppHeaderExitTest",
         "com.android.wm.shell.functional.DisableDisplayMirroringSwitchTest",

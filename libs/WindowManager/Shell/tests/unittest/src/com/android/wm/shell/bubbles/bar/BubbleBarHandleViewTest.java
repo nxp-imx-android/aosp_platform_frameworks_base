@@ -70,12 +70,4 @@ public class BubbleBarHandleViewTest extends ShellTestCase {
         mHandleView.setHandleInitialColor(Color.RED);
         assertThat(mHandleView.getHandleColor()).isEqualTo(Color.RED);
     }
-
-    @Test
-    public void testSetHandleInitialColor_afterUpdateHandleColor_doesNotUpdateColor() {
-        mHandleView.updateHandleColor(/* isRegionDark= */ true, /* animated= */ false);
-        mHandleView.setHandleInitialColor(Color.RED);
-        assertThat(mHandleView.getHandleColor()).isEqualTo(
-                ContextCompat.getColor(mContext, R.color.bubble_bar_expanded_view_handle_light));
-    }
 }

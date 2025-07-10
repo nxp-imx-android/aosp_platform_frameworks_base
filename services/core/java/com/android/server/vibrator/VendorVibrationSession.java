@@ -394,9 +394,11 @@ final class VendorVibrationSession extends IVibrationSession.Stub
         mEndedByVendor = isVendorRequest;
         mCallback.notifyFinishing();
         if (mConductor != null) {
+            boolean isFinished = status == Status.FINISHED;
             // Vibration is being dispatched when session end was requested, cancel it.
-            mConductor.notifyCancelled(new Vibration.EndInfo(status),
-                    /* immediate= */ status != Status.FINISHED);
+            mConductor.notifyCancelled(
+                    new Vibration.EndInfo(isFinished ? Status.CANCELLED_BY_USER : status),
+                    /* immediate= */ !isFinished);
         }
     }
 

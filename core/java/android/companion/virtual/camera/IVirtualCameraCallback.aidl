@@ -52,10 +52,11 @@ oneway interface IVirtualCameraCallback {
      *      The available Keys need to be set in the ANDROID_REQUEST_AVAILABLE_SESSION_KEYS tag of
      *      the {@link CameraCharacteristics}.
      * @param captureResultConsumer The consumer interface through which the virtual camera server
-     *      consumes the CameraMetadataNative part of the CaptureResult.
+     *      consumes the CameraMetadataNative part of the CaptureResult. It is null if per frame
+     *      camera metadata is not enabled.
      */
     void onConfigureSession(in CaptureRequest sessionParameters,
-        in ICaptureResultConsumer captureResultConsumer);
+        in @nullable ICaptureResultConsumer captureResultConsumer);
 
     /**
      * Called when one of the requested stream has been configured by the virtual camera service and

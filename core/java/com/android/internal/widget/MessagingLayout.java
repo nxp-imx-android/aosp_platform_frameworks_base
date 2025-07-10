@@ -95,6 +95,8 @@ public class MessagingLayout extends FrameLayout
     private final ArrayList<MessagingLinearLayout.MessagingChild> mToRecycle = new ArrayList<>();
     private boolean mPrecomputedTextEnabled = false;
     private CharSequence mSummarizedContent;
+    private int mSpacingForExpander;
+    private int mSpacingForImage;
 
     public MessagingLayout(@NonNull Context context) {
         super(context);
@@ -122,6 +124,23 @@ public class MessagingLayout extends FrameLayout
         mImageMessageContainer = findViewById(R.id.conversation_image_message_container);
         mRightIconView = findViewById(R.id.right_icon);
         mTopLine = findViewById(R.id.notification_top_line);
+
+        // Calculate the amount of space necessary for the expander (adjusted with the font size).
+        int iconMarginEnd = getResources().getDimensionPixelSize(
+                R.dimen.notification_2025_right_icon_margin_end);
+        int extraSpaceForExpander = getResources().getDimensionPixelSize(
+                R.dimen.notification_2025_extra_space_for_expander);
+        mSpacingForExpander = iconMarginEnd + extraSpaceForExpander;
+
+        // Unlike large icons which can be wider than tall, isolated image messages can only
+        // be square, so we can use the fixed width directly to calculate the amount of space
+        // necessary for the image.
+        int imageWidth = getResources().getDimensionPixelSize(
+                R.dimen.notification_right_icon_size);
+        int iconMarginStart = getResources().getDimensionPixelSize(
+                R.dimen.notification_2025_right_icon_content_margin);
+        mSpacingForImage = iconMarginStart + imageWidth;
+
         if (notificationsRedesignTemplates()) {
             // The left_icon in the header has the default rounded square background. Make sure
             // we're using the circular background instead.
@@ -385,11 +404,8 @@ public class MessagingLayout extends FrameLayout
                 mRightIconView.setImageDrawable(null);
                 mRightIconView.setVisibility(GONE);
             }
-        } else {
-            // Only alter the spacing if we're not showing the large icon; otherwise it's already
-            // been adjusted in Notification.java and we shouldn't override it.
-            adjustSpacingForImage();
         }
+        adjustSpacingForImage();
     }
 
     /**
@@ -398,11 +414,10 @@ public class MessagingLayout extends FrameLayout
      */
     private void adjustSpacingForImage() {
         if (notificationsRedesignTemplates()) {
-            int spacingForExpander = getSpacingForExpander();
-            updateMarginEnd(mImageMessageContainer, spacingForExpander);
+            updateMarginEnd(mImageMessageContainer, mSpacingForExpander);
 
             int spacingForImage = getSpacingForImage();
-            int textMargin = spacingForImage + spacingForExpander;
+            int textMargin = spacingForImage + mSpacingForExpander;
             updateMarginEnd(mTopLine, textMargin);
             // Only apply spacing to second line if there's an image - otherwise the text should
             // flow under the expander.
@@ -413,29 +428,11 @@ public class MessagingLayout extends FrameLayout
     }
 
     /**
-     * Calculate the amount of space necessary for the expander (adjusted with the font size).
-     */
-    private int getSpacingForExpander() {
-        int iconMarginEnd = getResources().getDimensionPixelSize(
-                R.dimen.notification_2025_right_icon_margin_end);
-        int extraSpaceForExpander = getResources().getDimensionPixelSize(
-                R.dimen.notification_2025_extra_space_for_expander);
-
-        return iconMarginEnd + extraSpaceForExpander;
-    }
-
-    /**
      * Calculate the amount of space necessary for the image if present.
      */
     private int getSpacingForImage() {
         if (mImageMessageContainer != null && mImageMessageContainer.getVisibility() == VISIBLE) {
-            // Unlike large icons which can be wider than tall, isolated image messages can only
-            // be square, so we can use the fixed width directly.
-            int imageWidth = getResources().getDimensionPixelSize(
-                    R.dimen.notification_right_icon_size);
-            int iconMarginStart = getResources().getDimensionPixelSize(
-                    R.dimen.notification_2025_right_icon_content_margin);
-            return iconMarginStart + imageWidth;
+            return mSpacingForImage;
         }
         return 0;
     }

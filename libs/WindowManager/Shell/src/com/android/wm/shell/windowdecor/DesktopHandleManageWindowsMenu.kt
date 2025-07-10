@@ -82,10 +82,10 @@ class DesktopHandleManageWindowsMenu(
             x = menuPosition.x,
             y = menuPosition.y,
             width = menuView.menuWidth,
-            height = menuView.menuHeight,
+            height = menuView.scrollableMenuHeight,
             flags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
                     WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH,
-            view = menuView.rootView,
+            view = menuView.scrollableMenuView,
             ignoreCutouts = desktopState.canEnterDesktopModeOrShowAppHandle,
         )
     }

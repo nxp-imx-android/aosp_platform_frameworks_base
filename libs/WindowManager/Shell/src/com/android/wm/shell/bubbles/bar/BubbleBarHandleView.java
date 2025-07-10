@@ -64,8 +64,7 @@ public class BubbleBarHandleView extends View {
     private float mCurrentHandleWidth;
     @Nullable
     private ObjectAnimator mColorChangeAnim;
-    private @ColorInt int mRegionSamplerColor;
-    private boolean mHasSampledColor;
+    private @ColorInt int mHandleColor;
 
     public BubbleBarHandleView(Context context) {
         this(context, null /* attrs */);
@@ -137,7 +136,7 @@ public class BubbleBarHandleView extends View {
      * {@link #updateHandleColor(boolean, boolean)} has not been called.
      */
     public void setHandleInitialColor(@ColorInt int color) {
-        if (!mHasSampledColor) {
+        if (color != mHandleColor) {
             setHandleColor(color);
         }
     }
@@ -151,11 +150,10 @@ public class BubbleBarHandleView extends View {
      */
     public void updateHandleColor(boolean isRegionDark, boolean animated) {
         int newColor = isRegionDark ? mHandleLightColor : mHandleDarkColor;
-        if (newColor == mRegionSamplerColor) {
+        if (newColor == mHandleColor) {
             return;
         }
-        mHasSampledColor = true;
-        mRegionSamplerColor = newColor;
+        mHandleColor = newColor;
         if (mColorChangeAnim != null) {
             mColorChangeAnim.cancel();
         }
@@ -185,14 +183,14 @@ public class BubbleBarHandleView extends View {
             int menuColor) {
         float currentWidth = mHandleWidth + widthDelta * progress;
         float currentHeight = mHandleHeight + heightDelta * progress;
-        int color = (int) mArgbEvaluator.evaluate(progress, mRegionSamplerColor, menuColor);
+        int color = (int) mArgbEvaluator.evaluate(progress, mHandleColor, menuColor);
         setHandleProperties(currentWidth, currentHeight, color);
         setTranslationY(heightDelta * progress / 2);
     }
 
     /** Restores all the properties that were animated to the default values. */
     public void restoreAnimationDefaults() {
-        setHandleProperties(mHandleWidth, mHandleHeight, mRegionSamplerColor);
+        setHandleProperties(mHandleWidth, mHandleHeight, mHandleColor);
         setTranslationY(0);
     }
 

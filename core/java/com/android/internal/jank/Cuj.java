@@ -442,8 +442,24 @@ public class Cuj {
      */
     public static final int CUJ_DESKTOP_MODE_TILE_RESIZING = 140;
 
+    /**
+     * Tracks Launcher Widget Picker Open animation.
+     *
+     * <p>Tracking starts when the widget picker starts open animation.
+     * Tracking finishes when the widget picker sheet is fully opened.
+     */
+    public static final int CUJ_LAUNCHER_WIDGET_PICKER_OPEN = 141;
+
+    /**
+     * Tracks expand animation for an app in the widget picker.
+     *
+     * <p>Tracking starts when user taps on an app in single pane widget picker.
+     * Tracking finishes when the widget picker app is fully expanded.
+     */
+    public static final int CUJ_LAUNCHER_WIDGET_PICKER_APP_EXPAND = 142;
+
     // When adding a CUJ, update this and make sure to also update CUJ_TO_STATSD_INTERACTION_TYPE.
-    @VisibleForTesting static final int LAST_CUJ = CUJ_DESKTOP_MODE_TILE_RESIZING;
+    @VisibleForTesting static final int LAST_CUJ = CUJ_LAUNCHER_WIDGET_PICKER_APP_EXPAND;
 
     /** @hide */
     @IntDef({
@@ -576,6 +592,8 @@ public class Cuj {
             CUJ_DESKTOP_MODE_SHADE_WINDOW_DISPLAY_CHANGE,
             CUJ_LAUNCHER_OVERVIEW_CLEAR_ALL,
             CUJ_DESKTOP_MODE_TILE_RESIZING,
+            CUJ_LAUNCHER_WIDGET_PICKER_OPEN,
+            CUJ_LAUNCHER_WIDGET_PICKER_APP_EXPAND,
     })
     @Retention(RetentionPolicy.SOURCE)
     public @interface CujType {}
@@ -718,6 +736,8 @@ public class Cuj {
         CUJ_TO_STATSD_INTERACTION_TYPE[CUJ_DESKTOP_MODE_SHADE_WINDOW_DISPLAY_CHANGE] = FrameworkStatsLog.UIINTERACTION_FRAME_INFO_REPORTED__INTERACTION_TYPE__DESKTOP_MODE_SHADE_WINDOW_DISPLAY_CHANGE;
         CUJ_TO_STATSD_INTERACTION_TYPE[CUJ_LAUNCHER_OVERVIEW_CLEAR_ALL] = FrameworkStatsLog.UIINTERACTION_FRAME_INFO_REPORTED__INTERACTION_TYPE__LAUNCHER_OVERVIEW_CLEAR_ALL;
         CUJ_TO_STATSD_INTERACTION_TYPE[CUJ_DESKTOP_MODE_TILE_RESIZING] = FrameworkStatsLog.UIINTERACTION_FRAME_INFO_REPORTED__INTERACTION_TYPE__DESKTOP_MODE_TILE_RESIZING;
+        CUJ_TO_STATSD_INTERACTION_TYPE[CUJ_LAUNCHER_WIDGET_PICKER_OPEN] = FrameworkStatsLog.UIINTERACTION_FRAME_INFO_REPORTED__INTERACTION_TYPE__LAUNCHER_WIDGET_PICKER_OPEN;
+        CUJ_TO_STATSD_INTERACTION_TYPE[CUJ_LAUNCHER_WIDGET_PICKER_APP_EXPAND] = FrameworkStatsLog.UIINTERACTION_FRAME_INFO_REPORTED__INTERACTION_TYPE__LAUNCHER_WIDGET_PICKER_APP_EXPAND;
     }
 
     private Cuj() {
@@ -994,6 +1014,10 @@ public class Cuj {
                 return "LAUNCHER_OVERVIEW_CLEAR_ALL";
             case CUJ_DESKTOP_MODE_TILE_RESIZING:
                 return "DESKTOP_MODE_TILE_RESIZING";
+            case CUJ_LAUNCHER_WIDGET_PICKER_OPEN:
+                return "LAUNCHER_WIDGET_PICKER_OPEN";
+            case CUJ_LAUNCHER_WIDGET_PICKER_APP_EXPAND:
+                return "LAUNCHER_WIDGET_PICKER_APP_EXPAND";
         }
         return "UNKNOWN";
     }

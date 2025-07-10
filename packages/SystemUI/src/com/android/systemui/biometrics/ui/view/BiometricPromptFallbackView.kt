@@ -47,7 +47,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.testTagsAsResourceId
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.android.compose.theme.PlatformTheme
@@ -115,6 +118,7 @@ fun BiometricPromptFallbackView(promptViewModel: PromptViewModel, callback: Spag
                         text = stringResource(credentialText),
                         index = optionCount++,
                         total = optionTotal.value,
+                        modifier = Modifier.testTag("fallback_credential_button"),
                         onClick = {
                             promptViewModel.onSwitchToCredential()
                             callback.onUseDeviceCredential()
@@ -193,6 +197,7 @@ private fun OptionItem(
         modifier =
             modifier
                 .fillMaxWidth()
+                .semantics { testTagsAsResourceId = true }
                 .clickable(onClick = onClick, enabled = enabled)
                 .alpha(if (enabled) 1f else 0.4f),
         shape = shape,

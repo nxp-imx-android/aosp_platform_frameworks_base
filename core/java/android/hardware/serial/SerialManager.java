@@ -37,7 +37,7 @@ import java.util.concurrent.Executor;
  * This class allows you to communicate with Serial ports.
  */
 @SystemService(Context.SERIAL_SERVICE)
-@FlaggedApi(android.hardware.serial.flags.Flags.FLAG_ENABLE_SERIAL_API)
+@FlaggedApi(android.hardware.serial.flags.Flags.FLAG_ENABLE_WIRED_SERIAL_API)
 public final class SerialManager {
     private static final String TAG = "SerialManager";
 

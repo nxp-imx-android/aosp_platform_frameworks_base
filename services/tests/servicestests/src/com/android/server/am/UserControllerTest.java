@@ -116,6 +116,7 @@ import com.android.server.AlarmManagerInternal;
 import com.android.server.FgThread;
 import com.android.server.SystemService;
 import com.android.server.am.UserState.KeyEvictedCallback;
+import com.android.server.locksettings.LockSettingsInternal;
 import com.android.server.pm.UserJourneyLogger;
 import com.android.server.pm.UserManagerInternal;
 import com.android.server.pm.UserManagerService;
@@ -1150,8 +1151,8 @@ public class UserControllerTest {
         // Cannot mock FgThread handler, so confirm that there is no posted message left before
         // checking.
         waitForHandlerToComplete(FgThread.getHandler(), HANDLER_WAIT_TIME_MS);
-        verify(mInjector.mStorageManagerMock, times(0))
-                .lockCeStorage(anyInt());
+        verify(mInjector.mLockSettingsInternalMock, times(0))
+                .lockUser(anyInt());
 
         addForegroundUserAndContinueUserSwitch(TEST_USER_ID2, TEST_USER_ID1,
                 numberOfUserSwitches, true, false);
@@ -1164,8 +1165,8 @@ public class UserControllerTest {
         ussUser1.setState(UserState.STATE_SHUTDOWN);
         mUserController.finishUserStopped(ussUser1, /* allowDelayedLocking= */ true);
         waitForHandlerToComplete(FgThread.getHandler(), HANDLER_WAIT_TIME_MS);
-        verify(mInjector.mStorageManagerMock, times(1))
-                .lockCeStorage(TEST_USER_ID);
+        verify(mInjector.mLockSettingsInternalMock, times(1))
+                .lockUser(TEST_USER_ID);
     }
 
     /** Tests that we stop excess users when starting a background user. */
@@ -2119,8 +2120,8 @@ public class UserControllerTest {
         // no easy way to get that information passed through lambda.
         mUserController.finishUserStopped(ussUser, allowDelayedLocking);
         waitForHandlerToComplete(FgThread.getHandler(), HANDLER_WAIT_TIME_MS);
-        verify(mInjector.mStorageManagerMock, times(expectLocking ? 1 : 0))
-                .lockCeStorage(userId);
+        verify(mInjector.mLockSettingsInternalMock, times(expectLocking ? 1 : 0))
+                .lockUser(eq(userId));
     }
 
     private void addForegroundUserAndContinueUserSwitch(int newUserId, int expectedOldUserId,
@@ -2288,6 +2289,7 @@ public class UserControllerTest {
 
         private final IStorageManager mStorageManagerMock;
         private final UserManagerInternal mUserManagerInternalMock;
+        private final LockSettingsInternal mLockSettingsInternalMock;
         private final WindowManagerService mWindowManagerMock;
         private final PowerManagerInternal mPowerManagerInternal;
         private final AlarmManagerInternal mAlarmManagerInternal;
@@ -2310,6 +2312,7 @@ public class UserControllerTest {
             mUiHandler = new TestHandler(mHandlerThread.getLooper());
             mUserManagerMock = mock(UserManagerService.class);
             mUserManagerInternalMock = mock(UserManagerInternal.class);
+            mLockSettingsInternalMock = mock(LockSettingsInternal.class);
             mWindowManagerMock = mock(WindowManagerService.class);
             mStorageManagerMock = mock(IStorageManager.class);
             mPowerManagerInternal = mock(PowerManagerInternal.class);
@@ -2339,6 +2342,11 @@ public class UserControllerTest {
         @Override
         UserManagerInternal getUserManagerInternal() {
             return mUserManagerInternalMock;
+        }
+
+        @Override
+        LockSettingsInternal getLockSettingsInternal() {
+            return mLockSettingsInternalMock;
         }
 
         @Override
@@ -2424,11 +2432,6 @@ public class UserControllerTest {
         boolean isRuntimeRestarted() {
             // to pass all metrics related calls
             return true;
-        }
-
-        @Override
-        protected IStorageManager getStorageManager() {
-            return mStorageManagerMock;
         }
 
         @Override

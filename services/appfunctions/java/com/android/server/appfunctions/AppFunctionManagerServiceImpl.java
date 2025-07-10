@@ -82,7 +82,6 @@ import android.util.ArraySet;
 import android.util.Slog;
 import android.util.SparseArray;
 
-import com.android.internal.R;
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.content.PackageMonitor;
@@ -112,7 +111,6 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
     private static final String ALLOWLISTED_APP_FUNCTIONS_AGENTS =
             "allowlisted_app_functions_agents";
     private static final String NAMESPACE_MACHINE_LEARNING = "machine_learning";
-    private static final String ANDROID_PACKAGE_NAME = "android";
 
     private final RemoteServiceCaller<IAppFunctionService> mRemoteServiceCaller;
     private final CallerValidator mCallerValidator;
@@ -133,11 +131,7 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
 
     private final IBinder mPermissionOwner;
 
-    private final Object mDeviceSettingPackagesLock = new Object();
-
-    @Nullable
-    @GuardedBy("mDeviceSettingPackagesLock")
-    private Set<String> mDeviceSettingPackages;
+    private final DeviceSettingHelper mDeviceSettingHelper;
 
     private final Object mAgentAllowlistLock = new Object();
 
@@ -162,7 +156,8 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
                 packageManagerInternal,
                 appFunctionAccessServiceInterface,
                 uriGrantsManager,
-                uriGrantsManagerInternal);
+                uriGrantsManagerInternal,
+                new DeviceSettingHelperImpl(context));
     }
 
     @VisibleForTesting
@@ -176,7 +171,8 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
             PackageManagerInternal packageManagerInternal,
             AppFunctionAccessServiceInterface appFunctionAccessServiceInterface,
             IUriGrantsManager uriGrantsManager,
-            UriGrantsManagerInternal uriGrantsManagerInternal) {
+            UriGrantsManagerInternal uriGrantsManagerInternal,
+            DeviceSettingHelper deviceSettingHelper) {
         mContext = Objects.requireNonNull(context);
         mRemoteServiceCaller = Objects.requireNonNull(remoteServiceCaller);
         mCallerValidator = Objects.requireNonNull(callerValidator);
@@ -188,6 +184,7 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
         mUriGrantsManager = Objects.requireNonNull(uriGrantsManager);
         mUriGrantsManagerInternal = Objects.requireNonNull(uriGrantsManagerInternal);
         mPermissionOwner = mUriGrantsManagerInternal.newUriPermissionOwner("appfunctions");
+        mDeviceSettingHelper = deviceSettingHelper;
     }
 
     /** Called when the user is unlocked. */
@@ -544,7 +541,8 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
         if (!accessCheckFlagsEnabled()) {
             return 0;
         }
-        final String targetPermissionOwner = getPermissionOwnerPackage(targetPackageName);
+        final String targetPermissionOwner =
+                mDeviceSettingHelper.getPermissionOwnerPackage(targetPackageName);
         return mAppFunctionAccessService.getAccessFlags(
                 agentPackageName, agentUserId, targetPermissionOwner, targetUserId);
     }
@@ -561,7 +559,8 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
         if (!accessCheckFlagsEnabled()) {
             return false;
         }
-        final String targetPermissionOwner = getPermissionOwnerPackage(targetPackageName);
+        final String targetPermissionOwner =
+                mDeviceSettingHelper.getPermissionOwnerPackage(targetPackageName);
         return mAppFunctionAccessService.updateAccessFlags(
                 agentPackageName,
                 agentUserId,
@@ -576,7 +575,8 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
         if (!accessCheckFlagsEnabled()) {
             return;
         }
-        final String targetPermissionOwner = getPermissionOwnerPackage(targetPackageName);
+        final String targetPermissionOwner =
+                mDeviceSettingHelper.getPermissionOwnerPackage(targetPackageName);
         mAppFunctionAccessService.revokeSelfAccess(targetPermissionOwner);
     }
 
@@ -587,7 +587,8 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
         if (!accessCheckFlagsEnabled()) {
             return ACCESS_REQUEST_STATE_UNREQUESTABLE;
         }
-        final String targetPermissionOwner = getPermissionOwnerPackage(targetPackageName);
+        final String targetPermissionOwner =
+                mDeviceSettingHelper.getPermissionOwnerPackage(targetPackageName);
         return mAppFunctionAccessService.getAccessRequestState(
                 agentPackageName, agentUserId, targetPermissionOwner, targetUserId);
     }
@@ -611,40 +612,11 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
         final int validTargetSize = validTargets.size();
         for (int i = 0; i < validTargetSize; i++) {
             final String target = validTargets.get(i);
-            final String permissionOwner = getPermissionOwnerPackage(target);
+            final String permissionOwner = mDeviceSettingHelper.getPermissionOwnerPackage(target);
             validPermissionOwnerTargets.add(permissionOwner);
         }
 
         return List.copyOf(validPermissionOwnerTargets);
-    }
-
-    /**
-     * Returns the permission owner's package name.
-     *
-     * <p>For apps that is set as part of config_appFunctionsDeviceSettingsPackages, the access
-     * permission is controlled as "android".
-     */
-    @NonNull
-    private String getPermissionOwnerPackage(@NonNull String packageName) {
-        final Set<String> deviceSettingPackages = getDeviceSettingPackages();
-        if (deviceSettingPackages.contains(packageName)) {
-            return ANDROID_PACKAGE_NAME;
-        }
-        return packageName;
-    }
-
-    @NonNull
-    private Set<String> getDeviceSettingPackages() {
-        synchronized (mDeviceSettingPackagesLock) {
-            if (mDeviceSettingPackages != null) {
-                return mDeviceSettingPackages;
-            }
-            final String[] deviceSettingPackages =
-                    mContext.getResources()
-                            .getStringArray(R.array.config_appFunctionDeviceSettingsPackages);
-            mDeviceSettingPackages = new ArraySet<>(deviceSettingPackages);
-            return mDeviceSettingPackages;
-        }
     }
 
     private boolean accessCheckFlagsEnabled() {

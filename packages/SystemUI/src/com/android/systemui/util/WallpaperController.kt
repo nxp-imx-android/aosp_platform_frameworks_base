@@ -67,7 +67,7 @@ constructor(
         setWallpaperZoom(max(notificationShadeZoomOut, unfoldTransitionZoomOut))
     }
 
-    private fun setWallpaperZoom(zoomOut: Float) {
+    fun setWallpaperZoom(zoomOut: Float) {
         try {
             rootView?.let { root ->
                 if (root.isAttachedToWindow && root.windowToken != null) {

@@ -24,6 +24,7 @@ import static com.android.internal.util.Preconditions.checkNotNull;
 
 import android.Manifest;
 import android.annotation.BoolRes;
+import android.annotation.BroadcastBehavior;
 import android.annotation.BytesLong;
 import android.annotation.CallbackExecutor;
 import android.annotation.CurrentTimeMillisLong;
@@ -71,6 +72,7 @@ import android.os.OutcomeReceiver;
 import android.os.ParcelFileDescriptor;
 import android.os.ParcelUuid;
 import android.os.Parcelable;
+import android.os.ParcelableException;
 import android.os.PersistableBundle;
 import android.os.RemoteException;
 import android.os.ResultReceiver;
@@ -2180,6 +2182,42 @@ public class TelephonyManager {
     @SdkConstant(SdkConstant.SdkConstantType.ACTIVITY_INTENT_ACTION)
     public static final String ACTION_RESET_MOBILE_NETWORK_SETTINGS =
             "android.telephony.action.RESET_MOBILE_NETWORK_SETTINGS";
+
+    /**
+     * Broadcast intent action indicating the SET UP EVENT LIST received from the UICC has
+     * changed.
+     *
+     * <p> The intent will have the following extra values:</p>
+     * <ul>
+     *   <li>{@link #EXTRA_SUBSCRIPTION_ID}</li>
+     *   <li>{@link #EXTRA_SETUP_EVENT_LIST}</li>
+     * </ul>
+     * <p class="note">Requires the STK_PERMISSION.</p>
+     * <p class="note">This is a protected intent that can only be sent by the system.</p>
+     * @hide
+     */
+    @FlaggedApi(Flags.FLAG_SUPPORT_IMS_REGISTRATION_EVENT_DOWNLOAD)
+    @RequiresPermission(android.Manifest.permission.RECEIVE_STK_COMMANDS)
+    @SystemApi
+    @SdkConstant(SdkConstantType.BROADCAST_INTENT_ACTION)
+    @BroadcastBehavior(explicitOnly = true)
+    public static final String ACTION_STK_SETUP_EVENT_LIST =
+            "android.telephony.action.STK_SETUP_EVENT_LIST";
+
+    /**
+     * Extra included in {@link #ACTION_STK_SETUP_EVENT_LIST}.
+     * It indicates changed list of SET UP EVENT LIST. UICC supplies this list of events
+     * which it wants the terminal to provide details of when these events happen.
+     * Each event in the list shall be coded with one of the values in 8.25 of TS 102.223
+     * (e.g. IMS Registration = 0x17)
+     *
+     * <p class="note"> Retrieve with
+     * {@link android.content.Intent#getIntArrayExtra(String)}.</p>
+     * @hide
+     */
+    @FlaggedApi(Flags.FLAG_SUPPORT_IMS_REGISTRATION_EVENT_DOWNLOAD)
+    @SystemApi
+    public static final String EXTRA_SETUP_EVENT_LIST = "android.telephony.extra.SETUP_EVENT_LIST";
 
     //
     //
@@ -8976,6 +9014,85 @@ public class TelephonyManager {
             ex.rethrowAsRuntimeException();
         }
         return Collections.EMPTY_LIST;
+    }
+
+    /**
+     * The key to indicate the result of the ResultReceiver in the {@link #requestUiccIari}.
+     * @hide
+     */
+    public static final String KEY_UICC_IARI_LIST = "uicc_iari_list";
+    /**
+     * The key to indicate the exception of the ResultReceiver in the {@link #requestUiccIari}.
+     * @hide
+     */
+    public static final String KEY_UICC_IARI_EXCEPTION = "uicc_iari_exception";
+
+    /**
+     * Fetches the IMS Application Reference Identifier(IARI) that was loaded from the UICC.
+     * If an error occurs internally during the process of fetching IARI,
+     * an exception is passed through the onError callback.
+     * <ul>
+     *   <li>IllegalArgumentException : if the subscriptionId is not valid</li>
+     *   <li>SecurityException : if the caller does not have the required permission</li>
+     *   <li>UnsupportedOperationException : if the device does not have
+     *   {@link PackageManager#FEATURE_TELEPHONY_SUBSCRIPTION}</li>
+     * </ul>
+     *
+     * @param executor executor to run the callback on.
+     * @param callback callback object to which the result will be delivered.
+     * @hide
+     */
+    @FlaggedApi(Flags.FLAG_SUPPORT_IMS_REGISTRATION_EVENT_DOWNLOAD)
+    @SystemApi
+    @RequiresPermission(value = Manifest.permission.READ_PRIVILEGED_PHONE_STATE)
+    @RequiresFeature(PackageManager.FEATURE_TELEPHONY_SUBSCRIPTION)
+    public void requestUiccIari(@NonNull Executor executor,
+            @NonNull OutcomeReceiver<Set<String>, Exception> callback) {
+        Objects.requireNonNull(executor);
+        Objects.requireNonNull(callback);
+
+        IPhoneSubInfo info = getSubscriberInfoService();
+        if (info == null) {
+            executor.execute(() -> callback.onError(
+                    new RuntimeException("requestUiccIari : Subscriber Info is null")));
+            return;
+        }
+
+        ResultReceiver wrappedCallback = new ResultReceiver(null) {
+            @Override
+            protected void onReceiveResult(int resultCode, Bundle result) {
+                ParcelableException e = result.getParcelable(
+                        KEY_UICC_IARI_EXCEPTION, android.os.ParcelableException.class);
+                if (e != null) {
+                    Throwable t = e.getCause();
+                    if (t instanceof IllegalArgumentException || t instanceof SecurityException
+                            || t instanceof UnsupportedOperationException) {
+                        executor.execute(() -> callback.onError((Exception) t));
+                    } else {
+                        executor.execute(() -> callback.onError(
+                                new RuntimeException("requestUiccIari : " + t.getMessage())));
+                    }
+                } else {
+                    List<String> iaris = result.getStringArrayList(KEY_UICC_IARI_LIST);
+                    Set<String> iariSet = (iaris != null) ? new HashSet<>(iaris) : new HashSet<>();
+                    Rlog.e(TAG, "requestUiccIari onReceiveResult: " + iariSet);
+                    executor.execute(() -> callback.onResult(iariSet));
+                }
+            }
+        };
+
+        try {
+            if (isApplicationOnUicc(APPTYPE_ISIM)) {
+                info.getUiccIari(getSubId(), APPTYPE_ISIM, getOpPackageName(), wrappedCallback);
+            } else if (isApplicationOnUicc(APPTYPE_USIM)) {
+                info.getUiccIari(getSubId(), APPTYPE_USIM, getOpPackageName(), wrappedCallback);
+            } else {
+                executor.execute(() -> callback.onError(new RuntimeException(
+                        "requestUiccIari : ISIM or USIM application is not exist in UICC")));
+            }
+        } catch (Exception ex) {
+            executor.execute(() -> callback.onError(ex));
+        }
     }
 
     /** UICC application type is unknown or not specified */

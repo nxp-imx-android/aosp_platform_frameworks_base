@@ -17,7 +17,6 @@ package android {
     field @FlaggedApi("android.multiuser.enable_permission_to_access_hidden_profiles") public static final String ACCESS_HIDDEN_PROFILES_FULL = "android.permission.ACCESS_HIDDEN_PROFILES_FULL";
     field public static final String ACCESS_INSTANT_APPS = "android.permission.ACCESS_INSTANT_APPS";
     field @FlaggedApi("com.android.server.telecom.flags.telecom_resolve_hidden_dependencies") public static final String ACCESS_LAST_KNOWN_CELL_ID = "android.permission.ACCESS_LAST_KNOWN_CELL_ID";
-    field @FlaggedApi("android.location.flags.change_get_adas_allowlist_from_hidden_to_system") public static final String ACCESS_LOCATION_BYPASS_ALLOWLIST = "android.permission.ACCESS_LOCATION_BYPASS_ALLOWLIST";
     field public static final String ACCESS_LOCUS_ID_USAGE_STATS = "android.permission.ACCESS_LOCUS_ID_USAGE_STATS";
     field public static final String ACCESS_MOCK_LOCATION = "android.permission.ACCESS_MOCK_LOCATION";
     field public static final String ACCESS_MTP = "android.permission.ACCESS_MTP";
@@ -332,6 +331,7 @@ package android {
     field @FlaggedApi("android.content.pm.get_resolved_apk_path") public static final String READ_INSTALLED_SESSION_PATHS = "android.permission.READ_INSTALLED_SESSION_PATHS";
     field public static final String READ_INSTALL_SESSIONS = "android.permission.READ_INSTALL_SESSIONS";
     field @FlaggedApi("android.security.afl_api") public static final String READ_INTRUSION_DETECTION_STATE = "android.permission.READ_INTRUSION_DETECTION_STATE";
+    field @FlaggedApi("android.location.flags.change_get_adas_allowlist_from_hidden_to_system") public static final String READ_LOCATION_BYPASS_ALLOWLIST = "android.permission.READ_LOCATION_BYPASS_ALLOWLIST";
     field public static final String READ_NETWORK_USAGE_HISTORY = "android.permission.READ_NETWORK_USAGE_HISTORY";
     field public static final String READ_OEM_UNLOCK_STATE = "android.permission.READ_OEM_UNLOCK_STATE";
     field public static final String READ_PEOPLE_DATA = "android.permission.READ_PEOPLE_DATA";
@@ -1310,7 +1310,10 @@ package android.app {
   public class WallpaperManager {
     method @RequiresPermission(android.Manifest.permission.INTERACT_ACROSS_USERS_FULL) public void clearWallpaper(int, int);
     method @FloatRange(from=0.0f, to=1.0f) @RequiresPermission(android.Manifest.permission.SET_WALLPAPER_DIM_AMOUNT) public float getWallpaperDimAmount();
+    method @FlaggedApi("com.android.server.backup.enable_cross_platform_transfer") @Nullable public android.os.ParcelFileDescriptor getWallpaperFile(int, boolean);
     method @FlaggedApi("android.app.live_wallpaper_content_handling") @Nullable @RequiresPermission(android.Manifest.permission.READ_WALLPAPER_INTERNAL) public android.app.wallpaper.WallpaperInstance getWallpaperInstance(int);
+    method @FlaggedApi("com.android.server.backup.enable_cross_platform_transfer") @RequiresPermission(android.Manifest.permission.READ_WALLPAPER_INTERNAL) public boolean isWallpaperBackupEligible(int);
+    method @FlaggedApi("com.android.server.backup.enable_cross_platform_transfer") @RequiresPermission(android.Manifest.permission.SET_WALLPAPER) public int setBitmapWithDescription(@Nullable android.graphics.Bitmap, @NonNull android.app.wallpaper.WallpaperDescription, boolean, int) throws java.io.IOException;
     method public void setDisplayOffset(android.os.IBinder, int, int);
     method @FlaggedApi("com.android.window.flags.multi_crop") @RequiresPermission(android.Manifest.permission.SET_WALLPAPER) public int setStreamWithCrops(@NonNull java.io.InputStream, @NonNull android.util.SparseArray<android.graphics.Rect>, boolean, int) throws java.io.IOException;
     method @FlaggedApi("android.app.live_wallpaper_content_handling") @RequiresPermission(android.Manifest.permission.SET_WALLPAPER) public int setStreamWithDescription(@NonNull java.io.InputStream, @NonNull android.app.wallpaper.WallpaperDescription, boolean, int) throws java.io.IOException;
@@ -6093,6 +6096,10 @@ package android.hardware.hdmi {
 }
 
 package android.hardware.input {
+
+  public final class InputManager {
+    method @FlaggedApi("com.android.hardware.input.create_virtual_keyboard_api") @NonNull @RequiresPermission(anyOf={android.Manifest.permission.INJECT_KEY_EVENTS, android.Manifest.permission.INJECT_EVENTS}) public android.hardware.input.VirtualKeyboard createVirtualKeyboard(@NonNull android.hardware.input.VirtualKeyboardConfig);
+  }
 
   public class VirtualDpad implements java.io.Closeable {
     method public void close();
@@ -11411,6 +11418,7 @@ package android.os {
     ctor public BugreportParams(int, int);
     method public int getFlags();
     method public int getMode();
+    field @FlaggedApi("android.os.bugreport_multi_display_screenshot_enabled") public static final int BUGREPORT_FLAG_CAPTURE_MULTI_DISPLAY_SCREENSHOT = 8; // 0x8
     field public static final int BUGREPORT_FLAG_DEFER_CONSENT = 2; // 0x2
     field @FlaggedApi("android.app.admin.flags.onboarding_bugreport_v2_enabled") public static final int BUGREPORT_FLAG_KEEP_BUGREPORT_ON_RETRIEVAL = 4; // 0x4
     field public static final int BUGREPORT_FLAG_USE_PREDUMPED_UI_DATA = 1; // 0x1
@@ -12569,10 +12577,6 @@ package android.provider {
     field public static final int ERROR_REMOTE_END_CLOSED = 1; // 0x1
     field public static final int ERROR_STORAGE_FULL = 2; // 0x2
     field public static final int ERROR_UNKNOWN = 0; // 0x0
-  }
-
-  public static class CallLog.Calls implements android.provider.BaseColumns {
-    field @FlaggedApi("com.android.server.telecom.flags.integrated_call_logs") public static final String UUID = "uuid";
   }
 
   @Deprecated public static final class ContactsContract.MetadataSync implements android.provider.BaseColumns android.provider.ContactsContract.MetadataSyncColumns {
@@ -16487,6 +16491,7 @@ package android.telephony {
     method @RequiresPermission(android.Manifest.permission.MODIFY_PHONE_STATE) public void requestModemActivityInfo(@NonNull java.util.concurrent.Executor, @NonNull android.os.OutcomeReceiver<android.telephony.ModemActivityInfo,android.telephony.TelephonyManager.ModemActivityInfoException>);
     method @RequiresPermission(android.Manifest.permission.MODIFY_PHONE_STATE) public void requestNumberVerification(@NonNull android.telephony.PhoneNumberRange, long, @NonNull java.util.concurrent.Executor, @NonNull android.telephony.NumberVerificationCallback);
     method @RequiresPermission(android.Manifest.permission.MODIFY_PHONE_STATE) public void requestRadioPowerOffForReason(int);
+    method @FlaggedApi("com.android.internal.telephony.flags.support_ims_registration_event_download") @RequiresPermission(android.Manifest.permission.READ_PRIVILEGED_PHONE_STATE) public void requestUiccIari(@NonNull java.util.concurrent.Executor, @NonNull android.os.OutcomeReceiver<java.util.Set<java.lang.String>,java.lang.Exception>);
     method @RequiresPermission(android.Manifest.permission.MODIFY_PHONE_STATE) public void resetAllCarrierActions();
     method @RequiresPermission(android.Manifest.permission.MODIFY_PHONE_STATE) public void resetCarrierKeysForImsiEncryption();
     method @RequiresPermission(android.Manifest.permission.MODIFY_PHONE_STATE) @WorkerThread public void resetIms(int);
@@ -16550,6 +16555,7 @@ package android.telephony {
     field public static final String ACTION_SIM_APPLICATION_STATE_CHANGED = "android.telephony.action.SIM_APPLICATION_STATE_CHANGED";
     field public static final String ACTION_SIM_CARD_STATE_CHANGED = "android.telephony.action.SIM_CARD_STATE_CHANGED";
     field public static final String ACTION_SIM_SLOT_STATUS_CHANGED = "android.telephony.action.SIM_SLOT_STATUS_CHANGED";
+    field @FlaggedApi("com.android.internal.telephony.flags.support_ims_registration_event_download") @RequiresPermission("android.permission.RECEIVE_STK_COMMANDS") public static final String ACTION_STK_SETUP_EVENT_LIST = "android.telephony.action.STK_SETUP_EVENT_LIST";
     field public static final int ALLOWED_NETWORK_TYPES_REASON_ENABLE_2G = 3; // 0x3
     field public static final int ALLOWED_NETWORK_TYPES_REASON_POWER = 1; // 0x1
     field public static final int CALL_WAITING_STATUS_DISABLED = 2; // 0x2
@@ -16584,6 +16590,7 @@ package android.telephony {
     field public static final String EXTRA_ANOMALY_ID = "android.telephony.extra.ANOMALY_ID";
     field public static final String EXTRA_PHONE_IN_ECM_STATE = "android.telephony.extra.PHONE_IN_ECM_STATE";
     field public static final String EXTRA_PHONE_IN_EMERGENCY_CALL = "android.telephony.extra.PHONE_IN_EMERGENCY_CALL";
+    field @FlaggedApi("com.android.internal.telephony.flags.support_ims_registration_event_download") public static final String EXTRA_SETUP_EVENT_LIST = "android.telephony.extra.SETUP_EVENT_LIST";
     field public static final String EXTRA_SIM_STATE = "android.telephony.extra.SIM_STATE";
     field public static final String EXTRA_VISUAL_VOICEMAIL_ENABLED_BY_USER_BOOL = "android.telephony.extra.VISUAL_VOICEMAIL_ENABLED_BY_USER_BOOL";
     field public static final String EXTRA_VOICEMAIL_SCRAMBLED_PIN_STRING = "android.telephony.extra.VOICEMAIL_SCRAMBLED_PIN_STRING";
@@ -18663,7 +18670,7 @@ package android.telephony.ims.stub {
     method public final void onDeregistered(android.telephony.ims.ImsReasonInfo);
     method public final void onDeregistered(@Nullable android.telephony.ims.ImsReasonInfo, int, int);
     method @FlaggedApi("com.android.internal.telephony.flags.emergency_registration_state") public final void onDeregistered(@Nullable android.telephony.ims.ImsReasonInfo, int, @NonNull android.telephony.ims.ImsRegistrationAttributes);
-    method @FlaggedApi("com.android.internal.telephony.flags.support_throttle_time_for_deregistration") public final void onDeregistered(@Nullable android.telephony.ims.ImsReasonInfo, int, @NonNull android.telephony.ims.ImsRegistrationAttributes, int);
+    method @FlaggedApi("com.android.internal.telephony.flags.support_throttle_time_for_deregistration") public final void onDeregistered(@Nullable android.telephony.ims.ImsReasonInfo, int, @NonNull android.telephony.ims.ImsRegistrationAttributes, @IntRange(from=0) int);
     method public final void onDeregistered(@Nullable android.telephony.ims.ImsReasonInfo, @NonNull android.telephony.ims.SipDetails);
     method public final void onDeregistered(@Nullable android.telephony.ims.ImsReasonInfo, int, int, @NonNull android.telephony.ims.SipDetails);
     method public final void onRegistered(int);

@@ -914,6 +914,7 @@ class AnrTimerService::Timer {
             started(0),
             timeout(0),
             extend(false),
+            splits(nullptr),
             nextSplit(0),
             status(Invalid),
             scheduled(0),

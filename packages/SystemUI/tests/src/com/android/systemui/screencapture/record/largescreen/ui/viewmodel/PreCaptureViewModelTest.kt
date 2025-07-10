@@ -16,11 +16,14 @@
 
 package com.android.systemui.screencapture.record.largescreen.ui.viewmodel
 
+import android.platform.test.annotations.DisableFlags
+import android.platform.test.annotations.EnableFlags
 import android.view.WindowManager
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.internal.util.ScreenshotRequest
 import com.android.internal.util.mockScreenshotHelper
+import com.android.systemui.Flags
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
@@ -93,6 +96,7 @@ class PreCaptureViewModelTest : SysuiTestCase() {
         }
 
     @Test
+    @EnableFlags(Flags.FLAG_DESKTOP_SCREEN_CAPTURE_APP_WINDOW)
     fun updateCaptureRegion_updatesSelectedCaptureRegionButtonViewModel() =
         testScope.runTest {
             // Default region is fullscreen
@@ -153,5 +157,23 @@ class PreCaptureViewModelTest : SysuiTestCase() {
             assertFailsWith(IllegalArgumentException::class) {
                 viewModel.takeFullscreenScreenshot()
             }
+        }
+
+    @Test
+    @DisableFlags(Flags.FLAG_DESKTOP_SCREEN_CAPTURE_APP_WINDOW)
+    fun captureRegionButtonViewModels_excludesAppWindowWithFeatureDisabled() =
+        testScope.runTest {
+            // TODO(b/430364500) Once a11y label is available, use it for a more robust assertion.
+            viewModel.updateCaptureRegion(ScreenCaptureRegion.APP_WINDOW)
+            assertThat(viewModel.captureRegionButtonViewModels.none { it.isSelected }).isTrue()
+        }
+
+    @Test
+    @EnableFlags(Flags.FLAG_DESKTOP_SCREEN_CAPTURE_APP_WINDOW)
+    fun captureRegionButtonViewModels_includesAppWindowWithFeatureEnabled() =
+        testScope.runTest {
+            // TODO(b/430364500) Once a11y label is available, use it for a more robust assertion.
+            viewModel.updateCaptureRegion(ScreenCaptureRegion.APP_WINDOW)
+            assertThat(viewModel.captureRegionButtonViewModels.count { it.isSelected }).isEqualTo(1)
         }
 }

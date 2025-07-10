@@ -17,8 +17,10 @@
 package com.android.wm.shell.flicker
 
 import android.platform.test.rule.ScreenRecordRule
+import android.tools.PlatformConsts.DEFAULT_DISPLAY
 import android.tools.flicker.legacy.LegacyFlickerTest
 import android.tools.flicker.rules.ChangeDisplayOrientationRule
+import androidx.test.uiautomator.UiDevice
 
 import org.junit.Assume
 import org.junit.Before
@@ -31,6 +33,7 @@ import com.android.server.wm.flicker.statusBarLayerPositionAtStartAndEnd
 import com.android.server.wm.flicker.statusBarWindowIsAlwaysVisible
 import com.android.server.wm.flicker.taskBarLayerIsVisibleAtStartAndEnd
 import com.android.server.wm.flicker.taskBarWindowIsAlwaysVisible
+import com.android.wm.shell.shared.desktopmode.DesktopState
 import org.junit.ClassRule
 
 /**
@@ -52,11 +55,20 @@ abstract class DesktopModeBaseTest(flicker: LegacyFlickerTest) : BaseBenchmarkTe
     // Override this set with the test method names that you want to exclude from the test
     open val excludedTests: Set<String> = emptySet()
 
+    private val device = UiDevice.getInstance(instrumentation)
+
     @Before
     fun setUp() {
+        Assume.assumeTrue(
+            DesktopState.fromContext(instrumentation.context)
+                .isDesktopModeSupportedOnDisplay(DEFAULT_DISPLAY)
+        )
+        tapl.setEnableRotation(true)
         tapl.setExpectedRotation(flicker.scenario.startRotation.value)
         ChangeDisplayOrientationRule.setRotation(flicker.scenario.startRotation)
-        Assume.assumeTrue(tapl.isTablet)
+        device.executeShellCommand(
+            "dumpsys activity service SystemUIService WMShell desktopmode removeAllDesks"
+        )
 
         val currentTestMethodName = testName.methodName
         Assume.assumeFalse(

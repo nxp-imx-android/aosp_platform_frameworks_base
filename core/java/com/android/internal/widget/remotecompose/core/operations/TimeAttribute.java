@@ -19,6 +19,7 @@ import static com.android.internal.widget.remotecompose.core.documentation.Docum
 import static com.android.internal.widget.remotecompose.core.documentation.DocumentedOperation.SHORT;
 
 import android.annotation.NonNull;
+import android.annotation.Nullable;
 
 import com.android.internal.widget.remotecompose.core.Operation;
 import com.android.internal.widget.remotecompose.core.Operations;
@@ -96,7 +97,7 @@ public class TimeAttribute extends PaintOperation {
      * @param type the type of calculation
      * @param args the optional args
      */
-    public TimeAttribute(int id, int longId, short type, int[] args) {
+    public TimeAttribute(int id, int longId, short type, @Nullable int [] args) {
         this.mId = id;
         this.mTimeId = longId;
         this.mType = type;
@@ -165,7 +166,7 @@ public class TimeAttribute extends PaintOperation {
      * @param args the optional args
      */
     public static void apply(
-            @NonNull WireBuffer buffer, int id, int textId, short type, int[] args) {
+            @NonNull WireBuffer buffer, int id, int textId, short type, @Nullable int [] args) {
         buffer.start(OP_CODE);
         buffer.writeInt(id);
         buffer.writeInt(textId);
@@ -222,12 +223,10 @@ public class TimeAttribute extends PaintOperation {
         return indent + toString();
     }
 
-    @NonNull float[] mBounds = new float[4];
-
     @Override
     public void paint(@NonNull PaintContext context) {
         int val = mType & 255;
-        int flags = mType >> 8;
+        // int flags = mType >> 8;
         RemoteContext ctx = context.getContext();
         long load_time = ctx.getDocLoadTime();
         LongConstant longConstant = (LongConstant) ctx.getObject(mTimeId);
@@ -239,7 +238,7 @@ public class TimeAttribute extends PaintOperation {
             case TIME_FROM_NOW_SEC:
             case TIME_FROM_NOW_MIN:
             case TIME_FROM_NOW_HR:
-                delta = (value - System.currentTimeMillis());
+                delta = (value - context.getClock().millis());
                 break;
             case TIME_FROM_ARG_SEC:
             case TIME_FROM_ARG_MIN:
@@ -265,7 +264,7 @@ public class TimeAttribute extends PaintOperation {
         switch (val) {
             case TIME_FROM_NOW_SEC:
             case TIME_FROM_ARG_SEC:
-                ctx.loadFloat(mId, (delta) * 1E-3f);
+                ctx.loadFloat(mId, delta * 1E-3f);
                 ctx.needsRepaint();
                 break;
             case TIME_FROM_ARG_MIN:
@@ -306,7 +305,7 @@ public class TimeAttribute extends PaintOperation {
     }
 
     @Override
-    public void serialize(MapSerializer serializer) {
+    public void serialize(@NonNull MapSerializer serializer) {
         serializer
                 .addType(CLASS_NAME)
                 .add("id", mId)

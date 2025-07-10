@@ -164,6 +164,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -573,9 +574,8 @@ public class BatteryStatsImpl extends BatteryStats {
      * Batterystats shall remove UIDs, and a delay {@link Constants#UID_REMOVE_DELAY_MS} is
      * implemented so that STATSD can capture those UID times before they are deleted.
      */
-    @GuardedBy("this")
     @VisibleForTesting(visibility = VisibleForTesting.Visibility.PACKAGE)
-    protected Queue<UidToRemove> mPendingRemovedUids = new LinkedList<>();
+    protected final Queue<UidToRemove> mPendingRemovedUids;
 
     @NonNull
     public BatteryStatsHistory getHistory() {
@@ -4602,10 +4602,14 @@ public class BatteryStatsImpl extends BatteryStats {
     }
 
     private void onBeforeIsolatedUidRemoved(int isolatedUid, int parentUid) {
-        long realtime = mClock.elapsedRealtime();
+        final long realtime = mClock.elapsedRealtime();
         mPowerStatsUidResolver.retainIsolatedUid(isolatedUid);
-        synchronized (this) {
+        if (Flags.concurrentQueueForPendingRemovedUids()) {
             mPendingRemovedUids.add(new UidToRemove(isolatedUid, realtime));
+        } else {
+            synchronized (this) {
+                mPendingRemovedUids.add(new UidToRemove(isolatedUid, realtime));
+            }
         }
         if (mExternalSync != null) {
             mExternalSync.scheduleCpuSyncDueToRemovedUid(isolatedUid);
@@ -4613,8 +4617,8 @@ public class BatteryStatsImpl extends BatteryStats {
     }
 
     private void onAfterIsolatedUidRemoved(int isolatedUid, int parentUid) {
-        long realtime = mClock.elapsedRealtime();
-        long uptime = mClock.uptimeMillis();
+        final long realtime = mClock.elapsedRealtime();
+        final long uptime = mClock.uptimeMillis();
         synchronized (this) {
             getUidStatsLocked(parentUid, realtime, uptime).removeIsolatedUid(isolatedUid);
         }
@@ -10784,6 +10788,12 @@ public class BatteryStatsImpl extends BatteryStats {
             @NonNull BatteryStatsHistory.EventLogger eventLogger) {
         mClock = clock;
         initKernelStatsReaders();
+
+        if (Flags.concurrentQueueForPendingRemovedUids()) {
+            mPendingRemovedUids = new ConcurrentLinkedQueue<>();
+        } else {
+            mPendingRemovedUids = new LinkedList<>();
+        }
 
         mBatteryStatsConfig = config;
         mMonotonicClock = monotonicClock;

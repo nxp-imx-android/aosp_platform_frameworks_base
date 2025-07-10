@@ -817,7 +817,9 @@ public final class NotificationRecord {
                 if (android.service.notification.Flags.notificationClassification()) {
                     if (signals.containsKey(Adjustment.KEY_TYPE)) {
                         // Store original channel visibility before re-assigning channel
-                        setOriginalChannelVisibility(mChannel.getLockscreenVisibility());
+                        if (!NotificationChannel.SYSTEM_RESERVED_IDS.contains(mChannel.getId())) {
+                            setOriginalChannelVisibility(mChannel.getLockscreenVisibility());
+                        }
                         updateNotificationChannel(signals.getParcelable(Adjustment.KEY_TYPE,
                                 NotificationChannel.class));
                         EventLogTags.writeNotificationAdjusted(getKey(),

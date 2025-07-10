@@ -26,7 +26,6 @@ import android.platform.test.annotations.Presubmit;
 import android.testing.AndroidTestingRunner;
 import android.util.proto.ProtoOutputStream;
 import android.util.proto.ProtoInputStream;
-import android.util.proto.ProtoParseException;
 
 import org.junit.runner.RunWith;
 import org.junit.Test;
@@ -42,114 +41,36 @@ public class ContinuityDeviceConnectedTest {
 
     @Test
     public void testConstructor_fromObjects() {
-        final int currentForegroundTaskId = 1234;
         final List<RemoteTaskInfo> remoteTasks = new ArrayList<>();
 
         final ContinuityDeviceConnected continuityDeviceConnected
-            = new ContinuityDeviceConnected(
-                currentForegroundTaskId,
-                remoteTasks);
+            = new ContinuityDeviceConnected(remoteTasks);
 
-        assertThat(continuityDeviceConnected.getCurrentForegroundTaskId())
-            .isEqualTo(currentForegroundTaskId);
-        assertThat(continuityDeviceConnected.getRemoteTasks())
-            .isEqualTo(remoteTasks);
+        assertThat(continuityDeviceConnected.remoteTasks()).isEqualTo(remoteTasks);
     }
 
     @Test
-    public void testConstructor_fromProto_readsValidProto()
-        throws IOException, ProtoParseException {
-
-        final int currentForegroundTaskId = 1234;
-        final ProtoOutputStream pos = new ProtoOutputStream();
-        pos.writeInt32(
-            android.companion.ContinuityDeviceConnected.CURRENT_FOREGROUND_TASK_ID,
-            currentForegroundTaskId);
-        pos.flush();
-
-        final ProtoInputStream pis = new ProtoInputStream(pos.getBytes());
-        final ContinuityDeviceConnected continuityDeviceConnected
-            = ContinuityDeviceConnected.readFromProto(pis);
-
-        assertThat(continuityDeviceConnected.getCurrentForegroundTaskId())
-            .isEqualTo(currentForegroundTaskId);
-    }
-
-    @Test
-    public void testConstructor_fromProto_setsToDefaultIfNoFieldsSet() throws Exception {
-        final ProtoInputStream pis = new ProtoInputStream(new byte[0]);
-        final ContinuityDeviceConnected continuityDeviceConnected
-            = ContinuityDeviceConnected.readFromProto(pis);
-
-        assertThat(continuityDeviceConnected.getCurrentForegroundTaskId())
-            .isEqualTo(0);
-        assertThat(continuityDeviceConnected.getRemoteTasks())
-            .isEmpty();
-    }
-
-    @Test
-    public void testWriteToProto_writesValidProto() throws IOException {
-        int currentForegroundTaskId = 1234;
-        List<RemoteTaskInfo> remoteTasks = new ArrayList<>();
-        ContinuityDeviceConnected continuityDeviceConnected
-            = new ContinuityDeviceConnected(
-                currentForegroundTaskId,
-                remoteTasks);
-        final ProtoOutputStream pos = new ProtoOutputStream();
-        continuityDeviceConnected.writeToProto(pos);
-        pos.flush();
-
-        final ProtoInputStream pis = new ProtoInputStream(pos.getBytes());
-        pis.nextField();
-        long currentForegroundTaskIdFieldNumber =
-            android.companion.ContinuityDeviceConnected.CURRENT_FOREGROUND_TASK_ID;
-        assertThat(pis.getFieldNumber())
-            .isEqualTo((int) currentForegroundTaskIdFieldNumber);
-        assertThat(pis.readInt(currentForegroundTaskIdFieldNumber))
-            .isEqualTo(currentForegroundTaskId);
-        pis.nextField();
-        assertThat(pis.nextField()).isEqualTo(ProtoInputStream.NO_MORE_FIELDS);
-    }
-
-    @Test
-    public void testWriteAndRead_roundTrip_works() throws IOException {
+    public void testWriteAndReadToProto_roundTrip_works() throws IOException {
         int expectedTaskId = 1;
         String expectedLabel = "test";
         long expectedLastActiveTime = 0;
-        RemoteTaskInfo expectedTaskInfo = new RemoteTaskInfo(
-            expectedTaskId,
-            expectedLabel,
-            expectedLastActiveTime,
-            new byte[0]);
-
-        int currentForegroundTaskId = 1234;
-        List<RemoteTaskInfo> remoteTasks = Arrays.asList(expectedTaskInfo);
-
-        ContinuityDeviceConnected expected
-            = new ContinuityDeviceConnected(
-                currentForegroundTaskId,
-                remoteTasks);
+        ContinuityDeviceConnected expected = new ContinuityDeviceConnected(
+            Arrays.asList(new RemoteTaskInfo(1, "task", 50, new byte[0])));
 
         final ProtoOutputStream pos = new ProtoOutputStream();
         expected.writeToProto(pos);
         pos.flush();
 
         final ProtoInputStream pis = new ProtoInputStream(pos.getBytes());
-        final ContinuityDeviceConnected actual
-            = ContinuityDeviceConnected.readFromProto(pis);
+        final ContinuityDeviceConnected actual = ContinuityDeviceConnected.readFromProto(pis);
 
-        assertThat(actual.getCurrentForegroundTaskId())
-            .isEqualTo(expected.getCurrentForegroundTaskId());
-        assertThat(actual.getRemoteTasks())
-            .hasSize(1);
-        RemoteTaskInfo actualTaskInfo = actual.getRemoteTasks().get(0);
-      assertThat(actualTaskInfo).isEqualTo(expectedTaskInfo);
+        assertThat(actual).isEqualTo(expected);
     }
 
     @Test
     public void testGetFieldNumber_returnsCorrectValue() {
         ContinuityDeviceConnected continuityDeviceConnected
-            = new ContinuityDeviceConnected(1234, new ArrayList<>());
+            = new ContinuityDeviceConnected(new ArrayList<>());
 
         assertThat(continuityDeviceConnected.getFieldNumber())
             .isEqualTo(android.companion.TaskContinuityMessage.DEVICE_CONNECTED);

@@ -140,18 +140,10 @@ public final class DeviceStateRotationLockSettingsManager implements
     }
 
     @Override
-    @NonNull
-    public SparseIntArray updateSetting(@NonNull SparseIntArray proposedSetting,
-            @NonNull SparseIntArray currentSetting) {
-        // This method is not supported in this implementation. Use updateSetting(int, boolean)
-        // instead. This overload is intended for a refactored settings manager.
+    public DeviceStateAutoRotateSetting getRotationLockSetting() {
+        // This method is not supported in this implementation.
         throw new UnsupportedOperationException(
                 "This API is only support by refactored settings manager.");
-    }
-
-    @Override
-    public SparseIntArray getRotationLockSetting() {
-        return mPostureRotationLockSettings.clone();
     }
 
     /**
@@ -217,12 +209,6 @@ public final class DeviceStateRotationLockSettingsManager implements
         return new ArrayList<>(mSettableDeviceStates);
     }
 
-    @NonNull
-    @Override
-    public SparseIntArray getDefaultRotationLockSetting() {
-        return mPostureDefaultRotationLockSettings.clone();
-    }
-
     private void initializeInMemoryMap() {
         String serializedSetting = getPersistedSettingValue();
         if (TextUtils.isEmpty(serializedSetting)) {
@@ -261,6 +247,14 @@ public final class DeviceStateRotationLockSettingsManager implements
                 return;
             }
         }
+    }
+
+    @NonNull
+    @Override
+    public DeviceStateAutoRotateSetting getDefaultRotationLockSetting() {
+        // This method is not supported in this implementation.
+        throw new UnsupportedOperationException(
+                "This API is only support by refactored settings manager.");
     }
 
     /**

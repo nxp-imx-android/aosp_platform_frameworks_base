@@ -21,6 +21,7 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
@@ -29,8 +30,10 @@ import static org.mockito.Mockito.when;
 
 import android.annotation.UserIdInt;
 import android.content.Context;
+import android.content.pm.UserInfo;
 import android.os.Handler;
 import android.os.UserHandle;
+import android.os.UserManager;
 
 import com.android.modules.utils.testing.ExtendedMockitoRule;
 import com.android.server.pm.UserManagerInternal;
@@ -166,5 +169,11 @@ public final class UserControllerMockedTest {
 
     private void mockSystemUserHeadlessMode(boolean headless) {
         when(mSpiedUserControllerInjector.isHeadlessSystemUserMode()).thenReturn(headless);
+        UserInfo sysInfo = new UserInfo(UserHandle.USER_SYSTEM,
+                "User" + UserHandle.USER_SYSTEM, /* iconPath= */ null,
+                headless ? UserInfo.FLAG_SYSTEM : UserInfo.FLAG_FULL | UserInfo.FLAG_SYSTEM,
+                headless
+                    ? UserManager.USER_TYPE_SYSTEM_HEADLESS : UserManager.USER_TYPE_FULL_SYSTEM);
+        when(mUserManagerService.getUserInfo(eq(UserHandle.USER_SYSTEM))).thenReturn(sysInfo);
     }
 }
