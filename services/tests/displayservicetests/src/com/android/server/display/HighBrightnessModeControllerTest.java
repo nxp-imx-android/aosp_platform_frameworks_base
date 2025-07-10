@@ -52,6 +52,7 @@ import androidx.test.core.app.ApplicationProvider;
 import androidx.test.filters.SmallTest;
 import androidx.test.runner.AndroidJUnit4;
 
+import com.android.internal.display.BrightnessSynchronizer;
 import com.android.internal.util.FrameworkStatsLog;
 import com.android.internal.util.test.FakeSettingsProvider;
 import com.android.internal.util.test.FakeSettingsProviderRule;
@@ -84,7 +85,7 @@ public class HighBrightnessModeControllerTest {
     private static final int DISPLAY_WIDTH = 900;
     private static final int DISPLAY_HEIGHT = 1600;
 
-    private static final float EPSILON = 0.000001f;
+    private static final float EPSILON = BrightnessSynchronizer.EPSILON;
 
     private OffsettableClock mClock;
     private TestLooper mTestLooper;
