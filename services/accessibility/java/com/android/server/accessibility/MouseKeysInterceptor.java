@@ -114,11 +114,11 @@ public class MouseKeysInterceptor extends BaseEventStreamTransformation
 
     /**
      * The parameter that converts the mouse keys max speed factor that ranges from 1 - 10
-     * to the actual float mouse pointer movement step. Assigning its value to 0.36f so
-     * the DEFAULT_MOUSE_KEYS_MAX_SPEED matches the constant MOUSE_POINTER_MOVEMENT_STEP
-     * when enableMouseKeyEnhancement flag is off.
+     * to the actual float mouse pointer movement step. Assigning its value to sqrt(2)
+     * so the mMaxMovementStep is guaranteed to be greater than 1.0, and has different values
+     * for each different max speed factor,
      */
-    private static final float CURSOR_MOVEMENT_PARAMETER = 0.36f;
+    private static final float CURSOR_MOVEMENT_PARAMETER = sqrt(2);
 
     private final AccessibilityManagerService mAms;
     private final Handler mHandler;
