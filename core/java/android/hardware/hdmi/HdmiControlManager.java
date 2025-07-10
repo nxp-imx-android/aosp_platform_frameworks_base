@@ -434,6 +434,22 @@ public final class HdmiControlManager {
     @Retention(RetentionPolicy.SOURCE)
     public @interface SoundbarMode {}
 
+    // -- Defines the TV's behavior upon receiving a <Standby> message.
+    /**
+     * TV goes to sleep upon receiving <Standby>.
+     *
+     * @see HdmiControlManager#CEC_SETTING_NAME_TV_BEHAVIOR_ON_STANDBY_MESSAGE
+     * @hide
+     */
+    public static final int TV_BEHAVIOR_ON_STANDBY_MESSAGE_GO_TO_SLEEP = 0;
+    /**
+     * TV goes to dream upon receiving <Standby>.
+     *
+     * @see HdmiControlManager#CEC_SETTING_NAME_TV_BEHAVIOR_ON_STANDBY_MESSAGE
+     * @hide
+     */
+    public static final int TV_BEHAVIOR_ON_STANDBY_MESSAGE_GO_TO_DREAM = 1;
+
     // -- Scope of CEC power control messages sent by a playback device.
     /**
      * Send CEC power control messages to TV only:
@@ -863,6 +879,14 @@ public final class HdmiControlManager {
      * @see HdmiControlManager#setSoundbarMode(int)
      */
     public static final String CEC_SETTING_NAME_SOUNDBAR_MODE = "soundbar_mode";
+    /**
+     * Name of a setting that defines the TV's behavior (sleep or dream) upon receiving a
+     * <Standby> message.
+     *
+     * @hide
+     */
+    public static final String CEC_SETTING_NAME_TV_BEHAVIOR_ON_STANDBY_MESSAGE =
+            "tv_behavior_on_standby_message";
     /**
      * Name of a setting deciding on the power control mode.
      *

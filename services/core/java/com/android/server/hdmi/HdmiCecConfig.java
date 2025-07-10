@@ -676,6 +676,18 @@ public class HdmiCecConfig {
                 R.bool.config_cecQuerySadMaxDisabled_allowed,
                 R.bool.config_cecQuerySadMaxDisabled_default);
 
+        Setting tvBehaviorOnStandby = registerSetting(
+                HdmiControlManager.CEC_SETTING_NAME_TV_BEHAVIOR_ON_STANDBY_MESSAGE,
+                R.bool.config_cecTvBehaviorOnStandbyMessage_userConfigurable);
+        tvBehaviorOnStandby.registerValue(
+                HdmiControlManager.TV_BEHAVIOR_ON_STANDBY_MESSAGE_GO_TO_SLEEP,
+                R.bool.config_cecTvBehaviorOnStandbyMessageGoToSleep_allowed,
+                R.bool.config_cecTvBehaviorOnStandbyMessageGoToSleep_default);
+        tvBehaviorOnStandby.registerValue(
+                HdmiControlManager.TV_BEHAVIOR_ON_STANDBY_MESSAGE_GO_TO_DREAM,
+                R.bool.config_cecTvBehaviorOnStandbyMessageGoToDream_allowed,
+                R.bool.config_cecTvBehaviorOnStandbyMessageGoToDream_default);
+
         Setting earcEnabled = registerSetting(
                 HdmiControlManager.SETTING_NAME_EARC_ENABLED,
                 R.bool.config_earcEnabled_userConfigurable);
@@ -785,6 +797,8 @@ public class HdmiCecConfig {
                 return STORAGE_SHARED_PREFS;
             case HdmiControlManager.CEC_SETTING_NAME_QUERY_SAD_MAX:
                 return STORAGE_SHARED_PREFS;
+            case HdmiControlManager.CEC_SETTING_NAME_TV_BEHAVIOR_ON_STANDBY_MESSAGE:
+                return STORAGE_SHARED_PREFS;
             case HdmiControlManager.SETTING_NAME_EARC_ENABLED:
                 return STORAGE_SHARED_PREFS;
             default:
@@ -861,6 +875,8 @@ public class HdmiCecConfig {
             case HdmiControlManager.CEC_SETTING_NAME_QUERY_SAD_WMAPRO:
                 return setting.getName();
             case HdmiControlManager.CEC_SETTING_NAME_QUERY_SAD_MAX:
+                return setting.getName();
+            case HdmiControlManager.CEC_SETTING_NAME_TV_BEHAVIOR_ON_STANDBY_MESSAGE:
                 return setting.getName();
             case HdmiControlManager.SETTING_NAME_EARC_ENABLED:
                 return setting.getName();

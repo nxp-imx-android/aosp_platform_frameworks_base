@@ -544,6 +544,18 @@ public class HdmiCecLocalDeviceTv extends HdmiCecLocalDevice {
     protected int handleStandby(HdmiCecMessage message) {
         assertRunOnServiceThread();
 
+        if (mService.shouldDreamOnStandbyMessage()) {
+            Slog.d(TAG, "Start dreaming upon receiving <Standby> from connected device.");
+            mService.startDreaming();
+            if(mService.shouldTvSendStandbyOnSleep()) {
+                // This will turn off connected devices (e.g. an AVR).
+                mService.sendCecCommand(
+                        HdmiCecMessageBuilder.buildStandby(
+                                getDeviceInfo().getLogicalAddress(), Constants.ADDR_BROADCAST));
+            }
+            return Constants.HANDLED;
+        }
+
         // If the TV has previously changed the active path, ignore <Standby> from non-active
         // source.
         if (getWasActivePathSetToConnectedDevice()
@@ -1548,11 +1560,7 @@ public class HdmiCecLocalDeviceTv extends HdmiCecLocalDevice {
             return;
         }
         setWasActivePathSetToConnectedDevice(false);
-        boolean sendStandbyOnSleep =
-                mService.getHdmiCecConfig().getIntValue(
-                    HdmiControlManager.CEC_SETTING_NAME_TV_SEND_STANDBY_ON_SLEEP)
-                        == HdmiControlManager.TV_SEND_STANDBY_ON_SLEEP_ENABLED;
-        if (!initiatedByCec && sendStandbyOnSleep) {
+        if (!initiatedByCec && mService.shouldTvSendStandbyOnSleep()) {
             mService.sendCecCommand(
                     HdmiCecMessageBuilder.buildStandby(
                             getDeviceInfo().getLogicalAddress(), Constants.ADDR_BROADCAST),

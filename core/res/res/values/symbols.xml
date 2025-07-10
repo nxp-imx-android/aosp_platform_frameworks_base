@@ -5271,6 +5271,12 @@
   <java-symbol type="bool" name="config_cecQuerySadMaxDisabled_allowed" />
   <java-symbol type="bool" name="config_cecQuerySadMaxDisabled_default" />
 
+  <java-symbol type="bool" name="config_cecTvBehaviorOnStandbyMessage_userConfigurable" />
+  <java-symbol type="bool" name="config_cecTvBehaviorOnStandbyMessageGoToSleep_allowed" />
+  <java-symbol type="bool" name="config_cecTvBehaviorOnStandbyMessageGoToSleep_default" />
+  <java-symbol type="bool" name="config_cecTvBehaviorOnStandbyMessageGoToDream_allowed" />
+  <java-symbol type="bool" name="config_cecTvBehaviorOnStandbyMessageGoToDream_default" />
+
   <!-- eARC Configuration -->
   <java-symbol type="bool" name="config_earcEnabled_userConfigurable" />
   <java-symbol type="bool" name="config_earcFeatureEnabled_allowed" />
