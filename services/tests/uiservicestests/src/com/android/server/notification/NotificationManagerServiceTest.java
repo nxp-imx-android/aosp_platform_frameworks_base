@@ -18339,6 +18339,45 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
+    @EnableFlags(android.service.notification.Flags.FLAG_NOTIFICATION_CLASSIFICATION)
+    public void applyAdjustment_classify_withUpdatesEnqueued_appliesChannel() throws Exception {
+        when(mAssistants.isClassificationTypeAllowed(anyInt(), anyInt())).thenReturn(true);
+        when(mAssistants.isAdjustmentAllowedForPackage(anyInt(), anyString(),
+                anyString())).thenReturn(true);
+        when(mAssistants.isSameUser(any(), anyInt())).thenReturn(true);
+        NotificationRecord sample = generateNotificationRecord(mTestNotificationChannel);
+
+        // App rapidly posts the same notification multiple times
+        int times = 2;
+        for (int i = 0; i < times; i++) {
+            NotificationRecord copy = generateNotificationRecord(mTestNotificationChannel);
+            mService.addEnqueuedNotification(copy);
+        }
+        // Assistant gets all the enqueues, so classifies the same notification multiple times too,
+        // before actual post has occurred.
+        for (int i = 0; i < times; i++) {
+            Bundle signals = new Bundle();
+            signals.putInt(KEY_TYPE, TYPE_NEWS);
+            Adjustment adjustment = new Adjustment(
+                    sample.getSbn().getPackageName(), sample.getKey(), signals, "",
+                    sample.getUser().getIdentifier());
+            mBinderService.applyEnqueuedAdjustmentFromAssistant(null, adjustment);
+        }
+        // Process and post all enqueues.
+        for (int i = 0; i < times; i++) {
+            mService.new PostNotificationRunnable(sample.getKey(), sample.getSbn().getPackageName(),
+                    sample.getUid(), mPostNotificationTrackerFactory.newTracker(null)).run();
+        }
+        waitForIdle();
+
+        assertThat(mService.mEnqueuedNotifications).isEmpty();
+        NotificationRecord posted = mService.mNotificationsByKey.get(sample.getKey());
+        assertThat(posted).isNotNull();
+        assertThat(posted.getChannel().getId()).isEqualTo(NEWS_ID);
+        assertThat(mService.mNotificationList).hasSize(2); // Bundle header + notif
+    }
+
+    @Test
     @EnableFlags({android.service.notification.Flags.FLAG_NOTIFICATION_CLASSIFICATION,
             android.app.Flags.FLAG_NOTIFICATION_CLASSIFICATION_UI})
     public void testApplyAdjustment_keyTypeForDisallowedPackage_DoesNotApply() throws Exception {
