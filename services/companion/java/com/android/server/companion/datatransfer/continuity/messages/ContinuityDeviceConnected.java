@@ -27,7 +27,7 @@ import java.util.List;
  * Deserialized version of the {@link ContinuityDeviceConnected} proto.
  */
 public record ContinuityDeviceConnected(
-    List<RemoteTaskInfo> remoteTasks) implements TaskContinuityMessageData {
+    List<RemoteTaskInfo> remoteTasks) implements TaskContinuityMessage {
 
     public static ContinuityDeviceConnected readFromProto(ProtoInputStream pis) throws IOException {
 

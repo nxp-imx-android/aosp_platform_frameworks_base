@@ -25,6 +25,7 @@ import com.android.server.companion.datatransfer.continuity.connectivity.Connect
 import com.android.server.companion.datatransfer.continuity.messages.HandoffRequestMessage;
 import com.android.server.companion.datatransfer.continuity.messages.HandoffRequestResultMessage;
 import com.android.server.companion.datatransfer.continuity.messages.TaskContinuityMessage;
+import com.android.server.companion.datatransfer.continuity.messages.TaskContinuityMessageSerializer;
 
 import android.app.ActivityOptions;
 import android.app.HandoffActivityData;
@@ -96,14 +97,10 @@ public class OutboundHandoffRequestController {
             callbacks.add(callback);
             mPendingCallbacks.get(associationId).put(taskId, callbacks);
             HandoffRequestMessage handoffRequestMessage = new HandoffRequestMessage(taskId);
-            TaskContinuityMessage taskContinuityMessage = new TaskContinuityMessage.Builder()
-                .setData(handoffRequestMessage)
-                .build();
-
             try {
                 mCompanionDeviceManager.sendMessage(
                     CompanionDeviceManager.MESSAGE_ONEWAY_TASK_CONTINUITY,
-                    taskContinuityMessage.toBytes(),
+                    TaskContinuityMessageSerializer.serialize(handoffRequestMessage),
                     new int[] {associationId});
             } catch (IOException e) {
                 Slog.e(TAG, "Failed to send handoff request message to device " + associationId, e);

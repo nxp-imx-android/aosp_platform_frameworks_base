@@ -31,7 +31,7 @@ import java.util.List;
 public record HandoffRequestResultMessage(
     int taskId,
     int statusCode,
-    List<HandoffActivityData> activities) implements TaskContinuityMessageData {
+    List<HandoffActivityData> activities) implements TaskContinuityMessage {
 
     public static HandoffRequestResultMessage readFromProto(
         ProtoInputStream pis) throws IOException {

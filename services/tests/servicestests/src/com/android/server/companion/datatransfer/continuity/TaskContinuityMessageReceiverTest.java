@@ -41,6 +41,7 @@ import androidx.test.platform.app.InstrumentationRegistry;
 import com.android.server.companion.datatransfer.continuity.messages.ContinuityDeviceConnected;
 import com.android.server.companion.datatransfer.continuity.messages.RemoteTaskInfo;
 import com.android.server.companion.datatransfer.continuity.messages.TaskContinuityMessage;
+import com.android.server.companion.datatransfer.continuity.messages.TaskContinuityMessageSerializer;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -118,21 +119,16 @@ public class TaskContinuityMessageReceiverTest {
 
         // Send a message to the listener.
         int expectedAssociationId = 1;
-        ContinuityDeviceConnected expectedData = new ContinuityDeviceConnected(
+        ContinuityDeviceConnected expectedMessage = new ContinuityDeviceConnected(
                     List.of(new RemoteTaskInfo(1, "label", 1000, new byte[0])));
-        TaskContinuityMessage expectedMessage = new TaskContinuityMessage.Builder()
-            .setData(expectedData)
-            .build();
 
-        listener.onMessageReceived(expectedAssociationId, expectedMessage.toBytes());
+        listener.onMessageReceived(
+            expectedAssociationId,
+            TaskContinuityMessageSerializer.serialize(expectedMessage));
         TestableLooper.get(this).processAllMessages();
         assertThat(receivedMessages).hasSize(1);
-        TaskContinuityMessage receivedMessage = receivedMessages.get(0);
-        assertThat(receivedMessage.getData()).isInstanceOf(ContinuityDeviceConnected.class);
-        ContinuityDeviceConnected actualData
-            = (ContinuityDeviceConnected) receivedMessage.getData();
+        assertThat(receivedMessages.get(0)).isEqualTo(expectedMessage);
 
-        assertThat(actualData).isEqualTo(expectedData);
         // Stop listening, verifying the message listener is removed.
         mTaskContinuityMessageReceiver.stopListening();
         verify(mMockCompanionDeviceManagerService, times(1))

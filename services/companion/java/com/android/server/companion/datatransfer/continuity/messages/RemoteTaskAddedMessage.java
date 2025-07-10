@@ -26,7 +26,7 @@ import java.io.IOException;
 /**
  * Deserialized version of the {@link RemoteTaskAdded} proto.
  */
-public record RemoteTaskAddedMessage(RemoteTaskInfo task) implements TaskContinuityMessageData {
+public record RemoteTaskAddedMessage(RemoteTaskInfo task) implements TaskContinuityMessage {
 
     static RemoteTaskAddedMessage readFromProto(ProtoInputStream pis) throws IOException {
         RemoteTaskInfo task = null;

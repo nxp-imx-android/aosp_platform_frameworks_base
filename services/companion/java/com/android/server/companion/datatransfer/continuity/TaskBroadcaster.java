@@ -40,7 +40,7 @@ import com.android.server.companion.datatransfer.continuity.messages.RemoteTaskR
 import com.android.server.companion.datatransfer.continuity.messages.RemoteTaskUpdatedMessage;
 import com.android.server.companion.datatransfer.continuity.messages.RemoteTaskInfo;
 import com.android.server.companion.datatransfer.continuity.messages.TaskContinuityMessage;
-import com.android.server.companion.datatransfer.continuity.messages.TaskContinuityMessageData;
+import com.android.server.companion.datatransfer.continuity.messages.TaskContinuityMessageSerializer;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -195,31 +195,20 @@ class TaskBroadcaster
         sendMessage(associationId, deviceConnectedMessage);
     }
 
-    private void sendMessage(
-        int associationId,
-        TaskContinuityMessageData data) {
-
-        Slog.v(
-            TAG,
-            "Sending message to association id: "
-                + associationId);
-
-        TaskContinuityMessage message = new TaskContinuityMessage.Builder()
-                .setData(data)
-                .build();
+    private void sendMessage(int associationId, TaskContinuityMessage message) {
+        Slog.v(TAG, "Sending message to association id: " + associationId);
 
         try {
             mCompanionDeviceManager.sendMessage(
                 CompanionDeviceManager.MESSAGE_ONEWAY_TASK_CONTINUITY,
-                message.toBytes(),
+                TaskContinuityMessageSerializer.serialize(message),
                 new int[] {associationId});
         } catch (IOException e) {
             Slog.e(TAG, "Failed to send message to device " + associationId, e);
         }
     }
 
-    private void sendMessageToAllConnectedAssociations(
-        TaskContinuityMessageData data) {
+    private void sendMessageToAllConnectedAssociations(TaskContinuityMessage message) {
 
         Collection<AssociationInfo> connectedAssociations
             = mConnectedAssociationStore.getConnectedAssociations();
@@ -229,7 +218,7 @@ class TaskBroadcaster
             "Sending message to " + connectedAssociations.size() + " associations.");
 
         for (AssociationInfo associationInfo : connectedAssociations) {
-            sendMessage(associationInfo.getId(), data);
+            sendMessage(associationInfo.getId(), message);
         }
     }
 

@@ -124,7 +124,7 @@ public final class TaskContinuityManagerService extends SystemService {
 
         Slog.v(TAG, "Received message from association id: " + associationId);
 
-        switch (taskContinuityMessage.getData()) {
+        switch (taskContinuityMessage) {
             case ContinuityDeviceConnected continuityDeviceConnected:
                 mRemoteTaskStore.setTasks(
                     associationId,
