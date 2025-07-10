@@ -12579,10 +12579,6 @@ package android.provider {
     field public static final int ERROR_UNKNOWN = 0; // 0x0
   }
 
-  public static class CallLog.Calls implements android.provider.BaseColumns {
-    field @FlaggedApi("com.android.server.telecom.flags.integrated_call_logs") public static final String UUID = "uuid";
-  }
-
   @Deprecated public static final class ContactsContract.MetadataSync implements android.provider.BaseColumns android.provider.ContactsContract.MetadataSyncColumns {
     field @Deprecated public static final String CONTENT_ITEM_TYPE = "vnd.android.cursor.item/contact_metadata";
     field @Deprecated public static final String CONTENT_TYPE = "vnd.android.cursor.dir/contact_metadata";

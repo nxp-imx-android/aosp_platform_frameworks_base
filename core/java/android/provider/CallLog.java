@@ -1139,9 +1139,7 @@ public class CallLog {
          * using {@link android.telecom.CallControl#getCallId()} during the call session.
          *
          * <p>Type: TEXT</p>
-         * @hide
          */
-        @SystemApi
         @FlaggedApi(Flags.FLAG_INTEGRATED_CALL_LOGS)
         public static final String UUID = "uuid";
 
