@@ -42,7 +42,7 @@ public class BmgrOutputParser {
     private static final Pattern BACKUP_START_PATTERN =
             Pattern.compile("Running (.*?) backup for (.*?) packages.");
     private static final Pattern EVENT_PATTERN =
-            Pattern.compile("=> Event\\{(.*?)/(.*?) : package = (.*?)\\(v(.*?)\\)\\}");
+            Pattern.compile("=> Event\\{(.*?)/(.*?) : package = (.*?)\\(v(.*?)\\).*\\}");
     private static final Pattern PACKAGE_RESULT_PATTERN =
             Pattern.compile("Package (.*?) with result: (.*)");
     private static final Pattern BACKUP_FINISHED_PATTERN =
@@ -150,15 +150,14 @@ public class BmgrOutputParser {
         // -----------------------------------------------------------------------------------------
         // Errors due to the size of backup
 
-        // This isn’t treated as an error by BackupTransport. Here it is reported as an error to let
-        // the user decide whether this is intented or not.
+        // This isn’t treated as an error by BackupTransport. Here it is reported as an 'error' to
+        // let the user decide whether this is intented or not.
         sErrorEventInfoMap.put("NO_DATA_TO_SEND", "App did not provide any backup data.");
         sErrorEventInfoMap.put(
                 "ERROR_PREFLIGHT",
-                "Backup Preflight check failed. Either the estimated backup size is over quota or"
-                        + " there is nothing to backup. Please ensure that backup size is within "
-                        + "allowed quota (25MB for Cloud backups, 2GB for device-to-device "
-                        + "backups).");
+                "Backup Preflight check failed. Either the estimated backup size is over quota. "
+                        + "Please ensure that backup size is within allowed quota (25MB for Cloud "
+                        + "backups, 2GB for device-to-device backups).");
         sErrorEventInfoMap.put(
                 "QUOTA_HIT_PREFLIGHT",
                 "App hit quota limit for backup. Estimated backup size > quota (25MB for Cloud "

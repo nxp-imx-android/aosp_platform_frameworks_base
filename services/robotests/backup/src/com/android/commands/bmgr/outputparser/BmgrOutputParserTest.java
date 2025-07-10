@@ -53,7 +53,7 @@ public class BmgrOutputParserTest {
         String output =
                 "Running non-incremental backup for 2 requested packages.\n"
                         + "Package @pm@ with result: Success\n"
-                        + "=> Event{BACKUP_MANAGER_POLICY / ERROR_PREFLIGHT : package = com.example.backuprestore(v1)}\n"
+                        + "=> Event{BACKUP_MANAGER_POLICY / ERROR_PREFLIGHT : package = com.example.backuprestore(v1), other keys = android.app.backup.extra.LOG_PREFLIGHT_ERROR}\n"
                         + "Package com.example.backuprestore with result: Transport rejected package because it wasn't able to process it at the time\n"
                         + "Backup finished with result: Success";
 
@@ -71,7 +71,7 @@ public class BmgrOutputParserTest {
                         + "=> Event{TRANSPORT / UNKNOWN_ID : package = @pm@(v0)}\n"
                         + "Package @pm@ with result: Success\n"
                         + "=> Event{AGENT / AGENT_LOGGING_RESULTS : package = com.example.backuprestore(v1), results = []}\n"
-                        + "=> Event{BACKUP_MANAGER_POLICY / NO_DATA_TO_SEND : package = com.example.backuprestore(v1)}\n"
+                        + "=> Event{BACKUP_MANAGER_POLICY / NO_DATA_TO_SEND : package = com.example.backuprestore(v1), other keys = some.random.key}\n"
                         + "Package com.example.backuprestore with result: Success\n"
                         + "Backup finished with result: Success";
 
