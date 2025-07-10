@@ -192,7 +192,6 @@ public final class BugreportParams {
 
     /**
      * Flag for taking screenshots of all displays.
-     * @hide
      */
     @FlaggedApi(android.os.Flags.FLAG_BUGREPORT_MULTI_DISPLAY_SCREENSHOT_ENABLED)
     public static final int BUGREPORT_FLAG_CAPTURE_MULTI_DISPLAY_SCREENSHOT =
