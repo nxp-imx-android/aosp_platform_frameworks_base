@@ -126,7 +126,8 @@ class BackgroundLaunchProcessController {
         // Allow if the proc is instrumenting with background activity starts privs.
         if (checkConfiguration.checkOtherExemptions && hasBackgroundActivityStartPrivileges) {
             return new BalVerdict(BAL_ALLOW_PERMISSION, /*background*/
-                    "process instrumenting with background activity starts privileges");
+                    "process instrumenting with background activity starts privileges")
+                    .allowNewTask();
         }
         // Allow if the token is explicitly allowed.
         if (checkConfiguration.checkOtherExemptions) {
@@ -140,7 +141,8 @@ class BackgroundLaunchProcessController {
         // But still respect the appSwitchState.
         if (checkConfiguration.checkVisibility && appSwitchState != APP_SWITCH_DISALLOW
                 && isBoundByForegroundUid()) {
-            return new BalVerdict(BAL_ALLOW_BOUND_BY_FOREGROUND, "process bound by foreground uid");
+            return new BalVerdict(BAL_ALLOW_BOUND_BY_FOREGROUND, "process bound by foreground uid")
+                    .allowNewTask().setVisibleOrForeground();
         }
         // Allow if the caller has an activity in any foreground task, unless it's a pinned window
         // and not a foreground service start.
@@ -148,7 +150,7 @@ class BackgroundLaunchProcessController {
                 && checkConfiguration.checkOtherExemptions
                 && hasActivityInVisibleTask && appSwitchState != APP_SWITCH_DISALLOW) {
             return new BalVerdict(BAL_ALLOW_FOREGROUND, /*background*/
-                    "process has activity in foreground task");
+                    "process has activity in foreground task").setVisibleOrForeground();
         }
 
         // If app switching is not allowed, we ignore all the start activity grace period
@@ -198,7 +200,8 @@ class BackgroundLaunchProcessController {
                 for (int i = mBackgroundStartPrivileges.size(); i-- > 0; ) {
                     if (mBackgroundStartPrivileges.valueAt(i)
                             .allowsBackgroundActivityStarts()) {
-                        return new BalVerdict(BAL_ALLOW_TOKEN, "process allowed by token");
+                        return new BalVerdict(BAL_ALLOW_TOKEN, "process allowed by token")
+                                .allowNewTask();
                     }
                 }
                 return BalVerdict.BLOCK;
@@ -218,11 +221,12 @@ class BackgroundLaunchProcessController {
             }
             if (activityStartAllowed.token() == null) {
                 return new BalVerdict(BAL_ALLOW_TOKEN,
-                        "process allowed by callback (token ignored) tokens: " + binderTokens);
+                        "process allowed by callback (token ignored) tokens: " + binderTokens)
+                        .allowNewTask();
             }
             return new BalVerdict(BAL_ALLOW_NOTIFICATION_TOKEN,
                     "process allowed by callback (token: " + activityStartAllowed.token()
-                            + ") tokens: " + binderTokens);
+                            + ") tokens: " + binderTokens).allowNewTask();
         }
     }
 
