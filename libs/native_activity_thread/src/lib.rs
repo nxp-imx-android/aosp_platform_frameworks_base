@@ -17,6 +17,8 @@
 
 use log::{info, LevelFilter};
 
+mod task;
+
 /// Start NativeActivityThread to manage the process.
 pub fn run_native_activity_thread(start_seq: i64) -> ! {
     logger::init(

@@ -18,6 +18,19 @@ package {
     default_visibility: ["//system/zygote:__subpackages__"],
 }
 
+rust_bindgen {
+    name: "liblooper_bindgen",
+    crate_name: "looper_bindgen",
+    wrapper_src: "src/bindings/looper.h",
+    source_stem: "looper_bindings",
+    header_libs: [
+        "native_headers",
+    ],
+    shared_libs: [
+        "libandroid",
+    ],
+}
+
 rust_library {
     name: "libnative_activity_thread",
     crate_name: "native_activity_thread",
@@ -26,7 +39,12 @@ rust_library {
         "src/lib.rs",
     ],
     rustlibs: [
+        "activitymanager_structured_aidl-rust",
+        "libanyhow",
+        "libbinder_rs",
         "liblogger",
+        "liblibc",
         "liblog_rust",
+        "liblooper_bindgen",
     ],
 }
