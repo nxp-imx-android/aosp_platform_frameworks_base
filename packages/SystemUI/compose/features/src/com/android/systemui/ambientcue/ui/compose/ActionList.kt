@@ -21,6 +21,8 @@ import android.os.VibrationEffect.Composition.PRIMITIVE_LOW_TICK
 import android.os.VibrationEffect.Composition.PRIMITIVE_THUD
 import android.os.VibrationEffect.Composition.PRIMITIVE_TICK
 import android.os.Vibrator
+import android.view.Surface.ROTATION_270
+import android.view.Surface.ROTATION_90
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
@@ -92,6 +94,7 @@ fun ActionList(
     horizontalAlignment: Alignment.Horizontal = Alignment.CenterHorizontally,
     portrait: Boolean = true,
     pillCenter: Offset = Offset.Zero,
+    rotation: Int = 0,
 ) {
     val density = LocalDensity.current
     val minOverscrollDelta = (-8).dp
@@ -344,13 +347,26 @@ fun ActionList(
                                 translationY = (1f - translation) * appxColumnY
                                 translationX = 0f
                             } else {
-                                translationY = (1f - translation) * (appxColumnY - pillCenter.y)
-                                translationX = (1f - translation) * chipWidthPx.toFloat()
+                                if (rotation == ROTATION_90) {
+                                    translationY = (1f - translation) * (appxColumnY - pillCenter.y)
+                                    translationX = (1f - translation) * chipWidthPx.toFloat()
+                                } else if (rotation == ROTATION_270) {
+                                    translationY = (1f - translation) * (appxColumnY - pillCenter.y)
+                                    translationX = (translation - 1f) * chipWidthPx.toFloat()
+                                }
                             }
                             scaleX = scale
                             scaleY = scale
                             transformOrigin =
-                                if (portrait) TransformOrigin(0.5f, 1f) else TransformOrigin(1f, 0f)
+                                if (portrait) {
+                                    TransformOrigin(0.5f, 1f)
+                                } else {
+                                    if (rotation == ROTATION_90) {
+                                        TransformOrigin(1f, 0f)
+                                    } else {
+                                        TransformOrigin(0f, 0f)
+                                    }
+                                }
                         },
             )
         }
