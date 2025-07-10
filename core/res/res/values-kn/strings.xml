@@ -74,23 +74,15 @@
     <string name="page_size_compat_apk_warning" msgid="2982396798449041224">"ಈ ಆ್ಯಪ್‌ 16 KB ಗೆ ಹೊಂದಿಕೆಯಾಗುವುದಿಲ್ಲ. APK ಮತ್ತು ELF ಅಲೈನ್‌ಮೆಂಟ್ ಪರಿಶೀಲನೆಗಳು ವಿಫಲವಾಗಿವೆ ಪುಟದ ಗಾತ್ರಕ್ಕೆ ಹೊಂದಿಕೆಯಾಗುವ ಮೋಡ್ ಅನ್ನು ಬಳಸಿಕೊಂಡು ಆ್ಯಪ್ ಅನ್ನು ರನ್ ಮಾಡಲಾಗುತ್ತದೆ. ಉತ್ತಮ ಹೊಂದಾಣಿಕೆಗಾಗಿ, 16 KB ಗೆ ಬೆಂಬಲದೊಂದಿಗೆ ಆ್ಯಪ್ ಅನ್ನು ಮರುಕಂಪೈಲ್ ಮಾಡಿ. ಹೆಚ್ಚಿನ ಮಾಹಿತಿಗಾಗಿ, &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; ಅನ್ನು ನೋಡಿ"</string>
     <string name="page_size_compat_elf_warning" msgid="6753874059564812651">"ಈ ಆ್ಯಪ್‌ 16 KB ಗೆ ಹೊಂದಿಕೆಯಾಗುವುದಿಲ್ಲ. ELF ಅಲೈನ್‌ಮೆಂಟ್ ಪರಿಶೀಲನೆಗಳು ವಿಫಲವಾಗಿದೆ. ಪುಟದ ಗಾತ್ರಕ್ಕೆ ಹೊಂದಿಕೆಯಾಗುವ ಮೋಡ್ ಅನ್ನು ಬಳಸಿಕೊಂಡು ಆ್ಯಪ್ ಅನ್ನು ರನ್ ಮಾಡಲಾಗುತ್ತದೆ. ಉತ್ತಮ ಹೊಂದಾಣಿಕೆಗಾಗಿ, 16 KB ಗೆ ಬೆಂಬಲದೊಂದಿಗೆ ಆ್ಯಪ್ ಅನ್ನು ಮರುಕಂಪೈಲ್ ಮಾಡಿ. ಹೆಚ್ಚಿನ ಮಾಹಿತಿಗಾಗಿ, &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; ಅನ್ನು ನೋಡಿ"</string>
     <string name="page_size_compat_apk_and_elf_warning" msgid="7628675779500605390">"ಈ ಆ್ಯಪ್‌ 16 KB ಗೆ ಹೊಂದಿಕೆಯಾಗುವುದಿಲ್ಲ. APK ಮತ್ತು ELF ಅಲೈನ್‌ಮೆಂಟ್ ಪರಿಶೀಲನೆಗಳು ವಿಫಲವಾಗಿವೆ ಪುಟದ ಗಾತ್ರಕ್ಕೆ ಹೊಂದಿಕೆಯಾಗುವ ಮೋಡ್ ಅನ್ನು ಬಳಸಿಕೊಂಡು ಆ್ಯಪ್ ಅನ್ನು ರನ್ ಮಾಡಲಾಗುತ್ತದೆ. ಉತ್ತಮ ಹೊಂದಾಣಿಕೆಗಾಗಿ, 16 KB ಗೆ ಬೆಂಬಲದೊಂದಿಗೆ ಆ್ಯಪ್ ಅನ್ನು ಮರುಕಂಪೈಲ್ ಮಾಡಿ. ಹೆಚ್ಚಿನ ಮಾಹಿತಿಗಾಗಿ, &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; ಅನ್ನು ನೋಡಿ"</string>
-    <!-- no translation found for page_size_compat_apk_warning_4kb (1284527724160989424) -->
-    <skip />
-    <!-- no translation found for page_size_compat_elf_warning_4kb (5197745436304627728) -->
-    <skip />
-    <!-- no translation found for page_size_compat_apk_and_elf_warning_4kb (5626544342073325806) -->
-    <skip />
+    <string name="page_size_compat_apk_warning_4kb" msgid="6013674159459424986">"ಇದು ಡೀಬಗ್ ಮಾಡಬಹುದಾದ ಆ್ಯಪ್ ಆಗಿರುವುದರಿಂದ ಈ ಎಚ್ಚರಿಕೆಯನ್ನು ತೋರಿಸಲಾಗುತ್ತಿದೆ, ಇದನ್ನು ಪ್ರಸ್ತುತ ಪರೀಕ್ಷಿಸಲಾಗುತ್ತಿದೆ. ನೀವು ಡೆವಲಪರ್ ಅಲ್ಲದಿದ್ದರೆ, ಇದನ್ನು ಡೆವಲಪರ್‌ಗೆ ವರದಿ ಮಾಡಿ ಮತ್ತು ಡೀಬಗ್ ಮಾಡಲಾಗದ ಆ್ಯಪ್‌ಗಾಗಿ ಕೇಳಿ. &lt;br&gt;&lt;br&gt; ಈ ಆ್ಯಪ್ 16 KB ಗೆ ಹೊಂದಾಣಿಕೆಯಾಗುವುದಿಲ್ಲ. APK ಅಲೈನ್‌ಮೆಂಟ್ ಪರಿಶೀಲನೆ ವಿಫಲವಾಗಿದೆ. &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; ನಲ್ಲಿ ನೀಡಲಾಗಿರುವ ಹಂತಗಳನ್ನು ಅನುಸರಿಸಿ &lt;br&gt;&lt;br&gt; ಕೆಳಗಿನ ಲೈಬ್ರರಿಗಳನ್ನು 16 KB ಗೆ ಅಲೈನ್ ಮಾಡಲಾಗಿಲ್ಲ: &lt;br&gt;&lt;br&gt;"</string>
+    <string name="page_size_compat_elf_warning_4kb" msgid="5189541753040977649">"ಇದು ಡೀಬಗ್ ಮಾಡಬಹುದಾದ ಆ್ಯಪ್ ಆಗಿರುವುದರಿಂದ ಈ ಎಚ್ಚರಿಕೆಯನ್ನು ತೋರಿಸಲಾಗುತ್ತಿದೆ, ಇದನ್ನು ಪ್ರಸ್ತುತ ಪರೀಕ್ಷಿಸಲಾಗುತ್ತಿದೆ. ನೀವು ಡೆವಲಪರ್ ಅಲ್ಲದಿದ್ದರೆ, ಇದನ್ನು ಡೆವಲಪರ್‌ಗೆ ವರದಿ ಮಾಡಿ ಮತ್ತು ಡೀಬಗ್ ಮಾಡಲಾಗದ ಆ್ಯಪ್‌ಗಾಗಿ ಕೇಳಿ. &lt;br&gt;&lt;br&gt; ಈ ಆ್ಯಪ್ 16 KB ಗೆ ಹೊಂದಾಣಿಕೆಯಾಗುವುದಿಲ್ಲ. ELF ಅಲೈನ್‌ಮೆಂಟ್ ಪರಿಶೀಲನೆ ವಿಫಲವಾಗಿದೆ. &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; ನಲ್ಲಿ ನೀಡಲಾಗಿರುವ ಹಂತಗಳನ್ನು ಅನುಸರಿಸಿ &lt;br&gt;&lt;br&gt; ಕೆಳಗಿನ ಲೈಬ್ರರಿಗಳನ್ನು 16 KB ಗೆ ಅಲೈನ್ ಮಾಡಲಾಗಿಲ್ಲ: &lt;br&gt;&lt;br&gt;"</string>
+    <string name="page_size_compat_apk_and_elf_warning_4kb" msgid="7665028394400479058">"ಇದು ಡೀಬಗ್ ಮಾಡಬಹುದಾದ ಆ್ಯಪ್ ಆಗಿರುವುದರಿಂದ ಈ ಎಚ್ಚರಿಕೆಯನ್ನು ತೋರಿಸಲಾಗುತ್ತಿದೆ, ಇದನ್ನು ಪ್ರಸ್ತುತ ಪರೀಕ್ಷಿಸಲಾಗುತ್ತಿದೆ. ನೀವು ಡೆವಲಪರ್ ಅಲ್ಲದಿದ್ದರೆ, ಇದನ್ನು ಡೆವಲಪರ್‌ಗೆ ವರದಿ ಮಾಡಿ ಮತ್ತು ಡೀಬಗ್ ಮಾಡಲಾಗದ ಆ್ಯಪ್‌ಗಾಗಿ ಕೇಳಿ. &lt;br&gt;&lt;br&gt; ಈ ಆ್ಯಪ್ 16 KB ಗೆ ಹೊಂದಾಣಿಕೆಯಾಗುವುದಿಲ್ಲ. APK ಮತ್ತು ELF ಅಲೈನ್‌ಮೆಂಟ್ ಪರಿಶೀಲನೆಗಳು ವಿಫಲವಾಗಿವೆ. &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; ನಲ್ಲಿ ನೀಡಲಾಗಿರುವ ಹಂತಗಳನ್ನು ಅನುಸರಿಸಿ. &lt;br&gt;&lt;br&gt; ಕೆಳಗಿನ ಲೈಬ್ರರಿಗಳನ್ನು 16 KB ಗೆ ಅಲೈನ್ ಮಾಡಲಾಗಿಲ್ಲ: &lt;br&gt;&lt;br&gt;"</string>
     <string name="page_size_compat_never_show" msgid="3391282612422783097">"ಮತ್ತೊಮ್ಮೆ ತೋರಿಸಬೇಡಿ"</string>
-    <!-- no translation found for page_size_compat_title (6497719153872572204) -->
-    <skip />
-    <!-- no translation found for page_size_compat_elf_not_aligned (7940806102874132630) -->
-    <skip />
-    <!-- no translation found for page_size_compat_apk_not_aligned (8927901100655245528) -->
-    <skip />
-    <!-- no translation found for page_size_compat_apk_and_elf_not_aligned (1010371834741548905) -->
-    <skip />
-    <!-- no translation found for page_size_compat_unknown (3254222165646410528) -->
-    <skip />
+    <string name="page_size_compat_title" msgid="6497719153872572204">"Android ಆ್ಯಪ್‌ ಹೊಂದಾಣಿಕೆ"</string>
+    <string name="page_size_compat_elf_not_aligned" msgid="7940806102874132630">"&amp;#8226; %1$s : LOAD ಸೆಗ್ಮೆಂಟ್ ಅನ್ನು ಅಲೈನ್ ಮಾಡಲಾಗಿಲ್ಲ"</string>
+    <string name="page_size_compat_apk_not_aligned" msgid="8927901100655245528">"&amp;#8226; %1$s : ಸಂಕ್ಷೇಪಿಸದ ಲೈಬ್ರರಿಯನ್ನು ಅಲೈನ್‌ ಮಾಡಲಾಗಿಲ್ಲ"</string>
+    <string name="page_size_compat_apk_and_elf_not_aligned" msgid="1010371834741548905">"&amp;#8226; %1$s : LOAD ಸೆಗ್ಮೆಂಟ್ ಮತ್ತು ಸಂಕ್ಷೇಪಿಸದ ಲೈಬ್ರರಿಯನ್ನು ಅಲೈನ್ ಮಾಡಲಾಗಿಲ್ಲ"</string>
+    <string name="page_size_compat_unknown" msgid="3254222165646410528">"&amp;#8226; %1$s : ಅಪರಿಚಿತ ದೋಷ"</string>
     <string name="serviceNotProvisioned" msgid="8289333510236766193">"ಸೇವೆಯನ್ನು ಪೂರೈಸಲಾಗಿಲ್ಲ."</string>
     <string name="CLIRPermanent" msgid="166443681876381118">"ನೀವು ಕಾಲರ್‌ ID ಸೆಟ್ಟಿಂಗ್‌ ಬದಲಾಯಿಸಲು ಸಾಧ್ಯವಿಲ್ಲ."</string>
     <string name="auto_data_switch_title" msgid="3286350716870518297">"<xliff:g id="CARRIERDISPLAY">%s</xliff:g> ಗೆ ಡೇಟಾವನ್ನು ಬದಲಾಯಿಸಲಾಗಿದೆ"</string>
@@ -373,18 +365,12 @@
     <string name="permgroupdesc_sensors" msgid="2610631290633747752">"ನಿಮ್ಮ ಮುಖ್ಯ ಲಕ್ಷಣಗಳ ಕುರಿತು ಸೆನ್ಸಾರ್ ಡೇಟಾವನ್ನು ಪ್ರವೇಶಿಸಿ"</string>
     <string name="permgrouplab_notifications" msgid="5472972361980668884">"ನೋಟಿಫಿಕೇಶನ್‌ಗಳು"</string>
     <string name="permgroupdesc_notifications" msgid="4608679556801506580">"ಅಧಿಸೂಚನೆಗಳನ್ನು ತೋರಿಸಿ"</string>
-    <!-- no translation found for permgrouplab_xr_eye_sensitive (1709596126334620353) -->
-    <skip />
-    <!-- no translation found for permgroupdesc_xr_eye_sensitive (6050967250223079001) -->
-    <skip />
-    <!-- no translation found for permgrouplab_xr_tracking (766634536453394700) -->
-    <skip />
-    <!-- no translation found for permgroupdesc_xr_tracking (812429788288001595) -->
-    <skip />
-    <!-- no translation found for permgrouplab_xr_tracking_sensitive (4346975608010051186) -->
-    <skip />
-    <!-- no translation found for permgroupdesc_xr_tracking_sensitive (7925014193164562556) -->
-    <skip />
+    <string name="permgrouplab_xr_eye_sensitive" msgid="1709596126334620353">"ಐ ಟ್ರ್ಯಾಕಿಂಗ್ ಡೇಟಾ"</string>
+    <string name="permgroupdesc_xr_eye_sensitive" msgid="6050967250223079001">"ಕಣ್ಣಿನ ಚಲನೆಯನ್ನು ನಿಖರವಾಗಿ ಟ್ರ್ಯಾಕ್ ಮಾಡಿ"</string>
+    <string name="permgrouplab_xr_tracking" msgid="766634536453394700">"ಚಲನೆ ಮತ್ತು ಪ್ರದೇಶದ ಡೇಟಾ"</string>
+    <string name="permgroupdesc_xr_tracking" msgid="812429788288001595">"ಕಣ್ಣುಗಳು, ಮುಖ, ದೇಹ ಮತ್ತು ಸ್ಕ್ಯಾನ್ ಪ್ರದೇಶವನ್ನು ಟ್ರ್ಯಾಕ್ ಮಾಡಿ"</string>
+    <string name="permgrouplab_xr_tracking_sensitive" msgid="4346975608010051186">"ನಿಖರವಾದ ತಲೆಯ ಚಲನೆ ಮತ್ತು ಪ್ರದೇಶದ ಡೇಟಾ"</string>
+    <string name="permgroupdesc_xr_tracking_sensitive" msgid="7925014193164562556">"ತಲೆ ಮತ್ತು ಸ್ಕ್ಯಾನ್ ಪ್ರದೇಶವನ್ನು ನಿಖರವಾಗಿ ಟ್ರ್ಯಾಕ್ ಮಾಡಿ"</string>
     <string name="capability_title_canRetrieveWindowContent" msgid="7554282892101587296">"ವಿಂಡೋ ವಿಷಯವನ್ನು ಹಿಂಪಡೆಯುತ್ತದೆ"</string>
     <string name="capability_desc_canRetrieveWindowContent" msgid="6195610527625237661">"ನೀವು ಸಂವಹನ ನಡೆಸುತ್ತಿರುವ ವಿಂಡೋದ ಕಂಟೆಂಟ್ ಅನ್ನು ಪರೀಕ್ಷಿಸಿ."</string>
     <string name="capability_title_canRequestTouchExploration" msgid="327598364696316213">"ಸ್ಪರ್ಶ-ಎಕ್ಸ್‌ಪ್ಲೋರ್ ಆನ್ ಮಾಡುತ್ತದೆ"</string>
@@ -682,38 +668,22 @@
     <string name="permdesc_imagesWrite" msgid="5195054463269193317">"ನಿಮ್ಮ ಫೋಟೋ ಸಂಗ್ರಹಣೆಯನ್ನು ಮಾರ್ಪಡಿಸಲು ಆ್ಯಪ್‌ಗೆ ಅನುಮತಿಸುತ್ತದೆ."</string>
     <string name="permlab_mediaLocation" msgid="7368098373378598066">"ನಿಮ್ಮ ಮೀಡಿಯಾ ಸಂಗ್ರಹಣೆಯಿಂದ ಸ್ಥಳಗಳನ್ನು ಓದಿ"</string>
     <string name="permdesc_mediaLocation" msgid="597912899423578138">"ನಿಮ್ಮ ಮೀಡಿಯಾ ಸಂಗ್ರಹಣೆಯಿಂದ ಸ್ಥಳಗಳನ್ನು ಓದಲು ಆ್ಯಪ್‌ಗೆ ಅನುಮತಿಸುತ್ತದೆ."</string>
-    <!-- no translation found for permlab_eye_tracking_coarse (1266477998416112440) -->
-    <skip />
-    <!-- no translation found for permdesc_eye_tracking_coarse (1652112796672085320) -->
-    <skip />
-    <!-- no translation found for permlab_eye_tracking_fine (6208991021186455002) -->
-    <skip />
-    <!-- no translation found for permdesc_eye_tracking_fine (9215360948852654836) -->
-    <skip />
-    <!-- no translation found for permlab_face_tracking (6052126246676474909) -->
-    <skip />
-    <!-- no translation found for permdesc_face_tracking (185815778490412574) -->
-    <skip />
-    <!-- no translation found for permlab_hand_tracking (21944950887649088) -->
-    <skip />
-    <!-- no translation found for permdesc_hand_tracking (8083783248481460669) -->
-    <skip />
-    <!-- no translation found for permlab_head_tracking (4304699038992159853) -->
-    <skip />
-    <!-- no translation found for permdesc_head_tracking (2232184518548944223) -->
-    <skip />
-    <!-- no translation found for permlab_scene_understanding_coarse (8765236119358852920) -->
-    <skip />
-    <!-- no translation found for permdesc_scene_understanding_coarse (847344305502345475) -->
-    <skip />
-    <!-- no translation found for permlab_scene_understanding_fine (2899904960307462936) -->
-    <skip />
-    <!-- no translation found for permdesc_scene_understanding_fine (4848943859506977588) -->
-    <skip />
-    <!-- no translation found for permlab_xr_tracking_in_background (8659516810430027774) -->
-    <skip />
-    <!-- no translation found for permdesc_xr_tracking_in_background (3151744132692357005) -->
-    <skip />
+    <string name="permlab_eye_tracking_coarse" msgid="1266477998416112440">"ಕಣ್ಣಿನ ಚಲನೆಯನ್ನು ಟ್ರ್ಯಾಕ್ ಮಾಡಿ"</string>
+    <string name="permdesc_eye_tracking_coarse" msgid="1652112796672085320">"ನಿಮ್ಮ ನೋಟದ ಅಂದಾಜು ದಿಕ್ಕನ್ನು ಟ್ರ್ಯಾಕ್ ಮಾಡಲು ಆ್ಯಪ್ ಅನ್ನು ಅನುಮತಿಸುತ್ತದೆ."</string>
+    <string name="permlab_eye_tracking_fine" msgid="6208991021186455002">"ಕಣ್ಣಿನ ಚಲನೆಯನ್ನು ನಿಖರವಾಗಿ ಟ್ರ್ಯಾಕ್ ಮಾಡಿ"</string>
+    <string name="permdesc_eye_tracking_fine" msgid="9215360948852654836">"ನಿಮ್ಮ ನೋಟದ ದಿಕ್ಕನ್ನು ಟ್ರ್ಯಾಕ್ ಮಾಡಲು ಆ್ಯಪ್ ಅನ್ನು ಅನುಮತಿಸುತ್ತದೆ."</string>
+    <string name="permlab_face_tracking" msgid="6052126246676474909">"ಮುಖದ ಚಲನೆಗಳನ್ನು ಟ್ರ್ಯಾಕ್ ಮಾಡಿ"</string>
+    <string name="permdesc_face_tracking" msgid="185815778490412574">"ನಿಮ್ಮ ಮುಖದ ಚಲನೆಗಳು ಮತ್ತು ಅಭಿವ್ಯಕ್ತಿಗಳನ್ನು ಟ್ರ್ಯಾಕ್ ಮಾಡಲು ಆ್ಯಪ್ ಅನ್ನು ಅನುಮತಿಸುತ್ತದೆ."</string>
+    <string name="permlab_hand_tracking" msgid="21944950887649088">"ಕೈ ಚಲನೆಗಳನ್ನು ಟ್ರ್ಯಾಕ್ ಮಾಡಿ"</string>
+    <string name="permdesc_hand_tracking" msgid="8083783248481460669">"ನಿಮ್ಮ ಕೈ ಚಲನೆಗಳನ್ನು ಟ್ರ್ಯಾಕ್ ಮಾಡಲು ಆ್ಯಪ್ ಅನ್ನು ಅನುಮತಿಸುತ್ತದೆ."</string>
+    <string name="permlab_head_tracking" msgid="4304699038992159853">"ತಲೆಯ ಚಲನೆಗಳನ್ನು ಟ್ರ್ಯಾಕ್ ಮಾಡಿ"</string>
+    <string name="permdesc_head_tracking" msgid="2232184518548944223">"ನಿಮ್ಮ ತಲೆಯ ಚಲನೆಗಳನ್ನು ಟ್ರ್ಯಾಕ್ ಮಾಡಲು ಆ್ಯಪ್ ಅನ್ನು ಅನುಮತಿಸುತ್ತದೆ."</string>
+    <string name="permlab_scene_understanding_coarse" msgid="8765236119358852920">"ನಿಮ್ಮ ಸುತ್ತಮುತ್ತಲಿನ ಪ್ರದೇಶವನ್ನು ಸ್ಕ್ಯಾನ್ ಮಾಡಿ"</string>
+    <string name="permdesc_scene_understanding_coarse" msgid="847344305502345475">"ನಿಮ್ಮ ಸುತ್ತಮುತ್ತಲಿನ ಪ್ರದೇಶಗಳನ್ನು ಸ್ಕ್ಯಾನ್ ಮಾಡಲು ಆ್ಯಪ್ ಅನ್ನು ಅನುಮತಿಸುತ್ತದೆ."</string>
+    <string name="permlab_scene_understanding_fine" msgid="2899904960307462936">"ನಿಮ್ಮ ಸುತ್ತಮುತ್ತಲಿನ ಪ್ರದೇಶವನ್ನು ನಿಖರವಾಗಿ ಸ್ಕ್ಯಾನ್ ಮಾಡಿ"</string>
+    <string name="permdesc_scene_understanding_fine" msgid="4848943859506977588">"ನಿಮ್ಮ ಸುತ್ತಮುತ್ತಲಿನ ಪ್ರದೇಶಗಳನ್ನು ನಿಖರವಾಗಿ ಸ್ಕ್ಯಾನ್ ಮಾಡಲು ಆ್ಯಪ್ ಅನ್ನು ಅನುಮತಿಸುತ್ತದೆ."</string>
+    <string name="permlab_xr_tracking_in_background" msgid="8659516810430027774">"ಹಿನ್ನೆಲೆಯಲ್ಲಿ XR ಡೇಟಾವನ್ನು ಟ್ರ್ಯಾಕ್ ಮಾಡಿ"</string>
+    <string name="permdesc_xr_tracking_in_background" msgid="3151744132692357005">"ಹಿನ್ನೆಲೆಯಲ್ಲಿ XR ಡೇಟಾವನ್ನು ಆ್ಯಕ್ಸೆಸ್ ಮಾಡಲು ಆ್ಯಪ್ ಅನ್ನು ಅನುಮತಿಸುತ್ತದೆ."</string>
     <string name="permlab_capture_keyboard" msgid="4076894823382693032">"ಕ್ಯಾಪ್ಚರ್ ಕೀಗಳು"</string>
     <string name="permdesc_capture_keyboard" msgid="4192269470684407219">"ಸಿಸ್ಟಂ ಶಾರ್ಟ್‌ಕಟ್‌ಗಳು ಮತ್ತು ಆ್ಯಕ್ಷನ್‌ಗಳನ್ನು ಸಿಸ್ಟಂ ಪ್ರಾಸೆಸ್ ಮಾಡುವ ಮೊದಲು ಕೀಗಳನ್ನು ಕ್ಯಾಪ್ಚರ್ ಮಾಡಲು ಆ್ಯಪ್‌ಗೆ ಅನುಮತಿಸುತ್ತದೆ."</string>
     <string name="biometric_app_setting_name" msgid="3339209978734534457">"ಬಯೋಮೆಟ್ರಿಕ್ಸ್ ಬಳಸಿ"</string>
@@ -944,6 +914,8 @@
     <string name="policydesc_disableCamera" msgid="3204405908799676104">"ಎಲ್ಲಾ ಸಾಧನ ಕ್ಯಾಮರಾಗಳ ಬಳಕೆಯನ್ನು ತಡೆಯಿರಿ."</string>
     <string name="policylab_disableKeyguardFeatures" msgid="5071855750149949741">"ಕೆಲವು ಸ್ಕ್ರೀನ್ ಲಾಕ್ ವೈಶಿಷ್ಟ್ಯಗಳನ್ನು ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಿ"</string>
     <string name="policydesc_disableKeyguardFeatures" msgid="6641673177041195957">"ಕೆಲವು ಸ್ಕ್ರೀನ್ ಲಾಕ್‌ನ ವೈಶಿಷ್ಟ್ಯಗಳ ಬಳಕೆಯನ್ನು ತಡೆಯಿರಿ."</string>
+    <!-- no translation found for exit_toast_on_long_press_escape (873907401529125943) -->
+    <skip />
   <string-array name="phoneTypes">
     <item msgid="8996339953292723951">"ಮನೆ"</item>
     <item msgid="7740243458912727194">"ಮೊಬೈಲ್"</item>
@@ -2596,6 +2568,7 @@
     <string name="keyboard_shortcut_group_applications_calendar" msgid="3571770335653387606">"Calendar"</string>
     <string name="keyboard_shortcut_group_applications_calculator" msgid="6753209559716091507">"ಕ್ಯಾಲ್ಕ್ಯುಲೇಟರ್"</string>
     <string name="keyboard_shortcut_group_applications_maps" msgid="7950000659522589471">"Maps"</string>
+    <string name="keyboard_shortcut_group_applications_files" msgid="863938400765838051">"Files"</string>
     <string name="keyboard_shortcut_group_applications" msgid="3010389163951364798">"ಆ್ಯಪ್‌ಗಳು"</string>
     <string name="fingerprint_loe_notification_msg" msgid="3927447270148854546">"ನಿಮ್ಮ ಫಿಂಗರ್‌ಪ್ರಿಂಟ್‌ಗಳನ್ನು ಇನ್ನು ಮುಂದೆ ಗುರುತಿಸಲಾಗುವುದಿಲ್ಲ. ಫಿಂಗರ್‌ಪ್ರಿಂಟ್ ಅನ್‌ಲಾಕ್ ಅನ್ನು ಮತ್ತೊಮ್ಮೆ ಸೆಟಪ್ ಮಾಡಿ."</string>
     <string name="usb_apm_usb_plugged_in_when_locked_notification_app_title" msgid="285421860627714333">"ಭದ್ರತೆ ಮತ್ತು ಗೌಪ್ಯತೆ"</string>
@@ -2615,6 +2588,5 @@
     <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"ಫಿಂಗರ್‌ಪ್ರಿಂಟ್ ಅನ್‌ಲಾಕ್‌ನಲ್ಲಿ ತೊಂದರೆ ಇದೆಯೇ?"</string>
     <string name="fingerprint_frr_notification_msg" msgid="2162966846624639252">"ನಿಮ್ಮ ಅನ್‌ಲಾಕ್ ಮಾಡುವಿಕೆ ಅನುಭವವನ್ನು ಸುಧಾರಿಸಲು ಸಲಹೆಗಳನ್ನು ಪರಿಶೀಲಿಸಲು ಟ್ಯಾಪ್ ಮಾಡಿ"</string>
     <string name="no_blink_accessibility_text_cursor_blink_label" msgid="223072797385428874">"ಬ್ಲಿಂಕ್ ಮಾಡಬೇಡಿ"</string>
-    <!-- no translation found for long_press_power_to_turn_off_tv_toast (2231397748028498986) -->
-    <skip />
+    <string name="long_press_power_to_turn_off_tv_toast" msgid="2231397748028498986">"ಟಿವಿ ಆಫ್ ಮಾಡಲು ಪವರ್ ಬಟನ್ ಅನ್ನು ಲಾಂಗ್ ಪ್ರೆಸ್ ಮಾಡಿ"</string>
 </resources>

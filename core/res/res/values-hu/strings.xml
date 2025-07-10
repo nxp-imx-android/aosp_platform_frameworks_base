@@ -74,23 +74,15 @@
     <string name="page_size_compat_apk_warning" msgid="2982396798449041224">"Ez az alkalmazás nem kompatibilis a 16 kB-os mérettel. Az APK-igazítási ellenőrzés sikertelen volt. Ez az app az oldalméret-kompatibilis mód használatával fog futni. A legjobb kompatibilitás érdekében fordítsa újra az alkalmazást 16 kB-os támogatással. További információ: &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
     <string name="page_size_compat_elf_warning" msgid="6753874059564812651">"Ez az alkalmazás nem kompatibilis a 16 kB-os mérettel. Az ELF-igazítási ellenőrzés sikertelen. Ez az app az oldalméret-kompatibilis mód használatával fog futni. A legjobb kompatibilitás érdekében fordítsa újra az alkalmazást 16 kB-os támogatással. További információ: &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
     <string name="page_size_compat_apk_and_elf_warning" msgid="7628675779500605390">"Ez az alkalmazás nem kompatibilis a 16 kB-os mérettel. Az APK- és ELF-igazítási ellenőrzések sikertelenek voltak. Ez az app az oldalméret-kompatibilis mód használatával fog futni. A legjobb kompatibilitás érdekében fordítsa újra az alkalmazást 16 kB-os támogatással. További információ: &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
-    <!-- no translation found for page_size_compat_apk_warning_4kb (1284527724160989424) -->
-    <skip />
-    <!-- no translation found for page_size_compat_elf_warning_4kb (5197745436304627728) -->
-    <skip />
-    <!-- no translation found for page_size_compat_apk_and_elf_warning_4kb (5626544342073325806) -->
-    <skip />
+    <string name="page_size_compat_apk_warning_4kb" msgid="6013674159459424986">"Ez a figyelmeztetés azért látható, mert ez egy hibaelhárításra alkalmas alkalmazás, amely jelenleg tesztelés alatt áll. Ha nem Ön a fejlesztő, jelentse ezt a fejlesztőnek, és kérjen egy olyan alkalmazást, amely nem alkalmas hibaelhárításra. &lt;br&gt;&lt;br&gt; Ez az alkalmazás nem kompatibilis a 16 kB-os mérettel. Az APK-igazítási ellenőrzés sikertelen volt. Kövesse a következő oldalon található lépéseket: &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; &lt;br&gt;&lt;br&gt; A következő könyvtárak nincsenek 16 kB-ra igazítva: &lt;br&gt;&lt;br&gt;"</string>
+    <string name="page_size_compat_elf_warning_4kb" msgid="5189541753040977649">"Ez a figyelmeztetés azért látható, mert ez egy hibaelhárításra alkalmas alkalmazás, amely jelenleg tesztelés alatt áll. Ha nem Ön a fejlesztő, jelentse ezt a fejlesztőnek, és kérjen egy olyan alkalmazást, amely nem alkalmas hibaelhárításra. &lt;br&gt;&lt;br&gt; Ez az alkalmazás nem kompatibilis a 16 kB-os mérettel. Az ELF-igazítási ellenőrzés sikertelen. Kövesse a következő oldalon található lépéseket: &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; &lt;br&gt;&lt;br&gt; A következő könyvtárak nincsenek 16 kB-ra igazítva: &lt;br&gt;&lt;br&gt;"</string>
+    <string name="page_size_compat_apk_and_elf_warning_4kb" msgid="7665028394400479058">"Ez a figyelmeztetés azért látható, mert ez egy hibaelhárításra alkalmas alkalmazás, amely jelenleg tesztelés alatt áll. Ha nem Ön a fejlesztő, jelentse ezt a fejlesztőnek, és kérjen egy olyan alkalmazást, amely nem alkalmas hibaelhárításra. &lt;br&gt;&lt;br&gt; Ez az alkalmazás nem kompatibilis a 16 kB-os mérettel. Az APK- és ELF-igazítási ellenőrzések sikertelenek voltak. Kövesse a következő oldalon található lépéseket: &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;. &lt;br&gt;&lt;br&gt; A következő könyvtárak nincsenek 16 kB-ra kiigazítva: &lt;br&gt;&lt;br&gt;"</string>
     <string name="page_size_compat_never_show" msgid="3391282612422783097">"Ne jelenjen meg többé"</string>
-    <!-- no translation found for page_size_compat_title (6497719153872572204) -->
-    <skip />
-    <!-- no translation found for page_size_compat_elf_not_aligned (7940806102874132630) -->
-    <skip />
-    <!-- no translation found for page_size_compat_apk_not_aligned (8927901100655245528) -->
-    <skip />
-    <!-- no translation found for page_size_compat_apk_and_elf_not_aligned (1010371834741548905) -->
-    <skip />
-    <!-- no translation found for page_size_compat_unknown (3254222165646410528) -->
-    <skip />
+    <string name="page_size_compat_title" msgid="6497719153872572204">"Android-alkalmazás kompatibilitása"</string>
+    <string name="page_size_compat_elf_not_aligned" msgid="7940806102874132630">"&amp;#8226; %1$s : A LOAD szegmens nincs igazítva"</string>
+    <string name="page_size_compat_apk_not_aligned" msgid="8927901100655245528">"&amp;#8226; %1$s : A tömörítetlen könyvtár nincs igazítva"</string>
+    <string name="page_size_compat_apk_and_elf_not_aligned" msgid="1010371834741548905">"&amp;#8226; %1$s : A LOAD szegmens és a tömörítetlen könyvtár nincs igazítva"</string>
+    <string name="page_size_compat_unknown" msgid="3254222165646410528">"&amp;#8226; %1$s : Ismeretlen hiba"</string>
     <string name="serviceNotProvisioned" msgid="8289333510236766193">"A szolgáltatás nincs biztosítva."</string>
     <string name="CLIRPermanent" msgid="166443681876381118">"Nem tudja módosítani a hívó fél azonosítója beállítást."</string>
     <string name="auto_data_switch_title" msgid="3286350716870518297">"Adatforgalom átváltva a következőre: <xliff:g id="CARRIERDISPLAY">%s</xliff:g>"</string>
@@ -373,18 +365,12 @@
     <string name="permgroupdesc_sensors" msgid="2610631290633747752">"az érzékelők által mért, életjelekkel kapcsolatos adatok elérése"</string>
     <string name="permgrouplab_notifications" msgid="5472972361980668884">"Értesítések"</string>
     <string name="permgroupdesc_notifications" msgid="4608679556801506580">"értesítések megjelenítése"</string>
-    <!-- no translation found for permgrouplab_xr_eye_sensitive (1709596126334620353) -->
-    <skip />
-    <!-- no translation found for permgroupdesc_xr_eye_sensitive (6050967250223079001) -->
-    <skip />
-    <!-- no translation found for permgrouplab_xr_tracking (766634536453394700) -->
-    <skip />
-    <!-- no translation found for permgroupdesc_xr_tracking (812429788288001595) -->
-    <skip />
-    <!-- no translation found for permgrouplab_xr_tracking_sensitive (4346975608010051186) -->
-    <skip />
-    <!-- no translation found for permgroupdesc_xr_tracking_sensitive (7925014193164562556) -->
-    <skip />
+    <string name="permgrouplab_xr_eye_sensitive" msgid="1709596126334620353">"Szemkövetési adatok"</string>
+    <string name="permgroupdesc_xr_eye_sensitive" msgid="6050967250223079001">"szemmozgás pontos nyomon követése"</string>
+    <string name="permgrouplab_xr_tracking" msgid="766634536453394700">"Mozgási és környezetadatok"</string>
+    <string name="permgroupdesc_xr_tracking" msgid="812429788288001595">"szem, arc és test nyomon követése, valamint a környezet felmérése"</string>
+    <string name="permgrouplab_xr_tracking_sensitive" msgid="4346975608010051186">"Pontos fejmozgás- és környezetadatok"</string>
+    <string name="permgroupdesc_xr_tracking_sensitive" msgid="7925014193164562556">"fej pontos nyomon követése és a környezet felmérése"</string>
     <string name="capability_title_canRetrieveWindowContent" msgid="7554282892101587296">"Ablaktartalom lekérdezése"</string>
     <string name="capability_desc_canRetrieveWindowContent" msgid="6195610527625237661">"A használt ablak tartalmának vizsgálata."</string>
     <string name="capability_title_canRequestTouchExploration" msgid="327598364696316213">"Felfedezés érintéssel bekapcsolása"</string>
@@ -682,38 +668,22 @@
     <string name="permdesc_imagesWrite" msgid="5195054463269193317">"Engedélyezi az alkalmazásnak a fényképgyűjtemény módosítását."</string>
     <string name="permlab_mediaLocation" msgid="7368098373378598066">"helyek olvasása a médiagyűjteményből"</string>
     <string name="permdesc_mediaLocation" msgid="597912899423578138">"Engedélyezi az alkalmazásnak a helyek médiagyűjteményből való olvasását."</string>
-    <!-- no translation found for permlab_eye_tracking_coarse (1266477998416112440) -->
-    <skip />
-    <!-- no translation found for permdesc_eye_tracking_coarse (1652112796672085320) -->
-    <skip />
-    <!-- no translation found for permlab_eye_tracking_fine (6208991021186455002) -->
-    <skip />
-    <!-- no translation found for permdesc_eye_tracking_fine (9215360948852654836) -->
-    <skip />
-    <!-- no translation found for permlab_face_tracking (6052126246676474909) -->
-    <skip />
-    <!-- no translation found for permdesc_face_tracking (185815778490412574) -->
-    <skip />
-    <!-- no translation found for permlab_hand_tracking (21944950887649088) -->
-    <skip />
-    <!-- no translation found for permdesc_hand_tracking (8083783248481460669) -->
-    <skip />
-    <!-- no translation found for permlab_head_tracking (4304699038992159853) -->
-    <skip />
-    <!-- no translation found for permdesc_head_tracking (2232184518548944223) -->
-    <skip />
-    <!-- no translation found for permlab_scene_understanding_coarse (8765236119358852920) -->
-    <skip />
-    <!-- no translation found for permdesc_scene_understanding_coarse (847344305502345475) -->
-    <skip />
-    <!-- no translation found for permlab_scene_understanding_fine (2899904960307462936) -->
-    <skip />
-    <!-- no translation found for permdesc_scene_understanding_fine (4848943859506977588) -->
-    <skip />
-    <!-- no translation found for permlab_xr_tracking_in_background (8659516810430027774) -->
-    <skip />
-    <!-- no translation found for permdesc_xr_tracking_in_background (3151744132692357005) -->
-    <skip />
+    <string name="permlab_eye_tracking_coarse" msgid="1266477998416112440">"szemmozgás nyomon követése"</string>
+    <string name="permdesc_eye_tracking_coarse" msgid="1652112796672085320">"Lehetővé teszi az alkalmazás számára a tekintet hozzávetőleges irányának nyomon követését."</string>
+    <string name="permlab_eye_tracking_fine" msgid="6208991021186455002">"szemmozgás pontos nyomon követése"</string>
+    <string name="permdesc_eye_tracking_fine" msgid="9215360948852654836">"Lehetővé teszi az alkalmazás számára a tekintet irányának nyomon követését."</string>
+    <string name="permlab_face_tracking" msgid="6052126246676474909">"mimika nyomon követése"</string>
+    <string name="permdesc_face_tracking" msgid="185815778490412574">"Lehetővé teszi az alkalmazás számára az arcmimika és az arckifejezések nyomon követését."</string>
+    <string name="permlab_hand_tracking" msgid="21944950887649088">"kézmozdulatok követése"</string>
+    <string name="permdesc_hand_tracking" msgid="8083783248481460669">"Lehetővé teszi az alkalmazás számára a kézmozdulatok nyomon követését."</string>
+    <string name="permlab_head_tracking" msgid="4304699038992159853">"fejmozdulatok követése"</string>
+    <string name="permdesc_head_tracking" msgid="2232184518548944223">"Lehetővé teszi az alkalmazás számára a fejmozgás nyomon követését."</string>
+    <string name="permlab_scene_understanding_coarse" msgid="8765236119358852920">"környező terület felmérése"</string>
+    <string name="permdesc_scene_understanding_coarse" msgid="847344305502345475">"Lehetővé teszi az alkalmazás számára a környezet felmérését."</string>
+    <string name="permlab_scene_understanding_fine" msgid="2899904960307462936">"környező terület pontos felmérése"</string>
+    <string name="permdesc_scene_understanding_fine" msgid="4848943859506977588">"Lehetővé teszi az alkalmazás számára a környezet pontos felmérését."</string>
+    <string name="permlab_xr_tracking_in_background" msgid="8659516810430027774">"XR-adatok követése a háttérben"</string>
+    <string name="permdesc_xr_tracking_in_background" msgid="3151744132692357005">"Lehetővé teszi az alkalmazás számára, hogy hozzáférjen az XR-adatokhoz a háttérben."</string>
     <string name="permlab_capture_keyboard" msgid="4076894823382693032">"billentyűk rögzítése"</string>
     <string name="permdesc_capture_keyboard" msgid="4192269470684407219">"Lehetővé teszi az alkalmazás számára, hogy rögzítse a billentyűket, mielőtt a rendszer feldolgozhatja a rendszer billentyűparancsait és műveleteit."</string>
     <string name="biometric_app_setting_name" msgid="3339209978734534457">"Biometriai feloldás használata"</string>
@@ -944,6 +914,8 @@
     <string name="policydesc_disableCamera" msgid="3204405908799676104">"Az összes eszközkamera használatának megakadályozása."</string>
     <string name="policylab_disableKeyguardFeatures" msgid="5071855750149949741">"Egyes képernyőzár-funkciók használatának kikapcsolása"</string>
     <string name="policydesc_disableKeyguardFeatures" msgid="6641673177041195957">"Egyes képernyőzár-funkciók használatának megakadályozása."</string>
+    <!-- no translation found for exit_toast_on_long_press_escape (873907401529125943) -->
+    <skip />
   <string-array name="phoneTypes">
     <item msgid="8996339953292723951">"Otthoni"</item>
     <item msgid="7740243458912727194">"Mobil"</item>
@@ -2596,6 +2568,7 @@
     <string name="keyboard_shortcut_group_applications_calendar" msgid="3571770335653387606">"Naptár"</string>
     <string name="keyboard_shortcut_group_applications_calculator" msgid="6753209559716091507">"Számológép"</string>
     <string name="keyboard_shortcut_group_applications_maps" msgid="7950000659522589471">"Térkép"</string>
+    <string name="keyboard_shortcut_group_applications_files" msgid="863938400765838051">"Fájlok"</string>
     <string name="keyboard_shortcut_group_applications" msgid="3010389163951364798">"Alkalmazások"</string>
     <string name="fingerprint_loe_notification_msg" msgid="3927447270148854546">"Az ujjlenyomata már nem ismerhető fel. Állítsa be újra a Feloldás ujjlenyomattal funkciót."</string>
     <string name="usb_apm_usb_plugged_in_when_locked_notification_app_title" msgid="285421860627714333">"Biztonság és adatvédelem"</string>
@@ -2615,6 +2588,5 @@
     <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"Problémája adódott a Feloldás ujjlenyomattal funkcióval?"</string>
     <string name="fingerprint_frr_notification_msg" msgid="2162966846624639252">"Koppintson a feloldási élmény javítását segítő tippek megtekintéséhez"</string>
     <string name="no_blink_accessibility_text_cursor_blink_label" msgid="223072797385428874">"Nincs villogás"</string>
-    <!-- no translation found for long_press_power_to_turn_off_tv_toast (2231397748028498986) -->
-    <skip />
+    <string name="long_press_power_to_turn_off_tv_toast" msgid="2231397748028498986">"A tévé kikapcsolásához nyomja meg hosszan a bekapcsológombot"</string>
 </resources>

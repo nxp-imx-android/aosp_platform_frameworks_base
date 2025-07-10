@@ -74,23 +74,15 @@
     <string name="page_size_compat_apk_warning" msgid="2982396798449041224">"Hierdie app is nie versoenbaar met 16 KB nie. APK-belyningkontrole het misluk. Hierdie app sal met bladsygrootteversoenbare modus gebruik word. Stel asseblief weer die app met 16 KB-ondersteuning saam vir beste versoenbaarheid. Sien &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; vir meer inligting"</string>
     <string name="page_size_compat_elf_warning" msgid="6753874059564812651">"Hierdie app is nie versoenbaar met 16 KB nie. ELF-belyningkontrole het misluk. Hierdie app sal met bladsygrootteversoenbare modus gebruik word. Stel asseblief weer die app met 16 KB-ondersteuning saam vir beste versoenbaarheid. Sien &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; vir meer inligting"</string>
     <string name="page_size_compat_apk_and_elf_warning" msgid="7628675779500605390">"Hierdie app is nie versoenbaar met 16 KB nie. APK- ELF-belyningkontroles het misluk. Hierdie app sal met bladsygrootteversoenbare modus gebruik word. Stel asseblief weer die app met 16 KB-ondersteuning saam vir beste versoenbaarheid. Sien &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; vir meer inligting"</string>
-    <!-- no translation found for page_size_compat_apk_warning_4kb (1284527724160989424) -->
-    <skip />
-    <!-- no translation found for page_size_compat_elf_warning_4kb (5197745436304627728) -->
-    <skip />
-    <!-- no translation found for page_size_compat_apk_and_elf_warning_4kb (5626544342073325806) -->
-    <skip />
+    <string name="page_size_compat_apk_warning_4kb" msgid="6013674159459424986">"Hierdie waarskuwing word gewys omdat dit ’n ontfoutbare app is wat tans getoets word. As jy nie die ontwikkelaar is nie, kan jy dit aan die ontwikkelaar rapporteer en vra vir ’n nieontfoutbare app. &lt;br&gt;&lt;br&gt; Hierdie app is nie 16 KB-versoenbaar nie. APK-belyningkontrole het misluk. Volg die stappe op &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; &lt;br&gt;&lt;br&gt; Die volgende biblioteke is nie 16 KB-belyn nie: &lt;br&gt;&lt;br&gt;"</string>
+    <string name="page_size_compat_elf_warning_4kb" msgid="5189541753040977649">"Hierdie waarskuwing word gewys omdat dit ’n ontfoutbare app is wat tans getoets word. As jy nie die ontwikkelaar is nie, kan jy dit aan die ontwikkelaar rapporteer en vra vir ’n nieontfoutbare app. &lt;br&gt;&lt;br&gt; Hierdie app is nie 16 KB-versoenbaar nie. ELF-belyningkontrole het misluk. Volg die stappe op &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; &lt;br&gt;&lt;br&gt; Die volgende biblioteke is nie 16 KB-belyn nie: &lt;br&gt;&lt;br&gt;"</string>
+    <string name="page_size_compat_apk_and_elf_warning_4kb" msgid="7665028394400479058">"Hierdie waarskuwing word gewys omdat dit ’n ontfoutbare app is wat tans getoets word. As jy nie die ontwikkelaar is nie, kan jy dit aan die ontwikkelaar rapporteer en vra vir ’n nieontfoutbare app. &lt;br&gt;&lt;br&gt; Hierdie app is nie 16 KB-versoenbaar nie. APK- en ELF-belyningkontroles het misluk. Volg die stappe op &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;. &lt;br&gt;&lt;br&gt; Die volgende biblioteke is nie 16 KB-belyn nie: &lt;br&gt;&lt;br&gt;"</string>
     <string name="page_size_compat_never_show" msgid="3391282612422783097">"Moenie weer wys nie"</string>
-    <!-- no translation found for page_size_compat_title (6497719153872572204) -->
-    <skip />
-    <!-- no translation found for page_size_compat_elf_not_aligned (7940806102874132630) -->
-    <skip />
-    <!-- no translation found for page_size_compat_apk_not_aligned (8927901100655245528) -->
-    <skip />
-    <!-- no translation found for page_size_compat_apk_and_elf_not_aligned (1010371834741548905) -->
-    <skip />
-    <!-- no translation found for page_size_compat_unknown (3254222165646410528) -->
-    <skip />
+    <string name="page_size_compat_title" msgid="6497719153872572204">"Versoenbaarheid van Android-app"</string>
+    <string name="page_size_compat_elf_not_aligned" msgid="7940806102874132630">"&amp;#8226; %1$s : LAAI-segment is nie belyn nie"</string>
+    <string name="page_size_compat_apk_not_aligned" msgid="8927901100655245528">"&amp;#8226; %1$s : Onsaamgeperste biblioteek is nie belyn nie"</string>
+    <string name="page_size_compat_apk_and_elf_not_aligned" msgid="1010371834741548905">"&amp;#8226; %1$s : LAAI-segment en onsaamgeperste biblioteek is nie belyn nie"</string>
+    <string name="page_size_compat_unknown" msgid="3254222165646410528">"&amp;#8226; %1$s : Onbekende fout"</string>
     <string name="serviceNotProvisioned" msgid="8289333510236766193">"Diens nie verskaf nie."</string>
     <string name="CLIRPermanent" msgid="166443681876381118">"Jy kan nie die beller-ID-instelling verander nie."</string>
     <string name="auto_data_switch_title" msgid="3286350716870518297">"Het data oorgeskakel na <xliff:g id="CARRIERDISPLAY">%s</xliff:g>"</string>
@@ -373,18 +365,12 @@
     <string name="permgroupdesc_sensors" msgid="2610631290633747752">"toegang te verkry tot sensordata oor jou lewenstekens"</string>
     <string name="permgrouplab_notifications" msgid="5472972361980668884">"Kennisgewings"</string>
     <string name="permgroupdesc_notifications" msgid="4608679556801506580">"wys kennisgewings"</string>
-    <!-- no translation found for permgrouplab_xr_eye_sensitive (1709596126334620353) -->
-    <skip />
-    <!-- no translation found for permgroupdesc_xr_eye_sensitive (6050967250223079001) -->
-    <skip />
-    <!-- no translation found for permgrouplab_xr_tracking (766634536453394700) -->
-    <skip />
-    <!-- no translation found for permgroupdesc_xr_tracking (812429788288001595) -->
-    <skip />
-    <!-- no translation found for permgrouplab_xr_tracking_sensitive (4346975608010051186) -->
-    <skip />
-    <!-- no translation found for permgroupdesc_xr_tracking_sensitive (7925014193164562556) -->
-    <skip />
+    <string name="permgrouplab_xr_eye_sensitive" msgid="1709596126334620353">"Oogkontroleringdata"</string>
+    <string name="permgroupdesc_xr_eye_sensitive" msgid="6050967250223079001">"kontroleer oogbeweging presies"</string>
+    <string name="permgrouplab_xr_tracking" msgid="766634536453394700">"Beweging- en areadata"</string>
+    <string name="permgroupdesc_xr_tracking" msgid="812429788288001595">"kontroleer oë, gesig, liggaam en skandeerarea"</string>
+    <string name="permgrouplab_xr_tracking_sensitive" msgid="4346975608010051186">"Presiese kopbeweging- en areadata"</string>
+    <string name="permgroupdesc_xr_tracking_sensitive" msgid="7925014193164562556">"kontroleer kop en skandeerarea"</string>
     <string name="capability_title_canRetrieveWindowContent" msgid="7554282892101587296">"Venster-inhoud ophaal"</string>
     <string name="capability_desc_canRetrieveWindowContent" msgid="6195610527625237661">"Die inhoud ondersoek van \'n venster waarmee jy interaksie het."</string>
     <string name="capability_title_canRequestTouchExploration" msgid="327598364696316213">"Verken-met-raak aanskakel"</string>
@@ -682,38 +668,22 @@
     <string name="permdesc_imagesWrite" msgid="5195054463269193317">"Laat die app toe om jou fotoversameling te wysig."</string>
     <string name="permlab_mediaLocation" msgid="7368098373378598066">"lees liggings in jou mediaversameling"</string>
     <string name="permdesc_mediaLocation" msgid="597912899423578138">"Laat die app toe om liggings in jou mediaversameling te lees."</string>
-    <!-- no translation found for permlab_eye_tracking_coarse (1266477998416112440) -->
-    <skip />
-    <!-- no translation found for permdesc_eye_tracking_coarse (1652112796672085320) -->
-    <skip />
-    <!-- no translation found for permlab_eye_tracking_fine (6208991021186455002) -->
-    <skip />
-    <!-- no translation found for permdesc_eye_tracking_fine (9215360948852654836) -->
-    <skip />
-    <!-- no translation found for permlab_face_tracking (6052126246676474909) -->
-    <skip />
-    <!-- no translation found for permdesc_face_tracking (185815778490412574) -->
-    <skip />
-    <!-- no translation found for permlab_hand_tracking (21944950887649088) -->
-    <skip />
-    <!-- no translation found for permdesc_hand_tracking (8083783248481460669) -->
-    <skip />
-    <!-- no translation found for permlab_head_tracking (4304699038992159853) -->
-    <skip />
-    <!-- no translation found for permdesc_head_tracking (2232184518548944223) -->
-    <skip />
-    <!-- no translation found for permlab_scene_understanding_coarse (8765236119358852920) -->
-    <skip />
-    <!-- no translation found for permdesc_scene_understanding_coarse (847344305502345475) -->
-    <skip />
-    <!-- no translation found for permlab_scene_understanding_fine (2899904960307462936) -->
-    <skip />
-    <!-- no translation found for permdesc_scene_understanding_fine (4848943859506977588) -->
-    <skip />
-    <!-- no translation found for permlab_xr_tracking_in_background (8659516810430027774) -->
-    <skip />
-    <!-- no translation found for permdesc_xr_tracking_in_background (3151744132692357005) -->
-    <skip />
+    <string name="permlab_eye_tracking_coarse" msgid="1266477998416112440">"kontroleer oogbeweging"</string>
+    <string name="permdesc_eye_tracking_coarse" msgid="1652112796672085320">"Laat die app toe om die benaderde rigting waarnatoe jy kyk te kontroleer."</string>
+    <string name="permlab_eye_tracking_fine" msgid="6208991021186455002">"kontroleer oogbeweging presies"</string>
+    <string name="permdesc_eye_tracking_fine" msgid="9215360948852654836">"Laat die app toe om die rigting waarnatoe jy kyk te kontroleer."</string>
+    <string name="permlab_face_tracking" msgid="6052126246676474909">"kontroleer gesigbewegings"</string>
+    <string name="permdesc_face_tracking" msgid="185815778490412574">"Laat die app toe om jou gesigbewegings en -uitdrukkings te kontroleer."</string>
+    <string name="permlab_hand_tracking" msgid="21944950887649088">"kontroleer handbewegings"</string>
+    <string name="permdesc_hand_tracking" msgid="8083783248481460669">"Laat die app toe om jou handbewegings te kontroleer."</string>
+    <string name="permlab_head_tracking" msgid="4304699038992159853">"kontroleer kopbewegings"</string>
+    <string name="permdesc_head_tracking" msgid="2232184518548944223">"Laat die app toe om jou kopbewegings te kontroleer."</string>
+    <string name="permlab_scene_understanding_coarse" msgid="8765236119358852920">"skandeer jou omgewing"</string>
+    <string name="permdesc_scene_understanding_coarse" msgid="847344305502345475">"Laat die app toe om jou omgewing te skandeer."</string>
+    <string name="permlab_scene_understanding_fine" msgid="2899904960307462936">"skandeer jou omgewing presies"</string>
+    <string name="permdesc_scene_understanding_fine" msgid="4848943859506977588">"Laat die app toe om jou omgewing presies te skandeer."</string>
+    <string name="permlab_xr_tracking_in_background" msgid="8659516810430027774">"kontroleeer UR-data in die agtergrond"</string>
+    <string name="permdesc_xr_tracking_in_background" msgid="3151744132692357005">"Laat die app toe om toegang tot UR-data in die agtergrond te kry."</string>
     <string name="permlab_capture_keyboard" msgid="4076894823382693032">"vang sleutels vas"</string>
     <string name="permdesc_capture_keyboard" msgid="4192269470684407219">"Laat die app toe om sleutels vas te vang voordat die stelsel stelselkortpaaie en -handelinge kan verwerk."</string>
     <string name="biometric_app_setting_name" msgid="3339209978734534457">"Gebruik biometrie"</string>
@@ -944,6 +914,8 @@
     <string name="policydesc_disableCamera" msgid="3204405908799676104">"Voorkom die gebruik van alle toestelkameras."</string>
     <string name="policylab_disableKeyguardFeatures" msgid="5071855750149949741">"Deaktiveer sommige skermslotkenmerke"</string>
     <string name="policydesc_disableKeyguardFeatures" msgid="6641673177041195957">"Voorkom dat sommige skermslotkenmerke gebruik word"</string>
+    <!-- no translation found for exit_toast_on_long_press_escape (873907401529125943) -->
+    <skip />
   <string-array name="phoneTypes">
     <item msgid="8996339953292723951">"Tuis"</item>
     <item msgid="7740243458912727194">"Mobiel"</item>
@@ -2596,6 +2568,7 @@
     <string name="keyboard_shortcut_group_applications_calendar" msgid="3571770335653387606">"Kalender"</string>
     <string name="keyboard_shortcut_group_applications_calculator" msgid="6753209559716091507">"Sakrekenaar"</string>
     <string name="keyboard_shortcut_group_applications_maps" msgid="7950000659522589471">"Maps"</string>
+    <string name="keyboard_shortcut_group_applications_files" msgid="863938400765838051">"Lêers"</string>
     <string name="keyboard_shortcut_group_applications" msgid="3010389163951364798">"Apps"</string>
     <string name="fingerprint_loe_notification_msg" msgid="3927447270148854546">"Jou vingerafdrukke kan nie meer herken word nie. Stel Vingerafdrukslot weer op."</string>
     <string name="usb_apm_usb_plugged_in_when_locked_notification_app_title" msgid="285421860627714333">"Sekuriteit en privaatheid"</string>
@@ -2615,6 +2588,5 @@
     <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"Sukkel jy met Vingerafdrukslot?"</string>
     <string name="fingerprint_frr_notification_msg" msgid="2162966846624639252">"Tik om te kyk na wenke om jou ervaring met ontsluiting te verbeter"</string>
     <string name="no_blink_accessibility_text_cursor_blink_label" msgid="223072797385428874">"Moenie flits nie"</string>
-    <!-- no translation found for long_press_power_to_turn_off_tv_toast (2231397748028498986) -->
-    <skip />
+    <string name="long_press_power_to_turn_off_tv_toast" msgid="2231397748028498986">"Langdruk die aan/af-skakelaar om TV af te skakel"</string>
 </resources>
