@@ -419,7 +419,9 @@ public class CallLog {
         public static final Uri CONTENT_FILTER_URI = Uri.parse("content://call_log/calls/filter");
 
         /**
-         * The content:// style URL for VoIP applications to query the data belongs to them
+         * The content:// style URL for VoIP applications to query the data belongs to them.
+         * <p>
+         * Applications granted the MANAGE_OWN_CALLS permission can access their own logs.
          */
         @FlaggedApi(Flags.FLAG_INTEGRATED_CALL_LOGS)
         @NonNull
