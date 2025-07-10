@@ -2257,8 +2257,6 @@ public abstract class OomAdjuster {
                     mService.setProcessTrackerStateLOSP(app,
                             mService.mProcessStats.getMemFactorLocked());
                 }
-            } else {
-                state.setHasProcStateChanged(true);
             }
         } else if (state.getHasReportedInteraction()) {
             final boolean fgsInteractionChangeEnabled = state.getCachedCompatChange(

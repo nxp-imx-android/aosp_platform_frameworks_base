@@ -392,12 +392,6 @@ public final class ProcessStateRecord {
     private boolean mRunningRemoteAnimation;
 
     /**
-     * Keep track of whether we changed 'mSetAdj'.
-     */
-    @CompositeRWLock({"mServiceLock", "mProcLock"})
-    private boolean mHasProcStateChanged;
-
-    /**
      * Whether we have told usage stats about it being an interaction.
      */
     @CompositeRWLock({"mServiceLock", "mProcLock"})
@@ -966,16 +960,6 @@ public final class ProcessStateRecord {
     @GuardedBy("mServiceLock")
     public void setRunningRemoteAnimation(boolean runningRemoteAnimation) {
         mRunningRemoteAnimation = runningRemoteAnimation;
-    }
-
-    @GuardedBy({"mServiceLock", "mProcLock"})
-    public void setHasProcStateChanged(boolean hasProcStateChanged) {
-        mHasProcStateChanged = hasProcStateChanged;
-    }
-
-    @GuardedBy(anyOf = {"mServiceLock", "mProcLock"})
-    public boolean getHasProcStateChanged() {
-        return mHasProcStateChanged;
     }
 
     @GuardedBy({"mServiceLock", "mProcLock"})

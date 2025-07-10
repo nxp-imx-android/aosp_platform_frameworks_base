@@ -1403,9 +1403,6 @@ public class AppProfiler {
                     final ProcessProfileRecord profile = app.mProfile;
                     final IApplicationThread thread;
                     final ProcessStateRecord state = app.mState;
-                    if (state.getHasProcStateChanged()) {
-                        state.setHasProcStateChanged(false);
-                    }
                     int procState = app.mState.getCurProcState();
                     if (((procState >= ActivityManager.PROCESS_STATE_IMPORTANT_BACKGROUND
                                             && procState
