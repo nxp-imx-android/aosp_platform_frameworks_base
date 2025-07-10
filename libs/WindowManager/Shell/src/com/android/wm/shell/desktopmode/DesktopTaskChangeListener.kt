@@ -176,6 +176,33 @@ class DesktopTaskChangeListener(
         )
     }
 
+    // This method should only be used for scenarios where the task close events are not propagated
+    // to [DesktopTaskChangeListener#onTaskClosing] via [TransitionsObserver].
+    // Any changes to [DesktopRepository] from this method should be made carefully to minimize risk
+    // of race conditions and possible duplications with [onTaskClosing].
+    override fun onNonTransitionTaskClosing(taskInfo: RunningTaskInfo) {
+        logD(
+            "onNonTransitionTaskClosing for taskId=%d, displayId=%d",
+            taskInfo.taskId,
+            taskInfo.displayId,
+        )
+
+        if (DesktopExperienceFlags.ENABLE_DESKTOP_INVISIBLE_TASK_REMOVAL_CLEANUP_BUGFIX.isTrue) {
+            // Removing an invisible task is an invisible->invisible change, so no shell transition
+            // runs for this, and DesktopRepository misses cleaning up task data, which could lead
+            // to DesktopTasksController incorrectly trying to restore the tasks when the desk is
+            // reactivated next time. See b/361419732.
+            val repository: DesktopRepository = desktopUserRepositories.getProfile(taskInfo.userId)
+            if (
+                repository.getDeskIdForTask(taskInfo.taskId) != null &&
+                    !repository.isVisibleTask(taskInfo.taskId)
+            ) {
+                repository.removeClosingTask(taskInfo.taskId)
+                repository.removeTask(taskInfo.taskId)
+            }
+        }
+    }
+
     override fun onTaskMovingToFront(taskInfo: RunningTaskInfo) {
         if (
             !desktopState.isDesktopModeSupportedOnDisplay(taskInfo.displayId) &&
