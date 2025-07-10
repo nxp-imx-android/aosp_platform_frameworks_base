@@ -273,7 +273,7 @@ applications that come with the platform
         <!-- Needed for GMSCore Location API test only -->
         <permission name="android.permission.LOCATION_BYPASS"/>
         <!-- Needed for XTS tests only. -->
-        <permission name="android.permission.ACCESS_LOCATION_BYPASS_ALLOWLIST"/>
+        <permission name="android.permission.READ_LOCATION_BYPASS_ALLOWLIST"/>
         <!-- Needed for test only -->
         <permission name="android.permission.BATTERY_PREDICTION"/>
         <permission name="android.permission.BATTERY_STATS"/>
