@@ -66,18 +66,9 @@ class DesktopDisplayEventHandler(
 
     private val onDisplayAreaChangeListener = OnDisplayAreaChangeListener { displayId ->
         logV("displayAreaChanged in displayId=%d", displayId)
-        val uniqueDisplayId = displayController.getDisplay(displayId)?.uniqueId
-        uniqueDisplayId?.let {
-            uniqueIdByDisplayId[displayId] = it
-            if (
-                DesktopExperienceFlags.ENABLE_DISPLAY_RECONNECT_INTERACTION.isTrue &&
-                    desktopUserRepositories.current.hasPreservedDisplayForUniqueDisplayId(it)
-            ) {
-                desktopTasksController.restoreDisplay(displayId, it)
-                return@OnDisplayAreaChangeListener
-            }
+        if (!handlePotentialReconnect(displayId)) {
+            createDefaultDesksIfNeeded(displayIds = listOf(displayId), userId = null)
         }
-        createDefaultDesksIfNeeded(displayIds = listOf(displayId), userId = null)
     }
 
     // Mapping of display uniqueIds to displayId. Used to match a disconnected
@@ -153,21 +144,58 @@ class DesktopDisplayEventHandler(
 
     override fun requestPreserveDisplay(displayId: Int) {
         logV("requestPreserveDisplay displayId=%d", displayId)
-        val uniqueId = uniqueIdByDisplayId.remove(displayId) ?: return
+        val uniqueId = uniqueIdByDisplayId[displayId] ?: return
         // TODO: b/365873835 - Preserve/restore bounds for other repositories.
         desktopUserRepositories.current.preserveDisplay(displayId, uniqueId)
     }
 
     override fun onDesktopModeEligibleChanged(displayId: Int) {
-        if (
-            DesktopExperienceFlags.ENABLE_DISPLAY_CONTENT_MODE_MANAGEMENT.isTrue &&
-                displayId != DEFAULT_DISPLAY
-        ) {
+        if (displayId == DEFAULT_DISPLAY) return
+        if (DesktopExperienceFlags.ENABLE_DISPLAY_CONTENT_MODE_MANAGEMENT.isTrue) {
             desktopDisplayModeController.updateExternalDisplayWindowingMode(displayId)
             // The default display's windowing mode depends on the desktop eligibility of the
             // external display. So updating the default display's windowing mode here.
             desktopDisplayModeController.updateDefaultDisplayWindowingMode()
         }
+        if (DesktopExperienceFlags.ENABLE_DISPLAY_DISCONNECT_INTERACTION.isTrue()) {
+            handlePotentialDeskDisplayChange(displayId)
+        }
+    }
+
+    private fun handlePotentialDeskDisplayChange(displayId: Int) {
+        if (desktopState.isDesktopModeSupportedOnDisplay(displayId)) {
+            // A display has become desktop eligible. Treat this as a potential reconnect.
+            val uniqueId = displayController.getDisplay(displayId)?.uniqueId ?: return
+            logV(
+                "onDesktopModeEligibleChanged: displayId=%d has become desktop eligible",
+                displayId,
+            )
+            if (!handlePotentialReconnect(displayId)) {
+                createDefaultDesksIfNeeded(displayIds = listOf(displayId), userId = null)
+            }
+        } else {
+            // A display has become desktop ineligible. Treat this as a potential disconnect.
+            logV(
+                "onDesktopModeEligibleChanged: displayId=%d has become desktop ineligible",
+                displayId,
+            )
+            desktopTasksController.disconnectDisplay(displayId)
+        }
+    }
+
+    private fun handlePotentialReconnect(displayId: Int): Boolean {
+        val uniqueDisplayId = displayController.getDisplay(displayId)?.uniqueId
+        uniqueDisplayId?.let {
+            uniqueIdByDisplayId[displayId] = it
+            if (
+                DesktopExperienceFlags.ENABLE_DISPLAY_RECONNECT_INTERACTION.isTrue &&
+                    desktopUserRepositories.current.hasPreservedDisplayForUniqueDisplayId(it)
+            ) {
+                desktopTasksController.restoreDisplay(displayId, it)
+                return true
+            }
+        }
+        return false
     }
 
     override fun onDeskRemoved(lastDisplayId: Int, deskId: Int) {
