@@ -126,7 +126,7 @@
     <string name="bluetooth_battery_level_untethered_lea_support" msgid="803110681688633362">"Imeunganishwa (inaweza kutumia kipengele cha kusikiliza pamoja). Kushoto: chaji ya betri imefika <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE_0">%1$s</xliff:g>, Kulia: chaji ya betri imefika <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE_1">%2$s</xliff:g>."</string>
     <string name="bluetooth_battery_level_untethered_left_lea_support" msgid="7707464334346454950">"Imeunganishwa (inaweza kutumia kipengele cha kusikiliza pamoja). Kushoto: chaji <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE">%1$s</xliff:g>."</string>
     <string name="bluetooth_battery_level_untethered_right_lea_support" msgid="8941549024377771038">"Imeunganishwa (inaweza kutumia kipengele cha kusikiliza pamoja). Kulia: chaji ya betri imefika <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE">%1$s</xliff:g>."</string>
-    <string name="bluetooth_no_battery_level_lea_support" msgid="5721725041048434075">"Imeunganishwa (inawezesha usikilizaji wa pamoja)"</string>
+    <string name="bluetooth_no_battery_level_lea_support" msgid="5721725041048434075">"Imeunganishwa (inaruhusu kusikiliza pamoja)"</string>
     <string name="bluetooth_guest_battery_level_lea_support" msgid="8098327939585013928">"Kifaa kingeni (kinatumia kipengele cha kusikiliza pamoja). Chaji ya betri imefika <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE">%1$s</xliff:g>."</string>
     <string name="bluetooth_guest_battery_level_untethered_lea_support" msgid="3701035025565668360">"Kifaa kingeni (kinatumia kipengele cha kusikiliza pamoja). Kushoto: chaji ya betri imefika <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE_0">%1$s</xliff:g>, Kulia: chaji ya betri imefika <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE_1">%2$s</xliff:g>."</string>
     <string name="bluetooth_guest_no_battery_level_lea_support" msgid="2977038548753103470">"Kifaa kingeni (kinatumia kipengele cha kusikiliza pamoja)"</string>
@@ -607,7 +607,7 @@
     <string name="alarm_template" msgid="3346777418136233330">"saa <xliff:g id="WHEN">%1$s</xliff:g>"</string>
     <string name="alarm_template_far" msgid="6382760514842998629">"siku ya <xliff:g id="WHEN">%1$s</xliff:g>"</string>
     <string name="zen_mode_duration_settings_title" msgid="1553451650289651489">"Muda"</string>
-    <string name="zen_mode_duration_always_prompt_title" msgid="3212996860498119555">"Uliza kila wakati"</string>
+    <string name="zen_mode_duration_always_prompt_title" msgid="3212996860498119555">"Omba kila wakati"</string>
     <string name="zen_mode_forever" msgid="3339224497605461291">"Hadi utakapoizima"</string>
     <string name="zen_mode_starred_contacts_empty_name" msgid="933552939706125937">"(Hakuna jina)"</string>
     <string name="time_unit_just_now" msgid="3006134267292728099">"Sasa hivi"</string>
