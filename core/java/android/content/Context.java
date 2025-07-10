@@ -5982,7 +5982,7 @@ public abstract class Context {
      * @see #getSystemService(String)
      * @see android.hardware.serial.SerialManager
      */
-    @FlaggedApi(android.hardware.serial.flags.Flags.FLAG_ENABLE_SERIAL_API)
+    @FlaggedApi(android.hardware.serial.flags.Flags.FLAG_ENABLE_WIRED_SERIAL_API)
     public static final String SERIAL_SERVICE = "serial";
 
     /**

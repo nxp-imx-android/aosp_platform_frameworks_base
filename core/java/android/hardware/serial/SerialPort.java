@@ -38,7 +38,7 @@ import java.util.concurrent.Executor;
 /**
  * A class representing a Serial port.
  */
-@FlaggedApi(android.hardware.serial.flags.Flags.FLAG_ENABLE_SERIAL_API)
+@FlaggedApi(android.hardware.serial.flags.Flags.FLAG_ENABLE_WIRED_SERIAL_API)
 public final class SerialPort {
     /**
      * Value returned by {@link #getVendorId()} and {@link #getProductId()} if this

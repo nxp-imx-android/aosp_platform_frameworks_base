@@ -40,7 +40,7 @@ import org.mockito.kotlin.whenever
  * atest SerialTests:SerialManagerTest
  */
 @RunWith(AndroidJUnit4::class)
-@EnableFlags(android.hardware.serial.flags.Flags.FLAG_ENABLE_SERIAL_API)
+@EnableFlags(android.hardware.serial.flags.Flags.FLAG_ENABLE_WIRED_SERIAL_API)
 class SerialManagerTest {
     @get:Rule
     val mockitoRule = MockitoJUnit.rule()

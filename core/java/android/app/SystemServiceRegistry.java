@@ -18,7 +18,7 @@ package android.app;
 
 import static android.app.appfunctions.flags.Flags.enableAppFunctionManager;
 import static android.app.userrecovery.flags.Flags.enableUserRecoveryManager;
-import static android.hardware.serial.flags.Flags.enableSerialApi;
+import static android.hardware.serial.flags.Flags.enableWiredSerialApi;
 import static android.provider.flags.Flags.newStoragePublicApi;
 import static android.server.Flags.removeGameManagerServiceFromWear;
 import static android.service.chooser.Flags.interactiveChooser;
@@ -825,7 +825,7 @@ public final class SystemServiceRegistry {
                         return new AdbManager(ctx, IAdbManager.Stub.asInterface(b));
                     }});
 
-        if (enableSerialApi()) {
+        if (enableWiredSerialApi()) {
             registerService(Context.SERIAL_SERVICE, android.hardware.serial.SerialManager.class,
                     new CachedServiceFetcher<android.hardware.serial.SerialManager>() {
                         @Override

@@ -2488,7 +2488,7 @@ public final class SystemServer implements Dumpable {
                 t.traceEnd();
             }
 
-            if (android.hardware.serial.flags.Flags.enableSerialApi()) {
+            if (android.hardware.serial.flags.Flags.enableWiredSerialApi()) {
                 t.traceBegin("StartSerialManagerService");
                 mSystemServiceManager.startService(SerialManagerService.Lifecycle.class);
                 t.traceEnd();
