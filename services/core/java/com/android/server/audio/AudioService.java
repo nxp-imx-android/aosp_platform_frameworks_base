@@ -74,7 +74,6 @@ import static com.android.internal.annotations.VisibleForTesting.Visibility.PACK
 import static com.android.media.audio.Flags.absVolumePrioritizesAbsDevice;
 import static com.android.media.audio.Flags.alarmMinVolumeZero;
 import static com.android.media.audio.Flags.asDeviceConnectionFailure;
-import static com.android.media.audio.Flags.audioserverPermissions;
 import static com.android.media.audio.Flags.deferWearPermissionUpdates;
 import static com.android.media.audio.Flags.disablePrescaleAbsoluteVolume;
 import static com.android.media.audio.Flags.equalScoHaVcIndexRange;
@@ -1331,10 +1330,8 @@ public class AudioService extends IAudioService.Stub
                               null,
                               context.getSystemService(AppOpsManager.class),
                               PermissionEnforcer.fromContext(context),
-                              audioserverPermissions() ?
-                                initializeAudioServerPermissionProvider(
-                                    context, audioPolicyFacade, audioserverLifecycleExecutor) :
-                                    null,
+                              initializeAudioServerPermissionProvider(
+                                    context, audioPolicyFacade, audioserverLifecycleExecutor),
                               audioserverLifecycleExecutor
                               );
         }
@@ -1968,9 +1965,7 @@ public class AudioService extends IAudioService.Stub
 
     public void onSystemReady() {
         mSystemReady = true;
-        if (audioserverPermissions()) {
-            setupPermissionListener();
-        }
+        setupPermissionListener();
         scheduleLoadSoundEffects();
         mDeviceBroker.onSystemReady();
 
@@ -5452,8 +5447,6 @@ public class AudioService extends IAudioService.Stub
                 + featureSpatialAudioHeadtrackingLowLatency());
         pw.println("\tandroid.media.audio.focusFreezeTestApi:"
                 + focusFreezeTestApi());
-        pw.println("\tcom.android.media.audio.audioserverPermissions:"
-                + audioserverPermissions());
         pw.println("\tcom.android.media.audio.disablePrescaleAbsoluteVolume:"
                 + disablePrescaleAbsoluteVolume());
         pw.println("\tcom.android.media.audio.setStreamVolumeOrder - EOL");
@@ -13881,18 +13874,14 @@ public class AudioService extends IAudioService.Stub
 
         @Override
         public void addAssistantServiceUid(int uid, int owningUid) {
-            if (audioserverPermissions()) {
-                mPermissionProvider.setIsolatedServiceUid(uid, owningUid);
-            }
+            mPermissionProvider.setIsolatedServiceUid(uid, owningUid);
             sendMsg(mAudioHandler, MSG_ADD_ASSISTANT_SERVICE_UID, SENDMSG_QUEUE,
                     uid, 0, null, 0);
         }
 
         @Override
         public void removeAssistantServiceUid(int uid) {
-            if (audioserverPermissions()) {
-                mPermissionProvider.clearIsolatedServiceUid(uid);
-            }
+            mPermissionProvider.clearIsolatedServiceUid(uid);
             sendMsg(mAudioHandler, MSG_REMOVE_ASSISTANT_SERVICE_UID, SENDMSG_QUEUE,
                     uid, 0, null, 0);
         }
@@ -15906,7 +15895,6 @@ public class AudioService extends IAudioService.Stub
     @Override
     /** @see AudioManager#permissionUpdateBarrier() */
     public void permissionUpdateBarrier() {
-        if (!audioserverPermissions()) return;
         mCacheWatcher.doCheck();
         List<Future> snapshot;
         synchronized (mScheduledPermissionTasks) {
