@@ -1207,6 +1207,16 @@ flag {
 }
 
 flag {
+  name: "lockscreen_shade_to_dream_transition_fix"
+  namespace: "systemui"
+  description: "Flags a minor transition fix for starting the dream from lockscreen with shade open"
+  bug: "409720192"
+  metadata {
+    purpose: PURPOSE_BUGFIX
+  }
+}
+
+flag {
     name: "dream_overlay_updated_ui"
     namespace: "systemui"
     description: "Flag to enable updated UI for dream overlay"

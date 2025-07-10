@@ -20,6 +20,7 @@ package com.android.systemui.statusbar.notification.stack.ui.viewmodel
 import android.content.Context
 import androidx.annotation.VisibleForTesting
 import com.android.app.tracing.coroutines.flow.flowName
+import com.android.systemui.Flags
 import com.android.systemui.Flags.glanceableHubV2
 import com.android.systemui.bouncer.domain.interactor.BouncerInteractor
 import com.android.systemui.common.shared.model.NotificationContainerBounds
@@ -596,11 +597,31 @@ constructor(
             } else {
                 interactor.configurationBasedDimensions.flatMapLatest { configurationBasedDimensions
                     ->
-                    combineTransform(shadeInteractor.shadeExpansion, shadeInteractor.qsExpansion) {
-                        shadeExpansion,
-                        qsExpansion ->
+                    combineTransform(
+                        shadeInteractor.shadeExpansion,
+                        shadeInteractor.qsExpansion,
+                        keyguardTransitionInteractor.isInTransition(
+                            // This branch is never triggered when scene container is enabled, the
+                            // edge param is unused.
+                            edge = Edge.create(from = LOCKSCREEN, to = Scenes.Dream),
+                            edgeWithoutSceneContainer =
+                                Edge.create(from = LOCKSCREEN, to = DREAMING),
+                        ),
+                    ) { shadeExpansion, qsExpansion, inLockscreenToDreamTransition ->
                         if (shadeExpansion > 0f || qsExpansion > 0f) {
-                            if (configurationBasedDimensions.useSplitShade) {
+                            if (
+                                Flags.lockscreenShadeToDreamTransitionFix() &&
+                                    inLockscreenToDreamTransition
+                            ) {
+                                // Don't show lock screen when transitioning to dream with the shade
+                                // open. The shade is collapsed by ACTION_CLOSE_SYSTEM_DIALOGS that
+                                // the system server sends when starting the dream. Since the shade
+                                // collapse isn't synced with the dream starting, if the collapse
+                                // animation finishes after the LOCKSCREN -> DREAMING transition
+                                // starts, it can cause keyguard to show up again briefly during the
+                                // transition.
+                                emit(0f)
+                            } else if (configurationBasedDimensions.useSplitShade) {
                                 emit(1f)
                             } else if (qsExpansion == 1f) {
                                 // Ensure HUNs will be visible in QS shade (at least while
