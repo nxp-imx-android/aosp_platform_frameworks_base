@@ -23,8 +23,6 @@ import android.os.UserHandle
 import android.platform.test.annotations.RequiresFlagsEnabled
 import android.platform.test.flag.junit.DeviceFlagsValueProvider
 import android.provider.Settings
-import android.tools.NavBar
-import android.tools.Rotation
 import android.view.IWindowManager
 import android.view.WindowManagerGlobal
 import androidx.test.platform.app.InstrumentationRegistry
@@ -33,9 +31,8 @@ import androidx.test.uiautomator.By.text
 import androidx.test.uiautomator.UiDevice
 import com.android.compatibility.common.util.UiAutomatorUtils2.waitFindObject
 import com.android.window.flags.Flags
-import com.android.wm.shell.Utils
-import org.junit.After
 import com.google.common.truth.Truth.assertThat
+import org.junit.After
 import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
@@ -59,8 +56,7 @@ abstract class ScaleDensityForExternalDisplay : TestScenarioBase() {
     private val decreaseDensityDescription = getSettingsString(DECREASE_DENSITY_DESCRIPTION_RES)
 
     @get:Rule(order = 0) val checkFlagsRule = DeviceFlagsValueProvider.createCheckFlagsRule()
-    @get:Rule(order = 1) val testSetupRule = Utils.testSetupRule(NavBar.MODE_GESTURAL, Rotation.ROTATION_0)
-    @get:Rule(order = 2) val connectedDisplayRule = SimulatedConnectedDisplayTestRule()
+    @get:Rule(order = 1) val connectedDisplayRule = SimulatedConnectedDisplayTestRule()
 
     @Test
     fun increaseDensity() {

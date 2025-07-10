@@ -19,7 +19,6 @@ package com.android.wm.shell.scenarios
 import android.graphics.Point
 import android.hardware.display.DisplayManager
 import android.platform.test.annotations.EnableFlags
-import android.tools.PlatformConsts.DEFAULT_DISPLAY
 import android.tools.traces.parsers.WindowManagerStateHelper
 import android.view.Display.DEFAULT_DISPLAY
 import android.view.DisplayInfo
