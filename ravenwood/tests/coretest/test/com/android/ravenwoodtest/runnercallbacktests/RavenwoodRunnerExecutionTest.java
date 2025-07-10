@@ -15,6 +15,8 @@
  */
 package com.android.ravenwoodtest.runnercallbacktests;
 
+import static com.android.ravenwoodtest.coretest.RavenwoodMainThreadTest.assertHasMessageWasPostedHereStackTraceAsCause;
+
 import static org.junit.Assert.fail;
 
 import android.os.Handler;
@@ -39,9 +41,9 @@ public class RavenwoodRunnerExecutionTest extends RavenwoodRunnerTestBase {
     testRunStarted: classes
     testSuiteStarted: classes
     testSuiteStarted: com.android.ravenwoodtest.runnercallbacktests.RavenwoodRunnerExecutionTest$MainThreadExceptionAndwaitForMainLooperDoneTest
-    testStarted: test1(com.android.ravenwoodtest.runnercallbacktests.RavenwoodRunnerExecutionTest$MainThreadExceptionAndwaitForMainLooperDoneTest)
+    testStarted: testMainThreadException(com.android.ravenwoodtest.runnercallbacktests.RavenwoodRunnerExecutionTest$MainThreadExceptionAndwaitForMainLooperDoneTest)
     testFailure: Exception detected on thread Ravenwood:Main:  *** Continuing running the remaining test *** : Intentional exception on the main thread!
-    testFinished: test1(com.android.ravenwoodtest.runnercallbacktests.RavenwoodRunnerExecutionTest$MainThreadExceptionAndwaitForMainLooperDoneTest)
+    testFinished: testMainThreadException(com.android.ravenwoodtest.runnercallbacktests.RavenwoodRunnerExecutionTest$MainThreadExceptionAndwaitForMainLooperDoneTest)
     testSuiteFinished: com.android.ravenwoodtest.runnercallbacktests.RavenwoodRunnerExecutionTest$MainThreadExceptionAndwaitForMainLooperDoneTest
     testSuiteFinished: classes
     testRunFinished: 1,1,0,0
@@ -50,7 +52,7 @@ public class RavenwoodRunnerExecutionTest extends RavenwoodRunnerTestBase {
     public static class MainThreadExceptionAndwaitForMainLooperDoneTest {
 
         @Test
-        public void test1() throws Exception {
+        public void testMainThreadException() throws Exception {
             var h = new Handler(Looper.getMainLooper());
             h.post(() -> {
                 throw new RuntimeException("Intentional exception on the main thread!");
@@ -58,7 +60,14 @@ public class RavenwoodRunnerExecutionTest extends RavenwoodRunnerTestBase {
 
             // This will wait for the looper idle, and checks for a pending exception and throws
             // if any. So the remaining code shouldn't be executed.
-            RavenwoodUtils.waitForMainLooperDone();
+            try {
+                RavenwoodUtils.waitForMainLooperDone();
+            } catch (Throwable th) {
+                // Ensure that the exception has MessageWasPostedHereStackTrace as a "cause".
+                assertHasMessageWasPostedHereStackTraceAsCause(th, "testMainThreadException");
+
+                throw th;
+            }
 
             fail("Shouldn't reach here");
         }

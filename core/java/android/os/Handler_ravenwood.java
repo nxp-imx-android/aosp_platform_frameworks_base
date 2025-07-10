@@ -24,11 +24,11 @@ public class Handler_ravenwood {
     }
 
     public static volatile TriFunction<MessageQueue, Message, Long, Void>
-            sPendingExceptionThrower = (a, b, c) -> null;
+            sOnBeforeEnqueue = (a, b, c) -> null;
 
     static void onBeforeEnqueue(@NonNull MessageQueue queue, @NonNull Message msg,
             long uptimeMillis) {
         // Check for a pendign exception, and throw it if any.
-        sPendingExceptionThrower.apply(queue, msg, uptimeMillis);
+        sOnBeforeEnqueue.apply(queue, msg, uptimeMillis);
     }
 }
