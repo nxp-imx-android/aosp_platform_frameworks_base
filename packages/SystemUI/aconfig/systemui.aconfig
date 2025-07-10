@@ -26,6 +26,16 @@ flag {
 }
 
 flag {
+   name: "multiuser_open_user_switcher_dialog"
+   namespace: "systemui"
+   description: "Enable multiuser widget to open user switcher dialog"
+   bug: "409328841"
+   metadata {
+        purpose: PURPOSE_BUGFIX
+   }
+}
+
+flag {
     name: "remove_aod_car_mode"
     namespace: "systemui"
     description: "Remove functionality of car mode disabling AOD."
