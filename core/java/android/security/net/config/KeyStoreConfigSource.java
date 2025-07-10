@@ -45,5 +45,10 @@ class KeyStoreConfigSource implements ConfigSource {
     public NetworkSecurityConfig getDefaultConfig() {
         return mConfig;
     }
+
+    @Override
+    public NetworkSecurityConfig getLocalhostConfig() {
+        return null;
+    }
 }
 
