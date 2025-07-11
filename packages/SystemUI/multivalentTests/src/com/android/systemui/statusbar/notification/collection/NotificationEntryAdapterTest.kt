@@ -590,7 +590,7 @@ class NotificationEntryAdapterTest : SysuiTestCase() {
         val entry = NotificationEntryBuilder().setNotification(notification).build()
         underTest = factory.create(entry) as NotificationEntryAdapter
 
-        underTest.onBundleDisabled()
+        underTest.onBundleDisabledForEntry()
         verify(kosmos.mockVisualStabilityCoordinator)
             .temporarilyAllowFreeMovement(eq(entry), anyLong())
     }
@@ -627,7 +627,7 @@ class NotificationEntryAdapterTest : SysuiTestCase() {
         whenever(summaryRow.attachedChildren).thenReturn(listOf(childRow))
 
         underTest = factory.create(summaryEntry) as NotificationEntryAdapter
-        underTest.onBundleDisabled()
+        underTest.onBundleDisabledForEntry()
         verify(kosmos.mockVisualStabilityCoordinator)
             .temporarilyAllowFreeMovement(eq(summaryEntry), anyLong())
         verify(kosmos.mockVisualStabilityCoordinator)

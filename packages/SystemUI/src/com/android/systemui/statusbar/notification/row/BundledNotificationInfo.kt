@@ -54,7 +54,7 @@ class BundledNotificationInfo(context: Context?, attrs: AttributeSet?) :
             try {
                 if (NotificationBundleUi.isEnabled) {
                     if (enabled && !toggle.isChecked) {
-                        mEntryAdapter.onBundleDisabled()
+                        mEntryAdapter.onBundleDisabledForApp()
                     }
                 } else {
                     mEntry.markForUserTriggeredMovement(true)

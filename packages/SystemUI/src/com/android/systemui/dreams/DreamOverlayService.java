@@ -476,7 +476,7 @@ public class DreamOverlayService extends android.service.dreams.DreamOverlayServ
             mFlows.add(collectFlow(getLifecycle(), sceneInteractor.getCurrentOverlays(),
                     mCurrentOverlaysConsumer));
         } else {
-            mFlows.add(collectFlow(getLifecycle(), BooleanFlowOperators.INSTANCE.anyOf(
+            mFlows.add(collectFlow(getLifecycle(), BooleanFlowOperators.anyOf(
                     keyguardInteractor.primaryBouncerShowing,
                     keyguardInteractor.getAlternateBouncerShowing()),
                     mBouncerShowingConsumer));
