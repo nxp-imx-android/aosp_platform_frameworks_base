@@ -19,68 +19,21 @@ package com.android.systemui.log.table
 import android.annotation.SuppressLint
 import android.icu.text.SimpleDateFormat
 import android.os.Trace
-import com.android.systemui.Dumpable
 import com.android.systemui.common.buffer.RingBuffer
 import com.android.systemui.log.LogcatEchoTracker
 import com.android.systemui.log.core.LogLevel
-import com.android.systemui.plugins.log.TableLogBufferBase
 import com.android.systemui.util.time.SystemClock
 import java.io.PrintWriter
 import java.util.Locale
 
-/**
- * A logger that logs changes in table format.
- *
- * Some parts of System UI maintain a lot of pieces of state at once.
- * [com.android.systemui.log.LogBuffer] allows us to easily log change events:
- * - 10-10 10:10:10.456: state2 updated to newVal2
- * - 10-10 10:11:00.000: stateN updated to StateN(val1=true, val2=1)
- * - 10-10 10:11:02.123: stateN updated to StateN(val1=true, val2=2)
- * - 10-10 10:11:05.123: state1 updated to newVal1
- * - 10-10 10:11:06.000: stateN updated to StateN(val1=false, val2=3)
- *
- * However, it can sometimes be more useful to view the state changes in table format:
- * - timestamp--------- | state1- | state2- | ... | stateN.val1 | stateN.val2
- * - -------------------------------------------------------------------------
- * - 10-10 10:10:10.123 | val1--- | val2--- | ... | false------ | 0-----------
- * - 10-10 10:10:10.456 | val1--- | newVal2 | ... | false------ | 0-----------
- * - 10-10 10:11:00.000 | val1--- | newVal2 | ... | true------- | 1-----------
- * - 10-10 10:11:02.123 | val1--- | newVal2 | ... | true------- | 2-----------
- * - 10-10 10:11:05.123 | newVal1 | newVal2 | ... | true------- | 2-----------
- * - 10-10 10:11:06.000 | newVal1 | newVal2 | ... | false------ | 3-----------
- *
- * This class enables easy logging of the state changes in both change event format and table
- * format.
- *
- * This class also enables easy logging of states that are a collection of fields. For example,
- * stateN in the above example consists of two fields -- val1 and val2. It's useful to put each
- * field into its own column so that ABT (Android Bug Tool) can easily highlight changes to
- * individual fields.
- *
- * How it works:
- * 1) Create an instance of this buffer via [TableLogBufferFactory].
- * 2) For any states being logged, implement [Diffable]. Implementing [Diffable] allows the state to
- *    only log the fields that have *changed* since the previous update, instead of always logging
- *    all fields.
- * 3) Each time a change in a state happens, call [logDiffs]. If your state is emitted using a
- *    [Flow], you should use the [logDiffsForTable] extension function to automatically log diffs
- *    any time your flow emits a new value.
- *
- * When a dump occurs, there will be two dumps:
- * 1) The change events under the dumpable name "$name-changes".
- * 2) This class will coalesce all the diffs into a table format and log them under the dumpable
- *    name "$name-table".
- *
- * @param maxSize the maximum size of the buffer. Must be > 0.
- */
 @SuppressLint("DumpableNotRegistered") // Registered as dumpable in [TableLogBufferFactory]
-class TableLogBuffer(
+class TableLogBufferImpl(
     maxSize: Int,
     private val name: String,
     private val systemClock: SystemClock,
     private val logcatEchoTracker: LogcatEchoTracker,
     private val localLogcat: LogProxy = LogProxyDefault(),
-) : Dumpable, TableLogBufferBase {
+) : TableLogBuffer {
     init {
         if (maxSize <= 0) {
             throw IllegalArgumentException("maxSize must be > 0")
@@ -284,7 +237,7 @@ class TableLogBuffer(
         var timestamp: Long,
         var columnPrefix: String,
         var isInitial: Boolean,
-        val tableLogBuffer: TableLogBuffer,
+        val tableLogBuffer: TableLogBufferImpl,
     ) : TableRowLogger {
         /** Logs a change to a string value. */
         override fun logChange(columnName: String, value: String?) {

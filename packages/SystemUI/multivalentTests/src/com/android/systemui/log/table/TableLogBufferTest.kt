@@ -54,7 +54,7 @@ class TableLogBufferTest : SysuiTestCase() {
         outputWriter = StringWriter()
 
         underTest =
-            TableLogBuffer(
+            TableLogBufferImpl(
                 MAX_SIZE,
                 NAME,
                 systemClock,
@@ -65,7 +65,7 @@ class TableLogBufferTest : SysuiTestCase() {
 
     @Test(expected = IllegalArgumentException::class)
     fun maxSizeZero_throwsException() {
-        TableLogBuffer(
+        TableLogBufferImpl(
             maxSize = 0,
             "name",
             systemClock,
