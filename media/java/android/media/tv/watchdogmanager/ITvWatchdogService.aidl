@@ -27,8 +27,10 @@ interface ITvWatchdogService {
 
     ResourceOveruseStats getResourceOveruseStats(
         in int resourceOveruseFlag, in int maxStatsPeriod);
+    @JavaPassthrough(annotation="@android.annotation.RequiresPermission(android.Manifest.permission.COLLECT_TV_WATCHDOG_METRICS)")
     List<ResourceOveruseStats> getAllResourceOveruseStats(
         in int resourceOveruseFlag, in int minimumStatsFlag, in int maxStatsPeriod);
+    @JavaPassthrough(annotation="@android.annotation.RequiresPermission(android.Manifest.permission.COLLECT_TV_WATCHDOG_METRICS)")
     ResourceOveruseStats getResourceOveruseStatsForUserPackage(
         in String packageName, in UserHandle userHandle, in int resourceOveruseFlag,
             in int maxStatsPeriod);
@@ -39,16 +41,20 @@ interface ITvWatchdogService {
     oneway void removeResourceOveruseListener(in IResourceOveruseListener listener);
 
     // Following APIs need to get calling pid/uid for permission checking, so cannot be oneway.
+    @JavaPassthrough(annotation="@android.annotation.RequiresPermission(android.Manifest.permission.COLLECT_TV_WATCHDOG_METRICS)")
     void addResourceOveruseListenerForSystem(
         in int resourceOveruseFlag, in IResourceOveruseListener listener);
+    @JavaPassthrough(annotation="@android.annotation.RequiresPermission(android.Manifest.permission.COLLECT_TV_WATCHDOG_METRICS)")
     void removeResourceOveruseListenerForSystem(in IResourceOveruseListener listener);
-
+    @JavaPassthrough(annotation="@android.annotation.RequiresPermission(android.Manifest.permission.CONTROL_TV_WATCHDOG_CONFIG)")
     void setKillablePackageAsUser(in String packageName, in UserHandle userHandle,
         in boolean isKillable);
+    @JavaPassthrough(annotation="@android.annotation.RequiresPermission(android.Manifest.permission.CONTROL_TV_WATCHDOG_CONFIG)")
     List<PackageKillableState> getPackageKillableStatesAsUser(in UserHandle user);
-
+    @JavaPassthrough(annotation="@android.annotation.RequiresPermission(android.Manifest.permission.CONTROL_TV_WATCHDOG_CONFIG)")
     int setResourceOveruseConfigurations(
         in List<ResourceOveruseConfiguration> configurations, in int resourceOveruseFlag);
+    @JavaPassthrough(annotation="@android.annotation.RequiresPermission(anyOf = {android.Manifest.permission.COLLECT_TV_WATCHDOG_METRICS, android.Manifest.permission.CONTROL_TV_WATCHDOG_CONFIG})")
     List<ResourceOveruseConfiguration> getResourceOveruseConfigurations(
         in int resourceOveruseFlag);
 }
