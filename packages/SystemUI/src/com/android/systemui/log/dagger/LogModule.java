@@ -262,7 +262,7 @@ public class LogModule {
     @SysUISingleton
     @MediaCarouselControllerLog
     public static LogBuffer provideMediaCarouselControllerBuffer(LogBufferFactory factory) {
-        return factory.create("MediaCarouselCtlrLog", 100);
+        return factory.create("MediaCarouselCtlrLog", 150);
     }
 
     /**

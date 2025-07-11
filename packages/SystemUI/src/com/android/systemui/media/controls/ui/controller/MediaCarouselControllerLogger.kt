@@ -16,6 +16,7 @@
 
 package com.android.systemui.media.controls.ui.controller
 
+import android.graphics.Rect
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.log.LogBuffer
 import com.android.systemui.log.core.LogLevel
@@ -78,6 +79,20 @@ constructor(@MediaCarouselControllerLog private val buffer: LogBuffer) {
                 bool2 = oldState
             },
             { "media host visibility changed location=$int1, visible:$bool1, was:$bool2" },
+        )
+    }
+
+    fun logMediaBounds(reason: String, rect: Rect, location: Int) {
+        buffer.log(
+            TAG,
+            LogLevel.DEBUG,
+            {
+                str1 = reason
+                int1 = rect.width()
+                int2 = rect.height()
+                long1 = location.toLong()
+            },
+            { "media frame($str1), width: $int1 height: $int2, location:$long1" },
         )
     }
 }
