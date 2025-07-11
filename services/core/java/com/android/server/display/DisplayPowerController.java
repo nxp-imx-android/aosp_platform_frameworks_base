@@ -2957,6 +2957,13 @@ final class DisplayPowerController implements AutomaticBrightnessController.Call
      * @return The corresponding bucket index from LUX_RANGE_INDEX.
      */
     static int mapLuxToProtoEnumBucket(float lux) {
+        if (lux < 0) {
+            if (DEBUG) {
+                Slog.d(TAG, "Invalid lux value: " + lux + ". Returning LUX_RANGE_UNKNOWN.");
+            }
+            return FrameworkStatsLog
+                .DISPLAY_BRIGHTNESS_CHANGED__LUX_BUCKET__LUX_RANGE_UNKNOWN;
+        }
 
         for (int i = 0; i < LUX_BUCKET_BOUNDARIES.length; i++) {
             if (lux < LUX_BUCKET_BOUNDARIES[i]) {
@@ -2965,9 +2972,35 @@ final class DisplayPowerController implements AutomaticBrightnessController.Call
         }
 
         // If the lux value is greater than or equal to the last boundary, it falls into
-        // the last bucket: [100000, +inf).
+        // the last bucket: [100000, inf).
         return FrameworkStatsLog
             .DISPLAY_BRIGHTNESS_CHANGED__LUX_BUCKET__LUX_RANGE_100000_INF;
+    }
+
+    /**
+     * Determines the direction of a brightness adjustment for logging purposes,
+     *
+     * @param currentBrightnessInNits The brightness level in nits *after* the adjustment.
+     * @param lastReportedBrightnessInNits The brightness level in nits *before* this adjustment.
+     * @return An enum value indicating if the brightness was increased, decreased, or unknown.
+     */
+    static int getBrightnessAdjustmentDirection(
+            float currentBrightnessInNits,
+            float lastReportedBrightnessInNits) {
+
+        // Determine increase or decrease
+        if (currentBrightnessInNits > lastReportedBrightnessInNits) {
+            return FrameworkStatsLog
+                    .DISPLAY_BRIGHTNESS_CHANGED__BRIGHTNESS_DIRECTION__DIRECTION_INCREASE;
+        } else if (currentBrightnessInNits < lastReportedBrightnessInNits) {
+            return FrameworkStatsLog
+                    .DISPLAY_BRIGHTNESS_CHANGED__BRIGHTNESS_DIRECTION__DIRECTION_DECREASE;
+        } else {
+            // No significant change. Brightness adjusted in the middle of the range, but the value
+            // didn't change for unknown reason (e.g. hardware limit, slight unintended movement).
+            return FrameworkStatsLog
+                    .DISPLAY_BRIGHTNESS_CHANGED__BRIGHTNESS_DIRECTION__DIRECTION_UNKNOWN;
+        }
     }
 
     private void logBrightnessEvent(BrightnessEvent event, float unmodifiedBrightness,
@@ -2979,6 +3012,8 @@ final class DisplayPowerController implements AutomaticBrightnessController.Call
         boolean brightnessIsMax = unmodifiedBrightness == event.getHbmMax();
         float brightnessInNits =
                 mDisplayBrightnessController.convertToAdjustedNits(event.getBrightness());
+        float initialBrightnessInNits =
+                mDisplayBrightnessController.convertToAdjustedNits(event.getInitialBrightness());
         float appliedLowPowerMode = event.isLowPowerModeSet() ? event.getPowerFactor() : -1f;
         int appliedRbcStrength  = event.isRbcEnabled() ? event.getRbcStrength() : -1;
         float appliedHbmMaxNits =
@@ -2989,10 +3024,13 @@ final class DisplayPowerController implements AutomaticBrightnessController.Call
                 event.getThermalMax() == PowerManager.BRIGHTNESS_MAX
                 ? -1f : mDisplayBrightnessController.convertToAdjustedNits(event.getThermalMax());
         int luxBucket = mapLuxToProtoEnumBucket(event.getLux());
+        int brightnessAdjustmentDirection = getBrightnessAdjustmentDirection(
+                brightnessInNits,
+                initialBrightnessInNits
+                );
         if (mIsDisplayInternal) {
             FrameworkStatsLog.write(FrameworkStatsLog.DISPLAY_BRIGHTNESS_CHANGED,
-                    mDisplayBrightnessController
-                            .convertToAdjustedNits(event.getInitialBrightness()),
+                    initialBrightnessInNits,
                     brightnessInNits,
                     event.getLux(),
                     event.getPhysicalDisplayId(),
@@ -3018,7 +3056,8 @@ final class DisplayPowerController implements AutomaticBrightnessController.Call
                     (flags & BrightnessEvent.FLAG_USER_SET) > 0,
                     event.getAutoBrightnessMode() == AUTO_BRIGHTNESS_MODE_IDLE,
                     (flags & BrightnessEvent.FLAG_LOW_POWER_MODE) > 0,
-                    luxBucket);
+                    luxBucket,
+                    brightnessAdjustmentDirection);
         }
     }
 

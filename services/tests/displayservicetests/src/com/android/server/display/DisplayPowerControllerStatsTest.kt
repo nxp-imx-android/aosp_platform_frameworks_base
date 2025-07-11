@@ -34,6 +34,15 @@ class DisplayPowerControllerStatsTest {
         assertThat(result).isEqualTo(testCase.expectedBucket)
     }
 
+    @Test
+    fun testGetBrightnessDirection(@TestParameter testCase: BrightnessDirectionTestCase) {
+        val result = DisplayPowerController.getBrightnessAdjustmentDirection(
+            testCase.currentBrightnessInNits,
+            testCase.lastReportedBrightnessInNits,
+        )
+        assertThat(result).isEqualTo(testCase.expectedDirection)
+    }
+
     enum class LuxBucketTestCase(
         val luxValue: Float,
         val expectedBucket: Int
@@ -106,5 +115,73 @@ class DisplayPowerControllerStatsTest {
         // >= 100000
         LUX_100000_TO_INF_LOWER_BOUND(100000.0f, FrameworkStatsLog.DISPLAY_BRIGHTNESS_CHANGED__LUX_BUCKET__LUX_RANGE_100000_INF),
         LUX_100000_TO_INF_HIGH_VALUE(1000000.0f, FrameworkStatsLog.DISPLAY_BRIGHTNESS_CHANGED__LUX_BUCKET__LUX_RANGE_100000_INF),
+    }
+
+    enum class BrightnessDirectionTestCase(
+        val currentBrightnessInNits: Float,
+        val lastReportedBrightnessInNits: Float,
+        val expectedDirection: Int
+    ) {
+        // --- Cases for DIRECTION_UNKNOWN ---
+        // No change
+        NO_CHANGE_EXACT(
+            currentBrightnessInNits = 50f,
+            lastReportedBrightnessInNits = 50f,
+            expectedDirection = FrameworkStatsLog.DISPLAY_BRIGHTNESS_CHANGED__BRIGHTNESS_DIRECTION__DIRECTION_UNKNOWN
+        ),
+
+        // --- Cases for DIRECTION_INCREASE ---
+        INCREASE_NORMAL(
+            currentBrightnessInNits = 120f,
+            lastReportedBrightnessInNits = 100f,
+            expectedDirection = FrameworkStatsLog.DISPLAY_BRIGHTNESS_CHANGED__BRIGHTNESS_DIRECTION__DIRECTION_INCREASE
+        ),
+        INCREASE_VERY_SMALL_INCREMENT(
+            currentBrightnessInNits = 50.0001f,
+            lastReportedBrightnessInNits = 50.0000f,
+            expectedDirection = FrameworkStatsLog.DISPLAY_BRIGHTNESS_CHANGED__BRIGHTNESS_DIRECTION__DIRECTION_INCREASE
+        ),
+        INCREASE_SMALL_INCREMENT(
+            currentBrightnessInNits = 100.1f,
+            lastReportedBrightnessInNits = 100.0f,
+            expectedDirection = FrameworkStatsLog.DISPLAY_BRIGHTNESS_CHANGED__BRIGHTNESS_DIRECTION__DIRECTION_INCREASE
+        ),
+        INCREASE_FROM_MIN(
+            currentBrightnessInNits = 0.5f,
+            lastReportedBrightnessInNits = 0.0f,
+            expectedDirection = FrameworkStatsLog.DISPLAY_BRIGHTNESS_CHANGED__BRIGHTNESS_DIRECTION__DIRECTION_INCREASE
+        ),
+        INCREASE_VERY_LARGE(
+            currentBrightnessInNits = 5000f,
+            lastReportedBrightnessInNits = 100f,
+            expectedDirection = FrameworkStatsLog.DISPLAY_BRIGHTNESS_CHANGED__BRIGHTNESS_DIRECTION__DIRECTION_INCREASE
+        ),
+
+        // --- Cases for DIRECTION_DECREASE ---
+        DECREASE_NORMAL(
+            currentBrightnessInNits = 80f,
+            lastReportedBrightnessInNits = 100f,
+            expectedDirection = FrameworkStatsLog.DISPLAY_BRIGHTNESS_CHANGED__BRIGHTNESS_DIRECTION__DIRECTION_DECREASE
+        ),
+        DECREASE_VERY_SMALL_DECREMENT(
+            currentBrightnessInNits = 50.0000f,
+            lastReportedBrightnessInNits = 50.0001f,
+            expectedDirection = FrameworkStatsLog.DISPLAY_BRIGHTNESS_CHANGED__BRIGHTNESS_DIRECTION__DIRECTION_DECREASE
+        ),
+        DECREASE_SMALL_DECREMENT(
+            currentBrightnessInNits = 99.9f,
+            lastReportedBrightnessInNits = 100.0f,
+            expectedDirection = FrameworkStatsLog.DISPLAY_BRIGHTNESS_CHANGED__BRIGHTNESS_DIRECTION__DIRECTION_DECREASE
+        ),
+        DECREASE_TO_MIN(
+            currentBrightnessInNits = 0.0f,
+            lastReportedBrightnessInNits = 0.5f,
+            expectedDirection = FrameworkStatsLog.DISPLAY_BRIGHTNESS_CHANGED__BRIGHTNESS_DIRECTION__DIRECTION_DECREASE
+        ),
+        DECREASE_VERY_LARGE(
+            currentBrightnessInNits = 50f,
+            lastReportedBrightnessInNits = 1000f,
+            expectedDirection = FrameworkStatsLog.DISPLAY_BRIGHTNESS_CHANGED__BRIGHTNESS_DIRECTION__DIRECTION_DECREASE
+        ),
     }
 }
