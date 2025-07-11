@@ -2291,10 +2291,6 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
         super.removeImmediately();
 
         final DisplayContent dc = getDisplayContent();
-        if (isImeOverlayLayeringTarget()) {
-            mWmService.dispatchImeOverlayLayeringTargetVisibilityChanged(mClient.asBinder(),
-                    mAttrs.type, false /* visible */, true /* removed */, dc.getDisplayId());
-        }
         if (isImeLayeringTarget()) {
             // Remove the attached IME screenshot.
             dc.removeImeScreenshotByTarget(this);
