@@ -72,8 +72,8 @@ interface LockscreenLayoutViewModel {
      * `false` if only heads-up notifications are showing).
      */
     val isNotificationsVisible: Boolean
-    /** Whether the ambient indication UI should currently be showing. */
-    val isAmbientIndicationVisible: Boolean
+    /** Whether udfps is supported. */
+    val isUdfpsSupported: Boolean
     /** Amount of horizontal translation that should be applied to elements in the scene. */
     val unfoldTranslations: UnfoldTranslations
 }
@@ -222,13 +222,25 @@ fun LockscreenSceneLayout(
         }
     }
 
-    /** Convenience function to draw the bottom area without needing to pass a lot of parameters. */
+    /**
+     * Convenience function to draw the ambient indication without needing to pass a lot of
+     * parameters.
+     */
     @Composable
-    fun bottomArea(modifier: Modifier = Modifier) {
-        BottomArea(
-            startShortcut = startShortcut,
-            isAmbientIndicationVisible = viewModel.isAmbientIndicationVisible,
+    fun ambientIndication(modifier: Modifier = Modifier) {
+        AmbientIndication(
             ambientIndication = ambientIndication,
+            modifier = modifier.navigationBarsPadding(),
+        )
+    }
+
+    /**
+     * Convenience function to draw the shortcut area without needing to pass a lot of parameters.
+     */
+    @Composable
+    fun shortcutArea(modifier: Modifier = Modifier) {
+        ShortcutArea(
+            startShortcut = startShortcut,
             bottomIndication = bottomIndication,
             endShortcut = endShortcut,
             unfoldTranslations = viewModel.unfoldTranslations,
@@ -255,19 +267,38 @@ fun LockscreenSceneLayout(
             Box(Modifier.graphicsLayer { translationX = viewModel.unfoldTranslations.end }) {
                 largeClock()
             }
-            bottomArea()
-            lockIcon()
+
+            if (viewModel.isUdfpsSupported) {
+                lockIcon()
+                ambientIndication()
+            } else {
+                ambientIndication()
+                lockIcon()
+            }
+
+            shortcutArea()
             settingsMenu()
         },
         modifier = modifier,
     ) { measurables, constraints ->
-        check(measurables.size == 6)
+        check(measurables.size == 7)
         val statusBarMeasurable = measurables[0]
         val contentColumnMeasurable = measurables[1]
         val largeClockMeasurable = measurables[2]
-        val bottomAreaMeasurable = measurables[3]
-        val lockIconMeasurable = measurables[4]
-        val settingsMenuMeasurable = measurables[5]
+        val ambientIndicationMeasurable =
+            if (viewModel.isUdfpsSupported) {
+                measurables[4]
+            } else {
+                measurables[3]
+            }
+        val lockIconMeasurable =
+            if (viewModel.isUdfpsSupported) {
+                measurables[3]
+            } else {
+                measurables[4]
+            }
+        val shortcutAreaMeasurable = measurables[5]
+        val settingsMenuMeasurable = measurables[6]
 
         val statusBarPlaceable =
             statusBarMeasurable.measure(constraints = Constraints.fixedWidth(constraints.maxWidth))
@@ -349,8 +380,15 @@ fun LockscreenSceneLayout(
                 else -> null
             }
 
-        val bottomAreaPlaceable =
-            bottomAreaMeasurable.measure(constraints = Constraints.fixedWidth(constraints.maxWidth))
+        val ambientIndicationPlaceable =
+            ambientIndicationMeasurable.measure(
+                constraints = Constraints.fixedWidth(constraints.maxWidth)
+            )
+
+        val shortcutAreaPlaceable =
+            shortcutAreaMeasurable.measure(
+                constraints = Constraints.fixedWidth(constraints.maxWidth)
+            )
 
         val settingsMenuPleaceable = settingsMenuMeasurable.measure(constraints)
 
@@ -389,8 +427,25 @@ fun LockscreenSceneLayout(
                     },
             )
 
-            bottomAreaPlaceable.place(0, constraints.maxHeight - bottomAreaPlaceable.measuredHeight)
-            lockIconPlaceable.place(x = lockIconBounds.left, y = lockIconBounds.top)
+            if (viewModel.isUdfpsSupported) {
+                lockIconPlaceable.place(x = lockIconBounds.left, y = lockIconBounds.top)
+                ambientIndicationPlaceable.place(
+                    0,
+                    constraints.maxHeight - ambientIndicationPlaceable.measuredHeight,
+                )
+            } else {
+                ambientIndicationPlaceable.place(
+                    0,
+                    constraints.maxHeight - ambientIndicationPlaceable.measuredHeight,
+                )
+                lockIconPlaceable.place(x = lockIconBounds.left, y = lockIconBounds.top)
+            }
+
+            shortcutAreaPlaceable.place(
+                0,
+                constraints.maxHeight - shortcutAreaPlaceable.measuredHeight,
+            )
+
             settingsMenuPleaceable.placeRelative(
                 x = (constraints.maxWidth - settingsMenuPleaceable.measuredWidth) / 2,
                 y = constraints.maxHeight - settingsMenuPleaceable.measuredHeight,
@@ -399,33 +454,36 @@ fun LockscreenSceneLayout(
     }
 }
 
-/** Draws the bottom area of the layout. */
 @Composable
-private fun BottomArea(
-    startShortcut: @Composable () -> Unit,
-    isAmbientIndicationVisible: Boolean,
+private fun AmbientIndication(
     ambientIndication: @Composable () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = modifier.fillMaxWidth().padding(horizontal = 16.dp),
+    ) {
+        ambientIndication()
+    }
+}
+
+/** Draws the shortcut area of the layout. */
+@Composable
+private fun ShortcutArea(
+    startShortcut: @Composable () -> Unit,
     bottomIndication: @Composable () -> Unit,
     endShortcut: @Composable () -> Unit,
     unfoldTranslations: UnfoldTranslations,
     modifier: Modifier = Modifier,
 ) {
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(8.dp),
+    Row(
+        horizontalArrangement = Arrangement.Center,
+        verticalAlignment = Alignment.CenterVertically,
         modifier = modifier.fillMaxWidth().padding(horizontal = 16.dp),
     ) {
-        if (isAmbientIndicationVisible) {
-            ambientIndication()
-        }
-
-        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
-            Box(Modifier.graphicsLayer { translationX = unfoldTranslations.start }) {
-                startShortcut()
-            }
-            Box(Modifier.weight(1f)) { bottomIndication() }
-            Box(Modifier.graphicsLayer { translationX = unfoldTranslations.end }) { endShortcut() }
-        }
+        Box(Modifier.graphicsLayer { translationX = unfoldTranslations.start }) { startShortcut() }
+        Box(Modifier.weight(1f)) { bottomIndication() }
+        Box(Modifier.graphicsLayer { translationX = unfoldTranslations.end }) { endShortcut() }
     }
 }
 

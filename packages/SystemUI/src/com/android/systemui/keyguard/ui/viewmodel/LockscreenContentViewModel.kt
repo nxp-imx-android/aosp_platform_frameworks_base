@@ -146,8 +146,8 @@ constructor(
                     initialValue = activeNotificationsInteractor.areAnyNotificationsPresentValue,
                 )
 
-            override val isAmbientIndicationVisible: Boolean
-                get() = !authController.isUdfpsSupported
+            override val isUdfpsSupported: Boolean
+                get() = authController.isUdfpsSupported
 
             override val unfoldTranslations: UnfoldTranslations =
                 object : UnfoldTranslations {
