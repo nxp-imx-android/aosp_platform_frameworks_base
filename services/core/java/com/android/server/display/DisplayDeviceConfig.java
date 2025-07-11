@@ -16,6 +16,7 @@
 
 package com.android.server.display;
 
+import static com.android.internal.display.BrightnessUtils.INVALID_BRIGHTNESS_IN_CONFIG;
 import static com.android.server.display.BrightnessMappingStrategy.INVALID_NITS;
 import static com.android.server.display.utils.DeviceConfigParsingUtils.ambientBrightnessThresholdsIntToFloat;
 import static com.android.server.display.utils.DeviceConfigParsingUtils.displayBrightnessThresholdsIntToFloat;
@@ -671,10 +672,6 @@ public class DisplayDeviceConfig {
     public static final String DEFAULT_ID = "default";
 
     public static final int DEFAULT_LOW_REFRESH_RATE = 60;
-
-    // Float.NaN (used as invalid for brightness) cannot be stored in config.xml
-    // so -2 is used instead
-    public static final float INVALID_BRIGHTNESS_IN_CONFIG = -2f;
 
     @VisibleForTesting
     static final float BRIGHTNESS_DEFAULT = 0.5f;
@@ -2908,8 +2905,7 @@ public class DisplayDeviceConfig {
     }
 
     private void loadDozeBrightness(DisplayConfiguration config) {
-        if (mFlags.isDozeBrightnessFloatEnabled() && config != null
-                && config.getDozeBrightnessSensorValueToBrightness() != null) {
+        if (config != null && config.getDozeBrightnessSensorValueToBrightness() != null) {
             List<BigDecimal> values = config.getDozeBrightnessSensorValueToBrightness().getItem();
             mDozeBrightnessSensorValueToBrightness = new float[values.size()];
             for (int i = 0; i < values.size(); i++) {
@@ -2923,8 +2919,7 @@ public class DisplayDeviceConfig {
             }
         }
 
-        if (mFlags.isDozeBrightnessFloatEnabled() && config != null
-                && config.getDefaultDozeBrightness() != null) {
+        if (config != null && config.getDefaultDozeBrightness() != null) {
             float backlight = config.getDefaultDozeBrightness().floatValue();
             mDefaultDozeBrightness = getBrightnessFromBacklight(backlight);
         } else {

@@ -312,22 +312,7 @@ class DozeLogger @Inject constructor(@DozeLog private val buffer: LogBuffer) {
         buffer.log(TAG, INFO, { str1 = reason }, { "Doze immediately ended due to $str1" })
     }
 
-    fun logDozeScreenBrightness(brightness: Int, afterRequest: Boolean) {
-        buffer.log(
-            TAG,
-            INFO,
-            {
-                int1 = brightness
-                bool1 = afterRequest
-            },
-            {
-                "Doze screen brightness ${if (bool1) "set" else "requested"}" +
-                    " (int), brightness=$int1"
-            },
-        )
-    }
-
-    fun logDozeScreenBrightnessFloat(brightness: Float, afterRequest: Boolean) {
+    fun logDozeScreenBrightness(brightness: Float, afterRequest: Boolean) {
         buffer.log(
             TAG,
             INFO,
@@ -335,10 +320,7 @@ class DozeLogger @Inject constructor(@DozeLog private val buffer: LogBuffer) {
                 double1 = brightness.toDouble()
                 bool1 = afterRequest
             },
-            {
-                "Doze screen brightness ${if (bool1) "set" else "requested"}" +
-                    " (float), brightness=$double1"
-            },
+            { "Doze screen brightness ${if (bool1) "set" else "requested"}, brightness=$double1" },
         )
     }
 

@@ -2230,7 +2230,6 @@ public class PowerManagerServiceTest {
                         Display.STATE_ON,
                         Display.STATE_REASON_DEFAULT_POLICY,
                         PowerManager.BRIGHTNESS_INVALID_FLOAT,
-                        PowerManager.BRIGHTNESS_DEFAULT,
                         /* useDozeBrightness= */ false);
         assertTrue(isAcquired[0]);
     }
