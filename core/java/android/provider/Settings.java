@@ -1177,6 +1177,22 @@ public final class Settings {
             "android.settings.DARK_THEME_SETTINGS";
 
     /**
+     * Activity Action: Show settings to configure the screen magnification feature.
+     * <p>
+     * In some cases, a matching Activity may not exist, so ensure you
+     * safeguard against this.
+     * <p>
+     * Input: Nothing.
+     * <p>
+     * Output: Nothing.
+     *
+     * @hide
+     */
+    @SdkConstant(SdkConstantType.ACTIVITY_INTENT_ACTION)
+    public static final String ACTION_SCREEN_MAGNIFICATION_SETTINGS =
+            "android.settings.MAGNIFICATION_SETTINGS";
+
+    /**
      * Activity Action: Show settings to allow configuration of locale.
      * <p>
      * In some cases, a matching Activity may not exist, so ensure you
