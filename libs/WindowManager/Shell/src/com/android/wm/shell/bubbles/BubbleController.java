@@ -204,6 +204,8 @@ public class BubbleController implements ConfigurationChangeListener,
         void bubbleOrderChanged(List<Bubble> bubbleOrder, boolean updatePointer);
         /** Called when the bubble overflow empty state changes, used to show/hide the overflow. */
         void bubbleOverflowChanged(boolean hasBubbles);
+        /** Called when the visibility of bubble views should be updated. */
+        void updateVisibility(boolean visible);
     }
 
     private final Context mContext;
@@ -1298,13 +1300,8 @@ public class BubbleController implements ConfigurationChangeListener,
      * added in the meantime.
      */
     public void onAllBubblesAnimatedOut() {
-        if (mStackView != null) {
-            mStackView.setVisibility(INVISIBLE);
-            removeFromWindowManagerMaybe();
-        } else if (mLayerView != null) {
-            mLayerView.setVisibility(INVISIBLE);
-            removeFromWindowManagerMaybe();
-        }
+        mBubbleViewCallback.updateVisibility(false /* visible */);
+        removeFromWindowManagerMaybe();
     }
 
     /**
@@ -2493,6 +2490,13 @@ public class BubbleController implements ConfigurationChangeListener,
                 }
             }
         }
+
+        @Override
+        public void updateVisibility(boolean visible) {
+            if (mStackView != null) {
+                mStackView.setVisibility(visible ? VISIBLE : INVISIBLE);
+            }
+        }
     };
 
     /** When bubbles are in the bubble bar, this will be used to notify bubble bar views. */
@@ -2570,6 +2574,13 @@ public class BubbleController implements ConfigurationChangeListener,
                     mLogger.log((Bubble) selectedBubble,
                             BubbleLogger.Event.BUBBLE_BAR_BUBBLE_SWITCHED);
                 }
+            }
+        }
+
+        @Override
+        public void updateVisibility(boolean visible) {
+            if (mLayerView != null) {
+                mLayerView.setVisibility(visible ? VISIBLE : INVISIBLE);
             }
         }
     };
@@ -2833,22 +2844,12 @@ public class BubbleController implements ConfigurationChangeListener,
                 mIsStatusBarShade, hasBubbles());
         if (!mIsStatusBarShade) {
             // Bubbles don't appear when the device is locked.
-            if (mStackView != null) {
-                mStackView.setVisibility(INVISIBLE);
-            }
-            if (mLayerView != null) {
-                mLayerView.setVisibility(INVISIBLE);
-            }
+            mBubbleViewCallback.updateVisibility(false /* visible */);
         } else if (hasBubbles()) {
             // If we're unlocked, show the stack if we have bubbles. If we don't have bubbles, the
             // stack will be set to INVISIBLE in onAllBubblesAnimatedOut after the bubbles animate
             // out.
-            if (mStackView != null) {
-                mStackView.setVisibility(VISIBLE);
-            }
-            if (mLayerView != null) {
-                mLayerView.setVisibility(VISIBLE);
-            }
+            mBubbleViewCallback.updateVisibility(true /* visible */);
         }
 
         if (mStackView != null) {
