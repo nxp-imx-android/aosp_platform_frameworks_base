@@ -28,3 +28,16 @@ val Kosmos.clockViewModel: ClockViewModel by
             amPmStyle = AmPmStyle.Shown,
         )
     }
+
+var Kosmos.clockViewModelFactory: ClockViewModel.Factory by
+    Kosmos.Fixture {
+        object : ClockViewModel.Factory {
+            override fun create(amPmStyle: AmPmStyle): ClockViewModel {
+                return ClockViewModel(
+                    clockInteractor = clockInteractor,
+                    dateFormatUtil = dateFormatUtil,
+                    amPmStyle = amPmStyle,
+                )
+            }
+        }
+    }
