@@ -25,6 +25,7 @@ import static android.media.audio.Flags.FLAG_DEPRECATE_STREAM_BT_SCO;
 import static android.media.audio.Flags.FLAG_FOCUS_EXCLUSIVE_WITH_RECORDING;
 import static android.media.audio.Flags.FLAG_FOCUS_FREEZE_TEST_API;
 import static android.media.audio.Flags.FLAG_REGISTER_VOLUME_CALLBACK_API_HARDENING;
+import static android.media.audio.Flags.FLAG_SCO_MANAGED_BY_AUDIO;
 import static android.media.audio.Flags.FLAG_SUPPORTED_DEVICE_TYPES_API;
 import static android.media.audio.Flags.FLAG_UNIFY_ABSOLUTE_VOLUME_MANAGEMENT;
 import static android.media.audio.Flags.autoPublicVolumeApiHardening;
@@ -9703,6 +9704,24 @@ public class AudioManager {
             }
         }
     }
+
+
+    /**
+     * @hide
+     * Queries if Bluetooth SCO audio connection is controlled by the audio framework based on the
+     * feature flag (until removed) and system property states.
+     * @return true if SCO audio is managed by the audio framework, false otherwise.
+     */
+    @SystemApi
+    @FlaggedApi(FLAG_SCO_MANAGED_BY_AUDIO)
+    public boolean isScoManagedByAudio() {
+        try {
+            return getService().isScoManagedByAudio();
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
 
     //---------------------------------------------------------
     // audio device connection-dependent muting
