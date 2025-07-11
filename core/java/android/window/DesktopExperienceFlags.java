@@ -24,7 +24,6 @@ import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.app.ActivityThread;
 import android.content.Context;
-import android.os.Build;
 import android.os.SystemProperties;
 import android.util.ArrayMap;
 import android.util.Log;
@@ -315,16 +314,14 @@ public enum DesktopExperienceFlags {
         // Name of the flag, used for adb commands.
         private final String mFlagName;
         // Whether the flag state should be affected by developer option.
-        private final boolean mShouldOverrideByDevOptionDefault;
-        // Cached value for that flag: null if not read yet.
-        private Boolean mCachedIsOverrideByDevOption;
+        private final boolean mShouldOverrideByDevOption;
 
         public DesktopExperienceFlag(BooleanSupplier flagFunction,
                 boolean shouldOverrideByDevOption,
                 @Nullable String flagName) {
             this.mFlagFunction = flagFunction;
             this.mFlagName = flagName;
-            this.mShouldOverrideByDevOptionDefault = shouldOverrideByDevOption;
+            this.mShouldOverrideByDevOption = shouldOverrideByDevOption;
             if (Flags.showDesktopExperienceDevOption()) {
                 registerFlag(flagName, this);
             }
@@ -338,11 +335,7 @@ public enum DesktopExperienceFlags {
          * user will reboot very soon so being inconsistent across threads is ok.
          */
         public boolean isTrue() {
-            if (mCachedIsOverrideByDevOption == null) {
-                mCachedIsOverrideByDevOption = checkIfFlagShouldBeOverridden(mFlagName,
-                        mShouldOverrideByDevOptionDefault);
-            }
-            return isFlagTrue(mFlagFunction, mCachedIsOverrideByDevOption);
+            return isFlagTrue(mFlagFunction, mShouldOverrideByDevOption);
         }
 
         public String getFlagName() {
@@ -354,7 +347,7 @@ public enum DesktopExperienceFlags {
         }
 
         public boolean isOverridable() {
-            return mShouldOverrideByDevOptionDefault;
+            return mShouldOverrideByDevOption;
         }
     }
 
@@ -364,9 +357,7 @@ public enum DesktopExperienceFlags {
     // Name of the flag, used for adb commands.
     private final String mFlagName;
     // Whether the flag state should be affected by developer option.
-    private final boolean mShouldOverrideByDevOptionDefault;
-    // Cached value for that flag: null if not read yet.
-    private Boolean mCachedIsOverrideByDevOption;
+    private final boolean mShouldOverrideByDevOption;
 
     // Local cache for toggle override, which is initialized once on its first access. It needs to
     // be refreshed only on reboots as overridden state is expected to take effect on reboots.
@@ -392,7 +383,7 @@ public enum DesktopExperienceFlags {
             @NonNull String flagName) {
         this.mFlagFunction = flagFunction;
         this.mFlagName = flagName;
-        this.mShouldOverrideByDevOptionDefault = shouldOverrideByDevOption;
+        this.mShouldOverrideByDevOption = shouldOverrideByDevOption;
     }
 
     /**
@@ -403,11 +394,7 @@ public enum DesktopExperienceFlags {
      * user will reboot very soon so being inconsistent across threads is ok.
      */
     public boolean isTrue() {
-        if (mCachedIsOverrideByDevOption == null) {
-            mCachedIsOverrideByDevOption = checkIfFlagShouldBeOverridden(mFlagName,
-                    mShouldOverrideByDevOptionDefault);
-        }
-        return isFlagTrue(mFlagFunction, mCachedIsOverrideByDevOption);
+        return isFlagTrue(mFlagFunction, mShouldOverrideByDevOption);
     }
 
     public boolean getFlagValue() {
@@ -420,7 +407,7 @@ public enum DesktopExperienceFlags {
 
     /** Returns whether or not the developer option can override that flag. */
     public boolean isOverridable() {
-        return mShouldOverrideByDevOptionDefault;
+        return mShouldOverrideByDevOption;
     }
 
     private static boolean isFlagTrue(
@@ -437,23 +424,6 @@ public enum DesktopExperienceFlags {
 
     public static List<DesktopExperienceFlag> getRegisteredFlags() {
         return new ArrayList<>(sDynamicFlags.values());
-    }
-
-    private static boolean checkIfFlagShouldBeOverridden(@Nullable String flagName,
-            boolean defaultValue) {
-        if (!Build.IS_ENG && !Build.IS_USERDEBUG) {
-            return defaultValue;
-        }
-        if (!Flags.showDesktopExperienceDevOption() || enableDisplayContentModeManagement()) {
-            return false;
-        }
-        if (flagName == null || flagName.isEmpty()) {
-            return defaultValue;
-        }
-        int lastDot = flagName.lastIndexOf('.');
-        String baseName = lastDot >= 0 ? flagName.substring(lastDot + 1) : flagName;
-        return SystemProperties.getBoolean(SYSTEM_PROPERTY_OVERRIDE_PREFIX + baseName,
-                defaultValue);
     }
 
     /** Check whether the flags are overridden to true or not. */
