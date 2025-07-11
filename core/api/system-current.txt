@@ -4789,12 +4789,17 @@ package android.content.pm.verify.developer {
     method @NonNull public android.content.pm.SigningInfo getSigningInfo();
     method @NonNull public android.net.Uri getStagedPackageUri();
     method @NonNull public java.time.Instant getTimeoutTime();
+    method public void reportVerificationBypassed(int);
     method public void reportVerificationComplete(@NonNull android.content.pm.verify.developer.DeveloperVerificationStatus);
     method public void reportVerificationComplete(@NonNull android.content.pm.verify.developer.DeveloperVerificationStatus, @NonNull android.os.PersistableBundle);
     method public void reportVerificationIncomplete(int);
     method public boolean setPolicy(int);
     method public void writeToParcel(@NonNull android.os.Parcel, int);
     field @NonNull public static final android.os.Parcelable.Creator<android.content.pm.verify.developer.DeveloperVerificationSession> CREATOR;
+    field public static final int DEVELOPER_VERIFICATION_BYPASSED_REASON_ADB = 1; // 0x1
+    field public static final int DEVELOPER_VERIFICATION_BYPASSED_REASON_EMERGENCY = 2; // 0x2
+    field public static final int DEVELOPER_VERIFICATION_BYPASSED_REASON_TEST = 3; // 0x3
+    field public static final int DEVELOPER_VERIFICATION_BYPASSED_REASON_UNSPECIFIED = 0; // 0x0
     field public static final int DEVELOPER_VERIFICATION_INCOMPLETE_NETWORK_UNAVAILABLE = 1; // 0x1
     field public static final int DEVELOPER_VERIFICATION_INCOMPLETE_UNKNOWN = 0; // 0x0
   }

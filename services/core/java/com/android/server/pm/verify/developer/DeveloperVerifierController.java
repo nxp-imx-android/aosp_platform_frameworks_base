@@ -16,6 +16,7 @@
 
 package com.android.server.pm.verify.developer;
 
+import static android.content.pm.verify.developer.DeveloperVerificationSession.DEVELOPER_VERIFICATION_BYPASSED_REASON_UNSPECIFIED;
 import static android.content.pm.verify.developer.DeveloperVerificationSession.DEVELOPER_VERIFICATION_INCOMPLETE_NETWORK_UNAVAILABLE;
 import static android.content.pm.verify.developer.DeveloperVerificationSession.DEVELOPER_VERIFICATION_INCOMPLETE_UNKNOWN;
 import static android.os.Process.INVALID_UID;
@@ -642,6 +643,26 @@ public class DeveloperVerifierController {
                 }
             }
             mCallback.onVerificationCompleteReceived(verificationStatus, extensionResponse);
+            // Remove status tracking and stop the timeout countdown
+            removeStatusTracker(id);
+        }
+
+        @Override
+        public void reportVerificationBypassed(int id, int bypassReason) {
+            assertCallerIsCurrentVerifier(getCallingUid());
+            final DeveloperVerificationRequestStatusTracker tracker;
+            synchronized (mVerificationStatusTrackers) {
+                tracker = mVerificationStatusTrackers.get(id);
+                if (tracker == null) {
+                    throw new IllegalStateException("Verification session " + id
+                            + " doesn't exist or has finished");
+                }
+            }
+            if (bypassReason <= DEVELOPER_VERIFICATION_BYPASSED_REASON_UNSPECIFIED) {
+                throw new IllegalArgumentException("Verification session " + id
+                        + " reported invalid bypass_reason code " + bypassReason);
+            }
+            mCallback.onVerificationBypassedReceived(bypassReason);
             // Remove status tracking and stop the timeout countdown
             removeStatusTracker(id);
         }
