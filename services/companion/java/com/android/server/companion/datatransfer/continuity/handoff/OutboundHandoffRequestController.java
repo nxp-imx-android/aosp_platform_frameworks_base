@@ -26,6 +26,7 @@ import com.android.server.companion.datatransfer.continuity.messages.HandoffRequ
 import com.android.server.companion.datatransfer.continuity.messages.HandoffRequestResultMessage;
 import com.android.server.companion.datatransfer.continuity.messages.TaskContinuityMessage;
 import com.android.server.companion.datatransfer.continuity.messages.TaskContinuityMessageSerializer;
+import com.android.server.companion.datatransfer.continuity.handoff.HandoffActivityStarter;
 
 import android.app.ActivityOptions;
 import android.app.HandoffActivityData;
@@ -128,28 +129,22 @@ public class OutboundHandoffRequestController {
                 return;
             }
 
-            launchHandoffTask(
-                associationId,
-                handoffRequestResultMessage.taskId(),
-                handoffRequestResultMessage.activities());
+            if (!HandoffActivityStarter.start(
+                    mContext,
+                    handoffRequestResultMessage.activities())) {
+
+                finishHandoffRequest(
+                    associationId,
+                    handoffRequestResultMessage.taskId(),
+                    HANDOFF_REQUEST_RESULT_FAILURE_NO_DATA_PROVIDED_BY_TASK);
+                return;
+            } else {
+                finishHandoffRequest(
+                    associationId,
+                    handoffRequestResultMessage.taskId(),
+                    HANDOFF_REQUEST_RESULT_SUCCESS);
+            }
         }
-    }
-
-    private void launchHandoffTask(
-        int associationId,
-        int taskId,
-        List<HandoffActivityData> activities) {
-
-        HandoffActivityData topActivity = activities.get(0);
-        Intent intent = new Intent();
-        intent.setComponent(topActivity.getComponentName());
-        intent.putExtras(new Bundle(topActivity.getExtras()));
-        // TODO (joeantonetti): Handle failures here and fall back to a web URL.
-        mContext.startActivityAsUser(
-            intent,
-            ActivityOptions.makeBasic().toBundle(),
-            UserHandle.CURRENT);
-        finishHandoffRequest(associationId, taskId, HANDOFF_REQUEST_RESULT_SUCCESS);
     }
 
     private void finishHandoffRequest(int associationId, int taskId, int statusCode) {
