@@ -127,3 +127,12 @@ flag {
     }
 }
 
+flag {
+    name: "fix_reporting_active_jobs"
+    namespace: "backstage_power"
+    description: "Correctly report the active jobs to idle controller"
+    bug: "425761099"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
