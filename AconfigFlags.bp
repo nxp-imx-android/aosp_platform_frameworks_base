@@ -128,7 +128,6 @@ aconfig_declarations_group {
         "libcore_exported_aconfig_flags_lib",
         "libcore_readonly_aconfig_flags_lib",
         "libgui_flags_java_lib",
-        "mediaprovider_aconfig_flag_lib",
         "networksecurity_exported_aconfig_flags_lib",
         "power_flags_lib",
         "sdk_sandbox_exported_flags_lib",
@@ -2110,16 +2109,5 @@ aconfig_declarations {
 java_aconfig_library {
     name: "android.hardware.serial.flags-aconfig-java",
     aconfig_declarations: "android.hardware.serial.flags-aconfig",
-    defaults: ["framework-minus-apex-aconfig-java-defaults"],
-}
-
-java_aconfig_library {
-    name: "mediaprovider_aconfig_flag_lib",
-    aconfig_declarations: "mediaprovider_flags",
-    min_sdk_version: "30",
-    apex_available: [
-        "//apex_available:platform",
-        "com.android.mediaprovider",
-    ],
     defaults: ["framework-minus-apex-aconfig-java-defaults"],
 }
