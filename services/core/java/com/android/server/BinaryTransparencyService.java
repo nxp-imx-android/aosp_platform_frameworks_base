@@ -612,7 +612,11 @@ public class BinaryTransparencyService extends SystemService {
                     pw.println("--- Package Installation Info ---");
                     pw.println("Current install location: "
                             + packageInfo.applicationInfo.sourceDir);
-                    if (packageInfo.applicationInfo.sourceDir.startsWith("/data/apex/")) {
+                    // Print more information for downloaded APEX
+                    String sourceDir = packageInfo.applicationInfo.sourceDir;
+                    if (packageInfo.isApex
+                            && (sourceDir.startsWith("/data/apex")
+                                    || sourceDir.startsWith("/dev/block/dm-"))) {
                         String origPackageFilepath = getOriginalApexPreinstalledLocation(
                                 packageInfo.packageName);
                         pw.println("|--> Pre-installed package install location: "
