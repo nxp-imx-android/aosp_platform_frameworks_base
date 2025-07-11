@@ -169,6 +169,11 @@ public class AutoclickIndicatorView extends View {
         return mRadius;
     }
 
+    @VisibleForTesting
+    ValueAnimator getAnimatorForTesting() {
+        return mAnimator;
+    }
+
     public void redrawIndicator() {
         mSnapshotX = mMouseX;
         mSnapshotY = mMouseY;
