@@ -153,6 +153,8 @@ public class AutoclickTypePanel {
     // Whether autoclick is paused.
     private boolean mPaused = false;
 
+    private boolean mIsPanelShown = false;
+
     private int mStatusBarHeight = 0;
 
     // The current corner position of the panel, default to bottom right.
@@ -390,19 +392,32 @@ public class AutoclickTypePanel {
     }
 
     public void show() {
+        if (mIsPanelShown) {
+            return;
+        }
+
         // Restores the panel position from saved settings. If no valid position is saved,
         // defaults to bottom-right corner.
         restorePanelPosition();
         mWindowManager.addView(mContentView, mParams);
+        mIsPanelShown = true;
 
         // Update icon after view is laid out on screen to ensure accurate position detection
         // (getLocationOnScreen only works properly after layout is complete).
         mContentView.post(() -> {
             updatePositionButtonIcon(getVisualCorner());
         });
+
+        // Make sure the selected button is highlighted if not already. This is to handle the
+        // case that the panel is shown when a pointing device is reconnected.
+        toggleSelectedButtonStyle(mSelectedButton, /* isSelected= */ true);
     }
 
     public void hide() {
+        if (!mIsPanelShown) {
+            return;
+        }
+
         // Sets the button background to unselected styling, this is necessary to make sure the
         // button background styling is correct when the panel shows up next time.
         toggleSelectedButtonStyle(mSelectedButton, /* isSelected= */ false);
@@ -411,6 +426,7 @@ public class AutoclickTypePanel {
         savePanelPosition();
 
         mWindowManager.removeView(mContentView);
+        mIsPanelShown = false;
     }
 
     /**
@@ -511,6 +527,13 @@ public class AutoclickTypePanel {
         setPanelPositionForCorner(mParams, mCurrentCorner);
         mWindowManager.updateViewLayout(mContentView, mParams);
         updatePositionButtonIcon(mCurrentCorner);
+    }
+
+    /** Resets the panel position to bottom-right corner. */
+    @VisibleForTesting
+    void resetPanelPositionForTesting() {
+        setPanelPositionForCorner(mParams, CORNER_BOTTOM_RIGHT);
+        mCurrentCorner = CORNER_BOTTOM_RIGHT;
     }
 
     /**
