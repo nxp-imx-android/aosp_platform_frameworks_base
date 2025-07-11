@@ -16,10 +16,6 @@
 
 package com.android.internal.content;
 
-import static android.provider.Flags.enableDocumentsTrashApi;
-
-import static com.android.providers.media.flags.Flags.enableTrashAndRestoreByFilePathApi;
-
 import android.annotation.CallSuper;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
@@ -75,8 +71,6 @@ import java.util.Locale;
 import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * A helper class for {@link android.provider.DocumentsProvider} to perform file operations on local
@@ -97,19 +91,6 @@ public abstract class FileSystemProvider extends DocumentsProvider {
 
     private static final int DEFAULT_SEARCH_RESULT_LIMIT = 23;
     private static final int MAX_SEARCH_RESULT_LIMIT = 1000;
-
-    /**
-     * File prefix indicating that the file {@link MediaStore.MediaColumns#IS_TRASHED}.
-     */
-    protected static final String PREFIX_TRASHED = "trashed";
-
-    /**
-     * Default directory for trashed items
-     */
-    protected static final String DIRECTORY_TRASH_STORAGE = ".trash-storage";
-
-    private static final Pattern PATTERN_EXPIRES_FILE = Pattern.compile(
-            "(?i)^\\.(pending|trashed)-(\\d+)-([^/]+)$");
 
     private static String joinNewline(String... args) {
         return TextUtils.join("\n", args);
@@ -628,117 +609,6 @@ public abstract class FileSystemProvider extends DocumentsProvider {
         return DocumentsContract.openImageThumbnail(file);
     }
 
-    @Nullable
-    @Override
-    public String trashDocument(@NonNull String documentId)
-            throws FileNotFoundException {
-        if (!enableTrashAndRestoreByFilePathApi()) {
-            throw new UnsupportedOperationException(
-                    "MediaStore feature for trash is not supported");
-        }
-
-        File file = getFileForDocId(documentId);
-        if (!file.exists()) {
-            throw new FileNotFoundException("File does not exist for " + documentId);
-        }
-
-        String trashedPath = MediaStore.trashFile(getContext().getContentResolver(),
-                file.getPath());
-        File trashedFile = new File(trashedPath);
-        final String trashedDocId = getDocIdForFile(trashedFile);
-        onDocIdChanged(documentId);
-        onDocIdDeleted(documentId, /* shouldRevokeUriPermission */ true);
-        onDocIdChanged(trashedDocId);
-        return trashedDocId;
-    }
-
-    protected final Cursor queryTrashDocuments(File parent, String[] projection)
-            throws FileNotFoundException {
-        MatrixCursor result = new MatrixCursor(resolveProjection(projection));
-        includeTrashFiles(result, parent);
-        // include MediaStore trashed files which are not in .trash-storage location
-        includeMediaStoreTrashFiles(result);
-        return result;
-    }
-
-    @Nullable
-    @Override
-    public String restoreDocumentFromTrash(@NonNull String documentId, @Nullable String targetId)
-            throws FileNotFoundException {
-        if (!enableTrashAndRestoreByFilePathApi()) {
-            throw new UnsupportedOperationException(
-                    "MediaStore feature for trash is not supported");
-        }
-
-        File file = getFileForDocId(documentId);
-        if (!file.exists()) {
-            throw new FileNotFoundException("File does not exist for " + documentId);
-        }
-
-        if (!isTrashFile(file)) {
-            throw new IllegalArgumentException("DocumentId represents a non-trashed file");
-        }
-
-        String targetPath = null;
-        if (targetId != null) {
-            File targetFile = getFileForDocId(targetId);
-            if (targetFile != null) {
-                targetPath = targetFile.getAbsolutePath();
-            }
-        }
-        String restoredPath = MediaStore.restoreFileFromTrash(getContext().getContentResolver(),
-                file.getPath(), targetPath);
-
-        File restoredFile = new File(restoredPath);
-        final String restoredDocId = getDocIdForFile(restoredFile);
-        onDocIdChanged(documentId);
-        onDocIdChanged(restoredDocId);
-
-        return restoredDocId;
-    }
-
-
-    private boolean isTrashFile(File file) {
-        final Matcher matcher = PATTERN_EXPIRES_FILE.matcher(file.getName());
-        return matcher.matches() && matcher.group(1).equals(PREFIX_TRASHED);
-    }
-
-    private void includeTrashFiles(MatrixCursor result, File parent) throws FileNotFoundException  {
-        for (File file : parent.listFiles()) {
-            if (isTrashFile(file)) {
-                includeFile(result, null, file);
-                continue;
-            }
-            if (file.isDirectory()) {
-                includeTrashFiles(result, file);
-            }
-        }
-    }
-
-    private void includeMediaStoreTrashFiles(MatrixCursor result)
-            throws FileNotFoundException {
-        final Uri uri = MediaStore.Files.getContentUri(MediaStore.VOLUME_EXTERNAL);
-        final Bundle queryArgs = new Bundle();
-        queryArgs.putInt(MediaStore.QUERY_ARG_MATCH_TRASHED, MediaStore.MATCH_ONLY);
-        queryArgs.putString(ContentResolver.QUERY_ARG_SQL_SELECTION,
-                MediaStore.MediaColumns.RELATIVE_PATH + " NOT LIKE ?");
-        queryArgs.putStringArray(ContentResolver.QUERY_ARG_SQL_SELECTION_ARGS,
-                new String[]{DIRECTORY_TRASH_STORAGE + "/%"});
-        String[] projection = new String[]{MediaStore.Files.FileColumns.DATA};
-
-        try (Cursor cursor = getContext().getContentResolver().query(uri, projection,
-                queryArgs, null)) {
-            if (cursor != null) {
-                while (cursor.moveToNext()) {
-                    final String data = cursor.getString(
-                            cursor.getColumnIndexOrThrow(MediaStore.Files.FileColumns.DATA));
-                    File file = new File(data);
-                    includeFile(result, null, file);
-                }
-            }
-        }
-    }
-
     protected RowBuilder includeFile(final MatrixCursor result, String docId, File file)
             throws FileNotFoundException {
         final String[] columns = result.getColumnNames();
@@ -757,27 +627,15 @@ public abstract class FileSystemProvider extends DocumentsProvider {
         final int flagIndex = ArrayUtils.indexOf(columns, Document.COLUMN_FLAGS);
         if (flagIndex != -1) {
             final boolean isDir = mimeType.equals(Document.MIME_TYPE_DIR);
-            boolean isTrashedFile = isTrashFile(file);
             int flags = 0;
             if (file.canWrite()) {
                 flags |= Document.FLAG_SUPPORTS_DELETE;
-                if (!isTrashedFile) {
-                    flags |= Document.FLAG_SUPPORTS_RENAME;
-                    flags |= Document.FLAG_SUPPORTS_MOVE;
-
-                    if (isDir) {
-                        flags |= Document.FLAG_DIR_SUPPORTS_CREATE;
-                    } else {
-                        flags |= Document.FLAG_SUPPORTS_WRITE;
-                    }
-                }
-            }
-
-            if (enableDocumentsTrashApi()) {
-                if (isTrashFile(file)) {
-                    flags |= Document.FLAG_SUPPORTS_RESTORE;
-                } else if (isTrashSupported(file)) {
-                    flags |= Document.FLAG_SUPPORTS_TRASH;
+                flags |= Document.FLAG_SUPPORTS_RENAME;
+                flags |= Document.FLAG_SUPPORTS_MOVE;
+                if (isDir) {
+                    flags |= Document.FLAG_DIR_SUPPORTS_CREATE;
+                } else {
+                    flags |= Document.FLAG_SUPPORTS_WRITE;
                 }
             }
 
@@ -797,13 +655,7 @@ public abstract class FileSystemProvider extends DocumentsProvider {
 
         final int displayNameIndex = ArrayUtils.indexOf(columns, Document.COLUMN_DISPLAY_NAME);
         if (displayNameIndex != -1) {
-            String name = file.getName();
-            final Matcher matcher = PATTERN_EXPIRES_FILE.matcher(name);
-            if (matcher.matches() && matcher.group(1).equals(PREFIX_TRASHED)) {
-                // .trashed-<timestamp>-<name>
-                name = matcher.group(3);
-            }
-            row.add(displayNameIndex, name);
+            row.add(displayNameIndex, file.getName());
         }
 
         final int lastModifiedIndex = ArrayUtils.indexOf(columns, Document.COLUMN_LAST_MODIFIED);
@@ -830,17 +682,6 @@ public abstract class FileSystemProvider extends DocumentsProvider {
      * Such providers should override this method.
      */
     protected boolean shouldHideDocument(@NonNull String documentId)
-            throws FileNotFoundException {
-        return false;
-    }
-
-    /**
-     * Some providers may want to restrict access to certain directories and files,
-     * e.g. <i>"Android/data"</i> and <i>"Android/obb"</i> on the shared storage for
-     * privacy reasons.
-     * Such providers should override this method.
-     */
-    protected boolean isTrashSupported(@NonNull File document)
             throws FileNotFoundException {
         return false;
     }
