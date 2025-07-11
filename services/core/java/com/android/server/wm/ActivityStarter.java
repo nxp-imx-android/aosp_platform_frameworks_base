@@ -2398,14 +2398,6 @@ class ActivityStarter {
 
         setTargetRootTaskIfNeeded(targetTaskTop);
 
-        // When there is a reused activity and the current result is a trampoline activity,
-        // set the reused activity as the result.
-        if (mLastStartActivityRecord != null
-                && (mLastStartActivityRecord.finishing
-                    || mLastStartActivityRecord.isNoDisplay())) {
-            mLastStartActivityRecord = targetTaskTop;
-        }
-
         if ((mStartFlags & START_FLAG_ONLY_IF_NEEDED) != 0) {
             // We don't need to start a new activity, and the client said not to do anything
             // if that is the case, so this is it!  And for paranoia, make sure we have
