@@ -1422,6 +1422,21 @@ public class AudioManager {
     @Retention(RetentionPolicy.SOURCE)
     public @interface PublicStreamTypes {}
 
+    /** @hide */
+    @IntDef(flag = false, prefix = "STREAM", value = {
+            STREAM_VOICE_CALL,
+            STREAM_SYSTEM,
+            STREAM_RING,
+            STREAM_MUSIC,
+            STREAM_ALARM,
+            STREAM_NOTIFICATION,
+            STREAM_DTMF,
+            STREAM_ACCESSIBILITY,
+            STREAM_ASSISTANT }
+    )
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface VolumeControlStreamTypes {}
+
     /**
      * Returns the volume in dB (decibel) for the given stream type at the given volume index, on
      * the given type of audio output device.
@@ -1471,6 +1486,30 @@ public class AudioManager {
             case STREAM_NOTIFICATION:
             case STREAM_DTMF:
             case STREAM_ACCESSIBILITY:
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    /**
+     * @hide
+     * Checks whether a stream type can be used to control the volume (e.g.: as part of a
+     * {@link VolumeInfo}.
+     * @param streamType
+     * @return true if the stream type can be used to control the volume
+     */
+    public static boolean isVolumeControlStreamType(int streamType) {
+        switch (streamType) {
+            case STREAM_VOICE_CALL:
+            case STREAM_SYSTEM:
+            case STREAM_RING:
+            case STREAM_MUSIC:
+            case STREAM_ALARM:
+            case STREAM_NOTIFICATION:
+            case STREAM_DTMF:
+            case STREAM_ACCESSIBILITY:
+            case STREAM_ASSISTANT:
                 return true;
             default:
                 return false;
