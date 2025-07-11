@@ -941,13 +941,11 @@ public class RecoverableKeyStoreManager {
     /**
      * This function can only be used inside LockSettingsService.
      *
-     * @param credentialType the type of credential, as defined in {@code LockPatternUtils}
-     * @param credential the credential, encoded as a byte array
+     * @param credential the lockscreen credential (not CREDENTIAL_TYPE_NONE)
      * @param userId the ID of the user to whom the credential belongs
      * @hide
      */
-    public void lockScreenSecretAvailable(
-            int credentialType, @NonNull byte[] credential, int userId) {
+    public void lockScreenSecretAvailable(@NonNull LockscreenCredential credential, int userId) {
         // So as not to block the critical path unlocking the phone, defer to another thread.
         try {
             mExecutorService.schedule(KeySyncTask.newInstance(
@@ -956,7 +954,6 @@ public class RecoverableKeyStoreManager {
                     mSnapshotStorage,
                     mListenersStorage,
                     userId,
-                    credentialType,
                     credential,
                     /*credentialUpdated=*/ false),
                     SYNC_DELAY_MILLIS,
@@ -974,15 +971,11 @@ public class RecoverableKeyStoreManager {
     /**
      * This function can only be used inside LockSettingsService.
      *
-     * @param credentialType the type of the new credential, as defined in {@code LockPatternUtils}
-     * @param credential the new credential, encoded as a byte array
+     * @param credential the new lockscreen credential (possibly CREDENTIAL_TYPE_NONE)
      * @param userId the ID of the user whose credential was changed
      * @hide
      */
-    public void lockScreenSecretChanged(
-            int credentialType,
-            @Nullable byte[] credential,
-            int userId) {
+    public void lockScreenSecretChanged(@NonNull LockscreenCredential credential, int userId) {
         // So as not to block the critical path unlocking the phone, defer to another thread.
         try {
             mExecutorService.schedule(KeySyncTask.newInstance(
@@ -991,7 +984,6 @@ public class RecoverableKeyStoreManager {
                     mSnapshotStorage,
                     mListenersStorage,
                     userId,
-                    credentialType,
                     credential,
                     /*credentialUpdated=*/ true),
                     SYNC_DELAY_MILLIS,
