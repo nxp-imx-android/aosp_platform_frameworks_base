@@ -189,6 +189,7 @@ import android.util.ExceptionUtils;
 import android.util.IntArray;
 import android.util.Log;
 import android.util.MathUtils;
+import android.util.Pair;
 import android.util.Slog;
 import android.util.SparseArray;
 import android.util.apk.ApkSignatureVerifier;
@@ -3028,23 +3029,25 @@ public class PackageInstallerSession extends IPackageInstallerSession.Stub {
             onSessionVerificationFailure(e.error, errorMsg, /* extras= */ null);
         }
         if (shouldUseVerificationService()) {
-            final SigningInfo signingInfo;
-            final List<SharedLibraryInfo> declaredLibraries;
-            synchronized (mLock) {
-                signingInfo = new SigningInfo(mSigningDetails);
-                declaredLibraries =
-                        mPackageLite == null ? null : mPackageLite.getDeclaredLibraries();
-            }
             // Send the request to the verifier and wait for its response before the rest of
             // the installation can proceed.
-            if (!mDeveloperVerifierController.startVerificationSession(mPm::snapshotComputer,
-                    userId, sessionId, getPackageName(),
-                    stageDir == null ? Uri.EMPTY : Uri.fromFile(stageDir), signingInfo,
-                    declaredLibraries, mCurrentVerificationPolicy.get(),
-                    /* extensionParams= */ params.extensionParams,
-                    mDeveloperVerifierCallback, /* retry= */ false)) {
-                // A verifier is installed but cannot be connected. Maybe notify user.
-                mDeveloperVerifierCallback.onConnectionInfeasible();
+            if (isMultiPackage()) {
+                // TODO(b/360129657) perform developer verification on each children session before
+                // moving on to the next installation stage.
+                resumeVerify();
+            } else { // Not a parent session
+                final var infoPair = getSigningInfoAndDeclaredLibraries();
+                final SigningInfo signingInfo = infoPair.first;
+                final List<SharedLibraryInfo> declaredLibraries = infoPair.second;
+                if (!mDeveloperVerifierController.startVerificationSession(
+                        mPm::snapshotComputer, userId, sessionId, getPackageName(),
+                        Uri.fromFile(stageDir), signingInfo,
+                        declaredLibraries, mCurrentVerificationPolicy.get(),
+                        /* extensionParams= */ params.extensionParams,
+                        mDeveloperVerifierCallback, /* retry= */ false)) {
+                    // A verifier is installed but cannot be connected. Maybe notify user.
+                    mDeveloperVerifierCallback.onConnectionInfeasible();
+                }
             }
             synchronized (mMetrics) {
                 mMetrics.onDeveloperVerificationRequestSent();
@@ -3053,6 +3056,17 @@ public class PackageInstallerSession extends IPackageInstallerSession.Stub {
             // No need to check with verifier. Proceed with the rest of the verification.
             resumeVerify();
         }
+    }
+
+    private Pair<SigningInfo, List<SharedLibraryInfo>> getSigningInfoAndDeclaredLibraries() {
+        final SigningInfo signingInfo;
+        final List<SharedLibraryInfo> declaredLibraries;
+        synchronized (mLock) {
+            signingInfo = new SigningInfo(mSigningDetails);
+            declaredLibraries =
+                    mPackageLite == null ? null : mPackageLite.getDeclaredLibraries();
+        }
+        return new Pair<>(signingInfo, declaredLibraries);
     }
 
     private boolean shouldUseVerificationService() {
