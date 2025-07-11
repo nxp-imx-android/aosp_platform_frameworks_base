@@ -1026,7 +1026,7 @@ class DesktopTasksController(
             DesktopExperienceFlags.ENABLE_PROJECTED_DISPLAY_DESKTOP_MODE.isTrue &&
                 !desktopState.isDesktopModeSupportedOnDisplay(displayId) &&
                 transitionSource != DesktopModeTransitionSource.ADB_COMMAND &&
-                transitionSource != DesktopModeTransitionSource.APP_FROM_OVERVIEW
+                transitionSource != DesktopModeTransitionSource.OVERVIEW_TASK_MENU
         ) {
             logW("moveTaskToDefaultDeskAndActivate display=$displayId does not support desk")
             return false

@@ -52,9 +52,9 @@ import com.android.wm.shell.desktopmode.DesktopModeEventLogger.Companion.TaskUpd
 import com.android.wm.shell.desktopmode.DesktopModeEventLogger.Companion.UnminimizeReason
 import com.android.wm.shell.desktopmode.DesktopModeTransitionTypes.TRANSIT_DESKTOP_MODE_END_DRAG_TO_DESKTOP
 import com.android.wm.shell.desktopmode.DesktopModeTransitionTypes.TRANSIT_DESKTOP_MODE_TASK_LIMIT_MINIMIZE
-import com.android.wm.shell.desktopmode.DesktopModeTransitionTypes.TRANSIT_ENTER_DESKTOP_FROM_APP_FROM_OVERVIEW
 import com.android.wm.shell.desktopmode.DesktopModeTransitionTypes.TRANSIT_ENTER_DESKTOP_FROM_APP_HANDLE_MENU_BUTTON
 import com.android.wm.shell.desktopmode.DesktopModeTransitionTypes.TRANSIT_ENTER_DESKTOP_FROM_KEYBOARD_SHORTCUT
+import com.android.wm.shell.desktopmode.DesktopModeTransitionTypes.TRANSIT_ENTER_DESKTOP_FROM_OVERVIEW_TASK_MENU
 import com.android.wm.shell.desktopmode.DesktopModeTransitionTypes.TRANSIT_ENTER_DESKTOP_FROM_UNKNOWN
 import com.android.wm.shell.desktopmode.DesktopModeTransitionTypes.TRANSIT_EXIT_DESKTOP_MODE_HANDLE_MENU_BUTTON
 import com.android.wm.shell.desktopmode.DesktopModeTransitionTypes.TRANSIT_EXIT_DESKTOP_MODE_KEYBOARD_SHORTCUT
@@ -218,17 +218,17 @@ class DesktopModeLoggerTransitionObserverTest : ShellTestCase() {
     }
 
     @Test
-    fun transitEnterDesktopFromAppFromOverview_logTaskAddedAndEnterReasonAppFromOverview() {
+    fun transitEnterDesktopFromOverviewTaskMenu_logTaskAddedAndEnterReasonOverviewTaskMenu() {
         val change = createChange(TRANSIT_TO_FRONT, createTaskInfo(WINDOWING_MODE_FREEFORM))
         val transitionInfo =
-            TransitionInfoBuilder(TRANSIT_ENTER_DESKTOP_FROM_APP_FROM_OVERVIEW, 0)
+            TransitionInfoBuilder(TRANSIT_ENTER_DESKTOP_FROM_OVERVIEW_TASK_MENU, 0)
                 .addChange(change)
                 .build()
 
         callOnTransitionReady(transitionInfo)
 
         verifyTaskAddedAndEnterLogging(
-            EnterReason.APP_FROM_OVERVIEW,
+            EnterReason.OVERVIEW_TASK_MENU,
             DEFAULT_TASK_UPDATE.copy(visibleTaskCount = 1),
         )
     }
@@ -357,8 +357,8 @@ class DesktopModeLoggerTransitionObserverTest : ShellTestCase() {
 
     @Test
     @Suppress("ktlint:standard:max-line-length")
-    fun transitEnterDesktopFromAppFromOverview_previousTransitionExitToOverview_logTaskAddedAndEnterReasonAppFromOverview() {
-        // Tests for AppFromOverview precedence in compared to cancelled Overview
+    fun transitEnterDesktopFromOverviewTaskMenu_previousTransitionExitToOverview_logTaskAddedAndEnterReasonOverviewTaskMenu() {
+        // Tests for OverviewTaskMenu precedence in compared to cancelled Overview
 
         // previous exit to overview transition
         // add a freeform task
@@ -374,17 +374,17 @@ class DesktopModeLoggerTransitionObserverTest : ShellTestCase() {
 
         verifyTaskRemovedAndExitLogging(ExitReason.RETURN_HOME_OR_OVERVIEW, DEFAULT_TASK_UPDATE)
 
-        // TRANSIT_ENTER_DESKTOP_FROM_APP_FROM_OVERVIEW
+        // TRANSIT_ENTER_DESKTOP_FROM_OVERVIEW_TASK_MENU
         val change = createChange(TRANSIT_TO_FRONT, createTaskInfo(WINDOWING_MODE_FREEFORM))
         val transitionInfo =
-            TransitionInfoBuilder(TRANSIT_ENTER_DESKTOP_FROM_APP_FROM_OVERVIEW, 0)
+            TransitionInfoBuilder(TRANSIT_ENTER_DESKTOP_FROM_OVERVIEW_TASK_MENU, 0)
                 .addChange(change)
                 .build()
 
         callOnTransitionReady(transitionInfo)
 
         verifyTaskAddedAndEnterLogging(
-            EnterReason.APP_FROM_OVERVIEW,
+            EnterReason.OVERVIEW_TASK_MENU,
             DEFAULT_TASK_UPDATE.copy(visibleTaskCount = 1),
         )
     }
