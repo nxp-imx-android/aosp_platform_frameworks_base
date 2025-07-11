@@ -27,6 +27,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import com.android.systemui.lifecycle.rememberViewModel
@@ -47,7 +48,9 @@ fun BatteryWithEstimate(
         rememberViewModel(traceName = "BatteryWithEstimate") { viewModelFactory.create() }
 
     val batteryHeight =
-        with(LocalDensity.current) { BatteryViewModel.STATUS_BAR_BATTERY_HEIGHT.toDp() }
+        with(LocalDensity.current) {
+            BatteryViewModel.getStatusBarBatteryHeight(LocalContext.current).toDp()
+        }
 
     Row(
         modifier = modifier,

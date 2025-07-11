@@ -33,6 +33,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.onLayoutRectChanged
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import com.android.systemui.common.ui.compose.load
@@ -65,7 +66,9 @@ fun BatteryWithChargeStatus(
         rememberViewModel(traceName = "BatteryWithPercent") { viewModelFactory.create() }
 
     val batteryHeight =
-        with(LocalDensity.current) { BatteryViewModel.STATUS_BAR_BATTERY_HEIGHT.toDp() }
+        with(LocalDensity.current) {
+            BatteryViewModel.getStatusBarBatteryHeight(LocalContext.current).toDp()
+        }
 
     var bounds by remember { mutableStateOf(Rect()) }
 

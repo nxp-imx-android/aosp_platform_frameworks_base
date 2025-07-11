@@ -34,6 +34,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import com.android.compose.theme.PlatformTheme
@@ -103,7 +104,10 @@ constructor(level: Int, context: Context, attrs: AttributeSet? = null) :
 @Composable
 private fun UnifiedBatteryChip(level: Int) {
     val isFull = BatteryInteractor.isBatteryFull(level)
-    val height = with(LocalDensity.current) { BatteryViewModel.STATUS_BAR_BATTERY_HEIGHT.toDp() }
+    val height =
+        with(LocalDensity.current) {
+            BatteryViewModel.getStatusBarBatteryHeight(LocalContext.current).toDp()
+        }
     BatteryLayout(
         attribution = BatteryGlyph.Bolt, // Always charging
         levelProvider = { level },
@@ -120,7 +124,10 @@ private fun UnifiedBatteryChip(level: Int) {
 @Composable
 private fun BatteryAndPercentChip(level: Int) {
     val isFull = BatteryInteractor.isBatteryFull(level)
-    val height = with(LocalDensity.current) { BatteryViewModel.STATUS_BAR_BATTERY_HEIGHT.toDp() }
+    val height =
+        with(LocalDensity.current) {
+            BatteryViewModel.getStatusBarBatteryHeight(LocalContext.current).toDp()
+        }
     Row(verticalAlignment = Alignment.CenterVertically) {
         BatteryLayout(
             attribution = BatteryGlyph.Bolt, // Always charging

@@ -34,6 +34,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.ViewCompositionStrategy
@@ -41,7 +42,6 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.android.compose.theme.PlatformTheme
 import com.android.keyguard.AlphaOptimizedLinearLayout
 import com.android.systemui.compose.modifiers.sysUiResTagContainer
@@ -78,7 +78,7 @@ import com.android.systemui.statusbar.phone.ui.StatusBarIconController
 import com.android.systemui.statusbar.pipeline.battery.ui.composable.BatteryWithChargeStatus
 import com.android.systemui.statusbar.pipeline.battery.ui.composable.ShowPercentMode
 import com.android.systemui.statusbar.pipeline.battery.ui.composable.UnifiedBattery
-import com.android.systemui.statusbar.pipeline.battery.ui.viewmodel.BatteryViewModel.Companion.STATUS_BAR_BATTERY_HEIGHT
+import com.android.systemui.statusbar.pipeline.battery.ui.viewmodel.BatteryViewModel
 import com.android.systemui.statusbar.pipeline.shared.ui.binder.HomeStatusBarIconBlockListBinder
 import com.android.systemui.statusbar.pipeline.shared.ui.binder.HomeStatusBarViewBinder
 import com.android.systemui.statusbar.pipeline.shared.ui.view.SystemStatusIconsLayoutHelper
@@ -441,7 +441,10 @@ private fun addBatteryComposable(
                         modifier = Modifier.sysUiResTagContainer().wrapContentSize(),
                     )
                 } else {
-                    val height = with(LocalDensity.current) { STATUS_BAR_BATTERY_HEIGHT.toDp() }
+                    val height =
+                        with(LocalDensity.current) {
+                            BatteryViewModel.getStatusBarBatteryHeight(LocalContext.current).toDp()
+                        }
                     val viewModel =
                         rememberViewModel(traceName = "UnifiedBattery") {
                             statusBarViewModel.unifiedBatteryViewModel.create()
@@ -488,7 +491,11 @@ private fun addSystemStatusIconsComposable(
                             modifier = Modifier.sysUiResTagContainer().wrapContentSize(),
                         )
                     } else {
-                        val height = with(LocalDensity.current) { STATUS_BAR_BATTERY_HEIGHT.toDp() }
+                        val height =
+                            with(LocalDensity.current) {
+                                BatteryViewModel.getStatusBarBatteryHeight(LocalContext.current)
+                                    .toDp()
+                            }
                         val viewModel =
                             rememberViewModel(traceName = "UnifiedBattery") {
                                 statusBarViewModel.unifiedBatteryViewModel.create()
