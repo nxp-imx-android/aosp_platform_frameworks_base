@@ -409,13 +409,7 @@ constructor(
             val deviceDrawable =
                 Icon.createWithResource(sbn.packageName, deviceIcon)
                     .loadDrawable(sbn.getPackageContext(context))
-            return MediaDeviceData(
-                enabled,
-                deviceDrawable,
-                deviceName,
-                deviceIntent,
-                showBroadcastButton = false,
-            )
+            return MediaDeviceData(enabled, deviceDrawable, deviceName, deviceIntent)
         }
         return null
     }

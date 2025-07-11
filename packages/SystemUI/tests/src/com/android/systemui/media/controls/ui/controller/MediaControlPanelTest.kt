@@ -62,7 +62,6 @@ import com.android.settingslib.media.LocalMediaManager.MediaDeviceState
 import com.android.systemui.ActivityIntentHelper
 import com.android.systemui.Flags
 import com.android.systemui.SysuiTestCase
-import com.android.systemui.bluetooth.BroadcastDialogController
 import com.android.systemui.broadcast.BroadcastSender
 import com.android.systemui.communal.domain.interactor.CommunalSceneInteractor
 import com.android.systemui.flags.DisableSceneContainer
@@ -159,7 +158,6 @@ public class MediaControlPanelTest : SysuiTestCase() {
     @Mock private lateinit var mediaCarouselController: MediaCarouselController
     @Mock private lateinit var falsingManager: FalsingManager
     @Mock private lateinit var transitionParent: ViewGroup
-    @Mock private lateinit var broadcastDialogController: BroadcastDialogController
     @Mock private lateinit var suggestionDrawable: Drawable
     private lateinit var appIcon: ImageView
     @Mock private lateinit var albumView: ImageView
@@ -201,8 +199,7 @@ public class MediaControlPanelTest : SysuiTestCase() {
 
     private lateinit var session: MediaSession
     private lateinit var device: MediaDeviceData
-    private val disabledDevice =
-        MediaDeviceData(false, null, DISABLED_DEVICE_NAME, null, showBroadcastButton = false)
+    private val disabledDevice = MediaDeviceData(false, null, DISABLED_DEVICE_NAME, null)
     private lateinit var mediaData: MediaData
     private val clock = FakeSystemClock()
     @Mock private lateinit var logger: MediaUiEventLogger
@@ -263,7 +260,6 @@ public class MediaControlPanelTest : SysuiTestCase() {
                     activityIntentHelper,
                     communalSceneInteractor,
                     lockscreenUserManager,
-                    broadcastDialogController,
                     globalSettings,
                 ) {
                 override fun loadAnimator(
@@ -278,7 +274,7 @@ public class MediaControlPanelTest : SysuiTestCase() {
         initGutsViewHolderMocks()
         initMediaViewHolderMocks()
 
-        initDeviceMediaData(false, DEVICE_NAME)
+        initDeviceMediaData(DEVICE_NAME)
     }
 
     private fun initGutsViewHolderMocks() {
@@ -295,9 +291,8 @@ public class MediaControlPanelTest : SysuiTestCase() {
         whenever(gutsViewHolder.dismissText).thenReturn(dismissText)
     }
 
-    private fun initDeviceMediaData(shouldShowBroadcastButton: Boolean, name: String) {
-        device =
-            MediaDeviceData(true, null, name, null, showBroadcastButton = shouldShowBroadcastButton)
+    private fun initDeviceMediaData(name: String) {
+        device = MediaDeviceData(true, null, name, null)
 
         // Create media session
         val metadataBuilder =
@@ -1287,28 +1282,6 @@ public class MediaControlPanelTest : SysuiTestCase() {
 
         assertThat(seamlessText.visibility).isEqualTo(View.VISIBLE)
         assertThat(deviceSuggestionButton.visibility).isEqualTo(View.GONE)
-    }
-
-    @Test
-    @RequiresFlagsEnabled(com.android.settingslib.flags.Flags.FLAG_LEGACY_LE_AUDIO_SHARING)
-    fun bindBroadcastButton() {
-        initMediaViewHolderMocks()
-        initDeviceMediaData(true, APP_NAME)
-
-        val mockAvd0 = mock(AnimatedVectorDrawable::class.java)
-        whenever(mockAvd0.mutate()).thenReturn(mockAvd0)
-        val semanticActions0 =
-            MediaButton(playOrPause = MediaAction(mockAvd0, Runnable {}, "play", null))
-        val state =
-            mediaData.copy(resumption = true, semanticActions = semanticActions0, isPlaying = false)
-        player.attachPlayer(viewHolder)
-        player.bindPlayer(state, PACKAGE)
-        assertThat(seamlessText.getText()).isEqualTo(APP_NAME)
-        assertThat(seamless.isEnabled()).isTrue()
-
-        seamless.callOnClick()
-
-        verify(logger).logOpenBroadcastDialog(anyInt(), eq(PACKAGE), eq(instanceId))
     }
 
     /* ***** Guts tests for the player ***** */
