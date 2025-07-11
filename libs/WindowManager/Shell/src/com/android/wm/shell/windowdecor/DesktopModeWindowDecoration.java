@@ -124,12 +124,12 @@ import kotlin.Pair;
 import kotlin.Unit;
 import kotlin.jvm.functions.Function0;
 import kotlin.jvm.functions.Function1;
+import kotlin.jvm.functions.Function2;
 
 import kotlinx.coroutines.CoroutineScope;
 import kotlinx.coroutines.MainCoroutineDispatcher;
 
 import java.util.ArrayList;
-import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
@@ -150,6 +150,7 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
     private final @ShellMainThread Handler mHandler;
     private final @ShellMainThread ShellExecutor mMainExecutor;
     private final @ShellMainThread MainCoroutineDispatcher mMainDispatcher;
+    private final @ShellMainThread CoroutineScope mMainScope;
     private final @ShellBackgroundThread CoroutineScope mBgScope;
     private final @ShellBackgroundThread ShellExecutor mBgExecutor;
     private final Transitions mTransitions;
@@ -216,8 +217,6 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
     private final DesktopModeUiEventLogger mDesktopModeUiEventLogger;
     private boolean mIsRecentsTransitionRunning = false;
     private boolean mIsDragging = false;
-    private Runnable mLoadAppInfoRunnable;
-    private Runnable mSetAppInfoRunnable;
 
     private final Function0<Unit> mCloseMaximizeMenuFunction = () -> {
         closeMaximizeMenu();
@@ -242,6 +241,7 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
             @ShellMainThread Handler handler,
             @ShellMainThread ShellExecutor mainExecutor,
             @ShellMainThread MainCoroutineDispatcher mainDispatcher,
+            @ShellMainThread CoroutineScope mainScope,
             @ShellBackgroundThread CoroutineScope bgScope,
             @ShellBackgroundThread ShellExecutor bgExecutor,
             Transitions transitions,
@@ -264,8 +264,8 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
             LockTaskChangeListener lockTaskChangeListener) {
         this (context, userContext, displayController, taskResourceLoader, splitScreenController,
                 desktopUserRepositories, taskOrganizer, taskInfo, taskSurface, handler,
-                mainExecutor, mainDispatcher, bgScope, bgExecutor, transitions, choreographer,
-                syncQueue, appHeaderViewHolderFactory, appHandleViewHolderFactory,
+                mainExecutor, mainDispatcher, mainScope, bgScope, bgExecutor, transitions,
+                choreographer, syncQueue, appHeaderViewHolderFactory, appHandleViewHolderFactory,
                 rootTaskDisplayAreaOrganizer, genericLinksParser, assistContentRequester,
                 SurfaceControl.Builder::new, SurfaceControl.Transaction::new,
                 WindowContainerTransaction::new, SurfaceControl::new, new WindowManagerWrapper(
@@ -292,6 +292,7 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
             @ShellMainThread Handler handler,
             @ShellMainThread ShellExecutor mainExecutor,
             @ShellMainThread MainCoroutineDispatcher mainDispatcher,
+            @ShellMainThread CoroutineScope mainScope,
             @ShellBackgroundThread CoroutineScope bgScope,
             @ShellBackgroundThread ShellExecutor bgExecutor,
             Transitions transitions,
@@ -329,6 +330,7 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
         mHandler = handler;
         mMainExecutor = mainExecutor;
         mMainDispatcher = mainDispatcher;
+        mMainScope = mainScope;
         mBgScope = bgScope;
         mBgExecutor = bgExecutor;
         mTransitions = transitions;
@@ -544,6 +546,7 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
                         notifyCaptionStateChanged();
                     }
                 }
+                return Unit.INSTANCE;
             });
         }
 
@@ -573,30 +576,16 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
     }
 
     /**
-     * Loads the task's name and icon in a background thread and posts the results back in the
-     * main thread.
+     * Loads the task's name and icon in a background thread (if they are not cached) and posts the
+     * results back in the main thread.
      */
-    private void loadTaskNameAndIconInBackground(BiConsumer<CharSequence, Bitmap> onResult) {
+    private void loadTaskNameAndIconInBackground(Function2<CharSequence, Bitmap, Unit> onResult) {
         if (mWindowDecorViewHolder == null) return;
         if (asAppHeader(mWindowDecorViewHolder) == null) {
             // Only needed when drawing a header.
             return;
         }
-        if (mLoadAppInfoRunnable != null) {
-            mBgExecutor.removeCallbacks(mLoadAppInfoRunnable);
-        }
-        if (mSetAppInfoRunnable != null) {
-            mMainExecutor.removeCallbacks(mSetAppInfoRunnable);
-        }
-        mLoadAppInfoRunnable = () -> {
-            final CharSequence name = mTaskResourceLoader.getName(mTaskInfo);
-            final Bitmap icon = mTaskResourceLoader.getHeaderIcon(mTaskInfo);
-            mSetAppInfoRunnable = () -> {
-                onResult.accept(name, icon);
-            };
-            mMainExecutor.execute(mSetAppInfoRunnable);
-        };
-        mBgExecutor.execute(mLoadAppInfoRunnable);
+        mTaskResourceLoader.getNameAndHeaderIcon(mTaskInfo, onResult);
     }
 
     private boolean showInputLayer() {
@@ -1298,7 +1287,7 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
                 mTaskResourceLoader,
                 mSurfaceControlTransactionSupplier,
                 mMainDispatcher,
-                mBgScope,
+                mMainScope,
                 new OpenByDefaultDialog.DialogLifecycleListener() {
                     @Override
                     public void onDialogCreated() {
@@ -1336,7 +1325,7 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
     private void createResizeVeilIfNeeded() {
         if (mResizeVeil != null) return;
         mResizeVeil = new ResizeVeil(mContext, mDisplayController, mTaskResourceLoader,
-                mMainDispatcher, mBgScope, mTaskSurface,
+                mMainDispatcher, mMainScope, mTaskSurface,
                 mSurfaceControlTransactionSupplier, mTaskInfo);
     }
 
@@ -1570,7 +1559,7 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
         }
         mHandleMenu = mHandleMenuFactory.create(
                 mMainDispatcher,
-                mBgScope,
+                mMainScope,
                 this,
                 mWindowManagerWrapper,
                 mWindowDecorationActions,
@@ -1874,12 +1863,6 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
 
     @Override
     public void close() {
-        if (mLoadAppInfoRunnable != null) {
-            mBgExecutor.removeCallbacks(mLoadAppInfoRunnable);
-        }
-        if (mSetAppInfoRunnable != null) {
-            mMainExecutor.removeCallbacks(mSetAppInfoRunnable);
-        }
         mTaskResourceLoader.onWindowDecorClosed(mTaskInfo);
         closeDragResizeListener();
         closeHandleMenu();

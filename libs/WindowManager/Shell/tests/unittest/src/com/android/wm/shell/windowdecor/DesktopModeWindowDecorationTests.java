@@ -200,6 +200,8 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
     @Mock
     private MainCoroutineDispatcher mMockMainCoroutineDispatcher;
     @Mock
+    private CoroutineScope mMockMainCoroutineScope;
+    @Mock
     private CoroutineScope mMockBgCoroutineScope;
     @Mock
     private SyncTransactionQueue mMockSyncQueue;
@@ -2004,7 +2006,8 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
                 mContext, mMockDisplayController, mMockTaskResourceLoader,
                 mMockSplitScreenController, mMockDesktopUserRepositories, mMockShellTaskOrganizer,
                 taskInfo, mMockSurfaceControl, handler, mMainExecutor,
-                mMockMainCoroutineDispatcher, mMockBgCoroutineScope, mBgExecutor, mTransitions,
+                mMockMainCoroutineDispatcher, mMockMainCoroutineScope, mMockBgCoroutineScope,
+                mBgExecutor, mTransitions,
                 mMockChoreographer, mMockSyncQueue, mMockAppHeaderViewHolderFactory,
                 mMockAppHandleViewHolderFactory, mMockRootTaskDisplayAreaOrganizer,
                 mMockGenericLinksParser, mMockAssistContentRequester, SurfaceControl.Builder::new,

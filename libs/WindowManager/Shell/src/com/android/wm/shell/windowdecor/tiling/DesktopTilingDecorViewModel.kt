@@ -58,6 +58,7 @@ import kotlinx.coroutines.MainCoroutineDispatcher
 class DesktopTilingDecorViewModel(
     private val context: Context,
     @ShellMainThread private val mainDispatcher: MainCoroutineDispatcher,
+    @ShellMainThread private val mainScope: CoroutineScope,
     @ShellBackgroundThread private val bgScope: CoroutineScope,
     private val displayController: DisplayController,
     private val rootTdaOrganizer: RootTaskDisplayAreaOrganizer,
@@ -106,6 +107,7 @@ class DesktopTilingDecorViewModel(
                     DesktopTilingWindowDecoration(
                         context,
                         mainDispatcher,
+                        mainScope,
                         bgScope,
                         syncQueue,
                         displayController,
