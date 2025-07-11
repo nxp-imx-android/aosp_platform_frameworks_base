@@ -84,6 +84,8 @@ import static com.android.server.am.ActivityManagerService.TAG_LRU;
 import static com.android.server.am.ActivityManagerService.TAG_OOM_ADJ;
 import static com.android.server.am.ActivityManagerService.TAG_UID_OBSERVERS;
 import static com.android.server.am.AppProfiler.TAG_PSS;
+import static com.android.server.am.OomAdjusterImpl.Connection.CPU_TIME_TRANSMISSION_LEGACY;
+import static com.android.server.am.OomAdjusterImpl.Connection.CPU_TIME_TRANSMISSION_NONE;
 import static com.android.server.am.ProcessList.CACHED_APP_IMPORTANCE_LEVELS;
 import static com.android.server.am.ProcessList.CACHED_APP_MAX_ADJ;
 import static com.android.server.am.ProcessList.CACHED_APP_MIN_ADJ;
@@ -113,6 +115,7 @@ import static com.android.server.wm.WindowProcessController.ACTIVITY_STATE_FLAG_
 import static com.android.server.wm.WindowProcessController.ACTIVITY_STATE_FLAG_IS_VISIBLE;
 import static com.android.server.wm.WindowProcessController.ACTIVITY_STATE_FLAG_MASK_MIN_TASK_LAYER;
 
+import android.annotation.IntDef;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.UserIdInt;
@@ -154,6 +157,8 @@ import com.android.server.am.psc.UidRecordInternal;
 import com.android.server.wm.WindowProcessController;
 
 import java.io.PrintWriter;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -164,6 +169,66 @@ import java.util.List;
  */
 public abstract class OomAdjuster {
     static final String TAG = "OomAdjuster";
+
+    /** To be used when the process does not have PROCESS_CAPABILITY_CPU_TIME. */
+    public static final int CPU_TIME_REASON_NONE = 0;
+    /** The process has PROCESS_CAPABILITY_CPU_TIME, but the reason is not interesting for logs. */
+    public static final int CPU_TIME_REASON_OTHER = 0x1;
+    /**
+     * The process has PROCESS_CAPABILITY_CPU_TIME because it was transmitted over a connection
+     * from a client. This is interesting because this reason will cease to exist if all the
+     * responsible bindings started using {@link Context#BIND_ALLOW_FREEZE}.
+     */
+    public static final int CPU_TIME_REASON_TRANSMITTED = 0x2;
+    /**
+     * The process has PROCESS_CAPABILITY_CPU_TIME because it was transmitted over a connection
+     * from a client transitively only because of {@link Context#BIND_SIMULATE_ALLOW_FREEZE}.
+     * This indicates that this reason will soon go away and in absence of other reasons, the app
+     * will not have PROCESS_CAPABILITY_CPU_TIME.
+     */
+    public static final int CPU_TIME_REASON_TRANSMITTED_LEGACY = 0x4;
+
+    @IntDef(flag = true, prefix = "CPU_TIME_REASON_", value = {
+            CPU_TIME_REASON_NONE,
+            CPU_TIME_REASON_OTHER,
+            CPU_TIME_REASON_TRANSMITTED,
+            CPU_TIME_REASON_TRANSMITTED_LEGACY,
+    })
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface CpuTimeReasons {
+    }
+
+    /** To be used when the process does not have PROCESS_CAPABILITY_IMPLICIT_CPU_TIME. */
+    public static final int IMPLICIT_CPU_TIME_REASON_NONE = 0;
+    /**
+     * The process has PROCESS_CAPABILITY_IMPLICIT_CPU_TIME, but the reason is not interesting for
+     * logs.
+     */
+    public static final int IMPLICIT_CPU_TIME_REASON_OTHER = 0x1;
+    /**
+     * The process has PROCESS_CAPABILITY_IMPLICIT_CPU_TIME because it was transmitted over a
+     * connection from a client. This is interesting because this reason will cease to exist if all
+     * the responsible bindings started using {@link Context#BIND_ALLOW_FREEZE}.
+     */
+    public static final int IMPLICIT_CPU_TIME_REASON_TRANSMITTED = 0x2;
+    /**
+     * The process has PROCESS_CAPABILITY_IMPLICIT_CPU_TIME because it was transmitted over a
+     * connection from a client transitively only because of
+     * {@link Context#BIND_SIMULATE_ALLOW_FREEZE}.
+     * This indicates that this reason will soon go away and in absence of other reasons, the app
+     * will not have PROCESS_CAPABILITY_IMPLICIT_CPU_TIME.
+     */
+    public static final int IMPLICIT_CPU_TIME_REASON_TRANSMITTED_LEGACY = 0x4;
+
+    @IntDef(flag = true, prefix = "IMPLICIT_CPU_TIME_REASON_", value = {
+            IMPLICIT_CPU_TIME_REASON_NONE,
+            IMPLICIT_CPU_TIME_REASON_OTHER,
+            IMPLICIT_CPU_TIME_REASON_TRANSMITTED,
+            IMPLICIT_CPU_TIME_REASON_TRANSMITTED_LEGACY,
+    })
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface ImplicitCpuTimeReasons {
+    }
 
     public static final int oomAdjReasonToProto(@OomAdjReason int oomReason) {
         switch (oomReason) {
@@ -1946,44 +2011,51 @@ public abstract class OomAdjuster {
         return baseCapabilities | networkCapabilities;
     }
 
-    protected static int getCpuCapability(ProcessRecord app, long nowUptime,
-            boolean hasForegroundActivities) {
-        // Note: persistent processes get all capabilities, including CPU_TIME.
+    @CpuTimeReasons
+    private static int getCpuTimeReasons(ProcessRecord app, boolean hasForegroundActivities) {
+        // Note: persistent processes always get CPU_TIME with reason CPU_TIME_REASON_OTHER.
+        // Currently, we only cite CPU_TIME_REASON_OTHER for all reasons. More specific reasons
+        // can be used when they become interesting to observe.
         final UidRecordInternal uidRec = app.getUidRecord();
         if (uidRec != null && uidRec.isCurAllowListed()) {
             // Process is in the power allowlist.
-            return PROCESS_CAPABILITY_CPU_TIME;
+            return CPU_TIME_REASON_OTHER;
         }
         if (hasForegroundActivities) {
             // TODO: b/402987519 - This grants the Top Sleeping process CPU_TIME but eventually
             //  should not.
             // Process has user perceptible activities.
-            return PROCESS_CAPABILITY_CPU_TIME;
+            return CPU_TIME_REASON_OTHER;
         }
         if (app.mServices.numberOfExecutingServices() > 0) {
             // Ensure that services get cpu time during start-up and tear-down.
-            return PROCESS_CAPABILITY_CPU_TIME;
+            return CPU_TIME_REASON_OTHER;
         }
         if (app.mServices.hasForegroundServices()) {
-            return PROCESS_CAPABILITY_CPU_TIME;
+            return CPU_TIME_REASON_OTHER;
         }
         if (app.mReceivers.isReceivingBroadcast()) {
-            return PROCESS_CAPABILITY_CPU_TIME;
+            return CPU_TIME_REASON_OTHER;
         }
         if (app.hasActiveInstrumentation()) {
-            return PROCESS_CAPABILITY_CPU_TIME;
+            return CPU_TIME_REASON_OTHER;
         }
         // TODO(b/370817323): Populate this method with all of the reasons to keep a process
         //  unfrozen.
-        return 0;
+        return CPU_TIME_REASON_NONE;
+    }
+
+    protected static int getCpuCapability(ProcessRecord app, boolean hasForegroundActivities) {
+        final int reasons = getCpuTimeReasons(app, hasForegroundActivities);
+        app.addCurCpuTimeReasons(reasons);
+        return (reasons != CPU_TIME_REASON_NONE) ? PROCESS_CAPABILITY_CPU_TIME : 0;
     }
 
     // Grant PROCESS_CAPABILITY_IMPLICIT_CPU_TIME to processes based on oom adj score.
     protected int getImplicitCpuCapability(ProcessRecordInternal app, int adj) {
-        if (adj < mConstants.FREEZER_CUTOFF_ADJ) {
-            return PROCESS_CAPABILITY_IMPLICIT_CPU_TIME;
-        }
-        if (app.getMaxAdj() < mConstants.FREEZER_CUTOFF_ADJ) {
+        if (adj < mConstants.FREEZER_CUTOFF_ADJ
+                || app.getMaxAdj() < mConstants.FREEZER_CUTOFF_ADJ) {
+            app.addCurImplicitCpuTimeReasons(IMPLICIT_CPU_TIME_REASON_OTHER);
             return PROCESS_CAPABILITY_IMPLICIT_CPU_TIME;
         }
         return 0;
@@ -2039,13 +2111,49 @@ public abstract class OomAdjuster {
     /**
      * @return the CPU capability from a client (of a service binding or provider).
      */
-    protected static int getCpuCapabilityFromClient(OomAdjusterImpl.Connection conn,
-            ProcessRecordInternal client) {
-        if (conn == null || conn.transmitsCpuTime()) {
-            return client.getCurCapability() & ALL_CPU_TIME_CAPABILITIES;
-        } else {
+    protected static int getCpuCapabilitiesFromClient(ProcessRecordInternal app,
+            ProcessRecord client, OomAdjusterImpl.Connection conn) {
+        final int clientCpuCaps = client.getCurCapability() & ALL_CPU_TIME_CAPABILITIES;
+        final @CpuTimeReasons int clientCpuReasons = client.getCurCpuTimeReasons();
+        final @ImplicitCpuTimeReasons int clientImplicitCpuReasons =
+                client.getCurImplicitCpuTimeReasons();
+
+        final @OomAdjusterImpl.Connection.CpuTimeTransmissionType int transmissionType =
+                (conn != null) ? conn.cpuTimeTransmissionType() : CPU_TIME_TRANSMISSION_NONE;
+
+        if (transmissionType == CPU_TIME_TRANSMISSION_NONE) {
+            // The binding does not transmit CPU_TIME capabilities in any way.
             return 0;
         }
+
+        @CpuTimeReasons int cpuReasons = CPU_TIME_REASON_NONE;
+        @ImplicitCpuTimeReasons int implicitCpuReasons = IMPLICIT_CPU_TIME_REASON_NONE;
+
+        if ((clientCpuCaps & PROCESS_CAPABILITY_CPU_TIME) != 0) {
+            if (clientCpuReasons == CPU_TIME_REASON_TRANSMITTED_LEGACY) {
+                // Client has CPU_TIME only for a legacy reason.
+                cpuReasons = CPU_TIME_REASON_TRANSMITTED_LEGACY;
+            } else if (transmissionType == CPU_TIME_TRANSMISSION_LEGACY) {
+                // Binding only transmits CPU_TIME for a legacy reason.
+                cpuReasons = CPU_TIME_REASON_TRANSMITTED_LEGACY;
+            } else {
+                cpuReasons = CPU_TIME_REASON_TRANSMITTED;
+            }
+        }
+        if ((clientCpuCaps & PROCESS_CAPABILITY_IMPLICIT_CPU_TIME) != 0) {
+            if (clientImplicitCpuReasons == IMPLICIT_CPU_TIME_REASON_TRANSMITTED_LEGACY) {
+                // Client has IMPLICIT_CPU_TIME only for a legacy reason.
+                implicitCpuReasons = IMPLICIT_CPU_TIME_REASON_TRANSMITTED_LEGACY;
+            } else if (transmissionType == CPU_TIME_TRANSMISSION_LEGACY) {
+                // Binding only transmits IMPLICIT_CPU_TIME for a legacy reason.
+                implicitCpuReasons = IMPLICIT_CPU_TIME_REASON_TRANSMITTED_LEGACY;
+            } else {
+                implicitCpuReasons = IMPLICIT_CPU_TIME_REASON_TRANSMITTED;
+            }
+        }
+        app.addCurCpuTimeReasons(cpuReasons);
+        app.addCurImplicitCpuTimeReasons(implicitCpuReasons);
+        return clientCpuCaps;
     }
 
     /** Inform the oomadj observer of changes to oomadj. Used by tests. */
@@ -2283,6 +2391,8 @@ public abstract class OomAdjuster {
 
         if (state.getCurCapability() != state.getSetCapability()) {
             state.setSetCapability(state.getCurCapability());
+            state.setSetCpuTimeReasons(state.getCurCpuTimeReasons());
+            state.setSetImplicitCpuTimeReasons(state.getCurImplicitCpuTimeReasons());
         }
 
         final boolean curBoundByNonBgRestrictedApp = state.isCurBoundByNonBgRestrictedApp();
@@ -2375,6 +2485,8 @@ public abstract class OomAdjuster {
         state.setCurProcState(initialProcState);
         state.setCurRawProcState(initialProcState);
         state.setCurCapability(initialCapability);
+        state.addCurCpuTimeReasons(CPU_TIME_REASON_OTHER);
+        state.addCurImplicitCpuTimeReasons(IMPLICIT_CPU_TIME_REASON_OTHER);
 
         state.setCurAdj(ProcessList.FOREGROUND_APP_ADJ);
         state.setCurRawAdj(ProcessList.FOREGROUND_APP_ADJ);
@@ -2580,7 +2692,7 @@ public abstract class OomAdjuster {
             if ((proc.getCurCapability() & ALL_CPU_TIME_CAPABILITIES) != 0) {
                 /// App is important enough (see {@link #getCpuCapability} and
                 /// {@link #getImplicitCpuCapability}) or bound by something important enough to
-                /// not be frozen (see {@link #getCpuCapabilityFromClient}).
+                /// not be frozen (see {@link #getCpuCapabilitiesFromClient}).
                 return false;
             }
 
@@ -2641,6 +2753,8 @@ public abstract class OomAdjuster {
                             == PROCESS_CAPABILITY_IMPLICIT_CPU_TIME;
             final boolean implicitCpuCapabilityChanged =
                     hasImplicitCpuCapability != usedToHaveImplicitCpuCapability;
+            final int cpuTimeReasons = app.getCurCpuTimeReasons();
+            final int implicitCpuTimeReasons = app.getCurImplicitCpuTimeReasons();
             if ((oomAdjChanged || shouldNotFreezeChanged || cpuCapabilityChanged
                     || implicitCpuCapabilityChanged)
                     && Trace.isTagEnabled(Trace.TRACE_TAG_ACTIVITY_MANAGER)) {
@@ -2659,7 +2773,9 @@ public abstract class OomAdjuster {
                         + "/" + app.getPid()
                         + "/" + state.getCurAdj()
                         + "/" + oldOomAdj
-                        + "/" + opt.shouldNotFreezeReason());
+                        + "/" + opt.shouldNotFreezeReason()
+                        + "/" + cpuTimeReasons
+                        + "/" + implicitCpuTimeReasons);
                 Trace.instantForTrack(Trace.TRACE_TAG_ACTIVITY_MANAGER,
                         CachedAppOptimizer.ATRACE_FREEZER_TRACK,
                         "updateAppFreezeStateLSP " + app.processName
@@ -2672,7 +2788,10 @@ public abstract class OomAdjuster {
                         + " oldOomAdj: " + oldOomAdj
                         + " immediate: " + immediate
                         + " cpuCapability: " + hasCpuCapability
-                        + " implicitCpuCapability: " + hasImplicitCpuCapability);
+                        + " implicitCpuCapability: " + hasImplicitCpuCapability
+                        + " cpuTimeReasons: 0x" + Integer.toHexString(cpuTimeReasons)
+                        + " implicitCpuTimeReasons: 0x"
+                                + Integer.toHexString(implicitCpuTimeReasons));
             }
         }
 

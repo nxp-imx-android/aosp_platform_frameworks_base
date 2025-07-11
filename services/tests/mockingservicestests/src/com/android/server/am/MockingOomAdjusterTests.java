@@ -48,6 +48,13 @@ import static android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE
 import static androidx.test.platform.app.InstrumentationRegistry.getInstrumentation;
 
 import static com.android.server.am.ActivityManagerService.FOLLOW_UP_OOMADJUSTER_UPDATE_MSG;
+import static com.android.server.am.OomAdjuster.CPU_TIME_REASON_NONE;
+import static com.android.server.am.OomAdjuster.CPU_TIME_REASON_OTHER;
+import static com.android.server.am.OomAdjuster.CPU_TIME_REASON_TRANSMITTED;
+import static com.android.server.am.OomAdjuster.CPU_TIME_REASON_TRANSMITTED_LEGACY;
+import static com.android.server.am.OomAdjuster.IMPLICIT_CPU_TIME_REASON_NONE;
+import static com.android.server.am.OomAdjuster.IMPLICIT_CPU_TIME_REASON_OTHER;
+import static com.android.server.am.OomAdjuster.IMPLICIT_CPU_TIME_REASON_TRANSMITTED;
 import static com.android.server.am.ProcessList.BACKUP_APP_ADJ;
 import static com.android.server.am.ProcessList.CACHED_APP_IMPORTANCE_LEVELS;
 import static com.android.server.am.ProcessList.CACHED_APP_MAX_ADJ;
@@ -329,18 +336,31 @@ public class MockingOomAdjusterTests {
 
     private static void assertNoCpuTime(ProcessRecord app) {
         assertCapability(false, app, PROCESS_CAPABILITY_CPU_TIME);
+        assertEquals(CPU_TIME_REASON_NONE, app.getCurCpuTimeReasons());
     }
 
     private static void assertCpuTime(ProcessRecord app) {
+        assertCpuTime(app, CPU_TIME_REASON_OTHER);
+    }
+
+    private static void assertCpuTime(ProcessRecord app, @OomAdjuster.CpuTimeReasons int reasons) {
         assertCapability(true, app, PROCESS_CAPABILITY_CPU_TIME);
+        assertEquals(reasons, app.getCurCpuTimeReasons());
     }
 
     private static void assertNoImplicitCpuTime(ProcessRecord app) {
         assertCapability(false, app, PROCESS_CAPABILITY_IMPLICIT_CPU_TIME);
+        assertEquals(IMPLICIT_CPU_TIME_REASON_NONE, app.getCurImplicitCpuTimeReasons());
     }
 
     private static void assertImplicitCpuTime(ProcessRecord app) {
+        assertImplicitCpuTime(app, IMPLICIT_CPU_TIME_REASON_OTHER);
+    }
+
+    private static void assertImplicitCpuTime(ProcessRecord app,
+            @OomAdjuster.ImplicitCpuTimeReasons int reasons) {
         assertCapability(true, app, PROCESS_CAPABILITY_IMPLICIT_CPU_TIME);
+        assertEquals(reasons, app.getCurImplicitCpuTimeReasons());
     }
 
     private static void assertBfsl(ProcessRecord app) {
@@ -426,6 +446,7 @@ public class MockingOomAdjusterTests {
 
         assertProcStates(app, PROCESS_STATE_BOUND_FOREGROUND_SERVICE, PERSISTENT_PROC_ADJ,
                 SCHED_GROUP_RESTRICTED);
+        assertImplicitCpuTime(app);
         assertBfsl(app);
     }
 
@@ -441,6 +462,7 @@ public class MockingOomAdjusterTests {
 
         assertProcStates(app, PROCESS_STATE_PERSISTENT_UI, PERSISTENT_PROC_ADJ,
                 SCHED_GROUP_TOP_APP);
+        assertImplicitCpuTime(app);
     }
 
     @SuppressWarnings("GuardedBy")
@@ -456,6 +478,7 @@ public class MockingOomAdjusterTests {
 
         assertProcStates(app, PROCESS_STATE_PERSISTENT_UI, PERSISTENT_PROC_ADJ,
                 SCHED_GROUP_TOP_APP);
+        assertImplicitCpuTime(app);
     }
 
     @SuppressWarnings("GuardedBy")
@@ -470,6 +493,7 @@ public class MockingOomAdjusterTests {
         setTopProcess(null);
 
         assertProcStates(app, PROCESS_STATE_TOP, FOREGROUND_APP_ADJ, SCHED_GROUP_TOP_APP);
+        assertImplicitCpuTime(app);
     }
 
     @SuppressWarnings("GuardedBy")
@@ -484,6 +508,7 @@ public class MockingOomAdjusterTests {
         setTopProcessState(PROCESS_STATE_TOP);
 
         assertProcStates(app, PROCESS_STATE_TOP_SLEEPING, VISIBLE_APP_ADJ, SCHED_GROUP_TOP_APP);
+        assertImplicitCpuTime(app);
     }
 
     @SuppressWarnings("GuardedBy")
@@ -498,6 +523,7 @@ public class MockingOomAdjusterTests {
 
         assertProcStates(app, PROCESS_STATE_FOREGROUND_SERVICE, FOREGROUND_APP_ADJ,
                 SCHED_GROUP_DEFAULT);
+        assertImplicitCpuTime(app);
         assertBfsl(app);
     }
 
@@ -512,6 +538,7 @@ public class MockingOomAdjusterTests {
         updateOomAdj(app);
 
         assertProcStates(app, PROCESS_STATE_RECEIVER, FOREGROUND_APP_ADJ, SCHED_GROUP_BACKGROUND);
+        assertImplicitCpuTime(app);
     }
 
     @SuppressWarnings("GuardedBy")
@@ -525,12 +552,14 @@ public class MockingOomAdjusterTests {
 
         assertProcStates(app, PROCESS_STATE_TOP_SLEEPING, FOREGROUND_APP_ADJ,
                 SCHED_GROUP_BACKGROUND);
+        assertImplicitCpuTime(app);
         assertTrue(app.getHasForegroundActivities());
 
         setIsReceivingBroadcast(app, true, SCHED_GROUP_BACKGROUND);
         updateOomAdj(app);
 
         assertProcStates(app, PROCESS_STATE_RECEIVER, FOREGROUND_APP_ADJ, SCHED_GROUP_BACKGROUND);
+        assertImplicitCpuTime(app);
         assertTrue(app.getHasForegroundActivities());
     }
 
@@ -544,6 +573,7 @@ public class MockingOomAdjusterTests {
         updateOomAdj(app);
 
         assertProcStates(app, PROCESS_STATE_SERVICE, FOREGROUND_APP_ADJ, SCHED_GROUP_BACKGROUND);
+        assertImplicitCpuTime(app);
     }
 
     @SuppressWarnings("GuardedBy")
@@ -561,6 +591,7 @@ public class MockingOomAdjusterTests {
 
         assertProcStates(app, PROCESS_STATE_TOP_SLEEPING, FOREGROUND_APP_ADJ,
                 SCHED_GROUP_BACKGROUND);
+        assertImplicitCpuTime(app);
     }
 
     @SuppressWarnings("GuardedBy")
@@ -593,6 +624,10 @@ public class MockingOomAdjusterTests {
         updateOomAdj(app);
 
         assertProcStates(app, PROCESS_STATE_TOP, VISIBLE_APP_ADJ, SCHED_GROUP_DEFAULT);
+        assertImplicitCpuTime(app);
+        assertFalse(app.isCached());
+        assertFalse(app.isEmpty());
+        assertEquals("vis-activity", app.getAdjType());
         assertFalse(app.isCached());
         assertFalse(app.isEmpty());
         assertEquals("vis-activity", app.getAdjType());
@@ -602,6 +637,8 @@ public class MockingOomAdjusterTests {
                 | WindowProcessController.ACTIVITY_STATE_FLAG_RESUMED_SPLIT_SCREEN);
         updateOomAdj(app);
         assertProcStates(app, PROCESS_STATE_TOP, VISIBLE_APP_ADJ, SCHED_GROUP_TOP_APP);
+        assertImplicitCpuTime(app);
+        assertEquals("resumed-split-screen-activity", app.getAdjType());
         assertEquals("resumed-split-screen-activity", app.getAdjType());
         assertCpuTime(app);
 
@@ -609,6 +646,8 @@ public class MockingOomAdjusterTests {
                 | WindowProcessController.ACTIVITY_STATE_FLAG_PERCEPTIBLE_FREEFORM);
         updateOomAdj(app);
         assertProcStates(app, PROCESS_STATE_TOP, VISIBLE_APP_ADJ, SCHED_GROUP_TOP_APP);
+        assertImplicitCpuTime(app);
+        assertEquals("perceptible-freeform-activity", app.getAdjType());
         assertEquals("perceptible-freeform-activity", app.getAdjType());
         assertCpuTime(app);
 
@@ -617,6 +656,8 @@ public class MockingOomAdjusterTests {
         updateOomAdj(app);
         assertProcStates(app, PROCESS_STATE_TOP, VISIBLE_APP_ADJ,
                 SCHED_GROUP_FOREGROUND_WINDOW);
+        assertImplicitCpuTime(app);
+        assertEquals("vis-multi-window-activity", app.getAdjType());
         assertEquals("vis-multi-window-activity", app.getAdjType());
         assertCpuTime(app);
 
@@ -624,6 +665,8 @@ public class MockingOomAdjusterTests {
                 | WindowProcessController.ACTIVITY_STATE_FLAG_OCCLUDED_FREEFORM);
         updateOomAdj(app);
         assertProcStates(app, PROCESS_STATE_TOP, VISIBLE_APP_ADJ, SCHED_GROUP_BACKGROUND);
+        assertImplicitCpuTime(app);
+        assertEquals("occluded-freeform-activity", app.getAdjType());
         assertEquals("occluded-freeform-activity", app.getAdjType());
         assertCpuTime(app);
     }
@@ -640,12 +683,14 @@ public class MockingOomAdjusterTests {
         updateOomAdj(app);
         assertProcStates(app, PROCESS_STATE_TOP, PERCEPTIBLE_APP_ADJ, SCHED_GROUP_DEFAULT,
                 "pause-activity");
+        assertImplicitCpuTime(app);
         assertCpuTime(app);
 
         setActivityStateFlags(wpc, ACTIVITY_STATE_FLAG_IS_STOPPING);
         updateOomAdj(app);
         assertProcStates(app, PROCESS_STATE_LAST_ACTIVITY, PERCEPTIBLE_APP_ADJ,
                 SCHED_GROUP_BACKGROUND, "stop-activity");
+        assertImplicitCpuTime(app);
         assertCpuTime(app);
 
         setActivityStateFlags(wpc, ACTIVITY_STATE_FLAG_IS_STOPPING_FINISHING);
@@ -684,6 +729,7 @@ public class MockingOomAdjusterTests {
 
         assertProcStates(app, PROCESS_STATE_FOREGROUND_SERVICE, PERCEPTIBLE_APP_ADJ,
                 SCHED_GROUP_DEFAULT);
+        assertImplicitCpuTime(app);
         assertBfsl(app);
     }
 
@@ -699,6 +745,7 @@ public class MockingOomAdjusterTests {
 
         assertProcStates(app, PROCESS_STATE_FOREGROUND_SERVICE, PERCEPTIBLE_APP_ADJ,
                 SCHED_GROUP_DEFAULT);
+        assertImplicitCpuTime(app);
         assertBfsl(app);
     }
 
@@ -729,6 +776,7 @@ public class MockingOomAdjusterTests {
 
             assertProcStates(app, PROCESS_STATE_FOREGROUND_SERVICE,
                     PERCEPTIBLE_RECENT_FOREGROUND_APP_ADJ + 1, SCHED_GROUP_DEFAULT);
+            assertImplicitCpuTime(app);
             assertNoBfsl(app);
         }
 
@@ -747,6 +795,7 @@ public class MockingOomAdjusterTests {
 
             assertProcStates(app, PROCESS_STATE_FOREGROUND_SERVICE,
                     PERCEPTIBLE_MEDIUM_APP_ADJ + 1, SCHED_GROUP_DEFAULT);
+            assertImplicitCpuTime(app);
             assertNoBfsl(app);
         }
 
@@ -805,7 +854,43 @@ public class MockingOomAdjusterTests {
         updateOomAdj(app);
 
         assertCpuTime(app);
-        assertCpuTime(app2);
+        assertCpuTime(app2, CPU_TIME_REASON_TRANSMITTED);
+        assertNoCpuTime(app3);
+    }
+
+    @SuppressWarnings("GuardedBy")
+    @Test
+    @EnableFlags(Flags.FLAG_CPU_TIME_CAPABILITY_BASED_FREEZE_POLICY)
+    public void testUpdateOomAdjFreezeState_bindingWithSimulateAllowFreeze() {
+        ProcessRecord app = makeDefaultProcessRecord(MOCKAPP_PID, MOCKAPP_UID, MOCKAPP_PROCESSNAME,
+                MOCKAPP_PACKAGENAME, true);
+        WindowProcessController wpc = app.getWindowProcessController();
+        setHasActivity(wpc, true);
+        setActivityStateFlags(wpc, ACTIVITY_STATE_FLAG_IS_VISIBLE);
+
+        final ProcessRecord app2 = makeDefaultProcessRecord(MOCKAPP2_PID, MOCKAPP2_UID,
+                MOCKAPP2_PROCESSNAME, MOCKAPP2_PACKAGENAME, false);
+
+        // App with a visible activity binds to app2 with SIMULATE_ALLOW_FREEZE
+        bindService(app2, app, null, null, Context.BIND_SIMULATE_ALLOW_FREEZE,
+                mock(IBinder.class));
+
+        final ProcessRecord app3 = makeDefaultProcessRecord(MOCKAPP3_PID, MOCKAPP3_UID,
+                MOCKAPP3_PROCESSNAME, MOCKAPP3_PACKAGENAME, false);
+
+        // App with a visible activity binds to app2 with both SIMULATE_ALLOW_FREEZE and
+        // ALLOW_FREEZE.
+        bindService(app3, app, null, null,
+                Context.BIND_ALLOW_FREEZE | Context.BIND_SIMULATE_ALLOW_FREEZE,
+                mock(IBinder.class));
+
+        setProcessesToLru(app, app2, app3);
+
+        updateOomAdj(app);
+
+        assertCpuTime(app);
+        assertCpuTime(app2, CPU_TIME_REASON_TRANSMITTED_LEGACY);
+        // ALLOW_FREEZE takes precedence over SIMULATE_ALLOW_FREEZE.
         assertNoCpuTime(app3);
     }
 
@@ -837,11 +922,46 @@ public class MockingOomAdjusterTests {
         mProcessStateController.updateBinderServiceCalls(cr, true);
 
         updateOomAdj(app);
-        assertCpuTime(app2);
+        assertCpuTime(app2, CPU_TIME_REASON_TRANSMITTED);
 
         mProcessStateController.updateBinderServiceCalls(cr, false);
         updateOomAdj(app);
         assertNoCpuTime(app2);
+    }
+
+    @SuppressWarnings("GuardedBy")
+    @Test
+    @EnableFlags(Flags.FLAG_CPU_TIME_CAPABILITY_BASED_FREEZE_POLICY)
+    public void testUpdateOomAdjFreezeState_simulateAllowFreezeBinding_ongoingBinderCalls() {
+        ProcessRecord app = spy(makeDefaultProcessRecord(MOCKAPP_PID, MOCKAPP_UID,
+                MOCKAPP_PROCESSNAME, MOCKAPP_PACKAGENAME, true));
+        WindowProcessController wpc = app.getWindowProcessController();
+        setHasActivity(wpc, true);
+        setActivityStateFlags(wpc, ACTIVITY_STATE_FLAG_IS_VISIBLE);
+
+        final ProcessRecord app2 = spy(makeDefaultProcessRecord(MOCKAPP3_PID, MOCKAPP3_UID,
+                MOCKAPP3_PROCESSNAME, MOCKAPP3_PACKAGENAME, false));
+
+        // App with a visible activity binds to app2 with SIMULATE_ALLOW_FREEZE.
+        final IBinder mockBinder = mock(IBinder.class);
+        final ServiceRecord sr = bindService(app2, app, null, null,
+                Context.BIND_SIMULATE_ALLOW_FREEZE, mockBinder);
+
+        setProcessesToLru(app, app2);
+
+        updateOomAdj(app);
+        assertCpuTime(app);
+        assertCpuTime(app2, CPU_TIME_REASON_TRANSMITTED_LEGACY);
+
+        final ConnectionRecord cr = sr.getConnections().get(mockBinder).get(0);
+        mProcessStateController.updateBinderServiceCalls(cr, true);
+
+        updateOomAdj(app);
+        assertCpuTime(app2, CPU_TIME_REASON_TRANSMITTED);
+
+        mProcessStateController.updateBinderServiceCalls(cr, false);
+        updateOomAdj(app);
+        assertCpuTime(app2, CPU_TIME_REASON_TRANSMITTED_LEGACY);
     }
 
     @SuppressWarnings("GuardedBy")
@@ -862,7 +982,7 @@ public class MockingOomAdjusterTests {
         updateOomAdj(app);
 
         assertCpuTime(app);
-        assertCpuTime(app2);
+        assertCpuTime(app2, CPU_TIME_REASON_TRANSMITTED);
     }
 
     @SuppressWarnings("GuardedBy")
@@ -947,6 +1067,7 @@ public class MockingOomAdjusterTests {
 
         assertProcStates(app, PROCESS_STATE_IMPORTANT_FOREGROUND, PERCEPTIBLE_APP_ADJ,
                 SCHED_GROUP_DEFAULT);
+        assertImplicitCpuTime(app);
     }
 
     @SuppressWarnings("GuardedBy")
@@ -962,6 +1083,7 @@ public class MockingOomAdjusterTests {
 
         assertProcStates(app, PROCESS_STATE_FOREGROUND_SERVICE,
                 PERCEPTIBLE_RECENT_FOREGROUND_APP_ADJ, SCHED_GROUP_DEFAULT, "fg-service-act");
+        assertImplicitCpuTime(app);
         assertBfsl(app);
 
         final ArgumentCaptor<Long> followUpTimeCaptor = ArgumentCaptor.forClass(Long.class);
@@ -972,6 +1094,7 @@ public class MockingOomAdjusterTests {
 
         assertProcStates(app, PROCESS_STATE_FOREGROUND_SERVICE, PERCEPTIBLE_APP_ADJ,
                 SCHED_GROUP_DEFAULT, "fg-service");
+        assertImplicitCpuTime(app);
         // Follow up should not have been called again.
         verify(mService.mHandler).sendEmptyMessageAtTime(eq(FOLLOW_UP_OOMADJUSTER_UPDATE_MSG),
                 followUpTimeCaptor.capture());
@@ -1078,6 +1201,7 @@ public class MockingOomAdjusterTests {
 
         assertProcStates(app, PROCESS_STATE_IMPORTANT_FOREGROUND,
                 PERCEPTIBLE_APP_ADJ + 1, SCHED_GROUP_DEFAULT);
+        assertImplicitCpuTime(app, IMPLICIT_CPU_TIME_REASON_TRANSMITTED);
     }
 
     @SuppressWarnings("GuardedBy")
@@ -1091,6 +1215,7 @@ public class MockingOomAdjusterTests {
 
         assertProcStates(app, PROCESS_STATE_TRANSIENT_BACKGROUND, PERCEPTIBLE_APP_ADJ,
                 SCHED_GROUP_DEFAULT);
+        assertImplicitCpuTime(app);
     }
 
     @SuppressWarnings("GuardedBy")
@@ -1106,6 +1231,7 @@ public class MockingOomAdjusterTests {
 
         assertProcStates(app, PROCESS_STATE_HEAVY_WEIGHT, HEAVY_WEIGHT_APP_ADJ,
                 SCHED_GROUP_BACKGROUND);
+        assertImplicitCpuTime(app);
     }
 
     @SuppressWarnings("GuardedBy")
@@ -1119,6 +1245,11 @@ public class MockingOomAdjusterTests {
         updateOomAdj(app);
 
         assertProcStates(app, PROCESS_STATE_HOME, HOME_APP_ADJ, SCHED_GROUP_BACKGROUND);
+        if (Flags.prototypeAggressiveFreezing()) {
+            assertNoImplicitCpuTime(app);
+        } else {
+            assertImplicitCpuTime(app);
+        }
     }
 
     @SuppressWarnings("GuardedBy")
@@ -1134,6 +1265,11 @@ public class MockingOomAdjusterTests {
 
         assertProcStates(app, PROCESS_STATE_LAST_ACTIVITY, PREVIOUS_APP_ADJ,
                 SCHED_GROUP_BACKGROUND, "previous");
+        if (Flags.prototypeAggressiveFreezing()) {
+            assertNoImplicitCpuTime(app);
+        } else {
+            assertImplicitCpuTime(app);
+        }
 
         final ArgumentCaptor<Long> followUpTimeCaptor = ArgumentCaptor.forClass(Long.class);
         verify(mService.mHandler).sendEmptyMessageAtTime(eq(FOLLOW_UP_OOMADJUSTER_UPDATE_MSG),
@@ -1193,11 +1329,21 @@ public class MockingOomAdjusterTests {
         updater.accept(apps);
         assertProcStates(previous, PROCESS_STATE_LAST_ACTIVITY, PREVIOUS_APP_ADJ,
                 SCHED_GROUP_BACKGROUND, "previous");
+        if (Flags.prototypeAggressiveFreezing()) {
+            assertNoImplicitCpuTime(previous);
+        } else {
+            assertImplicitCpuTime(previous);
+        }
         for (int i = 0; i < numberOfApps - 1; i++) {
             final int mruIndex = numberOfApps - i - 1;
             final int expectedAdj = Math.min(PREVIOUS_APP_ADJ + mruIndex, PREVIOUS_APP_MAX_ADJ);
             assertProcStates(apps[i], PROCESS_STATE_LAST_ACTIVITY, expectedAdj,
                     SCHED_GROUP_BACKGROUND, "service");
+            if (Flags.prototypeAggressiveFreezing()) {
+                assertNoImplicitCpuTime(apps[i]);
+            } else {
+                assertImplicitCpuTime(apps[i], IMPLICIT_CPU_TIME_REASON_TRANSMITTED);
+            }
         }
 
         for (int i = 0; i < numberOfApps; i++) {
@@ -1271,11 +1417,13 @@ public class MockingOomAdjusterTests {
         updater.accept(apps);
         assertProcStates(visible, PROCESS_STATE_TOP, FOREGROUND_APP_ADJ,
                 SCHED_GROUP_TOP_APP, "top-activity");
+        assertImplicitCpuTime(visible);
         for (int i = 0; i < numberOfApps - 1; i++) {
             final int mruIndex = numberOfApps - i - 2;
             final int expectedAdj = Math.min(VISIBLE_APP_ADJ + mruIndex, VISIBLE_APP_MAX_ADJ);
             assertProcStates(apps[i], PROCESS_STATE_BOUND_TOP, expectedAdj,
                     SCHED_GROUP_DEFAULT, "service");
+            assertImplicitCpuTime(apps[i], IMPLICIT_CPU_TIME_REASON_TRANSMITTED);
         }
     }
 
@@ -1291,6 +1439,7 @@ public class MockingOomAdjusterTests {
 
         assertProcStates(app, PROCESS_STATE_TRANSIENT_BACKGROUND, BACKUP_APP_ADJ,
                 SCHED_GROUP_BACKGROUND);
+        assertImplicitCpuTime(app);
     }
 
     @SuppressWarnings("GuardedBy")
@@ -1332,6 +1481,11 @@ public class MockingOomAdjusterTests {
         updateOomAdj(app);
 
         assertProcStates(app, PROCESS_STATE_SERVICE, SERVICE_B_ADJ, SCHED_GROUP_BACKGROUND);
+        if (Flags.prototypeAggressiveFreezing()) {
+            assertNoImplicitCpuTime(app);
+        } else {
+            assertImplicitCpuTime(app);
+        }
     }
 
     @SuppressWarnings("GuardedBy")
@@ -1345,6 +1499,7 @@ public class MockingOomAdjusterTests {
 
         assertProcStates(app, PROCESS_STATE_CACHED_EMPTY, PERCEPTIBLE_LOW_APP_ADJ,
                 SCHED_GROUP_DEFAULT);
+        assertImplicitCpuTime(app);
     }
 
     @SuppressWarnings("GuardedBy")
@@ -1376,6 +1531,7 @@ public class MockingOomAdjusterTests {
         updateOomAdj(app);
 
         assertProcStates(app, PROCESS_STATE_SERVICE, SERVICE_ADJ, SCHED_GROUP_BACKGROUND);
+        assertImplicitCpuTime(app);
     }
 
     @SuppressWarnings("GuardedBy")
@@ -1399,7 +1555,7 @@ public class MockingOomAdjusterTests {
         assertProcStates(app, PROCESS_STATE_SERVICE, expectedAdj, SCHED_GROUP_BACKGROUND);
         // This WPRIO service oom score is in the FREEZER_CUTOFF_ADJ range, but the client is not
         // frozen, so neither should the service.
-        assertImplicitCpuTime(app);
+        assertImplicitCpuTime(app, IMPLICIT_CPU_TIME_REASON_TRANSMITTED);
     }
 
     @SuppressWarnings("GuardedBy")
@@ -1507,6 +1663,7 @@ public class MockingOomAdjusterTests {
 
         assertProcStates(app, PROCESS_STATE_BOUND_FOREGROUND_SERVICE, VISIBLE_APP_ADJ,
                 SCHED_GROUP_DEFAULT);
+        assertImplicitCpuTime(app, IMPLICIT_CPU_TIME_REASON_TRANSMITTED);
         assertBfsl(app);
     }
 
@@ -1541,6 +1698,7 @@ public class MockingOomAdjusterTests {
         setTopProcess(null);
 
         assertProcStates(app, PROCESS_STATE_BOUND_TOP, VISIBLE_APP_ADJ, SCHED_GROUP_DEFAULT);
+        assertImplicitCpuTime(app, IMPLICIT_CPU_TIME_REASON_TRANSMITTED);
     }
 
     @SuppressWarnings("GuardedBy")
@@ -1576,8 +1734,10 @@ public class MockingOomAdjusterTests {
 
         assertProcStates(app, PROCESS_STATE_BOUND_FOREGROUND_SERVICE, VISIBLE_APP_ADJ,
                 SCHED_GROUP_RESTRICTED);
+        assertImplicitCpuTime(app, IMPLICIT_CPU_TIME_REASON_TRANSMITTED);
         assertProcStates(client, PROCESS_STATE_PERSISTENT, PERSISTENT_PROC_ADJ,
                 SCHED_GROUP_DEFAULT);
+        assertImplicitCpuTime(client, IMPLICIT_CPU_TIME_REASON_OTHER);
     }
 
     @SuppressWarnings("GuardedBy")
@@ -1947,6 +2107,7 @@ public class MockingOomAdjusterTests {
         setTopProcess(null);
 
         assertProcStates(app, PROCESS_STATE_BOUND_TOP, FOREGROUND_APP_ADJ, SCHED_GROUP_DEFAULT);
+        assertImplicitCpuTime(app, IMPLICIT_CPU_TIME_REASON_TRANSMITTED);
     }
 
     @SuppressWarnings("GuardedBy")
@@ -1964,6 +2125,7 @@ public class MockingOomAdjusterTests {
 
         assertProcStates(app, PROCESS_STATE_BOUND_FOREGROUND_SERVICE, PERCEPTIBLE_APP_ADJ,
                 SCHED_GROUP_DEFAULT);
+        assertImplicitCpuTime(app, IMPLICIT_CPU_TIME_REASON_TRANSMITTED);
         assertBfsl(app);
     }
 
@@ -1994,13 +2156,15 @@ public class MockingOomAdjusterTests {
         updateOomAdj(client, app);
 
         // Client only has a SHORT_FGS, so it doesn't have BFSL, and that's propagated.
-        assertProcStates(app, PROCESS_STATE_BOUND_FOREGROUND_SERVICE,
+        assertProcStates(client, PROCESS_STATE_FOREGROUND_SERVICE,
                 PERCEPTIBLE_RECENT_FOREGROUND_APP_ADJ + 1,
                 SCHED_GROUP_DEFAULT);
+        assertImplicitCpuTime(client, IMPLICIT_CPU_TIME_REASON_OTHER);
         assertNoBfsl(client);
         assertProcStates(app, PROCESS_STATE_BOUND_FOREGROUND_SERVICE,
                 PERCEPTIBLE_RECENT_FOREGROUND_APP_ADJ + 1,
                 SCHED_GROUP_DEFAULT);
+        assertImplicitCpuTime(app, IMPLICIT_CPU_TIME_REASON_TRANSMITTED);
         assertNoBfsl(app);
     }
 
@@ -2018,6 +2182,7 @@ public class MockingOomAdjusterTests {
 
         assertProcStates(app, PROCESS_STATE_IMPORTANT_FOREGROUND, FOREGROUND_APP_ADJ,
                 SCHED_GROUP_DEFAULT);
+        assertImplicitCpuTime(app);
     }
 
     @SuppressWarnings("GuardedBy")
@@ -2037,6 +2202,7 @@ public class MockingOomAdjusterTests {
         updateOomAdj(client, app);
 
         assertProcStates(app, PROCESS_STATE_BOUND_TOP, FOREGROUND_APP_ADJ, SCHED_GROUP_DEFAULT);
+        assertImplicitCpuTime(app, IMPLICIT_CPU_TIME_REASON_TRANSMITTED);
 
         unbindProvider(client, cpr, conn);
         mProcessStateController.removePublishedProvider(app, providerName);
@@ -2046,6 +2212,11 @@ public class MockingOomAdjusterTests {
 
         assertProcStates(app, PROCESS_STATE_LAST_ACTIVITY, PREVIOUS_APP_ADJ,
                 SCHED_GROUP_BACKGROUND, "recent-provider");
+        if (Flags.prototypeAggressiveFreezing()) {
+            assertNoImplicitCpuTime(app);
+        } else {
+            assertImplicitCpuTime(app);
+        }
 
         final ArgumentCaptor<Long> followUpTimeCaptor = ArgumentCaptor.forClass(Long.class);
         verify(mService.mHandler).sendEmptyMessageAtTime(eq(FOLLOW_UP_OOMADJUSTER_UPDATE_MSG),
@@ -2084,6 +2255,7 @@ public class MockingOomAdjusterTests {
 
         assertProcStates(app, PROCESS_STATE_BOUND_TOP, VISIBLE_APP_ADJ,
                 SCHED_GROUP_DEFAULT);
+        assertImplicitCpuTime(app, IMPLICIT_CPU_TIME_REASON_TRANSMITTED);
     }
 
     @SuppressWarnings("GuardedBy")
@@ -2103,6 +2275,7 @@ public class MockingOomAdjusterTests {
 
         assertProcStates(app, PROCESS_STATE_FOREGROUND_SERVICE, PERCEPTIBLE_APP_ADJ,
                 SCHED_GROUP_DEFAULT);
+        assertImplicitCpuTime(app, IMPLICIT_CPU_TIME_REASON_TRANSMITTED);
         assertBfsl(app);
     }
 
@@ -2123,6 +2296,7 @@ public class MockingOomAdjusterTests {
 
         assertProcStates(app, PROCESS_STATE_FOREGROUND_SERVICE, PERCEPTIBLE_APP_ADJ,
                 SCHED_GROUP_DEFAULT);
+        assertImplicitCpuTime(app, IMPLICIT_CPU_TIME_REASON_TRANSMITTED);
         assertBfsl(app);
     }
 
@@ -2148,10 +2322,14 @@ public class MockingOomAdjusterTests {
 
         assertProcStates(app, PROCESS_STATE_FOREGROUND_SERVICE, PERCEPTIBLE_APP_ADJ,
                 SCHED_GROUP_DEFAULT);
+        assertImplicitCpuTime(app, IMPLICIT_CPU_TIME_REASON_TRANSMITTED);
         assertProcStates(client, PROCESS_STATE_FOREGROUND_SERVICE, PERCEPTIBLE_APP_ADJ,
                 SCHED_GROUP_DEFAULT);
+        assertImplicitCpuTime(client, IMPLICIT_CPU_TIME_REASON_TRANSMITTED);
         assertProcStates(client2, PROCESS_STATE_FOREGROUND_SERVICE, PERCEPTIBLE_APP_ADJ,
                 SCHED_GROUP_DEFAULT);
+        assertImplicitCpuTime(client2,
+                IMPLICIT_CPU_TIME_REASON_TRANSMITTED | IMPLICIT_CPU_TIME_REASON_OTHER);
         assertBfsl(app);
         assertBfsl(client);
         assertBfsl(client2);
@@ -2163,6 +2341,9 @@ public class MockingOomAdjusterTests {
         assertEquals(PROCESS_STATE_CACHED_EMPTY, client2.getSetProcState());
         assertEquals(PROCESS_STATE_CACHED_EMPTY, client.getSetProcState());
         assertEquals(PROCESS_STATE_CACHED_EMPTY, app.getSetProcState());
+        assertNoImplicitCpuTime(app);
+        assertNoImplicitCpuTime(client);
+        assertNoImplicitCpuTime(client2);
         assertNoBfsl(app);
         assertNoBfsl(client);
         assertNoBfsl(client2);
@@ -2186,10 +2367,14 @@ public class MockingOomAdjusterTests {
 
         assertProcStates(app, PROCESS_STATE_FOREGROUND_SERVICE, PERCEPTIBLE_APP_ADJ,
                 SCHED_GROUP_DEFAULT);
+        assertImplicitCpuTime(app, IMPLICIT_CPU_TIME_REASON_TRANSMITTED);
         assertProcStates(client, PROCESS_STATE_FOREGROUND_SERVICE, PERCEPTIBLE_APP_ADJ,
                 SCHED_GROUP_DEFAULT);
+        assertImplicitCpuTime(client,
+                IMPLICIT_CPU_TIME_REASON_TRANSMITTED | IMPLICIT_CPU_TIME_REASON_OTHER);
         assertProcStates(client2, PROCESS_STATE_FOREGROUND_SERVICE, PERCEPTIBLE_APP_ADJ,
                 SCHED_GROUP_DEFAULT);
+        assertImplicitCpuTime(client2, IMPLICIT_CPU_TIME_REASON_TRANSMITTED);
         assertBfsl(app);
         assertBfsl(client);
         assertBfsl(client2);
@@ -2213,10 +2398,14 @@ public class MockingOomAdjusterTests {
 
         assertProcStates(app, PROCESS_STATE_FOREGROUND_SERVICE, PERCEPTIBLE_APP_ADJ,
                 SCHED_GROUP_DEFAULT);
+        assertImplicitCpuTime(app, IMPLICIT_CPU_TIME_REASON_TRANSMITTED);
         assertProcStates(client, PROCESS_STATE_FOREGROUND_SERVICE, PERCEPTIBLE_APP_ADJ,
                 SCHED_GROUP_DEFAULT);
+        assertImplicitCpuTime(client,
+                IMPLICIT_CPU_TIME_REASON_TRANSMITTED | IMPLICIT_CPU_TIME_REASON_OTHER);
         assertProcStates(client2, PROCESS_STATE_FOREGROUND_SERVICE, PERCEPTIBLE_APP_ADJ,
                 SCHED_GROUP_DEFAULT);
+        assertImplicitCpuTime(client2, IMPLICIT_CPU_TIME_REASON_TRANSMITTED);
         assertBfsl(app);
         assertBfsl(client);
         assertBfsl(client2);
@@ -2247,14 +2436,20 @@ public class MockingOomAdjusterTests {
 
         assertProcStates(app, PROCESS_STATE_FOREGROUND_SERVICE, PERCEPTIBLE_APP_ADJ,
                 SCHED_GROUP_DEFAULT);
+        assertImplicitCpuTime(app, IMPLICIT_CPU_TIME_REASON_TRANSMITTED);
         assertProcStates(client, PROCESS_STATE_FOREGROUND_SERVICE, PERCEPTIBLE_APP_ADJ,
                 SCHED_GROUP_DEFAULT);
+        assertImplicitCpuTime(client,
+                IMPLICIT_CPU_TIME_REASON_TRANSMITTED | IMPLICIT_CPU_TIME_REASON_OTHER);
         assertProcStates(client2, PROCESS_STATE_FOREGROUND_SERVICE, PERCEPTIBLE_APP_ADJ,
                 SCHED_GROUP_DEFAULT);
+        assertImplicitCpuTime(client2, IMPLICIT_CPU_TIME_REASON_TRANSMITTED);
         assertProcStates(client3, PROCESS_STATE_FOREGROUND_SERVICE, PERCEPTIBLE_APP_ADJ,
                 SCHED_GROUP_DEFAULT);
+        assertImplicitCpuTime(client3, IMPLICIT_CPU_TIME_REASON_TRANSMITTED);
         assertProcStates(client4, PROCESS_STATE_FOREGROUND_SERVICE, PERCEPTIBLE_APP_ADJ,
                 SCHED_GROUP_DEFAULT);
+        assertImplicitCpuTime(client4, IMPLICIT_CPU_TIME_REASON_TRANSMITTED);
         assertBfsl(app);
         assertBfsl(client);
         assertBfsl(client2);
@@ -2284,6 +2479,7 @@ public class MockingOomAdjusterTests {
 
         assertProcStates(app, PROCESS_STATE_FOREGROUND_SERVICE, PERCEPTIBLE_APP_ADJ,
                 SCHED_GROUP_DEFAULT);
+        assertImplicitCpuTime(app, IMPLICIT_CPU_TIME_REASON_TRANSMITTED);
         assertBfsl(app);
     }
 
@@ -2310,6 +2506,7 @@ public class MockingOomAdjusterTests {
 
         assertProcStates(app, PROCESS_STATE_TRANSIENT_BACKGROUND, PERCEPTIBLE_APP_ADJ,
                 SCHED_GROUP_DEFAULT);
+        assertImplicitCpuTime(app, IMPLICIT_CPU_TIME_REASON_TRANSMITTED);
     }
 
     @SuppressWarnings("GuardedBy")
@@ -2337,6 +2534,7 @@ public class MockingOomAdjusterTests {
 
         assertProcStates(app, PROCESS_STATE_TRANSIENT_BACKGROUND, PERCEPTIBLE_APP_ADJ,
                 SCHED_GROUP_DEFAULT);
+        assertImplicitCpuTime(app, CPU_TIME_REASON_TRANSMITTED);
     }
 
     @SuppressWarnings("GuardedBy")
@@ -2366,6 +2564,7 @@ public class MockingOomAdjusterTests {
 
         assertProcStates(app, PROCESS_STATE_FOREGROUND_SERVICE, PERCEPTIBLE_APP_ADJ,
                 SCHED_GROUP_DEFAULT);
+        assertImplicitCpuTime(app, IMPLICIT_CPU_TIME_REASON_TRANSMITTED);
         assertBfsl(app);
     }
 
@@ -2392,6 +2591,7 @@ public class MockingOomAdjusterTests {
 
         assertProcStates(app, PROCESS_STATE_FOREGROUND_SERVICE, PERCEPTIBLE_APP_ADJ,
                 SCHED_GROUP_DEFAULT);
+        assertImplicitCpuTime(app, IMPLICIT_CPU_TIME_REASON_TRANSMITTED);
         assertBfsl(app);
     }
 
@@ -2413,6 +2613,7 @@ public class MockingOomAdjusterTests {
 
         assertProcStates(app, PROCESS_STATE_BOUND_FOREGROUND_SERVICE, PERCEPTIBLE_APP_ADJ,
                 SCHED_GROUP_DEFAULT);
+        assertImplicitCpuTime(app, IMPLICIT_CPU_TIME_REASON_TRANSMITTED);
         assertBfsl(app);
     }
 
@@ -2435,6 +2636,7 @@ public class MockingOomAdjusterTests {
 
         assertProcStates(app, PROCESS_STATE_BOUND_FOREGROUND_SERVICE, PERCEPTIBLE_APP_ADJ,
                 SCHED_GROUP_DEFAULT);
+        assertImplicitCpuTime(app, IMPLICIT_CPU_TIME_REASON_TRANSMITTED);
         assertBfsl(app);
     }
 
@@ -2457,6 +2659,7 @@ public class MockingOomAdjusterTests {
 
         assertProcStates(app, PROCESS_STATE_BOUND_FOREGROUND_SERVICE, PERCEPTIBLE_APP_ADJ,
                 SCHED_GROUP_DEFAULT);
+        assertImplicitCpuTime(app, IMPLICIT_CPU_TIME_REASON_TRANSMITTED);
         assertBfsl(app);
     }
 
@@ -2481,6 +2684,7 @@ public class MockingOomAdjusterTests {
 
         assertProcStates(app, PROCESS_STATE_BOUND_FOREGROUND_SERVICE, PERCEPTIBLE_APP_ADJ,
                 SCHED_GROUP_DEFAULT);
+        assertImplicitCpuTime(app, IMPLICIT_CPU_TIME_REASON_TRANSMITTED);
         assertBfsl(app);
     }
 
@@ -2507,8 +2711,10 @@ public class MockingOomAdjusterTests {
 
         assertProcStates(app1, PROCESS_STATE_BOUND_FOREGROUND_SERVICE, VISIBLE_APP_ADJ,
                 SCHED_GROUP_DEFAULT);
+        assertImplicitCpuTime(app1, IMPLICIT_CPU_TIME_REASON_TRANSMITTED);
         assertProcStates(app2, PROCESS_STATE_FOREGROUND_SERVICE, PERCEPTIBLE_APP_ADJ,
                 SCHED_GROUP_DEFAULT);
+        assertImplicitCpuTime(app2, IMPLICIT_CPU_TIME_REASON_TRANSMITTED);
         assertBfsl(app1);
         assertBfsl(app2);
 
@@ -2520,15 +2726,19 @@ public class MockingOomAdjusterTests {
 
         assertProcStates(app1, PROCESS_STATE_BOUND_FOREGROUND_SERVICE, VISIBLE_APP_ADJ,
                 SCHED_GROUP_TOP_APP);
+        assertImplicitCpuTime(app1, IMPLICIT_CPU_TIME_REASON_TRANSMITTED);
         assertProcStates(app2, PROCESS_STATE_FOREGROUND_SERVICE, PERCEPTIBLE_APP_ADJ,
                 SCHED_GROUP_DEFAULT);
+        assertImplicitCpuTime(app2, IMPLICIT_CPU_TIME_REASON_TRANSMITTED);
 
         setWakefulness(PowerManagerInternal.WAKEFULNESS_ASLEEP);
         updateOomAdj(client1, client2, app1, app2);
         assertProcStates(app1, PROCESS_STATE_IMPORTANT_FOREGROUND, VISIBLE_APP_ADJ,
                 SCHED_GROUP_TOP_APP);
+        assertImplicitCpuTime(app1, IMPLICIT_CPU_TIME_REASON_TRANSMITTED);
         assertProcStates(app2, PROCESS_STATE_FOREGROUND_SERVICE, PERCEPTIBLE_APP_ADJ,
                 SCHED_GROUP_DEFAULT);
+        assertImplicitCpuTime(app2, IMPLICIT_CPU_TIME_REASON_TRANSMITTED);
         assertBfsl(app2);
 
         bindService(client2, app1, null, null, 0, mock(IBinder.class));
@@ -2538,6 +2748,7 @@ public class MockingOomAdjusterTests {
         assertProcStates(app1, PROCESS_STATE_IMPORTANT_FOREGROUND, VISIBLE_APP_ADJ
                         + (Flags.oomadjusterVisLaddering() && Flags.removeLruSpamPrevention()
                         ? 1 : 0), SCHED_GROUP_TOP_APP);
+        assertImplicitCpuTime(app1, IMPLICIT_CPU_TIME_REASON_TRANSMITTED);
     }
 
     @SuppressWarnings("GuardedBy")
@@ -2563,14 +2774,17 @@ public class MockingOomAdjusterTests {
 
         assertProcStates(app1, PROCESS_STATE_FOREGROUND_SERVICE, VISIBLE_APP_ADJ,
                 SCHED_GROUP_DEFAULT);
+        assertImplicitCpuTime(app1, IMPLICIT_CPU_TIME_REASON_TRANSMITTED);
         assertProcStates(app2, PROCESS_STATE_PERSISTENT, PERSISTENT_SERVICE_ADJ,
                 SCHED_GROUP_DEFAULT);
+        assertImplicitCpuTime(app2, IMPLICIT_CPU_TIME_REASON_TRANSMITTED);
 
         bindService(app2, client1, null, s2, Context.BIND_TREAT_LIKE_VISIBLE_FOREGROUND_SERVICE,
                 mock(IBinder.class));
         updateOomAdj(app2);
         assertProcStates(app2, PROCESS_STATE_PERSISTENT, PERSISTENT_SERVICE_ADJ,
                 SCHED_GROUP_DEFAULT);
+        assertImplicitCpuTime(app2, IMPLICIT_CPU_TIME_REASON_TRANSMITTED);
 
         s1.getConnections().clear();
         s2.getConnections().clear();
@@ -2591,8 +2805,10 @@ public class MockingOomAdjusterTests {
         // VISIBLE_APP_ADJ is the max oom-adj for BIND_TREAT_LIKE_VISIBLE_FOREGROUND_SERVICE.
         assertProcStates(app1, PROCESS_STATE_FOREGROUND_SERVICE, VISIBLE_APP_ADJ,
                 SCHED_GROUP_DEFAULT);
+        assertImplicitCpuTime(app1, IMPLICIT_CPU_TIME_REASON_TRANSMITTED);
         assertProcStates(app2, PROCESS_STATE_IMPORTANT_FOREGROUND, PERCEPTIBLE_APP_ADJ,
                 SCHED_GROUP_DEFAULT);
+        assertImplicitCpuTime(app2, IMPLICIT_CPU_TIME_REASON_TRANSMITTED);
 
         mProcessStateController.setHasOverlayUi(client2, false);
         setTopProcessState(PROCESS_STATE_TOP);
@@ -2600,8 +2816,8 @@ public class MockingOomAdjusterTests {
         setWakefulness(PowerManagerInternal.WAKEFULNESS_AWAKE);
 
         updateOomAdj(client2, app2);
-        assertProcStates(app2, PROCESS_STATE_BOUND_TOP, VISIBLE_APP_ADJ,
-                SCHED_GROUP_DEFAULT);
+        assertProcStates(app2, PROCESS_STATE_BOUND_TOP, VISIBLE_APP_ADJ, SCHED_GROUP_DEFAULT);
+        assertImplicitCpuTime(app2, IMPLICIT_CPU_TIME_REASON_TRANSMITTED);
     }
 
     @SuppressWarnings("GuardedBy")
@@ -2622,6 +2838,8 @@ public class MockingOomAdjusterTests {
 
         assertProcStates(app1, PROCESS_STATE_FOREGROUND_SERVICE, PERCEPTIBLE_APP_ADJ,
                 SCHED_GROUP_DEFAULT);
+        assertImplicitCpuTime(app1,
+                IMPLICIT_CPU_TIME_REASON_OTHER | IMPLICIT_CPU_TIME_REASON_TRANSMITTED);
         assertBfsl(app1);
     }
 
@@ -2644,6 +2862,8 @@ public class MockingOomAdjusterTests {
 
         assertProcStates(app1, PROCESS_STATE_FOREGROUND_SERVICE, PERCEPTIBLE_APP_ADJ,
                 SCHED_GROUP_DEFAULT);
+        assertImplicitCpuTime(app1,
+                IMPLICIT_CPU_TIME_REASON_TRANSMITTED | IMPLICIT_CPU_TIME_REASON_OTHER);
         assertBfsl(app1);
     }
 
@@ -2660,6 +2880,7 @@ public class MockingOomAdjusterTests {
 
         assertProcStates(app, PROCESS_STATE_CACHED_EMPTY, FOREGROUND_APP_ADJ,
                 SCHED_GROUP_DEFAULT);
+        assertImplicitCpuTime(app);
     }
 
     @SuppressWarnings("GuardedBy")
@@ -2676,6 +2897,7 @@ public class MockingOomAdjusterTests {
 
         assertProcStates(app, PROCESS_STATE_TOP, FOREGROUND_APP_ADJ,
                 SCHED_GROUP_TOP_APP);
+        assertImplicitCpuTime(app);
     }
 
     @SuppressWarnings("GuardedBy")
@@ -2745,10 +2967,15 @@ public class MockingOomAdjusterTests {
 
             assertProcStates(app1, PROCESS_STATE_FOREGROUND_SERVICE, PERCEPTIBLE_APP_ADJ,
                     SCHED_GROUP_DEFAULT);
+            final int selfReasons = // Due to a started service
+                    Flags.prototypeAggressiveFreezing() ? 0 : IMPLICIT_CPU_TIME_REASON_OTHER;
+            assertImplicitCpuTime(app1, selfReasons | IMPLICIT_CPU_TIME_REASON_TRANSMITTED);
             assertProcStates(app3, PROCESS_STATE_FOREGROUND_SERVICE, PERCEPTIBLE_APP_ADJ,
                     SCHED_GROUP_DEFAULT);
+            assertImplicitCpuTime(app3, selfReasons | IMPLICIT_CPU_TIME_REASON_TRANSMITTED);
             assertProcStates(client1, PROCESS_STATE_FOREGROUND_SERVICE, PERCEPTIBLE_APP_ADJ,
                     SCHED_GROUP_DEFAULT);
+            assertImplicitCpuTime(client1, IMPLICIT_CPU_TIME_REASON_OTHER);
             assertEquals(PROCESS_STATE_TRANSIENT_BACKGROUND, app2.getSetProcState());
             assertEquals(PROCESS_STATE_TRANSIENT_BACKGROUND, client2.getSetProcState());
 
@@ -2797,8 +3024,10 @@ public class MockingOomAdjusterTests {
 
         assertProcStates(app, PROCESS_STATE_TRANSIENT_BACKGROUND, PERCEPTIBLE_APP_ADJ,
                 SCHED_GROUP_DEFAULT);
+        assertImplicitCpuTime(app);
         assertProcStates(app2, PROCESS_STATE_FOREGROUND_SERVICE, PERCEPTIBLE_APP_ADJ,
                 SCHED_GROUP_DEFAULT);
+        assertImplicitCpuTime(app2);
         assertBfsl(app2);
     }
 
@@ -2819,8 +3048,11 @@ public class MockingOomAdjusterTests {
 
         assertProcStates(app, PROCESS_STATE_FOREGROUND_SERVICE, PERCEPTIBLE_APP_ADJ,
                 SCHED_GROUP_DEFAULT);
+        assertImplicitCpuTime(app,
+                IMPLICIT_CPU_TIME_REASON_TRANSMITTED | IMPLICIT_CPU_TIME_REASON_OTHER);
         assertProcStates(app2, PROCESS_STATE_FOREGROUND_SERVICE, PERCEPTIBLE_APP_ADJ,
                 SCHED_GROUP_DEFAULT);
+        assertImplicitCpuTime(app2, IMPLICIT_CPU_TIME_REASON_OTHER);
         assertBfsl(app);
         assertBfsl(app2);
     }
@@ -2843,10 +3075,14 @@ public class MockingOomAdjusterTests {
 
         assertProcStates(app, PROCESS_STATE_FOREGROUND_SERVICE, PERCEPTIBLE_APP_ADJ,
                 SCHED_GROUP_DEFAULT);
+        assertImplicitCpuTime(app, IMPLICIT_CPU_TIME_REASON_TRANSMITTED);
         assertProcStates(app2, PROCESS_STATE_FOREGROUND_SERVICE, PERCEPTIBLE_APP_ADJ,
                 SCHED_GROUP_DEFAULT);
+        assertImplicitCpuTime(app2, IMPLICIT_CPU_TIME_REASON_TRANSMITTED);
         assertProcStates(app3, PROCESS_STATE_FOREGROUND_SERVICE, PERCEPTIBLE_APP_ADJ,
                 SCHED_GROUP_DEFAULT);
+        assertImplicitCpuTime(app3,
+                IMPLICIT_CPU_TIME_REASON_TRANSMITTED | IMPLICIT_CPU_TIME_REASON_OTHER);
         assertEquals("service", app.getAdjType());
         assertEquals("service", app2.getAdjType());
         assertEquals("fg-service", app3.getAdjType());
@@ -2888,14 +3124,21 @@ public class MockingOomAdjusterTests {
 
         assertProcStates(app, PROCESS_STATE_FOREGROUND_SERVICE, PERCEPTIBLE_APP_ADJ,
                 SCHED_GROUP_DEFAULT);
+        assertImplicitCpuTime(app, IMPLICIT_CPU_TIME_REASON_TRANSMITTED);
         assertProcStates(app2, PROCESS_STATE_FOREGROUND_SERVICE, PERCEPTIBLE_APP_ADJ,
                 SCHED_GROUP_DEFAULT);
+        assertImplicitCpuTime(app2, IMPLICIT_CPU_TIME_REASON_TRANSMITTED);
         assertProcStates(app3, PROCESS_STATE_FOREGROUND_SERVICE, PERCEPTIBLE_APP_ADJ,
                 SCHED_GROUP_DEFAULT);
+        final int app3selfReasons =
+                Flags.prototypeAggressiveFreezing() ? 0 : IMPLICIT_CPU_TIME_REASON_OTHER;
+        assertImplicitCpuTime(app3, app3selfReasons | IMPLICIT_CPU_TIME_REASON_TRANSMITTED);
         assertProcStates(app4, PROCESS_STATE_IMPORTANT_FOREGROUND, PERCEPTIBLE_APP_ADJ,
                 SCHED_GROUP_DEFAULT);
+        assertImplicitCpuTime(app4, IMPLICIT_CPU_TIME_REASON_OTHER);
         assertProcStates(app5, PROCESS_STATE_FOREGROUND_SERVICE, PERCEPTIBLE_APP_ADJ,
                 SCHED_GROUP_DEFAULT);
+        assertImplicitCpuTime(app5, IMPLICIT_CPU_TIME_REASON_OTHER);
         assertBfsl(app);
         assertBfsl(app2);
         assertBfsl(app3);
@@ -2930,14 +3173,22 @@ public class MockingOomAdjusterTests {
 
         assertProcStates(app, PROCESS_STATE_FOREGROUND_SERVICE, PERCEPTIBLE_APP_ADJ,
                 SCHED_GROUP_DEFAULT);
+        assertImplicitCpuTime(app, IMPLICIT_CPU_TIME_REASON_TRANSMITTED);
         assertProcStates(app2, PROCESS_STATE_FOREGROUND_SERVICE, PERCEPTIBLE_APP_ADJ,
                 SCHED_GROUP_DEFAULT);
+        assertImplicitCpuTime(app2, IMPLICIT_CPU_TIME_REASON_TRANSMITTED);
         assertProcStates(app3, PROCESS_STATE_FOREGROUND_SERVICE, PERCEPTIBLE_APP_ADJ,
                 SCHED_GROUP_DEFAULT);
+        final int app3selfReasons =
+                Flags.prototypeAggressiveFreezing() ? 0 : IMPLICIT_CPU_TIME_REASON_OTHER;
+        assertImplicitCpuTime(app3, app3selfReasons | CPU_TIME_REASON_TRANSMITTED);
         assertProcStates(app4, PROCESS_STATE_IMPORTANT_FOREGROUND, PERCEPTIBLE_APP_ADJ,
                 SCHED_GROUP_DEFAULT);
+        assertImplicitCpuTime(app4, IMPLICIT_CPU_TIME_REASON_OTHER);
         assertProcStates(app5, PROCESS_STATE_FOREGROUND_SERVICE, PERCEPTIBLE_APP_ADJ,
                 SCHED_GROUP_DEFAULT);
+        assertImplicitCpuTime(app5, IMPLICIT_CPU_TIME_REASON_OTHER);
+
         assertBfsl(app);
         assertBfsl(app2);
         assertBfsl(app3);
@@ -2972,14 +3223,21 @@ public class MockingOomAdjusterTests {
 
         assertProcStates(app, PROCESS_STATE_FOREGROUND_SERVICE, PERCEPTIBLE_APP_ADJ,
                 SCHED_GROUP_DEFAULT);
+        assertImplicitCpuTime(app, IMPLICIT_CPU_TIME_REASON_TRANSMITTED);
         assertProcStates(app2, PROCESS_STATE_FOREGROUND_SERVICE, PERCEPTIBLE_APP_ADJ,
                 SCHED_GROUP_DEFAULT);
+        assertImplicitCpuTime(app2, IMPLICIT_CPU_TIME_REASON_TRANSMITTED);
         assertProcStates(app3, PROCESS_STATE_FOREGROUND_SERVICE, PERCEPTIBLE_APP_ADJ,
                 SCHED_GROUP_DEFAULT);
+        final int app3selfReasons =
+                Flags.prototypeAggressiveFreezing() ? 0 : IMPLICIT_CPU_TIME_REASON_OTHER;
+        assertImplicitCpuTime(app3, app3selfReasons | IMPLICIT_CPU_TIME_REASON_TRANSMITTED);
         assertProcStates(app4, PROCESS_STATE_IMPORTANT_FOREGROUND, PERCEPTIBLE_APP_ADJ,
                 SCHED_GROUP_DEFAULT);
+        assertImplicitCpuTime(app4, IMPLICIT_CPU_TIME_REASON_OTHER);
         assertProcStates(app5, PROCESS_STATE_FOREGROUND_SERVICE, PERCEPTIBLE_APP_ADJ,
                 SCHED_GROUP_DEFAULT);
+        assertImplicitCpuTime(app5, IMPLICIT_CPU_TIME_REASON_OTHER);
         assertBfsl(app);
         assertBfsl(app2);
         assertBfsl(app3);
@@ -3046,14 +3304,21 @@ public class MockingOomAdjusterTests {
 
         assertProcStates(app, PROCESS_STATE_BOUND_FOREGROUND_SERVICE, PERCEPTIBLE_APP_ADJ,
                 SCHED_GROUP_DEFAULT);
+        assertImplicitCpuTime(app, IMPLICIT_CPU_TIME_REASON_TRANSMITTED);
         assertProcStates(app2, PROCESS_STATE_BOUND_FOREGROUND_SERVICE, PERCEPTIBLE_APP_ADJ,
                 SCHED_GROUP_DEFAULT);
+        assertImplicitCpuTime(app2, IMPLICIT_CPU_TIME_REASON_TRANSMITTED);
         assertProcStates(app3, PROCESS_STATE_BOUND_FOREGROUND_SERVICE, PERCEPTIBLE_APP_ADJ,
                 SCHED_GROUP_DEFAULT);
+        final int app3selfReasons =
+                Flags.prototypeAggressiveFreezing() ? 0 : IMPLICIT_CPU_TIME_REASON_OTHER;
+        assertImplicitCpuTime(app3, app3selfReasons | IMPLICIT_CPU_TIME_REASON_TRANSMITTED);
         assertProcStates(app4, PROCESS_STATE_IMPORTANT_FOREGROUND, PERCEPTIBLE_APP_ADJ,
                 SCHED_GROUP_DEFAULT);
+        assertImplicitCpuTime(app4, IMPLICIT_CPU_TIME_REASON_OTHER);
         assertProcStates(app5, PROCESS_STATE_FOREGROUND_SERVICE, PERCEPTIBLE_APP_ADJ,
                 SCHED_GROUP_DEFAULT);
+        assertImplicitCpuTime(app5, IMPLICIT_CPU_TIME_REASON_OTHER);
         assertBfsl(app);
         assertBfsl(app2);
         assertBfsl(app3);
@@ -3166,6 +3431,7 @@ public class MockingOomAdjusterTests {
 
         assertProcStates(app, PROCESS_STATE_SERVICE, SERVICE_ADJ, SCHED_GROUP_BACKGROUND,
                 "started-services", false);
+        assertImplicitCpuTime(app);
 
         app.setSetProcState(PROCESS_STATE_NONEXISTENT);
         app.setAdjType(null);
@@ -3197,6 +3463,7 @@ public class MockingOomAdjusterTests {
 
         assertProcStates(app, PROCESS_STATE_SERVICE, SERVICE_ADJ, SCHED_GROUP_BACKGROUND,
                 "started-services", false);
+        assertImplicitCpuTime(app);
         assertProcStates(app2, PROCESS_STATE_SERVICE,
                 mService.mConstants.USE_TIERED_CACHED_ADJ ? mFirstNonUiCachedAdj : cachedAdj1,
                 SCHED_GROUP_BACKGROUND, "cch-started-services", true);
@@ -3212,6 +3479,7 @@ public class MockingOomAdjusterTests {
 
         assertProcStates(app, PROCESS_STATE_SERVICE, SERVICE_ADJ, SCHED_GROUP_BACKGROUND,
                 "started-services", false);
+        assertImplicitCpuTime(app);
         assertProcStates(app2, PROCESS_STATE_SERVICE,
                 mService.mConstants.USE_TIERED_CACHED_ADJ ? mFirstNonUiCachedAdj : cachedAdj1,
                 SCHED_GROUP_BACKGROUND, "cch-started-services", true);
@@ -3227,6 +3495,7 @@ public class MockingOomAdjusterTests {
         assertNoImplicitCpuTime(app);
         assertProcStates(app2, PROCESS_STATE_SERVICE, SERVICE_ADJ, SCHED_GROUP_BACKGROUND,
                 "started-services", false);
+        assertImplicitCpuTime(app2);
     }
 
     @SuppressWarnings("GuardedBy")
@@ -3342,6 +3611,7 @@ public class MockingOomAdjusterTests {
         setWakefulness(PowerManagerInternal.WAKEFULNESS_AWAKE);
         updateOomAdj();
         assertProcStates(app, PROCESS_STATE_SERVICE, SERVICE_ADJ, SCHED_GROUP_BACKGROUND);
+        assertImplicitCpuTime(app);
 
         mProcessStateController.stopService(app.mServices, s);
         updateOomAdj();
@@ -3362,6 +3632,7 @@ public class MockingOomAdjusterTests {
         setWakefulness(PowerManagerInternal.WAKEFULNESS_AWAKE);
         updateOomAdjPending(app);
         assertProcStates(app, PROCESS_STATE_SERVICE, SERVICE_ADJ, SCHED_GROUP_BACKGROUND);
+        assertImplicitCpuTime(app);
 
         mProcessStateController.stopService(app.mServices, s);
         updateOomAdjPending(app);
@@ -3384,6 +3655,7 @@ public class MockingOomAdjusterTests {
         setWakefulness(PowerManagerInternal.WAKEFULNESS_AWAKE);
         updateOomAdj();
         assertProcStates(app, PROCESS_STATE_SERVICE, SERVICE_ADJ, SCHED_GROUP_BACKGROUND);
+        assertImplicitCpuTime(app);
 
         mProcessStateController.stopService(app.mServices, s);
         updateOomAdj();
@@ -3405,6 +3677,7 @@ public class MockingOomAdjusterTests {
         setWakefulness(PowerManagerInternal.WAKEFULNESS_AWAKE);
         updateOomAdjPending(app);
         assertProcStates(app, PROCESS_STATE_SERVICE, SERVICE_ADJ, SCHED_GROUP_BACKGROUND);
+        assertImplicitCpuTime(app);
 
         mProcessStateController.stopService(app.mServices, s);
         updateOomAdjPending(app);
@@ -3434,10 +3707,13 @@ public class MockingOomAdjusterTests {
         updateOomAdj();
         assertProcStates(client, PROCESS_STATE_PERSISTENT, PERSISTENT_PROC_ADJ,
                 SCHED_GROUP_DEFAULT);
+        assertImplicitCpuTime(client);
         assertProcStates(attributedClient, PROCESS_STATE_FOREGROUND_SERVICE, PERCEPTIBLE_APP_ADJ,
                 SCHED_GROUP_DEFAULT);
+        assertImplicitCpuTime(attributedClient);
         assertProcStates(sandboxService, PROCESS_STATE_FOREGROUND_SERVICE, PERCEPTIBLE_APP_ADJ,
                 SCHED_GROUP_DEFAULT);
+        assertImplicitCpuTime(sandboxService, IMPLICIT_CPU_TIME_REASON_TRANSMITTED);
     }
 
     @SuppressWarnings("GuardedBy")
@@ -3458,7 +3734,7 @@ public class MockingOomAdjusterTests {
         assertFreezeState(app2, false);
         if (Flags.cpuTimeCapabilityBasedFreezePolicy()) {
             assertCpuTime(app);
-            assertCpuTime(app2);
+            assertCpuTime(app2, CPU_TIME_REASON_TRANSMITTED);
         }
 
         mProcessStateController.setUidTempAllowlistStateLSP(MOCKAPP_UID, false);
@@ -3496,7 +3772,7 @@ public class MockingOomAdjusterTests {
         if (Flags.cpuTimeCapabilityBasedFreezePolicy()) {
             assertCpuTime(app);
             assertCpuTime(app2);
-            assertCpuTime(app3);
+            assertCpuTime(app3, CPU_TIME_REASON_TRANSMITTED);
         }
 
         // Remove app1 from allowlist.
@@ -3509,7 +3785,7 @@ public class MockingOomAdjusterTests {
         if (Flags.cpuTimeCapabilityBasedFreezePolicy()) {
             assertNoCpuTime(app);
             assertCpuTime(app2);
-            assertCpuTime(app3);
+            assertCpuTime(app3, CPU_TIME_REASON_TRANSMITTED);
         }
 
         // Now remove app2 from allowlist.
@@ -3540,6 +3816,7 @@ public class MockingOomAdjusterTests {
         updateOomAdj();
         assertProcStates(app, PROCESS_STATE_SERVICE, SERVICE_ADJ, SCHED_GROUP_BACKGROUND,
                 "started-services");
+        assertImplicitCpuTime(app);
 
         final ArgumentCaptor<Long> followUpTimeCaptor = ArgumentCaptor.forClass(Long.class);
         verify(mService.mHandler).sendEmptyMessageAtTime(
@@ -3626,6 +3903,7 @@ public class MockingOomAdjusterTests {
         updateOomAdj(app);
         assertProcStates(app, PROCESS_STATE_IMPORTANT_BACKGROUND, PERCEPTIBLE_MEDIUM_APP_ADJ,
                 SCHED_GROUP_BACKGROUND, "perceptible-act");
+        assertImplicitCpuTime(app);
         assertNoCpuTime(app);
 
         // GIVEN: perceptible adjustment is is enabled and timeout has been reached
@@ -3635,6 +3913,11 @@ public class MockingOomAdjusterTests {
         updateOomAdj(app);
         assertProcStates(app, PROCESS_STATE_LAST_ACTIVITY, PREVIOUS_APP_ADJ,
                 SCHED_GROUP_BACKGROUND, "stale-perceptible-act");
+        if (Flags.prototypeAggressiveFreezing()) {
+            assertNoImplicitCpuTime(app);
+        } else {
+            assertImplicitCpuTime(app);
+        }
         assertNoCpuTime(app);
 
         // GIVEN: perceptible adjustment is is disabled
@@ -3652,6 +3935,7 @@ public class MockingOomAdjusterTests {
         updateOomAdj(app);
         assertProcStates(app, PROCESS_STATE_TOP, VISIBLE_APP_ADJ,
                 SCHED_GROUP_DEFAULT, "vis-activity");
+        assertImplicitCpuTime(app);
         assertCpuTime(app);
     }
 
@@ -3673,6 +3957,13 @@ public class MockingOomAdjusterTests {
                 SCHED_GROUP_BACKGROUND, "recent-provider");
         assertProcStates(app2, PROCESS_STATE_LAST_ACTIVITY, PREVIOUS_APP_ADJ,
                 SCHED_GROUP_BACKGROUND, "recent-provider");
+        if (Flags.prototypeAggressiveFreezing()) {
+            assertNoImplicitCpuTime(app1);
+            assertNoImplicitCpuTime(app2);
+        } else {
+            assertImplicitCpuTime(app1);
+            assertImplicitCpuTime(app2);
+        }
 
         final ArgumentCaptor<Long> followUpTimeCaptor = ArgumentCaptor.forClass(Long.class);
         verify(mService.mHandler, atLeastOnce()).sendEmptyMessageAtTime(
@@ -3729,6 +4020,7 @@ public class MockingOomAdjusterTests {
         updateOomAdj(app, client);
         assertProcStates(app, PROCESS_STATE_SERVICE, SERVICE_ADJ, SCHED_GROUP_BACKGROUND,
                 "service");
+        assertImplicitCpuTime(app, IMPLICIT_CPU_TIME_REASON_TRANSMITTED);
     }
 
     @SuppressWarnings("GuardedBy")
@@ -3760,7 +4052,7 @@ public class MockingOomAdjusterTests {
             assertNoImplicitCpuTime(app);
         } else {
             assertImplicitCpuTime(client);
-            assertImplicitCpuTime(app);
+            assertImplicitCpuTime(app, IMPLICIT_CPU_TIME_REASON_TRANSMITTED);
         }
     }
 
@@ -3777,11 +4069,13 @@ public class MockingOomAdjusterTests {
         updateOomAdj(app);
 
         assertProcStates(app, PROCESS_STATE_TOP, FOREGROUND_APP_ADJ, SCHED_GROUP_DEFAULT);
+        assertImplicitCpuTime(app);
 
         setDeviceUnlocking(false);
         updateOomAdj(app);
 
         assertProcStates(app, PROCESS_STATE_TOP, FOREGROUND_APP_ADJ, SCHED_GROUP_TOP_APP);
+        assertImplicitCpuTime(app);
     }
 
     @SuppressWarnings("GuardedBy")
@@ -3797,11 +4091,13 @@ public class MockingOomAdjusterTests {
         updateOomAdj(app);
 
         assertProcStates(app, PROCESS_STATE_TOP, FOREGROUND_APP_ADJ, SCHED_GROUP_DEFAULT);
+        assertImplicitCpuTime(app);
 
         setExpandedNotificationShade(false);
         updateOomAdj(app);
 
         assertProcStates(app, PROCESS_STATE_TOP, FOREGROUND_APP_ADJ, SCHED_GROUP_TOP_APP);
+        assertImplicitCpuTime(app);
     }
     //setVisibleDozeUiProcess
 
@@ -3818,11 +4114,13 @@ public class MockingOomAdjusterTests {
         updateOomAdj(app);
 
         assertProcStates(app, PROCESS_STATE_TOP, FOREGROUND_APP_ADJ, SCHED_GROUP_DEFAULT);
+        assertImplicitCpuTime(app);
 
         setExpandedNotificationShade(false);
         updateOomAdj(app);
 
         assertProcStates(app, PROCESS_STATE_TOP, FOREGROUND_APP_ADJ, SCHED_GROUP_TOP_APP);
+        assertImplicitCpuTime(app);
     }
 
 
@@ -3840,12 +4138,15 @@ public class MockingOomAdjusterTests {
         updateOomAdj(app);
 
         assertProcStates(app, PROCESS_STATE_PERSISTENT, PERSISTENT_PROC_ADJ, SCHED_GROUP_DEFAULT);
+        // Oom adj score below the freeze cutoff should always have the IMPLICIT_CPU_TIME.
+        assertImplicitCpuTime(app);
 
         setVisibleDozeUiProcess(null);
         updateOomAdj(app);
 
         assertProcStates(app, PROCESS_STATE_BOUND_FOREGROUND_SERVICE, PERSISTENT_PROC_ADJ,
                 SCHED_GROUP_RESTRICTED);
+        assertImplicitCpuTime(app);
     }
 
     @SuppressWarnings("GuardedBy")
@@ -4178,11 +4479,6 @@ public class MockingOomAdjusterTests {
         assertEquals(expectedAdj, state.getSetAdj());
         assertEquals(expectedAdj, mInjector.mLastSetOomAdj.get(pid, INVALID_ADJ));
         assertEquals(expectedSchedGroup, state.getSetSchedGroup());
-
-        // Oom adj score below the freeze cutoff should always have the BORROWED_CPU_TIME.
-        if (expectedAdj < mService.mConstants.FREEZER_CUTOFF_ADJ) {
-            assertImplicitCpuTime(app);
-        }
 
         // Below BFGS should never have BFSL.
         if (expectedProcState > PROCESS_STATE_BOUND_FOREGROUND_SERVICE) {

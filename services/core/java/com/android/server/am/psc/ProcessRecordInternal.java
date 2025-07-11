@@ -20,11 +20,13 @@ import static android.app.ActivityManager.PROCESS_CAPABILITY_NONE;
 import static android.app.ActivityManager.PROCESS_STATE_CACHED_EMPTY;
 import static android.app.ActivityManager.PROCESS_STATE_NONEXISTENT;
 
-import static com.android.server.am.ProcessList.SERVICE_B_ADJ;
+import static com.android.server.am.OomAdjuster.CPU_TIME_REASON_NONE;
+import static com.android.server.am.OomAdjuster.IMPLICIT_CPU_TIME_REASON_NONE;
 import static com.android.server.am.ProcessList.CACHED_APP_MIN_ADJ;
-import static com.android.server.am.ProcessList.UNKNOWN_ADJ;
 import static com.android.server.am.ProcessList.INVALID_ADJ;
 import static com.android.server.am.ProcessList.SCHED_GROUP_BACKGROUND;
+import static com.android.server.am.ProcessList.SERVICE_B_ADJ;
+import static com.android.server.am.ProcessList.UNKNOWN_ADJ;
 import static com.android.server.wm.WindowProcessController.ACTIVITY_STATE_FLAG_IS_VISIBLE;
 import static com.android.server.wm.WindowProcessController.ACTIVITY_STATE_FLAG_MASK_MIN_TASK_LAYER;
 
@@ -38,6 +40,7 @@ import android.util.TimeUtils;
 import com.android.internal.annotations.CompositeRWLock;
 import com.android.internal.annotations.GuardedBy;
 import com.android.server.am.Flags;
+import com.android.server.am.OomAdjuster;
 import com.android.server.am.psc.PlatformCompatCache.CachedCompatChangeId;
 
 import java.io.PrintWriter;
@@ -237,6 +240,38 @@ public abstract class ProcessRecordInternal {
      */
     @GuardedBy("mServiceLock")
     private int mVerifiedAdj = INVALID_ADJ;
+
+    /**
+     * The current reasons for granting {@link ActivityManager#PROCESS_CAPABILITY_CPU_TIME} to this
+     * process.
+     */
+    @CompositeRWLock({"mServiceLock", "mProcLock"})
+    @OomAdjuster.CpuTimeReasons
+    private int mCurCpuTimeReasons = CPU_TIME_REASON_NONE;
+
+    /**
+     * The last reasons for granting {@link ActivityManager#PROCESS_CAPABILITY_CPU_TIME} to this
+     * process.
+     */
+    @CompositeRWLock({"mServiceLock", "mProcLock"})
+    @OomAdjuster.CpuTimeReasons
+    private int mSetCpuTimeReasons = CPU_TIME_REASON_NONE;
+
+    /**
+     * The current reasons for granting {@link ActivityManager#PROCESS_CAPABILITY_IMPLICIT_CPU_TIME}
+     * to this process.
+     */
+    @CompositeRWLock({"mServiceLock", "mProcLock"})
+    @OomAdjuster.ImplicitCpuTimeReasons
+    private int mCurImplicitCpuTimeReasons = IMPLICIT_CPU_TIME_REASON_NONE;
+
+    /**
+     * The last reasons for granting {@link ActivityManager#PROCESS_CAPABILITY_IMPLICIT_CPU_TIME}
+     * to this process.
+     */
+    @CompositeRWLock({"mServiceLock", "mProcLock"})
+    @OomAdjuster.ImplicitCpuTimeReasons
+    private int mSetImplicitCpuTimeReasons = IMPLICIT_CPU_TIME_REASON_NONE;
 
     /**
      * Current capability flags of this process.
@@ -721,6 +756,54 @@ public abstract class ProcessRecordInternal {
     @GuardedBy(anyOf = {"mServiceLock", "mProcLock"})
     public int getSetCapability() {
         return mSetCapability;
+    }
+
+    @GuardedBy({"mServiceLock", "mProcLock"})
+    public void setSetCpuTimeReasons(@OomAdjuster.CpuTimeReasons int setCpuTimeReasons) {
+        mSetCpuTimeReasons = setCpuTimeReasons;
+    }
+
+    @GuardedBy(anyOf = {"mServiceLock", "mProcLock"})
+    @OomAdjuster.CpuTimeReasons
+    public int getCurCpuTimeReasons() {
+        return mCurCpuTimeReasons;
+    }
+
+    /** Add given reasons to mCurCpuTimeReasons. */
+    @GuardedBy({"mServiceLock", "mProcLock"})
+    public void addCurCpuTimeReasons(@OomAdjuster.CpuTimeReasons int cpuTimeReasons) {
+        mCurCpuTimeReasons |= cpuTimeReasons;
+    }
+
+    /** Sets mCurCpuTimeReasons to CPU_TIME_REASON_NONE. */
+    @GuardedBy({"mServiceLock", "mProcLock"})
+    public void clearCurCpuTimeReasons() {
+        mCurCpuTimeReasons = CPU_TIME_REASON_NONE;
+    }
+
+    @GuardedBy({"mServiceLock", "mProcLock"})
+    public void setSetImplicitCpuTimeReasons(
+            @OomAdjuster.ImplicitCpuTimeReasons int setImplicitCpuTimeReasons) {
+        mSetImplicitCpuTimeReasons = setImplicitCpuTimeReasons;
+    }
+
+    @GuardedBy(anyOf = {"mServiceLock", "mProcLock"})
+    @OomAdjuster.ImplicitCpuTimeReasons
+    public int getCurImplicitCpuTimeReasons() {
+        return mCurImplicitCpuTimeReasons;
+    }
+
+    /** Add given reasons to mCurImplicitCpuTimeReasons. */
+    @GuardedBy({"mServiceLock", "mProcLock"})
+    public void addCurImplicitCpuTimeReasons(
+            @OomAdjuster.ImplicitCpuTimeReasons int implicitCpuTimeReasons) {
+        mCurImplicitCpuTimeReasons |= implicitCpuTimeReasons;
+    }
+
+    /** Sets mCurImplicitCpuTimeReasons to IMPLICIT_CPU_TIME_REASON_NONE. */
+    @GuardedBy({"mServiceLock", "mProcLock"})
+    public void clearCurImplicitCpuTimeReasons() {
+        mCurImplicitCpuTimeReasons = IMPLICIT_CPU_TIME_REASON_NONE;
     }
 
     /** Sets the current scheduling group for this process, and notifies the observer. */
@@ -1563,6 +1646,16 @@ public abstract class ProcessRecordInternal {
         pw.print(" setCapability=");
         ActivityManager.printCapabilitiesFull(pw, mSetCapability);
         pw.println();
+
+        pw.print(prefix);
+        pw.print("curCpuTimeReasons=0x"); pw.print(Integer.toHexString(mCurCpuTimeReasons));
+        pw.print(" setCpuTimeReasons=0x"); pw.print(Integer.toHexString(mSetCpuTimeReasons));
+        pw.print(" curImplicitCpuTimeReasons=0x");
+        pw.print(Integer.toHexString(mCurImplicitCpuTimeReasons));
+        pw.print(" setImplicitCpuTimeReasons=0x");
+        pw.print(Integer.toHexString(mSetImplicitCpuTimeReasons));
+        pw.println();
+
         if (mBackgroundRestricted) {
             pw.print(" backgroundRestricted=");
             pw.print(mBackgroundRestricted);

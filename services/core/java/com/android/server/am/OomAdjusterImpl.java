@@ -498,6 +498,18 @@ public class OomAdjusterImpl extends OomAdjuster {
      * change in importance in the host process based on the client process and connection state.
      */
     public interface Connection {
+        int CPU_TIME_TRANSMISSION_NONE = 0;
+        int CPU_TIME_TRANSMISSION_NORMAL = 1;
+        int CPU_TIME_TRANSMISSION_LEGACY = 2;
+
+        @IntDef(prefix = "CPU_TIME_TRANSMISSION_", value = {
+                CPU_TIME_TRANSMISSION_NONE,
+                CPU_TIME_TRANSMISSION_NORMAL,
+                CPU_TIME_TRANSMISSION_LEGACY,
+        })
+        @interface CpuTimeTransmissionType {
+        }
+
         /**
          * Compute the impact this connection has on the host's importance values.
          */
@@ -510,12 +522,12 @@ public class OomAdjusterImpl extends OomAdjuster {
         boolean canAffectCapabilities();
 
         /**
-         * Returns whether this connection transmits PROCESS_CAPABILITY_CPU_TIME to the host, if the
-         * client possesses it.
+         * Returns the type of transmission of ALL_CPU_TIME_CAPABILITIES to the host, if the client
+         * possesses it.
          */
-        default boolean transmitsCpuTime() {
-            // Always lend this capability by default.
-            return true;
+        @CpuTimeTransmissionType
+        default int cpuTimeTransmissionType() {
+            return CPU_TIME_TRANSMISSION_NORMAL;
         }
     }
 
@@ -1171,6 +1183,10 @@ public class OomAdjusterImpl extends OomAdjuster {
             long now) {
         final ProcessRecordInternal state = app;
 
+        // We'll evaluate the reasons within getCpuCapability and getImplicitCpuCapability later.
+        state.clearCurCpuTimeReasons();
+        state.clearCurImplicitCpuTimeReasons();
+
         // Remove any follow up update this process might have. It will be rescheduled if still
         // needed.
         state.setFollowupUpdateUptimeMs(NO_FOLLOW_UP_TIME);
@@ -1213,6 +1229,8 @@ public class OomAdjusterImpl extends OomAdjuster {
             state.setHasForegroundActivities(false);
             state.setCurrentSchedulingGroup(SCHED_GROUP_DEFAULT);
             state.setCurCapability(PROCESS_CAPABILITY_ALL); // BFSL allowed
+            state.addCurCpuTimeReasons(CPU_TIME_REASON_OTHER);
+            state.addCurImplicitCpuTimeReasons(IMPLICIT_CPU_TIME_REASON_OTHER);
             state.setCurProcState(ActivityManager.PROCESS_STATE_PERSISTENT);
             // System processes can do UI, and when they do we want to have
             // them trim their memory after the user leaves the UI.  To
@@ -1793,7 +1811,7 @@ public class OomAdjusterImpl extends OomAdjuster {
         }
 
         capability |= getDefaultCapability(app, procState);
-        capability |= getCpuCapability(app, now, foregroundActivities);
+        capability |= getCpuCapability(app, foregroundActivities);
         capability |= getImplicitCpuCapability(app, adj);
 
         // Procstates below BFGS should never have this capability.
@@ -1887,7 +1905,7 @@ public class OomAdjusterImpl extends OomAdjuster {
         // we check the final procstate, and remove it if the procsate is below BFGS.
         capability |= getBfslCapabilityFromClient(client);
 
-        capability |= getCpuCapabilityFromClient(cr, client);
+        capability |= getCpuCapabilitiesFromClient(app, client, cr);
 
         if (cr.notHasFlag(Context.BIND_WAIVE_PRIORITY)) {
             if (cr.hasFlag(Context.BIND_INCLUDE_CAPABILITIES)) {
@@ -2321,8 +2339,7 @@ public class OomAdjusterImpl extends OomAdjuster {
         // but, right before actually setting it to the process,
         // we check the final procstate, and remove it if the procsate is below BFGS.
         capability |= getBfslCapabilityFromClient(client);
-
-        capability |= getCpuCapabilityFromClient(conn, client);
+        capability |= getCpuCapabilitiesFromClient(app, client, conn);
 
         if (clientProcState >= PROCESS_STATE_CACHED_ACTIVITY) {
             // If the other app is cached for any reason, for purposes here
