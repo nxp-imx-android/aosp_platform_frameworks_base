@@ -224,7 +224,8 @@ public class BubbleBarExpandedView extends FrameLayout implements BubbleTaskView
                     R.layout.bubble_overflow_container, null /* root */);
             mOverflowView.initialize(expandedViewManager, positioner);
             addView(mOverflowView);
-            // Don't show handle for overflow
+            // Don't show caption or handle for overflow
+            mCaptionView.setVisibility(View.GONE);
             getHandleView().setVisibility(View.GONE);
         } else {
             mBubbleTaskView = bubbleTaskView;
