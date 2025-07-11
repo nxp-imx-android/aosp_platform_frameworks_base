@@ -17,6 +17,7 @@
 package com.android.wm.shell.dagger;
 
 import static android.window.DesktopExperienceFlags.ENABLE_INORDER_TRANSITION_CALLBACKS_FOR_DESKTOP;
+import static android.window.DesktopExperienceFlags.ENABLE_MULTI_DISPLAY_HOME_FOCUS_BUG_FIX;
 import static android.window.DesktopExperienceFlags.ENABLE_WINDOWING_TRANSITION_HANDLERS_OBSERVERS;
 import static android.window.DesktopModeFlags.ENABLE_DESKTOP_SYSTEM_DIALOGS_TRANSITIONS;
 import static android.window.DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_ENTER_TRANSITIONS_BUGFIX;
@@ -132,6 +133,7 @@ import com.android.wm.shell.desktopmode.DesktopTasksLimiter;
 import com.android.wm.shell.desktopmode.DesktopTasksTransitionObserver;
 import com.android.wm.shell.desktopmode.DesktopUserRepositories;
 import com.android.wm.shell.desktopmode.DisplayDisconnectTransitionHandler;
+import com.android.wm.shell.desktopmode.DisplayFocusResolver;
 import com.android.wm.shell.desktopmode.DragToDesktopTransitionHandler;
 import com.android.wm.shell.desktopmode.EnterDesktopTaskTransitionHandler;
 import com.android.wm.shell.desktopmode.ExitDesktopTaskTransitionHandler;
@@ -1101,7 +1103,8 @@ public abstract class WMShellModule {
             DesktopState desktopState,
             Optional<DesktopImeHandler> desktopImeHandler,
             Optional<DesktopBackNavTransitionObserver> desktopBackNavTransitionObserver,
-            DesktopModeLoggerTransitionObserver desktopModeLoggerTransitionObserver) {
+            DesktopModeLoggerTransitionObserver desktopModeLoggerTransitionObserver,
+            Optional<DisplayFocusResolver> displayFocusResolver) {
         if (ENABLE_INORDER_TRANSITION_CALLBACKS_FOR_DESKTOP.isTrue()
                 && ENABLE_WINDOWING_TRANSITION_HANDLERS_OBSERVERS.isTrue()
                 && desktopState.canEnterDesktopMode()) {
@@ -1111,7 +1114,8 @@ public abstract class WMShellModule {
                     desksTransitionObserver,
                     desktopImeHandler,
                     desktopBackNavTransitionObserver,
-                    desktopModeLoggerTransitionObserver));
+                    desktopModeLoggerTransitionObserver,
+                    displayFocusResolver));
         }
         return Optional.empty();
     }
@@ -1564,6 +1568,31 @@ public abstract class WMShellModule {
                                         desktopWallpaperActivityTokenProvider,
                                         desktopState,
                                         shellInit)));
+    }
+
+    @WMSingleton
+    @Provides
+    static Optional<DisplayFocusResolver> provideDisplayFocusResolver(
+            Transitions transitions,
+            ShellTaskOrganizer shellTaskOrganizer,
+            FocusTransitionObserver focusTransitionObserver,
+            DesktopState desktopState,
+            Optional<DesktopUserRepositories> desktopUserRepositories,
+            Optional<DesktopTasksController> desktopTasksController,
+            ShellInit shellInit) {
+        if (desktopUserRepositories.isPresent()
+                && desktopTasksController.isPresent()
+                && desktopState.canEnterDesktopMode()
+                && ENABLE_MULTI_DISPLAY_HOME_FOCUS_BUG_FIX.isTrue()) {
+            return Optional.of(
+                    new DisplayFocusResolver(
+                        transitions,
+                        shellTaskOrganizer,
+                        focusTransitionObserver,
+                        desktopUserRepositories.get(),
+                        desktopTasksController.get()));
+        }
+        return Optional.empty();
     }
 
     @WMSingleton
