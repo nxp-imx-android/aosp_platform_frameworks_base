@@ -20,9 +20,9 @@ import android.platform.test.annotations.Postsubmit
 import android.platform.test.annotations.Presubmit
 import android.tools.NavBar
 import android.tools.flicker.junit.FlickerParametersRunnerFactory
-import android.tools.flicker.legacy.FlickerBuilder
-import android.tools.flicker.legacy.LegacyFlickerTest
-import android.tools.flicker.legacy.LegacyFlickerTestFactory
+import android.tools.flicker.FlickerBuilder
+import android.tools.flicker.FlickerTest
+import android.tools.flicker.FlickerTestFactory
 import androidx.test.filters.FlakyTest
 import androidx.test.filters.RequiresDevice
 import com.android.wm.shell.flicker.splitscreen.benchmark.EnterSplitScreenByDragFromTaskbarBenchmark
@@ -51,7 +51,7 @@ import org.junit.runners.Parameterized
 @RunWith(Parameterized::class)
 @Parameterized.UseParametersRunnerFactory(FlickerParametersRunnerFactory::class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-class EnterSplitScreenByDragFromTaskbarTest(override val flicker: LegacyFlickerTest) :
+class EnterSplitScreenByDragFromTaskbarTest(override val flicker: FlickerTest) :
     EnterSplitScreenByDragFromTaskbarBenchmark(flicker), ICommonAssertions {
     /** {@inheritDoc} */
     override val transition: FlickerBuilder.() -> Unit
@@ -164,7 +164,7 @@ class EnterSplitScreenByDragFromTaskbarTest(override val flicker: LegacyFlickerT
         @Parameterized.Parameters(name = "{0}")
         @JvmStatic
         fun getParams() =
-            LegacyFlickerTestFactory.nonRotationTests(
+            FlickerTestFactory.nonRotationTests(
                 supportedNavigationModes = listOf(NavBar.MODE_GESTURAL)
             )
     }

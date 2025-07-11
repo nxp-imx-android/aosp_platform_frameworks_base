@@ -18,11 +18,11 @@ package com.android.wm.shell.flicker.maximize
 
 import androidx.test.filters.RequiresDevice
 import android.tools.NavBar
-import android.tools.flicker.assertions.FlickerTest
+import android.tools.flicker.assertions.FlickerChecker
 import android.tools.flicker.junit.FlickerParametersRunnerFactory
-import android.tools.flicker.legacy.FlickerBuilder
-import android.tools.flicker.legacy.LegacyFlickerTest
-import android.tools.flicker.legacy.LegacyFlickerTestFactory
+import android.tools.flicker.FlickerBuilder
+import android.tools.flicker.FlickerTest
+import android.tools.flicker.FlickerTestFactory
 import com.android.server.wm.flicker.helpers.DesktopModeAppHelper
 import com.android.wm.shell.flicker.DesktopModeBaseTest
 import com.android.wm.shell.Utils
@@ -44,7 +44,7 @@ import org.junit.runners.Parameterized
 @RequiresDevice
 @RunWith(Parameterized::class)
 @Parameterized.UseParametersRunnerFactory(FlickerParametersRunnerFactory::class)
-class MaximizeAppDoubleTapAppHeaderFlickerTest(flicker: LegacyFlickerTest) :
+class MaximizeAppDoubleTapAppHeaderFlickerTest(flicker: FlickerTest) :
         DesktopModeBaseTest(flicker) {
     inner class MaximizeAppDoubleTapAppHeaderZoneScenario : MaximizeAppWindow(
         rotation = flicker.scenario.startRotation,
@@ -82,8 +82,8 @@ class MaximizeAppDoubleTapAppHeaderFlickerTest(flicker: LegacyFlickerTest) :
     companion object {
         @Parameterized.Parameters(name = "{0}")
         @JvmStatic
-        fun getParams(): Collection<FlickerTest> {
-            return LegacyFlickerTestFactory.nonRotationTests(
+        fun getParams(): Collection<FlickerChecker> {
+            return FlickerTestFactory.nonRotationTests(
                 supportedNavigationModes = listOf(NavBar.MODE_GESTURAL)
             )
         }

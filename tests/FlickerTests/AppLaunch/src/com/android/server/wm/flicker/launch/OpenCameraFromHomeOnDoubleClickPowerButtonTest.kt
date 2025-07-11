@@ -20,9 +20,9 @@ import android.platform.test.annotations.Postsubmit
 import android.tools.device.apphelpers.CameraAppHelper
 import android.tools.device.apphelpers.StandardAppHelper
 import android.tools.flicker.junit.FlickerParametersRunnerFactory
-import android.tools.flicker.legacy.FlickerBuilder
-import android.tools.flicker.legacy.LegacyFlickerTest
-import android.tools.flicker.legacy.LegacyFlickerTestFactory
+import android.tools.flicker.FlickerBuilder
+import android.tools.flicker.FlickerTest
+import android.tools.flicker.FlickerTestFactory
 import android.tools.flicker.rules.RemoveAllTasksButHomeRule
 import android.view.KeyEvent
 import androidx.test.filters.FlakyTest
@@ -62,7 +62,7 @@ import org.junit.runners.Parameterized
 @Parameterized.UseParametersRunnerFactory(FlickerParametersRunnerFactory::class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 @FlakyTest(bugId = 420408933)
-class OpenCameraFromHomeOnDoubleClickPowerButtonTest(flicker: LegacyFlickerTest) :
+class OpenCameraFromHomeOnDoubleClickPowerButtonTest(flicker: FlickerTest) :
     OpenAppFromLauncherTransition(flicker) {
     private val cameraApp = CameraAppHelper(instrumentation)
     override val testApp: StandardAppHelper
@@ -156,11 +156,11 @@ class OpenCameraFromHomeOnDoubleClickPowerButtonTest(flicker: LegacyFlickerTest)
         /**
          * Creates the test configurations.
          *
-         * See [LegacyFlickerTestFactory.nonRotationTests] for configuring screen orientation and
+         * See [FlickerTestFactory.nonRotationTests] for configuring screen orientation and
          * navigation modes.
          */
         @Parameterized.Parameters(name = "{0}")
         @JvmStatic
-        fun getParams() = LegacyFlickerTestFactory.nonRotationTests()
+        fun getParams() = FlickerTestFactory.nonRotationTests()
     }
 }

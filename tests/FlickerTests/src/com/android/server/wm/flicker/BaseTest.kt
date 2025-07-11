@@ -20,8 +20,8 @@ import android.app.Instrumentation
 import android.content.Intent
 import android.platform.test.annotations.Presubmit
 import android.tools.flicker.junit.FlickerBuilderProvider
-import android.tools.flicker.legacy.FlickerBuilder
-import android.tools.flicker.legacy.LegacyFlickerTest
+import android.tools.flicker.FlickerBuilder
+import android.tools.flicker.FlickerTest
 import android.tools.flicker.rules.ClearAppCacheRule
 import android.tools.traces.executeShellCommand
 import android.util.Log
@@ -41,7 +41,7 @@ import org.junit.Test
 abstract class BaseTest
 @JvmOverloads
 constructor(
-    protected val flicker: LegacyFlickerTest,
+    protected val flicker: FlickerTest,
     protected val instrumentation: Instrumentation = InstrumentationRegistry.getInstrumentation(),
     protected val tapl: LauncherInstrumentation = LauncherInstrumentation()
 ) {

@@ -19,9 +19,9 @@ package com.android.wm.shell.flicker.splitscreen
 import android.platform.test.annotations.Presubmit
 import android.tools.NavBar
 import android.tools.flicker.junit.FlickerParametersRunnerFactory
-import android.tools.flicker.legacy.FlickerBuilder
-import android.tools.flicker.legacy.LegacyFlickerTest
-import android.tools.flicker.legacy.LegacyFlickerTestFactory
+import android.tools.flicker.FlickerBuilder
+import android.tools.flicker.FlickerTest
+import android.tools.flicker.FlickerTestFactory
 import android.tools.flicker.subject.layers.LayersTraceSubject
 import android.tools.flicker.subject.region.RegionSubject
 import android.tools.traces.component.ComponentNameMatcher.Companion.WALLPAPER_BBQ_WRAPPER
@@ -50,7 +50,7 @@ import org.junit.runners.Parameterized
 @RunWith(Parameterized::class)
 @Parameterized.UseParametersRunnerFactory(FlickerParametersRunnerFactory::class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-class UnlockKeyguardToSplitScreenTest(override val flicker: LegacyFlickerTest) :
+class UnlockKeyguardToSplitScreenTest(override val flicker: FlickerTest) :
     UnlockKeyguardToSplitScreenBenchmark(flicker), ICommonAssertions {
     /** {@inheritDoc} */
     override val transition: FlickerBuilder.() -> Unit
@@ -122,7 +122,7 @@ class UnlockKeyguardToSplitScreenTest(override val flicker: LegacyFlickerTest) :
         @Parameterized.Parameters(name = "{0}")
         @JvmStatic
         fun getParams() =
-            LegacyFlickerTestFactory.nonRotationTests(
+            FlickerTestFactory.nonRotationTests(
                 supportedNavigationModes = listOf(NavBar.MODE_GESTURAL)
             )
     }

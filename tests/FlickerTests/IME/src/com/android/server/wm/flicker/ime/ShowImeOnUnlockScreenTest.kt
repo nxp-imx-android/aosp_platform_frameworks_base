@@ -21,9 +21,9 @@ import androidx.test.filters.RequiresDevice
 import android.platform.test.rule.UnlockScreenRule
 import android.tools.Rotation
 import android.tools.flicker.junit.FlickerParametersRunnerFactory
-import android.tools.flicker.legacy.FlickerBuilder
-import android.tools.flicker.legacy.LegacyFlickerTest
-import android.tools.flicker.legacy.LegacyFlickerTestFactory
+import android.tools.flicker.FlickerBuilder
+import android.tools.flicker.FlickerTest
+import android.tools.flicker.FlickerTestFactory
 import android.tools.traces.component.ComponentNameMatcher
 import androidx.test.filters.FlakyTest
 import com.android.server.wm.flicker.BaseTest
@@ -43,7 +43,7 @@ import org.junit.runners.Parameterized
 @RunWith(Parameterized::class)
 @Parameterized.UseParametersRunnerFactory(FlickerParametersRunnerFactory::class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-class ShowImeOnUnlockScreenTest(flicker: LegacyFlickerTest) : BaseTest(flicker) {
+class ShowImeOnUnlockScreenTest(flicker: FlickerTest) : BaseTest(flicker) {
     private val testApp = ImeAppHelper(instrumentation)
     private val imeOrScreenshot = ComponentNameMatcher.IME.or(ComponentNameMatcher.IME_SCREENSHOT)
 
@@ -102,7 +102,7 @@ class ShowImeOnUnlockScreenTest(flicker: LegacyFlickerTest) : BaseTest(flicker) 
         @Parameterized.Parameters(name = "{0}")
         @JvmStatic
         fun getParams() =
-            LegacyFlickerTestFactory.nonRotationTests(
+            FlickerTestFactory.nonRotationTests(
                 supportedRotations = listOf(Rotation.ROTATION_0)
             )
     }
