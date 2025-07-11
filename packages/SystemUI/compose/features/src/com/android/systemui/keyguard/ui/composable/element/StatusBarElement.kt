@@ -66,8 +66,7 @@ constructor(
     @Composable
     fun StatusBar(modifier: Modifier = Modifier) {
         val context = LocalContext.current
-        val viewDisplayCutout =
-            LocalDisplayCutout.current().viewDisplayCutoutKeyguardStatusBarView
+        val displayCutout = LocalDisplayCutout.current
 
         @SuppressLint("InflateParams")
         val view =
@@ -114,7 +113,11 @@ constructor(
             },
             modifier =
                 modifier.fillMaxWidth().height { Utils.getStatusBarHeaderHeightKeyguard(context) },
-            update = { viewController.setDisplayCutout(viewDisplayCutout) },
+            update = {
+                viewController.setDisplayCutout(
+                    displayCutout().viewDisplayCutoutKeyguardStatusBarView
+                )
+            },
         )
     }
 
