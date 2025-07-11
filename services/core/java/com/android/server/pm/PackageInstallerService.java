@@ -17,7 +17,7 @@
 package com.android.server.pm;
 
 import static android.app.admin.DevicePolicyResources.Strings.Core.PACKAGE_DELETED_BY_DO;
-import static android.content.pm.PackageInstaller.DEVELOPER_VERIFICATION_POLICY_BLOCK_FAIL_WARN;
+import static android.content.pm.PackageInstaller.DEVELOPER_VERIFICATION_POLICY_NONE;
 import static android.content.pm.PackageInstaller.LOCATION_DATA_APP;
 import static android.content.pm.PackageInstaller.SessionParams.MAX_PERMISSION_STATES_SIZE;
 import static android.content.pm.PackageInstaller.SessionParams.MAX_URI_LENGTH;
@@ -291,9 +291,10 @@ public class PackageInstallerService extends IPackageInstaller.Stub implements
      */
     @GuardedBy("mVerificationPolicyPerUser")
     private final SparseIntArray mDeveloperVerificationPolicyPerUser = new SparseIntArray(1);
-    // TODO(b/360129657): update the default policy.
-    private static final int DEFAULT_VERIFICATION_POLICY =
-            DEVELOPER_VERIFICATION_POLICY_BLOCK_FAIL_WARN;
+    /**
+     * Default developer verification policy for a new user.
+     */
+    private static final int DEFAULT_VERIFICATION_POLICY = DEVELOPER_VERIFICATION_POLICY_NONE;
 
     private static final class Lifecycle extends SystemService {
         private final PackageInstallerService mPackageInstallerService;
