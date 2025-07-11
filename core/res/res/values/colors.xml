@@ -586,6 +586,7 @@
     <color name="system_secondary_light">#585F72</color>
     <color name="system_secondary_container_light">#DCE2F9</color>
     <color name="system_secondary_dim_light">#4C5366</color>
+    <color name="system_semantic_red_container_high_light">#DB372D</color>
     <color name="system_shadow_light">#000000</color>
     <color name="system_surface_light">#FAF8FE</color>
     <color name="system_surface_bright_light">#FAF8FE</color>
@@ -641,6 +642,7 @@
     <color name="system_secondary_dark">#C0C6DC</color>
     <color name="system_secondary_container_dark">#353B4D</color>
     <color name="system_secondary_dim_dark">#B2B8CE</color>
+    <color name="system_semantic_red_container_high_dark">#F55E57</color>
     <color name="system_shadow_dark">#000000</color>
     <color name="system_surface_dark">#0D0E12</color>
     <color name="system_surface_bright_dark">#292C34</color>

@@ -130,6 +130,7 @@
     <color name="materialColorSecondary">@color/system_secondary_dark</color>
     <color name="materialColorSecondaryContainer">@color/system_secondary_container_dark</color>
     <color name="materialColorSecondaryDim">@color/system_secondary_dim_dark</color>
+    <color name="materialColorSemanticRedContainerHigh">@color/system_semantic_red_container_high_dark</color>
     <color name="materialColorShadow">@color/system_shadow_dark</color>
     <color name="materialColorSurface">@color/system_surface_dark</color>
     <color name="materialColorSurfaceBright">@color/system_surface_bright_dark</color>

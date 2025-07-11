@@ -6051,7 +6051,7 @@ public class Notification implements Parcelable
             contentView.setDrawableTint(
                     R.id.phishing_alert,
                     false /* targetBackground */,
-                    getPrimaryTextColor(p),
+                    getColors(p).getSemanticRedContainerHighColor(),
                     PorterDuff.Mode.SRC_ATOP);
         }
 
@@ -16754,6 +16754,7 @@ public class Notification implements Parcelable
         private int mOnTertiaryFixedAccentTextColor = COLOR_INVALID;
 
         private int mErrorColor = COLOR_INVALID;
+        private int mSemanticRedContainerHighColor = COLOR_INVALID;
         private int mContrastColor = COLOR_INVALID;
         private int mRippleAlpha = 0x33;
 
@@ -16904,6 +16905,8 @@ public class Notification implements Parcelable
             }
             // make sure every color has a valid value
             mProtectionColor = ColorUtils.blendARGB(mPrimaryTextColor, mBackgroundColor, 0.9f);
+            mSemanticRedContainerHighColor =
+                    ctx.getColor(R.color.materialColorSemanticRedContainerHigh);
         }
 
         /** calculates the contrast color for the non-colorized notifications */
@@ -16992,6 +16995,14 @@ public class Notification implements Parcelable
         /** @return the theme's error color, or the primary text color when colorized */
         public @ColorInt int getErrorColor() {
             return mErrorColor;
+        }
+
+        /**
+         * @return the semantic red container high color. Used for elements that are related to
+         * safety, security, and privacy.
+         */
+        public @ColorInt int getSemanticRedContainerHighColor() {
+            return mSemanticRedContainerHighColor;
         }
 
         /** @return the alpha component of the current theme's control highlight color */
