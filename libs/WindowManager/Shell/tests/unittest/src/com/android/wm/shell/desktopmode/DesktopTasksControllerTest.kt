@@ -194,6 +194,7 @@ import org.junit.Assume.assumeTrue
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.mockito.AdditionalMatchers.not
 import org.mockito.ArgumentMatchers.isA
 import org.mockito.ArgumentMatchers.isNull
 import org.mockito.Mock
@@ -2025,6 +2026,36 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
             verify(desktopModeEnterExitTransitionListener)
                 .onEnterDesktopModeTransitionStarted(TO_DESKTOP_ANIM_DURATION)
         }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_CASCADING_WINDOWS)
+    fun moveToDesk_existingDeskTasksInBackground_cascadeApplied() {
+        val stableBounds =
+            Rect(0, 0, DISPLAY_DIMENSION_LONG, DISPLAY_DIMENSION_SHORT - TASKBAR_FRAME_HEIGHT)
+        whenever(displayLayout.getStableBounds(any())).thenAnswer { i ->
+            (i.arguments.first() as Rect).set(stableBounds)
+        }
+        setUpLandscapeDisplay()
+
+        val freeformTask = setUpFreeformTask(bounds = DEFAULT_LANDSCAPE_BOUNDS, background = true)
+        val recentsFreeformTask =
+            createRecentTaskInfo(taskId = freeformTask.taskId, displayId = freeformTask.displayId)
+        recentsFreeformTask.lastNonFullscreenBounds = DEFAULT_LANDSCAPE_BOUNDS
+        whenever(recentTasksController.findTaskInBackground(anyInt()))
+            .thenReturn(recentsFreeformTask)
+        val fullscreenTask = setUpFullscreenTask()
+
+        controller.moveTaskToDefaultDeskAndActivate(
+            fullscreenTask.taskId,
+            transitionSource = UNKNOWN,
+        )
+
+        val wct = getLatestEnterDesktopWct()
+        assertNotNull(wct, "should move to desk")
+        val finalBounds = findBoundsChange(wct, fullscreenTask)
+        assertThat(stableBounds.getDesktopTaskPosition(finalBounds!!))
+            .isEqualTo(DesktopTaskPosition.BottomRight)
+    }
 
     @Test
     @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
@@ -11480,7 +11511,7 @@ private fun WindowContainerTransaction?.anyWindowingModeChange(
     } ?: false
 }
 
-private fun createRecentTaskInfo(taskId: Int, displayId: Int = DEFAULT_DISPLAY) =
+private fun createRecentTaskInfo(taskId: Int, displayId: Int = DEFAULT_DISPLAY): RecentTaskInfo =
     RecentTaskInfo().apply {
         this.taskId = taskId
         this.displayId = displayId
