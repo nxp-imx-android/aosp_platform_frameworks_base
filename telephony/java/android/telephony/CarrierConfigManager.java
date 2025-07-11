@@ -2125,6 +2125,27 @@ public class CarrierConfigManager {
             "ratchet_nr_advanced_bandwidth_if_rrc_idle_bool";
 
     /**
+     * Controls whether the framework applies modem provided display network type for icon display.
+     *
+     * <p>If {@code true}, the system uses the display network type
+     * suggested by the modem through the HAL indication displayNetworkTypeChanged.
+     * This allows the displayed network type to differ from the actual registered
+     * Radio Access Technology (RAT) based on specific network conditions or
+     * carrier requirements.
+     * </p>
+     *
+     * <p>If {@code false}, modem-suggested display overrides are ignored, and the
+     * network type display follows standard framework logic.
+     * </p>
+     *
+     * <p>Default value is {@code false}.</p>
+     *
+     * @hide
+     */
+    public static final String KEY_USE_MODEM_DISPLAY_NETWORK_TYPE_BOOL =
+            "use_modem_display_network_type_bool";
+
+    /**
      * Boolean indicating if operator name should be shown in the status bar
      * @hide
      */
@@ -11305,6 +11326,7 @@ public class CarrierConfigManager {
                 KEY_NR_ADVANCED_REQUIRES_SINGLE_CC_ABOVE_BANDWIDTH_THRESHOLD_BOOL, false);
         sDefaults.putBoolean(KEY_INCLUDE_LTE_FOR_NR_ADVANCED_THRESHOLD_BANDWIDTH_BOOL, false);
         sDefaults.putBoolean(KEY_RATCHET_NR_ADVANCED_BANDWIDTH_IF_RRC_IDLE_BOOL, false);
+        sDefaults.putBoolean(KEY_USE_MODEM_DISPLAY_NETWORK_TYPE_BOOL, false);
         sDefaults.putIntArray(KEY_CARRIER_NR_AVAILABILITIES_INT_ARRAY,
                 new int[]{CARRIER_NR_AVAILABILITY_NSA, CARRIER_NR_AVAILABILITY_SA});
         sDefaults.putBoolean(KEY_LTE_ENABLED_BOOL, true);

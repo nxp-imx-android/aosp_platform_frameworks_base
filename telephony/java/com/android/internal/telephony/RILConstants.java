@@ -621,6 +621,7 @@ public interface RILConstants {
     int RIL_UNSOL_SLICING_CONFIG_CHANGED = 1055;
     int RIL_UNSOL_CELLULAR_IDENTIFIER_DISCLOSED = 1056;
     int RIL_UNSOL_SECURITY_ALGORITHMS_UPDATED = 1057;
+    int RIL_UNSOL_DISPLAY_NETWORK_TYPE_CHANGED = 1058;
 
     /* The following unsols are not defined in RIL.h */
     int RIL_UNSOL_HAL_NON_RIL_BASE = 1100;
