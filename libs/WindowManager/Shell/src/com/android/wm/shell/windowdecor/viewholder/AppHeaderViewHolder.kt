@@ -51,6 +51,7 @@ import com.android.internal.R.color.materialColorSecondaryContainer
 import com.android.internal.R.color.materialColorSurfaceContainerHigh
 import com.android.internal.R.color.materialColorSurfaceContainerLow
 import com.android.internal.R.color.materialColorSurfaceDim
+import com.android.internal.util.FrameworkStatsLog
 import com.android.wm.shell.R
 import com.android.wm.shell.desktopmode.DesktopModeEventLogger.Companion.InputMethod
 import com.android.wm.shell.desktopmode.DesktopModeUiEventLogger
@@ -456,6 +457,7 @@ class AppHeaderViewHolder(
         enableMaximizeLongClick: Boolean,
         isCaptionVisible: Boolean,
     ) {
+        logDisplayCompatRestartButtonEventReported(taskInfo)
         currentTaskInfo = taskInfo
         if (DesktopModeFlags.ENABLE_THEMED_APP_HEADERS.isTrue) {
             bindDataWithThemedHeaders(
@@ -468,6 +470,25 @@ class AppHeaderViewHolder(
             )
         } else {
             bindDataLegacy(taskInfo, hasGlobalFocus, isCaptionVisible)
+        }
+    }
+
+    fun logDisplayCompatRestartButtonEventReported(newTaskInfo: RunningTaskInfo) {
+        val type = FrameworkStatsLog
+            .DISPLAY_COMPAT_RESTART_MENU_EVENT_REPORTED__EVENT__RESTART_MENU_EVENT_APPEARED
+        val prevIsRestartMenuEnabledForDisplayMove =
+            if (::currentTaskInfo.isInitialized) {
+                currentTaskInfo.appCompatTaskInfo.isRestartMenuEnabledForDisplayMove
+            } else {
+                false
+            }
+        if (!prevIsRestartMenuEnabledForDisplayMove
+                && newTaskInfo.appCompatTaskInfo.isRestartMenuEnabledForDisplayMove
+                && newTaskInfo.isFreeform) {
+            FrameworkStatsLog.write(
+                FrameworkStatsLog.DISPLAY_COMPAT_RESTART_MENU_EVENT_REPORTED,
+                newTaskInfo.effectiveUid, type
+            )
         }
     }
 
