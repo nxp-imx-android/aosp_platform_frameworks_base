@@ -2028,6 +2028,10 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
         return mA11yWindowManager.getLastNonProxyTopFocusedDisplayId();
     }
 
+    public int getTopFocusedDisplayId() {
+        return mA11yWindowManager.getTopFocusedDisplayId();
+    }
+
     @VisibleForTesting
     void notifySystemActionsChangedLocked(AccessibilityUserState userState) {
         for (int i = userState.mBoundServices.size() - 1; i >= 0; i--) {
