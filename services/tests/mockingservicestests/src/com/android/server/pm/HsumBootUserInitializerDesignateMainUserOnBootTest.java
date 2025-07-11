@@ -30,7 +30,7 @@ public final class HsumBootUserInitializerDesignateMainUserOnBootTest
 
     private final boolean mIsDebuggable;
     private final boolean mSysPropDesignateMainUser;
-    private final boolean mFlagCreateInitialUser;
+    private final boolean mFlagDemoteMainUser;
     private final boolean mConfigCreateInitialUser;
     private final boolean mConfigDesignateMainUser;
     private final boolean mConfigIsMainUserPermanentAdmin;
@@ -390,19 +390,19 @@ public final class HsumBootUserInitializerDesignateMainUserOnBootTest
     }
 
     public HsumBootUserInitializerDesignateMainUserOnBootTest(boolean isDebuggable,
-            boolean sysPropDesignateMainUser, boolean flagCreateInitialUser,
+            boolean sysPropDesignateMainUser, boolean flagDemoteMainUser,
             boolean configCreateInitialUser, boolean configDesignateMainUser,
             boolean configIsMainUserPermanentAdmin,  boolean result) {
         mSysPropDesignateMainUser = sysPropDesignateMainUser;
         mIsDebuggable = isDebuggable;
-        mFlagCreateInitialUser = flagCreateInitialUser;
+        mFlagDemoteMainUser = flagDemoteMainUser;
         mConfigCreateInitialUser = configCreateInitialUser;
         mConfigDesignateMainUser = configDesignateMainUser;
         mConfigIsMainUserPermanentAdmin = configIsMainUserPermanentAdmin;
         mResult = result;
         Log.v(mTag, "Constructor: isDebuggable=" + isDebuggable
                 + ", sysPropDesignateMainUser=" + sysPropDesignateMainUser
-                + ", flagCreateInitialUser=" + flagCreateInitialUser
+                + ", flagDemoteMainUser=" + flagDemoteMainUser
                 + ", configCreateInitialUser=" + configCreateInitialUser
                 + ", configDesignateMainUser=" + configDesignateMainUser
                 + ", configIsMainUserPermanentAdmin=" + configIsMainUserPermanentAdmin
@@ -413,7 +413,7 @@ public final class HsumBootUserInitializerDesignateMainUserOnBootTest
     public void testDesignateMainUserOnBoot() {
         mockSysPropDesignateMainUser(mSysPropDesignateMainUser);
         mockIsDebuggable(mIsDebuggable);
-        setCreateInitialUserFlag(mFlagCreateInitialUser);
+        setDemoteMainUserFlag(mFlagDemoteMainUser);
         mockConfigDesignateMainUser(mConfigDesignateMainUser);
         mockConfigIsMainUserPermanentAdmin(mConfigIsMainUserPermanentAdmin);
         mockConfigCreateInitialUser(mConfigCreateInitialUser);
