@@ -346,6 +346,50 @@ public class UserManager {
     public static final String DISALLOW_CONFIG_WIFI = "no_config_wifi";
 
     /**
+     * Specifies if a user is disallowed from adding or editing private Wi-Fi configurations,
+     * that is, Wi-Fi configurations that are not shared with other users.
+     *
+     * Use {@link #DISALLOW_CONFIG_WIFI} if all types of Wi-Fi configurations are disallowed to
+     * be added or edited.
+     *
+     * Note: This restriction is used for system only, it can't be used via
+     * the DevicePolicyManager APIs.
+     *
+     * <p>The default value is <code>false</code>.
+     *
+     * <p>Key for user restrictions.
+     * <p>Type: Boolean
+     * @see #getUserRestrictions()
+     *
+     * @hide
+     */
+    @FlaggedApi(com.android.wifi.flags.Flags.FLAG_MULTI_USER_WIFI_ENHANCEMENT)
+    @SystemApi(client = SystemApi.Client.MODULE_LIBRARIES)
+    public static final String DISALLOW_CONFIG_WIFI_PRIVATE = "no_config_wifi_private";
+
+    /**
+     * Specifies if a user is disallowed from adding or editing shared Wi-Fi configurations,
+     * that is, Wi-Fi configurations that are shared with other users.
+     *
+     * Use {@link #DISALLOW_CONFIG_WIFI} if all types of Wi-Fi configurations are disallowed
+     * to be added or edited.
+     *
+     * Note: This restriction is used for system only, it can't be used via
+     * the DevicePolicyManager APIs.
+     *
+     * <p>The default value is <code>false</code>.
+     *
+     * <p>Key for user restrictions.
+     * <p>Type: Boolean
+     * @see #getUserRestrictions()
+     *
+     * @hide
+     */
+    @FlaggedApi(com.android.wifi.flags.Flags.FLAG_MULTI_USER_WIFI_ENHANCEMENT)
+    @SystemApi(client = SystemApi.Client.MODULE_LIBRARIES)
+    public static final String DISALLOW_CONFIG_WIFI_SHARED = "no_config_wifi_shared";
+
+    /**
      * Specifies if a user is disallowed from enabling/disabling Wi-Fi.
      *
      * <p>This restriction can only be set by a device owner,
