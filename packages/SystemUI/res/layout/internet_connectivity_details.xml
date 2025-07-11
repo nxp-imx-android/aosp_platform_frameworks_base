@@ -488,48 +488,68 @@
             </LinearLayout>
 
             <androidx.constraintlayout.widget.ConstraintLayout
-                android:id="@+id/button_layout"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginEnd="@dimen/dialog_side_padding"
-                android:layout_marginStart="@dimen/dialog_side_padding"
-                android:layout_marginTop="8dp"
-                android:clickable="false"
-                android:focusable="false">
-
-                <Button
-                    android:id="@+id/apm_button"
-                    style="@style/Widget.Dialog.Button.BorderButton"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginEnd="10dp"
-                    android:layout_marginBottom="@dimen/dialog_bottom_padding"
-                    android:clickable="true"
-                    android:ellipsize="end"
-                    android:focusable="true"
-                    android:maxLines="1"
-                    android:text="@string/turn_off_airplane_mode"
-                    app:layout_constrainedWidth="true"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintHorizontal_bias="0"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent" />
-            </androidx.constraintlayout.widget.ConstraintLayout>
-
-            <androidx.constraintlayout.widget.ConstraintLayout
                 android:id="@+id/wifi_buttons_container"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
                 android:layout_marginBottom="@dimen/dialog_bottom_padding">
 
                 <LinearLayout
-                    android:id="@+id/share_wifi_button"
-                    style="@style/InternetDialog.Network"
+                    android:id="@+id/apm_button"
+                    style="@style/InternetDialog.Network.ButtonRow"
+                    android:layout_marginStart="16dp"
+                    app:layout_goneMarginEnd="16dp"
                     android:layout_height="@dimen/tile_details_button_row_height"
                     android:layout_width="0dp"
                     app:layout_constrainedWidth="true"
+                    app:layout_constraintEnd_toStartOf="@id/share_wifi_button"
+                    app:layout_constraintHorizontal_bias="0.0"
+                    app:layout_constraintHorizontal_chainStyle="packed"
                     app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    android:background="@drawable/settingslib_entry_bg_off"
+                    android:gravity="center"
+                    android:visibility="gone">
+
+                    <FrameLayout
+                        android:layout_width="@dimen/tile_details_button_size"
+                        android:layout_height="@dimen/tile_details_button_size"
+                        android:clickable="false">
+
+                        <ImageView
+                            android:contentDescription="@string/turn_off_airplane_mode"
+                            android:src="@drawable/qs_airplane_icon_on"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:tint="@androidprv:color/materialColorOnSurface" />
+                    </FrameLayout>
+
+                    <FrameLayout
+                        android:clickable="false"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="@dimen/internet_dialog_network_layout_margin">
+
+                        <TextView
+                            android:text="@string/turn_off_airplane_mode"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textAppearance="@style/TextAppearance.TileDetailsEntryTitle" />
+                    </FrameLayout>
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/share_wifi_button"
+                    style="@style/InternetDialog.Network.ButtonRow"
+                    android:layout_marginStart="8dp"
+                    android:layout_marginEnd="16dp"
+                    app:layout_goneMarginStart="16dp"
+                    android:layout_height="@dimen/tile_details_button_row_height"
+                    android:layout_width="0dp"
+                    app:layout_constrainedWidth="true"
                     app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toEndOf="@id/apm_button"
                     app:layout_constraintTop_toTopOf="parent"
                     app:layout_constraintBottom_toBottomOf="parent"
                     android:background="@drawable/settingslib_entry_bg_off"
