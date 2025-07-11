@@ -38,6 +38,9 @@ guaranteed to be available, and additional ClockProviders are loaded at runtime 
 longer used by keyguard to render clocks. The host code has been disabled but most of it is still
 present in the source tree, although it will likely be removed in a later patch.
 
+A [sample plugin](../customization/clocks/sample/) with minimal functionality is available as an example.
+It renders the current time, but does not enable many of the more advanced functions.
+
 ### Lockscreen Host
 [ClockEventController](../src/com/android/keyguard/ClockEventController.kt) propagates events from
 SystemUI event dispatchers to the clock controllers. It maintains a set of event listeners, but
