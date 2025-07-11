@@ -41,6 +41,7 @@ import com.android.systemui.statusbar.notification.row.ui.viewmodel.SingleLineVi
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
 import kotlin.test.assertIsNot
+import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import org.junit.Before
@@ -98,6 +99,22 @@ class SingleLineViewInflaterTest : SysuiTestCase() {
         // Then: the inflated SingleLineViewModel should be as expected
         // conversationData: null, because it's not a conversation notification
         assertEquals(SingleLineViewModel(CONTENT_TITLE, CONTENT_TEXT, null), singleLineViewModel)
+    }
+
+    @Test
+    fun createViewModelForEmptyNotification() {
+        // Given: a non-conversation notification with no title and no text
+        val notificationType = Empty()
+        val notification = getNotification(notificationType)
+
+        // When: inflate the SingleLineViewModel
+        val singleLineViewModel = notification.makeSingleLineViewModel(notificationType)
+
+        // Then: the view model should show the placeholder title
+        val expectedTitle = context.getString(R.string.empty_notification_single_line_title)
+        assertEquals(expectedTitle, singleLineViewModel.titleText)
+        assertNull(singleLineViewModel.contentText)
+        assertNull(singleLineViewModel.conversationData)
     }
 
     @Test
@@ -295,9 +312,32 @@ class SingleLineViewInflaterTest : SysuiTestCase() {
         assertEquals("summary", singleLineViewModel.conversationData?.summarization)
     }
 
+    @Test
+    fun createViewModelForPublicConversationNotification() {
+        // When: a public conversation notification is inflated
+        val singleLineViewModel =
+            SingleLineViewInflater.inflatePublicSingleLineViewModel(context, isConversation = true)
+
+        // Then: the view model should be populated with the correct data
+        val expectedIcon = context.getDrawable(R.drawable.ic_public_notification_single_line_icon)
+        assertTrue(
+            (singleLineViewModel.conversationData?.avatar as? SingleIcon)
+                ?.iconDrawable
+                ?.equalsTo(expectedIcon) == true
+        )
+
+        val expectedTitle = context.getString(R.string.public_notification_single_line_title)
+        assertEquals(expectedTitle, singleLineViewModel.titleText)
+
+        assertNull(singleLineViewModel.contentText)
+        assertNotNull(singleLineViewModel.conversationData)
+    }
+
     sealed class NotificationType(val largeIcon: Icon? = null)
 
     class NonMessaging(largeIcon: Icon? = null) : NotificationType(largeIcon)
+
+    class Empty(largeIcon: Icon? = null) : NotificationType(largeIcon)
 
     class LegacyMessaging(largeIcon: Icon? = null) : NotificationType(largeIcon)
 
@@ -328,6 +368,7 @@ class SingleLineViewInflaterTest : SysuiTestCase() {
                 notificationBuilder
                     .setStyle(Notification.BigTextStyle().bigText("Big Text"))
                     .build()
+            is Empty -> notificationBuilder.setContentTitle(null).setContentText(null).build()
             is LegacyMessaging -> {
                 buildMessagingStyle
                     .addMessage("What's up?", 0, firstSender)
