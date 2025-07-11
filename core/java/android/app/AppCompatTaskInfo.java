@@ -111,6 +111,8 @@ public class AppCompatTaskInfo implements Parcelable {
     public static final int FLAG_SAFE_REGION_LETTERBOXED = FLAG_BASE << 12;
     /** The related task is a leaf task. */
     public static final int FLAG_IS_LEAF_TASK = FLAG_BASE << 13;
+    /** The main window of the top activity has rounded corners. */
+    public static final int FLAG_HAS_MAIN_WINDOW_ROUNDED_CORNERS = FLAG_BASE << 14;
 
     @Retention(RetentionPolicy.SOURCE)
     @IntDef(flag = true, value = {
@@ -128,7 +130,8 @@ public class AppCompatTaskInfo implements Parcelable {
             FLAG_ENABLE_RESTART_MENU_FOR_DISPLAY_MOVE,
             FLAG_OPT_OUT_EDGE_TO_EDGE,
             FLAG_SAFE_REGION_LETTERBOXED,
-            FLAG_IS_LEAF_TASK
+            FLAG_IS_LEAF_TASK,
+            FLAG_HAS_MAIN_WINDOW_ROUNDED_CORNERS
     })
     public @interface TopActivityFlag {}
 
@@ -144,7 +147,7 @@ public class AppCompatTaskInfo implements Parcelable {
             | FLAG_ELIGIBLE_FOR_USER_ASPECT_RATIO_BUTTON | FLAG_FULLSCREEN_OVERRIDE_SYSTEM
             | FLAG_FULLSCREEN_OVERRIDE_USER | FLAG_HAS_MIN_ASPECT_RATIO_OVERRIDE
             | FLAG_OPT_OUT_EDGE_TO_EDGE | FLAG_ENABLE_RESTART_MENU_FOR_DISPLAY_MOVE
-            | FLAG_IS_LEAF_TASK;
+            | FLAG_IS_LEAF_TASK | FLAG_HAS_MAIN_WINDOW_ROUNDED_CORNERS;
 
     @TopActivityFlag
     private static final int FLAGS_COMPAT_UI_INTERESTED = FLAGS_ORGANIZER_INTERESTED
@@ -328,6 +331,20 @@ public class AppCompatTaskInfo implements Parcelable {
      */
     public void setTopActivityInSizeCompat(boolean enable) {
         setTopActivityFlag(FLAG_IN_SIZE_COMPAT, enable);
+    }
+
+    /**
+     * @return {@code true} if the main window has rounded corners.
+     */
+    public boolean hasMainWindowRoundedCorners() {
+        return isTopActivityFlagEnabled(FLAG_HAS_MAIN_WINDOW_ROUNDED_CORNERS);
+    }
+
+    /**
+     * Sets the information related to the rounded corners on the main window.
+     */
+    public void setHasMainWindowRoundedCorners(boolean hasRoundedCorners) {
+        setTopActivityFlag(FLAG_HAS_MAIN_WINDOW_ROUNDED_CORNERS, hasRoundedCorners);
     }
 
     /**

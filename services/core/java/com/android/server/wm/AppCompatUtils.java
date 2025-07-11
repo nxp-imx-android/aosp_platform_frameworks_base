@@ -198,6 +198,8 @@ final class AppCompatUtils {
                 top.mAppCompatController.getLetterboxPolicy();
         final boolean isTopActivityLetterboxed = letterboxPolicy.isRunning();
         appCompatTaskInfo.setTopActivityLetterboxed(isTopActivityLetterboxed);
+        appCompatTaskInfo.setHasMainWindowRoundedCorners(
+                letterboxPolicy.hasMainWindowRoundedCorners());
         if (isTopActivityLetterboxed) {
             // TODO(b/379824541) Remove duplicate information.
             appCompatTaskInfo.topActivityLetterboxBounds = new Rect();
@@ -353,7 +355,8 @@ final class AppCompatUtils {
         if (letterboxPolicy.isRunning()) {
             final Rect letterboxBounds = new Rect();
             letterboxPolicy.getLetterboxInnerBounds(letterboxBounds);
-            return new AppCompatTransitionInfo(letterboxBounds);
+            return new AppCompatTransitionInfo(letterboxBounds,
+                    letterboxPolicy.hasMainWindowRoundedCorners());
         }
         return null;
     }
