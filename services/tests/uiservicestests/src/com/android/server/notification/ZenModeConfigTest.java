@@ -399,7 +399,8 @@ public class ZenModeConfigTest extends UiServiceTestCase {
     @Test
     public void testBackupRestore_fromPreModesUi() throws IOException, XmlPullParserException {
         // Very non-default XML, to check that DND policy is transferred from the old values.
-        String xml = """
+        String xml =
+                """
                 <zen version="12">
                 <allow calls="true" repeatCallers="false" messages="true"
                   reminders="false" events="true" callsFrom="0" messagesFrom="1"
@@ -408,7 +409,8 @@ public class ZenModeConfigTest extends UiServiceTestCase {
                 <disallow visualEffects="24" />
                 <manual enabled="true" zen="1" creationTime="0" modified="false" />
                 <state areChannelsBypassingDnd="true" />
-                </zen>""";
+                </zen>\
+                """;
 
         ZenModeConfig config = readConfigXml(new ByteArrayInputStream(xml.getBytes()),
                 mock(BackupRestoreEventLogger.class));
@@ -659,7 +661,7 @@ public class ZenModeConfigTest extends UiServiceTestCase {
                         .setShouldMinimizeRadioUsage(false)
                         .setShouldMaximizeDoze(true)
                         .setShouldUseNightLight(true)
-                        .setBrightnessPercentageCap(50f)
+                        .setBrightnessCap(0.5f)
                         .setExtraEffects(ImmutableSet.of("one", "two"))
                         .build();
         rule.creationTime = CREATION_TIME;

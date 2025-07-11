@@ -117,7 +117,7 @@ public final class ZenDeviceEffects implements Parcelable {
 
     private static final int MAX_EFFECTS_LENGTH = 2_000; // characters
     private static final float BRIGHTNESS_CAP_MIN = 0f;
-    private static final float BRIGHTNESS_CAP_MAX = 100f;
+    private static final float BRIGHTNESS_CAP_MAX = 1f;
 
     private final boolean mGrayscale;
     private final boolean mSuppressAmbientDisplay;
@@ -180,7 +180,7 @@ public final class ZenDeviceEffects implements Parcelable {
         }
         if (mBrightnessCap != null
                 && (mBrightnessCap < BRIGHTNESS_CAP_MIN || mBrightnessCap > BRIGHTNESS_CAP_MAX)) {
-            throw new IllegalArgumentException("Brightness cap must be between 0f and 100f");
+            throw new IllegalArgumentException("Brightness cap must be between 0f and 1f");
         }
     }
 
@@ -377,13 +377,14 @@ public final class ZenDeviceEffects implements Parcelable {
 
     /**
      * Gets the brightness cap that should be applied while the rule is active. This is reflected as
-     * a percentage of the maximum brightness supported by the display.
+     * a {@code float} normalized to a range of [0, 1] where 1 indicates the maximum brightness
+     * supported by the display.
      *
      * @hide
      */
     @Nullable
     @FloatRange(from = BRIGHTNESS_CAP_MIN, to = BRIGHTNESS_CAP_MAX)
-    public Float getBrightnessPercentageCap() {
+    public Float getBrightnessCap() {
         return mBrightnessCap;
     }
 
@@ -513,7 +514,7 @@ public final class ZenDeviceEffects implements Parcelable {
             mMinimizeRadioUsage = zenDeviceEffects.shouldMinimizeRadioUsage();
             mMaximizeDoze = zenDeviceEffects.shouldMaximizeDoze();
             mNightLight = zenDeviceEffects.shouldUseNightLight();
-            mBrightnessCap = zenDeviceEffects.getBrightnessPercentageCap();
+            mBrightnessCap = zenDeviceEffects.getBrightnessCap();
             mExtraEffects.addAll(zenDeviceEffects.getExtraEffects());
         }
 
@@ -629,13 +630,13 @@ public final class ZenDeviceEffects implements Parcelable {
 
         /**
          * Sets whether the maximum brightness of the display should be capped while the rule is
-         * active. This is reflected as a percentage of the maximum brightness supported by the
-         * display.
+         * active. This is reflected as a {@code float} normalized to a range of [0, 1] where 1
+         * indicates the maximum brightness supported by the display.
          *
          * @hide
          */
         @NonNull
-        public Builder setBrightnessPercentageCap(
+        public Builder setBrightnessCap(
                 @Nullable @FloatRange(from = BRIGHTNESS_CAP_MIN, to = BRIGHTNESS_CAP_MAX)
                         Float brightnessCap) {
             mBrightnessCap = Flags.applyBrightnessClampingForModes() ? brightnessCap : null;
@@ -694,8 +695,8 @@ public final class ZenDeviceEffects implements Parcelable {
          * Applies the supplied {@link ZenDeviceEffects} to this builder which is consolidated on a
          * case by case basis choosing the most restrictive option. For effects tracked with a
          * boolean value, currently the structure dictates {@code true} to be most restrictive,
-         * essentially logically-ORing the effect set. For {@link #getBrightnessPercentageCap()},
-         * the lower range is chosen.
+         * essentially logically-ORing the effect set. For {@link #getBrightnessCap()}, the lower
+         * range is chosen.
          *
          * @hide
          */
@@ -714,11 +715,10 @@ public final class ZenDeviceEffects implements Parcelable {
             if (effects.shouldMaximizeDoze()) setShouldMaximizeDoze(true);
             if (effects.shouldUseNightLight()) setShouldUseNightLight(true);
             if (mBrightnessCap == null) {
-                setBrightnessPercentageCap(effects.getBrightnessPercentageCap());
-            } else if (effects.getBrightnessPercentageCap() != null) {
+                setBrightnessCap(effects.getBrightnessCap());
+            } else if (effects.getBrightnessCap() != null) {
                 // BrightnessCap for this and other ZenDeviceEffects is non null.
-                setBrightnessPercentageCap(
-                        Math.min(effects.getBrightnessPercentageCap(), mBrightnessCap));
+                setBrightnessCap(Math.min(effects.getBrightnessCap(), mBrightnessCap));
             }
             addExtraEffects(effects.getExtraEffects());
             return this;

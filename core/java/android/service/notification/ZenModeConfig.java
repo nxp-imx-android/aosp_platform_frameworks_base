@@ -1222,7 +1222,7 @@ public class ZenModeConfig implements Parcelable {
                                 safeBoolean(parser, DEVICE_EFFECT_USE_NIGHT_LIGHT, false))
                         .setExtraEffects(safeStringSet(parser, DEVICE_EFFECT_EXTRAS));
         if (android.service.notification.Flags.applyBrightnessClampingForModes()) {
-            builder.setBrightnessPercentageCap(unsafeFloat(parser, DEVICE_EFFECT_CAP_BRIGHTNESS));
+            builder.setBrightnessCap(unsafeFloat(parser, DEVICE_EFFECT_CAP_BRIGHTNESS));
         }
         ZenDeviceEffects deviceEffects = builder.build();
         return deviceEffects.hasEffects() ? deviceEffects : null;
@@ -1249,7 +1249,7 @@ public class ZenModeConfig implements Parcelable {
         writeBooleanIfTrue(out, DEVICE_EFFECT_USE_NIGHT_LIGHT, deviceEffects.shouldUseNightLight());
         if (android.service.notification.Flags.applyBrightnessClampingForModes()) {
             writeFloatIfNotNull(
-                    out, DEVICE_EFFECT_CAP_BRIGHTNESS, deviceEffects.getBrightnessPercentageCap());
+                    out, DEVICE_EFFECT_CAP_BRIGHTNESS, deviceEffects.getBrightnessCap());
         }
         writeStringSet(out, DEVICE_EFFECT_EXTRAS, deviceEffects.getExtraEffects());
     }
