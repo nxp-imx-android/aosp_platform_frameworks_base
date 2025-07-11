@@ -31,6 +31,7 @@ import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent.DisplayId
 import com.android.systemui.keyguard.domain.interactor.KeyguardInteractor
 import com.android.systemui.keyguard.domain.interactor.KeyguardTransitionInteractor
 import com.android.systemui.keyguard.shared.model.Edge
+import com.android.systemui.keyguard.shared.model.KeyguardState
 import com.android.systemui.keyguard.shared.model.KeyguardState.DREAMING
 import com.android.systemui.keyguard.shared.model.KeyguardState.GONE
 import com.android.systemui.keyguard.shared.model.KeyguardState.LOCKSCREEN
@@ -98,6 +99,7 @@ import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 
 /**
@@ -407,12 +409,21 @@ constructor(
             source = darkIconInteractor.isAreaDark(thisDisplayId),
         )
 
+    private val currentKeyguardState: Flow<KeyguardState> =
+        keyguardTransitionInteractor.currentKeyguardState.onEach {
+            tableLogger.logChange(
+                columnName = COL_KEYGUARD_STATE,
+                value = it.name,
+                isInitial = false,
+            )
+        }
+
     /**
      * True if the current SysUI state can show the home status bar (aka this status bar), and false
      * if we shouldn't be showing any part of the home status bar.
      */
     private val isHomeScreenStatusBarAllowedLegacy: Flow<Boolean> =
-        combine(keyguardTransitionInteractor.currentKeyguardState, isShadeVisibleOnThisDisplay) {
+        combine(currentKeyguardState, isShadeVisibleOnThisDisplay) {
                 currentKeyguardState,
                 isShadeVisibleOnThisDisplay ->
                 (currentKeyguardState == GONE || currentKeyguardState == OCCLUDED) &&
@@ -681,6 +692,7 @@ constructor(
         private const val COL_ALLOWED_LEGACY = "allowedLegacy"
         private const val COL_ALLOWED_BY_SCENE = "allowedByScene"
         private const val COL_SHADE_EXPANDED_ENOUGH = "shadeExpandedEnough"
+        private const val COL_KEYGUARD_STATE = "keyguardState"
         private const val COL_NOTIF_LIGHTS_OUT = "notifLightsOut"
         private const val COL_SHOW_OPERATOR_NAME = "showOperatorName"
         private const val COL_VISIBLE = "visible"
