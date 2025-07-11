@@ -465,7 +465,7 @@ public class StagedInstallInternalTest {
                     .isEqualTo(ApplicationInfo.FLAG_UPDATED_SYSTEM_APP);
             assertThat(apex.applicationInfo.flags & ApplicationInfo.FLAG_INSTALLED)
                     .isEqualTo(ApplicationInfo.FLAG_INSTALLED);
-            assertThat(apex.applicationInfo.sourceDir).startsWith("/data/apex/active");
+            assertThat(apex.applicationInfo.sourceDir.startsWith("/system/apex")).isFalse();
         }
         {
             PackageInfo apex = pm.getPackageInfo("test.apex.rebootless",
@@ -489,7 +489,7 @@ public class StagedInstallInternalTest {
                     .isEqualTo(ApplicationInfo.FLAG_UPDATED_SYSTEM_APP);
             assertThat(apex.applicationInfo.flags & ApplicationInfo.FLAG_INSTALLED)
                     .isEqualTo(ApplicationInfo.FLAG_INSTALLED);
-            assertThat(apex.applicationInfo.sourceDir).startsWith("/data/apex/active");
+            assertThat(apex.applicationInfo.sourceDir.startsWith("/system/apex")).isFalse();
         }
         {
             PackageInfo apex = pm.getPackageInfo("test.apex.rebootless",
@@ -609,7 +609,7 @@ public class StagedInstallInternalTest {
         assertThat(pi.getLongVersionCode()).isEqualTo(2);
         assertThat(pi.applicationInfo.privateFlags & ApplicationInfo.PRIVATE_FLAG_VENDOR)
                 .isEqualTo(ApplicationInfo.PRIVATE_FLAG_VENDOR);
-        assertThat(pi.applicationInfo.sourceDir).startsWith("/data/apex");
+        assertThat(pi.applicationInfo.sourceDir.startsWith("/vendor/apex")).isFalse();
     }
 
     private IPackageManagerNative getPackageManagerNative() {
