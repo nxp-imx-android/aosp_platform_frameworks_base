@@ -182,10 +182,64 @@ static std::unique_ptr<NativeGadgetMonitorThread> sGadgetMonitorThread;
  * control requests. It issues state changes for accessory mode as required.
  */
 class NativeVendorControlRequestMonitorThread {
+    // Constants for accessory mode.
+    static constexpr int ACCESSORY_VERSION = 2;
+    static constexpr int ACCESSORY_NUM_STRINGS = 6;
+    static constexpr int ACCESSORY_STRING_LENGTH = 256;
+
     android::base::unique_fd mMonitorFd;
     int mShutdownPipefd[2];
     std::thread mThread;
     jobject mCallbackObj;
+
+    // Variables for accessory mode.
+    std::mutex mAccessoryFieldsMutex;
+    struct accessory_fields {
+        std::string controlState;
+        std::string strings[ACCESSORY_NUM_STRINGS];
+        int maxPacketSize;
+    } mAccessoryFields;
+
+    bool handleAccessoryGetProtocol(int fd, uint16_t value, uint16_t index, uint16_t length,
+                                    std::vector<char> &buf) {
+        if (value != 0 || index != 0 || length != 2) {
+            ALOGE("Malformed Get protocol");
+            return false;
+        }
+        uint16_t *protocolVersion = reinterpret_cast<uint16_t *>(buf.data());
+        protocolVersion[0] = htole16(ACCESSORY_VERSION);
+        return true;
+    }
+
+    bool handleAccessorySendString(int fd, uint16_t index, uint16_t length,
+                                   std::vector<char> &buf) {
+        if (index >= ACCESSORY_NUM_STRINGS || length > ACCESSORY_STRING_LENGTH || length == 0) {
+            ALOGE("Malformed send string");
+            return false;
+        }
+        if (::read(fd, buf.data(), length) != length) {
+            ALOGE("Usb error ctrlreq read string %d", length);
+            return false;
+        }
+        buf[length] = '\0';
+        std::string str(buf.data());
+        std::lock_guard<std::mutex> lock(mAccessoryFieldsMutex);
+        mAccessoryFields.strings[index] = str;
+        return true;
+    }
+
+    bool handleAccessoryStart(int fd, uint16_t value, uint16_t index, uint16_t length,
+                              std::vector<char> &buf) {
+        if (value != 0 || index != 0 || length != 0) {
+            ALOGE("Malformed start accessory");
+            return false;
+        }
+        if (::read(fd, buf.data(), 0) != 0) {
+            ALOGE("Usb error ctrlreq read data");
+            return false;
+        }
+        return true;
+    }
 
     void handleControlRequest(int fd, const struct usb_ctrlrequest *setup) {
         JNIEnv *env = AndroidRuntime::getJNIEnv();
@@ -201,7 +255,30 @@ class NativeVendorControlRequestMonitorThread {
 
         if ((type & USB_TYPE_MASK) == USB_TYPE_VENDOR) {
             switch (code) {
-                // TODO(b/421809234): - Add support for accessory mode requests.
+                case ACCESSORY_GET_PROTOCOL: {
+                    if (!handleAccessoryGetProtocol(fd, value, index, length, buf) ||
+                        !(type & USB_DIR_IN)) {
+                        goto fail;
+                    }
+                    accessoryControlState = "GETPROTOCOL";
+                    break;
+                }
+                case ACCESSORY_SEND_STRING: {
+                    if (!handleAccessorySendString(fd, index, length, buf) || (type & USB_DIR_IN)) {
+                        goto fail;
+                    }
+                    accessoryControlState = "SENDSTRING";
+                    break;
+                }
+                case ACCESSORY_START: {
+                    if (!handleAccessoryStart(fd, value, index, length, buf) ||
+                        (type & USB_DIR_IN)) {
+                        goto fail;
+                    }
+                    accessoryControlState = "START";
+                    break;
+                }
+
                 // TODO(b/421807206): - Add support for accessory HID requests.
 
                 default:
@@ -220,6 +297,13 @@ class NativeVendorControlRequestMonitorThread {
             }
         }
 
+        {
+            std::lock_guard<std::mutex> lock(mAccessoryFieldsMutex);
+            if (mAccessoryFields.controlState.compare(accessoryControlState) ||
+                !accessoryControlState.compare("SENDSTRING")) {
+                mAccessoryFields.controlState = accessoryControlState;
+            }
+        }
         return;
     fail:
         // stall control endpoint by applying opposite i/o
@@ -236,8 +320,15 @@ class NativeVendorControlRequestMonitorThread {
 
     void teardown() {
         // Add teardown for vendor control requests being handled.
-
         ALOGI("Vendor control request monitor teardown");
+
+          // Teardown for accessory mode.
+          std::lock_guard<std::mutex> lock(mAccessoryFieldsMutex);
+          mAccessoryFields.controlState = "";
+          for (int i = 0; i < ACCESSORY_NUM_STRINGS; i++) {
+              mAccessoryFields.strings[i] = "";
+          }
+          mAccessoryFields.maxPacketSize = -1;
     }
 
     int setupEpoll(android::base::unique_fd &epollFd) {
@@ -347,10 +438,27 @@ class NativeVendorControlRequestMonitorThread {
 public:
     explicit NativeVendorControlRequestMonitorThread(jobject obj,
                                                      android::base::unique_fd monitorFd)
-          : mMonitorFd(std::move(monitorFd)){
+          : mMonitorFd(std::move(monitorFd)),
+            mAccessoryFields({.controlState = "",
+                              .strings = {"", "", "", "", "", ""},
+                              .maxPacketSize = -1}) {
         mCallbackObj = AndroidRuntime::getJNIEnv()->NewGlobalRef(obj);
         pipe(mShutdownPipefd);
         mThread = std::thread(&NativeVendorControlRequestMonitorThread::monitorLoop, this);
+    }
+
+    std::string getAccessoryString(int index) {
+        if (index < 0 || index >= ACCESSORY_NUM_STRINGS) {
+            ALOGE("Invalid accessory string index %d", index);
+            return "";
+        }
+        std::lock_guard<std::mutex> lock(mAccessoryFieldsMutex);
+        return mAccessoryFields.strings[index];
+    }
+
+    int getMaxPacketSize() {
+        std::lock_guard<std::mutex> lock(mAccessoryFieldsMutex);
+        return mAccessoryFields.maxPacketSize;
     }
 
     ~NativeVendorControlRequestMonitorThread() {
