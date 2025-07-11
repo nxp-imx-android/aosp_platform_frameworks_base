@@ -700,6 +700,9 @@ public class CachedAppOptimizer {
         if(compactProfile == null || compactProfile.equals(CompactProfile.NONE)) {
             return false;
         }
+        if (mCompactionHandler == null) {
+            return false;
+        }
         final String processName = (app.processName != null ? app.processName : "");
         mCompactStatsManager.logCompactionRequested(source, compactProfile, processName);
 
@@ -728,8 +731,10 @@ public class CachedAppOptimizer {
     }
 
     void compactNative(CompactProfile compactProfile, int pid) {
-        mCompactionHandler.sendMessage(mCompactionHandler.obtainMessage(
-                COMPACT_NATIVE_MSG, pid, compactProfile.ordinal()));
+        if (useCompaction()) {
+            mCompactionHandler.sendMessage(mCompactionHandler.obtainMessage(
+                    COMPACT_NATIVE_MSG, pid, compactProfile.ordinal()));
+        }
     }
 
     void compactAllSystem() {
