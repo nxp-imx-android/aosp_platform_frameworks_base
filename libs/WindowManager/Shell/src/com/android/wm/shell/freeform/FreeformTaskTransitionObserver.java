@@ -116,7 +116,7 @@ public class FreeformTaskTransitionObserver implements Transitions.TransitionObs
             @NonNull TransitionInfo info,
             @NonNull SurfaceControl.Transaction startT,
             @NonNull SurfaceControl.Transaction finishT) {
-        if (Flags.enableInorderTransitionCallbacksForDesktop()) {
+        if (DesktopExperienceFlags.ENABLE_INORDER_TRANSITION_CALLBACKS_FOR_DESKTOP.isTrue()) {
             mDesktopInOrderTransitionObserver.ifPresent(
                     o -> o.onTransitionReady(transition, info, startT, finishT));
         } else {
@@ -287,7 +287,7 @@ public class FreeformTaskTransitionObserver implements Transitions.TransitionObs
 
     @Override
     public void onTransitionStarting(@NonNull IBinder transition) {
-        if (Flags.enableInorderTransitionCallbacksForDesktop()) {
+        if (DesktopExperienceFlags.ENABLE_INORDER_TRANSITION_CALLBACKS_FOR_DESKTOP.isTrue()) {
             mDesktopInOrderTransitionObserver.ifPresent(o -> o.onTransitionStarting(transition));
         } else {
             if (DesktopModeFlags.ENABLE_FULLY_IMMERSIVE_IN_DESKTOP.isTrue()) {
@@ -299,7 +299,7 @@ public class FreeformTaskTransitionObserver implements Transitions.TransitionObs
 
     @Override
     public void onTransitionMerged(@NonNull IBinder merged, @NonNull IBinder playing) {
-        if (Flags.enableInorderTransitionCallbacksForDesktop()) {
+        if (DesktopExperienceFlags.ENABLE_INORDER_TRANSITION_CALLBACKS_FOR_DESKTOP.isTrue()) {
             mDesktopInOrderTransitionObserver.ifPresent(o -> o.onTransitionMerged(merged, playing));
         } else {
             mDesksTransitionObserver.ifPresent(o -> o.onTransitionMerged(merged, playing));
@@ -329,7 +329,7 @@ public class FreeformTaskTransitionObserver implements Transitions.TransitionObs
 
     @Override
     public void onTransitionFinished(@NonNull IBinder transition, boolean aborted) {
-        if (Flags.enableInorderTransitionCallbacksForDesktop()) {
+        if (DesktopExperienceFlags.ENABLE_INORDER_TRANSITION_CALLBACKS_FOR_DESKTOP.isTrue()) {
             mDesktopInOrderTransitionObserver.ifPresent(
                     o -> o.onTransitionFinished(transition, aborted));
         } else {
