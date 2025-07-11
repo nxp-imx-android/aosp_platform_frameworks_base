@@ -1296,10 +1296,13 @@ public class BubbleController implements ConfigurationChangeListener,
     };
 
     /**
-     * Called by the BubbleStackView and whenever all bubbles have animated out, and none have been
-     * added in the meantime.
+     * Called by the view displaying bubbles once all bubbles have finished animating out.
      */
     public void onAllBubblesAnimatedOut() {
+        if (hasBubbles()) {
+            // Bubbles could've been added in the time it takes to animate out the bubbles.
+            return;
+        }
         mBubbleViewCallback.updateVisibility(false /* visible */);
         removeFromWindowManagerMaybe();
     }
