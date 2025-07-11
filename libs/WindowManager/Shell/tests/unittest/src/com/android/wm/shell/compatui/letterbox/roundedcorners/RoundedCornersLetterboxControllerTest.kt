@@ -18,8 +18,11 @@ package com.android.wm.shell.compatui.letterbox.roundedcorners
 
 import android.content.res.Configuration
 import android.graphics.Rect
+import android.platform.test.annotations.DisableFlags
+import android.platform.test.annotations.EnableFlags
 import android.testing.AndroidTestingRunner
 import androidx.test.filters.SmallTest
+import com.android.window.flags.Flags
 import com.android.wm.shell.ShellTestCase
 import com.android.wm.shell.TestShellExecutor
 import com.android.wm.shell.compatui.letterbox.LetterboxController
@@ -109,7 +112,26 @@ class RoundedCornersLetterboxControllerTest : ShellTestCase() {
     }
 
     @Test
-    fun `Only existing surfaces receive visibility update`() {
+    @EnableFlags(Flags.FLAG_APP_COMPAT_REFACTORING_ROUNDED_CORNERS_ANIMATION)
+    fun `Only existing surfaces receive visibility update with animation`() {
+        runTestScenario { r ->
+            r.configureRepository()
+            r.configureRepository(taskId = ANOTHER_TASK_ID)
+            r.sendCreateSurfaceRequest()
+            r.sendUpdateSurfaceVisibilityRequest(visible = true)
+            r.sendUpdateSurfaceVisibilityRequest(visible = true, taskId = ANOTHER_TASK_ID)
+
+            r.checkRoundedCornersVisibilityUpdated(
+                times = 1,
+                expectedVisibility = true,
+                immediate = false
+            )
+        }
+    }
+
+    @Test
+    @DisableFlags(Flags.FLAG_APP_COMPAT_REFACTORING_ROUNDED_CORNERS_ANIMATION)
+    fun `Only existing surfaces receive visibility update without animation`() {
         runTestScenario { r ->
             r.configureRepository()
             r.configureRepository(taskId = ANOTHER_TASK_ID)
@@ -191,11 +213,15 @@ class RoundedCornersLetterboxControllerTest : ShellTestCase() {
             )
         }
 
-        fun checkRoundedCornersVisibilityUpdated(times: Int = 1, expectedVisibility: Boolean) {
+        fun checkRoundedCornersVisibilityUpdated(
+            times: Int = 1,
+            expectedVisibility: Boolean,
+            immediate: Boolean = true
+        ) {
             verify(roundedCornersSurface, times(times)).setCornersVisibility(
                 any(),
                 eq(expectedVisibility),
-                eq(true)
+                eq(immediate)
             )
         }
 
