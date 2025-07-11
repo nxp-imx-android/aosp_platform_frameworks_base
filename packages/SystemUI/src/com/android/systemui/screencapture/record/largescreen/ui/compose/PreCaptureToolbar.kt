@@ -56,12 +56,14 @@ fun PreCaptureToolbar(
 
     Toolbar(expanded = expanded, onCloseClick = onCloseClick, modifier = modifier) {
         Row {
-            IconToggleButton(
-                checked = false,
-                onCheckedChange = {},
-                shape = IconButtonDefaults.smallSquareShape,
-            ) {
-                viewModel.icons?.let { Icon(icon = it.moreOptions) }
+            if (viewModel.screenRecordingSupported) {
+                IconToggleButton(
+                    checked = false,
+                    onCheckedChange = {},
+                    shape = IconButtonDefaults.smallSquareShape,
+                ) {
+                    viewModel.icons?.let { Icon(icon = it.moreOptions) }
+                }
             }
 
             Spacer(Modifier.size(8.dp))
