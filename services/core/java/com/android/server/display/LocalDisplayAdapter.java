@@ -18,6 +18,7 @@ package com.android.server.display;
 
 import static android.os.Trace.TRACE_TAG_WINDOW_MANAGER;
 import static android.view.Display.Mode.INVALID_MODE_ID;
+import static android.window.DesktopExperienceFlags.ENABLE_PRESENTATION_FOR_CONNECTED_DISPLAYS;
 
 import static com.android.server.display.BrightnessMappingStrategy.INVALID_NITS;
 
@@ -845,6 +846,10 @@ final class LocalDisplayAdapter extends DisplayAdapter {
                 if (mStaticDisplayInfo.isInternal) {
                     mInfo.type = Display.TYPE_INTERNAL;
                     mInfo.touch = DisplayDeviceInfo.TOUCH_INTERNAL;
+                    if (ENABLE_PRESENTATION_FOR_CONNECTED_DISPLAYS.isTrue()
+                            && res.getBoolean(R.bool.config_allowPresentationOnInternalDisplay)) {
+                        mInfo.flags |= DisplayDeviceInfo.FLAG_PRESENTATION;
+                    }
                     mInfo.flags |= DisplayDeviceInfo.FLAG_ROTATES_WITH_CONTENT;
                     if (mInfo.name == null) {
                         mInfo.name = res.getString(R.string.display_manager_built_in_display_name);
