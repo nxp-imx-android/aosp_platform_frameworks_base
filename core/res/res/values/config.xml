@@ -7648,4 +7648,7 @@
     <string name="proximity_provider_service_package_name" translatable="false">android</string>
     <string name="proximity_provider_service_class_name" translatable="false">android.proximity.DefaultProximityProviderService</string>
 
+    <!-- Action for opening trusted location settings page [CHAR LIMIT=NONE] [DO NOT TRANSLATE] -->
+    <string name="trusted_location_settings_action" translatable="false"></string>
+
 </resources>
