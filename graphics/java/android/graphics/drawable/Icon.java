@@ -485,6 +485,7 @@ public final class Icon implements Parcelable {
                 return new AdaptiveIconDrawable(null,
                     new BitmapDrawable(context.getResources(), fixMaxBitmapSize(getBitmap())));
             case TYPE_RESOURCE:
+                invalidateResourcesCacheIfNeeded(context);
                 if (getResources() == null) {
                     // figure out where to load resources from
                     String resPackage = getResPackage();
@@ -595,6 +596,7 @@ public final class Icon implements Parcelable {
             if (TextUtils.isEmpty(resPackage)) {
                 resPackage = context.getPackageName();
             }
+            invalidateResourcesCacheIfNeeded(context);
             if (getResources() == null && !(getResPackage().equals("android"))) {
                 // TODO(b/173307037): Move CONTEXT_INCLUDE_CODE to ContextImpl.createContextAsUser
                 final Context userContext;
@@ -621,6 +623,20 @@ public final class Icon implements Parcelable {
             }
         }
         return loadDrawable(context);
+    }
+
+    private void invalidateResourcesCacheIfNeeded(Context context) {
+        if (!DesktopExperienceFlags.USE_RESOURCES_FROM_CONTEXT_TO_CREATE_DRAWABLE_ICONS.isTrue()) {
+            return;
+        }
+        if (mType == TYPE_RESOURCE && mObj1 != null) {
+            Resources cachedResources = (Resources) mObj1;
+            if (cachedResources.getConfiguration().diff(context.getResources().getConfiguration())
+                    != 0) {
+                // Invalidate the cache if the configuration has changed.
+                mObj1 = null;
+            }
+        }
     }
 
     /**
