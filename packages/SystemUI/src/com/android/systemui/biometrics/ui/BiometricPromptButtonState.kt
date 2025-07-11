@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.systemui.biometrics.shared.model
+package com.android.systemui.biometrics.ui
 
 /** The state of the positive (right) button in the biometric prompt. */
 sealed class PositiveButtonState {

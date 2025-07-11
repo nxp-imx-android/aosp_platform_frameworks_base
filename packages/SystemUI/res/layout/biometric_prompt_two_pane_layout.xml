@@ -35,7 +35,7 @@ android:layout_height="match_parent">
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintRight_toLeftOf="@+id/rightGuideline"
         app:layout_constraintLeft_toLeftOf="@+id/leftGuideline"
-        app:layout_constraintTop_toTopOf="@+id/topGuideline" />
+        app:layout_constraintTop_toTopOf="@+id/topBarrier" />
 
     <androidx.compose.ui.platform.ComposeView
         android:id="@+id/fallback_view"
@@ -45,7 +45,7 @@ android:layout_height="match_parent">
         android:fillViewport="true"
         app:layout_constrainedHeight="true"
         app:layout_constrainedWidth="true"
-        app:layout_constraintBottom_toTopOf="@id/button_bar"
+        app:layout_constraintBottom_toTopOf="@id/bottomGuideline"
         app:layout_constraintEnd_toEndOf="@id/panel"
         app:layout_constraintStart_toStartOf="@id/panel"
         app:layout_constraintTop_toTopOf="@+id/topGuideline"
