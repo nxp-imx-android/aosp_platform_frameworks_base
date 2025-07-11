@@ -19,43 +19,66 @@ package com.android.systemui.wallpapers.domain.interactor
 import android.content.mockedContext
 import android.content.res.Resources
 import android.graphics.PointF
-import android.graphics.RectF
+import android.platform.test.annotations.EnabledOnRavenwood
 import android.util.DisplayMetrics
-import android.view.View
+import android.view.View.INVISIBLE
+import android.view.View.VISIBLE
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
+import com.android.compose.animation.scene.ObservableTransitionState
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.coroutines.collectLastValue
+import com.android.systemui.flags.DisableSceneContainer
+import com.android.systemui.flags.EnableSceneContainer
+import com.android.systemui.keyguard.data.repository.fakeKeyguardTransitionRepository
 import com.android.systemui.keyguard.domain.interactor.keyguardSmartspaceInteractor
-import com.android.systemui.kosmos.currentValue
+import com.android.systemui.keyguard.domain.interactor.keyguardTransitionInteractor
+import com.android.systemui.keyguard.shared.model.KeyguardState
+import com.android.systemui.keyguard.shared.model.KeyguardState.GONE
+import com.android.systemui.keyguard.shared.model.KeyguardState.LOCKSCREEN
+import com.android.systemui.keyguard.shared.model.TransitionState
+import com.android.systemui.keyguard.shared.model.TransitionStep
+import com.android.systemui.kosmos.backgroundScope
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.res.R
+import com.android.systemui.scene.domain.interactor.sceneInteractor
+import com.android.systemui.scene.shared.flag.SceneContainerFlag
+import com.android.systemui.scene.shared.model.Overlays
+import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.shade.data.repository.ShadeRepository
 import com.android.systemui.shade.data.repository.shadeRepository
+import com.android.systemui.shade.domain.interactor.enableDualShade
+import com.android.systemui.shade.domain.interactor.enableSingleShade
+import com.android.systemui.shade.domain.interactor.enableSplitShade
+import com.android.systemui.shade.domain.interactor.shadeModeInteractor
 import com.android.systemui.testKosmos
 import com.android.systemui.util.mockito.mock
 import com.android.systemui.wallpapers.data.repository.wallpaperFocalAreaRepository
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.test.advanceUntilIdle
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.mockito.Mockito.spy
 import org.mockito.MockitoAnnotations
-import org.mockito.kotlin.mock
+import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 
 @ExperimentalCoroutinesApi
 @SmallTest
 @RunWith(AndroidJUnit4::class)
-@android.platform.test.annotations.EnabledOnRavenwood
+@EnabledOnRavenwood
 class WallpaperFocalAreaInteractorTest : SysuiTestCase() {
     private val kosmos = testKosmos()
     private val testScope = kosmos.testScope
     lateinit var shadeRepository: ShadeRepository
     private lateinit var mockedResources: Resources
-    private var underTest = kosmos.wallpaperFocalAreaInteractor
+    private lateinit var underTest: WallpaperFocalAreaInteractor
+    private var wallpaperInteractor: WallpaperInteractor = spy(kosmos.wallpaperInteractor)
 
     @Before
     fun setup() {
@@ -79,232 +102,348 @@ class WallpaperFocalAreaInteractorTest : SysuiTestCase() {
                 )
             )
             .thenReturn(2f)
+
         underTest =
             WallpaperFocalAreaInteractor(
                 context = kosmos.mockedContext,
                 wallpaperFocalAreaRepository = kosmos.wallpaperFocalAreaRepository,
-                shadeRepository = kosmos.shadeRepository,
+                shadeModeInteractor = kosmos.shadeModeInteractor,
                 smartspaceInteractor = kosmos.keyguardSmartspaceInteractor,
+                keyguardTransitionInteractor = kosmos.keyguardTransitionInteractor,
+                sceneInteractor = kosmos.sceneInteractor,
+                backgroundScope = kosmos.backgroundScope,
+                wallpaperInteractor = wallpaperInteractor,
             )
+        kosmos.wallpaperFocalAreaRepository.hasFocalArea.value = true
     }
 
     @Test
-    fun focalAreaBounds_withoutNotifications_inHandheldDevices() =
+    fun focalAreaBounds_noNotifications_noSmartspaceCard_inHandheldDevices() =
         testScope.runTest {
-            overrideMockedResources(
-                mockedResources,
-                OverrideResources(
-                    screenWidth = 1000,
-                    screenHeight = 2000,
-                    centerAlignFocalArea = false,
-                ),
-            )
+            setupHandheldDevice()
             val bounds by collectLastValue(underTest.wallpaperFocalAreaBounds)
-            kosmos.shadeRepository.setShadeLayoutWide(false)
-
-            kosmos.wallpaperFocalAreaRepository.setShortcutAbsoluteTop(1800F)
-            kosmos.wallpaperFocalAreaRepository.setNotificationDefaultTop(400F)
-            kosmos.wallpaperFocalAreaRepository.setNotificationStackAbsoluteBottom(400F)
+            setTestFocalAreaBounds(
+                shadeLayoutWide = false,
+                shortcutAbsoluteTop = 1800F,
+                notificationDefaultTop = 400F,
+                notificationStackAbsoluteBottom = 400F,
+                smallClockViewBottom = 400F,
+                smartspaceCardBottom = 400F,
+                smartspaceVisibility = INVISIBLE,
+            )
 
             assertThat(bounds?.top).isEqualTo(700F)
             assertThat(bounds?.bottom).isEqualTo(1400F)
         }
 
     @Test
-    fun focalAreaBounds_withNotifications_inHandheldDevices() =
+    fun focalAreaBelowNotifs_hasNotifications_noSmartspaceCard_inHandheldDevices() =
         testScope.runTest {
-            overrideMockedResources(
-                mockedResources,
-                OverrideResources(
-                    screenWidth = 1000,
-                    screenHeight = 2000,
-                    centerAlignFocalArea = false,
-                ),
-            )
+            setupHandheldDevice()
             val bounds by collectLastValue(underTest.wallpaperFocalAreaBounds)
-            kosmos.shadeRepository.setShadeLayoutWide(false)
-            kosmos.wallpaperFocalAreaRepository.setShortcutAbsoluteTop(1800F)
-            kosmos.wallpaperFocalAreaRepository.setNotificationDefaultTop(400F)
-            kosmos.wallpaperFocalAreaRepository.setNotificationStackAbsoluteBottom(600F)
+            setTestFocalAreaBounds(
+                shadeLayoutWide = false,
+                shortcutAbsoluteTop = 1800F,
+                notificationDefaultTop = 400F,
+                notificationStackAbsoluteBottom = 600F,
+                smallClockViewBottom = 400F,
+                smartspaceCardBottom = 400F,
+                smartspaceVisibility = INVISIBLE,
+            )
+            assertThat(bounds?.top).isEqualTo(800F)
+            assertThat(bounds?.bottom).isEqualTo(1400F)
+        }
+
+    @Test
+    fun focalAreaBelowSmartspace_noNotifcations_hasSmartspaceCard_inHandheldDevice() =
+        testScope.runTest {
+            setupHandheldDevice()
+            val bounds by collectLastValue(underTest.wallpaperFocalAreaBounds)
+            setTestFocalAreaBounds(
+                shadeLayoutWide = false,
+                shortcutAbsoluteTop = 1800F,
+                notificationDefaultTop = 400F,
+                notificationStackAbsoluteBottom = 400F,
+                smallClockViewBottom = 400F,
+                smartspaceCardBottom = 600F,
+                smartspaceVisibility = VISIBLE,
+            )
 
             assertThat(bounds?.top).isEqualTo(800F)
             assertThat(bounds?.bottom).isEqualTo(1400F)
         }
 
     @Test
-    fun focalAreaBounds_inUnfoldLandscape() =
+    fun focalAreaBelowNotifs_hasNotifcations_hasSmartspaceCard_inHandheldDevice() =
         testScope.runTest {
-            overrideMockedResources(
-                mockedResources,
-                OverrideResources(
-                    screenWidth = 2000,
-                    screenHeight = 1600,
-                    centerAlignFocalArea = false,
-                ),
-            )
+            setupHandheldDevice()
             val bounds by collectLastValue(underTest.wallpaperFocalAreaBounds)
-            kosmos.shadeRepository.setShadeLayoutWide(true)
-            kosmos.wallpaperFocalAreaRepository.setShortcutAbsoluteTop(1400F)
-            kosmos.wallpaperFocalAreaRepository.setNotificationDefaultTop(400F)
-            kosmos.wallpaperFocalAreaRepository.setNotificationStackAbsoluteBottom(400F)
-
-            assertThat(bounds?.top).isEqualTo(600F)
-            assertThat(bounds?.bottom).isEqualTo(1100F)
-        }
-
-    @Test
-    fun focalAreaBounds_withNotifications_inUnfoldPortrait() =
-        testScope.runTest {
-            overrideMockedResources(
-                mockedResources,
-                OverrideResources(
-                    screenWidth = 1600,
-                    screenHeight = 2000,
-                    centerAlignFocalArea = false,
-                ),
+            setTestFocalAreaBounds(
+                shadeLayoutWide = false,
+                shortcutAbsoluteTop = 1800F,
+                notificationDefaultTop = 400F,
+                notificationStackAbsoluteBottom = 1000F,
+                smallClockViewBottom = 400F,
+                smartspaceCardBottom = 600F,
+                smartspaceVisibility = VISIBLE,
             )
-            val bounds by collectLastValue(underTest.wallpaperFocalAreaBounds)
-            kosmos.shadeRepository.setShadeLayoutWide(false)
-            kosmos.wallpaperFocalAreaRepository.setShortcutAbsoluteTop(1800F)
-            kosmos.wallpaperFocalAreaRepository.setNotificationDefaultTop(400F)
-            kosmos.wallpaperFocalAreaRepository.setNotificationStackAbsoluteBottom(600F)
 
-            assertThat(bounds?.top).isEqualTo(800F)
+            assertThat(bounds?.top).isEqualTo(1000F)
             assertThat(bounds?.bottom).isEqualTo(1400F)
         }
 
     @Test
-    fun focalAreaBounds_withoutNotifications_inUnfoldPortrait() =
+    fun focalAreaNotBelowNotifs_hasNotification_noSmartspaceCard_inUnfoldLandscape() =
         testScope.runTest {
-            overrideMockedResources(
-                mockedResources,
-                OverrideResources(
-                    screenWidth = 1600,
-                    screenHeight = 2000,
-                    centerAlignFocalArea = false,
-                ),
-            )
+            setupUnfoldLandscape()
             val bounds by collectLastValue(underTest.wallpaperFocalAreaBounds)
-            kosmos.shadeRepository.setShadeLayoutWide(false)
-            kosmos.wallpaperFocalAreaRepository.setShortcutAbsoluteTop(1800F)
-            kosmos.wallpaperFocalAreaRepository.setNotificationDefaultTop(400F)
-            kosmos.wallpaperFocalAreaRepository.setNotificationStackAbsoluteBottom(600F)
-
-            assertThat(bounds?.top).isEqualTo(800F)
-            assertThat(bounds?.bottom).isEqualTo(1400F)
-        }
-
-    @Test
-    fun focalAreaBounds_inTabletLandscape() =
-        testScope.runTest {
-            overrideMockedResources(
-                mockedResources,
-                OverrideResources(
-                    screenWidth = 3000,
-                    screenHeight = 2000,
-                    centerAlignFocalArea = true,
-                ),
+            setTestFocalAreaBounds(
+                shadeLayoutWide = true,
+                shortcutAbsoluteTop = 1800F,
+                notificationDefaultTop = 200F,
+                notificationStackAbsoluteBottom = 300F,
+                smallClockViewBottom = 200F,
+                smartspaceCardBottom = 200F,
+                smartspaceVisibility = INVISIBLE,
             )
-            val bounds by collectLastValue(underTest.wallpaperFocalAreaBounds)
-            kosmos.shadeRepository.setShadeLayoutWide(true)
-            kosmos.wallpaperFocalAreaRepository.setShortcutAbsoluteTop(1800F)
-            kosmos.wallpaperFocalAreaRepository.setNotificationDefaultTop(200F)
-            kosmos.wallpaperFocalAreaRepository.setNotificationStackAbsoluteBottom(200F)
-
             assertThat(bounds?.top).isEqualTo(600F)
             assertThat(bounds?.bottom).isEqualTo(1400F)
         }
 
     @Test
-    fun onTapInFocalBounds_setTapPosition() =
+    fun focalAreaBoundsBelowSmartspace_noNotifcations_hasSmartspaceCard_inUnfoldLandscape() =
         testScope.runTest {
-            kosmos.wallpaperFocalAreaRepository.setTapPosition(PointF(0F, 0F))
-            overrideMockedResources(
-                mockedResources,
-                OverrideResources(
-                    screenWidth = 1000,
-                    screenHeight = 2000,
-                    centerAlignFocalArea = false,
-                ),
-            )
-            kosmos.wallpaperFocalAreaRepository.setWallpaperFocalAreaBounds(
-                RectF(250f, 700F, 750F, 1400F)
-            )
-            advanceUntilIdle()
-            assertThat(currentValue(kosmos.wallpaperFocalAreaRepository.wallpaperFocalAreaBounds))
-                .isEqualTo(RectF(250f, 700F, 750F, 1400F))
-            underTest.setTapPosition(750F, 750F)
-            assertThat(
-                    currentValue(kosmos.wallpaperFocalAreaRepository.wallpaperFocalAreaTapPosition)
-                )
-                .isEqualTo(PointF(625F, 875F))
-        }
-
-    @Test
-    fun onTapOutFocalBounds_stillSetTapPosition() =
-        testScope.runTest {
-            kosmos.wallpaperFocalAreaRepository.setTapPosition(PointF(0F, 0F))
-            overrideMockedResources(
-                mockedResources,
-                OverrideResources(
-                    screenWidth = 1000,
-                    screenHeight = 2000,
-                    centerAlignFocalArea = false,
-                ),
-            )
-            kosmos.wallpaperFocalAreaRepository.setWallpaperFocalAreaBounds(
-                RectF(500F, 500F, 1000F, 1000F)
-            )
-            underTest.setTapPosition(250F, 250F)
-            assertThat(
-                    currentValue(kosmos.wallpaperFocalAreaRepository.wallpaperFocalAreaTapPosition)
-                )
-                .isEqualTo(PointF(375F, 625F))
-        }
-
-    @Test
-    fun onBcSmartspaceVisible_boundsUnderBcSmartspace() =
-        testScope.runTest {
-            overrideMockedResources(
-                mockedResources,
-                OverrideResources(
-                    screenWidth = 1000,
-                    screenHeight = 2000,
-                    centerAlignFocalArea = false,
-                ),
-            )
+            setupUnfoldLandscape()
             val bounds by collectLastValue(underTest.wallpaperFocalAreaBounds)
-            kosmos.shadeRepository.setShadeLayoutWide(false)
-            kosmos.wallpaperFocalAreaRepository.setShortcutAbsoluteTop(1800F)
-            kosmos.wallpaperFocalAreaRepository.setNotificationDefaultTop(400F)
-            kosmos.wallpaperFocalAreaRepository.setNotificationStackAbsoluteBottom(400F)
-            kosmos.keyguardSmartspaceInteractor.setBcSmartspaceVisibility(View.VISIBLE)
-
+            setTestFocalAreaBounds(
+                shadeLayoutWide = true,
+                shortcutAbsoluteTop = 1800F,
+                notificationDefaultTop = 400F,
+                notificationStackAbsoluteBottom = 400F,
+                smallClockViewBottom = 400F,
+                smartspaceCardBottom = 600F,
+                smartspaceVisibility = VISIBLE,
+            )
             assertThat(bounds?.top).isEqualTo(800F)
             assertThat(bounds?.bottom).isEqualTo(1400F)
         }
 
     @Test
-    fun onBcSmartspaceNotVisible_boundsNotUnderBcSmartspace() =
+    fun focalAreaBoundsAlwaysCentered_noNotifications_noSmartspaceCard_inTabletLandscape() =
         testScope.runTest {
-            overrideMockedResources(
-                mockedResources,
-                OverrideResources(
-                    screenWidth = 1000,
-                    screenHeight = 2000,
-                    centerAlignFocalArea = false,
-                ),
-            )
+            setupTabletLandscape()
             val bounds by collectLastValue(underTest.wallpaperFocalAreaBounds)
-            kosmos.shadeRepository.setShadeLayoutWide(false)
+            setTestFocalAreaBounds(
+                shadeLayoutWide = true,
+                shortcutAbsoluteTop = 1800F,
+                notificationDefaultTop = 300F,
+                notificationStackAbsoluteBottom = 300F,
+                smallClockViewBottom = 300F,
+                smartspaceCardBottom = 300F,
+                smartspaceVisibility = INVISIBLE,
+            )
 
-            kosmos.wallpaperFocalAreaRepository.setShortcutAbsoluteTop(1800F)
-            kosmos.wallpaperFocalAreaRepository.setNotificationDefaultTop(400F)
-            kosmos.wallpaperFocalAreaRepository.setNotificationStackAbsoluteBottom(400F)
-            kosmos.keyguardSmartspaceInteractor.setBcSmartspaceVisibility(View.INVISIBLE)
-
-            assertThat(bounds?.top).isEqualTo(700F)
+            assertThat(bounds?.top).isEqualTo(600F)
             assertThat(bounds?.bottom).isEqualTo(1400F)
+
+            setTestFocalAreaBounds(
+                shadeLayoutWide = true,
+                shortcutAbsoluteTop = 1800F,
+                notificationDefaultTop = 100F,
+                notificationStackAbsoluteBottom = 1000F,
+                smallClockViewBottom = 300F,
+                smartspaceCardBottom = 300F,
+                smartspaceVisibility = INVISIBLE,
+            )
+            assertThat(bounds?.top).isEqualTo(600F)
+        }
+
+    @Test
+    fun onTapInFocalBounds_sendTapPosition() =
+        testScope.runTest {
+            setupHandheldDevice()
+            underTest.sendTapPosition(750F, 750F)
+            verify(wallpaperInteractor).sendTapPosition(PointF(625F, 875F))
+        }
+
+    @Test
+    fun shouldNotCollectFocalArea_notHasFocalArea() =
+        testScope.runTest {
+            val shouldCollectFocalArea by collectLastValue(underTest.shouldCollectFocalArea)
+            assertThat(shouldCollectFocalArea).isTrue()
+            kosmos.wallpaperFocalAreaRepository.hasFocalArea.value = false
+            assertThat(shouldCollectFocalArea).isFalse()
+        }
+
+    @Test
+    fun shouldCollectFocalBounds_onReboot() =
+        testScope.runTest {
+            val shouldCollectFocalArea by collectLastValue(underTest.shouldCollectFocalArea)
+            assertThat(shouldCollectFocalArea).isTrue()
+        }
+
+    @Test
+    @DisableSceneContainer
+    fun shouldNotSendBounds_whenGoingFromLockscreenToGone() =
+        testScope.runTest {
+            val shouldCollectFocalArea by collectLastValue(underTest.shouldCollectFocalArea)
+            kosmos.fakeKeyguardTransitionRepository.sendTransitionSteps(
+                listOf(
+                    TransitionStep(
+                        transitionState = TransitionState.STARTED,
+                        from = KeyguardState.OFF,
+                        to = LOCKSCREEN,
+                    ),
+                    TransitionStep(
+                        transitionState = TransitionState.FINISHED,
+                        from = KeyguardState.OFF,
+                        to = LOCKSCREEN,
+                    ),
+                ),
+                testScope,
+            )
+            assertThat(shouldCollectFocalArea).isTrue()
+
+            kosmos.fakeKeyguardTransitionRepository.sendTransitionSteps(
+                listOf(
+                    TransitionStep(
+                        transitionState = TransitionState.STARTED,
+                        from = LOCKSCREEN,
+                        to = GONE,
+                    )
+                ),
+                testScope,
+            )
+            runCurrent()
+            assertThat(shouldCollectFocalArea).isFalse()
+            kosmos.fakeKeyguardTransitionRepository.sendTransitionSteps(
+                listOf(
+                    TransitionStep(
+                        transitionState = TransitionState.FINISHED,
+                        from = LOCKSCREEN,
+                        to = GONE,
+                    )
+                ),
+                testScope,
+            )
+            assertThat(shouldCollectFocalArea).isFalse()
+        }
+
+    @Test
+    @EnableSceneContainer
+    fun shouldNotCollectFocalArea_isIdleInLockscreenWithDualShadeOverlays() =
+        testScope.runTest {
+            kosmos.enableDualShade()
+            val shouldCollectFocalArea by collectLastValue(underTest.shouldCollectFocalArea)
+            kosmos.sceneInteractor.changeScene(toScene = Scenes.Lockscreen, loggingReason = "test")
+            kosmos.sceneInteractor.setTransitionState(
+                MutableStateFlow<ObservableTransitionState>(
+                    ObservableTransitionState.Idle(Scenes.Lockscreen)
+                )
+            )
+            runCurrent()
+            assertThat(shouldCollectFocalArea).isTrue()
+
+            kosmos.sceneInteractor.showOverlay(
+                overlay = Overlays.QuickSettingsShade,
+                loggingReason = "test",
+            )
+            kosmos.sceneInteractor.setTransitionState(
+                MutableStateFlow<ObservableTransitionState>(
+                    ObservableTransitionState.Idle(
+                        Scenes.Lockscreen,
+                        setOf(Overlays.QuickSettingsShade),
+                    )
+                )
+            )
+            runCurrent()
+            assertThat(shouldCollectFocalArea).isFalse()
+
+            kosmos.sceneInteractor.hideOverlay(
+                overlay = Overlays.QuickSettingsShade,
+                loggingReason = "test",
+            )
+            kosmos.sceneInteractor.setTransitionState(
+                MutableStateFlow<ObservableTransitionState>(
+                    ObservableTransitionState.Idle(Scenes.Lockscreen)
+                )
+            )
+
+            runCurrent()
+            assertThat(shouldCollectFocalArea).isTrue()
+        }
+
+    @Test
+    @DisableSceneContainer
+    fun shouldSendBounds_onLockscreen() =
+        testScope.runTest {
+            val shouldCollectFocalArea by collectLastValue(underTest.shouldCollectFocalArea)
+            assertThat(shouldCollectFocalArea).isTrue()
+            kosmos.fakeKeyguardTransitionRepository.sendTransitionSteps(
+                listOf(TransitionStep(transitionState = TransitionState.STARTED, to = LOCKSCREEN)),
+                testScope,
+            )
+            runCurrent()
+            assertThat(shouldCollectFocalArea).isTrue()
+        }
+
+    @Test
+    @EnableSceneContainer
+    fun shouldCollectFocalArea_isIdleInLockscreen() =
+        testScope.runTest {
+            val shouldCollectFocalArea by collectLastValue(underTest.shouldCollectFocalArea)
+            kosmos.sceneInteractor.changeScene(toScene = Scenes.Lockscreen, loggingReason = "test")
+            assertThat(shouldCollectFocalArea).isTrue()
+        }
+
+    @Test
+    @EnableSceneContainer
+    fun shouldNotCollectFocalArea_transitioningFromLockscreen() =
+        testScope.runTest {
+            val shouldCollectFocalArea by collectLastValue(underTest.shouldCollectFocalArea)
+            kosmos.sceneInteractor.setTransitionState(
+                MutableStateFlow(ObservableTransitionState.Idle(currentScene = Scenes.Lockscreen))
+            )
+            assertThat(shouldCollectFocalArea).isTrue()
+
+            kosmos.sceneInteractor.setTransitionState(
+                MutableStateFlow(
+                    ObservableTransitionState.Transition(
+                        fromScene = Scenes.Lockscreen,
+                        toScene = Scenes.Shade,
+                        currentScene = flowOf(Scenes.Lockscreen),
+                        progress = flowOf(0.5f),
+                        isInitiatedByUserInput = false,
+                        isUserInputOngoing = flowOf(false),
+                    )
+                )
+            )
+            assertThat(shouldCollectFocalArea).isFalse()
+        }
+
+    @Test
+    @EnableSceneContainer
+    fun shouldNotCollectFocalArea_transitioningFromShadeToLockscreen() =
+        testScope.runTest {
+            val shouldCollectFocalArea by collectLastValue(underTest.shouldCollectFocalArea)
+            kosmos.sceneInteractor.setTransitionState(
+                MutableStateFlow(ObservableTransitionState.Idle(currentScene = Scenes.Shade))
+            )
+            assertThat(shouldCollectFocalArea).isFalse()
+
+            kosmos.sceneInteractor.setTransitionState(
+                MutableStateFlow(
+                    ObservableTransitionState.Transition(
+                        fromScene = Scenes.Shade,
+                        toScene = Scenes.Lockscreen,
+                        currentScene = flowOf(Scenes.Shade),
+                        progress = flowOf(0.5f),
+                        isInitiatedByUserInput = false,
+                        isUserInputOngoing = flowOf(false),
+                    )
+                )
+            )
+            assertThat(shouldCollectFocalArea).isFalse()
         }
 
     data class OverrideResources(
@@ -312,6 +451,56 @@ class WallpaperFocalAreaInteractorTest : SysuiTestCase() {
         val screenHeight: Int,
         val centerAlignFocalArea: Boolean,
     )
+
+    private fun setupHandheldDevice() {
+        overrideMockedResources(
+            mockedResources,
+            OverrideResources(screenWidth = 1000, screenHeight = 2000, centerAlignFocalArea = false),
+        )
+        kosmos.enableSingleShade()
+    }
+
+    private fun setupTabletLandscape() {
+        overrideMockedResources(
+            mockedResources,
+            OverrideResources(screenWidth = 3000, screenHeight = 2000, centerAlignFocalArea = true),
+        )
+        kosmos.enableSplitShade()
+    }
+
+    private fun setupUnfoldLandscape() {
+        overrideMockedResources(
+            mockedResources,
+            OverrideResources(screenWidth = 2500, screenHeight = 2000, centerAlignFocalArea = false),
+        )
+        kosmos.enableSplitShade()
+    }
+
+    private fun setTestFocalAreaBounds(
+        shadeLayoutWide: Boolean = false,
+        shortcutAbsoluteTop: Float = 400F,
+        notificationDefaultTop: Float = 20F,
+        notificationStackAbsoluteBottom: Float = 20F,
+        smallClockViewBottom: Float = 20F,
+        smartspaceCardBottom: Float = 0F,
+        smartspaceVisibility: Int = INVISIBLE,
+    ) {
+        kosmos.shadeRepository.setShadeLayoutWide(shadeLayoutWide)
+        if (SceneContainerFlag.isEnabled) {
+            kosmos.wallpaperFocalAreaRepository.shortcutAbsoluteTop.value = shortcutAbsoluteTop
+            kosmos.wallpaperFocalAreaRepository.smallClockViewBottom.value = smallClockViewBottom
+            kosmos.wallpaperFocalAreaRepository.smartspaceCardBottom.value = smartspaceCardBottom
+            kosmos.wallpaperFocalAreaRepository.notificationStackAbsoluteBottom.value =
+                notificationStackAbsoluteBottom
+        } else {
+            kosmos.wallpaperFocalAreaRepository.shortcutAbsoluteTop.value = shortcutAbsoluteTop
+            kosmos.wallpaperFocalAreaRepository.notificationDefaultTop.value =
+                notificationDefaultTop
+            kosmos.wallpaperFocalAreaRepository.notificationStackAbsoluteBottom.value =
+                notificationStackAbsoluteBottom
+            kosmos.keyguardSmartspaceInteractor.setBcSmartspaceVisibility(smartspaceVisibility)
+        }
+    }
 
     companion object {
         fun overrideMockedResources(

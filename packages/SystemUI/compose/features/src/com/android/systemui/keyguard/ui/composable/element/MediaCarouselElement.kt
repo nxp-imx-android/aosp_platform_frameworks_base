@@ -20,6 +20,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.boundsInWindow
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.res.dimensionResource
 import com.android.compose.animation.scene.ContentScope
 import com.android.systemui.media.controls.ui.composable.MediaCarousel
@@ -41,6 +43,7 @@ constructor(
     fun ContentScope.KeyguardMediaCarousel(
         isShadeLayoutWide: Boolean,
         modifier: Modifier = Modifier,
+        onBottomChanged: ((Float) -> Unit)? = null,
     ) {
         val horizontalPadding =
             if (isShadeLayoutWide) {
@@ -52,8 +55,15 @@ constructor(
         MediaCarousel(
             isVisible = true,
             mediaHost = mediaHost,
-            modifier = modifier.fillMaxWidth().padding(horizontal = horizontalPadding),
+            modifier =
+                modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = horizontalPadding)
+                    .onGloballyPositioned { coordinates ->
+                        onBottomChanged?.invoke(coordinates.boundsInWindow().bottom)
+                    },
             carouselController = mediaCarouselController,
+            onReleaseCallback = { onBottomChanged?.invoke(0f) },
         )
     }
 }

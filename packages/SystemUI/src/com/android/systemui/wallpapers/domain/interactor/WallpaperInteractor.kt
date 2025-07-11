@@ -16,6 +16,8 @@
 
 package com.android.systemui.wallpapers.domain.interactor
 
+import android.graphics.PointF
+import android.graphics.RectF
 import com.android.systemui.wallpapers.data.repository.WallpaperRepository
 import javax.inject.Inject
 import kotlinx.coroutines.flow.Flow
@@ -23,4 +25,12 @@ import kotlinx.coroutines.flow.Flow
 class WallpaperInteractor @Inject constructor(val wallpaperRepository: WallpaperRepository) {
     val wallpaperSupportsAmbientMode: Flow<Boolean> =
         wallpaperRepository.wallpaperSupportsAmbientMode
+
+    fun sendWallpaperFocalAreaBounds(bounds: RectF) {
+        wallpaperRepository.sendLockScreenLayoutChangeCommand(bounds)
+    }
+
+    fun sendTapPosition(tapPosition: PointF) {
+        wallpaperRepository.sendTapCommand(tapPosition)
+    }
 }

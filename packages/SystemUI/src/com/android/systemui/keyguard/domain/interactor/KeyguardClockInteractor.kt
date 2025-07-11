@@ -232,7 +232,7 @@ constructor(
         }
 
         if (wallpaperFocalAreaInteractor.hasFocalArea.value) {
-            wallpaperFocalAreaInteractor.setTapPosition(x, y)
+            wallpaperFocalAreaInteractor.sendTapPosition(x, y)
         } else {
             clockEventController.handleFidgetTap(x, y)
         }

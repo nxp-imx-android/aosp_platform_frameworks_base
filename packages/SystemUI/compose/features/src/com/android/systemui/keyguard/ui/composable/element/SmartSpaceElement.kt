@@ -30,6 +30,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.boundsInWindow
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.unit.dp
@@ -60,6 +62,7 @@ constructor(
     fun ContentScope.SmartSpace(
         burnInParams: BurnInParameters,
         onTopChanged: (top: Float?) -> Unit,
+        onBottomChanged: ((Float) -> Unit)?,
         smartSpacePaddingTop: (Resources) -> Int,
         modifier: Modifier = Modifier,
     ) {
@@ -120,6 +123,9 @@ constructor(
                         Modifier.fillMaxWidth()
                             .padding(start = paddingCardHorizontal, end = paddingCardHorizontal)
                             .burnInAware(viewModel = aodBurnInViewModel, params = burnInParams)
+                            .onGloballyPositioned { coordinates ->
+                                onBottomChanged?.invoke(coordinates.boundsInWindow().bottom)
+                            }
                 )
             }
         }
