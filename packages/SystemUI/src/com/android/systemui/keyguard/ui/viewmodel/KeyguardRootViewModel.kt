@@ -386,9 +386,6 @@ constructor(
             )
             .dumpWhileCollecting("translationX")
 
-    val wallpaperZoomOut: Flow<Float> =
-        zoomOutFromGlanceableHub.map { it * DEPTH_PUSH_WALLPAPER_FROM_GLANCEABLE_HUB }
-
     fun updateBurnInParams(params: BurnInParameters) {
         aodBurnInViewModel.updateBurnInParams(params)
     }
@@ -525,6 +522,5 @@ constructor(
     companion object {
         private const val TAG = "KeyguardRootViewModel"
         @VisibleForTesting const val PUSHBACK_SCALE_FOR_LOCKSCREEN = 0.05f
-        @VisibleForTesting const val DEPTH_PUSH_WALLPAPER_FROM_GLANCEABLE_HUB = 0.5f
     }
 }
