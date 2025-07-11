@@ -177,6 +177,9 @@
     <!-- Whether CompatUIController is enabled -->
     <bool name="config_enableCompatUIController">true</bool>
 
+    <!-- Whether the size compat restart button should be enabled -->
+    <bool name="config_isSizeCompatRestartButtonEnabled">true</bool>
+
     <!-- Whether pointer pilfer is required to start back animation. -->
     <bool name="config_backAnimationRequiresPointerPilfer">true</bool>
 
