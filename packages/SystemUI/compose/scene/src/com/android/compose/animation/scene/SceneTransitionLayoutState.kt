@@ -573,6 +573,7 @@ internal class MutableSceneTransitionLayoutStateImpl(
     }
 
     override fun snapTo(scene: SceneKey, overlays: Set<OverlayKey>) {
+        Log.i(TAG, "snapTo(scene=$scene, overlays=$overlays)")
         checkThread()
 
         // Force finish all transitions.
