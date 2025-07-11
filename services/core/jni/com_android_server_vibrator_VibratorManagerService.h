@@ -18,6 +18,8 @@
 #define _ANDROID_SERVER_VIBRATOR_MANAGER_SERVICE_H
 
 #include <aidl/android/hardware/vibrator/BnVibratorCallback.h>
+#include <aidl/android/hardware/vibrator/IVibrator.h>
+#include <aidl/android/hardware/vibrator/IVibratorManager.h>
 #include <android-base/thread_annotations.h>
 #include <android/binder_manager.h>
 #include <utils/Log.h>
@@ -34,7 +36,7 @@ namespace android {
 // TODO(b/409002423): remove this once remove_hidl_support flag removed
 extern vibrator::ManagerHalController* android_server_vibrator_VibratorManagerService_getManager();
 
-// Base IVibratorCallback implementation using JNI to send callback ID to vibrator service.
+// IVibratorCallback implementation using JNI to send callback ID to vibrator service.
 class VibratorCallback : public aidl::android::hardware::vibrator::BnVibratorCallback {
 public:
     VibratorCallback(JavaVM* jvm, jweak callback, jmethodID methodId, jlong callbackId)
@@ -83,8 +85,7 @@ public:
         if (mHal) {
             return mHal;
         }
-        auto serviceName = std::string(I::descriptor) + "/default";
-        mHal = I::fromBinder(ndk::SpAIBinder(AServiceManager_checkService(serviceName.c_str())));
+        mHal = loadHal();
         if (mHal == nullptr) {
             ALOGE("%s: Error connecting to HAL", __func__);
             return mHal;
@@ -143,13 +144,33 @@ private:
         }
         mDeathRecipientCv.notify_all();
     }
+
+    virtual std::shared_ptr<I> loadHal() = 0;
+};
+
+// Provides default service declared on the device, using link-to-death to reload dead objects.
+template <typename I>
+class DefaultProvider : public HalProvider<I> {
+public:
+    DefaultProvider() = default;
+    virtual ~DefaultProvider() = default;
+
+private:
+    std::shared_ptr<I> loadHal() override {
+        auto halName = std::string(I::descriptor) + "/default";
+        auto hal = I::fromBinder(ndk::SpAIBinder(AServiceManager_checkService(halName.c_str())));
+        if (hal == nullptr) {
+            ALOGE("%s: Error connecting to %s", halName.c_str(), __func__);
+        }
+        return hal;
+    }
 };
 
 // Returns a new provider for the default HAL service declared on the device, null if not declared.
 template <typename I>
 std::unique_ptr<HalProvider<I>> defaultProviderForDeclaredService() {
     if (AServiceManager_isDeclared((std::string(I::descriptor) + "/default").c_str())) {
-        return std::make_unique<HalProvider<I>>();
+        return std::make_unique<DefaultProvider<I>>();
     }
     return nullptr;
 }

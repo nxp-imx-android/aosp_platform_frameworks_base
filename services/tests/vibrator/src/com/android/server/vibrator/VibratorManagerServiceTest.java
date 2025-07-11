@@ -837,7 +837,7 @@ public class VibratorManagerServiceTest {
         assertEquals(
                 Arrays.asList(expectedPrebaked(EFFECT_HEAVY_CLICK),
                         expectedPrebaked(EFFECT_DOUBLE_CLICK)),
-                mHalHelper.getVibratorHelper(1).getAllEffectSegments());
+                mHalHelper.getVibratorHelper(1).getEffectSegments());
     }
 
     @Test
@@ -862,7 +862,7 @@ public class VibratorManagerServiceTest {
                 Arrays.asList(expectedPrebaked(EFFECT_CLICK),
                         expectedPrebaked(EFFECT_HEAVY_CLICK),
                         expectedPrebaked(EFFECT_DOUBLE_CLICK)),
-                mHalHelper.getVibratorHelper(1).getAllEffectSegments());
+                mHalHelper.getVibratorHelper(1).getEffectSegments());
     }
 
     @Test
@@ -1050,7 +1050,7 @@ public class VibratorManagerServiceTest {
         assertEquals(
                 Arrays.asList(expectedPrebaked(EFFECT_CLICK, EFFECT_STRENGTH_STRONG),
                         expectedPrebaked(EFFECT_TICK, EFFECT_STRENGTH_LIGHT)),
-                mHalHelper.getVibratorHelper(0).getAllEffectSegments());
+                mHalHelper.getVibratorHelper(0).getEffectSegments());
     }
 
     @Test
@@ -1135,7 +1135,7 @@ public class VibratorManagerServiceTest {
         // The second vibration shouldn't have recorded that the vibrators were turned on.
         verify(mBatteryStatsMock, times(1)).noteVibratorOn(anyInt(), anyLong());
         // No segment played is the prebaked CLICK from the second vibration.
-        assertFalse(vibratorHelper.getAllEffectSegments().stream()
+        assertFalse(vibratorHelper.getEffectSegments().stream()
                 .anyMatch(PrebakedSegment.class::isInstance));
     }
 
@@ -1166,7 +1166,7 @@ public class VibratorManagerServiceTest {
         // The second vibration should have recorded that the vibrators were turned on.
         verify(mBatteryStatsMock, times(2)).noteVibratorOn(anyInt(), anyLong());
         // Check that second vibration was played.
-        assertTrue(vibratorHelper.getAllEffectSegments().stream()
+        assertTrue(vibratorHelper.getEffectSegments().stream()
                 .anyMatch(PrebakedSegment.class::isInstance));
     }
 
@@ -1222,7 +1222,7 @@ public class VibratorManagerServiceTest {
         // The second vibration shouldn't have recorded that the vibrators were turned on.
         verify(mBatteryStatsMock, times(1)).noteVibratorOn(anyInt(), anyLong());
         // The second vibration shouldn't have played any prebaked segment.
-        assertFalse(vibratorHelper.getAllEffectSegments().stream()
+        assertFalse(vibratorHelper.getEffectSegments().stream()
                 .anyMatch(PrebakedSegment.class::isInstance));
     }
 
@@ -1278,7 +1278,7 @@ public class VibratorManagerServiceTest {
         // The second vibration shouldn't have recorded that the vibrators were turned on.
         verify(mBatteryStatsMock, times(1)).noteVibratorOn(anyInt(), anyLong());
         // The second vibration shouldn't have played any prebaked segment.
-        assertFalse(vibratorHelper.getAllEffectSegments().stream()
+        assertFalse(vibratorHelper.getEffectSegments().stream()
                 .anyMatch(PrebakedSegment.class::isInstance));
     }
 
@@ -1304,7 +1304,7 @@ public class VibratorManagerServiceTest {
         // The second vibration shouldn't have recorded that the vibrators were turned on.
         verify(mBatteryStatsMock, times(1)).noteVibratorOn(anyInt(), anyLong());
         // The second vibration shouldn't have played any prebaked segment.
-        assertFalse(vibratorHelper.getAllEffectSegments().stream()
+        assertFalse(vibratorHelper.getEffectSegments().stream()
                 .anyMatch(PrebakedSegment.class::isInstance));
     }
 
@@ -1336,7 +1336,7 @@ public class VibratorManagerServiceTest {
         verify(callback, never()).onFinishing();
         verify(callback, never()).onFinished(anyInt());
         // The second vibration shouldn't have played any prebaked segment.
-        assertFalse(vibratorHelper.getAllEffectSegments().stream()
+        assertFalse(vibratorHelper.getEffectSegments().stream()
                 .anyMatch(PrebakedSegment.class::isInstance));
     }
 
@@ -1363,7 +1363,7 @@ public class VibratorManagerServiceTest {
         // The second vibration should have recorded that the vibrators were turned on.
         verify(mBatteryStatsMock, times(2)).noteVibratorOn(anyInt(), anyLong());
         // One segment played is the prebaked CLICK from the second vibration.
-        assertEquals(1, vibratorHelper.getAllEffectSegments().stream()
+        assertEquals(1, vibratorHelper.getEffectSegments().stream()
                 .filter(PrebakedSegment.class::isInstance).count());
     }
 
@@ -1394,7 +1394,7 @@ public class VibratorManagerServiceTest {
         // The new vibration should have recorded that the vibrators were turned on.
         verify(mBatteryStatsMock, times(1)).noteVibratorOn(anyInt(), anyLong());
         // One segment played is the prebaked CLICK from the new vibration.
-        assertEquals(1, mHalHelper.getVibratorHelper(1).getAllEffectSegments().stream()
+        assertEquals(1, mHalHelper.getVibratorHelper(1).getEffectSegments().stream()
                 .filter(PrebakedSegment.class::isInstance).count());
     }
 
@@ -1427,7 +1427,7 @@ public class VibratorManagerServiceTest {
         verify(callback).onFinishing();
         verify(callback).onFinished(eq(android.os.vibrator.VendorVibrationSession.STATUS_CANCELED));
         // One segment played is the prebaked CLICK from the new vibration.
-        assertEquals(1, mHalHelper.getVibratorHelper(1).getAllEffectSegments().stream()
+        assertEquals(1, mHalHelper.getVibratorHelper(1).getEffectSegments().stream()
                 .filter(PrebakedSegment.class::isInstance).count());
     }
 
@@ -1459,7 +1459,7 @@ public class VibratorManagerServiceTest {
         verify(mBatteryStatsMock, times(2)).noteVibratorOn(anyInt(), anyLong());
         // One step segment (with several amplitudes) and one click should have played. Notably
         // there is no primitive segment.
-        List<VibrationEffectSegment> played = vibratorHelper.getAllEffectSegments();
+        List<VibrationEffectSegment> played = vibratorHelper.getEffectSegments();
         assertEquals(2, played.size());
         assertEquals(1, played.stream().filter(StepSegment.class::isInstance).count());
         assertEquals(1, played.stream().filter(PrebakedSegment.class::isInstance).count());
@@ -1489,7 +1489,7 @@ public class VibratorManagerServiceTest {
                         .compose(), HAPTIC_FEEDBACK_ATTRS);
         secondVibration.waitForEnd();
 
-        assertThat(vibratorHelper.getAllEffectSegments()).hasSize(2);
+        assertThat(vibratorHelper.getEffectSegments()).hasSize(2);
         assertThat(firstVibration.getStatus()).isEqualTo(Status.FINISHED);
         assertThat(secondVibration.getStatus()).isEqualTo(Status.FINISHED);
     }
@@ -1514,7 +1514,7 @@ public class VibratorManagerServiceTest {
         vibrateAndWaitUntilFinished(service, effect, ALARM_ATTRS);
 
         verify(mIInputManagerMock).vibrateCombined(eq(1), eq(effect), any());
-        assertTrue(vibratorHelper.getAllEffectSegments().isEmpty());
+        assertTrue(vibratorHelper.getEffectSegments().isEmpty());
     }
 
     @Test
@@ -1565,9 +1565,9 @@ public class VibratorManagerServiceTest {
         PrimitiveSegment expected = new PrimitiveSegment(PRIMITIVE_CLICK, 1, 100);
         assertThat(mHalHelper.getPrepareSyncedCount()).isEqualTo(1);
         assertThat(mHalHelper.getTriggerSyncedCount()).isEqualTo(1);
-        assertThat(mHalHelper.getVibratorHelper(1).getAllEffectSegments())
+        assertThat(mHalHelper.getVibratorHelper(1).getEffectSegments())
                 .containsExactly(expected).inOrder();
-        assertThat(mHalHelper.getVibratorHelper(2).getAllEffectSegments())
+        assertThat(mHalHelper.getVibratorHelper(2).getEffectSegments())
                 .containsExactly(expected).inOrder();
 
         // VibrationThread needs some time to react to native callbacks and stop the vibrator.
@@ -1696,7 +1696,7 @@ public class VibratorManagerServiceTest {
                 performHapticFeedbackAndWaitUntilFinished(
                         service, HapticFeedbackConstants.SCROLL_TICK, /* always= */ true);
 
-        List<VibrationEffectSegment> playedSegments = vibratorHelper.getAllEffectSegments();
+        List<VibrationEffectSegment> playedSegments = vibratorHelper.getEffectSegments();
         assertEquals(1, playedSegments.size());
         PrebakedSegment segment = (PrebakedSegment) playedSegments.get(0);
         assertEquals(EFFECT_CLICK, segment.getEffectId());
@@ -1739,7 +1739,7 @@ public class VibratorManagerServiceTest {
                         service, HapticFeedbackConstants.SCROLL_ITEM_FOCUS, /* inputDeviceId= */ 0,
                         InputDevice.SOURCE_TOUCHSCREEN, /* always= */ true);
 
-        List<VibrationEffectSegment> playedSegments = vibratorHelper.getAllEffectSegments();
+        List<VibrationEffectSegment> playedSegments = vibratorHelper.getEffectSegments();
         // 2 haptics: 1 by rotary + 1 by touch screen
         assertEquals(2, playedSegments.size());
         // Verify feedback by rotary input
@@ -1786,7 +1786,7 @@ public class VibratorManagerServiceTest {
                         service, HapticFeedbackConstants.SCROLL_TICK,
                         VibrationAttributes.USAGE_GESTURE_INPUT, /* always= */ true);
 
-        List<VibrationEffectSegment> playedSegments = vibratorHelper.getAllEffectSegments();
+        List<VibrationEffectSegment> playedSegments = vibratorHelper.getEffectSegments();
         assertEquals(2, playedSegments.size());
         PrebakedSegment segment = (PrebakedSegment) playedSegments.get(0);
         assertEquals(EFFECT_CLICK, segment.getEffectId());
@@ -1824,7 +1824,7 @@ public class VibratorManagerServiceTest {
                 service, HapticFeedbackConstants.SCROLL_TICK,
                 VibrationAttributes.USAGE_ACCESSIBILITY, /* always= */ true);
 
-        assertTrue(vibratorHelper.getAllEffectSegments().isEmpty());
+        assertTrue(vibratorHelper.getEffectSegments().isEmpty());
     }
 
     @Test
@@ -1847,7 +1847,7 @@ public class VibratorManagerServiceTest {
                 service, HapticFeedbackConstants.SCROLL_TICK,
                 VibrationAttributes.USAGE_ALARM, /* always= */ true);
 
-        assertTrue(vibratorHelper.getAllEffectSegments().isEmpty());
+        assertTrue(vibratorHelper.getEffectSegments().isEmpty());
     }
 
 
@@ -1875,7 +1875,7 @@ public class VibratorManagerServiceTest {
         performHapticFeedbackAndWaitUntilFinished(
                 service, HapticFeedbackConstants.BIOMETRIC_CONFIRM, /* always= */ false);
 
-        List<VibrationEffectSegment> playedSegments = vibratorHelper.getAllEffectSegments();
+        List<VibrationEffectSegment> playedSegments = vibratorHelper.getEffectSegments();
         assertEquals(1, playedSegments.size());
         PrebakedSegment segment = (PrebakedSegment) playedSegments.get(0);
         assertEquals(EFFECT_CLICK, segment.getEffectId());
@@ -1911,7 +1911,7 @@ public class VibratorManagerServiceTest {
                         service, HapticFeedbackConstants.BIOMETRIC_CONFIRM, /* inputDeviceId= */ 0,
                 InputDevice.SOURCE_TOUCHSCREEN, /* always= */ false);
 
-        List<VibrationEffectSegment> playedSegments = vibratorHelper.getAllEffectSegments();
+        List<VibrationEffectSegment> playedSegments = vibratorHelper.getEffectSegments();
         assertEquals(1, playedSegments.size());
         PrebakedSegment segment = (PrebakedSegment) playedSegments.get(0);
         assertEquals(EFFECT_CLICK, segment.getEffectId());
@@ -1940,7 +1940,7 @@ public class VibratorManagerServiceTest {
         performHapticFeedbackAndWaitUntilFinished(
                 service, HapticFeedbackConstants.BIOMETRIC_CONFIRM, /* always= */ false);
 
-        List<VibrationEffectSegment> playedSegments = vibratorHelper.getAllEffectSegments();
+        List<VibrationEffectSegment> playedSegments = vibratorHelper.getEffectSegments();
         assertEquals(2, playedSegments.size());
         assertEquals(EFFECT_CLICK, ((PrebakedSegment) playedSegments.get(0)).getEffectId());
         assertEquals(EFFECT_HEAVY_CLICK, ((PrebakedSegment) playedSegments.get(1)).getEffectId());
@@ -1971,7 +1971,7 @@ public class VibratorManagerServiceTest {
                 service, HapticFeedbackConstants.BIOMETRIC_CONFIRM, /* inputDeviceId= */ 0,
                 InputDevice.SOURCE_TOUCHSCREEN, /* always= */ false);
 
-        List<VibrationEffectSegment> playedSegments = vibratorHelper.getAllEffectSegments();
+        List<VibrationEffectSegment> playedSegments = vibratorHelper.getEffectSegments();
         assertEquals(2, playedSegments.size());
         assertEquals(EFFECT_CLICK, ((PrebakedSegment) playedSegments.get(0)).getEffectId());
         assertEquals(EFFECT_HEAVY_CLICK, ((PrebakedSegment) playedSegments.get(1)).getEffectId());
@@ -2010,7 +2010,7 @@ public class VibratorManagerServiceTest {
                 service, HapticFeedbackConstants.KEYBOARD_TAP, /* inputDeviceId= */ 0,
                 InputDevice.SOURCE_TOUCHSCREEN, /* always= */ true);
 
-        assertTrue(vibratorHelper.getAllEffectSegments().isEmpty());
+        assertTrue(vibratorHelper.getEffectSegments().isEmpty());
     }
 
     @Test
@@ -2036,7 +2036,7 @@ public class VibratorManagerServiceTest {
                 service, /* constant= */ -1, /* inputDeviceId= */ 0,
                 InputDevice.SOURCE_TOUCHSCREEN, /* always= */ true);
 
-        assertTrue(mHalHelper.getVibratorHelper(1).getAllEffectSegments().isEmpty());
+        assertTrue(mHalHelper.getVibratorHelper(1).getEffectSegments().isEmpty());
     }
 
     @Test
@@ -2059,9 +2059,9 @@ public class VibratorManagerServiceTest {
         vibrateAndWaitUntilFinished(service, tickEffect, RINGTONE_ATTRS);
 
         // No vendor effect played, but predefined TICK plays successfully.
-        assertThat(vibratorHelper.getAllVendorEffects()).isEmpty();
-        assertThat(vibratorHelper.getAllEffectSegments()).hasSize(1);
-        assertThat(vibratorHelper.getAllEffectSegments().get(0))
+        assertThat(vibratorHelper.getVendorEffects()).isEmpty();
+        assertThat(vibratorHelper.getEffectSegments()).hasSize(1);
+        assertThat(vibratorHelper.getEffectSegments().get(0))
                 .isInstanceOf(PrebakedSegment.class);
     }
 
@@ -2082,10 +2082,10 @@ public class VibratorManagerServiceTest {
         vibrateAndWaitUntilFinished(service, vendorEffect, RINGTONE_ATTRS);
 
         // Compare vendor data only, ignore scale applied by device settings in this test.
-        assertThat(vibratorHelper.getAllVendorEffects()).hasSize(1);
-        assertThat(vibratorHelper.getAllVendorEffects().get(0).getVendorData().keySet())
+        assertThat(vibratorHelper.getVendorEffects()).hasSize(1);
+        assertThat(vibratorHelper.getVendorEffects().get(0).getVendorData().keySet())
                 .containsExactly("key");
-        assertThat(vibratorHelper.getAllVendorEffects().get(0).getVendorData().getString("key"))
+        assertThat(vibratorHelper.getVendorEffects().get(0).getVendorData().getString("key"))
                 .isEqualTo("value");
     }
 
@@ -2137,11 +2137,11 @@ public class VibratorManagerServiceTest {
                 RINGTONE_ATTRS);
 
         // Only 3 effects played successfully.
-        assertEquals(3, vibratorHelper.getAllEffectSegments().size());
+        assertEquals(3, vibratorHelper.getEffectSegments().size());
 
         // Haptic feedback vibrations will be scaled with SCALE_LOW or none if default is low.
         assertEquals(defaultTouchIntensity > Vibrator.VIBRATION_INTENSITY_LOW,
-                0.5 > ((PrimitiveSegment) vibratorHelper.getAllEffectSegments().get(0)).getScale());
+                0.5 > ((PrimitiveSegment) vibratorHelper.getEffectSegments().get(0)).getScale());
 
         // Notification vibrations will be scaled with SCALE_HIGH or none if default is high.
         assertEquals(defaultNotificationIntensity < Vibrator.VIBRATION_INTENSITY_HIGH,
@@ -2149,7 +2149,7 @@ public class VibratorManagerServiceTest {
 
         // Alarm vibration will be scaled with SCALE_NONE.
         assertEquals(1f,
-                ((PrimitiveSegment) vibratorHelper.getAllEffectSegments().get(2)).getScale(), 1e-5);
+                ((PrimitiveSegment) vibratorHelper.getEffectSegments().get(2)).getScale(), 1e-5);
     }
 
     @Test
@@ -2184,7 +2184,7 @@ public class VibratorManagerServiceTest {
         vibrateAndWaitUntilFinished(service, effect, NOTIFICATION_ATTRS);
         vibrateAndWaitUntilFinished(service, effect, HAPTIC_FEEDBACK_ATTRS);
 
-        List<VibrationEffectSegment> segments = vibratorHelper.getAllEffectSegments();
+        List<VibrationEffectSegment> segments = vibratorHelper.getEffectSegments();
         assertEquals(3, segments.size());
         assertEquals(0.7f, ((PrimitiveSegment) segments.get(0)).getScale(), 1e-5);
         assertEquals(0.4f, ((PrimitiveSegment) segments.get(1)).getScale(), 1e-5);
@@ -2225,8 +2225,8 @@ public class VibratorManagerServiceTest {
         VibrationEffect vendorEffect = VibrationEffect.createVendorEffect(vendorData);
         vibrateAndWaitUntilFinished(service, vendorEffect, NOTIFICATION_ATTRS);
 
-        assertThat(vibratorHelper.getAllVendorEffects()).hasSize(1);
-        VibrationEffect.VendorEffect scaled = vibratorHelper.getAllVendorEffects().get(0);
+        assertThat(vibratorHelper.getVendorEffects()).hasSize(1);
+        VibrationEffect.VendorEffect scaled = vibratorHelper.getVendorEffects().get(0);
         assertThat(scaled.getEffectStrength()).isEqualTo(EFFECT_STRENGTH_LIGHT);
         assertThat(scaled.getScale()).isAtMost(1); // Scale down or none if default is LOW
         assertThat(scaled.getAdaptiveScale()).isEqualTo(0.4f);
@@ -2276,7 +2276,7 @@ public class VibratorManagerServiceTest {
                 ALARM_ATTRS);
 
         List<VibrationEffectSegment> segments =
-                mHalHelper.getVibratorHelper(1).getAllEffectSegments();
+                mHalHelper.getVibratorHelper(1).getEffectSegments();
         // At least one step segment played as fallback for unsupported vibration effect
         assertTrue(segments.size() > 2);
         // 0: Supported effect played
@@ -3843,7 +3843,7 @@ public class VibratorManagerServiceTest {
         vibrate(service, VibrationEffect.createOneShot(1_000, 128), HAPTIC_FEEDBACK_ATTRS);
 
         // VibrationThread will start this vibration async, so wait until vibration is triggered.
-        assertTrue(waitUntil(s -> !mHalHelper.getVibratorHelper(1).getAllEffectSegments().isEmpty(),
+        assertTrue(waitUntil(s -> !mHalHelper.getVibratorHelper(1).getEffectSegments().isEmpty(),
                 service, TEST_TIMEOUT_MILLIS));
 
         vibrateAndWaitUntilFinished(service, VibrationEffect.createOneShot(10, 255), ALARM_ATTRS);

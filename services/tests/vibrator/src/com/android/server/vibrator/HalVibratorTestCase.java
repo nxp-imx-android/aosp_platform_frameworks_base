@@ -26,6 +26,7 @@ import static com.google.common.truth.Truth.assertThat;
 
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.inOrder;
+import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
@@ -58,6 +59,7 @@ import java.util.List;
 
 /** Base test class for {@link HalVibrator} implementations. */
 public abstract class HalVibratorTestCase {
+    private static final int VIBRATION_CALLBACK_TIMEOUT = 5_000;
     static final int VIBRATOR_ID = 0;
 
     @Rule public MockitoRule rule = MockitoJUnit.rule();
@@ -329,7 +331,38 @@ public abstract class HalVibratorTestCase {
         assertThat(vibrator.on(1, 1, /* milliseconds= */ 100)).isEqualTo(100L);
         assertThat(vibrator.isVibrating()).isTrue();
         assertThat(vibrator.getCurrentAmplitude()).isEqualTo(-1f);
-        assertThat(mHelper.getEffectSegments(1)).containsExactly(createStep(100)).inOrder();
+        assertThat(mHelper.getEffectSegments()).containsExactly(createStep(100)).inOrder();
+    }
+
+    @Test
+    public void on_withDurationAndCallbackSupported_triggersCallbackFromHal() {
+        long vibrationId = 123;
+        long stepId = 456;
+        long durationMs = 10;
+        mHelper.setCapabilities(IVibrator.CAP_ON_CALLBACK);
+        HalVibrator vibrator = newInitializedVibrator(VIBRATOR_ID);
+
+        assertThat(vibrator.on(vibrationId, stepId, durationMs)).isEqualTo(durationMs);
+        mTestLooper.moveTimeForward(durationMs);
+        mTestLooper.dispatchAll();
+
+        verify(mCallbacksMock, timeout(durationMs + VIBRATION_CALLBACK_TIMEOUT))
+                .onVibrationStepComplete(eq(VIBRATOR_ID), eq(vibrationId), eq(stepId));
+    }
+
+    @Test
+    public void on_withDurationAndCallbackNotSupported_triggersCallbackFromHandler() {
+        long vibrationId = 10;
+        long stepId = 100;
+        long durationMs = 10;
+        HalVibrator vibrator = newInitializedVibrator(VIBRATOR_ID);
+
+        assertThat(vibrator.on(vibrationId, stepId, durationMs)).isEqualTo(durationMs);
+        mTestLooper.moveTimeForward(durationMs);
+        mTestLooper.dispatchAll();
+
+        verify(mCallbacksMock, timeout(durationMs + VIBRATION_CALLBACK_TIMEOUT))
+                .onVibrationStepComplete(eq(VIBRATOR_ID), eq(vibrationId), eq(stepId));
     }
 
     @Test
@@ -341,7 +374,7 @@ public abstract class HalVibratorTestCase {
         assertThat(vibrator.on(1, 1, prebaked)).isEqualTo(HalVibratorHelper.EFFECT_DURATION);
         assertThat(vibrator.isVibrating()).isTrue();
         assertThat(vibrator.getCurrentAmplitude()).isEqualTo(-1f);
-        assertThat(mHelper.getEffectSegments(1)).containsExactly(prebaked).inOrder();
+        assertThat(mHelper.getEffectSegments()).containsExactly(prebaked).inOrder();
     }
 
     @Test
@@ -358,7 +391,7 @@ public abstract class HalVibratorTestCase {
         assertThat(vibrator.on(1, 1, primitives)).isEqualTo(expectedDuration);
         assertThat(vibrator.isVibrating()).isTrue();
         assertThat(vibrator.getCurrentAmplitude()).isEqualTo(-1f);
-        assertThat(mHelper.getEffectSegments(1)).containsExactlyElementsIn(primitives).inOrder();
+        assertThat(mHelper.getEffectSegments()).containsExactlyElementsIn(primitives).inOrder();
     }
 
     @Test
@@ -374,7 +407,7 @@ public abstract class HalVibratorTestCase {
         assertThat(vibrator.on(1, 1, ramps)).isEqualTo(10L);
         assertThat(vibrator.isVibrating()).isTrue();
         assertThat(vibrator.getCurrentAmplitude()).isEqualTo(-1f);
-        assertThat(mHelper.getEffectSegments(1)).containsExactlyElementsIn(ramps).inOrder();
+        assertThat(mHelper.getEffectSegments()).containsExactlyElementsIn(ramps).inOrder();
     }
 
     @Test
@@ -390,7 +423,7 @@ public abstract class HalVibratorTestCase {
         assertThat(vibrator.on(1, 1, points)).isEqualTo(30L);
         assertThat(vibrator.isVibrating()).isTrue();
         assertThat(vibrator.getCurrentAmplitude()).isEqualTo(-1f);
-        assertThat(mHelper.getEffectPwlePoints(1)).containsExactlyElementsIn(points).inOrder();
+        assertThat(mHelper.getEffectPwlePoints()).containsExactlyElementsIn(points).inOrder();
     }
 
     @Test
