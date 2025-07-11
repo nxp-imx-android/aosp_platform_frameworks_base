@@ -30,6 +30,7 @@ import com.android.systemui.statusbar.systemstatusicons.ethernet.ui.viewmodel.Et
 import com.android.systemui.statusbar.systemstatusicons.hotspot.ui.viewmodel.HotspotIconViewModel
 import com.android.systemui.statusbar.systemstatusicons.ringer.ui.viewmodel.MuteIconViewModel
 import com.android.systemui.statusbar.systemstatusicons.ringer.ui.viewmodel.VibrateIconViewModel
+import com.android.systemui.statusbar.systemstatusicons.vpn.ui.viewmodel.VpnIconViewModel
 import com.android.systemui.statusbar.systemstatusicons.wifi.ui.viewmodel.WifiIconViewModel
 import com.android.systemui.statusbar.systemstatusicons.zenmode.ui.viewmodel.ZenModeIconViewModel
 import dagger.assisted.Assisted
@@ -59,6 +60,7 @@ constructor(
     muteIconViewModelFactory: MuteIconViewModel.Factory,
     nextAlarmIconViewModelFactory: NextAlarmIconViewModel.Factory,
     vibrateIconViewModelFactory: VibrateIconViewModel.Factory,
+    vpnIconViewModelFactory: VpnIconViewModel.Factory,
     wifiIconViewModelFactory: WifiIconViewModel.Factory,
     zenModeIconViewModelFactory: ZenModeIconViewModel.Factory,
 ) : ExclusiveActivatable() {
@@ -79,6 +81,7 @@ constructor(
     private val muteIcon by lazy { muteIconViewModelFactory.create(context) }
     private val nextAlarmIcon by lazy { nextAlarmIconViewModelFactory.create(context) }
     private val vibrateIcon by lazy { vibrateIconViewModelFactory.create(context) }
+    private val vpnIcon by lazy { vpnIconViewModelFactory.create(context) }
     private val wifiIcon by lazy { wifiIconViewModelFactory.create(context) }
     private val zenModeIcon by lazy { zenModeIconViewModelFactory.create(context) }
 
@@ -92,6 +95,7 @@ constructor(
             muteIcon,
             nextAlarmIcon,
             vibrateIcon,
+            vpnIcon,
             wifiIcon,
             zenModeIcon,
         )
@@ -123,6 +127,7 @@ constructor(
             launch { muteIcon.activate() }
             launch { nextAlarmIcon.activate() }
             launch { vibrateIcon.activate() }
+            launch { vpnIcon.activate() }
             launch { wifiIcon.activate() }
             launch { zenModeIcon.activate() }
         }
