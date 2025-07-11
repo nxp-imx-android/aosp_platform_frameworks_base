@@ -43,13 +43,11 @@ import android.view.DisplayAdjustments;
 
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.filters.SmallTest;
+import androidx.test.runner.AndroidJUnit4;
 
 import com.android.internal.display.BrightnessSynchronizer;
 import com.android.internal.util.test.FakeSettingsProvider;
 import com.android.server.testutils.OffsettableClock;
-
-import com.google.testing.junit.testparameterinjector.TestParameter;
-import com.google.testing.junit.testparameterinjector.TestParameterInjector;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -60,7 +58,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 @SmallTest
-@RunWith(TestParameterInjector.class)
+@RunWith(AndroidJUnit4.class)
 public class BrightnessSynchronizerTest {
     private static final Uri BRIGHTNESS_URI =
             Settings.System.getUriFor(Settings.System.SCREEN_BRIGHTNESS);
@@ -77,9 +75,6 @@ public class BrightnessSynchronizerTest {
     @Mock private DisplayManager mDisplayManagerMock;
     @Captor private ArgumentCaptor<DisplayListener> mDisplayListenerCaptor;
     @Captor private ArgumentCaptor<ContentObserver> mContentObserverCaptor;
-
-    // Feature flag that will eventually be removed
-    @TestParameter private boolean mIntRangeUserPerceptionEnabled;
 
     @Before
     public void setUp() throws Exception {
@@ -218,8 +213,7 @@ public class BrightnessSynchronizerTest {
     }
 
     private void start() {
-        mSynchronizer = new BrightnessSynchronizer(mContext, mTestLooper.getLooper(), mClock::now,
-                mIntRangeUserPerceptionEnabled);
+        mSynchronizer = new BrightnessSynchronizer(mContext, mTestLooper.getLooper(), mClock::now);
         mSynchronizer.startSynchronizing();
         verify(mDisplayManagerMock).registerDisplayListener(mDisplayListenerCaptor.capture(),
                 isA(Handler.class), eq(DisplayManager.EVENT_TYPE_DISPLAY_BRIGHTNESS));
@@ -257,19 +251,11 @@ public class BrightnessSynchronizerTest {
     }
 
     private int fToI(float brightness) {
-        if (mIntRangeUserPerceptionEnabled) {
-            return BrightnessSynchronizer.brightnessFloatToIntSetting(mContext, brightness);
-        } else {
-            return BrightnessSynchronizer.brightnessFloatToInt(brightness);
-        }
+        return BrightnessSynchronizer.brightnessFloatToInt(brightness);
     }
 
     private float iToF(int brightness) {
-        if (mIntRangeUserPerceptionEnabled) {
-            return BrightnessSynchronizer.brightnessIntSettingToFloat(mContext, brightness);
-        } else {
-            return BrightnessSynchronizer.brightnessIntToFloat(brightness);
-        }
+        return BrightnessSynchronizer.brightnessIntToFloat(brightness);
     }
 
     private void advanceTime(long timeMs) {
