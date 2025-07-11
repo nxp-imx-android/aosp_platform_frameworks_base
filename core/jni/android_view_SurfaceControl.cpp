@@ -24,6 +24,7 @@
 #include <android/gui/BnWindowInfosReportedListener.h>
 #include <android/gui/EdgeExtensionParameters.h>
 #include <android/gui/JankData.h>
+#include <android/gui/TransactionBarrier.h>
 #include <android/hardware/display/IDeviceProductInfoConstants.h>
 #include <android/os/IInputConstants.h>
 #include <android_runtime/AndroidRuntime.h>
@@ -61,6 +62,7 @@
 #include <ui/StaticDisplayInfo.h>
 #include <utils/LightRefBase.h>
 #include <utils/Log.h>
+#include <utils/String16.h>
 
 #include <memory>
 
@@ -1044,6 +1046,26 @@ static void nativeSetInputWindowInfo(JNIEnv* env, jclass clazz, jlong transactio
     sp<gui::WindowInfoHandle> info = android_view_InputWindowHandle_getHandle(env, inputWindow);
     auto ctrl = SpFromRawPtr<SurfaceControl>(nativeObject);
     transaction->setInputWindowInfo(ctrl, std::move(info));
+}
+
+static void nativeAddTransactionBarrier(JNIEnv* env, jclass clazz, jlong transactionObj,
+                                        jobject barrierObj) {
+    Parcel* barrierParcel = parcelForJavaObject(env, barrierObj);
+    if (barrierParcel == NULL) {
+        doThrowNPE(env);
+        return;
+    }
+    gui::TransactionBarrier barrier;
+    status_t err = barrier.readFromParcel(barrierParcel);
+    if (err != NO_ERROR) {
+        jniThrowException(env, "java/lang/IllegalArgumentException",
+                          "TransactionBarrier parcel has wrong format");
+        return;
+    }
+
+    auto transaction = reinterpret_cast<SurfaceComposerClient::Transaction*>(transactionObj);
+
+    transaction->addTransactionBarrier(std::move(barrier));
 }
 
 static void nativeAddWindowInfosReportedListener(JNIEnv* env, jclass clazz, jlong transactionObj,
@@ -2776,6 +2798,8 @@ static const JNINativeMethod sSurfaceControlMethods[] = {
             (void*)nativeSetDesiredHdrHeadroom },
     {"nativeSetCachingHint", "(JJI)V",
             (void*)nativeSetCachingHint },
+    {"nativeAddTransactionBarrier", "(JLandroid/os/Parcel;)V",
+            (void*)nativeAddTransactionBarrier },
     {"nativeAddWindowInfosReportedListener", "(JLjava/lang/Runnable;)V",
             (void*)nativeAddWindowInfosReportedListener },
     {"nativeGetDisplayBrightnessSupport", "(Landroid/os/IBinder;)Z",

@@ -52,6 +52,7 @@ import android.gui.BoxShadowSettings;
 import android.gui.DropInputMode;
 import android.gui.EarlyWakeupInfo;
 import android.gui.StalledTransactionInfo;
+import android.gui.TransactionBarrier;
 import android.gui.TrustedOverlay;
 import android.hardware.DataSpace;
 import android.hardware.DisplayLuts;
@@ -267,6 +268,7 @@ public final class SurfaceControl implements Parcelable {
             Parcel data);
     private static native void nativeAddWindowInfosReportedListener(long transactionObj,
             Runnable listener);
+    private static native void nativeAddTransactionBarrier(long transactionObj, Parcel barrier);
     private static native boolean nativeGetDisplayBrightnessSupport(IBinder displayToken);
     private static native boolean nativeSetDisplayBrightness(IBinder displayToken,
             float sdrBrightness, float sdrBrightnessNits, float displayBrightness,
@@ -3593,6 +3595,22 @@ public final class SurfaceControl implements Parcelable {
          */
         public Transaction addWindowInfosReportedListener(@NonNull Runnable listener) {
             nativeAddWindowInfosReportedListener(mNativeObject, listener);
+            return this;
+        }
+
+        /**
+         * Adds a transaction barrier.
+         *
+         * @param barrier Transaction Barrier.
+         *
+         * @hide
+         */
+        @NonNull
+        public Transaction addTransactionBarrier(@NonNull TransactionBarrier barrier) {
+            Parcel barrierParcel = Parcel.obtain();
+            barrier.writeToParcel(barrierParcel, 0);
+            barrierParcel.setDataPosition(0);
+            nativeAddTransactionBarrier(mNativeObject, barrierParcel);
             return this;
         }
 
