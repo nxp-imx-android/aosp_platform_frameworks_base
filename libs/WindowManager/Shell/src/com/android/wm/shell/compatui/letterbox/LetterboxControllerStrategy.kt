@@ -44,15 +44,14 @@ class LetterboxControllerStrategy @Inject constructor(
         // Decides whether to use a single surface or multiple surfaces for the letterbox.
         // The primary trade-off is memory usage versus rendering performance.
         //
-        // A single surface is used for letterboxes with rounded corners on opaque activities
-        // and always for Bubble. In all other cases, such as for letterboxes with straight corners
-        // or for those with rounded corners on a translucent activity, we use multiple surfaces to
-        // ensure better performance.
+        // The multi surfaces approach is only used when the activity is transparent. The single
+        // surface approach is the default one because it is easier and less expensive to handle.
+        // TODO(b/377875146): Improve heuristic for single/multiple surfaces
         currentMode = when {
             event.isBubble -> SINGLE_SURFACE
             event.isTranslucent -> MULTIPLE_SURFACES
             letterboxConfiguration.isLetterboxActivityCornersRounded() -> SINGLE_SURFACE
-            else -> MULTIPLE_SURFACES
+            else -> SINGLE_SURFACE
         }
         supportsInputSurface = event.supportsInput
     }
