@@ -18,8 +18,11 @@ package com.android.settingslib.supervision
 
 import android.app.role.RoleManager
 import android.app.supervision.SupervisionManager
+import android.app.supervision.flags.Flags
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
+import android.provider.Settings
 import androidx.annotation.RequiresPermission
 
 /** Helper class meant to provide intent to launch supervision features. */
@@ -27,6 +30,7 @@ object SupervisionIntentProvider {
     private const val ACTION_SHOW_PARENTAL_CONTROLS = "android.settings.SHOW_PARENTAL_CONTROLS"
     private const val ACTION_SETUP_PIN_RECOVERY =
         "android.settings.supervision.action.SET_PIN_RECOVERY"
+    private const val ACTION_SUPERVISION_SETTINGS = "android.settings.SUPERVISION_SETTINGS"
     private const val ACTION_VERIFY_PIN_RECOVERY =
         "android.settings.supervision.action.VERIFY_PIN_RECOVERY"
     private const val ACTION_UPDATE_PIN_RECOVERY =
@@ -54,13 +58,23 @@ object SupervisionIntentProvider {
      */
     @JvmStatic
     fun getSettingsIntent(context: Context): Intent? {
-        val supervisionManager = context.getSystemService(SupervisionManager::class.java)
-        val supervisionAppPackage = supervisionManager?.activeSupervisionAppPackage ?: return null
+        val (intentAction, intentPackage) =
+            if (Flags.enableSupervisionSettingsScreen()) {
+                val settingsAppPackage = getSettingsAppPackage(context)
+                ACTION_SUPERVISION_SETTINGS to settingsAppPackage
+            } else {
+                val supervisionManager = context.getSystemService(SupervisionManager::class.java)
+                val supervisionAppPackage = supervisionManager?.activeSupervisionAppPackage
+                ACTION_SHOW_PARENTAL_CONTROLS to supervisionAppPackage
+            }
+
+        if (intentPackage == null) {
+            return null
+        }
 
         val intent =
-            Intent(ACTION_SHOW_PARENTAL_CONTROLS)
-                .setPackage(supervisionAppPackage)
-                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            Intent(intentAction).setPackage(intentPackage).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+
         val activities =
             context.packageManager.queryIntentActivitiesAsUser(intent, 0, context.userId)
         return if (activities.isNotEmpty()) intent else null
@@ -96,6 +110,18 @@ object SupervisionIntentProvider {
         val activities =
             context.packageManager.queryIntentActivitiesAsUser(intent, 0, context.userId)
         return if (activities.isNotEmpty()) intent else null
+    }
+
+    /** Returns the System Settings application's package name */
+    @JvmStatic
+    private fun getSettingsAppPackage(context: Context): String {
+        val packageManager = context.getPackageManager()
+        val results =
+            packageManager.queryIntentActivities(
+                Intent(Settings.ACTION_SETTINGS),
+                PackageManager.MATCH_SYSTEM_ONLY,
+            )
+        return results.firstOrNull()?.activityInfo?.packageName ?: SETTINGS_PKG
     }
 
     /**
