@@ -156,3 +156,13 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    namespace: "haptics"
+    name: "vibration_scale_bounds_fix_enabled"
+    description: "Enables audio-coupled haptics vibration scale bounds fix"
+    bug: "427912736"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
