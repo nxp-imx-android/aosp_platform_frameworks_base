@@ -10050,7 +10050,8 @@ public class Notification implements Parcelable
                     .viewType(StandardTemplateParams.VIEW_TYPE_HEADS_UP)
                     .highlightExpander(isConversationLayout)
                     .fillTextsFrom(mBuilder)
-                    .hideTime(true);
+                    .hideTime(true)
+                    .needsExtraTextMargin(false);
 
             fixTitleAndTextForCompactMessaging(p);
             TemplateBindResult bindResult = new TemplateBindResult();
