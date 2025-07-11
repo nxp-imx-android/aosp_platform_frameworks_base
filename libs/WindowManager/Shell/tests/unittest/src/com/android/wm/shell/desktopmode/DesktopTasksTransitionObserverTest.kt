@@ -41,6 +41,7 @@ import com.android.wm.shell.MockToken
 import com.android.wm.shell.ShellTaskOrganizer
 import com.android.wm.shell.ShellTestCase
 import com.android.wm.shell.common.ShellExecutor
+import com.android.wm.shell.desktopmode.data.DesktopRepository
 import com.android.wm.shell.desktopmode.data.TopTransparentFullscreenTaskData
 import com.android.wm.shell.desktopmode.desktopwallpaperactivity.DesktopWallpaperActivityTokenProvider
 import com.android.wm.shell.shared.desktopmode.FakeDesktopState

@@ -17,7 +17,7 @@
 package com.android.wm.shell.compatui.letterbox.config
 
 import android.window.TransitionInfo
-import com.android.wm.shell.desktopmode.DesktopRepository
+import com.android.wm.shell.desktopmode.data.DesktopRepository
 
 /**
  * Default [LetterboxDependenciesHelper] implementation.

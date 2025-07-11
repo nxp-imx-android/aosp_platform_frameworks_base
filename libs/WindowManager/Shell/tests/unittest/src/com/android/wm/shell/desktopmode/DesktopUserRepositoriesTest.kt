@@ -29,6 +29,7 @@ import com.android.dx.mockito.inline.extended.StaticMockitoSession
 import com.android.window.flags.Flags.FLAG_ENABLE_DESKTOP_WINDOWING_HSUM
 import com.android.wm.shell.ShellTestCase
 import com.android.wm.shell.common.ShellExecutor
+import com.android.wm.shell.desktopmode.data.DesktopRepository
 import com.android.wm.shell.desktopmode.data.DesktopRepositoryInitializer
 import com.android.wm.shell.desktopmode.data.persistence.DesktopPersistentRepository
 import com.android.wm.shell.shared.desktopmode.FakeDesktopConfig

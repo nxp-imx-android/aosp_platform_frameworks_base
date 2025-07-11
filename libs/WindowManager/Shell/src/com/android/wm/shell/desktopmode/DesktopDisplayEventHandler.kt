@@ -32,6 +32,7 @@ import com.android.wm.shell.RootTaskDisplayAreaOrganizer
 import com.android.wm.shell.RootTaskDisplayAreaOrganizer.RootTaskDisplayAreaListener
 import com.android.wm.shell.common.DisplayController
 import com.android.wm.shell.common.DisplayController.OnDisplaysChangedListener
+import com.android.wm.shell.desktopmode.data.DesktopRepository
 import com.android.wm.shell.desktopmode.data.DesktopRepositoryInitializer
 import com.android.wm.shell.desktopmode.desktopfirst.DesktopDisplayModeController
 import com.android.wm.shell.desktopmode.desktopfirst.isDisplayDesktopFirst

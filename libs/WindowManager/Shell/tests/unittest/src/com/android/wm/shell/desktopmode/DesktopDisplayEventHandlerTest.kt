@@ -30,6 +30,7 @@ import com.android.wm.shell.ShellTestCase
 import com.android.wm.shell.common.DisplayController
 import com.android.wm.shell.common.DisplayController.OnDisplaysChangedListener
 import com.android.wm.shell.common.ShellExecutor
+import com.android.wm.shell.desktopmode.data.DesktopRepository
 import com.android.wm.shell.desktopmode.data.DesktopRepositoryInitializer
 import com.android.wm.shell.desktopmode.desktopfirst.DESKTOP_FIRST_DISPLAY_WINDOWING_MODE
 import com.android.wm.shell.desktopmode.desktopfirst.DesktopDisplayModeController

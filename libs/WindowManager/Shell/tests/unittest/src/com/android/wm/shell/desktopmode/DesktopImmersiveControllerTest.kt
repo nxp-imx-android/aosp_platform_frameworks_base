@@ -44,6 +44,7 @@ import com.android.wm.shell.common.DisplayLayout
 import com.android.wm.shell.desktopmode.DesktopImmersiveController.Direction
 import com.android.wm.shell.desktopmode.DesktopImmersiveController.ExitReason.USER_INTERACTION
 import com.android.wm.shell.desktopmode.DesktopTestHelpers.createFreeformTask
+import com.android.wm.shell.desktopmode.data.DesktopRepository
 import com.android.wm.shell.shared.desktopmode.FakeDesktopConfig
 import com.android.wm.shell.shared.desktopmode.FakeDesktopState
 import com.android.wm.shell.sysui.ShellInit

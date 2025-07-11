@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.wm.shell.desktopmode
+package com.android.wm.shell.desktopmode.data
 
 import android.app.ActivityManager
 import android.graphics.Rect
@@ -30,8 +30,7 @@ import androidx.core.util.forEach
 import androidx.core.util.valueIterator
 import com.android.internal.annotations.VisibleForTesting
 import com.android.internal.protolog.ProtoLog
-import com.android.wm.shell.desktopmode.data.Desk
-import com.android.wm.shell.desktopmode.data.TopTransparentFullscreenTaskData
+import com.android.wm.shell.desktopmode.DisplayDeskState
 import com.android.wm.shell.desktopmode.data.persistence.DesktopPersistentRepository
 import com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_DESKTOP_MODE
 import com.android.wm.shell.shared.annotations.ShellMainThread

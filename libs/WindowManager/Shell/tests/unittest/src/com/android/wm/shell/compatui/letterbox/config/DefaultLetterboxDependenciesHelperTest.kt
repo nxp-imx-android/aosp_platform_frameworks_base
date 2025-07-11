@@ -19,7 +19,7 @@ package com.android.wm.shell.compatui.letterbox.config
 import android.testing.AndroidTestingRunner
 import androidx.test.filters.SmallTest
 import com.android.wm.shell.ShellTestCase
-import com.android.wm.shell.desktopmode.DesktopRepository
+import com.android.wm.shell.desktopmode.data.DesktopRepository
 import com.android.wm.shell.util.testLetterboxDependenciesHelper
 import java.util.function.Consumer
 import kotlin.test.assertFalse
