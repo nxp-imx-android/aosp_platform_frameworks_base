@@ -17,18 +17,22 @@ package com.android.server.appfunctions
 
 import android.app.IUriGrantsManager
 import android.app.appfunctions.AppFunctionAccessServiceInterface
+import android.app.appfunctions.AppFunctionAttribution
 import android.app.appfunctions.AppFunctionException
 import android.app.appfunctions.ExecuteAppFunctionAidlRequest
 import android.app.appfunctions.ExecuteAppFunctionRequest
 import android.app.appfunctions.ExecuteAppFunctionResponse
 import android.app.appfunctions.IAppFunctionService
 import android.app.appfunctions.IExecuteAppFunctionCallback
-import android.app.appfunctions.SafeOneTimeExecuteAppFunctionCallback
 import android.app.appsearch.GenericDocument
 import android.content.Context
 import android.content.pm.PackageManager
 import android.content.pm.PackageManagerInternal
 import android.os.UserHandle
+import android.permission.flags.Flags.FLAG_APP_FUNCTION_ACCESS_API_ENABLED
+import android.permission.flags.Flags.FLAG_APP_FUNCTION_ACCESS_SERVICE_ENABLED
+import android.platform.test.annotations.RequiresFlagsDisabled
+import android.platform.test.annotations.RequiresFlagsEnabled
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.android.dx.mockito.inline.extended.ExtendedMockito
@@ -64,7 +68,6 @@ class AppFunctionsLoggingTest {
             MoreExecutors.directExecutor(),
             { TEST_CURRENT_TIME_MILLIS },
         )
-    private lateinit var mSafeCallback: SafeOneTimeExecuteAppFunctionCallback
 
     private val mServiceImpl =
         AppFunctionManagerServiceImpl(
@@ -81,29 +84,32 @@ class AppFunctionsLoggingTest {
             mock<DeviceSettingHelper>(),
         )
 
-    private val mRequestInternal =
-        ExecuteAppFunctionAidlRequest(
-            ExecuteAppFunctionRequest.Builder(TEST_TARGET_PACKAGE, TEST_FUNCTION_ID).build(),
-            UserHandle.CURRENT,
-            TEST_CALLING_PKG,
-            TEST_INITIAL_REQUEST_TIME_MILLIS,
-        )
-
     @Before
     fun setup() {
         whenever(mMockPackageManager.getPackageUid(eq(TEST_TARGET_PACKAGE), any<Int>()))
             .thenReturn(TEST_TARGET_UID)
-        mSafeCallback =
+    }
+
+    @RequiresFlagsDisabled(
+        FLAG_APP_FUNCTION_ACCESS_SERVICE_ENABLED,
+        FLAG_APP_FUNCTION_ACCESS_API_ENABLED,
+    )
+    @Test
+    fun testOnSuccess_logsSuccessResponse_withoutAttribution() {
+        val aidlRequest =
+            ExecuteAppFunctionAidlRequest(
+                ExecuteAppFunctionRequest.Builder(TEST_TARGET_PACKAGE, TEST_FUNCTION_ID).build(),
+                UserHandle.CURRENT,
+                TEST_CALLING_PKG,
+                TEST_INITIAL_REQUEST_TIME_MILLIS,
+            )
+        val safeCallback =
             mServiceImpl.initializeSafeExecuteAppFunctionCallback(
-                mRequestInternal,
+                aidlRequest,
                 mock<IExecuteAppFunctionCallback>(),
                 TEST_CALLING_UID,
             )
-        mSafeCallback.setExecutionStartTimeAfterBindMillis(TEST_EXECUTION_TIME_AFTER_BIND_MILLIS)
-    }
-
-    @Test
-    fun testOnSuccess_logsSuccessResponse() {
+        safeCallback.setExecutionStartTimeAfterBindMillis(TEST_EXECUTION_TIME_AFTER_BIND_MILLIS)
         val response =
             ExecuteAppFunctionResponse(
                 GenericDocument.Builder<GenericDocument.Builder<*>>("", "", "")
@@ -112,7 +118,7 @@ class AppFunctionsLoggingTest {
                     .build()
             )
 
-        mSafeCallback.onResult(response)
+        safeCallback.onResult(response)
 
         ExtendedMockito.verify {
             AppFunctionsStatsLog.write(
@@ -120,17 +126,38 @@ class AppFunctionsLoggingTest {
                 /* callerPackageUid= */ eq<Int>(TEST_CALLING_UID),
                 /* targetPackageUid= */ eq<Int>(TEST_TARGET_UID),
                 /* errorCode= */ eq<Int>(AppFunctionsLoggerWrapper.SUCCESS_RESPONSE_CODE),
-                /* requestSizeBytes= */ eq<Int>(mRequestInternal.clientRequest.requestDataSize),
+                /* requestSizeBytes= */ eq<Int>(aidlRequest.clientRequest.requestDataSize),
                 /* responseSizeBytes= */ eq<Int>(response.responseDataSize),
                 /* requestDurationMs= */ eq<Long>(TEST_EXPECTED_E2E_DURATION_MILLIS),
                 /* requestOverheadMs= */ eq<Long>(TEST_EXPECTED_OVERHEAD_DURATION_MILLIS),
+                /* interactionType= */ eq<Int>(
+                    AppFunctionsLoggerWrapper.INTERACTION_TYPE_UNSPECIFIED
+                ),
             )
         }
     }
 
+    @RequiresFlagsDisabled(
+        FLAG_APP_FUNCTION_ACCESS_SERVICE_ENABLED,
+        FLAG_APP_FUNCTION_ACCESS_API_ENABLED,
+    )
     @Test
-    fun testOnError_logsFailureResponse() {
-        mSafeCallback.onError(
+    fun testOnError_logsFailureResponse_withoutAttribution() {
+        val aidlRequest =
+            ExecuteAppFunctionAidlRequest(
+                ExecuteAppFunctionRequest.Builder(TEST_TARGET_PACKAGE, TEST_FUNCTION_ID).build(),
+                UserHandle.CURRENT,
+                TEST_CALLING_PKG,
+                TEST_INITIAL_REQUEST_TIME_MILLIS,
+            )
+        val safeCallback =
+            mServiceImpl.initializeSafeExecuteAppFunctionCallback(
+                aidlRequest,
+                mock<IExecuteAppFunctionCallback>(),
+                TEST_CALLING_UID,
+            )
+        safeCallback.setExecutionStartTimeAfterBindMillis(TEST_EXECUTION_TIME_AFTER_BIND_MILLIS)
+        safeCallback.onError(
             AppFunctionException(AppFunctionException.ERROR_DENIED, "Error: permission denied")
         )
 
@@ -140,10 +167,174 @@ class AppFunctionsLoggingTest {
                 /* callerPackageUid= */ eq<Int>(TEST_CALLING_UID),
                 /* targetPackageUid= */ eq<Int>(TEST_TARGET_UID),
                 /* errorCode= */ eq<Int>(AppFunctionException.ERROR_DENIED),
-                /* requestSizeBytes= */ eq<Int>(mRequestInternal.clientRequest.requestDataSize),
+                /* requestSizeBytes= */ eq<Int>(aidlRequest.clientRequest.requestDataSize),
                 /* responseSizeBytes= */ eq<Int>(0),
                 /* requestDurationMs= */ eq<Long>(TEST_EXPECTED_E2E_DURATION_MILLIS),
                 /* requestOverheadMs= */ eq<Long>(TEST_EXPECTED_OVERHEAD_DURATION_MILLIS),
+                /* interactionType= */ eq<Int>(
+                    AppFunctionsLoggerWrapper.INTERACTION_TYPE_UNSPECIFIED
+                ),
+            )
+        }
+    }
+
+    @RequiresFlagsEnabled(
+        FLAG_APP_FUNCTION_ACCESS_SERVICE_ENABLED,
+        FLAG_APP_FUNCTION_ACCESS_API_ENABLED,
+    )
+    @Test
+    fun testOnSuccess_logsSuccessResponse_withUsrQueryAttribution() {
+        val aidlRequest =
+            ExecuteAppFunctionAidlRequest(
+                ExecuteAppFunctionRequest.Builder(TEST_TARGET_PACKAGE, TEST_FUNCTION_ID)
+                    .setAttribution(
+                        AppFunctionAttribution.Builder(
+                                AppFunctionAttribution.INTERACTION_TYPE_USER_QUERY
+                            )
+                            .build()
+                    )
+                    .build(),
+                UserHandle.CURRENT,
+                TEST_CALLING_PKG,
+                TEST_INITIAL_REQUEST_TIME_MILLIS,
+            )
+        val safeCallback =
+            mServiceImpl.initializeSafeExecuteAppFunctionCallback(
+                aidlRequest,
+                mock<IExecuteAppFunctionCallback>(),
+                TEST_CALLING_UID,
+            )
+        safeCallback.setExecutionStartTimeAfterBindMillis(TEST_EXECUTION_TIME_AFTER_BIND_MILLIS)
+        val response =
+            ExecuteAppFunctionResponse(
+                GenericDocument.Builder<GenericDocument.Builder<*>>("", "", "")
+                    .setPropertyLong("longProperty", 42L)
+                    .setPropertyString("stringProperty", "text")
+                    .build()
+            )
+
+        safeCallback.onResult(response)
+
+        ExtendedMockito.verify {
+            AppFunctionsStatsLog.write(
+                /* atomId= */ eq<Int>(AppFunctionsStatsLog.APP_FUNCTIONS_REQUEST_REPORTED),
+                /* callerPackageUid= */ eq<Int>(TEST_CALLING_UID),
+                /* targetPackageUid= */ eq<Int>(TEST_TARGET_UID),
+                /* errorCode= */ eq<Int>(AppFunctionsLoggerWrapper.SUCCESS_RESPONSE_CODE),
+                /* requestSizeBytes= */ eq<Int>(aidlRequest.clientRequest.requestDataSize),
+                /* responseSizeBytes= */ eq<Int>(response.responseDataSize),
+                /* requestDurationMs= */ eq<Long>(TEST_EXPECTED_E2E_DURATION_MILLIS),
+                /* requestOverheadMs= */ eq<Long>(TEST_EXPECTED_OVERHEAD_DURATION_MILLIS),
+                /* interactionType= */ eq<Int>(
+                    AppFunctionsLoggerWrapper.INTERACTION_TYPE_USER_QUERY
+                ),
+            )
+        }
+    }
+
+    @RequiresFlagsEnabled(
+        FLAG_APP_FUNCTION_ACCESS_SERVICE_ENABLED,
+        FLAG_APP_FUNCTION_ACCESS_API_ENABLED,
+    )
+    @Test
+    fun testOnSuccess_logsSuccessResponse_withUserScheduledAttribution() {
+        val aidlRequest =
+            ExecuteAppFunctionAidlRequest(
+                ExecuteAppFunctionRequest.Builder(TEST_TARGET_PACKAGE, TEST_FUNCTION_ID)
+                    .setAttribution(
+                        AppFunctionAttribution.Builder(
+                                AppFunctionAttribution.INTERACTION_TYPE_USER_SCHEDULED
+                            )
+                            .build()
+                    )
+                    .build(),
+                UserHandle.CURRENT,
+                TEST_CALLING_PKG,
+                TEST_INITIAL_REQUEST_TIME_MILLIS,
+            )
+        val safeCallback =
+            mServiceImpl.initializeSafeExecuteAppFunctionCallback(
+                aidlRequest,
+                mock<IExecuteAppFunctionCallback>(),
+                TEST_CALLING_UID,
+            )
+        safeCallback.setExecutionStartTimeAfterBindMillis(TEST_EXECUTION_TIME_AFTER_BIND_MILLIS)
+        val response =
+            ExecuteAppFunctionResponse(
+                GenericDocument.Builder<GenericDocument.Builder<*>>("", "", "")
+                    .setPropertyLong("longProperty", 42L)
+                    .setPropertyString("stringProperty", "text")
+                    .build()
+            )
+
+        safeCallback.onResult(response)
+
+        ExtendedMockito.verify {
+            AppFunctionsStatsLog.write(
+                /* atomId= */ eq<Int>(AppFunctionsStatsLog.APP_FUNCTIONS_REQUEST_REPORTED),
+                /* callerPackageUid= */ eq<Int>(TEST_CALLING_UID),
+                /* targetPackageUid= */ eq<Int>(TEST_TARGET_UID),
+                /* errorCode= */ eq<Int>(AppFunctionsLoggerWrapper.SUCCESS_RESPONSE_CODE),
+                /* requestSizeBytes= */ eq<Int>(aidlRequest.clientRequest.requestDataSize),
+                /* responseSizeBytes= */ eq<Int>(response.responseDataSize),
+                /* requestDurationMs= */ eq<Long>(TEST_EXPECTED_E2E_DURATION_MILLIS),
+                /* requestOverheadMs= */ eq<Long>(TEST_EXPECTED_OVERHEAD_DURATION_MILLIS),
+                /* interactionType= */ eq<Int>(
+                    AppFunctionsLoggerWrapper.INTERACTION_TYPE_USER_SCHEDULED
+                ),
+            )
+        }
+    }
+
+    @RequiresFlagsEnabled(
+        FLAG_APP_FUNCTION_ACCESS_SERVICE_ENABLED,
+        FLAG_APP_FUNCTION_ACCESS_API_ENABLED,
+    )
+    @Test
+    fun testOnSuccess_logsSuccessResponse_withCustomAttribution() {
+        val aidlRequest =
+            ExecuteAppFunctionAidlRequest(
+                ExecuteAppFunctionRequest.Builder(TEST_TARGET_PACKAGE, TEST_FUNCTION_ID)
+                    .setAttribution(
+                        AppFunctionAttribution.Builder(
+                                AppFunctionAttribution.INTERACTION_TYPE_OTHER
+                            )
+                            .setCustomInteractionType("TEST_INTERACTION_TYPE")
+                            .build()
+                    )
+                    .build(),
+                UserHandle.CURRENT,
+                TEST_CALLING_PKG,
+                TEST_INITIAL_REQUEST_TIME_MILLIS,
+            )
+        val safeCallback =
+            mServiceImpl.initializeSafeExecuteAppFunctionCallback(
+                aidlRequest,
+                mock<IExecuteAppFunctionCallback>(),
+                TEST_CALLING_UID,
+            )
+        safeCallback.setExecutionStartTimeAfterBindMillis(TEST_EXECUTION_TIME_AFTER_BIND_MILLIS)
+        val response =
+            ExecuteAppFunctionResponse(
+                GenericDocument.Builder<GenericDocument.Builder<*>>("", "", "")
+                    .setPropertyLong("longProperty", 42L)
+                    .setPropertyString("stringProperty", "text")
+                    .build()
+            )
+
+        safeCallback.onResult(response)
+
+        ExtendedMockito.verify {
+            AppFunctionsStatsLog.write(
+                /* atomId= */ eq<Int>(AppFunctionsStatsLog.APP_FUNCTIONS_REQUEST_REPORTED),
+                /* callerPackageUid= */ eq<Int>(TEST_CALLING_UID),
+                /* targetPackageUid= */ eq<Int>(TEST_TARGET_UID),
+                /* errorCode= */ eq<Int>(AppFunctionsLoggerWrapper.SUCCESS_RESPONSE_CODE),
+                /* requestSizeBytes= */ eq<Int>(aidlRequest.clientRequest.requestDataSize),
+                /* responseSizeBytes= */ eq<Int>(response.responseDataSize),
+                /* requestDurationMs= */ eq<Long>(TEST_EXPECTED_E2E_DURATION_MILLIS),
+                /* requestOverheadMs= */ eq<Long>(TEST_EXPECTED_OVERHEAD_DURATION_MILLIS),
+                /* interactionType= */ eq<Int>(AppFunctionsLoggerWrapper.INTERACTION_TYPE_OTHER),
             )
         }
     }
