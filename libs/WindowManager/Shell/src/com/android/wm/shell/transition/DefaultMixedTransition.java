@@ -453,7 +453,7 @@ class DefaultMixedTransition extends DefaultMixedHandler.MixedTransition {
         return true;
     }
 
-    private static @Nullable TransitionInfo.Change getChangeForBubblingTask(
+    static @Nullable TransitionInfo.Change getChangeForBubblingTask(
             @NonNull TransitionInfo info, BubbleTransitions bubbleTransitions) {
         for (int i = 0; i < info.getChanges().size(); i++) {
             final TransitionInfo.Change chg = info.getChanges().get(i);
