@@ -120,6 +120,10 @@ public class AutoclickTypePanelTest {
         mPauseButton = contentView.findViewById(R.id.accessibility_autoclick_pause_layout);
         mPositionButton = contentView.findViewById(R.id.accessibility_autoclick_position_layout);
         mLongPressButton = contentView.findViewById(R.id.accessibility_autoclick_long_press_layout);
+
+        // Set panel to default bottom-right corner.
+        mAutoclickTypePanel.show();
+        mAutoclickTypePanel.resetPanelPositionForTesting();
     }
 
     @Test
