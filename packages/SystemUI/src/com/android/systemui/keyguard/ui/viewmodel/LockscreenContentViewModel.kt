@@ -36,6 +36,7 @@ import com.android.systemui.plugins.clocks.ClockController
 import com.android.systemui.shade.domain.interactor.ShadeModeInteractor
 import com.android.systemui.statusbar.notification.domain.interactor.ActiveNotificationsInteractor
 import com.android.systemui.unfold.domain.interactor.UnfoldTransitionInteractor
+import com.android.systemui.wallpapers.domain.interactor.WallpaperFocalAreaInteractor
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
@@ -61,6 +62,7 @@ constructor(
     keyguardSmartspaceViewModel: KeyguardSmartspaceViewModel,
     activeNotificationsInteractor: ActiveNotificationsInteractor,
     @Assisted private val keyguardTransitionAnimationCallback: KeyguardTransitionAnimationCallback,
+    private val wallpaperFocalAreaInteractor: WallpaperFocalAreaInteractor,
 ) : ExclusiveActivatable() {
 
     private val hydrator = Hydrator("LockscreenContentViewModel.hydrator")
@@ -144,8 +146,8 @@ constructor(
                     initialValue = activeNotificationsInteractor.areAnyNotificationsPresentValue,
                 )
 
-            override val isAmbientIndicationVisible: Boolean
-                get() = !authController.isUdfpsSupported
+            override val isUdfpsSupported: Boolean
+                get() = authController.isUdfpsSupported
 
             override val unfoldTranslations: UnfoldTranslations =
                 object : UnfoldTranslations {
@@ -182,6 +184,22 @@ constructor(
                 keyguardTransitionAnimationCallbackDelegator.delegate = null
             }
         }
+    }
+
+    fun setMediaPlayerBottom(bottom: Float) {
+        wallpaperFocalAreaInteractor.setMediaPlayerBottom(bottom)
+    }
+
+    fun setShortcutTop(top: Float) {
+        wallpaperFocalAreaInteractor.setShortcutTop(top)
+    }
+
+    fun setSmallClockBottom(bottom: Float) {
+        wallpaperFocalAreaInteractor.setSmallClockBottom(bottom)
+    }
+
+    fun setSmartspaceCardBottom(bottom: Float) {
+        wallpaperFocalAreaInteractor.setSmartspaceCardBottom(bottom)
     }
 
     @AssistedFactory

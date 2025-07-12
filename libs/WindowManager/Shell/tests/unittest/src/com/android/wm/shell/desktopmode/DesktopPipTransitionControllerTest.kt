@@ -36,6 +36,7 @@ import com.android.wm.shell.ShellTestCase
 import com.android.wm.shell.common.pip.PipDesktopState
 import com.android.wm.shell.desktopmode.DesktopTestHelpers.createFreeformTask
 import com.android.wm.shell.desktopmode.DesktopTestHelpers.createFullscreenTask
+import com.android.wm.shell.desktopmode.data.DesktopRepository
 import com.google.common.truth.Truth.assertThat
 import org.junit.Before
 import org.junit.Test

@@ -42,7 +42,6 @@ import com.android.internal.annotations.VisibleForTesting
 import com.android.wm.shell.R
 import com.android.wm.shell.common.DisplayController
 import com.android.wm.shell.common.DisplayController.OnDisplaysChangedListener
-import com.android.wm.shell.shared.annotations.ShellBackgroundThread
 import com.android.wm.shell.shared.annotations.ShellMainThread
 import com.android.wm.shell.windowdecor.WindowDecoration.SurfaceControlViewHostFactory
 import com.android.wm.shell.windowdecor.common.WindowDecorTaskResourceLoader
@@ -54,7 +53,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 /**
  * Creates and updates a veil that covers task contents on resize.
@@ -64,7 +62,7 @@ public class ResizeVeil @JvmOverloads constructor(
         private val displayController: DisplayController,
         private val taskResourceLoader: WindowDecorTaskResourceLoader,
         @ShellMainThread private val mainDispatcher: CoroutineDispatcher,
-        @ShellBackgroundThread private val bgScope: CoroutineScope,
+        @ShellMainThread private val mainScope: CoroutineScope,
         private var parentSurface: SurfaceControl,
         private val surfaceControlTransactionSupplier: Supplier<SurfaceControl.Transaction>,
         private val surfaceControlBuilderFactory: SurfaceControlBuilderFactory =
@@ -170,13 +168,10 @@ public class ResizeVeil @JvmOverloads constructor(
                 iconSurface, null /* hostInputToken */)
         viewHost = surfaceControlViewHostFactory.create(context, display, wwm, "ResizeVeil")
         viewHost?.setView(root, lp)
-        loadAppInfoJob = bgScope.launch {
+        loadAppInfoJob = mainScope.launch {
             if (!isActive) return@launch
             val icon = taskResourceLoader.getVeilIcon(taskInfo)
-            withContext(mainDispatcher) {
-                if (!isActive) return@withContext
-                iconView.setImageBitmap(icon)
-            }
+            iconView.setImageBitmap(icon)
         }
         Trace.endSection()
     }

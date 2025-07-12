@@ -97,7 +97,6 @@ import org.mockito.kotlin.times
 @RunWith(JUnitParamsRunner::class)
 @EnableFlags(
     com.android.hardware.input.Flags.FLAG_KEYBOARD_A11Y_SHORTCUT_CONTROL,
-    com.android.hardware.input.Flags.FLAG_KEYBOARD_A11Y_MOUSE_KEYS,
     com.android.hardware.input.Flags.FLAG_ENABLE_TALKBACK_AND_MAGNIFIER_KEY_GESTURES,
     com.android.hardware.input.Flags.FLAG_ENABLE_VOICE_ACCESS_KEY_GESTURES,
     com.android.window.flags.Flags.FLAG_ENABLE_MOVE_TO_NEXT_DISPLAY_SHORTCUT,

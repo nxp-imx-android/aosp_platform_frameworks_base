@@ -39,6 +39,7 @@ import com.android.internal.policy.DesktopModeCompatUtils
 import com.android.wm.shell.ShellTaskOrganizer
 import com.android.wm.shell.common.DisplayController
 import com.android.wm.shell.common.DisplayLayout
+import com.android.wm.shell.desktopmode.data.DesktopRepository
 import kotlin.math.ceil
 
 val DESKTOP_MODE_INITIAL_BOUNDS_SCALE: Float =
@@ -66,7 +67,7 @@ fun calculateDefaultDesktopTaskBounds(displayLayout: DisplayLayout): Rect {
 @JvmOverloads
 fun calculateInitialBounds(
     displayLayout: DisplayLayout,
-    taskInfo: RunningTaskInfo,
+    taskInfo: TaskInfo,
     scale: Float = DESKTOP_MODE_INITIAL_BOUNDS_SCALE,
     captionInsets: Int = 0,
     requestedScreenOrientation: Int? = null,
@@ -78,7 +79,7 @@ fun calculateInitialBounds(
     // Instead default to the desired initial bounds.
     val stableBounds = Rect()
     displayLayout.getStableBoundsForDesktopMode(stableBounds)
-    if (hasFullscreenOverride(taskInfo)) {
+    if (taskInfo.hasFullscreenOverride()) {
         // If the activity has a fullscreen override applied, it should be treated as
         // resizeable and match the device orientation. Thus the ideal size can be
         // applied.
@@ -197,7 +198,7 @@ fun calculateMaximizeBounds(displayLayout: DisplayLayout, taskInfo: RunningTaskI
  * ratio.
  */
 fun maximizeSizeGivenAspectRatio(
-    taskInfo: RunningTaskInfo,
+    taskInfo: TaskInfo,
     targetArea: Size,
     aspectRatio: Float,
     captionInsets: Int = 0,
@@ -233,7 +234,7 @@ fun maximizeSizeGivenAspectRatio(
 }
 
 /** Calculates the aspect ratio of an activity from its fullscreen bounds. */
-fun calculateAspectRatio(taskInfo: RunningTaskInfo): Float {
+fun calculateAspectRatio(taskInfo: TaskInfo): Float {
     if (taskInfo.appCompatTaskInfo.topNonResizableActivityAspectRatio > 0) {
         return taskInfo.appCompatTaskInfo.topNonResizableActivityAspectRatio
     }
@@ -286,7 +287,7 @@ fun isTaskBoundsEqual(taskBounds: Rect, stableBounds: Rect): Boolean {
 fun getInheritedExistingTaskBounds(
     taskRepository: DesktopRepository,
     shellTaskOrganizer: ShellTaskOrganizer,
-    task: RunningTaskInfo,
+    task: TaskInfo,
     deskId: Int,
 ): Rect? {
     if (!DesktopModeFlags.INHERIT_TASK_BOUNDS_FOR_TRAMPOLINE_TASK_LAUNCHES.isTrue) return null
@@ -392,7 +393,6 @@ private fun TaskInfo.hasPortraitTopActivity(screenOrientation: Int?): Boolean {
     }
 }
 
-private fun hasFullscreenOverride(taskInfo: RunningTaskInfo): Boolean {
-    return taskInfo.appCompatTaskInfo.isUserFullscreenOverrideEnabled ||
-        taskInfo.appCompatTaskInfo.isSystemFullscreenOverrideEnabled
-}
+private fun TaskInfo.hasFullscreenOverride(): Boolean =
+    appCompatTaskInfo.isUserFullscreenOverrideEnabled ||
+        appCompatTaskInfo.isSystemFullscreenOverrideEnabled

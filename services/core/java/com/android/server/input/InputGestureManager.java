@@ -29,7 +29,6 @@ import android.annotation.UserIdInt;
 import android.content.Context;
 import android.hardware.input.InputGestureData;
 import android.hardware.input.InputManager;
-import android.hardware.input.InputSettings;
 import android.hardware.input.KeyGestureEvent;
 import android.os.SystemProperties;
 import android.util.IndentingPrintWriter;
@@ -278,15 +277,13 @@ final class InputGestureManager {
                             KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_BOUNCE_KEYS,
                             /* allowCaptureByFocusedWindow = */true
                     ));
-            if (InputSettings.isAccessibilityMouseKeysFeatureFlagEnabled()) {
-                systemShortcuts.add(
-                        createKeyGesture(
-                                KeyEvent.KEYCODE_4,
-                                KeyEvent.META_META_ON | KeyEvent.META_ALT_ON,
-                                KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_MOUSE_KEYS,
-                                /* allowCaptureByFocusedWindow = */true
-                        ));
-            }
+            systemShortcuts.add(
+                    createKeyGesture(
+                            KeyEvent.KEYCODE_4,
+                            KeyEvent.META_META_ON | KeyEvent.META_ALT_ON,
+                            KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_MOUSE_KEYS,
+                            /* allowCaptureByFocusedWindow = */true
+                    ));
             systemShortcuts.add(
                     createKeyGesture(
                             KeyEvent.KEYCODE_5,

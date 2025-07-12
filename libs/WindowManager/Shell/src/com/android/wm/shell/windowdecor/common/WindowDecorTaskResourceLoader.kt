@@ -22,6 +22,7 @@ import android.content.pm.ActivityInfo
 import android.content.pm.PackageManager
 import android.content.pm.PackageManager.NameNotFoundException
 import android.graphics.Bitmap
+import android.os.Handler
 import android.os.LocaleList
 import android.os.UserHandle
 import android.util.Slog
@@ -33,19 +34,29 @@ import com.android.launcher3.icons.IconProvider
 import com.android.wm.shell.R
 import com.android.wm.shell.common.UserProfileContexts
 import com.android.wm.shell.shared.annotations.ShellBackgroundThread
+import com.android.wm.shell.shared.annotations.ShellMainThread
 import com.android.wm.shell.sysui.ShellCommandHandler
 import com.android.wm.shell.sysui.ShellController
 import com.android.wm.shell.sysui.ShellInit
 import com.android.wm.shell.sysui.UserChangeListener
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.io.PrintWriter
-import java.util.concurrent.ConcurrentHashMap
+import kotlin.coroutines.suspendCoroutine
 
 /**
  * A utility and cache for window decoration UI resources.
  */
+@ShellMainThread
 class WindowDecorTaskResourceLoader(
     shellInit: ShellInit,
     private val shellController: ShellController,
+    @ShellMainThread private val mainHandler: Handler,
+    @ShellMainThread private val mainScope: CoroutineScope,
+    @ShellMainThread private val mainDispatcher: CoroutineDispatcher,
+    @ShellBackgroundThread private val bgDispatcher: CoroutineDispatcher,
     private val shellCommandHandler: ShellCommandHandler,
     private val userProfilesContexts: UserProfileContexts,
     private val iconProvider: IconProvider,
@@ -56,11 +67,19 @@ class WindowDecorTaskResourceLoader(
         context: Context,
         shellInit: ShellInit,
         shellController: ShellController,
+        mainHandler: Handler,
+        mainScope: CoroutineScope,
+        mainDispatcher: CoroutineDispatcher,
+        bgDispatcher: CoroutineDispatcher,
         shellCommandHandler: ShellCommandHandler,
         userProfileContexts: UserProfileContexts,
     ) : this(
         shellInit,
         shellController,
+        mainHandler,
+        mainScope,
+        mainDispatcher,
+        bgDispatcher,
         shellCommandHandler,
         userProfileContexts,
         IconProvider(context),
@@ -74,7 +93,7 @@ class WindowDecorTaskResourceLoader(
      * used in the header and menu.
      */
     @VisibleForTesting
-    val taskToResourceCache = ConcurrentHashMap<Int, AppResources>()
+    val taskToResourceCache = HashMap<Int, AppResources>()
     /**
      * Keeps track of existing tasks with a window decoration. Useful to verify that requests to
      * get resources occur within the lifecycle of a window decoration, otherwise it'd be possible
@@ -88,7 +107,7 @@ class WindowDecorTaskResourceLoader(
      * cached in |taskToResourceCache|.
      */
     @VisibleForTesting
-    val localeListOnCache = ConcurrentHashMap<Int, LocaleList>()
+    val localeListOnCache = HashMap<Int, LocaleList>()
 
     init {
         shellInit.addInitCallback(this::onInit, this)
@@ -104,54 +123,70 @@ class WindowDecorTaskResourceLoader(
         })
     }
 
-    /** Returns the user readable name for this task. */
-    @ShellBackgroundThread
-    fun getName(taskInfo: RunningTaskInfo): CharSequence {
+    /**
+     *  Suspending function that returns the user readable name and icon for use by the app header
+     *  and menus for this task.
+     */
+    suspend fun getNameAndHeaderIcon(taskInfo: RunningTaskInfo): Pair<CharSequence, Bitmap> =
+        withContext(mainDispatcher) {
+            suspendCoroutine { cont ->
+                getNameAndHeaderIcon(taskInfo) { name, headerIcon ->
+                    cont.resumeWith(Result.success(Pair(name, headerIcon)))
+                }
+            }
+        }
+
+    /**
+     * Non-suspending function that returns the user readable name and icon for use by the app
+     * header and menus for this task.
+     */
+    fun getNameAndHeaderIcon(taskInfo: RunningTaskInfo, callback: (CharSequence, Bitmap) -> Unit) {
+        assertMainThread()
         checkWindowDecorExists(taskInfo)
         val cachedResources = taskToResourceCache[taskInfo.taskId]
         val localeListActiveOnCacheTime = localeListOnCache[taskInfo.taskId]
         if (cachedResources != null &&
-            taskInfo.getConfiguration().getLocales().equals(localeListActiveOnCacheTime)) {
-            return cachedResources.appName
+            taskInfo.getConfiguration().getLocales().equals(localeListActiveOnCacheTime)
+        ) {
+            callback(cachedResources.appName, cachedResources.appIcon)
+            return
         }
-        val resources = loadAppResources(taskInfo)
-        localeListOnCache[taskInfo.taskId] = taskInfo.getConfiguration().getLocales()
-        return resources.appName
-    }
 
-    /** Returns the icon for use by the app header and menus for this task. */
-    @ShellBackgroundThread
-    fun getHeaderIcon(taskInfo: RunningTaskInfo): Bitmap {
-        checkWindowDecorExists(taskInfo)
-        val cachedResources = taskToResourceCache[taskInfo.taskId]
-        if (cachedResources != null) {
-            return cachedResources.appIcon
+        mainScope.launch {
+            val resources = loadAppResources(taskInfo)
+            if (resources.shouldCacheResult) {
+                taskToResourceCache[taskInfo.taskId] = resources
+            }
+            localeListOnCache[taskInfo.taskId] = taskInfo.getConfiguration().getLocales()
+            callback(resources.appName, resources.appIcon)
         }
-        val resources = loadAppResources(taskInfo)
-        localeListOnCache[taskInfo.taskId] = taskInfo.getConfiguration().getLocales()
-        return resources.appIcon
     }
 
     /** Returns the icon for use by the resize veil for this task. */
-    @ShellBackgroundThread
-    fun getVeilIcon(taskInfo: RunningTaskInfo): Bitmap {
-        checkWindowDecorExists(taskInfo)
-        val cachedResources = taskToResourceCache[taskInfo.taskId]
-        if (cachedResources != null) {
-            return cachedResources.veilIcon
-        }
-        val resources = loadAppResources(taskInfo)
-        localeListOnCache[taskInfo.taskId] = taskInfo.getConfiguration().getLocales()
-        return resources.veilIcon
+    suspend fun getVeilIcon(taskInfo: RunningTaskInfo): Bitmap =
+        withContext(mainDispatcher) {
+            checkWindowDecorExists(taskInfo)
+            val cachedResources = taskToResourceCache[taskInfo.taskId]
+            if (cachedResources != null) {
+                return@withContext cachedResources.veilIcon
+            }
+            val resources = loadAppResources(taskInfo)
+            if (resources.shouldCacheResult) {
+                taskToResourceCache[taskInfo.taskId] = resources
+            }
+            localeListOnCache[taskInfo.taskId] = taskInfo.getConfiguration().getLocales()
+            return@withContext resources.veilIcon
     }
 
     /** Called when a window decoration for this task is created. */
     fun onWindowDecorCreated(taskInfo: RunningTaskInfo) {
+        assertMainThread()
         existingTasks.add(taskInfo.taskId)
     }
 
     /** Called when a window decoration for this task is closed. */
     fun onWindowDecorClosed(taskInfo: RunningTaskInfo) {
+        assertMainThread()
         existingTasks.remove(taskInfo.taskId)
         taskToResourceCache.remove(taskInfo.taskId)
         localeListOnCache.remove(taskInfo.taskId)
@@ -163,45 +198,63 @@ class WindowDecorTaskResourceLoader(
         }
     }
 
-    private fun loadAppResources(taskInfo: RunningTaskInfo): AppResources {
-        Trace.beginSection("$TAG#loadAppResources")
-        try {
-            val pm = userProfilesContexts.getOrCreate(taskInfo.userId).packageManager
-            val activityInfo = getActivityInfo(taskInfo, pm)
-            val appName = pm.getApplicationLabel(activityInfo.applicationInfo)
-            val appIconDrawable = iconProvider.getIcon(activityInfo)
-            val badgedAppIconDrawable = pm.getUserBadgedIcon(appIconDrawable, taskInfo.userHandle())
-            val appIcon = headerIconFactory.createIconBitmap(badgedAppIconDrawable, /* scale= */ 1f)
-            val veilIcon = veilIconFactory.createScaledBitmap(appIconDrawable, MODE_DEFAULT)
-            val appResources =
-                AppResources(appName = appName, appIcon = appIcon, veilIcon = veilIcon)
-            taskToResourceCache[taskInfo.taskId] = appResources
-            return appResources
-        } catch (e: NameNotFoundException) {
-            Slog.e(TAG, "Failed to get app resources")
-            val pm =
-                userProfilesContexts
-                .getOrCreate(taskInfo.userId)
-                .packageManager
-            val defaultIconDrawable = pm.getDefaultActivityIcon()
-            val appIcon = headerIconFactory.createIconBitmap(defaultIconDrawable, /* scale= */ 1f)
-            val veilIcon = veilIconFactory.createScaledBitmap(defaultIconDrawable, MODE_DEFAULT)
-            // Do not cache the result when loading failed.
-            return AppResources(appName = "", appIcon = appIcon, veilIcon = veilIcon)
-        } finally {
-            Trace.endSection()
-        }
+    private suspend fun loadAppResources(taskInfo: RunningTaskInfo): AppResources =
+        withContext(bgDispatcher) {
+            Trace.beginSection("$TAG#loadAppResources")
+            try {
+                val pm = userProfilesContexts.getOrCreate(taskInfo.userId).packageManager
+                val activityInfo = getActivityInfo(taskInfo, pm)
+                val appName = pm.getApplicationLabel(activityInfo.applicationInfo)
+                val appIconDrawable = iconProvider.getIcon(activityInfo)
+                val badgedAppIconDrawable = pm.getUserBadgedIcon(appIconDrawable, taskInfo.userHandle())
+                val appIcon = headerIconFactory.createIconBitmap(badgedAppIconDrawable, /* scale= */ 1f)
+                val veilIcon = veilIconFactory.createScaledBitmap(appIconDrawable, MODE_DEFAULT)
+                return@withContext AppResources(
+                    appName = appName,
+                    appIcon = appIcon,
+                    veilIcon = veilIcon,
+                    shouldCacheResult = true
+                )
+            } catch (e: NameNotFoundException) {
+                Slog.e(TAG, "Failed to get app resources")
+                val pm =
+                    userProfilesContexts
+                        .getOrCreate(taskInfo.userId)
+                        .packageManager
+                val defaultIconDrawable = pm.getDefaultActivityIcon()
+                val appIcon =
+                    headerIconFactory.createIconBitmap(defaultIconDrawable, /* scale= */ 1f)
+                val veilIcon = veilIconFactory.createScaledBitmap(defaultIconDrawable, MODE_DEFAULT)
+                // Do not cache the result when loading failed.
+                return@withContext AppResources(
+                    appName = "",
+                    appIcon = appIcon,
+                    veilIcon = veilIcon,
+                    shouldCacheResult = false
+                )
+            } finally {
+                Trace.endSection()
+            }
     }
 
     private fun getActivityInfo(taskInfo: RunningTaskInfo, pm: PackageManager): ActivityInfo {
         return pm.getActivityInfo(taskInfo.component(), /* flags= */ 0)
     }
 
+    private fun assertMainThread() {
+        check(mainHandler.looper.isCurrentThread) { "Method must be called on $mainHandler" }
+    }
+
     private fun RunningTaskInfo.component() = baseIntent.component!!
 
     private fun RunningTaskInfo.userHandle() = UserHandle.of(userId)
 
-    data class AppResources(val appName: CharSequence, val appIcon: Bitmap, val veilIcon: Bitmap)
+    data class AppResources(
+        val appName: CharSequence,
+        val appIcon: Bitmap,
+        val veilIcon: Bitmap,
+        val shouldCacheResult: Boolean
+    )
 
     private fun dump(pw: PrintWriter, prefix: String) {
         val innerPrefix = "$prefix  "

@@ -52,6 +52,7 @@ android_library {
     ],
     static_libs: [
         "com.android.systemui.dagger-api",
+        "com.android.systemui.log.table-api",
         "BiometricsSharedLib",
         "PlatformAnimationLib",
         "PluginCoreLib",

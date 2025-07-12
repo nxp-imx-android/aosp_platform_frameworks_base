@@ -23,6 +23,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.ProvidableCompositionLocal
 import androidx.compose.runtime.State
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.platform.LocalContext
@@ -52,7 +53,11 @@ fun ScreenDecorProvider(windowInsets: () -> WindowInsets?, content: @Composable 
     val screenCornerRadiusPx =
         remember(context.display.uniqueId) { ScreenDecorationsUtils.getWindowCornerRadius(context) }
     val screenCornerRadiusDp = with(LocalDensity.current) { screenCornerRadiusPx.toDp() }
-    val cutout = remember(windowInsets, context) { { windowInsets().toCutout(context) } }
+    val cutout =
+        remember(windowInsets, context) {
+            val cutoutState = derivedStateOf { windowInsets().toCutout(context) }
+            ({ cutoutState.value })
+        }
 
     CompositionLocalProvider(
         LocalScreenCornerRadius provides screenCornerRadiusDp,

@@ -25,6 +25,7 @@ import com.android.systemui.statusbar.notification.collection.provider.SectionSt
 import com.android.systemui.statusbar.notification.promoted.AutomaticPromotionCoordinator
 import com.android.systemui.statusbar.notification.shared.NotificationBundleUi
 import com.android.systemui.statusbar.notification.shared.NotificationMinimalism
+import com.android.systemui.statusbar.notification.shared.NotificationSummarizationOnboardingUi
 import javax.inject.Inject
 
 /**
@@ -67,6 +68,7 @@ constructor(
     dismissibilityCoordinator: DismissibilityCoordinator,
     statsLoggerCoordinator: NotificationStatsLoggerCoordinator,
     bundleCoordinator: BundleCoordinator,
+    summarizationCoordinator: SummarizationCoordinator,
     automaticPromotionCoordinator: AutomaticPromotionCoordinator,
 ) : NotifCoordinators {
 
@@ -109,6 +111,9 @@ constructor(
         mCoordinators.add(automaticPromotionCoordinator)
         if (NotificationBundleUi.isEnabled) {
             mCoordinators.add(bundleCoordinator)
+        }
+        if (NotificationSummarizationOnboardingUi.isEnabled) {
+            mCoordinators.add(summarizationCoordinator)
         }
         mCoordinators.add(statsLoggerCoordinator)
         // Manually add Ordered Sections

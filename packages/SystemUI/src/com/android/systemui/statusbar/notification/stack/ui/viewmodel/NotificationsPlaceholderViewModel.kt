@@ -42,6 +42,7 @@ import com.android.systemui.statusbar.notification.stack.shared.model.ShadeScrim
 import com.android.systemui.statusbar.notification.stack.shared.model.ShadeScrollState
 import com.android.systemui.util.kotlin.ActivatableFlowDumper
 import com.android.systemui.util.kotlin.ActivatableFlowDumperImpl
+import com.android.systemui.wallpapers.domain.interactor.WallpaperFocalAreaInteractor
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import java.util.function.Consumer
@@ -67,6 +68,7 @@ constructor(
     featureFlags: FeatureFlagsClassic,
     dumpManager: DumpManager,
     @Main private val mainContext: CoroutineContext,
+    private val wallpaperFocalAreaInteractor: WallpaperFocalAreaInteractor,
 ) :
     ExclusiveActivatable(),
     ActivatableFlowDumper by ActivatableFlowDumperImpl(
@@ -195,6 +197,10 @@ constructor(
     /** Set a consumer for accessibility events to be handled by the placeholder. */
     fun setAccessibilityScrollEventConsumer(consumer: Consumer<AccessibilityScrollEvent>?) {
         interactor.setAccessibilityScrollEventConsumer(consumer)
+    }
+
+    fun onLockScreenStackBottomChanged(bottom: Float) {
+        wallpaperFocalAreaInteractor.setNotificationStackAbsoluteBottom(bottom)
     }
 
     private fun getNotificationsShadeContentKey(shadeMode: ShadeMode): ContentKey {

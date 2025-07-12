@@ -20,8 +20,8 @@ import android.platform.test.annotations.Presubmit
 import androidx.test.filters.RequiresDevice
 import android.platform.test.annotations.RequiresFlagsDisabled
 import android.tools.flicker.junit.FlickerParametersRunnerFactory
-import android.tools.flicker.legacy.FlickerBuilder
-import android.tools.flicker.legacy.LegacyFlickerTest
+import android.tools.flicker.FlickerBuilder
+import android.tools.flicker.FlickerTest
 import android.tools.traces.parsers.toFlickerComponent
 import com.android.server.wm.flicker.helpers.BottomHalfPipAppHelper
 import com.android.server.wm.flicker.testapp.ActivityOptions
@@ -53,7 +53,7 @@ import org.junit.runners.Parameterized
  * ```
  *     1. All assertions are inherited from [EnterPipTest]
  *     2. Part of the test setup occurs automatically via
- *        [android.tools.flicker.legacy.runner.TransitionRunner],
+ *        [android.tools.flicker.runner.TransitionRunner],
  *        including configuring navigation mode, initial orientation and ensuring no
  *        apps are running before setup
  * ```
@@ -63,7 +63,7 @@ import org.junit.runners.Parameterized
 @RequiresDevice
 @Parameterized.UseParametersRunnerFactory(FlickerParametersRunnerFactory::class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-class BottomHalfFromSplitScreenAutoEnterPipOnGoToHomeTest(flicker: LegacyFlickerTest) :
+class BottomHalfFromSplitScreenAutoEnterPipOnGoToHomeTest(flicker: FlickerTest) :
     FromSplitScreenAutoEnterPipOnGoToHomeTest(flicker)
 {
     override val pipApp = BottomHalfPipAppHelper(

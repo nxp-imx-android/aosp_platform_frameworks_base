@@ -1258,6 +1258,10 @@ public class AccessibilityWindowManager {
         return mLastNonProxyTopFocusedDisplayId;
     }
 
+    int getTopFocusedDisplayId() {
+        return mTopFocusedDisplayId;
+    }
+
     /**
      * Checks if we are tracking windows on specified display.
      *

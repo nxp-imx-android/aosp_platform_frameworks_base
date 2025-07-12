@@ -32,12 +32,12 @@
 
 #include "MtpDescriptors.h"
 #include "android_runtime/AndroidRuntime.h"
-#include "android_runtime/Log.h"
 #include "jni.h"
 #include "utils/Log.h"
 
 #define DRIVER_NAME "/dev/usb_accessory"
 #define EPOLL_MAX_EVENTS 4
+#define FFS_NUM_EVENTS 5
 #define USB_STATE_MAX_LEN 20
 
 namespace android
@@ -176,6 +176,299 @@ public:
     }
 };
 static std::unique_ptr<NativeGadgetMonitorThread> sGadgetMonitorThread;
+
+/*
+ * NativeVendorControlRequestMonitorThread starts a new thread to monitor vendor
+ * control requests. It issues state changes for accessory mode as required.
+ */
+class NativeVendorControlRequestMonitorThread {
+    // Constants for accessory mode.
+    static constexpr int ACCESSORY_VERSION = 2;
+    static constexpr int ACCESSORY_NUM_STRINGS = 6;
+    static constexpr int ACCESSORY_STRING_LENGTH = 256;
+
+    android::base::unique_fd mMonitorFd;
+    int mShutdownPipefd[2];
+    std::thread mThread;
+    jobject mCallbackObj;
+
+    // Variables for accessory mode.
+    std::mutex mAccessoryFieldsMutex;
+    struct accessory_fields {
+        std::string controlState;
+        std::string strings[ACCESSORY_NUM_STRINGS];
+        int maxPacketSize;
+    } mAccessoryFields;
+
+    bool handleAccessoryGetProtocol(int fd, uint16_t value, uint16_t index, uint16_t length,
+                                    std::vector<char> &buf) {
+        if (value != 0 || index != 0 || length != 2) {
+            ALOGE("Malformed Get protocol");
+            return false;
+        }
+        uint16_t *protocolVersion = reinterpret_cast<uint16_t *>(buf.data());
+        protocolVersion[0] = htole16(ACCESSORY_VERSION);
+        return true;
+    }
+
+    bool handleAccessorySendString(int fd, uint16_t index, uint16_t length,
+                                   std::vector<char> &buf) {
+        if (index >= ACCESSORY_NUM_STRINGS || length > ACCESSORY_STRING_LENGTH || length == 0) {
+            ALOGE("Malformed send string");
+            return false;
+        }
+        if (::read(fd, buf.data(), length) != length) {
+            ALOGE("Usb error ctrlreq read string %d", length);
+            return false;
+        }
+        buf[length] = '\0';
+        std::string str(buf.data());
+        std::lock_guard<std::mutex> lock(mAccessoryFieldsMutex);
+        mAccessoryFields.strings[index] = str;
+        return true;
+    }
+
+    bool handleAccessoryStart(int fd, uint16_t value, uint16_t index, uint16_t length,
+                              std::vector<char> &buf) {
+        if (value != 0 || index != 0 || length != 0) {
+            ALOGE("Malformed start accessory");
+            return false;
+        }
+        if (::read(fd, buf.data(), 0) != 0) {
+            ALOGE("Usb error ctrlreq read data");
+            return false;
+        }
+        return true;
+    }
+
+    void handleControlRequest(int fd, const struct usb_ctrlrequest *setup) {
+        JNIEnv *env = AndroidRuntime::getJNIEnv();
+
+        uint8_t type = setup->bRequestType;
+        uint8_t code = setup->bRequest;
+        uint16_t length = setup->wLength;
+        uint16_t index = setup->wIndex;
+        uint16_t value = setup->wValue;
+        std::vector<char> buf;
+        buf.resize(length + 1);
+        std::string accessoryControlState;
+
+        if ((type & USB_TYPE_MASK) == USB_TYPE_VENDOR) {
+            switch (code) {
+                case ACCESSORY_GET_PROTOCOL: {
+                    if (!handleAccessoryGetProtocol(fd, value, index, length, buf) ||
+                        !(type & USB_DIR_IN)) {
+                        goto fail;
+                    }
+                    accessoryControlState = "GETPROTOCOL";
+                    break;
+                }
+                case ACCESSORY_SEND_STRING: {
+                    if (!handleAccessorySendString(fd, index, length, buf) || (type & USB_DIR_IN)) {
+                        goto fail;
+                    }
+                    accessoryControlState = "SENDSTRING";
+                    break;
+                }
+                case ACCESSORY_START: {
+                    if (!handleAccessoryStart(fd, value, index, length, buf) ||
+                        (type & USB_DIR_IN)) {
+                        goto fail;
+                    }
+                    accessoryControlState = "START";
+                    break;
+                }
+
+                // TODO(b/421807206): - Add support for accessory HID requests.
+
+                default:
+                    ALOGE("Unrecognized USB vendor request! %d", (int)code);
+                    goto fail;
+            }
+        } else {
+            ALOGE("Unrecognized USB request type %d", (int)type);
+            goto fail;
+        }
+
+        if (type & USB_DIR_IN) {
+            if (::write(fd, buf.data(), length) != length) {
+                ALOGE("Usb error ctrlreq write data");
+                goto fail;
+            }
+        }
+
+        {
+            std::lock_guard<std::mutex> lock(mAccessoryFieldsMutex);
+            if (mAccessoryFields.controlState.compare(accessoryControlState) ||
+                !accessoryControlState.compare("SENDSTRING")) {
+                mAccessoryFields.controlState = accessoryControlState;
+            }
+        }
+        return;
+    fail:
+        // stall control endpoint by applying opposite i/o
+        if (type & USB_DIR_IN) {
+            if (::read(fd, buf.data(), 0) != -1 || errno != EL2HLT) {
+                ALOGE("Couldn't halt ep0 on in request");
+            }
+        } else {
+            if (::write(fd, buf.data(), 0) != -1 || errno != EL2HLT) {
+                ALOGE("Couldn't halt ep0 on out request");
+            }
+        }
+    }
+
+    void teardown() {
+        // Add teardown for vendor control requests being handled.
+        ALOGI("Vendor control request monitor teardown");
+
+          // Teardown for accessory mode.
+          std::lock_guard<std::mutex> lock(mAccessoryFieldsMutex);
+          mAccessoryFields.controlState = "";
+          for (int i = 0; i < ACCESSORY_NUM_STRINGS; i++) {
+              mAccessoryFields.strings[i] = "";
+          }
+          mAccessoryFields.maxPacketSize = -1;
+    }
+
+    int setupEpoll(android::base::unique_fd &epollFd) {
+        struct epoll_event ev;
+
+        ev.data.fd = mMonitorFd.get();
+        ev.events = EPOLLIN;
+        if (epoll_ctl(epollFd.get(), EPOLL_CTL_ADD, mMonitorFd.get(), &ev) != 0) {
+            ALOGE("epoll_ctl failed for ctrl request monitor fd; %s", strerror(errno));
+            return errno;
+        }
+
+        ev.data.fd = mShutdownPipefd[0];
+        ev.events = EPOLLIN;
+        if (epoll_ctl(epollFd.get(), EPOLL_CTL_ADD, mShutdownPipefd[0], &ev) != 0) {
+            ALOGE("epoll_ctl failed for ctrl request pipe fd; %s", strerror(errno));
+            return errno;
+        }
+
+        return 0;
+    }
+
+    void monitorLoop() {
+        android::base::unique_fd epollFd(epoll_create(EPOLL_MAX_EVENTS));
+        std::vector<struct usb_functionfs_event> ffs_events(FFS_NUM_EVENTS);
+
+        ALOGI("Monitoring vendor control requests...");
+
+        if (epollFd.get() == -1) {
+            ALOGE("Vendor control request monitor epoll_create failed; %s", strerror(errno));
+            return;
+        }
+
+        if (setupEpoll(epollFd) != 0) {
+            ALOGE("Vendor control request monitor setupEpoll failed!");
+            return;
+        }
+
+        JNIEnv *env = nullptr;
+        JavaVMAttachArgs aargs = {JNI_VERSION_1_4, "NativeVendorControlRequestMonitorThread",
+                                  nullptr};
+        if (gvm->AttachCurrentThread(&env, &aargs) != JNI_OK || env == nullptr) {
+            ALOGE("Couldn't attach thread");
+            return;
+        }
+
+        struct epoll_event events[EPOLL_MAX_EVENTS];
+        int nevents = 0;
+        while (true) {
+            nevents = epoll_wait(epollFd.get(), events, EPOLL_MAX_EVENTS, -1);
+
+            if (nevents < 0) {
+                if (errno != EINTR)
+                    ALOGE("Vendor control request monitor epoll_wait failed; %s", strerror(errno));
+                continue;
+            }
+
+            for (int i = 0; i < nevents; ++i) {
+                int fd = events[i].data.fd;
+                if (fd == mShutdownPipefd[0]) {
+                    ALOGE("Vendor control request monitor loop exiting...");
+                    goto exit;
+                } else if (fd == mMonitorFd.get()) {
+                    if (events[i].events & EPOLLIN) {
+                        struct usb_functionfs_event *event = ffs_events.data();
+                        int nbytes = TEMP_FAILURE_RETRY(
+                                ::read(fd, event,
+                                       ffs_events.size() * sizeof(usb_functionfs_event)));
+                        if (nbytes == -1) {
+                            ALOGE("error reading Usb control events");
+                            continue;
+                        }
+                        for (size_t n = nbytes / sizeof(*event); n; --n, ++event) {
+                            switch (event->type) {
+                                case FUNCTIONFS_SETUP:
+                                    handleControlRequest(fd, &event->u.setup);
+                                    break;
+                                case FUNCTIONFS_UNBIND:
+                                    teardown();
+                                    break;
+                                default:
+                                    continue;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+    exit:
+        auto res = gvm->DetachCurrentThread();
+        ALOGE("Detaching thread");
+        ALOGE_IF(res != JNI_OK, "Couldn't detach thread");
+        return;
+    }
+
+    void stop() {
+        if (mThread.joinable()) {
+            int c = 'q';
+            write(mShutdownPipefd[1], &c, 1);
+            mThread.join();
+        }
+    }
+
+    DISALLOW_COPY_AND_ASSIGN(NativeVendorControlRequestMonitorThread);
+
+public:
+    explicit NativeVendorControlRequestMonitorThread(jobject obj,
+                                                     android::base::unique_fd monitorFd)
+          : mMonitorFd(std::move(monitorFd)),
+            mAccessoryFields({.controlState = "",
+                              .strings = {"", "", "", "", "", ""},
+                              .maxPacketSize = -1}) {
+        mCallbackObj = AndroidRuntime::getJNIEnv()->NewGlobalRef(obj);
+        pipe(mShutdownPipefd);
+        mThread = std::thread(&NativeVendorControlRequestMonitorThread::monitorLoop, this);
+    }
+
+    std::string getAccessoryString(int index) {
+        if (index < 0 || index >= ACCESSORY_NUM_STRINGS) {
+            ALOGE("Invalid accessory string index %d", index);
+            return "";
+        }
+        std::lock_guard<std::mutex> lock(mAccessoryFieldsMutex);
+        return mAccessoryFields.strings[index];
+    }
+
+    int getMaxPacketSize() {
+        std::lock_guard<std::mutex> lock(mAccessoryFieldsMutex);
+        return mAccessoryFields.maxPacketSize;
+    }
+
+    ~NativeVendorControlRequestMonitorThread() {
+        stop();
+        close(mShutdownPipefd[0]);
+        close(mShutdownPipefd[1]);
+        AndroidRuntime::getJNIEnv()->DeleteGlobalRef(mCallbackObj);
+    }
+};
+static std::unique_ptr<NativeVendorControlRequestMonitorThread> sVendorControlRequestMonitorThread;
 
 static void set_accessory_string(JNIEnv *env, int fd, int cmd, jobjectArray strArray, int index)
 {

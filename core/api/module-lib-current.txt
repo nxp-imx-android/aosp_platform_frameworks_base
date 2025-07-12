@@ -503,6 +503,11 @@ package android.os {
     method @FlaggedApi("android.os.update_engine_api") public void triggerPostinstall(@NonNull String);
   }
 
+  public class UserManager {
+    field @FlaggedApi("com.android.wifi.flags.multi_user_wifi_enhancement") public static final String DISALLOW_CONFIG_WIFI_PRIVATE = "no_config_wifi_private";
+    field @FlaggedApi("com.android.wifi.flags.multi_user_wifi_enhancement") public static final String DISALLOW_CONFIG_WIFI_SHARED = "no_config_wifi_shared";
+  }
+
 }
 
 package android.os.storage {

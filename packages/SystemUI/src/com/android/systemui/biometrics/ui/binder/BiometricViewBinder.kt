@@ -50,15 +50,15 @@ import com.android.compose.theme.PlatformTheme
 import com.android.systemui.biometrics.Utils.ellipsize
 import com.android.systemui.biometrics.shared.model.BiometricModalities
 import com.android.systemui.biometrics.shared.model.BiometricModality
-import com.android.systemui.biometrics.shared.model.NegativeButtonState
-import com.android.systemui.biometrics.shared.model.PositiveButtonState
 import com.android.systemui.biometrics.shared.model.PromptKind
 import com.android.systemui.biometrics.shared.model.asBiometricModality
+import com.android.systemui.biometrics.ui.NegativeButtonState
+import com.android.systemui.biometrics.ui.PositiveButtonState
+import com.android.systemui.biometrics.ui.PromptSize
 import com.android.systemui.biometrics.ui.view.BiometricPromptFallbackView
 import com.android.systemui.biometrics.ui.viewmodel.FingerprintStartMode
 import com.android.systemui.biometrics.ui.viewmodel.PromptFallbackViewModel
 import com.android.systemui.biometrics.ui.viewmodel.PromptMessage
-import com.android.systemui.biometrics.ui.viewmodel.PromptSize
 import com.android.systemui.biometrics.ui.viewmodel.PromptViewModel
 import com.android.systemui.common.ui.view.onTouchListener
 import com.android.systemui.deviceentry.ui.binder.UdfpsAccessibilityOverlayBinder
@@ -340,6 +340,12 @@ object BiometricViewBinder {
                     }
                     launch {
                         viewModel.negativeButtonState.collect { state ->
+                            // Set all buttons gone to start
+                            negativeButton.visibility = View.GONE
+                            cancelButton.visibility = View.GONE
+                            credentialFallbackButton.visibility = View.GONE
+                            fallbackButton.visibility = View.GONE
+
                             when (state) {
                                 is NegativeButtonState.Cancel -> {
                                     cancelButton.text = state.text

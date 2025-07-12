@@ -74,23 +74,15 @@
     <string name="page_size_compat_apk_warning" msgid="2982396798449041224">"Апликацијава не е компатибилна со 16 KB. Проверката за усогласување на APK не успеа. Апликацијава ќе се извршува со режим компатибилен со големината на страницата. За најдобра компатибилност, рекомпилирајте ја апликацијата со поддршка за 16 KB. За повеќе информации, одете на &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
     <string name="page_size_compat_elf_warning" msgid="6753874059564812651">"Апликацијава не е компатибилна со 16 KB. Проверката за усогласување на ELF не успеа. Апликацијава ќе се извршува со режим компатибилен со големината на страницата. За најдобра компатибилност, рекомпилирајте ја апликацијата со поддршка за 16 KB. За повеќе информации, одете на &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
     <string name="page_size_compat_apk_and_elf_warning" msgid="7628675779500605390">"Апликацијава не е компатибилна со 16 KB. Проверките за усогласување на APK и ELF се неуспешни. Апликацијава ќе се извршува со режим компатибилен со големината на страницата. За најдобра компатибилност, рекомпилирајте ја апликацијата со поддршка за 16 KB. За повеќе информации, одете на &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
-    <!-- no translation found for page_size_compat_apk_warning_4kb (1284527724160989424) -->
-    <skip />
-    <!-- no translation found for page_size_compat_elf_warning_4kb (5197745436304627728) -->
-    <skip />
-    <!-- no translation found for page_size_compat_apk_and_elf_warning_4kb (5626544342073325806) -->
-    <skip />
+    <string name="page_size_compat_apk_warning_4kb" msgid="6013674159459424986">"Предупредувањево се прикажува бидејќи ова е апликација на којашто може да се отстрануваат грешки и којашто се тестира во моментов. Ако вие не сте програмерот, пријавете го ова кај програмерот и побарајте апликација на којашто не може да се отстрануваат грешки. &lt;br&gt;&lt;br&gt; Апликацијава не е компатибилна со 16 KB. Проверката за усогласување на APK е неуспешна. Следете ги чекорите на &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; &lt;br&gt;&lt;br&gt; Следниве збирки не се усогласени со 16 KB: &lt;br&gt;&lt;br&gt;"</string>
+    <string name="page_size_compat_elf_warning_4kb" msgid="5189541753040977649">"Предупредувањево се прикажува бидејќи ова е апликација на којашто може да се отстрануваат грешки и којашто се тестира во моментов. Ако вие не сте програмерот, пријавете го ова кај програмерот и побарајте апликација на којашто не може да се отстрануваат грешки. &lt;br&gt;&lt;br&gt; Апликацијава не е компатибилна со 16 KB. Проверката за усогласување на ELF е неуспешна. Следете ги чекорите на &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; &lt;br&gt;&lt;br&gt; Следниве збирки не се усогласени со 16 KB: &lt;br&gt;&lt;br&gt;"</string>
+    <string name="page_size_compat_apk_and_elf_warning_4kb" msgid="7665028394400479058">"Предупредувањево се прикажува бидејќи ова е апликација на којашто може да се отстрануваат грешки и којашто се тестира во моментов. Ако вие не сте програмерот, пријавете го ова кај програмерот и побарајте апликација на којашто не може да се отстрануваат грешки. &lt;br&gt;&lt;br&gt; Апликацијава не е компатибилна со 16 KB. Проверките за усогласување на APK и ELF се неуспешни. Следете ги чекорите на &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;. &lt;br&gt;&lt;br&gt; Следниве збирки не се усогласени со 16 KB: &lt;br&gt;&lt;br&gt;"</string>
     <string name="page_size_compat_never_show" msgid="3391282612422783097">"Не прикажувај повторно"</string>
-    <!-- no translation found for page_size_compat_title (6497719153872572204) -->
-    <skip />
-    <!-- no translation found for page_size_compat_elf_not_aligned (7940806102874132630) -->
-    <skip />
-    <!-- no translation found for page_size_compat_apk_not_aligned (8927901100655245528) -->
-    <skip />
-    <!-- no translation found for page_size_compat_apk_and_elf_not_aligned (1010371834741548905) -->
-    <skip />
-    <!-- no translation found for page_size_compat_unknown (3254222165646410528) -->
-    <skip />
+    <string name="page_size_compat_title" msgid="6497719153872572204">"Компатибилност на апликациите за Android"</string>
+    <string name="page_size_compat_elf_not_aligned" msgid="7940806102874132630">"&amp;#8226; %1$s : Сегментот LOAD не е усогласен"</string>
+    <string name="page_size_compat_apk_not_aligned" msgid="8927901100655245528">"&amp;#8226; %1$s : Некомпримираната збирка не е усогласена"</string>
+    <string name="page_size_compat_apk_and_elf_not_aligned" msgid="1010371834741548905">"&amp;#8226; %1$s : Сегментот LOAD и некомпримираната збирка не се усогласени"</string>
+    <string name="page_size_compat_unknown" msgid="3254222165646410528">"&amp;#8226; %1$s : Непозната грешка"</string>
     <string name="serviceNotProvisioned" msgid="8289333510236766193">"Услугата не е предвидена."</string>
     <string name="CLIRPermanent" msgid="166443681876381118">"Не може да го промените поставувањето за ID на повикувач."</string>
     <string name="auto_data_switch_title" msgid="3286350716870518297">"Мобилниот интернет се префрли на <xliff:g id="CARRIERDISPLAY">%s</xliff:g>"</string>
@@ -373,18 +365,12 @@
     <string name="permgroupdesc_sensors" msgid="2610631290633747752">"пристапува до податоците од сензорите за виталните функции"</string>
     <string name="permgrouplab_notifications" msgid="5472972361980668884">"Известувања"</string>
     <string name="permgroupdesc_notifications" msgid="4608679556801506580">"да прикажува известувања"</string>
-    <!-- no translation found for permgrouplab_xr_eye_sensitive (1709596126334620353) -->
-    <skip />
-    <!-- no translation found for permgroupdesc_xr_eye_sensitive (6050967250223079001) -->
-    <skip />
-    <!-- no translation found for permgrouplab_xr_tracking (766634536453394700) -->
-    <skip />
-    <!-- no translation found for permgroupdesc_xr_tracking (812429788288001595) -->
-    <skip />
-    <!-- no translation found for permgrouplab_xr_tracking_sensitive (4346975608010051186) -->
-    <skip />
-    <!-- no translation found for permgroupdesc_xr_tracking_sensitive (7925014193164562556) -->
-    <skip />
+    <string name="permgrouplab_xr_eye_sensitive" msgid="1709596126334620353">"Податоци за следењето очи"</string>
+    <string name="permgroupdesc_xr_eye_sensitive" msgid="6050967250223079001">"прецизно да го следи движењето на очите"</string>
+    <string name="permgrouplab_xr_tracking" msgid="766634536453394700">"Податоци за движењето и областа"</string>
+    <string name="permgroupdesc_xr_tracking" msgid="812429788288001595">"да ги следи очите, лицето, телото и да ја скенира областа"</string>
+    <string name="permgrouplab_xr_tracking_sensitive" msgid="4346975608010051186">"Прецизни податоци за движењето на главата и областа"</string>
+    <string name="permgroupdesc_xr_tracking_sensitive" msgid="7925014193164562556">"прецизно да ја следи главата и да ја скенира областа"</string>
     <string name="capability_title_canRetrieveWindowContent" msgid="7554282892101587296">"да ги вчитува содржините од прозорците"</string>
     <string name="capability_desc_canRetrieveWindowContent" msgid="6195610527625237661">"да ги проверува содржините од прозорецот што го користите"</string>
     <string name="capability_title_canRequestTouchExploration" msgid="327598364696316213">"да вклучи „Истражувај со допир“"</string>
@@ -682,38 +668,22 @@
     <string name="permdesc_imagesWrite" msgid="5195054463269193317">"Дозволува апликацијата да ја менува вашата збирка на фотографии."</string>
     <string name="permlab_mediaLocation" msgid="7368098373378598066">"да чита локации од вашата збирка на аудиовизуелни содржини"</string>
     <string name="permdesc_mediaLocation" msgid="597912899423578138">"Дозволува апликацијата да чита локации од вашата збирка на аудиовизуелни содржини."</string>
-    <!-- no translation found for permlab_eye_tracking_coarse (1266477998416112440) -->
-    <skip />
-    <!-- no translation found for permdesc_eye_tracking_coarse (1652112796672085320) -->
-    <skip />
-    <!-- no translation found for permlab_eye_tracking_fine (6208991021186455002) -->
-    <skip />
-    <!-- no translation found for permdesc_eye_tracking_fine (9215360948852654836) -->
-    <skip />
-    <!-- no translation found for permlab_face_tracking (6052126246676474909) -->
-    <skip />
-    <!-- no translation found for permdesc_face_tracking (185815778490412574) -->
-    <skip />
-    <!-- no translation found for permlab_hand_tracking (21944950887649088) -->
-    <skip />
-    <!-- no translation found for permdesc_hand_tracking (8083783248481460669) -->
-    <skip />
-    <!-- no translation found for permlab_head_tracking (4304699038992159853) -->
-    <skip />
-    <!-- no translation found for permdesc_head_tracking (2232184518548944223) -->
-    <skip />
-    <!-- no translation found for permlab_scene_understanding_coarse (8765236119358852920) -->
-    <skip />
-    <!-- no translation found for permdesc_scene_understanding_coarse (847344305502345475) -->
-    <skip />
-    <!-- no translation found for permlab_scene_understanding_fine (2899904960307462936) -->
-    <skip />
-    <!-- no translation found for permdesc_scene_understanding_fine (4848943859506977588) -->
-    <skip />
-    <!-- no translation found for permlab_xr_tracking_in_background (8659516810430027774) -->
-    <skip />
-    <!-- no translation found for permdesc_xr_tracking_in_background (3151744132692357005) -->
-    <skip />
+    <string name="permlab_eye_tracking_coarse" msgid="1266477998416112440">"да го следи движењето на очите"</string>
+    <string name="permdesc_eye_tracking_coarse" msgid="1652112796672085320">"Ѝ дозволува на апликацијата да ја следи приближната насока на вашиот поглед."</string>
+    <string name="permlab_eye_tracking_fine" msgid="6208991021186455002">"прецизно да го следи движењето на очите"</string>
+    <string name="permdesc_eye_tracking_fine" msgid="9215360948852654836">"Ѝ дозволува на апликацијата да ја следи насоката на вашиот поглед."</string>
+    <string name="permlab_face_tracking" msgid="6052126246676474909">"да ги следи движењата на лицето"</string>
+    <string name="permdesc_face_tracking" msgid="185815778490412574">"Ѝ дозволува на апликацијата да ги следи движењата и изразите на вашето лице."</string>
+    <string name="permlab_hand_tracking" msgid="21944950887649088">"да ги следи движењата на рацете"</string>
+    <string name="permdesc_hand_tracking" msgid="8083783248481460669">"Ѝ дозволува на апликацијата да ги следи движењата на вашите раце."</string>
+    <string name="permlab_head_tracking" msgid="4304699038992159853">"да ги следи движењата на главата"</string>
+    <string name="permdesc_head_tracking" msgid="2232184518548944223">"Ѝ дозволува на апликацијата да ги следи движењата на вашата глава."</string>
+    <string name="permlab_scene_understanding_coarse" msgid="8765236119358852920">"да ја скенира вашата околина"</string>
+    <string name="permdesc_scene_understanding_coarse" msgid="847344305502345475">"Ѝ дозволува на апликацијата да ја скенира вашата околина."</string>
+    <string name="permlab_scene_understanding_fine" msgid="2899904960307462936">"прецизно да ја скенира вашата околина"</string>
+    <string name="permdesc_scene_understanding_fine" msgid="4848943859506977588">"Ѝ дозволува на апликацијата прецизно да ја скенира вашата околина."</string>
+    <string name="permlab_xr_tracking_in_background" msgid="8659516810430027774">"да ги следи XR-податоците во заднина"</string>
+    <string name="permdesc_xr_tracking_in_background" msgid="3151744132692357005">"Ѝ дозволува на апликацијата да пристапува до XR-податоци во заднина."</string>
     <string name="permlab_capture_keyboard" msgid="4076894823382693032">"да снима клучеви"</string>
     <string name="permdesc_capture_keyboard" msgid="4192269470684407219">"Ѝ дозволува на апликацијата да снима клучеви пред да може системот да обработува системски кратенки и дејства."</string>
     <string name="biometric_app_setting_name" msgid="3339209978734534457">"Користи биометрика"</string>
@@ -944,6 +914,8 @@
     <string name="policydesc_disableCamera" msgid="3204405908799676104">"Спречи употреба на сите камери на уредот."</string>
     <string name="policylab_disableKeyguardFeatures" msgid="5071855750149949741">"Оневозможување функции за заклучување на екранот"</string>
     <string name="policydesc_disableKeyguardFeatures" msgid="6641673177041195957">"Го спречува користењето на некои функции за заклучување на екранот."</string>
+    <!-- no translation found for exit_toast_on_long_press_escape (873907401529125943) -->
+    <skip />
   <string-array name="phoneTypes">
     <item msgid="8996339953292723951">"Дома"</item>
     <item msgid="7740243458912727194">"Мобилен"</item>
@@ -2596,6 +2568,7 @@
     <string name="keyboard_shortcut_group_applications_calendar" msgid="3571770335653387606">"Календар"</string>
     <string name="keyboard_shortcut_group_applications_calculator" msgid="6753209559716091507">"Калкулатор"</string>
     <string name="keyboard_shortcut_group_applications_maps" msgid="7950000659522589471">"Карти"</string>
+    <string name="keyboard_shortcut_group_applications_files" msgid="863938400765838051">"Files"</string>
     <string name="keyboard_shortcut_group_applications" msgid="3010389163951364798">"Апликации"</string>
     <string name="fingerprint_loe_notification_msg" msgid="3927447270148854546">"Вашите отпечатоци веќе не може да се препознаат. Поставете „Отклучување со отпечаток“ повторно."</string>
     <string name="usb_apm_usb_plugged_in_when_locked_notification_app_title" msgid="285421860627714333">"Безбедност и приватност"</string>
@@ -2615,6 +2588,5 @@
     <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"Имате проблем со „Отклучување со отпечаток“?"</string>
     <string name="fingerprint_frr_notification_msg" msgid="2162966846624639252">"Допрете за да прегледате совети за подобрување на доживувањето со отклучување"</string>
     <string name="no_blink_accessibility_text_cursor_blink_label" msgid="223072797385428874">"Без трепкање"</string>
-    <!-- no translation found for long_press_power_to_turn_off_tv_toast (2231397748028498986) -->
-    <skip />
+    <string name="long_press_power_to_turn_off_tv_toast" msgid="2231397748028498986">"Исклучете го телевизорот притискајќи го долго копчето за вклучување"</string>
 </resources>

@@ -42,7 +42,7 @@ import com.android.wm.shell.common.ShellExecutor
 import com.android.wm.shell.common.SyncTransactionQueue
 import com.android.wm.shell.desktopmode.DesktopModeEventLogger
 import com.android.wm.shell.desktopmode.DesktopModeEventLogger.Companion.ResizeTrigger
-import com.android.wm.shell.desktopmode.DesktopRepository
+import com.android.wm.shell.desktopmode.data.DesktopRepository
 import com.android.wm.shell.desktopmode.DesktopTasksController
 import com.android.wm.shell.desktopmode.DesktopTestHelpers.createFreeformTask
 import com.android.wm.shell.desktopmode.DesktopTestHelpers.createPinnedTask
@@ -114,6 +114,7 @@ class DesktopTilingWindowDecorationTest : ShellTestCase() {
     private val motionEvent: MotionEvent = mock()
     private val desktopRepository: DesktopRepository = mock()
     private val mainDispatcher: MainCoroutineDispatcher = mock()
+    private val mainScope: CoroutineScope = mock()
     private val bgScope: CoroutineScope = mock()
     private val taskResourceLoader: WindowDecorTaskResourceLoader = mock()
     private val focusTransitionObserver: FocusTransitionObserver = mock()
@@ -137,6 +138,7 @@ class DesktopTilingWindowDecorationTest : ShellTestCase() {
             DesktopTilingWindowDecoration(
                 context,
                 mainDispatcher,
+                mainScope,
                 bgScope,
                 syncQueue,
                 displayController,

@@ -303,7 +303,7 @@ public class RavenwoodTestStats {
             var description = failure.getDescription();
             addResult(description.getClassName(),
                     description.getMethodName(),
-                    Result.Passed,
+                    Result.Failed,
                     "  testFailure: ",
                     failure);
         }

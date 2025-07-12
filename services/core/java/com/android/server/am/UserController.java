@@ -251,6 +251,10 @@ class UserController implements Handler.Callback {
      */
     private static final int POSTPONEMENT_TIME_FOR_BACKGROUND_USER_STOP_SECS = 30 * 60; // 30 mins
 
+    @VisibleForTesting
+    static final String EXCEPTION_TEMPLATE_CANNOT_START_USER_WHEN_NOT_READY =
+            "Trying to start user %d before ready";
+
     /**
      * Maximum number of users we allow to be running at a time, including system user.
      *
@@ -468,6 +472,13 @@ class UserController implements Handler.Callback {
             onUserAdded(user);
         }
     };
+
+    /**
+     * Used to prevent external calls (for example, from {@code am start-user}) from crashing the
+     * system when it's not ready yet.
+     */
+    @GuardedBy("mLock")
+    private boolean mReady;
 
     UserController(ActivityManagerService service) {
         this(new Injector(service));
@@ -2062,9 +2073,15 @@ class UserController implements Handler.Callback {
     private boolean startUserInternal(@UserIdInt int userId, int displayId,
             @UserStartMode int userStartMode, int autoStopUserInSecs,
             @Nullable IProgressListener unlockListener, TimingsTraceAndSlog t) {
-        if (DEBUG_MU) {
-            Slogf.i(TAG, "Starting user %d on display %d with mode  %s", userId, displayId,
-                    userStartModeToString(userStartMode));
+        synchronized (mLock) {
+            if (DEBUG_MU) {
+                Slogf.i(TAG, "Starting user %d on display %d with mode %s (when ready=%b)", userId,
+                        displayId, userStartModeToString(userStartMode), mReady);
+            }
+            // NOTE: for now this is the only place that's mReady, but if it's needed in others,
+            // this check should be encapsulated into a private helper.
+            Preconditions.checkState(mReady, EXCEPTION_TEMPLATE_CANNOT_START_USER_WHEN_NOT_READY,
+                    userId);
         }
         boolean foreground = userStartMode == USER_START_MODE_FOREGROUND;
 
@@ -3411,6 +3428,10 @@ class UserController implements Handler.Callback {
 
         // IpcDataCache must be invalidated before it starts caching.
         ActivityManager.invalidateGetCurrentUserIdCache();
+
+        synchronized (mLock) {
+            mReady = true;
+        }
     }
 
     // TODO(b/266158156): remove this method if initial system user boot logic is refactored?
@@ -3854,6 +3875,7 @@ class UserController implements Handler.Callback {
             for (int i = 0; i < mCurrentProfileIds.length; i++) {
                 proto.write(UserControllerProto.CURRENT_PROFILES, mCurrentProfileIds[i]);
             }
+            proto.write(UserControllerProto.READY, mReady);
             proto.end(token);
         }
     }
@@ -3913,6 +3935,7 @@ class UserController implements Handler.Callback {
             pw.println("  mSwitchingFromUserMessage:" + mSwitchingFromUserMessage);
             pw.println("  mSwitchingToUserMessage:" + mSwitchingToUserMessage);
             pw.println("  mLastUserUnlockingUptime: " + mLastUserUnlockingUptime);
+            pw.println("  mReady: " + mReady);
         }
     }
 

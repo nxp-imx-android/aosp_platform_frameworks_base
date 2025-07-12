@@ -530,7 +530,7 @@ public class NotificationGutsManager implements NotifGutsViewManager, CoreStarta
                     List<ExpandableNotificationRow> children = row.getAttachedChildren();
                     if (children != null) {
                         for (ExpandableNotificationRow child : children) {
-                            child.getEntryAdapter().onBundleDisabled();
+                            child.getEntryAdapter().onBundleDisabledForEntry();
                         }
                     }
                 }

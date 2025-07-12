@@ -390,7 +390,6 @@
     <string name="quick_settings_done" msgid="2163641301648855793">"დასრულდა"</string>
     <string name="quick_settings_close_user_panel" msgid="5599724542275896849">"დახურვა"</string>
     <string name="quick_settings_connected" msgid="3873605509184830379">"დაკავშირებულია"</string>
-    <string name="quick_settings_connected_battery_level" msgid="1322075669498906959">"დაკავშირებულია. ბატარეის დონე: <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE">%1$s</xliff:g>"</string>
     <string name="quick_settings_connecting" msgid="2381969772953268809">"დაკავშირება..."</string>
     <string name="quick_settings_hotspot_label" msgid="1199196300038363424">"წვდომის წერტილი"</string>
     <string name="quick_settings_hotspot_secondary_label_transient" msgid="7585604088079160564">"ირთვება…"</string>
@@ -400,6 +399,7 @@
     <string name="quick_settings_flashlight_camera_in_use" msgid="4820591564526512571">"კამერა გამოიყენება"</string>
     <string name="flashlight_dialog_title" msgid="4232742718579701241">"ფარანის სიძლიერე"</string>
     <string name="quick_settings_flashlight_tile_level_percentage" msgid="2071942013174794819">"<xliff:g id="PERCENTAGE">%1$d</xliff:g>%%"</string>
+    <string name="flashlight_dialog_turn_off" msgid="5934897539563253348">"გამორთვა"</string>
     <string name="quick_settings_cellular_detail_title" msgid="792977203299358893">"მობილური ინტერნეტი"</string>
     <string name="quick_settings_cellular_detail_data_usage" msgid="6105969068871138427">"მონაცემთა მოხმარება"</string>
     <string name="quick_settings_cellular_detail_remaining_data" msgid="1136599216568805644">"დარჩენილი მონაცემები"</string>
@@ -843,8 +843,7 @@
     <string name="enable_bluetooth_confirmation_ok" msgid="2866408183324184876">"ჩართვა"</string>
     <string name="rotation_lock_camera_rotation_on" msgid="789434807790534274">"ჩართული — სახის მიხედვით"</string>
     <string name="notification_guts_bundle_title" msgid="5252530007273079591">"დადუმება და დაჯგუფება"</string>
-    <!-- no translation found for notification_guts_single_bundle_notif_title (5397951402211886396) -->
-    <skip />
+    <string name="notification_guts_single_bundle_notif_title" msgid="5397951402211886396">"შეტყობინების ორგანიზატორის გამოყენება"</string>
     <string name="notification_guts_bundle_summary" msgid="3971530802237393600">"<xliff:g id="APP_NAME">%1$s</xliff:g>-ისთვის"</string>
     <string name="notification_guts_promotions_summary" msgid="1565750619813325885">"გაყიდვები, ახალი ფუნქციები და სხვა"</string>
     <string name="notification_guts_news_summary" msgid="638697931043407835">"მთავარი ამბები, სარედაქციო სტატიები და სხვა"</string>
@@ -1095,16 +1094,11 @@
     <string name="accessibility_quick_settings_edit" msgid="6544873823850165">"სწრაფი პარამეტრების თანმიმდევრობის რედაქტირება"</string>
     <string name="accessibility_quick_settings_power_menu" msgid="6820426108301758412">"ჩართვის მენიუ"</string>
     <string name="accessibility_quick_settings_page" msgid="7506322631645550961">"გვერდი <xliff:g id="ID_1">%1$d</xliff:g> / <xliff:g id="ID_2">%2$d</xliff:g>-დან"</string>
-    <!-- no translation found for accessibility_key_gesture_dialog_title (7614965716626605518) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_dialog_content (4519838108423437794) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_dialog_magnifier_intro (627023269951856071) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_dialog_talkback_intro (1617808784388544741) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_dialog_positive_button_text (3670746017523589293) -->
-    <skip />
+    <string name="accessibility_key_gesture_dialog_title" msgid="7614965716626605518">"ჩაირთოს <xliff:g id="ID_1">%1$s</xliff:g>?"</string>
+    <string name="accessibility_key_gesture_dialog_content" msgid="4519838108423437794">"მოქმედების "<annotation id="action_key_icon">"ხატულა"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> არის კლავიატურის მალსახმობი <xliff:g id="ID_3">^3</xliff:g>-ის გამოსაყენებლად. <xliff:g id="ID_4">^4</xliff:g>"</string>
+    <string name="accessibility_key_gesture_dialog_magnifier_intro" msgid="627023269951856071">"ეს საშუალებას გაძლევთ, სწრაფად გაადიდოთ მასშტაბი ეკრანზე კონტენტის გასადიდებლად."</string>
+    <string name="accessibility_key_gesture_dialog_talkback_intro" msgid="1617808784388544741">"<xliff:g id="ID_1">%1$s</xliff:g> არის ეკრანის წამკითხველი, რომელიც საშუალებას გაძლევთ, მოისმინოთ ხმამაღლა წარმოთქმული ტექსტი. ეს ეხმარება მხედველობის შეზღუდვის მქონე ადამიანებს, რომლებსაც ეკრანის ყურება უჭირთ."</string>
+    <string name="accessibility_key_gesture_dialog_positive_button_text" msgid="3670746017523589293">"ჩართვა"</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"ჩაკეტილი ეკრანი"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"მიმდინარეობს გამორთვა…"</string>
     <string name="thermal_shutdown_dialog_help_text" msgid="6413474593462902901">"მისაღები ზომების გაცნობა"</string>
@@ -1475,7 +1469,7 @@
     <string name="bt_le_audio_broadcast_dialog_switch_app" msgid="6098768269397105733">"<xliff:g id="SWITCHAPP">%1$s</xliff:g>-ის ტრანსლაცია"</string>
     <string name="bt_le_audio_broadcast_dialog_different_output" msgid="7885102097302562674">"აუდიოს გამოსასვლელის შეცვლა"</string>
     <string name="bt_le_audio_broadcast_dialog_unknown_name" msgid="3791472237793443044">"უცნობი"</string>
-    <string name="dream_time_complication_12_hr_time_format" msgid="4691197486690291529">"სთ:წთ"</string>
+    <string name="dream_time_complication_12_hr_time_format" msgid="4691197486690291529">"h:mm"</string>
     <string name="dream_time_complication_24_hr_time_format" msgid="6248280719733640813">"kk:mm"</string>
     <string name="log_access_confirmation_title" msgid="4843557604739943395">"გსურთ <xliff:g id="LOG_ACCESS_APP_NAME">%s</xliff:g>-ს მიანიჭოთ მოწყობილობის ყველა ჟურნალზე წვდომა?"</string>
     <string name="log_access_confirmation_allow" msgid="752147861593202968">"ერთჯერადი წვდომის დაშვება"</string>
@@ -1676,8 +1670,10 @@
     <string name="dual_shade_educational_tooltip_notifs" msgid="7666159428113013319">"შეტყობინებების გასახსნელად ჩამოფურცლეთ ზედა მარცხენა მხარედან"</string>
     <string name="dual_shade_educational_tooltip_qs" msgid="3842355853737057332">"სწრაფი პარამეტრების გასახსნელად ჩამოფურცლეთ ზედა მარჯვენა მხარედან"</string>
     <string name="back_button_on_bouncer" msgid="809134628434396761">"უკან"</string>
-    <!-- no translation found for pager_dots_previous_content_description (26963508904918908) -->
+    <string name="pager_dots_previous_content_description" msgid="26963508904918908">"წინა"</string>
+    <string name="pager_dots_next_content_description" msgid="613943992626163120">"შემდეგი"</string>
+    <!-- no translation found for ambient_cue_autofill_action (9213025887835308128) -->
     <skip />
-    <!-- no translation found for pager_dots_next_content_description (613943992626163120) -->
+    <!-- no translation found for ambient_cue_expand_action (6803711089932959312) -->
     <skip />
 </resources>

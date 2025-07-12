@@ -2042,11 +2042,6 @@ public class WindowManagerService extends IWindowManager.Stub
 
         if (imMayMove) {
             displayContent.computeImeLayeringTarget(true /* update */);
-            if (win.isImeOverlayLayeringTarget()) {
-                dispatchImeOverlayLayeringTargetVisibilityChanged(client.asBinder(),
-                        win.mAttrs.type, win.isVisibleRequestedOrAdding(), false /* removed */,
-                        displayContent.getDisplayId());
-            }
         }
 
         // Don't do layout here, the window must call
@@ -3673,7 +3668,7 @@ public class WindowManagerService extends IWindowManager.Stub
         });
     }
 
-    void dispatchImeOverlayLayeringTargetVisibilityChanged(@NonNull IBinder token,
+    void dispatchImeOverlayLayeringTargetVisibilityChanged(@Nullable IBinder token,
             @WindowManager.LayoutParams.WindowType int windowType, boolean visible,
             boolean removed, int displayId) {
         if (DEBUG_INPUT_METHOD) {
@@ -9429,7 +9424,7 @@ public class WindowManagerService extends IWindowManager.Stub
             final int permissionResult = mContext.checkPermission(
                     permission.MONITOR_INPUT, callingPid, callingUid);
             if (permissionResult != PackageManager.PERMISSION_GRANTED) {
-                throw new IllegalArgumentException(
+                throw new SecurityException(
                         "Cannot use INPUT_FEATURE_SPY from '" + windowName
                                 + "' because it doesn't the have MONITOR_INPUT permission");
             }
@@ -9437,9 +9432,8 @@ public class WindowManagerService extends IWindowManager.Stub
 
         // You can only use INPUT_FEATURE_SENSITIVE_FOR_PRIVACY on a trusted overlay.
         if ((inputFeatures & INPUT_FEATURE_SENSITIVE_FOR_PRIVACY) != 0 && !isTrustedOverlay) {
-            Slog.w(TAG, "Removing INPUT_FEATURE_SENSITIVE_FOR_PRIVACY from '" + windowName
-                    + "' because it isn't a trusted overlay");
-            return inputFeatures & ~INPUT_FEATURE_SENSITIVE_FOR_PRIVACY;
+            throw new SecurityException("Cannot use INPUT_FEATURE_SENSITIVE_FOR_PRIVACY from '"
+                    + windowName + "' because it isn't a trusted overlay");
         }
 
         if ((inputFeatures & INPUT_FEATURE_DISPLAY_TOPOLOGY_AWARE) != 0) {

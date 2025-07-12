@@ -79,7 +79,6 @@ import com.android.systemui.util.ui.AnimatedValue
 import com.android.systemui.util.ui.isAnimating
 import com.android.systemui.util.ui.stopAnimating
 import com.android.systemui.util.ui.value
-import com.android.systemui.wallpapers.ui.viewmodel.WallpaperFocalAreaViewModel
 import com.google.android.msdl.data.model.MSDLToken
 import com.google.android.msdl.domain.MSDLPlayer
 import kotlin.math.min
@@ -109,7 +108,6 @@ object KeyguardRootViewBinder {
         mainImmediateDispatcher: CoroutineDispatcher,
         msdlPlayer: MSDLPlayer?,
         @KeyguardBlueprintLog blueprintLog: LogBuffer,
-        wallpaperFocalAreaViewModel: WallpaperFocalAreaViewModel,
         wallpaperController: WallpaperController,
     ): DisposableHandle {
         val disposables = DisposableHandles()
@@ -365,12 +363,6 @@ object KeyguardRootViewBinder {
                     }
 
                     launch { burnInParams.collect { viewModel.updateBurnInParams(it) } }
-
-                    launch {
-                        wallpaperFocalAreaViewModel.wallpaperFocalAreaBounds.collect {
-                            wallpaperFocalAreaViewModel.setFocalAreaBounds(it)
-                        }
-                    }
 
                     if (Flags.gestureBetweenHubAndLockscreenMotion()) {
                         launch {

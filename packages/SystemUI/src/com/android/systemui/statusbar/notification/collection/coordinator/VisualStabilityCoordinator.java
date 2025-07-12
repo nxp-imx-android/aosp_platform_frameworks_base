@@ -166,9 +166,9 @@ public class VisualStabilityCoordinator implements Coordinator, Dumpable {
         mJavaAdapter.alwaysCollectFlow(mShadeAnimationInteractor.isLaunchingActivity(),
                 this::onLaunchingActivityChanged);
         mJavaAdapter.alwaysCollectFlow(
-                BooleanFlowOperators.INSTANCE.allOf(
+                BooleanFlowOperators.allOf(
                         mCommunalSceneInteractor.isIdleOnCommunal(),
-                        BooleanFlowOperators.INSTANCE.not(mShadeInteractor.isAnyFullyExpanded())
+                        BooleanFlowOperators.not(mShadeInteractor.isAnyFullyExpanded())
                 ),
                 this::onCommunalShowingChanged);
 

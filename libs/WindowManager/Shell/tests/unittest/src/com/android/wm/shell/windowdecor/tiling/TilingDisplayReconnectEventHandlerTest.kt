@@ -19,7 +19,7 @@ package com.android.wm.shell.windowdecor.tiling
 import android.os.IBinder
 import android.testing.AndroidTestingRunner
 import androidx.test.filters.SmallTest
-import com.android.wm.shell.desktopmode.DesktopRepository
+import com.android.wm.shell.desktopmode.data.DesktopRepository
 import com.android.wm.shell.transition.Transitions
 import org.junit.Before
 import org.junit.Test

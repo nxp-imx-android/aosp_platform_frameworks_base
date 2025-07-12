@@ -1785,11 +1785,9 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
             Slog.w(TAG, "**** ro.build.version.sdk not set!");
         }
 
-        final int sdkVersionFull = android.sdk.Flags.majorMinorVersioningScheme()
-                ? Build.VERSION.SDK_INT_FULL : 0;
         PackageManagerService m = new PackageManagerService(injector, factoryTest,
                 PackagePartitions.FINGERPRINT, Build.IS_ENG, Build.IS_USERDEBUG,
-                Build.VERSION.SDK_INT, Build.VERSION.INCREMENTAL, sdkVersionFull);
+                Build.VERSION.SDK_INT, Build.VERSION.INCREMENTAL, Build.VERSION.SDK_INT_FULL);
 
         t.traceEnd(); // "create package manager"
 
@@ -2019,8 +2017,7 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
         mSdkVersionFull = sdkVersionFull;
         // If the major version of sdkVersionFull and sdkVersion are not equal,
         // throw RuntimeException to crash the system.
-        if (android.sdk.Flags.majorMinorVersioningScheme()
-                && (Build.getMajorSdkVersion(sdkVersionFull) != sdkVersion)) {
+        if (Build.getMajorSdkVersion(sdkVersionFull) != sdkVersion) {
             throw new RuntimeException("sdkVersionFull:" + sdkVersionFull + " and sdkVersion: "
                     + sdkVersion + " don't match. Please check your build configurations!");
         }
@@ -2294,8 +2291,7 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
                                 + PackagePartitions.FINGERPRINT + " (" + Build.FINGERPRINT + ")");
             }
             mPriorSdkVersion = mIsUpgrade ? ver.sdkVersion : -1;
-            mPriorSdkVersionFull = (android.sdk.Flags.majorMinorVersioningScheme() && mIsUpgrade)
-                    ? ver.sdkVersionFull : -1;
+            mPriorSdkVersionFull = mIsUpgrade ? ver.sdkVersionFull : -1;
             mInitAppsHelper = new InitAppsHelper(this, mApexManager, mInstallPackageHelper,
                     mInjector.getSystemPartitions());
 

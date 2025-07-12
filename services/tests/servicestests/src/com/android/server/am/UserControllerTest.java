@@ -141,6 +141,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -170,6 +171,10 @@ public class UserControllerTest {
     private static final long HANDLER_WAIT_TIME_MS = 100;
 
     private UserController mUserController;
+
+    // Used by tests that assert state when it's not ready
+    private UserController mNotReadyUserController;
+
     private TestInjector mInjector;
     private final HashMap<Integer, UserState> mUserStates = new HashMap<>();
     private final HashMap<Integer, UserInfo> mUserInfos = new HashMap<>();
@@ -232,6 +237,11 @@ public class UserControllerTest {
 
             mUserController = new UserController(mInjector);
             mUserController.setAllowUserUnlocking(true);
+            mUserController.onSystemReady();
+
+            mNotReadyUserController = new UserController(mInjector);
+            mNotReadyUserController.setAllowUserUnlocking(true);
+
             setUpUser(TEST_USER_ID, DEFAULT_USER_FLAGS);
             setUpUser(TEST_PRE_CREATED_USER_ID, DEFAULT_USER_FLAGS, /* preCreated= */ true, null);
             mInjector.mRelevantUser = null;
@@ -245,6 +255,16 @@ public class UserControllerTest {
     }
 
     @Test
+    public void testStartUser_foreground_notReady() {
+        var e = assertThrows(IllegalStateException.class,
+                () -> mNotReadyUserController.startUser(TEST_USER_ID, USER_START_MODE_FOREGROUND));
+
+        assertThat(e).hasMessageThat().isEqualTo(String.format(Locale.ENGLISH,
+                UserController.EXCEPTION_TEMPLATE_CANNOT_START_USER_WHEN_NOT_READY, TEST_USER_ID));
+    }
+
+
+    @Test
     public void testStartUser_foreground() {
         mUserController.startUser(TEST_USER_ID, USER_START_MODE_FOREGROUND);
         verify(mInjector, never()).dismissUserSwitchingDialog(any());
@@ -253,6 +273,16 @@ public class UserControllerTest {
         verify(mInjector).clearAllLockedTasks(anyString());
         startForegroundUserAssertions();
         verifyUserAssignedToDisplay(TEST_USER_ID, Display.DEFAULT_DISPLAY);
+    }
+
+    @Test
+    public void testStartUser_background_notReady() {
+        var e = assertThrows(IllegalStateException.class,
+                () -> mNotReadyUserController.startUser(TEST_USER_ID, USER_START_MODE_BACKGROUND));
+
+        assertThat(e).hasMessageThat().isEqualTo(String.format(Locale.ENGLISH,
+                UserController.EXCEPTION_TEMPLATE_CANNOT_START_USER_WHEN_NOT_READY, TEST_USER_ID));
+
     }
 
     @Test

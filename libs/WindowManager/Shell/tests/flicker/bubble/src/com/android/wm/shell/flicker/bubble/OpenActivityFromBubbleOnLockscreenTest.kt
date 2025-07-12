@@ -18,8 +18,8 @@ package com.android.wm.shell.flicker.bubble
 
 import android.platform.test.annotations.Postsubmit
 import android.tools.flicker.junit.FlickerParametersRunnerFactory
-import android.tools.flicker.legacy.FlickerBuilder
-import android.tools.flicker.legacy.LegacyFlickerTest
+import android.tools.flicker.FlickerBuilder
+import android.tools.flicker.FlickerTest
 import android.tools.traces.component.ComponentNameMatcher
 import android.view.WindowInsets
 import android.view.WindowManager
@@ -48,7 +48,7 @@ import org.junit.runners.Parameterized
 @RequiresDevice
 @RunWith(Parameterized::class)
 @Parameterized.UseParametersRunnerFactory(FlickerParametersRunnerFactory::class)
-class OpenActivityFromBubbleOnLockscreenTest(flicker: LegacyFlickerTest) :
+class OpenActivityFromBubbleOnLockscreenTest(flicker: FlickerTest) :
     BaseBubbleScreen(flicker) {
 
     /** {@inheritDoc} */

@@ -74,23 +74,15 @@
     <string name="page_size_compat_apk_warning" msgid="2982396798449041224">"Ứng dụng này không tương thích với kích thước trang 16 KB. Không kiểm tra được sự tương thích của tệp APK. Ứng dụng này sẽ chạy ở chế độ tương thích với kích thước trang. Để đảm bảo khả năng tương thích tốt nhất, vui lòng biên dịch lại ứng dụng ở chế độ hỗ trợ kích thước trang 16 KB. Để biết thêm thông tin, hãy xem &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
     <string name="page_size_compat_elf_warning" msgid="6753874059564812651">"Ứng dụng này không tương thích với kích thước trang 16 KB. Không kiểm tra được sự tương thích của tệp ELF. Ứng dụng này sẽ chạy ở chế độ tương thích với kích thước trang. Để đảm bảo khả năng tương thích tốt nhất, vui lòng biên dịch lại ứng dụng ở chế độ hỗ trợ kích thước trang 16 KB. Để biết thêm thông tin, hãy xem &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
     <string name="page_size_compat_apk_and_elf_warning" msgid="7628675779500605390">"Ứng dụng này không tương thích với kích thước trang 16 KB. Không kiểm tra được sự tương thích của tệp APK và tệp ELF. Ứng dụng này sẽ chạy ở chế độ tương thích với kích thước trang. Để đảm bảo khả năng tương thích tốt nhất, vui lòng biên dịch lại ứng dụng ở chế độ hỗ trợ kích thước trang 16 KB. Để biết thêm thông tin, hãy xem &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
-    <!-- no translation found for page_size_compat_apk_warning_4kb (1284527724160989424) -->
-    <skip />
-    <!-- no translation found for page_size_compat_elf_warning_4kb (5197745436304627728) -->
-    <skip />
-    <!-- no translation found for page_size_compat_apk_and_elf_warning_4kb (5626544342073325806) -->
-    <skip />
+    <string name="page_size_compat_apk_warning_4kb" msgid="6013674159459424986">"Cảnh báo này xuất hiện vì ứng dụng có thể gỡ lỗi này đang trong giai đoạn thử nghiệm. Nếu bạn không phải là nhà phát triển, hãy báo cáo vấn đề này cho nhà phát triển và yêu cầu cung cấp một ứng dụng không thể gỡ lỗi. &lt;br&gt;&lt;br&gt; Ứng dụng này không tương thích với kích thước trang 16 KB. Không kiểm tra được cách căn chỉnh của tệp APK. Vui lòng làm theo các bước trên &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; &lt;br&gt;&lt;br&gt; Các thư viện sau đây không được căn chỉnh theo kích thước trang 16 KB: &lt;br&gt;&lt;br&gt;"</string>
+    <string name="page_size_compat_elf_warning_4kb" msgid="5189541753040977649">"Cảnh báo này xuất hiện vì ứng dụng có thể gỡ lỗi này đang trong giai đoạn thử nghiệm. Nếu bạn không phải là nhà phát triển, hãy báo cáo vấn đề này cho nhà phát triển và yêu cầu cung cấp một ứng dụng không thể gỡ lỗi. &lt;br&gt;&lt;br&gt; Ứng dụng này không tương thích với kích thước trang 16 KB. Không kiểm tra được cách căn chỉnh của tệp ELF. Vui lòng làm theo các bước trên &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; &lt;br&gt;&lt;br&gt; Các thư viện sau đây không được căn chỉnh theo kích thước trang 16 KB: &lt;br&gt;&lt;br&gt;"</string>
+    <string name="page_size_compat_apk_and_elf_warning_4kb" msgid="7665028394400479058">"Cảnh báo này xuất hiện vì ứng dụng có thể gỡ lỗi này đang trong giai đoạn thử nghiệm. Nếu bạn không phải là nhà phát triển, hãy báo cáo vấn đề này cho nhà phát triển và yêu cầu cung cấp một ứng dụng không thể gỡ lỗi. &lt;br&gt;&lt;br&gt; Ứng dụng này không tương thích với kích thước trang 16 KB. Không kiểm tra được cách căn chỉnh của tệp APK và tệp ELF. Vui lòng làm theo các bước trên &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;. &lt;br&gt;&lt;br&gt; Các thư viện sau đây không được căn chỉnh theo kích thước trang 16 KB: &lt;br&gt;&lt;br&gt;"</string>
     <string name="page_size_compat_never_show" msgid="3391282612422783097">"Không hiện lại"</string>
-    <!-- no translation found for page_size_compat_title (6497719153872572204) -->
-    <skip />
-    <!-- no translation found for page_size_compat_elf_not_aligned (7940806102874132630) -->
-    <skip />
-    <!-- no translation found for page_size_compat_apk_not_aligned (8927901100655245528) -->
-    <skip />
-    <!-- no translation found for page_size_compat_apk_and_elf_not_aligned (1010371834741548905) -->
-    <skip />
-    <!-- no translation found for page_size_compat_unknown (3254222165646410528) -->
-    <skip />
+    <string name="page_size_compat_title" msgid="6497719153872572204">"Khả năng tương thích của ứng dụng Android"</string>
+    <string name="page_size_compat_elf_not_aligned" msgid="7940806102874132630">"&amp;#8226; %1$s: Phân đoạn TẢI không tương thích"</string>
+    <string name="page_size_compat_apk_not_aligned" msgid="8927901100655245528">"&amp;#8226; %1$s : Thư viện không nén không được căn chỉnh"</string>
+    <string name="page_size_compat_apk_and_elf_not_aligned" msgid="1010371834741548905">"&amp;#8226; %1$s : Phân đoạn TẢI và thư viện không nén không được căn chỉnh"</string>
+    <string name="page_size_compat_unknown" msgid="3254222165646410528">"&amp;#8226; %1$s : Lỗi không xác định"</string>
     <string name="serviceNotProvisioned" msgid="8289333510236766193">"Dịch vụ không được cấp phép."</string>
     <string name="CLIRPermanent" msgid="166443681876381118">"Bạn không thể thay đổi cài đặt ID người gọi."</string>
     <string name="auto_data_switch_title" msgid="3286350716870518297">"Đã chuyển dữ liệu sang <xliff:g id="CARRIERDISPLAY">%s</xliff:g>"</string>
@@ -373,18 +365,12 @@
     <string name="permgroupdesc_sensors" msgid="2610631290633747752">"truy cập dữ liệu cảm biến về dấu hiệu sinh tồn của bạn"</string>
     <string name="permgrouplab_notifications" msgid="5472972361980668884">"Thông báo"</string>
     <string name="permgroupdesc_notifications" msgid="4608679556801506580">"hiển thị thông báo"</string>
-    <!-- no translation found for permgrouplab_xr_eye_sensitive (1709596126334620353) -->
-    <skip />
-    <!-- no translation found for permgroupdesc_xr_eye_sensitive (6050967250223079001) -->
-    <skip />
-    <!-- no translation found for permgrouplab_xr_tracking (766634536453394700) -->
-    <skip />
-    <!-- no translation found for permgroupdesc_xr_tracking (812429788288001595) -->
-    <skip />
-    <!-- no translation found for permgrouplab_xr_tracking_sensitive (4346975608010051186) -->
-    <skip />
-    <!-- no translation found for permgroupdesc_xr_tracking_sensitive (7925014193164562556) -->
-    <skip />
+    <string name="permgrouplab_xr_eye_sensitive" msgid="1709596126334620353">"Dữ liệu theo dõi ánh mắt"</string>
+    <string name="permgroupdesc_xr_eye_sensitive" msgid="6050967250223079001">"theo dõi chính xác cử động mắt"</string>
+    <string name="permgrouplab_xr_tracking" msgid="766634536453394700">"Dữ liệu về cử động và khu vực"</string>
+    <string name="permgroupdesc_xr_tracking" msgid="812429788288001595">"theo dõi mắt, khuôn mặt, cơ thể và quét khu vực"</string>
+    <string name="permgrouplab_xr_tracking_sensitive" msgid="4346975608010051186">"Dữ liệu chính xác về cử động đầu và khu vực"</string>
+    <string name="permgroupdesc_xr_tracking_sensitive" msgid="7925014193164562556">"theo dõi chính xác cử động đầu và quét khu vực"</string>
     <string name="capability_title_canRetrieveWindowContent" msgid="7554282892101587296">"Truy xuất nội dung cửa sổ"</string>
     <string name="capability_desc_canRetrieveWindowContent" msgid="6195610527625237661">"Kiểm tra nội dung của cửa sổ bạn đang tương tác."</string>
     <string name="capability_title_canRequestTouchExploration" msgid="327598364696316213">"Bật tính năng Khám phá bằng cách chạm"</string>
@@ -682,38 +668,22 @@
     <string name="permdesc_imagesWrite" msgid="5195054463269193317">"Cho phép ứng dụng này sửa đổi bộ sưu tập ảnh của bạn."</string>
     <string name="permlab_mediaLocation" msgid="7368098373378598066">"đọc vị trí từ bộ sưu tập phương tiện"</string>
     <string name="permdesc_mediaLocation" msgid="597912899423578138">"Cho phép ứng dụng này đọc vị trí từ bộ sưu tập phương tiện của bạn."</string>
-    <!-- no translation found for permlab_eye_tracking_coarse (1266477998416112440) -->
-    <skip />
-    <!-- no translation found for permdesc_eye_tracking_coarse (1652112796672085320) -->
-    <skip />
-    <!-- no translation found for permlab_eye_tracking_fine (6208991021186455002) -->
-    <skip />
-    <!-- no translation found for permdesc_eye_tracking_fine (9215360948852654836) -->
-    <skip />
-    <!-- no translation found for permlab_face_tracking (6052126246676474909) -->
-    <skip />
-    <!-- no translation found for permdesc_face_tracking (185815778490412574) -->
-    <skip />
-    <!-- no translation found for permlab_hand_tracking (21944950887649088) -->
-    <skip />
-    <!-- no translation found for permdesc_hand_tracking (8083783248481460669) -->
-    <skip />
-    <!-- no translation found for permlab_head_tracking (4304699038992159853) -->
-    <skip />
-    <!-- no translation found for permdesc_head_tracking (2232184518548944223) -->
-    <skip />
-    <!-- no translation found for permlab_scene_understanding_coarse (8765236119358852920) -->
-    <skip />
-    <!-- no translation found for permdesc_scene_understanding_coarse (847344305502345475) -->
-    <skip />
-    <!-- no translation found for permlab_scene_understanding_fine (2899904960307462936) -->
-    <skip />
-    <!-- no translation found for permdesc_scene_understanding_fine (4848943859506977588) -->
-    <skip />
-    <!-- no translation found for permlab_xr_tracking_in_background (8659516810430027774) -->
-    <skip />
-    <!-- no translation found for permdesc_xr_tracking_in_background (3151744132692357005) -->
-    <skip />
+    <string name="permlab_eye_tracking_coarse" msgid="1266477998416112440">"theo dõi cử động mắt"</string>
+    <string name="permdesc_eye_tracking_coarse" msgid="1652112796672085320">"Cho phép ứng dụng này theo dõi hướng gần đúng của ánh mắt bạn."</string>
+    <string name="permlab_eye_tracking_fine" msgid="6208991021186455002">"theo dõi chính xác cử động mắt"</string>
+    <string name="permdesc_eye_tracking_fine" msgid="9215360948852654836">"Cho phép ứng dụng này theo dõi hướng ánh mắt của bạn."</string>
+    <string name="permlab_face_tracking" msgid="6052126246676474909">"theo dõi cử động khuôn mặt"</string>
+    <string name="permdesc_face_tracking" msgid="185815778490412574">"Cho phép ứng dụng này theo dõi các biểu cảm và cử động khuôn mặt bạn."</string>
+    <string name="permlab_hand_tracking" msgid="21944950887649088">"theo dõi cử động tay"</string>
+    <string name="permdesc_hand_tracking" msgid="8083783248481460669">"Cho phép ứng dụng này theo dõi chuyển động tay của bạn."</string>
+    <string name="permlab_head_tracking" msgid="4304699038992159853">"theo dõi cử động đầu"</string>
+    <string name="permdesc_head_tracking" msgid="2232184518548944223">"Cho phép ứng dụng này theo dõi cử động đầu của bạn."</string>
+    <string name="permlab_scene_understanding_coarse" msgid="8765236119358852920">"quét khu vực xung quanh bạn"</string>
+    <string name="permdesc_scene_understanding_coarse" msgid="847344305502345475">"Cho phép ứng dụng này quét môi trường xung quanh bạn."</string>
+    <string name="permlab_scene_understanding_fine" msgid="2899904960307462936">"quét chính xác khu vực xung quanh bạn"</string>
+    <string name="permdesc_scene_understanding_fine" msgid="4848943859506977588">"Cho phép ứng dụng này quét chính xác môi trường xung quanh bạn."</string>
+    <string name="permlab_xr_tracking_in_background" msgid="8659516810430027774">"theo dõi dữ liệu XR ở chế độ nền"</string>
+    <string name="permdesc_xr_tracking_in_background" msgid="3151744132692357005">"Cho phép ứng dụng này truy cập vào dữ liệu XR ở chế độ nền."</string>
     <string name="permlab_capture_keyboard" msgid="4076894823382693032">"ghi lại các phím"</string>
     <string name="permdesc_capture_keyboard" msgid="4192269470684407219">"Cho phép ứng dụng ghi lại các phím trước khi hệ thống có thể xử lý các thao tác và phím tắt trên đó."</string>
     <string name="biometric_app_setting_name" msgid="3339209978734534457">"Dùng dữ liệu sinh trắc học"</string>
@@ -944,6 +914,8 @@
     <string name="policydesc_disableCamera" msgid="3204405908799676104">"Ngăn sử dụng tất cả máy ảnh của thiết bị."</string>
     <string name="policylab_disableKeyguardFeatures" msgid="5071855750149949741">"Tắt một số tính năng của phương thức khóa màn hình"</string>
     <string name="policydesc_disableKeyguardFeatures" msgid="6641673177041195957">"Ngăn sử dụng một số tính năng của phương thức khóa màn hình."</string>
+    <!-- no translation found for exit_toast_on_long_press_escape (873907401529125943) -->
+    <skip />
   <string-array name="phoneTypes">
     <item msgid="8996339953292723951">"Nhà riêng"</item>
     <item msgid="7740243458912727194">"Di động"</item>
@@ -2596,6 +2568,7 @@
     <string name="keyboard_shortcut_group_applications_calendar" msgid="3571770335653387606">"Lịch"</string>
     <string name="keyboard_shortcut_group_applications_calculator" msgid="6753209559716091507">"Máy tính"</string>
     <string name="keyboard_shortcut_group_applications_maps" msgid="7950000659522589471">"Bản đồ"</string>
+    <string name="keyboard_shortcut_group_applications_files" msgid="863938400765838051">"Files"</string>
     <string name="keyboard_shortcut_group_applications" msgid="3010389163951364798">"Ứng dụng"</string>
     <string name="fingerprint_loe_notification_msg" msgid="3927447270148854546">"Hệ thống không nhận dạng được vân tay của bạn. Hãy thiết lập lại tính năng Mở khoá bằng vân tay."</string>
     <string name="usb_apm_usb_plugged_in_when_locked_notification_app_title" msgid="285421860627714333">"Tính bảo mật và quyền riêng tư"</string>
@@ -2615,6 +2588,5 @@
     <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"Bạn gặp sự cố khi sử dụng tính năng Mở khoá bằng vân tay?"</string>
     <string name="fingerprint_frr_notification_msg" msgid="2162966846624639252">"Nhấn để xem các mẹo giúp cải thiện trải nghiệm mở khoá"</string>
     <string name="no_blink_accessibility_text_cursor_blink_label" msgid="223072797385428874">"Không nhấp nháy"</string>
-    <!-- no translation found for long_press_power_to_turn_off_tv_toast (2231397748028498986) -->
-    <skip />
+    <string name="long_press_power_to_turn_off_tv_toast" msgid="2231397748028498986">"Nhấn và giữ nút Nguồn để tắt TV"</string>
 </resources>

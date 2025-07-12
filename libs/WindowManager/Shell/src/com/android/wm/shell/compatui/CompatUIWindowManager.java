@@ -198,6 +198,9 @@ class CompatUIWindowManager extends CompatUIWindowManagerAbstract {
 
     @VisibleForTesting
     boolean shouldShowSizeCompatRestartButton(@NonNull TaskInfo taskInfo) {
+        if (!mCompatUIConfiguration.isRestartButtonConfigEnabled()) {
+            return false;
+        }
         // Always show button if display is phone sized.
         if (CompatUIUtils.shouldShowSizeCompatRestartForPhoneScreen(taskInfo)) {
             return true;

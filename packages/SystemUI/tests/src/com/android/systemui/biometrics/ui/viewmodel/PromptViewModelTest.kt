@@ -65,11 +65,13 @@ import com.android.systemui.biometrics.fingerprintSensorPropertiesInternal
 import com.android.systemui.biometrics.shared.model.AuthenticationReason
 import com.android.systemui.biometrics.shared.model.BiometricModalities
 import com.android.systemui.biometrics.shared.model.BiometricModality
-import com.android.systemui.biometrics.shared.model.NegativeButtonState
-import com.android.systemui.biometrics.shared.model.PositiveButtonState
 import com.android.systemui.biometrics.shared.model.UdfpsOverlayParams
 import com.android.systemui.biometrics.shared.model.toSensorStrength
 import com.android.systemui.biometrics.shared.model.toSensorType
+import com.android.systemui.biometrics.ui.NegativeButtonState
+import com.android.systemui.biometrics.ui.PositiveButtonState
+import com.android.systemui.biometrics.ui.PromptPosition
+import com.android.systemui.biometrics.ui.PromptSize
 import com.android.systemui.concurrency.fakeExecutor
 import com.android.systemui.coroutines.collectLastValue
 import com.android.systemui.coroutines.collectValues

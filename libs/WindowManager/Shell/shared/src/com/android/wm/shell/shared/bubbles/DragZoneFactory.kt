@@ -220,7 +220,9 @@ class DragZoneFactory(
             is DraggedObject.Bubble -> {
                 dragZones.add(createDismissDragZone())
                 dragZones.addAll(createBubbleCornerDragZones())
-                dragZones.add(createFullScreenDragZone())
+                if (BubbleAnythingFlagHelper.enableBubbleToFullscreen()) {
+                    dragZones.add(createFullScreenDragZone())
+                }
                 if (shouldShowDesktopWindowDragZones()) {
                     dragZones.add(createDesktopWindowDragZoneForBubble())
                 }
@@ -228,7 +230,9 @@ class DragZoneFactory(
             }
             is DraggedObject.ExpandedView -> {
                 dragZones.add(createDismissDragZone())
-                dragZones.add(createFullScreenDragZone())
+                if (BubbleAnythingFlagHelper.enableBubbleToFullscreen()) {
+                    dragZones.add(createFullScreenDragZone())
+                }
                 if (shouldShowDesktopWindowDragZones()) {
                     dragZones.add(createDesktopWindowDragZoneForExpandedView())
                 }

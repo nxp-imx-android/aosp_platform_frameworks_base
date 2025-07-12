@@ -81,6 +81,7 @@ import kotlinx.coroutines.MainCoroutineDispatcher
 class DesktopTilingWindowDecoration(
     private var context: Context,
     @ShellMainThread private val mainDispatcher: MainCoroutineDispatcher,
+    @ShellMainThread private val mainScope: CoroutineScope,
     @ShellBackgroundThread private val bgScope: CoroutineScope,
     private val syncQueue: SyncTransactionQueue,
     private val displayController: DisplayController,
@@ -142,6 +143,7 @@ class DesktopTilingWindowDecoration(
                 displayController,
                 taskResourceLoader,
                 mainDispatcher,
+                mainScope,
                 bgScope,
                 transactionSupplier,
             )
@@ -543,6 +545,7 @@ class DesktopTilingWindowDecoration(
         val displayController: DisplayController,
         private val taskResourceLoader: WindowDecorTaskResourceLoader,
         @ShellMainThread val mainDispatcher: MainCoroutineDispatcher,
+        @ShellMainThread val mainScope: CoroutineScope,
         @ShellBackgroundThread val bgScope: CoroutineScope,
         val transactionSupplier: Supplier<Transaction>,
     ) {
@@ -569,7 +572,7 @@ class DesktopTilingWindowDecoration(
                     displayController = displayController,
                     taskResourceLoader = taskResourceLoader,
                     mainDispatcher = mainDispatcher,
-                    bgScope = bgScope,
+                    mainScope = mainScope,
                     parentSurface = windowDecoration.taskSurface,
                     surfaceControlTransactionSupplier = transactionSupplier,
                     taskInfo = taskInfo,

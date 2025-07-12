@@ -524,13 +524,13 @@ public class MockingOomAdjusterTests {
 
         assertProcStates(app, PROCESS_STATE_TOP_SLEEPING, FOREGROUND_APP_ADJ,
                 SCHED_GROUP_BACKGROUND);
-        assertTrue(app.mState.hasForegroundActivities());
+        assertTrue(app.mState.getHasForegroundActivities());
 
         setIsReceivingBroadcast(app, true, SCHED_GROUP_BACKGROUND);
         updateOomAdj(app);
 
         assertProcStates(app, PROCESS_STATE_RECEIVER, FOREGROUND_APP_ADJ, SCHED_GROUP_BACKGROUND);
-        assertTrue(app.mState.hasForegroundActivities());
+        assertTrue(app.mState.getHasForegroundActivities());
     }
 
     @SuppressWarnings("GuardedBy")
@@ -3844,7 +3844,7 @@ public class MockingOomAdjusterTests {
                 mock(IBinder.class));
         updateOomAdj(client);
 
-        assertTrue(host.mState.shouldScheduleLikeTopApp());
+        assertTrue(host.mState.getScheduleLikeTopApp());
         assertEquals(SCHED_GROUP_TOP_APP, host.mState.getCurrentSchedulingGroup());
     }
 
@@ -3861,7 +3861,7 @@ public class MockingOomAdjusterTests {
                 mock(IBinder.class));
         updateOomAdj(client);
 
-        assertFalse(host.mState.shouldScheduleLikeTopApp());
+        assertFalse(host.mState.getScheduleLikeTopApp());
         assertNotEquals(SCHED_GROUP_TOP_APP, host.mState.getCurrentSchedulingGroup());
     }
 
@@ -3885,7 +3885,7 @@ public class MockingOomAdjusterTests {
         updateOomAdj(client);
 
         // The update for host by its client connection evaluation is skipped.
-        assertFalse(host.mState.shouldScheduleLikeTopApp());
+        assertFalse(host.mState.getScheduleLikeTopApp());
         assertNotEquals(SCHED_GROUP_TOP_APP, host.mState.getSetSchedGroup());
     }
 
@@ -3908,7 +3908,7 @@ public class MockingOomAdjusterTests {
                 mock(IBinder.class));
         updateOomAdj(client);
 
-        assertTrue(host.mState.shouldScheduleLikeTopApp());
+        assertTrue(host.mState.getScheduleLikeTopApp());
         assertEquals(SCHED_GROUP_TOP_APP, host.mState.getCurrentSchedulingGroup());
     }
 

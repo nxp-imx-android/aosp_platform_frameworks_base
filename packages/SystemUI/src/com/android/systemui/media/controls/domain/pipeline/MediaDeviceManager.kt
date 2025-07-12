@@ -16,24 +16,19 @@
 
 package com.android.systemui.media.controls.domain.pipeline
 
-import android.bluetooth.BluetoothLeBroadcast
-import android.bluetooth.BluetoothLeBroadcastMetadata
 import android.content.Context
 import android.graphics.drawable.Drawable
 import android.media.MediaRouter2Manager
 import android.media.RoutingSessionInfo
 import android.media.session.MediaController
 import android.media.session.MediaController.PlaybackInfo
-import android.text.TextUtils
 import android.util.Log
 import androidx.annotation.AnyThread
 import androidx.annotation.MainThread
 import androidx.annotation.WorkerThread
 import com.android.media.flags.Flags.enableOutputSwitcherPersonalAudioSharing
-import com.android.settingslib.bluetooth.LocalBluetoothLeBroadcast
 import com.android.settingslib.bluetooth.LocalBluetoothManager
 import com.android.settingslib.flags.Flags.enableLeAudioSharing
-import com.android.settingslib.flags.Flags.legacyLeAudioSharing
 import com.android.settingslib.media.InfoMediaManager.SuggestedDeviceState
 import com.android.settingslib.media.LocalMediaManager
 import com.android.settingslib.media.MediaDevice
@@ -49,7 +44,6 @@ import com.android.systemui.media.controls.shared.model.SuggestedMediaDeviceData
 import com.android.systemui.media.controls.shared.model.SuggestionData
 import com.android.systemui.media.controls.util.LocalMediaManagerFactory
 import com.android.systemui.media.controls.util.MediaControllerFactory
-import com.android.systemui.media.controls.util.MediaDataUtils
 import com.android.systemui.media.muteawait.MediaMuteAwaitConnectionManager
 import com.android.systemui.media.muteawait.MediaMuteAwaitConnectionManagerFactory
 import com.android.systemui.res.R
@@ -84,7 +78,7 @@ constructor(
 
     companion object {
         private val EMPTY_AND_DISABLED_MEDIA_DEVICE_DATA =
-            MediaDeviceData(enabled = false, icon = null, name = null, showBroadcastButton = false)
+            MediaDeviceData(enabled = false, icon = null, name = null)
     }
 
     /** Add a listener for changes to the media route (ie. device). */
@@ -199,10 +193,7 @@ constructor(
         val controller: MediaController?,
         val localMediaManager: LocalMediaManager,
         val muteAwaitConnectionManager: MediaMuteAwaitConnectionManager,
-    ) :
-        LocalMediaManager.DeviceCallback,
-        MediaController.Callback(),
-        BluetoothLeBroadcast.Callback {
+    ) : LocalMediaManager.DeviceCallback, MediaController.Callback() {
 
         val token
             get() = controller?.sessionToken
@@ -220,7 +211,6 @@ constructor(
         // A device that is not yet connected but is expected to connect imminently. Because it's
         // expected to connect imminently, it should be displayed as the current device.
         private var aboutToConnectDeviceOverride: AboutToConnectDevice? = null
-        private var broadcastDescription: String? = null
         private val configListener =
             object : ConfigurationController.ConfigurationListener {
                 override fun onLocaleListChanged() {
@@ -336,7 +326,6 @@ constructor(
                             /* enabled */ enabled = true,
                             /* icon */ deviceIcon,
                             /* name */ deviceName,
-                            /* showBroadcastButton */ showBroadcastButton = false,
                         ),
                 )
             updateCurrent()
@@ -346,45 +335,6 @@ constructor(
             aboutToConnectDeviceOverride = null
             updateCurrent()
         }
-
-        override fun onBroadcastStarted(reason: Int, broadcastId: Int) {
-            logger.logBroadcastEvent("onBroadcastStarted", reason, broadcastId)
-            updateCurrent()
-        }
-
-        override fun onBroadcastStartFailed(reason: Int) {
-            logger.logBroadcastEvent("onBroadcastStartFailed", reason)
-        }
-
-        override fun onBroadcastMetadataChanged(
-            broadcastId: Int,
-            metadata: BluetoothLeBroadcastMetadata,
-        ) {
-            logger.logBroadcastMetadataChanged(broadcastId, metadata.toString())
-            updateCurrent()
-        }
-
-        override fun onBroadcastStopped(reason: Int, broadcastId: Int) {
-            logger.logBroadcastEvent("onBroadcastStopped", reason, broadcastId)
-            updateCurrent()
-        }
-
-        override fun onBroadcastStopFailed(reason: Int) {
-            logger.logBroadcastEvent("onBroadcastStopFailed", reason)
-        }
-
-        override fun onBroadcastUpdated(reason: Int, broadcastId: Int) {
-            logger.logBroadcastEvent("onBroadcastUpdated", reason, broadcastId)
-            updateCurrent()
-        }
-
-        override fun onBroadcastUpdateFailed(reason: Int, broadcastId: Int) {
-            logger.logBroadcastEvent("onBroadcastUpdateFailed", reason, broadcastId)
-        }
-
-        override fun onPlaybackStarted(reason: Int, broadcastId: Int) {}
-
-        override fun onPlaybackStopped(reason: Int, broadcastId: Int) {}
 
         @WorkerThread
         private fun updateSuggestion(
@@ -418,8 +368,13 @@ constructor(
         private fun updateCurrent(notifyListeners: Boolean = true) {
             val oldCurrent = current
             val newCurrent =
-                if (isLeAudioBroadcastEnabled()) {
-                        getLeAudioBroadcastDeviceData()
+                if (inBroadcast()) {
+                        MediaDeviceData(
+                            enabled = enableOutputSwitcherPersonalAudioSharing(),
+                            icon = MediaControlDrawables.getLeAudioSharing(context),
+                            name = context.getString(R.string.audio_sharing_description),
+                            intent = null,
+                        )
                     } else {
                         val activeDevice: MediaDeviceData?
 
@@ -464,7 +419,6 @@ constructor(
                                         icon = MediaControlDrawables.getHomeDevices(context),
                                         name =
                                             context.getString(R.string.media_seamless_other_device),
-                                        showBroadcastButton = false,
                                     )
                             logger.logRemoteDevice(routingSession?.name, connectedDevice)
                         } else {
@@ -494,35 +448,7 @@ constructor(
         }
 
         private fun MediaDevice.toMediaDeviceData() =
-            MediaDeviceData(
-                enabled = true,
-                icon = iconWithoutBackground,
-                name = name,
-                id = id,
-                showBroadcastButton = false,
-            )
-
-        private fun getLeAudioBroadcastDeviceData(): MediaDeviceData {
-            return if (enableLeAudioSharing()) {
-                MediaDeviceData(
-                    enabled = enableOutputSwitcherPersonalAudioSharing(),
-                    icon = MediaControlDrawables.getLeAudioSharing(context),
-                    name = context.getString(R.string.audio_sharing_description),
-                    intent = null,
-                    // TODO(b/333324985): showBroadcastButton is legacy audio sharing flow, remove
-                    //  these code once new design is launched.
-                    showBroadcastButton = false,
-                )
-            } else {
-                MediaDeviceData(
-                    enabled = true,
-                    icon = MediaControlDrawables.getAntenna(context),
-                    name = broadcastDescription,
-                    intent = null,
-                    showBroadcastButton = true,
-                )
-            }
-        }
+            MediaDeviceData(enabled = true, icon = iconWithoutBackground, name = name, id = id)
 
         /** Return a display name for the current device / route, or null if not possible */
         private fun getDeviceName(
@@ -567,15 +493,14 @@ constructor(
         }
 
         @WorkerThread
-        private fun isLeAudioBroadcastEnabled(): Boolean {
-            if (!enableLeAudioSharing() && !legacyLeAudioSharing()) return false
+        private fun inBroadcast(): Boolean {
+            if (!enableLeAudioSharing()) return false
             val localBluetoothManager = localBluetoothManager.get()
             if (localBluetoothManager != null) {
                 val profileManager = localBluetoothManager.profileManager
                 if (profileManager != null) {
                     val bluetoothLeBroadcast = profileManager.leAudioBroadcastProfile
                     if (bluetoothLeBroadcast != null && bluetoothLeBroadcast.isEnabled(null)) {
-                        getBroadcastingInfo(bluetoothLeBroadcast)
                         return true
                     } else if (DEBUG) {
                         Log.d(TAG, "Can not get LocalBluetoothLeBroadcast")
@@ -587,28 +512,6 @@ constructor(
                 Log.d(TAG, "Can not get LocalBluetoothManager")
             }
             return false
-        }
-
-        @WorkerThread
-        private fun getBroadcastingInfo(bluetoothLeBroadcast: LocalBluetoothLeBroadcast) {
-            val currentBroadcastedApp = bluetoothLeBroadcast.appSourceName
-            // TODO(b/233698402): Use the package name instead of app label to avoid the
-            // unexpected result.
-            // Check the current media app's name is the same with current broadcast app's name
-            // or not.
-            val mediaApp =
-                MediaDataUtils.getAppLabel(
-                    context,
-                    localMediaManager.packageName,
-                    context.getString(R.string.bt_le_audio_broadcast_dialog_unknown_name),
-                )
-            val isCurrentBroadcastedApp = TextUtils.equals(mediaApp, currentBroadcastedApp)
-            if (isCurrentBroadcastedApp) {
-                broadcastDescription =
-                    context.getString(R.string.broadcasting_description_is_broadcasting)
-            } else {
-                broadcastDescription = currentBroadcastedApp
-            }
         }
     }
 }

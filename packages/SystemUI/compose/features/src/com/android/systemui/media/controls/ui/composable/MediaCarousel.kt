@@ -60,6 +60,7 @@ fun ContentScope.MediaCarousel(
     offsetProvider: (() -> IntOffset)? = null,
     usingCollapsedLandscapeMedia: Boolean = false,
     isInSplitShade: Boolean = false,
+    onReleaseCallback: (() -> Unit)? = null,
 ) {
     if (!isVisible || carouselController.isLockedAndHidden()) {
         return
@@ -123,7 +124,10 @@ fun ContentScope.MediaCarousel(
                         !mediaHost.showsOnlyActiveMedia
                     it.setView(carouselController.mediaFrame)
                 },
-                onRelease = { it.removeAllViews() },
+                onRelease = {
+                    onReleaseCallback?.invoke()
+                    it.removeAllViews()
+                },
             )
         }
     }

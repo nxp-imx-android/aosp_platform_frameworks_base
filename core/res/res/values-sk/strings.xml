@@ -76,23 +76,15 @@
     <string name="page_size_compat_apk_warning" msgid="2982396798449041224">"Táto aplikácia nie je kompatibilná s režimom 16 kB. Nepodarilo sa skontrolovať zarovnanie súboru APK. Táto aplikácia bude spustená v režime kompatibilnom s veľkosťou stránky. Ak chcete dosiahnuť najlepšiu kompatibilitu, znova skompilujte aplikáciu s podporou 16 kB. Viac sa dozviete na &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;."</string>
     <string name="page_size_compat_elf_warning" msgid="6753874059564812651">"Táto aplikácia nie je kompatibilná s režimom 16 kB. Nepodarilo sa skontrolovať zarovnanie formátu ELF. Táto aplikácia bude spustená v režime kompatibilnom s veľkosťou stránky. Ak chcete dosiahnuť najlepšiu kompatibilitu, znova skompilujte aplikáciu s podporou 16 kB. Viac sa dozviete na &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;."</string>
     <string name="page_size_compat_apk_and_elf_warning" msgid="7628675779500605390">"Táto aplikácia nie je kompatibilná s 16 kB stránkovaním. Kontrola zarovnania v súboroch APK a ELF sa nepodarila. Aplikácia pobeží v režime kompatibility s veľkosťou stránky. Pre optimálnu kompatibilitu aplikáciu prekompilujte s podporou 16 kB stránkovania. Viac sa dozviete na &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;."</string>
-    <!-- no translation found for page_size_compat_apk_warning_4kb (1284527724160989424) -->
-    <skip />
-    <!-- no translation found for page_size_compat_elf_warning_4kb (5197745436304627728) -->
-    <skip />
-    <!-- no translation found for page_size_compat_apk_and_elf_warning_4kb (5626544342073325806) -->
-    <skip />
+    <string name="page_size_compat_apk_warning_4kb" msgid="6013674159459424986">"Dané upozornenie sa zobrazuje, pretože toto je laditeľná aplikácia, ktorá sa momentálne testuje. Ak nie ste vývojár, nahláste to príslušnému vývojárovi a požiadajte o neladiteľnú aplikáciu. &lt;br&gt;&lt;br&gt; Táto aplikácia nie je kompatibilná s režimom 16 kB. Nepodarilo sa skontrolovať zosúladenie súboru APK. Postupujte podľa pokynov na &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;. &lt;br&gt;&lt;br&gt; Nasledujúce knižnice nie sú zosúladené s režimom 16 kB: &lt;br&gt;&lt;br&gt;"</string>
+    <string name="page_size_compat_elf_warning_4kb" msgid="5189541753040977649">"Dané upozornenie sa zobrazuje, pretože toto je laditeľná aplikácia, ktorá sa momentálne testuje. Ak nie ste vývojár, nahláste to príslušnému vývojárovi a požiadajte o neladiteľnú aplikáciu. &lt;br&gt;&lt;br&gt; Táto aplikácia nie je kompatibilná s režimom 16 kB. Nepodarilo sa skontrolovať zosúladenie formátu ELF. Postupujte podľa pokynov na &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;. &lt;br&gt;&lt;br&gt; Nasledujúce knižnice nie sú zosúladené s režimom 16 kB: &lt;br&gt;&lt;br&gt;"</string>
+    <string name="page_size_compat_apk_and_elf_warning_4kb" msgid="7665028394400479058">"Dané upozornenie sa zobrazuje, pretože toto je laditeľná aplikácia, ktorá sa momentálne testuje. Ak nie ste vývojár, nahláste to príslušnému vývojárovi a požiadajte o neladiteľnú aplikáciu. &lt;br&gt;&lt;br&gt; Táto aplikácia nie je kompatibilná s režimom 16 kB. Nepodarilo sa skontrolovať zosúladenie súboru APK a formátu ELF. Postupujte podľa pokynov na &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;. &lt;br&gt;&lt;br&gt; Nasledujúce knižnice nie sú zosúladené s režimom 16 kB: &lt;br&gt;&lt;br&gt;"</string>
     <string name="page_size_compat_never_show" msgid="3391282612422783097">"Nabudúce nezobrazovať"</string>
-    <!-- no translation found for page_size_compat_title (6497719153872572204) -->
-    <skip />
-    <!-- no translation found for page_size_compat_elf_not_aligned (7940806102874132630) -->
-    <skip />
-    <!-- no translation found for page_size_compat_apk_not_aligned (8927901100655245528) -->
-    <skip />
-    <!-- no translation found for page_size_compat_apk_and_elf_not_aligned (1010371834741548905) -->
-    <skip />
-    <!-- no translation found for page_size_compat_unknown (3254222165646410528) -->
-    <skip />
+    <string name="page_size_compat_title" msgid="6497719153872572204">"Kompatibilita s aplikáciami pre Android"</string>
+    <string name="page_size_compat_elf_not_aligned" msgid="7940806102874132630">"&amp;#8226; %1$s : segment LOAD nie je zosúladený"</string>
+    <string name="page_size_compat_apk_not_aligned" msgid="8927901100655245528">"&amp;#8226; %1$s : neskomprimovaná knižnica nie je zosúladená"</string>
+    <string name="page_size_compat_apk_and_elf_not_aligned" msgid="1010371834741548905">"&amp;#8226; %1$s : segment LOAD a neskomprimovaná knižnica nie sú zosúladené"</string>
+    <string name="page_size_compat_unknown" msgid="3254222165646410528">"&amp;#8226; %1$s : neznáma chyba"</string>
     <string name="serviceNotProvisioned" msgid="8289333510236766193">"Služba nie je poskytovaná."</string>
     <string name="CLIRPermanent" msgid="166443681876381118">"Nemôžete meniť nastavenie identifikácie volajúcich."</string>
     <string name="auto_data_switch_title" msgid="3286350716870518297">"Dátové pripojenie bolo prepnuté na operátora <xliff:g id="CARRIERDISPLAY">%s</xliff:g>"</string>
@@ -375,18 +367,12 @@
     <string name="permgroupdesc_sensors" msgid="2610631290633747752">"prístup k dátam senzorov vašich životných funkcií"</string>
     <string name="permgrouplab_notifications" msgid="5472972361980668884">"Upozornenia"</string>
     <string name="permgroupdesc_notifications" msgid="4608679556801506580">"zobrazovať upozornenia"</string>
-    <!-- no translation found for permgrouplab_xr_eye_sensitive (1709596126334620353) -->
-    <skip />
-    <!-- no translation found for permgroupdesc_xr_eye_sensitive (6050967250223079001) -->
-    <skip />
-    <!-- no translation found for permgrouplab_xr_tracking (766634536453394700) -->
-    <skip />
-    <!-- no translation found for permgroupdesc_xr_tracking (812429788288001595) -->
-    <skip />
-    <!-- no translation found for permgrouplab_xr_tracking_sensitive (4346975608010051186) -->
-    <skip />
-    <!-- no translation found for permgroupdesc_xr_tracking_sensitive (7925014193164562556) -->
-    <skip />
+    <string name="permgrouplab_xr_eye_sensitive" msgid="1709596126334620353">"Údaje o sledovaní očí"</string>
+    <string name="permgroupdesc_xr_eye_sensitive" msgid="6050967250223079001">"presne sledovať pohyb očí"</string>
+    <string name="permgrouplab_xr_tracking" msgid="766634536453394700">"Údaje o pohybe a okolí"</string>
+    <string name="permgroupdesc_xr_tracking" msgid="812429788288001595">"sledovať oči, tvár, telo a kontrolovať okolie"</string>
+    <string name="permgrouplab_xr_tracking_sensitive" msgid="4346975608010051186">"Presné údaje o pohybe hlavy a okolí"</string>
+    <string name="permgroupdesc_xr_tracking_sensitive" msgid="7925014193164562556">"presne sledovať hlavu a kontrolovať okolie"</string>
     <string name="capability_title_canRetrieveWindowContent" msgid="7554282892101587296">"Načítať obsah okna"</string>
     <string name="capability_desc_canRetrieveWindowContent" msgid="6195610527625237661">"Môžete preskúmať obsah okna, s ktorým pracujete."</string>
     <string name="capability_title_canRequestTouchExploration" msgid="327598364696316213">"Zapnúť funkciu Preskúmanie dotykom"</string>
@@ -684,38 +670,22 @@
     <string name="permdesc_imagesWrite" msgid="5195054463269193317">"Umožňuje aplikácii upravovať zbierku fotiek."</string>
     <string name="permlab_mediaLocation" msgid="7368098373378598066">"čítať polohy zo zbierky médií"</string>
     <string name="permdesc_mediaLocation" msgid="597912899423578138">"Umožňuje aplikácii čítať polohy zo zbierky médií."</string>
-    <!-- no translation found for permlab_eye_tracking_coarse (1266477998416112440) -->
-    <skip />
-    <!-- no translation found for permdesc_eye_tracking_coarse (1652112796672085320) -->
-    <skip />
-    <!-- no translation found for permlab_eye_tracking_fine (6208991021186455002) -->
-    <skip />
-    <!-- no translation found for permdesc_eye_tracking_fine (9215360948852654836) -->
-    <skip />
-    <!-- no translation found for permlab_face_tracking (6052126246676474909) -->
-    <skip />
-    <!-- no translation found for permdesc_face_tracking (185815778490412574) -->
-    <skip />
-    <!-- no translation found for permlab_hand_tracking (21944950887649088) -->
-    <skip />
-    <!-- no translation found for permdesc_hand_tracking (8083783248481460669) -->
-    <skip />
-    <!-- no translation found for permlab_head_tracking (4304699038992159853) -->
-    <skip />
-    <!-- no translation found for permdesc_head_tracking (2232184518548944223) -->
-    <skip />
-    <!-- no translation found for permlab_scene_understanding_coarse (8765236119358852920) -->
-    <skip />
-    <!-- no translation found for permdesc_scene_understanding_coarse (847344305502345475) -->
-    <skip />
-    <!-- no translation found for permlab_scene_understanding_fine (2899904960307462936) -->
-    <skip />
-    <!-- no translation found for permdesc_scene_understanding_fine (4848943859506977588) -->
-    <skip />
-    <!-- no translation found for permlab_xr_tracking_in_background (8659516810430027774) -->
-    <skip />
-    <!-- no translation found for permdesc_xr_tracking_in_background (3151744132692357005) -->
-    <skip />
+    <string name="permlab_eye_tracking_coarse" msgid="1266477998416112440">"sledovať pohyb očí"</string>
+    <string name="permdesc_eye_tracking_coarse" msgid="1652112796672085320">"Umožňuje aplikácii sledovať približný smer vášho pohľadu."</string>
+    <string name="permlab_eye_tracking_fine" msgid="6208991021186455002">"presne sledovať pohyb očí"</string>
+    <string name="permdesc_eye_tracking_fine" msgid="9215360948852654836">"Umožňuje aplikácii sledovať smer vášho pohľadu."</string>
+    <string name="permlab_face_tracking" msgid="6052126246676474909">"sledovať pohyby tváre"</string>
+    <string name="permdesc_face_tracking" msgid="185815778490412574">"Umožňuje aplikácii sledovať pohyby a výrazy vašej tváre."</string>
+    <string name="permlab_hand_tracking" msgid="21944950887649088">"sledovať pohyby rúk"</string>
+    <string name="permdesc_hand_tracking" msgid="8083783248481460669">"Umožňuje aplikácii sledovať pohyby vašej ruky."</string>
+    <string name="permlab_head_tracking" msgid="4304699038992159853">"sledovať pohyby hlavy"</string>
+    <string name="permdesc_head_tracking" msgid="2232184518548944223">"Umožňuje aplikácii sledovať pohyby vašej hlavy."</string>
+    <string name="permlab_scene_understanding_coarse" msgid="8765236119358852920">"kontrolovať vaše okolie"</string>
+    <string name="permdesc_scene_understanding_coarse" msgid="847344305502345475">"Umožňuje aplikácii kontrolovať vaše okolie."</string>
+    <string name="permlab_scene_understanding_fine" msgid="2899904960307462936">"presne kontrolovať vaše okolie"</string>
+    <string name="permdesc_scene_understanding_fine" msgid="4848943859506977588">"Umožňuje aplikácii presne kontrolovať vaše okolie."</string>
+    <string name="permlab_xr_tracking_in_background" msgid="8659516810430027774">"sledovať údaje o UR na pozadí"</string>
+    <string name="permdesc_xr_tracking_in_background" msgid="3151744132692357005">"Umožňuje aplikácii získať prístup k údajom UR na pozadí."</string>
     <string name="permlab_capture_keyboard" msgid="4076894823382693032">"zaznamenávať klávesy"</string>
     <string name="permdesc_capture_keyboard" msgid="4192269470684407219">"Umožňuje aplikácii zaznamenávať klávesy ešte predtým, ako systém spracuje systémové skratky a akcie."</string>
     <string name="biometric_app_setting_name" msgid="3339209978734534457">"Použiť biometrické údaje"</string>
@@ -946,6 +916,8 @@
     <string name="policydesc_disableCamera" msgid="3204405908799676104">"Zakázať používanie všetkých fotoaparátov zariadenia."</string>
     <string name="policylab_disableKeyguardFeatures" msgid="5071855750149949741">"Deaktivovať niektoré funkcie zámky obrazovky"</string>
     <string name="policydesc_disableKeyguardFeatures" msgid="6641673177041195957">"Zabrániť používaniu niektorých funkcií zámky obrazovky."</string>
+    <!-- no translation found for exit_toast_on_long_press_escape (873907401529125943) -->
+    <skip />
   <string-array name="phoneTypes">
     <item msgid="8996339953292723951">"Domov"</item>
     <item msgid="7740243458912727194">"Mobil"</item>
@@ -2598,6 +2570,7 @@
     <string name="keyboard_shortcut_group_applications_calendar" msgid="3571770335653387606">"Kalendár"</string>
     <string name="keyboard_shortcut_group_applications_calculator" msgid="6753209559716091507">"Kalkulačka"</string>
     <string name="keyboard_shortcut_group_applications_maps" msgid="7950000659522589471">"Mapy"</string>
+    <string name="keyboard_shortcut_group_applications_files" msgid="863938400765838051">"Files"</string>
     <string name="keyboard_shortcut_group_applications" msgid="3010389163951364798">"Aplikácie"</string>
     <string name="fingerprint_loe_notification_msg" msgid="3927447270148854546">"Vaše odtlačky prstov sa už nedajú rozpoznať. Znova nastavte odomknutie odtlačkom prsta."</string>
     <string name="usb_apm_usb_plugged_in_when_locked_notification_app_title" msgid="285421860627714333">"Zabezpečenie a ochrana súkromia"</string>
@@ -2617,6 +2590,5 @@
     <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"Máte problémy s odomknutím odtlačkom prsta?"</string>
     <string name="fingerprint_frr_notification_msg" msgid="2162966846624639252">"Klepnutím si zobrazte tipy na zlepšenie odomykania"</string>
     <string name="no_blink_accessibility_text_cursor_blink_label" msgid="223072797385428874">"Neblikať"</string>
-    <!-- no translation found for long_press_power_to_turn_off_tv_toast (2231397748028498986) -->
-    <skip />
+    <string name="long_press_power_to_turn_off_tv_toast" msgid="2231397748028498986">"Televízor vypnete dlhým stlačením vypínača"</string>
 </resources>

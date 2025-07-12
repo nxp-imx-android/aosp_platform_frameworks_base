@@ -584,7 +584,7 @@ java_library {
         "documents-ui-compat-config",
         "calendar-provider-compat-config",
         "contacts-provider-platform-compat-config",
-        "SystemUI-core-compat-config",
+        "SystemUI-application-compat-config",
     ] + select(soong_config_variable("ANDROID", "release_crashrecovery_module"), {
         "true": [],
         default: [

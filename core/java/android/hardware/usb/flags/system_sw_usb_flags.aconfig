@@ -50,3 +50,10 @@ flag {
     description: "Enables signal API with staking for internal local service callers"
     bug: "369382558"
 }
+
+flag {
+    name: "enable_aoa_userspace_implementation"
+    namespace: "system_sw_usb"
+    description: "Enables AOA userspace implementation"
+    bug: "407985367"
+}

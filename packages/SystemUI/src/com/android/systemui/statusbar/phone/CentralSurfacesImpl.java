@@ -1524,7 +1524,10 @@ public class CentralSurfacesImpl implements CoreStartable, CentralSurfaces {
     protected View.OnTouchListener getStatusBarWindowTouchListener() {
         return (v, event) -> {
             mAutoHideController.checkUserAutoHide(event);
-            mRemoteInputManager.checkRemoteInputOutside(event);
+            if (!SceneContainerFlag.isEnabled()) {
+                // handled by SceneContainerViewModel#onEmptySpaceMotionEvent with SceneContainer
+                mRemoteInputManager.checkRemoteInputOutside(event);
+            }
             if (mQsController.isCustomizing()) {
                 // When the user is editing QS tiles they need to be able to touch outside the
                 // customizer to close it, such as on the status or nav bar.

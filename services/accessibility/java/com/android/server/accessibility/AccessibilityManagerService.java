@@ -46,7 +46,6 @@ import static android.view.accessibility.AccessibilityManager.FlashNotificationR
 
 import static com.android.hardware.input.Flags.enableTalkbackAndMagnifierKeyGestures;
 import static com.android.hardware.input.Flags.enableVoiceAccessKeyGestures;
-import static com.android.hardware.input.Flags.keyboardA11yMouseKeys;
 import static com.android.internal.accessibility.AccessibilityShortcutController.ACCESSIBILITY_HEARING_AIDS_COMPONENT_NAME;
 import static com.android.internal.accessibility.AccessibilityShortcutController.MAGNIFICATION_COMPONENT_NAME;
 import static com.android.internal.accessibility.AccessibilityShortcutController.MAGNIFICATION_CONTROLLER_NAME;
@@ -2027,6 +2026,10 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
     // TODO(b/276459590): Remove when this is resolved at the virtual device/input level.
     public int getLastNonProxyTopFocusedDisplayId() {
         return mA11yWindowManager.getLastNonProxyTopFocusedDisplayId();
+    }
+
+    public int getTopFocusedDisplayId() {
+        return mA11yWindowManager.getTopFocusedDisplayId();
     }
 
     @VisibleForTesting
@@ -6303,9 +6306,6 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
     }
 
     boolean readMouseKeysEnabledLocked(AccessibilityUserState userState) {
-        if (!keyboardA11yMouseKeys()) {
-            return false;
-        }
         final boolean isMouseKeysEnabled =
                 Settings.Secure.getIntForUser(mContext.getContentResolver(),
                 Settings.Secure.ACCESSIBILITY_MOUSE_KEYS_ENABLED, 0, userState.mUserId) == 1;

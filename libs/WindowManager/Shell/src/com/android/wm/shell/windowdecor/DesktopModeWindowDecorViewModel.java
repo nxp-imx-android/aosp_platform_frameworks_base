@@ -120,7 +120,6 @@ import com.android.wm.shell.desktopmode.DesktopModeUiEventLogger;
 import com.android.wm.shell.desktopmode.DesktopModeUiEventLogger.DesktopUiEventEnum;
 import com.android.wm.shell.desktopmode.DesktopModeUtils;
 import com.android.wm.shell.desktopmode.DesktopModeVisualIndicator;
-import com.android.wm.shell.desktopmode.DesktopRepository;
 import com.android.wm.shell.desktopmode.DesktopTasksController;
 import com.android.wm.shell.desktopmode.DesktopTasksController.SnapPosition;
 import com.android.wm.shell.desktopmode.DesktopTasksLimiter;
@@ -129,6 +128,7 @@ import com.android.wm.shell.desktopmode.ShellDesktopState;
 import com.android.wm.shell.desktopmode.WindowDecorCaptionRepository;
 import com.android.wm.shell.desktopmode.common.ToggleTaskSizeInteraction;
 import com.android.wm.shell.desktopmode.common.ToggleTaskSizeUtilsKt;
+import com.android.wm.shell.desktopmode.data.DesktopRepository;
 import com.android.wm.shell.desktopmode.education.AppHandleEducationController;
 import com.android.wm.shell.desktopmode.education.AppToWebEducationController;
 import com.android.wm.shell.desktopmode.multidesks.DesksOrganizer;
@@ -2038,7 +2038,6 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
                     mMainExecutor,
                     mMainDispatcher,
                     mMainScope,
-                    mBgScope,
                     mBgExecutor,
                     mTransitions,
                     mMainChoreographer,
@@ -2073,6 +2072,7 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
                             mMainHandler,
                             mMainExecutor,
                             mMainDispatcher,
+                            mMainScope,
                             mBgScope,
                             mBgExecutor,
                             mTransitions,

@@ -20,7 +20,11 @@ import static android.app.ActivityManager.PROCESS_CAPABILITY_NONE;
 import static android.app.ActivityManager.PROCESS_STATE_CACHED_EMPTY;
 import static android.app.ActivityManager.PROCESS_STATE_NONEXISTENT;
 
+import static com.android.server.am.ProcessList.SERVICE_B_ADJ;
 import static com.android.server.am.ProcessList.CACHED_APP_MIN_ADJ;
+import static com.android.server.am.ProcessList.UNKNOWN_ADJ;
+import static com.android.server.am.ProcessList.INVALID_ADJ;
+import static com.android.server.am.ProcessList.SCHED_GROUP_BACKGROUND;
 import static com.android.server.wm.WindowProcessController.ACTIVITY_STATE_FLAG_IS_VISIBLE;
 import static com.android.server.wm.WindowProcessController.ACTIVITY_STATE_FLAG_MASK_MIN_TASK_LAYER;
 
@@ -221,37 +225,37 @@ public final class ProcessStateRecord {
      * Maximum OOM adjustment for this process.
      */
     @GuardedBy("mServiceLock")
-    private int mMaxAdj = ProcessList.UNKNOWN_ADJ;
+    private int mMaxAdj = UNKNOWN_ADJ;
 
     /**
      *  Current OOM unlimited adjustment for this process.
      */
     @CompositeRWLock({"mServiceLock", "mProcLock"})
-    private int mCurRawAdj = ProcessList.INVALID_ADJ;
+    private int mCurRawAdj = INVALID_ADJ;
 
     /**
      * Last set OOM unlimited adjustment for this process.
      */
     @CompositeRWLock({"mServiceLock", "mProcLock"})
-    private int mSetRawAdj = ProcessList.INVALID_ADJ;
+    private int mSetRawAdj = INVALID_ADJ;
 
     /**
      * Current OOM adjustment for this process.
      */
     @CompositeRWLock({"mServiceLock", "mProcLock"})
-    private int mCurAdj = ProcessList.INVALID_ADJ;
+    private int mCurAdj = INVALID_ADJ;
 
     /**
      * Last set OOM adjustment for this process.
      */
     @CompositeRWLock({"mServiceLock", "mProcLock"})
-    private int mSetAdj = ProcessList.INVALID_ADJ;
+    private int mSetAdj = INVALID_ADJ;
 
     /**
      * The last adjustment that was verified as actually being set.
      */
     @GuardedBy("mServiceLock")
-    private int mVerifiedAdj = ProcessList.INVALID_ADJ;
+    private int mVerifiedAdj = INVALID_ADJ;
 
     /**
      * Current capability flags of this process.
@@ -270,13 +274,13 @@ public final class ProcessStateRecord {
      * Currently desired scheduling class.
      */
     @CompositeRWLock({"mServiceLock", "mProcLock"})
-    private int mCurSchedGroup = ProcessList.SCHED_GROUP_BACKGROUND;
+    private int mCurSchedGroup = SCHED_GROUP_BACKGROUND;
 
     /**
      * Last set to background scheduling class.
      */
     @CompositeRWLock({"mServiceLock", "mProcLock"})
-    private int mSetSchedGroup = ProcessList.SCHED_GROUP_BACKGROUND;
+    private int mSetSchedGroup = SCHED_GROUP_BACKGROUND;
 
     /**
      * Currently computed process state.
@@ -309,7 +313,11 @@ public final class ProcessStateRecord {
     private long mLastStateTime;
 
     /**
-     * Previous priority value if we're switching to non-SCHED_OTHER.
+     * Previous priority value before switching to non-{@link Process#SCHED_OTHER}.
+     *
+     * When a process needs to be moved to a higher priority scheduling group, we first save
+     * its current priority, then change the scheduling group and priority. When the process
+     * is moved back to the background, we restore the saved priority.
      */
     @CompositeRWLock({"mServiceLock", "mProcLock"})
     private int mSavedPriority;
@@ -372,7 +380,7 @@ public final class ProcessStateRecord {
     private boolean mHasOverlayUi;
 
     /**
-     * Is the process currently running a RemoteAnimation? When true
+     * Is the process currently running a remote animation? When true
      * the process will be set to use the
      * ProcessList#SCHED_GROUP_TOP_APP scheduling group to boost
      * performance, as well as oom adj score will be set to
@@ -386,13 +394,13 @@ public final class ProcessStateRecord {
      * Keep track of whether we changed 'mSetAdj'.
      */
     @CompositeRWLock({"mServiceLock", "mProcLock"})
-    private boolean mProcStateChanged;
+    private boolean mHasProcStateChanged;
 
     /**
      * Whether we have told usage stats about it being an interaction.
      */
     @CompositeRWLock({"mServiceLock", "mProcLock"})
-    private boolean mReportedInteraction;
+    private boolean mHasReportedInteraction;
 
     /**
      * The time we sent the last interaction event.
@@ -478,7 +486,7 @@ public final class ProcessStateRecord {
     private int mAdjTypeCode;
 
     /**
-     * Debugging: option dependent object.
+     * Debugging: the object that caused the OOM adjustment to be set.
      */
     @CompositeRWLock({"mServiceLock", "mProcLock"})
     private Object mAdjSource;
@@ -593,13 +601,13 @@ public final class ProcessStateRecord {
     @GuardedBy("mServiceLock")
     private String mCachedAdjType = null;
     @GuardedBy("mServiceLock")
-    private int mCachedAdj = ProcessList.INVALID_ADJ;
+    private int mCachedAdj = INVALID_ADJ;
     @GuardedBy("mServiceLock")
     private boolean mCachedForegroundActivities = false;
     @GuardedBy("mServiceLock")
     private int mCachedProcState = ActivityManager.PROCESS_STATE_CACHED_EMPTY;
     @GuardedBy("mServiceLock")
-    private int mCachedSchedGroup = ProcessList.SCHED_GROUP_BACKGROUND;
+    private int mCachedSchedGroup = SCHED_GROUP_BACKGROUND;
 
     @GuardedBy("mServiceLock")
     private boolean mScheduleLikeTopApp = false;
@@ -607,7 +615,18 @@ public final class ProcessStateRecord {
     @GuardedBy("mServiceLock")
     private long mFollowupUpdateUptimeMs = Long.MAX_VALUE;
 
-    ProcessStateRecord(String processName, int uid, Observer observer,
+    /**
+     * Constructs a new ProcessStateRecord.
+     *
+     * @param processName The name of the process.
+     * @param uid The UID of the process.
+     * @param observer An observer to be notified of state changes.
+     * @param startedServiceObserver An observer for started service related state changes.
+     * @param processRecordReader A reader for on-demand process record information.
+     * @param service The ActivityManagerService instance, used as a lock.
+     * @param procLock The ActivityManagerGlobalLock instance, used as a lock.
+     */
+    public ProcessStateRecord(String processName, int uid, Observer observer,
             StartedServiceObserver startedServiceObserver, ProcessRecordReader processRecordReader,
             Object serviceLock, Object procLock) {
         mProcessName = processName;
@@ -619,183 +638,209 @@ public final class ProcessStateRecord {
         mProcLock = procLock;
     }
 
-    void init(long now) {
+    /**
+     * Initializes the last time that the state of the process was changed.
+     *
+     * @param now The current uptime in milliseconds.
+     */
+    public void init(long now) {
         mLastStateTime = now;
     }
 
     @GuardedBy("mServiceLock")
-    void setMaxAdj(int maxAdj) {
+    public void setMaxAdj(int maxAdj) {
         mMaxAdj = maxAdj;
     }
 
     @GuardedBy("mServiceLock")
-    int getMaxAdj() {
+    public int getMaxAdj() {
         return mMaxAdj;
     }
 
+    /** Sets the current raw OOM adjustment for this process, and notifies the observer. */
     @GuardedBy({"mServiceLock", "mProcLock"})
-    void setCurRawAdj(int curRawAdj) {
-        setCurRawAdj(curRawAdj, false);
+    public void setCurRawAdj(int curRawAdj) {
+        mCurRawAdj = curRawAdj;
+        mObserver.onCurRawAdjChanged(mCurRawAdj);
     }
 
     /**
+     * Sets the current raw OOM adjustment for this process.
+     *
+     * @param curRawAdj The current raw OOM adjustment value.
+     * @param dryRun If true, only checks if the adj score would be bumped, without actually
+     *               setting it.
      * @return {@code true} if it's a dry run and it's going to bump the adj score of the process
      * if it was a real run.
      */
     @GuardedBy({"mServiceLock", "mProcLock"})
-    boolean setCurRawAdj(int curRawAdj, boolean dryRun) {
+    public boolean setCurRawAdj(int curRawAdj, boolean dryRun) {
         if (dryRun) {
             return mCurRawAdj > curRawAdj;
         }
-        mCurRawAdj = curRawAdj;
-        mObserver.onCurRawAdjChanged(mCurRawAdj);
+        setCurRawAdj(curRawAdj);
         return false;
     }
 
     @GuardedBy(anyOf = {"mServiceLock", "mProcLock"})
-    int getCurRawAdj() {
+    public int getCurRawAdj() {
         return mCurRawAdj;
     }
 
     @GuardedBy({"mServiceLock", "mProcLock"})
-    void setSetRawAdj(int setRawAdj) {
+    public void setSetRawAdj(int setRawAdj) {
         mSetRawAdj = setRawAdj;
     }
 
     @GuardedBy(anyOf = {"mServiceLock", "mProcLock"})
-    int getSetRawAdj() {
+    public int getSetRawAdj() {
         return mSetRawAdj;
     }
 
+    /** Sets the current OOM adjustment for this process, and notifies the observer. */
     @GuardedBy({"mServiceLock", "mProcLock"})
-    void setCurAdj(int curAdj) {
+    public void setCurAdj(int curAdj) {
         mCurAdj = curAdj;
         mObserver.onCurAdjChanged(mCurAdj);
     }
 
     @GuardedBy(anyOf = {"mServiceLock", "mProcLock"})
-    int getCurAdj() {
+    public int getCurAdj() {
         return mCurAdj;
     }
 
     @GuardedBy({"mServiceLock", "mProcLock"})
-    void setSetAdj(int setAdj) {
+    public void setSetAdj(int setAdj) {
         mSetAdj = setAdj;
     }
 
     @GuardedBy(anyOf = {"mServiceLock", "mProcLock"})
-    int getSetAdj() {
+    public int getSetAdj() {
         return mSetAdj;
     }
 
+    /**
+     * Returns the last set OOM adjustment for this process, potentially adjusted for services.
+     * If the process is cached and has started services, it returns {@link SERVICE_B_ADJ}.
+     * Otherwise, it returns the normal {@link #getSetAdj()}.
+     */
     @GuardedBy(anyOf = {"mServiceLock", "mProcLock"})
-    int getSetAdjWithServices() {
+    public int getSetAdjWithServices() {
         if (mSetAdj >= CACHED_APP_MIN_ADJ) {
             if (mHasStartedServices) {
-                return ProcessList.SERVICE_B_ADJ;
+                return SERVICE_B_ADJ;
             }
         }
         return mSetAdj;
     }
 
     @GuardedBy("mServiceLock")
-    void setVerifiedAdj(int verifiedAdj) {
+    public void setVerifiedAdj(int verifiedAdj) {
         mVerifiedAdj = verifiedAdj;
     }
 
     @GuardedBy("mServiceLock")
-    int getVerifiedAdj() {
+    public int getVerifiedAdj() {
         return mVerifiedAdj;
     }
 
     @GuardedBy({"mServiceLock", "mProcLock"})
-    void setCurCapability(int curCapability) {
+    public void setCurCapability(int curCapability) {
         mCurCapability = curCapability;
     }
 
     @GuardedBy(anyOf = {"mServiceLock", "mProcLock"})
-    int getCurCapability() {
+    public int getCurCapability() {
         return mCurCapability;
     }
 
     @GuardedBy({"mServiceLock", "mProcLock"})
-    void setSetCapability(int setCapability) {
+    public void setSetCapability(int setCapability) {
         mSetCapability = setCapability;
     }
 
     @GuardedBy(anyOf = {"mServiceLock", "mProcLock"})
-    int getSetCapability() {
+    public int getSetCapability() {
         return mSetCapability;
     }
 
+    /** Sets the current scheduling group for this process, and notifies the observer. */
     @GuardedBy({"mServiceLock", "mProcLock"})
-    void setCurrentSchedulingGroup(int curSchedGroup) {
+    public void setCurrentSchedulingGroup(int curSchedGroup) {
         mCurSchedGroup = curSchedGroup;
         mObserver.onCurrentSchedulingGroupChanged(mCurSchedGroup);
     }
 
     @GuardedBy(anyOf = {"mServiceLock", "mProcLock"})
-    int getCurrentSchedulingGroup() {
+    public int getCurrentSchedulingGroup() {
         return mCurSchedGroup;
     }
 
     @GuardedBy({"mServiceLock", "mProcLock"})
-    void setSetSchedGroup(int setSchedGroup) {
+    public void setSetSchedGroup(int setSchedGroup) {
         mSetSchedGroup = setSchedGroup;
     }
 
     @GuardedBy(anyOf = {"mServiceLock", "mProcLock"})
-    int getSetSchedGroup() {
+    public int getSetSchedGroup() {
         return mSetSchedGroup;
     }
 
+    /** Sets the current process state, and notifies the observer. */
     @GuardedBy({"mServiceLock", "mProcLock"})
-    void setCurProcState(int curProcState) {
+    public void setCurProcState(int curProcState) {
         mCurProcState = curProcState;
         mObserver.onCurProcStateChanged(mCurProcState);
     }
 
     @GuardedBy(anyOf = {"mServiceLock", "mProcLock"})
-    int getCurProcState() {
+    public int getCurProcState() {
         return mCurProcState;
     }
 
     @GuardedBy({"mServiceLock", "mProcLock"})
-    void setCurRawProcState(int curRawProcState) {
-        setCurRawProcState(curRawProcState, false);
+    public void setCurRawProcState(int curRawProcState) {
+        mCurRawProcState = curRawProcState;
     }
 
     /**
+     * Sets the current raw process state, with an option for a dry run.
+     *
+     * @param curRawProcState The current raw process state.
+     * @param dryRun If true, only checks if the proc state would be bumped, without actually
+     *               setting it.
      * @return {@code true} if it's a dry run and it's going to bump the procstate of the process
      * if it was a real run.
      */
     @GuardedBy({"mServiceLock", "mProcLock"})
-    boolean setCurRawProcState(int curRawProcState, boolean dryRun) {
+    public boolean setCurRawProcState(int curRawProcState, boolean dryRun) {
         if (dryRun) {
             return mCurRawProcState > curRawProcState;
         }
-        mCurRawProcState = curRawProcState;
+        setCurRawProcState(curRawProcState);
         return false;
     }
 
     @GuardedBy(anyOf = {"mServiceLock", "mProcLock"})
-    int getCurRawProcState() {
+    public int getCurRawProcState() {
         return mCurRawProcState;
     }
 
+    /** Sets the last reported process state, and notifies the observer. */
     @GuardedBy({"mServiceLock", "mProcLock"})
-    void setReportedProcState(int repProcState) {
+    public void setReportedProcState(int repProcState) {
         mRepProcState = repProcState;
         mObserver.onReportedProcStateChanged(mRepProcState);
     }
 
     @GuardedBy(anyOf = {"mServiceLock", "mProcLock"})
-    int getReportedProcState() {
+    public int getReportedProcState() {
         return mRepProcState;
     }
 
+    /** Sets the last set process state in the process tracker. */
     @GuardedBy({"mServiceLock", "mProcLock"})
-    void setSetProcState(int setProcState) {
+    public void setSetProcState(int setProcState) {
         if (ActivityManager.isProcStateCached(mSetProcState)
                 && !ActivityManager.isProcStateCached(setProcState)) {
             mCacheOomRankerUseCount++;
@@ -804,263 +849,267 @@ public final class ProcessStateRecord {
     }
 
     @GuardedBy(anyOf = {"mServiceLock", "mProcLock"})
-    int getSetProcState() {
+    public int getSetProcState() {
         return mSetProcState;
     }
 
     @GuardedBy({"mServiceLock", "mProcLock"})
-    void setLastStateTime(long lastStateTime) {
+    public void setLastStateTime(long lastStateTime) {
         mLastStateTime = lastStateTime;
     }
 
     @GuardedBy(anyOf = {"mServiceLock", "mProcLock"})
-    long getLastStateTime() {
+    public long getLastStateTime() {
         return mLastStateTime;
     }
 
     @GuardedBy({"mServiceLock", "mProcLock"})
-    void setSavedPriority(int savedPriority) {
+    public void setSavedPriority(int savedPriority) {
         mSavedPriority = savedPriority;
     }
 
     @GuardedBy(anyOf = {"mServiceLock", "mProcLock"})
-    int getSavedPriority() {
+    public int getSavedPriority() {
         return mSavedPriority;
     }
 
     @GuardedBy({"mServiceLock", "mProcLock"})
-    void setServiceB(boolean serviceb) {
+    public void setServiceB(boolean serviceb) {
         mServiceB = serviceb;
     }
 
     @GuardedBy(anyOf = {"mServiceLock", "mProcLock"})
-    boolean isServiceB() {
+    public boolean isServiceB() {
         return mServiceB;
     }
 
     @GuardedBy({"mServiceLock", "mProcLock"})
-    void setServiceHighRam(boolean serviceHighRam) {
+    public void setServiceHighRam(boolean serviceHighRam) {
         mServiceHighRam = serviceHighRam;
     }
 
-    @GuardedBy(anyOf = {"mServiceLock", "mProcLock"})
-    boolean isServiceHighRam() {
-        return mServiceHighRam;
-    }
-
+    /**
+     * Sets whether there are any started services running in this process, and notifies the
+     * observer.
+     */
     @GuardedBy("mProcLock")
-    void setHasStartedServices(boolean hasStartedServices) {
+    public void setHasStartedServices(boolean hasStartedServices) {
         mHasStartedServices = hasStartedServices;
         mStartedServiceObserver.onHasStartedServicesChanged(mHasStartedServices);
     }
 
     @GuardedBy("mProcLock")
-    boolean hasStartedServices() {
+    public boolean getHasStartedServices() {
         return mHasStartedServices;
     }
 
     @GuardedBy({"mServiceLock", "mProcLock"})
-    void setHasForegroundActivities(boolean hasForegroundActivities) {
+    public void setHasForegroundActivities(boolean hasForegroundActivities) {
         mHasForegroundActivities = hasForegroundActivities;
     }
 
     @GuardedBy(anyOf = {"mServiceLock", "mProcLock"})
-    boolean hasForegroundActivities() {
+    public boolean getHasForegroundActivities() {
         return mHasForegroundActivities;
     }
 
     @GuardedBy({"mServiceLock", "mProcLock"})
-    void setRepForegroundActivities(boolean repForegroundActivities) {
+    public void setRepForegroundActivities(boolean repForegroundActivities) {
         mRepForegroundActivities = repForegroundActivities;
     }
 
     @GuardedBy(anyOf = {"mServiceLock", "mProcLock"})
-    boolean hasRepForegroundActivities() {
+    public boolean getHasRepForegroundActivities() {
         return mRepForegroundActivities;
     }
 
     @GuardedBy("mServiceLock")
-    void setHasShownUi(boolean hasShownUi) {
+    public void setHasShownUi(boolean hasShownUi) {
         mHasShownUi = hasShownUi;
     }
 
     @GuardedBy("mServiceLock")
-    boolean hasShownUi() {
+    public boolean getHasShownUi() {
         return mHasShownUi;
     }
 
+    /** Sets whether this process is currently showing top UI, and notifies the observer. */
     @GuardedBy("mServiceLock")
-    void setHasTopUi(boolean hasTopUi) {
+    public void setHasTopUi(boolean hasTopUi) {
         mHasTopUi = hasTopUi;
         mObserver.onHasTopUiChanged(mHasTopUi);
     }
 
     @GuardedBy("mServiceLock")
-    boolean hasTopUi() {
+    public boolean getHasTopUi() {
         return mHasTopUi;
     }
 
+    /** Sets whether the process is currently showing overlay UI, and notifies the observer. */
     @GuardedBy("mServiceLock")
-    void setHasOverlayUi(boolean hasOverlayUi) {
+    public void setHasOverlayUi(boolean hasOverlayUi) {
         mHasOverlayUi = hasOverlayUi;
         mObserver.onHasOverlayUiChanged(mHasOverlayUi);
     }
 
     @GuardedBy("mServiceLock")
-    boolean hasOverlayUi() {
+    public boolean getHasOverlayUi() {
         return mHasOverlayUi;
     }
 
     @GuardedBy("mServiceLock")
-    boolean isRunningRemoteAnimation() {
+    public boolean isRunningRemoteAnimation() {
         return mRunningRemoteAnimation;
     }
 
     @GuardedBy("mServiceLock")
-    void setRunningRemoteAnimation(boolean runningRemoteAnimation) {
+    public void setRunningRemoteAnimation(boolean runningRemoteAnimation) {
         mRunningRemoteAnimation = runningRemoteAnimation;
     }
 
     @GuardedBy({"mServiceLock", "mProcLock"})
-    void setProcStateChanged(boolean procStateChanged) {
-        mProcStateChanged = procStateChanged;
+    public void setHasProcStateChanged(boolean hasProcStateChanged) {
+        mHasProcStateChanged = hasProcStateChanged;
     }
 
     @GuardedBy(anyOf = {"mServiceLock", "mProcLock"})
-    boolean hasProcStateChanged() {
-        return mProcStateChanged;
+    public boolean getHasProcStateChanged() {
+        return mHasProcStateChanged;
     }
 
     @GuardedBy({"mServiceLock", "mProcLock"})
-    void setReportedInteraction(boolean reportedInteraction) {
-        mReportedInteraction = reportedInteraction;
+    public void setHasReportedInteraction(boolean hasReportedInteraction) {
+        mHasReportedInteraction = hasReportedInteraction;
     }
 
     @GuardedBy(anyOf = {"mServiceLock", "mProcLock"})
-    boolean hasReportedInteraction() {
-        return mReportedInteraction;
+    public boolean getHasReportedInteraction() {
+        return mHasReportedInteraction;
     }
 
+    /** Sets the time the last interaction event was sent, and notifies the observer. */
     @GuardedBy({"mServiceLock", "mProcLock"})
-    void setInteractionEventTime(long interactionEventTime) {
+    public void setInteractionEventTime(long interactionEventTime) {
         mInteractionEventTime = interactionEventTime;
         mObserver.onInteractionEventTimeChanged(mInteractionEventTime);
     }
 
     @GuardedBy(anyOf = {"mServiceLock", "mProcLock"})
-    long getInteractionEventTime() {
+    public long getInteractionEventTime() {
         return mInteractionEventTime;
     }
 
+    /**
+     * Sets the time the process became foreground for interaction purposes, and notifies the
+     * observer.
+     */
     @GuardedBy({"mServiceLock", "mProcLock"})
-    void setFgInteractionTime(long fgInteractionTime) {
+    public void setFgInteractionTime(long fgInteractionTime) {
         mFgInteractionTime = fgInteractionTime;
         mObserver.onFgInteractionTimeChanged(mFgInteractionTime);
     }
 
     @GuardedBy(anyOf = {"mServiceLock", "mProcLock"})
-    long getFgInteractionTime() {
+    public long getFgInteractionTime() {
         return mFgInteractionTime;
     }
 
     @GuardedBy("mServiceLock")
-    void setForcingToImportant(Object forcingToImportant) {
+    public void setForcingToImportant(Object forcingToImportant) {
         mForcingToImportant = forcingToImportant;
     }
 
     @GuardedBy("mServiceLock")
-    Object getForcingToImportant() {
+    public Object getForcingToImportant() {
         return mForcingToImportant;
     }
 
     @GuardedBy("mServiceLock")
-    void setAdjSeq(int adjSeq) {
+    public void setAdjSeq(int adjSeq) {
         mAdjSeq = adjSeq;
     }
 
     @GuardedBy("mServiceLock")
-    void decAdjSeq() {
-        mAdjSeq--;
-    }
-
-    @GuardedBy("mServiceLock")
-    int getAdjSeq() {
+    public int getAdjSeq() {
         return mAdjSeq;
     }
 
     @GuardedBy("mServiceLock")
-    void setCompletedAdjSeq(int completedAdjSeq) {
+    public void setCompletedAdjSeq(int completedAdjSeq) {
         mCompletedAdjSeq = completedAdjSeq;
     }
 
     @GuardedBy("mServiceLock")
-    void decCompletedAdjSeq() {
-        mCompletedAdjSeq--;
-    }
-
-    @GuardedBy("mServiceLock")
-    int getCompletedAdjSeq() {
+    public int getCompletedAdjSeq() {
         return mCompletedAdjSeq;
     }
 
     @GuardedBy("mServiceLock")
-    int getLruSeq() {
+    public int getLruSeq() {
         return mLruSeq;
     }
 
     @GuardedBy("mServiceLock")
-    void setLruSeq(int lruSeq) {
+    public void setLruSeq(int lruSeq) {
         mLruSeq = lruSeq;
     }
 
+    /**
+     * Sets the uptime in milliseconds when the process last became unimportant, and notifies the
+     * observer.
+     */
     @GuardedBy({"mServiceLock", "mProcLock"})
-    void setWhenUnimportant(long whenUnimportant) {
+    public void setWhenUnimportant(long whenUnimportant) {
         mWhenUnimportant = whenUnimportant;
         mObserver.onWhenUnimportantChanged(mWhenUnimportant);
     }
 
     @GuardedBy(anyOf = {"mServiceLock", "mProcLock"})
-    long getWhenUnimportant() {
+    public long getWhenUnimportant() {
         return mWhenUnimportant;
     }
 
     @GuardedBy("mServiceLock")
-    void setLastTopTime(long lastTopTime) {
+    public void setLastTopTime(long lastTopTime) {
         mLastTopTime = lastTopTime;
     }
 
     @GuardedBy("mServiceLock")
-    long getLastTopTime() {
+    public long getLastTopTime() {
         return mLastTopTime;
     }
 
     @GuardedBy("mServiceLock")
-    boolean isEmpty() {
+    public boolean isEmpty() {
         return mCurProcState >= PROCESS_STATE_CACHED_EMPTY;
     }
 
     @GuardedBy("mServiceLock")
-    boolean isCached() {
+    public boolean isCached() {
         return mCurAdj >= CACHED_APP_MIN_ADJ;
     }
 
     @GuardedBy("mServiceLock")
-    int getCacheOomRankerUseCount() {
+    public int getCacheOomRankerUseCount() {
         return mCacheOomRankerUseCount;
     }
 
     @GuardedBy("mServiceLock")
-    void setSystemNoUi(boolean systemNoUi) {
+    public void setSystemNoUi(boolean systemNoUi) {
         mSystemNoUi = systemNoUi;
     }
 
     @GuardedBy("mServiceLock")
-    boolean isSystemNoUi() {
+    public boolean isSystemNoUi() {
         return mSystemNoUi;
     }
 
+    /**
+     * Sets the primary thing impacting OOM adjustment for debugging.
+     * Also traces the OOM adjustment type if tracing is enabled.
+     */
     @GuardedBy("mServiceLock")
-    void setAdjType(String adjType) {
+    public void setAdjType(String adjType) {
         if (TRACE_OOM_ADJ) {
             Trace.asyncTraceForTrackEnd(Trace.TRACE_TAG_ACTIVITY_MANAGER, getTrackName(), 0);
             Trace.asyncTraceForTrackBegin(Trace.TRACE_TAG_ACTIVITY_MANAGER, getTrackName(),
@@ -1070,92 +1119,93 @@ public final class ProcessStateRecord {
     }
 
     @GuardedBy("mServiceLock")
-    String getAdjType() {
+    public String getAdjType() {
         return mAdjType;
     }
 
     @GuardedBy({"mServiceLock", "mProcLock"})
-    void setAdjTypeCode(int adjTypeCode) {
+    public void setAdjTypeCode(int adjTypeCode) {
         mAdjTypeCode = adjTypeCode;
     }
 
     @GuardedBy(anyOf = {"mServiceLock", "mProcLock"})
-    int getAdjTypeCode() {
+    public int getAdjTypeCode() {
         return mAdjTypeCode;
     }
 
     @GuardedBy({"mServiceLock", "mProcLock"})
-    void setAdjSource(Object adjSource) {
+    public void setAdjSource(Object adjSource) {
         mAdjSource = adjSource;
     }
 
     @GuardedBy(anyOf = {"mServiceLock", "mProcLock"})
-    Object getAdjSource() {
+    public Object getAdjSource() {
         return mAdjSource;
     }
 
     @GuardedBy({"mServiceLock", "mProcLock"})
-    void setAdjSourceProcState(int adjSourceProcState) {
+    public void setAdjSourceProcState(int adjSourceProcState) {
         mAdjSourceProcState = adjSourceProcState;
     }
 
     @GuardedBy(anyOf = {"mServiceLock", "mProcLock"})
-    int getAdjSourceProcState() {
+    public int getAdjSourceProcState() {
         return mAdjSourceProcState;
     }
 
     @GuardedBy({"mServiceLock", "mProcLock"})
-    void setAdjTarget(Object adjTarget) {
+    public void setAdjTarget(Object adjTarget) {
         mAdjTarget = adjTarget;
     }
 
     @GuardedBy(anyOf = {"mServiceLock", "mProcLock"})
-    Object getAdjTarget() {
+    public Object getAdjTarget() {
         return mAdjTarget;
     }
 
     @GuardedBy("mServiceLock")
-    boolean isReachable() {
+    public boolean isReachable() {
         return mReachable;
     }
 
     @GuardedBy("mServiceLock")
-    void setReachable(boolean reachable) {
+    public void setReachable(boolean reachable) {
         mReachable = reachable;
     }
 
     @GuardedBy("mServiceLock")
-    void setHasActivities(boolean hasActivities) {
+    public void setHasActivities(boolean hasActivities) {
         mHasActivities = hasActivities;
     }
 
     @GuardedBy("mServiceLock")
-    int getActivityStateFlags() {
+    public int getActivityStateFlags() {
         return mActivityStateFlags;
     }
 
     @GuardedBy("mServiceLock")
-    void setActivityStateFlags(int flags) {
+    public void setActivityStateFlags(int flags) {
         mActivityStateFlags = flags;
     }
 
     @GuardedBy("mServiceLock")
-    long getPerceptibleTaskStoppedTimeMillis() {
+    public long getPerceptibleTaskStoppedTimeMillis() {
         return mPerceptibleTaskStoppedTimeMillis;
     }
 
     @GuardedBy("mServiceLock")
-    void setPerceptibleTaskStoppedTimeMillis(long uptimeMs) {
+    public void setPerceptibleTaskStoppedTimeMillis(long uptimeMs) {
         mPerceptibleTaskStoppedTimeMillis = uptimeMs;
     }
 
     @GuardedBy("mServiceLock")
-    void setHasRecentTask(boolean hasRecentTask) {
+    public void setHasRecentTask(boolean hasRecentTask) {
         mHasRecentTask = hasRecentTask;
     }
 
+    /** Resets all cached information used by the OomAdjuster. */
     @GuardedBy("mServiceLock")
-    void resetCachedInfo() {
+    public void resetCachedInfo() {
         mCachedHasActivities = VALUE_INVALID;
         mCachedIsHeavyWeight = VALUE_INVALID;
         mCachedHasVisibleActivities = VALUE_INVALID;
@@ -1163,13 +1213,14 @@ public final class ProcessStateRecord {
         mCachedIsPreviousProcess = VALUE_INVALID;
         mCachedHasRecentTasks = VALUE_INVALID;
         mCachedIsReceivingBroadcast = VALUE_INVALID;
-        mCachedAdj = ProcessList.INVALID_ADJ;
+        mCachedAdj = INVALID_ADJ;
         mCachedForegroundActivities = false;
         mCachedProcState = ActivityManager.PROCESS_STATE_CACHED_EMPTY;
-        mCachedSchedGroup = ProcessList.SCHED_GROUP_BACKGROUND;
+        mCachedSchedGroup = SCHED_GROUP_BACKGROUND;
         mCachedAdjType = null;
     }
 
+    /** Returns whether the process has any activities, using a cached value or pulling it. */
     @GuardedBy("mServiceLock")
     private boolean getCachedHasActivities() {
         if (mCachedHasActivities == VALUE_INVALID) {
@@ -1180,8 +1231,13 @@ public final class ProcessStateRecord {
         return mCachedHasActivities == VALUE_TRUE;
     }
 
+    /**
+     * Returns whether the process has any activities.
+     * Delegates to {@link #mHasActivities} if {@link Flags#pushActivityStateToOomadjuster()}
+     * is enabled, otherwise uses {@link #getCachedHasActivities()}.
+     */
     @GuardedBy("mServiceLock")
-    boolean getHasActivities() {
+    public boolean getHasActivities() {
         if (Flags.pushActivityStateToOomadjuster()) {
             return mHasActivities;
         } else {
@@ -1189,8 +1245,12 @@ public final class ProcessStateRecord {
         }
     }
 
+    /**
+     * Returns whether the process is considered a heavy-weight process, using a cached value or
+     * pulling it.
+     */
     @GuardedBy("mServiceLock")
-    boolean getCachedIsHeavyWeight() {
+    public boolean getCachedIsHeavyWeight() {
         if (mCachedIsHeavyWeight == VALUE_INVALID) {
             mCachedIsHeavyWeight = mProcessRecordReader.isHeavyWeightProcess()
                     ? VALUE_TRUE : VALUE_FALSE;
@@ -1198,6 +1258,9 @@ public final class ProcessStateRecord {
         return mCachedIsHeavyWeight == VALUE_TRUE;
     }
 
+    /**
+     * Returns whether the process has any visible activities, using a cached value or pulling it.
+     */
     @GuardedBy("mServiceLock")
     private boolean getCachedHasVisibleActivities() {
         if (mCachedHasVisibleActivities == VALUE_INVALID) {
@@ -1206,13 +1269,19 @@ public final class ProcessStateRecord {
         return mCachedHasVisibleActivities == VALUE_TRUE;
     }
 
+    /** Sets the cached state of whether the process has visible activities. */
     @GuardedBy("mServiceLock")
-    void setCachedHasVisibleActivities(boolean cachedHasVisibleActivities) {
+    public void setCachedHasVisibleActivities(boolean cachedHasVisibleActivities) {
         mCachedHasVisibleActivities = cachedHasVisibleActivities ? VALUE_TRUE : VALUE_FALSE;
     }
 
+    /**
+     * Returns whether the process has any visible activities.
+     * Delegates to {@link #mActivityStateFlags} if {@link Flags#pushActivityStateToOomadjuster()}
+     * is enabled, otherwise uses {@link #getCachedHasVisibleActivities()}.
+     */
     @GuardedBy("mServiceLock")
-    boolean getHasVisibleActivities() {
+    public boolean getHasVisibleActivities() {
         if (Flags.pushActivityStateToOomadjuster()) {
             return (mActivityStateFlags & ACTIVITY_STATE_FLAG_IS_VISIBLE) != 0;
         } else {
@@ -1220,16 +1289,22 @@ public final class ProcessStateRecord {
         }
     }
 
+    /**
+     * Returns whether the process is the current home process, using a cached value or pulling it.
+     */
     @GuardedBy("mServiceLock")
-    boolean getCachedIsHomeProcess() {
+    public boolean getCachedIsHomeProcess() {
         if (mCachedIsHomeProcess == VALUE_INVALID) {
             mCachedIsHomeProcess = mProcessRecordReader.isHomeProcess() ? VALUE_TRUE : VALUE_FALSE;
         }
         return mCachedIsHomeProcess == VALUE_TRUE;
     }
 
+    /**
+     * Returns whether the process was the previous top process, using a cached value or pulling it.
+     */
     @GuardedBy("mServiceLock")
-    boolean getCachedIsPreviousProcess() {
+    public boolean getCachedIsPreviousProcess() {
         if (mCachedIsPreviousProcess == VALUE_INVALID) {
             mCachedIsPreviousProcess = mProcessRecordReader.isPreviousProcess()
                     ? VALUE_TRUE : VALUE_FALSE;
@@ -1237,8 +1312,12 @@ public final class ProcessStateRecord {
         return mCachedIsPreviousProcess == VALUE_TRUE;
     }
 
+    /**
+     * Returns whether the process is associated with any recent tasks, using a cached value or
+     * pulling it.
+     */
     @GuardedBy("mServiceLock")
-    boolean getCachedHasRecentTasks() {
+    public boolean getCachedHasRecentTasks() {
         if (mCachedHasRecentTasks == VALUE_INVALID) {
             mCachedHasRecentTasks = mProcessRecordReader.hasRecentTasks()
                     ? VALUE_TRUE : VALUE_FALSE;
@@ -1246,8 +1325,13 @@ public final class ProcessStateRecord {
         return mCachedHasRecentTasks == VALUE_TRUE;
     }
 
+    /**
+     * Returns whether the process is associated with any recent tasks.
+     * Delegates to {@link #mHasRecentTask} if {@link Flags#pushActivityStateToOomadjuster()}
+     * is enabled, otherwise uses {@link #getCachedHasRecentTasks()}.
+     */
     @GuardedBy("mServiceLock")
-    boolean getHasRecentTasks() {
+    public boolean getHasRecentTasks() {
         if (Flags.pushActivityStateToOomadjuster()) {
             return mHasRecentTask;
         } else {
@@ -1255,8 +1339,17 @@ public final class ProcessStateRecord {
         }
     }
 
+    /**
+     * Returns whether the process is currently receiving a broadcast, using a cached value or
+     * pulling it. The scheduling group associated with the broadcast will be placed in
+     * {@code outSchedGroup} if active.
+     *
+     * @param outSchedGroup An output array of size 1 where the scheduling group associated
+     *                      with the broadcast will be placed if one is active.
+     * @return True if the process is receiving a broadcast, false otherwise.
+     */
     @GuardedBy("mServiceLock")
-    boolean getCachedIsReceivingBroadcast(int[] outSchedGroup) {
+    public boolean getCachedIsReceivingBroadcast(int[] outSchedGroup) {
         if (mCachedIsReceivingBroadcast == VALUE_INVALID) {
             final boolean isReceivingBroadcast =
                     mProcessRecordReader.isReceivingBroadcast(outSchedGroup);
@@ -1269,8 +1362,15 @@ public final class ProcessStateRecord {
         return mCachedIsReceivingBroadcast == VALUE_TRUE;
     }
 
+    /**
+     * Returns whether a specific compatibility change is enabled for the process, using a cached
+     * value or pulling it.
+     *
+     * @param cachedCompatChangeId The ID of the compatibility change to check.
+     * @return True if the change is enabled, false otherwise.
+     */
     @GuardedBy("mServiceLock")
-    boolean getCachedCompatChange(@CachedCompatChangeId int cachedCompatChangeId) {
+    public boolean getCachedCompatChange(@CachedCompatChangeId int cachedCompatChangeId) {
         if (mCachedCompatChanges[cachedCompatChangeId] == VALUE_INVALID) {
             mCachedCompatChanges[cachedCompatChangeId] =
                     mProcessRecordReader.hasCompatChange(cachedCompatChangeId)
@@ -1280,86 +1380,90 @@ public final class ProcessStateRecord {
     }
 
     @GuardedBy("mServiceLock")
-    int getCachedAdj() {
+    public int getCachedAdj() {
         return mCachedAdj;
     }
 
     @GuardedBy("mServiceLock")
-    void setCachedAdj(int cachedAdj) {
+    public void setCachedAdj(int cachedAdj) {
         mCachedAdj = cachedAdj;
     }
 
     @GuardedBy("mServiceLock")
-    boolean getCachedForegroundActivities() {
+    public boolean getCachedForegroundActivities() {
         return mCachedForegroundActivities;
     }
 
     @GuardedBy("mServiceLock")
-    void setCachedForegroundActivities(boolean cachedForegroundActivities) {
+    public void setCachedForegroundActivities(boolean cachedForegroundActivities) {
         mCachedForegroundActivities = cachedForegroundActivities;
     }
 
     @GuardedBy("mServiceLock")
-    int getCachedProcState() {
+    public int getCachedProcState() {
         return mCachedProcState;
     }
 
     @GuardedBy("mServiceLock")
-    void setCachedProcState(int cachedProcState) {
+    public void setCachedProcState(int cachedProcState) {
         mCachedProcState = cachedProcState;
     }
 
     @GuardedBy("mServiceLock")
-    int getCachedSchedGroup() {
+    public int getCachedSchedGroup() {
         return mCachedSchedGroup;
     }
 
     @GuardedBy("mServiceLock")
-    void setCachedSchedGroup(int cachedSchedGroup) {
+    public void setCachedSchedGroup(int cachedSchedGroup) {
         mCachedSchedGroup = cachedSchedGroup;
     }
 
     @GuardedBy("mServiceLock")
-    String getCachedAdjType() {
+    public String getCachedAdjType() {
         return mCachedAdjType;
     }
 
     @GuardedBy("mServiceLock")
-    void setCachedAdjType(String cachedAdjType) {
+    public void setCachedAdjType(String cachedAdjType) {
         mCachedAdjType = cachedAdjType;
     }
 
     @GuardedBy("mServiceLock")
-    boolean shouldScheduleLikeTopApp() {
+    public boolean getScheduleLikeTopApp() {
         return mScheduleLikeTopApp;
     }
 
     @GuardedBy("mServiceLock")
-    void setScheduleLikeTopApp(boolean scheduleLikeTopApp) {
+    public void setScheduleLikeTopApp(boolean scheduleLikeTopApp) {
         mScheduleLikeTopApp = scheduleLikeTopApp;
     }
 
     @GuardedBy("mServiceLock")
-    long getFollowupUpdateUptimeMs() {
+    public long getFollowupUpdateUptimeMs() {
         return mFollowupUpdateUptimeMs;
     }
 
     @GuardedBy("mServiceLock")
-    void setFollowupUpdateUptimeMs(long updateUptimeMs) {
+    public void setFollowupUpdateUptimeMs(long updateUptimeMs) {
         mFollowupUpdateUptimeMs = updateUptimeMs;
     }
 
+    /**
+     * Performs cleanup operations on the ProcessStateRecord when the application record is cleaned
+     * up. This resets various state flags and adjustment values.
+     */
     @GuardedBy({"mServiceLock", "mProcLock"})
-    void onCleanupApplicationRecordLSP() {
+    public void onCleanupApplicationRecordLSP() {
         if (TRACE_OOM_ADJ) {
             Trace.asyncTraceForTrackEnd(Trace.TRACE_TAG_ACTIVITY_MANAGER, getTrackName(), 0);
         }
         setHasForegroundActivities(false);
         mHasShownUi = false;
         mForcingToImportant = null;
-        mCurRawAdj = mSetRawAdj = mCurAdj = mSetAdj = mVerifiedAdj = ProcessList.INVALID_ADJ;
+        mCurRawAdj = mSetRawAdj = mCurAdj = mSetAdj = mVerifiedAdj = INVALID_ADJ;
         mCurCapability = mSetCapability = PROCESS_CAPABILITY_NONE;
-        mCurSchedGroup = mSetSchedGroup = ProcessList.SCHED_GROUP_BACKGROUND;
+        mCurSchedGroup = mSetSchedGroup = SCHED_GROUP_BACKGROUND;
         mCurProcState = mCurRawProcState = mSetProcState = PROCESS_STATE_NONEXISTENT;
         for (int i = 0; i < mCachedCompatChanges.length; i++) {
             mCachedCompatChanges[i] = VALUE_INVALID;
@@ -1371,37 +1475,42 @@ public final class ProcessStateRecord {
     }
 
     @GuardedBy("mServiceLock")
-    boolean isBackgroundRestricted() {
+    public boolean isBackgroundRestricted() {
         return mBackgroundRestricted;
     }
 
     @GuardedBy("mServiceLock")
-    void setBackgroundRestricted(boolean restricted) {
+    public void setBackgroundRestricted(boolean restricted) {
         mBackgroundRestricted = restricted;
     }
 
     @GuardedBy("mServiceLock")
-    boolean isCurBoundByNonBgRestrictedApp() {
+    public boolean isCurBoundByNonBgRestrictedApp() {
         return mCurBoundByNonBgRestrictedApp;
     }
 
     @GuardedBy("mServiceLock")
-    void setCurBoundByNonBgRestrictedApp(boolean bound) {
+    public void setCurBoundByNonBgRestrictedApp(boolean bound) {
         mCurBoundByNonBgRestrictedApp = bound;
     }
 
     @GuardedBy("mServiceLock")
-    boolean isSetBoundByNonBgRestrictedApp() {
+    public boolean isSetBoundByNonBgRestrictedApp() {
         return mSetBoundByNonBgRestrictedApp;
     }
 
     @GuardedBy("mServiceLock")
-    void setSetBoundByNonBgRestrictedApp(boolean bound) {
+    public void setSetBoundByNonBgRestrictedApp(boolean bound) {
         mSetBoundByNonBgRestrictedApp = bound;
     }
 
+    /**
+     * Updates the last time a visible activity within this process became invisible.
+     *
+     * @param hasVisibleActivities True if there are visible activities, false otherwise.
+     */
     @GuardedBy("mServiceLock")
-    void updateLastInvisibleTime(boolean hasVisibleActivities) {
+    public void updateLastInvisibleTime(boolean hasVisibleActivities) {
         if (hasVisibleActivities) {
             mLastInvisibleTime = Long.MAX_VALUE;
         } else if (mLastInvisibleTime == Long.MAX_VALUE) {
@@ -1411,31 +1520,37 @@ public final class ProcessStateRecord {
 
     @GuardedBy("mServiceLock")
     @ElapsedRealtimeLong
-    long getLastInvisibleTime() {
+    public long getLastInvisibleTime() {
         return mLastInvisibleTime;
     }
 
     @GuardedBy("mServiceLock")
-    void setSetCached(boolean cached) {
+    public void setSetCached(boolean cached) {
         mSetCached = cached;
     }
 
     @GuardedBy("mServiceLock")
-    boolean isSetCached() {
+    public boolean isSetCached() {
         return mSetCached;
     }
 
     @GuardedBy("mServiceLock")
-    void setLastCachedTime(@ElapsedRealtimeLong long now) {
+    public void setLastCachedTime(@ElapsedRealtimeLong long now) {
         mLastCachedTime = now;
     }
 
     @ElapsedRealtimeLong
     @GuardedBy("mServiceLock")
-    long getLastCachedTime() {
+    public long getLastCachedTime() {
         return mLastCachedTime;
     }
 
+    /**
+     * Sets the process memory usage (RSS) and the time it was updated for CacheOomRanker.
+     *
+     * @param rss The RSS memory usage in bytes.
+     * @param rssTimeMs The time in milliseconds since boot when RSS was updated.
+     */
     public void setCacheOomRankerRss(long rss, long rssTimeMs) {
         mCacheOomRankerRss = rss;
         mCacheOomRankerRssTimeMs = rssTimeMs;
@@ -1452,7 +1567,7 @@ public final class ProcessStateRecord {
     }
 
     /**
-     * Lazily initiate and return the track name.
+     * Lazily initiates and returns the track name for tracing.
      */
     private String getTrackName() {
         if (mTrackName == null) {
@@ -1461,11 +1576,18 @@ public final class ProcessStateRecord {
         return mTrackName;
     }
 
+    /**
+     * Dumps the current state of the ProcessStateRecord to the given PrintWriter.
+     *
+     * @param pw The PrintWriter to dump to.
+     * @param prefix The prefix string for each line.
+     * @param nowUptime The current uptime in milliseconds.
+     */
     @GuardedBy({"mServiceLock", "mProcLock"})
-    void dump(PrintWriter pw, String prefix, long nowUptime) {
-        if (mReportedInteraction || mFgInteractionTime != 0) {
+    public void dump(PrintWriter pw, String prefix, long nowUptime) {
+        if (mHasReportedInteraction || mFgInteractionTime != 0) {
             pw.print(prefix); pw.print("reportedInteraction=");
-            pw.print(mReportedInteraction);
+            pw.print(mHasReportedInteraction);
             if (mInteractionEventTime != 0) {
                 pw.print(" time=");
                 TimeUtils.formatDuration(mInteractionEventTime, SystemClock.elapsedRealtime(), pw);
@@ -1513,9 +1635,9 @@ public final class ProcessStateRecord {
             pw.print(prefix); pw.print("serviceb="); pw.print(mServiceB);
             pw.print(" serviceHighRam="); pw.println(mServiceHighRam);
         }
-        if (hasTopUi() || hasOverlayUi() || mRunningRemoteAnimation) {
-            pw.print(prefix); pw.print("hasTopUi="); pw.print(hasTopUi());
-            pw.print(" hasOverlayUi="); pw.print(hasOverlayUi());
+        if (getHasTopUi() || getHasOverlayUi() || mRunningRemoteAnimation) {
+            pw.print(prefix); pw.print("hasTopUi="); pw.print(getHasTopUi());
+            pw.print(" hasOverlayUi="); pw.print(getHasOverlayUi());
             pw.print(" runningRemoteAnimation="); pw.println(mRunningRemoteAnimation);
         }
         if (mHasForegroundActivities || mRepForegroundActivities) {

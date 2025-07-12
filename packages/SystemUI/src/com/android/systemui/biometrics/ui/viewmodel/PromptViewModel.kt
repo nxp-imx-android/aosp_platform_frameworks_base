@@ -50,10 +50,16 @@ import com.android.systemui.biometrics.domain.interactor.UdfpsOverlayInteractor
 import com.android.systemui.biometrics.domain.model.BiometricPromptRequest
 import com.android.systemui.biometrics.shared.model.BiometricModalities
 import com.android.systemui.biometrics.shared.model.BiometricModality
-import com.android.systemui.biometrics.shared.model.NegativeButtonState
-import com.android.systemui.biometrics.shared.model.PositiveButtonState
 import com.android.systemui.biometrics.shared.model.PromptKind
 import com.android.systemui.biometrics.shared.model.UdfpsOverlayParams
+import com.android.systemui.biometrics.ui.BiometricPromptLayoutState
+import com.android.systemui.biometrics.ui.NegativeButtonState
+import com.android.systemui.biometrics.ui.PositiveButtonState
+import com.android.systemui.biometrics.ui.PromptPosition
+import com.android.systemui.biometrics.ui.PromptSize
+import com.android.systemui.biometrics.ui.isMedium
+import com.android.systemui.biometrics.ui.isNotSmall
+import com.android.systemui.biometrics.ui.isSmall
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.deviceentry.domain.interactor.DeviceEntryUdfpsInteractor
 import com.android.systemui.display.domain.interactor.DisplayStateInteractor
@@ -110,9 +116,13 @@ constructor(
 
     /** The set of modalities available for this prompt */
     val modalities: Flow<BiometricModalities> =
-        promptSelectorInteractor.prompt
-            .map { it?.modalities ?: BiometricModalities() }
-            .distinctUntilChanged()
+        if (Flags.bpFallbackOptions()) {
+            promptSelectorInteractor.modalities
+        } else {
+            promptSelectorInteractor.prompt
+                .map { it?.modalities ?: BiometricModalities() }
+                .distinctUntilChanged()
+        }
 
     /** Whether the shade is being interacted with */
     val isShadeInteracted = shadeInteractor.isUserInteracting
@@ -565,8 +575,10 @@ constructor(
                 canTryAgain,
                 modalities ->
                 when {
+                    // Try again only on face failures
                     canTryAgain && modalities.hasFaceOnly -> PositiveButtonState.TryAgain
 
+                    // Confirm when authed and confirmation needed
                     size.isNotSmall && isPendingConfirmation -> PositiveButtonState.Confirm
 
                     else -> PositiveButtonState.Gone
@@ -712,6 +724,29 @@ constructor(
         } else {
             -mediumHorizontalGuidelinePadding
         }
+
+    /** The current layout state of the biometric prompt */
+    val layoutState: Flow<BiometricPromptLayoutState> =
+        combine(
+                currentView,
+                position,
+                size,
+                hideSensorIcon,
+                guidelineBounds,
+                iconPosition,
+                iconSize,
+            ) { currentView, position, size, hideSensor, guidelines, iconPosition, iconSize ->
+                BiometricPromptLayoutState(
+                    currentView,
+                    position,
+                    size,
+                    hideSensor,
+                    guidelines,
+                    iconPosition,
+                    iconSize,
+                )
+            }
+            .distinctUntilChanged()
 
     /** If the indicator (help, error) message should be shown. */
     val isIndicatorMessageVisible: Flow<Boolean> =

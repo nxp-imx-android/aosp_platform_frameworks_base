@@ -18,7 +18,6 @@ package com.android.systemui.media.controls.ui.controller;
 
 import static android.provider.Settings.ACTION_MEDIA_CONTROLS_SETTINGS;
 
-import static com.android.settingslib.flags.Flags.legacyLeAudioSharing;
 import static com.android.systemui.Flags.communalHub;
 import static com.android.systemui.media.controls.domain.pipeline.MediaActionsKt.getNotificationActions;
 import static com.android.systemui.media.controls.ui.viewmodel.MediaControlViewModel.MEDIA_PLAYER_SCRIM_END_ALPHA;
@@ -55,7 +54,6 @@ import android.os.Process;
 import android.os.Trace;
 import android.os.UserHandle;
 import android.provider.Settings;
-import android.text.TextUtils;
 import android.util.Log;
 import android.util.Pair;
 import android.view.Gravity;
@@ -82,7 +80,6 @@ import com.android.systemui.ActivityIntentHelper;
 import com.android.systemui.Flags;
 import com.android.systemui.animation.ActivityTransitionAnimator;
 import com.android.systemui.animation.GhostedViewTransitionAnimatorController;
-import com.android.systemui.bluetooth.BroadcastDialogController;
 import com.android.systemui.broadcast.BroadcastSender;
 import com.android.systemui.communal.domain.interactor.CommunalSceneInteractor;
 import com.android.systemui.communal.widgets.CommunalTransitionAnimatorController;
@@ -228,10 +225,6 @@ public class MediaControlPanel {
     private final SeekBarViewModel.ContentDescriptionListener mContentDescriptionListener =
             this::setSeekbarContentDescription;
 
-    private final BroadcastDialogController mBroadcastDialogController;
-    private boolean mIsCurrentBroadcastedApp = false;
-    private boolean mShowBroadcastDialogButton = false;
-    private String mCurrentBroadcastApp;
     private MultiRippleController mMultiRippleController;
     private TurbulenceNoiseController mTurbulenceNoiseController;
     private LoadingEffect mLoadingEffect;
@@ -290,7 +283,6 @@ public class MediaControlPanel {
             ActivityIntentHelper activityIntentHelper,
             CommunalSceneInteractor communalSceneInteractor,
             NotificationLockscreenUserManager lockscreenUserManager,
-            BroadcastDialogController broadcastDialogController,
             GlobalSettings globalSettings
     ) {
         mContext = context;
@@ -308,7 +300,6 @@ public class MediaControlPanel {
         mKeyguardStateController = keyguardStateController;
         mActivityIntentHelper = activityIntentHelper;
         mLockscreenUserManager = lockscreenUserManager;
-        mBroadcastDialogController = broadcastDialogController;
         mCommunalSceneInteractor = communalSceneInteractor;
 
         mSeekBarViewModel.setLogSeek(() -> {
@@ -555,12 +546,7 @@ public class MediaControlPanel {
             mBackgroundExecutor.execute(() -> mSeekBarViewModel.updateController(controller));
         }
 
-        // Show the broadcast dialog button only when the le audio is enabled.
-        mShowBroadcastDialogButton =
-                legacyLeAudioSharing()
-                        && data.getDevice() != null
-                        && data.getDevice().getShowBroadcastButton();
-        bindOutputSwitcherAndBroadcastButton(mShowBroadcastDialogButton, data);
+        bindOutputSwitcherChip(data);
         bindGutsMenuForPlayer(data);
         bindPlayerContentDescription(data);
         bindScrubbingTime(data);
@@ -718,42 +704,21 @@ public class MediaControlPanel {
         }
     }
 
-    private void bindOutputSwitcherAndBroadcastButton(boolean showBroadcastButton, MediaData data) {
+    private void bindOutputSwitcherChip(MediaData data) {
         ViewGroup seamlessView = mMediaViewHolder.getSeamless();
         seamlessView.setVisibility(View.VISIBLE);
         ImageView iconView = mMediaViewHolder.getSeamlessIcon();
         TextView deviceName = mMediaViewHolder.getSeamlessText();
         final MediaDeviceData device = data.getDevice();
 
-        final boolean isTapEnabled;
-        final boolean useDisabledAlpha;
-        final int iconResource;
-        CharSequence deviceString;
-        if (showBroadcastButton) {
-            // TODO(b/233698402): Use the package name instead of app label to avoid the
-            // unexpected result.
-            mIsCurrentBroadcastedApp = device != null
-                    && TextUtils.equals(device.getName(),
-                    mContext.getString(R.string.broadcasting_description_is_broadcasting));
-            useDisabledAlpha = !mIsCurrentBroadcastedApp;
-            // Always be enabled if the broadcast button is shown
-            isTapEnabled = true;
+        // Disable clicking on output switcher for invalid devices and resumption controls
+        final boolean isDisabled =
+                (device != null && !device.getEnabled()) || data.getResumption();
+        CharSequence deviceString = mContext.getString(R.string.media_seamless_other_device);
+        final int iconResource = R.drawable.ic_media_home_devices;
 
-            // Defaults for broadcasting state
-            deviceString = mContext.getString(R.string.bt_le_audio_broadcast_dialog_unknown_name);
-            iconResource = R.drawable.settings_input_antenna;
-        } else {
-            // Disable clicking on output switcher for invalid devices and resumption controls
-            useDisabledAlpha = (device != null && !device.getEnabled()) || data.getResumption();
-            isTapEnabled = !useDisabledAlpha;
-
-            // Defaults for non-broadcasting state
-            deviceString = mContext.getString(R.string.media_seamless_other_device);
-            iconResource = R.drawable.ic_media_home_devices;
-        }
-
-        mMediaViewHolder.getSeamlessButton().setAlpha(useDisabledAlpha ? DISABLED_ALPHA : 1.0f);
-        seamlessView.setEnabled(isTapEnabled);
+        mMediaViewHolder.getSeamlessButton().setAlpha(isDisabled ? DISABLED_ALPHA : 1.0f);
+        seamlessView.setEnabled(!isDisabled);
 
         if (device != null) {
             Drawable icon = device.getIcon();
@@ -779,58 +744,38 @@ public class MediaControlPanel {
                         return;
                     }
 
-                    if (showBroadcastButton) {
-                        // If the current media app is not broadcasted and users press the outputer
-                        // button, we should pop up the broadcast dialog to check do they want to
-                        // switch broadcast to the other media app, otherwise we still pop up the
-                        // media output dialog.
-                        if (!mIsCurrentBroadcastedApp) {
-                            mLogger.logOpenBroadcastDialog(mUid, mPackageName, mInstanceId);
-                            mCurrentBroadcastApp = device.getName().toString();
-                            mBroadcastDialogController.createBroadcastDialog(mCurrentBroadcastApp,
-                                    mPackageName, mMediaViewHolder.getSeamlessButton());
-                        } else {
-                            mLogger.logOpenOutputSwitcher(mUid, mPackageName, mInstanceId);
-                            mMediaOutputDialogManager.createAndShow(
-                                    mPackageName,
-                                    /* aboveStatusBar */ true,
-                                    mMediaViewHolder.getSeamlessButton(),
-                                    UserHandle.getUserHandleForUid(mUid),
-                                    mToken);
-                        }
-                    } else {
-                        mLogger.logOpenOutputSwitcher(mUid, mPackageName, mInstanceId);
-                        if (device.getIntent() != null) {
-                            PendingIntent deviceIntent = device.getIntent();
-                            boolean showOverLockscreen = mKeyguardStateController.isShowing()
-                                    && mActivityIntentHelper.wouldPendingShowOverLockscreen(
-                                    deviceIntent, mLockscreenUserManager.getCurrentUserId());
-                            if (deviceIntent.isActivity()) {
-                                if (!showOverLockscreen) {
-                                    mActivityStarter.postStartActivityDismissingKeyguard(
-                                            deviceIntent);
-                                } else {
-                                    try {
-                                        BroadcastOptions options = BroadcastOptions.makeBasic();
-                                        options.setInteractive(true);
-                                        options.setPendingIntentBackgroundActivityStartMode(
-                                            ActivityOptions.MODE_BACKGROUND_ACTIVITY_START_ALLOWED);
-                                        deviceIntent.send(options.toBundle());
-                                    } catch (PendingIntent.CanceledException e) {
-                                        Log.e(TAG, "Device pending intent was canceled");
-                                    }
-                                }
+                    mLogger.logOpenOutputSwitcher(mUid, mPackageName, mInstanceId);
+                    if (device.getIntent() != null) {
+                        PendingIntent deviceIntent = device.getIntent();
+                        boolean showOverLockscreen =
+                                mKeyguardStateController.isShowing()
+                                        && mActivityIntentHelper.wouldPendingShowOverLockscreen(
+                                                deviceIntent,
+                                                mLockscreenUserManager.getCurrentUserId());
+                        if (deviceIntent.isActivity()) {
+                            if (!showOverLockscreen) {
+                                mActivityStarter.postStartActivityDismissingKeyguard(deviceIntent);
                             } else {
-                                Log.w(TAG, "Device pending intent is not an activity.");
+                                try {
+                                    BroadcastOptions options = BroadcastOptions.makeBasic();
+                                    options.setInteractive(true);
+                                    options.setPendingIntentBackgroundActivityStartMode(
+                                            ActivityOptions.MODE_BACKGROUND_ACTIVITY_START_ALLOWED);
+                                    deviceIntent.send(options.toBundle());
+                                } catch (PendingIntent.CanceledException e) {
+                                    Log.e(TAG, "Device pending intent was canceled");
+                                }
                             }
                         } else {
-                            mMediaOutputDialogManager.createAndShow(
-                                    mPackageName,
-                                    /* aboveStatusBar */ true,
-                                    mMediaViewHolder.getSeamlessButton(),
-                                    UserHandle.getUserHandleForUid(mUid),
-                                    mToken);
+                            Log.w(TAG, "Device pending intent is not an activity.");
                         }
+                    } else {
+                        mMediaOutputDialogManager.createAndShow(
+                                mPackageName,
+                                /* aboveStatusBar */ true,
+                                mMediaViewHolder.getSeamlessButton(),
+                                UserHandle.getUserHandleForUid(mUid),
+                                mToken);
                     }
                 });
     }

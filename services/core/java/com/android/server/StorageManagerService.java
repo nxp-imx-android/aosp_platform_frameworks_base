@@ -193,7 +193,6 @@ import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -620,10 +619,6 @@ class StorageManagerService extends IStorageManager.Stub
     private final Set<Integer> mUidsWithLegacyExternalStorage = new ArraySet<>();
     // Not guarded by lock, always used on the ActivityManager thread
     private final SparseArray<PackageMonitor> mPackageMonitorsForUser = new SparseArray<>();
-
-    /** List of listeners registered for ce storage callbacks */
-    private final CopyOnWriteArrayList<ICeStorageLockEventListener>
-            mCeStorageEventCallbacks = new CopyOnWriteArrayList<>();
 
     class ObbState implements IBinder.DeathRecipient {
         public ObbState(String rawPath, String canonicalPath, int callingUid,
@@ -3412,11 +3407,6 @@ class StorageManagerService extends IStorageManager.Stub
         synchronized (mLock) {
             mCeUnlockedUsers.remove(userId);
         }
-        if (android.os.Flags.allowPrivateProfile()
-                && android.multiuser.Flags.enablePrivateSpaceFeatures()
-                && android.multiuser.Flags.enableBiometricsToUnlockPrivateSpace()) {
-            dispatchCeStorageLockedEvent(userId);
-        }
     }
 
     @Override
@@ -4689,18 +4679,6 @@ class StorageManagerService extends IStorageManager.Stub
         return StorageManager.MOUNT_MODE_EXTERNAL_NONE;
     }
 
-    @VisibleForTesting
-    CopyOnWriteArrayList<ICeStorageLockEventListener> getCeStorageEventCallbacks() {
-        return mCeStorageEventCallbacks;
-    }
-
-    @VisibleForTesting
-    void dispatchCeStorageLockedEvent(int userId) {
-        for (ICeStorageLockEventListener listener: mCeStorageEventCallbacks) {
-            listener.onStorageLocked(userId);
-        }
-    }
-
     private static class Callbacks extends Handler {
         private static final int MSG_STORAGE_STATE_CHANGED = 1;
         private static final int MSG_VOLUME_STATE_CHANGED = 2;
@@ -5186,24 +5164,6 @@ class StorageManagerService extends IStorageManager.Stub
                 return mInstaller.enableFsverity(authToken, filePath, packageName);
             } catch (Installer.InstallerException e) {
                 throw new IOException(e);
-            }
-        }
-
-        @Override
-        public void registerStorageLockEventListener(
-                @NonNull ICeStorageLockEventListener listener) {
-            boolean registered = mCeStorageEventCallbacks.add(listener);
-            if (!registered) {
-                Slog.w(TAG, "Failed to register listener: " + listener);
-            }
-        }
-
-        @Override
-        public void unregisterStorageLockEventListener(
-                @NonNull ICeStorageLockEventListener listener) {
-            boolean unregistered = mCeStorageEventCallbacks.remove(listener);
-            if (!unregistered) {
-                Slog.w(TAG, "Unregistering " + listener + " that was not registered");
             }
         }
     }

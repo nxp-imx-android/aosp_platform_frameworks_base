@@ -19,9 +19,9 @@ package com.android.wm.shell.flicker.splitscreen
 import android.platform.test.annotations.Presubmit
 import android.tools.NavBar
 import android.tools.flicker.junit.FlickerParametersRunnerFactory
-import android.tools.flicker.legacy.FlickerBuilder
-import android.tools.flicker.legacy.LegacyFlickerTest
-import android.tools.flicker.legacy.LegacyFlickerTestFactory
+import android.tools.flicker.FlickerBuilder
+import android.tools.flicker.FlickerTest
+import android.tools.flicker.FlickerTestFactory
 import android.tools.traces.component.ComponentNameMatcher
 import androidx.test.filters.RequiresDevice
 import com.android.server.wm.flicker.helpers.PipAppHelper
@@ -45,7 +45,7 @@ import org.junit.runners.Parameterized
 @RunWith(Parameterized::class)
 @Parameterized.UseParametersRunnerFactory(FlickerParametersRunnerFactory::class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-class SwitchBetweenSplitPairsNoPipTest(override val flicker: LegacyFlickerTest) :
+class SwitchBetweenSplitPairsNoPipTest(override val flicker: FlickerTest) :
     SplitScreenBase(flicker) {
 
     val thirdApp = SplitScreenUtils.getSendNotification(instrumentation)
@@ -152,7 +152,7 @@ class SwitchBetweenSplitPairsNoPipTest(override val flicker: LegacyFlickerTest) 
         @Parameterized.Parameters(name = "{0}")
         @JvmStatic
         fun getParams() =
-            LegacyFlickerTestFactory.nonRotationTests(
+            FlickerTestFactory.nonRotationTests(
                 supportedNavigationModes = listOf(NavBar.MODE_GESTURAL)
             )
     }

@@ -2666,7 +2666,7 @@ public class ZenModeHelperTest extends UiServiceTestCase {
                         .setShouldMinimizeRadioUsage(true)
                         .setShouldMaximizeDoze(true)
                         .setShouldUseNightLight(true)
-                        .setBrightnessPercentageCap(50f)
+                        .setBrightnessCap(0.5f)
                         .build();
 
         String ruleId =

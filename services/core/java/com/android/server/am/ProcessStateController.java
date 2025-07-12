@@ -382,7 +382,7 @@ public class ProcessStateController {
      */
     @GuardedBy("mLock")
     public boolean setHasTopUi(@NonNull ProcessRecord proc, boolean hasTopUi) {
-        if (proc.mState.hasTopUi() == hasTopUi) return false;
+        if (proc.mState.getHasTopUi() == hasTopUi) return false;
         if (DEBUG_OOM_ADJ) {
             Slog.d(TAG, "Setting hasTopUi=" + hasTopUi + " for pid=" + proc.getPid());
         }
@@ -397,7 +397,7 @@ public class ProcessStateController {
      */
     @GuardedBy("mLock")
     public boolean setHasOverlayUi(@NonNull ProcessRecord proc, boolean hasOverlayUi) {
-        if (proc.mState.hasOverlayUi() == hasOverlayUi) return false;
+        if (proc.mState.getHasOverlayUi() == hasOverlayUi) return false;
         proc.mState.setHasOverlayUi(hasOverlayUi);
         return true;
     }
@@ -436,7 +436,7 @@ public class ProcessStateController {
     @GuardedBy("mLock")
     public void setHasShownUi(@NonNull ProcessRecord proc, boolean hasShownUi) {
         // This arguably should be turned into an internal state of OomAdjuster.
-        if (proc.mState.hasShownUi() == hasShownUi) return;
+        if (proc.mState.getHasShownUi() == hasShownUi) return;
         proc.mState.setHasShownUi(hasShownUi);
     }
 

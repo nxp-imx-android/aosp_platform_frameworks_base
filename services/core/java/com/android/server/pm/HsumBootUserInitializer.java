@@ -343,8 +343,8 @@ public final class HsumBootUserInitializer {
         pw.print(res.getBoolean(R.bool.config_isMainUserPermanentAdmin));
         pw.print(" " + SYSPROP_DESIGNATE_MAIN_USER + ": ");
         pw.print(SystemProperties.get(SYSPROP_DESIGNATE_MAIN_USER, "N/A"));
-        pw.print(" flag_create_initial_user: ");
-        pw.println(Flags.createInitialUser());
+        pw.print(" flag_demote_main_user: ");
+        pw.println(Flags.demoteMainUser());
 
         pw.print("Create initial user on boot: ");
         pw.println(createInitialUserOnBoot(context));
@@ -435,11 +435,11 @@ public final class HsumBootUserInitializer {
         }
         // Ignore devices that should not create a main user while flag is not ramped up yet
         // TODO(b/402486365): remove this workaround after flag is ramped up
-        if (!Flags.createInitialUser() && res.getBoolean(R.bool.config_createInitialUser)
+        if (!Flags.demoteMainUser() && res.getBoolean(R.bool.config_createInitialUser)
                 && !defaultValue) {
             Slogf.i(TAG, "designateMainUserOnBoot(): overriding defaultValue to true (because "
-                    + "Flags.createInitialUser()=%b and config_createInitialUser=%b)",
-                    Flags.createInitialUser(), res.getBoolean(R.bool.config_createInitialUser));
+                    + "Flags.demoteMainUser()=%b and config_createInitialUser=%b)",
+                    Flags.demoteMainUser(), res.getBoolean(R.bool.config_createInitialUser));
             defaultValue = true;
         }
         if (!Build.isDebuggable()) {

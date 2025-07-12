@@ -22,6 +22,7 @@ import android.app.Notification.MessagingStyle
 import android.app.Person
 import android.content.Context
 import android.graphics.drawable.Icon
+import android.text.TextUtils
 import android.util.Log
 import android.view.LayoutInflater
 import androidx.annotation.VisibleForTesting
@@ -71,6 +72,7 @@ object SingleLineViewInflater {
             return SingleLineViewModel(null, null, null)
         }
         peopleHelper.init(systemUiContext)
+
         var titleText = HybridGroupManager.resolveTitle(notification)
         var contentText =
             if (redactText) {
@@ -82,6 +84,18 @@ object SingleLineViewInflater {
             }
 
         if (messagingStyle == null) {
+            // If we have no title AND no text (e.g. for some custom view notifications), show a
+            // placeholder string
+            if (TextUtils.isEmpty(titleText) && TextUtils.isEmpty(contentText)) {
+                return SingleLineViewModel(
+                    titleText =
+                        systemUiContext.getString(
+                            com.android.systemui.res.R.string.empty_notification_single_line_title
+                        ),
+                    contentText = null,
+                    conversationData = null,
+                )
+            }
             return SingleLineViewModel(
                 titleText = titleText,
                 contentText = contentText,
@@ -135,7 +149,7 @@ object SingleLineViewInflater {
                     SingleIcon(
                         context.getDrawable(
                             com.android.systemui.res.R.drawable
-                                .ic_redacted_notification_single_line_icon
+                                .ic_public_notification_single_line_icon
                         )
                     ),
                     null,
@@ -145,11 +159,9 @@ object SingleLineViewInflater {
             }
         return SingleLineViewModel(
             context.getString(
-                com.android.systemui.res.R.string.redacted_notification_single_line_title
+                com.android.systemui.res.R.string.public_notification_single_line_title
             ),
-            context.getString(
-                com.android.systemui.res.R.string.public_notification_single_line_text
-            ),
+            null,
             conversationData,
         )
     }

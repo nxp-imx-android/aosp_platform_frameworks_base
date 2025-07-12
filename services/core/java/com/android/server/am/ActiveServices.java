@@ -8835,7 +8835,7 @@ public final class ActiveServices {
                     if (uidRecord != null) {
                         for (int i = uidRecord.getNumOfProcs() - 1; i >= 0; i--) {
                             final ProcessRecord pr = uidRecord.getProcessRecordByIndex(i);
-                            if (pr != null && pr.mState.hasOverlayUi()) {
+                            if (pr != null && pr.mState.getHasOverlayUi()) {
                                 ret = REASON_SYSTEM_ALERT_WINDOW_PERMISSION;
                                 break;
                             }

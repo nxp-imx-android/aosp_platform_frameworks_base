@@ -4402,6 +4402,16 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
         boolean forceUpdateImeParent = target != mImeLayeringTarget;
         mImeLayeringTarget = target;
 
+        if (target != null && target.isImeOverlayLayeringTarget()) {
+            mWmService.dispatchImeOverlayLayeringTargetVisibilityChanged(target.mClient.asBinder(),
+                    target.mAttrs.type, target.isVisibleRequestedOrAdding() /* visible */,
+                    false /* removed */, mDisplayId);
+        } else {
+            final int windowType = target != null ? target.mAttrs.type : INVALID_WINDOW_TYPE;
+            mWmService.dispatchImeOverlayLayeringTargetVisibilityChanged(null /* token */,
+                    windowType, false /* visible */, true /* removed */, mDisplayId);
+        }
+
         // 1. Reparent the IME container window to the target root DA to get the correct bounds and
         // config. Only happens when the target window is in a different root DA and ImeContainer
         // is not organized (see FEATURE_IME and updateImeParent).

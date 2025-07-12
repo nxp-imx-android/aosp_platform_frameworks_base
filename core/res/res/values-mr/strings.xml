@@ -74,23 +74,15 @@
     <string name="page_size_compat_apk_warning" msgid="2982396798449041224">"हे अ‍ॅप १६ KB कंपॅटिबल नाही. APK अलाइनमेंटची तपासणी करता आली नाही. हे ॲप पेजच्या आकाराशी कंपॅटिबल असलेला मोड वापरून रन केले जाईल. सर्वोत्तम कंपॅटिबिलिटीसाठी, कृपया १६ KB च्या सपोर्टसह अ‍ॅप्लिकेशन पुन्हा कंपाइल करा. अधिक माहितीसाठी, &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; पहा"</string>
     <string name="page_size_compat_elf_warning" msgid="6753874059564812651">"हे अ‍ॅप १६ KB कंपॅटिबल नाही. ELF अलाइनमेंटची तपासणी करता आली नाही. हे ॲप पेजच्या आकाराशी कंपॅटिबल असलेला मोड वापरून रन केले जाईल. सर्वोत्तम कंपॅटिबिलिटीसाठी, कृपया १६ KB च्या सपोर्टसह अ‍ॅप्लिकेशन पुन्हा कंपाइल करा. अधिक माहितीसाठी, &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; पहा"</string>
     <string name="page_size_compat_apk_and_elf_warning" msgid="7628675779500605390">"हे अ‍ॅप १६ KB कंपॅटिबल नाही. APK आणि ELF अलाइनमेंटची तपासणी करता आली नाही. हे ॲप पेजच्या आकाराशी कंपॅटिबल असलेला मोड वापरून रन केले जाईल. सर्वोत्तम कंपॅटिबिलिटीसाठी, कृपया १६ KB च्या सपोर्टसह अ‍ॅप्लिकेशन पुन्हा कंपाइल करा. अधिक माहितीसाठी, &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; पहा"</string>
-    <!-- no translation found for page_size_compat_apk_warning_4kb (1284527724160989424) -->
-    <skip />
-    <!-- no translation found for page_size_compat_elf_warning_4kb (5197745436304627728) -->
-    <skip />
-    <!-- no translation found for page_size_compat_apk_and_elf_warning_4kb (5626544342073325806) -->
-    <skip />
+    <string name="page_size_compat_apk_warning_4kb" msgid="6013674159459424986">"ही चेतावणी दिसत आहे, कारण हे असे डीबग करता येणारे अ‍ॅप आहे, ज्याची सध्या चाचणी केली जात आहे. तुम्ही डेव्हलपर नसल्यास, कृपया डेव्हलपरकडे याची तक्रार करा आणि डीबग न करता येणारे अ‍ॅप उपलब्ध करून देण्याची विनंती करा. &lt;br&gt;&lt;br&gt; हे अ‍ॅप १६ KB सह कंपॅटिबल नाही. APK अलाइनमेंटची तपासणी करता आली नाही. कृपया &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; वरील पायऱ्या फॉलो करा. &lt;br&gt;&lt;br&gt; पुढील लायब्ररी १६ KB शी अलाइन केलेल्या नाहीत: &lt;br&gt;&lt;br&gt;"</string>
+    <string name="page_size_compat_elf_warning_4kb" msgid="5189541753040977649">"ही चेतावणी दिसत आहे, कारण हे असे डीबग करता येणारे अ‍ॅप आहे, ज्याची सध्या चाचणी केली जात आहे. तुम्ही डेव्हलपर नसल्यास, कृपया डेव्हलपरकडे याची तक्रार करा आणि डीबग न करता येणारे अ‍ॅप उपलब्ध करून देण्याची विनंती करा. &lt;br&gt;&lt;br&gt; हे अ‍ॅप १६ KB सह कंपॅटिबल नाही. ELF अलाइनमेंटची तपासणी करता आली नाही. कृपया &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; वरील पायऱ्या फॉलो करा. &lt;br&gt;&lt;br&gt; पुढील लायब्ररी १६ KB शी अलाइन केलेल्या नाहीत: &lt;br&gt;&lt;br&gt;"</string>
+    <string name="page_size_compat_apk_and_elf_warning_4kb" msgid="7665028394400479058">"ही चेतावणी दिसत आहे, कारण हे असे डीबग करता येणारे अ‍ॅप आहे, ज्याची सध्या चाचणी केली जात आहे. तुम्ही डेव्हलपर नसल्यास, कृपया डेव्हलपरकडे याची तक्रार करा आणि डीबग न करता येणारे अ‍ॅप उपलब्ध करून देण्याची विनंती करा. &lt;br&gt;&lt;br&gt; हे अ‍ॅप १६ KB सह कंपॅटिबल नाही. APK आणि ELF अलाइनमेंटच्या तपासण्या करता आल्या नाहीत. कृपया &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; वरील पायऱ्या फॉलो करा. &lt;br&gt;&lt;br&gt; पुढील लायब्ररी १६ KB शी अलाइन केलेल्या नाहीत: &lt;br&gt;&lt;br&gt;"</string>
     <string name="page_size_compat_never_show" msgid="3391282612422783097">"पुन्हा दाखवू नका"</string>
-    <!-- no translation found for page_size_compat_title (6497719153872572204) -->
-    <skip />
-    <!-- no translation found for page_size_compat_elf_not_aligned (7940806102874132630) -->
-    <skip />
-    <!-- no translation found for page_size_compat_apk_not_aligned (8927901100655245528) -->
-    <skip />
-    <!-- no translation found for page_size_compat_apk_and_elf_not_aligned (1010371834741548905) -->
-    <skip />
-    <!-- no translation found for page_size_compat_unknown (3254222165646410528) -->
-    <skip />
+    <string name="page_size_compat_title" msgid="6497719153872572204">"Android अ‍ॅप कंपॅटिबिलिटी"</string>
+    <string name="page_size_compat_elf_not_aligned" msgid="7940806102874132630">"&amp;#8226; %1$s : लोड केलेले सेगमेंट अलाइन केलेले नाही"</string>
+    <string name="page_size_compat_apk_not_aligned" msgid="8927901100655245528">"&amp;#8226; %1$s : अनकाँप्रेस्ड लायब्ररी अलाइन केलेली नाही"</string>
+    <string name="page_size_compat_apk_and_elf_not_aligned" msgid="1010371834741548905">"&amp;#8226; %1$s : लोड केलेले सेगमेंट आणि अनकाँप्रेस्ड लायब्ररी अलाइन केलेली नाही"</string>
+    <string name="page_size_compat_unknown" msgid="3254222165646410528">"&amp;#8226; %1$s : अज्ञात एरर"</string>
     <string name="serviceNotProvisioned" msgid="8289333510236766193">"सेवेची तरतूद केलेली नाही."</string>
     <string name="CLIRPermanent" msgid="166443681876381118">"तुम्ही कॉलर आयडी सेटिंग बदलू शकत नाही."</string>
     <string name="auto_data_switch_title" msgid="3286350716870518297">"डेटा <xliff:g id="CARRIERDISPLAY">%s</xliff:g> वर स्विच केला"</string>
@@ -373,18 +365,12 @@
     <string name="permgroupdesc_sensors" msgid="2610631290633747752">"आपल्‍या महत्त्वाच्या मापनांविषयी सेन्सर डेटा अ‍ॅक्सेस करा"</string>
     <string name="permgrouplab_notifications" msgid="5472972361980668884">"सूचना"</string>
     <string name="permgroupdesc_notifications" msgid="4608679556801506580">"नोटिफिकेशन दाखवा"</string>
-    <!-- no translation found for permgrouplab_xr_eye_sensitive (1709596126334620353) -->
-    <skip />
-    <!-- no translation found for permgroupdesc_xr_eye_sensitive (6050967250223079001) -->
-    <skip />
-    <!-- no translation found for permgrouplab_xr_tracking (766634536453394700) -->
-    <skip />
-    <!-- no translation found for permgroupdesc_xr_tracking (812429788288001595) -->
-    <skip />
-    <!-- no translation found for permgrouplab_xr_tracking_sensitive (4346975608010051186) -->
-    <skip />
-    <!-- no translation found for permgroupdesc_xr_tracking_sensitive (7925014193164562556) -->
-    <skip />
+    <string name="permgrouplab_xr_eye_sensitive" msgid="1709596126334620353">"डोळ्याचा ट्रॅकिंग डेटा"</string>
+    <string name="permgroupdesc_xr_eye_sensitive" msgid="6050967250223079001">"डोळ्यांची हालचाल अचूकपणे ट्रॅक करा"</string>
+    <string name="permgrouplab_xr_tracking" msgid="766634536453394700">"हालचाल आणि भाग यासंबंधी डेटा"</string>
+    <string name="permgroupdesc_xr_tracking" msgid="812429788288001595">"डोळे, चेहरा, शरीर ट्रॅक करून तो भाग स्कॅन करा"</string>
+    <string name="permgrouplab_xr_tracking_sensitive" msgid="4346975608010051186">"डोक्याची अचूक हालचाल व भाग यासंबंधी डेटा"</string>
+    <string name="permgroupdesc_xr_tracking_sensitive" msgid="7925014193164562556">"डोके अचूकपणे ट्रॅक करून तो भाग स्कॅन करा"</string>
     <string name="capability_title_canRetrieveWindowContent" msgid="7554282892101587296">"विंडोमधील आशय पुन्हा मिळवा"</string>
     <string name="capability_desc_canRetrieveWindowContent" msgid="6195610527625237661">"तुम्ही वापरत असलेल्‍या विंडोमधील आशय तपासा."</string>
     <string name="capability_title_canRequestTouchExploration" msgid="327598364696316213">"स्पर्श करून अन्वेषण सुरू करा"</string>
@@ -682,38 +668,22 @@
     <string name="permdesc_imagesWrite" msgid="5195054463269193317">"ॲपला तुमच्या फोटो संग्रहामध्ये सुधारणा करण्याची अनुमती देते."</string>
     <string name="permlab_mediaLocation" msgid="7368098373378598066">"तुमच्या मीडिया संग्रहातून स्थाने वाचा"</string>
     <string name="permdesc_mediaLocation" msgid="597912899423578138">"ॲपला तुमच्या मीडिया संग्रहामध्येील स्थाने वाचण्यासाठी अनुमती देते."</string>
-    <!-- no translation found for permlab_eye_tracking_coarse (1266477998416112440) -->
-    <skip />
-    <!-- no translation found for permdesc_eye_tracking_coarse (1652112796672085320) -->
-    <skip />
-    <!-- no translation found for permlab_eye_tracking_fine (6208991021186455002) -->
-    <skip />
-    <!-- no translation found for permdesc_eye_tracking_fine (9215360948852654836) -->
-    <skip />
-    <!-- no translation found for permlab_face_tracking (6052126246676474909) -->
-    <skip />
-    <!-- no translation found for permdesc_face_tracking (185815778490412574) -->
-    <skip />
-    <!-- no translation found for permlab_hand_tracking (21944950887649088) -->
-    <skip />
-    <!-- no translation found for permdesc_hand_tracking (8083783248481460669) -->
-    <skip />
-    <!-- no translation found for permlab_head_tracking (4304699038992159853) -->
-    <skip />
-    <!-- no translation found for permdesc_head_tracking (2232184518548944223) -->
-    <skip />
-    <!-- no translation found for permlab_scene_understanding_coarse (8765236119358852920) -->
-    <skip />
-    <!-- no translation found for permdesc_scene_understanding_coarse (847344305502345475) -->
-    <skip />
-    <!-- no translation found for permlab_scene_understanding_fine (2899904960307462936) -->
-    <skip />
-    <!-- no translation found for permdesc_scene_understanding_fine (4848943859506977588) -->
-    <skip />
-    <!-- no translation found for permlab_xr_tracking_in_background (8659516810430027774) -->
-    <skip />
-    <!-- no translation found for permdesc_xr_tracking_in_background (3151744132692357005) -->
-    <skip />
+    <string name="permlab_eye_tracking_coarse" msgid="1266477998416112440">"डोळ्यांची हालचाल ट्रॅक करा"</string>
+    <string name="permdesc_eye_tracking_coarse" msgid="1652112796672085320">"अ‍ॅपला तुमच्या नजरेची अंदाजे दिशा ट्रॅक करण्याची अनुमती देते."</string>
+    <string name="permlab_eye_tracking_fine" msgid="6208991021186455002">"डोळ्यांची हालचाल अचूकपणे ट्रॅक करा"</string>
+    <string name="permdesc_eye_tracking_fine" msgid="9215360948852654836">"अ‍ॅपला तुमच्या नजरेची दिशा ट्रॅक करण्याची अनुमती देते."</string>
+    <string name="permlab_face_tracking" msgid="6052126246676474909">"चेहऱ्याच्या हालचाली ट्रॅक करा"</string>
+    <string name="permdesc_face_tracking" msgid="185815778490412574">"अ‍ॅपला तुमच्या चेहऱ्याच्या हालचाली आणि हावभाव ट्रॅक करण्याची अनुमती देते."</string>
+    <string name="permlab_hand_tracking" msgid="21944950887649088">"हाताच्या हालचाली ट्रॅक करा"</string>
+    <string name="permdesc_hand_tracking" msgid="8083783248481460669">"अ‍ॅपला तुमच्या हाताच्या हालचाली ट्रॅक करण्याची अनुमती देते."</string>
+    <string name="permlab_head_tracking" msgid="4304699038992159853">"डोक्याच्या हालचाली ट्रॅक करा"</string>
+    <string name="permdesc_head_tracking" msgid="2232184518548944223">"अ‍ॅपला तुमच्या डोक्याच्या हालचाली ट्रॅक करण्याची अनुमती देते."</string>
+    <string name="permlab_scene_understanding_coarse" msgid="8765236119358852920">"तुमच्या सभोवतालचा परिसर स्कॅन करा"</string>
+    <string name="permdesc_scene_understanding_coarse" msgid="847344305502345475">"अ‍ॅपला तुमच्या आजूबाजूचा परिसर स्कॅन करण्याची अनुमती देते."</string>
+    <string name="permlab_scene_understanding_fine" msgid="2899904960307462936">"तुमच्या सभोवतालचा परिसर अचूकपणे स्कॅन करा"</string>
+    <string name="permdesc_scene_understanding_fine" msgid="4848943859506977588">"अ‍ॅपला तुमच्या आजूबाजूचा परिसर अचूकपणे स्कॅन करण्याची अनुमती देते."</string>
+    <string name="permlab_xr_tracking_in_background" msgid="8659516810430027774">"बॅकग्राउंडमध्ये XR डेटा ट्रॅक करा"</string>
+    <string name="permdesc_xr_tracking_in_background" msgid="3151744132692357005">"अ‍ॅपला बॅकग्राउंडमध्ये XR डेटा अ‍ॅक्सेस करण्याची अनुमती देते."</string>
     <string name="permlab_capture_keyboard" msgid="4076894823382693032">"की कॅप्चर करा"</string>
     <string name="permdesc_capture_keyboard" msgid="4192269470684407219">"सिस्टीमचे शॉर्टकट आणि कृती यांवर सिस्टीमला प्रक्रिया करता येण्यापूर्वी अ‍ॅपला की कॅप्चर करण्याची अनुमती द्या."</string>
     <string name="biometric_app_setting_name" msgid="3339209978734534457">"बायोमेट्रिक वापरा"</string>
@@ -944,6 +914,8 @@
     <string name="policydesc_disableCamera" msgid="3204405908799676104">"सर्व डिव्हाइस कॅमेर्‍यांचा वापर प्रतिबंधित करा."</string>
     <string name="policylab_disableKeyguardFeatures" msgid="5071855750149949741">"काही स्क्रीन लॉक वैशिष्‍ट्ये बंद करा"</string>
     <string name="policydesc_disableKeyguardFeatures" msgid="6641673177041195957">"काही स्क्रीन लॉक वैशिष्‍ट्यांचा वापर प्रतिबंधित करा."</string>
+    <!-- no translation found for exit_toast_on_long_press_escape (873907401529125943) -->
+    <skip />
   <string-array name="phoneTypes">
     <item msgid="8996339953292723951">"घर"</item>
     <item msgid="7740243458912727194">"मोबाइल"</item>
@@ -2596,6 +2568,7 @@
     <string name="keyboard_shortcut_group_applications_calendar" msgid="3571770335653387606">"Calendar"</string>
     <string name="keyboard_shortcut_group_applications_calculator" msgid="6753209559716091507">"Calculator"</string>
     <string name="keyboard_shortcut_group_applications_maps" msgid="7950000659522589471">"Maps"</string>
+    <string name="keyboard_shortcut_group_applications_files" msgid="863938400765838051">"Files"</string>
     <string name="keyboard_shortcut_group_applications" msgid="3010389163951364798">"अ‍ॅप्लिकेशन"</string>
     <string name="fingerprint_loe_notification_msg" msgid="3927447270148854546">"तुमची फिंगरप्रिंट यापुढे ओळखता येणार नाहीत. फिंगरप्रिंट अनलॉक पुन्हा सेट करा."</string>
     <string name="usb_apm_usb_plugged_in_when_locked_notification_app_title" msgid="285421860627714333">"सुरक्षा आणि गोपनीयता"</string>
@@ -2615,6 +2588,5 @@
     <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"फिंगरप्रिंट अनलॉक यासंबंधित समस्या येत आहे का?"</string>
     <string name="fingerprint_frr_notification_msg" msgid="2162966846624639252">"तुमच्या अनलॉक करण्याच्या अनुभवामध्ये सुधारणा करण्यासाठी टिपांचे पुनरावलोकन करण्याकरिता टॅप करा"</string>
     <string name="no_blink_accessibility_text_cursor_blink_label" msgid="223072797385428874">"ब्लिंक करू नका"</string>
-    <!-- no translation found for long_press_power_to_turn_off_tv_toast (2231397748028498986) -->
-    <skip />
+    <string name="long_press_power_to_turn_off_tv_toast" msgid="2231397748028498986">"टीव्ही बंद करण्यासाठी पॉवर बटण प्रेस करून ठेवा"</string>
 </resources>

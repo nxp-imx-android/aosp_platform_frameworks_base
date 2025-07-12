@@ -27,6 +27,7 @@ import static android.provider.Settings.Secure.SEARCH_CONTENT_FILTERS_ENABLED;
 
 import static com.android.internal.util.Preconditions.checkCallAuthorization;
 
+import android.annotation.CallbackExecutor;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.SuppressLint;
@@ -34,6 +35,7 @@ import android.annotation.UserIdInt;
 import android.app.KeyguardManager;
 import android.app.admin.DevicePolicyManager;
 import android.app.admin.DevicePolicyManagerInternal;
+import android.app.role.OnRoleHoldersChangedListener;
 import android.app.role.RoleManager;
 import android.app.supervision.ISupervisionListener;
 import android.app.supervision.ISupervisionManager;
@@ -81,6 +83,8 @@ import java.io.FileDescriptor;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+import java.util.concurrent.Executor;
 
 /** Service for handling system supervision. */
 public class SupervisionService extends ISupervisionManager.Stub {
@@ -456,15 +460,12 @@ public class SupervisionService extends ISupervisionManager.Stub {
 
         enforcePermission(MANAGE_ROLE_HOLDERS);
         List<String> supervisionPackages = new ArrayList<>();
-        RoleManagerWrapper roleManager = mInjector.getRoleManagerWrapper();
-        if (roleManager != null) {
-            supervisionPackages.addAll(
-                    roleManager.getRoleHoldersAsUser(
-                            RoleManager.ROLE_SUPERVISION, UserHandle.of(userId)));
-            supervisionPackages.addAll(
-                    roleManager.getRoleHoldersAsUser(
-                            RoleManager.ROLE_SYSTEM_SUPERVISION, UserHandle.of(userId)));
-        }
+        supervisionPackages.addAll(
+                mInjector.getRoleHoldersAsUser(
+                        RoleManager.ROLE_SUPERVISION, UserHandle.of(userId)));
+        supervisionPackages.addAll(
+                mInjector.getRoleHoldersAsUser(
+                        RoleManager.ROLE_SYSTEM_SUPERVISION, UserHandle.of(userId)));
 
         for (String supervisionPackage : supervisionPackages) {
             clearDevicePoliciesAndSuspendedPackagesFor(userId, supervisionPackage);
@@ -623,10 +624,11 @@ public class SupervisionService extends ISupervisionManager.Stub {
         private PackageManager mPackageManager;
         private PackageManagerInternal mPackageManagerInternal;
         private UserManagerInternal mUserManagerInternal;
-        private RoleManagerWrapper mRoleManagerWrapper;
+        private RoleManager mRoleManager;
 
         Injector(Context context) {
             this.context = context;
+            mRoleManager = Objects.requireNonNull(context.getSystemService(RoleManager.class));
         }
 
         @Nullable
@@ -673,26 +675,17 @@ public class SupervisionService extends ISupervisionManager.Stub {
             return mPackageManagerInternal;
         }
 
-        RoleManagerWrapper getRoleManagerWrapper() {
-            if (mRoleManagerWrapper == null) {
-                final Object roleManager = context.getSystemService(RoleManager.class);
-                if (roleManager instanceof RoleManager) {
-                    mRoleManagerWrapper = new RoleManagerWrapper() {
-                        @Override
-                        public List<String> getRoleHoldersAsUser(String roleName, UserHandle user) {
-                            return ((RoleManager) roleManager).getRoleHoldersAsUser(roleName, user);
-                        }
-                    };
-                } else {
-                    mRoleManagerWrapper = (RoleManagerWrapper) roleManager;
-                }
-            }
-            return mRoleManagerWrapper;
+        void addOnRoleHoldersChangedListenerAsUser(
+                @CallbackExecutor @NonNull Executor executor,
+                @NonNull OnRoleHoldersChangedListener listener,
+                @NonNull UserHandle user) {
+            mRoleManager.addOnRoleHoldersChangedListenerAsUser(executor, listener, user);
         }
-    }
 
-    public interface RoleManagerWrapper {
-        List<String> getRoleHoldersAsUser(String roleName, UserHandle user);
+        @NonNull
+        List<String> getRoleHoldersAsUser(String roleName, UserHandle user) {
+            return mRoleManager.getRoleHoldersAsUser(roleName, user);
+        }
     }
 
     /** Publishes local and binder services and allows the service to act during initialization. */

@@ -74,23 +74,15 @@
     <string name="page_size_compat_apk_warning" msgid="2982396798449041224">"ဤအက်ပ်သည် ၁၆ KB နှင့် တွဲမသုံးနိုင်ပါ။ APK ချိန်ညှိခြင်း စစ်ဆေးမှု မအောင်မြင်ပါ။ ဤအက်ပ်သည် တွဲသုံးနိုင်သော စာမျက်နှာအရွယ်အစားမုဒ်သုံး၍ လုပ်ဆောင်ပါမည်။ အကောင်းဆုံး တွဲသုံးနိုင်မှုအတွက် အပလီကေးရှင်းကို ၁၆ KB ပံ့ပိုးမှုဖြင့် ပြန်လည်တည်ဆောက်ပါ။ နောက်ထပ်အချက်အလက်အတွက် &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; တွင် ကြည့်ပါ"</string>
     <string name="page_size_compat_elf_warning" msgid="6753874059564812651">"ဤအက်ပ်ကို ၁၆ KB နှင့် တွဲမသုံးနိုင်ပါ။ ELF ချိန်ညှိခြင်း စစ်ဆေးမှု မအောင်မြင်ပါ။ ဤအက်ပ်ကို တွဲသုံးနိုင်သော စာမျက်နှာအရွယ်အစားမုဒ်သုံး၍ လုပ်ဆောင်ပါမည်။ အကောင်းဆုံး တွဲသုံးနိုင်မှုအတွက် အပလီကေးရှင်းကို ၁၆ KB ပံ့ပိုးမှုဖြင့် ပြန်လည်တည်ဆောက်ပါ။ နောက်ထပ်အချက်အလက်အတွက် &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; တွင် ကြည့်ပါ"</string>
     <string name="page_size_compat_apk_and_elf_warning" msgid="7628675779500605390">"ဤအက်ပ်ကို ၁၆ KB နှင့် တွဲမသုံးနိုင်ပါ။ APK နှင့် ELF ချိန်ညှိခြင်း စစ်ဆေးမှု မအောင်မြင်ပါ။ ဤအက်ပ်ကို တွဲသုံးနိုင်သော စာမျက်နှာအရွယ်အစားမုဒ်သုံး၍ လုပ်ဆောင်ပါမည်။ အကောင်းဆုံး တွဲသုံးနိုင်မှုအတွက် အပလီကေးရှင်းကို ၁၆ KB ပံ့ပိုးမှုဖြင့် ပြန်လည်တည်ဆောက်ပါ။ နောက်ထပ်အချက်အလက်အတွက် &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; တွင် ကြည့်ပါ"</string>
-    <!-- no translation found for page_size_compat_apk_warning_4kb (1284527724160989424) -->
-    <skip />
-    <!-- no translation found for page_size_compat_elf_warning_4kb (5197745436304627728) -->
-    <skip />
-    <!-- no translation found for page_size_compat_apk_and_elf_warning_4kb (5626544342073325806) -->
-    <skip />
+    <string name="page_size_compat_apk_warning_4kb" msgid="6013674159459424986">"အမှားရှာပြင်နိုင်သော အက်ပ်ဖြစ်သောကြောင့် ဤသတိပေးချက်ကို ပြခြင်းဖြစ်ပြီး ၎င်းကို လောလောဆယ် စမ်းသပ်နေဆဲဖြစ်သည်။ သင်သည် ဆော့ဖ်ဝဲရေးသူ မဟုတ်ပါက ၎င်းကို ဆော့ဖ်ဝဲရေးသူထံသို့ သတင်းပို့ပြီး အမှားရှာပြင်နိုင်ခြင်းမရှိသည့်အက်ပ်ကို တောင်းဆိုပါ။ &lt;br&gt;&lt;br&gt; ဤအက်ပ်သည် ၁၆ KB နှင့် ကိုက်ညီမှုမရှိပါ။ APK ချိန်ညှိခြင်းကို စစ်ဆေး၍ မရလိုက်ပါ။ &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; &lt;br&gt;&lt;br&gt; ရှိ အဆင့်များအတိုင်း လုပ်ဆောင်ပါ။ အောက်ပါဒစ်ဂျစ်တိုက်များကို ၁၆ KB ချိန်ညှိထားခြင်းမရှိပါ- &lt;br&gt;&lt;br&gt;"</string>
+    <string name="page_size_compat_elf_warning_4kb" msgid="5189541753040977649">"အမှားရှာပြင်နိုင်သော အက်ပ်ဖြစ်သောကြောင့် ဤသတိပေးချက်ကို ပြခြင်းဖြစ်ပြီး ၎င်းကို လောလောဆယ် စမ်းသပ်နေဆဲဖြစ်သည်။ သင်သည် ဆော့ဖ်ဝဲရေးသူ မဟုတ်ပါက ၎င်းကို ဆော့ဖ်ဝဲရေးသူထံသို့ သတင်းပို့ပြီး အမှားရှာပြင်နိုင်ခြင်းမရှိသည့်အက်ပ်ကို တောင်းဆိုပါ။ &lt;br&gt;&lt;br&gt; ဤအက်ပ်သည် ၁၆ KB နှင့် ကိုက်ညီမှုမရှိပါ။ ELF ချိန်ညှိခြင်းကို စစ်ဆေး၍ မရလိုက်ပါ။ &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; &lt;br&gt;&lt;br&gt; ရှိ အဆင့်များအတိုင်း လုပ်ဆောင်ပါ။ အောက်ပါဒစ်ဂျစ်တိုက်များကို ၁၆ KB ချိန်ညှိထားခြင်းမရှိပါ- &lt;br&gt;&lt;br&gt;"</string>
+    <string name="page_size_compat_apk_and_elf_warning_4kb" msgid="7665028394400479058">"အမှားရှာပြင်နိုင်သော အက်ပ်ဖြစ်သောကြောင့် ဤသတိပေးချက်ကို ပြခြင်းဖြစ်ပြီး ၎င်းကို လောလောဆယ် စမ်းသပ်နေဆဲဖြစ်သည်။ သင်သည် ဆော့ဖ်ဝဲရေးသူ မဟုတ်ပါက ၎င်းကို ဆော့ဖ်ဝဲရေးသူထံသို့ သတင်းပို့ပြီး အမှားရှာပြင်နိုင်ခြင်းမရှိသည့်အက်ပ်ကို တောင်းဆိုပါ။ &lt;br&gt;&lt;br&gt; ဤအက်ပ်သည် ၁၆ KB နှင့် ကိုက်ညီမှုမရှိပါ။ APK နှင့် ELF ချိန်ညှိခြင်းကို စစ်ဆေး၍ မရလိုက်ပါ။ &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; ရှိ အဆင့်များအတိုင်း လုပ်ဆောင်ပါ။ &lt;br&gt;&lt;br&gt; အောက်ပါဒစ်ဂျစ်တိုက်များကို ၁၆ KB ချိန်ညှိထားခြင်းမရှိပါ- &lt;br&gt;&lt;br&gt;"</string>
     <string name="page_size_compat_never_show" msgid="3391282612422783097">"ထပ်မပြပါနှင့်"</string>
-    <!-- no translation found for page_size_compat_title (6497719153872572204) -->
-    <skip />
-    <!-- no translation found for page_size_compat_elf_not_aligned (7940806102874132630) -->
-    <skip />
-    <!-- no translation found for page_size_compat_apk_not_aligned (8927901100655245528) -->
-    <skip />
-    <!-- no translation found for page_size_compat_apk_and_elf_not_aligned (1010371834741548905) -->
-    <skip />
-    <!-- no translation found for page_size_compat_unknown (3254222165646410528) -->
-    <skip />
+    <string name="page_size_compat_title" msgid="6497719153872572204">"Android အက်ပ် တွဲဖက်သုံးနိုင်မှု"</string>
+    <string name="page_size_compat_elf_not_aligned" msgid="7940806102874132630">"&amp;#8226; %1$s - အစိတ်အပိုင်းဖွင့်ခြင်းကို ချိန်ညှိထားခြင်းမရှိပါ"</string>
+    <string name="page_size_compat_apk_not_aligned" msgid="8927901100655245528">"&amp;#8226; %1$s - ချုံ့မထားသော ဒစ်ဂျစ်တိုက်ကို ချိန်ညှိထားခြင်းမရှိပါ"</string>
+    <string name="page_size_compat_apk_and_elf_not_aligned" msgid="1010371834741548905">"&amp;#8226; %1$s - အစိတ်အပိုင်းဖွင့်ခြင်းနှင့် ချုံ့မထားသော ဒစ်ဂျစ်တိုက်တို့ကို ချိန်ညှိထားခြင်းမရှိပါ"</string>
+    <string name="page_size_compat_unknown" msgid="3254222165646410528">"&amp;#8226; %1$s - အမျိုးအမည်မသိ အမှားအယွင်း"</string>
     <string name="serviceNotProvisioned" msgid="8289333510236766193">"ဝန်ဆောင်မှုအား ကန့်သတ်မထားပါ"</string>
     <string name="CLIRPermanent" msgid="166443681876381118">"သင်သည် ခေါ်ဆိုသူ ID ဆက်တင်ကို မပြောင်းလဲနိုင်ပါ။"</string>
     <string name="auto_data_switch_title" msgid="3286350716870518297">"ဒေတာကို <xliff:g id="CARRIERDISPLAY">%s</xliff:g> သို့ ပြောင်းထားသည်"</string>
@@ -373,18 +365,12 @@
     <string name="permgroupdesc_sensors" msgid="2610631290633747752">"သင်၏အရေးကြီးသော ကျန်းမာရေးလက္ခဏာဆိုင်ရာ အာရုံခံကိရိယာဒေတာကို ရယူရန်"</string>
     <string name="permgrouplab_notifications" msgid="5472972361980668884">"အကြောင်းကြားချက်များ"</string>
     <string name="permgroupdesc_notifications" msgid="4608679556801506580">"အကြောင်းကြားချက်များ ပြနိုင်သည်"</string>
-    <!-- no translation found for permgrouplab_xr_eye_sensitive (1709596126334620353) -->
-    <skip />
-    <!-- no translation found for permgroupdesc_xr_eye_sensitive (6050967250223079001) -->
-    <skip />
-    <!-- no translation found for permgrouplab_xr_tracking (766634536453394700) -->
-    <skip />
-    <!-- no translation found for permgroupdesc_xr_tracking (812429788288001595) -->
-    <skip />
-    <!-- no translation found for permgrouplab_xr_tracking_sensitive (4346975608010051186) -->
-    <skip />
-    <!-- no translation found for permgroupdesc_xr_tracking_sensitive (7925014193164562556) -->
-    <skip />
+    <string name="permgrouplab_xr_eye_sensitive" msgid="1709596126334620353">"မျက်လုံးကို ခြေရာခံခြင်းဆိုင်ရာ ဒေတာ"</string>
+    <string name="permgroupdesc_xr_eye_sensitive" msgid="6050967250223079001">"မျက်လုံးလှုပ်ရှားမှုကို အတိအကျ ခြေရာခံသည်"</string>
+    <string name="permgrouplab_xr_tracking" msgid="766634536453394700">"လှုပ်ရှားမှုနှင့် နေရာဆိုင်ရာ ဒေတာ"</string>
+    <string name="permgroupdesc_xr_tracking" msgid="812429788288001595">"မျက်လုံး၊ မျက်နှာ၊ ခန္ဓာကိုယ်တို့ကို ခြေရာခံပြီး နေရာကို စကင်ဖတ်သည်"</string>
+    <string name="permgrouplab_xr_tracking_sensitive" msgid="4346975608010051186">"ဦးခေါင်းလှုပ်ရှားမှုအတိအကျ၊ နေရာ ဒေတာ"</string>
+    <string name="permgroupdesc_xr_tracking_sensitive" msgid="7925014193164562556">"ဦးခေါင်းကို အတိအကျ ခြေရာခံပြီး နေရာကို စကင်ဖတ်သည်"</string>
     <string name="capability_title_canRetrieveWindowContent" msgid="7554282892101587296">"ဝင်းဒိုးတွင် ပါရှိသည်များကို ပြန်လည်ရယူရန်"</string>
     <string name="capability_desc_canRetrieveWindowContent" msgid="6195610527625237661">"သင်အသုံးပြုနေသော ဝင်းဒိုးတွင် ပါရှိသည်များကို ကြည့်ရှုစစ်ဆေးသည်။"</string>
     <string name="capability_title_canRequestTouchExploration" msgid="327598364696316213">"တို့ထိခြင်းဖြင့် ရှာဖွေမှုကို ဖွင့်ရန်"</string>
@@ -682,38 +668,22 @@
     <string name="permdesc_imagesWrite" msgid="5195054463269193317">"အက်ပ်အား သင့်ဓာတ်ပုံစုစည်းမှုကို ပြုပြင်ခွင့်ပေးသည်။"</string>
     <string name="permlab_mediaLocation" msgid="7368098373378598066">"သင့်မီဒီယာစုစည်းမှုမှ တည်နေရာများကို ဖတ်ခြင်း"</string>
     <string name="permdesc_mediaLocation" msgid="597912899423578138">"အက်ပ်အား သင့်မီဒီယာစုစည်းမှုမှ တည်နေရာများကို ဖတ်ခွင့်ပေးသည်။"</string>
-    <!-- no translation found for permlab_eye_tracking_coarse (1266477998416112440) -->
-    <skip />
-    <!-- no translation found for permdesc_eye_tracking_coarse (1652112796672085320) -->
-    <skip />
-    <!-- no translation found for permlab_eye_tracking_fine (6208991021186455002) -->
-    <skip />
-    <!-- no translation found for permdesc_eye_tracking_fine (9215360948852654836) -->
-    <skip />
-    <!-- no translation found for permlab_face_tracking (6052126246676474909) -->
-    <skip />
-    <!-- no translation found for permdesc_face_tracking (185815778490412574) -->
-    <skip />
-    <!-- no translation found for permlab_hand_tracking (21944950887649088) -->
-    <skip />
-    <!-- no translation found for permdesc_hand_tracking (8083783248481460669) -->
-    <skip />
-    <!-- no translation found for permlab_head_tracking (4304699038992159853) -->
-    <skip />
-    <!-- no translation found for permdesc_head_tracking (2232184518548944223) -->
-    <skip />
-    <!-- no translation found for permlab_scene_understanding_coarse (8765236119358852920) -->
-    <skip />
-    <!-- no translation found for permdesc_scene_understanding_coarse (847344305502345475) -->
-    <skip />
-    <!-- no translation found for permlab_scene_understanding_fine (2899904960307462936) -->
-    <skip />
-    <!-- no translation found for permdesc_scene_understanding_fine (4848943859506977588) -->
-    <skip />
-    <!-- no translation found for permlab_xr_tracking_in_background (8659516810430027774) -->
-    <skip />
-    <!-- no translation found for permdesc_xr_tracking_in_background (3151744132692357005) -->
-    <skip />
+    <string name="permlab_eye_tracking_coarse" msgid="1266477998416112440">"မျက်လုံးရွေ့လျားမှုကို ခြေရာခံခြင်း"</string>
+    <string name="permdesc_eye_tracking_coarse" msgid="1652112796672085320">"သင့်အကြည့်၏ ဦးတည်ရာခန့်မှန်းခြေကို ခြေရာခံရန် အက်ပ်အား ခွင့်ပြုသည်။"</string>
+    <string name="permlab_eye_tracking_fine" msgid="6208991021186455002">"မျက်လုံးလှုပ်ရှားမှုကို အတိအကျ ခြေရာခံခြင်း"</string>
+    <string name="permdesc_eye_tracking_fine" msgid="9215360948852654836">"သင့်အကြည့်၏ ဦးတည်ရာကို ခြေရာခံရန် အက်ပ်အား ခွင့်ပြုသည်။"</string>
+    <string name="permlab_face_tracking" msgid="6052126246676474909">"မျက်နှာလှုပ်ရှားမှုများကို ခြေရာခံခြင်း"</string>
+    <string name="permdesc_face_tracking" msgid="185815778490412574">"သင့်မျက်နှာလှုပ်ရှားမှုနှင့် မျက်နှာအမူအရာများကို ခြေရာခံရန် အက်ပ်အား ခွင့်ပြုသည်။"</string>
+    <string name="permlab_hand_tracking" msgid="21944950887649088">"လက်လှုပ်ရှားမှုများကို ခြေရာခံခြင်း"</string>
+    <string name="permdesc_hand_tracking" msgid="8083783248481460669">"သင့်လက်လှုပ်ရှားမှုများကို ခြေရာခံရန် အက်ပ်အား ခွင့်ပြုသည်။"</string>
+    <string name="permlab_head_tracking" msgid="4304699038992159853">"ဦးခေါင်းလှုပ်ရှားမှုများကို ခြေရာခံခြင်း"</string>
+    <string name="permdesc_head_tracking" msgid="2232184518548944223">"သင့်ဦးခေါင်းလှုပ်ရှားမှုများကို ခြေရာခံရန် အက်ပ်အား ခွင့်ပြုသည်။"</string>
+    <string name="permlab_scene_understanding_coarse" msgid="8765236119358852920">"သင့်ပတ်ဝန်းကျင်နေရာကို စကင်ဖတ်ခြင်း"</string>
+    <string name="permdesc_scene_understanding_coarse" msgid="847344305502345475">"သင့်ပတ်ဝန်းကျင်ကို စကင်ဖတ်ရန် အက်ပ်အား ခွင့်ပြုသည်။"</string>
+    <string name="permlab_scene_understanding_fine" msgid="2899904960307462936">"သင့်ပတ်ဝန်းကျင်နေရာကို အတိအကျ စကင်ဖတ်ခြင်း"</string>
+    <string name="permdesc_scene_understanding_fine" msgid="4848943859506977588">"သင့်ပတ်ဝန်းကျင်ကို အတိအကျ စကင်ဖတ်ရန် အက်ပ်အား ခွင့်ပြုသည်။"</string>
+    <string name="permlab_xr_tracking_in_background" msgid="8659516810430027774">"XR ဒေတာကို နောက်ခံတွင် ခြေရာခံခြင်း"</string>
+    <string name="permdesc_xr_tracking_in_background" msgid="3151744132692357005">"XR ဒေတာကို နောက်ခံတွင်သုံးရန် အက်ပ်အား ခွင့်ပြုသည်။"</string>
     <string name="permlab_capture_keyboard" msgid="4076894823382693032">"ကီးများ မှတ်သားခြင်း"</string>
     <string name="permdesc_capture_keyboard" msgid="4192269470684407219">"စနစ်က စနစ်ဖြတ်လမ်းနှင့် လုပ်ဆောင်ချက်များကို မဆောင်ရွက်မီ ကီးများကို အက်ပ်အား မှတ်သားခွင့်ပြုသည်။"</string>
     <string name="biometric_app_setting_name" msgid="3339209978734534457">"ဇီဝမက်ထရစ်အချက်အလက်များ သုံးခြင်း"</string>
@@ -944,6 +914,8 @@
     <string name="policydesc_disableCamera" msgid="3204405908799676104">"စက်မှ ကင်မရာအားလုံး အသုံးပြုမှုအား ကန့်သတ်ရန်"</string>
     <string name="policylab_disableKeyguardFeatures" msgid="5071855750149949741">"ဖန်သားပြင် လော့ခ်ချသည့် ဝန်ဆောင်မှုအချို့ ပိတ်ခြင်း"</string>
     <string name="policydesc_disableKeyguardFeatures" msgid="6641673177041195957">"ဖန်သားပြင်လော့ခ်ချသည့် ဝန်ဆောင်မှုအချို့ အသုံးပြုခြင်းကို တားဆီးသည်။"</string>
+    <!-- no translation found for exit_toast_on_long_press_escape (873907401529125943) -->
+    <skip />
   <string-array name="phoneTypes">
     <item msgid="8996339953292723951">"အိမ်"</item>
     <item msgid="7740243458912727194">"မိုဘိုင်း"</item>
@@ -2596,6 +2568,7 @@
     <string name="keyboard_shortcut_group_applications_calendar" msgid="3571770335653387606">"ပြက္ခဒိန်"</string>
     <string name="keyboard_shortcut_group_applications_calculator" msgid="6753209559716091507">"ဂဏန်းတွက်စက်"</string>
     <string name="keyboard_shortcut_group_applications_maps" msgid="7950000659522589471">"Maps"</string>
+    <string name="keyboard_shortcut_group_applications_files" msgid="863938400765838051">"ဖိုင်များ"</string>
     <string name="keyboard_shortcut_group_applications" msgid="3010389163951364798">"အပလီကေးရှင်းများ"</string>
     <string name="fingerprint_loe_notification_msg" msgid="3927447270148854546">"သင့်လက်ဗွေများကို မသိရှိနိုင်တော့ပါ။ ‘လက်ဗွေသုံး လော့ခ်ဖွင့်ခြင်း’ ထပ်မံစနစ်ထည့်သွင်းပါ။"</string>
     <string name="usb_apm_usb_plugged_in_when_locked_notification_app_title" msgid="285421860627714333">"လုံခြုံရေးနှင့် ကိုယ်ရေးအချက်အလက်လုံခြုံမှု"</string>
@@ -2615,6 +2588,5 @@
     <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"‘လက်ဗွေသုံး လော့ခ်ဖွင့်ခြင်း’ တွင် ပြဿနာရှိနေသလား။"</string>
     <string name="fingerprint_frr_notification_msg" msgid="2162966846624639252">"လော့ခ်ဖွင့်ရာတွင် ပိုအဆင်ပြေစေရန်အတွက် အကြံပြုချက်များကြည့်ရန် တို့ပါ"</string>
     <string name="no_blink_accessibility_text_cursor_blink_label" msgid="223072797385428874">"မှိတ်တုတ်မလင်းပါနှင့်"</string>
-    <!-- no translation found for long_press_power_to_turn_off_tv_toast (2231397748028498986) -->
-    <skip />
+    <string name="long_press_power_to_turn_off_tv_toast" msgid="2231397748028498986">"TV ပိတ်ရန်အတွက် ဖွင့်ပိတ်ခလုတ်ကို ကြာကြာနှိပ်ပါ"</string>
 </resources>

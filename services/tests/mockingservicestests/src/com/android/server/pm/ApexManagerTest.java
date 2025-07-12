@@ -125,8 +125,7 @@ public class ApexManagerTest {
 
         mMockSystem.system().stageNominalSystemState();
         final int sdkVersion = Build.VERSION_CODES.CUR_DEVELOPMENT;
-        final int sdkVersionFull = (android.sdk.Flags.majorMinorVersioningScheme())
-                ? Build.parseFullVersion(String.valueOf(sdkVersion)) : 0;
+        final int sdkVersionFull = Build.parseFullVersion(String.valueOf(sdkVersion));
         mPmService = new PackageManagerService(mMockSystem.mocks().getInjector(),
                 false /*factoryTest*/,
                 MockSystem.Companion.getDEFAULT_VERSION_INFO().fingerprint,

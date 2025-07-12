@@ -822,7 +822,7 @@ public class AccessibilityInputFilter extends InputFilter implements EventStream
 
         if (isAnyMagnificationEnabled(mEnabledFeatures)) {
             mMagnificationKeyHandler = new MagnificationKeyHandler(
-                    mAms.getMagnificationController());
+                    mAms.getMagnificationController(), mAms);
             addFirstEventHandler(Display.DEFAULT_DISPLAY, mMagnificationKeyHandler);
         }
     }

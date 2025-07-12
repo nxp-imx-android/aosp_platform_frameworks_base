@@ -1003,6 +1003,7 @@ message UserControllerProto {
     // both the current user and its profiles (if any)
     optional int32 current_user = 5;
     repeated int32 current_profiles = 6;
+    optional bool ready = 7;
 }
 
 // sync with com.android.server.am.AppTimeTracker.java

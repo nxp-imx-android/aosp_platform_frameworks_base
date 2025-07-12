@@ -233,7 +233,7 @@ class FalsingCollectorImpl implements FalsingCollector {
         final CommunalInteractor communalInteractor = mCommunalInteractorLazy.get();
         final CommunalSceneInteractor communalSceneInteractor = mCommunalSceneInteractorLazy.get();
         mJavaAdapter.alwaysCollectFlow(
-                BooleanFlowOperators.INSTANCE.allOf(
+                BooleanFlowOperators.allOf(
                         communalInteractor.isCommunalEnabled(),
                         communalSceneInteractor.isIdleOnCommunal()),
                 this::onShowingCommunalHubChanged

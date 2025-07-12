@@ -41,6 +41,7 @@ import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.display.domain.interactor.DisplayStateInteractor
 import com.android.systemui.display.shared.model.isDefaultOrientation
 import com.android.systemui.kairos.awaitClose
+import com.android.systemui.util.kotlin.combine
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
@@ -71,6 +72,9 @@ interface PromptSelectorInteractor {
 
     /** The kind of prompt to use (biometric, pin, pattern, etc.). */
     val promptKind: StateFlow<PromptKind>
+
+    /** The modalities available in the prompt */
+    val modalities: Flow<BiometricModalities>
 
     /** If using a credential is allowed. */
     val isCredentialAllowed: Flow<Boolean>
@@ -125,6 +129,7 @@ interface PromptSelectorInteractor {
         opPackageName: String,
         onSwitchToCredential: Boolean,
         isLandscape: Boolean,
+        updateView: Boolean = true,
     )
 
     /** Unset the current authentication request. */
@@ -151,7 +156,8 @@ constructor(
             promptRepository.userId,
             promptRepository.promptKind,
             promptRepository.opPackageName,
-        ) { promptInfo, challenge, userId, kind, opPackageName ->
+            promptRepository.modalities,
+        ) { promptInfo, challenge, userId, kind, opPackageName, modalities ->
             if (
                 promptInfo == null || userId == null || challenge == null || opPackageName == null
             ) {
@@ -171,7 +177,7 @@ constructor(
                         operationInfo = BiometricOperationInfo(gatekeeperChallenge = challenge),
                         modalities =
                             if (Flags.bpFallbackOptions()) {
-                                promptRepository.modalities.value
+                                modalities
                             } else {
                                 kind.activeModalities
                             },
@@ -182,6 +188,8 @@ constructor(
         }
 
     override val promptKind: StateFlow<PromptKind> = promptRepository.promptKind
+
+    override val modalities: StateFlow<BiometricModalities> = promptRepository.modalities
 
     override val isConfirmationRequired: Flow<Boolean> =
         promptRepository.isConfirmationRequired.distinctUntilChanged()
@@ -236,11 +244,21 @@ constructor(
     override val fallbackOptions: Flow<List<FallbackOptionModel>> = promptRepository.fallbackOptions
 
     override val credentialKind: Flow<PromptKind> =
-        combine(prompt, isCredentialAllowed) { prompt, isAllowed ->
-            if (prompt != null && isAllowed) {
-                getCredentialType(lockPatternUtils, prompt.userInfo.deviceCredentialOwnerId)
-            } else {
-                PromptKind.None
+        if (Flags.bpFallbackOptions()) {
+            promptRepository.userId.map { userId ->
+                if (userId != null) {
+                    getCredentialType(lockPatternUtils, userId)
+                } else {
+                    PromptKind.None
+                }
+            }
+        } else {
+            combine(prompt, isCredentialAllowed) { prompt, isAllowed ->
+                if (prompt != null && isAllowed) {
+                    getCredentialType(lockPatternUtils, prompt.userInfo.deviceCredentialOwnerId)
+                } else {
+                    PromptKind.None
+                }
             }
         }
 
@@ -298,6 +316,7 @@ constructor(
         opPackageName: String,
         onSwitchToCredential: Boolean,
         isLandscape: Boolean,
+        updateView: Boolean,
     ) {
         val effectiveUserId = credentialInteractor.getCredentialOwnerOrSelfId(userId)
         val hasCredentialViewShown = promptKind.value.isCredential()
@@ -309,11 +328,15 @@ constructor(
         val showBpWithoutIconForCredential = showBpForCredential && !hasCredentialViewShown
         var kind: PromptKind = PromptKind.None
 
-        if (onSwitchToCredential) {
+        if (onSwitchToCredential || _currentView.value == BiometricPromptView.CREDENTIAL) {
             kind = getCredentialType(lockPatternUtils, effectiveUserId)
-            _currentView.value = BiometricPromptView.CREDENTIAL
+            if (updateView) {
+                _currentView.value = BiometricPromptView.CREDENTIAL
+            }
         } else if (Utils.isBiometricAllowed(promptInfo) || showBpWithoutIconForCredential) {
-            _currentView.value = BiometricPromptView.BIOMETRIC
+            if (updateView) {
+                _currentView.value = BiometricPromptView.BIOMETRIC
+            }
             // TODO(b/330908557): Subscribe to
             // displayStateInteractor.currentRotation.value.isDefaultOrientation() for checking
             // `isLandscape` after removing AuthContainerView.
@@ -332,7 +355,9 @@ constructor(
                     PromptKind.Biometric(modalities)
                 }
         } else if (isDeviceCredentialAllowed(promptInfo)) {
-            _currentView.value = BiometricPromptView.CREDENTIAL
+            if (updateView) {
+                _currentView.value = BiometricPromptView.CREDENTIAL
+            }
             kind = getCredentialType(lockPatternUtils, effectiveUserId)
         }
 
@@ -348,6 +373,7 @@ constructor(
     }
 
     override fun resetPrompt(requestId: Long) {
+        _currentView.value = BiometricPromptView.BIOMETRIC
         promptRepository.unsetPrompt(requestId)
     }
 

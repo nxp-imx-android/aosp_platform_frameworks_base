@@ -392,7 +392,6 @@
     <string name="quick_settings_done" msgid="2163641301648855793">"完了"</string>
     <string name="quick_settings_close_user_panel" msgid="5599724542275896849">"閉じる"</string>
     <string name="quick_settings_connected" msgid="3873605509184830379">"接続済み"</string>
-    <string name="quick_settings_connected_battery_level" msgid="1322075669498906959">"接続済み、電池 <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE">%1$s</xliff:g>"</string>
     <string name="quick_settings_connecting" msgid="2381969772953268809">"接続しています..."</string>
     <string name="quick_settings_hotspot_label" msgid="1199196300038363424">"アクセスポイント"</string>
     <string name="quick_settings_hotspot_secondary_label_transient" msgid="7585604088079160564">"ON にしています…"</string>
@@ -402,6 +401,7 @@
     <string name="quick_settings_flashlight_camera_in_use" msgid="4820591564526512571">"カメラを使用中"</string>
     <string name="flashlight_dialog_title" msgid="4232742718579701241">"ライトの明るさ"</string>
     <string name="quick_settings_flashlight_tile_level_percentage" msgid="2071942013174794819">"<xliff:g id="PERCENTAGE">%1$d</xliff:g>%%"</string>
+    <string name="flashlight_dialog_turn_off" msgid="5934897539563253348">"OFF にする"</string>
     <string name="quick_settings_cellular_detail_title" msgid="792977203299358893">"モバイルデータ"</string>
     <string name="quick_settings_cellular_detail_data_usage" msgid="6105969068871138427">"データ使用量"</string>
     <string name="quick_settings_cellular_detail_remaining_data" msgid="1136599216568805644">"残りのデータ"</string>
@@ -845,8 +845,7 @@
     <string name="enable_bluetooth_confirmation_ok" msgid="2866408183324184876">"ONにする"</string>
     <string name="rotation_lock_camera_rotation_on" msgid="789434807790534274">"ON - 顔ベース"</string>
     <string name="notification_guts_bundle_title" msgid="5252530007273079591">"まとめてミュートする"</string>
-    <!-- no translation found for notification_guts_single_bundle_notif_title (5397951402211886396) -->
-    <skip />
+    <string name="notification_guts_single_bundle_notif_title" msgid="5397951402211886396">"通知オーガナイザーを使用する"</string>
     <string name="notification_guts_bundle_summary" msgid="3971530802237393600">"対象: <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
     <string name="notification_guts_promotions_summary" msgid="1565750619813325885">"セールス情報、新機能など"</string>
     <string name="notification_guts_news_summary" msgid="638697931043407835">"トップニュース、論説など"</string>
@@ -1097,16 +1096,11 @@
     <string name="accessibility_quick_settings_edit" msgid="6544873823850165">"クイック設定の順序を編集します。"</string>
     <string name="accessibility_quick_settings_power_menu" msgid="6820426108301758412">"電源ボタン メニュー"</string>
     <string name="accessibility_quick_settings_page" msgid="7506322631645550961">"ページ <xliff:g id="ID_1">%1$d</xliff:g>/<xliff:g id="ID_2">%2$d</xliff:g>"</string>
-    <!-- no translation found for accessibility_key_gesture_dialog_title (7614965716626605518) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_dialog_content (4519838108423437794) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_dialog_magnifier_intro (627023269951856071) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_dialog_talkback_intro (1617808784388544741) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_dialog_positive_button_text (3670746017523589293) -->
-    <skip />
+    <string name="accessibility_key_gesture_dialog_title" msgid="7614965716626605518">"<xliff:g id="ID_1">%1$s</xliff:g>機能を ON にしますか？"</string>
+    <string name="accessibility_key_gesture_dialog_content" msgid="4519838108423437794">"アクション "<annotation id="action_key_icon">"アイコン"</annotation>"+<xliff:g id="ID_1">^1</xliff:g>+<xliff:g id="ID_2">^2</xliff:g> は、<xliff:g id="ID_3">^3</xliff:g>機能を使用するためのキーボード ショートカットです。<xliff:g id="ID_4">^4</xliff:g>"</string>
+    <string name="accessibility_key_gesture_dialog_magnifier_intro" msgid="627023269951856071">"画面をすばやくズームインして、コンテンツを拡大できます。"</string>
+    <string name="accessibility_key_gesture_dialog_talkback_intro" msgid="1617808784388544741">"<xliff:g id="ID_1">%1$s</xliff:g> は、画面上の項目を読み上げるスクリーン リーダーです。目の不自由な方に役立つ機能です。"</string>
+    <string name="accessibility_key_gesture_dialog_positive_button_text" msgid="3670746017523589293">"ON にする"</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"ロック画面"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"シャットダウン中…"</string>
     <string name="thermal_shutdown_dialog_help_text" msgid="6413474593462902901">"取り扱いに関する手順をご覧ください"</string>
@@ -1667,10 +1661,10 @@
     <string name="qs_edit_mode_category_unknown" msgid="509314252124053550">"不明"</string>
     <string name="qs_edit_mode_reset_dialog_title" msgid="5344853290033761627">"すべてのタイルをリセットしますか？"</string>
     <string name="qs_edit_mode_reset_dialog_content" msgid="7474773130622653653">"すべてのクイック設定タイルがデバイスの元の設定にリセットされます"</string>
-    <string name="ambientcue_first_time_edu_title" msgid="4786708463521594957">"購入候補の情報を入手する"</string>
+    <string name="ambientcue_first_time_edu_title" msgid="4786708463521594957">"役に立つ提案を受け取る"</string>
     <string name="ambientcue_first_time_edu_text" msgid="7541905631076606020">"AI を使用して、画面上での操作に関連する情報やアクションを積極的に提案します"</string>
     <string name="ambientcue_first_time_edu_icon_description" msgid="1776865320146246305">"アイコン"</string>
-    <string name="ambientcue_long_press_edu_text" msgid="8424250358721947938">"長押しすると、候補の生成方法を確認できます"</string>
+    <string name="ambientcue_long_press_edu_text" msgid="8424250358721947938">"長押しすると、提案がどのように生成されるかを確認できます"</string>
     <string name="demote_explain_text" msgid="3942301497888762295">"<xliff:g id="APPLICATION">%1$s</xliff:g> のライブ情報は表示されなくなります。これは [設定] でいつでも変更できます。"</string>
     <string name="volume_slider_disabled_message_template" msgid="1305088816797803460">"<xliff:g id="STREAM_NAME">%1$s</xliff:g>、<xliff:g id="DISABLED_MESSAGE">%2$s</xliff:g>"</string>
     <string name="underlay_close_button_content_description" msgid="6518481455548869894">"閉じる"</string>
@@ -1678,8 +1672,10 @@
     <string name="dual_shade_educational_tooltip_notifs" msgid="7666159428113013319">"左上から下にスワイプして通知を開きます"</string>
     <string name="dual_shade_educational_tooltip_qs" msgid="3842355853737057332">"右上から下にスワイプしてクイック設定を開きます"</string>
     <string name="back_button_on_bouncer" msgid="809134628434396761">"戻る"</string>
-    <!-- no translation found for pager_dots_previous_content_description (26963508904918908) -->
+    <string name="pager_dots_previous_content_description" msgid="26963508904918908">"前へ"</string>
+    <string name="pager_dots_next_content_description" msgid="613943992626163120">"次へ"</string>
+    <!-- no translation found for ambient_cue_autofill_action (9213025887835308128) -->
     <skip />
-    <!-- no translation found for pager_dots_next_content_description (613943992626163120) -->
+    <!-- no translation found for ambient_cue_expand_action (6803711089932959312) -->
     <skip />
 </resources>

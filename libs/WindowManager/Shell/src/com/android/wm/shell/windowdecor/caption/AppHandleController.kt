@@ -48,7 +48,6 @@ import com.android.wm.shell.desktopmode.CaptionState
 import com.android.wm.shell.desktopmode.DesktopModeUiEventLogger
 import com.android.wm.shell.desktopmode.DesktopUserRepositories
 import com.android.wm.shell.desktopmode.WindowDecorCaptionRepository
-import com.android.wm.shell.shared.annotations.ShellBackgroundThread
 import com.android.wm.shell.shared.annotations.ShellMainThread
 import com.android.wm.shell.shared.bubbles.BubbleAnythingFlagHelper
 import com.android.wm.shell.shared.desktopmode.DesktopState
@@ -98,7 +97,6 @@ class AppHandleController(
     @ShellMainThread private val mainHandler: Handler,
     @ShellMainThread private val mainDispatcher: MainCoroutineDispatcher,
     @ShellMainThread private val mainScope: CoroutineScope,
-    @ShellBackgroundThread private val bgScope: CoroutineScope,
     private val windowManagerWrapper: WindowManagerWrapper,
     private val multiInstanceHelper: MultiInstanceHelper,
     private val windowDecorHandleRepository: WindowDecorCaptionRepository,
@@ -300,7 +298,7 @@ class AppHandleController(
             taskResourceLoader,
             surfaceControlTransactionSupplier,
             mainDispatcher,
-            bgScope,
+            mainScope,
             object : DialogLifecycleListener {
                 override fun onDialogDismissed() {
                     openByDefaultDialog = null
@@ -344,7 +342,7 @@ class AppHandleController(
         viewHolder.onHandleMenuOpened()
         handleMenu = handleMenuFactory.create(
             mainDispatcher = mainDispatcher,
-            bgScope = bgScope,
+            mainScope = mainScope,
             context = decorWindowContext,
             taskInfo = taskInfo,
             parentSurface = decorationSurface,

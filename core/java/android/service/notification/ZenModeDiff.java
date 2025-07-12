@@ -680,13 +680,10 @@ public class ZenModeDiff {
                         new FieldDiff<>(from.shouldUseNightLight(), to.shouldUseNightLight()));
             }
             if (Flags.applyBrightnessClampingForModes()
-                    && !Objects.equals(
-                            from.getBrightnessPercentageCap(), to.getBrightnessPercentageCap())) {
+                    && !Objects.equals(from.getBrightnessCap(), to.getBrightnessCap())) {
                 addField(
                         FIELD_BRIGHTNESS_CAP,
-                        new FieldDiff<>(
-                                from.getBrightnessPercentageCap(),
-                                to.getBrightnessPercentageCap()));
+                        new FieldDiff<>(from.getBrightnessCap(), to.getBrightnessCap()));
             }
             if (!Objects.equals(from.getExtraEffects(), to.getExtraEffects())) {
                 addField(FIELD_EXTRA_EFFECTS, new FieldDiff<>(from.getExtraEffects(),

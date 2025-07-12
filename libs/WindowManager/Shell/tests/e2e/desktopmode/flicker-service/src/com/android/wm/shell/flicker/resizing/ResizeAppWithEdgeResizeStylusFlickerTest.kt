@@ -18,11 +18,11 @@ package com.android.wm.shell.flicker.resizing
 
 import androidx.test.filters.RequiresDevice
 import android.tools.NavBar
-import android.tools.flicker.assertions.FlickerTest
+import android.tools.flicker.assertions.FlickerChecker
 import android.tools.flicker.junit.FlickerParametersRunnerFactory
-import android.tools.flicker.legacy.FlickerBuilder
-import android.tools.flicker.legacy.LegacyFlickerTest
-import android.tools.flicker.legacy.LegacyFlickerTestFactory
+import android.tools.flicker.FlickerBuilder
+import android.tools.flicker.FlickerTest
+import android.tools.flicker.FlickerTestFactory
 import com.android.server.wm.flicker.helpers.MotionEventHelper
 import com.android.wm.shell.Utils
 import com.android.wm.shell.flicker.DesktopModeBaseTest
@@ -41,7 +41,7 @@ import com.android.wm.shell.scenarios.ResizeAppWithEdgeResize
 @RequiresDevice
 @RunWith(Parameterized::class)
 @Parameterized.UseParametersRunnerFactory(FlickerParametersRunnerFactory::class)
-class ResizeAppWithEdgeResizeStylusFlickerTest(flicker: LegacyFlickerTest) : DesktopModeBaseTest(
+class ResizeAppWithEdgeResizeStylusFlickerTest(flicker: FlickerTest) : DesktopModeBaseTest(
     flicker
 ) {
     inner class ResizeAppWithEdgeResizeStylusScenario : ResizeAppWithEdgeResize(
@@ -74,8 +74,8 @@ class ResizeAppWithEdgeResizeStylusFlickerTest(flicker: LegacyFlickerTest) : Des
     companion object {
         @Parameterized.Parameters(name = "{0}")
         @JvmStatic
-        fun getParams(): Collection<FlickerTest> {
-            return LegacyFlickerTestFactory.nonRotationTests(
+        fun getParams(): Collection<FlickerChecker> {
+            return FlickerTestFactory.nonRotationTests(
                 supportedNavigationModes = listOf(NavBar.MODE_GESTURAL)
             )
         }

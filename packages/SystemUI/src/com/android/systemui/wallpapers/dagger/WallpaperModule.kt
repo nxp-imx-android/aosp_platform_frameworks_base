@@ -16,15 +16,36 @@
 
 package com.android.systemui.wallpapers.dagger
 
+import com.android.systemui.CoreStartable
 import com.android.systemui.dagger.SysUISingleton
+import com.android.systemui.shared.Flags.extendedWallpaperEffects
 import com.android.systemui.wallpapers.data.repository.WallpaperRepository
 import com.android.systemui.wallpapers.data.repository.WallpaperRepositoryImpl
+import com.android.systemui.wallpapers.domain.interactor.WallpaperFocalAreaInteractor
 import dagger.Binds
 import dagger.Module
+import dagger.Provides
+import dagger.multibindings.ClassKey
+import dagger.multibindings.IntoMap
 
 @Module
 interface WallpaperModule {
     @Binds
     @SysUISingleton
     fun bindWallpaperRepository(impl: WallpaperRepositoryImpl): WallpaperRepository
+
+    companion object {
+        @Provides
+        @IntoMap
+        @ClassKey(WallpaperFocalAreaInteractor::class)
+        fun provideWallpaperFocalAreaInteractor(
+            wallpaperFocalAreaInteractor: WallpaperFocalAreaInteractor
+        ): CoreStartable {
+            return if (extendedWallpaperEffects()) {
+                wallpaperFocalAreaInteractor
+            } else {
+                CoreStartable.NOP
+            }
+        }
+    }
 }

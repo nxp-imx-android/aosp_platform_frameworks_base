@@ -31,7 +31,7 @@ import com.android.wm.shell.common.DisplayLayout
 import com.android.wm.shell.common.ShellExecutor
 import com.android.wm.shell.common.SyncTransactionQueue
 import com.android.wm.shell.desktopmode.DesktopModeEventLogger
-import com.android.wm.shell.desktopmode.DesktopRepository
+import com.android.wm.shell.desktopmode.data.DesktopRepository
 import com.android.wm.shell.desktopmode.DesktopTasksController
 import com.android.wm.shell.desktopmode.DesktopTestHelpers.createFreeformTask
 import com.android.wm.shell.desktopmode.DesktopUserRepositories
@@ -68,6 +68,7 @@ class DesktopTilingDecorViewModelTest : ShellTestCase() {
     private val contextMock: Context = mock()
     private val resourcesMock: Resources = mock()
     private val mainDispatcher: MainCoroutineDispatcher = mock()
+    private val mainScope: CoroutineScope = mock()
     private val bgScope: CoroutineScope = mock()
     private val displayControllerMock: DisplayController = mock()
     private val rootTdaOrganizerMock: RootTaskDisplayAreaOrganizer = mock()
@@ -103,6 +104,7 @@ class DesktopTilingDecorViewModelTest : ShellTestCase() {
             DesktopTilingDecorViewModel(
                 contextMock,
                 mainDispatcher,
+                mainScope,
                 bgScope,
                 displayControllerMock,
                 rootTdaOrganizerMock,

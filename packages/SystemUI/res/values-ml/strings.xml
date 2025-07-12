@@ -390,7 +390,6 @@
     <string name="quick_settings_done" msgid="2163641301648855793">"പൂർത്തിയാക്കി"</string>
     <string name="quick_settings_close_user_panel" msgid="5599724542275896849">"അടയ്ക്കുക"</string>
     <string name="quick_settings_connected" msgid="3873605509184830379">"കണക്‌റ്റുചെയ്‌തു"</string>
-    <string name="quick_settings_connected_battery_level" msgid="1322075669498906959">"കണക്‌റ്റുചെയ്‌തു, ബാറ്ററി നില <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE">%1$s</xliff:g>"</string>
     <string name="quick_settings_connecting" msgid="2381969772953268809">"കണക്റ്റുചെയ്യുന്നു..."</string>
     <string name="quick_settings_hotspot_label" msgid="1199196300038363424">"ഹോട്ട്‌സ്‌പോട്ട്"</string>
     <string name="quick_settings_hotspot_secondary_label_transient" msgid="7585604088079160564">"ഓണാക്കുന്നു…"</string>
@@ -400,6 +399,7 @@
     <string name="quick_settings_flashlight_camera_in_use" msgid="4820591564526512571">"ക്യാമറ ഉപയോഗത്തിലാണ്"</string>
     <string name="flashlight_dialog_title" msgid="4232742718579701241">"ഫ്ലാഷ്‌ലൈറ്റിന്റെ തീവ്രത"</string>
     <string name="quick_settings_flashlight_tile_level_percentage" msgid="2071942013174794819">"<xliff:g id="PERCENTAGE">%1$d</xliff:g>%%"</string>
+    <string name="flashlight_dialog_turn_off" msgid="5934897539563253348">"ഓഫാക്കുക"</string>
     <string name="quick_settings_cellular_detail_title" msgid="792977203299358893">"മൊബൈൽ ഡാറ്റ"</string>
     <string name="quick_settings_cellular_detail_data_usage" msgid="6105969068871138427">"ഡാറ്റാ ഉപയോഗം"</string>
     <string name="quick_settings_cellular_detail_remaining_data" msgid="1136599216568805644">"ശേഷിക്കുന്ന ഡാറ്റ"</string>
@@ -843,8 +843,7 @@
     <string name="enable_bluetooth_confirmation_ok" msgid="2866408183324184876">"ഓണാക്കുക"</string>
     <string name="rotation_lock_camera_rotation_on" msgid="789434807790534274">"ഓണാണ് - ഫേസ് ബേസ്‌ഡ്"</string>
     <string name="notification_guts_bundle_title" msgid="5252530007273079591">"നിശബ്‌ദമാക്കലും ബണ്ടിൽ ചെയ്യലും"</string>
-    <!-- no translation found for notification_guts_single_bundle_notif_title (5397951402211886396) -->
-    <skip />
+    <string name="notification_guts_single_bundle_notif_title" msgid="5397951402211886396">"അറിയിപ്പ് ഓർഗനൈസർ ഉപയോഗിക്കുക"</string>
     <string name="notification_guts_bundle_summary" msgid="3971530802237393600">"<xliff:g id="APP_NAME">%1$s</xliff:g> എന്ന കുട്ടിക്ക്"</string>
     <string name="notification_guts_promotions_summary" msgid="1565750619813325885">"സെയിൽസും പുതിയ ഫീച്ചറുകളും മറ്റും"</string>
     <string name="notification_guts_news_summary" msgid="638697931043407835">"പ്രധാന വാർത്തകളും എഡിറ്റോറിയലുകളും മറ്റും"</string>
@@ -1095,16 +1094,11 @@
     <string name="accessibility_quick_settings_edit" msgid="6544873823850165">"ദ്രുത ക്രമീകരണത്തിന്റെ ക്രമം എഡിറ്റ് ചെയ്യുക."</string>
     <string name="accessibility_quick_settings_power_menu" msgid="6820426108301758412">"പവർ മെനു"</string>
     <string name="accessibility_quick_settings_page" msgid="7506322631645550961">"പേജ് <xliff:g id="ID_1">%1$d</xliff:g> / <xliff:g id="ID_2">%2$d</xliff:g>"</string>
-    <!-- no translation found for accessibility_key_gesture_dialog_title (7614965716626605518) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_dialog_content (4519838108423437794) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_dialog_magnifier_intro (627023269951856071) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_dialog_talkback_intro (1617808784388544741) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_dialog_positive_button_text (3670746017523589293) -->
-    <skip />
+    <string name="accessibility_key_gesture_dialog_title" msgid="7614965716626605518">"<xliff:g id="ID_1">%1$s</xliff:g> ഓണാക്കണോ?"</string>
+    <string name="accessibility_key_gesture_dialog_content" msgid="4519838108423437794">"പ്രവർത്തന "<annotation id="action_key_icon">"ഐക്കൺ"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> ആണ് <xliff:g id="ID_3">^3</xliff:g> ഉപയോഗിക്കുന്നതിനുള്ള കീബോഡ് കുറുക്കുവഴി. <xliff:g id="ID_4">^4</xliff:g>"</string>
+    <string name="accessibility_key_gesture_dialog_magnifier_intro" msgid="627023269951856071">"ഉള്ളടക്കം വലുതാക്കുന്നതിനായി വേഗത്തിൽ സ്ക്രീനിൽ സൂം ഇൻ ചെയ്യാൻ ഇത് നിങ്ങളെ അനുവദിക്കുന്നു."</string>
+    <string name="accessibility_key_gesture_dialog_talkback_intro" msgid="1617808784388544741">"സ്ക്രീനിലുള്ള കാര്യങ്ങൾ ഉറക്കെ വായിച്ചുകേൾക്കാൻ അനുവദിക്കുന്ന സ്ക്രീൻ റീഡറാണ് <xliff:g id="ID_1">%1$s</xliff:g>. സ്‌ക്രീൻ കാണാൻ ബുദ്ധിമുട്ടുള്ള ആളുകൾക്ക് ഇത് സഹായകരമായേക്കാം."</string>
+    <string name="accessibility_key_gesture_dialog_positive_button_text" msgid="3670746017523589293">"ഓണാക്കുക"</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"ലോക്ക് സ്‌ക്രീൻ"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"ഷട്ട്‌ഡൗൺ ചെയ്യുന്നു…"</string>
     <string name="thermal_shutdown_dialog_help_text" msgid="6413474593462902901">"പരിപാലന നിർദ്ദേശങ്ങൾ കാണുക"</string>
@@ -1676,8 +1670,10 @@
     <string name="dual_shade_educational_tooltip_notifs" msgid="7666159428113013319">"അറിയിപ്പുകൾ തുറക്കാൻ, മുകളിൽ ഇടതുവശത്ത് നിന്ന് സ്വൈപ്പ് ചെയ്യുക"</string>
     <string name="dual_shade_educational_tooltip_qs" msgid="3842355853737057332">"ദ്രുത ക്രമീകരണം തുറക്കാൻ, മുകളിൽ വലതുവശത്ത് നിന്ന് സ്വൈപ്പ് ചെയ്യുക"</string>
     <string name="back_button_on_bouncer" msgid="809134628434396761">"മടങ്ങുക"</string>
-    <!-- no translation found for pager_dots_previous_content_description (26963508904918908) -->
+    <string name="pager_dots_previous_content_description" msgid="26963508904918908">"മുമ്പത്തേത്"</string>
+    <string name="pager_dots_next_content_description" msgid="613943992626163120">"അടുത്തത്"</string>
+    <!-- no translation found for ambient_cue_autofill_action (9213025887835308128) -->
     <skip />
-    <!-- no translation found for pager_dots_next_content_description (613943992626163120) -->
+    <!-- no translation found for ambient_cue_expand_action (6803711089932959312) -->
     <skip />
 </resources>

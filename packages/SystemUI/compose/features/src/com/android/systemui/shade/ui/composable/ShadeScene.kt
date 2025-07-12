@@ -49,7 +49,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.CompositingStrategy
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.layout.layoutId
@@ -250,8 +250,10 @@ private fun ContentScope.SingleShade(
     shadeSession: SaveableSession,
     usingCollapsedLandscapeMedia: Boolean,
 ) {
-    val cutoutLocation = LocalDisplayCutout.current().location
+    val cutout = LocalDisplayCutout.current
     val cutoutInsets = WindowInsets.Companion.displayCutout
+    // TODO(b/428779792): update color to match BC25 spec
+    val shadePanelColor = Color.Gray.copy(alpha = 0.32f)
     mediaHost.expansion = if (usingCollapsedLandscapeMedia && isLandscape()) COLLAPSED else EXPANDED
 
     var maxNotifScrimTop by remember { mutableIntStateOf(0) }
@@ -285,7 +287,8 @@ private fun ContentScope.SingleShade(
     val shadeHorizontalPadding =
         dimensionResource(id = R.dimen.notification_panel_margin_horizontal)
     val shadeMeasurePolicy =
-        remember(mediaInRow) {
+        remember(mediaInRow, cutout, cutoutInsets) {
+            val cutoutLocation = cutout().location
             SingleShadeMeasurePolicy(
                 isMediaInRow = mediaInRow,
                 mediaOffset = { mediaOffset.roundToPx() },
@@ -303,19 +306,12 @@ private fun ContentScope.SingleShade(
             )
         }
 
-    Box(
-        modifier =
-            modifier.thenIf(shouldPunchHoleBehindScrim) {
-                // Render the scene to an offscreen buffer so that BlendMode.DstOut only clears this
-                // scene (and not the one under it) during a scene transition.
-                Modifier.graphicsLayer(compositingStrategy = CompositingStrategy.Offscreen)
-            }
-    ) {
+    Box() {
         Box(
             modifier =
                 Modifier.fillMaxSize()
                     .element(Shade.Elements.BackgroundScrim)
-                    .background(colorResource(R.color.shade_scrim_background_dark))
+                    .background(shadePanelColor)
         )
         Layout(
             modifier =

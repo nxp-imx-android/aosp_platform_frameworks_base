@@ -38,7 +38,6 @@ import android.util.Log
 import android.view.View
 import android.view.ViewStub
 import android.view.WindowManager
-import android.widget.Button
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.ProgressBar
@@ -135,7 +134,7 @@ constructor(
     private lateinit var wifiToggle: MaterialSwitch
     private lateinit var shareWifiButton: LinearLayout
     private lateinit var addNetworkButton: LinearLayout
-    private lateinit var airplaneModeButton: Button
+    private lateinit var airplaneModeButton: LinearLayout
     private var alertDialog: AlertDialog? = null
     private var canChangeWifiState = false
     private var wifiNetworkHeight = 0
@@ -331,8 +330,9 @@ constructor(
                             when {
                                 itemCount == 1 -> entryBackgroundInactive
                                 adapterPosition == 0 -> entryBackgroundStart
-                                adapterPosition == itemCount - 1 && !hasMoreWifiEntries ->
-                                    entryBackgroundEnd
+                                adapterPosition == itemCount - 1 &&
+                                    !hasMoreWifiEntries &&
+                                    !QsWifiConfig.isEnabled -> entryBackgroundEnd
                                 else -> entryBackgroundMiddle
                             }
 
@@ -792,10 +792,12 @@ constructor(
             addNetworkButton.visibility = View.GONE
             return
         }
-        if (QsWifiConfig.isEnabled) {
+        val isAddNetworkVisible = QsWifiConfig.isEnabled
+
+        if (isAddNetworkVisible) {
             addNetworkButton.visibility = View.VISIBLE
         }
-        if (QsWifiConfig.isEnabled && internetContent.showAllWifiInList) {
+        if (isAddNetworkVisible && internetContent.showAllWifiInList) {
             hasMoreWifiEntries = false
             adapter.setShowAllWifi()
             seeAllLayout.visibility = View.GONE
@@ -812,6 +814,14 @@ constructor(
             seeAllLayout.visibility = if (hasMoreWifiEntries) View.VISIBLE else View.INVISIBLE
         }
         wifiRecyclerView.invalidateItemDecorations()
+
+        // Here using `View.setBackgroundResource` instead of setting the background directly. This
+        // is a deliberate choice to avoid issues where a shared Drawable's state can cause
+        // rendering problems (e.g., an empty background).
+        seeAllLayout.setBackgroundResource(
+            if (isAddNetworkVisible) R.drawable.settingslib_entry_bg_off_middle
+            else R.drawable.settingslib_entry_bg_off_end
+        )
         wifiRecyclerView.visibility = View.VISIBLE
     }
 

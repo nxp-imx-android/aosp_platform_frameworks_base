@@ -4725,7 +4725,7 @@ public final class ProcessList {
             if (schedGroup != ProcessOomProto.SCHED_GROUP_UNKNOWN) {
                 proto.write(ProcessOomProto.SCHED_GROUP, schedGroup);
             }
-            if (state.hasForegroundActivities()) {
+            if (state.getHasForegroundActivities()) {
                 proto.write(ProcessOomProto.ACTIVITIES, true);
             } else if (psr.hasForegroundServices()) {
                 proto.write(ProcessOomProto.SERVICES, true);
@@ -4831,7 +4831,7 @@ public final class ProcessList {
                     break;
             }
             char foreground;
-            if (state.hasForegroundActivities()) {
+            if (state.getHasForegroundActivities()) {
                 foreground = 'A';
             } else if (psr.hasForegroundServices()) {
                 foreground = 'S';

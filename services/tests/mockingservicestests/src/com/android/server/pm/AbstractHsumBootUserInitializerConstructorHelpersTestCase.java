@@ -15,7 +15,7 @@
  */
 package com.android.server.pm;
 
-import static android.multiuser.Flags.FLAG_CREATE_INITIAL_USER;
+import static android.multiuser.Flags.FLAG_DEMOTE_MAIN_USER;
 
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.doReturn;
 import static com.android.server.pm.HsumBootUserInitializer.SYSPROP_DESIGNATE_MAIN_USER;
@@ -100,17 +100,17 @@ abstract class AbstractHsumBootUserInitializerConstructorHelpersTestCase {
     }
 
     @SuppressWarnings("deprecation") // TODO(b/341129262): SetFlagsRule methods are deprecated
-    protected final void setCreateInitialUserFlag(boolean value) {
-        boolean before =  Flags.createInitialUser();
+    protected final void setDemoteMainUserFlag(boolean value) {
+        boolean before =  Flags.demoteMainUser();
         if (before == value) {
-            Log.v(mTag, "setCreateInitialUserFlag(): already " + value);
+            Log.v(mTag, "setDemoteMainUserFlag(): already " + value);
             return;
         }
-        Log.v(mTag, "setCreateInitialUserFlag(): changing from " + before + " to " + value);
+        Log.v(mTag, "setDemoteMainUserFlag(): changing from " + before + " to " + value);
         if (value) {
-            setFlagsRule.enableFlags(FLAG_CREATE_INITIAL_USER);
+            setFlagsRule.enableFlags(FLAG_DEMOTE_MAIN_USER);
         } else {
-            setFlagsRule.disableFlags(FLAG_CREATE_INITIAL_USER);
+            setFlagsRule.disableFlags(FLAG_DEMOTE_MAIN_USER);
         }
     }
 

@@ -27,7 +27,7 @@ import com.android.wm.shell.transition.Transitions.TRANSIT_DESKTOP_MODE_TYPES
 object DesktopModeTransitionTypes {
 
     const val TRANSIT_ENTER_DESKTOP_FROM_APP_HANDLE_MENU_BUTTON = TRANSIT_DESKTOP_MODE_TYPES + 1
-    const val TRANSIT_ENTER_DESKTOP_FROM_APP_FROM_OVERVIEW = TRANSIT_DESKTOP_MODE_TYPES + 2
+    const val TRANSIT_ENTER_DESKTOP_FROM_OVERVIEW_TASK_MENU = TRANSIT_DESKTOP_MODE_TYPES + 2
     const val TRANSIT_ENTER_DESKTOP_FROM_KEYBOARD_SHORTCUT = TRANSIT_DESKTOP_MODE_TYPES + 3
     const val TRANSIT_ENTER_DESKTOP_FROM_UNKNOWN = TRANSIT_DESKTOP_MODE_TYPES + 4
     const val TRANSIT_EXIT_DESKTOP_MODE_TASK_DRAG = TRANSIT_DESKTOP_MODE_TYPES + 5
@@ -56,7 +56,7 @@ object DesktopModeTransitionTypes {
         return this in
             listOf(
                 TRANSIT_ENTER_DESKTOP_FROM_APP_HANDLE_MENU_BUTTON,
-                TRANSIT_ENTER_DESKTOP_FROM_APP_FROM_OVERVIEW,
+                TRANSIT_ENTER_DESKTOP_FROM_OVERVIEW_TASK_MENU,
                 TRANSIT_ENTER_DESKTOP_FROM_KEYBOARD_SHORTCUT,
                 TRANSIT_ENTER_DESKTOP_FROM_UNKNOWN,
             )
@@ -72,8 +72,8 @@ object DesktopModeTransitionTypes {
         return when (this) {
             DesktopModeTransitionSource.APP_HANDLE_MENU_BUTTON ->
                 TRANSIT_ENTER_DESKTOP_FROM_APP_HANDLE_MENU_BUTTON
-            DesktopModeTransitionSource.APP_FROM_OVERVIEW ->
-                TRANSIT_ENTER_DESKTOP_FROM_APP_FROM_OVERVIEW
+            DesktopModeTransitionSource.OVERVIEW_TASK_MENU ->
+                TRANSIT_ENTER_DESKTOP_FROM_OVERVIEW_TASK_MENU
             DesktopModeTransitionSource.KEYBOARD_SHORTCUT ->
                 TRANSIT_ENTER_DESKTOP_FROM_KEYBOARD_SHORTCUT
             else -> TRANSIT_ENTER_DESKTOP_FROM_UNKNOWN

@@ -118,12 +118,13 @@ import com.android.wm.shell.desktopmode.DesktopModeEventLogger.Companion.Unminim
 import com.android.wm.shell.desktopmode.DesktopModeUiEventLogger.DesktopUiEventEnum
 import com.android.wm.shell.desktopmode.DesktopModeVisualIndicator.DragStartState
 import com.android.wm.shell.desktopmode.DesktopModeVisualIndicator.IndicatorType
-import com.android.wm.shell.desktopmode.DesktopRepository.DeskChangeListener
-import com.android.wm.shell.desktopmode.DesktopRepository.VisibleTasksListener
 import com.android.wm.shell.desktopmode.DragToDesktopTransitionHandler.Companion.DRAG_TO_DESKTOP_FINISH_ANIM_DURATION_MS
 import com.android.wm.shell.desktopmode.DragToDesktopTransitionHandler.DragToDesktopStateListener
 import com.android.wm.shell.desktopmode.ExitDesktopTaskTransitionHandler.FULLSCREEN_ANIMATION_DURATION
 import com.android.wm.shell.desktopmode.common.ToggleTaskSizeInteraction
+import com.android.wm.shell.desktopmode.data.DesktopRepository
+import com.android.wm.shell.desktopmode.data.DesktopRepository.DeskChangeListener
+import com.android.wm.shell.desktopmode.data.DesktopRepository.VisibleTasksListener
 import com.android.wm.shell.desktopmode.data.DesktopRepositoryInitializer
 import com.android.wm.shell.desktopmode.data.DesktopRepositoryInitializer.DeskRecreationFactory
 import com.android.wm.shell.desktopmode.desktopfirst.DesktopFirstListenerManager
@@ -1026,7 +1027,7 @@ class DesktopTasksController(
             DesktopExperienceFlags.ENABLE_PROJECTED_DISPLAY_DESKTOP_MODE.isTrue &&
                 !desktopState.isDesktopModeSupportedOnDisplay(displayId) &&
                 transitionSource != DesktopModeTransitionSource.ADB_COMMAND &&
-                transitionSource != DesktopModeTransitionSource.APP_FROM_OVERVIEW
+                transitionSource != DesktopModeTransitionSource.OVERVIEW_TASK_MENU
         ) {
             logW("moveTaskToDefaultDeskAndActivate display=$displayId does not support desk")
             return false
@@ -1106,6 +1107,8 @@ class DesktopTasksController(
         remoteTransition: RemoteTransition? = null,
         callback: IMoveToDesktopCallback? = null,
     ): Boolean {
+        val targetDisplayId = taskRepository.getDisplayForDesk(deskId)
+        val displayLayout = displayController.getDisplayLayout(targetDisplayId) ?: return false
         val task = recentTasksController?.findTaskInBackground(taskId)
         if (task == null) {
             logW("moveBackgroundTaskToDesktop taskId=%d not found", taskId)
@@ -1124,7 +1127,10 @@ class DesktopTasksController(
         wct.startTask(
             taskId,
             ActivityOptions.makeBasic()
-                .apply { launchWindowingMode = WINDOWING_MODE_FREEFORM }
+                .apply {
+                    launchWindowingMode = WINDOWING_MODE_FREEFORM
+                    launchBounds = getInitialBounds(displayLayout, task, deskId)
+                }
                 .toBundle(),
         )
 
@@ -3807,7 +3813,7 @@ class DesktopTasksController(
 
     private fun getInitialBounds(
         displayLayout: DisplayLayout,
-        taskInfo: RunningTaskInfo,
+        taskInfo: TaskInfo,
         deskId: Int,
     ): Rect {
         val bounds =
@@ -3899,17 +3905,29 @@ class DesktopTasksController(
             displayLayout.getStableBoundsForDesktopMode(stableBounds)
         }
 
-        val activeTasks = taskRepository.getExpandedTasksIdsInDeskOrdered(deskId)
-        activeTasks
+        val expandedTasks = taskRepository.getExpandedTasksIdsInDeskOrdered(deskId)
+        expandedTasks
             .firstOrNull { !taskRepository.isClosingTask(it) }
-            ?.let { activeTask ->
-                shellTaskOrganizer.getRunningTaskInfo(activeTask)?.let {
-                    cascadeWindow(
-                        context.resources,
-                        stableBounds,
-                        it.configuration.windowConfiguration.bounds,
-                        bounds,
-                    )
+            ?.let { taskId: Int ->
+                val taskInfo =
+                    shellTaskOrganizer.getRunningTaskInfo(taskId)
+                        ?: recentTasksController?.findTaskInBackground(taskId)
+                taskInfo?.let {
+                    val taskBounds = it.configuration.windowConfiguration.bounds
+                    if (!taskBounds.isEmpty()) {
+                        cascadeWindow(context.resources, stableBounds, taskBounds, bounds)
+                        return@let
+                    }
+                    // RecentsTaskInfo might not have configuration bounds populated yet so use
+                    // task lastNonFullscreenBounds if available. If null or empty bounds are found
+                    // do not cascade.
+                    if (it is RecentTaskInfo) {
+                        it.lastNonFullscreenBounds?.let {
+                            if (!it.isEmpty()) {
+                                cascadeWindow(context.resources, stableBounds, it, bounds)
+                            }
+                        }
+                    }
                 }
             }
     }

@@ -21,11 +21,9 @@ import android.content.pm.PackageManager
 import android.media.session.MediaController
 import android.media.session.MediaSession.Token
 import android.media.session.PlaybackState
-import android.text.TextUtils
 import android.util.Log
 import androidx.constraintlayout.widget.ConstraintSet
 import com.android.internal.logging.InstanceId
-import com.android.settingslib.flags.Flags.legacyLeAudioSharing
 import com.android.settingslib.media.LocalMediaManager.MediaDeviceState
 import com.android.systemui.Flags.enableSuggestedDeviceUi
 import com.android.systemui.common.shared.model.Icon
@@ -164,83 +162,26 @@ data class MediaControlViewModel(
 
     private fun toOutputSwitcherViewModel(model: MediaControlModel): MediaOutputSwitcherViewModel {
         val device = model.deviceData
-        val showBroadcastButton = legacyLeAudioSharing() && device?.showBroadcastButton == true
-
-        // TODO(b/233698402): Use the package name instead of app label to avoid the unexpected
-        //  result.
-        val isCurrentBroadcastApp =
-            device?.name?.let {
-                TextUtils.equals(
-                    it,
-                    applicationContext.getString(R.string.broadcasting_description_is_broadcasting),
-                )
-            } ?: false
-        val useDisabledAlpha =
-            if (showBroadcastButton) {
-                !isCurrentBroadcastApp
-            } else {
-                device?.enabled == false || model.isResume
-            }
+        val isDisabled = device?.enabled == false || model.isResume
         val deviceString =
-            device?.name
-                ?: if (showBroadcastButton) {
-                    applicationContext.getString(R.string.bt_le_audio_broadcast_dialog_unknown_name)
-                } else {
-                    applicationContext.getString(R.string.media_seamless_other_device)
-                }
+            device?.name ?: applicationContext.getString(R.string.media_seamless_other_device)
         return MediaOutputSwitcherViewModel(
-            isTapEnabled = showBroadcastButton || !useDisabledAlpha,
+            isTapEnabled = !isDisabled,
             deviceString = deviceString,
             deviceIcon =
                 device?.icon?.let { Icon.Loaded(it, null) }
-                    ?: if (showBroadcastButton) {
-                        Icon.Resource(R.drawable.settings_input_antenna, null)
-                    } else {
-                        Icon.Resource(R.drawable.ic_media_home_devices, null)
-                    },
-            isCurrentBroadcastApp = isCurrentBroadcastApp,
+                    ?: Icon.Resource(R.drawable.ic_media_home_devices, null),
             isIntentValid = device?.intent != null,
             alpha =
-                if (useDisabledAlpha) {
+                if (isDisabled) {
                     DISABLED_ALPHA
                 } else {
                     1.0f
                 },
-            isVisible = showBroadcastButton,
             onClicked = { expandable ->
-                if (showBroadcastButton) {
-                    // If the current media app is not broadcasted and users press the outputer
-                    // button, we should pop up the broadcast dialog to check do they want to
-                    // switch broadcast to the other media app, otherwise we still pop up the
-                    // media output dialog.
-                    if (!isCurrentBroadcastApp) {
-                        logger.logOpenBroadcastDialog(
-                            model.uid,
-                            model.packageName,
-                            model.instanceId,
-                        )
-                        interactor.startBroadcastDialog(
-                            expandable,
-                            device?.name.toString(),
-                            model.packageName,
-                        )
-                    } else {
-                        logger.logOpenOutputSwitcher(model.uid, model.packageName, model.instanceId)
-                        interactor.startMediaOutputDialog(
-                            expandable,
-                            model.packageName,
-                            model.token,
-                        )
-                    }
-                } else {
-                    logger.logOpenOutputSwitcher(model.uid, model.packageName, model.instanceId)
-                    device?.intent?.let { interactor.startDeviceIntent(it) }
-                        ?: interactor.startMediaOutputDialog(
-                            expandable,
-                            model.packageName,
-                            model.token,
-                        )
-                }
+                logger.logOpenOutputSwitcher(model.uid, model.packageName, model.instanceId)
+                device?.intent?.let { interactor.startDeviceIntent(it) }
+                    ?: interactor.startMediaOutputDialog(expandable, model.packageName, model.token)
             },
         )
     }

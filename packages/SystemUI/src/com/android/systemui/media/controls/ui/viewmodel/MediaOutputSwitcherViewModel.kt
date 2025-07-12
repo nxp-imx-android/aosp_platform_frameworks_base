@@ -24,20 +24,16 @@ data class MediaOutputSwitcherViewModel(
     val isTapEnabled: Boolean,
     val deviceString: CharSequence,
     val deviceIcon: Icon,
-    val isCurrentBroadcastApp: Boolean,
     val isIntentValid: Boolean,
     val alpha: Float,
-    val isVisible: Boolean,
     val onClicked: (Expandable) -> Unit,
 ) {
     fun contentEquals(other: MediaOutputSwitcherViewModel?): Boolean {
         return (other?.let {
             isTapEnabled == other.isTapEnabled &&
                 deviceString == other.deviceString &&
-                isCurrentBroadcastApp == other.isCurrentBroadcastApp &&
                 isIntentValid == other.isIntentValid &&
-                alpha == other.alpha &&
-                isVisible == other.isVisible
+                alpha == other.alpha
         } ?: false)
     }
 }

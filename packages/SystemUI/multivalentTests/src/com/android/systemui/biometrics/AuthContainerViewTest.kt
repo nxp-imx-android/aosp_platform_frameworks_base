@@ -44,6 +44,7 @@ import android.widget.ScrollView
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
+import com.android.internal.widget.LockPatternUtils.CREDENTIAL_TYPE_PASSWORD
 import com.android.internal.widget.LockPatternUtils.CREDENTIAL_TYPE_PATTERN
 import com.android.internal.widget.LockPatternUtils.CREDENTIAL_TYPE_PIN
 import com.android.internal.widget.lockPatternUtils
@@ -113,6 +114,8 @@ open class AuthContainerViewTest : SysuiTestCase() {
         whenever(packageManager.getPackageInfo(any(String::class.java), anyInt()))
             .thenReturn(PackageInfo())
         context.setMockPackageManager(packageManager)
+        whenever(lockPatternUtils.getCredentialTypeForUser(anyInt()))
+            .thenReturn(CREDENTIAL_TYPE_PASSWORD)
     }
 
     @After
@@ -202,6 +205,7 @@ open class AuthContainerViewTest : SysuiTestCase() {
 
     @Test
     @DisableFlags(Flags.FLAG_BP_FALLBACK_OPTIONS)
+    @Ignore("b/430630633")
     fun testIgnoresAnimatedInWhenDialogAnimatingOut() {
         val container = initializeFingerprintContainer(addToView = false)
         container.mContainerState = 4 // STATE_ANIMATING_OUT
@@ -377,6 +381,7 @@ open class AuthContainerViewTest : SysuiTestCase() {
 
     @Test
     @DisableFlags(Flags.FLAG_BP_FALLBACK_OPTIONS)
+    @Ignore("b/430630633")
     fun testAnimateToCredentialUI_invokesStartTransitionToCredentialUI() {
         val container =
             initializeFingerprintContainer(
@@ -399,6 +404,7 @@ open class AuthContainerViewTest : SysuiTestCase() {
 
     @Test
     @DisableFlags(Flags.FLAG_BP_FALLBACK_OPTIONS)
+    @Ignore("b/430630633")
     fun testAnimateToCredentialUI_rotateCredentialUI() {
         val container =
             initializeFingerprintContainer(
