@@ -21,6 +21,7 @@ import com.android.systemui.haptics.msdl.msdlPlayer
 import com.android.systemui.haptics.vibratorHelper
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.statusbar.notification.row.NotificationRowLogger
+import com.android.systemui.statusbar.phone.notificationTargetsHelper
 import com.android.systemui.util.time.systemClock
 import org.mockito.kotlin.mock
 
@@ -32,7 +33,7 @@ val Kosmos.magneticNotificationRowManagerImpl by
         MagneticNotificationRowManagerImpl(
             msdlPlayer,
             vibratorHelper,
-            NotificationTargetsHelper(),
+            notificationTargetsHelper,
             NotificationRoundnessManager(dumpManager),
             mock<NotificationRowLogger>(),
             systemClock,

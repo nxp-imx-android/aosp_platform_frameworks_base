@@ -5826,6 +5826,12 @@ public class NotificationStackScrollLayout
                 && (!hasClipBounds || mTmpRect.height() > 0);
     }
 
+    public boolean isVisibleOrIsVisibleInShelf(ExpandableNotificationRow row) {
+        return isVisible(row)
+                || (NotificationBundleUi.isEnabled()
+                && mShelf.getVisibility() != GONE && row.isInShelf());
+    }
+
     /** Whether the group is expanded to show the child notifications, and they are visible. */
     private boolean areChildrenVisible(ExpandableNotificationRow parent) {
         List<ExpandableNotificationRow> children = parent.getAttachedChildren();
@@ -5881,7 +5887,7 @@ public class NotificationStackScrollLayout
                 viewsToRemove.add(parent);
             }
             List<ExpandableNotificationRow> children = parent.getAttachedChildren();
-            if (isVisible(parent) && children != null) {
+            if (isVisibleOrIsVisibleInShelf(parent) && children != null) {
                 for (ExpandableNotificationRow child : children) {
                     if (includeChildInClearAll(parent, selection)) {
                         viewsToRemove.add(child);

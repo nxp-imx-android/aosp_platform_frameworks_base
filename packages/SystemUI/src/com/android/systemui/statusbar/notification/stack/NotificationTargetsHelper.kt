@@ -9,12 +9,7 @@ import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow
 import com.android.systemui.statusbar.notification.row.ExpandableView
 import javax.inject.Inject
 
-/**
- * Utility class that helps us find the targets of an animation, often used to find the notification
- * ([Roundable]) above and below the current one (see [findRoundableTargets]).
- */
-@SysUISingleton
-class NotificationTargetsHelper @Inject constructor() {
+interface NotificationTargetsHelper {
 
     /**
      * This method looks for views that can be rounded (and implement [Roundable]) during a
@@ -25,6 +20,51 @@ class NotificationTargetsHelper @Inject constructor() {
      *   no above/below notification or the notification is not part of the same section.
      */
     fun findRoundableTargets(
+        viewSwiped: ExpandableNotificationRow,
+        stackScrollLayout: NotificationStackScrollLayout,
+        sectionsManager: NotificationSectionsManager,
+    ): RoundableTargets
+
+    /**
+     * This method looks for [MagneticRoundableTarget]s that can magnetically attach to a swiped
+     * [ExpandableNotificationRow].
+     *
+     * The [MagneticRoundableTarget] for the swiped row is at the center of the list. From the
+     * center towards the left, the list contains the closest notification targets above the swiped
+     * row. From the center towards the right, the list contains the closest targets below the row.
+     *
+     * The list is filled from the center outwards, stopping at the first target that is not a valid
+     * [MagneticRoundableTarget] (see [ExpandableView.isValidMagneticTargetForSwiped]). Positions
+     * where the list halted could also be added if the target is a valid boundary (see
+     * [ExpandableView.isValidMagneticBoundary]). If neither condition is met, the position is
+     * filled with an empty [MagneticRoundableTarget]. In addition to the [numTargets] required, the
+     * list contains two additional targets used as [Roundable] boundaries that are not affected by
+     * a magnetic swipe. These will be returned at the beginning and end of the list.
+     *
+     * @param[viewSwiped] The [ExpandableNotificationRow] that is swiped.
+     * @param[stackScrollLayout] [NotificationStackScrollLayout] container.
+     * @param[sectionsManager] The [NotificationSectionsManager].
+     * @param[numTargets] The number of targets in the resulting list, including the swiped view.
+     * @return The list of [MagneticRoundableTarget]s above and below the swiped
+     *   [ExpandableNotificationRow]. The list includes two [Roundable] targets as boundaries of the
+     *   list. They are position at the beginning and end of the list.
+     */
+    fun findMagneticRoundableTargets(
+        viewSwiped: ExpandableNotificationRow,
+        stackScrollLayout: NotificationStackScrollLayout,
+        sectionsManager: NotificationSectionsManager,
+        numTargets: Int,
+    ): List<MagneticRoundableTarget>
+}
+
+/**
+ * Utility class that helps us find the targets of an animation, often used to find the notification
+ * ([Roundable]) above and below the current one (see [findRoundableTargets]).
+ */
+@SysUISingleton
+class NotificationTargetsHelperImpl @Inject constructor() : NotificationTargetsHelper {
+
+    override fun findRoundableTargets(
         viewSwiped: ExpandableNotificationRow,
         stackScrollLayout: NotificationStackScrollLayout,
         sectionsManager: NotificationSectionsManager,
@@ -73,31 +113,7 @@ class NotificationTargetsHelper @Inject constructor() {
         return RoundableTargets(before = viewBefore, swiped = viewSwiped, after = viewAfter)
     }
 
-    /**
-     * This method looks for [MagneticRoundableTarget]s that can magnetically attach to a swiped
-     * [ExpandableNotificationRow].
-     *
-     * The [MagneticRoundableTarget] for the swiped row is at the center of the list. From the
-     * center towards the left, the list contains the closest notification targets above the swiped
-     * row. From the center towards the right, the list contains the closest targets below the row.
-     *
-     * The list is filled from the center outwards, stopping at the first target that is not a valid
-     * [MagneticRoundableTarget] (see [ExpandableView.isValidMagneticTargetForSwiped]). Positions
-     * where the list halted could also be added if the target is a valid boundary (see
-     * [ExpandableView.isValidMagneticBoundary]). If neither condition is met, the position is
-     * filled with an empty [MagneticRoundableTarget]. In addition to the [numTargets] required, the
-     * list contains two additional targets used as [Roundable] boundaries that are not affected by
-     * a magnetic swipe. These will be returned at the beginning and end of the list.
-     *
-     * @param[viewSwiped] The [ExpandableNotificationRow] that is swiped.
-     * @param[stackScrollLayout] [NotificationStackScrollLayout] container.
-     * @param[sectionsManager] The [NotificationSectionsManager].
-     * @param[numTargets] The number of targets in the resulting list, including the swiped view.
-     * @return The list of [MagneticRoundableTarget]s above and below the swiped
-     *   [ExpandableNotificationRow]. The list includes two [Roundable] targets as boundaries of the
-     *   list. They are position at the beginning and end of the list.
-     */
-    fun findMagneticRoundableTargets(
+    override fun findMagneticRoundableTargets(
         viewSwiped: ExpandableNotificationRow,
         stackScrollLayout: NotificationStackScrollLayout,
         sectionsManager: NotificationSectionsManager,

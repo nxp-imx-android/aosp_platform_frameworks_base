@@ -25,8 +25,8 @@ import static com.android.server.testutils.MockitoUtilsKt.eq;
 import static com.google.common.truth.Truth.assertThat;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyFloat;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
@@ -35,6 +35,7 @@ import static org.mockito.Mockito.when;
 
 import android.content.Context;
 import android.content.res.Configuration;
+import android.hardware.input.InputManager;
 import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.EnableFlags;
 import android.platform.test.flag.junit.SetFlagsRule;
@@ -59,6 +60,7 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnit;
@@ -86,6 +88,7 @@ public class AutoclickControllerTest {
     private AccessibilityTraceManager mMockTrace;
     @Mock
     private WindowManager mMockWindowManager;
+    @Mock private AutoclickController.InputManagerWrapper mMockInputManagerWrapper;
     private AutoclickController mController;
     private MotionEventCaptor mMotionEventCaptor;
 
@@ -1543,6 +1546,120 @@ public class AutoclickControllerTest {
         // Verify updateConfiguration was called.
         verify(spyIndicatorView).onConfigurationChanged(newConfig);
     }
+
+    @Test
+    @EnableFlags(com.android.server.accessibility.Flags.FLAG_ENABLE_AUTOCLICK_INDICATOR)
+    public void onInputDeviceChanged_disconnectAndReconnect_hidesAndShowsTypePanel() {
+        // Setup: one mouse connected initially.
+        mController.mInputManagerWrapper = mMockInputManagerWrapper;
+        when(mMockInputManagerWrapper.getInputDeviceIds()).thenReturn(new int[] {1});
+        AutoclickController.InputDeviceWrapper mockMouse =
+                mock(AutoclickController.InputDeviceWrapper.class);
+        when(mockMouse.supportsSource(InputDevice.SOURCE_MOUSE)).thenReturn(true);
+        when(mockMouse.isEnabled()).thenReturn(true);
+        when(mockMouse.isVirtual()).thenReturn(false);
+        when(mMockInputManagerWrapper.getInputDevice(1)).thenReturn(mockMouse);
+
+        // Initialize controller and panels.
+        injectFakeMouseActionHoverMoveEvent();
+
+        // Capture the listener.
+        ArgumentCaptor<InputManager.InputDeviceListener> listenerCaptor =
+                ArgumentCaptor.forClass(InputManager.InputDeviceListener.class);
+        verify(mMockInputManagerWrapper)
+                .registerInputDeviceListener(listenerCaptor.capture(), any());
+        InputManager.InputDeviceListener listener = listenerCaptor.getValue();
+
+        // Manually trigger once to establish initial connected state.
+        listener.onInputDeviceChanged(1);
+        mTestableLooper.processAllMessages();
+
+        // Mock panels to verify interactions.
+        AutoclickTypePanel mockTypePanel = mock(AutoclickTypePanel.class);
+        AutoclickScrollPanel mockScrollPanel = mock(AutoclickScrollPanel.class);
+        mController.mAutoclickTypePanel = mockTypePanel;
+        mController.mAutoclickScrollPanel = mockScrollPanel;
+
+        // Action: disconnect mouse.
+        when(mMockInputManagerWrapper.getInputDeviceIds()).thenReturn(new int[0]);
+        listener.onInputDeviceChanged(1);
+        mTestableLooper.processAllMessages();
+
+        // Verify panels are hidden.
+        verify(mockTypePanel).hide();
+        verify(mockScrollPanel).hide();
+
+        // Action: reconnect mouse.
+        when(mMockInputManagerWrapper.getInputDeviceIds()).thenReturn(new int[] {1});
+        listener.onInputDeviceChanged(1);
+        mTestableLooper.processAllMessages();
+
+        // Verify type panel is shown, but scroll panel is not.
+        verify(mockTypePanel).show();
+        verify(mockScrollPanel, Mockito.never()).show(anyFloat(), anyFloat());
+    }
+
+    @Test
+    @EnableFlags(com.android.server.accessibility.Flags.FLAG_ENABLE_AUTOCLICK_INDICATOR)
+    public void onInputDeviceChanged_noConnectionChange_panelsStateUnchanged() {
+        // Setup: one mouse connected initially.
+        mController.mInputManagerWrapper = mMockInputManagerWrapper;
+        when(mMockInputManagerWrapper.getInputDeviceIds()).thenReturn(new int[] {1});
+        AutoclickController.InputDeviceWrapper mockMouse =
+                mock(AutoclickController.InputDeviceWrapper.class);
+        when(mockMouse.supportsSource(InputDevice.SOURCE_MOUSE)).thenReturn(true);
+        when(mockMouse.isEnabled()).thenReturn(true);
+        when(mockMouse.isVirtual()).thenReturn(false);
+        when(mMockInputManagerWrapper.getInputDevice(1)).thenReturn(mockMouse);
+
+        // Initialize controller and panels.
+        injectFakeMouseActionHoverMoveEvent();
+
+        // Capture the listener.
+        ArgumentCaptor<InputManager.InputDeviceListener> listenerCaptor =
+                ArgumentCaptor.forClass(InputManager.InputDeviceListener.class);
+        verify(mMockInputManagerWrapper)
+                .registerInputDeviceListener(listenerCaptor.capture(), any());
+        InputManager.InputDeviceListener listener = listenerCaptor.getValue();
+
+        // Manually trigger once to establish initial connected state.
+        listener.onInputDeviceChanged(1);
+        mTestableLooper.processAllMessages();
+
+        // Mock panels to verify interactions.
+        AutoclickTypePanel mockTypePanel = mock(AutoclickTypePanel.class);
+        AutoclickScrollPanel mockScrollPanel = mock(AutoclickScrollPanel.class);
+        mController.mAutoclickTypePanel = mockTypePanel;
+        mController.mAutoclickScrollPanel = mockScrollPanel;
+
+        // Action: trigger change, but connection state is the same (connected).
+        listener.onInputDeviceChanged(1);
+        mTestableLooper.processAllMessages();
+
+        // Verify panels state is unchanged.
+        verify(mockTypePanel, Mockito.never()).hide();
+        verify(mockScrollPanel, Mockito.never()).hide();
+        verify(mockTypePanel, Mockito.never()).show();
+
+        // Action: disconnect mouse.
+        when(mMockInputManagerWrapper.getInputDeviceIds()).thenReturn(new int[0]);
+        listener.onInputDeviceChanged(1);
+        mTestableLooper.processAllMessages();
+
+        // Verify hide was called once.
+        verify(mockTypePanel, times(1)).hide();
+        verify(mockScrollPanel, times(1)).hide();
+
+        // Action: trigger change, but connection state is the same (disconnected).
+        listener.onInputDeviceChanged(1);
+        mTestableLooper.processAllMessages();
+
+        // Verify panels state is unchanged (hide not called again).
+        verify(mockTypePanel, times(1)).hide();
+        verify(mockScrollPanel, times(1)).hide();
+        verify(mockTypePanel, Mockito.never()).show();
+    }
+
     /**
      * =========================================================================
      * Helper Functions

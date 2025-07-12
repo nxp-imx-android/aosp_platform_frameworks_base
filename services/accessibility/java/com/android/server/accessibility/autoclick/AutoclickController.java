@@ -44,6 +44,7 @@ import android.content.ContentResolver;
 import android.content.Context;
 import android.content.res.Configuration;
 import android.database.ContentObserver;
+import android.hardware.input.InputManager;
 import android.net.Uri;
 import android.os.Handler;
 import android.os.SystemClock;
@@ -248,6 +249,77 @@ public class AutoclickController extends BaseEventStreamTransformation implement
                 }
             };
 
+    @VisibleForTesting InputManagerWrapper mInputManagerWrapper;
+
+    private final InputManager.InputDeviceListener mInputDeviceListener =
+            new InputManager.InputDeviceListener() {
+                // True when the pointing device is connected, including mouse, touchpad, etc.
+                private boolean mIsPointingDeviceConnected = false;
+
+                // True when the autoclick type panel is temporarily hidden due to the pointing
+                // device being disconnected.
+                private boolean mTemporaryHideAutoclickTypePanel = false;
+
+                @Override
+                public void onInputDeviceAdded(int deviceId) {
+                    onInputDeviceChanged(deviceId);
+                }
+
+                @Override
+                public void onInputDeviceRemoved(int deviceId) {
+                    onInputDeviceChanged(deviceId);
+                }
+
+                @Override
+                public void onInputDeviceChanged(int deviceId) {
+                    boolean wasConnected = mIsPointingDeviceConnected;
+                    mIsPointingDeviceConnected = false;
+                    for (final int id : mInputManagerWrapper.getInputDeviceIds()) {
+                        final InputDeviceWrapper device = mInputManagerWrapper.getInputDevice(id);
+                        if (device == null || !device.isEnabled() || device.isVirtual()) {
+                            continue;
+                        }
+                        if (device.supportsSource(InputDevice.SOURCE_MOUSE)
+                                || device.supportsSource(InputDevice.SOURCE_TOUCHPAD)
+                                || device.supportsSource(InputDevice.SOURCE_STYLUS)
+                                || device.supportsSource(InputDevice.SOURCE_BLUETOOTH_STYLUS)) {
+                            mIsPointingDeviceConnected = true;
+                            break;
+                        }
+                    }
+
+                    // If the device state did not change, do nothing.
+                    if (wasConnected == mIsPointingDeviceConnected) {
+                        return;
+                    }
+
+                    // Pointing device state changes from connected to disconnected.
+                    if (!mIsPointingDeviceConnected) {
+                        if (mAutoclickTypePanel != null) {
+                            mTemporaryHideAutoclickTypePanel = true;
+                            mAutoclickTypePanel.hide();
+
+                            if (mAutoclickScrollPanel != null) {
+                                mAutoclickScrollPanel.hide();
+                            }
+                        }
+
+                    // Pointing device state changes from disconnected to connected and the panel
+                    // was temporarily hidden due to the pointing device being disconnected.
+                    } else if (mTemporaryHideAutoclickTypePanel && mIsPointingDeviceConnected) {
+                        if (mAutoclickTypePanel != null) {
+                            mTemporaryHideAutoclickTypePanel = false;
+                            mAutoclickTypePanel.show();
+
+                            // No need to explicitly show the scroll panel here since we don't know
+                            // the cursor position when the pointing device is connected. If the
+                            // user disconnects the pointing device in scroll mode, another auto
+                            // click will trigger the scroll panel to be shown.
+                        }
+                    }
+                }
+            };
+
     public AutoclickController(Context context, int userId, AccessibilityTraceManager trace) {
         mTrace = trace;
         mContext = context;
@@ -340,6 +412,12 @@ public class AutoclickController extends BaseEventStreamTransformation implement
         mAutoclickTypePanel.show();
         mContext.registerComponentCallbacks(this);
         mWindowManager.addView(mAutoclickIndicatorView, mAutoclickIndicatorView.getLayoutParams());
+
+        if (mInputManagerWrapper == null) {
+            mInputManagerWrapper =
+                    new InputManagerWrapper(mContext.getSystemService(InputManager.class));
+        }
+        mInputManagerWrapper.registerInputDeviceListener(mInputDeviceListener, handler);
     }
 
     @Override
@@ -375,6 +453,10 @@ public class AutoclickController extends BaseEventStreamTransformation implement
     @Override
     public void onDestroy() {
         mContext.unregisterComponentCallbacks(this);
+        if (mInputManagerWrapper != null) {
+            mInputManagerWrapper.unregisterInputDeviceListener(mInputDeviceListener);
+        }
+
         if (mAutoclickSettingsObserver != null) {
             mAutoclickSettingsObserver.stop();
             mAutoclickSettingsObserver = null;
@@ -591,6 +673,64 @@ public class AutoclickController extends BaseEventStreamTransformation implement
     @Override
     public void onLowMemory() {
 
+    }
+
+    /** A wrapper for the final InputManager class, to allow mocking in tests. */
+    @VisibleForTesting
+    public static class InputManagerWrapper {
+        private final InputManager mInputManager;
+
+        InputManagerWrapper(InputManager inputManager) {
+            mInputManager = inputManager;
+        }
+
+        public void registerInputDeviceListener(
+                InputManager.InputDeviceListener listener, Handler handler) {
+            if (mInputManager == null) return;
+            mInputManager.registerInputDeviceListener(listener, handler);
+        }
+
+        public void unregisterInputDeviceListener(InputManager.InputDeviceListener listener) {
+            if (mInputManager == null) return;
+            mInputManager.unregisterInputDeviceListener(listener);
+        }
+
+        public int[] getInputDeviceIds() {
+            if (mInputManager == null) return new int[0];
+            return mInputManager.getInputDeviceIds();
+        }
+
+        public InputDeviceWrapper getInputDevice(int id) {
+            if (mInputManager == null) return null;
+            InputDevice device = mInputManager.getInputDevice(id);
+            return device == null ? null : new InputDeviceWrapper(device);
+        }
+    }
+
+    /** A wrapper for the final InputDevice class, to allow mocking in tests. */
+    @VisibleForTesting
+    public static class InputDeviceWrapper {
+        private final InputDevice mInputDevice;
+
+        InputDeviceWrapper(InputDevice inputDevice) {
+            mInputDevice = inputDevice;
+        }
+
+        public boolean isEnabled() {
+            return mInputDevice.isEnabled();
+        }
+
+        public boolean isVirtual() {
+            return mInputDevice.isVirtual();
+        }
+
+        public boolean supportsSource(int source) {
+            return mInputDevice.supportsSource(source);
+        }
+
+        public int getSources() {
+            return mInputDevice.getSources();
+        }
     }
 
     /**

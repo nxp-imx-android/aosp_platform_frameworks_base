@@ -27,6 +27,7 @@ import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.app.AlertDialog;
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.graphics.PixelFormat;
 import android.hardware.biometrics.BiometricAuthenticator.Modality;
@@ -158,6 +159,7 @@ public class AuthContainerView extends LinearLayout
     private final Set<Integer> mFailedModalities = new HashSet<Integer>();
     private final OnBackInvokedCallback mBackCallback = this::onBackInvoked;
     private final PromptFallbackViewModel.Factory mFallbackViewModelFactory;
+    private final boolean mIsWatch;
 
 
     private final MSDLPlayer mMSDLPlayer;
@@ -342,6 +344,8 @@ public class AuthContainerView extends LinearLayout
         mLinearOutSlowIn = Interpolators.LINEAR_OUT_SLOW_IN;
         mBiometricCallback = new BiometricCallback();
         mMSDLPlayer = msdlPlayer;
+        mIsWatch =
+                config.mContext.getPackageManager().hasSystemFeature(PackageManager.FEATURE_WATCH);
 
         final BiometricModalities biometricModalities = new BiometricModalities(
                 Utils.findFirstSensorProperties(fpProps, mConfig.mSensorIds),
@@ -506,7 +510,7 @@ public class AuthContainerView extends LinearLayout
             return;
         }
 
-        if (Flags.bpFallbackOptions() || Flags.bpInitializeComposeWatch()) {
+        if (Flags.bpFallbackOptions() || (mIsWatch && Flags.bpInitializeComposeWatch())) {
             ComposeInitializer.INSTANCE.onAttachedToWindow(this);
         }
 
@@ -581,7 +585,7 @@ public class AuthContainerView extends LinearLayout
             findOnBackInvokedDispatcher().unregisterOnBackInvokedCallback(mBackCallback);
         }
         super.onDetachedFromWindow();
-        if (Flags.bpFallbackOptions() || Flags.bpInitializeComposeWatch()) {
+        if (Flags.bpFallbackOptions() || (mIsWatch && Flags.bpInitializeComposeWatch())) {
             ComposeInitializer.INSTANCE.onDetachedFromWindow(this);
         }
         mWakefulnessLifecycle.removeObserver(this);

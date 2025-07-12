@@ -331,7 +331,7 @@ public class DefaultMixedHandler implements MixedTransitionHandler,
         if (requestHasBubbleEnter(request)) {
             consumeRemoteTransitionIfNecessary(transition, request.getRemoteTransition());
 
-            if (mSplitHandler.requestImpliesSplitToBubble(request)) {
+            if (mSplitHandler.requestImpliesSplitToBubble(request.getTriggerTask())) {
                 ProtoLog.v(ShellProtoLogGroup.WM_SHELL_TRANSITIONS,
                         " Got a Bubble-enter request from a split task");
                 mBubbleTransitions.storePendingEnterTransition(transition, request);
@@ -361,7 +361,7 @@ public class DefaultMixedHandler implements MixedTransitionHandler,
         } else if (requestHasBubbleEnterFromAppBubbleOrExistingBubble(request)) {
             consumeRemoteTransitionIfNecessary(transition, request.getRemoteTransition());
 
-            if (mSplitHandler.requestImpliesSplitToBubble(request)) {
+            if (mSplitHandler.requestImpliesSplitToBubble(request.getTriggerTask())) {
                 // TODO: Handle from split
             } else {
                 // Note: This will currently "intercept" launches even while the bubble is collapsed
@@ -579,6 +579,24 @@ public class DefaultMixedHandler implements MixedTransitionHandler,
             if (mActiveTransitions.get(i).mTransition != transition) continue;
             mixed = mActiveTransitions.get(i);
             break;
+        }
+
+        // If there was no requested transition but the transition includes an opening bubble task
+        // then handle it here now
+        TransitionInfo.Change bubbleChange =
+                transitionHasBubbleEnterFromAppBubbleOrExistingBubble(info);
+        if (mixed == null && bubbleChange != null) {
+            if (mSplitHandler.requestImpliesSplitToBubble(bubbleChange.getTaskInfo())) {
+                // TODO: Handle from split
+            } else {
+                // Add a mixed transition
+                ProtoLog.v(ShellProtoLogGroup.WM_SHELL_TRANSITIONS, " Got a Bubble-enter "
+                        + "transition from an app bubble or for an existing bubble");
+                mixed = createDefaultMixedTransition(
+                        MixedTransition.TYPE_LAUNCH_OR_CONVERT_TO_BUBBLE_FROM_EXISTING_BUBBLE,
+                        transition);
+                mActiveTransitions.add(mixed);
+            }
         }
 
         // Offer Keyguard the opportunity to take over lock transitions - ideally we could know by
@@ -834,6 +852,18 @@ public class DefaultMixedHandler implements MixedTransitionHandler,
         return BubbleAnythingFlagHelper.enableCreateAnyBubble()
                 && request.getTriggerTask() != null
                 && mBubbleTransitions.shouldBeAppBubble(request.getTriggerTask());
+    }
+
+    /**
+     * Returns the associated change for the bubbled task in the given started transition if it is
+     * from an app bubble or for an existing bubble and should be handled by the bubbles transition
+     */
+    public TransitionInfo.Change transitionHasBubbleEnterFromAppBubbleOrExistingBubble(
+            @NonNull TransitionInfo info) {
+        if (!BubbleAnythingFlagHelper.enableCreateAnyBubble()) {
+            return null;
+        }
+        return DefaultMixedTransition.getChangeForBubblingTask(info, mBubbleTransitions);
     }
 
     /**
