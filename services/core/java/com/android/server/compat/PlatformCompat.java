@@ -188,12 +188,14 @@ public class PlatformCompat extends IPlatformCompat.Stub {
         if (appInfo != null) {
             boolean isTargetingLatestSdk =
                     mCompatConfig.isChangeTargetingLatestSdk(c, appInfo.targetSdkVersion);
-            mChangeReporter.reportChange(
-                    appInfo.uid,
-                    changeId,
-                    state,
-                    appInfo.isSystemApp(),
-                    isReportRequested);
+            if (isTargetingLatestSdk || isReportRequested) {
+                mChangeReporter.reportChange(
+                        appInfo.uid,
+                        changeId,
+                        state,
+                        appInfo.isSystemApp(),
+                        isReportRequested);
+            }
         }
         return enabled;
     }
