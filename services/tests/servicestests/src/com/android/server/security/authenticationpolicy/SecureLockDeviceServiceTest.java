@@ -16,10 +16,27 @@
 
 package com.android.server.security.authenticationpolicy;
 
+import static android.app.StatusBarManager.DISABLE2_NOTIFICATION_SHADE;
+import static android.app.StatusBarManager.DISABLE2_QUICK_SETTINGS;
+import static android.app.StatusBarManager.DISABLE2_SYSTEM_ICONS;
+import static android.app.StatusBarManager.DISABLE_BACK;
+import static android.app.StatusBarManager.DISABLE_EXPAND;
+import static android.app.StatusBarManager.DISABLE_HOME;
+import static android.app.StatusBarManager.DISABLE_NONE;
+import static android.app.StatusBarManager.DISABLE_NOTIFICATION_ALERTS;
+import static android.app.StatusBarManager.DISABLE_NOTIFICATION_ICONS;
+import static android.app.StatusBarManager.DISABLE_ONGOING_CALL_CHIP;
+import static android.app.StatusBarManager.DISABLE_SEARCH;
 import static android.hardware.biometrics.BiometricManager.Authenticators.BIOMETRIC_STRONG;
 import static android.hardware.biometrics.BiometricManager.Authenticators.BIOMETRIC_WEAK;
 import static android.hardware.biometrics.SensorProperties.STRENGTH_STRONG;
 import static android.hardware.biometrics.SensorProperties.STRENGTH_WEAK;
+import static android.os.UserManager.DISALLOW_CHANGE_WIFI_STATE;
+import static android.os.UserManager.DISALLOW_CONFIG_WIFI;
+import static android.os.UserManager.DISALLOW_DEBUGGING_FEATURES;
+import static android.os.UserManager.DISALLOW_OUTGOING_CALLS;
+import static android.os.UserManager.DISALLOW_SMS;
+import static android.os.UserManager.DISALLOW_USB_FILE_TRANSFER;
 import static android.os.UserManager.DISALLOW_USER_SWITCH;
 import static android.security.Flags.FLAG_SECURE_LOCKDOWN;
 import static android.security.Flags.FLAG_SECURE_LOCK_DEVICE;
@@ -32,8 +49,10 @@ import static android.security.authenticationpolicy.AuthenticationPolicyManager.
 
 import static com.google.common.truth.Truth.assertThat;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.clearInvocations;
 import static org.mockito.Mockito.never;
@@ -42,6 +61,7 @@ import static org.mockito.Mockito.when;
 
 import android.annotation.SuppressLint;
 import android.app.ActivityManager;
+import android.app.ActivityTaskManager;
 import android.app.admin.DevicePolicyManager;
 import android.content.Context;
 import android.hardware.biometrics.BiometricEnrollmentStatus;
@@ -50,6 +70,7 @@ import android.hardware.biometrics.BiometricStateListener;
 import android.hardware.biometrics.SensorProperties;
 import android.hardware.face.FaceManager;
 import android.hardware.fingerprint.FingerprintManager;
+import android.os.Bundle;
 import android.os.IBinder;
 import android.os.IPowerManager;
 import android.os.IThermalService;
@@ -59,6 +80,7 @@ import android.os.UserHandle;
 import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
 import android.platform.test.flag.junit.SetFlagsRule;
+import android.provider.Settings;
 import android.security.authenticationpolicy.DisableSecureLockDeviceParams;
 import android.security.authenticationpolicy.EnableSecureLockDeviceParams;
 import android.security.authenticationpolicy.ISecureLockDeviceStatusListener;
@@ -70,6 +92,8 @@ import androidx.test.filters.SmallTest;
 import androidx.test.platform.app.InstrumentationRegistry;
 import androidx.test.runner.AndroidJUnit4;
 
+import com.android.internal.app.IVoiceInteractionManagerService;
+import com.android.internal.statusbar.IStatusBarService;
 import com.android.internal.util.test.LocalServiceKeeperRule;
 import com.android.server.wm.WindowManagerInternal;
 
@@ -84,6 +108,7 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 
+import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -112,6 +137,7 @@ public class SecureLockDeviceServiceTest {
     @Captor private ArgumentCaptor<Boolean> mSecureLockDeviceEnabledStatusArgumentCaptor;
 
     @Mock private ActivityManager mActivityManager;
+    @Mock private ActivityTaskManager mActivityTaskManager;
     @Mock private AuthenticationPolicyService mAuthenticationPolicyService;
     @Mock private BiometricManager mBiometricManager;
     @Mock private BiometricManager mUserBiometricManager;
@@ -125,7 +151,9 @@ public class SecureLockDeviceServiceTest {
     @Mock private ISecureLockDeviceStatusListener mSecureLockDeviceStatusListener;
     // For OTHER_USER_ID
     @Mock private ISecureLockDeviceStatusListener mSecureLockDeviceStatusOtherListener;
+    @Mock private IStatusBarService mStatusBarService;
     @Mock private IThermalService mThermalService;
+    @Mock private IVoiceInteractionManagerService mVoiceInteractionManagerService;
     @Mock private SecureLockDeviceServiceInternal mSecureLockDeviceServiceInternal;
     @Mock private WindowManagerInternal mWindowManagerInternal;
 
@@ -135,6 +163,32 @@ public class SecureLockDeviceServiceTest {
             new DisableSecureLockDeviceParams("test");
     private SecureLockDeviceService mSecureLockDeviceService;
     private SecureLockDeviceService.SecureLockDeviceStore mSecureLockDeviceStore;
+
+    private static final int DISABLE_FLAGS =
+            // Flag to make the status bar not expandable
+            DISABLE_EXPAND
+                    // Flag to hide notification icons and scrolling ticker text.
+                    | DISABLE_NOTIFICATION_ICONS
+                    // Flag to disable incoming notification alerts.  This will not block
+                    // icons, but it will block sound, vibrating and other visual or aural
+                    // notifications.
+                    | DISABLE_NOTIFICATION_ALERTS
+                    // Flag to hide only the home button.
+                    | DISABLE_HOME
+                    // Flag to hide only the back button.
+                    | DISABLE_BACK
+                    // Flag to disable the global search gesture.
+                    | DISABLE_SEARCH
+                    // Flag to disable the ongoing call chip.
+                    | DISABLE_ONGOING_CALL_CHIP;
+
+    private static final int DISABLE2_FLAGS =
+            // Setting this flag disables quick settings completely
+            DISABLE2_QUICK_SETTINGS
+                    // Flag to hide system icons.
+                    | DISABLE2_SYSTEM_ICONS
+                    // Flag to disable notification shade
+                    | DISABLE2_NOTIFICATION_SHADE;
 
     @SuppressLint("VisibleForTests")
     @Before
@@ -153,6 +207,9 @@ public class SecureLockDeviceServiceTest {
         mTestContext.addMockSystemService((FingerprintManager.class), mFingerprintManager);
 
         when(mActivityManager.isProfileForeground(eq(mUser))).thenReturn(true);
+        Bundle userRestrictions = constructUserRestrictionsBundle();
+        when(mDevicePolicyManager.getUserRestrictionsGlobally()).thenReturn(userRestrictions);
+
         when(mSecureLockDeviceStatusListener.asBinder())
                 .thenReturn(mSecureLockDeviceStatusListenerBinder);
         when(mSecureLockDeviceStatusOtherListener.asBinder())
@@ -167,8 +224,44 @@ public class SecureLockDeviceServiceTest {
 
         mSecureLockDeviceService = new SecureLockDeviceService(mTestContext);
         mSecureLockDeviceStore = mSecureLockDeviceService.getStore();
+
+        mSecureLockDeviceService.setSecureLockDeviceTestStatus(true);
         mSecureLockDeviceService.onLockSettingsReady();
         mSecureLockDeviceService.onBootCompleted();
+
+        try {
+            Field statusBarService = SecureLockDeviceService.class.getDeclaredField(
+                    "mStatusBarService");
+            statusBarService.setAccessible(true);
+            statusBarService.set(mSecureLockDeviceService, mStatusBarService);
+
+            Field voiceInteractionManagerService =
+                    SecureLockDeviceService.class.getDeclaredField(
+                            "mVoiceInteractionManagerService");
+            voiceInteractionManagerService.setAccessible(true);
+            voiceInteractionManagerService.set(mSecureLockDeviceService,
+                    mVoiceInteractionManagerService);
+
+            Field activityTaskManager =
+                    SecureLockDeviceService.class.getDeclaredField("mActivityTaskManager");
+            activityTaskManager.setAccessible(true);
+            activityTaskManager.set(mSecureLockDeviceService, mActivityTaskManager);
+        } catch (NoSuchFieldException | IllegalAccessException e) {
+            throw new RuntimeException("Failed to inject mock services", e);
+        }
+    }
+
+    private Bundle constructUserRestrictionsBundle() {
+        Bundle bundle = new Bundle();
+        bundle.putBoolean(SecureLockDeviceService.class.getSimpleName(), true);
+        bundle.putBoolean(DISALLOW_USB_FILE_TRANSFER, false);
+        bundle.putBoolean(DISALLOW_DEBUGGING_FEATURES, false);
+        bundle.putBoolean(DISALLOW_CHANGE_WIFI_STATE, false);
+        bundle.putBoolean(DISALLOW_CONFIG_WIFI, false);
+        bundle.putBoolean(DISALLOW_OUTGOING_CALLS, false);
+        bundle.putBoolean(DISALLOW_SMS, false);
+        bundle.putBoolean(DISALLOW_USER_SWITCH, false);
+        return bundle;
     }
 
     @SuppressLint("VisibleForTests")
@@ -176,6 +269,7 @@ public class SecureLockDeviceServiceTest {
     public void tearDown() throws Exception {
         disableSecureLockDevice(mUser);
         disableSecureLockDevice(mOtherUser);
+        mSecureLockDeviceService.setSecureLockDeviceTestStatus(false);
     }
 
     @Test
@@ -230,8 +324,6 @@ public class SecureLockDeviceServiceTest {
         assertThat(mSecureLockDeviceService.isSecureLockDeviceEnabled()).isFalse();
         assertThat(mSecureLockDeviceStore.retrieveSecureLockDeviceClientId())
                 .isEqualTo(UserHandle.USER_NULL);
-        verify(mDevicePolicyManager).clearUserRestrictionGlobally(
-                eq(SecureLockDeviceService.class.getSimpleName()), eq(DISALLOW_USER_SWITCH));
     }
 
     @Test
@@ -373,6 +465,89 @@ public class SecureLockDeviceServiceTest {
         assertThat(isSecureLockDeviceEnabled).isFalse();
     }
 
+    @SuppressWarnings("ConstantConditions")
+    @Test
+    public void securityFeaturesEnabled_onSecureLockDeviceEnabled()
+            throws RemoteException, Settings.SettingNotFoundException {
+        final String tag = "SecureLockDeviceService";
+
+        setupBiometricState(
+                true, /* deviceHasStrongBiometricSensor */
+                true, /* primaryUserHasStrongBiometricEnrollment */
+                false /* otherUserHasStrongBiometricEnrollment */
+        );
+        enableSecureLockDevice(mUser);
+
+        assertThat(Settings.System.getInt(mTestContext.getContentResolver(),
+                Settings.System.BLUETOOTH_DISCOVERABILITY)).isEqualTo(0);
+        assertThat(Settings.System.getInt(mTestContext.getContentResolver(),
+                Settings.System.LOCK_TO_APP_ENABLED)).isEqualTo(0);
+
+        assertThat(Settings.Secure.getInt(mTestContext.getContentResolver(),
+                Settings.Secure.CAMERA_DOUBLE_TAP_POWER_GESTURE_DISABLED)).isEqualTo(1);
+        assertThat(Settings.Secure.getInt(mTestContext.getContentResolver(),
+                Settings.Secure.CAMERA_GESTURE_DISABLED)).isEqualTo(1);
+        assertThat(Settings.Secure.getInt(mTestContext.getContentResolver(),
+                Settings.Secure.CAMERA_LIFT_TRIGGER_ENABLED)).isEqualTo(0);
+        assertThat(Settings.Secure.getInt(mTestContext.getContentResolver(),
+                Settings.Secure.DOUBLE_TAP_POWER_BUTTON_GESTURE_ENABLED)).isEqualTo(0);
+        assertThat(Settings.Secure.getInt(mTestContext.getContentResolver(),
+                Settings.Secure.GLANCEABLE_HUB_ENABLED)).isEqualTo(0);
+        assertThat(Settings.Secure.getInt(mTestContext.getContentResolver(),
+                Settings.Secure.LOCK_SCREEN_SHOW_NOTIFICATIONS)).isEqualTo(0);
+
+        verify(mActivityTaskManager).stopSystemLockTaskMode();
+
+        verify(mStatusBarService).disable(eq(DISABLE_FLAGS), any(), anyString());
+        verify(mStatusBarService).disable2(eq(DISABLE2_FLAGS), any(), anyString());
+
+        verify(mVoiceInteractionManagerService).setDisabled(eq(true));
+
+        verify(mDevicePolicyManager).addUserRestrictionGlobally(eq(tag),
+                eq(DISALLOW_CHANGE_WIFI_STATE));
+        verify(mDevicePolicyManager).addUserRestrictionGlobally(eq(tag),
+                eq(DISALLOW_CONFIG_WIFI));
+        verify(mDevicePolicyManager).addUserRestrictionGlobally(eq(tag),
+                eq(DISALLOW_OUTGOING_CALLS));
+        verify(mDevicePolicyManager).addUserRestrictionGlobally(eq(tag),
+                eq(DISALLOW_SMS));
+        verify(mDevicePolicyManager).addUserRestrictionGlobally(eq(tag),
+                eq(DISALLOW_USER_SWITCH));
+    }
+
+    @SuppressWarnings("ConstantConditions")
+    @Test
+    public void securityFeaturesDisabled_onSecureLockDeviceDisabled()
+            throws RemoteException {
+        final String tag = "SecureLockDeviceService";
+
+        setupBiometricState(
+                true, /* deviceHasStrongBiometricSensor */
+                true, /* primaryUserHasStrongBiometricEnrollment */
+                false /* otherUserHasStrongBiometricEnrollment */
+        );
+        enableSecureLockDevice(mUser);
+        clearInvocations();
+
+        disableSecureLockDevice(mUser);
+
+        verify(mStatusBarService).disable(eq(DISABLE_NONE), any(), anyString());
+        verify(mStatusBarService).disable2(eq(DISABLE_NONE), any(), anyString());
+
+        verify(mVoiceInteractionManagerService).setDisabled(eq(false));
+
+        verify(mDevicePolicyManager).clearUserRestrictionGlobally(eq(tag),
+                eq(DISALLOW_CHANGE_WIFI_STATE));
+        verify(mDevicePolicyManager).clearUserRestrictionGlobally(eq(tag),
+                eq(DISALLOW_CONFIG_WIFI));
+        verify(mDevicePolicyManager).clearUserRestrictionGlobally(eq(tag),
+                eq(DISALLOW_OUTGOING_CALLS));
+        verify(mDevicePolicyManager).clearUserRestrictionGlobally(eq(tag),
+                eq(DISALLOW_SMS));
+        verify(mDevicePolicyManager).clearUserRestrictionGlobally(eq(tag),
+                eq(DISALLOW_USER_SWITCH));
+    }
+
     @Test
     public void testAllListenersNotified_onEnableSecureLockDevice() throws RemoteException {
         setupBiometricState(
@@ -408,7 +583,6 @@ public class SecureLockDeviceServiceTest {
         enabled = mSecureLockDeviceEnabledStatusArgumentCaptor.getValue();
         assertThat(available).isEqualTo(ERROR_NO_BIOMETRICS_ENROLLED);
         assertThat(enabled).isTrue();
-
     }
 
     @Test

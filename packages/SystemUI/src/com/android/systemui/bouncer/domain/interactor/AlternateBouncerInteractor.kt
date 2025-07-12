@@ -29,6 +29,7 @@ import com.android.systemui.keyguard.shared.model.KeyguardState
 import com.android.systemui.scene.domain.interactor.SceneInteractor
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.scene.shared.model.Scenes
+import com.android.systemui.securelockdevice.domain.interactor.SecureLockDeviceInteractor
 import com.android.systemui.util.kotlin.BooleanFlowOperators.anyOf
 import dagger.Lazy
 import javax.inject.Inject
@@ -60,6 +61,7 @@ constructor(
     keyguardTransitionInteractor: Lazy<KeyguardTransitionInteractor>,
     displayStateInteractor: Lazy<DisplayStateInteractor>,
     sceneInteractor: Lazy<SceneInteractor>,
+    secureLockDeviceInteractor: Lazy<SecureLockDeviceInteractor>,
     @Application scope: CoroutineScope,
 ) {
     private var receivedDownTouch = false
@@ -105,10 +107,14 @@ constructor(
                     combine(
                             keyguardTransitionInteractor.get().currentKeyguardState,
                             sceneInteractor.get().currentScene,
-                            ::Pair,
+                            secureLockDeviceInteractor.get().isSecureLockDeviceEnabled,
+                            ::Triple,
                         )
-                        .flatMapLatest { (currentKeyguardState, transitionState) ->
-                            if (currentKeyguardState == KeyguardState.GONE) {
+                        .flatMapLatest {
+                            (currentKeyguardState, transitionState, secureLockDeviceEnabled) ->
+                            if (secureLockDeviceEnabled) {
+                                flowOf(false)
+                            } else if (currentKeyguardState == KeyguardState.GONE) {
                                 flowOf(false)
                             } else if (
                                 SceneContainerFlag.isEnabled && transitionState == Scenes.Gone
