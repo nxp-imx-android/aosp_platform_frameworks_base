@@ -26,8 +26,8 @@ import com.android.systemui.dagger.qualifiers.Main
 import com.android.systemui.kairos.awaitClose
 import com.android.systemui.lifecycle.ExclusiveActivatable
 import com.android.systemui.lifecycle.Hydrator
-import com.android.systemui.statusbar.domain.interactor.StatusBarRegionSamplingInteractor
 import com.android.systemui.statusbar.StatusBarRegionSampling
+import com.android.systemui.statusbar.domain.interactor.StatusBarRegionSamplingInteractor
 import com.android.systemui.util.boundsOnScreen
 import com.android.systemui.utils.coroutines.flow.conflatedCallbackFlow
 import com.android.wm.shell.shared.handles.RegionSamplingHelper
@@ -44,6 +44,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
@@ -91,86 +92,86 @@ constructor(
             initialValue = false,
         )
 
-    private val _startSideSamplingBounds: Flow<Rect> =
+    private data class Bounds(val sampling: Rect, val appearanceRegion: Rect)
+
+    private val _startSideBounds: Flow<Bounds> =
         conflatedCallbackFlow {
                 val layoutListener =
                     View.OnLayoutChangeListener { _, _, _, _, _, _, _, _, _ ->
                         trySend(
-                            getSamplingBounds(
-                                containerView = startSideContainerView,
-                                iconView = startSideIconView,
+                            Bounds(
+                                sampling =
+                                    getSamplingBounds(
+                                        containerView = startSideContainerView,
+                                        iconView = startSideIconView,
+                                    ),
+                                appearanceRegion =
+                                    getAppearanceRegionBounds(
+                                        containerView = startSideContainerView
+                                    ),
                             )
                         )
                     }
                 startSideContainerView.addOnLayoutChangeListener(layoutListener)
                 awaitClose { startSideContainerView.removeOnLayoutChangeListener(layoutListener) }
             }
-            .stateIn(backgroundScope, SharingStarted.WhileSubscribed(), initialValue = Rect())
+            .stateIn(
+                backgroundScope,
+                SharingStarted.WhileSubscribed(),
+                initialValue = Bounds(Rect(), Rect()),
+            )
 
     private val startSideSamplingBounds: Rect by
         hydrator.hydratedStateOf(
             traceName = "StatusBarRegionSamplingViewModel.startSideSamplingBounds",
             initialValue = Rect(),
-            source = _startSideSamplingBounds,
+            source = _startSideBounds.map { it.sampling },
         )
-
-    private val _startSideAppearanceRegionBounds: Flow<Rect> =
-        conflatedCallbackFlow {
-                val layoutListener =
-                    View.OnLayoutChangeListener { _, _, _, _, _, _, _, _, _ ->
-                        trySend(getAppearanceRegionBounds(containerView = startSideContainerView))
-                    }
-                startSideContainerView.addOnLayoutChangeListener(layoutListener)
-                awaitClose { startSideContainerView.removeOnLayoutChangeListener(layoutListener) }
-            }
-            .stateIn(backgroundScope, SharingStarted.WhileSubscribed(), initialValue = Rect())
 
     private val startSideAppearanceRegionBounds: Rect by
         hydrator.hydratedStateOf(
             traceName = "StatusBarRegionSamplingViewModel.startSideAppearanceRegionBounds",
             initialValue = Rect(),
-            source = _startSideAppearanceRegionBounds,
+            source = _startSideBounds.map { it.appearanceRegion },
         )
 
-    private val _endSideSamplingBounds: Flow<Rect> =
+    private val _endSideBounds: Flow<Bounds> =
         conflatedCallbackFlow {
                 val layoutListener =
                     View.OnLayoutChangeListener { _, _, _, _, _, _, _, _, _ ->
                         trySend(
-                            getSamplingBounds(
-                                containerView = endSideContainerView,
-                                iconView = endSideIconView,
+                            Bounds(
+                                sampling =
+                                    getSamplingBounds(
+                                        containerView = endSideContainerView,
+                                        iconView = endSideIconView,
+                                    ),
+                                appearanceRegion =
+                                    getAppearanceRegionBounds(containerView = endSideContainerView),
                             )
                         )
                     }
                 endSideContainerView.addOnLayoutChangeListener(layoutListener)
                 awaitClose { endSideContainerView.removeOnLayoutChangeListener(layoutListener) }
             }
-            .stateIn(backgroundScope, SharingStarted.WhileSubscribed(), initialValue = Rect())
+            .stateIn(
+                backgroundScope,
+                SharingStarted.WhileSubscribed(),
+                initialValue = Bounds(Rect(), Rect()),
+            )
 
     private val endSideSamplingBounds: Rect by
         hydrator.hydratedStateOf(
             traceName = "StatusBarRegionSamplingViewModel.endSideSamplingBounds",
             initialValue = Rect(),
-            source = _endSideSamplingBounds,
+            source = _endSideBounds.map { it.sampling },
         )
-
-    private val _endSideAppearanceRegionBounds: Flow<Rect> =
-        conflatedCallbackFlow {
-                val layoutListener =
-                    View.OnLayoutChangeListener { _, _, _, _, _, _, _, _, _ ->
-                        trySend(getAppearanceRegionBounds(containerView = endSideContainerView))
-                    }
-                endSideContainerView.addOnLayoutChangeListener(layoutListener)
-                awaitClose { endSideContainerView.removeOnLayoutChangeListener(layoutListener) }
-            }
-            .stateIn(backgroundScope, SharingStarted.WhileSubscribed(), initialValue = Rect())
 
     private val endSideAppearanceRegionBounds: Rect by
         hydrator.hydratedStateOf(
             traceName = "StatusBarRegionSamplingViewModel.endSideAppearanceRegionBounds",
             initialValue = Rect(),
-            source = _endSideAppearanceRegionBounds,
+            source = _endSideBounds.map { it.appearanceRegion },
         )
 
     private val startSideSampledAppearanceRegion: Flow<AppearanceRegion> = conflatedCallbackFlow {
