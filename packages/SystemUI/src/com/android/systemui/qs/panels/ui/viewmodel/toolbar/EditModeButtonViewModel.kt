@@ -18,7 +18,7 @@ package com.android.systemui.qs.panels.ui.viewmodel.toolbar
 
 import android.app.ActivityManager
 import androidx.compose.runtime.getValue
-import com.android.systemui.Flags.hsuBehaviorChanges
+import com.android.systemui.Flags.hsuQsChanges
 import com.android.systemui.classifier.domain.interactor.FalsingInteractor
 import com.android.systemui.lifecycle.ExclusiveActivatable
 import com.android.systemui.lifecycle.Hydrator
@@ -62,7 +62,7 @@ constructor(
             initialValue = false,
             source =
                 selectedUserInteractor.selectedUser.map { selectedUserId ->
-                    !hsuBehaviorChanges() || !hsum.isHeadlessSystemUser(selectedUserId)
+                    !hsuQsChanges() || !hsum.isHeadlessSystemUser(selectedUserId)
                 },
         )
 
