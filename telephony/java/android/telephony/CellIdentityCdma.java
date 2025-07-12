@@ -18,7 +18,6 @@ package android.telephony;
 
 import static android.text.TextUtils.formatSimple;
 
-import android.annotation.FlaggedApi;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.os.Parcel;
@@ -35,7 +34,6 @@ import java.util.Objects;
  *
  * @deprecated Legacy CDMA is unsupported.
  */
-@FlaggedApi(Flags.FLAG_DEPRECATE_CDMA)
 @Deprecated
 public final class CellIdentityCdma extends CellIdentity {
     private static final String TAG = CellIdentityCdma.class.getSimpleName();
@@ -143,7 +141,6 @@ public final class CellIdentityCdma extends CellIdentity {
     /** @hide
      * @deprecated Legacy CDMA is unsupported.
      */
-    @FlaggedApi(Flags.FLAG_DEPRECATE_CDMA)
     @Deprecated
     @Override
     public @NonNull CellIdentityCdma sanitizeLocationInfo() {
@@ -180,7 +177,6 @@ public final class CellIdentityCdma extends CellIdentity {
      *
      * @deprecated Legacy CDMA is unsupported.
      */
-    @FlaggedApi(Flags.FLAG_DEPRECATE_CDMA)
     @Deprecated
     public int getNetworkId() {
         return mNetworkId;
@@ -192,7 +188,6 @@ public final class CellIdentityCdma extends CellIdentity {
      *
      * @deprecated Legacy CDMA is unsupported.
      */
-    @FlaggedApi(Flags.FLAG_DEPRECATE_CDMA)
     @Deprecated
     public int getSystemId() {
         return mSystemId;
@@ -203,7 +198,6 @@ public final class CellIdentityCdma extends CellIdentity {
      *         if unavailable.
      * @deprecated Legacy CDMA is unsupported.
      */
-    @FlaggedApi(Flags.FLAG_DEPRECATE_CDMA)
     @Deprecated
     public int getBasestationId() {
         return mBasestationId;
@@ -218,7 +212,6 @@ public final class CellIdentityCdma extends CellIdentity {
      *
      * @deprecated Legacy CDMA is unsupported.
      */
-    @FlaggedApi(Flags.FLAG_DEPRECATE_CDMA)
     @Deprecated
     public int getLongitude() {
         return mLongitude;
@@ -233,7 +226,6 @@ public final class CellIdentityCdma extends CellIdentity {
      *
      * @deprecated Legacy CDMA is unsupported.
      */
-    @FlaggedApi(Flags.FLAG_DEPRECATE_CDMA)
     @Deprecated
     public int getLatitude() {
         return mLatitude;
@@ -248,7 +240,6 @@ public final class CellIdentityCdma extends CellIdentity {
     /** @hide
      * @deprecated Legacy CDMA is unsupported.
      */
-    @FlaggedApi(Flags.FLAG_DEPRECATE_CDMA)
     @Deprecated
     @NonNull
     @Override
@@ -345,7 +336,6 @@ public final class CellIdentityCdma extends CellIdentity {
      *
      * @deprecated Legacy CDMA is unsupported.
      */
-    @FlaggedApi(Flags.FLAG_DEPRECATE_CDMA)
     @Deprecated
     @SuppressWarnings("hiding")
     public static final @android.annotation.NonNull Creator<CellIdentityCdma> CREATOR =
