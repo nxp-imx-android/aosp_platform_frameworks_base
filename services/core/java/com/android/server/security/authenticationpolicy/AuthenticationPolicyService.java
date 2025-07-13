@@ -54,7 +54,7 @@ import android.proximity.IProximityResultCallback;
 import android.security.authenticationpolicy.AuthenticationPolicyManager;
 import android.security.authenticationpolicy.AuthenticationPolicyManager.DisableSecureLockDeviceRequestStatus;
 import android.security.authenticationpolicy.AuthenticationPolicyManager.EnableSecureLockDeviceRequestStatus;
-import android.security.authenticationpolicy.AuthenticationPolicyManager.IsSecureLockDeviceAvailableRequestStatus;
+import android.security.authenticationpolicy.AuthenticationPolicyManager.GetSecureLockDeviceAvailabilityRequestStatus;
 import android.security.authenticationpolicy.DisableSecureLockDeviceParams;
 import android.security.authenticationpolicy.EnableSecureLockDeviceParams;
 import android.security.authenticationpolicy.IAuthenticationPolicyService;
@@ -407,23 +407,23 @@ public class AuthenticationPolicyService extends SystemService {
 
     private final IBinder mService = new IAuthenticationPolicyService.Stub() {
         /**
-         * @see AuthenticationPolicyManager#isSecureLockDeviceAvailable()
+         * @see AuthenticationPolicyManager#getSecureLockDeviceAvailability()
          * @param user user associated with the calling context to check for secure lock device
          *             availability
-         * @return {@link IsSecureLockDeviceAvailableRequestStatus} int indicating whether secure
-         * lock device is available for the calling user
+         * @return {@link GetSecureLockDeviceAvailabilityRequestStatus} int indicating whether
+         * secure lock device is available for the calling user
          */
         @Override
         @EnforcePermission(MANAGE_SECURE_LOCK_DEVICE)
-        @IsSecureLockDeviceAvailableRequestStatus
-        public int isSecureLockDeviceAvailable(UserHandle user) {
-            isSecureLockDeviceAvailable_enforcePermission();
-            enforceCrossUserPermission(user, TAG + "#isSecureLockDeviceAvailable");
+        @GetSecureLockDeviceAvailabilityRequestStatus
+        public int getSecureLockDeviceAvailability(UserHandle user) {
+            getSecureLockDeviceAvailability_enforcePermission();
+            enforceCrossUserPermission(user, TAG + "#getSecureLockDeviceAvailability");
 
             // Required for internal service to acquire necessary system permissions
             final long identity = Binder.clearCallingIdentity();
             try {
-                return mSecureLockDeviceService.isSecureLockDeviceAvailable(user);
+                return mSecureLockDeviceService.getSecureLockDeviceAvailability(user);
             } finally {
                 Binder.restoreCallingIdentity(identity);
             }

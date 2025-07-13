@@ -13004,7 +13004,7 @@ package android.security.authenticationpolicy {
   @FlaggedApi("android.security.secure_lockdown") public final class AuthenticationPolicyManager {
     method @FlaggedApi("android.security.secure_lockdown") @RequiresPermission(android.Manifest.permission.MANAGE_SECURE_LOCK_DEVICE) public int disableSecureLockDevice(@NonNull android.security.authenticationpolicy.DisableSecureLockDeviceParams);
     method @FlaggedApi("android.security.secure_lockdown") @RequiresPermission(android.Manifest.permission.MANAGE_SECURE_LOCK_DEVICE) public int enableSecureLockDevice(@NonNull android.security.authenticationpolicy.EnableSecureLockDeviceParams);
-    method @FlaggedApi("android.security.secure_lock_device") @RequiresPermission(android.Manifest.permission.MANAGE_SECURE_LOCK_DEVICE) public int isSecureLockDeviceAvailable();
+    method @FlaggedApi("android.security.secure_lock_device") @RequiresPermission(android.Manifest.permission.MANAGE_SECURE_LOCK_DEVICE) public int getSecureLockDeviceAvailability();
     method @FlaggedApi("android.security.secure_lock_device") @RequiresPermission(android.Manifest.permission.MANAGE_SECURE_LOCK_DEVICE) public boolean isSecureLockDeviceEnabled();
     method @FlaggedApi("android.security.secure_lock_device") @RequiresPermission(android.Manifest.permission.MANAGE_SECURE_LOCK_DEVICE) public void registerSecureLockDeviceStatusListener(@NonNull java.util.concurrent.Executor, @NonNull android.security.authenticationpolicy.AuthenticationPolicyManager.SecureLockDeviceStatusListener);
     method @FlaggedApi("android.security.secure_lock_device") @RequiresPermission(android.Manifest.permission.MANAGE_SECURE_LOCK_DEVICE) public void unregisterSecureLockDeviceStatusListener(@NonNull android.security.authenticationpolicy.AuthenticationPolicyManager.SecureLockDeviceStatusListener);
@@ -13013,9 +13013,9 @@ package android.security.authenticationpolicy {
     field @FlaggedApi("android.security.secure_lockdown") public static final int ERROR_INVALID_PARAMS = 3; // 0x3
     field @FlaggedApi("android.security.secure_lockdown") public static final int ERROR_NOT_AUTHORIZED = 7; // 0x7
     field @FlaggedApi("android.security.secure_lockdown") public static final int ERROR_NO_BIOMETRICS_ENROLLED = 4; // 0x4
-    field @FlaggedApi("android.security.secure_lockdown") public static final int ERROR_UNKNOWN = 0; // 0x0
+    field @FlaggedApi("android.security.secure_lockdown") public static final int ERROR_UNKNOWN = 1; // 0x1
     field @FlaggedApi("android.security.secure_lockdown") public static final int ERROR_UNSUPPORTED = 2; // 0x2
-    field @FlaggedApi("android.security.secure_lockdown") public static final int SUCCESS = 1; // 0x1
+    field @FlaggedApi("android.security.secure_lockdown") public static final int SUCCESS = 0; // 0x0
   }
 
   @FlaggedApi("android.security.secure_lock_device") public static interface AuthenticationPolicyManager.SecureLockDeviceStatusListener {

@@ -20,7 +20,7 @@ import android.os.UserHandle;
 import android.security.authenticationpolicy.AuthenticationPolicyManager;
 import android.security.authenticationpolicy.AuthenticationPolicyManager.DisableSecureLockDeviceRequestStatus;
 import android.security.authenticationpolicy.AuthenticationPolicyManager.EnableSecureLockDeviceRequestStatus;
-import android.security.authenticationpolicy.AuthenticationPolicyManager.IsSecureLockDeviceAvailableRequestStatus;
+import android.security.authenticationpolicy.AuthenticationPolicyManager.GetSecureLockDeviceAvailabilityRequestStatus;
 import android.security.authenticationpolicy.DisableSecureLockDeviceParams;
 import android.security.authenticationpolicy.EnableSecureLockDeviceParams;
 import android.security.authenticationpolicy.ISecureLockDeviceStatusListener;
@@ -37,15 +37,15 @@ public abstract class SecureLockDeviceServiceInternal {
     private static final String TAG = "SecureLockDeviceServiceInternal";
 
     /**
-     * @see AuthenticationPolicyManager#isSecureLockDeviceAvailable()
+     * @see AuthenticationPolicyManager#getSecureLockDeviceAvailability()
      * @param user calling {@link UserHandle} to check that secure lock device is available for
-     * @return {@link IsSecureLockDeviceAvailableRequestStatus} int indicating whether secure lock
-     * device is available for the calling user
+     * @return {@link GetSecureLockDeviceAvailabilityRequestStatus} int indicating whether secure
+     * lock device is available for the calling user
      *
      * @hide
      */
-    @IsSecureLockDeviceAvailableRequestStatus
-    public abstract int isSecureLockDeviceAvailable(UserHandle user);
+    @GetSecureLockDeviceAvailabilityRequestStatus
+    public abstract int getSecureLockDeviceAvailability(UserHandle user);
 
     /**
      * @see AuthenticationPolicyManager#enableSecureLockDevice(EnableSecureLockDeviceParams)

@@ -34,7 +34,7 @@ interface IAuthenticationPolicyService {
     int disableSecureLockDevice(in UserHandle user, in DisableSecureLockDeviceParams params);
 
     @EnforcePermission("MANAGE_SECURE_LOCK_DEVICE")
-    int isSecureLockDeviceAvailable(in UserHandle user);
+    int getSecureLockDeviceAvailability(in UserHandle user);
 
     @EnforcePermission("MANAGE_SECURE_LOCK_DEVICE")
     boolean isSecureLockDeviceEnabled();
