@@ -24537,6 +24537,7 @@ package android.media {
   public static final class MediaCodecInfo.EncoderCapabilities {
     method public android.util.Range<java.lang.Integer> getComplexityRange();
     method public android.util.Range<java.lang.Integer> getQualityRange();
+    method @FlaggedApi("android.media.codec.temporal_layer_encoding") @NonNull public String[] getSupportedLayeringSchemas();
     method public boolean isBitrateModeSupported(int);
     field public static final int BITRATE_MODE_CBR = 2; // 0x2
     field public static final int BITRATE_MODE_CBR_FD = 3; // 0x3
