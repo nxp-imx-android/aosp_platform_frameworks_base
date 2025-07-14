@@ -241,19 +241,14 @@ public class BubbleTransitions {
 
     /**
      * Initiates axed bubble-to-bubble launch/existing bubble convert for the given transition.
-     *
-     * @return whether a new transition was started for the launch
      */
-    public boolean startBubbleToBubbleLaunchOrExistingBubbleConvert(@NonNull IBinder transition,
+    public void startBubbleToBubbleLaunchOrExistingBubbleConvert(@NonNull IBinder transition,
             @NonNull ActivityManager.RunningTaskInfo launchingTask,
             @NonNull Consumer<TransitionHandler> onInflatedCallback) {
-        TransitionHandler handler =
+        final TransitionHandler handler =
                 mBubbleController.expandStackAndSelectBubbleForExistingTransition(
                         launchingTask, transition, onInflatedCallback);
-        if (handler != null) {
-            mEnterTransitions.put(transition, handler);
-        }
-        return handler != null;
+        mEnterTransitions.put(transition, handler);
     }
 
     /**

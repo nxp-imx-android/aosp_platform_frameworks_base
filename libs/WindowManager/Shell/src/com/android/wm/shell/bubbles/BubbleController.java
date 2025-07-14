@@ -1761,13 +1761,11 @@ public class BubbleController implements ConfigurationChangeListener,
      *
      * @param taskInfo the task.
      */
-    @Nullable
-    public Transitions.TransitionHandler expandStackAndSelectBubbleForExistingTransition(
+    @NonNull
+    Transitions.TransitionHandler expandStackAndSelectBubbleForExistingTransition(
             @NonNull ActivityManager.RunningTaskInfo taskInfo,
             @NonNull IBinder transition,
             Consumer<Transitions.TransitionHandler> onInflatedCallback) {
-        if (!BubbleAnythingFlagHelper.enableCreateAnyBubble()) return null;
-
         Bubble b = mBubbleData.getBubbleInStackWithTaskId(taskInfo.taskId);
         if (b != null) {
             // Reuse the existing bubble; pass null for location to use existing location.
