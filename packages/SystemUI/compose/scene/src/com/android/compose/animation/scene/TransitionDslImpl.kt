@@ -127,7 +127,7 @@ private class SceneTransitionsBuilderImpl : SceneTransitionsBuilder {
 
 internal abstract class BaseTransitionBuilderImpl : BaseTransitionBuilder {
     val transformationMatchers = mutableListOf<TransformationMatcher>()
-    private var range: TransformationRange? = null
+    protected var range: TransformationRange? = null
     protected var reversed = false
     override var distance: UserActionDistance? = null
 
@@ -238,6 +238,8 @@ internal class TransitionBuilderImpl(override val transition: TransitionState.Tr
                 "(${transition.fromContent.debugName}) or toContent " +
                 "(${transition.toContent.debugName})"
         }
+
+        check(range == null) { "sharedElement() transformation can not be applied inside a range" }
 
         addTransformation(
             matcher,

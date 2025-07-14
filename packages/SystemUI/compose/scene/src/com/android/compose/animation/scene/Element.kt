@@ -55,9 +55,13 @@ import androidx.compose.ui.util.lerp
 import com.android.compose.animation.scene.content.Content
 import com.android.compose.animation.scene.content.state.TransitionState
 import com.android.compose.animation.scene.transformation.CustomPropertyTransformation
+import com.android.compose.animation.scene.transformation.CustomSharedPropertyTransformation
 import com.android.compose.animation.scene.transformation.InterpolatedPropertyTransformation
-import com.android.compose.animation.scene.transformation.PropertyTransformation
+import com.android.compose.animation.scene.transformation.InterpolatedSharedPropertyTransformation
+import com.android.compose.animation.scene.transformation.PropertyTransformationScope
+import com.android.compose.animation.scene.transformation.SharedElementPropertyTransformation
 import com.android.compose.animation.scene.transformation.TransformationWithRange
+import com.android.compose.animation.scene.transformation.TransformedElementPropertyTransformation
 import com.android.compose.modifiers.thenIf
 import com.android.compose.ui.graphics.drawInContainer
 import com.android.compose.ui.util.lerp
@@ -219,7 +223,6 @@ private fun Modifier.maybeElevateInContent(
                 state.transformationSpec
                     .transformations(key, content.key)
                     ?.shared
-                    ?.transformation
                     ?.elevateInContent == content.key &&
                 isSharedElement(stateByContent, state) &&
                 isSharedElementEnabled(key, state) &&
@@ -472,6 +475,7 @@ internal class ElementNode(
                     transition,
                     contentValue = { it.targetOffset },
                     transformation = { it?.offset },
+                    sharedTransformation = { it?.sharedOffset },
                     currentValue = { currentOffset },
                     isSpecified = { it != Offset.Unspecified },
                     ::lerp,
@@ -1086,7 +1090,7 @@ private fun shouldPlaceElement(
     }
 
     val sharedTransformation = sharedElementTransformation(element.key, transition)
-    if (sharedTransformation?.transformation?.enabled == false) {
+    if (sharedTransformation?.enabled == false) {
         return true
     }
 
@@ -1140,7 +1144,7 @@ private fun isElementOpaqueWithDefaultScale(
 }
 
 private fun ElementTransformations.hasAlphaOrScaleTransformation(): Boolean {
-    return alpha != null || scale != null
+    return alpha != null || sharedAlpha != null || scale != null || sharedDrawScale != null
 }
 
 /**
@@ -1165,6 +1169,7 @@ internal fun elementAlpha(
                 transition,
                 contentValue = { 1f },
                 transformation = { it?.alpha },
+                sharedTransformation = { it?.sharedAlpha },
                 currentValue = { 1f },
                 isSpecified = { true },
                 ::lerp,
@@ -1233,6 +1238,7 @@ private fun measure(
             transition,
             contentValue = { it.targetSize },
             transformation = { it?.size },
+            sharedTransformation = { it?.sharedSize },
             currentValue = { measurable.measure(constraints).also { maybePlaceable = it }.size() },
             isSpecified = { it != Element.SizeUnspecified },
             ::lerp,
@@ -1289,6 +1295,7 @@ internal fun getScale(
             transition,
             contentValue = { Scale.Default },
             transformation = { it?.scale },
+            sharedTransformation = { it?.sharedDrawScale },
             currentValue = { Scale.Default },
             isSpecified = { true },
             ::lerp,
@@ -1383,7 +1390,10 @@ private inline fun <T> computeValue(
     transition: TransitionState.Transition?,
     contentValue: (Element.State) -> T,
     transformation:
-        (ElementTransformations?) -> TransformationWithRange<PropertyTransformation<T>>?,
+        (ElementTransformations?) -> TransformationWithRange<
+                TransformedElementPropertyTransformation<T>
+            >?,
+    sharedTransformation: (ElementTransformations?) -> SharedElementPropertyTransformation<T>?,
     currentValue: () -> T,
     isSpecified: (T) -> Boolean,
     lerp: (T, T, Float) -> T,
@@ -1416,11 +1426,24 @@ private inline fun <T> computeValue(
     val isSharedElement = fromState != null && toState != null
     if (isSharedElement && isSharedElementEnabled(element.key, transition)) {
         return interpolateSharedElement(
+            element = element.key,
             transition = transition,
             contentValue = contentValue,
-            fromState = fromState!!,
-            toState = toState!!,
+            fromState = fromState,
+            toState = toState,
             isSpecified = isSpecified,
+            transformationScope = layoutImpl.propertyTransformationScope,
+            transformation =
+                sharedTransformation(
+                    transition.transformationSpec.transformations(element.key, currentContent)
+                ),
+            previewTransformation =
+                sharedTransformation(
+                    transition.previewTransformationSpec?.transformations(
+                        element.key,
+                        currentContent,
+                    )
+                ),
             lerp = lerp,
         )
     }
@@ -1432,11 +1455,27 @@ private inline fun <T> computeValue(
         currentSceneState = element.stateByContent[transition.currentScene]
         if (currentSceneState != null && isSharedElementEnabled(element.key, transition)) {
             return interpolateSharedElement(
+                element = element.key,
                 transition = transition,
                 contentValue = contentValue,
                 fromState = fromState ?: currentSceneState,
                 toState = toState ?: currentSceneState,
                 isSpecified = isSpecified,
+                transformationScope = layoutImpl.propertyTransformationScope,
+                transformation =
+                    sharedTransformation(
+                        transition.transformationSpec.transformations(
+                            element.key,
+                            transition.currentScene,
+                        )
+                    ),
+                previewTransformation =
+                    sharedTransformation(
+                        transition.previewTransformationSpec?.transformations(
+                            element.key,
+                            currentContent,
+                        )
+                    ),
                 lerp = lerp,
             )
         }
@@ -1598,20 +1637,17 @@ private inline fun <T> computePreviewTransformationValue(
     idleValue: T,
     transformationContentKey: ContentKey,
     isEntering: Boolean,
-    previewTransformation: TransformationWithRange<PropertyTransformation<T>>,
+    previewTransformation: TransformationWithRange<TransformedElementPropertyTransformation<T>>,
     element: Element,
     layoutImpl: SceneTransitionLayoutImpl,
-    transformationWithRange: TransformationWithRange<PropertyTransformation<T>>?,
+    transformationWithRange: TransformationWithRange<TransformedElementPropertyTransformation<T>>?,
     lerp: (T, T, Float) -> T,
 ): T {
     val isInPreviewStage = transition.isInPreviewStage
 
     val previewTargetValue =
         with(
-            previewTransformation.transformation.requireInterpolatedTransformation(
-                element,
-                transition,
-            ) {
+            previewTransformation.transformation.requireInterpolated(element, transition) {
                 "Custom transformations in preview specs should not be possible"
             }
         ) {
@@ -1626,10 +1662,7 @@ private inline fun <T> computePreviewTransformationValue(
     val targetValueOrNull =
         transformationWithRange?.let { transformation ->
             with(
-                transformation.transformation.requireInterpolatedTransformation(
-                    element,
-                    transition,
-                ) {
+                transformation.transformation.requireInterpolated(element, transition) {
                     "Custom transformations are not allowed for properties with a preview"
                 }
             ) {
@@ -1714,7 +1747,7 @@ private fun isEnteringAncestorTransition(
     return layoutImpl.ancestors.fastAny { it.inContent == transition.toContent }
 }
 
-private inline fun <T> PropertyTransformation<T>.requireInterpolatedTransformation(
+private inline fun <T> TransformedElementPropertyTransformation<T>.requireInterpolated(
     element: Element,
     transition: TransitionState.Transition,
     errorMessage: () -> String,
@@ -1731,11 +1764,15 @@ private inline fun <T> PropertyTransformation<T>.requireInterpolatedTransformati
 }
 
 private inline fun <T> interpolateSharedElement(
+    element: ElementKey,
     transition: TransitionState.Transition,
     contentValue: (Element.State) -> T,
     fromState: Element.State,
     toState: Element.State,
     isSpecified: (T) -> Boolean,
+    transformationScope: PropertyTransformationScope,
+    transformation: SharedElementPropertyTransformation<T>?,
+    previewTransformation: SharedElementPropertyTransformation<T>?,
     lerp: (T, T, Float) -> T,
 ): T {
     val start = contentValue(fromState)
@@ -1745,6 +1782,66 @@ private inline fun <T> interpolateSharedElement(
     // nodes before the intermediate layout pass.
     if (!isSpecified(start)) return end
     if (!isSpecified(end)) return start
+
+    if (transformation != null && previewTransformation != null) {
+        error(
+            "Element ${element.debugName} has both a custom shared transformation and a shared " +
+                "preview transformation, which is not supported"
+        )
+    }
+
+    if (transformation != null) {
+        return when (transformation) {
+            is InterpolatedSharedPropertyTransformation ->
+                error(
+                    "Element ${element.debugName} has a SharedElementPropertyTransformation that " +
+                        "is a InterpolatedSharedPropertyTransformation, which is only supported " +
+                        "inside preview for shared elements."
+                )
+            is CustomSharedPropertyTransformation -> {
+                with(transformation) {
+                    transformationScope.transform(
+                        element,
+                        transition,
+                        transition.coroutineScope,
+                        start,
+                        end,
+                    )
+                }
+            }
+        }
+    }
+
+    if (previewTransformation != null) {
+        val previewValue =
+            when (previewTransformation) {
+                is CustomSharedPropertyTransformation -> {
+                    with(previewTransformation) {
+                        transformationScope.transform(
+                            element,
+                            transition,
+                            transition.coroutineScope,
+                            start,
+                            end,
+                        )
+                    }
+                }
+                is InterpolatedSharedPropertyTransformation -> {
+                    val previewTargetValue =
+                        with(previewTransformation) {
+                            transformationScope.targetPreviewValue(element, transition, start, end)
+                        }
+                    if (previewTargetValue == start) start
+                    else lerp(start, previewTargetValue, transition.previewProgress)
+                }
+            }
+
+        return if (transition.isInPreviewStage) {
+            previewValue
+        } else {
+            if (previewValue == end) end else lerp(previewValue, end, transition.progress)
+        }
+    }
 
     // Make sure we don't read progress if values are the same and we don't need to interpolate,
     // so we don't invalidate the phase where this is read.
