@@ -360,6 +360,16 @@ flag {
 }
 
 flag {
+    name: "enable_desktop_first_policy_in_lpm"
+    namespace: "lse_desktop_experience"
+    description: "Enables desktop-first policy in DesktopModeLaunchParamsModifier."
+    bug: "427828063"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "enable_desktop_ime_bugfix"
     namespace: "lse_desktop_experience"
     description: "Enables bugfix to handle IME interactions in desktop windowing."
