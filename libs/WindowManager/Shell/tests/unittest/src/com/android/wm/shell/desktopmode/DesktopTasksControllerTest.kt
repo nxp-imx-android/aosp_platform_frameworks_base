@@ -5637,7 +5637,10 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
 
     @Test
     @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_WALLPAPER_ACTIVITY)
-    @DisableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
+    @DisableFlags(
+        Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
+        Flags.FLAG_ENABLE_DESKTOP_FIRST_POLICY_IN_LPM,
+    )
     fun handleRequest_fullscreenTask_noTasks_enforceDesktop_freeformDisplay_returnFreeformWCT() {
         whenever(desktopWallpaperActivityTokenProvider.getToken()).thenReturn(null)
         desktopState.enterDesktopByDefaultOnFreeformDisplay = true
@@ -5664,6 +5667,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         Flags.FLAG_ENABLE_DESKTOP_WINDOWING_WALLPAPER_ACTIVITY,
         Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
     )
+    @DisableFlags(Flags.FLAG_ENABLE_DESKTOP_FIRST_POLICY_IN_LPM)
     fun handleRequest_fullscreenTask_noInDesk_enforceDesktop_freeformDisplay_movesToDesk() {
         val deskId = 0
         taskRepository.setDeskInactive(deskId)
@@ -5685,13 +5689,13 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
         Flags.FLAG_ENABLE_DESKTOP_FIRST_BASED_DEFAULT_TO_DESKTOP_BUGFIX,
     )
+    @DisableFlags(Flags.FLAG_ENABLE_DESKTOP_FIRST_POLICY_IN_LPM)
     fun handleRequest_fullscreenTask_noInDesk_enforceDesktop_freeformDisplay_movesToDesk_desktopFirst() {
         // Ensure the force enter desktop works when the deprecated flag is off.
         desktopState.enterDesktopByDefaultOnFreeformDisplay = false
         val deskId = 0
         taskRepository.setDeskInactive(deskId)
         whenever(desktopWallpaperActivityTokenProvider.getToken()).thenReturn(null)
-        desktopState.enterDesktopByDefaultOnFreeformDisplay = true
         val tda = rootTaskDisplayAreaOrganizer.getDisplayAreaInfo(DEFAULT_DISPLAY)!!
         tda.configuration.windowConfiguration.windowingMode = WINDOWING_MODE_FREEFORM
 
@@ -5707,6 +5711,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         Flags.FLAG_ENABLE_DESKTOP_WINDOWING_WALLPAPER_ACTIVITY,
         Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
     )
+    @DisableFlags(Flags.FLAG_ENABLE_DESKTOP_FIRST_POLICY_IN_LPM)
     fun handleRequest_fullscreenTask_noInDesk_enforceDesktop_secondaryDisplay_movesToDesk() {
         val deskId = 5
         taskRepository.addDesk(displayId = SECONDARY_DISPLAY_ID, deskId = deskId)
@@ -5732,6 +5737,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         Flags.FLAG_ENABLE_DESKTOP_FIRST_BASED_DEFAULT_TO_DESKTOP_BUGFIX,
         Flags.FLAG_ENABLE_DESKTOP_FIRST_TOP_FULLSCREEN_BUGFIX,
     )
+    @DisableFlags(Flags.FLAG_ENABLE_DESKTOP_FIRST_POLICY_IN_LPM)
     fun handleRequest_fullscreenTask_fullscreenFocused_freeformDisplay_returnNull() {
         val deskId = 0
         taskRepository.setDeskInactive(deskId)
@@ -5745,6 +5751,25 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
 
         val fullscreenTask = createFullscreenTask()
 
+        assertThat(controller.handleRequest(Binder(), createTransition(fullscreenTask))).isNull()
+    }
+
+    @Test
+    @EnableFlags(
+        Flags.FLAG_ENABLE_DESKTOP_WINDOWING_WALLPAPER_ACTIVITY,
+        Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
+        Flags.FLAG_ENABLE_DESKTOP_FIRST_BASED_DEFAULT_TO_DESKTOP_BUGFIX,
+        Flags.FLAG_ENABLE_DESKTOP_FIRST_POLICY_IN_LPM,
+    )
+    fun handleRequest_fullscreenTask_noInDesk_enforceDesktop_desktopFirst_returnNull() {
+        val deskId = 0
+        taskRepository.setDeskInactive(deskId)
+        whenever(desktopWallpaperActivityTokenProvider.getToken()).thenReturn(null)
+        desktopState.enterDesktopByDefaultOnFreeformDisplay = true
+        val tda = rootTaskDisplayAreaOrganizer.getDisplayAreaInfo(DEFAULT_DISPLAY)!!
+        tda.configuration.windowConfiguration.windowingMode = WINDOWING_MODE_FREEFORM
+
+        val fullscreenTask = createFullscreenTask()
         assertThat(controller.handleRequest(Binder(), createTransition(fullscreenTask))).isNull()
     }
 
