@@ -45,6 +45,8 @@ abstract class FocusAppFromTaskbar(val rotation: Rotation = Rotation.ROTATION_0)
 
     @Before
     fun setup() {
+        browserApp.launchViaIntent(wmHelper)
+        browserAppHelper.closePopupsIfNeeded(device)
         browserApp.enterDesktopMode(wmHelper, device)
         tapl.showTaskbarIfHidden()
         testApp.launchViaIntent(wmHelper)
