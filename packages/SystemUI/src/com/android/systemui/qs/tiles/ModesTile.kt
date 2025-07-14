@@ -25,10 +25,12 @@ import androidx.annotation.DrawableRes
 import androidx.annotation.VisibleForTesting
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.coroutineScope
+import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import com.android.app.tracing.coroutines.launchTraced as launch
 import com.android.app.tracing.coroutines.runBlockingTraced as runBlocking
 import com.android.internal.logging.MetricsLogger
+import com.android.systemui.Flags
 import com.android.systemui.animation.Expandable
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.dagger.qualifiers.Main
@@ -112,13 +114,30 @@ constructor(
         }
     }
 
-    override fun handleClick(expandable: Expandable?) = runBlocking {
-        userActionInteractor.handleClick(expandable)
+    override fun handleClick(expandable: Expandable?) {
+        if (Flags.doNotUseRunBlocking()) {
+            lifecycleScope.launch {
+                userActionInteractor.handleClick(expandable)
+            }
+        } else {
+            runBlocking {
+                userActionInteractor.handleClick(expandable)
+            }
+        }
     }
 
-    override fun handleSecondaryClick(expandable: Expandable?) = runBlocking {
-        val model = dataInteractor.getCurrentTileModel()
-        userActionInteractor.handleToggleClick(model)
+    override fun handleSecondaryClick(expandable: Expandable?) {
+        if (Flags.doNotUseRunBlocking()) {
+            lifecycleScope.launch {
+                val model = dataInteractor.getCurrentTileModel()
+                userActionInteractor.handleToggleClick(model)
+            }
+        } else {
+            runBlocking {
+                val model = dataInteractor.getCurrentTileModel()
+                userActionInteractor.handleToggleClick(model)
+            }
+        }
     }
 
     override fun getDetailsViewModel(): TileDetailsViewModel {
