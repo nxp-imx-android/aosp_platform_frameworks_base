@@ -494,6 +494,7 @@ public final class UserTypeFactory {
 
     private static Bundle getDefaultHeadlessSystemUserRestrictions() {
         final Bundle restrictions = getDefaultSystemUserRestrictions();
+        restrictions.putBoolean(UserManager.DISALLOW_MODIFY_ACCOUNTS, true);
         return restrictions;
     }
 
