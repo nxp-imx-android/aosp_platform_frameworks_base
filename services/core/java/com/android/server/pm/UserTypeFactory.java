@@ -66,6 +66,7 @@ import java.util.function.Consumer;
  *
  * This class is responsible both for defining the AOSP use types, as well as reading in customized
  * user types from {@link com.android.internal.R.xml#config_user_types}.
+ * Recall that config_user_types values, if defined, will overwrite the AOSP defaults set here.
  *
  * Tests are located in {@link UserManagerServiceUserTypeTest}.
  * @hide
@@ -439,7 +440,8 @@ public final class UserTypeFactory {
                 .setName(USER_TYPE_FULL_SYSTEM)
                 .setBaseType(FLAG_SYSTEM | FLAG_FULL)
                 .setDefaultUserInfoPropertyFlags(FLAG_PRIMARY | FLAG_ADMIN | FLAG_MAIN)
-                .setMaxAllowed(1);
+                .setMaxAllowed(1)
+                .setDefaultRestrictions(getDefaultSystemUserRestrictions());
     }
 
     /**
@@ -452,7 +454,32 @@ public final class UserTypeFactory {
                 .setBaseType(FLAG_SYSTEM)
                 .setDefaultUserInfoPropertyFlags(FLAG_PRIMARY
                         | (android.multiuser.Flags.hsuNotAdmin() ? 0 : FLAG_ADMIN))
-                .setMaxAllowed(1);
+                .setMaxAllowed(1)
+                .setDefaultRestrictions(getDefaultHeadlessSystemUserRestrictions());
+    }
+
+    /** Gets the deprecated config_defaultFirstUserRestrictions as system default restrictions. */
+    private static Bundle getDefaultSystemUserRestrictions() {
+        // For historical reasons, we will default to config_defaultFirstUserRestrictions. But
+        // really that config is deprecated; OEMs should just use config_user_types instead.
+        final Bundle restrictions = new Bundle();
+        try {
+            final String[] defaultFirstUserRestrictions = Resources.getSystem().getStringArray(
+                    com.android.internal.R.array.config_defaultFirstUserRestrictions);
+            for (String userRestriction : defaultFirstUserRestrictions) {
+                if (UserRestrictionsUtils.isValidRestriction(userRestriction)) {
+                    restrictions.putBoolean(userRestriction, true);
+                }
+            }
+        } catch (Resources.NotFoundException e) {
+            Slog.e(LOG_TAG, "Couldn't find resource: config_defaultFirstUserRestrictions", e);
+        }
+        return restrictions;
+    }
+
+    private static Bundle getDefaultHeadlessSystemUserRestrictions() {
+        final Bundle restrictions = getDefaultSystemUserRestrictions();
+        return restrictions;
     }
 
     private static Bundle getDefaultSecondaryUserRestrictions() {
@@ -465,7 +492,11 @@ public final class UserTypeFactory {
     private static Bundle getDefaultGuestUserRestrictions() {
         // Guest inherits the secondary user's restrictions, plus has some extra ones.
         final Bundle restrictions = getDefaultSecondaryUserRestrictions();
-        restrictions.putBoolean(UserManager.DISALLOW_CONFIG_WIFI, true);
+        if (android.multiuser.Flags.userRestrictionConfigWifiSharedPrivate()) {
+            restrictions.putBoolean(UserManager.DISALLOW_CONFIG_WIFI_SHARED, true);
+        } else {
+            restrictions.putBoolean(UserManager.DISALLOW_CONFIG_WIFI, true);
+        }
         restrictions.putBoolean(UserManager.DISALLOW_INSTALL_UNKNOWN_SOURCES, true);
         restrictions.putBoolean(UserManager.DISALLOW_CONFIG_CREDENTIALS, true);
         return restrictions;
