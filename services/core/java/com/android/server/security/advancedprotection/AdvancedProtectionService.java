@@ -137,7 +137,7 @@ public class AdvancedProtectionService extends IAdvancedProtectionService.Stub {
                 && mStore.retrieveInt(AAPM_USB_DATA_PROTECTION, AdvancedProtectionStore.ON)
                 == AdvancedProtectionStore.ON) {
           try {
-            mHooks.add(new UsbDataAdvancedProtectionHook(mContext, enabled));
+            mHooks.add(new UsbDataAdvancedProtectionHook(mContext, enabled, this));
           } catch (Exception e) {
             Slog.e(TAG, "Failed to initialize UsbDataAdvancedProtection", e);
           }
