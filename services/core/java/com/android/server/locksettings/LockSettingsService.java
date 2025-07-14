@@ -1783,8 +1783,7 @@ public class LockSettingsService extends ILockSettings.Stub {
 
         // Send credentials for the user and any child profiles that share its lock screen.
         for (int profileId : getProfilesWithSameLockScreen(userId)) {
-            mRecoverableKeyStoreManager.lockScreenSecretAvailable(
-                    credential.getType(), credential.getCredential(), profileId);
+            mRecoverableKeyStoreManager.lockScreenSecretAvailable(credential, profileId);
         }
     }
 
@@ -1801,12 +1800,9 @@ public class LockSettingsService extends ILockSettings.Stub {
             return;
         }
 
-        // RecoverableKeyStoreManager expects null for empty credential.
-        final byte[] secret = credential.isNone() ? null : credential.getCredential();
         // Send credentials for the user and any child profiles that share its lock screen.
         for (int profileId : getProfilesWithSameLockScreen(userId)) {
-            mRecoverableKeyStoreManager.lockScreenSecretChanged(
-                    credential.getType(), secret, profileId);
+            mRecoverableKeyStoreManager.lockScreenSecretChanged(credential, profileId);
         }
     }
 
