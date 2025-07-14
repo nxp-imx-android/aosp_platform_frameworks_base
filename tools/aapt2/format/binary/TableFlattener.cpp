@@ -307,7 +307,7 @@ class PackageFlattener {
           if (!(chunk.source == item.overlayable->source)) {
             // The name of an overlayable set of resources must be unique
             context_->GetDiagnostics()->Error(android::DiagMessage(item.overlayable->source)
-                                              << "duplicate overlayable name"
+                                              << "duplicate overlayable name '"
                                               << item.overlayable->name << "'");
             context_->GetDiagnostics()->Error(android::DiagMessage(chunk.source)
                                               << "previous declaration here");
@@ -325,13 +325,7 @@ class PackageFlattener {
           return false;
         }
 
-        auto policy = overlayable_chunk->policy_ids.find(item.policies);
-        if (policy != overlayable_chunk->policy_ids.end()) {
-          policy->second.insert(id);
-        } else {
-          overlayable_chunk->policy_ids.insert(
-              std::make_pair(item.policies, std::set<ResourceId>{id}));
-        }
+        overlayable_chunk->policy_ids[item.policies].insert(id);
       }
     }
 
