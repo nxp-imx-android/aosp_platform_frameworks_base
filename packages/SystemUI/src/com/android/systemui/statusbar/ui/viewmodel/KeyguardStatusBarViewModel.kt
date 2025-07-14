@@ -18,7 +18,6 @@ package com.android.systemui.statusbar.ui.viewmodel
 
 import com.android.systemui.Flags
 import com.android.systemui.dagger.SysUISingleton
-import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.keyguard.domain.interactor.KeyguardInteractor
 import com.android.systemui.lifecycle.HydratedActivatable
 import com.android.systemui.scene.domain.interactor.SceneInteractor
@@ -33,15 +32,16 @@ import com.android.systemui.statusbar.policy.BatteryController.BatteryStateChang
 import com.android.systemui.user.domain.interactor.UserLogoutInteractor
 import com.android.systemui.utils.coroutines.flow.conflatedCallbackFlow
 import javax.inject.Inject
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 
 /**
  * A view model for the status bar displayed on keyguard (lockscreen).
@@ -55,9 +55,8 @@ import kotlinx.coroutines.flow.stateIn
 class KeyguardStatusBarViewModel
 @Inject
 constructor(
-    @Application scope: CoroutineScope,
     headsUpNotificationInteractor: HeadsUpNotificationInteractor,
-    sceneInteractor: SceneInteractor,
+    private val sceneInteractor: SceneInteractor,
     private val keyguardInteractor: KeyguardInteractor,
     keyguardStatusBarInteractor: KeyguardStatusBarInteractor,
     private val userLogoutInteractor: UserLogoutInteractor,
@@ -71,22 +70,30 @@ constructor(
             flowOf(false)
         }
 
+    private val _isVisible = MutableStateFlow(false)
     /** True if this view should be visible and false otherwise. */
-    val isVisible: StateFlow<Boolean> =
-        combine(
-                sceneInteractor.currentScene,
-                sceneInteractor.currentOverlays,
-                keyguardInteractor.isDozing,
-                showingHeadsUpStatusBar,
-            ) { currentScene, currentOverlays, isDozing, showHeadsUpStatusBar ->
-                currentScene == Scenes.Lockscreen &&
-                    Overlays.NotificationsShade !in currentOverlays &&
-                    Overlays.QuickSettingsShade !in currentOverlays &&
-                    Overlays.Bouncer !in currentOverlays &&
-                    !isDozing &&
-                    !showHeadsUpStatusBar
+    val isVisible: StateFlow<Boolean> = _isVisible.asStateFlow()
+
+    override suspend fun onActivated() {
+        coroutineScope {
+            launch {
+                combine(
+                        sceneInteractor.currentScene,
+                        sceneInteractor.currentOverlays,
+                        keyguardInteractor.isDozing,
+                        showingHeadsUpStatusBar,
+                    ) { currentScene, currentOverlays, isDozing, showHeadsUpStatusBar ->
+                        currentScene == Scenes.Lockscreen &&
+                            Overlays.NotificationsShade !in currentOverlays &&
+                            Overlays.QuickSettingsShade !in currentOverlays &&
+                            Overlays.Bouncer !in currentOverlays &&
+                            !isDozing &&
+                            !showHeadsUpStatusBar
+                    }
+                    .collect { _isVisible.value = it }
             }
-            .stateIn(scope, SharingStarted.WhileSubscribed(), false)
+        }
+    }
 
     /** True if the device's battery is currently charging and false otherwise. */
     // Note: Never make this an eagerly-started state flow so that the callback is removed when the
