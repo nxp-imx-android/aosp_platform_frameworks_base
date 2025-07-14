@@ -59,7 +59,7 @@
   "auto-end-to-end-postsubmit": [
     {
       "name": "AndroidAutomotiveHomeTests",
-      "options" : [
+      "options": [
         {
           "include-filter": "android.platform.tests.HomeTest"
         },
@@ -171,6 +171,12 @@
   "desktop-presubmit": [
     {
       "name": "SystemUIGoogleScreenshotTests_desktop"
+    }
+  ],
+
+  "sysui-unit-test": [
+    {
+      "name": "SystemUITests_presubmit"
     }
   ]
 }
