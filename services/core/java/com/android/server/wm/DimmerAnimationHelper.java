@@ -51,7 +51,9 @@ public class DimmerAnimationHelper {
     static class Change {
         private float mAlpha = -1f;
         private int mBlurRadius = -1;
+        @Nullable
         private WindowState mDimmingContainer = null;
+        @Nullable
         private WindowContainer<?> mGeometryParent = null;
         private static final float EPSILON = 0.0001f;
 
@@ -91,15 +93,22 @@ public class DimmerAnimationHelper {
         }
     }
 
+    @NonNull
     private final Change mCurrentProperties = new Change();
+    @NonNull
     private final Change mRequestedProperties = new Change();
+    @Nullable
     private AnimationSpec mAlphaAnimationSpec;
 
+    @NonNull
     private final SurfaceAnimationRunner mSurfaceAnimationRunner;
+    @NonNull
     private final AnimationAdapterFactory mAnimationAdapterFactory;
+    @Nullable
     private AnimationAdapter mLocalAnimationAdapter;
 
-    DimmerAnimationHelper(WindowContainer<?> host, AnimationAdapterFactory animationFactory) {
+    DimmerAnimationHelper(@NonNull WindowContainer<?> host,
+            @NonNull AnimationAdapterFactory animationFactory) {
         mAnimationAdapterFactory = animationFactory;
         mSurfaceAnimationRunner = host.mWmService.mSurfaceAnimationRunner;
     }
@@ -130,7 +139,8 @@ public class DimmerAnimationHelper {
     /**
      * Commit the last changes we received. Called after
      * {@link Change#setExitParameters()},
-     * {@link Change#setRequestedRelativeParent(WindowContainer)}, or
+     * {@link Change#setRequestedRelativeParent(WindowState)}, or
+     * {@link Change#setRequestedGeometryParent(WindowContainer)}, or
      * {@link Change#setRequestedAppearance(float, int)}
      */
     void applyChanges(@NonNull SurfaceControl.Transaction t, @NonNull Dimmer.DimState dim) {
@@ -227,7 +237,8 @@ public class DimmerAnimationHelper {
     }
 
     @NonNull
-    private static AnimationSpec getRequestedAnimationSpec(Change from, Change to) {
+    private static AnimationSpec getRequestedAnimationSpec(@NonNull Change from,
+            @NonNull Change to) {
         final float startAlpha = Math.max(from.mAlpha, 0f);
         final int startBlur = Math.max(from.mBlurRadius, 0);
         long duration = (long) (getDimDuration(to.mDimmingContainer)
@@ -246,9 +257,9 @@ public class DimmerAnimationHelper {
      * Change the geometry and relative parent of this dim layer
      */
     void reparent(@NonNull Dimmer.DimState dim,
-                  @Nullable SurfaceControl newGeometryParent,
-                  @Nullable SurfaceControl newRelativeParent,
-                  @NonNull SurfaceControl.Transaction t) {
+            @Nullable SurfaceControl newGeometryParent,
+            @Nullable SurfaceControl newRelativeParent,
+            @NonNull SurfaceControl.Transaction t) {
         final SurfaceControl dimLayer = dim.mDimSurface;
         try {
             if (newGeometryParent != null) {
@@ -263,7 +274,7 @@ public class DimmerAnimationHelper {
     }
 
     static void setBounds(@NonNull Dimmer.DimState dim, @NonNull WindowState relativeParent,
-                          @NonNull SurfaceControl.Transaction t) {
+            @NonNull SurfaceControl.Transaction t) {
         TaskFragment taskFragment = relativeParent.getTaskFragment();
         Rect taskFragmentBounds = taskFragment != null ? taskFragment.getBounds() : null;
         Task task = relativeParent.getTask();
@@ -331,15 +342,17 @@ public class DimmerAnimationHelper {
         }
 
         private final long mDuration;
+        @NonNull
         private final AnimationSpec.AnimationExtremes<Float> mAlpha;
+        @NonNull
         private final AnimationSpec.AnimationExtremes<Integer> mBlur;
 
         float mCurrentAlpha = 0;
         int mCurrentBlur = 0;
         boolean mStarted = false;
 
-        AnimationSpec(AnimationSpec.AnimationExtremes<Float> alpha,
-                      AnimationSpec.AnimationExtremes<Integer> blur, long duration) {
+        AnimationSpec(@NonNull AnimationSpec.AnimationExtremes<Float> alpha,
+                @NonNull AnimationSpec.AnimationExtremes<Integer> blur, long duration) {
             mAlpha = alpha;
             mBlur = blur;
             mDuration = duration;
@@ -352,7 +365,7 @@ public class DimmerAnimationHelper {
 
         @Override
         public void apply(@NonNull SurfaceControl.Transaction t, @NonNull SurfaceControl sc,
-                          long currentPlayTime) {
+                long currentPlayTime) {
             if (!mStarted) {
                 // The first frame would end up in the sync transaction, and since this could be
                 // applied after the animation transaction, we avoid putting visible changes here.
@@ -379,7 +392,7 @@ public class DimmerAnimationHelper {
         }
 
         @Override
-        public void dump(PrintWriter pw, String prefix) {
+        public void dump(@NonNull PrintWriter pw, @NonNull String prefix) {
             pw.print(prefix); pw.print("from_alpha="); pw.print(mAlpha.mStartValue);
             pw.print(" to_alpha="); pw.print(mAlpha.mFinishValue);
             pw.print(prefix); pw.print("from_blur="); pw.print(mBlur.mStartValue);
@@ -388,7 +401,7 @@ public class DimmerAnimationHelper {
         }
 
         @Override
-        public void dumpDebugInner(ProtoOutputStream proto) {
+        public void dumpDebugInner(@NonNull ProtoOutputStream proto) {
             final long token = proto.start(ALPHA);
             proto.write(FROM, mAlpha.mStartValue);
             proto.write(TO, mAlpha.mFinishValue);
@@ -398,8 +411,9 @@ public class DimmerAnimationHelper {
     }
 
     static class AnimationAdapterFactory {
-        public AnimationAdapter get(LocalAnimationAdapter.AnimationSpec alphaAnimationSpec,
-                                    SurfaceAnimationRunner runner) {
+        @NonNull
+        public AnimationAdapter get(@NonNull LocalAnimationAdapter.AnimationSpec alphaAnimationSpec,
+                @NonNull SurfaceAnimationRunner runner) {
             return new LocalAnimationAdapter(alphaAnimationSpec, runner);
         }
     }

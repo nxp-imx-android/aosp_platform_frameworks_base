@@ -38,8 +38,9 @@ public class MockAnimationAdapter implements AnimationAdapter {
     }
 
     @Override
-    public void startAnimation(SurfaceControl animationLeash, SurfaceControl.Transaction t,
-            int type, @NonNull SurfaceAnimator.OnAnimationFinishedCallback finishCallback) {
+    public void startAnimation(@NonNull SurfaceControl animationLeash,
+            @NonNull SurfaceControl.Transaction t, int type,
+            @NonNull SurfaceAnimator.OnAnimationFinishedCallback finishCallback) {
         // As the animation won't run, finish it immediately
         finishCallback.onAnimationFinished(0, null);
     }
@@ -58,8 +59,8 @@ public class MockAnimationAdapter implements AnimationAdapter {
     }
 
     @Override
-    public void dump(PrintWriter pw, String prefix) {}
+    public void dump(@NonNull PrintWriter pw, @NonNull String prefix) {}
 
     @Override
-    public void dumpDebug(ProtoOutputStream proto) {}
+    public void dumpDebug(@NonNull ProtoOutputStream proto) {}
 }
