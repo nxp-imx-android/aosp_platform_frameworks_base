@@ -61,3 +61,13 @@ test_module_config {
         "android.platform.test.annotations.FlakyTest",
     ],
 }
+
+test_module_config {
+    name: "SystemUITests_presubmit",
+    base: "SystemUITests",
+    test_suites: ["device-tests"],
+    exclude_annotations: [
+        "android.platform.test.annotations.Ignore",
+        "android.platform.test.annotations.FlakyTest",
+    ],
+}
