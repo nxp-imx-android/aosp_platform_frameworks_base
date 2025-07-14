@@ -15,7 +15,6 @@
  */
 package com.android.systemui.qs;
 
-import static android.app.admin.DevicePolicyManager.DEVICE_OWNER_TYPE_FINANCED;
 import static android.app.admin.DevicePolicyResources.Strings.SystemUi.QS_DIALOG_MANAGEMENT;
 import static android.app.admin.DevicePolicyResources.Strings.SystemUi.QS_DIALOG_MANAGEMENT_CA_CERT;
 import static android.app.admin.DevicePolicyResources.Strings.SystemUi.QS_DIALOG_MANAGEMENT_NAMED_VPN;
@@ -57,7 +56,6 @@ import android.graphics.drawable.Drawable;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.UserManager;
-import android.provider.DeviceConfig;
 import android.provider.Settings;
 import android.text.SpannableStringBuilder;
 import android.text.method.LinkMovementMethod;
@@ -374,7 +372,7 @@ public class QSSecurityFooterUtils implements DialogInterface.OnClickListener {
         if (organizationName == null) {
             return mDpm.getResources().getString(QS_MSG_MANAGEMENT, mManagementMessageSupplier);
         }
-        if (isFinancedDevice()) {
+        if (mSecurityController.isFinancedDevice()) {
             return mContext.getString(
                     R.string.quick_settings_financed_disclosure_named_management,
                     organizationName);
@@ -710,7 +708,7 @@ public class QSSecurityFooterUtils implements DialogInterface.OnClickListener {
             return null;
         }
         if (organizationName != null) {
-            if (isFinancedDevice()) {
+            if (mSecurityController.isFinancedDevice()) {
                 return mContext.getString(R.string.monitoring_financed_description_named_management,
                         organizationName, organizationName);
             } else {
@@ -814,7 +812,7 @@ public class QSSecurityFooterUtils implements DialogInterface.OnClickListener {
 
     @VisibleForTesting
     CharSequence getManagementTitle(CharSequence deviceOwnerOrganization) {
-        if (deviceOwnerOrganization != null && isFinancedDevice()) {
+        if (deviceOwnerOrganization != null && mSecurityController.isFinancedDevice()) {
             return mContext.getString(R.string.monitoring_title_financed_device,
                     deviceOwnerOrganization);
         } else {
@@ -842,20 +840,6 @@ public class QSSecurityFooterUtils implements DialogInterface.OnClickListener {
         @Override
         public int hashCode() {
             return 314159257; // prime
-        }
-    }
-
-    // TODO(b/259908270): remove and inline direct call to mSecurityController.isFinancedDevice()
-    private boolean isFinancedDevice() {
-        if (DeviceConfig.getBoolean(DeviceConfig.NAMESPACE_DEVICE_POLICY_MANAGER,
-                DevicePolicyManager.ADD_ISFINANCED_DEVICE_FLAG,
-                DevicePolicyManager.ADD_ISFINANCED_FEVICE_DEFAULT)) {
-            return mSecurityController.isFinancedDevice();
-        } else {
-            return mSecurityController.isDeviceManaged()
-                    && mSecurityController.getDeviceOwnerType(
-                    mSecurityController.getDeviceOwnerComponentOnAnyUser())
-                    == DEVICE_OWNER_TYPE_FINANCED;
         }
     }
 }

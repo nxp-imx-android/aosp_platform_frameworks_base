@@ -16,7 +16,6 @@
 
 package com.android.systemui.statusbar;
 
-import static android.app.admin.DevicePolicyManager.DEVICE_OWNER_TYPE_FINANCED;
 import static android.app.admin.DevicePolicyResources.Strings.SystemUi.KEYGUARD_MANAGEMENT_DISCLOSURE;
 import static android.app.admin.DevicePolicyResources.Strings.SystemUi.KEYGUARD_NAMED_MANAGEMENT_DISCLOSURE;
 import static android.hardware.biometrics.BiometricFaceConstants.FACE_ACQUIRED_START;
@@ -69,7 +68,6 @@ import android.os.Message;
 import android.os.RemoteException;
 import android.os.UserHandle;
 import android.os.UserManager;
-import android.provider.DeviceConfig;
 import android.text.TextUtils;
 import android.text.format.Formatter;
 import android.util.Pair;
@@ -585,24 +583,11 @@ public class KeyguardIndicationController {
     private CharSequence getDisclosureText(@Nullable CharSequence organizationName) {
         final Resources packageResources = mContext.getResources();
 
-        // TODO(b/259908270): remove and inline
-        boolean isFinanced;
-        if (DeviceConfig.getBoolean(DeviceConfig.NAMESPACE_DEVICE_POLICY_MANAGER,
-                DevicePolicyManager.ADD_ISFINANCED_DEVICE_FLAG,
-                DevicePolicyManager.ADD_ISFINANCED_FEVICE_DEFAULT)) {
-            isFinanced = mDevicePolicyManager.isFinancedDevice();
-        } else {
-            isFinanced = mDevicePolicyManager.isDeviceManaged()
-                    && mDevicePolicyManager.getDeviceOwnerType(
-                    mDevicePolicyManager.getDeviceOwnerComponentOnAnyUser())
-                    == DEVICE_OWNER_TYPE_FINANCED;
-        }
-
         if (organizationName == null) {
             return mDevicePolicyManager.getResources().getString(
                     KEYGUARD_MANAGEMENT_DISCLOSURE,
                     () -> packageResources.getString(R.string.do_disclosure_generic));
-        } else if (isFinanced) {
+        } else if (mDevicePolicyManager.isFinancedDevice()) {
             return packageResources.getString(R.string.do_financed_disclosure_with_name,
                     organizationName);
         } else {
