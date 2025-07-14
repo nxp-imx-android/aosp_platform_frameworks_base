@@ -32,7 +32,6 @@ import android.util.Log;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -789,9 +788,6 @@ public final class UsageEvents implements Parcelable {
     @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.P, trackingBug = 115609023)
     private List<Event> mEventsToWrite = null;
 
-    // Only used for reading/unparceling events.
-    @UnsupportedAppUsage
-    private Parcel mParcel = null;
     @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.P, trackingBug = 115609023)
     private int mEventCount;
 
@@ -814,12 +810,7 @@ public final class UsageEvents implements Parcelable {
      */
     @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.P, trackingBug = 115609023)
     public UsageEvents(Parcel in) {
-        if (Flags.useParceledList()) {
-            readUsageEventsFromParcelWithParceledList(in);
-        } else {
-            readUsageEventsFromParcelWithBlob(in);
-        }
-
+        readUsageEventsFromParcelWithParceledList(in);
         mIncludeTaskRoots = true;
     }
 
@@ -838,26 +829,6 @@ public final class UsageEvents implements Parcelable {
             Log.w(TAG, "Partial usage event list received: " + mEventCount + " != "
                     + mEventsToWrite.size());
             mEventCount = mEventsToWrite.size();
-        }
-    }
-
-    private void readUsageEventsFromParcelWithBlob(Parcel in) {
-        byte[] bytes = in.readBlob();
-        Parcel data = Parcel.obtain();
-        data.unmarshall(bytes, 0, bytes.length);
-        data.setDataPosition(0);
-        mEventCount = data.readInt();
-        mIndex = data.readInt();
-        if (mEventCount > 0) {
-            mStringPool = data.createStringArray();
-
-            final int listByteLength = data.readInt();
-            final int positionInParcel = data.readInt();
-            mParcel = Parcel.obtain();
-            mParcel.setDataPosition(0);
-            mParcel.appendFrom(data, data.dataPosition(), listByteLength);
-            mParcel.setDataSize(mParcel.dataPosition());
-            mParcel.setDataPosition(positionInParcel);
         }
     }
 
@@ -916,22 +887,7 @@ public final class UsageEvents implements Parcelable {
             return false;
         }
 
-        if (Flags.useParceledList()) {
-            return getNextEventFromParceledList(eventOut);
-        }
-
-        if (mParcel != null) {
-            readEventFromParcel(mParcel, eventOut);
-        } else {
-            eventOut.copyFrom(mEventsToWrite.get(mIndex));
-        }
-
-        mIndex++;
-        if (mIndex >= mEventCount && mParcel != null) {
-            mParcel.recycle();
-            mParcel = null;
-        }
-        return true;
+        return getNextEventFromParceledList(eventOut);
     }
 
     private boolean getNextEventFromParceledList(Event eventOut) {
@@ -948,169 +904,6 @@ public final class UsageEvents implements Parcelable {
      */
     public void resetToStart() {
         mIndex = 0;
-        if (mParcel != null) {
-            mParcel.setDataPosition(0);
-        }
-    }
-
-    @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.P, trackingBug = 115609023)
-    private int findStringIndex(String str) {
-        final int index = Arrays.binarySearch(mStringPool, str);
-        if (index < 0) {
-            throw new IllegalStateException("String '" + str + "' is not in the string pool");
-        }
-        return index;
-    }
-
-    /**
-     * Writes a single event to the parcel. Modify this when updating {@link Event}.
-     */
-    @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.P, trackingBug = 115609023)
-    private void writeEventToParcel(Event event, Parcel p, int flags) {
-        final int packageIndex;
-        if (event.mPackage != null) {
-            packageIndex = findStringIndex(event.mPackage);
-        } else {
-            packageIndex = -1;
-        }
-
-        final int classIndex;
-        if (event.mClass != null) {
-            classIndex = findStringIndex(event.mClass);
-        } else {
-            classIndex = -1;
-        }
-
-        final int taskRootPackageIndex;
-        if (mIncludeTaskRoots && event.mTaskRootPackage != null) {
-            taskRootPackageIndex = findStringIndex(event.mTaskRootPackage);
-        } else {
-            taskRootPackageIndex = -1;
-        }
-
-        final int taskRootClassIndex;
-        if (mIncludeTaskRoots && event.mTaskRootClass != null) {
-            taskRootClassIndex = findStringIndex(event.mTaskRootClass);
-        } else {
-            taskRootClassIndex = -1;
-        }
-        p.writeInt(packageIndex);
-        p.writeInt(classIndex);
-        p.writeInt(event.mInstanceId);
-        p.writeInt(taskRootPackageIndex);
-        p.writeInt(taskRootClassIndex);
-        p.writeInt(event.mEventType);
-        p.writeLong(event.mTimeStamp);
-
-        switch (event.mEventType) {
-            case Event.CONFIGURATION_CHANGE:
-                event.mConfiguration.writeToParcel(p, flags);
-                break;
-            case Event.SHORTCUT_INVOCATION:
-                p.writeString(event.mShortcutId);
-                break;
-            case Event.CHOOSER_ACTION:
-                p.writeString(event.mAction);
-                p.writeString(event.mContentType);
-                p.writeStringArray(event.mContentAnnotations);
-                break;
-            case Event.STANDBY_BUCKET_CHANGED:
-                p.writeInt(event.mBucketAndReason);
-                break;
-            case Event.NOTIFICATION_INTERRUPTION:
-                p.writeString(event.mNotificationChannelId);
-                break;
-            case Event.LOCUS_ID_SET:
-                p.writeString(event.mLocusId);
-                break;
-            case Event.USER_INTERACTION:
-                if (event.mExtras != null) {
-                    p.writeInt(1);
-                    p.writePersistableBundle(event.mExtras);
-                } else {
-                    p.writeInt(0);
-                }
-                break;
-        }
-        p.writeInt(event.mFlags);
-    }
-
-    /**
-     * Reads a single event from the parcel. Modify this when updating {@link Event}.
-     */
-    @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.P, trackingBug = 115609023)
-    private void readEventFromParcel(Parcel p, Event eventOut) {
-        final int packageIndex = p.readInt();
-        if (packageIndex >= 0) {
-            eventOut.mPackage = mStringPool[packageIndex];
-        } else {
-            eventOut.mPackage = null;
-        }
-
-        final int classIndex = p.readInt();
-        if (classIndex >= 0) {
-            eventOut.mClass = mStringPool[classIndex];
-        } else {
-            eventOut.mClass = null;
-        }
-        eventOut.mInstanceId = p.readInt();
-
-        final int taskRootPackageIndex = p.readInt();
-        if (taskRootPackageIndex >= 0) {
-            eventOut.mTaskRootPackage = mStringPool[taskRootPackageIndex];
-        } else {
-            eventOut.mTaskRootPackage = null;
-        }
-
-        final int taskRootClassIndex = p.readInt();
-        if (taskRootClassIndex >= 0) {
-            eventOut.mTaskRootClass = mStringPool[taskRootClassIndex];
-        } else {
-            eventOut.mTaskRootClass = null;
-        }
-
-        eventOut.mEventType = p.readInt();
-        eventOut.mTimeStamp = p.readLong();
-
-        // Fill out the event-dependant fields.
-        eventOut.mConfiguration = null;
-        eventOut.mShortcutId = null;
-        eventOut.mAction = null;
-        eventOut.mContentType = null;
-        eventOut.mContentAnnotations = null;
-        eventOut.mNotificationChannelId = null;
-        eventOut.mLocusId = null;
-        eventOut.mExtras = null;
-
-        switch (eventOut.mEventType) {
-            case Event.CONFIGURATION_CHANGE:
-                // Extract the configuration for configuration change events.
-                eventOut.mConfiguration = Configuration.CREATOR.createFromParcel(p);
-                break;
-            case Event.SHORTCUT_INVOCATION:
-                eventOut.mShortcutId = p.readString();
-                break;
-            case Event.CHOOSER_ACTION:
-                eventOut.mAction = p.readString();
-                eventOut.mContentType = p.readString();
-                eventOut.mContentAnnotations = p.readStringArray();
-                break;
-            case Event.STANDBY_BUCKET_CHANGED:
-                eventOut.mBucketAndReason = p.readInt();
-                break;
-            case Event.NOTIFICATION_INTERRUPTION:
-                eventOut.mNotificationChannelId = p.readString();
-                break;
-            case Event.LOCUS_ID_SET:
-                eventOut.mLocusId = p.readString();
-                break;
-            case Event.USER_INTERACTION:
-                if (p.readInt() != 0) {
-                    eventOut.mExtras = p.readPersistableBundle(getClass().getClassLoader());
-                }
-                break;
-        }
-        eventOut.mFlags = p.readInt();
     }
 
     @Override
@@ -1120,68 +913,13 @@ public final class UsageEvents implements Parcelable {
 
     @Override
     public void writeToParcel(Parcel dest, int flags) {
-        if (Flags.useParceledList()) {
-            writeUsageEventsToParcelWithParceledList(dest, flags);
-        } else {
-            writeUsageEventsToParcelWithBlob(dest, flags);
-        }
+        writeUsageEventsToParcelWithParceledList(dest, flags);
     }
 
     private void writeUsageEventsToParcelWithParceledList(Parcel dest, int flags) {
         dest.writeInt(mEventCount);
         dest.writeInt(mIndex);
         dest.writeParcelable(new ParcelableUsageEventList(mEventsToWrite), flags);
-    }
-
-    private void writeUsageEventsToParcelWithBlob(Parcel dest, int flags) {
-        Parcel data = Parcel.obtain();
-        data.writeInt(mEventCount);
-        data.writeInt(mIndex);
-        if (mEventCount > 0) {
-            data.writeStringArray(mStringPool);
-
-            if (mEventsToWrite != null) {
-                // Write out the events
-                Parcel p = Parcel.obtain();
-                try {
-                    p.setDataPosition(0);
-                    for (int i = 0; i < mEventCount; i++) {
-                        final Event event = mEventsToWrite.get(i);
-                        writeEventToParcel(event, p, flags);
-                    }
-
-                    final int listByteLength = p.dataPosition();
-
-                    // Write the total length of the data.
-                    data.writeInt(listByteLength);
-
-                    // Write our current position into the data.
-                    data.writeInt(0);
-
-                    // Write the data.
-                    data.appendFrom(p, 0, listByteLength);
-                } finally {
-                    p.recycle();
-                }
-
-            } else if (mParcel != null) {
-                // Write the total length of the data.
-                data.writeInt(mParcel.dataSize());
-
-                // Write out current position into the data.
-                data.writeInt(mParcel.dataPosition());
-
-                // Write the data.
-                data.appendFrom(mParcel, 0, mParcel.dataSize());
-            } else {
-                throw new IllegalStateException(
-                        "Either mParcel or mEventsToWrite must not be null");
-            }
-        }
-        // Data can be too large for a transact. Write the data as a Blob, which will be written to
-        // ashmem if too large.
-        dest.writeBlob(data.marshall());
-        data.recycle();
     }
 
     public static final @android.annotation.NonNull Creator<UsageEvents> CREATOR = new Creator<UsageEvents>() {
