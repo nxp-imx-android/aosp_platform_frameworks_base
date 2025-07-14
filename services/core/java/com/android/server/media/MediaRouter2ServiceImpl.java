@@ -2914,7 +2914,7 @@ class MediaRouter2ServiceImpl {
         }
 
         private List<MediaRoute2Info> getVisibleRoutes(List<MediaRoute2Info> routes) {
-            if (!Flags.enableFixForRouteVisibility() || TextUtils.isEmpty(mTargetPackageName)) {
+            if (TextUtils.isEmpty(mTargetPackageName)) {
                 // If the proxy router / manager doesn't target a specific app, it sees all
                 // routes.
                 return routes;
