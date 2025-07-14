@@ -152,16 +152,6 @@ flag {
 }
 
 flag {
-    name: "change_switch_bar_into_main_preference"
-    namespace: "multiuser"
-    description: "Refactor multiuser toggle to be of type MainSwitchPreference"
-    bug: "406107021"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-  }
-}
-
-flag {
     name: "property_invalidated_cache_bypass_mismatched_uids"
     namespace: "multiuser"
     description: "Bypass the cache when the process UID does not match the binder UID."
