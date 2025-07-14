@@ -20,6 +20,7 @@ import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.res.ColorStateList;
 import android.content.res.Resources;
 import android.view.View;
 import android.widget.Button;
@@ -31,6 +32,7 @@ import androidx.annotation.StringRes;
 import com.android.packageinstaller.R;
 import com.android.packageinstaller.v2.model.PackageUtil;
 
+import com.google.android.material.button.MaterialButton;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 /**
@@ -38,7 +40,6 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder;
  */
 public class UiUtil {
 
-    public static final String LOG_TAG = UiUtil.class.getSimpleName();
     /**
      * If material design is enabled, return the material layout resource id. Otherwise, return the
      * default layout resource id.
@@ -51,12 +52,12 @@ public class UiUtil {
         }
     }
 
-    /** If material design is enabled, return the material theme resource id of the text button.
-     * Otherwise, return {@code 0} to use the default theme.
+    /**
+     * Gets the negative button in the {@code dialog}. Returns null if the specified
+     * button does not exist or the dialog has not yet been fully created.
      */
-    public static int getTextButtonThemeResId(@NonNull Context context) {
-        return PackageUtil.isMaterialDesignEnabled(context)
-                ? R.style.Theme_MaterialAlertDialog_Variant : 0;
+    public static Button getAlertDialogNegativeButton(@NonNull Dialog dialog) {
+        return getAlertiDialogButton(dialog, DialogInterface.BUTTON_NEGATIVE);
     }
 
     /**
@@ -72,7 +73,7 @@ public class UiUtil {
      * button does not exist or the dialog has not yet been fully created.
      *
      * @param whichButton The identifier of the button that should be returned.
-     *            For example, this can be {@link DialogInterface#BUTTON_POSITIVE}.
+     *                    For example, this can be {@link DialogInterface#BUTTON_POSITIVE}.
      * @return The button from the dialog, or null if a button does not exist.
      */
     @Nullable
@@ -87,14 +88,15 @@ public class UiUtil {
     }
 
     /**
-     * If material design is enabled, return the MaterialAlertDialog. Otherwise, return the
-     * system AlertDialog.
+     * Get the id of the title template of the alert dialog.
      */
-    public static Dialog getAlertDialog(@NonNull Context context, @NonNull String title,
-            @NonNull View contentView) {
-        return getAlertDialog(context, title, contentView, /* positiveBtnText= */ null,
-                /* negativeBtnText= */ null, /* positiveBtnListener= */ null,
-                /* negativeBtnListener= */ null, /* themeResId= */ 0);
+    public static int getAlertDialogTitleTemplateId(@NonNull Context context) {
+        if (PackageUtil.isMaterialDesignEnabled(context)) {
+            return R.id.title_template;
+        } else {
+            return context.getResources().getIdentifier("title_template",
+                    /* defType= */ "id", /* defPackage= */ "android");
+        }
     }
 
     /**
@@ -199,6 +201,66 @@ public class UiUtil {
                     .setView(contentView)
                     .setNegativeButton(negativeBtnTextResId, negativeBtnListener)
                     .create();
+        }
+    }
+
+    /**
+     * Apply the filled button style to the {@code button}.
+     *
+     * @param context the context to get color
+     */
+    public static void applyFilledButtonStyle(@NonNull Context context,
+            @NonNull Button button) {
+        if (!PackageUtil.isMaterialDesignEnabled(context)) {
+            return;
+        }
+        if (button instanceof MaterialButton materialButton) {
+            materialButton.setBackgroundTintList(
+                    ColorStateList.valueOf(context.getColor(R.color.primaryColor)));
+            materialButton.setTextColor(ColorStateList.valueOf(
+                    context.getColor(R.color.onPrimaryColor)));
+            materialButton.setStrokeColor(
+                    ColorStateList.valueOf(context.getColor(android.R.color.transparent)));
+        }
+    }
+
+    /**
+     * Apply the outlined button style to the {@code button}.
+     *
+     * @param context the context to get color
+     */
+    public static void applyOutlinedButtonStyle(@NonNull Context context,
+            @NonNull Button button) {
+        if (!PackageUtil.isMaterialDesignEnabled(context)) {
+            return;
+        }
+        if (button instanceof MaterialButton materialButton) {
+            materialButton.setBackgroundTintList(
+                    ColorStateList.valueOf(context.getColor(android.R.color.transparent)));
+            materialButton.setTextColor(
+                    ColorStateList.valueOf(context.getColor(R.color.primaryColor)));
+            materialButton.setStrokeColor(
+                    ColorStateList.valueOf(context.getColor(R.color.outlineVariantColor)));
+        }
+    }
+
+    /**
+     * Apply the text button style to the {@code button}.
+     *
+     * @param context the context to get color
+     */
+    public static void applyTextButtonStyle(@NonNull Context context,
+            @NonNull Button button) {
+        if (!PackageUtil.isMaterialDesignEnabled(context)) {
+            return;
+        }
+        if (button instanceof MaterialButton materialButton) {
+            materialButton.setBackgroundTintList(
+                    ColorStateList.valueOf(context.getColor(android.R.color.transparent)));
+            materialButton.setTextColor(
+                    ColorStateList.valueOf(context.getColor(R.color.primaryColor)));
+            materialButton.setStrokeColor(
+                    ColorStateList.valueOf(context.getColor(android.R.color.transparent)));
         }
     }
 }
