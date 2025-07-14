@@ -17,6 +17,7 @@
 package com.android.internal.pm.pkg.component;
 
 import static android.provider.flags.Flags.newStoragePublicApi;
+import static android.provider.flags.Flags.publicInternalReadApi;
 
 import static com.android.internal.pm.pkg.parsing.ParsingUtils.ANDROID_RES_NAMESPACE;
 
@@ -271,7 +272,11 @@ public class AconfigFlags {
             // Note: Unlike with the old storage, with AconfigPackage, we don't have a way to
             // know if the flag is not found or if it's found but the value is false.
             try {
-                value = aconfigPackage.getBooleanFlagValue(flagName, false);
+                if (publicInternalReadApi()) {
+                    value = aconfigPackage.getBooleanFlagValueInternal(flagName, false);
+                } else {
+                    value = aconfigPackage.getBooleanFlagValue(flagName, false);
+                }
             } catch (Exception e) {
                 Slog.e(LOG_TAG, "Failed to read Aconfig flag value for " + flagPackageAndName, e);
                 return null;
