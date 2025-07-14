@@ -89,7 +89,7 @@ class EditModeButtonViewModelTest : SysuiTestCase() {
         }
 
     @Test
-    @DisableFlags(Flags.FLAG_HSU_BEHAVIOR_CHANGES)
+    @DisableFlags(Flags.FLAG_HSU_QS_CHANGES)
     fun isEditButtonVisibleTrue_nonHsu_flagDisabled() =
         kosmos.runTest {
             val underTest = createEditModeButtonViewModel(false)
@@ -98,7 +98,7 @@ class EditModeButtonViewModelTest : SysuiTestCase() {
         }
 
     @Test
-    @DisableFlags(Flags.FLAG_HSU_BEHAVIOR_CHANGES)
+    @DisableFlags(Flags.FLAG_HSU_QS_CHANGES)
     fun isEditButtonVisibleTrue_hsu_flagDisabled() =
         kosmos.runTest {
             val underTest = createEditModeButtonViewModel(true)
@@ -107,7 +107,7 @@ class EditModeButtonViewModelTest : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(Flags.FLAG_HSU_BEHAVIOR_CHANGES)
+    @EnableFlags(Flags.FLAG_HSU_QS_CHANGES)
     fun isEditButtonVisibleTrue_nonHsu_flagEnabled() =
         kosmos.runTest {
             val underTest = createEditModeButtonViewModel(false)
@@ -116,7 +116,7 @@ class EditModeButtonViewModelTest : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(Flags.FLAG_HSU_BEHAVIOR_CHANGES)
+    @EnableFlags(Flags.FLAG_HSU_QS_CHANGES)
     fun isEditButtonVisibleFalse_hsu_flagEnabled() =
         kosmos.runTest {
             val underTest = createEditModeButtonViewModel(true)
