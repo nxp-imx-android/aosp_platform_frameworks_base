@@ -50,7 +50,6 @@ import org.mockito.Mockito.verify
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
-@android.platform.test.annotations.EnabledOnRavenwood
 class NightDisplayTileUserActionInteractorTest : SysuiTestCase() {
     private val kosmos = testKosmos()
     private val qsTileIntentUserActionHandler = FakeQSTileIntentUserInputHandler()

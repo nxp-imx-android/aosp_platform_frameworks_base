@@ -50,7 +50,6 @@ import org.mockito.MockitoAnnotations;
 @RunWith(AndroidJUnit4.class)
 @TestableLooper.RunWithLooper(setAsMainLooper = true)
 @SmallTest
-@android.platform.test.annotations.EnabledOnRavenwood
 public class NfcTileTest extends SysuiTestCase {
 
     private static final String TILES_STOCK_WITHOUT_NFC = "wifi,cell,battery,dnd,flashlight,bt";

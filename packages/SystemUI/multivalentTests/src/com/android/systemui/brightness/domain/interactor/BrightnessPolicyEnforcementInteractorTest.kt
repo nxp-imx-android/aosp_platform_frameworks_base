@@ -43,7 +43,6 @@ import org.mockito.Mockito.verify
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
-@android.platform.test.annotations.EnabledOnRavenwood
 class BrightnessPolicyEnforcementInteractorTest : SysuiTestCase() {
 
     private val kosmos = testKosmos()

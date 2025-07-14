@@ -14,7 +14,6 @@ import platform.test.runner.parameterized.Parameters
 
 @RunWith(ParameterizedAndroidJunit4::class)
 @SmallTest
-@android.platform.test.annotations.EnabledOnRavenwood
 internal class FloatingRotationButtonPositionCalculatorTest(private val testCase: TestCase) :
     SysuiTestCase() {
 

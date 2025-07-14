@@ -31,7 +31,6 @@ import org.junit.runner.RunWith
 @SmallTest
 @RunWith(AndroidJUnit4::class)
 @DisableFlags(StatusBarChipsModernization.FLAG_NAME)
-@android.platform.test.annotations.EnabledOnRavenwood
 class OngoingCallRepositoryTest : SysuiTestCase() {
     private val kosmos = testKosmos()
     private val underTest = kosmos.ongoingCallRepository

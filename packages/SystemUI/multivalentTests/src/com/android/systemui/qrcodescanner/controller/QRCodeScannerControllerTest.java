@@ -59,7 +59,6 @@ import java.util.List;
 @RunWith(AndroidJUnit4.class)
 @TestableLooper.RunWithLooper
 @SmallTest
-@android.platform.test.annotations.EnabledOnRavenwood
 public class QRCodeScannerControllerTest extends SysuiTestCase {
     @Mock
     private PackageManager mPackageManager;

@@ -42,7 +42,6 @@ import java.util.function.Consumer;
 @SmallTest
 @RunWith(AndroidJUnit4.class)
 @TestableLooper.RunWithLooper
-@android.platform.test.annotations.EnabledOnRavenwood
 public class ProximityCheckTest extends SysuiTestCase {
 
     private FakeProximitySensor mFakeProximitySensor;

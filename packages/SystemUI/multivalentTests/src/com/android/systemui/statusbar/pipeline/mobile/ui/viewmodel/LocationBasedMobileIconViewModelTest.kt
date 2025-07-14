@@ -55,7 +55,6 @@ import org.mockito.MockitoAnnotations
 @Suppress("EXPERIMENTAL_IS_NOT_ENABLED")
 @SmallTest
 @RunWith(AndroidJUnit4::class)
-@android.platform.test.annotations.EnabledOnRavenwood
 class LocationBasedMobileIconViewModelTest : SysuiTestCase() {
     private val kosmos = testKosmos()
 

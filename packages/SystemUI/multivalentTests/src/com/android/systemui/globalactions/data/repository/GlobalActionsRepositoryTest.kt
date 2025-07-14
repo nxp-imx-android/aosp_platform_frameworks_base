@@ -31,7 +31,6 @@ import org.junit.runner.RunWith
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
-@android.platform.test.annotations.EnabledOnRavenwood
 class GlobalActionsRepositoryTest : SysuiTestCase() {
     private lateinit var underTest: GlobalActionsRepository
     private val kosmos = testKosmos()

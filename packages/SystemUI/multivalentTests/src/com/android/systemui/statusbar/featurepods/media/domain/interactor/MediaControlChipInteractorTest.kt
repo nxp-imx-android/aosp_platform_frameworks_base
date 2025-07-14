@@ -45,7 +45,6 @@ import platform.test.runner.parameterized.Parameters
 
 @RunWith(ParameterizedAndroidJunit4::class)
 @SmallTest
-@android.platform.test.annotations.EnabledOnRavenwood
 class MediaControlChipInteractorTest(flags: FlagsParameterization) : SysuiTestCase() {
     private val kosmos = testKosmos().useUnconfinedTestDispatcher()
     private val mediaFilterRepository = kosmos.mediaFilterRepository

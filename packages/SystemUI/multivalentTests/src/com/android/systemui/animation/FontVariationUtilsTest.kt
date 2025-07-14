@@ -9,7 +9,6 @@ import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
 @SmallTest
-@android.platform.test.annotations.EnabledOnRavenwood
 class FontVariationUtilsTest : SysuiTestCase() {
     @Test
     fun testUpdateFontVariation_getCorrectFvarStr() {

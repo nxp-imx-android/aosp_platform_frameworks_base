@@ -37,7 +37,6 @@ import org.mockito.Mockito.`when` as whenever
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
-@android.platform.test.annotations.EnabledOnRavenwood
 class NotifPipelineChoreographerTest : SysuiTestCase() {
 
     val viewChoreographer: Choreographer = mock()

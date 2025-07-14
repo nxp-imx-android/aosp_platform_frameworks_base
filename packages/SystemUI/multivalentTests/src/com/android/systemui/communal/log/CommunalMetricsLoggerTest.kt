@@ -34,7 +34,6 @@ import org.mockito.kotlin.verify
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
-@android.platform.test.annotations.EnabledOnRavenwood
 class CommunalMetricsLoggerTest : SysuiTestCase() {
     private val statsLogProxy = mock<CommunalMetricsLogger.StatsLogProxy>()
 

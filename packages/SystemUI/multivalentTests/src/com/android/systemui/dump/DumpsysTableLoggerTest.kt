@@ -32,7 +32,6 @@ import java.io.StringWriter
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
-@android.platform.test.annotations.EnabledOnRavenwood
 class DumpsysTableLoggerTest : SysuiTestCase() {
     private val logger = DumpsysTableLogger(
             TEST_SECTION_NAME,

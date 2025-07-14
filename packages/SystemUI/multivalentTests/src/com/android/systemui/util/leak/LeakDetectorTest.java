@@ -39,7 +39,6 @@ import java.util.function.Consumer;
 
 @SmallTest
 @RunWith(AndroidJUnit4.class)
-@android.platform.test.annotations.EnabledOnRavenwood
 public class LeakDetectorTest extends SysuiTestCase {
 
     private LeakDetector mLeakDetector;

@@ -29,7 +29,6 @@ import org.junit.runner.RunWith;
 /** Tests for {@link Position}. */
 @SmallTest
 @RunWith(AndroidJUnit4.class)
-@android.platform.test.annotations.EnabledOnRavenwood
 public class PositionTest extends SysuiTestCase {
 
     @Test

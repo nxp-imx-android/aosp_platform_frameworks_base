@@ -42,7 +42,6 @@ import org.junit.runner.RunWith;
 @RunWith(AndroidJUnit4.class)
 @TestableLooper.RunWithLooper
 @SmallTest
-@android.platform.test.annotations.EnabledOnRavenwood
 public class SmartReplyConstantsTest extends SysuiTestCase {
     private SmartReplyConstants mConstants;
     private DeviceConfigProxyFake mDeviceConfig;

@@ -30,7 +30,6 @@ import org.junit.runner.RunWith
 @RunWith(AndroidJUnit4::class)
 @SmallTest
 @TestableLooper.RunWithLooper
-@android.platform.test.annotations.EnabledOnRavenwood
 class FaceHelpMessageDebouncerTest : SysuiTestCase() {
     private lateinit var underTest: FaceHelpMessageDebouncer
     private val window = 9L

@@ -17,7 +17,6 @@ import platform.test.runner.parameterized.Parameters
 
 @SmallTest
 @RunWith(ParameterizedAndroidJunit4::class)
-@android.platform.test.annotations.EnabledOnRavenwood
 class KeyguardRemotePreviewManagerTest(flags: FlagsParameterization) : SysuiTestCase() {
 
     private val testDispatcher = StandardTestDispatcher()

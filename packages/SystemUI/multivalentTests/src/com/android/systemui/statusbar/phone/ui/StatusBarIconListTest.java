@@ -41,7 +41,6 @@ import java.util.List;
 
 @SmallTest
 @RunWith(AndroidJUnit4.class)
-@android.platform.test.annotations.EnabledOnRavenwood
 public class StatusBarIconListTest extends SysuiTestCase {
 
     private final static String[] STATUS_BAR_SLOTS = {"aaa", "bbb", "ccc"};

@@ -34,7 +34,6 @@ import java.util.Collections;
 
 @SmallTest
 @RunWith(AndroidJUnit4.class)
-@android.platform.test.annotations.EnabledOnRavenwood
 public class HistoryTrackerTest extends SysuiTestCase {
 
     private FakeSystemClock mSystemClock = new FakeSystemClock();

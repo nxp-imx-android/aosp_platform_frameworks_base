@@ -59,7 +59,6 @@ import org.mockito.MockitoAnnotations
 /** Tests all possible [QSTileUserAction]s. If you need */
 @MediumTest
 @RunWith(AndroidJUnit4::class)
-@android.platform.test.annotations.EnabledOnRavenwood
 class QSTileViewModelUserInputTest : SysuiTestCase() {
 
     @Mock private lateinit var qsTileLogger: QSTileLogger

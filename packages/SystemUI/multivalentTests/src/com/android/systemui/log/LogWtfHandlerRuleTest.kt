@@ -28,7 +28,6 @@ import org.mockito.kotlin.mock
 
 @RunWith(AndroidJUnit4::class)
 @SmallTest
-@android.platform.test.annotations.EnabledOnRavenwood
 class LogWtfHandlerRuleTest : SysuiTestCase() {
 
     val underTest = LogWtfHandlerRule()

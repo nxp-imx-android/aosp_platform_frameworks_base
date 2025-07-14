@@ -28,7 +28,6 @@ import org.junit.runner.RunWith
 /** atest SystemUITests:NoteTaskInfoTest */
 @SmallTest
 @RunWith(AndroidJUnit4::class)
-@android.platform.test.annotations.EnabledOnRavenwood
 internal class NoteTaskInfoTest : SysuiTestCase() {
 
     @Test

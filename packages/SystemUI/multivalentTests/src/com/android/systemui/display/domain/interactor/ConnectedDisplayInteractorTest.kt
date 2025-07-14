@@ -53,7 +53,6 @@ import org.mockito.Mockito.anyInt
 @RunWith(AndroidJUnit4::class)
 @TestableLooper.RunWithLooper
 @SmallTest
-@android.platform.test.annotations.EnabledOnRavenwood
 class ConnectedDisplayInteractorTest : SysuiTestCase() {
 
     private val virtualDeviceManager = mock<VirtualDeviceManager>()

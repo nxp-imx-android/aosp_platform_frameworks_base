@@ -26,7 +26,6 @@ import org.junit.Test
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
-@android.platform.test.annotations.EnabledOnRavenwood
 class AnimationUtilTest : SysuiTestCase() {
     @Test
     fun getMsForFrames_5frames_returns83() {

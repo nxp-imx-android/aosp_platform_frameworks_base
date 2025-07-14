@@ -41,7 +41,6 @@ import org.mockito.Mockito.verifyNoMoreInteractions
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
-@android.platform.test.annotations.EnabledOnRavenwood
 class StickyKeysIndicatorCoordinatorTest : SysuiTestCase() {
 
     private lateinit var coordinator: StickyKeysIndicatorCoordinator

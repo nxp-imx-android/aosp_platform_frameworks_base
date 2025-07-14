@@ -29,7 +29,6 @@ import org.junit.runner.RunWith
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
-@android.platform.test.annotations.EnabledOnRavenwood
 class AccessorizedBatteryDrawableTest : SysuiTestCase() {
     @Test
     fun intrinsicSize_shieldFalse_isBatterySize() {

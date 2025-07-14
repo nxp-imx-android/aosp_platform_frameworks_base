@@ -24,7 +24,6 @@ import android.os.Handler;
 import android.os.Looper;
 import android.os.MessageQueue;
 import android.os.ParcelFileDescriptor;
-import android.platform.test.annotations.DisabledOnRavenwood;
 import android.platform.test.flag.junit.SetFlagsRule;
 import android.platform.test.ravenwood.RavenwoodRule;
 import android.testing.DexmakerShareClassLoaderRule;
@@ -62,11 +61,6 @@ import java.util.concurrent.Future;
 /**
  * Base class that does System UI specific setup.
  */
-// NOTE: This @DisabledOnRavenwood annotation is inherited to all subclasses (unless overridden
-// via a more-specific @EnabledOnRavenwood annotation); this means that by default all
-// subclasses will be "ignored" when executed on the Ravenwood testing environment; more
-// background on Ravenwood is available at go/ravenwood
-@DisabledOnRavenwood
 public abstract class SysuiTestCase {
     /**
      * Especially when self-testing test utilities, we may have classes that look like test
@@ -159,10 +153,7 @@ public abstract class SysuiTestCase {
         ProtoLog.REQUIRE_PROTOLOGTOOL = false;
         mSysuiDependency = new SysuiTestDependency(mContext, shouldFailOnLeakedReceiver());
         mDependency = mSysuiDependency.install();
-        // TODO(b/292141694): build out Ravenwood support for Instrumentation
-        // Ravenwood doesn't yet provide Instrumentation, so we sidestep this global configuration
-        // step; any tests that rely on it are already being excluded on Ravenwood
-        if (!isRavenwoodTest() && !isScreenshotTest()) {
+        if (!isScreenshotTest()) {
             mRealInstrumentation = InstrumentationRegistry.getInstrumentation();
             Instrumentation inst = spy(mRealInstrumentation);
             when(inst.getContext()).thenAnswer(invocation -> {

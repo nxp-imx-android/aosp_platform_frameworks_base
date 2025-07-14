@@ -20,7 +20,6 @@ import org.mockito.MockitoAnnotations
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
-@android.platform.test.annotations.EnabledOnRavenwood
 class LoggerTest : SysuiTestCase() {
     @Mock private lateinit var buffer: MessageBuffer
     private lateinit var message: LogMessage

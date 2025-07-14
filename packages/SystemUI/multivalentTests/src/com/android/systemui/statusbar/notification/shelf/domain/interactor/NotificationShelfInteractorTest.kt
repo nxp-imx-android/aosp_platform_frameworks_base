@@ -41,7 +41,6 @@ import org.mockito.kotlin.whenever
 
 @RunWith(AndroidJUnit4::class)
 @SmallTest
-@android.platform.test.annotations.EnabledOnRavenwood
 class NotificationShelfInteractorTest : SysuiTestCase() {
 
     private val kosmos =

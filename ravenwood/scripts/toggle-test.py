@@ -25,6 +25,9 @@ To disable all tests that failed:
 $ atest SystemUiRavenTests
 $ ./toggle-test.py disable /path/to/src \
     /tmp/Ravenwood-stats_SystemUiRavenTestsRavenwood_latest.csv
+
+Remove all Ravenwood annotations from sources:
+$ ./toggle-test.py strip /path/to/src
 """
 
 import pathlib
@@ -39,6 +42,7 @@ DISABLED_ANNOTATION = "android.platform.test.annotations.DisabledOnRavenwood"
 
 def usage():
   print("Usage: toggle-test.py <enable|disable> <src_root> <csv_file>")
+  print("       toggle-test.py strip <src_root>")
   exit(1)
 
 
@@ -68,12 +72,25 @@ def disable_tests(src_root: str, csv_file: str):
     src.write()
 
 
+def strip_annotations(src_root: str):
+  test_sources = ravenlib.load_source_files(src_root)
+  for src in test_sources:
+    for clazz, _ in src.list_classes():
+      src.remove_annotation(clazz, ENABLED_ANNOTATION)
+      src.remove_annotation(clazz, DISABLED_ANNOTATION)
+      src.remove_import(ENABLED_ANNOTATION)
+      src.remove_import(DISABLED_ANNOTATION)
+    src.write()
+
+
 def main():
   action = sys.argv[1]
   if action == "enable":
     enable_tests(sys.argv[2], sys.argv[3])
   elif action == "disable":
     disable_tests(sys.argv[2], sys.argv[3])
+  elif action == "strip":
+    strip_annotations(sys.argv[2])
   else:
     usage()
 

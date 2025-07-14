@@ -40,7 +40,6 @@ import org.mockito.MockitoAnnotations
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
-@android.platform.test.annotations.EnabledOnRavenwood
 class FlashlightQuickAffordanceConfigTest : LeakCheckedTest() {
 
     @Mock private lateinit var context: Context

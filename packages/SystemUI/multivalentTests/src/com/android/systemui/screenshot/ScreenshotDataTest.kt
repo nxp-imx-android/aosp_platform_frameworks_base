@@ -20,7 +20,6 @@ import android.content.ComponentName
 import android.graphics.Insets
 import android.graphics.Rect
 import android.os.UserHandle
-import android.platform.test.annotations.DisabledOnRavenwood
 import android.view.Display
 import android.view.WindowManager
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -31,7 +30,6 @@ import org.junit.Test
 import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
-@DisabledOnRavenwood(blockedBy = [ScreenshotRequest::class])
 class ScreenshotDataTest : SysuiTestCase() {
     private val type = WindowManager.TAKE_SCREENSHOT_FULLSCREEN
     private val source = WindowManager.ScreenshotSource.SCREENSHOT_KEY_OTHER

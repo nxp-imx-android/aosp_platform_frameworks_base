@@ -42,7 +42,6 @@ import org.mockito.kotlin.whenever
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
-@android.platform.test.annotations.EnabledOnRavenwood
 class BrightnessPolicyRepositoryImplTest : SysuiTestCase() {
 
     private val kosmos = testKosmos()

@@ -39,7 +39,6 @@ import java.util.List;
 
 @SmallTest
 @RunWith(AndroidJUnit4.class)
-@android.platform.test.annotations.EnabledOnRavenwood
 public class FakeExecutorTest extends SysuiTestCase {
     @Before
     public void setUp() throws Exception {

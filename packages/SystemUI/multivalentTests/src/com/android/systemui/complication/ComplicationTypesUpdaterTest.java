@@ -51,7 +51,6 @@ import java.util.HashSet;
 
 @SmallTest
 @RunWith(AndroidJUnit4.class)
-@android.platform.test.annotations.EnabledOnRavenwood
 public class ComplicationTypesUpdaterTest extends SysuiTestCase {
     @Mock
     private Context mContext;

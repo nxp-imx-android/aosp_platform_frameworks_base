@@ -27,7 +27,6 @@ import org.junit.runner.RunWith
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
-@android.platform.test.annotations.EnabledOnRavenwood
 class CameraIntentsTest : SysuiTestCase() {
     companion object {
         val VALID_SECURE_INTENT = Intent(CameraIntents.DEFAULT_SECURE_CAMERA_INTENT_ACTION)

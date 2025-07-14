@@ -40,7 +40,6 @@ import org.mockito.kotlin.whenever
 @SmallTest
 @RunWith(AndroidJUnit4::class)
 @TestableLooper.RunWithLooper(setAsMainLooper = true)
-@android.platform.test.annotations.EnabledOnRavenwood
 class AncSliceRepositoryTest : SysuiTestCase() {
 
     private val kosmos = testKosmos()

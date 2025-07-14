@@ -34,7 +34,6 @@ import org.mockito.kotlin.mock
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
-@android.platform.test.annotations.EnabledOnRavenwood
 class ConditionTest : SysuiTestCase() {
     private val kosmos = Kosmos()
     private lateinit var underTest: FakeCondition

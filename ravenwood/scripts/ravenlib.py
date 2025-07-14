@@ -76,6 +76,14 @@ class SourceFile:
 
     return results
 
+  def remove_import(self, class_name: str):
+    """Removes an import statement from the source file."""
+    for idx, line in enumerate(self.lines):
+      if line.startswith(f"import {class_name}"):
+        self.lines.pop(idx)
+        self.modified = True
+        return
+
   def list_annotations(self, class_idx: int) -> list[(str, int)]:
     """Finds the annotations and their line numbers in the source file."""
     result = []

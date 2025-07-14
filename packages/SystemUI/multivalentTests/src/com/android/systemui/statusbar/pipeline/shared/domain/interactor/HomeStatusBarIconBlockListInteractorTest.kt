@@ -32,7 +32,6 @@ import org.junit.runner.RunWith
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
-@android.platform.test.annotations.EnabledOnRavenwood
 class HomeStatusBarIconBlockListInteractorTest : SysuiTestCase() {
     val kosmos = testKosmos()
     private val Kosmos.underTest by Kosmos.Fixture { kosmos.homeStatusBarIconBlockListInteractor }

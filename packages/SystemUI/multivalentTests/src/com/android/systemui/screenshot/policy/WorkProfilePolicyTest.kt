@@ -22,7 +22,6 @@ import android.content.Context
 import android.content.res.Resources
 import android.os.UserHandle
 import android.platform.test.annotations.DisableFlags
-import android.platform.test.annotations.DisabledOnRavenwood
 import android.platform.test.annotations.EnableFlags
 import android.platform.test.flag.junit.SetFlagsRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -64,7 +63,6 @@ import org.mockito.junit.MockitoRule
 import org.mockito.kotlin.whenever
 
 @RunWith(AndroidJUnit4::class)
-@DisabledOnRavenwood(blockedBy = [ActivityTaskManager.RootTaskInfo::class])
 class WorkProfilePolicyTest {
 
     @JvmField @Rule(order = 1) val setFlagsRule = SetFlagsRule()

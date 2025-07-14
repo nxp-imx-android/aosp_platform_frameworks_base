@@ -55,7 +55,6 @@ import org.mockito.ArgumentMatchers.anyString
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
-@android.platform.test.annotations.EnabledOnRavenwood
 class KeyguardQuickAffordanceRepositoryTest : SysuiTestCase() {
 
     private val kosmos = testKosmos()

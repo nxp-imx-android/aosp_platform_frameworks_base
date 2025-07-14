@@ -39,7 +39,6 @@ import org.mockito.MockitoAnnotations;
 
 @SmallTest
 @RunWith(AndroidJUnit4.class)
-@android.platform.test.annotations.EnabledOnRavenwood
 public class MessageRouterImplTest extends SysuiTestCase {
     private static final int MESSAGE_A = 0;
     private static final int MESSAGE_B = 1;

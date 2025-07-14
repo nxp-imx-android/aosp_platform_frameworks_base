@@ -29,7 +29,6 @@ import org.junit.runner.RunWith
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
-@android.platform.test.annotations.EnabledOnRavenwood
 class NotifCollectionCacheTest : SysuiTestCase() {
     companion object {
         const val A = "a"

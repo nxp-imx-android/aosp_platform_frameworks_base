@@ -32,7 +32,6 @@ import org.junit.runner.RunWith;
 
 @SmallTest
 @RunWith(AndroidJUnit4.class)
-@android.platform.test.annotations.EnabledOnRavenwood
 public class WeakIdentityHashMapTest extends SysuiTestCase {
 
     WeakIdentityHashMap<Object, Object> mMap;

@@ -30,7 +30,6 @@ import org.mockito.Mockito.verifyNoMoreInteractions
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
-@android.platform.test.annotations.EnabledOnRavenwood
 class VisualStabilityProviderTest : SysuiTestCase() {
     private val visualStabilityProvider = VisualStabilityProvider()
     private val listener: OnReorderingAllowedListener = mock()

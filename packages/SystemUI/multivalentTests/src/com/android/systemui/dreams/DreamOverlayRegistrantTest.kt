@@ -50,7 +50,6 @@ import org.mockito.kotlin.whenever
 @SmallTest
 @TestableLooper.RunWithLooper
 @RunWith(AndroidJUnit4::class)
-@android.platform.test.annotations.EnabledOnRavenwood
 class DreamOverlayRegistrantTest : SysuiTestCase() {
     private val kosmos = testKosmos()
 

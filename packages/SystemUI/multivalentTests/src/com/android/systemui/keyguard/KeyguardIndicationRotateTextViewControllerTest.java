@@ -57,7 +57,6 @@ import org.mockito.MockitoAnnotations;
 @RunWith(AndroidJUnit4.class)
 @RunWithLooper
 @SmallTest
-@android.platform.test.annotations.EnabledOnRavenwood
 public class KeyguardIndicationRotateTextViewControllerTest extends SysuiTestCase {
 
     private static final String TEST_MESSAGE = "test message";

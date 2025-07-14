@@ -48,7 +48,6 @@ import platform.test.runner.parameterized.Parameters
 
 @SmallTest
 @RunWith(ParameterizedAndroidJunit4::class)
-@android.platform.test.annotations.EnabledOnRavenwood
 class HomeControlsKeyguardQuickAffordanceConfigParameterizedStateTest : SysuiTestCase() {
 
     companion object {
