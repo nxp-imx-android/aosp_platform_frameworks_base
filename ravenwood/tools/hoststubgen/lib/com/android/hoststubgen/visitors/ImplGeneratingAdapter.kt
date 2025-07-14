@@ -21,11 +21,13 @@ import com.android.hoststubgen.asm.CLASS_INITIALIZER_NAME
 import com.android.hoststubgen.asm.CTOR_NAME
 import com.android.hoststubgen.asm.ClassNodes
 import com.android.hoststubgen.asm.UnifiedVisitor
+import com.android.hoststubgen.asm.UnifiedVisitor.Companion.addParams
 import com.android.hoststubgen.asm.adjustStackForConstructorRedirection
 import com.android.hoststubgen.asm.changeMethodDescriptorReturnType
 import com.android.hoststubgen.asm.getPackageNameFromFullClassName
 import com.android.hoststubgen.asm.isEnum
 import com.android.hoststubgen.asm.prependArgTypeToMethodDescriptor
+import com.android.hoststubgen.asm.reasonParam
 import com.android.hoststubgen.asm.toJvmClassName
 import com.android.hoststubgen.asm.writeByteCodeToPushArguments
 import com.android.hoststubgen.asm.writeByteCodeToReturn
@@ -136,7 +138,7 @@ class ImplGeneratingAdapter(
         log.v("Emitting class: %s", name)
         log.indent()
         // Inject annotations to generated classes.
-        UnifiedVisitor.on(this).visitAnnotation(CLASS_DESCRIPTOR, true)
+        UnifiedVisitor.on(this).visitAnnotation(CLASS_DESCRIPTOR, true, reasonParam(classPolicy.reason))
 
         classLoadHooks = filter.getClassLoadHooks(currentClassName)
 
@@ -266,7 +268,7 @@ class ImplGeneratingAdapter(
             val ret = super.visitField(access, name, descriptor, signature, value)
 
             UnifiedVisitor.on(ret)
-                .visitAnnotation(HostStubGenProcessedAsKeep.CLASS_DESCRIPTOR, true)
+                .visitAnnotation(HostStubGenProcessedAsKeep.CLASS_DESCRIPTOR, true, reasonParam(policy.reason))
 
             return ForceFieldAnnotationVisibilityVisitor(ret)
         }
@@ -357,7 +359,7 @@ class ImplGeneratingAdapter(
 
             ret?.let {
                 UnifiedVisitor.on(ret)
-                    .visitAnnotation(HostStubGenProcessedAsKeep.CLASS_DESCRIPTOR, true)
+                    .visitAnnotation(HostStubGenProcessedAsKeep.CLASS_DESCRIPTOR, true, reasonParam(p.reason))
             }
 
             return ForceMethodAnnotationVisibilityVisitor(ret)
@@ -396,8 +398,8 @@ class ImplGeneratingAdapter(
             innerVisitor = ClassLoadHookInjectingMethodAdapter(innerVisitor)
         }
 
-        fun MethodVisitor.withAnnotation(descriptor: String): MethodVisitor {
-            this.visitAnnotation(descriptor, true)
+        fun MethodVisitor.withAnnotation(descriptor: String, reason: String): MethodVisitor {
+            this.visitAnnotation(descriptor, true).addParams(reasonParam(reason))
             return this
         }
 
@@ -417,12 +419,12 @@ class ImplGeneratingAdapter(
                         options.throwExceptionType.toJvmClassName(),
                         forceCreateBody,
                         innerVisitor
-                    ).withAnnotation(annot)
+                    ).withAnnotation(annot, policy.reason)
                 }
                 FilterPolicy.Ignore -> {
                     log.v("Making method ignored...")
                     return IgnoreMethodAdapter(descriptor, forceCreateBody, innerVisitor)
-                        .withAnnotation(HostStubGenProcessedAsIgnore.CLASS_DESCRIPTOR)
+                        .withAnnotation(HostStubGenProcessedAsIgnore.CLASS_DESCRIPTOR, policy.reason)
                 }
                 FilterPolicy.Redirect -> {
                     log.v("Redirecting method...")
@@ -430,7 +432,7 @@ class ImplGeneratingAdapter(
                         access, name, descriptor,
                         forceCreateBody, innerVisitor
                     )
-                        .withAnnotation(HostStubGenProcessedAsSubstitute.CLASS_DESCRIPTOR)
+                        .withAnnotation(HostStubGenProcessedAsSubstitute.CLASS_DESCRIPTOR, policy.reason)
                 }
                 else -> {}
             }
@@ -440,7 +442,8 @@ class ImplGeneratingAdapter(
             innerVisitor = MethodCallReplacingAdapter(name, innerVisitor)
         }
         if (substituted) {
-            innerVisitor?.withAnnotation(HostStubGenProcessedAsSubstitute.CLASS_DESCRIPTOR)
+            innerVisitor?.withAnnotation(HostStubGenProcessedAsSubstitute.CLASS_DESCRIPTOR,
+                "(substitution reason not propagated)")
         }
 
         return innerVisitor

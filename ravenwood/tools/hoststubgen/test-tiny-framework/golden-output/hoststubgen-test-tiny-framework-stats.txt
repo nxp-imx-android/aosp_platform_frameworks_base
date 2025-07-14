@@ -347,7 +347,7 @@ com.android.hoststubgen.test.tinyframework
   <init>()V
   1
   Keep
-  file-override
+  file-override (test keep policy on ctor)
   1
   1
 com.android.hoststubgen.test.tinyframework
@@ -358,7 +358,7 @@ com.android.hoststubgen.test.tinyframework
   addOne(I)I
   1
   Keep
-  file-override
+  file-override (test keep policy on method)
   0
   2
 com.android.hoststubgen.test.tinyframework
@@ -490,7 +490,7 @@ com.android.hoststubgen.test.tinyframework
   toBeIgnoredV()V
   0
   Ignore
-  file-override
+  file-override (test ignore policy)
   0
   0
 com.android.hoststubgen.test.tinyframework

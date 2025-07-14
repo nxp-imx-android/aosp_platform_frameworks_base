@@ -1,8 +1,8 @@
 class com/android/hoststubgen/test/tinyframework/TinyFrameworkForTextPolicy	keep
-  field stub	keep
+  field stub	keep # test policy on field
   # field remove	remove # Implicitly remove
-  method <init>	()V	            keep
-  method addOne	(I)I	        keep
+  method <init>	()V	            keep # test keep policy on ctor
+  method addOne	(I)I	        keep # test keep policy on method
   method addOneInner	keep
   method toBeRemoved	(Ljava/lang/String;)V	remove
   method addTwo	(I)I	        @addTwo_host
@@ -12,7 +12,7 @@ class com/android/hoststubgen/test/tinyframework/TinyFrameworkForTextPolicy	keep
   method unsupportedMethod	()Ljava/lang/String;	throw
   method visibleButUsesUnsupportedMethod	()Ljava/lang/String;	keep
   method toBeIgnoredObj	()Ljava/lang/String;	ignore
-  method toBeIgnoredV	()V	ignore
+  method toBeIgnoredV	()V	ignore # test ignore policy
   method toBeIgnoredZ	()Z	ignore
   method toBeIgnoredB	()B	ignore
   method toBeIgnoredC	()C	ignore
@@ -32,7 +32,7 @@ class :aidl keepclass
 class :r keepclass
 
 # Default is "remove", so let's put all the base classes / interfaces in the stub first.
-class com.android.hoststubgen.test.tinyframework.subclasstest.C1 keep
+class com.android.hoststubgen.test.tinyframework.subclasstest.C1 keep # test-class-policy
 class com.android.hoststubgen.test.tinyframework.subclasstest.C2 keep
 class com.android.hoststubgen.test.tinyframework.subclasstest.C3 keep
 class com.android.hoststubgen.test.tinyframework.subclasstest.CA keep
@@ -51,7 +51,7 @@ class *com.android.hoststubgen.test.tinyframework.subclasstest.I1 keep
 class *com.android.hoststubgen.test.tinyframework.subclasstest.IA remove
 
 # Test package directive
-package com.android.hoststubgen.test.tinyframework.packagetest keep
+package com.android.hoststubgen.test.tinyframework.packagetest keep # test-package-policy
 class com.android.hoststubgen.test.tinyframework.packagetest.B remove
 class com.android.hoststubgen.test.tinyframework.packagetest.sub.B remove
 # The following rules are the same as above

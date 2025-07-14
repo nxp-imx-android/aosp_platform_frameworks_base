@@ -40,6 +40,17 @@ fun normalizeTextLine(s: String): String {
     return uncommented.trim()
 }
 
+/**
+ * Get the inline comment in a string. (Opposite of [normalizeTextLine])
+ */
+fun getInlineComment(s: String): String {
+    val pos = s.indexOf('#')
+    if (pos < 0) {
+        return ""
+    }
+    return s.substring(pos + 1).trim()
+}
+
 // Note, Soong clears unknown env vars, so $HSG_ALWAYS_SHOW_STACKTRACE doesn't work
 // if the command is executed on soong. In that case, you need to change this flag directly.
 val ALWAYS_SHOW_STACKTRACE: Boolean = false ||
