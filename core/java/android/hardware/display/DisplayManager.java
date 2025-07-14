@@ -765,10 +765,19 @@ public final class DisplayManager {
     public static final int BRIGHTNESS_UNIT_PERCENTAGE = 1;
 
     /**
+     * Brightness value type where the value is in nits. The nits range is defined by
+     * screenBrightnessMap in DisplayDeviceConfig. Adjustments such as Reduce Bright Colors might be
+     * applied to the nits value.
+     * @hide
+     */
+    public static final int BRIGHTNESS_UNIT_NITS = 2;
+
+    /**
      * @hide
      */
     @IntDef(prefix = { "BRIGHTNESS_UNIT_" }, value = {
-            BRIGHTNESS_UNIT_PERCENTAGE
+            BRIGHTNESS_UNIT_PERCENTAGE,
+            BRIGHTNESS_UNIT_NITS
     })
     @Retention(RetentionPolicy.SOURCE)
     public @interface BrightnessUnit {}
@@ -777,11 +786,11 @@ public final class DisplayManager {
      * @hide
      */
     public static String brightnessUnitToString(@BrightnessUnit int unit) {
-        if (Flags.setBrightnessByUnit() && unit == BRIGHTNESS_UNIT_PERCENTAGE) {
-            return "percentage";
-        } else {
-            throw new IllegalStateException("Unexpected value: " + unit);
-        }
+        return switch (unit) {
+            case BRIGHTNESS_UNIT_PERCENTAGE -> "percentage";
+            case BRIGHTNESS_UNIT_NITS -> "nits";
+            default -> throw new IllegalStateException("Unexpected value: " + unit);
+        };
     }
 
     /** @hide */

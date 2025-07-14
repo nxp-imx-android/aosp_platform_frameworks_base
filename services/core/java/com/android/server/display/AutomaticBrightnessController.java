@@ -1267,6 +1267,18 @@ public class AutomaticBrightnessController {
         return mCurrentBrightnessMapper.getBrightnessFromNits(nits);
     }
 
+    /**
+     * Convert a brightness nit value to a float scale value. It is assumed that the nit value
+     * provided might have adjustments, such as RBC, applied.
+     *
+     * @param nits The nit value
+     * @return The float scale value or {@link PowerManager.BRIGHTNESS_INVALID_FLOAT} if no
+     * conversion is possible.
+     */
+    public float getBrightnessFromAdjustedNits(float nits) {
+        return mCurrentBrightnessMapper.getBrightnessFromAdjustedNits(nits);
+    }
+
     public void recalculateSplines(boolean applyAdjustment, float[] adjustment) {
         mCurrentBrightnessMapper.recalculateSplines(applyAdjustment, adjustment);
 

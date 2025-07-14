@@ -45,6 +45,7 @@ class DisplayManagerShellCommand extends ShellCommand {
     private static final String TAG = "DisplayManagerShellCommand";
     private static final String NOTIFICATION_TYPES = "on-hotplug-error, on-link-training-failure, "
             + "on-cable-dp-incapable";
+    private static final int INVALID_BRIGHTNESS_UNIT = -1;
 
     private final DisplayManagerService mService;
     private final DisplayManagerFlags mFlags;
@@ -149,13 +150,24 @@ class DisplayManagerShellCommand extends ShellCommand {
         pw.println("    Show notification for one of the following types: " + NOTIFICATION_TYPES);
         pw.println("  cancel-notifications");
         pw.println("    Cancel notifications.");
-        pw.println("  get-brightness DISPLAY_ID UNIT(optional)");
-        pw.println("    Gets the current brightness of the specified display. If no unit is "
-                + "specified, the returned value is in the float scale [0, 1]. The unit can be '"
-                + brightnessUnitToString(DisplayManager.BRIGHTNESS_UNIT_PERCENTAGE) + "' which "
-                + "will return the value displayed on the brightness slider.");
-        pw.println("  set-brightness BRIGHTNESS");
-        pw.println("    Sets the current brightness to BRIGHTNESS (a number between 0 and 1).");
+        pw.println("  get-brightness [--id DISPLAY_ID] [--unit UNIT]");
+        pw.println("    Gets the current brightness. Can specify the display ID, otherwise the "
+                + "default display is used. If no unit is specified, the returned value is in the "
+                + "float scale [0, 1]. The unit can be one of the following:");
+        pw.println("      " + brightnessUnitToString(DisplayManager.BRIGHTNESS_UNIT_PERCENTAGE)
+                + " - return the value displayed on the brightness slider");
+        pw.println("      " + brightnessUnitToString(DisplayManager.BRIGHTNESS_UNIT_NITS)
+                + " - return the brightness in nits (adjustments such as Reduce Bright Colors "
+                + "might be included)");
+        pw.println("  set-brightness BRIGHTNESS [--id DISPLAY_ID] [--unit UNIT]");
+        pw.println("    Sets the current brightness. Can specify the display ID, otherwise the "
+                + "default display is used. If no unit is specified, the value should be in the "
+                + "float scale [0, 1]. The unit can be one of the following:");
+        pw.println("      " + brightnessUnitToString(DisplayManager.BRIGHTNESS_UNIT_PERCENTAGE)
+                + " - set the value displayed on the brightness slider");
+        pw.println("      " + brightnessUnitToString(DisplayManager.BRIGHTNESS_UNIT_NITS)
+                + " - set the brightness in nits (adjustments such as Reduce Bright Colors might "
+                + "be included)");
         pw.println("  reset-brightness-configuration");
         pw.println("    Reset the brightness to its default configuration.");
         pw.println("  ab-logging-enable");
@@ -394,38 +406,46 @@ class DisplayManagerShellCommand extends ShellCommand {
 
     @SuppressLint("AndroidFrameworkRequiresPermission")
     private int getBrightness() {
-        String displayIdString = getNextArg();
-        if (displayIdString == null) {
-            getErrPrintWriter().println("Error: no display id specified");
-            return 1;
-        }
-        int displayId;
-        try {
-            displayId = Integer.parseInt(displayIdString);
-        } catch (NumberFormatException e) {
-            getErrPrintWriter().println("Error: invalid displayId=" + displayIdString + " not int");
-            return 1;
+        String opt;
+        int displayId = Display.DEFAULT_DISPLAY;
+        int unit = INVALID_BRIGHTNESS_UNIT;
+        while ((opt = getNextOption()) != null) {
+            switch (opt) {
+                case "--id" -> {
+                    String displayIdString = getNextArgRequired();
+                    try {
+                        displayId = Integer.parseInt(displayIdString);
+                    } catch (NumberFormatException e) {
+                        getErrPrintWriter().println(
+                                "Error: invalid displayId=" + displayIdString + ", not an int");
+                        return 1;
+                    }
+                }
+                case "--unit" -> {
+                    String brightnessUnitString = getNextArgRequired();
+                    if (brightnessUnitString.equals(
+                            brightnessUnitToString(DisplayManager.BRIGHTNESS_UNIT_PERCENTAGE))) {
+                        unit = DisplayManager.BRIGHTNESS_UNIT_PERCENTAGE;
+                    } else if (brightnessUnitString.equals(
+                            brightnessUnitToString(DisplayManager.BRIGHTNESS_UNIT_NITS))) {
+                        unit = DisplayManager.BRIGHTNESS_UNIT_NITS;
+                    } else {
+                        getErrPrintWriter().println(
+                                "Unexpected brightness unit: " + brightnessUnitString);
+                        return 1;
+                    }
+                }
+            }
         }
 
         final Context context = mService.getContext();
         final DisplayManager dm = context.getSystemService(DisplayManager.class);
-
-        String brightnessUnitString = getNextArg();
         float brightness;
-        if (brightnessUnitString == null) {
+        if (unit == INVALID_BRIGHTNESS_UNIT) {
             brightness = dm.getBrightness(displayId);
         } else {
-            int unit;
-            if (brightnessUnitString.equals(
-                    brightnessUnitToString(DisplayManager.BRIGHTNESS_UNIT_PERCENTAGE))) {
-                unit = DisplayManager.BRIGHTNESS_UNIT_PERCENTAGE;
-            } else {
-                getErrPrintWriter().println("Unexpected brightness unit: " + brightnessUnitString);
-                return 1;
-            }
             brightness = dm.getBrightness(displayId, unit);
         }
-
         getOutPrintWriter().println(brightness);
         return 0;
     }
@@ -437,19 +457,54 @@ class DisplayManagerShellCommand extends ShellCommand {
             getErrPrintWriter().println("Error: no brightness specified");
             return 1;
         }
-        float brightness = -1.0f;
+        float brightness;
         try {
             brightness = Float.parseFloat(brightnessText);
         } catch (NumberFormatException e) {
-        }
-        if (brightness < 0 || brightness > 1) {
-            getErrPrintWriter().println("Error: brightness should be a number between 0 and 1");
+            getErrPrintWriter().println(
+                    "Error: invalid brightness=" + brightnessText + ", not a float");
             return 1;
+        }
+
+        String opt;
+        int displayId = Display.DEFAULT_DISPLAY;
+        int unit = INVALID_BRIGHTNESS_UNIT;
+        while ((opt = getNextOption()) != null) {
+            switch (opt) {
+                case "--id" -> {
+                    String displayIdString = getNextArgRequired();
+                    try {
+                        displayId = Integer.parseInt(displayIdString);
+                    } catch (NumberFormatException e) {
+                        getErrPrintWriter().println(
+                                "Error: invalid displayId=" + displayIdString + ", not an int");
+                        return 1;
+                    }
+                }
+                case "--unit" -> {
+                    String brightnessUnitString = getNextArgRequired();
+                    if (brightnessUnitString.equals(
+                            brightnessUnitToString(DisplayManager.BRIGHTNESS_UNIT_PERCENTAGE))) {
+                        unit = DisplayManager.BRIGHTNESS_UNIT_PERCENTAGE;
+                    } else if (brightnessUnitString.equals(
+                            brightnessUnitToString(DisplayManager.BRIGHTNESS_UNIT_NITS))) {
+                        unit = DisplayManager.BRIGHTNESS_UNIT_NITS;
+                    } else {
+                        getErrPrintWriter().println(
+                                "Unexpected brightness unit: " + brightnessUnitString);
+                        return 1;
+                    }
+                }
+            }
         }
 
         final Context context = mService.getContext();
         final DisplayManager dm = context.getSystemService(DisplayManager.class);
-        dm.setBrightness(Display.DEFAULT_DISPLAY, brightness);
+        if (unit == INVALID_BRIGHTNESS_UNIT) {
+            dm.setBrightness(displayId, brightness);
+        } else {
+            dm.setBrightness(displayId, brightness, unit);
+        }
         return 0;
     }
 
