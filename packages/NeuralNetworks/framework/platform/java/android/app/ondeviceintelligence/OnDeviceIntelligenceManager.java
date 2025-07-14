@@ -16,6 +16,7 @@
 
 package android.app.ondeviceintelligence;
 
+import static android.app.ondeviceintelligence.flags.Flags.FLAG_DMABUF_INFO;
 import static android.app.ondeviceintelligence.flags.Flags.FLAG_ENABLE_ON_DEVICE_INTELLIGENCE;
 import static android.app.ondeviceintelligence.flags.Flags.FLAG_ON_DEVICE_INTELLIGENCE_25Q4;
 
@@ -44,12 +45,6 @@ import android.service.ondeviceintelligence.OnDeviceSandboxedInferenceService;
 import android.system.OsConstants;
 import android.util.Log;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Executor;
-
 import com.android.internal.infra.AndroidFuture;
 
 import java.lang.annotation.ElementType;
@@ -57,6 +52,9 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
 import java.util.function.LongConsumer;
 
@@ -769,5 +767,130 @@ public final class OnDeviceIntelligenceManager {
         return processingSignalFuture;
     }
 
+    /**
+     * Retrieve the total size of exported DMABuf in kilobytes.
+     *
+     * @param callbackExecutor executor to run the callback on
+     * @param dmaBufTotalReceiver the callback to receive the total size of exported DMABufs
+     *
+     * @hide
+     */
+    @SystemApi
+    @FlaggedApi(FLAG_DMABUF_INFO)
+    @RequiresPermission(Manifest.permission.USE_ON_DEVICE_INTELLIGENCE)
+    public void getTotalDmaBufExportedKb(
+            @NonNull @CallbackExecutor Executor callbackExecutor,
+            @NonNull OutcomeReceiver<Long, OnDeviceIntelligenceException> dmaBufTotalReceiver) {
+        try {
+            IDmaBufTotalCallback callback =
+                    new IDmaBufTotalCallback.Stub() {
+                        @Override
+                        public void onSuccess(long result) {
+                            Binder.withCleanCallingIdentity(
+                                    () ->
+                                            callbackExecutor.execute(
+                                                    () -> dmaBufTotalReceiver.onResult(result)));
+                        }
 
+                        @Override
+                        public void onFailure(int errorCode, String errorMessage,
+                                PersistableBundle errorParams) {
+                            Binder.withCleanCallingIdentity(() -> callbackExecutor.execute(
+                                    () -> dmaBufTotalReceiver.onError(
+                                            new OnDeviceIntelligenceException(
+                                                    errorCode, errorMessage, errorParams))));
+                        }
+                    };
+            mService.getTotalDmaBufExportedKb(callback);
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    /**
+     * Retrieve stats of the exported DMABufs for all processes.
+     *
+     * @param callbackExecutor executor to run the callback on
+     * @param dmaBufInfoReceiver the callback to receive the DMABuf info
+     *
+     * @hide
+     */
+    @SystemApi
+    @FlaggedApi(FLAG_DMABUF_INFO)
+    @RequiresPermission(Manifest.permission.USE_ON_DEVICE_INTELLIGENCE)
+    public void getDmaBufInfo(
+            @NonNull @CallbackExecutor Executor callbackExecutor,
+            @NonNull
+                    OutcomeReceiver<DmaBufEntry[], OnDeviceIntelligenceException>
+                            dmaBufInfoReceiver) {
+        try {
+            IDmaBufInfoCallback callback =
+                    new IDmaBufInfoCallback.Stub() {
+                        @Override
+                        public void onSuccess(DmaBufEntry[] result) {
+                            Binder.withCleanCallingIdentity(
+                                    () ->
+                                            callbackExecutor.execute(
+                                                    () -> dmaBufInfoReceiver.onResult(result)));
+                        }
+
+                        @Override
+                        public void onFailure(int errorCode, String errorMessage,
+                                PersistableBundle errorParams) {
+                            Binder.withCleanCallingIdentity(() -> callbackExecutor.execute(
+                                    () -> dmaBufInfoReceiver.onError(
+                                            new OnDeviceIntelligenceException(
+                                                    errorCode, errorMessage, errorParams))));
+                        }
+                    };
+            mService.getDmaBufInfo(callback);
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    /**
+     * Retrieve stats of the exported DMABufs for a given PID
+     *
+     * @param pid Specifies the process to query DMABuf stats for
+     * @param callbackExecutor executor to run the callback on
+     * @param dmaBufInfoReceiver the callback to receive the DMABuf info
+     *
+     * @hide
+     */
+    @SystemApi
+    @FlaggedApi(FLAG_DMABUF_INFO)
+    @RequiresPermission(Manifest.permission.USE_ON_DEVICE_INTELLIGENCE)
+    public void getDmaBufInfoForPid(
+            int pid,
+            @NonNull @CallbackExecutor Executor callbackExecutor,
+            @NonNull
+                    OutcomeReceiver<DmaBufEntry[], OnDeviceIntelligenceException>
+                            dmaBufInfoReceiver) {
+        try {
+
+            IDmaBufInfoCallback callback =
+                    new IDmaBufInfoCallback.Stub() {
+                        @Override
+                        public void onSuccess(DmaBufEntry[] result) {
+                            Binder.withCleanCallingIdentity(
+                                    () ->
+                                            callbackExecutor.execute(
+                                                    () -> dmaBufInfoReceiver.onResult(result)));
+                        }
+
+                        @Override
+                        public void onFailure(int errorCode, String errorMessage,
+                                PersistableBundle errorParams) {
+                            Binder.withCleanCallingIdentity(() -> callbackExecutor.execute(
+                                    () -> dmaBufInfoReceiver.onError(
+                                            new OnDeviceIntelligenceException(
+                                                    errorCode, errorMessage, errorParams))));
+                        }
+                    };
+            mService.getDmaBufInfoForPid(pid, callback);
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
 }
