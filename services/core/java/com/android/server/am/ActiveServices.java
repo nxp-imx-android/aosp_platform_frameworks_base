@@ -5106,8 +5106,11 @@ public final class ActiveServices {
                             throw new SecurityException("BIND_EXTERNAL_SERVICE failed, "
                                     + className + " is not an isolatedProcess");
                         }
-                        if (!mAm.getPackageManagerInternal().isSameApp(callingPackage, callingUid,
-                                userId)) {
+                        // Calling package check would have happened before if service check flag
+                        // is on
+                        if (!com.android.server.am.Flags.serviceCheckCallingPkg()
+                                && !mAm.getPackageManagerInternal().isSameApp(
+                                        callingPackage, callingUid, userId)) {
                             throw new SecurityException("BIND_EXTERNAL_SERVICE failed, "
                                     + "calling package not owned by calling UID ");
                         }
@@ -8838,12 +8841,13 @@ public final class ActiveServices {
         }
 
         if (ret == REASON_DENIED) {
-            // Allow FGS while-in-use if the caller is in the while-in-use allowlist. Right now
-            // AttentionService and SystemCaptionsService packageName are in this allowlist.
-            if (verifyPackage(callingPackage, callingUid)) {
-                final boolean isAllowedPackage =
-                        mAllowListWhileInUsePermissionInFgs.contains(callingPackage);
-                if (isAllowedPackage) {
+            // If service check flag is on, the calling package check has already been made by
+            // this point
+            if (com.android.server.am.Flags.serviceCheckCallingPkg()
+                    || verifyPackage(callingPackage, callingUid)) {
+                // Allow FGS while-in-use if the caller is in the while-in-use allowlist. Right now
+                // AttentionService and SystemCaptionsService packageName are in this allowlist.
+                if (mAllowListWhileInUsePermissionInFgs.contains(callingPackage)) {
                     ret = REASON_ALLOWLISTED_PACKAGE;
                 }
             } else {
