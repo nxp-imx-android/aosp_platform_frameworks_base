@@ -141,6 +141,8 @@ public class DeveloperVerifierController {
     // Counter of active verification sessions per user; must be synced with the trackers map.
     private final SparseIntArray mSessionsCountPerUser = new SparseIntArray();
 
+    private final DeveloperVerifierExperimentProvider mExperimentProvider;
+
     /**
      * Get an instance of VerifierController.
      */
@@ -162,6 +164,7 @@ public class DeveloperVerifierController {
         mHandler = handler;
         mDeveloperVerificationServiceProvider = developerVerificationServiceProvider;
         mInjector = injector;
+        mExperimentProvider = new DeveloperVerifierExperimentProvider(mHandler);
     }
 
     /**
@@ -680,6 +683,31 @@ public class DeveloperVerifierController {
             // Remove status tracking and stop the timeout countdown
             removeStatusTracker(id);
         }
+    }
+
+    /**
+     * Add an experiment to the experiment provider.
+     * <p>Notice that invalid status codes will be ignored. Valid status codes are defined in
+     * {@link DeveloperVerificationStatusInternal}.
+     * </p>
+     */
+    public void addExperiment(String packageName, int verificationPolicy, List<Integer> status) {
+        mExperimentProvider.addExperiment(packageName, verificationPolicy, status);
+    }
+
+    /**
+     * Check if there is an experiment for the given package.
+     */
+    public boolean hasExperiments(String packageName) {
+        return mExperimentProvider.hasExperiments(packageName);
+    }
+
+    /**
+     * Start a local experiment for the given package.
+     */
+    public void startLocalExperiment(String packageName,
+            PackageInstallerSession.DeveloperVerifierCallback callback) {
+        mExperimentProvider.runNextExperiment(packageName, callback);
     }
 
     private static class ServiceConnectorWrapper {
