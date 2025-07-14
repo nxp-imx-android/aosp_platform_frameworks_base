@@ -188,7 +188,7 @@ public class TouchExplorer extends BaseEventStreamTransformation
         mAms = service;
         mState = new TouchState(mDisplayId, mAms);
         mReceivedPointerTracker = mState.getReceivedPointerTracker();
-        mDispatcher = new EventDispatcher(context, mAms, super.getNext(), mState);
+        mDispatcher = new EventDispatcher(context, mDisplayId, mAms, super.getNext(), mState);
         mDetermineUserIntentTimeout = ViewConfiguration.getDoubleTapTimeout();
         mDoubleTapSlop = ViewConfiguration.get(context).getScaledDoubleTapSlop();
         mTouchSlop = ViewConfiguration.get(context).getScaledTouchSlop();
