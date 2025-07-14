@@ -198,7 +198,7 @@ class FromDreamingTransitionInteractorTest(flags: FlagsParameterization?) : Sysu
         }
 
     @Test
-    @DisableFlags(Flags.FLAG_SCENE_CONTAINER)
+    @DisableFlags(Flags.FLAG_SCENE_CONTAINER, FLAG_GLANCEABLE_HUB_V2)
     fun testTransitionToGlanceableHubOnWake() =
         kosmos.runTest {
             transitionRepository.sendTransitionSteps(
