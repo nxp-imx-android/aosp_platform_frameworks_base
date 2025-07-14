@@ -43,7 +43,6 @@ import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
-import org.junit.Ignore
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.Answers
@@ -512,7 +511,6 @@ class AodBurnInViewModelTest : SysuiTestCase() {
 
     @Test
     @EnableSceneContainer
-    @Ignore("b/367659687")
     fun translationAndScale_sceneContainerOn_nonWeatherSmallClock() =
         testBurnInViewModelForClocks(
             isSmallClock = true,
