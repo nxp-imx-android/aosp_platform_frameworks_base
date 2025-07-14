@@ -363,15 +363,10 @@ public final class WindowInsets {
     @Deprecated
     @NonNull
     public Insets getSystemWindowInsets() {
-        Insets result = mCompatIgnoreVisibility
-                ? getInsetsIgnoringVisibility(mCompatInsetsTypes & ~ime())
-                : getInsets(mCompatInsetsTypes);
-
-        // We can't query max insets for IME, so we need to add it manually after.
-        if ((mCompatInsetsTypes & ime()) != 0 && mCompatIgnoreVisibility) {
-            result = Insets.max(result, getInsets(ime()));
-        }
-        return result;
+        final Insets result = getInsets(mCompatInsetsTypes);
+        return mCompatIgnoreVisibility
+                ? Insets.max(result, getInsetsIgnoringVisibility(mCompatInsetsTypes & ~ime()))
+                : result;
     }
 
     /**
