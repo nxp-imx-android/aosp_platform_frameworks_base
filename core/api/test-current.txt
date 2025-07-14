@@ -3558,7 +3558,7 @@ package android.telephony {
   public final class SmsManager {
     method @RequiresPermission(android.Manifest.permission.READ_PHONE_STATE) public int checkSmsShortCodeDestination(String, String);
     method @RequiresPermission(android.Manifest.permission.MODIFY_PHONE_STATE) public void clearStorageMonitorMemoryStatusOverride();
-    method @NonNull @RequiresPermission(allOf={android.Manifest.permission.READ_PRIVILEGED_PHONE_STATE, "android.permission.MANAGE_COMPANION_DEVICES", android.Manifest.permission.MANAGE_ROLE_HOLDERS}) public static java.util.Set<java.lang.String> getSmsOtpTrustedPackages(@NonNull android.content.Context);
+    method @NonNull @RequiresPermission(allOf={android.Manifest.permission.READ_PRIVILEGED_PHONE_STATE, "android.permission.MANAGE_COMPANION_DEVICES", android.Manifest.permission.MANAGE_ROLE_HOLDERS}) public static java.util.Set<java.lang.String> getSmsOtpTrustedPackages(@NonNull android.content.Context, @Nullable android.os.UserHandle);
     method @RequiresPermission(allOf={android.Manifest.permission.READ_PRIVILEGED_PHONE_STATE, "android.permission.MANAGE_COMPANION_DEVICES", android.Manifest.permission.MANAGE_ROLE_HOLDERS}) public static boolean isAppTrustedForSmsOtp(@NonNull android.content.Context, @NonNull String, int);
     method @RequiresPermission(android.Manifest.permission.MODIFY_PHONE_STATE) public void setStorageMonitorMemoryStatusOverride(boolean);
     field public static final int SMS_CATEGORY_FREE_SHORT_CODE = 1; // 0x1
