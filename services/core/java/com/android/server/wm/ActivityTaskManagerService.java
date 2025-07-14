@@ -5019,6 +5019,13 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
                 // Window configuration is unrelated to persistent configuration (e.g. font scale,
                 // locale). Unset it to avoid affecting the current display configuration.
                 values.windowConfiguration.setToDefaults();
+                // A locale change may set layout direction (Configuration#setLocales()) without
+                // including other screen layout bits, so preserve it to avoid extra config change.
+                if (values.userSetLocale && values.screenLayout
+                        == (values.screenLayout & Configuration.SCREENLAYOUT_LAYOUTDIR_MASK)) {
+                    values.screenLayout |= (getGlobalConfiguration().screenLayout
+                            & ~Configuration.SCREENLAYOUT_LAYOUTDIR_MASK);
+                }
                 updateConfigurationLocked(values, false /* initLocale */, true /* persistent */,
                         userId);
             }
