@@ -35,8 +35,7 @@ final class CompatUIUtils {
         // TODO(b/384610402): Clean this up once Bubble Anything is launched and re-check logic
         // for other multi-window modes.
         boolean shouldCheckForPhoneScreenWidth = true;
-        if (com.android.wm.shell.Flags.enableCreateAnyBubble()
-                && com.android.wm.shell.Flags.enableBubbleAppCompatFixes()) {
+        if (com.android.wm.shell.Flags.enableCreateAnyBubble()) {
             if (taskInfo.isAppBubble) {
                 shouldCheckForPhoneScreenWidth = false;
             }

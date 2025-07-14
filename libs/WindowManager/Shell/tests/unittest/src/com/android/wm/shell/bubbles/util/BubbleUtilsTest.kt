@@ -20,7 +20,6 @@ import android.os.Binder
 import android.platform.test.annotations.EnableFlags
 import android.window.WindowContainerToken
 import androidx.test.filters.SmallTest
-import com.android.wm.shell.Flags.FLAG_ENABLE_BUBBLE_APP_COMPAT_FIXES
 import com.android.wm.shell.Flags.FLAG_ENABLE_CREATE_ANY_BUBBLE
 import com.android.wm.shell.ShellTestCase
 import com.android.wm.shell.bubbles.util.BubbleTestUtils.verifyEnterBubbleTransaction
@@ -72,10 +71,7 @@ class BubbleUtilsTest : ShellTestCase() {
         )
     }
 
-    @EnableFlags(
-        FLAG_ENABLE_CREATE_ANY_BUBBLE,
-        FLAG_ENABLE_BUBBLE_APP_COMPAT_FIXES,
-    )
+    @EnableFlags(FLAG_ENABLE_CREATE_ANY_BUBBLE)
     @Test
     fun testGetExitBubbleTransaction() {
         val wct = getExitBubbleTransaction(token, captionInsetsOwner)

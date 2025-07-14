@@ -7562,8 +7562,7 @@ final class ActivityRecord extends WindowToken {
 
         boolean shouldApplyLegacyInsets =
                 !isFloating(newParentConfiguration.windowConfiguration.getWindowingMode());
-        if (com.android.wm.shell.Flags.enableCreateAnyBubble()
-                && com.android.wm.shell.Flags.enableBubbleAppCompatFixes()) {
+        if (com.android.wm.shell.Flags.enableCreateAnyBubble()) {
             final Task task = getTask();
             if (task != null) {
                 // Similar to floating windows, an app bubble should not apply legacy insets.

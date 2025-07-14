@@ -71,7 +71,7 @@ object BubbleUtils {
                 wct.setBounds(token, Rect())
             }
         }
-        if (BubbleAnythingFlagHelper.enableCreateAnyBubbleWithAppCompatFixes()) {
+        if (BubbleAnythingFlagHelper.enableCreateAnyBubble()) {
             if (!toBubble && captionInsetsOwner != null) {
                 wct.removeInsetsSource(
                     token, captionInsetsOwner, 0 /* index */, WindowInsets.Type.captionBar()

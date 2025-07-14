@@ -752,8 +752,7 @@ public class SizeCompatTests extends WindowTestsBase {
     }
 
     @Test
-    @EnableFlags({com.android.wm.shell.Flags.FLAG_ENABLE_CREATE_ANY_BUBBLE,
-            com.android.wm.shell.Flags.FLAG_ENABLE_BUBBLE_APP_COMPAT_FIXES})
+    @EnableFlags(com.android.wm.shell.Flags.FLAG_ENABLE_CREATE_ANY_BUBBLE)
     // Enable to prevent any non-legacy override insets from being added.
     @EnableCompatChanges({ActivityInfo.INSETS_DECOUPLED_CONFIGURATION_ENFORCED})
     public void testLegacyInsetOverride_isAppBubble_notApplied() {

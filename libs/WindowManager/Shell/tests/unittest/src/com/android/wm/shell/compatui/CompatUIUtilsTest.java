@@ -52,8 +52,7 @@ public class CompatUIUtilsTest extends ShellTestCase {
     private static final int TASK_ID = 1;
 
     @Test
-    @DisableFlags({Flags.FLAG_ENABLE_CREATE_ANY_BUBBLE,
-            Flags.FLAG_ENABLE_BUBBLE_APP_COMPAT_FIXES})
+    @DisableFlags(Flags.FLAG_ENABLE_CREATE_ANY_BUBBLE)
     public void shouldShowSizeCompatForPhoneSizedDisplay_NonBubbleSmallScreenWidth() {
         TaskInfo taskInfo =
                 createTaskInfo(
@@ -63,8 +62,7 @@ public class CompatUIUtilsTest extends ShellTestCase {
     }
 
     @Test
-    @DisableFlags({Flags.FLAG_ENABLE_CREATE_ANY_BUBBLE,
-            Flags.FLAG_ENABLE_BUBBLE_APP_COMPAT_FIXES})
+    @DisableFlags(Flags.FLAG_ENABLE_CREATE_ANY_BUBBLE)
     public void shouldShowSizeCompatForPhoneSizedDisplay_NonBubbleLargeScreenWidth() {
         TaskInfo taskInfo =
                 createTaskInfo(
@@ -74,8 +72,7 @@ public class CompatUIUtilsTest extends ShellTestCase {
     }
 
     @Test
-    @DisableFlags({Flags.FLAG_ENABLE_CREATE_ANY_BUBBLE,
-            Flags.FLAG_ENABLE_BUBBLE_APP_COMPAT_FIXES})
+    @DisableFlags(Flags.FLAG_ENABLE_CREATE_ANY_BUBBLE)
     public void shouldShowSizeCompatForPhoneSizedDisplay_NonBubbleThresholdScreenWidth() {
         TaskInfo taskInfo =
                 createTaskInfo(
@@ -85,8 +82,7 @@ public class CompatUIUtilsTest extends ShellTestCase {
     }
 
     @Test
-    @EnableFlags({Flags.FLAG_ENABLE_CREATE_ANY_BUBBLE,
-            Flags.FLAG_ENABLE_BUBBLE_APP_COMPAT_FIXES})
+    @EnableFlags(Flags.FLAG_ENABLE_CREATE_ANY_BUBBLE)
     public void shouldShowSizeCompatForPhoneSizedDisplay_BubbleSmallScreenWidth() {
         TaskInfo taskInfo =
                 createTaskInfo(

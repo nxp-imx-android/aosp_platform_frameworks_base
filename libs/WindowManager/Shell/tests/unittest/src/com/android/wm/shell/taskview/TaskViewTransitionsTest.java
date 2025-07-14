@@ -22,7 +22,6 @@ import static android.view.WindowManager.TRANSIT_TO_BACK;
 import static android.view.WindowManager.TRANSIT_TO_FRONT;
 
 import static com.android.wm.shell.Flags.FLAG_ENABLE_BUBBLE_ANYTHING;
-import static com.android.wm.shell.Flags.FLAG_ENABLE_BUBBLE_APP_COMPAT_FIXES;
 import static com.android.wm.shell.Flags.FLAG_ENABLE_CREATE_ANY_BUBBLE;
 import static com.android.wm.shell.bubbles.util.BubbleTestUtils.verifyExitBubbleTransaction;
 
@@ -138,7 +137,6 @@ public class TaskViewTransitionsTest extends ShellTestCase {
     @EnableFlags({
             FLAG_ENABLE_CREATE_ANY_BUBBLE,
             FLAG_ENABLE_BUBBLE_ANYTHING,
-            FLAG_ENABLE_BUBBLE_APP_COMPAT_FIXES,
     })
     @Test
     public void testMoveTaskViewToFullscreen_applyWctToExitBubble() {
