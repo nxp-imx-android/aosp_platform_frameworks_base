@@ -18,12 +18,14 @@ package com.android.systemui.screencapture.record.largescreen.ui.viewmodel
 
 import android.content.Context
 import com.android.systemui.dagger.qualifiers.Application
+import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.lifecycle.HydratedActivatable
 import com.android.systemui.res.R
 import com.android.systemui.screencapture.record.largescreen.domain.interactor.ScreenCaptureRecordLargeScreenFeaturesInteractor
 import com.android.systemui.screencapture.record.largescreen.domain.interactor.ScreenshotInteractor
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
@@ -45,6 +47,7 @@ class PreCaptureViewModel
 @AssistedInject
 constructor(
     @Application private val applicationContext: Context,
+    @Background private val backgroundScope: CoroutineScope,
     private val iconProvider: ScreenCaptureIconProvider,
     private val screenshotInteractor: ScreenshotInteractor,
     private val featuresInteractor: ScreenCaptureRecordLargeScreenFeaturesInteractor,
@@ -85,11 +88,14 @@ constructor(
         captureRegionSource.value = selectedRegion
     }
 
-    suspend fun takeFullscreenScreenshot() {
+    fun takeFullscreenScreenshot() {
         require(captureTypeSource.value == ScreenCaptureType.SCREENSHOT)
         require(captureRegionSource.value == ScreenCaptureRegion.FULLSCREEN)
 
-        screenshotInteractor.takeFullscreenScreenshot()
+        backgroundScope.launch {
+            // TODO(b/430361425) Pass in current display as argument.
+            screenshotInteractor.takeFullscreenScreenshot()
+        }
 
         // TODO(b/427500006) Close the window after requesting a fullscreen screenshot.
     }
@@ -110,7 +116,7 @@ constructor(
                 onClick = { updateCaptureType(ScreenCaptureType.SCREEN_RECORD) },
             ),
             RadioButtonGroupItemViewModel(
-                icon = icons?.screenshot,
+                icon = icons?.screenshotToolbar,
                 label =
                     applicationContext.getString(R.string.screen_capture_toolbar_capture_button),
                 isSelected = selectedType == ScreenCaptureType.SCREENSHOT,
