@@ -67,15 +67,8 @@ fun Change.asLetterboxLifecycleEventType() = when {
 
 /**
  * Logic to skip a [Change] if not related to Letterboxing. We always skip changes about closing.
- * We skip the changes for tasks which are not leaves. The isLeaf information for changes with
- * activity target is always false but those changes cannot be skipped.
- *
- * No leaf task    -> isChangeForALeafTask()==false  isActivityChange()==false     Skip
- * leaf task       -> isChangeForALeafTask()==true   isActivityChange()==false     No Skip
- * Activity change -> isChangeForALeafTask()==false  isActivityChange()==true      No Skip
  */
-fun Change.shouldSkipForLetterbox(): Boolean =
-    isClosingType(mode) || !(isChangeForALeafTask() || isActivityChange())
+fun Change.shouldSkipForLetterbox(): Boolean = isClosingType(mode)
 
 /**
  * Returns [true] if the [Change] is about an [Activity] and so it contains a
@@ -88,6 +81,9 @@ fun Change.isActivityChange(): Boolean = activityTransitionInfo != null
  */
 fun Change.isTranslucent() = hasFlags(FLAG_TRANSLUCENT)
 
-/** Returns [true] if the Task hosts Activities */
+/**
+ * Returns [true] if the Task hosts Activities. This is true if the Change has Activity as target
+ * or if task is a leaf task.
+ */
 fun Change.isChangeForALeafTask(): Boolean =
-    taskInfo?.appCompatTaskInfo?.isLeafTask() ?: false
+    taskInfo?.appCompatTaskInfo?.isLeafTask ?: isActivityChange()
