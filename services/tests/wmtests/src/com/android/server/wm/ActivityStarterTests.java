@@ -652,6 +652,36 @@ public class ActivityStarterTests extends WindowTestsBase {
         assertEquals(1, activity.compareTo(translucentActivity));
     }
 
+    @Test
+    public void testReportStartedNoDisplayActivity() {
+        final ActivityRecord activity = new ActivityBuilder(mAtm).setCreateTask(true)
+                .setVisible(false).build();
+        final Task task = activity.getTask();
+        task.inRecents = true;
+        final ActivityRecord[] outActivity = new ActivityRecord[1];
+        final ActivityStarter starter = prepareStarter(FLAG_ACTIVITY_NEW_TASK)
+                .setInTask(task).setReason("testReportStartedNoDisplayActivity")
+                .setOutActivity(outActivity);
+        starter.mRequest.activityInfo.applicationInfo.packageName = mContext.getPackageName();
+        starter.mRequest.activityInfo.theme = android.R.style.Theme_NoDisplay;
+        starter.execute();
+        final ActivityRecord startedActivity = outActivity[0];
+
+        assertNotNull(startedActivity);
+        assertEquals(task, startedActivity.getTask());
+        assertNotEquals("Report started no-display activity instead of the existing one",
+                activity, startedActivity);
+        assertTrue(startedActivity.isNoDisplay());
+
+        startedActivity.setProcess(activity.app);
+        startedActivity.setState(ActivityRecord.State.RESUMED, "test");
+        startedActivity.makeFinishingLocked();
+        // MetricsLogger will redirect to monitor next activity.
+        startedActivity.setVisibility(false);
+
+        assertNotNull(mSupervisor.getActivityMetricsLogger().notifyWindowsDrawn(activity));
+    }
+
     /**
      * Tests activity is cleaned up properly in a task mode violation.
      */
