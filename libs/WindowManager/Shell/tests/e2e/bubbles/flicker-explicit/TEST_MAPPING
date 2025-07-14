@@ -13,6 +13,9 @@
       "name": "WMShellExplicitFlickerTestsBubbles-EnterBubbleViaBubbleMenuTest"
     },
     {
+      "name": "WMShellExplicitFlickerTestsBubbles-EnterBubbleViaDragToBubbleBarTest"
+    },
+    {
       "name": "WMShellExplicitFlickerTestsBubbles-EnterBubbleWithImeViaBubbleMenuTest"
     },
     {

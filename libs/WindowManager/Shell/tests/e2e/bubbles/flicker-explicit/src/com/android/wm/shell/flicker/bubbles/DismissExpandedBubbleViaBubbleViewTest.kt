@@ -73,7 +73,8 @@ class DismissExpandedBubbleViaBubbleViewTest(navBar: NavBar) :
                 setUpBeforeTransition(instrumentation, wmHelper)
                 launchBubbleViaBubbleMenu(testApp, tapl, wmHelper)
             },
-            transition = { dismissBubbleAppViaBubbleView(uiDevice, wmHelper) }
+            transition = { dismissBubbleAppViaBubbleView(uiDevice, wmHelper) },
+            tearDownAfterTransition = { testApp.exit() }
         )
     }
 

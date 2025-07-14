@@ -19,11 +19,10 @@ package com.android.wm.shell.flicker.bubbles
 import android.platform.test.annotations.Presubmit
 import android.platform.test.annotations.RequiresFlagsEnabled
 import android.tools.NavBar
-import android.tools.traces.component.ComponentNameMatcher.Companion.BUBBLE
 import androidx.test.filters.RequiresDevice
 import com.android.wm.shell.Flags
 import com.android.wm.shell.Utils
-import com.android.wm.shell.flicker.bubbles.testcase.BubbleAppBecomesExpandedTestCases
+import com.android.wm.shell.flicker.bubbles.testcase.EnterBubbleTestCases
 import com.android.wm.shell.flicker.bubbles.utils.ApplyPerParameterRule
 import com.android.wm.shell.flicker.bubbles.utils.FlickerPropertyInitializer
 import com.android.wm.shell.flicker.bubbles.utils.RecordTraceWithTransitionRule
@@ -31,7 +30,6 @@ import com.android.wm.shell.flicker.bubbles.utils.launchBubbleViaBubbleMenu
 import com.android.wm.shell.flicker.bubbles.utils.setUpBeforeTransition
 import org.junit.FixMethodOrder
 import org.junit.Rule
-import org.junit.Test
 import org.junit.runners.MethodSorters
 
 /**
@@ -46,15 +44,14 @@ import org.junit.runners.MethodSorters
  * ```
  * Verified tests:
  * - [BubbleFlickerTestBase]
- * - [BubbleAppBecomesExpandedTestCases]
- * - Bubble becomes visible
+ * - [EnterBubbleTestCases]
  */
 @RequiresFlagsEnabled(Flags.FLAG_ENABLE_CREATE_ANY_BUBBLE)
 @RequiresDevice
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 @Presubmit
-open class EnterBubbleViaBubbleMenuTest(navBar: NavBar) :
-    BubbleFlickerTestBase(), BubbleAppBecomesExpandedTestCases {
+open class EnterBubbleViaBubbleMenuTest(navBar: NavBar) : BubbleFlickerTestBase(),
+    EnterBubbleTestCases {
 
     companion object : FlickerPropertyInitializer() {
         private val recordTraceWithTransitionRule = RecordTraceWithTransitionRule(
@@ -72,51 +69,4 @@ open class EnterBubbleViaBubbleMenuTest(navBar: NavBar) :
 
     override val traceDataReader
         get() = recordTraceWithTransitionRule.reader
-
-// region Bubble related tests
-
-    /**
-     * Verifies the bubble window is visible at the end of transition.
-     */
-    @Test
-    fun bubbleWindowIsVisibleAtEnd() {
-        wmStateSubjectAtEnd.isNonAppWindowVisible(BUBBLE)
-    }
-
-    /**
-     * Verifies the bubble layer is visible at the end of transition.
-     */
-    @Test
-    fun bubbleLayerIsVisibleAtEnd() {
-        layerTraceEntrySubjectAtEnd.isVisible(BUBBLE)
-    }
-
-    /**
-     * Verifies the bubble window becomes visible.
-     */
-    @Test
-    fun bubbleWindowBecomesVisible() {
-        wmTraceSubject
-            // Bubble app window may not have been added to WM hierarchy at the start of the
-            // transition.
-            .isNonAppWindowInvisible(BUBBLE)
-            .then()
-            .isAboveAppWindowVisible(BUBBLE)
-            .forAllEntries()
-    }
-
-    /**
-     * Verifies the bubble layer becomes visible.
-     */
-    @Test
-    fun bubbleLayerBecomesVisible() {
-        layersTraceSubject
-            // Bubble may not appear at the start of the transition.
-            .isInvisible(BUBBLE)
-            .then()
-            .isVisible(BUBBLE)
-            .forAllEntries()
-    }
-
-// endregion
 }
