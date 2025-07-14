@@ -22,6 +22,7 @@ import android.view.View
 import android.widget.Button
 import androidx.constraintlayout.widget.ConstraintLayout
 import com.android.wm.shell.R
+import com.android.wm.shell.compatui.DialogContainerSupplier
 
 /** View for open by default settings dialog for an application which allows the user to change
  * where links will open by default, in the default browser or in the application. */
@@ -30,7 +31,7 @@ class OpenByDefaultDialogView @JvmOverloads constructor(
     attrs: AttributeSet? = null,
     defStyleAttr: Int = 0,
     defStyleRes: Int = 0
-) : ConstraintLayout(context, attrs, defStyleAttr, defStyleRes) {
+) : ConstraintLayout(context, attrs, defStyleAttr, defStyleRes), DialogContainerSupplier {
 
     private lateinit var dialogContainer: View
     private lateinit var backgroundDim: Drawable
@@ -50,8 +51,13 @@ class OpenByDefaultDialogView @JvmOverloads constructor(
         dismissButton.setOnClickListener(callback)
     }
 
+    override fun getDialogContainerView(): View = dialogContainer
+
+    override fun getBackgroundDimDrawable(): Drawable = backgroundDim
+
     override fun onFinishInflate() {
         super.onFinishInflate()
+        accessibilityPaneTitle = context.getString(R.string.open_by_default_settings_text)
         dialogContainer = requireViewById(R.id.open_by_default_dialog_container)
         backgroundDim = background.mutate()
         backgroundDim.alpha = 128

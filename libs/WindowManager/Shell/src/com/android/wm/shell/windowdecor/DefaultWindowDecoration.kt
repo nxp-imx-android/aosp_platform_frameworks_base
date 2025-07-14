@@ -890,6 +890,7 @@ class DefaultWindowDecoration @JvmOverloads constructor(
                 taskResourceLoader,
                 splitScreenController,
                 desktopUserRepositories,
+                transitions,
                 taskSurface,
                 checkNotNull(decorationContainerSurface) {
                     "Expected non-null decoration container surface"
@@ -922,6 +923,7 @@ class DefaultWindowDecoration @JvmOverloads constructor(
                 windowDecorViewHostSupplier,
                 context,
                 userContext,
+                transitions,
                 displayController,
                 taskResourceLoader,
                 splitScreenController,
