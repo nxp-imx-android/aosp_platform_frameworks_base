@@ -1367,7 +1367,7 @@ package android.app.admin {
     method @Nullable public android.view.SurfaceControlViewHost.SurfacePackage onCreateKeyguardSurface(@NonNull android.os.IBinder);
   }
 
-  public class DevicePolicyManager {
+  @RestrictedForEnvironment(environments=android.annotation.RestrictedForEnvironment.ENVIRONMENT_SDK_RUNTIME, from=android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE) public class DevicePolicyManager {
     method @RequiresPermission(android.Manifest.permission.MANAGE_PROFILE_AND_DEVICE_OWNERS) public int checkProvisioningPrecondition(@NonNull String, @NonNull String);
     method @RequiresPermission(android.Manifest.permission.MANAGE_DEVICE_POLICY_AUDIT_LOGGING) public void clearAuditLogEventCallback();
     method @Deprecated @FlaggedApi("android.app.admin.flags.split_create_managed_profile_enabled") @Nullable @RequiresPermission(android.Manifest.permission.MANAGE_PROFILE_AND_DEVICE_OWNERS) public android.os.UserHandle createAndProvisionManagedProfile(@NonNull android.app.admin.ManagedProfileProvisioningParams) throws android.app.admin.ProvisioningException;
@@ -2317,7 +2317,7 @@ package android.app.job {
 
 package android.app.people {
 
-  public final class PeopleManager {
+  @RestrictedForEnvironment(environments=android.annotation.RestrictedForEnvironment.ENVIRONMENT_SDK_RUNTIME, from=android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE) public final class PeopleManager {
     method @RequiresPermission(android.Manifest.permission.READ_PEOPLE_DATA) public boolean isConversation(@NonNull String, @NonNull String);
   }
 
@@ -12965,7 +12965,7 @@ package android.se.omapi {
 
 package android.security {
 
-  public final class FileIntegrityManager {
+  @RestrictedForEnvironment(environments=android.annotation.RestrictedForEnvironment.ENVIRONMENT_SDK_RUNTIME, from=android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE) public final class FileIntegrityManager {
     method @FlaggedApi("android.security.fsverity_api") @Nullable public byte[] getFsVerityDigest(@NonNull java.io.File) throws java.io.IOException;
     method @FlaggedApi("android.security.fsverity_api") public void setupFsVerity(@NonNull java.io.File) throws java.io.IOException;
   }

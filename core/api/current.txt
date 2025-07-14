@@ -8282,7 +8282,7 @@ package android.app.admin {
     field public static final String USER_CONTROL_DISABLED_PACKAGES_POLICY = "userControlDisabledPackages";
   }
 
-  public class DevicePolicyManager {
+  @RestrictedForEnvironment(environments=android.annotation.RestrictedForEnvironment.ENVIRONMENT_SDK_RUNTIME, from=android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE) public class DevicePolicyManager {
     method public void acknowledgeDeviceCompliant();
     method @RequiresPermission(value=android.Manifest.permission.MANAGE_DEVICE_POLICY_PROFILE_INTERACTION, conditional=true) public void addCrossProfileIntentFilter(@Nullable android.content.ComponentName, android.content.IntentFilter, int);
     method @RequiresPermission(value=android.Manifest.permission.MANAGE_DEVICE_POLICY_PROFILE_INTERACTION, conditional=true) public boolean addCrossProfileWidgetProvider(@Nullable android.content.ComponentName, String);
@@ -9757,7 +9757,7 @@ package android.app.people {
     method @NonNull public android.app.people.ConversationStatus.Builder setStartTimeMillis(long);
   }
 
-  public final class PeopleManager {
+  @RestrictedForEnvironment(environments=android.annotation.RestrictedForEnvironment.ENVIRONMENT_SDK_RUNTIME, from=android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE) public final class PeopleManager {
     method public void addOrUpdateStatus(@NonNull String, @NonNull android.app.people.ConversationStatus);
     method public void clearStatus(@NonNull String, @NonNull String);
     method public void clearStatuses(@NonNull String);
@@ -40830,7 +40830,7 @@ package android.security {
     method public android.security.ConfirmationPrompt.Builder setPromptText(CharSequence);
   }
 
-  public final class FileIntegrityManager {
+  @RestrictedForEnvironment(environments=android.annotation.RestrictedForEnvironment.ENVIRONMENT_SDK_RUNTIME, from=android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE) public final class FileIntegrityManager {
     method public boolean isApkVeritySupported();
     method @Deprecated @RequiresPermission(anyOf={android.Manifest.permission.INSTALL_PACKAGES, android.Manifest.permission.REQUEST_INSTALL_PACKAGES}) public boolean isAppSourceCertificateTrusted(@NonNull java.security.cert.X509Certificate) throws java.security.cert.CertificateEncodingException;
   }
