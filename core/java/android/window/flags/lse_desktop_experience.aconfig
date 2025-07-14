@@ -3,6 +3,16 @@ container: "system"
 
 # go/keep-sorted start block=yes newline_separated=yes
 flag {
+    name: "apply_desk_activation_on_user_switch"
+    namespace: "lse_desktop_experience"
+    description: "Fixes desk activation when switching users"
+    bug: "430988310"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "close_task_keyboard_shortcut"
     namespace: "lse_desktop_experience"
     description: "Enable keyboard shortcut to close a task"
@@ -45,16 +55,6 @@ flag {
     namespace: "lse_desktop_experience"
     description: "Disable restoring bounds to mLastNonFullscreenBounds on configuration change."
     bug: "372315420"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
-    name: "empty_roots_never_top"
-    namespace: "lse_desktop_experience"
-    description: "Prevents empty roots from becoming top/focused"
-    bug: "420858253"
     metadata {
         purpose: PURPOSE_BUGFIX
     }

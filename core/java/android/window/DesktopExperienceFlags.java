@@ -64,6 +64,9 @@ public enum DesktopExperienceFlags {
     ENABLE_ACTIVITY_EMBEDDING_SUPPORT_FOR_CONNECTED_DISPLAYS(
             Flags::enableActivityEmbeddingSupportForConnectedDisplays, true,
             Flags.FLAG_ENABLE_ACTIVITY_EMBEDDING_SUPPORT_FOR_CONNECTED_DISPLAYS),
+    ENABLE_APPLY_DESK_ACTIVATION_ON_USER_SWITCH(
+            Flags::applyDeskActivationOnUserSwitch, false,
+            Flags.FLAG_APPLY_DESK_ACTIVATION_ON_USER_SWITCH),
     ENABLE_APP_HANDLE_POSITION_REPORTING(Flags::enableAppHandlePositionReporting, false,
             Flags.FLAG_ENABLE_APP_HANDLE_POSITION_REPORTING),
     ENABLE_BLOCK_NON_DESKTOP_DISPLAY_WINDOW_DRAG_BUGFIX(
@@ -145,8 +148,6 @@ public enum DesktopExperienceFlags {
             Flags.FLAG_ENABLE_DYNAMIC_RADIUS_COMPUTATION_BUGFIX),
     ENABLE_EMPTY_DESK_ON_MINIMIZE(Flags::enableEmptyDeskOnMinimize, true,
             Flags.FLAG_ENABLE_EMPTY_DESK_ON_MINIMIZE),
-    ENABLE_EMPTY_ROOTS_NEVER_TOP(Flags::emptyRootsNeverTop, false,
-            Flags.FLAG_EMPTY_ROOTS_NEVER_TOP),
     ENABLE_EXCLUSIVE_FLOATING_WINDOW(Flags::enableExclusiveFloatingWindow, false,
             Flags.FLAG_ENABLE_EXCLUSIVE_FLOATING_WINDOW),
     ENABLE_FREEFORM_BOX_SHADOWS(Flags::enableFreeformBoxShadows, false,
