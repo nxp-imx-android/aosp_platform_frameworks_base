@@ -28,7 +28,6 @@ import android.content.Context
 import android.graphics.drawable.Icon
 import android.service.notification.StatusBarNotification
 import android.util.ArrayMap
-import androidx.annotation.DrawableRes
 import com.android.app.tracing.traceSection
 import com.android.internal.logging.InstanceId
 import com.android.systemui.dagger.qualifiers.Main
@@ -122,7 +121,7 @@ private class ActiveNotificationsStoreBuilder(
         builder.addBundle(
             existingModels.createOrReuseBundle(
                 key = entry.key,
-                iconResId = entry.bundleRepository.bundleIcon,
+                icon = Icon.createWithResource(context, entry.bundleRepository.bundleIcon),
                 children = childModels,
             )
         )
@@ -412,21 +411,21 @@ private fun StatusBarNotification.toCallType(): CallType =
 
 private fun ActiveNotificationsStore.createOrReuseBundle(
     key: String,
-    @DrawableRes iconResId: Int,
+    icon: Icon,
     children: List<ActiveNotificationEntryModel>,
 ): ActiveBundleModel {
-    return bundles[key]?.takeIf { it.isCurrent(key, iconResId, children) }
-        ?: ActiveBundleModel(key, iconResId, children)
+    return bundles[key]?.takeIf { it.isCurrent(key, icon, children) }
+        ?: ActiveBundleModel(key, icon, children)
 }
 
 private fun ActiveBundleModel.isCurrent(
     key: String,
-    @DrawableRes iconResId: Int,
+    icon: Icon,
     children: List<ActiveNotificationEntryModel>,
 ): Boolean {
     return when {
         key != this.key -> false
-        iconResId != this.iconResId -> false
+        icon.resId != this.icon.resId -> false
         !hasSameInstances(children, this.children) -> false
         else -> true
     }

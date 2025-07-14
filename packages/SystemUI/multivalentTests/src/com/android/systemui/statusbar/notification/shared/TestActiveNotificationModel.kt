@@ -22,19 +22,40 @@ val byKey: Correspondence<ActiveNotificationModel, String> =
     Correspondence.transforming({ it.key }, "has a key of")
 val byIconIsAmbient: Correspondence<ActiveNotificationIconModel, Boolean> =
     Correspondence.transforming({ it.isAmbient }, "has an isAmbient value of")
-val byAssociatedNotifModel: Correspondence<ActiveNotificationIconModel, ActiveNotificationModel> =
+val byAssociatedNotifModel: Correspondence<ActiveNotificationIconModel, ActivePipelineEntryModel> =
     Correspondence.transforming(
         /* actualTransform = */ { it },
         /* expectedTransform = */ { expected ->
             checkNotNull(expected)
-            ActiveNotificationIconModel(
-                expected.key,
-                expected.groupKey!!,
-                expected.shelfIcon,
-                expected.statusBarIcon,
-                expected.aodIcon,
-                expected.isAmbient,
-            )
+            when (expected) {
+                is ActiveBundleModel ->
+                    ActiveNotificationIconModel(
+                        expected.key,
+                        expected.key,
+                        expected.icon,
+                        expected.icon,
+                        expected.icon,
+                        false,
+                    )
+                is ActiveNotificationGroupModel ->
+                    ActiveNotificationIconModel(
+                        expected.key,
+                        expected.summary.groupKey!!,
+                        expected.summary.shelfIcon,
+                        expected.summary.statusBarIcon,
+                        expected.summary.aodIcon,
+                        expected.summary.isAmbient,
+                    )
+                is ActiveNotificationModel ->
+                    ActiveNotificationIconModel(
+                        expected.key,
+                        expected.groupKey!!,
+                        expected.shelfIcon,
+                        expected.statusBarIcon,
+                        expected.aodIcon,
+                        expected.isAmbient,
+                    )
+            }
         },
         /* description = */ "is icon model of",
     )
