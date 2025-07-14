@@ -239,3 +239,13 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "external_camera_default_policy"
+    namespace: "virtual_devices"
+    description: "Allow virtual external cameras to be aded to a virtual device with a default camera policy"
+    bug: "371167033"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
