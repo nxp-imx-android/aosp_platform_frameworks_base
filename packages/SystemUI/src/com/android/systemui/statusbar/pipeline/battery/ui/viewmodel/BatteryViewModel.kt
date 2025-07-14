@@ -18,12 +18,14 @@ package com.android.systemui.statusbar.pipeline.battery.ui.viewmodel
 
 import android.content.Context
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.sp
 import com.android.systemui.common.shared.model.ContentDescription
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.lifecycle.ExclusiveActivatable
 import com.android.systemui.lifecycle.Hydrator
 import com.android.systemui.res.R
+import com.android.systemui.statusbar.core.StatusBarConnectedDisplays
 import com.android.systemui.statusbar.pipeline.battery.domain.interactor.BatteryAttributionModel.Charging
 import com.android.systemui.statusbar.pipeline.battery.domain.interactor.BatteryAttributionModel.Defend
 import com.android.systemui.statusbar.pipeline.battery.domain.interactor.BatteryAttributionModel.PowerSave
@@ -298,7 +300,17 @@ sealed class BatteryViewModel(
          * Status bar battery height, based on a 26.5x13 base canvas. Defined in [sp] so that the
          * icon properly scales when the font size changes (consistent with other status bar icons)
          */
-        val STATUS_BAR_BATTERY_HEIGHT = 13.sp
+        fun getStatusBarBatteryHeight(context: Context): TextUnit {
+            return if (StatusBarConnectedDisplays.isEnabled) {
+                (13 * getScaleFactor(context)).sp
+            } else {
+                13.sp
+            }
+        }
+
+        private fun getScaleFactor(context: Context): Float {
+            return context.resources.getFloat(R.dimen.status_bar_icon_scale_factor)
+        }
 
         /** Resource id used to identify battery composable view in SysUI tests */
         const val TEST_TAG = "battery"
