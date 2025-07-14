@@ -28,9 +28,11 @@ import android.os.UserHandle
 import android.os.UserManager
 import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
+import android.platform.test.flag.junit.FlagsParameterization
+import android.platform.test.flag.junit.FlagsParameterization.allCombinationsOf
 import android.provider.Settings
-import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
+import com.android.systemui.Flags.FLAG_DO_NOT_USE_RUN_BLOCKING
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.broadcast.broadcastDispatcher
 import com.android.systemui.coroutines.collectLastValue
@@ -59,10 +61,12 @@ import org.mockito.Mockito.`when` as whenever
 import org.mockito.MockitoAnnotations
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
+import platform.test.runner.parameterized.ParameterizedAndroidJunit4
+import platform.test.runner.parameterized.Parameters
 
 @SmallTest
-@RunWith(AndroidJUnit4::class)
-class UserRepositoryImplTest : SysuiTestCase() {
+@RunWith(ParameterizedAndroidJunit4::class)
+class UserRepositoryImplTest(flags: FlagsParameterization) : SysuiTestCase() {
 
     private val kosmos = testKosmos().useUnconfinedTestDispatcher()
     private val testDispatcher = kosmos.testDispatcher
@@ -78,6 +82,10 @@ class UserRepositoryImplTest : SysuiTestCase() {
     private lateinit var underTest: UserRepositoryImpl
 
     private lateinit var tracker: FakeUserTracker
+
+    init {
+        mSetFlagsRule.setFlagsParameterization(flags)
+    }
 
     @Before
     fun setUp() {
@@ -581,6 +589,12 @@ class UserRepositoryImplTest : SysuiTestCase() {
 
     companion object {
         @JvmStatic private val IMMEDIATE = Dispatchers.Main.immediate
+
+        @JvmStatic
+        @Parameters(name = "{0}")
+        fun getParams(): List<FlagsParameterization> {
+            return allCombinationsOf(FLAG_DO_NOT_USE_RUN_BLOCKING)
+        }
     }
 
     private enum class LogoutUserResult {

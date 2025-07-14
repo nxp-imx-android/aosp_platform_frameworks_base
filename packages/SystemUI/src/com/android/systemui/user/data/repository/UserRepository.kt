@@ -33,6 +33,7 @@ import androidx.annotation.VisibleForTesting
 import com.android.app.tracing.coroutines.launchTraced as launch
 import com.android.app.tracing.coroutines.runBlockingTraced as runBlocking
 import com.android.internal.statusbar.IStatusBarService
+import com.android.systemui.Flags
 import com.android.systemui.broadcast.BroadcastDispatcher
 import com.android.systemui.common.coroutine.ChannelExt.trySendWithFailureLogging
 import com.android.systemui.dagger.SysUISingleton
@@ -192,7 +193,11 @@ constructor(
             .stateIn(
                 scope = applicationScope,
                 started = SharingStarted.Eagerly,
-                initialValue = runBlocking { getSettings() },
+                initialValue = if (Flags.doNotUseRunBlocking()) {
+                    UserSwitcherSettingsModel()
+                } else {
+                    runBlocking { getSettings() }
+                },
             )
     override val userSwitcherSettings: Flow<UserSwitcherSettingsModel> = _userSwitcherSettings
 
