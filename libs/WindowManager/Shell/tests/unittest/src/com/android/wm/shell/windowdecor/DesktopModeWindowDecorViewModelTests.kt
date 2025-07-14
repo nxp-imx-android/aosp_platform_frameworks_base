@@ -1484,6 +1484,48 @@ class DesktopModeWindowDecorViewModelTests : DesktopModeWindowDecorViewModelTest
     }
 
     @Test
+    fun nullDecor_shouldNotInitializeTiling() {
+        mockDesktopRepository.stub { on { getLeftTiledTask(1) } doReturn 1 }
+        mockDesktopRepository.stub { on { getRightTiledTask(2) } doReturn 2 }
+        windowDecorByTaskIdSpy.stub { on { get(1) } doReturn null }
+        windowDecorByTaskIdSpy.stub { on { get(2) } doReturn null }
+        mockTilingWindowDecoration.stub { on { tilingDeskActive(any()) } doReturn false }
+
+        desktopModeWindowDecorViewModel.onDeskActivated(1, 2)
+
+        verify(mockTilingWindowDecoration, never()).snapToHalfScreen(
+            taskInfo = any(),
+            windowDecoration = any(),
+            position = any(),
+            currentBounds = any(),
+            destinationBounds = any()
+        )
+    }
+
+    @Test
+    fun nonNullDecor_shouldInitializeTiling() {
+        val task = createTask(windowingMode = WINDOWING_MODE_FREEFORM)
+        val taskSurface = SurfaceControl()
+        val decoration = setUpMockDecorationForTask(task)
+        onTaskOpening(task, taskSurface)
+        mockDesktopRepository.stub { on { getLeftTiledTask(1) } doReturn task.taskId }
+        mockDesktopRepository.stub { on { getRightTiledTask(1) } doReturn task.taskId }
+        mockTilingWindowDecoration.stub { on { tilingDeskActive(any()) } doReturn false }
+        windowDecorByTaskIdSpy.stub { on { get(task.taskId) } doReturn decoration }
+        decoration.stub { on { taskInfo } doReturn task }
+
+        desktopModeWindowDecorViewModel.onDeskActivated(1, 2)
+
+        verify(mockTilingWindowDecoration, times(2)).snapToHalfScreen(
+            taskInfo = any(),
+            windowDecoration = any(),
+            position = any(),
+            currentBounds = any(),
+            destinationBounds = any()
+        )
+    }
+
+    @Test
     @EnableFlags(Flags.FLAG_ENABLE_BLOCK_NON_DESKTOP_DISPLAY_WINDOW_DRAG_BUGFIX)
     fun testOnFreeformWindowDragMove_toNonDesktopModeDisplay_setsNoDropIconAndKeepsBounds() {
         val onTouchListenerCaptor = argumentCaptor<View.OnTouchListener>()
