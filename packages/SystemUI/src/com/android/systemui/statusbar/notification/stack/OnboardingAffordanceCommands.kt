@@ -42,45 +42,50 @@ constructor(
     private val commandRegistry: CommandRegistry,
     private val bundleOnboardingInteractor: BundleOnboardingInteractor,
     private val summarizationOnboardingInteractor: SummarizationOnboardingInteractor,
-) :
-    ParseableCommand(
-        name = CMD_RESTORE_ONBOARDING,
-        description = "Restores a dismissed notification onboarding affordance.",
-    ),
-    CoreStartable {
-
-    private val target: Target by
-        param(
-                shortName = "t",
-                longName = "target",
-                description =
-                    """Which onboarding affordance to restore. One of "bundles" or "summaries".""",
-                valueParser = { arg ->
-                    when (arg) {
-                        "bundles",
-                        "b" -> Result.success(Target.Bundle)
-                        "summaries",
-                        "s" -> Result.success(Target.Summarization)
-                        else -> Result.failure(IllegalArgumentException("unknown target: $arg"))
-                    }
-                },
-            )
-            .required()
+) : CoreStartable {
 
     override fun start() {
-        commandRegistry.registerCommand(CMD_RESTORE_ONBOARDING) { this }
-    }
-
-    override fun execute(pw: PrintWriter) {
-        when (target) {
-            Target.Bundle -> bundleOnboardingInteractor.resurrectOnboarding()
-            Target.Summarization -> summarizationOnboardingInteractor.resurrectOnboarding()
-        }
+        commandRegistry.registerCommand(CMD_RESTORE_ONBOARDING) { Command() }
     }
 
     private enum class Target {
         Bundle,
         Summarization,
+    }
+
+    private inner class Command :
+        ParseableCommand(
+            name = CMD_RESTORE_ONBOARDING,
+            description = "Restores a dismissed notification onboarding affordance.",
+        ) {
+
+        private val target: Target by
+            param(
+                    shortName = "t",
+                    longName = "target",
+                    description =
+                        """
+                            Which onboarding affordance to restore. One of "bundles" or "summaries".
+                        """
+                            .trimIndent(),
+                    valueParser = { arg ->
+                        when (arg) {
+                            "bundles",
+                            "b" -> Result.success(Target.Bundle)
+                            "summaries",
+                            "s" -> Result.success(Target.Summarization)
+                            else -> Result.failure(IllegalArgumentException("unknown target: $arg"))
+                        }
+                    },
+                )
+                .required()
+
+        override fun execute(pw: PrintWriter) {
+            when (target) {
+                Target.Bundle -> bundleOnboardingInteractor.resurrectOnboarding()
+                Target.Summarization -> summarizationOnboardingInteractor.resurrectOnboarding()
+            }
+        }
     }
 
     @dagger.Module

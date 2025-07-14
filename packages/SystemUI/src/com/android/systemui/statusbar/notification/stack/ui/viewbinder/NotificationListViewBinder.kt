@@ -342,7 +342,7 @@ constructor(
                 }
             }
             .collectLatest { onboardingView ->
-                bundleOnboardingMgr.view.value = onboardingView
+                bundleOnboardingMgr.setOnboardingAffordanceView(onboardingView)
                 onboardingView?.let {
                     bundleOnboardingBinder.get().bind(onboardingViewModel, onboardingView)
                 }
@@ -368,7 +368,7 @@ constructor(
                 }
             }
             .collectLatest { summariesView ->
-                summarizationOnboardingMgr.view.value = summariesView
+                summarizationOnboardingMgr.setOnboardingAffordanceView(summariesView)
                 summariesView?.let {
                     summarizationOnboardingBinder.get().bind(summarizationViewModel, summariesView)
                 }
