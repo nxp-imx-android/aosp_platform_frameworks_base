@@ -59,11 +59,11 @@ class EndToEndTest {
         )
         val outSrcJar = assertLoadSrcJar(output, "out.srcjar")
         Truth.assertThat(outSrcJar["frameworks/base/org/example/Example.java"])
-                .containsMatch(Pattern.compile("\\{ String protoLogParam0 = " +
-                        "String\\.valueOf\\(argString\\); long protoLogParam1 = argInt; " +
-                        "com\\.android\\.internal\\.protolog.ProtoLogImpl_.*\\.d\\(" +
-                        "GROUP, -6872339441335321086L, 4, protoLogParam0, protoLogParam1" +
-                        "\\); \\}"))
+                .contains("String protoLogParam0 = String.valueOf(argString);"
+                        + "  long protoLogParam1 = argInt;"
+                        + "  com.android.internal.protolog.ProtoLogImpl_454675969.d("
+                        + "GROUP, -6872339441335321086L, 4, protoLogParam0, protoLogParam1);"
+                        + " }");
     }
 
     @Test
