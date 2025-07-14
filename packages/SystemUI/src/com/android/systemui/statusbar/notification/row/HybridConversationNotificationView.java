@@ -21,6 +21,7 @@ import android.annotation.Nullable;
 import android.app.Flags;
 import android.content.Context;
 import android.content.res.ColorStateList;
+import android.graphics.Typeface;
 import android.graphics.drawable.Icon;
 import android.text.TextUtils;
 import android.util.AttributeSet;
@@ -298,6 +299,7 @@ public class HybridConversationNotificationView extends HybridNotificationView {
             contentText = summarization;
             mTextView.setSingleLine(false);
             mTextView.setMaxLines(MAX_SUMMARIZATION_LINES);
+            mTextView.setTypeface(Typeface.create("variable-body-medium", Typeface.ITALIC));
         } else {
             mTextView.setSingleLine(true);
             if (conversationSenderName == null) {

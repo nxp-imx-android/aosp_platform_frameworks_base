@@ -47,6 +47,7 @@ import android.view.animation.Interpolator;
 import android.view.animation.PathInterpolator;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.RemoteViews;
 import android.widget.flags.Flags;
 
@@ -97,6 +98,8 @@ public class MessagingLayout extends FrameLayout
     private CharSequence mSummarizedContent;
     private int mSpacingForExpander;
     private int mSpacingForImage;
+    private LinearLayout mMessageContentView;
+    private int mSummarizationStartMargin;
 
     public MessagingLayout(@NonNull Context context) {
         super(context);
@@ -156,6 +159,10 @@ public class MessagingLayout extends FrameLayout
         int size = Math.max(displayMetrics.widthPixels, displayMetrics.heightPixels);
         mMessagingClipRect = new Rect(0, 0, size, size);
         setMessagingClippingDisabled(false);
+
+        mMessageContentView = findViewById(R.id.notification_main_column);
+        mSummarizationStartMargin = getResources().getDimensionPixelSize(
+                R.dimen.notification_2025_content_margin_start_summarization);
     }
 
     @RemotableViewMethod(asyncImpl = "setAvatarReplacementAsync")
@@ -192,10 +199,6 @@ public class MessagingLayout extends FrameLayout
     @RemotableViewMethod(asyncImpl = "setIsCollapsedAsync")
     public void setIsCollapsed(boolean isCollapsed) {
         mIsCollapsed = isCollapsed;
-        if (mIsCollapsed) {
-            mMessagingLinearLayout.setMaxDisplayedLines(
-                    android.app.Flags.nmCollapsedLines() ? 2 : 1);
-        }
     }
 
     /**
@@ -263,8 +266,7 @@ public class MessagingLayout extends FrameLayout
                 /* isHistoric= */true, usePrecomputedText, false);
         List<MessagingMessage> newMessagingMessages;
         mSummarizedContent = extras.getCharSequence(Notification.EXTRA_SUMMARIZED_CONTENT);
-        if (!TextUtils.isEmpty(mSummarizedContent) && mIsCollapsed) {
-            mMessagingLinearLayout.setMaxDisplayedLines(MAX_SUMMARIZATION_LINES);
+        if (isShowingSummarization()) {
             Notification.MessagingStyle.Message summary =
                     new Notification.MessagingStyle.Message(mSummarizedContent, 0, "");
             newMessagingMessages =
@@ -346,8 +348,36 @@ public class MessagingLayout extends FrameLayout
         }
     }
 
+    private void updateViewsForSummarization() {
+        int maxLines = Integer.MAX_VALUE;
+        if (isShowingSummarization()) {
+            maxLines = MAX_SUMMARIZATION_LINES;
+        } else if (mIsCollapsed) {
+            if (android.app.Flags.nmCollapsedLines()) {
+                maxLines = 2;
+            } else {
+                maxLines = 1;
+            }
+        }
+        mMessagingLinearLayout.setMaxDisplayedLines(maxLines);
+        if (isShowingSummarization()) {
+            ViewGroup.LayoutParams lp = mMessageContentView.getLayoutParams();
+            if (lp != null && lp instanceof MarginLayoutParams) {
+                final MarginLayoutParams mlp = (MarginLayoutParams) lp;
+                mlp.setMarginStart(mSummarizationStartMargin);
+                // this happens before layout, so we don't need to explicitly ask for one
+            }
+        }
+    }
+
+    private boolean isShowingSummarization() {
+        return !TextUtils.isEmpty(mSummarizedContent) && mIsCollapsed;
+    }
+
     private void bind(MessagingData messagingData) {
         setUser(messagingData.getUser());
+
+        updateViewsForSummarization();
 
         // Let's now create the views and reorder them accordingly
         ArrayList<MessagingGroup> oldGroups = new ArrayList<>(mGroups);
@@ -652,7 +682,7 @@ public class MessagingLayout extends FrameLayout
                 mMessagingLinearLayout.removeView(newGroup);
                 mMessagingLinearLayout.addView(newGroup, groupIndex);
             }
-            newGroup.setMessages(group);
+            newGroup.setMessages(group, isShowingSummarization());
         }
 
         if (Flags.dropNonExistingMessages()) {

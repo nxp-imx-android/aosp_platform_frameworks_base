@@ -92,9 +92,6 @@ public class MessagingTextMessage extends ImageFloatingTextView implements Messa
                     R.layout.notification_template_messaging_text_message,
                     messagingLinearLayout,
                     false);
-            if (useItalics) {
-                createdMessage.setTypeface(Typeface.DEFAULT, Typeface.ITALIC);
-            }
             createdMessage.addOnLayoutChangeListener(MessagingLayout.MESSAGING_PROPERTY_ANIMATOR);
         }
         createdMessage.setMessage(m, usePrecomputedText);
@@ -150,6 +147,25 @@ public class MessagingTextMessage extends ImageFloatingTextView implements Messa
     @Override
     public void setColor(int color) {
         setTextColor(color);
+    }
+
+    @Override
+    public void updateViewForSummarization(boolean summarizationShowing) {
+        if (summarizationShowing) {
+            // Summarization text is italic, so we have to add space for it or characters like 'j'
+            // will be cut off
+            setPaddingRelative(mContext.getResources().getDimensionPixelSize(
+                            R.dimen.notification_text_message_start_padding_summarization),
+                    getPaddingTop(), getPaddingEnd(), getPaddingBottom());
+            setTypeface(Typeface.create("variable-body-medium", Typeface.ITALIC));
+            setShadowLayer(25f, 0f, 0f, 0);
+        } else {
+            setPaddingRelative(mContext.getResources().getDimensionPixelSize(
+                    R.dimen.notification_text_message_start_padding),
+                    getPaddingTop(), getPaddingEnd(), getPaddingBottom());
+            setTextAppearance(R.style.TextAppearance_DeviceDefault_Notification);
+            setShadowLayer(0f, 0f, 0f, 0);
+        }
     }
 
     @Override
