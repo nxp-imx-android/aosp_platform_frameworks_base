@@ -17,6 +17,7 @@
 package com.android.wm.shell.flicker
 
 import android.app.Instrumentation
+import android.platform.test.annotations.Postsubmit
 import android.tools.NavBar
 import android.tools.Rotation
 import android.tools.flicker.AssertionInvocationGroup
@@ -46,6 +47,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 
 @RequiresDevice
+@Postsubmit
 @RunWith(FlickerServiceJUnit4ClassRunner::class)
 class AutoEnterPipWithSrcRectHintViaTapHomeTest {
     private val tapl: LauncherInstrumentation = LauncherInstrumentation()
