@@ -18,6 +18,7 @@ package com.android.server.wm;
 
 import static android.Manifest.permission.START_ACTIVITIES_FROM_BACKGROUND;
 import static android.app.ActivityManager.PROCESS_STATE_NONEXISTENT;
+import static android.app.ActivityManager.PROCESS_STATE_TOP;
 import static android.app.ActivityOptions.BackgroundActivityStartMode;
 import static android.app.ActivityOptions.MODE_BACKGROUND_ACTIVITY_START_ALLOWED;
 import static android.app.ActivityOptions.MODE_BACKGROUND_ACTIVITY_START_ALLOW_ALWAYS;
@@ -1096,11 +1097,11 @@ public class BackgroundActivityStartController {
                     mCheckCallerProcessInGracePeriod);
         }
         return evaluateChain(state, basedOnRealCaller, mCheckCallerVisible,
-                mCheckCallerNonAppVisible, mCheckCallerProcessAllowsForeground,
-                mCheckCallerIsAllowlistedUid, mCheckCallerIsAllowlistedComponent,
-                mCheckCallerHasBackgroundPermission, mCheckCallerHasSawPermission,
-                mCheckCallerHasBgStartAppOp, mCheckCallerProcessAllowsBackground,
-                mCheckCallerProcessInGracePeriod);
+                mCheckCallerNonAppVisible, mCheckCallerNonActivityTop,
+                mCheckCallerProcessAllowsForeground, mCheckCallerIsAllowlistedUid,
+                mCheckCallerIsAllowlistedComponent, mCheckCallerHasBackgroundPermission,
+                mCheckCallerHasSawPermission, mCheckCallerHasBgStartAppOp,
+                mCheckCallerProcessAllowsBackground, mCheckCallerProcessInGracePeriod);
     }
 
     interface BalExemptionCheck {
@@ -1145,6 +1146,18 @@ public class BackgroundActivityStartController {
         if (appSwitchAllowedOrFg && state.mCallingUidHasVisibleNotPinnedActivity) {
             return new BalVerdict(BAL_ALLOW_VISIBLE_WINDOW,
                     "callingUid has visible non-pinned window");
+        }
+        return BalVerdict.BLOCK;
+    };
+
+    private final BalExemptionCheck mCheckCallerNonActivityTop = state -> {
+        // Allows if the UID process state is at the top and the app is not yet hosting any
+        // activities. This is possible if the application starts an activity within its
+        // `Application#onCreate` method when the process started, identifying a visible activity
+        // from that app is not possible because the application process has not yet fully attached.
+        if (state.mCallerApp != null && !state.mCallerApp.hasActivities()
+                && state.mCallingUidProcState == PROCESS_STATE_TOP) {
+            return new BalVerdict(BAL_ALLOW_FOREGROUND, "callingUid is the current top");
         }
         return BalVerdict.BLOCK;
     };
