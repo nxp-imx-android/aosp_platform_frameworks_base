@@ -16,9 +16,29 @@
 
 package android.app.userrecovery;
 
+import android.app.userrecovery.IUserRecoverySession;
+import android.app.userrecovery.RecoveryChallenge;
+
 /**
-* Interface between an app and the server implementation service (UserRecoveryManagerService).
+* Main interface for managing user recovery operations.
 * @hide
 */
-oneway interface IUserRecoveryManager {
+interface IUserRecoveryManager {
+    /**
+     * Initiates a new recovery session for the given user to add recovery data.
+     * Returns an IUserRecoverySession instance to manage this specific session.
+     */
+    IUserRecoverySession createRecoverySession(int userId) = 0;
+
+    /**
+     * Requests a Recovery Agent Registration Token (RART) for the user.
+     * This token is used to register a new recovery agent.
+     */
+    byte[] requestRart(int userId) = 1;
+
+    /**
+     * Starts the recovery process for the user.
+     * Returns a challenge to be solved by the recovery agent.
+     */
+    RecoveryChallenge startRecovery(int userId) = 2;
 }
