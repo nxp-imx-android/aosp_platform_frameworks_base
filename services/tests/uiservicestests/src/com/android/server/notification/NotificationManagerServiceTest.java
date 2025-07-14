@@ -2698,6 +2698,108 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
 
     @Test
     @EnableFlags(FLAG_NOTIFICATION_FORCE_GROUPING)
+    public void testAggregatedSummary_updateUngroupedChildFlags_updatesSummary() throws Exception {
+        // Add 2 ungrouped notifications
+        NotificationRecord nr0 = generateNotificationRecord(mTestNotificationChannel, 0, mUserId);
+        mService.addEnqueuedNotification(nr0);
+        NotificationManagerService.PostNotificationRunnable runnable =
+                mService.new PostNotificationRunnable(nr0.getKey(), nr0.getSbn().getPackageName(),
+                    nr0.getUid(), mPostNotificationTrackerFactory.newTracker(null));
+        runnable.run();
+        waitForIdle();
+        moveTimeForwardAndWaitForIdle(DELAY_FORCE_REGROUP_TIME);
+
+        NotificationRecord nr1 = generateNotificationRecord(mTestNotificationChannel, 1, mUserId);
+        mService.addEnqueuedNotification(nr1);
+        runnable = mService.new PostNotificationRunnable(nr1.getKey(),
+                nr1.getSbn().getPackageName(), nr1.getUid(),
+                mPostNotificationTrackerFactory.newTracker(null));
+        runnable.run();
+        waitForIdle();
+        moveTimeForwardAndWaitForIdle(DELAY_FORCE_REGROUP_TIME);
+
+        // Check that the aggregate group summary was created
+        nr0.applyAdjustments();
+        nr1.applyAdjustments();
+        final String fullAggregateGroupKey = nr0.getGroupKey();
+        NotificationRecord aggregateSummary = mService.mSummaryByGroupKey.get(
+                fullAggregateGroupKey);
+        assertThat(aggregateSummary).isNotNull();
+        assertThat(aggregateSummary.getNotification().getGroup()).isEqualTo(fullAggregateGroupKey);
+        assertThat(aggregateSummary.getNotification().getChannelId()).isEqualTo(
+                nr0.getChannel().getId());
+        assertThat(aggregateSummary.getSbn().isOngoing()).isFalse();
+
+        // Update first child's flags
+        final NotificationRecord updatedNotification = generateNotificationRecord(
+                mTestNotificationChannel, 0, mUserId);
+        updatedNotification.getNotification().flags |= FLAG_ONGOING_EVENT;
+        mBinderService.enqueueNotificationWithTag(mPkg, mPkg, nr0.getSbn().getTag(),
+                nr0.getSbn().getId(), updatedNotification.getNotification(),
+                nr0.getSbn().getUserId());
+        waitForIdle();
+        moveTimeForwardAndWaitForIdle(DELAY_FORCE_REGROUP_TIME);
+
+        // Check that summary has FLAG_ONGOING_EVENT
+        assertThat(aggregateSummary.getSbn().isOngoing()).isTrue();
+    }
+
+    @Test
+    @EnableFlags(FLAG_NOTIFICATION_FORCE_GROUPING)
+    public void testAggregatedSummary_updateForceGroupedChildFlags_updatesSummary()
+            throws Exception {
+        // Add 2 summary notifications without children
+        final String originalGroupName = "originalGroup";
+        final NotificationRecord nr0 =
+                generateNotificationRecord(mTestNotificationChannel, 0, originalGroupName, true);
+        mService.addEnqueuedNotification(nr0);
+        NotificationManagerService.PostNotificationRunnable runnable =
+                mService.new PostNotificationRunnable(nr0.getKey(), nr0.getSbn().getPackageName(),
+                    nr0.getUid(), mPostNotificationTrackerFactory.newTracker(null));
+        runnable.run();
+        waitForIdle();
+        moveTimeForwardAndWaitForIdle(DELAY_FORCE_REGROUP_TIME);
+
+        final NotificationRecord nr1 =
+                generateNotificationRecord(mTestNotificationChannel, 1, originalGroupName, true);
+        mService.addEnqueuedNotification(nr1);
+        runnable = mService.new PostNotificationRunnable(nr1.getKey(),
+                nr1.getSbn().getPackageName(), nr1.getUid(),
+                    mPostNotificationTrackerFactory.newTracker(null));
+        runnable.run();
+        waitForIdle();
+        moveTimeForwardAndWaitForIdle(DELAY_FORCE_REGROUP_TIME);
+
+        // Check that the aggregate group summary was created
+        nr0.applyAdjustments();
+        nr1.applyAdjustments();
+        final String fullAggregateGroupKey = nr0.getGroupKey();
+        NotificationRecord aggregateSummary = mService.mSummaryByGroupKey.get(
+                fullAggregateGroupKey);
+        assertThat(aggregateSummary).isNotNull();
+        assertThat(aggregateSummary.getNotification().getGroup()).isEqualTo(fullAggregateGroupKey);
+        assertThat(aggregateSummary.getNotification().getChannelId()).isEqualTo(
+                nr0.getChannel().getId());
+        assertThat(aggregateSummary.getSbn().isOngoing()).isFalse();
+        assertThat(nr0.getNotification().isGroupSummary()).isFalse();
+        assertThat(nr1.getNotification().isGroupSummary()).isFalse();
+
+        // Update first child's flags
+        final NotificationRecord updatedNotification =
+                generateNotificationRecord(mTestNotificationChannel, 0, originalGroupName, true);
+        updatedNotification.getNotification().flags |= FLAG_ONGOING_EVENT;
+        mBinderService.enqueueNotificationWithTag(mPkg, mPkg, nr0.getSbn().getTag(),
+                nr0.getSbn().getId(), updatedNotification.getNotification(),
+                nr0.getSbn().getUserId());
+        waitForIdle();
+        moveTimeForwardAndWaitForIdle(DELAY_FORCE_REGROUP_TIME);
+
+        // Check that summary has FLAG_ONGOING_EVENT
+        assertThat(aggregateSummary.getSbn().isOngoing()).isTrue();
+    }
+
+    @Test
+    @EnableFlags(FLAG_NOTIFICATION_FORCE_GROUPING)
     public void testAddAggregateNotification_notifyPostedLocked() throws Exception {
         final String originalGroupName = "originalGroup";
         final NotificationRecord r =
