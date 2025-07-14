@@ -348,6 +348,12 @@
     <!-- Button to stop a screen recording [CHAR LIMIT=35] -->
     <string name="screenrecord_stop_dialog_button">Stop recording</string>
 
+    <!-- Screen recording should record device audio setting [CHAR LIMIT=35] -->
+    <string name="screen_record_record_device_audio_label">Record device audio</string>
+    <!-- Screen recording should record microphone setting [CHAR LIMIT=35] -->
+    <string name="screen_record_record_microphone_label">Record microphone</string>
+    <!-- Screen recording should show touches setting [CHAR LIMIT=35] -->
+    <string name="screen_record_should_show_touches_label">Show touches</string>
     <!-- Header for the carousel to choose an app for screen recording. [CHAR LIMIT=50] -->
     <string name="screen_record_capture_target_choose_app">Choose an app to record</string>
 

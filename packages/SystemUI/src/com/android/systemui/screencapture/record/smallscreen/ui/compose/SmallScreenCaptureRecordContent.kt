@@ -29,6 +29,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
@@ -50,6 +51,7 @@ import androidx.compose.ui.unit.dp
 import com.android.compose.PlatformIconButton
 import com.android.systemui.lifecycle.rememberViewModel
 import com.android.systemui.res.R
+import com.android.systemui.screencapture.common.ScreenCaptureScope
 import com.android.systemui.screencapture.common.ui.compose.PrimaryButton
 import com.android.systemui.screencapture.common.ui.compose.ScreenCaptureContent
 import com.android.systemui.screencapture.common.ui.compose.loadIcon
@@ -57,8 +59,7 @@ import com.android.systemui.screencapture.record.smallscreen.ui.viewmodel.Record
 import com.android.systemui.screencapture.record.smallscreen.ui.viewmodel.SmallScreenCaptureRecordViewModel
 import javax.inject.Inject
 
-private val elevation = 6.dp
-
+@ScreenCaptureScope
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 class SmallScreenCaptureRecordContent
 @Inject
@@ -88,7 +89,7 @@ constructor(private val viewModelFactory: SmallScreenCaptureRecordViewModel.Fact
             Surface(
                 shape = FloatingToolbarDefaults.ContainerShape,
                 color = MaterialTheme.colorScheme.surface,
-                shadowElevation = elevation,
+                shadowElevation = 6.dp,
             ) {
                 Row(
                     modifier = Modifier.height(64.dp).padding(horizontal = 12.dp),
@@ -124,29 +125,34 @@ constructor(private val viewModelFactory: SmallScreenCaptureRecordViewModel.Fact
             Surface(
                 color = MaterialTheme.colorScheme.surface,
                 shape = RoundedCornerShape(28.dp),
-                shadowElevation = elevation,
-                modifier =
-                    Modifier.animateContentSize()
-                        .widthIn(max = 352.dp)
-                        .padding(start = 30.dp, end = 30.dp),
+                shadowElevation = 2.dp,
+                modifier = Modifier.animateContentSize(),
             ) {
                 AnimatedContent(
                     targetState = viewModel.detailsPopup,
                     contentAlignment = Alignment.Center,
                     transitionSpec = { fadeIn() togetherWith fadeOut() },
+                    modifier = Modifier.widthIn(max = 352.dp),
                 ) { currentPopup ->
+                    val contentModifier = Modifier.fillMaxWidth()
                     when (currentPopup) {
                         RecordDetailsPopupType.Empty -> {
                             /* show nothing */
                         }
-                        RecordDetailsPopupType.Settings -> RecordDetailsSettings()
+                        RecordDetailsPopupType.Settings ->
+                            RecordDetailsSettings(
+                                viewModel = viewModel.recordDetailsParametersViewModel,
+                                drawableLoaderViewModel = viewModel,
+                                modifier = contentModifier,
+                            )
                         RecordDetailsPopupType.AppSelector ->
                             RecordDetailsAppSelector(
                                 viewModel = viewModel.recordDetailsAppSelectorViewModel,
                                 onBackPressed = { viewModel.showSettings() },
+                                modifier = contentModifier,
                             )
                         RecordDetailsPopupType.MarkupColorSelector ->
-                            RecordDetailsMarkupColorSelector()
+                            RecordDetailsMarkupColorSelector(modifier = contentModifier)
                     }
                 }
             }
