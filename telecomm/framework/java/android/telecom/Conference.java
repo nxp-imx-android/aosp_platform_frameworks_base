@@ -19,6 +19,7 @@ package android.telecom;
 import static android.Manifest.permission.MODIFY_PHONE_STATE;
 
 import android.annotation.ElapsedRealtimeLong;
+import android.annotation.FlaggedApi;
 import android.annotation.IntRange;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
@@ -29,6 +30,8 @@ import android.os.Bundle;
 import android.os.SystemClock;
 import android.telecom.Connection.VideoProvider;
 import android.util.ArraySet;
+
+import com.android.server.telecom.flags.Flags;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -56,7 +59,9 @@ public abstract class Conference extends Conferenceable {
         public void onDisconnected(Conference conference, DisconnectCause disconnectCause) {}
         public void onConnectionAdded(Conference conference, Connection connection) {}
         public void onConnectionRemoved(Conference conference, Connection connection) {}
-        public void onConferenceableConnectionsChanged(
+        public void onConferenceablesChanged(
+                Conference conference, List<Conferenceable> conferenceables) {}
+        public void onConferenceableConnectionsChangedLegacy(
                 Conference conference, List<Connection> conferenceableConnections) {}
         public void onDestroyed(Conference conference) {}
         public void onConnectionCapabilitiesChanged(
@@ -81,6 +86,9 @@ public abstract class Conference extends Conferenceable {
     private final List<Connection> mChildConnections = new CopyOnWriteArrayList<>();
     private final List<Connection> mUnmodifiableChildConnections =
             Collections.unmodifiableList(mChildConnections);
+    private final List<Conferenceable> mConferenceables = new ArrayList<>();
+    private final List<Conferenceable> mUnmodifiableConferenceables =
+            Collections.unmodifiableList(mConferenceables);
     private final List<Connection> mConferenceableConnections = new ArrayList<>();
     private final List<Connection> mUnmodifiableConferenceableConnections =
             Collections.unmodifiableList(mConferenceableConnections);
@@ -108,11 +116,26 @@ public abstract class Conference extends Conferenceable {
     private boolean mRingbackRequested = false;
     private boolean mIsMultiparty = true;
 
+    private final Listener mConferenceDeathListener = new Listener() {
+        @Override
+        public void onDestroyed(Conference c) {
+            if (mConferenceables.remove(c)) {
+                fireOnConferenceableConnectionsChanged();
+            }
+        }
+    };
+
     private final Connection.Listener mConnectionDeathListener = new Connection.Listener() {
         @Override
         public void onDestroyed(Connection c) {
-            if (mConferenceableConnections.remove(c)) {
-                fireOnConferenceableConnectionsChanged();
+            if (Flags.multiPartyAnchorConf()) {
+                if (mConferenceables.remove(c)) {
+                    fireOnConferenceableConnectionsChanged();
+                }
+            } else {
+                if (mConferenceableConnections.remove(c)) {
+                    fireOnConferenceableConnectionsChanged();
+                }
             }
         }
     };
@@ -278,6 +301,16 @@ public abstract class Conference extends Conferenceable {
      * @param connection The {@code Connection} to merge.
      */
     public void onMerge(Connection connection) {}
+
+    /**
+     * Notifies the {@link Conference} when the specified {@link Conference} should be merged with
+     * the conference call.
+     *
+     * @param conference The {@code Conference} to merge.
+     */
+    @FlaggedApi(Flags.FLAG_MULTI_PARTY_ANCHOR_CONF)
+
+    public void onMerge(@NonNull Conference conference) {}
 
     /**
      * Notifies the {@link Conference} when it should be put on hold.
@@ -520,16 +553,53 @@ public abstract class Conference extends Conferenceable {
     /**
      * Sets the connections with which this connection can be conferenced.
      *
-     * @param conferenceableConnections The set of connections this connection can conference with.
+     * @param conferenceableConnections The set of connections this conference can conference with.
+     *
+     * @deprecated Use {@link #setConferenceables} instead.
      */
+    @FlaggedApi(Flags.FLAG_MULTI_PARTY_ANCHOR_CONF)
+    @Deprecated
     public final void setConferenceableConnections(List<Connection> conferenceableConnections) {
         clearConferenceableList();
         for (Connection c : conferenceableConnections) {
             // If statement checks for duplicates in input. It makes it N^2 but we're dealing with a
             // small amount of items here.
-            if (!mConferenceableConnections.contains(c)) {
-                c.addConnectionListener(mConnectionDeathListener);
-                mConferenceableConnections.add(c);
+            if (Flags.multiPartyAnchorConf()) {
+                if (!mConferenceables.contains(c)) {
+                    c.addConnectionListener(mConnectionDeathListener);
+                    mConferenceables.add(c);
+                }
+            } else {
+                if (!mConferenceableConnections.contains(c)) {
+                    c.addConnectionListener(mConnectionDeathListener);
+                    mConferenceableConnections.add(c);
+                }
+            }
+
+        }
+        fireOnConferenceableConnectionsChanged();
+    }
+
+    /**
+     * Sets a list of connections or conferences with which this conference can be conferenced.
+     *
+     * @param conferenceables The set of conferenceables this conference can conference with.
+     */
+    @FlaggedApi(Flags.FLAG_MULTI_PARTY_ANCHOR_CONF)
+    public final void setConferenceables(@NonNull List<Conferenceable> conferenceables) {
+        clearConferenceableList();
+        for (Conferenceable c : conferenceables) {
+            // If statement checks for duplicates in input. It makes it N^2 but we're dealing with a
+            // small amount of items here.
+            if (!mConferenceables.contains(c)) {
+                if (c instanceof Connection) {
+                    Connection connection = (Connection) c;
+                    connection.addConnectionListener(mConnectionDeathListener);
+                } else if (c instanceof Conference) {
+                    Conference conference = (Conference) c;
+                    conference.addListener(mConferenceDeathListener);
+                }
+                mConferenceables.add(c);
             }
         }
         fireOnConferenceableConnectionsChanged();
@@ -582,15 +652,38 @@ public abstract class Conference extends Conferenceable {
 
     private final void fireOnConferenceableConnectionsChanged() {
         for (Listener l : mListeners) {
-            l.onConferenceableConnectionsChanged(this, getConferenceableConnections());
+            if (Flags.multiPartyAnchorConf()) {
+                l.onConferenceablesChanged(this, getConferenceables());
+            } else {
+                l.onConferenceableConnectionsChangedLegacy(this,
+                        getConferenceableConnections());
+            }
         }
+    }
+
+    /**
+     * Returns the {@link Connection}s or {@link Conference}s with which this {@link Conference}
+     * can be merged / conferenced.
+     */
+    @FlaggedApi(Flags.FLAG_MULTI_PARTY_ANCHOR_CONF)
+    public final @NonNull List<Conferenceable> getConferenceables() {
+        return mUnmodifiableConferenceables;
     }
 
     /**
      * Returns the connections with which this connection can be conferenced.
      */
     public final List<Connection> getConferenceableConnections() {
-        return mUnmodifiableConferenceableConnections;
+        if (Flags.multiPartyAnchorConf()) {
+            // return the list of Connection instances from mUnmodifiableConferenceables
+            List<Connection> connections = new ArrayList<>();
+            for (Conferenceable c : mUnmodifiableConferenceables) {
+                if (c instanceof Connection) connections.add((Connection) c);
+            }
+            return connections;
+        } else {
+            return mUnmodifiableConferenceableConnections;
+        }
     }
 
     /**
@@ -846,10 +939,23 @@ public abstract class Conference extends Conferenceable {
     }
 
     private final void clearConferenceableList() {
-        for (Connection c : mConferenceableConnections) {
-            c.removeConnectionListener(mConnectionDeathListener);
+        if (Flags.multiPartyAnchorConf()) {
+            for (Conferenceable c : mConferenceables) {
+                if (c instanceof Connection) {
+                    Connection connection = (Connection) c;
+                    connection.removeConnectionListener(mConnectionDeathListener);
+                } else if (c instanceof Conference) {
+                    Conference conference = (Conference) c;
+                    conference.removeListener(mConferenceDeathListener);
+                }
+            }
+            mConferenceables.clear();
+        } else {
+            for (Connection c : mConferenceableConnections) {
+                c.removeConnectionListener(mConnectionDeathListener);
+            }
+            mConferenceableConnections.clear();
         }
-        mConferenceableConnections.clear();
     }
 
     @Override
