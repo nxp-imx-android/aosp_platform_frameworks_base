@@ -1429,7 +1429,8 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
             // that transaction will be applied on top of those of the merged transitions
             mFinishTransaction = finishT;
             boolean passTransitionInfo = ENABLE_DESKTOP_RECENTS_TRANSITIONS_CORNERS_BUGFIX.isTrue();
-            if (!passTransitionInfo) {
+            if (!passTransitionInfo
+                    && !com.android.window.flags.Flags.releaseAllTransitionSurfaces()) {
                 // not using the incoming anim-only surfaces
                 info.releaseAnimSurfaces();
             }
