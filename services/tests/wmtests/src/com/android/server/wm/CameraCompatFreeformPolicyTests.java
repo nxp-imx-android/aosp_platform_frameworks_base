@@ -41,6 +41,7 @@ import static com.android.dx.mockito.inline.extended.ExtendedMockito.doAnswer;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.doReturn;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.spyOn;
 import static com.android.server.wm.AppCompatConfiguration.MIN_FIXED_ORIENTATION_LETTERBOX_ASPECT_RATIO;
+import static com.android.window.flags.Flags.FLAG_ENABLE_CAMERA_COMPAT_COMPATIBILITY_INFO_ROTATE_AND_CROP_BUGFIX;
 import static com.android.window.flags.Flags.FLAG_ENABLE_CAMERA_COMPAT_FOR_DESKTOP_WINDOWING;
 import static com.android.window.flags.Flags.FLAG_ENABLE_CAMERA_COMPAT_FOR_DESKTOP_WINDOWING_OPT_OUT;
 
@@ -559,7 +560,7 @@ public class CameraCompatFreeformPolicyTests extends WindowTestsBase {
     @Test
     @EnableFlags(FLAG_ENABLE_CAMERA_COMPAT_FOR_DESKTOP_WINDOWING)
     @EnableCompatChanges({OVERRIDE_CAMERA_COMPAT_ENABLE_FREEFORM_WINDOWING_TREATMENT})
-    public void testOnCameraOpened_portraitActivity_sandboxesDisplayRotationAndUpdatesApp() {
+    public void testOnCameraOpened_portraitActivity_sendsDisplayRotationInCompatibilityInfo() {
         runTestScenario((robot) -> {
             robot.configureActivity(SCREEN_ORIENTATION_PORTRAIT);
             robot.activity().rotateDisplayForTopActivity(ROTATION_270);
@@ -569,6 +570,40 @@ public class CameraCompatFreeformPolicyTests extends WindowTestsBase {
             // This is a portrait rotation for a device with portrait natural orientation (most
             // common, currently the only one supported).
             robot.assertCompatibilityInfoSentWithDisplayRotation(ROTATION_0);
+        });
+    }
+
+    @Test
+    @EnableFlags({FLAG_ENABLE_CAMERA_COMPAT_FOR_DESKTOP_WINDOWING,
+            FLAG_ENABLE_CAMERA_COMPAT_COMPATIBILITY_INFO_ROTATE_AND_CROP_BUGFIX})
+    @EnableCompatChanges({OVERRIDE_CAMERA_COMPAT_ENABLE_FREEFORM_WINDOWING_TREATMENT})
+    public void testOnCameraOpened_portraitActivity90_sendsCameraRotation270InCompatibilityInfo() {
+        runTestScenario((robot) -> {
+            robot.configureActivity(SCREEN_ORIENTATION_PORTRAIT);
+            robot.activity().rotateDisplayForTopActivity(ROTATION_90);
+
+            robot.onCameraOpened(CAMERA_ID_1, TEST_PACKAGE_1);
+
+            // This is a difference between the sandboxed display rotation (0) and the real display
+            // rotation (90).
+            robot.assertCompatibilityInfoSentWithCameraRotation(ROTATION_270);
+        });
+    }
+
+    @Test
+    @EnableFlags({FLAG_ENABLE_CAMERA_COMPAT_FOR_DESKTOP_WINDOWING,
+            FLAG_ENABLE_CAMERA_COMPAT_COMPATIBILITY_INFO_ROTATE_AND_CROP_BUGFIX})
+    @EnableCompatChanges({OVERRIDE_CAMERA_COMPAT_ENABLE_FREEFORM_WINDOWING_TREATMENT})
+    public void testOnCameraOpened_portraitActivity270_sendsCameraRotation90InCompatibilityInfo() {
+        runTestScenario((robot) -> {
+            robot.configureActivity(SCREEN_ORIENTATION_PORTRAIT);
+            robot.activity().rotateDisplayForTopActivity(ROTATION_270);
+
+            robot.onCameraOpened(CAMERA_ID_1, TEST_PACKAGE_1);
+
+            // This is a difference between the sandboxed display rotation (0) and the real display
+            // rotation (270).
+            robot.assertCompatibilityInfoSentWithCameraRotation(ROTATION_90);
         });
     }
 
@@ -848,6 +883,23 @@ public class CameraCompatFreeformPolicyTests extends WindowTestsBase {
             final CompatibilityInfo compatInfo = compatibilityInfoArgumentCaptor.getValue();
             assertTrue(compatInfo.isOverrideDisplayRotationRequired());
             assertEquals(expectedRotation, compatInfo.applicationDisplayRotation);
+        }
+
+        void assertCompatibilityInfoSentWithCameraRotation(@Surface.Rotation int
+                expectedRotation) {
+            final ArgumentCaptor<CompatibilityInfo> compatibilityInfoArgumentCaptor =
+                    ArgumentCaptor.forClass(CompatibilityInfo.class);
+            try {
+                verify(activity().top().app.getThread()).updatePackageCompatibilityInfo(
+                        eq(activity().top().packageName),
+                        compatibilityInfoArgumentCaptor.capture());
+            } catch (RemoteException e) {
+                fail(e.getMessage());
+            }
+
+            final CompatibilityInfo compatInfo = compatibilityInfoArgumentCaptor.getValue();
+            assertTrue(compatInfo.isOverrideCameraRotationRequired());
+            assertEquals(expectedRotation, compatInfo.applicationCameraRotation);
         }
 
         CameraCompatFreeformPolicy cameraCompatFreeformPolicy() {

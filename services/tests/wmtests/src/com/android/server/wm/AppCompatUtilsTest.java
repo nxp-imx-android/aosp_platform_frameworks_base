@@ -33,6 +33,7 @@ import android.annotation.Nullable;
 import android.app.CameraCompatTaskInfo.FreeformCameraCompatMode;
 import android.app.TaskInfo;
 import android.graphics.Rect;
+import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
 import android.view.DisplayInfo;
@@ -209,6 +210,7 @@ public class AppCompatUtilsTest extends WindowTestsBase {
 
     @Test
     @EnableFlags(Flags.FLAG_ENABLE_CAMERA_COMPAT_FOR_DESKTOP_WINDOWING)
+    @DisableFlags(Flags.FLAG_ENABLE_CAMERA_COMPAT_COMPATIBILITY_INFO_ROTATE_AND_CROP_BUGFIX)
     public void getTaskInfoPropagatesCameraCompatMode() {
         runTestScenario((robot) -> {
             robot.dw().allowEnterDesktopMode(/* isAllowed= */ true);
