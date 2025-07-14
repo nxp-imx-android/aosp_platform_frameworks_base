@@ -16,6 +16,7 @@
 
 package com.android.wm.shell.compatui.letterbox.lifecycle
 
+import android.app.TaskInfo
 import android.graphics.Rect
 import android.view.SurfaceControl
 import android.window.TransitionInfo.Change
@@ -74,9 +75,13 @@ fun Change.isActivityChange(): Boolean = activityTransitionInfo != null
 /** Returns [true] if the [Change] is related to a translucent container. */
 fun Change.isTranslucent() = hasFlags(FLAG_TRANSLUCENT)
 
+/** Returns [true] if the related [Task] is a leaf task. */
+val TaskInfo.isALeafTask: Boolean
+    get() = appCompatTaskInfo?.isLeafTask ?: false
+
 /**
- * Returns [true] if the Task hosts Activities. This is true if the Change has Activity as target or
- * if task is a leaf task.
+ * Returns [true] if the [Task] hosts Activities. This is true if the Change has [Activity] as
+ * target or if task is a leaf task.
  */
 fun Change.isChangeForALeafTask(): Boolean =
     taskInfo?.appCompatTaskInfo?.isLeafTask ?: isActivityChange()
