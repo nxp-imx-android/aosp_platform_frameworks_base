@@ -27,11 +27,10 @@ import com.android.server.companion.datatransfer.continuity.messages.HandoffRequ
 import com.android.server.companion.datatransfer.continuity.messages.TaskContinuityMessage;
 import com.android.server.companion.datatransfer.continuity.messages.TaskContinuityMessageSerializer;
 import com.android.server.companion.datatransfer.continuity.handoff.HandoffActivityStarter;
+import com.android.server.companion.datatransfer.continuity.handoff.HandoffRequestCallbackHolder;
 
-import android.app.ActivityOptions;
 import android.app.HandoffActivityData;
 import android.content.Context;
-import android.content.Intent;
 import android.companion.CompanionDeviceManager;
 import android.companion.datatransfer.continuity.IHandoffRequestCallback;
 import android.os.Bundle;
@@ -40,10 +39,8 @@ import android.util.Slog;
 import android.os.UserHandle;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.Set;
+import java.util.HashSet;
 
 /**
  * Controller for outbound handoff requests.
@@ -55,11 +52,14 @@ public class OutboundHandoffRequestController {
 
     private static final String TAG = "OutboundHandoffRequestController";
 
+    private record PendingHandoffRequest(int associationId, int taskId) {}
+
     private final Context mContext;
     private final CompanionDeviceManager mCompanionDeviceManager;
     private final ConnectedAssociationStore mConnectedAssociationStore;
-    private final Map<Integer, Map<Integer, List<IHandoffRequestCallback>>> mPendingCallbacks
-        = new HashMap<>();
+    private final HandoffRequestCallbackHolder mHandoffRequestCallbackHolder
+        = new HandoffRequestCallbackHolder();
+    private final Set<PendingHandoffRequest> mPendingHandoffRequests = new HashSet<>();
 
     public OutboundHandoffRequestController(
         Context context,
@@ -84,19 +84,14 @@ public class OutboundHandoffRequestController {
             return;
         }
 
-        synchronized (mPendingCallbacks) {
-            if (!mPendingCallbacks.containsKey(associationId)) {
-                mPendingCallbacks.put(associationId, new HashMap<>());
-            }
-
-            if (mPendingCallbacks.get(associationId).containsKey(taskId)) {
-                mPendingCallbacks.get(associationId).get(taskId).add(callback);
+        synchronized (mPendingHandoffRequests) {
+            PendingHandoffRequest request = new PendingHandoffRequest(associationId, taskId);
+            if (mPendingHandoffRequests.contains(request)) {
+                mHandoffRequestCallbackHolder.registerCallback(associationId, taskId, callback);
                 return;
             }
 
-            List<IHandoffRequestCallback> callbacks = new ArrayList<>();
-            callbacks.add(callback);
-            mPendingCallbacks.get(associationId).put(taskId, callbacks);
+            mPendingHandoffRequests.add(request);
             HandoffRequestMessage handoffRequestMessage = new HandoffRequestMessage(taskId);
             try {
                 mCompanionDeviceManager.sendMessage(
@@ -105,7 +100,10 @@ public class OutboundHandoffRequestController {
                     new int[] {associationId});
             } catch (IOException e) {
                 Slog.e(TAG, "Failed to send handoff request message to device " + associationId, e);
+                return;
             }
+
+            mHandoffRequestCallbackHolder.registerCallback(associationId, taskId, callback);
         }
     }
 
@@ -113,19 +111,18 @@ public class OutboundHandoffRequestController {
         int associationId,
         HandoffRequestResultMessage handoffRequestResultMessage) {
 
-        synchronized (mPendingCallbacks) {
+        synchronized (mPendingHandoffRequests) {
+            PendingHandoffRequest request
+                = new PendingHandoffRequest(associationId, handoffRequestResultMessage.taskId());
+            if (!mPendingHandoffRequests.contains(request)) {
+                return;
+            }
+
             if (handoffRequestResultMessage.statusCode() != HANDOFF_REQUEST_RESULT_SUCCESS) {
                 finishHandoffRequest(
                     associationId,
                     handoffRequestResultMessage.taskId(),
                     handoffRequestResultMessage.statusCode());
-            }
-
-            if (handoffRequestResultMessage.activities().isEmpty()) {
-                finishHandoffRequest(
-                    associationId,
-                    handoffRequestResultMessage.taskId(),
-                    HANDOFF_REQUEST_RESULT_FAILURE_NO_DATA_PROVIDED_BY_TASK);
                 return;
             }
 
@@ -148,27 +145,15 @@ public class OutboundHandoffRequestController {
     }
 
     private void finishHandoffRequest(int associationId, int taskId, int statusCode) {
-        synchronized (mPendingCallbacks) {
-            if (!mPendingCallbacks.containsKey(associationId)) {
+        synchronized (mPendingHandoffRequests) {
+            PendingHandoffRequest request = new PendingHandoffRequest(associationId, taskId);
+            if (!mPendingHandoffRequests.contains(request)) {
                 return;
             }
 
-            Map<Integer, List<IHandoffRequestCallback>> pendingCallbacksForAssociation =
-                mPendingCallbacks.get(associationId);
-
-            if (!pendingCallbacksForAssociation.containsKey(taskId)) {
-                return;
-            }
-
-            for (IHandoffRequestCallback callback : pendingCallbacksForAssociation.get(taskId)) {
-                try {
-                    callback.onHandoffRequestFinished(associationId, taskId, statusCode);
-                } catch (RemoteException e) {
-                    Slog.e(TAG, "Failed to notify callback of handoff request result", e);
-                }
-            }
-
-            pendingCallbacksForAssociation.remove(taskId);
+            mPendingHandoffRequests.remove(request);
+            mHandoffRequestCallbackHolder
+                .notifyAndRemoveCallbacks(associationId, taskId, statusCode);
         }
     }
 }

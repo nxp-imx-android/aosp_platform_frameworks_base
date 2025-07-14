@@ -88,7 +88,7 @@ public class OutboundHandoffRequestControllerTest {
     public void testRequestHandoff_success() throws Exception {
         int associationId = 1;
         int taskId = 1;
-        HandoffRequestCallbackHolder callbackHolder = new HandoffRequestCallbackHolder();
+        FakeHandoffRequestCallback callbackHolder = new FakeHandoffRequestCallback();
         AssociationInfo mockAssociationInfo = createAssociationInfo(associationId, "device");
         when(mMockConnectedAssociationStore.getConnectedAssociationById(associationId))
             .thenReturn(mockAssociationInfo);
@@ -97,7 +97,7 @@ public class OutboundHandoffRequestControllerTest {
         mOutboundHandoffRequestController.requestHandoff(
             associationId,
             taskId,
-            callbackHolder.callback);
+            callbackHolder);
 
         // Verify HandoffRequestMessage was sent.
         HandoffRequestMessage expectedHandoffRequestMessage = new HandoffRequestMessage(taskId);
@@ -152,13 +152,13 @@ public class OutboundHandoffRequestControllerTest {
     public void testRequestHandoff_associationNotConnected_returnsFailure() {
         int associationId = 1;
         int taskId = 1;
-        HandoffRequestCallbackHolder callbackHolder = new HandoffRequestCallbackHolder();
+        FakeHandoffRequestCallback callbackHolder = new FakeHandoffRequestCallback();
         when(mMockConnectedAssociationStore.getConnectedAssociationById(associationId))
             .thenReturn(null);
         mOutboundHandoffRequestController.requestHandoff(
             associationId,
             taskId,
-            callbackHolder.callback);
+            callbackHolder);
 
         // Verify the callback was invoked.
         callbackHolder.verifyInvoked(
@@ -176,16 +176,16 @@ public class OutboundHandoffRequestControllerTest {
             .thenReturn(mockAssociationInfo);
 
         // Request handoff multiple times.
-        HandoffRequestCallbackHolder firstCallback = new HandoffRequestCallbackHolder();
-        HandoffRequestCallbackHolder secondCallback = new HandoffRequestCallbackHolder();
+        FakeHandoffRequestCallback firstCallback = new FakeHandoffRequestCallback();
+        FakeHandoffRequestCallback secondCallback = new FakeHandoffRequestCallback();
         mOutboundHandoffRequestController.requestHandoff(
             associationId,
             taskId,
-            firstCallback.callback);
+            firstCallback);
         mOutboundHandoffRequestController.requestHandoff(
             associationId,
             taskId,
-            secondCallback.callback);
+            secondCallback);
 
         HandoffRequestMessage expectedHandoffRequestMessage = new HandoffRequestMessage(taskId);
         verify(mMockCompanionDeviceManagerService, times(1)).sendMessage(
@@ -202,11 +202,11 @@ public class OutboundHandoffRequestControllerTest {
         AssociationInfo mockAssociationInfo = createAssociationInfo(associationId, "device");
         when(mMockConnectedAssociationStore.getConnectedAssociationById(associationId))
             .thenReturn(mockAssociationInfo);
-        HandoffRequestCallbackHolder callback = new HandoffRequestCallbackHolder();
+        FakeHandoffRequestCallback callback = new FakeHandoffRequestCallback();
         mOutboundHandoffRequestController.requestHandoff(
             associationId,
             taskId,
-            callback.callback);
+            callback);
 
         // Simulate a message failure
         int failureStatusCode =
@@ -233,11 +233,11 @@ public class OutboundHandoffRequestControllerTest {
         AssociationInfo mockAssociationInfo = createAssociationInfo(associationId, "device");
         when(mMockConnectedAssociationStore.getConnectedAssociationById(associationId))
             .thenReturn(mockAssociationInfo);
-        HandoffRequestCallbackHolder callback = new HandoffRequestCallbackHolder();
+        FakeHandoffRequestCallback callback = new FakeHandoffRequestCallback();
         mOutboundHandoffRequestController.requestHandoff(
             associationId,
             taskId,
-            callback.callback);
+            callback);
 
         // Return no data for this request.
         mOutboundHandoffRequestController.onHandoffRequestResultMessageReceived(
@@ -255,36 +255,5 @@ public class OutboundHandoffRequestControllerTest {
 
         // Verify no intent was launched.
         verify(mContext, never()).startActivitiesAsUser(any(), any(), any());
-    }
-
-    private final class HandoffRequestCallbackHolder {
-
-        final List<Integer> receivedAssociationIds = new ArrayList<>();
-        final List<Integer> receivedTaskIds = new ArrayList<>();
-        final List<Integer> receivedResultCodes = new ArrayList<>();
-        final IHandoffRequestCallback callback = new IHandoffRequestCallback.Stub() {
-            @Override
-            public void onHandoffRequestFinished(
-                int associationId,
-                int remoteTaskId,
-                int resultCode) throws RemoteException {
-
-                receivedAssociationIds.add(associationId);
-                receivedTaskIds.add(remoteTaskId);
-                receivedResultCodes.add(resultCode);
-            }
-        };
-
-        void verifyInvoked(int associationId, int taskId, int resultCode) {
-            assertThat(receivedAssociationIds).containsExactly(associationId);
-            assertThat(receivedTaskIds).containsExactly(taskId);
-            assertThat(receivedResultCodes).containsExactly(resultCode);
-        }
-
-        void verifyNotInvoked() {
-            assertThat(receivedAssociationIds).isEmpty();
-            assertThat(receivedTaskIds).isEmpty();
-            assertThat(receivedResultCodes).isEmpty();
-        }
     }
 }
