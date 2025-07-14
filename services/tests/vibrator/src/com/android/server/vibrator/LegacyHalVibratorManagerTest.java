@@ -69,23 +69,21 @@ public class LegacyHalVibratorManagerTest {
     public void onSystemReady_triggersAllVibratorsOnSystemReady() {
         mHelper.setVibratorIds(new int[] {1, 2});
         mHelper.getVibratorHelper(1).setCapabilities(IVibrator.CAP_EXTERNAL_CONTROL);
+        mHelper.getVibratorHelper(2).setCapabilities(IVibrator.CAP_AMPLITUDE_CONTROL);
         mHelper.getVibratorHelper(2).setLoadInfoToFail();
         HalVibratorManager manager = mHelper.newLegacyVibratorManager();
         manager.init(mHalCallbackMock, mHalVibratorCallbackMock);
 
-        assertThat(manager.getVibrator(1).getInfo().getCapabilities())
-                .isEqualTo(IVibrator.CAP_EXTERNAL_CONTROL);
-        assertThat(manager.getVibrator(2).getInfo().getCapabilities())
-                .isEqualTo(0);
+        assertThat(manager.getVibrator(1).getInfo().getId()).isEqualTo(1);
+        assertThat(manager.getVibrator(2).getInfo().getId()).isEqualTo(2);
 
-        mHelper.getVibratorHelper(2).setCapabilities(IVibrator.CAP_EXTERNAL_CONTROL);
         manager.onSystemReady();
 
         // Capabilities from vibrator 2 reloaded after failure.
         assertThat(manager.getVibrator(1).getInfo().getCapabilities())
                 .isEqualTo(IVibrator.CAP_EXTERNAL_CONTROL);
         assertThat(manager.getVibrator(2).getInfo().getCapabilities())
-                .isEqualTo(IVibrator.CAP_EXTERNAL_CONTROL);
+                .isEqualTo(IVibrator.CAP_AMPLITUDE_CONTROL);
     }
 
     @Test

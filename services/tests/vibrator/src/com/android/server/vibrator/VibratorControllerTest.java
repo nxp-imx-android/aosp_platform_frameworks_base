@@ -16,10 +16,43 @@
 
 package com.android.server.vibrator;
 
+import static com.google.common.truth.Truth.assertThat;
+
+import android.hardware.vibrator.IVibrator;
+
+import org.junit.Test;
+
 public class VibratorControllerTest extends HalVibratorTestCase {
 
     @Override
     HalVibrator newVibrator(int vibratorId) {
         return mHelper.newVibratorController(vibratorId);
+    }
+
+    @Test
+    public void onSystemReady_loadSucceededOnInit_doesNotReload() {
+        mHelper.setCapabilities(IVibrator.CAP_EXTERNAL_CONTROL);
+        HalVibrator vibrator = newVibrator(VIBRATOR_ID);
+
+        vibrator.init(mCallbacksMock);
+        assertThat(vibrator.getInfo().getCapabilities()).isEqualTo(IVibrator.CAP_EXTERNAL_CONTROL);
+
+        mHelper.setCapabilities(IVibrator.CAP_AMPLITUDE_CONTROL); // will be ignored
+        vibrator.onSystemReady();
+        assertThat(vibrator.getInfo().getCapabilities()).isEqualTo(IVibrator.CAP_EXTERNAL_CONTROL);
+    }
+
+    @Test
+    public void onSystemReady_loadFailedOnInit_reloadsVibratorInfo() {
+        mHelper.setCapabilities(IVibrator.CAP_EXTERNAL_CONTROL);
+        mHelper.setLoadInfoToFail();
+        HalVibrator vibrator = newVibrator(VIBRATOR_ID);
+
+        vibrator.init(mCallbacksMock);
+        assertThat(vibrator.getInfo().getCapabilities()).isEqualTo(IVibrator.CAP_EXTERNAL_CONTROL);
+
+        mHelper.setCapabilities(IVibrator.CAP_AMPLITUDE_CONTROL); // will be loaded
+        vibrator.onSystemReady();
+        assertThat(vibrator.getInfo().getCapabilities()).isEqualTo(IVibrator.CAP_AMPLITUDE_CONTROL);
     }
 }
