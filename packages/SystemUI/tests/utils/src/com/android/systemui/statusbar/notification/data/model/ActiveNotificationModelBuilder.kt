@@ -23,6 +23,7 @@ import com.android.systemui.statusbar.StatusBarIconView
 import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentModels
 import com.android.systemui.statusbar.notification.shared.ActiveNotificationModel
 import com.android.systemui.statusbar.notification.shared.CallType
+import com.android.systemui.statusbar.notification.shared.NotifStyle
 import com.android.systemui.statusbar.notification.stack.BUCKET_UNKNOWN
 
 /** Simple ActiveNotificationModel builder for use in tests. */
@@ -52,6 +53,7 @@ fun activeNotificationModel(
     callType: CallType = CallType.None,
     requestedPromotion: Boolean = false,
     promotedContent: PromotedNotificationContentModels? = null,
+    notifStyle: NotifStyle? = null,
 ) =
     ActiveNotificationModel(
         key = key,
@@ -79,4 +81,5 @@ fun activeNotificationModel(
         callType = callType,
         requestedPromotion = requestedPromotion,
         promotedContent = promotedContent,
+        style = notifStyle,
     )
