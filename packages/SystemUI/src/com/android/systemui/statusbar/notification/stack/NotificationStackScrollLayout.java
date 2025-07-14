@@ -1242,6 +1242,29 @@ public class NotificationStackScrollLayout
     }
 
     @Override
+    public void setInteractive(boolean interactive) {
+        if (SceneContainerFlag.isUnexpectedlyInLegacyMode()
+                || mScrollViewFields.interactive == interactive) {
+            return;
+        }
+
+        mScrollViewFields.interactive = interactive;
+        setImportantForAccessibility(
+                mScrollViewFields.interactive ? View.IMPORTANT_FOR_ACCESSIBILITY_YES :
+                        View.IMPORTANT_FOR_ACCESSIBILITY_NO_HIDE_DESCENDANTS
+        );
+
+
+        setDescendantFocusability(
+                mScrollViewFields.interactive ? FOCUS_AFTER_DESCENDANTS :
+                        FOCUS_BLOCK_DESCENDANTS
+        );
+        // We don't want the NSSL to be focusable unless both mScrollViewFields.interactive and
+        // mScrollable are true
+        setFocusable(mScrollViewFields.interactive && mScrollable);
+    }
+
+    @Override
     public void setScrollState(@NonNull ShadeScrollState scrollState) {
         if (SceneContainerFlag.isUnexpectedlyInLegacyMode()) {
             return;
@@ -3850,6 +3873,9 @@ public class NotificationStackScrollLayout
 
     @Override
     public boolean onTouchEvent(MotionEvent ev) {
+        // When NSSL is not active for touch
+        if (SceneContainerFlag.isEnabled() && !mScrollViewFields.interactive) return false;
+
         if (mTouchHandler != null) {
             boolean touchHandled = mTouchHandler.onTouchEvent(ev);
             if (SceneContainerFlag.isEnabled() || touchHandled) {
@@ -3870,7 +3896,8 @@ public class NotificationStackScrollLayout
             if (action == MotionEvent.ACTION_DOWN && !isTouchInGuts) {
                 mController.closeControlsDueToOutsideTouch();
             }
-            if (mIsBeingDragged || mExpandingNotification) {
+            if (mIsBeingDragged || mExpandingNotification || !mScrollViewFields.interactive) {
+                // Dispatch TouchEvent to the scene framework
                 boolean isUpOrCancel = action == ACTION_UP || action == ACTION_CANCEL;
                 if (mSendingTouchesToSceneFramework) {
                     MotionEvent adjustedEvent = MotionEvent.obtain(ev);
@@ -4225,6 +4252,13 @@ public class NotificationStackScrollLayout
 
     @Override
     public boolean onInterceptTouchEvent(MotionEvent ev) {
+        if (!mScrollViewFields.interactive) {
+            // When mScrollViewFields.interactive is false, NSSL will intercept TouchEvents to
+            // prevent its children from handling touches. NSSL#onTouchEvent() will return false so
+            // that neither NSSL or its children consume TouchEvents. Instead, the SceneContainer
+            // Framework will handle.
+            return true;
+        }
         if (mTouchHandler != null && mTouchHandler.onInterceptTouchEvent(ev)) {
             return true;
         }

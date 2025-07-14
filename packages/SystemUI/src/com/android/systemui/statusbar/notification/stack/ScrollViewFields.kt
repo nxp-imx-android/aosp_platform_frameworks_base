@@ -48,6 +48,16 @@ class ScrollViewFields {
     @JvmField var intrinsicStackHeight: Int = 0
 
     /**
+     * Whether the NSSL is interactive for touch-handling. When false, neither NSSL or its
+     * descendants handle touches. NSSL will dispatch TouchEvents to the scene container framework.
+     * This is achieved by NSSL intercepting TouchEvents and returning false in onTouchEvent().
+     *
+     * When mIsInteractive is false, NSSL and its child are not focusable or selectable by
+     * accessibility.
+     */
+    @JvmField var interactive = true
+
+    /**
      * When internal NSSL expansion requires the stack to be scrolled (e.g. to keep an expanding
      * notification in view), that scroll amount can be sent here and it will be handled by the
      * placeholder.
@@ -105,6 +115,7 @@ class ScrollViewFields {
             pw.println("negativeClippingShape", negativeClippingShape)
             pw.println("scrollState", scrollState)
             pw.println("intrinsicStackHeight", intrinsicStackHeight)
+            pw.println("interactive", interactive)
         }
     }
 }
