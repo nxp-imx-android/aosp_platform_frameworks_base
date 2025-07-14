@@ -1914,6 +1914,9 @@ public final class WindowInsets {
         @NonNull
         @SuppressLint("UnflaggedApi") // @TestApi without associated feature.
         public static String toString(@InsetsType int types) {
+            if (types == 0) {
+                return "";
+            }
             final StringBuilder result = new StringBuilder();
             if ((types & STATUS_BARS) != 0) {
                 result.append("statusBars ");
