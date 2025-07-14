@@ -23,7 +23,6 @@ import android.annotation.Nullable;
 import android.os.Parcel;
 import android.telephony.cdma.CdmaCellLocation;
 
-import com.android.internal.telephony.flags.Flags;
 import com.android.internal.telephony.util.TelephonyUtils;
 import com.android.telephony.Rlog;
 
@@ -103,30 +102,13 @@ public final class CellIdentityCdma extends CellIdentity {
      */
     public CellIdentityCdma(int nid, int sid, int bid, int lon, int lat,
             @Nullable String alphal, @Nullable String alphas) {
-        super(TAG, CellInfo.TYPE_CDMA, null, null, Flags.cleanupCdma() ? null : alphal,
-                Flags.cleanupCdma() ? null : alphas);
-        if (Flags.cleanupCdma()) {
-            mNetworkId = CellInfo.UNAVAILABLE;
-            mSystemId = CellInfo.UNAVAILABLE;
-            mBasestationId = CellInfo.UNAVAILABLE;
-            mLongitude = CellInfo.UNAVAILABLE;
-            mLatitude = CellInfo.UNAVAILABLE;
-            mGlobalCellId = null;
-        } else {
-            mNetworkId = inRangeOrUnavailable(nid, 0, NETWORK_ID_MAX);
-            mSystemId = inRangeOrUnavailable(sid, 0, SYSTEM_ID_MAX);
-            mBasestationId = inRangeOrUnavailable(bid, 0, BASESTATION_ID_MAX);
-            lat = inRangeOrUnavailable(lat, LATITUDE_MIN, LATITUDE_MAX);
-            lon = inRangeOrUnavailable(lon, LONGITUDE_MIN, LONGITUDE_MAX);
-
-            if (!isNullIsland(lat, lon)) {
-                mLongitude = lon;
-                mLatitude = lat;
-            } else {
-                mLongitude = mLatitude = CellInfo.UNAVAILABLE;
-            }
-            updateGlobalCellId();
-        }
+        super(TAG, CellInfo.TYPE_CDMA, null, null, null, null);
+        mNetworkId = CellInfo.UNAVAILABLE;
+        mSystemId = CellInfo.UNAVAILABLE;
+        mBasestationId = CellInfo.UNAVAILABLE;
+        mLongitude = CellInfo.UNAVAILABLE;
+        mLatitude = CellInfo.UNAVAILABLE;
+        mGlobalCellId = null;
     }
 
     private CellIdentityCdma(@NonNull CellIdentityCdma cid) {
@@ -302,33 +284,22 @@ public final class CellIdentityCdma extends CellIdentity {
     private CellIdentityCdma(Parcel in) {
         super(TAG, CellInfo.TYPE_CDMA, in);
 
-        if (Flags.cleanupCdma()) {
-            in.readInt();
-            mNetworkId = CellInfo.UNAVAILABLE;
+        in.readInt();
+        mNetworkId = CellInfo.UNAVAILABLE;
 
-            in.readInt();
-            mSystemId = CellInfo.UNAVAILABLE;
+        in.readInt();
+        mSystemId = CellInfo.UNAVAILABLE;
 
-            in.readInt();
-            mBasestationId = CellInfo.UNAVAILABLE;
+        in.readInt();
+        mBasestationId = CellInfo.UNAVAILABLE;
 
-            in.readInt();
-            mLongitude = CellInfo.UNAVAILABLE;
+        in.readInt();
+        mLongitude = CellInfo.UNAVAILABLE;
 
-            in.readInt();
-            mLatitude = CellInfo.UNAVAILABLE;
+        in.readInt();
+        mLatitude = CellInfo.UNAVAILABLE;
 
-            mGlobalCellId = null;
-        } else {
-            mNetworkId = in.readInt();
-            mSystemId = in.readInt();
-            mBasestationId = in.readInt();
-            mLongitude = in.readInt();
-            mLatitude = in.readInt();
-
-            updateGlobalCellId();
-            if (DBG) log(toString());
-        }
+        mGlobalCellId = null;
     }
 
     /**
