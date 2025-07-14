@@ -26,11 +26,6 @@ import com.android.systemui.dagger.qualifiers.Main
 import com.android.systemui.desktop.domain.interactor.DesktopInteractor
 import com.android.systemui.lifecycle.ExclusiveActivatable
 import com.android.systemui.lifecycle.Hydrator
-import com.android.systemui.media.controls.domain.pipeline.interactor.MediaCarouselInteractor
-import com.android.systemui.media.controls.ui.controller.MediaCarouselController
-import com.android.systemui.media.controls.ui.view.MediaHost
-import com.android.systemui.media.controls.ui.view.MediaHostState.Companion.COLLAPSED
-import com.android.systemui.media.dagger.MediaModule
 import com.android.systemui.qs.flags.QsDetailedView
 import com.android.systemui.qs.panels.ui.viewmodel.toolbar.ToolbarViewModel
 import com.android.systemui.qs.tiles.dialog.AudioDetailsViewModel
@@ -50,7 +45,6 @@ import com.android.systemui.window.domain.interactor.WindowRootViewBlurInteracto
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
-import javax.inject.Named
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.awaitCancellation
@@ -81,9 +75,6 @@ constructor(
     val sceneInteractor: SceneInteractor,
     val notificationStackAppearanceInteractor: NotificationStackAppearanceInteractor,
     @Assisted private val volumeSliderCoroutineScope: CoroutineScope?,
-    @Named(MediaModule.QS_PANEL) val mediaHost: MediaHost,
-    val mediaCarouselController: MediaCarouselController,
-    mediaCarouselInteractor: MediaCarouselInteractor,
     val toolbarViewModelFactory: ToolbarViewModel.Factory,
     windowRootViewBlurInteractor: WindowRootViewBlurInteractor,
 ) : ExclusiveActivatable() {
@@ -123,12 +114,6 @@ constructor(
                 },
         )
 
-    val showMedia: Boolean by
-        hydrator.hydratedStateOf(
-            traceName = "showMedia",
-            source = mediaCarouselInteractor.hasAnyMedia,
-        )
-
     private val showVolumeSlider =
         QsDetailedView.isEnabled &&
             shadeContext.resources.getBoolean(R.bool.config_enableDesktopAudioTileDetailsView)
@@ -147,7 +132,6 @@ constructor(
 
     override suspend fun onActivated(): Nothing {
         coroutineScope {
-            mediaHost.expansion = COLLAPSED
             launch { hydrator.activate() }
             launch {
                 shadeInteractor.isShadeTouchable

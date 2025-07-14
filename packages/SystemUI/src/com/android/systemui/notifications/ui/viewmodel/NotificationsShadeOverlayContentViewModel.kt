@@ -25,6 +25,9 @@ import com.android.systemui.desktop.domain.interactor.DesktopInteractor
 import com.android.systemui.lifecycle.ExclusiveActivatable
 import com.android.systemui.lifecycle.Hydrator
 import com.android.systemui.media.controls.domain.pipeline.interactor.MediaCarouselInteractor
+import com.android.systemui.media.remedia.ui.compose.MediaUiBehavior
+import com.android.systemui.media.remedia.ui.viewmodel.MediaCarouselVisibility
+import com.android.systemui.media.remedia.ui.viewmodel.MediaViewModel
 import com.android.systemui.scene.domain.interactor.SceneInteractor
 import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.shade.domain.interactor.ShadeInteractor
@@ -64,7 +67,8 @@ constructor(
     private val shadeInteractor: ShadeInteractor,
     private val shadeModeInteractor: ShadeModeInteractor,
     disableFlagsInteractor: DisableFlagsInteractor,
-    mediaCarouselInteractor: MediaCarouselInteractor,
+    private val mediaCarouselInteractor: MediaCarouselInteractor,
+    val mediaViewModelFactory: MediaViewModel.Factory,
     windowRootViewBlurInteractor: WindowRootViewBlurInteractor,
 ) : ExclusiveActivatable() {
 
@@ -118,6 +122,14 @@ constructor(
                     flowOf(false)
                 },
         )
+
+    val mediaUiBehavior =
+        MediaUiBehavior(
+            isCarouselDismissible = true,
+            carouselVisibility = MediaCarouselVisibility.WhenAnyCardIsActive,
+        )
+
+    fun onMediaSwipeToDismiss() = mediaCarouselInteractor.onSwipeToDismiss()
 
     override suspend fun onActivated(): Nothing {
         coroutineScope {

@@ -21,8 +21,10 @@ import androidx.compose.runtime.getValue
 import com.android.systemui.brightness.ui.viewmodel.BrightnessSliderViewModel
 import com.android.systemui.lifecycle.ExclusiveActivatable
 import com.android.systemui.lifecycle.Hydrator
+import com.android.systemui.media.controls.domain.pipeline.interactor.MediaCarouselInteractor
 import com.android.systemui.media.remedia.ui.compose.MediaUiBehavior
 import com.android.systemui.media.remedia.ui.viewmodel.MediaCarouselVisibility
+import com.android.systemui.media.remedia.ui.viewmodel.MediaViewModel
 import com.android.systemui.qs.panels.ui.viewmodel.DetailsViewModel
 import com.android.systemui.qs.panels.ui.viewmodel.EditModeViewModel
 import com.android.systemui.qs.panels.ui.viewmodel.TileGridViewModel
@@ -49,6 +51,8 @@ constructor(
     val editModeViewModel: EditModeViewModel,
     val detailsViewModel: DetailsViewModel,
     shadeDisplaysInteractor: Lazy<ShadeDisplaysInteractor>,
+    private val mediaCarouselInteractor: MediaCarouselInteractor,
+    val mediaViewModelFactory: MediaViewModel.Factory,
 ) : ExclusiveActivatable() {
 
     private val hydrator = Hydrator("QuickSettingsContainerViewModel.hydrator")
@@ -74,6 +78,14 @@ constructor(
 
     val tileGridViewModel = tileGridViewModelFactory.create()
 
+    val showMedia: Boolean by
+        hydrator.hydratedStateOf(
+            traceName = "showMedia",
+            source = mediaCarouselInteractor.hasAnyMedia,
+        )
+
+    fun onMediaSwipeToDismiss() = mediaCarouselInteractor.onSwipeToDismiss()
+
     override suspend fun onActivated(): Nothing {
         coroutineScope {
             launch { hydrator.activate() }
@@ -94,12 +106,11 @@ constructor(
         }
 
         /** Behavior of the media carousel in quick settings */
-        val mediaUiBehavior: MediaUiBehavior
-            get() =
-                MediaUiBehavior(
-                    isCarouselDismissible = false,
-                    carouselVisibility = MediaCarouselVisibility.WhenNotEmpty,
-                )
+        val mediaUiBehavior =
+            MediaUiBehavior(
+                isCarouselDismissible = false,
+                carouselVisibility = MediaCarouselVisibility.WhenNotEmpty,
+            )
     }
 
     @AssistedFactory

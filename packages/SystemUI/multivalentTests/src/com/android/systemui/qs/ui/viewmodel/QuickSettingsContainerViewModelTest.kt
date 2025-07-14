@@ -23,9 +23,12 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.Flags.FLAG_SHADE_WINDOW_GOES_AROUND
 import com.android.systemui.SysuiTestCase
+import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
 import com.android.systemui.lifecycle.activateIn
+import com.android.systemui.media.controls.shared.model.MediaData
+import com.android.systemui.media.remedia.data.repository.mediaPipelineRepository
 import com.android.systemui.qs.composefragment.dagger.usingMediaInComposeFragment
 import com.android.systemui.shade.data.repository.fakeShadeDisplaysRepository
 import com.android.systemui.testKosmos
@@ -63,6 +66,34 @@ class QuickSettingsContainerViewModelTest : SysuiTestCase() {
 
                 assertThat(underTest.isBrightnessSliderVisible).isTrue()
             }
+        }
+
+    @Test
+    fun addAndRemoveMedia_mediaVisibilityIsUpdated() =
+        kosmos.runTest {
+            val userMedia = MediaData(active = true)
+
+            assertThat(underTest.showMedia).isFalse()
+
+            mediaPipelineRepository.addCurrentUserMediaEntry(userMedia)
+
+            assertThat(underTest.showMedia).isTrue()
+
+            mediaPipelineRepository.removeCurrentUserMediaEntry(userMedia.instanceId)
+
+            assertThat(underTest.showMedia).isFalse()
+        }
+
+    @Test
+    fun addInactiveMedia_mediaVisibilityIsUpdated() =
+        kosmos.runTest {
+            val userMedia = MediaData(active = false)
+
+            assertThat(underTest.showMedia).isFalse()
+
+            mediaPipelineRepository.addCurrentUserMediaEntry(userMedia)
+
+            assertThat(underTest.showMedia).isTrue()
         }
 
     @Test

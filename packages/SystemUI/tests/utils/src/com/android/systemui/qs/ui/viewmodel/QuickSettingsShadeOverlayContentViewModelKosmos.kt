@@ -20,8 +20,6 @@ import android.content.applicationContext
 import com.android.systemui.desktop.domain.interactor.desktopInteractor
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.testDispatcher
-import com.android.systemui.media.controls.domain.pipeline.interactor.mediaCarouselInteractor
-import com.android.systemui.media.controls.ui.controller.mediaCarouselController
 import com.android.systemui.qs.panels.ui.viewmodel.toolbar.toolbarViewModelFactory
 import com.android.systemui.qs.tiles.dialog.audioDetailsViewModelFactory
 import com.android.systemui.scene.domain.interactor.sceneInteractor
@@ -31,7 +29,6 @@ import com.android.systemui.statusbar.notification.stack.domain.interactor.notif
 import com.android.systemui.volume.panel.component.volume.slider.ui.viewmodel.audioStreamSliderViewModelFactory
 import com.android.systemui.window.domain.interactor.windowRootViewBlurInteractor
 import kotlinx.coroutines.CoroutineScope
-import org.mockito.kotlin.mock
 
 val Kosmos.quickSettingsShadeOverlayContentViewModelFactory:
     QuickSettingsShadeOverlayContentViewModel.Factory by
@@ -51,9 +48,6 @@ val Kosmos.quickSettingsShadeOverlayContentViewModelFactory:
                     audioDetailsViewModelFactory = audioDetailsViewModelFactory,
                     audioStreamSliderViewModelFactory = audioStreamSliderViewModelFactory,
                     volumeSliderCoroutineScope = volumeSliderCoroutineScope,
-                    mediaHost = mock(),
-                    mediaCarouselController = mediaCarouselController,
-                    mediaCarouselInteractor = mediaCarouselInteractor,
                     toolbarViewModelFactory = toolbarViewModelFactory,
                     windowRootViewBlurInteractor = windowRootViewBlurInteractor,
                 )

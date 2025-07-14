@@ -35,8 +35,6 @@ import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
 import com.android.systemui.lifecycle.activateIn
-import com.android.systemui.media.controls.shared.model.MediaData
-import com.android.systemui.media.remedia.data.repository.mediaPipelineRepository
 import com.android.systemui.power.domain.interactor.PowerInteractor.Companion.setAsleepForTest
 import com.android.systemui.power.domain.interactor.PowerInteractor.Companion.setAwakeForTest
 import com.android.systemui.power.domain.interactor.powerInteractor
@@ -212,31 +210,6 @@ class QuickSettingsShadeOverlayContentViewModelTest : SysuiTestCase() {
         )
         configurationController.onConfigurationChanged(Configuration())
     }
-
-    @Test
-    fun showMedia_activeMedia_true() =
-        kosmos.runTest {
-            mediaPipelineRepository.addCurrentUserMediaEntry(MediaData(active = true))
-
-            assertThat(underTest.showMedia).isTrue()
-        }
-
-    @Test
-    fun showMedia_InactiveMedia_true() =
-        kosmos.runTest {
-            mediaPipelineRepository.addCurrentUserMediaEntry(MediaData(active = false))
-
-            assertThat(underTest.showMedia).isTrue()
-        }
-
-    @Test
-    fun showMedia_noMedia_false() =
-        kosmos.runTest {
-            mediaPipelineRepository.addCurrentUserMediaEntry(MediaData(active = true))
-            mediaPipelineRepository.clearCurrentUserMedia()
-
-            assertThat(underTest.showMedia).isFalse()
-        }
 
     @Test
     @DisableFlags(FLAG_NOTIFICATION_SHADE_BLUR)

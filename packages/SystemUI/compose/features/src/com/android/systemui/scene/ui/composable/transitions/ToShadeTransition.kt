@@ -20,7 +20,7 @@ import androidx.compose.animation.core.tween
 import com.android.compose.animation.scene.Edge
 import com.android.compose.animation.scene.TransitionBuilder
 import com.android.compose.animation.scene.UserActionDistance
-import com.android.systemui.media.controls.ui.composable.MediaCarousel
+import com.android.systemui.media.remedia.ui.compose.Media
 import com.android.systemui.notifications.ui.composable.Notifications
 import com.android.systemui.qs.ui.composable.QuickSettings
 import com.android.systemui.scene.shared.model.Scenes
@@ -47,7 +47,7 @@ fun TransitionBuilder.toShadeTransition(durationScale: Double = 1.0) {
 
     val qsTranslation = -ShadeHeader.Dimensions.CollapsedHeightForTransitions * 0.66f
     translate(QuickSettings.Elements.QuickQuickSettings, y = qsTranslation)
-    translate(MediaCarousel.Elements.Content, y = qsTranslation)
+    translate(Media.Elements.mediaCarousel, y = qsTranslation)
     translate(Notifications.Elements.NotificationScrim, Edge.Top, false)
 }
 
