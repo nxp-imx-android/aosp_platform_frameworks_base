@@ -85,7 +85,6 @@ import android.util.Pair;
 import android.util.Size;
 import android.view.Display;
 import android.view.Surface;
-import android.window.DesktopModeFlags;
 
 import com.android.internal.camera.flags.Flags;
 import com.android.internal.util.ArrayUtils;
@@ -1697,26 +1696,8 @@ public final class CameraManager {
     /**
      * @hide
      */
-    public static int getRotationOverride(@Nullable Context context,
-            @Nullable PackageManager packageManager, @Nullable String packageName) {
-        // Isolated process does not have access to the ContentProvider which
-        // `DesktopModeFlags` uses. `DesktopModeFlags` combines developer options and Aconfig flags.
-        if (!Process.isIsolated() && DesktopModeFlags
-                .ENABLE_CAMERA_COMPAT_SIMULATE_REQUESTED_ORIENTATION.isTrue()) {
-            return getRotationOverrideInternal(context, packageManager, packageName);
-        } else {
-            return shouldOverrideToPortrait(packageManager, packageName)
-                        ? ICameraService.ROTATION_OVERRIDE_OVERRIDE_TO_PORTRAIT
-                        : ICameraService.ROTATION_OVERRIDE_NONE;
-        }
-    }
-
-    /**
-     * @hide
-     */
-    @FlaggedApi(com.android.window.flags.Flags.FLAG_ENABLE_CAMERA_COMPAT_FOR_DESKTOP_WINDOWING)
     @TestApi
-    public static int getRotationOverrideInternal(@Nullable Context context,
+    public static int getRotationOverride(@Nullable Context context,
             @Nullable PackageManager packageManager, @Nullable String packageName) {
         if (!CameraManagerGlobal.sLandscapeToPortrait) {
             return ICameraService.ROTATION_OVERRIDE_NONE;
@@ -1822,30 +1803,6 @@ public final class CameraManager {
             return ICameraService.ROTATION_OVERRIDE_NONE;
         }
     }
-
-    /**
-     * @hide
-     */
-    @TestApi
-    public static boolean shouldOverrideToPortrait(@Nullable PackageManager packageManager,
-            @Nullable String packageName) {
-        if (!CameraManagerGlobal.sLandscapeToPortrait) {
-            return false;
-        }
-
-        if (packageManager != null && packageName != null) {
-            try {
-                return packageManager.getProperty(
-                        PackageManager.PROPERTY_COMPAT_OVERRIDE_LANDSCAPE_TO_PORTRAIT,
-                        packageName).getBoolean();
-            } catch (PackageManager.NameNotFoundException e) {
-                // No such property
-            }
-        }
-
-        return CompatChanges.isChangeEnabled(OVERRIDE_CAMERA_LANDSCAPE_TO_PORTRAIT);
-    }
-
 
     /**
      * @hide
