@@ -699,12 +699,6 @@ public class MediaQualityService extends SystemService {
 
         public long getPictureProfileForTvInput(String inputId, int userId) {
             // TODO: cache profiles
-            int callingUid = Binder.getCallingUid();
-            int callingPid = Binder.getCallingPid();
-            if (!hasGlobalPictureQualityServicePermission(callingUid, callingPid)) {
-                mMqManagerNotifier.notifyOnPictureProfileError(
-                        null, PictureProfile.ERROR_NO_PERMISSION, callingUid, callingPid);
-            }
             String[] columns = {BaseParameters.PARAMETER_ID};
             String selection = BaseParameters.PARAMETER_TYPE + " = ? AND ("
                     + BaseParameters.PARAMETER_NAME + " = ? OR "
@@ -734,12 +728,14 @@ public class MediaQualityService extends SystemService {
                     handle = p.getHandle().getId();
                     PictureProfile current = getCurrentPictureProfile(handle);
                     if (current != null) {
-                        long currentHandle = current.getHandle().getId();
-                        mHalNotifier.notifyHalOnPictureProfileChange(
-                                currentHandle, current.getParameters());
-                        return currentHandle;
+                        if (DEBUG) {
+                            Slog.d(TAG, "handle returned is " + current.getHandle().getId());
+                        }
+                        return current.getHandle().getId();
                     }
-                    mHalNotifier.notifyHalOnPictureProfileChange(handle, p.getParameters());
+                    if (DEBUG) {
+                        Slog.d(TAG, "handle returned is " + handle);
+                    }
                     return handle;
                 }
             }
@@ -2669,7 +2665,7 @@ public class MediaQualityService extends SystemService {
 
     private void putCurrentPictureProfile(Long originalHandle, Long currentHandle) {
         mOriginalToCurrent.put(originalHandle, currentHandle);
-        mCurrentPictureHandleToOriginal.removeValue(currentHandle);
+        mCurrentPictureHandleToOriginal.removeValue(originalHandle);
         mCurrentPictureHandleToOriginal.put(currentHandle, originalHandle);
     }
 }
