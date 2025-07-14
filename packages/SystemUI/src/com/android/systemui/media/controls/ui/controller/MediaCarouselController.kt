@@ -86,6 +86,7 @@ import com.android.systemui.statusbar.policy.ConfigurationController
 import com.android.systemui.util.Utils
 import com.android.systemui.util.animation.UniqueObjectHostView
 import com.android.systemui.util.animation.requiresRemeasuring
+import com.android.systemui.util.boundsOnScreen
 import com.android.systemui.util.concurrency.DelayableExecutor
 import com.android.systemui.util.settings.GlobalSettings
 import com.android.systemui.util.settings.SecureSettings
@@ -339,6 +340,9 @@ constructor(
             .isInTransition(Edge.create(to = DOZING))
             .stateIn(applicationScope, SharingStarted.Eagerly, true)
 
+    private var mediaFrameHeight: Int = 0
+    private var mediaFrameWidth: Int = 0
+
     init {
         // TODO(b/397989775): avoid unnecessary setup with media_controls_in_compose enabled
         dumpManager.registerNormalDumpable(TAG, this)
@@ -381,6 +385,15 @@ constructor(
             setUpListeners()
         }
         mediaFrame.addOnLayoutChangeListener { _, _, _, _, _, _, _, _, _ ->
+            if (mediaFrameHeight != mediaFrame.height || mediaFrameWidth != mediaFrame.width) {
+                mediaFrameHeight = mediaFrame.height
+                mediaFrameWidth = mediaFrame.width
+                debugLogger.logMediaBounds(
+                    reason = "layout change",
+                    rect = mediaFrame.boundsOnScreen,
+                    location = desiredLocation,
+                )
+            }
             // The pageIndicator is not laid out yet when we get the current state update,
             // Lets make sure we have the right dimensions
             updatePageIndicatorLocation()
