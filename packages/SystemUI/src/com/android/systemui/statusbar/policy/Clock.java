@@ -22,6 +22,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
 import android.content.res.TypedArray;
 import android.graphics.Rect;
@@ -45,6 +46,7 @@ import android.view.View;
 import android.widget.TextView;
 
 import com.android.settingslib.Utils;
+import com.android.settingslib.applications.InterestingConfigChanges;
 import com.android.systemui.Dependency;
 import com.android.systemui.FontSizeUtils;
 import com.android.systemui.broadcast.BroadcastDispatcher;
@@ -98,7 +100,6 @@ public class Clock extends TextView implements
     private SimpleDateFormat mContentDescriptionFormat;
     private Locale mLocale;
     private DateTimePatternGenerator mDateTimePatternGenerator;
-    private Configuration oldConfig = new Configuration();
 
     private static final int AM_PM_STYLE_NORMAL  = 0;
     private static final int AM_PM_STYLE_SMALL   = 1;
@@ -108,6 +109,8 @@ public class Clock extends TextView implements
     private boolean mShowSeconds;
     private Handler mSecondsHandler;
 
+    // Tracks config changes that will make the clock change dimensions
+    private final InterestingConfigChanges mInterestingConfigChanges;
     /**
      * Color to be set on this {@link TextView}, when wallpaperTextColor is <b>not</b> utilized.
      */
@@ -143,6 +146,12 @@ public class Clock extends TextView implements
         }
         mBroadcastDispatcher = Dependency.get(BroadcastDispatcher.class);
         mUserTracker = Dependency.get(UserTracker.class);
+        if (ShadeWindowGoesAround.isEnabled()) {
+            mInterestingConfigChanges = new InterestingConfigChanges(
+                    ActivityInfo.CONFIG_FONT_SCALE | ActivityInfo.CONFIG_DENSITY);
+        } else {
+            mInterestingConfigChanges = null;
+        }
 
         setIncludeFontPadding(false);
     }
@@ -395,16 +404,12 @@ public class Clock extends TextView implements
     protected void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
         if (ShadeWindowGoesAround.isEnabled()) {
-            if (densityOrFontScaleChanged(oldConfig, newConfig)) {
+            final boolean shouldReloadDimensions =
+                    mInterestingConfigChanges.applyNewConfig(newConfig);
+            if (shouldReloadDimensions) {
                 reloadDimens();
             }
-            oldConfig = newConfig;
         }
-    }
-
-    private boolean densityOrFontScaleChanged(Configuration oldConfig, Configuration newConfig) {
-        return (oldConfig.densityDpi != newConfig.densityDpi)
-                || oldConfig.fontScale != newConfig.fontScale;
     }
 
     private void updateShowSeconds() {
