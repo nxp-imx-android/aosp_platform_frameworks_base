@@ -197,13 +197,13 @@ final class SessionMetrics {
         reportStats();
     }
 
-    public void onDeveloperVerificationBindStarted() {
+    public void onDeveloperVerificationBindStarted(int verifierUid) {
         mDeveloperVerifierBindStartedMillis = System.currentTimeMillis();
+        mDeveloperVerifierUid = verifierUid;
     }
 
-    public void onDeveloperVerifierConnectionEstablished(int verifierUid) {
+    public void onDeveloperVerifierConnectionEstablished() {
         mDeveloperVerifierConnectedMillis = System.currentTimeMillis();
-        mDeveloperVerifierUid = verifierUid;
     }
 
     public void onDeveloperVerificationRequestSent() {
@@ -234,7 +234,7 @@ final class SessionMetrics {
         final long responseReceivedMillis = System.currentTimeMillis();
         if (mDeveloperVerifierRequestSentMillis != 0
                 && mDeveloperVerifierRetryRequestSentMillis == 0) {
-            mDeveloperVerifierRequestSentMillis =
+            mDeveloperVerificationDurationMillis =
                     responseReceivedMillis - mDeveloperVerifierRequestSentMillis;
         } else if (mDeveloperVerifierRetryRequestSentMillis != 0) {
             // Calculate the last retry duration
@@ -278,9 +278,11 @@ final class SessionMetrics {
                 mInternalInstallationFinished - mInternalInstallationStarted;
         final long sessionLifetimeMillis = mFinishedMillis - mCreatedMillis;
         final long developerVerifierConnectionDurationMillis =
-                mDeveloperVerifierConnectedMillis - mDeveloperVerifierBindStartedMillis;
+                mDeveloperVerifierConnectedMillis == 0
+                        ? 0 // Binding was already established before ths installation
+                        : mDeveloperVerifierConnectedMillis - mDeveloperVerifierBindStartedMillis;
         final long developerVerificationPrepDurationMillis =
-                mDeveloperVerifierRequestSentMillis - mDeveloperVerifierBindStartedMillis;
+                        mDeveloperVerifierRequestSentMillis - mDeveloperVerifierBindStartedMillis;
         // Do this on a handler so that we don't block anything critical
         mHandler.post(() ->
                 FrameworkStatsLog.write(
@@ -308,7 +310,7 @@ final class SessionMetrics {
                         mIsPreapproval,
                         mIsUnarchive,
                         mIsAutoInstallDependenciesEnabled,
-                        mApksSizeBytes, // TODO: compute apks size bytes
+                        mApksSizeBytes, // TODO(b/418283971): compute apks size bytes
                         getTranslatedStatusCodeForStats(installStatusToPublicStatus(mStatusCode)),
                         mWasUserActionIntentSent,
                         mIsExpired,
