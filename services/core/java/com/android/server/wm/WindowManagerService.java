@@ -9596,11 +9596,9 @@ public class WindowManagerService extends IWindowManager.Stub
             name = win.toString();
             applicationHandle = win.getApplicationHandle();
             win.setIsFocusable((flags & FLAG_NOT_FOCUSABLE) == 0);
-            if (Flags.updateHostInputTransferToken()) {
-                WindowState hostWindowState = hostInputTransferToken != null
-                        ? mInputToWindowMap.get(hostInputTransferToken.getToken()) : null;
-                win.updateHost(hostWindowState);
-            }
+            WindowState hostWindowState = hostInputTransferToken != null
+                    ? mInputToWindowMap.get(hostInputTransferToken.getToken()) : null;
+            win.updateHost(hostWindowState);
         }
 
         updateInputChannel(channelToken, win.mOwnerUid, win.mOwnerPid, displayId, surface, name,
