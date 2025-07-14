@@ -85,8 +85,6 @@ public class NotificationChildrenContainer extends ViewGroup
     @VisibleForTesting
     static final int NUMBER_OF_CHILDREN_WHEN_COLLAPSED = 2;
     @VisibleForTesting
-    static final int NUMBER_OF_CHILDREN_WHEN_COLLAPSED_BUNDLED = 5;
-    @VisibleForTesting
     static final int NUMBER_OF_CHILDREN_WHEN_SYSTEM_EXPANDED = 5;
     public static final int NUMBER_OF_CHILDREN_WHEN_CHILDREN_EXPANDED = 8;
     private static final AnimationProperties ALPHA_FADE_IN = new AnimationProperties() {
@@ -1040,9 +1038,6 @@ public class NotificationChildrenContainer extends ViewGroup
         if (isBundle()) {
             return NUMBER_OF_CHILDREN_BUNDLE_COLLAPSED;
         } else {
-            if (getContainingNotification().getEntryAdapter().isBundled()) {
-                return NUMBER_OF_CHILDREN_WHEN_COLLAPSED_BUNDLED;
-            }
             return NUMBER_OF_CHILDREN_WHEN_COLLAPSED;
         }
     }

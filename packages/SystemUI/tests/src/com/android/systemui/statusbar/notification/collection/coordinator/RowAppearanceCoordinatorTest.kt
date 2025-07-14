@@ -16,7 +16,6 @@
 package com.android.systemui.statusbar.notification.collection.coordinator
 
 import android.app.NotificationChannel
-import android.platform.test.annotations.EnableFlags
 import android.testing.TestableLooper.RunWithLooper
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
@@ -29,10 +28,8 @@ import com.android.systemui.statusbar.notification.collection.buildNotificationE
 import com.android.systemui.statusbar.notification.collection.listbuilder.NotifSection
 import com.android.systemui.statusbar.notification.collection.listbuilder.OnAfterRenderEntryListener
 import com.android.systemui.statusbar.notification.collection.listbuilder.OnBeforeRenderListListener
-import com.android.systemui.statusbar.notification.collection.notifCollection
 import com.android.systemui.statusbar.notification.collection.provider.SectionStyleProvider
 import com.android.systemui.statusbar.notification.collection.render.NotifRowController
-import com.android.systemui.statusbar.notification.shared.NotificationBundleUi
 import com.android.systemui.testKosmos
 import com.android.systemui.util.mockito.any
 import com.android.systemui.util.mockito.eq
@@ -72,8 +69,8 @@ class RowAppearanceCoordinatorTest : SysuiTestCase() {
     @Before
     fun setUp() {
         initMocks(this)
-        coordinator = RowAppearanceCoordinator(
-            mContext, assistantFeedbackController, sectionStyleProvider, kosmos.notifCollection)
+        coordinator =
+            RowAppearanceCoordinator(mContext, assistantFeedbackController, sectionStyleProvider)
         coordinator.attach(pipeline)
         beforeRenderListListener = withArgCaptor {
             verify(pipeline).addOnBeforeRenderListListener(capture())
@@ -92,7 +89,7 @@ class RowAppearanceCoordinatorTest : SysuiTestCase() {
     }
 
     @Test
-    fun testSetSystemExpandedOnlyOnFirstIfNotBundle() {
+    fun testSetSystemExpandedOnlyOnFirst() {
         whenever(sectionStyleProvider.isMinimizedSection(eq(section1))).thenReturn(false)
         whenever(sectionStyleProvider.isMinimizedSection(eq(section1))).thenReturn(false)
         beforeRenderListListener.onBeforeRenderList(listOf(entry1, entry2))
@@ -114,34 +111,12 @@ class RowAppearanceCoordinatorTest : SysuiTestCase() {
     }
 
     @Test
-    @EnableFlags(NotificationBundleUi.FLAG_NAME)
-    fun testSetSystemExpanded_Bundled_NotInGroup() {
+    fun testSetSystemExpandedNeverIfBundled() {
+        whenever(sectionStyleProvider.isMinimizedSection(eq(section1))).thenReturn(false)
         whenever(sectionStyleProvider.isMinimizedSection(eq(section3))).thenReturn(false)
-        beforeRenderListListener.onBeforeRenderList(listOf(entry3))
-        afterRenderEntryListener.onAfterRenderEntry(entry3, controller3)
-        verify(controller3).setSystemExpanded(eq(true))
-    }
-
-    @Test
-    @EnableFlags(NotificationBundleUi.FLAG_NAME)
-    fun testSetSystemExpanded_Bundled_SingleNotifInGroup() {
-        entry3.sbn.overrideGroupKey = "bundled"
-        whenever(sectionStyleProvider.isMinimizedSection(eq(section3))).thenReturn(false)
-        whenever(kosmos.notifCollection.isOnlyChildInGroup(entry3)).thenReturn(true)
-
-        beforeRenderListListener.onBeforeRenderList(listOf(entry3))
-        afterRenderEntryListener.onAfterRenderEntry(entry3, controller3)
-        verify(controller3).setSystemExpanded(eq(true))
-    }
-
-    @Test
-    @EnableFlags(NotificationBundleUi.FLAG_NAME)
-    fun testSetSystemExpanded_Bundled_NotMultiChildGroup() {
-        entry3.sbn.overrideGroupKey = "bundled"
-        whenever(sectionStyleProvider.isMinimizedSection(eq(section3))).thenReturn(false)
-        whenever(kosmos.notifCollection.isOnlyChildInGroup(entry3)).thenReturn(false)
-
-        beforeRenderListListener.onBeforeRenderList(listOf(entry3))
+        beforeRenderListListener.onBeforeRenderList(listOf(entry1, entry3))
+        afterRenderEntryListener.onAfterRenderEntry(entry1, controller1)
+        verify(controller1).setSystemExpanded(eq(true))
         afterRenderEntryListener.onAfterRenderEntry(entry3, controller3)
         verify(controller3).setSystemExpanded(eq(false))
     }
