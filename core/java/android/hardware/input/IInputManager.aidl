@@ -309,5 +309,7 @@ interface IInputManager {
 
     void setMouseScalingEnabled(boolean enabled, int displayId);
 
-    PointF getCursorPosition(int displayId);
+    PointF getCursorPositionInPhysicalDisplay(int displayId);
+
+    PointF getCursorPositionInLogicalDisplay(int displayId);
 }
