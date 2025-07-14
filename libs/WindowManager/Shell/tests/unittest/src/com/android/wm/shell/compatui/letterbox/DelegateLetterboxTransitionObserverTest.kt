@@ -80,7 +80,31 @@ class DelegateLetterboxTransitionObserverTest : ShellTestCase() {
                 r.invokeShellInit()
                 transitionInfo {
                     type = TRANSIT_MOVE_LETTERBOX_REACHABILITY
-                    addChange { }
+                    addChange {
+                        runningTaskInfo { ti ->
+                            ti.appCompatTaskInfo.setIsLeafTask(true)
+                        }
+                    }
+                }
+                validateOnTransitionReady {
+                    r.checkLifecycleControllerInvoked(times = 0)
+                }
+            }
+        }
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_APP_COMPAT_REFACTORING)
+    fun `LetterboxLifecycleController for not leaf tasks`() {
+        runTestScenario { r ->
+            executeTransitionObserverTest(observerFactory = r.observerFactory) {
+                r.invokeShellInit()
+                transitionInfo {
+                    addChange {
+                        runningTaskInfo { ti ->
+                            ti.appCompatTaskInfo.setIsLeafTask(false)
+                        }
+                    }
                 }
                 validateOnTransitionReady {
                     r.checkLifecycleControllerInvoked(times = 0)
@@ -111,7 +135,11 @@ class DelegateLetterboxTransitionObserverTest : ShellTestCase() {
             executeTransitionObserverTest(observerFactory = r.observerFactory) {
                 r.invokeShellInit()
                 transitionInfo {
-                    addChange { }
+                    addChange {
+                        runningTaskInfo { ti ->
+                            ti.appCompatTaskInfo.setIsLeafTask(true)
+                        }
+                    }
                 }
                 validateOnTransitionReady {
                     r.checkLifecycleControllerInvoked(times = 1)
@@ -127,9 +155,21 @@ class DelegateLetterboxTransitionObserverTest : ShellTestCase() {
             executeTransitionObserverTest(observerFactory = r.observerFactory) {
                 r.invokeShellInit()
                 transitionInfo {
-                    addChange { }
-                    addChange { }
-                    addChange { }
+                    addChange {
+                        runningTaskInfo { ti ->
+                            ti.appCompatTaskInfo.setIsLeafTask(true)
+                        }
+                    }
+                    addChange {
+                        runningTaskInfo { ti ->
+                            ti.appCompatTaskInfo.setIsLeafTask(true)
+                        }
+                    }
+                    addChange {
+                        runningTaskInfo { ti ->
+                            ti.appCompatTaskInfo.setIsLeafTask(true)
+                        }
+                    }
                 }
                 validateOnTransitionReady {
                     r.checkLifecycleControllerInvoked(times = 3)

@@ -27,13 +27,13 @@ import com.android.wm.shell.compatui.letterbox.LetterboxController
 import com.android.wm.shell.compatui.letterbox.LetterboxControllerStrategy
 import com.android.wm.shell.compatui.letterbox.LetterboxKey
 import com.android.wm.shell.compatui.letterbox.asMode
+import java.util.function.Consumer
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.kotlin.any
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
-import java.util.function.Consumer
 
 /**
  * Tests for [LetterboxLifecycleControllerImpl].
@@ -58,6 +58,19 @@ class LetterboxLifecycleControllerImplTest : ShellTestCase() {
     }
 
     @Test
+    fun `Letterbox is hidden with OPEN Transition but not letterboxed as empty`() {
+        runTestScenario { r ->
+            r.invokeLifecycleControllerWith(
+                r.createLifecycleEvent(
+                    type = LetterboxLifecycleEventType.OPEN,
+                    letterboxBounds = Rect()
+                )
+            )
+            r.verifyUpdateLetterboxSurfaceVisibility(expected = true)
+        }
+    }
+
+    @Test
     fun `Surface created with OPEN Transition and letterboxed with leash`() {
         runTestScenario { r ->
             r.invokeLifecycleControllerWith(
@@ -68,6 +81,20 @@ class LetterboxLifecycleControllerImplTest : ShellTestCase() {
             )
             r.verifyStrategyIsInvoked(expected = true)
             r.verifyCreateLetterboxSurface(expected = true)
+        }
+    }
+
+    @Test
+    fun `Surface NOT created with OPEN Transition and NO letterboxed with leash`() {
+        runTestScenario { r ->
+            r.invokeLifecycleControllerWith(
+                r.createLifecycleEvent(
+                    type = LetterboxLifecycleEventType.OPEN,
+                    letterboxBounds = Rect()
+                )
+            )
+            r.verifyStrategyIsInvoked(expected = false)
+            r.verifyCreateLetterboxSurface(expected = false)
         }
     }
 
@@ -99,6 +126,23 @@ class LetterboxLifecycleControllerImplTest : ShellTestCase() {
             r.verifyUpdateLetterboxSurfaceBounds(
                 expected = true,
                 letterboxBounds = Rect(500, 0, 800, 1800)
+            )
+        }
+    }
+
+    @Test
+    fun `Surface Bounds NOT updated with OPEN Transition and NOT letterboxed`() {
+        runTestScenario { r ->
+            r.invokeLifecycleControllerWith(
+                r.createLifecycleEvent(
+                    type = LetterboxLifecycleEventType.OPEN,
+                    letterboxBounds = Rect(),
+                    eventTaskLeash = null
+                )
+            )
+            r.verifyUpdateLetterboxSurfaceBounds(
+                expected = false,
+                letterboxBounds = Rect()
             )
         }
     }
