@@ -11,7 +11,7 @@
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
- * limitations under the License
+ * limitations under the License.
  */
 
 package com.android.server.am;
@@ -20,6 +20,9 @@ import android.app.ActivityManager;
 import android.os.UserHandle;
 import android.util.SparseArray;
 import android.util.proto.ProtoOutputStream;
+
+import com.android.server.am.psc.ActiveUidsInternal;
+import com.android.server.am.psc.UidStateRecord;
 
 import java.io.PrintWriter;
 
@@ -30,7 +33,7 @@ import java.io.PrintWriter;
  * TODO(b/425766486): Maybe rename it to "UidRecordMap", so we can reuse it for other purposes than
  *   "active" UIDs.
  */
-public final class ActiveUids {
+public final class ActiveUids implements ActiveUidsInternal {
     /**
      * Interface for observing changes in UID active/inactive states based on state changes of
      * processes running for that UID.
@@ -64,32 +67,45 @@ public final class ActiveUids {
         }
     }
 
-    void remove(int uid) {
+    @Override
+    public void put(int uid, UidStateRecord value) {
+        // Only UidRecord implements the UidStateRecord, so it's safe to cast directly.
+        put(uid, (UidRecord) value);
+    }
+
+
+    @Override
+    public void remove(int uid) {
         mActiveUids.remove(uid);
         if (mObserver != null) {
             mObserver.onUidInactive(uid);
         }
     }
 
-    void clear() {
+    @Override
+    public void clear() {
         mActiveUids.clear();
         // It is only called for a temporal container with mObserver == null or test case.
         // So there is no need to notify activity task manager.
     }
 
-    UidRecord get(int uid) {
+    @Override
+    public UidRecord get(int uid) {
         return mActiveUids.get(uid);
     }
 
-    int size() {
+    @Override
+    public int size() {
         return mActiveUids.size();
     }
 
-    UidRecord valueAt(int index) {
+    @Override
+    public UidRecord valueAt(int index) {
         return mActiveUids.valueAt(index);
     }
 
-    int keyAt(int index) {
+    @Override
+    public int keyAt(int index) {
         return mActiveUids.keyAt(index);
     }
 

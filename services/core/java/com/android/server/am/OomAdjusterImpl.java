@@ -104,6 +104,7 @@ import android.util.Slog;
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.server.ServiceThread;
+import com.android.server.am.psc.ActiveUidsInternal;
 import com.android.server.am.psc.ProcessStateRecord;
 import com.android.server.am.psc.UidStateRecord;
 import com.android.server.wm.ActivityServiceConnectionsHolder;
@@ -477,11 +478,12 @@ public class OomAdjusterImpl extends OomAdjuster {
         long mNow;
         int mCachedAdj;
         @OomAdjReason int mOomAdjReason;
-        @NonNull ActiveUids mUids;
+        @NonNull
+        ActiveUidsInternal mUids;
         boolean mFullUpdate;
 
-        void update(ProcessRecord topApp, long now, int cachedAdj,
-                @OomAdjReason int oomAdjReason, @NonNull ActiveUids uids, boolean fullUpdate) {
+        void update(ProcessRecord topApp, long now, int cachedAdj, @OomAdjReason int oomAdjReason,
+                @NonNull ActiveUidsInternal uids, boolean fullUpdate) {
             mTopApp = topApp;
             mNow = now;
             mCachedAdj = cachedAdj;
@@ -618,7 +620,7 @@ public class OomAdjusterImpl extends OomAdjuster {
         @Override
         public void accept(OomAdjusterArgs args) {
             final ProcessRecord app = args.mApp;
-            final ActiveUids uids = args.mUids;
+            final ActiveUidsInternal uids = args.mUids;
 
             // This process was updated in some way, mark that it was last calculated this sequence.
             app.mState.setCompletedAdjSeq(mAdjSeq);

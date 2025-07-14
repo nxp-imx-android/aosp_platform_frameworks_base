@@ -146,6 +146,7 @@ import com.android.internal.annotations.CompositeRWLock;
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.server.ServiceThread;
+import com.android.server.am.psc.ActiveUidsInternal;
 import com.android.server.am.psc.PlatformCompatCache;
 import com.android.server.am.psc.PlatformCompatCache.CachedCompatChangeId;
 import com.android.server.am.psc.ProcessStateRecord;
@@ -685,7 +686,8 @@ public abstract class OomAdjuster {
      */
     @GuardedBy("mService")
     protected boolean collectReachableProcessesLocked(ArraySet<ProcessRecord> apps,
-            ArrayList<ProcessRecord> processes, ActiveUids uids) {
+            ArrayList<ProcessRecord> processes) {
+        final ActiveUidsInternal uids = mTmpUidRecords;
         final ArrayDeque<ProcessRecord> queue = mTmpQueue;
         queue.clear();
         processes.clear();
@@ -2712,9 +2714,8 @@ public abstract class OomAdjuster {
                 collectReachableProcessesLSP(processes);
             }
         } else {
-            final ActiveUids uids = mTmpUidRecords;
             mTmpProcessSet.add(app);
-            collectReachableProcessesLocked(mTmpProcessSet, processes, uids);
+            collectReachableProcessesLocked(mTmpProcessSet, processes);
             mTmpProcessSet.clear();
         }
         // Now processes contains app's downstream and app
