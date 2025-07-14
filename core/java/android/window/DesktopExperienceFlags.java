@@ -274,6 +274,8 @@ public enum DesktopExperienceFlags {
             Flags.FLAG_PRESERVE_RECENTS_TASK_CONFIGURATION_ON_RELAUNCH),
     REPARENT_WINDOW_TOKEN_API(Flags::reparentWindowTokenApi, true,
             Flags.FLAG_REPARENT_WINDOW_TOKEN_API),
+    REPOSITORY_BASED_PERSISTENCE(Flags::repositoryBasedPersistence, false,
+            Flags.FLAG_REPOSITORY_BASED_PERSISTENCE),
     RESPECT_FULLSCREEN_ACTIVITY_OPTION_IN_DESKTOP_LAUNCH_PARAMS(
             Flags::respectFullscreenActivityOptionInDesktopLaunchParams, true,
             Flags.FLAG_RESPECT_FULLSCREEN_ACTIVITY_OPTION_IN_DESKTOP_LAUNCH_PARAMS),
