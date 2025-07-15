@@ -2187,7 +2187,7 @@
     <string name="notification_onboarding_summaries_message">Your longer conversations can now be summarized to give you quick recaps</string>
 
     <!--  Notification bundles onboarding affordance  [CHAR LIMIT=NONE]-->
-    <string name="notification_onboarding_bundles_message">Notification organizer bundles and silences lower priority notifications</string>
+    <string name="notification_onboarding_bundles_message">Notification organizer bundles and silences lower priority notifications. Add more categories in Settings.</string>
 
     <!-- Number of notifications for bundles header [CHAR LIMIT=NONE] -->
     <string name="notification_bundle_header_counter">{count, plural,
