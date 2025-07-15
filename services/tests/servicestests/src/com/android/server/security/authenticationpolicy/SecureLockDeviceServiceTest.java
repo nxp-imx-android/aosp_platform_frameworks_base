@@ -44,6 +44,9 @@ import static android.security.authenticationpolicy.AuthenticationPolicyManager.
 import static android.security.authenticationpolicy.AuthenticationPolicyManager.ERROR_UNKNOWN;
 import static android.security.authenticationpolicy.AuthenticationPolicyManager.SUCCESS;
 
+import static com.android.internal.widget.LockPatternUtils.StrongAuthTracker.PRIMARY_AUTH_REQUIRED_FOR_SECURE_LOCK_DEVICE;
+import static com.android.internal.widget.LockPatternUtils.StrongAuthTracker.STRONG_BIOMETRIC_AUTH_REQUIRED_FOR_SECURE_LOCK_DEVICE;
+
 import static com.google.common.truth.Truth.assertThat;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -53,6 +56,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.clearInvocations;
 import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -61,6 +65,7 @@ import android.annotation.SuppressLint;
 import android.app.ActivityManager;
 import android.app.ActivityTaskManager;
 import android.app.admin.DevicePolicyManager;
+import android.app.trust.IStrongAuthTracker;
 import android.content.Context;
 import android.hardware.biometrics.BiometricEnrollmentStatus;
 import android.hardware.biometrics.BiometricManager;
@@ -98,6 +103,9 @@ import androidx.test.runner.AndroidJUnit4;
 import com.android.internal.app.IVoiceInteractionManagerService;
 import com.android.internal.statusbar.IStatusBarService;
 import com.android.internal.util.test.LocalServiceKeeperRule;
+import com.android.internal.widget.LockPatternUtils;
+import com.android.server.locksettings.LockSettingsInternal;
+import com.android.server.pm.UserManagerInternal;
 import com.android.server.security.authenticationpolicy.settings.DevicePolicyRestrictionsController;
 import com.android.server.security.authenticationpolicy.settings.SecureLockDeviceSettingsManager;
 import com.android.server.security.authenticationpolicy.settings.SecureLockDeviceSettingsManagerImpl;
@@ -118,6 +126,7 @@ import org.mockito.junit.MockitoRule;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -133,6 +142,7 @@ import java.util.Set;
 public class SecureLockDeviceServiceTest {
     private static final int TEST_USER_ID = 0;
     private static final int OTHER_USER_ID = 1;
+    private static final int[] USER_IDS = {TEST_USER_ID, OTHER_USER_ID};
     private static final String TAG = "SecureLockDeviceService";
     private static final String FILE_NAME = "secure_lock_device_state";
     private static final String XML_TAG_ROOT = "secure-lock-device-state";
@@ -225,7 +235,11 @@ public class SecureLockDeviceServiceTest {
     @Mock private IStatusBarService mStatusBarService;
     @Mock private IThermalService mThermalService;
     @Mock private IVoiceInteractionManagerService mVoiceInteractionManagerService;
+    @Mock private LockPatternUtils mLockPatternUtils;
+    @Mock private LockSettingsInternal mLockSettingsInternal;
+    @Mock private SecureLockDeviceService.StrongAuthTracker mStrongAuthTracker;
     @Mock private SecureLockDeviceServiceInternal mSecureLockDeviceServiceInternal;
+    @Mock private UserManagerInternal mUserManagerInternal;
     @Mock private UsbManager mUsbManager;
     @Mock private IUsbManagerInternal mUsbManagerInternal;
     @Mock private WindowManagerInternal mWindowManagerInternal;
@@ -295,10 +309,15 @@ public class SecureLockDeviceServiceTest {
         when(mSecureLockDeviceStatusOtherListener.asBinder())
                 .thenReturn(mSecureLockDeviceStatusOtherListenerBinder);
 
-        mLocalServiceKeeperRule.overrideLocalService(
-                SecureLockDeviceServiceInternal.class, mSecureLockDeviceServiceInternal);
-        mLocalServiceKeeperRule.overrideLocalService(
-                WindowManagerInternal.class, mWindowManagerInternal);
+        mLocalServiceKeeperRule.overrideLocalService(LockSettingsInternal.class,
+                mLockSettingsInternal);
+        mLocalServiceKeeperRule.overrideLocalService(SecureLockDeviceServiceInternal.class,
+                mSecureLockDeviceServiceInternal);
+        mLocalServiceKeeperRule.overrideLocalService(UserManagerInternal.class,
+                mUserManagerInternal);
+        mLocalServiceKeeperRule.overrideLocalService(WindowManagerInternal.class,
+                mWindowManagerInternal);
+        when(mUserManagerInternal.getUserIds()).thenReturn(USER_IDS);
 
         doAnswer(
                 invocation -> {
@@ -316,9 +335,14 @@ public class SecureLockDeviceServiceTest {
                 .disable2(anyInt(), any(), anyString());
         when(mStatusBarService.getDisableFlags(any(), anyInt())).thenReturn(
                 new int[] {mDisableFlags, mDisable2Flags});
+        when(mStrongAuthTracker.getStub()).thenReturn(mock(IStrongAuthTracker.Stub.class));
 
-        mSecureLockDeviceSettingsManager = new SecureLockDeviceSettingsManagerImpl(mTestContext,
-                mActivityTaskManager, mStatusBarService, mVoiceInteractionManagerService);
+        mSecureLockDeviceSettingsManager = new SecureLockDeviceSettingsManagerImpl(
+                mTestContext,
+                mActivityTaskManager,
+                mStatusBarService,
+                mVoiceInteractionManagerService
+        );
         mSecureLockDeviceSettingsManager.initSettingsControllerDependencies(
                 mDevicePolicyManager, null /* nfcAdapter */, mUsbManager, mUsbManagerInternal);
 
@@ -329,7 +353,9 @@ public class SecureLockDeviceServiceTest {
                         mBiometricManager,
                         mFaceManager,
                         mFingerprintManager,
-                        new PowerManager(mTestContext, mIPowerManager, mThermalService, null));
+                        new PowerManager(mTestContext, mIPowerManager, mThermalService, null),
+                        mUserManagerInternal
+                );
 
         File secureLockDeviceStateFile =
                 File.createTempFile(FILE_NAME, ".xml", mTestContext.getCacheDir());
@@ -337,6 +363,25 @@ public class SecureLockDeviceServiceTest {
         mSecureLockDeviceStore.overrideStateFile(secureLockDeviceStateFile);
 
         mSecureLockDeviceService.setSecureLockDeviceTestStatus(true);
+
+        try {
+            Field strongAuthTracker =
+                    SecureLockDeviceService.class.getDeclaredField("mStrongAuthTracker");
+            strongAuthTracker.setAccessible(true);
+            strongAuthTracker.set(mSecureLockDeviceService, mStrongAuthTracker);
+        } catch (NoSuchFieldException | IllegalAccessException e) {
+            throw new RuntimeException("Failed to inject mock StrongAuthTracker via reflection", e);
+        }
+
+        try {
+            Field lockPatternUtils =
+                    SecureLockDeviceService.class.getDeclaredField("mLockPatternUtils");
+            lockPatternUtils.setAccessible(true);
+            lockPatternUtils.set(mSecureLockDeviceService, mLockPatternUtils);
+        } catch (NoSuchFieldException | IllegalAccessException e) {
+            throw new RuntimeException("Failed to inject mock LockPatternUtils via reflection", e);
+        }
+
         mSecureLockDeviceService.onLockSettingsReady();
         mSecureLockDeviceService.onBootCompleted();
     }
@@ -428,8 +473,28 @@ public class SecureLockDeviceServiceTest {
         );
         when(mActivityManager.isProfileForeground(eq(mUser))).thenReturn(false);
         when(mActivityManager.switchUser(eq(TEST_USER_ID))).thenReturn(false);
-
         assertThat(enableSecureLockDevice(mUser)).isEqualTo(ERROR_UNKNOWN);
+    }
+
+    @Test
+    public void testEnableAndDisableSecureLockDevice_setsAuthFlags() {
+        setupBiometricState(
+                true, /* deviceHasStrongBiometricSensor */
+                true, /* primaryUserHasStrongBiometricEnrollment */
+                false /* otherUserHasStrongBiometricEnrollment */
+        );
+        enableSecureLockDevice(mUser);
+
+        for (int userId : USER_IDS) {
+            verify(mLockPatternUtils).requireStrongAuth(
+                    eq(PRIMARY_AUTH_REQUIRED_FOR_SECURE_LOCK_DEVICE), eq(userId));
+            verify(mLockPatternUtils).requireStrongAuth(
+                    eq(STRONG_BIOMETRIC_AUTH_REQUIRED_FOR_SECURE_LOCK_DEVICE), eq(userId));
+        }
+
+        disableSecureLockDevice(mUser);
+
+        verify(mLockSettingsInternal).disableSecureLockDevice(eq(TEST_USER_ID), eq(false));
     }
 
     @Test
@@ -888,7 +953,8 @@ public class SecureLockDeviceServiceTest {
     }
 
     private int disableSecureLockDevice(UserHandle user) {
-        return mSecureLockDeviceService.disableSecureLockDevice(user, mDisableParams);
+        return mSecureLockDeviceService.disableSecureLockDevice(user, mDisableParams,
+                /* authenticationComplete=*/ false);
     }
 
     private Bundle setToBundle(Set<String> restrictions) {
