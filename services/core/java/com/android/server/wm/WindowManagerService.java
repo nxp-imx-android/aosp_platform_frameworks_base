@@ -1663,7 +1663,7 @@ public class WindowManagerService extends IWindowManager.Stub
             }
 
             if (type >= FIRST_SUB_WINDOW && type <= LAST_SUB_WINDOW) {
-                parentWindow = windowForClientLocked(null, attrs.token, false);
+                parentWindow = windowForClient(null /* session */, attrs.token);
                 if (parentWindow == null) {
                     ProtoLog.w(WM_ERROR, "Attempted to add window with token that is not a window: "
                             + "%s.  Aborting.", attrs.token);
@@ -2222,7 +2222,7 @@ public class WindowManagerService extends IWindowManager.Stub
 
     void removeClientToken(Session session, IBinder client) {
         synchronized (mGlobalLock) {
-            WindowState win = windowForClientLocked(session, client, false);
+            final WindowState win = windowForClient(session, client);
             if (win != null) {
                 win.removeIfPossible();
                 return;
@@ -2328,8 +2328,10 @@ public class WindowManagerService extends IWindowManager.Stub
         final long origId = Binder.clearCallingIdentity();
         try {
             synchronized (mGlobalLock) {
-                WindowState w = windowForClientLocked(session, client, false);
-                w.clearClientTouchableRegion();
+                final WindowState w = windowForClient(session, client);
+                if (w != null) {
+                    w.clearClientTouchableRegion();
+                }
             }
         } finally {
             Binder.restoreCallingIdentity(origId);
@@ -2342,7 +2344,7 @@ public class WindowManagerService extends IWindowManager.Stub
         final long origId = Binder.clearCallingIdentity();
         try {
             synchronized (mGlobalLock) {
-                WindowState w = windowForClientLocked(session, client, false);
+                final WindowState w = windowForClient(session, client);
                 if (DEBUG_LAYOUT) Slog.d(TAG, "setInsetsWindow " + w
                         + ", contentInsets=" + w.mGivenContentInsets + " -> " + contentInsets
                         + ", visibleInsets=" + w.mGivenVisibleInsets + " -> " + visibleInsets
@@ -2411,7 +2413,7 @@ public class WindowManagerService extends IWindowManager.Stub
 
     public void pokeDrawLock(Session session, IBinder token) {
         synchronized (mGlobalLock) {
-            WindowState window = windowForClientLocked(session, token, false);
+            final WindowState window = windowForClient(session, token);
             if (window != null) {
                 window.pokeDrawLockLw(mDrawLockTimeoutMillis);
             }
@@ -2428,7 +2430,7 @@ public class WindowManagerService extends IWindowManager.Stub
      */
     public boolean cancelDraw(Session session, IWindow client, int seqId) {
         synchronized (mGlobalLock) {
-            final WindowState win = windowForClientLocked(session, client, false);
+            final WindowState win = windowForClient(session, client);
             if (win == null) {
                 return false;
             }
@@ -2467,7 +2469,7 @@ public class WindowManagerService extends IWindowManager.Stub
         final int uid = Binder.getCallingUid();
         final long origId = Binder.clearCallingIdentity();
         synchronized (mGlobalLock) {
-            final WindowState win = windowForClientLocked(session, client, false);
+            final WindowState win = windowForClient(session, client);
             if (win == null) {
                 return 0;
             }
@@ -2960,7 +2962,7 @@ public class WindowManagerService extends IWindowManager.Stub
 
         try {
             synchronized (mGlobalLock) {
-                WindowState win = windowForClientLocked(session, client, false);
+                final WindowState win = windowForClient(session, client);
                 if (win == null) {
                     return false;
                 }
@@ -2980,7 +2982,7 @@ public class WindowManagerService extends IWindowManager.Stub
         final long origId = Binder.clearCallingIdentity();
         try {
             synchronized (mGlobalLock) {
-                WindowState win = windowForClientLocked(session, client, false);
+                final WindowState win = windowForClient(session, client);
                 ProtoLog.d(WM_DEBUG_ADD_REMOVE, "finishDrawingWindow: %s mDrawState=%s",
                         win, (win != null ? win.mWinAnimator.drawStateToString() : "null"));
                 if (win != null && win.finishDrawing(postDrawTransaction, seqId)) {
@@ -5149,8 +5151,7 @@ public class WindowManagerService extends IWindowManager.Stub
 
     void reportDecorViewGestureChanged(Session session, IWindow window, boolean intercepted) {
         synchronized (mGlobalLock) {
-            final WindowState win =
-                    windowForClientLocked(session, window, false /* throwOnError */);
+            final WindowState win = windowForClient(session, window);
             if (win == null) {
                 return;
             }
@@ -5162,8 +5163,7 @@ public class WindowManagerService extends IWindowManager.Stub
     void reportSystemGestureExclusionChanged(Session session, IWindow window,
             List<Rect> exclusionRects) {
         synchronized (mGlobalLock) {
-            final WindowState win = windowForClientLocked(session, window,
-                    false /* throwOnError */);
+            final WindowState win = windowForClient(session, window);
             if (win == null) {
                 Slog.i(TAG_WM,
                         "reportSystemGestureExclusionChanged(): No window state for package:"
@@ -5179,8 +5179,7 @@ public class WindowManagerService extends IWindowManager.Stub
     void reportKeepClearAreasChanged(Session session, IWindow window,
             List<Rect> restricted, List<Rect> unrestricted) {
         synchronized (mGlobalLock) {
-            final WindowState win = windowForClientLocked(session, window,
-                    false /* throwOnError */);
+            final WindowState win = windowForClient(session, window);
             if (win == null) {
                 Slog.i(TAG_WM,
                         "reportKeepClearAreasChanged(): No window state for package:"
@@ -6608,27 +6607,23 @@ public class WindowManagerService extends IWindowManager.Stub
     // Internals
     // -------------------------------------------------------------
 
-    final WindowState windowForClientLocked(Session session, IWindow client, boolean throwOnError) {
-        return windowForClientLocked(session, client.asBinder(), throwOnError);
+    @Nullable
+    @GuardedBy("mGlobalLock")
+    final WindowState windowForClient(@Nullable Session session, @NonNull IWindow client) {
+        return windowForClient(session, client.asBinder());
     }
 
-    final WindowState windowForClientLocked(Session session, IBinder client, boolean throwOnError) {
+    @Nullable
+    @GuardedBy("mGlobalLock")
+    final WindowState windowForClient(@Nullable Session session, @NonNull IBinder client) {
         WindowState win = mWindowMap.get(client);
         if (DEBUG) Slog.v(TAG_WM, "Looking up client " + client + ": " + win);
         if (win == null) {
-            if (throwOnError) {
-                throw new IllegalArgumentException(
-                        "Requested window " + client + " does not exist");
-            }
             ProtoLog.w(WM_ERROR, "Failed looking up window session=%s callers=%s", session,
                     Debug.getCallers(3));
             return null;
         }
         if (session != null && win.mSession != session) {
-            if (throwOnError) {
-                throw new IllegalArgumentException("Requested window " + client + " is in session "
-                        + win.mSession + ", not " + session);
-            }
             ProtoLog.w(WM_ERROR, "Failed looking up window session=%s callers=%s", session,
                     Debug.getCallers(3));
             return null;
@@ -7644,7 +7639,7 @@ public class WindowManagerService extends IWindowManager.Stub
      */
     void updateTapExcludeRegion(IWindow client, Region region) {
         synchronized (mGlobalLock) {
-            final WindowState callingWin = windowForClientLocked(null, client, false);
+            final WindowState callingWin = windowForClient(null /* session */, client);
             if (callingWin == null) {
                 ProtoLog.w(WM_ERROR, "Bad requesting window %s", client);
                 return;
@@ -7680,7 +7675,7 @@ public class WindowManagerService extends IWindowManager.Stub
                 }
                 WindowState topWindow = null;
                 if (behindClient != null) {
-                    topWindow = windowForClientLocked(null, behindClient, /* throwOnError*/ false);
+                    topWindow = windowForClient(null /* session */, behindClient);
                 }
                 WindowState targetWindow = dc.findScrollCaptureTargetWindow(topWindow, taskId);
                 if (targetWindow == null) {
@@ -10008,8 +10003,7 @@ public class WindowManagerService extends IWindowManager.Stub
     void grantEmbeddedWindowFocus(Session session, IWindow callingWindow,
             InputTransferToken inputTransferToken, boolean grantFocus) {
         synchronized (mGlobalLock) {
-            final WindowState hostWindow =
-                    windowForClientLocked(session, callingWindow, false /* throwOnError*/);
+            final WindowState hostWindow = windowForClient(session, callingWindow);
             if (hostWindow == null) {
                 Slog.e(TAG, "Host window not found");
                 return;
@@ -10089,7 +10083,7 @@ public class WindowManagerService extends IWindowManager.Stub
         final SurfaceControl displaySurfaceControl;
         final Rect boundsInDisplay = new Rect(boundsInWindow);
         synchronized (mGlobalLock) {
-            final WindowState win = windowForClientLocked(session, window, false);
+            final WindowState win = windowForClient(session, window);
             if (win == null) {
                 Slog.w(TAG, "Failed to generate DisplayHash. Invalid window");
                 mDisplayHashController.sendDisplayHashError(callback,
