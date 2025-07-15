@@ -28,7 +28,6 @@ public class ProtoLogGroup implements IProtoLogGroup {
     @NonNull
     private final String mTag;
     private final boolean mEnabled;
-    private boolean mLogToProto;
     private boolean mLogToLogcat;
 
     public ProtoLogGroup(@NonNull String name) {
@@ -43,19 +42,12 @@ public class ProtoLogGroup implements IProtoLogGroup {
         mName = name;
         mTag = tag;
         mEnabled = enabled;
-        mLogToProto = enabled;
         mLogToLogcat = enabled;
     }
 
     @Override
     public boolean isEnabled() {
         return mEnabled;
-    }
-
-    @Deprecated
-    @Override
-    public boolean isLogToProto() {
-        return mLogToProto;
     }
 
     @Override
@@ -67,12 +59,6 @@ public class ProtoLogGroup implements IProtoLogGroup {
     @NonNull
     public String getTag() {
         return mTag;
-    }
-
-    @Deprecated
-    @Override
-    public void setLogToProto(boolean logToProto) {
-        mLogToProto = logToProto;
     }
 
     @Override

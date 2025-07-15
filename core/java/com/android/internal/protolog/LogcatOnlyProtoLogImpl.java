@@ -16,8 +16,6 @@
 
 package com.android.internal.protolog;
 
-import static com.android.internal.protolog.ProtoLog.REQUIRE_PROTOLOGTOOL;
-
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.ravenwood.annotation.RavenwoodKeepWholeClass;
@@ -54,12 +52,7 @@ public class LogcatOnlyProtoLogImpl implements IProtoLog {
     @Override
     public void log(@NonNull LogLevel logLevel, @NonNull IProtoLogGroup group,
             @NonNull String messageString, @NonNull Object[] args) {
-        if (REQUIRE_PROTOLOGTOOL && group.isLogToProto()) {
-            Log.w(LOG_TAG, "ProtoLog message not processed. Failed to log it to proto. "
-                    + "Logging it below to logcat instead.");
-        }
-
-        if (group.isLogToLogcat() || group.isLogToProto()) {
+        if (group.isLogToLogcat()) {
             String formattedString = TextUtils.formatSimple(messageString, args);
             switch (logLevel) {
                 case VERBOSE -> Log.v(group.getTag(), formattedString);
