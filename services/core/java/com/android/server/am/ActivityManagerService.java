@@ -8095,7 +8095,9 @@ public class ActivityManagerService extends IActivityManager.Stub
      * @param observer The UidObserver implementation to register.
      * @param which    A bitmask of events to observe. See ActivityManager.UID_OBSERVER_*.
      * @param cutpoint The cutpoint for onUidStateChanged events. When the state crosses this
-     *                 threshold in either direction, onUidStateChanged will be called.
+     *                 threshold in either direction, onUidStateChanged will be called. If using
+     *                 {@link ActivityManager#PROCESS_STATE_UNKNOWN}, onUidStateChanged will be
+     *                 called on every state change.
      * @param callingPackage The name of the calling package.
      * @param uids     A list of uids to watch. If all uids are to be watched, use
      *                 registerUidObserver instead.
