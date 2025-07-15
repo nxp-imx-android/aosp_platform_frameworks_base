@@ -16,19 +16,17 @@
 package android.os;
 
 import android.annotation.NonNull;
-
-import com.android.internal.util.function.TriFunction;
+import android.platform.test.ravenwood.RavenwoodErrorHandler;
 
 public class Handler_ravenwood {
     private Handler_ravenwood() {
     }
 
-    public static volatile TriFunction<MessageQueue, Message, Long, Void>
-            sOnBeforeEnqueue = (a, b, c) -> null;
-
-    static void onBeforeEnqueue(@NonNull MessageQueue queue, @NonNull Message msg,
+    /**
+     * Called by {@link Handler#onBeforeEnqueue(MessageQueue, Message, long)}
+     */
+    public static void onBeforeEnqueue(@NonNull MessageQueue queue, @NonNull Message msg,
             long uptimeMillis) {
-        // Check for a pendign exception, and throw it if any.
-        sOnBeforeEnqueue.apply(queue, msg, uptimeMillis);
+        RavenwoodErrorHandler.onBeforeEnqueue(msg);
     }
 }
