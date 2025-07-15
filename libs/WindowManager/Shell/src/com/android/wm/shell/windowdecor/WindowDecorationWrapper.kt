@@ -408,8 +408,9 @@ class WindowDecorationWrapper private constructor(
     fun updateHoverAndPressStatus(
         e: MotionEvent
     ) = when {
+        defaultWindowDecor != null -> {} // No-op
         desktopWindowDecor != null -> requireDesktopWindowDecor().updateHoverAndPressStatus(e)
-        else -> error("Expected Non-null desktop window decoration")
+        else -> error("Expected Non-null default or desktop window decoration")
     }
 
     /** Handles a interruption to a drag event. */
@@ -548,8 +549,9 @@ class WindowDecorationWrapper private constructor(
     fun checkTouchEvent(
         e: MotionEvent
     ) = when {
+        defaultWindowDecor != null -> {} // No-op
         desktopWindowDecor != null -> requireDesktopWindowDecor().checkTouchEvent(e)
-        else -> error("Expected Non-null desktop window decoration")
+        else -> error("Expected Non-null default or desktop window decoration")
     }
 
     /**
