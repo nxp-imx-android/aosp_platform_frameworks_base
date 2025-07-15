@@ -20,10 +20,13 @@
 
 #include "GnssAssistance.h"
 
+#include <android_location_flags.h>
 #include <utils/String16.h>
 
 #include "GnssAssistanceCallback.h"
 #include "Utils.h"
+
+namespace location_flags = android::location::flags;
 
 namespace android::gnss {
 
@@ -81,6 +84,7 @@ jmethodID method_satelliteAlmanacGetOmega;
 jmethodID method_satelliteAlmanacGetOmega0;
 jmethodID method_satelliteAlmanacGetOmegaDot;
 jmethodID method_satelliteAlmanacGetRootA;
+jmethodID method_satelliteAlmanacGetToaSeconds;
 
 jmethodID method_satelliteEphemerisTimeGetIode;
 jmethodID method_satelliteEphemerisTimeGetToeSeconds;
@@ -369,6 +373,10 @@ void GnssAssistance_class_init_once(JNIEnv* env, jclass clazz) {
     method_satelliteAlmanacGetOmegaDot =
             env->GetMethodID(satelliteAlmanacClass, "getOmegaDot", "()D");
     method_satelliteAlmanacGetRootA = env->GetMethodID(satelliteAlmanacClass, "getRootA", "()D");
+    if (location_flags::support_toa_in_gnss_satellite_almanac()) {
+        method_satelliteAlmanacGetToaSeconds =
+                env->GetMethodID(satelliteAlmanacClass, "getToaSeconds", "()I");
+    }
 
     // Get the mothods of SatelliteEphemerisTime class.
     jclass satelliteEphemerisTimeClass = env->FindClass("android/location/SatelliteEphemerisTime");
@@ -2178,6 +2186,12 @@ void GnssAssistanceUtil::setGnssAlmanac(JNIEnv* env, jobject gnssAlmanacObj,
                 env->CallDoubleMethod(gnssSatelliteAlmanacObj, method_satelliteAlmanacGetOmegaDot);
         jdouble rootA =
                 env->CallDoubleMethod(gnssSatelliteAlmanacObj, method_satelliteAlmanacGetRootA);
+
+        if (location_flags::support_toa_in_gnss_satellite_almanac()) {
+            jint toaSeconds = env->CallIntMethod(gnssSatelliteAlmanacObj,
+                                                 method_satelliteAlmanacGetToaSeconds);
+            gnssSatelliteAlmanac.toaSeconds = toaSeconds;
+        }
         gnssSatelliteAlmanac.svid = static_cast<int32_t>(svid);
         gnssSatelliteAlmanac.svHealth = static_cast<int32_t>(svHealth);
         gnssSatelliteAlmanac.af0 = af0;

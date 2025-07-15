@@ -222,3 +222,10 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "support_toa_in_gnss_satellite_almanac"
+    namespace: "location"
+    description: "Support TOA in GnssSatelliteAlmanac"
+    bug: "409934786"
+}

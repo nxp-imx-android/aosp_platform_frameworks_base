@@ -487,6 +487,7 @@ package android.location {
     method @FloatRange(from=0.0f, to=8192.0f) public double getRootA();
     method @IntRange(from=0) public int getSvHealth();
     method @IntRange(from=1) public int getSvid();
+    method @FlaggedApi("android.location.flags.support_toa_in_gnss_satellite_almanac") @IntRange(from=0, to=604800) public int getToaSeconds();
     method public void writeToParcel(@NonNull android.os.Parcel, int);
     field @NonNull public static final android.os.Parcelable.Creator<android.location.GnssAlmanac.GnssSatelliteAlmanac> CREATOR;
   }
@@ -505,6 +506,7 @@ package android.location {
     method @NonNull public android.location.GnssAlmanac.GnssSatelliteAlmanac.Builder setRootA(@FloatRange(from=0.0f, to=8192.0f) double);
     method @NonNull public android.location.GnssAlmanac.GnssSatelliteAlmanac.Builder setSvHealth(@IntRange(from=0) int);
     method @NonNull public android.location.GnssAlmanac.GnssSatelliteAlmanac.Builder setSvid(@IntRange(from=1) int);
+    method @FlaggedApi("android.location.flags.support_toa_in_gnss_satellite_almanac") @NonNull public android.location.GnssAlmanac.GnssSatelliteAlmanac.Builder setToaSeconds(@IntRange(from=0, to=604800) int);
   }
 
   @FlaggedApi("android.location.flags.gnss_assistance_interface") public final class GnssAssistance implements android.os.Parcelable {
