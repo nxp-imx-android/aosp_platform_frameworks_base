@@ -185,56 +185,69 @@ class AppTaskImpl extends IAppTask.Stub {
     @Override
     public void moveTaskTo(int displayId, Rect bounds, IRemoteCallback callback) {
         checkCallerOrSystemOrRoot();
-        if (mService.checkPermission(
-                REPOSITION_SELF_WINDOWS, Binder.getCallingPid(), Binder.getCallingUid())
+        final int origCallingPid = Binder.getCallingPid();
+        final int origCallingUid = Binder.getCallingUid();
+        final long origId = Binder.clearCallingIdentity();
+        if (mService.checkPermission(REPOSITION_SELF_WINDOWS, origCallingPid, origCallingUid)
                 != PERMISSION_GRANTED) {
             reportTaskMoveRequestResult(
                     RESULT_FAILED_NO_PERMISSIONS, INVALID_DISPLAY, null /* bounds */, callback);
             return;
         }
-        synchronized (mService.mGlobalLock) {
-            final Task task = mService.mRootWindowContainer.anyTaskForId(mTaskId);
-            if (task == null) {
-                reportTaskMoveRequestResult(
-                        RESULT_FAILED_BAD_STATE, INVALID_DISPLAY, null /* bounds */, callback);
-                return;
-            }
-
-            if (displayId == INVALID_DISPLAY) {
-                displayId = task.getDisplayId();
-            }
-
-            adjustTaskMoveRequestBounds(displayId, bounds);
-            final int result = validateTaskMoveRequest(displayId, bounds, task);
-            if (result != RESULT_APPROVED) {
-                reportTaskMoveRequestResult(result, INVALID_DISPLAY, null /* bounds */, callback);
-                return;
-            }
-
-            final TransitionController controller = mService.getTransitionController();
-            final Transition transition = new Transition(
-                    TRANSIT_CHANGE, 0, controller, mService.mWindowManager.mSyncEngine);
-            transition.setRequestedLocation(displayId, bounds);
-            transition.addTransactionPresentedListener(() ->
+        try {
+            synchronized (mService.mGlobalLock) {
+                final Task task = mService.mRootWindowContainer.anyTaskForId(mTaskId);
+                if (task == null) {
                     reportTaskMoveRequestResult(
-                        result, task.getDisplayId(), task.getBounds(), callback));
-            controller.startCollectOrQueue(transition,
-                    (deferred) -> {
-                        if (deferred) {
-                            int lateResult = validateTaskMoveRequest(
-                                    transition.getRequestedLocation().getDisplayId(),
-                                    transition.getRequestedLocation().getBounds(),
-                                    task);
-                            if (lateResult != RESULT_APPROVED) {
-                                reportTaskMoveRequestResult(
-                                        lateResult, INVALID_DISPLAY, null /* bounds */, callback);
-                                transition.abort();
-                                return;
+                            RESULT_FAILED_BAD_STATE, INVALID_DISPLAY, null /* bounds */, callback);
+                    return;
+                }
+
+                if (displayId == INVALID_DISPLAY) {
+                    displayId = task.getDisplayId();
+                }
+
+                adjustTaskMoveRequestBounds(displayId, bounds);
+                final int result = validateTaskMoveRequest(displayId, bounds, task,
+                        origCallingPid, origCallingUid);
+                if (result != RESULT_APPROVED) {
+                    reportTaskMoveRequestResult(
+                            result, INVALID_DISPLAY, null /* bounds */, callback);
+                    return;
+                }
+
+                final TransitionController controller = mService.getTransitionController();
+                final Transition transition = new Transition(
+                        TRANSIT_CHANGE, 0, controller, mService.mWindowManager.mSyncEngine);
+                transition.setRequestedLocation(displayId, bounds);
+                transition.addTransactionPresentedListener(() ->
+                        reportTaskMoveRequestResult(
+                            result, task.getDisplayId(), task.getBounds(), callback));
+                controller.startCollectOrQueue(transition,
+                        (deferred) -> {
+                            if (deferred) {
+                                int lateResult = validateTaskMoveRequest(
+                                        transition.getRequestedLocation().getDisplayId(),
+                                        transition.getRequestedLocation().getBounds(),
+                                        task,
+                                        origCallingPid,
+                                        origCallingUid);
+                                if (lateResult != RESULT_APPROVED) {
+                                    reportTaskMoveRequestResult(
+                                            lateResult,
+                                            INVALID_DISPLAY,
+                                            null /* bounds */,
+                                            callback);
+                                    transition.abort();
+                                    return;
+                                }
                             }
-                        }
-                        controller.requestStartTransition(transition, task, null, null);
-                        transition.setReady(task, true);
-                    });
+                            controller.requestStartTransition(transition, task, null, null);
+                            transition.setReady(task, true);
+                        });
+            }
+        } finally {
+            Binder.restoreCallingIdentity(origId);
         }
     }
 
@@ -266,7 +279,12 @@ class AppTaskImpl extends IAppTask.Stub {
     }
 
     @TaskMoveRequestHandler.RequestResult
-    private int validateTaskMoveRequest(int displayId, Rect bounds, @NonNull Task task) {
+    private int validateTaskMoveRequest(
+            int displayId,
+            Rect bounds,
+            @NonNull Task task,
+            int origCallingPid,
+            int origCallingUid) {
         final DisplayContent targetDisplay =
                 mService.mRootWindowContainer.getDisplayContent(displayId);
         if (targetDisplay == null) {
@@ -274,7 +292,7 @@ class AppTaskImpl extends IAppTask.Stub {
         }
 
         if (!mService.mTaskSupervisor.canPlaceEntityOnDisplay(
-                displayId, Binder.getCallingPid(), Binder.getCallingUid(), task)) {
+                displayId, origCallingPid, origCallingUid, task)) {
             return RESULT_FAILED_UNABLE_TO_PLACE_TASK;
         }
 
