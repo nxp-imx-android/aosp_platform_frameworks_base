@@ -1428,9 +1428,7 @@ public class HardwareRenderer {
             if (mInitialized) return;
             mInitialized = true;
 
-            if (!android.app.Flags.earlyRenderThreadPriorityBoost()) {
-                initSched(renderProxy);
-            }
+            initSched(renderProxy);
             initGraphicsStats();
         }
 
