@@ -2126,3 +2126,13 @@ flag {
       purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "reset_tiles_removes_custom_tiles"
+    namespace: "systemui"
+    description: "Fixes bug where calling Reset Tiles will not properly mark custom tiles as removed."
+    bug: "431235255"
+    metadata {
+      purpose: PURPOSE_BUGFIX
+    }
+}
