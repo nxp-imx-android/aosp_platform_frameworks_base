@@ -48,6 +48,8 @@ import android.hardware.usb.gadget.UsbSpeed;
 import android.os.Binder;
 import android.os.Build;
 import android.os.Bundle;
+import android.system.ErrnoException;
+import android.system.Os;
 import android.os.ParcelFileDescriptor;
 import android.os.Process;
 import android.os.RemoteException;
@@ -60,6 +62,7 @@ import com.android.internal.annotations.GuardedBy;
 
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.InterruptedIOException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -957,36 +960,10 @@ public class UsbManager {
         @Override
         public void close() throws IOException {
             /* TODO(b/377850642) : Ensure the stream is closed even if client does not
-                explicitly close the stream to avoid corrupt FDs*/
+            explicitly close the stream to avoid corrupt FDs*/
             super.close();
-            closeHandleForAccessory(mAccessory, true);
-        }
-
-
-        @Override
-        public int read() throws IOException {
-            final int result = super.read();
-            checkError(result);
-            return result;
-        }
-
-        @Override
-        public int read(byte[] b) throws IOException {
-            final int result = super.read(b);
-            checkError(result);
-            return result;
-        }
-
-        @Override
-        public int read(byte[] b, int off, int len) throws IOException {
-            final int result = super.read(b, off, len);
-            checkError(result);
-            return result;
-        }
-
-        private void checkError(int result) throws IOException {
-            if (result == -1 && mPfd.canDetectErrors()) {
-                mPfd.checkError();
+            if (!android.hardware.usb.flags.Flags.enableAoaUserspaceImplementation()) {
+                closeHandleForAccessory(mAccessory, true);
             }
         }
     }
@@ -998,18 +975,59 @@ public class UsbManager {
      */
     private class AccessoryAutoCloseOutputStream extends FileOutputStream {
         private final UsbAccessory mAccessory;
+        private final int mMaxPacketSize;
+        private final ParcelFileDescriptor mPfd;
+
+        AccessoryAutoCloseOutputStream(
+                UsbAccessory accessory, ParcelFileDescriptor pfd, int maxPacketSize) {
+            super(pfd.getFileDescriptor());
+            mMaxPacketSize = maxPacketSize;
+            mAccessory = accessory;
+            mPfd = pfd;
+        }
 
         AccessoryAutoCloseOutputStream(UsbAccessory accessory, ParcelFileDescriptor pfd) {
             super(pfd.getFileDescriptor());
+            mMaxPacketSize = -1;
             mAccessory = accessory;
+            mPfd = pfd;
+        }
+
+        @Override
+        public void write(byte[] b, int off, int len) throws IOException {
+            super.write(b, off, len);
+
+            if (!android.hardware.usb.flags.Flags.enableAoaUserspaceImplementation()) {
+                return;
+            }
+            // Check if a ZLP is needed for this specific write operation
+            if (len > 0 && (len % mMaxPacketSize == 0)) {
+                sendZlp();
+            }
         }
 
         @Override
         public void close() throws IOException {
             /* TODO(b/377850642) : Ensure the stream is closed even if client does not
-                explicitly close the stream to avoid corrupt FDs*/
+            explicitly close the stream to avoid corrupt FDs*/
             super.close();
-            closeHandleForAccessory(mAccessory, false);
+            if (!android.hardware.usb.flags.Flags.enableAoaUserspaceImplementation()) {
+                closeHandleForAccessory(mAccessory, false);
+            }
+        }
+
+        /** Sends a Zero-Length Packet. This is done by writing a 0-byte array. */
+        private void sendZlp() {
+            byte[] emptyBuffer = new byte[0]; // Or any buffer, as count will be 0
+            // This should make a write(2) syscall with count = 0
+            try {
+                // TODO: febinthattil - Try this with native code
+                Os.write(mPfd.getFileDescriptor(), emptyBuffer, 0, 0);
+            } catch (ErrnoException e) {
+                Log.e(TAG, "ZLP failed to send.", e);
+            } catch (InterruptedIOException e) {
+                Log.e(TAG, "ZLP failed to send.", e);
+            }
         }
     }
 
@@ -1179,8 +1197,12 @@ public class UsbManager {
     @RequiresFeature(PackageManager.FEATURE_USB_ACCESSORY)
     public @NonNull InputStream openAccessoryInputStream(@NonNull UsbAccessory accessory) {
         try {
-            return new AccessoryAutoCloseInputStream(accessory,
-                    openHandleForAccessory(accessory, true).getPfd());
+            if (android.hardware.usb.flags.Flags.enableAoaUserspaceImplementation()) {
+                return new AccessoryAutoCloseInputStream(
+                        accessory, mService.openAccessoryForInputStream(accessory));
+            }
+            return new AccessoryAutoCloseInputStream(
+                    accessory, openHandleForAccessory(accessory, true).getPfd());
 
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
@@ -1199,6 +1221,12 @@ public class UsbManager {
     @RequiresFeature(PackageManager.FEATURE_USB_ACCESSORY)
     public @NonNull OutputStream openAccessoryOutputStream(@NonNull UsbAccessory accessory) {
         try {
+            if (android.hardware.usb.flags.Flags.enableAoaUserspaceImplementation()) {
+                return new AccessoryAutoCloseOutputStream(
+                        accessory,
+                        mService.openAccessoryForOutputStream(accessory),
+                        mService.getMaxPacketSize(accessory));
+            }
             return new AccessoryAutoCloseOutputStream(accessory,
                     openHandleForAccessory(accessory, false).getPfd());
         } catch (RemoteException e) {

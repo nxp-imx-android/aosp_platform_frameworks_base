@@ -404,6 +404,88 @@ public class UsbService extends IUsbManager.Stub {
         return null;
     }
 
+    /* opens the currently attached USB accessory to read from (device mode) */
+    @Override
+    public ParcelFileDescriptor openAccessoryForInputStream(UsbAccessory accessory) {
+        if (mDeviceManager != null) {
+            int uid = Binder.getCallingUid();
+            int pid = Binder.getCallingPid();
+            int user = UserHandle.getUserId(uid);
+
+            final long ident = clearCallingIdentity();
+            try {
+                synchronized (mLock) {
+                    if (mUserManager.isSameProfileGroup(user, mCurrentUserId)) {
+                        return mDeviceManager.openAccessoryForInputStream(
+                                accessory, getPermissionsForUser(user), pid, uid);
+                    } else {
+                        Slog.w(TAG, "Cannot open " + accessory + " for user " + user
+                                        + " as user is not active.");
+                    }
+                }
+            } finally {
+                restoreCallingIdentity(ident);
+            }
+        }
+
+        return null;
+    }
+
+    /* opens the currently attached USB accessory to write to (device mode) */
+    @Override
+    public ParcelFileDescriptor openAccessoryForOutputStream(UsbAccessory accessory) {
+        if (mDeviceManager != null) {
+            int uid = Binder.getCallingUid();
+            int pid = Binder.getCallingPid();
+            int user = UserHandle.getUserId(uid);
+
+            final long ident = clearCallingIdentity();
+            try {
+                synchronized (mLock) {
+                    if (mUserManager.isSameProfileGroup(user, mCurrentUserId)) {
+                        return mDeviceManager.openAccessoryForOutputStream(
+                                accessory, getPermissionsForUser(user), pid, uid);
+                    } else {
+                        Slog.w(
+                                TAG,
+                                "Cannot open " + accessory + " for user " + user
+                                        + " as user is not active.");
+                    }
+                }
+            } finally {
+                restoreCallingIdentity(ident);
+            }
+        }
+
+        return null;
+    }
+
+    /* Gets the currently attached USB accessory max packet size (device mode) */
+    @Override
+    public int getMaxPacketSize(UsbAccessory accessory) {
+        Preconditions.checkNotNull(mDeviceManager, "DeviceManager must not be null");
+        int uid = Binder.getCallingUid();
+        int user = UserHandle.getUserId(uid);
+
+        final long ident = clearCallingIdentity();
+        try {
+            synchronized (mLock) {
+                int maxPacketSize = -1;
+                if (mUserManager.isSameProfileGroup(user, mCurrentUserId)) {
+                    maxPacketSize = mDeviceManager.getMaxPacketSize(accessory);
+                } else {
+                    Slog.w(
+                            TAG,
+                            "Cannot open " + accessory + " for user " + user
+                                    + " as user is not active.");
+                }
+                return maxPacketSize;
+            }
+        } finally {
+            restoreCallingIdentity(ident);
+        }
+    }
+
     @android.annotation.EnforcePermission(android.Manifest.permission.ACCESS_MTP)
     /* Returns a dup of the control file descriptor for the given function. */
     @Override
