@@ -30,10 +30,8 @@ import static com.android.server.inputmethod.ImeVisibilityStateComputer.STATE_SH
 import android.annotation.NonNull;
 import android.annotation.UserIdInt;
 import android.os.IBinder;
-import android.os.ResultReceiver;
 import android.util.EventLog;
 import android.view.inputmethod.ImeTracker;
-import android.view.inputmethod.InputMethod;
 
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
@@ -72,25 +70,21 @@ final class DefaultImeVisibilityApplier {
      *
      * @param showInputToken a token that represents the requester to show IME
      * @param statsToken     the token tracking the current IME request
-     * @param resultReceiver if non-null, this will be called back to the caller when
-     *                       it has processed request to tell what it has done
-     * @param reason         yhe reason for requesting to show IME
+     * @param reason         the reason for requesting to show IME
      * @param userId         the target user when performing show IME
      */
     @GuardedBy("ImfLock.class")
     void performShowIme(IBinder showInputToken, @NonNull ImeTracker.Token statsToken,
-            @InputMethod.ShowFlags int showFlags, ResultReceiver resultReceiver,
             @SoftInputShowHideReason int reason, @UserIdInt int userId) {
         final var userData = mService.getUserData(userId);
         final var bindingController = userData.mBindingController;
         final IInputMethodInvoker curMethod = bindingController.getCurMethod();
         if (curMethod != null) {
             ProtoLog.v(IME_VISIBILITY_APPLIER_DEBUG,
-                    "Calling %s.showSoftInput(%s, %s, %s) for reason: %s", curMethod,
-                    showInputToken, showFlags, resultReceiver,
-                    InputMethodDebug.softInputDisplayReasonToString(reason));
+                    "Calling %s.showSoftInput(%s) for reason: %s", curMethod,
+                    showInputToken, InputMethodDebug.softInputDisplayReasonToString(reason));
             // TODO(b/192412909): Check if we can always call onShowHideSoftInputRequested() or not.
-            if (curMethod.showSoftInput(statsToken, showFlags, resultReceiver)) {
+            if (curMethod.showSoftInput(statsToken)) {
                 if (DEBUG_IME_VISIBILITY) {
                     EventLog.writeEvent(IMF_SHOW_IME,
                             statsToken != null ? statsToken.getTag() : ImeTracker.TOKEN_NONE,
@@ -111,15 +105,12 @@ final class DefaultImeVisibilityApplier {
      *
      * @param hideInputToken a token that represents the requester to hide IME
      * @param statsToken     the token tracking the current IME request
-     * @param resultReceiver if non-null, this will be called back to the caller when
-     *                       it has processed request to tell what it has done
      * @param reason         the reason for requesting to hide IME
      * @param userId         the target user when performing hide IME
      */
     @GuardedBy("ImfLock.class")
     void performHideIme(IBinder hideInputToken, @NonNull ImeTracker.Token statsToken,
-            ResultReceiver resultReceiver, @SoftInputShowHideReason int reason,
-            @UserIdInt int userId) {
+            @SoftInputShowHideReason int reason, @UserIdInt int userId) {
         final var userData = mService.getUserData(userId);
         final var bindingController = userData.mBindingController;
         final IInputMethodInvoker curMethod = bindingController.getCurMethod();
@@ -129,10 +120,10 @@ final class DefaultImeVisibilityApplier {
             // IMMS#mInputShown and IMMS#mImeWindowVis should be resolved spontaneously in
             // the final state.
             ProtoLog.v(IME_VISIBILITY_APPLIER_DEBUG,
-                    "Calling %s.hideSoftInput(0, %s, %s) for reason: %s", curMethod, hideInputToken,
-                    resultReceiver, InputMethodDebug.softInputDisplayReasonToString(reason));
+                    "Calling %s.hideSoftInput(%s) for reason: %s", curMethod, hideInputToken,
+                    InputMethodDebug.softInputDisplayReasonToString(reason));
             // TODO(b/192412909): Check if we can always call onShowHideSoftInputRequested() or not.
-            if (curMethod.hideSoftInput(statsToken, 0, resultReceiver)) {
+            if (curMethod.hideSoftInput(statsToken)) {
                 if (DEBUG_IME_VISIBILITY) {
                     EventLog.writeEvent(IMF_HIDE_IME,
                             statsToken != null ? statsToken.getTag() : ImeTracker.TOKEN_NONE,

@@ -71,9 +71,9 @@ oneway interface IInputMethod {
 
     void setSessionEnabled(IInputMethodSession session, boolean enabled);
 
-    void showSoftInput(in ImeTracker.Token statsToken, int flags, in ResultReceiver resultReceiver);
+    void showSoftInput(in ImeTracker.Token statsToken);
 
-    void hideSoftInput(in ImeTracker.Token statsToken, int flags, in ResultReceiver resultReceiver);
+    void hideSoftInput(in ImeTracker.Token statsToken);
 
     void updateEditorToolType(int toolType);
 

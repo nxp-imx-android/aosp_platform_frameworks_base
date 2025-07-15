@@ -590,7 +590,6 @@ public class InputMethodService extends AbstractInputMethodService {
     InputConnection mStartedInputConnection;
     EditorInfo mInputEditorInfo;
 
-    @InputMethod.ShowFlags
     int mShowInputFlags;
     boolean mShowInputRequested;
     boolean mLastShowInputRequested;
@@ -868,12 +867,11 @@ public class InputMethodService extends AbstractInputMethodService {
          */
         @MainThread
         @Override
-        public void hideSoftInputWithToken(int flags, ResultReceiver resultReceiver,
-                @NonNull ImeTracker.Token statsToken) {
+        public void hideSoftInputWithToken(@NonNull ImeTracker.Token statsToken) {
             mSystemCallingHideSoftInput = true;
             mCurStatsToken = statsToken;
             try {
-                hideSoftInput(flags, resultReceiver);
+                hideSoftInput(0 /* flags */, null /* resultReceiver */);
             } finally {
                 mSystemCallingHideSoftInput = false;
             }
@@ -907,20 +905,11 @@ public class InputMethodService extends AbstractInputMethodService {
             ImeTracing.getInstance().triggerServiceDump(
                     "InputMethodService.InputMethodImpl#hideSoftInput", mDumper,
                     null /* icProto */);
-            final boolean wasVisible = isInputViewShown();
 
             mShowInputFlags = 0;
             mShowInputRequested = false;
             mCurStatsToken = statsToken;
             hideWindow();
-            final boolean isVisible = isInputViewShown();
-            final boolean visibilityChanged = isVisible != wasVisible;
-            if (resultReceiver != null) {
-                resultReceiver.send(visibilityChanged
-                        ? InputMethodManager.RESULT_HIDDEN
-                        : (wasVisible ? InputMethodManager.RESULT_UNCHANGED_SHOWN
-                                : InputMethodManager.RESULT_UNCHANGED_HIDDEN), null);
-            }
             Trace.traceEnd(TRACE_TAG_WINDOW_MANAGER);
             // After the IME window was hidden, we can remove its surface
             scheduleImeSurfaceRemoval();
@@ -935,12 +924,11 @@ public class InputMethodService extends AbstractInputMethodService {
          */
         @MainThread
         @Override
-        public void showSoftInputWithToken(@InputMethod.ShowFlags int flags,
-                ResultReceiver resultReceiver, @NonNull ImeTracker.Token statsToken) {
+        public void showSoftInputWithToken(@NonNull ImeTracker.Token statsToken) {
             mSystemCallingShowSoftInput = true;
             mCurStatsToken = statsToken;
             try {
-                showSoftInput(flags, resultReceiver);
+                showSoftInput(InputMethod.SHOW_EXPLICIT /* flags */, null /* resultReceiver */);
             } finally {
                 mSystemCallingShowSoftInput = false;
             }
@@ -951,7 +939,7 @@ public class InputMethodService extends AbstractInputMethodService {
          */
         @MainThread
         @Override
-        public void showSoftInput(@InputMethod.ShowFlags int flags, ResultReceiver resultReceiver) {
+        public void showSoftInput(int flags, ResultReceiver resultReceiver) {
             if (DEBUG) Log.v(TAG, "showSoftInput()");
 
             final var statsToken = mCurStatsToken != null ? mCurStatsToken
@@ -974,7 +962,6 @@ public class InputMethodService extends AbstractInputMethodService {
             ImeTracing.getInstance().triggerServiceDump(
                     "InputMethodService.InputMethodImpl#showSoftInput", mDumper,
                     null /* icProto */);
-            final boolean wasVisible = isInputViewShown();
             if (dispatchOnShowInputRequested(flags, false)) {
                 ImeTracker.forLogging().onProgress(statsToken,
                         ImeTracker.PHASE_IME_ON_SHOW_SOFT_INPUT_TRUE);
@@ -986,14 +973,6 @@ public class InputMethodService extends AbstractInputMethodService {
             }
             setImeWindowVisibility(computeImeWindowVis());
 
-            final boolean isVisible = isInputViewShown();
-            final boolean visibilityChanged = isVisible != wasVisible;
-            if (resultReceiver != null) {
-                resultReceiver.send(visibilityChanged
-                        ? InputMethodManager.RESULT_SHOWN
-                        : (wasVisible ? InputMethodManager.RESULT_UNCHANGED_SHOWN
-                                : InputMethodManager.RESULT_UNCHANGED_HIDDEN), null);
-            }
             Trace.traceEnd(TRACE_TAG_WINDOW_MANAGER);
         }
 
@@ -3005,7 +2984,7 @@ public class InputMethodService extends AbstractInputMethodService {
      * configuration change.
      * @return Returns true to indicate that the window should be shown.
      */
-    public boolean onShowInputRequested(@InputMethod.ShowFlags int flags, boolean configChange) {
+    public boolean onShowInputRequested(int flags, boolean configChange) {
         if (!onEvaluateInputViewShown()) {
             return false;
         }
@@ -3041,8 +3020,7 @@ public class InputMethodService extends AbstractInputMethodService {
      * @return Returns true to indicate that the window should be shown.
      * @see #onShowInputRequested(int, boolean)
      */
-    private boolean dispatchOnShowInputRequested(@InputMethod.ShowFlags int flags,
-            boolean configChange) {
+    private boolean dispatchOnShowInputRequested(int flags, boolean configChange) {
         final boolean result = onShowInputRequested(flags, configChange);
         mInlineSuggestionSessionController.notifyOnShowInputRequested(result);
         if (result) {

@@ -336,19 +336,12 @@ public class InputMethodManagerServiceTestBase {
 
     protected void verifyShowSoftInput(boolean setVisible, boolean showSoftInput)
             throws RemoteException {
-        verifyShowSoftInput(setVisible, showSoftInput, NO_VERIFY_SHOW_FLAGS);
-    }
-
-    protected void verifyShowSoftInput(boolean setVisible, boolean showSoftInput, int showFlags)
-            throws RemoteException {
         synchronized (ImfLock.class) {
             verify(mMockInputMethodBindingController, times(setVisible ? 1 : 0))
                     .setCurrentMethodVisible();
         }
         verify(mMockInputMethod, times(showSoftInput ? 1 : 0))
-                .showSoftInput(notNull() /* statsToken */,
-                        showFlags != NO_VERIFY_SHOW_FLAGS ? eq(showFlags) : anyInt() /* flags*/,
-                        any() /* resultReceiver */);
+                .showSoftInput(notNull() /* statsToken */);
     }
 
     protected void verifyHideSoftInput(boolean setNotVisible, boolean hideSoftInput)
@@ -358,8 +351,7 @@ public class InputMethodManagerServiceTestBase {
                     .setCurrentMethodNotVisible();
         }
         verify(mMockInputMethod, times(hideSoftInput ? 1 : 0))
-                .hideSoftInput(notNull() /* statsToken */,
-                        anyInt() /* flags */, any() /* resultReceiver */);
+                .hideSoftInput(notNull() /* statsToken */);
     }
 
     protected void verifySetImeVisibility(boolean setVisible, boolean invoked) {
