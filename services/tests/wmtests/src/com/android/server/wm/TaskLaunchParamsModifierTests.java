@@ -83,7 +83,7 @@ public class TaskLaunchParamsModifierTests extends
         mActivity.info.applicationInfo.targetSdkVersion = Build.VERSION_CODES.N_MR1;
         mActivity.info.applicationInfo.flags |= ApplicationInfo.FLAG_SUPPORTS_SCREEN_DENSITIES;
 
-        mTarget = new TaskLaunchParamsModifier(mSupervisor);
+        mTarget = new TaskLaunchParamsModifier(mSupervisor, mContext);
 
         mCurrent = new LaunchParams();
         mCurrent.reset();
