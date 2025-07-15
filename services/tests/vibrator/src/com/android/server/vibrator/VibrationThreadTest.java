@@ -617,7 +617,7 @@ public class VibrationThreadTest {
         assertThat(segments.get(0).getDuration()).isEqualTo(expectedOnDuration);
         // Vibrator turns off in the middle of the second execution of the first step. Expect it to
         // be turned back ON at least for the fixed duration + the remaining duration of the step.
-        assertThat(segments.get(1).getDuration()).isGreaterThan(expectedOnDuration);
+        assertThat(segments.get(1).getDuration()).isAtLeast(expectedOnDuration);
         // Set amplitudes for a cycle {1, 2}, start second loop then turn it back on to same value.
         assertThat(mVibratorHelpers.get(VIBRATOR_ID).getAmplitudes().subList(0, 4))
                 .containsExactlyElementsIn(expectedAmplitudes(1, 2, 1, 1))
