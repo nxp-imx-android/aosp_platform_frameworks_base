@@ -128,6 +128,7 @@ import android.util.LauncherIcons;
 import android.util.Log;
 import android.util.Slog;
 import android.util.Xml;
+import android.window.DesktopExperienceFlags;
 
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
@@ -2162,7 +2163,15 @@ public class ApplicationPackageManager extends PackageManager {
     @Override
     public Resources getResourcesForApplication(@NonNull ApplicationInfo app)
             throws NameNotFoundException {
-        return getResourcesForApplication(app, null);
+        if (DesktopExperienceFlags.USE_RESOURCES_FROM_CONTEXT_TO_CREATE_DRAWABLE_ICONS.isTrue()) {
+            // To support multiple displays, we need to use the Configuration of the Resources
+            // associated with the Display of the current Context.
+            // Otherwise, we will be using wrong resource qualifiers due to different display
+            // configurations.
+            return getResourcesForApplication(app, mContext.getResources().getConfiguration());
+        } else {
+            return getResourcesForApplication(app, null);
+        }
     }
 
     @Override

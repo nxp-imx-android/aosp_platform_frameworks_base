@@ -27,6 +27,8 @@ import android.content.ContentProvider;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ParceledListSlice;
+import android.content.res.Configuration;
+import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.RecordingCanvas;
@@ -37,16 +39,22 @@ import android.os.HandlerThread;
 import android.os.IBinder;
 import android.os.Parcel;
 import android.os.RemoteException;
+import android.platform.test.annotations.DisableFlags;
+import android.platform.test.annotations.EnableFlags;
+import android.platform.test.flag.junit.SetFlagsRule;
 import android.util.Log;
 
 import androidx.test.core.app.ApplicationProvider;
 
 import com.android.frameworks.coretests.R;
+import com.android.graphics.flags.Flags;
 
 import com.google.testing.junit.testparameterinjector.TestParameter;
 import com.google.testing.junit.testparameterinjector.TestParameterInjector;
 
 import org.junit.Before;
+import org.junit.ClassRule;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -60,6 +68,11 @@ import java.util.Arrays;
 @RunWith(TestParameterInjector.class)
 public class IconTest {
     public static final String TAG = IconTest.class.getSimpleName();
+
+    @ClassRule public static final SetFlagsRule.ClassRule mClassRule = new SetFlagsRule.ClassRule(
+            com.android.graphics.flags.Flags.class);
+    @Rule public final SetFlagsRule mSetFlagsRule = mClassRule.createSetFlagsRule();
+
     private Context mContext;
 
     public static void L(String s, Object... parts) {
@@ -610,6 +623,172 @@ public class IconTest {
         assertThat(loadedDrawable).isNull();
     }
 
+    @EnableFlags(Flags.FLAG_USE_RESOURCES_FROM_CONTEXT_TO_CREATE_DRAWABLE_ICONS)
+    @Test
+    public void testLoadDrawable_withConfigurationChange_flagEnabled_invalidatesCache() {
+        final String resPackage = mContext.getPackageName();
+        final Icon icon = Icon.createWithResource(resPackage, R.drawable.landscape);
+
+        // Initial load with default configuration
+        icon.loadDrawable(mContext);
+        final int initialDpi = icon.getResources().getConfiguration().densityDpi;
+
+        // Create a new context with a different configuration
+        final Configuration newConfig =
+                new Configuration(mContext.getResources().getConfiguration());
+        final int newDpi = initialDpi + 100;
+        newConfig.densityDpi = newDpi;
+        final Context newContext = mContext.createConfigurationContext(newConfig);
+
+        // Load again with the new context
+        icon.loadDrawable(newContext);
+
+        // Verify that the cached resources have been updated to the new configuration
+        assertThat(icon.getResources().getConfiguration().densityDpi).isEqualTo(newDpi);
+    }
+
+    @DisableFlags(Flags.FLAG_USE_RESOURCES_FROM_CONTEXT_TO_CREATE_DRAWABLE_ICONS)
+    @Test
+    public void testLoadDrawable_withConfigurationChange_flagDisabled_doesNotInvalidateCache() {
+        final String resPackage = mContext.getPackageName();
+        final Icon icon = Icon.createWithResource(resPackage, R.drawable.landscape);
+
+        // Initial load with default configuration
+        icon.loadDrawable(mContext);
+        final int initialDpi = icon.getResources().getConfiguration().densityDpi;
+
+        // Create a new context with a different configuration
+        final Configuration newConfig =
+                new Configuration(mContext.getResources().getConfiguration());
+        final int newDpi = initialDpi + 100;
+        newConfig.densityDpi = newDpi;
+        final Context newContext = mContext.createConfigurationContext(newConfig);
+
+        // Load again with the new context
+        icon.loadDrawable(newContext);
+
+        // Verify that the cached resources have NOT been updated, as the flag is off
+        assertThat(icon.getResources().getConfiguration().densityDpi).isEqualTo(initialDpi);
+    }
+
+    @EnableFlags(Flags.FLAG_USE_RESOURCES_FROM_CONTEXT_TO_CREATE_DRAWABLE_ICONS)
+    @Test
+    public void testLoadDrawableAsUser_withConfigurationChange_flagEnabled_invalidatesCache() {
+        final String resPackage = mContext.getPackageName();
+        final Icon icon = Icon.createWithResource(resPackage, R.drawable.landscape);
+
+        // Initial load with default configuration
+        icon.loadDrawableAsUser(mContext, mContext.getUserId());
+        final int initialDpi = icon.getResources().getConfiguration().densityDpi;
+
+        // Create a new context with a different configuration
+        final Configuration newConfig =
+                new Configuration(mContext.getResources().getConfiguration());
+        final int newDpi = initialDpi + 100;
+        newConfig.densityDpi = newDpi;
+        final Context newContext = mContext.createConfigurationContext(newConfig);
+
+        // Load again with the new context
+        icon.loadDrawableAsUser(newContext, newContext.getUserId());
+
+        // Verify that the cached resources have been updated to the new configuration
+        assertThat(icon.getResources().getConfiguration().densityDpi).isEqualTo(newDpi);
+    }
+
+    @DisableFlags(Flags.FLAG_USE_RESOURCES_FROM_CONTEXT_TO_CREATE_DRAWABLE_ICONS)
+    @Test
+    public void
+            testLoadDrawableAsUser_withConfigurationChange_flagDisabled_doesNotInvalidateCache() {
+        final String resPackage = mContext.getPackageName();
+        final Icon icon = Icon.createWithResource(resPackage, R.drawable.landscape);
+
+        // Initial load with default configuration
+        icon.loadDrawableAsUser(mContext, mContext.getUserId());
+        final int initialDpi = icon.getResources().getConfiguration().densityDpi;
+
+        // Create a new context with a different configuration
+        final Configuration newConfig =
+                new Configuration(mContext.getResources().getConfiguration());
+        final int newDpi = initialDpi + 100;
+        newConfig.densityDpi = newDpi;
+        final Context newContext = mContext.createConfigurationContext(newConfig);
+
+        // Load again with the new context
+        icon.loadDrawableAsUser(newContext, newContext.getUserId());
+
+        // Verify that the cached resources have NOT been updated, as the flag is off
+        assertThat(icon.getResources().getConfiguration().densityDpi).isEqualTo(initialDpi);
+    }
+
+    @EnableFlags(Flags.FLAG_USE_RESOURCES_FROM_CONTEXT_TO_CREATE_DRAWABLE_ICONS)
+    @Test
+    public void testLoadDrawable_withNoConfigurationChange_flagEnabled_doesNotInvalidateCache() {
+        final String resPackage = mContext.getPackageName();
+        final Icon icon = Icon.createWithResource(resPackage, R.drawable.landscape);
+
+        // Initial load with default configuration
+        icon.loadDrawable(mContext);
+        final Resources initialResources = icon.getResources();
+
+        // Load again with the same context
+        icon.loadDrawable(mContext);
+
+        // Verify that the cached resources have NOT been updated
+        assertThat(icon.getResources()).isSameInstanceAs(initialResources);
+    }
+
+    @EnableFlags(Flags.FLAG_USE_RESOURCES_FROM_CONTEXT_TO_CREATE_DRAWABLE_ICONS)
+    @Test
+    public void
+            testLoadDrawableAsUser_withNoConfigurationChange_flagEnabled_doesNotInvalidateCache() {
+        final String resPackage = mContext.getPackageName();
+        final Icon icon = Icon.createWithResource(resPackage, R.drawable.landscape);
+
+        // Initial load with default configuration
+        icon.loadDrawableAsUser(mContext, mContext.getUserId());
+        final Resources initialResources = icon.getResources();
+
+        // Load again with the same context
+        icon.loadDrawableAsUser(mContext, mContext.getUserId());
+
+        // Verify that the cached resources have NOT been updated
+        assertThat(icon.getResources()).isSameInstanceAs(initialResources);
+    }
+
+    @DisableFlags(Flags.FLAG_USE_RESOURCES_FROM_CONTEXT_TO_CREATE_DRAWABLE_ICONS)
+    @Test
+    public void testLoadDrawable_withNoConfigurationChange_flagDisabled_doesNotInvalidateCache() {
+        final String resPackage = mContext.getPackageName();
+        final Icon icon = Icon.createWithResource(resPackage, R.drawable.landscape);
+
+        // Initial load with default configuration
+        icon.loadDrawable(mContext);
+        final Resources initialResources = icon.getResources();
+
+        // Load again with the same context
+        icon.loadDrawable(mContext);
+
+        // Verify that the cached resources have NOT been updated
+        assertThat(icon.getResources()).isSameInstanceAs(initialResources);
+    }
+
+    @DisableFlags(Flags.FLAG_USE_RESOURCES_FROM_CONTEXT_TO_CREATE_DRAWABLE_ICONS)
+    @Test
+    public void
+            testLoadDrawableAsUser_withNoConfigurationChange_flagDisabled_doesNotInvalidateCache() {
+        final String resPackage = mContext.getPackageName();
+        final Icon icon = Icon.createWithResource(resPackage, R.drawable.landscape);
+
+        // Initial load with default configuration
+        icon.loadDrawableAsUser(mContext, mContext.getUserId());
+        final Resources initialResources = icon.getResources();
+
+        // Load again with the same context
+        icon.loadDrawableAsUser(mContext, mContext.getUserId());
+
+        // Verify that the cached resources have NOT been updated
+        assertThat(icon.getResources()).isSameInstanceAs(initialResources);
+    }
 
     // ======== utils ========
 
