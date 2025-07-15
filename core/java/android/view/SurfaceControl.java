@@ -3837,9 +3837,9 @@ public final class SurfaceControl implements Parcelable {
                                 + " , bottomRight=" + bottomRight);
             }
 
-            if (!com.android.graphics.surfaceflinger.flags.Flags.setDistinctCornerRadii()) {
+            if (!com.android.graphics.surfaceflinger.flags.Flags.setClientDrawnCornerRadii()) {
                 Log.w(TAG, "setCornerRadius was called but"
-                           + "set_distinct_corner_radii flag is disabled");
+                           + "set_client_drawn_corner_radii flag is disabled");
                 return this;
             }
             nativeSetCornerRadius(mNativeObject, sc.mNativeObject,
@@ -3901,9 +3901,9 @@ public final class SurfaceControl implements Parcelable {
                                 + ", bottomLeft=" + bottomLeft
                                 + " , bottomRight=" + bottomRight);
             }
-            if (!com.android.graphics.surfaceflinger.flags.Flags.setDistinctCornerRadii()) {
-                Log.w(TAG, "setCornerRadius was called but"
-                           + "set_distinct_corner_radii flag is disabled");
+            if (!com.android.graphics.surfaceflinger.flags.Flags.setClientDrawnCornerRadii()) {
+                Log.w(TAG, "setClientDrawnCornerRadius was called but"
+                           + "set_client_drawn_corner_radii flag is disabled");
                 return this;
             }
 
