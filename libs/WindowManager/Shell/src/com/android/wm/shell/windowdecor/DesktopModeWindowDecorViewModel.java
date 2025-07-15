@@ -40,7 +40,6 @@ import static com.android.wm.shell.shared.multiinstance.ManageWindowsViewContain
 import static com.android.wm.shell.shared.split.SplitScreenConstants.SPLIT_POSITION_BOTTOM_OR_RIGHT;
 import static com.android.wm.shell.shared.split.SplitScreenConstants.SPLIT_POSITION_TOP_OR_LEFT;
 import static com.android.wm.shell.shared.split.SplitScreenConstants.SPLIT_POSITION_UNDEFINED;
-import static com.android.wm.shell.windowdecor.DragPositioningCallbackUtility.getInputMethodFromMotionEvent;
 
 import android.annotation.NonNull;
 import android.app.ActivityManager;
@@ -56,6 +55,7 @@ import android.graphics.PointF;
 import android.graphics.Rect;
 import android.graphics.Region;
 import android.hardware.input.InputManager;
+import android.net.Uri;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
@@ -91,6 +91,7 @@ import com.android.window.flags.Flags;
 import com.android.wm.shell.RootTaskDisplayAreaOrganizer;
 import com.android.wm.shell.ShellTaskOrganizer;
 import com.android.wm.shell.apptoweb.AppToWebGenericLinksParser;
+import com.android.wm.shell.apptoweb.AppToWebRepository;
 import com.android.wm.shell.apptoweb.AssistContentRequester;
 import com.android.wm.shell.common.ComponentUtils;
 import com.android.wm.shell.common.DisplayChangeController;
@@ -123,7 +124,6 @@ import com.android.wm.shell.desktopmode.common.ToggleTaskSizeInteraction;
 import com.android.wm.shell.desktopmode.common.ToggleTaskSizeUtilsKt;
 import com.android.wm.shell.desktopmode.data.DesktopRepository;
 import com.android.wm.shell.desktopmode.education.AppHandleEducationController;
-import com.android.wm.shell.desktopmode.education.AppToWebEducationController;
 import com.android.wm.shell.desktopmode.multidesks.DesksOrganizer;
 import com.android.wm.shell.freeform.FreeformTaskTransitionStarter;
 import com.android.wm.shell.recents.RecentsTransitionHandler;
@@ -157,6 +157,7 @@ import com.android.wm.shell.windowdecor.viewholder.AppHeaderViewHolder;
 
 import kotlin.Pair;
 import kotlin.Unit;
+import kotlin.coroutines.Continuation;
 import kotlin.jvm.functions.Function1;
 
 import kotlinx.coroutines.CoroutineScope;
@@ -182,7 +183,8 @@ import java.util.function.Supplier;
 
 public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
         FocusTransitionListener, SnapEventHandler,
-        LockTaskChangeListener.LockTaskModeChangedListener {
+        LockTaskChangeListener.LockTaskModeChangedListener,
+        AppToWebRepository {
     private static final String TAG = "DesktopModeWindowDecorViewModel";
 
     private final WindowDecorationWrapper.Factory mWindowDecoratioWrapperFactory;
@@ -210,7 +212,6 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
     private final WindowDecorCaptionRepository mWindowDecorCaptionRepository;
     private final Optional<DesktopTasksLimiter> mDesktopTasksLimiter;
     private final AppHandleEducationController mAppHandleEducationController;
-    private final AppToWebEducationController mAppToWebEducationController;
     private final AppHandleAndHeaderVisibilityHelper mAppHandleAndHeaderVisibilityHelper;
     private final AppHeaderViewHolder.Factory mAppHeaderViewHolderFactory;
     private final AppHandleViewHolder.Factory mAppHandleViewHolderFactory;
@@ -253,6 +254,7 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
             new DesktopModeKeyguardChangeListener();
     private final RootTaskDisplayAreaOrganizer mRootTaskDisplayAreaOrganizer;
     private final AppToWebGenericLinksParser mGenericLinksParser;
+    private final AppToWebRepository mAppToWebRepository;
     private final DisplayInsetsController mDisplayInsetsController;
 
     private final WindowDecorationGestureExclusionTracker mGestureExclusionTracker;
@@ -303,12 +305,12 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
             RootTaskDisplayAreaOrganizer rootTaskDisplayAreaOrganizer,
             InteractionJankMonitor interactionJankMonitor,
             AppToWebGenericLinksParser genericLinksParser,
+            AppToWebRepository appToWebRepository,
             AssistContentRequester assistContentRequester,
             @NonNull WindowDecorViewHostSupplier<WindowDecorViewHost> windowDecorViewHostSupplier,
             MultiInstanceHelper multiInstanceHelper,
             Optional<DesktopTasksLimiter> desktopTasksLimiter,
             AppHandleEducationController appHandleEducationController,
-            AppToWebEducationController appToWebEducationController,
             AppHandleAndHeaderVisibilityHelper appHandleAndHeaderVisibilityHelper,
             WindowDecorCaptionRepository windowDecorCaptionRepository,
             Optional<DesktopActivityOrientationChangeHandler> activityOrientationChangeHandler,
@@ -348,6 +350,7 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
                 desktopTasksController,
                 desktopImmersiveController,
                 genericLinksParser,
+                appToWebRepository,
                 assistContentRequester,
                 windowDecorViewHostSupplier,
                 multiInstanceHelper,
@@ -361,7 +364,6 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
                 interactionJankMonitor,
                 desktopTasksLimiter,
                 appHandleEducationController,
-                appToWebEducationController,
                 appHandleAndHeaderVisibilityHelper,
                 windowDecorCaptionRepository,
                 activityOrientationChangeHandler,
@@ -405,6 +407,7 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
             Optional<DesktopTasksController> desktopTasksController,
             DesktopImmersiveController desktopImmersiveController,
             AppToWebGenericLinksParser genericLinksParser,
+            AppToWebRepository appToWebRepository,
             AssistContentRequester assistContentRequester,
             @NonNull WindowDecorViewHostSupplier<WindowDecorViewHost> windowDecorViewHostSupplier,
             MultiInstanceHelper multiInstanceHelper,
@@ -418,7 +421,6 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
             InteractionJankMonitor interactionJankMonitor,
             Optional<DesktopTasksLimiter> desktopTasksLimiter,
             AppHandleEducationController appHandleEducationController,
-            AppToWebEducationController appToWebEducationController,
             AppHandleAndHeaderVisibilityHelper appHandleAndHeaderVisibilityHelper,
             WindowDecorCaptionRepository windowDecorCaptionRepository,
             Optional<DesktopActivityOrientationChangeHandler> activityOrientationChangeHandler,
@@ -465,6 +467,7 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
         mAppHandleViewHolderFactory = appHandleViewHolderFactory;
         mRootTaskDisplayAreaOrganizer = rootTaskDisplayAreaOrganizer;
         mGenericLinksParser = genericLinksParser;
+        mAppToWebRepository = appToWebRepository;
         mInputManager = mContext.getSystemService(InputManager.class);
         mWindowDecorByTaskId = decorationByTaskId;
         mSysUIPackageName = mContext.getResources().getString(
@@ -472,7 +475,6 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
         mInteractionJankMonitor = interactionJankMonitor;
         mDesktopTasksLimiter = desktopTasksLimiter;
         mAppHandleEducationController = appHandleEducationController;
-        mAppToWebEducationController = appToWebEducationController;
         mAppHandleAndHeaderVisibilityHelper = appHandleAndHeaderVisibilityHelper;
         mWindowDecorCaptionRepository = windowDecorCaptionRepository;
         mActivityOrientationChangeHandler = activityOrientationChangeHandler;
@@ -1071,6 +1073,73 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
         }
     }
 
+    /**
+     * @deprecated will be removed once window decoration refactor is turned on
+     * TODO: b/409648813 : to be removed when [WindowDecoration] is deprecated.
+     */
+    @Deprecated
+    @Override
+    public boolean updateAppToWebEducationRequestTimestamp(int taskId,
+            long latestOpenInBrowserEducationTimestamp) {
+        final WindowDecorationWrapper decor = mWindowDecorByTaskId.get(taskId);
+        return decor.updateAppToWebEducationRequestTimestamp(latestOpenInBrowserEducationTimestamp);
+    }
+
+    /**
+     * @deprecated will be removed once window decoration refactor is turned on
+     * TODO: b/409648813 : to be removed when [WindowDecoration] is deprecated.
+     */
+    @Deprecated
+    @Override
+    public Object isBrowserSessionAvailable(RunningTaskInfo taskInfo,
+            @NonNull Continuation<? super Boolean> completion) {
+        final WindowDecorationWrapper decor = mWindowDecorByTaskId.get(taskInfo.taskId);
+        return decor.isBrowserSessionAvailable();
+    }
+
+    /**
+     * @deprecated will be removed once window decoration refactor is turned on
+     * TODO: b/409648813 : to be removed when [WindowDecoration] is deprecated.
+     */
+    @Deprecated
+    @Override
+    public boolean isCapturedLinkAvailable(int taskId) {
+        final WindowDecorationWrapper decor = mWindowDecorByTaskId.get(taskId);
+        return decor.isCapturedLinkAvailable();
+    }
+
+    /**
+     * @deprecated Actual implementation within {@link WindowDecoration}
+     * TODO: b/409648813 : to be removed when [WindowDecoration] is deprecated.
+     */
+    @Deprecated
+    @Override
+    public void setCapturedLink(int taskId, @NonNull Uri link,
+            long timeStamp) {
+    }
+
+    /**
+     * @deprecated Actual implementation within {@link WindowDecoration}
+     * TODO: b/409648813 : to be removed when [WindowDecoration] is deprecated.
+     */
+    @Deprecated
+    @Override
+    public void onCapturedLinkUsed(int taskId) {
+
+    }
+
+    /**
+     * @deprecated Actual implementation within {@link WindowDecoration}
+     * TODO: b/409648813 : to be removed when [WindowDecoration] is deprecated.
+     */
+    @Deprecated
+    @Override
+    public Object getAppToWebIntent(@NonNull RunningTaskInfo taskInfo,
+            boolean isBrowserApp, @NonNull Continuation<? super Intent> completion) {
+        return null;
+    }
+
+
     @Override
     public void removeTaskIfTiled(int displayId, int taskId) {
         mDesktopTilingDecorViewModel.removeTaskIfTiled(displayId, taskId);
@@ -1582,8 +1651,6 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
             final DefaultWindowDecoration defaultWindowDecoration = new DefaultWindowDecoration(
                     taskInfo,
                     taskSurface,
-                    mGenericLinksParser,
-                    mAssistContentRequester,
                     DesktopExperienceFlags.ENABLE_BUG_FIXES_FOR_SECONDARY_DISPLAY.isTrue()
                             ? mDisplayController.getDisplayContext(taskInfo.displayId)
                             : mContext,
@@ -1612,6 +1679,7 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
                     mShellDesktopState,
                     mDesktopConfig,
                     mWindowDecorationActions,
+                    mAppToWebRepository,
                     mLockTaskChangeListener);
             windowDecoration =
                     mWindowDecoratioWrapperFactory.fromDefaultDecoration(defaultWindowDecoration);

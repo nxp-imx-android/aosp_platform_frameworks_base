@@ -49,9 +49,7 @@ import com.android.window.flags.Flags
 import com.android.wm.shell.R
 import com.android.wm.shell.RootTaskDisplayAreaOrganizer
 import com.android.wm.shell.ShellTaskOrganizer
-import com.android.wm.shell.apptoweb.AppToWebGenericLinksParser
 import com.android.wm.shell.apptoweb.AppToWebRepository
-import com.android.wm.shell.apptoweb.AssistContentRequester
 import com.android.wm.shell.common.DisplayController
 import com.android.wm.shell.common.LockTaskChangeListener
 import com.android.wm.shell.common.MultiInstanceHelper
@@ -98,8 +96,6 @@ class DefaultWindowDecoration
 constructor(
     taskInfo: RunningTaskInfo,
     taskSurface: SurfaceControl,
-    genericLinksParser: AppToWebGenericLinksParser,
-    assistContentRequester: AssistContentRequester,
     val context: Context,
     private val userContext: Context,
     private val displayController: DisplayController,
@@ -125,6 +121,7 @@ constructor(
     private val desktopState: DesktopState,
     private val desktopConfig: DesktopConfig,
     private val windowDecorationActions: WindowDecorationActions,
+    private val appToWebRepository: AppToWebRepository,
     private val windowManagerWrapper: WindowManagerWrapper =
         WindowManagerWrapper(context.getSystemService(WindowManager::class.java)),
     private val surfaceControlBuilderSupplier: () -> SurfaceControl.Builder = {
@@ -150,9 +147,6 @@ constructor(
         mainScope,
         transitions,
     ) {
-    private var appToWebRepository =
-        AppToWebRepository(userContext, taskInfo.taskId, assistContentRequester, genericLinksParser)
-
     private lateinit var onClickListener: OnClickListener
     private lateinit var onTouchListener: OnTouchListener
     private lateinit var onLongClickListener: OnLongClickListener
@@ -331,7 +325,11 @@ constructor(
         traceSection("DefaultWindowDecoration#relayout") {
             if (DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_APP_TO_WEB.isTrue) {
                 taskInfo.capturedLink?.let {
-                    appToWebRepository.setCapturedLink(it, taskInfo.capturedLinkTimestamp)
+                    appToWebRepository.setCapturedLink(
+                        taskInfo.taskId,
+                        it,
+                        taskInfo.capturedLinkTimestamp,
+                    )
                 }
             }
 

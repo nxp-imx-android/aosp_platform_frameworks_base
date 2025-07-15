@@ -23,8 +23,8 @@ import android.content.Context
 import android.content.res.Resources
 import android.graphics.Point
 import android.os.SystemProperties
+import android.window.DesktopExperienceFlags
 import androidx.compose.ui.graphics.toArgb
-import com.android.window.flags.Flags
 import com.android.wm.shell.R
 import com.android.wm.shell.desktopmode.CaptionState
 import com.android.wm.shell.desktopmode.WindowDecorCaptionRepository
@@ -119,7 +119,8 @@ class AppToWebEducationController(
     private inline fun runIfEducationFeatureEnabled(block: () -> Unit) {
         if (
             desktopState.canEnterDesktopMode &&
-                Flags.enableDesktopWindowingAppToWebEducationIntegration()
+                DesktopExperienceFlags.ENABLE_DESKTOP_WINDOWING_APP_TO_WEB_EDUCATION_INTEGRATION
+                    .isTrue
         ) {
             block()
         }

@@ -57,6 +57,8 @@ import com.android.wm.shell.RootTaskDisplayAreaOrganizer;
 import com.android.wm.shell.ShellTaskOrganizer;
 import com.android.wm.shell.activityembedding.ActivityEmbeddingController;
 import com.android.wm.shell.apptoweb.AppToWebGenericLinksParser;
+import com.android.wm.shell.apptoweb.AppToWebRepository;
+import com.android.wm.shell.apptoweb.AppToWebRepositoryImpl;
 import com.android.wm.shell.apptoweb.AssistContentRequester;
 import com.android.wm.shell.appzoomout.AppZoomOutController;
 import com.android.wm.shell.back.BackAnimationController;
@@ -461,6 +463,30 @@ public abstract class WMShellModule {
             Context context, @ShellMainThread ShellExecutor mainExecutor,
             DesktopConfig desktopConfig) {
         return new AppToWebGenericLinksParser(context, mainExecutor, desktopConfig);
+    }
+
+    @WMSingleton
+    @Provides
+    static AppToWebRepositoryImpl provideAppToWebRepositoryImpl(
+            Context context, AssistContentRequester assistContentRequester,
+            AppToWebGenericLinksParser appToWebGenericLinksParser,
+            ShellTaskOrganizer shellTaskOrganizer,
+            ShellInit shellInit) {
+        return new AppToWebRepositoryImpl(context, assistContentRequester,
+                appToWebGenericLinksParser, shellTaskOrganizer, shellInit);
+    }
+
+    @WMSingleton
+    @Provides
+    static AppToWebRepository provideAppToWebRepository(
+            AppToWebRepositoryImpl appToWebRepositoryImpl,
+            Optional<DesktopModeWindowDecorViewModel> desktopModeWindowDecorViewModel
+    ) {
+        if (DesktopExperienceFlags.ENABLE_WINDOW_DECORATION_REFACTOR.isTrue()
+                || desktopModeWindowDecorViewModel.isEmpty()) {
+            return appToWebRepositoryImpl;
+        }
+        return desktopModeWindowDecorViewModel.get();
     }
 
     @Provides
@@ -1232,12 +1258,12 @@ public abstract class WMShellModule {
             RootTaskDisplayAreaOrganizer rootTaskDisplayAreaOrganizer,
             InteractionJankMonitor interactionJankMonitor,
             AppToWebGenericLinksParser genericLinksParser,
+            AppToWebRepositoryImpl appToWebRepository,
             AssistContentRequester assistContentRequester,
             WindowDecorViewHostSupplier<WindowDecorViewHost> windowDecorViewHostSupplier,
             MultiInstanceHelper multiInstanceHelper,
             Optional<DesktopTasksLimiter> desktopTasksLimiter,
             AppHandleEducationController appHandleEducationController,
-            AppToWebEducationController appToWebEducationController,
             AppHandleAndHeaderVisibilityHelper appHandleAndHeaderVisibilityHelper,
             WindowDecorCaptionRepository windowDecorCaptionRepository,
             Optional<DesktopActivityOrientationChangeHandler> activityOrientationChangeHandler,
@@ -1266,8 +1292,8 @@ public abstract class WMShellModule {
                 displayInsetsController, syncQueue, transitions, desktopTasksController,
                 desktopImmersiveController.get(),
                 rootTaskDisplayAreaOrganizer, interactionJankMonitor, genericLinksParser,
-                assistContentRequester, windowDecorViewHostSupplier, multiInstanceHelper,
-                desktopTasksLimiter, appHandleEducationController, appToWebEducationController,
+                appToWebRepository, assistContentRequester, windowDecorViewHostSupplier,
+                multiInstanceHelper, desktopTasksLimiter, appHandleEducationController,
                 appHandleAndHeaderVisibilityHelper, windowDecorCaptionRepository,
                 activityOrientationChangeHandler, focusTransitionObserver, desktopModeEventLogger,
                 desktopModeUiEventLogger, taskResourceLoader, recentsTransitionHandler,
@@ -1705,12 +1731,14 @@ public abstract class WMShellModule {
             Context context,
             AdditionalSystemViewContainer.Factory additionalSystemViewContainerFactory,
             DisplayController displayController,
+            ShellController shellController,
             @ShellBackgroundThread MainCoroutineDispatcher bgDispatcher
     ) {
         return new DesktopWindowingEducationPromoController(
                 context,
                 additionalSystemViewContainerFactory,
                 displayController,
+                shellController,
                 bgDispatcher
         );
     }
@@ -1751,8 +1779,11 @@ public abstract class WMShellModule {
     @Provides
     static AppToWebEducationFilter provideAppToWebEducationFilter(
             Context context,
-            AppToWebEducationDatastoreRepository appToWebEducationDatastoreRepository) {
-        return new AppToWebEducationFilter(context, appToWebEducationDatastoreRepository);
+            AppToWebEducationDatastoreRepository appToWebEducationDatastoreRepository,
+            AppToWebRepository appToWebRepository
+    ) {
+        return new AppToWebEducationFilter(
+                context, appToWebEducationDatastoreRepository, appToWebRepository);
     }
 
     @OptIn(markerClass = ExperimentalCoroutinesApi.class)
@@ -1963,7 +1994,8 @@ public abstract class WMShellModule {
             Optional<SystemModalsTransitionHandler> systemModalsTransitionHandler,
             Optional<DisplayDisconnectTransitionHandler> displayDisconnectTransitionHandler,
             Optional<DesktopImeHandler> desktopImeHandler,
-            ShellCrashHandler shellCrashHandler) {
+            ShellCrashHandler shellCrashHandler,
+            AppToWebEducationController appToWebEducationController) {
         return new Object();
     }
 

@@ -42,6 +42,8 @@ import com.android.wm.shell.common.DisplayController
 import com.android.wm.shell.desktopmode.education.getLottieDrawable
 import com.android.wm.shell.shared.animation.PhysicsAnimator
 import com.android.wm.shell.shared.annotations.ShellBackgroundThread
+import com.android.wm.shell.sysui.KeyguardChangeListener
+import com.android.wm.shell.sysui.ShellController
 import com.android.wm.shell.windowdecor.WindowManagerWrapper
 import com.android.wm.shell.windowdecor.additionalviewcontainer.AdditionalSystemViewContainer
 import kotlin.coroutines.CoroutineContext
@@ -51,6 +53,7 @@ class DesktopWindowingEducationPromoController(
     private val context: Context,
     private val additionalSystemViewContainerFactory: AdditionalSystemViewContainer.Factory,
     private val displayController: DisplayController,
+    private val shellController: ShellController,
     @ShellBackgroundThread private val bgDispatcher: CoroutineContext,
 ) : OnDisplayChangingListener {
     private var educationView: View? = null
@@ -62,6 +65,7 @@ class DesktopWindowingEducationPromoController(
         )
     }
     private var popupWindow: AdditionalSystemViewContainer? = null
+    private var keyguardChangeListener: EducationPromoKeyguardChangeListener? = null
 
     override fun onDisplayChange(
         displayId: Int,
@@ -91,7 +95,15 @@ class DesktopWindowingEducationPromoController(
     }
 
     /** Hide the current education view if visible */
-    private fun hideEducation() = animateHideEducationTransition { cleanUp() }
+    private fun hideEducation() {
+        animateHideEducationTransition { cleanUp() }
+        removeKeyguardChangeListener()
+    }
+
+    private fun removeKeyguardChangeListener() {
+        keyguardChangeListener?.let { shellController.removeKeyguardChangeListener(it) }
+        keyguardChangeListener = null
+    }
 
     /** Create education view by inflating layout provided. */
     private suspend fun createEducationView(
@@ -132,6 +144,11 @@ class DesktopWindowingEducationPromoController(
                     setOnClickListener { hideEducation() }
                     setEducationColorScheme(viewConfig.educationColorScheme)
                 }
+
+        keyguardChangeListener =
+            EducationPromoKeyguardChangeListener().also {
+                shellController.addKeyguardChangeListener(it)
+            }
 
         createEducationPopupWindow(
             taskInfo.taskId,
@@ -241,4 +258,15 @@ class DesktopWindowingEducationPromoController(
      * @property text Text color of the [TextView] of education promo.
      */
     data class EducationColorScheme(@ColorInt val container: Int, @ColorInt val text: Int)
+
+    /** Listens to keyguard changes to hide education when keyguard is visible. */
+    inner class EducationPromoKeyguardChangeListener : KeyguardChangeListener {
+        override fun onKeyguardVisibilityChanged(
+            visible: Boolean,
+            occluded: Boolean,
+            animatingDismiss: Boolean,
+        ) {
+            if (visible) hideEducation()
+        }
+    }
 }

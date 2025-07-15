@@ -192,6 +192,7 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
     private ResizeVeil mResizeVeil;
 
     private CapturedLink mCapturedLink;
+    private long mAppToWebEducationRequestTimestamp;
     private Uri mGenericLink;
     private Uri mWebUri;
 
@@ -462,7 +463,8 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
             boolean inSyncWithTransition, SurfaceControl taskSurface) {
         Trace.beginSection("DesktopModeWindowDecoration#relayout");
 
-        if (DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_APP_TO_WEB.isTrue()) {
+        if (DesktopExperienceFlags
+                .ENABLE_DESKTOP_WINDOWING_APP_TO_WEB_EDUCATION_INTEGRATION.isTrue()) {
             setCapturedLink(taskInfo.capturedLink, taskInfo.capturedLinkTimestamp);
         }
 
@@ -638,6 +640,22 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
         mCapturedLink = new CapturedLink(capturedLink, timeStamp);
     }
 
+    /**
+     * Updates last App-to-Web education request timestamp. Returns true if new request to show
+     * education has been received.
+     */
+    Boolean updateAppToWebEducationRequestTimestamp(
+            Long latestOpenInBrowserEducationTimestamp
+    ) {
+        if (latestOpenInBrowserEducationTimestamp == 0L
+                || latestOpenInBrowserEducationTimestamp == mAppToWebEducationRequestTimestamp
+        ) {
+            return false;
+        }
+        mAppToWebEducationRequestTimestamp = latestOpenInBrowserEducationTimestamp;
+        return true;
+    }
+
     @Nullable
     private Intent getBrowserLink() {
         final Uri browserLink;
@@ -756,9 +774,12 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
         } else if (isAppHandle(mWindowDecorViewHolder)) {
             // App handle is visible since `mWindowDecorViewHolder` is of type
             // [AppHandleViewHolder].
-            final CaptionState captionState = new CaptionState.AppHandle(mTaskInfo,
-                    isHandleMenuActive(), getCurrentAppHandleBounds(), isCapturedLinkAvailable(),
-                    getAppHandleIdentifier(), mHasGlobalFocus);
+            final CaptionState captionState = new CaptionState.AppHandle(
+                    mTaskInfo,
+                    isHandleMenuActive(),
+                    getCurrentAppHandleBounds(),
+                    getAppHandleIdentifier(),
+                    mHasGlobalFocus);
             mWindowDecorCaptionRepository.notifyCaptionChanged(captionState);
         } else {
             // App header is visible since `mWindowDecorViewHolder` is of type
@@ -774,7 +795,20 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
         }
     }
 
-    private boolean isCapturedLinkAvailable() {
+    /**
+     * Returns true if there is an available browser link and an available browser app that can
+     * open the link.
+     */
+    boolean isBrowserSessionAvailable() {
+        // Checks to see that there is a browser application that can open the link
+        if (mDecorWindowContext.getPackageManager()
+                .getDefaultBrowserPackageNameAsUser(mUserContext.getUserId()) == null) {
+            return false;
+        }
+        return mWebUri != null || isCapturedLinkAvailable() || mGenericLink != null;
+    }
+
+    boolean isCapturedLinkAvailable() {
         return mCapturedLink != null && !mCapturedLink.mUsed;
     }
 
@@ -846,8 +880,8 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
                 mTaskInfo,
                 isHandleMenuActive(),
                 appChipGlobalPosition,
-                isCapturedLinkAvailable(),
-                mHasGlobalFocus);
+                mHasGlobalFocus
+        );
 
         mWindowDecorCaptionRepository.notifyCaptionChanged(captionState);
     }
@@ -1615,7 +1649,8 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
                 /* openInBrowserClickListener= */ (intent) -> {
                     mWindowDecorationActions.onOpenInBrowser(mTaskInfo.taskId, intent);
                     onCapturedLinkUsed();
-                    if (Flags.enableDesktopWindowingAppToWebEducationIntegration()) {
+                    if (DesktopExperienceFlags
+                            .ENABLE_DESKTOP_WINDOWING_APP_TO_WEB_EDUCATION_INTEGRATION.isTrue()) {
                         mWindowDecorCaptionRepository.onAppToWebUsage();
                     }
                     return Unit.INSTANCE;
@@ -1890,7 +1925,8 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
      */
     private boolean isEducationOrHandleReportingEnabled() {
         return Flags.enableDesktopWindowingAppHandleEducation()
-                || Flags.enableDesktopWindowingAppToWebEducationIntegration()
+                || DesktopExperienceFlags
+                .ENABLE_DESKTOP_WINDOWING_APP_TO_WEB_EDUCATION_INTEGRATION.isTrue()
                 || DesktopExperienceFlags.ENABLE_APP_HANDLE_POSITION_REPORTING.isTrue();
     }
 

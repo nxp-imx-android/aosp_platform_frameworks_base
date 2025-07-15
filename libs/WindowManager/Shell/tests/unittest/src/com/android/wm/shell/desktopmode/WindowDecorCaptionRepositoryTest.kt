@@ -24,23 +24,37 @@ import android.graphics.Rect
 import android.testing.AndroidTestingRunner
 import android.view.Display.DEFAULT_DISPLAY
 import androidx.test.filters.SmallTest
+import com.android.wm.shell.ShellTestCase
+import com.android.wm.shell.apptoweb.AppToWebRepositoryImpl
 import com.android.wm.shell.windowdecor.viewholder.AppHandleIdentifier
 import com.android.wm.shell.windowdecor.viewholder.AppHandleIdentifier.AppHandleWindowingMode
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
+import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.mockito.Mock
+import org.mockito.MockitoAnnotations
 
 @SmallTest
 @RunWith(AndroidTestingRunner::class)
-class WindowDecorCaptionRepositoryTest {
+class WindowDecorCaptionRepositoryTest : ShellTestCase() {
+    @Mock private lateinit var appToWebRepository: AppToWebRepositoryImpl
+
+    private lateinit var mockInit: AutoCloseable
     private lateinit var captionRepository: WindowDecorCaptionRepository
 
     @Before
     fun setUp() {
+        mockInit = MockitoAnnotations.openMocks(this)
         captionRepository = WindowDecorCaptionRepository()
+    }
+
+    @After
+    fun tearDown() {
+        mockInit.close()
     }
 
     @Test
@@ -52,7 +66,6 @@ class WindowDecorCaptionRepositoryTest {
                 isHandleMenuExpanded = false,
                 globalAppHandleBounds =
                     Rect(/* left= */ 0, /* top= */ 1, /* right= */ 2, /* bottom= */ 3),
-                isCapturedLinkAvailable = false,
                 appHandleIdentifier = createHandleIdentifier(taskInfo.taskId),
                 isFocused = true,
             )
@@ -71,7 +84,6 @@ class WindowDecorCaptionRepositoryTest {
                 isHeaderMenuExpanded = true,
                 globalAppChipBounds =
                     Rect(/* left= */ 0, /* top= */ 1, /* right= */ 2, /* bottom= */ 3),
-                isCapturedLinkAvailable = false,
                 isFocused = true,
             )
 
