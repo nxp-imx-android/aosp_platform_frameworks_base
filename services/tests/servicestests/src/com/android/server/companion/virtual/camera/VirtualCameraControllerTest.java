@@ -38,7 +38,6 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import android.companion.virtual.camera.CameraCharacteristicsBuilder;
 import android.companion.virtual.camera.VirtualCameraCallback;
 import android.companion.virtual.camera.VirtualCameraConfig;
 import android.companion.virtual.camera.VirtualCameraStreamConfig;
@@ -322,7 +321,8 @@ public class VirtualCameraControllerTest {
     @Test
     @EnableFlags(Flags.FLAG_VIRTUAL_CAMERA_METADATA)
     public void registerCameraWithCharacteristics_registersCamera(int lensFacing) throws Exception {
-        CameraCharacteristics characteristics = new CameraCharacteristicsBuilder()
+        CameraCharacteristics characteristics = new CameraCharacteristics.Builder(
+                VirtualCameraConfig.DEFAULT_VIRTUAL_CAMERA_CHARACTERISTICS)
                 .set(CameraCharacteristics.SENSOR_ORIENTATION, CAMERA_SENSOR_ORIENTATION_1)
                 .set(CameraCharacteristics.LENS_FACING, lensFacing)
                 .build();
@@ -340,7 +340,8 @@ public class VirtualCameraControllerTest {
     @Test
     @EnableFlags(Flags.FLAG_VIRTUAL_CAMERA_METADATA)
     public void unregisterCameraWithCharacteristics_unregistersCamera() throws Exception {
-        CameraCharacteristics characteristics = new CameraCharacteristicsBuilder()
+        CameraCharacteristics characteristics = new CameraCharacteristics.Builder(
+                VirtualCameraConfig.DEFAULT_VIRTUAL_CAMERA_CHARACTERISTICS)
                 .set(CameraCharacteristics.SENSOR_ORIENTATION, CAMERA_SENSOR_ORIENTATION_1)
                 .set(CameraCharacteristics.LENS_FACING, CAMERA_LENS_FACING_1)
                 .build();
@@ -389,7 +390,8 @@ public class VirtualCameraControllerTest {
     @EnableFlags(Flags.FLAG_VIRTUAL_CAMERA_METADATA)
     public void registerCameraWithCharacteristicsAndPerFrameMetadata_registersCamera(int lensFacing)
             throws Exception {
-        CameraCharacteristics characteristics = new CameraCharacteristicsBuilder()
+        CameraCharacteristics characteristics = new CameraCharacteristics.Builder(
+                VirtualCameraConfig.DEFAULT_VIRTUAL_CAMERA_CHARACTERISTICS)
                 .set(CameraCharacteristics.SENSOR_ORIENTATION, CAMERA_SENSOR_ORIENTATION_1)
                 .set(CameraCharacteristics.LENS_FACING, lensFacing)
                 .build();
