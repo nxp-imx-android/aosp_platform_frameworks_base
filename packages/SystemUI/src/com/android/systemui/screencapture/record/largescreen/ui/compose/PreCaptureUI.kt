@@ -65,7 +65,13 @@ fun PreCaptureUI(viewModel: PreCaptureViewModel) {
                 }
             }
             ScreenCaptureRegion.PARTIAL -> {
-                // TODO(b/422834671) If the capture region is PARTIAL, add region box here.
+                // TODO(b/427541309) Set the initial width and height of the RegionBox based on the
+                // viewmodel state.
+                RegionBox(
+                    initialWidth = 100.dp,
+                    initialHeight = 100.dp,
+                    onDragEnd = viewModel::onPartialRegionDragEnd,
+                )
             }
             ScreenCaptureRegion.APP_WINDOW -> {}
         }
