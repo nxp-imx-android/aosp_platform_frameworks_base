@@ -16,6 +16,7 @@
 package com.android.hoststubgen.hosthelper;
 
 import java.io.PrintStream;
+import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Arrays;
@@ -189,5 +190,32 @@ public class HostTestUtils {
             return;
         }
         logPrintStream.println("# class loaded: " + clazz.getCanonicalName());
+    }
+
+    /**
+     * Find any of the HostStubGenProcessedAsXxx annotations from a given element and
+     * return its "reason".
+     *
+     * Returns null if none found or if the only reason found is "".
+     */
+    // Nullable
+    public static String getHostStubGenAnnotationReason(/* nullable */ AnnotatedElement element) {
+        if (element == null) {
+            return null;
+        }
+        for (var annot : element.getAnnotations()) {
+            String reason = switch (annot) {
+                case HostStubGenProcessedAsKeep a -> a.reason();
+                case HostStubGenProcessedAsIgnore a -> a.reason();
+                case HostStubGenProcessedAsThrow a -> a.reason();
+                case HostStubGenProcessedAsThrowButSupported a -> a.reason();
+                // case HostStubGenProcessedAsSubstitute a -> a.reason();
+                default -> null;
+            };
+            if (reason != null && !reason.isEmpty()) {
+                return reason;
+            }
+        }
+        return null;
     }
 }
