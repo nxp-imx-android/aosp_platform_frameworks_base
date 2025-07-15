@@ -58,8 +58,6 @@ class DisplayWindowPropertiesRepositoryImpl
 constructor(
     @Background private val backgroundApplicationScope: CoroutineScope,
     private val globalContext: Context,
-    private val globalWindowManager: WindowManager,
-    private val globalLayoutInflater: LayoutInflater,
     private val displayRepository: DisplayRepository,
 ) : DisplayWindowPropertiesRepository, CoreStartable {
 
@@ -95,31 +93,25 @@ constructor(
 
     private fun create(display: Display, windowType: Int): DisplayWindowProperties? {
         val displayId = display.displayId
-        return if (displayId == Display.DEFAULT_DISPLAY) {
-            // For the default display, we can just reuse the global/application properties.
-            // Creating a window context is expensive, therefore we avoid it.
-            DisplayWindowProperties(
-                displayId = displayId,
-                windowType = windowType,
-                context = globalContext,
-                windowManager = globalWindowManager,
-                layoutInflater = globalLayoutInflater,
+        val context = createWindowContext(display, windowType)
+        if (context.displayId != display.displayId) {
+            Log.e(
+                TAG,
+                "Returning null because the new context doesn't have the desired display id " +
+                    "${display.displayId}. Display was already removed.",
             )
-        } else {
-            val context = createWindowContext(display, windowType)
-            if (context.displayId != display.displayId) {
-                Log.e(
-                    TAG,
-                    "Returning null because the new context doesn't have the desired display id " +
-                        "${display.displayId}. Display was already removed.",
-                )
-                return null
-            }
-            @SuppressLint("NonInjectedService") // Need to manually get the service
-            val windowManager = WindowManagerUtils.getWindowManager(context)
-            val layoutInflater = LayoutInflater.from(context)
-            DisplayWindowProperties(displayId, windowType, context, windowManager, layoutInflater)
+            return null
         }
+        @SuppressLint("NonInjectedService") // Need to manually get the service
+        val windowManager = WindowManagerUtils.getWindowManager(context)
+        val layoutInflater = LayoutInflater.from(context)
+        return DisplayWindowProperties(
+            displayId,
+            windowType,
+            context,
+            windowManager,
+            layoutInflater,
+        )
     }
 
     private fun createWindowContext(display: Display, windowType: Int): Context =
