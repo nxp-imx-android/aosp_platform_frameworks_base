@@ -1034,14 +1034,15 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
         final DesktopRepository repository = mDesktopUserRepositories.getCurrent();
         final Integer leftTaskId = repository.getLeftTiledTask(deskId);
         final Integer rightTaskId = repository.getRightTiledTask(deskId);
-        if (leftTaskId != null) {
+        // if the decor wrapper is null, tiling will be initialised when the decor is created.
+        if (leftTaskId != null && mWindowDecorByTaskId.get(leftTaskId) != null) {
             final WindowDecorationWrapper decor = mWindowDecorByTaskId.get(leftTaskId);
             final RunningTaskInfo taskInfo = decor.getTaskInfo();
             final Rect currentBounds = taskInfo.configuration.windowConfiguration.getBounds();
             snapPersistedTaskToHalfScreen(taskInfo, currentBounds, SnapPosition.LEFT);
         }
 
-        if (rightTaskId != null) {
+        if (rightTaskId != null && mWindowDecorByTaskId.get(rightTaskId) != null) {
             final WindowDecorationWrapper decor = mWindowDecorByTaskId.get(rightTaskId);
             final RunningTaskInfo taskInfo = decor.getTaskInfo();
             final Rect currentBounds = taskInfo.configuration.windowConfiguration.getBounds();
