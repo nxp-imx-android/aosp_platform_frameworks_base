@@ -106,6 +106,9 @@
       "name": "FunctionalTestsDesktopMode-fundamentals-CloseAllAppsWithBackNavigationTest"
     },
     {
+      "name": "FunctionalTestsDesktopMode-fundamentals-EnterDesktopFromKeyboardShortcutTest"
+    },
+    {
       "name": "FunctionalTestsDesktopMode-fundamentals-EnterDesktopFromSplitScreenWithAppHandleMenuTest"
     },
     {
