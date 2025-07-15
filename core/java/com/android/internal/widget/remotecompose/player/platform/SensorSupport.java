@@ -16,7 +16,6 @@
 package com.android.internal.widget.remotecompose.player.platform;
 
 import android.annotation.NonNull;
-import android.app.Application;
 import android.content.Context;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
@@ -41,7 +40,7 @@ public class SensorSupport {
      * @param view The RemoteComposeView instance that contains sensor listeners and will receive
      *     sensor data.
      */
-    public void setupSensors(@NonNull Application application, @NonNull RemoteComposeView view) {
+    public void setupSensors(@NonNull Context application, @NonNull RemoteComposeView view) {
         mRemoteComposeView = view;
         int minId = RemoteContext.ID_ACCELERATION_X;
         int maxId = RemoteContext.ID_LIGHT;

@@ -21,7 +21,6 @@ import android.annotation.Nullable;
 import com.android.internal.widget.remotecompose.player.state.StateUpdater;
 
 /** An interface for handling named actions. */
-@FunctionalInterface
 public interface NamedActionHandler {
     /**
      * Execute a named action
