@@ -37,8 +37,8 @@ public class ComplexMediaDevice extends MediaDevice {
             @NonNull Context context,
             @NonNull MediaRoute2Info info,
             @Nullable DynamicRouteAttributes dynamicRouteAttributes,
-            @Nullable RouteListingPreference.Item item) {
-        super(context, info, dynamicRouteAttributes, item);
+            @Nullable RouteListingPreference.Item rlpItem) {
+        super(context, info, dynamicRouteAttributes, rlpItem);
     }
 
     // MediaRoute2Info.getName was made public on API 34, but exists since API 30.

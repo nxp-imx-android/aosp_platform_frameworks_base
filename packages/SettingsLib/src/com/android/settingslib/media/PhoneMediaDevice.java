@@ -146,10 +146,10 @@ public class PhoneMediaDevice extends MediaDevice {
 
     PhoneMediaDevice(
             @NonNull Context context,
-            @NonNull MediaRoute2Info info,
+            @NonNull MediaRoute2Info routeInfo,
             @Nullable DynamicRouteAttributes dynamicRouteAttributes,
-            @Nullable RouteListingPreference.Item item) {
-        super(context, info, dynamicRouteAttributes, item);
+            @Nullable RouteListingPreference.Item rlpItem) {
+        super(context, routeInfo, dynamicRouteAttributes, rlpItem);
         mDeviceIconUtil = new DeviceIconUtil(mContext);
         initDeviceRecord();
     }
