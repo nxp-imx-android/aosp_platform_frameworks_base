@@ -204,6 +204,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.StringWriter;
 import java.io.PrintWriter;
 import java.text.SimpleDateFormat;
 import java.time.Duration;
@@ -6125,8 +6126,29 @@ public class AppOpsService extends IAppOpsService.Stub {
 
     private void dumpHelp(PrintWriter pw) {
         pw.println("AppOps service (appops) dump options:");
+        pw.println("  Default is `--op-data --restrictions` ");
         pw.println("  -h");
         pw.println("    Print this help text.");
+        pw.println("  -a, --all");
+        pw.println("    Print all non-historical service state.");
+        pw.println("  --[no-]op-data");
+        pw.println("    Dump per-uid op data.");
+        pw.println("  --[no-]restrictions");
+        pw.println("    Dump appops restrictions (global, user, audio).");
+        pw.println("  --[no-]watchers");
+        pw.println("    Dump listeners for appop state changes.");
+        pw.println("  --[no-]uid-state-changes");
+        pw.println("    Include logs about uid state changes.");
+        pw.println("  --history");
+        pw.println("    Historical dump mode. Only outputs history. "
+                   + "Incompatible with previous options");
+        pw.println("  --include-discrete [n]");
+        pw.println("    Include discrete ops limited to n per dimension. Use zero for no limit. "
+                   + "Only for historical mode");
+        pw.println("  --history-limit [n]");
+        pw.println("    Include app ops limited to n recent records. Use zero for no limit. "
+                    + "Only for historical mode.");
+        pw.println(" Filter arguments (filters watcher and op state):");
         pw.println("  --op [OP]");
         pw.println("    Limit output to data associated with the given app op code.");
         pw.println("  --mode [MODE]");
@@ -6135,16 +6157,6 @@ public class AppOpsService extends IAppOpsService.Stub {
         pw.println("    Limit output to data associated with the given package name.");
         pw.println("  --attributionTag [attributionTag]");
         pw.println("    Limit output to data associated with the given attribution tag.");
-        pw.println("  --include-discrete [n]");
-        pw.println("    Include discrete ops limited to n per dimension. Use zero for no limit.");
-        pw.println("  --history-limit [n]");
-        pw.println("    Include app ops limited to n recent records. Use zero for no limit.");
-        pw.println("  --watchers");
-        pw.println("    Only output the watcher sections.");
-        pw.println("  --history");
-        pw.println("    Only output history.");
-        pw.println("  --uid-state-changes");
-        pw.println("    Include logs about uid state changes.");
     }
 
     private void dumpStatesLocked(@NonNull PrintWriter pw, @Nullable String filterAttributionTag,
@@ -6284,15 +6296,20 @@ public class AppOpsService extends IAppOpsService.Stub {
         int dumpOp = OP_NONE;
         String dumpPackage = null;
         String dumpAttributionTag = null;
-        int dumpUid = Process.INVALID_UID;
+        int dumpAppId = Process.INVALID_UID;
         int dumpMode = -1;
+
+        // Whether we should dump each section
+        boolean dumpOpState = true;
+        boolean dumpRestrictions = true;
         boolean dumpWatchers = false;
+        boolean dumpUidStateChangeLogs = false;
+
+        // History dump mode params
         boolean dumpHistory = false;
         boolean includeDiscreteOps = false;
-        boolean dumpUidStateChangeLogs = false;
         int historyLimit = 100;
         @HistoricalOpsRequestFilter int dumpFilter = 0;
-        boolean dumpAll = false;
 
         if (args != null) {
             for (int i = 0; i < args.length; i++) {
@@ -6300,9 +6317,28 @@ public class AppOpsService extends IAppOpsService.Stub {
                 if ("-h".equals(arg)) {
                     dumpHelp(pw);
                     return;
-                } else if ("-a".equals(arg)) {
-                    // dump all data
-                    dumpAll = true;
+                } else if ("-a".equals(arg) || "--all".equals(arg)) {
+                    // dump all data, set for bug reports
+                    dumpOpState = true;
+                    dumpRestrictions = true;
+                    dumpWatchers = true;
+                    dumpUidStateChangeLogs = true;
+                } else if ("--op-data".equals(arg)) {
+                    dumpOpState = true;
+                } else if ("--no-op-data".equals(arg)) {
+                    dumpOpState = false;
+                } else if ("--restrictions".equals(arg)) {
+                    dumpRestrictions = true;
+                } else if ("--no-restrictions".equals(arg)) {
+                    dumpRestrictions = false;
+                } else if ("--uid-state-changes".equals(arg)) {
+                    dumpUidStateChangeLogs = true;
+                } else if ("--no-uid-state-changes".equals(arg)) {
+                    dumpUidStateChangeLogs = false;
+                } else if ("--watchers".equals(arg)) {
+                    dumpWatchers = true;
+                } else if ("--no-watchers".equals(arg)) {
+                    dumpWatchers = false;
                 } else if ("--op".equals(arg)) {
                     i++;
                     if (i >= args.length) {
@@ -6322,6 +6358,7 @@ public class AppOpsService extends IAppOpsService.Stub {
                     }
                     dumpPackage = args[i];
                     dumpFilter |= FILTER_BY_PACKAGE_NAME;
+                    int dumpUid = -1;
                     try {
                         dumpUid = AppGlobals.getPackageManager().getPackageUid(dumpPackage,
                                 PackageManager.MATCH_KNOWN_PACKAGES | PackageManager.MATCH_INSTANT,
@@ -6332,7 +6369,7 @@ public class AppOpsService extends IAppOpsService.Stub {
                         pw.println("Unknown package: " + dumpPackage);
                         return;
                     }
-                    dumpUid = UserHandle.getAppId(dumpUid);
+                    dumpAppId = UserHandle.getAppId(dumpUid);
                     dumpFilter |= FILTER_BY_UID;
                 } else if ("--attributionTag".equals(arg)) {
                     i++;
@@ -6352,8 +6389,6 @@ public class AppOpsService extends IAppOpsService.Stub {
                     if (dumpMode < 0) {
                         return;
                     }
-                } else if ("--watchers".equals(arg)) {
-                    dumpWatchers = true;
                 } else if ("--include-discrete".equals(arg)) {
                     i++;
                     if (i >= args.length) {
@@ -6384,8 +6419,6 @@ public class AppOpsService extends IAppOpsService.Stub {
                 } else if (arg.length() > 0 && arg.charAt(0) == '-') {
                     pw.println("Unknown option: " + arg);
                     return;
-                } else if ("--uid-state-changes".equals(arg)) {
-                    dumpUidStateChangeLogs = true;
                 } else {
                     pw.println("Unknown command: " + arg);
                     return;
@@ -6395,18 +6428,45 @@ public class AppOpsService extends IAppOpsService.Stub {
 
         final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
         final Date date = new Date();
-        synchronized (this) {
-            pw.println("Current AppOps Service state:");
-            if (!dumpHistory && !dumpWatchers) {
-                mConstants.dump(pw);
+
+        String sensorHistoryDump = "";
+        // Must not hold lock
+        // See dump documentation: this is an alternate dump mode, which early returns
+        if (dumpHistory) {
+            pw.println("AppOps Historical Service State:");
+            if (Flags.enableAllSqliteAppopsAccesses()) {
+                mHistoricalRegistry.dump("", pw, dumpAppId, dumpPackage, dumpAttributionTag,
+                        dumpOp, dumpFilter, sdf, date, includeDiscreteOps, historyLimit,
+                        /* dumpHistory*/ true);
+            } else {
+                mHistoricalRegistry.dumpAggregatedData("  ", pw, dumpAppId, dumpPackage,
+                        dumpAttributionTag, dumpOp, dumpFilter, sdf, date);
+                // Must not hold the appops lock
+                if (includeDiscreteOps) {
+                    pw.println("Discrete accesses: ");
+                    mHistoricalRegistry.dumpDiscreteData(pw, dumpAppId, dumpPackage,
+                            dumpAttributionTag, dumpFilter, dumpOp, sdf, date, "  ", historyLimit);
+                }
             }
-            pw.println();
+            return;
+        // TODO (b/411153195). Temporary workaround for locking, until historical dump is split
+        } else if (Flags.enableAllSqliteAppopsAccesses()) {
+            final StringWriter sw = new StringWriter();
+            PrintWriter spw = new PrintWriter(sw);
+            mHistoricalRegistry.dump("", spw, dumpAppId, dumpPackage, dumpAttributionTag,
+                    dumpOp, dumpFilter, sdf, date, includeDiscreteOps, historyLimit,
+                    /* dumpHistory*/ false);
+            sensorHistoryDump = sw.toString();
+        }
+
+        synchronized (this) {
             final long now = System.currentTimeMillis();
             final long nowElapsed = SystemClock.elapsedRealtime();
-            final long nowUptime = SystemClock.uptimeMillis();
-            boolean needSep = false;
-            if (dumpFilter == 0 && dumpMode < 0 && mProfileOwners != null && !dumpWatchers
-                    && !dumpHistory) {
+
+            pw.println("AppOps Service state:");
+            mConstants.dump(pw);
+            pw.println();
+            if (mProfileOwners != null) {
                 pw.println("  Profile owners:");
                 for (int poi = 0; poi < mProfileOwners.size(); poi++) {
                     pw.print("    User #");
@@ -6417,383 +6477,360 @@ public class AppOpsService extends IAppOpsService.Stub {
                 }
                 pw.println();
             }
+            pw.println();
+            if (mCheckOpsDelegateDispatcher.mPolicy != null
+                    && mCheckOpsDelegateDispatcher.mPolicy instanceof AppOpsPolicy) {
+                AppOpsPolicy policy = (AppOpsPolicy) mCheckOpsDelegateDispatcher.mPolicy;
+                policy.dumpTags(pw);
+            } else {
+                pw.println("  AppOps policy not set.");
+            }
 
-            if (mOpModeWatchers.size() > 0 && !dumpHistory) {
-                boolean printedHeader = false;
-                for (int i = 0; i < mOpModeWatchers.size(); i++) {
-                    if (dumpOp >= 0 && dumpOp != mOpModeWatchers.keyAt(i)) {
-                        continue;
-                    }
-                    boolean printedOpHeader = false;
-                    ArraySet<OnOpModeChangedListener> callbacks = mOpModeWatchers.valueAt(i);
-                    for (int j = 0; j < callbacks.size(); j++) {
-                        final OnOpModeChangedListener cb = callbacks.valueAt(j);
-                        if (dumpPackage != null
-                                && dumpUid != UserHandle.getAppId(cb.getWatchingUid())) {
+            pw.println();
+
+            if (dumpWatchers) {
+                pw.println("AppOps Watchers");
+                if (mOpModeWatchers.size() > 0) {
+                    boolean printedHeader = false;
+                    for (int i = 0; i < mOpModeWatchers.size(); i++) {
+                        if (dumpOp >= 0 && dumpOp != mOpModeWatchers.keyAt(i)) {
                             continue;
                         }
-                        needSep = true;
+                        boolean printedOpHeader = false;
+                        ArraySet<OnOpModeChangedListener> callbacks = mOpModeWatchers.valueAt(i);
+                        for (int j = 0; j < callbacks.size(); j++) {
+                            final OnOpModeChangedListener cb = callbacks.valueAt(j);
+                            if (dumpPackage != null
+                                    && dumpAppId != UserHandle.getAppId(cb.getWatchingUid())) {
+                                continue;
+                            }
+                            if (!printedHeader) {
+                                pw.println("  Op mode watchers:");
+                                printedHeader = true;
+                            }
+                            if (!printedOpHeader) {
+                                pw.print("    Op ");
+                                pw.print(AppOpsManager.opToName(mOpModeWatchers.keyAt(i)));
+                                pw.println(":");
+                                printedOpHeader = true;
+                            }
+                            pw.print("      #"); pw.print(j); pw.print(": ");
+                            pw.println(cb);
+                        }
+                    }
+                }
+                if (mPackageModeWatchers.size() > 0 && dumpOp < 0) {
+                    boolean printedHeader = false;
+                    for (int i = 0; i < mPackageModeWatchers.size(); i++) {
+                        if (dumpPackage != null
+                                && !dumpPackage.equals(mPackageModeWatchers.keyAt(i))) {
+                            continue;
+                        }
                         if (!printedHeader) {
-                            pw.println("  Op mode watchers:");
+                            pw.println("  Package mode watchers:");
                             printedHeader = true;
                         }
-                        if (!printedOpHeader) {
-                            pw.print("    Op ");
-                            pw.print(AppOpsManager.opToName(mOpModeWatchers.keyAt(i)));
-                            pw.println(":");
-                            printedOpHeader = true;
+                        pw.print("    Pkg "); pw.print(mPackageModeWatchers.keyAt(i));
+                        pw.println(":");
+                        ArraySet<OnOpModeChangedListener> callbacks =
+                                mPackageModeWatchers.valueAt(i);
+                        for (int j = 0; j < callbacks.size(); j++) {
+                            pw.print("      #"); pw.print(j); pw.print(": ");
+                            pw.println(callbacks.valueAt(j));
                         }
-                        pw.print("      #"); pw.print(j); pw.print(": ");
+                    }
+                }
+
+                if (mModeWatchers.size() > 0 && dumpOp < 0) {
+                    boolean printedHeader = false;
+                    for (int i = 0; i < mModeWatchers.size(); i++) {
+                        final ModeCallback cb = mModeWatchers.valueAt(i);
+                        if (dumpPackage != null
+                                && dumpAppId != UserHandle.getAppId(cb.getWatchingUid())) {
+                            continue;
+                        }
+                        if (!printedHeader) {
+                            pw.println("  All op mode watchers:");
+                            printedHeader = true;
+                        }
+                        pw.print("    ");
+                        pw.print(Integer.toHexString(
+                                System.identityHashCode(mModeWatchers.keyAt(i))));
+                        pw.print(": "); pw.println(cb);
+                    }
+                }
+                if (mActiveWatchers.size() > 0 && dumpMode < 0) {
+                    boolean printedHeader = false;
+                    for (int watcherNum = 0; watcherNum < mActiveWatchers.size(); watcherNum++) {
+                        final SparseArray<ActiveCallback> activeWatchers =
+                                mActiveWatchers.valueAt(watcherNum);
+                        if (activeWatchers.size() <= 0) {
+                            continue;
+                        }
+                        final ActiveCallback cb = activeWatchers.valueAt(0);
+                        if (dumpOp >= 0 && activeWatchers.indexOfKey(dumpOp) < 0) {
+                            continue;
+                        }
+                        if (dumpPackage != null
+                                && dumpAppId != UserHandle.getAppId(cb.mWatchingUid)) {
+                            continue;
+                        }
+                        if (!printedHeader) {
+                            pw.println("  All op active watchers:");
+                            printedHeader = true;
+                        }
+                        pw.print("    ");
+                        pw.print(Integer.toHexString(System.identityHashCode(
+                                mActiveWatchers.keyAt(watcherNum))));
+                        pw.println(" ->");
+                        pw.print("        [");
+                        final int opCount = activeWatchers.size();
+                        for (int opNum = 0; opNum < opCount; opNum++) {
+                            if (opNum > 0) {
+                                pw.print(' ');
+                            }
+                            pw.print(AppOpsManager.opToName(activeWatchers.keyAt(opNum)));
+                            if (opNum < opCount - 1) {
+                                pw.print(',');
+                            }
+                        }
+                        pw.println("]");
+                        pw.print("        ");
                         pw.println(cb);
                     }
                 }
-            }
-            if (mPackageModeWatchers.size() > 0 && dumpOp < 0 && !dumpHistory) {
-                boolean printedHeader = false;
-                for (int i = 0; i < mPackageModeWatchers.size(); i++) {
-                    if (dumpPackage != null && !dumpPackage.equals(mPackageModeWatchers.keyAt(i))) {
-                        continue;
-                    }
-                    needSep = true;
-                    if (!printedHeader) {
-                        pw.println("  Package mode watchers:");
-                        printedHeader = true;
-                    }
-                    pw.print("    Pkg "); pw.print(mPackageModeWatchers.keyAt(i));
-                    pw.println(":");
-                    ArraySet<OnOpModeChangedListener> callbacks = mPackageModeWatchers.valueAt(i);
-                    for (int j = 0; j < callbacks.size(); j++) {
-                        pw.print("      #"); pw.print(j); pw.print(": ");
-                        pw.println(callbacks.valueAt(j));
+                if (mStartedWatchers.size() > 0 && dumpMode < 0) {
+                    boolean printedHeader = false;
+
+                    final int watchersSize = mStartedWatchers.size();
+                    for (int watcherNum = 0; watcherNum < watchersSize; watcherNum++) {
+                        final SparseArray<StartedCallback> startedWatchers =
+                                mStartedWatchers.valueAt(watcherNum);
+                        if (startedWatchers.size() <= 0) {
+                            continue;
+                        }
+
+                        final StartedCallback cb = startedWatchers.valueAt(0);
+                        if (dumpOp >= 0 && startedWatchers.indexOfKey(dumpOp) < 0) {
+                            continue;
+                        }
+
+                        if (dumpPackage != null
+                                && dumpAppId != UserHandle.getAppId(cb.mWatchingUid)) {
+                            continue;
+                        }
+
+                        if (!printedHeader) {
+                            pw.println("  All op started watchers:");
+                            printedHeader = true;
+                        }
+
+                        pw.print("    ");
+                        pw.print(Integer.toHexString(System.identityHashCode(
+                                mStartedWatchers.keyAt(watcherNum))));
+                        pw.println(" ->");
+
+                        pw.print("        [");
+                        final int opCount = startedWatchers.size();
+                        for (int opNum = 0; opNum < opCount; opNum++) {
+                            if (opNum > 0) {
+                                pw.print(' ');
+                            }
+
+                            pw.print(AppOpsManager.opToName(startedWatchers.keyAt(opNum)));
+                            if (opNum < opCount - 1) {
+                                pw.print(',');
+                            }
+                        }
+                        pw.println("]");
+
+                        pw.print("        ");
+                        pw.println(cb);
                     }
                 }
-            }
-
-            if (mModeWatchers.size() > 0 && dumpOp < 0 && !dumpHistory) {
-                boolean printedHeader = false;
-                for (int i = 0; i < mModeWatchers.size(); i++) {
-                    final ModeCallback cb = mModeWatchers.valueAt(i);
-                    if (dumpPackage != null
-                            && dumpUid != UserHandle.getAppId(cb.getWatchingUid())) {
-                        continue;
+                if (mNotedWatchers.size() > 0 && dumpMode < 0) {
+                    boolean printedHeader = false;
+                    for (int watcherNum = 0; watcherNum < mNotedWatchers.size(); watcherNum++) {
+                        final SparseArray<NotedCallback> notedWatchers =
+                                mNotedWatchers.valueAt(watcherNum);
+                        if (notedWatchers.size() <= 0) {
+                            continue;
+                        }
+                        final NotedCallback cb = notedWatchers.valueAt(0);
+                        if (dumpOp >= 0 && notedWatchers.indexOfKey(dumpOp) < 0) {
+                            continue;
+                        }
+                        if (dumpPackage != null
+                                && dumpAppId != UserHandle.getAppId(cb.mWatchingUid)) {
+                            continue;
+                        }
+                        if (!printedHeader) {
+                            pw.println("  All op noted watchers:");
+                            printedHeader = true;
+                        }
+                        pw.print("    ");
+                        pw.print(Integer.toHexString(System.identityHashCode(
+                                mNotedWatchers.keyAt(watcherNum))));
+                        pw.println(" ->");
+                        pw.print("        [");
+                        final int opCount = notedWatchers.size();
+                        for (int opNum = 0; opNum < opCount; opNum++) {
+                            if (opNum > 0) {
+                                pw.print(' ');
+                            }
+                            pw.print(AppOpsManager.opToName(notedWatchers.keyAt(opNum)));
+                            if (opNum < opCount - 1) {
+                                pw.print(',');
+                            }
+                        }
+                        pw.println("]");
+                        pw.print("        ");
+                        pw.println(cb);
                     }
-                    needSep = true;
-                    if (!printedHeader) {
-                        pw.println("  All op mode watchers:");
-                        printedHeader = true;
-                    }
-                    pw.print("    ");
-                    pw.print(Integer.toHexString(System.identityHashCode(mModeWatchers.keyAt(i))));
-                    pw.print(": "); pw.println(cb);
                 }
-            }
-            if (mActiveWatchers.size() > 0 && dumpMode < 0) {
-                needSep = true;
-                boolean printedHeader = false;
-                for (int watcherNum = 0; watcherNum < mActiveWatchers.size(); watcherNum++) {
-                    final SparseArray<ActiveCallback> activeWatchers =
-                            mActiveWatchers.valueAt(watcherNum);
-                    if (activeWatchers.size() <= 0) {
-                        continue;
-                    }
-                    final ActiveCallback cb = activeWatchers.valueAt(0);
-                    if (dumpOp >= 0 && activeWatchers.indexOfKey(dumpOp) < 0) {
-                        continue;
-                    }
-                    if (dumpPackage != null
-                            && dumpUid != UserHandle.getAppId(cb.mWatchingUid)) {
-                        continue;
-                    }
-                    if (!printedHeader) {
-                        pw.println("  All op active watchers:");
-                        printedHeader = true;
-                    }
-                    pw.print("    ");
-                    pw.print(Integer.toHexString(System.identityHashCode(
-                            mActiveWatchers.keyAt(watcherNum))));
-                    pw.println(" ->");
-                    pw.print("        [");
-                    final int opCount = activeWatchers.size();
-                    for (int opNum = 0; opNum < opCount; opNum++) {
-                        if (opNum > 0) {
-                            pw.print(' ');
-                        }
-                        pw.print(AppOpsManager.opToName(activeWatchers.keyAt(opNum)));
-                        if (opNum < opCount - 1) {
-                            pw.print(',');
-                        }
-                    }
-                    pw.println("]");
-                    pw.print("        ");
-                    pw.println(cb);
-                }
-            }
-            if (mStartedWatchers.size() > 0 && dumpMode < 0) {
-                needSep = true;
-                boolean printedHeader = false;
-
-                final int watchersSize = mStartedWatchers.size();
-                for (int watcherNum = 0; watcherNum < watchersSize; watcherNum++) {
-                    final SparseArray<StartedCallback> startedWatchers =
-                            mStartedWatchers.valueAt(watcherNum);
-                    if (startedWatchers.size() <= 0) {
-                        continue;
-                    }
-
-                    final StartedCallback cb = startedWatchers.valueAt(0);
-                    if (dumpOp >= 0 && startedWatchers.indexOfKey(dumpOp) < 0) {
-                        continue;
-                    }
-
-                    if (dumpPackage != null
-                            && dumpUid != UserHandle.getAppId(cb.mWatchingUid)) {
-                        continue;
-                    }
-
-                    if (!printedHeader) {
-                        pw.println("  All op started watchers:");
-                        printedHeader = true;
-                    }
-
-                    pw.print("    ");
-                    pw.print(Integer.toHexString(System.identityHashCode(
-                            mStartedWatchers.keyAt(watcherNum))));
-                    pw.println(" ->");
-
-                    pw.print("        [");
-                    final int opCount = startedWatchers.size();
-                    for (int opNum = 0; opNum < opCount; opNum++) {
-                        if (opNum > 0) {
-                            pw.print(' ');
-                        }
-
-                        pw.print(AppOpsManager.opToName(startedWatchers.keyAt(opNum)));
-                        if (opNum < opCount - 1) {
-                            pw.print(',');
-                        }
-                    }
-                    pw.println("]");
-
-                    pw.print("        ");
-                    pw.println(cb);
-                }
-            }
-            if (mNotedWatchers.size() > 0 && dumpMode < 0) {
-                needSep = true;
-                boolean printedHeader = false;
-                for (int watcherNum = 0; watcherNum < mNotedWatchers.size(); watcherNum++) {
-                    final SparseArray<NotedCallback> notedWatchers =
-                            mNotedWatchers.valueAt(watcherNum);
-                    if (notedWatchers.size() <= 0) {
-                        continue;
-                    }
-                    final NotedCallback cb = notedWatchers.valueAt(0);
-                    if (dumpOp >= 0 && notedWatchers.indexOfKey(dumpOp) < 0) {
-                        continue;
-                    }
-                    if (dumpPackage != null
-                            && dumpUid != UserHandle.getAppId(cb.mWatchingUid)) {
-                        continue;
-                    }
-                    if (!printedHeader) {
-                        pw.println("  All op noted watchers:");
-                        printedHeader = true;
-                    }
-                    pw.print("    ");
-                    pw.print(Integer.toHexString(System.identityHashCode(
-                            mNotedWatchers.keyAt(watcherNum))));
-                    pw.println(" ->");
-                    pw.print("        [");
-                    final int opCount = notedWatchers.size();
-                    for (int opNum = 0; opNum < opCount; opNum++) {
-                        if (opNum > 0) {
-                            pw.print(' ');
-                        }
-                        pw.print(AppOpsManager.opToName(notedWatchers.keyAt(opNum)));
-                        if (opNum < opCount - 1) {
-                            pw.print(',');
-                        }
-                    }
-                    pw.println("]");
-                    pw.print("        ");
-                    pw.println(cb);
-                }
-            }
-            if (mAudioRestrictionManager.hasActiveRestrictions() && dumpOp < 0
-                    && dumpPackage != null && dumpMode < 0 && !dumpWatchers) {
-                needSep = mAudioRestrictionManager.dump(pw) || needSep;
-            }
-            if (needSep) {
                 pw.println();
             }
-            for (int i=0; i<mUidStates.size(); i++) {
-                UidState uidState = mUidStates.valueAt(i);
-                // TODO(b/299330771): Dump modes for all devices.
-                final SparseIntArray opModes =
-                        mAppOpsCheckingService.getNonDefaultUidModes(
-                                uidState.uid, PERSISTENT_DEVICE_ID_DEFAULT);
-                final ArrayMap<String, Ops> pkgOps = uidState.pkgOps;
+            if (dumpRestrictions) {
+                pw.println("AppOps Restrictions");
+                mAudioRestrictionManager.dump(pw);
+                mAppOpsRestrictions.dumpRestrictions(pw, dumpOp, dumpPackage, true);
+                pw.println();
+            }
+            if (dumpOpState) {
+                pw.println("AppOps Uid Op State");
+                for (int i=0; i<mUidStates.size(); i++) {
+                    UidState uidState = mUidStates.valueAt(i);
+                    // TODO(b/299330771): Dump modes for all devices.
+                    final SparseIntArray opModes =
+                            mAppOpsCheckingService.getNonDefaultUidModes(
+                                    uidState.uid, PERSISTENT_DEVICE_ID_DEFAULT);
+                    final ArrayMap<String, Ops> pkgOps = uidState.pkgOps;
 
-                if (dumpWatchers || dumpHistory) {
-                    continue;
-                }
-                if (dumpOp >= 0 || dumpPackage != null || dumpMode >= 0) {
-                    boolean hasOp = dumpOp < 0 || (opModes != null
-                            && opModes.indexOfKey(dumpOp) >= 0);
-                    boolean hasPackage = dumpPackage == null || dumpUid == mUidStates.keyAt(i);
-                    boolean hasMode = dumpMode < 0;
-                    if (!hasMode && opModes != null) {
-                        for (int opi = 0; !hasMode && opi < opModes.size(); opi++) {
-                            if (opModes.valueAt(opi) == dumpMode) {
-                                hasMode = true;
-                            }
-                        }
-                    }
-                    if (pkgOps != null) {
-                        for (int pkgi = 0;
-                                 (!hasOp || !hasPackage || !hasMode) && pkgi < pkgOps.size();
-                                 pkgi++) {
-                            Ops ops = pkgOps.valueAt(pkgi);
-                            if (!hasOp && ops != null && ops.indexOfKey(dumpOp) >= 0) {
-                                hasOp = true;
-                            }
-                            if (!hasMode) {
-                                for (int opi = 0; !hasMode && opi < ops.size(); opi++) {
-                                    final Op op = ops.valueAt(opi);
-                                    if (mAppOpsCheckingService.getPackageMode(
-                                                    op.packageName,
-                                                    op.op,
-                                                    UserHandle.getUserId(op.uid))
-                                            == dumpMode) {
-                                        hasMode = true;
-                                    }
+                    if (dumpOp >= 0 || dumpPackage != null || dumpMode >= 0) {
+                        boolean hasOp = dumpOp < 0 || (opModes != null
+                                && opModes.indexOfKey(dumpOp) >= 0);
+                        boolean hasPackage = dumpPackage == null
+                                || dumpAppId == UserHandle.getAppId(mUidStates.keyAt(i));
+                        boolean hasMode = dumpMode < 0;
+                        if (!hasMode && opModes != null) {
+                            for (int opi = 0; !hasMode && opi < opModes.size(); opi++) {
+                                if (opModes.valueAt(opi) == dumpMode) {
+                                    hasMode = true;
                                 }
                             }
-                            if (!hasPackage && dumpPackage.equals(ops.packageName)) {
-                                hasPackage = true;
+                        }
+                        if (pkgOps != null) {
+                            for (int pkgi = 0;
+                                     (!hasOp || !hasPackage || !hasMode) && pkgi < pkgOps.size();
+                                     pkgi++) {
+                                Ops ops = pkgOps.valueAt(pkgi);
+                                if (!hasOp && ops != null && ops.indexOfKey(dumpOp) >= 0) {
+                                    hasOp = true;
+                                }
+                                if (!hasMode) {
+                                    for (int opi = 0; !hasMode && opi < ops.size(); opi++) {
+                                        final Op op = ops.valueAt(opi);
+                                        if (mAppOpsCheckingService.getPackageMode(
+                                                        op.packageName,
+                                                        op.op,
+                                                        UserHandle.getUserId(op.uid))
+                                                == dumpMode) {
+                                            hasMode = true;
+                                        }
+                                    }
+                                }
+                                if (!hasPackage && dumpPackage.equals(ops.packageName)) {
+                                    hasPackage = true;
+                                }
                             }
                         }
+                        if (!hasOp || !hasPackage || !hasMode) {
+                            continue;
+                        }
                     }
-                    if (!hasOp || !hasPackage || !hasMode) {
+
+                    pw.print("  Uid "); UserHandle.formatUid(pw, uidState.uid); pw.println(":");
+                    uidState.dump(pw, nowElapsed);
+
+                    if (opModes != null) {
+                        final int opModeCount = opModes.size();
+                        for (int j = 0; j < opModeCount; j++) {
+                            final int code = opModes.keyAt(j);
+                            final int mode = opModes.valueAt(j);
+                            if (dumpOp >= 0 && dumpOp != code) {
+                                continue;
+                            }
+                            if (dumpMode >= 0 && dumpMode != mode) {
+                                continue;
+                            }
+                            pw.print("      "); pw.print(AppOpsManager.opToName(code));
+                            pw.print(": mode="); pw.println(AppOpsManager.modeToName(mode));
+                        }
+                    }
+
+                    if (pkgOps == null) {
                         continue;
                     }
-                }
 
-                pw.print("  Uid "); UserHandle.formatUid(pw, uidState.uid); pw.println(":");
-                uidState.dump(pw, nowElapsed);
-                needSep = true;
-
-                if (opModes != null) {
-                    final int opModeCount = opModes.size();
-                    for (int j = 0; j < opModeCount; j++) {
-                        final int code = opModes.keyAt(j);
-                        final int mode = opModes.valueAt(j);
-                        if (dumpOp >= 0 && dumpOp != code) {
+                    for (int pkgi = 0; pkgi < pkgOps.size(); pkgi++) {
+                        final Ops ops = pkgOps.valueAt(pkgi);
+                        if (dumpPackage != null && !dumpPackage.equals(ops.packageName)) {
                             continue;
                         }
-                        if (dumpMode >= 0 && dumpMode != mode) {
-                            continue;
+                        boolean printedPackage = false;
+                        for (int j=0; j<ops.size(); j++) {
+                            final Op op = ops.valueAt(j);
+                            final int opCode = op.op;
+                            if (dumpOp >= 0 && dumpOp != opCode) {
+                                continue;
+                            }
+                            if (dumpMode >= 0
+                                    && dumpMode
+                                            != mAppOpsCheckingService.getPackageMode(
+                                                    op.packageName,
+                                                    op.op,
+                                                    UserHandle.getUserId(op.uid))) {
+                                continue;
+                            }
+                            if (!printedPackage) {
+                                pw.print("    Package "); pw.print(ops.packageName);
+                                pw.println(":");
+                                printedPackage = true;
+                            }
+                            pw.print("      "); pw.print(AppOpsManager.opToName(opCode));
+                            pw.print(" (");
+                            pw.print(
+                                    AppOpsManager.modeToName(
+                                            mAppOpsCheckingService.getPackageMode(
+                                                    op.packageName,
+                                                    op.op,
+                                                    UserHandle.getUserId(op.uid))));
+                            final int switchOp = AppOpsManager.opToSwitch(opCode);
+                            if (switchOp != opCode) {
+                                pw.print(" / switch ");
+                                pw.print(AppOpsManager.opToName(switchOp));
+                                final Op switchObj = ops.get(switchOp);
+                                int mode =
+                                        switchObj == null
+                                                ? AppOpsManager.opToDefaultMode(switchOp)
+                                                : mAppOpsCheckingService.getPackageMode(
+                                                        switchObj.packageName,
+                                                        switchObj.op,
+                                                        UserHandle.getUserId(switchObj.uid));
+                                pw.print("="); pw.print(AppOpsManager.modeToName(mode));
+                            }
+                            pw.println("): ");
+                            dumpStatesLocked(pw, dumpAttributionTag, dumpFilter, nowElapsed, op,
+                                    now, sdf, date, "        ");
                         }
-                        pw.print("      "); pw.print(AppOpsManager.opToName(code));
-                        pw.print(": mode="); pw.println(AppOpsManager.modeToName(mode));
-                    }
-                }
-
-                if (pkgOps == null) {
-                    continue;
-                }
-
-                for (int pkgi = 0; pkgi < pkgOps.size(); pkgi++) {
-                    final Ops ops = pkgOps.valueAt(pkgi);
-                    if (dumpPackage != null && !dumpPackage.equals(ops.packageName)) {
-                        continue;
-                    }
-                    boolean printedPackage = false;
-                    for (int j=0; j<ops.size(); j++) {
-                        final Op op = ops.valueAt(j);
-                        final int opCode = op.op;
-                        if (dumpOp >= 0 && dumpOp != opCode) {
-                            continue;
-                        }
-                        if (dumpMode >= 0
-                                && dumpMode
-                                        != mAppOpsCheckingService.getPackageMode(
-                                                op.packageName,
-                                                op.op,
-                                                UserHandle.getUserId(op.uid))) {
-                            continue;
-                        }
-                        if (!printedPackage) {
-                            pw.print("    Package "); pw.print(ops.packageName); pw.println(":");
-                            printedPackage = true;
-                        }
-                        pw.print("      "); pw.print(AppOpsManager.opToName(opCode));
-                        pw.print(" (");
-                        pw.print(
-                                AppOpsManager.modeToName(
-                                        mAppOpsCheckingService.getPackageMode(
-                                                op.packageName,
-                                                op.op,
-                                                UserHandle.getUserId(op.uid))));
-                        final int switchOp = AppOpsManager.opToSwitch(opCode);
-                        if (switchOp != opCode) {
-                            pw.print(" / switch ");
-                            pw.print(AppOpsManager.opToName(switchOp));
-                            final Op switchObj = ops.get(switchOp);
-                            int mode =
-                                    switchObj == null
-                                            ? AppOpsManager.opToDefaultMode(switchOp)
-                                            : mAppOpsCheckingService.getPackageMode(
-                                                    switchObj.packageName,
-                                                    switchObj.op,
-                                                    UserHandle.getUserId(switchObj.uid));
-                            pw.print("="); pw.print(AppOpsManager.modeToName(mode));
-                        }
-                        pw.println("): ");
-                        dumpStatesLocked(pw, dumpAttributionTag, dumpFilter, nowElapsed, op, now,
-                                sdf, date, "        ");
                     }
                 }
             }
-            if (needSep) {
-                pw.println();
-            }
-
-            boolean showUserRestrictions = !(dumpMode < 0 && !dumpWatchers && !dumpHistory);
-            mAppOpsRestrictions.dumpRestrictions(pw, dumpOp, dumpPackage, showUserRestrictions);
-
-            if (!dumpHistory && !dumpWatchers) {
-                pw.println();
-                if (mCheckOpsDelegateDispatcher.mPolicy != null
-                        && mCheckOpsDelegateDispatcher.mPolicy instanceof AppOpsPolicy) {
-                    AppOpsPolicy policy = (AppOpsPolicy) mCheckOpsDelegateDispatcher.mPolicy;
-                    policy.dumpTags(pw);
-                } else {
-                    pw.println("  AppOps policy not set.");
-                }
-            }
-
-            if (dumpAll || dumpUidStateChangeLogs) {
+            pw.println(sensorHistoryDump);
+            if (dumpUidStateChangeLogs) {
                 pw.println();
                 pw.println("Uid State Changes Event Log:");
                 getUidStateTracker().dumpEvents(pw);
-            }
-        }
-
-        if (Flags.enableAllSqliteAppopsAccesses()) {
-            mHistoricalRegistry.dump("", pw, dumpUid, dumpPackage, dumpAttributionTag,
-                    dumpOp, dumpFilter, sdf, date, includeDiscreteOps, historyLimit,
-                    dumpHistory && !dumpWatchers);
-        } else {
-            // Must not hold the appops lock
-            if (dumpHistory && !dumpWatchers) {
-                mHistoricalRegistry.dumpAggregatedData("  ", pw, dumpUid, dumpPackage,
-                        dumpAttributionTag, dumpOp, dumpFilter, sdf, date);
-            }
-            if (includeDiscreteOps) {
-                pw.println("Discrete accesses: ");
-                mHistoricalRegistry.dumpDiscreteData(pw, dumpUid, dumpPackage, dumpAttributionTag,
-                        dumpFilter, dumpOp, sdf, date, "  ", historyLimit);
             }
         }
     }

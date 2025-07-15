@@ -535,6 +535,23 @@ open class DesktopModeAppHelper(private val innerHelper: StandardAppHelper) :
             .waitForAndVerify()
     }
 
+    fun dragRight(wmHelper: WindowManagerStateHelper, device: UiDevice, distance: Int) {
+        val windowRect = wmHelper.getWindowRegion(innerHelper).bounds
+        // Set start x-coordinate as center of app header.
+        val startX = windowRect.centerX()
+        val startY = windowRect.top
+
+        val endX = startX + distance
+        val endY = startY + distance
+
+        // drag the window to to the right by [distance].
+        device.drag(startX, startY, endX, endY, /* steps= */ 100)
+        wmHelper
+            .StateSyncBuilder()
+            .withAppTransitionIdle()
+            .waitForAndVerify()
+    }
+
     private fun getStartCoordinatesForCornerResize(
         windowRect: Rect,
         corner: Corners

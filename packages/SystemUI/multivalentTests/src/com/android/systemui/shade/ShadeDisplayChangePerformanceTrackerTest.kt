@@ -39,7 +39,6 @@ import org.mockito.kotlin.any
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
-@android.platform.test.annotations.EnabledOnRavenwood
 class ShadeDisplayChangePerformanceTrackerTest : SysuiTestCase() {
     private val kosmos = testKosmos().useUnconfinedTestDispatcher()
     private val configurationRepository = kosmos.fakeConfigurationRepository

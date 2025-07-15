@@ -55,7 +55,6 @@ import org.mockito.MockitoAnnotations;
 @RunWith(AndroidJUnit4.class)
 @TestableLooper.RunWithLooper(setAsMainLooper = true)
 @SmallTest
-@android.platform.test.annotations.EnabledOnRavenwood
 public class ColorCorrectionTileTest extends SysuiTestCase {
     private static final String SETTINGS_PACKAGE_NAME = "com.android.settings";
 

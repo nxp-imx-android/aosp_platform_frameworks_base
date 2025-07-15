@@ -68,7 +68,6 @@ import org.mockito.kotlin.whenever
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
-@android.platform.test.annotations.EnabledOnRavenwood
 class InternetTileDataInteractorTest : SysuiTestCase() {
     private val testUser = UserHandle.of(1)
     private val kosmos = testKosmos()

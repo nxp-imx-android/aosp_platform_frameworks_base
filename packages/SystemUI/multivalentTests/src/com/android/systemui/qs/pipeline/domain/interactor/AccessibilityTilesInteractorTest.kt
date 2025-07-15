@@ -44,7 +44,6 @@ import org.mockito.Mockito.mock
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
-@android.platform.test.annotations.EnabledOnRavenwood
 class AccessibilityTilesInteractorTest : SysuiTestCase() {
     private val USER_0_INFO = UserInfo(0, "zero", "", UserInfo.FLAG_ADMIN or UserInfo.FLAG_FULL)
 

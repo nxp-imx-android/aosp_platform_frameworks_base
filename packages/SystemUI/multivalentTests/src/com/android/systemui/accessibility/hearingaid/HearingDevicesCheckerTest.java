@@ -47,7 +47,6 @@ import java.util.List;
 @RunWith(AndroidJUnit4.class)
 @TestableLooper.RunWithLooper(setAsMainLooper = true)
 @SmallTest
-@android.platform.test.annotations.EnabledOnRavenwood
 public class HearingDevicesCheckerTest extends SysuiTestCase {
     @Rule
     public MockitoRule mockito = MockitoJUnit.rule();

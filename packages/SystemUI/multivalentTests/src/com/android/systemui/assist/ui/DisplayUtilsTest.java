@@ -36,7 +36,6 @@ import org.mockito.MockitoAnnotations;
 
 @SmallTest
 @RunWith(AndroidJUnit4.class)
-@android.platform.test.annotations.EnabledOnRavenwood
 public class DisplayUtilsTest extends SysuiTestCase {
 
     @Mock

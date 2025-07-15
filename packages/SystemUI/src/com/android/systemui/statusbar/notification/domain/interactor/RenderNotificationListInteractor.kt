@@ -15,12 +15,14 @@
  */
 package com.android.systemui.statusbar.notification.domain.interactor
 
+import android.app.Notification
 import android.app.Notification.CallStyle.CALL_TYPE_INCOMING
 import android.app.Notification.CallStyle.CALL_TYPE_ONGOING
 import android.app.Notification.CallStyle.CALL_TYPE_SCREENING
 import android.app.Notification.CallStyle.CALL_TYPE_UNKNOWN
 import android.app.Notification.EXTRA_CALL_TYPE
 import android.app.Notification.FLAG_ONGOING_EVENT
+import android.app.Notification.MessagingStyle
 import android.app.PendingIntent
 import android.content.Context
 import android.graphics.drawable.Icon
@@ -46,6 +48,7 @@ import com.android.systemui.statusbar.notification.shared.ActiveNotificationEntr
 import com.android.systemui.statusbar.notification.shared.ActiveNotificationGroupModel
 import com.android.systemui.statusbar.notification.shared.ActiveNotificationModel
 import com.android.systemui.statusbar.notification.shared.CallType
+import com.android.systemui.statusbar.notification.shared.NotifStyle
 import javax.inject.Inject
 import kotlinx.coroutines.flow.update
 
@@ -220,7 +223,8 @@ private class ActiveNotificationsStoreBuilder(
             bucket = bucket,
             callType = sbn.toCallType(),
             promotedContent = promotedContent,
-            requestedPromotion = sbn.notification.isRequestPromotedOngoing(),
+            requestedPromotion = sbn.notification.isRequestPromotedOngoing,
+            notifStyle = notifStyle(sbn.notification),
         )
     }
 }
@@ -251,6 +255,7 @@ private fun ActiveNotificationsStore.createOrReuseNotif(
     callType: CallType,
     promotedContent: PromotedNotificationContentModels?,
     requestedPromotion: Boolean,
+    notifStyle: NotifStyle?,
 ): ActiveNotificationModel {
     return individuals[key]?.takeIf {
         it.isCurrent(
@@ -279,6 +284,7 @@ private fun ActiveNotificationsStore.createOrReuseNotif(
             callType = callType,
             promotedContent = promotedContent,
             requestedPromotion = requestedPromotion,
+            style = notifStyle,
         )
     }
         ?: ActiveNotificationModel(
@@ -307,6 +313,7 @@ private fun ActiveNotificationsStore.createOrReuseNotif(
             callType = callType,
             promotedContent = promotedContent,
             requestedPromotion = requestedPromotion,
+            style = notifStyle,
         )
 }
 
@@ -336,6 +343,7 @@ private fun ActiveNotificationModel.isCurrent(
     callType: CallType,
     promotedContent: PromotedNotificationContentModels?,
     requestedPromotion: Boolean,
+    style: NotifStyle?,
 ): Boolean {
     return when {
         key != this.key -> false
@@ -365,6 +373,7 @@ private fun ActiveNotificationModel.isCurrent(
         // recreating the active notification model constantly?
         promotedContent != this.promotedContent -> false
         requestedPromotion != this.requestedPromotion -> false
+        style != this.style -> false
         else -> true
     }
 }
@@ -434,3 +443,9 @@ private fun hasSameInstances(list1: List<*>, list2: List<*>): Boolean {
     }
     return true
 }
+
+private fun notifStyle(notif: Notification): NotifStyle? =
+    when {
+        notif.isStyle(MessagingStyle::class.java) -> NotifStyle.Messaging()
+        else -> null
+    }

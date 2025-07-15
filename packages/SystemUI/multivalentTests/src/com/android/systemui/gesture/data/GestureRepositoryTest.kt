@@ -34,7 +34,6 @@ import org.mockito.kotlin.mock
 
 @RunWith(AndroidJUnit4::class)
 @SmallTest
-@android.platform.test.annotations.EnabledOnRavenwood
 class GestureRepositoryTest : SysuiTestCase() {
     private val testDispatcher = StandardTestDispatcher()
     private val testScope = TestScope(testDispatcher)

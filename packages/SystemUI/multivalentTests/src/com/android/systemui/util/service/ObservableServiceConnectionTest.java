@@ -50,7 +50,6 @@ import java.util.Objects;
 
 @SmallTest
 @RunWith(AndroidJUnit4.class)
-@android.platform.test.annotations.EnabledOnRavenwood
 public class ObservableServiceConnectionTest extends SysuiTestCase {
     static class Foo {
         int mValue;

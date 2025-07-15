@@ -26,7 +26,6 @@ import kotlin.test.Test
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
-@android.platform.test.annotations.EnabledOnRavenwood
 class ScreenRecordModelTest : SysuiTestCase() {
     @Test
     fun countdownSeconds_millis0_is0() {

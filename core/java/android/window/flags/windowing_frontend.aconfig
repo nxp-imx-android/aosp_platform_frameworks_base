@@ -19,10 +19,10 @@ flag {
 }
 
 flag {
-  name: "release_surface_on_transition_finish"
+  name: "release_all_transition_surfaces"
   namespace: "windowing_frontend"
   description: "Reduce offscreen layers which rely on GC to release"
-  bug: "407719374"
+  bug: "429548260"
   is_fixed_read_only: true
   metadata {
     purpose: PURPOSE_BUGFIX

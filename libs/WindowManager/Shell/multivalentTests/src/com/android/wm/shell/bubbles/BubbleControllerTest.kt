@@ -30,6 +30,7 @@ import android.graphics.drawable.Icon
 import android.os.Handler
 import android.os.UserHandle
 import android.os.UserManager
+import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
 import android.platform.test.flag.junit.FlagsParameterization
 import android.platform.test.flag.junit.SetFlagsRule
@@ -37,6 +38,7 @@ import android.view.IWindowManager
 import android.view.InsetsSource
 import android.view.InsetsState
 import android.view.SurfaceControl
+import android.view.View
 import android.view.WindowInsets
 import android.view.WindowManager
 import android.view.WindowManager.TRANSIT_CHANGE
@@ -55,6 +57,7 @@ import com.android.wm.shell.Flags.FLAG_ENABLE_CREATE_ANY_BUBBLE
 import com.android.wm.shell.R
 import com.android.wm.shell.ShellTaskOrganizer
 import com.android.wm.shell.bubbles.Bubbles.BubbleExpandListener
+import com.android.wm.shell.bubbles.Bubbles.DISMISS_USER_GESTURE
 import com.android.wm.shell.bubbles.Bubbles.SysuiProxy
 import com.android.wm.shell.bubbles.storage.BubblePersistentRepository
 import com.android.wm.shell.common.DisplayController
@@ -708,6 +711,102 @@ class BubbleControllerTest(flags: FlagsParameterization) {
         assertThat(bubbleController.stackView!!.isExpanded).isFalse()
         assertThat(bubble.taskView.parent.parent).isEqualTo(bubble.expandedView)
         assertThat(bubble.taskView.alpha).isEqualTo(0)
+    }
+
+    @DisableFlags(FLAG_ENABLE_BUBBLE_BAR)
+    @Test
+    fun onAllBubblesAnimatedOut_hasBubbles() {
+        val bubble = createBubble("key")
+        getInstrumentation().runOnMainSync {
+            bubbleController.inflateAndAdd(
+                bubble,
+                /* suppressFlyout= */ true,
+                /* showInShade= */ true
+            )
+        }
+        assertThat(bubbleData.hasBubbles()).isTrue()
+
+        getInstrumentation().runOnMainSync {
+            bubbleController.onAllBubblesAnimatedOut()
+        }
+        assertThat(bubbleController.stackView!!.visibility).isEqualTo(View.VISIBLE)
+    }
+
+    @DisableFlags(FLAG_ENABLE_BUBBLE_BAR)
+    @Test
+    fun onAllBubblesAnimatedOut_noBubbles() {
+        val bubble = createBubble("key")
+        getInstrumentation().runOnMainSync {
+            bubbleController.inflateAndAdd(
+                bubble,
+                /* suppressFlyout= */ true,
+                /* showInShade= */ true
+            )
+        }
+        getInstrumentation().runOnMainSync {
+            bubbleController.dismissBubble("key", DISMISS_USER_GESTURE)
+        }
+        assertThat(bubbleData.hasBubbles()).isFalse()
+
+        getInstrumentation().runOnMainSync {
+            bubbleController.onAllBubblesAnimatedOut()
+        }
+        assertThat(bubbleController.stackView!!.visibility).isEqualTo(View.INVISIBLE)
+    }
+
+    @EnableFlags(FLAG_ENABLE_BUBBLE_BAR)
+    @Test
+    fun onAllBubblesAnimatedOutBubbleBar_hasBubbles() {
+        bubblePositioner.update(deviceConfigUnfolded)
+        bubblePositioner.isShowingInBubbleBar = true
+        getInstrumentation().runOnMainSync {
+            bubbleController.setLauncherHasBubbleBar(true)
+            bubbleController.registerBubbleStateListener(FakeBubblesStateListener())
+        }
+
+        val bubble = createBubble("key")
+        getInstrumentation().runOnMainSync {
+            bubbleController.inflateAndAdd(
+                bubble,
+                /* suppressFlyout= */ true,
+                /* showInShade= */ true
+            )
+        }
+        assertThat(bubbleData.hasBubbles()).isTrue()
+
+        getInstrumentation().runOnMainSync {
+            bubbleController.onAllBubblesAnimatedOut()
+        }
+        assertThat(bubbleController.layerView!!.visibility).isEqualTo(View.VISIBLE)
+    }
+
+    @EnableFlags(FLAG_ENABLE_BUBBLE_BAR)
+    @Test
+    fun onAllBubblesAnimatedOutBubbleBar_noBubbles() {
+        bubblePositioner.update(deviceConfigUnfolded)
+        bubblePositioner.isShowingInBubbleBar = true
+        getInstrumentation().runOnMainSync {
+            bubbleController.setLauncherHasBubbleBar(true)
+            bubbleController.registerBubbleStateListener(FakeBubblesStateListener())
+        }
+
+        val bubble = createBubble("key")
+        getInstrumentation().runOnMainSync {
+            bubbleController.inflateAndAdd(
+                bubble,
+                /* suppressFlyout= */ true,
+                /* showInShade= */ true
+            )
+        }
+        getInstrumentation().runOnMainSync {
+            bubbleController.dismissBubble("key", DISMISS_USER_GESTURE)
+        }
+        assertThat(bubbleData.hasBubbles()).isFalse()
+
+        getInstrumentation().runOnMainSync {
+            bubbleController.onAllBubblesAnimatedOut()
+        }
+        assertThat(bubbleController.layerView!!.visibility).isEqualTo(View.INVISIBLE)
     }
 
     private fun createBubble(key: String, taskId: Int = 0): Bubble {

@@ -53,7 +53,6 @@ import platform.test.runner.parameterized.Parameters
 
 @RunWith(ParameterizedAndroidJunit4::class)
 @SmallTest
-@android.platform.test.annotations.EnabledOnRavenwood
 internal class IconAndNameCustomRepositoryParameterizedTest(private val testCase: TestCase) :
     SysuiTestCase() {
     private val kosmos = testKosmos()

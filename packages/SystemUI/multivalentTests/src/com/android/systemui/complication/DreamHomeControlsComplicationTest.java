@@ -63,7 +63,6 @@ import java.util.Optional;
 
 @SmallTest
 @RunWith(AndroidJUnit4.class)
-@android.platform.test.annotations.EnabledOnRavenwood
 public class DreamHomeControlsComplicationTest extends SysuiTestCase {
     @Mock
     private DreamHomeControlsComplication mComplication;

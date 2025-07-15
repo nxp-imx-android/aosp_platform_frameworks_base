@@ -42,7 +42,6 @@ import javax.inject.Provider
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
-@android.platform.test.annotations.EnabledOnRavenwood
 class DumpHandlerTest : SysuiTestCase() {
 
     private lateinit var dumpHandler: DumpHandler

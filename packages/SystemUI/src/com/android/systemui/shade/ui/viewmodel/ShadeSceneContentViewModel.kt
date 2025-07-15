@@ -39,7 +39,6 @@ import dagger.assisted.AssistedInject
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
 /**
@@ -60,7 +59,7 @@ constructor(
     disableFlagsInteractor: DisableFlagsInteractor,
     private val footerActionsViewModelFactory: FooterActionsViewModel.Factory,
     private val footerActionsController: FooterActionsController,
-    private val unfoldTransitionInteractor: UnfoldTransitionInteractor,
+    unfoldTransitionInteractor: UnfoldTransitionInteractor,
     deviceEntryInteractor: DeviceEntryInteractor,
     private val sceneInteractor: SceneInteractor,
 ) : ExclusiveActivatable() {
@@ -91,6 +90,17 @@ constructor(
             source = disableFlagsInteractor.disableFlags.map { it.isQuickSettingsEnabled() },
         )
 
+    /**
+     * Amount of X-axis translation to apply to various elements as the unfolded foldable is folded
+     * slightly, in pixels.
+     */
+    val unfoldTranslationXForStartSide: Float by
+        hydrator.hydratedStateOf(
+            traceName = "unfoldTranslationXForStartSide",
+            initialValue = 0f,
+            source = unfoldTransitionInteractor.unfoldTranslationX(isOnStartSide = true),
+        )
+
     private val footerActionsControllerInitialized = AtomicBoolean(false)
 
     override suspend fun onActivated(): Nothing {
@@ -99,14 +109,6 @@ constructor(
 
             awaitCancellation()
         }
-    }
-
-    /**
-     * Amount of X-axis translation to apply to various elements as the unfolded foldable is folded
-     * slightly, in pixels.
-     */
-    fun unfoldTranslationX(isOnStartSide: Boolean): Flow<Float> {
-        return unfoldTransitionInteractor.unfoldTranslationX(isOnStartSide)
     }
 
     fun getFooterActionsViewModel(lifecycleOwner: LifecycleOwner): FooterActionsViewModel {

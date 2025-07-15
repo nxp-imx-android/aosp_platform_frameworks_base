@@ -32,7 +32,6 @@ import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
 @SmallTest
-@android.platform.test.annotations.EnabledOnRavenwood
 class StockTilesRepositoryTest : SysuiTestCase() {
     private val kosmos =
         testKosmos().apply { mainResources = mContext.orCreateTestableResources.resources }

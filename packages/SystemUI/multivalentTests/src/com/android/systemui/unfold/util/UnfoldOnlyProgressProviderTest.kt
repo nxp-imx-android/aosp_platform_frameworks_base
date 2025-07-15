@@ -29,7 +29,6 @@ import org.junit.runner.RunWith
 @RunWith(AndroidJUnit4::class)
 @SmallTest
 @TestableLooper.RunWithLooper
-@android.platform.test.annotations.EnabledOnRavenwood
 class UnfoldOnlyProgressProviderTest : SysuiTestCase() {
 
     private val listener = TestUnfoldProgressListener()

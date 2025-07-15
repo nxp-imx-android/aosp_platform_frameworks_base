@@ -38,7 +38,6 @@ import org.mockito.kotlin.mock
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
-@android.platform.test.annotations.EnabledOnRavenwood
 class CommunalMediaRepositoryImplTest : SysuiTestCase() {
     private val mediaDataManager = mock<MediaDataManager>()
     private val mediaData = mock<MediaData>()

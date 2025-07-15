@@ -37,7 +37,6 @@ import org.junit.runner.RunWith
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
-@android.platform.test.annotations.EnabledOnRavenwood
 class IssueRecordingMapperTest : SysuiTestCase() {
     private val kosmos = testKosmos().also { it.testCase = this }
     private val uiConfig =

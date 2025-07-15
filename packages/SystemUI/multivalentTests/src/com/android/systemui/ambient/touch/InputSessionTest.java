@@ -52,7 +52,6 @@ import org.mockito.MockitoAnnotations;
 @SmallTest
 @RunWith(AndroidJUnit4.class)
 @TestableLooper.RunWithLooper()
-@android.platform.test.annotations.EnabledOnRavenwood
 public class InputSessionTest extends SysuiTestCase {
     @Mock
     InputMonitorCompat mInputMonitor;

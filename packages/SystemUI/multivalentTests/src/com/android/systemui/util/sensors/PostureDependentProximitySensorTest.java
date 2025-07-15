@@ -48,7 +48,6 @@ import org.mockito.MockitoAnnotations;
 @SmallTest
 @RunWith(AndroidJUnit4.class)
 @TestableLooper.RunWithLooper
-@android.platform.test.annotations.EnabledOnRavenwood
 public class PostureDependentProximitySensorTest extends SysuiTestCase {
     @Mock private Resources mResources;
     @Mock private DevicePostureController mDevicePostureController;

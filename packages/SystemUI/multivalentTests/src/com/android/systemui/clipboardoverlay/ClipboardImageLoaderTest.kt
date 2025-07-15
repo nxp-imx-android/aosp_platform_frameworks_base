@@ -43,7 +43,6 @@ import org.mockito.kotlin.whenever
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
-@android.platform.test.annotations.EnabledOnRavenwood
 class ClipboardImageLoaderTest : SysuiTestCase() {
     @Mock private lateinit var mockContext: Context
 

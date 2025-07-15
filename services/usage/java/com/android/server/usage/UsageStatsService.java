@@ -2054,8 +2054,6 @@ public class UsageStatsService extends SystemService implements
         pw.println("Flags:");
         pw.println("    " + Flags.FLAG_USER_INTERACTION_TYPE_API
                 + ": " + Flags.userInteractionTypeApi());
-        pw.println("    " + Flags.FLAG_USE_PARCELED_LIST
-                + ": " + Flags.useParceledList());
         pw.println("    " + Flags.FLAG_FILTER_BASED_EVENT_QUERY_API
                 + ": " + Flags.filterBasedEventQueryApi());
 

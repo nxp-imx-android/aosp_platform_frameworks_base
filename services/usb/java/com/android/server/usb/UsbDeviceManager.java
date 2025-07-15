@@ -470,6 +470,9 @@ public class UsbDeviceManager implements ActivityTaskManagerInternal.ScreenObser
             mUEventObserver.startObserving(USB_STATE_MATCH);
         }
 
+        if (android.hardware.usb.flags.Flags.enableAoaUserspaceImplementation()) {
+            nativeStartVendorControlRequestMonitor();
+        }
         sEventLogger = new EventLogger(DUMPSYS_LOG_BUFFER, "UsbDeviceManager activity");
     }
 
@@ -2738,4 +2741,6 @@ public class UsbDeviceManager implements ActivityTaskManagerInternal.ScreenObser
     private native boolean nativeStartGadgetMonitor(String udcName);
 
     private native void nativeStopGadgetMonitor();
+
+    private native boolean nativeStartVendorControlRequestMonitor();
 }

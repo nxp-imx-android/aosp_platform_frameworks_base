@@ -189,8 +189,8 @@ class DragDropController {
                         return null;
                     }
 
-                    final WindowState callingWin = mService.windowForClientLocked(
-                            null, window, false);
+                    final WindowState callingWin = mService.windowForClient(
+                            null /* session */, window);
                     if (callingWin == null || !callingWin.canReceiveTouchInput()) {
                         Slog.w(TAG_WM, "Bad requesting window " + window);
                         return null;  // !!! TODO: throw here?
@@ -343,7 +343,8 @@ class DragDropController {
                 // lookup fails.
                 mHandler.removeMessages(MSG_DRAG_END_TIMEOUT, window.asBinder());
 
-                WindowState callingWin = mService.windowForClientLocked(null, window, false);
+                final WindowState callingWin = mService.windowForClient(
+                        null /* session */, window);
                 if (callingWin == null) {
                     Slog.w(TAG_WM, "Bad result-reporting window " + window);
                     return;  // !!! TODO: throw here?
@@ -584,8 +585,8 @@ class DragDropController {
                 return false;
             }
             if (mDragState.isAccessibilityDragDrop() && isA11yEnabled) {
-                final WindowState winState = mService.windowForClientLocked(
-                        null, window, false);
+                final WindowState winState = mService.windowForClient(
+                        null /* session */, window);
                 if (!mDragState.isWindowNotified(winState)) {
                     return false;
                 }

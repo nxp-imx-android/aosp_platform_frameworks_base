@@ -152,16 +152,6 @@ flag {
 }
 
 flag {
-    name: "change_switch_bar_into_main_preference"
-    namespace: "multiuser"
-    description: "Refactor multiuser toggle to be of type MainSwitchPreference"
-    bug: "406107021"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-  }
-}
-
-flag {
     name: "property_invalidated_cache_bypass_mismatched_uids"
     namespace: "multiuser"
     description: "Bypass the cache when the process UID does not match the binder UID."
@@ -225,16 +215,6 @@ flag {
         purpose: PURPOSE_BUGFIX
   }
   is_fixed_read_only: true
-}
-
-flag {
-    name: "require_pin_before_user_deletion"
-    namespace: "multiuser"
-    description: "Require credential authentication when a user tries to delete themselves or another user"
-    bug: "342395399"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-  }
 }
 
 # This flag guards the private space feature and all its implementations excluding the APIs. APIs are guarded by android.os.Flags.allow_private_profile.

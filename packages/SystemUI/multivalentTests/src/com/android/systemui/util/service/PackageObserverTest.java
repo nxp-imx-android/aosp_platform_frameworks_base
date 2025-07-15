@@ -39,7 +39,6 @@ import org.mockito.MockitoAnnotations;
 
 @SmallTest
 @RunWith(AndroidJUnit4.class)
-@android.platform.test.annotations.EnabledOnRavenwood
 public class PackageObserverTest extends SysuiTestCase {
     @Mock
     Context mContext;

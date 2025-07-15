@@ -38,7 +38,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 /** Tests for {@link AnnotationLinkSpan}. */
 @SmallTest
 @RunWith(AndroidJUnit4.class)
-@android.platform.test.annotations.EnabledOnRavenwood
 public class AnnotationLinkSpanTest extends SysuiTestCase {
 
     private AnnotationLinkSpan.LinkInfo mLinkInfo;

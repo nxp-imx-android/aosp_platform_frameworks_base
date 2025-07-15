@@ -331,16 +331,17 @@ private fun ContentScope.SingleShade(
                         .padding(
                             horizontal =
                                 shadeHorizontalPadding +
-                                        dimensionResource(id = R.dimen.qs_horizontal_margin)
+                                    dimensionResource(id = R.dimen.qs_horizontal_margin)
                         )
                 ) {
-                    val qqsViewModel = rememberViewModel(traceName = "shade_scene_qqs") {
-                        viewModel.quickQuickSettingsViewModel.create()
-                    }
+                    val qqsViewModel =
+                        rememberViewModel(traceName = "shade_scene_qqs") {
+                            viewModel.quickQuickSettingsViewModel.create()
+                        }
                     QuickQuickSettings(
                         qqsViewModel,
                         listening = { true },
-                        modifier = Modifier.sysuiResTag("quick_qs_panel")
+                        modifier = Modifier.sysuiResTag("quick_qs_panel"),
                     )
                 }
 
@@ -428,8 +429,6 @@ private fun ContentScope.SplitShade(
             key = QuickSettings.SharedValues.TilesSquishiness,
             canOverflow = false,
         )
-    val unfoldTranslationXForStartSide by
-        viewModel.unfoldTranslationX(isOnStartSide = true).collectAsStateWithLifecycle(0f)
 
     val notificationStackPadding = dimensionResource(id = R.dimen.notification_side_paddings)
     val navBarBottomHeight = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
@@ -494,6 +493,8 @@ private fun ContentScope.SplitShade(
         )
 
         Column(modifier = Modifier.fillMaxSize()) {
+            val unfoldTranslationXForStartSide = viewModel.unfoldTranslationXForStartSide
+
             CollapsedShadeHeader(
                 viewModel = headerViewModel,
                 isSplitShade = true,

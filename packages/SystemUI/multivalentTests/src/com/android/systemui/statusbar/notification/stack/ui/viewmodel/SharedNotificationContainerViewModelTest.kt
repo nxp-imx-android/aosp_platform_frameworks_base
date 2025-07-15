@@ -21,6 +21,7 @@ import android.platform.test.annotations.EnableFlags
 import android.platform.test.flag.junit.FlagsParameterization
 import androidx.test.filters.SmallTest
 import com.android.systemui.Flags.FLAG_GLANCEABLE_HUB_V2
+import com.android.systemui.Flags.FLAG_LOCKSCREEN_SHADE_TO_DREAM_TRANSITION_FIX
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.bouncer.data.repository.keyguardBouncerRepository
 import com.android.systemui.common.shared.model.NotificationContainerBounds
@@ -1336,6 +1337,42 @@ class SharedNotificationContainerViewModelTest(flags: FlagsParameterization) : S
                 )
             )
             assertThat(alpha).isEqualTo(1f)
+        }
+
+    @Test
+    @EnableFlags(FLAG_LOCKSCREEN_SHADE_TO_DREAM_TRANSITION_FIX)
+    @BrokenWithSceneContainer(430694649)
+    fun alpha_isZero_duringLockscreenToDreamTransition() =
+        kosmos.runTest {
+            val viewState = ViewStateAccessor()
+            val alpha by
+                collectLastValue(underTest.keyguardAlpha(viewState, testScope.backgroundScope))
+
+            showLockscreenWithQSExpanded()
+
+            // Start lockscreen to dream transition, alpha is 0 once the transition starts.
+            keyguardTransitionRepository.sendTransitionStep(
+                from = LOCKSCREEN,
+                to = DREAMING,
+                value = 0f,
+                transitionState = TransitionState.STARTED,
+            )
+            assertThat(alpha).isEqualTo(0f)
+
+            keyguardTransitionRepository.sendTransitionStep(
+                from = LOCKSCREEN,
+                to = DREAMING,
+                value = 0.5f,
+                transitionState = TransitionState.RUNNING,
+            )
+            assertThat(alpha).isEqualTo(0f)
+
+            // Shade collapse animation finishing up. This can happen in the real world as the shade
+            // collapse and dream start are not synced in any way. Keyguard alpha should not change
+            // even when this is happening as the transition is ongoing.
+            shadeTestUtil.setLockscreenShadeExpansion(0.1f)
+            shadeTestUtil.setQsExpansion(0.1f)
+            assertThat(alpha).isEqualTo(0f)
         }
 
     @Test

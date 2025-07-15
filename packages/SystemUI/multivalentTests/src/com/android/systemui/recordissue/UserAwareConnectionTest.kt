@@ -37,7 +37,6 @@ import org.mockito.kotlin.whenever
 @SmallTest
 @RunWith(AndroidJUnit4::class)
 @TestableLooper.RunWithLooper(setAsMainLooper = true)
-@android.platform.test.annotations.EnabledOnRavenwood
 class UserAwareConnectionTest : SysuiTestCase() {
 
     @Mock private lateinit var userContextProvider: UserContextProvider

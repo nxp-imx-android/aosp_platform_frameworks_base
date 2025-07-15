@@ -108,6 +108,8 @@ data class ActiveNotificationModel(
     val promotedContent: PromotedNotificationContentModels?,
     /** True if this notification set the "requested promotion?" extra and false otherwise. */
     val requestedPromotion: Boolean,
+    /** The visual style of the notification, containing additional data relevant to that style. */
+    val style: NotifStyle?,
 ) : ActiveNotificationEntryModel() {
     init {
         if (!PromotedNotificationContentModel.featureFlagEnabled()) {
@@ -142,4 +144,12 @@ enum class CallType {
     Screening,
     /** See [android.app.Notification.CallStyle.CALL_TYPE_UNKNOWN]. */
     Unknown,
+}
+
+/** Style-specific data for [ActiveNotificationModel] */
+sealed class NotifStyle {
+    /**
+     * Data pertaining to [messaging style][android.app.Notification.MessagingStyle] notifications.
+     */
+    class Messaging : NotifStyle()
 }

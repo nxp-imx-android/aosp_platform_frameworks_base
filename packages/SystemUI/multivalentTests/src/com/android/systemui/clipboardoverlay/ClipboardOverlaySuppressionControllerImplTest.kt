@@ -28,7 +28,6 @@ import org.junit.runner.RunWith
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
-@android.platform.test.annotations.EnabledOnRavenwood
 class ClipboardOverlaySuppressionControllerImplTest : SysuiTestCase() {
     private lateinit var mSampleClipData: ClipData
     private lateinit var mSuppressableClipData: ClipData

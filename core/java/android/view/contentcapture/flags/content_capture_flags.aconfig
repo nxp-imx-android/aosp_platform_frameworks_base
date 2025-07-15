@@ -44,3 +44,11 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "enable_export_assist_virtual_node_to_ccapi"
+    namespace: "ailabs"
+    description: "Feature flag to enable exporting assist api virtual node to content capture"
+    bug: "430421182"
+}
+

@@ -50,7 +50,6 @@ import org.junit.runner.RunWith
  */
 @MediumTest
 @RunWith(AndroidJUnit4::class)
-@android.platform.test.annotations.EnabledOnRavenwood
 class WorkProfileAutoAddedAfterRestoreTest : SysuiTestCase() {
 
     private val kosmos by lazy {

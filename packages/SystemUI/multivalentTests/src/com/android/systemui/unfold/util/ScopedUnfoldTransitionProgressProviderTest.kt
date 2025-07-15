@@ -41,7 +41,6 @@ import org.junit.runner.RunWith
 @RunWith(AndroidJUnit4::class)
 @SmallTest
 @RunWithLooper
-@android.platform.test.annotations.EnabledOnRavenwood
 class ScopedUnfoldTransitionProgressProviderTest : SysuiTestCase() {
 
     private val rootProvider = FakeUnfoldTransitionProvider()

@@ -37,6 +37,7 @@ import android.content.Context;
 import android.content.ContextWrapper;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
+import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Color;
@@ -86,6 +87,7 @@ public class StatusBarIconViewTest extends SysuiTestCase {
     public void setUp() throws Exception {
         // Set up context such that asking for "mockPackage" resources returns mMockResources.
         mMockResources = mock(Resources.class);
+        doReturn(new Configuration()).when(mMockResources).getConfiguration();
         mPackageManagerSpy = spy(getContext().getPackageManager());
         doReturn(mMockResources).when(mPackageManagerSpy)
                 .getResourcesForApplication(eq("mockPackage"));

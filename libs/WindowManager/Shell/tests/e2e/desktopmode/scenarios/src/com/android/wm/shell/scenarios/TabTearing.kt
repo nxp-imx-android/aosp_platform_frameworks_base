@@ -42,8 +42,9 @@ abstract class TabTearing(val rotation: Rotation = Rotation.ROTATION_0) :
 
     @Before
     fun setup() {
-        browserDesktopAppHelper.enterDesktopMode(wmHelper, device)
+        browserAppHelper.launchViaIntent(wmHelper)
         browserAppHelper.closePopupsIfNeeded(device)
+        browserDesktopAppHelper.enterDesktopMode(wmHelper, device)
     }
 
     @Test

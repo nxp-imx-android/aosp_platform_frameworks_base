@@ -16,7 +16,6 @@
 
 package com.android.server.hdmi;
 
-import static android.media.tv.flags.Flags.hdmiControlEnhancedBehavior;
 import static android.hardware.hdmi.HdmiControlManager.DEVICE_EVENT_ADD_DEVICE;
 import static android.hardware.hdmi.HdmiControlManager.DEVICE_EVENT_REMOVE_DEVICE;
 import static android.hardware.hdmi.HdmiControlManager.EARC_FEATURE_DISABLED;
@@ -27,6 +26,7 @@ import static android.hardware.hdmi.HdmiControlManager.POWER_CONTROL_MODE_NONE;
 import static android.hardware.hdmi.HdmiControlManager.SOUNDBAR_MODE_DISABLED;
 import static android.hardware.hdmi.HdmiControlManager.SOUNDBAR_MODE_ENABLED;
 import static android.hardware.hdmi.HdmiControlManager.TV_SEND_STANDBY_ON_SLEEP_ENABLED;
+import static android.media.tv.flags.Flags.hdmiControlEnhancedBehavior;
 
 import static com.android.server.hdmi.Constants.ADDR_UNREGISTERED;
 import static com.android.server.hdmi.Constants.DISABLED;
@@ -98,6 +98,7 @@ import android.os.SystemProperties;
 import android.os.UserHandle;
 import android.provider.DeviceConfig;
 import android.provider.Settings.Global;
+import android.service.dreams.DreamManagerInternal;
 import android.stats.hdmi.HdmiStatsEnums;
 import android.sysprop.HdmiProperties;
 import android.text.TextUtils;
@@ -111,6 +112,7 @@ import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.util.DumpUtils;
 import com.android.internal.util.IndentingPrintWriter;
+import com.android.server.LocalServices;
 import com.android.server.SystemService;
 import com.android.server.hdmi.HdmiAnnotations.ServiceThreadOnly;
 import com.android.server.hdmi.HdmiCecController.AllocateAddressCallback;
@@ -584,6 +586,8 @@ public class HdmiControlService extends SystemService {
     private CecMessageBuffer mCecMessageBuffer;
 
     private final SelectRequestBuffer mSelectRequestBuffer = new SelectRequestBuffer();
+
+    private DreamManagerInternal mDreamManagerInternal;
 
     /**
      * Constructor for testing.
@@ -5263,6 +5267,42 @@ public class HdmiControlService extends SystemService {
 
     protected boolean isHdmiControlEnhancedBehaviorFlagEnabled() {
         return hdmiControlEnhancedBehavior();
+    }
+
+    @VisibleForTesting
+    protected boolean shouldDreamOnStandbyMessage() {
+        if (!isTvDevice()) {
+            return false;
+        }
+        return mHdmiCecConfig.getIntValue(
+                HdmiControlManager.CEC_SETTING_NAME_TV_BEHAVIOR_ON_STANDBY_MESSAGE)
+                == HdmiControlManager.TV_BEHAVIOR_ON_STANDBY_MESSAGE_GO_TO_DREAM;
+    }
+
+    @VisibleForTesting
+    protected boolean shouldTvSendStandbyOnSleep() {
+        if (!isTvDevice()) {
+            return false;
+        }
+        return mHdmiCecConfig.getIntValue(
+                HdmiControlManager.CEC_SETTING_NAME_TV_SEND_STANDBY_ON_SLEEP)
+                == HdmiControlManager.TV_SEND_STANDBY_ON_SLEEP_ENABLED;
+    }
+
+    protected void startDreaming() {
+        if (mDreamManagerInternal == null) {
+            // If mDreamManagerInternal is null, attempt to re-fetch it.
+            mDreamManagerInternal = LocalServices.getService(DreamManagerInternal.class);
+        }
+        if (mDreamManagerInternal == null) {
+            Slog.w(TAG, "DreamManagerInternal is null, can't start dreaming");
+            return;
+        }
+        if (!mDreamManagerInternal.canStartDreaming(true)) {
+            Slog.w(TAG, "Can't start dreaming.");
+            return;
+        }
+        mDreamManagerInternal.requestDream();
     }
 
     /**

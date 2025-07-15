@@ -3040,6 +3040,24 @@ public final class ViewRootImpl implements ViewParent,
     void scheduleTraversals() {
         if (!mTraversalScheduled) {
             mTraversalScheduled = true;
+            // The following behavior is load-bearing for public API correctness.
+            // For example, the following code is defined to be correct and the
+            // MessageQueue sync barrier mechanism and its usage here is
+            // responsible for ensuring it:
+            //
+            //   textView.setText("Hello, world!");
+            //   textView.getHandler().post(new Runnable() {
+            //     public void run() {
+            //       // This code will run after traversals have happened
+            //       // and the TextView has been measured with its new text.
+            //       reportNewTextWidth(textView.getWidth());
+            //     }
+            //   });
+            //
+            // Any message posted after scheduling traversals (e.g. via
+            // View#requestLayout or View#invalidate) is guaranteed to run after
+            // the scheduled traversals have occurred unless the message is
+            // specifically "asynchronous" - see Message#setAsynchronous
             mTraversalBarrier = mQueue.postSyncBarrier();
             mChoreographer.postCallback(
                     Choreographer.CALLBACK_TRAVERSAL, mTraversalRunnable, null);

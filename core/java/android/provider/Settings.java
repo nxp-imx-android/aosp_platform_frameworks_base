@@ -13156,7 +13156,10 @@ public final class Settings {
          *
          * @hide
          */
+        @TestApi
         @Readable
+        @FlaggedApi(android.view.accessibility.Flags.FLAG_FORCE_INVERT_COLOR)
+        @SuppressLint("NoSettingsProvider")
         public static final String ACCESSIBILITY_FORCE_INVERT_COLOR_ENABLED =
                 "accessibility_force_invert_color_enabled";
 

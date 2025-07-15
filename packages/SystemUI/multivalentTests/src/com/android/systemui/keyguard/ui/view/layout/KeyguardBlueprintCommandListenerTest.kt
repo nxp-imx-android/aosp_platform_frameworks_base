@@ -38,7 +38,6 @@ import org.mockito.MockitoAnnotations
 
 @RunWith(AndroidJUnit4::class)
 @SmallTest
-@android.platform.test.annotations.EnabledOnRavenwood
 class KeyguardBlueprintCommandListenerTest : SysuiTestCase() {
     private lateinit var keyguardBlueprintCommandListener: KeyguardBlueprintCommandListener
     @Mock private lateinit var commandRegistry: CommandRegistry

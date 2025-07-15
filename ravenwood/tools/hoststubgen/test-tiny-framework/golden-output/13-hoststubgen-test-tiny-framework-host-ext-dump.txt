@@ -13,13 +13,17 @@ Constant pool:
     descriptor: ()Ljava/lang/String;
     flags: (0x0401) ACC_PUBLIC, ACC_ABSTRACT
     RuntimeVisibleAnnotations:
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="is-annotation [inner-reason: is-annotation]"
+        )
 }
 SourceFile: "HostSideTestClassLoadHook.java"
 RuntimeVisibleAnnotations:
-  x: #x()
-    com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+  x: #x(#x=s#x)
+    com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+      reason="is-annotation"
+    )
   x: #x(#x=[e#x.#x])
     java.lang.annotation.Target(
       value=[Ljava/lang/annotation/ElementType;.TYPE]
@@ -42,8 +46,10 @@ Constant pool:
 }
 SourceFile: "HostSideTestKeep.java"
 RuntimeVisibleAnnotations:
-  x: #x()
-    com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+  x: #x(#x=s#x)
+    com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+      reason="is-annotation"
+    )
   x: #x(#x=[e#x.#x,e#x.#x,e#x.#x,e#x.#x])
     java.lang.annotation.Target(
       value=[Ljava/lang/annotation/ElementType;.TYPE,Ljava/lang/annotation/ElementType;.FIELD,Ljava/lang/annotation/ElementType;.METHOD,Ljava/lang/annotation/ElementType;.CONSTRUCTOR]
@@ -66,8 +72,10 @@ Constant pool:
 }
 SourceFile: "HostSideTestPartiallyAllowlisted.java"
 RuntimeVisibleAnnotations:
-  x: #x()
-    com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+  x: #x(#x=s#x)
+    com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+      reason="is-annotation"
+    )
   x: #x(#x=[e#x.#x])
     java.lang.annotation.Target(
       value=[Ljava/lang/annotation/ElementType;.TYPE]
@@ -90,8 +98,10 @@ Constant pool:
 }
 SourceFile: "HostSideTestRedirect.java"
 RuntimeVisibleAnnotations:
-  x: #x()
-    com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+  x: #x(#x=s#x)
+    com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+      reason="is-annotation"
+    )
   x: #x(#x=[e#x.#x])
     java.lang.annotation.Target(
       value=[Ljava/lang/annotation/ElementType;.METHOD]
@@ -115,13 +125,17 @@ Constant pool:
     descriptor: ()Ljava/lang/String;
     flags: (0x0401) ACC_PUBLIC, ACC_ABSTRACT
     RuntimeVisibleAnnotations:
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="is-annotation [inner-reason: is-annotation]"
+        )
 }
 SourceFile: "HostSideTestRedirectionClass.java"
 RuntimeVisibleAnnotations:
-  x: #x()
-    com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+  x: #x(#x=s#x)
+    com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+      reason="is-annotation"
+    )
   x: #x(#x=[e#x.#x])
     java.lang.annotation.Target(
       value=[Ljava/lang/annotation/ElementType;.TYPE]
@@ -144,8 +158,10 @@ Constant pool:
 }
 SourceFile: "HostSideTestRemove.java"
 RuntimeVisibleAnnotations:
-  x: #x()
-    com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+  x: #x(#x=s#x)
+    com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+      reason="is-annotation"
+    )
   x: #x(#x=[e#x.#x,e#x.#x,e#x.#x,e#x.#x])
     java.lang.annotation.Target(
       value=[Ljava/lang/annotation/ElementType;.TYPE,Ljava/lang/annotation/ElementType;.FIELD,Ljava/lang/annotation/ElementType;.METHOD,Ljava/lang/annotation/ElementType;.CONSTRUCTOR]
@@ -168,8 +184,10 @@ Constant pool:
 }
 SourceFile: "HostSideTestStaticInitializerKeep.java"
 RuntimeVisibleAnnotations:
-  x: #x()
-    com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+  x: #x(#x=s#x)
+    com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+      reason="is-annotation"
+    )
   x: #x(#x=[e#x.#x,e#x.#x,e#x.#x,e#x.#x])
     java.lang.annotation.Target(
       value=[Ljava/lang/annotation/ElementType;.TYPE,Ljava/lang/annotation/ElementType;.FIELD,Ljava/lang/annotation/ElementType;.METHOD,Ljava/lang/annotation/ElementType;.CONSTRUCTOR]
@@ -193,13 +211,17 @@ Constant pool:
     descriptor: ()Ljava/lang/String;
     flags: (0x0401) ACC_PUBLIC, ACC_ABSTRACT
     RuntimeVisibleAnnotations:
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="is-annotation [inner-reason: is-annotation]"
+        )
 }
 SourceFile: "HostSideTestSubstitute.java"
 RuntimeVisibleAnnotations:
-  x: #x()
-    com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+  x: #x(#x=s#x)
+    com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+      reason="is-annotation"
+    )
   x: #x(#x=[e#x.#x])
     java.lang.annotation.Target(
       value=[Ljava/lang/annotation/ElementType;.METHOD]
@@ -222,8 +244,10 @@ Constant pool:
 }
 SourceFile: "HostSideTestThrow.java"
 RuntimeVisibleAnnotations:
-  x: #x()
-    com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+  x: #x(#x=s#x)
+    com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+      reason="is-annotation"
+    )
   x: #x(#x=[e#x.#x,e#x.#x])
     java.lang.annotation.Target(
       value=[Ljava/lang/annotation/ElementType;.METHOD,Ljava/lang/annotation/ElementType;.CONSTRUCTOR]
@@ -246,8 +270,10 @@ Constant pool:
 }
 SourceFile: "HostSideTestThrowButSupported.java"
 RuntimeVisibleAnnotations:
-  x: #x()
-    com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+  x: #x(#x=s#x)
+    com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+      reason="is-annotation"
+    )
   x: #x(#x=[e#x.#x,e#x.#x])
     java.lang.annotation.Target(
       value=[Ljava/lang/annotation/ElementType;.METHOD,Ljava/lang/annotation/ElementType;.CONSTRUCTOR]
@@ -270,8 +296,10 @@ Constant pool:
 }
 SourceFile: "HostSideTestWholeClassKeep.java"
 RuntimeVisibleAnnotations:
-  x: #x()
-    com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+  x: #x(#x=s#x)
+    com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+      reason="is-annotation"
+    )
   x: #x(#x=[e#x.#x])
     java.lang.annotation.Target(
       value=[Ljava/lang/annotation/ElementType;.TYPE]
@@ -297,7 +325,7 @@ Constant pool:
     Code:
       stack=2, locals=0, args_size=0
          x: ldc           #x                  // class com/android/hoststubgen/test/tinyframework/IPretendingAidl$Stub$Proxy
-         x: ldc           #x                  // String com.android.hoststubgen.hosthelper.HostTestUtils.logClassLoaded
+         x: ldc           #x                 // String com.android.hoststubgen.hosthelper.HostTestUtils.logClassLoaded
          x: invokestatic  #x                 // Method com/android/hoststubgen/hosthelper/HostTestUtils.onClassLoaded:(Ljava/lang/Class;Ljava/lang/String;)V
          x: return
 
@@ -319,8 +347,10 @@ Constant pool:
         Start  Length  Slot  Name   Signature
            11       5     0  this   Lcom/android/hoststubgen/test/tinyframework/IPretendingAidl$Stub$Proxy;
     RuntimeVisibleAnnotations:
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="class-wide in com/android/hoststubgen/test/tinyframework/IPretendingAidl$Stub$Proxy [inner-reason: class-wide in com/android/hoststubgen/test/tinyframework/IPretendingAidl$Stub [inner-reason: class-wide in com/android/hoststubgen/test/tinyframework/IPretendingAidl [inner-reason: file-override (special-class AIDL)]]]"
+        )
 
   public static int addTwo(int);
     descriptor: (I)I
@@ -341,16 +371,20 @@ Constant pool:
         Start  Length  Slot  Name   Signature
            11       4     0     a   I
     RuntimeVisibleAnnotations:
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="class-wide in com/android/hoststubgen/test/tinyframework/IPretendingAidl$Stub$Proxy [inner-reason: class-wide in com/android/hoststubgen/test/tinyframework/IPretendingAidl$Stub [inner-reason: class-wide in com/android/hoststubgen/test/tinyframework/IPretendingAidl [inner-reason: file-override (special-class AIDL)]]]"
+        )
 }
 InnerClasses:
   public static #x= #x of #x;          // Stub=class com/android/hoststubgen/test/tinyframework/IPretendingAidl$Stub of class com/android/hoststubgen/test/tinyframework/IPretendingAidl
   public static #x= #x of #x;           // Proxy=class com/android/hoststubgen/test/tinyframework/IPretendingAidl$Stub$Proxy of class com/android/hoststubgen/test/tinyframework/IPretendingAidl$Stub
 SourceFile: "IPretendingAidl.java"
 RuntimeVisibleAnnotations:
-  x: #x()
-    com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+  x: #x(#x=s#x)
+    com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+      reason="class-wide in com/android/hoststubgen/test/tinyframework/IPretendingAidl$Stub [inner-reason: class-wide in com/android/hoststubgen/test/tinyframework/IPretendingAidl [inner-reason: file-override (special-class AIDL)]]"
+    )
 NestHost: class com/android/hoststubgen/test/tinyframework/IPretendingAidl
 ## Class: com/android/hoststubgen/test/tinyframework/IPretendingAidl$Stub.class
   Compiled from "IPretendingAidl.java"
@@ -369,7 +403,7 @@ Constant pool:
     Code:
       stack=2, locals=0, args_size=0
          x: ldc           #x                  // class com/android/hoststubgen/test/tinyframework/IPretendingAidl$Stub
-         x: ldc           #x                  // String com.android.hoststubgen.hosthelper.HostTestUtils.logClassLoaded
+         x: ldc           #x                 // String com.android.hoststubgen.hosthelper.HostTestUtils.logClassLoaded
          x: invokestatic  #x                 // Method com/android/hoststubgen/hosthelper/HostTestUtils.onClassLoaded:(Ljava/lang/Class;Ljava/lang/String;)V
          x: return
 
@@ -391,8 +425,10 @@ Constant pool:
         Start  Length  Slot  Name   Signature
            11       5     0  this   Lcom/android/hoststubgen/test/tinyframework/IPretendingAidl$Stub;
     RuntimeVisibleAnnotations:
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="class-wide in com/android/hoststubgen/test/tinyframework/IPretendingAidl$Stub [inner-reason: class-wide in com/android/hoststubgen/test/tinyframework/IPretendingAidl [inner-reason: file-override (special-class AIDL)]]"
+        )
 
   public static int addOne(int);
     descriptor: (I)I
@@ -413,16 +449,20 @@ Constant pool:
         Start  Length  Slot  Name   Signature
            11       4     0     a   I
     RuntimeVisibleAnnotations:
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="class-wide in com/android/hoststubgen/test/tinyframework/IPretendingAidl$Stub [inner-reason: class-wide in com/android/hoststubgen/test/tinyframework/IPretendingAidl [inner-reason: file-override (special-class AIDL)]]"
+        )
 }
 InnerClasses:
   public static #x= #x of #x;           // Stub=class com/android/hoststubgen/test/tinyframework/IPretendingAidl$Stub of class com/android/hoststubgen/test/tinyframework/IPretendingAidl
   public static #x= #x of #x;           // Proxy=class com/android/hoststubgen/test/tinyframework/IPretendingAidl$Stub$Proxy of class com/android/hoststubgen/test/tinyframework/IPretendingAidl$Stub
 SourceFile: "IPretendingAidl.java"
 RuntimeVisibleAnnotations:
-  x: #x()
-    com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+  x: #x(#x=s#x)
+    com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+      reason="class-wide in com/android/hoststubgen/test/tinyframework/IPretendingAidl [inner-reason: file-override (special-class AIDL)]"
+    )
 NestHost: class com/android/hoststubgen/test/tinyframework/IPretendingAidl
 ## Class: com/android/hoststubgen/test/tinyframework/IPretendingAidl.class
   Compiled from "IPretendingAidl.java"
@@ -441,7 +481,7 @@ Constant pool:
     Code:
       stack=2, locals=0, args_size=0
          x: ldc           #x                  // class com/android/hoststubgen/test/tinyframework/IPretendingAidl
-         x: ldc           #x                  // String com.android.hoststubgen.hosthelper.HostTestUtils.logClassLoaded
+         x: ldc           #x                 // String com.android.hoststubgen.hosthelper.HostTestUtils.logClassLoaded
          x: invokestatic  #x                 // Method com/android/hoststubgen/hosthelper/HostTestUtils.onClassLoaded:(Ljava/lang/Class;Ljava/lang/String;)V
          x: return
 }
@@ -450,8 +490,10 @@ InnerClasses:
   public static #x= #x of #x;          // Proxy=class com/android/hoststubgen/test/tinyframework/IPretendingAidl$Stub$Proxy of class com/android/hoststubgen/test/tinyframework/IPretendingAidl$Stub
 SourceFile: "IPretendingAidl.java"
 RuntimeVisibleAnnotations:
-  x: #x()
-    com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+  x: #x(#x=s#x)
+    com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+      reason="file-override (special-class AIDL)"
+    )
 NestMembers:
   com/android/hoststubgen/test/tinyframework/IPretendingAidl$Stub
   com/android/hoststubgen/test/tinyframework/IPretendingAidl$Stub$Proxy
@@ -470,8 +512,10 @@ Constant pool:
     descriptor: [I
     flags: (0x0009) ACC_PUBLIC, ACC_STATIC
     RuntimeVisibleAnnotations:
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="class-wide in com/android/hoststubgen/test/tinyframework/R$Nested [inner-reason: file-override (special-class R file)]"
+        )
 
   public com.android.hoststubgen.test.tinyframework.R$Nested();
     descriptor: ()V
@@ -491,8 +535,10 @@ Constant pool:
         Start  Length  Slot  Name   Signature
            11       5     0  this   Lcom/android/hoststubgen/test/tinyframework/R$Nested;
     RuntimeVisibleAnnotations:
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="class-wide in com/android/hoststubgen/test/tinyframework/R$Nested [inner-reason: file-override (special-class R file)]"
+        )
 
   static {};
     descriptor: ()V
@@ -517,15 +563,19 @@ Constant pool:
         x: return
       LineNumberTable:
     RuntimeVisibleAnnotations:
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="class-wide in com/android/hoststubgen/test/tinyframework/R$Nested [inner-reason: file-override (special-class R file)]"
+        )
 }
 InnerClasses:
-  public static #x= #x of #x;             // Nested=class com/android/hoststubgen/test/tinyframework/R$Nested of class com/android/hoststubgen/test/tinyframework/R
+  public static #x= #x of #x;           // Nested=class com/android/hoststubgen/test/tinyframework/R$Nested of class com/android/hoststubgen/test/tinyframework/R
 SourceFile: "R.java"
 RuntimeVisibleAnnotations:
-  x: #x()
-    com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+  x: #x(#x=s#x)
+    com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+      reason="file-override (special-class R file)"
+    )
 NestHost: class com/android/hoststubgen/test/tinyframework/R
 ## Class: com/android/hoststubgen/test/tinyframework/R.class
   Compiled from "R.java"
@@ -544,7 +594,7 @@ Constant pool:
     Code:
       stack=2, locals=0, args_size=0
          x: ldc           #x                  // class com/android/hoststubgen/test/tinyframework/R
-         x: ldc           #x                  // String com.android.hoststubgen.hosthelper.HostTestUtils.logClassLoaded
+         x: ldc           #x                 // String com.android.hoststubgen.hosthelper.HostTestUtils.logClassLoaded
          x: invokestatic  #x                 // Method com/android/hoststubgen/hosthelper/HostTestUtils.onClassLoaded:(Ljava/lang/Class;Ljava/lang/String;)V
          x: return
 
@@ -566,15 +616,19 @@ Constant pool:
         Start  Length  Slot  Name   Signature
            11       5     0  this   Lcom/android/hoststubgen/test/tinyframework/R;
     RuntimeVisibleAnnotations:
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="class-wide in com/android/hoststubgen/test/tinyframework/R [inner-reason: file-override (special-class R file)]"
+        )
 }
 InnerClasses:
   public static #x= #x of #x;           // Nested=class com/android/hoststubgen/test/tinyframework/R$Nested of class com/android/hoststubgen/test/tinyframework/R
 SourceFile: "R.java"
 RuntimeVisibleAnnotations:
-  x: #x()
-    com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+  x: #x(#x=s#x)
+    com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+      reason="file-override (special-class R file)"
+    )
 NestMembers:
   com/android/hoststubgen/test/tinyframework/R$Nested
 ## Class: com/android/hoststubgen/test/tinyframework/TinyFrameworkAnnotations.class
@@ -592,8 +646,10 @@ Constant pool:
     descriptor: I
     flags: (0x0001) ACC_PUBLIC
     RuntimeVisibleAnnotations:
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="annotation"
+        )
       x: #x()
         android.hosttest.annotation.HostSideTestKeep
 
@@ -603,7 +659,7 @@ Constant pool:
     Code:
       stack=2, locals=0, args_size=0
          x: ldc           #x                  // class com/android/hoststubgen/test/tinyframework/TinyFrameworkAnnotations
-         x: ldc           #x                  // String com.android.hoststubgen.hosthelper.HostTestUtils.logClassLoaded
+         x: ldc           #x                 // String com.android.hoststubgen.hosthelper.HostTestUtils.logClassLoaded
          x: invokestatic  #x                 // Method com/android/hoststubgen/hosthelper/HostTestUtils.onClassLoaded:(Ljava/lang/Class;Ljava/lang/String;)V
          x: ldc           #x                  // class com/android/hoststubgen/test/tinyframework/TinyFrameworkAnnotations
          x: ldc           #x                 // String com.android.hoststubgen.test.tinyframework.TinyFrameworkClassLoadHook.onClassLoaded
@@ -631,8 +687,10 @@ Constant pool:
         Start  Length  Slot  Name   Signature
            11      10     0  this   Lcom/android/hoststubgen/test/tinyframework/TinyFrameworkAnnotations;
     RuntimeVisibleAnnotations:
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="annotation"
+        )
       x: #x()
         android.hosttest.annotation.HostSideTestKeep
 
@@ -656,8 +714,10 @@ Constant pool:
            11       4     0  this   Lcom/android/hoststubgen/test/tinyframework/TinyFrameworkAnnotations;
            11       4     1 value   I
     RuntimeVisibleAnnotations:
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="annotation"
+        )
       x: #x()
         android.hosttest.annotation.HostSideTestKeep
 
@@ -681,10 +741,14 @@ Constant pool:
            11       4     0  this   Lcom/android/hoststubgen/test/tinyframework/TinyFrameworkAnnotations;
            11       4     1 value   I
     RuntimeVisibleAnnotations:
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsSubstitute
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsSubstitute(
+          reason="(substitution reason not propagated)"
+        )
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="annotation"
+        )
 
   public static int nativeAddThree(int);
     descriptor: (I)I
@@ -705,10 +769,14 @@ Constant pool:
         Start  Length  Slot  Name   Signature
            11       4     0 value   I
     RuntimeVisibleAnnotations:
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsSubstitute
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsSubstitute(
+          reason="(substitution reason not propagated)"
+        )
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="annotation"
+        )
 
   public java.lang.String unsupportedMethod();
     descriptor: ()Ljava/lang/String;
@@ -725,10 +793,14 @@ Constant pool:
         x: invokespecial #x                 // Method com/android/hoststubgen/test/tinyframework/TinyFrameworkUnsupportedApiException."<init>":()V
         x: athrow
     RuntimeVisibleAnnotations:
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsThrow
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsThrow(
+          reason="annotation"
+        )
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="annotation"
+        )
       x: #x()
         android.hosttest.annotation.HostSideTestThrow
 
@@ -747,10 +819,14 @@ Constant pool:
         x: invokespecial #x                 // Method com/android/hoststubgen/test/tinyframework/TinyFrameworkUnsupportedApiException."<init>":()V
         x: athrow
     RuntimeVisibleAnnotations:
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsThrowButSupported
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsThrowButSupported(
+          reason="annotation(ThrowButSupported)"
+        )
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="annotation(ThrowButSupported)"
+        )
       x: #x()
         android.hosttest.annotation.HostSideTestThrowButSupported
 
@@ -767,17 +843,23 @@ Constant pool:
         x: iconst_0
         x: ireturn
     RuntimeVisibleAnnotations:
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsIgnore
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsIgnore(
+          reason="annotation"
+        )
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="annotation"
+        )
       x: #x()
         android.hosttest.annotation.HostSideTestIgnore
 }
 SourceFile: "TinyFrameworkAnnotations.java"
 RuntimeVisibleAnnotations:
-  x: #x()
-    com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+  x: #x(#x=s#x)
+    com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+      reason="annotation"
+    )
   x: #x()
     android.hosttest.annotation.HostSideTestKeep
   x: #x(#x=s#x)
@@ -800,8 +882,10 @@ Constant pool:
     flags: (0x0019) ACC_PUBLIC, ACC_STATIC, ACC_FINAL
     Signature: #x                          // Ljava/util/Set<Ljava/lang/Class<*>;>;
     RuntimeVisibleAnnotations:
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="class-wide in com/android/hoststubgen/test/tinyframework/TinyFrameworkClassLoadHook [inner-reason: class-annotation]"
+        )
 
   private com.android.hoststubgen.test.tinyframework.TinyFrameworkClassLoadHook();
     descriptor: ()V
@@ -821,8 +905,10 @@ Constant pool:
         Start  Length  Slot  Name   Signature
            11       5     0  this   Lcom/android/hoststubgen/test/tinyframework/TinyFrameworkClassLoadHook;
     RuntimeVisibleAnnotations:
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="class-wide in com/android/hoststubgen/test/tinyframework/TinyFrameworkClassLoadHook [inner-reason: class-annotation]"
+        )
 
   public static void onClassLoaded(java.lang.Class<?>);
     descriptor: (Ljava/lang/Class;)V
@@ -848,8 +934,10 @@ Constant pool:
            11      11     0 clazz   Ljava/lang/Class<*>;
     Signature: #x                          // (Ljava/lang/Class<*>;)V
     RuntimeVisibleAnnotations:
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="class-wide in com/android/hoststubgen/test/tinyframework/TinyFrameworkClassLoadHook [inner-reason: class-annotation]"
+        )
 
   static {};
     descriptor: ()V
@@ -871,13 +959,17 @@ Constant pool:
         x: return
       LineNumberTable:
     RuntimeVisibleAnnotations:
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="class-wide in com/android/hoststubgen/test/tinyframework/TinyFrameworkClassLoadHook [inner-reason: class-annotation]"
+        )
 }
 SourceFile: "TinyFrameworkClassLoadHook.java"
 RuntimeVisibleAnnotations:
-  x: #x()
-    com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+  x: #x(#x=s#x)
+    com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+      reason="class-annotation"
+    )
   x: #x()
     android.hosttest.annotation.HostSideTestWholeClassKeep
 ## Class: com/android/hoststubgen/test/tinyframework/TinyFrameworkClassWideAnnotations.class
@@ -895,8 +987,10 @@ Constant pool:
     descriptor: I
     flags: (0x0001) ACC_PUBLIC
     RuntimeVisibleAnnotations:
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="class-wide in com/android/hoststubgen/test/tinyframework/TinyFrameworkClassWideAnnotations [inner-reason: class-annotation]"
+        )
 
   private static {};
     descriptor: ()V
@@ -904,7 +998,7 @@ Constant pool:
     Code:
       stack=2, locals=0, args_size=0
          x: ldc           #x                  // class com/android/hoststubgen/test/tinyframework/TinyFrameworkClassWideAnnotations
-         x: ldc           #x                  // String com.android.hoststubgen.hosthelper.HostTestUtils.logClassLoaded
+         x: ldc           #x                 // String com.android.hoststubgen.hosthelper.HostTestUtils.logClassLoaded
          x: invokestatic  #x                 // Method com/android/hoststubgen/hosthelper/HostTestUtils.onClassLoaded:(Ljava/lang/Class;Ljava/lang/String;)V
          x: return
 
@@ -929,8 +1023,10 @@ Constant pool:
         Start  Length  Slot  Name   Signature
            11      10     0  this   Lcom/android/hoststubgen/test/tinyframework/TinyFrameworkClassWideAnnotations;
     RuntimeVisibleAnnotations:
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="class-wide in com/android/hoststubgen/test/tinyframework/TinyFrameworkClassWideAnnotations [inner-reason: class-annotation]"
+        )
 
   public int addOne(int);
     descriptor: (I)I
@@ -952,8 +1048,10 @@ Constant pool:
            11       4     0  this   Lcom/android/hoststubgen/test/tinyframework/TinyFrameworkClassWideAnnotations;
            11       4     1 value   I
     RuntimeVisibleAnnotations:
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="class-wide in com/android/hoststubgen/test/tinyframework/TinyFrameworkClassWideAnnotations [inner-reason: class-annotation]"
+        )
 
   public int addTwo(int);
     descriptor: (I)I
@@ -975,10 +1073,14 @@ Constant pool:
            11       4     0  this   Lcom/android/hoststubgen/test/tinyframework/TinyFrameworkClassWideAnnotations;
            11       4     1 value   I
     RuntimeVisibleAnnotations:
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsSubstitute
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsSubstitute(
+          reason="(substitution reason not propagated)"
+        )
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="annotation"
+        )
 
   public java.lang.String unsupportedMethod();
     descriptor: ()Ljava/lang/String;
@@ -995,17 +1097,23 @@ Constant pool:
         x: invokespecial #x                 // Method com/android/hoststubgen/test/tinyframework/TinyFrameworkUnsupportedApiException."<init>":()V
         x: athrow
     RuntimeVisibleAnnotations:
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsThrow
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsThrow(
+          reason="annotation"
+        )
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="annotation"
+        )
       x: #x()
         android.hosttest.annotation.HostSideTestThrow
 }
 SourceFile: "TinyFrameworkClassWideAnnotations.java"
 RuntimeVisibleAnnotations:
-  x: #x()
-    com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+  x: #x(#x=s#x)
+    com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+      reason="class-annotation"
+    )
   x: #x()
     android.hosttest.annotation.HostSideTestWholeClassKeep
 ## Class: com/android/hoststubgen/test/tinyframework/TinyFrameworkClassWithInitializerDefault.class
@@ -1023,8 +1131,10 @@ Constant pool:
     descriptor: Z
     flags: (0x0009) ACC_PUBLIC, ACC_STATIC
     RuntimeVisibleAnnotations:
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="annotation"
+        )
       x: #x()
         android.hosttest.annotation.HostSideTestKeep
 
@@ -1032,16 +1142,20 @@ Constant pool:
     descriptor: Ljava/lang/Object;
     flags: (0x0009) ACC_PUBLIC, ACC_STATIC
     RuntimeVisibleAnnotations:
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="annotation"
+        )
       x: #x()
         android.hosttest.annotation.HostSideTestKeep
 
 }
 SourceFile: "TinyFrameworkClassWithInitializerDefault.java"
 RuntimeVisibleAnnotations:
-  x: #x()
-    com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+  x: #x(#x=s#x)
+    com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+      reason="annotation"
+    )
   x: #x()
     android.hosttest.annotation.HostSideTestKeep
 ## Class: com/android/hoststubgen/test/tinyframework/TinyFrameworkClassWithInitializerStub.class
@@ -1059,8 +1173,10 @@ Constant pool:
     descriptor: Z
     flags: (0x0009) ACC_PUBLIC, ACC_STATIC
     RuntimeVisibleAnnotations:
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="annotation"
+        )
       x: #x()
         android.hosttest.annotation.HostSideTestKeep
 
@@ -1068,8 +1184,10 @@ Constant pool:
     descriptor: Ljava/lang/Object;
     flags: (0x0009) ACC_PUBLIC, ACC_STATIC
     RuntimeVisibleAnnotations:
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="annotation"
+        )
       x: #x()
         android.hosttest.annotation.HostSideTestKeep
 
@@ -1098,13 +1216,17 @@ Constant pool:
         x: return
       LineNumberTable:
     RuntimeVisibleAnnotations:
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="annotation"
+        )
 }
 SourceFile: "TinyFrameworkClassWithInitializerStub.java"
 RuntimeVisibleAnnotations:
-  x: #x()
-    com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+  x: #x(#x=s#x)
+    com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+      reason="annotation"
+    )
   x: #x(#x=s#x)
     android.hosttest.annotation.HostSideTestClassLoadHook(
       value="com.android.hoststubgen.test.tinyframework.TinyFrameworkClassLoadHook.onClassLoaded"
@@ -1128,8 +1250,10 @@ Constant pool:
     descriptor: Lcom/android/hoststubgen/test/tinyframework/TinyFrameworkEnumComplex;
     flags: (0x4019) ACC_PUBLIC, ACC_STATIC, ACC_FINAL, ACC_ENUM
     RuntimeVisibleAnnotations:
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="enum [inner-reason: annotation]"
+        )
       x: #x()
         android.hosttest.annotation.HostSideTestKeep
 
@@ -1137,8 +1261,10 @@ Constant pool:
     descriptor: Lcom/android/hoststubgen/test/tinyframework/TinyFrameworkEnumComplex;
     flags: (0x4019) ACC_PUBLIC, ACC_STATIC, ACC_FINAL, ACC_ENUM
     RuntimeVisibleAnnotations:
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="enum [inner-reason: annotation]"
+        )
       x: #x()
         android.hosttest.annotation.HostSideTestKeep
 
@@ -1146,8 +1272,10 @@ Constant pool:
     descriptor: Lcom/android/hoststubgen/test/tinyframework/TinyFrameworkEnumComplex;
     flags: (0x4019) ACC_PUBLIC, ACC_STATIC, ACC_FINAL, ACC_ENUM
     RuntimeVisibleAnnotations:
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="enum [inner-reason: annotation]"
+        )
       x: #x()
         android.hosttest.annotation.HostSideTestKeep
 
@@ -1155,8 +1283,10 @@ Constant pool:
     descriptor: Ljava/lang/String;
     flags: (0x0012) ACC_PRIVATE, ACC_FINAL
     RuntimeVisibleAnnotations:
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="annotation"
+        )
       x: #x()
         android.hosttest.annotation.HostSideTestKeep
 
@@ -1164,8 +1294,10 @@ Constant pool:
     descriptor: Ljava/lang/String;
     flags: (0x0012) ACC_PRIVATE, ACC_FINAL
     RuntimeVisibleAnnotations:
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="annotation"
+        )
       x: #x()
         android.hosttest.annotation.HostSideTestKeep
 
@@ -1173,8 +1305,10 @@ Constant pool:
     descriptor: [Lcom/android/hoststubgen/test/tinyframework/TinyFrameworkEnumComplex;
     flags: (0x101a) ACC_PRIVATE, ACC_STATIC, ACC_FINAL, ACC_SYNTHETIC
     RuntimeVisibleAnnotations:
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="enum [inner-reason: annotation]"
+        )
 
   public static com.android.hoststubgen.test.tinyframework.TinyFrameworkEnumComplex[] values();
     descriptor: ()[Lcom/android/hoststubgen/test/tinyframework/TinyFrameworkEnumComplex;
@@ -1192,8 +1326,10 @@ Constant pool:
         x: areturn
       LineNumberTable:
     RuntimeVisibleAnnotations:
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="is-enum [inner-reason: annotation]"
+        )
 
   public static com.android.hoststubgen.test.tinyframework.TinyFrameworkEnumComplex valueOf(java.lang.String);
     descriptor: (Ljava/lang/String;)Lcom/android/hoststubgen/test/tinyframework/TinyFrameworkEnumComplex;
@@ -1215,8 +1351,10 @@ Constant pool:
         Start  Length  Slot  Name   Signature
            11      10     0  name   Ljava/lang/String;
     RuntimeVisibleAnnotations:
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="is-enum [inner-reason: annotation]"
+        )
     MethodParameters:
       Name                           Flags
       <no name>                      mandated
@@ -1250,8 +1388,10 @@ Constant pool:
            11      18     4 shortName   Ljava/lang/String;
     Signature: #x                          // (Ljava/lang/String;Ljava/lang/String;)V
     RuntimeVisibleAnnotations:
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="annotation"
+        )
       x: #x()
         android.hosttest.annotation.HostSideTestKeep
     MethodParameters:
@@ -1279,8 +1419,10 @@ Constant pool:
         Start  Length  Slot  Name   Signature
            11       5     0  this   Lcom/android/hoststubgen/test/tinyframework/TinyFrameworkEnumComplex;
     RuntimeVisibleAnnotations:
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="annotation"
+        )
       x: #x()
         android.hosttest.annotation.HostSideTestKeep
 
@@ -1302,8 +1444,10 @@ Constant pool:
         Start  Length  Slot  Name   Signature
            11       5     0  this   Lcom/android/hoststubgen/test/tinyframework/TinyFrameworkEnumComplex;
     RuntimeVisibleAnnotations:
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="annotation"
+        )
       x: #x()
         android.hosttest.annotation.HostSideTestKeep
 
@@ -1334,8 +1478,10 @@ Constant pool:
         x: areturn
       LineNumberTable:
     RuntimeVisibleAnnotations:
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="is-enum [inner-reason: annotation]"
+        )
 
   static {};
     descriptor: ()V
@@ -1368,9 +1514,9 @@ Constant pool:
         x: putstatic     #x                 // Field GREEN:Lcom/android/hoststubgen/test/tinyframework/TinyFrameworkEnumComplex;
         x: new           #x                  // class com/android/hoststubgen/test/tinyframework/TinyFrameworkEnumComplex
         x: dup
-        x: ldc           #x                 // String BLUE
+        x: ldc           #x                // String BLUE
         x: iconst_2
-        x: ldc           #x                 // String Blue
+        x: ldc           #x                // String Blue
         x: ldc           #x                // String B
         x: invokespecial #x                 // Method "<init>":(Ljava/lang/String;ILjava/lang/String;Ljava/lang/String;)V
         x: putstatic     #x                 // Field BLUE:Lcom/android/hoststubgen/test/tinyframework/TinyFrameworkEnumComplex;
@@ -1379,14 +1525,18 @@ Constant pool:
         x: return
       LineNumberTable:
     RuntimeVisibleAnnotations:
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="is-enum [inner-reason: annotation]"
+        )
 }
 Signature: #x                           // Ljava/lang/Enum<Lcom/android/hoststubgen/test/tinyframework/TinyFrameworkEnumComplex;>;
 SourceFile: "TinyFrameworkEnumComplex.java"
 RuntimeVisibleAnnotations:
-  x: #x()
-    com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+  x: #x(#x=s#x)
+    com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+      reason="annotation"
+    )
   x: #x()
     android.hosttest.annotation.HostSideTestKeep
 ## Class: com/android/hoststubgen/test/tinyframework/TinyFrameworkEnumSimple.class
@@ -1404,8 +1554,10 @@ Constant pool:
     descriptor: Lcom/android/hoststubgen/test/tinyframework/TinyFrameworkEnumSimple;
     flags: (0x4019) ACC_PUBLIC, ACC_STATIC, ACC_FINAL, ACC_ENUM
     RuntimeVisibleAnnotations:
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="enum [inner-reason: annotation]"
+        )
       x: #x()
         android.hosttest.annotation.HostSideTestKeep
 
@@ -1413,8 +1565,10 @@ Constant pool:
     descriptor: Lcom/android/hoststubgen/test/tinyframework/TinyFrameworkEnumSimple;
     flags: (0x4019) ACC_PUBLIC, ACC_STATIC, ACC_FINAL, ACC_ENUM
     RuntimeVisibleAnnotations:
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="enum [inner-reason: annotation]"
+        )
       x: #x()
         android.hosttest.annotation.HostSideTestKeep
 
@@ -1422,8 +1576,10 @@ Constant pool:
     descriptor: [Lcom/android/hoststubgen/test/tinyframework/TinyFrameworkEnumSimple;
     flags: (0x101a) ACC_PRIVATE, ACC_STATIC, ACC_FINAL, ACC_SYNTHETIC
     RuntimeVisibleAnnotations:
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="enum [inner-reason: annotation]"
+        )
 
   public static com.android.hoststubgen.test.tinyframework.TinyFrameworkEnumSimple[] values();
     descriptor: ()[Lcom/android/hoststubgen/test/tinyframework/TinyFrameworkEnumSimple;
@@ -1441,8 +1597,10 @@ Constant pool:
         x: areturn
       LineNumberTable:
     RuntimeVisibleAnnotations:
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="is-enum [inner-reason: annotation]"
+        )
 
   public static com.android.hoststubgen.test.tinyframework.TinyFrameworkEnumSimple valueOf(java.lang.String);
     descriptor: (Ljava/lang/String;)Lcom/android/hoststubgen/test/tinyframework/TinyFrameworkEnumSimple;
@@ -1464,8 +1622,10 @@ Constant pool:
         Start  Length  Slot  Name   Signature
            11      10     0  name   Ljava/lang/String;
     RuntimeVisibleAnnotations:
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="is-enum [inner-reason: annotation]"
+        )
     MethodParameters:
       Name                           Flags
       <no name>                      mandated
@@ -1491,8 +1651,10 @@ Constant pool:
            11       7     0  this   Lcom/android/hoststubgen/test/tinyframework/TinyFrameworkEnumSimple;
     Signature: #x                          // ()V
     RuntimeVisibleAnnotations:
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="is-enum [inner-reason: annotation]"
+        )
     MethodParameters:
       Name                           Flags
       <no name>                      synthetic
@@ -1521,8 +1683,10 @@ Constant pool:
         x: areturn
       LineNumberTable:
     RuntimeVisibleAnnotations:
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="is-enum [inner-reason: annotation]"
+        )
 
   static {};
     descriptor: ()V
@@ -1554,14 +1718,18 @@ Constant pool:
         x: return
       LineNumberTable:
     RuntimeVisibleAnnotations:
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="is-enum [inner-reason: annotation]"
+        )
 }
 Signature: #x                           // Ljava/lang/Enum<Lcom/android/hoststubgen/test/tinyframework/TinyFrameworkEnumSimple;>;
 SourceFile: "TinyFrameworkEnumSimple.java"
 RuntimeVisibleAnnotations:
-  x: #x()
-    com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+  x: #x(#x=s#x)
+    com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+      reason="annotation"
+    )
   x: #x()
     android.hosttest.annotation.HostSideTestKeep
 ## Class: com/android/hoststubgen/test/tinyframework/TinyFrameworkExceptionTester.class
@@ -1581,7 +1749,7 @@ Constant pool:
     Code:
       stack=2, locals=0, args_size=0
          x: ldc           #x                  // class com/android/hoststubgen/test/tinyframework/TinyFrameworkExceptionTester
-         x: ldc           #x                  // String com.android.hoststubgen.hosthelper.HostTestUtils.logClassLoaded
+         x: ldc           #x                 // String com.android.hoststubgen.hosthelper.HostTestUtils.logClassLoaded
          x: invokestatic  #x                 // Method com/android/hoststubgen/hosthelper/HostTestUtils.onClassLoaded:(Ljava/lang/Class;Ljava/lang/String;)V
          x: return
 
@@ -1603,8 +1771,10 @@ Constant pool:
         Start  Length  Slot  Name   Signature
            11       5     0  this   Lcom/android/hoststubgen/test/tinyframework/TinyFrameworkExceptionTester;
     RuntimeVisibleAnnotations:
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="class-wide in com/android/hoststubgen/test/tinyframework/TinyFrameworkExceptionTester [inner-reason: class-annotation]"
+        )
 
   public static int testException();
     descriptor: ()I
@@ -1639,13 +1809,17 @@ Constant pool:
         Start  Length  Slot  Name   Signature
            22      11     0     e   Ljava/lang/Exception;
     RuntimeVisibleAnnotations:
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="class-wide in com/android/hoststubgen/test/tinyframework/TinyFrameworkExceptionTester [inner-reason: class-annotation]"
+        )
 }
 SourceFile: "TinyFrameworkExceptionTester.java"
 RuntimeVisibleAnnotations:
-  x: #x()
-    com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+  x: #x(#x=s#x)
+    com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+      reason="class-annotation"
+    )
   x: #x()
     android.hosttest.annotation.HostSideTestWholeClassKeep
 ## Class: com/android/hoststubgen/test/tinyframework/TinyFrameworkForTextPolicy.class
@@ -1663,8 +1837,10 @@ Constant pool:
     descriptor: I
     flags: (0x0001) ACC_PUBLIC
     RuntimeVisibleAnnotations:
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="file-override (test policy on field)"
+        )
 
   private static {};
     descriptor: ()V
@@ -1672,7 +1848,7 @@ Constant pool:
     Code:
       stack=2, locals=0, args_size=0
          x: ldc           #x                  // class com/android/hoststubgen/test/tinyframework/TinyFrameworkForTextPolicy
-         x: ldc           #x                  // String com.android.hoststubgen.hosthelper.HostTestUtils.logClassLoaded
+         x: ldc           #x                 // String com.android.hoststubgen.hosthelper.HostTestUtils.logClassLoaded
          x: invokestatic  #x                 // Method com/android/hoststubgen/hosthelper/HostTestUtils.onClassLoaded:(Ljava/lang/Class;Ljava/lang/String;)V
          x: ldc           #x                  // class com/android/hoststubgen/test/tinyframework/TinyFrameworkForTextPolicy
          x: ldc           #x                 // String com.android.hoststubgen.test.tinyframework.TinyFrameworkClassLoadHook.onClassLoaded
@@ -1700,8 +1876,10 @@ Constant pool:
         Start  Length  Slot  Name   Signature
            11      10     0  this   Lcom/android/hoststubgen/test/tinyframework/TinyFrameworkForTextPolicy;
     RuntimeVisibleAnnotations:
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="file-override (test keep policy on ctor)"
+        )
 
   public int addOne(int);
     descriptor: (I)I
@@ -1723,8 +1901,10 @@ Constant pool:
            11       4     0  this   Lcom/android/hoststubgen/test/tinyframework/TinyFrameworkForTextPolicy;
            11       4     1 value   I
     RuntimeVisibleAnnotations:
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="file-override (test keep policy on method)"
+        )
 
   public java.lang.String toBeIgnoredObj();
     descriptor: ()Ljava/lang/String;
@@ -1739,10 +1919,14 @@ Constant pool:
         x: aconst_null
         x: areturn
     RuntimeVisibleAnnotations:
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsIgnore
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsIgnore(
+          reason="file-override"
+        )
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="file-override"
+        )
 
   public void toBeIgnoredV();
     descriptor: ()V
@@ -1756,10 +1940,14 @@ Constant pool:
          x: invokestatic  #x                 // Method com/android/hoststubgen/hosthelper/HostTestUtils.callMethodCallHook:(Ljava/lang/Class;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V
         x: return
     RuntimeVisibleAnnotations:
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsIgnore
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsIgnore(
+          reason="file-override (test ignore policy)"
+        )
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="file-override (test ignore policy)"
+        )
 
   public boolean toBeIgnoredZ();
     descriptor: ()Z
@@ -1774,10 +1962,14 @@ Constant pool:
         x: iconst_0
         x: ireturn
     RuntimeVisibleAnnotations:
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsIgnore
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsIgnore(
+          reason="file-override"
+        )
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="file-override"
+        )
 
   public byte toBeIgnoredB();
     descriptor: ()B
@@ -1792,10 +1984,14 @@ Constant pool:
         x: iconst_0
         x: ireturn
     RuntimeVisibleAnnotations:
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsIgnore
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsIgnore(
+          reason="file-override"
+        )
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="file-override"
+        )
 
   public char toBeIgnoredC();
     descriptor: ()C
@@ -1810,10 +2006,14 @@ Constant pool:
         x: iconst_0
         x: ireturn
     RuntimeVisibleAnnotations:
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsIgnore
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsIgnore(
+          reason="file-override"
+        )
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="file-override"
+        )
 
   public short toBeIgnoredS();
     descriptor: ()S
@@ -1828,10 +2028,14 @@ Constant pool:
         x: iconst_0
         x: ireturn
     RuntimeVisibleAnnotations:
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsIgnore
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsIgnore(
+          reason="file-override"
+        )
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="file-override"
+        )
 
   public int toBeIgnoredI();
     descriptor: ()I
@@ -1846,10 +2050,14 @@ Constant pool:
         x: iconst_0
         x: ireturn
     RuntimeVisibleAnnotations:
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsIgnore
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsIgnore(
+          reason="file-override"
+        )
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="file-override"
+        )
 
   public float toBeIgnoredF();
     descriptor: ()F
@@ -1864,10 +2072,14 @@ Constant pool:
         x: fconst_0
         x: freturn
     RuntimeVisibleAnnotations:
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsIgnore
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsIgnore(
+          reason="file-override"
+        )
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="file-override"
+        )
 
   public double toBeIgnoredD();
     descriptor: ()D
@@ -1882,10 +2094,14 @@ Constant pool:
         x: dconst_0
         x: dreturn
     RuntimeVisibleAnnotations:
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsIgnore
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsIgnore(
+          reason="file-override"
+        )
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="file-override"
+        )
 
   public int addTwo(int);
     descriptor: (I)I
@@ -1907,10 +2123,14 @@ Constant pool:
            11       4     0  this   Lcom/android/hoststubgen/test/tinyframework/TinyFrameworkForTextPolicy;
            11       4     1 value   I
     RuntimeVisibleAnnotations:
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsSubstitute
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsSubstitute(
+          reason="(substitution reason not propagated)"
+        )
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="file-override"
+        )
 
   public static int nativeAddThree(int);
     descriptor: (I)I
@@ -1931,10 +2151,14 @@ Constant pool:
         Start  Length  Slot  Name   Signature
            11       4     0 value   I
     RuntimeVisibleAnnotations:
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsSubstitute
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsSubstitute(
+          reason="(substitution reason not propagated)"
+        )
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="file-override"
+        )
 
   public java.lang.String unsupportedMethod();
     descriptor: ()Ljava/lang/String;
@@ -1951,15 +2175,21 @@ Constant pool:
         x: invokespecial #x                 // Method com/android/hoststubgen/test/tinyframework/TinyFrameworkUnsupportedApiException."<init>":()V
         x: athrow
     RuntimeVisibleAnnotations:
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsThrow
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsThrow(
+          reason="file-override"
+        )
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="file-override"
+        )
 }
 SourceFile: "TinyFrameworkForTextPolicy.java"
 RuntimeVisibleAnnotations:
-  x: #x()
-    com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+  x: #x(#x=s#x)
+    com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+      reason="file-override"
+    )
 ## Class: com/android/hoststubgen/test/tinyframework/TinyFrameworkLambdas$Nested.class
   Compiled from "TinyFrameworkLambdas.java"
 public class com.android.hoststubgen.test.tinyframework.TinyFrameworkLambdas$Nested
@@ -1976,8 +2206,10 @@ Constant pool:
     flags: (0x0011) ACC_PUBLIC, ACC_FINAL
     Signature: #x                          // Ljava/util/function/Supplier<Ljava/lang/Integer;>;
     RuntimeVisibleAnnotations:
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="annotation"
+        )
       x: #x()
         android.hosttest.annotation.HostSideTestKeep
 
@@ -1986,8 +2218,10 @@ Constant pool:
     flags: (0x0019) ACC_PUBLIC, ACC_STATIC, ACC_FINAL
     Signature: #x                          // Ljava/util/function/Supplier<Ljava/lang/Integer;>;
     RuntimeVisibleAnnotations:
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="annotation"
+        )
       x: #x()
         android.hosttest.annotation.HostSideTestKeep
 
@@ -2012,8 +2246,10 @@ Constant pool:
         Start  Length  Slot  Name   Signature
            11      14     0  this   Lcom/android/hoststubgen/test/tinyframework/TinyFrameworkLambdas$Nested;
     RuntimeVisibleAnnotations:
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="annotation"
+        )
       x: #x()
         android.hosttest.annotation.HostSideTestKeep
 
@@ -2035,8 +2271,10 @@ Constant pool:
            11       6     0  this   Lcom/android/hoststubgen/test/tinyframework/TinyFrameworkLambdas$Nested;
     Signature: #x                          // ()Ljava/util/function/Supplier<Ljava/lang/Integer;>;
     RuntimeVisibleAnnotations:
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="annotation"
+        )
       x: #x()
         android.hosttest.annotation.HostSideTestKeep
 
@@ -2055,8 +2293,10 @@ Constant pool:
       LineNumberTable:
     Signature: #x                          // ()Ljava/util/function/Supplier<Ljava/lang/Integer;>;
     RuntimeVisibleAnnotations:
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="annotation"
+        )
       x: #x()
         android.hosttest.annotation.HostSideTestKeep
 
@@ -2075,8 +2315,10 @@ Constant pool:
         x: areturn
       LineNumberTable:
     RuntimeVisibleAnnotations:
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="is-synthetic-method [inner-reason: annotation]"
+        )
 
   private static java.lang.Integer lambda$getSupplier$2();
     descriptor: ()Ljava/lang/Integer;
@@ -2093,8 +2335,10 @@ Constant pool:
         x: areturn
       LineNumberTable:
     RuntimeVisibleAnnotations:
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="is-synthetic-method [inner-reason: annotation]"
+        )
 
   private static java.lang.Integer lambda$static$1();
     descriptor: ()Ljava/lang/Integer;
@@ -2111,8 +2355,10 @@ Constant pool:
         x: areturn
       LineNumberTable:
     RuntimeVisibleAnnotations:
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="is-synthetic-method [inner-reason: annotation]"
+        )
 
   private static java.lang.Integer lambda$new$0();
     descriptor: ()Ljava/lang/Integer;
@@ -2129,8 +2375,10 @@ Constant pool:
         x: areturn
       LineNumberTable:
     RuntimeVisibleAnnotations:
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="is-synthetic-method [inner-reason: annotation]"
+        )
 
   static {};
     descriptor: ()V
@@ -2145,21 +2393,25 @@ Constant pool:
         x: ldc           #x                  // class com/android/hoststubgen/test/tinyframework/TinyFrameworkLambdas$Nested
         x: ldc           #x                 // String com.android.hoststubgen.hosthelper.HostTestUtils.logClassLoaded
         x: invokestatic  #x                 // Method com/android/hoststubgen/hosthelper/HostTestUtils.onClassLoaded:(Ljava/lang/Class;Ljava/lang/String;)V
-        x: invokedynamic #x,  0             // InvokeDynamic #x:get:()Ljava/util/function/Supplier;
-        x: putstatic     #x                 // Field sSupplier:Ljava/util/function/Supplier;
+        x: invokedynamic #x,  0            // InvokeDynamic #x:get:()Ljava/util/function/Supplier;
+        x: putstatic     #x                // Field sSupplier:Ljava/util/function/Supplier;
         x: return
       LineNumberTable:
     RuntimeVisibleAnnotations:
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="annotation"
+        )
 }
 InnerClasses:
-  public static #x= #x of #x;            // Nested=class com/android/hoststubgen/test/tinyframework/TinyFrameworkLambdas$Nested of class com/android/hoststubgen/test/tinyframework/TinyFrameworkLambdas
+  public static #x= #x of #x;           // Nested=class com/android/hoststubgen/test/tinyframework/TinyFrameworkLambdas$Nested of class com/android/hoststubgen/test/tinyframework/TinyFrameworkLambdas
   public static #x= #x of #x;          // Lookup=class java/lang/invoke/MethodHandles$Lookup of class java/lang/invoke/MethodHandles
 SourceFile: "TinyFrameworkLambdas.java"
 RuntimeVisibleAnnotations:
-  x: #x()
-    com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+  x: #x(#x=s#x)
+    com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+      reason="annotation"
+    )
   x: #x()
     android.hosttest.annotation.HostSideTestKeep
   x: #x()
@@ -2202,8 +2454,10 @@ Constant pool:
     flags: (0x0011) ACC_PUBLIC, ACC_FINAL
     Signature: #x                          // Ljava/util/function/Supplier<Ljava/lang/Integer;>;
     RuntimeVisibleAnnotations:
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="annotation"
+        )
       x: #x()
         android.hosttest.annotation.HostSideTestKeep
 
@@ -2212,8 +2466,10 @@ Constant pool:
     flags: (0x0019) ACC_PUBLIC, ACC_STATIC, ACC_FINAL
     Signature: #x                          // Ljava/util/function/Supplier<Ljava/lang/Integer;>;
     RuntimeVisibleAnnotations:
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="annotation"
+        )
       x: #x()
         android.hosttest.annotation.HostSideTestKeep
 
@@ -2238,8 +2494,10 @@ Constant pool:
         Start  Length  Slot  Name   Signature
            11      14     0  this   Lcom/android/hoststubgen/test/tinyframework/TinyFrameworkLambdas;
     RuntimeVisibleAnnotations:
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="annotation"
+        )
       x: #x()
         android.hosttest.annotation.HostSideTestKeep
 
@@ -2261,8 +2519,10 @@ Constant pool:
            11       6     0  this   Lcom/android/hoststubgen/test/tinyframework/TinyFrameworkLambdas;
     Signature: #x                          // ()Ljava/util/function/Supplier<Ljava/lang/Integer;>;
     RuntimeVisibleAnnotations:
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="annotation"
+        )
       x: #x()
         android.hosttest.annotation.HostSideTestKeep
 
@@ -2281,8 +2541,10 @@ Constant pool:
       LineNumberTable:
     Signature: #x                          // ()Ljava/util/function/Supplier<Ljava/lang/Integer;>;
     RuntimeVisibleAnnotations:
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="annotation"
+        )
       x: #x()
         android.hosttest.annotation.HostSideTestKeep
 
@@ -2301,8 +2563,10 @@ Constant pool:
         x: areturn
       LineNumberTable:
     RuntimeVisibleAnnotations:
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="is-synthetic-method [inner-reason: annotation]"
+        )
 
   private static java.lang.Integer lambda$getSupplier$2();
     descriptor: ()Ljava/lang/Integer;
@@ -2319,8 +2583,10 @@ Constant pool:
         x: areturn
       LineNumberTable:
     RuntimeVisibleAnnotations:
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="is-synthetic-method [inner-reason: annotation]"
+        )
 
   private static java.lang.Integer lambda$static$1();
     descriptor: ()Ljava/lang/Integer;
@@ -2337,8 +2603,10 @@ Constant pool:
         x: areturn
       LineNumberTable:
     RuntimeVisibleAnnotations:
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="is-synthetic-method [inner-reason: annotation]"
+        )
 
   private static java.lang.Integer lambda$new$0();
     descriptor: ()Ljava/lang/Integer;
@@ -2355,8 +2623,10 @@ Constant pool:
         x: areturn
       LineNumberTable:
     RuntimeVisibleAnnotations:
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="is-synthetic-method [inner-reason: annotation]"
+        )
 
   static {};
     descriptor: ()V
@@ -2371,21 +2641,25 @@ Constant pool:
         x: ldc           #x                  // class com/android/hoststubgen/test/tinyframework/TinyFrameworkLambdas
         x: ldc           #x                 // String com.android.hoststubgen.hosthelper.HostTestUtils.logClassLoaded
         x: invokestatic  #x                 // Method com/android/hoststubgen/hosthelper/HostTestUtils.onClassLoaded:(Ljava/lang/Class;Ljava/lang/String;)V
-        x: invokedynamic #x,  0             // InvokeDynamic #x:get:()Ljava/util/function/Supplier;
-        x: putstatic     #x                 // Field sSupplier:Ljava/util/function/Supplier;
+        x: invokedynamic #x,  0            // InvokeDynamic #x:get:()Ljava/util/function/Supplier;
+        x: putstatic     #x                // Field sSupplier:Ljava/util/function/Supplier;
         x: return
       LineNumberTable:
     RuntimeVisibleAnnotations:
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="annotation"
+        )
 }
 InnerClasses:
   public static #x= #x of #x;           // Nested=class com/android/hoststubgen/test/tinyframework/TinyFrameworkLambdas$Nested of class com/android/hoststubgen/test/tinyframework/TinyFrameworkLambdas
   public static #x= #x of #x;          // Lookup=class java/lang/invoke/MethodHandles$Lookup of class java/lang/invoke/MethodHandles
 SourceFile: "TinyFrameworkLambdas.java"
 RuntimeVisibleAnnotations:
-  x: #x()
-    com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+  x: #x(#x=s#x)
+    com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+      reason="annotation"
+    )
   x: #x()
     android.hosttest.annotation.HostSideTestKeep
   x: #x()
@@ -2428,8 +2702,10 @@ Constant pool:
     descriptor: I
     flags: (0x0001) ACC_PUBLIC
     RuntimeVisibleAnnotations:
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="class-wide in com/android/hoststubgen/test/tinyframework/TinyFrameworkMethodCallReplace$ConstructorTester [inner-reason: file-override]"
+        )
 
   private static {};
     descriptor: ()V
@@ -2437,7 +2713,7 @@ Constant pool:
     Code:
       stack=2, locals=0, args_size=0
          x: ldc           #x                  // class com/android/hoststubgen/test/tinyframework/TinyFrameworkMethodCallReplace$ConstructorTester
-         x: ldc           #x                  // String com.android.hoststubgen.hosthelper.HostTestUtils.logClassLoaded
+         x: ldc           #x                 // String com.android.hoststubgen.hosthelper.HostTestUtils.logClassLoaded
          x: invokestatic  #x                 // Method com/android/hoststubgen/hosthelper/HostTestUtils.onClassLoaded:(Ljava/lang/Class;Ljava/lang/String;)V
          x: return
 
@@ -2463,15 +2739,19 @@ Constant pool:
            11      10     0  this   Lcom/android/hoststubgen/test/tinyframework/TinyFrameworkMethodCallReplace$ConstructorTester;
            11      10     1     i   I
     RuntimeVisibleAnnotations:
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="file-override"
+        )
 }
 InnerClasses:
   public static #x= #x of #x;           // ConstructorTester=class com/android/hoststubgen/test/tinyframework/TinyFrameworkMethodCallReplace$ConstructorTester of class com/android/hoststubgen/test/tinyframework/TinyFrameworkMethodCallReplace
 SourceFile: "TinyFrameworkMethodCallReplace.java"
 RuntimeVisibleAnnotations:
-  x: #x()
-    com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+  x: #x(#x=s#x)
+    com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+      reason="file-override"
+    )
 NestHost: class com/android/hoststubgen/test/tinyframework/TinyFrameworkMethodCallReplace
 ## Class: com/android/hoststubgen/test/tinyframework/TinyFrameworkMethodCallReplace$ReplaceTo.class
   Compiled from "TinyFrameworkMethodCallReplace.java"
@@ -2490,7 +2770,7 @@ Constant pool:
     Code:
       stack=2, locals=0, args_size=0
          x: ldc           #x                  // class com/android/hoststubgen/test/tinyframework/TinyFrameworkMethodCallReplace$ReplaceTo
-         x: ldc           #x                  // String com.android.hoststubgen.hosthelper.HostTestUtils.logClassLoaded
+         x: ldc           #x                 // String com.android.hoststubgen.hosthelper.HostTestUtils.logClassLoaded
          x: invokestatic  #x                 // Method com/android/hoststubgen/hosthelper/HostTestUtils.onClassLoaded:(Ljava/lang/Class;Ljava/lang/String;)V
          x: return
 
@@ -2512,8 +2792,10 @@ Constant pool:
         Start  Length  Slot  Name   Signature
            11       5     0  this   Lcom/android/hoststubgen/test/tinyframework/TinyFrameworkMethodCallReplace$ReplaceTo;
     RuntimeVisibleAnnotations:
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="class-wide in com/android/hoststubgen/test/tinyframework/TinyFrameworkMethodCallReplace$ReplaceTo [inner-reason: class-wide in com/android/hoststubgen/test/tinyframework/TinyFrameworkMethodCallReplace [inner-reason: file-override]]"
+        )
 
   public static void startThread(java.lang.Thread);
     descriptor: (Ljava/lang/Thread;)V
@@ -2536,8 +2818,10 @@ Constant pool:
         Start  Length  Slot  Name   Signature
            11      10     0 thread   Ljava/lang/Thread;
     RuntimeVisibleAnnotations:
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="class-wide in com/android/hoststubgen/test/tinyframework/TinyFrameworkMethodCallReplace$ReplaceTo [inner-reason: class-wide in com/android/hoststubgen/test/tinyframework/TinyFrameworkMethodCallReplace [inner-reason: file-override]]"
+        )
 
   public static int add(int, int);
     descriptor: (II)I
@@ -2559,8 +2843,10 @@ Constant pool:
            11       4     0     a   I
            11       4     1     b   I
     RuntimeVisibleAnnotations:
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="class-wide in com/android/hoststubgen/test/tinyframework/TinyFrameworkMethodCallReplace$ReplaceTo [inner-reason: class-wide in com/android/hoststubgen/test/tinyframework/TinyFrameworkMethodCallReplace [inner-reason: file-override]]"
+        )
 
   public static com.android.hoststubgen.test.tinyframework.TinyFrameworkMethodCallReplace$ConstructorTester newConstructorTester(int);
     descriptor: (I)Lcom/android/hoststubgen/test/tinyframework/TinyFrameworkMethodCallReplace$ConstructorTester;
@@ -2584,16 +2870,20 @@ Constant pool:
         Start  Length  Slot  Name   Signature
            11      11     0     i   I
     RuntimeVisibleAnnotations:
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="class-wide in com/android/hoststubgen/test/tinyframework/TinyFrameworkMethodCallReplace$ReplaceTo [inner-reason: class-wide in com/android/hoststubgen/test/tinyframework/TinyFrameworkMethodCallReplace [inner-reason: file-override]]"
+        )
 }
 InnerClasses:
   public static #x= #x of #x;          // ConstructorTester=class com/android/hoststubgen/test/tinyframework/TinyFrameworkMethodCallReplace$ConstructorTester of class com/android/hoststubgen/test/tinyframework/TinyFrameworkMethodCallReplace
   public static #x= #x of #x;           // ReplaceTo=class com/android/hoststubgen/test/tinyframework/TinyFrameworkMethodCallReplace$ReplaceTo of class com/android/hoststubgen/test/tinyframework/TinyFrameworkMethodCallReplace
 SourceFile: "TinyFrameworkMethodCallReplace.java"
 RuntimeVisibleAnnotations:
-  x: #x()
-    com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+  x: #x(#x=s#x)
+    com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+      reason="class-wide in com/android/hoststubgen/test/tinyframework/TinyFrameworkMethodCallReplace [inner-reason: file-override]"
+    )
 NestHost: class com/android/hoststubgen/test/tinyframework/TinyFrameworkMethodCallReplace
 ## Class: com/android/hoststubgen/test/tinyframework/TinyFrameworkMethodCallReplace.class
   Compiled from "TinyFrameworkMethodCallReplace.java"
@@ -2612,7 +2902,7 @@ Constant pool:
     Code:
       stack=2, locals=0, args_size=0
          x: ldc           #x                  // class com/android/hoststubgen/test/tinyframework/TinyFrameworkMethodCallReplace
-         x: ldc           #x                  // String com.android.hoststubgen.hosthelper.HostTestUtils.logClassLoaded
+         x: ldc           #x                 // String com.android.hoststubgen.hosthelper.HostTestUtils.logClassLoaded
          x: invokestatic  #x                 // Method com/android/hoststubgen/hosthelper/HostTestUtils.onClassLoaded:(Ljava/lang/Class;Ljava/lang/String;)V
          x: return
 
@@ -2634,8 +2924,10 @@ Constant pool:
         Start  Length  Slot  Name   Signature
            11       5     0  this   Lcom/android/hoststubgen/test/tinyframework/TinyFrameworkMethodCallReplace;
     RuntimeVisibleAnnotations:
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="class-wide in com/android/hoststubgen/test/tinyframework/TinyFrameworkMethodCallReplace [inner-reason: file-override]"
+        )
 
   public static boolean nonStaticMethodCallReplaceTester() throws java.lang.Exception;
     descriptor: ()Z
@@ -2673,8 +2965,10 @@ Constant pool:
     Exceptions:
       throws java.lang.Exception
     RuntimeVisibleAnnotations:
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="class-wide in com/android/hoststubgen/test/tinyframework/TinyFrameworkMethodCallReplace [inner-reason: file-override]"
+        )
 
   public static int staticMethodCallReplaceTester();
     descriptor: ()I
@@ -2692,8 +2986,10 @@ Constant pool:
         x: ireturn
       LineNumberTable:
     RuntimeVisibleAnnotations:
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="class-wide in com/android/hoststubgen/test/tinyframework/TinyFrameworkMethodCallReplace [inner-reason: file-override]"
+        )
 
   public static com.android.hoststubgen.test.tinyframework.TinyFrameworkMethodCallReplace$ConstructorTester constructorReplaceTester(int);
     descriptor: (I)Lcom/android/hoststubgen/test/tinyframework/TinyFrameworkMethodCallReplace$ConstructorTester;
@@ -2701,7 +2997,7 @@ Constant pool:
     Code:
       stack=4, locals=1, args_size=1
          x: ldc           #x                  // class com/android/hoststubgen/test/tinyframework/TinyFrameworkMethodCallReplace
-         x: ldc           #x                 // String constructorReplaceTester
+         x: ldc           #x                // String constructorReplaceTester
          x: ldc           #x                // String (I)Lcom/android/hoststubgen/test/tinyframework/TinyFrameworkMethodCallReplace$ConstructorTester;
          x: ldc           #x                 // String com.android.hoststubgen.hosthelper.HostTestUtils.logMethodCall
          x: invokestatic  #x                 // Method com/android/hoststubgen/hosthelper/HostTestUtils.callMethodCallHook:(Ljava/lang/Class;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V
@@ -2719,8 +3015,10 @@ Constant pool:
         Start  Length  Slot  Name   Signature
            11      13     0     i   I
     RuntimeVisibleAnnotations:
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="class-wide in com/android/hoststubgen/test/tinyframework/TinyFrameworkMethodCallReplace [inner-reason: file-override]"
+        )
 
   private static int originalAdd(int, int);
     descriptor: (II)I
@@ -2744,8 +3042,10 @@ Constant pool:
            11       6     0     a   I
            11       6     1     b   I
     RuntimeVisibleAnnotations:
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="file-override"
+        )
 
   private static void lambda$nonStaticMethodCallReplaceTester$0(java.util.concurrent.atomic.AtomicBoolean);
     descriptor: (Ljava/util/concurrent/atomic/AtomicBoolean;)V
@@ -2767,8 +3067,10 @@ Constant pool:
         Start  Length  Slot  Name   Signature
            11      11     0    ab   Ljava/util/concurrent/atomic/AtomicBoolean;
     RuntimeVisibleAnnotations:
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="is-synthetic-method [inner-reason: file-override]"
+        )
 }
 InnerClasses:
   public static #x= #x of #x;           // ConstructorTester=class com/android/hoststubgen/test/tinyframework/TinyFrameworkMethodCallReplace$ConstructorTester of class com/android/hoststubgen/test/tinyframework/TinyFrameworkMethodCallReplace
@@ -2776,8 +3078,10 @@ InnerClasses:
   public static #x= #x of #x;          // Lookup=class java/lang/invoke/MethodHandles$Lookup of class java/lang/invoke/MethodHandles
 SourceFile: "TinyFrameworkMethodCallReplace.java"
 RuntimeVisibleAnnotations:
-  x: #x()
-    com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+  x: #x(#x=s#x)
+    com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+      reason="file-override"
+    )
   x: #x()
     android.hosttest.annotation.HostSideTestWholeClassKeep
 BootstrapMethods:
@@ -2804,8 +3108,10 @@ Constant pool:
     descriptor: I
     flags: (0x0000)
     RuntimeVisibleAnnotations:
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="class-wide in com/android/hoststubgen/test/tinyframework/TinyFrameworkNative [inner-reason: class-annotation]"
+        )
 
   private static {};
     descriptor: ()V
@@ -2813,7 +3119,7 @@ Constant pool:
     Code:
       stack=2, locals=0, args_size=0
          x: ldc           #x                  // class com/android/hoststubgen/test/tinyframework/TinyFrameworkNative
-         x: ldc           #x                  // String com.android.hoststubgen.hosthelper.HostTestUtils.logClassLoaded
+         x: ldc           #x                 // String com.android.hoststubgen.hosthelper.HostTestUtils.logClassLoaded
          x: invokestatic  #x                 // Method com/android/hoststubgen/hosthelper/HostTestUtils.onClassLoaded:(Ljava/lang/Class;Ljava/lang/String;)V
          x: return
 
@@ -2835,8 +3141,10 @@ Constant pool:
         Start  Length  Slot  Name   Signature
            11       5     0  this   Lcom/android/hoststubgen/test/tinyframework/TinyFrameworkNative;
     RuntimeVisibleAnnotations:
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="class-wide in com/android/hoststubgen/test/tinyframework/TinyFrameworkNative [inner-reason: class-annotation]"
+        )
 
   public static int nativeAddTwo(int);
     descriptor: (I)I
@@ -2852,10 +3160,14 @@ Constant pool:
         x: invokestatic  #x                 // Method com/android/hoststubgen/test/tinyframework/TinyFrameworkNative_host.nativeAddTwo:(I)I
         x: ireturn
     RuntimeVisibleAnnotations:
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsSubstitute
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsSubstitute(
+          reason="annotation"
+        )
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="annotation"
+        )
       x: #x()
         android.hosttest.annotation.HostSideTestRedirect
 
@@ -2877,8 +3189,10 @@ Constant pool:
         Start  Length  Slot  Name   Signature
            11       5     0   arg   I
     RuntimeVisibleAnnotations:
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="class-wide in com/android/hoststubgen/test/tinyframework/TinyFrameworkNative [inner-reason: class-annotation]"
+        )
 
   public static long nativeLongPlus(long, long);
     descriptor: (JJ)J
@@ -2895,10 +3209,14 @@ Constant pool:
         x: invokestatic  #x                 // Method com/android/hoststubgen/test/tinyframework/TinyFrameworkNative_host.nativeLongPlus:(JJ)J
         x: lreturn
     RuntimeVisibleAnnotations:
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsSubstitute
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsSubstitute(
+          reason="annotation"
+        )
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="annotation"
+        )
       x: #x()
         android.hosttest.annotation.HostSideTestRedirect
 
@@ -2922,8 +3240,10 @@ Constant pool:
            11       6     0  arg1   J
            11       6     2  arg2   J
     RuntimeVisibleAnnotations:
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="class-wide in com/android/hoststubgen/test/tinyframework/TinyFrameworkNative [inner-reason: class-annotation]"
+        )
 
   public void setValue(int);
     descriptor: (I)V
@@ -2945,8 +3265,10 @@ Constant pool:
            11       6     0  this   Lcom/android/hoststubgen/test/tinyframework/TinyFrameworkNative;
            11       6     1     v   I
     RuntimeVisibleAnnotations:
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="class-wide in com/android/hoststubgen/test/tinyframework/TinyFrameworkNative [inner-reason: class-annotation]"
+        )
 
   public int nativeNonStaticAddToValue(int);
     descriptor: (I)I
@@ -2963,10 +3285,14 @@ Constant pool:
         x: invokestatic  #x                 // Method com/android/hoststubgen/test/tinyframework/TinyFrameworkNative_host.nativeNonStaticAddToValue:(Lcom/android/hoststubgen/test/tinyframework/TinyFrameworkNative;I)I
         x: ireturn
     RuntimeVisibleAnnotations:
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsSubstitute
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsSubstitute(
+          reason="annotation"
+        )
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="annotation"
+        )
       x: #x()
         android.hosttest.annotation.HostSideTestRedirect
 
@@ -2990,8 +3316,10 @@ Constant pool:
            11       6     0  this   Lcom/android/hoststubgen/test/tinyframework/TinyFrameworkNative;
            11       6     1   arg   I
     RuntimeVisibleAnnotations:
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="class-wide in com/android/hoststubgen/test/tinyframework/TinyFrameworkNative [inner-reason: class-annotation]"
+        )
 
   public static void nativeStillNotSupported();
     descriptor: ()V
@@ -3008,10 +3336,14 @@ Constant pool:
         x: invokespecial #x                 // Method com/android/hoststubgen/test/tinyframework/TinyFrameworkUnsupportedApiException."<init>":()V
         x: athrow
     RuntimeVisibleAnnotations:
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsThrow
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsThrow(
+          reason="annotation"
+        )
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="annotation"
+        )
       x: #x()
         android.hosttest.annotation.HostSideTestThrow
 
@@ -3019,8 +3351,10 @@ Constant pool:
     descriptor: ()V
     flags: (0x0109) ACC_PUBLIC, ACC_STATIC, ACC_NATIVE
     RuntimeVisibleAnnotations:
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="class-wide in com/android/hoststubgen/test/tinyframework/TinyFrameworkNative [inner-reason: class-annotation]"
+        )
 
   public static void nativeStillNotSupported_should_be_like_this();
     descriptor: ()V
@@ -3038,8 +3372,10 @@ Constant pool:
         x: athrow
       LineNumberTable:
     RuntimeVisibleAnnotations:
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="class-wide in com/android/hoststubgen/test/tinyframework/TinyFrameworkNative [inner-reason: class-annotation]"
+        )
 
   public static byte nativeBytePlus(byte, byte);
     descriptor: (BB)B
@@ -3056,10 +3392,14 @@ Constant pool:
         x: invokestatic  #x                 // Method com/android/hoststubgen/test/tinyframework/TinyFrameworkNative_host.nativeBytePlus:(BB)B
         x: ireturn
     RuntimeVisibleAnnotations:
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsSubstitute
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsSubstitute(
+          reason="annotation"
+        )
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="annotation"
+        )
       x: #x()
         android.hosttest.annotation.HostSideTestRedirect
 
@@ -3074,13 +3414,17 @@ Constant pool:
          x: ldc           #x                 // String com.android.hoststubgen.hosthelper.HostTestUtils.logMethodCall
          x: invokestatic  #x                 // Method com/android/hoststubgen/hosthelper/HostTestUtils.callMethodCallHook:(Ljava/lang/Class;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V
         x: aload_0
-        x: invokestatic  #x                 // Method com/android/hoststubgen/test/tinyframework/TinyFrameworkNative_host.notNativeRedirected:(Lcom/android/hoststubgen/test/tinyframework/TinyFrameworkNative;)V
+        x: invokestatic  #x                // Method com/android/hoststubgen/test/tinyframework/TinyFrameworkNative_host.notNativeRedirected:(Lcom/android/hoststubgen/test/tinyframework/TinyFrameworkNative;)V
         x: return
     RuntimeVisibleAnnotations:
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsSubstitute
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsSubstitute(
+          reason="annotation"
+        )
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="annotation"
+        )
       x: #x()
         android.hosttest.annotation.HostSideTestRedirect
 
@@ -3090,24 +3434,30 @@ Constant pool:
     Code:
       stack=4, locals=0, args_size=0
          x: ldc           #x                  // class com/android/hoststubgen/test/tinyframework/TinyFrameworkNative
-         x: ldc           #x                 // String notNativeStaticRedirected
+         x: ldc           #x                // String notNativeStaticRedirected
          x: ldc           #x                 // String ()V
          x: ldc           #x                 // String com.android.hoststubgen.hosthelper.HostTestUtils.logMethodCall
          x: invokestatic  #x                 // Method com/android/hoststubgen/hosthelper/HostTestUtils.callMethodCallHook:(Ljava/lang/Class;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V
         x: invokestatic  #x                // Method com/android/hoststubgen/test/tinyframework/TinyFrameworkNative_host.notNativeStaticRedirected:()V
         x: return
     RuntimeVisibleAnnotations:
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsSubstitute
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsSubstitute(
+          reason="annotation"
+        )
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="annotation"
+        )
       x: #x()
         android.hosttest.annotation.HostSideTestRedirect
 }
 SourceFile: "TinyFrameworkNative.java"
 RuntimeVisibleAnnotations:
-  x: #x()
-    com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+  x: #x(#x=s#x)
+    com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+      reason="class-annotation"
+    )
   x: #x()
     android.hosttest.annotation.HostSideTestWholeClassKeep
   x: #x(#x=s#x)
@@ -3131,7 +3481,7 @@ Constant pool:
     Code:
       stack=2, locals=0, args_size=0
          x: ldc           #x                  // class com/android/hoststubgen/test/tinyframework/TinyFrameworkNative_host
-         x: ldc           #x                  // String com.android.hoststubgen.hosthelper.HostTestUtils.logClassLoaded
+         x: ldc           #x                 // String com.android.hoststubgen.hosthelper.HostTestUtils.logClassLoaded
          x: invokestatic  #x                 // Method com/android/hoststubgen/hosthelper/HostTestUtils.onClassLoaded:(Ljava/lang/Class;Ljava/lang/String;)V
          x: return
 
@@ -3153,8 +3503,10 @@ Constant pool:
         Start  Length  Slot  Name   Signature
            11       5     0  this   Lcom/android/hoststubgen/test/tinyframework/TinyFrameworkNative_host;
     RuntimeVisibleAnnotations:
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="class-wide in com/android/hoststubgen/test/tinyframework/TinyFrameworkNative_host [inner-reason: class-annotation]"
+        )
 
   public static int nativeAddTwo(int);
     descriptor: (I)I
@@ -3175,8 +3527,10 @@ Constant pool:
         Start  Length  Slot  Name   Signature
            11       4     0   arg   I
     RuntimeVisibleAnnotations:
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="class-wide in com/android/hoststubgen/test/tinyframework/TinyFrameworkNative_host [inner-reason: class-annotation]"
+        )
 
   public static long nativeLongPlus(long, long);
     descriptor: (JJ)J
@@ -3198,8 +3552,10 @@ Constant pool:
            11       4     0  arg1   J
            11       4     2  arg2   J
     RuntimeVisibleAnnotations:
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="class-wide in com/android/hoststubgen/test/tinyframework/TinyFrameworkNative_host [inner-reason: class-annotation]"
+        )
 
   public static int nativeNonStaticAddToValue(com.android.hoststubgen.test.tinyframework.TinyFrameworkNative, int);
     descriptor: (Lcom/android/hoststubgen/test/tinyframework/TinyFrameworkNative;I)I
@@ -3222,8 +3578,10 @@ Constant pool:
            11       7     0 source   Lcom/android/hoststubgen/test/tinyframework/TinyFrameworkNative;
            11       7     1   arg   I
     RuntimeVisibleAnnotations:
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="class-wide in com/android/hoststubgen/test/tinyframework/TinyFrameworkNative_host [inner-reason: class-annotation]"
+        )
 
   public static byte nativeBytePlus(byte, byte);
     descriptor: (BB)B
@@ -3246,8 +3604,10 @@ Constant pool:
            11       5     0  arg1   B
            11       5     1  arg2   B
     RuntimeVisibleAnnotations:
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="class-wide in com/android/hoststubgen/test/tinyframework/TinyFrameworkNative_host [inner-reason: class-annotation]"
+        )
 
   public static void notNativeRedirected(com.android.hoststubgen.test.tinyframework.TinyFrameworkNative);
     descriptor: (Lcom/android/hoststubgen/test/tinyframework/TinyFrameworkNative;)V
@@ -3265,8 +3625,10 @@ Constant pool:
         Start  Length  Slot  Name   Signature
            11       1     0 source   Lcom/android/hoststubgen/test/tinyframework/TinyFrameworkNative;
     RuntimeVisibleAnnotations:
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="class-wide in com/android/hoststubgen/test/tinyframework/TinyFrameworkNative_host [inner-reason: class-annotation]"
+        )
 
   public static void notNativeStaticRedirected();
     descriptor: ()V
@@ -3281,13 +3643,17 @@ Constant pool:
         x: return
       LineNumberTable:
     RuntimeVisibleAnnotations:
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="class-wide in com/android/hoststubgen/test/tinyframework/TinyFrameworkNative_host [inner-reason: class-annotation]"
+        )
 }
 SourceFile: "TinyFrameworkNative_host.java"
 RuntimeVisibleAnnotations:
-  x: #x()
-    com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+  x: #x(#x=s#x)
+    com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+      reason="class-annotation"
+    )
   x: #x()
     android.hosttest.annotation.HostSideTestWholeClassKeep
 ## Class: com/android/hoststubgen/test/tinyframework/TinyFrameworkNestedClasses$1.class
@@ -3330,8 +3696,10 @@ Constant pool:
            11       5     0  this   Lcom/android/hoststubgen/test/tinyframework/TinyFrameworkNestedClasses$1;
            11       5     1 this$0   Lcom/android/hoststubgen/test/tinyframework/TinyFrameworkNestedClasses;
     RuntimeVisibleAnnotations:
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="class-wide in com/android/hoststubgen/test/tinyframework/TinyFrameworkNestedClasses$1 [inner-reason: anonymous-inner-class]"
+        )
     MethodParameters:
       Name                           Flags
       <no name>                      final mandated
@@ -3354,8 +3722,10 @@ Constant pool:
         Start  Length  Slot  Name   Signature
            11       5     0  this   Lcom/android/hoststubgen/test/tinyframework/TinyFrameworkNestedClasses$1;
     RuntimeVisibleAnnotations:
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="class-wide in com/android/hoststubgen/test/tinyframework/TinyFrameworkNestedClasses$1 [inner-reason: anonymous-inner-class]"
+        )
 
   public java.lang.Object get();
     descriptor: ()Ljava/lang/Object;
@@ -3375,8 +3745,10 @@ Constant pool:
         Start  Length  Slot  Name   Signature
            11       5     0  this   Lcom/android/hoststubgen/test/tinyframework/TinyFrameworkNestedClasses$1;
     RuntimeVisibleAnnotations:
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="is-synthetic-method [inner-reason: anonymous-inner-class]"
+        )
 }
 InnerClasses:
   #x;                                     // class com/android/hoststubgen/test/tinyframework/TinyFrameworkNestedClasses$1
@@ -3384,8 +3756,10 @@ EnclosingMethod: #x.#x                 // com.android.hoststubgen.test.tinyframe
 Signature: #x                           // Ljava/lang/Object;Ljava/util/function/Supplier<Ljava/lang/Integer;>;
 SourceFile: "TinyFrameworkNestedClasses.java"
 RuntimeVisibleAnnotations:
-  x: #x()
-    com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+  x: #x(#x=s#x)
+    com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+      reason="anonymous-inner-class"
+    )
 NestHost: class com/android/hoststubgen/test/tinyframework/TinyFrameworkNestedClasses
 ## Class: com/android/hoststubgen/test/tinyframework/TinyFrameworkNestedClasses$2.class
   Compiled from "TinyFrameworkNestedClasses.java"
@@ -3426,8 +3800,10 @@ Constant pool:
         Start  Length  Slot  Name   Signature
            11       5     0  this   Lcom/android/hoststubgen/test/tinyframework/TinyFrameworkNestedClasses$2;
     RuntimeVisibleAnnotations:
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="class-wide in com/android/hoststubgen/test/tinyframework/TinyFrameworkNestedClasses$2 [inner-reason: anonymous-inner-class]"
+        )
 
   public java.lang.Integer get();
     descriptor: ()Ljava/lang/Integer;
@@ -3447,8 +3823,10 @@ Constant pool:
         Start  Length  Slot  Name   Signature
            11       5     0  this   Lcom/android/hoststubgen/test/tinyframework/TinyFrameworkNestedClasses$2;
     RuntimeVisibleAnnotations:
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="class-wide in com/android/hoststubgen/test/tinyframework/TinyFrameworkNestedClasses$2 [inner-reason: anonymous-inner-class]"
+        )
 
   public java.lang.Object get();
     descriptor: ()Ljava/lang/Object;
@@ -3468,8 +3846,10 @@ Constant pool:
         Start  Length  Slot  Name   Signature
            11       5     0  this   Lcom/android/hoststubgen/test/tinyframework/TinyFrameworkNestedClasses$2;
     RuntimeVisibleAnnotations:
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="is-synthetic-method [inner-reason: anonymous-inner-class]"
+        )
 }
 InnerClasses:
   #x;                                     // class com/android/hoststubgen/test/tinyframework/TinyFrameworkNestedClasses$2
@@ -3477,8 +3857,10 @@ EnclosingMethod: #x.#x                 // com.android.hoststubgen.test.tinyframe
 Signature: #x                           // Ljava/lang/Object;Ljava/util/function/Supplier<Ljava/lang/Integer;>;
 SourceFile: "TinyFrameworkNestedClasses.java"
 RuntimeVisibleAnnotations:
-  x: #x()
-    com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+  x: #x(#x=s#x)
+    com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+      reason="anonymous-inner-class"
+    )
 NestHost: class com/android/hoststubgen/test/tinyframework/TinyFrameworkNestedClasses
 ## Class: com/android/hoststubgen/test/tinyframework/TinyFrameworkNestedClasses$3.class
   Compiled from "TinyFrameworkNestedClasses.java"
@@ -3520,8 +3902,10 @@ Constant pool:
            11       5     0  this   Lcom/android/hoststubgen/test/tinyframework/TinyFrameworkNestedClasses$3;
            11       5     1 this$0   Lcom/android/hoststubgen/test/tinyframework/TinyFrameworkNestedClasses;
     RuntimeVisibleAnnotations:
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="class-wide in com/android/hoststubgen/test/tinyframework/TinyFrameworkNestedClasses$3 [inner-reason: anonymous-inner-class]"
+        )
     MethodParameters:
       Name                           Flags
       <no name>                      final mandated
@@ -3544,8 +3928,10 @@ Constant pool:
         Start  Length  Slot  Name   Signature
            11       5     0  this   Lcom/android/hoststubgen/test/tinyframework/TinyFrameworkNestedClasses$3;
     RuntimeVisibleAnnotations:
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="class-wide in com/android/hoststubgen/test/tinyframework/TinyFrameworkNestedClasses$3 [inner-reason: anonymous-inner-class]"
+        )
 
   public java.lang.Object get();
     descriptor: ()Ljava/lang/Object;
@@ -3565,8 +3951,10 @@ Constant pool:
         Start  Length  Slot  Name   Signature
            11       5     0  this   Lcom/android/hoststubgen/test/tinyframework/TinyFrameworkNestedClasses$3;
     RuntimeVisibleAnnotations:
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="is-synthetic-method [inner-reason: anonymous-inner-class]"
+        )
 }
 InnerClasses:
   #x;                                     // class com/android/hoststubgen/test/tinyframework/TinyFrameworkNestedClasses$3
@@ -3574,8 +3962,10 @@ EnclosingMethod: #x.#x                // com.android.hoststubgen.test.tinyframew
 Signature: #x                           // Ljava/lang/Object;Ljava/util/function/Supplier<Ljava/lang/Integer;>;
 SourceFile: "TinyFrameworkNestedClasses.java"
 RuntimeVisibleAnnotations:
-  x: #x()
-    com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+  x: #x(#x=s#x)
+    com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+      reason="anonymous-inner-class"
+    )
 NestHost: class com/android/hoststubgen/test/tinyframework/TinyFrameworkNestedClasses
 ## Class: com/android/hoststubgen/test/tinyframework/TinyFrameworkNestedClasses$4.class
   Compiled from "TinyFrameworkNestedClasses.java"
@@ -3616,8 +4006,10 @@ Constant pool:
         Start  Length  Slot  Name   Signature
            11       5     0  this   Lcom/android/hoststubgen/test/tinyframework/TinyFrameworkNestedClasses$4;
     RuntimeVisibleAnnotations:
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="class-wide in com/android/hoststubgen/test/tinyframework/TinyFrameworkNestedClasses$4 [inner-reason: anonymous-inner-class]"
+        )
 
   public java.lang.Integer get();
     descriptor: ()Ljava/lang/Integer;
@@ -3637,8 +4029,10 @@ Constant pool:
         Start  Length  Slot  Name   Signature
            11       5     0  this   Lcom/android/hoststubgen/test/tinyframework/TinyFrameworkNestedClasses$4;
     RuntimeVisibleAnnotations:
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="class-wide in com/android/hoststubgen/test/tinyframework/TinyFrameworkNestedClasses$4 [inner-reason: anonymous-inner-class]"
+        )
 
   public java.lang.Object get();
     descriptor: ()Ljava/lang/Object;
@@ -3658,8 +4052,10 @@ Constant pool:
         Start  Length  Slot  Name   Signature
            11       5     0  this   Lcom/android/hoststubgen/test/tinyframework/TinyFrameworkNestedClasses$4;
     RuntimeVisibleAnnotations:
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="is-synthetic-method [inner-reason: anonymous-inner-class]"
+        )
 }
 InnerClasses:
   #x;                                     // class com/android/hoststubgen/test/tinyframework/TinyFrameworkNestedClasses$4
@@ -3667,8 +4063,10 @@ EnclosingMethod: #x.#x                // com.android.hoststubgen.test.tinyframew
 Signature: #x                           // Ljava/lang/Object;Ljava/util/function/Supplier<Ljava/lang/Integer;>;
 SourceFile: "TinyFrameworkNestedClasses.java"
 RuntimeVisibleAnnotations:
-  x: #x()
-    com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+  x: #x(#x=s#x)
+    com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+      reason="anonymous-inner-class"
+    )
 NestHost: class com/android/hoststubgen/test/tinyframework/TinyFrameworkNestedClasses
 ## Class: com/android/hoststubgen/test/tinyframework/TinyFrameworkNestedClasses$BaseClass.class
   Compiled from "TinyFrameworkNestedClasses.java"
@@ -3685,8 +4083,10 @@ Constant pool:
     descriptor: I
     flags: (0x0001) ACC_PUBLIC
     RuntimeVisibleAnnotations:
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="class-wide in com/android/hoststubgen/test/tinyframework/TinyFrameworkNestedClasses$BaseClass [inner-reason: class-wide in com/android/hoststubgen/test/tinyframework/TinyFrameworkNestedClasses [inner-reason: class-annotation]]"
+        )
 
   private static {};
     descriptor: ()V
@@ -3694,7 +4094,7 @@ Constant pool:
     Code:
       stack=2, locals=0, args_size=0
          x: ldc           #x                  // class com/android/hoststubgen/test/tinyframework/TinyFrameworkNestedClasses$BaseClass
-         x: ldc           #x                  // String com.android.hoststubgen.hosthelper.HostTestUtils.logClassLoaded
+         x: ldc           #x                 // String com.android.hoststubgen.hosthelper.HostTestUtils.logClassLoaded
          x: invokestatic  #x                 // Method com/android/hoststubgen/hosthelper/HostTestUtils.onClassLoaded:(Ljava/lang/Class;Ljava/lang/String;)V
          x: return
 
@@ -3720,15 +4120,19 @@ Constant pool:
            11      10     0  this   Lcom/android/hoststubgen/test/tinyframework/TinyFrameworkNestedClasses$BaseClass;
            11      10     1     x   I
     RuntimeVisibleAnnotations:
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="class-wide in com/android/hoststubgen/test/tinyframework/TinyFrameworkNestedClasses$BaseClass [inner-reason: class-wide in com/android/hoststubgen/test/tinyframework/TinyFrameworkNestedClasses [inner-reason: class-annotation]]"
+        )
 }
 InnerClasses:
   public static #x= #x of #x;           // BaseClass=class com/android/hoststubgen/test/tinyframework/TinyFrameworkNestedClasses$BaseClass of class com/android/hoststubgen/test/tinyframework/TinyFrameworkNestedClasses
 SourceFile: "TinyFrameworkNestedClasses.java"
 RuntimeVisibleAnnotations:
-  x: #x()
-    com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+  x: #x(#x=s#x)
+    com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+      reason="class-wide in com/android/hoststubgen/test/tinyframework/TinyFrameworkNestedClasses [inner-reason: class-annotation]"
+    )
 NestHost: class com/android/hoststubgen/test/tinyframework/TinyFrameworkNestedClasses
 ## Class: com/android/hoststubgen/test/tinyframework/TinyFrameworkNestedClasses$InnerClass.class
   Compiled from "TinyFrameworkNestedClasses.java"
@@ -3745,8 +4149,10 @@ Constant pool:
     descriptor: I
     flags: (0x0001) ACC_PUBLIC
     RuntimeVisibleAnnotations:
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="class-wide in com/android/hoststubgen/test/tinyframework/TinyFrameworkNestedClasses$InnerClass [inner-reason: class-wide in com/android/hoststubgen/test/tinyframework/TinyFrameworkNestedClasses [inner-reason: class-annotation]]"
+        )
 
   private static {};
     descriptor: ()V
@@ -3754,7 +4160,7 @@ Constant pool:
     Code:
       stack=2, locals=0, args_size=0
          x: ldc           #x                  // class com/android/hoststubgen/test/tinyframework/TinyFrameworkNestedClasses$InnerClass
-         x: ldc           #x                  // String com.android.hoststubgen.hosthelper.HostTestUtils.logClassLoaded
+         x: ldc           #x                 // String com.android.hoststubgen.hosthelper.HostTestUtils.logClassLoaded
          x: invokestatic  #x                 // Method com/android/hoststubgen/hosthelper/HostTestUtils.onClassLoaded:(Ljava/lang/Class;Ljava/lang/String;)V
          x: return
 
@@ -3780,8 +4186,10 @@ Constant pool:
            11      10     0  this   Lcom/android/hoststubgen/test/tinyframework/TinyFrameworkNestedClasses$InnerClass;
            11      10     1 this$0   Lcom/android/hoststubgen/test/tinyframework/TinyFrameworkNestedClasses;
     RuntimeVisibleAnnotations:
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="class-wide in com/android/hoststubgen/test/tinyframework/TinyFrameworkNestedClasses$InnerClass [inner-reason: class-wide in com/android/hoststubgen/test/tinyframework/TinyFrameworkNestedClasses [inner-reason: class-annotation]]"
+        )
     MethodParameters:
       Name                           Flags
       <no name>                      final mandated
@@ -3790,8 +4198,10 @@ InnerClasses:
   public #x= #x of #x;                  // InnerClass=class com/android/hoststubgen/test/tinyframework/TinyFrameworkNestedClasses$InnerClass of class com/android/hoststubgen/test/tinyframework/TinyFrameworkNestedClasses
 SourceFile: "TinyFrameworkNestedClasses.java"
 RuntimeVisibleAnnotations:
-  x: #x()
-    com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+  x: #x(#x=s#x)
+    com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+      reason="class-wide in com/android/hoststubgen/test/tinyframework/TinyFrameworkNestedClasses [inner-reason: class-annotation]"
+    )
 NestHost: class com/android/hoststubgen/test/tinyframework/TinyFrameworkNestedClasses
 ## Class: com/android/hoststubgen/test/tinyframework/TinyFrameworkNestedClasses$StaticNestedClass$1.class
   Compiled from "TinyFrameworkNestedClasses.java"
@@ -3832,8 +4242,10 @@ Constant pool:
         Start  Length  Slot  Name   Signature
            11       5     0  this   Lcom/android/hoststubgen/test/tinyframework/TinyFrameworkNestedClasses$StaticNestedClass$1;
     RuntimeVisibleAnnotations:
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="class-wide in com/android/hoststubgen/test/tinyframework/TinyFrameworkNestedClasses$StaticNestedClass$1 [inner-reason: anonymous-inner-class]"
+        )
 
   public java.lang.Integer get();
     descriptor: ()Ljava/lang/Integer;
@@ -3853,8 +4265,10 @@ Constant pool:
         Start  Length  Slot  Name   Signature
            11       6     0  this   Lcom/android/hoststubgen/test/tinyframework/TinyFrameworkNestedClasses$StaticNestedClass$1;
     RuntimeVisibleAnnotations:
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="class-wide in com/android/hoststubgen/test/tinyframework/TinyFrameworkNestedClasses$StaticNestedClass$1 [inner-reason: anonymous-inner-class]"
+        )
 
   public java.lang.Object get();
     descriptor: ()Ljava/lang/Object;
@@ -3874,8 +4288,10 @@ Constant pool:
         Start  Length  Slot  Name   Signature
            11       5     0  this   Lcom/android/hoststubgen/test/tinyframework/TinyFrameworkNestedClasses$StaticNestedClass$1;
     RuntimeVisibleAnnotations:
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="is-synthetic-method [inner-reason: anonymous-inner-class]"
+        )
 }
 InnerClasses:
   public static #x= #x of #x;          // StaticNestedClass=class com/android/hoststubgen/test/tinyframework/TinyFrameworkNestedClasses$StaticNestedClass of class com/android/hoststubgen/test/tinyframework/TinyFrameworkNestedClasses
@@ -3884,8 +4300,10 @@ EnclosingMethod: #x.#x                // com.android.hoststubgen.test.tinyframew
 Signature: #x                           // Ljava/lang/Object;Ljava/util/function/Supplier<Ljava/lang/Integer;>;
 SourceFile: "TinyFrameworkNestedClasses.java"
 RuntimeVisibleAnnotations:
-  x: #x()
-    com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+  x: #x(#x=s#x)
+    com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+      reason="anonymous-inner-class"
+    )
 NestHost: class com/android/hoststubgen/test/tinyframework/TinyFrameworkNestedClasses
 ## Class: com/android/hoststubgen/test/tinyframework/TinyFrameworkNestedClasses$StaticNestedClass$Double$NestedClass.class
   Compiled from "TinyFrameworkNestedClasses.java"
@@ -3902,8 +4320,10 @@ Constant pool:
     descriptor: I
     flags: (0x0001) ACC_PUBLIC
     RuntimeVisibleAnnotations:
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="class-wide in com/android/hoststubgen/test/tinyframework/TinyFrameworkNestedClasses$StaticNestedClass$Double$NestedClass [inner-reason: class-wide in com/android/hoststubgen/test/tinyframework/TinyFrameworkNestedClasses$StaticNestedClass [inner-reason: class-wide in com/android/hoststubgen/test/tinyframework/TinyFrameworkNestedClasses [inner-reason: class-annotation]]]"
+        )
 
   private static {};
     descriptor: ()V
@@ -3911,7 +4331,7 @@ Constant pool:
     Code:
       stack=2, locals=0, args_size=0
          x: ldc           #x                  // class com/android/hoststubgen/test/tinyframework/TinyFrameworkNestedClasses$StaticNestedClass$Double$NestedClass
-         x: ldc           #x                  // String com.android.hoststubgen.hosthelper.HostTestUtils.logClassLoaded
+         x: ldc           #x                 // String com.android.hoststubgen.hosthelper.HostTestUtils.logClassLoaded
          x: invokestatic  #x                 // Method com/android/hoststubgen/hosthelper/HostTestUtils.onClassLoaded:(Ljava/lang/Class;Ljava/lang/String;)V
          x: return
 
@@ -3936,16 +4356,20 @@ Constant pool:
         Start  Length  Slot  Name   Signature
            11      11     0  this   Lcom/android/hoststubgen/test/tinyframework/TinyFrameworkNestedClasses$StaticNestedClass$Double$NestedClass;
     RuntimeVisibleAnnotations:
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="class-wide in com/android/hoststubgen/test/tinyframework/TinyFrameworkNestedClasses$StaticNestedClass$Double$NestedClass [inner-reason: class-wide in com/android/hoststubgen/test/tinyframework/TinyFrameworkNestedClasses$StaticNestedClass [inner-reason: class-wide in com/android/hoststubgen/test/tinyframework/TinyFrameworkNestedClasses [inner-reason: class-annotation]]]"
+        )
 }
 InnerClasses:
   public static #x= #x of #x;          // StaticNestedClass=class com/android/hoststubgen/test/tinyframework/TinyFrameworkNestedClasses$StaticNestedClass of class com/android/hoststubgen/test/tinyframework/TinyFrameworkNestedClasses
   public static #x= #x of #x;           // Double$NestedClass=class com/android/hoststubgen/test/tinyframework/TinyFrameworkNestedClasses$StaticNestedClass$Double$NestedClass of class com/android/hoststubgen/test/tinyframework/TinyFrameworkNestedClasses$StaticNestedClass
 SourceFile: "TinyFrameworkNestedClasses.java"
 RuntimeVisibleAnnotations:
-  x: #x()
-    com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+  x: #x(#x=s#x)
+    com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+      reason="class-wide in com/android/hoststubgen/test/tinyframework/TinyFrameworkNestedClasses$StaticNestedClass [inner-reason: class-wide in com/android/hoststubgen/test/tinyframework/TinyFrameworkNestedClasses [inner-reason: class-annotation]]"
+    )
 NestHost: class com/android/hoststubgen/test/tinyframework/TinyFrameworkNestedClasses
 ## Class: com/android/hoststubgen/test/tinyframework/TinyFrameworkNestedClasses$StaticNestedClass.class
   Compiled from "TinyFrameworkNestedClasses.java"
@@ -3962,8 +4386,10 @@ Constant pool:
     descriptor: I
     flags: (0x0001) ACC_PUBLIC
     RuntimeVisibleAnnotations:
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="class-wide in com/android/hoststubgen/test/tinyframework/TinyFrameworkNestedClasses$StaticNestedClass [inner-reason: class-wide in com/android/hoststubgen/test/tinyframework/TinyFrameworkNestedClasses [inner-reason: class-annotation]]"
+        )
 
   private static {};
     descriptor: ()V
@@ -3971,7 +4397,7 @@ Constant pool:
     Code:
       stack=2, locals=0, args_size=0
          x: ldc           #x                  // class com/android/hoststubgen/test/tinyframework/TinyFrameworkNestedClasses$StaticNestedClass
-         x: ldc           #x                  // String com.android.hoststubgen.hosthelper.HostTestUtils.logClassLoaded
+         x: ldc           #x                 // String com.android.hoststubgen.hosthelper.HostTestUtils.logClassLoaded
          x: invokestatic  #x                 // Method com/android/hoststubgen/hosthelper/HostTestUtils.onClassLoaded:(Ljava/lang/Class;Ljava/lang/String;)V
          x: return
 
@@ -3996,8 +4422,10 @@ Constant pool:
         Start  Length  Slot  Name   Signature
            11      11     0  this   Lcom/android/hoststubgen/test/tinyframework/TinyFrameworkNestedClasses$StaticNestedClass;
     RuntimeVisibleAnnotations:
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="class-wide in com/android/hoststubgen/test/tinyframework/TinyFrameworkNestedClasses$StaticNestedClass [inner-reason: class-wide in com/android/hoststubgen/test/tinyframework/TinyFrameworkNestedClasses [inner-reason: class-annotation]]"
+        )
 
   public static java.util.function.Supplier<java.lang.Integer> getSupplier_static();
     descriptor: ()Ljava/util/function/Supplier;
@@ -4016,8 +4444,10 @@ Constant pool:
       LineNumberTable:
     Signature: #x                          // ()Ljava/util/function/Supplier<Ljava/lang/Integer;>;
     RuntimeVisibleAnnotations:
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="class-wide in com/android/hoststubgen/test/tinyframework/TinyFrameworkNestedClasses$StaticNestedClass [inner-reason: class-wide in com/android/hoststubgen/test/tinyframework/TinyFrameworkNestedClasses [inner-reason: class-annotation]]"
+        )
 }
 InnerClasses:
   public static #x= #x of #x;           // StaticNestedClass=class com/android/hoststubgen/test/tinyframework/TinyFrameworkNestedClasses$StaticNestedClass of class com/android/hoststubgen/test/tinyframework/TinyFrameworkNestedClasses
@@ -4025,8 +4455,10 @@ InnerClasses:
   public static #x= #x of #x;           // Double$NestedClass=class com/android/hoststubgen/test/tinyframework/TinyFrameworkNestedClasses$StaticNestedClass$Double$NestedClass of class com/android/hoststubgen/test/tinyframework/TinyFrameworkNestedClasses$StaticNestedClass
 SourceFile: "TinyFrameworkNestedClasses.java"
 RuntimeVisibleAnnotations:
-  x: #x()
-    com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+  x: #x(#x=s#x)
+    com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+      reason="class-wide in com/android/hoststubgen/test/tinyframework/TinyFrameworkNestedClasses [inner-reason: class-annotation]"
+    )
 NestHost: class com/android/hoststubgen/test/tinyframework/TinyFrameworkNestedClasses
 ## Class: com/android/hoststubgen/test/tinyframework/TinyFrameworkNestedClasses$SubClass.class
   Compiled from "TinyFrameworkNestedClasses.java"
@@ -4045,7 +4477,7 @@ Constant pool:
     Code:
       stack=2, locals=0, args_size=0
          x: ldc           #x                  // class com/android/hoststubgen/test/tinyframework/TinyFrameworkNestedClasses$SubClass
-         x: ldc           #x                  // String com.android.hoststubgen.hosthelper.HostTestUtils.logClassLoaded
+         x: ldc           #x                 // String com.android.hoststubgen.hosthelper.HostTestUtils.logClassLoaded
          x: invokestatic  #x                 // Method com/android/hoststubgen/hosthelper/HostTestUtils.onClassLoaded:(Ljava/lang/Class;Ljava/lang/String;)V
          x: return
 
@@ -4069,16 +4501,20 @@ Constant pool:
            11       6     0  this   Lcom/android/hoststubgen/test/tinyframework/TinyFrameworkNestedClasses$SubClass;
            11       6     1     x   I
     RuntimeVisibleAnnotations:
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="class-wide in com/android/hoststubgen/test/tinyframework/TinyFrameworkNestedClasses$SubClass [inner-reason: class-wide in com/android/hoststubgen/test/tinyframework/TinyFrameworkNestedClasses [inner-reason: class-annotation]]"
+        )
 }
 InnerClasses:
   public static #x= #x of #x;           // BaseClass=class com/android/hoststubgen/test/tinyframework/TinyFrameworkNestedClasses$BaseClass of class com/android/hoststubgen/test/tinyframework/TinyFrameworkNestedClasses
   public static #x= #x of #x;           // SubClass=class com/android/hoststubgen/test/tinyframework/TinyFrameworkNestedClasses$SubClass of class com/android/hoststubgen/test/tinyframework/TinyFrameworkNestedClasses
 SourceFile: "TinyFrameworkNestedClasses.java"
 RuntimeVisibleAnnotations:
-  x: #x()
-    com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+  x: #x(#x=s#x)
+    com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+      reason="class-wide in com/android/hoststubgen/test/tinyframework/TinyFrameworkNestedClasses [inner-reason: class-annotation]"
+    )
 NestHost: class com/android/hoststubgen/test/tinyframework/TinyFrameworkNestedClasses
 ## Class: com/android/hoststubgen/test/tinyframework/TinyFrameworkNestedClasses.class
   Compiled from "TinyFrameworkNestedClasses.java"
@@ -4096,16 +4532,20 @@ Constant pool:
     flags: (0x0011) ACC_PUBLIC, ACC_FINAL
     Signature: #x                          // Ljava/util/function/Supplier<Ljava/lang/Integer;>;
     RuntimeVisibleAnnotations:
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="class-wide in com/android/hoststubgen/test/tinyframework/TinyFrameworkNestedClasses [inner-reason: class-annotation]"
+        )
 
   public static final java.util.function.Supplier<java.lang.Integer> sSupplier;
     descriptor: Ljava/util/function/Supplier;
     flags: (0x0019) ACC_PUBLIC, ACC_STATIC, ACC_FINAL
     Signature: #x                          // Ljava/util/function/Supplier<Ljava/lang/Integer;>;
     RuntimeVisibleAnnotations:
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="class-wide in com/android/hoststubgen/test/tinyframework/TinyFrameworkNestedClasses [inner-reason: class-annotation]"
+        )
 
   public com.android.hoststubgen.test.tinyframework.TinyFrameworkNestedClasses();
     descriptor: ()V
@@ -4131,8 +4571,10 @@ Constant pool:
         Start  Length  Slot  Name   Signature
            11      17     0  this   Lcom/android/hoststubgen/test/tinyframework/TinyFrameworkNestedClasses;
     RuntimeVisibleAnnotations:
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="class-wide in com/android/hoststubgen/test/tinyframework/TinyFrameworkNestedClasses [inner-reason: class-annotation]"
+        )
 
   public java.util.function.Supplier<java.lang.Integer> getSupplier();
     descriptor: ()Ljava/util/function/Supplier;
@@ -4155,8 +4597,10 @@ Constant pool:
            11       9     0  this   Lcom/android/hoststubgen/test/tinyframework/TinyFrameworkNestedClasses;
     Signature: #x                          // ()Ljava/util/function/Supplier<Ljava/lang/Integer;>;
     RuntimeVisibleAnnotations:
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="class-wide in com/android/hoststubgen/test/tinyframework/TinyFrameworkNestedClasses [inner-reason: class-annotation]"
+        )
 
   public static java.util.function.Supplier<java.lang.Integer> getSupplier_static();
     descriptor: ()Ljava/util/function/Supplier;
@@ -4175,8 +4619,10 @@ Constant pool:
       LineNumberTable:
     Signature: #x                          // ()Ljava/util/function/Supplier<Ljava/lang/Integer;>;
     RuntimeVisibleAnnotations:
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="class-wide in com/android/hoststubgen/test/tinyframework/TinyFrameworkNestedClasses [inner-reason: class-annotation]"
+        )
 
   static {};
     descriptor: ()V
@@ -4198,15 +4644,17 @@ Constant pool:
         x: return
       LineNumberTable:
     RuntimeVisibleAnnotations:
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="class-wide in com/android/hoststubgen/test/tinyframework/TinyFrameworkNestedClasses [inner-reason: class-annotation]"
+        )
 }
 InnerClasses:
   #x;                                    // class com/android/hoststubgen/test/tinyframework/TinyFrameworkNestedClasses$1
   #x;                                    // class com/android/hoststubgen/test/tinyframework/TinyFrameworkNestedClasses$3
   #x;                                    // class com/android/hoststubgen/test/tinyframework/TinyFrameworkNestedClasses$4
   #x;                                    // class com/android/hoststubgen/test/tinyframework/TinyFrameworkNestedClasses$2
-  public static #x= #x of #x;            // SubClass=class com/android/hoststubgen/test/tinyframework/TinyFrameworkNestedClasses$SubClass of class com/android/hoststubgen/test/tinyframework/TinyFrameworkNestedClasses
+  public static #x= #x of #x;           // SubClass=class com/android/hoststubgen/test/tinyframework/TinyFrameworkNestedClasses$SubClass of class com/android/hoststubgen/test/tinyframework/TinyFrameworkNestedClasses
   public static #x= #x of #x;           // BaseClass=class com/android/hoststubgen/test/tinyframework/TinyFrameworkNestedClasses$BaseClass of class com/android/hoststubgen/test/tinyframework/TinyFrameworkNestedClasses
   public static #x= #x of #x;           // StaticNestedClass=class com/android/hoststubgen/test/tinyframework/TinyFrameworkNestedClasses$StaticNestedClass of class com/android/hoststubgen/test/tinyframework/TinyFrameworkNestedClasses
   public #x= #x of #x;                  // InnerClass=class com/android/hoststubgen/test/tinyframework/TinyFrameworkNestedClasses$InnerClass of class com/android/hoststubgen/test/tinyframework/TinyFrameworkNestedClasses
@@ -4214,8 +4662,10 @@ InnerClasses:
   #x;                                    // class com/android/hoststubgen/test/tinyframework/TinyFrameworkNestedClasses$StaticNestedClass$1
 SourceFile: "TinyFrameworkNestedClasses.java"
 RuntimeVisibleAnnotations:
-  x: #x()
-    com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+  x: #x(#x=s#x)
+    com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+      reason="class-annotation"
+    )
   x: #x()
     android.hosttest.annotation.HostSideTestWholeClassKeep
 NestMembers:
@@ -4246,7 +4696,7 @@ Constant pool:
     Code:
       stack=2, locals=0, args_size=0
          x: ldc           #x                  // class com/android/hoststubgen/test/tinyframework/TinyFrameworkPackageRedirect
-         x: ldc           #x                  // String com.android.hoststubgen.hosthelper.HostTestUtils.logClassLoaded
+         x: ldc           #x                 // String com.android.hoststubgen.hosthelper.HostTestUtils.logClassLoaded
          x: invokestatic  #x                 // Method com/android/hoststubgen/hosthelper/HostTestUtils.onClassLoaded:(Ljava/lang/Class;Ljava/lang/String;)V
          x: return
 
@@ -4268,8 +4718,10 @@ Constant pool:
         Start  Length  Slot  Name   Signature
            11       5     0  this   Lcom/android/hoststubgen/test/tinyframework/TinyFrameworkPackageRedirect;
     RuntimeVisibleAnnotations:
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="class-wide in com/android/hoststubgen/test/tinyframework/TinyFrameworkPackageRedirect [inner-reason: class-annotation]"
+        )
 
   public static int foo(int);
     descriptor: (I)I
@@ -4292,13 +4744,17 @@ Constant pool:
         Start  Length  Slot  Name   Signature
            11      12     0 value   I
     RuntimeVisibleAnnotations:
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="class-wide in com/android/hoststubgen/test/tinyframework/TinyFrameworkPackageRedirect [inner-reason: class-annotation]"
+        )
 }
 SourceFile: "TinyFrameworkPackageRedirect.java"
 RuntimeVisibleAnnotations:
-  x: #x()
-    com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+  x: #x(#x=s#x)
+    com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+      reason="class-annotation"
+    )
   x: #x()
     android.hosttest.annotation.HostSideTestWholeClassKeep
 ## Class: com/android/hoststubgen/test/tinyframework/TinyFrameworkPartiallyAllowlisted$PartiallyAllowlisted.class
@@ -4318,7 +4774,7 @@ Constant pool:
     Code:
       stack=2, locals=0, args_size=0
          x: ldc           #x                  // class com/android/hoststubgen/test/tinyframework/TinyFrameworkPartiallyAllowlisted$PartiallyAllowlisted
-         x: ldc           #x                  // String com.android.hoststubgen.hosthelper.HostTestUtils.logClassLoaded
+         x: ldc           #x                 // String com.android.hoststubgen.hosthelper.HostTestUtils.logClassLoaded
          x: invokestatic  #x                 // Method com/android/hoststubgen/hosthelper/HostTestUtils.onClassLoaded:(Ljava/lang/Class;Ljava/lang/String;)V
          x: return
 
@@ -4341,8 +4797,10 @@ Constant pool:
         Start  Length  Slot  Name   Signature
            11       4     0 value   I
     RuntimeVisibleAnnotations:
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="annotation"
+        )
       x: #x()
         android.hosttest.annotation.HostSideTestKeep
 }
@@ -4350,8 +4808,10 @@ InnerClasses:
   public static #x= #x of #x;           // PartiallyAllowlisted=class com/android/hoststubgen/test/tinyframework/TinyFrameworkPartiallyAllowlisted$PartiallyAllowlisted of class com/android/hoststubgen/test/tinyframework/TinyFrameworkPartiallyAllowlisted
 SourceFile: "TinyFrameworkPartiallyAllowlisted.java"
 RuntimeVisibleAnnotations:
-  x: #x()
-    com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+  x: #x(#x=s#x)
+    com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+      reason="annotation"
+    )
   x: #x()
     android.hosttest.annotation.HostSideTestPartiallyAllowlisted
   x: #x()
@@ -4374,7 +4834,7 @@ Constant pool:
     Code:
       stack=2, locals=0, args_size=0
          x: ldc           #x                  // class com/android/hoststubgen/test/tinyframework/TinyFrameworkRenamedClassCaller
-         x: ldc           #x                  // String com.android.hoststubgen.hosthelper.HostTestUtils.logClassLoaded
+         x: ldc           #x                 // String com.android.hoststubgen.hosthelper.HostTestUtils.logClassLoaded
          x: invokestatic  #x                 // Method com/android/hoststubgen/hosthelper/HostTestUtils.onClassLoaded:(Ljava/lang/Class;Ljava/lang/String;)V
          x: return
 
@@ -4396,8 +4856,10 @@ Constant pool:
         Start  Length  Slot  Name   Signature
            11       5     0  this   Lcom/android/hoststubgen/test/tinyframework/TinyFrameworkRenamedClassCaller;
     RuntimeVisibleAnnotations:
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="class-wide in com/android/hoststubgen/test/tinyframework/TinyFrameworkRenamedClassCaller [inner-reason: class-annotation]"
+        )
 
   public static int foo(int);
     descriptor: (I)I
@@ -4420,8 +4882,10 @@ Constant pool:
         Start  Length  Slot  Name   Signature
            11      12     0 value   I
     RuntimeVisibleAnnotations:
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="class-wide in com/android/hoststubgen/test/tinyframework/TinyFrameworkRenamedClassCaller [inner-reason: class-annotation]"
+        )
 
   public static int bar(int);
     descriptor: (I)I
@@ -4444,13 +4908,17 @@ Constant pool:
         Start  Length  Slot  Name   Signature
            11      10     0 value   I
     RuntimeVisibleAnnotations:
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="class-wide in com/android/hoststubgen/test/tinyframework/TinyFrameworkRenamedClassCaller [inner-reason: class-annotation]"
+        )
 }
 SourceFile: "TinyFrameworkRenamedClassCaller.java"
 RuntimeVisibleAnnotations:
-  x: #x()
-    com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+  x: #x(#x=s#x)
+    com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+      reason="class-annotation"
+    )
   x: #x()
     android.hosttest.annotation.HostSideTestWholeClassKeep
 ## Class: com/android/hoststubgen/test/tinyframework/TinyFrameworkUnsupportedApiException.class
@@ -4470,7 +4938,7 @@ Constant pool:
     Code:
       stack=2, locals=0, args_size=0
          x: ldc           #x                  // class com/android/hoststubgen/test/tinyframework/TinyFrameworkUnsupportedApiException
-         x: ldc           #x                  // String com.android.hoststubgen.hosthelper.HostTestUtils.logClassLoaded
+         x: ldc           #x                 // String com.android.hoststubgen.hosthelper.HostTestUtils.logClassLoaded
          x: invokestatic  #x                 // Method com/android/hoststubgen/hosthelper/HostTestUtils.onClassLoaded:(Ljava/lang/Class;Ljava/lang/String;)V
          x: return
 
@@ -4493,13 +4961,17 @@ Constant pool:
         Start  Length  Slot  Name   Signature
            11       7     0  this   Lcom/android/hoststubgen/test/tinyframework/TinyFrameworkUnsupportedApiException;
     RuntimeVisibleAnnotations:
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="class-wide in com/android/hoststubgen/test/tinyframework/TinyFrameworkUnsupportedApiException [inner-reason: class-annotation]"
+        )
 }
 SourceFile: "TinyFrameworkUnsupportedApiException.java"
 RuntimeVisibleAnnotations:
-  x: #x()
-    com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+  x: #x(#x=s#x)
+    com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+      reason="class-annotation"
+    )
   x: #x()
     android.hosttest.annotation.HostSideTestWholeClassKeep
 ## Class: com/android/hoststubgen/test/tinyframework/packagetest/A.class
@@ -4519,14 +4991,16 @@ Constant pool:
     Code:
       stack=2, locals=0, args_size=0
          x: ldc           #x                  // class com/android/hoststubgen/test/tinyframework/packagetest/A
-         x: ldc           #x                  // String com.android.hoststubgen.hosthelper.HostTestUtils.logClassLoaded
+         x: ldc           #x                 // String com.android.hoststubgen.hosthelper.HostTestUtils.logClassLoaded
          x: invokestatic  #x                 // Method com/android/hoststubgen/hosthelper/HostTestUtils.onClassLoaded:(Ljava/lang/Class;Ljava/lang/String;)V
          x: return
 }
 SourceFile: "A.java"
 RuntimeVisibleAnnotations:
-  x: #x()
-    com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+  x: #x(#x=s#x)
+    com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+      reason="file-override (test-package-policy)"
+    )
 ## Class: com/android/hoststubgen/test/tinyframework/packagetest/sub/A.class
   Compiled from "A.java"
 public class com.android.hoststubgen.test.tinyframework.packagetest.sub.A
@@ -4544,14 +5018,16 @@ Constant pool:
     Code:
       stack=2, locals=0, args_size=0
          x: ldc           #x                  // class com/android/hoststubgen/test/tinyframework/packagetest/sub/A
-         x: ldc           #x                  // String com.android.hoststubgen.hosthelper.HostTestUtils.logClassLoaded
+         x: ldc           #x                 // String com.android.hoststubgen.hosthelper.HostTestUtils.logClassLoaded
          x: invokestatic  #x                 // Method com/android/hoststubgen/hosthelper/HostTestUtils.onClassLoaded:(Ljava/lang/Class;Ljava/lang/String;)V
          x: return
 }
 SourceFile: "A.java"
 RuntimeVisibleAnnotations:
-  x: #x()
-    com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+  x: #x(#x=s#x)
+    com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+      reason="file-override (test-package-policy)"
+    )
 ## Class: com/android/hoststubgen/test/tinyframework/subclasstest/C1.class
   Compiled from "C1.java"
 public class com.android.hoststubgen.test.tinyframework.subclasstest.C1
@@ -4569,14 +5045,16 @@ Constant pool:
     Code:
       stack=2, locals=0, args_size=0
          x: ldc           #x                  // class com/android/hoststubgen/test/tinyframework/subclasstest/C1
-         x: ldc           #x                  // String com.android.hoststubgen.hosthelper.HostTestUtils.logClassLoaded
+         x: ldc           #x                 // String com.android.hoststubgen.hosthelper.HostTestUtils.logClassLoaded
          x: invokestatic  #x                 // Method com/android/hoststubgen/hosthelper/HostTestUtils.onClassLoaded:(Ljava/lang/Class;Ljava/lang/String;)V
          x: return
 }
 SourceFile: "C1.java"
 RuntimeVisibleAnnotations:
-  x: #x()
-    com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+  x: #x(#x=s#x)
+    com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+      reason="file-override (test-class-policy)"
+    )
 ## Class: com/android/hoststubgen/test/tinyframework/subclasstest/C2.class
   Compiled from "C2.java"
 public class com.android.hoststubgen.test.tinyframework.subclasstest.C2 extends com.android.hoststubgen.test.tinyframework.subclasstest.C1
@@ -4594,14 +5072,16 @@ Constant pool:
     Code:
       stack=2, locals=0, args_size=0
          x: ldc           #x                  // class com/android/hoststubgen/test/tinyframework/subclasstest/C2
-         x: ldc           #x                  // String com.android.hoststubgen.hosthelper.HostTestUtils.logClassLoaded
+         x: ldc           #x                 // String com.android.hoststubgen.hosthelper.HostTestUtils.logClassLoaded
          x: invokestatic  #x                 // Method com/android/hoststubgen/hosthelper/HostTestUtils.onClassLoaded:(Ljava/lang/Class;Ljava/lang/String;)V
          x: return
 }
 SourceFile: "C2.java"
 RuntimeVisibleAnnotations:
-  x: #x()
-    com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+  x: #x(#x=s#x)
+    com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+      reason="file-override"
+    )
 ## Class: com/android/hoststubgen/test/tinyframework/subclasstest/C3.class
   Compiled from "C3.java"
 public class com.android.hoststubgen.test.tinyframework.subclasstest.C3 extends com.android.hoststubgen.test.tinyframework.subclasstest.C2
@@ -4619,14 +5099,16 @@ Constant pool:
     Code:
       stack=2, locals=0, args_size=0
          x: ldc           #x                  // class com/android/hoststubgen/test/tinyframework/subclasstest/C3
-         x: ldc           #x                  // String com.android.hoststubgen.hosthelper.HostTestUtils.logClassLoaded
+         x: ldc           #x                 // String com.android.hoststubgen.hosthelper.HostTestUtils.logClassLoaded
          x: invokestatic  #x                 // Method com/android/hoststubgen/hosthelper/HostTestUtils.onClassLoaded:(Ljava/lang/Class;Ljava/lang/String;)V
          x: return
 }
 SourceFile: "C3.java"
 RuntimeVisibleAnnotations:
-  x: #x()
-    com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+  x: #x(#x=s#x)
+    com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+      reason="file-override"
+    )
 ## Class: com/android/hoststubgen/test/tinyframework/subclasstest/CA.class
   Compiled from "CA.java"
 public class com.android.hoststubgen.test.tinyframework.subclasstest.CA
@@ -4644,14 +5126,16 @@ Constant pool:
     Code:
       stack=2, locals=0, args_size=0
          x: ldc           #x                  // class com/android/hoststubgen/test/tinyframework/subclasstest/CA
-         x: ldc           #x                  // String com.android.hoststubgen.hosthelper.HostTestUtils.logClassLoaded
+         x: ldc           #x                 // String com.android.hoststubgen.hosthelper.HostTestUtils.logClassLoaded
          x: invokestatic  #x                 // Method com/android/hoststubgen/hosthelper/HostTestUtils.onClassLoaded:(Ljava/lang/Class;Ljava/lang/String;)V
          x: return
 }
 SourceFile: "CA.java"
 RuntimeVisibleAnnotations:
-  x: #x()
-    com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+  x: #x(#x=s#x)
+    com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+      reason="file-override"
+    )
 ## Class: com/android/hoststubgen/test/tinyframework/subclasstest/CB.class
   Compiled from "CB.java"
 public class com.android.hoststubgen.test.tinyframework.subclasstest.CB
@@ -4669,14 +5153,16 @@ Constant pool:
     Code:
       stack=2, locals=0, args_size=0
          x: ldc           #x                  // class com/android/hoststubgen/test/tinyframework/subclasstest/CB
-         x: ldc           #x                  // String com.android.hoststubgen.hosthelper.HostTestUtils.logClassLoaded
+         x: ldc           #x                 // String com.android.hoststubgen.hosthelper.HostTestUtils.logClassLoaded
          x: invokestatic  #x                 // Method com/android/hoststubgen/hosthelper/HostTestUtils.onClassLoaded:(Ljava/lang/Class;Ljava/lang/String;)V
          x: return
 }
 SourceFile: "CB.java"
 RuntimeVisibleAnnotations:
-  x: #x()
-    com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+  x: #x(#x=s#x)
+    com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+      reason="file-override"
+    )
 ## Class: com/android/hoststubgen/test/tinyframework/subclasstest/Class_C1.class
   Compiled from "Class_C1.java"
 public class com.android.hoststubgen.test.tinyframework.subclasstest.Class_C1 extends com.android.hoststubgen.test.tinyframework.subclasstest.C1
@@ -4694,14 +5180,16 @@ Constant pool:
     Code:
       stack=2, locals=0, args_size=0
          x: ldc           #x                  // class com/android/hoststubgen/test/tinyframework/subclasstest/Class_C1
-         x: ldc           #x                  // String com.android.hoststubgen.hosthelper.HostTestUtils.logClassLoaded
+         x: ldc           #x                 // String com.android.hoststubgen.hosthelper.HostTestUtils.logClassLoaded
          x: invokestatic  #x                 // Method com/android/hoststubgen/hosthelper/HostTestUtils.onClassLoaded:(Ljava/lang/Class;Ljava/lang/String;)V
          x: return
 }
 SourceFile: "Class_C1.java"
 RuntimeVisibleAnnotations:
-  x: #x()
-    com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+  x: #x(#x=s#x)
+    com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+      reason="extends com.android.hoststubgen.test.tinyframework.subclasstest.C1"
+    )
 ## Class: com/android/hoststubgen/test/tinyframework/subclasstest/Class_C2.class
   Compiled from "Class_C2.java"
 public class com.android.hoststubgen.test.tinyframework.subclasstest.Class_C2 extends com.android.hoststubgen.test.tinyframework.subclasstest.C2
@@ -4719,14 +5207,16 @@ Constant pool:
     Code:
       stack=2, locals=0, args_size=0
          x: ldc           #x                  // class com/android/hoststubgen/test/tinyframework/subclasstest/Class_C2
-         x: ldc           #x                  // String com.android.hoststubgen.hosthelper.HostTestUtils.logClassLoaded
+         x: ldc           #x                 // String com.android.hoststubgen.hosthelper.HostTestUtils.logClassLoaded
          x: invokestatic  #x                 // Method com/android/hoststubgen/hosthelper/HostTestUtils.onClassLoaded:(Ljava/lang/Class;Ljava/lang/String;)V
          x: return
 }
 SourceFile: "Class_C2.java"
 RuntimeVisibleAnnotations:
-  x: #x()
-    com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+  x: #x(#x=s#x)
+    com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+      reason="extends com.android.hoststubgen.test.tinyframework.subclasstest.C1"
+    )
 ## Class: com/android/hoststubgen/test/tinyframework/subclasstest/Class_C3.class
   Compiled from "Class_C3.java"
 public class com.android.hoststubgen.test.tinyframework.subclasstest.Class_C3 extends com.android.hoststubgen.test.tinyframework.subclasstest.C3
@@ -4744,14 +5234,16 @@ Constant pool:
     Code:
       stack=2, locals=0, args_size=0
          x: ldc           #x                  // class com/android/hoststubgen/test/tinyframework/subclasstest/Class_C3
-         x: ldc           #x                  // String com.android.hoststubgen.hosthelper.HostTestUtils.logClassLoaded
+         x: ldc           #x                 // String com.android.hoststubgen.hosthelper.HostTestUtils.logClassLoaded
          x: invokestatic  #x                 // Method com/android/hoststubgen/hosthelper/HostTestUtils.onClassLoaded:(Ljava/lang/Class;Ljava/lang/String;)V
          x: return
 }
 SourceFile: "Class_C3.java"
 RuntimeVisibleAnnotations:
-  x: #x()
-    com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+  x: #x(#x=s#x)
+    com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+      reason="extends com.android.hoststubgen.test.tinyframework.subclasstest.C1"
+    )
 ## Class: com/android/hoststubgen/test/tinyframework/subclasstest/Class_I1.class
   Compiled from "Class_I1.java"
 public class com.android.hoststubgen.test.tinyframework.subclasstest.Class_I1 implements com.android.hoststubgen.test.tinyframework.subclasstest.I1
@@ -4775,8 +5267,10 @@ Constant pool:
 }
 SourceFile: "Class_I1.java"
 RuntimeVisibleAnnotations:
-  x: #x()
-    com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+  x: #x(#x=s#x)
+    com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+      reason="extends com.android.hoststubgen.test.tinyframework.subclasstest.I1"
+    )
 ## Class: com/android/hoststubgen/test/tinyframework/subclasstest/Class_I1_IA.class
   Compiled from "Class_I1_IA.java"
 public class com.android.hoststubgen.test.tinyframework.subclasstest.Class_I1_IA implements com.android.hoststubgen.test.tinyframework.subclasstest.I1,com.android.hoststubgen.test.tinyframework.subclasstest.IA
@@ -4800,8 +5294,10 @@ Constant pool:
 }
 SourceFile: "Class_I1_IA.java"
 RuntimeVisibleAnnotations:
-  x: #x()
-    com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+  x: #x(#x=s#x)
+    com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+      reason="extends com.android.hoststubgen.test.tinyframework.subclasstest.I1"
+    )
 ## Class: com/android/hoststubgen/test/tinyframework/subclasstest/Class_I2.class
   Compiled from "Class_I2.java"
 public class com.android.hoststubgen.test.tinyframework.subclasstest.Class_I2 implements com.android.hoststubgen.test.tinyframework.subclasstest.I2
@@ -4825,8 +5321,10 @@ Constant pool:
 }
 SourceFile: "Class_I2.java"
 RuntimeVisibleAnnotations:
-  x: #x()
-    com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+  x: #x(#x=s#x)
+    com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+      reason="extends com.android.hoststubgen.test.tinyframework.subclasstest.I1"
+    )
 ## Class: com/android/hoststubgen/test/tinyframework/subclasstest/Class_I3.class
   Compiled from "Class_I3.java"
 public class com.android.hoststubgen.test.tinyframework.subclasstest.Class_I3 implements com.android.hoststubgen.test.tinyframework.subclasstest.I3
@@ -4850,8 +5348,10 @@ Constant pool:
 }
 SourceFile: "Class_I3.java"
 RuntimeVisibleAnnotations:
-  x: #x()
-    com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+  x: #x(#x=s#x)
+    com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+      reason="extends com.android.hoststubgen.test.tinyframework.subclasstest.I1"
+    )
 ## Class: com/android/hoststubgen/test/tinyframework/subclasstest/I1.class
   Compiled from "I1.java"
 public interface com.android.hoststubgen.test.tinyframework.subclasstest.I1
@@ -4869,14 +5369,16 @@ Constant pool:
     Code:
       stack=2, locals=0, args_size=0
          x: ldc           #x                  // class com/android/hoststubgen/test/tinyframework/subclasstest/I1
-         x: ldc           #x                  // String com.android.hoststubgen.hosthelper.HostTestUtils.logClassLoaded
+         x: ldc           #x                 // String com.android.hoststubgen.hosthelper.HostTestUtils.logClassLoaded
          x: invokestatic  #x                 // Method com/android/hoststubgen/hosthelper/HostTestUtils.onClassLoaded:(Ljava/lang/Class;Ljava/lang/String;)V
          x: return
 }
 SourceFile: "I1.java"
 RuntimeVisibleAnnotations:
-  x: #x()
-    com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+  x: #x(#x=s#x)
+    com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+      reason="file-override"
+    )
 ## Class: com/android/hoststubgen/test/tinyframework/subclasstest/I2.class
   Compiled from "I2.java"
 public interface com.android.hoststubgen.test.tinyframework.subclasstest.I2 extends com.android.hoststubgen.test.tinyframework.subclasstest.I1
@@ -4900,8 +5402,10 @@ Constant pool:
 }
 SourceFile: "I2.java"
 RuntimeVisibleAnnotations:
-  x: #x()
-    com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+  x: #x(#x=s#x)
+    com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+      reason="file-override"
+    )
 ## Class: com/android/hoststubgen/test/tinyframework/subclasstest/I3.class
   Compiled from "I3.java"
 public interface com.android.hoststubgen.test.tinyframework.subclasstest.I3 extends com.android.hoststubgen.test.tinyframework.subclasstest.I2
@@ -4925,8 +5429,10 @@ Constant pool:
 }
 SourceFile: "I3.java"
 RuntimeVisibleAnnotations:
-  x: #x()
-    com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+  x: #x(#x=s#x)
+    com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+      reason="file-override"
+    )
 ## Class: com/android/hoststubgen/test/tinyframework/subclasstest/IA.class
   Compiled from "IA.java"
 public interface com.android.hoststubgen.test.tinyframework.subclasstest.IA
@@ -4944,14 +5450,16 @@ Constant pool:
     Code:
       stack=2, locals=0, args_size=0
          x: ldc           #x                  // class com/android/hoststubgen/test/tinyframework/subclasstest/IA
-         x: ldc           #x                  // String com.android.hoststubgen.hosthelper.HostTestUtils.logClassLoaded
+         x: ldc           #x                 // String com.android.hoststubgen.hosthelper.HostTestUtils.logClassLoaded
          x: invokestatic  #x                 // Method com/android/hoststubgen/hosthelper/HostTestUtils.onClassLoaded:(Ljava/lang/Class;Ljava/lang/String;)V
          x: return
 }
 SourceFile: "IA.java"
 RuntimeVisibleAnnotations:
-  x: #x()
-    com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+  x: #x(#x=s#x)
+    com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+      reason="file-override"
+    )
 ## Class: com/android/hoststubgen/test/tinyframework/subclasstest/IB.class
   Compiled from "IB.java"
 public interface com.android.hoststubgen.test.tinyframework.subclasstest.IB
@@ -4969,14 +5477,16 @@ Constant pool:
     Code:
       stack=2, locals=0, args_size=0
          x: ldc           #x                  // class com/android/hoststubgen/test/tinyframework/subclasstest/IB
-         x: ldc           #x                  // String com.android.hoststubgen.hosthelper.HostTestUtils.logClassLoaded
+         x: ldc           #x                 // String com.android.hoststubgen.hosthelper.HostTestUtils.logClassLoaded
          x: invokestatic  #x                 // Method com/android/hoststubgen/hosthelper/HostTestUtils.onClassLoaded:(Ljava/lang/Class;Ljava/lang/String;)V
          x: return
 }
 SourceFile: "IB.java"
 RuntimeVisibleAnnotations:
-  x: #x()
-    com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+  x: #x(#x=s#x)
+    com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+      reason="file-override"
+    )
 ## Class: com/supported/UnsupportedClass.class
   Compiled from "UnsupportedClass.java"
 public class com.supported.UnsupportedClass
@@ -4992,8 +5502,10 @@ Constant pool:
     descriptor: I
     flags: (0x0012) ACC_PRIVATE, ACC_FINAL
     RuntimeVisibleAnnotations:
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="class-wide in com/supported/UnsupportedClass [inner-reason: class-annotation]"
+        )
 
   private static {};
     descriptor: ()V
@@ -5001,7 +5513,7 @@ Constant pool:
     Code:
       stack=2, locals=0, args_size=0
          x: ldc           #x                  // class com/supported/UnsupportedClass
-         x: ldc           #x                  // String com.android.hoststubgen.hosthelper.HostTestUtils.logClassLoaded
+         x: ldc           #x                 // String com.android.hoststubgen.hosthelper.HostTestUtils.logClassLoaded
          x: invokestatic  #x                 // Method com/android/hoststubgen/hosthelper/HostTestUtils.onClassLoaded:(Ljava/lang/Class;Ljava/lang/String;)V
          x: return
 
@@ -5027,8 +5539,10 @@ Constant pool:
            11      10     0  this   Lcom/supported/UnsupportedClass;
            11      10     1 value   I
     RuntimeVisibleAnnotations:
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="class-wide in com/supported/UnsupportedClass [inner-reason: class-annotation]"
+        )
 
   public int getValue();
     descriptor: ()I
@@ -5048,13 +5562,17 @@ Constant pool:
         Start  Length  Slot  Name   Signature
            11       5     0  this   Lcom/supported/UnsupportedClass;
     RuntimeVisibleAnnotations:
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="class-wide in com/supported/UnsupportedClass [inner-reason: class-annotation]"
+        )
 }
 SourceFile: "UnsupportedClass.java"
 RuntimeVisibleAnnotations:
-  x: #x()
-    com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+  x: #x(#x=s#x)
+    com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+      reason="class-annotation"
+    )
   x: #x()
     android.hosttest.annotation.HostSideTestWholeClassKeep
 ## Class: com/unsupported/UnsupportedClass.class
@@ -5074,7 +5592,7 @@ Constant pool:
     Code:
       stack=2, locals=0, args_size=0
          x: ldc           #x                  // class com/unsupported/UnsupportedClass
-         x: ldc           #x                  // String com.android.hoststubgen.hosthelper.HostTestUtils.logClassLoaded
+         x: ldc           #x                 // String com.android.hoststubgen.hosthelper.HostTestUtils.logClassLoaded
          x: invokestatic  #x                 // Method com/android/hoststubgen/hosthelper/HostTestUtils.onClassLoaded:(Ljava/lang/Class;Ljava/lang/String;)V
          x: return
 
@@ -5101,8 +5619,10 @@ Constant pool:
            11      14     0  this   Lcom/unsupported/UnsupportedClass;
            11      14     1 value   I
     RuntimeVisibleAnnotations:
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="class-wide in com/unsupported/UnsupportedClass [inner-reason: class-annotation]"
+        )
 
   public int getValue();
     descriptor: ()I
@@ -5124,13 +5644,17 @@ Constant pool:
         Start  Length  Slot  Name   Signature
            11      10     0  this   Lcom/unsupported/UnsupportedClass;
     RuntimeVisibleAnnotations:
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="class-wide in com/unsupported/UnsupportedClass [inner-reason: class-annotation]"
+        )
 }
 SourceFile: "UnsupportedClass.java"
 RuntimeVisibleAnnotations:
-  x: #x()
-    com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+  x: #x(#x=s#x)
+    com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+      reason="class-annotation"
+    )
   x: #x()
     android.hosttest.annotation.HostSideTestWholeClassKeep
 ## Class: rename_prefix/com/android/hoststubgen/test/tinyframework/TinyFrameworkToBeRenamed.class
@@ -5148,8 +5672,10 @@ Constant pool:
     descriptor: I
     flags: (0x0012) ACC_PRIVATE, ACC_FINAL
     RuntimeVisibleAnnotations:
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="class-wide in com/android/hoststubgen/test/tinyframework/TinyFrameworkToBeRenamed [inner-reason: class-annotation]"
+        )
 
   private static {};
     descriptor: ()V
@@ -5157,7 +5683,7 @@ Constant pool:
     Code:
       stack=2, locals=0, args_size=0
          x: ldc           #x                  // class rename_prefix/com/android/hoststubgen/test/tinyframework/TinyFrameworkToBeRenamed
-         x: ldc           #x                  // String com.android.hoststubgen.hosthelper.HostTestUtils.logClassLoaded
+         x: ldc           #x                 // String com.android.hoststubgen.hosthelper.HostTestUtils.logClassLoaded
          x: invokestatic  #x                 // Method com/android/hoststubgen/hosthelper/HostTestUtils.onClassLoaded:(Ljava/lang/Class;Ljava/lang/String;)V
          x: return
 
@@ -5183,8 +5709,10 @@ Constant pool:
            11      10     0  this   Lrename_prefix/com/android/hoststubgen/test/tinyframework/TinyFrameworkToBeRenamed;
            11      10     1 value   I
     RuntimeVisibleAnnotations:
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="class-wide in com/android/hoststubgen/test/tinyframework/TinyFrameworkToBeRenamed [inner-reason: class-annotation]"
+        )
 
   public int getValue();
     descriptor: ()I
@@ -5204,8 +5732,10 @@ Constant pool:
         Start  Length  Slot  Name   Signature
            11       5     0  this   Lrename_prefix/com/android/hoststubgen/test/tinyframework/TinyFrameworkToBeRenamed;
     RuntimeVisibleAnnotations:
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="class-wide in com/android/hoststubgen/test/tinyframework/TinyFrameworkToBeRenamed [inner-reason: class-annotation]"
+        )
 
   public static rename_prefix.com.android.hoststubgen.test.tinyframework.TinyFrameworkToBeRenamed[] getArray(int);
     descriptor: (I)[Lrename_prefix/com/android/hoststubgen/test/tinyframework/TinyFrameworkToBeRenamed;
@@ -5232,12 +5762,16 @@ Constant pool:
         Start  Length  Slot  Name   Signature
            11      16     0 value   I
     RuntimeVisibleAnnotations:
-      x: #x()
-        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="class-wide in com/android/hoststubgen/test/tinyframework/TinyFrameworkToBeRenamed [inner-reason: class-annotation]"
+        )
 }
 SourceFile: "TinyFrameworkToBeRenamed.java"
 RuntimeVisibleAnnotations:
-  x: #x()
-    com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
+  x: #x(#x=s#x)
+    com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+      reason="class-annotation"
+    )
   x: #x()
     android.hosttest.annotation.HostSideTestWholeClassKeep

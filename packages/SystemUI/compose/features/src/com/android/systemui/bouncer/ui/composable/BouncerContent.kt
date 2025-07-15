@@ -150,7 +150,7 @@ fun ContentScope.BouncerContent(
     // Give an extra delay for showing BouncerContent if face auth or active unlock may run.
     // This gives passive auth methods an opportunity to succeed before showing bouncer contents.
     val appearAnimationInterpolator = FastOutSlowInEasing
-    val appearAnimationDuration = 250
+    var appearAnimationDuration: Int by remember { mutableIntStateOf(0) }
     var appearAnimationDelay: Int by remember { mutableIntStateOf(0) }
     var startAppearAnimation: Boolean by remember { mutableStateOf(false) }
     val animatedAlpha: Float by
@@ -193,6 +193,12 @@ fun ContentScope.BouncerContent(
         appearAnimationDelay =
             BOUNCER_CONTENTS_PASSIVE_AUTH_DELAY.takeIf { viewModel.shouldDelayBouncerContent() }
                 ?: 0
+
+        // evaluate once when BouncerContent first shows; we don't animate if the
+        // bouncer showing was initiated from a drag/fling
+        appearAnimationDuration =
+            if (!isDraggingToBouncer()) BOUNCER_CONTENTS_ALPHA_IN_ANIMATION_DURATION else 0
+
         startAppearAnimation = true
     }
 
@@ -219,9 +225,11 @@ fun ContentScope.BouncerContent(
                     alpha =
                         if (isDraggingToBouncer()) {
                             appearAnimationInterpolator.transform(
+                                // animate in along with the layout's transition
                                 layoutState.currentTransition!!.progress
                             )
                         } else {
+                            // animate in separately from the layout's transition
                             animatedAlpha
                         }
                 },
@@ -1051,3 +1059,4 @@ object BouncerMotionTestKeys {
 }
 
 private const val BOUNCER_CONTENTS_PASSIVE_AUTH_DELAY = 500
+private const val BOUNCER_CONTENTS_ALPHA_IN_ANIMATION_DURATION = 250

@@ -66,7 +66,6 @@ import androidx.test.InstrumentationRegistry;
 import androidx.test.filters.SmallTest;
 
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -2127,6 +2126,54 @@ public class HdmiCecLocalDeviceTvTest {
         assertThat(mPowerManager.isInteractive()).isTrue();
         assertThat(hdmiCecLocalDeviceTv.getWasActivePathSetToConnectedDevice())
                 .isTrue();
+    }
+
+
+    @Test
+    public void handleStandby_behaviorIsDream_broadcastsStandby_goesToDream() {
+        mHdmiCecLocalDeviceTv.mService.getHdmiCecConfig().setIntValue(
+                HdmiControlManager.CEC_SETTING_NAME_TV_BEHAVIOR_ON_STANDBY_MESSAGE,
+                HdmiControlManager.TV_BEHAVIOR_ON_STANDBY_MESSAGE_GO_TO_DREAM);
+        mHdmiCecLocalDeviceTv.mService.getHdmiCecConfig().setIntValue(
+                HdmiControlManager.CEC_SETTING_NAME_TV_SEND_STANDBY_ON_SLEEP,
+                HdmiControlManager.TV_SEND_STANDBY_ON_SLEEP_ENABLED);
+        HdmiCecMessage standbyMessageFromPlayback = HdmiCecMessageBuilder.buildStandby(
+                ADDR_PLAYBACK_1, ADDR_TV);
+        HdmiCecMessage standbyMessageFromTv = HdmiCecMessageBuilder.buildStandby(
+                mHdmiCecLocalDeviceTv.getDeviceInfo().getLogicalAddress(), ADDR_BROADCAST);
+        mPowerManager.setInteractive(true);
+        mTestLooper.dispatchAll();
+
+        assertThat(mHdmiCecLocalDeviceTv.dispatchMessage(standbyMessageFromPlayback))
+                .isEqualTo(Constants.HANDLED);
+        mTestLooper.dispatchAll();
+
+        assertThat(mPowerManager.isInteractive()).isTrue();
+        assertThat(mNativeWrapper.getResultMessages()).contains(standbyMessageFromTv);
+    }
+
+    @Test
+    public void handleStandby_behaviorIsDream_doesNotBroadcastStandby_goesToDream() {
+        mHdmiCecLocalDeviceTv.mService.getHdmiCecConfig().setIntValue(
+                HdmiControlManager.CEC_SETTING_NAME_TV_BEHAVIOR_ON_STANDBY_MESSAGE,
+                HdmiControlManager.TV_BEHAVIOR_ON_STANDBY_MESSAGE_GO_TO_DREAM);
+        mHdmiCecLocalDeviceTv.mService.getHdmiCecConfig().setIntValue(
+                HdmiControlManager.CEC_SETTING_NAME_TV_SEND_STANDBY_ON_SLEEP,
+                HdmiControlManager.TV_SEND_STANDBY_ON_SLEEP_DISABLED);
+        HdmiCecMessage standbyMessageFromPlayback = HdmiCecMessageBuilder.buildStandby(
+                ADDR_PLAYBACK_1, ADDR_TV);
+        HdmiCecMessage standbyMessageFromTv = HdmiCecMessageBuilder.buildStandby(
+                ADDR_TV, ADDR_BROADCAST);
+        mPowerManager.setInteractive(true);
+        mTestLooper.dispatchAll();
+        mTestLooper.dispatchAll();
+
+        assertThat(mHdmiCecLocalDeviceTv.dispatchMessage(standbyMessageFromPlayback))
+                .isEqualTo(Constants.HANDLED);
+        mTestLooper.dispatchAll();
+
+        assertThat(mPowerManager.isInteractive()).isTrue();
+        assertThat(mNativeWrapper.getResultMessages()).doesNotContain(standbyMessageFromTv);
     }
 
     @Test

@@ -78,7 +78,6 @@ import org.mockito.kotlin.stub
 @OptIn(ExperimentalKairosApi::class)
 @SmallTest
 @RunWith(AndroidJUnit4::class)
-@android.platform.test.annotations.EnabledOnRavenwood
 class MobileIconViewModelKairosTest : SysuiTestCase() {
 
     private val Kosmos.underTest: MobileIconViewModelKairos by ActivatedKairosFixture {

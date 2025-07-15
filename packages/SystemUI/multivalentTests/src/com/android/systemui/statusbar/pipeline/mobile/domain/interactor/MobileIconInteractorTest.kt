@@ -56,7 +56,6 @@ import org.mockito.ArgumentMatchers.anyString
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
-@android.platform.test.annotations.EnabledOnRavenwood
 class MobileIconInteractorTest : MobileIconInteractorTestBase() {
     override fun createInteractor(overrides: MobileIconCarrierIdOverrides) =
         MobileIconInteractorImpl(

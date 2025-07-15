@@ -32,7 +32,6 @@ import org.mockito.kotlin.verify
 
 @RunWith(AndroidJUnit4::class)
 @SmallTest
-@android.platform.test.annotations.EnabledOnRavenwood
 class ScreenshotActionsControllerTest : SysuiTestCase() {
     private val screenshotData = mock<ScreenshotData>()
     private val actionExecutor = mock<ActionExecutor>()

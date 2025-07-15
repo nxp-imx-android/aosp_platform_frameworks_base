@@ -371,7 +371,7 @@ public class DefaultTransitionHandler implements Transitions.TransitionHandler {
                 mInteractionJankMonitor.end(CUJ_DEFAULT_TASK_TO_TASK_ANIMATION);
             }
             mAnimations.remove(transition);
-            if (Flags.releaseSurfaceOnTransitionFinish()) {
+            if (!Flags.releaseAllTransitionSurfaces()) {
                 info.releaseAllSurfaces();
             }
             finishCallback.onTransitionFinished(null /* wct */);

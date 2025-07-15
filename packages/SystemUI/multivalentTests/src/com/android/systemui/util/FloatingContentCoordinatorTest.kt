@@ -16,7 +16,6 @@ import org.junit.runner.RunWith
 @TestableLooper.RunWithLooper
 @RunWith(AndroidJUnit4::class)
 @SmallTest
-@android.platform.test.annotations.EnabledOnRavenwood
 class FloatingContentCoordinatorTest : SysuiTestCase() {
 
     private val screenBounds = Rect(0, 0, 1000, 1000)

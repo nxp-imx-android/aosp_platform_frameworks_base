@@ -42,7 +42,6 @@ private const val AUDIO_SHARING_STREAM = 99
 @SmallTest
 @RunWith(AndroidJUnit4::class)
 @TestableLooper.RunWithLooper
-@android.platform.test.annotations.EnabledOnRavenwood
 class VolumeDialogSlidersInteractorTest : SysuiTestCase() {
 
     private val kosmos = testKosmos().useUnconfinedTestDispatcher()

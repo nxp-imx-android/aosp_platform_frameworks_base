@@ -573,8 +573,10 @@ class Session extends IWindowSession.Stub implements IBinder.DeathRecipient {
 
     private void actionOnWallpaper(IBinder window,
             BiConsumer<WallpaperController, WindowState> action) {
-        final WindowState windowState = mService.windowForClientLocked(this, window, true);
-        action.accept(windowState.getDisplayContent().mWallpaperController, windowState);
+        final WindowState windowState = mService.windowForClient(this, window);
+        if (windowState != null) {
+            action.accept(windowState.mDisplayContent.mWallpaperController, windowState);
+        }
     }
 
     @Override
@@ -642,7 +644,8 @@ class Session extends IWindowSession.Stub implements IBinder.DeathRecipient {
         synchronized (mService.mGlobalLock) {
             final long ident = Binder.clearCallingIdentity();
             try {
-                final WindowState windowState = mService.windowForClientLocked(this, window, true);
+                final WindowState windowState = mService.windowForClient(this, window);
+                if (windowState == null) return;
                 WallpaperController wallpaperController =
                         windowState.getDisplayContent().mWallpaperController;
                 if (mCanAlwaysUpdateWallpaper
@@ -707,8 +710,7 @@ class Session extends IWindowSession.Stub implements IBinder.DeathRecipient {
     public void updateRequestedVisibleTypes(IWindow window, @InsetsType int requestedVisibleTypes,
             @Nullable ImeTracker.Token imeStatsToken) {
         synchronized (mService.mGlobalLock) {
-            final WindowState win = mService.windowForClientLocked(this, window,
-                    false /* throwOnError */);
+            final WindowState win = mService.windowForClient(this, window);
             if (win != null) {
                 ImeTracker.forLogging().onProgress(imeStatsToken,
                         ImeTracker.PHASE_WM_UPDATE_REQUESTED_VISIBLE_TYPES);
@@ -746,8 +748,7 @@ class Session extends IWindowSession.Stub implements IBinder.DeathRecipient {
     public void updateAnimatingTypes(IWindow window, @InsetsType int animatingTypes,
             @Nullable ImeTracker.Token statsToken) {
         synchronized (mService.mGlobalLock) {
-            final WindowState win = mService.windowForClientLocked(this, window,
-                    false /* throwOnError */);
+            final WindowState win = mService.windowForClient(this, window);
             if (win != null) {
                 ImeTracker.forLogging().onProgress(statsToken,
                         ImeTracker.PHASE_WM_UPDATE_ANIMATING_TYPES);
@@ -982,8 +983,7 @@ class Session extends IWindowSession.Stub implements IBinder.DeathRecipient {
         final long identity = Binder.clearCallingIdentity();
         try {
             synchronized (mService.mGlobalLock) {
-                final WindowState win =
-                        mService.windowForClientLocked(this, fromWindow, false /* throwOnError */);
+                final WindowState win = mService.windowForClient(this, fromWindow);
                 if (win == null) {
                     return false;
                 }
@@ -1010,7 +1010,7 @@ class Session extends IWindowSession.Stub implements IBinder.DeathRecipient {
             IWindow window,
             OnBackInvokedCallbackInfo callbackInfo) {
         synchronized (mService.mGlobalLock) {
-            WindowState windowState = mService.windowForClientLocked(this, window, false);
+            final WindowState windowState = mService.windowForClient(this, window);
             if (windowState == null) {
                 Slog.i(TAG_WM,
                         "setOnBackInvokedCallback(): No window state for package:" + mPackageName);
@@ -1026,8 +1026,7 @@ class Session extends IWindowSession.Stub implements IBinder.DeathRecipient {
         synchronized (mService.mGlobalLock) {
             // TODO(b/353463205) check if we can use mService.getDefaultDisplayContentLocked()
             //  instead of window
-            final WindowState win = mService.windowForClientLocked(this, window,
-                    false /* throwOnError */);
+            final WindowState win = mService.windowForClient(this, window);
             if (win != null) {
                 final InsetsStateController insetsStateController =
                         win.getDisplayContent().getInsetsStateController();

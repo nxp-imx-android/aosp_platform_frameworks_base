@@ -217,30 +217,15 @@ status_t saveImage(const char* fn, std::optional<AndroidBitmapCompressFormat> fo
         info.height = buffer->getHeight();
         info.stride = buffer->getStride() * bytesPerPixel(buffer->getPixelFormat());
 
-        int bitmapResult;
-
-        if (gainmapBase) {
-            bitmapResult =
-                    ABitmap_compressWithGainmap(&info, static_cast<ADataSpace>(dataspace), base,
-                                                gainmapBase, captureResults.hdrSdrRatio, *format,
-                                                100, &fd,
-                                                [](void* fdPtr, const void* data,
-                                                   size_t size) -> bool {
-                                                    int bytesWritten =
-                                                            write(*static_cast<int*>(fdPtr), data,
-                                                                  size);
-                                                    return bytesWritten == size;
-                                                });
-        } else {
-            bitmapResult =
-                    AndroidBitmap_compress(&info, static_cast<int32_t>(dataspace), base, *format,
-                                           100, &fd,
-                                           [](void* fdPtr, const void* data, size_t size) -> bool {
-                                               int bytesWritten =
-                                                       write(*static_cast<int*>(fdPtr), data, size);
-                                               return bytesWritten == size;
-                                           });
-        }
+        int bitmapResult =
+                ABitmap_compressWithGainmap(&info, static_cast<ADataSpace>(dataspace), base,
+                                            gainmapBase, captureResults.hdrSdrRatio, *format, 100,
+                                            &fd,
+                                            [](void* fdPtr, const void* data, size_t size) -> bool {
+                                                int bytesWritten = write(*static_cast<int*>(fdPtr),
+                                                                         data, size);
+                                                return bytesWritten == size;
+                                            });
 
         if (bitmapResult != ANDROID_BITMAP_RESULT_SUCCESS) {
             fprintf(stderr, "Failed to compress (error code: %d)\n", bitmapResult);

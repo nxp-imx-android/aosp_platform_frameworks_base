@@ -15,15 +15,14 @@
  */
 package android.os;
 
-import java.util.function.Consumer;
+import android.platform.test.ravenwood.RavenwoodErrorHandler;
 
 public class Looper_ravenwood {
-    public static volatile Consumer<Message> sDispatcher = (msg) -> {
-        // Default implementation
-        msg.target.dispatchMessage(msg);
-    };
 
+    /**
+     * Called by {@link Looper#dispatchMessage(Message)}
+     */
     public static void dispatchMessage(Message msg) {
-        sDispatcher.accept(msg);
+        RavenwoodErrorHandler.dispatchMessage(msg);
     }
 }

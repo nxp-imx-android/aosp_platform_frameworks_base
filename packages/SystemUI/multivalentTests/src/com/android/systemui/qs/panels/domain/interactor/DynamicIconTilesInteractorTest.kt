@@ -39,7 +39,6 @@ import org.junit.runner.RunWith
 @OptIn(ExperimentalCoroutinesApi::class)
 @SmallTest
 @RunWith(AndroidJUnit4::class)
-@android.platform.test.annotations.EnabledOnRavenwood
 class DynamicIconTilesInteractorTest : SysuiTestCase() {
     private val kosmos =
         testKosmos().apply {

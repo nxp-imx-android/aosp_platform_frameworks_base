@@ -41,7 +41,6 @@ import org.mockito.kotlin.whenever
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
-@android.platform.test.annotations.EnabledOnRavenwood
 class CastDeviceTest : SysuiTestCase() {
     private val mockAppInfo =
         mock<ApplicationInfo>().apply { whenever(this.loadLabel(any())).thenReturn("") }

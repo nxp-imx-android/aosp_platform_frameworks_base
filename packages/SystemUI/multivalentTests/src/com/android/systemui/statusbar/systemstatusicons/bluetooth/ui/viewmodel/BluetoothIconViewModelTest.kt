@@ -42,7 +42,6 @@ import org.mockito.kotlin.whenever
 @SmallTest
 @RunWith(AndroidJUnit4::class)
 @EnableFlags(SystemStatusIconsInCompose.FLAG_NAME)
-@android.platform.test.annotations.EnabledOnRavenwood
 class BluetoothIconViewModelTest : SysuiTestCase() {
 
     private val kosmos = testKosmos().useUnconfinedTestDispatcher()

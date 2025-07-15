@@ -18,9 +18,11 @@ package com.android.systemui.supervision.data.repository
 
 import android.annotation.SuppressLint
 import android.annotation.WorkerThread
+import android.app.admin.DevicePolicyManager
 import android.app.role.RoleManager
 import android.app.supervision.SupervisionManager
 import android.app.supervision.SupervisionManager.SupervisionListener
+import android.content.ComponentName
 import android.content.Context
 import android.content.pm.UserInfo
 import android.os.UserHandle
@@ -57,6 +59,7 @@ constructor(
     supervisionManagerProvider: Provider<SupervisionManager>,
     userRepository: UserRepository,
     private val roleManager: RoleManager,
+    private val devicePolicyManager: DevicePolicyManager,
     @Application private val context: Context,
     @Background private val backgroundDispatcher: CoroutineDispatcher,
 ) : SupervisionRepository {
@@ -88,9 +91,18 @@ constructor(
             roleManager.getRoleHoldersAsUser(RoleManager.ROLE_SYSTEM_SUPERVISION, userHandle)
         val supervisionRoleHolders =
             roleManager.getRoleHoldersAsUser(RoleManager.ROLE_SUPERVISION, userHandle)
+        val po = devicePolicyManager.getProfileOwnerAsUser(userHandle)
+        val defaultSupervisionComponent =
+            ComponentName.unflattenFromString(
+                context.getString(
+                    com.android.internal.R.string.config_defaultSupervisionProfileOwnerComponent
+                )
+            )
+        val isSupervisionProfileOwner = po != null && po == defaultSupervisionComponent
         val isOnDeviceSupervision =
             systemSupervisionRoleHolders.isNotEmpty() &&
-                systemSupervisionRoleHolders.none { supervisionRoleHolders.contains(it) }
+                systemSupervisionRoleHolders.none { supervisionRoleHolders.contains(it) } &&
+                !isSupervisionProfileOwner
 
         return if (isOnDeviceSupervision) {
             SupervisionModel(

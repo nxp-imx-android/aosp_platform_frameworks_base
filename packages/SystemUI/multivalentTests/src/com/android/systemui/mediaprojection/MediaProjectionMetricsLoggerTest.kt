@@ -15,7 +15,6 @@ import org.mockito.Mockito.verify
 
 @RunWith(AndroidJUnit4::class)
 @SmallTest
-@android.platform.test.annotations.EnabledOnRavenwood
 class MediaProjectionMetricsLoggerTest : SysuiTestCase() {
 
     private val service = mock<IMediaProjectionManager>()

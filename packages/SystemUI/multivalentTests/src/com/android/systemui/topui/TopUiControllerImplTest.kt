@@ -34,7 +34,6 @@ import org.mockito.Mockito.verifyNoMoreInteractions
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
-@android.platform.test.annotations.EnabledOnRavenwood
 class TopUiControllerImplTest : SysuiTestCase() {
 
     private val kosmos = testKosmos().useUnconfinedTestDispatcher()

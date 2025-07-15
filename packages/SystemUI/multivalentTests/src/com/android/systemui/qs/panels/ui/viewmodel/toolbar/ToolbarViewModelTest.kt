@@ -43,7 +43,6 @@ import org.junit.runner.RunWith
 @RunWith(AndroidJUnit4::class)
 @SmallTest
 @OptIn(ExperimentalCoroutinesApi::class)
-@android.platform.test.annotations.EnabledOnRavenwood
 class ToolbarViewModelTest : SysuiTestCase() {
     private val kosmos =
         testKosmos().apply { footerActionsInteractor = FakeFooterActionInteractor() }

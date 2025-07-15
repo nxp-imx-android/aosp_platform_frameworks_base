@@ -39,7 +39,6 @@ import org.mockito.MockitoAnnotations
  */
 @SmallTest
 @RunWith(AndroidJUnit4::class)
-@android.platform.test.annotations.EnabledOnRavenwood
 class PluggedInConditionTest : SysuiTestCase() {
     private lateinit var condition: PluggedInCondition
 

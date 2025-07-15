@@ -1900,7 +1900,7 @@ public class ActivityTaskSupervisor implements RecentTasks.Callbacks {
                 mService.mAmInternal, task.mUserId, component, new Intent(baseIntent));
         mService.mH.sendMessage(msg);
 
-        if (!killProcess) {
+        if (!killProcess || task.mKillProcessesOnDestroyed) {
             return;
         }
         // Give a chance for the client to handle Activity#onStop(). The timeout waits for

@@ -19,8 +19,6 @@ package com.android.server.am;
 import static android.app.ProcessMemoryState.HOSTING_COMPONENT_TYPE_BOUND_SERVICE;
 import static android.app.ProcessMemoryState.HOSTING_COMPONENT_TYPE_FOREGROUND_SERVICE;
 
-import static com.android.server.am.Flags.serviceBindingOomAdjPolicy;
-
 import android.annotation.Nullable;
 import android.app.ActivityManager;
 import android.content.Context;
@@ -696,9 +694,6 @@ final class ProcessServiceRecord {
 
     @GuardedBy("mService")
     private void scheduleServiceTimeoutIfNeededLocked() {
-        if (!serviceBindingOomAdjPolicy()) {
-            return;
-        }
         if (mScheduleServiceTimeoutPending && mExecutingServices.size() > 0) {
             mService.mServices.scheduleServiceTimeoutLocked(mApp);
             // We'll need to reset the executingStart since the app was frozen.
@@ -753,10 +748,8 @@ final class ProcessServiceRecord {
                 pw.print(prefix); pw.print("  - "); pw.println(mConnections.valueAt(i));
             }
         }
-        if (serviceBindingOomAdjPolicy()) {
-            pw.print(prefix);
-            pw.print("scheduleServiceTimeoutPending=");
-            pw.println(mScheduleServiceTimeoutPending);
-        }
+        pw.print(prefix);
+        pw.print("scheduleServiceTimeoutPending=");
+        pw.println(mScheduleServiceTimeoutPending);
     }
 }

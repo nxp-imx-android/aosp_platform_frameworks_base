@@ -98,11 +98,11 @@ class LetterboxControllerStrategyTest : ShellTestCase() {
     }
 
     @Test
-    fun `LetterboxMode is MULTIPLE_SURFACES with no rounded corners`() {
+    fun `LetterboxMode is SINGLE_SURFACE with no rounded corners`() {
         runTestScenario { r ->
             r.configureRoundedCornerRadius(false)
             r.configureLetterboxMode()
-            r.checkLetterboxModeIsMultiple()
+            r.checkLetterboxModeIsSingle()
         }
     }
 

@@ -45,7 +45,6 @@ import org.mockito.Mockito.`when`
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
-@android.platform.test.annotations.EnabledOnRavenwood
 class SafetyControllerTest : SysuiTestCase() {
 
     private val TEST_PC_PKG = "testPermissionControllerPackageName"

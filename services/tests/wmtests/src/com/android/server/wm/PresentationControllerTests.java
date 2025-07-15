@@ -328,7 +328,7 @@ public class PresentationControllerTests extends WindowTestsBase {
         final int res = mWm.addWindow(session, clientWindow, params, View.VISIBLE, displayId,
                 userId, WindowInsets.Type.defaultVisible(), null, new WindowRelayoutResult());
         assertTrue(res >= WindowManagerGlobal.ADD_OKAY);
-        final WindowState window = mWm.windowForClientLocked(session, clientWindow, false);
+        final WindowState window = mWm.windowForClient(session, clientWindow);
         window.mHasSurface = true;
         return window;
     }

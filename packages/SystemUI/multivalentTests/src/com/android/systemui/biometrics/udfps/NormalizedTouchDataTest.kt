@@ -12,7 +12,6 @@ import org.junit.runner.RunWith
 
 @SmallTest
 @RunWith(ParameterizedAndroidJunit4::class)
-@android.platform.test.annotations.EnabledOnRavenwood
 class NormalizedTouchDataTest(val testCase: TestCase) : SysuiTestCase() {
 
     @Test

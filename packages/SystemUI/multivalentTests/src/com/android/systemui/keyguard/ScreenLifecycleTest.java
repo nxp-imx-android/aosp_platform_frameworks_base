@@ -37,7 +37,6 @@ import java.io.PrintWriter;
 
 @RunWith(AndroidJUnit4.class)
 @SmallTest
-@android.platform.test.annotations.EnabledOnRavenwood
 public class ScreenLifecycleTest extends SysuiTestCase {
 
     private ScreenLifecycle mScreen;

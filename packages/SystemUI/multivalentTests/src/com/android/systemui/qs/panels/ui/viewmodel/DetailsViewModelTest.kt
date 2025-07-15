@@ -40,7 +40,6 @@ import org.junit.runner.RunWith
 @RunWith(AndroidJUnit4::class)
 @SmallTest
 @EnableSceneContainer
-@android.platform.test.annotations.EnabledOnRavenwood
 class DetailsViewModelTest : SysuiTestCase() {
     private val kosmos = testKosmos()
     private lateinit var underTest: DetailsViewModel
