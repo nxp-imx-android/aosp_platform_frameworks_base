@@ -1547,7 +1547,10 @@ public class LockPatternUtils {
                         STRONG_AUTH_REQUIRED_AFTER_NON_STRONG_BIOMETRICS_TIMEOUT,
                         SOME_AUTH_REQUIRED_AFTER_TRUSTAGENT_EXPIRED,
                         SOME_AUTH_REQUIRED_AFTER_ADAPTIVE_AUTH_REQUEST,
-                        SOME_AUTH_REQUIRED_AFTER_WATCH_DISCONNECTED})
+                        SOME_AUTH_REQUIRED_AFTER_WATCH_DISCONNECTED,
+                        PRIMARY_AUTH_REQUIRED_FOR_SECURE_LOCK_DEVICE,
+                        STRONG_BIOMETRIC_AUTH_REQUIRED_FOR_SECURE_LOCK_DEVICE
+                })
         @Retention(RetentionPolicy.SOURCE)
         public @interface StrongAuthFlags {}
 
@@ -1623,6 +1626,19 @@ public class LockPatternUtils {
         public static final int SOME_AUTH_REQUIRED_AFTER_WATCH_DISCONNECTED = 0x400;
 
         /**
+         * Primary authentication is required as the first factor in Secure Lock Device
+         * authentication - all biometric authentication is disabled.
+         */
+        public static final int PRIMARY_AUTH_REQUIRED_FOR_SECURE_LOCK_DEVICE = 0x800;
+
+        /**
+         * Class 3 biometric-only authentication is required as the second factor
+         * in Secure Lock Device authentication - primary authentication and non strong biometric
+         * authentication are disabled.
+         */
+        public static final int STRONG_BIOMETRIC_AUTH_REQUIRED_FOR_SECURE_LOCK_DEVICE = 0x1000;
+
+        /**
          * Strong auth flags that do not prevent biometric methods from being accepted as auth.
          * If any other flags are set, biometric authentication is disabled.
          */
@@ -1630,7 +1646,8 @@ public class LockPatternUtils {
                 | SOME_AUTH_REQUIRED_AFTER_USER_REQUEST
                 | SOME_AUTH_REQUIRED_AFTER_TRUSTAGENT_EXPIRED
                 | SOME_AUTH_REQUIRED_AFTER_ADAPTIVE_AUTH_REQUEST
-                | SOME_AUTH_REQUIRED_AFTER_WATCH_DISCONNECTED;
+                | SOME_AUTH_REQUIRED_AFTER_WATCH_DISCONNECTED
+                | STRONG_BIOMETRIC_AUTH_REQUIRED_FOR_SECURE_LOCK_DEVICE;
 
         private final SparseIntArray mStrongAuthRequiredForUser = new SparseIntArray();
         private final H mHandler;
