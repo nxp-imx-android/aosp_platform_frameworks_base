@@ -6453,6 +6453,12 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
      * @see #mRemoved
      */
     boolean isRemoved() {
+        // After DisplayManager removes the LogicalDisplay object but before WindowManager begins
+        // removing the corresponding DisplayContent, we should check Display.isValid(), which
+        // returns false in this specific scenario.
+        if (mDisplayId != DEFAULT_DISPLAY && !mDisplay.isValid()) {
+            return true;
+        }
         return mRemoved;
     }
 

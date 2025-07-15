@@ -106,6 +106,7 @@ class TestDisplayContent extends DisplayContent {
         @NonNull
         private DeviceStateController mDeviceStateController = mock(DeviceStateController.class);
         private boolean mCanHostTasks = true;
+        private boolean mIsValid = true;
 
         Builder(ActivityTaskManagerService service, int width, int height) {
             mService = service;
@@ -163,6 +164,10 @@ class TestDisplayContent extends DisplayContent {
         }
         Builder setCanHostTasks(boolean canHostTasks) {
             mCanHostTasks = canHostTasks;
+            return this;
+        }
+        Builder setIsValid(boolean isValid) {
+            mIsValid = isValid;
             return this;
         }
         Builder setCutout(int left, int top, int right, int bottom) {
@@ -223,6 +228,9 @@ class TestDisplayContent extends DisplayContent {
             spyOn(display);
             if (mCanHostTasks) {
                 doReturn(true).when(display).canHostTasks();
+            }
+            if (mIsValid) {
+                doReturn(true).when(display).isValid();
             }
             final TestDisplayContent newDisplay = createInternal(display);
             // disable the normal system decorations
