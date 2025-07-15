@@ -523,9 +523,7 @@ public class NotificationManagerService extends SystemService {
 
     static final Integer[] DEFAULT_ALLOWED_ADJUSTMENT_KEY_TYPES = new Integer[] {
             TYPE_PROMOTION,
-            TYPE_NEWS,
-            TYPE_CONTENT_RECOMMENDATION,
-            TYPE_SOCIAL_MEDIA
+            TYPE_NEWS
     };
 
     static final String[] NON_BLOCKABLE_DEFAULT_ROLES = new String[] {
@@ -12542,7 +12540,7 @@ public class NotificationManagerService extends SystemService {
         private static final String TAG_DENIED_KEY = "adjustment";
         private static final String ATT_DENIED_KEY = "key";
         private static final String ATT_DENIED_KEY_APPS = "denied_apps";
-        private static final String TAG_ENABLED_TYPES = "enabled_classification_types";
+        private static final String TAG_ENABLED_TYPES = "enabled_bundle_types";
         private static final String ATT_NAS_UNSUPPORTED = "unsupported_adjustments";
         private static final String ATT_USER_ID = "user";
         // for classification only, but named a bit more generally in case this ever gets expanded
