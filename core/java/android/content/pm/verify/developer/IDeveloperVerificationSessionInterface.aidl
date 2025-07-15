@@ -29,4 +29,5 @@ interface IDeveloperVerificationSessionInterface {
     boolean setVerificationPolicy(int verificationId, int policy);
     void reportVerificationIncomplete(int verificationId, int reason);
     void reportVerificationComplete(int verificationId, in DeveloperVerificationStatus status, in @nullable PersistableBundle extensionResponse);
+    void reportVerificationBypassed(int verificationId, int bypassReason);
 }
