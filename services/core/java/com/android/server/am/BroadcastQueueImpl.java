@@ -1193,14 +1193,14 @@ class BroadcastQueueImpl extends BroadcastQueue {
                     mService.mPackageManagerInt.grantImplicitAccess(r.userId, r.intent,
                             UserHandle.getAppId(app.uid), r.callingUid, true);
                 }
-                queue.lastProcessState = app.mState.getCurProcState();
+                queue.lastProcessState = app.getCurProcState();
                 if (receiver instanceof BroadcastFilter) {
                     notifyScheduleRegisteredReceiver(app, r, (BroadcastFilter) receiver);
                     thread.scheduleRegisteredReceiver(
                             ((BroadcastFilter) receiver).receiverList.receiver,
                             receiverIntent, r.resultCode, r.resultData, r.resultExtras,
                             r.ordered, r.initialSticky, assumeDelivered, r.userId,
-                            app.mState.getReportedProcState(),
+                            app.getReportedProcState(),
                             r.shareIdentity ? r.callingUid : Process.INVALID_UID,
                             r.shareIdentity ? r.callerPackage : null);
                     // TODO: consider making registered receivers of unordered
@@ -1215,7 +1215,7 @@ class BroadcastQueueImpl extends BroadcastQueue {
                     thread.scheduleReceiver(receiverIntent, ((ResolveInfo) receiver).activityInfo,
                             null, r.resultCode, r.resultData, r.resultExtras, r.ordered,
                             assumeDelivered, r.userId,
-                            app.mState.getReportedProcState(),
+                            app.getReportedProcState(),
                             r.shareIdentity ? r.callingUid : Process.INVALID_UID,
                             r.shareIdentity ? r.callerPackage : null);
                 }
@@ -1265,7 +1265,7 @@ class BroadcastQueueImpl extends BroadcastQueue {
                         r.resultTo, r.intent,
                         r.resultCode, r.resultData, r.resultExtras, false, r.initialSticky,
                         assumeDelivered, r.userId,
-                        app.mState.getReportedProcState(),
+                        app.getReportedProcState(),
                         r.shareIdentity ? r.callingUid : Process.INVALID_UID,
                         r.shareIdentity ? r.callerPackage : null);
             } catch (RemoteException e) {

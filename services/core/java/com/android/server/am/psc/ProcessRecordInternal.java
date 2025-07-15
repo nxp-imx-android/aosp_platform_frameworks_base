@@ -41,13 +41,11 @@ import com.android.server.am.psc.PlatformCompatCache.CachedCompatChangeId;
 
 import java.io.PrintWriter;
 
-/**
- * The state info of the process, including proc state, oom adj score, et al.
- */
-public final class ProcessStateRecord {
+/** The state info of the process, including proc state, oom adj score, et al. */
+public abstract class ProcessRecordInternal {
     /**
-     * An observer interface for {@link ProcessStateRecord} to notify about changes to its internal
-     * state fields.
+     * An observer interface for {@link ProcessRecordInternal} to notify about changes to its
+     * internal state fields.
      * TODO(b/429069530): Investigate why WindowManager needs to know any of the mCurXXX value.
      */
     public interface Observer {
@@ -123,7 +121,7 @@ public final class ProcessStateRecord {
     }
 
     /**
-     * An observer interface for {@link ProcessStateRecord} to notify about changes
+     * An observer interface for {@link ProcessRecordInternal} to notify about changes
      * to component-related states like services, receivers, and activities.
      */
     public interface StartedServiceObserver {
@@ -149,62 +147,41 @@ public final class ProcessStateRecord {
         void onHasActivitiesChanged(boolean hasActivities);
     }
 
+    // TODO(b/401350380): Remove these methods after the push model is migrated.
+    /** @return {@code true} if the process has any activities. */
+    public abstract boolean hasActivities();
+
+    /** @return {@code true} if the process is considered a heavy-weight process. */
+    public abstract boolean isHeavyWeightProcess();
+
+    /** @return {@code true} if the process has any visible activities. */
+    public abstract boolean hasVisibleActivities();
+
+    /** @return {@code true} if the process is the current home process. */
+    public abstract boolean isHomeProcess();
+
+    /** @return {@code true} if the process was the previous top process. */
+    public abstract boolean isPreviousProcess();
+
+    /** @return {@code true} if the process is associated with any recent tasks. */
+    public abstract boolean hasRecentTasks();
+
     /**
-     * A temporary interface for {@link ProcessStateRecord} to pull state information from its
-     * owner, avoiding a direct dependency.
-     * <p>
-     * This is implemented by the owner of the ProcessStateRecord (e.g., ProcessRecord)
-     * to provide on-demand state information required for OOM adjustment calculations.
-     * TODO(b/401350380): Remove the interface after the push model is migrated.
+     * Checks if the process is currently receiving a broadcast.
+     *
+     * @param outSchedGroup An output array of size 1 where the scheduling group associated
+     *                      with the broadcast will be placed if one is active.
+     * @return {@code true} if the process is receiving a broadcast.
      */
-    public interface ProcessRecordReader {
-        /**
-         * @return {@code true} if the process has any activities.
-         */
-        boolean hasActivities();
+    public abstract boolean isReceivingBroadcast(int[] outSchedGroup);
 
-        /**
-         * @return {@code true} if the process is considered a heavy-weight process.
-         */
-        boolean isHeavyWeightProcess();
-
-        /**
-         * @return {@code true} if the process has any visible activities.
-         */
-        boolean hasVisibleActivities();
-
-        /**
-         * @return {@code true} if the process is the current home process.
-         */
-        boolean isHomeProcess();
-
-        /**
-         * @return {@code true} if the process was the previous top process.
-         */
-        boolean isPreviousProcess();
-
-        /**
-         * @return {@code true} if the process is associated with any recent tasks.
-         */
-        boolean hasRecentTasks();
-
-        /**
-         * Checks if the process is currently receiving a broadcast.
-         *
-         * @param outSchedGroup An output array of size 1 where the scheduling group associated
-         *                      with the broadcast will be placed if one is active.
-         * @return {@code true} if the process is receiving a broadcast.
-         */
-        boolean isReceivingBroadcast(int[] outSchedGroup);
-
-        /**
-         * Checks if a specific compatibility change is enabled for the process.
-         *
-         * @param cachedCompatChangeId The ID of the compatibility change to check.
-         * @return {@code true} if the change is enabled.
-         */
-        boolean hasCompatChange(@CachedCompatChangeId int cachedCompatChangeId);
-    }
+    /**
+     * Checks if a specific compatibility change is enabled for the process.
+     *
+     * @param cachedCompatChangeId The ID of the compatibility change to check.
+     * @return {@code true} if the change is enabled.
+     */
+    public abstract boolean hasCompatChange(@CachedCompatChangeId int cachedCompatChangeId);
 
     // Enable this to trace all OomAdjuster state transitions
     private static final boolean TRACE_OOM_ADJ = false;
@@ -213,9 +190,8 @@ public final class ProcessStateRecord {
     private final int mUid;
     private String mTrackName;
 
-    private final Observer mObserver;
-    private final StartedServiceObserver mStartedServiceObserver;
-    private final ProcessRecordReader mProcessRecordReader;
+    private Observer mObserver;
+    private StartedServiceObserver mStartedServiceObserver;
 
     // The ActivityManagerService object, which can only be used as a lock object.
     private final Object mServiceLock;
@@ -610,35 +586,17 @@ public final class ProcessStateRecord {
     @GuardedBy("mServiceLock")
     private long mFollowupUpdateUptimeMs = Long.MAX_VALUE;
 
-    /**
-     * Constructs a new ProcessStateRecord.
-     *
-     * @param processName The name of the process.
-     * @param uid The UID of the process.
-     * @param observer An observer to be notified of state changes.
-     * @param startedServiceObserver An observer for started service related state changes.
-     * @param processRecordReader A reader for on-demand process record information.
-     * @param service The ActivityManagerService instance, used as a lock.
-     * @param procLock The ActivityManagerGlobalLock instance, used as a lock.
-     */
-    public ProcessStateRecord(String processName, int uid, Observer observer,
-            StartedServiceObserver startedServiceObserver, ProcessRecordReader processRecordReader,
-            Object serviceLock, Object procLock) {
+    public ProcessRecordInternal(String processName, int uid, Object serviceLock, Object procLock) {
         mProcessName = processName;
         mUid = uid;
-        mObserver = observer;
-        mStartedServiceObserver = startedServiceObserver;
-        mProcessRecordReader  = processRecordReader;
         mServiceLock = serviceLock;
         mProcLock = procLock;
     }
 
-    /**
-     * Initializes the last time that the state of the process was changed.
-     *
-     * @param now The current uptime in milliseconds.
-     */
-    public void init(long now) {
+    /** Initializes the observers and the last time that the state of the process was changed. */
+    public void init(Observer observer, StartedServiceObserver startedServiceObserver, long now) {
+        mObserver = observer;
+        mStartedServiceObserver = startedServiceObserver;
         mLastStateTime = now;
     }
 
@@ -958,7 +916,7 @@ public final class ProcessStateRecord {
     }
 
     @GuardedBy("mServiceLock")
-    public void setRunningRemoteAnimation(boolean runningRemoteAnimation) {
+    public void setIsRunningRemoteAnimation(boolean runningRemoteAnimation) {
         mRunningRemoteAnimation = runningRemoteAnimation;
     }
 
@@ -1209,7 +1167,7 @@ public final class ProcessStateRecord {
     @GuardedBy("mServiceLock")
     private boolean getCachedHasActivities() {
         if (mCachedHasActivities == VALUE_INVALID) {
-            final boolean hasActivities = mProcessRecordReader.hasActivities();
+            final boolean hasActivities = hasActivities();
             mCachedHasActivities = hasActivities ? VALUE_TRUE : VALUE_FALSE;
             mStartedServiceObserver.onHasActivitiesChanged(hasActivities);
         }
@@ -1237,8 +1195,7 @@ public final class ProcessStateRecord {
     @GuardedBy("mServiceLock")
     public boolean getCachedIsHeavyWeight() {
         if (mCachedIsHeavyWeight == VALUE_INVALID) {
-            mCachedIsHeavyWeight = mProcessRecordReader.isHeavyWeightProcess()
-                    ? VALUE_TRUE : VALUE_FALSE;
+            mCachedIsHeavyWeight = isHeavyWeightProcess() ? VALUE_TRUE : VALUE_FALSE;
         }
         return mCachedIsHeavyWeight == VALUE_TRUE;
     }
@@ -1249,7 +1206,7 @@ public final class ProcessStateRecord {
     @GuardedBy("mServiceLock")
     private boolean getCachedHasVisibleActivities() {
         if (mCachedHasVisibleActivities == VALUE_INVALID) {
-            setCachedHasVisibleActivities(mProcessRecordReader.hasVisibleActivities());
+            setCachedHasVisibleActivities(hasVisibleActivities());
         }
         return mCachedHasVisibleActivities == VALUE_TRUE;
     }
@@ -1280,7 +1237,7 @@ public final class ProcessStateRecord {
     @GuardedBy("mServiceLock")
     public boolean getCachedIsHomeProcess() {
         if (mCachedIsHomeProcess == VALUE_INVALID) {
-            mCachedIsHomeProcess = mProcessRecordReader.isHomeProcess() ? VALUE_TRUE : VALUE_FALSE;
+            mCachedIsHomeProcess = isHomeProcess() ? VALUE_TRUE : VALUE_FALSE;
         }
         return mCachedIsHomeProcess == VALUE_TRUE;
     }
@@ -1291,8 +1248,7 @@ public final class ProcessStateRecord {
     @GuardedBy("mServiceLock")
     public boolean getCachedIsPreviousProcess() {
         if (mCachedIsPreviousProcess == VALUE_INVALID) {
-            mCachedIsPreviousProcess = mProcessRecordReader.isPreviousProcess()
-                    ? VALUE_TRUE : VALUE_FALSE;
+            mCachedIsPreviousProcess = isPreviousProcess() ? VALUE_TRUE : VALUE_FALSE;
         }
         return mCachedIsPreviousProcess == VALUE_TRUE;
     }
@@ -1304,8 +1260,7 @@ public final class ProcessStateRecord {
     @GuardedBy("mServiceLock")
     public boolean getCachedHasRecentTasks() {
         if (mCachedHasRecentTasks == VALUE_INVALID) {
-            mCachedHasRecentTasks = mProcessRecordReader.hasRecentTasks()
-                    ? VALUE_TRUE : VALUE_FALSE;
+            mCachedHasRecentTasks = hasRecentTasks() ? VALUE_TRUE : VALUE_FALSE;
         }
         return mCachedHasRecentTasks == VALUE_TRUE;
     }
@@ -1336,8 +1291,7 @@ public final class ProcessStateRecord {
     @GuardedBy("mServiceLock")
     public boolean getCachedIsReceivingBroadcast(int[] outSchedGroup) {
         if (mCachedIsReceivingBroadcast == VALUE_INVALID) {
-            final boolean isReceivingBroadcast =
-                    mProcessRecordReader.isReceivingBroadcast(outSchedGroup);
+            final boolean isReceivingBroadcast = isReceivingBroadcast(outSchedGroup);
             mCachedIsReceivingBroadcast = isReceivingBroadcast ? VALUE_TRUE : VALUE_FALSE;
             if (isReceivingBroadcast) {
                 mCachedSchedGroup = outSchedGroup[0];
@@ -1358,8 +1312,7 @@ public final class ProcessStateRecord {
     public boolean getCachedCompatChange(@CachedCompatChangeId int cachedCompatChangeId) {
         if (mCachedCompatChanges[cachedCompatChangeId] == VALUE_INVALID) {
             mCachedCompatChanges[cachedCompatChangeId] =
-                    mProcessRecordReader.hasCompatChange(cachedCompatChangeId)
-                            ? VALUE_TRUE : VALUE_FALSE;
+                    hasCompatChange(cachedCompatChangeId) ? VALUE_TRUE : VALUE_FALSE;
         }
         return mCachedCompatChanges[cachedCompatChangeId] == VALUE_TRUE;
     }
@@ -1435,8 +1388,8 @@ public final class ProcessStateRecord {
     }
 
     /**
-     * Performs cleanup operations on the ProcessStateRecord when the application record is cleaned
-     * up. This resets various state flags and adjustment values.
+     * Performs cleanup operations on the ProcessRecordInternal when the application record is
+     * cleaned up. This resets various state flags and adjustment values.
      */
     @GuardedBy({"mServiceLock", "mProcLock"})
     public void onCleanupApplicationRecordLSP() {
@@ -1562,7 +1515,7 @@ public final class ProcessStateRecord {
     }
 
     /**
-     * Dumps the current state of the ProcessStateRecord to the given PrintWriter.
+     * Dumps the current state of the ProcessRecordInternal to the given PrintWriter.
      *
      * @param pw The PrintWriter to dump to.
      * @param prefix The prefix string for each line.

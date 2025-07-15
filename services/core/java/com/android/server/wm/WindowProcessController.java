@@ -91,7 +91,7 @@ import com.android.internal.util.function.pooled.PooledLambda;
 import com.android.server.Watchdog;
 import com.android.server.am.Flags;
 import com.android.server.am.ProcessStateController;
-import com.android.server.am.psc.ProcessStateRecord;
+import com.android.server.am.psc.ProcessRecordInternal;
 import com.android.server.art.ReasonMapping;
 import com.android.server.grammaticalinflection.GrammaticalInflectionManagerInternal;
 import com.android.server.wm.ActivityTaskManagerService.HotPath;
@@ -116,7 +116,7 @@ import java.util.List;
  * calls are allowed to proceed.
  */
 public class WindowProcessController extends ConfigurationContainer<ConfigurationContainer>
-        implements ConfigurationContainerListener, ProcessStateRecord.Observer {
+        implements ConfigurationContainerListener, ProcessRecordInternal.Observer {
     private static final String TAG = TAG_WITH_CLASS_NAME ? "WindowProcessController" : TAG_ATM;
     private static final String TAG_RELEASE = TAG + POSTFIX_RELEASE;
     private static final String TAG_CONFIGURATION = TAG + POSTFIX_CONFIGURATION;

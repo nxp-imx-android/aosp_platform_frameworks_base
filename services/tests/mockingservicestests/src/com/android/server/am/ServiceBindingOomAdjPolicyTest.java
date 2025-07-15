@@ -778,14 +778,14 @@ public final class ServiceBindingOomAdjPolicyTest {
             String processName, String packageName, ActivityManagerService ams) {
         final ProcessRecord app = ApplicationExitInfoTest.makeProcessRecord(pid, uid, packageUid,
                 definingUid, connectionGroup, procState, pss, rss, processName, packageName, ams);
-        app.mState.setCurRawProcState(procState);
-        app.mState.setCurProcState(procState);
-        app.mState.setSetProcState(procState);
-        app.mState.setCurRawAdj(adj);
-        app.mState.setCurAdj(adj);
-        app.mState.setSetAdj(adj);
-        app.mState.setCurCapability(cap);
-        app.mState.setSetCapability(cap);
+        app.setCurRawProcState(procState);
+        app.setCurProcState(procState);
+        app.setSetProcState(procState);
+        app.setCurRawAdj(adj);
+        app.setCurAdj(adj);
+        app.setSetAdj(adj);
+        app.setCurCapability(cap);
+        app.setSetCapability(cap);
         return app;
     }
 

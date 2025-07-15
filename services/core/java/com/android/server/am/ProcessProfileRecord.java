@@ -36,7 +36,7 @@ import com.android.internal.annotations.GuardedBy;
 import com.android.internal.app.procstats.ProcessState;
 import com.android.internal.app.procstats.ProcessStats;
 import com.android.server.am.ProcessList.ProcStateMemTracker;
-import com.android.server.am.psc.ProcessStateRecord;
+import com.android.server.am.psc.ProcessRecordInternal;
 import com.android.server.power.stats.BatteryStatsImpl;
 
 import java.io.PrintWriter;
@@ -48,7 +48,7 @@ import java.util.concurrent.atomic.AtomicLong;
  *
  * TODO(b/297542292): Update PSS names with RSS once AppProfiler's PSS profiling has been replaced.
  */
-final class ProcessProfileRecord implements ProcessStateRecord.StartedServiceObserver {
+final class ProcessProfileRecord implements ProcessRecordInternal.StartedServiceObserver {
     final ProcessRecord mApp;
 
     private final ActivityManagerService mService;
@@ -636,7 +636,7 @@ final class ProcessProfileRecord implements ProcessStateRecord.StartedServiceObs
     }
 
     @GuardedBy({"mService", "mProfilerLock"})
-    void updateProcState(ProcessStateRecord state) {
+    void updateProcState(ProcessRecordInternal state) {
         mSetProcState = state.getCurProcState();
         mSetAdj = state.getCurAdj();
         mCurRawAdj = state.getCurRawAdj();
