@@ -300,8 +300,7 @@ public class CachedBluetoothDevice implements Comparable<CachedBluetoothDevice> 
                             mHandler.removeMessages(profile.getProfileId());
                             if (profile.getConnectionPolicy(mDevice) >
                                     BluetoothProfile.CONNECTION_POLICY_FORBIDDEN) {
-                                if (Flags.ignoreA2dpDisconnectionForAndroidAuto()
-                                        && profile instanceof A2dpProfile && isAndroidAuto()) {
+                                if (profile instanceof A2dpProfile && isAndroidAuto()) {
                                     Log.w(TAG,
                                             "onProfileStateChanged(): Skip setting A2DP "
                                                     + "connection fail for Android Auto");
