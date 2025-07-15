@@ -302,6 +302,14 @@ import java.util.stream.Collectors;
     }
 
     /**
+     * Trigger {@link BluetoothProfileMonitor} to stop the broadcast, optionally making a new BT
+     * device active.
+     */
+    protected void stopBroadcast(@Nullable String routeId) {
+        mBluetoothProfileMonitor.stopBroadcast(routeId);
+    }
+
+    /**
      * Obtains a list of selected bluetooth route infos.
      *
      * @return list of selected bluetooth route infos.
