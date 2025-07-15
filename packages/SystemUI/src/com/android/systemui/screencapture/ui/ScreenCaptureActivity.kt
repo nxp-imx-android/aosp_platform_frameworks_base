@@ -23,6 +23,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.lifecycle.lifecycleScope
+import com.android.compose.theme.PlatformTheme
 import com.android.systemui.screencapture.common.ScreenCaptureComponent
 import com.android.systemui.screencapture.common.shared.model.ScreenCaptureActivityIntentParameters
 import com.android.systemui.screencapture.common.shared.model.ScreenCaptureType
@@ -55,7 +56,7 @@ constructor(
 
         component =
             builder.setParameters(intentParameters).setScope(lifecycleScope).build().also {
-                setContent { it.screenCaptureContent.Content() }
+                setContent { PlatformTheme { it.screenCaptureContent.Content() } }
             }
     }
 
