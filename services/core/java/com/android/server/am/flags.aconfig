@@ -16,13 +16,6 @@ flag {
 }
 
 flag {
-    name: "service_binding_oom_adj_policy"
-    namespace: "backstage_power"
-    description: "Optimize the service bindings by different policies like skipping oom adjuster"
-    bug: "318717054"
-}
-
-flag {
     namespace: "backstage_power"
     name: "defer_outgoing_broadcasts"
     description: "Defer outgoing broadcasts from processes in freezable state"
