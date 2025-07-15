@@ -5,6 +5,7 @@ import android.app.contextualsearch.IContextualSearchCallback;
  * @hide
  */
 interface IContextualSearchManager {
+  boolean isContextualSearchAvailable();
   void startContextualSearchForForegroundApp();
   oneway void startContextualSearch(int entrypoint);
   oneway void getContextualSearchState(in IBinder token, in IContextualSearchCallback callback);

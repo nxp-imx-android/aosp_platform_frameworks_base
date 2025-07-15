@@ -20,6 +20,7 @@ import static android.Manifest.permission.ACCESS_CONTEXTUAL_SEARCH;
 import static android.app.AppOpsManager.OP_ASSIST_SCREENSHOT;
 import static android.app.AppOpsManager.OP_ASSIST_STRUCTURE;
 import static android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN;
+import static android.app.contextualsearch.ContextualSearchManager.FEATURE_CONTEXTUAL_SEARCH;
 import static android.content.Context.CONTEXTUAL_SEARCH_SERVICE;
 import static android.content.Intent.FLAG_ACTIVITY_CLEAR_TASK;
 import static android.content.Intent.FLAG_ACTIVITY_NEW_TASK;
@@ -513,6 +514,13 @@ public class ContextualSearchManagerService extends SystemService {
                 mTokenHandler.sendEmptyMessageDelayed(
                         MSG_INVALIDATE_TOKEN, getTokenValidDurationMs());
             }
+        }
+
+        @Override
+        public boolean isContextualSearchAvailable() {
+            return mContext.getPackageManager().hasSystemFeature(FEATURE_CONTEXTUAL_SEARCH)
+                    && getResolvedLaunchIntent(Binder.getCallingUserHandle().getIdentifier())
+                            != null;
         }
 
         @Override

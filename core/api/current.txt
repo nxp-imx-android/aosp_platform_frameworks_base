@@ -9426,6 +9426,7 @@ package android.app.blob {
 package android.app.contextualsearch {
 
   @FlaggedApi("android.app.contextualsearch.flags.self_invocation") public final class ContextualSearchManager {
+    method @FlaggedApi("android.app.contextualsearch.flags.self_invocation") public boolean isContextualSearchAvailable();
     method @FlaggedApi("android.app.contextualsearch.flags.self_invocation") public void startContextualSearch();
   }
 
