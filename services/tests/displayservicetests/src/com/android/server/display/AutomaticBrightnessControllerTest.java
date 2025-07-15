@@ -47,6 +47,7 @@ import android.os.Handler;
 import android.os.PowerManager;
 import android.os.SystemClock;
 import android.os.test.TestLooper;
+import android.util.MathUtils;
 import android.util.SparseArray;
 import android.view.Display;
 
@@ -55,6 +56,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.SmallTest;
 
 import com.android.internal.display.BrightnessSynchronizer;
+import com.android.internal.display.BrightnessUtils;
 import com.android.server.display.brightness.clamper.BrightnessClamperController;
 import com.android.server.display.config.HysteresisLevels;
 import com.android.server.display.feature.DisplayManagerFlags;
@@ -796,6 +798,78 @@ public class AutomaticBrightnessControllerTest {
                 /* shouldResetShortTermModel= */ true);
         assertEquals(BRIGHTNESS_MAX_FLOAT, mController.getAutomaticScreenBrightness(), 0.0f);
         assertEquals(BRIGHTNESS_MAX_FLOAT, mController.getRawAutomaticScreenBrightness(), 0.0f);
+    }
+
+    /**
+     * Tests that movement from 1% brightness to 0% brightness is possible.
+     * Because of gamma conversion, the difference in float brightness between 0 and 1
+     * percent is very small and this ensures that our float-comparison (using EPSILON)
+     * can tell the difference between the two small values.
+     */
+    @Test
+    public void testBrightnessChangeAtLowEnd() throws Exception {
+        ArgumentCaptor<SensorEventListener> listenerCaptor =
+                ArgumentCaptor.forClass(SensorEventListener.class);
+        verify(mSensorManager).registerListener(listenerCaptor.capture(), eq(mLightSensor),
+                eq(INITIAL_LIGHT_SENSOR_RATE * 1000), any(Handler.class));
+        SensorEventListener listener = listenerCaptor.getValue();
+
+        // Min and Max brightness may be reduced due to conditions such as ambient environment,
+        // thermal, etc.  So, lets further reduce the range of the brightness values since that
+        // can also affect the floating-point comparison resolution.
+        float minBrightness = 0.01f;
+        float maxBrightness = 0.25f;
+        when(mBrightnessRangeController.getCurrentBrightnessMax()).thenReturn(maxBrightness);
+        when(mBrightnessRangeController.getCurrentBrightnessMin()).thenReturn(minBrightness);
+
+        float twoPercentLux = 40;
+        float twoPercent = 0.02f;
+        float twoPercentLinearBrightness = MathUtils.lerp(minBrightness, maxBrightness,
+                BrightnessUtils.convertGammaToLinear(twoPercent));
+
+
+        when(mBrightnessMappingStrategy.getBrightness(eq(twoPercentLux), eq(null), anyInt()))
+                .thenReturn(twoPercentLinearBrightness);
+
+        listener.onSensorChanged(createSensorEvent(mLightSensor, (int) twoPercentLux));
+        assertEquals(twoPercentLinearBrightness, mController.getAutomaticScreenBrightness(), 0.0f);
+        assertEquals(twoPercentLinearBrightness, mController.getRawAutomaticScreenBrightness(),
+                0.0f);
+
+        float onePercentLux = 20;
+        float onePercent = 0.01f;
+        float onePercentLinearBrightness = MathUtils.lerp(minBrightness, maxBrightness,
+                BrightnessUtils.convertGammaToLinear(onePercent));
+
+        when(mBrightnessMappingStrategy.getBrightness(anyFloat(), eq(null), anyInt()))
+                .thenReturn(onePercentLinearBrightness);
+
+        listener.onSensorChanged(createSensorEvent(mLightSensor, (int) onePercentLux));
+        assertEquals(onePercentLinearBrightness, mController.getAutomaticScreenBrightness(), 0.0f);
+        assertEquals(onePercentLinearBrightness, mController.getRawAutomaticScreenBrightness(),
+                0.0f);
+
+        // Make a small change down an ensure the brightness actually changes.
+        float zeroPercentLux = 2;
+        float zeroPercent = 0.00f;
+        float zeroPercentLinearBrightness = MathUtils.lerp(minBrightness, maxBrightness,
+                BrightnessUtils.convertGammaToLinear(zeroPercent));
+        when(mBrightnessMappingStrategy.getBrightness(anyFloat(), eq(null), anyInt()))
+                .thenReturn(zeroPercentLinearBrightness);
+
+        listener.onSensorChanged(createSensorEvent(mLightSensor, (int) zeroPercentLux));
+        assertEquals(zeroPercentLinearBrightness, mController.getAutomaticScreenBrightness(), 0.0f);
+        assertEquals(zeroPercentLinearBrightness, mController.getRawAutomaticScreenBrightness(),
+                0.0f);
+
+        // And for good measure, lets put it back  to 1%
+        when(mBrightnessMappingStrategy.getBrightness(anyFloat(), eq(null), anyInt()))
+                .thenReturn(onePercentLinearBrightness);
+        listener.onSensorChanged(createSensorEvent(mLightSensor, (int) onePercentLux));
+        assertEquals(onePercentLinearBrightness, mController.getAutomaticScreenBrightness(), 0.0f);
+        assertEquals(onePercentLinearBrightness, mController.getRawAutomaticScreenBrightness(),
+                0.0f);
+
     }
 
     @Test
