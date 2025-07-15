@@ -95,17 +95,17 @@ class LockscreenContentViewModelTest(flags: FlagsParameterization) : SysuiTestCa
     }
 
     @Test
-    fun isUdfpsSupported_withoutUdfps_false() =
+    fun isAmbientIndicationVisible_withUdfps_false() =
         kosmos.runTest {
-            whenever(authController.isUdfpsSupported).thenReturn(false)
-            assertThat(underTest.layout.isUdfpsSupported).isFalse()
+            whenever(authController.isUdfpsSupported).thenReturn(true)
+            assertThat(underTest.layout.isAmbientIndicationVisible).isFalse()
         }
 
     @Test
-    fun isUdfpsSupported_withUdfps_true() =
+    fun isAmbientIndicationVisible_withoutUdfps_true() =
         kosmos.runTest {
-            whenever(authController.isUdfpsSupported).thenReturn(true)
-            assertThat(underTest.layout.isUdfpsSupported).isTrue()
+            whenever(authController.isUdfpsSupported).thenReturn(false)
+            assertThat(underTest.layout.isAmbientIndicationVisible).isTrue()
         }
 
     @Test
