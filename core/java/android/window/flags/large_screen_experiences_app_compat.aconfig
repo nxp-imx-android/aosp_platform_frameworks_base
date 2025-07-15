@@ -73,6 +73,13 @@ flag {
 }
 
 flag {
+    name: "camera_compat_unify_camera_policies"
+    namespace: "large_screen_experiences_app_compat"
+    description: "Whether to use simulate-requested-orientation camera compat treatment instead of a force-rotate one."
+    bug: "432218134"
+}
+
+flag {
   name: "scrolling_from_letterbox"
   namespace: "large_screen_experiences_app_compat"
   description: "Whether to enable app scrolling from gestures from letterbox area"
