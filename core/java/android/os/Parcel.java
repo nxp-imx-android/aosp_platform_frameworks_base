@@ -4716,12 +4716,14 @@ public final class Parcel {
             object = readValue(type, loader, clazz, itemTypes);
             int actual = dataPosition() - start;
             if (actual != length) {
+                boolean failOnMismatch = failOnParcelSizeMismatch();
                 String msg = "Unparcelling of " + object + " of type " + Parcel.valueTypeToString(
-                        type) + "  consumed " + actual + " bytes, but " + length + " expected.";
-                if (failOnParcelSizeMismatch()) {
+                        type) + "  consumed " + actual + " bytes, but " + length + " expected."
+                        + (failOnMismatch ? " [throwing]" : " [ignored]");
+                Slog.wtfStack(TAG, msg);
+                if (failOnMismatch) {
                     throw new BadParcelableException(msg);
                 }
-                Slog.wtfStack(TAG, msg);
             }
         } else {
             object = readValue(type, loader, clazz, itemTypes);
