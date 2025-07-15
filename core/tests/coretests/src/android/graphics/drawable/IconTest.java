@@ -40,9 +40,11 @@ import android.os.IBinder;
 import android.os.Parcel;
 import android.os.RemoteException;
 import android.platform.test.annotations.DisableFlags;
+import android.platform.test.annotations.DisabledOnRavenwood;
 import android.platform.test.annotations.EnableFlags;
 import android.platform.test.flag.junit.SetFlagsRule;
 import android.util.Log;
+import android.window.DesktopExperienceFlags;
 
 import androidx.test.core.app.ApplicationProvider;
 
@@ -202,6 +204,7 @@ public class IconTest {
         }
     }
 
+    @DisabledOnRavenwood(blockedBy = DesktopExperienceFlags.class)
     @Test
     public void testWithBitmapResource() throws Exception {
         final Bitmap res1 = ((BitmapDrawable) getContext().getDrawable(R.drawable.landscape))
@@ -229,6 +232,7 @@ public class IconTest {
      * Icon resource test that ensures we can load and draw non-bitmaps. (In this case,
      * stat_sys_adb is assumed, and asserted, to be a vector drawable.)
      */
+    @DisabledOnRavenwood(blockedBy = DesktopExperienceFlags.class)
     @Test
     public void testWithStatSysAdbResource() throws Exception {
         // establish reference bitmap
@@ -623,6 +627,7 @@ public class IconTest {
         assertThat(loadedDrawable).isNull();
     }
 
+    @DisabledOnRavenwood(blockedBy = DesktopExperienceFlags.class)
     @EnableFlags(Flags.FLAG_USE_RESOURCES_FROM_CONTEXT_TO_CREATE_DRAWABLE_ICONS)
     @Test
     public void testLoadDrawable_withConfigurationChange_flagEnabled_invalidatesCache() {
@@ -647,6 +652,7 @@ public class IconTest {
         assertThat(icon.getResources().getConfiguration().densityDpi).isEqualTo(newDpi);
     }
 
+    @DisabledOnRavenwood(blockedBy = DesktopExperienceFlags.class)
     @DisableFlags(Flags.FLAG_USE_RESOURCES_FROM_CONTEXT_TO_CREATE_DRAWABLE_ICONS)
     @Test
     public void testLoadDrawable_withConfigurationChange_flagDisabled_doesNotInvalidateCache() {
@@ -671,6 +677,7 @@ public class IconTest {
         assertThat(icon.getResources().getConfiguration().densityDpi).isEqualTo(initialDpi);
     }
 
+    @DisabledOnRavenwood(blockedBy = DesktopExperienceFlags.class)
     @EnableFlags(Flags.FLAG_USE_RESOURCES_FROM_CONTEXT_TO_CREATE_DRAWABLE_ICONS)
     @Test
     public void testLoadDrawableAsUser_withConfigurationChange_flagEnabled_invalidatesCache() {
@@ -695,6 +702,7 @@ public class IconTest {
         assertThat(icon.getResources().getConfiguration().densityDpi).isEqualTo(newDpi);
     }
 
+    @DisabledOnRavenwood(blockedBy = DesktopExperienceFlags.class)
     @DisableFlags(Flags.FLAG_USE_RESOURCES_FROM_CONTEXT_TO_CREATE_DRAWABLE_ICONS)
     @Test
     public void
@@ -720,6 +728,7 @@ public class IconTest {
         assertThat(icon.getResources().getConfiguration().densityDpi).isEqualTo(initialDpi);
     }
 
+    @DisabledOnRavenwood(blockedBy = DesktopExperienceFlags.class)
     @EnableFlags(Flags.FLAG_USE_RESOURCES_FROM_CONTEXT_TO_CREATE_DRAWABLE_ICONS)
     @Test
     public void testLoadDrawable_withNoConfigurationChange_flagEnabled_doesNotInvalidateCache() {
@@ -737,6 +746,7 @@ public class IconTest {
         assertThat(icon.getResources()).isSameInstanceAs(initialResources);
     }
 
+    @DisabledOnRavenwood(blockedBy = DesktopExperienceFlags.class)
     @EnableFlags(Flags.FLAG_USE_RESOURCES_FROM_CONTEXT_TO_CREATE_DRAWABLE_ICONS)
     @Test
     public void
@@ -755,6 +765,7 @@ public class IconTest {
         assertThat(icon.getResources()).isSameInstanceAs(initialResources);
     }
 
+    @DisabledOnRavenwood(blockedBy = DesktopExperienceFlags.class)
     @DisableFlags(Flags.FLAG_USE_RESOURCES_FROM_CONTEXT_TO_CREATE_DRAWABLE_ICONS)
     @Test
     public void testLoadDrawable_withNoConfigurationChange_flagDisabled_doesNotInvalidateCache() {
@@ -772,6 +783,7 @@ public class IconTest {
         assertThat(icon.getResources()).isSameInstanceAs(initialResources);
     }
 
+    @DisabledOnRavenwood(blockedBy = DesktopExperienceFlags.class)
     @DisableFlags(Flags.FLAG_USE_RESOURCES_FROM_CONTEXT_TO_CREATE_DRAWABLE_ICONS)
     @Test
     public void
