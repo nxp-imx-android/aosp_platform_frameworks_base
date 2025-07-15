@@ -1660,13 +1660,14 @@ public class InputMethodService extends AbstractInputMethodService {
 
     /**
      * Checks whether the IME should be shown when a hardware keyboard is connected, as configured
-     * through {@link Settings.Secure#SHOW_IME_WITH_HARD_KEYBOARD}, for testing purposes only.
+     * through {@link Settings.Secure#SHOW_IME_WITH_HARD_KEYBOARD}, for testing purposes only. If
+     * {@link #mSettingsObserver} is {@code null}, this will also return {@code null}.
      *
      * @hide
      */
     @VisibleForTesting
-    public final boolean getShouldShowImeWithHardKeyboardForTesting() {
-        return mSettingsObserver.shouldShowImeWithHardKeyboard();
+    public final Boolean getShouldShowImeWithHardKeyboardForTesting() {
+        return mSettingsObserver != null ? mSettingsObserver.shouldShowImeWithHardKeyboard() : null;
     }
 
     /**
