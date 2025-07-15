@@ -16,9 +16,12 @@
 
 package com.android.systemui.supervision.data.repository
 
+import android.app.admin.DevicePolicyManager
+import android.app.admin.devicePolicyManager
 import android.app.role.RoleManager
 import android.app.role.roleManager
 import android.app.supervision.SupervisionManager
+import android.content.ComponentName
 import android.os.UserHandle
 import android.platform.test.flag.junit.SetFlagsRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -65,6 +68,7 @@ class SupervisionRepositoryImplTest : SysuiTestCase() {
     private val testScope = kosmos.testScope
     private val roleManager: RoleManager = kosmos.roleManager
     private val supervisionManager: SupervisionManager = kosmos.supervisionManager
+    private val devicePolicyManager: DevicePolicyManager = kosmos.devicePolicyManager
     private val userRepository: FakeUserRepository = kosmos.fakeUserRepository
     private val supervisionListenerCaptor = argumentCaptor<SupervisionManager.SupervisionListener>()
 
@@ -77,6 +81,7 @@ class SupervisionRepositoryImplTest : SysuiTestCase() {
                 roleManager = roleManager,
                 supervisionManagerProvider = { supervisionManager },
                 userRepository = userRepository,
+                devicePolicyManager = devicePolicyManager,
                 context = context,
                 backgroundDispatcher = kosmos.testDispatcher,
             )
@@ -207,6 +212,60 @@ class SupervisionRepositoryImplTest : SysuiTestCase() {
         }
 
     @Test
+    fun getProperties_isSupervisionProfileOwner_returnsParentalControlsResources() =
+        testScope.runTest {
+            val currentSupervisionModel by collectLastValue(underTest.supervision)
+
+            assertNotNull(currentSupervisionModel)
+            verify(supervisionManager)
+                .registerSupervisionListener(supervisionListenerCaptor.capture())
+            verify(supervisionManager).isSupervisionEnabledForUser(eq(USER_ID))
+
+            whenever(
+                    roleManager.getRoleHoldersAsUser(
+                        eq(RoleManager.ROLE_SYSTEM_SUPERVISION),
+                        eq(UserHandle.of(USER_ID)),
+                    )
+                )
+                .thenReturn(listOf(SYSTEM_SUPERVISION_APP_PACKAGE_NAME))
+            whenever(
+                    roleManager.getRoleHoldersAsUser(
+                        eq(RoleManager.ROLE_SUPERVISION),
+                        eq(UserHandle.of(USER_ID)),
+                    )
+                )
+                .thenReturn(listOf(SUPERVISION_APP_PACKAGE_NAME))
+            whenever(devicePolicyManager.getProfileOwnerAsUser(eq(UserHandle.of(USER_ID))))
+                .thenReturn(SUPERVISION_COMPONENT)
+            context
+                .getOrCreateTestableResources()
+                .addOverride(
+                    com.android.internal.R.string.config_defaultSupervisionProfileOwnerComponent,
+                    SUPERVISION_COMPONENT_STR,
+                )
+
+            supervisionListenerCaptor.lastValue.onSupervisionEnabled(USER_ID)
+
+            val expectedLabel = context.getString(R.string.status_bar_supervision)
+            val expectedIcon = context.getDrawable(R.drawable.ic_supervision)
+            val expectedDisclaimerText =
+                context.getString(R.string.monitoring_description_parental_controls)
+            val expectedFooterText =
+                context.getString(R.string.quick_settings_disclosure_parental_controls)
+            assertEquals(expectedLabel, currentSupervisionModel!!.label)
+            assertTrue(currentSupervisionModel!!.icon.toBitmap()!!.sameAs(expectedIcon.toBitmap()))
+            assertEquals(expectedDisclaimerText, currentSupervisionModel!!.disclaimerText)
+            assertEquals(expectedFooterText, currentSupervisionModel!!.footerText)
+            verify(roleManager)
+                .getRoleHoldersAsUser(eq(RoleManager.ROLE_SUPERVISION), eq(UserHandle.of(USER_ID)))
+            verify(roleManager)
+                .getRoleHoldersAsUser(
+                    eq(RoleManager.ROLE_SYSTEM_SUPERVISION),
+                    eq(UserHandle.of(USER_ID)),
+                )
+        }
+
+    @Test
     fun getProperties_supervisionIsDisabled_returnsNull() =
         testScope.runTest {
             val currentSupervisionModel by collectLastValue(underTest.supervision)
@@ -243,6 +302,9 @@ class SupervisionRepositoryImplTest : SysuiTestCase() {
         const val USER_ID = FakeUserRepository.DEFAULT_SELECTED_USER
         const val SYSTEM_SUPERVISION_APP_PACKAGE_NAME = "com.abc.xyz.SystemSupervisionApp"
         const val SUPERVISION_APP_PACKAGE_NAME = "com.abc.xyz.SupervisionApp"
+        const val SUPERVISION_COMPONENT_STR =
+            "com.google.android.gms/.kids.account.receiver.ProfileOwnerReceiver"
+        val SUPERVISION_COMPONENT = ComponentName.unflattenFromString(SUPERVISION_COMPONENT_STR)
         val USER_HANDLE: UserHandle = UserHandle.of(FakeUserRepository.DEFAULT_SELECTED_USER)
     }
 }
