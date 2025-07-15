@@ -412,13 +412,6 @@ interface ITelephony {
     int getActivePhoneTypeForSlot(int slotIndex);
 
     /**
-     * Returns true if OTA service provisioning needs to run.
-     * Only relevant on some technologies, others will always
-     * return false.
-     */
-    boolean needsOtaServiceProvisioning();
-
-    /**
      * Sets the voicemail number for a particular subscriber.
      */
     boolean setVoiceMailNumber(int subId, String alphaTag, String number);

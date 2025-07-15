@@ -11882,20 +11882,18 @@ public class TelephonyManager {
     }
 
     /**
-     * @throws UnsupportedOperationException If the device does not have
-     *          {@link PackageManager#FEATURE_TELEPHONY_RADIO_ACCESS}.
+     * Checks if the device needs to be provisioned for OTA (Over-The-Air) service.
+     * OTA service provisioning is a device-specific process that may be required
+     * before the device can connect to the cellular network.
+     *
+     * <p>This method always returns {@code false} as CDMA is no longer supported.
+     *
+     * @return {@code false} always.
      * @hide
      */
     @SystemApi
     @RequiresFeature(PackageManager.FEATURE_TELEPHONY_RADIO_ACCESS)
     public boolean needsOtaServiceProvisioning() {
-        try {
-            ITelephony telephony = getITelephony();
-            if (telephony != null)
-                return telephony.needsOtaServiceProvisioning();
-        } catch (RemoteException e) {
-            Log.e(TAG, "Error calling ITelephony#needsOtaServiceProvisioning", e);
-        }
         return false;
     }
 
