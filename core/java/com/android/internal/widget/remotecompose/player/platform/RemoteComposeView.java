@@ -56,6 +56,8 @@ public class RemoteComposeView extends FrameLayout implements View.OnAttachState
     static final boolean USE_VIEW_AREA_CLICK = true; // Use views to represent click areas
     static final float DEFAULT_FRAME_RATE = 60f;
     static final float POST_TO_NEXT_FRAME_THRESHOLD = 60f;
+    private static final int sMaxBitmapMemory = 20 * 1024 * 1024;
+    private String mErrorMessage = "";
 
     Clock mClock;
 
@@ -188,6 +190,13 @@ public class RemoteComposeView extends FrameLayout implements View.OnAttachState
         mMaxFrameRate = DEFAULT_FRAME_RATE;
         mDocument.initializeContext(mARContext);
         mDisable = false;
+        if (mDocument.getDocument().bitmapMemory() > sMaxBitmapMemory) {
+            mDisable = true;
+            mErrorMessage =
+                    "Bitmap memory "
+                            + mDocument.getDocument().bitmapMemory() / (1024 * 1024)
+                            + "MB!";
+        }
         mARContext.setDocLoadTime();
         mARContext.setAnimationEnabled(true);
         mARContext.setDensity(mDensity);
@@ -714,7 +723,7 @@ public class RemoteComposeView extends FrameLayout implements View.OnAttachState
             return;
         }
         if (mDisable) {
-            drawDisable(canvas);
+            drawDisable(canvas, mErrorMessage);
             return;
         }
         try {
@@ -783,7 +792,9 @@ public class RemoteComposeView extends FrameLayout implements View.OnAttachState
             mDisable = true;
             invalidate();
             int errorId = mDocument.getDocument().getHostExceptionID();
-            System.err.println(".......... Exception in draw " + count);
+            System.err.println("Exception in draw " + count);
+            System.err.println("\"" + ex.getMessage() + "\"");
+            mErrorMessage = ex.getMessage();
             ex.printStackTrace();
             Utils.log(ex.toString());
             if (errorId != 0) {
@@ -803,7 +814,7 @@ public class RemoteComposeView extends FrameLayout implements View.OnAttachState
         }
     }
 
-    private void drawDisable(Canvas canvas) {
+    private void drawDisable(Canvas canvas, String message) {
         Rect rect = new Rect();
         canvas.drawColor(Color.BLACK);
         Paint paint = new Paint();
@@ -819,6 +830,11 @@ public class RemoteComposeView extends FrameLayout implements View.OnAttachState
         float y = h / 2f + rect.height() / 2f - rect.bottom;
 
         canvas.drawText(str, x, y, paint);
+        paint.setTextSize(48f);
+        y += rect.height();
+        paint.getTextBounds(message, 0, message.length(), rect);
+        x = w / 2f - rect.width() / 2f - rect.left;
+        canvas.drawText(message, x, y, paint);
     }
 
     private float getDefaultTextSize() {

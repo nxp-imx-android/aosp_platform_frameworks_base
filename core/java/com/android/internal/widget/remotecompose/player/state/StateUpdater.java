@@ -57,8 +57,8 @@ public interface StateUpdater {
     void setUserLocalBitmap(String name, Bitmap content);
 
     /**
-     * Calls {@link RemoteContext#setNamedStringOverride(String, String)}
-     * adding {@link RemoteDomains#USER} as a prefix to the stringName.
+     * Calls {@link RemoteContext#setNamedStringOverride(String,
+     * String)} adding {@link RemoteDomains#USER} as a prefix to the stringName.
      *
      * @param stringName the original name of the string parameter.
      * @param value the string value to set.

@@ -118,6 +118,8 @@ public class CoreDocument implements Serializable {
     boolean mFirstPaint = true;
     private boolean mIsUpdateDoc = false;
     private int mHostExceptionID = 0;
+    private int mBitmapMemory = 0;
+    private int mBitmapCount = 0;
 
     public CoreDocument() {
         this(new SystemClock());
@@ -570,6 +572,15 @@ public class CoreDocument implements Serializable {
         return mHostExceptionID;
     }
 
+    /**
+     * Get the bitmap memory used by the document
+     *
+     * @return the bitmap memory used by the document
+     */
+    public int bitmapMemory() {
+        return mBitmapMemory;
+    }
+
     private interface Visitor {
         void visit(Operation op);
     }
@@ -825,7 +836,10 @@ public class CoreDocument implements Serializable {
                 mFloatExpressions.put(expression.mId, expression);
             }
         }
+        mBitmapMemory = 0;
+        mBitmapCount = 0;
         mOperations = inflateComponents(mOperations);
+
         mBuffer = buffer;
         for (Operation op : mOperations) {
             if (op instanceof RootLayoutComponent) {
@@ -854,6 +868,11 @@ public class CoreDocument implements Serializable {
 
         mLastId = -1;
         for (Operation o : operations) {
+            if (o instanceof BitmapData) {
+                BitmapData bitmap = (BitmapData) o;
+                mBitmapMemory += bitmap.getHeight() * bitmap.getWidth() * 4;
+                mBitmapCount++;
+            }
             if (o instanceof Container) {
                 Container container = (Container) o;
                 if (container instanceof Component) {
@@ -1116,7 +1135,9 @@ public class CoreDocument implements Serializable {
     /**
      * Programmatically trigger the click response for the given id
      *
+     * @param context the context
      * @param id the click area id
+     * @param metadata the metadata of the click event
      */
     public void performClick(@NonNull RemoteContext context, int id, @NonNull String metadata) {
         for (ClickAreaRepresentation clickArea : mClickAreas) {
@@ -1166,6 +1187,7 @@ public class CoreDocument implements Serializable {
     /**
      * Support touch drag events on commands supporting touch
      *
+     * @param context the context
      * @param x position of touch
      * @param y position of touch
      */
@@ -1189,6 +1211,7 @@ public class CoreDocument implements Serializable {
     /**
      * Support touch down events on commands supporting touch
      *
+     * @param context the context
      * @param x position of touch
      * @param y position of touch
      */
@@ -1207,8 +1230,11 @@ public class CoreDocument implements Serializable {
     /**
      * Support touch up events on commands supporting touch
      *
+     * @param context the context
      * @param x position of touch
      * @param y position of touch
+     * @param dx the x component of the drag vector
+     * @param dy the y component of the drag vector
      */
     public void touchUp(@NonNull RemoteContext context, float x, float y, float dx, float dy) {
         context.loadFloat(RemoteContext.ID_TOUCH_POS_X, x);
@@ -1228,8 +1254,11 @@ public class CoreDocument implements Serializable {
     /**
      * Support touch cancel events on commands supporting touch
      *
+     * @param context the context
      * @param x position of touch
      * @param y position of touch
+     * @param dx the x component of the drag vector
+     * @param dy the y component of the drag vector
      */
     public void touchCancel(@NonNull RemoteContext context, float x, float y, float dx, float dy) {
         if (mRootLayoutComponent != null) {
