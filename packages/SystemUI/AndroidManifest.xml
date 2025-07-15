@@ -1120,6 +1120,15 @@
             </intent-filter>
         </receiver>
 
+        <receiver android:name=".user.UserDialogReceiver"
+            android:exported="true"
+            android:featureFlag="com.android.systemui.multiuser_open_user_switcher_dialog"
+            android:permission="android.permission.CREATE_USERS">
+            <intent-filter>
+                <action android:name="com.android.systemui.action.LAUNCH_USER_SWITCHER_DIALOG" />
+            </intent-filter>
+        </receiver>
+
         <receiver android:name=".accessibility.hearingaid.HearingDevicesDialogReceiver"
             android:exported="false">
             <intent-filter android:priority="1">
