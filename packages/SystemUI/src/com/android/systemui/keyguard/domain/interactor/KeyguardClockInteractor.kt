@@ -176,37 +176,25 @@ constructor(
                     areAnyNotificationsPresent,
                     isAodPromotedNotificationPresent,
                     keyguardInteractor.dozeTransitionModel,
-                    keyguardTransitionInteractor.startedKeyguardTransitionStep.map { it.to == AOD },
-                    keyguardTransitionInteractor.startedKeyguardTransitionStep.map {
-                        it.to == LOCKSCREEN
-                    },
-                    keyguardTransitionInteractor.startedKeyguardTransitionStep.map {
-                        it.to == DOZING
-                    },
+                    keyguardTransitionInteractor.startedKeyguardTransitionStep.map { it.to },
                     keyguardInteractor.isPulsing,
-                    keyguardTransitionInteractor.startedKeyguardTransitionStep.map { it.to == GONE },
                 ) {
                     isShadeLayoutWide,
                     areAnyNotificationsPresent,
                     isAodPromotedNotificationPresent,
                     dozeTransitionModel,
-                    startedToAod,
-                    startedToLockScreen,
-                    startedToDoze,
-                    isPulsing,
-                    startedToGone ->
+                    toKeyguardState,
+                    isPulsing ->
                     when {
                         !isShadeLayoutWide -> true
                         // [areAnyNotificationsPresent] also reacts to notification stack in
-                        // homescreen
-                        // it may cause unnecessary `false` emission when there's notification in
-                        // homescreen
-                        // but none in lockscreen when going from GONE to AOD / DOZING
-                        // use null to skip emitting wrong value
-                        startedToGone || startedToDoze -> null
-                        startedToLockScreen -> !areAnyNotificationsPresent
-                        startedToAod -> !(isPulsing || isAodPromotedNotificationPresent)
-                        else -> true
+                        // homescreen it may cause unnecessary `false` emission when there's
+                        // notification in homescreen but none in lockscreen when going from
+                        // GONE to AOD / DOZING use null to skip emitting wrong value
+                        toKeyguardState == GONE || toKeyguardState == DOZING -> null
+                        toKeyguardState == LOCKSCREEN -> !areAnyNotificationsPresent
+                        toKeyguardState == AOD -> !(isPulsing || isAodPromotedNotificationPresent)
+                        else -> !areAnyNotificationsPresent
                     }
                 }
                 .filterNotNull()
