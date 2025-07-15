@@ -47,6 +47,8 @@ import com.android.systemui.statusbar.policy.bluetooth.data.repository.bluetooth
 import com.android.systemui.statusbar.policy.data.repository.fakeZenModeRepository
 import com.android.systemui.statusbar.policy.fakeHotspotController
 import com.android.systemui.statusbar.policy.fakeNextAlarmController
+import com.android.systemui.statusbar.policy.vpn.data.repository.vpnRepository
+import com.android.systemui.statusbar.policy.vpn.shared.model.VpnState
 import com.android.systemui.statusbar.systemstatusicons.SystemStatusIconsInCompose
 import com.android.systemui.statusbar.systemstatusicons.data.repository.statusBarConfigIconSlotNames
 import com.android.systemui.testKosmos
@@ -79,6 +81,7 @@ class SystemStatusIconsViewModelTest : SysuiTestCase() {
     private lateinit var slotMute: String
     private lateinit var slotNextAlarm: String
     private lateinit var slotVibrate: String
+    private lateinit var slotVpn: String
     private lateinit var slotWifi: String
     private lateinit var slotZen: String
 
@@ -93,6 +96,7 @@ class SystemStatusIconsViewModelTest : SysuiTestCase() {
         slotMute = context.getString(com.android.internal.R.string.status_bar_mute)
         slotNextAlarm = context.getString(com.android.internal.R.string.status_bar_alarm_clock)
         slotVibrate = context.getString(com.android.internal.R.string.status_bar_volume)
+        slotVpn = context.getString(com.android.internal.R.string.status_bar_vpn)
         slotWifi = context.getString(com.android.internal.R.string.status_bar_wifi)
         slotZen = context.getString(com.android.internal.R.string.status_bar_zen)
     }
@@ -194,6 +198,7 @@ class SystemStatusIconsViewModelTest : SysuiTestCase() {
             showEthernet()
             showVibrate()
             showHotspot()
+            showVpn()
 
             assertThat(underTest.activeSlotNames)
                 .containsExactly(
@@ -204,6 +209,7 @@ class SystemStatusIconsViewModelTest : SysuiTestCase() {
                     slotHotspot,
                     slotNextAlarm,
                     slotVibrate,
+                    slotVpn,
                     slotZen,
                 )
                 .inOrder()
@@ -221,6 +227,7 @@ class SystemStatusIconsViewModelTest : SysuiTestCase() {
                     slotHotspot,
                     slotMute,
                     slotNextAlarm,
+                    slotVpn,
                     slotWifi,
                     slotZen,
                 )
@@ -303,5 +310,9 @@ class SystemStatusIconsViewModelTest : SysuiTestCase() {
 
     private fun Kosmos.showHotspot() {
         fakeHotspotController.isHotspotEnabled = true
+    }
+
+    private fun Kosmos.showVpn() {
+        vpnRepository.vpnState.value = VpnState(isEnabled = true)
     }
 }

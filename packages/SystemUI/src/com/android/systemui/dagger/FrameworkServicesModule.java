@@ -80,6 +80,7 @@ import android.media.session.MediaSessionManager;
 import android.nearby.NearbyManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkScoreManager;
+import android.net.VpnManager;
 import android.net.wifi.WifiManager;
 import android.os.BatteryStats;
 import android.os.IDeviceIdleController;
@@ -216,6 +217,12 @@ public class FrameworkServicesModule {
     @Singleton
     static ConnectivityManager provideConnectivityManagager(Context context) {
         return context.getSystemService(ConnectivityManager.class);
+    }
+
+    @Provides
+    @Singleton
+    static VpnManager provideVpnManager(Context context) {
+        return context.getSystemService(VpnManager.class);
     }
 
     @Provides
