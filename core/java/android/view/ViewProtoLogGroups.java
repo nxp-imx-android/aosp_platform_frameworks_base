@@ -32,11 +32,17 @@ public final class ViewProtoLogGroups {
     static final ProtoLogGroup IME_INSETS_CONTROLLER = new ProtoLogGroup(
             "IME_INSETS_CONTROLLER", "InsetsController", true /* enabled */);
     public static final ProtoLogGroup IME_TRACKER = new ProtoLogGroup(
-            "IME_TRACKER", ImeTracker.TAG, true);
+            "IME_TRACKER", ImeTracker.TAG, true /* enabled */);
+    public static final ProtoLogGroup INPUT_METHOD_MANAGER_DEBUG = new ProtoLogGroup(
+            "INPUT_METHOD_MANAGER", "InputMethodManager", false /* enabled */);
+    public static final ProtoLogGroup INPUT_METHOD_MANAGER_WITH_LOGCAT = new ProtoLogGroup(
+            "INPUT_METHOD_MANAGER_LOGCAT", "InputMethodManager", true /* enabled */);
 
     static final ProtoLogGroup[] ALL_GROUPS = {
             IME_INSETS_CONTROLLER,
             IME_TRACKER,
+            INPUT_METHOD_MANAGER_WITH_LOGCAT,
+            INPUT_METHOD_MANAGER_DEBUG,
     };
 }
 
