@@ -21,6 +21,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
@@ -36,7 +37,10 @@ import com.android.systemui.notifications.ui.viewmodel.NotificationViewModel
 
 @Composable
 public fun NotificationContent(viewModel: NotificationViewModel, modifier: Modifier = Modifier) {
-    Row(modifier.padding(16.dp), verticalAlignment = Alignment.Top) {
+    Row(
+        modifier.padding(16.dp).heightIn(max = viewModel.maxHeightDp.dp),
+        verticalAlignment = Alignment.Top,
+    ) {
         AppIcon(viewModel.appIcon)
         Spacer(Modifier.width(16.dp))
         Column(Modifier.weight(1f)) {
@@ -53,7 +57,7 @@ public fun NotificationContent(viewModel: NotificationViewModel, modifier: Modif
 @Composable
 private fun MainContent(viewModel: NotificationViewModel) {
     return if (viewModel.isExpanded) {
-        ExpandedText(viewModel.text)
+        ExpandedText(viewModel.text, maxLines = viewModel.maxLinesWhenExpanded)
     } else {
         CollapsedText(viewModel.text)
     }

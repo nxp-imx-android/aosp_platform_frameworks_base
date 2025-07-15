@@ -42,13 +42,12 @@ internal fun CollapsedText(content: String, modifier: Modifier = Modifier) {
 }
 
 @Composable
-internal fun ExpandedText(content: String, modifier: Modifier = Modifier) {
+internal fun ExpandedText(content: String, maxLines: Int, modifier: Modifier = Modifier) {
     Text(
         content,
         modifier,
         style = MaterialTheme.typography.bodyMediumEmphasized,
-        // TODO: b/431222735 - This should support longer text (à la BigTextStyle)
-        maxLines = 2,
+        maxLines = maxLines,
         overflow = Ellipsis,
     )
 }

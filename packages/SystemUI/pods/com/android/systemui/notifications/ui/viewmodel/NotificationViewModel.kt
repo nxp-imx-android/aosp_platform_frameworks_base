@@ -33,4 +33,9 @@ public interface NotificationViewModel {
     public val title: String
     /** The content text of the notification, shown below the title. */
     public val text: String
+
+    /** How many lines of text can be displayed when the notification is expanded. */
+    public val maxLinesWhenExpanded: Int
+    /** The maximum height of the notification. */
+    public val maxHeightDp: Int
 }
