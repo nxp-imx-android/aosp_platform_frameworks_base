@@ -89,6 +89,7 @@ aconfig_declarations_group {
         "android.webkit.flags-aconfig-java",
         "android.widget.flags-aconfig-java",
         "android.xr.flags-aconfig-java-export",
+        "com.android.microxr.flags.flags-aconfig-java",
         "art_exported_aconfig_flags_lib",
         "backstage_power_flags_lib",
         "backup_flags_lib",
@@ -1075,6 +1076,24 @@ java_aconfig_library {
     defaults: ["framework-minus-apex-aconfig-java-defaults"],
     min_sdk_version: "30",
     mode: "exported",
+    apex_available: [
+        "//apex_available:platform",
+        "com.android.permission",
+    ],
+}
+
+// XR - Glasses
+aconfig_declarations {
+    name: "com.android.microxr.flags.flags-aconfig",
+    container: "system",
+    package: "com.android.microxr.flags",
+    srcs: ["core/java/android/content/pm/glasses.aconfig"],
+}
+
+java_aconfig_library {
+    name: "com.android.microxr.flags.flags-aconfig-java",
+    aconfig_declarations: "com.android.microxr.flags.flags-aconfig",
+    defaults: ["framework-minus-apex-aconfig-java-defaults"],
     apex_available: [
         "//apex_available:platform",
         "com.android.permission",
