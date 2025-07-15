@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.wm.shell.functional.fundamentals
+package com.android.wm.shell.functional.keyboardshortcuts
 
 import android.platform.test.annotations.Postsubmit
 import android.platform.test.rule.ScreenRecordRule

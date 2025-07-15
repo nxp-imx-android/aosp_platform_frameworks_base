@@ -100,9 +100,6 @@
       "name": "FunctionalTestsDesktopMode-fundamentals-CloseAllAppsWithBackNavigationTest"
     },
     {
-      "name": "FunctionalTestsDesktopMode-fundamentals-EnterDesktopFromKeyboardShortcutTest"
-    },
-    {
       "name": "FunctionalTestsDesktopMode-fundamentals-EnterDesktopFromSplitScreenWithAppHandleMenuTest"
     },
     {
@@ -155,6 +152,9 @@
     },
     {
       "name": "FunctionalTestsDesktopMode-fundamentals-focus-OpenAndFocusTest"
+    },
+    {
+      "name": "FunctionalTestsDesktopMode-keyboardshortcuts-EnterDesktopFromKeyboardShortcutTest"
     },
     {
       "name": "FunctionalTestsDesktopMode-maximize-MaximizeAppWindowTest"
