@@ -28,6 +28,8 @@ public interface NotificationViewModel {
      * of the content.
      */
     public val appIcon: Drawable
+    /** The "large icon" shown on the top end of the notification beside the expander. */
+    public val largeIcon: Drawable?
 
     /** The title of the notification, emphasized in the content. */
     public val title: String

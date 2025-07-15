@@ -23,6 +23,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -41,4 +42,15 @@ internal fun AppIcon(drawable: Drawable, modifier: Modifier = Modifier) {
             contentScale = ContentScale.Fit,
         )
     }
+}
+
+@Composable
+internal fun LargeIcon(drawable: Drawable, modifier: Modifier = Modifier) {
+    Image(
+        painter = rememberDrawablePainter(drawable),
+        contentDescription = null,
+        // TODO: b/431222735 - Add support for different aspect ratio large icons.
+        modifier = modifier.size(48.dp).clip(RoundedCornerShape(5.dp)),
+        contentScale = ContentScale.Crop,
+    )
 }

@@ -27,7 +27,13 @@ import androidx.compose.ui.text.style.TextOverflow.Companion.Ellipsis
 
 @Composable
 internal fun Title(title: String, modifier: Modifier = Modifier) {
-    Text(title, modifier, style = MaterialTheme.typography.titleSmallEmphasized)
+    Text(
+        title,
+        modifier,
+        style = MaterialTheme.typography.titleSmallEmphasized,
+        maxLines = 1,
+        overflow = Ellipsis,
+    )
 }
 
 @Composable
@@ -50,4 +56,9 @@ internal fun ExpandedText(content: String, maxLines: Int, modifier: Modifier = M
         maxLines = maxLines,
         overflow = Ellipsis,
     )
+}
+
+@Composable
+internal fun TopLineText(text: String, modifier: Modifier = Modifier) {
+    Text(text, modifier, style = MaterialTheme.typography.bodySmallEmphasized, maxLines = 1)
 }
