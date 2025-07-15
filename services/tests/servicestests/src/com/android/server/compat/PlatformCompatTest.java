@@ -20,6 +20,7 @@ import static com.google.common.truth.Truth.assertThat;
 
 import static org.junit.Assert.assertThrows;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.anyBoolean;
 import static org.mockito.Mockito.anyInt;
 import static org.mockito.Mockito.anyLong;
 import static org.mockito.Mockito.never;
@@ -484,27 +485,46 @@ public class PlatformCompatTest {
     public void testIsChangeEnabled() throws Exception {
         mCompatConfig =
                 CompatConfigBuilder.create(mBuildClassifier, mContext)
-                        .addEnabledChangeWithId(1L)
-                        .addDisabledChangeWithId(2L)
-                        .addEnabledChangeWithId(3L)
+                        .addEnableSinceSdkChangeWithId(Build.VERSION_CODES.R, 1L)
+                        .addEnabledChangeWithId(2L)
+                        .addDisabledChangeWithId(3L)
                         .build();
-        mCompatConfig.forceNonDebuggableFinalForTest(true);
         mPlatformCompat =
                 new PlatformCompat(mContext, mCompatConfig, mBuildClassifier, mChangeReporter);
 
-        ApplicationInfo appInfo = ApplicationInfoBuilder.create().withUid(123).build();
-        assertThat(mPlatformCompat.isChangeEnabled(1L, appInfo)).isTrue();
+        // App targeting R, change is since R.
+        ApplicationInfo appInfoR =
+                ApplicationInfoBuilder.create()
+                        .withUid(123)
+                        .withTargetSdk(Build.VERSION_CODES.R)
+                        .build();
+
+        // This one will log as it's enabled since R.
+        assertThat(mPlatformCompat.isChangeEnabled(1L, appInfoR)).isTrue();
         verify(mChangeReporter)
                 .reportChange(123, 1L, ChangeReporter.STATE_ENABLED, false, false);
-        assertThat(mPlatformCompat.isChangeEnabled(2L, appInfo)).isFalse();
-        verify(mChangeReporter)
-                .reportChange(123, 2L, ChangeReporter.STATE_DISABLED, false, false);
+        reset(mChangeReporter);
 
-        ApplicationInfo systemAppInfo =
-                ApplicationInfoBuilder.create().withUid(123).systemApp().build();
-        assertThat(mPlatformCompat.isChangeEnabled(3L, systemAppInfo)).isTrue();
-        verify(mChangeReporter)
-                .reportChange(123, 3L, ChangeReporter.STATE_ENABLED, true, false);
+        // These two will not log as they're not enabled since R.
+        assertThat(mPlatformCompat.isChangeEnabled(2L, appInfoR)).isTrue();
+        assertThat(mPlatformCompat.isChangeEnabled(3L, appInfoR)).isFalse();
+        verify(mChangeReporter, never())
+                .reportChange(anyInt(), anyLong(), anyInt(), anyBoolean(), anyBoolean());
+        reset(mChangeReporter);
+
+        // App targeting Q, change is since R.
+        ApplicationInfo appInfoQ =
+                ApplicationInfoBuilder.create()
+                        .withUid(123)
+                        .withTargetSdk(Build.VERSION_CODES.Q)
+                        .build();
+        assertThat(mPlatformCompat.isChangeEnabled(1L, appInfoQ)).isFalse();
+        assertThat(mPlatformCompat.isChangeEnabled(2L, appInfoQ)).isTrue();
+        assertThat(mPlatformCompat.isChangeEnabled(3L, appInfoQ)).isFalse();
+
+        // None of these will log as they're not targeting R.
+        verify(mChangeReporter, never())
+                .reportChange(anyInt(), anyLong(), anyInt(), anyBoolean(), anyBoolean());
     }
 
     @DisableFlags(Flags.FLAG_SYSTEM_UID_TARGET_SYSTEM_SDK)
