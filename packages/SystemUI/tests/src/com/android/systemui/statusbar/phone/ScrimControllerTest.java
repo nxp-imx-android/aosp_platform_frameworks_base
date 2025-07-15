@@ -1891,6 +1891,25 @@ public class ScrimControllerTest extends SysuiTestCase {
 
     @Test
     @DisableSceneContainer
+    public void testBehindScrimSetToZeroWhenOcclusionChangesToFalse() {
+        mScrimController.setKeyguardOccluded(true);
+        mScrimController.legacyTransitionTo(ScrimState.AOD);
+        finishAnimationsImmediately();
+        assertScrimAlpha(Map.of(
+                mScrimInFront, TRANSPARENT,
+                mScrimBehind, OPAQUE,
+                mNotificationsScrim, TRANSPARENT));
+
+        mScrimController.setKeyguardOccluded(false);
+        finishAnimationsImmediately();
+        assertScrimAlpha(Map.of(
+                mScrimInFront, TRANSPARENT,
+                mScrimBehind, TRANSPARENT,
+                mNotificationsScrim, TRANSPARENT));
+    }
+
+    @Test
+    @DisableSceneContainer
     public void notificationAlpha_inKeyguardState_bouncerNotActive_clipsQsScrimFalse() {
         mScrimController.setClipsQsScrim(false);
         mScrimController.legacyTransitionTo(ScrimState.KEYGUARD);
