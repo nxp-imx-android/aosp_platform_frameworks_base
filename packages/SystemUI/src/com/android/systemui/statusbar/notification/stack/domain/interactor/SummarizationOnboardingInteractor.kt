@@ -22,6 +22,7 @@ import android.util.Log
 import androidx.core.content.edit
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.statusbar.notification.data.repository.ActiveNotificationListRepository
+import com.android.systemui.statusbar.notification.shared.NotifStyle
 import com.android.systemui.user.domain.interactor.SelectedUserInteractor
 import com.android.systemui.util.kotlin.BooleanFlowOperators.allOf
 import com.android.systemui.util.kotlin.SharedPreferencesExt.observeBoolean
@@ -47,7 +48,10 @@ constructor(
 ) {
     private val notifsPresent: Flow<Boolean> =
         notifListRepo.activeNotifications
-            .map { store -> store.renderList.isNotEmpty() }
+            .map { store ->
+                store.renderList.isNotEmpty() &&
+                    store.individuals.any { (_, notif) -> notif.style is NotifStyle.Messaging }
+            }
             .distinctUntilChanged()
 
     private val onboardingUnseen: Flow<Boolean> =
