@@ -41,6 +41,7 @@ import com.android.server.pm.UserManagerInternal;
 
 import java.io.FileNotFoundException;
 import java.security.KeyStore;
+import java.time.Duration;
 
 public class LockSettingsServiceTestable extends LockSettingsService {
     private Intent mSavedFrpNotificationIntent = null;
@@ -58,6 +59,7 @@ public class LockSettingsServiceTestable extends LockSettingsService {
         private RecoverableKeyStoreManager mRecoverableKeyStoreManager;
         private UserManagerInternal mUserManagerInternal;
         private DeviceStateCache mDeviceStateCache;
+        private Duration mTimeSinceBoot;
 
         public boolean mIsHeadlessSystemUserMode = false;
 
@@ -147,6 +149,18 @@ public class LockSettingsServiceTestable extends LockSettingsService {
         @Override
         public boolean isHeadlessSystemUserMode() {
             return mIsHeadlessSystemUserMode;
+        }
+
+        void setTimeSinceBoot(Duration time) {
+            mTimeSinceBoot = time;
+        }
+
+        @Override
+        public Duration getTimeSinceBoot() {
+            if (mTimeSinceBoot != null) {
+                return mTimeSinceBoot;
+            }
+            return super.getTimeSinceBoot();
         }
     }
 
