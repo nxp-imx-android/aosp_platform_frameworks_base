@@ -44,11 +44,13 @@ import com.android.systemui.keyguard.ui.transitions.BlurConfig
 import com.android.systemui.log.LogBuffer
 import com.android.systemui.log.core.Logger
 import com.android.systemui.log.dagger.CommunalLog
+import com.android.systemui.media.controls.domain.pipeline.interactor.MediaCarouselInteractor
 import com.android.systemui.media.controls.ui.controller.MediaCarouselController
 import com.android.systemui.media.controls.ui.controller.MediaHierarchyManager
 import com.android.systemui.media.controls.ui.view.MediaHost
 import com.android.systemui.media.controls.ui.view.MediaHostState
 import com.android.systemui.media.dagger.MediaModule
+import com.android.systemui.media.remedia.ui.viewmodel.MediaViewModel
 import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.shade.domain.interactor.ShadeInteractor
 import com.android.systemui.statusbar.KeyguardIndicationController
@@ -56,6 +58,7 @@ import com.android.systemui.util.kotlin.BooleanFlowOperators.allOf
 import com.android.systemui.util.kotlin.BooleanFlowOperators.not
 import com.android.systemui.utils.coroutines.flow.conflatedCallbackFlow
 import com.android.systemui.utils.coroutines.flow.flatMapLatestConflated
+import dagger.Lazy
 import javax.inject.Inject
 import javax.inject.Named
 import kotlinx.coroutines.CoroutineDispatcher
@@ -102,12 +105,16 @@ constructor(
     @Named(SWIPE_TO_HUB) private val swipeToHub: Boolean,
     private val communalSceneLogger: CommunalSceneLogger,
     private val falsingInteractor: FalsingInteractor,
+    mediaViewModelFactory: MediaViewModel.Factory,
+    mediaCarouselInteractorLazy: Lazy<MediaCarouselInteractor>,
 ) :
     BaseCommunalViewModel(
         communalSceneInteractor,
         communalInteractor,
         mediaHost,
         mediaCarouselController,
+        mediaViewModelFactory,
+        mediaCarouselInteractorLazy,
     ) {
 
     private val logger = Logger(logBuffer, "CommunalViewModel")
