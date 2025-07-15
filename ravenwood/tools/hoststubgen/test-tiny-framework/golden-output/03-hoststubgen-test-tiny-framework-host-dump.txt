@@ -4058,9 +4058,42 @@ public class com.android.hoststubgen.test.tinyframework.packagetest.A
   flags: (0x0021) ACC_PUBLIC, ACC_SUPER
   this_class: #x                          // com/android/hoststubgen/test/tinyframework/packagetest/A
   super_class: #x                         // java/lang/Object
-  interfaces: 0, fields: 0, methods: 0, attributes: 2
+  interfaces: 0, fields: 0, methods: 2, attributes: 2
 Constant pool:
 {
+  public com.android.hoststubgen.test.tinyframework.packagetest.A();
+    descriptor: ()V
+    flags: (0x0001) ACC_PUBLIC
+    Code:
+      stack=1, locals=1, args_size=1
+         x: aload_0
+         x: invokespecial #x                 // Method java/lang/Object."<init>":()V
+         x: return
+      LineNumberTable:
+      LocalVariableTable:
+        Start  Length  Slot  Name   Signature
+            0       5     0  this   Lcom/android/hoststubgen/test/tinyframework/packagetest/A;
+    RuntimeVisibleAnnotations:
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="class-wide in com/android/hoststubgen/test/tinyframework/packagetest/A [inner-reason: file-override (test-package-policy)]"
+        )
+
+  public void foo();
+    descriptor: ()V
+    flags: (0x0001) ACC_PUBLIC
+    Code:
+      stack=0, locals=1, args_size=1
+         x: return
+      LineNumberTable:
+      LocalVariableTable:
+        Start  Length  Slot  Name   Signature
+            0       1     0  this   Lcom/android/hoststubgen/test/tinyframework/packagetest/A;
+    RuntimeVisibleAnnotations:
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="class-wide in com/android/hoststubgen/test/tinyframework/packagetest/A [inner-reason: file-override (test-package-policy)]"
+        )
 }
 SourceFile: "A.java"
 RuntimeVisibleAnnotations:
@@ -4068,6 +4101,59 @@ RuntimeVisibleAnnotations:
     com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
       reason="file-override (test-package-policy)"
     )
+## Class: com/android/hoststubgen/test/tinyframework/packagetest/C.class
+  Compiled from "C.java"
+public class com.android.hoststubgen.test.tinyframework.packagetest.C
+  minor version: 0
+  major version: 65
+  flags: (0x0021) ACC_PUBLIC, ACC_SUPER
+  this_class: #x                          // com/android/hoststubgen/test/tinyframework/packagetest/C
+  super_class: #x                         // java/lang/Object
+  interfaces: 0, fields: 0, methods: 2, attributes: 2
+Constant pool:
+{
+  public com.android.hoststubgen.test.tinyframework.packagetest.C();
+    descriptor: ()V
+    flags: (0x0001) ACC_PUBLIC
+    Code:
+      stack=1, locals=1, args_size=1
+         x: aload_0
+         x: invokespecial #x                 // Method java/lang/Object."<init>":()V
+         x: return
+      LineNumberTable:
+      LocalVariableTable:
+        Start  Length  Slot  Name   Signature
+            0       5     0  this   Lcom/android/hoststubgen/test/tinyframework/packagetest/C;
+    RuntimeVisibleAnnotations:
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="class-wide in com/android/hoststubgen/test/tinyframework/packagetest/C [inner-reason: class-annotation]"
+        )
+
+  public void foo();
+    descriptor: ()V
+    flags: (0x0001) ACC_PUBLIC
+    Code:
+      stack=0, locals=1, args_size=1
+         x: return
+      LineNumberTable:
+      LocalVariableTable:
+        Start  Length  Slot  Name   Signature
+            0       1     0  this   Lcom/android/hoststubgen/test/tinyframework/packagetest/C;
+    RuntimeVisibleAnnotations:
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="class-wide in com/android/hoststubgen/test/tinyframework/packagetest/C [inner-reason: class-annotation]"
+        )
+}
+SourceFile: "C.java"
+RuntimeVisibleAnnotations:
+  x: #x(#x=s#x)
+    com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+      reason="class-annotation"
+    )
+  x: #x()
+    android.hosttest.annotation.HostSideTestWholeClassKeep
 ## Class: com/android/hoststubgen/test/tinyframework/packagetest/sub/A.class
   Compiled from "A.java"
 public class com.android.hoststubgen.test.tinyframework.packagetest.sub.A
@@ -4076,9 +4162,26 @@ public class com.android.hoststubgen.test.tinyframework.packagetest.sub.A
   flags: (0x0021) ACC_PUBLIC, ACC_SUPER
   this_class: #x                          // com/android/hoststubgen/test/tinyframework/packagetest/sub/A
   super_class: #x                         // java/lang/Object
-  interfaces: 0, fields: 0, methods: 0, attributes: 2
+  interfaces: 0, fields: 0, methods: 1, attributes: 2
 Constant pool:
 {
+  public com.android.hoststubgen.test.tinyframework.packagetest.sub.A();
+    descriptor: ()V
+    flags: (0x0001) ACC_PUBLIC
+    Code:
+      stack=1, locals=1, args_size=1
+         x: aload_0
+         x: invokespecial #x                 // Method java/lang/Object."<init>":()V
+         x: return
+      LineNumberTable:
+      LocalVariableTable:
+        Start  Length  Slot  Name   Signature
+            0       5     0  this   Lcom/android/hoststubgen/test/tinyframework/packagetest/sub/A;
+    RuntimeVisibleAnnotations:
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="class-wide in com/android/hoststubgen/test/tinyframework/packagetest/sub/A [inner-reason: file-override (test-package-policy)]"
+        )
 }
 SourceFile: "A.java"
 RuntimeVisibleAnnotations:

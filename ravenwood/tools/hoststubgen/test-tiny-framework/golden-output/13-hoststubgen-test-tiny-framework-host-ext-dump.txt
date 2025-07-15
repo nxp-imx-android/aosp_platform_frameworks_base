@@ -4982,7 +4982,7 @@ public class com.android.hoststubgen.test.tinyframework.packagetest.A
   flags: (0x0021) ACC_PUBLIC, ACC_SUPER
   this_class: #x                          // com/android/hoststubgen/test/tinyframework/packagetest/A
   super_class: #x                         // java/lang/Object
-  interfaces: 0, fields: 0, methods: 1, attributes: 2
+  interfaces: 0, fields: 0, methods: 3, attributes: 2
 Constant pool:
 {
   private static {};
@@ -4994,6 +4994,50 @@ Constant pool:
          x: ldc           #x                 // String com.android.hoststubgen.hosthelper.HostTestUtils.logClassLoaded
          x: invokestatic  #x                 // Method com/android/hoststubgen/hosthelper/HostTestUtils.onClassLoaded:(Ljava/lang/Class;Ljava/lang/String;)V
          x: return
+
+  public com.android.hoststubgen.test.tinyframework.packagetest.A();
+    descriptor: ()V
+    flags: (0x0001) ACC_PUBLIC
+    Code:
+      stack=4, locals=1, args_size=1
+         x: ldc           #x                  // class com/android/hoststubgen/test/tinyframework/packagetest/A
+         x: ldc           #x                 // String <init>
+         x: ldc           #x                 // String ()V
+         x: ldc           #x                 // String com.android.hoststubgen.hosthelper.HostTestUtils.logMethodCall
+         x: invokestatic  #x                 // Method com/android/hoststubgen/hosthelper/HostTestUtils.callMethodCallHook:(Ljava/lang/Class;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V
+        x: aload_0
+        x: invokespecial #x                 // Method java/lang/Object."<init>":()V
+        x: return
+      LineNumberTable:
+      LocalVariableTable:
+        Start  Length  Slot  Name   Signature
+           11       5     0  this   Lcom/android/hoststubgen/test/tinyframework/packagetest/A;
+    RuntimeVisibleAnnotations:
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="class-wide in com/android/hoststubgen/test/tinyframework/packagetest/A [inner-reason: file-override (test-package-policy)]"
+        )
+
+  public void foo();
+    descriptor: ()V
+    flags: (0x0001) ACC_PUBLIC
+    Code:
+      stack=4, locals=1, args_size=1
+         x: ldc           #x                  // class com/android/hoststubgen/test/tinyframework/packagetest/A
+         x: ldc           #x                 // String foo
+         x: ldc           #x                 // String ()V
+         x: ldc           #x                 // String com.android.hoststubgen.hosthelper.HostTestUtils.logMethodCall
+         x: invokestatic  #x                 // Method com/android/hoststubgen/hosthelper/HostTestUtils.callMethodCallHook:(Ljava/lang/Class;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V
+        x: return
+      LineNumberTable:
+      LocalVariableTable:
+        Start  Length  Slot  Name   Signature
+           11       1     0  this   Lcom/android/hoststubgen/test/tinyframework/packagetest/A;
+    RuntimeVisibleAnnotations:
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="class-wide in com/android/hoststubgen/test/tinyframework/packagetest/A [inner-reason: file-override (test-package-policy)]"
+        )
 }
 SourceFile: "A.java"
 RuntimeVisibleAnnotations:
@@ -5001,6 +5045,79 @@ RuntimeVisibleAnnotations:
     com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
       reason="file-override (test-package-policy)"
     )
+## Class: com/android/hoststubgen/test/tinyframework/packagetest/C.class
+  Compiled from "C.java"
+public class com.android.hoststubgen.test.tinyframework.packagetest.C
+  minor version: 0
+  major version: 65
+  flags: (0x0021) ACC_PUBLIC, ACC_SUPER
+  this_class: #x                          // com/android/hoststubgen/test/tinyframework/packagetest/C
+  super_class: #x                         // java/lang/Object
+  interfaces: 0, fields: 0, methods: 3, attributes: 2
+Constant pool:
+{
+  private static {};
+    descriptor: ()V
+    flags: (0x000a) ACC_PRIVATE, ACC_STATIC
+    Code:
+      stack=2, locals=0, args_size=0
+         x: ldc           #x                  // class com/android/hoststubgen/test/tinyframework/packagetest/C
+         x: ldc           #x                 // String com.android.hoststubgen.hosthelper.HostTestUtils.logClassLoaded
+         x: invokestatic  #x                 // Method com/android/hoststubgen/hosthelper/HostTestUtils.onClassLoaded:(Ljava/lang/Class;Ljava/lang/String;)V
+         x: return
+
+  public com.android.hoststubgen.test.tinyframework.packagetest.C();
+    descriptor: ()V
+    flags: (0x0001) ACC_PUBLIC
+    Code:
+      stack=4, locals=1, args_size=1
+         x: ldc           #x                  // class com/android/hoststubgen/test/tinyframework/packagetest/C
+         x: ldc           #x                 // String <init>
+         x: ldc           #x                 // String ()V
+         x: ldc           #x                 // String com.android.hoststubgen.hosthelper.HostTestUtils.logMethodCall
+         x: invokestatic  #x                 // Method com/android/hoststubgen/hosthelper/HostTestUtils.callMethodCallHook:(Ljava/lang/Class;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V
+        x: aload_0
+        x: invokespecial #x                 // Method java/lang/Object."<init>":()V
+        x: return
+      LineNumberTable:
+      LocalVariableTable:
+        Start  Length  Slot  Name   Signature
+           11       5     0  this   Lcom/android/hoststubgen/test/tinyframework/packagetest/C;
+    RuntimeVisibleAnnotations:
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="class-wide in com/android/hoststubgen/test/tinyframework/packagetest/C [inner-reason: class-annotation]"
+        )
+
+  public void foo();
+    descriptor: ()V
+    flags: (0x0001) ACC_PUBLIC
+    Code:
+      stack=4, locals=1, args_size=1
+         x: ldc           #x                  // class com/android/hoststubgen/test/tinyframework/packagetest/C
+         x: ldc           #x                 // String foo
+         x: ldc           #x                 // String ()V
+         x: ldc           #x                 // String com.android.hoststubgen.hosthelper.HostTestUtils.logMethodCall
+         x: invokestatic  #x                 // Method com/android/hoststubgen/hosthelper/HostTestUtils.callMethodCallHook:(Ljava/lang/Class;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V
+        x: return
+      LineNumberTable:
+      LocalVariableTable:
+        Start  Length  Slot  Name   Signature
+           11       1     0  this   Lcom/android/hoststubgen/test/tinyframework/packagetest/C;
+    RuntimeVisibleAnnotations:
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="class-wide in com/android/hoststubgen/test/tinyframework/packagetest/C [inner-reason: class-annotation]"
+        )
+}
+SourceFile: "C.java"
+RuntimeVisibleAnnotations:
+  x: #x(#x=s#x)
+    com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+      reason="class-annotation"
+    )
+  x: #x()
+    android.hosttest.annotation.HostSideTestWholeClassKeep
 ## Class: com/android/hoststubgen/test/tinyframework/packagetest/sub/A.class
   Compiled from "A.java"
 public class com.android.hoststubgen.test.tinyframework.packagetest.sub.A
@@ -5009,7 +5126,7 @@ public class com.android.hoststubgen.test.tinyframework.packagetest.sub.A
   flags: (0x0021) ACC_PUBLIC, ACC_SUPER
   this_class: #x                          // com/android/hoststubgen/test/tinyframework/packagetest/sub/A
   super_class: #x                         // java/lang/Object
-  interfaces: 0, fields: 0, methods: 1, attributes: 2
+  interfaces: 0, fields: 0, methods: 2, attributes: 2
 Constant pool:
 {
   private static {};
@@ -5021,6 +5138,29 @@ Constant pool:
          x: ldc           #x                 // String com.android.hoststubgen.hosthelper.HostTestUtils.logClassLoaded
          x: invokestatic  #x                 // Method com/android/hoststubgen/hosthelper/HostTestUtils.onClassLoaded:(Ljava/lang/Class;Ljava/lang/String;)V
          x: return
+
+  public com.android.hoststubgen.test.tinyframework.packagetest.sub.A();
+    descriptor: ()V
+    flags: (0x0001) ACC_PUBLIC
+    Code:
+      stack=4, locals=1, args_size=1
+         x: ldc           #x                  // class com/android/hoststubgen/test/tinyframework/packagetest/sub/A
+         x: ldc           #x                 // String <init>
+         x: ldc           #x                 // String ()V
+         x: ldc           #x                 // String com.android.hoststubgen.hosthelper.HostTestUtils.logMethodCall
+         x: invokestatic  #x                 // Method com/android/hoststubgen/hosthelper/HostTestUtils.callMethodCallHook:(Ljava/lang/Class;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V
+        x: aload_0
+        x: invokespecial #x                 // Method java/lang/Object."<init>":()V
+        x: return
+      LineNumberTable:
+      LocalVariableTable:
+        Start  Length  Slot  Name   Signature
+           11       5     0  this   Lcom/android/hoststubgen/test/tinyframework/packagetest/sub/A;
+    RuntimeVisibleAnnotations:
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="class-wide in com/android/hoststubgen/test/tinyframework/packagetest/sub/A [inner-reason: file-override (test-package-policy)]"
+        )
 }
 SourceFile: "A.java"
 RuntimeVisibleAnnotations:
