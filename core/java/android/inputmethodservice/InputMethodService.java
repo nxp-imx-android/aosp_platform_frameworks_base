@@ -67,6 +67,7 @@ import android.annotation.IntDef;
 import android.annotation.MainThread;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.annotation.SuppressLint;
 import android.annotation.TestApi;
 import android.annotation.UiContext;
 import android.app.ActivityManager;
@@ -4368,6 +4369,8 @@ public class InputMethodService extends AbstractInputMethodService {
      *
      * @hide
      */
+    @SuppressLint("UnflaggedApi") // @TestApi without associated feature.
+    @TestApi
     @VisibleForTesting
     public final boolean isImeNavigationBarShownForTesting() {
         return mNavigationBarController.isShown();
