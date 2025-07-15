@@ -27,7 +27,6 @@ import org.junit.runner.RunWith
 @SmallTest
 @RunWith(AndroidJUnit4::class)
 @RunWithLooper
-@android.platform.test.annotations.EnabledOnRavenwood
 class ShadeListBuilderHelperTest : SysuiTestCase() {
 
     @Test

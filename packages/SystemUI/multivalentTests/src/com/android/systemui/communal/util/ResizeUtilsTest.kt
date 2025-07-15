@@ -30,7 +30,6 @@ import org.mockito.kotlin.mock
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
-@android.platform.test.annotations.EnabledOnRavenwood
 class ResizeUtilsTest : SysuiTestCase() {
     private val mockWidget =
         mock<CommunalContentModel.WidgetContent.Widget> {

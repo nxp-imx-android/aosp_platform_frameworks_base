@@ -29,7 +29,6 @@ import org.mockito.Mockito.verifyNoMoreInteractions
 
 @RunWith(AndroidJUnit4::class)
 @SmallTest
-@android.platform.test.annotations.EnabledOnRavenwood
 class MediaProjectionTaskSwitcherCoreStartableTest : SysuiTestCase() {
 
     private val coordinator = mock<TaskSwitcherNotificationCoordinator>()

@@ -31,7 +31,6 @@ import org.mockito.MockitoAnnotations
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
-@android.platform.test.annotations.EnabledOnRavenwood
 class FlagCommandTest : SysuiTestCase() {
 
     @Mock private lateinit var featureFlags: FeatureFlagsClassicDebug

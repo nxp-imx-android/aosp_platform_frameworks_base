@@ -33,7 +33,6 @@ import java.io.File
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
-@android.platform.test.annotations.EnabledOnRavenwood
 class ControlsFavoritePersistenceWrapperTest : SysuiTestCase() {
 
     private lateinit var file: File

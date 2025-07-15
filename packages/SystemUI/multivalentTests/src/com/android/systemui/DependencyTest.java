@@ -29,7 +29,6 @@ import java.util.concurrent.ExecutionException;
 
 @SmallTest
 @RunWith(AndroidJUnit4.class)
-@android.platform.test.annotations.EnabledOnRavenwood
 public class DependencyTest extends SysuiTestCase {
 
     @Test

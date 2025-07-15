@@ -45,7 +45,6 @@ import java.util.Locale;
 
 @SmallTest
 @RunWith(AndroidJUnit4.class)
-@android.platform.test.annotations.EnabledOnRavenwood
 public class DreamClockTimeComplicationTest extends SysuiTestCase {
     @SuppressWarnings("HidingField")
     @Mock

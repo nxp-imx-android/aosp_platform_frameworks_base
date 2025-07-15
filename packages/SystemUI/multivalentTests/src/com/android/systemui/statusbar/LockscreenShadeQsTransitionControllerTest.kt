@@ -37,7 +37,6 @@ import org.mockito.MockitoAnnotations
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
-@android.platform.test.annotations.EnabledOnRavenwood
 class LockscreenShadeQsTransitionControllerTest : SysuiTestCase() {
 
     private val configurationController = FakeConfigurationController()

@@ -38,7 +38,6 @@ import org.mockito.kotlin.verify
 @SmallTest
 @RunWith(AndroidJUnit4::class)
 @TestableLooper.RunWithLooper(setAsMainLooper = true)
-@android.platform.test.annotations.EnabledOnRavenwood
 class IssueRecordingStateTest : SysuiTestCase() {
 
     private val kosmos = testKosmos()

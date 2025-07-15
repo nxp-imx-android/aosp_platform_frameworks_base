@@ -44,7 +44,6 @@ import java.util.Optional
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
-@android.platform.test.annotations.EnabledOnRavenwood
 class ScreenOnCoordinatorTest : SysuiTestCase() {
 
     @Mock

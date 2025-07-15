@@ -48,7 +48,6 @@ import platform.test.runner.parameterized.Parameters
 
 @RunWith(ParameterizedAndroidJunit4::class)
 @SmallTest
-@android.platform.test.annotations.EnabledOnRavenwood
 class TilesAvailabilityInteractorTest(flags: FlagsParameterization) : SysuiTestCase() {
 
     init {

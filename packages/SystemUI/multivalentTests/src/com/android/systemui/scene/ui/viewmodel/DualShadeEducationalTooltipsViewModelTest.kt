@@ -48,7 +48,6 @@ import platform.test.runner.parameterized.Parameters
 @SmallTest
 @RunWith(ParameterizedAndroidJunit4::class)
 @EnableSceneContainer
-@android.platform.test.annotations.EnabledOnRavenwood
 class DualShadeEducationalTooltipsViewModelTest(
     private val forOverlay: OverlayKey,
     private val tooltipText: String,

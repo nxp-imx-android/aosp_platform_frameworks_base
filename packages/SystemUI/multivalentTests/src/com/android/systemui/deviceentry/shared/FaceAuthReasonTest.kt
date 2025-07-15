@@ -26,7 +26,6 @@ import org.junit.runner.RunWith
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
-@android.platform.test.annotations.EnabledOnRavenwood
 class FaceAuthReasonTest : SysuiTestCase() {
     @Test
     fun testApiReasonToUiEvent_forAllReasons_isNotNull() {

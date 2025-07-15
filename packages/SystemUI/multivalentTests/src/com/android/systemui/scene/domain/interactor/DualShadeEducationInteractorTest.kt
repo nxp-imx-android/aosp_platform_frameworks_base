@@ -43,7 +43,6 @@ import platform.test.runner.parameterized.Parameters
 @SmallTest
 @RunWith(ParameterizedAndroidJunit4::class)
 @EnableSceneContainer
-@android.platform.test.annotations.EnabledOnRavenwood
 class DualShadeEducationInteractorTest(private val forOverlay: OverlayKey) : SysuiTestCase() {
     private val kosmos = testKosmos()
     private lateinit var underTest: DualShadeEducationInteractor

@@ -30,7 +30,6 @@ import org.junit.runner.RunWith
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
-@android.platform.test.annotations.EnabledOnRavenwood
 class StatusBarVisibilityModelTest : SysuiTestCase() {
     @Test
     fun createDefaultModel_everythingEnabled() {

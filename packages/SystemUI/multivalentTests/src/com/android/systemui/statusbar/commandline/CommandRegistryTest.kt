@@ -41,7 +41,6 @@ private fun <T : Any> safeEq(value: T): T = eq(value) ?: value
 @RunWith(AndroidJUnit4::class)
 @TestableLooper.RunWithLooper
 @SmallTest
-@android.platform.test.annotations.EnabledOnRavenwood
 class CommandRegistryTest : SysuiTestCase() {
     lateinit var registry: CommandRegistry
     val inLineExecutor =

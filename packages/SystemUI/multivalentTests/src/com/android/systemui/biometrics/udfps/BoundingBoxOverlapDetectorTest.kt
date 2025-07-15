@@ -28,7 +28,6 @@ import org.junit.runner.RunWith
 
 @SmallTest
 @RunWith(ParameterizedAndroidJunit4::class)
-@android.platform.test.annotations.EnabledOnRavenwood
 class BoundingBoxOverlapDetectorTest(val testCase: TestCase) : SysuiTestCase() {
     val underTest = BoundingBoxOverlapDetector(1f)
 

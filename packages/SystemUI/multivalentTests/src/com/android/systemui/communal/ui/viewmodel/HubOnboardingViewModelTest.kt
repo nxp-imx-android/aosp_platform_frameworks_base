@@ -42,7 +42,6 @@ import org.junit.runner.RunWith
 @SmallTest
 @EnableFlags(FLAG_GLANCEABLE_HUB_V2)
 @RunWith(AndroidJUnit4::class)
-@android.platform.test.annotations.EnabledOnRavenwood
 class HubOnboardingViewModelTest : SysuiTestCase() {
     private val kosmos = testKosmos().useUnconfinedTestDispatcher()
     private val underTest: HubOnboardingViewModel by lazy { kosmos.hubOnboardingViewModel }

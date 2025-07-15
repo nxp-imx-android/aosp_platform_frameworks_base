@@ -21,7 +21,6 @@ import android.graphics.Insets
 import android.graphics.Rect
 import android.os.UserHandle
 import android.platform.test.annotations.DisableFlags
-import android.platform.test.annotations.DisabledOnRavenwood
 import android.platform.test.flag.junit.SetFlagsRule
 import android.view.Display.DEFAULT_DISPLAY
 import android.view.WindowManager.ScreenshotSource.SCREENSHOT_KEY_CHORD
@@ -55,7 +54,6 @@ import org.junit.Test
 import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
-@DisabledOnRavenwood(blockedBy = [ScreenshotRequest::class])
 class PolicyRequestProcessorTest : SysuiTestCase() {
     private val kosmos = Kosmos()
 

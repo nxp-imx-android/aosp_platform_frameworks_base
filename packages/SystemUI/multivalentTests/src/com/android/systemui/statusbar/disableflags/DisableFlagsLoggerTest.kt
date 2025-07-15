@@ -26,7 +26,6 @@ import org.junit.runner.RunWith
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
-@android.platform.test.annotations.EnabledOnRavenwood
 class DisableFlagsLoggerTest : SysuiTestCase() {
     private val disable1Flags = listOf(
             DisableFlagsLogger.DisableFlag(0b100, 'A', 'a'),

@@ -46,7 +46,6 @@ import org.mockito.kotlin.whenever
 
 @RunWith(AndroidJUnit4::class)
 @SmallTest
-@android.platform.test.annotations.EnabledOnRavenwood
 class EditModeButtonViewModelTest : SysuiTestCase() {
     val kosmos = testKosmos().useUnconfinedTestDispatcher()
 

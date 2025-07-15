@@ -54,7 +54,6 @@ import org.mockito.MockitoAnnotations
 @RunWith(AndroidJUnit4::class)
 @TestableLooper.RunWithLooper(setAsMainLooper = true)
 @SmallTest
-@android.platform.test.annotations.EnabledOnRavenwood
 class SystemEventCoordinatorTest : SysuiTestCase() {
 
     private val fakeSystemClock = FakeSystemClock()

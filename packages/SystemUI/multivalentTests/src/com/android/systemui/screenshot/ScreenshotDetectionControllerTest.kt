@@ -45,7 +45,6 @@ import org.mockito.MockitoAnnotations
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
-@android.platform.test.annotations.EnabledOnRavenwood
 class ScreenshotDetectionControllerTest : SysuiTestCase() {
 
     @Mock lateinit var windowManager: IWindowManager

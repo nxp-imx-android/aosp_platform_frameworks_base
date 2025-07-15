@@ -40,7 +40,6 @@ private typealias Callback = (Int, Boolean) -> Unit
 @SmallTest
 @RunWith(AndroidJUnit4::class)
 @TestableLooper.RunWithLooper
-@android.platform.test.annotations.EnabledOnRavenwood
 class UserSettingObserverTest : SysuiTestCase() {
 
     companion object {

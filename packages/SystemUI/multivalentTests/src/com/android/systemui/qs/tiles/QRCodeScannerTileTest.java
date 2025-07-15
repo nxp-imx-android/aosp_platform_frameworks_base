@@ -53,7 +53,6 @@ import org.mockito.MockitoAnnotations;
 @RunWith(AndroidJUnit4.class)
 @TestableLooper.RunWithLooper(setAsMainLooper = true)
 @SmallTest
-@android.platform.test.annotations.EnabledOnRavenwood
 public class QRCodeScannerTileTest extends SysuiTestCase {
     @Mock
     private QSHost mHost;

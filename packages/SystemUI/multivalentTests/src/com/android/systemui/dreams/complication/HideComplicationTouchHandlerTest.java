@@ -54,7 +54,6 @@ import org.mockito.MockitoAnnotations;
 
 @SmallTest
 @RunWith(AndroidJUnit4.class)
-@android.platform.test.annotations.EnabledOnRavenwood
 public class HideComplicationTouchHandlerTest extends SysuiTestCase {
     private static final int RESTORE_TIMEOUT = 1000;
     private static final int HIDE_DELAY = 500;

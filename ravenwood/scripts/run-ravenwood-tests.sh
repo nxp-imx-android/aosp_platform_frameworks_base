@@ -145,7 +145,7 @@ filter_out() {
 # Remove the slow tests.
 targets=( $(
     for t in "${all_tests[@]}"; do
-        echo $t | filter_in "$include_re" | filter_out "$smoke_exclude_re" | filter_out "$exclude_re"
+        echo $t | filter_in "$include_re" | filter_out "$smoke_exclude_re" | filter_out "$exclude_re" | filter_out "SystemUiRavenTests"
     done
 ) )
 

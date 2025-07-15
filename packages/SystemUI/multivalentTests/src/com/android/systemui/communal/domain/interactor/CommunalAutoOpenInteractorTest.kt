@@ -53,7 +53,6 @@ import org.junit.runner.RunWith
 @SmallTest
 @RunWith(AndroidJUnit4::class)
 @EnableFlags(FLAG_GLANCEABLE_HUB_V2)
-@android.platform.test.annotations.EnabledOnRavenwood
 class CommunalAutoOpenInteractorTest : SysuiTestCase() {
     private val kosmos = testKosmos().useUnconfinedTestDispatcher()
 

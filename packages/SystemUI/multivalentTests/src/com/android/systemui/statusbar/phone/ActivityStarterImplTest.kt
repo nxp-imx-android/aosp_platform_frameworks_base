@@ -41,7 +41,6 @@ import org.mockito.kotlin.eq
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
-@android.platform.test.annotations.EnabledOnRavenwood
 class ActivityStarterImplTest : SysuiTestCase() {
     @Mock private lateinit var legacyActivityStarterInternal: LegacyActivityStarterInternalImpl
     @Mock private lateinit var activityStarterInternal: ActivityStarterInternalImpl

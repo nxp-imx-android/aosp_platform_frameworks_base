@@ -27,7 +27,6 @@ import org.junit.runner.RunWith
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
-@android.platform.test.annotations.EnabledOnRavenwood
 class MockExecutorHandlerTest : SysuiTestCase() {
     /** Test FakeExecutor that receives non-delayed items to execute. */
     @Test

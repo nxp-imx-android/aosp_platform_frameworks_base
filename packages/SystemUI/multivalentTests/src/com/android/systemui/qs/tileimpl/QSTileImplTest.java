@@ -89,7 +89,6 @@ import org.mockito.MockitoAnnotations;
 @RunWith(AndroidJUnit4.class)
 @RunWithLooper(setAsMainLooper = true)
 @SmallTest
-@android.platform.test.annotations.EnabledOnRavenwood
 public class QSTileImplTest extends SysuiTestCase {
 
     public static final int POSITION = 14;

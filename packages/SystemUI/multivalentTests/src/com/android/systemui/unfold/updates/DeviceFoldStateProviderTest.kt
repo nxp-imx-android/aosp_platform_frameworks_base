@@ -52,7 +52,6 @@ import org.mockito.MockitoAnnotations
 
 @RunWith(AndroidJUnit4::class)
 @SmallTest
-@android.platform.test.annotations.EnabledOnRavenwood
 class DeviceFoldStateProviderTest : SysuiTestCase() {
 
     @Mock private lateinit var activityTypeProvider: ActivityManagerActivityTypeProvider

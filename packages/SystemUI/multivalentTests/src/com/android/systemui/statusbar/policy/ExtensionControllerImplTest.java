@@ -53,7 +53,6 @@ import java.util.function.Consumer;
 
 @RunWith(AndroidJUnit4.class)
 @SmallTest
-@android.platform.test.annotations.EnabledOnRavenwood
 public class ExtensionControllerImplTest extends SysuiTestCase {
 
     @Mock

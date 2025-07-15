@@ -36,7 +36,6 @@ import org.mockito.kotlin.whenever
 @SmallTest
 @RunWith(AndroidJUnit4::class)
 @ExperimentalCoroutinesApi
-@android.platform.test.annotations.EnabledOnRavenwood
 class BluetoothConnectionStatusInteractorTest : SysuiTestCase() {
 
     private val kosmos = testKosmos().useUnconfinedTestDispatcher()

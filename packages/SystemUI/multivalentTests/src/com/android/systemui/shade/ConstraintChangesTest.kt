@@ -27,7 +27,6 @@ import org.mockito.Mockito.inOrder
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
-@android.platform.test.annotations.EnabledOnRavenwood
 class ConstraintChangesTest : SysuiTestCase() {
 
     @Test

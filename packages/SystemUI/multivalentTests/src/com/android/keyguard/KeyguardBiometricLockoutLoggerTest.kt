@@ -40,7 +40,6 @@ import org.mockito.Mockito.`when` as whenever
 
 @RunWith(AndroidJUnit4::class)
 @SmallTest
-@android.platform.test.annotations.EnabledOnRavenwood
 class KeyguardBiometricLockoutLoggerTest : SysuiTestCase() {
     @Mock
     lateinit var uiEventLogger: UiEventLogger

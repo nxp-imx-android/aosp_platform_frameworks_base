@@ -34,7 +34,6 @@ import org.junit.runner.RunWith
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
-@android.platform.test.annotations.EnabledOnRavenwood
 class MediaRouterChipInteractorTest : SysuiTestCase() {
     val kosmos = testKosmos()
     val testScope = kosmos.testScope

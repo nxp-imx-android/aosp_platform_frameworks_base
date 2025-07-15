@@ -54,7 +54,6 @@ import org.mockito.MockitoAnnotations
 @SmallTest
 @RunWith(AndroidJUnit4::class)
 @TestableLooper.RunWithLooper
-@android.platform.test.annotations.EnabledOnRavenwood
 class EmergencyButtonControllerTest : SysuiTestCase() {
     @Mock lateinit var emergencyButton: EmergencyButton
     @Mock lateinit var configurationController: ConfigurationController

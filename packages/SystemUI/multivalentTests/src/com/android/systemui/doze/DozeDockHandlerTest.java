@@ -48,7 +48,6 @@ import org.mockito.MockitoAnnotations;
 @SmallTest
 @RunWith(AndroidJUnit4.class)
 @RunWithLooper
-@android.platform.test.annotations.EnabledOnRavenwood
 public class DozeDockHandlerTest extends SysuiTestCase {
     @Mock private DozeMachine mMachine;
     @Mock private UserTracker mUserTracker;

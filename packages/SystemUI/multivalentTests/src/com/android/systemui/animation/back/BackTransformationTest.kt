@@ -15,7 +15,6 @@ import org.mockito.kotlin.whenever
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
-@android.platform.test.annotations.EnabledOnRavenwood
 class BackTransformationTest : SysuiTestCase() {
     private val targetView: View = mock()
 

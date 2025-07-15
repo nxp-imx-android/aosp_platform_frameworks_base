@@ -27,7 +27,6 @@ import org.junit.runner.RunWith
 /** atest SystemUITests:CoroutineResultTest */
 @SmallTest
 @RunWith(AndroidJUnit4::class)
-@android.platform.test.annotations.EnabledOnRavenwood
 class CoroutineResultTest : SysuiTestCase() {
 
     @Test

@@ -19,7 +19,6 @@ package com.android.systemui.wallpapers.domain.interactor
 import android.content.mockedContext
 import android.content.res.Resources
 import android.graphics.PointF
-import android.platform.test.annotations.EnabledOnRavenwood
 import android.util.DisplayMetrics
 import android.view.View.INVISIBLE
 import android.view.View.VISIBLE
@@ -53,6 +52,7 @@ import com.android.systemui.shade.domain.interactor.enableSplitShade
 import com.android.systemui.shade.domain.interactor.shadeModeInteractor
 import com.android.systemui.testKosmos
 import com.android.systemui.util.mockito.mock
+import com.android.systemui.util.mockito.mock
 import com.android.systemui.wallpapers.data.repository.wallpaperFocalAreaRepository
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -71,7 +71,6 @@ import org.mockito.kotlin.whenever
 @ExperimentalCoroutinesApi
 @SmallTest
 @RunWith(AndroidJUnit4::class)
-@EnabledOnRavenwood
 class WallpaperFocalAreaInteractorTest : SysuiTestCase() {
     private val kosmos = testKosmos()
     private val testScope = kosmos.testScope

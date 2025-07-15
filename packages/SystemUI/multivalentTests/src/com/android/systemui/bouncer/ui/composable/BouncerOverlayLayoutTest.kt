@@ -32,7 +32,6 @@ import platform.test.runner.parameterized.Parameters
 
 @SmallTest
 @RunWith(ParameterizedAndroidJunit4::class)
-@android.platform.test.annotations.EnabledOnRavenwood
 class BouncerOverlayLayoutTest : SysuiTestCase() {
 
     data object Phone :
