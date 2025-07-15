@@ -522,7 +522,7 @@ public abstract class ActivityManagerInternal {
     public static final int OOM_ADJ_REASON_SERVICE_BINDER_CALL = 25;
 
     /**
-     * Oom Adj Reason: Batched updated request.
+     * Oom Adj Reason: Batched service binding update request
      */
     public static final int OOM_ADJ_REASON_BATCH_UPDATE_REQUEST = 26;
 

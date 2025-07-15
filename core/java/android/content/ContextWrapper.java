@@ -973,6 +973,13 @@ public class ContextWrapper extends Context {
         mBase.unbindService(conn);
     }
 
+
+    @Override
+    public void rebindService(@NonNull ServiceConnection conn,
+            @NonNull BindServiceFlags flags) {
+        mBase.rebindService(conn, flags);
+    }
+
     @Override
     public boolean startInstrumentation(ComponentName className,
             @Nullable String profileFile, @Nullable Bundle arguments) {
