@@ -101,6 +101,7 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 
 /**
  * A view model that manages the visibility of the [CollapsedStatusBarFragment] based on the device
@@ -456,7 +457,12 @@ constructor(
                 keyguardInteractor.isSecureCameraActive,
                 headsUpNotificationInteractor.statusBarHeadsUpStatus,
                 isTransitioningFromGoneToDream,
-            ) { isHomeStatusBarAllowed, isSecureCameraActive, headsUpState, isGoneToDream ->
+                keyguardInteractor.isKeyguardVisible,
+            ) { isHomeStatusBarAllowed,
+                isSecureCameraActive,
+                headsUpState,
+                isGoneToDream,
+                isKeyguardVisible ->
                 val showForHeadsUp =
                     if (StatusBarNoHunBehavior.isEnabled) {
                         false
@@ -476,7 +482,12 @@ constructor(
                 // momentarily visible because the dream animation has finished, but SysUI has not
                 // been informed that the dream is full-screen. See b/273314977.
                 showForHeadsUp ||
-                    (isHomeStatusBarAllowed && !isSecureCameraActive && !isGoneToDream)
+                    (isHomeStatusBarAllowed &&
+                        !isSecureCameraActive &&
+                        !isGoneToDream &&
+                        // In legacy code, check if keyguard is visible to cover canceled
+                        // transitions. In Flexi, the scene state is enough to cover this case.
+                        if (!SceneContainerFlag.isEnabled) !isKeyguardVisible else true)
             }
             .distinctUntilChanged()
             .logDiffsForTable(
