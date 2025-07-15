@@ -1962,6 +1962,13 @@ flag {
 }
 
 flag {
+    name: "large_screen_recording"
+    namespace: "systemui"
+    description: "Enables screen recording UI for large screen devices."
+    bug: "423707369"
+}
+
+flag {
     name: "new_screen_record_toolbar"
     namespace: "systemui"
     description: "Enables the new screen record flow."

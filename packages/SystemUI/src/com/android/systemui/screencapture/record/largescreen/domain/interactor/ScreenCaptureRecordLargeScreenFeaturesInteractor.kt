@@ -23,4 +23,6 @@ import javax.inject.Inject
 @SysUISingleton
 class ScreenCaptureRecordLargeScreenFeaturesInteractor @Inject constructor() {
     val appWindowRegionSupported = Flags.desktopScreenCaptureAppWindow()
+
+    val screenRecordingSupported = Flags.largeScreenRecording()
 }
