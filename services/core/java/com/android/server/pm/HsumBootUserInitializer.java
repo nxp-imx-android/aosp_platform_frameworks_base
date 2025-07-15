@@ -70,9 +70,14 @@ public final class HsumBootUserInitializer {
             new ContentObserver(new Handler(Looper.getMainLooper())) {
                 @Override
                 public void onChange(boolean selfChange) {
+                    boolean isDeviceProvisioned = isDeviceProvisioned();
+                    if (DEBUG) {
+                        Slogf.d(TAG, "onChange(%b): isDeviceProvisioned=%b", selfChange,
+                                isDeviceProvisioned);
+                    }
                     // Set USER_SETUP_COMPLETE for the (headless) system user only when the device
                     // has been set up at least once.
-                    if (isDeviceProvisioned()) {
+                    if (isDeviceProvisioned) {
                         Slogf.i(TAG, "Marking USER_SETUP_COMPLETE for system user");
                         Settings.Secure.putInt(mContentResolver,
                                 Settings.Secure.USER_SETUP_COMPLETE, 1);
@@ -352,7 +357,8 @@ public final class HsumBootUserInitializer {
         pw.println(res.getBoolean(R.bool.config_createInitialUser));
     }
 
-    private void observeDeviceProvisioning() {
+    @VisibleForTesting
+    void observeDeviceProvisioning() {
         if (isDeviceProvisioned()) {
             return;
         }
