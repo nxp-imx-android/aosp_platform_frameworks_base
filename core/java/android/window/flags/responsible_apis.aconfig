@@ -81,3 +81,13 @@ flag {
     description: "Report aborted activity starts in the calling process."
     bug: "427863001"
 }
+
+flag {
+    name: "bal_check_broadcast_when_dispatched"
+    namespace: "responsible_apis"
+    description: "Check granting BAL permissions on dispatch instead on send."
+    bug: "421197489"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
