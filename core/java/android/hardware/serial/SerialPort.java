@@ -23,12 +23,11 @@ import static java.lang.annotation.RetentionPolicy.SOURCE;
 import android.annotation.FlaggedApi;
 import android.annotation.IntDef;
 import android.annotation.NonNull;
+import android.content.Context;
 import android.os.OutcomeReceiver;
 import android.os.ParcelFileDescriptor;
 import android.os.RemoteException;
 import android.system.ErrnoException;
-
-import com.android.internal.annotations.VisibleForTesting;
 
 import java.io.IOException;
 import java.lang.annotation.Retention;
@@ -92,12 +91,14 @@ public final class SerialPort {
      */
     public static final int OPEN_FLAG_SYNC = 1 << 20;
 
+    private final @NonNull Context mContext;
     private final @NonNull SerialPortInfo mInfo;
     private final @NonNull ISerialManager mService;
 
     /** @hide */
-    @VisibleForTesting
-    public SerialPort(@NonNull SerialPortInfo info, @NonNull ISerialManager service) {
+    public SerialPort(@NonNull Context context, @NonNull SerialPortInfo info,
+            @NonNull ISerialManager service) {
+        mContext = context;
         mInfo = info;
         mService = service;
     }
@@ -148,7 +149,7 @@ public final class SerialPort {
         Objects.requireNonNull(executor, "Executor must not be null");
         Objects.requireNonNull(receiver, "Receiver must not be null");
         try {
-            mService.requestOpen(mInfo.getName(), flags, exclusive,
+            mService.requestOpen(mInfo.getName(), flags, exclusive, mContext.getPackageName(),
                     new SerialPortResponseCallback(executor, receiver));
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
@@ -182,6 +183,7 @@ public final class SerialPort {
             return switch (errorCode) {
                 case ErrorCode.ERROR_READING_DRIVERS -> new IOException(message);
                 case ErrorCode.ERROR_PORT_NOT_FOUND -> new ErrnoException(message, ENOENT);
+                case ErrorCode.ERROR_ACCESS_DENIED -> new SecurityException(message);
                 case ErrorCode.ERROR_OPENING_PORT -> new ErrnoException(message, errno);
                 default -> new IllegalStateException("Unexpected errorCode " + errorCode);
             };

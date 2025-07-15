@@ -41,7 +41,6 @@ import java.util.concurrent.Executor;
 public final class SerialManager {
     private static final String TAG = "SerialManager";
 
-    @SuppressWarnings("unused")
     private final @NonNull Context mContext;
     private final @NonNull ISerialManager mService;
 
@@ -68,7 +67,7 @@ public final class SerialManager {
             List<SerialPortInfo> infos = mService.getSerialPorts();
             List<SerialPort> ports = new ArrayList<>(infos.size());
             for (int i = 0; i < infos.size(); i++) {
-                ports.add(new SerialPort(infos.get(i), mService));
+                ports.add(new SerialPort(mContext, infos.get(i), mService));
             }
             return Collections.unmodifiableList(ports);
         } catch (RemoteException e) {
@@ -131,7 +130,7 @@ public final class SerialManager {
     private class SerialPortServiceListener extends ISerialPortListener.Stub {
         @Override
         public void onSerialPortConnected(SerialPortInfo info) {
-            SerialPort port = new SerialPort(info, mService);
+            SerialPort port = new SerialPort(mContext, info, mService);
             synchronized (mLock) {
                 for (Map.Entry<SerialPortListener, Executor> e : mListeners.entrySet()) {
                     Executor executor = e.getValue();
@@ -147,7 +146,7 @@ public final class SerialManager {
 
         @Override
         public void onSerialPortDisconnected(SerialPortInfo info) {
-            SerialPort port = new SerialPort(info, mService);
+            SerialPort port = new SerialPort(mContext, info, mService);
             synchronized (mLock) {
                 for (Map.Entry<SerialPortListener, Executor> e : mListeners.entrySet()) {
                     Executor executor = e.getValue();

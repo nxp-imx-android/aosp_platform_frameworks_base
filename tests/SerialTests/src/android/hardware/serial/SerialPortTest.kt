@@ -53,12 +53,12 @@ class SerialPortTest {
     @Captor
     private lateinit var responseCallback: ArgumentCaptor<ISerialPortResponseCallback.Stub>
 
-    private val context = InstrumentationRegistry.getInstrumentation().getContext()
+    private val context = InstrumentationRegistry.getInstrumentation().context
     private val info = SerialPortInfo("ttyUSB0", 1234, 5678)
 
     @Test
     fun testAttributes() {
-        val serialPort = SerialPort(info, backendService)
+        val serialPort = SerialPort(context, info, backendService)
 
         assertEquals(serialPort.name, "ttyUSB0")
         assertEquals(serialPort.vendorId, 1234)
@@ -67,7 +67,7 @@ class SerialPortTest {
 
     @Test
     fun testRequestOpen_success() {
-        val serialPort = SerialPort(info, backendService)
+        val serialPort = SerialPort(context, info, backendService)
         val flags = SerialPort.OPEN_FLAG_NONBLOCK
         val exclusive = true
         val executor = Executor { r -> r.run() }
@@ -85,9 +85,8 @@ class SerialPortTest {
         val pfd: ParcelFileDescriptor = mock()
 
         serialPort.requestOpen(flags, exclusive, executor, outcomeReceiver)
-        verify(backendService).requestOpen(
-            eq("ttyUSB0"), eq(flags), eq(exclusive), responseCallback.capture()
-        )
+        verify(backendService).requestOpen(eq("ttyUSB0"), eq(flags), eq(exclusive),
+            eq(context.packageName), responseCallback.capture())
         responseCallback.value.onResult(info, pfd)
 
         assertEquals(outcomeResult?.port, serialPort)
@@ -96,8 +95,38 @@ class SerialPortTest {
     }
 
     @Test
+    fun testRequestOpen_accessDenied() {
+        val serialPort = SerialPort(context, info, backendService)
+        val flags = SerialPort.OPEN_FLAG_READ_WRITE or SerialPort.OPEN_FLAG_NONBLOCK
+        val exclusive = true
+        val executor = Executor { r -> r.run() }
+        var outcomeResult: SerialPortResponse? = null
+        var outcomeError: Exception? = null
+        val outcomeReceiver = object : OutcomeReceiver<SerialPortResponse, Exception> {
+            override fun onResult(result: SerialPortResponse) {
+                outcomeResult = result
+            }
+
+            override fun onError(error: Exception) {
+                outcomeError = error
+            }
+        }
+
+        serialPort.requestOpen(flags, exclusive, executor, outcomeReceiver)
+        verify(backendService).requestOpen(eq("ttyUSB0"), eq(flags), eq(exclusive),
+            eq(context.packageName), responseCallback.capture())
+        responseCallback.value.onError(
+            ISerialPortResponseCallback.ErrorCode.ERROR_ACCESS_DENIED, 0, "Access denied"
+        )
+
+        assertNull(outcomeResult)
+        assertEquals(outcomeError!!::class, SecurityException::class)
+        assertEquals(outcomeError.message, "Access denied")
+    }
+
+    @Test
     fun testRequestOpen_error() {
-        val serialPort = SerialPort(info, backendService)
+        val serialPort = SerialPort(context, info, backendService)
         val flags = SerialPort.OPEN_FLAG_READ_WRITE or SerialPort.OPEN_FLAG_NONBLOCK
         val exclusive = false
         val executor = Executor { r -> r.run() }
@@ -112,12 +141,10 @@ class SerialPortTest {
                 outcomeError = error
             }
         }
-        val error = Exception("test")
 
         serialPort.requestOpen(flags, exclusive, executor, outcomeReceiver)
-        verify(backendService).requestOpen(
-            eq("ttyUSB0"), eq(flags), eq(exclusive), responseCallback.capture()
-        )
+        verify(backendService).requestOpen(eq("ttyUSB0"), eq(flags), eq(exclusive),
+            eq(context.packageName), responseCallback.capture())
         responseCallback.value.onError(
             ISerialPortResponseCallback.ErrorCode.ERROR_READING_DRIVERS, 0, "Test Error"
         )
