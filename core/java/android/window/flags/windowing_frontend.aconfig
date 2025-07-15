@@ -249,6 +249,16 @@ flag {
 }
 
 flag {
+  name: "keyguard_remove_default_display_usage"
+  namespace: "windowing_frontend"
+  description: "Execute transitions on affected DisplayContent(s) instead of Default DisplayContent"
+  bug: "430227391"
+  metadata {
+    purpose: PURPOSE_BUGFIX
+  }
+}
+
+flag {
     name: "predictive_back_priority_system_navigation_observer"
     namespace: "systemui"
     description: "PRIORITY_SYSTEM_NAVIGATION_OBSERVER predictive back API extension"

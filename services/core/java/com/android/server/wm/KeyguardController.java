@@ -66,6 +66,7 @@ import com.android.server.policy.WindowManagerPolicy;
 import com.android.window.flags.Flags;
 
 import java.io.PrintWriter;
+import java.util.ArrayList;
 
 /**
  * Controls Keyguard occluding, dismissing and transitions depending on what kind of activities are
@@ -77,6 +78,9 @@ class KeyguardController {
 
     private static final boolean ENABLE_NEW_KEYGUARD_SHELL_TRANSITIONS =
             Flags.ensureKeyguardDoesTransitionStarting();
+
+    private static final boolean REMOVE_DEFAULT_DISPLAY_USAGE =
+            Flags.keyguardRemoveDefaultDisplayUsage();
 
     private static final String TAG = TAG_WITH_CLASS_NAME ? "KeyguardController" : TAG_ATM;
 
@@ -300,20 +304,20 @@ class KeyguardController {
     void keyguardGoingAway(int flags) {
         Trace.traceBegin(TRACE_TAG_WINDOW_MANAGER, "keyguardGoingAway");
 
-        boolean goingAwayChanged = false;
+        final ArrayList<DisplayContent> changedDisplays = new ArrayList<>();
         for (int i = mRootWindowContainer.getChildCount() - 1; i >= 0; i--) {
             final DisplayContent dc = mRootWindowContainer.getChildAt(i);
             if (!dc.isRemoving() && !dc.isRemoved()) {
                 final var state = getDisplayState(dc.mDisplayId);
                 if (state.mKeyguardShowing && !state.mKeyguardGoingAway) {
-                    goingAwayChanged = true;
                     state.mKeyguardGoingAway = true;
                     state.writeEventLog("keyguardGoingAway");
                     scheduleGoingAwayTimeout(dc.mDisplayId);
+                    changedDisplays.add(dc);
                 }
             }
         }
-        if (!goingAwayChanged) {
+        if (changedDisplays.isEmpty()) {
             Trace.traceEnd(TRACE_TAG_WINDOW_MANAGER);
             return;
         }
@@ -341,7 +345,13 @@ class KeyguardController {
             mRootWindowContainer.resumeFocusedTasksTopActivities();
             mRootWindowContainer.ensureActivitiesVisible();
             mRootWindowContainer.addStartingWindowsForVisibleActivities();
-            mWindowManager.executeAppTransition();
+            if (REMOVE_DEFAULT_DISPLAY_USAGE) {
+                for (int i = changedDisplays.size() - 1; i >= 0; i--) {
+                    changedDisplays.get(i).executeAppTransition();
+                }
+            } else {
+                mWindowManager.executeAppTransition();
+            }
         } finally {
             mService.continueWindowLayout();
             mService.mChainTracker.endPartial();
@@ -540,7 +550,11 @@ class KeyguardController {
             dc.mAtmService.getTransitionController().requestTransitionIfNeeded(
                     TRANSIT_OPEN, TRANSIT_FLAG_KEYGUARD_GOING_AWAY, null /* trigger */, dc, chain);
             updateKeyguardSleepToken();
-            mWindowManager.executeAppTransition();
+            if (REMOVE_DEFAULT_DISPLAY_USAGE) {
+                dc.executeAppTransition();
+            } else {
+                mWindowManager.executeAppTransition();
+            }
         } finally {
             mService.continueWindowLayout();
             mService.mChainTracker.endPartial();
