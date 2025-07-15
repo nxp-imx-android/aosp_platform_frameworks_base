@@ -79,6 +79,26 @@ public final class AssociationRequest implements Parcelable {
     public static final String DEVICE_PROFILE_WATCH = "android.app.role.COMPANION_DEVICE_WATCH";
 
     /**
+     * Device profile: fitness tracker.
+     *
+     * If specified, the current request may have a modified UI to highlight that the device being
+     * set up is a specific kind of device, and some extra permissions may be granted to the app
+     * as a result.
+     *
+     * Using it requires declaring uses-permission
+     * {@link android.Manifest.permission#REQUEST_COMPANION_PROFILE_WATCH} in the manifest.
+     *
+     * <a href="{@docRoot}about/versions/12/features#cdm-profiles">Learn more</a>
+     * about device profiles.
+     *
+     * @see AssociationRequest.Builder#setDeviceProfile
+     */
+    @FlaggedApi(Flags.FLAG_BAND_DEVICE_PROFILE)
+    @RequiresPermission(Manifest.permission.REQUEST_COMPANION_PROFILE_WATCH)
+    public static final String DEVICE_PROFILE_FITNESS_TRACKER =
+            "android.app.role.COMPANION_DEVICE_FITNESS_TRACKER";
+
+    /**
      * Device profile: glasses.
      *
      * If specified, the current request may have a modified UI to highlight that the device being

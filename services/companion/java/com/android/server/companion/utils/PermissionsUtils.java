@@ -61,6 +61,7 @@ import static android.app.AppOpsManager.MODE_ALLOWED;
 import static android.companion.AssociationRequest.DEVICE_PROFILE_APP_STREAMING;
 import static android.companion.AssociationRequest.DEVICE_PROFILE_AUTOMOTIVE_PROJECTION;
 import static android.companion.AssociationRequest.DEVICE_PROFILE_COMPUTER;
+import static android.companion.AssociationRequest.DEVICE_PROFILE_FITNESS_TRACKER;
 import static android.companion.AssociationRequest.DEVICE_PROFILE_GLASSES;
 import static android.companion.AssociationRequest.DEVICE_PROFILE_NEARBY_DEVICE_STREAMING;
 import static android.companion.AssociationRequest.DEVICE_PROFILE_VIRTUAL_DEVICE;
@@ -147,6 +148,8 @@ public final class PermissionsUtils {
     static {
         final Map<String, String> map = new ArrayMap<>();
         map.put(DEVICE_PROFILE_WATCH, Manifest.permission.REQUEST_COMPANION_PROFILE_WATCH);
+        map.put(DEVICE_PROFILE_FITNESS_TRACKER,
+                Manifest.permission.REQUEST_COMPANION_PROFILE_WATCH);
         map.put(DEVICE_PROFILE_APP_STREAMING,
                 Manifest.permission.REQUEST_COMPANION_PROFILE_APP_STREAMING);
         map.put(DEVICE_PROFILE_AUTOMOTIVE_PROJECTION,

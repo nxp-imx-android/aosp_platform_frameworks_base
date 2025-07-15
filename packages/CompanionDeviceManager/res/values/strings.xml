@@ -54,6 +54,11 @@
     <!-- Description of the privileges the application will get if associated with the companion device of WATCH profile [CHAR LIMIT=NONE] -->
     <string name="summary_watch">This app will be allowed to sync info, like the name of someone calling, and access these permissions on your <xliff:g id="device_type" example="phone">%1$s</xliff:g></string>
 
+    <!-- ================= DEVICE_PROFILE_FITNESS_TRACKER ================= -->
+
+    <!-- The name of the "fitness tracker" device type [CHAR LIMIT=30] -->
+    <string name="profile_name_fitness_tracker">fitness tracker</string>
+
     <!-- ================= DEVICE_PROFILE_GLASSES ================= -->
 
     <!-- Title of the device association confirmation dialog for glasses. -->
