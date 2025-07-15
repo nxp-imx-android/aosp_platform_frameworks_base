@@ -16,6 +16,7 @@
 
 package com.android.systemui.kairos.internal.util
 
+import com.android.app.tracing.coroutines.traceCoroutine
 import com.android.app.tracing.traceSection
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.InvocationKind
@@ -44,10 +45,21 @@ internal value class LogIndent(val currentLogIndent: Int) {
         getPrefix: () -> String,
         start: Boolean = true,
         trace: Boolean = false,
-        block: LogIndent.() -> R,
+        crossinline block: LogIndent.() -> R,
     ): R {
         contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
         return logDuration(currentLogIndent, getPrefix, start, trace, block)
+    }
+
+    @OptIn(ExperimentalContracts::class)
+    suspend inline fun <R> logDurationCoroutine(
+        crossinline getPrefix: () -> String,
+        start: Boolean = true,
+        trace: Boolean = false,
+        block: suspend LogIndent.() -> R,
+    ): R {
+        contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
+        return logDurationCoroutine(currentLogIndent, getPrefix, start, trace, block)
     }
 
     inline fun logLn(getMessage: () -> Any?) = logLn(currentLogIndent, getMessage)
@@ -77,6 +89,34 @@ internal inline fun <R> logDuration(
             traceSection(prefix) { logDurationInternal(start, indent, prefix, block) }
         } else {
             logDurationInternal(start, indent, prefix, block)
+        }
+    }
+}
+
+@OptIn(ExperimentalContracts::class)
+internal suspend inline fun <R> logDurationCoroutine(
+    indent: Int,
+    crossinline getPrefix: () -> String,
+    start: Boolean = true,
+    trace: Boolean = false,
+    block: suspend LogIndent.() -> R,
+): R {
+    contract {
+        callsInPlace(block, InvocationKind.EXACTLY_ONCE)
+        callsInPlace(getPrefix, InvocationKind.AT_MOST_ONCE)
+    }
+    return if (!LoggingEnabled) {
+        if (trace) {
+            traceCoroutine(getPrefix) { LogIndent(0).block() }
+        } else {
+            LogIndent(0).block()
+        }
+    } else {
+        val prefix = getPrefix()
+        if (trace) {
+            traceCoroutine(prefix) { logDurationInternal(start, indent, prefix) { block() } }
+        } else {
+            logDurationInternal(start, indent, prefix) { block() }
         }
     }
 }
