@@ -580,7 +580,7 @@ public class WebChromeClient {
          * @hide
          */
         @ChangeId
-        @EnabledAfter(targetSdkVersion = android.os.Build.VERSION_CODES.VANILLA_ICE_CREAM)
+        @EnabledAfter(targetSdkVersion = android.os.Build.VERSION_CODES.BAKLAVA)
         @FlaggedApi(android.webkit.Flags.FLAG_FILE_SYSTEM_ACCESS)
         @SystemApi
         public static final long ENABLE_FILE_SYSTEM_ACCESS = 364980165L;
