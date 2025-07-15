@@ -20,6 +20,7 @@ import static android.media.MediaRoute2Info.FEATURE_LIVE_AUDIO;
 import static android.media.MediaRoute2Info.FEATURE_LIVE_VIDEO;
 import static android.media.MediaRoute2Info.PLAYBACK_VOLUME_FIXED;
 import static android.media.MediaRoute2ProviderService.REQUEST_ID_NONE;
+import static android.media.RoutingSessionInfo.RELEASE_TYPE_CASTING;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
@@ -884,7 +885,8 @@ import java.util.stream.Stream;
                             .clearSelectedRoutes()
                             .clearSelectableRoutes()
                             .clearDeselectableRoutes()
-                            .clearTransferableRoutes();
+                            .clearTransferableRoutes()
+                            .setReleaseType(RELEASE_TYPE_CASTING);
             session.getSelectedRoutes().stream()
                     .map(it -> uniqueIdAsSystemRouteId(session.getProviderId(), it))
                     .forEach(builder::addSelectedRoute);
