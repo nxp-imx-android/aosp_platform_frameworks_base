@@ -42042,7 +42042,6 @@ package android.service.chooser {
     method public int getState();
     method @NonNull public android.service.chooser.ChooserSessionToken getToken();
     method public void removeStateListener(@NonNull android.service.chooser.ChooserSession.StateListener);
-    method public void setMinimized(boolean);
     method public void setTargetsEnabled(boolean);
     method public void updateIntent(@NonNull android.content.Intent);
     field public static final int STATE_CLOSED = 2; // 0x2
