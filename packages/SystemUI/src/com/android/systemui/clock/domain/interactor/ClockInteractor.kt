@@ -16,8 +16,11 @@
 
 package com.android.systemui.clock.domain.interactor
 
+import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.icu.text.DateFormat
+import android.icu.text.DisplayContext
 import android.os.UserHandle
 import android.provider.AlarmClock
 import androidx.annotation.VisibleForTesting
@@ -26,11 +29,14 @@ import com.android.systemui.clock.data.repository.ClockRepository
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.plugins.ActivityStarter
+import com.android.systemui.res.R
+import com.android.systemui.shade.ShadeDisplayAware
 import com.android.systemui.tuner.TunerService
 import com.android.systemui.util.kotlin.emitOnStart
 import com.android.systemui.util.time.SystemClock
 import com.android.systemui.utils.coroutines.flow.conflatedCallbackFlow
 import java.util.Date
+import java.util.Locale
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -42,6 +48,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.stateIn
 
@@ -49,6 +56,7 @@ import kotlinx.coroutines.flow.stateIn
 class ClockInteractor
 @Inject
 constructor(
+    @ShadeDisplayAware private val context: Context,
     private val repository: ClockRepository,
     private val activityStarter: ActivityStarter,
     private val broadcastDispatcher: BroadcastDispatcher,
@@ -121,6 +129,17 @@ constructor(
                 initialValue = Date(systemClock.currentTimeMillis()),
             )
 
+    private val longerPattern = context.getString(R.string.abbrev_wday_month_day_no_year_alarm)
+    private val shorterPattern = context.getString(R.string.abbrev_month_day_no_year)
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val longerDateFormat: Flow<DateFormat> =
+        onTimezoneOrLocaleChanged.mapLatest { getFormatFromPattern(longerPattern) }
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val shorterDateFormat: Flow<DateFormat> =
+        onTimezoneOrLocaleChanged.mapLatest { getFormatFromPattern(shorterPattern) }
+
     /** Launch the clock activity. */
     fun launchClockActivity() {
         val nextAlarmIntent = repository.nextAlarmIntent
@@ -146,6 +165,12 @@ constructor(
             filter = IntentFilter().apply { actionsToFilter.forEach(::addAction) },
             user = user,
         )
+    }
+
+    private fun getFormatFromPattern(pattern: String?): DateFormat {
+        return DateFormat.getInstanceForSkeleton(pattern, Locale.getDefault()).apply {
+            setContext(DisplayContext.CAPITALIZATION_FOR_STANDALONE)
+        }
     }
 
     companion object {

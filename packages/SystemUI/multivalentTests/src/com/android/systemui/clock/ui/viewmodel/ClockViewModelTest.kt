@@ -38,6 +38,7 @@ import com.google.common.truth.Truth.assertThat
 import java.time.ZoneId
 import java.util.Locale
 import java.util.TimeZone
+import kotlin.time.Duration.Companion.days
 import kotlin.time.Duration.Companion.minutes
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import org.junit.After
@@ -261,6 +262,40 @@ class ClockViewModelTest : SysuiTestCase() {
 
             assertThat(underTest.clockText).isEqualTo("11:12\u202FPM")
             assertThat(underTest.contentDescriptionText).isEqualTo("11:12\u202FPM")
+        }
+
+    @Test
+    fun shorterDateText_updatesWhenTimeTicks() =
+        kosmos.runTest {
+            fakeSystemClock.setCurrentTimeMillis(CURRENT_TIME_MILLIS)
+            underTest.activateIn(testScope)
+
+            assertThat(underTest.shorterDateText).isEqualTo("May 8")
+
+            fakeSystemClock.advanceTime(2.days.inWholeMilliseconds)
+            broadcastDispatcher.sendIntentToMatchingReceiversOnly(
+                context,
+                Intent(Intent.ACTION_TIME_TICK),
+            )
+
+            assertThat(underTest.shorterDateText).isEqualTo("May 10")
+        }
+
+    @Test
+    fun longerDateText_updatesWhenTimeTicks() =
+        kosmos.runTest {
+            fakeSystemClock.setCurrentTimeMillis(CURRENT_TIME_MILLIS)
+            underTest.activateIn(testScope)
+
+            assertThat(underTest.longerDateText).isEqualTo("Wed, May 8")
+
+            fakeSystemClock.advanceTime(2.days.inWholeMilliseconds)
+            broadcastDispatcher.sendIntentToMatchingReceiversOnly(
+                context,
+                Intent(Intent.ACTION_TIME_TICK),
+            )
+
+            assertThat(underTest.longerDateText).isEqualTo("Fri, May 10")
         }
 
     private fun Kosmos.getTunable(): Tunable {

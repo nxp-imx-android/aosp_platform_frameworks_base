@@ -16,6 +16,7 @@
 
 package com.android.systemui.clock.domain.interactor
 
+import android.content.applicationContext
 import com.android.systemui.broadcast.broadcastDispatcher
 import com.android.systemui.clock.data.repository.clockRepository
 import com.android.systemui.kosmos.Kosmos
@@ -27,6 +28,7 @@ import com.android.systemui.util.time.fakeSystemClock
 var Kosmos.clockInteractor: ClockInteractor by
     Kosmos.Fixture {
         ClockInteractor(
+            context = applicationContext,
             repository = clockRepository,
             activityStarter = activityStarter,
             broadcastDispatcher = broadcastDispatcher,
