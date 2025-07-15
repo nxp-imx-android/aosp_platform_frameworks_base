@@ -32,4 +32,6 @@ import java.lang.annotation.Target;
 public @interface HostStubGenProcessedAsKeep {
     String CLASS_INTERNAL_NAME = HostTestUtils.getInternalName(HostStubGenProcessedAsKeep.class);
     String CLASS_DESCRIPTOR = "L" + CLASS_INTERNAL_NAME + ";";
+
+    String reason() default "";
 }

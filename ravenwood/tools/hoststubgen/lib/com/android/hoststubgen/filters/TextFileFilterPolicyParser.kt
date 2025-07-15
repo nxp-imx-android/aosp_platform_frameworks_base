@@ -20,15 +20,16 @@ import com.android.hoststubgen.asm.ClassNodes
 import com.android.hoststubgen.asm.splitWithLastPeriod
 import com.android.hoststubgen.asm.toHumanReadableClassName
 import com.android.hoststubgen.asm.toJvmClassName
+import com.android.hoststubgen.getInlineComment
 import com.android.hoststubgen.log
 import com.android.hoststubgen.normalizeTextLine
 import com.android.hoststubgen.utils.FileOrResource
 import com.android.hoststubgen.whitespaceRegex
+import org.objectweb.asm.tree.ClassNode
 import java.io.BufferedReader
 import java.io.PrintWriter
 import java.io.Reader
 import java.util.regex.Pattern
-import org.objectweb.asm.tree.ClassNode
 
 /**
  * Print a class node as a "keep" policy.
@@ -48,7 +49,15 @@ fun printAsTextPolicy(pw: PrintWriter, cn: ClassNode) {
     }
 }
 
+/** "Reason" string for policies set by a policy file. */
 private const val FILTER_REASON = "file-override"
+
+/**
+ * "file-override" + an inline comment string (in the policy file).
+ */
+private fun reasonWithComment(inlineComment: String): String {
+    return if (inlineComment.isEmpty()) { FILTER_REASON } else {"$FILTER_REASON ($inlineComment)" }
+}
 
 enum class SpecialClass {
     NotSpecial,
@@ -273,7 +282,7 @@ class TextFileFilterPolicyBuilder(
                 className,
                 targetName,
                 methodDesc,
-                FilterPolicy.Keep.withReason(FILTER_REASON)
+                FilterPolicy.Keep.withReason(reasonWithComment(parser.currentInlineCommend))
             )
             // Set up the rename.
             imf.setRenameTo(className, targetName, methodDesc, methodName)
@@ -287,7 +296,7 @@ class TextFileFilterPolicyBuilder(
         ) {
             // Keep the source method, because the target method may call it.
             imf.setPolicyForMethod(className, methodName, methodDesc,
-                FilterPolicy.Keep.withReason(FILTER_REASON))
+                FilterPolicy.Keep.withReason(reasonWithComment(parser.currentInlineCommend)))
             imf.setMethodCallReplaceSpec(replaceSpec)
         }
     }
@@ -317,6 +326,10 @@ class TextFileFilterPolicyParser {
     var currentLineText = ""
         private set
 
+    /** Inline comment in the current line */
+    var currentInlineCommend = ""
+        private set
+
     /**
      * Parse a given "policy" file.
      */
@@ -338,6 +351,7 @@ class TextFileFilterPolicyParser {
                     if (line.isEmpty()) {
                         continue
                     }
+                    currentInlineCommend = getInlineComment(currentLineText)
                     parseLine(line)
                 }
                 finishLastClass()
@@ -447,7 +461,7 @@ class TextFileFilterPolicyParser {
         if (!policy.isUsableWithClasses) {
             throw ParseException("Package can't have policy '$policy'")
         }
-        processor.onPackage(name, policy.withReason(FILTER_REASON))
+        processor.onPackage(name, policy.withReason(reasonWithComment(currentInlineCommend)))
     }
 
     private fun parseClass(fields: Array<String>) {
@@ -513,7 +527,7 @@ class TextFileFilterPolicyParser {
                     if (superClass == null) {
                         currentClassName = className
                         processor.onClassStart(className)
-                        processor.onSimpleClassPolicy(className, policy.withReason(FILTER_REASON))
+                        processor.onSimpleClassPolicy(className, policy.withReason(reasonWithComment(currentInlineCommend)))
                     } else {
                         processor.onSubClassPolicy(
                             superClass,
@@ -591,7 +605,7 @@ class TextFileFilterPolicyParser {
         }
 
         // TODO: Duplicate check, etc
-        processor.onField(currentClassName!!, name, policy.withReason(FILTER_REASON))
+        processor.onField(currentClassName!!, name, policy.withReason(reasonWithComment(currentInlineCommend)))
     }
 
     private fun parseMethod(fields: Array<String>) {
@@ -617,7 +631,7 @@ class TextFileFilterPolicyParser {
 
         val className = currentClassName!!
 
-        val policyWithReason = policy.withReason(FILTER_REASON)
+        val policyWithReason = policy.withReason(reasonWithComment(currentInlineCommend))
         if (policy != FilterPolicy.Substitute) {
             processor.onSimpleMethodPolicy(className, methodName, signature, policyWithReason)
         } else {
