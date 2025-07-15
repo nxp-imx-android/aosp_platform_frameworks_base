@@ -17,15 +17,11 @@
 package com.android.systemui.statusbar.dagger
 
 import android.content.Context
-import android.view.Display
-import android.view.WindowManager.LayoutParams.TYPE_STATUS_BAR
 import com.android.systemui.CameraProtectionLoader
 import com.android.systemui.CoreStartable
 import com.android.systemui.SysUICutoutProvider
 import com.android.systemui.SysUICutoutProviderImpl
 import com.android.systemui.dagger.SysUISingleton
-import com.android.systemui.dagger.qualifiers.Main
-import com.android.systemui.display.data.repository.DisplayWindowPropertiesRepositoryImpl
 import com.android.systemui.log.LogBuffer
 import com.android.systemui.log.LogBufferFactory
 import com.android.systemui.statusbar.chips.sharetoapp.ui.viewmodel.ShareToAppChipViewModel
@@ -206,20 +202,6 @@ interface StatusBarModule {
             insetsProvider: StatusBarContentInsetsProvider
         ): StatusBarContentInsetsViewModel {
             return StatusBarContentInsetsViewModel(insetsProvider)
-        }
-
-        @Provides
-        @StatusBarMain
-        fun provideDefaultStatusBarContext(
-            repoLazy: Lazy<DisplayWindowPropertiesRepositoryImpl>,
-            @Main appContext: Context,
-        ): Context {
-            return if (StatusBarConnectedDisplays.isEnabled) {
-                return repoLazy.get().get(Display.DEFAULT_DISPLAY, TYPE_STATUS_BAR)?.context
-                    ?: appContext
-            } else {
-                appContext
-            }
         }
     }
 }
