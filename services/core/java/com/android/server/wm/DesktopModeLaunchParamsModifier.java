@@ -149,8 +149,9 @@ class DesktopModeLaunchParamsModifier implements LaunchParamsModifier {
                 && options.getLaunchWindowingMode() == WINDOWING_MODE_FULLSCREEN;
         if (DesktopExperienceFlags.RESPECT_FULLSCREEN_ACTIVITY_OPTION_IN_DESKTOP_LAUNCH_PARAMS
                 .isTrue() && requestFullscreen) {
-            appendLog("respecting fullscreen activity option, skipping");
-            return RESULT_SKIP;
+            appendLog("respecting fullscreen activity option");
+            outParams.mWindowingMode = WINDOWING_MODE_FULLSCREEN;
+            return RESULT_DONE;
         }
 
         // If activity is null attempt to use task top activity if available.
