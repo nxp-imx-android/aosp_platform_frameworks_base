@@ -24,6 +24,7 @@ import android.content.res.Resources
 import android.os.UserHandle
 import android.provider.Settings
 import com.android.systemui.Flags.communalHub
+import com.android.systemui.Flags.glanceableHubEnabledByDefault
 import com.android.systemui.Flags.glanceableHubV2
 import com.android.systemui.broadcast.BroadcastDispatcher
 import com.android.systemui.communal.data.model.CommunalFeature
@@ -117,6 +118,21 @@ constructor(
         resources.getInteger(com.android.internal.R.integer.config_whenToStartHubModeDefault)
     }
 
+    private val hubEnabledByUserDefault by lazy {
+        if (!glanceableHubV2()) {
+            ENABLED_SETTING_DEFAULT_PRE_HUB_V2
+        } else if (
+            glanceableHubEnabledByDefault() ||
+                resources.getBoolean(
+                    com.android.internal.R.bool.config_glanceableHubEnabledByDefault
+                )
+        ) {
+            1
+        } else {
+            0
+        }
+    }
+
     private val _suppressionReasons =
         MutableStateFlow<List<SuppressionReason>>(
             // Suppress hub by default until we get an initial update.
@@ -176,7 +192,7 @@ constructor(
 
     override fun getSettingEnabledByUser(): Flow<Boolean> =
         secureSettingsRepository
-            .intSetting(Settings.Secure.GLANCEABLE_HUB_ENABLED, ENABLED_SETTING_DEFAULT)
+            .intSetting(Settings.Secure.GLANCEABLE_HUB_ENABLED, hubEnabledByUserDefault)
             .map { it == 1 }
             .flowOn(bgDispatcher)
 
@@ -198,7 +214,7 @@ constructor(
 
     companion object {
         const val GLANCEABLE_HUB_BACKGROUND_SETTING = "glanceable_hub_background"
-        private const val ENABLED_SETTING_DEFAULT = 1
+        private const val ENABLED_SETTING_DEFAULT_PRE_HUB_V2 = 1
     }
 }
 

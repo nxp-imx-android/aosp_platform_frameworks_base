@@ -2859,6 +2859,8 @@
     <integer name="config_whenToStartHubModeDefault">0</integer>
     <!-- Whether to restrict auto-showing glanceable hub to wireless charging. -->
     <bool name="config_onlyShowGlanceableHubWhenWirelessChargingDefault">false</bool>
+    <!-- Whether glanceable hub is enabled by default. -->
+    <bool name="config_glanceableHubEnabledByDefault">false</bool>
 
     <!-- Whether or not low light display behavior is enabled -->
     <bool name="config_lowLightDisplayBehaviorEnabledDefault">true</bool>

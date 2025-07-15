@@ -2109,6 +2109,7 @@
   <java-symbol type="bool" name="config_keepDreamingWhenUnplugging" />
   <java-symbol type="bool" name="config_alwaysAllowDreamRotation" />
   <java-symbol type="bool" name="config_glanceableHubEnabled" />
+  <java-symbol type="bool" name="config_glanceableHubEnabledByDefault" />
   <java-symbol type="integer" name="config_whenToStartHubModeDefault" />
   <java-symbol type="bool" name="config_onlyShowGlanceableHubWhenWirelessChargingDefault" />
   <java-symbol type="bool" name="config_lowLightDisplayBehaviorEnabledDefault" />
