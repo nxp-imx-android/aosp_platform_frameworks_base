@@ -226,9 +226,9 @@ class AppCompatActivityRobot {
     }
 
     void enableFullscreenCameraCompatTreatmentForTopActivity(boolean enabled) {
-        if (mDisplayContent.mAppCompatCameraPolicy.hasDisplayRotationCompatPolicy()) {
+        if (mDisplayContent.mAppCompatCameraPolicy.hasDisplayRotationPolicy()) {
             doReturn(enabled).when(
-                    mDisplayContent.mAppCompatCameraPolicy.mDisplayRotationCompatPolicy)
+                    mDisplayContent.mAppCompatCameraPolicy.mDisplayRotationPolicy)
                         .isTreatmentEnabledForActivity(eq(mActivityStack.top()));
         }
     }
@@ -653,9 +653,9 @@ class AppCompatActivityRobot {
         }
     }
 
-    private DisplayRotationCompatPolicy getTopDisplayRotationCompatPolicy() {
+    private AppCompatCameraDisplayRotationPolicy getTopDisplayRotationCompatPolicy() {
         return mActivityStack.top().mDisplayContent.mAppCompatCameraPolicy
-                .mDisplayRotationCompatPolicy;
+                .mDisplayRotationPolicy;
     }
 
     private AppCompatCameraSimReqOrientationPolicy getTopCameraCompatSimReqOrientationPolicy() {

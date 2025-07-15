@@ -74,15 +74,15 @@ import org.junit.runner.RunWith;
 import java.util.concurrent.Executor;
 
 /**
- * Tests for {@link DisplayRotationCompatPolicy}.
+ * Tests for {@link AppCompatCameraDisplayRotationPolicy}.
  *
  * Build/Install/Run:
- *  atest WmTests:DisplayRotationCompatPolicyTests
+ *  atest WmTests:AppCompatCameraDisplayRotationPolicyTests
  */
 @SmallTest
 @Presubmit
 @RunWith(WindowTestRunner.class)
-public final class DisplayRotationCompatPolicyTests extends WindowTestsBase {
+public final class AppCompatCameraDisplayRotationPolicyTests extends WindowTestsBase {
 
     private static final String TEST_PACKAGE_1 = "com.test.package.one";
     private static final String TEST_PACKAGE_2 = "com.test.package.two";
@@ -94,7 +94,7 @@ public final class DisplayRotationCompatPolicyTests extends WindowTestsBase {
     private AppCompatConfiguration mAppCompatConfiguration;
     private ActivityRefresher mActivityRefresher;
 
-    private DisplayRotationCompatPolicy mDisplayRotationCompatPolicy;
+    private AppCompatCameraDisplayRotationPolicy mCameraDisplayRotationPolicy;
     private CameraManager.AvailabilityCallback mCameraAvailabilityCallback;
 
     private ActivityRecord mActivity;
@@ -138,15 +138,15 @@ public final class DisplayRotationCompatPolicyTests extends WindowTestsBase {
         final CameraStateMonitor cameraStateMonitor =
                 new CameraStateMonitor(mDisplayContent, mMockHandler, cameraStateSource);
         mActivityRefresher = new ActivityRefresher(mDisplayContent.mWmService, mMockHandler);
-        mDisplayRotationCompatPolicy = new DisplayRotationCompatPolicy(mDisplayContent,
-                cameraStateMonitor, cameraStateSource, mActivityRefresher);
+        mCameraDisplayRotationPolicy = new AppCompatCameraDisplayRotationPolicy(
+                mDisplayContent, cameraStateMonitor, cameraStateSource, mActivityRefresher);
 
         // Do not show the real toast.
-        spyOn(mDisplayRotationCompatPolicy);
-        doNothing().when(mDisplayRotationCompatPolicy).showToast(anyInt());
-        doNothing().when(mDisplayRotationCompatPolicy).showToast(anyInt(), anyString());
+        spyOn(mCameraDisplayRotationPolicy);
+        doNothing().when(mCameraDisplayRotationPolicy).showToast(anyInt());
+        doNothing().when(mCameraDisplayRotationPolicy).showToast(anyInt(), anyString());
 
-        mDisplayRotationCompatPolicy.start();
+        mCameraDisplayRotationPolicy.start();
         cameraStateMonitor.startListeningToCameraState();
     }
 
@@ -168,7 +168,7 @@ public final class DisplayRotationCompatPolicyTests extends WindowTestsBase {
 
         mCameraAvailabilityCallback.onCameraOpened(CAMERA_ID_1, TEST_PACKAGE_1);
 
-        verify(mDisplayRotationCompatPolicy).showToast(
+        verify(mCameraDisplayRotationPolicy).showToast(
                 R.string.display_rotation_camera_compat_toast_in_multi_window,
                 TEST_PACKAGE_1_LABEL);
     }
@@ -182,7 +182,7 @@ public final class DisplayRotationCompatPolicyTests extends WindowTestsBase {
 
         mCameraAvailabilityCallback.onCameraOpened(CAMERA_ID_1, TEST_PACKAGE_1);
 
-        verify(mDisplayRotationCompatPolicy, never()).showToast(
+        verify(mCameraDisplayRotationPolicy, never()).showToast(
                 R.string.display_rotation_camera_compat_toast_in_multi_window,
                 TEST_PACKAGE_1_LABEL);
     }
@@ -192,17 +192,17 @@ public final class DisplayRotationCompatPolicyTests extends WindowTestsBase {
         when(mAppCompatConfiguration.isCameraCompatForceRotateTreatmentEnabled())
                 .thenReturn(false);
 
-        mDisplayRotationCompatPolicy.onScreenRotationAnimationFinished();
+        mCameraDisplayRotationPolicy.onScreenRotationAnimationFinished();
 
-        verify(mDisplayRotationCompatPolicy, never()).showToast(
+        verify(mCameraDisplayRotationPolicy, never()).showToast(
                 R.string.display_rotation_camera_compat_toast_after_rotation);
     }
 
     @Test
     public void testOnScreenRotationAnimationFinished_noOpenCamera_doNotShowToast() {
-        mDisplayRotationCompatPolicy.onScreenRotationAnimationFinished();
+        mCameraDisplayRotationPolicy.onScreenRotationAnimationFinished();
 
-        verify(mDisplayRotationCompatPolicy, never()).showToast(
+        verify(mCameraDisplayRotationPolicy, never()).showToast(
                 R.string.display_rotation_camera_compat_toast_after_rotation);
     }
 
@@ -213,9 +213,9 @@ public final class DisplayRotationCompatPolicyTests extends WindowTestsBase {
 
         mCameraAvailabilityCallback.onCameraOpened(CAMERA_ID_1, TEST_PACKAGE_1);
 
-        mDisplayRotationCompatPolicy.onScreenRotationAnimationFinished();
+        mCameraDisplayRotationPolicy.onScreenRotationAnimationFinished();
 
-        verify(mDisplayRotationCompatPolicy, never()).showToast(
+        verify(mCameraDisplayRotationPolicy, never()).showToast(
                 R.string.display_rotation_camera_compat_toast_after_rotation);
     }
 
@@ -224,9 +224,9 @@ public final class DisplayRotationCompatPolicyTests extends WindowTestsBase {
         configureActivity(SCREEN_ORIENTATION_UNSPECIFIED);
         mCameraAvailabilityCallback.onCameraOpened(CAMERA_ID_1, TEST_PACKAGE_1);
 
-        mDisplayRotationCompatPolicy.onScreenRotationAnimationFinished();
+        mCameraDisplayRotationPolicy.onScreenRotationAnimationFinished();
 
-        verify(mDisplayRotationCompatPolicy, never()).showToast(
+        verify(mCameraDisplayRotationPolicy, never()).showToast(
                 R.string.display_rotation_camera_compat_toast_after_rotation);
     }
 
@@ -235,9 +235,9 @@ public final class DisplayRotationCompatPolicyTests extends WindowTestsBase {
         configureActivity(SCREEN_ORIENTATION_PORTRAIT);
         mCameraAvailabilityCallback.onCameraOpened(CAMERA_ID_1, TEST_PACKAGE_1);
 
-        mDisplayRotationCompatPolicy.onScreenRotationAnimationFinished();
+        mCameraDisplayRotationPolicy.onScreenRotationAnimationFinished();
 
-        verify(mDisplayRotationCompatPolicy).showToast(
+        verify(mCameraDisplayRotationPolicy).showToast(
                 R.string.display_rotation_camera_compat_toast_after_rotation);
     }
 
@@ -249,8 +249,7 @@ public final class DisplayRotationCompatPolicyTests extends WindowTestsBase {
         configureActivity(SCREEN_ORIENTATION_PORTRAIT);
         mCameraAvailabilityCallback.onCameraOpened(CAMERA_ID_1, TEST_PACKAGE_1);
 
-        assertEquals(mDisplayRotationCompatPolicy.getOrientation(),
-                SCREEN_ORIENTATION_UNSPECIFIED);
+        assertEquals(mCameraDisplayRotationPolicy.getOrientation(), SCREEN_ORIENTATION_UNSPECIFIED);
 
         assertNoForceRotationOrRefresh();
     }
@@ -363,8 +362,7 @@ public final class DisplayRotationCompatPolicyTests extends WindowTestsBase {
         mCameraAvailabilityCallback.onCameraOpened(CAMERA_ID_1, TEST_PACKAGE_1);
         callOnActivityConfigurationChanging(mActivity, /* isDisplayRotationChanging */ true);
 
-        assertEquals(mDisplayRotationCompatPolicy.getOrientation(),
-                SCREEN_ORIENTATION_PORTRAIT);
+        assertEquals(mCameraDisplayRotationPolicy.getOrientation(), SCREEN_ORIENTATION_PORTRAIT);
         assertActivityRefreshRequested(/* refreshRequested */ true);
     }
 
@@ -377,8 +375,7 @@ public final class DisplayRotationCompatPolicyTests extends WindowTestsBase {
         mCameraAvailabilityCallback.onCameraOpened(CAMERA_ID_2, TEST_PACKAGE_1);
         callOnActivityConfigurationChanging(mActivity, /* isDisplayRotationChanging */ true);
 
-        assertEquals(mDisplayRotationCompatPolicy.getOrientation(),
-                SCREEN_ORIENTATION_PORTRAIT);
+        assertEquals(mCameraDisplayRotationPolicy.getOrientation(), SCREEN_ORIENTATION_PORTRAIT);
         assertActivityRefreshRequested(/* refreshRequested */ true);
     }
 
@@ -388,14 +385,12 @@ public final class DisplayRotationCompatPolicyTests extends WindowTestsBase {
         // Open camera and test for compat treatment
         mCameraAvailabilityCallback.onCameraOpened(CAMERA_ID_1, TEST_PACKAGE_1);
         callOnActivityConfigurationChanging(mActivity, /* isDisplayRotationChanging */ true);
-        assertEquals(mDisplayRotationCompatPolicy.getOrientation(),
-                SCREEN_ORIENTATION_LANDSCAPE);
+        assertEquals(mCameraDisplayRotationPolicy.getOrientation(), SCREEN_ORIENTATION_LANDSCAPE);
         assertActivityRefreshRequested(/* refreshRequested */ true);
         // Close camera and test for revert
         mCameraAvailabilityCallback.onCameraClosed(CAMERA_ID_1);
         callOnActivityConfigurationChanging(mActivity, /* isDisplayRotationChanging */ true);
-        assertEquals(mDisplayRotationCompatPolicy.getOrientation(),
-                SCREEN_ORIENTATION_UNSPECIFIED);
+        assertEquals(mCameraDisplayRotationPolicy.getOrientation(), SCREEN_ORIENTATION_UNSPECIFIED);
         assertActivityRefreshRequested(/* refreshRequested */ true);
     }
 
@@ -405,13 +400,11 @@ public final class DisplayRotationCompatPolicyTests extends WindowTestsBase {
 
         mCameraAvailabilityCallback.onCameraOpened(CAMERA_ID_1, TEST_PACKAGE_1);
 
-        assertEquals(mDisplayRotationCompatPolicy.getOrientation(),
-                SCREEN_ORIENTATION_PORTRAIT);
+        assertEquals(mCameraDisplayRotationPolicy.getOrientation(), SCREEN_ORIENTATION_PORTRAIT);
 
         mCameraAvailabilityCallback.onCameraClosed(CAMERA_ID_1);
 
-        assertEquals(mDisplayRotationCompatPolicy.getOrientation(),
-                SCREEN_ORIENTATION_UNSPECIFIED);
+        assertEquals(mCameraDisplayRotationPolicy.getOrientation(), SCREEN_ORIENTATION_UNSPECIFIED);
     }
 
     @Test
@@ -463,8 +456,7 @@ public final class DisplayRotationCompatPolicyTests extends WindowTestsBase {
 
         mCameraAvailabilityCallback.onCameraOpened(CAMERA_ID_1, TEST_PACKAGE_1);
 
-        assertEquals(mDisplayRotationCompatPolicy.getOrientation(),
-                expectedOrientation);
+        assertEquals(mCameraDisplayRotationPolicy.getOrientation(), expectedOrientation);
     }
 
     @Test
@@ -552,14 +544,14 @@ public final class DisplayRotationCompatPolicyTests extends WindowTestsBase {
         configureActivity(SCREEN_ORIENTATION_PORTRAIT);
         mCameraAvailabilityCallback.onCameraOpened(CAMERA_ID_1, TEST_PACKAGE_1);
 
-        assertTrue(mDisplayRotationCompatPolicy.shouldCameraCompatControlOrientation(mActivity));
+        assertTrue(mCameraDisplayRotationPolicy.shouldCameraCompatControlOrientation(mActivity));
     }
 
     @Test
     public void testShouldCameraCompatControlOrientationWhenNotInvokedNoMultiWindow_returnFalse() {
         configureActivity(SCREEN_ORIENTATION_PORTRAIT);
 
-        assertFalse(mDisplayRotationCompatPolicy.shouldCameraCompatControlOrientation(mActivity));
+        assertFalse(mCameraDisplayRotationPolicy.shouldCameraCompatControlOrientation(mActivity));
     }
 
     @Test
@@ -567,7 +559,7 @@ public final class DisplayRotationCompatPolicyTests extends WindowTestsBase {
         configureActivity(SCREEN_ORIENTATION_PORTRAIT);
         when(mActivity.inMultiWindowMode()).thenReturn(true);
 
-        assertFalse(mDisplayRotationCompatPolicy.shouldCameraCompatControlOrientation(mActivity));
+        assertFalse(mCameraDisplayRotationPolicy.shouldCameraCompatControlOrientation(mActivity));
     }
 
     @Test
@@ -576,7 +568,7 @@ public final class DisplayRotationCompatPolicyTests extends WindowTestsBase {
         when(mActivity.inMultiWindowMode()).thenReturn(true);
         mCameraAvailabilityCallback.onCameraOpened(CAMERA_ID_1, TEST_PACKAGE_1);
 
-        assertFalse(mDisplayRotationCompatPolicy.shouldCameraCompatControlOrientation(mActivity));
+        assertFalse(mCameraDisplayRotationPolicy.shouldCameraCompatControlOrientation(mActivity));
     }
 
     private void configureActivity(@ScreenOrientation int activityOrientation) {
@@ -635,8 +627,7 @@ public final class DisplayRotationCompatPolicyTests extends WindowTestsBase {
     private void assertNoForceRotationOrRefresh() throws Exception {
         callOnActivityConfigurationChanging(mActivity, /* isDisplayRotationChanging */ true);
 
-        assertEquals(mDisplayRotationCompatPolicy.getOrientation(),
-                SCREEN_ORIENTATION_UNSPECIFIED);
+        assertEquals(mCameraDisplayRotationPolicy.getOrientation(), SCREEN_ORIENTATION_UNSPECIFIED);
         assertActivityRefreshRequested(/* refreshRequested */ false);
     }
 

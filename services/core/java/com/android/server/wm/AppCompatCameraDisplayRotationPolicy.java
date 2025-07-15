@@ -62,9 +62,9 @@ import com.android.window.flags.Flags;
  * R.bool.config_isWindowManagerCameraCompatTreatmentEnabled} is {@code true}.
  */
 // TODO(b/261444714): Consider moving Camera-specific logic outside of the WM Core path
-final class DisplayRotationCompatPolicy implements AppCompatCameraStatePolicy,
+final class AppCompatCameraDisplayRotationPolicy implements AppCompatCameraStatePolicy,
         ActivityRefresher.Evaluator {
-    private static final String TAG = TAG_WITH_CLASS_NAME ? "DisplayRotationCompatPolicy" : TAG_WM;
+    private static final String TAG = TAG_WITH_CLASS_NAME ? "AppCompatCameraDRPolicy" : TAG_WM;
 
     @NonNull
     private final DisplayContent mDisplayContent;
@@ -89,7 +89,7 @@ final class DisplayRotationCompatPolicy implements AppCompatCameraStatePolicy,
      */
     private boolean mIsRunning;
 
-    DisplayRotationCompatPolicy(@NonNull DisplayContent displayContent,
+    AppCompatCameraDisplayRotationPolicy(@NonNull DisplayContent displayContent,
             @NonNull CameraStateMonitor cameraStateMonitor,
             @NonNull AppCompatCameraStateSource cameraStateNotifier,
             @NonNull ActivityRefresher activityRefresher) {
