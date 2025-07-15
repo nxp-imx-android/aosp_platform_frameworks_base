@@ -2014,7 +2014,7 @@ class Task extends TaskFragment {
 
     private static boolean setTaskDescriptionFromActivityAboveRoot(
             ActivityRecord r, ActivityRecord root, TaskDescription td) {
-        if (!r.isTaskOverlay() && r.taskDescription != null) {
+        if (!r.isTaskOverlay() && !r.isNoDisplay() && r.taskDescription != null) {
             final TaskDescription atd = r.taskDescription;
             if (td.getLabel() == null) {
                 td.setLabel(atd.getLabel());
