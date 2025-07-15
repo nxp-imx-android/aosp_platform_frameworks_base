@@ -3153,7 +3153,7 @@ public class AppOpsService extends IAppOpsService.Stub {
         verifyIncomingOp(code);
 
         mAudioRestrictionManager.setZenModeAudioRestriction(
-                code, usage, uid, mode, exceptionPackages);
+                code, usage, mode, exceptionPackages);
 
         // Only notify default device as other devices are unaffected by restriction changes.
         mHandler.sendMessage(PooledLambda.obtainMessage(
