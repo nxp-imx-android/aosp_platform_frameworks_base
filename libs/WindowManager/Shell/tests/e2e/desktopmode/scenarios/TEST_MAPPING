@@ -55,12 +55,6 @@
       "name": "FunctionalTestsDesktopMode-FocusAppFromTaskbarTest"
     },
     {
-      "name": "FunctionalTestsDesktopMode-MaximizeAppWindowWithDragToTopDragZoneInDesktopFirstTest"
-    },
-    {
-      "name": "FunctionalTestsDesktopMode-MaximizeAppWindowWithDragToTopDragZoneTest"
-    },
-    {
       "name": "FunctionalTestsDesktopMode-MinimizeAppWindowsTest"
     },
     {
@@ -164,6 +158,12 @@
     },
     {
       "name": "FunctionalTestsDesktopMode-maximize-MaximizeAppWindowTest"
+    },
+    {
+      "name": "FunctionalTestsDesktopMode-maximize-MaximizeAppWindowWithDragToTopDragZoneInDesktopFirstTest"
+    },
+    {
+      "name": "FunctionalTestsDesktopMode-maximize-MaximizeAppWindowWithDragToTopDragZoneTest"
     },
     {
       "name": "FunctionalTestsDesktopMode-resizing-ResizeAppCornerMultiWindowAndPipTest"
