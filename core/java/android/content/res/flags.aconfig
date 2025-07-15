@@ -176,3 +176,13 @@ flag {
     description: "Enable the enhanced debugging features via ProtoLog"
     bug: "416380441"
 }
+
+flag {
+    name: "idmap_crc_is_mtime"
+    namespace: "resource_manager"
+    description: "Replace the raw crc with mtime in idmap files"
+    bug: "422474410"
+    metadata {
+      purpose: PURPOSE_BUGFIX
+    }
+}
