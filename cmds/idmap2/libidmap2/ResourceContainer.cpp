@@ -16,6 +16,8 @@
 
 #include "idmap2/ResourceContainer.h"
 
+#include <android_content_res.h>
+
 #include <memory>
 #include <mutex>
 #include <string>
@@ -57,6 +59,13 @@ const LoadedPackage* GetPackageAtIndex0(const LoadedArsc* loaded_arsc) {
 }
 
 Result<uint32_t> CalculateCrc(const ZipAssetsProvider* zip_assets) {
+  if (android_content_res_idmap_crc_is_mtime()) {
+    auto mod_date = zip_assets->GetModDate();
+    if (mod_date == kInvalidModDate) {
+      return Error("failed to get modification date");
+    }
+    return toTimeT(mod_date);
+  }
   constexpr const char* kResourcesArsc = "resources.arsc";
   std::optional<uint32_t> res_crc = zip_assets->GetCrc(kResourcesArsc);
   if (!res_crc) {
@@ -68,7 +77,6 @@ Result<uint32_t> CalculateCrc(const ZipAssetsProvider* zip_assets) {
   if (!man_crc) {
     return Error("failed to get CRC for '%s'", kManifest);
   }
-
   return *res_crc ^ *man_crc;
 }
 

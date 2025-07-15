@@ -67,12 +67,8 @@ TEST(RawPrintVisitorTests, CreateRawPrintVisitor) {
 
   ASSERT_CONTAINS_REGEX(ADDRESS "504d4449  magic\n", stream.str());
   ASSERT_CONTAINS_REGEX(ADDRESS "0000000b  version\n", stream.str());
-  ASSERT_CONTAINS_REGEX(
-      StringPrintf(ADDRESS "%s  target crc\n", android::idmap2::TestConstants::TARGET_CRC_STRING),
-      stream.str());
-  ASSERT_CONTAINS_REGEX(
-      StringPrintf(ADDRESS "%s  overlay crc\n", android::idmap2::TestConstants::OVERLAY_CRC_STRING),
-      stream.str());
+  ASSERT_CONTAINS_REGEX(ADDRESS "[0-9a-f]{8}  target crc\n", stream.str());
+  ASSERT_CONTAINS_REGEX(ADDRESS "[0-9a-f]{8}  overlay crc\n", stream.str());
   ASSERT_CONTAINS_REGEX(ADDRESS "00000001  fulfilled policies: public\n", stream.str());
   ASSERT_CONTAINS_REGEX(ADDRESS "00000001  enforce overlayable\n", stream.str());
   ASSERT_CONTAINS_REGEX(ADDRESS "00000000  constraints count\n", stream.str());

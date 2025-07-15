@@ -16,22 +16,23 @@
 
 #include "idmap2/FabricatedOverlay.h"
 
-#include <sys/stat.h>   // umask
-#include <sys/types.h>  // umask
-
 #include <android-base/file.h>
 #include <android-base/strings.h>
+#include <android_content_res.h>
 #include <androidfw/BigBuffer.h>
 #include <androidfw/BigBufferStream.h>
 #include <androidfw/FileStream.h>
 #include <androidfw/Image.h>
 #include <androidfw/Png.h>
 #include <androidfw/ResourceUtils.h>
+#include <androidfw/Streams.h>
 #include <androidfw/StringPiece.h>
 #include <androidfw/StringPool.h>
-#include <androidfw/Streams.h>
 #include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/io/zero_copy_stream_impl.h>
+#include <sys/stat.h>   // umask
+#include <sys/types.h>  // umask
+#include <sys/utsname.h>
 #include <utils/ByteOrder.h>
 #include <zlib.h>
 
@@ -40,7 +41,6 @@
 #include <memory>
 #include <string>
 #include <utility>
-#include <sys/utsname.h>
 
 namespace android::idmap2 {
 constexpr auto kBufferSize = 1024;
@@ -486,6 +486,13 @@ Result<OverlayData> FabContainer::GetOverlayData(const OverlayManifestInfo& info
 }
 
 Result<uint32_t> FabContainer::GetCrc() const {
+  if (android_content_res_idmap_crc_is_mtime()) {
+    auto mod_time = getFileModDate(path_.c_str());
+    if (mod_time == kInvalidModDate) {
+      return Error("Failed to get the modification time");
+    }
+    return toTimeT(mod_time);
+  }
   return overlay_.GetCrc();
 }
 

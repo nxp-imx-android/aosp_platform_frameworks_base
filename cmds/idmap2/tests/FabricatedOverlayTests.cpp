@@ -15,12 +15,14 @@
  */
 
 #include <android-base/file.h>
+#include <android_content_res.h>
 #include <gtest/gtest.h>
 #include <idmap2/FabricatedOverlay.h>
-#include "TestHelpers.h"
 
 #include <fstream>
 #include <utility>
+
+#include "TestHelpers.h"
 
 namespace android::idmap2 {
 
@@ -69,8 +71,12 @@ TEST(FabricatedOverlayTests, SetResourceValue) {
   ASSERT_TRUE((*info).target_name.empty());
 
   auto crc = (*container).GetCrc();
-  ASSERT_TRUE(crc) << crc.GetErrorMessage();
-  EXPECT_NE(0U, *crc);
+  if (android_content_res_idmap_crc_is_mtime()) {
+    ASSERT_FALSE(crc) << "No crc for a non-saved overlay";
+  } else {
+    ASSERT_TRUE(crc) << crc.GetErrorMessage();
+    EXPECT_NE(0U, *crc);
+  }
 
   auto pairs = container->GetOverlayData(*info);
   ASSERT_TRUE(pairs);

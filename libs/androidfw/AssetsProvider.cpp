@@ -294,6 +294,14 @@ std::optional<uint32_t> ZipAssetsProvider::GetCrc(std::string_view path) const {
   return entry.crc32;
 }
 
+ModDate ZipAssetsProvider::GetModDate() const {
+  // last_mod_time_ isn't always populated (only when it's useful).
+  if (last_mod_time_ != kInvalidModDate) {
+    return last_mod_time_;
+  }
+  return getFileModDate(GetFileDescriptor(zip_handle_.get()));
+}
+
 std::optional<std::string_view> ZipAssetsProvider::GetPath() const {
   if (name_.GetPath() != nullptr) {
     return *name_.GetPath();
