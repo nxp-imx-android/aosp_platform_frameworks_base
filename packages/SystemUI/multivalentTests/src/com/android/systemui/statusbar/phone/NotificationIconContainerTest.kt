@@ -42,15 +42,14 @@ import org.mockito.Mockito.`when` as whenever
 @RunWithLooper
 class NotificationIconContainerTest : SysuiTestCase() {
 
-    @get:Rule
-    val setFlagsRule = SetFlagsRule()
+    @get:Rule val setFlagsRule = SetFlagsRule()
     private val iconContainer = NotificationIconContainer(context, /* attrs= */ null)
 
     @Test
     fun calculateWidthFor_zeroIcons_widthIsZero() {
         assertEquals(
             /* expected= */ iconContainer.calculateWidthFor(/* numIcons= */ 0f),
-            /* actual= */ 0f
+            /* actual= */ 0f,
         )
     }
 
@@ -62,7 +61,7 @@ class NotificationIconContainerTest : SysuiTestCase() {
 
         assertEquals(
             /* expected= */ iconContainer.calculateWidthFor(/* numIcons= */ 1f),
-            /* actual= */ 30f
+            /* actual= */ 30f,
         )
     }
 
@@ -74,7 +73,7 @@ class NotificationIconContainerTest : SysuiTestCase() {
 
         assertEquals(
             /* expected= */ iconContainer.calculateWidthFor(/* numIcons= */ 4f),
-            /* actual= */ 60f
+            /* actual= */ 60f,
         )
     }
 
@@ -207,7 +206,6 @@ class NotificationIconContainerTest : SysuiTestCase() {
         assertTrue(iconContainer.areIconsOverflowing())
     }
 
-
     @Test
     @DisableFlags(Flags.FLAG_PHYSICAL_NOTIFICATION_MOVEMENT)
     fun calculateIconXTranslations_givenWidthNotEnoughForFourIcons_atCorrectXWithOverflowDotNonPhysical() {
@@ -240,9 +238,8 @@ class NotificationIconContainerTest : SysuiTestCase() {
         val forceOverflow =
             iconContainer.shouldForceOverflow(
                 /* i= */ 10,
-                /* speedBumpIndex= */ 11,
                 /* iconAppearAmount= */ 0.1f,
-                /* maxVisibleIcons= */ 5
+                /* maxVisibleIcons= */ 5,
             )
         assertTrue(forceOverflow)
     }
@@ -252,9 +249,8 @@ class NotificationIconContainerTest : SysuiTestCase() {
         val forceOverflow =
             iconContainer.shouldForceOverflow(
                 /* i= */ 0,
-                /* speedBumpIndex= */ 11,
                 /* iconAppearAmount= */ 0f,
-                /* maxVisibleIcons= */ 5
+                /* maxVisibleIcons= */ 5,
             )
         assertFalse(forceOverflow)
     }

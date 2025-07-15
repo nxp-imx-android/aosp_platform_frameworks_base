@@ -132,17 +132,6 @@ public class NotificationIconContainer extends ViewGroup {
         }
     }.setDuration(CONTENT_FADE_DURATION);
 
-    // TODO(b/278765923): Replace these with domain-agnostic state
-    /* Maximum number of icons on AOD when also showing overflow dot. */
-    private int mMaxIconsOnAod;
-    /* Maximum number of icons in short shelf on lockscreen when also showing overflow dot. */
-    private int mMaxIconsOnLockscreen;
-    /* Maximum number of icons in the status bar when also showing overflow dot. */
-    private int mMaxStaticIcons;
-    private boolean mDozing;
-    private boolean mOnLockScreen;
-    private int mSpeedBumpIndex = -1;
-
     private int mMaxIcons = Integer.MAX_VALUE;
     private boolean mOverrideIconColor;
     private boolean mUseInverseOverrideIconColor;
@@ -184,10 +173,6 @@ public class NotificationIconContainer extends ViewGroup {
     }
 
     private void initResources() {
-        mMaxIconsOnAod = getResources().getInteger(R.integer.max_notif_icons_on_aod);
-        mMaxIconsOnLockscreen = getResources().getInteger(R.integer.max_notif_icons_on_lockscreen);
-        mMaxStaticIcons = getResources().getInteger(R.integer.max_notif_static_icons);
-
         mDotPadding = getResources().getDimensionPixelSize(R.dimen.overflow_icon_dot_padding);
         int staticDotRadius = getResources().getDimensionPixelSize(R.dimen.overflow_dot_radius);
         mStaticDotDiameter = 2 * staticDotRadius;
@@ -463,8 +448,7 @@ public class NotificationIconContainer extends ViewGroup {
     }
 
     @VisibleForTesting
-    boolean shouldForceOverflow(int i, int speedBumpIndex, float iconAppearAmount,
-            int maxVisibleIcons) {
+    boolean shouldForceOverflow(int i, float iconAppearAmount, int maxVisibleIcons) {
         return i >= maxVisibleIcons && iconAppearAmount > 0.0f;
     }
 
@@ -512,8 +496,8 @@ public class NotificationIconContainer extends ViewGroup {
                     ? StatusBarIconView.STATE_HIDDEN
                     : StatusBarIconView.STATE_ICON;
 
-            final boolean forceOverflow = shouldForceOverflow(i, mSpeedBumpIndex,
-                    iconState.iconAppearAmount, maxVisibleIcons);
+            final boolean forceOverflow =
+                    shouldForceOverflow(i, iconState.iconAppearAmount, maxVisibleIcons);
             final boolean isOverflowing = forceOverflow || isOverflowing(
                     /* isLastChild= */ i == childCount - 1, translationX, layoutRight, mIconSize);
 
