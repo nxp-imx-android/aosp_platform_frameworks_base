@@ -98,6 +98,10 @@ abstract class TileResizingWithDrag(
         device.drag(startX, startY, endX, startY, 100)
     }
 
+    fun dragLeftAppHeaderToRight() {
+        leftTestApp.dragRight(wmHelper, device, 100)
+    }
+
     private fun getDisplayRect(): Rect =
         wmHelper.currentState.wmState.getDefaultDisplay()?.displayRect
             ?: throw IllegalStateException("Default display is null")
