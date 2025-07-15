@@ -518,8 +518,9 @@ public class VibratorManagerServiceTest {
     @Test
     public void getVibratorInfo_vibratorFailedLoadAfterSystemReady_returnsInfoForVibrator() {
         mHalHelper.setVibratorIds(new int[]{1});
-        mHalHelper.getVibratorHelper(1).setLoadInfoToFail();
+        mHalHelper.getVibratorHelper(1).setCapabilities(IVibrator.CAP_GET_RESONANT_FREQUENCY);
         mHalHelper.getVibratorHelper(1).setResonantFrequency(123.f);
+        mHalHelper.getVibratorHelper(1).setLoadInfoToFail();
         VibratorInfo info = createSystemReadyService().getVibratorInfo(1);
 
         assertNotNull(info);
@@ -532,12 +533,11 @@ public class VibratorManagerServiceTest {
     public void getVibratorInfo_vibratorSuccessfulLoadBeforeSystemReady_returnsInfoForVibrator() {
         mHalHelper.setVibratorIds(new int[]{1});
         HalVibratorHelper vibratorHelper = mHalHelper.getVibratorHelper(1);
-        vibratorHelper.setCapabilities(
-                IVibrator.CAP_COMPOSE_EFFECTS, IVibrator.CAP_AMPLITUDE_CONTROL);
+        vibratorHelper.setCapabilities(IVibrator.CAP_AMPLITUDE_CONTROL,
+                IVibrator.CAP_GET_RESONANT_FREQUENCY, IVibrator.CAP_COMPOSE_EFFECTS);
         vibratorHelper.setSupportedEffects(EFFECT_CLICK);
         vibratorHelper.setSupportedPrimitives(PRIMITIVE_CLICK);
         vibratorHelper.setResonantFrequency(123.f);
-        vibratorHelper.setQFactor(Float.NaN);
         VibratorInfo info = createService().getVibratorInfo(1);
 
         assertNotNull(info);
@@ -557,6 +557,7 @@ public class VibratorManagerServiceTest {
     @DisableFlags(Flags.FLAG_REMOVE_HIDL_SUPPORT)
     public void getVibratorInfo_vibratorFailedThenSuccessfulLoad_returnsNullThenInfo() {
         mHalHelper.setVibratorIds(new int[]{1});
+        mHalHelper.getVibratorHelper(1).setCapabilities(IVibrator.CAP_GET_RESONANT_FREQUENCY);
         mHalHelper.getVibratorHelper(1).setLoadInfoToFail();
 
         VibratorManagerService service = createService();

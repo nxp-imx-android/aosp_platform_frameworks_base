@@ -238,10 +238,15 @@ final class CameraCompatFreeformPolicy implements AppCompatCameraStatePolicy,
                 .compatibilityInfoForPackageLocked(app.mInfo);
         // CompatibilityInfo fields are static, so even if task or activity has been closed, this
         // state should be updated.
-        compatibilityInfo.applicationDisplayRotation = activityRecord == null
+        final int displayRotation = activityRecord == null
                 ? ROTATION_UNDEFINED
                 : CameraCompatTaskInfo.getDisplayRotationFromCameraCompatMode(
                         getCameraCompatMode(activityRecord));
+        compatibilityInfo.applicationDisplayRotation = displayRotation;
+        if (Flags.enableCameraCompatCompatibilityInfoRotateAndCropBugfix()) {
+            compatibilityInfo.applicationCameraRotation =
+                    getCameraRotationFromSandboxedDisplayRotation(displayRotation);
+        }
         try {
             // TODO(b/380840084): Consider using a ClientTransaction for this update.
             app.getThread().updatePackageCompatibilityInfo(app.mInfo.packageName,
@@ -249,6 +254,73 @@ final class CameraCompatFreeformPolicy implements AppCompatCameraStatePolicy,
         } catch (RemoteException e) {
             ProtoLog.w(WmProtoLogGroups.WM_DEBUG_STATES,
                     "Unable to update CompatibilityInfo for app %s", app);
+        }
+    }
+
+    /**
+     * Calculates the angle for camera feed rotate-and-crop.
+     *
+     * <p>Camera apps most commonly calculate the preview rotation with the formula (simplified):
+     * {code rotation = cameraSensorRotation - displayRotation}. When display rotation is sandboxed,
+     * camera preview needs to be rotated by the same amount to keep the preview upright.
+     */
+    private int getCameraRotationFromSandboxedDisplayRotation(@Surface.Rotation int
+            displayRotation) {
+        if (displayRotation == ROTATION_UNDEFINED) {
+            return ROTATION_UNDEFINED;
+        }
+        int realCameraRotation = mCameraDisplayRotationProvider.getCameraDeviceRotation();
+        if (displayRotation == realCameraRotation) {
+            // No need to rotate and crop, display rotation is unchanged.
+            return ROTATION_UNDEFINED;
+        }
+
+        final int displayRotationInDegrees = getRotationToDegrees(displayRotation);
+        final int realCameraRotationInDegrees = getRotationToDegrees(realCameraRotation);
+        // Feed needs to be rotated by the same amount as the display sandboxing difference, in
+        // order to keep the preview upright.
+        return getRotationDegreesToEnum((displayRotationInDegrees - realCameraRotationInDegrees
+                + 360) % 360);
+    }
+
+    private static int getRotationToDegrees(@Surface.Rotation int rotation) {
+        switch (rotation) {
+            case Surface.ROTATION_0 -> {
+                return 0;
+            }
+            case Surface.ROTATION_90 -> {
+                return 90;
+            }
+            case Surface.ROTATION_180 -> {
+                return 180;
+            }
+            case Surface.ROTATION_270 -> {
+                return 270;
+            }
+            default -> {
+                return ROTATION_UNDEFINED;
+            }
+        }
+    }
+
+    @Surface.Rotation
+    private static int getRotationDegreesToEnum(int rotationDegrees) {
+        switch (rotationDegrees) {
+            case 0 -> {
+                return Surface.ROTATION_0;
+            }
+            case 90 -> {
+                return Surface.ROTATION_90;
+            }
+            case 180 -> {
+                return Surface.ROTATION_180;
+            }
+            case 270 -> {
+                return Surface.ROTATION_270;
+            }
+            default -> {
+                return ROTATION_UNDEFINED;
+            }
         }
     }
 

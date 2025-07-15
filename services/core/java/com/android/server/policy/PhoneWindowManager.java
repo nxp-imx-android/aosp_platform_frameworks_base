@@ -3683,7 +3683,8 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                                             + " root task is null" );
                             return;
                         }
-                        mActivityManagerService.removeTask(currentRootTask.taskId);
+                        mActivityTaskManagerInternal.removeTask(currentRootTask.taskId,
+                                "key-gesture-quit");
                     } catch (RemoteException e) {
                         Slog.e(TAG,
                                 "onKeyGesture: KEY_GESTURE_TYPE_QUIT_FOCUSED_TASK failed to close"

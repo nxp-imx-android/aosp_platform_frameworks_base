@@ -300,8 +300,9 @@ public class AudioMix implements Parcelable {
     /**
      * Returns whether this mix was configured to inject silence audio into recordings
      * when the injection is failing to provide enough audio data in time.
-     * @return <code>false</code> if the mix is not an injection mix, or how it was configured
-     *         {@link Builder#setInjectSilenceOnStarvation(boolean)}.
+     * @return {@code false} if the mix is not an injection mix, or the value
+     *         used for {@link Builder#setInjectSilenceOnStarvation(boolean)} if the mix is an
+     *         injection mix.
      */
     @FlaggedApi(FLAG_DAP_INJECTION_STARVE_MANAGEMENT)
     public boolean isInjectingSilenceOnStarvation() {
@@ -573,7 +574,8 @@ public class AudioMix implements Parcelable {
         /**
          * When this mix is used for injecting audio into recordings, configure whether silence
          * should be injected when the injection is failing to provide enough audio data in time
-         * @param injectSilence indicates if silence is injected into recordings when
+         * @param injectSilence {@code true} to inject silence into recordings when the
+         *       {@link android.media.AudioTrack} used for the injection is starved of audio data.
          * @return the same Builder instance
          */
         @FlaggedApi(FLAG_DAP_INJECTION_STARVE_MANAGEMENT)
@@ -586,7 +588,7 @@ public class AudioMix implements Parcelable {
          * Combines all of the settings and return a new {@link AudioMix} object.
          * @return a new {@link AudioMix} object
          * @throws IllegalArgumentException if no {@link AudioMixingRule} has been set
-         *     or if {@link #setInjectSilenceOnStarvation(boolean)} was set to <code>true</code> on
+         *     or if {@link #setInjectSilenceOnStarvation(boolean)} was set to {@code true} on
          *     a mix not used for injection
          */
         public AudioMix build() throws IllegalArgumentException {

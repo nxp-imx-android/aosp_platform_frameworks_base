@@ -16,9 +16,11 @@
 
 package com.android.server.wm;
 
+import static android.app.ActivityManager.PROCESS_STATE_TOP;
 import static android.app.ActivityOptions.MODE_BACKGROUND_ACTIVITY_START_ALLOWED;
 import static android.app.ActivityOptions.MODE_BACKGROUND_ACTIVITY_START_ALLOW_ALWAYS;
 import static android.app.ActivityOptions.MODE_BACKGROUND_ACTIVITY_START_ALLOW_IF_VISIBLE;
+import static android.app.ActivityOptions.MODE_BACKGROUND_ACTIVITY_START_SYSTEM_DEFINED;
 
 import static com.android.server.wm.ActivityTaskManagerService.APP_SWITCH_ALLOW;
 import static com.android.server.wm.BackgroundActivityStartController.BAL_ALLOW_ALLOWLISTED_COMPONENT;
@@ -298,6 +300,46 @@ public class BackgroundActivityStartControllerExemptionTests {
         assertWithMessage(balState + " -> " + callerVerdict)
                 .that(callerVerdict.getCode())
                 .isEqualTo(BAL_BLOCK);
+    }
+
+    @Test
+    public void testCaller_appIsTop() {
+        int callingUid = REGULAR_UID_1;
+        int callingPid = REGULAR_PID_1;
+        final String callingPackage = REGULAR_PACKAGE_1;
+        int realCallingUid = REGULAR_UID_2;
+        int realCallingPid = REGULAR_PID_2;
+
+        // setup state
+        when(mVisibleActivityProcessTracker.hasVisibleActivity(eq(callingUid))).thenReturn(false);
+        when(mVisibleActivityProcessTracker.hasVisibleNotPinnedActivity(eq(callingUid)))
+                .thenReturn(false);
+        when(mService.getBalAppSwitchesState()).thenReturn(APP_SWITCH_ALLOW);
+        mActiveUids.onUidActive(callingUid, PROCESS_STATE_TOP);
+
+        // prepare call
+        PendingIntentRecord originatingPendingIntent = null;
+        boolean allowBalExemptionForSystemProcess = false;
+        Intent intent = TEST_INTENT;
+        ActivityOptions checkedOptions = mCheckedOptions
+                .setPendingIntentCreatorBackgroundActivityStartMode(
+                        MODE_BACKGROUND_ACTIVITY_START_SYSTEM_DEFINED);
+        BackgroundActivityStartController.BalState balState = mController.new BalState(callingUid,
+                callingPid, callingPackage, realCallingUid, realCallingPid, mCallerApp,
+                originatingPendingIntent, allowBalExemptionForSystemProcess, mResultRecord, intent,
+                checkedOptions);
+        assertThat(balState.toString()).contains("callingUidHasVisibleActivity: false");
+        assertThat(balState.toString()).contains("callingUidHasVisibleNotPinnedActivity: false");
+        assertThat(balState.toString()).contains("callingUidHasNonAppVisibleWindow: false");
+
+        // call
+        BalVerdict callerVerdict = mController.checkBackgroundActivityStartAllowedByCaller(
+                balState);
+        balState.setResultForCaller(callerVerdict);
+
+        // assertions
+        assertWithMessage(balState.toString()).that(callerVerdict.getCode()).isEqualTo(
+                BAL_ALLOW_FOREGROUND);
     }
 
     @Test

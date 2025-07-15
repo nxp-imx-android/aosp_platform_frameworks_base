@@ -437,7 +437,7 @@ class DefaultMixedTransition extends DefaultMixedHandler.MixedTransition {
         // 3. Switch the expanded bubble for notification launch
         ProtoLog.v(ShellProtoLogGroup.WM_SHELL_TRANSITIONS, " Animating a mixed transition for "
                 + "entering bubble from another bubbled task or for an existing bubble");
-        final boolean started = bubbleTransitions.startBubbleToBubbleLaunchOrExistingBubbleConvert(
+        bubbleTransitions.startBubbleToBubbleLaunchOrExistingBubbleConvert(
                 transition, change.getTaskInfo(), handler -> {
                     final Transitions.TransitionHandler h = bubbleTransitions
                             .getRunningEnterTransition(transition);
@@ -446,10 +446,6 @@ class DefaultMixedTransition extends DefaultMixedHandler.MixedTransition {
                     h.startAnimation(
                             transition, info, startTransaction, finishTransaction, finishCallback);
                 });
-        if (!started) {
-            // If nothing started, we are still consuming it since nothing else should handle it
-            finishCallback.onTransitionFinished(null);
-        }
         return true;
     }
 

@@ -3288,6 +3288,20 @@ final class DisplayPowerController implements AutomaticBrightnessController.Call
         msg.sendToTarget();
     }
 
+    /**
+     * @see DisplayBrightnessController#convertToAdjustedNits
+     */
+    float convertToAdjustedNits(float brightness) {
+        return mDisplayBrightnessController.convertToAdjustedNits(brightness);
+    }
+
+    /**
+     * @see DisplayBrightnessController#getBrightnessFromAdjustedNits
+     */
+    float getBrightnessFromAdjustedNits(float nits) {
+        return mDisplayBrightnessController.getBrightnessFromAdjustedNits(nits);
+    }
+
     /** Functional interface for providing time. */
     @VisibleForTesting
     interface Clock {

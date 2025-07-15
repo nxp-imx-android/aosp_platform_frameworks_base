@@ -30,9 +30,11 @@ import static com.android.wm.shell.startingsurface.SplashscreenContentDrawer.MIN
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -237,14 +239,16 @@ public class StartingSurfaceDrawerTests extends ShellTestCase {
             // Simulate a task snapshot window created with hasImeSurface.
             mStartingSurfaceDrawer.makeTaskSnapshotWindow(windowInfo, snapshot);
             waitHandlerIdle(mTestHandler);
-
-            // Verify the task snapshot with hasImeSurface will be removed when receiving the
-            // callback that the real IME was drawn.
-            // makeTaskSnapshotWindow shall call removeWindowSynced before there add a new
-            // StartingWindowRecord for the task.
+            reset(mStartingSurfaceDrawer.mWindowRecords);
+            // Verify the task snapshot with hasImeSurface will not be removed immediately when
+            // receiving the callback that the real IME was drawn.
             mStartingSurfaceDrawer.onImeDrawnOnTask(1);
-            verify(mStartingSurfaceDrawer.mWindowRecords, times(2))
-                    .removeWindow(any(), eq(true));
+            verify(mStartingSurfaceDrawer.mWindowRecords, never())
+                    .removeWindow(any(), anyBoolean());
+            final StartingWindowRemovalInfo removalInfo = new StartingWindowRemovalInfo();
+            removalInfo.taskId = windowInfo.taskInfo.taskId;
+            mStartingSurfaceDrawer.removeStartingWindow(removalInfo);
+            verify(mStartingSurfaceDrawer.mWindowRecords).removeWindow(any(), anyBoolean());
         }
     }
 

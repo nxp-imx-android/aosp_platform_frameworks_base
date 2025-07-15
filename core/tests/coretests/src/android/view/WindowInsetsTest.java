@@ -145,6 +145,36 @@ public class WindowInsetsTest {
                 .consumeSystemWindowInsets().isConsumed());
     }
 
+    /**
+     * Verifies that {@link WindowInsets#getSystemWindowInsets} returns the maximum value at each
+     * side between typeInsetsMap and typeMaxInsetsMap regarding compatInsetsTypes when
+     * compatIgnoreVisibility is true.
+     */
+    @Test
+    public void systemWindowInsets_compatIgnoreVisibility() {
+        Insets[] insets = new Insets[TYPES.length];
+        Insets[] maxInsets = new Insets[TYPES.length];
+        boolean[] visible = new boolean[TYPES.length];
+
+        // Creates Windowinsets with larger values in typeInsetsMap than ones in typeMaxInsetsMap.
+        WindowInsets.assignCompatInsets(insets, new Rect(5, 6, 7, 8));
+        WindowInsets.assignCompatInsets(maxInsets, new Rect(1, 2, 3, 4));
+        WindowInsets windowInsets1 = new WindowInsets(insets, maxInsets, visible, false, 0,
+                false, 0, null, null, null, DisplayShape.NONE, systemBars(),
+                true /* compatIgnoreVisibility */, null, null, 0, 0);
+        // If compatIgnoreVisibility is true, getSystemWindowInsets should return the larger values.
+        assertEquals(Insets.of(5, 6, 7, 8), windowInsets1.getSystemWindowInsets());
+
+        // Creates Windowinsets with larger values in typeMaxInsetsMap than ones in typeInsetsMap
+        WindowInsets.assignCompatInsets(insets, new Rect(1, 2, 3, 4));
+        WindowInsets.assignCompatInsets(maxInsets, new Rect(5, 6, 7, 8));
+        WindowInsets windowInsets2 = new WindowInsets(insets, maxInsets, visible, false, 0,
+                false, 0, null, null, null, DisplayShape.NONE, systemBars(),
+                true /* compatIgnoreVisibility */, null, null, 0, 0);
+        // If compatIgnoreVisibility is true, getSystemWindowInsets should return the larger values.
+        assertEquals(Insets.of(5, 6, 7, 8), windowInsets2.getSystemWindowInsets());
+    }
+
     @Test
     public void multiNullConstructor_isConsumed() {
         assertTrue(new WindowInsets(null, null, null, false, 0, false, 0, null, null, null, null,

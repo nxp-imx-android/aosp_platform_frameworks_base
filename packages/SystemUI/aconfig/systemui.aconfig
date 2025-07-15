@@ -1894,9 +1894,9 @@ flag {
 }
 
 flag {
-    name: "hsu_behavior_changes"
+    name: "hsu_qs_changes"
     namespace: "systemui"
-    description: "Overall changes on Sytem UI when current user is the Headless System User"
+    description: "Overall changes on QuickSettings when current user is the Headless System User"
     bug: "408066623"
 }
 

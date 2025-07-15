@@ -70,8 +70,8 @@ class NodeSpecBuilder(
 
             // If needed, the AI summaries onboarding affordance should be added above all
             // notifications.
-            if (summaryOnboardingAffordanceManager.addAffordanceToStack) {
-                root.children.add(NodeSpecImpl(root, summaryOnboardingAffordanceManager.controller))
+            summaryOnboardingAffordanceManager.nodeController?.let { controller ->
+                root.children.add(NodeSpecImpl(root, controller))
             }
 
             for (entry in notifList) {
@@ -102,10 +102,8 @@ class NodeSpecBuilder(
                 // Include onboarding affordance for bundles above the first bundle, if needed.
                 if (!seenBundle && entry is BundleEntry) {
                     seenBundle = true
-                    if (bundleOnboardingAffordanceManager.addAffordanceToStack) {
-                        root.children.add(
-                            NodeSpecImpl(root, bundleOnboardingAffordanceManager.controller)
-                        )
+                    bundleOnboardingAffordanceManager.nodeController?.let { controller ->
+                        root.children.add(NodeSpecImpl(root, controller))
                     }
                 }
 

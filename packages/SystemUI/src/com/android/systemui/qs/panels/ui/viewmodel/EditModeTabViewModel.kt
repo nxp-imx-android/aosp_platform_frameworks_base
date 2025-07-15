@@ -24,8 +24,6 @@ import com.android.systemui.qs.panels.ui.model.EditModeTab
 
 @Stable
 class EditModeTabViewModel {
-    val tabs: List<EditModeTab> = listOf(EditModeTab.EditingTab, EditModeTab.LayoutTab)
-
     var selectedTab: EditModeTab by mutableStateOf(tabs.first())
         private set
 
@@ -33,5 +31,9 @@ class EditModeTabViewModel {
         if (tab in tabs) {
             selectedTab = tab
         }
+    }
+
+    companion object {
+        val tabs: List<EditModeTab> = listOf(EditModeTab.EditingTab, EditModeTab.LayoutTab)
     }
 }

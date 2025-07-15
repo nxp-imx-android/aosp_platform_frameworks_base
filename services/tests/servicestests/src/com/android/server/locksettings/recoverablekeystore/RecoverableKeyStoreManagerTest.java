@@ -1305,19 +1305,15 @@ public class RecoverableKeyStoreManagerTest {
 
     @Test
     public void lockScreenSecretAvailable_syncsKeysForUser() throws Exception {
-        mRecoverableKeyStoreManager.lockScreenSecretAvailable(
-                LockPatternUtils.CREDENTIAL_TYPE_PATTERN, "password".getBytes(), 11);
-
+        LockscreenCredential password = LockscreenCredential.createPassword("password");
+        mRecoverableKeyStoreManager.lockScreenSecretAvailable(password, 11);
         verify(mExecutorService).schedule(any(Runnable.class), anyLong(), any());
     }
 
     @Test
     public void lockScreenSecretChanged_syncsKeysForUser() throws Exception {
-        mRecoverableKeyStoreManager.lockScreenSecretChanged(
-                LockPatternUtils.CREDENTIAL_TYPE_PATTERN,
-                "password".getBytes(),
-                11);
-
+        LockscreenCredential password = LockscreenCredential.createPassword("password");
+        mRecoverableKeyStoreManager.lockScreenSecretChanged(password, 11);
         verify(mExecutorService).schedule(any(Runnable.class), anyLong(), any());
     }
 

@@ -16,7 +16,6 @@
 
 package com.android.systemui.statusbar.notification
 
-import android.view.View
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.statusbar.notification.collection.provider.SectionHeaderVisibilityProvider
 import com.android.systemui.statusbar.notification.collection.render.NodeController
@@ -25,30 +24,41 @@ import dagger.Module
 import dagger.Provides
 import javax.inject.Qualifier
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 
 class OnboardingAffordanceManager(
     private val label: String,
     private val sectionHeaderVisibilityProvider: SectionHeaderVisibilityProvider,
 ) {
-    val view = MutableStateFlow<OnboardingAffordanceView?>(null)
+    private val _view = MutableStateFlow<OnboardingAffordanceView?>(null)
+    val view: StateFlow<OnboardingAffordanceView?> = _view.asStateFlow()
 
-    val addAffordanceToStack: Boolean
-        get() = view.value != null && sectionHeaderVisibilityProvider.sectionHeadersVisible
+    private var _nodeController: NodeController? = null
+    val nodeController: NodeController?
+        get() = _nodeController?.takeIf { sectionHeaderVisibilityProvider.sectionHeadersVisible }
 
-    val controller: NodeController
-        get() =
-            object : NodeController {
-                override val nodeLabel: String
-                    get() = label
+    fun setOnboardingAffordanceView(view: OnboardingAffordanceView?) {
+        if (view != _view.value) {
+            _view.value = view
+            _nodeController = view?.let { AffordanceNodeController(label, view) }
+        }
+    }
 
-                override val view: View = this@OnboardingAffordanceManager.view.value!!
+    private class AffordanceNodeController(
+        override val nodeLabel: String,
+        override val view: OnboardingAffordanceView,
+    ) : NodeController {
+        override fun offerToKeepInParentForAnimation(): Boolean = false
 
-                override fun offerToKeepInParentForAnimation(): Boolean = false
+        override fun removeFromParentIfKeptForAnimation(): Boolean = false
 
-                override fun removeFromParentIfKeptForAnimation(): Boolean = false
+        override fun resetKeepInParentForAnimation() {}
 
-                override fun resetKeepInParentForAnimation() {}
-            }
+        override fun onViewAdded() {
+            view.setContentVisibleAnimated(true)
+        }
+    }
 }
 
 @Qualifier @MustBeDocumented @Retention(AnnotationRetention.RUNTIME) annotation class Summarization

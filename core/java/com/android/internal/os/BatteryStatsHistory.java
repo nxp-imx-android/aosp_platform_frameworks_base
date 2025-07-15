@@ -1593,6 +1593,20 @@ public class BatteryStatsHistory {
     }
 
     /**
+     * Writes all available history items to history buffer.
+     *
+     * @param elapsedRealtimeMs used to find delta and to identify the currunt history item.
+     * @param uptimeMs used to identify the device is not in sleep mode.
+     * @param cur the History item about to write in history buffer.
+     */
+    @VisibleForTesting
+    public void writeAllHistoryItem(long elapsedRealtimeMs, long uptimeMs, HistoryItem cur) {
+        synchronized (this) {
+            writeHistoryItem(elapsedRealtimeMs, uptimeMs, cur);
+        }
+    }
+
+    /**
      * Writes the current history item to history.
      */
     public void writeHistoryItem(long elapsedRealtimeMs, long uptimeMs) {

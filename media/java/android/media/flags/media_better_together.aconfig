@@ -69,16 +69,6 @@ flag {
 }
 
 flag {
-    name: "enable_fix_for_route_visibility"
-    namespace: "media_better_together"
-    description: "Fixes a bug causing private routes to appear on the output switcher of an app that shouldn't see them."
-    bug: "416436531"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "enable_suggested_device_api"
     is_exported: true
     namespace: "media_better_together"

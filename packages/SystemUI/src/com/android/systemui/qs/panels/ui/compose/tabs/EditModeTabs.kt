@@ -17,6 +17,7 @@
 package com.android.systemui.qs.panels.ui.compose.tabs
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateColor
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.updateTransition
 import androidx.compose.animation.expandIn
@@ -30,11 +31,12 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.text.BasicText
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.FloatingToolbarDefaults
 import androidx.compose.material3.HorizontalFloatingToolbar
 import androidx.compose.material3.Icon
-import androidx.compose.material3.Text
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -56,7 +58,9 @@ fun EditModeTabs(
     onTabChanged: () -> Unit = {},
 ) {
     val containerColor = LocalAndroidColorScheme.current.surfaceEffect1
-    val selectedButtonColor = LocalAndroidColorScheme.current.surfaceEffect2
+    val selectedButtonColor = MaterialTheme.colorScheme.secondary
+    val selectedTextColor = MaterialTheme.colorScheme.onSecondary
+    val unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant
     HorizontalFloatingToolbar(
         modifier = modifier.height(60.dp),
         expanded = false,
@@ -66,9 +70,17 @@ fun EditModeTabs(
                 toolbarContainerColor = containerColor
             ),
     ) {
-        viewModel.tabs.forEach { tab ->
+        EditModeTabViewModel.tabs.forEach { tab ->
             val isSelected = updateTransition(viewModel.selectedTab == tab)
             val selectionBackgroundAlpha by isSelected.animateFloat { if (it) 1f else 0f }
+            val textColor by
+                isSelected.animateColor {
+                    if (it) {
+                        selectedTextColor
+                    } else {
+                        unselectedTextColor
+                    }
+                }
             Row(
                 horizontalArrangement = Arrangement.Center,
                 verticalAlignment = Alignment.CenterVertically,
@@ -98,10 +110,11 @@ fun EditModeTabs(
                     Icon(
                         imageVector = tab.titleIcon,
                         contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onSecondary,
                         modifier = Modifier.padding(end = 8.dp),
                     )
                 }
-                Text(stringResource(tab.titleResId))
+                BasicText(stringResource(tab.titleResId), color = { textColor })
             }
         }
     }

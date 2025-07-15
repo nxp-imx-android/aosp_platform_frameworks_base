@@ -54,6 +54,7 @@ import static android.Manifest.permission.QUERY_DEVICE_STOLEN_STATE;
 import static android.Manifest.permission.REQUEST_PASSWORD_COMPLEXITY;
 import static android.Manifest.permission.SET_TIME;
 import static android.Manifest.permission.SET_TIME_ZONE;
+import static android.annotation.RestrictedForEnvironment.ENVIRONMENT_SDK_RUNTIME;
 import static android.app.admin.DeviceAdminInfo.HEADLESS_DEVICE_OWNER_MODE_UNSUPPORTED;
 import static android.app.admin.flags.Flags.FLAG_DEVICE_THEFT_API_ENABLED;
 import static android.app.admin.flags.Flags.FLAG_REMOVE_MANAGED_PROFILE_ENABLED;
@@ -78,6 +79,7 @@ import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.RequiresFeature;
 import android.annotation.RequiresPermission;
+import android.annotation.RestrictedForEnvironment;
 import android.annotation.SdkConstant;
 import android.annotation.SdkConstant.SdkConstantType;
 import android.annotation.StringDef;
@@ -315,15 +317,11 @@ import java.util.function.Consumer;
  * "Android Automotive builds"} should always check for this exception.
  */
 
+@RestrictedForEnvironment(
+        environments = ENVIRONMENT_SDK_RUNTIME, from = Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
 @SystemService(Context.DEVICE_POLICY_SERVICE)
 @RequiresFeature(PackageManager.FEATURE_DEVICE_ADMIN)
 public class DevicePolicyManager {
-
-    /** @hide */
-    public static final String ADD_ISFINANCED_DEVICE_FLAG =
-            "add-isfinanced-device";
-    /** @hide */
-    public static final boolean ADD_ISFINANCED_FEVICE_DEFAULT = true;
 
     private static String TAG = "DevicePolicyManager";
 

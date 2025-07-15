@@ -510,7 +510,8 @@ public class VibrationThreadTest {
     @Test
     public void vibrate_singleVibratorRepeatingPwle_generatesLargestPwles() throws Exception {
         HalVibratorHelper vibratorHelper = mVibratorHelpers.get(VIBRATOR_ID);
-        vibratorHelper.setCapabilities(IVibrator.CAP_COMPOSE_PWLE_EFFECTS);
+        vibratorHelper.setCapabilities(IVibrator.CAP_GET_RESONANT_FREQUENCY,
+                IVibrator.CAP_FREQUENCY_CONTROL, IVibrator.CAP_COMPOSE_PWLE_EFFECTS);
         vibratorHelper.setMinFrequency(100);
         vibratorHelper.setResonantFrequency(150);
         vibratorHelper.setFrequencyResolution(50);
@@ -963,8 +964,9 @@ public class VibrationThreadTest {
         HalVibratorHelper vibratorHelper = mVibratorHelpers.get(VIBRATOR_ID);
         vibratorHelper.setSupportedEffects(EFFECT_CLICK);
         vibratorHelper.setSupportedPrimitives(PRIMITIVE_CLICK, PRIMITIVE_TICK);
-        vibratorHelper.setCapabilities(IVibrator.CAP_COMPOSE_EFFECTS,
-                IVibrator.CAP_COMPOSE_PWLE_EFFECTS, IVibrator.CAP_AMPLITUDE_CONTROL);
+        vibratorHelper.setCapabilities(IVibrator.CAP_AMPLITUDE_CONTROL,
+                IVibrator.CAP_GET_RESONANT_FREQUENCY, IVibrator.CAP_FREQUENCY_CONTROL,
+                IVibrator.CAP_COMPOSE_EFFECTS, IVibrator.CAP_COMPOSE_PWLE_EFFECTS);
         vibratorHelper.setMinFrequency(100);
         vibratorHelper.setResonantFrequency(150);
         vibratorHelper.setFrequencyResolution(50);
@@ -1094,7 +1096,8 @@ public class VibrationThreadTest {
     @EnableFlags(Flags.FLAG_NORMALIZED_PWLE_EFFECTS)
     public void vibrate_singleVibratorPwle_runsComposePwleV2() {
         HalVibratorHelper vibratorHelper = mVibratorHelpers.get(VIBRATOR_ID);
-        vibratorHelper.setCapabilities(IVibrator.CAP_COMPOSE_PWLE_EFFECTS_V2);
+        vibratorHelper.setCapabilities(IVibrator.CAP_GET_RESONANT_FREQUENCY,
+                IVibrator.CAP_FREQUENCY_CONTROL, IVibrator.CAP_COMPOSE_PWLE_EFFECTS_V2);
         vibratorHelper.setResonantFrequency(150);
         vibratorHelper.setFrequenciesHz(new float[]{30f, 50f, 100f, 120f, 150f});
         vibratorHelper.setOutputAccelerationsGs(new float[]{0.3f, 0.5f, 1.0f, 0.8f, 0.6f});
@@ -1130,7 +1133,8 @@ public class VibrationThreadTest {
     @EnableFlags(Flags.FLAG_NORMALIZED_PWLE_EFFECTS)
     public void vibrate_singleVibratorBasicPwle_runsComposePwleV2() {
         HalVibratorHelper vibratorHelper = mVibratorHelpers.get(VIBRATOR_ID);
-        vibratorHelper.setCapabilities(IVibrator.CAP_COMPOSE_PWLE_EFFECTS_V2);
+        vibratorHelper.setCapabilities(IVibrator.CAP_GET_RESONANT_FREQUENCY,
+                IVibrator.CAP_FREQUENCY_CONTROL, IVibrator.CAP_COMPOSE_PWLE_EFFECTS_V2);
         vibratorHelper.setResonantFrequency(150);
         vibratorHelper.setFrequenciesHz(new float[]{50f, 100f, 120f, 150f});
         vibratorHelper.setOutputAccelerationsGs(new float[]{0.05f, 1.0f, 3.0f, 2.0f});
@@ -1166,7 +1170,8 @@ public class VibrationThreadTest {
     @EnableFlags(Flags.FLAG_NORMALIZED_PWLE_EFFECTS)
     public void vibrate_singleVibratorPwle_withInitialFrequency_runsComposePwleV2() {
         HalVibratorHelper vibratorHelper = mVibratorHelpers.get(VIBRATOR_ID);
-        vibratorHelper.setCapabilities(IVibrator.CAP_COMPOSE_PWLE_EFFECTS_V2);
+        vibratorHelper.setCapabilities(IVibrator.CAP_GET_RESONANT_FREQUENCY,
+                IVibrator.CAP_FREQUENCY_CONTROL, IVibrator.CAP_COMPOSE_PWLE_EFFECTS_V2);
         vibratorHelper.setResonantFrequency(150);
         vibratorHelper.setFrequenciesHz(new float[]{30f, 50f, 100f, 120f, 150f});
         vibratorHelper.setOutputAccelerationsGs(new float[]{0.3f, 0.5f, 1.0f, 0.8f, 0.6f});
@@ -1203,7 +1208,8 @@ public class VibrationThreadTest {
     @EnableFlags(Flags.FLAG_NORMALIZED_PWLE_EFFECTS)
     public void vibrate_singleVibratorPwle_TooManyControlPoints_splitsAndRunsComposePwleV2() {
         HalVibratorHelper vibratorHelper = mVibratorHelpers.get(VIBRATOR_ID);
-        vibratorHelper.setCapabilities(IVibrator.CAP_COMPOSE_PWLE_EFFECTS_V2);
+        vibratorHelper.setCapabilities(IVibrator.CAP_GET_RESONANT_FREQUENCY,
+                IVibrator.CAP_FREQUENCY_CONTROL, IVibrator.CAP_COMPOSE_PWLE_EFFECTS_V2);
         vibratorHelper.setResonantFrequency(150);
         vibratorHelper.setFrequenciesHz(new float[]{30f, 50f, 100f, 120f, 150f});
         vibratorHelper.setOutputAccelerationsGs(new float[]{0.3f, 0.5f, 1.0f, 0.8f, 0.6f});
@@ -1248,7 +1254,8 @@ public class VibrationThreadTest {
     })
     public void vibrate_singleVibratorPwleFailed_returnsFailureAndStopsVibration() {
         HalVibratorHelper vibratorHelper = mVibratorHelpers.get(VIBRATOR_ID);
-        vibratorHelper.setCapabilities(IVibrator.CAP_COMPOSE_PWLE_EFFECTS_V2);
+        vibratorHelper.setCapabilities(IVibrator.CAP_GET_RESONANT_FREQUENCY,
+                IVibrator.CAP_FREQUENCY_CONTROL, IVibrator.CAP_COMPOSE_PWLE_EFFECTS_V2);
         vibratorHelper.setResonantFrequency(150);
         vibratorHelper.setFrequenciesHz(new float[]{30f, 50f, 100f, 120f, 150f});
         vibratorHelper.setOutputAccelerationsGs(new float[]{0.3f, 0.5f, 1.0f, 0.8f, 0.6f});
@@ -1272,7 +1279,8 @@ public class VibrationThreadTest {
     @DisableFlags(Flags.FLAG_NORMALIZED_PWLE_EFFECTS)
     public void vibrate_singleVibratorPwle_runsComposePwle() {
         HalVibratorHelper vibratorHelper = mVibratorHelpers.get(VIBRATOR_ID);
-        vibratorHelper.setCapabilities(IVibrator.CAP_COMPOSE_PWLE_EFFECTS);
+        vibratorHelper.setCapabilities(IVibrator.CAP_GET_RESONANT_FREQUENCY,
+                IVibrator.CAP_FREQUENCY_CONTROL, IVibrator.CAP_COMPOSE_PWLE_EFFECTS);
         vibratorHelper.setSupportedBraking(Braking.CLAB);
         vibratorHelper.setMinFrequency(100);
         vibratorHelper.setResonantFrequency(150);
@@ -1314,7 +1322,8 @@ public class VibrationThreadTest {
     @Test
     public void vibrate_singleVibratorLargePwle_splitsComposeCallWhenAmplitudeIsLowest() {
         HalVibratorHelper vibratorHelper = mVibratorHelpers.get(VIBRATOR_ID);
-        vibratorHelper.setCapabilities(IVibrator.CAP_COMPOSE_PWLE_EFFECTS);
+        vibratorHelper.setCapabilities(IVibrator.CAP_GET_RESONANT_FREQUENCY,
+                IVibrator.CAP_FREQUENCY_CONTROL, IVibrator.CAP_COMPOSE_PWLE_EFFECTS);
         vibratorHelper.setMinFrequency(100);
         vibratorHelper.setResonantFrequency(150);
         vibratorHelper.setFrequencyResolution(50);
@@ -2172,6 +2181,7 @@ public class VibrationThreadTest {
         createThreadAndSettings();
         HalVibratorHelper vibratorHelper = mVibratorHelpers.get(VIBRATOR_ID);
         vibratorHelper.setCapabilities(IVibrator.CAP_AMPLITUDE_CONTROL,
+                IVibrator.CAP_GET_RESONANT_FREQUENCY, IVibrator.CAP_FREQUENCY_CONTROL,
                 IVibrator.CAP_COMPOSE_PWLE_EFFECTS);
         vibratorHelper.setMinFrequency(100);
         vibratorHelper.setResonantFrequency(150);

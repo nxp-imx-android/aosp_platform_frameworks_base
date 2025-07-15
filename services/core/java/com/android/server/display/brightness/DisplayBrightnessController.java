@@ -511,6 +511,21 @@ public final class DisplayBrightnessController {
     }
 
     /**
+     * Convert a brightness nit value to a float scale value. It is assumed that the nit value
+     * provided might have adjustments, such as RBC, applied.
+     *
+     * @param nits The nit value
+     * @return The float scale value or {@link PowerManager.BRIGHTNESS_INVALID_FLOAT} if no
+     * conversion is possible.
+     */
+    public float getBrightnessFromAdjustedNits(float nits) {
+        if (mAutomaticBrightnessController == null) {
+            return PowerManager.BRIGHTNESS_INVALID_FLOAT;
+        }
+        return mAutomaticBrightnessController.getBrightnessFromAdjustedNits(nits);
+    }
+
+    /**
      * @return The brightness manually selected by the user, scaled for doze.
      */
     public float getManualDozeBrightness() {

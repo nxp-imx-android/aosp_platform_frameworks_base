@@ -583,7 +583,7 @@ package android.app.admin {
     field public static final String SCREEN_CAPTURE_DISABLED_POLICY = "screenCaptureDisabled";
   }
 
-  public class DevicePolicyManager {
+  @RestrictedForEnvironment(environments=android.annotation.RestrictedForEnvironment.ENVIRONMENT_SDK_RUNTIME, from=android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE) public class DevicePolicyManager {
     method @RequiresPermission(anyOf={android.Manifest.permission.MANAGE_USERS, android.Manifest.permission.INTERACT_ACROSS_USERS}) public void acknowledgeNewUserDisclaimer();
     method @RequiresPermission(android.Manifest.permission.MANAGE_PROFILE_AND_DEVICE_OWNERS) public void calculateHasIncompatibleAccounts();
     method @RequiresPermission(android.Manifest.permission.MANAGE_PROFILE_AND_DEVICE_OWNERS) public void clearOrganizationId();

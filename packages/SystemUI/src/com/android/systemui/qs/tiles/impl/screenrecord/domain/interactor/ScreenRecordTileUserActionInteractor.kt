@@ -19,7 +19,6 @@ package com.android.systemui.qs.tiles.impl.screenrecord.domain.interactor
 import android.content.Context
 import android.content.Intent
 import android.media.projection.StopReason
-import android.os.UserHandle
 import android.util.Log
 import com.android.internal.jank.InteractionJankMonitor
 import com.android.systemui.animation.DialogCuj
@@ -77,7 +76,7 @@ constructor(
                                 isUserConsentRequired = false,
                                 resultReceiver = null,
                                 mediaProjection = null,
-                                hostAppUserHandle = UserHandle.CURRENT,
+                                hostAppUserHandle = user,
                                 hostAppUid = 0,
                             )
                             .fillIntent(intent)

@@ -300,6 +300,8 @@ class ActivityMetricsLogger {
         boolean mIsDrawn;
         /** The latest activity to have been launched. */
         @NonNull ActivityRecord mLastLaunchedActivity;
+        /** The next activity if the latest launched activity in the same task is finishing. */
+        @Nullable ActivityRecord mNextRunningActivity;
 
         /** The type of the source that triggers the launch event. */
         @SourceInfo.SourceType int mSourceType;
@@ -389,6 +391,7 @@ class ActivityMetricsLogger {
                 return;
             }
             if (mLastLaunchedActivity != null) {
+                mNextRunningActivity = null;
                 if (mLastLaunchedActivity.mLaunchCookie != null) {
                     ProtoLog.v(WM_DEBUG_WINDOW_TRANSITIONS,
                             "Transferring launch cookie=%s from=%s(%d) to=%s(%d)",
@@ -446,6 +449,9 @@ class ActivityMetricsLogger {
 
         /** @return {@code true} if the activity matches a launched activity in this transition. */
         boolean contains(ActivityRecord r) {
+            if (mNextRunningActivity != null) {
+                return r == mNextRunningActivity;
+            }
             return r == mLastLaunchedActivity;
         }
 
@@ -470,7 +476,8 @@ class ActivityMetricsLogger {
         @Override
         public String toString() {
             return "TransitionInfo{" + Integer.toHexString(System.identityHashCode(this))
-                    + " a=" + mLastLaunchedActivity + " d=" + mIsDrawn + "}";
+                    + " a=" + mLastLaunchedActivity + " r=" + mNextRunningActivity
+                    + " d=" + mIsDrawn + "}";
         }
     }
 
@@ -986,11 +993,22 @@ class ActivityMetricsLogger {
             Slog.i(TAG, "notifyVisibilityChanged " + r + " visible=" + r.isVisibleRequested()
                     + " state=" + r.getState() + " finishing=" + r.finishing);
         }
-        if (r.isState(ActivityRecord.State.RESUMED) && r.mDisplayContent.isSleeping()) {
-            // The activity may be launching while keyguard is locked. The keyguard may be dismissed
-            // after the activity finished relayout, so skip the visibility check to avoid aborting
-            // the tracking of launch event.
-            return;
+        if (r.isState(ActivityRecord.State.RESUMED)) {
+            if (r.mDisplayContent.isSleeping()) {
+                // The activity may be launching while keyguard is locked. The keyguard may be
+                // dismissed after the activity finished relayout, so skip the visibility check
+                // to avoid aborting the tracking of launch event.
+                return;
+            }
+            if (r.finishing) {
+                // In case it is a trampoline activity that moves the existing task to front, then
+                // the next activity will report drawn.
+                final ActivityRecord next = r.getTask().getActivityBelow(r);
+                if (next != null && !next.finishing && !next.isVisible()) {
+                    info.mNextRunningActivity = next;
+                    return;
+                }
+            }
         }
         if (!r.isVisibleRequested() || r.finishing) {
             // Check if the tracker can be cancelled because the last launched activity may be
@@ -1116,6 +1134,10 @@ class ActivityMetricsLogger {
             mSupervisor.stopWaitingForActivityVisible(info.mLastLaunchedActivity);
             launchObserverNotifyActivityLaunchCancelled(info);
         } else {
+            if (info.mNextRunningActivity != null) {
+                // Report the running activity because the launched activity was finished.
+                info.mLastLaunchedActivity = info.mNextRunningActivity;
+            }
             if (info.isInterestingToLoggerAndObserver()) {
                 launchObserverNotifyActivityLaunchFinished(info, timestampNs);
             }

@@ -14,17 +14,12 @@
  * limitations under the License.
  */
 
-package com.android.wm.shell.flicker.bubbles
-
-import com.android.wm.shell.flicker.bubbles.testcase.BubbleAppBecomesExpandedTestCases
-import com.android.wm.shell.flicker.bubbles.testcase.BubbleAlwaysVisibleTestCases
+ package android.app.userrecovery;
 
 /**
- * The set to verify bubble expands from collapsed state, which verifies
- * - [BubbleFlickerTestBase]
- * - [BubbleAlwaysVisibleTestCases]
- * - [BubbleAppBecomesExpandedTestCases]
+ * Parcelable to hold a single certificate represented as a byte array.
+ * @hide
  */
-abstract class ExpandBubbleTestBase : BubbleFlickerTestBase(),
-    BubbleAlwaysVisibleTestCases,
-    BubbleAppBecomesExpandedTestCases
+parcelable CertificateBlob {
+    byte[] blob;
+}

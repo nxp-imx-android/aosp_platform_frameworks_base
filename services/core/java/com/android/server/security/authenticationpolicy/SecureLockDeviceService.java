@@ -16,7 +16,7 @@
 
 package com.android.server.security.authenticationpolicy;
 
-import static android.hardware.biometrics.BiometricManager.BIOMETRIC_ERROR_NONE_ENROLLED;
+import static android.hardware.biometrics.BiometricManager.Authenticators.BIOMETRIC_STRONG;
 import static android.os.UserManager.DISALLOW_USER_SWITCH;
 import static android.security.Flags.secureLockDevice;
 import static android.security.Flags.secureLockdown;
@@ -32,8 +32,10 @@ import android.annotation.NonNull;
 import android.app.ActivityManager;
 import android.app.admin.DevicePolicyManager;
 import android.content.Context;
+import android.hardware.biometrics.BiometricEnrollmentStatus;
 import android.hardware.biometrics.BiometricManager;
 import android.hardware.biometrics.BiometricStateListener;
+import android.hardware.biometrics.SensorProperties;
 import android.hardware.face.FaceManager;
 import android.hardware.fingerprint.FingerprintManager;
 import android.os.Build;
@@ -47,7 +49,7 @@ import android.os.UserHandle;
 import android.security.authenticationpolicy.AuthenticationPolicyManager;
 import android.security.authenticationpolicy.AuthenticationPolicyManager.DisableSecureLockDeviceRequestStatus;
 import android.security.authenticationpolicy.AuthenticationPolicyManager.EnableSecureLockDeviceRequestStatus;
-import android.security.authenticationpolicy.AuthenticationPolicyManager.IsSecureLockDeviceAvailableRequestStatus;
+import android.security.authenticationpolicy.AuthenticationPolicyManager.GetSecureLockDeviceAvailabilityRequestStatus;
 import android.security.authenticationpolicy.DisableSecureLockDeviceParams;
 import android.security.authenticationpolicy.EnableSecureLockDeviceParams;
 import android.security.authenticationpolicy.ISecureLockDeviceStatusListener;
@@ -74,6 +76,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.Map;
 
 /**
  * System service for remotely calling secure lock on the device.
@@ -186,8 +189,8 @@ public class SecureLockDeviceService extends SecureLockDeviceServiceInternal {
     @Override
     public void registerSecureLockDeviceStatusListener(@NonNull UserHandle user,
             @NonNull ISecureLockDeviceStatusListener listener) {
-        @IsSecureLockDeviceAvailableRequestStatus int isSecureLockDeviceAvailableForCurrentUser =
-                isSecureLockDeviceAvailable(user);
+        @GetSecureLockDeviceAvailabilityRequestStatus int secureLockDeviceAvailability =
+                getSecureLockDeviceAvailability(user);
         boolean isSecureLockDeviceEnabled = isSecureLockDeviceEnabled();
 
         // Register the listener with the UserHandle as its identifying cookie
@@ -197,13 +200,12 @@ public class SecureLockDeviceService extends SecureLockDeviceServiceInternal {
                         + user.getIdentifier());
             }
             try {
-                listener.onSecureLockDeviceAvailableStatusChanged(
-                        isSecureLockDeviceAvailableForCurrentUser);
+                listener.onSecureLockDeviceAvailableStatusChanged(secureLockDeviceAvailability);
                 listener.onSecureLockDeviceEnabledStatusChanged(
                         isSecureLockDeviceEnabled);
                 if (DEBUG) {
                     Slog.d(TAG, "Sent initial enabled state " + isSecureLockDeviceEnabled
-                            + " and available state " + isSecureLockDeviceAvailableForCurrentUser
+                            + " and available state " + secureLockDeviceAvailability
                             + " to listener " + listener.asBinder() + "for user "
                             + user.getIdentifier());
                 }
@@ -271,40 +273,67 @@ public class SecureLockDeviceService extends SecureLockDeviceServiceInternal {
     }
 
     /**
-     * @see AuthenticationPolicyManager#isSecureLockDeviceAvailable()
+     * @see AuthenticationPolicyManager#getSecureLockDeviceAvailability()
      * @param user {@link UserHandle} to check that secure lock device is available fo
-     * @return {@link IsSecureLockDeviceAvailableRequestStatus} int indicating whether secure lock
-     * device is available for the calling user
+     * @return {@link GetSecureLockDeviceAvailabilityRequestStatus} int indicating whether secure
+     * lock device is available for the calling user
      *
      * @hide
      */
     @Override
-    @IsSecureLockDeviceAvailableRequestStatus
-    public int isSecureLockDeviceAvailable(UserHandle user) {
+    @GetSecureLockDeviceAvailabilityRequestStatus
+    public int getSecureLockDeviceAvailability(UserHandle user) {
         if (!secureLockDevice()) {
             return ERROR_UNSUPPORTED;
         }
 
-        int userId = user.getIdentifier();
         if (mBiometricManager == null) {
             Slog.w(TAG, "BiometricManager not available: secure lock device is unsupported.");
             return ERROR_UNSUPPORTED;
-        } else if (!mBiometricManager.hasEnrolledBiometrics(userId)) {
+        } else if (!hasStrongBiometricSensor()) {
             if (DEBUG) {
-                Slog.d(TAG, "Secure lock device unavailable: no biometrics are enrolled.");
-            }
-            return ERROR_NO_BIOMETRICS_ENROLLED;
-            // TODO: update to getEnrollmentStatus API once biometric strength check is supported
-        } else if (mBiometricManager.canAuthenticate(userId,
-                BiometricManager.Authenticators.BIOMETRIC_STRONG) == BIOMETRIC_ERROR_NONE_ENROLLED
-        ) {
-            if (DEBUG) {
-                Slog.d(TAG, "Secure lock device unavailable: no strong biometric enrollments.");
+                Slog.d(TAG, "Secure lock device unavailable: device does not have biometric"
+                        + "sensors of sufficient strength.");
             }
             return ERROR_INSUFFICIENT_BIOMETRICS;
+        } else if (!hasStrongBiometricsEnrolled(user)) {
+            if (DEBUG) {
+                Slog.d(TAG, "Secure lock device unavailable: device is missing enrollments "
+                        + "for strong biometric sensor.");
+            }
+            return ERROR_NO_BIOMETRICS_ENROLLED;
         } else {
             return SUCCESS;
         }
+    }
+
+    private boolean hasStrongBiometricSensor() {
+        for (SensorProperties sensorProps : mBiometricManager.getSensorProperties()) {
+            if (sensorProps.getSensorStrength() == SensorProperties.STRENGTH_STRONG) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean hasStrongBiometricsEnrolled(UserHandle user) {
+        Context userContext = mContext.createContextAsUser(user, 0);
+        BiometricManager biometricManager = userContext.getSystemService(BiometricManager.class);
+
+        if (biometricManager == null) {
+            Slog.w(TAG, "BiometricManager not available, strong biometric enrollment cannot be "
+                    + "checked.");
+            return false;
+        }
+        Map<Integer, BiometricEnrollmentStatus> enrollmentStatusMap =
+                biometricManager.getEnrollmentStatus();
+
+        for (BiometricEnrollmentStatus status : enrollmentStatusMap.values()) {
+            if (status.getStrength() == BIOMETRIC_STRONG && status.getEnrollmentCount() > 0) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
@@ -323,9 +352,9 @@ public class SecureLockDeviceService extends SecureLockDeviceServiceInternal {
         if (!secureLockdown()) {
             return ERROR_UNSUPPORTED;
         }
-        int isSecureLockDeviceAvailable = isSecureLockDeviceAvailable(user);
-        if (isSecureLockDeviceAvailable != SUCCESS) {
-            return isSecureLockDeviceAvailable;
+        int secureLockDeviceAvailability = getSecureLockDeviceAvailability(user);
+        if (secureLockDeviceAvailability != SUCCESS) {
+            return secureLockDeviceAvailability;
         }
 
         if (isSecureLockDeviceEnabled()) {
@@ -486,18 +515,17 @@ public class SecureLockDeviceService extends SecureLockDeviceServiceInternal {
                     continue;
                 }
 
-                @IsSecureLockDeviceAvailableRequestStatus
-                int isSecureLockDeviceAvailableForUser = isSecureLockDeviceAvailable(user);
+                @GetSecureLockDeviceAvailabilityRequestStatus
+                int secureLockDeviceAvailability = getSecureLockDeviceAvailability(user);
 
                 if (DEBUG) {
                     Slog.d(TAG, "Notifying listener " + listener.asBinder() + " for user "
                             + user.getIdentifier() + " of secure lock device status update: "
                             + "enabled = " + isSecureLockDeviceEnabled + ", available = "
-                            + isSecureLockDeviceAvailableForUser);
+                            + secureLockDeviceAvailability);
                 }
                 try {
-                    listener.onSecureLockDeviceAvailableStatusChanged(
-                            isSecureLockDeviceAvailableForUser);
+                    listener.onSecureLockDeviceAvailableStatusChanged(secureLockDeviceAvailability);
                     listener.onSecureLockDeviceEnabledStatusChanged(isSecureLockDeviceEnabled);
                 } catch (RemoteException e) {
                     Slog.e(TAG, "Failed to notify listener " + listener.asBinder() + " for "
@@ -536,18 +564,17 @@ public class SecureLockDeviceService extends SecureLockDeviceServiceInternal {
                     continue;
                 }
 
-                @IsSecureLockDeviceAvailableRequestStatus
-                int isSecureLockDeviceAvailableForUser = isSecureLockDeviceAvailable(
+                @GetSecureLockDeviceAvailabilityRequestStatus
+                int secureLockDeviceAvailability = getSecureLockDeviceAvailability(
                         registeringUserHandle);
 
                 if (DEBUG) {
                     Slog.d(TAG, "Notifying listener " + listener.asBinder() + " for user "
                             + userId + " of secure lock device availability update: "
-                            + isSecureLockDeviceAvailableForUser);
+                            + secureLockDeviceAvailability);
                 }
                 try {
-                    listener.onSecureLockDeviceAvailableStatusChanged(
-                            isSecureLockDeviceAvailableForUser);
+                    listener.onSecureLockDeviceAvailableStatusChanged(secureLockDeviceAvailability);
                 } catch (RemoteException e) {
                     Slog.e(TAG, "Failed to notify listener " + listener.asBinder() + " for "
                             + "user " + userId + ", RemoteException thrown: ", e);

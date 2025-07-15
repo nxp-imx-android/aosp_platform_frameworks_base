@@ -54,7 +54,6 @@ import perfetto.protos.TracePacketOuterClass.TracePacket;
 import perfetto.protos.TrackDescriptorOuterClass.TrackDescriptor;
 import perfetto.protos.TrackEventConfigOuterClass.TrackEventConfig;
 import perfetto.protos.TrackEventOuterClass.EventCategory;
-import perfetto.protos.TrackEventOuterClass.EventName;
 import perfetto.protos.TrackEventOuterClass.TrackEvent;
 
 import java.util.List;
@@ -72,18 +71,13 @@ public class PerfettoTraceTest {
             DeviceFlagsValueProvider.createCheckFlagsRule(
                     InstrumentationRegistry.getInstrumentation().getUiAutomation());
 
-    private static final String TAG = "PerfettoTraceTest";
     private static final String FOO = "foo";
     private static final String BAR = "bar";
     private static final String TEXT_ABOVE_4K_SIZE =
             new String(new char[8192]).replace('\0', 'a');
-
     private static final Category FOO_CATEGORY = new Category(FOO);
-    private static final int MESSAGE = 1234567;
-    private static final int MESSAGE_DELAYED = 7654321;
 
     private final Set<String> mCategoryNames = new ArraySet<>();
-    private final Set<String> mEventNames = new ArraySet<>();
     private final Set<String> mDebugAnnotationNames = new ArraySet<>();
     private final Set<String> mTrackNames = new ArraySet<>();
 
@@ -93,7 +87,6 @@ public class PerfettoTraceTest {
         FOO_CATEGORY.register();
 
         mCategoryNames.clear();
-        mEventNames.clear();
         mDebugAnnotationNames.clear();
         mTrackNames.clear();
     }
@@ -666,9 +659,6 @@ public class PerfettoTraceTest {
 
         for (EventCategory cat : data.getEventCategoriesList()) {
             mCategoryNames.add(cat.getName());
-        }
-        for (EventName ev : data.getEventNamesList()) {
-            mEventNames.add(ev.getName());
         }
         for (DebugAnnotationName dbg : data.getDebugAnnotationNamesList()) {
             mDebugAnnotationNames.add(dbg.getName());

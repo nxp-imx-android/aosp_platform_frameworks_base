@@ -412,69 +412,6 @@ interface ITelephony {
     int getActivePhoneTypeForSlot(int slotIndex);
 
     /**
-     * Returns the CDMA ERI icon index to display
-     * @param callingPackage package making the call.
-     * @param callingFeatureId The feature in the package.
-     *
-     * @deprecated Legacy CDMA is unsupported.
-     */
-    int getCdmaEriIconIndex(String callingPackage, String callingFeatureId);
-
-    /**
-     * Returns the CDMA ERI icon index to display on particular subId.
-     * @param subId user preferred subId.
-     * @param callingPackage package making the call.
-     * @param callingFeatureId The feature in the package.
-     *
-     * @deprecated Legacy CDMA is unsupported.
-     */
-    int getCdmaEriIconIndexForSubscriber(int subId, String callingPackage,
-            String callingFeatureId);
-
-    /**
-     * Returns the CDMA ERI icon mode,
-     * 0 - ON
-     * 1 - FLASHING
-     * @param callingPackage package making the call.
-     * @param callingFeatureId The feature in the package.
-     *
-     * @deprecated Legacy CDMA is unsupported.
-     */
-    int getCdmaEriIconMode(String callingPackage, String callingFeatureId);
-
-    /**
-     * Returns the CDMA ERI icon mode on particular subId,
-     * 0 - ON
-     * 1 - FLASHING
-     * @param subId user preferred subId.
-     * @param callingPackage package making the call.
-     * @param callingFeatureId The feature in the package.
-     *
-     * @deprecated Legacy CDMA is unsupported.
-     */
-    int getCdmaEriIconModeForSubscriber(int subId, String callingPackage,
-            String callingFeatureId);
-
-    /**
-     * Returns the CDMA ERI text,
-     * @param callingPackage package making the call.
-     * @param callingFeatureId The feature in the package.
-     *
-     * @deprecated Legacy CDMA is unsupported.
-     */
-    String getCdmaEriText(String callingPackage, String callingFeatureId);
-
-    /**
-     * Returns the CDMA ERI text for particular subId,
-     * @param subId user preferred subId.
-     * @param callingPackage package making the call.
-     * @param callingFeatureId The feature in the package.
-     *
-     * @deprecated Legacy CDMA is unsupported.
-     */
-    String getCdmaEriTextForSubscriber(int subId, String callingPackage, String callingFeatureId);
-
-    /**
      * Returns true if OTA service provisioning needs to run.
      * Only relevant on some technologies, others will always
      * return false.
@@ -785,40 +722,6 @@ interface ITelephony {
     String sendEnvelopeWithStatus(int subId, String content);
 
     /**
-     * Read one of the NV items defined in {@link RadioNVItems} / {@code ril_nv_items.h}.
-     * Used for device configuration by some CDMA operators.
-     *
-     * @param itemID the ID of the item to read.
-     * @return the NV item as a String, or null on any failure.
-     *
-     * @deprecated Legacy CDMA is unsupported.
-     */
-    String nvReadItem(int itemID);
-
-    /**
-     * Write one of the NV items defined in {@link RadioNVItems} / {@code ril_nv_items.h}.
-     * Used for device configuration by some CDMA operators.
-     *
-     * @param itemID the ID of the item to read.
-     * @param itemValue the value to write, as a String.
-     * @return true on success; false on any failure.
-     *
-     * @deprecated Legacy CDMA is unsupported.
-     */
-    boolean nvWriteItem(int itemID, String itemValue);
-
-    /**
-     * Update the CDMA Preferred Roaming List (PRL) in the radio NV storage.
-     * Used for device configuration by some CDMA operators.
-     *
-     * @param preferredRoamingList byte array containing the new PRL.
-     * @return true on success; false on any failure.
-     *
-     * @deprecated Legacy CDMA is unsupported.
-     */
-    boolean nvWriteCdmaPrl(in byte[] preferredRoamingList);
-
-    /**
      * Rollback modem configurations to factory default except some config which are in whitelist.
      * Used for device configuration by some CDMA operators.
      *
@@ -1056,22 +959,6 @@ interface ITelephony {
      * Set IMS registration state
      */
     void setImsRegistrationState(boolean registered);
-
-    /**
-     * Return MDN string for CDMA phone.
-     * @param subId user preferred subId.
-     *
-     * @deprecated Legacy CDMA is unsupported.
-     */
-    String getCdmaMdn(int subId);
-
-    /**
-     * Return MIN string for CDMA phone.
-     * @param subId user preferred subId.
-     *
-     * @deprecated Legacy CDMA is unsupported.
-     */
-    String getCdmaMin(int subId);
 
     /**
      * Request that the next incoming call from a number matching {@code range} be intercepted.
@@ -1365,24 +1252,6 @@ interface ITelephony {
     String getTypeAllocationCodeForSlot(int slotIndex);
 
     /**
-     * Returns the MEID for the given slot.
-     *
-     * @param slotIndex - device slot.
-     * @param callingPackage The package making the call.
-     * @param callingFeatureId The feature in the package
-     * <p>Requires Permission:
-     *   {@link android.Manifest.permission#READ_PHONE_STATE READ_PHONE_STATE}
-     */
-    String getMeidForSlot(int slotIndex, String callingPackage, String callingFeatureId);
-
-    /**
-     * Returns the Manufacturer Code from the MEID for the given slot.
-     *
-     * @param slotIndex - Which slot to retrieve the Manufacturer Code from.
-     */
-    String getManufacturerCodeForSlot(int slotIndex);
-
-    /**
      * Returns the device software version.
      *
      * @param slotIndex - device slot.
@@ -1516,17 +1385,6 @@ interface ITelephony {
     * @hide
     */
     String getEsn(int subId);
-
-    /**
-     * Return the Preferred Roaming List Version
-     *
-     * Requires that the calling app has READ_PRIVILEGED_PHONE_STATE permission
-     * @param subId the subscription ID that this request applies to.
-     * @return PRLVersion or null if error.
-     * @hide
-     * @deprecated Legacy CDMA is unsupported.
-     */
-    String getCdmaPrlVersion(int subId);
 
     /**
      * Get snapshot of Telephony histograms
@@ -1824,50 +1682,6 @@ interface ITelephony {
      * @param isEnabled {@code true} to enable mobile data roaming, otherwise disable it.
      */
     void setDataRoamingEnabled(int subId, boolean isEnabled);
-
-    /**
-     * Gets the roaming mode for the CDMA phone with the subscription id {@code subId}.
-     *
-     * @param the subscription id.
-     * @return the roaming mode for CDMA phone.
-     *
-     * @deprecated Legacy CDMA is unsupported.
-     */
-    int getCdmaRoamingMode(int subId);
-
-    /**
-     * Sets the roaming mode on the CDMA phone with the subscription {@code subId} to the given
-     * roaming mode {@code mode}.
-     *
-     * @param subId the subscription id.
-     * @param mode the roaming mode should be set.
-     * @return {@code true} if successed.
-     *
-     * @deprecated Legacy CDMA is unsupported.
-     */
-    boolean setCdmaRoamingMode(int subId, int mode);
-
-    /**
-     * Gets the subscription mode for the CDMA phone with the subscription id {@code subId}.
-     *
-     * @param the subscription id.
-     * @return the subscription mode for CDMA phone.
-     *
-     * @deprecated Legacy CDMA is unsupported.
-     */
-    int getCdmaSubscriptionMode(int subId);
-
-    /**
-     * Sets the subscription mode for CDMA phone with the subscription {@code subId} to the given
-     * subscription mode {@code mode}.
-     *
-     * @param subId the subscription id.
-     * @param mode the subscription mode should be set.
-     * @return {@code true} if successed.
-     *
-     * @deprecated Legacy CDMA is unsupported.
-     */
-    boolean setCdmaSubscriptionMode(int subId, int mode);
 
     /**
      * A test API to override carrier information including mccmnc, imsi, iccid, gid1, gid2,

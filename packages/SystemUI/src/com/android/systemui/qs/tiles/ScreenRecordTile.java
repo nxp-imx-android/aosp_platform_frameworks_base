@@ -132,10 +132,12 @@ public class ScreenRecordTile extends QSTileImpl<QSTile.BooleanState>
     @Override
     protected void handleClick(@Nullable Expandable expandable) {
         if (mScreenCaptureRecordFeaturesInteractor.getShouldShowNewToolbar()) {
+            UserHandle userHandle = UserHandle.of(getCurrentTileUser());
+
             final Intent intent = new Intent(mContext, ScreenCaptureActivity.class);
             // TODO(b/412723197): pass actual params here.
             new ScreenCaptureActivityIntentParameters(ScreenCaptureType.RECORD, false, null, null,
-                    UserHandle.CURRENT, 0
+                    userHandle, 0
             ).fillIntent(intent);
             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
             mActivityStarter.postQSRunnableDismissingKeyguard(

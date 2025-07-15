@@ -1367,7 +1367,7 @@ package android.app.admin {
     method @Nullable public android.view.SurfaceControlViewHost.SurfacePackage onCreateKeyguardSurface(@NonNull android.os.IBinder);
   }
 
-  public class DevicePolicyManager {
+  @RestrictedForEnvironment(environments=android.annotation.RestrictedForEnvironment.ENVIRONMENT_SDK_RUNTIME, from=android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE) public class DevicePolicyManager {
     method @RequiresPermission(android.Manifest.permission.MANAGE_PROFILE_AND_DEVICE_OWNERS) public int checkProvisioningPrecondition(@NonNull String, @NonNull String);
     method @RequiresPermission(android.Manifest.permission.MANAGE_DEVICE_POLICY_AUDIT_LOGGING) public void clearAuditLogEventCallback();
     method @Deprecated @FlaggedApi("android.app.admin.flags.split_create_managed_profile_enabled") @Nullable @RequiresPermission(android.Manifest.permission.MANAGE_PROFILE_AND_DEVICE_OWNERS) public android.os.UserHandle createAndProvisionManagedProfile(@NonNull android.app.admin.ManagedProfileProvisioningParams) throws android.app.admin.ProvisioningException;
@@ -2317,7 +2317,7 @@ package android.app.job {
 
 package android.app.people {
 
-  public final class PeopleManager {
+  @RestrictedForEnvironment(environments=android.annotation.RestrictedForEnvironment.ENVIRONMENT_SDK_RUNTIME, from=android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE) public final class PeopleManager {
     method @RequiresPermission(android.Manifest.permission.READ_PEOPLE_DATA) public boolean isConversation(@NonNull String, @NonNull String);
   }
 
@@ -12965,7 +12965,7 @@ package android.se.omapi {
 
 package android.security {
 
-  public final class FileIntegrityManager {
+  @RestrictedForEnvironment(environments=android.annotation.RestrictedForEnvironment.ENVIRONMENT_SDK_RUNTIME, from=android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE) public final class FileIntegrityManager {
     method @FlaggedApi("android.security.fsverity_api") @Nullable public byte[] getFsVerityDigest(@NonNull java.io.File) throws java.io.IOException;
     method @FlaggedApi("android.security.fsverity_api") public void setupFsVerity(@NonNull java.io.File) throws java.io.IOException;
   }
@@ -13004,7 +13004,7 @@ package android.security.authenticationpolicy {
   @FlaggedApi("android.security.secure_lockdown") public final class AuthenticationPolicyManager {
     method @FlaggedApi("android.security.secure_lockdown") @RequiresPermission(android.Manifest.permission.MANAGE_SECURE_LOCK_DEVICE) public int disableSecureLockDevice(@NonNull android.security.authenticationpolicy.DisableSecureLockDeviceParams);
     method @FlaggedApi("android.security.secure_lockdown") @RequiresPermission(android.Manifest.permission.MANAGE_SECURE_LOCK_DEVICE) public int enableSecureLockDevice(@NonNull android.security.authenticationpolicy.EnableSecureLockDeviceParams);
-    method @FlaggedApi("android.security.secure_lock_device") @RequiresPermission(android.Manifest.permission.MANAGE_SECURE_LOCK_DEVICE) public int isSecureLockDeviceAvailable();
+    method @FlaggedApi("android.security.secure_lock_device") @RequiresPermission(android.Manifest.permission.MANAGE_SECURE_LOCK_DEVICE) public int getSecureLockDeviceAvailability();
     method @FlaggedApi("android.security.secure_lock_device") @RequiresPermission(android.Manifest.permission.MANAGE_SECURE_LOCK_DEVICE) public boolean isSecureLockDeviceEnabled();
     method @FlaggedApi("android.security.secure_lock_device") @RequiresPermission(android.Manifest.permission.MANAGE_SECURE_LOCK_DEVICE) public void registerSecureLockDeviceStatusListener(@NonNull java.util.concurrent.Executor, @NonNull android.security.authenticationpolicy.AuthenticationPolicyManager.SecureLockDeviceStatusListener);
     method @FlaggedApi("android.security.secure_lock_device") @RequiresPermission(android.Manifest.permission.MANAGE_SECURE_LOCK_DEVICE) public void unregisterSecureLockDeviceStatusListener(@NonNull android.security.authenticationpolicy.AuthenticationPolicyManager.SecureLockDeviceStatusListener);
@@ -13013,9 +13013,9 @@ package android.security.authenticationpolicy {
     field @FlaggedApi("android.security.secure_lockdown") public static final int ERROR_INVALID_PARAMS = 3; // 0x3
     field @FlaggedApi("android.security.secure_lockdown") public static final int ERROR_NOT_AUTHORIZED = 7; // 0x7
     field @FlaggedApi("android.security.secure_lockdown") public static final int ERROR_NO_BIOMETRICS_ENROLLED = 4; // 0x4
-    field @FlaggedApi("android.security.secure_lockdown") public static final int ERROR_UNKNOWN = 0; // 0x0
+    field @FlaggedApi("android.security.secure_lockdown") public static final int ERROR_UNKNOWN = 1; // 0x1
     field @FlaggedApi("android.security.secure_lockdown") public static final int ERROR_UNSUPPORTED = 2; // 0x2
-    field @FlaggedApi("android.security.secure_lockdown") public static final int SUCCESS = 1; // 0x1
+    field @FlaggedApi("android.security.secure_lockdown") public static final int SUCCESS = 0; // 0x0
   }
 
   @FlaggedApi("android.security.secure_lock_device") public static interface AuthenticationPolicyManager.SecureLockDeviceStatusListener {

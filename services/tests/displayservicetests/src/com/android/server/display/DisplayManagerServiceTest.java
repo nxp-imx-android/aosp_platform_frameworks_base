@@ -24,6 +24,7 @@ import static android.Manifest.permission.MANAGE_DISPLAYS;
 import static android.Manifest.permission.MODIFY_USER_PREFERRED_DISPLAY_MODE;
 import static android.Manifest.permission.WRITE_SETTINGS;
 import static android.app.ActivityManager.PROCESS_STATE_TRANSIENT_BACKGROUND;
+import static android.hardware.display.DisplayManager.BRIGHTNESS_UNIT_NITS;
 import static android.hardware.display.DisplayManager.BRIGHTNESS_UNIT_PERCENTAGE;
 import static android.hardware.display.DisplayManager.SWITCHING_TYPE_NONE;
 import static android.hardware.display.DisplayManager.VIRTUAL_DISPLAY_FLAG_ALWAYS_UNLOCKED;
@@ -493,6 +494,8 @@ public class DisplayManagerServiceTest {
         manageDisplaysPermission(/* granted= */ false);
         when(mContext.getResources()).thenReturn(mResources);
         mUserManager = Mockito.spy(mContext.getSystemService(UserManager.class));
+        when(mMockDisplayDeviceConfig.getTempSensor()).thenReturn(
+                SensorData.loadTempSensorUnspecifiedConfig());
 
         doReturn(Context.PERMISSION_ENFORCER_SERVICE).when(mContext).getSystemServiceName(
                 eq(PermissionEnforcer.class));
@@ -4559,6 +4562,68 @@ public class DisplayManagerServiceTest {
         float actualPercentage = displayManagerBinderService.getBrightnessByUnit(
                 Display.DEFAULT_DISPLAY, BRIGHTNESS_UNIT_PERCENTAGE);
         assertEquals(percentage, actualPercentage, /* delta= */ 0.05);
+    }
+
+    @Test
+    @Parameters({"0", "200", "600", "900", "1100", "1300"})
+    public void testGetAndSetBrightness_unitNits(float nits) {
+        mPermissionEnforcer.grant(WRITE_SETTINGS);
+        DisplayManagerService displayManager =
+                new DisplayManagerService(mContext, mShortMockedInjector);
+        DisplayManagerInternal localService = displayManager.new LocalService();
+        DisplayManagerService.BinderService displayManagerBinderService =
+                displayManager.new BinderService();
+        FakeDisplayDevice displayDevice = createFakeDisplayDevice(displayManager, new float[]{60f});
+        displayDevice.mDisplayDeviceConfig = mMockDisplayDeviceConfig;
+        when(mMockDisplayDeviceConfig.isAutoBrightnessAvailable()).thenReturn(true);
+        when(mMockDisplayDeviceConfig.getNits()).thenReturn(new float[]{0, 1300});
+        when(mMockDisplayDeviceConfig.getBrightness()).thenReturn(new float[]{0, 1});
+        when(mMockDisplayDeviceConfig.getAutoBrightnessBrighteningLevelsLux(anyInt(),
+                anyInt())).thenReturn(new float[]{0, 1000});
+        when(mMockDisplayDeviceConfig.getAutoBrightnessBrighteningLevelsNits()).thenReturn(
+                new float[]{100, 500});
+        registerDefaultDisplays(displayManager);
+        initDisplayPowerController(localService);
+
+        // Run DisplayPowerController.updatePowerState, initialize BrightnessInfo
+        localService.requestPowerState(Display.DEFAULT_DISPLAY_GROUP,
+                new DisplayManagerInternal.DisplayPowerRequest(),
+                /* waitForNegativeProximity= */ false);
+        flushHandlers();
+
+        displayManagerBinderService.setBrightnessByUnit(Display.DEFAULT_DISPLAY, nits,
+                BRIGHTNESS_UNIT_NITS);
+
+        float actualNits = displayManagerBinderService.getBrightnessByUnit(
+                Display.DEFAULT_DISPLAY, BRIGHTNESS_UNIT_NITS);
+        assertEquals(nits, actualNits, FLOAT_TOLERANCE);
+    }
+
+    @Test
+    public void testGetAndSetBrightness_unitNits_deviceDoesNotSupportNits() {
+        mPermissionEnforcer.grant(WRITE_SETTINGS);
+        DisplayManagerService displayManager =
+                new DisplayManagerService(mContext, mShortMockedInjector);
+        DisplayManagerInternal localService = displayManager.new LocalService();
+        DisplayManagerService.BinderService displayManagerBinderService =
+                displayManager.new BinderService();
+        FakeDisplayDevice displayDevice = createFakeDisplayDevice(displayManager, new float[]{60f});
+        displayDevice.mDisplayDeviceConfig = mMockDisplayDeviceConfig;
+        registerDefaultDisplays(displayManager);
+        initDisplayPowerController(localService);
+
+        // Run DisplayPowerController.updatePowerState, initialize BrightnessInfo
+        localService.requestPowerState(Display.DEFAULT_DISPLAY_GROUP,
+                new DisplayManagerInternal.DisplayPowerRequest(),
+                /* waitForNegativeProximity= */ false);
+        flushHandlers();
+
+        assertEquals(BrightnessMappingStrategy.INVALID_NITS,
+                displayManagerBinderService.getBrightnessByUnit(Display.DEFAULT_DISPLAY,
+                        BRIGHTNESS_UNIT_NITS), 0);
+        assertThrows(IllegalArgumentException.class,
+                () -> displayManagerBinderService.setBrightnessByUnit(Display.DEFAULT_DISPLAY, 200,
+                        BRIGHTNESS_UNIT_NITS));
     }
 
     @Test

@@ -173,6 +173,8 @@ public class ConversationLayout extends FrameLayout
     private ConversationHeaderData mConversationHeaderData;
     private int mSpacingForExpander;
     private int mSpacingForImage;
+    private LinearLayout mConversationContentView;
+    private int mSummarizationStartMargin;
 
     public ConversationLayout(@NonNull Context context) {
         super(context);
@@ -337,6 +339,10 @@ public class ConversationLayout extends FrameLayout
         mAppName.setOnVisibilityChangedListener((visibility) -> {
             onAppNameVisibilityChanged();
         });
+
+        mConversationContentView = findViewById(R.id.notification_main_column);
+        mSummarizationStartMargin = getResources().getDimensionPixelSize(
+                R.dimen.notification_2025_content_margin_start_summarization);
     }
 
     @RemotableViewMethod
@@ -435,19 +441,7 @@ public class ConversationLayout extends FrameLayout
     @RemotableViewMethod(asyncImpl = "setIsCollapsedAsync")
     public void setIsCollapsed(boolean isCollapsed) {
         mIsCollapsed = isCollapsed;
-        int maxLines = Integer.MAX_VALUE;
-        if (isCollapsed) {
-            if (!TextUtils.isEmpty(mSummarizedContent)) {
-                maxLines = MAX_SUMMARIZATION_LINES;
-            } else {
-                if (android.app.Flags.nmCollapsedLines()) {
-                    maxLines = 2;
-                } else {
-                    maxLines = 1;
-                }
-            }
-        }
-        mMessagingLinearLayout.setMaxDisplayedLines(maxLines);
+
         updateExpandButton();
         updateContentEndPaddings();
     }
@@ -496,7 +490,7 @@ public class ConversationLayout extends FrameLayout
 
         List<MessagingMessage> newMessagingMessages;
         mSummarizedContent = extras.getCharSequence(Notification.EXTRA_SUMMARIZED_CONTENT);
-        if (!TextUtils.isEmpty(mSummarizedContent) && mIsCollapsed) {
+        if (isShowingSummarization()) {
             Notification.MessagingStyle.Message summary =
                     new Notification.MessagingStyle.Message(mSummarizedContent, 0, "");
             newMessagingMessages =
@@ -604,6 +598,8 @@ public class ConversationLayout extends FrameLayout
     private void bind(MessagingData messagingData) {
         setUser(messagingData.getUser());
         setUnreadCount(messagingData.getUnreadCount());
+
+        updateViewsForSummarization();
 
         // Copy our groups, before they get clobbered
         ArrayList<MessagingGroup> oldGroups = new ArrayList<>(mGroups);
@@ -1101,6 +1097,10 @@ public class ConversationLayout extends FrameLayout
         return mConversationText.getText();
     }
 
+    private boolean isShowingSummarization() {
+        return !TextUtils.isEmpty(mSummarizedContent) && mIsCollapsed;
+    }
+
     private void removeGroups(ArrayList<MessagingGroup> oldGroups) {
         int size = oldGroups.size();
         for (int i = 0; i < size; i++) {
@@ -1288,7 +1288,7 @@ public class ConversationLayout extends FrameLayout
                 mMessagingLinearLayout.removeView(newGroup);
                 mMessagingLinearLayout.addView(newGroup, groupIndex);
             }
-            newGroup.setMessages(group);
+            newGroup.setMessages(group, isShowingSummarization());
         }
 
         if (Flags.dropNonExistingMessages()) {
@@ -1754,6 +1754,28 @@ public class ConversationLayout extends FrameLayout
         }
         mExpandButton.setVisibility(VISIBLE);
         updateContentEndPaddings();
+    }
+
+    private void updateViewsForSummarization() {
+        int maxLines = Integer.MAX_VALUE;
+        if (isShowingSummarization()) {
+            maxLines = MAX_SUMMARIZATION_LINES;
+        } else if (mIsCollapsed) {
+            if (android.app.Flags.nmCollapsedLines()) {
+                maxLines = 2;
+            } else {
+                maxLines = 1;
+            }
+        }
+        mMessagingLinearLayout.setMaxDisplayedLines(maxLines);
+        if (isShowingSummarization()) {
+            ViewGroup.LayoutParams lp = mConversationContentView.getLayoutParams();
+            if (lp != null && lp instanceof MarginLayoutParams) {
+                final MarginLayoutParams mlp = (MarginLayoutParams) lp;
+                mlp.setMarginStart(mSummarizationStartMargin);
+                // this happens before layout, so we don't need to explicitly ask for one
+            }
+        }
     }
 
     @Override

@@ -579,12 +579,14 @@ public class DeviceAdapterTest {
 
     private HalVibrator createPwleWithoutFrequenciesVibrator(int vibratorId) {
         HalVibratorHelper helper = createVibratorHelperWithEffects(
+                IVibrator.CAP_GET_RESONANT_FREQUENCY, IVibrator.CAP_FREQUENCY_CONTROL,
                 IVibrator.CAP_COMPOSE_EFFECTS, IVibrator.CAP_COMPOSE_PWLE_EFFECTS);
         return helper.newInitializedHalVibrator(vibratorId, mHalCallbacks);
     }
 
     private HalVibrator createPwleVibrator(int vibratorId) {
         HalVibratorHelper helper = createVibratorHelperWithEffects(
+                IVibrator.CAP_GET_RESONANT_FREQUENCY, IVibrator.CAP_FREQUENCY_CONTROL,
                 IVibrator.CAP_COMPOSE_EFFECTS, IVibrator.CAP_COMPOSE_PWLE_EFFECTS);
         helper.setResonantFrequency(TEST_RESONANT_FREQUENCY);
         helper.setMinFrequency(TEST_MIN_FREQUENCY);
@@ -600,6 +602,7 @@ public class DeviceAdapterTest {
     private HalVibrator createPwleV2Vibrator(int vibratorId, float[] frequencies,
             float[] accelerations) {
         HalVibratorHelper helper = createVibratorHelperWithEffects(
+                IVibrator.CAP_GET_RESONANT_FREQUENCY, IVibrator.CAP_FREQUENCY_CONTROL,
                 IVibrator.CAP_COMPOSE_EFFECTS, IVibrator.CAP_COMPOSE_PWLE_EFFECTS_V2);
         helper.setResonantFrequency(TEST_RESONANT_FREQUENCY);
         helper.setFrequenciesHz(frequencies);
