@@ -51,6 +51,7 @@ import android.app.Notification.MetricStyle;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
 import android.platform.test.flag.junit.SetFlagsRule;
@@ -100,6 +101,8 @@ public class NotificationMetricStyleTest {
     // December 18, 2025 -> more than 4 months away
     private static final LocalDate FAR_AWAY = LocalDate.of(2025, 12, 18);
 
+    private static final long ELAPSED_REALTIME = 300_000;
+
     private static final String NNBSP = "\u202f";
 
     private Context mContext;
@@ -121,6 +124,7 @@ public class NotificationMetricStyleTest {
         Settings.System.putString(mContext.getContentResolver(), Settings.System.TIME_12_24, "12");
 
         Notification.sSystemClock = () -> NOW;
+        Notification.sElapsedRealtimeClock = () -> ELAPSED_REALTIME;
     }
 
     @After
@@ -134,6 +138,7 @@ public class NotificationMetricStyleTest {
         Settings.System.putString(mContext.getContentResolver(), Settings.System.TIME_12_24,
                 mPrevious24HourSetting);
         Notification.sSystemClock = InstantSource.system();
+        Notification.sElapsedRealtimeClock = () -> SystemClock.elapsedRealtime();
     }
 
     @Test
@@ -312,6 +317,40 @@ public class NotificationMetricStyleTest {
                 TimeDifference.FORMAT_CHRONOMETER);
         expect.that(longRunningStopwatch.toValueString(mContext)).isEqualTo(
                 new ValueString("500:40:00"));
+    }
+
+    @Test
+    public void valueToString_timeDifferenceInstant_updatesWithSystemClock() {
+        TimeDifference runningTimer = TimeDifference.forTimer(
+                NOW.plusSeconds(60), // Rings in 60 seconds
+                TimeDifference.FORMAT_CHRONOMETER);
+        expect.that(runningTimer.toValueString(mContext)).isEqualTo(new ValueString("1:00"));
+
+        Notification.sElapsedRealtimeClock =
+                () -> ELAPSED_REALTIME + Duration.ofSeconds(10).toMillis();
+
+        expect.that(runningTimer.toValueString(mContext)).isEqualTo(new ValueString("1:00"));
+
+        Notification.sSystemClock = () -> NOW.plusSeconds(3);
+
+        expect.that(runningTimer.toValueString(mContext)).isEqualTo(new ValueString("0:57"));
+    }
+
+    @Test
+    public void valueToString_timeDifferenceElapsedRealtime_updatesWithElapsedRealtime() {
+        TimeDifference runningTimer = TimeDifference.forTimer(
+                ELAPSED_REALTIME + Duration.ofSeconds(60).toMillis(), // Rings in 60 seconds
+                TimeDifference.FORMAT_CHRONOMETER);
+        expect.that(runningTimer.toValueString(mContext)).isEqualTo(new ValueString("1:00"));
+
+        Notification.sSystemClock = () -> NOW.plusSeconds(3);
+
+        expect.that(runningTimer.toValueString(mContext)).isEqualTo(new ValueString("1:00"));
+
+        Notification.sElapsedRealtimeClock =
+                () -> ELAPSED_REALTIME + Duration.ofSeconds(10).toMillis();
+
+        expect.that(runningTimer.toValueString(mContext)).isEqualTo(new ValueString("0:50"));
     }
 
     @Test
