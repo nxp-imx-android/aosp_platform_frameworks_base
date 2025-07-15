@@ -63,8 +63,6 @@ class DisplayWindowPropertiesRepositoryImplTest : SysuiTestCase() {
         DisplayWindowPropertiesRepositoryImpl(
             kosmos.applicationCoroutineScope,
             applicationContext,
-            applicationWindowManager,
-            kosmos.layoutInflater,
             fakeDisplayRepository,
         )
     }
@@ -98,12 +96,12 @@ class DisplayWindowPropertiesRepositoryImplTest : SysuiTestCase() {
     }
 
     @Test
-    fun get_defaultDisplayId_returnsDefaultProperties() =
+    fun get_defaultDisplayId_doesNotReturnDefaultProperties() =
         testScope.runTest {
             val displayContext = repo.get(DEFAULT_DISPLAY_ID, WINDOW_TYPE_FOO)
 
             assertThat(displayContext)
-                .isEqualTo(
+                .isNotEqualTo(
                     DisplayWindowProperties(
                         displayId = DEFAULT_DISPLAY_ID,
                         windowType = WINDOW_TYPE_FOO,
