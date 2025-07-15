@@ -15,8 +15,11 @@
  */
 package com.android.settingslib.devicestate;
 
+import static android.hardware.devicestate.DeviceState.PROPERTY_FOLDABLE_HARDWARE_CONFIGURATION_FOLD_IN_CLOSED;
+
 import android.annotation.NonNull;
 import android.content.Context;
+import android.hardware.devicestate.DeviceStateManager;
 
 import com.android.internal.R;
 
@@ -26,8 +29,23 @@ public final class DeviceStateAutoRotateSettingUtils {
 
     /** Returns true if device-state based rotation lock settings are enabled. */
     public static boolean isDeviceStateRotationLockEnabled(@NonNull Context context) {
-        return context.getResources().getStringArray(
-                R.array.config_perDeviceStateRotationLockDefaults).length > 0;
+        final DeviceStateManager deviceStateManager = context.getSystemService(
+                DeviceStateManager.class);
+        if (deviceStateManager == null) return false;
 
+        return context.getResources().getStringArray(
+                R.array.config_perDeviceStateRotationLockDefaults).length > 0
+                && isAutoRotateSupported(context) && hasFoldedState(deviceStateManager);
+
+    }
+
+    private static boolean isAutoRotateSupported(@NonNull Context context) {
+        return context.getResources().getBoolean(R.bool.config_supportAutoRotation);
+    }
+
+    private static boolean hasFoldedState(DeviceStateManager deviceStateManager) {
+        return deviceStateManager.getSupportedDeviceStates().stream()
+                .anyMatch(state -> state.hasProperty(
+                        PROPERTY_FOLDABLE_HARDWARE_CONFIGURATION_FOLD_IN_CLOSED));
     }
 }
