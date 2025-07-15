@@ -131,6 +131,7 @@ test_module_config {
         "com.android.wm.shell.functional.fundamentals.focus.MoveToNextDisplayAndFocusTest",
         "com.android.wm.shell.functional.fundamentals.focus.OpenAndFocusTest",
         "com.android.wm.shell.functional.keyboardshortcuts.EnterDesktopFromKeyboardShortcutTest",
+        "com.android.wm.shell.functional.keyboardshortcuts.ExitDesktopFromKeyboardShortcutTest",
         "com.android.wm.shell.functional.maximize.MaximizeAppWindowTest",
         "com.android.wm.shell.functional.maximize.MaximizeAppWindowWithDragToTopDragZoneInDesktopFirstTest",
         "com.android.wm.shell.functional.maximize.MaximizeAppWindowWithDragToTopDragZoneTest",
@@ -472,6 +473,13 @@ test_module_config {
     base: "FunctionalTestsDesktopMode",
     test_suites: ["device-tests"],
     include_filters: ["com.android.wm.shell.functional.keyboardshortcuts.EnterDesktopFromKeyboardShortcutTest"],
+}
+
+test_module_config {
+    name: "FunctionalTestsDesktopMode-keyboardshortcuts-ExitDesktopFromKeyboardShortcutTest",
+    base: "FunctionalTestsDesktopMode",
+    test_suites: ["device-tests"],
+    include_filters: ["com.android.wm.shell.functional.keyboardshortcuts.ExitDesktopFromKeyboardShortcutTest"],
 }
 
 test_module_config {
