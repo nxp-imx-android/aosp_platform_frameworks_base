@@ -41,8 +41,6 @@ import static com.android.server.wm.ActivityRecord.State.STOPPING;
 import static com.android.server.wm.ActivityTaskSupervisor.ON_TOP;
 import static com.android.server.wm.RootWindowContainer.MATCH_ATTACHED_TASK_OR_RECENT_TASKS_AND_RESTORE;
 import static com.android.server.wm.WindowContainer.POSITION_BOTTOM;
-import static com.android.window.flags.Flags.FLAG_ENABLE_WINDOW_REPOSITIONING_API;
-
 
 import static com.google.common.truth.Truth.assertThat;
 
@@ -1395,18 +1393,6 @@ public class RootWindowContainerTests extends WindowTestsBase {
         mRootWindowContainer.onDisplayAdded(displayId);
         verify(mWm.mDisplayManagerInternal, times(1)).onDisplayBelongToTopologyChanged(anyInt(),
                 anyBoolean());
-    }
-
-    @EnableFlags(FLAG_ENABLE_WINDOW_REPOSITIONING_API)
-    @Test
-    public void testIsTaskMoveAllowedOnDisplay() {
-        final DisplayContent dc = mRootWindowContainer.getDisplayContent(DEFAULT_DISPLAY);
-
-        doReturn(true).when(dc).isTaskMoveAllowedOnDisplay();
-        assertTrue(mRootWindowContainer.isTaskMoveAllowedOnDisplay(DEFAULT_DISPLAY));
-
-        doReturn(false).when(dc).isTaskMoveAllowedOnDisplay();
-        assertFalse(mRootWindowContainer.isTaskMoveAllowedOnDisplay(DEFAULT_DISPLAY));
     }
 
     /**

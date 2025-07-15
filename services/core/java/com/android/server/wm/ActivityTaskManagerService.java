@@ -1970,13 +1970,19 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
      *
      * @param displayId Target display ID
      * @return Whether the windowing mode active on display with given ID allows task repositioning
+     *
+     * @throws IllegalArgumentException if there is no display with given display ID
      */
     public boolean isTaskMoveAllowedOnDisplay(int displayId) {
+        final DisplayContent dc = mRootWindowContainer.getDisplayContent(displayId);
+        if (dc == null) {
+            throw new IllegalArgumentException("There is no display with ID = " + displayId);
+        }
         if (checkCallingPermission(Manifest.permission.REPOSITION_SELF_WINDOWS)
                 != PackageManager.PERMISSION_GRANTED) {
             return false;
         }
-        return mRootWindowContainer.isTaskMoveAllowedOnDisplay(displayId);
+        return dc.isTaskMoveAllowedOnDisplay();
     }
 
     @Override
@@ -3047,6 +3053,13 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
         }
     }
 
+    /**
+     * This method uses different Shell Transitions machinery than {@link AppTaskImpl#moveTaskTo}.
+     * This method is used mostly for testing purposes and assuming the signature
+     * {@link android.Manifest.permission.MANAGE_ACTIVITY_TASKS} permission so unlike in
+     * {@link AppTaskImpl#moveTaskTo} here the WM Shell is forced to comply with the bounds
+     * provided by the WM Core.
+     */
     @Override
     public void resizeTask(int taskId, Rect bounds, int resizeMode) {
         enforceTaskPermission("resizeTask()");

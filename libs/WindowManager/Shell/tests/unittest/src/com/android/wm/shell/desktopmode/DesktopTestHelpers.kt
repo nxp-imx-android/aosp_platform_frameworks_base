@@ -16,6 +16,7 @@
 
 package com.android.wm.shell.desktopmode
 
+import android.app.ActivityManager
 import android.app.ActivityManager.RunningTaskInfo
 import android.app.WindowConfiguration.ACTIVITY_TYPE_HOME
 import android.app.WindowConfiguration.ACTIVITY_TYPE_STANDARD
@@ -34,7 +35,7 @@ object DesktopTestHelpers {
     fun createFreeformTask(
         displayId: Int = DEFAULT_DISPLAY,
         bounds: Rect? = null,
-        userId: Int = DEFAULT_USER_ID,
+        userId: Int = ActivityManager.getCurrentUser(),
     ): RunningTaskInfo =
         TestRunningTaskInfoBuilder()
             .setDisplayId(displayId)
@@ -64,7 +65,7 @@ object DesktopTestHelpers {
             .setToken(MockToken().token())
             .setActivityType(ACTIVITY_TYPE_STANDARD)
             .setWindowingMode(WINDOWING_MODE_FULLSCREEN)
-            .setUserId(DEFAULT_USER_ID)
+            .setUserId(ActivityManager.getCurrentUser())
             .setLastActiveTime(100)
 
     /** Create a task that has windowing mode set to [WINDOWING_MODE_FULLSCREEN] */
@@ -78,13 +79,13 @@ object DesktopTestHelpers {
             .setToken(MockToken().token())
             .setActivityType(ACTIVITY_TYPE_STANDARD)
             .setWindowingMode(WINDOWING_MODE_MULTI_WINDOW)
-            .setUserId(DEFAULT_USER_ID)
+            .setUserId(ActivityManager.getCurrentUser())
             .setLastActiveTime(100)
             .build()
 
     fun createHomeTask(
         displayId: Int = DEFAULT_DISPLAY,
-        userId: Int = DEFAULT_USER_ID,
+        userId: Int = ActivityManager.getCurrentUser(),
     ): RunningTaskInfo =
         TestRunningTaskInfoBuilder()
             .setDisplayId(displayId)
@@ -111,6 +112,4 @@ object DesktopTestHelpers {
         createSystemModalTask().apply {
             baseActivity = ComponentName("com.test.dummypackage", "TestClass")
         }
-
-    const val DEFAULT_USER_ID = 10
 }

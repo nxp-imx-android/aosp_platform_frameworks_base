@@ -1567,18 +1567,22 @@ public class ActivityTaskManagerServiceTests extends WindowTestsBase {
     @EnableFlags(FLAG_ENABLE_WINDOW_REPOSITIONING_API)
     @Test
     public void testIsTaskMoveAllowedOnDisplay_permissionGranted() {
-        final int displayId = 73;
+        final int displayId = Display.DEFAULT_DISPLAY;
+        final DisplayContent dc = mRootWindowContainer.getDisplayContent(displayId);
 
         MockitoSession session =
                 mockitoSession().spyStatic(ActivityTaskManagerService.class).startMocking();
         try {
-            doReturn(true).when(mRootWindowContainer).isTaskMoveAllowedOnDisplay(displayId);
             doReturn(PERMISSION_GRANTED).when(() -> {
                 return ActivityTaskManagerService.checkPermission(
                         eq(REPOSITION_SELF_WINDOWS), anyInt(), anyInt());
             });
 
+            doReturn(true).when(dc).isTaskMoveAllowedOnDisplay();
             assertTrue(mAtm.isTaskMoveAllowedOnDisplay(displayId));
+
+            doReturn(false).when(dc).isTaskMoveAllowedOnDisplay();
+            assertFalse(mAtm.isTaskMoveAllowedOnDisplay(displayId));
         } finally {
             session.finishMocking();
         }
@@ -1587,17 +1591,21 @@ public class ActivityTaskManagerServiceTests extends WindowTestsBase {
     @EnableFlags(FLAG_ENABLE_WINDOW_REPOSITIONING_API)
     @Test
     public void testIsTaskMoveAllowedOnDisplay_permissionDenied() {
-        final int displayId = 73;
+        final int displayId = Display.DEFAULT_DISPLAY;
+        final DisplayContent dc = mRootWindowContainer.getDisplayContent(displayId);
 
         MockitoSession session =
                 mockitoSession().spyStatic(ActivityTaskManagerService.class).startMocking();
         try {
-            doReturn(true).when(mRootWindowContainer).isTaskMoveAllowedOnDisplay(displayId);
             doReturn(PERMISSION_DENIED).when(() -> {
                 return ActivityTaskManagerService.checkPermission(
                         eq(REPOSITION_SELF_WINDOWS), anyInt(), anyInt());
             });
 
+            doReturn(true).when(dc).isTaskMoveAllowedOnDisplay();
+            assertFalse(mAtm.isTaskMoveAllowedOnDisplay(displayId));
+
+            doReturn(false).when(dc).isTaskMoveAllowedOnDisplay();
             assertFalse(mAtm.isTaskMoveAllowedOnDisplay(displayId));
         } finally {
             session.finishMocking();
