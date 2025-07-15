@@ -403,9 +403,7 @@ constructor(
             setAlpha(weatherId, if (showWeather) 1f else 0f)
 
             val showDateView =
-                !keyguardClockViewModel.hasCustomWeatherDataDisplay.value ||
-                    !isLargeClockVisible ||
-                    !keyguardClockViewModel.shouldDateWeatherBeBelowLargeClock.value
+                !keyguardClockViewModel.hasCustomWeatherDataDisplay.value || !isLargeClockVisible
             setVisibility(dateId, if (showDateView) VISIBLE else GONE)
             setAlpha(dateId, if (showDateView) 1f else 0f)
 
