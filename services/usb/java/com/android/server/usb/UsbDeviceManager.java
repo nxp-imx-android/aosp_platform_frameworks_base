@@ -361,6 +361,12 @@ public class UsbDeviceManager implements ActivityTaskManagerInternal.ScreenObser
         }
         mControlFds.put(UsbManager.FUNCTION_PTP, ptpFd);
 
+        if (android.hardware.usb.flags.Flags.enableAoaUserspaceImplementation()) {
+            if (!nativeOpenAccessoryControl()) {
+                Slog.e(TAG, "Failed to open control for accessory");
+            }
+        }
+
         if (mUsbGadgetHal == null) {
             /**
              * Initialze the legacy UsbHandler
@@ -535,7 +541,12 @@ public class UsbDeviceManager implements ActivityTaskManagerInternal.ScreenObser
 
         int operationId = sUsbOperationCount.incrementAndGet();
 
-        mAccessoryStrings = nativeGetAccessoryStrings();
+        if (android.hardware.usb.flags.Flags.enableAoaUserspaceImplementation()) {
+            mAccessoryStrings = nativeGetAccessoryStringsFromFfs();
+        } else {
+            mAccessoryStrings = nativeGetAccessoryStrings();
+        }
+
         // don't start accessory mode if our mandatory strings have not been set
         boolean enableAccessory = (mAccessoryStrings != null &&
                 mAccessoryStrings[UsbAccessory.MANUFACTURER_STRING] != null &&
@@ -2728,7 +2739,35 @@ public class UsbDeviceManager implements ActivityTaskManagerInternal.ScreenObser
         mHandler.updateState(state);
     }
 
+    /** Update accessory control state (Called by native code). */
+    @Keep
+    private void updateAccessoryState(String state) {
+        if (!android.hardware.usb.flags.Flags.enableAoaUserspaceImplementation()) {
+            Slog.w(TAG, "Accessory state update from userspace is not supported!");
+            return;
+        }
+
+        Slog.d(TAG, "Accessory state update " + state);
+
+        if ("GETPROTOCOL".equals(state)) {
+            if (DEBUG) Slog.d(TAG, "got accessory get protocol");
+            mHandler.setAccessoryUEventTime(SystemClock.elapsedRealtime());
+            resetAccessoryHandshakeTimeoutHandler();
+        } else if ("SENDSTRING".equals(state)) {
+            if (DEBUG) Slog.d(TAG, "got accessory send string");
+            mHandler.sendEmptyMessage(MSG_INCREASE_SENDSTRING_COUNT);
+            resetAccessoryHandshakeTimeoutHandler();
+        } else if ("START".equals(state)) {
+            if (DEBUG) Slog.d(TAG, "got accessory start");
+            mHandler.removeMessages(MSG_ACCESSORY_HANDSHAKE_TIMEOUT);
+            mHandler.setStartAccessoryTrue();
+            startAccessoryMode();
+        }
+    }
+
     private native String[] nativeGetAccessoryStrings();
+
+    private native String[] nativeGetAccessoryStringsFromFfs();
 
     private native ParcelFileDescriptor nativeOpenAccessory();
 
@@ -2743,4 +2782,6 @@ public class UsbDeviceManager implements ActivityTaskManagerInternal.ScreenObser
     private native void nativeStopGadgetMonitor();
 
     private native boolean nativeStartVendorControlRequestMonitor();
+
+    private native boolean nativeOpenAccessoryControl();
 }
