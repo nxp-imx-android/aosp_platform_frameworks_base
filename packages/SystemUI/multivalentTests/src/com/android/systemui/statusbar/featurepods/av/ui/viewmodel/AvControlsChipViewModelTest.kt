@@ -16,6 +16,7 @@
 
 package com.android.systemui.statusbar.featurepods.av.ui.viewmodel
 
+import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
@@ -104,6 +105,7 @@ class AvControlsChipViewModelTest() : SysuiTestCase() {
         }
 
     @Test
+    @DisableFlags(FLAG_EXPANDED_PRIVACY_INDICATORS_ON_LARGE_SCREEN)
     fun avControlsChip_flagNotEnabled_isHidden() =
         kosmos.runTest {
             underTest.chip.verifyHidden()
