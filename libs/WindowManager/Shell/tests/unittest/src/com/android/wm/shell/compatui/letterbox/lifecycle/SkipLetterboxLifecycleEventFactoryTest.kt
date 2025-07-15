@@ -24,7 +24,6 @@ import com.android.wm.shell.ShellTestCase
 import com.android.wm.shell.util.testLetterboxLifecycleEventFactory
 import java.util.function.Consumer
 import kotlin.test.assertFalse
-import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -49,62 +48,16 @@ class SkipLetterboxLifecycleEventFactoryTest : ShellTestCase() {
                 validateCanHandle { canHandle ->
                     assertTrue(canHandle)
                 }
-                validateCreateLifecycleEvent { event ->
-                    assertNull(event)
-                }
             }
         }
     }
 
     @Test
-    fun `Factory is active when Change is for a Task which is NOT a leaf`() {
+    fun `Factory is NOT active when Change is NOT a Closing one`() {
         runTestScenario { r ->
             testLetterboxLifecycleEventFactory(r.getLetterboxLifecycleEventFactory()) {
                 inputChange {
                     mode = TRANSIT_OPEN
-                    runningTaskInfo { ti ->
-                        ti.appCompatTaskInfo.setIsLeafTask(false)
-                    }
-                }
-                validateCanHandle { canHandle ->
-                    assertTrue(canHandle)
-                }
-                validateCreateLifecycleEvent { event ->
-                    assertNull(event)
-                }
-            }
-        }
-    }
-
-    @Test
-    fun `Factory is active when Change is not closing for a Task which is NOT a leaf`() {
-        runTestScenario { r ->
-            testLetterboxLifecycleEventFactory(r.getLetterboxLifecycleEventFactory()) {
-                inputChange {
-                    mode = TRANSIT_OPEN
-                    runningTaskInfo { ti ->
-                        ti.appCompatTaskInfo.setIsLeafTask(false)
-                    }
-                }
-                validateCanHandle { canHandle ->
-                    assertTrue(canHandle)
-                }
-                validateCreateLifecycleEvent { event ->
-                    assertNull(event)
-                }
-            }
-        }
-    }
-
-    @Test
-    fun `Factory is NOT active when Change is not closing for an Activity Transition`() {
-        runTestScenario { r ->
-            testLetterboxLifecycleEventFactory(r.getLetterboxLifecycleEventFactory()) {
-                inputChange {
-                    mode = TRANSIT_OPEN
-                    activityTransitionInfo {
-                        this.taskId = 10
-                    }
                 }
                 validateCanHandle { canHandle ->
                     assertFalse(canHandle)
