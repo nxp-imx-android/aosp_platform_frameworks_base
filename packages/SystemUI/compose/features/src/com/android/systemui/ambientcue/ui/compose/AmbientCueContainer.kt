@@ -268,6 +268,7 @@ private fun NavBarAmbientCue(
             }
         },
         onCloseClick = { viewModel.hide() },
+        onCloseEducation = { viewModel.disableFirstTimeHint() },
     )
 }
 

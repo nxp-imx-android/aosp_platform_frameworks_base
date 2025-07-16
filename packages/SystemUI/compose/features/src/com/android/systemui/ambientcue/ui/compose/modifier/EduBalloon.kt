@@ -29,6 +29,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.unit.dp
+import kotlin.math.sqrt
 
 @Composable
 fun Modifier.eduBalloon(
@@ -41,6 +42,7 @@ fun Modifier.eduBalloon(
             val oneDp = with(density) { 1.dp.toPx() }
             val translationX = with(density) { 6.dp.toPx() }
             val translationY = with(density) { 10.dp.toPx() }
+            val cornerRadius = with(density) { 2.dp.toPx() }
 
             val center =
                 when (horizontalAlignment) {
@@ -54,7 +56,22 @@ fun Modifier.eduBalloon(
                     path =
                         Path().apply {
                             moveTo(-translationX, 0f)
-                            lineTo(0f, translationY)
+                            // Calculate the tangent point coordinates.
+                            val arrowLegLength =
+                                sqrt(translationX * translationX + translationY * translationY)
+                            val tangentPointX = translationY * cornerRadius / arrowLegLength
+                            val tangentPointY =
+                                translationY - translationX * tangentPointX / translationY
+                            lineTo(-tangentPointX, tangentPointY)
+                            // Draw a curve connecting the two tangent points via a control point,
+                            // forming the rounded tip of the arrow.
+                            quadraticTo(
+                                0f,
+                                translationY + cornerRadius -
+                                    (arrowLegLength - cornerRadius) / translationX,
+                                tangentPointX,
+                                tangentPointY,
+                            )
                             lineTo(translationX, 0f)
                         },
                     color = backgroundColor,
@@ -62,7 +79,7 @@ fun Modifier.eduBalloon(
             }
         }
         .clip(RoundedCornerShape(28.dp))
-        .widthIn(max = 296.dp)
+        .widthIn(max = 348.dp)
         .background(backgroundColor)
         .padding(16.dp)
 }
