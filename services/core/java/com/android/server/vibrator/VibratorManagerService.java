@@ -34,8 +34,12 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.content.res.Resources;
+import android.hardware.vibrator.CompositeEffect;
+import android.hardware.vibrator.CompositePwleV2;
 import android.hardware.vibrator.IVibrator;
 import android.hardware.vibrator.IVibratorManager;
+import android.hardware.vibrator.PrimitivePwle;
+import android.hardware.vibrator.VendorEffect;
 import android.os.BatteryStats;
 import android.os.Binder;
 import android.os.Build;
@@ -49,6 +53,7 @@ import android.os.IExternalVibratorService;
 import android.os.IVibratorManagerService;
 import android.os.IVibratorStateListener;
 import android.os.Looper;
+import android.os.Parcel;
 import android.os.PowerManager;
 import android.os.Process;
 import android.os.RemoteException;
@@ -253,8 +258,28 @@ public class VibratorManagerService extends IVibratorManagerService.Stub {
             int[] vibratorIds);
 
     /** Calls {@link IVibrator#on} with callback. */
-    private static native boolean nativeVibratorOnWithCallback(long nativePtr, int vibratorId,
+    private static native int nativeVibratorOnWithCallback(long nativePtr, int vibratorId,
             long vibrationId, long stepId, int durationMs);
+
+    /** Calls {@link IVibrator#performVendorEffect} with given {@link VendorEffect} and callback. */
+    private static native int nativeVibratorPerformVendorEffectWithCallback(long nativePtr,
+            int vibratorId, long vibrationId, long stepId, Parcel effect);
+
+    /** Calls {@link IVibrator#perform} with callback. */
+    private static native int nativeVibratorPerformEffectWithCallback(long nativePtr,
+            int vibratorId, long vibrationId, long stepId, int effectId, int effectStrength);
+
+    /** Calls {@link IVibrator#compose} with given {@link CompositeEffect} array and callback. */
+    private static native int nativeVibratorComposeEffectWithCallback(long nativePtr,
+            int vibratorId, long vibrationId, long stepId, Parcel effect);
+
+    /** Calls {@link IVibrator#composePwle} with given {@link PrimitivePwle} array and callback. */
+    private static native int nativeVibratorComposePwleEffectWithCallback(long nativePtr,
+            int vibratorId, long vibrationId, long stepId, Parcel effect);
+
+    /** Calls {@link IVibrator#composePwleV2} with callback. */
+    private static native int nativeVibratorComposePwleV2EffectWithCallback(long nativePtr,
+            int vibratorId, long vibrationId, long stepId, Parcel effect);
 
     // TODO(b/409002423): remove native methods below once remove_hidl_support flag removed
     static native long nativeInit(HalVibratorManager.Callbacks callback);
@@ -2377,10 +2402,83 @@ public class VibratorManagerService extends IVibratorManagerService.Stub {
         }
 
         @Override
-        public boolean vibrateWithCallback(int vibratorId, long vibrationId, long stepId,
+        public int vibrateWithCallback(int vibratorId, long vibrationId, long stepId,
                 int durationMs) {
             return nativeVibratorOnWithCallback(mNativePtr, vibratorId, vibrationId, stepId,
                     durationMs);
+        }
+
+        @Override
+        public int vibrateWithCallback(int vibratorId, long vibrationId, long stepId,
+                VendorEffect effect) {
+            Parcel parcel = Parcel.obtain();
+            try {
+                effect.writeToParcel(parcel, /* flags= */ 0);
+                parcel.setDataPosition(0);
+                return nativeVibratorPerformVendorEffectWithCallback(mNativePtr, vibratorId,
+                        vibrationId, stepId, parcel);
+            } finally {
+                parcel.recycle();
+                Trace.traceEnd(TRACE_TAG_VIBRATOR);
+            }
+        }
+
+        @Override
+        public int vibrateWithCallback(int vibratorId, long vibrationId, long stepId,
+                int effectId, int effectStrength) {
+            return nativeVibratorPerformEffectWithCallback(mNativePtr, vibratorId, vibrationId,
+                    stepId, effectId, effectStrength);
+        }
+
+        @Override
+        public int vibrateWithCallback(int vibratorId, long vibrationId, long stepId,
+                CompositeEffect[] effects) {
+            Parcel parcel = Parcel.obtain();
+            try {
+                parcel.writeInt(effects.length);
+                for (CompositeEffect effect : effects) {
+                    effect.writeToParcel(parcel, /* flags= */ 0);
+                }
+                parcel.setDataPosition(0);
+                return nativeVibratorComposeEffectWithCallback(mNativePtr, vibratorId,
+                        vibrationId, stepId, parcel);
+            } finally {
+                parcel.recycle();
+                Trace.traceEnd(TRACE_TAG_VIBRATOR);
+            }
+        }
+
+        @Override
+        public int vibrateWithCallback(int vibratorId, long vibrationId, long stepId,
+                PrimitivePwle[] effects) {
+            Parcel parcel = Parcel.obtain();
+            try {
+                parcel.writeInt(effects.length);
+                for (PrimitivePwle effect : effects) {
+                    effect.writeToParcel(parcel, /* flags= */ 0);
+                }
+                parcel.setDataPosition(0);
+                return nativeVibratorComposePwleEffectWithCallback(mNativePtr, vibratorId,
+                        vibrationId, stepId, parcel);
+            } finally {
+                parcel.recycle();
+                Trace.traceEnd(TRACE_TAG_VIBRATOR);
+            }
+        }
+
+        @Override
+        public int vibrateWithCallback(int vibratorId, long vibrationId, long stepId,
+                CompositePwleV2 composite) {
+            Parcel parcel = Parcel.obtain();
+            try {
+                composite.writeToParcel(parcel, /* flags= */ 0);
+                parcel.setDataPosition(0);
+                return nativeVibratorComposePwleV2EffectWithCallback(mNativePtr, vibratorId,
+                        vibrationId, stepId, parcel);
+            } finally {
+                parcel.recycle();
+                Trace.traceEnd(TRACE_TAG_VIBRATOR);
+            }
         }
     }
 

@@ -22,11 +22,14 @@
 #include <aidl/android/hardware/vibrator/IVibratorManager.h>
 #include <android-base/thread_annotations.h>
 #include <android/binder_manager.h>
+#include <android/binder_parcel.h>
+#include <android/binder_parcel_jni.h>
 #include <utils/Log.h>
 #include <vibratorservice/VibratorManagerHalController.h>
 
 #include <condition_variable>
 #include <mutex>
+#include <vector>
 
 #include "core_jni_helpers.h"
 #include "jni.h"
@@ -173,6 +176,54 @@ std::unique_ptr<HalProvider<I>> defaultProviderForDeclaredService() {
         return std::make_unique<DefaultProvider<I>>();
     }
     return nullptr;
+}
+
+// Returns a new parcelable from given java parcel object.
+template <typename I>
+I fromParcel(JNIEnv* env, AParcel* parcel) {
+    I parcelable;
+    if (binder_status_t status = parcelable.readFromParcel(parcel); status != STATUS_OK) {
+        jniThrowExceptionFmt(env, "android/os/BadParcelableException",
+                             "Failed to readFromParcel, status %d (%s)", status, strerror(-status));
+    }
+    return parcelable;
+}
+
+// Returns a new parcelable from given java parcel object.
+template <typename I>
+I fromJavaParcel(JNIEnv* env, jobject data) {
+    I parcelable;
+    if (AParcel* parcel = AParcel_fromJavaParcel(env, data); parcel != nullptr) {
+        parcelable = fromParcel<I>(env, parcel);
+        AParcel_delete(parcel);
+    } else {
+        jniThrowExceptionFmt(env, "android/os/BadParcelableException",
+                             "Failed to AParcel_fromJavaParcel, for nullptr");
+    }
+    return parcelable;
+}
+
+// Returns a new array of parcelables from given java parcel object.
+template <typename I>
+std::vector<I> vectorFromJavaParcel(JNIEnv* env, jobject data) {
+    int32_t size;
+    std::vector<I> result;
+    if (AParcel* parcel = AParcel_fromJavaParcel(env, data); parcel != nullptr) {
+        if (binder_status_t status = AParcel_readInt32(parcel, &size); status == STATUS_OK) {
+            for (int i = 0; i < size; i++) {
+                result.push_back(fromParcel<I>(env, parcel));
+            }
+            AParcel_delete(parcel);
+        } else {
+            jniThrowExceptionFmt(env, "android/os/BadParcelableException",
+                                 "Failed to readInt32 for array length, status %d (%s)", status,
+                                 strerror(-status));
+        }
+    } else {
+        jniThrowExceptionFmt(env, "android/os/BadParcelableException",
+                             "Failed to AParcel_fromJavaParcel, for nullptr");
+    }
+    return result;
 }
 
 } // namespace android

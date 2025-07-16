@@ -34,9 +34,15 @@
 namespace android {
 
 using BnVibratorCallback = aidl::android::hardware::vibrator::BnVibratorCallback;
+using CompositeEffect = aidl::android::hardware::vibrator::CompositeEffect;
+using CompositePwleV2 = aidl::android::hardware::vibrator::CompositePwleV2;
+using Effect = aidl::android::hardware::vibrator::Effect;
+using EffectStrength = aidl::android::hardware::vibrator::EffectStrength;
 using IVibrator = aidl::android::hardware::vibrator::IVibrator;
 using IVibratorManager = aidl::android::hardware::vibrator::IVibratorManager;
 using IVibrationSession = aidl::android::hardware::vibrator::IVibrationSession;
+using PrimitivePwle = aidl::android::hardware::vibrator::PrimitivePwle;
+using VendorEffect = aidl::android::hardware::vibrator::VendorEffect;
 using VibrationSessionConfig = aidl::android::hardware::vibrator::VibrationSessionConfig;
 
 // Used to attach HAL callbacks to JNI environment and send them back to vibrator manager service.
@@ -249,6 +255,29 @@ vibrator::ManagerHalController* android_server_vibrator_VibratorManagerService_g
     return gManager;
 }
 
+static jboolean resultFromStatus(ndk::ScopedAStatus status, const char* logLabel) {
+    if (status.isOk()) {
+        return JNI_TRUE;
+    }
+    ALOGE("%s: %s", logLabel, status.getMessage());
+    return JNI_FALSE;
+}
+
+static jint resultFromStatus(ndk::ScopedAStatus status, int32_t successValue,
+                             const char* logLabel) {
+    if (status.isOk()) {
+        return static_cast<jint>(successValue);
+    }
+    ALOGE("%s: %s", logLabel, status.getMessage());
+    if (status.getExceptionCode() == EX_UNSUPPORTED_OPERATION ||
+        status.getStatus() == STATUS_UNKNOWN_TRANSACTION) {
+        // STATUS_UNKNOWN_TRANSACTION means the HAL implementation is an older version, so this
+        // is the same as the operation being unsupported by this HAL.
+        return 0;
+    }
+    return -1;
+}
+
 static NativeVibratorManagerService* toNativeService(jlong ptr, const char* logLabel) {
     auto service = reinterpret_cast<NativeVibratorManagerService*>(ptr);
     if (service == nullptr) {
@@ -327,12 +356,7 @@ static jboolean nativeTriggerSyncedWithCallback(JNIEnv* env, jclass /* clazz */,
     auto callback = ndk::SharedRefBase::make<VibratorCallback>(sJvm, service->managerCallbacks(),
                                                                sMethodIdOnSyncedVibrationComplete,
                                                                vibrationId);
-    auto status = hal->triggerSynced(callback);
-    if (!status.isOk()) {
-        ALOGE("%s: %s", __func__, status.getMessage());
-        return JNI_FALSE;
-    }
-    return JNI_TRUE;
+    return resultFromStatus(hal->triggerSynced(callback), __func__);
 }
 
 static jobject nativeStartSessionWithCallback(JNIEnv* env, jclass /* clazz */, jlong ptr,
@@ -359,23 +383,100 @@ static jobject nativeStartSessionWithCallback(JNIEnv* env, jclass /* clazz */, j
     return AIBinder_toJavaBinder(env, session->asBinder().get());
 }
 
-static jboolean nativeVibratorOnWithCallback(JNIEnv* env, jclass /* clazz */, jlong ptr,
-                                             jint vibratorId, jlong vibrationId, jlong stepId,
-                                             jint durationMs) {
+static jint nativeVibratorOnWithCallback(JNIEnv* env, jclass /* clazz */, jlong ptr,
+                                         jint vibratorId, jlong vibrationId, jlong stepId,
+                                         jint durationMs) {
     ALOGD("%s", __func__);
     auto service = toNativeService(ptr, __func__);
     auto hal = loadVibratorHal(service, static_cast<int32_t>(vibratorId), __func__);
     if (service == nullptr || hal == nullptr) {
-        return JNI_FALSE;
+        return -1;
     }
     auto callback = ndk::SharedRefBase::make<VibrationCallback>(service->vibratorCallbacks(),
                                                                 vibratorId, vibrationId, stepId);
-    auto status = hal->on(static_cast<int32_t>(durationMs), callback);
-    if (!status.isOk()) {
-        ALOGE("%s: %s", __func__, status.getMessage());
-        return JNI_FALSE;
+    int32_t millis = static_cast<int32_t>(durationMs);
+    return resultFromStatus(hal->on(millis, callback), millis, __func__);
+}
+
+static jint nativeVibratorPerformVendorEffectWithCallback(JNIEnv* env, jclass /* clazz */,
+                                                          jlong ptr, jint vibratorId,
+                                                          jlong vibrationId, jlong stepId,
+                                                          jobject vendorEffect) {
+    ALOGD("%s", __func__);
+    auto service = toNativeService(ptr, __func__);
+    auto hal = loadVibratorHal(service, static_cast<int32_t>(vibratorId), __func__);
+    if (service == nullptr || hal == nullptr) {
+        return -1;
     }
-    return JNI_TRUE;
+    auto effect = fromJavaParcel<VendorEffect>(env, vendorEffect);
+    auto callback = ndk::SharedRefBase::make<VibrationCallback>(service->vibratorCallbacks(),
+                                                                vibratorId, vibrationId, stepId);
+    return resultFromStatus(hal->performVendorEffect(effect, callback), INT32_MAX, __func__);
+}
+
+static jint nativeVibratorPerformEffectWithCallback(JNIEnv* env, jclass /* clazz */, jlong ptr,
+                                                    jint vibratorId, jlong vibrationId,
+                                                    jlong stepId, jint effectId,
+                                                    jint effectStrength) {
+    ALOGD("%s", __func__);
+    auto service = toNativeService(ptr, __func__);
+    auto hal = loadVibratorHal(service, static_cast<int32_t>(vibratorId), __func__);
+    if (service == nullptr || hal == nullptr) {
+        return -1;
+    }
+    int32_t durationMs;
+    auto effect = static_cast<Effect>(effectId);
+    auto strength = static_cast<EffectStrength>(effectStrength);
+    auto callback = ndk::SharedRefBase::make<VibrationCallback>(service->vibratorCallbacks(),
+                                                                vibratorId, vibrationId, stepId);
+    auto status = hal->perform(effect, strength, callback, &durationMs);
+    return resultFromStatus(std::move(status), durationMs, __func__);
+}
+
+static jint nativeVibratorComposeEffectWithCallback(JNIEnv* env, jclass /* clazz */, jlong ptr,
+                                                    jint vibratorId, jlong vibrationId,
+                                                    jlong stepId, jobject compositeEffects) {
+    ALOGD("%s", __func__);
+    auto service = toNativeService(ptr, __func__);
+    auto hal = loadVibratorHal(service, static_cast<int32_t>(vibratorId), __func__);
+    if (service == nullptr || hal == nullptr) {
+        return -1;
+    }
+    auto effects = vectorFromJavaParcel<CompositeEffect>(env, compositeEffects);
+    auto callback = ndk::SharedRefBase::make<VibrationCallback>(service->vibratorCallbacks(),
+                                                                vibratorId, vibrationId, stepId);
+    return resultFromStatus(hal->compose(effects, callback), INT32_MAX, __func__);
+}
+
+static jint nativeVibratorComposePwleEffectWithCallback(JNIEnv* env, jclass /* clazz */, jlong ptr,
+                                                        jint vibratorId, jlong vibrationId,
+                                                        jlong stepId, jobject pwles) {
+    ALOGD("%s", __func__);
+    auto service = toNativeService(ptr, __func__);
+    auto hal = loadVibratorHal(service, static_cast<int32_t>(vibratorId), __func__);
+    if (service == nullptr || hal == nullptr) {
+        return -1;
+    }
+    auto effects = vectorFromJavaParcel<PrimitivePwle>(env, pwles);
+    auto callback = ndk::SharedRefBase::make<VibrationCallback>(service->vibratorCallbacks(),
+                                                                vibratorId, vibrationId, stepId);
+    return resultFromStatus(hal->composePwle(effects, callback), INT32_MAX, __func__);
+}
+
+static jint nativeVibratorComposePwleV2EffectWithCallback(JNIEnv* env, jclass /* clazz */,
+                                                          jlong ptr, jint vibratorId,
+                                                          jlong vibrationId, jlong stepId,
+                                                          jobject composite) {
+    ALOGD("%s", __func__);
+    auto service = toNativeService(ptr, __func__);
+    auto hal = loadVibratorHal(service, static_cast<int32_t>(vibratorId), __func__);
+    if (service == nullptr || hal == nullptr) {
+        return -1;
+    }
+    auto compositePwleV2 = fromJavaParcel<CompositePwleV2>(env, composite);
+    auto callback = ndk::SharedRefBase::make<VibrationCallback>(service->vibratorCallbacks(),
+                                                                vibratorId, vibrationId, stepId);
+    return resultFromStatus(hal->composePwleV2(compositePwleV2, callback), INT32_MAX, __func__);
 }
 
 // TODO(b/409002423): remove functions below once remove_hidl_support flag removed
@@ -505,7 +606,17 @@ static const JNINativeMethod method_table[] = {
         {"nativeTriggerSyncedWithCallback", "(JJ)Z", (void*)nativeTriggerSyncedWithCallback},
         {"nativeStartSessionWithCallback", "(JJ[I)Landroid/os/IBinder;",
          (void*)nativeStartSessionWithCallback},
-        {"nativeVibratorOnWithCallback", "(JIJJI)Z", (void*)nativeVibratorOnWithCallback},
+        {"nativeVibratorOnWithCallback", "(JIJJI)I", (void*)nativeVibratorOnWithCallback},
+        {"nativeVibratorPerformVendorEffectWithCallback", "(JIJJLandroid/os/Parcel;)I",
+         (void*)nativeVibratorPerformVendorEffectWithCallback},
+        {"nativeVibratorPerformEffectWithCallback", "(JIJJII)I",
+         (void*)nativeVibratorPerformEffectWithCallback},
+        {"nativeVibratorComposeEffectWithCallback", "(JIJJLandroid/os/Parcel;)I",
+         (void*)nativeVibratorComposeEffectWithCallback},
+        {"nativeVibratorComposePwleEffectWithCallback", "(JIJJLandroid/os/Parcel;)I",
+         (void*)nativeVibratorComposePwleEffectWithCallback},
+        {"nativeVibratorComposePwleV2EffectWithCallback", "(JIJJLandroid/os/Parcel;)I",
+         (void*)nativeVibratorComposePwleV2EffectWithCallback},
 };
 
 int register_android_server_vibrator_VibratorManagerService(JavaVM* jvm, JNIEnv* env) {

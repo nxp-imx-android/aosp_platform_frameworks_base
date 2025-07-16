@@ -18,9 +18,13 @@ package com.android.server.vibrator;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.hardware.vibrator.CompositeEffect;
+import android.hardware.vibrator.CompositePwleV2;
 import android.hardware.vibrator.IVibrationSession;
 import android.hardware.vibrator.IVibrator;
 import android.hardware.vibrator.IVibratorManager;
+import android.hardware.vibrator.PrimitivePwle;
+import android.hardware.vibrator.VendorEffect;
 
 /** Handles interactions with vibrator HAL services through native. */
 interface HalNativeHandler {
@@ -56,7 +60,64 @@ interface HalNativeHandler {
      * <p>This should only be called if HAL has {@link IVibrator#CAP_ON_CALLBACK}. The HAL might
      * fail the request otherwise.
      *
-     * @return true if successful, false otherwise.
+     * @return durationMs if successful, zero if unsupported or negative if failed.
      */
-    boolean vibrateWithCallback(int vibratorId, long vibrationId, long stepId, int durationMs);
+    int vibrateWithCallback(int vibratorId, long vibrationId, long stepId, int durationMs);
+
+    /**
+     * Call {@link IVibrator#performVendorEffect} on single vibrator using vibration id for
+     * callbacks from HAL.
+     *
+     * <p>This should only be called if HAL has {@link IVibrator#CAP_PERFORM_VENDOR_EFFECTS}.
+     * The HAL might fail the request otherwise.
+     *
+     * @return max int value if successful, zero if unsupported or negative if failed.
+     */
+    int vibrateWithCallback(int vibratorId, long vibrationId, long stepId, VendorEffect effect);
+
+    /**
+     * Call {@link IVibrator#perform} on single vibrator using vibration id for callbacks from HAL.
+     *
+     * <p>This should only be called if HAL has {@link IVibrator#CAP_PERFORM_CALLBACK}. The HAL
+     * might fail the request otherwise.
+     *
+     * @return duration (milliseconds) if successful, zero if unsupported or negative if failed.
+     */
+    int vibrateWithCallback(int vibratorId, long vibrationId, long stepId, int effectId,
+            int effectStrength);
+
+    /**
+     * Call {@link IVibrator#compose} on single vibrator using vibration id for callbacks from HAL.
+     *
+     * <p>This should only be called if HAL has {@link IVibrator#CAP_COMPOSE_EFFECTS}. The HAL
+     * might fail the request otherwise.
+     *
+     * @return max int value if successful, zero if unsupported or negative if failed.
+     */
+    int vibrateWithCallback(int vibratorId, long vibrationId, long stepId,
+            CompositeEffect[] effects);
+
+    /**
+     * Call {@link IVibrator#composePwle} on single vibrator using vibration id for callbacks
+     * from HAL.
+     *
+     * <p>This should only be called if HAL has {@link IVibrator#CAP_COMPOSE_PWLE_EFFECTS}. The HAL
+     * might fail the request otherwise.
+     *
+     * @return max int value if successful, zero if unsupported or negative if failed.
+     */
+    int vibrateWithCallback(int vibratorId, long vibrationId, long stepId,
+            PrimitivePwle[] effects);
+
+    /**
+     * Call {@link IVibrator#composePwleV2} on single vibrator using vibration id for callbacks
+     * from HAL.
+     *
+     * <p>This should only be called if HAL has {@link IVibrator#CAP_COMPOSE_PWLE_EFFECTS_V2}.
+     * The HAL might fail the request otherwise.
+     *
+     * @return max int value if successful, zero if unsupported or negative if failed.
+     */
+    int vibrateWithCallback(int vibratorId, long vibrationId, long stepId,
+            CompositePwleV2 composite);
 }
