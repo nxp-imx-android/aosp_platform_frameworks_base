@@ -557,11 +557,6 @@ public class Bubble implements BubbleViewProvider {
         return mDotColor;
     }
 
-    @Override
-    public Path getDotPath() {
-        return mDotPath;
-    }
-
     @Nullable
     public String getAppName() {
         return mAppName;
@@ -808,7 +803,6 @@ public class Bubble implements BubbleViewProvider {
         mBubbleBitmap = info.bubbleBitmap;
 
         mDotColor = info.dotColor;
-        mDotPath = info.dotPath;
 
         if (mExpandedView != null) {
             mExpandedView.update(this /* bubble */);

@@ -199,7 +199,6 @@ class BubbleViewInfoTest : ShellTestCase() {
         assertThat(info.shortcutInfo).isNotNull()
         assertThat(info.appName).isNotEmpty()
         assertThat(info.rawBadgeBitmap).isNotNull()
-        assertThat(info.dotPath).isNotNull()
         assertThat(info.bubbleBitmap).isNotNull()
         assertThat(info.badgeBitmap).isNotNull()
     }
@@ -226,7 +225,6 @@ class BubbleViewInfoTest : ShellTestCase() {
         assertThat(info.shortcutInfo).isNotNull()
         assertThat(info.appName).isNotEmpty()
         assertThat(info.rawBadgeBitmap).isNotNull()
-        assertThat(info.dotPath).isNotNull()
         assertThat(info.bubbleBitmap).isNotNull()
         assertThat(info.badgeBitmap).isNotNull()
     }
@@ -257,7 +255,6 @@ class BubbleViewInfoTest : ShellTestCase() {
         assertThat(info?.shortcutInfo).isNotNull()
         assertThat(info?.appName).isNotEmpty()
         assertThat(info?.rawBadgeBitmap).isNotNull()
-        assertThat(info?.dotPath).isNotNull()
         assertThat(info?.bubbleBitmap).isNotNull()
         assertThat(info?.badgeBitmap).isNotNull()
     }
