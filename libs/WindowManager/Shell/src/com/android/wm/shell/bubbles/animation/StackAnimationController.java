@@ -425,6 +425,13 @@ public class StackAnimationController extends
         return stackPos;
     }
 
+    /**
+     * Clean up state when all bubbles have been removed
+     */
+    public void onLastBubbleRemoved() {
+        mFloatingContentCoordinator.onContentRemoved(mStackFloatingContent);
+    }
+
     /** Description of current animation controller state. */
     public void dump(PrintWriter pw) {
         pw.println("StackAnimationController state:");
@@ -749,10 +756,6 @@ public class StackAnimationController extends
         } else {
             // When all children are removed ensure stack position is sane
             mPositioner.setRestingPosition(mPositioner.getRestingPosition());
-
-            // Remove the stack from the coordinator since we don't have any bubbles and aren't
-            // visible.
-            mFloatingContentCoordinator.onContentRemoved(mStackFloatingContent);
         }
     }
 
