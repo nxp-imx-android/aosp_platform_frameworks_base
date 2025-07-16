@@ -19,7 +19,6 @@ package com.android.server.job.controllers;
 import static com.android.server.job.JobSchedulerService.sElapsedRealtimeClock;
 
 import android.annotation.NonNull;
-import android.app.job.JobInfo;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -222,30 +221,18 @@ public final class DeviceIdleJobsController extends StateController {
     }
 
     private boolean updateTaskStateLocked(JobStatus task, final long nowElapsed) {
-        final boolean allowInIdle =
-                (!android.app.job.Flags.ignoreImportantWhileForeground()
-                        && ((task.getFlags() & JobInfo.FLAG_IMPORTANT_WHILE_FOREGROUND) != 0))
-                && (mForegroundUids.get(task.getSourceUid()) || isTempWhitelistedLocked(task));
         final boolean whitelisted = isWhitelistedLocked(task);
-        final boolean enableTask = !mDeviceIdleMode || whitelisted || allowInIdle;
+        final boolean enableTask = !mDeviceIdleMode || whitelisted;
         return task.setDeviceNotDozingConstraintSatisfied(nowElapsed, enableTask, whitelisted);
     }
 
     @Override
     public void maybeStartTrackingJobLocked(JobStatus jobStatus, JobStatus lastJob) {
-        if (!android.app.job.Flags.ignoreImportantWhileForeground()
-                && (jobStatus.getFlags() & JobInfo.FLAG_IMPORTANT_WHILE_FOREGROUND) != 0) {
-            mAllowInIdleJobs.add(jobStatus);
-        }
         updateTaskStateLocked(jobStatus, sElapsedRealtimeClock.millis());
     }
 
     @Override
     public void maybeStopTrackingJobLocked(JobStatus jobStatus, JobStatus incomingJob) {
-        if (!android.app.job.Flags.ignoreImportantWhileForeground()
-                && (jobStatus.getFlags() & JobInfo.FLAG_IMPORTANT_WHILE_FOREGROUND) != 0) {
-            mAllowInIdleJobs.remove(jobStatus);
-        }
     }
 
     @Override
