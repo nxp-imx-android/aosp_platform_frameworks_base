@@ -72,7 +72,6 @@ import static com.android.internal.util.FrameworkStatsLog.TIME_ZONE_DETECTOR_STA
 import static com.android.internal.util.FrameworkStatsLog.TIME_ZONE_DETECTOR_STATE__DETECTION_MODE__UNKNOWN;
 import static com.android.server.am.MemoryStatUtil.readMemoryStatFromFilesystem;
 import static com.android.server.stats.Flags.addMobileBytesTransferByProcStatePuller;
-import static com.android.server.stats.Flags.addPressureStallInformationPuller;
 import static com.android.server.stats.pull.IonMemoryUtil.readProcessSystemIonHeapSizesFromDebugfs;
 import static com.android.server.stats.pull.IonMemoryUtil.readSystemIonHeapSizeFromDebugfs;
 import static com.android.server.stats.pull.netstats.NetworkStatsUtils.fromPublicNetworkStats;
@@ -467,10 +466,6 @@ public class StatsPullAtomService extends SystemService {
      */
     public static final boolean ENABLE_MOBILE_DATA_STATS_AGGREGATED_PULLER =
                 addMobileBytesTransferByProcStatePuller();
-
-    // Whether or not to enable the new puller with pressure stall information.
-    public static final boolean ENABLE_PRESSURE_STALL_INFORMATION_PULLER =
-                addPressureStallInformationPuller();
     private static int mPreviousThermalThrottlingStatus = Temperature.THROTTLING_NONE;
 
     // Puller locks
@@ -1064,9 +1059,7 @@ public class StatsPullAtomService extends SystemService {
         registerPinnerServiceStats();
         registerHdrCapabilitiesPuller();
         registerCachedAppsHighWatermarkPuller();
-        if (ENABLE_PRESSURE_STALL_INFORMATION_PULLER) {
-            registerPressureStallInformation();
-        }
+        registerPressureStallInformation();
         registerBatteryLife();
     }
 

@@ -24,14 +24,6 @@ flag {
 }
 
 flag {
-    name: "add_pressure_stall_information_puller"
-    namespace: "statsd"
-    description: "Adds PressureStallInformation atom logging"
-    bug: "365731097"
-    is_fixed_read_only: true
-}
-
-flag {
     name: "use_network_stats_query_summary"
     namespace: "statsd"
     description: "Use NetworkStats querySummary API for AggregatedMobileDataStatsPuller"
