@@ -10,16 +10,6 @@ flag {
 }
 
 flag {
-  name: "do_not_delay_chooser_adapter_notify_data_change"
-  namespace: "intentresolver"
-  description: "Do not delay ChooserAdapter notifyDataSetChanged call."
-  bug: "406397494"
-  metadata {
-    purpose: PURPOSE_BUGFIX
-  }
-}
-
-flag {
   name: "enable_sharesheet_metadata_extra"
   is_exported: true
   namespace: "intentresolver"

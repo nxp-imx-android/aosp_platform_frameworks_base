@@ -493,11 +493,9 @@ public class ChooserActivity extends ResolverActivity implements
     private final ChooserHandler mChooserHandler = new ChooserHandler();
 
     private class ChooserHandler extends Handler {
-        private static final int LIST_VIEW_UPDATE_MESSAGE = 6;
         private static final int SHORTCUT_MANAGER_ALL_SHARE_TARGET_RESULTS = 7;
 
         private void removeAllMessages() {
-            removeMessages(LIST_VIEW_UPDATE_MESSAGE);
             removeMessages(SHORTCUT_MANAGER_ALL_SHARE_TARGET_RESULTS);
         }
 
@@ -508,16 +506,6 @@ public class ChooserActivity extends ResolverActivity implements
             }
 
             switch (msg.what) {
-                case LIST_VIEW_UPDATE_MESSAGE:
-                    if (DEBUG) {
-                        Log.d(TAG, "LIST_VIEW_UPDATE_MESSAGE; ");
-                    }
-
-                    UserHandle userHandle = (UserHandle) msg.obj;
-                    mChooserMultiProfilePagerAdapter.getListAdapterForUserHandle(userHandle)
-                            .refreshListView();
-                    break;
-
                 case SHORTCUT_MANAGER_ALL_SHARE_TARGET_RESULTS:
                     if (DEBUG) Log.d(TAG, "SHORTCUT_MANAGER_ALL_SHARE_TARGET_RESULTS");
                     final ServiceResultInfo[] resultInfos = (ServiceResultInfo[]) msg.obj;
@@ -2829,14 +2817,6 @@ public class ChooserActivity extends ResolverActivity implements
     @Override // ChooserListCommunicator
     public int getMaxRankedTargets() {
         return mMaxTargetsPerRow;
-    }
-
-    @Override // ChooserListCommunicator
-    public void sendListViewUpdateMessage(UserHandle userHandle) {
-        Message msg = Message.obtain();
-        msg.what = ChooserHandler.LIST_VIEW_UPDATE_MESSAGE;
-        msg.obj = userHandle;
-        mChooserHandler.sendMessageDelayed(msg, mListViewUpdateDelayMs);
     }
 
     @Override
