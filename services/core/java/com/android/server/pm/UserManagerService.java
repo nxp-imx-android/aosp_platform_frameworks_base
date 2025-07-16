@@ -2913,9 +2913,9 @@ public class UserManagerService extends IUserManager.Stub {
     @Override
     public boolean isForegroundUserAdmin() {
         // No permission requirements for this API.
-        synchronized (mUsersLock) {
-            final int currentUserId = getCurrentUserId();
-            if (currentUserId != UserHandle.USER_NULL) {
+        final int currentUserId = getCurrentUserId();
+        if (currentUserId != UserHandle.USER_NULL) {
+            synchronized (mUsersLock) {
                 final UserInfo userInfo = getUserInfoLU(currentUserId);
                 return userInfo != null && userInfo.isAdmin();
             }
