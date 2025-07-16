@@ -63,7 +63,9 @@ constructor(
     @VisibleForTesting var currentDialog: ComponentSystemUIDialog? = null
 
     override fun start() {
-        if (!Flags.enableTalkbackAndMagnifierKeyGestures()) {
+        if (
+            !Flags.enableTalkbackAndMagnifierKeyGestures() && !Flags.enableVoiceAccessKeyGestures()
+        ) {
             return
         }
 
