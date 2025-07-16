@@ -23,6 +23,8 @@ import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.lifecycle.HydratedActivatable
 import com.android.systemui.res.R
+import com.android.systemui.screencapture.common.ui.viewmodel.DrawableLoaderViewModel
+import com.android.systemui.screencapture.common.ui.viewmodel.DrawableLoaderViewModelImpl
 import com.android.systemui.screencapture.record.largescreen.domain.interactor.ScreenCaptureRecordLargeScreenFeaturesInteractor
 import com.android.systemui.screencapture.record.largescreen.domain.interactor.ScreenshotInteractor
 import dagger.assisted.AssistedFactory
@@ -53,7 +55,8 @@ constructor(
     private val iconProvider: ScreenCaptureIconProvider,
     private val screenshotInteractor: ScreenshotInteractor,
     private val featuresInteractor: ScreenCaptureRecordLargeScreenFeaturesInteractor,
-) : HydratedActivatable() {
+    private val drawableLoaderViewModelImpl: DrawableLoaderViewModelImpl,
+) : HydratedActivatable(), DrawableLoaderViewModel by drawableLoaderViewModelImpl {
     private val captureTypeSource = MutableStateFlow(ScreenCaptureType.SCREENSHOT)
     private val captureRegionSource = MutableStateFlow(ScreenCaptureRegion.FULLSCREEN)
 
