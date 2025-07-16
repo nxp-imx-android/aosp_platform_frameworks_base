@@ -68,11 +68,6 @@ public final class DeveloperVerificationSession implements Parcelable {
     }
 
     /**
-     * The developer verification is bypassed because of an unspecified reason. This field is
-     * reserved and must not be used when reporting a developer verification bypass.
-     */
-    public static final int DEVELOPER_VERIFICATION_BYPASSED_REASON_UNSPECIFIED = 0;
-    /**
      * The developer verification is bypassed because the installation was initiated from the
      * Android Debug Bridge (ADB) service.
      */
@@ -320,10 +315,8 @@ public final class DeveloperVerificationSession implements Parcelable {
     /**
      * Report to the system that the developer verification verification has been bypassed because
      * of a certain reason.
-     * @param bypassReason The reason for the verification bypass, which must be larger than
-     *                     {@link #DEVELOPER_VERIFICATION_BYPASSED_REASON_UNSPECIFIED}.
-     * @throws IllegalArgumentException if @bypassReason is less than or equal to
-     * {@link #DEVELOPER_VERIFICATION_BYPASSED_REASON_UNSPECIFIED}.
+     * @param bypassReason The reason for the verification bypass, which must be a positive integer.
+     * @throws IllegalArgumentException if @bypassReason is not a positive integer.
      * @throws SecurityException if the caller is not the current verifier bound by the system.
      * @throws IllegalStateException if this is called after the session has finished, because
      * this API or {@link #reportVerificationComplete} or or {@link #reportVerificationIncomplete}
