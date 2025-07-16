@@ -19,6 +19,7 @@ package com.android.server.vibrator;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.hardware.vibrator.IVibrationSession;
+import android.hardware.vibrator.IVibrator;
 import android.hardware.vibrator.IVibratorManager;
 
 /** Handles interactions with vibrator HAL services through native. */
@@ -48,4 +49,14 @@ interface HalNativeHandler {
      */
     @Nullable
     IVibrationSession startSessionWithCallback(long sessionId, int[] vibratorIds);
+
+    /**
+     * Call {@link IVibrator#on} on single vibrator using vibration id for callbacks from HAL.
+     *
+     * <p>This should only be called if HAL has {@link IVibrator#CAP_ON_CALLBACK}. The HAL might
+     * fail the request otherwise.
+     *
+     * @return true if successful, false otherwise.
+     */
+    boolean vibrateWithCallback(int vibratorId, long vibrationId, long stepId, int durationMs);
 }

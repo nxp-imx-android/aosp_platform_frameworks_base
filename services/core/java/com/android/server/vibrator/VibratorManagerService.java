@@ -252,6 +252,10 @@ public class VibratorManagerService extends IVibratorManagerService.Stub {
     private static native IBinder nativeStartSessionWithCallback(long nativePtr, long sessionId,
             int[] vibratorIds);
 
+    /** Calls {@link IVibrator#on} with callback. */
+    private static native boolean nativeVibratorOnWithCallback(long nativePtr, int vibratorId,
+            long vibrationId, long stepId, int durationMs);
+
     // TODO(b/409002423): remove native methods below once remove_hidl_support flag removed
     static native long nativeInit(HalVibratorManager.Callbacks callback);
 
@@ -2370,6 +2374,13 @@ public class VibratorManagerService extends IVibratorManagerService.Stub {
                 return null;
             }
             return android.hardware.vibrator.IVibrationSession.Stub.asInterface(token);
+        }
+
+        @Override
+        public boolean vibrateWithCallback(int vibratorId, long vibrationId, long stepId,
+                int durationMs) {
+            return nativeVibratorOnWithCallback(mNativePtr, vibratorId, vibrationId, stepId,
+                    durationMs);
         }
     }
 
