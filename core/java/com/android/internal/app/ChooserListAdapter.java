@@ -16,8 +16,6 @@
 
 package com.android.internal.app;
 
-import static android.service.chooser.Flags.notifySingleItemChangeOnIconLoad;
-
 import static com.android.internal.app.ChooserActivity.TARGET_TYPE_SHORTCUTS_FROM_PREDICTION_SERVICE;
 import static com.android.internal.app.ChooserActivity.TARGET_TYPE_SHORTCUTS_FROM_SHORTCUT_MANAGER;
 
@@ -326,7 +324,7 @@ public class ChooserListAdapter extends ResolverListAdapter {
 
     @Override
     protected void onIconLoaded(DisplayResolveInfo info) {
-        if (notifySingleItemChangeOnIconLoad() && mOnIconLoadedListener != null) {
+        if (mOnIconLoadedListener != null) {
             mOnIconLoadedListener.accept(info);
         } else {
             notifyDataSetChanged();

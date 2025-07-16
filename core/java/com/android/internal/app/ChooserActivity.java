@@ -23,7 +23,6 @@ import static android.app.admin.DevicePolicyResources.Strings.Core.RESOLVER_CANT
 import static android.app.admin.DevicePolicyResources.Strings.Core.RESOLVER_CROSS_PROFILE_BLOCKED_TITLE;
 import static android.content.ContentProvider.getUriWithoutUserId;
 import static android.content.ContentProvider.getUserIdFromUri;
-import static android.service.chooser.Flags.notifySingleItemChangeOnIconLoad;
 import static android.stats.devicepolicy.DevicePolicyEnums.RESOLVER_EMPTY_STATE_NO_SHARING_TO_PERSONAL;
 import static android.stats.devicepolicy.DevicePolicyEnums.RESOLVER_EMPTY_STATE_NO_SHARING_TO_WORK;
 
@@ -3222,9 +3221,7 @@ public class ChooserActivity extends ResolverActivity implements
                     notifyDataSetChanged();
                 }
             });
-            if (notifySingleItemChangeOnIconLoad()) {
-                wrappedAdapter.setOnIconLoadedListener(this::onTargetIconLoaded);
-            }
+            wrappedAdapter.setOnIconLoadedListener(this::onTargetIconLoaded);
         }
 
         private void onTargetIconLoaded(DisplayResolveInfo info) {
@@ -3397,9 +3394,7 @@ public class ChooserActivity extends ResolverActivity implements
 
         @Override
         public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
-            if (notifySingleItemChangeOnIconLoad()) {
-                mBoundViewHolders.add((ViewHolderBase) holder);
-            }
+            mBoundViewHolders.add((ViewHolderBase) holder);
             int viewType = ((ViewHolderBase) holder).getViewType();
             switch (viewType) {
                 case VIEW_TYPE_DIRECT_SHARE:
@@ -3415,17 +3410,13 @@ public class ChooserActivity extends ResolverActivity implements
 
         @Override
         public void onViewRecycled(RecyclerView.ViewHolder holder) {
-            if (notifySingleItemChangeOnIconLoad()) {
-                mBoundViewHolders.remove((ViewHolderBase) holder);
-            }
+            mBoundViewHolders.remove((ViewHolderBase) holder);
             super.onViewRecycled(holder);
         }
 
         @Override
         public boolean onFailedToRecycleView(RecyclerView.ViewHolder holder) {
-            if (notifySingleItemChangeOnIconLoad()) {
-                mBoundViewHolders.remove((ViewHolderBase) holder);
-            }
+            mBoundViewHolders.remove((ViewHolderBase) holder);
             return super.onFailedToRecycleView(holder);
         }
 
