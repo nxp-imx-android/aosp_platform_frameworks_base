@@ -23,6 +23,7 @@ import static android.app.ActivityManagerInternal.ALLOW_FULL_ONLY;
 import static android.app.ActivityManagerInternal.ALLOW_NON_FULL;
 import static android.app.ActivityManagerInternal.ALLOW_NON_FULL_IN_PROFILE;
 import static android.app.ActivityManagerInternal.ALLOW_PROFILES_OR_NON_FULL;
+import static android.app.KeyguardManager.LOCK_ON_USER_SWITCH_CALLBACK;
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 import static android.testing.DexmakerShareClassLoaderRule.runWithDexmakerShareClassLoader;
 
@@ -55,6 +56,7 @@ import static org.mockito.Matchers.anyBoolean;
 import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doCallRealMethod;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
@@ -103,6 +105,7 @@ import com.android.server.wm.WindowManagerService;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -177,6 +180,7 @@ public class UserControllerTest {
             doNothing().when(mInjector).activityManagerOnUserStopped(anyInt());
             doNothing().when(mInjector).clearBroadcastQueueForUser(anyInt());
             doNothing().when(mInjector).taskSupervisorRemoveUser(anyInt());
+            doNothing().when(mInjector).lockDeviceNowAndWaitForKeyguardShown();
             // All UserController params are set to default.
             mUserController = new UserController(mInjector);
             setUpUser(TEST_USER_ID, NO_USERINFO_FLAGS);
@@ -361,27 +365,6 @@ public class UserControllerTest {
         mInjector.mHandler.clearAllRecordedMessages();
         // Verify that continueUserSwitch worked as expected
         continueAndCompleteUserSwitch(userState, oldUserId, newUserId);
-        verify(mInjector, times(0)).dismissKeyguard(any(), anyString());
-        verify(mInjector.getWindowManager(), times(1)).stopFreezingScreen();
-        continueUserSwitchAssertions(TEST_USER_ID, false);
-    }
-
-    @Test
-    public void testContinueUserSwitchDismissKeyguard() throws RemoteException {
-        when(mInjector.mKeyguardManagerMock.isDeviceSecure(anyInt())).thenReturn(false);
-        mUserController.setInitialConfig(/* userSwitchUiEnabled= */ true,
-                /* maxRunningUsers= */ 3, /* delayUserDataLocking= */ false);
-        // Start user -- this will update state of mUserController
-        mUserController.startUser(TEST_USER_ID, true);
-        Message reportMsg = mInjector.mHandler.getMessageForCode(REPORT_USER_SWITCH_MSG);
-        assertNotNull(reportMsg);
-        UserState userState = (UserState) reportMsg.obj;
-        int oldUserId = reportMsg.arg1;
-        int newUserId = reportMsg.arg2;
-        mInjector.mHandler.clearAllRecordedMessages();
-        // Verify that continueUserSwitch worked as expected
-        continueAndCompleteUserSwitch(userState, oldUserId, newUserId);
-        verify(mInjector, times(1)).dismissKeyguard(any(), anyString());
         verify(mInjector.getWindowManager(), times(1)).stopFreezingScreen();
         continueUserSwitchAssertions(TEST_USER_ID, false);
     }
@@ -998,11 +981,6 @@ public class UserControllerTest {
         @Override
         protected IStorageManager getStorageManager() {
             return mStorageManagerMock;
-        }
-
-        @Override
-        protected void dismissKeyguard(Runnable runnable, String reason) {
-            runnable.run();
         }
     }
 
