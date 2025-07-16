@@ -18,9 +18,9 @@
 
 package com.android.systemui.shade.ui.viewmodel
 
-import android.content.applicationContext
 import com.android.systemui.battery.batteryMeterViewControllerFactory
 import com.android.systemui.clock.domain.interactor.clockInteractor
+import com.android.systemui.desktop.domain.interactor.desktopInteractor
 import com.android.systemui.kairos.ExperimentalKairosApi
 import com.android.systemui.kairos.kairos
 import com.android.systemui.kosmos.Kosmos
@@ -41,7 +41,6 @@ import org.mockito.kotlin.mock
 val Kosmos.shadeHeaderViewModel: ShadeHeaderViewModel by
     Kosmos.Fixture {
         ShadeHeaderViewModel(
-            context = applicationContext,
             activityStarter = activityStarter,
             sceneInteractor = sceneInteractor,
             shadeInteractor = shadeInteractor,
@@ -57,6 +56,7 @@ val Kosmos.shadeHeaderViewModel: ShadeHeaderViewModel by
             kairosNetwork = kairos,
             mobileIconsViewModelKairos = { mobileIconsViewModelKairos },
             dualShadeEducationInteractor = dualShadeEducationInteractor,
+            desktopInteractor = desktopInteractor,
         )
     }
 
