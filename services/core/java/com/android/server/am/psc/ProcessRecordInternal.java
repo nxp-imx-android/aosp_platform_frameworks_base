@@ -30,6 +30,7 @@ import static com.android.server.wm.WindowProcessController.ACTIVITY_STATE_FLAG_
 
 import android.annotation.ElapsedRealtimeLong;
 import android.app.ActivityManager;
+import android.os.Process;
 import android.os.SystemClock;
 import android.os.Trace;
 import android.util.TimeUtils;
@@ -189,6 +190,9 @@ public abstract class ProcessRecordInternal {
     private final String mProcessName;
     private final int mUid;
     private String mTrackName;
+
+    public final boolean isolated;     // true if this is a special isolated process
+    public final boolean isSdkSandbox; // true if this is an SDK sandbox process
 
     private Observer mObserver;
     private StartedServiceObserver mStartedServiceObserver;
@@ -589,6 +593,8 @@ public abstract class ProcessRecordInternal {
     public ProcessRecordInternal(String processName, int uid, Object serviceLock, Object procLock) {
         mProcessName = processName;
         mUid = uid;
+        isSdkSandbox = Process.isSdkSandboxUid(mUid);
+        isolated = Process.isIsolatedUid(mUid);
         mServiceLock = serviceLock;
         mProcLock = procLock;
     }
