@@ -5250,6 +5250,33 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
+    @EnableFlags({FLAG_NOTIFICATION_CONVERSATION_CHANNEL_MANAGEMENT,
+            Flags.FLAG_RANDOM_CONVERSATION_IDS})
+    public void createConvChannelForPkgFromPrivilegedListener_longParentId_differentChannels()
+            throws Exception {
+        String extremelyLongParentId = "x".repeat(NotificationChannel.MAX_TEXT_LENGTH - 1);
+        when(mCompanionMgr.getAssociations(mPkg, mUserId))
+                .thenReturn(singletonList(mock(AssociationInfo.class)));
+        mService.mPreferencesHelper.createNotificationChannel(mPkg, mUid,
+                new NotificationChannel(extremelyLongParentId, "parentName", IMPORTANCE_DEFAULT),
+                true, false, mUid, false);
+
+        NotificationChannel convoChannel1 = mBinderService
+                .createConversationNotificationChannelForPackageFromPrivilegedListener(
+                        null, mPkg, mUser, extremelyLongParentId, "convo1");
+        NotificationChannel convoChannel2 = mBinderService
+                .createConversationNotificationChannelForPackageFromPrivilegedListener(
+                        null, mPkg, mUser, extremelyLongParentId, "convo2");
+
+        assertThat(convoChannel1).isNotNull();
+        assertThat(convoChannel2).isNotNull();
+        assertThat(convoChannel1.getId()).isNotEqualTo(convoChannel2.getId());
+        ParceledListSlice<NotificationChannel> channels = mBinderService.getNotificationChannels(
+                mPkg, mPkg, mUserId);
+        assertThat(channels.getList().stream().filter(c -> c.isConversation()).toList()).hasSize(2);
+    }
+
+    @Test
     public void updateNotificationChannelFromPrivilegedListener_cdm_success() throws Exception {
 
         mService.setPreferencesHelper(mPreferencesHelper);

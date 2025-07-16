@@ -22,7 +22,6 @@ import static android.app.Flags.FLAG_NOTIFICATION_CLASSIFICATION_UI;
 import static android.app.Notification.VISIBILITY_PRIVATE;
 import static android.app.Notification.VISIBILITY_SECRET;
 import static android.app.NotificationChannel.ALLOW_BUBBLE_ON;
-import static android.app.NotificationChannel.CONVERSATION_CHANNEL_ID_FORMAT;
 import static android.app.NotificationChannel.DEFAULT_ALLOW_BUBBLE;
 import static android.app.NotificationChannel.NEWS_ID;
 import static android.app.NotificationChannel.PROMOTIONS_ID;
@@ -181,6 +180,9 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import platform.test.runner.parameterized.ParameterizedAndroidJunit4;
+import platform.test.runner.parameterized.Parameters;
+
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
@@ -200,9 +202,6 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ThreadLocalRandom;
-
-import platform.test.runner.parameterized.ParameterizedAndroidJunit4;
-import platform.test.runner.parameterized.Parameters;
 
 @SmallTest
 @RunWith(ParameterizedAndroidJunit4.class)
@@ -5123,9 +5122,8 @@ public class PreferencesHelperTest extends UiServiceTestCase {
         mHelper.createNotificationChannel(PKG_O, UID_O, parent, true, false,
                 UID_O, false);
 
-        NotificationChannel friend = new NotificationChannel(String.format(
-                CONVERSATION_CHANNEL_ID_FORMAT, parent.getId(), conversationId),
-                "messages", IMPORTANCE_DEFAULT);
+        NotificationChannel friend = new NotificationChannel("friendConvo", "messages",
+                IMPORTANCE_DEFAULT);
         friend.setConversationId(parent.getId(), conversationId);
         mHelper.createNotificationChannel(PKG_O, UID_O, friend, true, false,
                 UID_O, false);
@@ -5151,19 +5149,15 @@ public class PreferencesHelperTest extends UiServiceTestCase {
     public void testConversationNotificationChannelsRequireParents() {
         String parentId = "does not exist";
         String conversationId = "friend";
-
-        NotificationChannel friend = new NotificationChannel(String.format(
-                CONVERSATION_CHANNEL_ID_FORMAT, parentId, conversationId),
-                "messages", IMPORTANCE_DEFAULT);
+        NotificationChannel friend = new NotificationChannel("friendConvo", "messages",
+                IMPORTANCE_DEFAULT);
         friend.setConversationId(parentId, conversationId);
 
-        try {
-            mHelper.createNotificationChannel(PKG_O, UID_O, friend, true, false,
-                    UID_O, false);
-            fail("allowed creation of conversation channel without a parent");
-        } catch (IllegalArgumentException e) {
-            // good
-        }
+        IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () ->
+                mHelper.createNotificationChannel(PKG_O, UID_O, friend, true, false, UID_O, false));
+
+        assertThat(e).hasMessageThat().isEqualTo(
+                "Tried to create a conversation channel without a preexisting parent");
     }
 
     @Test
@@ -6058,8 +6052,7 @@ public class PreferencesHelperTest extends UiServiceTestCase {
                 new NotificationChannel("parent", "messages", IMPORTANCE_DEFAULT);
         mHelper.createNotificationChannel(PKG_O, UID_O, parent, true, false, UID_O, false);
 
-        String channelId = String.format(
-                CONVERSATION_CHANNEL_ID_FORMAT, parent.getId(), conversationId);
+        String channelId = "conversationChannel";
         String name = "conversation";
         NotificationChannel friend = new NotificationChannel(channelId,
                 name, IMPORTANCE_DEFAULT);
@@ -6091,8 +6084,7 @@ public class PreferencesHelperTest extends UiServiceTestCase {
         NotificationChannel parent =
                 new NotificationChannel("parent", "messages", IMPORTANCE_DEFAULT);
         mHelper.createNotificationChannel(PKG_O, UID_O, parent, true, false, UID_O, false);
-        String channelId = String.format(
-                CONVERSATION_CHANNEL_ID_FORMAT, parent.getId(), "friend");
+        String channelId = "conversationChannel";
         NotificationChannel friend = new NotificationChannel(channelId,
                 "conversation", IMPORTANCE_DEFAULT);
         friend.setConversationId(parent.getId(), "friend");
@@ -6122,8 +6114,7 @@ public class PreferencesHelperTest extends UiServiceTestCase {
         NotificationChannel parent =
                 new NotificationChannel("parent", "messages", IMPORTANCE_DEFAULT);
         mHelper.createNotificationChannel(PKG_O, UID_O, parent, true, false, UID_O, false);
-        String channelId = String.format(
-                CONVERSATION_CHANNEL_ID_FORMAT, parent.getId(), "friend");
+        String channelId = "conversationChannel";
         NotificationChannel friend = new NotificationChannel(channelId,
                 "conversation", IMPORTANCE_DEFAULT);
         friend.setConversationId(parent.getId(), "friend");
@@ -6743,8 +6734,7 @@ public class PreferencesHelperTest extends UiServiceTestCase {
         mHelper.resetCacheInvalidation();
         String parentId = "id";
         String convId = "conversation";
-        NotificationChannel conv = new NotificationChannel(
-                String.format(CONVERSATION_CHANNEL_ID_FORMAT, parentId, convId), "conversation",
+        NotificationChannel conv = new NotificationChannel("convId", "conversation",
                 IMPORTANCE_DEFAULT);
         conv.setConversationId(parentId, convId);
         mHelper.createNotificationChannel(PKG_N_MR1, UID_N_MR1, conv, true, false, UID_N_MR1,
@@ -6812,7 +6802,7 @@ public class PreferencesHelperTest extends UiServiceTestCase {
         // pkg O, work (same channel ID, different user)
         // pkg N_MR1, user
         // pkg N_MR1, user, conversation child of above
-        String p2u1ConvId = String.format(CONVERSATION_CHANNEL_ID_FORMAT, "p2", "conv");
+        String p2u1ConvId = "p2conv";
         NotificationChannel p1u1 = new NotificationChannel("p1", "p1u1", IMPORTANCE_DEFAULT);
         NotificationChannel p1u2 = new NotificationChannel("p1", "p1u2", IMPORTANCE_DEFAULT);
         NotificationChannel p2u1 = new NotificationChannel("p2", "p2u1", IMPORTANCE_DEFAULT);

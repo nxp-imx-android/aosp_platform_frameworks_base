@@ -124,7 +124,8 @@ public final class NotificationChannel implements Parcelable {
      * {@link ShortcutInfo#getId() id} of the conversation.
      * @hide
      */
-    public static final String CONVERSATION_CHANNEL_ID_FORMAT = "%1$s : %2$s";
+    // TODO: b/432250872 - Delete when inlining random_conversation_ids flag.
+    public static final String OLD_CONVERSATION_CHANNEL_ID_FORMAT = "%1$s : %2$s";
 
     /**
      * TODO: STOPSHIP  remove

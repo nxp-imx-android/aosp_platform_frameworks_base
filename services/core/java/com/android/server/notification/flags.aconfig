@@ -221,4 +221,9 @@ flag {
   }
 }
 
-
+flag {
+  name: "random_conversation_ids"
+  namespace: "systemui"
+  description: "Use random ids for new conversation channels, instead of concatenating parent id and conversation id"
+  bug: "432250872"
+}
