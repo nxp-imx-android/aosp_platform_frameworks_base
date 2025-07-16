@@ -359,16 +359,8 @@ class DesktopModeLoggerTransitionObserver(
                     desktopModeEventLogger.logTaskAdded(
                         currentTaskUpdate.copy(unminimizeReason = unminimizeReason)
                     )
-                    Trace.setCounter(
-                        Trace.TRACE_TAG_WINDOW_MANAGER,
-                        VISIBLE_TASKS_COUNTER_NAME,
-                        postTransitionVisibleFreeformTasks.size.toLong(),
-                    )
-                    SystemProperties.set(
-                        VISIBLE_TASKS_COUNTER_SYSTEM_PROPERTY,
-                        postTransitionVisibleFreeformTasks.size.toString(),
-                    )
                 }
+
                 focusChangedReason != null ->
                     desktopModeEventLogger.logTaskInfoChanged(currentTaskUpdate)
                 // old tasks that were resized or repositioned
@@ -395,16 +387,19 @@ class DesktopModeLoggerTransitionObserver(
                         minimizeReason,
                     )
                 desktopModeEventLogger.logTaskRemoved(taskUpdate)
-                Trace.setCounter(
-                    Trace.TRACE_TAG_WINDOW_MANAGER,
-                    VISIBLE_TASKS_COUNTER_NAME,
-                    postTransitionVisibleFreeformTasks.size.toLong(),
-                )
-                SystemProperties.set(
-                    VISIBLE_TASKS_COUNTER_SYSTEM_PROPERTY,
-                    postTransitionVisibleFreeformTasks.size.toString(),
-                )
             }
+        }
+
+        if (preTransitionVisibleFreeformTasks.size != postTransitionVisibleFreeformTasks.size) {
+            Trace.setCounter(
+                Trace.TRACE_TAG_WINDOW_MANAGER,
+                VISIBLE_TASKS_COUNTER_NAME,
+                postTransitionVisibleFreeformTasks.size.toLong(),
+            )
+            SystemProperties.set(
+                VISIBLE_TASKS_COUNTER_SYSTEM_PROPERTY,
+                postTransitionVisibleFreeformTasks.size.toString(),
+            )
         }
     }
 
