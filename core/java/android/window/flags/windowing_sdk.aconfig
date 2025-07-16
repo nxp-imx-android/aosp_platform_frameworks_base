@@ -172,6 +172,17 @@ flag {
 
 flag {
     namespace: "windowing_sdk"
+    name: "fix_task_compatible_modes"
+    description: "Make most of the windowing modes compatible"
+    bug: "427336494"
+    is_fixed_read_only: true
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
+    namespace: "windowing_sdk"
     name: "support_gemini_on_multi_display"
     description: "Launch Gemini on a multi-display environment"
     bug: "400351723"
