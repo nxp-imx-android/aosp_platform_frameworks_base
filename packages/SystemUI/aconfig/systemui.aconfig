@@ -421,6 +421,13 @@ flag {
 }
 
 flag {
+    name: "status_bar_date"
+    namespace: "systemui"
+    description: "Show date in the status bar for the desktop experience"
+    bug: "378545144"
+}
+
+flag {
     name: "status_bar_no_hun_behavior"
     namespace: "systemui"
     description: "When there's a HUN, don't show the HUN text or icon in the status bar. Instead, "
