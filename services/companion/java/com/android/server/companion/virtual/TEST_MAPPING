@@ -22,9 +22,6 @@
     },
     {
       "name": "CtsAccessibilityServiceTestCases_cts_accessibilitydisplayproxytest"
-    },
-    {
-      "name": "CtsInputMethodTestCases_cts_virtualdeviceimetest"
     }
   ],
   "postsubmit": [
