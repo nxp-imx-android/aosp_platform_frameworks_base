@@ -27,7 +27,7 @@ import java.util.Set;
  *
  * @hide
  */
-public final class MobileCountries {
+public class MobileCountries {
 
     @NonNull
     private final com.android.i18n.timezone.MobileCountries mDelegate;
