@@ -23,6 +23,7 @@ import com.android.internal.protolog.ProtoLog
 import com.android.window.flags.Flags.appCompatRefactoring
 import com.android.wm.shell.compatui.letterbox.lifecycle.LetterboxLifecycleController
 import com.android.wm.shell.compatui.letterbox.lifecycle.LetterboxLifecycleEventFactory
+import com.android.wm.shell.compatui.letterbox.lifecycle.isChangeForALeafTask
 import com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_APP_COMPAT
 import com.android.wm.shell.sysui.ShellInit
 import com.android.wm.shell.transition.Transitions
@@ -64,7 +65,7 @@ class DelegateLetterboxTransitionObserver(
             return
         }
         info.changes.forEach { change ->
-            if (letterboxLifecycleEventFactory.canHandle(change)) {
+            if (change.isChangeForALeafTask() && letterboxLifecycleEventFactory.canHandle(change)) {
                 letterboxLifecycleEventFactory.createLifecycleEvent(change)?.let { event ->
                     letterboxLifecycleController.onLetterboxLifecycleEvent(
                         event,
