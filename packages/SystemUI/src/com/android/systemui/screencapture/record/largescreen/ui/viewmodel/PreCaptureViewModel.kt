@@ -17,6 +17,8 @@
 package com.android.systemui.screencapture.record.largescreen.ui.viewmodel
 
 import android.content.Context
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.unit.Dp
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.lifecycle.HydratedActivatable
@@ -100,6 +102,10 @@ constructor(
         }
 
         // TODO(b/427500006) Close the window after requesting a fullscreen screenshot.
+    }
+
+    fun onPartialRegionDragEnd(offset: Offset, width: Dp, height: Dp) {
+        // TODO(b/427541309) Update region box position and size.
     }
 
     override suspend fun onActivated() {
