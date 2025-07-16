@@ -23,6 +23,7 @@ import android.telecom.Log;
 import android.text.TextUtils;
 
 import com.android.internal.annotations.VisibleForTesting;
+import com.android.server.telecom.flags.Flags;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -308,10 +309,14 @@ public class Session {
 
     // Print out the full Session tree from any subsession node
     public String printFullSessionTree() {
-        return getRootSession("printFullSessionTree").printSessionTree();
+        if (Flags.fixSessionTreeLogging()) {
+            return getRootSession("printFullSessionTree").printSessionTree();
+        } else {
+            return getRootSession("printFullSessionTree").printSessionTreeLegacy();
+        }
     }
 
-    private String printSessionTree() {
+    private String printSessionTreeLegacy() {
         StringBuilder sb = new StringBuilder();
         int depth = 0;
         ArrayDeque<Session> deque = new ArrayDeque<>();
@@ -336,6 +341,48 @@ public class Session {
                 depth -= 1;
             }
         }
+        return sb.toString();
+    }
+
+    private String printSessionTree() {
+        final StringBuilder sb = new StringBuilder();
+        // Use an ArrayDeque as a stack for nodes to visit.
+        final ArrayDeque<Session> sessionStack = new ArrayDeque<>();
+        // Use a parallel stack to track the depth of each node.
+        final ArrayDeque<Integer> depthStack = new ArrayDeque<>();
+
+        // Start with the current session at depth 0.
+        sessionStack.push(this);
+        depthStack.push(0);
+
+        while (!sessionStack.isEmpty()) {
+            // Pop the next session and its corresponding depth.
+            final Session session = sessionStack.pop();
+            final int depth = depthStack.pop();
+
+            // Append indented session information.
+            sb.append("\t".repeat(depth));
+            sb.append(session.toString());
+            sb.append("\n");
+
+            // If the depth limit is reached, print a truncation marker and stop descending.
+            if (depth >= SESSION_RECURSION_LIMIT) {
+                sb.append("\t".repeat(depth + 1));
+                sb.append(TRUNCATE_STRING);
+                sb.append("\n");
+                continue;
+            }
+
+            final List<Session> childSessions = session.getChildSessions();
+            // Push children onto the stack in reverse order. This ensures they are
+            // processed in their natural (first-to-last) order due to the LIFO
+            // nature of the stack.
+            for (int i = childSessions.size() - 1; i >= 0; i--) {
+                sessionStack.push(childSessions.get(i));
+                depthStack.push(depth + 1);
+            }
+        }
+
         return sb.toString();
     }
 
