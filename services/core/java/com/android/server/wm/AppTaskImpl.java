@@ -207,7 +207,6 @@ class AppTaskImpl extends IAppTask.Stub {
                     displayId = task.getDisplayId();
                 }
 
-                adjustTaskMoveRequestBounds(displayId, bounds);
                 final int result = validateTaskMoveRequest(displayId, bounds, task,
                         origCallingPid, origCallingUid);
                 if (result != RESULT_APPROVED) {
@@ -321,13 +320,6 @@ class AppTaskImpl extends IAppTask.Stub {
         }
 
         return RESULT_APPROVED;
-    }
-
-    private void adjustTaskMoveRequestBounds(int displayId, Rect bounds) {
-        // TODO(b/421882376): add a best-effort strategy that fixes |displayId| and |bounds| if
-        // needed. Some possible fixes: moving the bounds inside the display, ensuring minimal and
-        // maximal size requirements are met, more complex topology-based fixes including changing
-        // the target display if the bounds are fully offscreen.
     }
 
     @Override
