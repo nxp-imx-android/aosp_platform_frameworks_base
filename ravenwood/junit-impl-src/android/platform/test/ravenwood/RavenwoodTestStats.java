@@ -45,6 +45,9 @@ import java.util.Map;
  * The output file is created as `/tmp/Ravenwood-stats_[TEST-MODULE=NAME]_[TIMESTAMP].csv`.
  * A symlink to the latest result will be created as
  * `/tmp/Ravenwood-stats_[TEST-MODULE=NAME]_latest.csv`.
+ *
+ * Also responsible for dumping all called methods in the form of policy file, by calling
+ * {@link RavenwoodMethodCallLogger#dumpAllCalledMethodsInner()}, if the method call log is enabled.
  */
 public class RavenwoodTestStats {
     private static final String TAG = RavenwoodInternalUtils.TAG;
@@ -227,6 +230,13 @@ public class RavenwoodTestStats {
         return className.substring(0, p);
     }
 
+    private static void createCalledMethodPolicyFile() {
+        // Ideally we want to call it only once, when the very last test class finishes,
+        // but we don't know which test class is last or not, so let's just do the dump
+        // after every test class.
+        RavenwoodMethodCallLogger.getInstance().dumpAllCalledMethods();
+    }
+
     public void attachToRunNotifier(RunNotifier notifier) {
         notifier.addListener(mRunListener);
     }
@@ -261,6 +271,7 @@ public class RavenwoodTestStats {
                 Log.d(TAG, "testRunFinished: " + result);
             }
 
+            createCalledMethodPolicyFile();
             dumpAllAndClear();
         }
 

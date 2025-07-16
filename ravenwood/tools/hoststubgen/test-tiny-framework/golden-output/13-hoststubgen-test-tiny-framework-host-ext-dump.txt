@@ -743,7 +743,7 @@ Constant pool:
     RuntimeVisibleAnnotations:
       x: #x(#x=s#x)
         com.android.hoststubgen.hosthelper.HostStubGenProcessedAsSubstitute(
-          reason="(substitution reason not propagated)"
+          reason=""
         )
       x: #x(#x=s#x)
         com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
@@ -771,7 +771,7 @@ Constant pool:
     RuntimeVisibleAnnotations:
       x: #x(#x=s#x)
         com.android.hoststubgen.hosthelper.HostStubGenProcessedAsSubstitute(
-          reason="(substitution reason not propagated)"
+          reason=""
         )
       x: #x(#x=s#x)
         com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
@@ -1075,7 +1075,7 @@ Constant pool:
     RuntimeVisibleAnnotations:
       x: #x(#x=s#x)
         com.android.hoststubgen.hosthelper.HostStubGenProcessedAsSubstitute(
-          reason="(substitution reason not propagated)"
+          reason=""
         )
       x: #x(#x=s#x)
         com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
@@ -2125,7 +2125,7 @@ Constant pool:
     RuntimeVisibleAnnotations:
       x: #x(#x=s#x)
         com.android.hoststubgen.hosthelper.HostStubGenProcessedAsSubstitute(
-          reason="(substitution reason not propagated)"
+          reason=""
         )
       x: #x(#x=s#x)
         com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
@@ -2153,7 +2153,7 @@ Constant pool:
     RuntimeVisibleAnnotations:
       x: #x(#x=s#x)
         com.android.hoststubgen.hosthelper.HostStubGenProcessedAsSubstitute(
-          reason="(substitution reason not propagated)"
+          reason=""
         )
       x: #x(#x=s#x)
         com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
