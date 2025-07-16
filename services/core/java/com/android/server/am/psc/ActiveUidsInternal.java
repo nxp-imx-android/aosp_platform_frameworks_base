@@ -19,14 +19,14 @@ package com.android.server.am.psc;
 /**
  * Interface for tracking the activity state of UIDs based on their running processes.
  * This provides a contract for implementations that store and retrieve
- * {@link UidStateRecord} objects by UID.
+ * {@link UidRecordInternal} objects by UID.
  *
  * TODO(b/425766486): Mark the mutable methods as package-private after moving the user classes
  *   (e.g. OomAdjuster, ProcessList) into psc package.
  */
 public interface ActiveUidsInternal {
-    /** Associates the specified UID with the given {@link UidStateRecord}. */
-    void put(int uid, UidStateRecord value);
+    /** Associates the specified UID with the given {@link UidRecordInternal}. */
+    void put(int uid, UidRecordInternal value);
 
     /** Removes the mapping for a specified UID from this tracking mechanism. */
     void remove(int uid);
@@ -38,13 +38,13 @@ public interface ActiveUidsInternal {
     int size();
 
     /**
-     * Returns the {@link UidStateRecord} associated with the specified UID,
+     * Returns the {@link UidRecordInternal} associated with the specified UID,
      * or {@code null} if no mapping for the UID exists.
      */
-    UidStateRecord get(int uid);
+    UidRecordInternal get(int uid);
 
-    /** Returns the {@link UidStateRecord} at the specified index. */
-    UidStateRecord valueAt(int index);
+    /** Returns the {@link UidRecordInternal} at the specified index. */
+    UidRecordInternal valueAt(int index);
 
     /** Returns the UID (key) at the specified index. */
     int keyAt(int index);

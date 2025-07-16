@@ -36,7 +36,7 @@ import com.android.internal.annotations.GuardedBy;
  * (e.g., {@link com.android.server.am.UidRecord}) that manage the actual
  * collection of processes for the UID.
  */
-public abstract class UidStateRecord {
+public abstract class UidRecordInternal {
     protected final Object mService;
     protected final Object mProcLock;
 
@@ -121,7 +121,7 @@ public abstract class UidStateRecord {
     @CompositeRWLock({"mService", "mProcLock"})
     protected boolean mSetIdle;
 
-    public UidStateRecord(int uid, Object service, Object procLock) {
+    public UidRecordInternal(int uid, Object service, Object procLock) {
         mUid = uid;
         mService = service;
         mProcLock = procLock;
@@ -292,6 +292,18 @@ public abstract class UidStateRecord {
     /** Returns the number of processes currently associated with this UID. */
     @GuardedBy(anyOf = {"mService", "mProcLock"})
     public abstract int getNumOfProcs();
+
+    /** Returns the ProcessRecordInternal at the specified index. */
+    @GuardedBy(anyOf = {"mService", "mProcLock"})
+    public abstract ProcessRecordInternal getProcessRecordByIndex(int idx);
+
+    /** Adds a ProcessRecordInternal to this UID. */
+    @GuardedBy({"mService", "mProcLock"})
+    public abstract void addProcess(ProcessRecordInternal app);
+
+    /** Removes a ProcessRecordInternal from this UID. */
+    @GuardedBy({"mService", "mProcLock"})
+    public abstract void removeProcess(ProcessRecordInternal app);
 
     /** Returns the minimum OOM adj across all processes managed by this UID. */
     @GuardedBy(anyOf = {"mService", "mProcLock"})

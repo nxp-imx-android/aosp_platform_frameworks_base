@@ -22,7 +22,7 @@ import android.util.SparseArray;
 import android.util.proto.ProtoOutputStream;
 
 import com.android.server.am.psc.ActiveUidsInternal;
-import com.android.server.am.psc.UidStateRecord;
+import com.android.server.am.psc.UidRecordInternal;
 
 import java.io.PrintWriter;
 
@@ -68,8 +68,8 @@ public final class ActiveUids implements ActiveUidsInternal {
     }
 
     @Override
-    public void put(int uid, UidStateRecord value) {
-        // Only UidRecord implements the UidStateRecord, so it's safe to cast directly.
+    public void put(int uid, UidRecordInternal value) {
+        // Only UidRecord implements the UidRecordInternal, so it's safe to cast directly.
         put(uid, (UidRecord) value);
     }
 
