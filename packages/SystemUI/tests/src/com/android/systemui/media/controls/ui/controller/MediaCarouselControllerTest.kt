@@ -879,26 +879,36 @@ class MediaCarouselControllerTest : SysuiTestCase() {
 
     @DisableSceneContainer
     @Test
-    fun swipeToDismiss_pausedAndResumeOff_userInitiated() {
-        verify(mediaDataManager).addListener(capture(listener))
+    fun swipeToDismiss_pausedAndResumeOff_userInitiated() =
+        kosmos.testScope.runTest {
+            verify(mediaDataManager).addListener(capture(listener))
+            transitionRepository.sendTransitionSteps(
+                from = KeyguardState.LOCKSCREEN,
+                to = KeyguardState.GONE,
+                this,
+            )
 
-        // When resumption is disabled, paused media should be dismissed after being swiped away
-        Settings.Secure.putInt(context.contentResolver, Settings.Secure.MEDIA_CONTROLS_RESUME, 0)
-        val pausedMedia = DATA.copy(isPlaying = false)
-        listener.value.onMediaDataLoaded(PAUSED_LOCAL, PAUSED_LOCAL, pausedMedia)
-        runAllReady()
-        mediaCarouselController.onSwipeToDismiss()
+            // When resumption is disabled, paused media should be dismissed after being swiped away
+            Settings.Secure.putInt(
+                context.contentResolver,
+                Settings.Secure.MEDIA_CONTROLS_RESUME,
+                0,
+            )
+            val pausedMedia = DATA.copy(isPlaying = false)
+            listener.value.onMediaDataLoaded(PAUSED_LOCAL, PAUSED_LOCAL, pausedMedia)
+            runAllReady()
+            mediaCarouselController.onSwipeToDismiss()
 
-        // When it can be removed immediately on update
-        whenever(visualStabilityProvider.isReorderingAllowed).thenReturn(true)
-        val inactiveMedia = pausedMedia.copy(active = false)
-        listener.value.onMediaDataLoaded(PAUSED_LOCAL, PAUSED_LOCAL, inactiveMedia)
-        runAllReady()
+            // When it can be removed immediately on update
+            whenever(visualStabilityProvider.isReorderingAllowed).thenReturn(true)
+            val inactiveMedia = pausedMedia.copy(active = false)
+            listener.value.onMediaDataLoaded(PAUSED_LOCAL, PAUSED_LOCAL, inactiveMedia)
+            runAllReady()
 
-        // This is processed as a user-initiated dismissal
-        verify(debugLogger).logMediaRemoved(eq(PAUSED_LOCAL), eq(true))
-        verify(mediaDataManager).dismissMediaData(eq(PAUSED_LOCAL), anyLong(), eq(true))
-    }
+            // This is processed as a user-initiated dismissal
+            verify(debugLogger).logMediaRemoved(eq(PAUSED_LOCAL), eq(true))
+            verify(mediaDataManager).dismissMediaData(eq(PAUSED_LOCAL), anyLong(), eq(true))
+        }
 
     @DisableSceneContainer
     @Test

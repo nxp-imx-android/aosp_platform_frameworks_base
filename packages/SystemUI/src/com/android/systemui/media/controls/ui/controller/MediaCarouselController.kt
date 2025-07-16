@@ -321,7 +321,7 @@ constructor(
         }
 
     private val isReorderingAllowed: Boolean
-        get() = visualStabilityProvider.isReorderingAllowed
+        get() = visualStabilityProvider.isReorderingAllowed && !isOnLockscreen()
 
     /** Size provided by the scene framework container */
     private var widthInSceneContainerPx = 0
@@ -731,14 +731,15 @@ constructor(
 
     /** Return true if the carousel should be hidden because device is locked. */
     fun isLockedAndHidden(): Boolean {
-        val isOnLockscreen =
-            if (SceneContainerFlag.isEnabled) {
-                !deviceEntryInteractor.isDeviceEntered.value
-            } else {
-                !isOnGone.value || isGoingToDozing.value
-            }
-        return !allowMediaPlayerOnLockScreen && isOnLockscreen
+        return !allowMediaPlayerOnLockScreen && isOnLockscreen()
     }
+
+    private fun isOnLockscreen() =
+        if (SceneContainerFlag.isEnabled) {
+            !deviceEntryInteractor.isDeviceEntered.value
+        } else {
+            !isOnGone.value || isGoingToDozing.value
+        }
 
     private fun reorderAllPlayers(
         previousVisiblePlayerKey: MediaPlayerData.MediaSortKey?,
