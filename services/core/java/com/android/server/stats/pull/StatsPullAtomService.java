@@ -170,6 +170,7 @@ import android.security.metrics.KeyCreationWithGeneralInfo;
 import android.security.metrics.KeyCreationWithPurposeAndModesInfo;
 import android.security.metrics.KeyOperationWithGeneralInfo;
 import android.security.metrics.KeyOperationWithPurposeAndModesInfo;
+import android.security.metrics.KeysPerUid;
 import android.security.metrics.Keystore2AtomWithOverflow;
 import android.security.metrics.KeystoreAtom;
 import android.security.metrics.KeystoreAtomPayload;
@@ -840,6 +841,7 @@ public class StatsPullAtomService extends SystemService {
                     case FrameworkStatsLog.KEYSTORE2_KEY_OPERATION_WITH_GENERAL_INFO:
                     case FrameworkStatsLog.RKP_ERROR_STATS:
                     case FrameworkStatsLog.KEYSTORE2_CRASH_STATS:
+                    case FrameworkStatsLog.KEYSTORE2_KEYS_PER_UID:
                         return pullKeystoreAtoms(atomTag, data);
                     case FrameworkStatsLog.ACCESSIBILITY_SHORTCUT_STATS:
                         return pullAccessibilityShortcutStatsLocked(data);
@@ -4644,7 +4646,8 @@ public class StatsPullAtomService extends SystemService {
                 FrameworkStatsLog.KEYSTORE2_KEY_OPERATION_WITH_PURPOSE_AND_MODES_INFO,
                 FrameworkStatsLog.KEYSTORE2_KEY_OPERATION_WITH_GENERAL_INFO,
                 FrameworkStatsLog.RKP_ERROR_STATS,
-                FrameworkStatsLog.KEYSTORE2_CRASH_STATS
+                FrameworkStatsLog.KEYSTORE2_CRASH_STATS,
+                FrameworkStatsLog.KEYSTORE2_KEYS_PER_UID
         };
 
         for (int atomTag : atomTags) {
@@ -4819,6 +4822,19 @@ public class StatsPullAtomService extends SystemService {
         return StatsManager.PULL_SUCCESS;
     }
 
+    int parseKeystoreKeysPerUid(KeystoreAtom[] atoms,
+            List<StatsEvent> pulledData) {
+        for (KeystoreAtom atomWrapper : atoms) {
+            if (atomWrapper.payload.getTag() != KeystoreAtomPayload.keysPerUid) {
+                return StatsManager.PULL_SKIP;
+            }
+            KeysPerUid atom = atomWrapper.payload.getKeysPerUid();
+            pulledData.add(FrameworkStatsLog.buildStatsEvent(
+                    FrameworkStatsLog.KEYSTORE2_KEYS_PER_UID, atom.uid, atom.key_count));
+        }
+        return StatsManager.PULL_SUCCESS;
+    }
+
     int pullKeystoreAtoms(int atomTag, List<StatsEvent> pulledData) {
         IKeystoreMetrics keystoreMetricsService = getIKeystoreMetricsService();
         if (keystoreMetricsService == null) {
@@ -4847,6 +4863,8 @@ public class StatsPullAtomService extends SystemService {
                     return parseRkpErrorStats(atoms, pulledData);
                 case FrameworkStatsLog.KEYSTORE2_CRASH_STATS:
                     return parseKeystoreCrashStats(atoms, pulledData);
+                case FrameworkStatsLog.KEYSTORE2_KEYS_PER_UID:
+                    return parseKeystoreKeysPerUid(atoms, pulledData);
                 default:
                     Slog.w(TAG, "Unsupported keystore atom: " + atomTag);
                     return StatsManager.PULL_SKIP;
