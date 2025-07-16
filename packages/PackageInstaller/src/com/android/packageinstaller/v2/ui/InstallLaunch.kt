@@ -44,10 +44,8 @@ import com.android.packageinstaller.v2.model.InstallUserActionRequired
 import com.android.packageinstaller.v2.model.PackageUtil
 import com.android.packageinstaller.v2.model.PackageUtil.localLogv
 import com.android.packageinstaller.v2.ui.fragments.DeveloperVerificationConfirmationFragment
-import com.android.packageinstaller.v2.ui.fragments.InstallFailedFragment
 import com.android.packageinstaller.v2.ui.fragments.InstallRestrictionFragment
 import com.android.packageinstaller.v2.ui.fragments.InstallationFragment
-import com.android.packageinstaller.v2.ui.fragments.ParseErrorFragment
 import com.android.packageinstaller.v2.viewmodel.InstallViewModel
 import com.android.packageinstaller.v2.viewmodel.InstallViewModelFactory
 
@@ -140,8 +138,7 @@ class InstallLaunch : FragmentActivity(), InstallActionListener {
                     InstallAborted.ABORT_REASON_INTERNAL_ERROR,
                         -> {
                         if (aborted.errorDialogType == InstallAborted.DLG_PACKAGE_ERROR) {
-                            val parseErrorDialog = ParseErrorFragment.newInstance(aborted)
-                            showDialogInner(parseErrorDialog)
+                            showInstallationDialog()
                         } else {
                             setResult(aborted.activityResultCode, aborted.resultIntent, true)
                         }
@@ -188,8 +185,7 @@ class InstallLaunch : FragmentActivity(), InstallActionListener {
                     val failureIntent = failed.resultIntent
                     setResult(RESULT_FIRST_USER, failureIntent, true)
                 } else {
-                    val failureDialog = InstallFailedFragment.newInstance(failed)
-                    showDialogInner(failureDialog)
+                    showInstallationDialog()
                 }
             }
 

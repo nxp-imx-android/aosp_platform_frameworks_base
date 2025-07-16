@@ -20,6 +20,7 @@ import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageInstaller;
 import android.content.pm.ResolveInfo;
 import android.os.Bundle;
 import android.text.Html;
@@ -37,6 +38,8 @@ import androidx.fragment.app.DialogFragment;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.android.packageinstaller.R;
+import com.android.packageinstaller.v2.model.InstallAborted;
+import com.android.packageinstaller.v2.model.InstallFailed;
 import com.android.packageinstaller.v2.model.InstallInstalling;
 import com.android.packageinstaller.v2.model.InstallStage;
 import com.android.packageinstaller.v2.model.InstallSuccess;
@@ -147,12 +150,19 @@ public class InstallationFragment extends DialogFragment {
         // Get the current install stage
         final InstallStage installStage = getCurrentInstallStage();
 
-        // show the title and adjust the paddings of the custom message textview
+        // show the title and reset the paddings of the custom message textview
         if (mTitleTemplate != null) {
             mTitleTemplate.setVisibility(View.VISIBLE);
             mCustomMessageTextView.setPadding(0, 0, 0, 0);
         }
+
         switch (installStage.getStageCode()) {
+            case InstallStage.STAGE_ABORTED -> {
+                updateInstallAbortedUI(mDialog, (InstallAborted) installStage);
+            }
+            case InstallStage.STAGE_FAILED -> {
+                updateInstallFailedUI(mDialog, (InstallFailed) installStage);
+            }
             case InstallStage.STAGE_INSTALLING -> {
                 updateInstallInstallingUI(mDialog, (InstallInstalling) installStage);
             }
@@ -166,6 +176,113 @@ public class InstallationFragment extends DialogFragment {
                 updateUserActionRequiredUI(mDialog, (InstallUserActionRequired) installStage);
             }
         }
+    }
+
+    private void updateInstallAbortedUI(Dialog dialog, InstallAborted installStage) {
+        mProgressBar.setVisibility(View.GONE);
+        mAppSnippet.setVisibility(View.GONE);
+        mCustomMessageTextView.setVisibility(View.VISIBLE);
+
+        // Set the message
+        mCustomMessageTextView.setText(R.string.message_parse_failed);
+
+        // Set the title
+        dialog.setTitle(R.string.title_cant_install_app);
+
+        // Hide the positive button
+        Button positiveButton = UiUtil.getAlertDialogPositiveButton(dialog);
+        if (positiveButton != null) {
+            positiveButton.setVisibility(View.GONE);
+        }
+
+        // Set the negative button and the listener
+        Button negativeButton = UiUtil.getAlertDialogNegativeButton(dialog);
+        if (negativeButton != null) {
+            negativeButton.setVisibility(View.VISIBLE);
+            UiUtil.applyOutlinedButtonStyle(requireContext(), negativeButton);
+            negativeButton.setText(R.string.button_close);
+            negativeButton.setOnClickListener(view -> {
+                mInstallActionListener.onNegativeResponse(
+                        installStage.getActivityResultCode(), installStage.getResultIntent());
+            });
+        }
+
+        // Cancelable is false
+        this.setCancelable(false);
+    }
+
+    private void updateInstallFailedUI(Dialog dialog, InstallFailed installStage) {
+        mAppSnippet.setVisibility(View.VISIBLE);
+        mCustomMessageTextView.setVisibility(View.VISIBLE);
+        mProgressBar.setVisibility(View.GONE);
+
+        Log.i(LOG_TAG, "Installation status code: " + installStage.getLegacyCode());
+
+        // Set the app icon and label
+        mAppIcon.setImageDrawable(installStage.getAppIcon());
+        mAppLabelTextView.setText(installStage.getAppLabel());
+
+        int titleResId = R.string.title_install_failed_not_installed;
+        String positiveButtonText = null;
+        View.OnClickListener positiveButtonListener = null;
+
+        switch (installStage.getLegacyCode()) {
+            case PackageInstaller.STATUS_FAILURE_BLOCKED -> {
+                mCustomMessageTextView.setText(R.string.message_install_failed_blocked);
+                titleResId = R.string.title_install_failed_blocked;
+            }
+            case PackageInstaller.STATUS_FAILURE_CONFLICT -> {
+                mCustomMessageTextView.setText(R.string.message_install_failed_conflict);
+                titleResId = R.string.title_cant_install_app;
+            }
+            case PackageInstaller.STATUS_FAILURE_INCOMPATIBLE -> {
+                mCustomMessageTextView.setText(R.string.message_install_failed_incompatible);
+                titleResId = R.string.title_install_failed_incompatible;
+            }
+            case PackageInstaller.STATUS_FAILURE_INVALID -> {
+                mCustomMessageTextView.setText(R.string.message_install_failed_invalid);
+                titleResId = R.string.title_cant_install_app;
+            }
+            case PackageInstaller.STATUS_FAILURE_STORAGE -> {
+                mCustomMessageTextView.setText(R.string.message_install_failed_less_storage);
+                titleResId = R.string.title_install_failed_less_storage;
+                positiveButtonText = getString(R.string.button_manage_apps);
+                positiveButtonListener = (view) -> mInstallActionListener.sendManageAppsIntent();
+            }
+            default -> {
+                mCustomMessageTextView.setVisibility(View.GONE);
+            }
+        }
+
+        // Set the title
+        dialog.setTitle(titleResId);
+
+        // Set the positive button and set the listener if needed
+        Button positiveButton = UiUtil.getAlertDialogPositiveButton(dialog);
+        if (positiveButton != null) {
+            if (positiveButtonText == null) {
+                positiveButton.setVisibility(View.GONE);
+            } else {
+                positiveButton.setVisibility(View.VISIBLE);
+                UiUtil.applyFilledButtonStyle(requireContext(), positiveButton);
+                positiveButton.setText(positiveButtonText);
+                positiveButton.setFilterTouchesWhenObscured(true);
+                positiveButton.setOnClickListener(positiveButtonListener);
+            }
+        }
+
+        // Set the negative button and set the listener
+        Button negativeButton = UiUtil.getAlertDialogNegativeButton(dialog);
+        if (negativeButton != null) {
+            negativeButton.setVisibility(View.VISIBLE);
+            UiUtil.applyOutlinedButtonStyle(requireContext(), negativeButton);
+            negativeButton.setText(R.string.button_close);
+            negativeButton.setOnClickListener(view -> {
+                mInstallActionListener.onNegativeResponse(installStage.getStageCode());
+            });
+        }
+
+        this.setCancelable(true);
     }
 
     private void updateInstallInstallingUI(Dialog dialog, InstallInstalling installStage) {
