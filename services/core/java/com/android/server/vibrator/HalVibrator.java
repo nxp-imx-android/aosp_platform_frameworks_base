@@ -27,10 +27,16 @@ import android.os.vibrator.PwlePoint;
 import android.os.vibrator.RampSegment;
 import android.util.IndentingPrintWriter;
 
+import com.android.tools.r8.keepanno.annotations.KeepItemKind;
+import com.android.tools.r8.keepanno.annotations.UsedByNative;
+
 /** Handles interactions with a single vibrator HAL. */
 interface HalVibrator {
 
     /** Callbacks from the vibrator HAL. */
+    @UsedByNative(
+            description = "Called from JNI in jni/VibratorManagerService.cpp",
+            kind = KeepItemKind.CLASS_AND_MEMBERS)
     interface Callbacks {
         /** Callback triggered when a vibration step is complete. */
         void onVibrationStepComplete(int vibratorId, long vibrationId, long stepId);
