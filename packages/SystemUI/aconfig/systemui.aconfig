@@ -1952,9 +1952,9 @@ flag {
 }
 
 flag {
-    name: "desktop_screen_capture_app_window"
+    name: "large_screen_screenshot_app_window"
     namespace: "systemui"
-    description: "Enables the app window region option for desktop screen capture."
+    description: "Enables the app window region screenshot option on large screen devices."
     bug: "422833825"
 }
 
