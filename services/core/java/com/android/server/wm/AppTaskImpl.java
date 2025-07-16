@@ -188,13 +188,13 @@ class AppTaskImpl extends IAppTask.Stub {
         final int origCallingPid = Binder.getCallingPid();
         final int origCallingUid = Binder.getCallingUid();
         final long origId = Binder.clearCallingIdentity();
-        if (mService.checkPermission(REPOSITION_SELF_WINDOWS, origCallingPid, origCallingUid)
-                != PERMISSION_GRANTED) {
-            reportTaskMoveRequestResult(
-                    RESULT_FAILED_NO_PERMISSIONS, INVALID_DISPLAY, null /* bounds */, callback);
-            return;
-        }
         try {
+            if (mService.checkPermission(REPOSITION_SELF_WINDOWS, origCallingPid, origCallingUid)
+                    != PERMISSION_GRANTED) {
+                reportTaskMoveRequestResult(
+                        RESULT_FAILED_NO_PERMISSIONS, INVALID_DISPLAY, null /* bounds */, callback);
+                return;
+            }
             synchronized (mService.mGlobalLock) {
                 final Task task = mService.mRootWindowContainer.anyTaskForId(mTaskId);
                 if (task == null) {
