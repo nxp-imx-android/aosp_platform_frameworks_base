@@ -1306,6 +1306,9 @@ public class AutoclickController extends BaseEventStreamTransformation implement
 
         public void setIgnoreMinorCursorMovement(boolean ignoreMinorCursorMovement) {
             mIgnoreMinorCursorMovement = ignoreMinorCursorMovement;
+            if (mAutoclickIndicatorView != null) {
+                mAutoclickIndicatorView.setIgnoreMinorCursorMovement(ignoreMinorCursorMovement);
+            }
         }
 
         public void setRevertToLeftClick(boolean revertToLeftClick) {
@@ -1362,7 +1365,12 @@ public class AutoclickController extends BaseEventStreamTransformation implement
                 mTempPointerCoords = new PointerCoords[1];
                 mTempPointerCoords[0] = new PointerCoords();
             }
-            mLastMotionEvent.getPointerCoords(pointerIndex, mTempPointerCoords[0]);
+            if (mIgnoreMinorCursorMovement) {
+                mTempPointerCoords[0].x = mAnchorCoords.x;
+                mTempPointerCoords[0].y = mAnchorCoords.y;
+            } else {
+                mLastMotionEvent.getPointerCoords(pointerIndex, mTempPointerCoords[0]);
+            }
 
             int actionButton = BUTTON_PRIMARY;
             switch (selectedClickType) {

@@ -509,6 +509,62 @@ public class AutoclickControllerTest {
 
     @Test
     @EnableFlags(com.android.server.accessibility.Flags.FLAG_ENABLE_AUTOCLICK_INDICATOR)
+    public void sendClick_ignoreMinorMovementTrue_clicksAtAnchorPosition() {
+        initializeAutoclick();
+        enableIgnoreMinorCursorMovement();
+
+        // First move event to set the anchor.
+        float anchorX = 50f;
+        float anchorY = 60f;
+        injectFakeMouseMoveEvent(anchorX, anchorY, MotionEvent.ACTION_HOVER_MOVE);
+
+        // Second move event to trigger the click.
+        float lastX = 80f;
+        float lastY = 80f;
+        injectFakeMouseMoveEvent(lastX, lastY, MotionEvent.ACTION_HOVER_MOVE);
+        mController.mClickScheduler.run();
+
+        // Verify click happened at anchor position, not the last position.
+        assertThat(mMotionEventCaptor.downEvent).isNotNull();
+        assertThat(mMotionEventCaptor.downEvent.getX()).isEqualTo(anchorX);
+        assertThat(mMotionEventCaptor.downEvent.getY()).isEqualTo(anchorY);
+    }
+
+    @Test
+    @EnableFlags(com.android.server.accessibility.Flags.FLAG_ENABLE_AUTOCLICK_INDICATOR)
+    public void sendClick_ignoreMinorMovementFalse_clicksAtLastPosition() {
+        initializeAutoclick();
+
+        // Ensure setting is off.
+        Settings.Secure.putIntForUser(
+                mTestableContext.getContentResolver(),
+                Settings.Secure.ACCESSIBILITY_AUTOCLICK_IGNORE_MINOR_CURSOR_MOVEMENT,
+                AccessibilityUtils.State.OFF,
+                mTestableContext.getUserId());
+        mController.onChangeForTesting(
+                /* selfChange= */ true,
+                Settings.Secure.getUriFor(
+                        Settings.Secure.ACCESSIBILITY_AUTOCLICK_IGNORE_MINOR_CURSOR_MOVEMENT));
+
+        // First move event to set the anchor.
+        float anchorX = 50f;
+        float anchorY = 60f;
+        injectFakeMouseMoveEvent(anchorX, anchorY, MotionEvent.ACTION_HOVER_MOVE);
+
+        // Second move event to trigger the click.
+        float lastX = 80f;
+        float lastY = 80f;
+        injectFakeMouseMoveEvent(lastX, lastY, MotionEvent.ACTION_HOVER_MOVE);
+        mController.mClickScheduler.run();
+
+        // Verify click happened at the last position.
+        assertThat(mMotionEventCaptor.downEvent).isNotNull();
+        assertThat(mMotionEventCaptor.downEvent.getX()).isEqualTo(lastX);
+        assertThat(mMotionEventCaptor.downEvent.getY()).isEqualTo(lastY);
+    }
+
+    @Test
+    @EnableFlags(com.android.server.accessibility.Flags.FLAG_ENABLE_AUTOCLICK_INDICATOR)
     public void onIgnoreCursorMovement_clickNotTriggered_whenMoveIsWithinSlop() {
         // Move mouse to initialize autoclick panel before enabling ignore minor cursor movement.
         injectFakeMouseActionHoverMoveEvent();

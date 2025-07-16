@@ -86,6 +86,8 @@ public class AutoclickIndicatorView extends View {
     // Status of whether the visual indicator should display or not.
     private boolean showIndicator = false;
 
+    private boolean mIgnoreMinorCursorMovement = false;
+
     public AutoclickIndicatorView(Context context) {
         super(context);
 
@@ -151,16 +153,25 @@ public class AutoclickIndicatorView extends View {
                     /* bottom= */ mSnapshotY + mRadius);
             canvas.drawArc(mRingRect, /* startAngle= */ -90, mSweepAngle, false, mPaint);
 
-            // Draw a point indicator at the cursor's current location.
-            // Draw a circle at (mMouseX, mMouseY) with default black fill and white border.
+            // Draw a point indicator. When mIgnoreMinorCursorMovement is true, the point stays at
+            // the center of the ring. Otherwise, it follows the mouse movement.
+            final float pointX;
+            final float pointY;
+            if (mIgnoreMinorCursorMovement) {
+                pointX = mSnapshotX;
+                pointY = mSnapshotY;
+            } else {
+                pointX = mMouseX;
+                pointY = mMouseY;
+            }
             mPointPaint.setStyle(Paint.Style.FILL);
             mPointPaint.setColor(Color.BLACK);
-            canvas.drawCircle(mMouseX, mMouseY, mPointSizePx, mPointPaint);
+            canvas.drawCircle(pointX, pointY, mPointSizePx, mPointPaint);
 
             mPointPaint.setStyle(Paint.Style.STROKE);
             mPointPaint.setStrokeWidth(mPointStrokeWidthPx);
             mPointPaint.setColor(Color.WHITE);
-            canvas.drawCircle(mMouseX, mMouseY, mPointSizePx, mPointPaint);
+            canvas.drawCircle(pointX, pointY, mPointSizePx, mPointPaint);
         }
     }
 
@@ -230,5 +241,9 @@ public class AutoclickIndicatorView extends View {
     public void setAnimationDuration(int duration) {
         mAnimationDuration = Math.max(duration, MINIMAL_ANIMATION_DURATION);
         mAnimator.setDuration(mAnimationDuration);
+    }
+
+    public void setIgnoreMinorCursorMovement(boolean ignoreMinorCursorMovement) {
+        mIgnoreMinorCursorMovement = ignoreMinorCursorMovement;
     }
 }

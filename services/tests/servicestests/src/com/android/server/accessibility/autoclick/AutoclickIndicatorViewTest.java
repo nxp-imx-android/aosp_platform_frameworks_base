@@ -102,6 +102,29 @@ public class AutoclickIndicatorViewTest {
     }
 
     @Test
+    public void onDraw_ignoreMinorMovementTrue_pointDoesNotMoveWithMouse() {
+        mAutoclickIndicatorView.setIgnoreMinorCursorMovement(true);
+        mAutoclickIndicatorView.setCoordination(100f, 200f);
+        mAutoclickIndicatorView.redrawIndicator();
+        // After indicator is shown, mouse moves to a new position.
+        mAutoclickIndicatorView.setCoordination(300f, 400f);
+
+        mAutoclickIndicatorView.onDraw(mMockCanvas);
+
+        // Verify ring is drawn at the original snapshot position.
+        ArgumentCaptor<RectF> rectCaptor = ArgumentCaptor.forClass(RectF.class);
+        verify(mMockCanvas)
+                .drawArc(rectCaptor.capture(), eq(-90f), anyFloat(), eq(false), any(Paint.class));
+        RectF ringRect = rectCaptor.getValue();
+        assertThat(ringRect.centerX()).isEqualTo(100f);
+        assertThat(ringRect.centerY()).isEqualTo(200f);
+
+        // Verify point is drawn at the original snapshot position, not the new mouse position.
+        verify(mMockCanvas, times(2)).drawCircle(eq(100f), eq(200f), anyFloat(), any(Paint.class));
+        verify(mMockCanvas, never()).drawCircle(eq(300f), eq(400f), anyFloat(), any(Paint.class));
+    }
+
+    @Test
     public void onDraw_showIndicatorFalse_doesNotDraw() {
         mAutoclickIndicatorView.clearIndicator();
 
