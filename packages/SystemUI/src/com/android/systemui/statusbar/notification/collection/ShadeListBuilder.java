@@ -741,6 +741,10 @@ public class ShadeListBuilder implements Dumpable, PipelineDumpable {
         return be;
     }
 
+    Collection<BundleEntry> getBundleEntries() {
+        return Collections.unmodifiableCollection(mIdToBundleEntry.values());
+    }
+
     private void debugList(String s) {
         if (!BundleCoordinator.debugBundleLogs) {
             return;

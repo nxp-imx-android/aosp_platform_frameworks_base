@@ -112,6 +112,7 @@ import com.android.systemui.statusbar.notification.ColorUpdateLogger;
 import com.android.systemui.statusbar.notification.FeedbackIcon;
 import com.android.systemui.statusbar.notification.LaunchAnimationParameters;
 import com.android.systemui.statusbar.notification.NmSummarizationUiFlag;
+import com.android.systemui.statusbar.notification.NotificationActivityStarter;
 import com.android.systemui.statusbar.notification.NotificationFadeAware;
 import com.android.systemui.statusbar.notification.NotificationTransitionAnimatorController;
 import com.android.systemui.statusbar.notification.NotificationUtils;
@@ -213,6 +214,7 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
     private LayoutListener mLayoutListener;
     private RowContentBindStage mRowContentBindStage;
     private PeopleNotificationIdentifier mPeopleNotificationIdentifier;
+    private NotificationActivityStarter mNotificationActivityStarter;
     private MetricsLogger mMetricsLogger;
     private NotificationChildrenContainerLogger mChildrenContainerLogger;
     private ColorUpdateLogger mColorUpdateLogger;
@@ -1611,7 +1613,8 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
     @Override
     public void onPluginDisconnected(NotificationMenuRowPlugin plugin) {
         boolean existed = mMenuRow.getMenuView() != null;
-        mMenuRow = new NotificationMenuRow(mContext, mPeopleNotificationIdentifier);
+        mMenuRow = new NotificationMenuRow(
+                mContext, mPeopleNotificationIdentifier, mNotificationActivityStarter);
         if (existed) {
             createMenu();
         }
@@ -1669,6 +1672,9 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
         initDimens();
         initBackground();
         reInflateViews();
+        if (mChildrenContainer != null) {
+            mChildrenContainer.dispatchConfigurationChanged(getResources().getConfiguration());
+        }
     }
 
     private void reInflateViews() {
@@ -1735,9 +1741,6 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
         }
         if (mBigPictureIconManager != null) {
             mBigPictureIconManager.updateMaxImageSizes();
-        }
-        if (mChildrenContainer != null) {
-            mChildrenContainer.recomposeBundleHeader();
         }
     }
 
@@ -2285,7 +2288,8 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
             IStatusBarService statusBarService,
             UiEventLogger uiEventLogger,
             NotificationRebindingTracker notificationRebindingTracker,
-            BundleInteractionLogger bundleInteractionLogger) {
+            BundleInteractionLogger bundleInteractionLogger,
+            NotificationActivityStarter notificationActivityStarter) {
 
         if (NotificationBundleUi.isEnabled()) {
             mEntryAdapter = entryAdapter;
@@ -2295,8 +2299,10 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
         }
         mAppName = appName;
         mRebindingTracker = notificationRebindingTracker;
+        mNotificationActivityStarter = notificationActivityStarter;
         if (mMenuRow == null) {
-            mMenuRow = new NotificationMenuRow(mContext, peopleNotificationIdentifier);
+            mMenuRow = new NotificationMenuRow(
+                    mContext, peopleNotificationIdentifier, mNotificationActivityStarter);
         }
         if (mMenuRow.getMenuView() != null) {
             mMenuRow.setAppName(mAppName);
@@ -3306,15 +3312,15 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
             return getActualHeight();
         } else if (mGuts != null && mGuts.isExposed()) {
             return mGuts.getIntrinsicHeight();
-        } else if (!NotificationBundleUi.isEnabled() && (isChildInGroup() && !isGroupExpanded())) {
+        } else if (isBundle() && !isGroupExpanded()) {
+            return getCollapsedHeight();
+        } else if (isBundle() && isGroupExpanded()) {
+            return mChildrenContainer.getIntrinsicHeight();
+        } else if ((isChildInGroup() && !isGroupExpanded())) {
             return mPrivateLayout.getMinHeight();
         } else if (mSensitive && mHideSensitiveForIntrinsicHeight) {
             return getMinHeight();
-        } else if (NotificationBundleUi.isEnabled() && mIsSummaryWithChildren) {
-            return mChildrenContainer.getIntrinsicHeight();
-        } else if (NotificationBundleUi.isEnabled() && (isChildInGroup() && !isGroupExpanded())) {
-            return mPrivateLayout.getMinHeight();
-        } else if (!NotificationBundleUi.isEnabled() && mIsSummaryWithChildren) {
+        } else if (mIsSummaryWithChildren) {
             return mChildrenContainer.getIntrinsicHeight();
         } else if (canShowHeadsUp() && isHeadsUpState()) {
             if (isPinned() || mHeadsupDisappearRunning) {

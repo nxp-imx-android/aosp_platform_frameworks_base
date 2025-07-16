@@ -92,6 +92,10 @@ constructor(
         return mNotifCollection.allNotifs
     }
 
+    override fun getAllBundles(): Collection<BundleEntry> {
+        return mShadeListBuilder.bundleEntries
+    }
+
     override fun addCollectionListener(listener: NotifCollectionListener) {
         mNotifCollection.addCollectionListener(listener)
     }

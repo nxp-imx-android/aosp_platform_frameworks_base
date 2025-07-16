@@ -207,9 +207,7 @@ public class NotificationChildrenContainer extends ViewGroup
                     R.dimen.notification_children_container_top_padding);
             mHeaderHeight = mCollapsedHeaderMargin + mAdditionalExpandedHeaderMargin;
         }
-        if (mBundleHeaderView != null) {
-            initBundleDimens();
-        }
+
         mCollapsedBottomPadding = res.getDimensionPixelOffset(
                 R.dimen.notification_children_collapsed_bottom_padding);
         mEnableShadowOnChildNotifications =
@@ -226,12 +224,8 @@ public class NotificationChildrenContainer extends ViewGroup
         mHybridGroupManager.initDimens();
         mMinSingleLineHeight = getResources().getDimensionPixelSize(
                 R.dimen.conversation_single_line_face_pile_size);
-    }
-
-    public void recomposeBundleHeader() {
         if (mBundleHeaderView != null) {
-            mBundleHeaderView.disposeComposition();
-            mBundleHeaderView.createComposition();
+            initBundleDimens();
         }
     }
 
@@ -1670,7 +1664,6 @@ public class NotificationChildrenContainer extends ViewGroup
             addView(divider, index);
             mDividers.set(i, divider);
         }
-        recomposeBundleHeader();
     }
 
     public void setUserLocked(boolean userLocked) {
