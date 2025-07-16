@@ -44,16 +44,19 @@ class DragToBubblesZoneChangeListener(
         from: DragZone?,
         to: DragZone?,
     ) {
-        val updateLocation = to.toBubbleBarLocation()
-        updateBubbleBarLocation(updateLocation)
-        lastUpdateLocation = updateLocation
+        processLocationUpdate(to.toBubbleBarLocation())
     }
 
     override fun onDragEnded(zone: DragZone?) {
-        updateBubbleBarLocation(updateLocation = null)
+        processLocationUpdate(updateLocation = null)
     }
 
-    fun updateBubbleBarLocation(updateLocation: BubbleBarLocation?) {
+    private fun processLocationUpdate(updateLocation: BubbleBarLocation?) {
+        actOnLocationUpdate(updateLocation)
+        lastUpdateLocation = updateLocation
+    }
+
+    private fun actOnLocationUpdate(updateLocation: BubbleBarLocation?) {
         val updatedBefore = lastUpdateLocation != null
         val originalLocation = callback.getStartingBubbleBarLocation()
         val isLocationUpdated = isDifferentSides(lastUpdateLocation, updateLocation, isRtl)
