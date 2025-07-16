@@ -119,7 +119,7 @@ constructor(
             emptyFlow()
         }
 
-    val zoomOut: Flow<Float> =
+    override val zoomOut: Flow<Float> =
         transitionAnimation.sharedFlow(
             onStep = { it },
             onFinish = { 1f },

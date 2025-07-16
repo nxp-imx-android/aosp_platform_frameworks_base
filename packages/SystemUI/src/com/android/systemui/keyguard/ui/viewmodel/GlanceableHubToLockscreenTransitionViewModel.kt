@@ -164,7 +164,7 @@ constructor(
 
     override val deviceEntryParentViewAlpha: Flow<Float> = keyguardAlpha
 
-    val zoomOut: Flow<Float> =
+    override val zoomOut: Flow<Float> =
         transitionAnimation.sharedFlow(
             onStep = { 1f - it },
             // reset zoom out on wallpaper and keyguard view

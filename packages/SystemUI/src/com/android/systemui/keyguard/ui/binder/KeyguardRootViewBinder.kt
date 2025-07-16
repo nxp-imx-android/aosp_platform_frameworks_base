@@ -73,7 +73,6 @@ import com.android.systemui.statusbar.phone.StatusBarKeyguardViewManager
 import com.android.systemui.temporarydisplay.ViewPriority
 import com.android.systemui.temporarydisplay.chipbar.ChipbarCoordinator
 import com.android.systemui.temporarydisplay.chipbar.ChipbarInfo
-import com.android.systemui.util.WallpaperController
 import com.android.systemui.util.kotlin.DisposableHandles
 import com.android.systemui.util.ui.AnimatedValue
 import com.android.systemui.util.ui.isAnimating
@@ -108,7 +107,6 @@ object KeyguardRootViewBinder {
         mainImmediateDispatcher: CoroutineDispatcher,
         msdlPlayer: MSDLPlayer?,
         @KeyguardBlueprintLog blueprintLog: LogBuffer,
-        wallpaperController: WallpaperController,
     ): DisposableHandle {
         val disposables = DisposableHandles()
         val childViews = mutableMapOf<Int, View>()
@@ -363,14 +361,6 @@ object KeyguardRootViewBinder {
                     }
 
                     launch { burnInParams.collect { viewModel.updateBurnInParams(it) } }
-
-                    if (Flags.gestureBetweenHubAndLockscreenMotion()) {
-                        launch {
-                            viewModel.wallpaperZoomOut.collect { zoomOutToApply ->
-                                wallpaperController.setWallpaperZoom(zoomOutToApply)
-                            }
-                        }
-                    }
                 }
             }
 

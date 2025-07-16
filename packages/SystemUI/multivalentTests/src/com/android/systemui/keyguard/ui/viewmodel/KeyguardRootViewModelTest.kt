@@ -44,7 +44,6 @@ import com.android.systemui.keyguard.domain.interactor.pulseExpansionInteractor
 import com.android.systemui.keyguard.shared.model.KeyguardState
 import com.android.systemui.keyguard.shared.model.TransitionState
 import com.android.systemui.keyguard.shared.model.TransitionStep
-import com.android.systemui.keyguard.ui.viewmodel.KeyguardRootViewModel.Companion.DEPTH_PUSH_WALLPAPER_FROM_GLANCEABLE_HUB
 import com.android.systemui.keyguard.ui.viewmodel.KeyguardRootViewModel.Companion.PUSHBACK_SCALE_FOR_LOCKSCREEN
 import com.android.systemui.kosmos.collectLastValue
 import com.android.systemui.kosmos.runCurrent
@@ -549,76 +548,6 @@ class KeyguardRootViewModelTest(flags: FlagsParameterization) : SysuiTestCase() 
             )
 
             assertThat(alpha).isEqualTo(1.0f)
-        }
-
-    @Test
-    @EnableFlags(FLAG_GESTURE_BETWEEN_HUB_AND_LOCKSCREEN_MOTION)
-    @DisableSceneContainer
-    fun wallpaperZoomOut_transitionFromLockscreenToHubAndBack() =
-        testScope.runTest {
-            val zoomOut by collectLastValue(underTest.wallpaperZoomOut)
-
-            val transitionState: MutableStateFlow<ObservableTransitionState> =
-                MutableStateFlow(
-                    ObservableTransitionState.Transition(
-                        fromScene = CommunalScenes.Blank,
-                        toScene = CommunalScenes.Communal,
-                        currentScene = flowOf(CommunalScenes.Communal),
-                        progress = flowOf(0f),
-                        isInitiatedByUserInput = true,
-                        isUserInputOngoing = flowOf(false),
-                    )
-                )
-
-            // Start transition to communal
-            communalRepository.setTransitionState(transitionState)
-
-            keyguardTransitionRepository.sendTransitionSteps(
-                from = KeyguardState.LOCKSCREEN,
-                to = KeyguardState.GLANCEABLE_HUB,
-                testScope,
-            )
-            // Finish transition to communal
-            transitionState.value = ObservableTransitionState.Idle(CommunalScenes.Communal)
-
-            assertThat(zoomOut).isEqualTo(DEPTH_PUSH_WALLPAPER_FROM_GLANCEABLE_HUB)
-
-            // Start transitioning back.
-            keyguardTransitionRepository.sendTransitionSteps(
-                from = KeyguardState.GLANCEABLE_HUB,
-                to = KeyguardState.LOCKSCREEN,
-                testScope,
-            )
-            transitionState.value = ObservableTransitionState.Idle(CommunalScenes.Blank)
-
-            assertThat(zoomOut).isEqualTo(0f)
-        }
-
-    @Test
-    @DisableSceneContainer
-    @EnableFlags(FLAG_GESTURE_BETWEEN_HUB_AND_LOCKSCREEN_MOTION)
-    fun wallpaperZoomOut_reset_transitionedAwayFromHub() =
-        testScope.runTest {
-            val zoomOut by collectLastValue(underTest.wallpaperZoomOut)
-            val transitionState: MutableStateFlow<ObservableTransitionState> =
-                MutableStateFlow(ObservableTransitionState.Idle(CommunalScenes.Blank))
-
-            // Transition to the glanceable hub and then to bouncer.
-            keyguardTransitionRepository.sendTransitionSteps(
-                from = KeyguardState.LOCKSCREEN,
-                to = KeyguardState.GLANCEABLE_HUB,
-                testScope,
-            )
-            transitionState.value = ObservableTransitionState.Idle(CommunalScenes.Communal)
-
-            keyguardTransitionRepository.sendTransitionSteps(
-                from = KeyguardState.GLANCEABLE_HUB,
-                to = KeyguardState.PRIMARY_BOUNCER,
-                testScope,
-            )
-            transitionState.value = ObservableTransitionState.Idle(CommunalScenes.Blank)
-
-            assertThat(zoomOut).isEqualTo(0f)
         }
 
     @Test
