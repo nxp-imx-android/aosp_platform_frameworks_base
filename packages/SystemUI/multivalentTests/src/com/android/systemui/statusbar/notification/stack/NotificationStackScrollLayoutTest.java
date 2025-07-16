@@ -22,13 +22,10 @@ import static com.android.systemui.flags.SceneContainerFlagParameterizationKt.pa
 import static com.android.systemui.statusbar.notification.stack.NotificationStackScrollLayout.ROWS_ALL;
 import static com.android.systemui.statusbar.notification.stack.NotificationStackScrollLayout.ROWS_GENTLE;
 import static com.android.systemui.statusbar.notification.stack.NotificationStackScrollLayout.RUBBER_BAND_FACTOR_NORMAL;
-
 import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.truth.Truth.assertWithMessage;
-
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertTrue;
-
 import static org.junit.Assert.assertFalse;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
@@ -104,8 +101,6 @@ import com.android.systemui.statusbar.phone.ScreenOffAnimationController;
 import com.android.systemui.statusbar.phone.StatusBarKeyguardViewManager;
 import com.android.systemui.statusbar.policy.ResourcesSplitShadeStateController;
 
-import kotlin.Unit;
-
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -116,12 +111,13 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 
-import platform.test.runner.parameterized.ParameterizedAndroidJunit4;
-import platform.test.runner.parameterized.Parameters;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
+
+import kotlin.Unit;
+import platform.test.runner.parameterized.ParameterizedAndroidJunit4;
+import platform.test.runner.parameterized.Parameters;
 
 /**
  * Tests for {@link NotificationStackScrollLayout}.
@@ -1988,6 +1984,67 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
         // bigger than because of padding
         assertTrue("TopOverlap not calculated accurately", firstRow.getTopOverlap() == 0);
         assertTrue("BottomOverlap not calculated accurately", firstRow.getBottomOverlap() == 0);
+    }
+
+    /**
+     * This test validates the legacy behavior when the NotificationBundleUi flag is OFF.
+     * It confirms that when a partially visible child is removed, the scroll position
+     * incorrectly jumps to an absolute position based on the removed child's location.
+     */
+    @Test
+    @DisableFlags(NotificationBundleUi.FLAG_NAME)
+    @DisableSceneContainer
+    public void updateScrollStateForRemovedChild_partiallyVisible_bundleUiFlagOff_jumpsToTop() {
+        // GIVEN: A scrollable list with two rows, where we can control the height of the first row
+        final int rowHeight = 200;
+        ExpandableNotificationRow row1 = spy(mKosmos.createRow());
+        doReturn(rowHeight).when(row1).getIntrinsicHeight();
+        ExpandableNotificationRow row2 = mKosmos.createRow();
+        mStackScroller.addContainerView(row1);
+        mStackScroller.addContainerView(row2);
+
+        // GIVEN: The NSSL is scrolled down by 100px, making row1 partially visible at the top.
+        mStackScroller.setOwnScrollY(100);
+        assertThat(mStackScroller.getOwnScrollY()).isEqualTo(100);
+
+        // WHEN: The partially visible row1 is removed (simulating auto-grouping).
+        mStackScroller.removeContainerView(row1);
+
+        // THEN: The scroll position should jump to a value LESS THAN its original position.
+        assertThat(mStackScroller.getOwnScrollY()).isLessThan(100);
+    }
+
+    /**
+     * This test validates the new behavior when the NotificationBundleUi flag is ON.
+     * It confirms that when a partially visible child is removed, the scroll position is
+     * adjusted relatively to maintain visual stability, preventing any jump
+     */
+    @Test
+    @EnableFlags(NotificationBundleUi.FLAG_NAME)
+    @DisableSceneContainer
+    public void updateScrollStateForRemovedChild_partiallyVisible_bundleUiFlagOn_adjustsRelative() {
+        // GIVEN: A scrollable list with two rows, where we can control the height of the first.
+        final int rowHeight = 200;
+        final int padding = mContext.getResources()
+                .getDimensionPixelSize(R.dimen.notification_divider_height);
+        final int childHeight = rowHeight + padding;
+
+        ExpandableNotificationRow row1 = spy(mKosmos.createRow());
+        doReturn(rowHeight).when(row1).getIntrinsicHeight();
+        ExpandableNotificationRow row2 = mKosmos.createRow();
+        mStackScroller.addContainerView(row1);
+        mStackScroller.addContainerView(row2);
+
+        // GIVEN: The NSSL is scrolled down by 100px, making row1 partially visible at the top.
+        mStackScroller.setOwnScrollY(100);
+        assertThat(mStackScroller.getOwnScrollY()).isEqualTo(100);
+
+        // WHEN: The partially visible row1 is removed (simulating auto-grouping).
+        mStackScroller.removeContainerView(row1);
+
+        // THEN: The scroll position should be adjusted by the height of the removed child to
+        // maintain stability. The new scrollY will be (currentScrollY - childHeight).
+        assertThat(mStackScroller.getOwnScrollY()).isEqualTo(100 - childHeight);
     }
 
     private MotionEvent captureTouchSentToSceneFramework() {

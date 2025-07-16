@@ -3317,7 +3317,11 @@ public class NotificationStackScrollLayout
         } else if (startingPosition < getOwnScrollY() - scrollBoundaryStart) {
             // This child is currently being scrolled into, set the scroll position to the
             // start of this child
-            setOwnScrollY(startingPosition + scrollBoundaryStart);
+            if (NotificationBundleUi.isEnabled()) {
+                setOwnScrollY(getOwnScrollY() - childHeight);
+            } else {
+                setOwnScrollY(startingPosition + scrollBoundaryStart);
+            }
         }
     }
 
