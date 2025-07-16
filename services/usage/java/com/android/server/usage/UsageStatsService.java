@@ -106,7 +106,6 @@ import android.util.SparseSetArray;
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.content.PackageMonitor;
-import com.android.internal.os.BackgroundThread;
 import com.android.internal.util.CollectionUtils;
 import com.android.internal.util.DumpUtils;
 import com.android.internal.util.FrameworkStatsLog;
@@ -153,10 +152,6 @@ public class UsageStatsService extends SystemService implements
     static final String TAG = "UsageStatsService";
     public static final boolean ENABLE_TIME_CHANGE_CORRECTION
             = SystemProperties.getBoolean("persist.debug.time_correction", true);
-
-    private static final boolean USE_DEDICATED_HANDLER_THREAD =
-            SystemProperties.getBoolean("persist.debug.use_dedicated_handler_thread",
-            Flags.useDedicatedHandlerThread());
 
     static final boolean DEBUG = false; // Never submit with true
     static final boolean DEBUG_RESPONSE_STATS = DEBUG || Log.isLoggable(TAG, Log.DEBUG);
@@ -406,18 +401,16 @@ public class UsageStatsService extends SystemService implements
 
         mAppStandby.addListener(mStandbyChangeListener);
 
-        mPackageMonitor.register(getContext(),
-                /* thread= */ USE_DEDICATED_HANDLER_THREAD ? mHandler.getLooper() : null,
+        mPackageMonitor.register(getContext(), /* thread= */ mHandler.getLooper(),
                 UserHandle.ALL, true);
 
         IntentFilter filter = new IntentFilter(Intent.ACTION_USER_REMOVED);
         filter.addAction(Intent.ACTION_USER_STARTED);
         getContext().registerReceiverAsUser(new UserActionsReceiver(), UserHandle.ALL, filter,
-                null, /* scheduler= */ USE_DEDICATED_HANDLER_THREAD ? mHandler : null);
+                null, /* scheduler= */ mHandler);
 
         getContext().registerReceiverAsUser(new UidRemovedReceiver(), UserHandle.ALL,
-                new IntentFilter(ACTION_UID_REMOVED), null,
-                /* scheduler= */ USE_DEDICATED_HANDLER_THREAD ? mHandler : null);
+                new IntentFilter(ACTION_UID_REMOVED), null, /* scheduler= */ mHandler);
 
         mRealTimeSnapshot = SystemClock.elapsedRealtime();
         mSystemTimeSnapshot = System.currentTimeMillis();
@@ -509,11 +502,7 @@ public class UsageStatsService extends SystemService implements
     }
 
     private Handler getUsageEventProcessingHandler() {
-        if (USE_DEDICATED_HANDLER_THREAD) {
-            return new H(UsageStatsHandlerThread.get().getLooper());
-        } else {
-            return new H(BackgroundThread.get().getLooper());
-        }
+        return new H(UsageStatsHandlerThread.get().getLooper());
     }
 
     private void onUserUnlocked(int userId) {
