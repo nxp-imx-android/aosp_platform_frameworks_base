@@ -33,6 +33,16 @@ flag {
 }
 
 flag {
+    name: "dimming_wallpaper_for_maximized_and_tiled"
+    namespace: "lse_desktop_experience"
+    description: "Dim the wallpaper to make maximized and tiled window looks immersive."
+    bug: "406869685"
+    metadata {
+       purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "disable_desktop_launch_params_outside_desktop_bug_fix"
     namespace: "lse_desktop_experience"
     description: "Prevents DesktopModeLaunchParamsModifier from modifying launch params for non /n"
