@@ -17,14 +17,13 @@
 package com.android.wm.shell.flicker.bubbles
 
 import android.platform.test.annotations.Presubmit
-import androidx.test.filters.RequiresDevice
 import android.platform.test.annotations.RequiresFlagsEnabled
 import android.tools.NavBar
-import android.tools.traces.component.ComponentNameMatcher.Companion.BUBBLE
 import androidx.test.filters.FlakyTest
+import androidx.test.filters.RequiresDevice
 import com.android.wm.shell.Flags
 import com.android.wm.shell.Utils
-import com.android.wm.shell.flicker.bubbles.testcase.BubbleAppBecomesNotExpandedTestCases
+import com.android.wm.shell.flicker.bubbles.testcase.DismissExpandedBubbleTestCases
 import com.android.wm.shell.flicker.bubbles.utils.ApplyPerParameterRule
 import com.android.wm.shell.flicker.bubbles.utils.FlickerPropertyInitializer
 import com.android.wm.shell.flicker.bubbles.utils.RecordTraceWithTransitionRule
@@ -55,18 +54,15 @@ import org.junit.runners.MethodSorters
  * ```
  * Verified tests:
  * - [BubbleFlickerTestBase]
- * - [BubbleAppBecomesNotExpandedTestCases]
- * - [BUBBLE] is visible and then disappear
+ * - [DismissExpandedBubbleTestCases]
  */
 @FlakyTest(bugId = 427850786)
 @RequiresFlagsEnabled(Flags.FLAG_ENABLE_CREATE_ANY_BUBBLE)
 @RequiresDevice
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 @Presubmit
-class DismissExpandedBubbleViaBubbleViewTest(navBar: NavBar) :
-    BubbleFlickerTestBase(),
-    BubbleAppBecomesNotExpandedTestCases
-{
+class DismissExpandedBubbleViaBubbleViewTest(navBar: NavBar) : BubbleFlickerTestBase(),
+    DismissExpandedBubbleTestCases {
     companion object : FlickerPropertyInitializer() {
         private val recordTraceWithTransitionRule = RecordTraceWithTransitionRule(
             setUpBeforeTransition = {
@@ -92,62 +88,6 @@ class DismissExpandedBubbleViaBubbleViewTest(navBar: NavBar) :
     override fun setUp() {
         assumeFalse(tapl.isTablet)
         super.setUp()
-    }
-
-// region Bubble stack related tests
-
-    /**
-     * Verifies [BUBBLE] window is gone at the end of the transition.
-     */
-    @Test
-    fun bubbleWindowIsGoneAtEnd() {
-        wmStateSubjectAtEnd.notContains(BUBBLE)
-    }
-
-    /**
-     * Verifies [BUBBLE] layer is gone at the end of the transition.
-     */
-    @Test
-    fun bubbleLayerIsGoneAtEnd() {
-        layerTraceEntrySubjectAtEnd.notContains(BUBBLE)
-    }
-
-    /**
-     * Verifies [BUBBLE] window was visible then disappear.
-     */
-    @Test
-    fun bubbleWindowWasVisibleThenDisappear() {
-        wmTraceSubject
-            .isAboveAppWindowVisible(BUBBLE)
-            .then()
-            // Use #isNonAppWindowInvisible here because the BUBBLE window may have been removed
-            // from WM hierarchy.
-            .isNonAppWindowInvisible(BUBBLE)
-            .forAllEntries()
-    }
-
-    /**
-     * Verifies [BUBBLE] layer was visible then disappear.
-     */
-    @Test
-    fun bubbleLayerWasVisibleThenDisappear() {
-        layersTraceSubject
-            .isVisible(BUBBLE)
-            .then()
-            .isInvisible(BUBBLE)
-            .forAllEntries()
-    }
-
-// endregion
-
-// region bubble app related tests
-
-    /**
-     * Verifies bubble app window is gone at the end of the transition.
-     */
-    @Test
-    fun appWindowIsGoneAtEnd() {
-        wmStateSubjectAtEnd.notContains(testApp)
     }
 
     @FlakyTest(bugId = 396020056)

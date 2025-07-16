@@ -209,8 +209,12 @@ fun dismissBubbleAppViaBubbleView(uiDevice: UiDevice, wmHelper: WindowManagerSta
     uiDevice.bubbleIcon?.run {
         drag(Point(uiDevice.displayWidth / 2, uiDevice.displayHeight), 1000)
     }
+}
 
-    // Wait for bubble gone.
+/**
+ * Waits and verifies the bubble (represented as bubble icon or bubble bar) is gone.
+ */
+fun waitAndVerifyBubbleGone(wmHelper: WindowManagerStateHelper) {
     wmHelper
         .StateSyncBuilder()
         .add(ConditionsFactory.isWMStateComplete())
