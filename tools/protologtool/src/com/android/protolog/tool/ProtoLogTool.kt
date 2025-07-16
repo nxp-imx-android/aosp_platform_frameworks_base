@@ -20,9 +20,10 @@ import com.android.internal.protolog.common.IProtoLog
 import com.android.internal.protolog.common.LogLevel
 import com.android.internal.protolog.common.ProtoLogToolInjected
 import com.android.protolog.tool.CommandOptions.Companion.USAGE
+import com.github.javaparser.JavaParser
+import com.github.javaparser.JavaParserAdapter
 import com.github.javaparser.ParseProblemException
 import com.github.javaparser.ParserConfiguration
-import com.github.javaparser.StaticJavaParser
 import com.github.javaparser.ast.CompilationUnit
 import com.github.javaparser.ast.Modifier
 import com.github.javaparser.ast.NodeList
@@ -62,6 +63,9 @@ object ProtoLogTool {
         "frameworks/base/core/java/com/android/internal/protolog/ProtoLogImpl.java"
 
     private const val PROTOLOG_CLASS_NAME = "ProtoLog"; // ProtoLog::class.java.simpleName
+
+    private val PARSER_CONFIG = ParserConfiguration()
+        .setLanguageLevel(ParserConfiguration.LanguageLevel.JAVA_21)
 
     data class LogCall(
         val messageString: String,
@@ -322,7 +326,8 @@ object ProtoLogTool {
 
     private fun tryParse(code: String, fileName: String): CompilationUnit {
         try {
-            return StaticJavaParser.parse(code)
+            val javaParser = JavaParser(PARSER_CONFIG)
+            return JavaParserAdapter(javaParser).parse(code)
         } catch (ex: ParseProblemException) {
             val problem = ex.problems.first()
             throw ParsingException("Java parsing error: ${problem.verboseMessage}",
@@ -452,11 +457,6 @@ object ProtoLogTool {
     }
 
     fun invoke(command: CommandOptions) {
-        StaticJavaParser.setConfiguration(ParserConfiguration().apply {
-            setLanguageLevel(ParserConfiguration.LanguageLevel.RAW)
-            setAttributeComments(false)
-        })
-
         when (command.command) {
             CommandOptions.TRANSFORM_CALLS_CMD -> processClasses(command)
             CommandOptions.GENERATE_CONFIG_CMD -> viewerConf(command)
