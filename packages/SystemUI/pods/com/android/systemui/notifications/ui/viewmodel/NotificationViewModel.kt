@@ -31,10 +31,11 @@ public interface NotificationViewModel {
     /** The "large icon" shown on the top end of the notification beside the expander. */
     public val largeIcon: Drawable?
 
+    // TODO: b/431222735 - Make this nullable once we implement the top line fields.
     /** The title of the notification, emphasized in the content. */
     public val title: String
     /** The content text of the notification, shown below the title. */
-    public val text: String
+    public val text: String?
 
     /** How many lines of text can be displayed when the notification is expanded. */
     public val maxLinesWhenExpanded: Int

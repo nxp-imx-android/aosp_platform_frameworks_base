@@ -39,12 +39,11 @@ import com.android.systemui.notifications.ui.viewmodel.NotificationViewModel
 @Composable
 public fun NotificationContent(viewModel: NotificationViewModel, modifier: Modifier = Modifier) {
     // TODO: b/431222735 - Handle transitions using STL.
-    // TODO: b/431222735 - Handle empty text edge cases.
     if (!viewModel.isExpanded) {
         NotificationRow(
             viewModel,
             firstLine = { Title(viewModel.title) },
-            secondLine = { CollapsedText(viewModel.text) },
+            secondLine = { viewModel.text?.let { CollapsedText(it) } },
             modifier,
         )
     } else {
@@ -57,7 +56,7 @@ public fun NotificationContent(viewModel: NotificationViewModel, modifier: Modif
             secondLine = { Title(viewModel.title) },
             modifier,
         ) {
-            ExpandedText(viewModel.text, maxLines = viewModel.maxLinesWhenExpanded)
+            viewModel.text?.let { ExpandedText(it, maxLines = viewModel.maxLinesWhenExpanded) }
         }
     }
 }
@@ -103,7 +102,9 @@ private fun HeaderWithLargeIcon(
 ) {
     Row(modifier.fillMaxWidth()) {
         Column(
-            modifier = Modifier.weight(1f).padding(top = 4.dp),
+            // The text container has a min height in order to align correctly to the app icon when
+            // there's only one line of text, or the font size is smaller.
+            modifier = Modifier.weight(1f).padding(top = 4.dp).heightIn(min = 40.dp),
             verticalArrangement = Arrangement.Center,
         ) {
             firstLine()
@@ -125,7 +126,12 @@ private fun HeaderWithoutLargeIcon(
     secondLine: @Composable () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Column(modifier.padding(top = 4.dp).fillMaxWidth()) {
+    Column(
+        // The text container has a min height in order to align correctly to the app icon when
+        // there's only one line of text, or the font size is smaller.
+        modifier.padding(top = 4.dp).fillMaxWidth().heightIn(min = 40.dp),
+        verticalArrangement = Arrangement.Center,
+    ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Box(Modifier.weight(1f)) { firstLine() }
             Expander(expanded = viewModel.isExpanded)
