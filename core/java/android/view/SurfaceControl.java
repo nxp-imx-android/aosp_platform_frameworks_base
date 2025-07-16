@@ -345,6 +345,8 @@ public final class SurfaceControl implements Parcelable {
             long nativeObject, long pictureProfileId);
     private static native void nativeSetContentPriority(long transactionObj, long nativeObject,
             int priority);
+    private static native void nativeSetSystemContentPriority(
+            long transactionObj, long nativeObject, int priority);
     private static native String nativeGetName(long nativeObject);
 
     /**
@@ -5071,6 +5073,27 @@ public final class SurfaceControl implements Parcelable {
             checkPreconditions(sc);
 
             nativeSetContentPriority(mNativeObject, sc.mNativeObject, priority);
+            return this;
+        }
+
+        /**
+         * Sets the system-level importance of the window's content.
+         * <p>
+         * This priority is used by the system to make decisions for different use cases where the
+         * resource is limited.
+         * <p>
+         * This is intended for system internal use.
+         *
+         * @param sc       The SurfaceControl of the layer to update.
+         * @param priority The system content priority to assign to this layer. The range of the
+         *                 system priority is [-10. 10]. A window with higher priority value gets
+         *                 preferred access to limited resources.
+         * @hide
+         */
+        public @NonNull Transaction setSystemContentPriority(
+                @NonNull SurfaceControl sc, @IntRange(from = -10, to = 10) int priority) {
+            checkPreconditions(sc);
+            nativeSetSystemContentPriority(mNativeObject, sc.mNativeObject, priority);
             return this;
         }
 
