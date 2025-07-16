@@ -23,7 +23,7 @@
     <string name="title_anonymous_source_warning">Install unknown app?</string>
     <string name="title_install_blocked">Install blocked</string>
 
-    <string name="title_install_staging">Preparing to install app&#8230;</string>
+    <string name="title_install_staging">Preparing app&#8230;</string>
 
     <string name="title_install">Install this app?</string>
     <string name="title_installing">Installing&#8230;</string>
@@ -118,7 +118,7 @@
     <string name="message_install_failed_invalid">There\'s a problem with this app\'s installation file</string>
     <string name="message_install_failed_less_storage">To install this app, free up some space and try again</string>
 
-    <string name="message_parse_failed">There is a problem with the app file</string>
+    <string name="message_parse_failed">There\'s a problem with the app file</string>
 
     <string name="message_no_install_apps_restriction">Installing apps has been restricted</string>
     <string name="message_no_install_unknown_apps_restriction">Installing unknown apps has been restricted</string>
