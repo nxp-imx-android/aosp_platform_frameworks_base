@@ -268,14 +268,16 @@ public class PipTransitionStateTest extends ShellTestCase {
     }
 
     @Test
-    public void testSetIsPipBoundsChangingWithDisplay_toFalse_thenIdle() {
+    public void testSetIsDisplayChangeScheduled_toFalse_thenIdleWithoutRunnableSent() {
         when(mMainHandler.obtainMessage(anyInt())).thenAnswer(invocation ->
                 new Message().setWhat(invocation.getArgument(0)));
 
         // Pick an initially idle ENTERED_PIP state
         mPipTransitionState.setState(PipTransitionState.ENTERED_PIP);
+
         // Enter an non-idle state as PiP bounds change with the display
-        mPipTransitionState.setIsPipBoundsChangingWithDisplay(true);
+        mPipTransitionState.setIsDisplayChangeScheduled(true);
+        Assert.assertFalse("PiP should not be idle", mPipTransitionState.isPipStateIdle());
 
         final Runnable onIdleRunnable = mock(Runnable.class);
         mPipTransitionState.setOnIdlePipTransitionStateRunnable(onIdleRunnable);
@@ -283,9 +285,10 @@ public class PipTransitionStateTest extends ShellTestCase {
         // We are supposed to be in a non-idle state, so the runnable should not be posted yet.
         verify(mMainHandler, never()).sendMessage(any());
 
-        mPipTransitionState.setIsPipBoundsChangingWithDisplay(false);
-        verify(mMainHandler, times(1))
-                .sendMessage(argThat(msg -> msg.getCallback() == onIdleRunnable));
+        mPipTransitionState.setIsDisplayChangeScheduled(false);
+        // We aren't supposed to post the on-idle runnable upon reset of display change scheduled
+        // flag, as we are expected to be put back into a non-idle state while display change plays.
+        verify(mMainHandler, never()).sendMessage(any());
     }
 
     @Test
