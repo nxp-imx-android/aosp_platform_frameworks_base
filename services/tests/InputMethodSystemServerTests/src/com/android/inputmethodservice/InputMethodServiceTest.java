@@ -70,6 +70,7 @@ import android.view.inputmethod.Flags;
 import android.view.inputmethod.InputMethodManager;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.MediumTest;
 import androidx.test.platform.app.InstrumentationRegistry;
@@ -162,7 +163,8 @@ public class InputMethodServiceTest {
     private TestActivity mActivity;
     private InputMethodServiceWrapper mInputMethodService;
     private boolean mOriginalVerboseImeTrackerLoggingEnabled;
-    private boolean mOriginalShowImeWithHardKeyboardEnabled;
+    @Nullable
+    private Boolean mOriginalShowImeWithHardKeyboardEnabled;
 
     @Before
     public void setUp() throws Exception {
@@ -212,7 +214,9 @@ public class InputMethodServiceTest {
             setVerboseImeTrackerLogging(false);
         }
         // Change back the original value of show_ime_with_hard_keyboard in Settings.
-        setShowImeWithHardKeyboard(mOriginalShowImeWithHardKeyboardEnabled);
+        if (mOriginalShowImeWithHardKeyboardEnabled != null) {
+            setShowImeWithHardKeyboard(mOriginalShowImeWithHardKeyboardEnabled);
+        }
         executeShellCommand("ime disable " + mInputMethodId);
     }
 
@@ -1393,9 +1397,12 @@ public class InputMethodServiceTest {
             return;
         }
 
-        final boolean currentEnabled =
+        final Boolean currentEnabled =
                 mInputMethodService.getShouldShowImeWithHardKeyboardForTesting();
-        if (currentEnabled != enable) {
+        if (currentEnabled == null) {
+            // IME is being destroyed, reset the system property without checking the set value.
+            executeShellCommand(SET_SHOW_IME_WITH_HARD_KEYBOARD_CMD + " " + (enable ? "1" : "0"));
+        } else if (currentEnabled != enable) {
             executeShellCommand(SET_SHOW_IME_WITH_HARD_KEYBOARD_CMD + " " + (enable ? "1" : "0"));
             eventually(() -> assertWithMessage("showImeWithHardKeyboard updated")
                     .that(mInputMethodService.getShouldShowImeWithHardKeyboardForTesting())

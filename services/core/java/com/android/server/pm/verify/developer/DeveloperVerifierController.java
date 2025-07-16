@@ -645,6 +645,26 @@ public class DeveloperVerifierController {
             // Remove status tracking and stop the timeout countdown
             removeStatusTracker(id);
         }
+
+        @Override
+        public void reportVerificationBypassed(int id, int bypassReason) {
+            assertCallerIsCurrentVerifier(getCallingUid());
+            final DeveloperVerificationRequestStatusTracker tracker;
+            synchronized (mVerificationStatusTrackers) {
+                tracker = mVerificationStatusTrackers.get(id);
+                if (tracker == null) {
+                    throw new IllegalStateException("Verification session " + id
+                            + " doesn't exist or has finished");
+                }
+            }
+            if (bypassReason <= 0) {
+                throw new IllegalArgumentException("Verification session " + id
+                        + " reported invalid bypass_reason code " + bypassReason);
+            }
+            mCallback.onVerificationBypassedReceived(bypassReason);
+            // Remove status tracking and stop the timeout countdown
+            removeStatusTracker(id);
+        }
     }
 
     private static class ServiceConnectorWrapper {

@@ -175,6 +175,8 @@ public final class ChooserSession {
      *
      * @param isMinimized {@code true} to request that the Chooser be minimized;
      * {@code false} to restore it to its standard layout.
+     *
+     * @hide
      */
     public void setMinimized(boolean isMinimized) {
         mChooserSession.setMinimized(isMinimized);

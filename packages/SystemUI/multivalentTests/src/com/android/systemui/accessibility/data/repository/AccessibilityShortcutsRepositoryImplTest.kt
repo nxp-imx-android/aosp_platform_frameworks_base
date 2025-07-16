@@ -148,7 +148,7 @@ class AccessibilityShortcutsRepositoryImplTest : SysuiTestCase() {
             val type = KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_VOICE_ACCESS
 
             val a11yServiceInfo = spy(getMockAccessibilityServiceInfo("Voice access"))
-            whenever(a11yServiceInfo.loadIntro(any())).thenReturn("Voice access Intro.")
+            whenever(a11yServiceInfo.loadIntro(any())).thenReturn("Voice access default Intro.")
             whenever(
                     accessibilityManager.getInstalledServiceInfoWithComponentName(
                         ComponentName.unflattenFromString(getTargetNameByType(type))
@@ -168,12 +168,12 @@ class AccessibilityShortcutsRepositoryImplTest : SysuiTestCase() {
             assertThat(titleToContent?.first).isEqualTo("Turn on Voice access?")
             val contentText = titleToContent?.second
             assertThat(hasExpectedAnnotation(contentText)).isTrue()
-            // `contentText` here is an instance of SpannableStringBuilder, so we only need to
-            // compare its value here.
+            // The intro should be the string below instead of the intro from
+            // AccessibilityServiceInfo.
             assertThat(contentText?.toString())
                 .isEqualTo(
                     "Action icon + Alt + V is the keyboard shortcut to use Voice access." +
-                        " Voice access Intro."
+                        " Voice access lets you control your device hands-free."
                 )
         }
     }

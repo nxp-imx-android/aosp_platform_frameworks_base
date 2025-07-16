@@ -17,7 +17,9 @@
 package android.view.inputmethod;
 
 import static android.os.Trace.TRACE_TAG_WINDOW_MANAGER;
+import static android.view.ViewProtoLogGroups.INPUT_METHOD_MANAGER_DEBUG;
 import static android.view.inputmethod.Flags.FLAG_HOME_SCREEN_HANDWRITING_DELEGATOR;
+import static android.view.ViewProtoLogGroups.INPUT_METHOD_MANAGER_WITH_LOGCAT;
 import static android.view.inputmethod.Flags.initiationWithoutInputConnection;
 import static android.view.inputmethod.InputConnection.CURSOR_UPDATE_IMMEDIATE;
 import static android.view.inputmethod.InputConnection.CURSOR_UPDATE_MONITOR;
@@ -122,6 +124,7 @@ import com.android.internal.inputmethod.StartInputFlags;
 import com.android.internal.inputmethod.StartInputReason;
 import com.android.internal.inputmethod.UnbindReason;
 import com.android.internal.os.SomeArgs;
+import com.android.internal.protolog.ProtoLog;
 import com.android.internal.view.IInputMethodManager;
 
 import java.io.FileDescriptor;
@@ -823,19 +826,22 @@ public final class InputMethodManager {
         final InputMethodManager fallbackImm =
                 viewRootImpl.mContext.getSystemService(InputMethodManager.class);
         if (fallbackImm == null) {
-            Log.v(TAG, "b/117267690: Failed to get non-null fallback IMM. view=" + view);
+            ProtoLog.v(INPUT_METHOD_MANAGER_WITH_LOGCAT,
+                    "b/117267690: Failed to get non-null fallback IMM. view=%s", view);
             return null;
+
         }
         if (fallbackImm.mDisplayId != viewRootDisplayId) {
-            Log.v(TAG, "b/117267690: Failed to get fallback IMM with expected displayId="
-                    + viewRootDisplayId + " actual IMM#displayId=" + fallbackImm.mDisplayId
-                    + " view=" + view);
+            ProtoLog.v(INPUT_METHOD_MANAGER_WITH_LOGCAT,
+                    "b/117267690: Failed to get fallback IMM with expected displayId=%d actual "
+                            + "IMM#displayId=%d view=%s", viewRootDisplayId, fallbackImm.mDisplayId,
+                    view);
             return null;
         }
-        Log.v(TAG, "b/117267690: Display ID mismatch found."
-                + " ViewRootImpl displayId=" + viewRootDisplayId
-                + " InputMethodManager displayId=" + mDisplayId
-                + ". Use the right InputMethodManager instance to avoid performance overhead.",
+        Log.v(TAG, "b/117267690: Display ID mismatch found. ViewRootImpl displayId="
+                        + viewRootDisplayId + " InputMethodManager displayId=" + mDisplayId + ". "
+                        + "Use the right InputMethodManager instance to avoid performance "
+                        + "overhead.",
                 new Throwable());
         return fallbackImm;
     }
@@ -927,7 +933,8 @@ public final class InputMethodManager {
                     return;
                 }
                 if (mRestartOnNextWindowFocus) {
-                    if (DEBUG) Log.v(TAG, "Restarting due to mRestartOnNextWindowFocus as true");
+                    ProtoLog.v(INPUT_METHOD_MANAGER_DEBUG,
+                            "Restarting due to mRestartOnNextWindowFocus as true");
                     mRestartOnNextWindowFocus = false;
                     forceFocus = true;
                 }
@@ -948,9 +955,7 @@ public final class InputMethodManager {
             synchronized (mH) {
                 // For some reason we didn't do a startInput + windowFocusGain, so
                 // we'll just do a window focus gain and call it a day.
-                if (DEBUG) {
-                    Log.v(TAG, "Reporting focus gain, without startInput");
-                }
+                ProtoLog.v(INPUT_METHOD_MANAGER_DEBUG, "Reporting focus gain, without startInput");
 
                 final boolean imeRequestedVisible = hasViewImeRequestedVisible(
                         mCurRootView.getView());
@@ -1051,10 +1056,8 @@ public final class InputMethodManager {
                     ImeTracker.TYPE_HIDE, ImeTracker.ORIGIN_CLIENT,
                     SoftInputShowHideReason.HIDE_WINDOW_LOST_FOCUS,
                     false /* fromUser */);
-            if (DEBUG) {
-                Log.d(TAG, "onImeFocusLost, hiding IME because "
-                        + "of STATE_ALWAYS_HIDDEN");
-            }
+            ProtoLog.d(INPUT_METHOD_MANAGER_DEBUG,
+                    "onImeFocusLost, hiding IME because of STATE_ALWAYS_HIDDEN");
             previousRootView.getInsetsController().hide(WindowInsets.Type.ime(), statsToken);
         }
     }
@@ -1169,8 +1172,9 @@ public final class InputMethodManager {
                     synchronized (mH) {
                         final int curBindSequence = getBindSequenceLocked();
                         if (curBindSequence < 0 || curBindSequence != res.sequence) {
-                            Log.w(TAG, "Ignoring onBind: cur seq=" + curBindSequence
-                                    + ", given seq=" + res.sequence);
+                            ProtoLog.w(INPUT_METHOD_MANAGER_WITH_LOGCAT,
+                                    "Ignoring onBind: cur seq=%s, given seq=%s", curBindSequence,
+                                    res.sequence);
                             if (res.channel != null && res.channel != mCurChannel) {
                                 res.channel.dispose();
                             }
@@ -1203,7 +1207,8 @@ public final class InputMethodManager {
                             return;
                         }
 
-                        if (DEBUG) Log.v(TAG, "Starting input: Bind result=" + res);
+                        ProtoLog.v(INPUT_METHOD_MANAGER_DEBUG, "Starting input: Bind result=%s",
+                                res);
                         if (res.id != null) {
                             updateInputChannelLocked(res.channel);
                             mCurMethod = res.method; // for @UnsupportedAppUsage
@@ -1290,8 +1295,9 @@ public final class InputMethodManager {
                     synchronized (mH) {
                         final int curBindSequence = getBindSequenceLocked();
                         if (curBindSequence < 0 || curBindSequence != res.sequence) {
-                            Log.w(TAG, "Ignoring onBind: cur seq=" + curBindSequence
-                                    + ", given seq=" + res.sequence);
+                            ProtoLog.w(INPUT_METHOD_MANAGER_WITH_LOGCAT,
+                                    "Ignoring onBind: cur seq=%s, given seq=%s", curBindSequence,
+                                    res.sequence);
                             if (res.channel != null && res.channel != mCurChannel) {
                                 res.channel.dispose();
                             }
@@ -1335,10 +1341,9 @@ public final class InputMethodManager {
                     }
                     synchronized (mH) {
                         if (getBindSequenceLocked() != sequence) {
-                            if (DEBUG) {
-                                Log.i(TAG, "current BindSequence =" + getBindSequenceLocked()
-                                        + " sequence =" + sequence + " id=" + id);
-                            }
+                            ProtoLog.i(INPUT_METHOD_MANAGER_DEBUG,
+                                    "current BindSequence=%s sequence=%s id=%s",
+                                    getBindSequenceLocked(), sequence, id);
                             return;
                         }
                         clearAccessibilityBindingLocked(id);
@@ -2026,7 +2031,8 @@ public final class InputMethodManager {
     @Deprecated
     @UnsupportedAppUsage
     public void registerSuggestionSpansForNotification(SuggestionSpan[] spans) {
-        Log.w(TAG, "registerSuggestionSpansForNotification() is deprecated.  Does nothing.");
+        ProtoLog.w(INPUT_METHOD_MANAGER_WITH_LOGCAT,
+                "registerSuggestionSpansForNotification() is deprecated.  Does nothing.");
     }
 
     /**
@@ -2038,7 +2044,8 @@ public final class InputMethodManager {
     @Deprecated
     @UnsupportedAppUsage
     public void notifySuggestionPicked(SuggestionSpan span, String originalString, int index) {
-        Log.w(TAG, "notifySuggestionPicked() is deprecated.  Does nothing.");
+        ProtoLog.w(INPUT_METHOD_MANAGER_WITH_LOGCAT,
+                "notifySuggestionPicked() is deprecated.  Does nothing.");
     }
 
     /**
@@ -2118,7 +2125,7 @@ public final class InputMethodManager {
      */
     @GuardedBy("mH")
     private void clearBindingLocked() {
-        if (DEBUG) Log.v(TAG, "Clearing binding!");
+        ProtoLog.v(INPUT_METHOD_MANAGER_DEBUG, "Clearing binding!");
         clearConnectionLocked();
         updateInputChannelLocked(null);
         mCurId = null; // for @UnsupportedAppUsage
@@ -2132,7 +2139,7 @@ public final class InputMethodManager {
      */
     @GuardedBy("mH")
     private void clearAccessibilityBindingLocked(int id) {
-        if (DEBUG) Log.v(TAG, "Clearing accessibility binding " + id);
+        ProtoLog.v(INPUT_METHOD_MANAGER_DEBUG, "Clearing accessibility binding %s", id);
         mAccessibilityInputMethodSession.remove(id);
     }
 
@@ -2141,7 +2148,7 @@ public final class InputMethodManager {
      */
     @GuardedBy("mH")
     private void clearAllAccessibilityBindingLocked() {
-        if (DEBUG) Log.v(TAG, "Clearing all accessibility bindings");
+        ProtoLog.v(INPUT_METHOD_MANAGER_DEBUG, "Clearing all accessibility bindings");
         mAccessibilityInputMethodSession.clear();
     }
 
@@ -2209,10 +2216,8 @@ public final class InputMethodManager {
             }
         }
         if (clearedView != null) {
-            if (DEBUG) {
-                Log.v(TAG, "FINISH INPUT: mServedView="
-                        + InputMethodDebug.dumpViewInfo(clearedView));
-            }
+            ProtoLog.v(INPUT_METHOD_MANAGER_DEBUG, "FINISH INPUT: mServedView=%s",
+                    InputMethodDebug.dumpViewInfo(clearedView));
             mCompletions = null;
             mServedConnecting = false;
             mLastPendingStartSeqId = INVALID_SEQ_ID;
@@ -2433,7 +2438,8 @@ public final class InputMethodManager {
                 ImeTracker.forLogging().onFailed(statsToken, ImeTracker.PHASE_CLIENT_VIEW_SERVED);
                 ImeTracker.forLatency().onShowFailed(statsToken,
                         ImeTracker.PHASE_CLIENT_VIEW_SERVED, ActivityThread::currentApplication);
-                Log.w(TAG, "Ignoring showSoftInput() as view=" + view + " is not served.");
+                ProtoLog.w(INPUT_METHOD_MANAGER_WITH_LOGCAT,
+                        "Ignoring showSoftInput() as view=%s is not served.", view);
                 return false;
             }
 
@@ -2463,7 +2469,8 @@ public final class InputMethodManager {
                 if (vh.getLooper() != Looper.myLooper()) {
                     // The view is running on a different thread than our own, so
                     // we need to reschedule our work for over there.
-                    if (DEBUG) Log.v(TAG, "Show soft input: reschedule to view thread");
+                    ProtoLog.v(INPUT_METHOD_MANAGER_DEBUG,
+                            "Show soft input: reschedule to view thread");
                     final var finalStatsToken = statsToken;
                     vh.post(() -> viewRootImpl.getInsetsController().show(WindowInsets.Type.ime(),
                             finalStatsToken));
@@ -2500,7 +2507,8 @@ public final class InputMethodManager {
             final View rootView = mCurRootView != null ? mCurRootView.getView() : null;
             if (rootView == null) {
                 ImeTracker.forLogging().onFailed(statsToken, ImeTracker.PHASE_CLIENT_VIEW_SERVED);
-                Log.w(TAG, "No current root view, ignoring showSoftInputUnchecked()");
+                ProtoLog.w(INPUT_METHOD_MANAGER_WITH_LOGCAT,
+                        "No current root view, ignoring showSoftInputUnchecked()");
                 return;
             }
 
@@ -2650,7 +2658,8 @@ public final class InputMethodManager {
                 if (vh.getLooper() != Looper.myLooper()) {
                     // The view is running on a different thread than our own, so
                     // we need to reschedule our work for over there.
-                    if (DEBUG) Log.v(TAG, "Hiding soft input: reschedule to view thread");
+                    ProtoLog.v(INPUT_METHOD_MANAGER_DEBUG,
+                            "Hiding soft input: reschedule to view thread");
                     final var finalStatsToken = statsToken;
                     vh.post(() -> viewRootImpl.getInsetsController().hide(WindowInsets.Type.ime(),
                             finalStatsToken));
@@ -2701,7 +2710,8 @@ public final class InputMethodManager {
                 ImeTracker.forLogging().onFailed(statsToken, ImeTracker.PHASE_CLIENT_VIEW_SERVED);
                 ImeTracker.forLatency().onShowFailed(statsToken,
                         ImeTracker.PHASE_CLIENT_VIEW_SERVED, ActivityThread::currentApplication);
-                Log.w(TAG, "Ignoring hideSoftInputFromView() as view=" + view + " is not served.");
+                ProtoLog.w(INPUT_METHOD_MANAGER_WITH_LOGCAT,
+                        "Ignoring hideSoftInputFromView() as view=%s is not served.", view);
                 return false;
             }
 
@@ -2783,13 +2793,13 @@ public final class InputMethodManager {
         checkFocus();
         synchronized (mH) {
             if (!hasServedByInputMethodLocked(view)) {
-                Log.w(TAG,
-                        "Ignoring startStylusHandwriting as view=" + view + " is not served.");
+                ProtoLog.w(INPUT_METHOD_MANAGER_WITH_LOGCAT,
+                        "Ignoring startStylusHandwriting as view=%s is not served.", view);
                 sendFailureCallback(executor, callback);
                 return false;
             }
             if (view.getViewRootImpl() != mCurRootView) {
-                Log.w(TAG,
+                ProtoLog.w(INPUT_METHOD_MANAGER_WITH_LOGCAT,
                         "Ignoring startStylusHandwriting: View's window does not have focus.");
                 sendFailureCallback(executor, callback);
                 return false;
@@ -2936,8 +2946,9 @@ public final class InputMethodManager {
         checkFocus();
         synchronized (mH) {
             if (view.getViewRootImpl() != mCurRootView) {
-                Log.w(TAG, "Ignoring startConnectionlessStylusHandwriting: "
-                        + "View's window does not have focus.");
+                ProtoLog.w(INPUT_METHOD_MANAGER_WITH_LOGCAT,
+                        "Ignoring startConnectionlessStylusHandwriting: View's window does not "
+                                + "have focus.");
                 return;
             }
             IInputMethodManagerGlobalInvoker.startConnectionlessStylusHandwriting(
@@ -3340,12 +3351,11 @@ public final class InputMethodManager {
             view = getServedViewLocked();
 
             // Make sure we have a window token for the served view.
-            if (DEBUG) {
-                Log.v(TAG, "Starting input: view=" + InputMethodDebug.dumpViewInfo(view) +
-                        " reason=" + InputMethodDebug.startInputReasonToString(startInputReason));
-            }
+            ProtoLog.v(INPUT_METHOD_MANAGER_DEBUG, "Starting input: view=%s reason=%s",
+                    InputMethodDebug.dumpViewInfo(view),
+                    InputMethodDebug.startInputReasonToString(startInputReason));
             if (view == null) {
-                if (DEBUG) Log.v(TAG, "ABORT input: no served view!");
+                ProtoLog.v(INPUT_METHOD_MANAGER_DEBUG, "ABORT input: no served view!");
                 return false;
             }
         }
@@ -3360,14 +3370,15 @@ public final class InputMethodManager {
             // from under us, so just close the current input.
             // If we don't close the current input, the current input method can remain on the
             // screen without a connection.
-            if (DEBUG) Log.v(TAG, "ABORT input: no handler for view! Close current input.");
+            ProtoLog.v(INPUT_METHOD_MANAGER_DEBUG,
+                    "ABORT input: no handler for view! Close current input.");
             closeCurrentInput();
             return false;
         }
         if (vh.getLooper() != Looper.myLooper()) {
             // The view is running on a different thread than our own, so
             // we need to reschedule our work for over there.
-            if (DEBUG) Log.v(TAG, "Starting input: reschedule to view thread");
+            ProtoLog.v(INPUT_METHOD_MANAGER_DEBUG, "Starting input: reschedule to view thread");
             vh.post(() -> startInputOnWindowFocusGainInternal(startInputReason, null, 0, 0, 0));
             return false;
         }
@@ -3375,7 +3386,8 @@ public final class InputMethodManager {
         if (windowGainingFocus == null) {
             windowGainingFocus = view.getWindowToken();
             if (windowGainingFocus == null) {
-                Log.e(TAG, "ABORT input: ServedView must be attached to a Window");
+                ProtoLog.e(INPUT_METHOD_MANAGER_WITH_LOGCAT,
+                        "ABORT input: ServedView must be attached to a Window");
                 return false;
             }
             startInputFlags = getStartInputFlags(view, startInputFlags);
@@ -3397,10 +3409,11 @@ public final class InputMethodManager {
             final View servedView = getServedViewLocked();
             if (servedView != view || !mServedConnecting) {
                 // Something else happened, so abort.
-                if (DEBUG) Log.v(TAG, "Starting input: finished by someone else."
-                        + " view=" + InputMethodDebug.dumpViewInfo(view)
-                        + " servedView=" + InputMethodDebug.dumpViewInfo(servedView)
-                        + " mServedConnecting=" + mServedConnecting);
+                ProtoLog.v(INPUT_METHOD_MANAGER_DEBUG,
+                        "Starting input: finished by someone else. view=%s servedView=%s "
+                                + "mServedConnecting=%s",
+                        InputMethodDebug.dumpViewInfo(view),
+                        InputMethodDebug.dumpViewInfo(servedView), mServedConnecting);
                 if (mServedInputConnection != null && startInputReason == BOUND_TO_IMMS) {
                     // This is not an error. Once IME binds (MSG_BIND), InputConnection is fully
                     // established. So we report this to interested recipients.
@@ -3460,12 +3473,11 @@ public final class InputMethodManager {
 
             imeRequestedVisible = hasViewImeRequestedVisible(servedView);
 
-            if (DEBUG) {
-                Log.v(TAG, "START INPUT: view=" + InputMethodDebug.dumpViewInfo(view)
-                        + " ic=" + ic + " editorInfo=" + editorInfo + " startInputFlags="
-                        + InputMethodDebug.startInputFlagsToString(startInputFlags)
-                        + " imeRequestedVisible=" + imeRequestedVisible);
-            }
+            ProtoLog.v(INPUT_METHOD_MANAGER_DEBUG,
+                    "START INPUT: view=%s ic=%s editorInfo=%s startInputFlags=%s "
+                            + "imeRequestedVisible=%s",
+                    InputMethodDebug.dumpViewInfo(view), ic, editorInfo,
+                    InputMethodDebug.startInputFlagsToString(startInputFlags), imeRequestedVisible);
 
             // When we switch between non-editable views, do not call into the IMMS.
             final boolean canSkip = OPTIMIZE_NONEDITABLE_VIEWS
@@ -3477,9 +3489,8 @@ public final class InputMethodManager {
             mPreviousViewFocusParameters = new ViewFocusParameterInfo(mCurrentEditorInfo,
                     startInputFlags, startInputReason, softInputMode, windowFlags);
             if (canSkip) {
-                if (DEBUG) {
-                    Log.d(TAG, "Not calling IMMS due to switching between non-editable views.");
-                }
+                ProtoLog.d(INPUT_METHOD_MANAGER_DEBUG,
+                        "Not calling IMMS due to switching between non-editable views.");
                 return false;
             }
             final int targetUserId = editorInfo.targetInputMethodUser != null
@@ -3508,13 +3519,10 @@ public final class InputMethodManager {
                         new ReportInputConnectionOpenedRunner(startInputSeq) {
                             @Override
                             public void run() {
-                                if (DEBUG) {
-                                    Log.v(TAG, "Calling View.onInputConnectionOpened: view= "
-                                            + view
-                                            + ", ic=" + ic + ", editorInfo=" + editorInfo
-                                            + ", handler="
-                                            + icHandler + ", startInputSeq=" + seqId);
-                                }
+                                ProtoLog.v(INPUT_METHOD_MANAGER_DEBUG,
+                                        "Calling View.onInputConnectionOpened: view=%s, ic=%s, "
+                                                + "editorInfo=%s, handler=%s, startInputSeq=%s",
+                                        view, ic, editorInfo, icHandler, seqId);
                                 reportInputConnectionOpened(ic, editorInfo, icHandler, view);
                             }
                         };
@@ -3657,14 +3665,9 @@ public final class InputMethodManager {
         if (mServedView == mNextServedView && !forceNewFocus) {
             return false;
         }
-        if (DEBUG) {
-            Log.v(TAG, "checkFocus: view=" + mServedView
-                    + " next=" + mNextServedView
-                    + " force=" + forceNewFocus
-                    + " package="
-                    + (mServedView != null ? mServedView.getContext().getPackageName()
-                    : "<none>"));
-        }
+        ProtoLog.v(INPUT_METHOD_MANAGER_DEBUG, "checkFocus: view=%s next=%s force=%s package=%s",
+                mServedView, mNextServedView, forceNewFocus,
+                (mServedView != null ? mServedView.getContext().getPackageName() : "<none>"));
         // Close the connection when no next served view coming.
         if (mNextServedView == null) {
             finishInputLocked();
@@ -3691,10 +3694,8 @@ public final class InputMethodManager {
             if (!view.hasImeFocus() || !view.hasWindowFocus()) {
                 return;
             }
-            if (DEBUG) {
-                Log.d(TAG, "onViewFocusChangedInternal, view="
-                        + InputMethodDebug.dumpViewInfo(view));
-            }
+            ProtoLog.d(INPUT_METHOD_MANAGER_DEBUG, "onViewFocusChangedInternal, view=%s",
+                    InputMethodDebug.dumpViewInfo(view));
 
             // We don't need to track the next served view when the view lost focus here
             // because:
@@ -3727,7 +3728,8 @@ public final class InputMethodManager {
                 ImeTracker.forLogging().onFailed(statsToken, ImeTracker.PHASE_CLIENT_VIEW_SERVED);
                 ImeTracker.forLatency().onHideFailed(statsToken,
                         ImeTracker.PHASE_CLIENT_VIEW_SERVED, ActivityThread::currentApplication);
-                Log.w(TAG, "No current root view, ignoring closeCurrentInput()");
+                ProtoLog.w(INPUT_METHOD_MANAGER_WITH_LOGCAT,
+                        "No current root view, ignoring closeCurrentInput()");
                 return;
             }
 
@@ -3748,9 +3750,8 @@ public final class InputMethodManager {
                 if (vh.getLooper() != Looper.myLooper()) {
                     // The view is running on a different thread than our own, so
                     // we need to reschedule our work for over there.
-                    if (DEBUG) {
-                        Log.v(TAG, "Close current input: reschedule hide to view thread");
-                    }
+                    ProtoLog.v(INPUT_METHOD_MANAGER_DEBUG,
+                            "Close current input: reschedule hide to view thread");
                     final var viewRootImpl = mCurRootView;
                     vh.post(() -> viewRootImpl.getInsetsController().hide(WindowInsets.Type.ime(),
                             statsToken));
@@ -3806,11 +3807,10 @@ public final class InputMethodManager {
             if (mCursorSelStart != selStart || mCursorSelEnd != selEnd
                     || mCursorCandStart != candidatesStart
                     || mCursorCandEnd != candidatesEnd) {
-                if (DEBUG) Log.d(TAG, "updateSelection");
+                ProtoLog.d(INPUT_METHOD_MANAGER_DEBUG, "updateSelection");
 
-                if (DEBUG) {
-                    Log.v(TAG, "SELECTION CHANGE: " + mCurBindState.mImeSession);
-                }
+                ProtoLog.v(INPUT_METHOD_MANAGER_DEBUG,
+                        "SELECTION CHANGE: " + mCurBindState.mImeSession);
                 mCurBindState.mImeSession.updateSelection(mCursorSelStart, mCursorSelEnd, selStart,
                         selEnd, candidatesStart, candidatesEnd);
                 forAccessibilitySessionsLocked(wrapper -> wrapper.updateSelection(mCursorSelStart,
@@ -3855,7 +3855,7 @@ public final class InputMethodManager {
                     || !isImeSessionAvailableLocked()) {
                 return;
             }
-            if (DEBUG) Log.v(TAG, "onViewClicked: " + focusChanged);
+            ProtoLog.v(INPUT_METHOD_MANAGER_DEBUG, "onViewClicked: %s", focusChanged);
             mCurBindState.mImeSession.viewClicked(focusChanged);
         }
     }
@@ -3927,7 +3927,8 @@ public final class InputMethodManager {
 
             mTmpCursorRect.set(left, top, right, bottom);
             if (!mCursorRect.equals(mTmpCursorRect)) {
-                if (DEBUG) Log.d(TAG, "updateCursor: " + mCurBindState.mImeSession);
+                ProtoLog.d(INPUT_METHOD_MANAGER_DEBUG, "updateCursor: %s",
+                        mCurBindState.mImeSession);
 
                 mCurBindState.mImeSession.updateCursor(mTmpCursorRect);
                 mCursorRect.set(mTmpCursorRect);
@@ -4000,7 +4001,7 @@ public final class InputMethodManager {
                     || !isImeSessionAvailableLocked()) {
                 return;
             }
-            if (DEBUG) Log.v(TAG, "APP PRIVATE COMMAND " + action + ": " + data);
+            ProtoLog.v(INPUT_METHOD_MANAGER_DEBUG, "APP PRIVATE COMMAND %s: %s", action, data);
             mCurBindState.mImeSession.appPrivateCommand(action, data);
         }
     }
@@ -4060,8 +4061,10 @@ public final class InputMethodManager {
                 }
             }
             if (!found) {
-                Log.e(TAG, "Ignoring setInputMethod(null, " + id + ") because the specified "
-                        + "id not found in enabled IMEs.");
+                ProtoLog.e(INPUT_METHOD_MANAGER_WITH_LOGCAT,
+                        "Ignoring setInputMethod(null, %s) because the specified id not found in "
+                                + "enabled IMEs.",
+                        id);
                 return;
             }
             Log.w(TAG, "The undocumented behavior that setInputMethod() accepts null token "
@@ -4176,9 +4179,8 @@ public final class InputMethodManager {
                     }
                 }
 
-                if (DEBUG) {
-                    Log.v(TAG, "DISPATCH INPUT EVENT: " + mCurBindState.mImeSession);
-                }
+                ProtoLog.v(INPUT_METHOD_MANAGER_DEBUG, "DISPATCH INPUT EVENT: %s",
+                        mCurBindState.mImeSession);
 
                 PendingEvent p = obtainPendingEventLocked(
                         event, token, mCurBindState.mImeId, callback, handler);
@@ -4270,10 +4272,12 @@ public final class InputMethodManager {
             }
 
             if (sPreventImeStartupUnlessTextEditor) {
-                Log.d(TAG, "Dropping event because IME is evicted: " + event);
+                ProtoLog.d(INPUT_METHOD_MANAGER_WITH_LOGCAT,
+                        "Dropping event because IME is evicted: %s", event);
             } else {
-                Log.w(TAG, "Unable to send input event to IME: " + getImeIdLocked()
-                        + " dropping: " + event);
+                ProtoLog.w(INPUT_METHOD_MANAGER_WITH_LOGCAT,
+                        "Unable to send input event to IME: %s dropping: %s", getImeIdLocked(),
+                        event);
             }
         }
         return DISPATCH_NOT_HANDLED;
@@ -4292,8 +4296,9 @@ public final class InputMethodManager {
             Trace.traceCounter(Trace.TRACE_TAG_INPUT, PENDING_EVENT_COUNTER, mPendingEvents.size());
 
             if (timeout) {
-                Log.w(TAG, "Timeout waiting for IME to handle input event after "
-                        + INPUT_METHOD_NOT_RESPONDING_TIMEOUT + " ms: " + p.mInputMethodId);
+                ProtoLog.w(INPUT_METHOD_MANAGER_WITH_LOGCAT,
+                        "Timeout waiting for IME to handle input event after %s ms: %s",
+                        INPUT_METHOD_NOT_RESPONDING_TIMEOUT, p.mInputMethodId);
             } else {
                 mH.removeMessages(MSG_TIMEOUT_INPUT_EVENT, p);
             }
@@ -5055,7 +5060,8 @@ public final class InputMethodManager {
         editorInfo.setAutofillId(servedView.getAutofillId());
         editorInfo.fieldId = servedView.getId();
         final InputConnection ic = servedView.onCreateInputConnection(editorInfo);
-        if (DEBUG) Log.v(TAG, "Starting input: editorInfo=" + editorInfo + " ic=" + ic);
+        ProtoLog.w(INPUT_METHOD_MANAGER_DEBUG, "Starting input: editorInfo=%s ic=%s", editorInfo,
+                ic);
 
         // Clear autofill and field ids if a connection could not be established.
         // This ensures that even disconnected EditorInfos have well-defined attributes,

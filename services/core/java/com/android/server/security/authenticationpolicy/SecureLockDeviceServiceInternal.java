@@ -94,4 +94,9 @@ public abstract class SecureLockDeviceServiceInternal {
      */
     public abstract void unregisterSecureLockDeviceStatusListener(
             ISecureLockDeviceStatusListener listener);
+
+    /**
+     * @see AuthenticationPolicyManager#setSecureLockDeviceTestStatus(boolean)
+     */
+    public abstract void setSecureLockDeviceTestStatus(boolean isTestMode);
 }

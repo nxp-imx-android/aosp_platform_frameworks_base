@@ -37,8 +37,8 @@ public final class HsumBootUserInitializerCreateInitialUserOnBootTest
     @Parameters(name = "{index}: cfgCreateIU={0},result={1}")
     public static Collection<Object[]> junitParametersPassedToConstructor() {
         return Arrays.asList(new Object[][] {
-            { CFG_CREATE_INITIAL(false), RESULT(false) },
-            { CFG_CREATE_INITIAL(true), RESULT(true) }
+            { CFG_CREAT_INITIAL(false), RESULT(false) },
+            { CFG_CREAT_INITIAL(true), RESULT(true) }
         });
     }
 

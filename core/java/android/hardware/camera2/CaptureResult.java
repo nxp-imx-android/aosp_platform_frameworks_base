@@ -19,6 +19,8 @@ package android.hardware.camera2;
 import android.annotation.FlaggedApi;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.annotation.SuppressLint;
+import android.annotation.SystemApi;
 import android.compat.annotation.UnsupportedAppUsage;
 import android.hardware.camera2.impl.CameraMetadataNative;
 import android.hardware.camera2.impl.CaptureResultExtras;
@@ -430,6 +432,61 @@ public class CaptureResult extends CameraMetadata<CaptureResult.Key<?>> {
      */
     public int getSequenceId() {
         return mSequenceId;
+    }
+
+    /**
+     * Builder class for creating {@link CaptureResult} instances. Only the native metadata can be
+     * customized and there is no associated {@link CaptureRequest}.
+     *
+     * @hide
+     */
+    @SystemApi
+    @FlaggedApi(android.companion.virtualdevice.flags.Flags.FLAG_VIRTUAL_CAMERA_METADATA)
+    public static final class Builder {
+        private final CameraMetadataNative mNativeMetadata;
+
+        /**
+         * Builder for creating a {@link CaptureResult}.
+         *
+         * @see CameraCharacteristics#getAvailableCaptureResultKeys
+         */
+        public Builder() {
+            mNativeMetadata = new CameraMetadataNative();
+        }
+
+        /**
+         * Builder for creating a {@link CaptureResult} starting from a copy of an existing
+         * instance.
+         */
+        public Builder(@NonNull CaptureResult captureResult) {
+            mNativeMetadata = new CameraMetadataNative(captureResult.getNativeMetadata());
+        }
+
+        /**
+         * Sets a capture result field to a value. The field definitions can be found in
+         * {@link CaptureResult}.
+         * <p>
+         * Setting a field to {@code null} will remove that field from the capture result metadata.
+         *
+         * @param key   The metadata field to write.
+         * @param value The value to set the field to, which must be of a matching type to the key.
+         */
+        @SuppressLint("KotlinOperator")
+        @NonNull
+        public <T> Builder set(@NonNull CaptureResult.Key<T> key, T value) {
+            mNativeMetadata.set(key, value);
+            return this;
+        }
+
+        /**
+         * Builds the {@link CaptureResult} object with the set of {@link CaptureResult.Key}s.
+         *
+         * @return A new {@link CaptureResult} instance.
+         */
+        public @NonNull CaptureResult build() {
+            // cameraId, captureRequest, requestId and frameNumber are not used
+            return new CaptureResult(mNativeMetadata, 0 /* requestId */);
+        }
     }
 
     /*@O~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~@~

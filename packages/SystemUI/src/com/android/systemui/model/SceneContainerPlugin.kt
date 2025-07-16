@@ -70,7 +70,9 @@ constructor(
     private val shadeDisplaysRepository: Lazy<ShadeDisplaysRepository>,
 ) : SceneContainerPlugin {
 
-    private val shadeDisplayId: StateFlow<Int> by lazy { shadeDisplaysRepository.get().displayId }
+    private val shadeDisplayId: StateFlow<Int> by lazy {
+        shadeDisplaysRepository.get().pendingDisplayId
+    }
 
     override fun flagValueOverride(@SystemUiStateFlags flag: Long, displayId: Int): Boolean? {
         if (!SceneContainerFlag.isEnabled) {

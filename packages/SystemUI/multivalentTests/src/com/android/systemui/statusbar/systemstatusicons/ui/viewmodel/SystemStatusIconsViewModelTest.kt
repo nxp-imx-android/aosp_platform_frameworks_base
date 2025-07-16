@@ -45,8 +45,11 @@ import com.android.systemui.statusbar.pipeline.wifi.data.repository.fakeWifiRepo
 import com.android.systemui.statusbar.pipeline.wifi.shared.model.WifiNetworkModel
 import com.android.systemui.statusbar.policy.bluetooth.data.repository.bluetoothRepository
 import com.android.systemui.statusbar.policy.data.repository.fakeZenModeRepository
+import com.android.systemui.statusbar.policy.fakeDataSaverController
 import com.android.systemui.statusbar.policy.fakeHotspotController
 import com.android.systemui.statusbar.policy.fakeNextAlarmController
+import com.android.systemui.statusbar.policy.vpn.data.repository.vpnRepository
+import com.android.systemui.statusbar.policy.vpn.shared.model.VpnState
 import com.android.systemui.statusbar.systemstatusicons.SystemStatusIconsInCompose
 import com.android.systemui.statusbar.systemstatusicons.data.repository.statusBarConfigIconSlotNames
 import com.android.systemui.testKosmos
@@ -74,11 +77,13 @@ class SystemStatusIconsViewModelTest : SysuiTestCase() {
     private lateinit var slotAirplane: String
     private lateinit var slotBluetooth: String
     private lateinit var slotConnectedDisplay: String
+    private lateinit var slotDataSaver: String
     private lateinit var slotEthernet: String
     private lateinit var slotHotspot: String
     private lateinit var slotMute: String
     private lateinit var slotNextAlarm: String
     private lateinit var slotVibrate: String
+    private lateinit var slotVpn: String
     private lateinit var slotWifi: String
     private lateinit var slotZen: String
 
@@ -88,11 +93,13 @@ class SystemStatusIconsViewModelTest : SysuiTestCase() {
         slotBluetooth = context.getString(com.android.internal.R.string.status_bar_bluetooth)
         slotConnectedDisplay =
             context.getString(com.android.internal.R.string.status_bar_connected_display)
+        slotDataSaver = context.getString(com.android.internal.R.string.status_bar_data_saver)
         slotEthernet = context.getString(com.android.internal.R.string.status_bar_ethernet)
         slotHotspot = context.getString(com.android.internal.R.string.status_bar_hotspot)
         slotMute = context.getString(com.android.internal.R.string.status_bar_mute)
         slotNextAlarm = context.getString(com.android.internal.R.string.status_bar_alarm_clock)
         slotVibrate = context.getString(com.android.internal.R.string.status_bar_volume)
+        slotVpn = context.getString(com.android.internal.R.string.status_bar_vpn)
         slotWifi = context.getString(com.android.internal.R.string.status_bar_wifi)
         slotZen = context.getString(com.android.internal.R.string.status_bar_zen)
     }
@@ -189,21 +196,25 @@ class SystemStatusIconsViewModelTest : SysuiTestCase() {
             showZenMode()
             showBluetooth()
             showConnectedDisplay()
+            showDataSaver()
             showAirplaneMode()
             showNextAlarm()
             showEthernet()
             showVibrate()
             showHotspot()
+            showVpn()
 
             assertThat(underTest.activeSlotNames)
                 .containsExactly(
                     slotAirplane,
                     slotBluetooth,
                     slotConnectedDisplay,
+                    slotDataSaver,
                     slotEthernet,
                     slotHotspot,
                     slotNextAlarm,
                     slotVibrate,
+                    slotVpn,
                     slotZen,
                 )
                 .inOrder()
@@ -218,9 +229,11 @@ class SystemStatusIconsViewModelTest : SysuiTestCase() {
                     slotAirplane,
                     slotBluetooth,
                     slotConnectedDisplay,
+                    slotDataSaver,
                     slotHotspot,
                     slotMute,
                     slotNextAlarm,
+                    slotVpn,
                     slotWifi,
                     slotZen,
                 )
@@ -303,5 +316,13 @@ class SystemStatusIconsViewModelTest : SysuiTestCase() {
 
     private fun Kosmos.showHotspot() {
         fakeHotspotController.isHotspotEnabled = true
+    }
+
+    private fun Kosmos.showDataSaver() {
+        fakeDataSaverController.setDataSaverEnabled(true)
+    }
+
+    private fun Kosmos.showVpn() {
+        vpnRepository.vpnState.value = VpnState(isEnabled = true)
     }
 }

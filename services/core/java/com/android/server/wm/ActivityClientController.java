@@ -97,6 +97,7 @@ import android.os.UserHandle;
 import android.service.voice.VoiceInteractionManagerInternal;
 import android.util.Slog;
 import android.view.RemoteAnimationDefinition;
+import android.window.DesktopExperienceFlags;
 import android.window.DesktopModeFlags;
 import android.window.SizeConfigurationBuckets;
 import android.window.TransitionInfo;
@@ -1276,21 +1277,33 @@ class ActivityClientController extends IActivityClientController.Stub {
         }
     }
 
+    private Task getMultiwindowFullscreenTargetTask() {
+        Task task = mService.getTopDisplayFocusedRootTask();
+        if (DesktopExperienceFlags.ENABLE_REQUEST_FULLSCREEN_RESTORE_FREEFORM_BUGFIX.isTrue()
+                && task.mCreatedByOrganizer) {
+            final Task topMostChild = task.getTopLeafTask();
+            if (topMostChild != null) {
+                task = topMostChild;
+            }
+        }
+        return task;
+    }
+
     private @FullscreenRequestHandler.RequestResult int validateMultiwindowFullscreenRequestLocked(
-            Task topFocusedRootTask, int fullscreenRequest, ActivityRecord requesterActivity) {
+            Task targetTask, int fullscreenRequest, ActivityRecord requesterActivity) {
         if (requesterActivity.getWindowingMode() == WINDOWING_MODE_PINNED) {
             return RESULT_APPROVED;
         }
-        final int taskWindowingMode = topFocusedRootTask.getWindowingMode();
         // If this is not coming from the currently top-most activity, reject the request.
-        if (requesterActivity != topFocusedRootTask.getTopMostActivity()) {
+        if (requesterActivity != targetTask.getTopMostActivity()) {
             return RESULT_FAILED_NOT_TOP_FOCUSED;
         }
+        final int taskWindowingMode = targetTask.getWindowingMode();
         if (fullscreenRequest == FULLSCREEN_MODE_REQUEST_EXIT) {
             if (taskWindowingMode != WINDOWING_MODE_FULLSCREEN) {
                 return RESULT_FAILED_NOT_IN_FULLSCREEN_WITH_HISTORY;
             }
-            if (topFocusedRootTask.mMultiWindowRestoreWindowingMode == INVALID_WINDOWING_MODE) {
+            if (targetTask.mMultiWindowRestoreWindowingMode == INVALID_WINDOWING_MODE) {
                 return RESULT_FAILED_NOT_IN_FULLSCREEN_WITH_HISTORY;
             }
             return RESULT_APPROVED;
@@ -1328,13 +1341,12 @@ class ActivityClientController extends IActivityClientController.Stub {
         final TransitionController controller = r.mTransitionController;
         if (!controller.isShellTransitionsEnabled()) {
             final @FullscreenRequestHandler.RequestResult int validateResult;
-            final Task topFocusedRootTask;
-            topFocusedRootTask = mService.getTopDisplayFocusedRootTask();
-            validateResult = validateMultiwindowFullscreenRequestLocked(topFocusedRootTask,
+            final Task targetTask = getMultiwindowFullscreenTargetTask();
+            validateResult = validateMultiwindowFullscreenRequestLocked(targetTask,
                     fullscreenRequest, r);
             reportMultiwindowFullscreenRequestValidatingResult(callback, validateResult);
             if (validateResult == RESULT_APPROVED) {
-                executeMultiWindowFullscreenRequest(fullscreenRequest, topFocusedRootTask);
+                executeMultiWindowFullscreenRequest(fullscreenRequest, targetTask);
             }
             return;
         }
@@ -1351,9 +1363,8 @@ class ActivityClientController extends IActivityClientController.Stub {
     private void executeFullscreenRequestTransition(int fullscreenRequest, IRemoteCallback callback,
             ActivityRecord r, Transition transition, boolean queued) {
         final @FullscreenRequestHandler.RequestResult int validateResult;
-        final Task topFocusedRootTask;
-        topFocusedRootTask = mService.getTopDisplayFocusedRootTask();
-        validateResult = validateMultiwindowFullscreenRequestLocked(topFocusedRootTask,
+        final Task targetTask = getMultiwindowFullscreenTargetTask();
+        validateResult = validateMultiwindowFullscreenRequestLocked(targetTask,
                 fullscreenRequest, r);
         reportMultiwindowFullscreenRequestValidatingResult(callback, validateResult);
         if (validateResult != RESULT_APPROVED) {

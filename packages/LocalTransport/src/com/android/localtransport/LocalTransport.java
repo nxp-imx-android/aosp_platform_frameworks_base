@@ -42,6 +42,7 @@ import android.util.Base64;
 import android.util.Dumpable;
 import android.util.Log;
 
+import com.android.server.backup.Flags;
 import com.android.tools.r8.keepanno.annotations.KeepTarget;
 import com.android.tools.r8.keepanno.annotations.UsesReflection;
 
@@ -196,6 +197,9 @@ public class LocalTransport extends BackupTransport {
         }
         if (mParameters.isEncrypted()) {
             flags |= BackupAgent.FLAG_CLIENT_SIDE_ENCRYPTION_ENABLED;
+        }
+        if (Flags.enableCrossPlatformTransfer() && mParameters.isCrossPlatformTransferIos()) {
+            flags |= BackupAgent.FLAG_CROSS_PLATFORM_DATA_TRANSFER_IOS;
         }
         return flags;
     }

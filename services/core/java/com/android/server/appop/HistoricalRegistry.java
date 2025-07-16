@@ -237,13 +237,19 @@ public class HistoricalRegistry implements HistoricalRegistryInterface {
                 mHistoryRetentionMillis);
         // migrate discrete ops from xml or sqlite to unified-schema sqlite database.
         if (DiscreteOpsXmlRegistry.getDiscreteOpsDir().exists()) {
+            Slog.i(TAG, "migrate discrete ops from xml to unified sqlite.");
             DiscreteOpsXmlRegistry xmlRegistry = new DiscreteOpsXmlRegistry(mContext);
             DiscreteOpsMigrationHelper.migrateFromXmlToUnifiedSchemaSqlite(
                     xmlRegistry, mShortIntervalHistoryHelper);
         } else if (DiscreteOpsDbHelper.getDatabaseFile().exists()) {
+            Slog.i(TAG, "migrate discrete ops from sqlite to unified sqlite.");
             DiscreteOpsSqlRegistry sqlRegistry = new DiscreteOpsSqlRegistry(mContext);
             DiscreteOpsMigrationHelper.migrateFromSqliteToUnifiedSchemaSqlite(
                     sqlRegistry, mShortIntervalHistoryHelper);
+        }
+
+        if (LegacyHistoricalRegistry.historicalOpsDirExist()) {
+            LegacyHistoricalRegistry.deleteHistoricalOpsDir();
         }
 
         mChainIdOffset = mShortIntervalHistoryHelper.getLargestAttributionChainId();
@@ -684,6 +690,15 @@ public class HistoricalRegistry implements HistoricalRegistryInterface {
     public void resetHistoryParameters() {
         mMode = AppOpsManager.HISTORICAL_MODE_ENABLED_ACTIVE;
         mIsReady = true;
+    }
+
+
+    static boolean historicalOpsDbExist() {
+        return getDatabaseFile(LONG_INTERVAL_DATABASE_FILE).exists();
+    }
+
+    static void deleteHistoricalOpsDb(Context context) {
+        context.deleteDatabase(getDatabaseFile(LONG_INTERVAL_DATABASE_FILE).getAbsolutePath());
     }
 
     @NonNull

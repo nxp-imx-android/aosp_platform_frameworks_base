@@ -17,18 +17,17 @@
 package android.view;
 
 import static android.app.WindowConfiguration.ACTIVITY_TYPE_STANDARD;
+import static android.internal.perfetto.protos.Insetsstate.InsetsStateProto.DISPLAY_CUTOUT;
+import static android.internal.perfetto.protos.Insetsstate.InsetsStateProto.DISPLAY_FRAME;
+import static android.internal.perfetto.protos.Insetsstate.InsetsStateProto.SOURCES;
 import static android.util.SequenceUtils.getInitSeq;
 import static android.view.InsetsSource.FLAG_FORCE_CONSUMING;
 import static android.view.InsetsSource.FLAG_FORCE_CONSUMING_OPAQUE_CAPTION_BAR;
 import static android.view.InsetsSource.FLAG_INSETS_ROUNDED_CORNER;
 import static android.view.InsetsSource.FLAG_INVALID;
-import static android.internal.perfetto.protos.Insetsstate.InsetsStateProto.DISPLAY_CUTOUT;
-import static android.internal.perfetto.protos.Insetsstate.InsetsStateProto.DISPLAY_FRAME;
-import static android.internal.perfetto.protos.Insetsstate.InsetsStateProto.SOURCES;
 import static android.view.View.SYSTEM_UI_FLAG_LAYOUT_STABLE;
 import static android.view.WindowInsets.Type.TYPES;
 import static android.view.WindowInsets.Type.captionBar;
-import static android.view.WindowInsets.Type.defaultCompatible;
 import static android.view.WindowInsets.Type.displayCutout;
 import static android.view.WindowInsets.Type.ime;
 import static android.view.WindowInsets.Type.indexOf;
@@ -194,7 +193,7 @@ public class InsetsState implements Parcelable {
         final int softInputAdjustMode = legacySoftInputMode & SOFT_INPUT_MASK_ADJUST;
 
         @InsetsType
-        int compatInsetsTypes = defaultCompatible();
+        int compatInsetsTypes = systemBars() | displayCutout();
         if (softInputAdjustMode == SOFT_INPUT_ADJUST_RESIZE) {
             compatInsetsTypes |= ime();
         }

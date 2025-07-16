@@ -16,6 +16,7 @@
 
 package com.android.systemui.shade.ui.viewmodel
 
+import com.android.compose.animation.scene.Back
 import com.android.compose.animation.scene.Swipe
 import com.android.compose.animation.scene.UserAction
 import com.android.compose.animation.scene.UserActionResult
@@ -63,6 +64,7 @@ constructor(
                                 ToSplitShade.takeIf { shadeMode is ShadeMode.Split },
                             ),
                         )
+                        set(Back, UserActionResult(backScene))
                     }
 
                     // TODO(b/330200163) Add an else to be able to collapse the shade while

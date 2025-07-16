@@ -58,7 +58,7 @@ object NotificationCustomContentMemoryVerifier {
         val mainColumnView =
             view.findViewById<View>(com.android.internal.R.id.notification_main_column)
         if (mainColumnView == null) {
-            Log.wtf(
+            Log.e(
                 NOTIFICATION_SERVICE_TAG,
                 "R.id.notification_main_column view should not be null!",
             )

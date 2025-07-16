@@ -2049,6 +2049,11 @@ public final class SystemServiceRegistry {
                         return null;
                     }
                     break;
+                case Context.WIFI_AWARE_SERVICE:
+                    if (!hasSystemFeatureOpportunistic(ctx, PackageManager.FEATURE_WIFI_AWARE)) {
+                        return null;
+                    }
+                    break;
             }
             // TODO (b/404593897): make it a case of the switch statement above when the flag is
             //  removed.

@@ -63,6 +63,8 @@ constructor(
     // TODO(b/423697394) Init default value to be user's previously selected option
     val captureRegion: ScreenCaptureRegion by captureRegionSource.hydratedStateOf()
 
+    val screenRecordingSupported = featuresInteractor.screenRecordingSupported
+
     val captureTypeButtonViewModels: List<RadioButtonGroupItemViewModel> by
         combine(captureTypeSource, iconProvider.icons) { selectedType, icons ->
                 generateCaptureTypeButtonViewModels(selectedType, icons)
@@ -116,7 +118,8 @@ constructor(
                 onClick = { updateCaptureType(ScreenCaptureType.SCREEN_RECORD) },
             ),
             RadioButtonGroupItemViewModel(
-                icon = icons?.screenshotToolbar,
+                selectedIcon = icons?.screenshotToolbar,
+                unselectedIcon = icons?.screenshotToolbarUnselected,
                 label =
                     applicationContext.getString(R.string.screen_capture_toolbar_capture_button),
                 isSelected = selectedType == ScreenCaptureType.SCREENSHOT,

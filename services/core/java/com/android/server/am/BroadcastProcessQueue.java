@@ -38,6 +38,7 @@ import android.util.TimeUtils;
 
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.os.SomeArgs;
+import com.android.server.am.psc.ProcessStateRecord;
 
 import dalvik.annotation.optimization.NeverCompile;
 

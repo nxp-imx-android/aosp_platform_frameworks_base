@@ -205,6 +205,10 @@ class Session extends IWindowSession.Stub implements IBinder.DeathRecipient {
                     Manifest.permission.SYSTEM_APPLICATION_OVERLAY,
                     new AttributionSource(mUid, mPackageName, null))
                     == PermissionManager.PERMISSION_GRANTED;
+
+            for (int i = 0; i < mAddedWindows.size(); i++) {
+                mAddedWindows.get(i).updateTrustedOverlay();
+            }
         } else {
             mCanCreateSystemApplicationOverlay = mService.mContext.checkCallingOrSelfPermission(
                     SYSTEM_APPLICATION_OVERLAY)

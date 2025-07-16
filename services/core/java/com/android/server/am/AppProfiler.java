@@ -101,6 +101,7 @@ import com.android.internal.util.FrameworkStatsLog;
 import com.android.internal.util.MemInfoReader;
 import com.android.internal.util.QuickSelect;
 import com.android.server.am.LowMemDetector.MemFactor;
+import com.android.server.am.psc.ProcessStateRecord;
 import com.android.server.power.stats.BatteryStatsImpl;
 import com.android.server.utils.PriorityDump;
 
@@ -1402,9 +1403,6 @@ public class AppProfiler {
                     final ProcessProfileRecord profile = app.mProfile;
                     final IApplicationThread thread;
                     final ProcessStateRecord state = app.mState;
-                    if (state.getHasProcStateChanged()) {
-                        state.setHasProcStateChanged(false);
-                    }
                     int procState = app.mState.getCurProcState();
                     if (((procState >= ActivityManager.PROCESS_STATE_IMPORTANT_BACKGROUND
                                             && procState

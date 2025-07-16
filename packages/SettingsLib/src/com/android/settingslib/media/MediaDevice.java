@@ -127,19 +127,19 @@ public abstract class MediaDevice implements Comparable<MediaDevice> {
     protected final Context mContext;
     protected final MediaRoute2Info mRouteInfo;
     @Nullable private final DynamicRouteAttributes mDynamicRouteAttributes;
-    protected final RouteListingPreference.Item mItem;
+    protected final RouteListingPreference.Item mRlpItem;
     private boolean mIsSuggested;
 
     MediaDevice(
             @NonNull Context context,
-            @Nullable MediaRoute2Info info,
+            @Nullable MediaRoute2Info routeInfo,
             @Nullable DynamicRouteAttributes dynamicRouteAttributes,
-            @Nullable RouteListingPreference.Item item) {
+            @Nullable RouteListingPreference.Item rlpItem) {
         mContext = context;
-        mRouteInfo = info;
-        mItem = item;
+        mRouteInfo = routeInfo;
+        mRlpItem = rlpItem;
         mDynamicRouteAttributes = dynamicRouteAttributes;
-        setType(info);
+        setType(routeInfo);
         if (Flags.enableSuggestedDeviceApi()) {
             mState = LocalMediaManager.MediaDeviceState.STATE_DISCONNECTED;
         }
@@ -147,12 +147,12 @@ public abstract class MediaDevice implements Comparable<MediaDevice> {
 
     // MediaRoute2Info.getType was made public on API 34, but exists since API 30.
     @SuppressWarnings("NewApi")
-    private void setType(MediaRoute2Info info) {
-        if (info == null) {
+    private void setType(MediaRoute2Info routeInfo) {
+        if (routeInfo == null) {
             mType = MediaDeviceType.TYPE_BLUETOOTH_DEVICE;
             return;
         }
-        switch (info.getType()) {
+        switch (routeInfo.getType()) {
             case TYPE_GROUP:
                 mType = MediaDeviceType.TYPE_CAST_GROUP_DEVICE;
                 break;
@@ -254,7 +254,7 @@ public abstract class MediaDevice implements Comparable<MediaDevice> {
 
     /** Returns {@code true} if the device has a non-null {@link RouteListingPreference.Item}. */
     public boolean hasRouteListingPreferenceItem() {
-        return mItem != null;
+        return mRlpItem != null;
     }
 
     /**
@@ -264,8 +264,8 @@ public abstract class MediaDevice implements Comparable<MediaDevice> {
      */
     @SelectionBehavior
     public int getSelectionBehavior() {
-        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE && mItem != null
-                ? mItem.getSelectionBehavior() : SELECTION_BEHAVIOR_TRANSFER;
+        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE && mRlpItem != null
+                ? mRlpItem.getSelectionBehavior() : SELECTION_BEHAVIOR_TRANSFER;
     }
 
     /**
@@ -275,8 +275,8 @@ public abstract class MediaDevice implements Comparable<MediaDevice> {
      */
     public boolean hasSubtext() {
         return Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE
-                && mItem != null
-                && mItem.getSubText() != SUBTEXT_NONE;
+                && mRlpItem != null
+                && mRlpItem.getSubText() != SUBTEXT_NONE;
     }
 
     /**
@@ -286,8 +286,8 @@ public abstract class MediaDevice implements Comparable<MediaDevice> {
      */
     @RouteListingPreference.Item.SubText
     public int getSubtext() {
-        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE && mItem != null
-                ? mItem.getSubText() : SUBTEXT_NONE;
+        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE && mRlpItem != null
+                ? mRlpItem.getSubText() : SUBTEXT_NONE;
     }
 
     /**
@@ -296,8 +296,8 @@ public abstract class MediaDevice implements Comparable<MediaDevice> {
      * @return subtext string for this route
      */
     public String getSubtextString() {
-        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE && mItem != null
-                ? Api34Impl.composeSubtext(mItem, mContext) : null;
+        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE && mRlpItem != null
+                ? Api34Impl.composeSubtext(mRlpItem, mContext) : null;
     }
 
     /**
@@ -307,7 +307,7 @@ public abstract class MediaDevice implements Comparable<MediaDevice> {
      */
     public boolean hasOngoingSession() {
         return Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE
-                && Api34Impl.hasOngoingSession(mItem);
+                && Api34Impl.hasOngoingSession(mRlpItem);
     }
 
     /**
@@ -317,7 +317,7 @@ public abstract class MediaDevice implements Comparable<MediaDevice> {
      */
     public boolean isHostForOngoingSession() {
         return Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE
-                && Api34Impl.isHostForOngoingSession(mItem);
+                && Api34Impl.isHostForOngoingSession(mRlpItem);
     }
 
     /**
@@ -342,7 +342,7 @@ public abstract class MediaDevice implements Comparable<MediaDevice> {
      */
     public boolean isSuggestedByRouteListingPreferences() {
         return Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE
-                && Api34Impl.isSuggestedDevice(mItem);
+                && Api34Impl.isSuggestedDevice(mRlpItem);
     }
 
     void setConnectedRecord() {
@@ -646,28 +646,92 @@ public abstract class MediaDevice implements Comparable<MediaDevice> {
         return mDynamicRouteAttributes.getDeselectable();
     }
 
+    @NonNull
+    @Override
+    public String toString() {
+        return "MediaDevice (" + getClass().getSimpleName() + "): {"
+                + " name=" + getName()
+                + ", type=" + getDeviceTypeString(mType)
+                + ", id=" + getId()
+                + ", volume=" + getVolumeString()
+                + ", attributes=" + getDynamicAttributesString()
+                + (isSuggestedDevice() ? ",  suggestedBy=" + getSuggestedSourceString() : "")
+                + ", rangeZone=" + NearbyDevice.rangeZoneToString(getRangeZone())
+                + ", routeFeatures=" + getRouteFeaturesString()
+                + " }";
+    }
+
+    @NonNull
+    private String getVolumeString() {
+        return "[" + getCurrentVolume() + "/" + getMaxVolume() + (isVolumeFixed() ? "/fixed" : "")
+                + "]";
+    }
+
+    @NonNull
+    private String getSuggestedSourceString() {
+        List<String> attributes = new ArrayList<>();
+        if (mIsSuggested) attributes.add("IDS");
+        if (Api34Impl.isSuggestedDevice(mRlpItem)) attributes.add("RLP");
+        return "[" + TextUtils.join(", ", attributes) + "]";
+    }
+
+    @NonNull
+    private String getDynamicAttributesString() {
+        List<String> attributes = new ArrayList<>();
+        if (isSelected()) attributes.add("selected");
+        if (isTransferable()) attributes.add("transferable");
+        if (isSelectable()) attributes.add("selectable");
+        if (isDeselectable()) attributes.add("deselectable");
+        if (hasRouteListingPreferenceItem()) attributes.add("hasRLP");
+        if (hasOngoingSession()) attributes.add("ongoingSession");
+        if (isHostForOngoingSession()) attributes.add("ongoingSessionHost");
+        if (isMutingExpectedDevice()) attributes.add("mutingExpectedDevice");
+        return "[" + TextUtils.join(", ", attributes) + "]";
+    }
+
+    /** Returns string value for MediaDeviceType. */
+    @NonNull
+    public static String getDeviceTypeString(@MediaDeviceType int type) {
+        return switch (type) {
+            case MediaDeviceType.TYPE_UNKNOWN -> "UNKNOWN";
+            case MediaDeviceType.TYPE_PHONE_DEVICE -> "PHONE_DEVICE";
+            case MediaDeviceType.TYPE_USB_C_AUDIO_DEVICE -> "USB_C_AUDIO_DEVICE";
+            case MediaDeviceType.TYPE_3POINT5_MM_AUDIO_DEVICE -> "3POINT5_MM_AUDIO_DEVICE";
+            case MediaDeviceType.TYPE_FAST_PAIR_BLUETOOTH_DEVICE -> "FAST_PAIR_BLUETOOTH_DEVICE";
+            case MediaDeviceType.TYPE_BLUETOOTH_DEVICE -> "BLUETOOTH_DEVICE";
+            case MediaDeviceType.TYPE_CAST_DEVICE -> "CAST_DEVICE";
+            case MediaDeviceType.TYPE_CAST_GROUP_DEVICE -> "CAST_GROUP_DEVICE";
+            case MediaDeviceType.TYPE_REMOTE_AUDIO_VIDEO_RECEIVER -> "REMOTE_AUDIO_VIDEO_RECEIVER";
+            default -> TextUtils.formatSimple("UNSUPPORTED(%d)", type);
+        };
+    }
+
+    private String getRouteFeaturesString() {
+        return String.join(/* delimiter= */ "|", getFeatures());
+    }
+
     @RequiresApi(34)
     private static class Api34Impl {
         @DoNotInline
-        static boolean isHostForOngoingSession(RouteListingPreference.Item item) {
-            int flags = item != null ? item.getFlags() : 0;
+        static boolean isHostForOngoingSession(RouteListingPreference.Item rlpItem) {
+            int flags = rlpItem != null ? rlpItem.getFlags() : 0;
             return (flags & FLAG_ONGOING_SESSION) != 0
                     && (flags & FLAG_ONGOING_SESSION_MANAGED) != 0;
         }
 
         @DoNotInline
-        static boolean isSuggestedDevice(RouteListingPreference.Item item) {
-            return item != null && (item.getFlags() & FLAG_SUGGESTED) != 0;
+        static boolean isSuggestedDevice(RouteListingPreference.Item rlpItem) {
+            return rlpItem != null && (rlpItem.getFlags() & FLAG_SUGGESTED) != 0;
         }
 
         @DoNotInline
-        static boolean hasOngoingSession(RouteListingPreference.Item item) {
-            return item != null && (item.getFlags() & FLAG_ONGOING_SESSION) != 0;
+        static boolean hasOngoingSession(RouteListingPreference.Item rlpItem) {
+            return rlpItem != null && (rlpItem.getFlags() & FLAG_ONGOING_SESSION) != 0;
         }
 
         @DoNotInline
-        static String composeSubtext(RouteListingPreference.Item item, Context context) {
-            switch (item.getSubText()) {
+        static String composeSubtext(RouteListingPreference.Item rlpItem, Context context) {
+            switch (rlpItem.getSubText()) {
                 case SUBTEXT_ERROR_UNKNOWN:
                     return context.getString(R.string.media_output_status_unknown_error);
                 case SUBTEXT_SUBSCRIPTION_REQUIRED:
@@ -683,7 +747,7 @@ public abstract class MediaDevice implements Comparable<MediaDevice> {
                 case SUBTEXT_TRACK_UNSUPPORTED:
                     return context.getString(R.string.media_output_status_track_unsupported);
                 case SUBTEXT_CUSTOM:
-                    return (String) item.getCustomSubtextMessage();
+                    return (String) rlpItem.getCustomSubtextMessage();
             }
             return "";
         }

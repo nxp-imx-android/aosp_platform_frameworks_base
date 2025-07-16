@@ -52,6 +52,7 @@ import android.gui.BoxShadowSettings;
 import android.gui.DropInputMode;
 import android.gui.EarlyWakeupInfo;
 import android.gui.StalledTransactionInfo;
+import android.gui.TransactionBarrier;
 import android.gui.TrustedOverlay;
 import android.hardware.DataSpace;
 import android.hardware.DisplayLuts;
@@ -267,6 +268,7 @@ public final class SurfaceControl implements Parcelable {
             Parcel data);
     private static native void nativeAddWindowInfosReportedListener(long transactionObj,
             Runnable listener);
+    private static native void nativeAddTransactionBarrier(long transactionObj, Parcel barrier);
     private static native boolean nativeGetDisplayBrightnessSupport(IBinder displayToken);
     private static native boolean nativeSetDisplayBrightness(IBinder displayToken,
             float sdrBrightness, float sdrBrightnessNits, float displayBrightness,
@@ -3597,6 +3599,22 @@ public final class SurfaceControl implements Parcelable {
         }
 
         /**
+         * Adds a transaction barrier.
+         *
+         * @param barrier Transaction Barrier.
+         *
+         * @hide
+         */
+        @NonNull
+        public Transaction addTransactionBarrier(@NonNull TransactionBarrier barrier) {
+            Parcel barrierParcel = Parcel.obtain();
+            barrier.writeToParcel(barrierParcel, 0);
+            barrierParcel.setDataPosition(0);
+            nativeAddTransactionBarrier(mNativeObject, barrierParcel);
+            return this;
+        }
+
+        /**
          * Specify how the buffer associated with this Surface is mapped in to the
          * parent coordinate space. The source frame will be scaled to fit the destination
          * frame, after being rotated according to the orientation parameter.
@@ -3837,9 +3855,9 @@ public final class SurfaceControl implements Parcelable {
                                 + " , bottomRight=" + bottomRight);
             }
 
-            if (!com.android.graphics.surfaceflinger.flags.Flags.setDistinctCornerRadii()) {
+            if (!com.android.graphics.surfaceflinger.flags.Flags.setClientDrawnCornerRadii()) {
                 Log.w(TAG, "setCornerRadius was called but"
-                           + "set_distinct_corner_radii flag is disabled");
+                           + "set_client_drawn_corner_radii flag is disabled");
                 return this;
             }
             nativeSetCornerRadius(mNativeObject, sc.mNativeObject,
@@ -3901,9 +3919,9 @@ public final class SurfaceControl implements Parcelable {
                                 + ", bottomLeft=" + bottomLeft
                                 + " , bottomRight=" + bottomRight);
             }
-            if (!com.android.graphics.surfaceflinger.flags.Flags.setDistinctCornerRadii()) {
-                Log.w(TAG, "setCornerRadius was called but"
-                           + "set_distinct_corner_radii flag is disabled");
+            if (!com.android.graphics.surfaceflinger.flags.Flags.setClientDrawnCornerRadii()) {
+                Log.w(TAG, "setClientDrawnCornerRadius was called but"
+                           + "set_client_drawn_corner_radii flag is disabled");
                 return this;
             }
 

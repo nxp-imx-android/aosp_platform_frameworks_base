@@ -19,6 +19,7 @@ package com.android.server.locksettings;
 import static com.android.server.locksettings.SoftwareRateLimiterResult.CONTINUE_TO_HARDWARE;
 import static com.android.server.locksettings.SoftwareRateLimiterResult.CREDENTIAL_TOO_SHORT;
 import static com.android.server.locksettings.SoftwareRateLimiterResult.DUPLICATE_WRONG_GUESS;
+import static com.android.server.locksettings.SoftwareRateLimiterResult.NO_MORE_GUESSES;
 import static com.android.server.locksettings.SoftwareRateLimiterResult.RATE_LIMITED;
 
 import static com.google.common.truth.Truth.assertThat;
@@ -79,7 +80,7 @@ public class SoftwareRateLimiterTest {
             verifyUniqueWrongGuess(id, guess, delayTable[Math.min(i + 1, delayTable.length - 1)]);
             verifyFailureCounter(id, i + 1);
         }
-        verifyRateLimited(id, newPassword("password"), delayTable[delayTable.length - 1]);
+        verifyNoMoreGuesses(id, newPassword("password"));
     }
 
     // This test re-instantiates the SoftwareRateLimiter, like what happens after a reboot, after
@@ -482,6 +483,11 @@ public class SoftwareRateLimiterTest {
     private void verifyCredentialTooShort(LskfIdentifier id, LockscreenCredential guess) {
         SoftwareRateLimiterResult result = mRateLimiter.apply(id, guess);
         assertThat(result.code).isEqualTo(CREDENTIAL_TOO_SHORT);
+    }
+
+    private void verifyNoMoreGuesses(LskfIdentifier id, LockscreenCredential guess) {
+        SoftwareRateLimiterResult result = mRateLimiter.apply(id, guess);
+        assertThat(result.code).isEqualTo(NO_MORE_GUESSES);
     }
 
     private void verifyRateLimited(LskfIdentifier id, LockscreenCredential guess) {

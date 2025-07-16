@@ -1999,6 +1999,7 @@ package android.inputmethodservice {
   }
 
   @UiContext public class InputMethodService extends android.inputmethodservice.AbstractInputMethodService {
+    method public final boolean isImeNavigationBarShownForTesting();
     field public static final long DISALLOW_INPUT_METHOD_INTERFACE_OVERRIDE = 148086656L; // 0x8d39f80L
     field public static final long FINISH_INPUT_NO_FALLBACK_CONNECTION = 156215187L; // 0x94fa793L
   }
@@ -3134,6 +3135,14 @@ package android.security {
   public class KeyStoreException extends java.lang.Exception {
     method public int getErrorCode();
     method public static boolean hasFailureInfoForError(int);
+  }
+
+}
+
+package android.security.authenticationpolicy {
+
+  @FlaggedApi("android.security.secure_lockdown") public final class AuthenticationPolicyManager {
+    method @FlaggedApi("android.security.secure_lock_device") @RequiresPermission(android.Manifest.permission.TEST_BIOMETRIC) public void setSecureLockDeviceTestStatus(boolean);
   }
 
 }

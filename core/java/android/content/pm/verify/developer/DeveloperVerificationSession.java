@@ -67,6 +67,25 @@ public final class DeveloperVerificationSession implements Parcelable {
     public @interface DeveloperVerificationIncompleteReason {
     }
 
+    /**
+     * The developer verification is bypassed because the installation was initiated from the
+     * Android Debug Bridge (ADB) service.
+     */
+    public static final int DEVELOPER_VERIFICATION_BYPASSED_REASON_ADB = 1;
+    /**
+     * The developer verification is bypassed because the verification could not be performed due
+     * to emergency conditions such as the verification service being unresponsive. Only critical
+     * packages such as the verifier itself, the installer or the update owner of the verifier, or
+     * the emergency installer are allowed to bypass the developer verification with this reason.
+     */
+    public static final int DEVELOPER_VERIFICATION_BYPASSED_REASON_EMERGENCY = 2;
+    /**
+     * The developer verification is bypassed because this is a testing environment and the result
+     * of the verification does not rely on the actual verification service.
+     */
+    public static final int DEVELOPER_VERIFICATION_BYPASSED_REASON_TEST = 3;
+
+
     private final int mId;
     private final int mInstallSessionId;
     @NonNull
@@ -247,8 +266,8 @@ public final class DeveloperVerificationSession implements Parcelable {
      * along with an approximate reason to pass on to the installer.
      * @throws SecurityException if the caller is not the current verifier bound by the system.
      * @throws IllegalStateException if this is called after the session has finished, because
-     * this API or {@link #reportVerificationComplete} have already been called once, or because the
-     * session has timed out.
+     * this API or {@link #reportVerificationComplete} or {@link #reportVerificationBypassed}
+     * have already been called once, or because the session has timed out.
      */
     public void reportVerificationIncomplete(@DeveloperVerificationIncompleteReason int reason) {
         try {
@@ -264,8 +283,8 @@ public final class DeveloperVerificationSession implements Parcelable {
      * of failure or continue to process the install in the case of success.
      * @throws SecurityException if the caller is not the current verifier bound by the system.
      * @throws IllegalStateException if this is called after the session has finished, because
-     * this API or {@link #reportVerificationIncomplete} have already been called once, or because
-     * the session has timed out.
+     * this API or {@link #reportVerificationIncomplete} or {@link #reportVerificationBypassed}
+     * have already been called once, or because the session has timed out.
      */
     public void reportVerificationComplete(@NonNull DeveloperVerificationStatus status) {
         try {
@@ -281,13 +300,31 @@ public final class DeveloperVerificationSession implements Parcelable {
      * installer in the installation result.
      * @throws SecurityException if the caller is not the current verifier bound by the system.
      * @throws IllegalStateException if this is called after the session has finished, because
-     * this API or {@link #reportVerificationIncomplete} have already been called once, or because
-     * the session has timed out.
+     * this API or {@link #reportVerificationIncomplete} or {@link #reportVerificationBypassed} have
+     * already been called once, or because the session has timed out.
      */
     public void reportVerificationComplete(@NonNull DeveloperVerificationStatus status,
             @NonNull PersistableBundle extensionResponse) {
         try {
             mSession.reportVerificationComplete(mId, status, extensionResponse);
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    /**
+     * Report to the system that the developer verification verification has been bypassed because
+     * of a certain reason.
+     * @param bypassReason The reason for the verification bypass, which must be a positive integer.
+     * @throws IllegalArgumentException if @bypassReason is not a positive integer.
+     * @throws SecurityException if the caller is not the current verifier bound by the system.
+     * @throws IllegalStateException if this is called after the session has finished, because
+     * this API or {@link #reportVerificationComplete} or or {@link #reportVerificationIncomplete}
+     * have already been called once, or because the session has timed out.
+     */
+    public void reportVerificationBypassed(int bypassReason) {
+        try {
+            mSession.reportVerificationBypassed(mId, bypassReason);
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }

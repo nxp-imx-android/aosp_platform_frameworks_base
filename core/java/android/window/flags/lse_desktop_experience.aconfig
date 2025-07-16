@@ -1113,6 +1113,16 @@ flag {
 }
 
 flag {
+    name: "enable_request_fullscreen_restore_freeform_bugfix"
+    namespace: "lse_desktop_experience"
+    description: "Fixes freeform to fullscreen restoration using the Activity#requestFullscreenMode API."
+    bug: "414334135"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "enable_resizing_metrics"
     namespace: "lse_desktop_experience"
     description: "Whether to enable log collection for task resizing in desktop windowing mode"

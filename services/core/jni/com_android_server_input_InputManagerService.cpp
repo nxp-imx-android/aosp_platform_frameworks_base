@@ -368,7 +368,8 @@ public:
     void setMotionClassifierEnabled(bool enabled);
     std::optional<std::string> getBluetoothAddress(int32_t deviceId);
     void setStylusButtonMotionEventsEnabled(bool enabled);
-    std::optional<vec2> getMouseCursorPosition(ui::LogicalDisplayId displayId);
+    std::optional<vec2> getMouseCursorPositionInPhysicalDisplay(ui::LogicalDisplayId displayId);
+    std::optional<vec2> getMouseCursorPositionInLogicalDisplay(ui::LogicalDisplayId displayId);
     void setStylusPointerIconEnabled(bool enabled);
     void setInputMethodConnectionIsActive(bool isActive);
     void setKeyRemapping(const std::map<int32_t, int32_t>& keyRemapping);
@@ -2165,8 +2166,14 @@ void NativeInputManager::setStylusButtonMotionEventsEnabled(bool enabled) {
             InputReaderConfiguration::Change::STYLUS_BUTTON_REPORTING);
 }
 
-std::optional<vec2> NativeInputManager::getMouseCursorPosition(ui::LogicalDisplayId displayId) {
+std::optional<vec2> NativeInputManager::getMouseCursorPositionInPhysicalDisplay(
+        ui::LogicalDisplayId displayId) {
     return mInputManager->getChoreographer().getMouseCursorPosition(displayId);
+}
+
+std::optional<vec2> NativeInputManager::getMouseCursorPositionInLogicalDisplay(
+        ui::LogicalDisplayId displayId) {
+    return mInputManager->getChoreographer().getMouseCursorPositionInLogicalDisplay(displayId);
 }
 
 void NativeInputManager::setStylusPointerIconEnabled(bool enabled) {
@@ -3229,10 +3236,23 @@ static void nativeSetStylusButtonMotionEventsEnabled(JNIEnv* env, jobject native
     im->setStylusButtonMotionEventsEnabled(enabled);
 }
 
-static jfloatArray nativeGetMouseCursorPosition(JNIEnv* env, jobject nativeImplObj,
-                                                jint displayId) {
+static jfloatArray nativeGetMouseCursorPositionInPhysicalDisplay(JNIEnv* env, jobject nativeImplObj,
+                                                                 jint displayId) {
     NativeInputManager* im = getNativeInputManager(env, nativeImplObj);
-    const auto p = im->getMouseCursorPosition(ui::LogicalDisplayId{displayId});
+    const auto p = im->getMouseCursorPositionInPhysicalDisplay(ui::LogicalDisplayId{displayId});
+    if (!p) {
+        return nullptr;
+    }
+    const std::array<float, 2> arr = {{p->x, p->y}};
+    jfloatArray outArr = env->NewFloatArray(2);
+    env->SetFloatArrayRegion(outArr, 0, arr.size(), arr.data());
+    return outArr;
+}
+
+static jfloatArray nativeGetMouseCursorPositionInLogicalDisplay(JNIEnv* env, jobject nativeImplObj,
+                                                                jint displayId) {
+    NativeInputManager* im = getNativeInputManager(env, nativeImplObj);
+    const auto p = im->getMouseCursorPositionInLogicalDisplay(ui::LogicalDisplayId{displayId});
     if (!p) {
         return nullptr;
     }
@@ -3438,7 +3458,10 @@ static const JNINativeMethod gInputManagerMethods[] = {
         {"getBluetoothAddress", "(I)Ljava/lang/String;", (void*)nativeGetBluetoothAddress},
         {"setStylusButtonMotionEventsEnabled", "(Z)V",
          (void*)nativeSetStylusButtonMotionEventsEnabled},
-        {"getMouseCursorPosition", "(I)[F", (void*)nativeGetMouseCursorPosition},
+        {"getMouseCursorPositionInPhysicalDisplay", "(I)[F",
+         (void*)nativeGetMouseCursorPositionInPhysicalDisplay},
+        {"getMouseCursorPositionInLogicalDisplay", "(I)[F",
+         (void*)nativeGetMouseCursorPositionInLogicalDisplay},
         {"setStylusPointerIconEnabled", "(Z)V", (void*)nativeSetStylusPointerIconEnabled},
         {"setAccessibilityBounceKeysThreshold", "(I)V",
          (void*)nativeSetAccessibilityBounceKeysThreshold},

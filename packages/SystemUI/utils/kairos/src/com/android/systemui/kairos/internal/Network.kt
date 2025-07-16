@@ -20,6 +20,7 @@ import com.android.systemui.kairos.CoalescingPolicy
 import com.android.systemui.kairos.internal.util.LogIndent
 import com.android.systemui.kairos.internal.util.fastForEach
 import com.android.systemui.kairos.internal.util.logDuration
+import com.android.systemui.kairos.internal.util.logDurationCoroutine
 import com.android.systemui.kairos.util.Maybe
 import com.android.systemui.kairos.util.Maybe.Present
 import com.android.systemui.kairos.util.maybeOf
@@ -126,7 +127,7 @@ internal class Network(
                 }
             }
             val e = epoch
-            logDuration(indent = 0, { "Kairos Transaction epoch=$e" }, trace = true) {
+            logDurationCoroutine(indent = 0, { "Kairos Transaction epoch=$e" }, trace = true) {
                 val evalScope =
                     EvalScopeImpl(networkScope = this@Network, deferScope = deferScopeImpl)
                 try {
@@ -181,12 +182,12 @@ internal class Network(
                     }
                 logLn { "drained $numNodes nodes" }
             } while (
-                logDuration({ "drain outputs" }, trace = true) {
+                logDuration({ "drain sync outputs" }, trace = true) {
                     runThenDrainDeferrals { evalFastOutputs(evalScope) }
                 }
             )
         }
-        evalLaunchedOutputs(coroutineScope)
+        logDuration({ "drain launched outputs" }) { evalLaunchedOutputs(coroutineScope) }
         // Invalidate caches
         // Note: this needs to occur before deferred switches
         logDuration({ "clear store" }) { transactionStore.clear() }

@@ -161,23 +161,7 @@ public abstract class MediaOutputAdapterBase extends RecyclerView.Adapter<Recycl
             boolean hasRouteListingPreferenceItem = device.hasRouteListingPreferenceItem();
 
             if (DEBUG) {
-                Log.d(
-                        TAG,
-                        "["
-                                + position
-                                + "] "
-                                + device.getName()
-                                + " ["
-                                + (isDeselectable ? "deselectable" : "")
-                                + "] ["
-                                + (isSelected ? "selected" : "")
-                                + "] ["
-                                + (isSelectable ? "selectable" : "")
-                                + "] ["
-                                + (isTransferable ? "transferable" : "")
-                                + "] ["
-                                + (hasRouteListingPreferenceItem ? "hasListingPreference" : "")
-                                + "]");
+                Log.d(TAG, "#" + position + ": " + device);
             }
 
             boolean isDeviceGroup = false;

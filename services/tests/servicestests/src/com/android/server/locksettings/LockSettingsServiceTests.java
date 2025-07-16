@@ -807,6 +807,65 @@ public class LockSettingsServiceTests extends BaseLockSettingsServiceTests {
     }
 
     @Test
+    @EnableFlags(android.security.Flags.FLAG_SOFTWARE_RATELIMITER)
+    public void test20UniqueGuessesAllowed() throws Exception {
+        final int userId = PRIMARY_USER_ID;
+        final LockscreenCredential credential = newPassword("password");
+        final Duration tenYears = Duration.ofDays(10 * 365);
+        Duration now = Duration.ZERO;
+        VerifyCredentialResponse response;
+
+        mInjector.setTimeSinceBoot(now);
+        setCredential(userId, credential);
+        for (int i = 0; i < 19; i++) {
+            response = mService.verifyCredential(newPassword("wrong" + i), userId, /* flags= */ 0);
+            assertFalse(response.isMatched());
+            now = now.plus(tenYears); // Advance 10 years to get past rate-limiting
+            mInjector.setTimeSinceBoot(now);
+        }
+        response = mService.verifyCredential(credential, userId, /* flags= */ 0);
+        assertTrue(response.isMatched());
+    }
+
+    @Test
+    @EnableFlags(android.security.Flags.FLAG_SOFTWARE_RATELIMITER)
+    public void testMoreThan20UniqueGuessesNotAllowed() throws Exception {
+        final int userId = PRIMARY_USER_ID;
+        final LockscreenCredential credential = newPassword("password");
+        final Duration tenYears = Duration.ofDays(10 * 365);
+        Duration now = Duration.ZERO;
+        VerifyCredentialResponse response;
+
+        mInjector.setTimeSinceBoot(now);
+        setCredential(userId, credential);
+        for (int i = 0; i < 20; i++) {
+            response = mService.verifyCredential(newPassword("wrong" + i), userId, /* flags= */ 0);
+            assertFalse(response.isMatched());
+            now = now.plus(tenYears); // Advance 10 years to get past rate-limiting
+            mInjector.setTimeSinceBoot(now);
+        }
+        response = mService.verifyCredential(credential, userId, /* flags= */ 0);
+        assertFalse(response.isMatched());
+    }
+
+    @Test
+    @DisableFlags(android.security.Flags.FLAG_SOFTWARE_RATELIMITER)
+    public void testMoreThan20UniqueGuessesAllowed_softwareRateLimiterFlagDisabled()
+            throws Exception {
+        final int userId = PRIMARY_USER_ID;
+        final LockscreenCredential credential = newPassword("password");
+        VerifyCredentialResponse response;
+
+        setCredential(userId, credential);
+        for (int i = 0; i < 20; i++) {
+            response = mService.verifyCredential(newPassword("wrong" + i), userId, /* flags= */ 0);
+            assertFalse(response.isMatched());
+        }
+        response = mService.verifyCredential(credential, userId, /* flags= */ 0);
+        assertTrue(response.isMatched());
+    }
+
+    @Test
     public void testVerifyCredentialResponseTimeoutClamping() {
         testTimeoutClamping(Duration.ofMillis(Long.MIN_VALUE), Integer.MAX_VALUE);
         testTimeoutClamping(Duration.ofMillis(Integer.MIN_VALUE), Integer.MAX_VALUE);

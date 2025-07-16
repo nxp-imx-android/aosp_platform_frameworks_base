@@ -147,6 +147,8 @@ import com.android.server.SystemConfig;
 import com.android.server.Watchdog;
 import com.android.server.am.ActivityManagerService.ProcessChangeItem;
 import com.android.server.am.psc.PlatformCompatCache;
+import com.android.server.am.psc.ProcessStateRecord;
+import com.android.server.am.psc.UidStateRecord;
 import com.android.server.compat.PlatformCompat;
 import com.android.server.pm.pkg.AndroidPackage;
 import com.android.server.pm.pkg.PackageStateInternal;
@@ -301,7 +303,7 @@ public final class ProcessList {
     // Activity manager's version of an undefined schedule group
     static final int SCHED_GROUP_UNDEFINED = Integer.MIN_VALUE;
     // Activity manager's version of Process.THREAD_GROUP_BACKGROUND
-    static final int SCHED_GROUP_BACKGROUND = 0;
+    public static final int SCHED_GROUP_BACKGROUND = 0;
       // Activity manager's version of Process.THREAD_GROUP_RESTRICTED
     static final int SCHED_GROUP_RESTRICTED = 1;
     // Activity manager's version of Process.THREAD_GROUP_DEFAULT
@@ -5305,7 +5307,7 @@ public final class ProcessList {
      */
     @GuardedBy(anyOf = {"mService", "mProcLock"})
     int getUidProcStateLOSP(int uid) {
-        UidRecord uidRec = mActiveUids.get(uid);
+        UidStateRecord uidRec = mActiveUids.get(uid);
         return uidRec == null ? PROCESS_STATE_NONEXISTENT : uidRec.getCurProcState();
     }
 
@@ -5315,7 +5317,7 @@ public final class ProcessList {
      */
     @GuardedBy(anyOf = {"mService", "mProcLock"})
     @ProcessCapability int getUidProcessCapabilityLOSP(int uid) {
-        UidRecord uidRec = mActiveUids.get(uid);
+        UidStateRecord uidRec = mActiveUids.get(uid);
         return uidRec == null ? PROCESS_CAPABILITY_NONE : uidRec.getCurCapability();
     }
 
@@ -5356,7 +5358,7 @@ public final class ProcessList {
      */
     @VisibleForTesting
     @GuardedBy(anyOf = {"mService", "mProcLock"})
-    int getBlockStateForUid(UidRecord uidRec) {
+    int getBlockStateForUid(UidStateRecord uidRec) {
         // Denotes whether uid's process state is currently allowed network access.
         final boolean isAllowed =
                 isProcStateAllowedWhileIdleOrPowerSaveMode(uidRec.getCurProcState(),

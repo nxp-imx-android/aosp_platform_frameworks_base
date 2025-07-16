@@ -442,8 +442,8 @@ class ImplGeneratingAdapter(
             innerVisitor = MethodCallReplacingAdapter(name, innerVisitor)
         }
         if (substituted) {
-            innerVisitor?.withAnnotation(HostStubGenProcessedAsSubstitute.CLASS_DESCRIPTOR,
-                "(substitution reason not propagated)")
+            // We don't have a reason in this case.
+            innerVisitor?.withAnnotation(HostStubGenProcessedAsSubstitute.CLASS_DESCRIPTOR, "")
         }
 
         return innerVisitor

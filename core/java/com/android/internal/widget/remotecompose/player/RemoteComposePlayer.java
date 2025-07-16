@@ -20,7 +20,6 @@ import static com.android.internal.widget.remotecompose.core.CoreDocument.MINOR_
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
-import android.app.Application;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Color;
@@ -134,11 +133,11 @@ public class RemoteComposePlayer extends FrameLayout implements RemoteContextAct
     }
 
     @Override
-    public int scrollByOffset(@NonNull Component component, int pixels) {
+    public int scrollByOffset(@NonNull Component component, int offset) {
         ScrollableComponent scrollable = component.selfOrModifier(ScrollableComponent.class);
 
         if (scrollable != null) {
-            return scrollable.scrollByOffset(getRemoteContext(), pixels);
+            return scrollable.scrollByOffset(getRemoteContext(), offset);
         }
 
         return 0;
@@ -299,7 +298,7 @@ public class RemoteComposePlayer extends FrameLayout implements RemoteContextAct
         }
 
         mThemeSupport.mapColors(getContext(), mInner);
-        mSensorsSupport.setupSensors((Application) getContext().getApplicationContext(), mInner);
+        mSensorsSupport.setupSensors(getContext().getApplicationContext(), mInner);
         mHapticSupport.setupHaptics(mInner);
         mInner.checkShaders(mShaderControl);
     }

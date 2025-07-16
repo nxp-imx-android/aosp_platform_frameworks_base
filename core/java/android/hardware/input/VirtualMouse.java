@@ -18,7 +18,11 @@ package android.hardware.input;
 
 import android.annotation.NonNull;
 import android.annotation.SystemApi;
+import android.app.compat.CompatChanges;
+import android.compat.annotation.ChangeId;
+import android.compat.annotation.EnabledSince;
 import android.graphics.PointF;
+import android.os.Build;
 import android.os.RemoteException;
 import android.util.Log;
 import android.view.MotionEvent;
@@ -34,6 +38,14 @@ import android.view.MotionEvent;
  */
 @SystemApi
 public class VirtualMouse extends VirtualInputDevice {
+
+    /**
+     * If enabled, the {@link #getCursorPosition()} API now returns in logical display coordinates
+     * instead of in physical display coordinates, which is an old behavior.
+     */
+    @ChangeId
+    @EnabledSince(targetSdkVersion = Build.VERSION_CODES.CUR_DEVELOPMENT)
+    static final long VIRTUAL_MOUSE_CURSOR_POTION_IN_LOGICAL_COORDINATES = 431622043;
 
     /** @hide */
     public VirtualMouse(VirtualMouseConfig config, IVirtualInputDevice virtualInputDevice) {
@@ -96,7 +108,10 @@ public class VirtualMouse extends VirtualInputDevice {
     }
 
     /**
-     * Gets the current cursor position.
+     * Gets the current cursor position in logical display coordinates in pixels.
+     *
+     * <p>Note that if {@code VIRTUAL_MOUSE_CURSOR_POTION_IN_LOGICAL_COORDINATES} is disabled,
+     * this returns a position in the physical display coordinates instead.
      *
      * @return the position, expressed as x and y coordinates
      * @throws IllegalStateException if the display this mouse is associated with is not currently
@@ -104,7 +119,13 @@ public class VirtualMouse extends VirtualInputDevice {
      */
     public @NonNull PointF getCursorPosition() {
         try {
-            PointF cursorPosition = mVirtualInputDevice.getCursorPosition();
+            final PointF cursorPosition;
+            if (CompatChanges.isChangeEnabled(
+                    VIRTUAL_MOUSE_CURSOR_POTION_IN_LOGICAL_COORDINATES)) {
+                cursorPosition = mVirtualInputDevice.getCursorPositionInLogicalDisplay();
+            } else {
+                cursorPosition = mVirtualInputDevice.getCursorPositionInPhysicalDisplay();
+            }
             // TODO(b/410677781): Returning PointF(NaN, NaN) on invalid displayId is different with
             // what the javadoc states, consider updating this (or the javadoc).
             return cursorPosition != null ? cursorPosition : new PointF(Float.NaN, Float.NaN);

@@ -91,16 +91,6 @@ flag {
 }
 
 flag {
-    name: "enable_bubble_app_compat_fixes"
-    namespace: "multitasking"
-    description: "Enable fixes for app compat (e.g. insets and layout issues) for bubbles"
-    bug: "384610402"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "enable_taskbar_on_phones"
     namespace: "multitasking"
     description: "Enables taskbar on phones"

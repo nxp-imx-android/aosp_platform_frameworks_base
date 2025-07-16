@@ -52,7 +52,6 @@ import com.android.systemui.statusbar.VibratorHelper
 import com.android.systemui.statusbar.phone.ScreenOffAnimationController
 import com.android.systemui.statusbar.phone.StatusBarKeyguardViewManager
 import com.android.systemui.temporarydisplay.chipbar.ChipbarCoordinator
-import com.android.systemui.util.WallpaperController
 import com.android.systemui.wallpapers.ui.viewmodel.WallpaperViewModel
 import com.google.android.msdl.domain.MSDLPlayer
 import java.util.Optional
@@ -92,7 +91,6 @@ constructor(
     @Main private val mainDispatcher: CoroutineDispatcher,
     private val msdlPlayer: MSDLPlayer,
     @KeyguardBlueprintLog private val blueprintLog: LogBuffer,
-    private val wallpaperController: WallpaperController,
 ) : CoreStartable {
 
     private var rootViewHandle: DisposableHandle? = null
@@ -154,7 +152,6 @@ constructor(
                 mainDispatcher,
                 msdlPlayer,
                 blueprintLog,
-                wallpaperController,
             )
     }
 

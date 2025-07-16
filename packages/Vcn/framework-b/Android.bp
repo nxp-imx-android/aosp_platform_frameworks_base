@@ -31,6 +31,22 @@ filegroup {
     ],
 }
 
+// Utility library for the IPsec module
+java_library {
+    name: "vcn-utils-framework-ipsec",
+    sdk_version: "module_current",
+    min_sdk_version: "30",
+    srcs: ["src/android/net/vcn/util/PersistableBundleUtils.java"],
+    libs: [
+        "framework-annotations-lib",
+        "net-utils-framework-vcn", // For HexDump.java
+    ],
+    visibility: [
+        "//packages/modules/IPsec",
+    ],
+    apex_available: ["com.android.ipsec"],
+}
+
 java_defaults {
     name: "framework-connectivity-b-defaults-base",
     sdk_version: "module_current",
@@ -157,7 +173,11 @@ java_sdk_library {
     impl_library_visibility: [
         // Using for test only
         "//cts/tests/netlegacy22.api",
+
+        // TODO: b/374174952 Clean up VCN paths when the code location is finalized
         "//cts/tests/tests/vcn",
+        "//packages/modules/Connectivity/Vcn/tests:__subpackages__",
+
         "//external/sl4a:__subpackages__",
         "//frameworks/base/core/tests/bandwidthtests",
         "//frameworks/base/core/tests/benchmarks",

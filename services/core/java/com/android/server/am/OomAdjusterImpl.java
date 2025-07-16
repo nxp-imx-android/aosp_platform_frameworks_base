@@ -104,6 +104,8 @@ import android.util.Slog;
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.server.ServiceThread;
+import com.android.server.am.psc.ProcessStateRecord;
+import com.android.server.am.psc.UidStateRecord;
 import com.android.server.wm.ActivityServiceConnectionsHolder;
 
 import java.lang.annotation.Retention;
@@ -766,7 +768,7 @@ public class OomAdjusterImpl extends OomAdjuster {
             final int prevProcState = app.mState.getCurProcState();
             final int prevAdj = app.mState.getCurRawAdj();
             app.mState.resetCachedInfo();
-            final UidRecord uidRec = app.getUidRecord();
+            final UidStateRecord uidRec = app.getUidRecord();
             if (uidRec != null) {
                 if (DEBUG_UID_OBSERVERS) {
                     Slog.i(TAG_UID_OBSERVERS, "Starting update of " + uidRec);
@@ -1191,7 +1193,7 @@ public class OomAdjusterImpl extends OomAdjuster {
         state.setAdjTarget(null);
 
         // If this UID is currently allowlisted, it should not be frozen.
-        final UidRecord uidRec = app.getUidRecord();
+        final UidStateRecord uidRec = app.getUidRecord();
         app.mOptRecord.setShouldNotFreeze(uidRec != null && uidRec.isCurAllowListed(),
                 ProcessCachedOptimizerRecord.SHOULD_NOT_FREEZE_REASON_UID_ALLOWLISTED, mAdjSeq);
 

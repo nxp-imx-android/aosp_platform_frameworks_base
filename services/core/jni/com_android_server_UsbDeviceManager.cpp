@@ -41,6 +41,7 @@
 #define USB_STATE_MAX_LEN 20
 #define FFS_VENDOR_CTRL_REQUEST_EP0 "/dev/usb-ffs/ctrl/ep0"
 
+#define FFS_ACCESSORY_EP0 "/dev/usb-ffs/aoa/ep0"
 
 namespace {
 struct func_desc {
@@ -176,7 +177,6 @@ const struct desc_v2 ctrl_desc = {
 };
 
 #define CTRL_INTERFACE_STR "Android Control Interface"
-
 struct ctrl_functionfs_lang {
     __le16 code;
     char str1[sizeof(CTRL_INTERFACE_STR)];
@@ -201,6 +201,50 @@ const struct ctrl_functionfs_strings ctrl_strings = {
                         .str1 = CTRL_INTERFACE_STR,
                 },
 };
+
+const struct desc_v2 acc_desc = {
+    .header =
+            {
+                    .magic = htole32(FUNCTIONFS_DESCRIPTORS_MAGIC_V2),
+                    .length = htole32(sizeof(acc_desc)),
+                    .flags = FUNCTIONFS_HAS_FS_DESC | FUNCTIONFS_HAS_HS_DESC |
+                            FUNCTIONFS_HAS_SS_DESC,
+            },
+    .fs_count = 3,
+    .hs_count = 3,
+    .ss_count = 5,
+    .fs_descs = fs_descriptors,
+    .hs_descs = hs_descriptors,
+    .ss_descs = ss_descriptors,
+};
+
+#define ACC_INTERFACE_STR "Android Accessory Interface"
+struct acc_functionfs_lang {
+    __le16 code;
+    char str1[sizeof(ACC_INTERFACE_STR)];
+} __attribute__((packed));
+
+struct acc_functionfs_strings {
+    struct usb_functionfs_strings_head header;
+    struct acc_functionfs_lang lang0;
+} __attribute__((packed));
+
+const struct acc_functionfs_strings acc_strings = {
+        .header =
+                {
+                        .magic = htole32(FUNCTIONFS_STRINGS_MAGIC),
+                        .length = htole32(sizeof(acc_strings)),
+                        .str_count = htole32(1),
+                        .lang_count = htole32(1),
+                },
+        .lang0 =
+                {
+                        .code = htole16(0x0409),
+                        .str1 = ACC_INTERFACE_STR,
+                },
+};
+
+
 } // namespace
 
 namespace android
@@ -208,6 +252,7 @@ namespace android
 
 static JavaVM *gvm = nullptr;
 static jmethodID gUpdateGadgetStateMethod;
+static jmethodID gUpdateAccessoryStateMethod;
 
 static struct parcel_file_descriptor_offsets_t
 {
@@ -646,6 +691,19 @@ static void set_accessory_string(JNIEnv *env, int fd, int cmd, jobjectArray strA
     }
 }
 
+static void set_accessory_string_from_ffs(JNIEnv *env, jobjectArray strArray, int index) {
+    if (!sVendorControlRequestMonitorThread) {
+        ALOGE("Vendor control request monitor thread is not running");
+        return;
+    }
+
+    std::string str = sVendorControlRequestMonitorThread->getAccessoryString(index);
+    if (!str.empty()) {
+        jstring obj = env->NewStringUTF(str.data());
+        env->SetObjectArrayElement(strArray, index, obj);
+        env->DeleteLocalRef(obj);
+    }
+}
 
 static jobjectArray android_server_UsbDeviceManager_getAccessoryStrings(JNIEnv *env,
                                                                         jobject /* thiz */)
@@ -667,6 +725,21 @@ static jobjectArray android_server_UsbDeviceManager_getAccessoryStrings(JNIEnv *
 
 out:
     close(fd);
+    return strArray;
+}
+
+static jobjectArray android_server_UsbDeviceManager_getAccessoryStringsFromFfs(JNIEnv *env,
+                                                                        jobject /* thiz */)
+{
+    jclass stringClass = env->FindClass("java/lang/String");
+    jobjectArray strArray = env->NewObjectArray(6, stringClass, NULL);
+    if (!strArray) return nullptr;
+    set_accessory_string_from_ffs(env, strArray, 0);
+    set_accessory_string_from_ffs(env, strArray, 1);
+    set_accessory_string_from_ffs(env, strArray, 2);
+    set_accessory_string_from_ffs(env, strArray, 3);
+    set_accessory_string_from_ffs(env, strArray, 4);
+    set_accessory_string_from_ffs(env, strArray, 5);
     return strArray;
 }
 
@@ -782,6 +855,31 @@ static jboolean android_server_UsbDeviceManager_startVendorControlRequestMonitor
     return JNI_TRUE;
 }
 
+static jboolean android_server_UsbDeviceManager_openAccessoryControl(JNIEnv * /* env */,
+                                                                     jobject /* thiz */) {
+    ALOGI("Writing descriptors to USB Accessory...");
+
+    int fd = TEMP_FAILURE_RETRY(open(FFS_ACCESSORY_EP0, O_RDWR));
+    if (fd < 0) {
+        ALOGE("Opening accessory ep0 failed: %d - %s", fd, strerror(errno));
+        return JNI_FALSE;
+    }
+    ssize_t ret = TEMP_FAILURE_RETRY(write(fd, &acc_desc, sizeof(acc_desc)));
+    if (ret < 0) {
+        ALOGE("Writing accessory desc failed: %d - %s", fd, strerror(errno));
+        close(fd);
+        return JNI_FALSE;
+    }
+    ret = TEMP_FAILURE_RETRY(write(fd, &acc_strings, sizeof(acc_strings)));
+    if (ret < 0) {
+        ALOGE("Writing accessory strings failed: %d - %s", fd, strerror(errno));
+        close(fd);
+        return JNI_FALSE;
+    }
+
+    return JNI_TRUE;
+}
+
 static jstring android_server_UsbDeviceManager_waitAndGetProperty(JNIEnv *env, jobject thiz,
                                                                   jstring jPropName) {
     ScopedUtfChars propName(env, jPropName);
@@ -796,6 +894,8 @@ static jstring android_server_UsbDeviceManager_waitAndGetProperty(JNIEnv *env, j
 static const JNINativeMethod method_table[] = {
         {"nativeGetAccessoryStrings", "()[Ljava/lang/String;",
          (void *)android_server_UsbDeviceManager_getAccessoryStrings},
+        {"nativeGetAccessoryStringsFromFfs", "()[Ljava/lang/String;",
+         (void *)android_server_UsbDeviceManager_getAccessoryStringsFromFfs},
         {"nativeOpenAccessory", "()Landroid/os/ParcelFileDescriptor;",
          (void *)android_server_UsbDeviceManager_openAccessory},
         {"nativeIsStartRequested", "()Z", (void *)android_server_UsbDeviceManager_isStartRequested},
@@ -807,6 +907,8 @@ static const JNINativeMethod method_table[] = {
          (void *)android_server_UsbDeviceManager_stopGadgetMonitor},
         {"nativeStartVendorControlRequestMonitor", "()Z",
          (void *)android_server_UsbDeviceManager_startVendorControlRequestMonitor},
+        {"nativeOpenAccessoryControl", "()Z",
+         (void *)android_server_UsbDeviceManager_openAccessoryControl},
         {"nativeWaitAndGetProperty", "(Ljava/lang/String;)Ljava/lang/String;",
          (void *)android_server_UsbDeviceManager_waitAndGetProperty},
 };
@@ -822,6 +924,9 @@ int register_android_server_UsbDeviceManager(JavaVM *vm, JNIEnv *env) {
 
     gUpdateGadgetStateMethod =
             GetMethodIDOrDie(env, clazz, "updateGadgetState", "(Ljava/lang/String;)V");
+
+    gUpdateAccessoryStateMethod =
+            GetMethodIDOrDie(env, clazz, "updateAccessoryState", "(Ljava/lang/String;)V");
 
     clazz = env->FindClass("android/os/ParcelFileDescriptor");
     LOG_FATAL_IF(clazz == NULL, "Unable to find class android.os.ParcelFileDescriptor");

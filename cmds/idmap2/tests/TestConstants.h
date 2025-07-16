@@ -19,12 +19,6 @@
 
 namespace android::idmap2::TestConstants {
 
-constexpr const auto TARGET_CRC = 0xa960a69;
-constexpr const auto TARGET_CRC_STRING = "0a960a69";
-
-constexpr const auto OVERLAY_CRC = 0xb71095cf;
-constexpr const auto OVERLAY_CRC_STRING = "b71095cf";
-
 constexpr const char* OVERLAY_NAME_DEFAULT = "Default";
 constexpr const char* OVERLAY_NAME_ALL_POLICIES = "AllPolicies";
 

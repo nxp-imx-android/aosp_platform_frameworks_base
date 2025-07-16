@@ -18,8 +18,10 @@
 
 package com.android.wm.shell.desktopmode
 
+import android.app.ActivityManager.RecentTaskInfo
 import android.app.ActivityManager.RunningTaskInfo
 import android.app.TaskInfo
+import android.content.Context
 import android.content.Intent.FLAG_ACTIVITY_CLEAR_TASK
 import android.content.Intent.FLAG_ACTIVITY_MULTIPLE_TASK
 import android.content.pm.ActivityInfo.LAUNCH_MULTIPLE
@@ -40,7 +42,10 @@ import com.android.wm.shell.ShellTaskOrganizer
 import com.android.wm.shell.common.DisplayController
 import com.android.wm.shell.common.DisplayLayout
 import com.android.wm.shell.desktopmode.data.DesktopRepository
+import com.android.wm.shell.recents.RecentTasksController
 import kotlin.math.ceil
+import kotlin.math.max
+import kotlin.math.min
 
 val DESKTOP_MODE_INITIAL_BOUNDS_SCALE: Float =
     SystemProperties.getInt("persist.wm.debug.desktop_mode_initial_bounds_scale", 75) / 100f
@@ -314,6 +319,126 @@ fun getInheritedExistingTaskBounds(
             lastTask.configuration.windowConfiguration.bounds
         else -> null
     }
+}
+
+/**
+ * Returns new or initial bounds of a desktop task that is being placed based on its current bounds,
+ * possible inherited bounds, and bounds maybe requested in transition request.
+ */
+fun decideDesktopTaskPlacementBounds(
+    context: Context,
+    recentTasksController: RecentTasksController?,
+    taskRepository: DesktopRepository,
+    shellTaskOrganizer: ShellTaskOrganizer,
+    displayController: DisplayController,
+    task: RunningTaskInfo,
+    requestedDisplayId: Int,
+    deskId: Int,
+    requestedTaskBounds: Rect?,
+): Rect? {
+    // If the caller requested specific bounds, they should take priority.
+    if (requestedTaskBounds != null && !requestedTaskBounds.isEmpty) {
+        val displayLayout = displayController.getDisplayLayout(requestedDisplayId)
+        if (displayLayout == null) {
+            return requestedTaskBounds
+        }
+        val stableBounds = Rect().also { displayLayout.getStableBounds(it) }
+        val finalBounds =
+            Rect(requestedTaskBounds).apply {
+                // 1. Try to fit |requestedTaskBounds| in |stableBounds| without changing size
+                offset(max(stableBounds.left - left, 0), 0)
+                offset(min(stableBounds.right - right, 0), 0)
+                offset(0, max(stableBounds.top - top, 0))
+                offset(0, min(stableBounds.bottom - bottom, 0))
+
+                // 2. Ensure that |requestedTaskBounds| fit inside |stableBounds| even if that
+                // requires size changes.
+                intersect(stableBounds)
+            }
+
+        return finalBounds
+    }
+
+    // Inherit bounds from closing task instance to prevent application jumping different
+    // cascading positions.
+    val inheritedTaskBounds =
+        getInheritedExistingTaskBounds(taskRepository, shellTaskOrganizer, task, deskId)
+    if (!taskRepository.isActiveTask(task.taskId) && inheritedTaskBounds != null) {
+        return inheritedTaskBounds
+    }
+
+    // TODO: b/365723620 - Handle non running tasks that were launched after reboot.
+    // If task is already visible, it must have been handled already and added to desktop mode.
+    // Cascade task only if it's not visible yet.
+    if (
+        DesktopModeFlags.ENABLE_CASCADING_WINDOWS.isTrue() &&
+            !taskRepository.isVisibleTask(task.taskId)
+    ) {
+        val displayLayout = displayController.getDisplayLayout(requestedDisplayId)
+        if (displayLayout != null) {
+            val stableBounds = Rect().also { displayLayout.getStableBounds(it) }
+            val initialBounds = Rect(task.configuration.windowConfiguration.bounds)
+            cascadeWindow(
+                context,
+                recentTasksController,
+                taskRepository,
+                shellTaskOrganizer,
+                initialBounds,
+                displayLayout,
+                deskId,
+                stableBounds,
+            )
+            return initialBounds
+        }
+    }
+
+    // No strategy has overridden bounds provided initially in TaskInfo.
+    return null
+}
+
+/**
+ * Finds the topmost active non-closing task on the given desk, calculates new bounds of this task
+ * according to position cascading logic, and writes them to |bounds| provided.
+ */
+fun cascadeWindow(
+    context: Context,
+    recentTasksController: RecentTasksController?,
+    taskRepository: DesktopRepository,
+    shellTaskOrganizer: ShellTaskOrganizer,
+    bounds: Rect,
+    displayLayout: DisplayLayout,
+    deskId: Int,
+    stableBounds: Rect = Rect(),
+) {
+    if (stableBounds.isEmpty) {
+        displayLayout.getStableBoundsForDesktopMode(stableBounds)
+    }
+
+    val expandedTasks = taskRepository.getExpandedTasksIdsInDeskOrdered(deskId)
+    expandedTasks
+        .firstOrNull { !taskRepository.isClosingTask(it) }
+        ?.let { taskId: Int ->
+            val taskInfo =
+                shellTaskOrganizer.getRunningTaskInfo(taskId)
+                    ?: recentTasksController?.findTaskInBackground(taskId)
+            taskInfo?.let {
+                val taskBounds = it.configuration.windowConfiguration.bounds
+                if (!taskBounds.isEmpty()) {
+                    cascadeWindow(context.resources, stableBounds, taskBounds, bounds)
+                    return@let
+                }
+                // RecentsTaskInfo might not have configuration bounds populated yet so use
+                // task lastNonFullscreenBounds if available. If null or empty bounds are found
+                // do not cascade.
+                if (it is RecentTaskInfo) {
+                    it.lastNonFullscreenBounds?.let {
+                        if (!it.isEmpty()) {
+                            cascadeWindow(context.resources, stableBounds, it, bounds)
+                        }
+                    }
+                }
+            }
+        }
 }
 
 /**

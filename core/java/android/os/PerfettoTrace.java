@@ -23,6 +23,7 @@ import dalvik.annotation.optimization.FastNative;
 
 import libcore.util.NativeAllocationRegistry;
 
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -50,6 +51,8 @@ public final class PerfettoTrace {
     // in this class to chose what API to initialize.
     public static final boolean IS_USE_SDK_TRACING_API_V3 =
             IS_FLAG_ENABLED && android.os.Flags.perfettoSdkTracingV3();
+
+    private static final AtomicBoolean sAttemptedSystemRegistration = new AtomicBoolean(false);
 
     /**
      * For fetching the next flow event id in a process.
@@ -380,6 +383,9 @@ public final class PerfettoTrace {
     /** Registers the process with Perfetto. */
     @android.ravenwood.annotation.RavenwoodReplace
     public static void register(boolean isBackendInProcess) {
+        if (!isBackendInProcess) {
+            sAttemptedSystemRegistration.set(true);
+        }
         if (IS_USE_SDK_TRACING_API_V3) {
             com.android.internal.dev.perfetto.sdk.PerfettoTrace.register(isBackendInProcess);
         } else {
@@ -405,5 +411,14 @@ public final class PerfettoTrace {
     /** Ravenwood replacement for {@link #registerCategories()}. */
     public static void registerCategories$ravenwood() {
         // Tracing currently completely disabled under Ravenwood
+    }
+
+    /**
+     * Returns whether the calling process attempted to register with the system backend of perfetto
+     * by calling {@code register(false)}. A true return does not mean that the registration is
+     * already completed, as that is an asynchronous operation.
+     */
+    public static boolean getAttempedSystemRegistration() {
+        return sAttemptedSystemRegistration.get();
     }
 }

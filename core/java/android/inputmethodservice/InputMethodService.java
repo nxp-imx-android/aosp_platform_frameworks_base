@@ -67,6 +67,7 @@ import android.annotation.IntDef;
 import android.annotation.MainThread;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.annotation.SuppressLint;
 import android.annotation.TestApi;
 import android.annotation.UiContext;
 import android.app.ActivityManager;
@@ -1659,13 +1660,14 @@ public class InputMethodService extends AbstractInputMethodService {
 
     /**
      * Checks whether the IME should be shown when a hardware keyboard is connected, as configured
-     * through {@link Settings.Secure#SHOW_IME_WITH_HARD_KEYBOARD}, for testing purposes only.
+     * through {@link Settings.Secure#SHOW_IME_WITH_HARD_KEYBOARD}, for testing purposes only. If
+     * {@link #mSettingsObserver} is {@code null}, this will also return {@code null}.
      *
      * @hide
      */
     @VisibleForTesting
-    public final boolean getShouldShowImeWithHardKeyboardForTesting() {
-        return mSettingsObserver.shouldShowImeWithHardKeyboard();
+    public final Boolean getShouldShowImeWithHardKeyboardForTesting() {
+        return mSettingsObserver != null ? mSettingsObserver.shouldShowImeWithHardKeyboard() : null;
     }
 
     /**
@@ -4368,6 +4370,8 @@ public class InputMethodService extends AbstractInputMethodService {
      *
      * @hide
      */
+    @SuppressLint("UnflaggedApi") // @TestApi without associated feature.
+    @TestApi
     @VisibleForTesting
     public final boolean isImeNavigationBarShownForTesting() {
         return mNavigationBarController.isShown();

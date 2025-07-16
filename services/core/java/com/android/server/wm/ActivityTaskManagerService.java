@@ -1970,13 +1970,19 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
      *
      * @param displayId Target display ID
      * @return Whether the windowing mode active on display with given ID allows task repositioning
+     *
+     * @throws IllegalArgumentException if there is no display with given display ID
      */
     public boolean isTaskMoveAllowedOnDisplay(int displayId) {
+        final DisplayContent dc = mRootWindowContainer.getDisplayContent(displayId);
+        if (dc == null) {
+            throw new IllegalArgumentException("There is no display with ID = " + displayId);
+        }
         if (checkCallingPermission(Manifest.permission.REPOSITION_SELF_WINDOWS)
                 != PackageManager.PERMISSION_GRANTED) {
             return false;
         }
-        return mRootWindowContainer.isTaskMoveAllowedOnDisplay(displayId);
+        return dc.isTaskMoveAllowedOnDisplay();
     }
 
     @Override
@@ -3047,6 +3053,13 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
         }
     }
 
+    /**
+     * This method uses different Shell Transitions machinery than {@link AppTaskImpl#moveTaskTo}.
+     * This method is used mostly for testing purposes and assuming the signature
+     * {@link android.Manifest.permission.MANAGE_ACTIVITY_TASKS} permission so unlike in
+     * {@link AppTaskImpl#moveTaskTo} here the WM Shell is forced to comply with the bounds
+     * provided by the WM Core.
+     */
     @Override
     public void resizeTask(int taskId, Rect bounds, int resizeMode) {
         enforceTaskPermission("resizeTask()");
@@ -5019,6 +5032,13 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
                 // Window configuration is unrelated to persistent configuration (e.g. font scale,
                 // locale). Unset it to avoid affecting the current display configuration.
                 values.windowConfiguration.setToDefaults();
+                // A locale change may set layout direction (Configuration#setLocales()) without
+                // including other screen layout bits, so preserve it to avoid extra config change.
+                if (values.userSetLocale && values.screenLayout
+                        == (values.screenLayout & Configuration.SCREENLAYOUT_LAYOUTDIR_MASK)) {
+                    values.screenLayout |= (getGlobalConfiguration().screenLayout
+                            & ~Configuration.SCREENLAYOUT_LAYOUTDIR_MASK);
+                }
                 updateConfigurationLocked(values, false /* initLocale */, true /* persistent */,
                         userId);
             }

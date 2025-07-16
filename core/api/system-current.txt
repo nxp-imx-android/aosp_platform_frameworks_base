@@ -3741,24 +3741,6 @@ package android.companion.virtual.audio {
 
 package android.companion.virtual.camera {
 
-  @FlaggedApi("android.companion.virtualdevice.flags.virtual_camera_metadata") public final class CameraCharacteristicsBuilder {
-    ctor public CameraCharacteristicsBuilder();
-    ctor public CameraCharacteristicsBuilder(@NonNull android.hardware.camera2.CameraCharacteristics);
-    method @NonNull public android.hardware.camera2.CameraCharacteristics build();
-    method @NonNull public <T> android.companion.virtual.camera.CameraCharacteristicsBuilder set(@NonNull android.hardware.camera2.CameraCharacteristics.Key<T>, T);
-    method @NonNull public android.companion.virtual.camera.CameraCharacteristicsBuilder setAvailableCaptureRequestKeys(@Nullable java.util.List<android.hardware.camera2.CaptureRequest.Key<?>>);
-    method @NonNull public android.companion.virtual.camera.CameraCharacteristicsBuilder setAvailableCaptureResultKeys(@Nullable java.util.List<android.hardware.camera2.CaptureResult.Key<?>>);
-    method @NonNull public android.companion.virtual.camera.CameraCharacteristicsBuilder setAvailableCharacteristicsKeys(@Nullable java.util.List<android.hardware.camera2.CameraCharacteristics.Key<?>>);
-    method @NonNull public android.companion.virtual.camera.CameraCharacteristicsBuilder setAvailableSessionKeys(@Nullable java.util.List<android.hardware.camera2.CaptureRequest.Key<?>>);
-  }
-
-  @FlaggedApi("android.companion.virtualdevice.flags.virtual_camera_metadata") public final class CaptureResultBuilder {
-    ctor public CaptureResultBuilder();
-    ctor public CaptureResultBuilder(@NonNull android.hardware.camera2.CaptureResult);
-    method @NonNull public android.hardware.camera2.CaptureResult build();
-    method @NonNull public <T> android.companion.virtual.camera.CaptureResultBuilder set(@NonNull android.hardware.camera2.CaptureResult.Key<T>, T);
-  }
-
   public final class VirtualCamera implements java.io.Closeable {
     method public void close();
     method @NonNull public android.companion.virtual.camera.VirtualCameraConfig getConfig();
@@ -3783,6 +3765,7 @@ package android.companion.virtual.camera {
     method @FlaggedApi("android.companion.virtualdevice.flags.virtual_camera_metadata") public boolean isPerFrameCameraMetadataEnabled();
     method public void writeToParcel(@NonNull android.os.Parcel, int);
     field @NonNull public static final android.os.Parcelable.Creator<android.companion.virtual.camera.VirtualCameraConfig> CREATOR;
+    field @FlaggedApi("android.companion.virtualdevice.flags.virtual_camera_metadata") public static final android.hardware.camera2.CameraCharacteristics DEFAULT_VIRTUAL_CAMERA_CHARACTERISTICS;
     field public static final int SENSOR_ORIENTATION_0 = 0; // 0x0
     field public static final int SENSOR_ORIENTATION_180 = 180; // 0xb4
     field public static final int SENSOR_ORIENTATION_270 = 270; // 0x10e
@@ -4789,12 +4772,16 @@ package android.content.pm.verify.developer {
     method @NonNull public android.content.pm.SigningInfo getSigningInfo();
     method @NonNull public android.net.Uri getStagedPackageUri();
     method @NonNull public java.time.Instant getTimeoutTime();
+    method public void reportVerificationBypassed(int);
     method public void reportVerificationComplete(@NonNull android.content.pm.verify.developer.DeveloperVerificationStatus);
     method public void reportVerificationComplete(@NonNull android.content.pm.verify.developer.DeveloperVerificationStatus, @NonNull android.os.PersistableBundle);
     method public void reportVerificationIncomplete(int);
     method public boolean setPolicy(int);
     method public void writeToParcel(@NonNull android.os.Parcel, int);
     field @NonNull public static final android.os.Parcelable.Creator<android.content.pm.verify.developer.DeveloperVerificationSession> CREATOR;
+    field public static final int DEVELOPER_VERIFICATION_BYPASSED_REASON_ADB = 1; // 0x1
+    field public static final int DEVELOPER_VERIFICATION_BYPASSED_REASON_EMERGENCY = 2; // 0x2
+    field public static final int DEVELOPER_VERIFICATION_BYPASSED_REASON_TEST = 3; // 0x3
     field public static final int DEVELOPER_VERIFICATION_INCOMPLETE_NETWORK_UNAVAILABLE = 1; // 0x1
     field public static final int DEVELOPER_VERIFICATION_INCOMPLETE_UNKNOWN = 0; // 0x0
   }
@@ -5219,6 +5206,17 @@ package android.hardware.camera2 {
     field @FlaggedApi("com.android.internal.camera.flags.camera_multi_client") @NonNull public static final android.hardware.camera2.CameraCharacteristics.Key<android.hardware.camera2.params.SharedSessionConfiguration> SHARED_SESSION_CONFIGURATION;
   }
 
+  @FlaggedApi("android.companion.virtualdevice.flags.virtual_camera_metadata") public static final class CameraCharacteristics.Builder {
+    ctor public CameraCharacteristics.Builder();
+    ctor public CameraCharacteristics.Builder(@NonNull android.hardware.camera2.CameraCharacteristics);
+    method @NonNull public android.hardware.camera2.CameraCharacteristics build();
+    method @NonNull public <T> android.hardware.camera2.CameraCharacteristics.Builder set(@NonNull android.hardware.camera2.CameraCharacteristics.Key<T>, T);
+    method @NonNull public android.hardware.camera2.CameraCharacteristics.Builder setAvailableCaptureRequestKeys(@Nullable java.util.List<android.hardware.camera2.CaptureRequest.Key<?>>);
+    method @NonNull public android.hardware.camera2.CameraCharacteristics.Builder setAvailableCaptureResultKeys(@Nullable java.util.List<android.hardware.camera2.CaptureResult.Key<?>>);
+    method @NonNull public android.hardware.camera2.CameraCharacteristics.Builder setAvailableCharacteristicsKeys(@Nullable java.util.List<android.hardware.camera2.CameraCharacteristics.Key<?>>);
+    method @NonNull public android.hardware.camera2.CameraCharacteristics.Builder setAvailableSessionKeys(@Nullable java.util.List<android.hardware.camera2.CaptureRequest.Key<?>>);
+  }
+
   public abstract class CameraDevice implements java.lang.AutoCloseable {
     method @Deprecated public abstract void createCustomCaptureSession(android.hardware.camera2.params.InputConfiguration, @NonNull java.util.List<android.hardware.camera2.params.OutputConfiguration>, int, @NonNull android.hardware.camera2.CameraCaptureSession.StateCallback, @Nullable android.os.Handler) throws android.hardware.camera2.CameraAccessException;
     field public static final int SESSION_OPERATION_MODE_CONSTRAINED_HIGH_SPEED = 1; // 0x1
@@ -5247,6 +5245,13 @@ package android.hardware.camera2 {
     ctor public CameraSharedCaptureSession();
     method @FlaggedApi("com.android.internal.camera.flags.camera_multi_client") public abstract int startStreaming(@NonNull java.util.List<android.view.Surface>, @NonNull java.util.concurrent.Executor, @NonNull android.hardware.camera2.CameraCaptureSession.CaptureCallback) throws android.hardware.camera2.CameraAccessException;
     method @FlaggedApi("com.android.internal.camera.flags.camera_multi_client") public abstract void stopStreaming() throws android.hardware.camera2.CameraAccessException;
+  }
+
+  @FlaggedApi("android.companion.virtualdevice.flags.virtual_camera_metadata") public static final class CaptureResult.Builder {
+    ctor public CaptureResult.Builder();
+    ctor public CaptureResult.Builder(@NonNull android.hardware.camera2.CaptureResult);
+    method @NonNull public android.hardware.camera2.CaptureResult build();
+    method @NonNull public <T> android.hardware.camera2.CaptureResult.Builder set(@NonNull android.hardware.camera2.CaptureResult.Key<T>, T);
   }
 
 }
@@ -15183,6 +15188,7 @@ package android.telecom {
     field @Deprecated public static final String EXTRA_CLEAR_MISSED_CALLS_INTENT = "android.telecom.extra.CLEAR_MISSED_CALLS_INTENT";
     field public static final String EXTRA_CONNECTION_SERVICE = "android.telecom.extra.CONNECTION_SERVICE";
     field public static final String EXTRA_CURRENT_TTY_MODE = "android.telecom.extra.CURRENT_TTY_MODE";
+    field @FlaggedApi("com.android.server.telecom.flags.promote_extra_do_not_log_call_to_system_api") @RequiresPermission(android.Manifest.permission.MODIFY_PHONE_STATE) public static final String EXTRA_DO_NOT_LOG_CALL = "android.telecom.extra.DO_NOT_LOG_CALL";
     field public static final String EXTRA_IS_USER_INTENT_EMERGENCY_CALL = "android.telecom.extra.IS_USER_INTENT_EMERGENCY_CALL";
     field public static final String EXTRA_TTY_PREFERRED_MODE = "android.telecom.extra.TTY_PREFERRED_MODE";
     field public static final String EXTRA_UNKNOWN_CALL_HANDLE = "android.telecom.extra.UNKNOWN_CALL_HANDLE";

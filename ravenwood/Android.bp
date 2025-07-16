@@ -132,6 +132,11 @@ java_library {
         "ravenwood-androidx",
         "ravenwood-common-utils",
         "ravenwood-libcore",
+        "ow2-asm",
+        "ow2-asm-analysis",
+        "ow2-asm-commons",
+        "ow2-asm-tree",
+        "ow2-asm-util",
     ],
     libs: [
         "framework-configinfrastructure.ravenwood",

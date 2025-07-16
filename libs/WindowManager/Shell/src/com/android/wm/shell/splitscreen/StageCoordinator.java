@@ -267,7 +267,8 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
     private boolean mShouldUpdateRecents = true;
     private boolean mExitSplitScreenOnHide;
     private boolean mIsDividerRemoteAnimating;
-    private boolean mIsDropEntering;
+    private boolean mIsDropEnteringSplitInvisible;
+    private boolean mIsDropEnteringSplitVisible;
     private boolean mSkipEvictingMainStageChildren;
     private boolean mIsExiting;
     private boolean mIsRootTranslucent;
@@ -713,10 +714,10 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
                 null, this,
                 isSplitScreenVisible()
                         ? TRANSIT_SPLIT_SCREEN_OPEN_TO_SIDE : TRANSIT_SPLIT_SCREEN_PAIR_OPEN,
-                !mIsDropEntering, SNAP_TO_2_50_50);
+                !mIsDropEnteringSplitInvisible, SNAP_TO_2_50_50);
 
         // Due to drag already pip task entering split by this method so need to reset flag here.
-        mIsDropEntering = false;
+        mIsDropEnteringSplitInvisible = false;
         mSkipEvictingMainStageChildren = false;
         return true;
     }
@@ -836,10 +837,12 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
         // If split screen is not activated, we're expecting to open a pair of apps to split.
         final int extraTransitType = isSplitActive()
                 ? TRANSIT_SPLIT_SCREEN_OPEN_TO_SIDE : TRANSIT_SPLIT_SCREEN_PAIR_OPEN;
-        prepareEnterSplitScreen(wct, null /* taskInfo */, position, !mIsDropEntering, index);
+        final boolean resizeAnim = shouldPlayResizeAnimation(position);
+        prepareEnterSplitScreen(wct, null /* taskInfo */, position,
+                resizeAnim, index);
 
         mSplitTransitions.startEnterTransition(TRANSIT_TO_FRONT, wct, null, this,
-                extraTransitType, !mIsDropEntering, SNAP_TO_2_50_50);
+                extraTransitType, resizeAnim, resolveEffectiveSnapPosition());
     }
 
     /**
@@ -890,10 +893,13 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
         // If split screen is not activated, we're expecting to open a pair of apps to split.
         final int extraTransitType = isSplitActive()
                 ? TRANSIT_SPLIT_SCREEN_OPEN_TO_SIDE : TRANSIT_SPLIT_SCREEN_PAIR_OPEN;
-        prepareEnterSplitScreen(wct, null /* taskInfo */, position, !mIsDropEntering, index);
+
+        final boolean resizeAnim = shouldPlayResizeAnimation(position);
+        prepareEnterSplitScreen(wct, null /* taskInfo */, position,
+                resizeAnim, index);
 
         mSplitTransitions.startEnterTransition(TRANSIT_TO_FRONT, wct, null, this,
-                extraTransitType, !mIsDropEntering, SNAP_TO_2_50_50);
+                extraTransitType, resizeAnim, resolveEffectiveSnapPosition());
     }
 
     /**
@@ -1060,6 +1066,54 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
 
         startWithTask(wct, taskId, outOptions[0], snapPosition, remoteTransition, instanceId,
                 splitPosition);
+    }
+
+    /**
+     * Determines whether a resize animation should be played.
+     * A resize animation is only played when dropping an app into the smaller, 10 ratio
+     * side of an existing 10:90 or 90:10 split layout.
+     *
+     * @param dropPosition The intended position (SPLIT_POSITION_TOP_OR_LEFT,
+     *                     SPLIT_POSITION_BOTTOM_OR_RIGHT) for the new task.
+     * @return {@code true} if a resize animation should be played, {@code false} otherwise.
+     */
+    private boolean shouldPlayResizeAnimation(@SplitPosition int dropPosition) {
+        if (!mIsDropEnteringSplitVisible) {
+            return !mIsDropEnteringSplitInvisible;
+        }
+
+        if (dropPosition == SPLIT_POSITION_UNDEFINED) {
+            return false;
+        }
+
+        final int currentSnapPosition = mSplitLayout.calculateCurrentSnapPosition();
+        final boolean isResizeSplitRatio = (currentSnapPosition == SNAP_TO_2_10_90
+                || currentSnapPosition == SNAP_TO_2_90_10);
+
+        if (!isResizeSplitRatio) {
+            return false;
+        }
+
+        // Play animation only if dropping into the 10 ratio of an 10:90 or 90:10 split:
+        // - Top/Left drop for a 10:90 split (where 10 is Top/Left)
+        // - Bottom/Right drop for a 90:10 split (where 10 is Bottom/Right)
+        return (dropPosition == SPLIT_POSITION_TOP_OR_LEFT
+                && currentSnapPosition == SNAP_TO_2_10_90)
+                || (dropPosition == SPLIT_POSITION_BOTTOM_OR_RIGHT
+                && currentSnapPosition == SNAP_TO_2_90_10);
+    }
+
+    /**
+     * Determines the effective snap position for a split layout operation.
+     * If the drop target is currently visibly entering the split, the method returns the
+     * dynamically calculated current snap position from the layout. Otherwise, it defaults
+     * to a 50:50 split position.
+     *
+     * @return The effective snap position as a {@link PersistentSnapPosition} integer.
+     */
+    private @PersistentSnapPosition int resolveEffectiveSnapPosition() {
+        return mIsDropEnteringSplitVisible
+                ? mSplitLayout.calculateCurrentSnapPosition() : SNAP_TO_2_50_50;
     }
 
     /**
@@ -1923,7 +1977,7 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
     private void prepareEnterSplitScreen(WindowContainerTransaction wct) {
         ProtoLog.d(WM_SHELL_SPLIT_SCREEN, "prepareEnterSplitScreen");
         prepareEnterSplitScreen(wct, null /* taskInfo */, SPLIT_POSITION_UNDEFINED,
-                !mIsDropEntering, SPLIT_INDEX_UNDEFINED);
+                !mIsDropEnteringSplitInvisible, SPLIT_INDEX_UNDEFINED);
     }
 
     /**
@@ -2057,7 +2111,8 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
         updateSurfaceBounds(mSplitLayout, finishT, false /* applyResizingOffset */);
         finishT.show(mSplitMultiDisplayHelper.getDisplayRootTaskLeash(DEFAULT_DISPLAY));
         setSplitsVisible(true);
-        mIsDropEntering = false;
+        mIsDropEnteringSplitInvisible = false;
+        mIsDropEnteringSplitVisible = false;
         mSkipEvictingMainStageChildren = false;
         mSplitRequest = null;
         updateRecentTasksSplitPair();
@@ -2335,8 +2390,8 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
                     sideStageTopTaskId, splitBounds);
             if (added) {
                 ProtoLog.d(WM_SHELL_SPLIT_SCREEN,
-                        "updateRecentTasksSplitPair: adding split pair ltTask="
-                                + leftTopTaskIds + " rbTask=" + rightBottomTaskIds);
+                        "updateRecentTasksSplitPair: adding split pair ltTask=%s rbTask=%s",
+                        leftTopTaskIds, rightBottomTaskIds);
             }
         });
     }
@@ -3168,7 +3223,8 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
                     // split, prepare to enter split screen.
                     prepareEnterSplitScreen(out);
                     mSplitTransitions.setEnterTransition(transition, request.getRemoteTransition(),
-                            TRANSIT_SPLIT_SCREEN_PAIR_OPEN, !mIsDropEntering, SNAP_TO_2_50_50);
+                            TRANSIT_SPLIT_SCREEN_PAIR_OPEN, !mIsDropEnteringSplitInvisible,
+                            SNAP_TO_2_50_50);
                 } else if (enableFlexibleTwoAppSplit() && isSplitScreenVisible() && isOpening) {
                     // launching into an existing split stage; possibly launchAdjacent
                     // If we're replacing a pip-able app, we need to let mixed handler take care of
@@ -3244,7 +3300,8 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
                 out = new WindowContainerTransaction();
                 prepareEnterSplitScreen(out);
                 mSplitTransitions.setEnterTransition(transition, request.getRemoteTransition(),
-                        TRANSIT_SPLIT_SCREEN_PAIR_OPEN, !mIsDropEntering, SNAP_TO_2_50_50);
+                        TRANSIT_SPLIT_SCREEN_PAIR_OPEN, !mIsDropEnteringSplitInvisible,
+                        SNAP_TO_2_50_50);
                 return out;
             }
             ProtoLog.d(WM_SHELL_SPLIT_SCREEN, "handleRequest: transition=%d "
@@ -4012,9 +4069,17 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
             }
             if (enterTransition.mResizeAnim) {
                 mShowDecorImmediately = true;
-                mSplitLayout.flingDividerToCenter(() -> {
-                    notifySplitAnimationStatus(false /*animationRunning*/);
-                });
+
+                final int enteringPosition = enterTransition.mEnteringPosition;
+                final boolean isSwapToFocusTargetSide = (enteringPosition == SNAP_TO_2_90_10
+                        || enteringPosition == SNAP_TO_2_10_90);
+                if (isSwapToFocusTargetSide) {
+                    mSplitLayout.flingDividerToOtherSide(enteringPosition);
+                } else {
+                    mSplitLayout.flingDividerToCenter(() -> {
+                        notifySplitAnimationStatus(false /* animationRunning */);
+                    });
+                }
             }
             int displayId = SplitMultiDisplayHelper.getTransitionDisplayId(info);
             callbackWct.setReparentLeafTaskIfRelaunch(mSplitMultiDisplayHelper
@@ -4533,9 +4598,12 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
     public void onDroppedToSplit(@SplitPosition int position, InstanceId dragSessionId) {
         ProtoLog.d(WM_SHELL_SPLIT_SCREEN, "onDroppedToSplit: position=%d", position);
         if (!isSplitScreenVisible()) {
-            mIsDropEntering = true;
+            mIsDropEnteringSplitInvisible = true;
             mSkipEvictingMainStageChildren = true;
+        } else {
+            mIsDropEnteringSplitVisible = true;
         }
+
         mLogger.enterRequestedByDrag(position, dragSessionId);
     }
 

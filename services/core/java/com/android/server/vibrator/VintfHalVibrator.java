@@ -25,6 +25,7 @@ import android.annotation.Nullable;
 import android.hardware.vibrator.FrequencyAccelerationMapEntry;
 import android.hardware.vibrator.IVibrator;
 import android.os.Binder;
+import android.os.Handler;
 import android.os.IVibratorStateListener;
 import android.os.RemoteCallbackList;
 import android.os.RemoteException;
@@ -56,10 +57,14 @@ class VintfHalVibrator {
         private final Object mLock = new Object();
         private final int mVibratorId;
         private final VintfSupplier<IVibrator> mHalSupplier;
+        private final Handler mHandler;
+        private final HalNativeHandler mNativeHandler;
 
         @GuardedBy("mLock")
         private final RemoteCallbackList<IVibratorStateListener> mVibratorStateListeners =
                 new RemoteCallbackList<>();
+
+        private Callbacks mCallbacks;
 
         // Vibrator state variables that are updated from synchronized blocks but can be read
         // anytime for a snippet of the current known vibrator state/info.
@@ -67,9 +72,12 @@ class VintfHalVibrator {
         private volatile State mCurrentState;
         private volatile float mCurrentAmplitude;
 
-        DefaultHalVibrator(int vibratorId, VintfSupplier<IVibrator> supplier) {
+        DefaultHalVibrator(int vibratorId, VintfSupplier<IVibrator> supplier, Handler handler,
+                HalNativeHandler nativeHandler) {
             mVibratorId = vibratorId;
             mHalSupplier = supplier;
+            mHandler = handler;
+            mNativeHandler = nativeHandler;
             mVibratorInfo = new VibratorInfo.Builder(vibratorId).build();
             mCurrentState = State.IDLE;
             mCurrentAmplitude = 0;
@@ -79,6 +87,7 @@ class VintfHalVibrator {
         public void init(@NonNull Callbacks callbacks) {
             Trace.traceBegin(TRACE_TAG_VIBRATOR, "DefaultHalVibrator#init");
             try {
+                mCallbacks = callbacks;
                 int capabilities = getValue(IVibrator::getCapabilities,
                         "Error loading capabilities during init").orElse(0);
 
@@ -170,7 +179,9 @@ class VintfHalVibrator {
                     boolean result = VintfUtils.runNoThrow(mHalSupplier,
                             hal -> hal.setExternalControl(enabled),
                             e -> logError("Error setting external control to " + enabled, e));
-                    updateStateAndNotifyListenersLocked(newState);
+                    if (result) {
+                        updateStateAndNotifyListenersLocked(newState);
+                    }
                     return result;
                 }
             } finally {
@@ -234,8 +245,30 @@ class VintfHalVibrator {
         public long on(long vibrationId, long stepId, long milliseconds) {
             Trace.traceBegin(TRACE_TAG_VIBRATOR, "DefaultHalVibrator#on");
             try {
-                // TODO(b/422944962): implement
-                return 0;
+                synchronized (mLock) {
+                    boolean result;
+                    if (mVibratorInfo.hasCapability(IVibrator.CAP_ON_CALLBACK)) {
+                        // Delegate vibrate with callback to native, to avoid creating a new
+                        // callback instance for each call, overloading the GC.
+                        result = mNativeHandler.vibrateWithCallback(mVibratorId, vibrationId,
+                                stepId, (int) milliseconds);
+                    } else {
+                        // Vibrate callback not supported, avoid unnecessary JNI round trip and
+                        // simulate HAL callback here using a Handler.
+                        result = VintfUtils.runNoThrow(mHalSupplier,
+                                hal -> hal.on((int) milliseconds, null),
+                                e -> logError("Error turning on for " + milliseconds + "ms", e));
+                        if (result) {
+                            mHandler.postDelayed(newVibrationCallback(vibrationId, stepId),
+                                    milliseconds);
+                        }
+                    }
+                    if (result) {
+                        updateStateAndNotifyListenersLocked(State.VIBRATING);
+                    }
+                    // IVibrator.on API should never be unsupported.
+                    return result ? milliseconds : -1;
+                }
             } finally {
                 Trace.traceEnd(TRACE_TAG_VIBRATOR);
             }
@@ -364,6 +397,10 @@ class VintfHalVibrator {
             } catch (RemoteException | RuntimeException e) {
                 logError("Vibrator state listener failed to call", e);
             }
+        }
+
+        private Runnable newVibrationCallback(long vibrationId, long stepId) {
+            return () -> mCallbacks.onVibrationStepComplete(mVibratorId, vibrationId, stepId);
         }
 
         private VibratorInfo loadVibratorInfo(int vibratorId) {

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.server.am;
+package com.android.server.am.psc;
 
 import static android.app.ActivityManager.PROCESS_CAPABILITY_NONE;
 import static android.app.ActivityManager.PROCESS_STATE_CACHED_EMPTY;
@@ -36,6 +36,7 @@ import android.util.TimeUtils;
 
 import com.android.internal.annotations.CompositeRWLock;
 import com.android.internal.annotations.GuardedBy;
+import com.android.server.am.Flags;
 import com.android.server.am.psc.PlatformCompatCache.CachedCompatChangeId;
 
 import java.io.PrintWriter;
@@ -389,12 +390,6 @@ public final class ProcessStateRecord {
      */
     @GuardedBy("mServiceLock")
     private boolean mRunningRemoteAnimation;
-
-    /**
-     * Keep track of whether we changed 'mSetAdj'.
-     */
-    @CompositeRWLock({"mServiceLock", "mProcLock"})
-    private boolean mHasProcStateChanged;
 
     /**
      * Whether we have told usage stats about it being an interaction.
@@ -965,16 +960,6 @@ public final class ProcessStateRecord {
     @GuardedBy("mServiceLock")
     public void setRunningRemoteAnimation(boolean runningRemoteAnimation) {
         mRunningRemoteAnimation = runningRemoteAnimation;
-    }
-
-    @GuardedBy({"mServiceLock", "mProcLock"})
-    public void setHasProcStateChanged(boolean hasProcStateChanged) {
-        mHasProcStateChanged = hasProcStateChanged;
-    }
-
-    @GuardedBy(anyOf = {"mServiceLock", "mProcLock"})
-    public boolean getHasProcStateChanged() {
-        return mHasProcStateChanged;
     }
 
     @GuardedBy({"mServiceLock", "mProcLock"})

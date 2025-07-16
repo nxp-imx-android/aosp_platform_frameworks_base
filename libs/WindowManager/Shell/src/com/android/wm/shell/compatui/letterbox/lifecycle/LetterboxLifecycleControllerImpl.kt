@@ -37,8 +37,9 @@ class LetterboxLifecycleControllerImpl(
         // Each [LetterboxController] will handle its own Surfaces and will be responsible to
         // avoid the creation happens twice or that some visibility/size change operation
         // happens on missing surfaces.
+        val isLetterboxed = event.letterboxBounds?.isEmpty == false
         with(letterboxController) {
-            if (event.letterboxBounds != null) {
+            if (isLetterboxed) {
                 // In this case the top Activity is letterboxed.
                 event.taskLeash?.let { taskLeash ->
                     letterboxModeStrategy.configureLetterboxMode(event)
@@ -53,20 +54,22 @@ class LetterboxLifecycleControllerImpl(
             updateLetterboxSurfaceVisibility(
                 key,
                 startTransaction,
-                visible = event.letterboxBounds != null
+                visible = isLetterboxed
             )
             // This happens after the visibility update because it needs to
             // check if the surfaces to show have empty bounds. When that happens
             // the clipAndCrop() doesn't actually work because cropping an empty
             // Rect means "do not crop" with the result of a surface filling the
             // task completely.
-            if (event.letterboxBounds != null) {
-                updateLetterboxSurfaceBounds(
-                    key,
-                    startTransaction,
-                    event.taskBounds,
-                    event.letterboxBounds
-                )
+            if (isLetterboxed) {
+                event.letterboxBounds?.let { activityBounds ->
+                    updateLetterboxSurfaceBounds(
+                        key,
+                        startTransaction,
+                        event.taskBounds,
+                        activityBounds
+                    )
+                }
             }
         }
     }

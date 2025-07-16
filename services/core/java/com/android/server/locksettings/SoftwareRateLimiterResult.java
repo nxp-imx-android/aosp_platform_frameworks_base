@@ -27,14 +27,16 @@ import java.time.Duration;
 /** The result from the {@link SoftwareRateLimiter} */
 class SoftwareRateLimiterResult {
     public static final int CREDENTIAL_TOO_SHORT = 0;
-    public static final int RATE_LIMITED = 1;
-    public static final int DUPLICATE_WRONG_GUESS = 2;
-    public static final int CONTINUE_TO_HARDWARE = 3;
+    public static final int NO_MORE_GUESSES = 1;
+    public static final int RATE_LIMITED = 2;
+    public static final int DUPLICATE_WRONG_GUESS = 3;
+    public static final int CONTINUE_TO_HARDWARE = 4;
 
     @Retention(RetentionPolicy.SOURCE)
     @IntDef(
             value = {
                 CREDENTIAL_TOO_SHORT,
+                NO_MORE_GUESSES,
                 RATE_LIMITED,
                 DUPLICATE_WRONG_GUESS,
                 CONTINUE_TO_HARDWARE,
@@ -65,6 +67,10 @@ class SoftwareRateLimiterResult {
 
     static SoftwareRateLimiterResult credentialTooShort() {
         return new SoftwareRateLimiterResult(CREDENTIAL_TOO_SHORT, null);
+    }
+
+    static SoftwareRateLimiterResult noMoreGuesses() {
+        return new SoftwareRateLimiterResult(NO_MORE_GUESSES, null);
     }
 
     static SoftwareRateLimiterResult rateLimited(@NonNull Duration remainingDelay) {

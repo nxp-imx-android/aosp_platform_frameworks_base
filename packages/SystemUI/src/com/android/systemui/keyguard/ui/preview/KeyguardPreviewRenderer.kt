@@ -46,6 +46,7 @@ import androidx.constraintlayout.widget.ConstraintSet.TOP
 import androidx.core.view.isInvisible
 import com.android.app.tracing.coroutines.runBlockingTraced as runBlocking
 import com.android.keyguard.ClockEventController
+import com.android.systemui.Flags
 import com.android.systemui.animation.view.LaunchableImageView
 import com.android.systemui.biometrics.domain.interactor.UdfpsOverlayInteractor
 import com.android.systemui.broadcast.BroadcastDispatcher
@@ -122,7 +123,7 @@ constructor(
     private val keyguardQuickAffordanceViewBinder: KeyguardQuickAffordanceViewBinder,
     private val wallpaperFocalAreaInteractor: WallpaperFocalAreaInteractor,
 ) {
-    private var host: SurfaceControlViewHost
+    private lateinit var host: SurfaceControlViewHost
 
     private var _surfacePackage: SurfaceControlViewHost.SurfacePackage? = null
     val surfacePackage: SurfaceControlViewHost.SurfacePackage
@@ -148,19 +149,29 @@ constructor(
             shouldHighlightSelectedAffordance = previewViewModel.shouldHighlightSelectedAffordance,
         )
 
-        runBlocking(context = mainDispatcher) {
-            host =
-                SurfaceControlViewHost(
-                    context,
-                    displayManager.getDisplay(DEFAULT_DISPLAY),
-                    previewViewModel.hostToken?.let { InputTransferToken(it) },
-                    TAG,
-                )
-            disposables += DisposableHandle {
-                _surfacePackage?.release()
-                _surfacePackage = null
-                host.release()
+        if (Flags.doNotUseRunBlocking()) {
+            mainHandler.post {
+                provideSurfaceControlViewHost(displayManager)
             }
+        } else {
+            runBlocking(context = mainDispatcher) {
+                provideSurfaceControlViewHost(displayManager)
+            }
+        }
+    }
+
+    private fun provideSurfaceControlViewHost(displayManager: DisplayManager) {
+        host =
+            SurfaceControlViewHost(
+                context,
+                displayManager.getDisplay(DEFAULT_DISPLAY),
+                previewViewModel.hostToken?.let { InputTransferToken(it) },
+                TAG,
+            )
+        disposables += DisposableHandle {
+            _surfacePackage?.release()
+            _surfacePackage = null
+            host.release()
         }
     }
 

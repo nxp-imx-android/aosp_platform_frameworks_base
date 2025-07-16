@@ -20,6 +20,7 @@ import android.testing.AndroidTestingRunner
 import android.view.WindowManager
 import android.window.TransitionInfo.FLAG_TRANSLUCENT
 import androidx.test.filters.SmallTest
+import com.android.wm.shell.ShellTestCase
 import com.android.wm.shell.compatui.letterbox.lifecycle.LetterboxLifecycleEventType.CLOSE
 import com.android.wm.shell.compatui.letterbox.lifecycle.LetterboxLifecycleEventType.OPEN
 import com.android.wm.shell.util.testLetterboxLifecycleEvent
@@ -37,7 +38,7 @@ import org.junit.runner.RunWith
  */
 @RunWith(AndroidTestingRunner::class)
 @SmallTest
-class LetterboxLifecycleEventTest {
+class LetterboxLifecycleEventTest : ShellTestCase() {
 
     @Test
     fun `asLetterboxLifecycleEventType returns the right type for OPEN modes`() {
@@ -136,18 +137,37 @@ class LetterboxLifecycleEventTest {
     }
 
     @Test
+    fun `isChangeForALeafTask returns true if the Change has Activity target`() {
+        testLetterboxLifecycleEvent {
+            inputChange {
+            }
+            useChange { change ->
+                assertFalse(change.isChangeForALeafTask())
+            }
+
+            inputChange {
+                activityTransitionInfo {
+                }
+            }
+            useChange { change ->
+                assertTrue(change.isChangeForALeafTask())
+            }
+        }
+    }
+
+    @Test
     fun `isTranslucent returns true if the FLAG_TRANSLUCENT flag is present in Change`() {
         testLetterboxLifecycleEvent {
             inputChange { }
             useChange { change ->
-                assert(!change.isTranslucent())
+                assertFalse(change.isTranslucent())
             }
 
             inputChange {
                 flags = FLAG_TRANSLUCENT
             }
             useChange { change ->
-                assert(!change.isTranslucent())
+                assertTrue(change.isTranslucent())
             }
         }
     }

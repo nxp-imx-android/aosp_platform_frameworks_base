@@ -894,8 +894,7 @@ public class NotificationAssistantsTest extends UiServiceTestCase {
         writeXmlAndReload(USER_ALL);
 
         assertThat(mAssistants.getAllowedClassificationTypes(mZero.id)).asList()
-                .containsExactlyElementsIn(List.of(TYPE_PROMOTION, TYPE_NEWS, TYPE_SOCIAL_MEDIA,
-                        TYPE_CONTENT_RECOMMENDATION));
+                .containsExactlyElementsIn(List.of(TYPE_PROMOTION, TYPE_NEWS));
     }
 
     @Test

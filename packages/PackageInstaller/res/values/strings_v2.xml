@@ -19,7 +19,7 @@
     <!-- TODO(b/274120822): Add product configs for required strings -->
 
     <!-- Dialog Titles -->
-    <string name="title_unknown_source_blocked">Install unknown apps</string>
+    <string name="title_unknown_source_blocked">Permission required</string>
     <string name="title_anonymous_source_warning">Install unknown app?</string>
     <string name="title_install_blocked">Install blocked</string>
 

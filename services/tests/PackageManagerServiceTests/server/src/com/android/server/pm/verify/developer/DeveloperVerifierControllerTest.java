@@ -18,6 +18,7 @@ package com.android.server.pm.verify.developer;
 
 import static android.content.pm.PackageInstaller.DEVELOPER_VERIFICATION_POLICY_BLOCK_FAIL_CLOSED;
 import static android.content.pm.PackageInstaller.DEVELOPER_VERIFICATION_POLICY_BLOCK_FAIL_OPEN;
+import static android.content.pm.verify.developer.DeveloperVerificationSession.DEVELOPER_VERIFICATION_BYPASSED_REASON_EMERGENCY;
 import static android.os.Process.INVALID_UID;
 
 import static com.google.common.truth.Truth.assertThat;
@@ -278,17 +279,10 @@ public class DeveloperVerifierControllerTest {
 
     @Test
     public void testStartVerificationSession() throws Exception {
-        ArgumentCaptor<DeveloperVerificationSession> captor =
-                ArgumentCaptor.forClass(DeveloperVerificationSession.class);
-        assertThat(mDeveloperVerifierController.startVerificationSession(
-                mSnapshotSupplier, 0, TEST_ID, TEST_PACKAGE_NAME, TEST_PACKAGE_URI,
-                TEST_SIGNING_INFO, mTestDeclaredLibraries, TEST_POLICY, mTestExtensionParams,
-                mSessionCallback, /* retry= */ false)).isTrue();
+        final DeveloperVerificationSession session = setUpSession();
         // Test the auto-disconnect job is canceled when the request is sent out
         verify(mInjector, times(1)).removeCallbacks(eq(mHandler), any(Runnable.class));
-        // Test that the remote service has received the request with correct params
-        verify(mMockService).onVerificationRequired(captor.capture());
-        DeveloperVerificationSession session = captor.getValue();
+
         assertThat(session.getId()).isEqualTo(TEST_ID);
         assertThat(session.getInstallSessionId()).isEqualTo(TEST_ID);
         assertThat(session.getPackageName()).isEqualTo(TEST_PACKAGE_NAME);
@@ -416,15 +410,8 @@ public class DeveloperVerifierControllerTest {
 
     @Test
     public void testRequestIncomplete() throws Exception {
-        ArgumentCaptor<DeveloperVerificationSession> captor =
-                ArgumentCaptor.forClass(DeveloperVerificationSession.class);
-        assertThat(mDeveloperVerifierController.startVerificationSession(
-                mSnapshotSupplier, 0, TEST_ID, TEST_PACKAGE_NAME, TEST_PACKAGE_URI,
-                TEST_SIGNING_INFO, mTestDeclaredLibraries, TEST_POLICY, mTestExtensionParams,
-                mSessionCallback, /* retry= */ false)).isTrue();
         ArgumentCaptor<Runnable> runnableCaptor = ArgumentCaptor.forClass(Runnable.class);
-        verify(mMockService).onVerificationRequired(captor.capture());
-        DeveloperVerificationSession session = captor.getValue();
+        final DeveloperVerificationSession session = setUpSession();
         session.reportVerificationIncomplete(
                 DeveloperVerificationSession.DEVELOPER_VERIFICATION_INCOMPLETE_UNKNOWN);
         verify(mSessionCallback, times(1)).onVerificationIncompleteReceived(
@@ -440,15 +427,8 @@ public class DeveloperVerifierControllerTest {
 
     @Test
     public void testRequestCompleteWithSuccessWithExtensionResponse() throws Exception {
-        ArgumentCaptor<DeveloperVerificationSession> captor =
-                ArgumentCaptor.forClass(DeveloperVerificationSession.class);
-        assertThat(mDeveloperVerifierController.startVerificationSession(
-                mSnapshotSupplier, 0, TEST_ID, TEST_PACKAGE_NAME, TEST_PACKAGE_URI,
-                TEST_SIGNING_INFO, mTestDeclaredLibraries, TEST_POLICY, mTestExtensionParams,
-                mSessionCallback, /* retry= */ false)).isTrue();
         ArgumentCaptor<Runnable> runnableCaptor = ArgumentCaptor.forClass(Runnable.class);
-        verify(mMockService).onVerificationRequired(captor.capture());
-        DeveloperVerificationSession session = captor.getValue();
+        final DeveloperVerificationSession session = setUpSession();
         DeveloperVerificationStatus status = new DeveloperVerificationStatus.Builder().setVerified(
                 true).build();
         PersistableBundle bundle = new PersistableBundle();
@@ -466,15 +446,8 @@ public class DeveloperVerifierControllerTest {
 
     @Test
     public void testRequestCompleteWithFailure() throws Exception {
-        ArgumentCaptor<DeveloperVerificationSession> captor =
-                ArgumentCaptor.forClass(DeveloperVerificationSession.class);
-        assertThat(mDeveloperVerifierController.startVerificationSession(
-                mSnapshotSupplier, 0, TEST_ID, TEST_PACKAGE_NAME, TEST_PACKAGE_URI,
-                TEST_SIGNING_INFO, mTestDeclaredLibraries, TEST_POLICY, mTestExtensionParams,
-                mSessionCallback, /* retry= */ false)).isTrue();
         ArgumentCaptor<Runnable> runnableCaptor = ArgumentCaptor.forClass(Runnable.class);
-        verify(mMockService).onVerificationRequired(captor.capture());
-        DeveloperVerificationSession session = captor.getValue();
+        final DeveloperVerificationSession session = setUpSession();
         DeveloperVerificationStatus status = new DeveloperVerificationStatus.Builder()
                 .setVerified(false)
                 .setFailureMessage(TEST_FAILURE_MESSAGE)
@@ -493,14 +466,7 @@ public class DeveloperVerifierControllerTest {
 
     @Test
     public void testRepeatedRequestCompleteShouldThrow() throws Exception {
-        ArgumentCaptor<DeveloperVerificationSession> captor =
-                ArgumentCaptor.forClass(DeveloperVerificationSession.class);
-        assertThat(mDeveloperVerifierController.startVerificationSession(
-                mSnapshotSupplier, 0, TEST_ID, TEST_PACKAGE_NAME, TEST_PACKAGE_URI,
-                TEST_SIGNING_INFO, mTestDeclaredLibraries, TEST_POLICY, mTestExtensionParams,
-                mSessionCallback, /* retry= */ false)).isTrue();
-        verify(mMockService).onVerificationRequired(captor.capture());
-        DeveloperVerificationSession session = captor.getValue();
+        final DeveloperVerificationSession session = setUpSession();
         DeveloperVerificationStatus status = new DeveloperVerificationStatus.Builder().setVerified(
                 true).build();
         session.reportVerificationComplete(status);
@@ -511,15 +477,128 @@ public class DeveloperVerifierControllerTest {
     }
 
     @Test
-    public void testExtendTimeRemaining() throws Exception {
+    public void testRequestBypassedWithIllegalArgumentThrows() throws Exception {
+        final DeveloperVerificationSession session = setUpSession();
+        // Reason cannot be negative
+        expectThrows(IllegalArgumentException.class,
+                () -> session.reportVerificationBypassed(-1));
+        // Reason cannot be 0
+        expectThrows(IllegalArgumentException.class,
+                () -> session.reportVerificationBypassed(0));
+    }
+
+    @Test
+    public void testRequestedBypassedWithUndefinedReason() throws Exception {
+        final DeveloperVerificationSession session = setUpSession();
+        int randomReasonCode = 200;
+        session.reportVerificationBypassed(randomReasonCode); // random reason code
+        verify(mSessionCallback, times(1)).onVerificationBypassedReceived(
+                eq(randomReasonCode));
+    }
+
+    @Test
+    public void testRequestedBypassedWithMaxReasonCode() throws Exception {
+        final DeveloperVerificationSession session = setUpSession();
+        session.reportVerificationBypassed(Integer.MAX_VALUE);
+        verify(mSessionCallback, times(1)).onVerificationBypassedReceived(
+                eq(Integer.MAX_VALUE));
+    }
+
+    @Test
+    public void testRequestBypassed() throws Exception {
+        ArgumentCaptor<Runnable> runnableCaptor = ArgumentCaptor.forClass(Runnable.class);
+        final DeveloperVerificationSession session = setUpSession();
+        session.reportVerificationBypassed(DEVELOPER_VERIFICATION_BYPASSED_REASON_EMERGENCY);
+        verify(mSessionCallback, times(1)).onVerificationBypassedReceived(
+                eq(DEVELOPER_VERIFICATION_BYPASSED_REASON_EMERGENCY));
+        verify(mInjector, times(1)).stopTimeoutCountdown(eq(mHandler), any());
+        // Test that the countdown to auto-disconnect has started
+        verify(mInjector, times(2)).removeCallbacks(eq(mHandler),
+                runnableCaptor.capture());
+        Runnable autoDisconnectRunnable = runnableCaptor.getValue();
+        verify(mHandler, times(1)).sendMessageAtTime(
+                argThat(argument -> argument.getCallback() == autoDisconnectRunnable), anyLong());
+    }
+
+    @Test
+    public void testRequestBypassedAfterRequestCompleteShouldThrow() throws Exception {
+        final DeveloperVerificationSession session = setUpSession();
+        DeveloperVerificationStatus status = new DeveloperVerificationStatus.Builder().setVerified(
+                true).build();
+        session.reportVerificationComplete(status);
+        // Report bypass after reporting complete should fail with exception
+        expectThrows(IllegalStateException.class, () -> session.reportVerificationBypassed(
+                DEVELOPER_VERIFICATION_BYPASSED_REASON_EMERGENCY));
+    }
+
+    @Test
+    public void testRequestBypassedAfterRequestTimeoutShouldThrow() throws Exception {
+        // Let the mock handler set request to TIMEOUT, immediately after the request is sent.
+        // We can't mock postDelayed because it's final, but we can mock the method it calls.
+        when(mHandler.sendMessageAtTime(
+                argThat(argument -> argument.obj != null), anyLong())).thenAnswer(i -> {
+                    ((Message) i.getArguments()[0]).getCallback().run();
+                    return true;
+                });
+        final DeveloperVerificationSession session = setUpSession();
+        verify(mSessionCallback, times(1)).onTimeout();
+        // Report bypass after session timeout should fail with exception
+        expectThrows(IllegalStateException.class, () -> session.reportVerificationBypassed(
+                DEVELOPER_VERIFICATION_BYPASSED_REASON_EMERGENCY));
+    }
+
+    @Test
+    public void testRequestBypassedAfterRequestIncompleteShouldThrow() throws Exception {
+        final DeveloperVerificationSession session = setUpSession();
+        session.reportVerificationIncomplete(
+                DeveloperVerificationSession.DEVELOPER_VERIFICATION_INCOMPLETE_UNKNOWN);
+        // Report bypass after reporting incomplete should fail with exception
+        expectThrows(IllegalStateException.class, () -> session.reportVerificationBypassed(
+                DEVELOPER_VERIFICATION_BYPASSED_REASON_EMERGENCY));
+    }
+
+    @Test
+    public void testRequestBypassedAfterRequestBypassedShouldThrow() throws Exception {
+        final DeveloperVerificationSession session = setUpSession();
+        session.reportVerificationBypassed(DEVELOPER_VERIFICATION_BYPASSED_REASON_EMERGENCY);
+        // Report bypass after reporting bypass should fail with exception
+        expectThrows(IllegalStateException.class, () -> session.reportVerificationBypassed(
+                DEVELOPER_VERIFICATION_BYPASSED_REASON_EMERGENCY));
+    }
+
+    @Test
+    public void testRequestCompletedAfterRequestBypassedShouldThrow() throws Exception {
+        final DeveloperVerificationSession session = setUpSession();
+        session.reportVerificationBypassed(DEVELOPER_VERIFICATION_BYPASSED_REASON_EMERGENCY);
+        // Report complete after reporting bypass should fail with exception
+        expectThrows(IllegalStateException.class, () -> session.reportVerificationComplete(
+                new DeveloperVerificationStatus.Builder().setVerified(true).build()));
+    }
+
+    @Test
+    public void testRequestIncompleteAfterRequestBypassedShouldThrow() throws Exception {
+        final DeveloperVerificationSession session = setUpSession();
+        session.reportVerificationBypassed(DEVELOPER_VERIFICATION_BYPASSED_REASON_EMERGENCY);
+        // Report incomplete after reporting bypass should fail with exception
+        expectThrows(IllegalStateException.class, () -> session.reportVerificationIncomplete(
+                DeveloperVerificationSession.DEVELOPER_VERIFICATION_INCOMPLETE_UNKNOWN));
+    }
+
+    private DeveloperVerificationSession setUpSession() throws Exception {
         ArgumentCaptor<DeveloperVerificationSession> captor =
                 ArgumentCaptor.forClass(DeveloperVerificationSession.class);
-        mDeveloperVerifierController.startVerificationSession(
+        assertThat(mDeveloperVerifierController.startVerificationSession(
                 mSnapshotSupplier, 0, TEST_ID, TEST_PACKAGE_NAME, TEST_PACKAGE_URI,
                 TEST_SIGNING_INFO, mTestDeclaredLibraries, TEST_POLICY, mTestExtensionParams,
-                mSessionCallback, /* retry= */ false);
+                mSessionCallback, /* retry= */ false)).isTrue();
         verify(mMockService).onVerificationRequired(captor.capture());
-        DeveloperVerificationSession session = captor.getValue();
+        return captor.getValue();
+    }
+
+
+    @Test
+    public void testExtendTimeRemaining() throws Exception {
+        final DeveloperVerificationSession session = setUpSession();
         final long initialTimeoutTime = TEST_REQUEST_START_TIME + TEST_TIMEOUT_DURATION_MILLIS;
         assertThat(session.getTimeoutTime().toEpochMilli()).isEqualTo(initialTimeoutTime);
         final long extendTimeMillis = TEST_TIMEOUT_DURATION_MILLIS;
@@ -532,14 +611,7 @@ public class DeveloperVerifierControllerTest {
 
     @Test
     public void testExtendTimeExceedsMax() throws Exception {
-        ArgumentCaptor<DeveloperVerificationSession> captor =
-                ArgumentCaptor.forClass(DeveloperVerificationSession.class);
-        mDeveloperVerifierController.startVerificationSession(
-                mSnapshotSupplier, 0, TEST_ID, TEST_PACKAGE_NAME, TEST_PACKAGE_URI,
-                TEST_SIGNING_INFO, mTestDeclaredLibraries, TEST_POLICY, mTestExtensionParams,
-                mSessionCallback, /* retry= */ false);
-        verify(mMockService).onVerificationRequired(captor.capture());
-        DeveloperVerificationSession session = captor.getValue();
+        final DeveloperVerificationSession session = setUpSession();
         final long initialTimeoutTime = TEST_REQUEST_START_TIME + TEST_TIMEOUT_DURATION_MILLIS;
         final long maxTimeoutTime = TEST_REQUEST_START_TIME + TEST_MAX_TIMEOUT_DURATION_MILLIS;
         assertThat(session.getTimeoutTime().toEpochMilli()).isEqualTo(initialTimeoutTime);
@@ -584,14 +656,7 @@ public class DeveloperVerifierControllerTest {
 
     @Test
     public void testPolicyOverride() throws Exception {
-        ArgumentCaptor<DeveloperVerificationSession> captor =
-                ArgumentCaptor.forClass(DeveloperVerificationSession.class);
-        mDeveloperVerifierController.startVerificationSession(
-                mSnapshotSupplier, 0, TEST_ID, TEST_PACKAGE_NAME, TEST_PACKAGE_URI,
-                TEST_SIGNING_INFO, mTestDeclaredLibraries, TEST_POLICY, mTestExtensionParams,
-                mSessionCallback, /* retry= */ false);
-        verify(mMockService).onVerificationRequired(captor.capture());
-        DeveloperVerificationSession session = captor.getValue();
+        final DeveloperVerificationSession session = setUpSession();
         final int policy = DEVELOPER_VERIFICATION_POLICY_BLOCK_FAIL_OPEN;
         when(mSessionCallback.onVerificationPolicyOverridden(eq(policy))).thenReturn(true);
         assertThat(session.setPolicy(policy)).isTrue();
@@ -645,14 +710,7 @@ public class DeveloperVerifierControllerTest {
     @Test
     public void testAutoDisconnectMultiUser() throws Exception {
         // First send out request for user 0
-        ArgumentCaptor<DeveloperVerificationSession> captor =
-                ArgumentCaptor.forClass(DeveloperVerificationSession.class);
-        assertThat(mDeveloperVerifierController.startVerificationSession(
-                mSnapshotSupplier, /* userId= */ 0, TEST_ID, TEST_PACKAGE_NAME, TEST_PACKAGE_URI,
-                TEST_SIGNING_INFO, mTestDeclaredLibraries, TEST_POLICY, mTestExtensionParams,
-                mSessionCallback, /* retry= */ false)).isTrue();
-        verify(mMockService).onVerificationRequired(captor.capture());
-        DeveloperVerificationSession session = captor.getValue();
+        final DeveloperVerificationSession session = setUpSession();
 
         // Then send out request for user 10
         ArgumentCaptor<DeveloperVerificationSession> captorSecondaryUser =

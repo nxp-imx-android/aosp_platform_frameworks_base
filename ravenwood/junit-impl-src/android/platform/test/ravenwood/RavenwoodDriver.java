@@ -260,7 +260,7 @@ public class RavenwoodDriver {
         RavenwoodNativeLoader.loadFrameworkNativeCode();
 
         // Start method logging.
-        RavenwoodMethodCallLogger.enable(sRawStdOut);
+        RavenwoodMethodCallLogger.getInstance().enable(sRawStdOut);
 
         // Touch some references early to ensure they're <clinit>'ed
         Objects.requireNonNull(Build.TYPE);

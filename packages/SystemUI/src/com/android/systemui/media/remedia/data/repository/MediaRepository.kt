@@ -127,9 +127,7 @@ constructor(
         val sortedMap = TreeMap<MediaSortKeyModel, MediaDataModel>(comparator)
         val currentModel = sortedMedia.values.find { it.instanceId == data.instanceId }
 
-        sortedMap.putAll(
-            sortedMedia.filter { (keyModel, _) -> keyModel.instanceId != data.instanceId }
-        )
+        sortedMap.putAll(sortedMedia.filter { (_, model) -> model.instanceId != data.instanceId })
 
         mutableUserEntries.value[data.instanceId]?.let { mediaData ->
             with(mediaData) {
@@ -186,7 +184,9 @@ constructor(
     private fun removeFromSortedMedia(data: MediaData) {
         currentMedia.removeIf { model -> data.instanceId == model.instanceId }
         sortedMedia =
-            TreeMap(sortedMedia.filter { (keyModel, _) -> keyModel.instanceId != data.instanceId })
+            TreeMap<MediaSortKeyModel, MediaDataModel>(comparator).apply {
+                putAll(sortedMedia.filter { (_, model) -> model.instanceId != data.instanceId })
+            }
         clearControllerState(data.instanceId)
     }
 
@@ -437,9 +437,7 @@ constructor(
                 ?.let {
                     val sortedMap = TreeMap<MediaSortKeyModel, MediaDataModel>(comparator)
                     sortedMap.putAll(
-                        sortedMedia.filter { (keyModel, _) ->
-                            keyModel.instanceId != newModel.instanceId
-                        }
+                        sortedMedia.filter { (_, model) -> model.instanceId != newModel.instanceId }
                     )
                     sortedMap[it] = newModel
                     sortedMedia = sortedMap

@@ -165,3 +165,10 @@ flag {
     description: "Flag for restricting implicit URI grants on Send action intents"
     bug: "295238578"
 }
+
+flag {
+    name: "fail_on_parcel_size_mismatch"
+    namespace: "responsible_apis"
+    description: "Flag for failing instead of logging in case of parcel size mismatches"
+    bug: "416031865"
+}

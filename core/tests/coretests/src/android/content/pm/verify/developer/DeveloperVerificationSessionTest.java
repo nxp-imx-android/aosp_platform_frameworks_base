@@ -165,6 +165,12 @@ public class DeveloperVerificationSessionTest {
         mTestSession.reportVerificationIncomplete(reason);
         verify(mTestSessionInterface, times(1)).reportVerificationIncomplete(
                 eq(TEST_ID), eq(reason));
+
+        final int bypassReason =
+                DeveloperVerificationSession.DEVELOPER_VERIFICATION_BYPASSED_REASON_ADB;
+        mTestSession.reportVerificationBypassed(bypassReason);
+        verify(mTestSessionInterface, times(1)).reportVerificationBypassed(
+                eq(TEST_ID), eq(bypassReason));
     }
 
     @Test

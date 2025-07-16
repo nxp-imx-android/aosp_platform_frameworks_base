@@ -421,6 +421,13 @@ flag {
 }
 
 flag {
+    name: "status_bar_date"
+    namespace: "systemui"
+    description: "Show date in the status bar for the desktop experience"
+    bug: "378545144"
+}
+
+flag {
     name: "status_bar_no_hun_behavior"
     namespace: "systemui"
     description: "When there's a HUN, don't show the HUN text or icon in the status bar. Instead, "
@@ -1391,16 +1398,6 @@ flag {
 }
 
 flag {
-    name: "notify_password_text_view_user_activity_in_background"
-    namespace: "systemui"
-    description: "Decide whether to notify the user activity in password text view, to power manager in the background thread."
-    bug: "346882515"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
    name: "non_touchscreen_devices_bypass_falsing"
    namespace: "systemui"
    description: "Allow non-touchscreen devices to bypass falsing"
@@ -1955,10 +1952,17 @@ flag {
 }
 
 flag {
-    name: "desktop_screen_capture_app_window"
+    name: "large_screen_screenshot_app_window"
     namespace: "systemui"
-    description: "Enables the app window region option for desktop screen capture."
+    description: "Enables the app window region screenshot option on large screen devices."
     bug: "422833825"
+}
+
+flag {
+    name: "large_screen_recording"
+    namespace: "systemui"
+    description: "Enables screen recording UI for large screen devices."
+    bug: "423707369"
 }
 
 flag {
@@ -1966,6 +1970,13 @@ flag {
     namespace: "systemui"
     description: "Enables the new screen record flow."
     bug: "427481098"
+}
+
+flag {
+    name: "large_screen_sharing"
+    namespace: "systemui"
+    description: "Enables the new large screen window sharing experience."
+    bug: "430582532"
 }
 
 flag {
@@ -2012,7 +2023,7 @@ flag {
    name: "enable_desktop_growth"
    namespace: "systemui"
    description: "Enables the growth framework for desktop."
-   bug: "383601076"
+   bug: "416287338"
 }
 
 flag {

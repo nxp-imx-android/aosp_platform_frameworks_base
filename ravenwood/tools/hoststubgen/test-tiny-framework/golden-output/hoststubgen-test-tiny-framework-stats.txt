@@ -1164,6 +1164,61 @@ com.android.hoststubgen.test.tinyframework
   class-wide in com/android/hoststubgen/test/tinyframework/TinyFrameworkUnsupportedApiException [inner-reason: class-annotation]
   1
   1
+com.android.hoststubgen.test.tinyframework.packagetest
+  A
+  0
+  com.android.hoststubgen.test.tinyframework.packagetest.A
+  <init>
+  <init>()V
+  1
+  Keep
+  class-wide in com/android/hoststubgen/test/tinyframework/packagetest/A [inner-reason: file-override (test-package-policy)]
+  1
+  1
+com.android.hoststubgen.test.tinyframework.packagetest
+  A
+  0
+  com.android.hoststubgen.test.tinyframework.packagetest.A
+  foo
+  foo()V
+  1
+  Keep
+  class-wide in com/android/hoststubgen/test/tinyframework/packagetest/A [inner-reason: file-override (test-package-policy)]
+  0
+  2
+com.android.hoststubgen.test.tinyframework.packagetest
+  C
+  0
+  com.android.hoststubgen.test.tinyframework.packagetest.C
+  <init>
+  <init>()V
+  1
+  Keep
+  class-wide in com/android/hoststubgen/test/tinyframework/packagetest/C [inner-reason: class-annotation]
+  1
+  1
+com.android.hoststubgen.test.tinyframework.packagetest
+  C
+  0
+  com.android.hoststubgen.test.tinyframework.packagetest.C
+  foo
+  foo()V
+  1
+  Keep
+  class-wide in com/android/hoststubgen/test/tinyframework/packagetest/C [inner-reason: class-annotation]
+  0
+  2
+com.android.hoststubgen.test.tinyframework.packagetest.sub
+  A
+  0
+  com.android.hoststubgen.test.tinyframework.packagetest.sub.A
+  <init>
+  <init>()V
+  1
+  Keep
+  class-wide in com/android/hoststubgen/test/tinyframework/packagetest/sub/A [inner-reason: file-override (test-package-policy)]
+  1
+  1
 com.supported
   UnsupportedClass
   0

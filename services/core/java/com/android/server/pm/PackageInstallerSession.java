@@ -54,6 +54,7 @@ import static android.content.pm.PackageManager.INSTALL_FAILED_VERIFICATION_FAIL
 import static android.content.pm.PackageManager.INSTALL_PARSE_FAILED_NO_CERTIFICATES;
 import static android.content.pm.PackageManager.INSTALL_STAGED;
 import static android.content.pm.PackageManager.INSTALL_SUCCEEDED;
+import static android.content.pm.verify.developer.DeveloperVerificationSession.DEVELOPER_VERIFICATION_BYPASSED_REASON_ADB;
 import static android.content.pm.verify.developer.DeveloperVerificationSession.DEVELOPER_VERIFICATION_INCOMPLETE_NETWORK_UNAVAILABLE;
 import static android.os.Process.INVALID_UID;
 import static android.provider.DeviceConfig.NAMESPACE_PACKAGE_MANAGER_SERVICE;
@@ -3082,7 +3083,8 @@ public class PackageInstallerSession extends IPackageInstallerSession.Stub {
             // adb installs are exempted from verification unless explicitly requested
             if (!params.forceVerification) {
                 synchronized (mMetrics) {
-                    mMetrics.onDeveloperVerificationBypassedByAdb();
+                    mMetrics.onDeveloperVerificationBypassed(
+                            DEVELOPER_VERIFICATION_BYPASSED_REASON_ADB);
                 }
                 return false;
             }
@@ -3091,6 +3093,8 @@ public class PackageInstallerSession extends IPackageInstallerSession.Stub {
         synchronized (mLock) {
             if (TextUtils.equals(verifierPackageName, mPackageName)) {
                 // The verifier itself is being updated. Skip.
+                // TODO(b/360129657): log bypass reason and this bypass should only happen if the
+                // current verifier cannot be connected or isn't responding.
                 Slog.w(TAG, "Skipping verification service because the verifier is being updated");
                 return false;
             }
@@ -3400,6 +3404,21 @@ public class PackageInstallerSession extends IPackageInstallerSession.Stub {
                 mVerificationFailedMessage = sb.toString();
                 maybeSendUserActionForVerification(/* blockingFailure= */ false,
                         /* extensionResponse= */ null);
+            });
+        }
+
+        /**
+         * Called by the VerifierController when the verification request has been bypassed by the
+         * verifier.
+         */
+        public void onVerificationBypassedReceived(int bypassReason) {
+            mHandler.post(() -> {
+                synchronized (mMetrics) {
+                    mMetrics.onDeveloperVerificationBypassed(bypassReason);
+                }
+                // The verifier informed the system to bypass the verification. Continue with the
+                // rest of the verification and installation.
+                resumeVerify();
             });
         }
 

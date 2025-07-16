@@ -107,6 +107,28 @@ class MediaRepositoryTest : SysuiTestCase() {
         }
 
     @Test
+    fun addMultipleCurrentUserMediaEntries_thenRemove_returnsValues() =
+        testScope.runTest {
+            val currentUserEntries by collectLastValue(underTest.currentUserEntries)
+
+            val firstInstanceId = InstanceId.fakeInstanceId(123)
+            val secondInstanceId = InstanceId.fakeInstanceId(321)
+            val firstUserMedia = createMediaData("app1", false, LOCAL, false, firstInstanceId)
+            val secondUserMedia = createMediaData("app2", true, LOCAL, false, secondInstanceId)
+
+            addCurrentUserMediaEntry(firstUserMedia)
+            addCurrentUserMediaEntry(secondUserMedia)
+
+            assertThat(currentUserEntries?.get(firstInstanceId)).isEqualTo(firstUserMedia)
+            assertThat(currentUserEntries?.get(secondInstanceId)).isEqualTo(secondUserMedia)
+
+            assertThat(underTest.removeCurrentUserMediaEntry(firstInstanceId))
+                .isEqualTo(firstUserMedia)
+            assertThat(underTest.removeCurrentUserMediaEntry(secondInstanceId))
+                .isEqualTo(secondUserMedia)
+        }
+
+    @Test
     fun addMediaEntry_activeThenInactivate() =
         testScope.runTest {
             val allMediaEntries by collectLastValue(underTest.allMediaEntries)

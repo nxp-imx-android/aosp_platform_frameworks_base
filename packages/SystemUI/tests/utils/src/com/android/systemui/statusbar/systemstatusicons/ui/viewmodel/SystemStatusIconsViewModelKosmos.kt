@@ -22,10 +22,12 @@ import com.android.systemui.statusbar.systemstatusicons.airplane.ui.viewmodel.ai
 import com.android.systemui.statusbar.systemstatusicons.alarm.ui.viewmodel.nextAlarmIconViewModelFactory
 import com.android.systemui.statusbar.systemstatusicons.bluetooth.ui.viewmodel.bluetoothIconViewModelFactory
 import com.android.systemui.statusbar.systemstatusicons.connecteddisplay.ui.viewmodel.connectedDisplayIconViewModelFactory
+import com.android.systemui.statusbar.systemstatusicons.datasaver.ui.viewmodel.dataSaverIconViewModelFactory
 import com.android.systemui.statusbar.systemstatusicons.ethernet.ui.viewmodel.ethernetIconViewModelFactory
 import com.android.systemui.statusbar.systemstatusicons.hotspot.ui.viewmodel.hotspotIconViewModelFactory
 import com.android.systemui.statusbar.systemstatusicons.ringer.ui.viewmodel.muteIconViewModelFactory
 import com.android.systemui.statusbar.systemstatusicons.ringer.ui.viewmodel.vibrateIconViewModelFactory
+import com.android.systemui.statusbar.systemstatusicons.vpn.ui.viewmodel.vpnIconViewModelFactory
 import com.android.systemui.statusbar.systemstatusicons.wifi.ui.viewmodel.wifiIconViewModelFactory
 import com.android.systemui.statusbar.systemstatusicons.zenmode.ui.viewmodel.zenModeIconViewModelFactory
 
@@ -39,11 +41,13 @@ val Kosmos.systemStatusIconsViewModelFactory by
                     airplaneModeIconViewModelFactory = airplaneModeIconViewModelFactory,
                     bluetoothIconViewModelFactory = bluetoothIconViewModelFactory,
                     connectedDisplayIconViewModelFactory = connectedDisplayIconViewModelFactory,
+                    dataSaverIconViewModelFactory = dataSaverIconViewModelFactory,
                     ethernetIconViewModelFactory = ethernetIconViewModelFactory,
                     hotspotIconViewModelFactory = hotspotIconViewModelFactory,
                     muteIconViewModelFactory = muteIconViewModelFactory,
                     nextAlarmIconViewModelFactory = nextAlarmIconViewModelFactory,
                     vibrateIconViewModelFactory = vibrateIconViewModelFactory,
+                    vpnIconViewModelFactory = vpnIconViewModelFactory,
                     wifiIconViewModelFactory = wifiIconViewModelFactory,
                     zenModeIconViewModelFactory = zenModeIconViewModelFactory,
                 )

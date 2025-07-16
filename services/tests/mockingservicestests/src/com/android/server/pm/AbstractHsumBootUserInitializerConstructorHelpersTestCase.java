@@ -132,7 +132,7 @@ abstract class AbstractHsumBootUserInitializerConstructorHelpersTestCase {
         return value;
     }
 
-    protected static boolean CFG_DESIGNATE_MAIN(boolean value) {
+    protected static boolean CFG_DESIGNATE(boolean value) {
         return value;
     }
 
@@ -140,7 +140,8 @@ abstract class AbstractHsumBootUserInitializerConstructorHelpersTestCase {
         return value;
     }
 
-    protected static boolean CFG_CREATE_INITIAL(boolean value) {
+    // NOTE: called CREAT on purpose as lines fit. After all, there's a creat() method on UNIX...
+    protected static boolean CFG_CREAT_INITIAL(boolean value) {
         return value;
     }
 

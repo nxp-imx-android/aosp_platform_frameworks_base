@@ -18,6 +18,7 @@ package com.android.server.security.authenticationpolicy;
 
 import static android.Manifest.permission.INTERACT_ACROSS_USERS_FULL;
 import static android.Manifest.permission.MANAGE_SECURE_LOCK_DEVICE;
+import static android.Manifest.permission.TEST_BIOMETRIC;
 import static android.Manifest.permission.USE_BIOMETRIC_INTERNAL;
 import static android.security.Flags.disableAdaptiveAuthCounterLock;
 import static android.security.Flags.failedAuthLockToggle;
@@ -538,6 +539,17 @@ public class AuthenticationPolicyService extends SystemService {
             } finally {
                 Binder.restoreCallingIdentity(identity);
             }
+        }
+
+        /**
+         * @see AuthenticationPolicyManager#setSecureLockDeviceTestStatus(boolean)
+         * @param isTestMode boolean indicating whether to enable test mode for secure lock device
+         */
+        @Override
+        @EnforcePermission(TEST_BIOMETRIC)
+        public void setSecureLockDeviceTestStatus(boolean isTestMode) {
+            setSecureLockDeviceTestStatus_enforcePermission();
+            mSecureLockDeviceService.setSecureLockDeviceTestStatus(isTestMode);
         }
 
         @Override

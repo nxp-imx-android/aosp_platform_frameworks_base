@@ -219,6 +219,10 @@ public class BrightnessClamperController {
         return mModifiersAggregatedState.mMaxBrightness;
     }
 
+    public float getMinBrightness() {
+        return mModifiersAggregatedState.mMinBrightness;
+    }
+
     public boolean isThrottled() {
         return mModifiersAggregatedState.mMaxBrightnessReason
                 != BrightnessInfo.BRIGHTNESS_MAX_REASON_NONE;
@@ -246,7 +250,9 @@ public class BrightnessClamperController {
                 || state1.mHdrRatioScaleFactor != state2.mHdrRatioScaleFactor
                 || state1.mMaxBrightnessReason != state2.mMaxBrightnessReason
                 || !BrightnessSynchronizer.floatEquals(state1.mMaxBrightness,
-                state2.mMaxBrightness);
+                state2.mMaxBrightness)
+                || !BrightnessSynchronizer.floatEquals(state1.mMinBrightness,
+                state2.mMinBrightness);
     }
 
     private void start() {
@@ -484,5 +490,6 @@ public class BrightnessClamperController {
         @BrightnessInfo.BrightnessMaxReason
         int mMaxBrightnessReason = BrightnessInfo.BRIGHTNESS_MAX_REASON_NONE;
         float mMaxBrightness = PowerManager.BRIGHTNESS_MAX;
+        float mMinBrightness = PowerManager.BRIGHTNESS_MIN;
     }
 }

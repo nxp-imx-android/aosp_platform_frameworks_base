@@ -28,21 +28,26 @@ import static com.android.server.serial.SerialConstants.DEV_DIR;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.annotation.UserIdInt;
 import android.content.Context;
 import android.hardware.serial.ISerialManager;
 import android.hardware.serial.ISerialPortListener;
 import android.hardware.serial.ISerialPortResponseCallback;
 import android.hardware.serial.ISerialPortResponseCallback.ErrorCode;
 import android.hardware.serial.SerialPortInfo;
+import android.os.Binder;
 import android.os.FileObserver;
 import android.os.ParcelFileDescriptor;
 import android.os.RemoteCallbackList;
 import android.os.RemoteException;
+import android.os.UserHandle;
 import android.system.ErrnoException;
 import android.system.Os;
 import android.system.OsConstants;
 import android.util.Slog;
+import android.util.SparseArray;
 
+import com.android.internal.R;
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.server.SystemService;
@@ -68,10 +73,14 @@ public class SerialManagerService extends ISerialManager.Stub {
     @GuardedBy("mLock")
     private final HashMap<String, SerialPortInfo> mSerialPorts = new HashMap<>();
 
-    @GuardedBy("mLock")
-    private boolean mIsStarted;
-
     private final Object mLock = new Object();
+
+    private final Context mContext;
+
+    private final String[] mPortsInConfig;
+
+    @GuardedBy("mLock")
+    private final SparseArray<SerialUserAccessManager> mAccessManagerPerUser = new SparseArray<>();
 
     private final RemoteCallbackList<ISerialPortListener> mListeners = new RemoteCallbackList<>();
 
@@ -79,7 +88,32 @@ public class SerialManagerService extends ISerialManager.Stub {
 
     private final SerialDevicesEnumerator mSerialDevicesEnumerator = new SerialDevicesEnumerator();
 
-    private SerialManagerService() {}
+    @GuardedBy("mLock")
+    private boolean mIsStarted;
+
+    private SerialManagerService(Context context) {
+        mContext = context;
+        mPortsInConfig =
+                stripDevPrefix(mContext.getResources().getStringArray(R.array.config_serialPorts));
+    }
+
+    private static String[] stripDevPrefix(String[] portPaths) {
+        if (portPaths.length == 0) {
+            return portPaths;
+        }
+
+        final String devDirPrefix = DEV_DIR + "/";
+        ArrayList<String> portNames = new ArrayList<>();
+        for (int i = 0; i < portPaths.length; ++i) {
+            String portPath = portPaths[i];
+            if (portPath.startsWith(devDirPrefix)) {
+                portNames.add(portPath.substring(devDirPrefix.length()));
+            } else {
+                Slog.w(TAG, "Skipping port path not under /dev: " + portPath);
+            }
+        }
+        return portNames.toArray(new String[0]);
+    }
 
     @Override
     public List<SerialPortInfo> getSerialPorts() throws RemoteException {
@@ -110,42 +144,71 @@ public class SerialManagerService extends ISerialManager.Stub {
 
     @Override
     public void requestOpen(@NonNull String portName, int flags, boolean exclusive,
-            @NonNull ISerialPortResponseCallback callback) throws RemoteException {
+            @NonNull String packageName, @NonNull ISerialPortResponseCallback callback)
+            throws RemoteException {
+        final int callingPid = Binder.getCallingPid();
+        final int callingUid = Binder.getCallingUid();
+        final @UserIdInt int userId = UserHandle.getUserId(callingUid);
+
         synchronized (mLock) {
             try {
                 startIfNeeded();
             } catch (IOException e) {
                 Slog.e(TAG, "Error reading the list of serial drivers", e);
-                callback.onError(ErrorCode.ERROR_READING_DRIVERS, 0, e.getMessage());
+                deliverErrorToCallback(
+                        callback, ErrorCode.ERROR_READING_DRIVERS, /* errno */ 0, e.getMessage());
                 return;
             }
             SerialPortInfo port = mSerialPorts.get(portName);
             if (port == null) {
-                try {
-                    callback.onError(ErrorCode.ERROR_PORT_NOT_FOUND, 0, portName);
-                } catch (RemoteException e) {
-                    Slog.e(TAG, "Error sending error to callback", e);
-                }
+                deliverErrorToCallback(
+                        callback, ErrorCode.ERROR_PORT_NOT_FOUND, /* errno */ 0, portName);
                 return;
             }
-            String path = DEV_DIR + "/" + portName;
-            try {
-                FileDescriptor fd = Os.open(path, toOsConstants(flags), /* mode= */ 0);
-                try (var pfd = new ParcelFileDescriptor(fd)) {
-                    callback.onResult(port, pfd);
-                } catch (RemoteException | RuntimeException e) {
-                    Slog.e(TAG, "Error sending result to callback", e);
-                } catch (IOException e) {
-                    Slog.w(TAG, "Error closing the file descriptor", e);
-                }
-            } catch (ErrnoException e) {
-                Slog.e(TAG, "Failed to open " + path, e);
-                try {
-                    callback.onError(ErrorCode.ERROR_OPENING_PORT, e.errno, "open");
-                } catch (RemoteException e2) {
-                    Slog.e(TAG, "Error sending error to callback", e2);
-                }
+            if (!mAccessManagerPerUser.contains(userId)) {
+                mAccessManagerPerUser.put(
+                        userId, new SerialUserAccessManager(mContext, mPortsInConfig));
             }
+            final SerialUserAccessManager accessManager = mAccessManagerPerUser.get(userId);
+            accessManager.requestAccess(portName, callingPid, callingUid,
+                    (resultPort, pid, uid, granted) -> {
+                        if (!granted) {
+                            deliverErrorToCallback(
+                                    callback, ErrorCode.ERROR_ACCESS_DENIED, /* errno */ 0,
+                                    "User denied " + packageName + " access to " + portName);
+                            return;
+                        }
+
+                        String path = DEV_DIR + "/" + portName;
+                        try {
+                            deliverResultToCallback(callback, port,
+                                    Os.open(path, toOsConstants(flags), /* mode */ 0));
+                        } catch (ErrnoException e) {
+                            Slog.e(TAG, "Failed to open " + path, e);
+                            deliverErrorToCallback(
+                                    callback, ErrorCode.ERROR_OPENING_PORT, e.errno, "open");
+                        }
+                    });
+        }
+    }
+
+    private void deliverResultToCallback(
+            @NonNull ISerialPortResponseCallback callback, SerialPortInfo port, FileDescriptor fd) {
+        try (var pfd = new ParcelFileDescriptor(fd)) {
+            callback.onResult(port, pfd);
+        } catch (RemoteException | RuntimeException e) {
+            Slog.e(TAG, "Error sending result to callback", e);
+        } catch (IOException e) {
+            Slog.w(TAG, "Error closing the file descriptor", e);
+        }
+    }
+
+    private void deliverErrorToCallback(@NonNull ISerialPortResponseCallback callback,
+            @ErrorCode int errorCode, int errno, String message) {
+        try {
+            callback.onError(errorCode, errno, message);
+        } catch (RemoteException e) {
+            Slog.e(TAG, "Error sending error to callback", e);
         }
     }
 
@@ -259,6 +322,9 @@ public class SerialManagerService extends ISerialManager.Stub {
                 return;
             }
         }
+        for (int i = mAccessManagerPerUser.size() - 1; i >= 0; --i) {
+            mAccessManagerPerUser.valueAt(i).onPortRemoved(name);
+        }
         Slog.d(TAG, "Removed serial device " + name);
         int n = mListeners.beginBroadcast();
         for (int i = 0; i < n; i++) {
@@ -272,15 +338,17 @@ public class SerialManagerService extends ISerialManager.Stub {
     }
 
     public static class Lifecycle extends SystemService {
+        private final Context mContext;
 
         public Lifecycle(@NonNull Context context) {
             super(context);
+            mContext = context;
         }
 
         @Override
         public void onStart() {
             if (enableWiredSerialApi()) {
-                publishBinderService(Context.SERIAL_SERVICE, new SerialManagerService());
+                publishBinderService(Context.SERIAL_SERVICE, new SerialManagerService(mContext));
             }
         }
     }

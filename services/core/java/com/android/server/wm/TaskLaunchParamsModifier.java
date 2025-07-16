@@ -36,12 +36,14 @@ import static android.util.DisplayMetrics.DENSITY_DEFAULT;
 import static android.window.DisplayAreaOrganizer.FEATURE_UNDEFINED;
 
 import static com.android.server.wm.ActivityStarter.Request;
+import static com.android.server.wm.DesktopModeHelper.canEnterDesktopMode;
 import static com.android.server.wm.LaunchParamsUtil.getPreferredLaunchTaskDisplayArea;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.app.ActivityOptions;
 import android.app.WindowConfiguration;
+import android.content.Context;
 import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
 import android.graphics.Rect;
@@ -77,6 +79,7 @@ class TaskLaunchParamsModifier implements LaunchParamsModifier {
     private static final int MINIMAL_STEP = 1;
 
     private final ActivityTaskSupervisor mSupervisor;
+    private final Context mContext;
     private final Rect mTmpBounds = new Rect();
     private final Rect mTmpStableBounds = new Rect();
     private final int[] mTmpDirections = new int[2];
@@ -85,8 +88,9 @@ class TaskLaunchParamsModifier implements LaunchParamsModifier {
 
     private StringBuilder mLogBuilder;
 
-    TaskLaunchParamsModifier(ActivityTaskSupervisor supervisor) {
+    TaskLaunchParamsModifier(ActivityTaskSupervisor supervisor, Context context) {
         mSupervisor = supervisor;
+        mContext = context;
     }
 
     @Override
@@ -557,9 +561,11 @@ class TaskLaunchParamsModifier implements LaunchParamsModifier {
             @NonNull ActivityInfo.WindowLayout layout, int resolvedMode, boolean hasInitialBounds,
             @NonNull Rect inOutBounds) {
         if (resolvedMode != WINDOWING_MODE_FREEFORM
-                && resolvedMode != WINDOWING_MODE_FULLSCREEN) {
+                && (resolvedMode != WINDOWING_MODE_FULLSCREEN || canEnterDesktopMode(mContext))) {
             // This function should be used only for freeform bounds adjustment. Freeform bounds
-            // needs to be set to fullscreen tasks too as restore bounds.
+            // needs to be set to fullscreen tasks too as restore bounds for legacy use case only.
+            // If desktop mode is available on the device do not set freeform bounds for fullscreen
+            // task.
             appendLog("skip-bounds-" + WindowConfiguration.windowingModeToString(resolvedMode));
             return;
         }
@@ -834,7 +840,7 @@ class TaskLaunchParamsModifier implements LaunchParamsModifier {
     }
 
     private void outputLog() {
-        ProtoLog.v(WmProtoLogGroups.WM_DEBUG_TASKS_LAUNCH_PARAMS, mLogBuilder.toString());
+        ProtoLog.v(WmProtoLogGroups.WM_DEBUG_TASKS_LAUNCH_PARAMS, "%s", mLogBuilder.toString());
     }
 
     private static int orientationFromBounds(Rect bounds) {

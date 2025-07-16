@@ -262,30 +262,49 @@ final class LegacyHistoricalRegistry implements HistoricalRegistryInterface {
         if (Flags.enableSqliteAppopsAccesses()) {
             DiscreteOpsSqlRegistry sqlRegistry = (DiscreteOpsSqlRegistry) mDiscreteRegistry;
             if (DiscreteOpsXmlRegistry.getDiscreteOpsDir().exists()) {
+                Slog.i(LOG_TAG, "migrate discrete ops from xml to sqlite.");
                 DiscreteOpsXmlRegistry xmlRegistry = new DiscreteOpsXmlRegistry(mContext);
                 xmlRegistry.systemReady();
                 DiscreteOpsMigrationHelper.migrateFromXmlToSqlite(
                         xmlRegistry, sqlRegistry);
             } else if (HistoricalRegistry.getDiscreteOpsDatabaseFile().exists()) {
                 // roll back from unified schema sqlite to discrete ops sqlite.
-                AppOpHistoryHelper appOpHistoryHelper = new AppOpHistoryHelper(mContext,
-                        HistoricalRegistry.getDiscreteOpsDatabaseFile(),
-                        HistoricalRegistry.AggregationTimeWindow.SHORT,
-                        HistoricalRegistry.getDiscreteOpsDatabaseVersion());
-                appOpHistoryHelper.systemReady(
-                        HistoricalRegistry.getDiscreteOpsQuantizationMillis(),
-                        HistoricalRegistry.getAppOpsHistoryRetentionMillis());
+                Slog.i(LOG_TAG, "rollback discrete ops from unified sqlite to sqlite.");
+                AppOpHistoryHelper appOpHistoryHelper = getAppOpHistoryHelper();
                 DiscreteOpsMigrationHelper.rollbackFromUnifiedSchemaSqliteToSqlite(
                         appOpHistoryHelper, sqlRegistry);
             }
         } else {
-            if (DiscreteOpsDbHelper.getDatabaseFile().exists()) { // roll-back sqlite to xml
+            if (HistoricalRegistry.getDiscreteOpsDatabaseFile().exists()) {
+                Slog.i(LOG_TAG, "rollback discrete ops from unified sqlite to xml.");
+                DiscreteOpsXmlRegistry xmlRegistry = new DiscreteOpsXmlRegistry(mContext);
+                AppOpHistoryHelper appOpHistoryHelper = getAppOpHistoryHelper();
+                DiscreteOpsMigrationHelper.rollbackFromUnifiedSchemaSqliteToXml(
+                        appOpHistoryHelper, xmlRegistry);
+                if (HistoricalRegistry.historicalOpsDbExist()) {
+                    HistoricalRegistry.deleteHistoricalOpsDb(mContext);
+                }
+            } else if (DiscreteOpsDbHelper.getDatabaseFile().exists()) {
+                Slog.i(LOG_TAG, "rollback discrete ops from sqlite to xml.");
                 DiscreteOpsSqlRegistry sqlRegistry = new DiscreteOpsSqlRegistry(mContext);
                 sqlRegistry.systemReady();
                 DiscreteOpsXmlRegistry xmlRegistry = (DiscreteOpsXmlRegistry) mDiscreteRegistry;
                 DiscreteOpsMigrationHelper.rollbackFromSqliteToXml(sqlRegistry, xmlRegistry);
             }
+
+
         }
+    }
+
+    private @NonNull AppOpHistoryHelper getAppOpHistoryHelper() {
+        AppOpHistoryHelper appOpHistoryHelper = new AppOpHistoryHelper(mContext,
+                HistoricalRegistry.getDiscreteOpsDatabaseFile(),
+                HistoricalRegistry.AggregationTimeWindow.SHORT,
+                HistoricalRegistry.getDiscreteOpsDatabaseVersion());
+        appOpHistoryHelper.systemReady(
+                HistoricalRegistry.getDiscreteOpsQuantizationMillis(),
+                HistoricalRegistry.getAppOpsHistoryRetentionMillis());
+        return appOpHistoryHelper;
     }
 
     private boolean isPersistenceInitializedMLocked() {
@@ -862,6 +881,14 @@ final class LegacyHistoricalRegistry implements HistoricalRegistryInterface {
                 Persistence.spliceFromBeginning(op, filterScale);
             }
         }
+    }
+
+    static boolean historicalOpsDirExist() {
+        return Persistence.sHistoricalAppOpsDir.exists();
+    }
+
+    static void deleteHistoricalOpsDir() {
+        Persistence.sHistoricalAppOpsDir.delete();
     }
 
     private static final class Persistence {

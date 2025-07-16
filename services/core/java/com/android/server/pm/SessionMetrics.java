@@ -84,7 +84,7 @@ final class SessionMetrics {
     private long mDeveloperVerificationRetryDurationMillis;
 
     private int mDeveloperVerifierUid = INVALID_UID;
-    private boolean mIsDeveloperVerificationBypassedByAdb = false;
+    private int mIsDeveloperVerificationBypassedReason = 0;
     private boolean mIsDeveloperVerificationTimeoutExtensionRequested = false;
     private final boolean mHasDeveloperVerificationExtensionParams;
     private boolean mIsDeveloperVerificationPolicyOverridden = false;
@@ -215,8 +215,8 @@ final class SessionMetrics {
         mDeveloperVerificationRetryCount = retryCount;
     }
 
-    public void onDeveloperVerificationBypassedByAdb() {
-        mIsDeveloperVerificationBypassedByAdb = true;
+    public void onDeveloperVerificationBypassed(int bypassReason) {
+        mIsDeveloperVerificationBypassedReason = bypassReason;
     }
 
     public void onDeveloperVerificationTimeoutExtensionRequested() {
@@ -320,7 +320,7 @@ final class SessionMetrics {
                         sessionLifetimeMillis,
                         getTranslatedPolicyCodeForStats(mDefaultDeveloperVerificationPolicy),
                         mDeveloperVerifierUid,
-                        getTranslatedBypassedReasonForStats(mIsDeveloperVerificationBypassedByAdb),
+                        mIsDeveloperVerificationBypassedReason,
                         mIsDeveloperVerificationTimeoutExtensionRequested,
                         mHasDeveloperVerificationExtensionParams,
                         mIsDeveloperVerificationPolicyOverridden,
@@ -415,14 +415,6 @@ final class SessionMetrics {
             default ->
                     FrameworkStatsLog.PACKAGE_INSTALLER_SESSION_REPORTED__STATUS_CODE__STATUS_UNSPECIFIED;
         };
-    }
-
-    private static int getTranslatedBypassedReasonForStats(boolean isBypassedByAdb) {
-        if (isBypassedByAdb) {
-            return FrameworkStatsLog.PACKAGE_INSTALLER_SESSION_REPORTED__ADI_BYPASSED_REASON__BYPASSED_REASON_ADB;
-        } else {
-            return FrameworkStatsLog.PACKAGE_INSTALLER_SESSION_REPORTED__ADI_BYPASSED_REASON__BYPASSED_REASON_UNSPECIFIED;
-        }
     }
 
     private static int getTranslatedPolicyCodeForStats(

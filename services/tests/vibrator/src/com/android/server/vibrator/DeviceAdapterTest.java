@@ -592,7 +592,7 @@ public class DeviceAdapterTest {
         helper.setMinFrequency(TEST_MIN_FREQUENCY);
         helper.setFrequencyResolution(TEST_FREQUENCY_RESOLUTION);
         helper.setMaxAmplitudes(TEST_AMPLITUDE_MAP);
-        return helper.newHalVibrator(vibratorId);
+        return helper.newInitializedHalVibrator(vibratorId, mHalCallbacks);
     }
 
     private HalVibrator createPwleV2Vibrator(int vibratorId) {
@@ -612,8 +612,7 @@ public class DeviceAdapterTest {
                 TEST_MIN_ENVELOPE_EFFECT_CONTROL_POINT_DURATION_MILLIS);
         helper.setMaxEnvelopeEffectControlPointDurationMillis(
                 TEST_MAX_ENVELOPE_EFFECT_CONTROL_POINT_DURATION_MILLIS);
-
-        return helper.newHalVibrator(vibratorId);
+        return helper.newInitializedHalVibrator(vibratorId, mHalCallbacks);
     }
 
     private HalVibratorHelper createVibratorHelperWithEffects(int... capabilities) {

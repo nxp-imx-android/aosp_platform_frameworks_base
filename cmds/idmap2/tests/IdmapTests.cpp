@@ -219,8 +219,8 @@ TEST(IdmapTests, CreateIdmapHeaderFromApkAssets) {
   ASSERT_THAT(idmap->GetHeader(), NotNull());
   ASSERT_EQ(idmap->GetHeader()->GetMagic(), 0x504d4449U);
   ASSERT_EQ(idmap->GetHeader()->GetVersion(), 11);
-  ASSERT_EQ(idmap->GetHeader()->GetTargetCrc(), android::idmap2::TestConstants::TARGET_CRC);
-  ASSERT_EQ(idmap->GetHeader()->GetOverlayCrc(), android::idmap2::TestConstants::OVERLAY_CRC);
+  ASSERT_NE(idmap->GetHeader()->GetTargetCrc(), toTimeT(android::kInvalidModDate));
+  ASSERT_NE(idmap->GetHeader()->GetOverlayCrc(), toTimeT(android::kInvalidModDate));
   ASSERT_EQ(idmap->GetHeader()->GetFulfilledPolicies(), PolicyFlags::PUBLIC);
   ASSERT_EQ(idmap->GetHeader()->GetEnforceOverlayable(), true);
   ASSERT_EQ(idmap->GetHeader()->GetTargetPath(), target_apk_path);

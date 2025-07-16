@@ -434,6 +434,10 @@ class ActivityMetricsLogger {
                     || mLastLaunchedActivity.getWindowingMode() != r.getWindowingMode()) {
                 return false;
             }
+            if (mLastLaunchedActivity.isUid(r.launchedFromUid)) {
+                return true;
+            }
+
             // The current task should be non-null because it is just launched. While the
             // last task can be cleared when starting activity with FLAG_ACTIVITY_CLEAR_TASK.
             final Task lastTask = mLastLaunchedActivity.getTask();
@@ -444,7 +448,8 @@ class ActivityMetricsLogger {
                 }
                 return lastTask.getBounds().equals(currentTask.getBounds());
             }
-            return mLastLaunchedActivity.isUid(r.launchedFromUid);
+
+            return false;
         }
 
         /** @return {@code true} if the activity matches a launched activity in this transition. */
