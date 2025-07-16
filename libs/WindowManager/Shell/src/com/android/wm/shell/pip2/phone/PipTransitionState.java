@@ -352,7 +352,18 @@ public class PipTransitionState {
     }
 
     void setPinnedTaskLeash(@Nullable SurfaceControl leash) {
-        mPinnedTaskLeash = leash;
+        if (!com.android.window.flags.Flags.releaseAllTransitionSurfaces()) {
+            mPinnedTaskLeash = leash;
+            return;
+        }
+        if (mPinnedTaskLeash != null) {
+            if (leash != null && leash.isSameSurface(mPinnedTaskLeash)) {
+                return;
+            }
+            mPinnedTaskLeash.release();
+        }
+        mPinnedTaskLeash = leash != null
+                ? new SurfaceControl(leash, "PipTransitionState") : null;
     }
 
     @Nullable TaskInfo getPipTaskInfo() {

@@ -166,7 +166,7 @@ public class PhonePipMenuController implements PipMenuController {
      */
     @Override
     public void attach(SurfaceControl leash) {
-        mLeash = leash;
+        mLeash = new SurfaceControl(leash, "PhonePipMenuController");
         attachPipMenuView();
     }
 
@@ -177,7 +177,10 @@ public class PhonePipMenuController implements PipMenuController {
     public void detach() {
         hideMenu();
         detachPipMenuView();
-        mLeash = null;
+        if (mLeash != null) {
+            mLeash.release();
+            mLeash = null;
+        }
     }
 
     void attachPipMenuView() {
