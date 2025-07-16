@@ -1388,7 +1388,6 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
         verify(mCallback).dismissDialog();
     }
 
-    @EnableFlags(Flags.FLAG_ENABLE_AUDIO_INPUT_DEVICE_ROUTING_AND_VOLUME_CONTROL)
     @Test
     public void getSelectedMediaDevice() {
         // Mock MediaDevice since none of the output media device constructor is publicly available
@@ -1398,13 +1397,9 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
                 .when(mLocalMediaManager)
                 .getSelectedMediaDevice();
 
-        // Mock selected input media device.
-        final MediaDevice selectedInputMediaDevice = mock(MediaDevice.class);
-        doReturn(selectedInputMediaDevice).when(mInputRouteManager).getSelectedInputDevice();
-
         List<MediaDevice> selectedMediaDevices = mMediaSwitchingController.getSelectedMediaDevice();
         assertThat(selectedMediaDevices)
-                .containsExactly(selectedOutputMediaDevice, selectedInputMediaDevice);
+                .containsExactly(selectedOutputMediaDevice);
     }
 
     @EnableFlags(Flags.FLAG_ENABLE_AUDIO_INPUT_DEVICE_ROUTING_AND_VOLUME_CONTROL)
@@ -1492,36 +1487,6 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
         doReturn(Collections.singletonList(mMediaDevice1))
                 .when(mLocalMediaManager)
                 .getSelectedMediaDevice();
-
-        // Verify that there is initially one "Connect a device" button present.
-        assertThat(getNumberOfConnectDeviceButtons(
-                mMediaSwitchingController.getMediaItemList())).isEqualTo(1);
-
-        // Change the selected device, and verify that there is still one "Connect a device" button
-        // present.
-        doReturn(Collections.singletonList(mMediaDevice2))
-                .when(mLocalMediaManager)
-                .getSelectedMediaDevice();
-        mMediaSwitchingController.onDeviceListUpdate(mMediaDevices);
-
-        assertThat(getNumberOfConnectDeviceButtons(
-                mMediaSwitchingController.getMediaItemList())).isEqualTo(1);
-    }
-
-    @EnableFlags(Flags.FLAG_ENABLE_AUDIO_INPUT_DEVICE_ROUTING_AND_VOLUME_CONTROL)
-    @Test
-    public void connectDeviceButton_presentAtAllTimesForNonGroupOutputs_inputRoutingEnabled() {
-        mMediaSwitchingController.start(mCb);
-        reset(mCb);
-
-        // Mock the selected output device.
-        doReturn(Collections.singletonList(mMediaDevice1))
-                .when(mLocalMediaManager)
-                .getSelectedMediaDevice();
-
-        // Mock the selected input media device.
-        final MediaDevice selectedInputMediaDevice = mock(MediaDevice.class);
-        doReturn(selectedInputMediaDevice).when(mInputRouteManager).getSelectedInputDevice();
 
         // Verify that there is initially one "Connect a device" button present.
         assertThat(getNumberOfConnectDeviceButtons(
