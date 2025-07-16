@@ -113,6 +113,9 @@ class FlexClockController(
     override fun initialize(isDarkTheme: Boolean, dozeFraction: Float, foldFraction: Float) {
         smallClock.run {
             layerController.onViewBoundsChanged = { eventListeners.fire { onBoundsChanged(it) } }
+            layerController.onViewMaxSizeChanged = {
+                eventListeners.fire { onMaxSizeChanged(it, isLargeClock = false) }
+            }
             events.onThemeChanged(theme.copy(isDarkTheme = isDarkTheme))
             animations.onFontAxesChanged(clockCtx.settings.axes)
             animations.doze(dozeFraction)
@@ -122,6 +125,9 @@ class FlexClockController(
 
         largeClock.run {
             layerController.onViewBoundsChanged = { eventListeners.fire { onBoundsChanged(it) } }
+            layerController.onViewMaxSizeChanged = {
+                eventListeners.fire { onMaxSizeChanged(it, isLargeClock = true) }
+            }
             events.onThemeChanged(theme.copy(isDarkTheme = isDarkTheme))
             animations.onFontAxesChanged(clockCtx.settings.axes)
             animations.doze(dozeFraction)

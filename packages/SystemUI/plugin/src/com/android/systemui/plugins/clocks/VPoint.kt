@@ -46,6 +46,10 @@ value class VPointF(val data: ULong) {
 
     constructor(pt: PointF) : this(pt.x, pt.y)
 
+    constructor(value: Int) : this(value.toFloat())
+
+    constructor(value: Float) : this(value, value)
+
     constructor(x: Int, y: Int) : this(x.toFloat(), y.toFloat())
 
     constructor(x: Int, y: Float) : this(x.toFloat(), y)
@@ -110,7 +114,7 @@ value class VPointF(val data: ULong) {
     operator fun div(value: Float) = VPointF(x / value, y / value)
 
     companion object {
-        val ZERO = VPointF(0, 0)
+        val ZERO = VPointF(0)
 
         fun fromLong(data: Long) = VPointF(data.toULong())
 
@@ -147,6 +151,8 @@ value class VPoint(val data: ULong) {
 
     val y: Int
         get() = unpackY(data)
+
+    constructor(value: Int) : this(value, value)
 
     constructor(x: Int, y: Int) : this(pack(x, y))
 
@@ -195,7 +201,7 @@ value class VPoint(val data: ULong) {
     operator fun div(value: Float) = VPointF(x / value, y / value)
 
     companion object {
-        val ZERO = VPoint(0, 0)
+        val ZERO = VPoint(0)
 
         fun fromLong(data: Long) = VPoint(data.toULong())
 

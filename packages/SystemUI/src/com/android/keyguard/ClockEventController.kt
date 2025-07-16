@@ -61,6 +61,7 @@ import com.android.systemui.plugins.clocks.ClockFaceController.Companion.updateT
 import com.android.systemui.plugins.clocks.ClockMessageBuffers
 import com.android.systemui.plugins.clocks.ClockTickRate
 import com.android.systemui.plugins.clocks.TimeFormatKind
+import com.android.systemui.plugins.clocks.VPointF
 import com.android.systemui.plugins.clocks.VRectF
 import com.android.systemui.plugins.clocks.WeatherData
 import com.android.systemui.plugins.clocks.ZenData
@@ -256,6 +257,8 @@ constructor(
 
     val dozeAmount = MutableStateFlow(0f)
     val onClockBoundsChanged = MutableStateFlow<VRectF>(VRectF.ZERO)
+    val smallClockMaxSize = MutableStateFlow<VPointF>(VPointF.ZERO)
+    val largeClockMaxSize = MutableStateFlow<VPointF>(VPointF.ZERO)
 
     private fun isDarkTheme(): Boolean {
         val isLightTheme = TypedValue()
@@ -322,8 +325,12 @@ constructor(
         object : ClockEventListener {
             override fun onChangeComplete() {}
 
-            override fun onBoundsChanged(bounds: VRectF) {
-                onClockBoundsChanged.value = bounds
+            override fun onBoundsChanged(currentBounds: VRectF) {
+                onClockBoundsChanged.value = currentBounds
+            }
+
+            override fun onMaxSizeChanged(maxSize: VPointF, isLargeClock: Boolean) {
+                (if (isLargeClock) largeClockMaxSize else smallClockMaxSize).value = maxSize
             }
         }
 
