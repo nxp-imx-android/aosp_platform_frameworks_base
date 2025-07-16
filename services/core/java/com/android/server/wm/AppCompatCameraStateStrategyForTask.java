@@ -83,10 +83,10 @@ class AppCompatCameraStateStrategyForTask implements AppCompatCameraStateStrateg
         }
 
         // TODO(b/423883666): Use `WM_DEBUG_CAMERA_COMPAT`.
-        ProtoLog.v(WM_DEBUG_STATES, "CameraOpen: cameraApp=" + cameraApp
-                + " cameraInfo.mPid=" + cameraAppInfo.mPid
-                + " cameraTask=" + cameraActivity.getTask()
-                + " cameraAppInfo.mTaskId=" + cameraAppInfo.mTaskId);
+        ProtoLog.v(WM_DEBUG_STATES,
+                "CameraOpen: cameraApp=%s cameraInfo.mPid=%d cameraTask=%s "
+                        + "cameraAppInfo.mTaskId=%d",
+                cameraApp, cameraAppInfo.mPid, cameraActivity.getTask(), cameraAppInfo.mTaskId);
 
         final boolean anyCameraAlreadyOpenForTask = mCameraAppInfoSet
                 .containsAnyCameraForTaskId(cameraActivity.getTask().mTaskId);
