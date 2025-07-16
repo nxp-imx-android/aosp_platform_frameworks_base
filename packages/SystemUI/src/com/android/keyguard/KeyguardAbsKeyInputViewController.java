@@ -19,7 +19,6 @@ package com.android.keyguard;
 import static com.android.internal.util.LatencyTracker.ACTION_CHECK_CREDENTIAL;
 import static com.android.internal.util.LatencyTracker.ACTION_CHECK_CREDENTIAL_UNLOCKED;
 import static com.android.keyguard.KeyguardAbsKeyInputView.MINIMUM_PASSWORD_LENGTH_BEFORE_REPORT;
-import static com.android.systemui.Flags.notifyPasswordTextViewUserActivityInBackground;
 
 import android.content.res.ColorStateList;
 import android.os.AsyncTask;
@@ -300,9 +299,7 @@ public abstract class KeyguardAbsKeyInputViewController<T extends KeyguardAbsKey
         getKeyguardSecurityCallback().userActivity();
         getKeyguardSecurityCallback().onUserInput();
         mMessageAreaController.setMessage("");
-        if (notifyPasswordTextViewUserActivityInBackground()) {
-            mUserActivityNotifier.notifyUserActivity();
-        }
+        mUserActivityNotifier.notifyUserActivity();
     }
 
     @Override
