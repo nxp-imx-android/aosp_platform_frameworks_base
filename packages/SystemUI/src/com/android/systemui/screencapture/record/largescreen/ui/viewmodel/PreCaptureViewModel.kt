@@ -60,10 +60,14 @@ constructor(
     private val featuresInteractor: ScreenCaptureRecordLargeScreenFeaturesInteractor,
     private val drawableLoaderViewModelImpl: DrawableLoaderViewModelImpl,
 ) : HydratedActivatable(), DrawableLoaderViewModel by drawableLoaderViewModelImpl {
+
+    private val isShowingUIFlow = MutableStateFlow(true)
     private val captureTypeSource = MutableStateFlow(ScreenCaptureType.SCREENSHOT)
     private val captureRegionSource = MutableStateFlow(ScreenCaptureRegion.FULLSCREEN)
 
     val icons: ScreenCaptureIcons? by iconProvider.icons.hydratedStateOf()
+
+    val isShowingUI: Boolean by isShowingUIFlow.hydratedStateOf()
 
     // TODO(b/423697394) Init default value to be user's previously selected option
     val captureType: ScreenCaptureType by captureTypeSource.hydratedStateOf()
@@ -102,18 +106,30 @@ constructor(
         require(captureTypeSource.value == ScreenCaptureType.SCREENSHOT)
         require(captureRegionSource.value == ScreenCaptureRegion.FULLSCREEN)
 
+        // Finishing the activity is not guaranteed to complete before the screenshot is taken.
+        // Since the pre-capture UI should not be included in the screenshot, hide the UI first.
+        hideUI()
+        closeUI()
+
         backgroundScope.launch {
             // TODO(b/430361425) Pass in current display as argument.
             screenshotInteractor.takeFullscreenScreenshot()
         }
-
-        // TODO(b/427500006) Close the window after requesting a fullscreen screenshot.
     }
 
     fun onPartialRegionDragEnd(offset: Offset, width: Dp, height: Dp) {
         // TODO(b/427541309) Update region box position and size.
     }
 
+    /**
+     * Simply hides all Composables from being visible in the [ScreenCaptureActivity], but does NOT
+     * close the activity. See [closeUI] for closing the activity.
+     */
+    fun hideUI() {
+        isShowingUIFlow.value = false
+    }
+
+    /** Closes the UI by finishing the parent [ScreenCaptureActivity]. */
     fun closeUI() {
         activity.finish()
     }

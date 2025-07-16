@@ -63,6 +63,7 @@ class PreCaptureViewModelTest : SysuiTestCase() {
     fun initialState() =
         testScope.runTest {
             // Assert that the initial values are as expected upon creation and activation.
+            assertThat(viewModel.isShowingUI).isTrue()
             assertThat(viewModel.captureType).isEqualTo(ScreenCaptureType.SCREENSHOT)
             assertThat(viewModel.captureRegion).isEqualTo(ScreenCaptureRegion.FULLSCREEN)
         }
@@ -192,6 +193,14 @@ class PreCaptureViewModelTest : SysuiTestCase() {
             // TODO(b/430364500) Once a11y label is available, use it for a more robust assertion.
             viewModel.updateCaptureRegion(ScreenCaptureRegion.APP_WINDOW)
             assertThat(viewModel.captureRegionButtonViewModels.count { it.isSelected }).isEqualTo(1)
+        }
+
+    @Test
+    fun hideUI_stopsShowingUI() =
+        testScope.runTest {
+            viewModel.hideUI()
+
+            assertThat(viewModel.isShowingUI).isFalse()
         }
 
     @Test

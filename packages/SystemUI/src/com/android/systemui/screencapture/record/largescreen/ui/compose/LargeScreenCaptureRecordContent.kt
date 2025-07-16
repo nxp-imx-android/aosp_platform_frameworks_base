@@ -31,6 +31,8 @@ constructor(private val viewModelFactory: PreCaptureViewModel.Factory) : ScreenC
         val viewModel: PreCaptureViewModel =
             rememberViewModel("PreCaptureViewModel") { viewModelFactory.create() }
 
-        PreCaptureUI(viewModel = viewModel)
+        if (viewModel.isShowingUI) {
+            PreCaptureUI(viewModel = viewModel)
+        }
     }
 }
