@@ -118,6 +118,35 @@ public class DiscreteOpsMigrationHelper {
     }
 
     /**
+     * rollback discrete ops from unified schema sqlite to xml schema.
+     */
+    static void rollbackFromUnifiedSchemaSqliteToXml(AppOpHistoryHelper sourceRegistry,
+            DiscreteOpsXmlRegistry targetRegistry) {
+        try {
+            List<AggregatedAppOpAccessEvent> unifiedSchemaSqliteOps =
+                    sourceRegistry.getAppOpHistory();
+            List<DiscreteOpsSqlRegistry.DiscreteOp> discreteOps = new ArrayList<>();
+            for (AggregatedAppOpAccessEvent event : unifiedSchemaSqliteOps) {
+                discreteOps.add(new DiscreteOpsSqlRegistry.DiscreteOp(event.uid(),
+                        event.packageName(), event.attributionTag(),
+                        event.deviceId(), event.opCode(), event.opFlags(),
+                        event.attributionFlags(),
+                        event.uidState(), event.attributionChainId(),
+                        event.accessTimeMillis(),
+                        event.durationMillis()));
+            }
+            DiscreteOpsXmlRegistry.DiscreteOps xmlOps = getXmlDiscreteOps(discreteOps);
+            targetRegistry.migrateDiscreteAppOpHistory(xmlOps);
+            if (!sourceRegistry.deleteDatabase()) {
+                Slog.w(LOG_TAG, "Couldn't delete appops unified sql database.");
+            }
+        } catch (Exception ex) {
+            Slog.e(LOG_TAG, "rollbackFromUnifiedSchemaSqliteToXml failed.", ex);
+            sourceRegistry.deleteDatabase();
+        }
+    }
+
+    /**
      * rollback discrete ops from sqlite to xml.
      */
     static void rollbackFromSqliteToXml(DiscreteOpsSqlRegistry sourceRegistry,
