@@ -21,15 +21,19 @@ import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.biometrics.authController
 import com.android.systemui.common.ui.data.repository.fakeConfigurationRepository
+import com.android.systemui.deviceentry.domain.interactor.deviceEntryBypassInteractor
 import com.android.systemui.flags.EnableSceneContainer
 import com.android.systemui.flags.andSceneContainer
 import com.android.systemui.keyguard.data.repository.fakeKeyguardClockRepository
 import com.android.systemui.keyguard.data.repository.fakeKeyguardTransitionRepository
 import com.android.systemui.keyguard.data.repository.keyguardOcclusionRepository
+import com.android.systemui.keyguard.domain.interactor.keyguardBlueprintInteractor
 import com.android.systemui.keyguard.domain.interactor.keyguardClockInteractor
+import com.android.systemui.keyguard.domain.interactor.keyguardTransitionInteractor
 import com.android.systemui.keyguard.shared.model.ClockSize
 import com.android.systemui.keyguard.shared.model.KeyguardState
 import com.android.systemui.keyguard.shared.transition.fakeKeyguardTransitionAnimationCallback
+import com.android.systemui.keyguard.shared.transition.keyguardTransitionAnimationCallback
 import com.android.systemui.keyguard.shared.transition.keyguardTransitionAnimationCallbackDelegator
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.collectLastValue
@@ -51,12 +55,15 @@ import com.android.systemui.statusbar.notification.data.repository.ActiveNotific
 import com.android.systemui.statusbar.notification.data.repository.activeNotificationListRepository
 import com.android.systemui.statusbar.notification.domain.interactor.activeNotificationsInteractor
 import com.android.systemui.testKosmos
+import com.android.systemui.unfold.domain.interactor.unfoldTransitionInteractor
 import com.android.systemui.unfold.fakeUnfoldTransitionProgressProvider
 import com.android.systemui.util.mockito.mock
 import com.android.systemui.util.mockito.whenever
+import com.android.systemui.wallpapers.domain.interactor.wallpaperFocalAreaInteractor
 import com.google.common.truth.Truth.assertThat
 import java.util.Locale
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.MutableStateFlow
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -124,6 +131,52 @@ class LockscreenContentViewModelTest(flags: FlagsParameterization) : SysuiTestCa
             setupState(hasNotifications = false)
 
             assertThat(underTest.layout.isNotificationsVisible).isFalse()
+        }
+
+    @Test
+    fun isDateAndWeatherVisible_isDateWeatherDecoupledFalse_false() =
+        kosmos.runTest {
+            val smartspaceViewModel = mock<KeyguardSmartspaceViewModel>()
+            whenever(smartspaceViewModel.isDateWeatherDecoupled).thenReturn(false)
+
+            val underTest = createTestViewModel(smartspaceViewModel = smartspaceViewModel)
+
+            assertThat(underTest.layout.isDateAndWeatherVisible).isFalse()
+        }
+
+    @Test
+    fun isDateAndWeatherVisible_isDateWeatherDecoupledTrue_true() =
+        kosmos.runTest {
+            val smartspaceViewModel = mock<KeyguardSmartspaceViewModel>()
+            whenever(smartspaceViewModel.isDateWeatherDecoupled).thenReturn(true)
+
+            val underTest = createTestViewModel(smartspaceViewModel = smartspaceViewModel)
+
+            assertThat(underTest.layout.isDateAndWeatherVisible).isTrue()
+        }
+
+    @Test
+    fun shouldDateWeatherBeBelowSmallClock_false() =
+        kosmos.runTest {
+            val clockViewModel = mock<KeyguardClockViewModel>()
+            whenever(clockViewModel.shouldDateWeatherBeBelowSmallClock)
+                .thenReturn(MutableStateFlow(false))
+
+            val underTest = createTestViewModel(clockViewModel = clockViewModel)
+
+            assertThat(underTest.layout.shouldDateWeatherBeBelowSmallClock).isFalse()
+        }
+
+    @Test
+    fun shouldDateWeatherBeBelowSmallClock_true() =
+        kosmos.runTest {
+            val clockViewModel = mock<KeyguardClockViewModel>()
+            whenever(clockViewModel.shouldDateWeatherBeBelowSmallClock)
+                .thenReturn(MutableStateFlow(true))
+
+            val underTest = createTestViewModel(clockViewModel = clockViewModel)
+
+            assertThat(underTest.layout.shouldDateWeatherBeBelowSmallClock).isTrue()
         }
 
     @Test
@@ -284,5 +337,29 @@ class LockscreenContentViewModelTest(flags: FlagsParameterization) : SysuiTestCa
             maxTranslation,
         )
         return maxTranslation
+    }
+
+    private fun Kosmos.createTestViewModel(
+        smartspaceViewModel: KeyguardSmartspaceViewModel = keyguardSmartspaceViewModel,
+        clockViewModel: KeyguardClockViewModel = keyguardClockViewModel,
+    ): LockscreenContentViewModel {
+        return LockscreenContentViewModel(
+            clockInteractor = keyguardClockInteractor,
+            interactor = keyguardBlueprintInteractor,
+            authController = authController,
+            touchHandlingFactory = keyguardTouchHandlingViewModelFactory,
+            shadeModeInteractor = shadeModeInteractor,
+            unfoldTransitionInteractor = unfoldTransitionInteractor,
+            deviceEntryBypassInteractor = deviceEntryBypassInteractor,
+            transitionInteractor = keyguardTransitionInteractor,
+            keyguardTransitionAnimationCallbackDelegator =
+                keyguardTransitionAnimationCallbackDelegator,
+            keyguardTransitionAnimationCallback = keyguardTransitionAnimationCallback,
+            keyguardMediaViewModelFactory = keyguardMediaViewModelFactory,
+            keyguardSmartspaceViewModel = smartspaceViewModel,
+            keyguardClockViewModel = clockViewModel,
+            activeNotificationsInteractor = activeNotificationsInteractor,
+            wallpaperFocalAreaInteractor = wallpaperFocalAreaInteractor,
+        )
     }
 }
