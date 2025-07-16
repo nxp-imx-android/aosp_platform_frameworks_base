@@ -132,17 +132,6 @@ public class NotificationIconContainer extends ViewGroup {
         }
     }.setDuration(CONTENT_FADE_DURATION);
 
-    // TODO(b/278765923): Replace these with domain-agnostic state
-    /* Maximum number of icons on AOD when also showing overflow dot. */
-    private int mMaxIconsOnAod;
-    /* Maximum number of icons in short shelf on lockscreen when also showing overflow dot. */
-    private int mMaxIconsOnLockscreen;
-    /* Maximum number of icons in the status bar when also showing overflow dot. */
-    private int mMaxStaticIcons;
-    private boolean mDozing;
-    private boolean mOnLockScreen;
-    private int mSpeedBumpIndex = -1;
-
     private int mMaxIcons = Integer.MAX_VALUE;
     private boolean mOverrideIconColor;
     private boolean mUseInverseOverrideIconColor;
@@ -166,6 +155,8 @@ public class NotificationIconContainer extends ViewGroup {
     private IconState mFirstVisibleIconState;
     private float mVisualOverflowStart;
     private boolean mIsShowingOverflowDot;
+    private int mFirstOverflowIndex;
+    private boolean mWasOverflowForced;
     @Nullable private StatusBarIconView mIsolatedIcon;
     @Nullable private Rect mIsolatedIconLocation;
     private final int[] mAbsolutePosition = new int[2];
@@ -182,10 +173,6 @@ public class NotificationIconContainer extends ViewGroup {
     }
 
     private void initResources() {
-        mMaxIconsOnAod = getResources().getInteger(R.integer.max_notif_icons_on_aod);
-        mMaxIconsOnLockscreen = getResources().getInteger(R.integer.max_notif_icons_on_lockscreen);
-        mMaxStaticIcons = getResources().getInteger(R.integer.max_notif_static_icons);
-
         mDotPadding = getResources().getDimensionPixelSize(R.dimen.overflow_icon_dot_padding);
         int staticDotRadius = getResources().getDimensionPixelSize(R.dimen.overflow_dot_radius);
         mStaticDotDiameter = 2 * staticDotRadius;
@@ -293,7 +280,12 @@ public class NotificationIconContainer extends ViewGroup {
                 + " overrideIconColor=" + mOverrideIconColor
                 + ", maxIcons=" + mMaxIcons
                 + ", isStaticLayout=" + mIsStaticLayout
+                + ", iconSize=" + mIconSize
+                + ", rightBound=" + getRightBound()
                 + ", themedTextColorPrimary=#" + Integer.toHexString(mThemedTextColorPrimary)
+                + ", showingOverflowDot=" + mIsShowingOverflowDot
+                + ", firstOverflowIndex=" + mFirstOverflowIndex
+                + ", wasOverflowForced=" + mWasOverflowForced
                 + " }";
     }
 
@@ -456,8 +448,7 @@ public class NotificationIconContainer extends ViewGroup {
     }
 
     @VisibleForTesting
-    boolean shouldForceOverflow(int i, int speedBumpIndex, float iconAppearAmount,
-            int maxVisibleIcons) {
+    boolean shouldForceOverflow(int i, float iconAppearAmount, int maxVisibleIcons) {
         return i >= maxVisibleIcons && iconAppearAmount > 0.0f;
     }
 
@@ -481,7 +472,9 @@ public class NotificationIconContainer extends ViewGroup {
      */
     public void calculateIconXTranslations() {
         float translationX = getLeftBound();
-        int firstOverflowIndex = -1;
+        mFirstOverflowIndex = -1;
+        mIsShowingOverflowDot = false;
+        mWasOverflowForced = false;
         int childCount = getChildCount();
         int maxVisibleIcons = mMaxIcons;
         float layoutRight = getRightBound();
@@ -503,24 +496,24 @@ public class NotificationIconContainer extends ViewGroup {
                     ? StatusBarIconView.STATE_HIDDEN
                     : StatusBarIconView.STATE_ICON;
 
-            final boolean forceOverflow = shouldForceOverflow(i, mSpeedBumpIndex,
-                    iconState.iconAppearAmount, maxVisibleIcons);
+            final boolean forceOverflow =
+                    shouldForceOverflow(i, iconState.iconAppearAmount, maxVisibleIcons);
             final boolean isOverflowing = forceOverflow || isOverflowing(
                     /* isLastChild= */ i == childCount - 1, translationX, layoutRight, mIconSize);
 
             // First icon to overflow.
-            if (firstOverflowIndex == -1 && isOverflowing) {
-                firstOverflowIndex = i;
+            if (mFirstOverflowIndex == -1 && isOverflowing) {
+                mFirstOverflowIndex = i;
+                mWasOverflowForced = forceOverflow;
                 mVisualOverflowStart = translationX;
             }
 
             final float drawingScale = getDrawingScale(view);
             translationX += iconState.iconAppearAmount * view.getWidth() * drawingScale;
         }
-        mIsShowingOverflowDot = false;
-        if (firstOverflowIndex != -1) {
+        if (mFirstOverflowIndex != -1) {
             translationX = mVisualOverflowStart;
-            for (int i = firstOverflowIndex; i < childCount; i++) {
+            for (int i = mFirstOverflowIndex; i < childCount; i++) {
                 View view = getChildAt(i);
                 IconState iconState = mIconStates.get(view);
                 int dotWidth = mStaticDotDiameter + mDotPadding;
