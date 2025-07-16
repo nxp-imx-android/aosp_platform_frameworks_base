@@ -432,17 +432,19 @@ public abstract class MediaRoute2ProviderService extends Service {
 
         AudioFormat audioFormat = formats.mAudioFormat;
         var mediaStreamsBuilder = new MediaStreams.Builder(sessionInfo);
+        boolean success = false;
         if (audioFormat != null) {
-            populateAudioStream(audioFormat, uid, mediaStreamsBuilder);
+            success = populateAudioStream(audioFormat, uid, mediaStreamsBuilder);
         }
         // TODO: b/380431086 - Populate video stream once we add support for video.
 
         MediaStreams streams = mediaStreamsBuilder.build();
-        var audioRecord = streams.mAudioRecord;
-        if (audioRecord == null) {
+        if (!success) {
+            // We failed to start the media re-routing. If the app had focus, it shouldn't lose it.
+            releaseAudioStream(streams, /* shouldRetainFocus= */ true);
             Log.e(
                     TAG,
-                    "Audio record is not populated. Returning an empty stream and scheduling the"
+                    "Failed to re-route audio. Returning an empty stream and scheduling the"
                             + " session release for: "
                             + sessionInfo);
             mHandler.post(() -> onReleaseSession(REQUEST_ID_NONE, sessionInfo.getOriginalId()));
@@ -461,8 +463,12 @@ public abstract class MediaRoute2ProviderService extends Service {
         }
     }
 
-    @RequiresPermission(Manifest.permission.MODIFY_AUDIO_ROUTING)
-    private void populateAudioStream(
+    @RequiresPermission(
+            allOf = {
+                Manifest.permission.MODIFY_AUDIO_ROUTING,
+                Manifest.permission.MODIFY_AUDIO_SETTINGS_PRIVILEGED
+            })
+    private boolean populateAudioStream(
             AudioFormat audioFormat, int uid, MediaStreams.Builder builder) {
         var audioAttributes =
                 new AudioAttributes.Builder().setUsage(AudioAttributes.USAGE_MEDIA).build();
@@ -482,20 +488,28 @@ public abstract class MediaRoute2ProviderService extends Service {
         var audioManager = getSystemService(AudioManager.class);
         if (audioManager == null) {
             Log.e(TAG, "Couldn't fetch the audio manager.");
-            return;
+            return false;
         }
         int audioPolicyResult = audioManager.registerAudioPolicy(audioPolicy);
         if (audioPolicyResult != AudioManager.SUCCESS) {
             Log.e(TAG, "Failed to register the audio policy.");
-            return;
+            return false;
         }
         var audioRecord = audioPolicy.createAudioRecordSink(mix);
         if (audioRecord == null) {
             Log.e(TAG, "Audio record creation failed.");
             audioManager.unregisterAudioPolicy(audioPolicy);
-            return;
+            return false;
         }
         builder.setAudioStream(audioPolicy, audioRecord);
+        var token = audioManager.enterFocusIsolation(uid);
+        if (token == null) {
+            Log.e(TAG, "Failed to isolate audio focus.");
+            return false;
+        }
+        builder.setAudioFocusIsolationToken(token);
+        Log.i(TAG, "Successfully re-routed and isolated audio focus for uid=" + uid);
+        return true;
     }
 
     /**
@@ -527,9 +541,19 @@ public abstract class MediaRoute2ProviderService extends Service {
     /**
      * Notifies that the session is released.
      *
+     * <p>This method only requires permissions when releasing {@link #onCreateSystemRoutingSession
+     * system media routing sessions}. A provider without {@link #CATEGORY_SYSTEM_MEDIA system
+     * routing permissions} will never receive a request to create a system media routing session.
+     *
      * @param sessionId the ID of the released session.
      * @see #onReleaseSession(long, String)
      */
+    @RequiresPermission(
+            allOf = {
+                Manifest.permission.MODIFY_AUDIO_ROUTING,
+                Manifest.permission.MODIFY_AUDIO_SETTINGS_PRIVILEGED
+            },
+            conditional = true)
     public final void notifySessionReleased(@NonNull String sessionId) {
         if (TextUtils.isEmpty(sessionId)) {
             throw new IllegalArgumentException("sessionId must not be empty");
@@ -543,7 +567,11 @@ public abstract class MediaRoute2ProviderService extends Service {
             sessionInfo = mSessionInfos.remove(sessionId);
             if (Flags.enableMirroringInMediaRouter2()) {
                 if (sessionInfo == null) {
-                    sessionInfo = maybeReleaseMediaStreams(sessionId);
+                    // When the session is released as a result of a provider event, we don't try to
+                    // retain focus. The user's intent to change routing is reflected through
+                    // MediaRouter2 transfers.
+                    sessionInfo =
+                            maybeReleaseMediaStreams(sessionId, /* shouldRetainFocus= */ false);
                 }
                 if (sessionInfo == null) {
                     sessionInfo = mPendingSystemSessionReleases.remove(sessionId);
@@ -568,18 +596,28 @@ public abstract class MediaRoute2ProviderService extends Service {
     /**
      * Releases any system media routing resources associated with the given {@code sessionId}.
      *
+     * @param sessionId The id of the session to release.
+     * @param shouldRetainFocus Whether the routed application should retain focus when the session
+     *     stops. Typically, this is true when the user expressed the intention to transfer playback
+     *     back to this device, and false otherwise.
      * @return The {@link RoutingSessionInfo} that corresponds to the released media streams, or
      *     null if no streams were released.
      */
+    @RequiresPermission(
+            allOf = {
+                Manifest.permission.MODIFY_AUDIO_ROUTING,
+                Manifest.permission.MODIFY_AUDIO_SETTINGS_PRIVILEGED
+            })
     @Nullable
-    private RoutingSessionInfo maybeReleaseMediaStreams(String sessionId) {
+    private RoutingSessionInfo maybeReleaseMediaStreams(
+            String sessionId, boolean shouldRetainFocus) {
         if (!Flags.enableMirroringInMediaRouter2()) {
             return null;
         }
         synchronized (mSessionLock) {
             var streams = mOngoingMediaStreams.remove(sessionId);
             if (streams != null) {
-                releaseAudioStream(streams.mAudioPolicy, streams.mAudioRecord);
+                releaseAudioStream(streams, shouldRetainFocus);
                 // TODO: b/380431086: Release the video stream once implemented.
                 return streams.mSessionInfo;
             }
@@ -587,18 +625,41 @@ public abstract class MediaRoute2ProviderService extends Service {
         return null;
     }
 
-    // We cannot reach the code that requires MODIFY_AUDIO_ROUTING without holding it.
-    @SuppressWarnings("MissingPermission")
-    private void releaseAudioStream(AudioPolicy audioPolicy, AudioRecord audioRecord) {
-        if (audioPolicy == null) {
-            return;
-        }
+    /**
+     * Releases any resources held by the given {@link MediaStreams}.
+     *
+     * <p>Release order should be the reverse of resource acquisition order, in {@link
+     * #notifySystemRoutingSessionCreated} and {@link #populateAudioStream}.
+     *
+     * @param streams The streams object whose resources to release.
+     * @param shouldRetainFocus Whether to use {link AudioManager#FOCUS_ISOLATION_EXIT_RETAIN_FOCUS}
+     *     or {link AudioManager#FOCUS_ISOLATION_EXIT_LOSE_FOCUS} when exiting focus isolation, if
+     *     needed.
+     */
+    @RequiresPermission(
+            allOf = {
+                Manifest.permission.MODIFY_AUDIO_ROUTING,
+                Manifest.permission.MODIFY_AUDIO_SETTINGS_PRIVILEGED
+            })
+    private void releaseAudioStream(MediaStreams streams, boolean shouldRetainFocus) {
         var audioManager = getSystemService(AudioManager.class);
         if (audioManager == null) {
+            Log.e(TAG, "releaseAudioStream: Failed to retrieve audio manager.");
             return;
         }
-        audioRecord.release();
-        audioManager.unregisterAudioPolicy(audioPolicy);
+        if (streams.mToken != null) {
+            audioManager.exitFocusIsolation(
+                    streams.mToken,
+                    shouldRetainFocus
+                            ? AudioManager.FOCUS_ISOLATION_EXIT_RETAIN_FOCUS
+                            : AudioManager.FOCUS_ISOLATION_EXIT_LOSE_FOCUS);
+        }
+        if (streams.mAudioRecord != null) {
+            streams.mAudioRecord.release();
+        }
+        if (streams.mAudioPolicy != null) {
+            audioManager.unregisterAudioPolicy(streams.mAudioPolicy);
+        }
     }
 
     /**
@@ -793,11 +854,21 @@ public abstract class MediaRoute2ProviderService extends Service {
     /**
      * Updates routes of the provider and notifies the system media router service.
      *
+     * <p>Passing routes that {@link MediaRoute2Info#getSupportedRoutingTypes() support system media
+     * routing} to this method requires {@link #CATEGORY_SYSTEM_MEDIA system media routing
+     * permissions}.
+     *
      * @throws IllegalArgumentException If {@code routes} contains a route that {@link
      *     MediaRoute2Info#getSupportedRoutingTypes() supports} both system media routing and remote
      *     routing but doesn't contain any {@link MediaRoute2Info#getDeduplicationIds()
      *     deduplication ids}.
      */
+    @RequiresPermission(
+            allOf = {
+                Manifest.permission.MODIFY_AUDIO_ROUTING,
+                Manifest.permission.MODIFY_AUDIO_SETTINGS_PRIVILEGED
+            },
+            conditional = true)
     public final void notifyRoutes(@NonNull Collection<MediaRoute2Info> routes) {
         requireNonNull(routes, "routes must not be null");
         List<MediaRoute2Info> sanitizedRoutes = new ArrayList<>(routes.size());
@@ -1101,15 +1172,22 @@ public abstract class MediaRoute2ProviderService extends Service {
                     MediaRoute2ProviderService.this, requestId, sessionId, volume));
         }
 
+        @RequiresPermission(
+                allOf = {
+                    Manifest.permission.MODIFY_AUDIO_ROUTING,
+                    Manifest.permission.MODIFY_AUDIO_SETTINGS_PRIVILEGED
+                },
+                conditional = true)
         @Override
-        public void releaseSession(long requestId, String sessionId) {
+        public void releaseSession(long requestId, String sessionId, boolean shouldRetainFocus) {
             if (!checkCallerIsSystem()) {
                 return;
             }
             synchronized (mSessionLock) {
                 // We proactively release the system media routing session resources when the
                 // system requests it, to ensure it happens immediately.
-                RoutingSessionInfo releasedSession = maybeReleaseMediaStreams(sessionId);
+                RoutingSessionInfo releasedSession =
+                        maybeReleaseMediaStreams(sessionId, shouldRetainFocus);
                 if (releasedSession != null) {
                     mPendingSystemSessionReleases.put(sessionId, releasedSession);
                 } else if (!checkSessionIdIsValid(sessionId, "releaseSession")) {
@@ -1135,6 +1213,7 @@ public abstract class MediaRoute2ProviderService extends Service {
 
         @Nullable private final AudioPolicy mAudioPolicy;
         @Nullable private final AudioRecord mAudioRecord;
+        @Nullable private final AudioManager.FocusIsolationToken mToken;
 
         /**
          * Holds the last {@link RoutingSessionInfo} associated with these streams.
@@ -1149,6 +1228,7 @@ public abstract class MediaRoute2ProviderService extends Service {
             this.mSessionInfo = builder.mSessionInfo;
             this.mAudioPolicy = builder.mAudioPolicy;
             this.mAudioRecord = builder.mAudioRecord;
+            this.mToken = builder.mToken;
         }
 
         /**
@@ -1170,6 +1250,7 @@ public abstract class MediaRoute2ProviderService extends Service {
             @NonNull private RoutingSessionInfo mSessionInfo;
             @Nullable private AudioPolicy mAudioPolicy;
             @Nullable private AudioRecord mAudioRecord;
+            @Nullable private AudioManager.FocusIsolationToken mToken;
 
             /**
              * Constructor.
@@ -1186,6 +1267,11 @@ public abstract class MediaRoute2ProviderService extends Service {
                 mAudioPolicy = requireNonNull(audioPolicy);
                 mAudioRecord = requireNonNull(audioRecord);
                 return this;
+            }
+
+            /** Sets the {@link AudioManager#enterFocusIsolation focus isolation token}. */
+            public void setAudioFocusIsolationToken(AudioManager.FocusIsolationToken token) {
+                this.mToken = token;
             }
 
             /** Builds a {@link MediaStreams} instance. */
