@@ -19,7 +19,6 @@ package com.android.server.pm.verify.developer;
 import static android.content.pm.PackageInstaller.DEVELOPER_VERIFICATION_POLICY_BLOCK_FAIL_CLOSED;
 import static android.content.pm.PackageInstaller.DEVELOPER_VERIFICATION_POLICY_BLOCK_FAIL_OPEN;
 import static android.content.pm.verify.developer.DeveloperVerificationSession.DEVELOPER_VERIFICATION_BYPASSED_REASON_EMERGENCY;
-import static android.content.pm.verify.developer.DeveloperVerificationSession.DEVELOPER_VERIFICATION_BYPASSED_REASON_UNSPECIFIED;
 import static android.os.Process.INVALID_UID;
 
 import static com.google.common.truth.Truth.assertThat;
@@ -483,10 +482,9 @@ public class DeveloperVerifierControllerTest {
         // Reason cannot be negative
         expectThrows(IllegalArgumentException.class,
                 () -> session.reportVerificationBypassed(-1));
-        // Reason cannot be unspecified
+        // Reason cannot be 0
         expectThrows(IllegalArgumentException.class,
-                () -> session.reportVerificationBypassed(
-                        DEVELOPER_VERIFICATION_BYPASSED_REASON_UNSPECIFIED));
+                () -> session.reportVerificationBypassed(0));
     }
 
     @Test

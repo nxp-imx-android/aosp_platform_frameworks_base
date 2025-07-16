@@ -23,7 +23,6 @@ import android.annotation.Nullable;
 import android.content.pm.DataLoaderType;
 import android.content.pm.PackageInstaller;
 import android.content.pm.PackageManager;
-import android.content.pm.verify.developer.DeveloperVerificationSession;
 import android.content.pm.verify.developer.DeveloperVerificationStatus;
 import android.os.Handler;
 
@@ -85,8 +84,7 @@ final class SessionMetrics {
     private long mDeveloperVerificationRetryDurationMillis;
 
     private int mDeveloperVerifierUid = INVALID_UID;
-    private int mIsDeveloperVerificationBypassedReason =
-            DeveloperVerificationSession.DEVELOPER_VERIFICATION_BYPASSED_REASON_UNSPECIFIED;
+    private int mIsDeveloperVerificationBypassedReason = 0;
     private boolean mIsDeveloperVerificationTimeoutExtensionRequested = false;
     private final boolean mHasDeveloperVerificationExtensionParams;
     private boolean mIsDeveloperVerificationPolicyOverridden = false;
