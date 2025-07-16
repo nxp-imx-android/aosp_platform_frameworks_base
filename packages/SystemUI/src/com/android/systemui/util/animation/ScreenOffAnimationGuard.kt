@@ -16,7 +16,9 @@
 
 package com.android.systemui.util.animation
 
+import android.animation.Animator
 import android.animation.ValueAnimator
+import android.content.Context
 import android.content.res.Resources
 import android.os.Build
 import android.util.Log
@@ -35,11 +37,11 @@ private const val LOG_TAG = "AnimationGuard"
  * screen is off.
  */
 fun LottieAnimationView.enableScreenOffAnimationGuard() {
-    if (!screenOffAnimationGuardEnabled()) {
+    if (!(Build.IS_ENG || Build.IS_USERDEBUG)) {
         return
     }
 
-    if (!(Build.IS_ENG || Build.IS_USERDEBUG)) {
+    if (!screenOffAnimationGuardEnabled()) {
         return
     }
 
@@ -83,3 +85,63 @@ fun LottieAnimationView.enableScreenOffAnimationGuard() {
     lottieDrawable.addAnimatorUpdateListener(screenOffListenerGuard)
     setTag(R.id.screen_off_animation_guard_set, System.identityHashCode(lottieDrawable))
 }
+
+/**
+ * Attaches a listener which will report a [Log.wtf] error if the animator is attempting to render
+ * frames while the screen is off.
+ */
+fun ValueAnimator.enableScreenOffAnimationGuard(context: Context) {
+    if (!(Build.IS_ENG || Build.IS_USERDEBUG)) {
+        return
+    }
+
+    enableScreenOffAnimationGuard({ context.display.state == Display.STATE_OFF })
+}
+
+/** Attaches an animation guard listener to the given ValueAnimator. */
+fun ValueAnimator.enableScreenOffAnimationGuard(isDisplayOffPredicate: () -> Boolean) {
+    if (!screenOffAnimationGuardEnabled()) {
+        return
+    }
+
+    val listener = ScreenOffAnimationGuardListener(isDisplayOffPredicate)
+    this.addListener(listener)
+    this.addUpdateListener(listener)
+}
+
+/**
+ * Remembers the stack trace of started animation and then reports an error if it runs when screen
+ * is off.
+ */
+private class ScreenOffAnimationGuardListener(private val isDisplayOffPredicate: () -> Boolean) :
+    Animator.AnimatorListener, ValueAnimator.AnimatorUpdateListener {
+
+    // Holds the exception stack trace for the report.
+    var animationStartedStackTrace: Exception? = null
+    var animationDuringScreenOffReported = false
+
+    override fun onAnimationStart(animation: Animator) {
+        // This captures the stack trace of the starter of this animation.
+        animationStartedStackTrace =
+            AnimationDuringScreenOffException("Animation running during screen off.")
+        animationDuringScreenOffReported = false
+    }
+
+    override fun onAnimationEnd(animation: Animator) {
+        animationStartedStackTrace = null
+    }
+
+    override fun onAnimationUpdate(animation: ValueAnimator) {
+        if (!animationDuringScreenOffReported && isDisplayOffPredicate()) {
+            Log.wtf(LOG_TAG, "View animator running during screen off.", animationStartedStackTrace)
+            animationDuringScreenOffReported = true
+        }
+    }
+
+    override fun onAnimationCancel(animation: Animator) {}
+
+    override fun onAnimationRepeat(animation: Animator) {}
+}
+
+/** Used to record the stack trace of animation starter. */
+private class AnimationDuringScreenOffException(message: String) : RuntimeException(message)
