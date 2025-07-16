@@ -279,7 +279,7 @@ object ProtoLogTool {
             cacheClass.addFieldWithInitializer(
                 "boolean[]",
                 "${group.key}_enabled",
-                ArrayCreationExpr().setElementType("boolean[]").setInitializer(
+                ArrayCreationExpr().setElementType("boolean").setInitializer(
                     ArrayInitializerExpr().setValues(nodeList)
                 ),
                 Modifier.Keyword.PUBLIC,
