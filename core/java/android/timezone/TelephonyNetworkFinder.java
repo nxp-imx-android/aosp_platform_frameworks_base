@@ -41,14 +41,14 @@ public final class TelephonyNetworkFinder {
      * returned, e.g. if they operate in countries other than the one suggested by their MCC.
      */
     @Nullable
-    public TelephonyNetwork findNetworkByMccMnc(@NonNull String mcc, @NonNull String mnc) {
+    public MobileCountries findCountriesByMccMnc(@NonNull String mcc, @NonNull String mnc) {
         Objects.requireNonNull(mcc);
         Objects.requireNonNull(mnc);
 
-        com.android.i18n.timezone.TelephonyNetwork telephonyNetworkDelegate =
-                mDelegate.findNetworkByMccMnc(mcc, mnc);
+        com.android.i18n.timezone.MobileCountries telephonyNetworkDelegate =
+                mDelegate.findCountriesByMccMnc(mcc, mnc);
         return telephonyNetworkDelegate != null
-                ? new TelephonyNetwork(telephonyNetworkDelegate) : null;
+                ? new MobileCountries(telephonyNetworkDelegate) : null;
     }
 
     /**
