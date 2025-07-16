@@ -87,7 +87,7 @@ public final class VolumeInfo implements Parcelable {
      * @throws IllegalStateException when called on a VolumeInfo not configured for
      *      stream types.
      */
-    public @AudioManager.PublicStreamTypes int getStreamType() {
+    public @AudioManager.VolumeControlStreamTypes int getStreamType() {
         if (!mUsesStreamType) {
             throw new IllegalStateException("VolumeInfo doesn't use stream types");
         }
