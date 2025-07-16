@@ -440,7 +440,10 @@ object ProtoLogTool {
                     println("CodeProcessingException " +
                             "(${index + 1}/${injector.processingErrors.size}): \n${it.message}\n")
                 }
-                exitProcess(1)
+                // Do not fail the build if there are processing errors.
+                // TODO (b/370425985): Set to 1 once the bug is fixed, so we fail the build if there
+                //  are processing errors.
+                exitProcess(0)
             }
         } catch (ex: InvalidCommandException) {
             println("InvalidCommandException: \n${ex.message}\n")
@@ -464,8 +467,7 @@ object ProtoLogTool {
     }
 
     var injector = object : Injector {
-        override val processingErrors: MutableList<CodeProcessingException>
-            get() = mutableListOf()
+        override val processingErrors: MutableList<CodeProcessingException> = mutableListOf()
         override fun fileOutputStream(file: String) = FileOutputStream(file)
         override fun readText(file: File) = file.readText()
         override fun readLogGroups(jarPath: String, className: String) =
