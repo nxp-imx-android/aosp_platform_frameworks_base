@@ -404,6 +404,6 @@ class DesktopModeLaunchParamsModifier implements LaunchParamsModifier {
     }
 
     private void outputLog() {
-        ProtoLog.v(WmProtoLogGroups.WM_DEBUG_TASKS_LAUNCH_PARAMS, mLogBuilder.toString());
+        ProtoLog.v(WmProtoLogGroups.WM_DEBUG_TASKS_LAUNCH_PARAMS, "%s", mLogBuilder.toString());
     }
 }

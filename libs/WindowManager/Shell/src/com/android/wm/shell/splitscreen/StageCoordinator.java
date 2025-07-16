@@ -2335,8 +2335,8 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
                     sideStageTopTaskId, splitBounds);
             if (added) {
                 ProtoLog.d(WM_SHELL_SPLIT_SCREEN,
-                        "updateRecentTasksSplitPair: adding split pair ltTask="
-                                + leftTopTaskIds + " rbTask=" + rightBottomTaskIds);
+                        "updateRecentTasksSplitPair: adding split pair ltTask=%s rbTask=%s",
+                        leftTopTaskIds, rightBottomTaskIds);
             }
         });
     }
