@@ -37,12 +37,12 @@ import android.graphics.RectF;
 import android.testing.AndroidTestingRunner;
 import android.testing.TestableContext;
 import android.testing.TestableLooper;
-import android.view.accessibility.AccessibilityManager;
 
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
@@ -76,6 +76,29 @@ public class AutoclickIndicatorViewTest {
         // Verify ring is drawn.
         verify(mMockCanvas).drawArc(
                 any(RectF.class), eq(-90f), anyFloat(), eq(false), any(Paint.class));
+        // Verify point is drawn (fill and stroke).
+        verify(mMockCanvas, times(2)).drawCircle(eq(100f), eq(200f), anyFloat(), any(Paint.class));
+    }
+
+    @Test
+    public void onDraw_mouseMovesAfterIndicatorShown_pointMovesWithMouse() {
+        mAutoclickIndicatorView.setCoordination(100f, 200f);
+        mAutoclickIndicatorView.redrawIndicator();
+        // After indicator is shown, mouse moves to a new position.
+        mAutoclickIndicatorView.setCoordination(300f, 400f);
+
+        mAutoclickIndicatorView.onDraw(mMockCanvas);
+
+        // Verify ring is drawn at the original snapshot position.
+        ArgumentCaptor<RectF> rectCaptor = ArgumentCaptor.forClass(RectF.class);
+        verify(mMockCanvas)
+                .drawArc(rectCaptor.capture(), eq(-90f), anyFloat(), eq(false), any(Paint.class));
+        RectF ringRect = rectCaptor.getValue();
+        assertThat(ringRect.centerX()).isEqualTo(100f);
+        assertThat(ringRect.centerY()).isEqualTo(200f);
+
+        // Verify point is drawn at the new mouse position (fill and stroke).
+        verify(mMockCanvas, times(2)).drawCircle(eq(300f), eq(400f), anyFloat(), any(Paint.class));
     }
 
     @Test
@@ -86,12 +109,15 @@ public class AutoclickIndicatorViewTest {
 
         verify(mMockCanvas, never()).drawArc(
                 any(RectF.class), anyFloat(), anyFloat(), anyBoolean(), any(Paint.class));
+        verify(mMockCanvas, never())
+                .drawCircle(anyFloat(), anyFloat(), anyFloat(), any(Paint.class));
     }
 
     @Test
     public void setCoordination_showIndicatorTrue_invalidatesView() {
         mSpyAutoclickIndicatorView.setCoordination(100f, 200f);
         mSpyAutoclickIndicatorView.redrawIndicator();
+        clearInvocations(mSpyAutoclickIndicatorView);
 
         mSpyAutoclickIndicatorView.setCoordination(300f, 400f);
 
@@ -110,11 +136,28 @@ public class AutoclickIndicatorViewTest {
     }
 
     @Test
+    public void setCoordination_sameCoordinates_doesNotInvalidateView() {
+        mSpyAutoclickIndicatorView.setCoordination(100f, 200f);
+        mSpyAutoclickIndicatorView.redrawIndicator();
+        clearInvocations(mSpyAutoclickIndicatorView);
+
+        mSpyAutoclickIndicatorView.setCoordination(100f, 200f);
+
+        verify(mSpyAutoclickIndicatorView, never()).invalidate();
+    }
+
+    @Test
     public void redrawIndicator_startsAnimation() {
         mAutoclickIndicatorView.redrawIndicator();
 
         ValueAnimator animator = mSpyAutoclickIndicatorView.getAnimatorForTesting();
         assertThat(animator.isStarted()).isTrue();
+    }
+
+    @Test
+    public void redrawIndicator_invalidatesView() {
+        mSpyAutoclickIndicatorView.redrawIndicator();
+        verify(mSpyAutoclickIndicatorView).invalidate();
     }
 
     @Test
@@ -124,6 +167,16 @@ public class AutoclickIndicatorViewTest {
 
         ValueAnimator animator = mSpyAutoclickIndicatorView.getAnimatorForTesting();
         assertThat(animator.isStarted()).isFalse();
+    }
+
+    @Test
+    public void clearIndicator_invalidatesView() {
+        mSpyAutoclickIndicatorView.redrawIndicator();
+        clearInvocations(mSpyAutoclickIndicatorView);
+
+        mSpyAutoclickIndicatorView.clearIndicator();
+
+        verify(mSpyAutoclickIndicatorView).invalidate();
     }
 
     @Test
