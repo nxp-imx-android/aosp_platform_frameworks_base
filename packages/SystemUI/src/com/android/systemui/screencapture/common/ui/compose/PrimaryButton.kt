@@ -16,20 +16,15 @@
 
 package com.android.systemui.screencapture.common.ui.compose
 
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.android.compose.PlatformButton
 import com.android.systemui.common.shared.model.Icon as IconModel
 import com.android.systemui.common.ui.compose.Icon
-
-private val ButtonPaddings = PaddingValues(horizontal = 16.dp, vertical = 8.dp)
 
 /** Component for a primary button containing text and an optional leading icon. */
 @Composable
@@ -38,14 +33,12 @@ fun PrimaryButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     icon: IconModel? = null,
-    contentPadding: PaddingValues = ButtonPaddings,
-    iconPadding: Dp = 5.dp,
 ) {
-    PlatformButton(onClick = onClick, modifier = modifier, contentPadding = contentPadding) {
+    PlatformButton(modifier = modifier, onClick = onClick) {
         if (icon != null) {
-            Icon(icon = icon, modifier = Modifier.size(20.dp).align(Alignment.CenterVertically))
-            Spacer(Modifier.size(iconPadding))
+            Icon(icon = icon, modifier = Modifier.size(20.dp))
+            Spacer(Modifier.size(5.dp))
         }
-        Text(text = text, maxLines = 1, modifier = Modifier.align(Alignment.CenterVertically))
+        Text(text = text, maxLines = 1)
     }
 }

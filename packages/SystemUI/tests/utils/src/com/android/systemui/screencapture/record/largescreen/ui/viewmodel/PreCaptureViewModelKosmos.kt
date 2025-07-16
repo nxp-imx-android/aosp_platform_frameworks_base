@@ -20,7 +20,6 @@ import android.content.applicationContext
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.Kosmos.Fixture
 import com.android.systemui.kosmos.backgroundScope
-import com.android.systemui.screencapture.common.ui.viewmodel.drawableLoaderViewModelImpl
 import com.android.systemui.screencapture.record.largescreen.domain.interactor.screenCaptureRecordLargeScreenFeaturesInteractor
 import com.android.systemui.screencapture.record.largescreen.domain.interactor.screenshotInteractor
 
@@ -31,6 +30,5 @@ val Kosmos.preCaptureViewModel by Fixture {
         iconProvider = screenCaptureIconProviderKosmos,
         screenshotInteractor = screenshotInteractor,
         featuresInteractor = screenCaptureRecordLargeScreenFeaturesInteractor,
-        drawableLoaderViewModelImpl = drawableLoaderViewModelImpl,
     )
 }
