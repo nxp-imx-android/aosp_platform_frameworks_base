@@ -1391,16 +1391,6 @@ flag {
 }
 
 flag {
-    name: "notify_password_text_view_user_activity_in_background"
-    namespace: "systemui"
-    description: "Decide whether to notify the user activity in password text view, to power manager in the background thread."
-    bug: "346882515"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
    name: "non_touchscreen_devices_bypass_falsing"
    namespace: "systemui"
    description: "Allow non-touchscreen devices to bypass falsing"

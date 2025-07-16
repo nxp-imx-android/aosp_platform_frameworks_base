@@ -16,8 +16,6 @@
 
 package com.android.keyguard;
 
-import static com.android.systemui.Flags.notifyPasswordTextViewUserActivityInBackground;
-
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.AnimatorSet;
@@ -261,14 +259,6 @@ public class PasswordTextView extends BasePasswordTextView {
         } else {
             mTextChars.clear();
         }
-    }
-
-    @Override
-    protected void onUserActivity() {
-        if (!notifyPasswordTextViewUserActivityInBackground()) {
-            mPM.userActivity(SystemClock.uptimeMillis(), false);
-        }
-        super.onUserActivity();
     }
 
     /**
