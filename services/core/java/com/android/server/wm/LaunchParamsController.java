@@ -30,6 +30,7 @@ import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.app.ActivityOptions;
 import android.app.WindowConfiguration.WindowingMode;
+import android.content.Context;
 import android.content.pm.ActivityInfo.WindowLayout;
 import android.graphics.Rect;
 
@@ -68,9 +69,10 @@ class LaunchParamsController {
      */
     void registerDefaultModifiers(ActivityTaskSupervisor supervisor) {
         // {@link TaskLaunchParamsModifier} handles window layout preferences.
-        registerModifier(new TaskLaunchParamsModifier(supervisor));
-        registerModifier(new DesktopModeLaunchParamsModifier(mService.mContext, supervisor,
-                new DesktopModeCompatPolicy(mService.mContext)));
+        final Context context = mService.mContext;
+        registerModifier(new TaskLaunchParamsModifier(supervisor, context));
+        registerModifier(new DesktopModeLaunchParamsModifier(context, supervisor,
+                new DesktopModeCompatPolicy(context)));
     }
 
     /**
