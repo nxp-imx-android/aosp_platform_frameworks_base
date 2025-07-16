@@ -1394,6 +1394,13 @@ public class UserManagerService extends IUserManager.Stub {
         return null;
     }
 
+    @Override
+    public boolean isMainUser(int userId) {
+        mDeprecationReporter.logIsMainUserCall();
+        UserInfo user = getUserInfo(userId);
+        return user != null && user.isMainUnlogged();
+    }
+
     private @CanBeNULL @UserIdInt int getPrivateProfileUserId() {
         synchronized (mUsersLock) {
             for (int userId : getUserIds()) {
