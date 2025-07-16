@@ -16,6 +16,9 @@
 
 package android.media;
 
+import static android.media.RoutingChangeInfo.ENTRY_POINT_LOCAL_ROUTER_UNSPECIFIED;
+import static android.media.RoutingChangeInfo.ENTRY_POINT_PROXY_ROUTER_UNSPECIFIED;
+
 import static com.android.internal.util.function.pooled.PooledLambda.obtainMessage;
 import static com.android.media.flags.Flags.FLAG_ENABLE_BUILT_IN_SPEAKER_ROUTE_SUITABILITY_STATUSES;
 import static com.android.media.flags.Flags.FLAG_ENABLE_GET_TRANSFERABLE_ROUTES;
@@ -1099,7 +1102,7 @@ public final class MediaRouter2 {
      * @see TransferCallback#onTransferFailure
      */
     public void transferTo(@NonNull MediaRoute2Info route) {
-        mImpl.transferTo(route);
+        mImpl.transferTo(route, /* routingChangeInfo= */ null);
     }
 
     /**
@@ -1116,8 +1119,7 @@ public final class MediaRouter2 {
      */
     public void transferTo(
             @NonNull MediaRoute2Info route, @NonNull RoutingChangeInfo routingChangeInfo) {
-        // TODO: b/427964326 - Pass the entry point of media routing session to MediaRouterService
-        mImpl.transferTo(route);
+        mImpl.transferTo(route, routingChangeInfo);
     }
 
     /**
@@ -1140,13 +1142,33 @@ public final class MediaRouter2 {
     @SystemApi
     @RequiresPermission(android.Manifest.permission.MEDIA_CONTENT_CONTROL)
     public void transfer(@NonNull RoutingController controller, @NonNull MediaRoute2Info route) {
-        mImpl.transfer(controller.getRoutingSessionInfo(), route);
+        mImpl.transfer(controller.getRoutingSessionInfo(), route, /* routingChangeInfo= */ null);
+    }
+
+    /**
+     * Transfers the media of a routing controller to the given route.
+     *
+     * <p>This will be no-op for non-system media routers.
+     *
+     * @param controller a routing controller controlling media routing.
+     * @param route the route you want to transfer the media to.
+     * @param routingChangeInfo information about the start of the media routing session. See {@link
+     *     android.media.RoutingChangeInfo}
+     * @hide
+     */
+    @RequiresPermission(android.Manifest.permission.MEDIA_CONTENT_CONTROL)
+    public void transfer(
+            @NonNull RoutingController controller,
+            @NonNull MediaRoute2Info route,
+            @NonNull RoutingChangeInfo routingChangeInfo) {
+        mImpl.transfer(controller.getRoutingSessionInfo(), route, routingChangeInfo);
     }
 
     void requestCreateController(
             @NonNull RoutingController controller,
             @NonNull MediaRoute2Info route,
-            long managerRequestId) {
+            long managerRequestId,
+            @NonNull RoutingChangeInfo routingChangeInfo) {
 
         if (route.isSystemRoute()) {
             notifyTransfer(controller, getSystemController());
@@ -1181,6 +1203,7 @@ public final class MediaRouter2 {
                         managerRequestId,
                         controller.getRoutingSessionInfo(),
                         route,
+                        routingChangeInfo,
                         controllerHints);
             } catch (RemoteException ex) {
                 Log.e(TAG, "createControllerForTransfer: "
@@ -1528,7 +1551,10 @@ public final class MediaRouter2 {
     }
 
     void onRequestCreateControllerByManagerOnHandler(
-            RoutingSessionInfo oldSession, MediaRoute2Info route, long managerRequestId) {
+            RoutingSessionInfo oldSession,
+            MediaRoute2Info route,
+            long managerRequestId,
+            RoutingChangeInfo routingChangeInfo) {
         Log.i(
                 TAG,
                 TextUtils.formatSimple(
@@ -1552,7 +1578,7 @@ public final class MediaRouter2 {
                             managerRequestId, oldSessionId));
             return;
         }
-        requestCreateController(controller, route, managerRequestId);
+        requestCreateController(controller, route, managerRequestId, routingChangeInfo);
     }
 
     private List<MediaRoute2Info> getSortedRoutes(
@@ -2268,8 +2294,10 @@ public final class MediaRouter2 {
          * @see RoutingSessionInfo#getTransferableRoutes()
          * @see ControllerCallback#onControllerUpdated
          */
-        boolean tryTransferWithinProvider(@NonNull MediaRoute2Info route) {
+        boolean tryTransferWithinProvider(
+                @NonNull MediaRoute2Info route, @NonNull RoutingChangeInfo routingChangeInfo) {
             Objects.requireNonNull(route, "route must not be null");
+            Objects.requireNonNull(routingChangeInfo, "routingChangeInfo must not be null");
             synchronized (mControllerLock) {
                 if (isReleased()) {
                     Log.w(
@@ -2304,7 +2332,8 @@ public final class MediaRouter2 {
             }
             if (stub != null) {
                 try {
-                    mMediaRouterService.transferToRouteWithRouter2(stub, getId(), route);
+                    mMediaRouterService.transferToRouteWithRouter2(
+                            stub, getId(), route, routingChangeInfo);
                 } catch (RemoteException ex) {
                     Log.e(TAG, "Unable to transfer to route for session.", ex);
                 }
@@ -2704,14 +2733,18 @@ public final class MediaRouter2 {
 
         @Override
         public void requestCreateSessionByManager(
-                long managerRequestId, RoutingSessionInfo oldSession, MediaRoute2Info route) {
+                long managerRequestId,
+                RoutingSessionInfo oldSession,
+                MediaRoute2Info route,
+                RoutingChangeInfo routingChangeInfo) {
             mHandler.sendMessage(
                     obtainMessage(
                             MediaRouter2::onRequestCreateControllerByManagerOnHandler,
                             MediaRouter2.this,
                             oldSession,
                             route,
-                            managerRequestId));
+                            managerRequestId,
+                            routingChangeInfo));
         }
     }
 
@@ -2757,11 +2790,14 @@ public final class MediaRouter2 {
 
         void setOnGetControllerHintsListener(OnGetControllerHintsListener listener);
 
-        void transferTo(MediaRoute2Info route);
+        void transferTo(MediaRoute2Info route, @Nullable RoutingChangeInfo routingChangeInfo);
 
         void stop();
 
-        void transfer(@NonNull RoutingSessionInfo sessionInfo, @NonNull MediaRoute2Info route);
+        void transfer(
+                @NonNull RoutingSessionInfo sessionInfo,
+                @NonNull MediaRoute2Info route,
+                @Nullable RoutingChangeInfo routingChangeInfo);
 
         List<RoutingController> getControllers();
 
@@ -3016,14 +3052,22 @@ public final class MediaRouter2 {
          * router's {@link #mClientPackageName client package name}.
          *
          * @param route The route to transfer to.
+         * @param routingChangeInfo information about the start of the media routing session. See
+         *     {@link android.media.RoutingChangeInfo}
          */
         @Override
-        public void transferTo(MediaRoute2Info route) {
+        public void transferTo(
+                MediaRoute2Info route, @Nullable RoutingChangeInfo routingChangeInfo) {
             Objects.requireNonNull(route, "route must not be null");
 
             List<RoutingSessionInfo> sessionInfos = getRoutingSessions();
             RoutingSessionInfo targetSession = sessionInfos.get(sessionInfos.size() - 1);
-            transfer(targetSession, route);
+            routingChangeInfo =
+                    routingChangeInfo == null
+                            ? new RoutingChangeInfo(
+                                    ENTRY_POINT_PROXY_ROUTER_UNSPECIFIED, /* isSuggested= */ false)
+                            : routingChangeInfo;
+            transfer(targetSession, route, routingChangeInfo);
         }
 
         @Override
@@ -3046,13 +3090,18 @@ public final class MediaRouter2 {
          *
          * @param sessionInfo The {@link RoutingSessionInfo routing session} to transfer.
          * @param route The {@link MediaRoute2Info route} to transfer to.
-         * @see #transferToRoute(RoutingSessionInfo, MediaRoute2Info, UserHandle, String)
-         * @see #requestCreateSession(RoutingSessionInfo, MediaRoute2Info)
+         * @param routingChangeInfo information about the start of the media routing session. See
+         *     {@link android.media.RoutingChangeInfo}
+         * @see #transferToRoute(RoutingSessionInfo, MediaRoute2Info, UserHandle, String,
+         *     RoutingChangeInfo)
+         * @see #requestCreateSession(RoutingSessionInfo, MediaRoute2Info, RoutingChangeInfo)
          */
         @Override
         @SuppressWarnings("AndroidFrameworkRequiresPermission")
         public void transfer(
-                @NonNull RoutingSessionInfo sessionInfo, @NonNull MediaRoute2Info route) {
+                @NonNull RoutingSessionInfo sessionInfo,
+                @NonNull MediaRoute2Info route,
+                @Nullable RoutingChangeInfo routingChangeInfo) {
             Objects.requireNonNull(sessionInfo, "sessionInfo must not be null");
             Objects.requireNonNull(route, "route must not be null");
 
@@ -3071,6 +3120,12 @@ public final class MediaRouter2 {
                 return;
             }
 
+            routingChangeInfo =
+                    routingChangeInfo == null
+                            ? new RoutingChangeInfo(
+                                    ENTRY_POINT_PROXY_ROUTER_UNSPECIFIED, /* isSuggested= */ false)
+                            : routingChangeInfo;
+
             // If this call is trying to transfer from an existing system route to a selected system
             // route, we will handle the transfer through as a provider driven transfer in order to
             // update the transfer reason and initiator data.
@@ -3081,7 +3136,8 @@ public final class MediaRouter2 {
                             && sessionInfo.getSelectedRoutes().contains(route.getId());
             if (sessionInfo.getTransferableRoutes().contains(route.getId())
                     || isSystemRouteReselection) {
-                transferToRoute(sessionInfo, route, mClientUser, mClientPackageName);
+                transferToRoute(
+                        sessionInfo, route, mClientUser, mClientPackageName, routingChangeInfo);
             } else {
                 RoutingSessionInfo systemSessionInfo = mSystemController.getRoutingSessionInfo();
                 boolean isTransferFromUserRouteToUnselectedSystemRoute =
@@ -3093,9 +3149,14 @@ public final class MediaRouter2 {
                     // session must first be transferred to the target system route. Subsequently,
                     // the user route to system route transfer is processed by releasing the user
                     // route.
-                    transferToRoute(systemSessionInfo, route, mClientUser, mClientPackageName);
+                    transferToRoute(
+                            systemSessionInfo,
+                            route,
+                            mClientUser,
+                            mClientPackageName,
+                            routingChangeInfo);
                 }
-                requestCreateSession(sessionInfo, route);
+                requestCreateSession(sessionInfo, route, routingChangeInfo);
             }
         }
 
@@ -3107,20 +3168,23 @@ public final class MediaRouter2 {
          * RoutingSessionInfo routing session's} {@link RoutingSessionInfo#getTransferableRoutes()
          * transferable routes list}. Otherwise, the request will fail.
          *
-         * <p>Use {@link #requestCreateSession(RoutingSessionInfo, MediaRoute2Info)} to request an
-         * out-of-session transfer.
+         * <p>Use {@link #requestCreateSession(RoutingSessionInfo, MediaRoute2Info,
+         * RoutingChangeInfo)} to request an out-of-session transfer.
          *
          * @param session The {@link RoutingSessionInfo routing session} to transfer.
          * @param route The {@link MediaRoute2Info route} to transfer to. Must be one of the {@link
          *     RoutingSessionInfo routing session's} {@link
          *     RoutingSessionInfo#getTransferableRoutes() transferable routes}.
+         * @param routingChangeInfo information about the start of the media routing session. See
+         *     {@link android.media.RoutingChangeInfo}
          */
         @RequiresPermission(Manifest.permission.MEDIA_CONTENT_CONTROL)
         private void transferToRoute(
                 @NonNull RoutingSessionInfo session,
                 @NonNull MediaRoute2Info route,
                 @NonNull UserHandle transferInitiatorUserHandle,
-                @NonNull String transferInitiatorPackageName) {
+                @NonNull String transferInitiatorPackageName,
+                @NonNull RoutingChangeInfo routingChangeInfo) {
             int requestId = createTransferRequest(session, route);
 
             try {
@@ -3130,7 +3194,8 @@ public final class MediaRouter2 {
                         session.getId(),
                         route,
                         transferInitiatorUserHandle,
-                        transferInitiatorPackageName);
+                        transferInitiatorPackageName,
+                        routingChangeInfo);
             } catch (RemoteException ex) {
                 throw ex.rethrowFromSystemServer();
             }
@@ -3144,14 +3209,18 @@ public final class MediaRouter2 {
          * whether the {@link MediaRoute2Info route} is one of the {@link RoutingSessionInfo current
          * session's} {@link RoutingSessionInfo#getTransferableRoutes() transferable routes}.
          *
-         * <p>Use {@link #transferToRoute(RoutingSessionInfo, MediaRoute2Info)} to request an
-         * in-session transfer.
+         * <p>Use {@link #transferToRoute(RoutingSessionInfo, MediaRoute2Info, UserHandle, String,
+         * RoutingChangeInfo)} to request an in-session transfer.
          *
          * @param oldSession The {@link RoutingSessionInfo routing session} to transfer.
          * @param route The {@link MediaRoute2Info route} to transfer to.
+         * @param routingChangeInfo information about the start of the media routing session. See
+         *     {@link android.media.RoutingChangeInfo}
          */
         private void requestCreateSession(
-                @NonNull RoutingSessionInfo oldSession, @NonNull MediaRoute2Info route) {
+                @NonNull RoutingSessionInfo oldSession,
+                @NonNull MediaRoute2Info route,
+                @NonNull RoutingChangeInfo routingChangeInfo) {
             if (TextUtils.isEmpty(oldSession.getClientPackageName())) {
                 Log.w(TAG, "requestCreateSession: Can't create a session without package name.");
                 this.onTransferFailed(oldSession, route);
@@ -3162,7 +3231,7 @@ public final class MediaRouter2 {
 
             try {
                 mMediaRouterService.requestCreateSessionWithManager(
-                        mClient, requestId, oldSession, route);
+                        mClient, requestId, oldSession, routingChangeInfo, route);
             } catch (RemoteException ex) {
                 throw ex.rethrowFromSystemServer();
             }
@@ -3960,7 +4029,8 @@ public final class MediaRouter2 {
         }
 
         @Override
-        public void transferTo(MediaRoute2Info route) {
+        public void transferTo(
+                MediaRoute2Info route, @Nullable RoutingChangeInfo routingChangeInfo) {
             Log.v(TAG, "Transferring to route: " + route);
 
             boolean routeFound;
@@ -3973,9 +4043,15 @@ public final class MediaRouter2 {
                 return;
             }
 
+            routingChangeInfo =
+                    routingChangeInfo == null
+                            ? new RoutingChangeInfo(
+                                    ENTRY_POINT_LOCAL_ROUTER_UNSPECIFIED, /* isSuggested= */ false)
+                            : routingChangeInfo;
             RoutingController controller = getCurrentController();
-            if (!controller.tryTransferWithinProvider(route)) {
-                requestCreateController(controller, route, MANAGER_REQUEST_ID_NONE);
+            if (!controller.tryTransferWithinProvider(route, routingChangeInfo)) {
+                requestCreateController(
+                        controller, route, MANAGER_REQUEST_ID_NONE, routingChangeInfo);
             }
         }
 
@@ -3993,7 +4069,9 @@ public final class MediaRouter2 {
          */
         @Override
         public void transfer(
-                @NonNull RoutingSessionInfo sessionInfo, @NonNull MediaRoute2Info route) {
+                @NonNull RoutingSessionInfo sessionInfo,
+                @NonNull MediaRoute2Info route,
+                @Nullable RoutingChangeInfo routingChangeInfo) {
             // Do nothing.
         }
 

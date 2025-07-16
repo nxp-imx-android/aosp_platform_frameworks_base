@@ -18,6 +18,7 @@ package android.media;
 
 import static android.media.MediaRouter2.SCANNING_STATE_NOT_SCANNING;
 import static android.media.MediaRouter2.SCANNING_STATE_WHILE_INTERACTIVE;
+import static android.media.RoutingChangeInfo.ENTRY_POINT_PROXY_ROUTER_UNSPECIFIED;
 
 import static com.android.internal.util.function.pooled.PooledLambda.obtainMessage;
 
@@ -903,6 +904,9 @@ public final class MediaRouter2Manager {
             @NonNull String transferInitiatorPackageName) {
         int requestId = createTransferRequest(session, route);
 
+        RoutingChangeInfo routingChangeInfo =
+                new RoutingChangeInfo(
+                        ENTRY_POINT_PROXY_ROUTER_UNSPECIFIED, /* isSuggested= */ false);
         try {
             mMediaRouterService.transferToRouteWithManager(
                     mClient,
@@ -910,7 +914,8 @@ public final class MediaRouter2Manager {
                     session.getId(),
                     route,
                     transferInitiatorUserHandle,
-                    transferInitiatorPackageName);
+                    transferInitiatorPackageName,
+                    routingChangeInfo);
         } catch (RemoteException ex) {
             throw ex.rethrowFromSystemServer();
         }
@@ -925,9 +930,12 @@ public final class MediaRouter2Manager {
 
         int requestId = createTransferRequest(oldSession, route);
 
+        RoutingChangeInfo routingChangeInfo =
+                new RoutingChangeInfo(
+                        ENTRY_POINT_PROXY_ROUTER_UNSPECIFIED, /* isSuggested= */ false);
         try {
             mMediaRouterService.requestCreateSessionWithManager(
-                    mClient, requestId, oldSession, route);
+                    mClient, requestId, oldSession, routingChangeInfo, route);
         } catch (RemoteException ex) {
             throw ex.rethrowFromSystemServer();
         }
