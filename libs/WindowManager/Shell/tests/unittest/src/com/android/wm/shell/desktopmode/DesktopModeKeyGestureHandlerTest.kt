@@ -44,6 +44,7 @@ import com.android.wm.shell.ShellTestCase
 import com.android.wm.shell.TestShellExecutor
 import com.android.wm.shell.common.DisplayController
 import com.android.wm.shell.common.DisplayLayout
+import com.android.wm.shell.desktopmode.DesktopModeEventLogger.Companion.EnterReason
 import com.android.wm.shell.desktopmode.DesktopModeEventLogger.Companion.MinimizeReason
 import com.android.wm.shell.desktopmode.DesktopTestHelpers.createFreeformTask
 import com.android.wm.shell.desktopmode.DesktopTestHelpers.createFullscreenTask
@@ -203,7 +204,8 @@ class DesktopModeKeyGestureHandlerTest : ShellTestCase() {
         keyGestureEventHandler.handleKeyGestureEvent(event, null)
         testExecutor.flushAll()
 
-        verify(desktopTasksController).moveToNextDesktopDisplay(task.taskId)
+        verify(desktopTasksController)
+            .moveToNextDesktopDisplay(task.taskId, EnterReason.KEYBOARD_SHORTCUT_ENTER)
     }
 
     @Test
@@ -241,7 +243,8 @@ class DesktopModeKeyGestureHandlerTest : ShellTestCase() {
         keyGestureEventHandler.handleKeyGestureEvent(event, null)
         testExecutor.flushAll()
 
-        verify(desktopTasksController).moveToNextDesktopDisplay(task.taskId)
+        verify(desktopTasksController)
+            .moveToNextDesktopDisplay(task.taskId, EnterReason.KEYBOARD_SHORTCUT_ENTER)
     }
 
     @Test

@@ -34,6 +34,8 @@ import com.android.window.flags.Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND
 import com.android.wm.shell.ShellTaskOrganizer
 import com.android.wm.shell.ShellTestCase
 import com.android.wm.shell.common.pip.PipDesktopState
+import com.android.wm.shell.desktopmode.DesktopModeEventLogger.Companion.EnterReason
+import com.android.wm.shell.desktopmode.DesktopModeEventLogger.Companion.ExitReason
 import com.android.wm.shell.desktopmode.DesktopTestHelpers.createFreeformTask
 import com.android.wm.shell.desktopmode.DesktopTestHelpers.createFullscreenTask
 import com.android.wm.shell.desktopmode.data.DesktopRepository
@@ -245,6 +247,7 @@ class DesktopPipTransitionControllerTest(flags: FlagsParameterization) : ShellTe
                 wct = wct,
                 newTask = taskInfo,
                 displayId = taskInfo.displayId,
+                enterReason = EnterReason.EXIT_PIP,
             )
         verify(mockDesktopTasksController)
             .addMoveToDeskTaskChanges(wct = wct, task = taskInfo, deskId = DESK_ID)
@@ -311,6 +314,7 @@ class DesktopPipTransitionControllerTest(flags: FlagsParameterization) : ShellTe
                     displayId = DEFAULT_DISPLAY,
                     willExitDesktop = true,
                     removingLastTaskId = taskInfo.taskId,
+                    exitReason = ExitReason.ENTER_PIP,
                 )
         } else {
             verify(mockDesktopTasksController, never())
@@ -323,6 +327,7 @@ class DesktopPipTransitionControllerTest(flags: FlagsParameterization) : ShellTe
                     shouldEndUpAtHome = any(),
                     skipWallpaperAndHomeOrdering = any(),
                     skipUpdatingExitDesktopListener = any(),
+                    exitReason = any(),
                 )
         }
     }

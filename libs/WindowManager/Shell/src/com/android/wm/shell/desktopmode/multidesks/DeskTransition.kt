@@ -16,6 +16,7 @@
 package com.android.wm.shell.desktopmode.multidesks
 
 import android.os.IBinder
+import com.android.wm.shell.desktopmode.DesktopModeEventLogger
 
 /** Represents shell-started transitions involving desks. */
 sealed interface DeskTransition {
@@ -32,6 +33,7 @@ sealed interface DeskTransition {
         val deskId: Int,
         val tasks: Set<Int>,
         val onDeskRemovedListener: OnDeskRemovedListener?,
+        val exitReason: DesktopModeEventLogger.Companion.ExitReason,
     ) : DeskTransition {
         constructor(
             token: IBinder,
@@ -39,11 +41,12 @@ sealed interface DeskTransition {
             deskId: Int,
             tasks: Set<Int>,
             onDeskRemovedListener: OnDeskRemovedListener?,
+            exitReason: DesktopModeEventLogger.Companion.ExitReason,
             // TODO(b/415259520): Consolidate desk removed listeners and callback lambdas
             // after verifying that the call order before and after repository does not matter
             // for [DesktopDisplayEventHandler].
             runOnTransitEnd: (() -> Unit)?,
-        ) : this(token, displayId, deskId, tasks, onDeskRemovedListener) {
+        ) : this(token, displayId, deskId, tasks, onDeskRemovedListener, exitReason) {
             this.runOnTransitEnd = runOnTransitEnd
         }
 
@@ -53,14 +56,19 @@ sealed interface DeskTransition {
     }
 
     /** A transition to activate a desk in its display. */
-    data class ActivateDesk(override val token: IBinder, val displayId: Int, val deskId: Int) :
-        DeskTransition {
+    data class ActivateDesk(
+        override val token: IBinder,
+        val displayId: Int,
+        val deskId: Int,
+        val enterReason: DesktopModeEventLogger.Companion.EnterReason,
+    ) : DeskTransition {
         constructor(
             token: IBinder,
             displayId: Int,
             deskId: Int,
+            enterReason: DesktopModeEventLogger.Companion.EnterReason,
             runOnTransitEnd: (() -> Unit)?,
-        ) : this(token, displayId, deskId) {
+        ) : this(token, displayId, deskId, enterReason) {
             this.runOnTransitEnd = runOnTransitEnd
         }
 
@@ -75,14 +83,16 @@ sealed interface DeskTransition {
         val displayId: Int,
         val deskId: Int,
         val enterTaskId: Int,
+        val enterReason: DesktopModeEventLogger.Companion.EnterReason,
     ) : DeskTransition {
         constructor(
             token: IBinder,
             displayId: Int,
             deskId: Int,
             enterTaskId: Int,
+            enterReason: DesktopModeEventLogger.Companion.EnterReason,
             runOnTransitEnd: (() -> Unit)?,
-        ) : this(token, displayId, deskId, enterTaskId) {
+        ) : this(token, displayId, deskId, enterTaskId, enterReason) {
             this.runOnTransitEnd = runOnTransitEnd
         }
 
@@ -92,12 +102,17 @@ sealed interface DeskTransition {
     }
 
     /** A transition to deactivate a desk. */
-    data class DeactivateDesk(override val token: IBinder, val deskId: Int) : DeskTransition {
+    data class DeactivateDesk(
+        override val token: IBinder,
+        val deskId: Int,
+        val exitReason: DesktopModeEventLogger.Companion.ExitReason,
+    ) : DeskTransition {
         constructor(
             token: IBinder,
             deskId: Int,
+            exitReason: DesktopModeEventLogger.Companion.ExitReason,
             runOnTransitEnd: (() -> Unit)?,
-        ) : this(token, deskId) {
+        ) : this(token, deskId, exitReason) {
             this.runOnTransitEnd = runOnTransitEnd
         }
 
