@@ -5991,7 +5991,7 @@ class Task extends TaskFragment {
 
     private void moveTaskToBackInner(@NonNull Task task, @Nullable Transition transition) {
         final Transition.ReadyCondition movedToBack =
-                new Transition.ReadyCondition("moved-to-back", task);
+                new Transition.ReadyCondition("moved-to-back", task, true /* newTrackerOnly */);
         if (transition != null) {
             // Preventing from update surface position for WindowState if configuration changed,
             // because the position is depends on WindowFrame, so update the position before
