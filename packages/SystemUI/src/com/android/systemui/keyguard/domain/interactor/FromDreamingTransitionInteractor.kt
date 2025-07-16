@@ -214,10 +214,6 @@ constructor(
     }
 
     private fun listenForDreamingToLockscreenOrGone() {
-        if (!KeyguardWmStateRefactor.isEnabled) {
-            return
-        }
-
         scope.launch {
             keyguardInteractor.isAbleToDream
                 .filterRelevantKeyguardStateAnd { !it }
