@@ -7551,7 +7551,10 @@
 
     <!-- Allows access to TestApis for various components in the biometric stack, including
          FingerprintService, FaceService, BiometricService. Used by com.android.server.biometrics
-         CTS tests. @hide @TestApi -->
+         CTS tests. Also allows access to TestApis for Secure Lock Device, which are used by
+         android.security.authenticationpolicy CTS tests.
+         @hide @TestApi
+     -->
     <permission android:name="android.permission.TEST_BIOMETRIC"
         android:protectionLevel="signature" />
 

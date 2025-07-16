@@ -18,6 +18,7 @@ package android.security.authenticationpolicy;
 import static android.Manifest.permission.MANAGE_SECURE_LOCK_DEVICE;
 import static android.Manifest.permission.USE_BIOMETRIC_INTERNAL;
 import static android.hardware.biometrics.Flags.FLAG_IDENTITY_CHECK_WATCH;
+import static android.Manifest.permission.TEST_BIOMETRIC;
 import static android.security.Flags.FLAG_SECURE_LOCKDOWN;
 import static android.security.Flags.FLAG_SECURE_LOCK_DEVICE;
 
@@ -28,6 +29,7 @@ import android.annotation.NonNull;
 import android.annotation.RequiresPermission;
 import android.annotation.SystemApi;
 import android.annotation.SystemService;
+import android.annotation.TestApi;
 import android.content.Context;
 import android.os.Binder;
 import android.os.Build;
@@ -498,6 +500,23 @@ public final class AuthenticationPolicyManager {
     public boolean isSecureLockDeviceEnabled() {
         try {
             return mAuthenticationPolicyService.isSecureLockDeviceEnabled();
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    /**
+     * Sets test mode for Secure Lock Device. This allows tests to indicate that security features
+     * that would interfere with testing (disabling ADB, USB) should be skipped.
+     * @hide
+     */
+    @TestApi
+    @RequiresPermission(TEST_BIOMETRIC)
+    @FlaggedApi(FLAG_SECURE_LOCK_DEVICE)
+    public void setSecureLockDeviceTestStatus(boolean isTestMode) {
+        try {
+            Slog.d(TAG, "#setTestModeForSecureLockDevice(isTestMode=" + isTestMode + ")");
+            mAuthenticationPolicyService.setSecureLockDeviceTestStatus(isTestMode);
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }

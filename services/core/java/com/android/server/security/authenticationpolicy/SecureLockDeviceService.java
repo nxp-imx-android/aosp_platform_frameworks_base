@@ -107,6 +107,9 @@ public class SecureLockDeviceService extends SecureLockDeviceServiceInternal {
     private DevicePolicyManager mDevicePolicyManager;
     private WindowManagerInternal mWindowManagerInternal;
 
+    // TODO (b/396680098): Use to skip security features that interfere with testing (USB, ADB)
+    private boolean mSkipSecurityFeaturesForTest = false;
+
     SecureLockDeviceService(@NonNull Context context) {
         mContext = context;
         mBiometricManager = mContext.getSystemService(BiometricManager.class);
@@ -587,6 +590,21 @@ public class SecureLockDeviceService extends SecureLockDeviceServiceInternal {
         } finally {
             mSecureLockDeviceStatusListeners.finishBroadcast();
         }
+    }
+
+    /**
+     * @see AuthenticationPolicyManager#setSecureLockDeviceTestStatus(boolean)
+     */
+    @Override
+    public void setSecureLockDeviceTestStatus(boolean isTestMode) {
+        if (DEBUG) {
+            Slog.d(TAG, "setSecureLockDeviceTestStatus(isTestMode = " + isTestMode + ")");
+        }
+        setSkipSecurityFeaturesForTest(isTestMode);
+    }
+
+    private void setSkipSecurityFeaturesForTest(boolean skipSecurityFeaturesForTest) {
+        mSkipSecurityFeaturesForTest = skipSecurityFeaturesForTest;
     }
 
     /**
