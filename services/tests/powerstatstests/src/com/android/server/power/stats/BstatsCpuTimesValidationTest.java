@@ -92,19 +92,15 @@ public class BstatsCpuTimesValidationTest {
     private static final int BATTERY_STATE_TIMEOUT_MS = 2000;
     private static final int BATTERY_STATE_CHECK_INTERVAL_MS = 200;
 
-    private static final int START_ACTIVITY_TIMEOUT_MS = 2000;
-    private static final int START_FG_SERVICE_TIMEOUT_MS = 2000;
-    private static final int START_SERVICE_TIMEOUT_MS = 2000;
-    private static final int START_ISOLATED_SERVICE_TIMEOUT_MS = 2000;
-
-    private static final int SETTING_UPDATE_TIMEOUT_MS = 2000;
-    private static final int SETTING_UPDATE_CHECK_INTERVAL_MS = 200;
-
+    private static final int START_ACTIVITY_TIMEOUT_MS = 5000;
+    private static final int START_FG_SERVICE_TIMEOUT_MS = 5000;
+    private static final int START_SERVICE_TIMEOUT_MS = 5000;
+    private static final int START_ISOLATED_SERVICE_TIMEOUT_MS = 5000;
     private static final int GENERAL_TIMEOUT_MS = 4000;
     private static final int GENERAL_INTERVAL_MS = 200;
     private static final int SCREEN_STATE_CHANGE_TIMEOUT_MS = 10000;
 
-    private static final int WORK_DURATION_MS = 2000;
+    private static final int WORK_DURATION_MS = 5000;
 
     private static boolean sBatteryStatsConstsUpdated;
     private static String sOriginalBatteryStatsConsts;

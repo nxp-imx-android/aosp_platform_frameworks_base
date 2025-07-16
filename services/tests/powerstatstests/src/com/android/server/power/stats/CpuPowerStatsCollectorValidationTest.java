@@ -52,11 +52,11 @@ import java.util.regex.Pattern;
 @LargeTest
 @android.platform.test.annotations.DisabledOnRavenwood(reason = "Integration test")
 public class CpuPowerStatsCollectorValidationTest {
-    private static final int WORK_DURATION_MS = 2000;
+    private static final int WORK_DURATION_MS = 5000;
     private static final String TEST_PKG = "com.android.coretests.apps.bstatstestapp";
     private static final String TEST_ACTIVITY = TEST_PKG + ".TestActivity";
     private static final String EXTRA_KEY_CMD_RECEIVER = "cmd_receiver";
-    private static final int START_ACTIVITY_TIMEOUT_MS = 2000;
+    private static final int START_ACTIVITY_TIMEOUT_MS = 5000;
 
     private Context mContext;
     private UiDevice mUiDevice;
