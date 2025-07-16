@@ -29,6 +29,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
+import android.graphics.PointF;
 import android.hardware.display.DisplayManagerInternal;
 import android.hardware.input.IInputDevicesChangedListener;
 import android.hardware.input.InputManagerGlobal;
@@ -225,6 +226,25 @@ public class VirtualInputDeviceControllerTest {
                 IllegalArgumentException.class,
                 () -> mInputController.createDpad(
                         NAME, VENDOR_ID, PRODUCT_ID, TOKEN_2, DISPLAY_ID_2));
+    }
+
+    @Test
+    public void getCursorPosition_returnsPositionFromService() {
+        mInputController.createMouse(NAME, VENDOR_ID, PRODUCT_ID, TOKEN_1, DISPLAY_ID_1);
+        final PointF physicalPoint = new PointF(10.0f, 20.0f);
+        when(mInputManagerService.getCursorPositionInPhysicalDisplay(DISPLAY_ID_1))
+                .thenReturn(physicalPoint);
+        final PointF logicalPoint = new PointF(30.0f, 40.0f);
+        when(mInputManagerService.getCursorPositionInLogicalDisplay(DISPLAY_ID_1))
+                .thenReturn(logicalPoint);
+
+        assertThat(mInputController.getCursorPositionInPhysicalDisplay(TOKEN_1))
+                .isEqualTo(physicalPoint);
+        verify(mInputManagerService).getCursorPositionInPhysicalDisplay(DISPLAY_ID_1);
+
+        assertThat(mInputController.getCursorPositionInLogicalDisplay(TOKEN_1))
+                .isEqualTo(logicalPoint);
+        verify(mInputManagerService).getCursorPositionInLogicalDisplay(DISPLAY_ID_1);
     }
 
     @Test

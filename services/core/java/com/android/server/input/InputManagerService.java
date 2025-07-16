@@ -3274,7 +3274,7 @@ public class InputManagerService extends IInputManager.Stub
 
     @Override // Binder call
     @Nullable
-    public PointF getCursorPosition(int displayId) {
+    public PointF getCursorPositionInPhysicalDisplay(int displayId) {
         if (!checkCallingPermission(
                 Manifest.permission.INJECT_EVENTS,
                 "getCursorPosition()",
@@ -3283,7 +3283,25 @@ public class InputManagerService extends IInputManager.Stub
                     "The INJECT_EVENTS permission is required to access cursor outside the "
                             + "intermediate window / display.");
         }
-        final float[] p = mNative.getMouseCursorPosition(displayId);
+        final float[] p = mNative.getMouseCursorPositionInPhysicalDisplay(displayId);
+        if (p == null || p.length != 2) {
+            return null;
+        }
+        return new PointF(p[0], p[1]);
+    }
+
+    @Override // Binder call
+    @Nullable
+    public PointF getCursorPositionInLogicalDisplay(int displayId) {
+        if (!checkCallingPermission(
+                Manifest.permission.INJECT_EVENTS,
+                "getCursorPositionInLogicalDisplay()",
+                true /*checkInstrumentationSource*/)) {
+            throw new SecurityException(
+                    "The INJECT_EVENTS permission is required to access cursor outside the "
+                            + "intermediate window / display.");
+        }
+        final float[] p = mNative.getMouseCursorPositionInLogicalDisplay(displayId);
         if (p == null || p.length != 2) {
             return null;
         }

@@ -1645,6 +1645,8 @@ public final class InputManager {
     /**
      * Gets the current position of the mouse cursor on the specified display.
      *
+     * <p>Returned values are in logical display coordinates in pixels.
+     *
      * <p>Returns null if no cursor is available, or if existing cursor is not on the supplied
      * `displayId`.
      *
@@ -1657,7 +1659,7 @@ public final class InputManager {
     @Nullable
     public PointF getCursorPosition(int displayId) {
         try {
-            return mIm.getCursorPosition(displayId);
+            return mIm.getCursorPositionInLogicalDisplay(displayId);
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }

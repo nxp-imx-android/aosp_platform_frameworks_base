@@ -19,6 +19,7 @@ package com.android.server.input
 import android.Manifest
 import android.content.Context
 import android.content.pm.PackageManagerInternal
+import android.graphics.PointF
 import android.hardware.display.DisplayManager
 import android.hardware.display.DisplayViewport
 import android.hardware.display.VirtualDisplay
@@ -549,6 +550,37 @@ class InputManagerServiceTests {
         service.handleKeyGestureEvent(toggleCapsLockEvent)
 
         verify(native).toggleCapsLock(anyInt())
+    }
+
+    @Test
+    fun getCursorPosition_returnsPosition() {
+        val expectedPosition = PointF(10f, 20f)
+        whenever(native.getMouseCursorPositionInPhysicalDisplay(anyInt()))
+            .thenReturn(floatArrayOf(expectedPosition.x, expectedPosition.y))
+
+        val position = service.getCursorPositionInPhysicalDisplay(0)
+
+        assertThat(position).isEqualTo(expectedPosition)
+    }
+
+    @Test
+    fun getCursorPositionInLogicalDisplay_returnsPosition() {
+        val expectedPosition = PointF(30f, 40f)
+        whenever(native.getMouseCursorPositionInLogicalDisplay(anyInt()))
+            .thenReturn(floatArrayOf(expectedPosition.x, expectedPosition.y))
+
+        val position = service.getCursorPositionInLogicalDisplay(0)
+
+        assertThat(position).isEqualTo(expectedPosition)
+    }
+
+    @Test
+    fun getCursorPosition_nullFromNative() {
+        whenever(native.getMouseCursorPositionInPhysicalDisplay(anyInt())).thenReturn(null)
+
+        val position = service.getCursorPositionInPhysicalDisplay(0)
+
+        assertThat(position).isNull()
     }
 
     inner class KeyEventListener(private var listener: () -> Boolean) :

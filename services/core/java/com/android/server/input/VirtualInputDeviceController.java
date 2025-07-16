@@ -358,7 +358,7 @@ class VirtualInputDeviceController {
         }
     }
 
-    public PointF getCursorPosition(@NonNull IBinder token) {
+    public PointF getCursorPositionInPhysicalDisplay(@NonNull IBinder token) {
         synchronized (mLock) {
             final InputDeviceDescriptor inputDeviceDescriptor = mInputDeviceDescriptors.get(
                     token);
@@ -367,8 +367,21 @@ class VirtualInputDeviceController {
                         "Could not get cursor position for input device for given token");
             }
             return Binder.withCleanCallingIdentity(
-                    () -> mService.getCursorPosition(
+                    () -> mService.getCursorPositionInPhysicalDisplay(
                             inputDeviceDescriptor.getAssociatedDisplayId()));
+        }
+    }
+
+    public PointF getCursorPositionInLogicalDisplay(@NonNull IBinder token) {
+        synchronized (mLock) {
+            final InputDeviceDescriptor inputDeviceDescriptor = mInputDeviceDescriptors.get(
+                    token);
+            if (inputDeviceDescriptor == null) {
+                throw new IllegalArgumentException(
+                        "Could not get cursor position for input device for given token");
+            }
+            return Binder.withCleanCallingIdentity(() -> mService.getCursorPositionInLogicalDisplay(
+                    inputDeviceDescriptor.getAssociatedDisplayId()));
         }
     }
 
@@ -713,8 +726,13 @@ class VirtualInputDeviceController {
         }
 
         @Override
-        public PointF getCursorPosition() {
-            return mController.getCursorPosition(mToken);
+        public PointF getCursorPositionInPhysicalDisplay() {
+            return mController.getCursorPositionInPhysicalDisplay(mToken);
+        }
+
+        @Override
+        public PointF getCursorPositionInLogicalDisplay() {
+            return mController.getCursorPositionInLogicalDisplay(mToken);
         }
 
         @Override

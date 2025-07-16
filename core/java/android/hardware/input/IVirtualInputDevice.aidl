@@ -98,8 +98,14 @@ interface IVirtualInputDevice {
     boolean sendRotaryEncoderScrollEvent(in VirtualRotaryEncoderScrollEvent event);
 
     /**
-     * Returns the current cursor position of the mouse corresponding to this device, in x and y
-     * coordinates.
+     * Returns the current cursor position of the mouse corresponding to this device, in the
+     * physical display coordinates.
      */
-    PointF getCursorPosition();
+    PointF getCursorPositionInPhysicalDisplay();
+
+    /**
+     * Returns the current cursor position of the mouse corresponding to this device, in the
+     * logical display coordinates.
+     */
+    PointF getCursorPositionInLogicalDisplay();
 }
