@@ -782,7 +782,7 @@ constructor(
                         }
                 }
                 .distinctUntilChanged()
-                .collect { (displayId: Int, flagMap) ->
+                .collect { (displayId: Int, flagMap: List<Pair<Long, Boolean>>) ->
                     sysuiStateInteractor.setFlagsExclusivelyToDisplay(
                         targetDisplayId = displayId,
                         stateChanges = StateChange.from(flagMap),
