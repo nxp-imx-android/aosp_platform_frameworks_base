@@ -69,3 +69,11 @@ flag {
     description: "This flag controls VPN metrics collection."
     bug: "306313287"
 }
+
+flag {
+  name: "update_network_factory_protection_level"
+  is_exported: false
+  namespace: "android_core_networking"
+  description: "Flag for change to NETWORK_FACTORY permission to include priviliged"
+  bug: "431500580"
+}
