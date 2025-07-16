@@ -59,6 +59,7 @@ import static android.internal.perfetto.protos.Windowmanagerservice.TaskProto.RO
 import static android.internal.perfetto.protos.Windowmanagerservice.TaskProto.SURFACE_HEIGHT;
 import static android.internal.perfetto.protos.Windowmanagerservice.TaskProto.SURFACE_WIDTH;
 import static android.internal.perfetto.protos.Windowmanagerservice.TaskProto.TASK_FRAGMENT;
+import static android.internal.perfetto.protos.Windowmanagerservice.TaskProto.TASK_NAME;
 import static android.internal.perfetto.protos.Windowmanagerservice.WindowContainerChildProto.TASK;
 import static android.os.Trace.TRACE_TAG_WINDOW_MANAGER;
 import static android.provider.Settings.Secure.USER_SETUP_COMPLETE;
@@ -6495,6 +6496,9 @@ class Task extends TaskFragment {
         }
         proto.write(RESIZE_MODE, mResizeMode);
         proto.write(FILLS_PARENT, matchParentBounds());
+        if (mName != null) {
+            proto.write(TASK_NAME, mName);
+        }
         getRawBounds().dumpDebug(proto, BOUNDS);
 
         if (mLastNonFullscreenBounds != null) {

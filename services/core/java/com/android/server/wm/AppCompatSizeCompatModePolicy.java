@@ -22,6 +22,7 @@ import static android.content.pm.ActivityInfo.SIZE_CHANGES_SUPPORTED_OVERRIDE;
 import static android.content.pm.ActivityInfo.SIZE_CHANGES_UNSUPPORTED_METADATA;
 import static android.content.pm.ActivityInfo.SIZE_CHANGES_UNSUPPORTED_OVERRIDE;
 import static android.content.res.Configuration.ORIENTATION_UNDEFINED;
+import static android.internal.perfetto.protos.Windowmanagerservice.ActivityRecordProto.IN_SIZE_COMPAT_MODE;
 import static android.window.DesktopExperienceFlags.ENABLE_SIZE_COMPAT_MODE_IMPROVEMENTS_FOR_CONNECTED_DISPLAYS;
 
 import static com.android.server.wm.AppCompatUtils.isInDesktopMode;
@@ -31,6 +32,7 @@ import android.annotation.Nullable;
 import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
 import android.graphics.Rect;
+import android.util.proto.ProtoOutputStream;
 
 import java.io.PrintWriter;
 import java.util.function.DoubleSupplier;
@@ -204,6 +206,10 @@ class AppCompatSizeCompatModePolicy {
         if (shouldCreateAppCompatDisplayInsets()) {
             pw.println(prefix + "shouldCreateAppCompatDisplayInsets=true");
         }
+    }
+
+    void dumpDebug(@NonNull ProtoOutputStream proto) {
+        proto.write(IN_SIZE_COMPAT_MODE, inSizeCompatMode());
     }
 
     /**

@@ -17,6 +17,7 @@ package com.android.server.wm;
 
 import android.annotation.NonNull;
 import android.content.pm.PackageManager;
+import android.util.proto.ProtoOutputStream;
 
 import com.android.server.wm.utils.OptPropFactory;
 
@@ -173,5 +174,16 @@ class AppCompatController {
         getSizeCompatModePolicy().dump(pw, prefix);
         getDisplayCompatModePolicy().dump(pw, prefix);
         getSafeRegionPolicy().dump(pw, prefix);
+    }
+
+    void dumpDebug(@NonNull ProtoOutputStream proto) {
+        getSizeCompatModePolicy().dumpDebug(proto);
+        getAspectRatioPolicy().dumpDebug(proto);
+        getAspectRatioOverrides().dumpDebug(proto);
+        getSafeRegionPolicy().dumpDebug(proto);
+        getFocusOverrides().dumpDebug(proto);
+        getCameraOverrides().dumpDebug(proto);
+        getOrientationOverrides().dumpDebug(proto);
+        getResizeOverrides().dumpDebug(proto);
     }
 }
