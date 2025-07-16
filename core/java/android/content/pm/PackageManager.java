@@ -4468,6 +4468,18 @@ public abstract class PackageManager {
     public static final String FEATURE_PC = "android.hardware.type.pc";
 
     /**
+     * Feature for {@link #getSystemAvailableFeatures} and
+     * {@link #hasSystemFeature}: This is a full stack Android device with or without a display
+     * on glasses. Glasses here are defined to be the device worn on the body, perhaps on
+     * the head. The user is very close and usually wears the device when interacting with the
+     * device. The device likely requires a companion phone to access features of apps. User input
+     * can be a variety of touchpad on the glasses, audio and the companion phone.
+     */
+    @FlaggedApi(com.android.microxr.flags.Flags.FLAG_XR_GLASSES_FEATURE)
+    @SdkConstant(SdkConstantType.FEATURE)
+    public static final String FEATURE_GLASSES = "android.hardware.type.glasses";
+
+    /**
      * Feature for {@link #getSystemAvailableFeatures} and {@link #hasSystemFeature}:
      * The device supports printing.
      */
