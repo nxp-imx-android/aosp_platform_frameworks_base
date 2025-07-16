@@ -1778,25 +1778,36 @@ class ActivityStarter {
         // Apply setAlwaysOnTop when starting an activity is successful regardless of creating
         // a new Activity or reusing the existing activity.
         if (options != null && options.getTaskAlwaysOnTop()) {
-            startedActivityRootTask.setAlwaysOnTop(true);
+            // Sets always-on-top on the root-task because it only ensures the task be the top
+            // among the sibling tasks, but not the parent task (if any).
+            // However, do not apply to the created-by-organizer root-tasks because it should be
+            // controlled by the organizer.
+            Task nonCreateByOrganizerRootTask = mLastStartActivityRecord.getTask();
+            Task parentTask = nonCreateByOrganizerRootTask.getParent().asTask();
+            while (parentTask != null && !parentTask.mCreatedByOrganizer) {
+                nonCreateByOrganizerRootTask = parentTask;
+                parentTask = nonCreateByOrganizerRootTask.getParent().asTask();
+            }
+            nonCreateByOrganizerRootTask.setAlwaysOnTop(true);
         }
 
         if (com.android.wm.shell.Flags.enableCreateAnyBubble()) {
+            final Task activityTask = mLastStartActivityRecord.getTask();
             // Sets the launch-next-to-bubble policy if requested
             if (options != null && options.getLaunchNextToBubble()) {
-                startedActivityRootTask.mLaunchNextToBubble = true;
+                activityTask.mLaunchNextToBubble = true;
             }
 
             // Propagate the launch-next-to-bubble policy from the source Task if any
             if (mSourceRecord != null && mSourceRecord.getTask().mLaunchNextToBubble) {
-                startedActivityRootTask.mLaunchNextToBubble = true;
+                activityTask.mLaunchNextToBubble = true;
 
                 // Also propagate the windowingMode and bounds if not set.
                 if (options == null || (options.getLaunchWindowingMode() == WINDOWING_MODE_UNDEFINED
                         && options.getLaunchBounds() == null)) {
                     final Task sourceTask = mSourceRecord.getTask();
-                    startedActivityRootTask.setWindowingMode(sourceTask.getWindowingMode());
-                    startedActivityRootTask.setBounds(sourceTask.getBounds());
+                    activityTask.setWindowingMode(sourceTask.getWindowingMode());
+                    activityTask.setBounds(sourceTask.getBounds());
                 }
             }
         }
