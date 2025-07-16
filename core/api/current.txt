@@ -42901,7 +42901,7 @@ package android.service.notification {
 
 package android.service.persistentdata {
 
-  public class PersistentDataBlockManager {
+  @RestrictedForEnvironment(environments=android.annotation.RestrictedForEnvironment.ENVIRONMENT_SDK_RUNTIME, from=android.os.Build.VERSION_CODES.VANILLA_ICE_CREAM) public class PersistentDataBlockManager {
     method public boolean isFactoryResetProtectionActive();
   }
 
