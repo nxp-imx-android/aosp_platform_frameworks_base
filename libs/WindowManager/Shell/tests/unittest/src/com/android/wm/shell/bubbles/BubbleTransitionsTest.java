@@ -919,4 +919,51 @@ public class BubbleTransitionsTest extends ShellTestCase {
         assertThat(mBubbleTransitions.mPendingEnterTransitions).doesNotContainKey(
                 bt.mLaunchCookie.binder);
     }
+
+    @Test
+    public void launchNewTaskBubbleForExistingTransition_startTransitionBeforeBubbleInflated() {
+        final ActivityManager.RunningTaskInfo taskInfo = setupAppBubble();
+
+        when(mLayerView.canExpandView(mBubble)).thenReturn(true);
+
+        final IBinder transition = mock(IBinder.class);
+        final BubbleTransitions.LaunchNewTaskBubbleForExistingTransition bt =
+                (BubbleTransitions.LaunchNewTaskBubbleForExistingTransition) mBubbleTransitions
+                        .startLaunchNewTaskBubbleForExistingTransition(
+                                mBubble, mExpandedViewManager, mTaskViewFactory, mBubblePositioner,
+                                mStackView, mLayerView, mIconFactory, false /* inflateSync */,
+                                transition, transitionHandler -> {});
+
+        verify(mBubble).setPreparingTransition(bt);
+
+        // Prepare for startAnimation call
+        final SurfaceControl taskLeash = new SurfaceControl.Builder().setName("taskLeash").build();
+        final TransitionInfo info = new TransitionInfo(TRANSIT_OPEN, 0);
+        final TransitionInfo.Change chg = new TransitionInfo.Change(taskInfo.token, taskLeash);
+        chg.setTaskInfo(taskInfo);
+        chg.setMode(TRANSIT_CHANGE);
+        info.addChange(chg);
+        info.addRoot(new TransitionInfo.Root(0, mock(SurfaceControl.class), 0, 0));
+
+        final SurfaceControl.Transaction startT = mock(SurfaceControl.Transaction.class);
+        final SurfaceControl.Transaction finishT = mock(SurfaceControl.Transaction.class);
+        final Transitions.TransitionFinishCallback finishCb = wct -> {};
+
+        // Start playing the transition
+        bt.startAnimation(transition, info, startT, finishT, finishCb);
+
+        verify(mBubble, never()).setPreparingTransition(null);
+
+        // Simulate inflating the bubble
+        bt.onInflated(mBubble);
+
+        assertThat(mTaskViewTransitions.hasPending()).isTrue();
+
+        // Simulate surfaceCreated so the animation can start
+        bt.surfaceCreated();
+        bt.continueExpand();
+
+        verify(mBubble).setPreparingTransition(null);
+        assertThat(mTaskViewTransitions.hasPending()).isFalse();
+    }
 }

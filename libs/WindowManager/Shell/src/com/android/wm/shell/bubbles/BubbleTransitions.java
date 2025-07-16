@@ -535,9 +535,7 @@ public class BubbleTransitions {
             // Remove any intermediate queued transitions that were started as a result of the
             // inflation (the task view will be in the right bounds)
             mTaskViewTransitions.removePendingTransitions(tv.getController());
-            mTaskViewTransitions.enqueueExternal(tv.getController(), () -> {
-                return mTransition;
-            });
+            mTaskViewTransitions.enqueueExternal(tv.getController(), () -> mTransition);
         }
 
         @Override
@@ -639,7 +637,6 @@ public class BubbleTransitions {
             }
             startTransaction.apply();
 
-            mTaskViewTransitions.onExternalDone(mTransition);
             mTransitionProgress.setTransitionReady();
             startExpandAnim();
             return true;
@@ -684,6 +681,7 @@ public class BubbleTransitions {
             ProtoLog.d(WM_SHELL_BUBBLES_NOISY,
                     "LaunchNewTaskBubble.playAnimation(): playConvert=%b",
                     mPlayConvertTaskAnimation);
+            mTaskViewTransitions.onExternalDone(mTransition);
             final TaskViewTaskController tv = mBubble.getTaskView().getController();
             final SurfaceControl.Transaction startT = new SurfaceControl.Transaction();
             // Set task position to 0,0 as it will be placed inside the TaskView
