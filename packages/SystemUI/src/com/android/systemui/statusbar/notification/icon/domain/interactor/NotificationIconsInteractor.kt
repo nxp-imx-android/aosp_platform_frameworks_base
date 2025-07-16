@@ -29,6 +29,7 @@ import com.android.systemui.statusbar.notification.data.repository.Notifications
 import com.android.systemui.statusbar.notification.domain.interactor.HeadsUpNotificationIconInteractor
 import com.android.systemui.statusbar.notification.promoted.domain.interactor.AODPromotedNotificationInteractor
 import com.android.systemui.statusbar.notification.shared.ActiveBundleModel
+import com.android.systemui.statusbar.notification.shared.ActiveNotificationEntryModel
 import com.android.systemui.statusbar.notification.shared.ActiveNotificationGroupModel
 import com.android.systemui.statusbar.notification.shared.ActiveNotificationModel
 import com.android.wm.shell.bubbles.Bubbles
@@ -90,7 +91,11 @@ constructor(
                                 // bundles are located in the silent section, so only include them
                                 // if we're showing low priority icons
                                 is ActiveBundleModel ->
-                                    if (showLowPriority) Either.first(it.toIconModel()) else null
+                                    if (shouldShowBundleIcon(it, showAmbient, showLowPriority)) {
+                                        Either.first(it.toIconModel())
+                                    } else {
+                                        null
+                                    }
                                 is ActiveNotificationGroupModel -> Either.second(it.summary)
                                 is ActiveNotificationModel -> Either.second(it)
                             }
@@ -117,6 +122,25 @@ constructor(
                         }
                 }
                 .toSet()
+        }
+    }
+
+    private fun shouldShowBundleIcon(
+        model: ActiveBundleModel,
+        showAmbient: Boolean,
+        showLowPriority: Boolean,
+    ): Boolean {
+        return when {
+            !showLowPriority -> false
+            !showAmbient && areAllChildrenSuppressed(model.children) -> false
+            else -> true
+        }
+    }
+
+    private fun areAllChildrenSuppressed(children: List<ActiveNotificationEntryModel>): Boolean {
+        return children.none {
+            (it is ActiveNotificationModel && !it.isSuppressedFromStatusBar) ||
+                (it is ActiveNotificationGroupModel && !areAllChildrenSuppressed(it.children))
         }
     }
 
@@ -150,9 +174,9 @@ constructor(
         ActiveNotificationIconModel(
             notifKey = key,
             groupKey = key,
-            shelfIcon = Icon.createWithResource(appContext, iconResId),
-            statusBarIcon = Icon.createWithResource(appContext, iconResId),
-            aodIcon = null,
+            shelfIcon = icon,
+            statusBarIcon = icon,
+            aodIcon = icon,
             isAmbient = false,
         )
 }

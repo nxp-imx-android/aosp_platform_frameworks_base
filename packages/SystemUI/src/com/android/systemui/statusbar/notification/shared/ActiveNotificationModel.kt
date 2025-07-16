@@ -18,7 +18,6 @@ package com.android.systemui.statusbar.notification.shared
 import android.app.PendingIntent
 import android.graphics.drawable.Icon
 import android.util.Log
-import androidx.annotation.DrawableRes
 import com.android.internal.logging.InstanceId
 import com.android.systemui.statusbar.StatusBarIconView
 import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentModel
@@ -35,7 +34,7 @@ sealed class ActivePipelineEntryModel
 /** Model for a bundle of notifications. */
 data class ActiveBundleModel(
     val key: String,
-    @DrawableRes val iconResId: Int,
+    val icon: Icon,
     val children: List<ActiveNotificationEntryModel>,
 ) : ActivePipelineEntryModel()
 
