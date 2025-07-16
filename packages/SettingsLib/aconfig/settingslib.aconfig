@@ -194,16 +194,6 @@ flag {
 }
 
 flag {
-    name: "enable_temporary_bond_devices_ui"
-    namespace: "cross_device_experiences"
-    description: "UI changes for temporary bond devices in audio sharing."
-    bug: "362859132"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "adopt_primary_group_management_api"
     namespace: "cross_device_experiences"
     description: "Adopt Bluetooth LE broadcast primary group management APIs"

@@ -1398,17 +1398,6 @@ public class BluetoothUtilsTest {
     }
 
     @Test
-    @DisableFlags(Flags.FLAG_ENABLE_TEMPORARY_BOND_DEVICES_UI)
-    public void setTemporaryBondDevice_flagOff_doNothing() {
-        when(mBluetoothDevice.getMetadata(METADATA_FAST_PAIR_CUSTOMIZED_FIELDS))
-                .thenReturn(new byte[]{});
-        BluetoothUtils.setTemporaryBondMetadata(mBluetoothDevice);
-        verify(mBluetoothDevice, never()).setMetadata(eq(METADATA_FAST_PAIR_CUSTOMIZED_FIELDS),
-                any());
-    }
-
-    @Test
-    @EnableFlags(Flags.FLAG_ENABLE_TEMPORARY_BOND_DEVICES_UI)
     public void setTemporaryBondDevice_flagOn_setCorrectValue() {
         when(mBluetoothDevice.getMetadata(METADATA_FAST_PAIR_CUSTOMIZED_FIELDS))
                 .thenReturn(new byte[]{});
@@ -1418,7 +1407,6 @@ public class BluetoothUtilsTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_TEMPORARY_BOND_DEVICES_UI)
     public void setTemporaryBondDevice_flagOff_replaceAndSetCorrectValue() {
         when(mBluetoothDevice.getMetadata(METADATA_FAST_PAIR_CUSTOMIZED_FIELDS))
                 .thenReturn(FAKE_TEMP_BOND_METADATA.getBytes());

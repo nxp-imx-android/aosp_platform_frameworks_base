@@ -16,7 +16,6 @@
 package com.android.settingslib.bluetooth;
 
 import static com.android.settingslib.flags.Flags.FLAG_ENABLE_LE_AUDIO_SHARING;
-import static com.android.settingslib.flags.Flags.FLAG_ENABLE_TEMPORARY_BOND_DEVICES_UI;
 import static com.android.settingslib.flags.Flags.FLAG_REFACTOR_BATTERY_LEVEL_DISPLAY;
 
 import static com.google.common.truth.Truth.assertThat;
@@ -150,7 +149,6 @@ public class CachedBluetoothDeviceTest {
         MockitoAnnotations.initMocks(this);
         mSetFlagsRule.enableFlags(Flags.FLAG_ENABLE_TV_MEDIA_OUTPUT_DIALOG);
         mSetFlagsRule.enableFlags(FLAG_ENABLE_LE_AUDIO_SHARING);
-        mSetFlagsRule.enableFlags(FLAG_ENABLE_TEMPORARY_BOND_DEVICES_UI);
         mContext = RuntimeEnvironment.application;
         mAudioManager = mContext.getSystemService(AudioManager.class);
         mShadowBluetoothAdapter = Shadow.extract(BluetoothAdapter.getDefaultAdapter());
