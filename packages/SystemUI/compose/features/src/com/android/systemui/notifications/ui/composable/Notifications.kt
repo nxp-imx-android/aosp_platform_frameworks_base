@@ -63,7 +63,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
@@ -612,6 +614,15 @@ fun ContentScope.NotificationScrollingStack(
                     Modifier.clickable(onClick = { onEmptySpaceClick?.invoke() })
                 }
     ) {
+        Spacer(
+            modifier =
+                Modifier.thenIf(shouldFillMaxSize) {
+                    Modifier.fillMaxSize()
+                }
+                .drawBehind {
+                    drawRect(Color.Black, blendMode = BlendMode.DstOut)
+                }
+        )
         Box(
             modifier =
                 Modifier.graphicsLayer {
