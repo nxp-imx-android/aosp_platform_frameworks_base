@@ -30,6 +30,8 @@ import com.android.systemui.Flags.FLAG_GLANCEABLE_HUB_V2
 import com.android.systemui.Flags.glanceableHubV2
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.bouncer.data.repository.fakeKeyguardBouncerRepository
+import com.android.systemui.communal.data.repository.communalSceneRepository
+import com.android.systemui.communal.data.repository.fakeCommunalSceneRepositorySpy
 import com.android.systemui.communal.domain.interactor.CommunalSceneTransitionInteractor
 import com.android.systemui.communal.domain.interactor.communalSceneInteractor
 import com.android.systemui.communal.domain.interactor.communalSceneTransitionInteractor
@@ -54,6 +56,8 @@ import com.android.systemui.keyguard.shared.model.StatusBarState
 import com.android.systemui.keyguard.shared.model.TransitionState
 import com.android.systemui.keyguard.shared.model.TransitionStep
 import com.android.systemui.keyguard.util.KeyguardTransitionRepositorySpySubject.Companion.assertThat
+import com.android.systemui.kosmos.runCurrent
+import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.power.domain.interactor.PowerInteractor.Companion.setAsleepForTest
 import com.android.systemui.power.domain.interactor.PowerInteractor.Companion.setAwakeForTest
@@ -77,7 +81,11 @@ import org.mockito.ArgumentMatchers.anyInt
 import org.mockito.Mock
 import org.mockito.Mockito.clearInvocations
 import org.mockito.Mockito.reset
+import org.mockito.Mockito.verify
 import org.mockito.MockitoAnnotations
+import org.mockito.kotlin.any
+import org.mockito.kotlin.anyOrNull
+import org.mockito.kotlin.eq
 import platform.test.runner.parameterized.ParameterizedAndroidJunit4
 import platform.test.runner.parameterized.Parameters
 
@@ -91,6 +99,7 @@ class KeyguardTransitionScenariosTest(flags: FlagsParameterization?) : SysuiTest
     private val kosmos =
         testKosmos().apply {
             this.keyguardTransitionRepository = fakeKeyguardTransitionRepositorySpy
+            this.communalSceneRepository = fakeCommunalSceneRepositorySpy
         }
     private val testScope = kosmos.testScope
 
@@ -1448,7 +1457,7 @@ class KeyguardTransitionScenariosTest(flags: FlagsParameterization?) : SysuiTest
     @Test
     @DisableSceneContainer
     fun glanceableHubToDozing_communalKtfRefactor() =
-        testScope.runTest {
+        kosmos.runTest {
             // GIVEN a prior transition has run to GLANCEABLE_HUB
             communalSceneInteractor.changeScene(CommunalScenes.Communal, "test")
             runCurrent()
@@ -1465,8 +1474,14 @@ class KeyguardTransitionScenariosTest(flags: FlagsParameterization?) : SysuiTest
                     to = KeyguardState.DOZING,
                     animatorAssertion = { it.isNull() },
                 )
+            if (Flags.communalPowerTransitionFix()) {
+                verify(communalSceneRepository)
+                    .instantlyTransitionTo(eq(CommunalScenes.Blank), any())
+            } else {
+                verify(communalSceneRepository).changeScene(eq(CommunalScenes.Blank), anyOrNull())
+            }
 
-            coroutineContext.cancelChildren()
+            testScope.coroutineContext.cancelChildren()
         }
 
     @Test
