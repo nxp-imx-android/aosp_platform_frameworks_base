@@ -2398,8 +2398,8 @@ class SettingsProtoDumpUtil {
                 Settings.Secure.NAV_BAR_KIDS_MODE,
                 SecureSettingsProto.NavBar.NAV_BAR_KIDS_MODE);
         dumpSetting(s, p,
-                Settings.Secure.NAV_BAR_ORDER,
-                SecureSettingsProto.NavBar.NAV_BAR_ORDER);
+                Settings.Secure.NAVIGATIONBAR_KEY_ORDER,
+                SecureSettingsProto.NavBar.NAVIGATIONBAR_KEY_ORDER);
         p.end(navBar);
 
         dumpSetting(s, p,
