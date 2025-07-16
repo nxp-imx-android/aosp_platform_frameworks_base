@@ -85,7 +85,7 @@ class SoftwareRateLimiter {
 
     /**
      * A table that maps the number of (real) failures to the delay that is enforced after that
-     * number of (real) failures. Out-of-bounds indices default to the final delay.
+     * number of (real) failures. Out-of-bounds indices default to not allowed.
      */
     private static final Duration[] DELAY_TABLE =
             new Duration[] {
@@ -172,16 +172,6 @@ class SoftwareRateLimiter {
         mEnforcing = enforcing;
     }
 
-    private Duration getCurrentDelay(RateLimiterState state) {
-        if (!mEnforcing) {
-            return Duration.ZERO;
-        } else if (state.numFailures >= 0 && state.numFailures < DELAY_TABLE.length) {
-            return DELAY_TABLE[state.numFailures];
-        } else {
-            return DELAY_TABLE[DELAY_TABLE.length - 1];
-        }
-    }
-
     /**
      * Applies the software rate-limiter to the given LSKF guess.
      *
@@ -229,7 +219,16 @@ class SoftwareRateLimiter {
         // was made, causing the lock screen to block inputs for that amount of time. But checking
         // for it is still needed to cover any cases where a guess gets made anyway, for example
         // following a reboot which causes the lock screen to "forget" the delay.
-        final Duration delay = getCurrentDelay(state);
+        final Duration delay;
+        if (mEnforcing) {
+            if (state.numFailures >= DELAY_TABLE.length || state.numFailures < 0) {
+                Slogf.e(TAG, "No more guesses allowed; numFailures=%d", state.numFailures);
+                return SoftwareRateLimiterResult.noMoreGuesses();
+            }
+            delay = DELAY_TABLE[state.numFailures];
+        } else {
+            delay = Duration.ZERO;
+        }
         final Duration now = mInjector.getTimeSinceBoot();
         final Duration remainingDelay = state.timeSinceBootOfLastFailure.plus(delay).minus(now);
         if (remainingDelay.isPositive()) {
@@ -362,7 +361,15 @@ class SoftwareRateLimiter {
                     SAVED_WRONG_GUESS_TIMEOUT.toMillis());
         }
 
-        return getCurrentDelay(state);
+        if (!mEnforcing) {
+            return Duration.ZERO;
+        }
+        if (state.numFailures >= DELAY_TABLE.length || state.numFailures < 0) {
+            // In this case actually no more guesses are allowed, but currently there is no way to
+            // convey that information. For now just report the final delay again.
+            return DELAY_TABLE[DELAY_TABLE.length - 1];
+        }
+        return DELAY_TABLE[state.numFailures];
     }
 
     private static int getStatsCredentialType(LockscreenCredential firstGuess) {
