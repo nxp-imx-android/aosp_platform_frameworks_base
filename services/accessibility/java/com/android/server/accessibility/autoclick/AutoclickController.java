@@ -1298,8 +1298,7 @@ public class AutoclickController extends BaseEventStreamTransformation implement
             // If the panel is hovered, always use the default slop so it's easier to click the
             // closely spaced buttons.
             double slop =
-                    ((Flags.enableAutoclickIndicator() && mIgnoreMinorCursorMovement
-                            && !isPanelHovered())
+                    ((Flags.enableAutoclickIndicator() && !isPanelHovered())
                             ? mMovementSlop
                             : DEFAULT_MOVEMENT_SLOP);
             return delta > slop;
