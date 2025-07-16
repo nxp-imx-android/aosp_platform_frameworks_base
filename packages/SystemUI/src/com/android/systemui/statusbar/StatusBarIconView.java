@@ -64,6 +64,7 @@ import com.android.systemui.scene.shared.flag.SceneContainerFlag;
 import com.android.systemui.statusbar.notification.NotificationContentDescription;
 import com.android.systemui.statusbar.notification.NotificationDozeHelper;
 import com.android.systemui.statusbar.notification.NotificationUtils;
+import com.android.systemui.statusbar.notification.collection.BundleEntry;
 import com.android.systemui.util.drawable.DrawableSize;
 
 import java.lang.annotation.Retention;
@@ -147,7 +148,8 @@ public class StatusBarIconView extends AnimatedImageView implements StatusIconDi
     private StatusBarIcon mIcon;
     private int mLayoutDirectionForLoadedDrawable = LayoutDirection.UNDEFINED;
     @ViewDebug.ExportedProperty private String mSlot;
-    private StatusBarNotification mNotification;
+    @Nullable private StatusBarNotification mNotification;
+    @Nullable private BundleEntry mBundleEntry;
     private final boolean mBlocked;
     private Configuration mConfiguration;
     private boolean mNightMode;
@@ -188,6 +190,12 @@ public class StatusBarIconView extends AnimatedImageView implements StatusIconDi
     }
 
     public StatusBarIconView(Context context, String slot, StatusBarNotification sbn,
+            BundleEntry entry) {
+        this(context, slot, sbn, false);
+        mBundleEntry = entry;
+    }
+
+    public StatusBarIconView(Context context, String slot, StatusBarNotification sbn,
             boolean blocked) {
         super(context);
         mDozer = new NotificationDozeHelper();
@@ -210,7 +218,7 @@ public class StatusBarIconView extends AnimatedImageView implements StatusIconDi
     public void maybeUpdateIconScaleDimens() {
         // We scale notification icons (on the left) plus icons on the right that explicitly
         // want FIXED_SPACE.
-        boolean useNonSystemIconScaling = isNotification()
+        boolean useNonSystemIconScaling = isShownWithNotifications()
                 || (mIcon != null && mIcon.shape == Shape.FIXED_SPACE);
 
         if (useNonSystemIconScaling) {
@@ -375,6 +383,10 @@ public class StatusBarIconView extends AnimatedImageView implements StatusIconDi
 
     private boolean isNotification() {
         return mNotification != null;
+    }
+
+    private boolean isShownWithNotifications() {
+        return mNotification != null || mBundleEntry != null;
     }
 
     public boolean equalIcons(Icon a, Icon b) {
@@ -545,7 +557,7 @@ public class StatusBarIconView extends AnimatedImageView implements StatusIconDi
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
 
-        if (!isNotification()) {
+        if (!isShownWithNotifications()) {
             // for system icons, calculated measured width from super is for image drawable real
             // width (17dp). We may scale the image with font scale, so we also need to scale the
             // measured width so that scaled measured width and image width would be fit.
@@ -627,7 +639,7 @@ public class StatusBarIconView extends AnimatedImageView implements StatusIconDi
     }
 
     private void initializeDecorColor() {
-        if (isNotification()) {
+        if (isShownWithNotifications()) {
             setDecorColor(getContext().getColor(mNightMode
                     ? com.android.internal.R.color.notification_default_color_dark
                     : com.android.internal.R.color.notification_default_color_light));
