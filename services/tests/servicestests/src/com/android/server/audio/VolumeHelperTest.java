@@ -245,11 +245,12 @@ public class VolumeHelperTest {
         if (mAudioMusicVolumeGroup != null) {
             when(mAudioVolumeGroupHelper.getAudioVolumeGroups()).thenReturn(
                     List.of(mAudioMusicVolumeGroup));
-            when(mSpyAudioSystem.getVolumeGroupIdFromStreamType(STREAM_MUSIC))
-                    .thenReturn(mAudioMusicVolumeGroup.getId());
         }
 
         mAm = mContext.getSystemService(AudioManager.class);
+
+        ((NoOpAudioSystemAdapter) mSpyAudioSystem)
+                .configureAudioProductStrategies(mAm.getAudioProductStrategies());
 
         mAudioService = new MyAudioService(mContext, mSpyAudioSystem, mSpySystemServer,
                 mSettingsAdapter, mAudioVolumeGroupHelper, mMockAudioPolicy,
