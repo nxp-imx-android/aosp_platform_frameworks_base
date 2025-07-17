@@ -144,6 +144,14 @@ fun FlickerTest.layerBecomesInvisible(component: IComponentMatcher) {
     assertLayers { this.isVisible(component).then().isInvisible(component) }
 }
 
+fun FlickerTest.layerCoversFullScreenAtEnd(component: IComponentMatcher) {
+    assertLayersEnd {
+        val displayBounds =
+            entry.physicalDisplayBounds ?: error("Missing physical display bounds")
+        visibleRegion(component).coversExactly(displayBounds)
+    }
+}
+
 fun FlickerTest.layerIsVisibleAtEnd(component: IComponentMatcher) {
     assertLayersEnd { this.isVisible(component) }
 }
