@@ -3412,7 +3412,6 @@ public class WindowManagerService extends IWindowManager.Stub
     }
 
     // TODO(multi-display): remove when no default display use case.
-    // (i.e. KeyguardController)
     public void executeAppTransition() {
         if (!checkCallingPermission(MANAGE_APP_TOKENS, "executeAppTransition()")) {
             throw new SecurityException("Requires MANAGE_APP_TOKENS permission");
