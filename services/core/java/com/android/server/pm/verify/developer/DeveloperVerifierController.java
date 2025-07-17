@@ -185,6 +185,20 @@ public class DeveloperVerifierController {
     }
 
     /**
+     * Return the UID of the verifier that is bound to the system. If the verifier has not been
+     * bound, return INVALID_UID.
+     */
+    public int getVerifierUidIfBound(int userId) {
+        synchronized (mRemoteServices) {
+            var remoteService = mRemoteServices.get(userId);
+            if (remoteService == null) {
+                return INVALID_UID;
+            }
+            return remoteService.getUid();
+        }
+    }
+
+    /**
      * Called to start querying and binding to a qualified verifier agent.
      *
      * @return False if a qualified verifier agent doesn't exist on device, so that the system can
@@ -247,7 +261,7 @@ public class DeveloperVerifierController {
                         Slog.i(TAG, "Verifier " + verifierPackageName + " is connected"
                                 + " on user " + userId);
                         // Logging the success of connecting to the verifier.
-                        callback.onConnectionEstablished(verifierUid);
+                        callback.onConnectionEstablished();
                         // Aggressively auto-disconnect until verification requests are sent out
                         startAutoDisconnectCountdown(
                                 remoteServiceWrapper.getAutoDisconnectCallback());

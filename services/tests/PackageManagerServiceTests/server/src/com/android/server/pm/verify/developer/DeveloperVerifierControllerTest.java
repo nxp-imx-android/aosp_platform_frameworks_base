@@ -197,7 +197,7 @@ public class DeveloperVerifierControllerTest {
         // Verify that the countdown to auto-disconnect has started
         ArgumentCaptor<Runnable> runnableCaptor = ArgumentCaptor.forClass(Runnable.class);
         callbacks.onConnected(mMockService);
-        verify(mSessionCallback, times(1)).onConnectionEstablished(anyInt());
+        verify(mSessionCallback, times(1)).onConnectionEstablished();
         verify(mInjector, times(1)).removeCallbacks(eq(mHandler),
                 runnableCaptor.capture());
         Runnable autoDisconnectRunnable = runnableCaptor.getValue();
