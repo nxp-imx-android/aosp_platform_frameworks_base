@@ -46,6 +46,7 @@ import androidx.test.uiautomator.UiDevice
 import androidx.test.uiautomator.UiObject2
 import androidx.test.uiautomator.Until
 import com.android.launcher3.tapl.LauncherInstrumentation
+import com.android.server.wm.flicker.helpers.ImeAppHelper
 import com.android.wm.shell.Flags
 import com.google.common.truth.Truth.assertWithMessage
 
@@ -172,8 +173,8 @@ fun expandBubbleAppViaTapOnBubbleStack(
  * Expands the bubble app [testApp], which is previously collapsed via tapping on bubble bar.
  * Note that this method only works on device with bubble bar.
  *
- * @param testApp the bubble app to expand
  * @param uiDevice the UI automator to get the bubble bar [UiObject2]
+ * @param testApp the bubble app to expand
  * @param wmHelper the [WindowManagerStateHelper]
  */
 fun expandBubbleAppViaBubbleBar(
@@ -297,8 +298,11 @@ private fun launchAndWaitForBubbleAppExpanded(
 
     waitAndAssertBubbleAppInExpandedState(testApp, wmHelper)
 
-    assertWithMessage("The education must not show for Application bubble")
-        .that(Root.get().bubble.isEducationVisible).isFalse()
+    // Don't check bubble icons if the testApp is IME because IME occludes the overflow.
+    if (testApp !is ImeAppHelper) {
+        assertWithMessage("The education must not show for Application bubble")
+            .that(Root.get().bubble.isEducationVisible).isFalse()
+    }
 }
 
 private fun waitAndAssertBubbleAppInExpandedState(
@@ -313,7 +317,10 @@ private fun waitAndAssertBubbleAppInExpandedState(
         .withBubbleShown()
         .waitForAndVerify()
 
-    Root.get().expandedBubbleStack.verifyBubbleOverflowIsVisible()
+    // Don't check the overflow if the testApp is IME because IME occludes the overflow.
+    if (testApp !is ImeAppHelper) {
+        Root.get().expandedBubbleStack.verifyBubbleOverflowIsVisible()
+    }
 }
 
 private fun waitAndAssertBubbleAppInCollapseState(wmHelper: WindowManagerStateHelper) {
