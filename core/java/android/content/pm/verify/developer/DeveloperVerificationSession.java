@@ -68,6 +68,12 @@ public final class DeveloperVerificationSession implements Parcelable {
     }
 
     /**
+     * The developer verification is bypassed because of an unspecified reason. This field is
+     * reserved and must not be used when reporting a developer verification bypass.
+     * @hide
+     */
+    public static final int DEVELOPER_VERIFICATION_BYPASSED_REASON_UNSPECIFIED = 0;
+    /**
      * The developer verification is bypassed because the installation was initiated from the
      * Android Debug Bridge (ADB) service.
      */
