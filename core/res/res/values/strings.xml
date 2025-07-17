@@ -2508,7 +2508,7 @@
     <string name="policydesc_disableKeyguardFeatures">Prevent use of some screen lock features.</string>
 
     <!-- Text for toast instructing user to long press escape to exit the current application. [CHAR LIMIT=TOAST]-->
-    <string name="exit_toast_on_long_press_escape">Long press ESC key to close this app</string>
+    <string name="exit_toast_on_long_press_escape">Long press Esc key to close this app</string>
 
     <!-- The order of these is important, don't reorder without changing Contacts.java --> <skip />
     <!-- Phone number types from android.provider.Contacts. This could be used when adding a new phone number for a contact, for example. -->
