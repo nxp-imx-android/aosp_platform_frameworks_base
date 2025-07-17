@@ -2169,3 +2169,13 @@ flag {
     description: "Gets rid of runBlocking usages wherever possible, across all of sysui."
     bug: "423462317"
 }
+
+flag {
+    name: "glanceable_hub_enabled_by_default"
+    namespace: "systemui"
+    description: "Enable glanceable hub by default (this flag is intended to enable GH for DF only)."
+    bug: "428215526"
+    metadata {
+      purpose: PURPOSE_BUGFIX
+    }
+}
