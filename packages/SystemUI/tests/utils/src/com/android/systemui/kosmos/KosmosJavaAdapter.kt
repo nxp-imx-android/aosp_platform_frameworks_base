@@ -73,6 +73,8 @@ import com.android.systemui.scene.domain.startable.scrimStartable
 import com.android.systemui.scene.sceneContainerConfig
 import com.android.systemui.scene.shared.model.sceneDataSource
 import com.android.systemui.scene.ui.view.mockWindowRootViewProvider
+import com.android.systemui.securelockdevice.data.repository.fakeSecureLockDeviceRepository
+import com.android.systemui.securelockdevice.domain.interactor.secureLockDeviceInteractor
 import com.android.systemui.settings.brightness.data.repository.brightnessMirrorShowingRepository
 import com.android.systemui.settings.displayTracker
 import com.android.systemui.shade.data.repository.fakeShadeDisplaysRepository
@@ -260,6 +262,8 @@ class KosmosJavaAdapter() {
     val sysuiStateInteractor by lazy { kosmos.sysuiStateInteractor }
     val wallpaperInteractor by lazy { kosmos.wallpaperInteractorFaked }
     val wallpaperRepository by lazy { kosmos.fakeWallpaperRepository }
+    val fakeSecureLockDeviceRepository by lazy { kosmos.fakeSecureLockDeviceRepository }
+    val secureLockDeviceInteractor by lazy { kosmos.secureLockDeviceInteractor }
 
     /** Use if you need a unique or mutate-able row */
     fun createRow(): ExpandableNotificationRow {
