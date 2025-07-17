@@ -6674,7 +6674,9 @@
         android:featureFlag="!com.android.graphics.surfaceflinger.flags.readback_screenshot" />
 
     <!-- Allows an application to take screen shots and more generally
-         get access to the frame buffer data.
+         get access to the frame buffer data. This permission does not grant
+         the ability to capture secure content, which is guarded by the
+         permission CAPTURE_BLACKOUT_CONTENT.
          <p>Not for use by third-party applications.
           @FlaggedApi(com.android.graphics.surfaceflinger.flags.Flags.FLAG_READBACK_SCREENSHOT)
           @SystemApi
