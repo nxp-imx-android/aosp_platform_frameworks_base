@@ -286,11 +286,9 @@ public class AdbDebuggingManager {
 
             mNsdManager.unregisterService(this);
 
-            Bundle bundle = new Bundle();
-            bundle.putString("publicKey", publicKey);
             Message message = Message.obtain(mHandler,
                                              AdbDebuggingHandler.MSG_RESPONSE_PAIRING_RESULT,
-                                             bundle);
+                                             publicKey);
             mHandler.sendMessage(message);
         }
 
@@ -1166,8 +1164,7 @@ public class AdbDebuggingManager {
                     break;
                 }
                 case MSG_RESPONSE_PAIRING_RESULT: {
-                    Bundle bundle = (Bundle) msg.obj;
-                    String publicKey = bundle.getString("publicKey");
+                    String publicKey = (String) msg.obj;
                     onPairingResult(publicKey);
                     // Send the updated paired devices list to the UI.
                     sendPairedDevicesToUI(mAdbKeyStore.getPairedDevices());
