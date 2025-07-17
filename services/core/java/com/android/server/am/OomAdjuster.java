@@ -2204,6 +2204,9 @@ public abstract class OomAdjuster {
         final ProcessRecordInternal state = app;
         final UidRecordInternal uidRec = app.getUidRecord();
 
+        final boolean reportDebugMsgs =
+                DEBUG_SWITCH || DEBUG_OOM_ADJ || mService.mCurOomAdjUid == app.info.uid;
+
         if (state.getCurRawAdj() != state.getSetRawAdj()) {
             state.setSetRawAdj(state.getCurRawAdj());
         }
@@ -2222,7 +2225,7 @@ public abstract class OomAdjuster {
                 mInjector.setOomAdj(app.getPid(), app.uid, state.getCurAdj());
             }
 
-            if (DEBUG_SWITCH || DEBUG_OOM_ADJ || mService.mCurOomAdjUid == app.info.uid) {
+            if (reportDebugMsgs) {
                 String msg = "Set " + app.getPid() + " " + app.processName + " adj "
                         + state.getCurAdj() + ": " + state.getAdjType();
                 reportOomAdjMessageLocked(TAG_OOM_ADJ, msg);
@@ -2244,7 +2247,7 @@ public abstract class OomAdjuster {
         } else if (state.getSetSchedGroup() != curSchedGroup) {
             int oldSchedGroup = state.getSetSchedGroup();
             state.setSetSchedGroup(curSchedGroup);
-            if (DEBUG_SWITCH || DEBUG_OOM_ADJ || mService.mCurOomAdjUid == app.uid) {
+            if (reportDebugMsgs) {
                 String msg = "Setting sched group of " + app.processName
                         + " to " + curSchedGroup + ": " + state.getAdjType();
                 reportOomAdjMessageLocked(TAG_OOM_ADJ, msg);
@@ -2356,7 +2359,7 @@ public abstract class OomAdjuster {
         }
         int oldProcState = state.getSetProcState();
         if (state.getSetProcState() != state.getCurProcState()) {
-            if (DEBUG_SWITCH || DEBUG_OOM_ADJ || mService.mCurOomAdjUid == app.uid) {
+            if (reportDebugMsgs) {
                 String msg = "Proc state change of " + app.processName
                         + " to " + ProcessList.makeProcStateString(state.getCurProcState())
                         + " (" + state.getCurProcState() + ")" + ": " + state.getAdjType();
