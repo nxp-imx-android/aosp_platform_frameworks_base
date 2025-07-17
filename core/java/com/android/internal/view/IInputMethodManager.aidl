@@ -83,29 +83,11 @@ interface IInputMethodManager {
             + "android.Manifest.permission.TEST_INPUT_METHOD)")
     void hideSoftInputFromServerForTest();
 
-    // TODO(b/418839448): merge with startInputOrWindowGainedFocus once
-    //                    WINDOW_FOCUS_GAIN_REPORT_ONLY uses async method.
-    // If windowToken is null, this just does startInput().  Otherwise this reports that a window
-    // has gained focus, and if 'editorInfo' is non-null then also does startInput.
-    // @NonNull
-    @JavaPassthrough(annotation="@android.annotation.RequiresPermission(value = "
-            + "android.Manifest.permission.INTERACT_ACROSS_USERS_FULL, conditional = true)")
-    InputBindResult startInputOrWindowGainedFocus(
-            /* @StartInputReason */ int startInputReason,
-            in IInputMethodClient client, in @nullable IBinder windowToken,
-            /* @StartInputFlags */ int startInputFlags,
-            /* @android.view.WindowManager.LayoutParams.SoftInputModeFlags */ int softInputMode,
-            /* @android.view.WindowManager.LayoutParams.Flags */ int windowFlags,
-            in @nullable EditorInfo editorInfo, in @nullable IRemoteInputConnection inputConnection,
-            in @nullable IRemoteAccessibilityInputConnection remoteAccessibilityInputConnection,
-            int unverifiedTargetSdkVersion, int userId,
-            in ImeOnBackInvokedDispatcher imeDispatcher, boolean imeRequestedVisible);
-
     // If windowToken is null, this just does startInput().  Otherwise this reports that a window
     // has gained focus, and if 'editorInfo' is non-null then also does startInput.
     @JavaPassthrough(annotation="@android.annotation.RequiresPermission(value = "
             + "android.Manifest.permission.INTERACT_ACROSS_USERS_FULL, conditional = true)")
-    void startInputOrWindowGainedFocusAsync(
+    oneway void startInputOrWindowGainedFocus(
             /* @StartInputReason */ int startInputReason,
             in IInputMethodClient client, in @nullable IBinder windowToken,
             /* @StartInputFlags */ int startInputFlags,

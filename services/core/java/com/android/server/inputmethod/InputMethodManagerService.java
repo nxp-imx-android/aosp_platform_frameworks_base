@@ -3557,24 +3557,42 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
         return imeClientFocus == WindowManagerInternal.ImeClientFocusResult.HAS_IME_FOCUS;
     }
 
-    //TODO(b/418839448): merge with startInputOrWindowGainedFocus once WINDOW_FOCUS_GAIN_REPORT_ONLY
-    // uses async method.
     @Override
-    public void startInputOrWindowGainedFocusAsync(@StartInputReason int startInputReason,
-            IInputMethodClient client, IBinder windowToken, @StartInputFlags int startInputFlags,
+    public void startInputOrWindowGainedFocus(
+            @StartInputReason int startInputReason, @NonNull IInputMethodClient client,
+            @Nullable IBinder windowToken, @StartInputFlags int startInputFlags,
             @SoftInputModeFlags int softInputMode,
             @WindowManager.LayoutParams.Flags int windowFlags, @Nullable EditorInfo editorInfo,
-            IRemoteInputConnection inputConnection,
-            IRemoteAccessibilityInputConnection remoteAccessibilityInputConnection,
+            @Nullable IRemoteInputConnection inputConnection,
+            @Nullable IRemoteAccessibilityInputConnection remoteAccessibilityInputConnection,
             int unverifiedTargetSdkVersion, @UserIdInt int userId,
             @NonNull ImeOnBackInvokedDispatcher imeDispatcher, boolean imeRequestedVisible,
             int startInputSeq) {
-        // implemented by ZeroJankProxy
+        final var res = startInputOrWindowGainedFocusWithResult(startInputReason, client,
+                windowToken, startInputFlags, softInputMode, windowFlags, editorInfo,
+                inputConnection, remoteAccessibilityInputConnection, unverifiedTargetSdkVersion,
+                userId, imeDispatcher, imeRequestedVisible);
+        synchronized (ImfLock.class) {
+            final ClientState cs = getClientStateLocked(client);
+            if (cs != null) {
+                cs.mClient.onStartInputResult(res, startInputSeq);
+                // For first-time client bind, MSG_BIND should arrive after MSG_START_INPUT_RESULT.
+                if (res.result == InputBindResult.ResultCode.SUCCESS_WAITING_IME_SESSION) {
+                    requestClientSessionLocked(cs, userId);
+                    requestClientSessionForAccessibilityLocked(cs);
+                }
+            } else {
+                // client is unbound.
+                Slog.i(TAG, "Client that requested startInputOrWindowGainedFocus is no longer"
+                        + " bound. InputBindResult: " + res + " for startInputSeq: "
+                        + startInputSeq);
+            }
+        }
     }
 
+    @VisibleForTesting
     @NonNull
-    @Override
-    public InputBindResult startInputOrWindowGainedFocus(
+    InputBindResult startInputOrWindowGainedFocusWithResult(
             @StartInputReason int startInputReason, IInputMethodClient client, IBinder windowToken,
             @StartInputFlags int startInputFlags, @SoftInputModeFlags int softInputMode,
             @WindowManager.LayoutParams.Flags int windowFlags, @Nullable EditorInfo editorInfo,
