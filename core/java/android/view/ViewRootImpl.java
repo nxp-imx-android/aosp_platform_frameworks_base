@@ -103,6 +103,7 @@ import static android.view.WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE;
 import static android.view.WindowManager.LayoutParams.SOFT_INPUT_MASK_ADJUST;
 import static android.view.WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY;
 import static android.view.WindowManager.LayoutParams.TYPE_APPLICATION_STARTING;
+import static android.view.WindowManager.LayoutParams.TYPE_BASE_APPLICATION;
 import static android.view.WindowManager.LayoutParams.TYPE_INPUT_METHOD;
 import static android.view.WindowManager.LayoutParams.TYPE_STATUS_BAR_ADDITIONAL;
 import static android.view.WindowManager.LayoutParams.TYPE_SYSTEM_ALERT;
@@ -3451,11 +3452,19 @@ public final class ViewRootImpl implements ViewParent,
     /* package */ WindowInsets getWindowInsets(boolean forceConstruct) {
         if (mLastWindowInsets == null || forceConstruct) {
             final Configuration config = getConfiguration();
-            mLastWindowInsets = mInsetsController.calculateInsets(
+            final WindowInsets insets = mInsetsController.calculateInsets(
                     config.isScreenRound(), mWindowAttributes.type,
                     config.windowConfiguration.getActivityType(), mWindowAttributes.softInputMode,
                     mWindowAttributes.flags, (mWindowAttributes.systemUiVisibility
                             | mWindowAttributes.subtreeSystemUiVisibility));
+            // TODO(b/432205389): Remove this when bugs of the insets dispatching are gone.
+            if (mWindowAttributes.type == TYPE_BASE_APPLICATION && !mDragResizing) {
+                final String diffString = insets.toDiffString(mLastWindowInsets);
+                if (!diffString.isEmpty()) {
+                    Log.d(mTag, "WindowInsets changed: " + diffString);
+                }
+            }
+            mLastWindowInsets = insets;
 
             mAttachInfo.mContentInsets.set(mLastWindowInsets.getSystemWindowInsets().toRect());
             mAttachInfo.mStableInsets.set(mLastWindowInsets.getStableInsets().toRect());
