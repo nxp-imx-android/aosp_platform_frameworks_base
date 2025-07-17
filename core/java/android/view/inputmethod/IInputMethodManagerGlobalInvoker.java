@@ -373,8 +373,7 @@ final class IInputMethodManagerGlobalInvoker {
             @Nullable IRemoteInputConnection remoteInputConnection,
             @Nullable IRemoteAccessibilityInputConnection remoteAccessibilityInputConnection,
             int unverifiedTargetSdkVersion, @UserIdInt int userId,
-            @NonNull ImeOnBackInvokedDispatcher imeDispatcher, boolean imeRequestedVisible,
-            boolean useAsyncShowHideMethod) {
+            @NonNull ImeOnBackInvokedDispatcher imeDispatcher, boolean imeRequestedVisible) {
         final IInputMethodManager service = getService();
         if (service == null) {
             return -1;
@@ -383,8 +382,7 @@ final class IInputMethodManagerGlobalInvoker {
             service.startInputOrWindowGainedFocusAsync(startInputReason, client, windowToken,
                     startInputFlags, softInputMode, windowFlags, editorInfo, remoteInputConnection,
                     remoteAccessibilityInputConnection, unverifiedTargetSdkVersion, userId,
-                    imeDispatcher, imeRequestedVisible, advanceAngGetStartInputSequenceNumber(),
-                    useAsyncShowHideMethod);
+                    imeDispatcher, imeRequestedVisible, advanceAngGetStartInputSequenceNumber());
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }
