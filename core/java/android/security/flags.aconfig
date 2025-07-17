@@ -207,3 +207,10 @@ flag {
     purpose: PURPOSE_BUGFIX
   }
 }
+flag {
+    name: "app_lock_apis"
+    namespace: "security"
+    description: "Flag to enable access to the App Lock APIs in PackageManager"
+    bug: "415167460"
+    is_exported: true
+}
