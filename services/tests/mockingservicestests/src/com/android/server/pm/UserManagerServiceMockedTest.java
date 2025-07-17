@@ -120,8 +120,11 @@ import org.xmlpull.v1.XmlPullParserException;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Run as {@code atest
@@ -1166,8 +1169,9 @@ public final class UserManagerServiceMockedTest {
         UserInfo normalUserWithName = mUms.userWithName(normalUser);
         assertWithMessage("userWithName(normalUser)").that(normalUserWithName).isNotNull();
         expect.withMessage("userWithName(normalUser)").that(normalUserWithName)
-                .isSameInstanceAs(normalUser);
-        expect.withMessage("normalUserWithName.name").that(normalUserWithName.name).isNull();
+                .isNotSameInstanceAs(normalUser);
+        expect.withMessage("normalUserWithName.name").that(normalUserWithName.name)
+                .isEqualTo(mUms.getUnnamedUserName());
         expect.withMessage("normalUser.name").that(normalUser.name).isNull();
         expect.withMessage("number of system user allocations after non-systemUser call")
                 .that(getCurrentNumberOfUser0Allocations()).isEqualTo(expectedAllocations);
@@ -1229,7 +1233,8 @@ public final class UserManagerServiceMockedTest {
                 .isEqualTo(mUms.getGuestName());
 
         var normalUser = new UserInfo(42, /* name= */ null, /* flags= */ 0);
-        expect.withMessage("name of normal user").that(mUms.getName(normalUser)).isNull();
+        expect.withMessage("name of normal user").that(mUms.getName(normalUser))
+                .isEqualTo(mUms.getUnnamedUserName());
     }
 
     @Test
@@ -1250,7 +1255,8 @@ public final class UserManagerServiceMockedTest {
                 .isEqualTo(mUms.getGuestName());
 
         var normalUser = new UserInfo(42, /* name= */ null, /* flags= */ 0);
-        expect.withMessage("name of normal user").that(mUms.getName(normalUser)).isNull();
+        expect.withMessage("name of normal user").that(mUms.getName(normalUser))
+                .isEqualTo(mUms.getUnnamedUserName());
     }
 
     @Test
@@ -1383,6 +1389,18 @@ public final class UserManagerServiceMockedTest {
         }
     }
 
+    private void assertDefaultNewUserName(List<UserInfo> users, int... userIds) {
+        Set<Integer> userIdsSet = Arrays.stream(userIds).boxed().collect(Collectors.toSet());
+        var newUserName = mUms.getUnnamedUserName();
+        for (var user : users) {
+            if (userIdsSet.contains(user.id)) {
+                expect.withMessage("name on user (%s)", user.toFullString())
+                        .that(user.name)
+                        .isEqualTo(newUserName);
+            }
+        }
+    }
+
     @Test
     public void testGetUsersWithUnresolvedNames() {
         var headlessSystemUser = addUser(new UserInfo(USER_SYSTEM, /* name= */ null, FLAG_ADMIN));
@@ -1418,8 +1436,19 @@ public final class UserManagerServiceMockedTest {
     }
 
     @Test
-    public void testGetUsersInternal() {
+    public void testGetUsersInternal_nonHsum() {
+        var fullSystemUser =
+                addUser(new UserInfo(USER_SYSTEM, /* name= */ null, FLAG_FULL | FLAG_ADMIN));
+        testGetUsersInternal(fullSystemUser);
+    }
+
+    @Test
+    public void testGetUsersInternal_hsum() {
         var headlessSystemUser = addUser(new UserInfo(USER_SYSTEM, /* name= */ null, FLAG_ADMIN));
+        testGetUsersInternal(headlessSystemUser);
+    }
+
+    private void testGetUsersInternal(UserInfo systemUser) {
         var adminUser = addUser(new UserInfo(/* id= */ 4, /* name= */ null,
                 FLAG_FULL | FLAG_ADMIN));
         var nonAdminUser = addUser(new UserInfo(/* id= */ 8, /* name= */ null, FLAG_FULL));
@@ -1435,28 +1464,28 @@ public final class UserManagerServiceMockedTest {
                 DONT_RESOLVE_NULL_NAMES)
                 .that(mUms.getUsersInternal(EXCLUDE_PARTIAL, EXCLUDE_DYING,
                         DONT_RESOLVE_NULL_NAMES))
-                .containsExactly(headlessSystemUser, adminUser, nonAdminUser, namedUser);
+                .containsExactly(systemUser, adminUser, nonAdminUser, namedUser);
         expect.withMessage("getUsersInternal(%s, %s, %s)", DONT_EXCLUDE_PARTIAL, EXCLUDE_DYING,
                 DONT_RESOLVE_NULL_NAMES)
                 .that(mUms.getUsersInternal(DONT_EXCLUDE_PARTIAL, EXCLUDE_DYING,
                         DONT_RESOLVE_NULL_NAMES))
-                .containsExactly(headlessSystemUser, adminUser, nonAdminUser, namedUser,
+                .containsExactly(systemUser, adminUser, nonAdminUser, namedUser,
                         partialUser);
         expect.withMessage("getUsersInternal(%s, %s, %s)", DONT_EXCLUDE_PARTIAL, DONT_EXCLUDE_DYING,
                 DONT_RESOLVE_NULL_NAMES)
                 .that(mUms.getUsersInternal(DONT_EXCLUDE_PARTIAL, DONT_EXCLUDE_DYING,
                         DONT_RESOLVE_NULL_NAMES))
-                .containsExactly(headlessSystemUser, adminUser, nonAdminUser, namedUser,
+                .containsExactly(systemUser, adminUser, nonAdminUser, namedUser,
                         partialUser, dyingUser);
         expect.withMessage("getUsersInternal(%s, %s, %s)", DONT_EXCLUDE_PARTIAL, DONT_EXCLUDE_DYING,
                 DONT_RESOLVE_NULL_NAMES)
                 .that(mUms.getUsersInternal(DONT_EXCLUDE_PARTIAL, DONT_EXCLUDE_DYING,
                         DONT_RESOLVE_NULL_NAMES))
-                .containsExactly(headlessSystemUser, adminUser, nonAdminUser, namedUser,
+                .containsExactly(systemUser, adminUser, nonAdminUser, namedUser,
                         partialUser, dyingUser);
 
-        // NOTE: cannot check for a system user with resolved name on containsExactly() because
-        // UserInfo doesn't implement equals, hence checks below need to explicitly check it
+        // NOTE: cannot check for users with resolved names on containsExactly() because
+        // UserInfo doesn't implement equals, hence checks below need to explicitly check them
         List<UserInfo> resolvedNameUsers;
 
         resolvedNameUsers = mUms.getUsersInternal(EXCLUDE_PARTIAL, EXCLUDE_DYING,
@@ -1468,8 +1497,9 @@ public final class UserManagerServiceMockedTest {
         expect.withMessage("getUsersInternal(%s, %s, %s)", EXCLUDE_PARTIAL, EXCLUDE_DYING,
                 RESOLVE_NULL_NAMES)
                 .that(resolvedNameUsers)
-                .containsAtLeast(adminUser, nonAdminUser, namedUser);
+                .contains(namedUser);
         assertDefaultSystemUserName(resolvedNameUsers);
+        assertDefaultNewUserName(resolvedNameUsers, adminUser.id, nonAdminUser.id);
 
         resolvedNameUsers = mUms.getUsersInternal(DONT_EXCLUDE_PARTIAL, EXCLUDE_DYING,
                 RESOLVE_NULL_NAMES);
@@ -1480,8 +1510,9 @@ public final class UserManagerServiceMockedTest {
         expect.withMessage("getUsersInternal(%s, %s, %s)", DONT_EXCLUDE_PARTIAL, EXCLUDE_DYING,
                 RESOLVE_NULL_NAMES)
                 .that(resolvedNameUsers)
-                .containsAtLeast(adminUser, nonAdminUser, namedUser, partialUser);
+                .contains(namedUser);
         assertDefaultSystemUserName(resolvedNameUsers);
+        assertDefaultNewUserName(resolvedNameUsers, adminUser.id, nonAdminUser.id, partialUser.id);
 
         resolvedNameUsers = mUms.getUsersInternal(DONT_EXCLUDE_PARTIAL, DONT_EXCLUDE_DYING,
                 RESOLVE_NULL_NAMES);
@@ -1492,8 +1523,10 @@ public final class UserManagerServiceMockedTest {
         expect.withMessage("getUsersInternal(%s, %s, %s)", DONT_EXCLUDE_PARTIAL,
                 DONT_EXCLUDE_DYING, RESOLVE_NULL_NAMES)
                 .that(resolvedNameUsers)
-                .containsAtLeast(adminUser, nonAdminUser, namedUser, partialUser, dyingUser);
+                .contains(namedUser);
         assertDefaultSystemUserName(resolvedNameUsers);
+        assertDefaultNewUserName(resolvedNameUsers, adminUser.id, nonAdminUser.id, partialUser.id,
+                dyingUser.id);
 
         resolvedNameUsers = mUms.getUsersInternal(DONT_EXCLUDE_PARTIAL, DONT_EXCLUDE_DYING,
                 RESOLVE_NULL_NAMES);
@@ -1504,8 +1537,10 @@ public final class UserManagerServiceMockedTest {
         expect.withMessage("getUsersInternal(%s, %s, %s)", DONT_EXCLUDE_PARTIAL, DONT_EXCLUDE_DYING,
                 RESOLVE_NULL_NAMES)
                 .that(resolvedNameUsers)
-                .containsAtLeast(adminUser, nonAdminUser, namedUser, partialUser, dyingUser);
+                .contains(namedUser);
         assertDefaultSystemUserName(resolvedNameUsers);
+        assertDefaultNewUserName(resolvedNameUsers, adminUser.id, nonAdminUser.id, partialUser.id,
+                dyingUser.id);
     }
 
     @Test

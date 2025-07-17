@@ -1126,6 +1126,7 @@
   <java-symbol type="string" name="owner_name" />
   <java-symbol type="string" name="guest_name" />
   <java-symbol type="string" name="headless_system_user_name" />
+  <java-symbol type="string" name="unnamed_user_name" />
   <java-symbol type="string" name="config_chooseAccountActivity" />
   <java-symbol type="string" name="config_chooseTypeAndAccountActivity" />
   <java-symbol type="string" name="config_chooserActivity" />

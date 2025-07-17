@@ -5093,6 +5093,8 @@
     <!-- Default name of the headless system user, on HSUM devices. This users hosts the system, but
     is not a human user. [CHAR LIMIT=35] -->
     <string name="headless_system_user_name">System User</string>
+    <!-- Used when the name of a user is not explicitly set [CHAR LIMIT=35] -->
+    <string name="unnamed_user_name">User</string>
     <!-- Error message title [CHAR LIMIT=35] -->
     <string name="error_message_title">Error</string>
     <!-- Message informing user that the change was disallowed by an administrator. [CHAR LIMIT=none] -->
