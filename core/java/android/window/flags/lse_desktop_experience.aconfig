@@ -400,6 +400,16 @@ flag {
 }
 
 flag {
+    name: "enable_desktop_invisible_task_removal_cleanup_bugfix"
+    namespace: "lse_desktop_experience"
+    description: "Enables bugfix to properly clean up task data when an invisible task gets removed in desktop windowing."
+    bug: "427869488"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "enable_desktop_mode_through_dev_option"
     namespace: "lse_desktop_experience"
     description: "Enables support for desktop mode through developer options for devices eligible for desktop mode."
