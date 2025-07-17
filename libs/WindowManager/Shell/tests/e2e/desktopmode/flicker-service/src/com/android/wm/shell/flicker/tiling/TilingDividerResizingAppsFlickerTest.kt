@@ -28,7 +28,7 @@ import com.android.wm.shell.flicker.DesktopModeBaseTest
 import com.android.wm.shell.flicker.utils.leftTiledAppLargerThanRightAtEnd
 import com.android.wm.shell.flicker.utils.tilingDividerIsVisibleAtEnd
 import com.android.wm.shell.flicker.utils.tilingDividerIsVisibleAtStart
-import com.android.wm.shell.scenarios.TileResizingWithDrag
+import com.android.wm.shell.scenarios.TilingTestBase
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -42,7 +42,7 @@ import org.junit.runners.Parameterized
 @Parameterized.UseParametersRunnerFactory(FlickerParametersRunnerFactory::class)
 class TilingDividerResizingAppsFlickerTest(flicker: FlickerTest) :
     DesktopModeBaseTest(flicker) {
-    inner class TileResizingWithDragScenario : TileResizingWithDrag(flicker.scenario.startRotation)
+    inner class TileResizingWithDragScenario : TilingTestBase(flicker.scenario.startRotation)
 
     @Rule
     @JvmField

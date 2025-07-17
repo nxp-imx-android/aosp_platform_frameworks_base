@@ -32,7 +32,7 @@ import org.junit.Ignore
 import org.junit.Test
 
 @Ignore("Test Base Class")
-abstract class TileResizingWithDrag(
+abstract class TilingTestBase(
     private val rotation: Rotation = Rotation.ROTATION_0
 ) : TestScenarioBase(rotation) {
 
@@ -51,7 +51,50 @@ abstract class TileResizingWithDrag(
     }
 
     @Test
-    open fun snapTileAppsWithDrag() {
+    open fun snapTileAppsWithDragTest() {
+        snapTileAppsWithDrag()
+    }
+
+    @Test
+    open fun tileResizeTwoAppsTest() {
+        snapTileAppsWithDrag()
+        resizeBothAppsLeftBigger()
+    }
+
+    @Test
+    open fun tiledAppsPersistAfterSwipingHomeTest() {
+        snapTileAppsWithDrag()
+        goHomeThenOverview()
+        returnToDesktopMode()
+    }
+
+    @Test
+    open fun tiledAppsPersistAfterOverviewTest() {
+        snapTileAppsWithDrag()
+        showOverview()
+        returnToDesktopMode()
+    }
+
+    @Test
+    open fun tilingDividerShownThenHiddenAfterRemovingAppTest() {
+        snapTileAppsWithDrag()
+        removeTiledApp(removeLeft = true)
+    }
+
+    @Test
+    open fun tilingBrokenWhenDraggingHeaderTest() {
+       snapTileAppsWithDrag()
+       dragLeftAppHeaderToRight()
+    }
+
+    @Test
+    open fun tilingBrokenWhenEnteringPipTest() {
+        enablePipForRightApp()
+        snapTileAppsWithDrag()
+        minimizePipApp()
+    }
+
+    fun snapTileAppsWithDrag() {
         leftTestApp.dragToSnapResizeRegion(wmHelper, device, isLeft = true)
         rightTestPipApp.dragToSnapResizeRegion(wmHelper, device, isLeft = false)
     }

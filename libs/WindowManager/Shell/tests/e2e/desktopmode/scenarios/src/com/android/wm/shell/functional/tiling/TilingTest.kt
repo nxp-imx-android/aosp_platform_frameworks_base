@@ -18,12 +18,12 @@ package com.android.wm.shell.functional.tiling
 
 import android.platform.test.annotations.Presubmit
 import android.platform.test.rule.ScreenRecordRule
-import com.android.wm.shell.scenarios.TileResizingWithDrag
+import com.android.wm.shell.scenarios.TilingTestBase
 import org.junit.runner.RunWith
 import org.junit.runners.BlockJUnit4ClassRunner
 
-/* Functional test for [TileResizingWithDrag]. */
+/* Functional test for [TilingTest]. */
 @RunWith(BlockJUnit4ClassRunner::class)
 @Presubmit
 @ScreenRecordRule.ScreenRecord
-class TileResizingWithDragTest : TileResizingWithDrag()
+class TilingTest : TilingTestBase()
