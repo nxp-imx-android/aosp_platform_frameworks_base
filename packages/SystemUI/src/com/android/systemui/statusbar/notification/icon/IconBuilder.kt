@@ -42,7 +42,7 @@ class IconBuilder @Inject constructor(@StatusBarMain private val context: Contex
 
     @JvmOverloads
     fun createIconView(entry: BundleEntry, context: Context = this.context): StatusBarIconView {
-        return StatusBarIconView(context, entry.key, null)
+        return StatusBarIconView(context, entry.key, null, entry)
     }
 
     fun getIconContentDescription(n: Notification): CharSequence {
