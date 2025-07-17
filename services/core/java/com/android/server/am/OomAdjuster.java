@@ -77,7 +77,6 @@ import static com.android.server.am.ActivityManagerDebugConfig.DEBUG_PROCESS_OBS
 import static com.android.server.am.ActivityManagerDebugConfig.DEBUG_PSS;
 import static com.android.server.am.ActivityManagerDebugConfig.DEBUG_UID_OBSERVERS;
 import static com.android.server.am.ActivityManagerDebugConfig.DEBUG_USAGE_STATS;
-import static com.android.server.am.ActivityManagerService.DISPATCH_OOM_ADJ_OBSERVER_MSG;
 import static com.android.server.am.ActivityManagerService.FOLLOW_UP_OOMADJUSTER_UPDATE_MSG;
 import static com.android.server.am.ActivityManagerService.IDLE_UIDS_MSG;
 import static com.android.server.am.ActivityManagerService.TAG_LRU;
@@ -2189,12 +2188,7 @@ public abstract class OomAdjuster {
     @GuardedBy("mService")
     protected void reportOomAdjMessageLocked(String tag, String msg) {
         Slog.d(tag, msg);
-        synchronized (mService.mOomAdjObserverLock) {
-            if (mService.mCurOomAdjObserver != null) {
-                mService.mUiHandler.obtainMessage(DISPATCH_OOM_ADJ_OBSERVER_MSG, msg)
-                        .sendToTarget();
-            }
-        }
+        mService.reportOomAdjMessageLocked(msg);
     }
 
     void onWakefulnessChanged(int wakefulness) {
