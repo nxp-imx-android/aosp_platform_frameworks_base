@@ -20,8 +20,6 @@ package com.android.systemui.shade.ui.viewmodel
 
 import android.content.Context
 import android.content.Intent
-import android.icu.text.DateFormat
-import android.icu.text.DisplayContext
 import android.provider.Settings
 import android.view.ViewGroup
 import androidx.compose.runtime.derivedStateOf
@@ -58,14 +56,11 @@ import com.android.systemui.statusbar.pipeline.mobile.ui.viewmodel.MobileIconsVi
 import com.android.systemui.statusbar.pipeline.mobile.ui.viewmodel.MobileIconsViewModelKairos
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
-import java.util.Locale
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.mapLatest
 
 /** Models UI state for the shade header. */
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -159,20 +154,14 @@ constructor(
         get() =
             dualShadeEducationInteractor.education == DualShadeEducationModel.ForQuickSettingsShade
 
-    private val longerPattern = context.getString(R.string.abbrev_wday_month_day_no_year_alarm)
-    private val shorterPattern = context.getString(R.string.abbrev_month_day_no_year)
-
-    private val longerDateFormat: Flow<DateFormat> =
-        clockInteractor.onTimezoneOrLocaleChanged.mapLatest { getFormatFromPattern(longerPattern) }
-    private val shorterDateFormat: Flow<DateFormat> =
-        clockInteractor.onTimezoneOrLocaleChanged.mapLatest { getFormatFromPattern(shorterPattern) }
-
     val longerDateText: String by
         hydrator.hydratedStateOf(
             traceName = "longerDateText",
             initialValue = "",
             source =
-                combine(longerDateFormat, clockInteractor.currentTime) { format, time ->
+                combine(clockInteractor.longerDateFormat, clockInteractor.currentTime) {
+                    format,
+                    time ->
                     format.format(time)
                 },
         )
@@ -182,7 +171,9 @@ constructor(
             traceName = "shorterDateText",
             initialValue = "",
             source =
-                combine(shorterDateFormat, clockInteractor.currentTime) { format, time ->
+                combine(clockInteractor.shorterDateFormat, clockInteractor.currentTime) {
+                    format,
+                    time ->
                     format.format(time)
                 },
         )
@@ -279,12 +270,6 @@ constructor(
         bounds: IntRect,
     ) {
         dualShadeEducationInteractor.onDualShadeEducationElementBoundsChange(element, bounds)
-    }
-
-    private fun getFormatFromPattern(pattern: String?): DateFormat {
-        return DateFormat.getInstanceForSkeleton(pattern, Locale.getDefault()).apply {
-            setContext(DisplayContext.CAPITALIZATION_FOR_STANDALONE)
-        }
     }
 
     @AssistedFactory
