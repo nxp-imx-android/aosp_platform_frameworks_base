@@ -77,6 +77,7 @@ import android.platform.test.flag.junit.DeviceFlagsValueProvider;
 import android.platform.test.flag.junit.SetFlagsRule;
 import android.provider.Settings;
 import android.sysprop.ViewProperties;
+import android.testing.TestableContext;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.util.MergedConfiguration;
@@ -1531,6 +1532,27 @@ public class ViewRootImplTest {
 
     @Test
     @EnableFlags(FLAG_FORCE_INVERT_COLOR)
+    public void determineForceDarkType_isBlocklistedPackage_returnsNone() throws Exception {
+        TestableContext testableContext = new TestableContext(sContext);
+        sInstrumentation.runOnMainSync(() -> mViewRootImpl =
+                new ViewRootImpl(testableContext, testableContext.getDisplayNoVerify()));
+        // Set up configurations for force invert color, but with this context belonging to a
+        // blocklisted package.
+        waitForSystemNightModeActivated(testableContext, true);
+        enableForceInvertColor(testableContext, true);
+        testableContext.getOrCreateTestableResources().addOverride(
+                com.android.internal.R.array.config_forceInvertPackageBlocklist,
+                new String[]{testableContext.getPackageName()});
+
+        setUpViewAttributes(testableContext, /* isLightTheme= */ true, /* isForceDarkAllowed= */
+                false);
+
+        TestUtils.waitUntil("Waiting for ForceDarkType to be ready",
+                () -> (mViewRootImpl.determineForceDarkType() == ForceDarkType.NONE));
+    }
+
+    @Test
+    @EnableFlags(FLAG_FORCE_INVERT_COLOR)
     public void determineForceDarkType_notLightTheme_returnsNone() throws Exception {
         // Set up configurations for force invert color
         waitForSystemNightModeActivated(true);
@@ -1812,18 +1834,26 @@ public class ViewRootImplTest {
     }
 
     private void waitForSystemNightModeActivated(boolean active) {
+        waitForSystemNightModeActivated(sContext, active);
+    }
+
+    private void waitForSystemNightModeActivated(Context context, boolean active) {
         ShellIdentityUtils.invokeWithShellPermissions(() ->
                 sInstrumentation.runOnMainSync(() -> {
-                    var uiModeManager = sContext.getSystemService(UiModeManager.class);
+                    var uiModeManager = context.getSystemService(UiModeManager.class);
                     uiModeManager.setNightModeActivated(active);
                 }));
         sInstrumentation.waitForIdleSync();
     }
 
     private void enableForceInvertColor(boolean enabled) {
+        enableForceInvertColor(sContext, enabled);
+    }
+
+    private void enableForceInvertColor(Context context, boolean enabled) {
         ShellIdentityUtils.invokeWithShellPermissions(() -> {
             Settings.Secure.putInt(
-                    sContext.getContentResolver(),
+                    context.getContentResolver(),
                     Settings.Secure.ACCESSIBILITY_FORCE_INVERT_COLOR_ENABLED,
                     enabled ? 1 : 0
             );
@@ -1831,6 +1861,11 @@ public class ViewRootImplTest {
     }
 
     private void setUpViewAttributes(boolean isLightTheme, boolean isForceDarkAllowed) {
+        setUpViewAttributes(sContext, isLightTheme, isForceDarkAllowed);
+    }
+
+    private void setUpViewAttributes(Context context, boolean isLightTheme,
+            boolean isForceDarkAllowed) {
         ShellIdentityUtils.invokeWithShellPermissions(() -> {
             int themeId;
             if (isForceDarkAllowed) {
@@ -1846,17 +1881,17 @@ public class ViewRootImplTest {
                     themeId = R.style.ForceDarkAllowedFalse_Dark;
                 }
             }
-            sContext.setTheme(themeId);
+            context.setTheme(themeId);
         });
 
         sInstrumentation.runOnMainSync(() -> {
-            View view = new View(sContext);
+            View view = new View(context);
             WindowManager.LayoutParams layoutParams = new WindowManager.LayoutParams(
                     TYPE_APPLICATION_OVERLAY);
             layoutParams.token = new Binder();
             view.setLayoutParams(layoutParams);
             mViewRootImpl.setView(view, layoutParams, /* panelParentView= */ null);
-            mViewRootImpl.updateConfiguration(sContext.getDisplayNoVerify().getDisplayId());
+            mViewRootImpl.updateConfiguration(context.getDisplayNoVerify().getDisplayId());
         });
     }
 }

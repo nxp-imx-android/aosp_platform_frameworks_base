@@ -50,6 +50,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.ref.WeakReference;
 import java.time.LocalTime;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -1557,6 +1558,22 @@ public class UiModeManager {
     @ForceInvertType
     public int getForceInvertState() {
         return sGlobals.getForceInvertState();
+    }
+
+    /**
+     * Returns {@code true} if the provided context allows applying force invert, otherwise
+     * {@code false}.
+     *
+     * @hide
+     */
+    public static boolean isForceInvertAllowed(Context context) {
+        final String packageName = context.getPackageName();
+        final String[] packageBlocklist = context.getResources().getStringArray(
+                com.android.internal.R.array.config_forceInvertPackageBlocklist);
+        if (packageName != null && Arrays.asList(packageBlocklist).contains(packageName)) {
+            return false;
+        }
+        return true;
     }
 
     /**

@@ -4889,6 +4889,13 @@
         -->
     </string-array>
 
+    <string-array translatable="false" name="config_forceInvertPackageBlocklist">
+        <!--
+        <item>com.example.package.first</item>
+        <item>com.example.package.second</item>
+        -->
+    </string-array>
+
     <!-- Warning: This API can be dangerous when not implemented properly. In particular,
          escrow token must NOT be retrievable from device storage. In other words, either
          escrow token is not stored on device or its ciphertext is stored on device while
