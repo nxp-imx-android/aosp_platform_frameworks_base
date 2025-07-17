@@ -447,7 +447,7 @@ class TransitionScopedMechanicsAdapterTest {
         override val property = PropertyTransformation.Property.Offset
 
         val motionValue =
-            TransitionScopedMechanicsAdapter(createSpec = specFactory, stableThreshold = 1f)
+            TransitionScopedMechanicsAdapter(getSpec = specFactory, stableThreshold = 1f)
 
         override fun PropertyTransformationScope.transform(
             content: ContentKey,
