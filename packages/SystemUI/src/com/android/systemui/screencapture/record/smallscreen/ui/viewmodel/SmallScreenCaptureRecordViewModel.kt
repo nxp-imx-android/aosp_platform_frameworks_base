@@ -21,14 +21,25 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import com.android.app.tracing.coroutines.launchTraced
 import com.android.systemui.lifecycle.HydratedActivatable
+import com.android.systemui.screencapture.common.ScreenCapture
+import com.android.systemui.screencapture.common.ui.viewmodel.DrawableLoaderViewModel
+import com.android.systemui.screencapture.common.ui.viewmodel.DrawableLoaderViewModelImpl
+import com.android.systemui.screencapture.ui.ScreenCaptureActivity
+import com.android.systemui.screenrecord.ScreenRecordingAudioSource
+import com.android.systemui.screenrecord.domain.ScreenRecordingParameters
+import com.android.systemui.screenrecord.domain.interactor.ScreenRecordingServiceInteractor
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.coroutineScope
 
 class SmallScreenCaptureRecordViewModel
 @AssistedInject
-constructor(recordDetailsAppSelectorViewModelFactory: RecordDetailsAppSelectorViewModel.Factory) :
-    HydratedActivatable() {
+constructor(
+    @ScreenCapture private val activity: ScreenCaptureActivity,
+    private val screenRecordingServiceInteractor: ScreenRecordingServiceInteractor,
+    recordDetailsAppSelectorViewModelFactory: RecordDetailsAppSelectorViewModel.Factory,
+    private val drawableLoaderViewModelImpl: DrawableLoaderViewModelImpl,
+) : HydratedActivatable(), DrawableLoaderViewModel by drawableLoaderViewModelImpl {
 
     val recordDetailsAppSelectorViewModel: RecordDetailsAppSelectorViewModel =
         recordDetailsAppSelectorViewModelFactory.create()
@@ -54,6 +65,23 @@ constructor(recordDetailsAppSelectorViewModelFactory: RecordDetailsAppSelectorVi
 
     fun showMarkupColorSelector() {
         detailsPopup = RecordDetailsPopupType.MarkupColorSelector
+    }
+
+    fun dismiss() {
+        activity.finish()
+    }
+
+    fun startRecording() {
+        // TODO(b/428686600) pass actual parameters
+        screenRecordingServiceInteractor.startRecording(
+            ScreenRecordingParameters(
+                captureTarget = null,
+                displayId = 0,
+                shouldShowTaps = false,
+                audioSource = ScreenRecordingAudioSource.NONE,
+            )
+        )
+        dismiss()
     }
 
     @AssistedFactory

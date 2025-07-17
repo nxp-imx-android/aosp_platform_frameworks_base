@@ -29,6 +29,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import com.android.systemui.res.R
 import com.android.systemui.screencapture.common.ui.compose.PrimaryButton
+import com.android.systemui.screencapture.common.ui.compose.loadIcon
 import com.android.systemui.screencapture.record.largescreen.ui.viewmodel.PreCaptureViewModel
 import com.android.systemui.screencapture.record.largescreen.ui.viewmodel.ScreenCaptureRegion
 
@@ -58,7 +59,12 @@ fun PreCaptureUI(viewModel: PreCaptureViewModel) {
                     modifier = Modifier.fillMaxSize().wrapContentSize(Alignment.Center).zIndex(0f)
                 ) {
                     PrimaryButton(
-                        icon = viewModel.icons?.screenshotButton,
+                        icon =
+                            loadIcon(
+                                viewModel = viewModel,
+                                resId = R.drawable.ic_screen_capture_camera,
+                                contentDescription = null,
+                            ),
                         text = stringResource(R.string.screen_capture_fullscreen_screenshot_button),
                         onClick = { viewModel.takeFullscreenScreenshot() },
                     )
@@ -71,6 +77,7 @@ fun PreCaptureUI(viewModel: PreCaptureViewModel) {
                     initialWidth = 100.dp,
                     initialHeight = 100.dp,
                     onDragEnd = viewModel::onPartialRegionDragEnd,
+                    drawableLoaderViewModel = viewModel,
                 )
             }
             ScreenCaptureRegion.APP_WINDOW -> {}
