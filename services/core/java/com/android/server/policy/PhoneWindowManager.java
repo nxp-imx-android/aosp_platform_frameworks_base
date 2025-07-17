@@ -609,6 +609,8 @@ public class PhoneWindowManager implements WindowManagerPolicy {
     boolean mWakeOnBackKeyPress;
     boolean mSilenceRingerOnSleepKey;
     long mWakeUpToLastStateTimeout;
+    long mTurnOffTvToastSuppressionDelay;
+    long mLastShortPressTurnOffTvHintToastTime = 0;
     ComponentName mSearchKeyTargetActivity;
 
     // Key Behavior - Stem Primary
@@ -1311,12 +1313,16 @@ public class PhoneWindowManager implements WindowManagerPolicy {
         dreamManagerInternal.requestDream();
         if (mHasFeatureLeanback
                 && getResolvedLongPressOnPowerBehavior() == LONG_PRESS_POWER_GO_TO_SLEEP) {
-            Toast.makeText(
-                    mContext,
-                    UiThread.get().getLooper(),
-                    mContext.getString(R.string.long_press_power_to_turn_off_tv_toast),
-                    Toast.LENGTH_LONG)
-                    .show();
+            final long now = SystemClock.uptimeMillis();
+            if (now - mLastShortPressTurnOffTvHintToastTime >= mTurnOffTvToastSuppressionDelay) {
+                mLastShortPressTurnOffTvHintToastTime = now;
+                Toast.makeText(
+                        mContext,
+                        UiThread.get().getLooper(),
+                        mContext.getString(R.string.long_press_power_to_turn_off_tv_toast),
+                        Toast.LENGTH_LONG)
+                        .show();
+            }
         }
     }
 
@@ -2410,6 +2416,9 @@ public class PhoneWindowManager implements WindowManagerPolicy {
             mContext.getResources().getString(
                 com.android.internal.R.string.config_searchKeyTargetActivity));
         readConfigurationDependentBehaviors();
+
+        mTurnOffTvToastSuppressionDelay = mContext.getResources().getInteger(
+                com.android.internal.R.integer.config_turnOffTvToastSuppressionDelayMs);
 
         mDisplayFoldController = DisplayFoldController.create(mContext, DEFAULT_DISPLAY);
 

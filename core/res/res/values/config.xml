@@ -7663,4 +7663,8 @@
     <!-- Action for opening trusted location settings page [CHAR LIMIT=NONE] [DO NOT TRANSLATE] -->
     <string name="trusted_location_settings_action" translatable="false"></string>
 
+    <!-- The delay in milliseconds to suppress the toast after the user presses the
+         power button. -->
+    <integer name="config_turnOffTvToastSuppressionDelayMs">0</integer>
+
 </resources>
