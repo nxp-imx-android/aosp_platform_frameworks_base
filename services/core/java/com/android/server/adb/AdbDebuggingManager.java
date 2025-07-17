@@ -42,7 +42,6 @@ import android.debug.AdbManager;
 import android.debug.AdbNotifications;
 import android.debug.AdbProtoEnums;
 import android.debug.AdbTransportType;
-import android.debug.IAdbTransport;
 import android.debug.PairDevice;
 import android.net.ConnectivityManager;
 import android.net.LocalSocket;
@@ -145,7 +144,6 @@ public class AdbDebuggingManager {
     private final Context mContext;
     private final ContentResolver mContentResolver;
     @VisibleForTesting final AdbDebuggingHandler mHandler;
-    @Nullable private AdbDebuggingThread mThread;
     private boolean mAdbUsbEnabled = false;
     private boolean mAdbWifiEnabled = false;
     private String mFingerprints;
@@ -200,9 +198,8 @@ public class AdbDebuggingManager {
         mConfirmComponent = confirmComponent;
         mUserKeyFile = testUserKeyFile;
         mTempKeysFile = tempKeysFile;
-        mThread = adbDebuggingThread;
         mTicker = ticker;
-        mHandler = new AdbDebuggingHandler(FgThread.get().getLooper(), mThread);
+        mHandler = new AdbDebuggingHandler(FgThread.get().getLooper(), adbDebuggingThread);
     }
 
     static void sendBroadcastWithDebugPermission(@NonNull Context context, @NonNull Intent intent,
@@ -803,6 +800,8 @@ public class AdbDebuggingManager {
         // Usb, Wi-Fi transports can be enabled together or separately, so don't break the framework
         // connection unless all transport types are disconnected.
         private int mAdbEnabledRefCount = 0;
+
+        @Nullable private AdbDebuggingThread mThread;
 
         private ContentObserver mAuthTimeObserver = new ContentObserver(this) {
             @Override
@@ -1794,7 +1793,10 @@ public class AdbDebuggingManager {
     public void dump(DualDumpOutputStream dump, String idName, long id) {
         long token = dump.start(idName, id);
 
-        dump.write("connected_to_adb", AdbDebuggingManagerProto.CONNECTED_TO_ADB, mThread != null);
+        dump.write(
+                "connected_to_adb",
+                AdbDebuggingManagerProto.CONNECTED_TO_ADB,
+                mHandler.mThread != null);
         writeStringIfNotNull(dump, "last_key_received", AdbDebuggingManagerProto.LAST_KEY_RECEVIED,
                 mFingerprints);
 
