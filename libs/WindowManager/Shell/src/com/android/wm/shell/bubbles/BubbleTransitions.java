@@ -214,6 +214,8 @@ public class BubbleTransitions {
         // the bubble bar flag, but once these are combined we should be able to remove this.
         if (com.android.wm.shell.Flags.enableBubbleBar()
                 && mBubbleData.getSelectedBubble() instanceof Bubble) {
+            ProtoLog.d(
+                    WM_SHELL_BUBBLES, "notifyUnfoldTransitionStarting transition=%s", transition);
             Bubble bubble = (Bubble) mBubbleData.getSelectedBubble();
             mTaskViewTransitions.enqueueExternal(
                     bubble.getTaskView().getController(), () -> transition);
@@ -223,6 +225,8 @@ public class BubbleTransitions {
     /** Notifies when the unfold transition has finished. */
     public void notifyUnfoldTransitionFinished(@NonNull IBinder transition) {
         if (com.android.wm.shell.Flags.enableBubbleBar()) {
+            ProtoLog.d(
+                    WM_SHELL_BUBBLES, "notifyUnfoldTransitionFinished transition=%s", transition);
             mTaskViewTransitions.onExternalDone(transition);
         }
     }
