@@ -16,6 +16,7 @@
 
 package com.android.wm.shell.desktopmode
 
+import android.app.ActivityManager.getCurrentUser
 import android.app.TaskInfo
 import android.app.WallpaperColors
 import android.app.WallpaperManager
@@ -41,10 +42,18 @@ import androidx.fragment.app.FragmentActivity
 class DesktopWallpaperActivity : FragmentActivity() {
 
     private var wallpaperManager: WallpaperManager? = null
+    // TODO(b/432710419): Refresh current user on user change if needed
+    private var currentUser: Int = getCurrentUser()
 
     private val wallpaperColorsListener =
-        WallpaperManager.OnColorsChangedListener { colors, which ->
-            updateStatusBarIconColors(colors)
+        object : WallpaperManager.OnColorsChangedListener {
+            override fun onColorsChanged(colors: WallpaperColors?, which: Int) {}
+
+            override fun onColorsChanged(colors: WallpaperColors?, which: Int, userId: Int) {
+                if (userId == currentUser) {
+                    updateStatusBarIconColors(colors)
+                }
+            }
         }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -72,9 +81,7 @@ class DesktopWallpaperActivity : FragmentActivity() {
         wallpaperManager?.addOnColorsChangedListener(wallpaperColorsListener, mainThreadHandler)
 
         // Set the initial color of status bar icons on activity creation.
-        updateStatusBarIconColors(
-            wallpaperManager?.getWallpaperColors(WallpaperManager.FLAG_SYSTEM)
-        )
+        updateStatusBarIconColors(wallpaperManager?.getWallpaperColors(WallpaperManager.FLAG_SYSTEM, currentUser))
     }
 
     override fun onDestroy() {
@@ -106,10 +113,8 @@ class DesktopWallpaperActivity : FragmentActivity() {
         }
     }
 
-    private fun getWindowInsetsController(): WindowInsetsControllerCompat {
-        val window = getWindow()
-        return WindowCompat.getInsetsController(window, window.decorView)
-    }
+    private fun getWindowInsetsController(): WindowInsetsControllerCompat =
+        WindowCompat.getInsetsController(window, window.decorView)
 
     companion object {
         private const val TAG = "DesktopWallpaperActivity"
