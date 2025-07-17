@@ -258,11 +258,15 @@ fun CommunalHub(
         viewModel.isCommunalContentVisible.collectAsStateWithLifecycle(
             initialValue = hubEditModeTransition() || !viewModel.isEditMode
         )
-
+    val shouldShowEditModeLayout by
+        viewModel.shouldShowEditModeLayout.collectAsStateWithLifecycle(
+            initialValue = viewModel.isEditMode
+        )
     val minContentPadding =
         if (hubEditModeTransition())
-            gridContentPadding(viewModel.isEditMode, Dimensions.ToolbarHeight)
+            gridContentPadding(shouldShowEditModeLayout, Dimensions.ToolbarHeight)
         else gridContentPadding(viewModel.isEditMode, toolbarSize)
+
     ObserveScrollEffect(gridState, viewModel)
 
     val context = LocalContext.current
@@ -462,7 +466,7 @@ fun CommunalHub(
 
         if (onOpenWidgetPicker != null && onEditDone != null) {
             AnimatedVisibility(
-                visible = viewModel.isEditMode && isCommunalContentVisible,
+                visible = shouldShowEditModeLayout && isCommunalContentVisible,
                 enter =
                     fadeIn(animationSpec = tween(durationMillis = 250, easing = LinearEasing)) +
                         slideInVertically(
@@ -852,6 +856,7 @@ private fun HorizontalGridWrapper(
             state = gridState,
             flingBehavior = flingBehavior,
             minContentPadding = minContentPadding,
+            animateContentPadding = hubEditModeTransition(),
             minHorizontalArrangement = minHorizontalArrangement,
             minVerticalArrangement = minVerticalArrangement,
             setContentOffset = setContentOffset,

@@ -17,6 +17,7 @@
 package com.android.systemui.communal.ui.compose
 
 import android.content.res.Configuration
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.OverscrollEffect
 import androidx.compose.foundation.gestures.FlingBehavior
 import androidx.compose.foundation.gestures.ScrollableDefaults
@@ -33,6 +34,7 @@ import androidx.compose.foundation.lazy.grid.LazyHorizontalGrid
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.rememberOverscrollEffect
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -66,6 +68,7 @@ fun ResponsiveLazyHorizontalGrid(
     state: LazyGridState = rememberLazyGridState(),
     setContentOffset: (offset: Offset) -> Unit = {},
     minContentPadding: PaddingValues = PaddingValues(0.dp),
+    animateContentPadding: Boolean = false,
     minHorizontalArrangement: Dp = 0.dp,
     minVerticalArrangement: Dp = 0.dp,
     flingBehavior: FlingBehavior = ScrollableDefaults.flingBehavior(),
@@ -148,14 +151,31 @@ fun ResponsiveLazyHorizontalGrid(
         val finalStartPadding = minStartPadding + evenlyDistributedWidth
         val finalEndPadding = minEndPadding + evenlyDistributedWidth
         val finalTopPadding = minTopPadding + extraHeight / 2
+        val finalBottomPadding = minBottomPadding + extraHeight / 2
 
-        val finalContentPadding =
-            PaddingValues(
-                start = finalStartPadding,
-                end = finalEndPadding,
-                top = finalTopPadding,
-                bottom = minBottomPadding + extraHeight / 2,
-            )
+        val finalContentPadding: PaddingValues
+        if (animateContentPadding) {
+            val finalStartPaddingAnimated by animateDpAsState(finalStartPadding)
+            val finalTopPaddingAnimated by animateDpAsState(finalTopPadding)
+            val finalEndPaddingAnimated by animateDpAsState(finalEndPadding)
+            val finalBottomPaddingAnimated by animateDpAsState(finalBottomPadding)
+
+            finalContentPadding =
+                PaddingValues(
+                    start = finalStartPaddingAnimated,
+                    top = finalTopPaddingAnimated,
+                    end = finalEndPaddingAnimated,
+                    bottom = finalBottomPaddingAnimated,
+                )
+        } else {
+            finalContentPadding =
+                PaddingValues(
+                    start = finalStartPadding,
+                    top = finalTopPadding,
+                    end = finalEndPadding,
+                    bottom = finalBottomPadding,
+                )
+        }
 
         with(density) { setContentOffset(Offset(finalStartPadding.toPx(), finalTopPadding.toPx())) }
 
