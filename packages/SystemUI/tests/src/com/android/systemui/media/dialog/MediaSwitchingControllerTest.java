@@ -1402,6 +1402,24 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
                 .containsExactly(selectedOutputMediaDevice);
     }
 
+    @Test
+    public void hasGroupPlayback_singleOutputDevice_returnsFalse() {
+        doReturn(ImmutableList.of(mock(MediaDevice.class)))
+                .when(mLocalMediaManager)
+                .getSelectedMediaDevice();
+
+        assertThat(mMediaSwitchingController.hasGroupPlayback()).isFalse();
+    }
+
+    @Test
+    public void hasGroupPlayback_multipleOutputDevices_returnsTrue() {
+        doReturn(ImmutableList.of(mock(MediaDevice.class), mock(MediaDevice.class)))
+                .when(mLocalMediaManager)
+                .getSelectedMediaDevice();
+
+        assertThat(mMediaSwitchingController.hasGroupPlayback()).isTrue();
+    }
+
     @EnableFlags(Flags.FLAG_ENABLE_AUDIO_INPUT_DEVICE_ROUTING_AND_VOLUME_CONTROL)
     @Test
     public void selectInputDevice() throws InterruptedException {

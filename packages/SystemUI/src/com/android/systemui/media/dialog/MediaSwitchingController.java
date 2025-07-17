@@ -647,12 +647,14 @@ public class MediaSwitchingController
                 mContext.getString(R.string.media_output_group_title_connected_speakers));
     }
 
+    boolean hasGroupPlayback() {
+        return getSelectedMediaDevice().size() > 1;
+    }
+
     @Nullable
     MediaItem getConnectNewDeviceItem() {
-        boolean isSelectedDeviceNotAGroup = getSelectedMediaDevice().size() == 1;
-
         // Attach "Connect a device" item only when current output is not remote and not a group
-        return (!isCurrentConnectedDeviceRemote() && isSelectedDeviceNotAGroup)
+        return (!isCurrentConnectedDeviceRemote() && !hasGroupPlayback())
                 ? MediaItem.createPairNewDeviceMediaItem()
                 : null;
     }

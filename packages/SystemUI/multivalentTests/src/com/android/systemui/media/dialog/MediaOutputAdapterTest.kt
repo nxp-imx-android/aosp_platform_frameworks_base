@@ -332,6 +332,7 @@ class MediaOutputAdapterTest : SysuiTestCase() {
         mMediaSwitchingController.stub {
             on { isGroupListCollapsed } doReturn false
             on { isVolumeControlEnabledForSession } doReturn true
+            on { hasGroupPlayback() } doReturn true
         }
         mMediaSwitchingController.stub {
             on { selectedMediaDevice } doReturn listOf(mMediaDevice1, mMediaDevice2)
@@ -790,6 +791,7 @@ class MediaOutputAdapterTest : SysuiTestCase() {
             on { selectableMediaDevice } doReturn selectedDevices
             on { selectedMediaDevice } doReturn selectedDevices
             on { deselectableMediaDevice } doReturn selectedDevices
+            on { hasGroupPlayback() } doReturn true
         }
         mMediaOutputAdapter = MediaOutputAdapter(mMediaSwitchingController)
         updateAdapterWithDevices(listOf(mMediaDevice1, mMediaDevice2))

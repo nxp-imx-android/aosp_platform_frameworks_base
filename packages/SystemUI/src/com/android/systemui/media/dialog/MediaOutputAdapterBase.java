@@ -75,7 +75,7 @@ public abstract class MediaOutputAdapterBase extends RecyclerView.Adapter<Recycl
     boolean isCurrentlyConnected(MediaDevice device) {
         return TextUtils.equals(device.getId(),
                 mController.getCurrentConnectedMediaDevice().getId())
-                || (mController.getSelectedMediaDevice().size() == 1
+                || (!mController.hasGroupPlayback()
                 && isDeviceIncluded(mController.getSelectedMediaDevice(), device));
     }
 
@@ -105,7 +105,7 @@ public abstract class MediaOutputAdapterBase extends RecyclerView.Adapter<Recycl
         mMediaItemList.clear();
         mMediaItemList.addAll(mController.getMediaItemList());
         if (mShouldGroupSelectedMediaItems) {
-            if (mController.getSelectedMediaDevice().size() == 1) {
+            if (!mController.hasGroupPlayback()) {
                 // Don't group devices if initially there isn't more than one selected.
                 mShouldGroupSelectedMediaItems = false;
             }
@@ -197,7 +197,7 @@ public abstract class MediaOutputAdapterBase extends RecyclerView.Adapter<Recycl
                 } else if (device.getState() == MediaDeviceState.STATE_GROUPING) {
                     connectionState = ConnectionState.CONNECTING;
                 } else if (!enableOutputSwitcherRedesign() && mShouldGroupSelectedMediaItems
-                        && hasMultipleSelectedDevices()
+                        && mController.hasGroupPlayback()
                         && isSelected) {
                     if (mediaItem.isFirstDeviceInGroup()) {
                         isDeviceGroup = true;
@@ -263,15 +263,11 @@ public abstract class MediaOutputAdapterBase extends RecyclerView.Adapter<Recycl
             // A device should either be selectable or, when the device selected, the list should
             // have other selectable or selected devices.
             boolean selectedWithOtherGroupDevices =
-                    isSelected && (hasMultipleSelectedDevices() || hasSelectableDevices());
+                    isSelected && (mController.hasGroupPlayback() || hasSelectableDevices());
             if (isSelectable || selectedWithOtherGroupDevices) {
                 return new GroupStatus(isSelected, isDeselectable);
             }
             return null;
-        }
-
-        private boolean hasMultipleSelectedDevices() {
-            return mController.getSelectedMediaDevice().size() > 1;
         }
 
         private boolean hasSelectableDevices() {
