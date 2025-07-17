@@ -26,16 +26,6 @@
     android:layout_width="wrap_content"
     android:layout_height="wrap_content">
 
-    <View
-        android:id="@+id/bluetooth_tile_dialog_progress_background"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        app:layout_constraintEnd_toEndOf="@id/bluetooth_tile_dialog_progress_animation"
-        app:layout_constraintStart_toStartOf="@id/bluetooth_tile_dialog_progress_animation"
-        app:layout_constraintTop_toTopOf="@id/bluetooth_tile_dialog_progress_animation"
-        app:layout_constraintBottom_toBottomOf="@id/bluetooth_tile_dialog_progress_animation"
-        android:background="?androidprv:attr/colorSurfaceVariant" />
-
     <ProgressBar
         android:id="@+id/bluetooth_tile_dialog_progress_animation"
         android:layout_width="152dp"
