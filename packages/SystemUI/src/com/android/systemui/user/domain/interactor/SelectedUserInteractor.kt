@@ -27,7 +27,6 @@ class SelectedUserInteractor @Inject constructor(private val repository: UserRep
 
     /** Returns the ID of the currently-selected user. */
     @UserIdInt
-    @JvmOverloads
     fun getSelectedUserId(): Int {
         return repository.getSelectedUserInfo().id
     }
