@@ -48,8 +48,6 @@ import android.net.LocalSocket;
 import android.net.LocalSocketAddress;
 import android.net.NetworkInfo;
 import android.net.Uri;
-import android.net.nsd.NsdManager;
-import android.net.nsd.NsdServiceInfo;
 import android.net.wifi.WifiConfiguration;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
@@ -60,7 +58,6 @@ import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
 import android.os.SystemClock;
-import android.os.SystemProperties;
 import android.os.SystemService;
 import android.os.UserHandle;
 import android.os.UserManager;
@@ -153,14 +150,14 @@ public class AdbDebuggingManager {
     @Nullable private final File mUserKeyFile;
     @Nullable private final File mTempKeysFile;
 
-    private static final String WIFI_PERSISTENT_GUID =
-            "persist.adb.wifi.guid";
+    static final String WIFI_PERSISTENT_GUID = "persist.adb.wifi.guid";
     private static final int PAIRING_CODE_LENGTH = 6;
     /**
      * The maximum time to wait for the adbd service to change state when toggling.
      */
     private static final long ADBD_STATE_CHANGE_TIMEOUT = DEFAULT_DISPATCHING_TIMEOUT_MILLIS;
-    private PairingThread mPairingThread = null;
+
+    private AdbPairingThread mAdbPairingThread = null;
     // A list of keys connected via wifi
     private final Set<String> mWifiConnectedKeys = new HashSet<>();
     // The current info of the adbwifi connection.
@@ -230,117 +227,7 @@ public class AdbDebuggingManager {
         mConnectionPortPoller = null;
     }
 
-    class PairingThread extends Thread implements NsdManager.RegistrationListener {
-        private NsdManager mNsdManager;
-        private String mPairingCode;
-        private String mGuid;
-        private String mServiceName;
-        // From RFC6763 (https://tools.ietf.org/html/rfc6763#section-7.2),
-        // The rules for Service Names [RFC6335] state that they may be no more
-        // than fifteen characters long (not counting the mandatory underscore),
-        // consisting of only letters, digits, and hyphens, must begin and end
-        // with a letter or digit, must not contain consecutive hyphens, and
-        // must contain at least one letter.
-        @VisibleForTesting static final String SERVICE_PROTOCOL = "adb-tls-pairing";
-        private final String mServiceType = String.format("_%s._tcp.", SERVICE_PROTOCOL);
-        private int mPort;
 
-        private native int native_pairing_start(String guid, String password);
-        private native void native_pairing_cancel();
-
-        private native String native_pairing_wait();
-
-        PairingThread(String pairingCode, String serviceName) {
-            super(TAG);
-            mPairingCode = pairingCode;
-            mGuid = SystemProperties.get(WIFI_PERSISTENT_GUID);
-            mServiceName = serviceName;
-            if (serviceName == null || serviceName.isEmpty()) {
-                mServiceName = mGuid;
-            }
-            mPort = -1;
-            mNsdManager = (NsdManager) mContext.getSystemService(Context.NSD_SERVICE);
-        }
-
-        @Override
-        public void run() {
-            // Register the mdns service
-            NsdServiceInfo serviceInfo = new NsdServiceInfo();
-            serviceInfo.setServiceName(mServiceName);
-            serviceInfo.setServiceType(mServiceType);
-            serviceInfo.setPort(mPort);
-            mNsdManager.registerService(serviceInfo, NsdManager.PROTOCOL_DNS_SD, this);
-
-            // Send pairing port to UI
-            Message msg = mHandler.obtainMessage(
-                    AdbDebuggingHandler.MSG_RESPONSE_PAIRING_PORT);
-            msg.obj = mPort;
-            mHandler.sendMessage(msg);
-
-            String publicKey = native_pairing_wait();
-            if (publicKey != null) {
-                Slog.i(TAG, "Pairing succeeded key=" + publicKey);
-            } else {
-                Slog.i(TAG, "Pairing failed");
-            }
-
-            mNsdManager.unregisterService(this);
-
-            Message message = Message.obtain(mHandler,
-                                             AdbDebuggingHandler.MSG_RESPONSE_PAIRING_RESULT,
-                                             publicKey);
-            mHandler.sendMessage(message);
-        }
-
-        @Override
-        public void start() {
-            /*
-             * If a user is fast enough to click cancel, native_pairing_cancel can be invoked
-             * while native_pairing_start is running which run the destruction of the object
-             * while it is being constructed. Here we start the pairing server on foreground
-             * Thread so native_pairing_cancel can never be called concurrently. Then we let
-             * the pairing server run on a background Thread.
-             */
-            if (mGuid.isEmpty()) {
-                Slog.e(TAG, "adbwifi guid was not set");
-                return;
-            }
-            mPort = native_pairing_start(mGuid, mPairingCode);
-            if (mPort <= 0) {
-                Slog.e(TAG, "Unable to start pairing server");
-                return;
-            }
-
-            super.start();
-        }
-
-        public void cancelPairing() {
-            native_pairing_cancel();
-        }
-
-        @Override
-        public void onServiceRegistered(NsdServiceInfo serviceInfo) {
-            Slog.i(TAG, "Registered pairing service: " + serviceInfo);
-        }
-
-        @Override
-        public void onRegistrationFailed(NsdServiceInfo serviceInfo, int errorCode) {
-            Slog.e(TAG, "Failed to register pairing service(err=" + errorCode
-                    + "): " + serviceInfo);
-            cancelPairing();
-        }
-
-        @Override
-        public void onServiceUnregistered(NsdServiceInfo serviceInfo) {
-            Slog.i(TAG, "Unregistered pairing service: " + serviceInfo);
-        }
-
-        @Override
-        public void onUnregistrationFailed(NsdServiceInfo serviceInfo, int errorCode) {
-            Slog.w(TAG, "Failed to unregister pairing service(err=" + errorCode
-                    + "): " + serviceInfo);
-        }
-    }
 
     @VisibleForTesting
     static class AdbDebuggingThread extends Thread {
@@ -1164,7 +1051,7 @@ public class AdbDebuggingManager {
                     break;
                 }
                 case MSG_RESPONSE_PAIRING_RESULT: {
-                    String publicKey = (String) msg.obj;
+                        String publicKey = (String) msg.obj;
                     onPairingResult(publicKey);
                     // Send the updated paired devices list to the UI.
                     sendPairedDevicesToUI(mAdbKeyStore.getPairedDevices());
@@ -1178,28 +1065,29 @@ public class AdbDebuggingManager {
                 case MSG_PAIR_PAIRING_CODE: {
                     String pairingCode = createPairingCode(PAIRING_CODE_LENGTH);
                     updateUIPairCode(pairingCode);
-                    mPairingThread = new PairingThread(pairingCode, null);
-                    mPairingThread.start();
+                        mAdbPairingThread = new AdbPairingThread(pairingCode, null, mContext, this);
+                        mAdbPairingThread.start();
                     break;
                 }
                 case MSG_PAIR_QR_CODE: {
                     Bundle bundle = (Bundle) msg.obj;
                     String serviceName = bundle.getString("serviceName");
                     String password = bundle.getString("password");
-                    mPairingThread = new PairingThread(password, serviceName);
-                    mPairingThread.start();
+                        mAdbPairingThread =
+                                new AdbPairingThread(password, serviceName, mContext, this);
+                        mAdbPairingThread.start();
                     break;
                 }
                 case MSG_PAIRING_CANCEL:
-                    if (mPairingThread != null) {
-                        mPairingThread.cancelPairing();
+                    if (mAdbPairingThread != null) {
+                        mAdbPairingThread.cancelPairing();
                         try {
-                            mPairingThread.join();
+                            mAdbPairingThread.join();
                         } catch (InterruptedException e) {
                             Slog.w(TAG, "Error while waiting for pairing thread to quit.");
                             e.printStackTrace();
                         }
-                        mPairingThread = null;
+                        mAdbPairingThread = null;
                     }
                     break;
                 case MSG_WIFI_DEVICE_CONNECTED: {
@@ -1277,7 +1165,6 @@ public class AdbDebuggingManager {
             FrameworkStatsLog.write(FrameworkStatsLog.ADB_CONNECTION_CHANGED, lastConnectionTime,
                     authWindow, state, alwaysAllow);
         }
-
 
         /**
          * Schedules a job to update the connection time of the currently connected key and filter

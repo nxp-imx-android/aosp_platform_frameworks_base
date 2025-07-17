@@ -873,7 +873,7 @@ public final class AdbDebuggingManagerTest {
 
     @Test
     public void testPairingThread_MdnsServiceName_RFC6335() {
-        assertTrue(isValidMdnsServiceName(AdbDebuggingManager.PairingThread.SERVICE_PROTOCOL));
+        assertTrue(isValidMdnsServiceName(AdbPairingThread.SERVICE_PROTOCOL));
     }
 
     private boolean isValidMdnsServiceName(String name) {

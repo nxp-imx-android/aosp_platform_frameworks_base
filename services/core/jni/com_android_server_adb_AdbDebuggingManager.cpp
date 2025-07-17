@@ -116,8 +116,7 @@ static const JNINativeMethod gPairingThreadMethods[] = {
 };
 
 int register_android_server_AdbDebuggingManager(JNIEnv* env) {
-    return jniRegisterNativeMethods(env,
-                                    "com/android/server/adb/AdbDebuggingManager$PairingThread",
+    return jniRegisterNativeMethods(env, "com/android/server/adb/AdbPairingThread",
                                     gPairingThreadMethods, NELEM(gPairingThreadMethods));
 }
 
