@@ -63,6 +63,7 @@ public class StackScrollAlgorithm {
 
     private float mPaddingBetweenElements;
     private float mBundleGapHeight;
+    private float mBundleExpandedGapHeight;
     private float mGapHeight;
     private float mGapHeightOnLockscreen;
     private int mCollapsedSize;
@@ -118,6 +119,8 @@ public class StackScrollAlgorithm {
                 R.dimen.notification_section_divider_height_lockscreen);
         mBundleGapHeight = res.getDimensionPixelSize(
                 R.dimen.bundle_divider_height);
+        mBundleExpandedGapHeight = res.getDimensionPixelSize(
+                R.dimen.bundle_expanded_divider_height);
         mNotificationScrimPadding = res.getDimensionPixelSize(R.dimen.notification_side_paddings);
         mMarginBottom = res.getDimensionPixelSize(R.dimen.notification_panel_margin_bottom);
         mQuickQsOffsetHeight = SystemBarUtils.getQuickQsOffsetHeight(context);
@@ -826,7 +829,11 @@ public class StackScrollAlgorithm {
             boolean onKeyguard) {
 
         if (NotificationBundleUi.isEnabled() && childNeedsBundleGap(child, previousChild))  {
-            return mBundleGapHeight;
+            if (childNeedsBundleExpandedGap(child, previousChild)) {
+                return mBundleExpandedGapHeight;
+            } else {
+                return mBundleGapHeight;
+            }
         } else if (childNeedsGapHeight(sectionProvider, visibleIndex, child, previousChild)) {
             return getGapForLocation(fractionToShade, onKeyguard);
         } else {
@@ -838,6 +845,12 @@ public class StackScrollAlgorithm {
         return (isBundle(child) || isBundle(previousChild))
                 && !(previousChild instanceof SectionHeaderView)
                 && !(child instanceof FooterView);
+    }
+
+    private boolean childNeedsBundleExpandedGap(View child, View previousChild) {
+        return ((isBundle(child) && ((ExpandableNotificationRow) child).isGroupExpanded())
+            || (isBundle(previousChild)
+                    && ((ExpandableNotificationRow) previousChild).isGroupExpanded()));
     }
 
     private boolean isBundle(View view) {

@@ -106,6 +106,7 @@ class StackScrollAlgorithmTest(flags: FlagsParameterization) : SysuiTestCase() {
 
     private val notifSectionDividerGap = px(R.dimen.notification_section_divider_height)
     private val bundleGap = px(R.dimen.bundle_divider_height)
+    private val bundleExpandedGap = px(R.dimen.bundle_expanded_divider_height)
     private val scrimPadding = px(R.dimen.notification_side_paddings)
     private val baseZ by lazy { ambientState.baseZHeight }
     private val headsUpZ = px(R.dimen.heads_up_pinned_elevation)
@@ -424,6 +425,58 @@ class StackScrollAlgorithmTest(flags: FlagsParameterization) : SysuiTestCase() {
 
         // Assert
         assertThat(gapHeight).isEqualTo(0f) // childNeedsGapHeight should return false
+    }
+
+    @Test
+    @EnableFlags(NotificationBundleUi.FLAG_NAME)
+    fun getGapHeightForChild_returnsBundleExpandedGapHeight_whenChildIsExpandedBundle() {
+        // Assemble
+        val child = mock<ExpandableNotificationRow>()
+        val previousChild = mock<View>()
+        whenever(child.isBundle()).thenReturn(true)
+        whenever(child.isGroupExpanded()).thenReturn(true)
+        whenever(kosmos.stackScrollAlgorithmSectionProvider.beginsSection(any(), any()))
+            .thenReturn(false)
+
+        // Act
+        val gapHeight =
+            stackScrollAlgorithm.getGapHeightForChild(
+                kosmos.stackScrollAlgorithmSectionProvider,
+                1,
+                child,
+                previousChild,
+                0.5f,
+                false,
+            )
+
+        // Assert
+        assertThat(gapHeight).isEqualTo(bundleExpandedGap)
+    }
+
+    @Test
+    @EnableFlags(NotificationBundleUi.FLAG_NAME)
+    fun getGapHeightForChild_returnsBundleExpandedGapHeight_whenPreviousChildIsExpandedBundle() {
+        // Assemble
+        val child = mock<View>()
+        val previousChild = mock<ExpandableNotificationRow>()
+        whenever(previousChild.isBundle()).thenReturn(true) // Previous child is a bundle
+        whenever(previousChild.isGroupExpanded()).thenReturn(true)
+        whenever(kosmos.stackScrollAlgorithmSectionProvider.beginsSection(any(), any()))
+            .thenReturn(false)
+
+        // Act
+        val gapHeight =
+            stackScrollAlgorithm.getGapHeightForChild(
+                kosmos.stackScrollAlgorithmSectionProvider,
+                1,
+                child,
+                previousChild,
+                0.5f,
+                false,
+            )
+
+        // Assert
+        assertThat(gapHeight).isEqualTo(bundleExpandedGap)
     }
 
     @Test
