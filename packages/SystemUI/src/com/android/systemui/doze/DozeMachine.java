@@ -16,13 +16,11 @@
 
 package com.android.systemui.doze;
 
-import static com.android.systemui.Flags.removeAodCarMode;
 import static com.android.systemui.keyguard.WakefulnessLifecycle.WAKEFULNESS_AWAKE;
 import static com.android.systemui.keyguard.WakefulnessLifecycle.WAKEFULNESS_WAKING;
 
 import android.annotation.MainThread;
 import android.annotation.Nullable;
-import android.content.res.Configuration;
 import android.hardware.display.AmbientDisplayConfiguration;
 import android.util.Log;
 import android.view.Display;
@@ -180,7 +178,6 @@ public class DozeMachine {
     private State mState = State.UNINITIALIZED;
     private int mPulseReason;
     private boolean mWakeLockHeldForCurrentState = false;
-    private int mUiModeType = Configuration.UI_MODE_TYPE_NORMAL;
 
     @Inject
     public DozeMachine(@WrappedService Service service,
@@ -209,18 +206,6 @@ public class DozeMachine {
     public void destroy() {
         for (Part part : mParts) {
             part.destroy();
-        }
-    }
-
-    /**
-     * Notifies the {@link DozeMachine} that {@link Configuration} has changed.
-     */
-    public void onConfigurationChanged(Configuration newConfiguration) {
-        int newUiModeType = newConfiguration.uiMode & Configuration.UI_MODE_TYPE_MASK;
-        if (mUiModeType == newUiModeType) return;
-        mUiModeType = newUiModeType;
-        for (Part part : mParts) {
-            part.onUiModeTypeChanged(mUiModeType);
         }
     }
 
@@ -421,16 +406,7 @@ public class DozeMachine {
         if (mState == State.FINISH) {
             return State.FINISH;
         }
-        if (mUiModeType == Configuration.UI_MODE_TYPE_CAR
-                && (requestedState.canPulse() || requestedState.staysAwake())) {
-            if (removeAodCarMode()) {
-                Log.d(TAG, "skip applying car mode");
-            } else {
-                Log.i(TAG, "Doze is suppressed with all triggers disabled as car mode is active");
-                mDozeLog.traceCarModeStarted();
-                return State.DOZE_SUSPEND_TRIGGERS;
-            }
-        }
+
         if (mDozeHost.isAlwaysOnSuppressed() && requestedState.isAlwaysOn()) {
             Log.i(TAG, "Doze is suppressed by an app. Suppressing state: " + requestedState);
             mDozeLog.traceAlwaysOnSuppressed(requestedState, "app");
@@ -498,7 +474,6 @@ public class DozeMachine {
     /** Dumps the current state */
     public void dump(PrintWriter pw) {
         pw.print(" state="); pw.println(mState);
-        pw.print(" mUiModeType="); pw.println(mUiModeType);
         pw.print(" wakeLockHeldForCurrentState="); pw.println(mWakeLockHeldForCurrentState);
         pw.print(" wakeLock="); pw.println(mWakeLock);
         pw.println("Parts:");
@@ -531,19 +506,6 @@ public class DozeMachine {
 
         /** Sets the {@link DozeMachine} when this Part is associated with one. */
         default void setDozeMachine(DozeMachine dozeMachine) {}
-
-        /**
-         * Notifies the Part about a change in {@link Configuration#uiMode}.
-         *
-         * @param newUiModeType {@link Configuration#UI_MODE_TYPE_NORMAL},
-         *                   {@link Configuration#UI_MODE_TYPE_DESK},
-         *                   {@link Configuration#UI_MODE_TYPE_CAR},
-         *                   {@link Configuration#UI_MODE_TYPE_TELEVISION},
-         *                   {@link Configuration#UI_MODE_TYPE_APPLIANCE},
-         *                   {@link Configuration#UI_MODE_TYPE_WATCH},
-         *                   or {@link Configuration#UI_MODE_TYPE_VR_HEADSET}
-         */
-        default void onUiModeTypeChanged(int newUiModeType) {}
     }
 
     /** A wrapper interface for {@link android.service.dreams.DreamService} */

@@ -36,16 +36,6 @@ flag {
 }
 
 flag {
-    name: "remove_aod_car_mode"
-    namespace: "systemui"
-    description: "Remove functionality of car mode disabling AOD."
-    bug: "297462331"
-    metadata {
-         purpose: PURPOSE_BUGFIX
-    }
- }
-
-flag {
    name: "user_encrypted_source"
    namespace: "systemui"
    description: "Get rid of the local cache and rely on UserManager.isUserUnlocked directly to determine whether user CE storage is encrypted."
