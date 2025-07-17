@@ -42,7 +42,6 @@ import android.debug.AdbManager;
 import android.debug.AdbNotifications;
 import android.debug.AdbProtoEnums;
 import android.debug.AdbTransportType;
-import android.debug.IAdbTransport;
 import android.debug.PairDevice;
 import android.net.ConnectivityManager;
 import android.net.LocalSocket;
@@ -74,7 +73,6 @@ import android.util.Slog;
 import android.util.Xml;
 
 import com.android.internal.R;
-import com.android.internal.annotations.Keep;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.messages.nano.SystemMessageProto.SystemMessage;
 import com.android.internal.util.FrameworkStatsLog;
@@ -234,7 +232,6 @@ public class AdbDebuggingManager {
 
     class PairingThread extends Thread implements NsdManager.RegistrationListener {
         private NsdManager mNsdManager;
-        @Keep private String mPublicKey;
         private String mPairingCode;
         private String mGuid;
         private String mServiceName;
@@ -250,7 +247,8 @@ public class AdbDebuggingManager {
 
         private native int native_pairing_start(String guid, String password);
         private native void native_pairing_cancel();
-        private native boolean native_pairing_wait();
+
+        private native String native_pairing_wait();
 
         PairingThread(String pairingCode, String serviceName) {
             super(TAG);
@@ -279,9 +277,9 @@ public class AdbDebuggingManager {
             msg.obj = mPort;
             mHandler.sendMessage(msg);
 
-            boolean paired = native_pairing_wait();
-            if (mPublicKey != null) {
-                Slog.i(TAG, "Pairing succeeded key=" + mPublicKey);
+            String publicKey = native_pairing_wait();
+            if (publicKey != null) {
+                Slog.i(TAG, "Pairing succeeded key=" + publicKey);
             } else {
                 Slog.i(TAG, "Pairing failed");
             }
@@ -289,7 +287,7 @@ public class AdbDebuggingManager {
             mNsdManager.unregisterService(this);
 
             Bundle bundle = new Bundle();
-            bundle.putString("publicKey", paired ? mPublicKey : null);
+            bundle.putString("publicKey", publicKey);
             Message message = Message.obtain(mHandler,
                                              AdbDebuggingHandler.MSG_RESPONSE_PAIRING_RESULT,
                                              bundle);
