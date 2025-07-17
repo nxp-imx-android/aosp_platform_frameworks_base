@@ -280,6 +280,7 @@ constructor(
         customMessage: String?,
         disallowEnterPictureInPictureWhileLaunching: Boolean,
         userHandle: UserHandle?,
+        activityOptions: ActivityOptions?,
     ) {
         if (SceneContainerFlag.isUnexpectedlyInLegacyMode()) return
         val userHandle: UserHandle = userHandle ?: getActivityUserHandle(intent)

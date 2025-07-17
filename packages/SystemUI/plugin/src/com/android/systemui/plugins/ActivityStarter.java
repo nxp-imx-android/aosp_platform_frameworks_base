@@ -15,6 +15,7 @@
 package com.android.systemui.plugins;
 
 import android.annotation.Nullable;
+import android.app.ActivityOptions;
 import android.app.PendingIntent;
 import android.content.ComponentName;
 import android.content.Intent;
@@ -182,6 +183,14 @@ public interface ActivityStarter {
             boolean onlyProvisioned,
             boolean dismissShade,
             @Nullable String customMessage,
+            Callback callback);
+
+    /** Starts an activity with custom ActivityOptions and dismisses keyguard. */
+    void startActivityDismissingKeyguard(Intent intent,
+            boolean onlyProvisioned,
+            boolean dismissShade,
+            @Nullable String customMessage,
+            ActivityOptions activityOptions,
             Callback callback);
 
     /** Starts an activity and dismisses keyguard. */
