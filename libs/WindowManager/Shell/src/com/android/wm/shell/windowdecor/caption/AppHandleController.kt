@@ -53,6 +53,7 @@ import com.android.wm.shell.shared.bubbles.BubbleAnythingFlagHelper
 import com.android.wm.shell.shared.desktopmode.DesktopState
 import com.android.wm.shell.shared.split.SplitScreenConstants.SPLIT_POSITION_BOTTOM_OR_RIGHT
 import com.android.wm.shell.splitscreen.SplitScreenController
+import com.android.wm.shell.transition.Transitions
 import com.android.wm.shell.windowdecor.DesktopHandleManageWindowsMenu
 import com.android.wm.shell.windowdecor.HandleMenu
 import com.android.wm.shell.windowdecor.HandleMenu.Companion.shouldShowChangeAspectRatioButton
@@ -87,6 +88,7 @@ class AppHandleController(
     windowDecorViewHostSupplier: WindowDecorViewHostSupplier<WindowDecorViewHost>,
     private val context: Context,
     private val userContext: Context,
+    private val transitions: Transitions,
     private val displayController: DisplayController,
     private val taskResourceLoader: WindowDecorTaskResourceLoader,
     private val splitScreenController: SplitScreenController,
@@ -292,6 +294,7 @@ class AppHandleController(
         openByDefaultDialog = OpenByDefaultDialog(
             context,
             userContext,
+            transitions,
             taskInfo,
             taskSurface,
             displayController,
