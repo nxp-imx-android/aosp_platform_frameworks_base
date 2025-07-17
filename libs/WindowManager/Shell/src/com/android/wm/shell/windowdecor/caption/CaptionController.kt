@@ -20,6 +20,7 @@ import android.content.Context
 import android.graphics.PixelFormat
 import android.graphics.Rect
 import android.graphics.Region
+import android.graphics.RegionIterator
 import android.os.Binder
 import android.os.Trace
 import android.view.Display
@@ -30,6 +31,8 @@ import android.view.WindowManager
 import android.window.DesktopModeFlags
 import android.window.WindowContainerTransaction
 import com.android.app.tracing.traceSection
+import com.android.internal.protolog.ProtoLog
+import com.android.wm.shell.protolog.ShellProtoLogGroup
 import com.android.wm.shell.windowdecor.HandleMenuController
 import com.android.wm.shell.windowdecor.ManageWindowsMenuController
 import com.android.wm.shell.windowdecor.MaximizeMenuController
@@ -146,6 +149,17 @@ abstract class CaptionController<T>(
         )
         val customizableCaptionRegion =
             updateCaptionInsets(params, decorWindowContext, wct, captionHeight, taskBounds)
+        logD(
+            "relayout with taskBounds=%s captionSize=%dx%d captionTopPadding=%d " +
+                    "captionX=%d captionY=%d customCaptionRegion=%s",
+            taskBounds,
+            captionHeight,
+            captionWidth,
+            captionTopPadding,
+            captionX,
+            captionY,
+            customizableCaptionRegion.toReadableString(),
+        )
 
         traceSection(
             traceTag = Trace.TRACE_TAG_WINDOW_MANAGER,
@@ -367,7 +381,7 @@ abstract class CaptionController<T>(
         // positioned at the top of the task bounds, also in absolute coordinates.
         // So just reuse the task bounds and adjust the bottom coordinate.
         val captionInsetsRect = Rect(taskBounds)
-        captionInsetsRect.bottom = captionHeight
+        captionInsetsRect.bottom = captionInsetsRect.top + captionHeight
 
         // Caption bounding rectangles: these are optional, and are used to present finer
         // insets than traditional |Insets| to apps about where their content is occluded.
@@ -507,6 +521,27 @@ abstract class CaptionController<T>(
         return viewHost
     }
 
+    private fun logD(msg: String, vararg arguments: Any?) {
+        ProtoLog.d(ShellProtoLogGroup.WM_SHELL_WINDOW_DECORATION, "%s: $msg", TAG, *arguments)
+    }
+
+    private fun Region.toReadableString(): String {
+        val iterator = RegionIterator(this)
+        val rect = Rect()
+        val sb = StringBuilder()
+        sb.append("Region[")
+        var first = true
+        while (iterator.next(rect)) {
+            if (!first) {
+                sb.append(", ")
+            }
+            sb.append(rect.toShortString())
+            first = false
+        }
+        sb.append("]")
+        return sb.toString()
+    }
+
     /** Caption data calculated during [relayout]. */
     data class CaptionRelayoutResult(
         // The caption height with caption padding included
@@ -524,6 +559,8 @@ abstract class CaptionController<T>(
     }
 
     companion object {
+        private const val TAG = "CaptionController"
+
         /**
          * The Z-order of the caption surface.
          *
