@@ -438,6 +438,7 @@ constructor(
             if (needsReordering) {
                 needsReordering = false
                 reorderAllPlayers(previousVisiblePlayerKey = null)
+                updatePageArrows()
             }
 
             keysNeedRemoval.forEach {
@@ -934,6 +935,37 @@ constructor(
             pageIndicator.setLocation(0f)
         }
         updatePageIndicatorAlpha()
+
+        if (!needsReordering || numPages == 1) {
+            // If carousel needs to reorder, don't update arrow state until the reorder happens
+            // But needsReordering can be true when there is only one player left, and we don't
+            // need to delay in that case.
+            updatePageArrows()
+        }
+    }
+
+    private fun updatePageArrows() {
+        if (!Flags.mediaCarouselArrows()) return
+
+        val nPlayers = MediaPlayerData.players().size
+        MediaPlayerData.players().forEachIndexed { index, mediaPlayer ->
+            if (nPlayers == 1) {
+                mediaPlayer.setPageArrowsVisible(false)
+            } else {
+                mediaPlayer.setPageArrowsVisible(true)
+                if (index == 0) {
+                    mediaPlayer.setPageLeftEnabled(false)
+                    mediaPlayer.setPageRightEnabled(true)
+                } else if (index == nPlayers - 1) {
+                    mediaPlayer.setPageLeftEnabled(true)
+                    mediaPlayer.setPageRightEnabled(false)
+                } else {
+                    mediaPlayer.setPageLeftEnabled(true)
+                    mediaPlayer.setPageRightEnabled(true)
+                }
+            }
+            mediaPlayer.mediaViewController.refreshState()
+        }
     }
 
     /**
@@ -942,14 +974,9 @@ constructor(
      *
      * @param startLocation the start location of our state or -1 if this is directly set
      * @param endLocation the ending location of our state.
-     * @param progress the progress of the transition between startLocation and endlocation. If
-     *
-     * ```
-     *                 this is not a guided transformation, this will be 1.0f
-     * @param immediately
-     * ```
-     *
-     * should this state be applied immediately, canceling all animations?
+     * @param progress the progress of the transition between startLocation and endlocation. If this
+     *   is not a guided transformation, this will be 1.0f
+     * @param immediately should this state be applied immediately, canceling all animations?
      */
     fun setCurrentState(
         @MediaLocation startLocation: Int,
