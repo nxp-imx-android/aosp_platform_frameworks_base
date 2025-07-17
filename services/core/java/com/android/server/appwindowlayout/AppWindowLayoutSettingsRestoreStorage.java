@@ -23,6 +23,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Environment;
+import android.util.Slog;
 
 import com.android.internal.annotations.VisibleForTesting;
 
@@ -41,6 +42,8 @@ import java.time.InstantSource;
  */
 @VisibleForTesting(visibility = VisibleForTesting.Visibility.PACKAGE)
 public class AppWindowLayoutSettingsRestoreStorage {
+    private static final String TAG = "AppWinLayoutSetStorage";
+
     // TODO(b/414361710): Consider joining this class implementation with the Settings app
     //  UserAspectRatioRestoreStorage, or removing the Settings class implementation if it is not
     //  needed after restoreUserAspectRatioSettingsUsingService flag is launched.
@@ -122,6 +125,8 @@ public class AppWindowLayoutSettingsRestoreStorage {
                 KEY_STAGED_DATA_TIME, 0));
         if (Duration.between(restoreTime, mInstantSource.instant()).compareTo(EXPIRY_DURATION)
                 >= 0) {
+            Slog.d(TAG, "Restore time expired. Deleting packages: "
+                    + mUserAspectRatioSharedPreferences.getAll());
             // Remove the restore time and all data to restore.
             mUserAspectRatioSharedPreferences.edit().clear().commit();
             mRestoreTimeSharedPreferences.edit().clear().commit();
