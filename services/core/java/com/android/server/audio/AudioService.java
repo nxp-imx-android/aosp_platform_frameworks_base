@@ -32,6 +32,7 @@ import static android.Manifest.permission.QUERY_AUDIO_STATE;
 import static android.Manifest.permission.WRITE_SETTINGS;
 import static android.app.BroadcastOptions.DELIVERY_GROUP_POLICY_MOST_RECENT;
 import static android.content.Intent.ACTION_PACKAGE_ADDED;
+import static android.content.Intent.ACTION_PACKAGE_REPLACED;
 import static android.content.Intent.EXTRA_ARCHIVAL;
 import static android.content.Intent.EXTRA_REPLACING;
 import static android.media.AudioDeviceInfo.TYPE_BLUETOOTH_A2DP;
@@ -123,6 +124,7 @@ import android.content.IntentFilter;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.content.pm.PackageManagerInternal;
 import android.content.pm.UserInfo;
 import android.content.res.Configuration;
 import android.content.res.Resources;
@@ -266,6 +268,7 @@ import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.os.SomeArgs;
 import com.android.internal.util.DumpUtils;
 import com.android.internal.util.Preconditions;
+import com.android.media.permission.UidPackageState;
 import com.android.modules.expresslog.Counter;
 import com.android.server.EventLogTags;
 import com.android.server.LocalManagerRegistry;
@@ -314,6 +317,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BooleanSupplier;
+import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 /**
@@ -13619,16 +13623,51 @@ public class AudioService extends IAudioService.Stub
     private static final String mMetricsId = MediaMetrics.Name.AUDIO_SERVICE
             + MediaMetrics.SEPARATOR;
 
+    /*
+     * Create AIDL defined package state for audioserver
+     */
+    @VisibleForTesting
+    static UidPackageState.PackageState makePackageState(PackageState p) {
+        final var ret = new UidPackageState.PackageState();
+        ret.packageName = p.getPackageName();
+        ret.targetSdk = p.getTargetSdkVersion();
+        ret.isPlaybackCaptureAllowed = p.isAudioPlaybackCaptureAllowed();
+        return ret;
+    }
+
+    /**
+     * Aggregation operation on all package states list: groups by states by app-id and merges the
+     * packages per app-id into a Map keyed by the packageName.
+     */
+    @VisibleForTesting
+    static Map<Integer, Map<String, UidPackageState.PackageState>> generatePackageMap(
+            Collection<PackageState> appInfos) {
+        Collector<PackageState, Object, Map<String, UidPackageState.PackageState>> reducer =
+                Collectors.toMap(p -> p.getPackageName(), /* key */
+                                 AudioService::makePackageState, /* val */
+                                 (x, y) -> x, /* mergeFunc, x,y should be identical */
+                                 () -> new ArrayMap(1) /* factory */);
+
+        return appInfos.stream()
+                .collect(
+                        Collectors.groupingBy(
+                                /* predicate */ (PackageState p) -> p.getAppId(),
+                                /* factory */ HashMap::new,
+                                /* downstream collector */ reducer));
+    }
+
     private static AudioServerPermissionProvider initializeAudioServerPermissionProvider(
             Context context, AudioPolicyFacade audioPolicy, Executor audioserverExecutor) {
-        Collection<PackageState> packageStates = null;
-        try (PackageManagerLocal.UnfilteredSnapshot snapshot =
+        Map<Integer, Map<String, UidPackageState.PackageState>> packageStates = null;
+        try (var snapshot =
                     LocalManagerRegistry.getManager(PackageManagerLocal.class)
                         .withUnfilteredSnapshot()) {
-            packageStates = snapshot.getPackageStates().values();
+            packageStates = generatePackageMap(snapshot.getPackageStates().values());
         }
         var umi = LocalServices.getService(UserManagerInternal.class);
         var pmsi = LocalServices.getService(PermissionManagerServiceInternal.class);
+        var pmi = LocalServices.getService(PackageManagerInternal.class);
+
         var provider = new AudioServerPermissionProvider(packageStates,
                 (Integer uid, String perm) -> ActivityManager.checkComponentPermission(perm, uid,
                         /* owningUid = */ -1, /* exported */true)
@@ -13643,6 +13682,7 @@ public class AudioService extends IAudioService.Stub
 
         IntentFilter packageUpdateFilter = new IntentFilter();
         packageUpdateFilter.addAction(ACTION_PACKAGE_ADDED);
+        packageUpdateFilter.addAction(ACTION_PACKAGE_REPLACED);
         packageUpdateFilter.addDataScheme("package");
 
         context.registerReceiverForAllUsers(new BroadcastReceiver() {
@@ -13655,9 +13695,13 @@ public class AudioService extends IAudioService.Stub
                     intent.getBooleanExtra(EXTRA_REPLACING, false) + " archival: " +
                     intent.getBooleanExtra(EXTRA_ARCHIVAL, false) + " for package " +
                     pkgName + " with uid " + uid);
-                if (ACTION_PACKAGE_ADDED.equals(action)) {
+                if (ACTION_PACKAGE_ADDED.equals(action)
+                        || ACTION_PACKAGE_REPLACED.equals(action)) {
                     audioserverExecutor.execute(() ->
-                            provider.onModifyPackageState(uid, pkgName, false /* isRemoved */));
+                            provider.onModifyPackageState(
+                                uid,
+                                makePackageState(pmi.getPackageStateInternal(pkgName)),
+                                false /* isRemoved */));
                 }
             }
         }, packageUpdateFilter, null, null); // main thread is fine, since dispatch on executor
