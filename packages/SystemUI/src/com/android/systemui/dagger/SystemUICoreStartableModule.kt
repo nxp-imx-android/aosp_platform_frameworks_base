@@ -54,7 +54,6 @@ import com.android.systemui.statusbar.ImmersiveModeConfirmation
 import com.android.systemui.statusbar.gesture.GesturePointerEventListener
 import com.android.systemui.statusbar.notification.InstantAppNotifier
 import com.android.systemui.statusbar.notification.headsup.StatusBarHeadsUpChangeListener
-import com.android.systemui.statusbar.policy.BatteryControllerStartable
 import com.android.systemui.stylus.StylusUsiPowerStartable
 import com.android.systemui.temporarydisplay.chipbar.ChipbarCoordinator
 import com.android.systemui.theme.ThemeOverlayController
@@ -303,12 +302,6 @@ abstract class SystemUICoreStartableModule {
     @IntoMap
     @ClassKey(HomeControlsDreamStartable::class)
     abstract fun bindHomeControlsDreamStartable(impl: HomeControlsDreamStartable): CoreStartable
-
-    /** Binds {@link BatteryControllerStartable} as a {@link CoreStartable}. */
-    @Binds
-    @IntoMap
-    @ClassKey(BatteryControllerStartable::class)
-    abstract fun bindsBatteryControllerStartable(impl: BatteryControllerStartable): CoreStartable
 
     @Binds
     @IntoMap
