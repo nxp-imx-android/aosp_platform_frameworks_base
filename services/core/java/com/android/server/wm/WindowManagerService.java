@@ -328,6 +328,7 @@ import android.window.ScreenCaptureInternal.ScreenshotHardwareBuffer;
 import android.window.SystemPerformanceHinter;
 import android.window.TaskSnapshot;
 import android.window.TaskSnapshotManager;
+import android.window.TransitionRequestInfo;
 import android.window.TrustedPresentationThresholds;
 import android.window.WindowContainerToken;
 import android.window.WindowContextInfo;
@@ -3905,48 +3906,53 @@ public class WindowManagerService extends IWindowManager.Stub
     public void setCurrentUser(@UserIdInt int newUserId) {
         synchronized (mGlobalLock) {
             final TransitionController controller = mAtmService.getTransitionController();
-            final ActionChain chain = mAtmService.mChainTracker.startTransit("setUser");
-            if (!chain.isCollecting() && controller.isShellTransitionsEnabled()) {
-                chain.attachTransition(controller.createTransition(TRANSIT_OPEN));
-                controller.requestStartTransition(chain.getTransition(),
-                        null /* trigger */, null /* remote */, null /* disp */);
-            }
-            mCurrentUserId = newUserId;
-            mDisplayWindowSettingsProvider.setOverrideSettingsForUser(newUserId);
-            mPolicy.setCurrentUserLw(newUserId);
-            mKeyguardDisableHandler.setCurrentUser(newUserId);
+            final Transition transition = new Transition(TRANSIT_OPEN, 0 /* flags */, controller,
+                    mAtmService.mWindowManager.mSyncEngine);
+            controller.startCollectOrQueue(transition, (deferred) -> {
+                final ActionChain chain = mAtmService.mChainTracker.start("setUser", transition);
+                final TransitionRequestInfo.UserChange userChange =
+                        DesktopExperienceFlags.ENABLE_APPLY_DESK_ACTIVATION_ON_USER_SWITCH.isTrue()
+                                ? new TransitionRequestInfo.UserChange(mCurrentUserId, newUserId)
+                                : null;
+                controller.requestStartUserTransition(chain.getTransition(), userChange);
 
-            // Hide windows that should not be seen by the new user.
-            mRoot.switchUser(newUserId);
-            mWindowPlacerLocked.performSurfacePlacement();
+                mCurrentUserId = newUserId;
+                mDisplayWindowSettingsProvider.setOverrideSettingsForUser(newUserId);
+                mPolicy.setCurrentUserLw(newUserId);
+                mKeyguardDisableHandler.setCurrentUser(newUserId);
 
-            // Notify whether the root docked task exists for the current user
-            final DisplayContent displayContent = getDefaultDisplayContentLocked();
+                // Hide windows that should not be seen by the new user.
+                mRoot.switchUser(newUserId);
+                mWindowPlacerLocked.performSurfacePlacement();
 
-            if (mDisplayReady) {
-                // If the display is already prepared, update the density.
-                // Otherwise, we'll update it when it's prepared.
-                final int forcedDensity = getForcedDisplayDensityForUserLocked(newUserId);
-                final int targetDensity = forcedDensity != 0
-                        ? forcedDensity : displayContent.getInitialDisplayDensity();
-                displayContent.setForcedDensity(targetDensity, UserHandle.USER_CURRENT);
+                // Notify whether the root docked task exists for the current user
+                final DisplayContent displayContent = getDefaultDisplayContentLocked();
 
-                // Because DisplayWindowSettingsProvider.mOverrideSettings has been reset for the
-                // new user, we need to update DisplayWindowSettings.mShouldShowSystemDecors to
-                // ensure it reflects the latest value.
-                if (DesktopExperienceFlags.ENABLE_DISPLAY_CONTENT_MODE_MANAGEMENT.isTrue()) {
-                    final int displayCount = mRoot.mChildren.size();
-                    for (int i = 0; i < displayCount; ++i) {
-                        final DisplayContent dc = mRoot.mChildren.get(i);
-                        dc.updateShouldShowSystemDecorations();
+                if (mDisplayReady) {
+                    // If the display is already prepared, update the density.
+                    // Otherwise, we'll update it when it's prepared.
+                    final int forcedDensity = getForcedDisplayDensityForUserLocked(newUserId);
+                    final int targetDensity = forcedDensity != 0
+                            ? forcedDensity : displayContent.getInitialDisplayDensity();
+                    displayContent.setForcedDensity(targetDensity, UserHandle.USER_CURRENT);
+
+                    // Because DisplayWindowSettingsProvider.mOverrideSettings has been reset for
+                    // the new user, we need to update DisplayWindowSettings.mShouldShowSystemDecors
+                    // to ensure it reflects the latest value.
+                    if (DesktopExperienceFlags.ENABLE_DISPLAY_CONTENT_MODE_MANAGEMENT.isTrue()) {
+                        final int displayCount = mRoot.mChildren.size();
+                        for (int i = 0; i < displayCount; ++i) {
+                            final DisplayContent dc = mRoot.mChildren.get(i);
+                            dc.updateShouldShowSystemDecorations();
+                        }
                     }
                 }
-            }
 
-            // This call is crucial on user switch to ensure the Magnify IME state
-            // is correctly re-evaluated and applied for the new user.
-            mSettingsObserver.updateMagnifyIme();
-            mAtmService.mChainTracker.end();
+                // This call is crucial on user switch to ensure the Magnify IME state
+                // is correctly re-evaluated and applied for the new user.
+                mSettingsObserver.updateMagnifyIme();
+                mAtmService.mChainTracker.end();
+            });
         }
     }
 
