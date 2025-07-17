@@ -28,6 +28,7 @@ import android.annotation.IntDef;
 import android.annotation.NonNull;
 import android.annotation.RequiresPermission;
 import android.annotation.SdkConstant;
+import android.annotation.SuppressLint;
 import android.annotation.SystemApi;
 import android.annotation.SystemService;
 import android.annotation.TestApi;
@@ -35,6 +36,7 @@ import android.annotation.UserHandleAware;
 import android.app.appfunctions.AppFunctionManagerHelper.AppFunctionNotFoundException;
 import android.app.appsearch.AppSearchManager;
 import android.content.Context;
+import android.content.Intent;
 import android.os.CancellationSignal;
 import android.os.ICancellationSignal;
 import android.os.OutcomeReceiver;
@@ -42,6 +44,7 @@ import android.os.ParcelableException;
 import android.os.RemoteException;
 import android.os.SystemClock;
 import android.permission.flags.Flags;
+import android.provider.BaseColumns;
 import android.util.ArraySet;
 
 import com.android.internal.R;
@@ -99,6 +102,119 @@ import java.util.concurrent.Executor;
 @FlaggedApi(FLAG_ENABLE_APP_FUNCTION_MANAGER)
 @SystemService(Context.APP_FUNCTION_SERVICE)
 public final class AppFunctionManager {
+
+    // TODO(b/427993624): Expose Uri once ContentProvider is added
+    /**
+     * The contract between the AppFunction access history provider and applications with read
+     * permission. Contains definitions for the supported URIs and columns.
+     *
+     * <p>This class provides access to the history of AppFunction calls. The access history is
+     * stored on a per-user basis. An application querying the access history provider will only see
+     * the records for the user it is currently running as.
+     *
+     * @see AppFunctionAttribution
+     * @hide
+     */
+    @FlaggedApi(Flags.FLAG_APP_FUNCTION_ACCESS_API_ENABLED)
+    @SystemApi
+    public static final class AccessHistory implements BaseColumns {
+        private AccessHistory() {}
+
+        /**
+         * The package name of the agent app.
+         *
+         * <p>Type: TEXT
+         */
+        public static final String COLUMN_AGENT_PACKAGE_NAME = "agent_package_name";
+
+        /**
+         * The package name of the target app.
+         *
+         * <p>Type: TEXT
+         */
+        public static final String COLUMN_TARGET_PACKAGE_NAME = "target_package_name";
+
+        /**
+         * The type of interaction that triggered the function call. See {@link
+         * AppFunctionAttribution.InteractionType} for a list of possible values.
+         *
+         * <p>The column is nullable. The caller should call {@link android.database.Cursor#isNull}
+         * to check if the column value is null for that row.
+         *
+         * <p>Type: INTEGER (int)
+         */
+        @SuppressLint("IntentName")
+        public static final String COLUMN_INTERACTION_TYPE = "interaction_type";
+
+        /**
+         * The custom interaction type, used when {@link
+         * AppFunctionAttribution#getInteractionType()} is {@link
+         * AppFunctionAttribution#INTERACTION_TYPE_OTHER}.
+         *
+         * <p>The column is nullable. The caller should call {@link android.database.Cursor#isNull}
+         * to check if the column value is null for that row.
+         *
+         * <p>Type: TEXT
+         */
+        @SuppressLint("IntentName")
+        public static final String COLUMN_CUSTOM_INTERACTION_TYPE = "custom_interaction_type";
+
+        /**
+         * A URI linking to the original interaction context.
+         *
+         * <p>The column is nullable. The caller should call {@link android.database.Cursor#isNull}
+         * to check if the column value is null for that row.
+         *
+         * <p>To launch this URI, the caller must construct an explicit {@link
+         * android.content.Intent}. An implicit Intent is not sufficient and may not resolve to the
+         * correct component. The required procedure is as follows:
+         *
+         * <ol>
+         *   <li>Create an {@link android.content.Intent} with this URI as its data.
+         *   <li>Call {@link android.content.Intent#setPackage(String)} on the Intent, providing the
+         *       package name from {@link AccessHistory#COLUMN_AGENT_PACKAGE_NAME}.
+         *   <li>Resolve the target activity by calling {@link
+         *       android.content.pm.PackageManager#resolveActivity(Intent, int)}.
+         *   <li>If the returned {@link android.content.pm.ResolveInfo} and its nested {@code
+         *       activityInfo} are not null, create an explicit Intent.
+         *   <li>Make the Intent explicit by calling {@link
+         *       android.content.Intent#setComponent(android.content.ComponentName)}, creating the
+         *       {@code ComponentName} from the {@code packageName} and {@code name} fields within
+         *       the {@link android.content.pm.ResolveInfo#activityInfo}.
+         *   <li>The resulting explicit Intent can now be used to start the activity.
+         * </ol>
+         *
+         * <p>Type: TEXT
+         *
+         * @see AppFunctionAttribution.Builder#setInteractionUri
+         */
+        @SuppressLint("IntentName")
+        public static final String COLUMN_INTERACTION_URI = "interaction_uri";
+
+        /**
+         * An identifier to group related function calls.
+         *
+         * <p>The column is nullable. The caller should call {@link android.database.Cursor#isNull}
+         * to check if the column value is null for that row.
+         *
+         * <p>Type: TEXT
+         */
+        public static final String COLUMN_THREAD_ID = "thread_id";
+
+        /**
+         * The timestamp (in milliseconds) when the app function was accessed.
+         *
+         * <p>Type: INTEGER (long)
+         */
+        public static final String COLUMN_ACCESS_TIME = "access_time";
+
+        /**
+         * The duration (in milliseconds) of the app function execution.
+         *
+         * <p>Type: INTEGER (long)
+         */
+        public static final String COLUMN_DURATION = "access_duration";
+    }
 
     /**
      * Activity action: Launch UI that shows list of all agents and provides management of App

@@ -1792,6 +1792,17 @@ package android.app.appfunctions {
     field @FlaggedApi("android.permission.flags.app_function_access_ui_enabled") public static final String ACTION_REQUEST_APP_FUNCTION_ACCESS = "android.app.appfunctions.action.REQUEST_APP_FUNCTION_ACCESS";
   }
 
+  @FlaggedApi("android.permission.flags.app_function_access_api_enabled") public static final class AppFunctionManager.AccessHistory implements android.provider.BaseColumns {
+    field public static final String COLUMN_ACCESS_TIME = "access_time";
+    field public static final String COLUMN_AGENT_PACKAGE_NAME = "agent_package_name";
+    field public static final String COLUMN_CUSTOM_INTERACTION_TYPE = "custom_interaction_type";
+    field public static final String COLUMN_DURATION = "access_duration";
+    field public static final String COLUMN_INTERACTION_TYPE = "interaction_type";
+    field public static final String COLUMN_INTERACTION_URI = "interaction_uri";
+    field public static final String COLUMN_TARGET_PACKAGE_NAME = "target_package_name";
+    field public static final String COLUMN_THREAD_ID = "thread_id";
+  }
+
 }
 
 package android.app.assist {
