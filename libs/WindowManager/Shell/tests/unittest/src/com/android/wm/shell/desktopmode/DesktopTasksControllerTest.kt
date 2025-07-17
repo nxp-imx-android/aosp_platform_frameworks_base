@@ -349,6 +349,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
                 persistentRepository,
                 repositoryInitializer,
                 testScope.backgroundScope,
+                testScope.backgroundScope,
                 userManager,
                 desktopState,
                 desktopConfig,

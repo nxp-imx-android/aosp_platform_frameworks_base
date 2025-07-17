@@ -61,6 +61,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.test.StandardTestDispatcher
+import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.setMain
 import org.junit.After
 import org.junit.Before
@@ -129,11 +130,12 @@ class DesktopModeKeyGestureHandlerTest : ShellTestCase() {
         desktopUserRepositories =
             DesktopUserRepositories(
                 ShellInit(TestShellExecutor()),
-                /* shellController= */ mock(),
-                /* persistentRepository= */ mock(),
-                /* repositoryInitializer= */ mock(),
+                shellController = mock(),
+                persistentRepository = mock(),
+                repositoryInitializer = mock(),
                 testScope,
-                /* userManager= */ mock(),
+                bgCoroutineScope = TestScope(),
+                userManager = mock(),
                 desktopState,
                 FakeDesktopConfig(),
             )

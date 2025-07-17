@@ -51,6 +51,7 @@ import com.android.wm.shell.sysui.ShellInit
 import com.android.wm.shell.transition.Transitions
 import com.android.wm.shell.util.StubTransaction
 import com.google.common.truth.Truth.assertThat
+import kotlinx.coroutines.test.TestScope
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -100,6 +101,7 @@ class DesktopImmersiveControllerTest : ShellTestCase() {
                 mock(),
                 mock(),
                 mock(),
+                TestScope(),
                 mock(),
                 desktopState,
                 desktopConfig,

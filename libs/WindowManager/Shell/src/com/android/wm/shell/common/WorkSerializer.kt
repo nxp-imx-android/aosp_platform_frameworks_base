@@ -26,10 +26,20 @@ import kotlinx.coroutines.channels.ChannelResult
 import kotlinx.coroutines.launch
 
 /**
- * A queue that executes coroutines sequentially in a First-In, First-Out (FIFO) order.
+ * Serializes the execution of suspendable work, ensuring that tasks are processed
+ * sequentially in a First-In, First-Out (FIFO) order.
  *
- * @param scope The [CoroutineScope] the queue will use to launch its worker. Cancelling this scope
- * will terminate the queue.
+ * This class is useful for managing operations that need to be executed one after another,
+ * preventing race conditions and ensuring a predictable order of execution. It uses a
+ * [Channel] to queue incoming work and a single worker coroutine to process the queue.
+ *
+ * @param scope The [CoroutineScope] the serializer will use to launch its worker coroutine.
+ *              Cancelling this scope will terminate the queue and stop all processing.
+ * @param capacity The number of elements that can be buffered in the channel.
+ *                 See [Channel] for options like [Channel.UNLIMITED], [Channel.BUFFERED], etc.
+ *                 Defaults to [Channel.UNLIMITED].
+ * @param overflowStrategy The action to take when the buffer is full. See [BufferOverflow].
+ *                         Defaults to [BufferOverflow.SUSPEND].
  */
 class WorkSerializer(
     scope: CoroutineScope,
@@ -73,7 +83,7 @@ class WorkSerializer(
         if (result.isFailure) {
             ProtoLog.w(
                 WM_SHELL,
-                "Failed to post work to CoroutineQueue %s",
+                "Failed to post work to WorkSerializer %s",
                 result.exceptionOrNull()?.stackTraceToString()
             )
         }
@@ -86,6 +96,6 @@ class WorkSerializer(
     fun close() = channel.close()
 
     fun onUndeliveredElement() {
-        ProtoLog.w(WM_SHELL, "An element in CoroutineQueue was undelivered")
+        ProtoLog.w(WM_SHELL, "An element in WorkSerializer was undelivered")
     }
 }

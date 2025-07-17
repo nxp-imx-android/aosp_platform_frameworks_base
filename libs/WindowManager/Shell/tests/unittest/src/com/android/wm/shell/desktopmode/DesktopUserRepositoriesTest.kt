@@ -60,6 +60,8 @@ class DesktopUserRepositoriesTest : ShellTestCase() {
     private lateinit var userRepositories: DesktopUserRepositories
     private lateinit var shellInit: ShellInit
     private lateinit var datastoreScope: CoroutineScope
+
+    private lateinit var bgScope: CoroutineScope
     private lateinit var mockitoSession: StaticMockitoSession
     private lateinit var desktopState: FakeDesktopState
     private lateinit var desktopConfig: FakeDesktopConfig
@@ -84,6 +86,8 @@ class DesktopUserRepositoriesTest : ShellTestCase() {
         desktopConfig = FakeDesktopConfig()
 
         datastoreScope = CoroutineScope(Dispatchers.Unconfined + SupervisorJob())
+        bgScope = CoroutineScope(Dispatchers.Unconfined + SupervisorJob())
+
         shellInit = spy(ShellInit(testExecutor))
 
         val profiles: MutableList<UserInfo> =
@@ -97,6 +101,7 @@ class DesktopUserRepositoriesTest : ShellTestCase() {
                 persistentRepository,
                 repositoryInitializer,
                 datastoreScope,
+                bgScope,
                 userManager,
                 desktopState,
                 desktopConfig,

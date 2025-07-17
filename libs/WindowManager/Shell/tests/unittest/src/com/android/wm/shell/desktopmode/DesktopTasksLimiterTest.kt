@@ -125,6 +125,7 @@ class DesktopTasksLimiterTest : ShellTestCase() {
                 persistentRepository,
                 repositoryInitializer,
                 testScope,
+                testScope,
                 userManager,
                 desktopState,
                 desktopConfig,

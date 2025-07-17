@@ -23,6 +23,7 @@ import android.platform.test.flag.junit.FlagsParameterization
 import android.util.ArraySet
 import android.view.Display.DEFAULT_DISPLAY
 import android.view.Display.INVALID_DISPLAY
+import androidx.compose.ui.test.cancel
 import androidx.test.filters.SmallTest
 import com.android.window.flags.Flags
 import com.android.wm.shell.MockToken
@@ -46,6 +47,7 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.StandardTestDispatcher
+import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import org.junit.After
@@ -79,7 +81,7 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
     private lateinit var repo: DesktopRepository
     private lateinit var shellInit: ShellInit
     private lateinit var datastoreScope: CoroutineScope
-
+    private lateinit var bgScope: TestScope
     @Mock private lateinit var testExecutor: ShellExecutor
     @Mock private lateinit var persistentRepository: DesktopPersistentRepository
 
@@ -93,6 +95,7 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
     fun setUp() {
         Dispatchers.setMain(StandardTestDispatcher())
         datastoreScope = CoroutineScope(Dispatchers.Unconfined + SupervisorJob())
+        bgScope = TestScope()
         shellInit = spy(ShellInit(testExecutor))
 
         repo =
@@ -100,6 +103,7 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
                 DesktopRepository(
                     persistentRepository,
                     datastoreScope,
+                    bgScope,
                     DEFAULT_USER_ID,
                     desktopConfig,
                 )
@@ -114,6 +118,7 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
     @After
     fun tearDown() {
         datastoreScope.cancel()
+        bgScope.cancel()
     }
 
     @Test
@@ -446,12 +451,14 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
                 taskBounds = TEST_TASK_BOUNDS,
             )
             val expectedDesks1 = repo.getAllDesks().map { it.deepCopy() }
+
             repo.updateTask(
                 DEFAULT_DISPLAY,
                 taskId = 2,
                 isVisible = true,
                 taskBounds = TEST_TASK_BOUNDS,
             )
+            bgScope.testScheduler.advanceUntilIdle()
             val expectedDesks2 = repo.getAllDesks()
 
             inOrder(persistentRepository).run {
@@ -531,6 +538,7 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
                 displayId = DEFAULT_DISPLAY,
                 deskId = DEFAULT_DESKTOP_ID,
             )
+            bgScope.testScheduler.advanceUntilIdle()
 
             val expectedDesksAfterRemoval = repo.getAllDesks().map { it.deepCopy() }
             assertThat(repo.getLeftTiledTask(deskId = DEFAULT_DESKTOP_ID)).isNull()
@@ -594,6 +602,7 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
                 displayId = DEFAULT_DISPLAY,
                 deskId = DEFAULT_DESKTOP_ID,
             )
+            bgScope.testScheduler.advanceUntilIdle()
 
             val expectedDesksAfterRemoval = repo.getAllDesks().map { it.deepCopy() }
             assertThat(repo.getRightTiledTask(deskId = DEFAULT_DESKTOP_ID)).isNull()
@@ -1072,6 +1081,7 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
                     )
                     repo.getAllDesks().map { it.deepCopy() }
                 }
+            bgScope.testScheduler.advanceUntilIdle()
 
             val tasks = repo.getFreeformTasksInZOrder(DEFAULT_DISPLAY)
             assertThat(tasks).containsExactly(7, 6, 5).inOrder()
@@ -1190,6 +1200,7 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
                     .toMutableList()
 
             repo.minimizeTask(displayId = 0, taskId = 6)
+            bgScope.testScheduler.advanceUntilIdle()
 
             val tasks = repo.getFreeformTasksInZOrder(DEFAULT_DISPLAY)
             assertThat(tasks).containsExactly(7, 6, 5).inOrder()
@@ -1331,6 +1342,7 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
 
             repo.removeTask(taskId = 1)
             val expectedDesksAfterRemovingTask = repo.getAllDesks().map { it.deepCopy() }
+            bgScope.testScheduler.advanceUntilIdle()
 
             inOrder(persistentRepository).run {
                 verify(persistentRepository)
@@ -1797,6 +1809,7 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
             repo.addDesk(displayId = DEFAULT_DISPLAY, deskId = 2)
 
             repo.removeDesk(deskId = 2)
+            bgScope.testScheduler.advanceUntilIdle()
             val expectedDesksAfterRemovingDesk = repo.getAllDesks().map { it.deepCopy() }
 
             verify(persistentRepository)

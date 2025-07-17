@@ -60,6 +60,7 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.StandardTestDispatcher
+import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.setMain
 import org.junit.After
 import org.junit.Before
@@ -127,6 +128,7 @@ class DesktopActivityOrientationChangeHandlerTest : ShellTestCase() {
                 persistentRepository,
                 repositoryInitializer,
                 testScope,
+                TestScope(),
                 userManager,
                 desktopState,
                 desktopConfig,
