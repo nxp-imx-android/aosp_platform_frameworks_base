@@ -34,7 +34,6 @@ import static android.internal.perfetto.protos.Inputmethodmanagerservice.InputMe
 import static android.internal.perfetto.protos.Inputmethodmanagerservice.InputMethodManagerServiceProto.IS_INTERACTIVE;
 import static android.internal.perfetto.protos.Inputmethodmanagerservice.InputMethodManagerServiceProto.LAST_IME_TARGET_WINDOW_NAME;
 import static android.internal.perfetto.protos.Inputmethodmanagerservice.InputMethodManagerServiceProto.PREVENT_IME_STARTUP_UNLESS_TEXT_EDITOR;
-import static android.internal.perfetto.protos.Inputmethodmanagerservice.InputMethodManagerServiceProto.SHOW_IME_WITH_HARD_KEYBOARD;
 import static android.internal.perfetto.protos.Inputmethodmanagerservice.InputMethodManagerServiceProto.SYSTEM_READY;
 import static android.os.IServiceManager.DUMP_FLAG_PRIORITY_CRITICAL;
 import static android.os.IServiceManager.DUMP_FLAG_PRIORITY_NORMAL;
@@ -271,8 +270,6 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
 
     private static final int MSG_SET_INTERACTIVE = 3030;
 
-    private static final int MSG_HARD_KEYBOARD_SWITCH_CHANGED = 4000;
-
     private static final int MSG_DISPATCH_ON_INPUT_METHOD_LIST_UPDATED = 5010;
 
     private static final int MSG_NOTIFY_IME_UID_TO_AUDIO_SERVICE = 7000;
@@ -405,7 +402,6 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
 
     private final UserManagerInternal mUserManagerInternal;
     @MultiUserUnawareField
-    private final InputMethodMenuController mMenuController;
     private final InputMethodMenuControllerNew mMenuControllerNew;
 
     /**
@@ -610,14 +606,6 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
     @GuardedBy("ImfLock.class")
     private void onSecureSettingsChangedLocked(@NonNull String key, @UserIdInt int userId) {
         switch (key) {
-            case Settings.Secure.SHOW_IME_WITH_HARD_KEYBOARD: {
-                if (!Flags.imeSwitcherRevamp()) {
-                    if (userId == mCurrentImeUserId) {
-                        mMenuController.updateKeyboardFromSettingsLocked(userId);
-                    }
-                }
-                break;
-            }
             case Settings.Secure.ACCESSIBILITY_SOFT_KEYBOARD_MODE: {
                 final int accessibilitySoftKeyboardSetting = Settings.Secure.getIntForUser(
                         mContext.getContentResolver(),
@@ -680,12 +668,8 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
                         return;
                     }
                     final int userId = mCurrentImeUserId;
-                    if (Flags.imeSwitcherRevamp()) {
-                        final var bindingController = getInputMethodBindingController(userId);
-                        mMenuControllerNew.hide(bindingController.getCurTokenDisplayId(), userId);
-                    } else {
-                        mMenuController.hideInputMethodMenuLocked(userId);
-                    }
+                    final var bindingController = getInputMethodBindingController(userId);
+                    mMenuControllerNew.hide(bindingController.getCurTokenDisplayId(), userId);
                 }
             } else {
                 Slog.w(TAG, "Unexpected intent " + intent);
@@ -723,7 +707,7 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
                 postInputMethodSettingUpdatedLocked(true /* resetDefaultEnabledIme */, userId);
                 // If the locale is changed, needs to reset the default ime
                 resetDefaultImeLocked(mContext, userId);
-                updateFromSettingsLocked(true, userId);
+                updateInputMethodsFromSettingsLocked(true, userId);
             }
         }
     }
@@ -903,7 +887,7 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
                 }
 
                 if (changed) {
-                    updateFromSettingsLocked(false, userId);
+                    updateInputMethodsFromSettingsLocked(false, userId);
                 }
             }
         }
@@ -1230,9 +1214,7 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
                     bindingControllerForTesting != null ? bindingControllerForTesting
                             : bindingControllerFactory, visibilityStateComputerFactory);
 
-            mMenuController = new InputMethodMenuController(this);
-            mMenuControllerNew = Flags.imeSwitcherRevamp()
-                    ? new InputMethodMenuControllerNew() : null;
+            mMenuControllerNew = new InputMethodMenuControllerNew();
 
             mClientController = new ClientController(mPackageManagerInternal);
             mClientController.addClientControllerCallback(this::onClientRemoved);
@@ -1353,7 +1335,7 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
             // set the current ime to the proper one.
             resetDefaultImeLocked(mContext, newUserId);
         }
-        updateFromSettingsLocked(true, newUserId);
+        updateInputMethodsFromSettingsLocked(true, newUserId);
 
         // Special workaround for b/356879517.
         // KeyboardLayoutManager still expects onInputMethodSubtypeChangedForKeyboardLayoutMapping
@@ -1432,12 +1414,6 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
                 final var bindingController = getInputMethodBindingController(currentImeUserId);
                 updateSystemUiLocked(bindingController.getImeWindowVis(),
                         bindingController.getBackDisposition(), currentImeUserId);
-                if (!Flags.imeSwitcherRevamp()) {
-                    mWindowManagerInternal.setOnHardKeyboardStatusChangeListener(available -> {
-                        mHandler.obtainMessage(MSG_HARD_KEYBOARD_SWITCH_CHANGED,
-                                available ? 1 : 0, 0 /* unused */).sendToTarget();
-                    });
-                }
 
                 mMyPackageMonitor.register(mContext, UserHandle.ALL, mIoHandler);
                 SecureSettingsChangeCallback.register(mHandler, mContext.getContentResolver(),
@@ -1446,7 +1422,6 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
                                 Settings.Secure.DEFAULT_INPUT_METHOD,
                                 Settings.Secure.ENABLED_INPUT_METHODS,
                                 Settings.Secure.SELECTED_INPUT_METHOD_SUBTYPE,
-                                Settings.Secure.SHOW_IME_WITH_HARD_KEYBOARD,
                                 Settings.Secure.STYLUS_HANDWRITING_ENABLED,
                         }, (key, flags, userId) -> {
                             synchronized (ImfLock.class) {
@@ -1481,7 +1456,7 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
         final var settings = InputMethodSettingsRepository.get(userId);
         postInputMethodSettingUpdatedLocked(!imeSelectedOnBoot /* resetDefaultEnabledIme */,
                 userId);
-        updateFromSettingsLocked(true, userId);
+        updateInputMethodsFromSettingsLocked(true, userId);
         InputMethodUtils.setNonSelectedSystemImesDisabledUntilUsed(
                 getPackageManagerForUser(mContext, userId), settings.getEnabledInputMethodList());
     }
@@ -1819,11 +1794,7 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
                     ImeTracker.PHASE_SERVER_WAIT_IME);
             userData.mCurStatsToken = null;
             // TODO: Make mMenuController multi-user aware
-            if (Flags.imeSwitcherRevamp()) {
-                mMenuControllerNew.hide(bindingController.getCurTokenDisplayId(), userId);
-            } else {
-                mMenuController.hideInputMethodMenuLocked(userId);
-            }
+            mMenuControllerNew.hide(bindingController.getCurTokenDisplayId(), userId);
         }
     }
 
@@ -2603,10 +2574,7 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
             @UserIdInt int userId) {
         // When the IME switcher dialog is shown, the IME switcher button should be hidden.
         // TODO(b/305849394): Make mMenuController multi-user aware.
-        final boolean switcherMenuShowing = Flags.imeSwitcherRevamp()
-                ? mMenuControllerNew.isShowing()
-                : mMenuController.getSwitchingDialogLocked() != null;
-        if (switcherMenuShowing) {
+        if (mMenuControllerNew.isShowing()) {
             return false;
         }
         // When we are switching IMEs, the IME switcher button should be hidden.
@@ -2619,16 +2587,8 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
                 && mWindowManagerInternal.isKeyguardSecure(userId)) {
             return false;
         }
-        if ((visibility & InputMethodService.IME_ACTIVE) == 0) {
-            return false;
-        }
-        if (mWindowManagerInternal.isHardKeyboardAvailable() && !Flags.imeSwitcherRevamp()) {
-            // When physical keyboard is attached, we show the ime switcher (or notification if
-            // NavBar is not available) because SHOW_IME_WITH_HARD_KEYBOARD settings currently
-            // exists in the IME switcher dialog.  Might be OK to remove this condition once
-            // SHOW_IME_WITH_HARD_KEYBOARD settings finds a good place to live.
-            return true;
-        } else if ((visibility & InputMethodService.IME_VISIBLE) == 0) {
+        if ((visibility & InputMethodService.IME_ACTIVE) == 0
+                || (visibility & InputMethodService.IME_VISIBLE) == 0) {
             return false;
         }
 
@@ -2674,7 +2634,7 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
                 }
             }
         }
-        if (Flags.imeSwitcherRevamp() && nonAuxOnly) {
+        if (nonAuxOnly) {
             return nonAuxCount > 1;
         } else if (nonAuxCount > 1 || auxCount > 1) {
             return true;
@@ -2789,13 +2749,9 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
             if (windowPerceptible != null && !windowPerceptible) {
                 vis &= ~InputMethodService.IME_VISIBLE;
             }
-            final var curId = bindingController.getCurId();
             // TODO(b/305849394): Make mMenuController multi-user aware.
-            final boolean switcherMenuShowing = Flags.imeSwitcherRevamp()
-                    ? mMenuControllerNew.isShowing()
-                    : mMenuController.getSwitchingDialogLocked() != null;
-            if (switcherMenuShowing
-                    || !Objects.equals(curId, bindingController.getSelectedMethodId())) {
+            if (mMenuControllerNew.isShowing() || !Objects.equals(bindingController.getCurId(),
+                    bindingController.getSelectedMethodId())) {
                 // When the IME switcher dialog is shown, or we are switching IMEs,
                 // the back button should be in the default state (as if the IME is not shown).
                 backDisposition = InputMethodService.BACK_DISPOSITION_ADJUST_NOTHING;
@@ -2807,14 +2763,6 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
             }
         } finally {
             Binder.restoreCallingIdentity(ident);
-        }
-    }
-
-    @GuardedBy("ImfLock.class")
-    void updateFromSettingsLocked(boolean enabledMayChange, @UserIdInt int userId) {
-        updateInputMethodsFromSettingsLocked(enabledMayChange, userId);
-        if (!Flags.imeSwitcherRevamp()) {
-            mMenuController.updateKeyboardFromSettingsLocked(userId);
         }
     }
 
@@ -2888,8 +2836,7 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
             resetCurrentMethodAndClientLocked(UnbindReason.NO_IME, userId);
         }
 
-        userData.mSwitchingController.resetCircularListLocked(mContext, settings);
-        userData.mHardwareKeyboardShortcutController.update(settings);
+        userData.mSwitchingController.update(mContext, settings);
         sendOnNavButtonFlagsChangedLocked(userData);
     }
 
@@ -3926,11 +3873,7 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
      */
     @IInputMethodManagerImpl.PermissionVerified(Manifest.permission.TEST_INPUT_METHOD)
     public boolean isInputMethodPickerShownForTest() {
-        synchronized (ImfLock.class) {
-            return Flags.imeSwitcherRevamp()
-                    ? mMenuControllerNew.isShowing()
-                    : mMenuController.isisInputMethodPickerShownForTestLocked();
-        }
+        return mMenuControllerNew.isShowing();
     }
 
     @IInputMethodManagerImpl.PermissionVerified(allOf = {
@@ -4469,10 +4412,6 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
             proto.write(IS_INTERACTIVE, mIsInteractive);
             proto.write(BACK_DISPOSITION, bindingController.getBackDisposition());
             proto.write(IME_WINDOW_VISIBILITY, bindingController.getImeWindowVis());
-            if (!Flags.imeSwitcherRevamp()) {
-                proto.write(SHOW_IME_WITH_HARD_KEYBOARD,
-                        mMenuController.getShowImeWithHardKeyboard());
-            }
             proto.write(CONCURRENT_MULTI_USER_MODE_ENABLED, mConcurrentMultiUserModeEnabled);
             proto.write(PREVENT_IME_STARTUP_UNLESS_TEXT_EDITOR, mPreventImeStartupUnlessTextEditor);
             proto.end(token);
@@ -4650,9 +4589,8 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
                 settings.getSelectedInputMethodSubtypeIndex(lastInputMethodId);
 
         final List<ImeSubtypeListItem> imList = InputMethodSubtypeSwitchingController
-                .getSortedInputMethodAndSubtypeList(
-                        showAuxSubtypes, isScreenLocked, true /* forImeMenu */,
-                        mContext, settings);
+                .getSortedInputMethodAndSubtypeList(showAuxSubtypes, isScreenLocked,
+                        true /* forImeMenu */, mContext, settings);
         if (imList.isEmpty()) {
             Slog.w(TAG, "Show switching menu failed, imList is empty,"
                     + " showAuxSubtypes: " + showAuxSubtypes
@@ -4661,33 +4599,25 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
             return;
         }
 
-        if (Flags.imeSwitcherRevamp()) {
-            ProtoLog.v(IMMS_DEBUG, "Show IME switcher menu,"
-                            + " showAuxSubtypes=%s"
-                            + " displayId=%s"
-                            + " preferredInputMethodId=%s"
-                            + " preferredInputMethodSubtypeIndex=%s",
-                    showAuxSubtypes, displayId, lastInputMethodId, lastInputMethodSubtypeIndex);
+        ProtoLog.v(IMMS_DEBUG, "Show IME switcher menu, showAuxSubtypes=%s displayId=%s"
+                        + " preferredInputMethodId=%s preferredInputMethodSubtypeIndex=%s",
+                showAuxSubtypes, displayId, lastInputMethodId, lastInputMethodSubtypeIndex);
 
-            int selectedSubtypeIndex = lastInputMethodSubtypeIndex;
-            if (selectedSubtypeIndex == NOT_A_SUBTYPE_INDEX) {
-                // TODO(b/351124299): Check if this fallback logic is still necessary.
-                final var bindingController = getInputMethodBindingController(userId);
-                final var curSubtype = bindingController.getCurrentInputMethodSubtype();
-                if (curSubtype != null) {
-                    final var curMethodId = bindingController.getSelectedMethodId();
-                    final var curImi = settings.getMethodMap().get(curMethodId);
-                    selectedSubtypeIndex = SubtypeUtils.getSubtypeIndexFromHashCode(
-                            curImi, curSubtype.hashCode());
-                }
+        int selectedSubtypeIndex = lastInputMethodSubtypeIndex;
+        if (selectedSubtypeIndex == NOT_A_SUBTYPE_INDEX) {
+            // TODO(b/351124299): Check if this fallback logic is still necessary.
+            final var bindingController = getInputMethodBindingController(userId);
+            final var curSubtype = bindingController.getCurrentInputMethodSubtype();
+            if (curSubtype != null) {
+                final var curMethodId = bindingController.getSelectedMethodId();
+                final var curImi = settings.getMethodMap().get(curMethodId);
+                selectedSubtypeIndex = SubtypeUtils.getSubtypeIndexFromHashCode(
+                        curImi, curSubtype.hashCode());
             }
-
-            mMenuControllerNew.show(imList, lastInputMethodId, selectedSubtypeIndex, isScreenLocked,
-                    displayId, userId);
-        } else {
-            mMenuController.showInputMethodMenuLocked(showAuxSubtypes, displayId,
-                    lastInputMethodId, lastInputMethodSubtypeIndex, imList, userId);
         }
+
+        mMenuControllerNew.show(imList, lastInputMethodId, selectedSubtypeIndex, isScreenLocked,
+                displayId, userId);
     }
 
     @SuppressWarnings("unchecked")
@@ -4747,15 +4677,6 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
                 return true;
 
             // --------------------------------------------------------------
-            case MSG_HARD_KEYBOARD_SWITCH_CHANGED:
-                if (Flags.imeSwitcherRevamp()) {
-                    return true;
-                }
-                mMenuController.handleHardKeyboardStatusChange(msg.arg1 == 1);
-                synchronized (ImfLock.class) {
-                    sendOnNavButtonFlagsChangedToAllImesLocked();
-                }
-                return true;
             case MSG_DISPATCH_ON_INPUT_METHOD_LIST_UPDATED: {
                 final int userId = msg.arg1;
                 final List<InputMethodInfo> imes = (List<InputMethodInfo>) msg.obj;
@@ -5052,8 +4973,7 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
         updateDefaultVoiceImeIfNeededLocked(userId);
 
         final var userData = getUserData(userId);
-        userData.mSwitchingController.resetCircularListLocked(mContext, settings);
-        userData.mHardwareKeyboardShortcutController.update(settings);
+        userData.mSwitchingController.update(mContext, settings);
 
         sendOnNavButtonFlagsChangedLocked(userData);
 
@@ -5222,9 +5142,7 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
             settings.putSelectedInputMethod(imi != null ? imi.getId() : "");
         }
 
-        if (Flags.imeSwitcherRevamp()) {
-            getUserData(userId).mSwitchingController.onInputMethodSubtypeChanged();
-        }
+        getUserData(userId).mSwitchingController.onInputMethodSubtypeChanged();
     }
 
     @GuardedBy("ImfLock.class")
@@ -5326,30 +5244,18 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
             return;
         }
         final var currentSubtype = bindingController.getCurrentSubtype();
-        final InputMethodSubtypeHandle nextSubtypeHandle;
-        if (Flags.imeSwitcherRevamp()) {
-            final var nextItem = userData.mSwitchingController
-                    .getNextInputMethodForHardware(
-                            false /* onlyCurrentIme */, currentImi, currentSubtype, MODE_AUTO,
-                            direction > 0 /* forward */);
-            if (nextItem == null) {
-                Slog.i(TAG, "Hardware keyboard switching shortcut,"
-                        + " next input method and subtype not found");
-                return;
-            }
-
-            final var nextSubtype = nextItem.mSubtypeIndex > NOT_A_SUBTYPE_INDEX
-                    ? nextItem.mImi.getSubtypeAt(nextItem.mSubtypeIndex) : null;
-            nextSubtypeHandle = InputMethodSubtypeHandle.of(nextItem.mImi, nextSubtype);
-        } else {
-            final InputMethodSubtypeHandle currentSubtypeHandle =
-                    InputMethodSubtypeHandle.of(currentImi, currentSubtype);
-            nextSubtypeHandle = userData.mHardwareKeyboardShortcutController.onSubtypeSwitch(
-                        currentSubtypeHandle, direction > 0);
-        }
-        if (nextSubtypeHandle == null) {
+        final var nextItem = userData.mSwitchingController.getNextInputMethodForHardware(
+                false /* onlyCurrentIme */, currentImi, currentSubtype, MODE_AUTO,
+                direction > 0 /* forward */);
+        if (nextItem == null) {
+            Slog.i(TAG, "Hardware keyboard switching shortcut,"
+                    + " next input method and subtype not found");
             return;
         }
+
+        final var nextSubtype = nextItem.mSubtypeIndex > NOT_A_SUBTYPE_INDEX
+                ? nextItem.mImi.getSubtypeAt(nextItem.mSubtypeIndex) : null;
+        final var nextSubtypeHandle = InputMethodSubtypeHandle.of(nextItem.mImi, nextSubtype);
         final InputMethodInfo nextImi = settings.getMethodMap().get(nextSubtypeHandle.getImeId());
         if (nextImi == null) {
             return;
@@ -5573,12 +5479,8 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
                 final var visibilityStateComputer = userData.mVisibilityStateComputer;
                 if (visibilityStateComputer.getLastImeTargetWindow()
                         != userData.mImeBindingState.mFocusedWindow) {
-                    if (Flags.imeSwitcherRevamp()) {
-                        final var bindingController = getInputMethodBindingController(userId);
-                        mMenuControllerNew.hide(bindingController.getCurTokenDisplayId(), userId);
-                    } else {
-                        mMenuController.hideInputMethodMenuLocked(userId);
-                    }
+                    final var bindingController = getInputMethodBindingController(userId);
+                    mMenuControllerNew.hide(bindingController.getCurTokenDisplayId(), userId);
                 }
             }
         }
@@ -5864,13 +5766,8 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
                     ? Arrays.toString(mStylusIds.toArray()) : ""));
         }
         // TODO(b/305849394): Make mMenuController multi-user aware.
-        if (Flags.imeSwitcherRevamp()) {
-            p.println("  mMenuControllerNew:");
-            mMenuControllerNew.dump(p, "    ");
-        } else {
-            p.println("  mMenuController:");
-            mMenuController.dump(p, "    ");
-        }
+        p.println("  mMenuControllerNew:");
+        mMenuControllerNew.dump(p, "    ");
         dumpClientController(p);
         dumpUserRepository(p);
 

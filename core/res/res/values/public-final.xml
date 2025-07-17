@@ -3932,7 +3932,6 @@
     <public name="removed_" />
     <!-- @FlaggedApi("android.media.tv.flags.enable_ad_service_fw") -->
     <public name="adServiceTypes" />
-    <!-- @FlaggedApi("android.view.inputmethod.ime_switcher_revamp_api") -->
     <public name="languageSettingsActivity"/>
     <!-- @FlaggedApi(android.service.controls.flags.Flags.FLAG_HOME_PANEL_DREAM) -->
     <public name="dreamCategory"/>
@@ -3943,7 +3942,6 @@
     <public name="supplementalDescription"/>
     <!-- @FlaggedApi("android.security.enable_intent_matching_flags") -->
     <public name="intentMatchingFlags"/>
-    <!-- @FlaggedApi(android.view.inputmethod.Flags.FLAG_IME_SWITCHER_REVAMP_API) -->
     <public name="layoutLabel"/>
     <public name="removed_" />
     <public name="removed_" />
@@ -3960,7 +3958,6 @@
 
   <!-- @FlaggedApi("android.media.tv.flags.enable_ad_service_fw") -->
   <public type="attr" name="adServiceTypes" id="0x010106a4" />
-  <!-- @FlaggedApi("android.view.inputmethod.ime_switcher_revamp_api") -->
   <public type="attr" name="languageSettingsActivity" id="0x010106a5" />
   <!-- @FlaggedApi(android.service.controls.flags.Flags.FLAG_HOME_PANEL_DREAM) -->
   <public type="attr" name="dreamCategory" id="0x010106a6" />
@@ -3971,7 +3968,6 @@
   <public type="attr" name="supplementalDescription" id="0x010106a8" />
   <!-- @FlaggedApi("android.security.enable_intent_matching_flags") -->
   <public type="attr" name="intentMatchingFlags" id="0x010106a9" />
-  <!-- @FlaggedApi(android.view.inputmethod.Flags.FLAG_IME_SWITCHER_REVAMP_API) -->
   <public type="attr" name="layoutLabel" id="0x010106aa" />
   <!-- @FlaggedApi(android.content.pm.Flags.FLAG_APP_COMPAT_OPTION_16KB) -->
   <public type="attr" name="pageSizeCompat" id="0x010106ab" />

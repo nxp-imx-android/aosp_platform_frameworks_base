@@ -56,7 +56,6 @@ import android.view.WindowManager;
 import android.view.WindowManagerGlobal;
 import android.view.accessibility.AccessibilityNodeInfo;
 import android.view.accessibility.AccessibilityNodeInfo.AccessibilityAction;
-import android.view.inputmethod.Flags;
 import android.widget.FrameLayout;
 
 import androidx.annotation.Nullable;
@@ -284,11 +283,8 @@ public class NavigationBarView extends FrameLayout {
 
         // Set up the context group of buttons
         mContextualButtonGroup = new ContextualButtonGroup(R.id.menu_container);
-        final int switcherResId = Flags.imeSwitcherRevamp()
-                ? com.android.internal.R.drawable.ic_ime_switcher_new
-                : R.drawable.ic_ime_switcher_default;
         final ContextualButton imeSwitcherButton = new ContextualButton(R.id.ime_switcher,
-                mLightContext, switcherResId);
+                mLightContext, com.android.internal.R.drawable.ic_ime_switcher_new);
         final ContextualButton accessibilityButton =
                 new ContextualButton(R.id.accessibility_button, mLightContext,
                         R.drawable.ic_sysbar_accessibility_button);

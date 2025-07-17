@@ -24,27 +24,17 @@ import static com.android.server.inputmethod.InputMethodUtils.NOT_A_SUBTYPE_INDE
 import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.truth.Truth.assertWithMessage;
 
-import android.platform.test.annotations.RequiresFlagsEnabled;
-import android.platform.test.flag.junit.CheckFlagsRule;
-import android.platform.test.flag.junit.DeviceFlagsValueProvider;
-import android.view.inputmethod.Flags;
-
 import com.android.server.inputmethod.InputMethodMenuControllerNew.DividerItem;
 import com.android.server.inputmethod.InputMethodMenuControllerNew.HeaderItem;
 import com.android.server.inputmethod.InputMethodMenuControllerNew.SubtypeItem;
 import com.android.server.inputmethod.InputMethodSubtypeSwitchingController.ImeSubtypeListItem;
 
-import org.junit.Rule;
 import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.List;
 
-@RequiresFlagsEnabled(Flags.FLAG_IME_SWITCHER_REVAMP)
 public class InputMethodMenuControllerTest {
-
-    @Rule
-    public final CheckFlagsRule mCheckFlagsRule = DeviceFlagsValueProvider.createCheckFlagsRule();
 
     /** Verifies that getMenuItems maintains the same order and information from the given items. */
     @Test

@@ -53,9 +53,6 @@ import android.graphics.Insets;
 import android.os.Build;
 import android.os.RemoteException;
 import android.os.SystemClock;
-import android.platform.test.annotations.RequiresFlagsEnabled;
-import android.platform.test.flag.junit.CheckFlagsRule;
-import android.platform.test.flag.junit.DeviceFlagsValueProvider;
 import android.provider.Settings;
 import android.server.wm.DumpOnFailure;
 import android.server.wm.LockScreenSession;
@@ -66,7 +63,6 @@ import android.view.WindowInsets;
 import android.view.WindowInsetsAnimation;
 import android.view.WindowManagerGlobal;
 import android.view.inputmethod.EditorInfo;
-import android.view.inputmethod.Flags;
 import android.view.inputmethod.InputMethodManager;
 
 import androidx.annotation.NonNull;
@@ -145,9 +141,6 @@ public class InputMethodServiceTest {
     private final WindowManagerStateHelper mWmState = new WindowManagerStateHelper();
 
     private final GestureNavSwitchHelper mGestureNavSwitchHelper = new GestureNavSwitchHelper();
-
-    @Rule
-    public final CheckFlagsRule mCheckFlagsRule = DeviceFlagsValueProvider.createCheckFlagsRule();
 
     @Rule
     public final TestName mName = new TestName();
@@ -1030,7 +1023,6 @@ public class InputMethodServiceTest {
      * Shows the Input Method Switcher menu and verifies opening the IME Language Settings activity
      * by tapping on the button, when the device is provisioned.
      */
-    @RequiresFlagsEnabled(Flags.FLAG_IME_SWITCHER_REVAMP)
     @Test
     public void testImeSwitcherMenu_openLanguageSettings() throws Exception {
         final var context = mInstrumentation.getTargetContext();
@@ -1075,7 +1067,6 @@ public class InputMethodServiceTest {
      * Shows the Input Method Switcher menu and verifies the IME Language Settings button is not
      * visible when the screen is secure locked.
      */
-    @RequiresFlagsEnabled(Flags.FLAG_IME_SWITCHER_REVAMP)
     @Test
     public void testImeSwitcherMenu_noLanguageSettingsWhenScreenLocked() throws Exception {
         final var context = mInstrumentation.getTargetContext();
@@ -1124,7 +1115,6 @@ public class InputMethodServiceTest {
      * Shows the Input Method Switcher menu and verifies the IME Language Settings button is not
      * visible when the device is not provisioned.
      */
-    @RequiresFlagsEnabled(Flags.FLAG_IME_SWITCHER_REVAMP)
     @Test
     public void testImeSwitcherMenu_noLanguageSettingsWhenDeviceNotProvisioned() throws Exception {
         final var context = mInstrumentation.getTargetContext();

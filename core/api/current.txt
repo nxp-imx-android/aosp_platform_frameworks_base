@@ -1088,7 +1088,7 @@ package android {
     field public static final int label = 16842753; // 0x1010001
     field public static final int labelFor = 16843718; // 0x10103c6
     field @Deprecated public static final int labelTextSize = 16843317; // 0x1010235
-    field @FlaggedApi("android.view.inputmethod.ime_switcher_revamp_api") public static final int languageSettingsActivity = 16844453; // 0x10106a5
+    field public static final int languageSettingsActivity = 16844453; // 0x10106a5
     field public static final int languageTag = 16844040; // 0x1010508
     field public static final int largeHeap = 16843610; // 0x101035a
     field public static final int largeScreens = 16843398; // 0x1010286
@@ -1101,7 +1101,7 @@ package android {
     field public static final int layout = 16842994; // 0x10100f2
     field public static final int layoutAnimation = 16842988; // 0x10100ec
     field public static final int layoutDirection = 16843698; // 0x10103b2
-    field @FlaggedApi("android.view.inputmethod.ime_switcher_revamp_api") public static final int layoutLabel = 16844458; // 0x10106aa
+    field public static final int layoutLabel = 16844458; // 0x10106aa
     field public static final int layoutMode = 16843738; // 0x10103da
     field public static final int layout_above = 16843140; // 0x1010184
     field public static final int layout_alignBaseline = 16843142; // 0x1010186
@@ -21615,7 +21615,7 @@ package android.inputmethodservice {
     method @Deprecated public android.inputmethodservice.AbstractInputMethodService.AbstractInputMethodSessionImpl onCreateInputMethodSessionInterface();
     method public android.view.View onCreateInputView();
     method protected void onCurrentInputMethodSubtypeChanged(android.view.inputmethod.InputMethodSubtype);
-    method @FlaggedApi("android.view.inputmethod.ime_switcher_revamp_api") public void onCustomImeSwitcherButtonRequestedVisible(boolean);
+    method public void onCustomImeSwitcherButtonRequestedVisible(boolean);
     method public void onDisplayCompletions(android.view.inputmethod.CompletionInfo[]);
     method public boolean onEvaluateFullscreenMode();
     method @CallSuper public boolean onEvaluateInputViewShown();
@@ -58379,7 +58379,7 @@ package android.view.inputmethod {
   public final class InputMethodInfo implements android.os.Parcelable {
     ctor public InputMethodInfo(android.content.Context, android.content.pm.ResolveInfo) throws java.io.IOException, org.xmlpull.v1.XmlPullParserException;
     ctor public InputMethodInfo(String, String, CharSequence, String);
-    method @FlaggedApi("android.view.inputmethod.ime_switcher_revamp_api") @Nullable public android.content.Intent createImeLanguageSettingsActivityIntent();
+    method @Nullable public android.content.Intent createImeLanguageSettingsActivityIntent();
     method @Nullable public android.content.Intent createStylusHandwritingSettingsActivityIntent();
     method public int describeContents();
     method public void dump(android.util.Printer, String);
@@ -58400,7 +58400,7 @@ package android.view.inputmethod {
     method public boolean supportsStylusHandwriting();
     method public boolean suppressesSpellChecker();
     method public void writeToParcel(android.os.Parcel, int);
-    field @FlaggedApi("android.view.inputmethod.ime_switcher_revamp_api") public static final String ACTION_IME_LANGUAGE_SETTINGS = "android.view.inputmethod.action.IME_LANGUAGE_SETTINGS";
+    field public static final String ACTION_IME_LANGUAGE_SETTINGS = "android.view.inputmethod.action.IME_LANGUAGE_SETTINGS";
     field public static final String ACTION_STYLUS_HANDWRITING_SETTINGS = "android.view.inputmethod.action.STYLUS_HANDWRITING_SETTINGS";
     field @NonNull public static final android.os.Parcelable.Creator<android.view.inputmethod.InputMethodInfo> CREATOR;
   }
@@ -58501,9 +58501,9 @@ package android.view.inputmethod {
     method public String getExtraValueOf(String);
     method public int getIconResId();
     method @NonNull public String getLanguageTag();
-    method @FlaggedApi("android.view.inputmethod.ime_switcher_revamp_api") @NonNull public CharSequence getLayoutDisplayName(@NonNull android.content.Context, @NonNull android.content.pm.ApplicationInfo);
-    method @FlaggedApi("android.view.inputmethod.ime_switcher_revamp_api") @NonNull public CharSequence getLayoutLabelNonLocalized();
-    method @FlaggedApi("android.view.inputmethod.ime_switcher_revamp_api") @StringRes public int getLayoutLabelResource();
+    method @NonNull public CharSequence getLayoutDisplayName(@NonNull android.content.Context, @NonNull android.content.pm.ApplicationInfo);
+    method @NonNull public CharSequence getLayoutLabelNonLocalized();
+    method @StringRes public int getLayoutLabelResource();
     method @Deprecated @NonNull public String getLocale();
     method public String getMode();
     method @NonNull public CharSequence getNameOverride();
@@ -58523,8 +58523,8 @@ package android.view.inputmethod {
     method public android.view.inputmethod.InputMethodSubtype.InputMethodSubtypeBuilder setIsAsciiCapable(boolean);
     method public android.view.inputmethod.InputMethodSubtype.InputMethodSubtypeBuilder setIsAuxiliary(boolean);
     method public android.view.inputmethod.InputMethodSubtype.InputMethodSubtypeBuilder setLanguageTag(String);
-    method @FlaggedApi("android.view.inputmethod.ime_switcher_revamp_api") @NonNull public android.view.inputmethod.InputMethodSubtype.InputMethodSubtypeBuilder setLayoutLabelNonLocalized(@NonNull CharSequence);
-    method @FlaggedApi("android.view.inputmethod.ime_switcher_revamp_api") @NonNull public android.view.inputmethod.InputMethodSubtype.InputMethodSubtypeBuilder setLayoutLabelResource(@StringRes int);
+    method @NonNull public android.view.inputmethod.InputMethodSubtype.InputMethodSubtypeBuilder setLayoutLabelNonLocalized(@NonNull CharSequence);
+    method @NonNull public android.view.inputmethod.InputMethodSubtype.InputMethodSubtypeBuilder setLayoutLabelResource(@StringRes int);
     method public android.view.inputmethod.InputMethodSubtype.InputMethodSubtypeBuilder setOverridesImplicitlyEnabledSubtype(boolean);
     method @NonNull public android.view.inputmethod.InputMethodSubtype.InputMethodSubtypeBuilder setPhysicalKeyboardHint(@Nullable android.icu.util.ULocale, @NonNull String);
     method public android.view.inputmethod.InputMethodSubtype.InputMethodSubtypeBuilder setSubtypeExtraValue(String);

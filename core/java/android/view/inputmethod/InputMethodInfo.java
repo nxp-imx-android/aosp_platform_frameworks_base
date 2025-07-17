@@ -94,7 +94,6 @@ public final class InputMethodInfo implements Parcelable {
      *
      * @see #createImeLanguageSettingsActivityIntent()
      */
-    @FlaggedApi(android.view.inputmethod.Flags.FLAG_IME_SWITCHER_REVAMP_API)
     public static final String ACTION_IME_LANGUAGE_SETTINGS =
             "android.view.inputmethod.action.IME_LANGUAGE_SETTINGS";
 
@@ -318,10 +317,8 @@ public final class InputMethodInfo implements Parcelable {
                     com.android.internal.R.styleable.InputMethod);
             settingsActivityComponent = sa.getString(
                     com.android.internal.R.styleable.InputMethod_settingsActivity);
-            if (Flags.imeSwitcherRevampApi()) {
-                languageSettingsActivityComponent = sa.getString(
-                        com.android.internal.R.styleable.InputMethod_languageSettingsActivity);
-            }
+            languageSettingsActivityComponent = sa.getString(
+                    com.android.internal.R.styleable.InputMethod_languageSettingsActivity);
             if ((si.name != null && si.name.length() > COMPONENT_NAME_MAX_LENGTH)
                     || (settingsActivityComponent != null
                             && settingsActivityComponent.length()
@@ -959,7 +956,6 @@ public final class InputMethodInfo implements Parcelable {
      * @attr ref android.R.styleable#InputMethod_languageSettingsActivity
      * @attr ref android.R.styleable#InputMethod_settingsActivity
      */
-    @FlaggedApi(android.view.inputmethod.Flags.FLAG_IME_SWITCHER_REVAMP_API)
     @Nullable
     public Intent createImeLanguageSettingsActivityIntent() {
         final var activityName = !TextUtils.isEmpty(mLanguageSettingsActivityName)
