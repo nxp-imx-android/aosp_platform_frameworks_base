@@ -3853,7 +3853,7 @@ public class MockingOomAdjusterTests {
         // TLDR: App is not set as a perceptible task and hence no oom_adj boosting.
         mService.mOomAdjuster.mTmpOomAdjWindowCalculator.initialize(app, CACHED_APP_MIN_ADJ,
                 false, false, PROCESS_STATE_CACHED_ACTIVITY,
-                SCHED_GROUP_DEFAULT, 0, 0, PROCESS_STATE_IMPORTANT_FOREGROUND);
+                SCHED_GROUP_DEFAULT, PROCESS_STATE_IMPORTANT_FOREGROUND, true);
         mService.mOomAdjuster.mTmpOomAdjWindowCalculator.onOtherActivity(-1);
         assertEquals(CACHED_APP_MIN_ADJ, mService.mOomAdjuster.mTmpOomAdjWindowCalculator.getAdj());
 
@@ -3863,7 +3863,7 @@ public class MockingOomAdjusterTests {
         // TLDR: App is a perceptible task (e.g. opened from launcher) and has oom_adj boosting.
         mService.mOomAdjuster.mTmpOomAdjWindowCalculator.initialize(app, CACHED_APP_MIN_ADJ,
                 false, false, PROCESS_STATE_CACHED_ACTIVITY,
-                SCHED_GROUP_DEFAULT, 0, 0, PROCESS_STATE_IMPORTANT_FOREGROUND);
+                SCHED_GROUP_DEFAULT, PROCESS_STATE_IMPORTANT_FOREGROUND, true);
         mInjector.reset();
         mService.mOomAdjuster.mTmpOomAdjWindowCalculator.onOtherActivity(now);
         assertEquals(PERCEPTIBLE_MEDIUM_APP_ADJ,
@@ -3876,7 +3876,7 @@ public class MockingOomAdjusterTests {
         //       time has elapsed and has dropped to a lower boosting of PREVIOUS_APP_ADJ
         mService.mOomAdjuster.mTmpOomAdjWindowCalculator.initialize(app, CACHED_APP_MIN_ADJ,
                 false, false, PROCESS_STATE_CACHED_ACTIVITY,
-                SCHED_GROUP_DEFAULT, 0, 0, PROCESS_STATE_IMPORTANT_FOREGROUND);
+                SCHED_GROUP_DEFAULT, PROCESS_STATE_IMPORTANT_FOREGROUND, true);
         mInjector.jumpUptimeAheadTo(OomAdjuster.PERCEPTIBLE_TASK_TIMEOUT_MILLIS + 1000);
         mService.mOomAdjuster.mTmpOomAdjWindowCalculator.onOtherActivity(0);
         assertEquals(PREVIOUS_APP_ADJ, mService.mOomAdjuster.mTmpOomAdjWindowCalculator.getAdj());
