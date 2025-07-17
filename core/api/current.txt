@@ -7091,9 +7091,12 @@ package android.app {
     method @NonNull public static android.app.Notification.Metric.TimeDifference forPausedStopwatch(@NonNull java.time.Duration, int);
     method @NonNull public static android.app.Notification.Metric.TimeDifference forPausedTimer(@NonNull java.time.Duration, int);
     method @NonNull public static android.app.Notification.Metric.TimeDifference forStopwatch(@NonNull java.time.Instant, int);
+    method @NonNull public static android.app.Notification.Metric.TimeDifference forStopwatch(long, int);
     method @NonNull public static android.app.Notification.Metric.TimeDifference forTimer(@NonNull java.time.Instant, int);
+    method @NonNull public static android.app.Notification.Metric.TimeDifference forTimer(long, int);
     method public int getFormat();
     method @Nullable public java.time.Duration getPausedDuration();
+    method @Nullable public Long getZeroElapsedRealtime();
     method @Nullable public java.time.Instant getZeroTime();
     method public boolean isStopwatch();
     method public boolean isTimer();

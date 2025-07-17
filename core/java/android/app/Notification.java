@@ -41,6 +41,7 @@ import android.annotation.ColorRes;
 import android.annotation.DimenRes;
 import android.annotation.Dimension;
 import android.annotation.DrawableRes;
+import android.annotation.ElapsedRealtimeLong;
 import android.annotation.FlaggedApi;
 import android.annotation.IdRes;
 import android.annotation.IntDef;
@@ -154,6 +155,7 @@ import java.util.Locale;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.Consumer;
+import java.util.function.LongSupplier;
 
 /**
  * A class that represents how a persistent notification is to be presented to
@@ -1824,6 +1826,16 @@ public class Notification implements Parcelable
     @VisibleForTesting
     public static InstantSource sSystemClock = InstantSource.system();
 
+    /**
+     * Provider of "elapsedRealTime" (milliseconds since boot, not affected by moving the system
+     * clock). Normally {@link SystemClock#elapsedRealtime()}, but overridable for testing.
+     *
+     * @hide
+     */
+    @Nullable
+    @VisibleForTesting
+    public static LongSupplier sElapsedRealtimeClock = () -> SystemClock.elapsedRealtime();
+
     @UnsupportedAppUsage
     private Icon mSmallIcon;
     @UnsupportedAppUsage
@@ -3109,6 +3121,13 @@ public class Notification implements Parcelable
     @NonNull
     private static InstantSource getSystemClock() {
         return sSystemClock != null ? sSystemClock : InstantSource.system();
+    }
+
+    @NonNull
+    private static LongSupplier getElapsedRealtimeClock() {
+        return sElapsedRealtimeClock != null
+                ? sElapsedRealtimeClock
+                : () -> SystemClock.elapsedRealtime();
     }
 
     private static LocalDate getToday() {
@@ -12229,10 +12248,16 @@ public class Notification implements Parcelable
          * This represents a timer, a stopwatch, or a countdown to an event.
          *
          * <p>When representing a <em>running</em> timer (or stopwatch, etc), this value specifies
-         * a reference instant for when that timer will hit zero, called the "zero time".
-         * In this case the time displayed is defined as the difference between the
-         * "zero time" instant, and {@link Instant#now()}, meaning it will show a live-updated
-         * timer.
+         * a reference instant for when that timer will hit zero (or the stopwatch was at zero,
+         * respectively), called the "zero time". In this case the time displayed is defined as the
+         * difference between the "zero time" and the current time, meaning it will show a
+         * live-updated timer.
+         *
+         * <p>The zero time can be specified as an {@link Instant} (in which case it corresponds
+         * to a "real-world" point in time, from {@link InstantSource#system}), or as milliseconds
+         * since boot (from {@link SystemClock#elapsedRealtime()}). The latter might be suitable
+         * when the timer is tied to {@link AlarmManager#ELAPSED_REALTIME} alarm in
+         * {@link AlarmManager}.
          *
          * <p>When representing a <em>paused</em> timer (or stopwatch, etc), this value specifies
          * the duration as a fixed value.
@@ -12261,12 +12286,14 @@ public class Notification implements Parcelable
             public @interface Format {}
 
             private static final String KEY_ZERO_TIME = "zeroTime";
+            private static final String KEY_ZERO_ELAPSED_REALTIME = "zeroElapsedRealtime";
             private static final String KEY_PAUSED_DURATION = "pausedDuration";
             private static final String KEY_COUNT_DOWN = "countDown";
             private static final String KEY_FORMAT = "format";
 
             // One of these two will be present.
             @Nullable private final Instant mZeroTime;
+            @Nullable @ElapsedRealtimeLong private final Long mZeroElapsedRealtime;
             @Nullable private final Duration mPausedDuration;
             private final boolean mCountDown;
             private final @Format int mFormat;
@@ -12278,8 +12305,22 @@ public class Notification implements Parcelable
              */
             @NonNull
             public static TimeDifference forTimer(@NonNull Instant endTime, @Format int format) {
-                return new TimeDifference(requireNonNull(endTime), /* pausedDuration= */ null,
+                return new TimeDifference(requireNonNull(endTime),
+                        /* zeroElapsedRealtime= */ null, /* pausedDuration= */ null,
                         /* countDown= */ true, format);
+            }
+
+            /**
+             * Creates a "running timer" metric, which will show a countdown to {@code endTime},
+             * specified in the {@link SystemClock#elapsedRealtime()} frame of reference.
+             *
+             * @param endTime elapsed realtime at which the timer reaches zero
+             */
+            @NonNull
+            public static TimeDifference forTimer(@ElapsedRealtimeLong long endTime,
+                    @Format int format) {
+                return new TimeDifference(/* zeroTime= */ null, endTime,
+                        /* pausedDuration= */ null, /* countDown= */ true, format);
             }
 
             /**
@@ -12291,8 +12332,23 @@ public class Notification implements Parcelable
             @NonNull
             public static TimeDifference forStopwatch(@NonNull Instant startTime,
                     @Format int format) {
-                return new TimeDifference(requireNonNull(startTime), /* pausedDuration= */ null,
+                return new TimeDifference(requireNonNull(startTime),
+                        /* zeroElapsedRealtime= */ null, /* pausedDuration= */ null,
                         /* countDown= */ false, format);
+            }
+
+            /**
+             * Creates a "running stopwatch" metric, which will show the time elapsed since
+             * {@code startTime}, specified in the {@link SystemClock#elapsedRealtime()} frame of
+             * reference.
+             *
+             * @param startTime elapsed realtime at which the stopwatch started
+             */
+            @NonNull
+            public static TimeDifference forStopwatch(@ElapsedRealtimeLong long startTime,
+                    @Format int format) {
+                return new TimeDifference(/* zeroTime= */ null, startTime,
+                        /* pausedDuration= */ null, /* countDown= */ false, format);
             }
 
             /**
@@ -12301,29 +12357,32 @@ public class Notification implements Parcelable
             @NonNull
             public static TimeDifference forPausedTimer(@NonNull Duration remainingTime,
                     @Format int format) {
-                return new TimeDifference(/* zeroTime= */ null, requireNonNull(remainingTime),
-                        /* countDown= */ true, format);
+                return new TimeDifference(/* zeroTime= */ null, /* zeroElapsedRealtime= */ null,
+                        requireNonNull(remainingTime), /* countDown= */ true, format);
             }
 
             /**
-             * Creates a "paused timer" metric, showing the {@code elapsedTime}.
+             * Creates a "paused stopwatch" metric, showing the {@code elapsedTime}.
              */
             @NonNull
             public static TimeDifference forPausedStopwatch(@NonNull Duration elapsedTime,
                     @Format int format) {
-                return new TimeDifference(/* zeroTime= */ null, requireNonNull(elapsedTime),
-                        /* countDown= */ false, format);
+                return new TimeDifference(/* zeroTime= */ null, /* zeroElapsedRealtime= */ null,
+                        requireNonNull(elapsedTime), /* countDown= */ false, format);
             }
 
-            private TimeDifference(@Nullable Instant zeroTime, @Nullable Duration pausedDuration,
-                    boolean countDown, @Format int format) {
-                checkArgument((zeroTime != null) ^ (pausedDuration != null),
-                        "Either zeroTime or pausedDuration must be present, and not both. "
-                                + "Received %s,%s",
-                        zeroTime, pausedDuration);
+            private TimeDifference(@Nullable Instant zeroTime,
+                    @Nullable @ElapsedRealtimeLong Long zeroElapsedRealtime,
+                    @Nullable Duration pausedDuration, boolean countDown, @Format int format) {
+                checkArgument((zeroTime != null ? 1 : 0) + (zeroElapsedRealtime != null ? 1 : 0)
+                                + (pausedDuration != null ? 1 : 0) == 1,
+                        "Exactly one of zeroTime, zeroElapsedRealtime, or pausedDuration must be "
+                                + "present; received %s,%s,%s",
+                        zeroTime, zeroElapsedRealtime, pausedDuration);
                 checkArgument(format >= FORMAT_AUTOMATIC && format <= FORMAT_CHRONOMETER,
                         "Invalid format: %s", format);
                 mZeroTime = zeroTime;
+                mZeroElapsedRealtime = zeroElapsedRealtime;
                 mPausedDuration = pausedDuration;
                 mCountDown = countDown;
                 mFormat = format;
@@ -12333,10 +12392,12 @@ public class Notification implements Parcelable
             private static TimeDifference fromBundle(Bundle bundle) {
                 Instant zeroTime = bundle.containsKey(KEY_ZERO_TIME)
                         ? Instant.ofEpochMilli(bundle.getLong(KEY_ZERO_TIME)) : null;
+                Long zeroElapsedRealtime = bundle.containsKey(KEY_ZERO_ELAPSED_REALTIME)
+                        ? bundle.getLong(KEY_ZERO_ELAPSED_REALTIME) : null;
                 Duration pausedDuration = bundle.containsKey(KEY_PAUSED_DURATION)
                         ? Duration.ofMillis(bundle.getLong(KEY_PAUSED_DURATION)) : null;
                 if (zeroTime != null || pausedDuration != null) {
-                    return new TimeDifference(zeroTime, pausedDuration,
+                    return new TimeDifference(zeroTime, zeroElapsedRealtime, pausedDuration,
                             bundle.getBoolean(KEY_COUNT_DOWN),
                             bundle.getInt(KEY_FORMAT, FORMAT_AUTOMATIC));
                 } else {
@@ -12349,6 +12410,8 @@ public class Notification implements Parcelable
             protected void toBundle(Bundle bundle) {
                 if (mZeroTime != null) {
                     bundle.putLong(KEY_ZERO_TIME, mZeroTime.toEpochMilli());
+                } else if (mZeroElapsedRealtime != null) {
+                    bundle.putLong(KEY_ZERO_ELAPSED_REALTIME, mZeroElapsedRealtime);
                 } else if (mPausedDuration != null) {
                     bundle.putLong(KEY_PAUSED_DURATION, mPausedDuration.toMillis());
                 }
@@ -12361,6 +12424,7 @@ public class Notification implements Parcelable
                 if (!(obj instanceof TimeDifference that)) return false;
                 if (this == that) return true;
                 return Objects.equals(this.mZeroTime, that.mZeroTime)
+                        && Objects.equals(this.mZeroElapsedRealtime, that.mZeroElapsedRealtime)
                         && Objects.equals(this.mPausedDuration, that.mPausedDuration)
                         && this.mCountDown == that.mCountDown
                         && this.mFormat == that.mFormat;
@@ -12368,27 +12432,37 @@ public class Notification implements Parcelable
 
             @Override
             public int hashCode() {
-                return Objects.hash(mZeroTime, mPausedDuration, mCountDown, mFormat);
+                return Objects.hash(mZeroTime, mZeroElapsedRealtime, mPausedDuration, mCountDown,
+                        mFormat);
             }
 
             @Override
             public String toString() {
-                return "TimeDifference{"
-                        + "mZeroTime=" + mZeroTime
-                        + ", mPausedDuration=" + mPausedDuration
-                        + ", mCountDown=" + mCountDown
-                        + ", mFormat=" + mFormat
-                        + "}";
+                StringBuilder sb = new StringBuilder("TimeDifference{");
+                if (mZeroTime != null) {
+                    sb.append("mZeroTime=").append(mZeroTime);
+                } else if (mZeroElapsedRealtime != null) {
+                    sb.append("mZeroElapsedRealtime=").append(mZeroElapsedRealtime);
+                } else if (mPausedDuration != null) {
+                    sb.append("mPausedDuration=").append(mPausedDuration);
+                }
+                sb.append(", mCountDown=").append(mCountDown)
+                        .append(", mFormat=").append(mFormat)
+                        .append("}");
+                return sb.toString();
             }
 
             /**
-             * The instant at which the time difference is zero.
+             * The {@link Instant} at which the time difference is zero. Only valid for an
+             * {@link Instant}-based {@link TimeDifference}.
+             *
              * <ul>
              *     <li>For a running timer this is the {@code endTime} supplied to
-             *     {@link #forTimer}.
+             *     {@link #forTimer(Instant, int)}.
              *     <li>For a running stopwatch this is the {@code startTime} supplied to
-             *     {@link #forStopwatch}.
-             *     <li>This is {@code null} for paused timers or stopwatches.
+             *     {@link #forStopwatch(Instant, int)}.
+             *     <li>For running timers or stopwatches based on elapsed realtime (as well as
+             *     paused timers and stopwatches), this is {@code null}.
              * </ul>
              */
             @Nullable public Instant getZeroTime() {
@@ -12396,13 +12470,32 @@ public class Notification implements Parcelable
             }
 
             /**
+             * The elapsed realtime at which the time difference is zero. Only valid for an
+             * {@link SystemClock#elapsedRealtime()}-based {@link TimeDifference}.
+             *
+             * <ul>
+             *     <li>For a running timer this is the {@code endTime} supplied to
+             *     {@link #forTimer(long, int)}.
+             *     <li>For a running stopwatch this is the {@code startTime} supplied to
+             *     {@link #forStopwatch(long, int)}.
+             *     <li>For running timers or stopwatches based on {@link Instant} (as well as
+             *     paused timers and stopwatches), this is {@code null}.
+             * </ul>
+             */
+            @SuppressLint("AutoBoxing")
+            @Nullable @ElapsedRealtimeLong public Long getZeroElapsedRealtime() {
+                return mZeroElapsedRealtime;
+            }
+
+            /**
              * The fixed time difference, for a paused timer or stopwatch.
+             *
              * <ul>
              *     <li>For a paused timer this is the {@code remainingTime} supplied to
              *     {@link #forPausedTimer}.
              *     <li>For a paused stopwatch this is the {@code elapsedTime} supplied to
              *     {@link #forPausedStopwatch}.
-             *     <li>This is {@code null} for running timers or stopwatches.
+             *     <li>For running timers or stopwatches this is {@code null}.
              * </ul>
              */
             @Nullable public Duration getPausedDuration() {
@@ -12411,7 +12504,7 @@ public class Notification implements Parcelable
 
             /**
              * Whether this {@link TimeDifference} value represents a stopwatch -- when running,
-             * it counts up from {@link #getZeroTime()}.
+             * it counts up from {@link #getZeroTime()} (or {@link #getZeroElapsedRealtime()}).
              */
             public boolean isStopwatch() {
                 return !mCountDown;
@@ -12419,7 +12512,7 @@ public class Notification implements Parcelable
 
             /**
              * Whether this {@link TimeDifference} value represents a timer -- when running,
-             * it counts down to {@link #getZeroTime()}.
+             * it counts down to {@link #getZeroTime()} (or {@link #getZeroElapsedRealtime()}).
              */
             public boolean isTimer() {
                 return mCountDown;
@@ -12436,21 +12529,9 @@ public class Notification implements Parcelable
             @NonNull
             @VisibleForTesting(visibility = VisibleForTesting.Visibility.PACKAGE)
             public ValueString toValueString(Context context) {
-                Duration duration;
-                if (mPausedDuration != null) {
-                    duration = mPausedDuration;
-                } else {
-                    // If the timer/stopwatch is running we likely want a Chronometer view, so this
-                    // path is mostly for debugging/completeness.
-                    Instant now = getSystemClock().instant();
-                    if (isStopwatch()) {
-                        duration = Duration.between(mZeroTime, now);
-                    } else {
-                        duration = Duration.between(now, mZeroTime);
-                    }
-                }
-
+                Duration duration = getCurrentDuration();
                 duration = duration.truncatedTo(SECONDS); // ms are ignored and we don't want -0:00
+
                 Duration absDuration = duration.abs();
                 Measure hours = new Measure(absDuration.toHours(), MeasureUnit.HOUR);
                 Measure minutes = new Measure(absDuration.toMinutesPart(), MeasureUnit.MINUTE);
@@ -12462,6 +12543,33 @@ public class Notification implements Parcelable
                         : absText;
 
                 return new ValueString(text, null);
+            }
+
+            private Duration getCurrentDuration() {
+                if (mPausedDuration != null) {
+                    return mPausedDuration;
+                } else if (mZeroTime != null) {
+                    // If the timer/stopwatch is running we likely want a Chronometer view, so this
+                    // path is mostly for debugging/completeness.
+                    Instant now = getSystemClock().instant();
+                    if (isStopwatch()) {
+                        return Duration.between(mZeroTime, now);
+                    } else {
+                        return Duration.between(now, mZeroTime);
+                    }
+                } else if (mZeroElapsedRealtime != null) {
+                    // If the timer/stopwatch is running we likely want a Chronometer view, so this
+                    // path is mostly for debugging/completeness.
+                    long elapsedRealtimeNow = getElapsedRealtimeClock().getAsLong();
+                    if (isStopwatch()) {
+                        return Duration.ofMillis(elapsedRealtimeNow - mZeroElapsedRealtime);
+                    } else {
+                        return Duration.ofMillis(mZeroElapsedRealtime - elapsedRealtimeNow);
+                    }
+                } else {
+                    throw new IllegalStateException(
+                            "None of mPausedDuration, mZeroTime, mZeroElapsedRealtime set!");
+                }
             }
 
             private static String formatAbsoluteDuration(@Format int format, Measure hours,
