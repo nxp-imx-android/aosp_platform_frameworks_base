@@ -161,7 +161,7 @@ public class TvPipMenuController implements PipMenuController, TvPipMenuView.Lis
             throw new IllegalStateException("Delegate is not set.");
         }
 
-        mLeash = leash;
+        mLeash = new SurfaceControl(leash, "TvPipMenuController");
         attachPipMenu(/* showEduText */ true);
     }
 
@@ -294,7 +294,10 @@ public class TvPipMenuController implements PipMenuController, TvPipMenuView.Lis
     public void detach() {
         detachPipMenu();
         switchToMenuMode(MODE_NO_MENU);
-        mLeash = null;
+        if (mLeash != null) {
+            mLeash.release();
+            mLeash = null;
+        }
     }
 
     @Override
