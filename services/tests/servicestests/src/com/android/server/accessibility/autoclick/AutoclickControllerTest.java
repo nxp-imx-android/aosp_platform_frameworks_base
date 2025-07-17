@@ -1733,6 +1733,58 @@ public class AutoclickControllerTest {
         verify(mockTypePanel, Mockito.never()).show();
     }
 
+    @Test
+    @EnableFlags(com.android.server.accessibility.Flags.FLAG_ENABLE_AUTOCLICK_INDICATOR)
+    public void onInputDeviceChanged_touchpad_hidesAndShowsTypePanel() {
+        // Setup: one touchpad connected initially.
+        mController.mInputManagerWrapper = mMockInputManagerWrapper;
+        when(mMockInputManagerWrapper.getInputDeviceIds()).thenReturn(new int[]{1});
+        AutoclickController.InputDeviceWrapper mockTouchpad =
+                mock(AutoclickController.InputDeviceWrapper.class);
+        when(mockTouchpad.supportsSource(InputDevice.SOURCE_TOUCHPAD)).thenReturn(true);
+        when(mockTouchpad.isEnabled()).thenReturn(true);
+        when(mockTouchpad.isVirtual()).thenReturn(false);
+        when(mMockInputManagerWrapper.getInputDevice(1)).thenReturn(mockTouchpad);
+
+        // Initialize controller and panels.
+        injectFakeMouseActionHoverMoveEvent();
+
+        // Capture the listener.
+        ArgumentCaptor<InputManager.InputDeviceListener> listenerCaptor =
+                ArgumentCaptor.forClass(InputManager.InputDeviceListener.class);
+        verify(mMockInputManagerWrapper)
+                .registerInputDeviceListener(listenerCaptor.capture(), any());
+        InputManager.InputDeviceListener listener = listenerCaptor.getValue();
+
+        // Manually trigger once to establish initial connected state.
+        listener.onInputDeviceChanged(1);
+        mTestableLooper.processAllMessages();
+
+        // Mock panels to verify interactions.
+        AutoclickTypePanel mockTypePanel = mock(AutoclickTypePanel.class);
+        AutoclickScrollPanel mockScrollPanel = mock(AutoclickScrollPanel.class);
+        mController.mAutoclickTypePanel = mockTypePanel;
+        mController.mAutoclickScrollPanel = mockScrollPanel;
+
+        // Action: disconnect touchpad.
+        when(mMockInputManagerWrapper.getInputDeviceIds()).thenReturn(new int[0]);
+        listener.onInputDeviceChanged(1);
+        mTestableLooper.processAllMessages();
+
+        // Verify panels are hidden.
+        verify(mockTypePanel).hide();
+        verify(mockScrollPanel).hide();
+
+        // Action: reconnect touchpad.
+        when(mMockInputManagerWrapper.getInputDeviceIds()).thenReturn(new int[]{1});
+        listener.onInputDeviceChanged(1);
+        mTestableLooper.processAllMessages();
+
+        // Verify type panel is shown, but scroll panel is not.
+        verify(mockTypePanel).show();
+        verify(mockScrollPanel, Mockito.never()).show(anyFloat(), anyFloat());
+    }
+
     /**
      * =========================================================================
      * Helper Functions
