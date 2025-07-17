@@ -1485,6 +1485,12 @@ public class Build {
          * Android 36.0.
          */
         public static final int BAKLAVA = VERSION_CODES.BAKLAVA * SDK_INT_MULTIPLIER;
+
+        /**
+         * Android 36.1.
+         */
+        @SuppressLint("UnflaggedApi")
+        public static final int BAKLAVA_1 = VERSION_CODES.BAKLAVA * SDK_INT_MULTIPLIER + 1;
     }
 
     /**
