@@ -84,16 +84,20 @@ public class HalVibratorManagerHelper {
 
     /** Create new {@link DefaultHalVibratorManager} for testing. */
     public DefaultHalVibratorManager newDefaultVibratorManager() {
+        HalNativeHandler nativeHandler = new FakeHalNativeHandler();
         return new DefaultHalVibratorManager(
                 new FakeVibratorManagerSupplier(new FakeVibratorManager()),
-                new FakeHalNativeHandler(),
-                id -> mVibratorHelpers.get(id).newVibratorController(id));
+                nativeHandler,
+                id -> mVibratorHelpers.get(id).newDefaultVibrator(id, nativeHandler));
     }
 
     /** Create new {@link LegacyHalVibratorManager} for testing. */
     public LegacyHalVibratorManager newLegacyVibratorManager() {
-        return new LegacyHalVibratorManager(mVibratorIds,
-                id -> mVibratorHelpers.get(id).newVibratorController(id));
+        int vibratorId = VintfHalVibratorManager.DEFAULT_VIBRATOR_ID;
+        setVibratorIds(new int[] { vibratorId });
+        HalNativeHandler nativeHandler = new FakeHalNativeHandler();
+        return new LegacyHalVibratorManager(mVibratorHelpers.get(vibratorId).newDefaultVibrator(
+                vibratorId, nativeHandler), nativeHandler);
     }
 
     /** Return the helper class for given vibrator, or null if ID not found. */
@@ -414,8 +418,8 @@ public class HalVibratorManagerHelper {
 
         private void scheduleCallback(int vibratorId, long vibrationId, long stepId,
                 int durationMs) {
-            mHandler.postDelayed(() -> mVibratorCallbacks.onVibrationStepComplete(
-                    vibratorId, vibrationId, stepId), durationMs);
+            mVibratorHelpers.get(vibratorId).scheduleVibrationCallback(mVibratorCallbacks,
+                    vibratorId, vibrationId, stepId, durationMs);
         }
     }
 

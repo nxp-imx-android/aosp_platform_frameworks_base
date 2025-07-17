@@ -27,15 +27,18 @@ import android.hardware.vibrator.CompositeEffect;
 import android.hardware.vibrator.CompositePwleV2;
 import android.hardware.vibrator.FrequencyAccelerationMapEntry;
 import android.hardware.vibrator.IVibrator;
+import android.hardware.vibrator.IVibratorManager;
 import android.hardware.vibrator.PrimitivePwle;
 import android.hardware.vibrator.PwleV2Primitive;
 import android.hardware.vibrator.VendorEffect;
 import android.os.BadParcelableException;
 import android.os.Binder;
 import android.os.Handler;
+import android.os.IBinder;
 import android.os.IVibratorStateListener;
 import android.os.RemoteCallbackList;
 import android.os.RemoteException;
+import android.os.ServiceManager;
 import android.os.Trace;
 import android.os.VibrationEffect;
 import android.os.VibratorInfo;
@@ -57,6 +60,61 @@ import java.util.function.Supplier;
 
 /** Implementations for {@link HalVibrator} backed by VINTF objects. */
 class VintfHalVibrator {
+    private static final String TAG = "VintfHalVibrator";
+
+    /** {@link VintfSupplier} for {@link IVibrator} service managed by {@link IVibratorManager}. */
+    static final class ManagedVibratorSupplier extends VintfSupplier<IVibrator> {
+        private final int mVibratorId;
+        private final VintfSupplier<IVibratorManager> mManagerSupplier;
+
+        ManagedVibratorSupplier(int vibratorId, VintfSupplier<IVibratorManager> managerSupplier) {
+            mVibratorId = vibratorId;
+            mManagerSupplier = managerSupplier;
+        }
+
+        @Nullable
+        @Override
+        IBinder connectToService() {
+            try {
+                IVibratorManager manager = mManagerSupplier.get();
+                if (manager == null) {
+                    Slog.e(TAG, "Error getting manager to load vibrator " + mVibratorId);
+                    return null;
+                }
+                IVibrator vibrator = manager.getVibrator(mVibratorId);
+                if (vibrator == null) {
+                    Slog.e(TAG, "Null vibrator returned by manager for id " + mVibratorId);
+                    return null;
+                }
+                return vibrator.asBinder();
+            } catch (RemoteException e) {
+                Slog.e(TAG, "Error getting vibrator " + mVibratorId + " from manager", e);
+            }
+            return null;
+        }
+
+        @NonNull
+        @Override
+        IVibrator castService(@NonNull IBinder binder) {
+            return IVibrator.Stub.asInterface(binder);
+        }
+    }
+
+    /** {@link VintfSupplier} for default {@link IVibrator} service. */
+    static final class DefaultVibratorSupplier extends VintfSupplier<IVibrator> {
+        @Nullable
+        @Override
+        IBinder connectToService() {
+            return Binder.allowBlocking(ServiceManager.waitForDeclaredService(
+                    IVibrator.DESCRIPTOR + "/default"));
+        }
+
+        @NonNull
+        @Override
+        IVibrator castService(@NonNull IBinder binder) {
+            return IVibrator.Stub.asInterface(binder);
+        }
+    }
 
     /** Default implementation for devices with {@link IVibrator} available. */
     static final class DefaultHalVibrator implements HalVibrator {

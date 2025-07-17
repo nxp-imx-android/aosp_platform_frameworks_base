@@ -318,7 +318,7 @@ public class VibratorManagerService extends IVibratorManagerService.Stub {
 
         HalListener halListener = new HalListener(this);
         mVibratorManager = Flags.removeHidlSupport()
-                ? injector.createHalVibratorManager()
+                ? injector.createHalVibratorManager(mHandler)
                 : injector.createNativeHalVibratorManager();
         mVibratorManager.init(halListener, halListener);
 
@@ -1786,8 +1786,8 @@ public class VibratorManagerService extends IVibratorManagerService.Stub {
             return new VibratorFrameworkStatsLogger(handler);
         }
 
-        HalVibratorManager createHalVibratorManager() {
-            return VintfHalVibratorManager.createHalVibratorManager(new NativeHandler());
+        HalVibratorManager createHalVibratorManager(Handler handler) {
+            return VintfHalVibratorManager.createHalVibratorManager(handler, new NativeHandler());
         }
 
         HalVibratorManager createNativeHalVibratorManager() {

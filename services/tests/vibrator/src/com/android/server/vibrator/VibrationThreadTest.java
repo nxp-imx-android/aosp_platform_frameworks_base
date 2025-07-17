@@ -488,7 +488,7 @@ public class VibrationThreadTest {
     public void vibrate_singleVibratorPatternWithCallbackDelay_oldCallbacksIgnored() {
         HalVibratorHelper vibratorHelper = mVibratorHelpers.get(VIBRATOR_ID);
         vibratorHelper.setCompletionCallbackLatency(100); // 100ms delay to notify service.
-        vibratorHelper.setCapabilities(IVibrator.CAP_AMPLITUDE_CONTROL);
+        vibratorHelper.setCapabilities(IVibrator.CAP_ON_CALLBACK, IVibrator.CAP_AMPLITUDE_CONTROL);
 
         VibrationEffect effect = VibrationEffect.createWaveform(
                 /* timings= */ new long[]{0, 200, 50, 400}, /* repeat= */ -1);
@@ -1794,7 +1794,8 @@ public class VibrationThreadTest {
         long callbackDelay = VibrationStepConductor.CALLBACKS_EXTRA_TIMEOUT / 2;
 
         mVibratorHelpers.get(VIBRATOR_ID).setCompletionCallbackLatency(callbackDelay);
-        mVibratorHelpers.get(VIBRATOR_ID).setCapabilities(IVibrator.CAP_AMPLITUDE_CONTROL);
+        mVibratorHelpers.get(VIBRATOR_ID).setCapabilities(IVibrator.CAP_ON_CALLBACK,
+                IVibrator.CAP_AMPLITUDE_CONTROL);
 
         HalVibration vibration = createVibration(
                 CombinedVibration.createParallel(
@@ -1816,10 +1817,11 @@ public class VibrationThreadTest {
     public void vibrate_withVibratorCallbackDelayLongerThanTimeout_vibrationFinishedAfterTimeout() {
         long expectedDuration = 10;
         long callbackTimeout = VibrationStepConductor.CALLBACKS_EXTRA_TIMEOUT;
-        long callbackDelay = callbackTimeout * 2;
+        long callbackDelay = callbackTimeout * 5;
 
         mVibratorHelpers.get(VIBRATOR_ID).setCompletionCallbackLatency(callbackDelay);
-        mVibratorHelpers.get(VIBRATOR_ID).setCapabilities(IVibrator.CAP_AMPLITUDE_CONTROL);
+        mVibratorHelpers.get(VIBRATOR_ID).setCapabilities(IVibrator.CAP_ON_CALLBACK,
+                IVibrator.CAP_AMPLITUDE_CONTROL);
 
         HalVibration vibration = createVibration(
                 CombinedVibration.createParallel(
@@ -1829,7 +1831,8 @@ public class VibrationThreadTest {
         long startTime = SystemClock.elapsedRealtime();
         startThreadAndDispatcher(vibration);
 
-        waitForCompletion(callbackDelay + TEST_TIMEOUT_MILLIS);
+        // Vibration will be completed after VibrationStepConductor timeout.
+        waitForCompletion(expectedDuration + callbackTimeout + TEST_TIMEOUT_MILLIS);
         long vibrationEndTime = SystemClock.elapsedRealtime();
 
         verify(mHalCallbacks, never())
@@ -1848,7 +1851,8 @@ public class VibrationThreadTest {
         // 25% of the first waveform step will be spent on the native on() call.
         // 25% of each waveform step will be spent on the native setAmplitude() call..
         mVibratorHelpers.get(VIBRATOR_ID).setOnLatency(stepDuration / 4);
-        mVibratorHelpers.get(VIBRATOR_ID).setCapabilities(IVibrator.CAP_AMPLITUDE_CONTROL);
+        mVibratorHelpers.get(VIBRATOR_ID).setCapabilities(IVibrator.CAP_ON_CALLBACK,
+                IVibrator.CAP_AMPLITUDE_CONTROL);
 
         int stepCount = totalDuration / stepDuration;
         long[] timings = new long[stepCount];
