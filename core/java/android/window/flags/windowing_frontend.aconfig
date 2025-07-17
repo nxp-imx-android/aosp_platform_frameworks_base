@@ -57,6 +57,17 @@ flag {
 }
 
 flag {
+  name: "copy_compat_fields_of_window_insets"
+  namespace: "windowing_frontend"
+  description: "Copy mCompatInsetTypes and mCompatIgnoreVisibility from WindowInsets"
+  bug: "409469172"
+  is_fixed_read_only: true
+  metadata {
+    purpose: PURPOSE_BUGFIX
+  }
+}
+
+flag {
   name: "close_to_square_config_includes_status_bar"
   namespace: "windowing_frontend"
   description: "On close to square display, when necessary, configuration includes status bar"

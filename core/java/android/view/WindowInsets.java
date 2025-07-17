@@ -1411,6 +1411,8 @@ public final class WindowInsets {
         private final Rect[][] mTypeBoundingRectsMap;
         @NonNull
         private final Rect[][] mTypeMaxBoundingRectsMap;
+        private @InsetsType int mCompatInsetTypes = systemBars();
+        private boolean mCompatIgnoreVisibility;
         private boolean mSystemInsetsConsumed = true;
         private boolean mStableInsetsConsumed = true;
 
@@ -1453,6 +1455,10 @@ public final class WindowInsets {
             mTypeInsetsMap = insets.mTypeInsetsMap.clone();
             mTypeMaxInsetsMap = insets.mTypeMaxInsetsMap.clone();
             mTypeVisibilityMap = insets.mTypeVisibilityMap.clone();
+            if (com.android.window.flags.Flags.copyCompatFieldsOfWindowInsets()) {
+                mCompatInsetTypes = insets.mCompatInsetsTypes;
+                mCompatIgnoreVisibility = insets.mCompatIgnoreVisibility;
+            }
             mSystemInsetsConsumed = insets.mSystemWindowInsetsConsumed;
             mStableInsetsConsumed = insets.mStableInsetsConsumed;
             mDisplayCutout = displayCutoutCopyConstructorArgument(insets);
@@ -1486,6 +1492,11 @@ public final class WindowInsets {
         public Builder setSystemWindowInsets(@NonNull Insets systemWindowInsets) {
             Objects.requireNonNull(systemWindowInsets);
             assignCompatInsets(mTypeInsetsMap, systemWindowInsets.toRect());
+            if (com.android.window.flags.Flags.copyCompatFieldsOfWindowInsets()) {
+                // This should match the types used in assignCompatInsets.
+                mCompatInsetTypes = STATUS_BARS | NAVIGATION_BARS;
+                mCompatIgnoreVisibility = false;
+            }
             mSystemInsetsConsumed = false;
             return this;
         }
@@ -1828,7 +1839,7 @@ public final class WindowInsets {
                     mStableInsetsConsumed ? null : mTypeMaxInsetsMap, mTypeVisibilityMap,
                     mIsRound, mForceConsumingTypes, mForceConsumingOpaqueCaptionBar,
                     mSuppressScrimTypes, mDisplayCutout, mRoundedCorners, mPrivacyIndicatorBounds,
-                    mDisplayShape, systemBars(), false /* compatIgnoreVisibility */,
+                    mDisplayShape, mCompatInsetTypes, mCompatIgnoreVisibility,
                     mSystemInsetsConsumed ? null : mTypeBoundingRectsMap,
                     mStableInsetsConsumed ? null : mTypeMaxBoundingRectsMap,
                     mFrameWidth, mFrameHeight);
