@@ -127,11 +127,22 @@ constructor(
             powerInteractor.isAsleep
                 .filterRelevantKeyguardStateAnd { isAsleep -> isAsleep }
                 .collect {
-                    communalSceneInteractor.changeScene(
-                        newScene = CommunalScenes.Blank,
-                        loggingReason = "hub to sleep",
-                        keyguardState = keyguardInteractor.asleepKeyguardState.value,
-                    )
+                    if (Flags.communalPowerTransitionFix()) {
+                        // Snap to blank immediately when asleep so that KTF can transition
+                        // correctly if the power button is pressed quickly in succession, ex.
+                        // pressing twice should end up on lock screen.
+                        communalSceneInteractor.snapToScene(
+                            newScene = CommunalScenes.Blank,
+                            loggingReason = "hub to sleep",
+                            keyguardState = keyguardInteractor.asleepKeyguardState.value,
+                        )
+                    } else {
+                        communalSceneInteractor.changeScene(
+                            newScene = CommunalScenes.Blank,
+                            loggingReason = "hub to sleep",
+                            keyguardState = keyguardInteractor.asleepKeyguardState.value,
+                        )
+                    }
                 }
         }
     }
