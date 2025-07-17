@@ -22,6 +22,8 @@ import static android.app.NotificationSystemUtil.toggleNotificationPolicyAccess;
 import static android.service.notification.Condition.STATE_FALSE;
 import static android.service.notification.Condition.STATE_TRUE;
 
+import static com.android.server.notification.Flags.FLAG_STRICT_ZEN_RULE_COMPONENT_VALIDATION;
+
 import static com.google.common.truth.Truth.assertThat;
 
 import static org.junit.Assert.assertThrows;
@@ -101,6 +103,8 @@ public class NotificationManagerZenTest {
 
         AutomaticZenRule savedAzr = mNotificationManager.getAutomaticZenRule(ruleId);
         assertThat(savedAzr).isNotNull();
+        assertThat(savedAzr.getOwner()).isEqualTo(CONDITION_PROVIDER_SERVICE);
+        assertThat(savedAzr.getConfigurationActivity()).isEqualTo(CONFIGURATION_ACTIVITY);
         assertThat(savedAzr.getPackageName()).isEqualTo(mContext.getPackageName());
     }
 
@@ -115,6 +119,7 @@ public class NotificationManagerZenTest {
 
         AutomaticZenRule savedAzr = mNotificationManager.getAutomaticZenRule(ruleId);
         assertThat(savedAzr).isNotNull();
+        assertThat(savedAzr.getOwner()).isEqualTo(CONDITION_PROVIDER_SERVICE);
         assertThat(savedAzr.getPackageName()).isEqualTo(mContext.getPackageName());
     }
 
@@ -129,6 +134,7 @@ public class NotificationManagerZenTest {
 
         AutomaticZenRule savedAzr = mNotificationManager.getAutomaticZenRule(ruleId);
         assertThat(savedAzr).isNotNull();
+        assertThat(savedAzr.getConfigurationActivity()).isEqualTo(CONFIGURATION_ACTIVITY);
         assertThat(savedAzr.getPackageName()).isEqualTo(mContext.getPackageName());
     }
 
@@ -144,7 +150,7 @@ public class NotificationManagerZenTest {
     }
 
     @Test
-    public void addAutomaticZenRule_invalidCps_rejected() {
+    public void addAutomaticZenRule_invalidCpsAndNoConfigActivity_rejected() {
         AutomaticZenRule azr = new AutomaticZenRule.Builder("Invalid CPS", CONDITION_ID)
                 .setOwner(new ComponentName(mContext, "android.app.NonExistentCps"))
                 .build();
@@ -154,7 +160,24 @@ public class NotificationManagerZenTest {
     }
 
     @Test
-    public void addAutomaticZenRule_invalidConfigActivity_rejected() {
+    @RequiresFlagsEnabled(FLAG_STRICT_ZEN_RULE_COMPONENT_VALIDATION)
+    public void addAutomaticZenRule_invalidCpsButValidConfigActivity_cpsRemoved() {
+        AutomaticZenRule azr = new AutomaticZenRule.Builder("Invalid CPS", CONDITION_ID)
+                .setOwner(new ComponentName(mContext, "android.app.NonExistentCps"))
+                .setConfigurationActivity(CONFIGURATION_ACTIVITY)
+                .build();
+
+        String ruleId = mNotificationManager.addAutomaticZenRule(azr);
+
+        AutomaticZenRule savedAzr = mNotificationManager.getAutomaticZenRule(ruleId);
+        assertThat(savedAzr).isNotNull();
+        assertThat(savedAzr.getOwner()).isNull();
+        assertThat(savedAzr.getConfigurationActivity()).isEqualTo(CONFIGURATION_ACTIVITY);
+        assertThat(savedAzr.getPackageName()).isEqualTo(mContext.getPackageName());
+    }
+
+    @Test
+    public void addAutomaticZenRule_invalidConfigActivityAndNoCps_rejected() {
         AutomaticZenRule azr = new AutomaticZenRule.Builder("Invalid CPS", CONDITION_ID)
                 .setConfigurationActivity(
                         new ComponentName(mContext, "android.app.NonExistentActivity"))
@@ -162,6 +185,24 @@ public class NotificationManagerZenTest {
 
         assertThrows(IllegalArgumentException.class,
                 () -> mNotificationManager.addAutomaticZenRule(azr));
+    }
+
+    @Test
+    @RequiresFlagsEnabled(FLAG_STRICT_ZEN_RULE_COMPONENT_VALIDATION)
+    public void addAutomaticZenRule_invalidConfigActivityButValidCps_configActivityRemoved() {
+        AutomaticZenRule azr = new AutomaticZenRule.Builder("Invalid CPS", CONDITION_ID)
+                .setOwner(CONDITION_PROVIDER_SERVICE)
+                .setConfigurationActivity(
+                        new ComponentName(mContext, "android.app.NonExistentActivity"))
+                .build();
+
+        String ruleId = mNotificationManager.addAutomaticZenRule(azr);
+
+        AutomaticZenRule savedAzr = mNotificationManager.getAutomaticZenRule(ruleId);
+        assertThat(savedAzr).isNotNull();
+        assertThat(savedAzr.getOwner()).isEqualTo(CONDITION_PROVIDER_SERVICE);
+        assertThat(savedAzr.getConfigurationActivity()).isNull();
+        assertThat(savedAzr.getPackageName()).isEqualTo(mContext.getPackageName());
     }
 
     @Test
@@ -186,12 +227,10 @@ public class NotificationManagerZenTest {
     }
 
     @Test
-    @RequiresFlagsEnabled(
-            com.android.server.notification.Flags.FLAG_STRICT_ZEN_RULE_COMPONENT_VALIDATION)
+    @RequiresFlagsEnabled(FLAG_STRICT_ZEN_RULE_COMPONENT_VALIDATION)
     public void updateAutomaticZenRule_switchToInvalidCps_rejected() {
         AutomaticZenRule original = new AutomaticZenRule.Builder("OK so far", CONDITION_ID)
                 .setOwner(CONDITION_PROVIDER_SERVICE)
-                .setConfigurationActivity(CONFIGURATION_ACTIVITY)
                 .build();
 
         String ruleId = mNotificationManager.addAutomaticZenRule(original);
@@ -205,11 +244,29 @@ public class NotificationManagerZenTest {
     }
 
     @Test
-    @RequiresFlagsEnabled(
-            com.android.server.notification.Flags.FLAG_STRICT_ZEN_RULE_COMPONENT_VALIDATION)
-    public void updateAutomaticZenRule_switchToInvalidConfigActivity_rejected() {
+    @RequiresFlagsEnabled(FLAG_STRICT_ZEN_RULE_COMPONENT_VALIDATION)
+    public void updateAutomaticZenRule_switchToInvalidCpsButWithValidConfigActivity_cpsGone() {
         AutomaticZenRule original = new AutomaticZenRule.Builder("OK so far", CONDITION_ID)
                 .setOwner(CONDITION_PROVIDER_SERVICE)
+                .setConfigurationActivity(CONFIGURATION_ACTIVITY)
+                .build();
+        String ruleId = mNotificationManager.addAutomaticZenRule(original);
+
+        AutomaticZenRule sneaky = new AutomaticZenRule.Builder(original)
+                .setOwner(ZenModeConfig.getScheduleConditionProvider())
+                .build();
+        mNotificationManager.updateAutomaticZenRule(ruleId, sneaky);
+
+        AutomaticZenRule savedAzr = mNotificationManager.getAutomaticZenRule(ruleId);
+        assertThat(savedAzr).isNotNull();
+        assertThat(savedAzr.getOwner()).isNull();
+        assertThat(savedAzr.getConfigurationActivity()).isEqualTo(CONFIGURATION_ACTIVITY);
+    }
+
+    @Test
+    @RequiresFlagsEnabled(FLAG_STRICT_ZEN_RULE_COMPONENT_VALIDATION)
+    public void updateAutomaticZenRule_switchToInvalidConfigActivity_rejected() {
+        AutomaticZenRule original = new AutomaticZenRule.Builder("OK so far", CONDITION_ID)
                 .setConfigurationActivity(CONFIGURATION_ACTIVITY)
                 .build();
 
@@ -222,6 +279,27 @@ public class NotificationManagerZenTest {
 
         assertThrows(IllegalArgumentException.class,
                 () -> mNotificationManager.updateAutomaticZenRule(ruleId, sneaky));
+    }
+
+    @Test
+    @RequiresFlagsEnabled(FLAG_STRICT_ZEN_RULE_COMPONENT_VALIDATION)
+    public void updateAutomaticZenRule_switchToInvalidConfigActivityButWithValidCps_activityGone() {
+        AutomaticZenRule original = new AutomaticZenRule.Builder("OK so far", CONDITION_ID)
+                .setOwner(CONDITION_PROVIDER_SERVICE)
+                .setConfigurationActivity(CONFIGURATION_ACTIVITY)
+                .build();
+        String ruleId = mNotificationManager.addAutomaticZenRule(original);
+
+        AutomaticZenRule sneaky = new AutomaticZenRule.Builder(original)
+                .setConfigurationActivity(
+                        new ComponentName("com.android.settings", "Settings$ModesSettingsActivity"))
+                .build();
+        mNotificationManager.updateAutomaticZenRule(ruleId, sneaky);
+
+        AutomaticZenRule savedAzr = mNotificationManager.getAutomaticZenRule(ruleId);
+        assertThat(savedAzr).isNotNull();
+        assertThat(savedAzr.getConfigurationActivity()).isNull();
+        assertThat(savedAzr.getOwner()).isEqualTo(CONDITION_PROVIDER_SERVICE);
     }
 
     @Test
