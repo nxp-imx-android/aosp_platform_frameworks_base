@@ -16,8 +16,6 @@
 
 package android.security.net.config;
 
-import static android.sdk.Flags.majorMinorVersioningScheme;
-
 import static com.android.org.conscrypt.net.flags.Flags.certificateTransparencyDefaultEnabled;
 
 import android.annotation.FlaggedApi;
@@ -201,7 +199,6 @@ public final class NetworkSecurityConfig {
                         defaultEnabled != null
                                 ? defaultEnabled
                                 : certificateTransparencyDefaultEnabled()
-                                        && majorMinorVersioningScheme()
                                         && CompatChanges.isChangeEnabled(
                                                 DEFAULT_ENABLE_CERTIFICATE_TRANSPARENCY));
     }
