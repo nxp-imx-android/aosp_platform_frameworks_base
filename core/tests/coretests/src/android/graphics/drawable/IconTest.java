@@ -400,6 +400,7 @@ public class IconTest {
     }
 
     @Test
+    @DisabledOnRavenwood(blockedBy = DesktopExperienceFlags.class)
     public void testParcel() throws Exception {
         final Bitmap originalbits = ((BitmapDrawable) getContext().getDrawable(R.drawable.landscape))
                 .getBitmap();
@@ -862,7 +863,7 @@ public class IconTest {
                         a.getWidth(), a.getHeight(), b.getWidth(), b.getHeight());
             return;
         }
-        
+
         final int w = a.getWidth();
         final int h = a.getHeight();
         int[] aPix = new int[w * h];
