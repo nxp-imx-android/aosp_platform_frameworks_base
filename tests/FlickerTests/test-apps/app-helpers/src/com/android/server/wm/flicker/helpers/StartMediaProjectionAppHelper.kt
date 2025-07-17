@@ -112,6 +112,13 @@ constructor(
     }
 
     private fun selectTargetApp(targetAppName: String) {
+        val targetApp = uiDevice.wait(Until.findObject(By.text(targetAppName)), TIMEOUT)
+        if (targetApp != null) {
+            targetApp.click()
+            return
+        }
+        Log.d(TAG, "Unable to find target app immediately so will attempt to scroll")
+
         // Scroll to to find target app to launch then click app icon it to start capture
         val scrollable = UiScrollable(UiSelector().scrollable(true))
         try {
@@ -121,7 +128,7 @@ constructor(
                 return
             }
         } catch (e: UiObjectNotFoundException) {
-            Log.d(TAG, "There was no scrolling (UI may not be scrollable")
+            Log.d(TAG, "There was no scrolling (UI may not be scrollable)", e)
         }
 
         findObject(By.text(targetAppName)).also { it.click() }
