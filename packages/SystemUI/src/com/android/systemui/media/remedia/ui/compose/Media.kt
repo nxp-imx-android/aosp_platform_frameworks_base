@@ -143,6 +143,7 @@ import com.android.systemui.common.ui.compose.Icon
 import com.android.systemui.common.ui.compose.PagerDots
 import com.android.systemui.common.ui.compose.load
 import com.android.systemui.communal.ui.compose.extensions.detectLongPressGesture
+import com.android.systemui.compose.modifiers.sysuiResTag
 import com.android.systemui.lifecycle.rememberViewModel
 import com.android.systemui.media.remedia.shared.model.MediaCardActionButtonLayout
 import com.android.systemui.media.remedia.shared.model.MediaColorScheme
@@ -252,6 +253,7 @@ private fun CardCarouselContent(
             Box {
                 HorizontalPager(
                     state = pagerState,
+                    modifier = Modifier.sysuiResTag(MediaRes.MEDIA_CAROUSEL),
                     userScrollEnabled = isSwipingEnabled,
                     pageSpacing = 8.dp,
                     beyondViewportPageCount = 1,
@@ -261,7 +263,8 @@ private fun CardCarouselContent(
                     Card(
                         viewModel = viewModel.cards[pageIndex],
                         presentationStyle = presentationStyle,
-                        modifier = Modifier.clip(roundedCornerShape),
+                        modifier =
+                            Modifier.clip(roundedCornerShape).sysuiResTag(MediaRes.MEDIA_CONTROLS),
                     )
                 }
 
@@ -332,7 +335,7 @@ private fun Card(
             CardBackground(
                 image = viewModel.background,
                 colorScheme = colorScheme,
-                modifier = Modifier.matchParentSize(),
+                modifier = Modifier.matchParentSize().sysuiResTag(MediaRes.BACKGROUND),
             )
         }
 
@@ -549,9 +552,10 @@ private fun ContentScope.CardForegroundContent(
                                 ),
                             modifier =
                                 Modifier.fractionalMaxWidth(
-                                    containerMaxWidth = cardMaxWidth,
-                                    fraction = 0.5f,
-                                ),
+                                        containerMaxWidth = cardMaxWidth,
+                                        fraction = 0.5f,
+                                    )
+                                    .sysuiResTag(MediaRes.SUGGESTED_DEVICE_CHIP),
                         )
                     }
                 }
@@ -571,7 +575,8 @@ private fun ContentScope.CardForegroundContent(
                             // chip with text and one more icon-only chip. Only the one with
                             // text can ever end up being too wide.
                             .fractionalMaxWidth(containerMaxWidth = cardMaxWidth, fraction = 0.4f)
-                            .padding(end = 16.dp),
+                            .padding(end = 16.dp)
+                            .sysuiResTag(MediaRes.OUTPUT_CHIP),
                 )
             }
         }
@@ -631,6 +636,7 @@ private fun ContentScope.CardForegroundContent(
                 viewModel.additionalActions.fastForEachIndexed { index, action ->
                     SecondaryAction(
                         viewModel = action,
+                        resId = "action$index",
                         element = Media.Elements.additionalActionButton(index),
                     )
                 }
@@ -664,6 +670,7 @@ private fun ContentScope.CardForegroundContent(
                     viewModel.additionalActions.fastForEachIndexed { index, action ->
                         SecondaryAction(
                             viewModel = action,
+                            resId = "action$index",
                             element = Media.Elements.additionalActionButton(index),
                             modifier = Modifier.padding(end = 8.dp),
                         )
@@ -726,6 +733,7 @@ private fun ContentScope.CompactCardForeground(
 
         SecondaryAction(
             viewModel = viewModel.outputSwitcherChipButton,
+            resId = MediaRes.OUTPUT_CHIP,
             element = Media.Elements.OutputSwitcherButton,
             iconColor = MaterialTheme.colorScheme.onSurface,
         )
@@ -734,6 +742,7 @@ private fun ContentScope.CompactCardForeground(
         if (rightAction != null) {
             SecondaryAction(
                 viewModel = rightAction,
+                resId = MediaRes.NEXT_BTN,
                 element = Media.Elements.NextButton,
                 iconColor = MaterialTheme.colorScheme.onSurface,
             )
@@ -818,7 +827,11 @@ private fun ContentScope.Navigation(
                 modifier = modifier,
             ) {
                 if (areActionsVisible) {
-                    SecondaryAction(viewModel = viewModel.left, element = Media.Elements.PrevButton)
+                    SecondaryAction(
+                        viewModel = viewModel.left,
+                        modifier = Modifier.sysuiResTag(MediaRes.PREV_BTN),
+                        element = Media.Elements.PrevButton,
+                    )
                 }
 
                 val interactionSource = remember { MutableInteractionSource() }
@@ -902,6 +915,7 @@ private fun ContentScope.Navigation(
                 if (areActionsVisible) {
                     SecondaryAction(
                         viewModel = viewModel.right,
+                        modifier = Modifier.sysuiResTag(MediaRes.NEXT_BTN),
                         element = Media.Elements.NextButton,
                     )
                 }
@@ -1085,6 +1099,7 @@ private fun CardGuts(
             ) {
                 PlatformButton(
                     onClick = viewModel.primaryAction.onClick,
+                    modifier = Modifier.sysuiResTag(MediaRes.HIDE_BTN),
                     colors = ButtonDefaults.buttonColors(containerColor = Color.White),
                 ) {
                     Text(
@@ -1122,6 +1137,7 @@ private fun ContentScope.Metadata(
             Column {
                 Text(
                     text = title,
+                    modifier = Modifier.sysuiResTag(MediaRes.TITLE),
                     style = MaterialTheme.typography.bodyLarge,
                     color = color,
                     maxLines = 1,
@@ -1130,6 +1146,7 @@ private fun ContentScope.Metadata(
 
                 Text(
                     text = subtitle,
+                    modifier = Modifier.sysuiResTag(MediaRes.ARTIST),
                     style = MaterialTheme.typography.bodyMedium,
                     color = color,
                     maxLines = 1,
@@ -1242,7 +1259,7 @@ private fun ContentScope.PlayPauseAction(
             enabled = viewModel.onClick != null,
             colors = ButtonDefaults.buttonColors(containerColor = buttonColor),
             shape = RoundedCornerShape(cornerRadius),
-            modifier = Modifier.size(buttonSize),
+            modifier = Modifier.size(buttonSize).sysuiResTag(MediaRes.PLAY_PAUSE_BTN),
         ) {
             when (viewModel.state) {
                 is MediaSessionState.Playing,
@@ -1289,15 +1306,21 @@ private fun ContentScope.PlayPauseAction(
 private fun ContentScope.SecondaryAction(
     viewModel: MediaSecondaryActionViewModel,
     modifier: Modifier = Modifier,
+    resId: String = MediaRes.EMPTY_STRING,
     element: ElementKey? = null,
     iconColor: Color = Color.White,
 ) {
     if (viewModel !is MediaSecondaryActionViewModel.None && element != null) {
         Element(key = element, modifier = modifier) {
-            SecondaryActionContent(viewModel = viewModel, iconColor = iconColor)
+            SecondaryActionContent(viewModel = viewModel, iconColor = iconColor, resId = resId)
         }
     } else {
-        SecondaryActionContent(viewModel = viewModel, iconColor = iconColor, modifier = modifier)
+        SecondaryActionContent(
+            viewModel = viewModel,
+            iconColor = iconColor,
+            resId = resId,
+            modifier = modifier,
+        )
     }
 }
 
@@ -1306,6 +1329,7 @@ private fun ContentScope.SecondaryAction(
 private fun SecondaryActionContent(
     viewModel: MediaSecondaryActionViewModel,
     iconColor: Color,
+    resId: String,
     modifier: Modifier = Modifier,
 ) {
     val sharedModifier = modifier.size(48.dp).padding(13.dp)
@@ -1315,7 +1339,7 @@ private fun SecondaryActionContent(
                 is Icon.Resource ->
                     PlatformIconButton(
                         onClick = viewModel.onClick ?: {},
-                        modifier = sharedModifier,
+                        modifier = sharedModifier.sysuiResTag(resId),
                         enabled = viewModel.onClick != null,
                         colors = IconButtonDefaults.iconButtonColors(contentColor = iconColor),
                         iconResource = viewModel.icon.res,
@@ -1325,7 +1349,7 @@ private fun SecondaryActionContent(
                 is Icon.Loaded ->
                     PlatformIconButton(
                         onClick = viewModel.onClick ?: {},
-                        modifier = sharedModifier,
+                        modifier = sharedModifier.sysuiResTag(resId),
                         enabled = viewModel.onClick != null,
                         colors = IconButtonDefaults.iconButtonColors(contentColor = iconColor),
                         iconDrawable = viewModel.icon.drawable,
@@ -1427,6 +1451,21 @@ private interface AnimatedColorScheme {
     val primary: Color
     val onPrimary: Color
     val background: Color
+}
+
+private object MediaRes {
+    const val EMPTY_STRING = ""
+    const val BACKGROUND = "album_art"
+    const val PLAY_PAUSE_BTN = "actionPlayPause"
+    const val NEXT_BTN = "actionNext"
+    const val PREV_BTN = "actionPrev"
+    const val MEDIA_CAROUSEL = "media_carousel"
+    const val MEDIA_CONTROLS = "qs_media_controls"
+    const val OUTPUT_CHIP = "media_seamless"
+    const val SUGGESTED_DEVICE_CHIP = "device_suggestion_button"
+    const val TITLE = "header_title"
+    const val ARTIST = "header_artist"
+    const val HIDE_BTN = "dismiss"
 }
 
 object Media {
