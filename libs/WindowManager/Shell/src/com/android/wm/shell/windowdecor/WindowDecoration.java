@@ -761,6 +761,11 @@ public abstract class WindowDecoration<T extends View & TaskFocusStateConsumer>
             released = true;
         }
 
+        if (mTaskSurface != null) {
+            t.unsetColor(mTaskSurface);
+            released = true;
+        }
+
         if (released) {
             t.apply();
         }

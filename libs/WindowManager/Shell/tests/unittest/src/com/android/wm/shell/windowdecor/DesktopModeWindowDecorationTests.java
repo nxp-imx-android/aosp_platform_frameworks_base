@@ -48,6 +48,7 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -1314,7 +1315,8 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
 
         spyWindowDecor.relayout(taskInfo, true /* hasGlobalFocus */, mExclusionRegion);
 
-        verify(mMockTransaction).apply();
+        // Apply is also invoked when the color of the Task Surface is reset.
+        verify(mMockTransaction, times(2)).apply();
         verify(mMockRootSurfaceControl, never()).applyTransactionOnDraw(any());
     }
 

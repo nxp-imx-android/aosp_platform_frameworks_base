@@ -398,7 +398,9 @@ public class WindowDecorationTests extends ShellTestCase {
         windowDecor.relayout(taskInfo, true /* hasGlobalFocus */);
 
         verify(mMockWindowDecorViewHost, never()).release(any());
-        verify(t, never()).apply();
+        // Apply is invoked because a task surfaces needs to be always reset with unsetColor.
+        verify(t).unsetColor(any());
+        verify(t).apply();
         verify(mMockWindowContainerTransaction, never())
                 .removeInsetsSource(eq(taskInfo.token), any(), anyInt(), anyInt());
 
