@@ -6988,7 +6988,7 @@ package android.app {
     method public android.app.Notification.MessagingStyle.Message setData(String, android.net.Uri);
   }
 
-  @FlaggedApi("android.app.api_metric_style") public static class Notification.Metric {
+  @FlaggedApi("android.app.api_metric_style") public static final class Notification.Metric {
     ctor public Notification.Metric(@NonNull android.app.Notification.Metric.MetricValue, @NonNull String, int);
     method @NonNull public String getLabel();
     method public int getMeaning();
@@ -7101,7 +7101,7 @@ package android.app {
     field public static final int FORMAT_CHRONOMETER = 3; // 0x3
   }
 
-  @FlaggedApi("android.app.api_metric_style") public static class Notification.MetricStyle extends android.app.Notification.Style {
+  @FlaggedApi("android.app.api_metric_style") public static final class Notification.MetricStyle extends android.app.Notification.Style {
     ctor public Notification.MetricStyle();
     method @NonNull public android.app.Notification.MetricStyle addMetric(@NonNull android.app.Notification.Metric);
     method @NonNull public java.util.List<android.app.Notification.Metric> getMetrics();

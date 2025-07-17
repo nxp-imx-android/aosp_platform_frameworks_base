@@ -11563,7 +11563,7 @@ public class Notification implements Parcelable
      * </pre>
      */
     @FlaggedApi(Flags.FLAG_API_METRIC_STYLE)
-    public static class MetricStyle extends Style {
+    public static final class MetricStyle extends Style {
 
         private static final int MAX_METRICS = 3;
 
@@ -11759,7 +11759,7 @@ public class Notification implements Parcelable
      * default meaning based on the provided {@link MetricValue}.
      */
     @FlaggedApi(Flags.FLAG_API_METRIC_STYLE)
-    public static class Metric {
+    public static final class Metric {
 
         /**
          * The default meaning. As this provides no semantic information to the system, it makes
@@ -11970,7 +11970,7 @@ public class Notification implements Parcelable
         /** Travel port, such as airport, train station, or harbor. */
         public static final int MEANING_TRAVEL_PORT = MEANING_TRAVEL + 1;
 
-        /** Terminal within the port, e.g. aiport terminal, wharf. */
+        /** Terminal within the port, e.g. airport terminal, wharf. */
         public static final int MEANING_TRAVEL_TERMINAL = MEANING_TRAVEL + 2;
 
         /** Boarding location within a port of terminal, e.g. gate, track, or dock. */
