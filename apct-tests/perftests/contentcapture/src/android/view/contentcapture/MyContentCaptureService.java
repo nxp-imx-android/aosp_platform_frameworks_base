@@ -25,9 +25,13 @@ import android.util.Pair;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.ReentrantLock;
 
 public class MyContentCaptureService extends ContentCaptureService {
 
@@ -37,7 +41,10 @@ public class MyContentCaptureService extends ContentCaptureService {
             + MyContentCaptureService.class.getName();
 
     private static ServiceWatcher sServiceWatcher;
-
+    private final ReentrantLock lock = new ReentrantLock();
+    private final Condition eventsChanged = lock.newCondition();
+    private final List<ContentCaptureEvent> mCapturedEvents = new ArrayList<>();
+    private int appearedCount = 0;
     @NonNull
     public static ServiceWatcher setServiceWatcher() {
         if (sServiceWatcher != null) {
@@ -114,9 +121,66 @@ public class MyContentCaptureService extends ContentCaptureService {
     public void onContentCaptureEvent(ContentCaptureSessionId sessionId,
             ContentCaptureEvent event) {
         Log.i(TAG, "onContentCaptureEventsRequest(session=" + sessionId + "): " + event);
+        lock.lock();
+        try {
+            mCapturedEvents.add(event);
+            if (event.getType() == ContentCaptureEvent.TYPE_VIEW_APPEARED) {
+                appearedCount++;
+            }
+            eventsChanged.signalAll();
+        } finally {
+            lock.unlock();
+        }
         if (sServiceWatcher != null
                 && event.getType() == ContentCaptureEvent.TYPE_SESSION_PAUSED) {
             sServiceWatcher.mSessionPaused.countDown();
+        }
+    }
+
+    public void clearEvents() {
+        lock.lock();
+        try {
+            mCapturedEvents.clear();
+            appearedCount = 0;
+        } finally {
+            lock.unlock();
+        }
+        Log.i(TAG, "Cleared captured events");
+    }
+
+    public List<ContentCaptureEvent> getCapturedEvents() {
+        lock.lock();
+        try {
+            return new ArrayList<>(mCapturedEvents);
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    public int getAppearedCount() {
+        lock.lock();
+        try {
+            return appearedCount;
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    public boolean waitForAppearedEvents(
+            int expectedCount, long timeoutMillis) throws InterruptedException {
+        long deadline = System.nanoTime() + TimeUnit.MILLISECONDS.toNanos(timeoutMillis);
+        lock.lock();
+        try {
+            while (appearedCount < expectedCount) {
+                long remainingNanos = deadline - System.nanoTime();
+                if (remainingNanos <= 0) {
+                    return false;
+                }
+                eventsChanged.await(remainingNanos, TimeUnit.NANOSECONDS);
+            }
+            return true;
+        } finally {
+            lock.unlock();
         }
     }
 
