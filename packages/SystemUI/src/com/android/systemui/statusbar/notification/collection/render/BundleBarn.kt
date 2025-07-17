@@ -187,7 +187,6 @@ private fun HeaderComposeViewContent(
         BundleHeader(
             viewModel,
             onHeaderClicked = { row.expandNotification() },
-            onHeaderLongClicked = { row.performLongClick() },
             // to be used only for dismissal coming from an accessibility action.
             onA11yDismissAction = { row.performDismiss(true) },
         )
