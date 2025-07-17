@@ -16,7 +16,6 @@
 
 package com.android.wm.shell.bubbles;
 
-import static com.android.wm.shell.bubbles.BadgedImageView.DEFAULT_PATH_SIZE;
 import static com.android.wm.shell.bubbles.BadgedImageView.WHITE_SCRIM_ALPHA;
 import static com.android.wm.shell.bubbles.BubbleDebugConfig.TAG_BUBBLES;
 import static com.android.wm.shell.bubbles.BubbleDebugConfig.TAG_WITH_CLASS_NAME;
@@ -28,11 +27,8 @@ import android.content.Context;
 import android.content.pm.ShortcutInfo;
 import android.graphics.Bitmap;
 import android.graphics.Color;
-import android.graphics.Matrix;
-import android.graphics.Path;
 import android.graphics.drawable.Drawable;
 import android.util.Log;
-import android.util.PathParser;
 import android.view.LayoutInflater;
 
 import com.android.internal.annotations.VisibleForTesting;
@@ -263,7 +259,6 @@ public class BubbleViewInfoTask {
         @Nullable BadgedImageView imageView;
         @Nullable BubbleExpandedView expandedView;
         int dotColor;
-        Path dotPath;
         Bubble.FlyoutMessage flyoutMessage;
         Bitmap bubbleBitmap;
         Bitmap badgeBitmap;
@@ -385,19 +380,8 @@ public class BubbleViewInfoTask {
                 ? iconFactory.getBadgeBitmap(badgedIcon, false).icon
                 : badgeBitmapInfo.icon;
 
-        float[] bubbleBitmapScale = new float[1];
-        info.bubbleBitmap = iconFactory.getBubbleBitmap(bubbleDrawable, bubbleBitmapScale);
+        info.bubbleBitmap = iconFactory.getBubbleBitmap(bubbleDrawable);
 
-        // Dot color & placement
-        Path iconPath = PathParser.createPathFromPathData(
-                c.getResources().getString(com.android.internal.R.string.config_icon_mask));
-        Matrix matrix = new Matrix();
-        float scale = bubbleBitmapScale[0];
-        float radius = DEFAULT_PATH_SIZE / 2f;
-        matrix.setScale(scale /* x scale */, scale /* y scale */, radius /* pivot x */,
-                radius /* pivot y */);
-        iconPath.transform(matrix);
-        info.dotPath = iconPath;
         info.dotColor = ColorUtils.blendARGB(badgeBitmapInfo.color,
                 Color.WHITE, WHITE_SCRIM_ALPHA);
         return true;

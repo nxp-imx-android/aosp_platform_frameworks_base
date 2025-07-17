@@ -17,7 +17,6 @@
 package com.android.wm.shell.bubbles;
 
 import android.graphics.Bitmap;
-import android.graphics.Path;
 import android.view.View;
 
 import androidx.annotation.Nullable;
@@ -67,9 +66,6 @@ public interface BubbleViewProvider {
 
     /** Base app badge drawable without any markings. */
     @Nullable Bitmap getRawAppBadge();
-
-    /** Path of normalized bubble icon to draw dot on. */
-    Path getDotPath();
 
     int getDotColor();
 
