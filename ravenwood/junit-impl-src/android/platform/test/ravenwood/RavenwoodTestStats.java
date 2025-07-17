@@ -139,7 +139,7 @@ public class RavenwoodTestStats {
 
     /** Ctor */
     public RavenwoodTestStats() {
-        String testModuleName = guessTestModuleName();
+        String testModuleName = RavenwoodDriver.getTestModuleName();
 
         var basename = "Ravenwood-stats_" + testModuleName + "_";
 
@@ -172,17 +172,6 @@ public class RavenwoodTestStats {
         // Print the header.
         mOutputWriter.println(HEADER);
         mOutputWriter.flush();
-    }
-
-    private String guessTestModuleName() {
-        // Assume the current directory name is the test module name.
-        File cwd;
-        try {
-            cwd = new File(".").getCanonicalFile();
-        } catch (IOException e) {
-            throw new RuntimeException("Failed to get the current directory", e);
-        }
-        return cwd.getName();
     }
 
     private void addResult(String className, String methodName, Outcome outcome) {

@@ -108,18 +108,23 @@ public class RavenwoodEnablementChecker {
     }
 
     private static class EnablementPolicy {
-        boolean mEnabled = true;
+        final Map<String, Boolean> mModules = new HashMap<>();
         final Map<String, ClassEnablementPolicy> mClasses = new HashMap<>();
 
-        boolean shouldEnableClass(String className) {
+        private boolean shouldEnableModule(String testModule) {
+            return mModules.getOrDefault(testModule, true);
+        }
+
+        boolean shouldEnableClass(String testModule, String className) {
+            final boolean moduleEnabled = shouldEnableModule(testModule);
             if (mClasses.isEmpty()) {
-                return mEnabled;
+                return moduleEnabled;
             }
             var clazz = mClasses.get(className);
             if (clazz == null) {
-                return mEnabled;
+                return moduleEnabled;
             }
-            return clazz.mEnabled != null ? clazz.mEnabled : mEnabled;
+            return clazz.mEnabled != null ? clazz.mEnabled : moduleEnabled;
         }
 
         Boolean shouldEnableMethod(String className, String methodName) {
@@ -141,9 +146,9 @@ public class RavenwoodEnablementChecker {
             if (columns.length != 2) return;
             var signature = columns[0];
             boolean enable = Boolean.parseBoolean(columns[1]);
-            if (signature.equals("*")) {
-                // Setting the global default policy
-                mEnabled = enable;
+            if (signature.contains("*")) {
+                // Setting the test module default policy
+                parseWildcard(signature, enable);
             } else {
                 var s = signature.split("\\#");
                 var clazz = s[0];
@@ -158,8 +163,20 @@ public class RavenwoodEnablementChecker {
             }
         }
 
+        private void parseWildcard(String signature, boolean enabled) {
+            // Only "[TEST-MODULE]:*" is supported, for now.
+            if (signature.endsWith(":*")) {
+                var module = signature.substring(0, signature.length() - 2);
+                mModules.put(module, enabled);
+                return;
+            }
+            throw new RuntimeException(
+                    "Invalid use of '*' in enablement policy '" + signature + "': "
+                    + " Only '[TEST-MODULE]:*' is supported");
+        }
+
         void clear() {
-            mEnabled = true;
+            mModules.clear();
             mClasses.clear();
         }
     }
@@ -242,7 +259,8 @@ public class RavenwoodEnablementChecker {
         } else if (testClass.getAnnotation(DisabledOnRavenwood.class) != null) {
             result = false;
         } else {
-            result = sEnablementPolicy.shouldEnableClass(testClass.getName());
+            result = sEnablementPolicy.shouldEnableClass(
+                    RavenwoodDriver.getTestModuleName(), testClass.getName());
         }
         if (checkRunDisabledTestsFlag && RUN_DISABLED_TESTS) {
             // Invert the result + check the really disable pattern

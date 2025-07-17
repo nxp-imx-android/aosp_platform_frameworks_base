@@ -60,6 +60,8 @@ import com.android.server.compat.PlatformCompat;
 import org.junit.internal.management.ManagementFactory;
 import org.junit.runner.Description;
 
+import java.io.File;
+import java.io.IOException;
 import java.io.PrintStream;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -89,6 +91,18 @@ public class RavenwoodDriver {
      */
     static final PrintStream sRawStdOut = System.out;
     static final PrintStream sRawStdErr = System.err;
+
+    /**
+     * The current directory when the test started.
+     */
+    private static final File sInitialDirectory;
+    static {
+        try {
+            sInitialDirectory = new File(".").getCanonicalFile();
+        } catch (IOException e) {
+            throw new RuntimeException("Unable to get the current directory", e);
+        }
+    }
 
     private static final String MAIN_THREAD_NAME = "Ravenwood:Main";
     private static final String TEST_THREAD_NAME = "Ravenwood:Test";
@@ -574,5 +588,16 @@ public class RavenwoodDriver {
 
         var itz = android.icu.util.TimeZone.getDefault();
         Log.i(TAG, "  android.icu.util.TimeZone="  + itz.getDisplayName() + " / " + itz);
+    }
+
+    /**
+     * @return the name of the current test module.
+     *
+     * The current version "guesses" the name from the current directory name.
+     *
+     * TODO: Write the real module name in ravenwood.go to ravenwood.properties and use that.
+     */
+    public static String getTestModuleName() {
+        return sInitialDirectory.getName();
     }
 }
