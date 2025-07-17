@@ -21,7 +21,6 @@ import android.annotation.DrawableRes;
 import android.annotation.Nullable;
 import android.content.Context;
 import android.content.res.TypedArray;
-import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Outline;
 import android.graphics.PointF;
@@ -35,6 +34,7 @@ import android.widget.ImageView;
 
 import androidx.constraintlayout.widget.ConstraintLayout;
 
+import com.android.launcher3.icons.BitmapInfo;
 import com.android.launcher3.icons.DotRenderer;
 import com.android.launcher3.icons.DotRenderer.IconShapeInfo;
 import com.android.wm.shell.R;
@@ -159,7 +159,8 @@ public class BadgedImageView extends ConstraintLayout {
     public void setRenderedBubble(BubbleViewProvider bubble) {
         mBubble = bubble;
         mBubbleIcon.setImageBitmap(bubble.getBubbleIcon());
-        mAppIcon.setImageBitmap(bubble.getAppBadge());
+        BitmapInfo appBadgeInfo = bubble.getAppBadge();
+        mAppIcon.setImageDrawable(appBadgeInfo == null ? null : appBadgeInfo.newIcon(getContext()));
         if (mDotSuppressionFlags.contains(SuppressionFlag.BEHIND_STACK)) {
             hideBadge();
         } else {
@@ -335,7 +336,7 @@ public class BadgedImageView extends ConstraintLayout {
     }
 
     void showBadge() {
-        Bitmap appBadgeBitmap = mBubble.getAppBadge();
+        BitmapInfo appBadgeBitmap = mBubble.getAppBadge();
         final boolean showAppBadge = (mBubble instanceof Bubble)
                 && ((Bubble) mBubble).showAppBadge();
         if (appBadgeBitmap == null || !showAppBadge) {
@@ -345,7 +346,7 @@ public class BadgedImageView extends ConstraintLayout {
 
         int translationX;
         if (mBadgeOnLeft) {
-            translationX = -(mBubble.getBubbleIcon().getWidth() - appBadgeBitmap.getWidth());
+            translationX = -(mBubble.getBubbleIcon().getWidth() - appBadgeBitmap.icon.getWidth());
         } else {
             translationX = 0;
         }
