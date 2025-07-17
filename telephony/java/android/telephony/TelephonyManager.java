@@ -19532,7 +19532,6 @@ public class TelephonyManager {
      * The emergency callback mode is due to emergency call.
      * @hide
      */
-    @FlaggedApi(Flags.FLAG_EMERGENCY_CALLBACK_MODE_NOTIFICATION)
     @SystemApi
     public static final int EMERGENCY_CALLBACK_MODE_CALL = 1;
 
@@ -19540,7 +19539,6 @@ public class TelephonyManager {
      * The emergency callback mode is due to emergency SMS.
      * @hide
      */
-    @FlaggedApi(Flags.FLAG_EMERGENCY_CALLBACK_MODE_NOTIFICATION)
     @SystemApi
     public static final int EMERGENCY_CALLBACK_MODE_SMS = 2;
 
@@ -19565,7 +19563,6 @@ public class TelephonyManager {
      * Indicates that emergency callback mode has been stopped for an unknown reason.
      * @hide
      */
-    @FlaggedApi(Flags.FLAG_EMERGENCY_CALLBACK_MODE_NOTIFICATION)
     @SystemApi
     public static final int STOP_REASON_UNKNOWN = 0;
 
@@ -19574,7 +19571,6 @@ public class TelephonyManager {
      * initiated.
      * @hide
      */
-    @FlaggedApi(Flags.FLAG_EMERGENCY_CALLBACK_MODE_NOTIFICATION)
     @SystemApi
     public static final int STOP_REASON_OUTGOING_NORMAL_CALL_INITIATED = 1;
 
@@ -19583,7 +19579,6 @@ public class TelephonyManager {
      * sent.
      * @hide
      */
-    @FlaggedApi(Flags.FLAG_EMERGENCY_CALLBACK_MODE_NOTIFICATION)
     @SystemApi
     public static final int STOP_REASON_NORMAL_SMS_SENT = 2;
 
@@ -19592,7 +19587,6 @@ public class TelephonyManager {
      * call was initiated.
      * @hide
      */
-    @FlaggedApi(Flags.FLAG_EMERGENCY_CALLBACK_MODE_NOTIFICATION)
     @SystemApi
     public static final int STOP_REASON_OUTGOING_EMERGENCY_CALL_INITIATED = 3;
 
@@ -19600,7 +19594,6 @@ public class TelephonyManager {
      * Indicates that emergency callback mode has been stopped because a new emergency SMS was sent.
      * @hide
      */
-    @FlaggedApi(Flags.FLAG_EMERGENCY_CALLBACK_MODE_NOTIFICATION)
     @SystemApi
     public static final int STOP_REASON_EMERGENCY_SMS_SENT = 4;
 
@@ -19609,7 +19602,6 @@ public class TelephonyManager {
      * timer expiry.
      * @hide
      */
-    @FlaggedApi(Flags.FLAG_EMERGENCY_CALLBACK_MODE_NOTIFICATION)
     @SystemApi
     public static final int STOP_REASON_TIMER_EXPIRED = 5;
 
@@ -19618,7 +19610,6 @@ public class TelephonyManager {
      * mode by clicking the notification.
      * @hide
      */
-    @FlaggedApi(Flags.FLAG_EMERGENCY_CALLBACK_MODE_NOTIFICATION)
     @SystemApi
     public static final int STOP_REASON_USER_ACTION = 6;
 
