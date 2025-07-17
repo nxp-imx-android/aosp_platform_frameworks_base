@@ -80,6 +80,7 @@ import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.ArgumentMatchers.longThat;
 import static org.mockito.Mockito.clearInvocations;
 import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.nullable;
@@ -103,9 +104,11 @@ import android.app.AppOpsManager;
 import android.app.Notification;
 import android.app.PendingIntent;
 import android.app.admin.DeviceAdminReceiver;
+import android.app.admin.DevicePolicyIdentifiers;
 import android.app.admin.DevicePolicyManager;
 import android.app.admin.DevicePolicyManagerInternal;
 import android.app.admin.DevicePolicyManagerLiteInternal;
+import android.app.admin.EnforcingAdmin;
 import android.app.admin.FactoryResetProtectionPolicy;
 import android.app.admin.PasswordMetrics;
 import android.app.admin.PreferentialNetworkServiceConfig;
@@ -8846,6 +8849,91 @@ public class DevicePolicyManagerTest extends DpmTestBase {
         assertFalse(dpm.isSubscriptionEnterpriseManaged(subscription, "does-not-matter"));
     }
 
+    @Test
+    public void getEnforcingAdminsForPolicy_singleEnforcingAdmin() throws Exception {
+        // Setup device owner and set policy.
+        mContext.binder.callingUid = DpmMockContext.CALLER_SYSTEM_USER_UID;
+        setupDeviceOwner();
+        when(getServices().usbManager.enableUsbDataSignal(true)).thenReturn(true);
+        when(getServices().usbManager.getUsbHalVersion()).thenReturn(UsbManager.USB_HAL_V1_3);
+        dpm.setUsbDataSignalingEnabled(true);
+        // Give necessary permission.
+        mContext.callerPermissions.add(permission.QUERY_ADMIN_POLICY);
+
+        List<EnforcingAdmin> enforcingAdmins = dpm.getEnforcingAdminsForPolicy(
+                DevicePolicyIdentifiers.USB_DATA_SIGNALING_POLICY,
+                DpmMockContext.CALLER_SYSTEM_USER_UID).getAllAdmins();
+
+        assertThat(enforcingAdmins.size()).isEqualTo(1);
+        assertThat(enforcingAdmins.getFirst().getComponentName()).isEqualTo(admin1);
+    }
+
+    @Test
+    public void getEnforcingAdminsForPolicy_multipleEnforcingAdmins()
+            throws Exception {
+        // Set-up mock calls for the policy enforcement.
+        doNothing().when(getServices().packageManagerInternal).setOwnerProtectedPackages(anyInt(),
+                any());
+        doNothing().when(getServices().usageStatsManagerInternal).setAdminProtectedPackages(any(),
+                anyInt());
+        final String packageOne = "random.package1";
+        final String packageTwo = "random.package2";
+        when(getServices().packageManagerInternal.getApplicationInfo(eq(packageOne), anyLong(),
+                anyInt(), anyInt())).thenReturn(null);
+        when(getServices().packageManagerInternal.getApplicationInfo(eq(packageTwo), anyLong(),
+                anyInt(), anyInt())).thenReturn(null);
+        // Necessary to set the policy.
+        mContext.callerPermissions.add(permission.MANAGE_DEVICE_POLICY_APPS_CONTROL);
+        // Set-up two admins for the same user.
+        final int userId = 80;
+        final int dpcAdminAppId = 20320;
+        final int dpcAdminUid = UserHandle.getUid(userId, dpcAdminAppId);
+        final int supervisorAppId = 20350;
+        final int supervisorAdminUid = UserHandle.getUid(userId, supervisorAppId);
+        setUpProfileOwnerAdmin(admin1, dpcAdminUid);
+        dpm.setUserControlDisabledPackages(admin1, List.of(packageOne));
+        setUpSupervisionAuthorityAdmin(admin2, userId, supervisorAdminUid);
+        dpm.setUserControlDisabledPackages(admin2, List.of(packageTwo));
+        // The permission is necessary to query admins.
+        mContext.callerPermissions.add(permission.QUERY_ADMIN_POLICY);
+
+
+        List<EnforcingAdmin> enforcingAdmins = dpm.getEnforcingAdminsForPolicy(
+                DevicePolicyIdentifiers.USER_CONTROL_DISABLED_PACKAGES_POLICY,
+                userId).getAllAdmins();
+
+        assertThat(enforcingAdmins.size()).isEqualTo(2);
+    }
+
+    @Test
+    public void getEnforcingAdminsForPolicy_multipleAdminsSetConflictingValues_oneEnforcingAdmin()
+            throws Exception {
+        // Set-up two admins for the same user.
+        final int userId = 80;
+        final int dpcAdminAppId = 20320;
+        final int dpcAdminUid = UserHandle.getUid(userId, dpcAdminAppId);
+        final int supervisorAppId = 20350;
+        final int supervisorAdminUid = UserHandle.getUid(userId, supervisorAppId);
+        setUpProfileOwnerAdmin(admin1, dpcAdminUid);
+        // Necessary permission to set the time policy.
+        mContext.callerPermissions.add(permission.SET_TIME);
+        dpm.setAutoTimePolicy(DevicePolicyManager.AUTO_TIME_DISABLED);
+        setUpSupervisionAuthorityAdmin(admin2, userId, supervisorAdminUid);
+        dpm.setAutoTimePolicy(DevicePolicyManager.AUTO_TIME_ENABLED);
+        // The permission is necessary to query admins.
+        mContext.callerPermissions.add(permission.QUERY_ADMIN_POLICY);
+
+
+        List<EnforcingAdmin> enforcingAdmins = dpm.getEnforcingAdminsForPolicy(
+                DevicePolicyIdentifiers.AUTO_TIME_POLICY,
+                userId).getAllAdmins();
+
+        // Only the value set by the supervision admin will be applied due to resolution mechanism.
+        assertThat(enforcingAdmins.size()).isEqualTo(1);
+        // The first admin on the list should be supervision admin.
+        assertThat(enforcingAdmins.getFirst().getPackageName()).isEqualTo(admin2.getPackageName());
+    }
+
     private void setupVpnAuthorization(String userVpnPackage, int userVpnUid) {
         final AppOpsManager.PackageOps vpnOp = new AppOpsManager.PackageOps(userVpnPackage,
                 userVpnUid, List.of(new AppOpsManager.OpEntry(
@@ -9064,6 +9152,42 @@ public class DevicePolicyManagerTest extends DpmTestBase {
     private void addManagedProfile(
             ComponentName admin, int adminUid, ComponentName copyFromAdmin) throws Exception {
         addManagedProfile(admin, adminUid, copyFromAdmin, VERSION_CODES.CUR_DEVELOPMENT);
+    }
+
+    /*
+     * Sets {@code admin} as profile owner DPC admin on {@code adminUid}. Updates the {@code
+     *  mContext} to contain the UID and the package name of {@code admin} as the current caller.
+     */
+    private void setUpProfileOwnerAdmin(ComponentName admin, int adminUid) throws Exception {
+
+        mContext.callerPermissions.add(permission.BIND_DEVICE_ADMIN);
+
+        mContext.binder.callingUid = adminUid;
+        mContext.packageName = admin.getPackageName();
+
+        // Add a managed profile belonging to the system user.
+        addManagedProfile(admin, adminUid, admin);
+
+        // Restore the permissions to its initial state.
+        mContext.callerPermissions.remove(permission.BIND_DEVICE_ADMIN);
+    }
+
+    /**
+     * Sets {@code admin} as supervision authority admin on {@code adminUid} for {@code userId}.
+     */
+    private void setUpSupervisionAuthorityAdmin(ComponentName admin, int userId, int adminUid)
+            throws Exception {
+        mContext.callerPermissions.addAll(OWNER_SETUP_PERMISSIONS);
+        mContext.binder.callingUid = adminUid;
+        mContext.packageName = admin.getPackageName();
+
+        setUpPackageManagerForAdmin(admin, adminUid);
+        dpm.setActiveAdmin(admin, false, userId);
+        when(getServices().roleManagerLocal.getRolesAndHolders(
+                userId))
+                .thenReturn(Map.of(RoleManager.ROLE_SYSTEM_SUPERVISION,
+                        Set.of(admin.getPackageName())));
+        mContext.callerPermissions.removeAll(OWNER_SETUP_PERMISSIONS);
     }
 
     /**

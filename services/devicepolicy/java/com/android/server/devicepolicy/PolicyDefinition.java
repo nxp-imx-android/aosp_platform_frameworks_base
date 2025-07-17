@@ -16,8 +16,8 @@
 
 package com.android.server.devicepolicy;
 
-import static com.android.server.devicepolicy.DevicePolicyEngine.DEVICE_LOCK_CONTROLLER_ROLE;
-import static com.android.server.devicepolicy.DevicePolicyEngine.SYSTEM_SUPERVISION_ROLE;
+import static android.app.role.RoleManager.ROLE_SYSTEM_FINANCED_DEVICE_CONTROLLER;
+import static android.app.role.RoleManager.ROLE_SYSTEM_SUPERVISION;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
@@ -50,6 +50,7 @@ import org.xmlpull.v1.XmlPullParserException;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -102,8 +103,8 @@ final class PolicyDefinition<V> {
             // means the time will be more precise and other applications can rely on that for
             // their purposes.
             new TopPriority<>(List.of(
-                    EnforcingAdmin.getRoleAuthorityOf(SYSTEM_SUPERVISION_ROLE),
-                    EnforcingAdmin.getRoleAuthorityOf(DEVICE_LOCK_CONTROLLER_ROLE),
+                    EnforcingAdmin.getRoleAuthorityOf(ROLE_SYSTEM_SUPERVISION),
+                    EnforcingAdmin.getRoleAuthorityOf(ROLE_SYSTEM_FINANCED_DEVICE_CONTROLLER),
                     EnforcingAdmin.DPC_AUTHORITY)),
             POLICY_FLAG_GLOBAL_ONLY_POLICY,
             PolicyEnforcerCallbacks::setAutoTimeZonePolicy,
@@ -155,7 +156,7 @@ final class PolicyDefinition<V> {
     static PolicyDefinition<LockTaskPolicy> LOCK_TASK = new PolicyDefinition<>(
             new NoArgsPolicyKey(DevicePolicyIdentifiers.LOCK_TASK_POLICY),
             new TopPriority<>(List.of(
-                    EnforcingAdmin.getRoleAuthorityOf(DEVICE_LOCK_CONTROLLER_ROLE),
+                    EnforcingAdmin.getRoleAuthorityOf(ROLE_SYSTEM_FINANCED_DEVICE_CONTROLLER),
                     EnforcingAdmin.DPC_AUTHORITY)),
             POLICY_FLAG_LOCAL_ONLY_POLICY,
             (LockTaskPolicy value, Context context, Integer userId, PolicyKey policyKey) ->
@@ -174,12 +175,13 @@ final class PolicyDefinition<V> {
             new PolicyDefinition<>(
                     new IntentFilterPolicyKey(
                             DevicePolicyIdentifiers.PERSISTENT_PREFERRED_ACTIVITY_POLICY),
-            new TopPriority<>(List.of(
-                    EnforcingAdmin.getRoleAuthorityOf(DEVICE_LOCK_CONTROLLER_ROLE),
-                    EnforcingAdmin.DPC_AUTHORITY)),
-            POLICY_FLAG_LOCAL_ONLY_POLICY,
-            PolicyEnforcerCallbacks::addPersistentPreferredActivity,
-            new ComponentNamePolicySerializer());
+                    new TopPriority<>(List.of(
+                            EnforcingAdmin.getRoleAuthorityOf(
+                                    ROLE_SYSTEM_FINANCED_DEVICE_CONTROLLER),
+                            EnforcingAdmin.DPC_AUTHORITY)),
+                    POLICY_FLAG_LOCAL_ONLY_POLICY,
+                    PolicyEnforcerCallbacks::addPersistentPreferredActivity,
+                    new ComponentNamePolicySerializer());
 
     static PolicyDefinition<ComponentName> PERSISTENT_PREFERRED_ACTIVITY(
             @NonNull IntentFilter intentFilter) {
@@ -284,8 +286,8 @@ final class PolicyDefinition<V> {
     static PolicyDefinition<Set<String>> PERMITTED_INPUT_METHODS = new PolicyDefinition<>(
             new NoArgsPolicyKey(DevicePolicyIdentifiers.PERMITTED_INPUT_METHODS_POLICY),
             (Flags.usePolicyIntersectionForPermittedInputMethods()
-                ? new StringSetIntersection()
-                : new MostRecent<>()),
+                    ? new StringSetIntersection()
+                    : new MostRecent<>()),
             POLICY_FLAG_LOCAL_ONLY_POLICY | POLICY_FLAG_INHERITABLE,
             PolicyEnforcerCallbacks::noOp,
             new PackageSetPolicySerializer());
@@ -311,7 +313,7 @@ final class PolicyDefinition<V> {
             FALSE_MORE_RESTRICTIVE,
             POLICY_FLAG_GLOBAL_ONLY_POLICY,
             (Boolean value, Context context, Integer userId, PolicyKey policyKey) ->
-                PolicyEnforcerCallbacks.setUsbDataSignalingEnabled(value, context),
+                    PolicyEnforcerCallbacks.setUsbDataSignalingEnabled(value, context),
             new BooleanPolicySerializer());
 
     static PolicyDefinition<Integer> CONTENT_PROTECTION = new PolicyDefinition<>(
@@ -360,17 +362,17 @@ final class PolicyDefinition<V> {
                     new PackageSetPolicySerializer());
 
     static PolicyDefinition<Integer> MEMORY_TAGGING = new PolicyDefinition<>(
-                    new NoArgsPolicyKey(
-                            DevicePolicyIdentifiers.MEMORY_TAGGING_POLICY),
-                    new TopPriority<>(List.of(EnforcingAdmin.DPC_AUTHORITY)),
-                    PolicyEnforcerCallbacks::setMtePolicy,
-                    new IntegerPolicySerializer());
+            new NoArgsPolicyKey(
+                    DevicePolicyIdentifiers.MEMORY_TAGGING_POLICY),
+            new TopPriority<>(List.of(EnforcingAdmin.DPC_AUTHORITY)),
+            PolicyEnforcerCallbacks::setMtePolicy,
+            new IntegerPolicySerializer());
 
     static PolicyDefinition<Integer> AUTO_TIME = new PolicyDefinition<>(
             new NoArgsPolicyKey(DevicePolicyIdentifiers.AUTO_TIME_POLICY),
             new TopPriority<>(List.of(
-                    EnforcingAdmin.getRoleAuthorityOf(SYSTEM_SUPERVISION_ROLE),
-                    EnforcingAdmin.getRoleAuthorityOf(DEVICE_LOCK_CONTROLLER_ROLE),
+                    EnforcingAdmin.getRoleAuthorityOf(ROLE_SYSTEM_SUPERVISION),
+                    EnforcingAdmin.getRoleAuthorityOf(ROLE_SYSTEM_FINANCED_DEVICE_CONTROLLER),
                     EnforcingAdmin.DPC_AUTHORITY)),
             POLICY_FLAG_GLOBAL_ONLY_POLICY,
             PolicyEnforcerCallbacks::setAutoTimePolicy,
@@ -378,6 +380,8 @@ final class PolicyDefinition<V> {
 
     private static final Map<String, PolicyDefinition<?>> POLICY_DEFINITIONS = new HashMap<>();
     private static Map<String, Integer> USER_RESTRICTION_FLAGS = new HashMap<>();
+
+    private static final Set<PolicyDefinition<?>> GENERIC_POLICY_DEFINITIONS = new HashSet<>();
 
     // TODO(b/277218360): Revisit policies that should be marked as global-only.
     static {
@@ -542,6 +546,12 @@ final class PolicyDefinition<V> {
         for (String key : USER_RESTRICTION_FLAGS.keySet()) {
             createAndAddUserRestrictionPolicyDefinition(key, USER_RESTRICTION_FLAGS.get(key));
         }
+        GENERIC_POLICY_DEFINITIONS.add(GENERIC_PERMISSION_GRANT);
+        GENERIC_POLICY_DEFINITIONS.add(GENERIC_PERSISTENT_PREFERRED_ACTIVITY);
+        GENERIC_POLICY_DEFINITIONS.add(GENERIC_PACKAGE_UNINSTALL_BLOCKED);
+        GENERIC_POLICY_DEFINITIONS.add(GENERIC_APPLICATION_RESTRICTIONS);
+        GENERIC_POLICY_DEFINITIONS.add(GENERIC_APPLICATION_HIDDEN);
+        GENERIC_POLICY_DEFINITIONS.add(GENERIC_ACCOUNT_MANAGEMENT_DISABLED);
     }
 
     private final PolicyKey mPolicyKey;
@@ -578,6 +588,7 @@ final class PolicyDefinition<V> {
     ResolutionMechanism<V> getResolutionMechanism() {
         return mResolutionMechanism;
     }
+
     /**
      * Returns {@code true} if the policy is a global policy by nature and can't be applied locally.
      */
@@ -615,6 +626,10 @@ final class PolicyDefinition<V> {
         return (mPolicyFlags & POLICY_FLAG_SKIP_ENFORCEMENT_IF_UNCHANGED) != 0;
     }
 
+    boolean isGenericDefinition() {
+        return GENERIC_POLICY_DEFINITIONS.contains(this);
+    }
+
     @Nullable
     ResolvedPolicy<V> resolvePolicy(
             LinkedHashMap<EnforcingAdmin, PolicyValue<V>> adminsPolicy) {
@@ -623,6 +638,11 @@ final class PolicyDefinition<V> {
 
     CompletableFuture<Boolean> enforcePolicy(@Nullable V value, Context context, int userId) {
         return mPolicyEnforcerCallback.apply(value, context, userId, mPolicyKey);
+    }
+
+    @Nullable
+    static PolicyDefinition<?> getPolicyDefinitionForIdentifier(@NonNull String identifier) {
+        return POLICY_DEFINITIONS.get(identifier);
     }
 
     private static void createAndAddUserRestrictionPolicyDefinition(
@@ -644,7 +664,7 @@ final class PolicyDefinition<V> {
      * {@link Object#equals} implementation.
      */
     private PolicyDefinition(
-            @NonNull  PolicyKey key,
+            @NonNull PolicyKey key,
             ResolutionMechanism<V> resolutionMechanism,
             QuadFunction<V, Context, Integer, PolicyKey, CompletableFuture<Boolean>>
                     policyEnforcerCallback,

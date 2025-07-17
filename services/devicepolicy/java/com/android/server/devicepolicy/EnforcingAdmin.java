@@ -23,6 +23,7 @@ import android.app.admin.DeviceAdminAuthority;
 import android.app.admin.DpcAuthority;
 import android.app.admin.RoleAuthority;
 import android.app.admin.UnknownAuthority;
+import android.app.role.RoleManager;
 import android.content.ComponentName;
 import android.os.UserHandle;
 
@@ -262,6 +263,10 @@ final class EnforcingAdmin {
 
     boolean isSystemAuthority() {
         return mIsSystemAuthority;
+    }
+
+    boolean isSupervisionAdmin() {
+        return hasAuthority(getRoleAuthorityOf(RoleManager.ROLE_SYSTEM_SUPERVISION));
     }
 
     @NonNull
