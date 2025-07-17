@@ -107,9 +107,7 @@ class MediaOutputAdapter(controller: MediaSwitchingController) :
     }
 
     private fun isSelectedDevice(mediaItem: MediaItem): Boolean {
-        return mediaItem.mediaDevice.getOrNull()?.let { device ->
-            isDeviceIncluded(mController.selectedMediaDevice, device)
-        } ?: false
+        return mediaItem.mediaDevice.getOrNull()?.isSelected ?: false
     }
 
     override fun getItemId(position: Int): Long {

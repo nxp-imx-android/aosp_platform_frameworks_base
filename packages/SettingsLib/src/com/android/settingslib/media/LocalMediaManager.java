@@ -416,35 +416,6 @@ public class LocalMediaManager implements BluetoothCallback {
     }
 
     /**
-     * Get the MediaDevice list that can be added to current media.
-     *
-     * @return list of MediaDevice
-     */
-    public List<MediaDevice> getSelectableMediaDevice() {
-        return mInfoMediaManager.getSelectableMediaDevices();
-    }
-
-    /**
-     * Gets the MediaDevice list that can be transferred to with the current media session by the
-     * media route provider.
-     *
-     * @return list of MediaDevice
-     */
-    @NonNull
-    public List<MediaDevice> getTransferableMediaDevices() {
-        return mInfoMediaManager.getTransferableMediaDevices();
-    }
-
-    /**
-     * Get the MediaDevice list that can be removed from current media session.
-     *
-     * @return list of MediaDevice
-     */
-    public List<MediaDevice> getDeselectableMediaDevice() {
-        return mInfoMediaManager.getDeselectableMediaDevices();
-    }
-
-    /**
      * Get the current session's release type.
      *
      * @return release type of the current session
@@ -458,15 +429,6 @@ public class LocalMediaManager implements BluetoothCallback {
      */
     public boolean releaseSession() {
         return mInfoMediaManager.releaseSession();
-    }
-
-    /**
-     * Get the MediaDevice list that has been selected to current media.
-     *
-     * @return list of MediaDevice
-     */
-    public List<MediaDevice> getSelectedMediaDevice() {
-        return mInfoMediaManager.getSelectedMediaDevices();
     }
 
     /**

@@ -560,18 +560,6 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
     @DisableFlags(Flags.FLAG_ENABLE_AUDIO_INPUT_DEVICE_ROUTING_AND_VOLUME_CONTROL)
     @Test
     public void onDeviceListUpdate_verifyDeviceListCallback() {
-        // This test relies on mMediaSwitchingController.start being called while the selected
-        // device list has exactly one item, and that item's id is:
-        // - Different from both ids in mMediaDevices.
-        // - Different from the id of the route published by the device under test (usually the
-        //   built-in speakers).
-        // So mock the selected device to respect these two preconditions.
-        MediaDevice mockSelectedMediaDevice = Mockito.mock(MediaDevice.class);
-        when(mockSelectedMediaDevice.getId()).thenReturn(TEST_DEVICE_3_ID);
-        doReturn(List.of(mockSelectedMediaDevice))
-                .when(mLocalMediaManager)
-                .getSelectedMediaDevice();
-
         mMediaSwitchingController.start(mCb);
         reset(mCb);
 
@@ -591,18 +579,6 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
     @EnableFlags(Flags.FLAG_ENABLE_AUDIO_INPUT_DEVICE_ROUTING_AND_VOLUME_CONTROL)
     @Test
     public void onDeviceListUpdate_verifyDeviceListCallback_inputRouting() {
-        // This test relies on mMediaSwitchingController.start being called while the selected
-        // device list has exactly one item, and that item's id is:
-        // - Different from both ids in mMediaDevices.
-        // - Different from the id of the route published by the device under test (usually the
-        //   built-in speakers).
-        // So mock the selected device to respect these two preconditions.
-        MediaDevice mockSelectedMediaDevice = Mockito.mock(MediaDevice.class);
-        when(mockSelectedMediaDevice.getId()).thenReturn(TEST_DEVICE_3_ID);
-        doReturn(List.of(mockSelectedMediaDevice))
-                .when(mLocalMediaManager)
-                .getSelectedMediaDevice();
-
         mMediaSwitchingController.start(mCb);
         reset(mCb);
 
@@ -623,18 +599,6 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
     @DisableFlags(Flags.FLAG_ENABLE_AUDIO_INPUT_DEVICE_ROUTING_AND_VOLUME_CONTROL)
     @Test
     public void advanced_onDeviceListUpdateWithConnectedDeviceRemote_verifyItemSize() {
-        // This test relies on mMediaSwitchingController.start being called while the selected
-        // device list has exactly one item, and that item's id is:
-        // - Different from both ids in mMediaDevices.
-        // - Different from the id of the route published by the device under test (usually the
-        //   built-in speakers).
-        // So mock the selected device to respect these two preconditions.
-        MediaDevice mockSelectedMediaDevice = Mockito.mock(MediaDevice.class);
-        when(mockSelectedMediaDevice.getId()).thenReturn(TEST_DEVICE_3_ID);
-        doReturn(List.of(mockSelectedMediaDevice))
-                .when(mLocalMediaManager)
-                .getSelectedMediaDevice();
-
         when(mMediaDevice1.getFeatures()).thenReturn(
                 ImmutableList.of(MediaRoute2Info.FEATURE_REMOTE_PLAYBACK));
         when(mLocalMediaManager.getCurrentConnectedDevice()).thenReturn(mMediaDevice1);
@@ -656,18 +620,6 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
     @EnableFlags(Flags.FLAG_ENABLE_AUDIO_INPUT_DEVICE_ROUTING_AND_VOLUME_CONTROL)
     @Test
     public void advanced_onDeviceListUpdateWithConnectedDeviceRemote_verifyItemSize_inputRouting() {
-        // This test relies on mMediaSwitchingController.start being called while the selected
-        // device list has exactly one item, and that item's id is:
-        // - Different from both ids in mMediaDevices.
-        // - Different from the id of the route published by the device under test (usually the
-        //   built-in speakers).
-        // So mock the selected device to respect these two preconditions.
-        MediaDevice mockSelectedMediaDevice = Mockito.mock(MediaDevice.class);
-        when(mockSelectedMediaDevice.getId()).thenReturn(TEST_DEVICE_3_ID);
-        doReturn(List.of(mockSelectedMediaDevice))
-                .when(mLocalMediaManager)
-                .getSelectedMediaDevice();
-
         when(mMediaDevice1.getFeatures())
                 .thenReturn(ImmutableList.of(MediaRoute2Info.FEATURE_REMOTE_PLAYBACK));
         when(mLocalMediaManager.getCurrentConnectedDevice()).thenReturn(mMediaDevice1);
@@ -965,20 +917,6 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
 
         testMediaSwitchingController.removeDeviceFromPlayMedia(mMediaDevice2);
         verify(mockLocalMediaManager).removeDeviceFromPlayMedia(mMediaDevice2);
-    }
-
-    @Test
-    public void getTransferableMediaDevice_triggersFromLocalMediaManager() {
-        mMediaSwitchingController.getTransferableMediaDevices();
-
-        verify(mLocalMediaManager).getTransferableMediaDevices();
-    }
-
-    @Test
-    public void getDeselectableMediaDevice_triggersFromLocalMediaManager() {
-        mMediaSwitchingController.getDeselectableMediaDevice();
-
-        verify(mLocalMediaManager).getDeselectableMediaDevice();
     }
 
     @Test
@@ -1389,33 +1327,24 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
     }
 
     @Test
-    public void getSelectedMediaDevice() {
-        // Mock MediaDevice since none of the output media device constructor is publicly available
-        // outside of SettingsLib package.
-        final MediaDevice selectedOutputMediaDevice = mock(MediaDevice.class);
-        doReturn(Collections.singletonList(selectedOutputMediaDevice))
-                .when(mLocalMediaManager)
-                .getSelectedMediaDevice();
-
-        List<MediaDevice> selectedMediaDevices = mMediaSwitchingController.getSelectedMediaDevice();
-        assertThat(selectedMediaDevices)
-                .containsExactly(selectedOutputMediaDevice);
-    }
-
-    @Test
     public void hasGroupPlayback_singleOutputDevice_returnsFalse() {
-        doReturn(ImmutableList.of(mock(MediaDevice.class)))
-                .when(mLocalMediaManager)
-                .getSelectedMediaDevice();
+        when(mMediaDevice1.isSelected()).thenReturn(true);
+
+        mMediaSwitchingController.start(mCb);
+        reset(mCb);
+        mMediaSwitchingController.onDeviceListUpdate(mMediaDevices);
 
         assertThat(mMediaSwitchingController.hasGroupPlayback()).isFalse();
     }
 
     @Test
     public void hasGroupPlayback_multipleOutputDevices_returnsTrue() {
-        doReturn(ImmutableList.of(mock(MediaDevice.class), mock(MediaDevice.class)))
-                .when(mLocalMediaManager)
-                .getSelectedMediaDevice();
+        when(mMediaDevice1.isSelected()).thenReturn(true);
+        when(mMediaDevice2.isSelected()).thenReturn(true);
+
+        mMediaSwitchingController.start(mCb);
+        reset(mCb);
+        mMediaSwitchingController.onDeviceListUpdate(mMediaDevices);
 
         assertThat(mMediaSwitchingController.hasGroupPlayback()).isTrue();
     }
@@ -1495,16 +1424,15 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
         assertThat(getNumberOfConnectDeviceButtons(resultList)).isEqualTo(0);
     }
 
-    @DisableFlags(Flags.FLAG_ENABLE_AUDIO_INPUT_DEVICE_ROUTING_AND_VOLUME_CONTROL)
     @Test
     public void connectDeviceButton_presentAtAllTimesForNonGroupOutputs() {
         mMediaSwitchingController.start(mCb);
         reset(mCb);
 
         // Mock the selected output device.
-        doReturn(Collections.singletonList(mMediaDevice1))
-                .when(mLocalMediaManager)
-                .getSelectedMediaDevice();
+        when(mMediaDevice1.isSelected()).thenReturn(true);
+        when(mMediaDevice2.isSelected()).thenReturn(false);
+        mMediaSwitchingController.onDeviceListUpdate(mMediaDevices);
 
         // Verify that there is initially one "Connect a device" button present.
         assertThat(getNumberOfConnectDeviceButtons(
@@ -1512,9 +1440,8 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
 
         // Change the selected device, and verify that there is still one "Connect a device" button
         // present.
-        doReturn(Collections.singletonList(mMediaDevice2))
-                .when(mLocalMediaManager)
-                .getSelectedMediaDevice();
+        when(mMediaDevice1.isSelected()).thenReturn(false);
+        when(mMediaDevice2.isSelected()).thenReturn(true);
         mMediaSwitchingController.onDeviceListUpdate(mMediaDevices);
 
         assertThat(getNumberOfConnectDeviceButtons(
@@ -1524,9 +1451,8 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
     @Test
     public void selectedDevicesAddedInSameOrder() {
         when(mLocalMediaManager.isPreferenceRouteListingExist()).thenReturn(true);
-        doReturn(mMediaDevices)
-                .when(mLocalMediaManager)
-                .getSelectedMediaDevice();
+        when(mMediaDevice1.isSelected()).thenReturn(true);
+        when(mMediaDevice2.isSelected()).thenReturn(true);
         mMediaSwitchingController.start(mCb);
         reset(mCb);
         mMediaSwitchingController.clearMediaItemList();
@@ -1573,9 +1499,9 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
                 mMediaDevice4,
                 mMediaDevice3,
                 mMediaDevice5);
-        List<MediaDevice> selectedMediaDevices = new ArrayList<>();
-        Collections.addAll(selectedMediaDevices, mMediaDevice3, mMediaDevice4, mMediaDevice5);
-        doReturn(selectedMediaDevices).when(mLocalMediaManager).getSelectedMediaDevice();
+        when(mMediaDevice3.isSelected()).thenReturn(true);
+        when(mMediaDevice4.isSelected()).thenReturn(true);
+        when(mMediaDevice5.isSelected()).thenReturn(true);
         // Sort the media devices in the order they appear in the deviceOrder list
         List<MediaDevice> deviceOrder = new ArrayList<>();
         Collections.addAll(
@@ -1600,9 +1526,8 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
     @Test
     public void firstSelectedDeviceIsFirstDeviceInGroupIsTrue() {
         when(mLocalMediaManager.isPreferenceRouteListingExist()).thenReturn(true);
-        doReturn(mMediaDevices)
-                .when(mLocalMediaManager)
-                .getSelectedMediaDevice();
+        when(mMediaDevice1.isSelected()).thenReturn(true);
+        when(mMediaDevice2.isSelected()).thenReturn(true);
         mMediaSwitchingController.start(mCb);
         reset(mCb);
         mMediaSwitchingController.clearMediaItemList();
@@ -1617,9 +1542,8 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
     @Test
     public void deviceListUpdateWithDifferentDevices_firstSelectedDeviceIsFirstDeviceInGroup() {
         when(mLocalMediaManager.isPreferenceRouteListingExist()).thenReturn(true);
-        doReturn(mMediaDevices)
-                .when(mLocalMediaManager)
-                .getSelectedMediaDevice();
+        when(mMediaDevice1.isSelected()).thenReturn(true);
+        when(mMediaDevice2.isSelected()).thenReturn(true);
         mMediaSwitchingController.start(mCb);
         reset(mCb);
         mMediaSwitchingController.clearMediaItemList();
