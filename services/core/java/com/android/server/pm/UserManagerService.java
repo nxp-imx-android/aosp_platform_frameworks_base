@@ -4095,6 +4095,11 @@ public class UserManagerService extends IUserManager.Stub {
             // TODO(b/394178333): This is here for ease-of-rollout. Delete the Guest exception.
             return UserManager.getMaxSupportedUsers() >  1;
         }
+        if (UserManager.isUserTypeSupervisingProfile(userType)) {
+            // Return true in the scenario that the device doesn't support multi-user, since we'd
+            // still want to support Supervising Profiles.
+            return UserManager.getMaxSupportedUsers() == 1;
+        }
         return false;
     }
 
