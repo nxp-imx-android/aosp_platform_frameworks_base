@@ -2273,8 +2273,10 @@ package android.app.contextualsearch {
     field @NonNull public static final android.os.Parcelable.Creator<android.app.contextualsearch.CallbackToken> CREATOR;
   }
 
-  @FlaggedApi("android.app.contextualsearch.flags.self_invocation") public final class ContextualSearchManager {
+  public final class ContextualSearchManager {
+    method @FlaggedApi("android.app.contextualsearch.flags.self_invocation") public boolean isContextualSearchAvailable();
     method @RequiresPermission(android.Manifest.permission.ACCESS_CONTEXTUAL_SEARCH) public void startContextualSearch(int);
+    method @FlaggedApi("android.app.contextualsearch.flags.self_invocation") public void startContextualSearch();
     field public static final String ACTION_LAUNCH_CONTEXTUAL_SEARCH = "android.app.contextualsearch.action.LAUNCH_CONTEXTUAL_SEARCH";
     field public static final int ENTRYPOINT_LONG_PRESS_HOME = 2; // 0x2
     field public static final int ENTRYPOINT_LONG_PRESS_META = 10; // 0xa
