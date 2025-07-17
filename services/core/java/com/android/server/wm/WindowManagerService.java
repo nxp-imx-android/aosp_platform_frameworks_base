@@ -1103,8 +1103,12 @@ public class WindowManagerService extends IWindowManager.Stub
         }
     }
 
-    private float mWindowAnimationScaleSetting = 1.0f;
-    private float mTransitionAnimationScaleSetting = 1.0f;
+    private static final float DEFAULT_ANIMATION_SCALE = 1.0f;
+
+    @GuardedBy("mGlobalLock")
+    private float mWindowAnimationScaleSetting = DEFAULT_ANIMATION_SCALE;
+    @GuardedBy("mGlobalLock")
+    private float mTransitionAnimationScaleSetting = DEFAULT_ANIMATION_SCALE;
     boolean mPointerLocationEnabled = false;
 
     private final SharedMemoryBackedCurrentAnimatorScale mAnimatorScale =
@@ -1469,7 +1473,7 @@ public class WindowManagerService extends IWindowManager.Stub
         }, UserHandle.ALL, suspendPackagesFilter, null, null);
 
         // Get persisted window scale setting
-        mWindowAnimationScaleSetting = getWindowAnimationScaleSetting();
+        mWindowAnimationScaleSetting = getWindowAnimationScaleSetting(DEFAULT_ANIMATION_SCALE);
         mTransitionAnimationScaleSetting = getTransitionAnimationScaleSetting();
 
         setAnimatorDurationScale(getAnimatorDurationScaleSetting());
@@ -1575,9 +1579,9 @@ public class WindowManagerService extends IWindowManager.Stub
                 Settings.Global.ANIMATOR_DURATION_SCALE, mAnimatorScale.getCurrentScale()));
     }
 
-    private float getWindowAnimationScaleSetting() {
+    private float getWindowAnimationScaleSetting(float defaultValue) {
         return fixScale(Settings.Global.getFloat(mContext.getContentResolver(),
-                Settings.Global.WINDOW_ANIMATION_SCALE, mWindowAnimationScaleSetting));
+                Settings.Global.WINDOW_ANIMATION_SCALE, defaultValue));
     }
 
     /**
@@ -3744,8 +3748,16 @@ public class WindowManagerService extends IWindowManager.Stub
 
         scale = fixScale(scale);
         switch (which) {
-            case 0: mWindowAnimationScaleSetting = scale; break;
-            case 1: mTransitionAnimationScaleSetting = scale; break;
+            case 0:
+                synchronized (mGlobalLock) {
+                    mWindowAnimationScaleSetting = scale;
+                }
+                break;
+            case 1:
+                synchronized (mGlobalLock) {
+                    mTransitionAnimationScaleSetting = scale;
+                }
+                break;
             case 2:
                 mAnimatorScale.setCurrentScale(scale);
                 break;
@@ -3764,10 +3776,14 @@ public class WindowManagerService extends IWindowManager.Stub
 
         if (scales != null) {
             if (scales.length >= 1) {
-                mWindowAnimationScaleSetting = fixScale(scales[0]);
+                synchronized (mGlobalLock) {
+                    mWindowAnimationScaleSetting = fixScale(scales[0]);
+                }
             }
             if (scales.length >= 2) {
-                mTransitionAnimationScaleSetting = fixScale(scales[1]);
+                synchronized (mGlobalLock) {
+                    mTransitionAnimationScaleSetting = fixScale(scales[1]);
+                }
             }
             if (scales.length >= 3) {
                 mAnimatorScale.setCurrentScale(fixScale(scales[2]));
@@ -3795,8 +3811,14 @@ public class WindowManagerService extends IWindowManager.Stub
     @Override
     public float getAnimationScale(int which) {
         switch (which) {
-            case 0: return mWindowAnimationScaleSetting;
-            case 1: return mTransitionAnimationScaleSetting;
+            case 0:
+                synchronized (mGlobalLock) {
+                    return mWindowAnimationScaleSetting;
+                }
+            case 1:
+                synchronized (mGlobalLock) {
+                    return mTransitionAnimationScaleSetting;
+                }
             case 2: return mAnimatorScale.getCurrentScale();
         }
         return 0;
@@ -3804,7 +3826,13 @@ public class WindowManagerService extends IWindowManager.Stub
 
     @Override
     public float[] getAnimationScales() {
-        return new float[] { mWindowAnimationScaleSetting, mTransitionAnimationScaleSetting,
+        float windowAnimationScale;
+        float transitionAnimationScale;
+        synchronized (mGlobalLock) {
+            windowAnimationScale = mWindowAnimationScaleSetting;
+            transitionAnimationScale = mTransitionAnimationScaleSetting;
+        }
+        return new float[] { windowAnimationScale, transitionAnimationScale,
                 mAnimatorScale.getCurrentScale() };
     }
 
@@ -5965,11 +5993,16 @@ public class WindowManagerService extends IWindowManager.Stub
             }
             switch (msg.what) {
                 case PERSIST_ANIMATION_SCALE: {
+                    float windowAnimationScale;
+                    float transitionAnimationScale;
+                    synchronized (mGlobalLock) {
+                        windowAnimationScale = mWindowAnimationScaleSetting;
+                        transitionAnimationScale = mTransitionAnimationScaleSetting;
+                    }
                     Settings.Global.putFloat(mContext.getContentResolver(),
-                            Settings.Global.WINDOW_ANIMATION_SCALE, mWindowAnimationScaleSetting);
+                            Settings.Global.WINDOW_ANIMATION_SCALE, windowAnimationScale);
                     Settings.Global.putFloat(mContext.getContentResolver(),
-                            Settings.Global.TRANSITION_ANIMATION_SCALE,
-                            mTransitionAnimationScaleSetting);
+                            Settings.Global.TRANSITION_ANIMATION_SCALE, transitionAnimationScale);
                     Settings.Global.putFloat(mContext.getContentResolver(),
                             Settings.Global.ANIMATOR_DURATION_SCALE,
                             mAnimatorScale.getCurrentScale());
@@ -5981,12 +6014,22 @@ public class WindowManagerService extends IWindowManager.Stub
                     final int mode = msg.arg1;
                     switch (mode) {
                         case WINDOW_ANIMATION_SCALE: {
-                            mWindowAnimationScaleSetting = getWindowAnimationScaleSetting();
+                            float windowAnimationScale;
+                            synchronized (mGlobalLock) {
+                                windowAnimationScale = mWindowAnimationScaleSetting;
+                            }
+                            windowAnimationScale = getWindowAnimationScaleSetting(
+                                    windowAnimationScale);
+                            synchronized (mGlobalLock) {
+                                mWindowAnimationScaleSetting = windowAnimationScale;
+                            }
                             break;
                         }
                         case TRANSITION_ANIMATION_SCALE: {
-                            mTransitionAnimationScaleSetting =
-                                    getTransitionAnimationScaleSetting();
+                            float transitionAnimationScale = getTransitionAnimationScaleSetting();
+                            synchronized (mGlobalLock) {
+                                mTransitionAnimationScaleSetting = transitionAnimationScale;
+                            }
                             break;
                         }
                         case ANIMATION_DURATION_SCALE: {
