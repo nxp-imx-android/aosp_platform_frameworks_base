@@ -583,6 +583,8 @@ android.view.InflateException
 
 android.view.inputmethod.InputBinding
 
+android.window.DesktopExperienceFlags
+
 com.android.internal.display.BrightnessSynchronizer
 
 com.android.internal.graphics.ColorUtils
