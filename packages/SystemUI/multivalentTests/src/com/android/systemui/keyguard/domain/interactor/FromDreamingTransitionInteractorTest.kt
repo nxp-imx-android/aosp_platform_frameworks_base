@@ -151,7 +151,6 @@ class FromDreamingTransitionInteractorTest(flags: FlagsParameterization?) : Sysu
         }
 
     @Test
-    @EnableFlags(Flags.FLAG_KEYGUARD_WM_STATE_REFACTOR)
     fun testTransitionsToLockscreen_whenOccludingActivityEnds() =
         kosmos.runTest {
             fakeKeyguardRepository.setDreaming(true)
