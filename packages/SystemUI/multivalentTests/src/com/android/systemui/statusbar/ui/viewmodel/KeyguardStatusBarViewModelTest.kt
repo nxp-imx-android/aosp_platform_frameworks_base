@@ -92,6 +92,7 @@ class KeyguardStatusBarViewModelTest(flags: FlagsParameterization) : SysuiTestCa
     fun setup() {
         underTest =
             KeyguardStatusBarViewModel(
+                testScope.backgroundScope,
                 headsUpNotificationInteractor,
                 kosmos.sceneInteractor,
                 keyguardInteractor,
