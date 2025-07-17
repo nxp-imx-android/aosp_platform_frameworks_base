@@ -25,6 +25,7 @@ import android.annotation.Nullable;
 import android.app.ActivityThread;
 import android.content.Context;
 import android.os.SystemProperties;
+import android.ravenwood.annotation.RavenwoodKeepWholeClass;
 import android.util.ArrayMap;
 import android.util.Log;
 
@@ -51,6 +52,7 @@ import java.util.function.BooleanSupplier;
  *
  * @hide
  */
+@RavenwoodKeepWholeClass
 public enum DesktopExperienceFlags {
     // go/keep-sorted start
     BASE_DENSITY_FOR_EXTERNAL_DISPLAYS(
