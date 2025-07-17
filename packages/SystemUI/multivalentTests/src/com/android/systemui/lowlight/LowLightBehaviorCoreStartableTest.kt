@@ -306,6 +306,25 @@ class LowLightBehaviorCoreStartableTest : SysuiTestCase() {
             assertThat(ambientLightModeMonitor.fake.started).isFalse()
         }
 
+    @Test
+    fun testDoNotSubscribeIfDozeForLowLightBehaviorPluggedIn() =
+        kosmos.runTest {
+            lowLightRepository.addAction(LowLightDisplayBehavior.LOW_LIGHT_DREAM, action)
+            lowLightSettingsRepository.setLowLightDisplayBehavior(
+                LowLightDisplayBehavior.LOW_LIGHT_DREAM
+            )
+
+            setBatteryPluggedIn(true)
+            setDisplayOn(true)
+
+            fakeKeyguardRepository.setDozeTransitionModel(
+                DozeTransitionModel(from = DozeStateModel.UNINITIALIZED, to = DozeStateModel.DOZE)
+            )
+
+            underTest.start()
+            assertThat(ambientLightModeMonitor.fake.started).isFalse()
+        }
+
     private fun Kosmos.setLowLightFromSensor(lowlight: Boolean) {
         val lightMode =
             if (lowlight) {
