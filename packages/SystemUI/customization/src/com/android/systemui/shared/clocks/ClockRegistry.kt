@@ -38,6 +38,7 @@ import com.android.systemui.plugins.clocks.ClockPickerConfig
 import com.android.systemui.plugins.clocks.ClockProvider
 import com.android.systemui.plugins.clocks.ClockProviderPlugin
 import com.android.systemui.plugins.clocks.ClockSettings
+import com.android.systemui.plugins.clocks.VPointF
 import com.android.systemui.plugins.clocks.VRectF
 import com.android.systemui.util.ThreadAssert
 import java.io.PrintWriter
@@ -313,7 +314,9 @@ open class ClockRegistry(
         val onComplete = endChangeTrace?.also { endChangeTrace = null } ?: return
         clock.eventListeners.attach(
             object : ClockEventListener {
-                override fun onBoundsChanged(bounds: VRectF) {}
+                override fun onBoundsChanged(current: VRectF) {}
+
+                override fun onMaxSizeChanged(maxSize: VPointF, isLargeClock: Boolean) {}
 
                 override fun onChangeComplete() = onComplete()
             }

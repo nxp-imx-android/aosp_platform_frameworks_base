@@ -402,14 +402,25 @@ class WindowDecorationWrapper private constructor(
     }
 
     /**
+     * Request direct a11y focus on the maximize button
+     */
+    fun requestFocusMaximizeButton() =
+        when {
+            defaultWindowDecor != null -> requireDefaultWindowDecor().a11yFocusMaximizeButton()
+            desktopWindowDecor != null -> requireDesktopWindowDecor().a11yFocusMaximizeButton()
+            else -> error("Expected Non-null default or desktop window decoration")
+        }
+
+    /**
      * Updates hover and pressed status of views in this decoration. Should only be called
      * when status cannot be updated normally.
      */
     fun updateHoverAndPressStatus(
         e: MotionEvent
     ) = when {
+        defaultWindowDecor != null -> {} // No-op
         desktopWindowDecor != null -> requireDesktopWindowDecor().updateHoverAndPressStatus(e)
-        else -> error("Expected Non-null desktop window decoration")
+        else -> error("Expected Non-null default or desktop window decoration")
     }
 
     /** Handles a interruption to a drag event. */
@@ -548,8 +559,9 @@ class WindowDecorationWrapper private constructor(
     fun checkTouchEvent(
         e: MotionEvent
     ) = when {
+        defaultWindowDecor != null -> {} // No-op
         desktopWindowDecor != null -> requireDesktopWindowDecor().checkTouchEvent(e)
-        else -> error("Expected Non-null desktop window decoration")
+        else -> error("Expected Non-null default or desktop window decoration")
     }
 
     /**

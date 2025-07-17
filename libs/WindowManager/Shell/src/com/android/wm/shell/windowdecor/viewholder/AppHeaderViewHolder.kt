@@ -45,12 +45,14 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.accessibility.AccessibilityNodeInfoCompat.AccessibilityActionCompat
 import androidx.core.view.isGone
 import androidx.core.view.isVisible
+import androidx.core.view.postDelayed
 import com.android.internal.R.color.materialColorOnSecondaryContainer
 import com.android.internal.R.color.materialColorOnSurface
 import com.android.internal.R.color.materialColorSecondaryContainer
 import com.android.internal.R.color.materialColorSurfaceContainerHigh
 import com.android.internal.R.color.materialColorSurfaceContainerLow
 import com.android.internal.R.color.materialColorSurfaceDim
+import com.android.internal.util.FrameworkStatsLog
 import com.android.wm.shell.R
 import com.android.wm.shell.desktopmode.DesktopModeEventLogger.Companion.InputMethod
 import com.android.wm.shell.desktopmode.DesktopModeUiEventLogger
@@ -298,6 +300,12 @@ class AppHeaderViewHolder(
             ): Boolean {
                 when (action) {
                     AccessibilityAction.ACTION_CLICK.id -> {
+                        // clear focus before clicking so that focus can be captured by resize veil
+                        // necessary due to a race condition bug where after clicking maximize, a11y
+                        // focus wouldn't go back to maximize button
+                        host.clearFocus()
+                        host.clearAccessibilityFocus()
+                        host.requestFocus()
                         desktopModeUiEventLogger.log(
                             currentTaskInfo, A11Y_APP_WINDOW_MAXIMIZE_RESTORE_BUTTON
                         )
@@ -456,6 +464,7 @@ class AppHeaderViewHolder(
         enableMaximizeLongClick: Boolean,
         isCaptionVisible: Boolean,
     ) {
+        logDisplayCompatRestartButtonEventReported(taskInfo)
         currentTaskInfo = taskInfo
         if (DesktopModeFlags.ENABLE_THEMED_APP_HEADERS.isTrue) {
             bindDataWithThemedHeaders(
@@ -468,6 +477,25 @@ class AppHeaderViewHolder(
             )
         } else {
             bindDataLegacy(taskInfo, hasGlobalFocus, isCaptionVisible)
+        }
+    }
+
+    fun logDisplayCompatRestartButtonEventReported(newTaskInfo: RunningTaskInfo) {
+        val type = FrameworkStatsLog
+            .DISPLAY_COMPAT_RESTART_MENU_EVENT_REPORTED__EVENT__RESTART_MENU_EVENT_APPEARED
+        val prevIsRestartMenuEnabledForDisplayMove =
+            if (::currentTaskInfo.isInitialized) {
+                currentTaskInfo.appCompatTaskInfo.isRestartMenuEnabledForDisplayMove
+            } else {
+                false
+            }
+        if (!prevIsRestartMenuEnabledForDisplayMove
+                && newTaskInfo.appCompatTaskInfo.isRestartMenuEnabledForDisplayMove
+                && newTaskInfo.isFreeform) {
+            FrameworkStatsLog.write(
+                FrameworkStatsLog.DISPLAY_COMPAT_RESTART_MENU_EVENT_REPORTED,
+                newTaskInfo.effectiveUid, type
+            )
         }
     }
 
@@ -674,7 +702,8 @@ class AppHeaderViewHolder(
     }
 
     fun requestAccessibilityFocus() {
-        maximizeWindowButton.post {
+        // Slight delay so that after maximizing, everything has settled before resetting focus
+        maximizeWindowButton.postDelayed (250) {
             maximizeWindowButton.sendAccessibilityEvent(AccessibilityEvent.TYPE_VIEW_FOCUSED)
         }
     }

@@ -4188,14 +4188,17 @@ public class AudioService extends IAudioService.Stub
             return;
         }
 
-        // If the stream is STREAM_ASSISTANT,
-        // make sure that the calling app have the MODIFY_AUDIO_ROUTING permission.
+        // If the stream is STREAM_ASSISTANT, make sure that the calling app have the
+        // MODIFY_AUDIO_ROUTING or MODIFY_AUDIO_SETTINGS_PRIVILEGED permissions.
         if (streamType == AudioSystem.STREAM_ASSISTANT &&
-                mContext.checkPermission(
-                MODIFY_AUDIO_ROUTING, pid, uid)
-                    != PackageManager.PERMISSION_GRANTED) {
-            Log.w(TAG, "MODIFY_AUDIO_ROUTING Permission Denial: adjustStreamVolume from pid="
-                    + Binder.getCallingPid() + ", uid=" + Binder.getCallingUid());
+                (mContext.checkPermission(MODIFY_AUDIO_ROUTING, pid, uid)
+                        != PackageManager.PERMISSION_GRANTED
+                        || mContext.checkPermission(MODIFY_AUDIO_SETTINGS_PRIVILEGED, pid, uid)
+                        != PackageManager.PERMISSION_GRANTED)) {
+            Log.w(TAG, "Permission Denial: adjustStreamVolume from pid="
+                    + Binder.getCallingPid() + ", uid=" + Binder.getCallingUid()
+                    + " requires permission MODIFY_AUDIO_ROUTING or "
+                    + "MODIFY_AUDIO_SETTINGS_PRIVILEGED");
             return;
         }
 
@@ -5193,11 +5196,13 @@ public class AudioService extends IAudioService.Stub
                     + " MODIFY_PHONE_STATE  callingPackage=" + callingPackage);
             return;
         }
-        if ((streamType == AudioManager.STREAM_ASSISTANT)
-                && (mContext.checkCallingOrSelfPermission(MODIFY_AUDIO_ROUTING)
-                    != PackageManager.PERMISSION_GRANTED)) {
+        if ((streamType == AudioManager.STREAM_ASSISTANT) && (mContext.checkCallingOrSelfPermission(
+                MODIFY_AUDIO_ROUTING) != PackageManager.PERMISSION_GRANTED
+                || mContext.checkCallingOrSelfPermission(MODIFY_AUDIO_SETTINGS_PRIVILEGED)
+                != PackageManager.PERMISSION_GRANTED)) {
             Log.w(TAG, "Trying to call setStreamVolume() for STREAM_ASSISTANT without"
-                    + " MODIFY_AUDIO_ROUTING  callingPackage=" + callingPackage);
+                    + " MODIFY_AUDIO_ROUTING or MODIFY_AUDIO_SETTINGS_PRIVILEGED from "
+                    + "callingPackage=" + callingPackage);
             return;
         }
 

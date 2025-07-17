@@ -60,6 +60,7 @@ open class FlexClockTextViewController(
     private val logger = Logger(clockCtx.messageBuffer, TAG)
     private val timespec = DigitalTimespecHandler(layerCfg.timespec, layerCfg.timeFormatter!!)
     override var onViewBoundsChanged by view::onViewBoundsChanged
+    override var onViewMaxSizeChanged by view::onViewMaxSizeChanged
 
     override val config = ClockFaceConfig()
     var dozeState: DefaultClockController.AnimationState? = null

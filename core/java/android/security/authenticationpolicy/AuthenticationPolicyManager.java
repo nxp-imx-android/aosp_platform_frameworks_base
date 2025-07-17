@@ -230,7 +230,7 @@ public final class AuthenticationPolicyManager {
      *
      * @hide
      */
-    @IntDef(prefix = {"IS_SECURE_LOCK_DEVICE_AVAILABLE_STATUS_"}, value = {
+    @IntDef(prefix = {"GET_SECURE_LOCK_DEVICE_AVAILABILITY_STATUS_"}, value = {
             SUCCESS,
             ERROR_UNSUPPORTED,
             ERROR_NO_BIOMETRICS_ENROLLED,

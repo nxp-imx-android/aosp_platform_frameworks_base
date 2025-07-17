@@ -14,16 +14,12 @@
  * limitations under the License.
  */
 
-package com.android.wm.shell.functional.tiling
+package com.android.systemui.keyguard.ui.viewmodel
 
-import android.platform.test.annotations.Postsubmit
-import android.platform.test.rule.ScreenRecordRule
-import com.android.wm.shell.scenarios.TileResizingWithDrag
-import org.junit.runner.RunWith
-import org.junit.runners.BlockJUnit4ClassRunner
+import com.android.systemui.keyguard.ui.keyguardTransitionAnimationFlow
+import com.android.systemui.kosmos.Kosmos
+import com.android.systemui.kosmos.Kosmos.Fixture
 
-/* Functional test for [TileResizingWithDrag]. */
-@RunWith(BlockJUnit4ClassRunner::class)
-@Postsubmit
-@ScreenRecordRule.ScreenRecord
-class TileResizingWithDragTest : TileResizingWithDrag()
+var Kosmos.goneToGlanceableHubTransitionViewModel by Fixture {
+    GoneToGlanceableHubTransitionViewModel(animationFlow = keyguardTransitionAnimationFlow)
+}

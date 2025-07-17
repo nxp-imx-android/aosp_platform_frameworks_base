@@ -57,6 +57,7 @@ import com.android.wm.shell.shared.annotations.ShellBackgroundThread
 import com.android.wm.shell.shared.annotations.ShellMainThread
 import com.android.wm.shell.shared.desktopmode.DesktopState
 import com.android.wm.shell.splitscreen.SplitScreenController
+import com.android.wm.shell.transition.Transitions
 import com.android.wm.shell.windowdecor.DefaultMaximizeMenuFactory
 import com.android.wm.shell.windowdecor.DesktopHeaderManageWindowsMenu
 import com.android.wm.shell.windowdecor.HandleMenu
@@ -99,6 +100,7 @@ class AppHeaderController(
     private val taskResourceLoader: WindowDecorTaskResourceLoader,
     private val splitScreenController: SplitScreenController,
     private val desktopUserRepositories: DesktopUserRepositories,
+    private val transitions: Transitions,
     private val taskSurface: SurfaceControl,
     private val decorationSurface: SurfaceControl,
     @ShellMainThread private val mainHandler: Handler,
@@ -371,16 +373,20 @@ class AppHeaderController(
         maximizeMenu?.close {
             // Request the accessibility service to refocus on the maximize button after closing
             // the menu.
-            viewHolder.requestAccessibilityFocus()
+            a11yFocusMaximizeButton()
         }
         maximizeMenu = null
     }
+
+    /** Request direct a11y focus on the maximize button */
+    fun a11yFocusMaximizeButton() = viewHolder.requestAccessibilityFocus()
 
     private fun createOpenByDefaultDialog() {
         if (isOpenByDefaultDialogActive) return
         openByDefaultDialog = OpenByDefaultDialog(
             context,
             userContext,
+            transitions,
             taskInfo,
             taskSurface,
             displayController,

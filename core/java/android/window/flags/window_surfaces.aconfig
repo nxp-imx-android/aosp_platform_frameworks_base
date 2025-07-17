@@ -126,14 +126,3 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
-
-flag {
-    name: "update_host_input_transfer_token"
-    namespace: "window_surfaces"
-    description: "Update host InpuTransferToken on view attach"
-    is_fixed_read_only: true
-    bug: "392965431"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}

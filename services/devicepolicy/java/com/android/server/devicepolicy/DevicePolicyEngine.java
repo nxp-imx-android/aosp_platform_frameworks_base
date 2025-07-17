@@ -27,6 +27,7 @@ import static android.app.admin.PolicyUpdateResult.RESULT_FAILURE_UNKNOWN;
 import static android.app.admin.PolicyUpdateResult.RESULT_POLICY_CLEARED;
 import static android.app.admin.PolicyUpdateResult.RESULT_POLICY_SET;
 import static android.content.pm.UserProperties.INHERIT_DEVICE_POLICY_FROM_PARENT;
+import static android.app.role.RoleManager.ROLE_SYSTEM_FINANCED_DEVICE_CONTROLLER;
 
 import android.Manifest;
 import android.annotation.NonNull;
@@ -107,11 +108,6 @@ import java.util.concurrent.TimeUnit;
  */
 final class DevicePolicyEngine {
     static final String TAG = "DevicePolicyEngine";
-
-    static final String DEVICE_LOCK_CONTROLLER_ROLE =
-            "android.app.role.SYSTEM_FINANCED_DEVICE_CONTROLLER";
-
-    static final String SYSTEM_SUPERVISION_ROLE = "android.app.role.SYSTEM_SUPERVISION";
 
     private static final String CELLULAR_2G_USER_RESTRICTION_ID =
             DevicePolicyIdentifiers.getIdentifierForUserRestriction(
@@ -1959,7 +1955,7 @@ final class DevicePolicyEngine {
      */
     void handleRoleChanged(@NonNull String roleName, int userId) {
         // TODO(b/256852787): handle all roles changing.
-        if (!DEVICE_LOCK_CONTROLLER_ROLE.equals(roleName)) {
+        if (!ROLE_SYSTEM_FINANCED_DEVICE_CONTROLLER.equals(roleName)) {
             // We only support device lock controller role for now.
             return;
         }

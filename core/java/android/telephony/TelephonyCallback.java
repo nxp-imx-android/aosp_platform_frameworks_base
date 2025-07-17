@@ -633,8 +633,6 @@ public class TelephonyCallback {
      *
      * @hide
      */
-
-    @FlaggedApi(Flags.FLAG_EMERGENCY_CALLBACK_MODE_NOTIFICATION)
     @RequiresPermission(Manifest.permission.READ_PRIVILEGED_PHONE_STATE)
     @SystemApi
     public static final int EVENT_EMERGENCY_CALLBACK_MODE_CHANGED = 40;
@@ -1746,7 +1744,6 @@ public class TelephonyCallback {
      *
      * @hide
      */
-    @FlaggedApi(Flags.FLAG_EMERGENCY_CALLBACK_MODE_NOTIFICATION)
     @SystemApi
     public interface EmergencyCallbackModeListener {
         /**
@@ -2284,8 +2281,6 @@ public class TelephonyCallback {
         @RequiresPermission(Manifest.permission.READ_PRIVILEGED_PHONE_STATE)
         public void onCallbackModeStarted(@TelephonyManager.EmergencyCallbackModeType int type,
                 long durationMillis, int subscriptionId) {
-            if (!Flags.emergencyCallbackModeNotification()) return;
-
             EmergencyCallbackModeListener listener =
                     (EmergencyCallbackModeListener) mTelephonyCallbackWeakRef.get();
             Log.d(LOG_TAG, "onCallBackModeStarted:type=" + type + ", listener=" + listener);
@@ -2300,8 +2295,6 @@ public class TelephonyCallback {
         @RequiresPermission(Manifest.permission.READ_PRIVILEGED_PHONE_STATE)
         public void onCallbackModeRestarted(@TelephonyManager.EmergencyCallbackModeType int type,
                 long durationMillis, int subscriptionId) {
-            if (!Flags.emergencyCallbackModeNotification()) return;
-
             EmergencyCallbackModeListener listener =
                     (EmergencyCallbackModeListener) mTelephonyCallbackWeakRef.get();
             Log.d(LOG_TAG, "onCallbackModeRestarted:type=" + type + ", listener=" + listener);
@@ -2316,8 +2309,6 @@ public class TelephonyCallback {
         @RequiresPermission(Manifest.permission.READ_PRIVILEGED_PHONE_STATE)
         public void onCallbackModeStopped(@TelephonyManager.EmergencyCallbackModeType int type,
                 @TelephonyManager.EmergencyCallbackModeStopReason int reason, int subscriptionId) {
-            if (!Flags.emergencyCallbackModeNotification()) return;
-
             EmergencyCallbackModeListener listener =
                     (EmergencyCallbackModeListener) mTelephonyCallbackWeakRef.get();
             Log.d(LOG_TAG, "onCallBackModeStopped:type=" + type

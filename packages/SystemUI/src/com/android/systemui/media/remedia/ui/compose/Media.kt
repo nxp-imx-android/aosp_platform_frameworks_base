@@ -235,16 +235,10 @@ private fun CardCarouselContent(
     val isSwipingEnabled = behavior.isCarouselScrollingEnabled && !isFalseTouchDetected
 
     val roundedCornerShape = RoundedCornerShape(32.dp)
-    val padding =
-        if (presentationStyle == MediaPresentationStyle.Large) {
-            0.dp
-        } else {
-            8.dp
-        }
 
     Box(
         modifier =
-            modifier.padding(padding).clip(roundedCornerShape).pointerInput(behavior) {
+            modifier.clip(roundedCornerShape).pointerInput(behavior) {
                 if (behavior.isCarouselScrollFalseTouch != null) {
                     awaitEachGesture {
                         awaitFirstDown(false, PointerEventPass.Initial)

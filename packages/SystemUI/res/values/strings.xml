@@ -3501,35 +3501,6 @@
     <!-- Button text for stopping sharing [CHAR LIMIT=60] -->
     <string name="media_output_dialog_button_stop_sharing">Stop sharing</string>
 
-
-    <!-- Media Output Broadcast Dialog -->
-    <!-- Title for Broadcast First Notify Dialog [CHAR LIMIT=60] -->
-    <string name="media_output_first_broadcast_title">How broadcasting works</string>
-    <!-- Title for Broadcast Notify Dialog [CHAR LIMIT=60] -->
-    <string name="media_output_broadcast">Broadcast</string>
-    <!-- Message for notifying the user about the Broadcast at first launch [CHAR LIMIT=NONE] -->
-    <string name="media_output_first_notify_broadcast_message">People near you with compatible Bluetooth devices can listen to the media you\'re broadcasting</string>
-    <!-- Message for Broadcasting information and QR code [CHAR LIMIT=NONE] -->
-    <string name="media_output_broadcasting_message">To listen to your broadcast, people nearby with compatible Bluetooth devices can scan your QR code or use your broadcast name and password</string>
-    <!-- Title for Broadcast Name [CHAR LIMIT=60] -->
-    <string name="media_output_broadcast_name">Broadcast Name</string>
-    <!-- Title for Broadcast Code(Password) [CHAR LIMIT=60] -->
-    <string name="media_output_broadcast_code">Password</string>
-    <!-- Button for change broadcast name and broadcast code [CHAR LIMIT=60] -->
-    <string name="media_output_broadcast_dialog_save">Save</string>
-    <!-- The "starting" text when Broadcast is starting [CHAR LIMIT=60] -->
-    <string name="media_output_broadcast_starting">Starting&#8230;</string>
-    <!-- The button text when Broadcast start failed [CHAR LIMIT=60] -->
-    <string name="media_output_broadcast_start_failed">Can\u2019t broadcast</string>
-    <!-- The error message when Broadcast name/code update failed [CHAR LIMIT=60] -->
-    <string name="media_output_broadcast_update_error">Can\u2019t save. Try again.</string>
-    <!-- The error message when Broadcast name/code update failed and can't change again[CHAR LIMIT=60] -->
-    <string name="media_output_broadcast_last_update_error">Can\u2019t save.</string>
-    <!-- The hint message when Broadcast code is less than 4 characters [CHAR LIMIT=60] -->
-    <string name="media_output_broadcast_code_hint_no_less_than_min">Use at least 4 characters</string>
-    <!-- The hint message when Broadcast edit is more than 16/254 characters [CHAR LIMIT=60] -->
-    <string name="media_output_broadcast_edit_hint_no_more_than_max">Use fewer than <xliff:g id="length" example="16">%1$d</xliff:g> characters</string>
-
     <!-- Label for clip data when copying the build number off QS [CHAR LIMIT=NONE]-->
     <string name="build_number_clip_data_label">Build number</string>
     <!-- Text to display when copying the build number off QS [CHAR LIMIT=NONE]-->
@@ -3794,18 +3765,6 @@
 
     <!-- [CHAR LIMIT=NONE] Output switch chip text during broadcasting -->
     <string name="audio_sharing_description">Sharing audio</string>
-    <!-- [CHAR LIMIT=NONE] Le audio broadcast dialog, media app is broadcasting -->
-    <string name="broadcasting_description_is_broadcasting">Broadcasting</string>
-    <!-- [CHAR LIMIT=NONE] Le audio broadcast dialog, title -->
-    <string name="bt_le_audio_broadcast_dialog_title">Stop broadcasting <xliff:g id="app_name" example="App Name 1">%1$s</xliff:g>?</string>
-    <!-- [CHAR LIMIT=NONE] Le audio broadcast dialog, sub-title -->
-    <string name="bt_le_audio_broadcast_dialog_sub_title">If you broadcast <xliff:g id="switchApp" example="App Name 2">%1$s</xliff:g> or change the output, your current broadcast will stop</string>
-    <!-- [CHAR LIMIT=NONE] Le audio broadcast dialog, switch to others app. -->
-    <string name="bt_le_audio_broadcast_dialog_switch_app">Broadcast <xliff:g id="switchApp" example="App Name 2">%1$s</xliff:g></string>
-    <!-- [CHAR LIMIT=NONE] Le audio broadcast dialog, different output. -->
-    <string name="bt_le_audio_broadcast_dialog_different_output">Change output</string>
-    <!-- [CHAR LIMIT=NONE] Le audio broadcast dialog, media app is unknown -->
-    <string name="bt_le_audio_broadcast_dialog_unknown_name">Unknown</string>
 
     <!-- Time format for the Dream Time Complication for 12-hour time format [CHAR LIMIT=NONE] -->
     <string name="dream_time_complication_12_hr_time_format">h:mm</string>

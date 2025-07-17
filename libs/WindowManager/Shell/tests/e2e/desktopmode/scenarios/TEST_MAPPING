@@ -157,6 +157,9 @@
       "name": "FunctionalTestsDesktopMode-keyboardshortcuts-EnterDesktopFromKeyboardShortcutTest"
     },
     {
+      "name": "FunctionalTestsDesktopMode-keyboardshortcuts-ExitDesktopFromKeyboardShortcutTest"
+    },
+    {
       "name": "FunctionalTestsDesktopMode-maximize-MaximizeAppWindowTest"
     },
     {

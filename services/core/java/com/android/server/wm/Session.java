@@ -925,18 +925,6 @@ class Session extends IWindowSession.Stub implements IBinder.DeathRecipient {
             IBinder clientToken, @Nullable InputTransferToken hostInputTransferToken, int flags,
             int privateFlags, int inputFeatures, int type, IBinder windowToken,
             InputTransferToken inputTransferToken, String inputHandleName) {
-        if (!Flags.updateHostInputTransferToken()) {
-            // This is not a valid security check, callers can pass in a bogus token. If the
-            // token is not known to wm, then input APIs is request focus or transferTouchGesture
-            // will fail. Removing this check allows SCVH to be created before associating with a
-            // host window.
-            if (hostInputTransferToken == null && !mCanAddInternalSystemWindow) {
-                // Callers without INTERNAL_SYSTEM_WINDOW permission cannot grant input channel to
-                // embedded windows without providing a host window input token
-                throw new SecurityException("Requires INTERNAL_SYSTEM_WINDOW permission");
-            }
-        }
-
         final long identity = Binder.clearCallingIdentity();
         try {
             return mService.grantInputChannel(this, mUid, mPid, displayId, surface, clientToken,

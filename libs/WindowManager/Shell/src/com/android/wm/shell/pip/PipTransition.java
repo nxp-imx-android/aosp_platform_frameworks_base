@@ -1114,8 +1114,7 @@ public class PipTransition extends PipTransitionController {
                     destinationBounds, sourceHintRect);
         }
         if (!mPipOrganizer.shouldAttachMenuEarly()) {
-            mTransitions.getMainExecutor().executeDelayed(
-                    () -> mPipMenuController.attach(leash), 0);
+            mPipMenuController.attach(leash);
         }
 
         if (taskInfo.pictureInPictureParams != null

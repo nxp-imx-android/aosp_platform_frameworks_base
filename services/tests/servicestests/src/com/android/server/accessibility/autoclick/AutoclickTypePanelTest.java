@@ -33,6 +33,7 @@ import static com.android.server.accessibility.autoclick.AutoclickTypePanel.POSI
 import static com.google.common.truth.Truth.assertThat;
 
 import android.content.Context;
+import android.content.res.ColorStateList;
 import android.graphics.drawable.GradientDrawable;
 import android.provider.Settings;
 import android.testing.AndroidTestingRunner;
@@ -189,12 +190,12 @@ public class AutoclickTypePanelTest {
 
     @Test
     public void togglePanelExpansion_selectButton_correctStyle() {
-        // By first click, the panel is expanded.
-        mLeftClickButton.callOnClick();
-
-        // Clicks any button in the expanded state to select a type button.
+        // The panel starts in an expanded state. This test verifies that clicking
+        // a new type button (e.g., Scroll) correctly selects it, collapses the
+        // panel, and applies the 'selected' visual style.
         mScrollButton.callOnClick();
 
+        // Verify the scroll button now has the style for a selected item.
         verifyButtonHasSelectedStyle(mScrollButton);
     }
 
@@ -596,7 +597,15 @@ public class AutoclickTypePanelTest {
 
     private void verifyButtonHasSelectedStyle(@NonNull LinearLayout button) {
         GradientDrawable gradientDrawable = (GradientDrawable) button.getBackground();
-        assertThat(gradientDrawable.getColor().getDefaultColor())
+        // Get the ColorStateList from the background.
+        ColorStateList colorStateList = gradientDrawable.getColor();
+        // Add an assertion to handle the lint warning and ensure the color list is not null.
+        assertThat(colorStateList).isNotNull();
+        // Get the color that corresponds to the button's current drawable state.
+        int currentColor = colorStateList.getColorForState(button.getDrawableState(), 0);
+
+        // Assert that the current color is the primary color.
+        assertThat(currentColor)
                 .isEqualTo(mTestableContext.getColor(R.color.materialColorPrimary));
     }
 

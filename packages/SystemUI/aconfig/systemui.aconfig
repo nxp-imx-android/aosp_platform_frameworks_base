@@ -1204,6 +1204,16 @@ flag {
 }
 
 flag {
+  name: "communal_power_transition_fix"
+  namespace: "systemui"
+  description: "Flags a minor bug fix for pressing power button on the hub"
+  bug: "431931326"
+  metadata {
+    purpose: PURPOSE_BUGFIX
+  }
+}
+
+flag {
   name: "dream_transition_fixes"
   namespace: "systemui"
   description: "Flags some minor transition fixes for opening the dream"

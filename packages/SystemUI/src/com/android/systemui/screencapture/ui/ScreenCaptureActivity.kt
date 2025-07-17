@@ -55,9 +55,12 @@ constructor(
             componentBuilders[intentParameters.screenCaptureType] ?: defaultBuilder.get()
 
         component =
-            builder.setParameters(intentParameters).setScope(lifecycleScope).build().also {
-                setContent { PlatformTheme { it.screenCaptureContent.Content() } }
-            }
+            builder
+                .setParameters(intentParameters)
+                .setScope(lifecycleScope)
+                .setScreenCaptureActivity(this)
+                .build()
+                .also { setContent { PlatformTheme { it.screenCaptureContent.Content() } } }
     }
 
     override fun onDestroy() {

@@ -27,8 +27,8 @@ import androidx.compose.ui.graphics.toComposeRect
 import androidx.core.content.edit
 import com.android.app.tracing.coroutines.coroutineScopeTraced
 import com.android.systemui.Dumpable
-import com.android.systemui.ambientcue.shared.logger.AmbientCueLogger
 import com.android.systemui.ambientcue.domain.interactor.AmbientCueInteractor
+import com.android.systemui.ambientcue.shared.logger.AmbientCueLogger
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.domain.interactor.SharedPreferencesInteractor
 import com.android.systemui.dump.DumpManager
@@ -283,7 +283,7 @@ constructor(
         }
     }
 
-    private fun disableFirstTimeHint() {
+    fun disableFirstTimeHint() {
         if (showFirstTimeEducation) {
             sharedPreferences.value?.edit {
                 Log.i(TAG, "suppressing first time tooltip")

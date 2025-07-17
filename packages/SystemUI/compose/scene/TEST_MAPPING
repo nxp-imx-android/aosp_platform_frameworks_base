@@ -1,7 +1,8 @@
 {
   "presubmit": [
     {
-      "name": "PlatformComposeSceneTransitionLayoutTests"
+      "name": "PlatformComposeSceneTransitionLayoutTests",
+      "keywords": ["internal"]
     },
     {
       "name": "PlatformComposeCoreTests"

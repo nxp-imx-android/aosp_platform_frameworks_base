@@ -21,9 +21,9 @@ import static android.view.WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_M
 
 import android.annotation.IntDef;
 import android.content.Context;
+import android.content.res.Configuration;
 import android.graphics.PixelFormat;
 import android.graphics.drawable.Drawable;
-import android.graphics.drawable.GradientDrawable;
 import android.provider.Settings;
 import android.text.TextUtils;
 import android.view.Gravity;
@@ -137,7 +137,7 @@ public class AutoclickTypePanel {
 
     private final Context mContext;
 
-    private final AutoclickTypeLinearLayout mContentView;
+    private AutoclickTypeLinearLayout mContentView;
 
     private final WindowManager mWindowManager;
 
@@ -160,24 +160,24 @@ public class AutoclickTypePanel {
     // The current corner position of the panel, default to bottom right.
     private @Corner int mCurrentCorner = CORNER_BOTTOM_RIGHT;
 
-    private final LinearLayout mLeftClickButton;
-    private final LinearLayout mRightClickButton;
-    private final LinearLayout mDoubleClickButton;
-    private final LinearLayout mDragButton;
-    private final LinearLayout mScrollButton;
-    private final LinearLayout mPauseButton;
-    private final LinearLayout mPositionButton;
-    private final LinearLayout mLongPressButton;
+    private LinearLayout mLeftClickButton;
+    private LinearLayout mRightClickButton;
+    private LinearLayout mDoubleClickButton;
+    private LinearLayout mDragButton;
+    private LinearLayout mScrollButton;
+    private LinearLayout mPauseButton;
+    private LinearLayout mPositionButton;
+    private LinearLayout mLongPressButton;
 
     private LinearLayout mSelectedButton;
     private int mSelectedClickType = AUTOCLICK_TYPE_LEFT_CLICK;
 
-    private final Drawable mPauseButtonDrawable;
-    private final Drawable mResumeButtonDrawable;
-    private final Drawable mPositionTopLeftDrawable;
-    private final Drawable mPositionTopRightDrawable;
-    private final Drawable mPositionBottomLeftDrawable;
-    private final Drawable mPositionBottomRightDrawable;
+    private Drawable mPauseButtonDrawable;
+    private Drawable mResumeButtonDrawable;
+    private Drawable mPositionTopLeftDrawable;
+    private Drawable mPositionTopRightDrawable;
+    private Drawable mPositionBottomLeftDrawable;
+    private Drawable mPositionBottomRightDrawable;
 
     public AutoclickTypePanel(
             Context context,
@@ -190,6 +190,10 @@ public class AutoclickTypePanel {
         mClickPanelController = clickPanelController;
         mParams = getDefaultLayoutParams();
 
+        inflateViewAndResources();
+    }
+
+    private void inflateViewAndResources() {
         // Load drawables for buttons.
         mPauseButtonDrawable = mContext.getDrawable(
                 R.drawable.accessibility_autoclick_pause);
@@ -206,7 +210,7 @@ public class AutoclickTypePanel {
 
         // Inflate the panel layout.
         mContentView =
-                (AutoclickTypeLinearLayout) LayoutInflater.from(context)
+                (AutoclickTypeLinearLayout) LayoutInflater.from(mContext)
                         .inflate(R.layout.accessibility_autoclick_type_panel, null);
         mContentView.setOnHoverChangedListener(mClickPanelController::onHoverChange);
         mLeftClickButton =
@@ -223,9 +227,9 @@ public class AutoclickTypePanel {
                 mContentView.findViewById(R.id.accessibility_autoclick_long_press_layout);
 
         // Get status bar height.
-        mStatusBarHeight = SystemBarUtils.getStatusBarHeight(context);
+        mStatusBarHeight = SystemBarUtils.getStatusBarHeight(mContext);
         // Initialize the cursor icons.
-        mCurrentCursor = PointerIcon.getSystemIcon(context, PointerIcon.TYPE_ARROW);
+        mCurrentCursor = PointerIcon.getSystemIcon(mContext, PointerIcon.TYPE_ARROW);
 
         initializeButtonState();
 
@@ -330,13 +334,27 @@ public class AutoclickTypePanel {
         // The pause button calls `togglePause()` directly so it does not need extra logic.
         mPauseButton.setOnClickListener(v -> togglePause());
 
-        setSelectedClickType(AUTOCLICK_TYPE_LEFT_CLICK);
+        setSelectedClickType(mSelectedClickType);
 
         // Set up hover listeners on panel and buttons to dynamically change cursor icons.
         setupHoverListenersForCursor();
 
-        // Remove spacing between buttons when initialized.
-        adjustPanelSpacing(/* isExpanded= */ true);
+        // Update the type panel to be expanded or not based on its state before theme change.
+        if (mExpanded) {
+            showAllClickTypeButtons();
+        } else {
+            // If it was collapsed, re-apply that state by hiding other buttons.
+            hideAllClickTypeButtons();
+            getButtonFromClickType(mSelectedClickType).setVisibility(View.VISIBLE);
+        }
+        // Adjust the panel spacing based on if it is expanded.
+        adjustPanelSpacing(mExpanded);
+        // Update the pause button and position button icons
+        // based on their states before theme change.
+        updatePauseButtonAppearance();
+        mContentView.post(() -> {
+            updatePositionButtonIcon(getVisualCorner());
+        });
     }
 
     /** Reset panel as collapsed state and only displays selected button. */
@@ -372,23 +390,7 @@ public class AutoclickTypePanel {
     }
 
     private void toggleSelectedButtonStyle(@NonNull LinearLayout button, boolean isSelected) {
-        // Sets icon background color.
-        GradientDrawable gradientDrawable = (GradientDrawable) button.getBackground();
-        gradientDrawable.setColor(
-                mContext.getColor(
-                        isSelected
-                                ? R.color.materialColorPrimary
-                                : R.color.materialColorSurfaceContainer));
-
-        // Sets icon color.
-        ImageButton imageButton = (ImageButton) button.getChildAt(/* index= */ 0);
-        Drawable drawable = imageButton.getDrawable();
-        drawable.mutate()
-                .setTint(
-                        mContext.getColor(
-                                isSelected
-                                        ? R.color.materialColorOnPrimary
-                                        : R.color.materialColorOnSurface));
+        button.setSelected(isSelected);
     }
 
     public void show() {
@@ -443,6 +445,29 @@ public class AutoclickTypePanel {
         return mContentView.isHovered();
     }
 
+    /**
+     * Updates the autoclick type panel when the system configuration is changed.
+     * @param newConfig The new system configuration.
+     */
+    public void onConfigurationChanged(@android.annotation.NonNull Configuration newConfig) {
+        mContext.getMainThreadHandler().post(() -> {
+            // Only remove the view if it's currently shown.
+            if (mIsPanelShown) {
+                mWindowManager.removeView(mContentView);
+            }
+
+            // Always re-inflate the views and resources to adopt the new configuration.
+            // This is important even if the panel is hidden.
+            inflateViewAndResources();
+
+            // If the panel was shown before the configuration change, add the newly
+            // inflated view back to the window to restore its state.
+            if (mIsPanelShown) {
+                mWindowManager.addView(mContentView, mParams);
+            }
+        });
+    }
+
     /** Toggles the panel expanded or collapsed state. */
     private void togglePanelExpansion(@AutoclickType int clickType) {
         if (mExpanded) {
@@ -467,8 +492,15 @@ public class AutoclickTypePanel {
     private void togglePause() {
         mPaused = !mPaused;
         mClickPanelController.toggleAutoclickPause(mPaused);
+        updatePauseButtonAppearance();
+    }
 
-        ImageButton imageButton = (ImageButton) mPauseButton.getChildAt(/* index= */ 0);
+    /**
+     * Updates the Pause/Resume button's icon and text based on the current {@code mPaused} state,
+     * without changing the state itself.
+     */
+    private void updatePauseButtonAppearance() {
+        ImageButton imageButton = (ImageButton) mPauseButton.getChildAt(0);
         if (mPaused) {
             String resumeText = mContext.getString(R.string.accessibility_autoclick_resume);
             mPauseButton.setTooltipText(resumeText);

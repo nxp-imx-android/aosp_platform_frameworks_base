@@ -57,8 +57,6 @@ import java.util.List;
 public class AppWindowLayoutSettingsService extends SystemService {
     private static final String TAG = "AppWinLayoutSetService";
 
-    private static final boolean DEBUG = false;
-
     @NonNull
     private final Context mContext;
     @NonNull
@@ -86,9 +84,8 @@ public class AppWindowLayoutSettingsService extends SystemService {
         mIPackageManager = AppGlobals.getPackageManager();
         mPackageMonitor = new AppWindowLayoutSettingsPackageMonitor();
         mPackageMonitor.setCallback(this::onPackageAdded);
-        final HandlerThread handlerThread = new HandlerThread("AppWinLayoutSetService",
+        mBackgroundThread = new HandlerThread("AppWinLayoutSetService",
                 THREAD_PRIORITY_BACKGROUND);
-        mBackgroundThread = handlerThread;
         mBackgroundThread.start();
     }
 
@@ -98,9 +95,8 @@ public class AppWindowLayoutSettingsService extends SystemService {
         mIPackageManager = AppGlobals.getPackageManager();
         mPackageMonitor = new AppWindowLayoutSettingsPackageMonitor();
         mPackageMonitor.setCallback(this::onPackageAdded);
-        final HandlerThread handlerThread = new HandlerThread("AppWinLayoutSetService",
+        mBackgroundThread = new HandlerThread("AppWinLayoutSetService",
                 THREAD_PRIORITY_BACKGROUND);
-        mBackgroundThread = handlerThread;
         mBackgroundThread.start();
     }
 
@@ -140,6 +136,8 @@ public class AppWindowLayoutSettingsService extends SystemService {
     public void awaitPackageInstallForAspectRatio(@NonNull String packageName,
             @UserIdInt int userId,
             @PackageManager.UserMinAspectRatio int aspectRatio) {
+        Slog.d(TAG, "Await package installed " + packageName + " to restore aspect ratio: "
+                + aspectRatio);
         synchronized (mLock) {
             createAndGetStorage(userId).storePackageAndUserAspectRatio(packageName, aspectRatio);
 
@@ -148,9 +146,12 @@ public class AppWindowLayoutSettingsService extends SystemService {
     }
 
     private void onPackageAdded(@NonNull String packageName, @UserIdInt int userId) {
+        Slog.d(TAG, "Notified package installed: " + packageName);
         synchronized (mLock) {
             final AppWindowLayoutSettingsRestoreStorage storage = createAndGetStorage(userId);
             final int aspectRatio = storage.getAndRemoveUserAspectRatioForPackage(packageName);
+            Slog.d(TAG, "Found aspect ratio: " + aspectRatio + " for package: "
+                    + packageName);
             if (aspectRatio != USER_MIN_ASPECT_RATIO_UNSET) {
                 checkExistingAspectRatioAndApplyRestore(packageName, userId, aspectRatio);
             }
@@ -178,6 +179,7 @@ public class AppWindowLayoutSettingsService extends SystemService {
             mIsPackageMonitorRegistered = true;
             mPackageMonitor.register(this.getContext(), mBackgroundThread.getLooper(),
                     UserHandle.ALL, true);
+            Slog.d(TAG, "Registered package monitor for restoring aspect ratios.");
         }
     }
 
@@ -186,6 +188,7 @@ public class AppWindowLayoutSettingsService extends SystemService {
         if (mIsPackageMonitorRegistered) {
             mIsPackageMonitorRegistered = false;
             mPackageMonitor.unregister();
+            Slog.d(TAG, "Unregistered package monitor.");
         }
     }
 
@@ -198,16 +201,13 @@ public class AppWindowLayoutSettingsService extends SystemService {
             // Don't apply the restore if the aspect ratio have already been set for the app.
             // Packages which are not yet installed will return `USER_MIN_ASPECT_RATIO_UNSET`.
             if (existingUserAspectRatio != USER_MIN_ASPECT_RATIO_UNSET) {
-                Slog.d(TAG, "Not restoring user aspect ratio=" + aspectRatio + " for package="
+                Slog.d(TAG, "Not restoring user aspect ratio: " + aspectRatio + " for package: "
                         + pkgName + " as it is already set to " + existingUserAspectRatio + ".");
                 return;
             }
 
             mIPackageManager.setUserMinAspectRatio(pkgName, userId, aspectRatio);
-            if (DEBUG) {
-                Slog.d(TAG, "Restored user aspect ratio=" + aspectRatio + " for package="
-                        + pkgName);
-            }
+            Slog.d(TAG, "Restored user aspect ratio: " + aspectRatio + " for package: " + pkgName);
         } catch (Exception e) {
             Slog.e(TAG, "Could not restore user aspect ratio for package " + pkgName, e);
         }

@@ -116,6 +116,7 @@ import com.android.systemui.scene.ui.view.WindowRootViewComponent;
 import com.android.systemui.screencapture.common.ScreenCaptureModule;
 import com.android.systemui.screenrecord.ScreenRecordModule;
 import com.android.systemui.screenshot.dagger.ScreenshotModule;
+import com.android.systemui.securelockdevice.dagger.SecureLockDeviceModule;
 import com.android.systemui.security.data.repository.SecurityRepositoryModule;
 import com.android.systemui.settings.UserTracker;
 import com.android.systemui.shade.ShadeController;
@@ -272,6 +273,7 @@ import javax.inject.Named;
         RetailModeModule.class,
         ScreenBrightnessModule.class,
         ScreenshotModule.class,
+        SecureLockDeviceModule.class,
         SensorModule.class,
         SecurityRepositoryModule.class,
         ScreenCaptureModule.class,

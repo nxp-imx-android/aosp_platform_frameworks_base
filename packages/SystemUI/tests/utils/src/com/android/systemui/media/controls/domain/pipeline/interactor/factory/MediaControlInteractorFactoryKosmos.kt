@@ -18,7 +18,6 @@ package com.android.systemui.media.controls.domain.pipeline.interactor.factory
 
 import com.android.internal.logging.InstanceId
 import com.android.systemui.activityIntentHelper
-import com.android.systemui.bluetooth.mockBroadcastDialogController
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.media.controls.data.repository.mediaFilterRepository
 import com.android.systemui.media.controls.domain.pipeline.interactor.MediaControlInteractor
@@ -42,7 +41,6 @@ val Kosmos.mediaControlInteractorFactory by
                     activityIntentHelper = activityIntentHelper,
                     lockscreenUserManager = notificationLockscreenUserManager,
                     mediaOutputDialogManager = mediaOutputDialogManager,
-                    broadcastDialogController = mockBroadcastDialogController,
                     mediaLogger = mediaLogger,
                 )
             }

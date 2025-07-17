@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 The Android Open Source Project
+ * Copyright (C) 2025 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,9 +14,16 @@
  * limitations under the License.
  */
 
-package com.android.systemui.bluetooth
+package com.android.wm.shell.functional.tiling
 
-import com.android.systemui.kosmos.Kosmos
-import com.android.systemui.util.mockito.mock
+import android.platform.test.annotations.Presubmit
+import android.platform.test.rule.ScreenRecordRule
+import com.android.wm.shell.scenarios.TilingTestBase
+import org.junit.runner.RunWith
+import org.junit.runners.BlockJUnit4ClassRunner
 
-val Kosmos.mockBroadcastDialogController by Kosmos.Fixture { mock<BroadcastDialogController>() }
+/* Functional test for [TilingTest]. */
+@RunWith(BlockJUnit4ClassRunner::class)
+@Presubmit
+@ScreenRecordRule.ScreenRecord
+class TilingTest : TilingTestBase()

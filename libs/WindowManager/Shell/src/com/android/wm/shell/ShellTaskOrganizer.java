@@ -984,7 +984,8 @@ public class ShellTaskOrganizer extends TaskOrganizer {
         if (info == null) {
             return;
         }
-        logSizeCompatRestartButtonEventReported(info,
+        logCompatRestartButtonEventReported(info.getTaskInfo(),
+                FrameworkStatsLog.SIZE_COMPAT_RESTART_BUTTON_EVENT_REPORTED,
                 FrameworkStatsLog.SIZE_COMPAT_RESTART_BUTTON_EVENT_REPORTED__EVENT__APPEARED);
     }
 
@@ -998,19 +999,31 @@ public class ShellTaskOrganizer extends TaskOrganizer {
         if (info == null) {
             return;
         }
-        logSizeCompatRestartButtonEventReported(info,
-                FrameworkStatsLog.SIZE_COMPAT_RESTART_BUTTON_EVENT_REPORTED__EVENT__CLICKED);
-        restartTaskTopActivityProcessIfVisible(info.getTaskInfo().token);
+        final RunningTaskInfo taskInfo = info.getTaskInfo();
+        logCompatRestartButtonClicked(taskInfo);
+        restartTaskTopActivityProcessIfVisible(taskInfo.token);
     }
 
-    private void logSizeCompatRestartButtonEventReported(@NonNull TaskAppearedInfo info,
-            int event) {
-        ActivityInfo topActivityInfo = info.getTaskInfo().topActivityInfo;
+    private void logCompatRestartButtonClicked(@NonNull RunningTaskInfo taskInfo) {
+        if (taskInfo.appCompatTaskInfo.isRestartMenuEnabledForDisplayMove()) {
+            final int type = FrameworkStatsLog
+                    .DISPLAY_COMPAT_RESTART_MENU_EVENT_REPORTED__EVENT__RESTART_MENU_EVENT_CLICKED;
+            logCompatRestartButtonEventReported(taskInfo,
+                    FrameworkStatsLog.DISPLAY_COMPAT_RESTART_MENU_EVENT_REPORTED, type);
+        } else {
+            logCompatRestartButtonEventReported(taskInfo,
+                    FrameworkStatsLog.SIZE_COMPAT_RESTART_BUTTON_EVENT_REPORTED,
+                    FrameworkStatsLog.SIZE_COMPAT_RESTART_BUTTON_EVENT_REPORTED__EVENT__CLICKED);
+        }
+    }
+
+    private void logCompatRestartButtonEventReported(@NonNull RunningTaskInfo taskInfo, int event,
+            int type) {
+        ActivityInfo topActivityInfo = taskInfo.topActivityInfo;
         if (topActivityInfo == null) {
             return;
         }
-        FrameworkStatsLog.write(FrameworkStatsLog.SIZE_COMPAT_RESTART_BUTTON_EVENT_REPORTED,
-                topActivityInfo.applicationInfo.uid, event);
+        FrameworkStatsLog.write(event, topActivityInfo.applicationInfo.uid, type);
     }
 
     /**

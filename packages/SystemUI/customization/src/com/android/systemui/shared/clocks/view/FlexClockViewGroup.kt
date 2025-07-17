@@ -85,7 +85,7 @@ class FlexClockViewGroup(clockCtx: ClockContext) :
                     .also { _childViews = it }
         }
 
-    private var maxChildSize = VPointF(-1, -1)
+    private var maxChildSize = VPointF(-1f)
     private val lockscreenTranslate = VPointF.ZERO
     private var aodTranslate = VPointF.ZERO
 
@@ -105,7 +105,11 @@ class FlexClockViewGroup(clockCtx: ClockContext) :
         updateLocale(Locale.getDefault())
     }
 
+    var maxSize = VPointF(-1f)
+        private set
+
     var onViewBoundsChanged: ((VRectF) -> Unit)? = null
+    var onViewMaxSizeChanged: ((VPointF) -> Unit)? = null
     private val digitOffsets = mutableMapOf<Int, Float>()
 
     protected fun calculateSize(
@@ -113,7 +117,7 @@ class FlexClockViewGroup(clockCtx: ClockContext) :
         heightMeasureSpec: Int,
         shouldMeasureChildren: Boolean,
     ): VPointF {
-        maxChildSize = VPointF(-1, -1)
+        maxChildSize = VPointF(-1f)
         childViews.forEach { textView ->
             if (shouldMeasureChildren) {
                 textView.measure(MeasureSpec.UNSPECIFIED, MeasureSpec.UNSPECIFIED)
@@ -140,6 +144,7 @@ class FlexClockViewGroup(clockCtx: ClockContext) :
         super.onViewAdded(child)
         (child as? FlexClockTextView)?.let {
             it.digitTranslateAnimator = DigitTranslateAnimator { invalidate() }
+            it.onViewMaxSizeChanged = { recomputeMaxTextSize() }
         }
         child.setWillNotDraw(true)
         _childViews = null
@@ -175,12 +180,13 @@ class FlexClockViewGroup(clockCtx: ClockContext) :
         super.requestLayout()
     }
 
-    override fun updateMeasuredSize() =
+    override fun updateMeasuredSize() {
         updateMeasuredSize(
             measuredWidthAndState,
             measuredHeightAndState,
             shouldMeasureChildren = false,
         )
+    }
 
     private fun updateMeasuredSize(
         widthMeasureSpec: Int,
@@ -189,6 +195,34 @@ class FlexClockViewGroup(clockCtx: ClockContext) :
     ) {
         val size = calculateSize(widthMeasureSpec, heightMeasureSpec, shouldMeasureChildren)
         setMeasuredDimension(size.x.roundToInt(), size.y.roundToInt())
+    }
+
+    private fun recomputeMaxTextSize() {
+        var maxSize = VPointF(-1f)
+        childViews.forEach { child ->
+            maxSize =
+                max(
+                    maxSize,
+                    // This wil overmeasure if some child views may be larger than others at their
+                    // maximal size, however all child views should be equivalently configured which
+                    // means that we should not need a more complex approach here.
+                    when (child.id) {
+                        // Digit pairs should only need to be duplicated vertically
+                        ClockViewIds.HOUR_DIGIT_PAIR,
+                        ClockViewIds.MINUTE_DIGIT_PAIR -> child.maxSize * VPointF(1f, 2f)
+                        // Single digit views are duplicated in both the x & y direction
+                        ClockViewIds.HOUR_FIRST_DIGIT,
+                        ClockViewIds.HOUR_SECOND_DIGIT,
+                        ClockViewIds.MINUTE_FIRST_DIGIT,
+                        ClockViewIds.MINUTE_SECOND_DIGIT -> child.maxSize * 2f
+                        // Other clock view ids are not valid children
+                        else -> VPointF(-1)
+                    },
+                )
+        }
+        val yBuffer = context.resources.getDimensionPixelSize(R.dimen.clock_vertical_digit_buffer)
+        this.maxSize = maxSize + VPointF(0f, yBuffer)
+        onViewMaxSizeChanged?.let { it(this.maxSize) }
     }
 
     override fun updateLocation() {
@@ -227,9 +261,9 @@ class FlexClockViewGroup(clockCtx: ClockContext) :
             var offset =
                 maxChildSize.run {
                     when (child.id) {
+                        ClockViewIds.HOUR_DIGIT_PAIR -> VPointF.ZERO
                         ClockViewIds.HOUR_FIRST_DIGIT -> VPointF.ZERO
                         ClockViewIds.HOUR_SECOND_DIGIT -> VPointF(x, 0f)
-                        ClockViewIds.HOUR_DIGIT_PAIR -> VPointF.ZERO
                         // Add a small vertical buffer for second line views
                         ClockViewIds.MINUTE_DIGIT_PAIR -> VPointF(0f, y + yBuffer)
                         ClockViewIds.MINUTE_FIRST_DIGIT -> VPointF(0f, y + yBuffer)

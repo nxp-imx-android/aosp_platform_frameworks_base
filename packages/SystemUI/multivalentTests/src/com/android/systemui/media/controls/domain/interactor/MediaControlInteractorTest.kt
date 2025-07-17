@@ -26,7 +26,6 @@ import com.android.systemui.activityIntentHelper
 import com.android.systemui.animation.ActivityTransitionAnimator
 import com.android.systemui.animation.DialogTransitionAnimator
 import com.android.systemui.animation.Expandable
-import com.android.systemui.bluetooth.mockBroadcastDialogController
 import com.android.systemui.concurrency.fakeExecutor
 import com.android.systemui.coroutines.collectLastValue
 import com.android.systemui.kosmos.testScope
@@ -208,22 +207,6 @@ class MediaControlInteractorTest : SysuiTestCase() {
                 eq(dialogTransitionController),
                 eq(null),
                 eq(null),
-            )
-    }
-
-    @Test
-    fun startBroadcastDialog() {
-        val expandable = mock<Expandable>()
-        val dialogTransitionController = mock<DialogTransitionAnimator.Controller>()
-        whenever(expandable.dialogTransitionController()).thenReturn(dialogTransitionController)
-
-        underTest.startBroadcastDialog(expandable, APP_NAME, PACKAGE_NAME)
-
-        verify(kosmos.mockBroadcastDialogController)
-            .createBroadcastDialogWithController(
-                eq(APP_NAME),
-                eq(PACKAGE_NAME),
-                eq(dialogTransitionController),
             )
     }
 

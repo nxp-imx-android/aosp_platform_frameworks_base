@@ -16,7 +16,6 @@
 
 package com.android.internal.app;
 
-import static android.service.chooser.Flags.doNotDelayChooserAdapterNotifyDataChange;
 import static android.service.chooser.Flags.notifySingleItemChangeOnIconLoad;
 
 import static com.android.internal.app.ChooserActivity.TARGET_TYPE_SHORTCUTS_FROM_PREDICTION_SERVICE;
@@ -102,7 +101,6 @@ public class ChooserListAdapter extends ResolverListAdapter {
 
     private final ChooserActivity.BaseChooserTargetComparator mBaseTargetComparator =
             new ChooserActivity.BaseChooserTargetComparator();
-    private boolean mListViewDataChanged = false;
 
     // Sorted list of DisplayResolveInfos for the alphabetical app section.
     private List<DisplayResolveInfo> mSortedList = new ArrayList<>();
@@ -242,25 +240,6 @@ public class ChooserListAdapter extends ResolverListAdapter {
         createPlaceHolders();
         mChooserListCommunicator.onHandlePackagesChanged(this);
 
-    }
-
-    @Override
-    public void notifyDataSetChanged() {
-        if (doNotDelayChooserAdapterNotifyDataChange()) {
-            super.notifyDataSetChanged();
-            return;
-        }
-        if (!mListViewDataChanged) {
-            mChooserListCommunicator.sendListViewUpdateMessage(getUserHandle());
-            mListViewDataChanged = true;
-        }
-    }
-
-    void refreshListView() {
-        if (mListViewDataChanged) {
-            super.notifyDataSetChanged();
-        }
-        mListViewDataChanged = false;
     }
 
     private void createPlaceHolders() {
@@ -796,8 +775,6 @@ public class ChooserListAdapter extends ResolverListAdapter {
     public interface ChooserListCommunicator extends ResolverListCommunicator {
 
         int getMaxRankedTargets();
-
-        void sendListViewUpdateMessage(UserHandle userHandle);
 
         boolean isSendAction(Intent targetIntent);
 

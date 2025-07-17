@@ -93,6 +93,7 @@ import android.os.Vibrator;
 import android.os.storage.StorageManager;
 import android.permission.PermissionManager;
 import android.safetycenter.SafetyCenterManager;
+import android.security.authenticationpolicy.AuthenticationPolicyManager;
 import android.service.dreams.DreamService;
 import android.service.dreams.IDreamManager;
 import android.service.vr.IVrManager;
@@ -192,6 +193,13 @@ public class FrameworkServicesModule {
     @Singleton
     static AudioManager provideAudioManager(Context context) {
         return context.getSystemService(AudioManager.class);
+    }
+
+    @Provides
+    @Singleton
+    @Nullable
+    static AuthenticationPolicyManager provideAuthenticationPolicyManager(Context context) {
+        return context.getSystemService(AuthenticationPolicyManager.class);
     }
 
     @Provides

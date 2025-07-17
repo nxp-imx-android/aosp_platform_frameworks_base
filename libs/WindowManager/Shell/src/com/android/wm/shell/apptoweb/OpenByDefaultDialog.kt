@@ -20,25 +20,31 @@ import android.app.ActivityManager.RunningTaskInfo
 import android.content.Context
 import android.content.pm.PackageManager.NameNotFoundException
 import android.content.pm.verify.domain.DomainVerificationManager
+import android.content.res.Configuration
 import android.graphics.Bitmap
 import android.graphics.PixelFormat
+import android.graphics.Rect
+import android.os.Binder
 import android.util.Slog
+import android.view.IWindow
 import android.view.LayoutInflater
 import android.view.SurfaceControl
 import android.view.SurfaceControlViewHost
-import android.view.WindowManager
+import android.view.WindowManager.LayoutParams
 import android.view.WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
 import android.view.WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL
 import android.view.WindowManager.LayoutParams.TYPE_APPLICATION_PANEL
 import android.view.WindowlessWindowManager
+import android.view.accessibility.AccessibilityEvent
 import android.widget.ImageView
 import android.widget.RadioButton
 import android.widget.TextView
 import android.window.TaskConstants
 import com.android.wm.shell.R
 import com.android.wm.shell.common.DisplayController
+import com.android.wm.shell.compatui.DialogAnimationController
 import com.android.wm.shell.shared.annotations.ShellMainThread
-import com.android.wm.shell.windowdecor.additionalviewcontainer.AdditionalViewHostViewContainer
+import com.android.wm.shell.transition.Transitions
 import com.android.wm.shell.windowdecor.common.WindowDecorTaskResourceLoader
 import java.util.function.Supplier
 import kotlinx.coroutines.CoroutineScope
@@ -54,6 +60,7 @@ import kotlinx.coroutines.launch
 internal class OpenByDefaultDialog(
     private val context: Context,
     private val userContext: Context,
+    private val transitions: Transitions,
     private val taskInfo: RunningTaskInfo,
     private val taskSurface: SurfaceControl,
     private val displayController: DisplayController,
@@ -65,14 +72,15 @@ internal class OpenByDefaultDialog(
 ) {
     private lateinit var dialog: OpenByDefaultDialogView
     private lateinit var viewHost: SurfaceControlViewHost
-    private lateinit var dialogSurfaceControl: SurfaceControl
-    private var dialogContainer: AdditionalViewHostViewContainer? = null
+    private lateinit var dialogWindowManager: DialogWindowManager
     private lateinit var appIconView: ImageView
     private lateinit var appNameView: TextView
 
     private lateinit var openInAppButton: RadioButton
     private lateinit var openInBrowserButton: RadioButton
 
+    private val animationController =
+        DialogAnimationController<OpenByDefaultDialogView>(context, "OpenByDefaultDialog")
     private val domainVerificationManager =
         userContext.getSystemService(DomainVerificationManager::class.java)!!
     private val packageName = taskInfo.baseActivity?.packageName!!
@@ -91,9 +99,6 @@ internal class OpenByDefaultDialog(
 
     /** Creates an open by default settings dialog. */
     fun createDialog() {
-        val t = SurfaceControl.Transaction()
-        val taskBounds = taskInfo.configuration.windowConfiguration.bounds
-
         dialog = LayoutInflater.from(context)
             .inflate(
                 R.layout.open_by_default_settings_dialog,
@@ -102,47 +107,48 @@ internal class OpenByDefaultDialog(
         appIconView = dialog.requireViewById(R.id.application_icon)
         appNameView = dialog.requireViewById(R.id.application_name)
 
-        val display = displayController.getDisplay(taskInfo.displayId)
-        val builder: SurfaceControl.Builder = SurfaceControl.Builder()
-        dialogSurfaceControl = builder
-            .setName("Open by Default Dialog of Task=" + taskInfo.taskId)
-            .setContainerLayer()
-            .setParent(taskSurface)
-            .setCallsite("OpenByDefaultDialog#createDialog")
-            .build()
-        t.setPosition(dialogSurfaceControl, 0f, 0f)
-            .setWindowCrop(dialogSurfaceControl, taskBounds.width(), taskBounds.height())
-            .setLayer(dialogSurfaceControl, TaskConstants.TASK_CHILD_LAYER_SETTINGS_DIALOG)
-            .show(dialogSurfaceControl)
-        val lp = WindowManager.LayoutParams(
-            taskBounds.width(),
-            taskBounds.height(),
-            TYPE_APPLICATION_PANEL,
-            FLAG_NOT_FOCUSABLE or FLAG_NOT_TOUCH_MODAL,
-            PixelFormat.TRANSLUCENT)
-        lp.title = "Open by default settings dialog of task=" + taskInfo.taskId
-        lp.setTrustedOverlay()
-        val windowManager = WindowlessWindowManager(
-            taskInfo.configuration,
-            dialogSurfaceControl, null /* hostInputToken */
-        )
-        viewHost = SurfaceControlViewHost(context, display, windowManager, "Dialog").apply {
-            setView(dialog, lp)
-            rootSurfaceControl.applyTransactionOnDraw(t)
-        }
-        dialogContainer = AdditionalViewHostViewContainer(
-            dialogSurfaceControl, viewHost, surfaceControlTransactionSupplier)
+        // TODO: ag/34061541 - once landed, can refactor with simpler fix
+        transitions.runOnIdle(this::createDialogWindow)
 
-        dialog.setDismissOnClickListener{
-            closeMenu()
-        }
-
+        dialog.setDismissOnClickListener { closeMenu() }
         dialog.setConfirmButtonClickListener {
             setDefaultLinkHandlingSetting()
             closeMenu()
         }
 
         listener.onDialogCreated()
+    }
+
+    private fun createDialogWindow() {
+        val display = displayController.getDisplay(taskInfo.displayId)
+        val taskBounds = taskInfo.configuration.windowConfiguration.bounds
+        val lp = LayoutParams(
+            taskBounds.width(),
+            taskBounds.height(),
+            TYPE_APPLICATION_PANEL,
+            FLAG_NOT_FOCUSABLE or FLAG_NOT_TOUCH_MODAL,
+            PixelFormat.TRANSLUCENT
+        ).apply {
+            token = Binder()
+            title = "Open by default settings dialog of task=${taskInfo.taskId}"
+            setTrustedOverlay()
+        }
+
+        dialogWindowManager = DialogWindowManager(taskInfo.configuration)
+        viewHost = SurfaceControlViewHost(context, display, dialogWindowManager, "Dialog").apply {
+            setView(dialog, lp)
+        }
+
+        animationController.startEnterAnimation(dialog, this::onAnimationEnded)
+    }
+
+    private fun onAnimationEnded() {
+        dialog.post {
+            dialog.sendAccessibilityEvent(AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED)
+            val subHeader: TextView = dialog.requireViewById(R.id.dialog_subheader)
+            subHeader.requestFocus()
+            subHeader.requestAccessibilityFocus()
+        }
     }
 
     private fun initializeRadioButtons() {
@@ -163,22 +169,22 @@ internal class OpenByDefaultDialog(
         } catch (e: NameNotFoundException) {
             Slog.e(
                 TAG,
-                "Failed to change link handling policy due to the package name is not found: " + e
+                "Failed to change link handling policy due to the package name is not found: $e"
             )
         }
     }
 
     private fun closeMenu() {
         loadAppInfoJob?.cancel()
-        dialogContainer?.releaseView()
-        dialogContainer = null
-        listener.onDialogDismissed()
+        animationController.startExitAnimation(dialog) {
+            // Release the host and manager after the exit animation
+            viewHost.release()
+            dialogWindowManager.release()
+            listener.onDialogDismissed()
+        }
     }
 
-     private fun bindAppInfo(
-        appIconBitmap: Bitmap,
-        appName: CharSequence
-    ) {
+     private fun bindAppInfo(appIconBitmap: Bitmap, appName: CharSequence) {
         appIconView.setImageBitmap(appIconBitmap)
         appNameView.text = appName
     }
@@ -186,14 +192,56 @@ internal class OpenByDefaultDialog(
     /**
      * Relayout the dialog to the new task bounds.
      */
-    fun relayout(
-        taskInfo: RunningTaskInfo,
-    ) {
-        val t = surfaceControlTransactionSupplier.get()
+    fun relayout(taskInfo: RunningTaskInfo) {
         val taskBounds = taskInfo.configuration.windowConfiguration.bounds
-        t.setWindowCrop(dialogSurfaceControl, taskBounds.width(), taskBounds.height())
-        viewHost.rootSurfaceControl.applyTransactionOnDraw(t)
+        dialogWindowManager.relayout(taskBounds)
         viewHost.relayout(taskBounds.width(), taskBounds.height())
+    }
+
+    /**
+     * Handles showing, positioning and tearing down the dialog surface
+     */
+    private inner class DialogWindowManager(config: Configuration) :
+        WindowlessWindowManager(config, null, null) {
+
+        private var leash: SurfaceControl? = null
+
+        override fun getParentSurface(
+            window: IWindow,
+            attrs: LayoutParams
+        ): SurfaceControl {
+            val builder = SurfaceControl.Builder()
+                .setContainerLayer()
+                .setName("OpenByDefaultDialogLeash")
+                .setParent(taskSurface)
+                .setCallsite("OpenByDefaultDialog.getParentSurface")
+
+            val newLeash = builder.build()
+            leash = newLeash
+
+            val t = surfaceControlTransactionSupplier.get()
+            val taskBounds = taskInfo.configuration.windowConfiguration.bounds
+            t.setPosition(newLeash, 0f, 0f)
+                .setWindowCrop(newLeash, taskBounds.width(), taskBounds.height())
+                .setLayer(newLeash, TaskConstants.TASK_CHILD_LAYER_SETTINGS_DIALOG)
+                .show(newLeash)
+                .apply()
+
+            return newLeash
+        }
+
+        fun relayout(taskBounds: Rect) {
+            leash?.let {
+                surfaceControlTransactionSupplier.get()
+                    .setWindowCrop(it, taskBounds.width(), taskBounds.height())
+                    .apply()
+            }
+        }
+
+        fun release() {
+            leash?.let { surfaceControlTransactionSupplier.get().remove(it).apply() }
+            leash = null
+        }
     }
 
     /**

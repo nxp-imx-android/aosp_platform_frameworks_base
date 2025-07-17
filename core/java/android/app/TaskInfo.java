@@ -418,6 +418,12 @@ public class TaskInfo {
     @Nullable
     public Rect topActivityMainWindowFrame;
 
+    /**
+     * Whether the Task should be an Interactive Picture-in-Picture window.
+     * @hide
+     */
+    public boolean isInteractivePictureInPicture;
+
     TaskInfo() {
         // Do nothing
     }

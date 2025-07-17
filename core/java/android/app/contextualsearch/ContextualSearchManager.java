@@ -254,6 +254,26 @@ public final class ContextualSearchManager {
     }
 
     /**
+     * Used to check whether contextual search is available on the device. This method should be
+     * called before calling {@link #startContextualSearch()} or adding any UI related to it to
+     * ensure that the device is configured to support contextual search.
+     *
+     * @see #startContextualSearch()
+     * @return true if contextual search is available on the device, false otherwise.
+     */
+    @FlaggedApi(Flags.FLAG_SELF_INVOCATION)
+    public boolean isContextualSearchAvailable() {
+        if (DEBUG) Log.d(TAG, "isContextualSearchAvailable");
+        try {
+            return mService.isContextualSearchAvailable();
+        } catch (RemoteException e) {
+            if (DEBUG) Log.e(TAG, "Failed to determine isContextualSearchAvailable", e);
+            e.rethrowFromSystemServer();
+        }
+        return false;
+    }
+
+    /**
      * Used to start contextual search for a given system entrypoint.
      * <p>
      *     When {@link #startContextualSearch} is called, the system server does the following:
@@ -266,6 +286,8 @@ public final class ContextualSearchManager {
      *         <li>Launches the activity.
      *     </ul>
      * </p>
+     *
+     * <p>This method will fail silently if Contextual Search is not available on the device.
      *
      * @param entrypoint the invocation entrypoint
      *
@@ -287,10 +309,18 @@ public final class ContextualSearchManager {
     }
 
     /**
-     * Used to start contextual search from within an app.
+     * Used to start Contextual Search from within an app. This will send a screenshot to the
+     * Contextual Search app designated by the device manufacturer. The user can then select content
+     * on the screenshot to get a search result or take an action such as calling a phone number or
+     * translating the text.
      *
-     * <p>System apps should use the available System APIs rather than this method.
+     * <p>Prior to calling this method or showing any UI related to it, you should verify that
+     * Contextual Search is available on the device by using {@link #isContextualSearchAvailable()}.
+     * Otherwise, this method will fail silently.
      *
+     * <p>This method should only be called from an app that has a foreground Activity.
+     *
+     * @see #isContextualSearchAvailable()
      * @throws SecurityException if the caller does not have a foreground Activity.
      */
     @FlaggedApi(Flags.FLAG_SELF_INVOCATION)

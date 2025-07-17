@@ -60,6 +60,7 @@ test_module_config {
         "com.android.wm.shell.flicker.fundamentals.SwitchToHomeFromDesktopTest",
         "com.android.wm.shell.flicker.fundamentals.SwitchToOverviewFromDesktopFlickerTest",
         "com.android.wm.shell.flicker.keyboardshortcuts.EnterDesktopFromKeyboardShortcutFlickerTest",
+        "com.android.wm.shell.flicker.keyboardshortcuts.ExitDesktopToFullScreenWithKeyboardShortcutFlickerTest",
         "com.android.wm.shell.flicker.maximize.MaximizeAppDoubleTapAppHeaderFlickerTest",
         "com.android.wm.shell.flicker.maximize.MaximizeAppFlickerTest",
         "com.android.wm.shell.flicker.maximize.MaximizeAppNonResizableFlickerTest",
@@ -201,6 +202,13 @@ test_module_config {
     base: "WMShellFlickerTestsDesktopMode",
     test_suites: ["device-tests"],
     include_filters: ["com.android.wm.shell.flicker.keyboardshortcuts.EnterDesktopFromKeyboardShortcutFlickerTest"],
+}
+
+test_module_config {
+    name: "WMShellFlickerTestsDesktopMode-keyboardshortcuts-ExitDesktopToFullScreenWithKeyboardShortcutFlickerTest",
+    base: "WMShellFlickerTestsDesktopMode",
+    test_suites: ["device-tests"],
+    include_filters: ["com.android.wm.shell.flicker.keyboardshortcuts.ExitDesktopToFullScreenWithKeyboardShortcutFlickerTest"],
 }
 
 test_module_config {

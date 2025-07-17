@@ -29,7 +29,6 @@ import com.android.systemui.ActivityIntentHelper
 import com.android.systemui.animation.DialogCuj
 import com.android.systemui.animation.DialogTransitionAnimator
 import com.android.systemui.animation.Expandable
-import com.android.systemui.bluetooth.BroadcastDialogController
 import com.android.systemui.media.controls.data.repository.MediaFilterRepository
 import com.android.systemui.media.controls.domain.pipeline.MediaDataProcessor
 import com.android.systemui.media.controls.domain.pipeline.getNotificationActions
@@ -58,7 +57,6 @@ constructor(
     private val activityIntentHelper: ActivityIntentHelper,
     private val lockscreenUserManager: NotificationLockscreenUserManager,
     private val mediaOutputDialogManager: MediaOutputDialogManager,
-    private val broadcastDialogController: BroadcastDialogController,
     private val mediaLogger: MediaLogger,
 ) {
 
@@ -177,14 +175,6 @@ constructor(
             true,
             expandable.dialogController(),
             token = token,
-        )
-    }
-
-    fun startBroadcastDialog(expandable: Expandable, broadcastApp: String, packageName: String) {
-        broadcastDialogController.createBroadcastDialogWithController(
-            broadcastApp,
-            packageName,
-            expandable.dialogTransitionController(),
         )
     }
 

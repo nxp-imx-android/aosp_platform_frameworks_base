@@ -107,5 +107,18 @@
    {
      "name": "PackageManagerServiceServerTests_Presubmit"
    }
- ]
+ ],
+  "wear-cts-presubmit": [
+    {
+      "name": "CtsWidgetTestCases",
+      "options": [
+        {
+          "include-filter": "android.widget.cts.RemoteViewsTest"
+        },
+        {
+          "include-filter": "android.widget.cts.TextViewTest"
+        }
+      ]
+    }
+  ]
 }

@@ -279,7 +279,6 @@ import static com.android.internal.widget.LockPatternUtils.StrongAuthTracker.STR
 import static com.android.server.SystemTimeZone.TIME_ZONE_CONFIDENCE_HIGH;
 import static com.android.server.am.ActivityManagerService.STOCK_PM_FLAGS;
 import static com.android.server.devicepolicy.DevicePolicyEngine.DEFAULT_POLICY_SIZE_LIMIT;
-import static com.android.server.devicepolicy.DevicePolicyEngine.SYSTEM_SUPERVISION_ROLE;
 import static com.android.server.devicepolicy.DevicePolicyStatsLog.DEVICE_POLICY_MANAGEMENT_MODE;
 import static com.android.server.devicepolicy.DevicePolicyStatsLog.DEVICE_POLICY_MANAGEMENT_MODE__MANAGEMENT_MODE__COPE;
 import static com.android.server.devicepolicy.DevicePolicyStatsLog.DEVICE_POLICY_MANAGEMENT_MODE__MANAGEMENT_MODE__DEVICE_OWNER;
@@ -934,6 +933,7 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
     private static final int RETRY_COPY_ACCOUNT_ATTEMPTS = 3;
 
     private static final int BOOT_TO_HSU_FOR_PROVISIONED_DEVICE = 1;
+
 
     /**
      * For apps targeting U+
@@ -16671,8 +16671,7 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
             return admins.iterator().next().getParcelableAdmin();
         }
         Optional<EnforcingAdmin> supervision = admins.stream()
-                .filter(a -> a.hasAuthority(
-                        EnforcingAdmin.getRoleAuthorityOf(SYSTEM_SUPERVISION_ROLE)))
+                .filter(EnforcingAdmin::isSupervisionAdmin)
                 .findFirst();
         if (supervision.isPresent()) {
             return supervision.get().getParcelableAdmin();
@@ -16839,6 +16838,59 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
             intent.putExtra(DevicePolicyManager.EXTRA_RESTRICTION, restriction);
         }
         return intent;
+    }
+
+    @Override
+    public List<android.app.admin.EnforcingAdmin> getEnforcingAdminsForPolicy(
+            String policyIdentifier, int userId) {
+        Preconditions.checkCallAuthorization(canQueryAdminPolicy(getCallerIdentity()));
+
+        return Binder.withCleanCallingIdentity(() -> {
+
+            // TODO(b/414733570): Handle legacy policies that are not stored in DPE first.
+
+            PolicyDefinition<?> policyDefinition =
+                    PolicyDefinition.getPolicyDefinitionForIdentifier(policyIdentifier);
+            if (policyDefinition == null) {
+                throw new IllegalArgumentException(
+                        "Unknown policy identifier: " + policyIdentifier);
+            }
+            // Generic policy definitions are never set directly. They're set through
+            // parameterized policy keys, thus the callers need to query them using the
+            // corresponding  {@code PolicyKey}.
+            if (policyDefinition.isGenericDefinition()) {
+                throw new IllegalArgumentException(
+                        "Generic policies are not supported. Call DPM"
+                                + ".getEnforcingAdminsForPolicyKey "
+                                + "instead.");
+            }
+
+            Set<EnforcingAdmin> admins =
+                    mDevicePolicyEngine.getEnforcingAdminsForResolvedPolicy(policyDefinition,
+                            userId);
+
+            // The user restrictions that are set by the admins are already included in the
+            // EnforcingAdmin set that DevicePolicyEngine returns in the previous line.
+            if (policyDefinition.isUserRestrictionPolicy()
+                    && isUserRestrictionPolicyEnforcedBySystem(policyDefinition, userId)) {
+                admins.add(
+                        EnforcingAdmin.createSystemEnforcingAdmin(PLATFORM_PACKAGE_NAME));
+            }
+
+            // Convert the internal EnforcingAdmin instances to external parcelable EnforcingAdmin
+            // list.
+            return admins.stream().map(EnforcingAdmin::getParcelableAdmin).toList();
+        });
+    }
+
+    private boolean isUserRestrictionPolicyEnforcedBySystem(
+            PolicyDefinition<?> policyDefinition, int userId) {
+        // User restriction can be enforced by the system aside from admins, until they're
+        // migrated to DevicePolicyEngine, DPMS should read them from UserManager.
+        UserRestrictionPolicyKey policyKey =
+                (UserRestrictionPolicyKey) policyDefinition.getPolicyKey();
+        return mUserManager.hasBaseUserRestriction(policyKey.getRestriction(),
+                UserHandle.of(userId));
     }
 
     /**

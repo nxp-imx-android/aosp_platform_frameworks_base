@@ -490,7 +490,7 @@ public class PipController implements ConfigurationChangeListener,
                 mPipTransitionState.setState(PipTransitionState.SCHEDULED_BOUNDS_CHANGE, extra);
             });
         } else {
-            mPipTransitionState.setIsPipBoundsChangingWithDisplay(true);
+            mPipTransitionState.setIsDisplayChangeScheduled(true);
             t.setBounds(mPipTransitionState.getPipTaskToken(), mPipBoundsState.getBounds());
         }
         // Update the size spec in PipBoundsState afterwards.

@@ -151,7 +151,6 @@ class FromDreamingTransitionInteractorTest(flags: FlagsParameterization?) : Sysu
         }
 
     @Test
-    @EnableFlags(Flags.FLAG_KEYGUARD_WM_STATE_REFACTOR)
     fun testTransitionsToLockscreen_whenOccludingActivityEnds() =
         kosmos.runTest {
             fakeKeyguardRepository.setDreaming(true)
@@ -198,7 +197,7 @@ class FromDreamingTransitionInteractorTest(flags: FlagsParameterization?) : Sysu
         }
 
     @Test
-    @DisableFlags(Flags.FLAG_SCENE_CONTAINER)
+    @DisableFlags(Flags.FLAG_SCENE_CONTAINER, FLAG_GLANCEABLE_HUB_V2)
     fun testTransitionToGlanceableHubOnWake() =
         kosmos.runTest {
             transitionRepository.sendTransitionSteps(

@@ -221,7 +221,7 @@ public class PhonePipMenuController implements PipMenuController,
                             @Override
                             public void surfaceCreated(SurfaceControl.Transaction t) {
                                 final SurfaceControl sc = getSurfaceControl();
-                                if (sc != null) {
+                                if (sc != null && mLeash.isValid()) {
                                     t.reparent(sc, mLeash);
                                     // make menu on top of the surface
                                     t.setLayer(sc, Integer.MAX_VALUE);

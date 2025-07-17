@@ -357,9 +357,12 @@ private fun ContentScope.QuickSettingsScene(
                     }
                     Spacer(modifier = Modifier.height(16.dp))
                     Column(
-                        modifier = Modifier
-                            .element(ElementKeys.QuickSettingsContent)
-                            .padding(horizontal = dimensionResource(id = R.dimen.qs_horizontal_margin))
+                        modifier =
+                            Modifier.element(ElementKeys.QuickSettingsContent)
+                                .padding(
+                                    horizontal =
+                                        dimensionResource(id = R.dimen.qs_horizontal_margin)
+                                )
                     ) {
                         BrightnessSliderContainer(
                             viewModel.qsContainerViewModel.brightnessSliderViewModel,
@@ -368,18 +371,20 @@ private fun ContentScope.QuickSettingsScene(
                                     Color.Transparent,
                                     ContainerColors.defaultContainerColor,
                                 ),
-                            modifier = Modifier.padding(
-                                vertical = dimensionResource(id = R.dimen.qs_brightness_margin_top),
-                            )
+                            modifier =
+                                Modifier.padding(
+                                    vertical =
+                                        dimensionResource(id = R.dimen.qs_brightness_margin_top)
+                                ),
                         )
                         GridAnchor()
                         // This view has its own horizontal padding
                         val content: @Composable () -> Unit = {
                             TileGrid(
                                 viewModel.qsContainerViewModel.tileGridViewModel,
-                                modifier = Modifier
-                                    .sysuiResTag("quick_settings_panel")
-                                    .layoutId(QSMediaMeasurePolicy.LayoutId.QS),
+                                modifier =
+                                    Modifier.sysuiResTag("quick_settings_panel")
+                                        .layoutId(QSMediaMeasurePolicy.LayoutId.QS),
                             )
 
                             MediaCarousel(
@@ -405,7 +410,7 @@ private fun ContentScope.QuickSettingsScene(
                             if (mediaInRow) {
                                 Layout(
                                     content = content,
-                                    measurePolicy = landscapeQsMediaMeasurePolicy
+                                    measurePolicy = landscapeQsMediaMeasurePolicy,
                                 )
                             } else {
                                 content()

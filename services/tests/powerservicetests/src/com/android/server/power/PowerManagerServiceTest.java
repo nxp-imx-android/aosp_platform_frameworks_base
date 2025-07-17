@@ -38,6 +38,7 @@ import static android.service.dreams.Flags.FLAG_DREAMS_V2;
 import static com.android.server.deviceidle.Flags.FLAG_DISABLE_WAKELOCKS_IN_LIGHT_IDLE;
 
 import static com.google.common.truth.Truth.assertThat;
+import static com.google.common.truth.Truth.assertWithMessage;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -655,6 +656,257 @@ public class PowerManagerServiceTest {
                 PowerManager.GO_TO_SLEEP_FLAG_SOFT_SLEEP);
         assertThat(mService.getGlobalWakefulnessLocked()).isEqualTo(WAKEFULNESS_AWAKE);
     }
+
+    @RequiresFlagsEnabled(Flags.FLAG_PARTIAL_SLEEP_WAKELOCKS)
+    @Test
+    public void testPartialSleepWakelock_keepsDeviceAsleep() {
+        createService();
+        startSystem();
+
+        // Go to sleep (force full sleep - not doze)
+        mService.getBinderServiceInstance().goToSleep(mClock.now(),
+                PowerManager.GO_TO_SLEEP_REASON_APPLICATION,
+                PowerManager.GO_TO_SLEEP_FLAG_NO_DOZE);
+        advanceTime(1000);
+
+        assertWithMessage("Device is not setup as asleep")
+                .that(mService.getGlobalWakefulnessLocked())
+                .isEqualTo(WAKEFULNESS_ASLEEP);
+
+        // Grab a wakelock
+        final String tag = "sleeplock1";
+        final String packageName = "pkg.name";
+        final IBinder token = new Binder();
+        final int flags = PowerManager.PARTIAL_SLEEP_WAKE_LOCK;
+        mService.getBinderServiceInstance().acquireWakeLock(token, flags, tag, packageName,
+                null /* workSource */, null /* historyTag */, Display.INVALID_DISPLAY,
+                null /* callback */);
+
+        // try to wake up, should fail to wake
+        mService.getBinderServiceInstance().wakeUp(mClock.now(),
+                PowerManager.WAKE_REASON_WAKE_KEY, "", "");
+        advanceTime(1000);
+
+        assertWithMessage("Device did not stay asleep")
+                .that(mService.getGlobalWakefulnessLocked())
+                .isEqualTo(WAKEFULNESS_ASLEEP);
+
+        mService.getBinderServiceInstance().releaseWakeLock(token, /* flags= */ 0);
+    }
+
+    @RequiresFlagsEnabled(Flags.FLAG_PARTIAL_SLEEP_WAKELOCKS)
+    @Test
+    public void testPartialSleepWakelock_isRememberedFromAwakeToAsleep() {
+        createService();
+        startSystem();
+
+        assertWithMessage("Device is not setup as awake")
+                .that(mService.getGlobalWakefulnessLocked())
+                .isEqualTo(WAKEFULNESS_AWAKE);
+
+        // Grab a wakelock
+        final String tag = "sleeplock1";
+        final String packageName = "pkg.name";
+        final IBinder token = new Binder();
+        final int flags = PowerManager.PARTIAL_SLEEP_WAKE_LOCK;
+        mService.getBinderServiceInstance().acquireWakeLock(token, flags, tag, packageName,
+                null /* workSource */, null /* historyTag */, Display.INVALID_DISPLAY,
+                null /* callback */);
+
+        mService.getBinderServiceInstance().goToSleep(mClock.now(),
+                PowerManager.GO_TO_SLEEP_REASON_APPLICATION,
+                PowerManager.GO_TO_SLEEP_FLAG_NO_DOZE);
+        advanceTime(1000);
+
+        assertWithMessage("Device did not go to sleep")
+                .that(mService.getGlobalWakefulnessLocked())
+                .isEqualTo(WAKEFULNESS_ASLEEP);
+
+        // try to wake up, should fail to wake
+        mService.getBinderServiceInstance().wakeUp(mClock.now(),
+                PowerManager.WAKE_REASON_WAKE_KEY, "", "");
+        advanceTime(1000);
+
+        assertWithMessage("Device did not stay asleep")
+                .that(mService.getGlobalWakefulnessLocked())
+                .isEqualTo(WAKEFULNESS_ASLEEP);
+        mService.getBinderServiceInstance().releaseWakeLock(token, /* flags= */ 0);
+
+    }
+
+    @RequiresFlagsEnabled(Flags.FLAG_PARTIAL_SLEEP_WAKELOCKS)
+    @Test
+    public void testPartialSleepWakelock_ignoresOtherWakingWakelocks() {
+        createService();
+        startSystem();
+
+        // Go to sleep (force full sleep - not doze)
+        mService.getBinderServiceInstance().goToSleep(mClock.now(),
+                PowerManager.GO_TO_SLEEP_REASON_APPLICATION,
+                PowerManager.GO_TO_SLEEP_FLAG_NO_DOZE);
+        advanceTime(1000);
+
+        assertWithMessage("Device is not setup as asleep")
+                .that(mService.getGlobalWakefulnessLocked())
+                .isEqualTo(WAKEFULNESS_ASLEEP);
+
+        // Grab a wakelock
+        final String tag = "sleeplock1";
+        final String packageName = "pkg.name";
+        final IBinder token = new Binder();
+        final int flags = PowerManager.PARTIAL_SLEEP_WAKE_LOCK;
+        mService.getBinderServiceInstance().acquireWakeLock(token, flags, tag, packageName,
+                null /* workSource */, null /* historyTag */, Display.INVALID_DISPLAY,
+                null /* callback */);
+        advanceTime(1000);
+
+        // Grab a wakelock that should wake the device
+        final String tag2 = "fullAndCausesWakeup";
+        final String packageName2 = "pkg.name2";
+        final IBinder token2 = new Binder();
+        final int flags2 = PowerManager.FULL_WAKE_LOCK | PowerManager.ACQUIRE_CAUSES_WAKEUP;
+        mService.getBinderServiceInstance().acquireWakeLock(token2, flags2, tag2, packageName2,
+                null /* workSource */, null /* historyTag */, Display.INVALID_DISPLAY,
+                null /* callback */);
+
+        assertWithMessage("Sleeplock did not supersede full wakelock with acquire")
+                .that(mService.getGlobalWakefulnessLocked())
+                .isEqualTo(WAKEFULNESS_ASLEEP);
+    }
+
+    @RequiresFlagsEnabled(Flags.FLAG_PARTIAL_SLEEP_WAKELOCKS)
+    @Test
+    public void testPartialSleepWakelock_requestNewWakefulnessKeepsDeviceAsleep() {
+        createService();
+        startSystem();
+
+        // Go to sleep (force full sleep - not doze)
+        mService.getBinderServiceInstance().goToSleep(mClock.now(),
+                PowerManager.GO_TO_SLEEP_REASON_APPLICATION,
+                PowerManager.GO_TO_SLEEP_FLAG_NO_DOZE);
+        advanceTime(1000);
+
+        assertWithMessage("Device is not setup as asleep")
+                .that(mService.getGlobalWakefulnessLocked())
+                .isEqualTo(WAKEFULNESS_ASLEEP);
+
+        // Grab a wakelock
+        final String tag = "sleeplock1";
+        final String packageName = "pkg.name";
+        final IBinder token = new Binder();
+        final int flags = PowerManager.PARTIAL_SLEEP_WAKE_LOCK;
+        mService.getBinderServiceInstance().acquireWakeLock(token, flags, tag, packageName,
+                null /* workSource */, null /* historyTag */, Display.INVALID_DISPLAY,
+                null /* callback */);
+        advanceTime(1000);
+
+        // test switch to doze
+        mService.dozePowerGroupLocked(Display.DEFAULT_DISPLAY_GROUP, mClock.now(),
+                PowerManager.GO_TO_SLEEP_REASON_SLEEP_BUTTON, 1000, true);
+        advanceTime(1000);
+
+        assertWithMessage("Device did not stay - switch to doze")
+                .that(mService.getGlobalWakefulnessLocked())
+                .isEqualTo(WAKEFULNESS_ASLEEP);
+
+        // test switch to awake
+        mService.getBinderServiceInstance().wakeUp(mClock.now(),
+                PowerManager.WAKE_REASON_WAKE_KEY, "", "");
+        advanceTime(1000);
+
+        assertWithMessage("Device did not stay asleep - switch to awake")
+                .that(mService.getGlobalWakefulnessLocked())
+                .isEqualTo(WAKEFULNESS_ASLEEP);
+
+        // test switch to dream
+        mService.dreamPowerGroupLocked(Display.DEFAULT_DISPLAY_GROUP,
+                mClock.now(), /* uid= */ 1000, /* allowWake= */true);
+        advanceTime(1000);
+
+        assertWithMessage("Device did not stay asleep - switch to dream")
+                .that(mService.getGlobalWakefulnessLocked())
+                .isEqualTo(WAKEFULNESS_ASLEEP);
+
+        mService.getBinderServiceInstance().releaseWakeLock(token, /* flags= */ 0);
+    }
+
+    @RequiresFlagsEnabled(Flags.FLAG_PARTIAL_SLEEP_WAKELOCKS)
+    @Test
+    public void testPartialSleepWakelock_multiplePowerGroups() {
+        // setup
+        final int nonDefaultPowerGroupId = Display.DEFAULT_DISPLAY_GROUP + 1;
+        int displayInNonDefaultGroup = 1;
+        final AtomicReference<DisplayManagerInternal.DisplayGroupListener> listener =
+                new AtomicReference<>();
+        long eventTime1 = 10;
+        final DisplayInfo info = new DisplayInfo();
+        info.displayGroupId = Display.DEFAULT_DISPLAY_GROUP;
+        when(mDisplayManagerInternalMock.getDisplayInfo(Display.DEFAULT_DISPLAY)).thenReturn(info);
+        doAnswer((Answer<Void>) invocation -> {
+            listener.set(invocation.getArgument(0));
+            return null;
+        }).when(mDisplayManagerInternalMock).registerDisplayGroupListener(any());
+        createService();
+        startSystem();
+        listener.get().onDisplayGroupAdded(nonDefaultPowerGroupId);
+
+        // Verify all displays are awake.
+        assertThat(mService.getGlobalWakefulnessLocked())
+                .isEqualTo(WAKEFULNESS_AWAKE);
+        assertThat(mService.getWakefulnessLocked(Display.DEFAULT_DISPLAY_GROUP))
+                .isEqualTo(WAKEFULNESS_AWAKE);
+        assertThat(mService.getWakefulnessLocked(nonDefaultPowerGroupId))
+                .isEqualTo(WAKEFULNESS_AWAKE);
+
+        // Transition default display to doze, and verify the global wakefulness
+        mService.setWakefulnessLocked(Display.DEFAULT_DISPLAY_GROUP, WAKEFULNESS_DOZING, eventTime1,
+                0, PowerManager.GO_TO_SLEEP_REASON_INATTENTIVE, 0, null, null);
+        advanceTime(1000);
+
+        // assert that default group is alseep
+        assertWithMessage("Global wakefulness is not awake")
+                .that(mService.getGlobalWakefulnessLocked())
+                .isEqualTo(WAKEFULNESS_AWAKE);
+        assertWithMessage("Default group is not asleep")
+                .that(mService.getWakefulnessLocked(Display.DEFAULT_DISPLAY_GROUP))
+                .isEqualTo(WAKEFULNESS_ASLEEP);
+        assertWithMessage("Secondary group is not awake")
+                .that(mService.getWakefulnessLocked(nonDefaultPowerGroupId))
+                .isEqualTo(WAKEFULNESS_AWAKE);
+
+        // grab sleeplock on default group
+        // Grab a wakelock
+        final String tag = "sleeplock1";
+        final String packageName = "pkg.name";
+        final IBinder token = new Binder();
+        final int flags = PowerManager.PARTIAL_SLEEP_WAKE_LOCK;
+        mService.getBinderServiceInstance().acquireWakeLock(token, flags, tag, packageName,
+                null /* workSource */, null /* historyTag */, Display.DEFAULT_DISPLAY,
+                null /* callback */);
+        advanceTime(1000);
+
+        // try to wake default group
+        mService.getBinderServiceInstance().wakeUp(mClock.now(),
+                PowerManager.WAKE_REASON_WAKE_KEY, "", "");
+
+        advanceTime(1000);
+
+
+        // verify default group is still asleep + secondary display is awake
+        assertWithMessage("Global wakefulness is not awake")
+                .that(mService.getGlobalWakefulnessLocked())
+                .isEqualTo(WAKEFULNESS_AWAKE);
+        assertWithMessage("Default group is not asleep")
+                .that(mService.getWakefulnessLocked(Display.DEFAULT_DISPLAY_GROUP))
+                .isEqualTo(WAKEFULNESS_ASLEEP);
+        assertWithMessage("Secondary group is not awake")
+                .that(mService.getWakefulnessLocked(nonDefaultPowerGroupId))
+                .isEqualTo(WAKEFULNESS_AWAKE);
+
+        mService.getBinderServiceInstance().releaseWakeLock(token, /* flags= */ 0);
+    }
+
+
     @Test
     public void testWakefulnessSleep_SoftSleepFlag_WithScreenDimWakelock() {
         createService();

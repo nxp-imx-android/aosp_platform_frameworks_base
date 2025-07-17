@@ -819,11 +819,27 @@ class TransitionController {
         return newTransition;
     }
 
-    /** Asks the transition player (shell) to start a created but not yet started transition. */
+    @NonNull
+    Transition requestStartUserTransition(@NonNull Transition transition,
+            @Nullable TransitionRequestInfo.UserChange userChange) {
+        return requestStartTransition(transition, null /* startTask */,
+                null /* remoteTransition */, null /* displayChange */, userChange);
+    }
+
     @NonNull
     Transition requestStartTransition(@NonNull Transition transition, @Nullable Task startTask,
             @Nullable RemoteTransition remoteTransition,
             @Nullable TransitionRequestInfo.DisplayChange displayChange) {
+        return requestStartTransition(transition, startTask, remoteTransition, displayChange,
+                null /* userChange */);
+    }
+
+    /** Asks the transition player (shell) to start a created but not yet started transition. */
+    @NonNull
+    Transition requestStartTransition(@NonNull Transition transition, @Nullable Task startTask,
+            @Nullable RemoteTransition remoteTransition,
+            @Nullable TransitionRequestInfo.DisplayChange displayChange,
+            @Nullable TransitionRequestInfo.UserChange userChange) {
         if (mIsWaitingForDisplayEnabled) {
             ProtoLog.v(WmProtoLogGroups.WM_DEBUG_WINDOW_TRANSITIONS,
                     "Disabling player for transition #%d because display isn't enabled yet",
@@ -870,7 +886,7 @@ class TransitionController {
 
             final TransitionRequestInfo request = new TransitionRequestInfo(transition.mType,
                     startTaskInfo, pipChange, remoteTransition, displayChange,
-                    transition.getRequestedLocation(), transition.getFlags(),
+                    transition.getRequestedLocation(), userChange, transition.getFlags(),
                     transition.getSyncId());
 
             transition.mLogger.mRequestTimeNs = SystemClock.elapsedRealtimeNanos();

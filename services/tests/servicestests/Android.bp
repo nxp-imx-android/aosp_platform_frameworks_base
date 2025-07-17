@@ -253,6 +253,7 @@ java_library {
         "androidx.test.ext.truth",
         "androidx.test.rules",
         "frameworks-base-testutils",
+        "service-permission.stubs.system_server",
         "services.core",
         "services.devicepolicy",
     ],

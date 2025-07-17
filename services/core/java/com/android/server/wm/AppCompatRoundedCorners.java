@@ -44,6 +44,9 @@ class AppCompatRoundedCorners {
     }
 
     void updateRoundedCornersIfNeeded(@NonNull final WindowState mainWindow) {
+        if (!requiresRoundedCorners(mainWindow)) {
+            return;
+        }
         final SurfaceControl windowSurface = mainWindow.getSurfaceControl();
         if (windowSurface == null || !windowSurface.isValid()) {
             return;
@@ -134,6 +137,14 @@ class AppCompatRoundedCorners {
     }
 
     private boolean requiresRoundedCorners(@NonNull final WindowState mainWindow) {
+        if (com.android.wm.shell.Flags.enableCreateAnyBubble()) {
+            final Task task = mActivityRecord.getTask();
+            if (task != null && task.mLaunchNextToBubble) {
+                // Don't set rounded corners for letterboxed bubble'd apps for better UX.
+                // TODO(b/407669465): Update mLaunchNextToBubble usage when migrated.
+                return false;
+            }
+        }
         final AppCompatLetterboxOverrides letterboxOverrides = mActivityRecord
                 .mAppCompatController.getLetterboxOverrides();
         return mRoundedCornersWindowCondition.test(mainWindow)

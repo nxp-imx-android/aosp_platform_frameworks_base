@@ -124,6 +124,7 @@ import com.android.internal.content.InstallLocationUtils;
 import com.android.internal.messages.nano.SystemMessageProto.SystemMessage;
 import com.android.internal.notification.SystemNotificationChannels;
 import com.android.internal.pm.parsing.PackageParser2;
+import com.android.internal.util.ArrayUtils;
 import com.android.internal.util.ImageUtils;
 import com.android.internal.util.IndentingPrintWriter;
 import com.android.modules.utils.TypedXmlPullParser;
@@ -176,6 +177,10 @@ public class PackageInstallerService extends IPackageInstaller.Stub implements
 
     /** XML constants used in {@link #mSessionsFile} */
     private static final String TAG_SESSIONS = "sessions";
+    private static final String TAG_DEVELOPER_VERIFICATION_POLICY_PER_USER =
+            "developerVerificationPolicyPerUser";
+    private static final String ATTR_USER_ID = "userId";
+    private static final String ATTR_DEVELOPER_VERIFICATION_POLICY = "developerVerificationPolicy";
 
     /** Automatically destroy sessions older than this */
     private static final long MAX_AGE_MILLIS = 3 * DateUtils.DAY_IN_MILLIS;
@@ -289,7 +294,7 @@ public class PackageInstallerService extends IPackageInstaller.Stub implements
     /**
      * Default verification policy for incoming installation sessions, mapped from userId to policy.
      */
-    @GuardedBy("mVerificationPolicyPerUser")
+    @GuardedBy("mDeveloperVerificationPolicyPerUser")
     private final SparseIntArray mDeveloperVerificationPolicyPerUser = new SparseIntArray(1);
     /**
      * Default developer verification policy for a new user.
@@ -353,13 +358,6 @@ public class PackageInstallerService extends IPackageInstaller.Stub implements
         mPackageArchiver = new PackageArchiver(mContext, mPm);
         mDeveloperVerifierController = DeveloperVerifierController.getInstance(context,
                 mInstallHandler, developerVerificationServiceProvider);
-        synchronized (mDeveloperVerificationPolicyPerUser) {
-            int[] users = mPm.mUserManager.getUserIds();
-            for (int i = 0; i < users.length; i++) {
-                // TODO(b/360129657): preserve the overridden policy across reboots.
-                mDeveloperVerificationPolicyPerUser.put(users[i], DEFAULT_VERIFICATION_POLICY);
-            }
-        }
         mInstallDependencyHelper = new InstallDependencyHelper(mContext,
                 mPm.mInjector.getSharedLibrariesImpl(), this);
 
@@ -404,12 +402,30 @@ public class PackageInstallerService extends IPackageInstaller.Stub implements
                 Slog.w(TAG, "Deleting orphan icon " + icon);
                 icon.delete();
             }
-
-            // Invalid sessions might have been marked while parsing. Re-write the database with
-            // the updated information.
-            mSettingsWriteRequest.runNow();
-
         }
+
+        // Clean up the per-user developer verification policies in case some previous users have
+        // been removed since the last reboot.
+        final int[] users = mPm.mUserManager.getUserIds();
+        synchronized (mDeveloperVerificationPolicyPerUser) {
+            int size = mDeveloperVerificationPolicyPerUser.size();
+            for (int i = size - 1; i >= 0; i--) {
+                if (!ArrayUtils.contains(users, mDeveloperVerificationPolicyPerUser.keyAt(i))) {
+                    mDeveloperVerificationPolicyPerUser.removeAt(i);
+                }
+            }
+            // If the per-user developer verification policy was never set before for any user,
+            // add a default policy for the user.
+            for (int i = 0; i < users.length; i++) {
+                if (mDeveloperVerificationPolicyPerUser.indexOfKey(users[i]) < 0) {
+                    mDeveloperVerificationPolicyPerUser.put(users[i], DEFAULT_VERIFICATION_POLICY);
+                }
+            }
+        }
+
+        // Invalid sessions might have been marked while parsing. Re-write the database with
+        // the updated information.
+        mSettingsWriteRequest.runNow();
     }
 
     private void onBroadcastReady() {
@@ -570,6 +586,19 @@ public class PackageInstallerService extends IPackageInstaller.Stub implements
                         }
                         mSessions.put(session.sessionId, session);
                         mAllocatedSessions.put(session.sessionId, true);
+                    } else if (TAG_DEVELOPER_VERIFICATION_POLICY_PER_USER.equals(tag)) {
+                        int userId = in.getAttributeInt(null, ATTR_USER_ID, -1);
+                        if (userId == -1) {
+                            continue;
+                        }
+                        int policy =
+                                in.getAttributeInt(null, ATTR_DEVELOPER_VERIFICATION_POLICY, -1);
+                        if (policy == -1) {
+                            continue;
+                        }
+                        synchronized (mDeveloperVerificationPolicyPerUser) {
+                            mDeveloperVerificationPolicyPerUser.put(userId, policy);
+                        }
                     }
                 }
             }
@@ -674,6 +703,18 @@ public class PackageInstallerService extends IPackageInstaller.Stub implements
                 session.write(out, mSessionsDir);
             }
             out.endTag(null, TAG_SESSIONS);
+
+            // Preserve current developer verification policy per user to disk.
+            synchronized (mDeveloperVerificationPolicyPerUser) {
+                for (int i = 0; i < mDeveloperVerificationPolicyPerUser.size(); i++) {
+                    out.startTag(null, TAG_DEVELOPER_VERIFICATION_POLICY_PER_USER);
+                    out.attributeInt(null, ATTR_USER_ID,
+                            mDeveloperVerificationPolicyPerUser.keyAt(i));
+                    out.attributeInt(null, ATTR_DEVELOPER_VERIFICATION_POLICY,
+                            mDeveloperVerificationPolicyPerUser.valueAt(i));
+                    out.endTag(null, TAG_DEVELOPER_VERIFICATION_POLICY_PER_USER);
+                }
+            }
             out.endDocument();
 
             mSessionsFile.finishWrite(fos);
@@ -1993,8 +2034,6 @@ public class PackageInstallerService extends IPackageInstaller.Stub implements
     }
 
     @Override
-    @RequiresPermission(value = Manifest.permission.DEVELOPER_VERIFICATION_AGENT,
-            conditional = true)
     public boolean setDeveloperVerificationPolicy(
             @PackageInstaller.DeveloperVerificationPolicy int policy, int userId) {
         // Write is more restrictive than read. Having the permission granted is not enough.
@@ -2021,6 +2060,8 @@ public class PackageInstallerService extends IPackageInstaller.Stub implements
             }
             if (policy != mDeveloperVerificationPolicyPerUser.get(userId)) {
                 mDeveloperVerificationPolicyPerUser.put(userId, policy);
+                // Preserve the change to disk
+                mSettingsWriteRequest.schedule();
             }
         }
         return true;

@@ -98,7 +98,6 @@ interface IPackageInstaller {
 
     @PermissionManuallyEnforced
     int getDeveloperVerificationPolicy(int userId);
-    @PermissionManuallyEnforced
     boolean setDeveloperVerificationPolicy(int policy, int userId);
     ComponentName getDeveloperVerificationServiceProvider();
     @EnforcePermission("DEVELOPER_VERIFICATION_AGENT")

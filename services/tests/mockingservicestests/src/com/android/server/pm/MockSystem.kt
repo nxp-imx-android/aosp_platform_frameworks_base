@@ -62,6 +62,7 @@ import com.android.internal.pm.parsing.pkg.PackageImpl
 import com.android.internal.pm.parsing.pkg.ParsedPackage
 import com.android.internal.pm.pkg.parsing.ParsingPackage
 import com.android.internal.pm.pkg.parsing.ParsingPackageUtils
+import com.android.server.IoThread
 import com.android.server.LocalManagerRegistry
 import com.android.server.LocalServices
 import com.android.server.LockGuard
@@ -75,8 +76,8 @@ import com.android.server.pm.permission.PermissionManagerServiceInternal
 import com.android.server.pm.pkg.AndroidPackage
 import com.android.server.pm.resolution.ComponentResolver
 import com.android.server.pm.snapshot.PackageDataSnapshot
-import com.android.server.pm.verify.domain.DomainVerificationManagerInternal
 import com.android.server.pm.verify.developer.DeveloperVerifierController
+import com.android.server.pm.verify.domain.DomainVerificationManagerInternal
 import com.android.server.sdksandbox.SdkSandboxManagerLocal
 import com.android.server.testutils.TestHandler
 import com.android.server.testutils.mock
@@ -158,6 +159,7 @@ class MockSystem(withSession: (StaticMockitoSessionBuilder) -> Unit = {}) {
                 .mockStatic(DeviceConfig::class.java, Mockito.CALLS_REAL_METHODS)
                 .mockStatic(HexEncoding::class.java)
                 .mockStatic(DeveloperVerifierController::class.java)
+                .mockStatic(IoThread::class.java)
                 .apply(withSession)
         session = apply.startMocking()
         whenever(mocks.settings.insertPackageSettingLPw(

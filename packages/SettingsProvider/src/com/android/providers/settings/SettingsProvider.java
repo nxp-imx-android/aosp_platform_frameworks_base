@@ -4254,7 +4254,7 @@ public class SettingsProvider extends ContentProvider {
 
         @VisibleForTesting
         final class UpgradeController {
-            private static final int SETTINGS_VERSION = 230;
+            private static final int SETTINGS_VERSION = 231;
 
             private final int mUserId;
             private final int mDeviceId;
@@ -6583,6 +6583,34 @@ public class SettingsProvider extends ContentProvider {
                     }
 
                     currentVersion = 230;
+                }
+
+                if (currentVersion == 230) {
+                    if (Flags.allowDefaultValueForTextShowPassword()) {
+                        final SettingsState systemSettings =
+                                getSystemSettingsLocked(userId, deviceId);
+
+                        if (systemSettings
+                                .getSettingLocked(Settings.System.TEXT_SHOW_PASSWORD)
+                                .isNull()) {
+                            try {
+                                boolean defTextShowPassword =
+                                        getContext()
+                                                .getResources()
+                                                .getBoolean(R.bool.def_text_show_password);
+                                systemSettings.insertSettingOverrideableByRestoreLocked(
+                                        Settings.System.TEXT_SHOW_PASSWORD,
+                                        defTextShowPassword ? "1" : "0",
+                                        null /* tag */,
+                                        true /* makeDefault */,
+                                        SettingsState.SYSTEM_PACKAGE_NAME);
+                            } catch (Resources.NotFoundException e) {
+                                // Do nothing
+                            }
+                        }
+                    }
+
+                    currentVersion = 231;
                 }
 
                 // vXXX: Add new settings above this point.
