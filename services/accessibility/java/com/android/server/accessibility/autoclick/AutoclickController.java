@@ -664,9 +664,14 @@ public class AutoclickController extends BaseEventStreamTransformation implement
 
     @Override
     public void onConfigurationChanged(@NonNull Configuration newConfig) {
+        // TODO(b/431038033): Add a similar onConfigurationChanged to AutoclickScrollPanel.
+        // When system configuration is changed, update the indicator view
+        // and type panel configuration.
         if (mAutoclickIndicatorView != null) {
-            // When system configuration is changed, update the indicator view configuration.
             mAutoclickIndicatorView.onConfigurationChanged(newConfig);
+        }
+        if (mAutoclickTypePanel != null) {
+            mAutoclickTypePanel.onConfigurationChanged(newConfig);
         }
     }
 
