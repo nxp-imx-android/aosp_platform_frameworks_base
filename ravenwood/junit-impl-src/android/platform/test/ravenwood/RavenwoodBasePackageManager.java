@@ -60,7 +60,8 @@ public class RavenwoodBasePackageManager extends PackageManager {
 
     private static RavenwoodUnsupportedApiException notSupported() {
         return new RavenwoodUnsupportedApiException("This PackageManager API is not yet supported "
-                + "under the Ravenwood deviceless testing environment. Contact g/ravenwood");
+                + "under the Ravenwood deviceless testing environment. Contact g/ravenwood")
+                .skipStackTraces(1);
     }
 
 

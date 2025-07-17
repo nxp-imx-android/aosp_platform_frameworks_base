@@ -15,7 +15,12 @@
  */
 package android.platform.test.ravenwood;
 
+import java.util.Arrays;
+
 public class RavenwoodUnsupportedApiException extends UnsupportedOperationException {
+
+    private int mSkipStackTraces = 0;
+
     public RavenwoodUnsupportedApiException(String message) {
         super(message);
     }
@@ -24,5 +29,22 @@ public class RavenwoodUnsupportedApiException extends UnsupportedOperationExcept
         super("This method is not yet supported under the Ravenwood deviceless testing "
                 + "environment; consider requesting support from the API owner or "
                 + "consider using Mockito; more details at go/ravenwood");
+    }
+
+    /**
+     * Sets the number of stack frames to skip when calling {@link #getStackTrace()}.
+     */
+    public RavenwoodUnsupportedApiException skipStackTraces(int number) {
+        mSkipStackTraces = number;
+        return this;
+    }
+
+    @Override
+    public StackTraceElement[] getStackTrace() {
+        var traces = super.getStackTrace();
+        if (mSkipStackTraces > 0) {
+            return Arrays.copyOfRange(traces, mSkipStackTraces, traces.length);
+        }
+        return traces;
     }
 }
