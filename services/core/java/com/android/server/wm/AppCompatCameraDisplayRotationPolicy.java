@@ -120,6 +120,12 @@ final class AppCompatCameraDisplayRotationPolicy implements AppCompatCameraState
         return mIsRunning;
     }
 
+    static boolean isPolicyEnabled(@NonNull DisplayContent displayContent) {
+        return !Flags.cameraCompatUnifyCameraPolicies()
+                && displayContent.mWmService.mAppCompatConfiguration
+                        .isCameraCompatForceRotateTreatmentEnabledAtBuildTime();
+    }
+
     /**
      * Determines orientation for Camera compatibility.
      *
@@ -161,7 +167,7 @@ final class AppCompatCameraDisplayRotationPolicy implements AppCompatCameraState
         boolean isPortraitActivity =
                 topActivity.getRequestedConfigurationOrientation() == ORIENTATION_PORTRAIT;
         boolean isNaturalDisplayOrientationPortrait =
-                mDisplayContent.getNaturalOrientation() == ORIENTATION_PORTRAIT;
+                topActivity.getDisplayContent().getNaturalOrientation() == ORIENTATION_PORTRAIT;
         // Rotate portrait-only activity in the natural orientation of the displays (and in the
         // opposite to natural orientation for landscape-only) since many apps assume that those
         // are aligned when they compute orientation of the preview.
@@ -180,7 +186,7 @@ final class AppCompatCameraDisplayRotationPolicy implements AppCompatCameraState
                 "Display id=%d is ignoring all orientation requests, camera is active "
                         + "and the top activity is eligible for force rotation, return %s,"
                         + "portrait activity: %b, is natural orientation portrait: %b.",
-                mDisplayContent.mDisplayId, screenOrientationToString(orientation),
+                topActivity.getDisplayContent().mDisplayId, screenOrientationToString(orientation),
                 isPortraitActivity, isNaturalDisplayOrientationPortrait);
         return orientation;
     }

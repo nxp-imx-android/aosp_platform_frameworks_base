@@ -732,6 +732,24 @@ public class ActivityRecordTests extends WindowTestsBase {
     @DisableFlags(Flags.FLAG_ENABLE_CAMERA_COMPAT_FOR_DESKTOP_WINDOWING_OPT_OUT)
     @EnableCompatChanges({OVERRIDE_CAMERA_COMPAT_ENABLE_FREEFORM_WINDOWING_TREATMENT})
     public void testOrientation_allowFixedOrientationForCameraCompatInFreeformWindowing() {
+        doReturn(true).when(() -> DesktopModeHelper.canEnterDesktopMode(any()));
+        final ActivityRecord activity = setupDisplayAndActivityForCameraCompat(
+                /* isCameraRunning= */ true, WINDOWING_MODE_FREEFORM);
+
+        // Task in landscape.
+        assertEquals(ORIENTATION_LANDSCAPE, activity.getTask().getConfiguration().orientation);
+        // The app should be letterboxed.
+        assertEquals(ORIENTATION_PORTRAIT, activity.getConfiguration().orientation);
+        assertTrue(activity.mAppCompatController.getAspectRatioPolicy()
+                .isLetterboxedForFixedOrientationAndAspectRatio());
+    }
+
+    @Test
+    @EnableFlags({Flags.FLAG_ENABLE_CAMERA_COMPAT_FOR_DESKTOP_WINDOWING,
+            Flags.FLAG_CAMERA_COMPAT_UNIFY_CAMERA_POLICIES,
+            Flags.FLAG_ENABLE_CAMERA_COMPAT_FOR_DESKTOP_WINDOWING_OPT_OUT})
+    @EnableCompatChanges({OVERRIDE_CAMERA_COMPAT_ENABLE_FREEFORM_WINDOWING_TREATMENT})
+    public void testOrientation_allowFixedOrientationForCameraCompatWhenEnabledForAll() {
         final ActivityRecord activity = setupDisplayAndActivityForCameraCompat(
                 /* isCameraRunning= */ true, WINDOWING_MODE_FREEFORM);
 
@@ -780,21 +798,6 @@ public class ActivityRecordTests extends WindowTestsBase {
     public void testOrientation_noFixedOrientationForCameraCompatFreeformIfCameraNotRunning() {
         final ActivityRecord activity = setupDisplayAndActivityForCameraCompat(
                 /* isCameraRunning= */ false, WINDOWING_MODE_FREEFORM);
-
-        // Task in landscape.
-        assertEquals(ORIENTATION_LANDSCAPE, activity.getTask().getConfiguration().orientation);
-        // Activity is not letterboxed.
-        assertEquals(ORIENTATION_LANDSCAPE, activity.getConfiguration().orientation);
-        assertFalse(activity.mAppCompatController.getAspectRatioPolicy()
-                .isLetterboxedForFixedOrientationAndAspectRatio());
-    }
-
-    @Test
-    @EnableFlags(Flags.FLAG_ENABLE_CAMERA_COMPAT_FOR_DESKTOP_WINDOWING)
-    @EnableCompatChanges({OVERRIDE_CAMERA_COMPAT_ENABLE_FREEFORM_WINDOWING_TREATMENT})
-    public void testOrientation_dontAllowFixedOrientationForCameraCompatFreeformIfInPip() {
-        final ActivityRecord activity = setupDisplayAndActivityForCameraCompat(
-                /* isCameraRunning= */ true, WINDOWING_MODE_PINNED);
 
         // Task in landscape.
         assertEquals(ORIENTATION_LANDSCAPE, activity.getTask().getConfiguration().orientation);
@@ -3631,6 +3634,7 @@ public class ActivityRecordTests extends WindowTestsBase {
         // Create a new DisplayContent so that the flag values create the camera freeform policy.
         mDisplayContent = new TestDisplayContent.Builder(mAtm, mDisplayContent.getSurfaceWidth(),
                 mDisplayContent.getSurfaceHeight()).build();
+        mDisplayContent.setIgnoreOrientationRequest(true);
         final CameraStateMonitor cameraStateMonitor = mDisplayContent.mAppCompatCameraPolicy
                 .mCameraStateMonitor;
         spyOn(cameraStateMonitor);
@@ -3646,6 +3650,7 @@ public class ActivityRecordTests extends WindowTestsBase {
         final ActivityRecord activity = new ActivityBuilder(mAtm)
                 .setComponent(ComponentName.createRelative(mContext,
                         com.android.server.wm.ActivityRecordTests.class.getName()))
+                .setTask(rootTask)
                 .setParentTask(rootTask)
                 .setCreateTask(true)
                 .setOnTop(true)

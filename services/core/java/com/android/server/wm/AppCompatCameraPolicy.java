@@ -28,7 +28,6 @@ import android.content.pm.ActivityInfo.ScreenOrientation;
 import android.content.res.Configuration;
 import android.view.Surface;
 import android.widget.Toast;
-import android.window.DesktopModeFlags;
 
 import com.android.internal.annotations.VisibleForTesting;
 
@@ -52,24 +51,21 @@ class AppCompatCameraPolicy {
             @NonNull DisplayContent displayContent) {
         // Not checking DeviceConfig value here to allow enabling via DeviceConfig
         // without the need to restart the device.
-        final boolean needsDisplayRotationPolicy = wmService.mAppCompatConfiguration
-                .isCameraCompatForceRotateTreatmentEnabledAtBuildTime();
-        final boolean needsSimReqOrientationPolicy =
-                DesktopModeFlags.ENABLE_CAMERA_COMPAT_SIMULATE_REQUESTED_ORIENTATION.isTrue()
-                        && DesktopModeHelper.canEnterDesktopMode(wmService.mContext)
-                        && wmService.mAppCompatConfiguration
-                        .isCameraCompatSimulateRequestedOrientationTreatmentEnabled();
-        if (needsDisplayRotationPolicy || needsSimReqOrientationPolicy) {
+        final boolean isDisplayRotationPolicyEnabled = AppCompatCameraDisplayRotationPolicy
+                .isPolicyEnabled(displayContent);
+        final boolean isSimReqOrientationPolicyEnabled = AppCompatCameraSimReqOrientationPolicy
+                .isPolicyEnabled(displayContent);
+        if (isDisplayRotationPolicyEnabled || isSimReqOrientationPolicyEnabled) {
             final AppCompatCameraStateSource cameraStateListenerDelegate =
                     new AppCompatCameraStateSource();
             mCameraStateMonitor = new CameraStateMonitor(displayContent, wmService.mH,
                     cameraStateListenerDelegate);
             mActivityRefresher = new ActivityRefresher(wmService, wmService.mH);
-            mDisplayRotationPolicy = needsDisplayRotationPolicy
+            mDisplayRotationPolicy = isDisplayRotationPolicyEnabled
                     ? new AppCompatCameraDisplayRotationPolicy(displayContent, mCameraStateMonitor,
                             cameraStateListenerDelegate, mActivityRefresher)
                     : null;
-            mSimReqOrientationPolicy = needsSimReqOrientationPolicy
+            mSimReqOrientationPolicy = isSimReqOrientationPolicyEnabled
                     ? new AppCompatCameraSimReqOrientationPolicy(displayContent,
                             mCameraStateMonitor, cameraStateListenerDelegate, mActivityRefresher)
                     : null;

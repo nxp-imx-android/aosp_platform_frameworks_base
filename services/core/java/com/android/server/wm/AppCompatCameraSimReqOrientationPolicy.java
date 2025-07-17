@@ -23,6 +23,7 @@ import static android.app.CameraCompatTaskInfo.CAMERA_COMPAT_PORTRAIT_DEVICE_IN_
 import static android.app.CameraCompatTaskInfo.CAMERA_COMPAT_PORTRAIT_DEVICE_IN_PORTRAIT;
 import static android.app.CameraCompatTaskInfo.CAMERA_COMPAT_UNSPECIFIED;
 import static android.app.WindowConfiguration.ROTATION_UNDEFINED;
+import static android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN;
 import static android.app.WindowConfiguration.WINDOW_CONFIG_APP_BOUNDS;
 import static android.app.WindowConfiguration.WINDOW_CONFIG_DISPLAY_ROTATION;
 import static android.content.pm.ActivityInfo.SCREEN_ORIENTATION_LOCKED;
@@ -43,6 +44,7 @@ import android.content.res.Configuration;
 import android.os.RemoteException;
 import android.util.Slog;
 import android.view.Surface;
+import android.window.DesktopModeFlags;
 
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.protolog.ProtoLog;
@@ -62,7 +64,7 @@ final class AppCompatCameraSimReqOrientationPolicy implements AppCompatCameraSta
     private static final String TAG = TAG_WITH_CLASS_NAME ? "AppCompatCameraSROPolicy" : TAG_WM;
 
     @NonNull
-    private final DisplayContent mDisplayContent;
+    private final ActivityTaskManagerService mAtmService;
     @NonNull
     private final ActivityRefresher mActivityRefresher;
     @NonNull
@@ -85,7 +87,7 @@ final class AppCompatCameraSimReqOrientationPolicy implements AppCompatCameraSta
             @NonNull CameraStateMonitor cameraStateMonitor,
             @NonNull AppCompatCameraStateSource cameraStateNotifier,
             @NonNull ActivityRefresher activityRefresher) {
-        mDisplayContent = displayContent;
+        mAtmService = displayContent.mAtmService;
         mCameraStateMonitor = cameraStateMonitor;
         mCameraStateNotifier = cameraStateNotifier;
         mActivityRefresher = activityRefresher;
@@ -115,6 +117,14 @@ final class AppCompatCameraSimReqOrientationPolicy implements AppCompatCameraSta
     @Surface.Rotation
     int getCameraDeviceRotation() {
         return mCameraDisplayRotationProvider.getCameraDeviceRotation();
+    }
+
+    static boolean isPolicyEnabled(@NonNull DisplayContent displayContent) {
+        return DesktopModeFlags.ENABLE_CAMERA_COMPAT_SIMULATE_REQUESTED_ORIENTATION.isTrue()
+                && (DesktopModeHelper.canEnterDesktopMode(displayContent.mWmService.mContext)
+                        || Flags.cameraCompatUnifyCameraPolicies())
+                && displayContent.mWmService.mAppCompatConfiguration
+                        .isCameraCompatSimulateRequestedOrientationTreatmentEnabled();
     }
 
     // Refreshing only when configuration changes after applying camera compat treatment.
@@ -174,7 +184,7 @@ final class AppCompatCameraSimReqOrientationPolicy implements AppCompatCameraSta
             ProtoLog.v(WmProtoLogGroups.WM_DEBUG_STATES,
                     "Display id=%d is notified that Camera %s is closed but activity is"
                             + " still refreshing. Rescheduling an update.",
-                    mDisplayContent.mDisplayId, cameraId);
+                    topActivity.getDisplayContent().mDisplayId, cameraId);
             return false;
         }
         return true;
@@ -234,7 +244,7 @@ final class AppCompatCameraSimReqOrientationPolicy implements AppCompatCameraSta
             Slog.w(TAG, "Insufficient app information. Cannot revert display rotation sandboxing.");
             return;
         }
-        final CompatibilityInfo compatibilityInfo = mDisplayContent.mAtmService
+        final CompatibilityInfo compatibilityInfo = mAtmService
                 .compatibilityInfoForPackageLocked(app.mInfo);
         // CompatibilityInfo fields are static, so even if task or activity has been closed, this
         // state should be updated.
@@ -341,13 +351,18 @@ final class AppCompatCameraSimReqOrientationPolicy implements AppCompatCameraSta
     boolean isCameraRunningAndWindowingModeEligible(@NonNull ActivityRecord activity) {
         return  activity.mAppCompatController.getCameraOverrides()
                 .shouldApplyCameraCompatSimReqOrientationTreatment()
+                // Do not apply camera compat treatment when an app is running on a candybar
+                // display.
+                && activity.getDisplayContent().getIgnoreOrientationRequest()
                 && isWindowingModeEligible(activity)
                 && mCameraStateMonitor.isCameraRunningForActivity(activity);
     }
 
     private boolean isWindowingModeEligible(@NonNull ActivityRecord activity) {
+        // TODO(b/432218134): consider all windowing modes, e.g. WINDOWING_MODE_PINNED.
         return activity.inFreeformWindowingMode()
-                || (Flags.cameraCompatUnifyCameraPolicies() && activity.inMultiWindowMode());
+                || (Flags.cameraCompatUnifyCameraPolicies() && (activity.inMultiWindowMode()
+                        || activity.getWindowingMode() == WINDOWING_MODE_FULLSCREEN));
     }
 
     boolean shouldCameraCompatControlAspectRatio(@NonNull ActivityRecord activity) {
@@ -426,18 +441,26 @@ final class AppCompatCameraSimReqOrientationPolicy implements AppCompatCameraSta
     @VisibleForTesting
     boolean isTreatmentEnabledForActivity(@NonNull ActivityRecord activity,
             boolean checkOrientation) {
-        int orientation = activity.getRequestedConfigurationOrientation();
         return activity.mAppCompatController.getCameraOverrides()
                 .shouldApplyCameraCompatSimReqOrientationTreatment()
+                // Do not apply camera compat treatment when an app is running on a candybar
+                // display.
+                && activity.getDisplayContent().getIgnoreOrientationRequest()
                 && mCameraStateMonitor.isCameraRunningForActivity(activity)
-                && (!checkOrientation || orientation != ORIENTATION_UNDEFINED)
-                && activity.inFreeformWindowingMode()
+                && isOrientationEligibleForTreatment(activity, checkOrientation)
+                && isWindowingModeEligible(activity)
+                // TODO(b/332665280): investigate whether we can support activity embedding.
+                && !activity.isEmbedded();
+    }
+
+    private boolean isOrientationEligibleForTreatment(@NonNull ActivityRecord activity,
+            boolean checkOrientation) {
+        final int orientation = activity.getRequestedConfigurationOrientation();
+        return  (!checkOrientation || orientation != ORIENTATION_UNDEFINED)
                 // "locked" and "nosensor" values are often used by camera apps that can't
                 // handle dynamic changes so we shouldn't force-letterbox them.
                 && activity.getRequestedOrientation() != SCREEN_ORIENTATION_NOSENSOR
-                && activity.getRequestedOrientation() != SCREEN_ORIENTATION_LOCKED
-                // TODO(b/332665280): investigate whether we can support activity embedding.
-                && !activity.isEmbedded();
+                && activity.getRequestedOrientation() != SCREEN_ORIENTATION_LOCKED;
     }
 
     @Nullable
