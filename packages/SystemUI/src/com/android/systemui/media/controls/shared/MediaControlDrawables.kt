@@ -28,7 +28,6 @@ object MediaControlDrawables {
     private var nextIcon: Drawable? = null
     // Output switcher drawables.
     private var leAudioSharing: Drawable? = null
-    private var antenna: Drawable? = null
     private var groupDevice: Drawable? = null
     private var homeDevices: Drawable? = null
 
@@ -45,11 +44,6 @@ object MediaControlDrawables {
             ?: context.getDrawable(com.android.settingslib.R.drawable.ic_bt_le_audio_sharing).also {
                 leAudioSharing = it
             }
-    }
-
-    fun getAntenna(context: Context): Drawable? {
-        return antenna
-            ?: context.getDrawable(R.drawable.settings_input_antenna).also { antenna = it }
     }
 
     fun getGroupDevice(context: Context): Drawable? {

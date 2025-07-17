@@ -1548,68 +1548,6 @@
         <item name="android:drawableTint">@color/audio_sharing_btn_text_color</item>
     </style>
 
-    <style name="BroadcastDialog">
-        <item name="android:layout_width">wrap_content</item>
-        <item name="android:layout_height">wrap_content</item>
-        <item name="android:layout_gravity">start|center_vertical</item>
-    </style>
-
-    <style name="BroadcastDialog.InfoItem">
-        <item name="android:layout_width">@dimen/media_output_broadcast_info_item_width</item>
-        <item name="android:layout_height">@dimen/media_output_broadcast_info_item_height</item>
-        <item name="android:clickable">false</item>
-        <item name="android:gravity">start|center_vertical</item>
-    </style>
-
-    <style name="BroadcastDialog.InfoItem.Title">
-        <item name="android:layout_height">@dimen/media_output_broadcast_info_title_height</item>
-        <item name="android:textAppearance">@style/TextAppearance.BroadcastDialog</item>
-    </style>
-
-    <style name="BroadcastDialog.InfoItem.Summary">
-        <item name="android:layout_height">@dimen/media_output_broadcast_info_summary_height</item>
-        <item name="android:textAppearance">@style/TextAppearance.BroadcastDialog.Secondary</item>
-    </style>
-
-    <style name="BroadcastDialog.InfoItem.Edit">
-        <item name="android:layout_width">@dimen/media_output_broadcast_info_edit</item>
-        <item name="android:layout_height">@dimen/media_output_broadcast_info_edit</item>
-        <item name="android:background">?android:attr/selectableItemBackground</item>
-        <item name="android:clickable">true</item>
-        <item name="android:focusable">true</item>
-        <item name="android:src">@*android:drawable/ic_mode_edit</item>
-        <item name="android:tint">?android:attr/textColorPrimary</item>
-    </style>
-
-    <style name="BroadcastDialog.Divider">
-        <item name="android:background">?android:attr/textColorSecondary</item>
-    </style>
-
-    <style name="BroadcastDialog.Divider.Horizontal">
-        <item name="android:layout_width">348dp</item>
-        <item name="android:layout_height">1dp</item>
-        <item name="android:layout_gravity">center_horizontal</item>
-    </style>
-
-
-    <style name="BroadcastDialog.Divider.Vertical">
-        <item name="android:layout_width">1dp</item>
-        <item name="android:layout_height">28dp</item>
-        <item name="android:layout_marginEnd">30dp</item>
-    </style>
-
-    <style name="TextAppearance.BroadcastDialog">
-        <item name="android:fontFamily">@*android:string/config_headlineFontFamily</item>
-        <item name="android:textSize">16sp</item>
-        <item name="android:textColor">?android:attr/textColorPrimary</item>
-        <item name="android:textDirection">locale</item>
-    </style>
-
-    <style name="TextAppearance.BroadcastDialog.Secondary">
-        <item name="android:textSize">14sp</item>
-        <item name="android:textColor">?android:attr/textColorSecondary</item>
-    </style>
-
     <!-- Dream Overlay Complication UI styles -->
     <style name="clock_subtitle">
         <item name="android:textSize">@dimen/dream_overlay_complication_clock_subtitle_text_size
@@ -1635,50 +1573,6 @@
         <item name="android:textSize">@dimen/dream_overlay_complication_clock_time_text_size</item>
         <item name="android:fontVariationSettings" android:featureFlag="!com.android.systemui.dream_overlay_updated_ui">"'wght' 400"</item>
         <item name="android:fontVariationSettings" android:featureFlag="com.android.systemui.dream_overlay_updated_ui">"'wght' 600, 'opsz' 96"</item>
-    </style>
-
-    <style name="BroadcastDialogTitleStyle">
-        <item name="android:textAppearance">@style/TextAppearanceBroadcastDialogTitle</item>
-        <item name="android:layout_marginStart">@dimen/broadcast_dialog_title_text_margin</item>
-        <item name="android:layout_marginEnd">@dimen/broadcast_dialog_title_text_margin</item>
-        <item name="android:layout_marginTop">@dimen/broadcast_dialog_title_text_margin_top</item>
-        <item name="android:layout_marginBottom">18dp</item>
-    </style>
-
-    <style name="TextAppearanceBroadcastDialogTitle" parent="@android:style/TextAppearance.DeviceDefault.Headline">
-        <item name="android:textSize">@dimen/broadcast_dialog_title_text_size</item>
-        <item name="android:textColor">?android:attr/textColorPrimary</item>
-        <item name="android:textDirection">locale</item>
-        <item name="android:ellipsize">end</item>
-    </style>
-
-    <style name="BroadcastDialogBodyStyle">
-        <item name="android:textAppearance">@style/TextAppearanceBroadcastDialogSubTitle</item>
-        <item name="android:layout_margin">@dimen/broadcast_dialog_title_text_margin</item>
-    </style>
-
-    <style name="TextAppearanceBroadcastDialogSubTitle" parent="@android:style/TextAppearance.DeviceDefault.Headline">
-        <item name="android:textSize">@dimen/broadcast_dialog_subtitle_text_size</item>
-        <item name="android:textColor">?android:attr/textColorSecondary</item>
-        <item name="android:textDirection">locale</item>
-        <item name="android:ellipsize">end</item>
-    </style>
-
-    <style name="BroadcastDialogButtonStyle">
-        <item name="android:textAppearance">@style/TextAppearanceBroadcastDialogButton</item>
-        <item name="android:layout_width">match_parent</item>
-        <item name="android:layout_height">wrap_content</item>
-        <item name="android:layout_gravity">center</item>
-        <item name="android:gravity">center</item>
-        <item name="android:stateListAnimator">@null</item>
-        <item name="android:elevation">0dp</item>
-        <item name="android:minHeight">@dimen/broadcast_dialog_btn_minHeight</item>
-        <item name="android:background">@drawable/broadcast_dialog_btn_bg</item>
-    </style>
-
-    <style name="TextAppearanceBroadcastDialogButton" parent="@android:style/TextAppearance.DeviceDefault.Headline">
-        <item name="android:textColor">?androidprv:attr/textColorOnAccent</item>
-        <item name="android:textSize">@dimen/broadcast_dialog_btn_text_size</item>
     </style>
 
     <!-- The style for log access consent dialog -->
