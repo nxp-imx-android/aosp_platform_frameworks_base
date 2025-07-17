@@ -388,7 +388,13 @@ public class NativeApplicationThreadWrapper extends IApplicationThread.Stub {
     public void scheduleOnNewSceneTransitionInfo(IBinder token, SceneTransitionInfo info) {}
 
     @Override
-    public void setProcessState(int state) {}
+    public void setProcessState(int state) {
+        try {
+            mNativeThread.setProcessState(state);
+        } catch (RemoteException e) {
+            Slog.w(TAG, "setProcessState failed", e);
+        }
+    }
 
     @Override
     public void setNetworkBlockSeq(long procStateSeq) {}
