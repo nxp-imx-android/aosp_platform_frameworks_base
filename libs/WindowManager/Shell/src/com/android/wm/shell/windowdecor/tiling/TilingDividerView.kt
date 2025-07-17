@@ -154,8 +154,12 @@ class TilingDividerView : FrameLayout, View.OnTouchListener, DragDetector.Motion
         }
     }
 
-    override fun onResolvePointerIcon(event: MotionEvent, pointerIndex: Int): PointerIcon =
-        PointerIcon.getSystemIcon(context, PointerIcon.TYPE_HORIZONTAL_DOUBLE_ARROW)
+    override fun onResolvePointerIcon(event: MotionEvent, pointerIndex: Int): PointerIcon {
+        if (isWithinHandleRegion(event.y.toInt())) {
+            return PointerIcon.getSystemIcon(context, PointerIcon.TYPE_HORIZONTAL_DOUBLE_ARROW)
+        }
+        return PointerIcon.getSystemIcon(context, PointerIcon.TYPE_ARROW)
+    }
 
     override fun onTouch(v: View, event: MotionEvent): Boolean =
         dragDetector.onMotionEvent(v, event)

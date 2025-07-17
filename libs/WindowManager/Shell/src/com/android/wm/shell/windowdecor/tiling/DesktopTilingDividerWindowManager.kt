@@ -70,10 +70,10 @@ class DesktopTilingDividerWindowManager(
     private var handleRegionSize: Size =
         Size(
             displayContext.resources.getDimensionPixelSize(
-                R.dimen.split_divider_handle_region_width
+                R.dimen.split_divider_handle_region_height
             ),
             displayContext.resources.getDimensionPixelSize(
-                R.dimen.split_divider_handle_region_height
+                R.dimen.split_divider_handle_region_width
             ),
         )
     private var setTouchRegion = true
@@ -114,7 +114,7 @@ class DesktopTilingDividerWindowManager(
         val centerY = divider.height() / 2f
         val handleLeft = centerX - handle.width() / 2f
         val handleRight = handleLeft + handle.width()
-        val dividerLeft = centerY - divider.width() / 2f
+        val dividerLeft = centerX - divider.width() / 2f
         val dividerRight = dividerLeft + divider.width()
 
         val dividerTop = cornerRadius
@@ -371,7 +371,7 @@ class DesktopTilingDividerWindowManager(
 
     private fun updateTouchRegion() {
         val startX = -handleRegionSize.width / 2
-        val handle = Rect(startX, 0, startX + handleRegionSize.width, dividerBounds.height())
+        val handle = Rect(startX, 0, startX + handleRegionSize.width, handleRegionSize.height)
         setTouchRegion(handle, dividerBounds, maxRoundedCornerRadius.toFloat())
     }
 
