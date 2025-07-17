@@ -36,13 +36,10 @@ import android.media.session.MediaSessionManager;
 import android.media.session.PlaybackState;
 import android.os.PowerExemptionManager;
 import android.os.UserHandle;
-import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.EnableFlags;
-import android.platform.test.annotations.RequiresFlagsEnabled;
 import android.platform.test.flag.junit.CheckFlagsRule;
 import android.platform.test.flag.junit.DeviceFlagsValueProvider;
 import android.testing.TestableLooper;
-import android.util.FeatureFlagUtils;
 import android.view.View;
 
 import androidx.annotation.NonNull;
@@ -50,10 +47,8 @@ import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.MediumTest;
 
 import com.android.internal.logging.UiEventLogger;
-import com.android.settingslib.bluetooth.LocalBluetoothLeBroadcast;
 import com.android.settingslib.bluetooth.LocalBluetoothManager;
 import com.android.settingslib.bluetooth.LocalBluetoothProfileManager;
-import com.android.settingslib.flags.Flags;
 import com.android.settingslib.media.LocalMediaManager;
 import com.android.settingslib.media.MediaDevice;
 import com.android.settingslib.utils.ThreadUtils;
@@ -63,7 +58,6 @@ import com.android.systemui.animation.DialogTransitionAnimator;
 import com.android.systemui.broadcast.BroadcastDispatcher;
 import com.android.systemui.broadcast.BroadcastSender;
 import com.android.systemui.common.domain.interactor.SysUIStateDisplaysInteractor;
-import com.android.systemui.flags.FeatureFlags;
 import com.android.systemui.kosmos.Kosmos;
 import com.android.systemui.media.nearby.NearbyMediaDevicesManager;
 import com.android.systemui.plugins.ActivityStarter;
@@ -105,8 +99,6 @@ public class MediaOutputDialogTest extends SysuiTestCase {
     private final LocalBluetoothManager mLocalBluetoothManager = mock(LocalBluetoothManager.class);
     private final LocalBluetoothProfileManager mLocalBluetoothProfileManager = mock(
             LocalBluetoothProfileManager.class);
-    private final LocalBluetoothLeBroadcast mLocalBluetoothLeBroadcast = mock(
-            LocalBluetoothLeBroadcast.class);
     private final ActivityStarter mStarter = mock(ActivityStarter.class);
     private final BroadcastSender mBroadcastSender = mock(BroadcastSender.class);
     private final LocalMediaManager mLocalMediaManager = mock(LocalMediaManager.class);
@@ -122,7 +114,6 @@ public class MediaOutputDialogTest extends SysuiTestCase {
     private final AudioManager mAudioManager = mock(AudioManager.class);
     private PowerExemptionManager mPowerExemptionManager = mock(PowerExemptionManager.class);
     private KeyguardManager mKeyguardManager = mock(KeyguardManager.class);
-    private FeatureFlags mFlags = mock(FeatureFlags.class);
     private UserTracker mUserTracker = mock(UserTracker.class);
 
     private List<MediaController> mMediaControllers = new ArrayList<>();
@@ -174,7 +165,6 @@ public class MediaOutputDialogTest extends SysuiTestCase {
                         mAudioManager,
                         mPowerExemptionManager,
                         mKeyguardManager,
-                        mFlags,
                         new FakeSystemClock(),
                         volumePanelGlobalStateInteractor,
                         mUserTracker);
@@ -214,33 +204,6 @@ public class MediaOutputDialogTest extends SysuiTestCase {
     }
 
     @Test
-    @RequiresFlagsEnabled(Flags.FLAG_LEGACY_LE_AUDIO_SHARING)
-    public void getStopButtonVisibility_remoteBLEDevice_returnVisible() {
-        when(mLocalBluetoothProfileManager.getLeAudioBroadcastProfile()).thenReturn(
-                mLocalBluetoothLeBroadcast);
-        when(mLocalBluetoothLeBroadcast.isEnabled(any())).thenReturn(false);
-        when(mPlaybackState.getState()).thenReturn(PlaybackState.STATE_PLAYING);
-        when(mMediaDevice.isBLEDevice()).thenReturn(true);
-
-        assertThat(mMediaOutputDialog.getStopButtonVisibility()).isEqualTo(View.VISIBLE);
-    }
-
-    @Test
-    @RequiresFlagsEnabled(Flags.FLAG_LEGACY_LE_AUDIO_SHARING)
-    public void getStopButtonVisibility_remoteNonBLEDevice_returnGone() {
-        when(mLocalBluetoothProfileManager.getLeAudioBroadcastProfile()).thenReturn(
-                mLocalBluetoothLeBroadcast);
-        when(mLocalBluetoothLeBroadcast.isEnabled(any())).thenReturn(false);
-        when(mPlaybackState.getState()).thenReturn(PlaybackState.STATE_PLAYING);
-        FeatureFlagUtils.setEnabled(mContext,
-                FeatureFlagUtils.SETTINGS_NEED_CONNECTED_BLE_DEVICE_FOR_BROADCAST, true);
-        when(mMediaDevice.isBLEDevice()).thenReturn(false);
-
-        assertThat(mMediaOutputDialog.getStopButtonVisibility()).isEqualTo(View.GONE);
-    }
-
-    @Test
-    @DisableFlags(Flags.FLAG_LEGACY_LE_AUDIO_SHARING)
     @EnableFlags(com.android.media.flags.Flags.FLAG_ENABLE_OUTPUT_SWITCHER_PERSONAL_AUDIO_SHARING)
     public void getStopButtonVisibility_notInBroadcast_returnGone() {
         when(mLocalMediaManager.getSessionReleaseType()).thenReturn(
@@ -250,7 +213,6 @@ public class MediaOutputDialogTest extends SysuiTestCase {
     }
 
     @Test
-    @DisableFlags(Flags.FLAG_LEGACY_LE_AUDIO_SHARING)
     @EnableFlags(com.android.media.flags.Flags.FLAG_ENABLE_OUTPUT_SWITCHER_PERSONAL_AUDIO_SHARING)
     public void getStopButtonVisibility_inBroadcast_returnVisible() {
         when(mLocalMediaManager.getSessionReleaseType()).thenReturn(
@@ -264,129 +226,6 @@ public class MediaOutputDialogTest extends SysuiTestCase {
         mFeatures.add(MediaRoute2Info.FEATURE_LOCAL_PLAYBACK);
 
         assertThat(mMediaOutputDialog.getStopButtonVisibility()).isEqualTo(View.GONE);
-    }
-
-    @Test
-    @RequiresFlagsEnabled(Flags.FLAG_LEGACY_LE_AUDIO_SHARING)
-    public void isBroadcastSupported_flagOnAndConnectBleDevice_returnsTrue() {
-        when(mLocalBluetoothProfileManager.getLeAudioBroadcastProfile()).thenReturn(
-                mLocalBluetoothLeBroadcast);
-        when(mLocalBluetoothLeBroadcast.isEnabled(any())).thenReturn(false);
-        FeatureFlagUtils.setEnabled(mContext,
-                FeatureFlagUtils.SETTINGS_NEED_CONNECTED_BLE_DEVICE_FOR_BROADCAST, true);
-        when(mMediaDevice.isBLEDevice()).thenReturn(true);
-
-        assertThat(mMediaOutputDialog.isBroadcastSupported()).isTrue();
-    }
-
-    @Test
-    @RequiresFlagsEnabled(Flags.FLAG_LEGACY_LE_AUDIO_SHARING)
-    public void isBroadcastSupported_flagOnAndNoBleDevice_returnsFalse() {
-        when(mLocalBluetoothProfileManager.getLeAudioBroadcastProfile()).thenReturn(
-                mLocalBluetoothLeBroadcast);
-        when(mLocalBluetoothLeBroadcast.isEnabled(any())).thenReturn(false);
-        FeatureFlagUtils.setEnabled(mContext,
-                FeatureFlagUtils.SETTINGS_NEED_CONNECTED_BLE_DEVICE_FOR_BROADCAST, true);
-        when(mMediaDevice.isBLEDevice()).thenReturn(false);
-
-        assertThat(mMediaOutputDialog.isBroadcastSupported()).isFalse();
-    }
-
-    @Test
-    @RequiresFlagsEnabled(Flags.FLAG_LEGACY_LE_AUDIO_SHARING)
-    public void isBroadcastSupported_notSupportBroadcastAndflagOn_returnsFalse() {
-        FeatureFlagUtils.setEnabled(mContext,
-                FeatureFlagUtils.SETTINGS_NEED_CONNECTED_BLE_DEVICE_FOR_BROADCAST, true);
-
-        assertThat(mMediaOutputDialog.isBroadcastSupported()).isFalse();
-    }
-
-    @Test
-    @RequiresFlagsEnabled(Flags.FLAG_LEGACY_LE_AUDIO_SHARING)
-    public void isBroadcastSupported_flagOffAndConnectToBleDevice_returnsTrue() {
-        when(mLocalBluetoothProfileManager.getLeAudioBroadcastProfile()).thenReturn(
-                mLocalBluetoothLeBroadcast);
-        when(mLocalBluetoothLeBroadcast.isEnabled(any())).thenReturn(false);
-        FeatureFlagUtils.setEnabled(mContext,
-                FeatureFlagUtils.SETTINGS_NEED_CONNECTED_BLE_DEVICE_FOR_BROADCAST, false);
-        when(mMediaDevice.isBLEDevice()).thenReturn(true);
-
-        assertThat(mMediaOutputDialog.isBroadcastSupported()).isTrue();
-    }
-
-    @Test
-    @RequiresFlagsEnabled(Flags.FLAG_LEGACY_LE_AUDIO_SHARING)
-    public void isBroadcastSupported_flagOffAndNoBleDevice_returnsTrue() {
-        when(mLocalBluetoothProfileManager.getLeAudioBroadcastProfile()).thenReturn(
-                mLocalBluetoothLeBroadcast);
-        when(mLocalBluetoothLeBroadcast.isEnabled(any())).thenReturn(false);
-        FeatureFlagUtils.setEnabled(mContext,
-                FeatureFlagUtils.SETTINGS_NEED_CONNECTED_BLE_DEVICE_FOR_BROADCAST, false);
-        when(mMediaDevice.isBLEDevice()).thenReturn(false);
-
-        assertThat(mMediaOutputDialog.isBroadcastSupported()).isTrue();
-    }
-
-    @Test
-    @RequiresFlagsEnabled(Flags.FLAG_LEGACY_LE_AUDIO_SHARING)
-    public void isBroadcastSupported_noBleDeviceAndEnabledBroadcast_returnsTrue() {
-        when(mLocalBluetoothProfileManager.getLeAudioBroadcastProfile()).thenReturn(
-                mLocalBluetoothLeBroadcast);
-        when(mLocalBluetoothLeBroadcast.isEnabled(any())).thenReturn(true);
-        FeatureFlagUtils.setEnabled(mContext,
-                FeatureFlagUtils.SETTINGS_NEED_CONNECTED_BLE_DEVICE_FOR_BROADCAST, true);
-        when(mMediaDevice.isBLEDevice()).thenReturn(false);
-
-        assertThat(mMediaOutputDialog.isBroadcastSupported()).isTrue();
-    }
-
-    @Test
-    @RequiresFlagsEnabled(Flags.FLAG_LEGACY_LE_AUDIO_SHARING)
-    public void isBroadcastSupported_noBleDeviceAndDisabledBroadcast_returnsFalse() {
-        when(mLocalBluetoothProfileManager.getLeAudioBroadcastProfile()).thenReturn(
-                mLocalBluetoothLeBroadcast);
-        when(mLocalBluetoothLeBroadcast.isEnabled(any())).thenReturn(false);
-        FeatureFlagUtils.setEnabled(mContext,
-                FeatureFlagUtils.SETTINGS_NEED_CONNECTED_BLE_DEVICE_FOR_BROADCAST, true);
-        when(mMediaDevice.isBLEDevice()).thenReturn(false);
-
-        assertThat(mMediaOutputDialog.isBroadcastSupported()).isFalse();
-    }
-
-    @Test
-    @RequiresFlagsEnabled(Flags.FLAG_LEGACY_LE_AUDIO_SHARING)
-    public void getBroadcastIconVisibility_isBroadcasting_returnVisible() {
-        when(mLocalBluetoothProfileManager.getLeAudioBroadcastProfile()).thenReturn(
-                mLocalBluetoothLeBroadcast);
-        when(mLocalBluetoothLeBroadcast.isEnabled(any())).thenReturn(true);
-        when(mPlaybackState.getState()).thenReturn(PlaybackState.STATE_PLAYING);
-        when(mMediaDevice.isBLEDevice()).thenReturn(true);
-
-        assertThat(mMediaOutputDialog.getBroadcastIconVisibility()).isEqualTo(View.VISIBLE);
-    }
-
-    @Test
-    @RequiresFlagsEnabled(Flags.FLAG_LEGACY_LE_AUDIO_SHARING)
-    public void getBroadcastIconVisibility_noBroadcasting_returnGone() {
-        when(mLocalBluetoothProfileManager.getLeAudioBroadcastProfile()).thenReturn(
-                mLocalBluetoothLeBroadcast);
-        when(mLocalBluetoothLeBroadcast.isEnabled(any())).thenReturn(false);
-        when(mPlaybackState.getState()).thenReturn(PlaybackState.STATE_PLAYING);
-        when(mMediaDevice.isBLEDevice()).thenReturn(true);
-
-        assertThat(mMediaOutputDialog.getBroadcastIconVisibility()).isEqualTo(View.GONE);
-    }
-
-    @Test
-    @RequiresFlagsEnabled(Flags.FLAG_LEGACY_LE_AUDIO_SHARING)
-    public void getBroadcastIconVisibility_remoteNonLeDevice_returnGone() {
-        when(mLocalBluetoothProfileManager.getLeAudioBroadcastProfile()).thenReturn(
-                mLocalBluetoothLeBroadcast);
-        when(mLocalBluetoothLeBroadcast.isEnabled(any())).thenReturn(false);
-        when(mPlaybackState.getState()).thenReturn(PlaybackState.STATE_PLAYING);
-        when(mMediaDevice.isBLEDevice()).thenReturn(false);
-
-        assertThat(mMediaOutputDialog.getBroadcastIconVisibility()).isEqualTo(View.GONE);
     }
 
     @Test
@@ -419,22 +258,6 @@ public class MediaOutputDialogTest extends SysuiTestCase {
     }
 
     @Test
-    public void getStopButtonText_notSupportsBroadcast_returnsDefaultText() {
-        String stopText = mContext.getText(
-                R.string.media_output_dialog_button_stop_casting).toString();
-        MediaSwitchingController mockMediaSwitchingController =
-                mock(MediaSwitchingController.class);
-        when(mockMediaSwitchingController.isBroadcastSupported()).thenReturn(false);
-
-        withTestDialog(
-                mockMediaSwitchingController,
-                testDialog -> {
-                    assertThat(testDialog.getStopButtonText().toString()).isEqualTo(stopText);
-                });
-    }
-
-    @Test
-    @DisableFlags(Flags.FLAG_LEGACY_LE_AUDIO_SHARING)
     @EnableFlags(com.android.media.flags.Flags.FLAG_ENABLE_OUTPUT_SWITCHER_PERSONAL_AUDIO_SHARING)
     public void getStopButtonText_notInBroadcast_returnsDefaultText() {
         String stopText = mContext.getText(
@@ -452,7 +275,6 @@ public class MediaOutputDialogTest extends SysuiTestCase {
     }
 
     @Test
-    @DisableFlags(Flags.FLAG_LEGACY_LE_AUDIO_SHARING)
     @EnableFlags(com.android.media.flags.Flags.FLAG_ENABLE_OUTPUT_SWITCHER_PERSONAL_AUDIO_SHARING)
     public void getStopButtonText_inBroadcast_returnsDefaultText() {
         String stopText = mContext.getText(
@@ -470,30 +292,9 @@ public class MediaOutputDialogTest extends SysuiTestCase {
     }
 
     @Test
-    @RequiresFlagsEnabled(Flags.FLAG_LEGACY_LE_AUDIO_SHARING)
-    public void getStopButtonText_supportsBroadcast_returnsBroadcastText() {
-        String stopText = mContext.getText(R.string.media_output_broadcast).toString();
-        MediaDevice mMediaDevice = mock(MediaDevice.class);
-        MediaSwitchingController mockMediaSwitchingController =
-                mock(MediaSwitchingController.class);
-        when(mockMediaSwitchingController.isBroadcastSupported()).thenReturn(true);
-        when(mockMediaSwitchingController.getCurrentConnectedMediaDevice())
-                .thenReturn(mMediaDevice);
-        when(mockMediaSwitchingController.isBluetoothLeDevice(any())).thenReturn(true);
-        when(mockMediaSwitchingController.isPlaying()).thenReturn(true);
-        when(mockMediaSwitchingController.isBluetoothLeBroadcastEnabled()).thenReturn(false);
-        withTestDialog(
-                mockMediaSwitchingController,
-                testDialog -> {
-                    assertThat(testDialog.getStopButtonText().toString()).isEqualTo(stopText);
-                });
-    }
-
-    @Test
     public void onStopButtonClick_notPlaying_releaseSession() {
         MediaSwitchingController mockMediaSwitchingController =
                 mock(MediaSwitchingController.class);
-        when(mockMediaSwitchingController.isBroadcastSupported()).thenReturn(false);
         when(mockMediaSwitchingController.getCurrentConnectedMediaDevice()).thenReturn(null);
         when(mockMediaSwitchingController.isPlaying()).thenReturn(false);
         withTestDialog(
@@ -507,7 +308,6 @@ public class MediaOutputDialogTest extends SysuiTestCase {
     }
 
     @Test
-    @DisableFlags(Flags.FLAG_LEGACY_LE_AUDIO_SHARING)
     @EnableFlags(com.android.media.flags.Flags.FLAG_ENABLE_OUTPUT_SWITCHER_PERSONAL_AUDIO_SHARING)
     public void onStopButtonClick_inBroadcast_releaseSession() {
         MediaSwitchingController mockMediaSwitchingController =
