@@ -38,6 +38,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.TreeMap;
 
 /**
  * Collect test result stats and write them into a CSV file containing the test results.
@@ -47,12 +48,12 @@ import java.util.Map;
  * `/tmp/Ravenwood-stats_[TEST-MODULE=NAME]_latest.csv`.
  *
  * Also responsible for dumping all called methods in the form of policy file, by calling
- * {@link RavenwoodMethodCallLogger#dumpAllCalledMethodsInner()}, if the method call log is enabled.
+ * {@link RavenwoodMethodCallLogger#dumpAllCalledMethodsInner}, if the method call log is enabled.
  */
 public class RavenwoodTestStats {
     private static final String TAG = RavenwoodInternalUtils.TAG;
     private static final String HEADER =
-            "ClassOrMethod,Module,Class,OuterClass,Method,Passed,Failed,Skipped,DurationMillis";
+            "ClassOrMethod,Class,Method,Reason,Passed,Failed,Skipped,DurationMillis";
 
     private static RavenwoodTestStats sInstance;
 
@@ -69,21 +70,18 @@ public class RavenwoodTestStats {
     /**
      * Represents a test result.
      */
-    public enum Result {
+    enum Result {
         Passed,
         Failed,
         Skipped,
     }
 
-    public static class Outcome {
-        public final Result result;
-        public final Duration duration;
+    private static String getCaller(Throwable throwable) {
+        var caller = throwable.getStackTrace()[0];
+        return caller.getClassName() + "#" + caller.getMethodName();
+    }
 
-        public Outcome(Result result, Duration duration) {
-            this.result = result;
-            this.duration = duration;
-        }
-
+    record Outcome(Result result, Duration duration, Failure failure) {
         /** @return 1 if {@link #result} is "passed". */
         public int passedCount() {
             return result == Result.Passed ? 1 : 0;
@@ -98,42 +96,74 @@ public class RavenwoodTestStats {
         public int skippedCount() {
             return result == Result.Skipped ? 1 : 0;
         }
+
+        /**
+         * Try to extract the real reason behind a test failure.
+         * The logic here is just some heuristic to generate human-readable information.
+         */
+        public String reason() {
+            if (failure != null) {
+                var ex = failure.getException();
+                // Keep unwrapping the exception until we found
+                // unsupported API exception or the deepest cause.
+                for (;;) {
+                    if (ex instanceof RavenwoodUnsupportedApiException) {
+                        // The test hit a Ravenwood unsupported API
+                        return getCaller(ex);
+                    }
+                    var cause = ex.getCause();
+                    if (cause == null) {
+                        if (ex instanceof ExceptionInInitializerError
+                                && ex.getMessage().contains("RavenwoodUnsupportedApiException")) {
+                            // A static initializer hit a Ravenwood unsupported API
+                            return getCaller(ex);
+                        }
+                        if ("Stub!".equals(ex.getMessage())) {
+                            // The test hit a stub API
+                            return getCaller(ex);
+                        }
+                        // We don't actually know what's up, just report the exception class name.
+                        return ex.getClass().getName();
+                    } else {
+                        ex = cause;
+                    }
+                }
+            }
+            return "-";
+        }
     }
 
-    private final File mOutputFile;
     private final File mOutputSymlinkFile;
     private final PrintWriter mOutputWriter;
-    private final String mTestModuleName;
-
-    public final Map<String, Map<String, Outcome>> mStats = new LinkedHashMap<>();
+    private final Map<String, Map<String, Outcome>> mStats = new LinkedHashMap<>();
 
     /** Ctor */
     public RavenwoodTestStats() {
-        mTestModuleName = guessTestModuleName();
+        String testModuleName = guessTestModuleName();
 
-        var basename = "Ravenwood-stats_" + mTestModuleName + "_";
+        var basename = "Ravenwood-stats_" + testModuleName + "_";
 
         // Get the current time
         LocalDateTime now = LocalDateTime.now();
         DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss");
 
         var tmpdir = System.getProperty("java.io.tmpdir");
-        mOutputFile = new File(tmpdir, basename + now.format(fmt) + ".csv");
+        File outputFile = new File(tmpdir, basename + now.format(fmt) + ".csv");
 
         try {
-            mOutputWriter = new PrintWriter(mOutputFile);
+            mOutputWriter = new PrintWriter(outputFile);
         } catch (IOException e) {
-            throw new RuntimeException("Failed to create logfile. File=" + mOutputFile, e);
+            throw new RuntimeException("Failed to create logfile. File=" + outputFile, e);
         }
 
         // Create the "latest" symlink.
         Path symlink = Paths.get(tmpdir, basename + "latest.csv");
         try {
             Files.deleteIfExists(symlink);
-            Files.createSymbolicLink(symlink, Paths.get(mOutputFile.getName()));
+            Files.createSymbolicLink(symlink, Paths.get(outputFile.getName()));
 
         } catch (IOException e) {
-            throw new RuntimeException("Failed to create logfile. File=" + mOutputFile, e);
+            throw new RuntimeException("Failed to create logfile. File=" + outputFile, e);
         }
         mOutputSymlinkFile = symlink.toFile();
 
@@ -155,79 +185,50 @@ public class RavenwoodTestStats {
         return cwd.getName();
     }
 
-    private void addResult(String className, String methodName,
-            Result result, Duration duration) {
-        mStats.compute(className, (className_, value) -> {
-            if (value == null) {
-                value = new LinkedHashMap<>();
-            }
-            // If the result is already set, don't overwrite it.
-            if (!value.containsKey(methodName)) {
-                value.put(methodName, new Outcome(result, duration));
-            }
-            return value;
-        });
+    private void addResult(String className, String methodName, Outcome outcome) {
+        mStats.computeIfAbsent(className, k -> new TreeMap<>()).putIfAbsent(methodName, outcome);
     }
 
     /**
-     * Call it when a test method is finished.
+     * Make sure the string properly escapes commas for CSV fields.
      */
-    private void onTestFinished(String className,
-            String testName,
-            Result result,
-            Duration duration) {
-        addResult(className, testName, result, duration);
+    private static String normalize(String s) {
+        return '"' + s.replace("\"", "\"\"") + '"';
     }
 
     /**
      * Dump all the results and clear it.
      */
     private void dumpAllAndClear() {
-        for (var entry : mStats.entrySet()) {
-            var className = entry.getKey();
-            var outcomes = entry.getValue();
-
+        mStats.forEach((className, outcomes) -> {
             int passed = 0;
             int skipped = 0;
             int failed = 0;
             Duration totalDuration = Duration.ZERO;
 
-            var methods = outcomes.keySet().stream().sorted().toList();
-
-            for (var method : methods) {
-                var outcome = outcomes.get(method);
+            for (var entry : outcomes.entrySet()) {
+                var method = entry.getKey();
+                var outcome = entry.getValue();
 
                 // Per-method status, with "m".
-                mOutputWriter.printf("m,%s,%s,%s,%s,%d,%d,%d,%d\n",
-                        mTestModuleName, className, getOuterClassName(className), method,
+                mOutputWriter.printf("m,%s,%s,%s,%d,%d,%d,%d\n",
+                        className, normalize(method), normalize(outcome.reason()),
                         outcome.passedCount(), outcome.failedCount(), outcome.skippedCount(),
                         outcome.duration.toMillis());
 
                 passed += outcome.passedCount();
                 skipped += outcome.skippedCount();
                 failed += outcome.failedCount();
-
                 totalDuration = totalDuration.plus(outcome.duration);
             }
 
             // Per-class status, with "c".
-            mOutputWriter.printf("c,%s,%s,%s,%s,%d,%d,%d,%d\n",
-                    mTestModuleName, className, getOuterClassName(className), "-",
+            mOutputWriter.printf("c,%s,-,-,%d,%d,%d,%d\n", className,
                     passed, failed, skipped, totalDuration.toMillis());
-        }
+        });
         mOutputWriter.flush();
         mStats.clear();
         Log.i(TAG, "Added result to stats file: " + mOutputSymlinkFile);
-    }
-
-    private static String getOuterClassName(String className) {
-        // Just delete the '$', because I'm not sure if the className we get here is actaully a
-        // valid class name that does exist. (it might have a parameter name, etc?)
-        int p = className.indexOf('$');
-        if (p < 0) {
-            return className;
-        }
-        return className.substring(0, p);
     }
 
     private static void createCalledMethodPolicyFile() {
@@ -283,18 +284,25 @@ public class RavenwoodTestStats {
             mStartTime = Instant.now();
         }
 
-        private void addResult(
+        private Outcome createOutcome(Result result, Failure failure) {
+            var endTime = Instant.now();
+            return new Outcome(result, Duration.between(mStartTime, endTime), failure);
+        }
+
+        private Outcome createOutcome(Result result) {
+            return createOutcome(result, null);
+        }
+
+        private void addResultWithLogging(
                 String className,
                 String methodName,
-                Result result,
+                Outcome outcome,
                 String logMessage,
                 Object messageExtra) {
-            var endTime = Instant.now();
             if (RAVENWOOD_VERBOSE_LOGGING) {
                 Log.d(TAG, logMessage + messageExtra);
             }
-
-            onTestFinished(className, methodName, result, Duration.between(mStartTime, endTime));
+            addResult(className, methodName, outcome);
         }
 
         @Override
@@ -302,9 +310,9 @@ public class RavenwoodTestStats {
             // Note: testFinished() is always called, even in failure cases and another callback
             // (e.g. testFailure) has already called. But we just call it anyway because if
             // we already recorded a result to the same metho, we won't overwrite it.
-            addResult(description.getClassName(),
+            addResultWithLogging(description.getClassName(),
                     description.getMethodName(),
-                    Result.Passed,
+                    createOutcome(Result.Passed),
                     "  testFinished: ",
                     description);
         }
@@ -312,9 +320,9 @@ public class RavenwoodTestStats {
         @Override
         public void testFailure(Failure failure) {
             var description = failure.getDescription();
-            addResult(description.getClassName(),
+            addResultWithLogging(description.getClassName(),
                     description.getMethodName(),
-                    Result.Failed,
+                    createOutcome(Result.Failed, failure),
                     "  testFailure: ",
                     failure);
         }
@@ -322,18 +330,18 @@ public class RavenwoodTestStats {
         @Override
         public void testAssumptionFailure(Failure failure) {
             var description = failure.getDescription();
-            addResult(description.getClassName(),
+            addResultWithLogging(description.getClassName(),
                     description.getMethodName(),
-                    Result.Skipped,
+                    createOutcome(Result.Skipped),
                     "  testAssumptionFailure: ",
                     failure);
         }
 
         @Override
         public void testIgnored(Description description) {
-            addResult(description.getClassName(),
+            addResultWithLogging(description.getClassName(),
                     description.getMethodName(),
-                    Result.Skipped,
+                    createOutcome(Result.Skipped),
                     "  testIgnored: ",
                     description);
         }
