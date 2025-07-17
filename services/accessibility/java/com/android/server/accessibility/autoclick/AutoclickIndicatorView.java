@@ -23,6 +23,7 @@ import android.animation.ValueAnimator;
 import android.content.Context;
 import android.content.res.Configuration;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.PixelFormat;
 import android.graphics.RectF;
@@ -48,6 +49,11 @@ public class AutoclickIndicatorView extends View {
 
     static final int MINIMAL_ANIMATION_DURATION = 50;
 
+    // The radius of the click point indicator.
+    private static final float POINT_RADIUS_DP = 4f;
+
+    private static final float POINT_STROKE_WIDTH_DP = 1f;
+
     private final int mColor = R.color.materialColorPrimary;
 
     // Radius of the indicator circle.
@@ -55,10 +61,14 @@ public class AutoclickIndicatorView extends View {
 
     // Paint object used to draw the indicator.
     private final Paint mPaint;
+    private final Paint mPointPaint;
 
     private final ValueAnimator mAnimator;
 
     private final RectF mRingRect;
+
+    private final float mPointSizePx;
+    private final float mPointStrokeWidthPx;
 
     // x and y coordinates of the mouse.
     private float mMouseX;
@@ -76,6 +86,8 @@ public class AutoclickIndicatorView extends View {
     // Status of whether the visual indicator should display or not.
     private boolean showIndicator = false;
 
+    private boolean mIgnoreMinorCursorMovement = false;
+
     public AutoclickIndicatorView(Context context) {
         super(context);
 
@@ -83,6 +95,15 @@ public class AutoclickIndicatorView extends View {
         mPaint.setColor(context.getColor(mColor));
         mPaint.setStyle(Paint.Style.STROKE);
         mPaint.setStrokeWidth(10);
+
+        // Convert dp to pixels based on screen density for the point indicator.
+        float density = getResources().getDisplayMetrics().density;
+        mPointSizePx = POINT_RADIUS_DP * density;
+        mPointStrokeWidthPx = POINT_STROKE_WIDTH_DP * density;
+
+        // Setup paint for drawing the point indicator.
+        mPointPaint = new Paint();
+        mPointPaint.setAntiAlias(true);
 
         mAnimator = ValueAnimator.ofFloat(0, 360);
         mAnimator.setDuration(mAnimationDuration);
@@ -124,12 +145,33 @@ public class AutoclickIndicatorView extends View {
         super.onDraw(canvas);
 
         if (showIndicator) {
+            // Draw the ring indicator.
             mRingRect.set(
                     /* left= */ mSnapshotX - mRadius,
                     /* top= */ mSnapshotY - mRadius,
                     /* right= */ mSnapshotX + mRadius,
                     /* bottom= */ mSnapshotY + mRadius);
             canvas.drawArc(mRingRect, /* startAngle= */ -90, mSweepAngle, false, mPaint);
+
+            // Draw a point indicator. When mIgnoreMinorCursorMovement is true, the point stays at
+            // the center of the ring. Otherwise, it follows the mouse movement.
+            final float pointX;
+            final float pointY;
+            if (mIgnoreMinorCursorMovement) {
+                pointX = mSnapshotX;
+                pointY = mSnapshotY;
+            } else {
+                pointX = mMouseX;
+                pointY = mMouseY;
+            }
+            mPointPaint.setStyle(Paint.Style.FILL);
+            mPointPaint.setColor(Color.BLACK);
+            canvas.drawCircle(pointX, pointY, mPointSizePx, mPointPaint);
+
+            mPointPaint.setStyle(Paint.Style.STROKE);
+            mPointPaint.setStrokeWidth(mPointStrokeWidthPx);
+            mPointPaint.setColor(Color.WHITE);
+            canvas.drawCircle(pointX, pointY, mPointSizePx, mPointPaint);
         }
     }
 
@@ -156,8 +198,16 @@ public class AutoclickIndicatorView extends View {
     }
 
     public void setCoordination(float x, float y) {
+        if (mMouseX == x && mMouseY == y) {
+            return;
+        }
         mMouseX = x;
         mMouseY = y;
+
+        // Redraw the click point indicator with the updated coordinates.
+        if (showIndicator) {
+            invalidate();
+        }
     }
 
     public void setRadius(int radius) {
@@ -191,5 +241,9 @@ public class AutoclickIndicatorView extends View {
     public void setAnimationDuration(int duration) {
         mAnimationDuration = Math.max(duration, MINIMAL_ANIMATION_DURATION);
         mAnimator.setDuration(mAnimationDuration);
+    }
+
+    public void setIgnoreMinorCursorMovement(boolean ignoreMinorCursorMovement) {
+        mIgnoreMinorCursorMovement = ignoreMinorCursorMovement;
     }
 }

@@ -1298,8 +1298,7 @@ public class AutoclickController extends BaseEventStreamTransformation implement
             // If the panel is hovered, always use the default slop so it's easier to click the
             // closely spaced buttons.
             double slop =
-                    ((Flags.enableAutoclickIndicator() && mIgnoreMinorCursorMovement
-                            && !isPanelHovered())
+                    ((Flags.enableAutoclickIndicator() && !isPanelHovered())
                             ? mMovementSlop
                             : DEFAULT_MOVEMENT_SLOP);
             return delta > slop;
@@ -1307,6 +1306,9 @@ public class AutoclickController extends BaseEventStreamTransformation implement
 
         public void setIgnoreMinorCursorMovement(boolean ignoreMinorCursorMovement) {
             mIgnoreMinorCursorMovement = ignoreMinorCursorMovement;
+            if (mAutoclickIndicatorView != null) {
+                mAutoclickIndicatorView.setIgnoreMinorCursorMovement(ignoreMinorCursorMovement);
+            }
         }
 
         public void setRevertToLeftClick(boolean revertToLeftClick) {
@@ -1363,7 +1365,12 @@ public class AutoclickController extends BaseEventStreamTransformation implement
                 mTempPointerCoords = new PointerCoords[1];
                 mTempPointerCoords[0] = new PointerCoords();
             }
-            mLastMotionEvent.getPointerCoords(pointerIndex, mTempPointerCoords[0]);
+            if (mIgnoreMinorCursorMovement) {
+                mTempPointerCoords[0].x = mAnchorCoords.x;
+                mTempPointerCoords[0].y = mAnchorCoords.y;
+            } else {
+                mLastMotionEvent.getPointerCoords(pointerIndex, mTempPointerCoords[0]);
+            }
 
             int actionButton = BUTTON_PRIMARY;
             switch (selectedClickType) {
