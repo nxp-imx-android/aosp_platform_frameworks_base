@@ -18,7 +18,6 @@ package com.android.ravenwoodtest.unittests;
 import static com.google.common.truth.Truth.assertThat;
 
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import android.content.Context;
@@ -58,95 +57,37 @@ public class RavenwoodMethodCallLoggerTest {
 
         /** This allows overriding the nest level. */
         public Integer mNestLevel = null;
-
-        @Override
-        public int getNestLevel() {
-            return (mNestLevel != null) ? mNestLevel : super.getNestLevel();
-        }
     }
 
-    private void assertLogged(Class<?> clazz) {
-        assertFalse(clazz + " should be logged", mTarget.shouldIgnoreClass(clazz));
+    private void assertLogged(String className) {
+        assertTrue(className + " should be logged", mTarget.shouldLog(className));
     }
 
-    private void assertNotLogged(Class<?> clazz) {
-        assertTrue(clazz + " should not be logged", mTarget.shouldIgnoreClass(clazz));
+    private void assertNotLogged(String className) {
+        assertFalse(className + " should not be logged", mTarget.shouldLog(className));
     }
 
     @Test
-    public void testShouldIgnoreClass() {
-        assertNotLogged(android.util.Log.class);
-        assertNotLogged(android.util.SparseArray.class);
-        assertNotLogged(android.util.ArrayMap.class);
-        assertNotLogged(android.app.EventLogTags.class);
+    public void testShouldLog() {
+        assertNotLogged("android.util.Log");
+        assertNotLogged("android.util.ArrayMap");
+        assertNotLogged("android.util.SparseArray");
+        assertNotLogged("android.app.EventLogTags");
+        assertNotLogged("android.os.Build");
+        assertNotLogged("android.os.Build$VERSION"); // Inner class follows the outer class policy.
 
-        assertLogged(android.app.ActivityThread.class);
-        assertLogged(android.content.Context.class);
+        assertLogged("android.app.ActivityThread");
+        assertLogged("android.content.Context");
+        assertLogged("android.util.DebugUtils");
+        assertLogged("android.content.pm.PackageManager");
+        assertLogged("android.content.pm.PackageManager$NameNotFoundException");
     }
 
     /**
-     * Unit test for buildMethodCallLogLine().
-     */
-    @Test
-    public void testBuildLogLine() {
-        Thread thread = new Thread("caller-thread");
-        StringBuilder sb = new StringBuilder();
-
-        // Note, buildMethodCallLogLine() doesn't check "mEnabled", so no need to call enable().
-
-        // Here, we should only use public APIs that won't suddenly be removed
-        mTarget.mNestLevel = 0;
-        sb.append(mTarget.buildMethodCallLogLine(
-                Context.class,
-                "getPackageName",
-                "()Ljava/lang/String;",
-                thread));
-
-        mTarget.mNestLevel = 1;
-        sb.append(mTarget.buildMethodCallLogLine(
-                Context.class,
-                "getBasePackageName",
-                "()Ljava/lang/String;",
-                thread));
-
-        // This shouldn't be logged, so the method should return null.
-        mTarget.mNestLevel = 2;
-        assertNull(mTarget.buildMethodCallLogLine(
-                Log.class,
-                "d",
-                "(Ljava/lang/String;Ljava/lang/String;)V",
-                thread));
-
-        // Called by an ignored method, so this shouldn't be logged either.
-        mTarget.mNestLevel = 3;
-        assertNull(mTarget.buildMethodCallLogLine(
-                Context.class,
-                "getBasePackageName",
-                "()Ljava/lang/String;",
-                thread));
-
-        // This should be logged again.
-        mTarget.mNestLevel = 1;
-        sb.append(mTarget.buildMethodCallLogLine(
-                Context.class,
-                "getOpPackgeName",
-                "()Ljava/lang/String;",
-                thread));
-        String expected = """
-# [123: caller-thread]: [@ 0] android.content.Context.getPackageName()Ljava/lang/String;
-# [123: caller-thread]: [@ 1]   android.content.Context.getBasePackageName()Ljava/lang/String;
-# [123: caller-thread]: [@ 1]   android.content.Context.getOpPackgeName()Ljava/lang/String;
-                """;
-        assertThat(sb.toString().trim()).isEqualTo(expected.trim());
-    }
-
-    /**
-     * More complete "end-to-end" test that exercises more of the target code.
+     * Complete "end-to-end" test that exercises more of the target code.
      *
-     * - It doesn't inject the nest level or the caller thread and let RavenwoodMethodCallLogger
-     *   figure them out. (That means we can't adjust the nest level, and because
-     *   RavenwoodMethodCallLogger gets the nest level from the stacktrace, all the log lines
-     *   will get the same nest level.)
+     * Note, method call log uses the real stacktrace to figure out the nest level.
+     * So all the calls look "flat".
      */
     @Test
     public void testEndToEnd() throws Exception {

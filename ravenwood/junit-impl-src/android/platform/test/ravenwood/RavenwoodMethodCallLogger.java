@@ -17,6 +17,7 @@ package android.platform.test.ravenwood;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.platform.test.ravenwood.RavenwoodInternalUtils.MapCache;
 import android.util.Log;
 
 import com.android.hoststubgen.hosthelper.HostTestUtils;
@@ -144,13 +145,6 @@ public class RavenwoodMethodCallLogger {
     @GuardedBy("sAllMethods")
     private final Map<Class<?>, Set<MethodDesc>> mAllMethods = new HashMap<>();
 
-    /** Return the current thread's call nest level. */
-    @VisibleForTesting
-    public int getNestLevel() {
-        var st = Thread.currentThread().getStackTrace();
-        return st.length;
-    }
-
     /** Information about the current thread. */
     private class ThreadInfo {
         /**
@@ -158,13 +152,7 @@ public class RavenwoodMethodCallLogger {
          * We do it because otherwise the nest level would be too deep by the time test
          * starts.
          */
-        public final int mInitialNestLevel = getNestLevel();
-
-        /**
-         * A nest level where shouldLog() returned false.
-         * Once it's set, we ignore all calls deeper than this.
-         */
-        public int mDisabledNestLevel = Integer.MAX_VALUE;
+        public final int mInitialNestLevel = Thread.currentThread().getStackTrace().length;
     }
 
     private final ThreadLocal<ThreadInfo> mThreadInfo = ThreadLocal.withInitial(ThreadInfo::new);
@@ -177,17 +165,6 @@ public class RavenwoodMethodCallLogger {
         sIgnoreClasses.add(android.util.Slog.class);
         sIgnoreClasses.add(android.util.EventLog.class);
         sIgnoreClasses.add(android.util.TimingsTraceLog.class);
-
-        sIgnoreClasses.add(android.util.SparseArray.class);
-        sIgnoreClasses.add(android.util.SparseIntArray.class);
-        sIgnoreClasses.add(android.util.SparseLongArray.class);
-        sIgnoreClasses.add(android.util.SparseBooleanArray.class);
-        sIgnoreClasses.add(android.util.SparseDoubleArray.class);
-        sIgnoreClasses.add(android.util.SparseSetArray.class);
-        sIgnoreClasses.add(android.util.SparseArrayMap.class);
-        sIgnoreClasses.add(android.util.LongSparseArray.class);
-        sIgnoreClasses.add(android.util.LongSparseLongArray.class);
-        sIgnoreClasses.add(android.util.LongArray.class);
 
         sIgnoreClasses.add(android.text.FontConfig.class);
 
@@ -220,24 +197,30 @@ public class RavenwoodMethodCallLogger {
     /**
      * Return if a class should be ignored. Uses {link #sIgnoreCladsses}, but
      * we ignore more classes.
+     *
+     * If we make it operate on class names as strings directly, we wouldn't need
+     * the reflections. But we cache the result anyway, so that's not super-critical.
+     * Using class objects allow us to easily check inheritance too.
      */
-    @VisibleForTesting
-    public boolean shouldIgnoreClass(Class<?> clazz) {
+    private boolean shouldIgnoreClass(Class<?> clazz) {
         if (mLogAllMethods) {
             return false;
         }
         if (sIgnoreClasses.contains(clazz)) {
             return true;
         }
-        // Let's also ignore collection-ish classes in android.util.
-        if (java.util.Collection.class.isAssignableFrom(clazz)
-                || java.util.Map.class.isAssignableFrom(clazz)
-                || java.util.Iterator.class.isAssignableFrom(clazz)
-        ) {
-            if ("android.util".equals(clazz.getPackageName())) {
+        // We want to hide a lot of classes from android.util.
+        if ("android.util".equals(clazz.getPackageName())) {
+            // Let's also ignore collection-ish classes in android.util.
+            if (java.util.Collection.class.isAssignableFrom(clazz)
+                    || java.util.Map.class.isAssignableFrom(clazz)
+                    || java.util.Iterator.class.isAssignableFrom(clazz)
+            ) {
                 return true;
             }
-            return false;
+            if (clazz.getSimpleName().endsWith("Array")) {
+                return true;
+            }
         }
 
         switch (clazz.getSimpleName()) {
@@ -257,36 +240,58 @@ public class RavenwoodMethodCallLogger {
         return false;
     }
 
-    private boolean shouldLog(
-            Class<?> methodClass,
-            String methodName,
-            @SuppressWarnings("UnusedVariable") String methodDescriptor
-    ) {
+    private boolean shouldLogUncached(Class<?> clazz) {
         // Should we ignore this class?
-        if (shouldIgnoreClass(methodClass)) {
+        if (shouldIgnoreClass(clazz)) {
             return false;
         }
         // Is it a nested class in a class that should be ignored?
-        var host = methodClass.getNestHost();
-        if (host != methodClass && shouldIgnoreClass(host)) {
+        var host = clazz.getNestHost();
+        if (host != clazz && shouldIgnoreClass(host)) {
             return false;
         }
 
-        var className = methodClass.getName();
-
-        // Ad-hoc ignore list. They'd be too noisy.
-        if ("create".equals(methodName)
-                // We may apply jarjar, so use endsWith().
-                && className.endsWith("com.android.server.compat.CompatConfig")) {
-            return false;
-        }
-
-        var pkg = methodClass.getPackageName();
+        var pkg = clazz.getPackageName();
         if (pkg.startsWith("android.icu")) {
             return false;
         }
 
         return true;
+    }
+
+    /** Cache for {@link #shouldLog(Class)} */
+    private final MapCache<Class<?>, Boolean> mClassEnabledCache = new MapCache<>() {
+        @Override
+        protected Boolean compute(Class<?> key) {
+            return shouldLogUncached(key);
+        }
+    };
+
+    /** @return whether a class should be logged */
+    private boolean shouldLog(Class<?> clazz) {
+        return mClassEnabledCache.get(clazz);
+    }
+
+    /** Cache for {@link #shouldLog(String)} to avoid repeated reflections. */
+    private final MapCache<String, Boolean> mStringClassEnabledCache = new MapCache<>() {
+        @Override
+        protected Boolean compute(String className) {
+            try {
+                Class<?> c = Class.forName(className);
+                if (!shouldLog(c)) {
+                    return false;
+                }
+            } catch (ClassNotFoundException e) {
+                // Assume this class is loggable.
+            }
+            return true;
+        }
+    };
+
+    /** @return whether a class should be logged */
+    @VisibleForTesting
+    public boolean shouldLog(String className) {
+        return mStringClassEnabledCache.get(className);
     }
 
     /**
@@ -322,29 +327,31 @@ public class RavenwoodMethodCallLogger {
     }
 
     /** Inner method exposed for testing. */
-    @VisibleForTesting
     @Nullable
-    public String buildMethodCallLogLine(
+    private String buildMethodCallLogLine(
             @NonNull Class<?> methodClass,
             @NonNull String methodName,
             @NonNull String methodDesc,
             @NonNull Thread mThread
     ) {
-        final var ti = mThreadInfo.get();
-        final int nestLevel = getNestLevel() - ti.mInitialNestLevel;
-
-        // Once shouldLog() returns false, we just ignore all deeper calls.
-        if (ti.mDisabledNestLevel < nestLevel) {
-            return null; // Still ignore.
-        }
-        final boolean shouldLog = shouldLog(methodClass, methodName, methodDesc);
-
-        if (!shouldLog) {
-            ti.mDisabledNestLevel = nestLevel;
+        if (!shouldLog(methodClass)) {
             return null;
         }
-        ti.mDisabledNestLevel = Integer.MAX_VALUE;
+        final var ti = mThreadInfo.get();
+        final var stack = Thread.currentThread().getStackTrace();
+        final int nestLevel = stack.length - ti.mInitialNestLevel;
 
+        // If a method is called from a "ignored" class, we don't want to log it,
+        // even if this method itself is loggable.
+        //
+        // To do so, we have to check all the classes in the stacktrace (unfortunately) every time.
+        // That's because we can't re-construct the whole call tree only from the information
+        // from the method call log call, because we don't know when we exit each method.
+        for (var sf : stack) {
+            if (!shouldLog(sf.getClassName())) {
+                return null;
+            }
+        }
         var sb = new StringBuilder();
         sb.append("# [");
         sb.append(getRawThreadId());
