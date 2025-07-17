@@ -60,14 +60,6 @@ public class BackgroundUserSoundNotifier {
     private static final String EXTRA_NOTIFICATION_CLIENT_UID =
             "com.android.server.EXTRA_CLIENT_UID";
     /**
-     * The clientUid from the AudioFocusInfo of the background user,
-     * for which an active notification is currently displayed.
-     * Set to -1 if no notification is being shown.
-     * TODO: b/367615180 - add support for multiple simultaneous alarms
-     */
-    @VisibleForTesting
-    int mNotificationClientUid = -1;
-    /**
      * UIDs of audio focus infos with active notifications.
      */
     Set<Integer> mNotificationClientUids = new ArraySet<>();
@@ -102,6 +94,7 @@ public class BackgroundUserSoundNotifier {
         mNotificationManager.createNotificationChannel(channel);
     }
 
+    @SuppressLint("MissingPermission")
     private void setupFocusControlAudioPolicy() {
         // Used to configure our audio policy to handle focus events.
         // This gives us the ability to decide which audio focus requests to accept and bypasses
