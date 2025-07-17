@@ -20,6 +20,9 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -32,7 +35,11 @@ import com.android.systemui.ambientcue.ui.compose.modifier.eduBalloon
 import com.android.systemui.res.R
 
 @Composable
-fun FirstTimeEducation(horizontalAlignment: Alignment.Horizontal, modifier: Modifier = Modifier) {
+fun FirstTimeEducation(
+    horizontalAlignment: Alignment.Horizontal,
+    modifier: Modifier = Modifier,
+    onCloseClick: () -> Unit,
+) {
     val backgroundColor = MaterialTheme.colorScheme.surfaceBright
     Row(
         verticalAlignment = Alignment.Top,
@@ -45,7 +52,10 @@ fun FirstTimeEducation(horizontalAlignment: Alignment.Horizontal, modifier: Modi
                 stringResource(R.string.ambientcue_first_time_edu_icon_description),
             modifier = Modifier.size(56.dp),
         )
-        Column {
+        Column(
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+            modifier = Modifier.widthIn(max = 204.dp),
+        ) {
             Text(
                 text = stringResource(R.string.ambientcue_first_time_edu_title),
                 style = MaterialTheme.typography.titleMedium,
@@ -55,6 +65,14 @@ fun FirstTimeEducation(horizontalAlignment: Alignment.Horizontal, modifier: Modi
                 text = stringResource(R.string.ambientcue_first_time_edu_text),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+        IconButton(onClick = onCloseClick, modifier = modifier.size(24.dp)) {
+            Icon(
+                painter = painterResource(R.drawable.ic_close_white),
+                contentDescription =
+                    stringResource(id = R.string.underlay_close_button_content_description),
+                tint = MaterialTheme.colorScheme.primary,
             )
         }
     }
