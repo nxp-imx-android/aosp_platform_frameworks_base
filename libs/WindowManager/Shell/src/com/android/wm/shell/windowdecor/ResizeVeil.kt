@@ -30,6 +30,7 @@ import android.view.Display
 import android.view.LayoutInflater
 import android.view.SurfaceControl
 import android.view.SurfaceControlViewHost
+import android.view.View
 import android.view.WindowManager
 import android.view.WindowManager.LayoutParams.INPUT_FEATURE_NO_INPUT_CHANNEL
 import android.view.WindowlessWindowManager
@@ -77,6 +78,7 @@ public class ResizeVeil @JvmOverloads constructor(
 
     @VisibleForTesting
     lateinit var iconView: ImageView
+    lateinit var rootView: View
     private var iconSize = 0
 
     /** A container surface to host the veil background and icon child surfaces.  */
@@ -152,9 +154,9 @@ public class ResizeVeil @JvmOverloads constructor(
                 .build()
         iconSize = context.resources
                 .getDimensionPixelSize(R.dimen.desktop_mode_resize_veil_icon_size)
-        val root = LayoutInflater.from(context)
+        rootView = LayoutInflater.from(context)
                 .inflate(R.layout.desktop_mode_resize_veil, null /* root */)
-        iconView = root.requireViewById(R.id.veil_application_icon)
+        iconView = rootView.requireViewById(R.id.veil_application_icon)
         val lp = WindowManager.LayoutParams(
                 iconSize,
                 iconSize,
@@ -167,7 +169,7 @@ public class ResizeVeil @JvmOverloads constructor(
         val wwm = WindowlessWindowManager(taskInfo.configuration,
                 iconSurface, null /* hostInputToken */)
         viewHost = surfaceControlViewHostFactory.create(context, display, wwm, "ResizeVeil")
-        viewHost?.setView(root, lp)
+        viewHost?.setView(rootView, lp)
         loadAppInfoJob = mainScope.launch {
             if (!isActive) return@launch
             val icon = taskResourceLoader.getVeilIcon(taskInfo)
@@ -215,6 +217,10 @@ public class ResizeVeil @JvmOverloads constructor(
             taskInfo,
             fadeIn,
         )
+
+        // Give a11y focus to the veil to "park" it, to keep it from being lost during resize
+        rootView.post { rootView.requestAccessibilityFocus() }
+
         if (fadeIn) {
             cancelAnimation()
             val veilAnimT = surfaceControlTransactionSupplier.get()

@@ -402,6 +402,16 @@ class WindowDecorationWrapper private constructor(
     }
 
     /**
+     * Request direct a11y focus on the maximize button
+     */
+    fun requestFocusMaximizeButton() =
+        when {
+            defaultWindowDecor != null -> requireDefaultWindowDecor().a11yFocusMaximizeButton()
+            desktopWindowDecor != null -> requireDesktopWindowDecor().a11yFocusMaximizeButton()
+            else -> error("Expected Non-null default or desktop window decoration")
+        }
+
+    /**
      * Updates hover and pressed status of views in this decoration. Should only be called
      * when status cannot be updated normally.
      */

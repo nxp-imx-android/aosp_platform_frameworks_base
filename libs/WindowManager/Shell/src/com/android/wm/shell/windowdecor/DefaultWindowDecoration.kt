@@ -868,6 +868,14 @@ class DefaultWindowDecoration @JvmOverloads constructor(
         (captionController as? AppHeaderController)?.a11yAnnounceFocused()
     }
 
+    /**
+     * Request direct a11y focus on the maximize button. This is used after a maximize/restore to
+     * ensure that focus always goes back to the button.
+     */
+    fun a11yFocusMaximizeButton() {
+        (captionController as? AppHeaderController)?.a11yFocusMaximizeButton()
+    }
+
     /** Closes the window decoration. */
     override fun close() {
         taskResourceLoader.onWindowDecorClosed(taskInfo)

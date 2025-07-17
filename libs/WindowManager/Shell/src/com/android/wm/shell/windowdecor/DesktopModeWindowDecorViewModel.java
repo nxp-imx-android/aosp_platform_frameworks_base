@@ -2197,6 +2197,7 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
             if (decoration == null) return;
             decoration.hideResizeVeil();
             decoration.setAnimatingTaskResizeOrReposition(false);
+            decoration.requestFocusMaximizeButton();
         }
     }
 

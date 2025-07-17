@@ -1499,13 +1499,20 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
         mMaximizeMenu.close(() -> {
             // Request the accessibility service to refocus on the maximize button after closing
             // the menu.
-            final AppHeaderViewHolder appHeader = asAppHeader(mWindowDecorViewHolder);
-            if (appHeader != null) {
-                appHeader.requestAccessibilityFocus();
-            }
+            a11yFocusMaximizeButton();
             return Unit.INSTANCE;
         });
         mMaximizeMenu = null;
+    }
+
+    /**
+     * Request direct a11y focus on the maximize button
+     */
+    void a11yFocusMaximizeButton() {
+        final AppHeaderViewHolder appHeader = asAppHeader(mWindowDecorViewHolder);
+        if (appHeader != null) {
+            appHeader.requestAccessibilityFocus();
+        }
     }
 
     @Override

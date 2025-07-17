@@ -373,10 +373,13 @@ class AppHeaderController(
         maximizeMenu?.close {
             // Request the accessibility service to refocus on the maximize button after closing
             // the menu.
-            viewHolder.requestAccessibilityFocus()
+            a11yFocusMaximizeButton()
         }
         maximizeMenu = null
     }
+
+    /** Request direct a11y focus on the maximize button */
+    fun a11yFocusMaximizeButton() = viewHolder.requestAccessibilityFocus()
 
     private fun createOpenByDefaultDialog() {
         if (isOpenByDefaultDialogActive) return

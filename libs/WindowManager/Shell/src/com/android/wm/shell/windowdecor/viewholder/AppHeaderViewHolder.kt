@@ -45,6 +45,7 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.accessibility.AccessibilityNodeInfoCompat.AccessibilityActionCompat
 import androidx.core.view.isGone
 import androidx.core.view.isVisible
+import androidx.core.view.postDelayed
 import com.android.internal.R.color.materialColorOnSecondaryContainer
 import com.android.internal.R.color.materialColorOnSurface
 import com.android.internal.R.color.materialColorSecondaryContainer
@@ -299,6 +300,12 @@ class AppHeaderViewHolder(
             ): Boolean {
                 when (action) {
                     AccessibilityAction.ACTION_CLICK.id -> {
+                        // clear focus before clicking so that focus can be captured by resize veil
+                        // necessary due to a race condition bug where after clicking maximize, a11y
+                        // focus wouldn't go back to maximize button
+                        host.clearFocus()
+                        host.clearAccessibilityFocus()
+                        host.requestFocus()
                         desktopModeUiEventLogger.log(
                             currentTaskInfo, A11Y_APP_WINDOW_MAXIMIZE_RESTORE_BUTTON
                         )
@@ -695,7 +702,8 @@ class AppHeaderViewHolder(
     }
 
     fun requestAccessibilityFocus() {
-        maximizeWindowButton.post {
+        // Slight delay so that after maximizing, everything has settled before resetting focus
+        maximizeWindowButton.postDelayed (250) {
             maximizeWindowButton.sendAccessibilityEvent(AccessibilityEvent.TYPE_VIEW_FOCUSED)
         }
     }
