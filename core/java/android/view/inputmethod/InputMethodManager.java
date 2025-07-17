@@ -428,21 +428,6 @@ public final class InputMethodManager {
     public static final int SHOW_IM_PICKER_MODE_EXCLUDE_AUXILIARY_SUBTYPES = 2;
 
     /**
-     * Clear {@link #SHOW_FORCED} flag when the next IME focused application changed.
-     *
-     * <p>
-     * Note that when this flag enabled in server side, {@link #SHOW_FORCED} will no longer
-     * affect the next focused application to keep showing IME, in case of unexpected IME visible
-     * when the next focused app isn't be the IME requester. </p>
-     *
-     * @hide
-     */
-    @TestApi
-    @ChangeId
-    @EnabledSince(targetSdkVersion = Build.VERSION_CODES.TIRAMISU)
-    public static final long CLEAR_SHOW_FORCED_FLAG_WHEN_LEAVING = 214016041L; // This is a bug id.
-
-    /**
      * Always return {@code true} when {@link #hideSoftInputFromWindow(IBinder, int)} and
      * {@link #hideSoftInputFromWindow(IBinder, int, ResultReceiver, int, ImeTracker.Token)} is
      * called.
