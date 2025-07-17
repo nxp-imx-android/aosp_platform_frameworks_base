@@ -75,6 +75,7 @@ import com.android.systemui.dagger.qualifiers.Main;
 import com.android.systemui.plugins.ActivityStarter;
 import com.android.systemui.qs.shared.QSSettingsPackageRepository;
 import com.android.systemui.res.R;
+import com.android.systemui.shade.domain.interactor.ShadeDialogContextInteractor;
 import com.android.systemui.statusbar.phone.SystemUIDialog;
 
 import dagger.assisted.Assisted;
@@ -127,6 +128,7 @@ public class HearingDevicesDialogDelegate implements SystemUIDialog.Delegate,
     private View mInputRoutingLayout;
     private Spinner mInputRoutingSpinner;
     private HearingDevicesInputRoutingController.Factory mInputRoutingControllerFactory;
+    private final ShadeDialogContextInteractor mShadeDialogContextInteractor;
     private HearingDevicesInputRoutingController mInputRoutingController;
     private HearingDevicesSpinnerAdapter mInputRoutingAdapter;
 
@@ -179,7 +181,8 @@ public class HearingDevicesDialogDelegate implements SystemUIDialog.Delegate,
             AudioManager audioManager,
             HearingDevicesUiEventLogger uiEventLogger,
             QSSettingsPackageRepository qsSettingsPackageRepository,
-            HearingDevicesInputRoutingController.Factory inputRoutingControllerFactory) {
+            HearingDevicesInputRoutingController.Factory inputRoutingControllerFactory,
+            ShadeDialogContextInteractor shadeDialogContextInteractor) {
         mShowPairNewDevice = showPairNewDevice;
         mSystemUIDialogFactory = systemUIDialogFactory;
         mActivityStarter = activityStarter;
@@ -193,11 +196,13 @@ public class HearingDevicesDialogDelegate implements SystemUIDialog.Delegate,
         mLaunchSourceId = launchSourceId;
         mQSSettingsPackageRepository = qsSettingsPackageRepository;
         mInputRoutingControllerFactory = inputRoutingControllerFactory;
+        mShadeDialogContextInteractor = shadeDialogContextInteractor;
     }
 
     @Override
     public SystemUIDialog createDialog() {
-        SystemUIDialog dialog = mSystemUIDialogFactory.create(this);
+        SystemUIDialog dialog = mSystemUIDialogFactory.create(this,
+                mShadeDialogContextInteractor.getContext());
         dismissDialogIfExists();
         mDialog = dialog;
 
