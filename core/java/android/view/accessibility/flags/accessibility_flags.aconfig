@@ -126,13 +126,6 @@ flag {
 }
 
 flag {
-    name: "enable_system_pinch_zoom_gesture"
-    namespace: "accessibility"
-    description: "Feature flag for system pinch zoom gesture detector and related opt-out apis"
-    bug: "283323770"
-}
-
-flag {
     name: "enable_trusted_accessibility_service_api"
     namespace: "accessibility"
     description: "API that allows an app to enable its own accessibility service if that service is trusted."
