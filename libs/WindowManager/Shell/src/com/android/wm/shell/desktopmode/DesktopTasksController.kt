@@ -2868,14 +2868,6 @@ class DesktopTasksController(
                 transition,
             )
         }
-        val userChange = request.userChange
-        if (
-            DesktopExperienceFlags.ENABLE_APPLY_DESK_ACTIVATION_ON_USER_SWITCH.isTrue &&
-                userChange != null
-        ) {
-            // TODO: b/420858253 - deactivate the outgoing user's active desks and reactivate the
-            //  active desks of the incoming user.
-        }
         // Check if we should skip handling this transition
         var reason = ""
         val triggerTask = request.triggerTask
