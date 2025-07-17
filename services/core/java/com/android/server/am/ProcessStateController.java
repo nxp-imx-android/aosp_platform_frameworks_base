@@ -15,6 +15,7 @@
  */
 package com.android.server.am;
 
+import static android.app.ActivityManagerInternal.OOM_ADJ_REASON_ACTIVITY;
 import static android.app.ActivityManagerInternal.OOM_ADJ_REASON_SERVICE_BINDER_CALL;
 import static android.app.ProcessMemoryState.HOSTING_COMPONENT_TYPE_BROADCAST_RECEIVER;
 
@@ -24,7 +25,7 @@ import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.UserIdInt;
 import android.app.ActivityManager;
-import android.app.ActivityManagerInternal;
+import android.app.ActivityManagerInternal.OomAdjReason;
 import android.content.Context;
 import android.content.pm.ServiceInfo;
 import android.os.Handler;
@@ -113,8 +114,7 @@ public class ProcessStateController {
      * {@link #enqueueUpdateTarget}).
      */
     @GuardedBy("mLock")
-    public boolean runUpdate(@NonNull ProcessRecord proc,
-            @ActivityManagerInternal.OomAdjReason int oomAdjReason) {
+    public boolean runUpdate(@NonNull ProcessRecord proc, @OomAdjReason int oomAdjReason) {
         mGlobalState.commitStagedState();
         return mOomAdjuster.updateOomAdjLocked(proc, oomAdjReason);
     }
@@ -123,7 +123,7 @@ public class ProcessStateController {
      * Trigger an update on all processes that have been enqueued with {@link #enqueueUpdateTarget}.
      */
     @GuardedBy("mLock")
-    public void runPendingUpdate(@ActivityManagerInternal.OomAdjReason int oomAdjReason) {
+    public void runPendingUpdate(@OomAdjReason int oomAdjReason) {
         mGlobalState.commitStagedState();
         mOomAdjuster.updateOomAdjPendingTargetsLocked(oomAdjReason);
     }
@@ -131,7 +131,7 @@ public class ProcessStateController {
     /**
      * Trigger an update on all processes.
      */
-    public void runFullUpdate(@ActivityManagerInternal.OomAdjReason int oomAdjReason) {
+    public void runFullUpdate(@OomAdjReason int oomAdjReason) {
         mGlobalState.commitStagedState();
         mOomAdjuster.updateOomAdjLocked(oomAdjReason);
     }
@@ -940,8 +940,7 @@ public class ProcessStateController {
         private AsyncBatchSession getBatchSession() {
             if (mBatchSession == null) {
                 final Handler h = new Handler(mLooper);
-                final Runnable update = () -> mPsc.runFullUpdate(
-                        ActivityManagerInternal.OOM_ADJ_REASON_ACTIVITY);
+                final Runnable update = () -> mPsc.runFullUpdate(OOM_ADJ_REASON_ACTIVITY);
                 mBatchSession = new AsyncBatchSession(h, mPsc.mLock, update);
             }
             return mBatchSession;
