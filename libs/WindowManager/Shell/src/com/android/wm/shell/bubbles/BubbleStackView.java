@@ -2177,6 +2177,9 @@ public class BubbleStackView extends FrameLayout
             // bubble window so do that at the end of the animation so we see the scrim animate).
             BadgedImageView iconView = bubble.getIconView();
             final BubbleViewProvider expandedBubbleBeforeScrim = mExpandedBubble;
+            // Notify the stack anim controller before running the scrim animation. In case
+            // another bubble gets added during it.
+            mStackAnimationController.onLastBubbleRemoved();
             showScrim(false, () -> {
                 mRemovingLastBubbleWhileExpanded = false;
                 bubble.cleanupExpandedView();
@@ -2201,6 +2204,7 @@ public class BubbleStackView extends FrameLayout
             return;
         } else if (getBubbleCount() == 1) {
             mExpandedBubble = null;
+            mStackAnimationController.onLastBubbleRemoved();
         }
         // Remove it from the views
         for (int i = 0; i < getBubbleCount(); i++) {
