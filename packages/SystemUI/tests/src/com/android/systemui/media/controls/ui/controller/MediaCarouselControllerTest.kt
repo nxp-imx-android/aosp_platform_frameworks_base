@@ -21,7 +21,9 @@ import android.content.res.ColorStateList
 import android.content.res.Configuration
 import android.database.ContentObserver
 import android.os.LocaleList
+import android.platform.test.annotations.EnableFlags
 import android.provider.Settings
+import android.security.Flags.FLAG_SECURE_LOCK_DEVICE
 import android.testing.TestableLooper
 import android.util.MathUtils.abs
 import android.view.View
@@ -61,6 +63,8 @@ import com.android.systemui.scene.data.repository.Idle
 import com.android.systemui.scene.data.repository.setSceneTransition
 import com.android.systemui.scene.domain.interactor.sceneInteractor
 import com.android.systemui.scene.shared.model.Scenes
+import com.android.systemui.securelockdevice.data.repository.fakeSecureLockDeviceRepository
+import com.android.systemui.securelockdevice.domain.interactor.secureLockDeviceInteractor
 import com.android.systemui.statusbar.featurepods.media.domain.interactor.mediaControlChipInteractor
 import com.android.systemui.statusbar.notification.collection.provider.OnReorderingAllowedListener
 import com.android.systemui.statusbar.notification.collection.provider.VisualStabilityProvider
@@ -182,6 +186,7 @@ class MediaCarouselControllerTest : SysuiTestCase() {
                 mediaViewControllerFactory = mediaViewControllerFactory,
                 deviceEntryInteractor = kosmos.deviceEntryInteractor,
                 mediaControlChipInteractor = kosmos.mediaControlChipInteractor,
+                secureLockDeviceInteractor = { kosmos.secureLockDeviceInteractor },
             )
         verify(configurationController).addCallback(capture(configListener))
         verify(visualStabilityProvider)
@@ -591,6 +596,29 @@ class MediaCarouselControllerTest : SysuiTestCase() {
     @Test
     fun testLockDownModeOff_showMediaCarousel() {
         whenever(keyguardUpdateMonitor.isUserInLockdown(context.userId)).thenReturn(false)
+        whenever(keyguardUpdateMonitor.isUserUnlocked(context.userId)).thenReturn(true)
+        mediaCarouselController.mediaCarousel = mediaCarousel
+
+        keyguardCallback.value.onStrongAuthStateChanged(context.userId)
+
+        verify(mediaCarousel).visibility = View.VISIBLE
+    }
+
+    @EnableFlags(FLAG_SECURE_LOCK_DEVICE)
+    @Test
+    fun testOnSecureLockDeviceMode_hideMediaCarousel() {
+        kosmos.fakeSecureLockDeviceRepository.onSecureLockDeviceEnabled()
+        mediaCarouselController.mediaCarousel = mediaCarousel
+
+        keyguardCallback.value.onStrongAuthStateChanged(context.userId)
+
+        verify(mediaCarousel).visibility = View.GONE
+    }
+
+    @EnableFlags(FLAG_SECURE_LOCK_DEVICE)
+    @Test
+    fun testOnSecureLockDeviceModeOff_showMediaCarousel() {
+        kosmos.fakeSecureLockDeviceRepository.onSecureLockDeviceDisabled()
         whenever(keyguardUpdateMonitor.isUserUnlocked(context.userId)).thenReturn(true)
         mediaCarouselController.mediaCarousel = mediaCarousel
 

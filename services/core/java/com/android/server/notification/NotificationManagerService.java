@@ -115,6 +115,8 @@ import static android.os.UserHandle.USER_ALL;
 import static android.os.UserHandle.USER_NULL;
 import static android.os.UserHandle.USER_SYSTEM;
 import static android.os.UserHandle.getUserHandleForUid;
+import static android.security.Flags.secureLockDevice;
+import static android.security.Flags.secureLockdown;
 import static android.service.notification.Adjustment.KEY_SUMMARIZATION;
 import static android.service.notification.Adjustment.KEY_TYPE;
 import static android.service.notification.Adjustment.KEY_UNCLASSIFY;
@@ -411,6 +413,7 @@ import com.android.server.notification.toast.ToastRecord;
 import com.android.server.pm.PackageManagerService;
 import com.android.server.pm.UserManagerInternal;
 import com.android.server.policy.PermissionPolicyInternal;
+import com.android.server.security.authenticationpolicy.SecureLockDeviceServiceInternal;
 import com.android.server.statusbar.StatusBarManagerInternal;
 import com.android.server.uri.UriGrantsManagerInternal;
 import com.android.server.utils.Slogf;
@@ -685,6 +688,7 @@ public class NotificationManagerService extends SystemService {
     private PermissionManager mPermissionManager;
     private PermissionPolicyInternal mPermissionPolicyInternal;
 
+    @Nullable private SecureLockDeviceServiceInternal mSecureLockDeviceService;
     // Can be null for wear
     @Nullable StatusBarManagerInternal mStatusBar;
     private DisplayManager mDisplayManager;
@@ -2610,9 +2614,12 @@ public class NotificationManagerService extends SystemService {
 
         @Override
         public synchronized void onStrongAuthRequiredChanged(int userId) {
+            boolean userInSecureLockDevice = false;
+            if (secureLockDevice() && mSecureLockDeviceService != null) {
+                userInSecureLockDevice = mSecureLockDeviceService.isSecureLockDeviceEnabled();
+            }
             boolean userInLockDownModeNext = containsFlag(getStrongAuthForUser(userId),
-                    STRONG_AUTH_REQUIRED_AFTER_USER_LOCKDOWN);
-
+                    STRONG_AUTH_REQUIRED_AFTER_USER_LOCKDOWN) || userInSecureLockDevice;
             // Nothing happens if the lockdown mode of userId keeps the same.
             if (userInLockDownModeNext == isInLockDownMode(userId)) {
                 return;
@@ -2630,7 +2637,6 @@ public class NotificationManagerService extends SystemService {
             if (userInLockDownModeNext) {
                 cancelNotificationsWhenEnterLockDownMode(userId);
             }
-
             mUserInLockDownMode.put(userId, userInLockDownModeNext);
 
             if (!userInLockDownModeNext) {
@@ -3480,7 +3486,12 @@ public class NotificationManagerService extends SystemService {
 
     @VisibleForTesting
     void onBootPhase(int phase, Looper mainLooper) {
-        if (phase == SystemService.PHASE_SYSTEM_SERVICES_READY) {
+        if (phase == SystemService.PHASE_LOCK_SETTINGS_READY) {
+            if (secureLockdown()) {
+                mSecureLockDeviceService =
+                        LocalServices.getService(SecureLockDeviceServiceInternal.class);
+            }
+        } else if (phase == SystemService.PHASE_SYSTEM_SERVICES_READY) {
             mDisplayManager = getContext().getSystemService(DisplayManager.class);
             mWindowManagerInternal = LocalServices.getService(WindowManagerInternal.class);
             mZenModeHelper.onSystemReady();

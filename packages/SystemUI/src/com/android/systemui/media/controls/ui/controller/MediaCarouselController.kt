@@ -78,6 +78,7 @@ import com.android.systemui.qs.PageIndicator
 import com.android.systemui.res.R
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.scene.shared.model.Scenes
+import com.android.systemui.securelockdevice.domain.interactor.SecureLockDeviceInteractor
 import com.android.systemui.shade.ShadeDisplayAware
 import com.android.systemui.statusbar.featurepods.media.domain.interactor.MediaControlChipInteractor
 import com.android.systemui.statusbar.notification.collection.provider.OnReorderingAllowedListener
@@ -92,6 +93,7 @@ import com.android.systemui.util.settings.GlobalSettings
 import com.android.systemui.util.settings.SecureSettings
 import com.android.systemui.util.settings.SettingsProxyExt.observerFlow
 import com.android.systemui.util.time.SystemClock
+import dagger.Lazy
 import java.io.PrintWriter
 import java.util.Locale
 import java.util.TreeMap
@@ -149,6 +151,7 @@ constructor(
     private val mediaViewControllerFactory: Provider<MediaViewController>,
     private val deviceEntryInteractor: DeviceEntryInteractor,
     private val mediaControlChipInteractor: MediaControlChipInteractor,
+    private val secureLockDeviceInteractor: Lazy<SecureLockDeviceInteractor>,
 ) : Dumpable {
     /** The current width of the carousel */
     var currentCarouselWidth: Int = 0
@@ -299,7 +302,10 @@ constructor(
     private val keyguardUpdateMonitorCallback =
         object : KeyguardUpdateMonitorCallback() {
             override fun onStrongAuthStateChanged(userId: Int) {
-                if (keyguardUpdateMonitor.isUserInLockdown(userId)) {
+                if (
+                    keyguardUpdateMonitor.isUserInLockdown(userId) ||
+                        secureLockDeviceInteractor.get().isSecureLockDeviceEnabled.value
+                ) {
                     debugLogger.logCarouselHidden()
                     hideMediaCarousel()
                 } else if (keyguardUpdateMonitor.isUserUnlocked(userId)) {

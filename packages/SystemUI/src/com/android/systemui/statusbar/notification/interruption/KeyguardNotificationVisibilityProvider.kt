@@ -8,6 +8,7 @@ import android.os.Handler
 import android.os.HandlerExecutor
 import android.os.UserHandle
 import android.provider.Settings
+import android.security.Flags.secureLockDevice
 import com.android.keyguard.KeyguardUpdateMonitor
 import com.android.keyguard.KeyguardUpdateMonitorCallback
 import com.android.systemui.CoreStartable
@@ -15,6 +16,7 @@ import com.android.systemui.ambient.statusbar.shared.flag.OngoingActivityChipsOn
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Main
 import com.android.systemui.plugins.statusbar.StatusBarStateController
+import com.android.systemui.securelockdevice.domain.interactor.SecureLockDeviceInteractor
 import com.android.systemui.settings.UserTracker
 import com.android.systemui.statusbar.NotificationLockscreenUserManager
 import com.android.systemui.statusbar.StatusBarState
@@ -31,6 +33,7 @@ import com.android.systemui.util.settings.GlobalSettings
 import com.android.systemui.util.settings.SecureSettings
 import com.android.systemui.util.withIncreasedIndent
 import dagger.Binds
+import dagger.Lazy
 import dagger.Module
 import dagger.multibindings.ClassKey
 import dagger.multibindings.IntoMap
@@ -84,6 +87,7 @@ constructor(
     private val userTracker: UserTracker,
     private val secureSettings: SecureSettings,
     private val globalSettings: GlobalSettings,
+    private val secureLockDeviceInteractor: Lazy<SecureLockDeviceInteractor>,
 ) : CoreStartable, KeyguardNotificationVisibilityProvider {
     private val showSilentNotifsUri =
         secureSettings.getUriFor(Settings.Secure.LOCK_SCREEN_SHOW_SILENT_NOTIFICATIONS)
@@ -207,6 +211,9 @@ constructor(
             !isLockedOrLocking -> SHOW
             // Notifications not allowed on the lockscreen, always hide.
             !lockscreenUserManager.shouldShowLockscreenNotifications() -> HIDE
+            // secure lock device mode is enabled always disallow
+            secureLockDevice() &&
+                secureLockDeviceInteractor.get().isSecureLockDeviceEnabled.value -> HIDE
             // User settings do not allow this notification on the lockscreen, so hide it.
             userSettingsDisallowNotification(entry) -> HIDE
             // Entry is explicitly marked SECRET, so hide it.
