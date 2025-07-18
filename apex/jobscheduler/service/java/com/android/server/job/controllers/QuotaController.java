@@ -669,10 +669,8 @@ public final class QuotaController extends StateController {
         }
 
         final int uid = jobStatus.getSourceUid();
-        if ((!Flags.enforceQuotaPolicyToTopStartedJobs()
-                || mPlatformCompat.isChangeEnabledByUid(
-                        OVERRIDE_QUOTA_ENFORCEMENT_TO_TOP_STARTED_JOBS, uid))
-                && mTopAppCache.get(uid)) {
+        if ((mPlatformCompat.isChangeEnabledByUid(
+                OVERRIDE_QUOTA_ENFORCEMENT_TO_TOP_STARTED_JOBS, uid)) && mTopAppCache.get(uid)) {
             if (DEBUG) {
                 Slog.d(TAG, jobStatus.toShortString() + " is top started job");
             }
@@ -709,9 +707,8 @@ public final class QuotaController extends StateController {
                 timer.stopTrackingJob(jobStatus);
             }
         }
-        if (!Flags.enforceQuotaPolicyToTopStartedJobs()
-                || mPlatformCompat.isChangeEnabledByUid(
-                        OVERRIDE_QUOTA_ENFORCEMENT_TO_TOP_STARTED_JOBS, jobStatus.getSourceUid())) {
+        if (mPlatformCompat.isChangeEnabledByUid(
+                OVERRIDE_QUOTA_ENFORCEMENT_TO_TOP_STARTED_JOBS, jobStatus.getSourceUid())) {
             mTopStartedJobs.remove(jobStatus);
         }
     }
@@ -824,9 +821,8 @@ public final class QuotaController extends StateController {
 
     /** @return true if the job was started while the app was in the TOP state. */
     private boolean isTopStartedJobLocked(@NonNull final JobStatus jobStatus) {
-        if (!Flags.enforceQuotaPolicyToTopStartedJobs()
-                || mPlatformCompat.isChangeEnabledByUid(
-                        OVERRIDE_QUOTA_ENFORCEMENT_TO_TOP_STARTED_JOBS, jobStatus.getSourceUid())) {
+        if (mPlatformCompat.isChangeEnabledByUid(
+                OVERRIDE_QUOTA_ENFORCEMENT_TO_TOP_STARTED_JOBS, jobStatus.getSourceUid())) {
             return mTopStartedJobs.contains(jobStatus);
         }
 
@@ -4595,8 +4591,6 @@ public final class QuotaController extends StateController {
                 + ": " + Flags.adjustQuotaDefaultConstants());
         pw.println("    " + Flags.FLAG_ENFORCE_QUOTA_POLICY_TO_FGS_JOBS
                 + ": " + Flags.enforceQuotaPolicyToFgsJobs());
-        pw.println("    " + Flags.FLAG_ENFORCE_QUOTA_POLICY_TO_TOP_STARTED_JOBS
-                + ": " + Flags.enforceQuotaPolicyToTopStartedJobs());
         pw.println("    " + Flags.FLAG_ADDITIONAL_QUOTA_FOR_SYSTEM_INSTALLER
                 + ": " + Flags.additionalQuotaForSystemInstaller());
         pw.println();
