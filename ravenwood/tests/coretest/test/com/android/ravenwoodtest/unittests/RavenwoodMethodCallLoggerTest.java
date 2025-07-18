@@ -115,8 +115,8 @@ public class RavenwoodMethodCallLoggerTest {
         // Note, for implementation detail reasons, the nest levels show up as negative,
         // because of how we initialize the initial nest level.
         String expected = """
-# [123: Ravenwood:Test]: [@-5] android.content.Context.getPackageName()Ljava/lang/String;
-# [123: Ravenwood:Test]: [@-5] android.content.Context.getOpPackgeName()Ljava/lang/String;
+# [123: Ravenwood:Test]: [@-4] android.content.Context.getPackageName()Ljava/lang/String;
+# [123: Ravenwood:Test]: [@-4] android.content.Context.getOpPackgeName()Ljava/lang/String;
                 """;
         assertThat(bos.toString().trim()).isEqualTo(expected.trim());
 
@@ -128,11 +128,11 @@ public class RavenwoodMethodCallLoggerTest {
         var policy = Files.readString(temp.toPath());
         expected = """
 class android.content.Context	keep
-    method getOpPackgeName()Ljava/lang/String;	keep
-    method getPackageName()Ljava/lang/String;	keep	# annotation(ThrowButSupported)
+    method getOpPackgeName ()Ljava/lang/String;	keep
+    method getPackageName ()Ljava/lang/String;	keep	# annotation(ThrowButSupported)
 
 class android.util.Log	keep
-    method d(Ljava/lang/String;Ljava/lang/String;)V	keep	# class-wide in android/util/Log [inner-reason: class-annotation]
+    method d (Ljava/lang/String;Ljava/lang/String;)V	keep	# class-wide in android/util/Log [inner-reason: class-annotation]
                 """;
         assertThat(policy.trim()).isEqualTo(expected.trim());
 
@@ -144,10 +144,10 @@ class android.util.Log	keep
         policy = Files.readString(temp.toPath());
         expected = """
 class android.content.Context	keep
-    method getPackageName()Ljava/lang/String;	keep	# annotation(ThrowButSupported)
+    method getPackageName ()Ljava/lang/String;	keep	# annotation(ThrowButSupported)
 
 class android.util.Log	keep
-    method d(Ljava/lang/String;Ljava/lang/String;)V	keep	# class-wide in android/util/Log [inner-reason: class-annotation]
+    method d (Ljava/lang/String;Ljava/lang/String;)V	keep	# class-wide in android/util/Log [inner-reason: class-annotation]
                 """;
         assertThat(policy.trim()).isEqualTo(expected.trim());
     }

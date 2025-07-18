@@ -19,6 +19,27 @@ function apply() {
 
 #==============================================================================
 
+apply "tiny-framework/src/com/android/hoststubgen/test/tinyframework/TinyFrameworkForPta.java" <<'__END_OF_SCRIPT__'
+
+# add class annotation to com.android.hoststubgen.test.tinyframework.TinyFrameworkForPta
+21i\
+@android.ravenwood.annotation.RavenwoodKeepPartialClass
+
+# add keep-<clinit> annotation to com.android.hoststubgen.test.tinyframework.TinyFrameworkForPta
+21i\
+@android.ravenwood.annotation.RavenwoodKeepStaticInitializer
+
+# Add a comment about missing constructor to com.android.hoststubgen.test.tinyframework.TinyFrameworkForPta
+21i\
+// [PTA]: Constructor needs Keep
+
+# add annotation to method com.android.hoststubgen.test.tinyframework.TinyFrameworkForPta.foo(Ljava/lang/String;Ljava/lang/Object;)V
+25i\
+    @android.ravenwood.annotation.RavenwoodKeep
+__END_OF_SCRIPT__
+
+#==============================================================================
+
 apply "tiny-framework/src/com/android/hoststubgen/test/tinyframework/TinyFrameworkForTextPolicy.java" <<'__END_OF_SCRIPT__'
 
 # add class annotation to com.android.hoststubgen.test.tinyframework.TinyFrameworkForTextPolicy
@@ -93,6 +114,23 @@ apply "tiny-framework/src/com/android/hoststubgen/test/tinyframework/TinyFramewo
 # add class annotation to com.android.hoststubgen.test.tinyframework.TinyFrameworkMethodCallReplace
 23i\
 @android.ravenwood.annotation.RavenwoodKeepWholeClass
+
+# add class annotation to com.android.hoststubgen.test.tinyframework.TinyFrameworkMethodCallReplace$ConstructorTester
+53i\
+    @android.ravenwood.annotation.RavenwoodKeepWholeClass
+__END_OF_SCRIPT__
+
+#==============================================================================
+
+apply "tiny-framework/src/com/android/hoststubgen/test/tinyframework/TinyFrameworkPartiallyAllowlisted.java" <<'__END_OF_SCRIPT__'
+
+# add class annotation to com.android.hoststubgen.test.tinyframework.TinyFrameworkPartiallyAllowlisted$PartialWithWholeClass_bad
+54i\
+    @android.ravenwood.annotation.RavenwoodRemove
+
+# add class annotation to com.android.hoststubgen.test.tinyframework.TinyFrameworkPartiallyAllowlisted$PartiallyAllowlistedWithoutAnnot_bad
+65i\
+    @android.ravenwood.annotation.RavenwoodRemove
 __END_OF_SCRIPT__
 
 #==============================================================================
@@ -209,11 +247,27 @@ apply "annotation-allowed-classes-tiny-framework-for-pta-test.txt" <<'__END_OF_S
 
 # add to annotation allowlist
 $a\
+com.android.hoststubgen.test.tinyframework.TinyFrameworkForPta
+
+# add to annotation allowlist
+$a\
 com.android.hoststubgen.test.tinyframework.TinyFrameworkForTextPolicy
 
 # add to annotation allowlist
 $a\
 com.android.hoststubgen.test.tinyframework.TinyFrameworkMethodCallReplace
+
+# add to annotation allowlist
+$a\
+com.android.hoststubgen.test.tinyframework.TinyFrameworkMethodCallReplace$ConstructorTester
+
+# add to annotation allowlist
+$a\
+com.android.hoststubgen.test.tinyframework.TinyFrameworkPartiallyAllowlisted$PartialWithWholeClass_bad
+
+# add to annotation allowlist
+$a\
+com.android.hoststubgen.test.tinyframework.TinyFrameworkPartiallyAllowlisted$PartiallyAllowlistedWithoutAnnot_bad
 
 # add to annotation allowlist
 $a\
@@ -348,6 +402,18 @@ apply "policy-override-tiny-framework.txt" <<'__END_OF_SCRIPT__'
 
 # remove class policy on com.android.hoststubgen.test.tinyframework.packagetest.sub.B
 56s/^/#[PTA]: /
+
+# remove class policy on com.android.hoststubgen.test.tinyframework.TinyFrameworkPartiallyAllowlisted$PartialWithWholeClass_bad
+86s/^/#[PTA]: /
+
+# remove class policy on com.android.hoststubgen.test.tinyframework.TinyFrameworkPartiallyAllowlisted$PartiallyAllowlistedWithoutAnnot_bad
+87s/^/#[PTA]: /
+
+# remove method policy com.android.hoststubgen.test.tinyframework.TinyFrameworkForPta.<clinit>*
+92s/^/#[PTA]: /
+
+# remove method policy com.android.hoststubgen.test.tinyframework.TinyFrameworkForPta.foo(Ljava/lang/String;Ljava/lang/Object;)V
+94s/^/#[PTA]: /
 __END_OF_SCRIPT__
 
 echo "All files updated successfully!"

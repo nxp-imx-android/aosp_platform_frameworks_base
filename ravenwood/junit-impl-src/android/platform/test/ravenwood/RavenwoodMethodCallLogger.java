@@ -146,7 +146,7 @@ public class RavenwoodMethodCallLogger {
     private final Map<Class<?>, Set<MethodDesc>> mAllMethods = new HashMap<>();
 
     /** Information about the current thread. */
-    private class ThreadInfo {
+    private static class ThreadInfo {
         /**
          * We save the current thread's nest call level here and use that as the initial level.
          * We do it because otherwise the nest level would be too deep by the time test
@@ -167,6 +167,9 @@ public class RavenwoodMethodCallLogger {
         sIgnoreClasses.add(android.util.TimingsTraceLog.class);
 
         sIgnoreClasses.add(android.text.FontConfig.class);
+
+        sIgnoreClasses.add(android.app.PropertyInvalidatedCache.class);
+        sIgnoreClasses.add(android.os.IpcDataCache.class);
 
         sIgnoreClasses.add(android.os.SystemClock.class);
         sIgnoreClasses.add(android.os.Trace.class);
@@ -192,6 +195,8 @@ public class RavenwoodMethodCallLogger {
         // Following classes *may* be interesting for some purposes, but the initialization is
         // too noisy...
         sIgnoreClasses.add(android.graphics.fonts.SystemFonts.class);
+        sIgnoreClasses.add(android.content.res.FontScaleConverterFactory.class);
+        sIgnoreClasses.add(android.content.res.FontScaleConverterImpl.class);
     }
 
     /**
@@ -222,7 +227,9 @@ public class RavenwoodMethodCallLogger {
                 return true;
             }
         }
-
+        if ("android.util.proto".equals(clazz.getPackageName())) {
+            return true;
+        }
         switch (clazz.getSimpleName()) {
             case "EventLogTags":
                 return true;
@@ -455,6 +462,7 @@ public class RavenwoodMethodCallLogger {
 
                         wr.print("    method ");
                         wr.print(method.name);
+                        wr.print(" ");
                         wr.print(method.desc);
                         wr.print("\tkeep");
 
