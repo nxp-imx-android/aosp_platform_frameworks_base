@@ -16,7 +16,6 @@
 package com.android.systemui.statusbar.phone.domain.interactor
 
 import android.graphics.Rect
-import com.android.systemui.Flags.statusBarDarkIconInteractorMixedFix
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.plugins.DarkIconDispatcher
 import com.android.systemui.statusbar.phone.SysuiDarkIconDispatcher.DarkChange
@@ -37,7 +36,7 @@ class DarkIconInteractor @Inject constructor(private val repository: DarkIconRep
 
     /**
      * Given a display id: returns a flow of [IsAreaDark], a function that can tell you if a given
-     * [Rect] should be tinted dark theme or not. This flow ignores [DarkChange.tint] and
+     * [Rect] should be tinted dark or not. This flow ignores [DarkChange.tint] and
      * [DarkChange.darkIntensity]
      */
     fun isAreaDark(displayId: Int): Flow<IsAreaDark> {
@@ -52,44 +51,15 @@ class DarkIconInteractor @Inject constructor(private val repository: DarkIconRep
         @JvmStatic
         fun Flow<DarkChange>.toIsAreaDark(): Flow<IsAreaDark> =
             map { darkChange ->
-                    // Note: DarkChange.darkIntensity is 0.0f when icons should be white (for dark
-                    // theme) and 1.0f when icons should be black (for light theme).
-                    DarkStateWithoutIntensity(
-                        darkChange.areas,
-                        isDarkTheme = darkChange.darkIntensity < 0.5f,
-                    )
+                    DarkStateWithoutIntensity(darkChange.areas, darkChange.darkIntensity < 0.5f)
                 }
                 .distinctUntilChanged()
                 .map { darkState ->
                     IsAreaDark { viewBounds: Rect ->
-                        if (DarkIconDispatcher.isInAreas(darkState.darkIconAreas, viewBounds)) {
-                            /*
-                            This path happens in the following situations:
-                            1. The status bar is all one color: dark theme.
-                            2. The status bar is all one color: light theme.
-                            3. The status bar is half light and half dark, and the provided
-                               viewBounds overlaps the dark icon area meaning that these icons
-                               should be dark. In this situation darkState.isDarkTheme is always
-                               false.
-
-                            In all these cases the icon theme in this region should match the
-                            status bar theme, so return the status bar theme.
-                            */
-                            darkState.isDarkTheme
+                        if (DarkIconDispatcher.isInAreas(darkState.areas, viewBounds)) {
+                            darkState.isDark
                         } else {
-                            /*
-                            This path happens when the status bar is half light and half dark,
-                            and the provided viewBounds do *not* overlap the dark icon area meaning
-                            that these icons should be light.
-
-                            In this case the icon theme should always be dark so that callers
-                            use light icons.
-                            */
-                            if (statusBarDarkIconInteractorMixedFix()) {
-                                true
-                            } else {
-                                false
-                            }
+                            false
                         }
                     }
                 }
@@ -99,12 +69,9 @@ class DarkIconInteractor @Inject constructor(private val repository: DarkIconRep
 }
 
 /** So we can map between [DarkState] and a single boolean, but based on intensity */
-private data class DarkStateWithoutIntensity(
-    val darkIconAreas: Collection<Rect>,
-    val isDarkTheme: Boolean,
-)
+private data class DarkStateWithoutIntensity(val areas: Collection<Rect>, val isDark: Boolean)
 
-/** Given a region on screen, determine if content in this region should use dark or light theme */
+/** Given a region on screen, determine if the foreground should be dark or light */
 fun interface IsAreaDark {
-    fun isDarkTheme(viewBounds: Rect): Boolean
+    fun isDark(viewBounds: Rect): Boolean
 }
