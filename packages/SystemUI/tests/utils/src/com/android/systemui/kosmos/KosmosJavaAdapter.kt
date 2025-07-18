@@ -128,6 +128,7 @@ import com.android.systemui.statusbar.ui.viewmodel.keyguardStatusBarViewModel
 import com.android.systemui.topui.topUiController
 import com.android.systemui.util.kotlin.javaAdapter
 import com.android.systemui.util.time.systemClock
+import com.android.systemui.volume.dialog.captions.domain.volumeDialogCaptionsButtonInteractor
 import com.android.systemui.volume.domain.interactor.volumeDialogInteractor
 import com.android.systemui.wallpapers.domain.interactor.fakeWallpaperRepository
 import com.android.systemui.wallpapers.domain.interactor.wallpaperInteractorFaked
@@ -221,6 +222,7 @@ class KosmosJavaAdapter() {
     val wifiInteractor by lazy { kosmos.wifiInteractor }
     val fakeWifiRepository by lazy { kosmos.fakeWifiRepository }
     val volumeDialogInteractor by lazy { kosmos.volumeDialogInteractor }
+    val volumeDialogCaptionsButtonInteractor by lazy { kosmos.volumeDialogCaptionsButtonInteractor }
     val alternateBouncerInteractor by lazy { kosmos.alternateBouncerInteractor }
 
     val ongoingActivityChipsViewModel by lazy { kosmos.ongoingActivityChipsViewModel }
