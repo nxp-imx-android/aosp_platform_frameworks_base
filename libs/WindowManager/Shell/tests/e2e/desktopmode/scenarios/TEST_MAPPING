@@ -166,9 +166,6 @@
       "name": "FunctionalTestsDesktopMode-maximize-MaximizeAppWindowWithDragToTopDragZoneInDesktopFirstTest"
     },
     {
-      "name": "FunctionalTestsDesktopMode-maximize-MaximizeAppWindowWithDragToTopDragZoneTest"
-    },
-    {
       "name": "FunctionalTestsDesktopMode-resizing-ResizeAppCornerMultiWindowAndPipTest"
     },
     {
