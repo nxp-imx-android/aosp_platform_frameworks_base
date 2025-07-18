@@ -46,9 +46,6 @@
       "name": "FunctionalTestsDesktopMode-EnterDesktopWithDragWindowsLimitTest"
     },
     {
-      "name": "FunctionalTestsDesktopMode-ExitDesktopWithDragToTopDragZoneTest"
-    },
-    {
       "name": "FunctionalTestsDesktopMode-FocusAppFromAllAppsTest"
     },
     {
@@ -158,6 +155,9 @@
     },
     {
       "name": "FunctionalTestsDesktopMode-keyboardshortcuts-ExitDesktopFromKeyboardShortcutTest"
+    },
+    {
+      "name": "FunctionalTestsDesktopMode-maximize-ExitDesktopWithDragToTopDragZoneTest"
     },
     {
       "name": "FunctionalTestsDesktopMode-maximize-MaximizeAppWindowTest"
