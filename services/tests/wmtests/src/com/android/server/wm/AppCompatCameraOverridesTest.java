@@ -482,7 +482,7 @@ public class AppCompatCameraOverridesTest extends WindowTestsBase {
 
         void checkShouldApplyFreeformTreatmentForCameraCompat(boolean expected) {
             Assert.assertEquals(getAppCompatCameraOverrides()
-                    .shouldApplyFreeformTreatmentForCameraCompat(), expected);
+                    .shouldApplyCameraCompatSimReqOrientationTreatment(), expected);
         }
 
         void checkIsOverrideMinAspectRatioForCameraEnabled(boolean expected) {

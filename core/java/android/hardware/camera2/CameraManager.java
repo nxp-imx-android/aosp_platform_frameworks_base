@@ -1738,13 +1738,13 @@ public final class CameraManager {
                 if (activityManager != null) {
                     for (ActivityManager.AppTask appTask : activityManager.getAppTasks()) {
                         final TaskInfo taskInfo = appTask.getTaskInfo();
-                        final int freeformCameraCompatMode = taskInfo.appCompatTaskInfo
-                                .cameraCompatTaskInfo.freeformCameraCompatMode;
-                        if (isInCameraCompatMode(freeformCameraCompatMode)
+                        final int cameraCompatMode = taskInfo.appCompatTaskInfo.cameraCompatTaskInfo
+                                .cameraCompatMode;
+                        if (isInCameraCompatMode(cameraCompatMode)
                                 && taskInfo.topActivity != null
                                 && taskInfo.topActivity.getPackageName().equals(packageName)) {
                             // WindowManager has requested rotation override.
-                            return getRotationOverrideForCompatFreeform(freeformCameraCompatMode,
+                            return getRotationOverrideForCompatFreeform(cameraCompatMode,
                                     taskInfo.appCompatTaskInfo.cameraCompatTaskInfo
                                             .displayRotation);
                         }
@@ -1770,10 +1770,10 @@ public final class CameraManager {
                 : ICameraService.ROTATION_OVERRIDE_NONE;
     }
 
-    private static boolean isInCameraCompatMode(@CameraCompatTaskInfo.FreeformCameraCompatMode int
-            freeformCameraCompatMode) {
-        return (freeformCameraCompatMode != CameraCompatTaskInfo.CAMERA_COMPAT_FREEFORM_UNSPECIFIED)
-                && (freeformCameraCompatMode != CameraCompatTaskInfo.CAMERA_COMPAT_FREEFORM_NONE);
+    private static boolean isInCameraCompatMode(@CameraCompatTaskInfo.CameraCompatMode int
+            cameraCompatMode) {
+        return (cameraCompatMode != CameraCompatTaskInfo.CAMERA_COMPAT_UNSPECIFIED)
+                && (cameraCompatMode != CameraCompatTaskInfo.CAMERA_COMPAT_NONE);
     }
 
     private static int getRotationOverrideForCompatFreeform(
@@ -1788,13 +1788,13 @@ public final class CameraManager {
     }
 
     private static int getRotationOverrideForCompatFreeform(
-            @CameraCompatTaskInfo.FreeformCameraCompatMode int freeformCameraCompatMode,
+            @CameraCompatTaskInfo.CameraCompatMode int freeformCameraCompatMode,
             @Surface.Rotation int displayRotation) {
         // Only rotate-and-crop if the app and device orientations do not match.
         if (freeformCameraCompatMode
-                == CameraCompatTaskInfo.CAMERA_COMPAT_FREEFORM_LANDSCAPE_DEVICE_IN_PORTRAIT
+                == CameraCompatTaskInfo.CAMERA_COMPAT_LANDSCAPE_DEVICE_IN_PORTRAIT
                 || freeformCameraCompatMode
-                    == CameraCompatTaskInfo.CAMERA_COMPAT_FREEFORM_PORTRAIT_DEVICE_IN_LANDSCAPE) {
+                    == CameraCompatTaskInfo.CAMERA_COMPAT_PORTRAIT_DEVICE_IN_LANDSCAPE) {
             // Rotate-and-crop compensates for changes in camera preview calculations (sandboxing).
             // Recommended calculation of camera preview is:
             // rotation = (sensorOrientationDegrees - deviceOrientationDegrees * sign + 360) % 360

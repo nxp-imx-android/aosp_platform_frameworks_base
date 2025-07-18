@@ -46,7 +46,7 @@ class AppCompatCameraPolicy {
     @Nullable
     final DisplayRotationCompatPolicy mDisplayRotationCompatPolicy;
     @Nullable
-    final CameraCompatFreeformPolicy mCameraCompatFreeformPolicy;
+    final AppCompatCameraSimReqOrientationPolicy mSimReqOrientationPolicy;
 
     AppCompatCameraPolicy(@NonNull WindowManagerService wmService,
             @NonNull DisplayContent displayContent) {
@@ -54,29 +54,28 @@ class AppCompatCameraPolicy {
         // without the need to restart the device.
         final boolean needsDisplayRotationCompatPolicy = wmService.mAppCompatConfiguration
                 .isCameraCompatForceRotateTreatmentEnabledAtBuildTime();
-        final boolean needsCameraCompatFreeformPolicy =
+        final boolean needsSimReqOrientationPolicy =
                 DesktopModeFlags.ENABLE_CAMERA_COMPAT_SIMULATE_REQUESTED_ORIENTATION.isTrue()
                         && DesktopModeHelper.canEnterDesktopMode(wmService.mContext)
                         && wmService.mAppCompatConfiguration
                         .isCameraCompatSimulateRequestedOrientationTreatmentEnabled();
-        if (needsDisplayRotationCompatPolicy || needsCameraCompatFreeformPolicy) {
+        if (needsDisplayRotationCompatPolicy || needsSimReqOrientationPolicy) {
             final AppCompatCameraStateSource cameraStateListenerDelegate =
                     new AppCompatCameraStateSource();
             mCameraStateMonitor = new CameraStateMonitor(displayContent, wmService.mH,
                     cameraStateListenerDelegate);
             mActivityRefresher = new ActivityRefresher(wmService, wmService.mH);
-            mDisplayRotationCompatPolicy =
-                    needsDisplayRotationCompatPolicy ? new DisplayRotationCompatPolicy(
-                            displayContent, mCameraStateMonitor, cameraStateListenerDelegate,
-                            mActivityRefresher)
-                            : null;
-            mCameraCompatFreeformPolicy =
-                    needsCameraCompatFreeformPolicy ? new CameraCompatFreeformPolicy(displayContent,
+            mDisplayRotationCompatPolicy = needsDisplayRotationCompatPolicy
+                    ? new DisplayRotationCompatPolicy(displayContent, mCameraStateMonitor,
+                            cameraStateListenerDelegate, mActivityRefresher)
+                    : null;
+            mSimReqOrientationPolicy = needsSimReqOrientationPolicy
+                    ? new AppCompatCameraSimReqOrientationPolicy(displayContent,
                             mCameraStateMonitor, cameraStateListenerDelegate, mActivityRefresher)
-                            : null;
+                    : null;
         } else {
             mDisplayRotationCompatPolicy = null;
-            mCameraCompatFreeformPolicy = null;
+            mSimReqOrientationPolicy = null;
             mCameraStateMonitor = null;
             mActivityRefresher = null;
         }
@@ -150,8 +149,8 @@ class AppCompatCameraPolicy {
         if (mDisplayRotationCompatPolicy != null) {
             mDisplayRotationCompatPolicy.start();
         }
-        if (mCameraCompatFreeformPolicy != null) {
-            mCameraCompatFreeformPolicy.start();
+        if (mSimReqOrientationPolicy != null) {
+            mSimReqOrientationPolicy.start();
         }
         if (mCameraStateMonitor != null) {
             mCameraStateMonitor.startListeningToCameraState();
@@ -162,8 +161,8 @@ class AppCompatCameraPolicy {
         if (mDisplayRotationCompatPolicy != null) {
             mDisplayRotationCompatPolicy.dispose();
         }
-        if (mCameraCompatFreeformPolicy != null) {
-            mCameraCompatFreeformPolicy.dispose();
+        if (mSimReqOrientationPolicy != null) {
+            mSimReqOrientationPolicy.dispose();
         }
         if (mCameraStateMonitor != null) {
             mCameraStateMonitor.stopListeningToCameraState();
@@ -174,8 +173,8 @@ class AppCompatCameraPolicy {
         return mDisplayRotationCompatPolicy != null;
     }
 
-    boolean hasCameraCompatFreeformPolicy() {
-        return mCameraCompatFreeformPolicy != null;
+    boolean hasSimReqOrientationPolicy() {
+        return mSimReqOrientationPolicy != null;
     }
 
     boolean hasCameraStateMonitor() {
@@ -198,8 +197,8 @@ class AppCompatCameraPolicy {
         return (cameraPolicy.mDisplayRotationCompatPolicy != null
                         && cameraPolicy.mDisplayRotationCompatPolicy
                                 .shouldCameraCompatControlOrientation(activity))
-                || (cameraPolicy.mCameraCompatFreeformPolicy != null
-                        && cameraPolicy.mCameraCompatFreeformPolicy
+                || (cameraPolicy.mSimReqOrientationPolicy != null
+                        && cameraPolicy.mSimReqOrientationPolicy
                                 .shouldCameraCompatControlOrientation(activity));
     }
 
@@ -209,8 +208,8 @@ class AppCompatCameraPolicy {
         if (cameraPolicy == null) {
             return false;
         }
-        return cameraPolicy.mCameraCompatFreeformPolicy != null
-                        && cameraPolicy.mCameraCompatFreeformPolicy
+        return cameraPolicy.mSimReqOrientationPolicy != null
+                        && cameraPolicy.mSimReqOrientationPolicy
                                 .isFreeformLetterboxingForCameraAllowed(activity);
     }
 
@@ -223,8 +222,8 @@ class AppCompatCameraPolicy {
         return (cameraPolicy.mDisplayRotationCompatPolicy != null
                         && cameraPolicy.mDisplayRotationCompatPolicy
                                 .shouldCameraCompatControlAspectRatio(activity))
-                || (cameraPolicy.mCameraCompatFreeformPolicy != null
-                        && cameraPolicy.mCameraCompatFreeformPolicy
+                || (cameraPolicy.mSimReqOrientationPolicy != null
+                        && cameraPolicy.mSimReqOrientationPolicy
                                 .shouldCameraCompatControlAspectRatio(activity));
     }
 
@@ -243,8 +242,8 @@ class AppCompatCameraPolicy {
                 && cameraPolicy.mDisplayRotationCompatPolicy
                         .isCameraRunningAndWindowingModeEligible(activity,
                                 /* mustBeFullscreen */ true))
-                || (cameraPolicy.mCameraCompatFreeformPolicy != null
-                        && cameraPolicy.mCameraCompatFreeformPolicy
+                || (cameraPolicy.mSimReqOrientationPolicy != null
+                        && cameraPolicy.mSimReqOrientationPolicy
                                 .isCameraRunningAndWindowingModeEligible(activity));
     }
 
@@ -263,29 +262,29 @@ class AppCompatCameraPolicy {
         }
         float displayRotationCompatPolicyAspectRatio =
                 cameraPolicy.mDisplayRotationCompatPolicy != null
-                ? cameraPolicy.mDisplayRotationCompatPolicy.getCameraCompatAspectRatio(activity)
+                        ? cameraPolicy.mDisplayRotationCompatPolicy.getCameraCompatAspectRatio(
+                                activity)
+                        : MIN_FIXED_ORIENTATION_LETTERBOX_ASPECT_RATIO;
+        float simReqOrientationPolicyAspectRatio = cameraPolicy.mSimReqOrientationPolicy != null
+                ? cameraPolicy.mSimReqOrientationPolicy.getCameraCompatAspectRatio(activity)
                 : MIN_FIXED_ORIENTATION_LETTERBOX_ASPECT_RATIO;
-        float cameraCompatFreeformPolicyAspectRatio =
-                cameraPolicy.mCameraCompatFreeformPolicy != null
-                ? cameraPolicy.mCameraCompatFreeformPolicy.getCameraCompatAspectRatio(activity)
-                : MIN_FIXED_ORIENTATION_LETTERBOX_ASPECT_RATIO;
-        return Math.max(displayRotationCompatPolicyAspectRatio,
-                cameraCompatFreeformPolicyAspectRatio);
+        return Math.max(displayRotationCompatPolicyAspectRatio, simReqOrientationPolicyAspectRatio);
     }
 
-    @CameraCompatTaskInfo.FreeformCameraCompatMode
-    static int getCameraCompatFreeformMode(@NonNull ActivityRecord activity) {
+    @CameraCompatTaskInfo.CameraCompatMode
+    static int getCameraCompatSimReqOrientationMode(@NonNull ActivityRecord activity) {
         final AppCompatCameraPolicy cameraPolicy = getAppCompatCameraPolicy(activity);
-        return cameraPolicy != null && cameraPolicy.mCameraCompatFreeformPolicy != null
-                ? cameraPolicy.mCameraCompatFreeformPolicy.getCameraCompatMode(activity)
-                : CameraCompatTaskInfo.CAMERA_COMPAT_FREEFORM_NONE;
+        return cameraPolicy != null && cameraPolicy.mSimReqOrientationPolicy
+                != null
+                ? cameraPolicy.mSimReqOrientationPolicy.getCameraCompatMode(activity)
+                : CameraCompatTaskInfo.CAMERA_COMPAT_NONE;
     }
 
     @Surface.Rotation
     static int getCameraDeviceRotation(@NonNull ActivityRecord activity) {
         final AppCompatCameraPolicy cameraPolicy = getAppCompatCameraPolicy(activity);
-        return cameraPolicy != null && cameraPolicy.mCameraCompatFreeformPolicy != null
-                ? cameraPolicy.mCameraCompatFreeformPolicy.getCameraDeviceRotation()
+        return cameraPolicy != null && cameraPolicy.mSimReqOrientationPolicy != null
+                ? cameraPolicy.mSimReqOrientationPolicy.getCameraDeviceRotation()
                 : ROTATION_UNDEFINED;
     }
 

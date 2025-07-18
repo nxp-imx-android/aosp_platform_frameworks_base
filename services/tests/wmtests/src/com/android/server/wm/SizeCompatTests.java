@@ -5510,8 +5510,8 @@ public class SizeCompatTests extends WindowTestsBase {
     }
 
     /**
-     * {@code canEnterDesktopMode} is called when {@link CameraCompatFreeformPolicy} is created in
-     * {@link AppCompatCameraPolicy}.
+     * {@code canEnterDesktopMode} is called when {@link AppCompatCameraSimReqOrientationPolicy}
+     * is created in {@link AppCompatCameraPolicy}.
      *
      * <p>{@link #allowDesktopMode()} needs to be called before {@link DisplayContent} is created.
      */
@@ -5521,8 +5521,8 @@ public class SizeCompatTests extends WindowTestsBase {
 
     private void setupCameraCompatAspectRatio(float cameraCompatAspectRatio,
             @NonNull DisplayContent display) {
-        CameraCompatFreeformPolicy cameraPolicy = display.mAppCompatCameraPolicy
-                .mCameraCompatFreeformPolicy;
+        AppCompatCameraSimReqOrientationPolicy cameraPolicy = display.mAppCompatCameraPolicy
+                .mSimReqOrientationPolicy;
         spyOn(cameraPolicy);
         doReturn(true).when(cameraPolicy).shouldCameraCompatControlAspectRatio(any());
         doReturn(cameraCompatAspectRatio).when(cameraPolicy).getCameraCompatAspectRatio(any());

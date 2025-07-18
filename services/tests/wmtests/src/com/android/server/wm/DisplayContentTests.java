@@ -2962,7 +2962,7 @@ public class DisplayContentTests extends WindowTestsBase {
         doReturn(true).when(() ->
                 DesktopModeHelper.canEnterDesktopMode(any(Context.class)));
 
-        assertTrue(createNewDisplay().mAppCompatCameraPolicy.hasCameraCompatFreeformPolicy());
+        assertTrue(createNewDisplay().mAppCompatCameraPolicy.hasSimReqOrientationPolicy());
     }
 
     @DisableFlags(FLAG_ENABLE_CAMERA_COMPAT_FOR_DESKTOP_WINDOWING)
@@ -2971,14 +2971,14 @@ public class DisplayContentTests extends WindowTestsBase {
         doReturn(true).when(() ->
                 DesktopModeHelper.canEnterDesktopMode(any(Context.class)));
 
-        assertFalse(createNewDisplay().mAppCompatCameraPolicy.hasCameraCompatFreeformPolicy());
+        assertFalse(createNewDisplay().mAppCompatCameraPolicy.hasSimReqOrientationPolicy());
     }
 
     @EnableFlags(FLAG_ENABLE_CAMERA_COMPAT_FOR_DESKTOP_WINDOWING)
     @DisableFlags(FLAG_ENABLE_DESKTOP_WINDOWING_MODE)
     @Test
     public void desktopWindowingFlagNotEnabled_cameraCompatFreeformPolicyIsNull() {
-        assertFalse(createNewDisplay().mAppCompatCameraPolicy.hasCameraCompatFreeformPolicy());
+        assertFalse(createNewDisplay().mAppCompatCameraPolicy.hasSimReqOrientationPolicy());
     }
 
     @EnableFlags(FLAG_ENABLE_DISPLAY_CONTENT_MODE_MANAGEMENT)

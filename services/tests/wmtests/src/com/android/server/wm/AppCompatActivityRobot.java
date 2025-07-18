@@ -240,7 +240,7 @@ class AppCompatActivityRobot {
     }
 
     void setIsCameraRunningAndWindowingModeEligibleFreeform(boolean enabled) {
-        doReturn(enabled).when(getTopCameraCompatFreeformPolicy())
+        doReturn(enabled).when(getTopCameraCompatSimReqOrientationPolicy())
                 .isCameraRunningAndWindowingModeEligible(eq(mActivityStack.top()));
     }
 
@@ -658,9 +658,8 @@ class AppCompatActivityRobot {
                 .mDisplayRotationCompatPolicy;
     }
 
-    private CameraCompatFreeformPolicy getTopCameraCompatFreeformPolicy() {
-        return mActivityStack.top().mDisplayContent.mAppCompatCameraPolicy
-                .mCameraCompatFreeformPolicy;
+    private AppCompatCameraSimReqOrientationPolicy getTopCameraCompatSimReqOrientationPolicy() {
+        return mActivityStack.top().mDisplayContent.mAppCompatCameraPolicy.mSimReqOrientationPolicy;
     }
 
     // We add the activity to the stack and spyOn() on its properties.
