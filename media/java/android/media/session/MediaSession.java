@@ -403,7 +403,7 @@ public final class MediaSession {
      * Set if this session is currently active.
      *
      * <p>If set to false then your session's controller will not be
-     * discoverable via {@link MediaSessionManager#getActiveSessions(int)} by
+     * discoverable via {@link MediaSessionManager#getActiveSessions(ComponentName)} by
      * other apps, including system apps.
      *
      * @param active Whether this session is active or not.
@@ -424,7 +424,7 @@ public final class MediaSession {
      * Get the current active state of this session.
      *
      * <p>If false then your session's controller will not be discoverable via
-     * {@link MediaSessionManager#getActiveSessions(int)} by other apps,
+     * {@link MediaSessionManager#getActiveSessions(ComponentName)} by other apps,
      * including system apps.
      *
      * @return True if the session is active, false otherwise.
