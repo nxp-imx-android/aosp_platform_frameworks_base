@@ -186,7 +186,7 @@ final class ZeroJankProxy implements IInputMethodManagerImpl.Callback {
             IRemoteAccessibilityInputConnection remoteAccessibilityInputConnection,
             int unverifiedTargetSdkVersion, @UserIdInt int userId,
             @NonNull ImeOnBackInvokedDispatcher imeDispatcher, boolean imeRequestedVisible,
-            int startInputSeq, boolean useAsyncShowHideMethod) {
+            int startInputSeq) {
         offload(() -> {
             InputBindResult result = mInner.startInputOrWindowGainedFocus(startInputReason, client,
                     windowToken, startInputFlags, softInputMode, windowFlags,

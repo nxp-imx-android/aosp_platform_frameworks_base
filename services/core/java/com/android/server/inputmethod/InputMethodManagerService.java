@@ -3513,7 +3513,7 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
             IRemoteAccessibilityInputConnection remoteAccessibilityInputConnection,
             int unverifiedTargetSdkVersion, @UserIdInt int userId,
             @NonNull ImeOnBackInvokedDispatcher imeDispatcher, boolean imeRequestedVisible,
-            int startInputSeq, boolean useAsyncShowHideMethod) {
+            int startInputSeq) {
         // implemented by ZeroJankProxy
     }
 

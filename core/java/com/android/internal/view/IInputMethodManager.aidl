@@ -115,7 +115,7 @@ interface IInputMethodManager {
             in @nullable IRemoteAccessibilityInputConnection remoteAccessibilityInputConnection,
             int unverifiedTargetSdkVersion, int userId,
             in ImeOnBackInvokedDispatcher imeDispatcher, boolean imeRequestedVisible,
-            int startInputSeq, boolean useAsyncShowHideMethod);
+            int startInputSeq);
 
     void showInputMethodPickerFromClient(in IInputMethodClient client,
             int auxiliarySubtypeMode);
