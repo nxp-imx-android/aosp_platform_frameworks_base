@@ -4029,9 +4029,8 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
             return false;
         }
         final ImeSubtypeListItem nextSubtype = userData.mSwitchingController
-                .getNextInputMethodLocked(onlyCurrentIme, currentImi,
-                        bindingController.getCurrentSubtype(),
-                        MODE_AUTO, true /* forward */);
+                .getNextInputMethod(currentImi, bindingController.getCurrentSubtype(),
+                        onlyCurrentIme, MODE_AUTO, true /* forward */);
         if (nextSubtype == null) {
             return false;
         }
@@ -4049,9 +4048,8 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
             return false;
         }
         final ImeSubtypeListItem nextSubtype = userData.mSwitchingController
-                .getNextInputMethodLocked(false /* onlyCurrentIme */, currentImi,
-                        bindingController.getCurrentSubtype(),
-                        MODE_AUTO, true /* forward */);
+                .getNextInputMethod(currentImi, bindingController.getCurrentSubtype(),
+                        false /* onlyCurrentIme */, MODE_AUTO, true /* forward */);
         return nextSubtype != null;
     }
 
@@ -4425,8 +4423,7 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
         final var bindingController = userData.mBindingController;
         final InputMethodInfo imi = bindingController.getSelectedMethod();
         if (imi != null) {
-            userData.mSwitchingController.onUserActionLocked(imi,
-                    bindingController.getCurrentSubtype());
+            userData.mSwitchingController.onUserAction(imi, bindingController.getCurrentSubtype());
         }
     }
 
@@ -4562,16 +4559,14 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
     @GuardedBy("ImfLock.class")
     private void showInputMethodPickerLocked(int auxiliarySubtypeMode, int displayId,
             @UserIdInt int userId) {
+        final var userData = getUserData(userId);
         final boolean showAuxSubtypes;
         switch (auxiliarySubtypeMode) {
             // This is undocumented so far, but IMM#showInputMethodPicker() has been
             // implemented so that auxiliary subtypes will be excluded when the soft
             // keyboard is invisible.
-            case InputMethodManager.SHOW_IM_PICKER_MODE_AUTO -> {
-                final var userData = getUserData(userId);
-                final var visibilityStateComputer = userData.mVisibilityStateComputer;
-                showAuxSubtypes = visibilityStateComputer.isInputShown();
-            }
+            case InputMethodManager.SHOW_IM_PICKER_MODE_AUTO ->
+                    showAuxSubtypes = userData.mVisibilityStateComputer.isInputShown();
             case InputMethodManager.SHOW_IM_PICKER_MODE_INCLUDE_AUXILIARY_SUBTYPES ->
                     showAuxSubtypes = true;
             case InputMethodManager.SHOW_IM_PICKER_MODE_EXCLUDE_AUXILIARY_SUBTYPES ->
@@ -4581,18 +4576,21 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
                 return;
             }
         }
-        final InputMethodSettings settings = InputMethodSettingsRepository.get(userId);
         final boolean isScreenLocked = mWindowManagerInternal.isKeyguardLocked()
                 && mWindowManagerInternal.isKeyguardSecure(userId);
+        final boolean includeAuxiliary = showAuxSubtypes && !isScreenLocked;
+        if (DEBUG && isScreenLocked && showAuxSubtypes) {
+            Slog.w(TAG, "Auxiliary subtypes are not allowed to be shown in lock screen.");
+        }
+        final InputMethodSettings settings = InputMethodSettingsRepository.get(userId);
         final String lastInputMethodId = settings.getSelectedInputMethod();
         final int lastInputMethodSubtypeIndex =
                 settings.getSelectedInputMethodSubtypeIndex(lastInputMethodId);
 
-        final List<ImeSubtypeListItem> imList = InputMethodSubtypeSwitchingController
-                .getSortedInputMethodAndSubtypeList(showAuxSubtypes, isScreenLocked,
-                        true /* forImeMenu */, mContext, settings);
-        if (imList.isEmpty()) {
-            Slog.w(TAG, "Show switching menu failed, imList is empty,"
+        final List<ImeSubtypeListItem> items = userData.mSwitchingController
+                .getItemsForImeSwitcherMenu(includeAuxiliary);
+        if (items.isEmpty()) {
+            Slog.w(TAG, "Show switching menu failed, items is empty,"
                     + " showAuxSubtypes: " + showAuxSubtypes
                     + " isScreenLocked: " + isScreenLocked
                     + " userId: " + userId);
@@ -4616,7 +4614,7 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
             }
         }
 
-        mMenuController.show(imList, lastInputMethodId, selectedSubtypeIndex, isScreenLocked,
+        mMenuController.show(items, lastInputMethodId, selectedSubtypeIndex, isScreenLocked,
                 displayId, userId);
     }
 
@@ -5245,7 +5243,7 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
         }
         final var currentSubtype = bindingController.getCurrentSubtype();
         final var nextItem = userData.mSwitchingController.getNextInputMethodForHardware(
-                false /* onlyCurrentIme */, currentImi, currentSubtype, MODE_AUTO,
+                currentImi, currentSubtype, false /* onlyCurrentIme */, MODE_AUTO,
                 direction > 0 /* forward */);
         if (nextItem == null) {
             Slog.i(TAG, "Hardware keyboard switching shortcut,"
