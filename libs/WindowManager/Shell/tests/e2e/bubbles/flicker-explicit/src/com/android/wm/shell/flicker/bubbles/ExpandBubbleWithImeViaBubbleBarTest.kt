@@ -34,7 +34,6 @@ import com.android.wm.shell.flicker.bubbles.utils.RecordTraceWithTransitionRule
 import com.android.wm.shell.flicker.bubbles.utils.collapseBubbleAppViaBackKey
 import com.android.wm.shell.flicker.bubbles.utils.expandBubbleAppViaBubbleBar
 import com.android.wm.shell.flicker.bubbles.utils.launchBubbleViaBubbleMenu
-import com.android.wm.shell.flicker.bubbles.utils.setUpBeforeTransition
 import org.junit.Assume.assumeTrue
 import org.junit.Before
 import org.junit.FixMethodOrder
@@ -81,7 +80,6 @@ class ExpandBubbleWithImeViaBubbleBarTest(navBar: NavBar) : BubbleFlickerTestBas
 
         private val recordTraceWithTransitionRule = RecordTraceWithTransitionRule(
             setUpBeforeTransition = {
-                setUpBeforeTransition(instrumentation, wmHelper)
                 // Launch and collapse the bubble.
                 launchBubbleViaBubbleMenu(testApp, tapl, wmHelper)
                 // Press back to dismiss IME window.
@@ -119,10 +117,10 @@ class ExpandBubbleWithImeViaBubbleBarTest(navBar: NavBar) : BubbleFlickerTestBas
     override val testApp
         get() = ExpandBubbleWithImeViaBubbleBarTest.testApp
 
-    override val bitmapAtEnd: Bitmap
+    override val bitmapAtEnd
         get() = ExpandBubbleWithImeViaBubbleBarTest.bitmapAtEnd
 
-    override val expectedImeInset: Int
+    override val expectedImeInset
         get() = imeInset
 
     @Before

@@ -108,10 +108,10 @@ class EnterBubbleWithImeViaBubbleMenuTest(navBar: NavBar) : BubbleFlickerTestBas
     override val testApp
         get() = EnterBubbleWithImeViaBubbleMenuTest.testApp
 
-    override val bitmapAtEnd: Bitmap
+    override val bitmapAtEnd
         get() = EnterBubbleWithImeViaBubbleMenuTest.bitmapAtEnd
 
-    override val expectedImeInset: Int
+    override val expectedImeInset
         get() = imeInset
 
     @FlakyTest(bugId = 421000153)

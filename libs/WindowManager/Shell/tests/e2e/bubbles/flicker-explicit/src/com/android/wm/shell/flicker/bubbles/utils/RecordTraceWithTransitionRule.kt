@@ -78,7 +78,7 @@ class RecordTraceWithTransitionRule(
             try {
                 transition()
             } catch (e: Throwable) {
-                Log.e(TAG, "Transition is aborted due to the exception:\n $e")
+                Log.e(TAG, "Transition is aborted due to the exception:\n $e", e)
             }
         }
     }
