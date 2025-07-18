@@ -68,7 +68,7 @@ class ExpandBubbleViaBubbleStackTest(navBar: NavBar) : BubbleFlickerTestBase(),
                 launchBubbleViaBubbleMenu(testApp, tapl, wmHelper)
                 collapseBubbleAppViaBackKey(testApp, tapl, wmHelper)
             },
-            transition = { expandBubbleAppViaTapOnBubbleStack(uiDevice, testApp, wmHelper) },
+            transition = { expandBubbleAppViaTapOnBubbleStack(testApp, uiDevice, wmHelper) },
             tearDownAfterTransition = { testApp.exit(wmHelper) }
         )
     }

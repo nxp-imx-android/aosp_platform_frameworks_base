@@ -92,7 +92,7 @@ class ExpandBubbleWithImeViaBubbleBarTest(navBar: NavBar) : BubbleFlickerTestBas
                     .waitForAndVerify()
             },
             transition = {
-                expandBubbleAppViaBubbleBar(uiDevice, testApp, wmHelper)
+                expandBubbleAppViaBubbleBar(testApp, uiDevice, wmHelper)
                 testApp.waitIMEShown(wmHelper)
                 bitmapAtEnd = instrumentation.uiAutomation.takeScreenshot()
                 imeInset = testApp.retrieveImeBottomInset()

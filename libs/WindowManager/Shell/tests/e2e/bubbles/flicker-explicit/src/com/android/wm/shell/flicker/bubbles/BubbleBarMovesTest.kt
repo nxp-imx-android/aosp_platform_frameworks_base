@@ -81,7 +81,7 @@ class BubbleBarMovesTest(navBar: NavBar) : BubbleFlickerTestBase(), ExpandBubble
                 Root.get().bubbleBar.dragToTheOtherSide()
                 val bubbleBarAfterTransition = Root.get().bubbleBar.visibleCenter
                 bubbleBarPosChanges = (bubbleBarBeforeTransition != bubbleBarAfterTransition)
-                expandBubbleAppViaBubbleBar(uiDevice, testApp, wmHelper)
+                expandBubbleAppViaBubbleBar(testApp, uiDevice, wmHelper)
             },
             tearDownAfterTransition = { testApp.exit(wmHelper) }
         )
