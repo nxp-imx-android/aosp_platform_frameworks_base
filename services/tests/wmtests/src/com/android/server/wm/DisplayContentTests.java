@@ -3171,6 +3171,16 @@ public class DisplayContentTests extends WindowTestsBase {
         assertFalse(mDisplayContent.isTaskMoveAllowedOnDisplay());
     }
 
+    @Test
+    public void testIsRemoved_nonDefaultDisplay_isNotValid() {
+        final DisplayInfo displayInfo = new DisplayInfo(mDisplayInfo);
+        displayInfo.displayId = DEFAULT_DISPLAY + 1;
+        final DisplayContent dc = createNewDisplay(displayInfo);
+        spyOn(dc.mDisplay);
+        doReturn(false).when(dc.mDisplay).isValid();
+        assertTrue(dc.isRemoved());
+    }
+
     private void removeRootTaskTests(@NonNull Runnable runnable) {
         final TaskDisplayArea taskDisplayArea = mRootWindowContainer.getDefaultTaskDisplayArea();
         final Task rootTask1 = taskDisplayArea.createRootTask(WINDOWING_MODE_FULLSCREEN,
