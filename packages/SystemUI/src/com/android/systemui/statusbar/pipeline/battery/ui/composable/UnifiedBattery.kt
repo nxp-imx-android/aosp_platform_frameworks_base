@@ -170,7 +170,7 @@ fun UnifiedBattery(
     var bounds by remember { mutableStateOf(Rect()) }
 
     val colorProvider = {
-        if (isDarkProvider().isDarkTheme(bounds)) {
+        if (isDarkProvider().isDark(bounds)) {
             viewModel.colorProfile.dark
         } else {
             viewModel.colorProfile.light
