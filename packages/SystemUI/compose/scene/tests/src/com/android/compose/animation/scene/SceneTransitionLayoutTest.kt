@@ -60,6 +60,7 @@ import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.android.compose.animation.scene.TestOverlays.OverlayA
 import com.android.compose.animation.scene.TestScenes.SceneA
 import com.android.compose.animation.scene.TestScenes.SceneB
 import com.android.compose.animation.scene.TestScenes.SceneC
@@ -615,5 +616,40 @@ class SceneTransitionLayoutTest {
         aToB.finish()
         rule.onNode(isElement(TestElements.Foo)).assertDoesNotExist()
         rule.onNode(isElement(TestElements.Bar)).assertIsDisplayed().assertSizeIsEqualTo(40.dp)
+    }
+
+    @Test
+    fun alwaysComposeOverlay() {
+        val state = rule.runOnUiThread { MutableSceneTransitionLayoutStateForTests(SceneA) }
+        val scope =
+            rule.setContentAndCreateMainScope {
+                SceneTransitionLayoutForTesting(state) {
+                    scene(SceneA) { Box(Modifier.element(TestElements.Foo).size(40.dp)) }
+                    overlay(OverlayA, alwaysCompose = true) {
+                        Box(Modifier.element(TestElements.Bar).size(20.dp))
+                    }
+                }
+            }
+
+        // Overlay hidden: Foo is displayed and Bar exists given that OverlayA is always composed
+        // but it is not displayed.
+        rule.onNode(isElement(TestElements.Foo)).assertIsDisplayed().assertSizeIsEqualTo(40.dp)
+        rule.onNode(isElement(TestElements.Bar)).assertExists().assertIsNotDisplayed()
+
+        // Show overlay: Foo and Bar are both displayed.
+        val aToB = transition(SceneA, OverlayA)
+        scope.launch { state.startTransition(aToB) }
+        rule.onNode(isElement(TestElements.Foo)).assertIsDisplayed().assertSizeIsEqualTo(40.dp)
+        rule.onNode(isElement(TestElements.Bar)).assertIsDisplayed().assertSizeIsEqualTo(20.dp)
+
+        // Overlay shown: Foo and Bar are both displayed.
+        aToB.finish()
+        rule.onNode(isElement(TestElements.Foo)).assertIsDisplayed().assertSizeIsEqualTo(40.dp)
+        rule.onNode(isElement(TestElements.Bar)).assertIsDisplayed().assertSizeIsEqualTo(20.dp)
+
+        // Overlay hidden: Foo is displayed and Bar exists.
+        scope.launch { state.snapTo(state.currentScene, overlays = emptySet()) }
+        rule.onNode(isElement(TestElements.Foo)).assertIsDisplayed().assertSizeIsEqualTo(40.dp)
+        rule.onNode(isElement(TestElements.Bar)).assertExists().assertIsNotDisplayed()
     }
 }

@@ -87,6 +87,7 @@ internal sealed class Content(
     zIndex: Float,
     globalZIndex: Long,
     effectFactory: OverscrollFactory,
+    val alwaysCompose: Boolean,
 ) {
     private val nestedScrollControlState = NestedScrollControlState()
     internal val scope = ContentScopeImpl(layoutImpl, content = this, nestedScrollControlState)
