@@ -22,7 +22,6 @@ import android.annotation.Nullable;
 import android.annotation.SuppressLint;
 import android.annotation.TestApi;
 import android.app.ActivityThread;
-import android.app.Instrumentation;
 import android.compat.annotation.UnsupportedAppUsage;
 import android.ravenwood.annotation.RavenwoodKeepWholeClass;
 import android.ravenwood.annotation.RavenwoodRedirect;
@@ -101,28 +100,6 @@ public final class MessageQueue {
     MessageQueue(boolean quitAllowed) {
         mQuitAllowed = quitAllowed;
         mPtr = nativeInit();
-    }
-
-    @android.ravenwood.annotation.RavenwoodReplace
-    private static void throwIfNotTest() {
-        final ActivityThread activityThread = ActivityThread.currentActivityThread();
-        if (activityThread == null) {
-            // Only tests can reach here.
-            return;
-        }
-        final Instrumentation instrumentation = activityThread.getInstrumentation();
-        if (instrumentation == null) {
-            // Only tests can reach here.
-            return;
-        }
-        if (instrumentation.isInstrumenting()) {
-            return;
-        }
-        throw new IllegalStateException("Test-only API called not from a test!");
-    }
-
-    private static void throwIfNotTest$ravenwood() {
-        return;
     }
 
     @Override
@@ -758,7 +735,7 @@ public final class MessageQueue {
      */
     @SuppressLint("VisiblySynchronized") // Legacy MessageQueue synchronizes on this
     Long peekWhenForTest() {
-        throwIfNotTest();
+        ActivityThread.throwIfNotInstrumenting();
         Message ret = legacyPeekOrPoll(true);
         return ret != null ? ret.when : null;
     }
@@ -772,7 +749,7 @@ public final class MessageQueue {
     @SuppressLint("VisiblySynchronized") // Legacy MessageQueue synchronizes on this
     @Nullable
     Message pollForTest() {
-        throwIfNotTest();
+        ActivityThread.throwIfNotInstrumenting();
         return legacyPeekOrPoll(false);
     }
 
@@ -784,7 +761,7 @@ public final class MessageQueue {
      * and may not be resumed until after returning from this method.
      */
     boolean isBlockedOnSyncBarrier() {
-        throwIfNotTest();
+        ActivityThread.throwIfNotInstrumenting();
         synchronized (this) {
             Message msg = mMessages;
             return msg != null && msg.target == null;
