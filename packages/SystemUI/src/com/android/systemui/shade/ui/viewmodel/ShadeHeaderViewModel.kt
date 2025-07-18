@@ -18,7 +18,6 @@
 
 package com.android.systemui.shade.ui.viewmodel
 
-import android.content.Context
 import android.content.Intent
 import android.provider.Settings
 import android.view.ViewGroup
@@ -28,6 +27,7 @@ import androidx.compose.ui.unit.IntRect
 import com.android.app.tracing.coroutines.launchTraced as launch
 import com.android.systemui.battery.BatteryMeterViewController
 import com.android.systemui.clock.domain.interactor.ClockInteractor
+import com.android.systemui.desktop.domain.interactor.DesktopInteractor
 import com.android.systemui.kairos.ExperimentalKairosApi
 import com.android.systemui.kairos.KairosNetwork
 import com.android.systemui.lifecycle.ExclusiveActivatable
@@ -35,14 +35,12 @@ import com.android.systemui.lifecycle.Hydrator
 import com.android.systemui.plugins.ActivityStarter
 import com.android.systemui.privacy.OngoingPrivacyChip
 import com.android.systemui.privacy.PrivacyItem
-import com.android.systemui.res.R
 import com.android.systemui.scene.domain.interactor.DualShadeEducationInteractor
 import com.android.systemui.scene.domain.interactor.SceneInteractor
 import com.android.systemui.scene.domain.model.DualShadeEducationModel
 import com.android.systemui.scene.shared.model.DualShadeEducationElement
 import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.scene.shared.model.TransitionKeys.SlightlyFasterShadeCollapse
-import com.android.systemui.shade.ShadeDisplayAware
 import com.android.systemui.shade.domain.interactor.PrivacyChipInteractor
 import com.android.systemui.shade.domain.interactor.ShadeInteractor
 import com.android.systemui.shade.domain.interactor.ShadeModeInteractor
@@ -67,7 +65,6 @@ import kotlinx.coroutines.flow.map
 class ShadeHeaderViewModel
 @AssistedInject
 constructor(
-    @ShadeDisplayAware private val context: Context,
     private val activityStarter: ActivityStarter,
     private val sceneInteractor: SceneInteractor,
     private val shadeInteractor: ShadeInteractor,
@@ -83,6 +80,7 @@ constructor(
     val kairosNetwork: KairosNetwork,
     val mobileIconsViewModelKairos: dagger.Lazy<MobileIconsViewModelKairos>,
     private val dualShadeEducationInteractor: DualShadeEducationInteractor,
+    private val desktopInteractor: DesktopInteractor,
 ) : ExclusiveActivatable() {
 
     private val hydrator = Hydrator("ShadeHeaderViewModel.hydrator")
@@ -178,6 +176,13 @@ constructor(
                 },
         )
 
+    private val isDesktopFeatureSetEnabled: Boolean by
+        hydrator.hydratedStateOf(
+            traceName = "isDesktopFeatureSetEnabled",
+            initialValue = desktopInteractor.isDesktopFeatureSetEnabled.value,
+            source = desktopInteractor.isDesktopFeatureSetEnabled,
+        )
+
     override suspend fun onActivated(): Nothing {
         coroutineScope {
             launch { hydrator.activate() }
@@ -193,7 +198,7 @@ constructor(
 
     /** Notifies that the clock was clicked. */
     fun onClockClicked() {
-        if (shadeModeInteractor.isDualShade && isDesktopFeatureSetEnabled()) {
+        if (shadeModeInteractor.isDualShade && isDesktopFeatureSetEnabled) {
             toggleNotificationShade(
                 loggingReason = "ShadeHeaderViewModel.onClockChipClicked",
                 launchClockActivityOnCollapse = false,
@@ -210,12 +215,8 @@ constructor(
         }
         toggleNotificationShade(
             loggingReason = "ShadeHeaderViewModel.onNotificationIconChipClicked",
-            launchClockActivityOnCollapse = !isDesktopFeatureSetEnabled(),
+            launchClockActivityOnCollapse = !isDesktopFeatureSetEnabled,
         )
-    }
-
-    private fun isDesktopFeatureSetEnabled(): Boolean {
-        return context.resources.getBoolean(R.bool.config_enableDesktopFeatureSet)
     }
 
     private fun toggleNotificationShade(
