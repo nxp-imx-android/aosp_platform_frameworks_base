@@ -355,7 +355,7 @@ abstract class CaptionController<T>(
             owner = insetsOwner,
             frame = captionInsets,
             taskFrame = null,
-            boundingRects = null,
+            boundingRects = emptyList(),
             flags = 0,
             shouldAddCaptionInset = true,
             excludedFromAppBounds = false
@@ -388,35 +388,28 @@ abstract class CaptionController<T>(
         // These are also in absolute coordinates.
         val numOfElements = params.occludingCaptionElements.size
         val customizableCaptionRegion = Region.obtain()
-        val boundingRects: Array<Rect>?
-        if (numOfElements == 0) {
-            boundingRects = null
-        } else {
+        val boundingRects = mutableListOf<Rect>()
+        if (numOfElements != 0) {
             // The customizable region can at most be equal to the caption bar.
             if (params.hasInputFeatureSpy()) {
                 customizableCaptionRegion.set(captionInsetsRect)
             }
             val resources = decorWindowContext.resources
-            boundingRects = Array(numOfElements) { Rect() }
 
             for (i in 0 until numOfElements) {
                 val element = params.occludingCaptionElements[i]
                 val elementWidthPx = resources.getDimensionPixelSize(element.widthResId)
-                boundingRects[i].set(
-                    calculateBoundingRectLocal(
-                        element,
-                        elementWidthPx,
-                        captionInsetsRect,
-                        decorWindowContext
-                    )
+                val boundingRect = calculateBoundingRectLocal(
+                    element,
+                    elementWidthPx,
+                    captionInsetsRect,
+                    decorWindowContext
                 )
+                boundingRects.add(boundingRect)
                 // Subtract the regions used by the caption elements, the rest is
                 // customizable.
                 if (params.hasInputFeatureSpy()) {
-                    customizableCaptionRegion.op(
-                        boundingRects[i],
-                        Region.Op.DIFFERENCE
-                    )
+                    customizableCaptionRegion.op(boundingRect, Region.Op.DIFFERENCE)
                 }
             }
         }

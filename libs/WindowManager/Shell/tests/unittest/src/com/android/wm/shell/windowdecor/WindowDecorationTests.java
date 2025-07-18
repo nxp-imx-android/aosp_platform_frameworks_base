@@ -62,6 +62,8 @@ import android.graphics.Rect;
 import android.graphics.Region;
 import android.os.LocaleList;
 import android.os.Looper;
+import android.platform.test.annotations.DisableFlags;
+import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.UsesFlags;
 import android.platform.test.flag.junit.FlagsParameterization;
 import android.util.DisplayMetrics;
@@ -907,7 +909,8 @@ public class WindowDecorationTests extends ShellTestCase {
     }
 
     @Test
-    public void testRelayout_captionFrameChanged_insetsReapplied() {
+    @DisableFlags(Flags.FLAG_RELATIVE_INSETS)
+    public void testRelayout_taskFrameChanged_insetsReapplied() {
         final Display defaultDisplay = mock(Display.class);
         doReturn(defaultDisplay).when(mMockDisplayController)
                 .getDisplay(Display.DEFAULT_DISPLAY);
@@ -925,6 +928,35 @@ public class WindowDecorationTests extends ShellTestCase {
         windowDecor.relayout(firstTaskInfo, true /* hasGlobalFocus */);
         final ActivityManager.RunningTaskInfo secondTaskInfo =
                 builder.setToken(token).setBounds(new Rect(50, 50, 1000, 1000)).build();
+        windowDecor.relayout(secondTaskInfo, true /* hasGlobalFocus */);
+
+        // Insets should be applied twice.
+        verifyAddedInsets(2 /* times */, token, 0 /* index */, captionBar());
+        verifyAddedInsets(2 /* times */, token, 0 /* index */, mandatorySystemGestures());
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_RELATIVE_INSETS)
+    public void testRelayout_captionFrameChanged_insetsReapplied() {
+        final Display defaultDisplay = mock(Display.class);
+        doReturn(defaultDisplay).when(mMockDisplayController)
+                .getDisplay(Display.DEFAULT_DISPLAY);
+        mInsetsState.getOrCreateSource(STATUS_BAR_INSET_SOURCE_ID, captionBar()).setVisible(true);
+        final WindowContainerToken token = new MockToken().token();
+        final TestRunningTaskInfoBuilder builder = new TestRunningTaskInfoBuilder()
+                .setDisplayId(Display.DEFAULT_DISPLAY)
+                .setVisible(true);
+        mRelayoutParams.mIsCaptionVisible = true;
+
+        // Relayout twice with different caption heights.
+        final ActivityManager.RunningTaskInfo firstTaskInfo =
+                builder.setToken(token).setBounds(new Rect(0, 0, 1000, 1000)).build();
+        final TestWindowDecoration windowDecor = createWindowDecoration(firstTaskInfo);
+        mRelayoutParams.mCaptionHeightCalculator = (context, display) -> 80;
+        windowDecor.relayout(firstTaskInfo, true /* hasGlobalFocus */);
+        final ActivityManager.RunningTaskInfo secondTaskInfo =
+                builder.setToken(token).setBounds(new Rect(0, 0, 1000, 1000)).build();
+        mRelayoutParams.mCaptionHeightCalculator = (context, display) -> 100;
         windowDecor.relayout(secondTaskInfo, true /* hasGlobalFocus */);
 
         // Insets should be applied twice.

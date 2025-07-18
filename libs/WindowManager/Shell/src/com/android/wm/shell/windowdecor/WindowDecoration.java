@@ -69,6 +69,7 @@ import com.android.wm.shell.windowdecor.common.viewhost.WindowDecorViewHostSuppl
 import com.android.wm.shell.windowdecor.extension.InsetsStateKt;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.Supplier;
@@ -483,29 +484,26 @@ public abstract class WindowDecoration<T extends View & TaskFocusStateConsumer>
         // Caption bounding rectangles: these are optional, and are used to present finer
         // insets than traditional |Insets| to apps about where their content is occluded.
         // These are also in absolute coordinates.
-        final Rect[] boundingRects;
+        final List<Rect> boundingRects = new ArrayList<>();
         final int numOfElements = params.mOccludingCaptionElements.size();
-        if (numOfElements == 0) {
-            boundingRects = null;
-        } else {
+        if (numOfElements != 0) {
             // The customizable region can at most be equal to the caption bar.
             if (params.hasInputFeatureSpy()) {
                 outResult.mCustomizableCaptionRegion.set(captionInsetsRect);
             }
             final Resources resources = mDecorWindowContext.getResources();
-            boundingRects = new Rect[numOfElements];
             for (int i = 0; i < numOfElements; i++) {
                 final OccludingCaptionElement element =
                         params.mOccludingCaptionElements.get(i);
                 final int elementWidthPx =
                         resources.getDimensionPixelSize(element.mWidthResId);
-                boundingRects[i] =
+                final Rect boundingRect =
                         calculateBoundingRectLocal(element, elementWidthPx, captionInsetsRect);
+                boundingRects.add(boundingRect);
                 // Subtract the regions used by the caption elements, the rest is
                 // customizable.
                 if (params.hasInputFeatureSpy()) {
-                    outResult.mCustomizableCaptionRegion.op(boundingRects[i],
-                            Region.Op.DIFFERENCE);
+                    outResult.mCustomizableCaptionRegion.op(boundingRect, Region.Op.DIFFERENCE);
                 }
             }
         }
@@ -889,8 +887,9 @@ public abstract class WindowDecoration<T extends View & TaskFocusStateConsumer>
 
         final Rect captionInsets = new Rect(0, 0, 0, captionHeight);
         final WindowDecorationInsets newInsets = new WindowDecorationInsets(mTaskInfo.token,
-                mOwner, captionInsets, null  /* taskFrame */,  null /* boundingRects */,
-                0 /* flags */, true /* shouldAddCaptionInset */, false /* excludedFromAppBounds */);
+                mOwner, captionInsets, null  /* taskFrame */,
+                Collections.emptyList() /* boundingRects */, 0 /* flags */,
+                true /* shouldAddCaptionInset */, false /* excludedFromAppBounds */);
         if (!newInsets.equals(mWindowDecorationInsets)) {
             mWindowDecorationInsets = newInsets;
             mWindowDecorationInsets.update(wct);
