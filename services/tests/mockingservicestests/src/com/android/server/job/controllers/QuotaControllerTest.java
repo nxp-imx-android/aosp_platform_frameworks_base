@@ -79,7 +79,6 @@ import android.os.ServiceManager;
 import android.os.SystemClock;
 import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.EnableFlags;
-import android.platform.test.annotations.RequiresFlagsEnabled;
 import android.platform.test.flag.junit.CheckFlagsRule;
 import android.platform.test.flag.junit.DeviceFlagsValueProvider;
 import android.platform.test.flag.junit.SetFlagsRule;
@@ -4840,7 +4839,6 @@ public class QuotaControllerTest {
 
     /** Tests that Timers count FOREGROUND_SERVICE jobs. */
     @Test
-    @EnableFlags(Flags.FLAG_ENFORCE_QUOTA_POLICY_TO_FGS_JOBS)
     public void testTimerTracking_Fgs() {
         setDischarging();
 
@@ -5259,7 +5257,6 @@ public class QuotaControllerTest {
     }
 
     @Test
-    @RequiresFlagsEnabled(Flags.FLAG_ENFORCE_QUOTA_POLICY_TO_FGS_JOBS)
     public void testTracking_OutOfQuota_ForegroundAndBackground_CompactChangeOverrides() {
         setDischarging();
 
