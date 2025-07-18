@@ -47,15 +47,19 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.geometry.RoundRect
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.geometry.center
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.drawscope.clipPath
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.layout
@@ -83,6 +87,7 @@ import com.android.systemui.qs.panels.ui.compose.selection.TileState.Placeable
 import com.android.systemui.qs.panels.ui.compose.selection.TileState.Removable
 import com.android.systemui.qs.panels.ui.compose.selection.TileState.Selected
 import kotlin.math.cos
+import kotlin.math.min
 import kotlin.math.roundToInt
 import kotlin.math.sin
 
@@ -136,13 +141,24 @@ fun InteractiveTileContainer(
         ) {
             Box(
                 Modifier.fillMaxSize()
-                    .drawBehind {
-                        drawRoundRect(
-                            color = decorationColor,
-                            topLeft = center - decorationSize.center,
-                            size = decorationSize,
-                            cornerRadius = CornerRadius(size.width / 2),
-                        )
+                    .drawWithCache {
+                        val radius = min(decorationSize.width, decorationSize.height) / 2f
+                        val cornerRadius = CornerRadius(radius)
+                        val path = Path()
+                        onDrawWithContent {
+                            val rect = Rect(center - decorationSize.center, decorationSize)
+
+                            drawRoundRect(
+                                color = decorationColor,
+                                topLeft = rect.topLeft,
+                                size = rect.size,
+                                cornerRadius = cornerRadius,
+                            )
+
+                            path.reset()
+                            path.addRoundRect(RoundRect(rect, cornerRadius))
+                            clipPath(path) { this@onDrawWithContent.drawContent() }
+                        }
                     }
                     .graphicsLayer { this.alpha = decorationAlpha }
                     .anchoredDraggable(
