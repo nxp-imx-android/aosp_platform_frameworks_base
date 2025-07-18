@@ -45,6 +45,8 @@ import android.net.NetworkCapabilities;
 import android.net.wifi.WifiConfiguration;
 import android.net.wifi.WifiManager;
 import android.os.Handler;
+import android.platform.test.annotations.DisableFlags;
+import android.platform.test.annotations.EnableFlags;
 import android.telephony.ServiceState;
 import android.telephony.SignalStrength;
 import android.telephony.SubscriptionInfo;
@@ -75,6 +77,7 @@ import com.android.systemui.flags.Flags;
 import com.android.systemui.plugins.ActivityStarter;
 import com.android.systemui.res.R;
 import com.android.systemui.statusbar.connectivity.AccessPointController;
+import com.android.systemui.statusbar.pipeline.StatusBarInflateCarrierMerged;
 import com.android.systemui.statusbar.policy.KeyguardStateController;
 import com.android.systemui.statusbar.policy.LocationController;
 import com.android.systemui.toast.SystemUIToast;
@@ -1024,6 +1027,7 @@ public class InternetDetailsContentControllerTest extends SysuiTestCase {
     }
 
     @Test
+    @DisableFlags(StatusBarInflateCarrierMerged.FLAG_NAME)
     public void getSignalStrengthDrawableWithLevel_carrierNetworkIsActive_useCarrierNetworkLevel() {
         // Fake mobile data level as SIGNAL_STRENGTH_POOR(1)
         when(mSignalStrength.getLevel()).thenReturn(SIGNAL_STRENGTH_POOR);
@@ -1034,6 +1038,38 @@ public class InternetDetailsContentControllerTest extends SysuiTestCase {
         spyController.getSignalStrengthDrawableWithLevel(true /* isCarrierNetworkActive */, 0);
 
         verify(spyController).getSignalStrengthIcon(eq(0), any(), eq(WIFI_LEVEL_MAX),
+                eq(WIFI_LEVEL_MAX + 1), anyInt(), anyBoolean());
+    }
+
+    @Test
+    @EnableFlags(StatusBarInflateCarrierMerged.FLAG_NAME)
+    public void getSignalStrengthDrawableWithLevel_carrierNetworkIsActive_useCarrierLevelInflate() {
+        when(mCarrierConfigTracker.getInflateSignalStrengthBool(SUB_ID)).thenReturn(true);
+        // Fake mobile data level as SIGNAL_STRENGTH_POOR(1)
+        when(mSignalStrength.getLevel()).thenReturn(SIGNAL_STRENGTH_POOR);
+        // Fake carrier network level as WIFI_LEVEL_MAX(4)
+        when(mInternetDetailsContentController.getCarrierNetworkLevel()).thenReturn(WIFI_LEVEL_MAX);
+
+        InternetDetailsContentController spyController = spy(mInternetDetailsContentController);
+        spyController.getSignalStrengthDrawableWithLevel(true /* isCarrierNetworkActive */, SUB_ID);
+
+        verify(spyController).getSignalStrengthIcon(eq(SUB_ID), any(), eq(WIFI_LEVEL_MAX + 1),
+                eq(WIFI_LEVEL_MAX + 2), anyInt(), anyBoolean());
+    }
+
+    @Test
+    @DisableFlags(StatusBarInflateCarrierMerged.FLAG_NAME)
+    public void getSignalStrengthDrawableWithLevel_carrierNetworkIsActive_useCarrierLevel() {
+        when(mCarrierConfigTracker.getInflateSignalStrengthBool(SUB_ID)).thenReturn(true);
+        // Fake mobile data level as SIGNAL_STRENGTH_POOR(1)
+        when(mSignalStrength.getLevel()).thenReturn(SIGNAL_STRENGTH_POOR);
+        // Fake carrier network level as WIFI_LEVEL_MAX(4)
+        when(mInternetDetailsContentController.getCarrierNetworkLevel()).thenReturn(WIFI_LEVEL_MAX);
+
+        InternetDetailsContentController spyController = spy(mInternetDetailsContentController);
+        spyController.getSignalStrengthDrawableWithLevel(true /* isCarrierNetworkActive */, SUB_ID);
+
+        verify(spyController).getSignalStrengthIcon(eq(SUB_ID), any(), eq(WIFI_LEVEL_MAX),
                 eq(WIFI_LEVEL_MAX + 1), anyInt(), anyBoolean());
     }
 
