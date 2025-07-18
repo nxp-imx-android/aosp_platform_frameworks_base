@@ -303,9 +303,7 @@ class MediaOutputAdapterTest : SysuiTestCase() {
 
     @Test
     fun onBindViewHolder_bindSelectableDevice_verifyView() {
-        mMediaSwitchingController.stub {
-            on { selectableMediaDevice } doReturn listOf(mMediaDevice2)
-        }
+        mMediaDevice2.stub { on { isSelectable() } doReturn true }
         updateAdapterWithDevices(listOf(mMediaDevice1, mMediaDevice2))
 
         createAndBindDeviceViewHolder(position = 1).apply {
@@ -334,9 +332,13 @@ class MediaOutputAdapterTest : SysuiTestCase() {
             on { isVolumeControlEnabledForSession } doReturn true
             on { hasGroupPlayback() } doReturn true
         }
-        mMediaSwitchingController.stub {
-            on { selectedMediaDevice } doReturn listOf(mMediaDevice1, mMediaDevice2)
-            on { deselectableMediaDevice } doReturn listOf(mMediaDevice1, mMediaDevice2)
+        mMediaDevice1.stub {
+            on { isSelected() } doReturn true
+            on { isDeselectable() } doReturn true
+        }
+        mMediaDevice2.stub {
+            on { isSelected() } doReturn true
+            on { isDeselectable() } doReturn true
         }
         updateAdapterWithDevices(listOf(mMediaDevice1, mMediaDevice2))
 
@@ -358,10 +360,7 @@ class MediaOutputAdapterTest : SysuiTestCase() {
 
     @Test
     fun onBindViewHolder_bindNonDeselectableDevice_verifyView() {
-        mMediaSwitchingController.stub {
-            on { selectedMediaDevice } doReturn listOf(mMediaDevice1)
-            on { deselectableMediaDevice } doReturn ArrayList()
-        }
+        mMediaDevice1.stub { on { isSelected() } doReturn true }
         updateAdapterWithDevices(listOf(mMediaDevice1, mMediaDevice2))
 
         createAndBindDeviceViewHolder(position = 0).apply {
@@ -488,9 +487,9 @@ class MediaOutputAdapterTest : SysuiTestCase() {
 
     @Test
     fun clickFullItemOfSelectableDevice_hasListingPreference_verifyConnectDevice() {
-        mMediaDevice2.stub { on { hasRouteListingPreferenceItem() } doReturn true }
-        mMediaSwitchingController.stub {
-            on { selectableMediaDevice } doReturn listOf(mMediaDevice2)
+        mMediaDevice2.stub {
+            on { hasRouteListingPreferenceItem() } doReturn true
+            on { isSelectable() } doReturn true
         }
         updateAdapterWithDevices(listOf(mMediaDevice2))
 
@@ -503,9 +502,9 @@ class MediaOutputAdapterTest : SysuiTestCase() {
 
     @Test
     fun clickFullItemOfSelectableDevice_isTransferable_verifyConnectDevice() {
-        mMediaSwitchingController.stub {
-            on { selectableMediaDevice } doReturn listOf(mMediaDevice2)
-            on { transferableMediaDevices } doReturn listOf(mMediaDevice2)
+        mMediaDevice2.stub {
+            on { isSelectable() } doReturn true
+            on { isTransferable() } doReturn true
         }
         updateAdapterWithDevices(listOf(mMediaDevice2))
 
@@ -518,10 +517,9 @@ class MediaOutputAdapterTest : SysuiTestCase() {
 
     @Test
     fun clickFullItemOfSelectableDevice_notTransferable_verifyNotConnectDevice() {
-        mMediaDevice2.stub { on { hasRouteListingPreferenceItem() } doReturn false }
-        mMediaSwitchingController.stub {
-            on { selectableMediaDevice } doReturn listOf(mMediaDevice2)
-            on { transferableMediaDevices } doReturn listOf()
+        mMediaDevice2.stub {
+            on { hasRouteListingPreferenceItem() } doReturn false
+            on { isSelectable() } doReturn true
         }
         updateAdapterWithDevices(listOf(mMediaDevice2))
 
@@ -585,9 +583,7 @@ class MediaOutputAdapterTest : SysuiTestCase() {
 
     @Test
     fun onGroupActionTriggered_clicksSelectableDevice_triggerGrouping() {
-        mMediaSwitchingController.stub {
-            on { selectableMediaDevice } doReturn listOf(mMediaDevice2)
-        }
+        mMediaDevice2.stub { on { isSelectable() } doReturn true }
         updateAdapterWithDevices(listOf(mMediaDevice2))
 
         createAndBindDeviceViewHolder(position = 0).apply { mGroupButton.performClick() }
@@ -596,12 +592,12 @@ class MediaOutputAdapterTest : SysuiTestCase() {
 
     @Test
     fun onGroupActionTriggered_clickSelectedRemoteDevice_triggerUngrouping() {
-        mMediaSwitchingController.stub {
-            on { selectableMediaDevice } doReturn listOf(mMediaDevice2)
-            on { selectedMediaDevice } doReturn listOf(mMediaDevice1)
-            on { deselectableMediaDevice } doReturn listOf(mMediaDevice1)
-            on { isCurrentConnectedDeviceRemote } doReturn true
+        mMediaDevice1.stub {
+            on { isSelected() } doReturn true
+            on { isDeselectable() } doReturn true
         }
+        mMediaDevice2.stub { on { isSelectable() } doReturn true }
+        mMediaSwitchingController.stub { on { isCurrentConnectedDeviceRemote } doReturn true }
         updateAdapterWithDevices(listOf(mMediaDevice1, mMediaDevice2))
 
         createAndBindDeviceViewHolder(position = 0).apply { mGroupButton.performClick() }
@@ -786,13 +782,20 @@ class MediaOutputAdapterTest : SysuiTestCase() {
     }
 
     private fun initializeSession() {
-        val selectedDevices = listOf(mMediaDevice1, mMediaDevice2)
-        mMediaSwitchingController.stub {
-            on { selectableMediaDevice } doReturn selectedDevices
-            on { selectedMediaDevice } doReturn selectedDevices
-            on { deselectableMediaDevice } doReturn selectedDevices
-            on { hasGroupPlayback() } doReturn true
+        mMediaSwitchingController.stub { on { hasGroupPlayback() } doReturn true }
+
+        mMediaDevice1.stub {
+            on { isSelected() } doReturn true
+            on { isSelectable() } doReturn true
+            on { isDeselectable() } doReturn true
         }
+
+        mMediaDevice2.stub {
+            on { isSelected() } doReturn true
+            on { isSelectable() } doReturn true
+            on { isDeselectable() } doReturn true
+        }
+
         mMediaOutputAdapter = MediaOutputAdapter(mMediaSwitchingController)
         updateAdapterWithDevices(listOf(mMediaDevice1, mMediaDevice2))
     }
