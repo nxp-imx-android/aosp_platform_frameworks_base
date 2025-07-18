@@ -90,6 +90,14 @@ public abstract class MagnificationGestureHandler extends BaseEventStreamTransfo
          * @param mode The magnification mode
          */
         void onTouchInteractionEnd(int displayId, int mode);
+
+        /**
+         * Called when the pointer moves by a user.
+         *
+         * @param displayId The logical display id
+         * @param mode The magnification mode
+         */
+        void onMouseMove(int displayId, int mode);
     }
 
     private final AccessibilityTraceManager mTrace;
@@ -160,6 +168,9 @@ public abstract class MagnificationGestureHandler extends BaseEventStreamTransfo
             case SOURCE_MOUSE:
             case SOURCE_STYLUS: {
                 if (magnificationShortcutExists()) {
+                    if (event.getAction() == MotionEvent.ACTION_HOVER_MOVE) {
+                        mCallback.onMouseMove(mDisplayId, getMode());
+                    }
                     handleMouseOrStylusEvent(event, rawEvent, policyFlags);
                 }
             }
