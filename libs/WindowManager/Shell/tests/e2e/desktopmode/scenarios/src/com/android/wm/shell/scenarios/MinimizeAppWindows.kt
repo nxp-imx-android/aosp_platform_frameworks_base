@@ -50,15 +50,21 @@ constructor(
     private val testApp2 = DesktopModeAppHelper(NonResizeableAppHelper(instrumentation))
     private val testApp3 = DesktopModeAppHelper(NewTasksAppHelper(instrumentation))
 
+    val appInDesktop: ArrayList<DesktopModeAppHelper> = ArrayList()
+
     @Before
     fun setup() {
         Assume.assumeTrue(Flags.enableMinimizeButton())
+        Assume.assumeTrue(Flags.enableEmptyDeskOnMinimize())
         if (usingKeyboard) {
             Assume.assumeTrue(DesktopModeFlags.ENABLE_TASK_RESIZING_KEYBOARD_SHORTCUTS.isTrue)
         }
         testApp1.enterDesktopMode(wmHelper, device)
+        appInDesktop.add(testApp1)
         testApp2.launchViaIntent(wmHelper)
+        appInDesktop.add(testApp2)
         testApp3.launchViaIntent(wmHelper)
+        appInDesktop.add(testApp3)
     }
 
     @Test
