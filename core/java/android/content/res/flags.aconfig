@@ -186,3 +186,10 @@ flag {
       purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "merge_idmap_binder_transactions"
+    namespace: "resource_manager"
+    description: "Merge per-package idmap verification and creation steps into a single binder transaction"
+    bug: "422474410"
+}
