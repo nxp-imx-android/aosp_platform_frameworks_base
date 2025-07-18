@@ -24,12 +24,12 @@ import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.content.Context;
 import android.content.res.Resources;
-import android.graphics.drawable.Icon;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
 import com.android.app.animation.Interpolators;
+import com.android.launcher3.icons.BitmapInfo;
 import com.android.wm.shell.R;
 import com.android.wm.shell.bubbles.Bubble;
 import com.android.wm.shell.shared.bubbles.BubbleAnythingFlagHelper;
@@ -227,7 +227,7 @@ class BubbleBarMenuViewController {
         if (bubble.isChat()) {
             // Don't bubble conversation action
             menuActions.add(new BubbleBarMenuView.MenuAction(
-                    Icon.createWithResource(mContext, R.drawable.bubble_ic_stop_bubble),
+                    DrawableProvider.forResource(R.drawable.bubble_ic_stop_bubble),
                     resources.getString(R.string.bubbles_dont_bubble_conversation),
                     tintColor,
                     view -> {
@@ -238,8 +238,9 @@ class BubbleBarMenuViewController {
                     }
             ));
             // Open settings action
-            Icon appIcon = bubble.getRawAppBadge() != null ? Icon.createWithBitmap(
-                    bubble.getRawAppBadge()) : null;
+            BitmapInfo rawAppBadge = bubble.getRawAppBadge();
+            DrawableProvider appIcon = rawAppBadge != null
+                    ? DrawableProvider.forInfo(rawAppBadge) : null;
             menuActions.add(new BubbleBarMenuView.MenuAction(
                     appIcon,
                     resources.getString(R.string.bubbles_app_settings, bubble.getAppName()),
@@ -254,7 +255,7 @@ class BubbleBarMenuViewController {
 
         // Dismiss bubble action
         menuActions.add(new BubbleBarMenuView.MenuAction(
-                Icon.createWithResource(resources, R.drawable.ic_remove_no_shadow),
+                DrawableProvider.forResource(R.drawable.ic_remove_no_shadow),
                 resources.getString(R.string.bubble_dismiss_text),
                 tintColor,
                 view -> {
@@ -267,8 +268,7 @@ class BubbleBarMenuViewController {
 
         if (BubbleAnythingFlagHelper.enableBubbleToFullscreen()) {
             menuActions.add(new BubbleBarMenuView.MenuAction(
-                    Icon.createWithResource(resources,
-                            R.drawable.desktop_mode_ic_handle_menu_fullscreen),
+                    DrawableProvider.forResource(R.drawable.desktop_mode_ic_handle_menu_fullscreen),
                     resources.getString(R.string.bubble_fullscreen_text),
                     tintColor,
                     view -> {

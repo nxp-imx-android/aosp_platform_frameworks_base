@@ -51,6 +51,7 @@ import android.util.Log;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.logging.InstanceId;
 import com.android.internal.protolog.ProtoLog;
+import com.android.launcher3.icons.BitmapInfo;
 import com.android.launcher3.icons.BubbleIconFactory;
 import com.android.wm.shell.bubbles.appinfo.BubbleAppInfoProvider;
 import com.android.wm.shell.bubbles.bar.BubbleBarExpandedView;
@@ -156,9 +157,9 @@ public class Bubble implements BubbleViewProvider {
     // The developer provided image for the bubble
     private Bitmap mBubbleBitmap;
     // The app badge for the bubble
-    private Bitmap mBadgeBitmap;
+    private BitmapInfo mBadgeBitmap;
     // App badge without any markings for important conversations
-    private Bitmap mRawBadgeBitmap;
+    private BitmapInfo mRawBadgeBitmap;
     private int mDotColor;
     private Path mDotPath;
     private int mFlags;
@@ -543,12 +544,12 @@ public class Bubble implements BubbleViewProvider {
     }
 
     @Override
-    public Bitmap getAppBadge() {
+    public BitmapInfo getAppBadge() {
         return mBadgeBitmap;
     }
 
     @Override
-    public Bitmap getRawAppBadge() {
+    public BitmapInfo getRawAppBadge() {
         return mRawBadgeBitmap;
     }
 

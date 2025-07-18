@@ -21,6 +21,7 @@ import android.view.View;
 
 import androidx.annotation.Nullable;
 
+import com.android.launcher3.icons.BitmapInfo;
 import com.android.wm.shell.bubbles.bar.BubbleBarExpandedView;
 
 /**
@@ -62,10 +63,10 @@ public interface BubbleViewProvider {
     Bitmap getBubbleIcon();
 
     /** App badge drawable to draw above bubble icon. */
-    @Nullable Bitmap getAppBadge();
+    @Nullable BitmapInfo getAppBadge();
 
     /** Base app badge drawable without any markings. */
-    @Nullable Bitmap getRawAppBadge();
+    @Nullable BitmapInfo getRawAppBadge();
 
     int getDotColor();
 

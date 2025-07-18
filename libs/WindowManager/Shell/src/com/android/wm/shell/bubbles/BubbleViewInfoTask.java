@@ -250,7 +250,8 @@ public class BubbleViewInfoTask {
         // Always populated
         ShortcutInfo shortcutInfo;
         String appName;
-        Bitmap rawBadgeBitmap;
+        BitmapInfo rawBadgeBitmap;
+        BitmapInfo badgeBitmap;
 
         // Only populated when showing in taskbar
         @Nullable BubbleBarExpandedView bubbleBarExpandedView;
@@ -261,7 +262,6 @@ public class BubbleViewInfoTask {
         int dotColor;
         Bubble.FlyoutMessage flyoutMessage;
         Bitmap bubbleBitmap;
-        Bitmap badgeBitmap;
 
         @Nullable
         public static BubbleViewInfo populateForBubbleBar(Context c,
@@ -351,7 +351,6 @@ public class BubbleViewInfoTask {
             return false;
         }
 
-        Drawable badgedIcon = appInfo.getBadgedIcon();
         Drawable appIcon = appInfo.getAppIcon();
         if (appInfo.getAppName() != null) {
             info.appName = appInfo.getAppName();
@@ -372,13 +371,15 @@ public class BubbleViewInfoTask {
             bubbleDrawable = appIcon;
         }
 
-        BitmapInfo badgeBitmapInfo = iconFactory.getBadgeBitmap(badgedIcon,
+        BitmapInfo badgeBitmapInfo = iconFactory.getBadgeBitmap(
+                appIcon,
+                appInfo.getUser(),
                 b.isImportantConversation());
-        info.badgeBitmap = badgeBitmapInfo.icon;
+        info.badgeBitmap = badgeBitmapInfo;
         // Raw badge bitmap never includes the important conversation ring
         info.rawBadgeBitmap = b.isImportantConversation()
-                ? iconFactory.getBadgeBitmap(badgedIcon, false).icon
-                : badgeBitmapInfo.icon;
+                ? iconFactory.getBadgeBitmap(appIcon, appInfo.getUser(), false)
+                : badgeBitmapInfo;
 
         info.bubbleBitmap = iconFactory.getBubbleBitmap(bubbleDrawable);
 
