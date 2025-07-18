@@ -6298,6 +6298,12 @@ class Task extends TaskFragment {
     void onChildPositionChanged(WindowContainer child) {
         if (!mChildren.contains(child)) {
             dispatchTaskInfoChangedIfNeeded(false /* force */);
+            if (DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue()
+                    && mCreatedByOrganizer && mChildren.isEmpty() && getDisplayArea() != null
+                    && getDisplayArea().mPreferredTopFocusableRootTask == this) {
+                // An empty task cannot be focusable.
+                getDisplayArea().clearPreferredTopFocusableRootTask();
+            }
             return;
         }
         if (child.asTask() != null) {

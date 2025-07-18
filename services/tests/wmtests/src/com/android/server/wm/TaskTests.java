@@ -49,6 +49,7 @@ import static com.android.server.wm.ActivityRecord.State.RESUMED;
 import static com.android.server.wm.Task.FLAG_FORCE_HIDDEN_FOR_TASK_ORG;
 import static com.android.server.wm.TaskFragment.EMBEDDED_DIM_AREA_PARENT_TASK;
 import static com.android.server.wm.TaskFragment.TASK_FRAGMENT_VISIBILITY_VISIBLE_BEHIND_TRANSLUCENT;
+import static com.android.server.wm.WindowContainer.POSITION_BOTTOM;
 import static com.android.server.wm.WindowContainer.POSITION_TOP;
 
 import static com.google.common.truth.Truth.assertThat;
@@ -183,6 +184,29 @@ public class TaskTests extends WindowTestsBase {
         activity1.removeImmediately();
         activity2.removeImmediately();
         assertFalse(rootTask.isAttached());
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
+    public void testRemoveOnlyChildNestedTask_removesFocusFromRoot() {
+        // A created-by-organizer root task at the bottom.
+        final Task bottomRootTask = createTask(mDisplayContent);
+        bottomRootTask.mCreatedByOrganizer = true;
+        // Then a task with an activity on top of it.
+        final Task middleTask = createTask(mDisplayContent);
+        createActivityRecord(middleTask);
+        // And a created-by-organizer root task with a child task with an activity.
+        final Task topRootTask = createTask(mDisplayContent);
+        topRootTask.mCreatedByOrganizer = true;
+        final Task childTask = new TaskBuilder(mSupervisor).setParentTask(topRootTask).build();
+        createActivityRecord(childTask);
+        assertEquals(topRootTask, mDisplayContent.getFocusedRootTask());
+
+        // Reparent the top leaf task to the bottom root task.
+        childTask.reparent(bottomRootTask, POSITION_BOTTOM);
+
+        // Root is now empty, so it can't be focused.
+        assertNotEquals(topRootTask, mDisplayContent.getFocusedRootTask());
     }
 
     @Test
