@@ -6484,7 +6484,7 @@ public class NotificationManagerService extends SystemService {
         @Override
         public String addAutomaticZenRule(AutomaticZenRule automaticZenRule, String pkg,
                 boolean fromUser) {
-            validateAutomaticZenRule(/* updateId= */ null, automaticZenRule);
+            automaticZenRule = validateAutomaticZenRule(/* updateId= */ null, automaticZenRule);
             checkCallerIsSameApp(pkg);
             if (automaticZenRule.getZenPolicy() != null
                     && automaticZenRule.getInterruptionFilter() != INTERRUPTION_FILTER_PRIORITY) {
@@ -6521,7 +6521,7 @@ public class NotificationManagerService extends SystemService {
         @Override
         public boolean updateAutomaticZenRule(String id, AutomaticZenRule automaticZenRule,
                 boolean fromUser) throws RemoteException {
-            validateAutomaticZenRule(id, automaticZenRule);
+            automaticZenRule = validateAutomaticZenRule(id, automaticZenRule);
             enforcePolicyAccess(Binder.getCallingUid(), "updateAutomaticZenRule");
             enforceUserOriginOnlyFromSystem(fromUser, "updateAutomaticZenRule");
             UserHandle zenUser = getCallingZenUser();
@@ -6530,9 +6530,16 @@ public class NotificationManagerService extends SystemService {
                     computeZenOrigin(fromUser), "updateAutomaticZenRule", Binder.getCallingUid());
         }
 
-        private void validateAutomaticZenRule(@Nullable String updateId, AutomaticZenRule rule) {
+        /**
+         * Validate and potentially "fix" a rule supplied to {@link #addAutomaticZenRule} or
+         * {@link #updateAutomaticZenRule}.
+         */
+        @NonNull
+        private AutomaticZenRule validateAutomaticZenRule(@Nullable String updateId,
+                AutomaticZenRule rule) {
             Objects.requireNonNull(rule, "automaticZenRule is null");
             Objects.requireNonNull(rule.getName(), "Name is null");
+            Objects.requireNonNull(rule.getConditionId(), "ConditionId is null");
             rule.validate();
 
             // Implicit rules have no ConditionProvider or Activity. We allow the user to customize
@@ -6548,37 +6555,42 @@ public class NotificationManagerService extends SystemService {
                         "Rule must have a ConditionProviderService and/or configuration "
                                 + "activity");
             }
-            Objects.requireNonNull(rule.getConditionId(), "ConditionId is null");
 
             // If supplied, both CPS and ConfigurationActivity must be accessible to the calling
-            // package. Skip check when the caller is the system: for additions we trust ourselves,
-            // and for updates we don't want to block updating a rule in Settings even if the owner
-            // package has changed its manifest so that some component is gone.
+            // package. Clear them out if invalid -- but at least one must remain.
             if (Flags.strictZenRuleComponentValidation() && !isCallerSystemOrSystemUi()) {
-                if (rule.getOwner() != null) {
-                    PackageItemInfo ownerInfo = mZenModeHelper.getServiceInfo(rule.getOwner());
+                ComponentName ruleOwner = rule.getOwner();
+                if (ruleOwner != null) {
+                    PackageItemInfo ownerInfo = mZenModeHelper.getServiceInfo(ruleOwner);
                     if (ownerInfo == null) {
-                        throw new IllegalArgumentException(
-                                "Lacking enabled ConditionProviderService " + rule.getOwner());
+                        Slog.e(TAG, "AZR.owner " + ruleOwner
+                                + " is not valid. This might throw in a future release.");
+                        rule = new AutomaticZenRule.Builder(rule).setOwner(null).build();
                     }
                 }
-                if (rule.getConfigurationActivity() != null) {
-                    PackageItemInfo activityInfo = mZenModeHelper.getActivityInfo(
-                            rule.getConfigurationActivity());
+                ComponentName ruleActivity = rule.getConfigurationActivity();
+                if (ruleActivity != null) {
+                    PackageItemInfo activityInfo = mZenModeHelper.getActivityInfo(ruleActivity);
                     if (activityInfo == null) {
-                        throw new IllegalArgumentException(
-                                "Lacking enabled ConfigurationActivity "
-                                        + rule.getConfigurationActivity());
+                        Slog.e(TAG, "AZR.configurationActivity " + ruleActivity
+                                + " is not valid. This might throw in a future release.");
+                        rule = new AutomaticZenRule.Builder(rule)
+                                .setConfigurationActivity(null)
+                                .build();
                     }
+                }
+                if (rule.getOwner() == null && rule.getConfigurationActivity() == null) {
+                    throw new IllegalArgumentException(
+                            "Rule must have a valid (enabled) ConditionProviderService or "
+                                    + "configurationActivity");
                 }
             }
 
             if (isCallerSystemOrSystemUi()) {
-                return; // System callers can use any type.
+                return rule; // System callers can use any type.
             }
             int uid = Binder.getCallingUid();
             int userId = UserHandle.getUserId(uid);
-
             if (rule.getType() == AutomaticZenRule.TYPE_MANAGED) {
                 boolean isDeviceOwner = Binder.withCleanCallingIdentity(
                         () -> mDpm.isActiveDeviceOwner(uid));
@@ -6597,6 +6609,8 @@ public class NotificationManagerService extends SystemService {
                                     + "TYPE_BEDTIME");
                 }
             }
+
+            return rule;
         }
 
         @Override
