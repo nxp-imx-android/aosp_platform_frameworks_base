@@ -29,6 +29,7 @@ val Kosmos.infiniteGridViewModelFactory by
                     tileSquishinessViewModel,
                     infiniteGridSnapshotViewModelFactory,
                     qsResetDialogDelegateFactoryKosmos,
+                    editTopBarActionsViewModelFactory,
                 )
             }
         }

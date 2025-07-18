@@ -24,6 +24,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
@@ -34,10 +35,12 @@ import com.android.compose.animation.scene.ContentScope
 import com.android.compose.animation.scene.ElementKey
 import com.android.mechanics.compose.modifier.verticalTactileSurfaceReveal
 import com.android.mechanics.spec.builder.rememberMotionBuilderContext
+import com.android.systemui.common.ui.icons.Reset
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.grid.ui.compose.VerticalSpannedGrid
 import com.android.systemui.haptics.msdl.qs.TileHapticsViewModelFactoryProvider
 import com.android.systemui.lifecycle.rememberViewModel
+import com.android.systemui.qs.flags.QsEditModeTabs
 import com.android.systemui.qs.panels.shared.model.SizedTileImpl
 import com.android.systemui.qs.panels.ui.compose.EditTileListState
 import com.android.systemui.qs.panels.ui.compose.PaginatableGridLayout
@@ -46,6 +49,7 @@ import com.android.systemui.qs.panels.ui.compose.bounceableInfo
 import com.android.systemui.qs.panels.ui.viewmodel.BounceableTileViewModel
 import com.android.systemui.qs.panels.ui.viewmodel.DetailsViewModel
 import com.android.systemui.qs.panels.ui.viewmodel.EditTileViewModel
+import com.android.systemui.qs.panels.ui.viewmodel.EditTopBarActionViewModel
 import com.android.systemui.qs.panels.ui.viewmodel.IconTilesViewModel
 import com.android.systemui.qs.panels.ui.viewmodel.InfiniteGridViewModel
 import com.android.systemui.qs.panels.ui.viewmodel.TextFeedbackContentViewModel
@@ -175,6 +179,10 @@ constructor(
             rememberViewModel("InfiniteGridLayout.EditTileGrid") {
                 viewModel.snapshotViewModelFactory.create()
             }
+        val topBarActionsViewModel =
+            rememberViewModel("InfiniteGridLayout.EditTileGrid") {
+                viewModel.editTopBarActionsViewModelFactory.create()
+            }
         val scrollState = rememberScrollState()
         val coroutineScope = rememberCoroutineScope()
         val dialogDelegate =
@@ -187,6 +195,20 @@ constructor(
                     coroutineScope.launch { scrollState.animateScrollTo(0) }
                 }
             }
+        val actions =
+            remember(topBarActionsViewModel) { topBarActionsViewModel.actions.toMutableStateList() }
+        if (QsEditModeTabs.isEnabled) {
+            val resetClick by rememberUpdatedState(dialogDelegate::showDialog)
+            val resetAction = remember {
+                EditTopBarActionViewModel(
+                    Reset,
+                    com.android.internal.R.string.reset,
+                    { resetClick() },
+                )
+            }
+
+            LaunchedEffect(actions) { actions.add(resetAction) }
+        }
         val columns = columnsViewModel.columns
         val largeTilesSpan = columnsViewModel.largeSpan
         val largeTiles by viewModel.iconTilesViewModel.largeTilesState
@@ -210,6 +232,7 @@ constructor(
             scrollState = scrollState,
             snapshotViewModel = snapshotViewModel,
             onStopEditing = onStopEditing,
+            topBarActions = actions,
         ) { action ->
             // Opening the dialog doesn't require a snapshot
             if (action != EditAction.ResetGrid) {

@@ -38,6 +38,7 @@ constructor(
     val squishinessViewModel: TileSquishinessViewModel,
     val snapshotViewModelFactory: InfiniteGridSnapshotViewModel.Factory,
     val resetDialogDelegateFactory: QSResetDialogDelegate.Factory,
+    val editTopBarActionsViewModelFactory: EditTopBarActionsViewModel.Factory,
 ) : ExclusiveActivatable(), PaginatableViewModel {
     private val hydrator = Hydrator("InfiniteGridViewModel.hydrator")
 
