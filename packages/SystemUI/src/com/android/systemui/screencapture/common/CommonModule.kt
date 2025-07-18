@@ -18,10 +18,14 @@ package com.android.systemui.screencapture.common
 
 import android.content.Context
 import com.android.launcher3.icons.IconFactory
+import com.android.systemui.mediaprojection.appselector.data.RecentTaskListProvider
+import com.android.systemui.mediaprojection.appselector.data.ShellRecentTaskListProvider
 import com.android.systemui.screencapture.common.data.repository.ScreenCaptureIconRepository
 import com.android.systemui.screencapture.common.data.repository.ScreenCaptureIconRepositoryImpl
 import com.android.systemui.screencapture.common.data.repository.ScreenCaptureLabelRepository
 import com.android.systemui.screencapture.common.data.repository.ScreenCaptureLabelRepositoryImpl
+import com.android.systemui.screencapture.common.data.repository.ScreenCaptureRecentTaskRepository
+import com.android.systemui.screencapture.common.data.repository.ScreenCaptureRecentTaskRepositoryImpl
 import com.android.systemui.screencapture.common.data.repository.ScreenCaptureThumbnailRepository
 import com.android.systemui.screencapture.common.data.repository.ScreenCaptureThumbnailRepositoryImpl
 import dagger.Binds
@@ -49,6 +53,13 @@ interface CommonModule {
     fun bindScreenCaptureThumbnailRepository(
         impl: ScreenCaptureThumbnailRepositoryImpl
     ): ScreenCaptureThumbnailRepository
+
+    @Binds
+    fun bindRecentTaskRepository(
+        impl: ScreenCaptureRecentTaskRepositoryImpl
+    ): ScreenCaptureRecentTaskRepository
+
+    @Binds fun bindRecentTaskListProvider(impl: ShellRecentTaskListProvider): RecentTaskListProvider
 
     companion object {
         @Provides
