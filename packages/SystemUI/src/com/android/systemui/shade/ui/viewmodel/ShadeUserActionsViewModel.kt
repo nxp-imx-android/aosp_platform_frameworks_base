@@ -57,14 +57,10 @@ constructor(
             ) { shadeMode, isCustomizerShowing, backScene ->
                 buildMap<UserAction, UserActionResult> {
                     if (!isCustomizerShowing) {
-                        set(
-                            Swipe.Up,
-                            UserActionResult(
-                                backScene,
-                                ToSplitShade.takeIf { shadeMode is ShadeMode.Split },
-                            ),
-                        )
-                        set(Back, UserActionResult(backScene))
+                        val backSceneTransitionKey =
+                            ToSplitShade.takeIf { shadeMode is ShadeMode.Split }
+                        set(Swipe.Up, UserActionResult(backScene, backSceneTransitionKey))
+                        set(Back, UserActionResult(backScene, backSceneTransitionKey))
                     }
 
                     // TODO(b/330200163) Add an else to be able to collapse the shade while
