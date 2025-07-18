@@ -289,6 +289,11 @@ final class EnforcingAdmin {
         return mComponentName;
     }
 
+    @Nullable
+    String getSystemEntity() {
+        return mSystemEntity;
+    }
+
     @NonNull
     android.app.admin.EnforcingAdmin getParcelableAdmin() {
         Authority authority;
