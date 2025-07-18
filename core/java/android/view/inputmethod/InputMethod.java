@@ -17,6 +17,7 @@
 package android.view.inputmethod;
 
 import android.annotation.DurationMillisLong;
+import android.annotation.FlaggedApi;
 import android.annotation.MainThread;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
@@ -275,16 +276,22 @@ public interface InputMethod {
      * requested by the user.  If not set, the system has decided it may be
      * a good idea to show the input method based on a navigation operation
      * in the UI.
+     *
+     * @deprecated {@link InputMethodManager#SHOW_IMPLICIT} is deprecated therefore this flag
+     * becomes the default. There is no need to pass it anymore.
      */
+    @FlaggedApi(Flags.FLAG_DEPRECATE_INPUT_METHOD_SHOW_HIDE_FLAGS)
+    @Deprecated
     public static final int SHOW_EXPLICIT = 0x00001;
-    
+
     /**
      * Flag for {@link #showSoftInput}: this show has been forced to
      * happen by the user.  If set, the input method should remain visible
      * until deliberated dismissed by the user in its UI.
      *
-     * @deprecated {@link InputMethodManager#SHOW_FORCED} is deprecated and
-     * should no longer be used by apps. IMEs likewise should no longer react to this flag.
+     * @deprecated Starting in {@link Build.VERSION_CODES#BAKLAVA Android B},
+     * {@link InputMethodManager#SHOW_IMPLICIT} is deprecated and has no effect, therefore all
+     * requests will have this flag set. IMEs should no longer react to this flag.
      */
     @Deprecated
     public static final int SHOW_FORCED = 0x00002;

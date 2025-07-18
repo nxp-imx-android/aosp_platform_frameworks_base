@@ -2267,7 +2267,12 @@ public final class InputMethodManager {
      * Flag for {@link #showSoftInput} to indicate that this is an implicit
      * request to show the input window, not as the result of a direct request
      * by the user.  The window may not be shown in this case.
+     *
+     * @deprecated Use {@link #showSoftInput} without this flag instead. Starting in
+     * {@link Build.VERSION_CODES#BAKLAVA Android B}, this flag has no effect anymore.
      */
+    @FlaggedApi(Flags.FLAG_DEPRECATE_INPUT_METHOD_SHOW_HIDE_FLAGS)
+    @Deprecated
     public static final int SHOW_IMPLICIT = 0x0001;
 
     /**
@@ -2279,7 +2284,8 @@ public final class InputMethodManager {
      * to the soft input remaining visible even when the calling application is closed. The
      * use of this flag can make the soft input remain visible globally. Starting in
      * {@link Build.VERSION_CODES#TIRAMISU Android T}, this flag only has an effect while the
-     * caller is currently focused.
+     * caller is currently focused. Starting in {@link Build.VERSION_CODES#BAKLAVA Android B},
+     * this flag has no effect anymore.
      */
     @Deprecated
     public static final int SHOW_FORCED = 0x0002;
@@ -2433,7 +2439,6 @@ public final class InputMethodManager {
                             imeReqVisible ? InputMethodManager.RESULT_UNCHANGED_SHOWN
                                     : InputMethodManager.RESULT_SHOWN, null);
                 }
-                // TODO(b/322992891) handle case of SHOW_IMPLICIT
                 if (vh.getLooper() != Looper.myLooper()) {
                     // The view is running on a different thread than our own, so
                     // we need to reschedule our work for over there.
@@ -2496,14 +2501,24 @@ public final class InputMethodManager {
      * Flag for {@link #hideSoftInputFromWindow} and {@link InputMethodService#requestHideSelf(int)}
      * to indicate that the soft input window should only be hidden if it was not explicitly shown
      * by the user.
+     *
+     * @deprecated Starting in {@link Build.VERSION_CODES#BAKLAVA Android B}, this flag has no
+     * effect anymore.
      */
+    @Deprecated
+    @FlaggedApi(Flags.FLAG_DEPRECATE_INPUT_METHOD_SHOW_HIDE_FLAGS)
     public static final int HIDE_IMPLICIT_ONLY = 0x0001;
 
     /**
      * Flag for {@link #hideSoftInputFromWindow} and {@link InputMethodService#requestShowSelf(int)}
      * to indicate that the soft input window should normally be hidden, unless it was originally
      * shown with {@link #SHOW_FORCED}.
+     *
+     * @deprecated Starting in {@link Build.VERSION_CODES#BAKLAVA Android B}, this flag has no
+     * effect anymore.
      */
+    @Deprecated
+    @FlaggedApi(Flags.FLAG_DEPRECATE_INPUT_METHOD_SHOW_HIDE_FLAGS)
     public static final int HIDE_NOT_ALWAYS = 0x0002;
 
     /**
@@ -2599,7 +2614,6 @@ public final class InputMethodManager {
 
             ImeTracker.forLogging().onProgress(statsToken, ImeTracker.PHASE_CLIENT_VIEW_SERVED);
 
-            // TODO(b/322992891) handle case of HIDE_IMPLICIT_ONLY
             final var viewRootImpl = servedView.getViewRootImpl();
             if (viewRootImpl != null) {
                 Handler vh = servedView.getHandler();
