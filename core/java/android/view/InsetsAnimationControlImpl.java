@@ -17,9 +17,6 @@
 package android.view;
 
 import static android.app.WindowConfiguration.ACTIVITY_TYPE_UNDEFINED;
-import static android.view.EventLogTags.IMF_IME_ANIM_CANCEL;
-import static android.view.EventLogTags.IMF_IME_ANIM_FINISH;
-import static android.view.EventLogTags.IMF_IME_ANIM_START;
 import static android.internal.perfetto.protos.Insetsanimationcontrolimpl.InsetsAnimationControlImplProto.CURRENT_ALPHA;
 import static android.internal.perfetto.protos.Insetsanimationcontrolimpl.InsetsAnimationControlImplProto.IS_CANCELLED;
 import static android.internal.perfetto.protos.Insetsanimationcontrolimpl.InsetsAnimationControlImplProto.IS_FINISHED;
@@ -28,9 +25,11 @@ import static android.internal.perfetto.protos.Insetsanimationcontrolimpl.Insets
 import static android.internal.perfetto.protos.Insetsanimationcontrolimpl.InsetsAnimationControlImplProto.PENDING_INSETS;
 import static android.internal.perfetto.protos.Insetsanimationcontrolimpl.InsetsAnimationControlImplProto.SHOWN_ON_FINISH;
 import static android.internal.perfetto.protos.Insetsanimationcontrolimpl.InsetsAnimationControlImplProto.TMP_MATRIX;
+import static android.view.EventLogTags.IMF_IME_ANIM_CANCEL;
+import static android.view.EventLogTags.IMF_IME_ANIM_FINISH;
+import static android.view.EventLogTags.IMF_IME_ANIM_START;
 import static android.view.InsetsController.ANIMATION_TYPE_SHOW;
 import static android.view.InsetsController.AnimationType;
-import static android.view.InsetsController.DEBUG;
 import static android.view.InsetsController.LAYOUT_INSETS_DURING_ANIMATION_SHOWN;
 import static android.view.InsetsController.LayoutInsetsDuringAnimation;
 import static android.view.InsetsSource.ID_IME;
@@ -39,6 +38,7 @@ import static android.view.InsetsSource.SIDE_LEFT;
 import static android.view.InsetsSource.SIDE_NONE;
 import static android.view.InsetsSource.SIDE_RIGHT;
 import static android.view.InsetsSource.SIDE_TOP;
+import static android.view.ViewProtoLogGroups.INSETS_ANIMATION_CONTROLLER;
 import static android.view.WindowInsets.Type.ime;
 import static android.view.WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE;
 import static android.view.WindowManager.LayoutParams.TYPE_APPLICATION;
@@ -56,7 +56,6 @@ import android.graphics.Point;
 import android.graphics.Rect;
 import android.util.ArraySet;
 import android.util.EventLog;
-import android.util.Log;
 import android.util.SparseArray;
 import android.util.SparseIntArray;
 import android.util.SparseSetArray;
@@ -69,6 +68,7 @@ import android.view.animation.Interpolator;
 import android.view.inputmethod.ImeTracker;
 
 import com.android.internal.annotations.VisibleForTesting;
+import com.android.internal.protolog.ProtoLog;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -82,9 +82,6 @@ import java.util.Objects;
 @VisibleForTesting(visibility = VisibleForTesting.Visibility.PACKAGE)
 public class InsetsAnimationControlImpl implements InternalInsetsAnimationController,
         InsetsAnimationControlRunner {
-
-    private static final String TAG = "InsetsAnimationCtrlImpl";
-
     @NonNull
     private final Rect mTmpFrame = new Rect();
 
@@ -347,7 +344,7 @@ public class InsetsAnimationControlImpl implements InternalInsetsAnimationContro
     @VisibleForTesting(visibility = VisibleForTesting.Visibility.PACKAGE)
     public boolean applyChangeInsets(@Nullable InsetsState outState) {
         if (mCancelled) {
-            if (DEBUG) Log.d(TAG, "applyChangeInsets canceled");
+            ProtoLog.d(INSETS_ANIMATION_CONTROLLER, "applyChangeInsets canceled");
             return false;
         }
         final Insets offset = Insets.subtract(mShownInsets, mPendingInsets);
@@ -363,14 +360,12 @@ public class InsetsAnimationControlImpl implements InternalInsetsAnimationContro
         mCurrentAlpha = mPendingAlpha;
         mAnimation.setAlpha(mPendingAlpha);
         if (mFinished) {
-            if (DEBUG) {
-                Log.d(TAG, "notifyFinished shown: " + mShownOnFinish
-                        + ", currentAlpha: " + mCurrentAlpha
-                        + ", currentInsets: " + mCurrentInsets);
-            }
+            ProtoLog.d(INSETS_ANIMATION_CONTROLLER,
+                    "notifyFinished shown: %s, currentAlpha: %s, currentInsets: %s", mShownOnFinish,
+                    mCurrentAlpha, mCurrentInsets);
             mController.notifyFinished(this, mShownOnFinish);
             releaseLeashes();
-            if (DEBUG) Log.d(TAG, "Animation finished abruptly.");
+            ProtoLog.d(INSETS_ANIMATION_CONTROLLER, "Animation finished abruptly.");
         }
         return mFinished;
     }
@@ -386,7 +381,8 @@ public class InsetsAnimationControlImpl implements InternalInsetsAnimationContro
     @Override
     public void finish(boolean shown) {
         if (mCancelled || mFinished) {
-            if (DEBUG) Log.d(TAG, "Animation already canceled or finished, not notifying.");
+            ProtoLog.d(INSETS_ANIMATION_CONTROLLER,
+                    "Animation already canceled or finished, not notifying.");
             return;
         }
         mShownOnFinish = shown;
@@ -394,7 +390,8 @@ public class InsetsAnimationControlImpl implements InternalInsetsAnimationContro
         final Insets insets = shown ? mShownInsets : mHiddenInsets;
         setInsetsAndAlpha(insets, mPendingAlpha, 1f /* fraction */, true /* allowWhenFinished */);
 
-        if (DEBUG) Log.d(TAG, "notify control request finished for types: " + mTypes);
+        ProtoLog.d(INSETS_ANIMATION_CONTROLLER, "notify control request finished for types: %s",
+                WindowInsets.Type.toString(mTypes));
         mListener.onFinished(this);
         if (DEBUG_IME_VISIBILITY && (mTypes & ime()) != 0) {
             EventLog.writeEvent(IMF_IME_ANIM_FINISH,
@@ -422,7 +419,8 @@ public class InsetsAnimationControlImpl implements InternalInsetsAnimationContro
         applyChangeInsets(null);
         mCancelled = true;
         mListener.onCancelled(mReadyDispatched ? this : null);
-        if (DEBUG) Log.d(TAG, "notify Control request cancelled for types: " + mTypes);
+        ProtoLog.d(INSETS_ANIMATION_CONTROLLER, "notify Control request cancelled for types: %s",
+                WindowInsets.Type.toString(mTypes));
         if (DEBUG_IME_VISIBILITY && (mTypes & ime()) != 0) {
             EventLog.writeEvent(IMF_IME_ANIM_CANCEL,
                     mStatsToken != null ? mStatsToken.getTag() : ImeTracker.TOKEN_NONE,
