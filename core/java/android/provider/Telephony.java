@@ -70,8 +70,7 @@ import java.util.regex.Pattern;
  * </a> element in your manifest that declares the {@code "android.hardware.telephony"} hardware
  * feature. Alternatively, you can check for telephony availability at runtime using either
  * {@link android.content.pm.PackageManager#hasSystemFeature
- * hasSystemFeature(PackageManager.FEATURE_TELEPHONY)} or {@link
- * android.telephony.TelephonyManager#getPhoneType}.</p>
+ * hasSystemFeature(PackageManager.FEATURE_TELEPHONY)}.</p>
  *
  * <h3>Creating an SMS app</h3>
  *
