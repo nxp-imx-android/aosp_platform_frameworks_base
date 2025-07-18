@@ -101,6 +101,10 @@ public class UserManager {
 
     private static final String TAG = "UserManager";
 
+    private static final String DEPRECATION_LOG_TAG = "MultiuserDeprecation";
+    private static final boolean DEBUG_LOG_DEPRECATION =
+            Build.isDebuggable() && Log.isLoggable(DEPRECATION_LOG_TAG, Log.VERBOSE);
+
     @UnsupportedAppUsage
     private final IUserManager mService;
     /** Holding the Application context (not constructor param context). */
@@ -3027,8 +3031,9 @@ public class UserManager {
             Manifest.permission.QUERY_USERS})
     @UserHandleAware(enabledSinceTargetSdkVersion = Build.VERSION_CODES.TIRAMISU)
     public boolean isPrimaryUser() {
+        logDeprecation();
         final UserInfo user = getUserInfo(getContextUserIfAppropriate());
-        return user != null && user.isPrimary();
+        return user != null && user.isPrimaryUnlogged();
     }
 
     /**
@@ -3072,8 +3077,9 @@ public class UserManager {
             Manifest.permission.QUERY_USERS})
     @UserHandleAware
     public boolean isMainUser() {
+        logDeprecation();
         final UserInfo user = getUserInfo(mUserId);
-        return user != null && user.isMain();
+        return user != null && user.isMainUnlogged();
     }
 
     /**
@@ -3094,6 +3100,7 @@ public class UserManager {
             Manifest.permission.CREATE_USERS,
             Manifest.permission.QUERY_USERS})
     public @Nullable UserHandle getMainUser() {
+        logDeprecation();
         try {
             final int mainUserId = mService.getMainUserId();
             if (mainUserId == UserHandle.USER_NULL) {
@@ -3104,6 +3111,7 @@ public class UserManager {
             throw re.rethrowFromSystemServer();
         }
     }
+
     /**
      * Returns the designated "communal profile" of the device, or {@code null} if there is none.
      * @hide
@@ -6962,6 +6970,36 @@ public class UserManager {
         } catch (RemoteException re) {
             throw re.rethrowFromSystemServer();
         }
+    }
+
+    /**
+     * Logs a call to a deprecated multi-user API.
+     *
+     * <p>NOTE: it's a no-op if build is not debuggable or log level of
+     * {@value #DEPRECATION_LOG_TAG} is not verbose.
+     *
+     * @hide
+     */
+    public void logDeprecation() {
+        if (!DEBUG_LOG_DEPRECATION) {
+            return;
+        }
+        Log.v(DEPRECATION_LOG_TAG, "deprecated call on pkg " + mContext.getPackageName()
+                + " (from user " + mUserId + "):", new Exception());
+    }
+
+    /**
+     * Same as {@link #logDeprecation()}, but for cases where the caller doesn't have a reference
+     * to a {@link UserManager} (like methods from system server components or POJOs like
+     * {@code UserInfo}.
+     *
+     * @hide
+     */
+    public static void logStaticDeprecation() {
+        if (!DEBUG_LOG_DEPRECATION) {
+            return;
+        }
+        Log.v(DEPRECATION_LOG_TAG, "deprecated call:", new Exception());
     }
 
     /* Cache key for anything that assumes that userIds cannot be re-used without rebooting. */
