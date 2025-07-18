@@ -327,7 +327,6 @@ public class ProtoLogControllerTest {
         private final String mName;
         private final int mId;
         private final boolean mEnabled;
-        private boolean mLogToProto = true;
         private boolean mLogToLogcat = true;
 
         TestProtoLogGroup(String name, int id, boolean enabled) {
@@ -352,24 +351,12 @@ public class ProtoLogControllerTest {
             return mName;
         }
 
-        @Override public boolean isLogToProto() {
-            return mLogToProto;
-        }
-
-        @Override public void setLogToProto(boolean val) {
-            this.mLogToProto = val;
-        }
-
         @Override public boolean isLogToLogcat() {
             return mLogToLogcat;
         }
 
         @Override public void setLogToLogcat(boolean val) {
             this.mLogToLogcat = val;
-        }
-
-        @Override public boolean isLogToAny() {
-            return isLogToLogcat() || isLogToProto();
         }
 
         @Override

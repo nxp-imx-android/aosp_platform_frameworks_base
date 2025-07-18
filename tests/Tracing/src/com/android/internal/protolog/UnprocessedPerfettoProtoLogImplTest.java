@@ -77,7 +77,6 @@ public class UnprocessedPerfettoProtoLogImplTest {
     @Before
     public void before() {
         TestProtoLogGroup.TEST_GROUP.setLogToLogcat(false);
-        TestProtoLogGroup.TEST_GROUP.setLogToProto(false);
     }
 
     @After
@@ -159,28 +158,13 @@ public class UnprocessedPerfettoProtoLogImplTest {
         }
 
         @Override
-        public boolean isLogToProto() {
-            return mLogToProto;
-        }
-
-        @Override
         public boolean isLogToLogcat() {
             return mLogToLogcat;
         }
 
         @Override
-        public boolean isLogToAny() {
-            return mLogToLogcat || mLogToProto;
-        }
-
-        @Override
         public String getTag() {
             return mTag;
-        }
-
-        @Override
-        public void setLogToProto(boolean logToProto) {
-            this.mLogToProto = logToProto;
         }
 
         @Override
