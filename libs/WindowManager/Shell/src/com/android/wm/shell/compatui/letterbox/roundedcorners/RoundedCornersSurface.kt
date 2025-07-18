@@ -47,9 +47,7 @@ import com.android.wm.shell.compatui.letterbox.roundedcorners.RoundedCornersDraw
 import com.android.wm.shell.compatui.letterbox.roundedcorners.RoundedCornersDrawableFactory.Position.TOP_LEFT
 import com.android.wm.shell.compatui.letterbox.roundedcorners.RoundedCornersDrawableFactory.Position.TOP_RIGHT
 
-/**
- * Overlay responsible for handling letterbox rounded corners in Shell.
- */
+/** Overlay responsible for handling letterbox rounded corners in Shell. */
 class RoundedCornersSurface(
     private val context: Context,
     config: Configuration?,
@@ -57,7 +55,7 @@ class RoundedCornersSurface(
     private val parentSurface: SurfaceControl,
     private val cornersFactory: LetterboxRoundedCornersDrawableFactory,
     private val letterboxConfiguration: LetterboxConfiguration,
-    private val surfaceBuilderSupplier: SurfaceBuilderSupplier
+    private val surfaceBuilderSupplier: SurfaceBuilderSupplier,
 ) : WindowlessWindowManager(config, parentSurface, /* hostInputToken */ null) {
 
     private var viewHost: SurfaceControlViewHost? = null
@@ -78,27 +76,24 @@ class RoundedCornersSurface(
     private var roundedCornersLayout: View
 
     init {
-        viewHost = SurfaceControlViewHost(
-            context,
-            context.display,
-            this,
-            javaClass.simpleName
-        )
+        viewHost = SurfaceControlViewHost(context, context.display, this, javaClass.simpleName)
         roundedCornersLayout = inflateLayout()
         viewHost?.setView(roundedCornersLayout, getRoundedCornersViewWindowLayoutParams())
     }
 
     override fun getParentSurface(
         window: IWindow,
-        attrs: WindowManager.LayoutParams
+        attrs: WindowManager.LayoutParams,
     ): SurfaceControl {
         val className = javaClass.simpleName
-        val builder = surfaceBuilderSupplier.get()
-            .setContainerLayer()
-            .setName(className + "Leash")
-            .setHidden(false)
-            .setParent(parentSurface)
-            .setCallsite("$className#attachToParentSurface")
+        val builder =
+            surfaceBuilderSupplier
+                .get()
+                .setContainerLayer()
+                .setName(className + "Leash")
+                .setHidden(false)
+                .setParent(parentSurface)
+                .setCallsite("$className#attachToParentSurface")
         return builder.build().apply {
             initSurface(this)
             leash = this
@@ -117,29 +112,23 @@ class RoundedCornersSurface(
             // If leash is null or invalid, return. Otherwise, assign it to 'validLeash'.
             val validLeash = leash?.takeIf { it.isValid } ?: return@runInSync
             t.setPosition(validLeash, bounds.left.toFloat(), bounds.top.toFloat())
-                .setWindowCrop(
-                    validLeash,
-                    bounds.width(),
-                    bounds.height()
-                )
+                .setWindowCrop(validLeash, bounds.width(), bounds.height())
         }
         viewHost?.relayout(getRoundedCornersViewWindowLayoutParams())
     }
 
-    /**
-     * Updates the position of the surface with respect to the given positions [x] and [y].
-     */
+    /** Updates the position of the surface with respect to the given positions [x] and [y]. */
     fun updatePosition(t: SurfaceControl.Transaction, x: Int, y: Int) {
         // Chain of checks:
         // 1. Is 'leash' not null?
         // 2. If so, is it valid?
         // 3. If so, execute the 'let' block with the valid leash.
-        leash?.takeIf { it.isValid }?.let { validLeash ->
-            t.setPosition(validLeash, x.toFloat(), y.toFloat())
-        }
+        leash
+            ?.takeIf { it.isValid }
+            ?.let { validLeash -> t.setPosition(validLeash, x.toFloat(), y.toFloat()) }
     }
 
-    /** Releases the surface control and tears down the view hierarchy.  */
+    /** Releases the surface control and tears down the view hierarchy. */
     fun release() {
         // If viewHost is not null, run this block. 'it' is the non-null viewHost.
         viewHost?.let {
@@ -149,9 +138,7 @@ class RoundedCornersSurface(
 
         // If leash is not null, run this block. 'currentLeash' is the non-null leash.
         leash?.let { currentLeash ->
-            syncQueue.runInSync { t: SurfaceControl.Transaction ->
-                t.remove(currentLeash)
-            }
+            syncQueue.runInSync { t: SurfaceControl.Transaction -> t.remove(currentLeash) }
             leash = null
         }
     }
@@ -159,7 +146,7 @@ class RoundedCornersSurface(
     fun setCornersVisibility(
         executor: ShellExecutor,
         visible: Boolean,
-        immediate: Boolean = false
+        immediate: Boolean = false,
     ) {
         leftTopRoundedCorner?.setCornersVisibility(executor, visible, immediate)
         rightTopRoundedCorner?.setCornersVisibility(executor, visible, immediate)
@@ -170,7 +157,7 @@ class RoundedCornersSurface(
     private fun View.setCornersVisibility(
         executor: ShellExecutor,
         visible: Boolean,
-        immediate: Boolean = false
+        immediate: Boolean = false,
     ) {
         val drawable = background as? LetterboxRoundedCornersDrawable
         drawable?.let {
@@ -179,10 +166,7 @@ class RoundedCornersSurface(
     }
 
     private fun getRoundedCornersViewWindowLayoutParams(): WindowManager.LayoutParams {
-        return getWindowLayoutParams(
-            letterboxBounds.width(),
-            letterboxBounds.height()
-        )
+        return getWindowLayoutParams(letterboxBounds.width(), letterboxBounds.height())
     }
 
     /** Gets the layout params given the width and height of the layout. */
@@ -194,24 +178,23 @@ class RoundedCornersSurface(
                 height,
                 TYPE_APPLICATION_OVERLAY,
                 getWindowManagerLayoutParamsFlags(),
-                PixelFormat.TRANSLUCENT
+                PixelFormat.TRANSLUCENT,
             )
         winParams.token = Binder()
         winParams.title = javaClass.simpleName
         winParams.privateFlags =
-            winParams.privateFlags or (WindowManager.LayoutParams.PRIVATE_FLAG_NO_MOVE_ANIMATION
-                    or WindowManager.LayoutParams.PRIVATE_FLAG_TRUSTED_OVERLAY)
+            winParams.privateFlags or
+                (WindowManager.LayoutParams.PRIVATE_FLAG_NO_MOVE_ANIMATION or
+                    WindowManager.LayoutParams.PRIVATE_FLAG_TRUSTED_OVERLAY)
         return winParams
     }
 
-    /**
-     * @return Flags to use for the [WindowManager] layout
-     */
+    /** @return Flags to use for the [WindowManager] layout */
     private fun getWindowManagerLayoutParamsFlags(): Int {
         return FLAG_NOT_FOCUSABLE or FLAG_NOT_TOUCHABLE
     }
 
-    /** Inits the z-order of the surface.  */
+    /** Inits the z-order of the surface. */
     private fun initSurface(leash: SurfaceControl?) {
         syncQueue.runInSync { t: SurfaceControl.Transaction ->
             val validLeash = leash?.takeIf { it.isValid } ?: return@runInSync
@@ -225,30 +208,44 @@ class RoundedCornersSurface(
         val radius = letterboxConfiguration.getLetterboxActivityCornersRadius().toFloat()
         // The parent here must be [null] because this is a View that will be set as the [View] of
         // a [SurfaceControlViewHost].
-        return LayoutInflater.from(context).inflate(
-            R.layout.letterbox_shell_rounded_corners,
-            null
-        ).apply {
-            leftTopRoundedCorner = findViewById<View>(R.id.roundedCornerTopLeft)
-                .applyCornerAttrs(TOP_LEFT, radius, Gravity.TOP or Gravity.START, color)
-            rightTopRoundedCorner = findViewById<View>(R.id.roundedCornerTopRight)
-                .applyCornerAttrs(TOP_RIGHT, radius, Gravity.TOP or Gravity.END, color)
-            leftBottomRoundedCorner = findViewById<View>(R.id.roundedCornerBottomLeft)
-                .applyCornerAttrs(BOTTOM_LEFT, radius, Gravity.BOTTOM or Gravity.START, color)
-            rightBottomRoundedCorner = findViewById<View>(R.id.roundedCornerBottomRight)
-                .applyCornerAttrs(BOTTOM_RIGHT, radius, Gravity.BOTTOM or Gravity.END, color)
-        }
+        return LayoutInflater.from(context)
+            .inflate(R.layout.letterbox_shell_rounded_corners, null)
+            .apply {
+                leftTopRoundedCorner =
+                    findViewById<View>(R.id.roundedCornerTopLeft)
+                        .applyCornerAttrs(TOP_LEFT, radius, Gravity.TOP or Gravity.START, color)
+                rightTopRoundedCorner =
+                    findViewById<View>(R.id.roundedCornerTopRight)
+                        .applyCornerAttrs(TOP_RIGHT, radius, Gravity.TOP or Gravity.END, color)
+                leftBottomRoundedCorner =
+                    findViewById<View>(R.id.roundedCornerBottomLeft)
+                        .applyCornerAttrs(
+                            BOTTOM_LEFT,
+                            radius,
+                            Gravity.BOTTOM or Gravity.START,
+                            color,
+                        )
+                rightBottomRoundedCorner =
+                    findViewById<View>(R.id.roundedCornerBottomRight)
+                        .applyCornerAttrs(
+                            BOTTOM_RIGHT,
+                            radius,
+                            Gravity.BOTTOM or Gravity.END,
+                            color,
+                        )
+            }
     }
 
     private fun View.applyCornerAttrs(
         position: RoundedCornersDrawableFactory.Position,
         radius: Float,
         cornerGravity: Int,
-        color: Color
+        color: Color,
     ): View {
-        layoutParams = FrameLayout.LayoutParams(radius.toInt(), radius.toInt()).apply {
-            gravity = cornerGravity
-        }
+        layoutParams =
+            FrameLayout.LayoutParams(radius.toInt(), radius.toInt()).apply {
+                gravity = cornerGravity
+            }
         background = cornersFactory.getRoundedCornerDrawable(color, position, radius)
         return this
     }

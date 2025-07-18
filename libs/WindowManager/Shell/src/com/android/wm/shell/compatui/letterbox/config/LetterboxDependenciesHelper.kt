@@ -24,8 +24,6 @@ import android.window.TransitionInfo.Change
  */
 interface LetterboxDependenciesHelper {
 
-    /**
-     * Tells if the input surface should be created or not. This enables reachability.
-     */
+    /** Tells if the input surface should be created or not. This enables reachability. */
     fun shouldSupportInputSurface(change: Change): Boolean
 }

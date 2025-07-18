@@ -20,18 +20,16 @@ import android.view.SurfaceControl
 import com.android.wm.shell.compatui.letterbox.LetterboxController
 import com.android.wm.shell.compatui.letterbox.LetterboxControllerStrategy
 
-/**
- * [LetterboxLifecycleController] default implementation.
- */
+/** [LetterboxLifecycleController] default implementation. */
 class LetterboxLifecycleControllerImpl(
     private val letterboxController: LetterboxController,
-    private val letterboxModeStrategy: LetterboxControllerStrategy
+    private val letterboxModeStrategy: LetterboxControllerStrategy,
 ) : LetterboxLifecycleController {
 
     override fun onLetterboxLifecycleEvent(
         event: LetterboxLifecycleEvent,
         startTransaction: SurfaceControl.Transaction,
-        finishTransaction: SurfaceControl.Transaction
+        finishTransaction: SurfaceControl.Transaction,
     ) {
         val key = event.letterboxKey()
         // Each [LetterboxController] will handle its own Surfaces and will be responsible to
@@ -43,19 +41,10 @@ class LetterboxLifecycleControllerImpl(
                 // In this case the top Activity is letterboxed.
                 event.taskLeash?.let { taskLeash ->
                     letterboxModeStrategy.configureLetterboxMode(event)
-                    createLetterboxSurface(
-                        key,
-                        startTransaction,
-                        taskLeash,
-                        event.containerToken
-                    )
+                    createLetterboxSurface(key, startTransaction, taskLeash, event.containerToken)
                 }
             }
-            updateLetterboxSurfaceVisibility(
-                key,
-                startTransaction,
-                visible = isLetterboxed
-            )
+            updateLetterboxSurfaceVisibility(key, startTransaction, visible = isLetterboxed)
             // This happens after the visibility update because it needs to
             // check if the surfaces to show have empty bounds. When that happens
             // the clipAndCrop() doesn't actually work because cropping an empty
@@ -67,7 +56,7 @@ class LetterboxLifecycleControllerImpl(
                         key,
                         startTransaction,
                         event.taskBounds,
-                        activityBounds
+                        activityBounds,
                     )
                 }
             }

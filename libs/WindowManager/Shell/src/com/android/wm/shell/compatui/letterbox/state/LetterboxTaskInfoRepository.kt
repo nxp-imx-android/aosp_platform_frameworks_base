@@ -26,22 +26,22 @@ import com.android.wm.shell.repository.GenericRepository
 import com.android.wm.shell.repository.MemoryRepositoryImpl
 import javax.inject.Inject
 
-/**
- * Encapsulate the [TaskInfo] information useful for letterboxing in shell.
- */
+/** Encapsulate the [TaskInfo] information useful for letterboxing in shell. */
 data class LetterboxTaskInfoState(
     val containerToken: WindowContainerToken,
     val containerLeash: SurfaceControl,
     val taskId: Int = ActivityTaskManager.INVALID_TASK_ID,
-    val parentTaskId: Int = ActivityTaskManager.INVALID_TASK_ID
+    val parentTaskId: Int = ActivityTaskManager.INVALID_TASK_ID,
 )
 
 /**
- * Repository for keeping the reference to the [TaskInfo] data useful to handle letterbox
- * surfaces lifecycle.
+ * Repository for keeping the reference to the [TaskInfo] data useful to handle letterbox surfaces
+ * lifecycle.
  */
 @WMSingleton
-class LetterboxTaskInfoRepository @Inject constructor(
-) : GenericRepository<Int, LetterboxTaskInfoState> by MemoryRepositoryImpl(
-    logger = { msg -> ProtoLog.v(WM_SHELL_APP_COMPAT, "%s: %s", "TaskInfoMemoryRepository", msg) }
-)
+class LetterboxTaskInfoRepository @Inject constructor() :
+    GenericRepository<Int, LetterboxTaskInfoState> by MemoryRepositoryImpl(
+        logger = { msg ->
+            ProtoLog.v(WM_SHELL_APP_COMPAT, "%s: %s", "TaskInfoMemoryRepository", msg)
+        }
+    )

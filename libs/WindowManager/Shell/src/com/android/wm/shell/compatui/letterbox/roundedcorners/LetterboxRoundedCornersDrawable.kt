@@ -33,23 +33,22 @@ import android.graphics.RectF
 import android.graphics.drawable.Drawable
 import com.android.wm.shell.common.ShellExecutor
 
-/**
- * Rounded corner [Drawable] implementation
- */
+/** Rounded corner [Drawable] implementation */
 class LetterboxRoundedCornersDrawable(
     private var cornerColor: Color,
-    private var radius: Float = 0f
+    private var radius: Float = 0f,
 ) : Drawable() {
 
-    enum class FlipType { FLIP_VERTICAL, FLIP_HORIZONTAL }
+    enum class FlipType {
+        FLIP_VERTICAL,
+        FLIP_HORIZONTAL,
+    }
 
     companion object {
-        @JvmStatic
-        private val ANIMATION_DURATION = 350L
+        @JvmStatic private val ANIMATION_DURATION = 350L
 
         // To make the animation visible we add a small delay
-        @JvmStatic
-        private val ANIMATION_DELAY = 200L
+        @JvmStatic private val ANIMATION_DELAY = 200L
     }
 
     private val currentBounds = RectF()
@@ -58,31 +57,34 @@ class LetterboxRoundedCornersDrawable(
 
     private var currentRadius = 0f
 
-    private val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = cornerColor.toArgb()
-        style = Paint.Style.FILL
-    }
+    private val paint =
+        Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            color = cornerColor.toArgb()
+            style = Paint.Style.FILL
+        }
 
-    private val trPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        style = Paint.Style.FILL
-        color = Color.TRANSPARENT
-        xfermode = PorterDuffXfermode(PorterDuff.Mode.CLEAR)
-    }
+    private val trPaint =
+        Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            style = Paint.Style.FILL
+            color = Color.TRANSPARENT
+            xfermode = PorterDuffXfermode(PorterDuff.Mode.CLEAR)
+        }
 
     private val squarePath = Path()
     private val circlePath = Path()
     private val path = Path()
 
-    val radii = floatArrayOf(
-        0f,
-        0f, // Top-left corner
-        0f,
-        0f, // Top-right corner
-        0f,
-        0f, // Bottom-right corner
-        0f,
-        0f // Bottom-left corner
-    )
+    val radii =
+        floatArrayOf(
+            0f,
+            0f, // Top-left corner
+            0f,
+            0f, // Top-right corner
+            0f,
+            0f, // Bottom-right corner
+            0f,
+            0f, // Bottom-left corner
+        )
 
     override fun draw(canvas: Canvas) {
         canvas.drawPath(path, paint)
@@ -139,26 +141,24 @@ class LetterboxRoundedCornersDrawable(
     }
 
     @SuppressLint("Recycle")
-    private fun animateRadius(
-        executor: ShellExecutor,
-        fromRadius: Float,
-        targetRadius: Float
-    ) {
+    private fun animateRadius(executor: ShellExecutor, fromRadius: Float, targetRadius: Float) {
         ValueAnimator.ofFloat(fromRadius, targetRadius).apply {
             this.duration = ANIMATION_DURATION
-            addListener(object : Animator.AnimatorListener {
-                override fun onAnimationStart(animation: Animator) {}
+            addListener(
+                object : Animator.AnimatorListener {
+                    override fun onAnimationStart(animation: Animator) {}
 
-                override fun onAnimationEnd(animation: Animator) {
-                    currentRadius = targetRadius
+                    override fun onAnimationEnd(animation: Animator) {
+                        currentRadius = targetRadius
+                    }
+
+                    override fun onAnimationCancel(animation: Animator) {
+                        currentRadius = fromRadius
+                    }
+
+                    override fun onAnimationRepeat(animation: Animator) {}
                 }
-
-                override fun onAnimationCancel(animation: Animator) {
-                    currentRadius = fromRadius
-                }
-
-                override fun onAnimationRepeat(animation: Animator) {}
-            })
+            )
             addUpdateListener { animation ->
                 updatePath(animation.animatedValue as Float) // Update the path with the new radius
                 invalidateSelf() // Trigger redraw
@@ -196,7 +196,7 @@ class LetterboxRoundedCornersDrawable(
                 -1f,
                 1f,
                 bounds.centerX().toFloat(),
-                bounds.centerY().toFloat()
+                bounds.centerY().toFloat(),
             ) // Flip horizontally
         }
         if (verticalFlipped) {
@@ -204,7 +204,7 @@ class LetterboxRoundedCornersDrawable(
                 1f,
                 -1f,
                 bounds.centerX().toFloat(),
-                bounds.centerY().toFloat()
+                bounds.centerY().toFloat(),
             ) // Flip vertically
         }
         transform(matrix)
