@@ -109,6 +109,7 @@ import androidx.test.filters.SmallTest;
 
 import com.android.internal.graphics.ColorUtils;
 import com.android.server.wm.TransitionController.OnStartCollect;
+import com.android.window.flags.Flags;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -1836,10 +1837,19 @@ public class TransitionTests extends WindowTestsBase {
 
         openTransition.setAllReady();
 
-        openTransition.deferTransitionReady();
+        final Transition.ReadyCondition testCondition = new Transition.ReadyCondition("test");
+        if (Flags.migrateBasicLegacyReady()) {
+            openTransition.mReadyTracker.add(testCondition);
+        } else {
+            openTransition.deferTransitionReady();
+        }
         assertFalse(openTransition.allReady());
 
-        openTransition.continueTransitionReady();
+        if (Flags.migrateBasicLegacyReady()) {
+            testCondition.meet();
+        } else {
+            openTransition.continueTransitionReady();
+        }
         assertTrue(openTransition.allReady());
     }
 
@@ -2454,13 +2464,22 @@ public class TransitionTests extends WindowTestsBase {
 
         assertTrue(mSyncEngine.isReady(transition.getSyncId()));
 
-        transition.deferTransitionReady();
+        final Transition.ReadyCondition testCondition = new Transition.ReadyCondition("test");
+        if (Flags.migrateBasicLegacyReady()) {
+            transition.mReadyTracker.add(testCondition);
+        } else {
+            transition.deferTransitionReady();
+        }
 
         // Both transition ready tracker and sync engine should be deferred.
         assertFalse(transition.allReady());
         assertFalse(mSyncEngine.isReady(transition.getSyncId()));
 
-        transition.continueTransitionReady();
+        if (Flags.migrateBasicLegacyReady()) {
+            testCondition.meet();
+        } else {
+            transition.continueTransitionReady();
+        }
 
         assertTrue(transition.allReady());
         assertTrue(mSyncEngine.isReady(transition.getSyncId()));

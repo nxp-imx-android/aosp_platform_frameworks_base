@@ -288,7 +288,7 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
     private IRemoteCallback mClientAnimationFinishCallback = null;
 
     private @TransitionState int mState = STATE_PENDING;
-    private final ReadyTrackerOld mReadyTrackerOld = new ReadyTrackerOld();
+    final ReadyTrackerOld mReadyTrackerOld = new ReadyTrackerOld();
     final ReadyTracker mReadyTracker = new ReadyTracker(this);
 
     private int mRecentsDisplayId = INVALID_DISPLAY;
@@ -1110,8 +1110,7 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
         if (mState < STATE_STARTED) return;
         // Since some legacy behavior relies on being able to "unready" the old tracker, we need
         // to always re-check the old tracker here even if it had become ready previously.
-        final boolean ready = mReadyTracker.isReady()
-                && (mController.useFullReadyTracking() || mReadyTrackerOld.allReady());
+        final boolean ready = allReady();
         ProtoLog.v(WmProtoLogGroups.WM_DEBUG_WINDOW_TRANSITIONS,
                 "Set transition ready=%b %d", ready, mSyncId);
         boolean changed = mSyncEngine.setReady(mSyncId, ready);
@@ -1138,12 +1137,13 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
 
     @VisibleForTesting
     boolean allReady() {
-        return mReadyTrackerOld.allReady();
+        return mReadyTracker.isReady()
+                && (mController.useFullReadyTracking() || mReadyTrackerOld.allReady());
     }
 
     /** This transition has all of its expected participants. */
     boolean isPopulated() {
-        return mState >= STATE_STARTED && mReadyTrackerOld.allReady();
+        return mState >= STATE_STARTED && allReady();
     }
 
     /**
@@ -4237,7 +4237,8 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
      * of readiness across the multiple groups. Currently, we assume that each display is a group
      * since that is how it has been until now.
      */
-    private static class ReadyTrackerOld extends ReadyCondition {
+    @VisibleForTesting
+    static class ReadyTrackerOld extends ReadyCondition {
         private final ArrayMap<WindowContainer, Boolean> mReadyGroups = new ArrayMap<>();
 
         /**
@@ -4263,6 +4264,11 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
 
         ReadyTrackerOld() {
             super("Legacy");
+        }
+
+        @VisibleForTesting
+        int getDeferReadyDepth() {
+            return mDeferReadyDepth;
         }
 
         /**
