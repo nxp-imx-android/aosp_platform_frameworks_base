@@ -50,6 +50,10 @@ cc_defaults {
             enabled: true,
             cflags: ["-Wno-maybe-uninitialized"],
             ldflags: ["-static"],
+            host_ldlibs: [
+                // Required by stack tracing code bundled with protobuf
+                "-ldbghelp",
+            ],
         },
         darwin: {
             cflags: ["-D_DARWIN_UNLIMITED_STREAMS"],
