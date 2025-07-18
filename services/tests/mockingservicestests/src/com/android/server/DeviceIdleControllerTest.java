@@ -438,7 +438,8 @@ public class DeviceIdleControllerTest {
 
     @Test
     @EnableFlags(Flags.FLAG_USE_CPU_TIME_FOR_TEMP_ALLOWLIST)
-    public void testTempAllowlistCountsUptime() {
+    @DisableFlags(Flags.FLAG_STOP_POWER_SAVE_TEMP_WHITELIST_BROADCAST)
+    public void testTempAllowlistCountsUptime_flagDisabled() {
         doNothing().when(getContext()).sendBroadcastAsUser(any(), any(), any(), any());
         final int testUid = 12345;
         final long durationMs = 4300;
@@ -474,6 +475,47 @@ public class DeviceIdleControllerTest {
                 argThat(m -> m.what == MSG_TEMP_APP_WHITELIST_TIMEOUT && m.arg1 == testUid),
                 anyLong());
         assertFalse(mDeviceIdleController.mTempWhitelistAppIdEndTimes.contains(testUid));
+    }
+
+    @Test
+    @EnableFlags({Flags.FLAG_USE_CPU_TIME_FOR_TEMP_ALLOWLIST,
+            Flags.FLAG_STOP_POWER_SAVE_TEMP_WHITELIST_BROADCAST})
+    public void testTempAllowlistCountsUptime() {
+        final int testUid = 12345;
+        final long durationMs = 4300;
+        final long startTime = 100; // Arbitrary starting point in time.
+        mInjector.nowUptime = mInjector.nowElapsed = startTime;
+
+        mDeviceIdleController.addPowerSaveTempWhitelistAppDirectInternal(0, testUid, durationMs,
+                TEMPORARY_ALLOW_LIST_TYPE_FOREGROUND_SERVICE_ALLOWED, true, REASON_OTHER, "test");
+
+        assertEquals(startTime + durationMs,
+                mDeviceIdleController.mTempWhitelistAppIdEndTimes.get(testUid).first.value);
+
+        final InOrder inorder = inOrder(mHandler);
+        // mHandler is already stubbed to do nothing on handleMessage.
+        inorder.verify(mHandler).sendMessageDelayed(
+                argThat(m -> m.what == MSG_TEMP_APP_WHITELIST_TIMEOUT && m.arg1 == testUid),
+                eq(durationMs));
+
+        mInjector.nowElapsed += durationMs;
+        mInjector.nowUptime += 2;
+        // Elapsed time moved past the expiration but not uptime. The check should be rescheduled.
+        mDeviceIdleController.checkTempAppWhitelistTimeout(testUid);
+        inorder.verify(mHandler).sendMessageDelayed(
+                argThat(m -> m.what == MSG_TEMP_APP_WHITELIST_TIMEOUT && m.arg1 == testUid),
+                eq(durationMs - 2));
+        assertEquals(startTime + durationMs,
+                mDeviceIdleController.mTempWhitelistAppIdEndTimes.get(testUid).first.value);
+
+        mInjector.nowUptime += durationMs;
+        // Uptime moved past the expiration time. Uid should be removed from the temp allowlist.
+        mDeviceIdleController.checkTempAppWhitelistTimeout(testUid);
+        inorder.verify(mHandler, never()).sendMessageDelayed(
+                argThat(m -> m.what == MSG_TEMP_APP_WHITELIST_TIMEOUT && m.arg1 == testUid),
+                anyLong());
+        assertFalse(mDeviceIdleController.mTempWhitelistAppIdEndTimes.contains(testUid));
+        verify(getContext(), never()).sendBroadcastAsUser(any(), any(), any(), any());
     }
 
     @Test
