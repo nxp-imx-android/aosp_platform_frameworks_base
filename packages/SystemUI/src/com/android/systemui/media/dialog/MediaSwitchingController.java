@@ -647,17 +647,14 @@ public class MediaSwitchingController
                 mContext.getString(R.string.media_output_group_title_connected_speakers));
     }
 
+    boolean hasGroupPlayback() {
+        return getSelectedMediaDevice().size() > 1;
+    }
+
     @Nullable
     MediaItem getConnectNewDeviceItem() {
-        boolean isSelectedDeviceNotAGroup = getSelectedMediaDevice().size() == 1;
-        if (enableInputRouting()) {
-            // When input routing is enabled, there are expected to be at least 2 total selected
-            // devices: one output device and one input device.
-            isSelectedDeviceNotAGroup = getSelectedMediaDevice().size() <= 2;
-        }
-
         // Attach "Connect a device" item only when current output is not remote and not a group
-        return (!isCurrentConnectedDeviceRemote() && isSelectedDeviceNotAGroup)
+        return (!isCurrentConnectedDeviceRemote() && !hasGroupPlayback())
                 ? MediaItem.createPairNewDeviceMediaItem()
                 : null;
     }
@@ -779,18 +776,7 @@ public class MediaSwitchingController
     }
 
     public List<MediaDevice> getSelectedMediaDevice() {
-        if (!enableInputRouting()) {
-            return mLocalMediaManager.getSelectedMediaDevice();
-        }
-
-        // Add selected input device if input routing is supported.
-        List<MediaDevice> selectedDevices =
-                new ArrayList<>(mLocalMediaManager.getSelectedMediaDevice());
-        MediaDevice selectedInputDevice = mInputRouteManager.getSelectedInputDevice();
-        if (selectedInputDevice != null) {
-            selectedDevices.add(selectedInputDevice);
-        }
-        return selectedDevices;
+        return mLocalMediaManager.getSelectedMediaDevice();
     }
 
     List<MediaDevice> getDeselectableMediaDevice() {

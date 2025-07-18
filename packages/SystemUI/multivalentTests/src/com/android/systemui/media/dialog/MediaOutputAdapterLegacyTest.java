@@ -410,6 +410,7 @@ public class MediaOutputAdapterLegacyTest extends SysuiTestCase {
                 List.of(mMediaDevice1, mMediaDevice2));
         when(mMediaSwitchingController.getDeselectableMediaDevice()).thenReturn(
                 List.of(mMediaDevice1, mMediaDevice2));
+        when(mMediaSwitchingController.hasGroupPlayback()).thenReturn(true);
 
         mMediaOutputAdapter.onBindViewHolder(mViewHolder, 0);
         // Expand the group control.
@@ -1031,7 +1032,10 @@ public class MediaOutputAdapterLegacyTest extends SysuiTestCase {
         when(mMediaSwitchingController.getSelectableMediaDevice()).thenReturn(selectedDevices);
         when(mMediaSwitchingController.getSelectedMediaDevice()).thenReturn(selectedDevices);
         when(mMediaSwitchingController.getDeselectableMediaDevice()).thenReturn(selectedDevices);
+        when(mMediaSwitchingController.hasGroupPlayback()).thenReturn(true);
 
+        mMediaOutputAdapter = new MediaOutputAdapterLegacy(mMediaSwitchingController, mMainExecutor,
+                mBackgroundExecutor);
         mMediaOutputAdapter.updateItems();
     }
 }

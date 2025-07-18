@@ -62,7 +62,7 @@ class MediaOutputAdapter(controller: MediaSwitchingController) :
             // Avoid grouping broadcast devices because grouped volume control is not available for
             // broadcast session.
             mGroupSelectedItems =
-                mController.selectedMediaDevice.size > 1 &&
+                mController.hasGroupPlayback() &&
                     (!Flags.enableOutputSwitcherPersonalAudioSharing() ||
                         mController.isVolumeControlEnabledForSession)
         }
