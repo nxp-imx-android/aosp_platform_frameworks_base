@@ -1647,7 +1647,13 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
                 // Update new size for the rotated activities, if any.
                 applyFixedRotationForNonTopVisibleActivityIfNeeded();
             }
-            sendNewConfiguration();
+            if (!sendNewConfiguration()) {
+                // If config resolution didn't take place and the new config wasn't sent, at least,
+                // make sure that full config is resolved; this is important cause display change
+                // signals sent to Shell could rely on the new config for the latest updates.
+                updateDisplayOverrideConfigurationLocked(mTmpConfiguration,
+                        null /* starting */, true /* deferResume */);
+            }
         }
 
         mWmService.mWindowPlacerLocked.performSurfacePlacement();
