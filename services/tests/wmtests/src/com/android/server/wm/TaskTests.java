@@ -2272,6 +2272,18 @@ public class TaskTests extends WindowTestsBase {
         assertEquals(1000, task.mMinHeight);
     }
 
+    @Test
+    public void testRemoveImmediately_resetHasBennVisible() {
+        final Task task = getTestTask();
+        task.setHasBeenVisible(true);
+
+        assertTrue(task.getHasBeenVisible());
+
+        task.removeImmediately("test");
+
+        assertFalse(task.getHasBeenVisible());
+    }
+
     private Task getTestTask() {
         return new TaskBuilder(mSupervisor).setCreateActivity(true).build();
     }

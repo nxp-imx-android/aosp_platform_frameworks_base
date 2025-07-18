@@ -2860,6 +2860,8 @@ class Task extends TaskFragment {
 
         super.removeImmediately();
         mDisplayContent = null;
+        // Reset in case the Task may be reused by apps.
+        setHasBeenVisible(false);
         mRemoving = false;
     }
 
