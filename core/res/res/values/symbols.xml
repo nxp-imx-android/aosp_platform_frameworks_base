@@ -6293,6 +6293,11 @@
 
   <java-symbol type="string" name="exit_toast_on_long_press_escape" />
 
+
+  <!-- For partial sleep wake locks. -->
+  <java-symbol type="bool" name="config_allowPartialSleepWakeLocks" />
+  <java-symbol type="integer" name="config_maximumPartialSleepWakeLockDuration" />
+
   <!-- For App Functions -->
   <java-symbol type="array" name="config_appFunctionDeviceSettingsPackages" />
 

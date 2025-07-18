@@ -2795,6 +2795,18 @@
         android:description="@string/permdesc_wakeLock"
         android:protectionLevel="normal|instant" />
 
+    <!--
+    @SystemApi
+    @FlaggedApi(com.android.server.power.feature.flags.Flags.FLAG_PARTIAL_SLEEP_WAKELOCKS)
+    Allows an application to create and acquire partial sleep wakelocks with
+    {@link android.os.PowerManager#newSleeplock}.
+    <p> Protection level: signature
+    @hide
+    -->
+    <permission android:name="android.permission.ACQUIRE_SLEEP_LOCK"
+        android:protectionLevel="signature"
+        android:featureFlag="com.android.server.power.feature.flags.partial_sleep_wakelocks"/>
+
     <!-- Allows using the device's IR transmitter, if available.
          <p>Protection level: normal
     -->
