@@ -65,7 +65,9 @@ constructor(
         userInteractor.selectedUser.mapLatestConflated { userId -> isAvailableAndDisabled(userId) }
 
     val onboardingNeeded: Flow<Boolean> =
-        allOf(onboardingUnseen, summarizationAvailableAndDisabled, notifsPresent)
+        allOf(onboardingUnseen, summarizationAvailableAndDisabled)
+            .distinctUntilChanged()
+            .flatMapLatestConflated { if (it) notifsPresent else flowOf(false) }
             .distinctUntilChanged()
             .flowOn(bgDispatcher)
 
