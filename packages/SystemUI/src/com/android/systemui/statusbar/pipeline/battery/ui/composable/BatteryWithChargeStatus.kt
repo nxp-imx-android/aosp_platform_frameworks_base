@@ -83,7 +83,7 @@ fun BatteryWithChargeStatus(
         val path = viewModel.batteryFrame
 
         val colorProvider = {
-            if (isDarkProvider().isDark(bounds)) {
+            if (isDarkProvider().isDarkTheme(bounds)) {
                 viewModel.colorProfile.dark
             } else {
                 viewModel.colorProfile.light
@@ -105,7 +105,7 @@ fun BatteryWithChargeStatus(
         if (shouldShowPercent(showPercentMode, viewModel)) {
             // The text can just use the Default.fill color, since we don't want to colorize it
             val colorProducer = {
-                if (isDarkProvider().isDark(bounds)) {
+                if (isDarkProvider().isDarkTheme(bounds)) {
                     BatteryColors.DarkTheme.Default.fill
                 } else {
                     BatteryColors.LightTheme.Default.fill
