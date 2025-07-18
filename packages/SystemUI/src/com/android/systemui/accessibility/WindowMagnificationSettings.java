@@ -405,6 +405,7 @@ class WindowMagnificationSettings implements MagnificationGestureDetector.OnGest
     private void showSettingPanel(boolean resetPosition) {
         if (!mIsVisible) {
             updateUIControlsIfNeeded();
+            updatePanelSize(mContext);
             if (Flags.enableMagnificationMagnifyNavBarAndIme()) {
                 updateMagnifyTypingUI();
                 updateMagnifyKeyboardUI();
@@ -674,7 +675,6 @@ class WindowMagnificationSettings implements MagnificationGestureDetector.OnGest
             // CONFIG_LOCALE: language change
             // CONFIG_DENSITY: display size change
             // CONFIG_FONT_WEIGHT_ADJUSTMENT: bold text setting change
-            mParams.width = getPanelWidth(mContext);
             mParams.accessibilityTitle = getAccessibilityWindowTitle(mContext);
 
             boolean showSettingPanelAfterConfigChange = mIsVisible;
@@ -688,6 +688,8 @@ class WindowMagnificationSettings implements MagnificationGestureDetector.OnGest
 
         if ((configDiff & ActivityInfo.CONFIG_ORIENTATION) != 0
                 || (configDiff & ActivityInfo.CONFIG_SCREEN_SIZE) != 0) {
+            // update the panel size to fit in the new screen size
+            updatePanelSize(mContext);
             mDraggableWindowBounds.set(getDraggableWindowBounds());
             // reset the panel position to the right-bottom corner
             mParams.x = mDraggableWindowBounds.right;
@@ -765,22 +767,40 @@ class WindowMagnificationSettings implements MagnificationGestureDetector.OnGest
         mCallback.onEditMagnifierSizeMode(enable);
     }
 
-    private int getPanelWidth(Context context) {
+    private void updatePanelSize(Context context) {
+        final WindowMetrics windowMetrics = mWindowManager.getCurrentWindowMetrics();
+
         // The magnification settings panel width is limited to the minimum of
         //     1. display width
         //     2. panel done button width + left and right padding
         // So we can directly calculate the proper panel width at runtime
-        int displayWidth = mWindowManager.getCurrentWindowMetrics().getBounds().width();
+        int displayWidth = windowMetrics.getBounds().width();
         int contentWidth = context.getResources()
                 .getDimensionPixelSize(R.dimen.magnification_setting_button_done_width);
         int padding = context.getResources()
                 .getDimensionPixelSize(R.dimen.magnification_setting_background_padding);
-        return Math.min(displayWidth, contentWidth + 2 * padding);
+        mParams.width = Math.min(displayWidth, contentWidth + 2 * padding);
+
+        // The magnification settings panel's max height is
+        //   display height - (insets height for system bar / cutout)
+        Rect windowBounds =  new Rect(windowMetrics.getBounds());
+        Insets windowInsets = windowMetrics.getWindowInsets().getInsetsIgnoringVisibility(
+                WindowInsets.Type.systemBars() | WindowInsets.Type.displayCutout());
+        windowBounds.inset(windowInsets);
+        int availableHeight = windowBounds.height();
+        // Re-measure the view with the new screen height constraint
+        int widthMeasureSpec = View.MeasureSpec.makeMeasureSpec(
+                mParams.width, View.MeasureSpec.EXACTLY);
+        int heightMeasureSpec = View.MeasureSpec.makeMeasureSpec(
+                availableHeight, View.MeasureSpec.AT_MOST);
+        mSettingView.measure(widthMeasureSpec, heightMeasureSpec);
+        // Use the newly calculated height as the params height
+        mParams.height = mSettingView.getMeasuredHeight();
     }
 
     private LayoutParams createLayoutParams(Context context) {
         final LayoutParams params = new LayoutParams(
-                getPanelWidth(context),
+                LayoutParams.WRAP_CONTENT,
                 LayoutParams.WRAP_CONTENT,
                 LayoutParams.TYPE_NAVIGATION_BAR_PANEL,
                 LayoutParams.FLAG_NOT_FOCUSABLE,
@@ -795,13 +815,10 @@ class WindowMagnificationSettings implements MagnificationGestureDetector.OnGest
         final WindowMetrics windowMetrics = mWindowManager.getCurrentWindowMetrics();
         final Insets windowInsets = windowMetrics.getWindowInsets().getInsetsIgnoringVisibility(
                 WindowInsets.Type.systemBars() | WindowInsets.Type.displayCutout());
-        // re-measure the settings panel view so that we can get the correct view size to inset
-        int unspecificSpec = View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED);
-        mSettingView.measure(unspecificSpec, unspecificSpec);
-
         final Rect boundRect = new Rect(windowMetrics.getBounds());
         boundRect.offsetTo(0, 0);
-        boundRect.inset(0, 0, mSettingView.getMeasuredWidth(), mSettingView.getMeasuredHeight());
+        // inset with the currently decided panel size
+        boundRect.inset(0, 0, mParams.width, mParams.height);
         boundRect.inset(windowInsets);
         return boundRect;
     }
