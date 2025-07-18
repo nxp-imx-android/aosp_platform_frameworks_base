@@ -474,6 +474,8 @@ class AppHandleController(
     override fun getCaptionWidth(): Int =
         context.resources.getDimensionPixelSize(R.dimen.desktop_mode_fullscreen_decor_caption_width)
 
+    override val occludingElements: List<OccludingElement> = emptyList()
+
     override fun releaseViews(
         wct: WindowContainerTransaction,
         t: SurfaceControl.Transaction

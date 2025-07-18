@@ -6258,8 +6258,10 @@
   <!-- Enable OEMs to support scale up anim across tasks.-->
   <java-symbol type="bool" name="config_enableCrossTaskScaleUpAnimation" />
 
-  <!-- Default height of desktop view header for freeform tasks on launch. -->
+  <!-- Default height of desktop view's header for desktop tasks on launch. -->
   <java-symbol type="dimen" name="desktop_view_default_header_height" />
+  <!-- Default height of desktop view's large header for desktop tasks on launch. -->
+  <java-symbol type="dimen" name="desktop_view_default_large_header_height" />
 
   <!-- Enable OEMs to support different frr notification target component activity -->
   <java-symbol type="string" name="config_fingerprintFrrTargetComponent" />

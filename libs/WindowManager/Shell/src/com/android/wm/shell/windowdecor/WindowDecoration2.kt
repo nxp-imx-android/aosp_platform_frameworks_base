@@ -505,7 +505,6 @@ abstract class WindowDecoration2<T>(
     data class RelayoutParams(
         val runningTaskInfo: RunningTaskInfo,
         val captionType: CaptionController.CaptionType,
-        val occludingCaptionElements: MutableList<OccludingCaptionElement> = ArrayList(),
         val inputFeatures: Int = 0,
         val isInsetSource: Boolean = true,
         @InsetsSource.Flags val insetSourceFlags: Int = 0,
@@ -530,19 +529,6 @@ abstract class WindowDecoration2<T>(
         /** Returns true if caption input should fall through to the app. */
         fun hasInputFeatureSpy(): Boolean {
             return (inputFeatures and LayoutParams.INPUT_FEATURE_SPY) != 0
-        }
-
-        /**
-         * Describes elements within the caption bar that could occlude app content, and should be
-         * sent as bounding rectangles to the insets system.
-         */
-        data class OccludingCaptionElement(
-            val widthResId: Int,
-            val alignment: Alignment
-        ) {
-            enum class Alignment {
-                START, END
-            }
         }
     }
 

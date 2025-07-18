@@ -27,6 +27,7 @@ import android.graphics.drawable.shapes.RoundRectShape
  * Represents drawable insets, specifying the number of pixels to inset a drawable from its bounds.
  */
 data class DrawableInsets(val l: Int, val t: Int, val r: Int, val b: Int) {
+    constructor(insets: Int) : this(insets, insets, insets, insets)
     constructor(vertical: Int = 0, horizontal: Int = 0) :
             this(horizontal, vertical, horizontal, vertical)
     constructor(vertical: Int = 0, horizontalLeft: Int = 0, horizontalRight: Int = 0) :
