@@ -82,12 +82,16 @@ class BubblesNavBarGestureTracker {
 
     private void stopInternal() {
         if (mInputEventReceiver != null) {
-            mInputEventReceiver.dispose();
+            // Clear the field before calling dispose() to guard against re-entrant calls from it
+            InputEventReceiver receiver = mInputEventReceiver;
             mInputEventReceiver = null;
+            receiver.dispose();
         }
         if (mInputMonitor != null) {
-            mInputMonitor.dispose();
+            // Clear the field before calling dispose() to guard against re-entrant calls from it
+            InputMonitor monitor = mInputMonitor;
             mInputMonitor = null;
+            monitor.dispose();
         }
     }
 
