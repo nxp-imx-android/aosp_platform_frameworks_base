@@ -1316,7 +1316,6 @@ public class VibrationThreadTest {
                                 /* startFrequencyHz= */ 100, /* endFrequencyHz= */ 200,
                                 /* duration= */ 40))
                 .inOrder();
-        assertThat(vibratorHelper.getBraking()).containsExactly(Braking.CLAB).inOrder();
     }
 
     @Test

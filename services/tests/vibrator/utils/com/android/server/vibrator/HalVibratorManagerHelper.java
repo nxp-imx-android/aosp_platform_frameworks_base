@@ -18,16 +18,25 @@ package com.android.server.vibrator;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.hardware.vibrator.ActivePwle;
+import android.hardware.vibrator.CompositeEffect;
+import android.hardware.vibrator.CompositePwleV2;
 import android.hardware.vibrator.IVibrationSession;
 import android.hardware.vibrator.IVibrator;
 import android.hardware.vibrator.IVibratorCallback;
 import android.hardware.vibrator.IVibratorManager;
+import android.hardware.vibrator.PrimitivePwle;
+import android.hardware.vibrator.PwleV2Primitive;
 import android.hardware.vibrator.VibrationSessionConfig;
 import android.os.Binder;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
 import android.os.RemoteException;
+import android.os.VibrationEffect;
+import android.os.vibrator.PrimitiveSegment;
+import android.os.vibrator.PwlePoint;
+import android.os.vibrator.RampSegment;
 
 import com.android.server.vibrator.VintfHalVibratorManager.DefaultHalVibratorManager;
 import com.android.server.vibrator.VintfHalVibratorManager.LegacyHalVibratorManager;
@@ -325,13 +334,82 @@ public class HalVibratorManagerHelper {
         }
 
         @Override
-        public boolean vibrateWithCallback(int vibratorId, long vibrationId, long stepId,
+        public int vibrateWithCallback(int vibratorId, long vibrationId, long stepId,
                 int durationMs) {
-            boolean success = mVibratorHelpers.get(vibratorId).vibrate(durationMs);
-            if (success) {
+            int result = mVibratorHelpers.get(vibratorId).vibrate(durationMs);
+            if (result > 0) {
                 scheduleCallback(vibratorId, vibrationId, stepId, durationMs);
             }
-            return success;
+            return result;
+        }
+
+        @Override
+        public int vibrateWithCallback(int vibratorId, long vibrationId, long stepId,
+                android.hardware.vibrator.VendorEffect effect) {
+            VibrationEffect.VendorEffect vendorEffect = new VibrationEffect.VendorEffect(
+                    effect.vendorData, effect.strength, effect.scale, effect.vendorScale);
+            int result = mVibratorHelpers.get(vibratorId).vibrate(vendorEffect);
+            if (result > 0) {
+                scheduleCallback(vibratorId, vibrationId, stepId, result);
+            }
+            return result;
+        }
+
+        @Override
+        public int vibrateWithCallback(int vibratorId, long vibrationId, long stepId, int effectId,
+                int effectStrength) {
+            int result = mVibratorHelpers.get(vibratorId).vibrate(effectId, (byte) effectStrength);
+            if (result > 0) {
+                scheduleCallback(vibratorId, vibrationId, stepId, result);
+            }
+            return result;
+        }
+
+        @Override
+        public int vibrateWithCallback(int vibratorId, long vibrationId, long stepId,
+                CompositeEffect[] effects) {
+            PrimitiveSegment[] primitives = new PrimitiveSegment[effects.length];
+            for (int i = 0; i < primitives.length; i++) {
+                primitives[i] = new PrimitiveSegment(effects[i].primitive, effects[i].scale,
+                        effects[i].delayMs);
+            }
+            int result = mVibratorHelpers.get(vibratorId).vibrate(primitives);
+            if (result > 0) {
+                scheduleCallback(vibratorId, vibrationId, stepId, result);
+            }
+            return result;
+        }
+
+        @Override
+        public int vibrateWithCallback(int vibratorId, long vibrationId, long stepId,
+                PrimitivePwle[] effects) {
+            RampSegment[] primitives = new RampSegment[effects.length];
+            for (int i = 0; i < primitives.length; i++) {
+                ActivePwle pwle = effects[i].getActive();
+                primitives[i] = new RampSegment(pwle.startAmplitude, pwle.endAmplitude,
+                        pwle.startFrequency, pwle.endFrequency, pwle.duration);
+            }
+            int result = mVibratorHelpers.get(vibratorId).vibrate(primitives);
+            if (result > 0) {
+                scheduleCallback(vibratorId, vibrationId, stepId, result);
+            }
+            return result;
+        }
+
+        @Override
+        public int vibrateWithCallback(int vibratorId, long vibrationId, long stepId,
+                CompositePwleV2 composite) {
+            PwlePoint[] points = new PwlePoint[composite.pwlePrimitives.length];
+            for (int i = 0; i < points.length; i++) {
+                PwleV2Primitive primitive = composite.pwlePrimitives[i];
+                points[i] = new PwlePoint(primitive.amplitude, primitive.frequencyHz,
+                        primitive.timeMillis);
+            }
+            int result = mVibratorHelpers.get(vibratorId).vibrate(points);
+            if (result > 0) {
+                scheduleCallback(vibratorId, vibrationId, stepId, result);
+            }
+            return result;
         }
 
         private void scheduleCallback(int vibratorId, long vibrationId, long stepId,
