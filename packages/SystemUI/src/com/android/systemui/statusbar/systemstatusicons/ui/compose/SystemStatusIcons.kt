@@ -53,7 +53,7 @@ fun SystemStatusIcons(
 ) {
     val context = LocalContext.current
     var bounds by remember { mutableStateOf(Rect()) }
-    val color = if (isDark.isDark(bounds)) Color.White else Color.Black
+    val color = if (isDark.isDarkTheme(bounds)) Color.White else Color.Black
     CompositionLocalProvider(LocalContentColor provides color) {
         val viewModel =
             rememberViewModel(traceName = "SystemStatusIcons") { viewModelFactory.create(context) }
