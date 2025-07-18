@@ -284,6 +284,9 @@ class DesktopRepository(
     /** Returns all the ids of all desks in all displays. */
     fun getAllDeskIds(): Set<Int> = desktopData.desksSequence().map { desk -> desk.deskId }.toSet()
 
+    /** Returns all the desks in all displays. */
+    @VisibleForTesting fun getAllDesks(): List<Desk> = desktopData.desksSequence().toList()
+
     /** Returns the id of the default desk in the given display. */
     fun getDefaultDeskId(displayId: Int): Int? = getDefaultDesk(displayId)?.deskId
 
@@ -361,8 +364,12 @@ class DesktopRepository(
         )
         val desk = checkNotNull(desktopData.getDesk(deskId)) { "Did not find desk: $deskId" }
         desk.leftTiledTaskId = taskId
-        if (DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_PERSISTENCE.isTrue()) {
-            updatePersistentRepositoryForDesk(deskId)
+        if (DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_PERSISTENCE.isTrue) {
+            if (DesktopExperienceFlags.REPOSITORY_BASED_PERSISTENCE.isTrue) {
+                updatePersistentRepository(displayId)
+            } else {
+                updatePersistentRepositoryForDesk(deskId)
+            }
         }
     }
 
@@ -375,8 +382,12 @@ class DesktopRepository(
         )
         val desk = checkNotNull(desktopData.getDesk(deskId)) { "Did not find desk: $deskId" }
         desk.rightTiledTaskId = taskId
-        if (DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_PERSISTENCE.isTrue()) {
-            updatePersistentRepositoryForDesk(deskId)
+        if (DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_PERSISTENCE.isTrue) {
+            if (DesktopExperienceFlags.REPOSITORY_BASED_PERSISTENCE.isTrue) {
+                updatePersistentRepository(displayId)
+            } else {
+                updatePersistentRepositoryForDesk(deskId)
+            }
         }
     }
 
@@ -397,8 +408,12 @@ class DesktopRepository(
         val desk = desktopData.getDesk(deskId)
         if (desk == null) return
         desk.leftTiledTaskId = null
-        if (DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_PERSISTENCE.isTrue()) {
-            updatePersistentRepositoryForDesk(deskId)
+        if (DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_PERSISTENCE.isTrue) {
+            if (DesktopExperienceFlags.REPOSITORY_BASED_PERSISTENCE.isTrue) {
+                updatePersistentRepository(displayId)
+            } else {
+                updatePersistentRepositoryForDesk(deskId)
+            }
         }
     }
 
@@ -407,8 +422,12 @@ class DesktopRepository(
         val desk = desktopData.getDesk(deskId)
         if (desk == null) return
         desk.rightTiledTaskId = null
-        if (DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_PERSISTENCE.isTrue()) {
-            updatePersistentRepositoryForDesk(deskId)
+        if (DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_PERSISTENCE.isTrue) {
+            if (DesktopExperienceFlags.REPOSITORY_BASED_PERSISTENCE.isTrue) {
+                updatePersistentRepository(displayId)
+            } else {
+                updatePersistentRepositoryForDesk(deskId)
+            }
         }
     }
 
@@ -781,7 +800,7 @@ class DesktopRepository(
                 desk.visibleTasks,
             )
             notifyVisibleTaskListeners(displayId, newCount)
-            if (DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_PERSISTENCE.isTrue()) {
+            if (DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_PERSISTENCE.isTrue) {
                 updatePersistentRepository(displayId)
             }
         }
@@ -913,7 +932,7 @@ class DesktopRepository(
         }
         desk.freeformTasksInZOrder.add(0, taskId)
         if (!bounds.isEmpty) desk.boundsByTaskId[taskId] = bounds
-        if (DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_PERSISTENCE.isTrue()) {
+        if (DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_PERSISTENCE.isTrue) {
             // TODO: can probably just update the desk.
             updatePersistentRepository(displayId)
         }
@@ -947,8 +966,12 @@ class DesktopRepository(
         desktopData.getDesk(deskId)?.minimizedTasks?.add(taskId)
             ?: logD("Minimize task: No active desk found for task: taskId=%d", taskId)
         updateTaskInDesk(displayId, deskId, taskId, isVisible = false, taskBounds = null)
-        if (DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_PERSISTENCE.isTrue()) {
-            updatePersistentRepositoryForDesk(deskId)
+        if (DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_PERSISTENCE.isTrue) {
+            if (DesktopExperienceFlags.REPOSITORY_BASED_PERSISTENCE.isTrue) {
+                updatePersistentRepository(displayId)
+            } else {
+                updatePersistentRepositoryForDesk(deskId)
+            }
         }
     }
 
@@ -1024,7 +1047,11 @@ class DesktopRepository(
         removeActiveTaskFromDesk(deskId = deskId, taskId = taskId)
         removeVisibleTaskFromDesk(deskId = deskId, taskId = taskId)
         if (DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_PERSISTENCE.isTrue) {
-            updatePersistentRepositoryForDesk(desk.deskId)
+            if (DesktopExperienceFlags.REPOSITORY_BASED_PERSISTENCE.isTrue) {
+                updatePersistentRepository(desk.displayId)
+            } else {
+                updatePersistentRepositoryForDesk(deskId)
+            }
         }
     }
 
@@ -1061,7 +1088,11 @@ class DesktopRepository(
             DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_PERSISTENCE.isTrue &&
                 DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue
         ) {
-            removeDeskFromPersistentRepository(desk)
+            if (DesktopExperienceFlags.REPOSITORY_BASED_PERSISTENCE.isTrue) {
+                updatePersistentRepository(desk.displayId)
+            } else {
+                removeDeskFromPersistentRepository(desk)
+            }
         }
         return activeTasks
     }
@@ -1131,19 +1162,47 @@ class DesktopRepository(
             }
             .toTypedArray()
 
-    /** TODO: b/389960283 - consider updating only the changing desks. */
     private fun updatePersistentRepository(displayId: Int) {
-        val desks = desktopData.desksSequence(displayId).map { desk -> desk.deepCopy() }.toList()
-        mainCoroutineScope.launch {
-            desks.forEach { desk -> updatePersistentRepositoryForDesk(desk) }
+        logD("updatePersistentRepository: displayId=%d", displayId)
+        if (displayId == INVALID_DISPLAY) return
+
+        val desks = desktopData.desksSequence(displayId).map { it.deepCopy() }.toList()
+        if (desks.isEmpty()) {
+            logD("updatePersistentRepository: no desks found for displayId=%d, skipping", displayId)
+            return
+        }
+        if (DesktopExperienceFlags.REPOSITORY_BASED_PERSISTENCE.isTrue) {
+            mainCoroutineScope.launch {
+                try {
+                    logD("updatePersistentRepository user=%d display=%d", userId, displayId)
+                    persistentRepository.addOrUpdateRepository(userId, desks)
+                } catch (exception: Exception) {
+                    logE(
+                        "An exception occurred while updating the persistent repository \n%s",
+                        exception.stackTrace,
+                    )
+                }
+            }
+        } else {
+            mainCoroutineScope.launch {
+                desks.forEach { desk -> updatePersistentRepositoryForDesk(desk) }
+            }
         }
     }
 
+    @Deprecated(
+        "Use updatePersistentRepository() instead.",
+        ReplaceWith("updatePersistentRepository()"),
+    )
     private fun updatePersistentRepositoryForDesk(deskId: Int) {
         val desk = desktopData.getDesk(deskId)?.deepCopy() ?: return
         mainCoroutineScope.launch { updatePersistentRepositoryForDesk(desk) }
     }
 
+    @Deprecated(
+        "Use updatePersistentRepository() instead.",
+        ReplaceWith("updatePersistentRepository()"),
+    )
     private suspend fun updatePersistentRepositoryForDesk(desk: Desk) {
         try {
             persistentRepository.addOrUpdateDesktop(
@@ -1163,6 +1222,10 @@ class DesktopRepository(
         }
     }
 
+    @Deprecated(
+        "Use updatePersistentRepository() instead.",
+        ReplaceWith("updatePersistentRepository()"),
+    )
     private fun removeDeskFromPersistentRepository(desk: Desk) {
         mainCoroutineScope.launch {
             try {

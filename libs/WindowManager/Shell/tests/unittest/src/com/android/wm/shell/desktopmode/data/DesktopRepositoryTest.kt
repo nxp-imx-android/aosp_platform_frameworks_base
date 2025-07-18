@@ -392,6 +392,7 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
 
     @Test
     @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_PERSISTENCE)
+    @DisableFlags(Flags.FLAG_REPOSITORY_BASED_PERSISTENCE)
     fun updateTaskVisibility_multipleTasks_persistsVisibleTasks() =
         runTest(StandardTestDispatcher()) {
             repo.updateTask(
@@ -432,6 +433,34 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
         }
 
     @Test
+    @EnableFlags(
+        Flags.FLAG_ENABLE_DESKTOP_WINDOWING_PERSISTENCE,
+        Flags.FLAG_REPOSITORY_BASED_PERSISTENCE,
+    )
+    fun updateTaskVisibility_multipleTasks_persistsAllOfRepository() =
+        runTest(StandardTestDispatcher()) {
+            repo.updateTask(
+                DEFAULT_DISPLAY,
+                taskId = 1,
+                isVisible = true,
+                taskBounds = TEST_TASK_BOUNDS,
+            )
+            val expectedDesks1 = repo.getAllDesks().map { it.deepCopy() }
+            repo.updateTask(
+                DEFAULT_DISPLAY,
+                taskId = 2,
+                isVisible = true,
+                taskBounds = TEST_TASK_BOUNDS,
+            )
+            val expectedDesks2 = repo.getAllDesks()
+
+            inOrder(persistentRepository).run {
+                verify(persistentRepository).addOrUpdateRepository(DEFAULT_USER_ID, expectedDesks1)
+                verify(persistentRepository).addOrUpdateRepository(DEFAULT_USER_ID, expectedDesks2)
+            }
+        }
+
+    @Test
     fun isOnlyVisibleNonClosingTask_singleVisibleClosingTask() {
         repo.updateTask(
             DEFAULT_DISPLAY,
@@ -452,16 +481,16 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
 
     @Test
     @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_PERSISTENCE)
+    @DisableFlags(Flags.FLAG_REPOSITORY_BASED_PERSISTENCE)
     fun leftTiledTask_updatedInRepoAndPersisted() {
         runTest(StandardTestDispatcher()) {
             repo.addLeftTiledTaskToDesk(
                 displayId = DEFAULT_DISPLAY,
                 taskId = 1,
-                // TODO(b/414589444): Swap with deskId when multi desk is more stable.
-                deskId = DEFAULT_DISPLAY,
+                deskId = DEFAULT_DESKTOP_ID,
             )
 
-            assertThat(repo.getLeftTiledTask(deskId = DEFAULT_DISPLAY)).isEqualTo(1)
+            assertThat(repo.getLeftTiledTask(deskId = DEFAULT_DESKTOP_ID)).isEqualTo(1)
             verify(persistentRepository)
                 .addOrUpdateDesktop(
                     DEFAULT_USER_ID,
@@ -473,23 +502,59 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
                     rightTiledTask = null,
                 )
 
-            repo.removeLeftTiledTaskFromDesk(displayId = DEFAULT_DISPLAY, deskId = DEFAULT_DISPLAY)
+            repo.removeLeftTiledTaskFromDesk(
+                displayId = DEFAULT_DISPLAY,
+                deskId = DEFAULT_DESKTOP_ID,
+            )
 
-            assertThat(repo.getLeftTiledTask(deskId = DEFAULT_DISPLAY)).isNull()
+            assertThat(repo.getLeftTiledTask(deskId = DEFAULT_DESKTOP_ID)).isNull()
+        }
+    }
+
+    @Test
+    @EnableFlags(
+        Flags.FLAG_ENABLE_DESKTOP_WINDOWING_PERSISTENCE,
+        Flags.FLAG_REPOSITORY_BASED_PERSISTENCE,
+    )
+    fun leftTiledTask_addAndRemove_updatedInRepoAndPersisted() {
+        runTest(StandardTestDispatcher()) {
+            repo.addLeftTiledTaskToDesk(
+                displayId = DEFAULT_DISPLAY,
+                taskId = 1,
+                deskId = DEFAULT_DESKTOP_ID,
+            )
+
+            val expectedDesksAfterAdding = repo.getAllDesks().map { it.deepCopy() }
+            assertThat(repo.getLeftTiledTask(deskId = DEFAULT_DESKTOP_ID)).isEqualTo(1)
+
+            repo.removeLeftTiledTaskFromDesk(
+                displayId = DEFAULT_DISPLAY,
+                deskId = DEFAULT_DESKTOP_ID,
+            )
+
+            val expectedDesksAfterRemoval = repo.getAllDesks().map { it.deepCopy() }
+            assertThat(repo.getLeftTiledTask(deskId = DEFAULT_DESKTOP_ID)).isNull()
+            inOrder(persistentRepository).run {
+                verify(persistentRepository)
+                    .addOrUpdateRepository(DEFAULT_USER_ID, expectedDesksAfterAdding)
+                verify(persistentRepository)
+                    .addOrUpdateRepository(DEFAULT_USER_ID, expectedDesksAfterRemoval)
+            }
         }
     }
 
     @Test
     @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_PERSISTENCE)
+    @DisableFlags(Flags.FLAG_REPOSITORY_BASED_PERSISTENCE)
     fun rightTiledTask_updatedInRepoAndPersisted() {
         runTest(StandardTestDispatcher()) {
             repo.addRightTiledTaskToDesk(
                 displayId = DEFAULT_DISPLAY,
                 taskId = 1,
-                deskId = DEFAULT_DISPLAY,
+                deskId = DEFAULT_DESKTOP_ID,
             )
 
-            assertThat(repo.getRightTiledTask(deskId = DEFAULT_DISPLAY)).isEqualTo(1)
+            assertThat(repo.getRightTiledTask(deskId = DEFAULT_DESKTOP_ID)).isEqualTo(1)
             verify(persistentRepository)
                 .addOrUpdateDesktop(
                     DEFAULT_USER_ID,
@@ -501,8 +566,43 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
                     rightTiledTask = 1,
                 )
 
-            repo.removeRightTiledTaskFromDesk(displayId = DEFAULT_DISPLAY, deskId = DEFAULT_DISPLAY)
-            assertThat(repo.getRightTiledTask(deskId = DEFAULT_DISPLAY)).isNull()
+            repo.removeRightTiledTaskFromDesk(
+                displayId = DEFAULT_DISPLAY,
+                deskId = DEFAULT_DESKTOP_ID,
+            )
+            assertThat(repo.getRightTiledTask(deskId = DEFAULT_DESKTOP_ID)).isNull()
+        }
+    }
+
+    @Test
+    @EnableFlags(
+        Flags.FLAG_ENABLE_DESKTOP_WINDOWING_PERSISTENCE,
+        Flags.FLAG_REPOSITORY_BASED_PERSISTENCE,
+    )
+    fun rightTiledTask_addAndRemove_updatedInRepoAndPersisted() {
+        runTest(StandardTestDispatcher()) {
+            repo.addRightTiledTaskToDesk(
+                displayId = DEFAULT_DISPLAY,
+                taskId = 1,
+                deskId = DEFAULT_DESKTOP_ID,
+            )
+
+            val expectedDesksAfterAdding = repo.getAllDesks().map { it.deepCopy() }
+            assertThat(repo.getRightTiledTask(deskId = DEFAULT_DESKTOP_ID)).isEqualTo(1)
+
+            repo.removeRightTiledTaskFromDesk(
+                displayId = DEFAULT_DISPLAY,
+                deskId = DEFAULT_DESKTOP_ID,
+            )
+
+            val expectedDesksAfterRemoval = repo.getAllDesks().map { it.deepCopy() }
+            assertThat(repo.getRightTiledTask(deskId = DEFAULT_DESKTOP_ID)).isNull()
+            inOrder(persistentRepository).run {
+                verify(persistentRepository)
+                    .addOrUpdateRepository(DEFAULT_USER_ID, expectedDesksAfterAdding)
+                verify(persistentRepository)
+                    .addOrUpdateRepository(DEFAULT_USER_ID, expectedDesksAfterRemoval)
+            }
         }
     }
 
@@ -911,6 +1011,7 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
 
     @Test
     @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_PERSISTENCE)
+    @DisableFlags(Flags.FLAG_REPOSITORY_BASED_PERSISTENCE)
     fun addTask_noTaskExists_persistenceEnabled_addsToTop() =
         runTest(StandardTestDispatcher()) {
             repo.addTask(DEFAULT_DISPLAY, 5, isVisible = true, taskBounds = TEST_TASK_BOUNDS)
@@ -954,6 +1055,37 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
         }
 
     @Test
+    @EnableFlags(
+        Flags.FLAG_ENABLE_DESKTOP_WINDOWING_PERSISTENCE,
+        Flags.FLAG_REPOSITORY_BASED_PERSISTENCE,
+    )
+    fun addTask_noTaskExists_persistenceEnabled_addsTasksToTop() =
+        runTest(StandardTestDispatcher()) {
+            val taskIdsToAdd = listOf(5, 6, 7)
+            val expectedDesksInOrder =
+                taskIdsToAdd.map { taskId ->
+                    repo.addTask(
+                        DEFAULT_DISPLAY,
+                        taskId,
+                        isVisible = true,
+                        taskBounds = TEST_TASK_BOUNDS,
+                    )
+                    repo.getAllDesks().map { it.deepCopy() }
+                }
+
+            val tasks = repo.getFreeformTasksInZOrder(DEFAULT_DISPLAY)
+            assertThat(tasks).containsExactly(7, 6, 5).inOrder()
+            inOrder(persistentRepository).run {
+                verify(persistentRepository)
+                    .addOrUpdateRepository(DEFAULT_USER_ID, expectedDesksInOrder[0])
+                verify(persistentRepository)
+                    .addOrUpdateRepository(DEFAULT_USER_ID, expectedDesksInOrder[1])
+                verify(persistentRepository)
+                    .addOrUpdateRepository(DEFAULT_USER_ID, expectedDesksInOrder[2])
+            }
+        }
+
+    @Test
     fun addTask_alreadyExists_movesToTop() {
         repo.addTask(DEFAULT_DISPLAY, 5, isVisible = true, taskBounds = TEST_TASK_BOUNDS)
         repo.addTask(DEFAULT_DISPLAY, 6, isVisible = true, taskBounds = TEST_TASK_BOUNDS)
@@ -980,6 +1112,7 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
 
     @Test
     @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_PERSISTENCE)
+    @DisableFlags(Flags.FLAG_REPOSITORY_BASED_PERSISTENCE)
     fun minimizeTask_persistenceEnabled_taskIsPersistedAsMinimized() =
         runTest(StandardTestDispatcher()) {
             repo.addTask(DEFAULT_DISPLAY, 5, isVisible = true, taskBounds = TEST_TASK_BOUNDS)
@@ -1036,6 +1169,47 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
         }
 
     @Test
+    @EnableFlags(
+        Flags.FLAG_ENABLE_DESKTOP_WINDOWING_PERSISTENCE,
+        Flags.FLAG_REPOSITORY_BASED_PERSISTENCE,
+    )
+    fun minimizeTask_repositoryBasedPersistenceEnabled_taskIsPersistedAsMinimized() =
+        runTest(StandardTestDispatcher()) {
+            val taskIdsToAdd = listOf(5, 6, 7)
+            var expectedDesksInOrder =
+                taskIdsToAdd
+                    .map { taskId ->
+                        repo.addTask(
+                            DEFAULT_DISPLAY,
+                            taskId,
+                            isVisible = true,
+                            taskBounds = TEST_TASK_BOUNDS,
+                        )
+                        repo.getAllDesks().map { it.deepCopy() }
+                    }
+                    .toMutableList()
+
+            repo.minimizeTask(displayId = 0, taskId = 6)
+
+            val tasks = repo.getFreeformTasksInZOrder(DEFAULT_DISPLAY)
+            assertThat(tasks).containsExactly(7, 6, 5).inOrder()
+            assertThat(repo.isMinimizedTask(taskId = 6)).isTrue()
+
+            expectedDesksInOrder.add(repo.getAllDesks().map { it.deepCopy() })
+            inOrder(persistentRepository).run {
+                verify(persistentRepository)
+                    .addOrUpdateRepository(DEFAULT_USER_ID, expectedDesksInOrder[0])
+                verify(persistentRepository)
+                    .addOrUpdateRepository(DEFAULT_USER_ID, expectedDesksInOrder[1])
+                verify(persistentRepository)
+                    .addOrUpdateRepository(DEFAULT_USER_ID, expectedDesksInOrder[2])
+                // Triggers once for updateTask and once for minimize task
+                verify(persistentRepository, times(2))
+                    .addOrUpdateRepository(DEFAULT_USER_ID, expectedDesksInOrder[3])
+            }
+        }
+
+    @Test
     fun addTask_taskIsUnminimized_noop() {
         repo.addTask(DEFAULT_DISPLAY, 5, isVisible = true, taskBounds = TEST_TASK_BOUNDS)
         repo.addTask(DEFAULT_DISPLAY, 6, isVisible = true, taskBounds = TEST_TASK_BOUNDS)
@@ -1058,6 +1232,7 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
 
     @Test
     @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_PERSISTENCE)
+    @DisableFlags(Flags.FLAG_REPOSITORY_BASED_PERSISTENCE)
     fun removeTask_invalidDisplay_persistenceEnabled_removesTaskFromFreeformTasks() {
         runTest(StandardTestDispatcher()) {
             repo.addTask(
@@ -1104,6 +1279,7 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
 
     @Test
     @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_PERSISTENCE)
+    @DisableFlags(Flags.FLAG_REPOSITORY_BASED_PERSISTENCE)
     fun removeTask_validDisplay_persistenceEnabled_removesTaskFromFreeformTasks() {
         runTest(StandardTestDispatcher()) {
             repo.addTask(
@@ -1135,6 +1311,33 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
                     leftTiledTask = null,
                     rightTiledTask = null,
                 )
+        }
+    }
+
+    @Test
+    @EnableFlags(
+        Flags.FLAG_ENABLE_DESKTOP_WINDOWING_PERSISTENCE,
+        Flags.FLAG_REPOSITORY_BASED_PERSISTENCE,
+    )
+    fun removeTask_validDisplay_repositoryBasedPersistenceEnabled_removesTaskFromFreeformTasks() {
+        runTest(StandardTestDispatcher()) {
+            repo.addTask(
+                DEFAULT_DISPLAY,
+                taskId = 1,
+                isVisible = true,
+                taskBounds = TEST_TASK_BOUNDS,
+            )
+            val expectedDesksAfterAddingTask = repo.getAllDesks().map { it.deepCopy() }
+
+            repo.removeTask(taskId = 1)
+            val expectedDesksAfterRemovingTask = repo.getAllDesks().map { it.deepCopy() }
+
+            inOrder(persistentRepository).run {
+                verify(persistentRepository)
+                    .addOrUpdateRepository(DEFAULT_USER_ID, expectedDesksAfterAddingTask)
+                verify(persistentRepository)
+                    .addOrUpdateRepository(DEFAULT_USER_ID, expectedDesksAfterRemovingTask)
+            }
         }
     }
 
@@ -1573,6 +1776,7 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
         Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
         Flags.FLAG_ENABLE_DESKTOP_WINDOWING_PERSISTENCE,
     )
+    @DisableFlags(Flags.FLAG_REPOSITORY_BASED_PERSISTENCE)
     fun removeDesk_removesFromPersistence() =
         runTest(StandardTestDispatcher()) {
             repo.addDesk(displayId = DEFAULT_DISPLAY, deskId = 2)
@@ -1580,6 +1784,23 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
             repo.removeDesk(deskId = 2)
 
             verify(persistentRepository).removeDesktop(DEFAULT_USER_ID, 2)
+        }
+
+    @Test
+    @EnableFlags(
+        Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
+        Flags.FLAG_ENABLE_DESKTOP_WINDOWING_PERSISTENCE,
+        Flags.FLAG_REPOSITORY_BASED_PERSISTENCE,
+    )
+    fun removeDesk_repositoryBasedPersistenceEnabled_removesFromPersistence() =
+        runTest(StandardTestDispatcher()) {
+            repo.addDesk(displayId = DEFAULT_DISPLAY, deskId = 2)
+
+            repo.removeDesk(deskId = 2)
+            val expectedDesksAfterRemovingDesk = repo.getAllDesks().map { it.deepCopy() }
+
+            verify(persistentRepository)
+                .addOrUpdateRepository(DEFAULT_USER_ID, expectedDesksAfterRemovingDesk)
         }
 
     @Test
@@ -1939,6 +2160,7 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
         Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
         Flags.FLAG_ENABLE_DESKTOP_WINDOWING_PERSISTENCE,
     )
+    @DisableFlags(Flags.FLAG_REPOSITORY_BASED_PERSISTENCE)
     fun removeTaskFromDesk_updatesPersistence() = runTest {
         repo.addDesk(DEFAULT_DISPLAY, deskId = 6)
         repo.addTaskToDesk(

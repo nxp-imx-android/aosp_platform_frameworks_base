@@ -27,6 +27,7 @@ import androidx.datastore.core.Serializer
 import androidx.datastore.core.handlers.ReplaceFileCorruptionHandler
 import androidx.datastore.dataStoreFile
 import com.android.framework.protobuf.InvalidProtocolBufferException
+import com.android.wm.shell.desktopmode.data.Desk
 import com.android.wm.shell.shared.annotations.ShellBackgroundThread
 import java.io.IOException
 import java.io.InputStream
@@ -107,7 +108,54 @@ class DesktopPersistentRepository(private val dataStore: DataStore<DesktopPersis
             null
         }
 
+    suspend fun addOrUpdateRepository(userId: Int, desks: List<Desk>) {
+        try {
+            dataStore.updateData { persistentRepositories: DesktopPersistentRepositories ->
+                val currentRepository =
+                    persistentRepositories.getDesktopRepoByUserOrDefault(
+                        userId,
+                        DesktopRepositoryState.getDefaultInstance(),
+                    )
+
+                val currentUserRepoBuilder = currentRepository.toBuilder()
+                desks.forEach { desk ->
+                    if (isEmptyDesk(desk.freeformTasksInZOrder)) {
+                        currentUserRepoBuilder.removeDesktop(desk.deskId)
+                    } else {
+                        val updatedDesktop =
+                            getDesktop(currentRepository, desk.deskId, desk.displayId)
+                                .toBuilder()
+                                .updateTaskStates(
+                                    desk.visibleTasks,
+                                    desk.minimizedTasks,
+                                    desk.freeformTasksInZOrder,
+                                    desk.leftTiledTaskId,
+                                    desk.rightTiledTaskId,
+                                )
+                                .updateZOrder(desk.freeformTasksInZOrder)
+                                .build()
+
+                        currentUserRepoBuilder.putDesktop(desk.deskId, updatedDesktop)
+                    }
+                }
+
+                persistentRepositories
+                    .toBuilder()
+                    .putDesktopRepoByUser(userId, currentUserRepoBuilder.build())
+                    .build()
+            }
+        } catch (exception: Exception) {
+            Log.e(
+                TAG,
+                "Error in updating desktop mode related data, data is " +
+                    "stored in a file named $DESKTOP_REPOSITORIES_DATASTORE_FILE",
+                exception,
+            )
+        }
+    }
+
     /** Adds or updates a desktop stored in the datastore */
+    @Deprecated("Use addOrUpdateRepository() instead.", ReplaceWith("addOrUpdateRepository()"))
     suspend fun addOrUpdateDesktop(
         userId: Int,
         desktopId: Int = 0,
@@ -169,6 +217,7 @@ class DesktopPersistentRepository(private val dataStore: DataStore<DesktopPersis
     }
 
     /** Removes the desktop from the persistent repository. */
+    @Deprecated("Use addOrUpdateRepository() instead.", ReplaceWith("addOrUpdateRepository()"))
     suspend fun removeDesktop(userId: Int, desktopId: Int) {
         try {
             dataStore.updateData { persistentRepositories: DesktopPersistentRepositories ->
@@ -212,11 +261,15 @@ class DesktopPersistentRepository(private val dataStore: DataStore<DesktopPersis
         }
     }
 
-    private fun getDesktop(currentRepository: DesktopRepositoryState, desktopId: Int): Desktop =
+    private fun getDesktop(
+        currentRepository: DesktopRepositoryState,
+        desktopId: Int,
+        displayId: Int = DEFAULT_DISPLAY,
+    ): Desktop =
         // If there are no desktops set up, create one on the default display
         currentRepository.getDesktopOrDefault(
             desktopId,
-            Desktop.newBuilder().setDesktopId(desktopId).setDisplayId(DEFAULT_DISPLAY).build(),
+            Desktop.newBuilder().setDesktopId(desktopId).setDisplayId(displayId).build(),
         )
 
     private fun isEmptyDesk(freeformTasksInZOrder: ArrayList<Int>) = freeformTasksInZOrder.isEmpty()

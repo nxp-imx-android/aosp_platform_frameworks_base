@@ -30,6 +30,7 @@ import androidx.test.platform.app.InstrumentationRegistry
 import com.android.window.flags.Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE
 import com.android.window.flags.Flags.FLAG_ENABLE_DESKTOP_WINDOWING_PERSISTENCE
 import com.android.wm.shell.ShellTestCase
+import com.android.wm.shell.desktopmode.data.Desk
 import com.google.common.truth.Truth.assertThat
 import java.io.File
 import kotlinx.coroutines.CoroutineScope
@@ -37,7 +38,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.StandardTestDispatcher
+import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import org.junit.After
@@ -289,6 +292,183 @@ class DesktopPersistentRepositoryTest : ShellTestCase() {
 
             val actualDesktop = datastoreRepository.readDesktop(DEFAULT_USER_ID, DEFAULT_DESKTOP_ID)
             assertThat(actualDesktop?.tasksByTaskIdMap).isNull()
+        }
+    }
+
+    @Test
+    fun addOrUpdateRepository_addNewTaskToDesktop() {
+        runTest(StandardTestDispatcher()) {
+            // Create a basic repository state
+            val task = createDesktopTask(1)
+            val desktopPersistentRepositories = createRepositoryWithOneDesk(ArrayList(listOf(task)))
+            testDatastore.updateData { desktopPersistentRepositories }
+            // Create a new state to be initialized
+            val visibleTasks = ArraySet(listOf(1, 2))
+            val minimizedTasks = ArraySet<Int>()
+            val freeformTasksInZOrder = ArrayList(listOf(2, 1))
+            val desk =
+                Desk(
+                    deskId = DEFAULT_DESKTOP_ID,
+                    displayId = DEFAULT_DISPLAY,
+                    visibleTasks = visibleTasks,
+                    minimizedTasks = minimizedTasks,
+                    freeformTasksInZOrder = freeformTasksInZOrder,
+                )
+
+            // Update with new state
+            datastoreRepository.addOrUpdateRepository(
+                userId = DEFAULT_USER_ID,
+                desks = listOf(desk),
+            )
+
+            val actualDesktop = datastoreRepository.readDesktop(DEFAULT_USER_ID, DEFAULT_DESKTOP_ID)
+            assertThat(actualDesktop?.tasksByTaskIdMap).hasSize(2)
+            assertThat(actualDesktop?.getZOrderedTasks(0)).isEqualTo(2)
+        }
+    }
+
+    @Test
+    fun addOrUpdateRepository_tiledTasks_addsTiledTasksToDesktop() {
+        runTest(StandardTestDispatcher()) {
+            // Create a basic repository state
+            val task = createDesktopTask(1)
+            val desktopPersistentRepositories = createRepositoryWithOneDesk(ArrayList(listOf(task)))
+            testDatastore.updateData { desktopPersistentRepositories }
+            // Create a new state to be initialized
+            val visibleTasks = ArraySet(listOf(1, 2))
+            val freeformTasksInZOrder = ArrayList(listOf(1, 2))
+            val desk =
+                Desk(
+                    deskId = DEFAULT_DESKTOP_ID,
+                    displayId = DEFAULT_DISPLAY,
+                    visibleTasks = visibleTasks,
+                    freeformTasksInZOrder = freeformTasksInZOrder,
+                    leftTiledTaskId = 1,
+                )
+
+            // Update with new state
+            datastoreRepository.addOrUpdateRepository(
+                userId = DEFAULT_USER_ID,
+                desks = listOf(desk),
+            )
+
+            var actualDesktop = datastoreRepository.readDesktop(DEFAULT_USER_ID, DEFAULT_DESKTOP_ID)
+            assertThat(actualDesktop?.tasksByTaskIdMap?.get(1)?.desktopTaskTilingState)
+                .isEqualTo(DesktopTaskTilingState.LEFT)
+            assertThat(actualDesktop?.tasksByTaskIdMap?.get(2)?.desktopTaskTilingState)
+                .isEqualTo(DesktopTaskTilingState.NONE)
+
+            desk.rightTiledTaskId = 2
+            desk.leftTiledTaskId = null
+
+            // Update with new state
+            datastoreRepository.addOrUpdateRepository(
+                userId = DEFAULT_USER_ID,
+                desks = listOf(desk),
+            )
+
+            actualDesktop = datastoreRepository.readDesktop(DEFAULT_USER_ID, DEFAULT_DESKTOP_ID)
+            assertThat(actualDesktop?.tasksByTaskIdMap?.get(1)?.desktopTaskTilingState)
+                .isEqualTo(DesktopTaskTilingState.NONE)
+            assertThat(actualDesktop?.tasksByTaskIdMap?.get(2)?.desktopTaskTilingState)
+                .isEqualTo(DesktopTaskTilingState.RIGHT)
+        }
+    }
+
+    @Test
+    fun addOrUpdateRepository_changeTaskStateToMinimize_taskStateIsMinimized() {
+        runTest(StandardTestDispatcher()) {
+            val task = createDesktopTask(1)
+            val desktopPersistentRepositories = createRepositoryWithOneDesk(ArrayList(listOf(task)))
+            testDatastore.updateData { desktopPersistentRepositories }
+            // Create a new state to be initialized
+            val visibleTasks = ArraySet(listOf(1))
+            val minimizedTasks = ArraySet(listOf(1))
+            val freeformTasksInZOrder = ArrayList(listOf(1))
+            val desk =
+                Desk(
+                    deskId = DEFAULT_DESKTOP_ID,
+                    displayId = DEFAULT_DISPLAY,
+                    visibleTasks = visibleTasks,
+                    minimizedTasks = minimizedTasks,
+                    freeformTasksInZOrder = freeformTasksInZOrder,
+                )
+
+            // Update with new state
+            datastoreRepository.addOrUpdateRepository(
+                userId = DEFAULT_USER_ID,
+                desks = listOf(desk),
+            )
+
+            val actualDesktop = datastoreRepository.readDesktop(DEFAULT_USER_ID, DEFAULT_DESKTOP_ID)
+            assertThat(actualDesktop?.tasksByTaskIdMap?.get(task.taskId)?.desktopTaskState)
+                .isEqualTo(DesktopTaskState.MINIMIZED)
+        }
+    }
+
+    @Test
+    fun addOrUpdateRepository_removeMultipleDesks_removesAllDesks() {
+        runTest(StandardTestDispatcher()) {
+            val task = createDesktopTask(1)
+            val desktopPersistentRepositories = createRepositoryWithOneDesk(ArrayList(listOf(task)))
+            testDatastore.updateData { desktopPersistentRepositories }
+            // Create a new state to be initialized
+            val visibleTasks = ArraySet(listOf(1))
+            val minimizedTasks = ArraySet(listOf(1))
+            val freeformTasksInZOrder = ArrayList(listOf(1))
+            val desk1 =
+                Desk(
+                    deskId = DEFAULT_DESKTOP_ID,
+                    displayId = DEFAULT_DISPLAY,
+                    visibleTasks = visibleTasks,
+                    minimizedTasks = minimizedTasks,
+                    freeformTasksInZOrder = freeformTasksInZOrder,
+                )
+            val desk2 =
+                Desk(
+                    deskId = DEFAULT_DESKTOP_ID + 1,
+                    displayId = DEFAULT_DISPLAY,
+                    visibleTasks = visibleTasks,
+                    minimizedTasks = minimizedTasks,
+                    freeformTasksInZOrder = freeformTasksInZOrder,
+                )
+            val desk3 =
+                Desk(
+                    deskId = DEFAULT_DESKTOP_ID + 3,
+                    displayId = DEFAULT_DISPLAY,
+                    visibleTasks = visibleTasks,
+                    minimizedTasks = minimizedTasks,
+                    freeformTasksInZOrder = freeformTasksInZOrder,
+                )
+            datastoreRepository.addOrUpdateRepository(
+                userId = DEFAULT_USER_ID,
+                desks = listOf(desk1, desk2, desk3),
+            )
+
+            // Back to back removals
+            launch {
+                datastoreRepository.addOrUpdateRepository(
+                    userId = DEFAULT_USER_ID,
+                    desks = listOf(desk1, desk3),
+                )
+            }
+            launch {
+                datastoreRepository.addOrUpdateRepository(
+                    userId = DEFAULT_USER_ID,
+                    desks = listOf(desk3),
+                )
+            }
+            launch {
+                datastoreRepository.addOrUpdateRepository(
+                    userId = DEFAULT_USER_ID,
+                    desks = listOf(),
+                )
+            }
+            advanceUntilIdle()
+
+            val actualDesktop = datastoreRepository.readDesktop(DEFAULT_USER_ID, DEFAULT_DESKTOP_ID)
+            assertThat(actualDesktop?.tasksByTaskIdMap?.get(task.taskId)?.desktopTaskState)
+                .isEqualTo(DesktopTaskState.MINIMIZED)
         }
     }
 
