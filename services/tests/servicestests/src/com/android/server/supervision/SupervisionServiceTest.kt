@@ -24,8 +24,10 @@ import android.app.admin.DevicePolicyManagerInternal
 import android.app.role.OnRoleHoldersChangedListener
 import android.app.role.RoleManager
 import android.app.supervision.ISupervisionListener
+import android.app.supervision.SupervisionManager
 import android.app.supervision.SupervisionRecoveryInfo
 import android.app.supervision.SupervisionRecoveryInfo.STATE_PENDING
+import android.app.supervision.SupervisionRecoveryInfo.STATE_VERIFIED
 import android.app.supervision.flags.Flags
 import android.content.BroadcastReceiver
 import android.content.ComponentName
@@ -48,6 +50,7 @@ import android.os.PersistableBundle
 import android.os.UserHandle
 import android.os.UserHandle.MIN_SECONDARY_USER_ID
 import android.os.UserHandle.USER_SYSTEM
+import android.os.UserManager
 import android.platform.test.annotations.EnableFlags
 import android.platform.test.annotations.RequiresFlagsEnabled
 import android.platform.test.flag.junit.DeviceFlagsValueProvider
@@ -84,6 +87,7 @@ import org.mockito.kotlin.clearInvocations
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
+import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 
@@ -316,6 +320,11 @@ class SupervisionServiceTest {
                 eq(USER_ID),
                 argThat { toSet() == supervisionRoleHolders.values.toSet() },
             )
+        verify(mockDpmInternal)
+            .removeLocalPoliciesForSystemEntities(
+                eq(USER_ID),
+                eq(SupervisionService.SYSTEM_ENTITIES),
+            )
         for (packageName in supervisionRoleHolders.values) {
             verify(mockPackageManagerInternal)
                 .unsuspendForSuspendingPackage(eq(packageName), eq(USER_ID), eq(USER_ID))
@@ -329,6 +338,62 @@ class SupervisionServiceTest {
 
         assertThat(service.isSupervisionEnabledForUser(USER_ID)).isTrue()
         verify(mockDpmInternal, never()).removePoliciesForAdmins(any(), any())
+        verify(mockDpmInternal, never()).removeLocalPoliciesForSystemEntities(any(), any())
+    }
+
+    @Test
+    fun setSupervisionEnabledForUser_hasVerifiedRecoveryInfo_restrictsFactoryResetWhenEnabling() {
+        assertThat(service.isSupervisionEnabledForUser(USER_ID)).isFalse()
+
+        setSupervisionRecoveryInfo(state = STATE_VERIFIED)
+        setSupervisionEnabledForUser(USER_ID, true)
+
+        assertThat(service.isSupervisionEnabledForUser(USER_ID)).isTrue()
+        verify(mockDpmInternal)
+            .setUserRestrictionForUser(
+                SupervisionManager.SUPERVISION_SYSTEM_ENTITY,
+                UserManager.DISALLOW_FACTORY_RESET,
+                /* enabled= */ true,
+                USER_ID,
+            )
+    }
+
+    @Test
+    fun setSupervisionEnabledForUser_hasPendingRecoveryInfo_doesNotRestrictFactoryReset() {
+        assertThat(service.isSupervisionEnabledForUser(USER_ID)).isFalse()
+
+        setSupervisionRecoveryInfo(state = STATE_PENDING)
+        setSupervisionEnabledForUser(USER_ID, true)
+
+        assertThat(service.isSupervisionEnabledForUser(USER_ID)).isTrue()
+        verify(mockDpmInternal)
+            .setUserRestrictionForUser(
+                SupervisionManager.SUPERVISION_SYSTEM_ENTITY,
+                UserManager.DISALLOW_FACTORY_RESET,
+                /* enabled= */ false,
+                USER_ID,
+            )
+    }
+
+    @Test
+    fun setSupervisionEnabledForUser_hasSupervisionRoleHolders_doesNotRestrictFactoryReset() {
+        assertThat(service.isSupervisionEnabledForUser(USER_ID)).isFalse()
+        injector.setRoleHoldersAsUser(
+            RoleManager.ROLE_SUPERVISION,
+            UserHandle.of(USER_ID),
+            listOf("com.example.supervisionapp1"),
+        )
+        setSupervisionRecoveryInfo(state = STATE_VERIFIED)
+        setSupervisionEnabledForUser(USER_ID, true)
+
+        assertThat(service.isSupervisionEnabledForUser(USER_ID)).isTrue()
+        verify(mockDpmInternal)
+            .setUserRestrictionForUser(
+                SupervisionManager.SUPERVISION_SYSTEM_ENTITY,
+                UserManager.DISALLOW_FACTORY_RESET,
+                /* enabled= */ false,
+                USER_ID,
+            )
     }
 
     @Test
@@ -438,6 +503,7 @@ class SupervisionServiceTest {
     @Test
     @RequiresFlagsEnabled(Flags.FLAG_PERSISTENT_SUPERVISION_SETTINGS)
     fun setSupervisionRecoveryInfo() {
+        addDefaultAndTestUsers()
         assertThat(service.supervisionRecoveryInfo).isNull()
 
         val recoveryInfo =
@@ -455,6 +521,64 @@ class SupervisionServiceTest {
         assertThat(service.supervisionRecoveryInfo.accountData.getString("id"))
             .isEqualTo(recoveryInfo.accountData.getString("id"))
         assertThat(service.supervisionRecoveryInfo.state).isEqualTo(recoveryInfo.state)
+    }
+
+    @Test
+    @RequiresFlagsEnabled(Flags.FLAG_PERSISTENT_SUPERVISION_SETTINGS)
+    fun setSupervisionRecoveryInfo_supervisionEnabled_restrictsFactoryReset() {
+        addDefaultAndTestUsers()
+        setSupervisionEnabledForUser(USER_ID, true)
+        setSupervisionRecoveryInfo(state = STATE_VERIFIED)
+
+        verify(mockDpmInternal)
+            .setUserRestrictionForUser(
+                SupervisionManager.SUPERVISION_SYSTEM_ENTITY,
+                UserManager.DISALLOW_FACTORY_RESET,
+                /* enabled= */ true,
+                USER_ID,
+            )
+    }
+
+    @Test
+    @RequiresFlagsEnabled(Flags.FLAG_PERSISTENT_SUPERVISION_SETTINGS)
+    fun setSupervisionRecoveryInfo_toNull_supervisionEnabled_unrestrictsFactoryReset() {
+        addDefaultAndTestUsers()
+        setSupervisionEnabledForUser(USER_ID, true)
+
+        service.setSupervisionRecoveryInfo(null)
+
+        // Once for the initial setSupervisionEnabledForUser, once for the
+        // setSupervisionRecoveryInfo(null).
+        verify(mockDpmInternal, times(2))
+            .setUserRestrictionForUser(
+                SupervisionManager.SUPERVISION_SYSTEM_ENTITY,
+                UserManager.DISALLOW_FACTORY_RESET,
+                /* enabled= */ false,
+                USER_ID,
+            )
+    }
+
+    @Test
+    @RequiresFlagsEnabled(Flags.FLAG_PERSISTENT_SUPERVISION_SETTINGS)
+    fun setSupervisionRecoveryInfo_supervisionEnabled_hasSupervisionRoleHolders_doesNotRestrictFactoryReset() {
+        addDefaultAndTestUsers()
+        setSupervisionEnabledForUser(USER_ID, true)
+        injector.setRoleHoldersAsUser(
+            RoleManager.ROLE_SUPERVISION,
+            UserHandle.of(USER_ID),
+            listOf("com.example.supervisionapp1"),
+        )
+        setSupervisionRecoveryInfo(state = STATE_VERIFIED)
+
+        // Once for the initial setSupervisionEnabledForUser, and again for the
+        // setSupervisionRecoveryInfo.
+        verify(mockDpmInternal, times(2))
+            .setUserRestrictionForUser(
+                SupervisionManager.SUPERVISION_SYSTEM_ENTITY,
+                UserManager.DISALLOW_FACTORY_RESET,
+                /* enabled= */ false,
+                USER_ID,
+            )
     }
 
     @Test
@@ -565,6 +689,14 @@ class SupervisionServiceTest {
         injector.awaitServiceThreadIdle()
 
         verifySupervisionListeners(userId, enabled, listeners)
+    }
+
+    private fun setSupervisionRecoveryInfo(
+        @SupervisionRecoveryInfo.State state: Int,
+        accountData: PersistableBundle? = null,
+    ) {
+        val recoveryInfo = SupervisionRecoveryInfo("email", "default", state, accountData)
+        service.setSupervisionRecoveryInfo(recoveryInfo)
     }
 
     private fun verifySupervisionListeners(
