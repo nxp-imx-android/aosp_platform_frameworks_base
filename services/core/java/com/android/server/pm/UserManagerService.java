@@ -2537,7 +2537,7 @@ public class UserManagerService extends IUserManager.Stub {
         if (user.isGuest()) {
             return getGuestName();
         }
-        return null;
+        return getUnnamedUserName();
     }
 
     /** Returns whether the given user type is one of the FULL user types. */
@@ -5410,6 +5410,11 @@ public class UserManagerService extends IUserManager.Stub {
         return mContext.getString(com.android.internal.R.string.guest_name);
     }
 
+    @VisibleForTesting
+    String getUnnamedUserName() {
+        return mContext.getString(com.android.internal.R.string.unnamed_user_name);
+    }
+
     String getHeadlessSystemUserName() {
         return mContext.getString(com.android.internal.R.string.headless_system_user_name);
     }
@@ -8045,6 +8050,7 @@ public class UserManagerService extends IUserManager.Stub {
         pw.println("  User version: " + mUserVersion);
         pw.println("  Owner name: " + getOwnerName());
         pw.println("  Guest name: " + getGuestName());
+        pw.println("  Unnamed user name: " + getUnnamedUserName());
         if (DBG_ALLOCATION) {
             pw.println("  System user allocations: " + mUser0Allocations.get());
         }
