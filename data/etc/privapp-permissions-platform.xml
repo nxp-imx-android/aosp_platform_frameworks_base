@@ -722,4 +722,8 @@ applications that come with the platform
     <privapp-permissions package="com.android.wm.shell">
         <permission name="android.permission.SUBSCRIBE_TO_KEYGUARD_LOCKED_STATE" />
     </privapp-permissions>
+
+    <privapp-permissions package="com.android.phone">
+        <permission name="android.permission.NETWORK_FACTORY" />
+    </privapp-permissions>
 </permissions>
