@@ -232,6 +232,13 @@ flag {
 }
 
 flag {
+    name: "enable_connected_displays_wallpaper_presentations"
+    namespace: "lse_desktop_experience"
+    description: "Enables wallpaper presentations shown in connected displays."
+    bug: "429395688"
+}
+
+flag {
     name: "enable_connected_displays_window_drag"
     namespace: "lse_desktop_experience"
     description: "Enable window drag between connected displays."
