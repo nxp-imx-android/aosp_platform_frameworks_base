@@ -78,9 +78,7 @@ public class PolicyEnforcementInfo {
     }
 
     private static boolean isSystemAuthority(EnforcingAdmin enforcingAdmin) {
-        // System authorities are implemented as UnknownAuthority.
-        // TODO(b/414733570): Add SystemAuthority class to represent system authority properly.
-        return enforcingAdmin.getAuthority() instanceof UnknownAuthority;
+        return enforcingAdmin.getAuthority() instanceof SystemAuthority;
     }
 
     private static boolean isSupervisionRole(EnforcingAdmin enforcingAdmin) {
