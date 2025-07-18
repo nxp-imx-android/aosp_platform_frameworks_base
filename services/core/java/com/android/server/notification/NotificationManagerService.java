@@ -187,7 +187,6 @@ import static com.android.server.am.PendingIntentRecord.FLAG_ACTIVITY_SENDER;
 import static com.android.server.am.PendingIntentRecord.FLAG_BROADCAST_SENDER;
 import static com.android.server.am.PendingIntentRecord.FLAG_SERVICE_SENDER;
 import static com.android.server.bitmapoffload.BitmapOffload.BITMAP_SOURCE_NOTIFICATIONS;
-import static com.android.server.notification.Flags.expireBitmaps;
 import static com.android.server.notification.Flags.managedServicesConcurrentMultiuser;
 import static com.android.server.notification.NotificationManagerService.NotificationPostEvent.NOTIFICATION_POSTED_CACHED;
 import static com.android.server.policy.PhoneWindowManager.TOAST_WINDOW_ANIM_BUFFER;
@@ -3539,18 +3538,7 @@ public class NotificationManagerService extends SystemService {
             mPreferencesHelper.updateFixedImportance(mUm.getUsers());
             mPreferencesHelper.migrateNotificationPermissions(mUm.getUsers());
         } else if (phase == SystemService.PHASE_BOOT_COMPLETED) {
-            if (mFlagResolver.isEnabled(NotificationFlags.DEBUG_SHORT_BITMAP_DURATION)) {
-                new Thread(() -> {
-                    while (true) {
-                        try {
-                            Thread.sleep(5000);
-                        } catch (InterruptedException e) { }
-                        mInternalService.removeBitmaps();
-                    }
-                }).start();
-            } else if (expireBitmaps()) {
-                NotificationBitmapJobService.scheduleJob(getContext());
-            }
+            NotificationBitmapJobService.scheduleJob(getContext());
         }
     }
 
@@ -8548,15 +8536,7 @@ public class NotificationManagerService extends SystemService {
                     // System#currentTimeMillis when posted
                     final long timePostedMs = r.getSbn().getPostTime();
                     final long timeNowMs = System.currentTimeMillis();
-
-                    final long bitmapDuration;
-                    if (mFlagResolver.isEnabled(NotificationFlags.DEBUG_SHORT_BITMAP_DURATION)) {
-                        bitmapDuration = Duration.ofSeconds(5).toMillis();
-                    } else {
-                        bitmapDuration = BITMAP_DURATION.toMillis();
-                    }
-
-                    if (isBitmapExpired(timePostedMs, timeNowMs, bitmapDuration)) {
+                    if (isBitmapExpired(timePostedMs, timeNowMs, BITMAP_DURATION.toMillis())) {
                         removeBitmapAndRepost(r);
                     }
                 }
