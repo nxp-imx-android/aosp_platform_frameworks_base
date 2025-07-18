@@ -1441,30 +1441,15 @@ public class PropertyInvalidatedCache<Query, Result> {
     /**
      * Throw if the current process is not allowed to use test APIs.
      */
-    @android.ravenwood.annotation.RavenwoodReplace
     private static void throwIfNotTest() {
-        final ActivityThread activityThread = ActivityThread.currentActivityThread();
-        if (activityThread == null) {
-            // Only tests can reach here.
-            return;
+        try {
+            ActivityThread.throwIfNotInstrumenting();
+        } catch (IllegalStateException e) {
+            if (Flags.enforcePicTestmodeProtocol()) {
+                throw e;
+            }
+            // else swallow the exception
         }
-        final Instrumentation instrumentation = activityThread.getInstrumentation();
-        if (instrumentation == null) {
-            // Only tests can reach here.
-            return;
-        }
-        if (instrumentation.isInstrumenting()) {
-            return;
-        }
-        if (Flags.enforcePicTestmodeProtocol()) {
-            throw new IllegalStateException("Test-only API called not from a test.");
-        }
-    }
-
-    /**
-     * Do not throw if running under ravenwood.
-     */
-    private static void throwIfNotTest$ravenwood() {
     }
 
     /**
