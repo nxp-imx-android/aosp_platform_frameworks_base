@@ -242,17 +242,24 @@ public class DisplayArea<T extends WindowContainer> extends WindowContainer<T> {
      * @return {@value true} if we need to ignore the orientation in input.
      */
     boolean shouldIgnoreOrientationRequest(@ScreenOrientation int orientation) {
-        // We always respect orientation request for ActivityInfo.SCREEN_ORIENTATION_LOCKED
-        // ActivityInfo.SCREEN_ORIENTATION_NOSENSOR.
-        // Main use case why this is important is Camera apps that rely on those
-        // properties to ensure that they will be able to determine Camera preview
-        // orientation correctly
         if (orientation == ActivityInfo.SCREEN_ORIENTATION_LOCKED
-                || orientation == ActivityInfo.SCREEN_ORIENTATION_NOSENSOR) {
+                || orientation == ActivityInfo.SCREEN_ORIENTATION_NOSENSOR
+                || orientation == ActivityInfo.SCREEN_ORIENTATION_SENSOR
+                || orientation == ActivityInfo.SCREEN_ORIENTATION_FULL_SENSOR) {
+            // Respect "locked" and "nosensor" for the compatibility of camera apps.
+            // Respect "sensor" because the main purpose of ignoring is to avoid changing
+            // display rotation by fixed-orientation request.
             return false;
+        } else if (getIgnoreOrientationRequest()) {
+            if (orientation == SCREEN_ORIENTATION_UNSET
+                    || orientation == SCREEN_ORIENTATION_UNSPECIFIED
+                    || orientation == ActivityInfo.SCREEN_ORIENTATION_USER) {
+                // The behavior of non-fixed orientation is the same as ignoring.
+                return true;
+            }
+            return !shouldRespectOrientationRequestDueToPerAppOverride();
         }
-        return getIgnoreOrientationRequest()
-                && !shouldRespectOrientationRequestDueToPerAppOverride();
+        return false;
     }
 
     private boolean shouldRespectOrientationRequestDueToPerAppOverride() {
