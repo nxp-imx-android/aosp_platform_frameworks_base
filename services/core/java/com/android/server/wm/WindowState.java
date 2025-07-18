@@ -4928,7 +4928,6 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
     }
 
     void startAnimation(Animation anim) {
-
         // If we are an inset provider, all our animations are driven by the inset client.
         if (mControllableInsetProvider != null) {
             return;
@@ -4938,7 +4937,7 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
         anim.initialize(mWindowFrames.mFrame.width(), mWindowFrames.mFrame.height(),
                 displayInfo.appWidth, displayInfo.appHeight);
         anim.restrictDuration(MAX_ANIMATION_DURATION);
-        anim.scaleCurrentDuration(mWmService.getWindowAnimationScaleLocked());
+        anim.scaleCurrentDuration(mDisplayContent.getWindowAnimationScaleLocked());
         final Point position = new Point();
         transformFrameToSurfacePosition(mWindowFrames.mFrame.left, mWindowFrames.mFrame.top,
                 position);
@@ -5627,15 +5626,15 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
     private final class MoveAnimationSpec implements AnimationSpec {
 
         private final long mDuration;
-        private Interpolator mInterpolator;
-        private Point mFrom = new Point();
-        private Point mTo = new Point();
+        private final Interpolator mInterpolator;
+        private final Point mFrom = new Point();
+        private final Point mTo = new Point();
 
         private MoveAnimationSpec(int fromX, int fromY, int toX, int toY) {
             final Animation anim = AnimationUtils.loadAnimation(mContext,
                     com.android.internal.R.anim.window_move_from_decor);
             mDuration = (long)
-                    (anim.computeDurationHint() * mWmService.getWindowAnimationScaleLocked());
+                    (anim.computeDurationHint() * mDisplayContent.getWindowAnimationScaleLocked());
             mInterpolator = anim.getInterpolator();
             mFrom.set(fromX, fromY);
             mTo.set(toX, toY);

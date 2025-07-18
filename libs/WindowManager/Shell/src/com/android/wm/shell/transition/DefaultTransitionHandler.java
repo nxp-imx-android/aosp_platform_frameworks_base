@@ -347,7 +347,8 @@ public class DefaultTransitionHandler implements Transitions.TransitionHandler {
         }
 
         // Early check if the transition doesn't warrant an animation.
-        if (TransitionUtil.isAllNoAnimation(info) || TransitionUtil.isAllOrderOnly(info)
+        if (isAnimationsDisabledForAnyDisplay(info) || TransitionUtil.isAllNoAnimation(info)
+                || TransitionUtil.isAllOrderOnly(info)
                 || (info.getFlags() & WindowManager.TRANSIT_FLAG_INVISIBLE) != 0) {
             startTransaction.apply();
             // As a contract, finishTransaction should only be applied in Transitions#onFinish
@@ -664,6 +665,15 @@ public class DefaultTransitionHandler implements Transitions.TransitionHandler {
             onAnimFinish.run();
         }
         return true;
+    }
+
+    private boolean isAnimationsDisabledForAnyDisplay(@NonNull TransitionInfo info) {
+        boolean disabled = false;
+        int rootCount = info.getRootCount();
+        for (int i = 0; i < rootCount; i++) {
+            disabled |= mDisplayController.isAnimationsDisabled(info.getRoot(i).getDisplayId());
+        }
+        return disabled;
     }
 
     private void addBackgroundColor(@NonNull TransitionInfo info,
@@ -1032,7 +1042,7 @@ public class DefaultTransitionHandler implements Transitions.TransitionHandler {
 
     /**
      * Returns {@code true} if the default transition handler can run the override animation.
-     * @see #loadAnimation(TransitionInfo, TransitionInfo.Change, int, boolean)
+     * @see #loadAnimation(int, TransitionInfo, TransitionInfo.Change, int, boolean)
      */
     public static boolean isSupportedOverrideAnimation(
             @NonNull TransitionInfo.AnimationOptions options) {

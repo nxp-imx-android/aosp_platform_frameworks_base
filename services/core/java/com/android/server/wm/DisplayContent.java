@@ -252,6 +252,7 @@ import android.window.SystemPerformanceHinter;
 import android.window.TransitionRequestInfo;
 
 import com.android.internal.R;
+import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.logging.MetricsLogger;
 import com.android.internal.logging.nano.MetricsProto.MetricsEvent;
@@ -651,6 +652,13 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
 
     /** Caches the value whether told display manager that we have content. */
     private boolean mLastHasContent;
+
+    /**
+     * Indicates if animations should be disabled on this {@link DisplayContent} ({@code false}
+     * by default).
+     */
+    @GuardedBy("mWmService.mGlobalLock")
+    private boolean mAnimationsDisabled = false;
 
     /**
      * The input method window for this display.
@@ -1297,6 +1305,36 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
 
         configureSurfaces(t);
         scheduleAnimation();
+    }
+
+    void setAnimationsDisabledLocked(boolean disabled) {
+        if (mAnimationsDisabled != disabled) {
+            mAnimationsDisabled = disabled;
+            mWmService.mDisplayNotificationController
+                    .dispatchDisplayAnimationsDisabledChanged(mDisplayId, mAnimationsDisabled);
+        }
+    }
+
+    /**
+     * @return the window animation scale for this {@link DisplayContent}.
+     */
+    float getWindowAnimationScaleLocked() {
+        if (mWmService.isAnimationsDisabledLocked() || mAnimationsDisabled) {
+            return 0;
+        }
+
+        return mWmService.getAnimationScaleLocked(WindowManagerService.WINDOW_ANIMATION_SCALE);
+    }
+
+    /**
+     * @return the transition animation scale for this {@link DisplayContent}.
+     */
+    float getTransitionAnimationScaleLocked() {
+        if (mWmService.isAnimationsDisabledLocked() || mAnimationsDisabled) {
+            return 0;
+        }
+
+        return mWmService.getAnimationScaleLocked(WindowManagerService.TRANSITION_ANIMATION_SCALE);
     }
 
     /**
@@ -5560,6 +5598,8 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
             reconfigureDisplayLocked();
             onRequestedOverrideConfigurationChanged(getRequestedOverrideConfiguration());
             mWmService.mDisplayNotificationController.dispatchDisplayAdded(this);
+            mWmService.mDisplayNotificationController
+                    .dispatchDisplayAnimationsDisabledChanged(mDisplayId, mAnimationsDisabled);
             // Attach the SystemUiContext to this DisplayContent to get latest configuration.
             // Note that the SystemUiContext will be removed automatically if this DisplayContent
             // is detached.

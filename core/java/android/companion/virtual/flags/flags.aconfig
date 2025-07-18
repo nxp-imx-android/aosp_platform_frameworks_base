@@ -256,3 +256,13 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "enable_animations_per_display"
+    namespace: "virtual_devices"
+    description: "Enable/disable window and transition animations per display"
+    bug: "427437362"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}

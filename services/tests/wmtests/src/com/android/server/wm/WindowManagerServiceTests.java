@@ -189,6 +189,34 @@ public class WindowManagerServiceTests extends WindowTestsBase {
     }
 
     @Test
+    @EnableFlags(android.companion.virtualdevice.flags.Flags.FLAG_ENABLE_ANIMATIONS_PER_DISPLAY)
+    public void testEnableDisableAnimationsForDisplay() {
+        // Set non-zero default animation scales for window and transition animations.
+        float defaultScale = 5f;
+        mWm.setAnimationScale(WindowManagerService.WINDOW_ANIMATION_SCALE, defaultScale);
+        mWm.setAnimationScale(WindowManagerService.TRANSITION_ANIMATION_SCALE, defaultScale);
+        DisplayContent newDisplay = createNewDisplay();
+        assertEquals(defaultScale, newDisplay.getWindowAnimationScaleLocked(), 0.1f /* delta */);
+        assertEquals(defaultScale, newDisplay.getTransitionAnimationScaleLocked(),
+                0.1f /* delta */);
+
+        // Disable animations for the new display.
+        mWm.setAnimationsDisabledForDisplay(newDisplay.mDisplayId, true /* disabled */);
+        assertEquals(0, newDisplay.getWindowAnimationScaleLocked(), 0.1f /* delta */);
+        assertEquals(0, newDisplay.getTransitionAnimationScaleLocked(), 0.1f /* delta */);
+        assertEquals(defaultScale, mDisplayContent.getTransitionAnimationScaleLocked(),
+                0.1f /* delta */);
+        assertEquals(defaultScale, mDisplayContent.getTransitionAnimationScaleLocked(),
+                0.1f /* delta */);
+
+        // Re-enable animations for the new display.
+        mWm.setAnimationsDisabledForDisplay(newDisplay.mDisplayId, false /* disabled */);
+        assertEquals(defaultScale, newDisplay.getWindowAnimationScaleLocked(), 0.1f /* delta */);
+        assertEquals(defaultScale, newDisplay.getTransitionAnimationScaleLocked(),
+                0.1f /* delta */);
+    }
+
+    @Test
     public void testAddWindowToken() {
         IBinder token = mock(IBinder.class);
         mWm.addWindowToken(token, TYPE_TOAST, mDisplayContent.getDisplayId(), null /* options */);
