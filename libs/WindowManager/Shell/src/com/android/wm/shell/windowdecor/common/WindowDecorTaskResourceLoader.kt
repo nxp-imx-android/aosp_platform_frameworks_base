@@ -39,16 +39,14 @@ import com.android.wm.shell.sysui.ShellCommandHandler
 import com.android.wm.shell.sysui.ShellController
 import com.android.wm.shell.sysui.ShellInit
 import com.android.wm.shell.sysui.UserChangeListener
+import java.io.PrintWriter
+import kotlin.coroutines.suspendCoroutine
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.io.PrintWriter
-import kotlin.coroutines.suspendCoroutine
 
-/**
- * A utility and cache for window decoration UI resources.
- */
+/** A utility and cache for window decoration UI resources. */
 @ShellMainThread
 class WindowDecorTaskResourceLoader(
     shellInit: ShellInit,
@@ -88,26 +86,24 @@ class WindowDecorTaskResourceLoader(
     )
 
     /**
-     * A map of task -> resources to prevent unnecessary binder calls and resource loading
-     * when multiple window decorations need the same resources, for example, the app name or icon
-     * used in the header and menu.
+     * A map of task -> resources to prevent unnecessary binder calls and resource loading when
+     * multiple window decorations need the same resources, for example, the app name or icon used
+     * in the header and menu.
      */
-    @VisibleForTesting
-    val taskToResourceCache = HashMap<Int, AppResources>()
+    @VisibleForTesting val taskToResourceCache = HashMap<Int, AppResources>()
     /**
-     * Keeps track of existing tasks with a window decoration. Useful to verify that requests to
-     * get resources occur within the lifecycle of a window decoration, otherwise it'd be possible
-     * to load a tasks resources into memory without a future signal to clean up the resource.
-     * See [onWindowDecorClosed].
+     * Keeps track of existing tasks with a window decoration. Useful to verify that requests to get
+     * resources occur within the lifecycle of a window decoration, otherwise it'd be possible to
+     * load a tasks resources into memory without a future signal to clean up the resource. See
+     * [onWindowDecorClosed].
      */
     private val existingTasks = mutableSetOf<Int>()
 
     /**
-     * A map of task -> localeList to keep track of the language of app name that's currently
-     * cached in |taskToResourceCache|.
+     * A map of task -> localeList to keep track of the language of app name that's currently cached
+     * in |taskToResourceCache|.
      */
-    @VisibleForTesting
-    val localeListOnCache = HashMap<Int, LocaleList>()
+    @VisibleForTesting val localeListOnCache = HashMap<Int, LocaleList>()
 
     init {
         shellInit.addInitCallback(this::onInit, this)
@@ -115,17 +111,19 @@ class WindowDecorTaskResourceLoader(
 
     private fun onInit() {
         shellCommandHandler.addDumpCallback(this::dump, this)
-        shellController.addUserChangeListener(object : UserChangeListener {
-            override fun onUserChanged(newUserId: Int, userContext: Context) {
-                // No need to hold on to resources for tasks of another profile.
-                taskToResourceCache.clear()
+        shellController.addUserChangeListener(
+            object : UserChangeListener {
+                override fun onUserChanged(newUserId: Int, userContext: Context) {
+                    // No need to hold on to resources for tasks of another profile.
+                    taskToResourceCache.clear()
+                }
             }
-        })
+        )
     }
 
     /**
-     *  Suspending function that returns the user readable name and icon for use by the app header
-     *  and menus for this task.
+     * Suspending function that returns the user readable name and icon for use by the app header
+     * and menus for this task.
      */
     suspend fun getNameAndHeaderIcon(taskInfo: RunningTaskInfo): Pair<CharSequence, Bitmap> =
         withContext(mainDispatcher) {
@@ -145,8 +143,9 @@ class WindowDecorTaskResourceLoader(
         checkWindowDecorExists(taskInfo)
         val cachedResources = taskToResourceCache[taskInfo.taskId]
         val localeListActiveOnCacheTime = localeListOnCache[taskInfo.taskId]
-        if (cachedResources != null &&
-            taskInfo.getConfiguration().getLocales().equals(localeListActiveOnCacheTime)
+        if (
+            cachedResources != null &&
+                taskInfo.getConfiguration().getLocales().equals(localeListActiveOnCacheTime)
         ) {
             callback(cachedResources.appName, cachedResources.appIcon)
             return
@@ -176,7 +175,7 @@ class WindowDecorTaskResourceLoader(
             }
             localeListOnCache[taskInfo.taskId] = taskInfo.getConfiguration().getLocales()
             return@withContext resources.veilIcon
-    }
+        }
 
     /** Called when a window decoration for this task is created. */
     fun onWindowDecorCreated(taskInfo: RunningTaskInfo) {
@@ -206,21 +205,20 @@ class WindowDecorTaskResourceLoader(
                 val activityInfo = getActivityInfo(taskInfo, pm)
                 val appName = pm.getApplicationLabel(activityInfo.applicationInfo)
                 val appIconDrawable = iconProvider.getIcon(activityInfo)
-                val badgedAppIconDrawable = pm.getUserBadgedIcon(appIconDrawable, taskInfo.userHandle())
-                val appIcon = headerIconFactory.createIconBitmap(badgedAppIconDrawable, /* scale= */ 1f)
+                val badgedAppIconDrawable =
+                    pm.getUserBadgedIcon(appIconDrawable, taskInfo.userHandle())
+                val appIcon =
+                    headerIconFactory.createIconBitmap(badgedAppIconDrawable, /* scale= */ 1f)
                 val veilIcon = veilIconFactory.createScaledBitmap(appIconDrawable, MODE_DEFAULT)
                 return@withContext AppResources(
                     appName = appName,
                     appIcon = appIcon,
                     veilIcon = veilIcon,
-                    shouldCacheResult = true
+                    shouldCacheResult = true,
                 )
             } catch (e: NameNotFoundException) {
                 Slog.e(TAG, "Failed to get app resources")
-                val pm =
-                    userProfilesContexts
-                        .getOrCreate(taskInfo.userId)
-                        .packageManager
+                val pm = userProfilesContexts.getOrCreate(taskInfo.userId).packageManager
                 val defaultIconDrawable = pm.getDefaultActivityIcon()
                 val appIcon =
                     headerIconFactory.createIconBitmap(defaultIconDrawable, /* scale= */ 1f)
@@ -230,12 +228,12 @@ class WindowDecorTaskResourceLoader(
                     appName = "",
                     appIcon = appIcon,
                     veilIcon = veilIcon,
-                    shouldCacheResult = false
+                    shouldCacheResult = false,
                 )
             } finally {
                 Trace.endSection()
             }
-    }
+        }
 
     private fun getActivityInfo(taskInfo: RunningTaskInfo, pm: PackageManager): ActivityInfo {
         return pm.getActivityInfo(taskInfo.component(), /* flags= */ 0)
@@ -253,7 +251,7 @@ class WindowDecorTaskResourceLoader(
         val appName: CharSequence,
         val appIcon: Bitmap,
         val veilIcon: Bitmap,
-        val shouldCacheResult: Boolean
+        val shouldCacheResult: Boolean,
     )
 
     private fun dump(pw: PrintWriter, prefix: String) {

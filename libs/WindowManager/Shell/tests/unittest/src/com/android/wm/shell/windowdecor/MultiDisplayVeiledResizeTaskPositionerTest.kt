@@ -140,19 +140,20 @@ class MultiDisplayVeiledResizeTaskPositionerTest : ShellTestCase() {
         whenever(mockWindowDecoration.taskSurface).thenReturn(mockSurfaceControl)
         whenever(mockTransaction.setPosition(any(), any(), any())).thenReturn(mockTransaction)
         whenever(mockTransaction.setAlpha(any(), any())).thenReturn(mockTransaction)
-        whenever(mockWindowDecoration.taskInfo).thenReturn(
-            ActivityManager.RunningTaskInfo().apply {
-                taskId = TASK_ID
-                token = taskToken
-                minWidth = MIN_WIDTH
-                minHeight = MIN_HEIGHT
-                defaultMinSize = DEFAULT_MIN
-                displayId = DISPLAY_ID_0
-                configuration.windowConfiguration.setBounds(STARTING_BOUNDS)
-                configuration.windowConfiguration.displayRotation = ROTATION_90
-                isResizeable = true
-            }
-        )
+        whenever(mockWindowDecoration.taskInfo)
+            .thenReturn(
+                ActivityManager.RunningTaskInfo().apply {
+                    taskId = TASK_ID
+                    token = taskToken
+                    minWidth = MIN_WIDTH
+                    minHeight = MIN_HEIGHT
+                    defaultMinSize = DEFAULT_MIN
+                    displayId = DISPLAY_ID_0
+                    configuration.windowConfiguration.setBounds(STARTING_BOUNDS)
+                    configuration.windowConfiguration.displayRotation = ROTATION_90
+                    isResizeable = true
+                }
+            )
         whenever(mockWindowDecoration.calculateValidDragArea()).thenReturn(VALID_DRAG_AREA)
         whenever(mockWindowDecoration.display).thenReturn(mockDisplay)
         whenever(mockDisplay.displayId).thenAnswer { DISPLAY_ID_0 }

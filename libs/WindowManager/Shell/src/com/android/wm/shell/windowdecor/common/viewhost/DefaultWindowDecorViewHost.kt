@@ -32,14 +32,15 @@ import kotlinx.coroutines.launch
 /**
  * A default implementation of [WindowDecorViewHost] backed by a [SurfaceControlViewHostAdapter].
  *
- * It supports asynchronously updating the view hierarchy using [updateViewAsync], in which
- * case the update work will be posted on the [ShellMainThread] with no delay.
+ * It supports asynchronously updating the view hierarchy using [updateViewAsync], in which case the
+ * update work will be posted on the [ShellMainThread] with no delay.
  */
 class DefaultWindowDecorViewHost(
     context: Context,
     @ShellMainThread private val mainScope: CoroutineScope,
     display: Display,
-    @VisibleForTesting val viewHostAdapter: SurfaceControlViewHostAdapter =
+    @VisibleForTesting
+    val viewHostAdapter: SurfaceControlViewHostAdapter =
         SurfaceControlViewHostAdapter(context, display),
 ) : WindowDecorViewHost {
     private var currentUpdateJob: Job? = null
@@ -75,7 +76,7 @@ class DefaultWindowDecorViewHost(
                     attrs,
                     configuration,
                     touchableRegion,
-                    onDrawTransaction = null
+                    onDrawTransaction = null,
                 )
             }
         Trace.endSection()
@@ -95,9 +96,7 @@ class DefaultWindowDecorViewHost(
     ) {
         Trace.beginSection("DefaultWindowDecorViewHost#updateViewHost")
         viewHostAdapter.prepareViewHost(configuration, touchableRegion)
-        onDrawTransaction?.let {
-            viewHostAdapter.applyTransactionOnDraw(it)
-        }
+        onDrawTransaction?.let { viewHostAdapter.applyTransactionOnDraw(it) }
         viewHostAdapter.updateView(view, attrs)
         Trace.endSection()
     }

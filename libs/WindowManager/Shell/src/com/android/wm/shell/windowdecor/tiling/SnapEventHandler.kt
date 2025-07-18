@@ -60,23 +60,15 @@ interface SnapEventHandler {
      */
     fun getRightSnapBoundsIfTiled(displayId: Int): Rect
 
-    /**
-     * Notifies the snap handler of a desk being de-activated.
-     */
+    /** Notifies the snap handler of a desk being de-activated. */
     fun onDeskDeactivated(deskId: Int)
 
-    /**
-     * Notifies the snap event handler of a display disconnect event.
-     */
+    /** Notifies the snap event handler of a display disconnect event. */
     fun onDisplayDisconnected(disconnectedDisplayId: Int)
 
-    /**
-     * Notifies the snap event handler of a desk being activated.
-     */
+    /** Notifies the snap event handler of a desk being activated. */
     fun onDeskActivated(deskId: Int, displayId: Int)
 
-    /**
-     * Notifies the snap event handler of a desk being removed.
-     */
+    /** Notifies the snap event handler of a desk being removed. */
     fun onDeskRemoved(deskId: Int)
 }

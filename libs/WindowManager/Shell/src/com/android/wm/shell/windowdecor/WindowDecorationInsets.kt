@@ -28,7 +28,8 @@ import com.android.window.flags.Flags
 import com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_WINDOW_DECORATION
 
 /** Adds, removes, and updates caption insets. */
-data class WindowDecorationInsets private constructor(
+data class WindowDecorationInsets
+private constructor(
     private val token: WindowContainerToken,
     private val owner: Binder,
     private val frame: Frame,
@@ -41,8 +42,10 @@ data class WindowDecorationInsets private constructor(
         abstract val height: Int
 
         data class Absolute(val rect: Rect, override val height: Int = rect.height()) : Frame()
+
         data class Relative(override val height: Int) : Frame()
     }
+
     private data class AppBoundsExclusion(val taskFrame: Rect)
 
     constructor(
@@ -65,7 +68,7 @@ data class WindowDecorationInsets private constructor(
         boundingRects,
         flags,
         shouldAddCaptionInset,
-        if (excludedFromAppBounds) AppBoundsExclusion(checkNotNull(taskFrame)) else null
+        if (excludedFromAppBounds) AppBoundsExclusion(checkNotNull(taskFrame)) else null,
     )
 
     /** Updates the caption insets. */
@@ -123,9 +126,7 @@ data class WindowDecorationInsets private constructor(
             }
         }
         appBoundsExclusion?.let { exclusion ->
-            val appBounds = Rect(exclusion.taskFrame).apply {
-                top += frame.height
-            }
+            val appBounds = Rect(exclusion.taskFrame).apply { top += frame.height }
             wct.setAppBounds(token, appBounds)
         }
     }
@@ -133,15 +134,8 @@ data class WindowDecorationInsets private constructor(
     /** Removes the caption insets. */
     fun remove(wct: WindowContainerTransaction) {
         wct.removeInsetsSource(token, owner, INDEX, WindowInsets.Type.captionBar())
-        wct.removeInsetsSource(
-            token,
-            owner,
-            INDEX,
-            WindowInsets.Type.mandatorySystemGestures()
-        )
-        appBoundsExclusion?.let {
-            wct.setAppBounds(token, Rect())
-        }
+        wct.removeInsetsSource(token, owner, INDEX, WindowInsets.Type.mandatorySystemGestures())
+        appBoundsExclusion?.let { wct.setAppBounds(token, Rect()) }
     }
 
     private fun logD(msg: String, vararg arguments: Any?) {

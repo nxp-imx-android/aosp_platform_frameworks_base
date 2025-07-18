@@ -24,8 +24,8 @@ import android.os.UserManager
 import android.platform.test.annotations.EnableFlags
 import android.testing.AndroidTestingRunner
 import android.testing.TestableLooper
-import android.view.SurfaceControl
 import android.view.Display.DEFAULT_DISPLAY
+import android.view.SurfaceControl
 import android.window.TaskSnapshot
 import androidx.test.filters.SmallTest
 import com.android.dx.mockito.inline.extended.ExtendedMockito.doReturn
@@ -55,8 +55,7 @@ import org.mockito.quality.Strictness
 /**
  * Tests for [DesktopHeaderManageWindowsMenu].
  *
- * Build/Install/Run:
- * atest WMShellUnitTests:DesktopHeaderManageWindowsMenuTest
+ * Build/Install/Run: atest WMShellUnitTests:DesktopHeaderManageWindowsMenuTest
  */
 @SmallTest
 @TestableLooper.RunWithLooper
@@ -84,18 +83,19 @@ class DesktopHeaderManageWindowsMenuTest : ShellTestCase() {
         desktopState.canEnterDesktopMode = true
         desktopConfig = FakeDesktopConfig()
 
-        whenever(mockUserManager.getProfiles(DEFAULT_USER_ID)).thenReturn(
-            listOf(UserInfo(DEFAULT_USER_ID, "User 10", /* flags= */ 0)))
-        userRepositories = DesktopUserRepositories(
-            shellInit = ShellInit(TestShellExecutor()),
-            shellController = mock(),
-            persistentRepository = mock(),
-            repositoryInitializer = mock(),
-            mainCoroutineScope = mock(),
-            userManager = mockUserManager,
-            desktopState = desktopState,
-            desktopConfig = desktopConfig,
-        )
+        whenever(mockUserManager.getProfiles(DEFAULT_USER_ID))
+            .thenReturn(listOf(UserInfo(DEFAULT_USER_ID, "User 10", /* flags= */ 0)))
+        userRepositories =
+            DesktopUserRepositories(
+                shellInit = ShellInit(TestShellExecutor()),
+                shellController = mock(),
+                persistentRepository = mock(),
+                repositoryInitializer = mock(),
+                mainCoroutineScope = mock(),
+                userManager = mockUserManager,
+                desktopState = desktopState,
+                desktopConfig = desktopConfig,
+            )
         userRepositories.getProfile(DEFAULT_USER_ID).apply {
             addDesk(displayId = DEFAULT_DISPLAY, deskId = 0)
             setActiveDesk(displayId = DEFAULT_DISPLAY, deskId = 0)
@@ -113,11 +113,13 @@ class DesktopHeaderManageWindowsMenuTest : ShellTestCase() {
     fun testShow_forImmersiveTask_usesSystemViewContainer() {
         val task = createFreeformTask()
         assertThat(userRepositories.getProfile(DEFAULT_USER_ID).userId).isEqualTo(DEFAULT_USER_ID)
-        userRepositories.getProfile(DEFAULT_USER_ID).setTaskInFullImmersiveState(
-            displayId = task.displayId,
-            taskId = task.taskId,
-            immersive = true
-        )
+        userRepositories
+            .getProfile(DEFAULT_USER_ID)
+            .setTaskInFullImmersiveState(
+                displayId = task.displayId,
+                taskId = task.taskId,
+                immersive = true,
+            )
 
         val menu = createMenu(task)
 
@@ -129,14 +131,16 @@ class DesktopHeaderManageWindowsMenuTest : ShellTestCase() {
     @EnableFlags(Flags.FLAG_ENABLE_FULLY_IMMERSIVE_IN_DESKTOP)
     fun testShow_nullSnapshotDoesNotCauseNPE() {
         val task = createFreeformTask()
-        val snapshotList = listOf(Pair(/* index = */ 1, /* snapshot = */ null))
+        val snapshotList = listOf(Pair(/* index= */ 1, /* snapshot= */ null))
         // Set as immersive so that menu is created as system view container (simpler of the
         // options)
-        userRepositories.getProfile(DEFAULT_USER_ID).setTaskInFullImmersiveState(
-            displayId = task.displayId,
-            taskId = task.taskId,
-            immersive = true
-        )
+        userRepositories
+            .getProfile(DEFAULT_USER_ID)
+            .setTaskInFullImmersiveState(
+                displayId = task.displayId,
+                taskId = task.taskId,
+                immersive = true,
+            )
         try {
             menu = createMenu(task, snapshotList)
         } catch (e: NullPointerException) {
@@ -146,32 +150,34 @@ class DesktopHeaderManageWindowsMenuTest : ShellTestCase() {
 
     private fun createMenu(
         task: RunningTaskInfo,
-        snapshotList: List<Pair<Int, TaskSnapshot?>> = emptyList()
+        snapshotList: List<Pair<Int, TaskSnapshot?>> = emptyList(),
     ): DesktopHeaderManageWindowsMenu? {
-        val menu = DesktopHeaderManageWindowsMenu(
-            callerTaskInfo = task,
-            x = 0,
-            y = 0,
-            displayController = mock(),
-            rootTdaOrganizer = mock(),
-            context = context,
-            desktopUserRepositories = userRepositories,
-            surfaceControlBuilderSupplier = { SurfaceControl.Builder() },
-            surfaceControlTransactionSupplier = { SurfaceControl.Transaction() },
-            snapshotList = snapshotList,
-            onIconClickListener = {},
-            onOutsideClickListener = {},
-        )
+        val menu =
+            DesktopHeaderManageWindowsMenu(
+                callerTaskInfo = task,
+                x = 0,
+                y = 0,
+                displayController = mock(),
+                rootTdaOrganizer = mock(),
+                context = context,
+                desktopUserRepositories = userRepositories,
+                surfaceControlBuilderSupplier = { SurfaceControl.Builder() },
+                surfaceControlTransactionSupplier = { SurfaceControl.Transaction() },
+                snapshotList = snapshotList,
+                onIconClickListener = {},
+                onOutsideClickListener = {},
+            )
         this.menu = menu
         return menu
     }
 
-    private fun createFreeformTask(): RunningTaskInfo = TestRunningTaskInfoBuilder()
-        .setToken(MockToken().token())
-        .setActivityType(ACTIVITY_TYPE_STANDARD)
-        .setWindowingMode(WINDOWING_MODE_FREEFORM)
-        .setUserId(DEFAULT_USER_ID)
-        .build()
+    private fun createFreeformTask(): RunningTaskInfo =
+        TestRunningTaskInfoBuilder()
+            .setToken(MockToken().token())
+            .setActivityType(ACTIVITY_TYPE_STANDARD)
+            .setWindowingMode(WINDOWING_MODE_FREEFORM)
+            .setUserId(DEFAULT_USER_ID)
+            .build()
 
     private companion object {
         const val DEFAULT_USER_ID = 10

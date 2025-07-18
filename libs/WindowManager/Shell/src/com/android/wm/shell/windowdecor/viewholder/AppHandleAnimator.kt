@@ -24,23 +24,13 @@ import android.widget.ImageButton
 import androidx.core.animation.doOnEnd
 import com.android.wm.shell.shared.animation.Interpolators
 
-/**
- * Animates the Desktop View's app handle.
- */
-class AppHandleAnimator(
-    private val appHandleView: View,
-    private val captionHandle: ImageButton,
-) {
+/** Animates the Desktop View's app handle. */
+class AppHandleAnimator(private val appHandleView: View, private val captionHandle: ImageButton) {
     companion object {
         //  Constants for animating the whole caption
         private const val APP_HANDLE_ALPHA_FADE_IN_ANIMATION_DURATION_MS: Long = 275L
         private const val APP_HANDLE_ALPHA_FADE_OUT_ANIMATION_DURATION_MS: Long = 340
-        private val APP_HANDLE_ANIMATION_INTERPOLATOR = PathInterpolator(
-            0.4f,
-            0f,
-            0.2f,
-            1f
-        )
+        private val APP_HANDLE_ANIMATION_INTERPOLATOR = PathInterpolator(0.4f, 0f, 0.2f, 1f)
 
         // Constants for animating the caption's handle
         private const val HANDLE_ANIMATION_DURATION: Long = 100
@@ -60,39 +50,38 @@ class AppHandleAnimator(
     /** Animate appearance/disappearance of caption's handle. */
     fun animateCaptionHandleAlpha(startValue: Float, endValue: Float) {
         cancel()
-        animator = ObjectAnimator.ofFloat(captionHandle, View.ALPHA, startValue, endValue).apply {
-            duration = HANDLE_ANIMATION_DURATION
-            interpolator = HANDLE_ANIMATION_INTERPOLATOR
-            start()
-        }
+        animator =
+            ObjectAnimator.ofFloat(captionHandle, View.ALPHA, startValue, endValue).apply {
+                duration = HANDLE_ANIMATION_DURATION
+                interpolator = HANDLE_ANIMATION_INTERPOLATOR
+                start()
+            }
     }
 
     private fun animateShowAppHandle() {
         cancel()
         appHandleView.alpha = 0f
         appHandleView.visibility = View.VISIBLE
-        animator = ObjectAnimator.ofFloat(appHandleView, View.ALPHA, 1f).apply {
-            duration = APP_HANDLE_ALPHA_FADE_IN_ANIMATION_DURATION_MS
-            interpolator = APP_HANDLE_ANIMATION_INTERPOLATOR
-            start()
-        }
+        animator =
+            ObjectAnimator.ofFloat(appHandleView, View.ALPHA, 1f).apply {
+                duration = APP_HANDLE_ALPHA_FADE_IN_ANIMATION_DURATION_MS
+                interpolator = APP_HANDLE_ANIMATION_INTERPOLATOR
+                start()
+            }
     }
 
     private fun animateHideAppHandle() {
         cancel()
-        animator = ObjectAnimator.ofFloat(appHandleView, View.ALPHA, 0f).apply {
-            duration = APP_HANDLE_ALPHA_FADE_OUT_ANIMATION_DURATION_MS
-            interpolator = APP_HANDLE_ANIMATION_INTERPOLATOR
-            doOnEnd {
-                appHandleView.visibility = View.GONE
+        animator =
+            ObjectAnimator.ofFloat(appHandleView, View.ALPHA, 0f).apply {
+                duration = APP_HANDLE_ALPHA_FADE_OUT_ANIMATION_DURATION_MS
+                interpolator = APP_HANDLE_ANIMATION_INTERPOLATOR
+                doOnEnd { appHandleView.visibility = View.GONE }
+                start()
             }
-            start()
-        }
     }
 
-    /**
-     * Cancels any active animations.
-     */
+    /** Cancels any active animations. */
     fun cancel() {
         animator?.removeAllListeners()
         animator?.cancel()

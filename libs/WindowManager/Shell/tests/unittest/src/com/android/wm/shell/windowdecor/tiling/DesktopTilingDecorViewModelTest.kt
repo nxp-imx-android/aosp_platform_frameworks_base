@@ -31,12 +31,12 @@ import com.android.wm.shell.common.DisplayLayout
 import com.android.wm.shell.common.ShellExecutor
 import com.android.wm.shell.common.SyncTransactionQueue
 import com.android.wm.shell.desktopmode.DesktopModeEventLogger
-import com.android.wm.shell.desktopmode.data.DesktopRepository
 import com.android.wm.shell.desktopmode.DesktopTasksController
 import com.android.wm.shell.desktopmode.DesktopTestHelpers.createFreeformTask
 import com.android.wm.shell.desktopmode.DesktopUserRepositories
 import com.android.wm.shell.desktopmode.ReturnToDragStartAnimator
 import com.android.wm.shell.desktopmode.ToggleResizeDesktopTaskTransitionHandler
+import com.android.wm.shell.desktopmode.data.DesktopRepository
 import com.android.wm.shell.shared.desktopmode.FakeDesktopState
 import com.android.wm.shell.sysui.ShellController
 import com.android.wm.shell.sysui.ShellInit
@@ -277,9 +277,7 @@ class DesktopTilingDecorViewModelTest : ShellTestCase() {
         whenever(desktopTilingDecoration.displayId).thenReturn(1)
         desktopTilingDecorViewModel.tilingHandlerByUserAndDeskId.put(1, decorationByDeskId)
 
-        desktopTilingDecorViewModel.onDisplayDisconnected(
-            disconnectedDisplayId = 1,
-        )
+        desktopTilingDecorViewModel.onDisplayDisconnected(disconnectedDisplayId = 1)
 
         // Each tiling session should be reset.
         verify(desktopTilingDecoration, times(1)).resetTilingSession(true)
@@ -297,9 +295,7 @@ class DesktopTilingDecorViewModelTest : ShellTestCase() {
         whenever(desktopTilingDecoration2.displayId).thenReturn(1)
         desktopTilingDecorViewModel.tilingHandlerByUserAndDeskId.put(1, decorationByDeskId)
 
-        desktopTilingDecorViewModel.onDisplayDisconnected(
-            disconnectedDisplayId = 1,
-        )
+        desktopTilingDecorViewModel.onDisplayDisconnected(disconnectedDisplayId = 1)
 
         // Each tiling session should be reset.
         verify(desktopTilingDecoration, times(1)).resetTilingSession(true)
@@ -316,9 +312,7 @@ class DesktopTilingDecorViewModelTest : ShellTestCase() {
 
         assertEquals(true, desktopTilingDecorViewModel.tilingDeskActive(1))
 
-        desktopTilingDecorViewModel.onDisplayDisconnected(
-            disconnectedDisplayId = 1,
-        )
+        desktopTilingDecorViewModel.onDisplayDisconnected(disconnectedDisplayId = 1)
 
         assertEquals(desktopTilingDecorViewModel.tilingDeskActive(1), false)
     }

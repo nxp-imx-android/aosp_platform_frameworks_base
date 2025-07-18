@@ -48,8 +48,7 @@ class MaximizeButtonView(context: Context, attrs: AttributeSet) : FrameLayout(co
     private lateinit var stubProgressBarContainer: ViewStub
     private val maximizeWindow: ImageButton
     private val progressBar: ProgressBar by lazy {
-        (stubProgressBarContainer.inflate() as FrameLayout)
-            .requireViewById(R.id.progress_bar)
+        (stubProgressBarContainer.inflate() as FrameLayout).requireViewById(R.id.progress_bar)
     }
 
     init {
@@ -68,25 +67,21 @@ class MaximizeButtonView(context: Context, attrs: AttributeSet) : FrameLayout(co
         maximizeWindow.background.alpha = 0
 
         hoverProgressAnimatorSet.playSequentially(
-                ValueAnimator.ofInt(0, MAX_DRAWABLE_ALPHA)
-                        .setDuration(50)
-                        .apply {
-                            addUpdateListener {
-                                maximizeWindow.background.alpha = animatedValue as Int
-                            }
-                        },
-                ObjectAnimator.ofInt(progressBar, "progress", 100)
-                        .setDuration(OPEN_MAXIMIZE_MENU_DELAY_ON_HOVER_MS.toLong())
-                        .apply {
-                            doOnStart {
-                                progressBar.setProgress(0, false)
-                                progressBar.visibility = View.VISIBLE
-                            }
-                            doOnEnd {
-                                progressBar.visibility = View.INVISIBLE
-                                onHoverAnimationFinishedListener()
-                            }
-                        }
+            ValueAnimator.ofInt(0, MAX_DRAWABLE_ALPHA).setDuration(50).apply {
+                addUpdateListener { maximizeWindow.background.alpha = animatedValue as Int }
+            },
+            ObjectAnimator.ofInt(progressBar, "progress", 100)
+                .setDuration(OPEN_MAXIMIZE_MENU_DELAY_ON_HOVER_MS.toLong())
+                .apply {
+                    doOnStart {
+                        progressBar.setProgress(0, false)
+                        progressBar.visibility = View.VISIBLE
+                    }
+                    doOnEnd {
+                        progressBar.visibility = View.INVISIBLE
+                        onHoverAnimationFinishedListener()
+                    }
+                },
         )
         hoverProgressAnimatorSet.start()
     }
@@ -103,14 +98,14 @@ class MaximizeButtonView(context: Context, attrs: AttributeSet) : FrameLayout(co
      * @param darkMode whether the app's theme is in dark mode.
      * @param iconForegroundColor the color tint to use for the maximize icon to match the rest of
      *   the App Header icons
-     * @param baseForegroundColor the base foreground color tint used by the App Header, used to style
-     *   views within this button using the same base color but with different opacities.
+     * @param baseForegroundColor the base foreground color tint used by the App Header, used to
+     *   style views within this button using the same base color but with different opacities.
      */
     fun setAnimationTints(
         darkMode: Boolean,
         iconForegroundColor: ColorStateList? = null,
         baseForegroundColor: Int? = null,
-        backgroundDrawable: Drawable? = null
+        backgroundDrawable: Drawable? = null,
     ) {
         if (DesktopModeFlags.ENABLE_THEMED_APP_HEADERS.isTrue()) {
             requireNotNull(iconForegroundColor) { "Icon foreground color must be non-null" }
@@ -119,28 +114,34 @@ class MaximizeButtonView(context: Context, attrs: AttributeSet) : FrameLayout(co
             maximizeWindow.imageTintList = iconForegroundColor
             maximizeWindow.background = backgroundDrawable
             onProgressBarInflated { progressBar ->
-                progressBar.progressTintList = ColorStateList.valueOf(baseForegroundColor)
-                    .withAlpha(OPACITY_15)
+                progressBar.progressTintList =
+                    ColorStateList.valueOf(baseForegroundColor).withAlpha(OPACITY_15)
                 progressBar.progressBackgroundTintList = ColorStateList.valueOf(Color.TRANSPARENT)
             }
         } else {
-            val progressTint = if (darkMode) {
-                ColorStateList.valueOf(
-                    resources.getColor(R.color.desktop_mode_maximize_menu_progress_dark))
-            } else {
-                ColorStateList.valueOf(
-                    resources.getColor(R.color.desktop_mode_maximize_menu_progress_light))
-            }
-            val backgroundTint = if (darkMode) {
-                ContextCompat.getColorStateList(context,
-                    R.color.desktop_mode_caption_button_color_selector_dark)
-            } else {
-                ContextCompat.getColorStateList(context,
-                    R.color.desktop_mode_caption_button_color_selector_light)
-            }
-            onProgressBarInflated { progressBar ->
-                progressBar.progressTintList = progressTint
-            }
+            val progressTint =
+                if (darkMode) {
+                    ColorStateList.valueOf(
+                        resources.getColor(R.color.desktop_mode_maximize_menu_progress_dark)
+                    )
+                } else {
+                    ColorStateList.valueOf(
+                        resources.getColor(R.color.desktop_mode_maximize_menu_progress_light)
+                    )
+                }
+            val backgroundTint =
+                if (darkMode) {
+                    ContextCompat.getColorStateList(
+                        context,
+                        R.color.desktop_mode_caption_button_color_selector_dark,
+                    )
+                } else {
+                    ContextCompat.getColorStateList(
+                        context,
+                        R.color.desktop_mode_caption_button_color_selector_light,
+                    )
+                }
+            onProgressBarInflated { progressBar -> progressBar.progressTintList = progressTint }
             maximizeWindow.background?.setTintList(backgroundTint)
         }
     }
@@ -152,23 +153,25 @@ class MaximizeButtonView(context: Context, attrs: AttributeSet) : FrameLayout(co
 
     /** Sets the dimensions of the maximize button. */
     fun setDimensions(width: Int, height: Int, padding: Rect) {
-        maximizeWindow.layoutParams = maximizeWindow.layoutParams.apply {
-            this.width = width
-            this.height = height
-        }
-        maximizeWindow.setPadding(padding.left, padding.top, padding.right, padding.bottom)
-        onProgressBarInflated { progressBar ->
-            progressBar.layoutParams = progressBar.layoutParams.apply {
+        maximizeWindow.layoutParams =
+            maximizeWindow.layoutParams.apply {
                 this.width = width
                 this.height = height
             }
+        maximizeWindow.setPadding(padding.left, padding.top, padding.right, padding.bottom)
+        onProgressBarInflated { progressBar ->
+            progressBar.layoutParams =
+                progressBar.layoutParams.apply {
+                    this.width = width
+                    this.height = height
+                }
         }
     }
 
     private fun onProgressBarInflated(onInflated: (ProgressBar) -> Unit) {
         stubProgressBarContainer.setOnInflateListener { _, inflated ->
-            val progressBar = (inflated as FrameLayout)
-                .requireViewById<ProgressBar>(R.id.progress_bar)
+            val progressBar =
+                (inflated as FrameLayout).requireViewById<ProgressBar>(R.id.progress_bar)
             onInflated(progressBar)
         }
     }

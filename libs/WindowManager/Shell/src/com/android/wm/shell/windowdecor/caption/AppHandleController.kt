@@ -78,10 +78,9 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.MainCoroutineDispatcher
 import kotlinx.coroutines.launch
 
-
 /**
- * Controller for the app handle. Creates, updates, and removes the views of the caption
- * and its menus.
+ * Controller for the app handle. Creates, updates, and removes the views of the caption and its
+ * menus.
  */
 class AppHandleController(
     taskInfo: RunningTaskInfo,
@@ -112,18 +111,21 @@ class AppHandleController(
     private val handleMenuFactory: HandleMenuFactory = HandleMenuFactory,
     private val appHandleViewHolderFactory: AppHandleViewHolder.Factory =
         AppHandleViewHolder.Factory(),
-    private val surfaceControlTransactionSupplier: () -> SurfaceControl.Transaction =
-        { SurfaceControl.Transaction() },
-    surfaceControlBuilderSupplier: () -> SurfaceControl.Builder =
-        { SurfaceControl.Builder() },
+    private val surfaceControlTransactionSupplier: () -> SurfaceControl.Transaction = {
+        SurfaceControl.Transaction()
+    },
+    surfaceControlBuilderSupplier: () -> SurfaceControl.Builder = { SurfaceControl.Builder() },
     surfaceControlViewHostFactory: SurfaceControlViewHostFactory =
         object : SurfaceControlViewHostFactory {},
-) : CaptionController<WindowDecorLinearLayout>(
-    taskInfo,
-    windowDecorViewHostSupplier,
-    surfaceControlBuilderSupplier,
-    surfaceControlViewHostFactory
-), HandleMenuController, ManageWindowsMenuController {
+) :
+    CaptionController<WindowDecorLinearLayout>(
+        taskInfo,
+        windowDecorViewHostSupplier,
+        surfaceControlBuilderSupplier,
+        surfaceControlViewHostFactory,
+    ),
+    HandleMenuController,
+    ManageWindowsMenuController {
 
     override val captionType = CaptionType.APP_HANDLE
     private lateinit var viewHolder: AppHandleViewHolder
@@ -137,22 +139,28 @@ class AppHandleController(
 
     override val isHandleMenuActive: Boolean
         get() = handleMenu != null
+
     private val isOpenByDefaultDialogActive
         get() = openByDefaultDialog != null
+
     private val showInputLayer
         // Don't show the input layer during the recents transition, otherwise it could become
         // touchable while in overview, during quick-switch or even for a short moment after
         // going home.
         get() = isCaptionVisible && !isRecentsTransitionRunning
+
     private val isEducationOrHandleReportingEnabled =
-        Flags.enableDesktopWindowingAppHandleEducation()
-            || Flags.enableDesktopWindowingAppToWebEducationIntegration()
-                || DesktopExperienceFlags.ENABLE_APP_HANDLE_POSITION_REPORTING.isTrue
+        Flags.enableDesktopWindowingAppHandleEducation() ||
+            Flags.enableDesktopWindowingAppToWebEducationIntegration() ||
+            DesktopExperienceFlags.ENABLE_APP_HANDLE_POSITION_REPORTING.isTrue
     private val display
         get() = displayController.getDisplay(taskInfo.displayId)
+
     private val inFullImmersive
-        get() = desktopUserRepositories.getProfile(taskInfo.userId)
-            .isTaskInFullImmersiveState(taskInfo.taskId)
+        get() =
+            desktopUserRepositories
+                .getProfile(taskInfo.userId)
+                .isTaskInFullImmersiveState(taskInfo.taskId)
 
     override fun relayout(
         params: RelayoutParams,
@@ -162,37 +170,35 @@ class AppHandleController(
         startT: SurfaceControl.Transaction,
         finishT: SurfaceControl.Transaction,
         wct: WindowContainerTransaction,
-    ): CaptionRelayoutResult = traceSection(
-        traceTag = Trace.TRACE_TAG_WINDOW_MANAGER,
-        name = "AppHandleController#relayout",
-    ) {
-        val captionLayout = super.relayout(
-            params,
-            parentContainer,
-            display,
-            decorWindowContext,
-            startT,
-            finishT,
-            wct
-        )
+    ): CaptionRelayoutResult =
+        traceSection(
+            traceTag = Trace.TRACE_TAG_WINDOW_MANAGER,
+            name = "AppHandleController#relayout",
+        ) {
+            val captionLayout =
+                super.relayout(
+                    params,
+                    parentContainer,
+                    display,
+                    decorWindowContext,
+                    startT,
+                    finishT,
+                    wct,
+                )
 
-        handleMenu?.relayout(
-            startT,
-            captionLayout.captionX,
-            captionLayout.captionY
-        )
-        openByDefaultDialog?.relayout(taskInfo)
+            handleMenu?.relayout(startT, captionLayout.captionX, captionLayout.captionY)
+            openByDefaultDialog?.relayout(taskInfo)
 
-        updateViewHolder(captionLayout)
+            updateViewHolder(captionLayout)
 
-        if (!params.hasGlobalFocus) {
-            closeHandleMenu()
-            closeManageWindowsMenu()
+            if (!params.hasGlobalFocus) {
+                closeHandleMenu()
+                closeManageWindowsMenu()
+            }
+
+            notifyCaptionStateChanged(captionLayout)
+            return captionLayout
         }
-
-        notifyCaptionStateChanged(captionLayout)
-        return captionLayout
-    }
 
     private fun notifyNoCaption() {
         if (!desktopState.canEnterDesktopMode || !isEducationOrHandleReportingEnabled) return
@@ -205,31 +211,35 @@ class AppHandleController(
             notifyNoCaption()
             return
         }
-        val captionState = CaptionState.AppHandle(
-            taskInfo,
-            isHandleMenuActive,
-            getCurrentAppHandleBounds(captionLayoutResult),
-            appToWebRepository.isCapturedLinkAvailable(),
-            getAppHandleIdentifier(captionLayoutResult),
-            hasGlobalFocus
-        )
+        val captionState =
+            CaptionState.AppHandle(
+                taskInfo,
+                isHandleMenuActive,
+                getCurrentAppHandleBounds(captionLayoutResult),
+                appToWebRepository.isCapturedLinkAvailable(),
+                getAppHandleIdentifier(captionLayoutResult),
+                hasGlobalFocus,
+            )
         windowDecorHandleRepository.notifyCaptionChanged(captionState)
     }
 
-    /** Updates app handle position and notifies [AppHandleNotifier] of any changes.  */
+    /** Updates app handle position and notifies [AppHandleNotifier] of any changes. */
     private fun getAppHandleIdentifier(
         captionLayoutResult: CaptionRelayoutResult
-    ): AppHandleIdentifier = AppHandleIdentifier(
-        getCurrentAppHandleBounds(captionLayoutResult),
-        taskInfo.displayId,
-        taskInfo.taskId,
-        getAppHandleIdentifierWindowingMode()
-    )
+    ): AppHandleIdentifier =
+        AppHandleIdentifier(
+            getCurrentAppHandleBounds(captionLayoutResult),
+            taskInfo.displayId,
+            taskInfo.taskId,
+            getAppHandleIdentifierWindowingMode(),
+        )
 
     /** Returns the windowing mode of the App Handle. */
     private fun getAppHandleIdentifierWindowingMode(): AppHandleWindowingMode =
-        if (BubbleAnythingFlagHelper.enableBubbleToFullscreen()
-            && !desktopState.isDesktopModeSupportedOnDisplay(display)) {
+        if (
+            BubbleAnythingFlagHelper.enableBubbleToFullscreen() &&
+                !desktopState.isDesktopModeSupportedOnDisplay(display)
+        ) {
             AppHandleWindowingMode.APP_HANDLE_WINDOWING_MODE_BUBBLE
         } else if (splitScreenController.isTaskInSplitScreen(taskInfo.taskId)) {
             AppHandleWindowingMode.APP_HANDLE_WINDOWING_MODE_SPLIT_SCREEN
@@ -238,16 +248,17 @@ class AppHandleController(
         }
 
     /** Returns the current bounds relative to the parent task. */
-    private fun getCurrentAppHandleBounds(captionLayoutResult: CaptionRelayoutResult): Rect = Rect(
-        captionLayoutResult.captionX,
-        captionLayoutResult.captionY,
-        captionLayoutResult.captionX + captionLayoutResult.captionWidth,
-        captionLayoutResult.captionHeight
-    )
+    private fun getCurrentAppHandleBounds(captionLayoutResult: CaptionRelayoutResult): Rect =
+        Rect(
+            captionLayoutResult.captionX,
+            captionLayoutResult.captionY,
+            captionLayoutResult.captionX + captionLayoutResult.captionWidth,
+            captionLayoutResult.captionHeight,
+        )
 
     /**
-     * Dispose of the view used to forward inputs in status bar region. Intended to be
-     * used any time handle is no longer visible.
+     * Dispose of the view used to forward inputs in status bar region. Intended to be used any time
+     * handle is no longer visible.
      */
     private fun disposeStatusBarInputLayer() {
         viewHolder.disposeStatusBarInputLayer()
@@ -256,8 +267,9 @@ class AppHandleController(
     /** Gets the global coordinates of the app handle's position. */
     private fun getHandlePosition(captionLayoutResult: CaptionRelayoutResult): Point {
         val position = Point(captionLayoutResult.captionX, captionLayoutResult.captionY)
-        if (splitScreenController.getSplitPosition(taskInfo.taskId)
-            == SPLIT_POSITION_BOTTOM_OR_RIGHT
+        if (
+            splitScreenController.getSplitPosition(taskInfo.taskId) ==
+                SPLIT_POSITION_BOTTOM_OR_RIGHT
         ) {
             if (splitScreenController.isLeftRightSplit) {
                 // If this is the right split task, add left stage's width.
@@ -273,59 +285,60 @@ class AppHandleController(
         return position
     }
 
-    /** Update the view holder for app handle.  */
-    private fun updateViewHolder(
-        captionLayoutResult: CaptionRelayoutResult
-    ) = traceSection("AppHandleController#updateViewHolder") {
-        viewHolder.bindData(
-            HandleData(
-                taskInfo,
-                getHandlePosition(captionLayoutResult),
-                captionLayoutResult.captionWidth,
-                captionLayoutResult.captionHeight,
-                showInputLayer,
-                isCaptionVisible
+    /** Update the view holder for app handle. */
+    private fun updateViewHolder(captionLayoutResult: CaptionRelayoutResult) =
+        traceSection("AppHandleController#updateViewHolder") {
+            viewHolder.bindData(
+                HandleData(
+                    taskInfo,
+                    getHandlePosition(captionLayoutResult),
+                    captionLayoutResult.captionWidth,
+                    captionLayoutResult.captionHeight,
+                    showInputLayer,
+                    isCaptionVisible,
+                )
             )
-        )
-    }
+        }
 
     private fun createOpenByDefaultDialog() {
         if (isOpenByDefaultDialogActive) return
-        openByDefaultDialog = OpenByDefaultDialog(
-            context,
-            userContext,
-            transitions,
-            taskInfo,
-            taskSurface,
-            displayController,
-            taskResourceLoader,
-            surfaceControlTransactionSupplier,
-            mainDispatcher,
-            mainScope,
-            object : DialogLifecycleListener {
-                override fun onDialogDismissed() {
-                    openByDefaultDialog = null
-                }
-            }
-        )
+        openByDefaultDialog =
+            OpenByDefaultDialog(
+                context,
+                userContext,
+                transitions,
+                taskInfo,
+                taskSurface,
+                displayController,
+                taskResourceLoader,
+                surfaceControlTransactionSupplier,
+                mainDispatcher,
+                mainScope,
+                object : DialogLifecycleListener {
+                    override fun onDialogDismissed() {
+                        openByDefaultDialog = null
+                    }
+                },
+            )
     }
 
     /** Updates app info and creates and displays handle menu window. */
-     override fun createHandleMenu(minimumInstancesFound: Boolean) {
+    override fun createHandleMenu(minimumInstancesFound: Boolean) {
         if (isHandleMenuActive) return
         mainScope.launch {
             val isBrowserApp = isBrowserApp()
-            val appToWebIntent = if (canShowAppLinks(display, desktopState)) {
-                appToWebRepository.getAppToWebIntent(taskInfo, isBrowserApp)
-            } else {
-                // Skip request for assist content as it is only used for links, which are not
-                // supported
-                null
-            }
+            val appToWebIntent =
+                if (canShowAppLinks(display, desktopState)) {
+                    appToWebRepository.getAppToWebIntent(taskInfo, isBrowserApp)
+                } else {
+                    // Skip request for assist content as it is only used for links, which are not
+                    // supported
+                    null
+                }
             createHandleMenu(
                 openInAppOrBrowserIntent = appToWebIntent,
                 isBrowserApp = isBrowserApp,
-                minimumInstancesFound = minimumInstancesFound
+                minimumInstancesFound = minimumInstancesFound,
             )
         }
     }
@@ -334,57 +347,63 @@ class AppHandleController(
     private fun createHandleMenu(
         openInAppOrBrowserIntent: Intent?,
         isBrowserApp: Boolean,
-        minimumInstancesFound: Boolean
+        minimumInstancesFound: Boolean,
     ) {
         val supportsMultiInstance =
-            multiInstanceHelper.supportsMultiInstanceSplit(taskInfo.baseActivity, taskInfo.userId)
-                    && DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_MULTI_INSTANCE_FEATURES.isTrue
+            multiInstanceHelper.supportsMultiInstanceSplit(
+                taskInfo.baseActivity,
+                taskInfo.userId,
+            ) && DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_MULTI_INSTANCE_FEATURES.isTrue
         val shouldShowManageWindowsButton = supportsMultiInstance && minimumInstancesFound
         val shouldShowChangeAspectRatioButton = shouldShowChangeAspectRatioButton(taskInfo)
         val shouldShowRestartButton = shouldShowRestartButton(taskInfo)
         viewHolder.onHandleMenuOpened()
-        handleMenu = handleMenuFactory.create(
-            mainDispatcher = mainDispatcher,
-            mainScope = mainScope,
-            context = decorWindowContext,
-            taskInfo = taskInfo,
-            parentSurface = decorationSurface,
-            display = display,
-            windowManagerWrapper = windowManagerWrapper,
-            windowDecorationActions = windowDecorationActions,
-            taskResourceLoader = taskResourceLoader,
-            // TODO(b/409648813): Have handle menus use [CaptionType]
-            layoutResId = R.layout.desktop_mode_app_handle,
-            splitScreenController = splitScreenController,
-            shouldShowWindowingPill = desktopState.canEnterDesktopModeOrShowAppHandle,
-            shouldShowNewWindowButton = supportsMultiInstance,
-            shouldShowManageWindowsButton = shouldShowManageWindowsButton,
-            shouldShowChangeAspectRatioButton = shouldShowChangeAspectRatioButton,
-            shouldShowDesktopModeButton = desktopState.isDesktopModeSupportedOnDisplay(display),
-            shouldShowRestartButton = shouldShowRestartButton,
-            isBrowserApp = isBrowserApp,
-            openInAppOrBrowserIntent = openInAppOrBrowserIntent,
-            desktopModeUiEventLogger = desktopModeUiEventLogger,
-            captionWidth = captionLayoutResult.captionWidth,
-            captionHeight = captionLayoutResult.captionHeight,
-            captionX = captionLayoutResult.captionX,
-            captionY = captionLayoutResult.captionY
-        ).apply {
-            show(
-                openInAppOrBrowserClickListener = { intent ->
-                    windowDecorationActions.onOpenInBrowser(taskInfo.taskId, intent)
-                    appToWebRepository.onCapturedLinkUsed()
-                    if (Flags.enableDesktopWindowingAppToWebEducationIntegration()) {
-                        windowDecorHandleRepository.onAppToWebUsage()
-                    }
-                },
-                onOpenByDefaultClickListener = { createOpenByDefaultDialog() },
-                onCloseMenuClickListener = { closeHandleMenu() },
-                onOutsideTouchListener = { closeHandleMenu() },
-                onHandleMenuClicked = { closeHandleMenu() },
-                forceShowSystemBars = inFullImmersive
-            )
-        }
+        handleMenu =
+            handleMenuFactory
+                .create(
+                    mainDispatcher = mainDispatcher,
+                    mainScope = mainScope,
+                    context = decorWindowContext,
+                    taskInfo = taskInfo,
+                    parentSurface = decorationSurface,
+                    display = display,
+                    windowManagerWrapper = windowManagerWrapper,
+                    windowDecorationActions = windowDecorationActions,
+                    taskResourceLoader = taskResourceLoader,
+                    // TODO(b/409648813): Have handle menus use [CaptionType]
+                    layoutResId = R.layout.desktop_mode_app_handle,
+                    splitScreenController = splitScreenController,
+                    shouldShowWindowingPill = desktopState.canEnterDesktopModeOrShowAppHandle,
+                    shouldShowNewWindowButton = supportsMultiInstance,
+                    shouldShowManageWindowsButton = shouldShowManageWindowsButton,
+                    shouldShowChangeAspectRatioButton = shouldShowChangeAspectRatioButton,
+                    shouldShowDesktopModeButton =
+                        desktopState.isDesktopModeSupportedOnDisplay(display),
+                    shouldShowRestartButton = shouldShowRestartButton,
+                    isBrowserApp = isBrowserApp,
+                    openInAppOrBrowserIntent = openInAppOrBrowserIntent,
+                    desktopModeUiEventLogger = desktopModeUiEventLogger,
+                    captionWidth = captionLayoutResult.captionWidth,
+                    captionHeight = captionLayoutResult.captionHeight,
+                    captionX = captionLayoutResult.captionX,
+                    captionY = captionLayoutResult.captionY,
+                )
+                .apply {
+                    show(
+                        openInAppOrBrowserClickListener = { intent ->
+                            windowDecorationActions.onOpenInBrowser(taskInfo.taskId, intent)
+                            appToWebRepository.onCapturedLinkUsed()
+                            if (Flags.enableDesktopWindowingAppToWebEducationIntegration()) {
+                                windowDecorHandleRepository.onAppToWebUsage()
+                            }
+                        },
+                        onOpenByDefaultClickListener = { createOpenByDefaultDialog() },
+                        onCloseMenuClickListener = { closeHandleMenu() },
+                        onOutsideTouchListener = { closeHandleMenu() },
+                        onHandleMenuClicked = { closeHandleMenu() },
+                        forceShowSystemBars = inFullImmersive,
+                    )
+                }
         notifyCaptionStateChanged(captionLayoutResult)
     }
 
@@ -402,9 +421,10 @@ class AppHandleController(
     /** Checks if a [MotionEvent] occurs in caption. */
     fun checkTouchEventInCaption(ev: MotionEvent): Boolean {
         val inputPoint = offsetCaptionLocation(ev)
-        return inputPoint.x >= captionLayoutResult.captionX
-                && inputPoint.x <= captionLayoutResult.captionX + captionLayoutResult.captionWidth
-                && inputPoint.y >= 0 && inputPoint.y <= captionLayoutResult.captionHeight
+        return inputPoint.x >= captionLayoutResult.captionX &&
+            inputPoint.x <= captionLayoutResult.captionX + captionLayoutResult.captionWidth &&
+            inputPoint.y >= 0 &&
+            inputPoint.y <= captionLayoutResult.captionHeight
     }
 
     /** Offset the coordinates of a [MotionEvent] to be in the same coordinate space as caption. */
@@ -425,42 +445,44 @@ class AppHandleController(
         viewHolder.setHandlePressed(false)
     }
 
-    private fun isBrowserApp(): Boolean = taskInfo.baseActivity?.let {
-        isBrowserApp(userContext, it.packageName, userContext.userId)
-    } ?: false
+    private fun isBrowserApp(): Boolean =
+        taskInfo.baseActivity?.let { isBrowserApp(userContext, it.packageName, userContext.userId) }
+            ?: false
 
     override fun createCaptionView(): WindowDecorationViewHolder<HandleData> {
-        val appHandleViewHolder = appHandleViewHolderFactory.create(
-            // View holder should inflate the caption's root view
-            rootView = null,
-            context = decorWindowContext,
-            onCaptionTouchListener = onCaptionTouchListener,
-            onCaptionButtonClickListener = onCaptionButtonClickListener,
-            windowManagerWrapper = windowManagerWrapper,
-            handler = mainHandler,
-            desktopModeUiEventLogger = desktopModeUiEventLogger,
-        )
+        val appHandleViewHolder =
+            appHandleViewHolderFactory.create(
+                // View holder should inflate the caption's root view
+                rootView = null,
+                context = decorWindowContext,
+                onCaptionTouchListener = onCaptionTouchListener,
+                onCaptionButtonClickListener = onCaptionButtonClickListener,
+                windowManagerWrapper = windowManagerWrapper,
+                handler = mainHandler,
+                desktopModeUiEventLogger = desktopModeUiEventLogger,
+            )
         viewHolder = appHandleViewHolder
         return appHandleViewHolder
     }
 
     /** Creates and shows the manage windows menu. */
     override fun createManageWindowsMenu(snapshotList: ArrayList<Pair<Int, TaskSnapshot>>) {
-        manageWindowsMenu = DesktopHandleManageWindowsMenu(
-            callerTaskInfo = taskInfo,
-            splitScreenController = splitScreenController,
-            captionX = captionLayoutResult.captionX,
-            captionWidth = captionLayoutResult.captionWidth,
-            windowManagerWrapper = windowManagerWrapper,
-            desktopState = desktopState,
-            context = context,
-            snapshotList = snapshotList,
-            onIconClickListener = { requestedTaskId ->
-                closeManageWindowsMenu()
-                windowDecorationActions.onOpenInstance(taskInfo, requestedTaskId)
-            },
-            onOutsideClickListener = { closeManageWindowsMenu() }
-        )
+        manageWindowsMenu =
+            DesktopHandleManageWindowsMenu(
+                callerTaskInfo = taskInfo,
+                splitScreenController = splitScreenController,
+                captionX = captionLayoutResult.captionX,
+                captionWidth = captionLayoutResult.captionWidth,
+                windowManagerWrapper = windowManagerWrapper,
+                desktopState = desktopState,
+                context = context,
+                snapshotList = snapshotList,
+                onIconClickListener = { requestedTaskId ->
+                    closeManageWindowsMenu()
+                    windowDecorationActions.onOpenInstance(taskInfo, requestedTaskId)
+                },
+                onOutsideClickListener = { closeManageWindowsMenu() },
+            )
     }
 
     private fun closeManageWindowsMenu() {
@@ -478,7 +500,7 @@ class AppHandleController(
 
     override fun releaseViews(
         wct: WindowContainerTransaction,
-        t: SurfaceControl.Transaction
+        t: SurfaceControl.Transaction,
     ): Boolean {
         closeHandleMenu()
         closeManageWindowsMenu()

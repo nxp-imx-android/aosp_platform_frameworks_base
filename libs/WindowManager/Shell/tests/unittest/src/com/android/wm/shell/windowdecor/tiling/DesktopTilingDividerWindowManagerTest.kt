@@ -114,7 +114,8 @@ class DesktopTilingDividerWindowManagerTest : ShellTestCase() {
         desktopTilingWindowManager.generateViewHost(surfaceControl)
         val cornerRadius =
             mContext.resources.getDimensionPixelSize(
-                com.android.wm.shell.shared.R.dimen.desktop_windowing_freeform_rounded_corner_radius)
+                com.android.wm.shell.shared.R.dimen.desktop_windowing_freeform_rounded_corner_radius
+            )
         // Ensure a surfaceControl transaction runs to show the divider.
         verify(transaction, times(1))
             .setPosition(any(), eq(BOUNDS.left.toFloat() - cornerRadius), any())

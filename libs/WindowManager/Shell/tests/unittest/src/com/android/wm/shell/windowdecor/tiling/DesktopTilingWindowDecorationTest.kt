@@ -42,20 +42,20 @@ import com.android.wm.shell.common.ShellExecutor
 import com.android.wm.shell.common.SyncTransactionQueue
 import com.android.wm.shell.desktopmode.DesktopModeEventLogger
 import com.android.wm.shell.desktopmode.DesktopModeEventLogger.Companion.ResizeTrigger
-import com.android.wm.shell.desktopmode.data.DesktopRepository
 import com.android.wm.shell.desktopmode.DesktopTasksController
 import com.android.wm.shell.desktopmode.DesktopTestHelpers.createFreeformTask
 import com.android.wm.shell.desktopmode.DesktopTestHelpers.createPinnedTask
 import com.android.wm.shell.desktopmode.DesktopUserRepositories
 import com.android.wm.shell.desktopmode.ReturnToDragStartAnimator
 import com.android.wm.shell.desktopmode.ToggleResizeDesktopTaskTransitionHandler
+import com.android.wm.shell.desktopmode.data.DesktopRepository
 import com.android.wm.shell.shared.desktopmode.FakeDesktopState
 import com.android.wm.shell.sysui.ShellController
 import com.android.wm.shell.transition.FocusTransitionObserver
 import com.android.wm.shell.transition.Transitions
 import com.android.wm.shell.transition.Transitions.TRANSIT_START_RECENTS_TRANSITION
-import com.android.wm.shell.windowdecor.WindowDecorationWrapper
 import com.android.wm.shell.windowdecor.DragResizeWindowGeometry
+import com.android.wm.shell.windowdecor.WindowDecorationWrapper
 import com.android.wm.shell.windowdecor.common.WindowDecorTaskResourceLoader
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.CoroutineScope
@@ -676,8 +676,7 @@ class DesktopTilingWindowDecorationTest : ShellTestCase() {
         whenever(tiledTaskHelper.taskInfo).thenReturn(task1)
         whenever(tiledTaskHelper.windowDecoration).thenReturn(windowDecoration)
         whenever(additionalTaskHelper.taskInfo).thenReturn(task2)
-        whenever(additionalTaskHelper.windowDecoration)
-            .thenReturn(windowDecoration)
+        whenever(additionalTaskHelper.windowDecoration).thenReturn(windowDecoration)
 
         tilingDecoration.leftTaskResizingHelper = tiledTaskHelper
         tilingDecoration.rightTaskResizingHelper = additionalTaskHelper
@@ -751,8 +750,7 @@ class DesktopTilingWindowDecorationTest : ShellTestCase() {
         whenever(tiledTaskHelper.taskInfo).thenReturn(task1)
         whenever(tiledTaskHelper.windowDecoration).thenReturn(windowDecoration)
         whenever(additionalTaskHelper.taskInfo).thenReturn(task2)
-        whenever(additionalTaskHelper.windowDecoration)
-            .thenReturn(windowDecoration)
+        whenever(additionalTaskHelper.windowDecoration).thenReturn(windowDecoration)
 
         tilingDecoration.apply {
             leftTaskResizingHelper = tiledTaskHelper

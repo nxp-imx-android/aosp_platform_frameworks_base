@@ -25,8 +25,8 @@ import android.view.MotionEvent
  * @return true if the [MotionEvent] is a touchpad gesture, false otherwise.
  */
 fun MotionEvent.isTouchpadGesture(): Boolean =
-    source == InputDevice.SOURCE_MOUSE
-        && getToolType(0) == MotionEvent.TOOL_TYPE_FINGER
-        && (classification == MotionEvent.CLASSIFICATION_TWO_FINGER_SWIPE
-        || classification == MotionEvent.CLASSIFICATION_PINCH
-        || classification == MotionEvent.CLASSIFICATION_MULTI_FINGER_SWIPE)
+    source == InputDevice.SOURCE_MOUSE &&
+        getToolType(0) == MotionEvent.TOOL_TYPE_FINGER &&
+        (classification == MotionEvent.CLASSIFICATION_TWO_FINGER_SWIPE ||
+            classification == MotionEvent.CLASSIFICATION_PINCH ||
+            classification == MotionEvent.CLASSIFICATION_MULTI_FINGER_SWIPE)
