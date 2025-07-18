@@ -1663,7 +1663,8 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
         }
 
         final Transition.ReadyCondition displayConfig = mTransitionController.isCollecting()
-                ? new Transition.ReadyCondition("displayConfig", this) : null;
+                ? new Transition.ReadyCondition("displayConfig", this, true /* newTrockerOnly */)
+                : null;
         if (displayConfig != null) {
             mTransitionController.waitFor(displayConfig);
         } else if (mTransitionController.isShellTransitionsEnabled() && mLastHasContent) {
