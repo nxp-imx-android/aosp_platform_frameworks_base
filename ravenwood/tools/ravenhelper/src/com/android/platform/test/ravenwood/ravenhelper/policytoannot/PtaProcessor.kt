@@ -17,6 +17,8 @@ package com.android.platform.test.ravenwood.ravenhelper.policytoannot
 
 import com.android.hoststubgen.LogLevel
 import com.android.hoststubgen.asm.CLASS_INITIALIZER_NAME
+import com.android.hoststubgen.asm.CTOR_NAME
+import com.android.hoststubgen.asm.toHumanReadableClassName
 import com.android.hoststubgen.asm.toJvmClassName
 import com.android.hoststubgen.filters.FilterPolicyWithReason
 import com.android.hoststubgen.filters.MethodCallReplaceSpec
@@ -252,7 +254,7 @@ private class TextPolicyToAnnotationConverter(
         }
 
         private fun findClass(className: String): ClassInfo? {
-            val ci = classes.findClass(className)
+            val ci = classes.findClass(className.toHumanReadableClassName().replace('$', '.'))
             if (ci == null) {
                 warnOnCurrentPolicy("Class not found: $className")
             }
@@ -382,10 +384,6 @@ private class TextPolicyToAnnotationConverter(
             // If this policy can't be converted for any reason, it'll return null.
             // Otherwise, it'll return a pair of method list and the annotation string.
             fun getMethods(): Pair<List<MethodInfo>, String>? {
-                if (methodName == CLASS_INITIALIZER_NAME) {
-                    warnOnClassPolicy("Policy for class initializers not supported.")
-                    return null
-                }
                 val ci = findClass(className) ?: return null
                 val methods = ci.findMethods(methodName, methodDesc)
                 if (methods == null) {
@@ -403,9 +401,54 @@ private class TextPolicyToAnnotationConverter(
                 return Pair(methods, annot)
             }
 
+            fun annotationAdded() {
+                commentOutPolicy(
+                    policyParser.lineNumber,
+                    "remove method policy $readableName"
+                )
+
+                annotationNeedingClasses.add(className)
+            }
+
+            // Special case <clinit>.
+            if (methodName == CLASS_INITIALIZER_NAME) {
+                annotations.getClassInitializerPolicy(policy.policy)?.let { annotation ->
+                    // Add "KeepStaticInitializer".
+                    val ci = findClass(className)!!
+                    addOperation(
+                        SourceOperation(
+                            ci.location.file,
+                            ci.location.line,
+                            SourceOperationType.Insert,
+                            ci.location.getIndent() + annotation,
+                            "add keep-<clinit> annotation to $className"
+                        )
+                    )
+                    annotationAdded()
+                }
+                return
+            }
+
+            // Find all the methods matching the policy, and add the annotation to them.
             val methodsAndAnnot = getMethods()
 
             if (methodsAndAnnot == null) {
+                // Special case. If a constructor isn't found, it's likely the default ctor.
+                // We could inject a ctor with sed, but let's just leave a comment for now.
+                //
+                // We may as well add "@KeepAllConstructor".
+                if (methodName == CTOR_NAME) {
+                    val ci = findClass(className)!!
+                    addOperation(
+                        SourceOperation(
+                            ci.location.file,
+                            ci.location.line,
+                            SourceOperationType.Insert,
+                            ci.location.getIndent() + "// [PTA]: Constructor needs Keep",
+                            "Add a comment about missing constructor to $className"
+                        )
+                    )
+                }
                 classHasMember = true
                 return // This policy can't be converted.
             }
@@ -426,12 +469,7 @@ private class TextPolicyToAnnotationConverter(
                 )
             }
             if (found) {
-                commentOutPolicy(
-                    policyParser.lineNumber,
-                    "remove method policy $readableName"
-                )
-
-                annotationNeedingClasses.add(className)
+                annotationAdded()
             } else {
                 warnOnCurrentPolicy("Method not found: $readableName")
             }
