@@ -79,6 +79,7 @@ import android.util.SparseArray;
 
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
+import com.android.internal.jank.InteractionMonitorDebugOverlay;
 import com.android.internal.logging.EventLogTags;
 import com.android.internal.os.BackgroundThread;
 
@@ -448,6 +449,8 @@ public class LatencyTracker {
     private boolean mEnabled;
     private final DeviceConfig.OnPropertiesChangedListener mOnPropertiesChangedListener =
             this::updateProperties;
+    @GuardedBy("mLock")
+    private InteractionMonitorDebugOverlay mInteractionMonitorDebugOverlay = null;
 
     // Wrapping this in a holder class achieves lazy loading behavior
     private static final class SLatencyTrackerHolder {
@@ -500,6 +503,16 @@ public class LatencyTracker {
                                 legacyActionTraceThreshold)));
             }
             onDeviceConfigPropertiesUpdated(mActionPropertiesMap);
+        }
+    }
+
+    /**
+     * Set debug overlay used for drawing names of latency events
+     * @hide
+     */
+    public void setDebugOverlay(InteractionMonitorDebugOverlay debugOverlay) {
+        synchronized (mLock) {
+            mInteractionMonitorDebugOverlay = debugOverlay;
         }
     }
 
@@ -725,9 +738,12 @@ public class LatencyTracker {
                 return;
             }
             Session session = new Session(action, tag);
+            if (mInteractionMonitorDebugOverlay != null) {
+                mInteractionMonitorDebugOverlay.onTrackerAdded(
+                        session.traceName(), System.identityHashCode(session));
+            }
             session.begin(() -> onActionCancel(action));
             mSessions.put(action, session);
-
             if (DEBUG) {
                 Log.d(TAG, "onActionStart: " + session.name() + ", start=" + session.mStartRtc);
             }
@@ -747,6 +763,10 @@ public class LatencyTracker {
             Session session = mSessions.get(action);
             if (session == null) {
                 return;
+            }
+            if (mInteractionMonitorDebugOverlay != null) {
+                mInteractionMonitorDebugOverlay.onTrackerRemoved(false,
+                        System.identityHashCode(session));
             }
             session.end();
             mSessions.delete(action);
@@ -769,6 +789,10 @@ public class LatencyTracker {
             Session session = mSessions.get(action);
             if (session == null) {
                 return;
+            }
+            if (mInteractionMonitorDebugOverlay != null) {
+                mInteractionMonitorDebugOverlay.onTrackerRemoved(true,
+                        System.identityHashCode(session));
             }
             session.cancel();
             mSessions.delete(action);
