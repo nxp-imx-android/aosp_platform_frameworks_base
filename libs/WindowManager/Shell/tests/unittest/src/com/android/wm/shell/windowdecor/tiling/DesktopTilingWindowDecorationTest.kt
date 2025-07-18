@@ -590,6 +590,7 @@ class DesktopTilingWindowDecorationTest : ShellTestCase() {
                 BOUNDS.width() / 2,
                 BOUNDS.height(),
                 displayController,
+                deskId,
             )
 
         tilingDecoration.onDividerHandleMoved(BOUNDS, transaction)
@@ -604,6 +605,7 @@ class DesktopTilingWindowDecorationTest : ShellTestCase() {
                 BOUNDS.width(),
                 BOUNDS.height(),
                 displayController,
+                deskId,
             )
     }
 

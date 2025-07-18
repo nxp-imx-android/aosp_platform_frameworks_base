@@ -28,6 +28,9 @@ import android.window.TransitionInfo.FLAG_MOVED_TO_TOP
 import android.window.WindowContainerTransaction
 import com.android.app.tracing.traceSection
 import com.android.internal.protolog.ProtoLog
+import com.android.wm.shell.desktopmode.DesktopModeEventLogger
+import com.android.wm.shell.desktopmode.DesktopModeEventLogger.Companion.EnterReason
+import com.android.wm.shell.desktopmode.DesktopModeEventLogger.Companion.ExitReason
 import com.android.wm.shell.desktopmode.DesktopUserRepositories
 import com.android.wm.shell.desktopmode.desktopwallpaperactivity.DesktopWallpaperActivityTokenProvider
 import com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_DESKTOP_MODE
@@ -51,6 +54,7 @@ class DesksTransitionObserver(
     private val shellController: ShellController,
     private val desktopWallpaperActivityTokenProvider: DesktopWallpaperActivityTokenProvider,
     @ShellMainThread private val mainScope: CoroutineScope,
+    private val desktopModeEventLogger: DesktopModeEventLogger,
 ) {
     private val deskTransitions = mutableMapOf<IBinder, MutableSet<DeskTransition>>()
 
@@ -132,6 +136,9 @@ class DesksTransitionObserver(
                 val deskId = deskTransition.deskId
                 val displayId = deskTransition.displayId
                 deskTransition.runOnTransitEnd?.invoke()
+                if (repository.isDeskActive(deskTransition.deskId)) {
+                    desktopModeEventLogger.logPendingSessionExit(deskId, deskTransition.exitReason)
+                }
                 repository.removeDesk(deskTransition.deskId)
                 deskTransition.onDeskRemovedListener?.onDeskRemoved(displayId, deskId)
             }
@@ -151,6 +158,10 @@ class DesksTransitionObserver(
                     displayId = deskTransition.displayId,
                     deskId = deskTransition.deskId,
                 )
+                desktopModeEventLogger.logSessionEnter(
+                    deskTransition.deskId,
+                    deskTransition.enterReason,
+                )
                 deskTransition.runOnTransitEnd?.invoke()
             }
             is DeskTransition.ActivateDeskWithTask -> {
@@ -169,6 +180,10 @@ class DesksTransitionObserver(
                     repository.setActiveDesk(
                         displayId = deskTransition.displayId,
                         deskId = deskTransition.deskId,
+                    )
+                    desktopModeEventLogger.logSessionEnter(
+                        deskTransition.deskId,
+                        deskTransition.enterReason,
                     )
                 } else {
                     logW("ActivateDeskWithTask: did not find desk change")
@@ -232,6 +247,10 @@ class DesksTransitionObserver(
             return
         }
         desktopRepository.setDeskInactive(deskId = deskTransition.deskId)
+        desktopModeEventLogger.logPendingSessionExit(
+            deskTransition.deskId,
+            deskTransition.exitReason,
+        )
     }
 
     private fun handleChangeDeskDisplay(deskTransition: DeskTransition.ChangeDeskDisplay) {
@@ -371,6 +390,10 @@ class DesksTransitionObserver(
                             )
                             // Always let the organizer deactivate to clear the launch root.
                             desksOrganizer.deactivateDesk(wct, activeDeskId, skipReorder = true)
+                            desktopModeEventLogger.logPendingSessionExit(
+                                activeDeskId,
+                                ExitReason.UNKNOWN_EXIT,
+                            )
                             if (!keepActiveInRepository) {
                                 repository.setDeskInactive(activeDeskId)
                             }
@@ -400,6 +423,10 @@ class DesksTransitionObserver(
                             logD("Reactivating desk=%d", activeDeskId)
                             desksToActivate.add(activeDeskId)
                             desksOrganizer.activateDesk(wct, activeDeskId, skipReorder = false)
+                            desktopModeEventLogger.logSessionEnter(
+                                activeDeskId,
+                                EnterReason.UNKNOWN_ENTER,
+                            )
                         } else {
                             logD("Dismissing desktop wallpaper")
                             val container =
@@ -485,6 +512,7 @@ class DesksTransitionObserver(
                     )
                     // Always let the organizer deactivate to clear the launch root.
                     desksOrganizer.deactivateDesk(wct, deskId, skipReorder = true)
+                    desktopModeEventLogger.logPendingSessionExit(deskId, ExitReason.UNKNOWN_EXIT)
                     if (!keepActiveInRepository) {
                         // The desk was independently deactivated (such as when Home is brought
                         // to front during CTS), make sure the repository state reflects that too.
@@ -515,6 +543,7 @@ class DesksTransitionObserver(
                     )
                     desksOrganizer.activateDesk(wct, deskId, skipReorder = true)
                     repository.setActiveDesk(displayId, deskId)
+                    desktopModeEventLogger.logSessionEnter(deskId, EnterReason.UNKNOWN_ENTER)
                 }
                 else -> {
                     logW(

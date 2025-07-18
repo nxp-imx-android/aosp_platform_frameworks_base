@@ -574,12 +574,13 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         verify(taskbarDesktopTaskListener).onTaskbarCornerRoundingUpdate(argumentCaptor.capture())
         verify(desktopModeEventLogger, times(1))
             .logTaskResizingEnded(
-                ResizeTrigger.MAXIMIZE_BUTTON,
-                InputMethod.TOUCH,
-                task1,
-                STABLE_BOUNDS.width(),
-                STABLE_BOUNDS.height(),
-                displayController,
+                resizeTrigger = ResizeTrigger.MAXIMIZE_BUTTON,
+                inputMethod = InputMethod.TOUCH,
+                taskInfo = task1,
+                taskWidth = STABLE_BOUNDS.width(),
+                taskHeight = STABLE_BOUNDS.height(),
+                displayController = displayController,
+                deskId = 0,
             )
         assertThat(argumentCaptor.firstValue).isTrue()
     }
@@ -8866,21 +8867,23 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         // Assert event is properly logged
         verify(desktopModeEventLogger, times(1))
             .logTaskResizingStarted(
-                ResizeTrigger.DRAG_TO_TOP_RESIZE_TRIGGER,
-                InputMethod.UNKNOWN_INPUT_METHOD,
-                task,
-                task.configuration.windowConfiguration.bounds.width(),
-                task.configuration.windowConfiguration.bounds.height(),
-                displayController,
+                resizeTrigger = ResizeTrigger.DRAG_TO_TOP_RESIZE_TRIGGER,
+                inputMethod = InputMethod.UNKNOWN_INPUT_METHOD,
+                taskInfo = task,
+                taskWidth = task.configuration.windowConfiguration.bounds.width(),
+                taskHeight = task.configuration.windowConfiguration.bounds.height(),
+                displayController = displayController,
+                deskId = 0,
             )
         verify(desktopModeEventLogger, times(1))
             .logTaskResizingEnded(
-                ResizeTrigger.DRAG_TO_TOP_RESIZE_TRIGGER,
-                InputMethod.UNKNOWN_INPUT_METHOD,
-                task,
-                STABLE_BOUNDS.width(),
-                STABLE_BOUNDS.height(),
-                displayController,
+                resizeTrigger = ResizeTrigger.DRAG_TO_TOP_RESIZE_TRIGGER,
+                inputMethod = InputMethod.UNKNOWN_INPUT_METHOD,
+                taskInfo = task,
+                taskWidth = STABLE_BOUNDS.width(),
+                taskHeight = STABLE_BOUNDS.height(),
+                displayController = displayController,
+                deskId = 0,
             )
     }
 
@@ -8989,21 +8992,23 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         // Assert event is properly logged
         verify(desktopModeEventLogger, times(1))
             .logTaskResizingStarted(
-                ResizeTrigger.DRAG_TO_TOP_RESIZE_TRIGGER,
-                InputMethod.UNKNOWN_INPUT_METHOD,
-                task,
-                task.configuration.windowConfiguration.bounds.width(),
-                task.configuration.windowConfiguration.bounds.height(),
-                displayController,
+                resizeTrigger = ResizeTrigger.DRAG_TO_TOP_RESIZE_TRIGGER,
+                inputMethod = InputMethod.UNKNOWN_INPUT_METHOD,
+                taskInfo = task,
+                taskWidth = task.configuration.windowConfiguration.bounds.width(),
+                taskHeight = task.configuration.windowConfiguration.bounds.height(),
+                displayController = displayController,
+                deskId = 0,
             )
         verify(desktopModeEventLogger, times(1))
             .logTaskResizingEnded(
-                ResizeTrigger.DRAG_TO_TOP_RESIZE_TRIGGER,
-                InputMethod.UNKNOWN_INPUT_METHOD,
-                task,
-                STABLE_BOUNDS.width(),
-                STABLE_BOUNDS.height(),
-                displayController,
+                resizeTrigger = ResizeTrigger.DRAG_TO_TOP_RESIZE_TRIGGER,
+                inputMethod = InputMethod.UNKNOWN_INPUT_METHOD,
+                taskInfo = task,
+                taskWidth = STABLE_BOUNDS.width(),
+                taskHeight = STABLE_BOUNDS.height(),
+                displayController = displayController,
+                deskId = 0,
             )
     }
 
@@ -9602,12 +9607,13 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         assertThat(findBoundsChange(wct, task)).isEqualTo(STABLE_BOUNDS)
         verify(desktopModeEventLogger, times(1))
             .logTaskResizingEnded(
-                ResizeTrigger.MAXIMIZE_BUTTON,
-                InputMethod.TOUCH,
-                task,
-                STABLE_BOUNDS.width(),
-                STABLE_BOUNDS.height(),
-                displayController,
+                resizeTrigger = ResizeTrigger.MAXIMIZE_BUTTON,
+                inputMethod = InputMethod.TOUCH,
+                taskInfo = task,
+                taskWidth = STABLE_BOUNDS.width(),
+                taskHeight = STABLE_BOUNDS.height(),
+                displayController = displayController,
+                deskId = 0,
             )
     }
 
@@ -9647,12 +9653,13 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         assertThat(findBoundsChange(wct, task)).isEqualTo(expectedBounds)
         verify(desktopModeEventLogger, times(1))
             .logTaskResizingEnded(
-                ResizeTrigger.SNAP_LEFT_MENU,
-                InputMethod.TOUCH,
-                task,
-                expectedBounds.width(),
-                expectedBounds.height(),
-                displayController,
+                resizeTrigger = ResizeTrigger.SNAP_LEFT_MENU,
+                inputMethod = InputMethod.TOUCH,
+                taskInfo = task,
+                taskWidth = expectedBounds.width(),
+                taskHeight = expectedBounds.height(),
+                displayController = displayController,
+                deskId = 0,
             )
     }
 
@@ -9696,12 +9703,13 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
             .start(eq(task.taskId), eq(mockSurface), eq(currentDragBounds), eq(bounds), anyOrNull())
         verify(desktopModeEventLogger, times(1))
             .logTaskResizingEnded(
-                ResizeTrigger.SNAP_LEFT_MENU,
-                InputMethod.TOUCH,
-                task,
-                bounds.width(),
-                bounds.height(),
-                displayController,
+                resizeTrigger = ResizeTrigger.SNAP_LEFT_MENU,
+                inputMethod = InputMethod.TOUCH,
+                taskInfo = task,
+                taskWidth = bounds.width(),
+                taskHeight = bounds.height(),
+                displayController = displayController,
+                deskId = 0,
             )
     }
 
@@ -9735,12 +9743,13 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         assertThat(findBoundsChange(wct, task)).isEqualTo(expectedBounds)
         verify(desktopModeEventLogger, times(1))
             .logTaskResizingStarted(
-                ResizeTrigger.DRAG_LEFT,
-                InputMethod.UNKNOWN_INPUT_METHOD,
-                task,
-                preDragBounds.width(),
-                preDragBounds.height(),
-                displayController,
+                resizeTrigger = ResizeTrigger.DRAG_LEFT,
+                inputMethod = InputMethod.UNKNOWN_INPUT_METHOD,
+                taskInfo = task,
+                taskWidth = preDragBounds.width(),
+                taskHeight = preDragBounds.height(),
+                displayController = displayController,
+                deskId = 0,
             )
     }
 
@@ -9818,21 +9827,23 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         verify(mockToast, never()).show()
         verify(desktopModeEventLogger, times(1))
             .logTaskResizingStarted(
-                ResizeTrigger.SNAP_LEFT_MENU,
-                InputMethod.MOUSE,
-                task,
-                taskBounds.width(),
-                taskBounds.height(),
-                displayController,
+                resizeTrigger = ResizeTrigger.SNAP_LEFT_MENU,
+                inputMethod = InputMethod.MOUSE,
+                taskInfo = task,
+                taskWidth = taskBounds.width(),
+                taskHeight = taskBounds.height(),
+                displayController = displayController,
+                deskId = 0,
             )
         verify(desktopModeEventLogger, times(1))
             .logTaskResizingEnded(
-                ResizeTrigger.SNAP_LEFT_MENU,
-                InputMethod.MOUSE,
-                task,
-                expectedBounds.width(),
-                expectedBounds.height(),
-                displayController,
+                resizeTrigger = ResizeTrigger.SNAP_LEFT_MENU,
+                inputMethod = InputMethod.MOUSE,
+                taskInfo = task,
+                taskWidth = expectedBounds.width(),
+                taskHeight = expectedBounds.height(),
+                displayController = displayController,
+                deskId = 0,
             )
     }
 
@@ -9866,12 +9877,13 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         assertThat(findBoundsChange(wct, task)).isEqualTo(expectedBounds)
         verify(desktopModeEventLogger, times(1))
             .logTaskResizingEnded(
-                ResizeTrigger.MAXIMIZE_BUTTON,
-                InputMethod.TOUCH,
-                task,
-                expectedBounds.width(),
-                expectedBounds.height(),
-                displayController,
+                resizeTrigger = ResizeTrigger.MAXIMIZE_BUTTON,
+                inputMethod = InputMethod.TOUCH,
+                taskInfo = task,
+                taskWidth = expectedBounds.width(),
+                taskHeight = expectedBounds.height(),
+                displayController = displayController,
+                deskId = 0,
             )
     }
 
@@ -9890,8 +9902,16 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         )
 
         assertThat(taskRepository.removeBoundsBeforeMaximize(task.taskId)).isEqualTo(bounds)
-        verify(desktopModeEventLogger, never())
-            .logTaskResizingEnded(any(), any(), any(), any(), any(), any(), any())
+        verify(desktopModeEventLogger)
+            .logTaskResizingEnded(
+                resizeTrigger = ResizeTrigger.MAXIMIZE_BUTTON,
+                inputMethod = InputMethod.TOUCH,
+                taskInfo = task,
+                taskWidth = STABLE_BOUNDS.width(),
+                taskHeight = STABLE_BOUNDS.height(),
+                displayController = displayController,
+                deskId = 0,
+            )
     }
 
     @Test
@@ -9925,12 +9945,13 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         assertThat(findBoundsChange(wct, task)).isEqualTo(boundsBeforeMaximize)
         verify(desktopModeEventLogger, times(1))
             .logTaskResizingEnded(
-                ResizeTrigger.MAXIMIZE_BUTTON,
-                InputMethod.TOUCH,
-                task,
-                boundsBeforeMaximize.width(),
-                boundsBeforeMaximize.height(),
-                displayController,
+                resizeTrigger = ResizeTrigger.MAXIMIZE_BUTTON,
+                inputMethod = InputMethod.TOUCH,
+                taskInfo = task,
+                taskWidth = boundsBeforeMaximize.width(),
+                taskHeight = boundsBeforeMaximize.height(),
+                displayController = displayController,
+                deskId = 0,
             )
     }
 
@@ -9971,12 +9992,13 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         assertThat(findBoundsChange(wct, task)).isEqualTo(boundsBeforeMaximize)
         verify(desktopModeEventLogger, times(1))
             .logTaskResizingEnded(
-                ResizeTrigger.MAXIMIZE_BUTTON,
-                InputMethod.TOUCH,
-                task,
-                boundsBeforeMaximize.width(),
-                boundsBeforeMaximize.height(),
-                displayController,
+                resizeTrigger = ResizeTrigger.MAXIMIZE_BUTTON,
+                inputMethod = InputMethod.TOUCH,
+                taskInfo = task,
+                taskWidth = boundsBeforeMaximize.width(),
+                taskHeight = boundsBeforeMaximize.height(),
+                displayController = displayController,
+                deskId = 0,
             )
     }
 
@@ -10017,12 +10039,13 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         assertThat(findBoundsChange(wct, task)).isEqualTo(boundsBeforeMaximize)
         verify(desktopModeEventLogger, times(1))
             .logTaskResizingEnded(
-                ResizeTrigger.MAXIMIZE_BUTTON,
-                InputMethod.TOUCH,
-                task,
-                boundsBeforeMaximize.width(),
-                boundsBeforeMaximize.height(),
-                displayController,
+                resizeTrigger = ResizeTrigger.MAXIMIZE_BUTTON,
+                inputMethod = InputMethod.TOUCH,
+                taskInfo = task,
+                taskWidth = boundsBeforeMaximize.width(),
+                taskHeight = boundsBeforeMaximize.height(),
+                displayController = displayController,
+                deskId = 0,
             )
     }
 
@@ -10056,12 +10079,13 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         assertThat(taskRepository.removeBoundsBeforeMaximize(task.taskId)).isNull()
         verify(desktopModeEventLogger, times(1))
             .logTaskResizingEnded(
-                ResizeTrigger.MAXIMIZE_BUTTON,
-                InputMethod.TOUCH,
-                task,
-                boundsBeforeMaximize.width(),
-                boundsBeforeMaximize.height(),
-                displayController,
+                resizeTrigger = ResizeTrigger.MAXIMIZE_BUTTON,
+                inputMethod = InputMethod.TOUCH,
+                taskInfo = task,
+                taskWidth = boundsBeforeMaximize.width(),
+                taskHeight = boundsBeforeMaximize.height(),
+                displayController = displayController,
+                deskId = 0,
             )
     }
 

@@ -2565,6 +2565,7 @@ class DesktopTasksController(
     fun toggleDesktopTaskSize(taskInfo: RunningTaskInfo, interaction: ToggleTaskSizeInteraction) {
         val repository = userRepositories.getProfile(taskInfo.userId)
         val currentTaskBounds = taskInfo.configuration.windowConfiguration.bounds
+        val deskId = repository.getDeskIdForTask(taskInfo.taskId)
         desktopModeEventLogger.logTaskResizingStarted(
             interaction.resizeTrigger,
             interaction.inputMethod,
@@ -2572,6 +2573,7 @@ class DesktopTasksController(
             currentTaskBounds.width(),
             currentTaskBounds.height(),
             displayController,
+            deskId,
         )
         val displayLayout = displayController.getDisplayLayout(taskInfo.displayId) ?: return
         val destinationBounds = Rect()
@@ -2626,6 +2628,7 @@ class DesktopTasksController(
             destinationBounds.width(),
             destinationBounds.height(),
             displayController,
+            deskId,
         )
         toggleResizeDesktopTaskTransitionHandler.startTransition(
             wct,
@@ -2742,6 +2745,8 @@ class DesktopTasksController(
         resizeTrigger: ResizeTrigger,
         inputMethod: InputMethod,
     ) {
+        val repository = userRepositories.getProfile(taskInfo.userId)
+        val deskId = repository.getDeskIdForTask(taskInfo.taskId)
         desktopModeEventLogger.logTaskResizingStarted(
             resizeTrigger,
             inputMethod,
@@ -2749,6 +2754,7 @@ class DesktopTasksController(
             currentDragBounds.width(),
             currentDragBounds.height(),
             displayController,
+            deskId,
         )
 
         val destinationBounds = getSnapBounds(taskInfo.displayId, position)
@@ -2759,6 +2765,7 @@ class DesktopTasksController(
             destinationBounds.width(),
             destinationBounds.height(),
             displayController,
+            deskId,
         )
 
         if (DesktopExperienceFlags.ENABLE_TILE_RESIZING.isTrue()) {
