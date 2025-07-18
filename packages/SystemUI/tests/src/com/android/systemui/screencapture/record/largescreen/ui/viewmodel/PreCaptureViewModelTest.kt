@@ -28,6 +28,7 @@ import com.android.systemui.SysuiTestCase
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
 import com.android.systemui.lifecycle.activateIn
+import com.android.systemui.screencapture.ui.mockScreenCaptureActivity
 import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
 import kotlin.test.assertFailsWith
@@ -191,5 +192,13 @@ class PreCaptureViewModelTest : SysuiTestCase() {
             // TODO(b/430364500) Once a11y label is available, use it for a more robust assertion.
             viewModel.updateCaptureRegion(ScreenCaptureRegion.APP_WINDOW)
             assertThat(viewModel.captureRegionButtonViewModels.count { it.isSelected }).isEqualTo(1)
+        }
+
+    @Test
+    fun closeUI_finishesActivity() =
+        testScope.runTest {
+            viewModel.closeUI()
+
+            verify(kosmos.mockScreenCaptureActivity, times(1)).finish()
         }
 }

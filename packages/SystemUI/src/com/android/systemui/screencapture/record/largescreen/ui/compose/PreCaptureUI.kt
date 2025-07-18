@@ -47,9 +47,7 @@ fun PreCaptureUI(viewModel: PreCaptureViewModel) {
             PreCaptureToolbar(
                 viewModel = viewModel,
                 expanded = true,
-                onCloseClick = {
-                    // TODO(b/424792547) Close the activity.
-                },
+                onCloseClick = { viewModel.closeUI() },
             )
         }
 

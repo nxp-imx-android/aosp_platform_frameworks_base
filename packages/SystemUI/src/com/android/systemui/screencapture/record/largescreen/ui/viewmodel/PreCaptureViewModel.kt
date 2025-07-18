@@ -23,10 +23,12 @@ import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.lifecycle.HydratedActivatable
 import com.android.systemui.res.R
+import com.android.systemui.screencapture.common.ScreenCapture
 import com.android.systemui.screencapture.common.ui.viewmodel.DrawableLoaderViewModel
 import com.android.systemui.screencapture.common.ui.viewmodel.DrawableLoaderViewModelImpl
 import com.android.systemui.screencapture.record.largescreen.domain.interactor.ScreenCaptureRecordLargeScreenFeaturesInteractor
 import com.android.systemui.screencapture.record.largescreen.domain.interactor.ScreenshotInteractor
+import com.android.systemui.screencapture.ui.ScreenCaptureActivity
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.CoroutineScope
@@ -50,6 +52,7 @@ enum class ScreenCaptureRegion {
 class PreCaptureViewModel
 @AssistedInject
 constructor(
+    @ScreenCapture private val activity: ScreenCaptureActivity,
     @Application private val applicationContext: Context,
     @Background private val backgroundScope: CoroutineScope,
     private val iconProvider: ScreenCaptureIconProvider,
@@ -109,6 +112,10 @@ constructor(
 
     fun onPartialRegionDragEnd(offset: Offset, width: Dp, height: Dp) {
         // TODO(b/427541309) Update region box position and size.
+    }
+
+    fun closeUI() {
+        activity.finish()
     }
 
     override suspend fun onActivated() {
