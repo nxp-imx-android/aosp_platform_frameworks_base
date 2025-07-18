@@ -47,13 +47,6 @@ flag {
 }
 
 flag {
-   name: "enforce_quota_policy_to_fgs_jobs"
-   namespace: "backstage_power"
-   description: "Applies the normal quota policy to FGS jobs"
-   bug: "341201311"
-}
-
-flag {
    name: "adjust_quota_default_constants"
    namespace: "backstage_power"
    description: "Adjust quota default parameters"
