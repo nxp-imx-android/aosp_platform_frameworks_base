@@ -82,6 +82,8 @@ class AppFunctionsLoggingTest {
             mock<IUriGrantsManager>(),
             mock<UriGrantsManagerInternal>(),
             mock<DeviceSettingHelper>(),
+            mock<AppFunctionAgentAllowlistStorage>(),
+            MoreExecutors.directExecutor(),
         )
 
     @Before

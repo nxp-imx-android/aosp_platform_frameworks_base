@@ -66,6 +66,7 @@ import android.content.pm.SignedPackage;
 import android.content.pm.SigningInfo;
 import android.os.Binder;
 import android.os.CancellationSignal;
+import android.os.Environment;
 import android.os.IBinder;
 import android.os.ICancellationSignal;
 import android.os.OutcomeReceiver;
@@ -92,6 +93,7 @@ import com.android.server.SystemService;
 import com.android.server.SystemService.TargetUser;
 import com.android.server.uri.UriGrantsManagerInternal;
 
+import java.io.File;
 import java.io.FileDescriptor;
 import java.io.PrintWriter;
 import java.util.ArrayList;
@@ -111,6 +113,8 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
     private static final String ALLOWLISTED_APP_FUNCTIONS_AGENTS =
             "allowlisted_app_functions_agents";
     private static final String NAMESPACE_MACHINE_LEARNING = "machine_learning";
+    private static final String AGENT_ALLOWLIST_FILE_NAME = "agent_allowlist.txt";
+    private static final String APP_FUNCTIONS_DIR = "appfunctions";
 
     private final RemoteServiceCaller<IAppFunctionService> mRemoteServiceCaller;
     private final CallerValidator mCallerValidator;
@@ -139,6 +143,10 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
     @GuardedBy("mAgentAllowlistLock")
     private List<SignedPackage> mUpdatableAgentAllowlist = new ArrayList<>();
 
+    private final Executor mWorkerExecutor;
+
+    private final AppFunctionAgentAllowlistStorage mAgentAllowlistStorage;
+
     public AppFunctionManagerServiceImpl(
             @NonNull Context context,
             @NonNull PackageManagerInternal packageManagerInternal,
@@ -157,7 +165,12 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
                 appFunctionAccessServiceInterface,
                 uriGrantsManager,
                 uriGrantsManagerInternal,
-                new DeviceSettingHelperImpl(context));
+                new DeviceSettingHelperImpl(context),
+                new AppFunctionAgentAllowlistStorage(
+                        new File(
+                                new File(Environment.getDataSystemDirectory(), APP_FUNCTIONS_DIR),
+                                AGENT_ALLOWLIST_FILE_NAME)),
+                THREAD_POOL_EXECUTOR);
     }
 
     @VisibleForTesting
@@ -172,7 +185,9 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
             AppFunctionAccessServiceInterface appFunctionAccessServiceInterface,
             IUriGrantsManager uriGrantsManager,
             UriGrantsManagerInternal uriGrantsManagerInternal,
-            DeviceSettingHelper deviceSettingHelper) {
+            DeviceSettingHelper deviceSettingHelper,
+            AppFunctionAgentAllowlistStorage agentAllowlistStorage,
+            Executor workerExecutor) {
         mContext = Objects.requireNonNull(context);
         mRemoteServiceCaller = Objects.requireNonNull(remoteServiceCaller);
         mCallerValidator = Objects.requireNonNull(callerValidator);
@@ -185,6 +200,8 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
         mUriGrantsManagerInternal = Objects.requireNonNull(uriGrantsManagerInternal);
         mPermissionOwner = mUriGrantsManagerInternal.newUriPermissionOwner("appfunctions");
         mDeviceSettingHelper = deviceSettingHelper;
+        mAgentAllowlistStorage = Objects.requireNonNull(agentAllowlistStorage);
+        mWorkerExecutor = Objects.requireNonNull(workerExecutor);
     }
 
     /** Called when the user is unlocked. */
@@ -263,7 +280,7 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
     public void onBootPhase(int phase) {
         if (!Flags.appFunctionAccessServiceEnabled()) return;
         if (phase == SystemService.PHASE_SYSTEM_SERVICES_READY) {
-            updateAgentAllowlist(/* readFromDeviceConfig */ true);
+            mWorkerExecutor.execute(() -> updateAgentAllowlist(/* readFromDeviceConfig */ true));
             DeviceConfig.addOnPropertiesChangedListener(
                     NAMESPACE_MACHINE_LEARNING,
                     BackgroundThread.getExecutor(),
@@ -272,6 +289,7 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
     }
 
     // TODO(b/413093397): Merge allowlist agents from other sources
+    @WorkerThread
     private void updateAgentAllowlist(boolean readFromDeviceConfig) {
         synchronized (mAgentAllowlistLock) {
             Set<SignedPackage> oldAgents = new HashSet<>();
@@ -301,15 +319,18 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
     }
 
     @Nullable
+    @WorkerThread
     private List<SignedPackage> readDeviceConfigAgentAllowlist() {
-        final String signatureString =
+        final String allowlistString =
                 DeviceConfig.getString(
                         NAMESPACE_MACHINE_LEARNING, ALLOWLISTED_APP_FUNCTIONS_AGENTS, "");
         try {
-            return SignedPackageParser.parseList(signatureString);
+            List<SignedPackage> parsedAllowlist = SignedPackageParser.parseList(allowlistString);
+            mAgentAllowlistStorage.writeCurrentAllowlist(allowlistString);
+            return parsedAllowlist;
         } catch (Exception e) {
-            Slog.e(TAG, "Cannot parse signature string: " + signatureString, e);
-            return null;
+            Slog.e(TAG, "Cannot parse agent allowlist from config: " + allowlistString, e);
+            return mAgentAllowlistStorage.readPreviousValidAllowlist();
         }
     }
 
