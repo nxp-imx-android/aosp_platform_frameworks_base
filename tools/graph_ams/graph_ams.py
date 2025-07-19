@@ -27,6 +27,7 @@ import re
 import sys
 
 from frameworks.base.core.proto.android.server import activitymanagerservice_pb2
+from frameworks.proto_logging.stats.enums.app_shared import app_enums_pb2
 
 # Colours from Google Material.
 BLUE = "#4285f4"
@@ -45,6 +46,22 @@ def read_activity_proto(filename):
     ams.ParseFromString(f.read())
   return ams
 
+def countBindingsOut(pid, edges):
+  """Count the # of bindings out from a process."""
+  count = 0
+  for e in edges:
+    if e["source"] == str(pid):
+      count += 1
+  return count
+
+def countBindingsIn(pid, edges):
+  """Count the # of bindings to a process."""
+  count = 0
+  for e in edges:
+    if e["target"] == str(pid):
+      count += 1
+  return count
+
 def make_name(p):
   """Make a pretty process name."""
   return f"{p.pid}:{p.process_name}/{p.uid}"
@@ -53,9 +70,96 @@ def flag_str(flag):
   """Convert bind flags into a string."""
   return activitymanagerservice_pb2.ConnectionRecordProto.Flag.Name(flag)
 
-def make_nodes(procs):
+def schedGroup_str(schedGroup):
+  """ Convert schedule group into a string."""
+  return activitymanagerservice_pb2.ProcessOomProto.SchedGroup.Name(schedGroup)
+
+def setState_str(setState):
+  """ Convert set state into a string."""
+  return app_enums_pb2.ProcessStateEnum.Name(setState)
+
+def capabilityFlag_str(capabilityFlags) :
+  """ Convert caoability flag into a string."""
+  capability_flags = []
+  for flag in capabilityFlags :
+    capability_flags.append(app_enums_pb2.ProcessCapabilityEnum.Name(flag))
+  return capability_flags
+
+def make_nodes(ams, edges):
   """Make a list of all the nodes."""
-  nodes = [{"id": str(p.pid), "name": make_name(p)} for p in procs]
+  procs = ams.processes
+  broads = ams.broadcasts
+  services = ams.services
+  # Create a list of process details from 'details {}'.
+  details = [
+  {"pid": str(d.proc.pid),
+   "uid": str(d.proc.uid),
+   "setState": setState_str(d.detail.set_state) + " (" + str(d.detail.set_state) + ")",
+   "schedGroup": schedGroup_str(d.sched_group) + " (" + str(d.sched_group) + ")",
+   "oomAdj": str(d.oom_adj), # Universally understood OOM score.
+   "setAdj": str(d.detail.set_adj), # Used for D3.js forces.
+   # May remove any following data point.
+   "persistent": str(d.persistent),
+   "maxAdj": str(d.detail.max_adj),
+   "curRawAdj": str(d.detail.cur_raw_adj),
+   "setRawAdj": str(d.detail.set_raw_adj),
+   "curAdj": str(d.detail.cur_adj),
+   "currentState": str(d.detail.current_state),
+   "lastPss": str(d.detail.last_pss),
+   "lastSwapPss": str(d.detail.last_swap_pss),
+   "lastCachedPss": str(d.detail.last_cached_pss),
+   "numOfBindingsOut": str(countBindingsOut(d.proc.pid, edges)),
+   "numOfBindingsIn": str(countBindingsIn(d.proc.pid, edges)),
+   "capabilityFlags": capabilityFlag_str(d.detail.capability_flags)}
+  for d in procs.lru_procs.list]
+  # Create a list of processes from 'procs {}'.
+  process = [{"pid": str(p.pid), "name": make_name(p), "user": str(p.user_id)} for p in procs.procs]
+  if DEBUG_LOGS:
+    print(process, file=sys.stderr)
+  # Create a lookup map from the details list for efficient merging. Set the 'id' as the key.
+  details_map = {d['pid']: d for d in details}
+  nodes = []
+  # Create a list of broadcasts from 'broadcasts {}'.
+  broadcasts = [{"pid": str(b.pid),
+                 "numberReceivers": str(b.number_receivers),
+                 "broadcastIntentActions": str(f.intent_filter.actions),
+                 "broadcastRequiredPermissions": str(f.required_permission)}
+                for b in broads.receiver_list
+                for f in b.filters]
+  # Create a lookup map from the broadcasts list for efficient merging. Set the 'id' as the key.
+  broadcasts_map = {b['pid']: b for b in broadcasts}
+  timeMetrics = [{"pid": str(s.pid), "createRealTime":
+                 {"startMs": str(s.create_real_time.start_ms),
+                  "endMs": str(s.create_real_time.end_ms)},
+                  "startingBgTimeout": {"endMs": str(s.starting_bg_timeout.end_ms)},
+                  "lastActivityTime": {"startMs": str(s.last_activity_time.start_ms),
+                  "endMs": str(s.last_activity_time.end_ms)},
+                  "restartTime": {"startMs": str(s.restart_time.start_ms),
+                  "endMs":str(s.restart_time.end_ms)}}
+                for sbu in services.active_services.services_by_users
+                for  s in sbu.service_records]
+  # Create a lookup map from the timeMetrics list for efficient merging. Set the 'id' as the key.
+  timeMetrics_map = {t['pid']: t for t in timeMetrics}
+  # Iterate through the process list.
+  for proc_item in process:
+    # Start with the base process info (name, user, etc.).
+    node = proc_item.copy()
+    # Find the corresponding details using the id from the map.
+    detail_item = details_map.get(node['pid'])
+    # Find the corresponding broadcasts using the id from the map.
+    broadcast_item = broadcasts_map.get(node['pid'])
+    # Find the corresponding timeMetrics using the id from the map.
+    timeMetric_item = timeMetrics_map.get(node['pid'])
+    # If details exist for this process, merge them into the node.
+    if detail_item:
+      node.update(detail_item)
+    # If broadcasts exist for this process, merge them into the node.
+    if broadcast_item:
+      node.update(broadcast_item)
+    # If timeMetrics extst for this process, merge them into the node.
+    if timeMetric_item:
+      node.update(timeMetric_item)
+    nodes.append(node)
   return nodes
 
 def make_edges(services):
@@ -79,7 +183,7 @@ def make_edges(services):
         edge = {
             "source": str(dst),
             "target": str(src),
-            "flags_full": flags_full,
+            "flagsFull": flags_full,
             "flags": flags_str,
         }
         edges.append(edge)
@@ -155,6 +259,15 @@ def print_json(nodes, edges):
   }
   print(json.dumps(data, indent=2))
 
+def print_text(proto):
+  print(proto)
+
+def print_node(proto):
+  print(proto.processes.procs)
+
+def print_link(proto):
+  print(proto.services)
+
 def parse_args():
   """Parse command-line arguments."""
   parser = argparse.ArgumentParser(
@@ -165,7 +278,7 @@ def parse_args():
   parser.add_argument("--no-highlight", dest="highlight",
                       help="Highlight connections", action="store_false")
   parser.add_argument("--format", help="Format type", default="dot",
-                      choices=["dot", "json"])
+                      choices=["dot", "json", "text", "node", "link"])
   parser.add_argument("filename", help="Input file dumpsys activity --proto")
   return parser.parse_args()
 
@@ -174,14 +287,20 @@ def main():
   args = parse_args()
   ams = read_activity_proto(args.filename)
 
-  nodes = make_nodes(ams.processes.procs)
   edges = make_edges(ams.services)
+  nodes = make_nodes(ams, edges)
 
   if args.format == "dot":
     print_dot(nodes, edges, args)
   elif args.format == "json":
     print_json(nodes, edges)
-
+  elif args.format == "text":
+    print_text(ams)
+  elif args.format == "node":
+    print_node(ams)
+  elif args.format == "link":
+    print_link(ams)
+DEBUG_LOGS= False
 if __name__ == "__main__":
   main()
 
