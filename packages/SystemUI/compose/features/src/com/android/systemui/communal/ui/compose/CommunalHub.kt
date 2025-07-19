@@ -1387,6 +1387,9 @@ private fun CommunalContent(
 @Composable
 fun HighlightedItem(modifier: Modifier = Modifier, alpha: Float = 1.0f) {
     val brush = SolidColor(MaterialTheme.colorScheme.primary)
+    val cornerRadius =
+        if (hubEditModeTransition()) dimensionResource(system_app_widget_background_radius)
+        else 37.adjustedDp
     Box(
         modifier =
             // drawBehind lets us draw outside the bounds of the widgets so that we don't need to
@@ -1400,7 +1403,7 @@ fun HighlightedItem(modifier: Modifier = Modifier, alpha: Float = 1.0f) {
                     topLeft = Offset(-padding, -padding),
                     size =
                         Size(width = size.width + padding * 2, height = size.height + padding * 2),
-                    cornerRadius = CornerRadius(37.adjustedDp.toPx()),
+                    cornerRadius = CornerRadius(cornerRadius.toPx()),
                     style = Stroke(width = 3.adjustedDp.toPx()),
                 )
             }
@@ -2118,7 +2121,7 @@ class Dimensions(val context: Context, val config: Configuration) {
             get() = 360.adjustedDp
 
         val WidgetOutlinePadding
-            get() = 8.adjustedDp
+            get() = if (hubEditModeTransition()) 0.dp else 8.adjustedDp
 
         val Spacing
             get() = ItemSpacing / 2
