@@ -278,7 +278,7 @@ class DesktopTilingWindowDecoration(
                     dividerBounds,
                     displayContext,
                     isDarkMode,
-                    interactionJankMonitor
+                    interactionJankMonitor,
                 )
             }
         // a leash to present the divider on top of, without re-parenting.

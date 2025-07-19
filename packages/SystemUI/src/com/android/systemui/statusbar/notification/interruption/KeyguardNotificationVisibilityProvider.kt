@@ -199,9 +199,10 @@ constructor(
 
     override fun shouldHideNotification(entry: NotificationEntry): VisState =
         when {
-            // Don't hide notifications if we're in a dream. The dream status bar needs
+            // Show notifications if we're in a dream with overlay. The dream status bar needs
             // notifications to render ongoing call chip.
-            OngoingActivityChipsOnDream.isEnabled && keyguardUpdateMonitor.isDreaming -> SHOW
+            OngoingActivityChipsOnDream.isEnabled && keyguardUpdateMonitor.isDreamingWithOverlay ->
+                SHOW
             // Keyguard state doesn't matter if the keyguard is not showing.
             !isLockedOrLocking -> SHOW
             // Notifications not allowed on the lockscreen, always hide.

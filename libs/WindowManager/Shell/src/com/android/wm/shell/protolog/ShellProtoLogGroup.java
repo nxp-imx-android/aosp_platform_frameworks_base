@@ -107,28 +107,13 @@ public enum ShellProtoLogGroup implements IProtoLogGroup {
     }
 
     @Override
-    public boolean isLogToProto() {
-        return mLogToProto;
-    }
-
-    @Override
     public boolean isLogToLogcat() {
         return mLogToLogcat;
     }
 
     @Override
-    public boolean isLogToAny() {
-        return mLogToLogcat || mLogToProto;
-    }
-
-    @Override
     public String getTag() {
         return mTag;
-    }
-
-    @Override
-    public void setLogToProto(boolean logToProto) {
-        this.mLogToProto = logToProto;
     }
 
     @Override

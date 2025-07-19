@@ -69,14 +69,14 @@ class TilingDisplayReconnectEventHandler(
             desktopRepository.addLeftTiledTaskToDesk(
                 displayId,
                 session.leftTiledTask,
-                session.deskId
+                session.deskId,
             )
         }
         if (session.rightTiledTask != null) {
             desktopRepository.addRightTiledTaskToDesk(
                 displayId,
                 session.rightTiledTask,
-                session.deskId
+                session.deskId,
             )
         }
     }

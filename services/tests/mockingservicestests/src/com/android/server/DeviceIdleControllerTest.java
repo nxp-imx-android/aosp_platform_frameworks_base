@@ -72,6 +72,7 @@ import android.app.IActivityManager;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -177,6 +178,7 @@ public class DeviceIdleControllerTest {
         volatile long nowUptime;
         boolean useMotionSensor = true;
         boolean isLocationPrefetchEnabled = true;
+        boolean isSmallBatteryDevice = false;
 
         InjectorForTest(Context ctx) {
             super(ctx);
@@ -276,6 +278,11 @@ public class DeviceIdleControllerTest {
         boolean useMotionSensor() {
             return useMotionSensor;
         }
+
+        @Override
+        boolean isSmallBatteryDevice() {
+            return isSmallBatteryDevice;
+        }
     }
 
     private class AnyMotionDetectorForTest extends AnyMotionDetector {
@@ -341,6 +348,8 @@ public class DeviceIdleControllerTest {
                 .spyStatic(LocalServices.class)
                 .startMocking();
         spyOn(getContext());
+        spyOn(getContext().getResources());
+        spyOn(getContext().getPackageManager());
         doReturn(null).when(getContext()).registerReceiver(any(), any());
         doReturn(mock(IBatteryStats.class)).when(() -> BatteryStatsService.getService());
         doReturn(mock(ActivityManagerInternal.class))
@@ -2762,6 +2771,54 @@ public class DeviceIdleControllerTest {
         assertTrue(mDeviceIdleController.isQuickDozeEnabled());
     }
 
+    @Test
+    public void testInactiveConstants_smallBatteryDevice_configValuesOverriden() {
+        setupIntResource(com.android.internal.R.integer.device_idle_inactive_to_ms, 1234);
+        setupIntResource(com.android.internal.R.integer.device_idle_idle_after_inactive_to_ms, 567);
+        setupPackageManagerFeature(PackageManager.FEATURE_WATCH, false);
+        mInjector = new InjectorForTest(getContext());
+        mInjector.isSmallBatteryDevice = true;
+
+        cleanupDeviceIdleController();
+        setupDeviceIdleController();
+
+        assertEquals(
+                mConstants.DEFAULT_INACTIVE_TIMEOUT_SMALL_BATTERY, mConstants.INACTIVE_TIMEOUT);
+        assertEquals(
+                mConstants.DEFAULT_IDLE_AFTER_INACTIVE_TIMEOUT_SMALL_BATTERY,
+                mConstants.IDLE_AFTER_INACTIVE_TIMEOUT);
+    }
+
+    @Test
+    public void testInactiveConstants_nonSmallBatteryDevice_configValuesNotOverriden() {
+        setupIntResource(com.android.internal.R.integer.device_idle_inactive_to_ms, 1234);
+        setupIntResource(com.android.internal.R.integer.device_idle_idle_after_inactive_to_ms, 567);
+        setupPackageManagerFeature(PackageManager.FEATURE_WATCH, false);
+        mInjector = new InjectorForTest(getContext());
+        mInjector.isSmallBatteryDevice = false;
+
+        cleanupDeviceIdleController();
+        setupDeviceIdleController();
+
+        assertEquals(1234, mConstants.INACTIVE_TIMEOUT);
+        assertEquals(567, mConstants.IDLE_AFTER_INACTIVE_TIMEOUT);
+    }
+
+    @Test
+    public void testInactiveConstants_smallBatteryWatch_configValuesNotOverriden() {
+        setupIntResource(com.android.internal.R.integer.device_idle_inactive_to_ms, 1234);
+        setupIntResource(com.android.internal.R.integer.device_idle_idle_after_inactive_to_ms, 567);
+        setupPackageManagerFeature(PackageManager.FEATURE_WATCH, true);
+        mInjector = new InjectorForTest(getContext());
+        mInjector.isSmallBatteryDevice = true;
+
+        cleanupDeviceIdleController();
+        setupDeviceIdleController();
+
+        assertEquals(1234, mConstants.INACTIVE_TIMEOUT);
+        assertEquals(567, mConstants.IDLE_AFTER_INACTIVE_TIMEOUT);
+    }
+
     private void enterDeepState(int state) {
         switch (state) {
             case STATE_ACTIVE:
@@ -2894,6 +2951,15 @@ public class DeviceIdleControllerTest {
         } else {
             doReturn(Long.MAX_VALUE).when(mAlarmManager).getNextWakeFromIdleTime();
         }
+    }
+
+    private void setupIntResource(int resId, int value) {
+        when(getContext().getResources().getInteger(resId)).thenReturn(value);
+    }
+
+    private void setupPackageManagerFeature(String feature, boolean isFeaturePresent) {
+        when(getContext().getPackageManager().hasSystemFeature(feature))
+                .thenReturn(isFeaturePresent);
     }
 
     private void verifyStateConditions(int expectedState) {

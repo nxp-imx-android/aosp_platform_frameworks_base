@@ -200,7 +200,7 @@ class ReusableWindowDecorViewHostTest : ShellTestCase() {
             display = context.display,
             id = 1,
             viewHostAdapter = spy(SurfaceControlViewHostAdapter(context, context.display)),
-            rootView
+            rootView,
         )
 
     private fun ReusableWindowDecorViewHost.view(): View? = viewHostAdapter.viewHost?.view

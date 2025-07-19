@@ -46,7 +46,7 @@ class TilingDisplayReconnectEventHandlerTest {
                 desktopRepository,
                 snapEventHandler,
                 transitions,
-                RECONNECTED_DISPLAY_ID
+                RECONNECTED_DISPLAY_ID,
             )
     }
 
@@ -56,13 +56,13 @@ class TilingDisplayReconnectEventHandlerTest {
             getTilingDisplayReconnectSession(
                 isActiveSession = false,
                 leftTiledTask = null,
-                primaryDesk = true
+                primaryDesk = true,
             )
         val inactiveSession2 =
             getTilingDisplayReconnectSession(
                 isActiveSession = false,
                 leftTiledTask = 1,
-                primaryDesk = true
+                primaryDesk = true,
             )
         tilingReconnectHandler.activationBinder = transition
         tilingReconnectHandler.addTilingDisplayReconnectSession(inactiveSession1)
@@ -82,13 +82,13 @@ class TilingDisplayReconnectEventHandlerTest {
             getTilingDisplayReconnectSession(
                 isActiveSession = true,
                 leftTiledTask = null,
-                primaryDesk = true
+                primaryDesk = true,
             )
         val inactiveSession2 =
             getTilingDisplayReconnectSession(
                 isActiveSession = false,
                 leftTiledTask = 1,
-                primaryDesk = true
+                primaryDesk = true,
             )
         tilingReconnectHandler.activationBinder = transition
         tilingReconnectHandler.addTilingDisplayReconnectSession(inactiveSession1)
@@ -108,13 +108,13 @@ class TilingDisplayReconnectEventHandlerTest {
             getTilingDisplayReconnectSession(
                 isActiveSession = true,
                 leftTiledTask = null,
-                primaryDesk = true
+                primaryDesk = true,
             )
         val inactiveSession2 =
             getTilingDisplayReconnectSession(
                 isActiveSession = false,
                 leftTiledTask = 1,
-                primaryDesk = true
+                primaryDesk = true,
             )
         tilingReconnectHandler.activationBinder = mock()
         tilingReconnectHandler.addTilingDisplayReconnectSession(inactiveSession1)
@@ -131,13 +131,13 @@ class TilingDisplayReconnectEventHandlerTest {
     private fun getTilingDisplayReconnectSession(
         isActiveSession: Boolean,
         leftTiledTask: Int?,
-        primaryDesk: Boolean
+        primaryDesk: Boolean,
     ) =
         TilingDisplayReconnectEventHandler.TilingDisplayReconnectSession(
             leftTiledTask,
             2,
             if (primaryDesk) PRIMARY_DESK_ID else SECONDARY_DESK_ID,
-            isActiveSession
+            isActiveSession,
         )
 
     companion object {

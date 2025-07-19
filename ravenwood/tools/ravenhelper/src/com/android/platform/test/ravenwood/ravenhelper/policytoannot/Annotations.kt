@@ -53,6 +53,16 @@ class Annotations {
         }
     }
 
+    /**
+     * Keeping <clinit> requires a special policy on the class.
+     */
+    fun getClassInitializerPolicy(policy: FilterPolicy): String? {
+        if (policy == FilterPolicy.Keep) {
+            return "@android.ravenwood.annotation.RavenwoodKeepStaticInitializer"
+        }
+        return null
+    }
+
     private fun withArg(annot: String, arg: String): String {
         return "@$annot(\"$arg\")"
     }

@@ -482,6 +482,16 @@ flag {
 }
 
 flag {
+    name: "status_bar_dark_icon_interactor_mixed_fix"
+    namespace: "systemui"
+    description: "Fix DarkIconInteractor#toIsAreaDark result for mixed status bar lightness, for icons that do not overlap with the dark icon area."
+    bug: "423390143"
+    metadata {
+      purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "icon_refresh_2025"
     namespace: "systemui"
     description: "Build time flag for 2025 icon refresh"
@@ -1047,16 +1057,6 @@ flag {
     bug: "333596426"
     metadata {
       purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
-    name: "register_battery_controller_receivers_in_corestartable"
-    namespace: "systemui"
-    description: "Decide whether to register the receivers in battery controller impl in the BatteryControllerStartable corestartable."
-    bug: "307517093"
-    metadata {
-        purpose: PURPOSE_BUGFIX
     }
 }
 

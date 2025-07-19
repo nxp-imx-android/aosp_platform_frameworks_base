@@ -548,12 +548,8 @@ public class GraphicsEnvironment {
     }
 
     /**
-     * If ANGLE is not the system driver, determine whether ANGLE should be used, and if so, pass
+     * Determine whether ANGLE should be used, and if so, pass
      * down the necessary details to the C++ GraphicsEnv class via GraphicsEnv::setAngleInfo().
-     * <p>
-     * If ANGLE is the system driver or the various flags indicate it should be used, attempt to
-     * set up ANGLE from the APK first, so the updatable libraries are used. If APK setup fails,
-     * attempt to set up the system ANGLE. Return false if both fail.
      *
      * @param context - Context of the application.
      * @param bundle - Bundle of the application.
@@ -564,28 +560,107 @@ public class GraphicsEnvironment {
      */
     private boolean setupAngle(Context context, Bundle bundle, PackageManager packageManager,
             String packageName) {
-        final String eglDriverName = SystemProperties.get(PROPERTY_RO_HARDWARE_EGL);
 
-        // The ANGLE choice only makes sense if ANGLE is not the system driver.
-        if (!eglDriverName.equals(ANGLE_DRIVER_NAME)) {
-            final String angleChoice = queryAngleChoice(context, bundle, packageName);
-            if (angleChoice.equals(ANGLE_GL_DRIVER_CHOICE_DEFAULT)) {
+        // There are three values involved in deciding whether to load ANGLE.
+        // In order of precedence:
+        //
+        // 1. Settings choice for ANGLE
+        // 2. Persist choice for EGL (persist.graphics.egl)
+        // 3. Readonly choice for EGL (ro.hardware.egl)
+        //
+        // One complication here is, the persist choice is *only* respected when DEFAULT is chosen.
+        //
+        // Settings choice can be three values:
+        //
+        //   ANGLE_GL_DRIVER_CHOICE_ANGLE
+        //   ANGLE_GL_DRIVER_CHOICE_NATIVE
+        //   ANGLE_GL_DRIVER_CHOICE_DEFAULT
+        //
+        // If it is ANGLE
+        //   - We don't care what the other choices are, we want to use ANGLE
+        // If it is NATIVE
+        //   - We don't care about the persist choice
+        //   - We need to check readonly choice
+        // If it is DEFAULT
+        //   - We need to check the persist choice (if it exists)
+        //   - We need to check the readonly choice
+        //
+        // Finally, only call nativeSetAngleInfo if readonly choice is used, and it is *not* ANGLE
+        //  - This is to match expectations in Loader::open
+
+        // Perform a number of checks to decide if we should set up ANGLE
+        boolean setupANGLE = false;
+
+        if (android.os.Flags.queryAngleChoiceFlag()) {
+            // Check settings choice first, as the highest priority
+            final String settingsChoice = queryAngleChoice(context, bundle, packageName);
+
+            if (settingsChoice.equals(ANGLE_GL_DRIVER_CHOICE_ANGLE)) {
+                 // If choice was ANGLE, we explicitly want to set it up
+                setupANGLE = true;
+
+            } else if (settingsChoice.equals(ANGLE_GL_DRIVER_CHOICE_NATIVE)) {
+                // If choice was NATIVE, we only check the readonly value
+                setupANGLE = SystemProperties.get(PROPERTY_RO_HARDWARE_EGL)
+                                    .equals(ANGLE_DRIVER_NAME);
+                if (!setupANGLE) {
+                    // We are using readonly choice and it is not ANGLE, inform the loader
+                    nativeSetAngleInfo("", true, packageName, null);
+                }
+
+            } else if (settingsChoice.equals(ANGLE_GL_DRIVER_CHOICE_DEFAULT)) {
+                // If choice was DEFAULT, we need to check persist, then readonly
+                final String persistChoice  = nativeGetPersistGraphicsEgl();
+                if (persistChoice != null) {
+                    // We have a persist choice, check it for ANGLE
+                    setupANGLE = persistChoice.equals(ANGLE_DRIVER_NAME);
+                } else {
+                    // No persist choice, so check readonly
+                    setupANGLE = SystemProperties.get(PROPERTY_RO_HARDWARE_EGL)
+                                        .equals(ANGLE_DRIVER_NAME);
+                    if (!setupANGLE) {
+                        // We are using readonly choice and it is not ANGLE, inform the loader
+                        nativeSetAngleInfo("", true, packageName, null);
+                    }
+                }
+
+            } else {
+                Log.v(TAG, "Unrecognized ANGLE choice: " + settingsChoice);
                 return false;
             }
-            if (angleChoice.equals(ANGLE_GL_DRIVER_CHOICE_NATIVE)) {
-                nativeSetAngleInfo("", true, packageName, null);
-                return false;
+
+        } else {
+            // Original code
+            // TODO: Remove the else chunk when the flag is enabled
+            final String eglDriverName = SystemProperties.get(PROPERTY_RO_HARDWARE_EGL);
+
+            // The ANGLE choice only makes sense if ANGLE is not the system driver.
+            if (!eglDriverName.equals(ANGLE_DRIVER_NAME)) {
+                final String angleChoice = queryAngleChoice(context, bundle, packageName);
+                if (angleChoice.equals(ANGLE_GL_DRIVER_CHOICE_DEFAULT)) {
+                    return false;
+                }
+                if (angleChoice.equals(ANGLE_GL_DRIVER_CHOICE_NATIVE)) {
+                    nativeSetAngleInfo("", true, packageName, null);
+                    return false;
+                }
             }
+
+            setupANGLE = true;
         }
 
-        // If we reach here, it means either:
-        // 1. system driver is not ANGLE, but ANGLE is requested.
-        // 2. system driver is ANGLE.
-        // In both cases, setup ANGLE info. We attempt to setup the APK first, so
-        // updated/development libraries are used if the APK is present, falling back to the system
-        // libraries otherwise.
-        return setupAngleFromApk(context, bundle, packageManager, packageName)
-                || setupAngleFromSystem(context, bundle, packageName);
+        if (setupANGLE) {
+            // If we reach here, it means either:
+            // 1. system driver is not ANGLE, but ANGLE is requested.
+            // 2. system driver is ANGLE, and no other driver is requested.
+            // In both cases, setup ANGLE info. We attempt to setup the APK first, so
+            // updated/development libraries are used if the APK is present, falling back to the
+            // system libraries otherwise.
+            return setupAngleFromApk(context, bundle, packageManager, packageName)
+                    || setupAngleFromSystem(context, bundle, packageName);
+        }
+
+        return false;
     }
 
     /**
@@ -960,6 +1035,7 @@ public class GraphicsEnvironment {
             String packageName, String[] features);
     private static native boolean setInjectLayersPrSetDumpable();
     private static native void nativeToggleAngleAsSystemDriver(boolean enabled);
+    private static native String nativeGetPersistGraphicsEgl();
 
     /**
      * Hint for GraphicsEnvironment that an activity is launching on the process.

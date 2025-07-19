@@ -48,11 +48,6 @@ public enum ImeProtoLogGroup implements IProtoLogGroup {
     }
 
     @Override
-    public boolean isLogToProto() {
-        return mLogToProto;
-    }
-
-    @Override
     public boolean isLogToLogcat() {
         return mLogToLogcat;
     }
@@ -65,11 +60,6 @@ public enum ImeProtoLogGroup implements IProtoLogGroup {
     @Override
     public int getId() {
         return Consts.START_ID + ordinal();
-    }
-
-    @Override
-    public void setLogToProto(boolean logToProto) {
-        mLogToProto = logToProto;
     }
 
     @Override

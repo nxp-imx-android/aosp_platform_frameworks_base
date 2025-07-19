@@ -30,17 +30,17 @@ import com.android.internal.protolog.ProtoLogGroup;
  */
 public final class ViewProtoLogGroups {
     static final ProtoLogGroup IME_INSETS_CONTROLLER = new ProtoLogGroup(
-            "IME_INSETS_CONTROLLER", "InsetsController", true /* enabled */);
+            "IME_INSETS_CONTROLLER", "InsetsController", true /* logToLogcat */);
     static final ProtoLogGroup INSETS_CONTROLLER_DEBUG = new ProtoLogGroup(
-            "INSETS_CONTROLLER_DEBUG", "InsetsController", false /* enabled */);
+            "INSETS_CONTROLLER_DEBUG", "InsetsController", false /* logToLogcat */);
     static final ProtoLogGroup INSETS_ANIMATION_CONTROLLER = new ProtoLogGroup(
-            "INSETS_ANIMATION_CONTROLLER", "InsetsAnimationCtrlImpl", false /* enabled */);
+            "INSETS_ANIMATION_CONTROLLER", "InsetsAnimationCtrlImpl", false /* logToLogcat */);
     public static final ProtoLogGroup IME_TRACKER = new ProtoLogGroup(
-            "IME_TRACKER", ImeTracker.TAG, true /* enabled */);
+            "IME_TRACKER", ImeTracker.TAG, true /* logToLogcat */);
     public static final ProtoLogGroup INPUT_METHOD_MANAGER_DEBUG = new ProtoLogGroup(
-            "INPUT_METHOD_MANAGER", "InputMethodManager", false /* enabled */);
+            "INPUT_METHOD_MANAGER", "InputMethodManager", false /* logToLogcat */);
     public static final ProtoLogGroup INPUT_METHOD_MANAGER_WITH_LOGCAT = new ProtoLogGroup(
-            "INPUT_METHOD_MANAGER_LOGCAT", "InputMethodManager", true /* enabled */);
+            "INPUT_METHOD_MANAGER_LOGCAT", "InputMethodManager", true /* logToLogcat */);
 
     static final ProtoLogGroup[] ALL_GROUPS = {
             IME_INSETS_CONTROLLER,

@@ -51,14 +51,13 @@ import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.argThat
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
-import org.mockito.kotlin.whenever
 import org.mockito.kotlin.verify
+import org.mockito.kotlin.whenever
 
 /**
  * Tests for [DragResizeInputListener].
  *
- * Build/Install/Run:
- *   atest WMShellUnitTests:DragResizeInputListenerTest
+ * Build/Install/Run: atest WMShellUnitTests:DragResizeInputListenerTest
  */
 @SmallTest
 @TestableLooper.RunWithLooper
@@ -74,21 +73,23 @@ class DragResizeInputListenerTest : ShellTestCase() {
 
     @Before
     fun setUp() {
-        whenever(mockWindowSession.grantInputChannel(
-            anyInt(), // displayId
-            any(), // decorationSurface
-            any(), // clientToken
-            anyOrNull(), // hostInputToken
-            anyInt(), // flags
-            anyInt(), // privateFlags
-            anyInt(), // inputFeatures
-            anyInt(), // type
-            anyOrNull(), // windowToken
-            any(), // inputTransferToken
-            any(), // name
-        )).thenReturn(InputChannel())
+        whenever(
+                mockWindowSession.grantInputChannel(
+                    anyInt(), // displayId
+                    any(), // decorationSurface
+                    any(), // clientToken
+                    anyOrNull(), // hostInputToken
+                    anyInt(), // flags
+                    anyInt(), // privateFlags
+                    anyInt(), // inputFeatures
+                    anyInt(), // type
+                    anyOrNull(), // windowToken
+                    any(), // inputTransferToken
+                    any(), // name
+                )
+            )
+            .thenReturn(InputChannel())
     }
-
 
     @After
     fun tearDown() {

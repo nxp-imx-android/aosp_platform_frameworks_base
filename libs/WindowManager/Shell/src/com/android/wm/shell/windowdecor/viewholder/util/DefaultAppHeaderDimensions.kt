@@ -36,30 +36,35 @@ class DefaultAppHeaderDimensions(private val resources: Resources) : AppHeaderDi
     override val expandMenuErrorImageMargin: Int =
         getDimensionPixelSize(R.dimen.desktop_mode_header_expand_menu_error_image_margin)
 
-    override val appChipBackgroundInsets: DrawableInsets = DrawableInsets(
-        vertical =
-            getDimensionPixelSize(R.dimen.desktop_mode_header_app_chip_ripple_inset_vertical),
-    )
+    override val appChipBackgroundInsets: DrawableInsets =
+        DrawableInsets(
+            vertical =
+                getDimensionPixelSize(R.dimen.desktop_mode_header_app_chip_ripple_inset_vertical)
+        )
 
-    override val minimizeBackgroundInsets: DrawableInsets = DrawableInsets(
-        vertical =
-            getDimensionPixelSize(R.dimen.desktop_mode_header_minimize_ripple_inset_vertical),
-        horizontal =
-            getDimensionPixelSize(R.dimen.desktop_mode_header_minimize_ripple_inset_horizontal),
-    )
+    override val minimizeBackgroundInsets: DrawableInsets =
+        DrawableInsets(
+            vertical =
+                getDimensionPixelSize(R.dimen.desktop_mode_header_minimize_ripple_inset_vertical),
+            horizontal =
+                getDimensionPixelSize(R.dimen.desktop_mode_header_minimize_ripple_inset_horizontal),
+        )
 
-    override val maximizeBackgroundInsets: DrawableInsets = DrawableInsets(
-        vertical =
-            getDimensionPixelSize(R.dimen.desktop_mode_header_maximize_ripple_inset_vertical),
-        horizontal =
-            getDimensionPixelSize(R.dimen.desktop_mode_header_maximize_ripple_inset_horizontal),
-    )
+    override val maximizeBackgroundInsets: DrawableInsets =
+        DrawableInsets(
+            vertical =
+                getDimensionPixelSize(R.dimen.desktop_mode_header_maximize_ripple_inset_vertical),
+            horizontal =
+                getDimensionPixelSize(R.dimen.desktop_mode_header_maximize_ripple_inset_horizontal),
+        )
 
-    override val closeBackgroundInsets: DrawableInsets = DrawableInsets(
-        vertical = getDimensionPixelSize(R.dimen.desktop_mode_header_close_ripple_inset_vertical),
-        horizontal =
-            getDimensionPixelSize(R.dimen.desktop_mode_header_close_ripple_inset_horizontal),
-    )
+    override val closeBackgroundInsets: DrawableInsets =
+        DrawableInsets(
+            vertical =
+                getDimensionPixelSize(R.dimen.desktop_mode_header_close_ripple_inset_vertical),
+            horizontal =
+                getDimensionPixelSize(R.dimen.desktop_mode_header_close_ripple_inset_horizontal),
+        )
 
     override val windowControlButtonWidth: Int =
         getDimensionPixelSize(R.dimen.desktop_mode_header_window_control_button_width)
@@ -67,13 +72,21 @@ class DefaultAppHeaderDimensions(private val resources: Resources) : AppHeaderDi
     override val windowControlButtonHeight: Int =
         getDimensionPixelSize(R.dimen.desktop_mode_header_window_control_button_height)
 
-    override val windowControlButtonPadding: Rect = Rect(
-        getDimensionPixelSize(R.dimen.desktop_mode_header_window_control_button_padding_horizontal),
-        getDimensionPixelSize(R.dimen.desktop_mode_header_window_control_button_padding_vertical),
-        getDimensionPixelSize(R.dimen.desktop_mode_header_window_control_button_padding_horizontal),
-        getDimensionPixelSize(R.dimen.desktop_mode_header_window_control_button_padding_vertical),
-
-    )
+    override val windowControlButtonPadding: Rect =
+        Rect(
+            getDimensionPixelSize(
+                R.dimen.desktop_mode_header_window_control_button_padding_horizontal
+            ),
+            getDimensionPixelSize(
+                R.dimen.desktop_mode_header_window_control_button_padding_vertical
+            ),
+            getDimensionPixelSize(
+                R.dimen.desktop_mode_header_window_control_button_padding_horizontal
+            ),
+            getDimensionPixelSize(
+                R.dimen.desktop_mode_header_window_control_button_padding_vertical
+            ),
+        )
 
     override val windowControlButtonMarginEnd: Int =
         getDimensionPixelSize(R.dimen.desktop_mode_header_window_control_button_padding_end)
@@ -85,7 +98,7 @@ class DefaultAppHeaderDimensions(private val resources: Resources) : AppHeaderDi
         get() {
             val numOfButtons = if (DesktopModeFlags.ENABLE_MINIMIZE_BUTTON.isTrue) 3 else 2
             return (windowControlButtonWidth + windowControlButtonMarginEnd) * numOfButtons +
-                    customizableRegionEmptyDragSpace
+                customizableRegionEmptyDragSpace
         }
 
     override val customizableRegionEmptyDragSpace: Int =

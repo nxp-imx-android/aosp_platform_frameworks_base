@@ -228,10 +228,10 @@ struct ResChunk_header
     // (if any).
     uint16_t headerSize;
 
-    // Total size of this chunk (in bytes).  This is the chunkSize plus
+    // Total size of this chunk (in bytes).  This is the headerSize plus
     // the size of any data associated with the chunk.  Adding this value
     // to the chunk allows you to completely skip its contents (including
-    // any child chunks).  If this value is the same as chunkSize, there is
+    // any child chunks).  If this value is the same as headerSize, there is
     // no data associated with the chunk.
     uint32_t size;
 };

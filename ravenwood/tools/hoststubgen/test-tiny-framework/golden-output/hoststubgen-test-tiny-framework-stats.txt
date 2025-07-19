@@ -340,6 +340,39 @@ com.android.hoststubgen.test.tinyframework
   0
   2
 com.android.hoststubgen.test.tinyframework
+  TinyFrameworkForPta
+  0
+  com.android.hoststubgen.test.tinyframework.TinyFrameworkForPta
+  <clinit>
+  <clinit>()V
+  1
+  Keep
+  file-override (Keep static initializer)
+  1
+  1
+com.android.hoststubgen.test.tinyframework
+  TinyFrameworkForPta
+  0
+  com.android.hoststubgen.test.tinyframework.TinyFrameworkForPta
+  <init>
+  <init>()V
+  1
+  Keep
+  file-override (Keep implicit ctor)
+  1
+  1
+com.android.hoststubgen.test.tinyframework
+  TinyFrameworkForPta
+  0
+  com.android.hoststubgen.test.tinyframework.TinyFrameworkForPta
+  foo
+  foo(Ljava/lang/String;Ljava/lang/Object;)V
+  1
+  Keep
+  file-override (keep multi-arg method)
+  0
+  2
+com.android.hoststubgen.test.tinyframework
   TinyFrameworkForTextPolicy
   0
   com.android.hoststubgen.test.tinyframework.TinyFrameworkForTextPolicy

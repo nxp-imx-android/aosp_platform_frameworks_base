@@ -1174,7 +1174,9 @@ public class SplitScreenController implements SplitDragPolicy.Starter,
         @Override
         public void registerSplitAnimationListener(@NonNull SplitInvocationListener listener,
                 @NonNull Executor executor) {
-            mStageCoordinator.registerSplitAnimationListener(listener, executor);
+            mMainExecutor.execute(() -> {
+                mStageCoordinator.registerSplitAnimationListener(listener, executor);
+            });
         }
 
         @Override

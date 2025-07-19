@@ -193,7 +193,6 @@ public class ProcessedPerfettoProtoLogImplTest {
         Mockito.reset(sReader);
 
         TestProtoLogGroup.TEST_GROUP.setLogToLogcat(false);
-        TestProtoLogGroup.TEST_GROUP.setLogToProto(false);
     }
 
     @After
@@ -378,7 +377,6 @@ public class ProcessedPerfettoProtoLogImplTest {
         when(sReader.getViewerString(anyLong())).thenReturn("test %b %d %% 0x%x %s %f");
         PerfettoProtoLogImpl implSpy = Mockito.spy(sProtoLog);
         TestProtoLogGroup.TEST_GROUP.setLogToLogcat(true);
-        TestProtoLogGroup.TEST_GROUP.setLogToProto(false);
 
         implSpy.log(
                 LogLevel.INFO, TestProtoLogGroup.TEST_GROUP, 1234, 4321,
@@ -395,7 +393,6 @@ public class ProcessedPerfettoProtoLogImplTest {
         when(sReader.getViewerString(anyLong())).thenReturn("test %b %d %% %x %s %f");
         PerfettoProtoLogImpl implSpy = Mockito.spy(sProtoLog);
         TestProtoLogGroup.TEST_GROUP.setLogToLogcat(true);
-        TestProtoLogGroup.TEST_GROUP.setLogToProto(false);
 
         implSpy.log(
                 LogLevel.INFO, TestProtoLogGroup.TEST_GROUP, 1234, 4321,
@@ -413,7 +410,6 @@ public class ProcessedPerfettoProtoLogImplTest {
         when(sReader.getViewerString(anyLong())).thenReturn(null);
         PerfettoProtoLogImpl implSpy = Mockito.spy(sProtoLog);
         TestProtoLogGroup.TEST_GROUP.setLogToLogcat(true);
-        TestProtoLogGroup.TEST_GROUP.setLogToProto(false);
 
         var assertion = assertThrows(RuntimeException.class, () ->
                 implSpy.log(LogLevel.INFO, TestProtoLogGroup.TEST_GROUP, 1234, 4321,
@@ -1314,10 +1310,9 @@ public class ProcessedPerfettoProtoLogImplTest {
     }
 
     private enum TestProtoLogGroup implements IProtoLogGroup {
-        TEST_GROUP(true, true, false, "TEST_TAG");
+        TEST_GROUP(true, false, "TEST_TAG");
 
         private final boolean mEnabled;
-        private volatile boolean mLogToProto;
         private volatile boolean mLogToLogcat;
         private final String mTag;
 
@@ -1325,13 +1320,11 @@ public class ProcessedPerfettoProtoLogImplTest {
          * @param enabled     set to false to exclude all log statements for this group from
          *                    compilation,
          *                    they will not be available in runtime.
-         * @param logToProto  enable binary logging for the group
          * @param logToLogcat enable text logging for the group
          * @param tag         name of the source of the logged message
          */
-        TestProtoLogGroup(boolean enabled, boolean logToProto, boolean logToLogcat, String tag) {
+        TestProtoLogGroup(boolean enabled, boolean logToLogcat, String tag) {
             this.mEnabled = enabled;
-            this.mLogToProto = logToProto;
             this.mLogToLogcat = logToLogcat;
             this.mTag = tag;
         }
@@ -1342,28 +1335,13 @@ public class ProcessedPerfettoProtoLogImplTest {
         }
 
         @Override
-        public boolean isLogToProto() {
-            return mLogToProto;
-        }
-
-        @Override
         public boolean isLogToLogcat() {
             return mLogToLogcat;
         }
 
         @Override
-        public boolean isLogToAny() {
-            return mLogToLogcat || mLogToProto;
-        }
-
-        @Override
         public String getTag() {
             return mTag;
-        }
-
-        @Override
-        public void setLogToProto(boolean logToProto) {
-            this.mLogToProto = logToProto;
         }
 
         @Override

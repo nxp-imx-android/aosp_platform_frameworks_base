@@ -1115,7 +1115,7 @@ public class DeviceIdleController extends SystemService
                 !COMPRESS_TIME ? 30 * 1000L : 5 * 1000L;
         private long mDefaultInactiveTimeout =
                 (30 * 60 * 1000L) / (!COMPRESS_TIME ? 1 : 10);
-        private static final long DEFAULT_INACTIVE_TIMEOUT_SMALL_BATTERY =
+        @VisibleForTesting static final long DEFAULT_INACTIVE_TIMEOUT_SMALL_BATTERY =
                 (60 * 1000L) / (!COMPRESS_TIME ? 1 : 10);
         private long mDefaultSensingTimeout =
                 !COMPRESS_TIME ? 4 * 60 * 1000L : 60 * 1000L;
@@ -1128,7 +1128,7 @@ public class DeviceIdleController extends SystemService
                 !COMPRESS_TIME ? 60 * 1000L : 5 * 1000L;
         private long mDefaultIdleAfterInactiveTimeout =
                 (30 * 60 * 1000L) / (!COMPRESS_TIME ? 1 : 10);
-        private static final long DEFAULT_IDLE_AFTER_INACTIVE_TIMEOUT_SMALL_BATTERY =
+        @VisibleForTesting static final long DEFAULT_IDLE_AFTER_INACTIVE_TIMEOUT_SMALL_BATTERY =
                 (60 * 1000L) / (!COMPRESS_TIME ? 1 : 10);
         private long mDefaultIdlePendingTimeout =
                 !COMPRESS_TIME ? 5 * 60 * 1000L : 30 * 1000L;
@@ -1429,16 +1429,17 @@ public class DeviceIdleController extends SystemService
         public boolean USE_MODE_MANAGER = mDefaultUseModeManager;
 
         private final ContentResolver mResolver;
-        private final boolean mSmallBatteryDevice;
+        private final boolean mUseSmallBatteryDeviceValues;
         private final UserSettingDeviceConfigMediator mUserSettingDeviceConfigMediator =
                 new UserSettingDeviceConfigMediator.SettingsOverridesIndividualMediator(',');
 
-        public Constants(Handler handler, ContentResolver resolver) {
+        public Constants(Handler handler, ContentResolver resolver, boolean isSmallBatteryDevice) {
             super(handler);
             mResolver = resolver;
             initDefault();
-            mSmallBatteryDevice = ActivityManager.isSmallBatteryDevice();
-            if (mSmallBatteryDevice) {
+
+            mUseSmallBatteryDeviceValues = isSmallBatteryDevice && !isWatch();
+            if (mUseSmallBatteryDeviceValues) {
                 INACTIVE_TIMEOUT = DEFAULT_INACTIVE_TIMEOUT_SMALL_BATTERY;
                 IDLE_AFTER_INACTIVE_TIMEOUT = DEFAULT_IDLE_AFTER_INACTIVE_TIMEOUT_SMALL_BATTERY;
             }
@@ -1680,7 +1681,7 @@ public class DeviceIdleController extends SystemService
                     KEY_MIN_DEEP_MAINTENANCE_TIME,
                     mDefaultMinDeepMaintenanceTime);
 
-            final long defaultInactiveTimeout = mSmallBatteryDevice
+            final long defaultInactiveTimeout = mUseSmallBatteryDeviceValues
                     ? DEFAULT_INACTIVE_TIMEOUT_SMALL_BATTERY
                     : mDefaultInactiveTimeout;
             INACTIVE_TIMEOUT = mUserSettingDeviceConfigMediator.getLong(
@@ -1702,7 +1703,7 @@ public class DeviceIdleController extends SystemService
                     KEY_MOTION_INACTIVE_TIMEOUT_FLEX,
                     mDefaultMotionInactiveTimeoutFlex);
 
-            final long defaultIdleAfterInactiveTimeout = mSmallBatteryDevice
+            final long defaultIdleAfterInactiveTimeout = mUseSmallBatteryDeviceValues
                     ? DEFAULT_IDLE_AFTER_INACTIVE_TIMEOUT_SMALL_BATTERY
                     : mDefaultIdleAfterInactiveTimeout;
             IDLE_AFTER_INACTIVE_TIMEOUT = mUserSettingDeviceConfigMediator.getLong(
@@ -1757,6 +1758,10 @@ public class DeviceIdleController extends SystemService
 
             USE_MODE_MANAGER = mUserSettingDeviceConfigMediator.getBoolean(
                     KEY_USE_MODE_MANAGER, mDefaultUseModeManager);
+        }
+
+        private boolean isWatch() {
+            return getContext().getPackageManager().hasSystemFeature(PackageManager.FEATURE_WATCH);
         }
 
         void dump(PrintWriter pw) {
@@ -2502,7 +2507,7 @@ public class DeviceIdleController extends SystemService
         Constants getConstants(DeviceIdleController controller, Handler handler,
                 ContentResolver resolver) {
             if (mConstants == null) {
-                mConstants = controller.new Constants(handler, resolver);
+                mConstants = controller.new Constants(handler, resolver, isSmallBatteryDevice());
             }
             return mConstants;
         }
@@ -2578,6 +2583,10 @@ public class DeviceIdleController extends SystemService
         boolean useMotionSensor() {
             return mContext.getResources().getBoolean(
                    com.android.internal.R.bool.config_autoPowerModeUseMotionSensor);
+        }
+
+        boolean isSmallBatteryDevice() {
+            return ActivityManager.isSmallBatteryDevice();
         }
     }
 

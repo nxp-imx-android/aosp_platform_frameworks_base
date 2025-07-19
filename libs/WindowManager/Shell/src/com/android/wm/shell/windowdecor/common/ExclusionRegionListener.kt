@@ -24,8 +24,8 @@ interface ExclusionRegionListener {
     fun onExclusionRegionChanged(taskId: Int, region: Region)
 
     /**
-     * Inform the implementing class that this task no longer needs an exclusion region,
-     * likely due to it closing.
+     * Inform the implementing class that this task no longer needs an exclusion region, likely due
+     * to it closing.
      */
     fun onExclusionRegionDismissed(taskId: Int)
 }

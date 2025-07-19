@@ -74,60 +74,68 @@ import org.mockito.kotlin.whenever
 /**
  * Tests for [HandleMenu].
  *
- * Build/Install/Run:
- * atest WMShellUnitTests:HandleMenuTest
+ * Build/Install/Run: atest WMShellUnitTests:HandleMenuTest
  */
 @OptIn(ExperimentalCoroutinesApi::class)
 @SmallTest
 @TestableLooper.RunWithLooper
 @RunWith(AndroidTestingRunner::class)
 class HandleMenuTest : ShellTestCase() {
-    @Mock
-    private lateinit var mockDesktopWindowDecoration: DesktopModeWindowDecoration
-    @Mock
-    private lateinit var mockWindowManager: WindowManager
-    @Mock
-    private lateinit var displayController: DisplayController
-    @Mock
-    private lateinit var mockDisplay: Display
-    @Mock
-    private lateinit var mockSurfaceControl: SurfaceControl
-    @Mock
-    private lateinit var splitScreenController: SplitScreenController
-    @Mock
-    private lateinit var displayLayout: DisplayLayout
-    @Mock
-    private lateinit var mockSurfaceControlViewHost: SurfaceControlViewHost
-    @Mock
-    private lateinit var mockTaskResourceLoader: WindowDecorTaskResourceLoader
-    @Mock
-    private lateinit var mockWindowDecorationActions: WindowDecorationActions
-    @Mock
-    private lateinit var mockAppIcon: Bitmap
-    @Mock
-    private lateinit var mockDesktopModeUiEventLogger: DesktopModeUiEventLogger
-    @Mock
-    private lateinit var mockSurfaceControlViewHostFactory: SurfaceControlViewHostFactory
+    @Mock private lateinit var mockDesktopWindowDecoration: DesktopModeWindowDecoration
+    @Mock private lateinit var mockWindowManager: WindowManager
+    @Mock private lateinit var displayController: DisplayController
+    @Mock private lateinit var mockDisplay: Display
+    @Mock private lateinit var mockSurfaceControl: SurfaceControl
+    @Mock private lateinit var splitScreenController: SplitScreenController
+    @Mock private lateinit var displayLayout: DisplayLayout
+    @Mock private lateinit var mockSurfaceControlViewHost: SurfaceControlViewHost
+    @Mock private lateinit var mockTaskResourceLoader: WindowDecorTaskResourceLoader
+    @Mock private lateinit var mockWindowDecorationActions: WindowDecorationActions
+    @Mock private lateinit var mockAppIcon: Bitmap
+    @Mock private lateinit var mockDesktopModeUiEventLogger: DesktopModeUiEventLogger
+    @Mock private lateinit var mockSurfaceControlViewHostFactory: SurfaceControlViewHostFactory
 
     private val handleMenuFactory = HandleMenu.HandleMenuFactory
     private lateinit var handleMenu: HandleMenu
 
     @Before
     fun setUp() {
-        val mockAdditionalViewHostViewContainer = AdditionalViewHostViewContainer(
-            mock(SurfaceControl::class.java),
-            mockSurfaceControlViewHost,
-        ) {
-            SurfaceControl.Transaction()
-        }
-        val menuView = LayoutInflater.from(mContext).inflate(
-            R.layout.desktop_mode_window_decor_handle_menu, null)
-        whenever(mockDesktopWindowDecoration.addWindow(
-            anyInt(), any(), any(), any(), anyInt(), anyInt(), anyInt(), anyInt())
-        ).thenReturn(mockAdditionalViewHostViewContainer)
-        whenever(mockDesktopWindowDecoration.addWindow(
-            any<View>(), any(), any(), any(), anyInt(), anyInt(), anyInt(), anyInt())
-        ).thenReturn(mockAdditionalViewHostViewContainer)
+        val mockAdditionalViewHostViewContainer =
+            AdditionalViewHostViewContainer(
+                mock(SurfaceControl::class.java),
+                mockSurfaceControlViewHost,
+            ) {
+                SurfaceControl.Transaction()
+            }
+        val menuView =
+            LayoutInflater.from(mContext)
+                .inflate(R.layout.desktop_mode_window_decor_handle_menu, null)
+        whenever(
+                mockDesktopWindowDecoration.addWindow(
+                    anyInt(),
+                    any(),
+                    any(),
+                    any(),
+                    anyInt(),
+                    anyInt(),
+                    anyInt(),
+                    anyInt(),
+                )
+            )
+            .thenReturn(mockAdditionalViewHostViewContainer)
+        whenever(
+                mockDesktopWindowDecoration.addWindow(
+                    any<View>(),
+                    any(),
+                    any(),
+                    any(),
+                    anyInt(),
+                    anyInt(),
+                    anyInt(),
+                    anyInt(),
+                )
+            )
+            .thenReturn(mockAdditionalViewHostViewContainer)
         mockDesktopWindowDecoration.mDecorationContainerSurface = mockSurfaceControl
         mockDesktopWindowDecoration.mDisplay = mockDisplay
         whenever(mockAdditionalViewHostViewContainer.view).thenReturn(menuView)
@@ -143,7 +151,9 @@ class HandleMenuTest : ShellTestCase() {
             addOverride(R.dimen.desktop_mode_handle_menu_margin_top, MENU_TOP_MARGIN)
             addOverride(R.dimen.desktop_mode_handle_menu_margin_start, MENU_START_MARGIN)
             addOverride(
-                R.dimen.desktop_mode_handle_menu_pill_spacing_margin, MENU_PILL_SPACING_MARGIN)
+                R.dimen.desktop_mode_handle_menu_pill_spacing_margin,
+                MENU_PILL_SPACING_MARGIN,
+            )
         }
         mockDesktopWindowDecoration.mDecorWindowContext = mContext
     }
@@ -179,10 +189,7 @@ class HandleMenuTest : ShellTestCase() {
         assertTrue(handleMenu.handleMenuViewContainer is AdditionalSystemViewContainer)
         // Verify menu is created at coordinates that, when added to WindowManager,
         // show at the top-center of split left task.
-        val expected = Point(
-            SPLIT_LEFT_BOUNDS.centerX() - MENU_WIDTH / 2,
-            MENU_TOP_MARGIN
-        )
+        val expected = Point(SPLIT_LEFT_BOUNDS.centerX() - MENU_WIDTH / 2, MENU_TOP_MARGIN)
         assertEquals(expected.toPointF(), handleMenu.handleMenuPosition)
     }
 
@@ -194,10 +201,7 @@ class HandleMenuTest : ShellTestCase() {
         assertTrue(handleMenu.handleMenuViewContainer is AdditionalSystemViewContainer)
         // Verify menu is created at coordinates that, when added to WindowManager,
         // show at the top-center of split right task.
-        val expected = Point(
-            SPLIT_RIGHT_BOUNDS.centerX() - MENU_WIDTH / 2,
-            MENU_TOP_MARGIN
-        )
+        val expected = Point(SPLIT_RIGHT_BOUNDS.centerX() - MENU_WIDTH / 2, MENU_TOP_MARGIN)
         assertEquals(expected.toPointF(), handleMenu.handleMenuPosition)
     }
 
@@ -217,8 +221,10 @@ class HandleMenuTest : ShellTestCase() {
 
         handleMenu = createAndShowHandleMenu(forceShowSystemBars = true)
 
-        val types = (handleMenu.handleMenuViewContainer as AdditionalSystemViewContainer)
-            .lp.forciblyShownTypes
+        val types =
+            (handleMenu.handleMenuViewContainer as AdditionalSystemViewContainer)
+                .lp
+                .forciblyShownTypes
         assertTrue((types and systemBars()) != 0)
     }
 
@@ -235,28 +241,30 @@ class HandleMenuTest : ShellTestCase() {
     }
 
     private suspend fun createTaskInfo(windowingMode: Int, splitPosition: Int? = null) {
-        val taskDescriptionBuilder = ActivityManager.TaskDescription.Builder()
-            .setBackgroundColor(Color.YELLOW)
-        val bounds = when (windowingMode) {
-            WINDOWING_MODE_FULLSCREEN -> DISPLAY_BOUNDS
-            WINDOWING_MODE_FREEFORM -> FREEFORM_BOUNDS
-            WINDOWING_MODE_MULTI_WINDOW -> {
-                checkNotNull(splitPosition)
-                if (splitPosition == SPLIT_POSITION_TOP_OR_LEFT) {
-                    SPLIT_LEFT_BOUNDS
-                } else {
-                    SPLIT_RIGHT_BOUNDS
+        val taskDescriptionBuilder =
+            ActivityManager.TaskDescription.Builder().setBackgroundColor(Color.YELLOW)
+        val bounds =
+            when (windowingMode) {
+                WINDOWING_MODE_FULLSCREEN -> DISPLAY_BOUNDS
+                WINDOWING_MODE_FREEFORM -> FREEFORM_BOUNDS
+                WINDOWING_MODE_MULTI_WINDOW -> {
+                    checkNotNull(splitPosition)
+                    if (splitPosition == SPLIT_POSITION_TOP_OR_LEFT) {
+                        SPLIT_LEFT_BOUNDS
+                    } else {
+                        SPLIT_RIGHT_BOUNDS
+                    }
                 }
+                else -> error("Unsupported windowing mode")
             }
-            else -> error("Unsupported windowing mode")
-        }
-        mockDesktopWindowDecoration.mTaskInfo = TestRunningTaskInfoBuilder()
-            .setDisplayId(Display.DEFAULT_DISPLAY)
-            .setTaskDescriptionBuilder(taskDescriptionBuilder)
-            .setWindowingMode(windowingMode)
-            .setBounds(bounds)
-            .setVisible(true)
-            .build()
+        mockDesktopWindowDecoration.mTaskInfo =
+            TestRunningTaskInfoBuilder()
+                .setDisplayId(Display.DEFAULT_DISPLAY)
+                .setTaskDescriptionBuilder(taskDescriptionBuilder)
+                .setWindowingMode(windowingMode)
+                .setBounds(bounds)
+                .setVisible(true)
+                .build()
         if (windowingMode == WINDOWING_MODE_MULTI_WINDOW) {
             whenever(splitScreenController.getSplitPosition(any())).thenReturn(splitPosition)
             whenever(splitScreenController.getStageBounds(any(), any())).thenAnswer {
@@ -265,94 +273,96 @@ class HandleMenuTest : ShellTestCase() {
             }
         }
         whenever(mockTaskResourceLoader.getNameAndHeaderIcon(mockDesktopWindowDecoration.mTaskInfo))
-            .thenReturn(
-                Pair(APP_NAME, mockAppIcon)
-            )
+            .thenReturn(Pair(APP_NAME, mockAppIcon))
     }
 
     private fun TestScope.createAndShowHandleMenu(
         splitPosition: Int? = null,
-        forceShowSystemBars: Boolean = false
+        forceShowSystemBars: Boolean = false,
     ): HandleMenu {
-        val layoutId = if (mockDesktopWindowDecoration.mTaskInfo.isFreeform) {
-            R.layout.desktop_mode_app_header
-        } else {
-            R.layout.desktop_mode_app_handle
-        }
-        val captionX = when (mockDesktopWindowDecoration.mTaskInfo.windowingMode) {
-            WINDOWING_MODE_FULLSCREEN -> (DISPLAY_BOUNDS.width() / 2) - (HANDLE_WIDTH / 2)
-            WINDOWING_MODE_FREEFORM -> 0
-            WINDOWING_MODE_MULTI_WINDOW -> {
-                checkNotNull(splitPosition)
-                if (splitPosition == SPLIT_POSITION_TOP_OR_LEFT) {
-                    (SPLIT_LEFT_BOUNDS.width() / 2) - (HANDLE_WIDTH / 2)
-                } else {
-                    SPLIT_LEFT_BOUNDS.width() + (SPLIT_RIGHT_BOUNDS.width() / 2) - (HANDLE_WIDTH / 2)
-                }
+        val layoutId =
+            if (mockDesktopWindowDecoration.mTaskInfo.isFreeform) {
+                R.layout.desktop_mode_app_header
+            } else {
+                R.layout.desktop_mode_app_handle
             }
-            else -> error("Invalid windowing mode")
-        }
-        val handleMenu = if (DesktopExperienceFlags.ENABLE_WINDOW_DECORATION_REFACTOR.isTrue) {
-            handleMenuFactory.create(
-                StandardTestDispatcher(testScheduler),
-                this,
-                mContext,
-                mockDesktopWindowDecoration.mTaskInfo,
-                mockSurfaceControl,
-                mockDisplay,
-                WindowManagerWrapper(mockWindowManager),
-                mockWindowDecorationActions,
-                mockTaskResourceLoader,
-                layoutId,
-                splitScreenController,
-                shouldShowWindowingPill = true,
-                shouldShowNewWindowButton = true,
-                shouldShowManageWindowsButton = false,
-                shouldShowChangeAspectRatioButton = false,
-                shouldShowDesktopModeButton = true,
-                shouldShowRestartButton = true,
-                isBrowserApp = false,
-                openInAppOrBrowserIntent = null,
-                mockDesktopModeUiEventLogger,
-                captionWidth = HANDLE_WIDTH,
-                captionHeight = 50,
-                captionX = captionX,
-                captionY = 0,
-                surfaceControlViewHostFactory = mockSurfaceControlViewHostFactory
-            )
-        } else {
-            handleMenuFactory.create(
-                StandardTestDispatcher(testScheduler),
-                this,
-                mockDesktopWindowDecoration,
-                WindowManagerWrapper(mockWindowManager),
-                mockWindowDecorationActions,
-                mockTaskResourceLoader,
-                layoutId,
-                splitScreenController,
-                shouldShowWindowingPill = true,
-                shouldShowNewWindowButton = true,
-                shouldShowManageWindowsButton = false,
-                shouldShowChangeAspectRatioButton = false,
-                shouldShowDesktopModeButton = true,
-                shouldShowRestartButton = true,
-                isBrowserApp = false,
-                openInAppOrBrowserIntent = null,
-                mockDesktopModeUiEventLogger,
-                captionWidth = HANDLE_WIDTH,
-                captionHeight = 50,
-                captionX = captionX,
-                captionY = 0,
-                surfaceControlViewHostFactory = mockSurfaceControlViewHostFactory
-            )
-        }
+        val captionX =
+            when (mockDesktopWindowDecoration.mTaskInfo.windowingMode) {
+                WINDOWING_MODE_FULLSCREEN -> (DISPLAY_BOUNDS.width() / 2) - (HANDLE_WIDTH / 2)
+                WINDOWING_MODE_FREEFORM -> 0
+                WINDOWING_MODE_MULTI_WINDOW -> {
+                    checkNotNull(splitPosition)
+                    if (splitPosition == SPLIT_POSITION_TOP_OR_LEFT) {
+                        (SPLIT_LEFT_BOUNDS.width() / 2) - (HANDLE_WIDTH / 2)
+                    } else {
+                        SPLIT_LEFT_BOUNDS.width() + (SPLIT_RIGHT_BOUNDS.width() / 2) -
+                            (HANDLE_WIDTH / 2)
+                    }
+                }
+                else -> error("Invalid windowing mode")
+            }
+        val handleMenu =
+            if (DesktopExperienceFlags.ENABLE_WINDOW_DECORATION_REFACTOR.isTrue) {
+                handleMenuFactory.create(
+                    StandardTestDispatcher(testScheduler),
+                    this,
+                    mContext,
+                    mockDesktopWindowDecoration.mTaskInfo,
+                    mockSurfaceControl,
+                    mockDisplay,
+                    WindowManagerWrapper(mockWindowManager),
+                    mockWindowDecorationActions,
+                    mockTaskResourceLoader,
+                    layoutId,
+                    splitScreenController,
+                    shouldShowWindowingPill = true,
+                    shouldShowNewWindowButton = true,
+                    shouldShowManageWindowsButton = false,
+                    shouldShowChangeAspectRatioButton = false,
+                    shouldShowDesktopModeButton = true,
+                    shouldShowRestartButton = true,
+                    isBrowserApp = false,
+                    openInAppOrBrowserIntent = null,
+                    mockDesktopModeUiEventLogger,
+                    captionWidth = HANDLE_WIDTH,
+                    captionHeight = 50,
+                    captionX = captionX,
+                    captionY = 0,
+                    surfaceControlViewHostFactory = mockSurfaceControlViewHostFactory,
+                )
+            } else {
+                handleMenuFactory.create(
+                    StandardTestDispatcher(testScheduler),
+                    this,
+                    mockDesktopWindowDecoration,
+                    WindowManagerWrapper(mockWindowManager),
+                    mockWindowDecorationActions,
+                    mockTaskResourceLoader,
+                    layoutId,
+                    splitScreenController,
+                    shouldShowWindowingPill = true,
+                    shouldShowNewWindowButton = true,
+                    shouldShowManageWindowsButton = false,
+                    shouldShowChangeAspectRatioButton = false,
+                    shouldShowDesktopModeButton = true,
+                    shouldShowRestartButton = true,
+                    isBrowserApp = false,
+                    openInAppOrBrowserIntent = null,
+                    mockDesktopModeUiEventLogger,
+                    captionWidth = HANDLE_WIDTH,
+                    captionHeight = 50,
+                    captionX = captionX,
+                    captionY = 0,
+                    surfaceControlViewHostFactory = mockSurfaceControlViewHostFactory,
+                )
+            }
         handleMenu.show(
             openInAppOrBrowserClickListener = mock(),
             onOpenByDefaultClickListener = mock(),
             onCloseMenuClickListener = mock(),
             onOutsideTouchListener = mock(),
             onHandleMenuClicked = mock(),
-            forceShowSystemBars = forceShowSystemBars
+            forceShowSystemBars = forceShowSystemBars,
         )
         return handleMenu
     }

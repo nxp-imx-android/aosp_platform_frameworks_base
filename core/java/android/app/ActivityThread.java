@@ -259,6 +259,7 @@ import com.android.org.conscrypt.TrustedCertificateStore;
 import com.android.server.am.BitmapDumpProto;
 import com.android.server.am.MemInfoDumpProto;
 
+import dalvik.annotation.optimization.NeverInline;
 import dalvik.annotation.optimization.NeverCompile;
 import dalvik.system.AppSpecializationHooks;
 import dalvik.system.CloseGuard;
@@ -3352,6 +3353,31 @@ public final class ActivityThread extends ClientTransactionHandler
     public Instrumentation getInstrumentation()
     {
         return mInstrumentation;
+    }
+
+    @NeverCompile // Only called by tests.
+    @NeverInline  // Only called by tests.
+    @RavenwoodReplace
+    public static void throwIfNotInstrumenting() {
+        final ActivityThread activityThread = ActivityThread.currentActivityThread();
+        if (activityThread == null) {
+            // Only tests can reach here.
+            return;
+        }
+        final Instrumentation instrumentation = activityThread.getInstrumentation();
+        if (instrumentation == null) {
+            // Only tests can reach here.
+            return;
+        }
+        if (instrumentation.isInstrumenting()) {
+            return;
+        }
+        throw new IllegalStateException();
+    }
+
+    public static void throwIfNotInstrumenting$ravenwood() {
+        // Treat Ravenwood tests as instrumenting, so that they can call code that is
+        // used in instrumentation tests.
     }
 
     public boolean isProfiling() {

@@ -16,6 +16,8 @@
 
 package com.android.server.firewall;
 
+import static android.security.Flags.enableIntentFirewallExtraKeyValueFilter;
+
 import android.annotation.NonNull;
 import android.app.AppGlobals;
 import android.content.ComponentName;
@@ -87,28 +89,55 @@ public class IntentFirewall {
     private FirewallIntentResolver mServiceResolver = new FirewallIntentResolver();
 
     static {
-        FilterFactory[] factories = new FilterFactory[] {
-                AndFilter.FACTORY,
-                OrFilter.FACTORY,
-                NotFilter.FACTORY,
+        FilterFactory[] factories;
+        if (enableIntentFirewallExtraKeyValueFilter()) {
+            factories = new FilterFactory[]{
+                    AndFilter.FACTORY,
+                    OrFilter.FACTORY,
+                    NotFilter.FACTORY,
 
-                StringFilter.ACTION,
-                StringFilter.COMPONENT,
-                StringFilter.COMPONENT_NAME,
-                StringFilter.COMPONENT_PACKAGE,
-                StringFilter.DATA,
-                StringFilter.HOST,
-                StringFilter.MIME_TYPE,
-                StringFilter.SCHEME,
-                StringFilter.PATH,
-                StringFilter.SSP,
+                    StringFilter.ACTION,
+                    StringFilter.COMPONENT,
+                    StringFilter.COMPONENT_NAME,
+                    StringFilter.COMPONENT_PACKAGE,
+                    StringFilter.DATA,
+                    StringFilter.HOST,
+                    StringFilter.MIME_TYPE,
+                    StringFilter.SCHEME,
+                    StringFilter.PATH,
+                    StringFilter.SSP,
 
-                CategoryFilter.FACTORY,
-                SenderFilter.FACTORY,
-                SenderPackageFilter.FACTORY,
-                SenderPermissionFilter.FACTORY,
-                PortFilter.FACTORY
-        };
+                    CategoryFilter.FACTORY,
+                    SenderFilter.FACTORY,
+                    SenderPackageFilter.FACTORY,
+                    SenderPermissionFilter.FACTORY,
+                    PortFilter.FACTORY,
+                    ExtraKeyValueFilter.FACTORY
+            };
+        } else {
+            factories = new FilterFactory[]{
+                    AndFilter.FACTORY,
+                    OrFilter.FACTORY,
+                    NotFilter.FACTORY,
+
+                    StringFilter.ACTION,
+                    StringFilter.COMPONENT,
+                    StringFilter.COMPONENT_NAME,
+                    StringFilter.COMPONENT_PACKAGE,
+                    StringFilter.DATA,
+                    StringFilter.HOST,
+                    StringFilter.MIME_TYPE,
+                    StringFilter.SCHEME,
+                    StringFilter.PATH,
+                    StringFilter.SSP,
+
+                    CategoryFilter.FACTORY,
+                    SenderFilter.FACTORY,
+                    SenderPackageFilter.FACTORY,
+                    SenderPermissionFilter.FACTORY,
+                    PortFilter.FACTORY
+            };
+        }
 
         // load factor ~= .75
         factoryMap = new HashMap<String, FilterFactory>(factories.length * 4 / 3);

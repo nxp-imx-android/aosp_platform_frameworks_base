@@ -43,6 +43,8 @@ import com.android.wm.shell.sysui.ShellInit
 import com.android.wm.shell.sysui.UserChangeListener
 import com.android.wm.shell.windowdecor.common.WindowDecorTaskResourceLoader.AppResources
 import com.google.common.truth.Truth.assertThat
+import java.util.Locale
+import kotlin.test.assertFailsWith
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.cancel
@@ -53,8 +55,6 @@ import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import org.junit.After
-import kotlin.test.assertFailsWith
-import java.util.Locale
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -221,26 +221,26 @@ class WindowDecorTaskResourceLoaderTest : ShellTestCase() {
     fun testGet_nonexistentDecor_throws() = runTest {
         val task = createTaskInfo(context.userId)
 
-        assertFailsWith<Exception> {
-            loader.getNameAndHeaderIcon(task)
-        }
+        assertFailsWith<Exception> { loader.getNameAndHeaderIcon(task) }
     }
 
     @Test
     fun testGet_nonexistentPackage_returnsDefaultAndDontCache() = runTest {
         val componentName = ComponentName("com.foo", "BarActivity")
         val appIconDrawable = mock<Drawable>()
-        val task = TestRunningTaskInfoBuilder()
-            .setUserId(context.userId)
-            .setBaseIntent(Intent().apply { component = componentName })
-            .build()
+        val task =
+            TestRunningTaskInfoBuilder()
+                .setUserId(context.userId)
+                .setBaseIntent(Intent().apply { component = componentName })
+                .build()
         loader.onWindowDecorCreated(task)
         doReturn(appIconDrawable).whenever(mockPackageManager).getDefaultActivityIcon()
-        whenever(mockHeaderIconFactory.createIconBitmap(appIconDrawable, 1f))
-            .thenReturn(mock())
+        whenever(mockHeaderIconFactory.createIconBitmap(appIconDrawable, 1f)).thenReturn(mock())
         whenever(mockVeilIconFactory.createScaledBitmap(appIconDrawable, MODE_DEFAULT))
             .thenReturn(mock())
-        doThrow(NameNotFoundException()).whenever(mockPackageManager).getActivityInfo(eq(componentName), anyInt())
+        doThrow(NameNotFoundException())
+            .whenever(mockPackageManager)
+            .getActivityInfo(eq(componentName), anyInt())
 
         loader.getVeilIcon(task)
 

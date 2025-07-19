@@ -27,7 +27,6 @@ import android.view.View.TRANSLATION_Y
 import android.view.View.TRANSLATION_Z
 import android.view.ViewGroup
 import android.view.accessibility.AccessibilityEvent
-import android.widget.Button
 import androidx.core.animation.doOnEnd
 import androidx.core.view.children
 import com.android.wm.shell.R
@@ -37,7 +36,7 @@ import com.android.wm.shell.shared.animation.Interpolators
 class HandleMenuAnimator(
     private val handleMenu: View,
     private val menuWidth: Int,
-    private val captionHeight: Float
+    private val captionHeight: Float,
 ) {
     companion object {
         // Open animation constants
@@ -87,8 +86,9 @@ class HandleMenuAnimator(
         animateOpenInAppOrBrowserPill()
         runAnimations {
             appInfoPill.post {
-                appInfoPill.requireViewById<View>(R.id.collapse_menu_button).sendAccessibilityEvent(
-                    AccessibilityEvent.TYPE_VIEW_FOCUSED)
+                appInfoPill
+                    .requireViewById<View>(R.id.collapse_menu_button)
+                    .sendAccessibilityEvent(AccessibilityEvent.TYPE_VIEW_FOCUSED)
             }
         }
     }
@@ -107,8 +107,9 @@ class HandleMenuAnimator(
         animateOpenInAppOrBrowserPill()
         runAnimations {
             appInfoPill.post {
-                appInfoPill.requireViewById<View>(R.id.collapse_menu_button).sendAccessibilityEvent(
-                    AccessibilityEvent.TYPE_VIEW_FOCUSED)
+                appInfoPill
+                    .requireViewById<View>(R.id.collapse_menu_button)
+                    .sendAccessibilityEvent(AccessibilityEvent.TYPE_VIEW_FOCUSED)
             }
         }
     }
@@ -135,7 +136,6 @@ class HandleMenuAnimator(
      * screen.
      *
      * @param after runs after animation finishes.
-     *
      */
     fun animateClose(after: () -> Unit) {
         appInfoPillCollapse()
@@ -290,50 +290,51 @@ class HandleMenuAnimator(
         // More Actions Content Opacity Animation
         moreActionsPill.children.forEach {
             animators +=
-                    ObjectAnimator.ofFloat(it, ALPHA, 1f).apply {
-                        startDelay = BODY_ALPHA_OPEN_DELAY
-                        duration = BODY_CONTENT_ALPHA_OPEN_DURATION
-                        interpolator = Interpolators.FAST_OUT_SLOW_IN
-                    }
+                ObjectAnimator.ofFloat(it, ALPHA, 1f).apply {
+                    startDelay = BODY_ALPHA_OPEN_DELAY
+                    duration = BODY_CONTENT_ALPHA_OPEN_DURATION
+                    interpolator = Interpolators.FAST_OUT_SLOW_IN
+                }
         }
     }
 
     private fun animateOpenInAppOrBrowserPill() {
         // Open in Browser X & Y Scaling Animation
         animators +=
-                ObjectAnimator.ofFloat(openInAppOrBrowserPill, SCALE_X, HALF_INITIAL_SCALE, 1f).apply {
-                    startDelay = BODY_SCALE_OPEN_DELAY
-                    duration = BODY_SCALE_OPEN_DURATION
-                }
+            ObjectAnimator.ofFloat(openInAppOrBrowserPill, SCALE_X, HALF_INITIAL_SCALE, 1f).apply {
+                startDelay = BODY_SCALE_OPEN_DELAY
+                duration = BODY_SCALE_OPEN_DURATION
+            }
 
         animators +=
-                ObjectAnimator.ofFloat(openInAppOrBrowserPill, SCALE_Y, HALF_INITIAL_SCALE, 1f).apply {
-                    startDelay = BODY_SCALE_OPEN_DELAY
-                    duration = BODY_SCALE_OPEN_DURATION
-                }
+            ObjectAnimator.ofFloat(openInAppOrBrowserPill, SCALE_Y, HALF_INITIAL_SCALE, 1f).apply {
+                startDelay = BODY_SCALE_OPEN_DELAY
+                duration = BODY_SCALE_OPEN_DURATION
+            }
 
         // Open in Browser Opacity Animation
         animators +=
-                ObjectAnimator.ofFloat(openInAppOrBrowserPill, ALPHA, 1f).apply {
-                    startDelay = BODY_ALPHA_OPEN_DELAY
-                    duration = BODY_ALPHA_OPEN_DURATION
-                }
+            ObjectAnimator.ofFloat(openInAppOrBrowserPill, ALPHA, 1f).apply {
+                startDelay = BODY_ALPHA_OPEN_DELAY
+                duration = BODY_ALPHA_OPEN_DURATION
+            }
 
         // Open in Browser Elevation Animation
         animators +=
-                ObjectAnimator.ofFloat(openInAppOrBrowserPill, TRANSLATION_Z, 1f).apply {
-                    startDelay = ELEVATION_OPEN_DELAY
-                    duration = BODY_ELEVATION_OPEN_DURATION
-                }
+            ObjectAnimator.ofFloat(openInAppOrBrowserPill, TRANSLATION_Z, 1f).apply {
+                startDelay = ELEVATION_OPEN_DELAY
+                duration = BODY_ELEVATION_OPEN_DURATION
+            }
 
         // Open in Browser Button Opacity Animation
-        val button = openInAppOrBrowserPill.requireViewById<View>(R.id.open_in_app_or_browser_button)
+        val button =
+            openInAppOrBrowserPill.requireViewById<View>(R.id.open_in_app_or_browser_button)
         animators +=
-                ObjectAnimator.ofFloat(button, ALPHA, 1f).apply {
-                    startDelay = BODY_ALPHA_OPEN_DELAY
-                    duration = BODY_CONTENT_ALPHA_OPEN_DURATION
-                    interpolator = Interpolators.FAST_OUT_SLOW_IN
-                }
+            ObjectAnimator.ofFloat(button, ALPHA, 1f).apply {
+                startDelay = BODY_ALPHA_OPEN_DELAY
+                duration = BODY_CONTENT_ALPHA_OPEN_DURATION
+                interpolator = Interpolators.FAST_OUT_SLOW_IN
+            }
     }
 
     private fun appInfoPillCollapse() {
@@ -442,32 +443,32 @@ class HandleMenuAnimator(
     private fun openInAppOrBrowserPillClose() {
         // Open in Browser X & Y Scaling Animation
         animators +=
-                ObjectAnimator.ofFloat(openInAppOrBrowserPill, SCALE_X, HALF_INITIAL_SCALE).apply {
-                    duration = BODY_CLOSE_DURATION
-                }
+            ObjectAnimator.ofFloat(openInAppOrBrowserPill, SCALE_X, HALF_INITIAL_SCALE).apply {
+                duration = BODY_CLOSE_DURATION
+            }
 
         animators +=
-                ObjectAnimator.ofFloat(openInAppOrBrowserPill, SCALE_Y, HALF_INITIAL_SCALE).apply {
-                    duration = BODY_CLOSE_DURATION
-                }
+            ObjectAnimator.ofFloat(openInAppOrBrowserPill, SCALE_Y, HALF_INITIAL_SCALE).apply {
+                duration = BODY_CLOSE_DURATION
+            }
 
         // Open in Browser Opacity Animation
         animators +=
-                ObjectAnimator.ofFloat(openInAppOrBrowserPill, ALPHA, 0f).apply {
-                    duration = BODY_CLOSE_DURATION
-                }
+            ObjectAnimator.ofFloat(openInAppOrBrowserPill, ALPHA, 0f).apply {
+                duration = BODY_CLOSE_DURATION
+            }
 
         animators +=
-                ObjectAnimator.ofFloat(openInAppOrBrowserPill, ALPHA, 0f).apply {
-                    duration = BODY_CLOSE_DURATION
-                }
+            ObjectAnimator.ofFloat(openInAppOrBrowserPill, ALPHA, 0f).apply {
+                duration = BODY_CLOSE_DURATION
+            }
 
         // Upward Open in Browser y-translation Animation
         val yStart: Float = -captionHeight / 2
         animators +=
-                ObjectAnimator.ofFloat(openInAppOrBrowserPill, TRANSLATION_Y, yStart).apply {
-                    duration = BODY_CLOSE_DURATION
-                }
+            ObjectAnimator.ofFloat(openInAppOrBrowserPill, TRANSLATION_Y, yStart).apply {
+                duration = BODY_CLOSE_DURATION
+            }
     }
 
     /**
@@ -483,14 +484,15 @@ class HandleMenuAnimator(
             cancel()
         }
 
-        runningAnimation = AnimatorSet().apply {
-            playTogether(animators)
-            animators.clear()
-            doOnEnd {
-                after?.invoke()
-                runningAnimation = null
+        runningAnimation =
+            AnimatorSet().apply {
+                playTogether(animators)
+                animators.clear()
+                doOnEnd {
+                    after?.invoke()
+                    runningAnimation = null
+                }
+                start()
             }
-            start()
-        }
     }
 }

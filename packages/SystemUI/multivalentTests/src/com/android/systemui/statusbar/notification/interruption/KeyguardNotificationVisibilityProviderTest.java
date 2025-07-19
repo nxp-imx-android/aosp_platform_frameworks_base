@@ -309,7 +309,7 @@ public class KeyguardNotificationVisibilityProviderTest  extends SysuiTestCase {
 
     @EnableFlags(OngoingActivityChipsOnDream.FLAG_NAME)
     @Test
-    public void dreaming_flagEnabled_doNotHideNotifications() {
+    public void dreamingWithOverlay_flagEnabled_showNotifications() {
         when(mStatusBarStateController.getCurrentOrUpcomingState()).thenReturn(KEYGUARD);
         mSecureSettings.putBool(Settings.Secure.LOCK_SCREEN_SHOW_NOTIFICATIONS, true);
         mSecureSettings.putBool(Settings.Secure.LOCK_SCREEN_SHOW_SILENT_NOTIFICATIONS, false);
@@ -318,13 +318,13 @@ public class KeyguardNotificationVisibilityProviderTest  extends SysuiTestCase {
                 .setImportance(IMPORTANCE_LOW)
                 .build();
         when(mHighPriorityProvider.isExplicitlyHighPriority(any())).thenReturn(false);
-        when(mKeyguardUpdateMonitor.isDreaming()).thenReturn(true);
+        when(mKeyguardUpdateMonitor.isDreamingWithOverlay()).thenReturn(true);
         assertFalse(mKeyguardNotificationVisibilityProvider.shouldHideNotification(mEntry));
     }
 
     @DisableFlags(OngoingActivityChipsOnDream.FLAG_NAME)
     @Test
-    public void dreaming_flagDisabled_hideNotifications() {
+    public void dreamingWithOverlay_flagDisabled_hideNotifications() {
         when(mStatusBarStateController.getCurrentOrUpcomingState()).thenReturn(KEYGUARD);
         mSecureSettings.putBool(Settings.Secure.LOCK_SCREEN_SHOW_NOTIFICATIONS, true);
         mSecureSettings.putBool(Settings.Secure.LOCK_SCREEN_SHOW_SILENT_NOTIFICATIONS, false);
@@ -333,7 +333,7 @@ public class KeyguardNotificationVisibilityProviderTest  extends SysuiTestCase {
                 .setImportance(IMPORTANCE_LOW)
                 .build();
         when(mHighPriorityProvider.isExplicitlyHighPriority(any())).thenReturn(false);
-        when(mKeyguardUpdateMonitor.isDreaming()).thenReturn(true);
+        when(mKeyguardUpdateMonitor.isDreamingWithOverlay()).thenReturn(true);
         assertTrue(mKeyguardNotificationVisibilityProvider.shouldHideNotification(mEntry));
     }
 
