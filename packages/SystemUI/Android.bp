@@ -294,7 +294,6 @@ filegroup {
         "tests/src/**/systemui/qs/tiles/dialog/InternetDetailsContentManagerTest.kt",
         "tests/src/**/systemui/qs/external/TileLifecycleManagerTest.java",
         "tests/src/**/systemui/ScreenDecorationsTest.java",
-        "tests/src/**/systemui/statusbar/policy/BatteryControllerStartableTest.java",
         "tests/src/**/systemui/user/domain/interactor/HeadlessSystemUserModeImplTest.kt",
         "tests/src/**/keyguard/CarrierTextManagerTest.java",
         "tests/src/**/keyguard/KeyguardUpdateMonitorTest.java",
