@@ -24,29 +24,36 @@ import com.android.wm.shell.windowdecor.common.DrawableInsets
 /**
  * The dimensions of the App Header in its larger form, adapted to the minimum a11y requirements.
  */
-class LargeAppHeaderDimensions private constructor(
+class LargeAppHeaderDimensions
+private constructor(
     private val resources: Resources,
     private val defaultAppHeaderDimensions: DefaultAppHeaderDimensions,
 ) : AppHeaderDimensions by defaultAppHeaderDimensions {
 
     constructor(resources: Resources) : this(resources, DefaultAppHeaderDimensions(resources))
 
-    override val appChipBackgroundInsets: DrawableInsets = DrawableInsets(
-        vertical = getDimensionPixelSize(
-                R.dimen.desktop_mode_header_app_chip_ripple_inset_vertical_large),
-    )
+    override val appChipBackgroundInsets: DrawableInsets =
+        DrawableInsets(
+            vertical =
+                getDimensionPixelSize(
+                    R.dimen.desktop_mode_header_app_chip_ripple_inset_vertical_large
+                )
+        )
 
-    override val minimizeBackgroundInsets: DrawableInsets = DrawableInsets(
-        insets = getDimensionPixelSize(R.dimen.desktop_mode_header_minimize_ripple_inset_large),
-    )
+    override val minimizeBackgroundInsets: DrawableInsets =
+        DrawableInsets(
+            insets = getDimensionPixelSize(R.dimen.desktop_mode_header_minimize_ripple_inset_large)
+        )
 
-    override val maximizeBackgroundInsets: DrawableInsets = DrawableInsets(
-        insets = getDimensionPixelSize(R.dimen.desktop_mode_header_maximize_ripple_inset_large),
-    )
+    override val maximizeBackgroundInsets: DrawableInsets =
+        DrawableInsets(
+            insets = getDimensionPixelSize(R.dimen.desktop_mode_header_maximize_ripple_inset_large)
+        )
 
-    override val closeBackgroundInsets: DrawableInsets = DrawableInsets(
-        insets = getDimensionPixelSize(R.dimen.desktop_mode_header_close_ripple_inset_large),
-    )
+    override val closeBackgroundInsets: DrawableInsets =
+        DrawableInsets(
+            insets = getDimensionPixelSize(R.dimen.desktop_mode_header_close_ripple_inset_large)
+        )
 
     override val windowControlButtonWidth: Int =
         getDimensionPixelSize(R.dimen.desktop_mode_header_window_control_button_width_large)
@@ -54,12 +61,13 @@ class LargeAppHeaderDimensions private constructor(
     override val windowControlButtonHeight: Int =
         getDimensionPixelSize(R.dimen.desktop_mode_header_window_control_button_height_large)
 
-    override val windowControlButtonPadding: Rect = Rect(
-        getDimensionPixelSize(R.dimen.desktop_mode_header_window_control_button_padding_large),
-        getDimensionPixelSize(R.dimen.desktop_mode_header_window_control_button_padding_large),
-        getDimensionPixelSize(R.dimen.desktop_mode_header_window_control_button_padding_large),
-        getDimensionPixelSize(R.dimen.desktop_mode_header_window_control_button_padding_large),
-    )
+    override val windowControlButtonPadding: Rect =
+        Rect(
+            getDimensionPixelSize(R.dimen.desktop_mode_header_window_control_button_padding_large),
+            getDimensionPixelSize(R.dimen.desktop_mode_header_window_control_button_padding_large),
+            getDimensionPixelSize(R.dimen.desktop_mode_header_window_control_button_padding_large),
+            getDimensionPixelSize(R.dimen.desktop_mode_header_window_control_button_padding_large),
+        )
 
     private fun getDimensionPixelSize(@DimenRes res: Int) = resources.getDimensionPixelSize(res)
 }

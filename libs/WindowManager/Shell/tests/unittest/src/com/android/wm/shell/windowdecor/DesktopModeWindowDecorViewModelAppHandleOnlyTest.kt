@@ -49,9 +49,9 @@ import org.mockito.quality.Strictness
 /**
  * Tests of [DesktopModeWindowDecorViewModelAppHandleOnlyTest]
  *
- * A subset of tests from [DesktopModeWindowDecorViewModel] for when DesktopMode is not active
- * but we still need to show AppHandle
- * Usage: atest WMShellUnitTests:DesktopModeWindowDecorViewModelAppHandleOnlyTest
+ * A subset of tests from [DesktopModeWindowDecorViewModel] for when DesktopMode is not active but
+ * we still need to show AppHandle Usage: atest
+ * WMShellUnitTests:DesktopModeWindowDecorViewModelAppHandleOnlyTest
  */
 @OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
 @SmallTest
@@ -128,10 +128,8 @@ class DesktopModeWindowDecorViewModelAppHandleOnlyTest :
         task.baseActivity = baseComponent
 
         onTaskOpening(task)
-        verify(
-            mockAppHandleEducationController,
-            times(1)
-        ).setAppHandleEducationTooltipCallbacks(openHandleMenuCallbackCaptor.capture(), any())
+        verify(mockAppHandleEducationController, times(1))
+            .setAppHandleEducationTooltipCallbacks(openHandleMenuCallbackCaptor.capture(), any())
         openHandleMenuCallbackCaptor.lastValue.invoke(task.taskId)
         bgExecutor.flushAll()
         testShellExecutor.flushAll()
@@ -145,8 +143,8 @@ class DesktopModeWindowDecorViewModelAppHandleOnlyTest :
         val task = createTask()
 
         // Set task as systemUI package
-        val systemUIPackageName = context.resources.getString(
-            com.android.internal.R.string.config_systemUi)
+        val systemUIPackageName =
+            context.resources.getString(com.android.internal.R.string.config_systemUi)
         val baseComponent = ComponentName(systemUIPackageName, /* class */ "")
         task.baseActivity = baseComponent
 
@@ -163,7 +161,6 @@ class DesktopModeWindowDecorViewModelAppHandleOnlyTest :
         onTaskOpening(task, taskSurface)
         assertTrue(windowDecorByTaskIdSpy.contains(task.taskId))
 
-
         setLargeScreen(false)
         setUpMockDecorationForTask(task)
         onTaskChanging(task, taskSurface)
@@ -179,7 +176,6 @@ class DesktopModeWindowDecorViewModelAppHandleOnlyTest :
         onTaskOpening(task, taskSurface)
         assertTrue(windowDecorByTaskIdSpy.contains(task.taskId))
 
-
         setDisplayInTopology(false)
         setUpMockDecorationForTask(task)
         onTaskChanging(task, taskSurface)
@@ -192,10 +188,10 @@ class DesktopModeWindowDecorViewModelAppHandleOnlyTest :
         activityType: Int = ACTIVITY_TYPE_STANDARD,
         activityInfo: ActivityInfo = ActivityInfo(),
         requestingImmersive: Boolean = false,
-        shouldShowAspectRatioButton: Boolean = true
+        shouldShowAspectRatioButton: Boolean = true,
     ): RunningTaskInfo {
-        val task = createTask(
-            displayId, windowingMode, activityType, activityInfo, requestingImmersive)
+        val task =
+            createTask(displayId, windowingMode, activityType, activityInfo, requestingImmersive)
         setLargeScreen(shouldShowAspectRatioButton)
         return task
     }

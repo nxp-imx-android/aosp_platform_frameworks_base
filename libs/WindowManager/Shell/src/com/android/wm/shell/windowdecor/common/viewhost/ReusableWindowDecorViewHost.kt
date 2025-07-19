@@ -50,7 +50,7 @@ class ReusableWindowDecorViewHost(
     @VisibleForTesting
     val viewHostAdapter: SurfaceControlViewHostAdapter =
         SurfaceControlViewHostAdapter(context, display),
-    private val rootView: FrameLayout = FrameLayout(context)
+    private val rootView: FrameLayout = FrameLayout(context),
 ) : WindowDecorViewHost, Warmable {
     private var currentUpdateJob: Job? = null
 

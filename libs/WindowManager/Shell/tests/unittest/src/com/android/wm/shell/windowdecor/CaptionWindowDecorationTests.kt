@@ -59,7 +59,7 @@ class CaptionWindowDecorationTests : ShellTestCase() {
             true /* hasGlobalFocus */,
             exclusionRegion,
             false /* shouldSetBackground */,
-            /* inSyncWithTransition= */ true
+            /* inSyncWithTransition= */ true,
         )
 
         Truth.assertThat(relayoutParams.hasInputFeatureSpy()).isTrue()
@@ -85,7 +85,7 @@ class CaptionWindowDecorationTests : ShellTestCase() {
             true /* hasGlobalFocus */,
             exclusionRegion,
             false /* shouldSetBackground */,
-            /* inSyncWithTransition= */ true
+            /* inSyncWithTransition= */ true,
         )
 
         Truth.assertThat(relayoutParams.hasInputFeatureSpy()).isFalse()
@@ -107,7 +107,7 @@ class CaptionWindowDecorationTests : ShellTestCase() {
             true /* hasGlobalFocus */,
             exclusionRegion,
             false /* shouldSetBackground */,
-            /* inSyncWithTransition= */ true
+            /* inSyncWithTransition= */ true,
         )
 
         val elements = relayoutParams.mOccludingElementsCalculator.get()
@@ -117,21 +117,17 @@ class CaptionWindowDecorationTests : ShellTestCase() {
     }
 
     private fun createTaskInfo(): ActivityManager.RunningTaskInfo {
-        val taskDescriptionBuilder =
-            ActivityManager.TaskDescription.Builder()
-        val taskInfo = TestRunningTaskInfoBuilder()
-            .setDisplayId(Display.DEFAULT_DISPLAY)
-            .setTaskDescriptionBuilder(taskDescriptionBuilder)
-            .setVisible(true)
-            .build()
-        taskInfo.realActivity = ComponentName(
-            "com.android.wm.shell.windowdecor",
-            "CaptionWindowDecorationTests"
-        )
-        taskInfo.baseActivity = ComponentName(
-            "com.android.wm.shell.windowdecor",
-            "CaptionWindowDecorationTests"
-        )
+        val taskDescriptionBuilder = ActivityManager.TaskDescription.Builder()
+        val taskInfo =
+            TestRunningTaskInfoBuilder()
+                .setDisplayId(Display.DEFAULT_DISPLAY)
+                .setTaskDescriptionBuilder(taskDescriptionBuilder)
+                .setVisible(true)
+                .build()
+        taskInfo.realActivity =
+            ComponentName("com.android.wm.shell.windowdecor", "CaptionWindowDecorationTests")
+        taskInfo.baseActivity =
+            ComponentName("com.android.wm.shell.windowdecor", "CaptionWindowDecorationTests")
         return taskInfo
     }
 }

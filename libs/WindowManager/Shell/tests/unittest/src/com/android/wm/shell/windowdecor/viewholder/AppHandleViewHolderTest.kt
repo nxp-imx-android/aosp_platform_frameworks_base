@@ -28,19 +28,18 @@ import com.android.wm.shell.R
 import com.android.wm.shell.ShellTestCase
 import com.android.wm.shell.desktopmode.DesktopModeUiEventLogger
 import com.android.wm.shell.windowdecor.WindowManagerWrapper
+import kotlin.test.Test
 import org.junit.Before
 import org.junit.runner.RunWith
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.spy
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
-import kotlin.test.Test
 
 /**
  * Tests for [AppHandleViewHolder].
  *
- * Build/Install/Run:
- * atest WMShellUnitTests:AppHandleViewHolderTest
+ * Build/Install/Run: atest WMShellUnitTests:AppHandleViewHolderTest
  */
 @SmallTest
 @RunWith(AndroidTestingRunner::class)
@@ -63,8 +62,7 @@ class AppHandleViewHolderTest : ShellTestCase() {
     @Before
     fun setup() {
         whenever(mockView.context).thenReturn(mContext)
-        whenever(mockView.requireViewById<View>(R.id.desktop_mode_caption))
-            .thenReturn(mockView)
+        whenever(mockView.requireViewById<View>(R.id.desktop_mode_caption)).thenReturn(mockView)
         whenever(mockView.requireViewById<ImageButton>(R.id.caption_handle))
             .thenReturn(mockImageButton)
     }
@@ -81,7 +79,7 @@ class AppHandleViewHolderTest : ShellTestCase() {
                 width = CAPTION_WIDTH,
                 height = CAPTION_HEIGHT,
                 showInputLayer = false,
-                isCaptionVisible = true
+                isCaptionVisible = true,
             )
         )
 

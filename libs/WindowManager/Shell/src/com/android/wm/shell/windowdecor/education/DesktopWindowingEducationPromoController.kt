@@ -39,9 +39,7 @@ import com.android.wm.shell.shared.animation.PhysicsAnimator
 import com.android.wm.shell.windowdecor.WindowManagerWrapper
 import com.android.wm.shell.windowdecor.additionalviewcontainer.AdditionalSystemViewContainer
 
-/**
- * Controls the lifecycle of an education promo, including showing and hiding it.
- */
+/** Controls the lifecycle of an education promo, including showing and hiding it. */
 class DesktopWindowingEducationPromoController(
     private val context: Context,
     private val additionalSystemViewContainerFactory: AdditionalSystemViewContainer.Factory,
@@ -52,7 +50,7 @@ class DesktopWindowingEducationPromoController(
     private val springConfig by lazy {
         PhysicsAnimator.SpringConfig(
             SpringForce.STIFFNESS_MEDIUM,
-            SpringForce.DAMPING_RATIO_LOW_BOUNCY
+            SpringForce.DAMPING_RATIO_LOW_BOUNCY,
         )
     }
     private var popupWindow: AdditionalSystemViewContainer? = null
@@ -62,7 +60,7 @@ class DesktopWindowingEducationPromoController(
         fromRotation: Int,
         toRotation: Int,
         newDisplayAreaInfo: DisplayAreaInfo?,
-        t: WindowContainerTransaction?
+        t: WindowContainerTransaction?,
     ) {
         // Exit if the rotation hasn't changed or is changed by 180 degrees. [fromRotation] and
         // [toRotation] can be one of the [@Surface.Rotation] values.
@@ -76,10 +74,7 @@ class DesktopWindowingEducationPromoController(
      * @param viewConfig features of the education.
      * @param taskId is used in the title of popup window created for the education view.
      */
-    fun showEducation(
-        viewConfig: EducationViewConfig,
-        taskId: Int
-    ) {
+    fun showEducation(viewConfig: EducationViewConfig, taskId: Int) {
         hideEducation()
         educationView = createEducationView(viewConfig, taskId)
         animator = createAnimator()
@@ -91,14 +86,10 @@ class DesktopWindowingEducationPromoController(
     private fun hideEducation() = animateHideEducationTransition { cleanUp() }
 
     /** Create education view by inflating layout provided. */
-    private fun createEducationView(
-        viewConfig: EducationViewConfig,
-        taskId: Int
-    ): View {
+    private fun createEducationView(viewConfig: EducationViewConfig, taskId: Int): View {
         val educationView =
             LayoutInflater.from(context)
-                .inflate(
-                    viewConfig.viewLayout, /* root= */ null, /* attachToRoot= */ false)
+                .inflate(viewConfig.viewLayout, /* root= */ null, /* attachToRoot= */ false)
                 .apply {
                     alpha = 0f
                     scaleX = 0f
@@ -115,9 +106,7 @@ class DesktopWindowingEducationPromoController(
                             false
                         }
                     }
-                    setOnClickListener {
-                        hideEducation()
-                    }
+                    setOnClickListener { hideEducation() }
                     setEducationColorScheme(viewConfig.educationColorScheme)
                 }
 
@@ -126,7 +115,8 @@ class DesktopWindowingEducationPromoController(
             viewConfig.viewGlobalCoordinates,
             loadDimensionPixelSize(viewConfig.widthId),
             loadDimensionPixelSize(viewConfig.heightId),
-            educationView = educationView)
+            educationView = educationView,
+        )
 
         return educationView
     }
@@ -175,15 +165,17 @@ class DesktopWindowingEducationPromoController(
         popupWindow =
             additionalSystemViewContainerFactory.create(
                 windowManagerWrapper =
-                WindowManagerWrapper(context.getSystemService(WindowManager::class.java)),
+                    WindowManagerWrapper(context.getSystemService(WindowManager::class.java)),
                 taskId = taskId,
                 x = educationViewGlobalCoordinates.x,
                 y = educationViewGlobalCoordinates.y,
                 width = width,
                 height = height,
-                flags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
+                flags =
+                    WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
                         WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH,
-                view = educationView)
+                view = educationView,
+            )
     }
 
     private fun View.setEducationColorScheme(educationColorScheme: EducationColorScheme) {
@@ -215,7 +207,7 @@ class DesktopWindowingEducationPromoController(
         val viewGlobalCoordinates: Point,
         val educationText: String,
         @DimenRes val widthId: Int,
-        @DimenRes val heightId: Int
+        @DimenRes val heightId: Int,
     )
 
     /**
@@ -224,8 +216,5 @@ class DesktopWindowingEducationPromoController(
      * @property container Color of the container of the education.
      * @property text Text color of the [TextView] of education promo.
      */
-    data class EducationColorScheme(
-        @ColorInt val container: Int,
-        @ColorInt val text: Int,
-    )
+    data class EducationColorScheme(@ColorInt val container: Int, @ColorInt val text: Int)
 }

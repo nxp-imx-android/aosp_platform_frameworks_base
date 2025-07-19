@@ -116,8 +116,7 @@ class MultiDisplayVeiledResizeTaskPositioner(
             )
         }
         repositionTaskBounds.set(taskBoundsAtDragStart)
-        val rotation =
-            windowDecoration.taskInfo.configuration.windowConfiguration.displayRotation
+        val rotation = windowDecoration.taskInfo.configuration.windowConfiguration.displayRotation
         if (stableBounds.isEmpty || this.rotation != rotation) {
             this.rotation = rotation
             displayController

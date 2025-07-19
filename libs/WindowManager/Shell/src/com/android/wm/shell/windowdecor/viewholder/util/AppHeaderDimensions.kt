@@ -20,13 +20,13 @@ import com.android.wm.shell.windowdecor.common.DrawableInsets
 
 /** Provides the dimensions to use for drawing the app header. */
 interface AppHeaderDimensions {
-    /** The corner radius to apply to the app chip, maximize and close button's background. **/
+    /** The corner radius to apply to the app chip, maximize and close button's background. */
     val buttonCornerRadius: Int
-    /** The max width of the app name. **/
+    /** The max width of the app name. */
     val appNameMaxWidth: Int
     /** The width of the expand menu error image on the app header. */
     val expandMenuErrorImageWidth: Int
-    /** The margin added between app name and expand menu error image on the app header. **/
+    /** The margin added between app name and expand menu error image on the app header. */
     val expandMenuErrorImageMargin: Int
     /** The insets to apply to the app chip's background drawable. */
     val appChipBackgroundInsets: DrawableInsets

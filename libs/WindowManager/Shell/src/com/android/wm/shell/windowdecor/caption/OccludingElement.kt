@@ -16,15 +16,13 @@
 package com.android.wm.shell.windowdecor.caption
 
 /**
-* Describes elements within the caption bar that could occlude app content, and should be
-* sent as bounding rectangles to the insets system.
-*/
-data class OccludingElement(
-    val width: Int,
-    val alignment: Alignment,
-) {
+ * Describes elements within the caption bar that could occlude app content, and should be sent as
+ * bounding rectangles to the insets system.
+ */
+data class OccludingElement(val width: Int, val alignment: Alignment) {
     /** The alignment of an occluding element relative to the caption. */
     enum class Alignment {
-        START, END
+        START,
+        END,
     }
 }

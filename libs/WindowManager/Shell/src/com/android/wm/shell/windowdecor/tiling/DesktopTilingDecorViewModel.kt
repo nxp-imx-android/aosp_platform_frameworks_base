@@ -105,28 +105,28 @@ class DesktopTilingDecorViewModel(
                 .getOrElse(deskId) {
                     val userHandlerList = tilingHandlerByUserAndDeskId[currentUserId]
                     DesktopTilingWindowDecoration(
-                        context,
-                        mainDispatcher,
-                        mainScope,
-                        bgScope,
-                        syncQueue,
-                        displayController,
-                        taskResourceLoader,
-                        taskInfo.displayId,
-                        deskId,
-                        rootTdaOrganizer,
-                        transitions,
-                        shellTaskOrganizer,
-                        toggleResizeDesktopTaskTransitionHandler,
-                        returnToDragStartAnimator,
-                        desktopUserRepositories,
-                        desktopModeEventLogger,
-                        focusTransitionObserver,
-                        mainExecutor,
-                        desktopState,
-                        shellController,
-                        interactionJankMonitor,
-                    )
+                            context,
+                            mainDispatcher,
+                            mainScope,
+                            bgScope,
+                            syncQueue,
+                            displayController,
+                            taskResourceLoader,
+                            taskInfo.displayId,
+                            deskId,
+                            rootTdaOrganizer,
+                            transitions,
+                            shellTaskOrganizer,
+                            toggleResizeDesktopTaskTransitionHandler,
+                            returnToDragStartAnimator,
+                            desktopUserRepositories,
+                            desktopModeEventLogger,
+                            focusTransitionObserver,
+                            mainExecutor,
+                            desktopState,
+                            shellController,
+                            interactionJankMonitor,
+                        )
                         .also { userHandlerList[deskId] = it }
                 }
         transitions.registerObserver(handler)
@@ -188,9 +188,7 @@ class DesktopTilingDecorViewModel(
      * Resets tiling sessions for all desks on the disconnected display and retains tiling data if
      * the destination display supports desktop mode, otherwise erases all tiling data.
      */
-    fun onDisplayDisconnected(
-        disconnectedDisplayId: Int,
-    ) {
+    fun onDisplayDisconnected(disconnectedDisplayId: Int) {
         // Reset the tiling session but keep the persistence data for when the moved desks
         // are activated again.
         for (userHandlerList in tilingHandlerByUserAndDeskId.valueIterator()) {
@@ -236,8 +234,8 @@ class DesktopTilingDecorViewModel(
         val snapBounds =
             Rect(
                 stableBounds.left +
-                        stableBounds.width() / 2 +
-                        context.resources.getDimensionPixelSize(R.dimen.split_divider_bar_width) / 2,
+                    stableBounds.width() / 2 +
+                    context.resources.getDimensionPixelSize(R.dimen.split_divider_bar_width) / 2,
                 stableBounds.top,
                 stableBounds.right,
                 stableBounds.bottom,
@@ -267,7 +265,7 @@ class DesktopTilingDecorViewModel(
                 stableBounds.left,
                 stableBounds.top,
                 stableBounds.left + stableBounds.width() / 2 -
-                        context.resources.getDimensionPixelSize(R.dimen.split_divider_bar_width) / 2,
+                    context.resources.getDimensionPixelSize(R.dimen.split_divider_bar_width) / 2,
                 stableBounds.bottom,
             )
         return snapBounds
@@ -281,7 +279,6 @@ class DesktopTilingDecorViewModel(
     /** Returns whether [deskId] already exists and active or needs initialization. */
     fun tilingDeskActive(deskId: Int): Boolean =
         tilingHandlerByUserAndDeskId[currentUserId]?.contains(deskId) ?: false
-
 
     /** Destroys a tiling session for a removed desk. */
     fun onDeskRemoved(deskId: Int) {
