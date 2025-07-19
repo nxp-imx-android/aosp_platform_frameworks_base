@@ -178,7 +178,7 @@ public class DiscreteOpsMigrationAndRollbackTest {
                     ATTRIBUTION_FLAG_ACCESSOR, i, 1, false);
         }
         // flush records from cache to the database.
-        appOpHistoryHelper.shutdown();
+        appOpHistoryHelper.persistPendingHistory();
         assertThat(appOpHistoryHelper.getAppOpHistory().size()).isEqualTo(RECORD_COUNT);
         assertThat(appOpHistoryHelper.getLargestAttributionChainId()).isEqualTo(RECORD_COUNT);
 
@@ -248,7 +248,7 @@ public class DiscreteOpsMigrationAndRollbackTest {
                     ATTRIBUTION_FLAG_ACCESSOR, i, 1, false);
         }
         // flush records from cache to the database.
-        appOpHistoryHelper.shutdown();
+        appOpHistoryHelper.persistPendingHistory();
         assertThat(appOpHistoryHelper.getAppOpHistory().size()).isEqualTo(RECORD_COUNT);
         assertThat(appOpHistoryHelper.getLargestAttributionChainId()).isEqualTo(RECORD_COUNT);
 
