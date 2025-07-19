@@ -396,22 +396,6 @@ interface ITelephony {
     int getDataStateForSubId(int subId);
 
     /**
-     * Returns the current active phone type as integer.
-     * Returns TelephonyManager.PHONE_TYPE_CDMA if RILConstants.CDMA_PHONE
-     * and TelephonyManager.PHONE_TYPE_GSM if RILConstants.GSM_PHONE
-     */
-    @UnsupportedAppUsage
-    int getActivePhoneType();
-
-    /**
-     * Returns the current active phone type as integer for particular slot.
-     * Returns TelephonyManager.PHONE_TYPE_CDMA if RILConstants.CDMA_PHONE
-     * and TelephonyManager.PHONE_TYPE_GSM if RILConstants.GSM_PHONE
-     * @param slotIndex - slot to query.
-     */
-    int getActivePhoneTypeForSlot(int slotIndex);
-
-    /**
      * Sets the voicemail number for a particular subscriber.
      */
     boolean setVoiceMailNumber(int subId, String alphaTag, String number);
@@ -530,30 +514,6 @@ interface ITelephony {
      * Return true if an ICC card is present
      */
     boolean hasIccCardUsingSlotIndex(int slotIndex);
-
-    /**
-     * Return if the current radio is LTE on CDMA. This
-     * is a tri-state return value as for a period of time
-     * the mode may be unknown.
-     *
-     * @param callingPackage the name of the calling package
-     * @param callingFeatureId The feature in the package.
-     * @return {@link Phone#LTE_ON_CDMA_UNKNOWN}, {@link Phone#LTE_ON_CDMA_FALSE}
-     * or {@link PHone#LTE_ON_CDMA_TRUE}
-     */
-    int getLteOnCdmaMode(String callingPackage, String callingFeatureId);
-
-    /**
-     * Return if the current radio is LTE on CDMA. This
-     * is a tri-state return value as for a period of time
-     * the mode may be unknown.
-     *
-     * @param callingPackage the name of the calling package
-     * @param callingFeatureId The feature in the package.
-     * @return {@link Phone#LTE_ON_CDMA_UNKNOWN}, {@link Phone#LTE_ON_CDMA_FALSE}
-     * or {@link PHone#LTE_ON_CDMA_TRUE}
-     */
-    int getLteOnCdmaModeForSubscriber(int subId, String callingPackage, String callingFeatureId);
 
     /**
      * Returns all observed cell information of the device.
@@ -1367,17 +1327,6 @@ interface ITelephony {
      * @return Application ID for specificied app type or null if no uicc or error.
      */
     String getAidForAppType(int subId, int appType);
-
-    /**
-    * Return the Electronic Serial Number.
-    *
-    * Requires that the calling app has READ_PRIVILEGED_PHONE_STATE permission
-    *
-    * @param subId the subscription ID that this request applies to.
-    * @return ESN or null if error.
-    * @hide
-    */
-    String getEsn(int subId);
 
     /**
      * Get snapshot of Telephony histograms

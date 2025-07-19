@@ -204,6 +204,29 @@ public final class DevicePolicyIdentifiers {
     public static final String MEMORY_TAGGING_POLICY = "memoryTagging";
 
     /**
+     * String identifier for {@link DevicePolicyManager#setManagedProfileContactsAccessPolicy}.
+     *
+     * @hide
+     */
+    public static final String MANAGED_PROFILE_CONTACTS_ACCESS_POLICY =
+            "managedProfileContactsAccess";
+
+    /**
+     * String identifier for {@link DevicePolicyManager#setManagedProfileCallerIdAccessPolicy}.
+     *
+     * @hide
+     */
+    public static final String MANAGED_PROFILE_CALLER_ID_ACCESS_POLICY =
+            "managedProfileCallerIdAccess";
+
+    /**
+     * String identifier for {@link DevicePolicyManager#setMaximumTimeToLock}.
+     * @hide
+     */
+    public static final String MAX_TIME_TO_LOCK_POLICY = "maxTimeToLock";
+
+
+    /**
      * @hide
      */
     public static final String USER_RESTRICTION_PREFIX = "userRestriction_";

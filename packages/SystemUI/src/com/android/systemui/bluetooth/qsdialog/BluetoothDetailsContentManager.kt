@@ -192,11 +192,12 @@ constructor(
         audioSharingButton = contentView.requireViewById(R.id.audio_sharing_button)
         progressBarAnimation =
             contentView.requireViewById(R.id.bluetooth_tile_dialog_progress_animation)
-        progressBarBackground =
-            contentView.requireViewById(R.id.bluetooth_tile_dialog_progress_background)
         scrollViewContent = contentView.requireViewById(R.id.scroll_view)
 
         if (isInDialog) {
+            progressBarBackground =
+                contentView.requireViewById(R.id.bluetooth_tile_dialog_progress_background)
+
             // If `QsDetailedView` is enabled, it should show the details view.
             QsDetailedView.assertInLegacyMode()
 
@@ -518,14 +519,18 @@ constructor(
     private fun showProgressBar() {
         if (progressBarAnimation.visibility != VISIBLE) {
             progressBarAnimation.visibility = VISIBLE
-            progressBarBackground.visibility = INVISIBLE
+            if (isInDialog) {
+                progressBarBackground.visibility = INVISIBLE
+            }
         }
     }
 
     private fun hideProgressBar() {
         if (progressBarAnimation.visibility != INVISIBLE) {
             progressBarAnimation.visibility = INVISIBLE
-            progressBarBackground.visibility = VISIBLE
+            if (isInDialog) {
+                progressBarBackground.visibility = VISIBLE
+            }
         }
     }
 

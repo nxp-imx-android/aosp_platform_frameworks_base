@@ -2113,6 +2113,46 @@ public class MagnificationControllerTest {
     }
 
     @Test
+    public void onMouseMove_whenNotMagnifying_notShowMagnificationButton() {
+        mMagnificationController.onMouseMove(TEST_DISPLAY, MODE_FULLSCREEN);
+
+        verify(mMagnificationConnectionManager, never()).showMagnificationButton(
+                eq(TEST_DISPLAY), eq(MODE_FULLSCREEN));
+    }
+
+    @Test
+    public void onMouseMove_fullscreenAndCapabilitiesAll_showMagnificationButton()
+            throws RemoteException {
+        setMagnificationEnabled(MODE_FULLSCREEN);
+
+        reset(mMagnificationConnectionManager);
+        mMagnificationController.onMouseMove(TEST_DISPLAY, MODE_FULLSCREEN);
+
+        verify(mMagnificationConnectionManager).showMagnificationButton(eq(TEST_DISPLAY),
+                eq(MODE_FULLSCREEN));
+        // Never call removeMagnificationSettingsPanel if it is allowed to show the settings panel
+        // in current capability and mode, and the magnification is activated.
+        verify(mMagnificationConnectionManager, never()).removeMagnificationSettingsPanel(
+                eq(TEST_DISPLAY));
+    }
+
+    @Test
+    public void onMouseMove_windowModeAndCapabilitiesAll_showMagnificationButton()
+            throws RemoteException {
+        setMagnificationEnabled(MODE_WINDOW);
+
+        reset(mMagnificationConnectionManager);
+        mMagnificationController.onMouseMove(TEST_DISPLAY, MODE_WINDOW);
+
+        verify(mMagnificationConnectionManager).showMagnificationButton(eq(TEST_DISPLAY),
+                eq(MODE_WINDOW));
+        // Never call removeMagnificationSettingsPanel if it is allowed to show the settings panel
+        // in current capability and mode, and the magnification is activated.
+        verify(mMagnificationConnectionManager, never()).removeMagnificationSettingsPanel(
+                eq(TEST_DISPLAY));
+    }
+
+    @Test
     public void enableWindowMode_showMagnificationButton()
             throws RemoteException {
         setMagnificationEnabled(MODE_WINDOW);

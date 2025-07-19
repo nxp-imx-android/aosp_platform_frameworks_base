@@ -3123,8 +3123,12 @@ public final class SatelliteManager {
             } else {
                 throw new IllegalStateException("Telephony service is null.");
             }
+        } catch (IllegalStateException ex) {
+            loge("registerForNtnSignalStrengthChanged() IllegalStateException: " + ex);
+            throw ex;
         } catch (RemoteException ex) {
             loge("registerForNtnSignalStrengthChanged() RemoteException: " + ex);
+            // Treat other remote exceptions as fatal system errors.
             ex.rethrowAsRuntimeException();
         }
     }

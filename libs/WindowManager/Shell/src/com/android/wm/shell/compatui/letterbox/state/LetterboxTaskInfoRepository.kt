@@ -16,6 +16,7 @@
 
 package com.android.wm.shell.compatui.letterbox.state
 
+import android.app.ActivityTaskManager
 import android.view.SurfaceControl
 import android.window.WindowContainerToken
 import com.android.internal.protolog.ProtoLog
@@ -30,7 +31,9 @@ import javax.inject.Inject
  */
 data class LetterboxTaskInfoState(
     val containerToken: WindowContainerToken,
-    val containerLeash: SurfaceControl
+    val containerLeash: SurfaceControl,
+    val taskId: Int = ActivityTaskManager.INVALID_TASK_ID,
+    val parentTaskId: Int = ActivityTaskManager.INVALID_TASK_ID
 )
 
 /**

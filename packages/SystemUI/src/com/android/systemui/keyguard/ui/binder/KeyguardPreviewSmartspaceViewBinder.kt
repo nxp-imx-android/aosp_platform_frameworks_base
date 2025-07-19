@@ -56,9 +56,7 @@ object KeyguardPreviewSmartspaceViewBinder {
                     com.android.systemui.shared.R.id.date_smartspace_view_large
                 )
             val smallDateView =
-                parentView.findViewById<View>(
-                    com.android.systemui.shared.R.id.date_smartspace_view
-                )
+                parentView.findViewById<View>(com.android.systemui.shared.R.id.date_smartspace_view)
             parentView.repeatWhenAttached {
                 repeatOnLifecycle(Lifecycle.State.STARTED) {
                     launch("$TAG#viewModel.previewClockSize") {
@@ -124,7 +122,7 @@ object KeyguardPreviewSmartspaceViewBinder {
                                     when (clockSize) {
                                         ClockSizeSetting.DYNAMIC -> {
                                             if (viewModel.shouldDateWeatherBeBelowLargeClock) {
-                                                largeDateView.also { view ->
+                                                largeDateView?.also { view ->
                                                     constrainWidth(
                                                         view.id,
                                                         ConstraintSet.WRAP_CONTENT,

@@ -36,16 +36,6 @@ flag {
 }
 
 flag {
-    name: "remove_aod_car_mode"
-    namespace: "systemui"
-    description: "Remove functionality of car mode disabling AOD."
-    bug: "297462331"
-    metadata {
-         purpose: PURPOSE_BUGFIX
-    }
- }
-
-flag {
    name: "user_encrypted_source"
    namespace: "systemui"
    description: "Get rid of the local cache and rely on UserManager.isUserUnlocked directly to determine whether user CE storage is encrypted."
@@ -662,6 +652,13 @@ flag {
     namespace: "systemui"
     description: "Enables Volume visuals update"
     bug: "368308908"
+}
+
+flag {
+    name: "captions_toggle_in_volume_dialog_v1"
+    namespace: "systemui"
+    description: "Bring the captions toggle back to the volume rocker."
+    bug: "425471100"
 }
 
 flag {
@@ -2182,4 +2179,14 @@ flag {
     namespace: "systemui"
     description: "Gets rid of runBlocking usages wherever possible, across all of sysui."
     bug: "423462317"
+}
+
+flag {
+    name: "glanceable_hub_enabled_by_default"
+    namespace: "systemui"
+    description: "Enable glanceable hub by default (this flag is intended to enable GH for DF only)."
+    bug: "428215526"
+    metadata {
+      purpose: PURPOSE_BUGFIX
+    }
 }

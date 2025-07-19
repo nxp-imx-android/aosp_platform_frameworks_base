@@ -2742,26 +2742,25 @@ public class TelephonyManager {
     public static final int PHONE_TYPE_THIRD_PARTY = PhoneConstants.PHONE_TYPE_THIRD_PARTY;
 
     /**
-     * Returns the current phone type.
-     * TODO: This is a last minute change and hence hidden.
+     * Returns the current phone type. It should be always {@link #PHONE_TYPE_GSM} as we no longer
+     * support CDMA.
      *
      * @see #PHONE_TYPE_NONE
      * @see #PHONE_TYPE_GSM
      * @see #PHONE_TYPE_CDMA
      * @see #PHONE_TYPE_SIP
      *
-     * @throws UnsupportedOperationException If the device does not have
-     *          {@link PackageManager#FEATURE_TELEPHONY}.
      * {@hide}
      */
     @SystemApi
     @RequiresFeature(PackageManager.FEATURE_TELEPHONY)
     public int getCurrentPhoneType() {
-        return getCurrentPhoneType(getSubId());
+        return PHONE_TYPE_GSM;
     }
 
     /**
-     * Returns a constant indicating the device phone type for a subscription.
+     * Returns a constant indicating the device phone type for a subscription. It should be always
+     * {@link #PHONE_TYPE_GSM} as we no longer support CDMA.
      *
      * @see #PHONE_TYPE_NONE
      * @see #PHONE_TYPE_GSM
@@ -2776,41 +2775,7 @@ public class TelephonyManager {
     @SystemApi
     @RequiresFeature(PackageManager.FEATURE_TELEPHONY)
     public int getCurrentPhoneType(int subId) {
-        int phoneId;
-        if (subId == SubscriptionManager.INVALID_SUBSCRIPTION_ID) {
-            // if we don't have any sims, we don't have subscriptions, but we
-            // still may want to know what type of phone we've got.
-            phoneId = 0;
-        } else {
-            phoneId = SubscriptionManager.getPhoneId(subId);
-        }
-
-        return getCurrentPhoneTypeForSlot(phoneId);
-    }
-
-    /**
-     * See getCurrentPhoneType.
-     *
-     * @hide
-     */
-    public int getCurrentPhoneTypeForSlot(int slotIndex) {
-        try{
-            ITelephony telephony = getITelephony();
-            if (telephony != null) {
-                return telephony.getActivePhoneTypeForSlot(slotIndex);
-            } else {
-                // This can happen when the ITelephony interface is not up yet.
-                return getPhoneTypeFromProperty(slotIndex);
-            }
-        } catch (RemoteException ex) {
-            // This shouldn't happen in the normal case, as a backup we
-            // read from the system property.
-            return getPhoneTypeFromProperty(slotIndex);
-        } catch (NullPointerException ex) {
-            // This shouldn't happen in the normal case, as a backup we
-            // read from the system property.
-            return getPhoneTypeFromProperty(slotIndex);
-        }
+        return PHONE_TYPE_GSM;
     }
 
     /**
@@ -2830,81 +2795,7 @@ public class TelephonyManager {
         if (!isDeviceVoiceCapable() && !isDataCapable()) {
             return PHONE_TYPE_NONE;
         }
-        return getCurrentPhoneType();
-    }
-
-    /** {@hide} */
-    @UnsupportedAppUsage
-    private int getPhoneTypeFromProperty(int phoneId) {
-        Integer type = getTelephonyProperty(
-                phoneId, TelephonyProperties.current_active_phone(), null);
-        if (type != null) return type;
-        return getPhoneTypeFromNetworkType(phoneId);
-    }
-
-    /** {@hide} */
-    private int getPhoneTypeFromNetworkType(int phoneId) {
-        // When the system property CURRENT_ACTIVE_PHONE, has not been set,
-        // use the system property for default network type.
-        // This is a fail safe, and can only happen at first boot.
-        Integer mode = getTelephonyProperty(phoneId, TelephonyProperties.default_network(), null);
-        if (mode != null) {
-            return TelephonyManager.getPhoneType(mode);
-        }
-        return TelephonyManager.PHONE_TYPE_NONE;
-    }
-
-    /**
-     * This function returns the type of the phone, depending
-     * on the network mode.
-     *
-     * @param networkMode
-     * @return Phone Type
-     *
-     * @hide
-     */
-    @UnsupportedAppUsage
-    public static int getPhoneType(int networkMode) {
-        switch(networkMode) {
-        case RILConstants.NETWORK_MODE_CDMA:
-        case RILConstants.NETWORK_MODE_CDMA_NO_EVDO:
-        case RILConstants.NETWORK_MODE_EVDO_NO_CDMA:
-            return PhoneConstants.PHONE_TYPE_CDMA;
-
-        case RILConstants.NETWORK_MODE_WCDMA_PREF:
-        case RILConstants.NETWORK_MODE_GSM_ONLY:
-        case RILConstants.NETWORK_MODE_WCDMA_ONLY:
-        case RILConstants.NETWORK_MODE_GSM_UMTS:
-        case RILConstants.NETWORK_MODE_LTE_GSM_WCDMA:
-        case RILConstants.NETWORK_MODE_LTE_WCDMA:
-        case RILConstants.NETWORK_MODE_LTE_CDMA_EVDO_GSM_WCDMA:
-        case RILConstants.NETWORK_MODE_TDSCDMA_ONLY:
-        case RILConstants.NETWORK_MODE_TDSCDMA_WCDMA:
-        case RILConstants.NETWORK_MODE_LTE_TDSCDMA:
-        case RILConstants.NETWORK_MODE_TDSCDMA_GSM:
-        case RILConstants.NETWORK_MODE_LTE_TDSCDMA_GSM:
-        case RILConstants.NETWORK_MODE_TDSCDMA_GSM_WCDMA:
-        case RILConstants.NETWORK_MODE_LTE_TDSCDMA_WCDMA:
-        case RILConstants.NETWORK_MODE_LTE_TDSCDMA_GSM_WCDMA:
-        case RILConstants.NETWORK_MODE_LTE_TDSCDMA_CDMA_EVDO_GSM_WCDMA:
-            return PhoneConstants.PHONE_TYPE_GSM;
-
-        // Use CDMA Phone for the global mode including CDMA
-        case RILConstants.NETWORK_MODE_GLOBAL:
-        case RILConstants.NETWORK_MODE_LTE_CDMA_EVDO:
-        case RILConstants.NETWORK_MODE_TDSCDMA_CDMA_EVDO_GSM_WCDMA:
-            return PhoneConstants.PHONE_TYPE_CDMA;
-
-        case RILConstants.NETWORK_MODE_LTE_ONLY:
-            if (TelephonyProperties.lte_on_cdma_device().orElse(
-                    PhoneConstants.LTE_ON_CDMA_FALSE) == PhoneConstants.LTE_ON_CDMA_TRUE) {
-                return PhoneConstants.PHONE_TYPE_CDMA;
-            } else {
-                return PhoneConstants.PHONE_TYPE_GSM;
-            }
-        default:
-            return PhoneConstants.PHONE_TYPE_GSM;
-        }
+        return PHONE_TYPE_GSM;
     }
 
     /**
@@ -2924,10 +2815,6 @@ public class TelephonyManager {
 
     /**
      * Returns the alphabetic name of current registered operator.
-     * <p>
-     * Availability: Only when user is registered to a network. Result may be
-     * unreliable on CDMA networks (use {@link #getPhoneType()} to determine if
-     * on a CDMA network).
      */
     @RequiresFeature(PackageManager.FEATURE_TELEPHONY_RADIO_ACCESS)
     public String getNetworkOperatorName() {
@@ -2938,10 +2825,8 @@ public class TelephonyManager {
      * Returns the alphabetic name of current registered operator
      * for a particular subscription.
      * <p>
-     * Availability: Only when user is registered to a network. Result may be
-     * unreliable on CDMA networks (use {@link #getPhoneType()} to determine if
-     * on a CDMA network).
-     * @param subId
+     *
+     * @param subId The subscription id.
      * @hide
      */
     @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.P)
@@ -2952,10 +2837,6 @@ public class TelephonyManager {
 
     /**
      * Returns the numeric name (MCC+MNC) of current registered operator.
-     * <p>
-     * Availability: Only when user is registered to a network. Result may be
-     * unreliable on CDMA networks (use {@link #getPhoneType()} to determine if
-     * on a CDMA network).
      */
     @RequiresFeature(PackageManager.FEATURE_TELEPHONY_RADIO_ACCESS)
     public String getNetworkOperator() {
@@ -2965,12 +2846,8 @@ public class TelephonyManager {
     /**
      * Returns the numeric name (MCC+MNC) of current registered operator
      * for a particular subscription.
-     * <p>
-     * Availability: Only when user is registered to a network. Result may be
-     * unreliable on CDMA networks (use {@link #getPhoneType()} to determine if
-     * on a CDMA network).
      *
-     * @param subId
+     * @param subId The subscription id.
      * @hide
      */
     @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.P)
@@ -2983,11 +2860,8 @@ public class TelephonyManager {
      * Returns the numeric name (MCC+MNC) of current registered operator
      * for a particular subscription.
      * <p>
-     * Availability: Only when user is registered to a network. Result may be
-     * unreliable on CDMA networks (use {@link #getPhoneType()} to determine if
-     * on a CDMA network).
      *
-     * @param phoneId
+     * @param phoneId The phone id
      * @hide
      **/
     @UnsupportedAppUsage
@@ -3068,9 +2942,6 @@ public class TelephonyManager {
     /**
      * Returns the ISO-3166-1 alpha-2 country code equivalent of the MCC (Mobile Country Code) of
      * the current registered operator or the cell nearby, if available.
-     *
-     * Note: Result may be unreliable on CDMA networks (use {@link #getPhoneType()} to determine
-     * if on a CDMA network).
      * <p>
      * @return the lowercase 2 character ISO-3166-1 alpha-2 country code, or empty string if not
      * available.
@@ -3088,10 +2959,6 @@ public class TelephonyManager {
      * the current registered operator or the cell nearby, if available. This is same as
      * {@link #getNetworkCountryIso()} but allowing specifying the SIM slot index. This is used for
      * accessing network country info from the SIM slot that does not have SIM inserted.
-     *
-     * Note: Result may be unreliable on CDMA networks (use {@link #getPhoneType()} to determine
-     * if on a CDMA network).
-     * <p>
      *
      * @param slotIndex the SIM slot index to get network country ISO.
      *
@@ -4364,35 +4231,7 @@ public class TelephonyManager {
     @RequiresPermission(android.Manifest.permission.READ_PRIVILEGED_PHONE_STATE)
     @RequiresFeature(PackageManager.FEATURE_TELEPHONY_RADIO_ACCESS)
     public boolean isLteCdmaEvdoGsmWcdmaEnabled() {
-        return getLteOnCdmaMode(getSubId()) == PhoneConstants.LTE_ON_CDMA_TRUE;
-    }
-
-    /**
-     * Return if the current radio is LTE on CDMA for Subscription. This
-     * is a tri-state return value as for a period of time
-     * the mode may be unknown.
-     *
-     * @param subId for which radio is LTE on CDMA is returned
-     * @return {@link PhoneConstants#LTE_ON_CDMA_UNKNOWN}, {@link PhoneConstants#LTE_ON_CDMA_FALSE}
-     * or {@link PhoneConstants#LTE_ON_CDMA_TRUE}
-     * @hide
-     */
-    @RequiresPermission(android.Manifest.permission.READ_PRIVILEGED_PHONE_STATE)
-    @UnsupportedAppUsage
-    public int getLteOnCdmaMode(int subId) {
-        try {
-            ITelephony telephony = getITelephony();
-            if (telephony == null)
-                return PhoneConstants.LTE_ON_CDMA_UNKNOWN;
-            return telephony.getLteOnCdmaModeForSubscriber(subId, getOpPackageName(),
-                    getAttributionTag());
-        } catch (RemoteException ex) {
-            // Assume no ICC card if remote exception which shouldn't happen
-            return PhoneConstants.LTE_ON_CDMA_UNKNOWN;
-        } catch (NullPointerException ex) {
-            // This could happen before phone restarts due to crashing
-            return PhoneConstants.LTE_ON_CDMA_UNKNOWN;
-        }
+        return false;
     }
 
     /**
@@ -13871,39 +13710,6 @@ public class TelephonyManager {
             }
         } catch (RemoteException e) {
             Log.e(TAG, "Error calling ITelephony#getAidForAppType", e);
-        }
-        return null;
-    }
-
-    /**
-     * Return the Electronic Serial Number.
-     *
-     * Requires that the calling app has READ_PRIVILEGED_PHONE_STATE permission
-     *
-     * @return ESN or null if error.
-     * @hide
-     */
-    public String getEsn() {
-        return getEsn(getSubId());
-    }
-
-    /**
-     * Return the Electronic Serial Number.
-     *
-     * Requires that the calling app has READ_PRIVILEGED_PHONE_STATE permission
-     *
-     * @param subId the subscription ID that this request applies to.
-     * @return ESN or null if error.
-     * @hide
-     */
-    public String getEsn(int subId) {
-        try {
-            ITelephony service = getITelephony();
-            if (service != null) {
-                return service.getEsn(subId);
-            }
-        } catch (RemoteException e) {
-            Log.e(TAG, "Error calling ITelephony#getEsn", e);
         }
         return null;
     }

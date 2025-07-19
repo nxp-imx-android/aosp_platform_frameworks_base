@@ -75,17 +75,7 @@ public abstract class MediaOutputAdapterBase extends RecyclerView.Adapter<Recycl
     boolean isCurrentlyConnected(MediaDevice device) {
         return TextUtils.equals(device.getId(),
                 mController.getCurrentConnectedMediaDevice().getId())
-                || (mController.getSelectedMediaDevice().size() == 1
-                && isDeviceIncluded(mController.getSelectedMediaDevice(), device));
-    }
-
-    boolean isDeviceIncluded(List<MediaDevice> deviceList, MediaDevice targetDevice) {
-        for (MediaDevice device : deviceList) {
-            if (TextUtils.equals(device.getId(), targetDevice.getId())) {
-                return true;
-            }
-        }
-        return false;
+                || (!mController.hasGroupPlayback() && device.isSelected());
     }
 
     boolean isDragging() {
@@ -105,7 +95,7 @@ public abstract class MediaOutputAdapterBase extends RecyclerView.Adapter<Recycl
         mMediaItemList.clear();
         mMediaItemList.addAll(mController.getMediaItemList());
         if (mShouldGroupSelectedMediaItems) {
-            if (mController.getSelectedMediaDevice().size() == 1) {
+            if (!mController.hasGroupPlayback()) {
                 // Don't group devices if initially there isn't more than one selected.
                 mShouldGroupSelectedMediaItems = false;
             }
@@ -152,13 +142,6 @@ public abstract class MediaOutputAdapterBase extends RecyclerView.Adapter<Recycl
             MediaDevice device = mediaItem.getMediaDevice().get();
             boolean isMutingExpectedDeviceExist = mController.hasMutingExpectedDevice();
             final boolean currentlyConnected = isCurrentlyConnected(device);
-            boolean isSelected = isDeviceIncluded(mController.getSelectedMediaDevice(), device);
-            boolean isDeselectable =
-                    isDeviceIncluded(mController.getDeselectableMediaDevice(), device);
-            boolean isSelectable = isDeviceIncluded(mController.getSelectableMediaDevice(), device);
-            boolean isTransferable =
-                    isDeviceIncluded(mController.getTransferableMediaDevices(), device);
-            boolean hasRouteListingPreferenceItem = device.hasRouteListingPreferenceItem();
 
             if (DEBUG) {
                 Log.d(TAG, "#" + position + ": " + device);
@@ -197,8 +180,7 @@ public abstract class MediaOutputAdapterBase extends RecyclerView.Adapter<Recycl
                 } else if (device.getState() == MediaDeviceState.STATE_GROUPING) {
                     connectionState = ConnectionState.CONNECTING;
                 } else if (!enableOutputSwitcherRedesign() && mShouldGroupSelectedMediaItems
-                        && hasMultipleSelectedDevices()
-                        && isSelected) {
+                        && mController.hasGroupPlayback() && device.isSelected()) {
                     if (mediaItem.isFirstDeviceInGroup()) {
                         isDeviceGroup = true;
                     } else {
@@ -207,18 +189,18 @@ public abstract class MediaOutputAdapterBase extends RecyclerView.Adapter<Recycl
                 } else { // A connected or disconnected device.
                     subtitle = device.hasSubtext() ? device.getSubtextString() : null;
                     ongoingSessionStatus = getOngoingSessionStatus(device);
-                    groupStatus = getGroupStatus(isSelected, isSelectable, isDeselectable);
+                    groupStatus = getGroupStatus(device);
 
                     if (device.getState() == MediaDeviceState.STATE_CONNECTING_FAILED) {
                         deviceStatusIcon = mContext.getDrawable(
                                 R.drawable.media_output_status_failed);
                         subtitle = mContext.getString(R.string.media_output_dialog_connect_failed);
                         clickListener = v -> onItemClick(v, device);
-                    } else if (currentlyConnected || isSelected) {
+                    } else if (currentlyConnected || device.isSelected()) {
                         connectionState = ConnectionState.CONNECTED;
                     } else { // disconnected
-                        if (isSelectable) { // groupable device
-                            if (isTransferable || hasRouteListingPreferenceItem) {
+                        if (device.isSelectable()) { // groupable device
+                            if (device.isTransferable() || device.hasRouteListingPreferenceItem()) {
                                 clickListener = v -> onItemClick(v, device);
                             }
                         } else {
@@ -258,24 +240,22 @@ public abstract class MediaOutputAdapterBase extends RecyclerView.Adapter<Recycl
                     device.isHostForOngoingSession()) : null;
         }
 
-        private GroupStatus getGroupStatus(boolean isSelected, boolean isSelectable,
-                boolean isDeselectable) {
+        private GroupStatus getGroupStatus(@NonNull MediaDevice device) {
             // A device should either be selectable or, when the device selected, the list should
             // have other selectable or selected devices.
             boolean selectedWithOtherGroupDevices =
-                    isSelected && (hasMultipleSelectedDevices() || hasSelectableDevices());
-            if (isSelectable || selectedWithOtherGroupDevices) {
-                return new GroupStatus(isSelected, isDeselectable);
+                    device.isSelected() && (mController.hasGroupPlayback()
+                            || hasSelectableDevices());
+            if (device.isSelectable() || selectedWithOtherGroupDevices) {
+                return new GroupStatus(device.isSelected(), device.isDeselectable());
             }
             return null;
         }
 
-        private boolean hasMultipleSelectedDevices() {
-            return mController.getSelectedMediaDevice().size() > 1;
-        }
-
         private boolean hasSelectableDevices() {
-            return !mController.getSelectableMediaDevice().isEmpty();
+            return mMediaItemList.stream()
+                    .anyMatch(item -> item.getMediaDevice().map(MediaDevice::isSelectable).orElse(
+                            false));
         }
 
         @Nullable
@@ -297,10 +277,9 @@ public abstract class MediaOutputAdapterBase extends RecyclerView.Adapter<Recycl
 
         protected void onGroupActionTriggered(boolean isChecked, MediaDevice device) {
             disableSeekBar();
-            if (isChecked && isDeviceIncluded(mController.getSelectableMediaDevice(), device)) {
+            if (isChecked && device.isSelectable()) {
                 mController.addDeviceToPlayMedia(device);
-            } else if (!isChecked
-                    && isDeviceIncluded(mController.getDeselectableMediaDevice(), device)) {
+            } else if (!isChecked && device.isDeselectable()) {
                 mController.removeDeviceFromPlayMedia(device);
             }
             if (Flags.enableOutputSwitcherPersonalAudioSharing()) {

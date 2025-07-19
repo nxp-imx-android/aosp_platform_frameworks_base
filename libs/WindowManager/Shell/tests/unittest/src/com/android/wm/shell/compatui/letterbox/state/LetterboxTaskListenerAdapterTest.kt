@@ -27,6 +27,7 @@ import com.android.wm.shell.ShellTaskOrganizer
 import com.android.wm.shell.ShellTestCase
 import com.android.wm.shell.common.ShellExecutor
 import com.android.wm.shell.compatui.letterbox.asMode
+import com.android.wm.shell.compatui.letterbox.lifecycle.TaskIdResolver
 import com.android.wm.shell.sysui.ShellInit
 import com.android.wm.shell.util.testTaskAppearedListener
 import com.android.wm.shell.util.testTaskVanishedListener
@@ -37,6 +38,7 @@ import kotlin.test.assertNull
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.kotlin.any
+import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
 
@@ -69,6 +71,38 @@ class LetterboxTaskListenerAdapterTest : ShellTestCase() {
     }
 
     @Test
+    @EnableFlags(
+        Flags.FLAG_APP_COMPAT_REFACTORING,
+        Flags.FLAG_APP_COMPAT_REFACTORING_FIX_MULTIWINDOW_TASK_HIERARCHY
+    )
+    fun `When a Task appears the TaskInfo data are persisted with parentTaskId`() {
+        runTestScenario { r ->
+            testTaskAppearedListener(r.getLetterboxTaskListenerAdapterFactory()) {
+                val leashTest = SurfaceControl()
+                val tokenTest = mock<WindowContainerToken>()
+                r.configureTaskIdResolver(letterboxTaskId = 37)
+                runningTaskInfo { ti ->
+                    ti.taskId = 10
+                    ti.parentTaskId = 20
+                    ti.token = tokenTest
+                    ti.appCompatTaskInfo.setIsLeafTask(true)
+                }
+                leash { leashTest }
+                validateOnTaskAppeared {
+                    r.validateItem(10) { item ->
+                        assertEquals(leashTest, item?.containerLeash)
+                        assertEquals(tokenTest, item?.containerToken)
+                        assertEquals(37, item?.taskId)
+                        assertEquals(20, item?.parentTaskId)
+                    }
+                }
+            }
+        }
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_APP_COMPAT_REFACTORING)
+    @DisableFlags(Flags.FLAG_APP_COMPAT_REFACTORING_FIX_MULTIWINDOW_TASK_HIERARCHY)
     fun `When a Task appears the TaskInfo data are persisted`() {
         runTestScenario { r ->
             testTaskAppearedListener(r.getLetterboxTaskListenerAdapterFactory()) {
@@ -77,6 +111,7 @@ class LetterboxTaskListenerAdapterTest : ShellTestCase() {
                 runningTaskInfo { ti ->
                     ti.taskId = 10
                     ti.token = tokenTest
+                    ti.appCompatTaskInfo.setIsLeafTask(true)
                 }
                 leash { leashTest }
                 validateOnTaskAppeared {
@@ -90,6 +125,7 @@ class LetterboxTaskListenerAdapterTest : ShellTestCase() {
     }
 
     @Test
+    @EnableFlags(Flags.FLAG_APP_COMPAT_REFACTORING)
     fun `When a Task vanishes the TaskInfo data are removed`() {
         runTestScenario { r ->
             val leashTest = SurfaceControl()
@@ -135,16 +171,19 @@ class LetterboxTaskListenerAdapterTest : ShellTestCase() {
         private val shellTaskOrganizer: ShellTaskOrganizer
         private val letterboxTaskListenerAdapter: LetterboxTaskListenerAdapter
         private val letterboxTaskInfoRepository: LetterboxTaskInfoRepository
+        private val taskIdResolver: TaskIdResolver
 
         init {
             executor = mock<ShellExecutor>()
             shellInit = ShellInit(executor)
             shellTaskOrganizer = mock<ShellTaskOrganizer>()
             letterboxTaskInfoRepository = LetterboxTaskInfoRepository()
+            taskIdResolver = mock<TaskIdResolver>()
             letterboxTaskListenerAdapter = LetterboxTaskListenerAdapter(
                 shellInit,
                 shellTaskOrganizer,
-                letterboxTaskInfoRepository
+                letterboxTaskInfoRepository,
+                taskIdResolver
             )
         }
 
@@ -153,6 +192,10 @@ class LetterboxTaskListenerAdapterTest : ShellTestCase() {
         }
 
         fun invokeShellInit() = shellInit.init()
+
+        fun configureTaskIdResolver(letterboxTaskId: Int) {
+            doReturn(letterboxTaskId).`when`(taskIdResolver).getLetterboxTaskId(any())
+        }
 
         fun checkListenerIsRegistered(expected: Boolean) {
             verify(shellTaskOrganizer, expected.asMode()).addTaskAppearedListener(any())

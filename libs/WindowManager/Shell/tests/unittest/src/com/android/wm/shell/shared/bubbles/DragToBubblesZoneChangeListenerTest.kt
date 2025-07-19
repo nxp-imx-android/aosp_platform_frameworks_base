@@ -361,4 +361,23 @@ class DragToBubblesZoneChangeListenerTest {
         // Then animate should NOT be called
         verify(mockCallback, never()).animateBubbleBarLocation(any())
     }
+
+    @Test
+    fun onDragZoneChanged_dragToSameLocationTwice_onDragEnteredLocationCalledOnSecondDrag() {
+        // // Given has bubbles, starting on LEFT
+        setUpListener(hasBubbles = false, startingLocation = BubbleBarLocation.LEFT)
+
+        // First drag to the left zone
+        listener.onDragZoneChanged(draggedObject, null, leftZone)
+        listener.onDragEnded(leftZone)
+        verify(mockCallback).onDragEnteredLocation(BubbleBarLocation.LEFT)
+        clearInvocations(mockCallback) // Reset mock to clear interactions for the next assertion
+
+        // Second drag to the same left zone
+        listener.onDragZoneChanged(draggedObject, null, leftZone)
+        listener.onDragEnded(leftZone)
+
+        // Verify onDragEnteredLocation is called again for the same location
+        verify(mockCallback).onDragEnteredLocation(BubbleBarLocation.LEFT)
+    }
 }

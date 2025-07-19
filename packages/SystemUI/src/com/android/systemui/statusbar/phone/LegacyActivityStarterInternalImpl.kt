@@ -149,6 +149,7 @@ constructor(
         customMessage: String?,
         disallowEnterPictureInPictureWhileLaunching: Boolean,
         userHandle: UserHandle?,
+        activityOptions: ActivityOptions?,
     ) {
         val userHandle: UserHandle = userHandle ?: getActivityUserHandle(intent)
 
@@ -192,6 +193,9 @@ constructor(
             ) { adapter: RemoteAnimationAdapter? ->
                 val options =
                     ActivityOptions(CentralSurfaces.getActivityOptions(displayId, adapter))
+                if (activityOptions != null) {
+                    options.update(activityOptions)
+                }
 
                 // We know that the intent of the caller is to dismiss the keyguard and
                 // this runnable is called right after the keyguard is solved, so we tell

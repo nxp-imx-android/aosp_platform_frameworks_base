@@ -534,7 +534,7 @@ public class TaskFragmentOrganizerController extends ITaskFragmentOrganizerContr
             mDeferredTransitions.put(transaction.getTransactionToken(), transitionId);
             mWindowOrganizerController.getTransitionController().deferTransitionReady();
             final Transition.ReadyCondition transactionApplied = new Transition.ReadyCondition(
-                    "task-fragment transaction", transaction);
+                    "task-fragment transaction", transaction, true /* newTrackerOnly */);
             mWindowOrganizerController.getTransitionController().waitFor(transactionApplied);
             mInFlightTransactions.put(transaction.getTransactionToken(), transactionApplied);
         }

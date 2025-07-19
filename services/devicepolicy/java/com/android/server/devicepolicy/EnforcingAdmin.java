@@ -22,6 +22,7 @@ import android.app.admin.Authority;
 import android.app.admin.DeviceAdminAuthority;
 import android.app.admin.DpcAuthority;
 import android.app.admin.RoleAuthority;
+import android.app.admin.SystemAuthority;
 import android.app.admin.UnknownAuthority;
 import android.app.role.RoleManager;
 import android.content.ComponentName;
@@ -120,10 +121,11 @@ final class EnforcingAdmin {
         } else if (authority instanceof RoleAuthority roleAuthority) {
             return new EnforcingAdmin(
                     admin.getPackageName(), admin.getComponentName(),
-                    Set.of(DEVICE_ADMIN_AUTHORITY), admin.getUserHandle().getIdentifier(),
+                    roleAuthority.getRoles(), admin.getUserHandle().getIdentifier(),
                     /* isRoleAuthority = */ true);
+        } else if (authority instanceof SystemAuthority systemAuthority) {
+            return new EnforcingAdmin(systemAuthority.getSystemEntity());
         }
-        // TODO(b/324899199): Consider supporting android.app.admin.SystemAuthority.
         return new EnforcingAdmin(admin.getPackageName(), admin.getComponentName(),
                 Set.of(), admin.getUserHandle().getIdentifier());
     }
@@ -145,6 +147,10 @@ final class EnforcingAdmin {
         if (authority.startsWith(ROLE_AUTHORITY_PREFIX)) {
             String role = authority.substring(ROLE_AUTHORITY_PREFIX.length());
             return new RoleAuthority(Set.of(role));
+        }
+        if (authority.startsWith(SYSTEM_AUTHORITY_PREFIX)) {
+            String systemEntity = authority.substring(SYSTEM_AUTHORITY_PREFIX.length());
+            return new SystemAuthority(systemEntity);
         }
         return UnknownAuthority.UNKNOWN_AUTHORITY;
     }
@@ -298,8 +304,7 @@ final class EnforcingAdmin {
         } else if (mAuthorities.contains(DEVICE_ADMIN_AUTHORITY)) {
             authority = DeviceAdminAuthority.DEVICE_ADMIN_AUTHORITY;
         } else if (mIsSystemAuthority) {
-            // For now, System Authority returns UnknownAuthority.
-            authority = new UnknownAuthority(mSystemEntity);
+            authority = new SystemAuthority(mSystemEntity);
         } else {
             authority = UnknownAuthority.UNKNOWN_AUTHORITY;
         }

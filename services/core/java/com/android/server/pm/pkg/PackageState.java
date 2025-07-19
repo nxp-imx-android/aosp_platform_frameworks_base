@@ -469,6 +469,12 @@ public interface PackageState {
     boolean isVendor();
 
     /**
+     * @see ApplicationInfo#PRIVATE_FLAG_ALLOW_AUDIO_PLAYBACK_CAPTURE
+     * @hide
+     */
+    boolean isAudioPlaybackCaptureAllowed();
+
+    /**
      * The name of the APEX module containing this package, if it is an APEX or APK-in-APEX.
      * @hide
      */

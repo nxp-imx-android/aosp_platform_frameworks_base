@@ -1118,6 +1118,49 @@ public final class WindowInsets {
     }
 
     /**
+     * Returns a string of the changes of critical fields for debug.
+     */
+    @SuppressLint("SwitchIntDef")
+    @NonNull
+    String toDiffString(@Nullable WindowInsets other) {
+        final var result = new StringBuilder();
+        if (other == null
+                || mFrameWidth != other.mFrameWidth
+                || mFrameHeight != other.mFrameHeight) {
+            result.append(mFrameWidth).append("x").append(mFrameHeight).append(" ");
+        }
+        final Insets[] thisInsetsMap = mTypeInsetsMap;
+        final Insets[] thatInsetsMap = other != null ? other.mTypeInsetsMap : null;
+        for (int i = 0; i < TYPES.length; i++) {
+            @InsetsType final int type = TYPES[i];
+            switch (type) {
+                // These are the types that we want to debug.
+                case STATUS_BARS, NAVIGATION_BARS, IME, MANDATORY_SYSTEM_GESTURES -> {
+                    final Insets thisInsets = thisInsetsMap[i];
+                    final Insets thatInsets = thatInsetsMap != null ? thatInsetsMap[i] : null;
+                    if (!Objects.equals(thisInsets, thatInsets)) {
+                        result.append(Type.toString(type)).append(":")
+                                .append(toShortString(thisInsets)).append(" ");
+                    }
+                }
+            }
+        }
+        return result.toString();
+    }
+
+    @NonNull
+    private static String toShortString(Insets insets) {
+        if (insets == null) {
+            return "null";
+        }
+        return "["
+                + insets.left + ","
+                + insets.top + ","
+                + insets.right + ","
+                + insets.bottom + "]";
+    }
+
+    /**
      * Returns a copy of this instance inset in the given directions.
      *
      * @see #inset(int, int, int, int)
@@ -1914,6 +1957,9 @@ public final class WindowInsets {
         @NonNull
         @SuppressLint("UnflaggedApi") // @TestApi without associated feature.
         public static String toString(@InsetsType int types) {
+            if (types == 0) {
+                return "";
+            }
             final StringBuilder result = new StringBuilder();
             if ((types & STATUS_BARS) != 0) {
                 result.append("statusBars ");

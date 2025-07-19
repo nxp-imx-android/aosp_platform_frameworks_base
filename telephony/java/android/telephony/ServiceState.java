@@ -265,16 +265,6 @@ public class ServiceState implements Parcelable {
      */
     private static final int NEXT_RIL_RADIO_TECHNOLOGY = 21;
 
-    /** @hide */
-    public static final int RIL_RADIO_CDMA_TECHNOLOGY_BITMASK =
-            (1 << (RIL_RADIO_TECHNOLOGY_IS95A - 1))
-                    | (1 << (RIL_RADIO_TECHNOLOGY_IS95B - 1))
-                    | (1 << (RIL_RADIO_TECHNOLOGY_1xRTT - 1))
-                    | (1 << (RIL_RADIO_TECHNOLOGY_EVDO_0 - 1))
-                    | (1 << (RIL_RADIO_TECHNOLOGY_EVDO_A - 1))
-                    | (1 << (RIL_RADIO_TECHNOLOGY_EVDO_B - 1))
-                    | (1 << (RIL_RADIO_TECHNOLOGY_EHRPD - 1));
-
     private int mVoiceRegState = STATE_OUT_OF_SERVICE;
     private int mDataRegState = STATE_OUT_OF_SERVICE;
 
@@ -336,19 +326,6 @@ public class ServiceState implements Parcelable {
 
     @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.P, trackingBug = 115609023)
     private boolean mCssIndicator;
-    @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.P)
-    private int mNetworkId;
-    @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.P)
-    private int mSystemId;
-    @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.P, trackingBug = 115609023)
-    private int mCdmaRoamingIndicator;
-    @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.P, trackingBug = 115609023)
-    private int mCdmaDefaultRoamingIndicator;
-    @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.P, trackingBug = 115609023)
-    private int mCdmaEriIconIndex;
-    @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.P, trackingBug = 115609023)
-    private int mCdmaEriIconMode;
-
     @FrequencyRange
     private int mNrFrequencyRange;
     private int mChannelNumber;
@@ -432,12 +409,6 @@ public class ServiceState implements Parcelable {
         mOperatorNumeric = s.mOperatorNumeric;
         mIsManualNetworkSelection = s.mIsManualNetworkSelection;
         mCssIndicator = s.mCssIndicator;
-        mNetworkId = s.mNetworkId;
-        mSystemId = s.mSystemId;
-        mCdmaRoamingIndicator = s.mCdmaRoamingIndicator;
-        mCdmaDefaultRoamingIndicator = s.mCdmaDefaultRoamingIndicator;
-        mCdmaEriIconIndex = s.mCdmaEriIconIndex;
-        mCdmaEriIconMode = s.mCdmaEriIconMode;
         mIsEmergencyOnly = s.mIsEmergencyOnly;
         mChannelNumber = s.mChannelNumber;
         mCellBandwidths = s.mCellBandwidths == null ? null :
@@ -471,12 +442,6 @@ public class ServiceState implements Parcelable {
         mOperatorNumeric = in.readString();
         mIsManualNetworkSelection = in.readInt() != 0;
         mCssIndicator = (in.readInt() != 0);
-        mNetworkId = in.readInt();
-        mSystemId = in.readInt();
-        mCdmaRoamingIndicator = in.readInt();
-        mCdmaDefaultRoamingIndicator = in.readInt();
-        mCdmaEriIconIndex = in.readInt();
-        mCdmaEriIconMode = in.readInt();
         mIsEmergencyOnly = in.readInt() != 0;
         mArfcnRsrpBoost = in.readInt();
         synchronized (mNetworkRegistrationInfos) {
@@ -499,13 +464,8 @@ public class ServiceState implements Parcelable {
         out.writeString(mOperatorNumeric);
         out.writeInt(mIsManualNetworkSelection ? 1 : 0);
         out.writeInt(mCssIndicator ? 1 : 0);
-        out.writeInt(mNetworkId);
-        out.writeInt(mSystemId);
-        out.writeInt(mCdmaRoamingIndicator);
-        out.writeInt(mCdmaDefaultRoamingIndicator);
-        out.writeInt(mCdmaEriIconIndex);
-        out.writeInt(mCdmaEriIconMode);
         out.writeInt(mIsEmergencyOnly ? 1 : 0);
+
         out.writeInt(mArfcnRsrpBoost);
         synchronized (mNetworkRegistrationInfos) {
             out.writeList(mNetworkRegistrationInfos);
@@ -731,38 +691,6 @@ public class ServiceState implements Parcelable {
     }
 
     /**
-     * @hide
-     */
-    @UnsupportedAppUsage
-    public int getCdmaRoamingIndicator(){
-        return this.mCdmaRoamingIndicator;
-    }
-
-    /**
-     * @hide
-     */
-    @UnsupportedAppUsage
-    public int getCdmaDefaultRoamingIndicator(){
-        return this.mCdmaDefaultRoamingIndicator;
-    }
-
-    /**
-     * @hide
-     */
-    @UnsupportedAppUsage
-    public int getCdmaEriIconIndex() {
-        return this.mCdmaEriIconIndex;
-    }
-
-    /**
-     * @hide
-     */
-    @UnsupportedAppUsage
-    public int getCdmaEriIconMode() {
-        return this.mCdmaEriIconMode;
-    }
-
-    /**
      * Get current registered operator name in long alphanumeric format.
      *
      * In GSM/UMTS, long format can be up to 16 characters long.
@@ -981,12 +909,6 @@ public class ServiceState implements Parcelable {
                     mOperatorNumeric,
                     mIsManualNetworkSelection,
                     mCssIndicator,
-                    mNetworkId,
-                    mSystemId,
-                    mCdmaRoamingIndicator,
-                    mCdmaDefaultRoamingIndicator,
-                    mCdmaEriIconIndex,
-                    mCdmaEriIconMode,
                     mIsEmergencyOnly,
                     mArfcnRsrpBoost,
                     mNetworkRegistrationInfos,
@@ -1013,11 +935,6 @@ public class ServiceState implements Parcelable {
                     && equalsHandlesNulls(mOperatorAlphaShort, s.mOperatorAlphaShort)
                     && equalsHandlesNulls(mOperatorNumeric, s.mOperatorNumeric)
                     && equalsHandlesNulls(mCssIndicator, s.mCssIndicator)
-                    && equalsHandlesNulls(mNetworkId, s.mNetworkId)
-                    && equalsHandlesNulls(mSystemId, s.mSystemId)
-                    && equalsHandlesNulls(mCdmaRoamingIndicator, s.mCdmaRoamingIndicator)
-                    && equalsHandlesNulls(mCdmaDefaultRoamingIndicator,
-                    s.mCdmaDefaultRoamingIndicator)
                     && mIsEmergencyOnly == s.mIsEmergencyOnly
                     && equalsHandlesNulls(mOperatorAlphaLongRaw, s.mOperatorAlphaLongRaw)
                     && equalsHandlesNulls(mOperatorAlphaShortRaw, s.mOperatorAlphaShortRaw)
@@ -1194,10 +1111,6 @@ public class ServiceState implements Parcelable {
                     .append(", getRilDataRadioTechnology=").append(getRilDataRadioTechnology())
                     .append("(" + rilRadioTechnologyToString(getRilDataRadioTechnology()) + ")")
                     .append(", mCssIndicator=").append(mCssIndicator ? "supported" : "unsupported")
-                    .append(", mNetworkId=").append(mNetworkId)
-                    .append(", mSystemId=").append(mSystemId)
-                    .append(", mCdmaRoamingIndicator=").append(mCdmaRoamingIndicator)
-                    .append(", mCdmaDefaultRoamingIndicator=").append(mCdmaDefaultRoamingIndicator)
                     .append(", mIsEmergencyOnly=").append(mIsEmergencyOnly)
                     .append(", isUsingCarrierAggregation=").append(isUsingCarrierAggregation())
                     .append(", mArfcnRsrpBoost=").append(mArfcnRsrpBoost)
@@ -1229,12 +1142,6 @@ public class ServiceState implements Parcelable {
         mOperatorNumeric = null;
         mIsManualNetworkSelection = false;
         mCssIndicator = false;
-        mNetworkId = -1;
-        mSystemId = -1;
-        mCdmaRoamingIndicator = -1;
-        mCdmaDefaultRoamingIndicator = -1;
-        mCdmaEriIconIndex = -1;
-        mCdmaEriIconMode = -1;
         mIsEmergencyOnly = false;
         mArfcnRsrpBoost = 0;
         mNrFrequencyRange = FREQUENCY_RANGE_UNKNOWN;
@@ -1372,38 +1279,6 @@ public class ServiceState implements Parcelable {
         mIsEmergencyOnly = emergencyOnly;
     }
 
-    /**
-     * @hide
-     */
-    @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.P, trackingBug = 115609023)
-    public void setCdmaRoamingIndicator(int roaming) {
-        this.mCdmaRoamingIndicator = roaming;
-    }
-
-    /**
-     * @hide
-     */
-    @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.P, trackingBug = 115609023)
-    public void setCdmaDefaultRoamingIndicator (int roaming) {
-        this.mCdmaDefaultRoamingIndicator = roaming;
-    }
-
-    /**
-     * @hide
-     */
-    @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.P, trackingBug = 115609023)
-    public void setCdmaEriIconIndex(int index) {
-        this.mCdmaEriIconIndex = index;
-    }
-
-    /**
-     * @hide
-     */
-    @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.P, trackingBug = 115609023)
-    public void setCdmaEriIconMode(int mode) {
-        this.mCdmaEriIconMode = mode;
-    }
-
     public void setOperatorName(String longName, String shortName, String numeric) {
         mOperatorAlphaLong = longName;
         mOperatorAlphaShort = shortName;
@@ -1480,10 +1355,6 @@ public class ServiceState implements Parcelable {
         m.putInt("radioTechnology", getRilVoiceRadioTechnology());
         m.putInt("dataRadioTechnology", getRilDataRadioTechnology());
         m.putBoolean("cssIndicator", mCssIndicator);
-        m.putInt("networkId", mNetworkId);
-        m.putInt("systemId", mSystemId);
-        m.putInt("cdmaRoamingIndicator", mCdmaRoamingIndicator);
-        m.putInt("cdmaDefaultRoamingIndicator", mCdmaDefaultRoamingIndicator);
         m.putBoolean("emergencyOnly", mIsEmergencyOnly);
         m.putBoolean("isDataRoamingFromRegistration", getDataRoamingFromRegistration());
         m.putBoolean("isUsingCarrierAggregation", isUsingCarrierAggregation());
@@ -1596,8 +1467,6 @@ public class ServiceState implements Parcelable {
     /** @hide */
     @TestApi
     public void setCdmaSystemAndNetworkId(int systemId, int networkId) {
-        this.mSystemId = systemId;
-        this.mNetworkId = networkId;
     }
 
     /** @hide */
@@ -1821,14 +1690,14 @@ public class ServiceState implements Parcelable {
      * {@link android.Manifest.permission#ACCESS_COARSE_LOCATION}. Otherwise return
      * {@link #UNKNOWN_ID}.
      *
-     * @return The CDMA NID or {@link #UNKNOWN_ID} if not available.
+     * @return {@link #UNKNOWN_ID} as CDMA is no longer supported.
      */
     @RequiresPermission(anyOf = {
             android.Manifest.permission.ACCESS_FINE_LOCATION,
             android.Manifest.permission.ACCESS_COARSE_LOCATION
     })
     public int getCdmaNetworkId() {
-        return this.mNetworkId;
+        return UNKNOWN_ID;
     }
 
     /**
@@ -1839,14 +1708,14 @@ public class ServiceState implements Parcelable {
      * {@link android.Manifest.permission#ACCESS_COARSE_LOCATION}. Otherwise return
      * {@link #UNKNOWN_ID}.
      *
-     * @return The CDMA SID or {@link #UNKNOWN_ID} if not available.
+     * @return {@link #UNKNOWN_ID} as CDMA is no longer supported.
      */
     @RequiresPermission(anyOf = {
             android.Manifest.permission.ACCESS_FINE_LOCATION,
             android.Manifest.permission.ACCESS_COARSE_LOCATION
     })
     public int getCdmaSystemId() {
-        return this.mSystemId;
+        return UNKNOWN_ID;
     }
 
     /** @hide */
@@ -1885,13 +1754,6 @@ public class ServiceState implements Parcelable {
         return radioTechnology == RIL_RADIO_TECHNOLOGY_LTE
                 || radioTechnology == RIL_RADIO_TECHNOLOGY_LTE_CA
                 || radioTechnology == RIL_RADIO_TECHNOLOGY_NR;
-    }
-
-    /** @hide */
-    @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.P, trackingBug = 115609023)
-    public static boolean bearerBitmapHasCdma(int networkTypeBitmask) {
-        return (RIL_RADIO_CDMA_TECHNOLOGY_BITMASK
-                & convertNetworkTypeBitmaskToBearerBitmask(networkTypeBitmask)) != 0;
     }
 
     /** @hide */
@@ -2136,8 +1998,6 @@ public class ServiceState implements Parcelable {
         state.mOperatorAlphaLong = null;
         state.mOperatorAlphaShort = null;
         state.mOperatorNumeric = null;
-        state.mSystemId = UNKNOWN_ID;
-        state.mNetworkId = UNKNOWN_ID;
 
         return state;
     }

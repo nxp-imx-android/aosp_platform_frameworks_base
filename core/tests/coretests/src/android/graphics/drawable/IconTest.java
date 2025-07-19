@@ -400,7 +400,6 @@ public class IconTest {
     }
 
     @Test
-    @DisabledOnRavenwood(blockedBy = DesktopExperienceFlags.class)
     public void testParcel() throws Exception {
         final Bitmap originalbits = ((BitmapDrawable) getContext().getDrawable(R.drawable.landscape))
                 .getBitmap();

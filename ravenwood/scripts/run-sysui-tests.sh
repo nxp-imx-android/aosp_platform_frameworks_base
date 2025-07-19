@@ -18,5 +18,6 @@ set -e
 # Move to the script's directory
 cd "${0%/*}"
 
+export ROLLING_TF_SUBPROCESS_OUTPUT=0
 export RAVENWOOD_TEST_ENABLEMENT_POLICY=$(readlink -f ../texts/sysui-enablement-policy.txt)
 ${ATEST:-atest} --class-level-report SystemUiRavenTests "$@"

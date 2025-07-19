@@ -16,6 +16,7 @@
 
 package com.android.server.pm.verify.developer;
 
+import static android.content.pm.verify.developer.DeveloperVerificationSession.DEVELOPER_VERIFICATION_BYPASSED_REASON_UNSPECIFIED;
 import static android.content.pm.verify.developer.DeveloperVerificationSession.DEVELOPER_VERIFICATION_INCOMPLETE_NETWORK_UNAVAILABLE;
 import static android.content.pm.verify.developer.DeveloperVerificationSession.DEVELOPER_VERIFICATION_INCOMPLETE_UNKNOWN;
 import static android.os.Process.INVALID_UID;
@@ -671,7 +672,7 @@ public class DeveloperVerifierController {
                             + " doesn't exist or has finished");
                 }
             }
-            if (bypassReason <= 0) {
+            if (bypassReason <= DEVELOPER_VERIFICATION_BYPASSED_REASON_UNSPECIFIED) {
                 throw new IllegalArgumentException("Verification session " + id
                         + " reported invalid bypass_reason code " + bypassReason);
             }

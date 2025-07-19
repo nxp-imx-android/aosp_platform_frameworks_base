@@ -833,6 +833,7 @@
   <java-symbol type="string" name="lockscreen_emergency_call" />
   <java-symbol type="string" name="lockscreen_return_to_call" />
   <java-symbol type="string" name="long_press_power_to_turn_off_tv_toast" />
+  <java-symbol type="integer" name="config_turnOffTvToastSuppressionDelayMs" />
   <java-symbol type="string" name="low_memory" />
   <java-symbol type="string" name="mic_access_off_toast" />
   <java-symbol type="string" name="mic_access_on_toast" />
@@ -1126,6 +1127,7 @@
   <java-symbol type="string" name="owner_name" />
   <java-symbol type="string" name="guest_name" />
   <java-symbol type="string" name="headless_system_user_name" />
+  <java-symbol type="string" name="unnamed_user_name" />
   <java-symbol type="string" name="config_chooseAccountActivity" />
   <java-symbol type="string" name="config_chooseTypeAndAccountActivity" />
   <java-symbol type="string" name="config_chooserActivity" />
@@ -2102,13 +2104,6 @@
   <java-symbol type="bool" name="config_skipScreenOffTransition" />
   <java-symbol type="bool" name="config_allowAutoBrightnessWhileDozing" />
   <java-symbol type="bool" name="config_allowTheaterModeWakeFromUnplug" />
-  <java-symbol type="bool" name="config_allowTheaterModeWakeFromGesture" />
-  <java-symbol type="bool" name="config_allowTheaterModeWakeFromCameraLens" />
-  <java-symbol type="bool" name="config_allowTheaterModeWakeFromPowerKey" />
-  <java-symbol type="bool" name="config_allowTheaterModeWakeFromKey" />
-  <java-symbol type="bool" name="config_allowTheaterModeWakeFromMotion" />
-  <java-symbol type="bool" name="config_allowTheaterModeWakeFromMotionWhenNotDreaming" />
-  <java-symbol type="bool" name="config_allowTheaterModeWakeFromLidSwitch" />
   <java-symbol type="bool" name="config_allowTheaterModeWakeFromDock" />
   <java-symbol type="bool" name="config_allowTheaterModeWakeFromWindowLayout" />
   <java-symbol type="bool" name="config_keepDreamingWhenUnplugging" />
@@ -2119,7 +2114,6 @@
   <java-symbol type="bool" name="config_lowLightDisplayBehaviorEnabledDefault" />
   <java-symbol type="integer" name="config_lowLightDisplayBehaviorDefault" />
   <java-symbol type="integer" name="config_keyguardDrawnTimeout" />
-  <java-symbol type="bool" name="config_goToSleepOnButtonPressTheaterMode" />
   <java-symbol type="bool" name="config_supportLongPressPowerWhenNonInteractive" />
   <java-symbol type="bool" name="config_supportShortPressPowerWhenDefaultDisplayOn" />
   <java-symbol type="bool" name="config_wimaxEnabled" />
@@ -6264,8 +6258,10 @@
   <!-- Enable OEMs to support scale up anim across tasks.-->
   <java-symbol type="bool" name="config_enableCrossTaskScaleUpAnimation" />
 
-  <!-- Default height of desktop view header for freeform tasks on launch. -->
+  <!-- Default height of desktop view's header for desktop tasks on launch. -->
   <java-symbol type="dimen" name="desktop_view_default_header_height" />
+  <!-- Default height of desktop view's large header for desktop tasks on launch. -->
+  <java-symbol type="dimen" name="desktop_view_default_large_header_height" />
 
   <!-- Enable OEMs to support different frr notification target component activity -->
   <java-symbol type="string" name="config_fingerprintFrrTargetComponent" />

@@ -1981,16 +1981,6 @@ public class AudioSystem
      */
     public static native int setMaxVolumeIndexForGroup(int groupId, int index);
 
-    /**
-     * Get the volume group for stream type
-     * @param stream stream type to query
-     *
-     * @return volume group for the stream query stream type
-     *
-     * @hide
-     */
-    public static native int getVolumeGroupIdForStreamType(int stream);
-
     /** @hide */
     public static native int setMasterVolume(float value);
     /** @hide */

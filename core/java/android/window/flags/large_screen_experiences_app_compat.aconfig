@@ -130,6 +130,16 @@ flag {
 }
 
 flag {
+  name: "app_compat_refactoring_force_change_for_letterbox_transitions"
+  namespace: "large_screen_experiences_app_compat"
+  description: "Whether a Change should always sent for Letterbox transition."
+  bug: "432347028"
+  metadata {
+    purpose: PURPOSE_BUGFIX
+  }
+}
+
+flag {
   name: "enable_transition_on_activity_set_requested_orientation"
   namespace: "large_screen_experiences_app_compat"
   description: "Whether a Transition should be created after setRequestedOrientation"

@@ -2537,7 +2537,7 @@ public class UserManagerService extends IUserManager.Stub {
         if (user.isGuest()) {
             return getGuestName();
         }
-        return null;
+        return getUnnamedUserName();
     }
 
     /** Returns whether the given user type is one of the FULL user types. */
@@ -4095,6 +4095,11 @@ public class UserManagerService extends IUserManager.Stub {
             // TODO(b/394178333): This is here for ease-of-rollout. Delete the Guest exception.
             return UserManager.getMaxSupportedUsers() >  1;
         }
+        if (UserManager.isUserTypeSupervisingProfile(userType)) {
+            // Return true in the scenario that the device doesn't support multi-user, since we'd
+            // still want to support Supervising Profiles.
+            return UserManager.getMaxSupportedUsers() == 1;
+        }
         return false;
     }
 
@@ -5403,6 +5408,11 @@ public class UserManagerService extends IUserManager.Stub {
     @VisibleForTesting
     String getGuestName() {
         return mContext.getString(com.android.internal.R.string.guest_name);
+    }
+
+    @VisibleForTesting
+    String getUnnamedUserName() {
+        return mContext.getString(com.android.internal.R.string.unnamed_user_name);
     }
 
     String getHeadlessSystemUserName() {
@@ -8040,6 +8050,7 @@ public class UserManagerService extends IUserManager.Stub {
         pw.println("  User version: " + mUserVersion);
         pw.println("  Owner name: " + getOwnerName());
         pw.println("  Guest name: " + getGuestName());
+        pw.println("  Unnamed user name: " + getUnnamedUserName());
         if (DBG_ALLOCATION) {
             pw.println("  System user allocations: " + mUser0Allocations.get());
         }

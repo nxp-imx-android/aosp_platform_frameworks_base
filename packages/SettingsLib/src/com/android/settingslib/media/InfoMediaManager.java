@@ -605,50 +605,6 @@ public abstract class InfoMediaManager {
         return true;
     }
 
-    /**
-     * Returns the list of {@link MediaDevice media devices} that can be added to the current {@link
-     * RoutingSessionInfo routing session}.
-     */
-    @NonNull
-    List<MediaDevice> getSelectableMediaDevices() {
-        synchronized (mLock) {
-            return mMediaDevices.stream().filter(MediaDevice::isSelectable).toList();
-        }
-    }
-
-    /**
-     * Returns the list of {@link MediaDevice media devices} that can be transferred to with the
-     * current {@link RoutingSessionInfo routing session} by the media route provider.
-     */
-    @NonNull
-    List<MediaDevice> getTransferableMediaDevices() {
-        synchronized (mLock) {
-            return mMediaDevices.stream().filter(MediaDevice::isTransferable).toList();
-        }
-    }
-
-    /**
-     * Returns the list of {@link MediaDevice media devices} that can be deselected from the current
-     * {@link RoutingSessionInfo routing session}.
-     */
-    @NonNull
-    List<MediaDevice> getDeselectableMediaDevices() {
-        synchronized (mLock) {
-            return mMediaDevices.stream().filter(MediaDevice::isDeselectable).toList();
-        }
-    }
-
-    /**
-     * Returns the list of {@link MediaDevice media devices} that are selected in the current {@link
-     * RoutingSessionInfo routing session}.
-     */
-    @NonNull
-    List<MediaDevice> getSelectedMediaDevices() {
-        synchronized (mLock) {
-            return mMediaDevices.stream().filter(MediaDevice::isSelected).toList();
-        }
-    }
-
     /* package */ void adjustDeviceVolume(MediaDevice device, int volume) {
         Log.i(TAG, "adjustDeviceVolume(), device = " + device.getName() + "/" + device.getId()
                 + " volume = " + volume);
@@ -780,8 +736,9 @@ public abstract class InfoMediaManager {
 
     private boolean isSuggestedDeviceSelected(
             @NonNull SuggestedDeviceState newSuggestedDeviceState) {
-        return getSelectedMediaDevices().stream().anyMatch(device ->
-                Objects.equals(
+        return mMediaDevices.stream().anyMatch(device ->
+                device.isSelected()
+                && Objects.equals(
                         device.getId(),
                         newSuggestedDeviceState
                                 .getSuggestedDeviceInfo()

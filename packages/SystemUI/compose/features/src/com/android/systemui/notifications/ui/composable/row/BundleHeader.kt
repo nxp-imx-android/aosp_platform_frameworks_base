@@ -49,6 +49,7 @@ import androidx.compose.ui.semantics.collapse
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.dismiss
 import androidx.compose.ui.semantics.expand
+import androidx.compose.ui.semantics.onLongClick
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
@@ -91,7 +92,6 @@ fun BundleHeader(
     viewModel: BundleHeaderViewModel,
     modifier: Modifier = Modifier,
     onHeaderClicked: () -> Unit = {},
-    onHeaderLongClicked: () -> Unit = {},
     onA11yDismissAction: () -> Unit = {}, // only for dismissing via accessibility action
 ) {
     val state =
@@ -152,7 +152,6 @@ fun BundleHeader(
             modifier =
                 Modifier.combinedClickable(
                         onClick = { toggle() },
-                        onLongClick = { onHeaderLongClicked() },
                         interactionSource = null,
                         indication = null,
                     )
@@ -173,6 +172,9 @@ fun BundleHeader(
                             onA11yDismissAction()
                             true
                         }
+                        // Do nothing. This is here to indicate that the BundleHeader is long
+                        // clickable; the actual long click is handled by ExpandableNotificationRow.
+                        onLongClick(action = null)
                     },
         ) {
             scene(BundleHeader.Scenes.Collapsed) {

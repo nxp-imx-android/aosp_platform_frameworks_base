@@ -66,6 +66,7 @@ flag {
     description: "API for reading the current display topology"
     bug: "404269099"
     is_fixed_read_only: true
+    is_exported: true
 }
 
 flag {

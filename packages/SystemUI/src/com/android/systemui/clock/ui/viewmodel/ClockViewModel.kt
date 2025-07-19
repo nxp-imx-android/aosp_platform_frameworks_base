@@ -97,6 +97,30 @@ constructor(
             source = _clockText,
         )
 
+    val longerDateText: String by
+        hydrator.hydratedStateOf(
+            traceName = "longerDateText",
+            initialValue = "",
+            source =
+                combine(clockInteractor.longerDateFormat, clockInteractor.currentTime) {
+                    format,
+                    time ->
+                    format.format(time)
+                },
+        )
+
+    val shorterDateText: String by
+        hydrator.hydratedStateOf(
+            traceName = "shorterDateText",
+            initialValue = "",
+            source =
+                combine(clockInteractor.shorterDateFormat, clockInteractor.currentTime) {
+                    format,
+                    time ->
+                    format.format(time)
+                },
+        )
+
     override suspend fun onActivated(): Nothing {
         coroutineScope {
             launch { hydrator.activate() }

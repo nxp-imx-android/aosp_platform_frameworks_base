@@ -88,15 +88,12 @@ import dagger.assisted.AssistedFactory;
 import dagger.assisted.AssistedInject;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Executor;
-import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 
@@ -581,18 +578,10 @@ public class MediaSwitchingController
         synchronized (mMediaDevicesLock) {
             if (!mLocalMediaManager.isPreferenceRouteListingExist()) {
                 attachRangeInfo(devices);
-                List<MediaDevice> selectedDevices = new ArrayList<>();
-                Set<String> selectedDeviceIds =
-                        getSelectedMediaDevice().stream()
-                                .map(MediaDevice::getId)
-                                .collect(Collectors.toSet());
-                for (MediaDevice device : devices) {
-                    if (selectedDeviceIds.contains(device.getId())) {
-                        selectedDevices.add(device);
-                    }
-                }
+                List<MediaDevice> selectedDevices =
+                        devices.stream().filter(MediaDevice::isSelected).toList();
                 devices.removeAll(selectedDevices);
-                Collections.sort(devices, Comparator.naturalOrder());
+                devices.sort(Comparator.naturalOrder());
                 devices.addAll(0, selectedDevices);
             }
 
@@ -609,7 +598,6 @@ public class MediaSwitchingController
             }
             mOutputMediaItemListProxy.updateMediaDevices(
                     devices,
-                    getSelectedMediaDevice(),
                     connectedMediaDevice,
                     needToHandleMutingExpectedDevice);
         }
@@ -647,17 +635,17 @@ public class MediaSwitchingController
                 mContext.getString(R.string.media_output_group_title_connected_speakers));
     }
 
+    boolean hasGroupPlayback() {
+        long selectedCount = mOutputMediaItemListProxy.getOutputMediaItemList().stream()
+                .filter(item -> item.getMediaDevice().map(MediaDevice::isSelected).orElse(
+                        false)).count();
+        return selectedCount > 1;
+    }
+
     @Nullable
     MediaItem getConnectNewDeviceItem() {
-        boolean isSelectedDeviceNotAGroup = getSelectedMediaDevice().size() == 1;
-        if (enableInputRouting()) {
-            // When input routing is enabled, there are expected to be at least 2 total selected
-            // devices: one output device and one input device.
-            isSelectedDeviceNotAGroup = getSelectedMediaDevice().size() <= 2;
-        }
-
         // Attach "Connect a device" item only when current output is not remote and not a group
-        return (!isCurrentConnectedDeviceRemote() && isSelectedDeviceNotAGroup)
+        return (!isCurrentConnectedDeviceRemote() && !hasGroupPlayback())
                 ? MediaItem.createPairNewDeviceMediaItem()
                 : null;
     }
@@ -768,33 +756,6 @@ public class MediaSwitchingController
     boolean removeDeviceFromPlayMedia(MediaDevice device) {
         mMetricLogger.logInteractionContraction(device);
         return mLocalMediaManager.removeDeviceFromPlayMedia(device);
-    }
-
-    List<MediaDevice> getSelectableMediaDevice() {
-        return mLocalMediaManager.getSelectableMediaDevice();
-    }
-
-    List<MediaDevice> getTransferableMediaDevices() {
-        return mLocalMediaManager.getTransferableMediaDevices();
-    }
-
-    public List<MediaDevice> getSelectedMediaDevice() {
-        if (!enableInputRouting()) {
-            return mLocalMediaManager.getSelectedMediaDevice();
-        }
-
-        // Add selected input device if input routing is supported.
-        List<MediaDevice> selectedDevices =
-                new ArrayList<>(mLocalMediaManager.getSelectedMediaDevice());
-        MediaDevice selectedInputDevice = mInputRouteManager.getSelectedInputDevice();
-        if (selectedInputDevice != null) {
-            selectedDevices.add(selectedInputDevice);
-        }
-        return selectedDevices;
-    }
-
-    List<MediaDevice> getDeselectableMediaDevice() {
-        return mLocalMediaManager.getDeselectableMediaDevice();
     }
 
     void adjustSessionVolume(int volume) {

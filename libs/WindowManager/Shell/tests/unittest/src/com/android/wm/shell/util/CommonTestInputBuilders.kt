@@ -17,6 +17,7 @@
 package com.android.wm.shell.util
 
 import android.app.ActivityManager.RunningTaskInfo
+import android.app.TaskInfo
 import android.content.ComponentName
 import android.graphics.Point
 import android.graphics.Rect
@@ -24,7 +25,6 @@ import android.view.SurfaceControl
 import android.view.WindowManager.TRANSIT_NONE
 import android.view.WindowManager.TransitionFlags
 import android.view.WindowManager.TransitionType
-
 import android.window.ActivityTransitionInfo
 import android.window.AppCompatTransitionInfo
 import android.window.TransitionInfo
@@ -53,6 +53,25 @@ open class BaseChangeTestContext {
         inputFactoryObj.builder()
         return inputFactoryObj.build().apply {
             inputObject = this
+        }
+    }
+}
+
+/**
+ * Base class for Test Contexts requiring a [TaskInfo] object.
+ */
+open class BaseRunningTaskInfoTestContext {
+
+    protected lateinit var taskInfo: RunningTaskInfo
+
+    fun runningTaskInfo(
+        builder: RunningTaskInfoTestInputBuilder.(RunningTaskInfo) -> Unit
+    ): RunningTaskInfo {
+        val runningTaskInfoObj = RunningTaskInfoTestInputBuilder()
+        return RunningTaskInfo().also {
+            runningTaskInfoObj.builder(it)
+        }.apply {
+            taskInfo = this
         }
     }
 }

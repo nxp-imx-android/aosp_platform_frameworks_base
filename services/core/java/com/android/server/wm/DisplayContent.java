@@ -1663,7 +1663,8 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
         }
 
         final Transition.ReadyCondition displayConfig = mTransitionController.isCollecting()
-                ? new Transition.ReadyCondition("displayConfig", this) : null;
+                ? new Transition.ReadyCondition("displayConfig", this, true /* newTrockerOnly */)
+                : null;
         if (displayConfig != null) {
             mTransitionController.waitFor(displayConfig);
         } else if (mTransitionController.isShellTransitionsEnabled() && mLastHasContent) {
@@ -6453,6 +6454,12 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
      * @see #mRemoved
      */
     boolean isRemoved() {
+        // After DisplayManager removes the LogicalDisplay object but before WindowManager begins
+        // removing the corresponding DisplayContent, we should check Display.isValid(), which
+        // returns false in this specific scenario.
+        if (mDisplayId != DEFAULT_DISPLAY && !mDisplay.isValid()) {
+            return true;
+        }
         return mRemoved;
     }
 

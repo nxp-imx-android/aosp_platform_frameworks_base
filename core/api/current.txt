@@ -6989,7 +6989,7 @@ package android.app {
     method public android.app.Notification.MessagingStyle.Message setData(String, android.net.Uri);
   }
 
-  @FlaggedApi("android.app.api_metric_style") public static class Notification.Metric {
+  @FlaggedApi("android.app.api_metric_style") public static final class Notification.Metric {
     ctor public Notification.Metric(@NonNull android.app.Notification.Metric.MetricValue, @NonNull String, int);
     method @NonNull public String getLabel();
     method public int getMeaning();
@@ -7105,7 +7105,7 @@ package android.app {
     field public static final int FORMAT_CHRONOMETER = 3; // 0x3
   }
 
-  @FlaggedApi("android.app.api_metric_style") public static class Notification.MetricStyle extends android.app.Notification.Style {
+  @FlaggedApi("android.app.api_metric_style") public static final class Notification.MetricStyle extends android.app.Notification.Style {
     ctor public Notification.MetricStyle();
     method @NonNull public android.app.Notification.MetricStyle addMetric(@NonNull android.app.Notification.Metric);
     method @NonNull public java.util.List<android.app.Notification.Metric> getMetrics();
@@ -13784,6 +13784,7 @@ package android.content.pm {
     field public static final String FEATURE_FINGERPRINT = "android.hardware.fingerprint";
     field public static final String FEATURE_FREEFORM_WINDOW_MANAGEMENT = "android.software.freeform_window_management";
     field public static final String FEATURE_GAMEPAD = "android.hardware.gamepad";
+    field @FlaggedApi("com.android.microxr.flags.xr_glasses_feature") public static final String FEATURE_GLASSES = "android.hardware.type.glasses";
     field public static final String FEATURE_HARDWARE_KEYSTORE = "android.hardware.hardware_keystore";
     field public static final String FEATURE_HIFI_SENSORS = "android.hardware.sensor.hifi_sensors";
     field public static final String FEATURE_HOME_SCREEN = "android.software.home_screen";

@@ -18,10 +18,11 @@ package com.android.wm.shell.compatui.letterbox.state
 
 import android.app.ActivityManager.RunningTaskInfo
 import android.view.SurfaceControl
-import com.android.window.flags.Flags.appCompatRefactoring
+import com.android.window.flags.Flags
 import com.android.wm.shell.ShellTaskOrganizer
 import com.android.wm.shell.ShellTaskOrganizer.TaskAppearedListener
 import com.android.wm.shell.ShellTaskOrganizer.TaskVanishedListener
+import com.android.wm.shell.compatui.letterbox.lifecycle.TaskIdResolver
 import com.android.wm.shell.dagger.WMSingleton
 import com.android.wm.shell.sysui.ShellInit
 import javax.inject.Inject
@@ -34,11 +35,12 @@ import javax.inject.Inject
 class LetterboxTaskListenerAdapter @Inject constructor(
     shellInit: ShellInit,
     shellTaskOrganizer: ShellTaskOrganizer,
-    private val letterboxTaskInfoRepository: LetterboxTaskInfoRepository
+    private val letterboxTaskInfoRepository: LetterboxTaskInfoRepository,
+    private val taskIdResolver: TaskIdResolver
 ) : TaskVanishedListener, TaskAppearedListener {
 
     init {
-        if (appCompatRefactoring()) {
+        if (Flags.appCompatRefactoring()) {
             shellInit.addInitCallback({
                 shellTaskOrganizer.addTaskAppearedListener(this)
                 shellTaskOrganizer.addTaskVanishedListener(this)
@@ -50,14 +52,27 @@ class LetterboxTaskListenerAdapter @Inject constructor(
         taskInfo: RunningTaskInfo,
         leash: SurfaceControl
     ) {
-        letterboxTaskInfoRepository.insert(
-            key = taskInfo.taskId,
-            item = LetterboxTaskInfoState(
-                containerToken = taskInfo.token,
-                containerLeash = leash
-            ),
-            overrideIfPresent = true
-        )
+        if (Flags.appCompatRefactoringFixMultiwindowTaskHierarchy()) {
+            letterboxTaskInfoRepository.insert(
+                key = taskInfo.taskId,
+                item = LetterboxTaskInfoState(
+                    containerToken = taskInfo.token,
+                    containerLeash = leash,
+                    parentTaskId = taskInfo.parentTaskId,
+                    taskId = taskIdResolver.getLetterboxTaskId(taskInfo)
+                ),
+                overrideIfPresent = true
+            )
+        } else {
+            letterboxTaskInfoRepository.insert(
+                key = taskInfo.taskId,
+                item = LetterboxTaskInfoState(
+                    containerToken = taskInfo.token,
+                    containerLeash = leash,
+                ),
+                overrideIfPresent = true
+            )
+        }
     }
 
     override fun onTaskVanished(taskInfo: RunningTaskInfo) {

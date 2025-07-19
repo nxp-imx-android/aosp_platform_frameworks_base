@@ -32,14 +32,19 @@ import com.android.systemui.Flags.FLAG_DOUBLE_TAP_TO_SLEEP
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.coroutines.collectLastValue
 import com.android.systemui.deviceentry.domain.interactor.deviceEntryFaceAuthInteractor
+import com.android.systemui.deviceentry.domain.interactor.deviceEntryInteractor
 import com.android.systemui.deviceentry.shared.FaceAuthUiEvent
 import com.android.systemui.keyguard.data.repository.fakeDeviceEntryFaceAuthRepository
 import com.android.systemui.keyguard.data.repository.fakeKeyguardRepository
 import com.android.systemui.keyguard.data.repository.fakeKeyguardTransitionRepository
 import com.android.systemui.keyguard.shared.model.KeyguardState
 import com.android.systemui.kosmos.testScope
+import com.android.systemui.power.domain.interactor.powerInteractor
 import com.android.systemui.res.R
+import com.android.systemui.scene.domain.interactor.sceneInteractor
+import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.shade.pulsingGestureListener
+import com.android.systemui.statusbar.phone.statusBarKeyguardViewManager
 import com.android.systemui.statusbar.policy.AccessibilityManagerWrapper
 import com.android.systemui.testKosmos
 import com.android.systemui.util.mockito.mock
@@ -82,6 +87,7 @@ class KeyguardTouchHandlingInteractorTest : SysuiTestCase() {
     private val keyguardRepository = kosmos.fakeKeyguardRepository
     private val keyguardTransitionRepository = kosmos.fakeKeyguardTransitionRepository
     private val secureSettingsRepository = kosmos.userAwareSecureSettingsRepository
+    private val sceneInteractor = kosmos.sceneInteractor
 
     @Mock private lateinit var powerManager: PowerManager
 
@@ -273,20 +279,41 @@ class KeyguardTouchHandlingInteractorTest : SysuiTestCase() {
         }
 
     @Test
-    fun triggersFaceAuthWhenLockscreenIsClicked() =
+    fun triggersFaceAuthWhenLockscreenIsClickedStaysOnKeyguard() =
         testScope.runTest {
             collectLastValue(underTest.isMenuVisible)
+            val currentOverlays by collectLastValue(sceneInteractor.currentOverlays)
             runCurrent()
             kosmos.fakeDeviceEntryFaceAuthRepository.canRunFaceAuth.value = true
 
+            assertThat(currentOverlays).doesNotContain(Overlays.Bouncer)
+
             underTest.onClick(100.0f, 100.0f)
             runCurrent()
+
+            assertThat(currentOverlays).doesNotContain(Overlays.Bouncer)
 
             val runningAuthRequest =
                 kosmos.fakeDeviceEntryFaceAuthRepository.runningAuthRequest.value
             assertThat(runningAuthRequest?.first)
                 .isEqualTo(FaceAuthUiEvent.FACE_AUTH_TRIGGERED_NOTIFICATION_PANEL_CLICKED)
             assertThat(runningAuthRequest?.second).isEqualTo(true)
+        }
+
+    @Test
+    fun switchesToBouncerWhenLockscreenIsClickedNoFaceAuth() =
+        testScope.runTest {
+            collectLastValue(underTest.isMenuVisible)
+            val currentOverlays by collectLastValue(sceneInteractor.currentOverlays)
+            runCurrent()
+            kosmos.fakeDeviceEntryFaceAuthRepository.canRunFaceAuth.value = false
+
+            assertThat(currentOverlays).doesNotContain(Overlays.Bouncer)
+
+            underTest.onClick(100.0f, 100.0f)
+            runCurrent()
+
+            assertThat(currentOverlays).contains(Overlays.Bouncer)
         }
 
     @Test
@@ -435,8 +462,11 @@ class KeyguardTouchHandlingInteractorTest : SysuiTestCase() {
                 logger = logger,
                 broadcastDispatcher = fakeBroadcastDispatcher,
                 accessibilityManager = kosmos.accessibilityManagerWrapper,
+                statusBarKeyguardViewManager = kosmos.statusBarKeyguardViewManager,
                 pulsingGestureListener = kosmos.pulsingGestureListener,
                 faceAuthInteractor = kosmos.deviceEntryFaceAuthInteractor,
+                deviceEntryInteractor = kosmos.deviceEntryInteractor,
+                powerInteractor = kosmos.powerInteractor,
                 secureSettingsRepository = secureSettingsRepository,
                 powerManager = powerManager,
                 systemClock = kosmos.fakeSystemClock,

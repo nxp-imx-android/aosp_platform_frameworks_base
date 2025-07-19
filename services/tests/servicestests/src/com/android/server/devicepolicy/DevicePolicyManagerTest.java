@@ -8934,6 +8934,27 @@ public class DevicePolicyManagerTest extends DpmTestBase {
         assertThat(enforcingAdmins.getFirst().getPackageName()).isEqualTo(admin2.getPackageName());
     }
 
+    @Test
+    public void getEnforcingAdminsForPolicy_legacyPolicy() throws Exception {
+        // Configure the admin and set the policy.
+        final int userId = 80;
+        final int dpcAdminAppId = 20320;
+        final int dpcAdminUid = UserHandle.getUid(userId, dpcAdminAppId);
+        setUpProfileOwnerAdmin(admin1, dpcAdminUid);
+        reset(getServices().powerManagerInternal);
+        reset(getServices().settings);
+        dpm.setMaximumTimeToLock(admin1, 10);
+        // Give necessary permission.
+        mContext.callerPermissions.add(permission.QUERY_ADMIN_POLICY);
+
+        List<EnforcingAdmin> enforcingAdmins = dpm.getEnforcingAdminsForPolicy(
+                DevicePolicyIdentifiers.MAX_TIME_TO_LOCK_POLICY,
+                userId).getAllAdmins();
+
+        assertThat(enforcingAdmins.size()).isEqualTo(1);
+        assertThat(enforcingAdmins.getFirst().getPackageName()).isEqualTo(admin1.getPackageName());
+    }
+
     private void setupVpnAuthorization(String userVpnPackage, int userVpnUid) {
         final AppOpsManager.PackageOps vpnOp = new AppOpsManager.PackageOps(userVpnPackage,
                 userVpnUid, List.of(new AppOpsManager.OpEntry(

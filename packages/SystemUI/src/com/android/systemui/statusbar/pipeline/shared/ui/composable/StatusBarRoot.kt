@@ -186,18 +186,6 @@ fun StatusBarRoot(
             val phoneStatusBarView =
                 inflater.inflate(R.layout.status_bar, parent, false) as PhoneStatusBarView
 
-            // For now, just set up the system icons the same way we used to
-            val statusIconContainer =
-                phoneStatusBarView.requireViewById<StatusIconContainer>(R.id.statusIcons)
-            // TODO(b/364360986): turn this into a repo/intr/viewmodel
-            val darkIconManager =
-                darkIconManagerFactory.create(
-                    statusIconContainer,
-                    StatusBarLocation.HOME,
-                    darkIconDispatcher,
-                )
-            iconController.addIconGroup(darkIconManager)
-
             if (StatusBarChipsModernization.isEnabled) {
                 addStartSideChipsComposable(
                     phoneStatusBarView = phoneStatusBarView,
@@ -207,12 +195,6 @@ fun StatusBarRoot(
                     context = context,
                 )
             }
-
-            HomeStatusBarIconBlockListBinder.bind(
-                statusIconContainer,
-                darkIconManager,
-                statusBarViewModel.iconBlockList,
-            )
 
             if (StatusBarChipsModernization.isEnabled) {
                 // Make sure the primary chip is hidden when StatusBarChipsModernization is
@@ -281,13 +263,32 @@ fun StatusBarRoot(
             // If the flag is enabled, create and add a compose section to the end
             // of the system_icons container
             if (SystemStatusIconsInCompose.isEnabled) {
+                phoneStatusBarView.requireViewById<View>(R.id.system_icons).visibility = View.GONE
                 addSystemStatusIconsComposable(phoneStatusBarView, statusBarViewModel)
-            } else if (NewStatusBarIcons.isEnabled) {
-                addBatteryComposable(phoneStatusBarView, statusBarViewModel)
-                // Also adjust the paddings :)
-                SystemStatusIconsLayoutHelper.configurePaddingForNewStatusBarIcons(
-                    phoneStatusBarView.requireViewById(R.id.statusIcons)
+            } else {
+                val statusIconContainer =
+                    phoneStatusBarView.requireViewById<StatusIconContainer>(R.id.statusIcons)
+                val darkIconManager =
+                    darkIconManagerFactory.create(
+                        statusIconContainer,
+                        StatusBarLocation.HOME,
+                        darkIconDispatcher,
+                    )
+                iconController.addIconGroup(darkIconManager)
+
+                HomeStatusBarIconBlockListBinder.bind(
+                    statusIconContainer,
+                    darkIconManager,
+                    statusBarViewModel.iconBlockList,
                 )
+
+                if (NewStatusBarIcons.isEnabled) {
+                    addBatteryComposable(phoneStatusBarView, statusBarViewModel)
+                    // Also adjust the paddings :)
+                    SystemStatusIconsLayoutHelper.configurePaddingForNewStatusBarIcons(
+                        phoneStatusBarView.requireViewById(R.id.statusIcons)
+                    )
+                }
             }
 
             notificationIconsBinder.bindWhileAttached(notificationIconContainer, context.displayId)
@@ -510,8 +511,9 @@ private fun addSystemStatusIconsComposable(
                 }
             }
         }
-    phoneStatusBarView.findViewById<ViewGroup>(R.id.status_bar_end_side_container).apply {
-        addView(systemStatusIconsComposeView, -1)
+
+    phoneStatusBarView.findViewById<ViewGroup>(R.id.status_bar_end_side_content).apply {
+        addView(systemStatusIconsComposeView)
     }
 }
 

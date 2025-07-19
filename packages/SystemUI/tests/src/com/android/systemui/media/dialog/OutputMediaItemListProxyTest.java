@@ -76,10 +76,10 @@ public class OutputMediaItemListProxyTest extends SysuiTestCase {
     public void updateMediaDevices_shouldUpdateMediaItemList() {
         assertThat(mOutputMediaItemListProxy.isEmpty()).isTrue();
 
+        when(mMediaDevice3.isSelected()).thenReturn(true);
         // Create the initial output media item list with mMediaDevice2 and mMediaDevice3.
         mOutputMediaItemListProxy.updateMediaDevices(
                 /* devices= */ List.of(mMediaDevice2, mMediaDevice3),
-                /* selectedDevices */ List.of(mMediaDevice3),
                 /* connectedMediaDevice= */ null,
                 /* needToHandleMutingExpectedDevice= */ false);
 
@@ -92,10 +92,10 @@ public class OutputMediaItemListProxyTest extends SysuiTestCase {
         assertThat(mOutputMediaItemListProxy.getOutputMediaItemList().get(0).isFirstDeviceInGroup())
                 .isTrue();
 
+        when(mMediaDevice3.isSelected()).thenReturn(true);
         // Update the output media item list with more media devices.
         mOutputMediaItemListProxy.updateMediaDevices(
                 /* devices= */ List.of(mMediaDevice4, mMediaDevice1, mMediaDevice3, mMediaDevice2),
-                /* selectedDevices */ List.of(mMediaDevice3),
                 /* connectedMediaDevice= */ null,
                 /* needToHandleMutingExpectedDevice= */ false);
 
@@ -112,10 +112,11 @@ public class OutputMediaItemListProxyTest extends SysuiTestCase {
         assertThat(mOutputMediaItemListProxy.getOutputMediaItemList().get(0).isFirstDeviceInGroup())
                 .isTrue();
 
+        when(mMediaDevice1.isSelected()).thenReturn(true);
+        when(mMediaDevice3.isSelected()).thenReturn(true);
         // Update the output media item list where mMediaDevice4 is offline and new selected device.
         mOutputMediaItemListProxy.updateMediaDevices(
                 /* devices= */ List.of(mMediaDevice1, mMediaDevice3, mMediaDevice2),
-                /* selectedDevices */ List.of(mMediaDevice1, mMediaDevice3),
                 /* connectedMediaDevice= */ null,
                 /* needToHandleMutingExpectedDevice= */ false);
 
@@ -135,10 +136,12 @@ public class OutputMediaItemListProxyTest extends SysuiTestCase {
     public void updateMediaDevices_multipleSelectedDevices_shouldHaveCorrectDeviceOrdering() {
         assertThat(mOutputMediaItemListProxy.isEmpty()).isTrue();
 
+        when(mMediaDevice1.isSelected()).thenReturn(true);
+        when(mMediaDevice2.isSelected()).thenReturn(true);
+        when(mMediaDevice3.isSelected()).thenReturn(true);
         // Create the initial output media item list with mMediaDevice2 and mMediaDevice3.
         mOutputMediaItemListProxy.updateMediaDevices(
                 /* devices= */ List.of(mMediaDevice2, mMediaDevice4, mMediaDevice3, mMediaDevice1),
-                /* selectedDevices */ List.of(mMediaDevice1, mMediaDevice2, mMediaDevice3),
                 /* connectedMediaDevice= */ null,
                 /* needToHandleMutingExpectedDevice= */ false);
 
@@ -152,11 +155,14 @@ public class OutputMediaItemListProxyTest extends SysuiTestCase {
                 .containsExactly(mMediaDevice2, mMediaDevice3, mMediaDevice1, null, mMediaDevice4);
         assertThat(mOutputMediaItemListProxy.getOutputMediaItemList().get(0).isFirstDeviceInGroup())
                 .isTrue();
+
+        when(mMediaDevice1.isSelected()).thenReturn(false);
+        when(mMediaDevice2.isSelected()).thenReturn(true);
+        when(mMediaDevice3.isSelected()).thenReturn(true);
 
         // Update the output media item list with a selected device being deselected.
         mOutputMediaItemListProxy.updateMediaDevices(
                 /* devices= */ List.of(mMediaDevice4, mMediaDevice1, mMediaDevice3, mMediaDevice2),
-                /* selectedDevices */ List.of(mMediaDevice2, mMediaDevice3),
                 /* connectedMediaDevice= */ null,
                 /* needToHandleMutingExpectedDevice= */ false);
 
@@ -171,10 +177,12 @@ public class OutputMediaItemListProxyTest extends SysuiTestCase {
         assertThat(mOutputMediaItemListProxy.getOutputMediaItemList().get(0).isFirstDeviceInGroup())
                 .isTrue();
 
+        when(mMediaDevice1.isSelected()).thenReturn(false);
+        when(mMediaDevice2.isSelected()).thenReturn(false);
+        when(mMediaDevice3.isSelected()).thenReturn(true);
         // Update the output media item list with a selected device is missing.
         mOutputMediaItemListProxy.updateMediaDevices(
                 /* devices= */ List.of(mMediaDevice1, mMediaDevice3, mMediaDevice4),
-                /* selectedDevices */ List.of(mMediaDevice3),
                 /* connectedMediaDevice= */ null,
                 /* needToHandleMutingExpectedDevice= */ false);
 
@@ -195,7 +203,6 @@ public class OutputMediaItemListProxyTest extends SysuiTestCase {
 
         mOutputMediaItemListProxy.updateMediaDevices(
                 /* devices= */ List.of(mMediaDevice1),
-                /* selectedDevices */ List.of(),
                 /* connectedMediaDevice= */ null,
                 /* needToHandleMutingExpectedDevice= */ false);
         assertThat(mOutputMediaItemListProxy.isEmpty()).isFalse();
@@ -210,7 +217,6 @@ public class OutputMediaItemListProxyTest extends SysuiTestCase {
 
         mOutputMediaItemListProxy.updateMediaDevices(
                 /* devices= */ List.of(mMediaDevice1),
-                /* selectedDevices */ List.of(),
                 /* connectedMediaDevice= */ null,
                 /* needToHandleMutingExpectedDevice= */ false);
         assertThat(mOutputMediaItemListProxy.isEmpty()).isFalse();
@@ -233,10 +239,10 @@ public class OutputMediaItemListProxyTest extends SysuiTestCase {
 
         assertThat(mOutputMediaItemListProxy.isEmpty()).isTrue();
 
+        when(mMediaDevice3.isSelected()).thenReturn(true);
         // Update the proxy with all the devices keeping mMediaDevice3 as the selected device.
         mOutputMediaItemListProxy.updateMediaDevices(
                 /* devices= */ allDevices,
-                /* selectedDevices= */ List.of(mMediaDevice3),
                 /* connectedMediaDevice= */ null,
                 /* needToHandleMutingExpectedDevice= */ false);
 

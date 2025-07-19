@@ -158,6 +158,10 @@ constructor(
                 anyOf(isScreenOn, flowOf(behavior.allowedInScreenState(ScreenState.OFF))),
                 dreamSettingsInteractor.dreamingEnabled,
                 isPluggedIn,
+                anyOf(
+                    isDeviceIdleAndNotDozing,
+                    flowOf(behavior.allowedInScreenState(ScreenState.DOZE)),
+                ),
             )
             .flatMapLatestConflated {
                 // The second set of conditions are separated from the above allOf flow combination
@@ -169,19 +173,13 @@ constructor(
                 // Force lowlight only if idle and in either direct-boot
                 // mode or in a lowlight environment.
                 if (it) {
-                    allOf(
-                        anyOf(
-                            isDeviceIdleAndNotDozing,
-                            flowOf(behavior.allowedInScreenState(ScreenState.DOZE)),
-                        ),
-                        anyOf(
-                            isLowLight,
-                            if (lowLightSettingsInteractor.allowLowLightBehaviorWhenLocked) {
-                                not(userLockedInteractor.isUserUnlocked(UserHandle.CURRENT))
-                            } else {
-                                flowOf(false)
-                            },
-                        ),
+                    anyOf(
+                        isLowLight,
+                        if (lowLightSettingsInteractor.allowLowLightBehaviorWhenLocked) {
+                            not(userLockedInteractor.isUserUnlocked(UserHandle.CURRENT))
+                        } else {
+                            flowOf(false)
+                        },
                     )
                 } else {
                     flowOf(false)

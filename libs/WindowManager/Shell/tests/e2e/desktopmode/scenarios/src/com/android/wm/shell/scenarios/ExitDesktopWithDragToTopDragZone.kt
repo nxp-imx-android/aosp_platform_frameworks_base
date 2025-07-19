@@ -17,9 +17,7 @@
 package com.android.wm.shell.scenarios
 
 import android.tools.Rotation
-import com.android.wm.shell.shared.desktopmode.DesktopConfig
 import org.junit.After
-import org.junit.Assume
 import org.junit.Before
 import org.junit.Ignore
 import org.junit.Test
@@ -32,9 +30,6 @@ abstract class ExitDesktopWithDragToTopDragZone(
 ) : DesktopScenarioCustomAppTestBase(isResizeable, isLandscapeApp, rotation) {
     @Before
     fun setup() {
-        val desktopConfig = DesktopConfig.fromContext(instrumentation.context)
-        // Skip the test when the drag-to-maximize is enabled on this device.
-        Assume.assumeFalse(desktopConfig.shouldMaximizeWhenDragToTopEdge)
         testApp.enterDesktopMode(wmHelper, device)
     }
 

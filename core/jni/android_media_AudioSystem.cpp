@@ -896,18 +896,6 @@ static jint android_media_AudioSystem_setMaxVolumeIndexForGroup(JNIEnv *env, job
             AudioSystem::setMaxVolumeIndexForGroup(static_cast<volume_group_t>(groupId), index));
 }
 
-static jint android_media_AudioSystem_getVolumeGroupIdForStreamType(JNIEnv *env, jobject thiz,
-                                                                jint stream) {
-    int group;
-    status_t status = AudioSystem::getVolumeGroupIdForStreamType(
-            static_cast<audio_stream_type_t>(stream), group);
-    if (status != NO_ERROR) {
-        ALOGE("%s AudioSystem::getVolumeGroupIdForStreamType error %d", __func__, status);
-        group = -1;
-    }
-    return group;
-}
-
 static jint
 android_media_AudioSystem_setMasterVolume(JNIEnv *env, jobject thiz, jfloat value)
 {
@@ -3578,8 +3566,6 @@ static const JNINativeMethod gMethods[] = {
                                android_media_AudioSystem_getMaxVolumeIndexForGroup),
         MAKE_JNI_NATIVE_METHOD("setMaxVolumeIndexForGroup", "(II)I",
                                android_media_AudioSystem_setMaxVolumeIndexForGroup),
-        MAKE_JNI_NATIVE_METHOD("getVolumeGroupIdForStreamType", "(I)I",
-                               android_media_AudioSystem_getVolumeGroupIdForStreamType),
         MAKE_AUDIO_SYSTEM_METHOD(setMasterVolume),
         MAKE_AUDIO_SYSTEM_METHOD(getMasterVolume),
         MAKE_AUDIO_SYSTEM_METHOD(setMasterMute),

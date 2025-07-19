@@ -29,7 +29,7 @@ import android.app.AppOpsManager;
 import android.app.admin.DevicePolicyManager;
 import android.app.admin.EnforcingAdmin;
 import android.app.admin.PackagePolicy;
-import android.app.admin.UnknownAuthority;
+import android.app.admin.SystemAuthority;
 import android.app.ecm.EnhancedConfirmationManager;
 import android.app.role.RoleManager;
 import android.content.ComponentName;
@@ -871,9 +871,9 @@ public class RestrictedLockUtilsInternal extends RestrictedLockUtils {
         EnforcingAdmin admin = context.getSystemService(DevicePolicyManager.class)
                 .getEnforcingAdmin(userId, identifier);
         if (admin == null) return false;
-        return admin.getAuthority() instanceof UnknownAuthority authority
+        return admin.getAuthority() instanceof SystemAuthority authority
                 && AdvancedProtectionManager.ADVANCED_PROTECTION_SYSTEM_ENTITY.equals(
-                        authority.getName());
+                        authority.getSystemEntity());
     }
 
     /**

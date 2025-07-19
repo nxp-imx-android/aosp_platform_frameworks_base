@@ -261,6 +261,10 @@ public class StackAnimationControllerTest extends PhysicsAnimationLayoutTestCase
             mLayout.removeView(mLayout.getChildAt(0));
         }
 
+        // FloatingContentCoordinator only reacts to onLastBubbleRemoved
+        verify(mFloatingContentCoordinator, never()).onContentRemoved(any());
+
+        mStackController.onLastBubbleRemoved();
         verify(mFloatingContentCoordinator, times(1)).onContentRemoved(any());
     }
 

@@ -395,6 +395,11 @@ public class MagnificationController implements MagnificationConnectionManager.C
     }
 
     @Override
+    public void onMouseMove(int displayId, int mode) {
+        handleUserInteractionChanged(displayId, mode);
+    }
+
+    @Override
     public void onPanMagnificationStart(int displayId,
             @MagnificationController.PanDirection int direction) {
         // Update the current panning state for any callbacks.

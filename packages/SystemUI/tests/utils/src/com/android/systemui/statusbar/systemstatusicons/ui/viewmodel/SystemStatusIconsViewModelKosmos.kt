@@ -25,6 +25,7 @@ import com.android.systemui.statusbar.systemstatusicons.connecteddisplay.ui.view
 import com.android.systemui.statusbar.systemstatusicons.datasaver.ui.viewmodel.dataSaverIconViewModelFactory
 import com.android.systemui.statusbar.systemstatusicons.ethernet.ui.viewmodel.ethernetIconViewModelFactory
 import com.android.systemui.statusbar.systemstatusicons.hotspot.ui.viewmodel.hotspotIconViewModelFactory
+import com.android.systemui.statusbar.systemstatusicons.mobile.ui.viewmodel.mobileSystemStatusIconsViewModelFactory
 import com.android.systemui.statusbar.systemstatusicons.ringer.ui.viewmodel.muteIconViewModelFactory
 import com.android.systemui.statusbar.systemstatusicons.ringer.ui.viewmodel.vibrateIconViewModelFactory
 import com.android.systemui.statusbar.systemstatusicons.vpn.ui.viewmodel.vpnIconViewModelFactory
@@ -44,6 +45,8 @@ val Kosmos.systemStatusIconsViewModelFactory by
                     dataSaverIconViewModelFactory = dataSaverIconViewModelFactory,
                     ethernetIconViewModelFactory = ethernetIconViewModelFactory,
                     hotspotIconViewModelFactory = hotspotIconViewModelFactory,
+                    mobileSystemStatusIconsViewModelFactory =
+                        mobileSystemStatusIconsViewModelFactory,
                     muteIconViewModelFactory = muteIconViewModelFactory,
                     nextAlarmIconViewModelFactory = nextAlarmIconViewModelFactory,
                     vibrateIconViewModelFactory = vibrateIconViewModelFactory,

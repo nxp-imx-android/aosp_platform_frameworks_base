@@ -80,6 +80,7 @@ import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.policy.ScreenDecorationsUtils;
 import com.android.internal.protolog.ProtoLog;
 import com.android.internal.util.FrameworkStatsLog;
+import com.android.launcher3.icons.BitmapInfo;
 import com.android.wm.shell.Flags;
 import com.android.wm.shell.R;
 import com.android.wm.shell.bubbles.BubblesNavBarMotionEventHandler.MotionEventListener;
@@ -2177,6 +2178,9 @@ public class BubbleStackView extends FrameLayout
             // bubble window so do that at the end of the animation so we see the scrim animate).
             BadgedImageView iconView = bubble.getIconView();
             final BubbleViewProvider expandedBubbleBeforeScrim = mExpandedBubble;
+            // Notify the stack anim controller before running the scrim animation. In case
+            // another bubble gets added during it.
+            mStackAnimationController.onLastBubbleRemoved();
             showScrim(false, () -> {
                 mRemovingLastBubbleWhileExpanded = false;
                 bubble.cleanupExpandedView();
@@ -2201,6 +2205,7 @@ public class BubbleStackView extends FrameLayout
             return;
         } else if (getBubbleCount() == 1) {
             mExpandedBubble = null;
+            mStackAnimationController.onLastBubbleRemoved();
         }
         // Remove it from the views
         for (int i = 0; i < getBubbleCount(); i++) {
@@ -3550,7 +3555,9 @@ public class BubbleStackView extends FrameLayout
             if (bubble != null && bubble.isChat()) {
                 // Setup options for chat bubbles
                 mManageDontBubbleView.setVisibility(VISIBLE);
-                mManageSettingsIcon.setImageBitmap(bubble.getRawAppBadge());
+                BitmapInfo info = bubble.getRawAppBadge();
+                mManageSettingsIcon.setImageDrawable(
+                        info == null ? null : info.newIcon(getContext()));
                 mManageSettingsText.setText(getResources().getString(
                         R.string.bubbles_app_settings, bubble.getAppName()));
                 mManageSettingsView.setVisibility(VISIBLE);

@@ -94,7 +94,6 @@ test_module_config {
         "com.android.wm.shell.functional.EnterDesktopViaStaticDesktopOverviewTaskTest",
         "com.android.wm.shell.functional.EnterDesktopWithDragExistingWindowsTest",
         "com.android.wm.shell.functional.EnterDesktopWithDragWindowsLimitTest",
-        "com.android.wm.shell.functional.ExitDesktopWithDragToTopDragZoneTest",
         "com.android.wm.shell.functional.FocusAppFromAllAppsTest",
         "com.android.wm.shell.functional.FocusAppFromTaskbarTest",
         "com.android.wm.shell.functional.MinimizeAppWindowsTest",
@@ -132,9 +131,9 @@ test_module_config {
         "com.android.wm.shell.functional.fundamentals.focus.OpenAndFocusTest",
         "com.android.wm.shell.functional.keyboardshortcuts.EnterDesktopFromKeyboardShortcutTest",
         "com.android.wm.shell.functional.keyboardshortcuts.ExitDesktopFromKeyboardShortcutTest",
+        "com.android.wm.shell.functional.maximize.ExitDesktopWithDragToTopDragZoneTest",
         "com.android.wm.shell.functional.maximize.MaximizeAppWindowTest",
         "com.android.wm.shell.functional.maximize.MaximizeAppWindowWithDragToTopDragZoneInDesktopFirstTest",
-        "com.android.wm.shell.functional.maximize.MaximizeAppWindowWithDragToTopDragZoneTest",
         "com.android.wm.shell.functional.resizing.ResizeAppCornerMultiWindowAndPipTest",
         "com.android.wm.shell.functional.resizing.ResizeAppCornerMultiWindowTest",
         "com.android.wm.shell.functional.resizing.ResizeAppWithCornerResizeTest",
@@ -214,13 +213,6 @@ test_module_config {
     base: "FunctionalTestsDesktopMode",
     test_suites: ["device-tests"],
     include_filters: ["com.android.wm.shell.functional.EnterDesktopWithDragWindowsLimitTest"],
-}
-
-test_module_config {
-    name: "FunctionalTestsDesktopMode-ExitDesktopWithDragToTopDragZoneTest",
-    base: "FunctionalTestsDesktopMode",
-    test_suites: ["device-tests"],
-    include_filters: ["com.android.wm.shell.functional.ExitDesktopWithDragToTopDragZoneTest"],
 }
 
 test_module_config {
@@ -483,6 +475,13 @@ test_module_config {
 }
 
 test_module_config {
+    name: "FunctionalTestsDesktopMode-maximize-ExitDesktopWithDragToTopDragZoneTest",
+    base: "FunctionalTestsDesktopMode",
+    test_suites: ["device-tests"],
+    include_filters: ["com.android.wm.shell.functional.maximize.ExitDesktopWithDragToTopDragZoneTest"],
+}
+
+test_module_config {
     name: "FunctionalTestsDesktopMode-maximize-MaximizeAppWindowTest",
     base: "FunctionalTestsDesktopMode",
     test_suites: ["device-tests"],
@@ -494,13 +493,6 @@ test_module_config {
     base: "FunctionalTestsDesktopMode",
     test_suites: ["device-tests"],
     include_filters: ["com.android.wm.shell.functional.maximize.MaximizeAppWindowWithDragToTopDragZoneInDesktopFirstTest"],
-}
-
-test_module_config {
-    name: "FunctionalTestsDesktopMode-maximize-MaximizeAppWindowWithDragToTopDragZoneTest",
-    base: "FunctionalTestsDesktopMode",
-    test_suites: ["device-tests"],
-    include_filters: ["com.android.wm.shell.functional.maximize.MaximizeAppWindowWithDragToTopDragZoneTest"],
 }
 
 test_module_config {

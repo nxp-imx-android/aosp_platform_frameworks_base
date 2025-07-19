@@ -326,7 +326,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
     // The config value can be overridden using Settings.Global.POWER_BUTTON_DOUBLE_PRESS and/or
     // Settings.Global.POWER_BUTTON_TRIPLE_PRESS
     static final int MULTI_PRESS_POWER_NOTHING = 0;
-    static final int MULTI_PRESS_POWER_THEATER_MODE = 1;
+    // Deprecated: static final int MULTI_PRESS_POWER_THEATER_MODE = 1;
     static final int MULTI_PRESS_POWER_BRIGHTNESS_BOOST = 2;
     static final int MULTI_PRESS_POWER_LAUNCH_TARGET_ACTIVITY = 3;
 
@@ -609,6 +609,8 @@ public class PhoneWindowManager implements WindowManagerPolicy {
     boolean mWakeOnBackKeyPress;
     boolean mSilenceRingerOnSleepKey;
     long mWakeUpToLastStateTimeout;
+    long mTurnOffTvToastSuppressionDelay;
+    long mLastShortPressTurnOffTvHintToastTime = 0;
     ComponentName mSearchKeyTargetActivity;
 
     // Key Behavior - Stem Primary
@@ -676,9 +678,6 @@ public class PhoneWindowManager implements WindowManagerPolicy {
     // display is on, even if the display is not interactive. If false, the power button short press
     // behavior will be skipped if the default display is non-interactive.
     private boolean mSupportShortPressPowerWhenDefaultDisplayOn;
-
-    // Whether to go to sleep entering theater mode from power button
-    private boolean mGoToSleepOnButtonPressTheaterMode;
 
     // Ringer toggle should reuse timing and triggering from screenshot power and a11y vol up
     int mRingerToggleChord = VOLUME_HUSH_OFF;
@@ -1311,12 +1310,16 @@ public class PhoneWindowManager implements WindowManagerPolicy {
         dreamManagerInternal.requestDream();
         if (mHasFeatureLeanback
                 && getResolvedLongPressOnPowerBehavior() == LONG_PRESS_POWER_GO_TO_SLEEP) {
-            Toast.makeText(
-                    mContext,
-                    UiThread.get().getLooper(),
-                    mContext.getString(R.string.long_press_power_to_turn_off_tv_toast),
-                    Toast.LENGTH_LONG)
-                    .show();
+            final long now = SystemClock.uptimeMillis();
+            if (now - mLastShortPressTurnOffTvHintToastTime >= mTurnOffTvToastSuppressionDelay) {
+                mLastShortPressTurnOffTvHintToastTime = now;
+                Toast.makeText(
+                        mContext,
+                        UiThread.get().getLooper(),
+                        mContext.getString(R.string.long_press_power_to_turn_off_tv_toast),
+                        Toast.LENGTH_LONG)
+                        .show();
+            }
         }
     }
 
@@ -1367,30 +1370,6 @@ public class PhoneWindowManager implements WindowManagerPolicy {
     private void powerMultiPressAction(long eventTime, boolean interactive, int behavior) {
         switch (behavior) {
             case MULTI_PRESS_POWER_NOTHING:
-                break;
-            case MULTI_PRESS_POWER_THEATER_MODE:
-                if (!isUserSetupComplete()) {
-                    Slog.i(TAG, "Ignoring toggling theater mode - device not setup.");
-                    break;
-                }
-
-                if (isTheaterModeEnabled()) {
-                    Slog.i(TAG, "Toggling theater mode off.");
-                    Settings.Global.putInt(mContext.getContentResolver(),
-                            Settings.Global.THEATER_MODE_ON, 0);
-                    if (!interactive) {
-                        wakeUpFromWakeKey(eventTime, KEYCODE_POWER, /* isDown= */ false);
-                    }
-                } else {
-                    Slog.i(TAG, "Toggling theater mode on.");
-                    Settings.Global.putInt(mContext.getContentResolver(),
-                            Settings.Global.THEATER_MODE_ON, 1);
-
-                    if (mGoToSleepOnButtonPressTheaterMode && interactive) {
-                        goToSleep(eventTime, PowerManager.GO_TO_SLEEP_REASON_POWER_BUTTON,
-                                0);
-                    }
-                }
                 break;
             case MULTI_PRESS_POWER_BRIGHTNESS_BOOST:
                 Slog.i(TAG, "Starting brightness boost.");
@@ -2365,9 +2344,6 @@ public class PhoneWindowManager implements WindowManagerPolicy {
         mLidNavigationAccessibility = mContext.getResources().getInteger(
                 com.android.internal.R.integer.config_lidNavigationAccessibility);
 
-        mGoToSleepOnButtonPressTheaterMode = mContext.getResources().getBoolean(
-                com.android.internal.R.bool.config_goToSleepOnButtonPressTheaterMode);
-
         mSupportLongPressPowerWhenNonInteractive = mContext.getResources().getBoolean(
                 com.android.internal.R.bool.config_supportLongPressPowerWhenNonInteractive);
         mSupportShortPressPowerWhenDefaultDisplayOn =
@@ -2410,6 +2386,9 @@ public class PhoneWindowManager implements WindowManagerPolicy {
             mContext.getResources().getString(
                 com.android.internal.R.string.config_searchKeyTargetActivity));
         readConfigurationDependentBehaviors();
+
+        mTurnOffTvToastSuppressionDelay = mContext.getResources().getInteger(
+                com.android.internal.R.integer.config_turnOffTvToastSuppressionDelayMs);
 
         mDisplayFoldController = DisplayFoldController.create(mContext, DEFAULT_DISPLAY);
 
@@ -5088,17 +5067,6 @@ public class PhoneWindowManager implements WindowManagerPolicy {
             return ACTION_PASS_TO_USER;
         }
 
-        // If we have not passed the action up and we are in theater mode without dreaming,
-        // there will be no dream to intercept the touch and wake into ambient.  The device should
-        // wake up in this case.
-        if (isTheaterModeEnabled() && (policyFlags & FLAG_WAKE) != 0) {
-            if (mWindowWakeUpPolicy.wakeUpFromMotion(displayId, whenNanos / 1000000, source,
-                    action == MotionEvent.ACTION_DOWN, mDeviceGoingToSleep)) {
-                // Woke up. Pass motion events to user.
-                return ACTION_PASS_TO_USER;
-            }
-        }
-
         return 0;
     }
 
@@ -6360,11 +6328,6 @@ public class PhoneWindowManager implements WindowManagerPolicy {
         return true;
     }
 
-    private boolean isTheaterModeEnabled() {
-        return Settings.Global.getInt(mContext.getContentResolver(),
-                Settings.Global.THEATER_MODE_ON, 0) == 1;
-    }
-
     private void performHapticFeedback(int effectId, String reason) {
         performHapticFeedback(effectId, reason, 0 /* flags */);
     }
@@ -6691,8 +6654,6 @@ public class PhoneWindowManager implements WindowManagerPolicy {
         switch (behavior) {
             case MULTI_PRESS_POWER_NOTHING:
                 return "MULTI_PRESS_POWER_NOTHING";
-            case MULTI_PRESS_POWER_THEATER_MODE:
-                return "MULTI_PRESS_POWER_THEATER_MODE";
             case MULTI_PRESS_POWER_BRIGHTNESS_BOOST:
                 return "MULTI_PRESS_POWER_BRIGHTNESS_BOOST";
             case MULTI_PRESS_POWER_LAUNCH_TARGET_ACTIVITY:

@@ -62,7 +62,7 @@ class MediaOutputAdapter(controller: MediaSwitchingController) :
             // Avoid grouping broadcast devices because grouped volume control is not available for
             // broadcast session.
             mGroupSelectedItems =
-                mController.selectedMediaDevice.size > 1 &&
+                mController.hasGroupPlayback() &&
                     (!Flags.enableOutputSwitcherPersonalAudioSharing() ||
                         mController.isVolumeControlEnabledForSession)
         }
@@ -107,9 +107,7 @@ class MediaOutputAdapter(controller: MediaSwitchingController) :
     }
 
     private fun isSelectedDevice(mediaItem: MediaItem): Boolean {
-        return mediaItem.mediaDevice.getOrNull()?.let { device ->
-            isDeviceIncluded(mController.selectedMediaDevice, device)
-        } ?: false
+        return mediaItem.mediaDevice.getOrNull()?.isSelected ?: false
     }
 
     override fun getItemId(position: Int): Long {

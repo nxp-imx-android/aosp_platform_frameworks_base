@@ -30,7 +30,6 @@ import static android.media.MediaRoute2ProviderService.REASON_UNKNOWN_ERROR;
 import static com.android.settingslib.media.LocalMediaManager.MediaDeviceState.STATE_SELECTED;
 
 import static com.google.common.truth.Truth.assertThat;
-import static com.google.common.truth.Truth.assertWithMessage;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -59,9 +58,6 @@ import android.os.Build;
 import android.platform.test.annotations.EnableFlags;
 import android.platform.test.flag.junit.SetFlagsRule;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-
 import com.android.media.flags.Flags;
 import com.android.settingslib.bluetooth.CachedBluetoothDevice;
 import com.android.settingslib.bluetooth.CachedBluetoothDeviceManager;
@@ -87,11 +83,6 @@ import org.robolectric.util.ReflectionHelpers;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 @RunWith(RobolectricTestRunner.class)
 public class InfoMediaManagerTest {
@@ -683,10 +674,14 @@ public class InfoMediaManagerTest {
 
         when(mRouterManager.getRoutingSessions(TEST_PACKAGE_NAME))
                 .thenReturn(List.of(TEST_SYSTEM_ROUTING_SESSION));
-        List<MediaDevice> transferableDevices = mInfoMediaManager.getTransferableMediaDevices();
-        List<MediaDevice> selectedDevices = mInfoMediaManager.getSelectedMediaDevices();
-        List<MediaDevice> selectableDevices = mInfoMediaManager.getSelectableMediaDevices();
-        List<MediaDevice> deselectableDevices = mInfoMediaManager.getDeselectableMediaDevices();
+        List<MediaDevice> transferableDevices = mInfoMediaManager.mMediaDevices.stream().filter(
+                MediaDevice::isTransferable).toList();
+        List<MediaDevice> selectedDevices = mInfoMediaManager.mMediaDevices.stream().filter(
+                MediaDevice::isSelected).toList();
+        List<MediaDevice> selectableDevices = mInfoMediaManager.mMediaDevices.stream().filter(
+                MediaDevice::isSelectable).toList();
+        List<MediaDevice> deselectableDevices = mInfoMediaManager.mMediaDevices.stream().filter(
+                MediaDevice::isDeselectable).toList();
 
         assertThat(transferableDevices.size()).isEqualTo(3);
         // The "COMPLEX" device is transferable because it's a non-system route for a system session
@@ -729,16 +724,6 @@ public class InfoMediaManagerTest {
         assertThat(deselectableDevice.isSelected()).isFalse();
         assertThat(deselectableDevice.isSelectable()).isFalse();
         assertThat(deselectableDevice.isDeselectable()).isTrue();
-    }
-
-    @Test
-    public void getSelectableMediaDevice_notContainPackageName_returnEmpty() {
-        final RoutingSessionInfo info = mock(RoutingSessionInfo.class);
-
-        when(mRoutingController.getRoutingSessionInfo()).thenReturn(info);
-        when(info.getClientPackageName()).thenReturn("com.fake.packagename");
-
-        assertThat(mInfoMediaManager.getSelectableMediaDevices()).isEmpty();
     }
 
     @Test
@@ -866,143 +851,6 @@ public class InfoMediaManagerTest {
 
         // Expecting 1st call after registerCallback() and 2nd call after onSessionUpdated().
         verify(mCallback, times(2)).onDeviceListAdded(any());
-    }
-
-    @Test
-    public void onDeviceListAdded_callingGettersInCallback_shouldNotCauseDeadlock()
-            throws InterruptedException {
-        when(mRouterManager.getRoutingSessions(anyString())).thenReturn(
-                List.of(TEST_SYSTEM_ROUTING_SESSION));
-        when(mRouterManager.getSelectedRoutes(any())).thenReturn(
-                List.of(TEST_SELECTED_SYSTEM_ROUTE));
-
-        ExecutorService executor = Executors.newSingleThreadExecutor();
-
-        final CountDownLatch callbackEnteredLatch = new CountDownLatch(1);
-        final CountDownLatch mainThreadActionLatch = new CountDownLatch(1);
-
-        final AtomicBoolean callbackCompletedSuccessfully = new AtomicBoolean(false);
-
-        InfoMediaManager.MediaDeviceCallback mediaDeviceCallback =
-                new InfoMediaManager.MediaDeviceCallback() {
-                    @Override
-                    public void onDeviceListAdded(@NonNull List<MediaDevice> devices) {
-                        try {
-                            callbackEnteredLatch.countDown();
-                            // Pausing the callback and waiting for the main thread to act.
-                            boolean mainThreadUnblocked = mainThreadActionLatch.await(
-                                    ASYNC_TIMEOUT_SECONDS, TimeUnit.SECONDS);
-                            callbackCompletedSuccessfully.set(mainThreadUnblocked);
-                        } catch (InterruptedException e) {
-                            Thread.currentThread().interrupt();
-                        }
-                    }
-
-                    @Override
-                    public void onDeviceListRemoved(@NonNull List<MediaDevice> devices) {
-                    }
-
-                    @Override
-                    public void onConnectedDeviceChanged(@Nullable String id) {
-                    }
-
-                    @Override
-                    public void onRequestFailed(int reason) {
-                    }
-                };
-
-
-        // This will invoke a callback in the background thread.
-        executor.submit(() -> mInfoMediaManager.registerCallback(mediaDeviceCallback));
-
-        if (!callbackEnteredLatch.await(ASYNC_TIMEOUT_SECONDS, TimeUnit.SECONDS)) {
-            throw new AssertionError("Callback was never entered.");
-        }
-
-        // While the callback execution is on pause, make a call to a potential blocking method.
-        mInfoMediaManager.getSelectedMediaDevices();
-
-        // Signal the waiting callback thread that it can now proceed.
-        mainThreadActionLatch.countDown();
-        executor.shutdown();
-        assertWithMessage("Deadlock detected! The test timed out.").that(
-                executor.awaitTermination(ASYNC_TIMEOUT_SECONDS, TimeUnit.SECONDS)).isTrue();
-
-        assertThat(callbackCompletedSuccessfully.get()).isTrue();
-    }
-
-    @Test
-    @EnableFlags(Flags.FLAG_ENABLE_SUGGESTED_DEVICE_API)
-    public void onSuggestedDeviceUpdated_callingGettersInCallback_shouldNotCauseDeadlock()
-            throws InterruptedException {
-        ExecutorService executor = Executors.newSingleThreadExecutor();
-
-        final CountDownLatch callbackEnteredLatch = new CountDownLatch(1);
-        final CountDownLatch mainThreadActionLatch = new CountDownLatch(1);
-
-        final AtomicBoolean callbackCompletedSuccessfully = new AtomicBoolean(false);
-
-        InfoMediaManager.MediaDeviceCallback mediaDeviceCallback =
-                new InfoMediaManager.MediaDeviceCallback() {
-                    @Override
-                    public void onDeviceListAdded(@NonNull List<MediaDevice> devices) {
-                    }
-
-                    @Override
-                    public void onDeviceListRemoved(@NonNull List<MediaDevice> devices) {
-                    }
-
-                    @Override
-                    public void onConnectedDeviceChanged(@Nullable String id) {
-                    }
-
-                    @Override
-                    public void onRequestFailed(int reason) {
-                    }
-
-                    @Override
-                    public void onSuggestedDeviceUpdated(
-                            @Nullable SuggestedDeviceState suggestedDevice) {
-                        try {
-                            callbackEnteredLatch.countDown();
-                            // Pausing the callback and waiting for the main thread to act.
-                            boolean mainThreadUnblocked = mainThreadActionLatch.await(
-                                    ASYNC_TIMEOUT_SECONDS, TimeUnit.SECONDS);
-                            callbackCompletedSuccessfully.set(mainThreadUnblocked);
-                        } catch (InterruptedException e) {
-                            Thread.currentThread().interrupt();
-                        }
-                    }
-                };
-
-        SuggestedDeviceInfo suggestedDeviceInfo = new SuggestedDeviceInfo.Builder("device_name",
-                TEST_ID_3, 0).build();
-        setAvailableRoutesList(TEST_PACKAGE_NAME);
-
-        // This will invoke a callback in the background thread.
-        executor.submit(() -> {
-            mInfoMediaManager.registerCallback(mediaDeviceCallback);
-            verify(mRouter2).registerDeviceSuggestionsUpdatesCallback(any(),
-                    mDeviceSuggestionsUpdatesCallback.capture());
-
-            mDeviceSuggestionsUpdatesCallback.getValue().onSuggestionsUpdated("random_package_name",
-                    List.of(suggestedDeviceInfo));
-        });
-
-        if (!callbackEnteredLatch.await(ASYNC_TIMEOUT_SECONDS, TimeUnit.SECONDS)) {
-            throw new AssertionError("Callback was never entered.");
-        }
-
-        // While the callback execution is on pause, make a call to a potential blocking method.
-        mInfoMediaManager.getSelectedMediaDevices();
-
-        // Signal the waiting callback thread that it can now proceed.
-        mainThreadActionLatch.countDown();
-        executor.shutdown();
-        assertWithMessage("Deadlock detected! The test timed out.").that(
-                executor.awaitTermination(ASYNC_TIMEOUT_SECONDS, TimeUnit.SECONDS)).isTrue();
-
-        assertThat(callbackCompletedSuccessfully.get()).isTrue();
     }
 
     @Test

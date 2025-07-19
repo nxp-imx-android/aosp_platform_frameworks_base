@@ -16,16 +16,12 @@
 
 package com.android.systemui.doze;
 
-import static android.content.res.Configuration.UI_MODE_NIGHT_YES;
-import static android.content.res.Configuration.UI_MODE_TYPE_CAR;
-
 import static com.android.systemui.doze.DozeMachine.State.DOZE;
 import static com.android.systemui.doze.DozeMachine.State.DOZE_AOD;
 import static com.android.systemui.doze.DozeMachine.State.DOZE_AOD_DOCKED;
 import static com.android.systemui.doze.DozeMachine.State.DOZE_AOD_MINMODE;
 import static com.android.systemui.doze.DozeMachine.State.DOZE_PULSE_DONE;
 import static com.android.systemui.doze.DozeMachine.State.DOZE_PULSING;
-import static com.android.systemui.doze.DozeMachine.State.DOZE_PULSING_BRIGHT;
 import static com.android.systemui.doze.DozeMachine.State.DOZE_REQUEST_PULSE;
 import static com.android.systemui.doze.DozeMachine.State.DOZE_SUSPEND_TRIGGERS;
 import static com.android.systemui.doze.DozeMachine.State.FINISH;
@@ -42,18 +38,14 @@ import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.reset;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import android.app.ActivityManager;
-import android.content.res.Configuration;
 import android.hardware.display.AmbientDisplayConfiguration;
 import android.platform.test.annotations.EnableFlags;
-import android.platform.test.annotations.DisableFlags;
 import android.view.Display;
 
-import androidx.annotation.NonNull;
 import androidx.test.annotation.UiThreadTest;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.SmallTest;
@@ -67,12 +59,13 @@ import com.android.systemui.settings.UserTracker;
 import com.android.systemui.statusbar.phone.DozeParameters;
 import com.android.systemui.util.wakelock.WakeLockFake;
 
-import java.util.Optional;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+
+import java.util.Optional;
 
 @SmallTest
 @RunWith(AndroidJUnit4.class)
@@ -517,108 +510,7 @@ public class DozeMachineTest extends SysuiTestCase {
     }
 
     @Test
-    @DisableFlags(Flags.FLAG_REMOVE_AOD_CAR_MODE)
-    public void testTransitionToInitialized_carModeIsEnabled() {
-        Configuration configuration = configWithCarNightUiMode();
-
-        mMachine.onConfigurationChanged(configuration);
-        mMachine.requestState(INITIALIZED);
-
-        verify(mPartMock).transitionTo(UNINITIALIZED, INITIALIZED);
-        verify(mPartMock).transitionTo(INITIALIZED, DOZE_SUSPEND_TRIGGERS);
-        assertEquals(DOZE_SUSPEND_TRIGGERS, mMachine.getState());
-    }
-
-    @Test
-    @DisableFlags(Flags.FLAG_REMOVE_AOD_CAR_MODE)
-    public void testTransitionToFinish_carModeIsEnabled() {
-        Configuration configuration = configWithCarNightUiMode();
-
-        mMachine.onConfigurationChanged(configuration);
-        mMachine.requestState(INITIALIZED);
-        mMachine.requestState(FINISH);
-
-        assertEquals(FINISH, mMachine.getState());
-    }
-
-    @Test
-    @DisableFlags(Flags.FLAG_REMOVE_AOD_CAR_MODE)
-    public void testDozeToDozeSuspendTriggers_carModeIsEnabled() {
-        Configuration configuration = configWithCarNightUiMode();
-
-        mMachine.onConfigurationChanged(configuration);
-        mMachine.requestState(INITIALIZED);
-        mMachine.requestState(DOZE);
-
-        assertEquals(DOZE_SUSPEND_TRIGGERS, mMachine.getState());
-    }
-
-    @Test
-    @DisableFlags(Flags.FLAG_REMOVE_AOD_CAR_MODE)
-    public void testDozeAoDToDozeSuspendTriggers_carModeIsEnabled() {
-        Configuration configuration = configWithCarNightUiMode();
-
-        mMachine.onConfigurationChanged(configuration);
-        mMachine.requestState(INITIALIZED);
-        mMachine.requestState(DOZE_AOD);
-
-        assertEquals(DOZE_SUSPEND_TRIGGERS, mMachine.getState());
-    }
-
-    @Test
-    @DisableFlags(Flags.FLAG_REMOVE_AOD_CAR_MODE)
-    public void testDozePulsingBrightDozeSuspendTriggers_carModeIsEnabled() {
-        Configuration configuration = configWithCarNightUiMode();
-
-        mMachine.onConfigurationChanged(configuration);
-        mMachine.requestState(INITIALIZED);
-        mMachine.requestState(DOZE_PULSING_BRIGHT);
-
-        assertEquals(DOZE_SUSPEND_TRIGGERS, mMachine.getState());
-    }
-
-    @Test
-    @DisableFlags(Flags.FLAG_REMOVE_AOD_CAR_MODE)
-    public void testDozeAodDockedDozeSuspendTriggers_carModeIsEnabled() {
-        Configuration configuration = configWithCarNightUiMode();
-
-        mMachine.onConfigurationChanged(configuration);
-        mMachine.requestState(INITIALIZED);
-        mMachine.requestState(DOZE_AOD_DOCKED);
-
-        assertEquals(DOZE_SUSPEND_TRIGGERS, mMachine.getState());
-    }
-
-    @Test
-    public void testOnConfigurationChanged_propagatesUiModeTypeToParts() {
-        Configuration newConfig = configWithCarNightUiMode();
-
-        mMachine.onConfigurationChanged(newConfig);
-
-        verify(mPartMock).onUiModeTypeChanged(UI_MODE_TYPE_CAR);
-        verify(mAnotherPartMock).onUiModeTypeChanged(UI_MODE_TYPE_CAR);
-    }
-
-    @Test
-    public void testOnConfigurationChanged_propagatesOnlyUiModeChangesToParts() {
-        Configuration newConfig = configWithCarNightUiMode();
-
-        mMachine.onConfigurationChanged(newConfig);
-        mMachine.onConfigurationChanged(newConfig);
-
-        verify(mPartMock, times(1)).onUiModeTypeChanged(UI_MODE_TYPE_CAR);
-        verify(mAnotherPartMock, times(1)).onUiModeTypeChanged(UI_MODE_TYPE_CAR);
-    }
-
-    @Test
     public void testDozeSuppressTriggers_screenState() {
         assertEquals(Display.STATE_OFF, DOZE_SUSPEND_TRIGGERS.screenState(null));
-    }
-
-    @NonNull
-    private Configuration configWithCarNightUiMode() {
-        Configuration configuration = Configuration.EMPTY;
-        configuration.uiMode = UI_MODE_TYPE_CAR | UI_MODE_NIGHT_YES;
-        return configuration;
     }
 }

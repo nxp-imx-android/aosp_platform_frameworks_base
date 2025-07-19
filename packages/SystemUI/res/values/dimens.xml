@@ -815,6 +815,9 @@
     <!-- The *additional* height of the divider between bundles. -->
     <dimen name="bundle_divider_height">2dp</dimen>
 
+    <!-- The *additional* height of the divider between bundles when expanded. -->
+    <dimen name="bundle_expanded_divider_height">6dp</dimen>
+
     <!-- The min distance the notifications should be from the lock icon on the lock screen. -->
     <dimen name="min_lock_icon_padding">48dp</dimen>
 

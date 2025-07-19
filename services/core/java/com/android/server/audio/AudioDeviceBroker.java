@@ -794,6 +794,7 @@ public class AudioDeviceBroker {
         if (device == null) {
             AudioAttributes attr =
                     AudioProductStrategy.getAudioAttributesForStrategyWithLegacyStreamType(
+                            mAudioSystem.getAudioProductStrategies(/* filterInternal*/ true),
                             AudioSystem.STREAM_VOICE_CALL);
             List<AudioDeviceAttributes> devices = mAudioSystem.getDevicesForAttributes(
                     attr, false /* forVolume */);

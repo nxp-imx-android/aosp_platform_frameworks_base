@@ -92,11 +92,11 @@ public class OutputMediaItemListProxy {
     /** Updates the list of output media items with a given list of media devices. */
     public void updateMediaDevices(
             List<MediaDevice> devices,
-            List<MediaDevice> selectedDevices,
             @Nullable MediaDevice connectedMediaDevice,
             boolean needToHandleMutingExpectedDevice) {
         Set<String> selectedOrConnectedMediaDeviceIds =
-                selectedDevices.stream().map(MediaDevice::getId).collect(Collectors.toSet());
+                devices.stream().filter(MediaDevice::isSelected).map(MediaDevice::getId).collect(
+                        Collectors.toSet());
         if (connectedMediaDevice != null) {
             selectedOrConnectedMediaDeviceIds.add(connectedMediaDevice.getId());
         }

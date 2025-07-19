@@ -74,7 +74,6 @@ import com.android.wm.shell.windowdecor.DragResizeWindowGeometry.getFineResizeCo
 import com.android.wm.shell.windowdecor.DragResizeWindowGeometry.getLargeResizeCornerSize
 import com.android.wm.shell.windowdecor.DragResizeWindowGeometry.getResizeEdgeHandleSize
 import com.android.wm.shell.windowdecor.DragResizeWindowGeometry.getResizeHandleEdgeInset
-import com.android.wm.shell.windowdecor.WindowDecoration2.RelayoutParams.OccludingCaptionElement.Alignment
 import com.android.wm.shell.windowdecor.caption.AppHandleController
 import com.android.wm.shell.windowdecor.caption.AppHeaderController
 import com.android.wm.shell.windowdecor.caption.CaptionController
@@ -436,26 +435,6 @@ class DefaultWindowDecoration @JvmOverloads constructor(
             }
         }
 
-        val occludingCaptionElements = if (isAppHeader) {
-            // Report occluding elements as bounding rects to the insets system so that apps can
-            // draw in the empty space in the center:
-            //   First, the "app chip" section of the caption bar (+ some extra margins).
-            val appChipElement = RelayoutParams.OccludingCaptionElement(
-                widthResId = R.dimen.desktop_mode_customizable_caption_margin_start,
-                alignment = Alignment.START
-            )
-            // Then, the right-aligned section (drag space, maximize and close buttons).
-            val controlsElement = RelayoutParams.OccludingCaptionElement(
-                widthResId = if (DesktopModeFlags.ENABLE_MINIMIZE_BUTTON.isTrue) {
-                    R.dimen.desktop_mode_customizable_caption_with_minimize_button_margin_end
-                } else {
-                    R.dimen.desktop_mode_customizable_caption_margin_end
-                },
-                alignment = Alignment.END
-            )
-            arrayListOf(appChipElement, controlsElement)
-        } else ArrayList()
-
         // The configuration used to layout the window decoration. A copy is made instead of using
         // the original reference so that the configuration isn't mutated on config changes and
         // diff checks can be made in WindowDecoration#relayout using the pre/post-relayout
@@ -483,7 +462,6 @@ class DefaultWindowDecoration @JvmOverloads constructor(
         return RelayoutParams(
             runningTaskInfo = taskInfo,
             captionType = captionType,
-            occludingCaptionElements = occludingCaptionElements,
             inputFeatures = inputFeatures,
             isInsetSource = isInsetSource,
             insetSourceFlags = insetSourceFlags,

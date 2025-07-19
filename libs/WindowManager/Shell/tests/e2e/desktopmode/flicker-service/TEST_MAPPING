@@ -55,6 +55,9 @@
       "name": "WMShellFlickerTestsDesktopMode-keyboardshortcuts-ExitDesktopToFullScreenWithKeyboardShortcutFlickerTest"
     },
     {
+      "name": "WMShellFlickerTestsDesktopMode-maximize-ExitDesktopToFullScreenWithDragToTopDragZoneFlickerTest"
+    },
+    {
       "name": "WMShellFlickerTestsDesktopMode-maximize-MaximizeAppDoubleTapAppHeaderFlickerTest"
     },
     {

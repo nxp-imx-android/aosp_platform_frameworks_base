@@ -16,21 +16,23 @@
 
  package android.app.ondeviceintelligence;
 
- import com.android.internal.infra.AndroidFuture;
- import android.os.ICancellationSignal;
- import android.os.ParcelFileDescriptor;
- import android.os.PersistableBundle;
- import android.os.RemoteCallback;
- import android.os.Bundle;
- import android.app.ondeviceintelligence.Feature;
- import android.app.ondeviceintelligence.FeatureDetails;
- import android.app.ondeviceintelligence.InferenceInfo;
- import java.util.List;
- import android.app.ondeviceintelligence.IDownloadCallback;
- import android.app.ondeviceintelligence.IListFeaturesCallback;
- import android.app.ondeviceintelligence.IFeatureCallback;
- import android.app.ondeviceintelligence.IFeatureDetailsCallback;
- import android.app.ondeviceintelligence.IResponseCallback;
+import com.android.internal.infra.AndroidFuture;
+import android.os.ICancellationSignal;
+import android.os.ParcelFileDescriptor;
+import android.os.PersistableBundle;
+import android.os.RemoteCallback;
+import android.os.Bundle;
+import android.app.ondeviceintelligence.Feature;
+import android.app.ondeviceintelligence.FeatureDetails;
+import android.app.ondeviceintelligence.InferenceInfo;
+import java.util.List;
+import android.app.ondeviceintelligence.IDmaBufInfoCallback;
+import android.app.ondeviceintelligence.IDmaBufTotalCallback;
+import android.app.ondeviceintelligence.IDownloadCallback;
+import android.app.ondeviceintelligence.IListFeaturesCallback;
+import android.app.ondeviceintelligence.IFeatureCallback;
+import android.app.ondeviceintelligence.IFeatureDetailsCallback;
+import android.app.ondeviceintelligence.IResponseCallback;
 import android.app.ondeviceintelligence.IStreamingResponseCallback;
 import android.app.ondeviceintelligence.IProcessingSignal;
 import android.app.ondeviceintelligence.ITokenInfoCallback;
@@ -91,4 +93,7 @@ interface IOnDeviceIntelligenceManager {
       @JavaPassthrough(annotation="@android.annotation.RequiresPermission(android.Manifest.permission.USE_ON_DEVICE_INTELLIGENCE)")
       @JavaPassthrough(annotation="@android.annotation.FlaggedApi(android.app.ondeviceintelligence.flags.Flags.FLAG_ON_DEVICE_INTELLIGENCE_25Q4)")
       void unregisterInferenceServiceLifecycleListener(in ILifecycleListener listener) = 13;
+      void getDmaBufInfo(in IDmaBufInfoCallback callback) = 14;
+      void getDmaBufInfoForPid(in int pid, in IDmaBufInfoCallback callback) = 15;
+      void getTotalDmaBufExportedKb(in IDmaBufTotalCallback callback) = 16;
  }

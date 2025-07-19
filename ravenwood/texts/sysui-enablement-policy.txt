@@ -43,7 +43,6 @@ com.android.systemui.biometrics.udfps.NormalizedTouchDataTest true
 com.android.systemui.biometrics.ui.viewmodel.PromptAuthStateTest true
 com.android.systemui.biometrics.ui.viewmodel.PromptHistoryImplTest true
 com.android.systemui.bouncer.data.repository.EmergencyServicesRepositoryImplTest true
-com.android.systemui.bouncer.data.repository.KeyguardBouncerRepositoryTest true
 com.android.systemui.bouncer.domain.interactor.PrimaryBouncerCallbackInteractorTest true
 com.android.systemui.bouncer.domain.interactor.PrimaryBouncerInteractorWithCoroutinesTest true
 com.android.systemui.bouncer.ui.composable.BouncerOverlayLayoutTest true
@@ -149,7 +148,6 @@ com.android.systemui.dreams.homecontrols.HomeControlsDreamStartableTest true
 com.android.systemui.dreams.homecontrols.service.HomeControlsRemoteProxyTest true
 com.android.systemui.dreams.homecontrols.service.RemoteHomeControlsDataSourceDelegatorTest true
 com.android.systemui.dreams.homecontrols.system.HomeControlsRemoteServiceBinderTest true
-com.android.systemui.dump.DumpHandlerTest true
 com.android.systemui.dump.DumpManagerTest true
 com.android.systemui.dump.DumpsysTableLoggerTest true
 com.android.systemui.dump.LogBufferFreezerTest true
@@ -214,9 +212,7 @@ com.android.systemui.log.LogWtfHandlerRuleTest true
 com.android.systemui.log.core.LoggerTest true
 com.android.systemui.log.echo.LogcatEchoSettingsFormatTest true
 com.android.systemui.log.echo.LogcatEchoTrackerDebugTest true
-com.android.systemui.log.table.LogDiffsForTableTest true
 com.android.systemui.log.table.TableChangeTest true
-com.android.systemui.log.table.TableLogBufferTest true
 com.android.systemui.lowlightclock.LowLightClockDreamActionTest true
 com.android.systemui.media.controls.data.repository.MediaDataRepositoryTest true
 com.android.systemui.media.controls.data.repository.MediaFilterRepositoryTest true
@@ -424,7 +420,6 @@ com.android.systemui.shade.domain.interactor.ShadeAnimationInteractorSceneContai
 com.android.systemui.shade.domain.interactor.ShadeDisplayDialogInteractorTest true
 com.android.systemui.shade.domain.interactor.ShadeModeInteractorImplTest true
 com.android.systemui.shared.condition.ConditionExtensionsTest true
-com.android.systemui.shared.condition.ConditionMonitorTest true
 com.android.systemui.shared.condition.ConditionTest true
 com.android.systemui.shared.customization.data.SensorLocationTest true
 com.android.systemui.shared.notifications.data.repository.NotificationSettingsRepositoryTest true
@@ -537,6 +532,7 @@ com.android.systemui.statusbar.systemstatusicons.connecteddisplay.ui.viewmodel.C
 com.android.systemui.statusbar.systemstatusicons.data.repository.OrderedIconSlotNamesRepositoryTest true
 com.android.systemui.statusbar.systemstatusicons.ethernet.ui.viewmodel.EthernetIconViewModelTest true
 com.android.systemui.statusbar.systemstatusicons.hotspot.ui.viewmodel.HotspotIconViewModelTest true
+com.android.systemui.statusbar.systemstatusicons.vpn.ui.viewmodel.VpnIconViewModelTest true
 com.android.systemui.statusbar.systemstatusicons.wifi.ui.viewmodel.WifiIconViewModelTest true
 com.android.systemui.statusbar.window.StatusBarWindowStateControllerTest true
 com.android.systemui.statusbar.window.data.repository.StatusBarWindowStatePerDisplayRepositoryTest true
@@ -561,6 +557,7 @@ com.android.systemui.unfold.updates.DeviceFoldStateProviderTest true
 com.android.systemui.unfold.updates.DeviceStateRepositoryTest true
 com.android.systemui.unfold.util.ScopedUnfoldTransitionProgressProviderTest true
 com.android.systemui.unfold.util.UnfoldOnlyProgressProviderTest true
+com.android.systemui.user.UserDialogReceiverTest true
 com.android.systemui.user.domain.interactor.SelectedUserInteractorTest true
 com.android.systemui.user.domain.interactor.UserLogoutInteractorTest true
 com.android.systemui.util.ConvenienceExtensionsKtTest true

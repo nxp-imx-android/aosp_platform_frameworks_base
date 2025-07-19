@@ -811,6 +811,10 @@ public class PackageSetting extends SettingBase implements PackageStateInternal 
                 != 0;
     }
 
+    public boolean isAudioPlaybackCaptureAllowed() {
+        return (getPrivateFlags() & ApplicationInfo.PRIVATE_FLAG_ALLOW_AUDIO_PLAYBACK_CAPTURE) != 0;
+    }
+
     public SigningDetails getSigningDetails() {
         return signatures.mSigningDetails;
     }

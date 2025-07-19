@@ -34,7 +34,7 @@ import android.app.admin.Authority;
 import android.app.admin.DevicePolicyManager;
 import android.app.admin.DevicePolicyResourcesManager;
 import android.app.admin.EnforcingAdmin;
-import android.app.admin.UnknownAuthority;
+import android.app.admin.SystemAuthority;
 import android.app.ecm.EnhancedConfirmationManager;
 import android.content.ComponentName;
 import android.content.Context;
@@ -61,7 +61,7 @@ import org.robolectric.RobolectricTestRunner;
 public class RestrictedSwitchPreferenceTest {
 
     private static final int SIZE = 50;
-    private final Authority mAdvancedProtectionAuthority = new UnknownAuthority(
+    private final Authority mAdvancedProtectionAuthority = new SystemAuthority(
             ADVANCED_PROTECTION_SYSTEM_ENTITY);
 
     private AutoCloseable mMockCloseable;

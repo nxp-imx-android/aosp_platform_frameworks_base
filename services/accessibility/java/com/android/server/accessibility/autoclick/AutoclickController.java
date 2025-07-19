@@ -280,9 +280,7 @@ public class AutoclickController extends BaseEventStreamTransformation implement
                             continue;
                         }
                         if (device.supportsSource(InputDevice.SOURCE_MOUSE)
-                                || device.supportsSource(InputDevice.SOURCE_TOUCHPAD)
-                                || device.supportsSource(InputDevice.SOURCE_STYLUS)
-                                || device.supportsSource(InputDevice.SOURCE_BLUETOOTH_STYLUS)) {
+                                || device.supportsSource(InputDevice.SOURCE_TOUCHPAD)) {
                             mIsPointingDeviceConnected = true;
                             break;
                         }

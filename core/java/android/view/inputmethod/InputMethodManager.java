@@ -443,29 +443,6 @@ public final class InputMethodManager {
     public static final long CLEAR_SHOW_FORCED_FLAG_WHEN_LEAVING = 214016041L; // This is a bug id.
 
     /**
-     * Use async method for {@link InputMethodManager#showSoftInput(View, int, ResultReceiver)},
-     * {@link InputMethodManager#showSoftInput(View, int)} and
-     * {@link InputMethodManager#hideSoftInputFromWindow(IBinder, int, ResultReceiver)},
-     * {@link InputMethodManager#hideSoftInputFromWindow(IBinder, int)} for apps targeting V+.
-     * <p>
-     * Apps can incorrectly rely on {@link InputMethodManager#showSoftInput(View, int)} and
-     * {@link InputMethodManager#hideSoftInputFromWindow(IBinder, int)} method return type
-     * to interpret result of a request rather than relying on {@link ResultReceiver}. The return
-     * type of the method was never documented to have accurate info of visibility but few apps
-     * incorrectly rely on it.
-     * <p>
-     * Starting Android V, we use async calls into system_server which returns {@code true} if
-     * method call was made but return type doesn't guarantee execution.
-     * Apps targeting older versions will fallback to existing behavior of calling synchronous
-     * methods which had undocumented result in return type.
-     *
-     * @hide
-     */
-    @ChangeId
-    @EnabledSince(targetSdkVersion = Build.VERSION_CODES.VANILLA_ICE_CREAM)
-    private static final long USE_ASYNC_SHOW_HIDE_METHOD = 352594277L; // This is a bug id.
-
-    /**
      * Always return {@code true} when {@link #hideSoftInputFromWindow(IBinder, int)} and
      * {@link #hideSoftInputFromWindow(IBinder, int, ResultReceiver, int, ImeTracker.Token)} is
      * called.
@@ -634,15 +611,6 @@ public final class InputMethodManager {
     @GuardedBy("mH")
     @UnsupportedAppUsage
     Rect mCursorRect = new Rect();
-
-    /**
-     * Version-gating is guarded by bug-fix flag.
-     */
-    // Note: this is non-static so that it only gets initialized once CompatChanges has
-    // access to the correct application context.
-    private final boolean mAsyncShowHideMethodEnabled =
-            !Flags.compatchangeForZerojankproxy()
-                    || CompatChanges.isChangeEnabled(USE_ASYNC_SHOW_HIDE_METHOD);
 
     /** Cached value for {@link #isStylusHandwritingAvailable} for userId. */
     @GuardedBy("mH")
@@ -3505,7 +3473,7 @@ public final class InputMethodManager {
                             servedInputConnection == null ? null
                                     : servedInputConnection.asIRemoteAccessibilityInputConnection(),
                             view.getContext().getApplicationInfo().targetSdkVersion, targetUserId,
-                            mImeDispatcher, imeRequestedVisible, mAsyncShowHideMethodEnabled);
+                            mImeDispatcher, imeRequestedVisible);
 
             Trace.traceEnd(TRACE_TAG_WINDOW_MANAGER);
             // Create a runnable for delayed notification to the app that the InputConnection is

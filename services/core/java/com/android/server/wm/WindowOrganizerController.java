@@ -360,8 +360,8 @@ class WindowOrganizerController extends IWindowOrganizerController.Stub
                     final boolean needsSetReady = t != null;
                     final Transition nextTransition = new Transition(type, 0 /* flags */,
                             mTransitionController, mService.mWindowManager.mSyncEngine);
-                    final Transition.ReadyCondition wctApplied =
-                            new Transition.ReadyCondition("start WCT applied");
+                    final Transition.ReadyCondition wctApplied = new Transition.ReadyCondition(
+                            "start WCT applied", true /* newTrackerOnly */);
                     nextTransition.mReadyTracker.add(wctApplied);
                     nextTransition.calcParallelCollectType(wct);
                     nextTransition.mLogger.mFromPlayer = true;
@@ -396,7 +396,8 @@ class WindowOrganizerController extends IWindowOrganizerController.Stub
                 // waitAsyncStart), so add a condition to ensure that it finishes applying.
                 final Transition.ReadyCondition wctApplied;
                 if (t != null) {
-                    wctApplied = new Transition.ReadyCondition("start WCT applied");
+                    wctApplied = new Transition.ReadyCondition("start WCT applied",
+                            true /* newTrackerOnly */);
                     transition.mReadyTracker.add(wctApplied);
                 } else {
                     wctApplied = null;
