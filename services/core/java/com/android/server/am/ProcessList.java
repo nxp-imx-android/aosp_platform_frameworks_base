@@ -1278,6 +1278,17 @@ public final class ProcessList implements ProcessStateController.ProcessLruUpdat
         }
     }
 
+    // write a process capabilities to the proto
+    private static void writeProcessCapabilitiesListToProto(ProtoOutputStream proto, int cap) {
+        for (int i = 0; i < 32; i++) {
+            final int capability = 1 << i;
+            if ((cap & capability) != 0) {
+                final int protoCapability = ActivityManager.processCapabilityAmToProto(capability);
+                proto.write(ProcessOomProto.Detail.CAPABILITY_FLAGS, protoCapability);
+            }
+        }
+    }
+
     public static void appendRamKb(StringBuilder sb, long ramKb) {
         for (int j = 0, fact = 10; j < 6; j++, fact *= 10) {
             if (ramKb < fact) {
@@ -4766,6 +4777,7 @@ public final class ProcessList implements ProcessStateController.ProcessLruUpdat
                         makeProcStateProtoEnum(state.getCurProcState()));
                 proto.write(ProcessOomProto.Detail.SET_STATE,
                         makeProcStateProtoEnum(state.getSetProcState()));
+                writeProcessCapabilitiesListToProto(proto, state.getCurCapability());
                 proto.write(ProcessOomProto.Detail.LAST_PSS, DebugUtils.sizeValueToString(
                         r.mProfile.getLastPss() * 1024, new StringBuilder()));
                 proto.write(ProcessOomProto.Detail.LAST_SWAP_PSS, DebugUtils.sizeValueToString(
