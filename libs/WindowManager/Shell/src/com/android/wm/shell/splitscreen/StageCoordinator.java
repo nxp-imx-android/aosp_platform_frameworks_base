@@ -158,6 +158,7 @@ import com.android.wm.shell.common.split.SplitDecorManager;
 import com.android.wm.shell.common.split.SplitLayout;
 import com.android.wm.shell.common.split.SplitState;
 import com.android.wm.shell.common.split.SplitWindowManager;
+import com.android.wm.shell.common.split.TouchInterceptLayer;
 import com.android.wm.shell.desktopmode.DesktopTasksController;
 import com.android.wm.shell.desktopmode.DesktopUserRepositories;
 import com.android.wm.shell.desktopmode.data.DesktopRepository;
@@ -382,10 +383,8 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
                     //  after making SplitLayout display aware.
                     RunningTaskInfo rootTaskInfo =
                             mSplitMultiDisplayHelper.getDisplayRootTaskInfo(DEFAULT_DISPLAY);
-                    touchZone.inflate(
-                            mContext.createConfigurationContext(rootTaskInfo.configuration),
-                            rootTaskInfo.configuration, mSyncQueue,
-                            touchZone.isTopLeft() ? topLeftLeash : bottomRightLeash);
+                    touchZone.inflate(mContext,
+                            touchZone.isTopLeft() ? topLeftLeash : bottomRightLeash, rootTaskInfo);
                 }
 
                 @Override
@@ -1515,16 +1514,12 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
             bottomRightStage =
                     mSideStagePosition == SPLIT_POSITION_TOP_OR_LEFT ? mMainStage : mSideStage;
         }
-        // Don't allow windows or divider to be focused during animation (mRootTaskInfo is the
-        // parent of all 3 leaves). We don't want the user to be able to tap and focus a window
-        // while it is moving across the screen, because granting focus also recalculates the
-        // layering order, which is in delicate balance during this animation.
-        WindowContainerTransaction noFocus = new WindowContainerTransaction();
-        // TODO: b/393217881 - replace DEFAULT DISPLAY with the current display id
-        RunningTaskInfo rootTaskInfo =
-                mSplitMultiDisplayHelper.getDisplayRootTaskInfo(DEFAULT_DISPLAY);
-        noFocus.setFocusable(rootTaskInfo.token, false);
-        mSyncQueue.queue(noFocus);
+
+        final TouchInterceptLayer touchInterceptLayer = new TouchInterceptLayer();
+        touchInterceptLayer.inflate(mContext,
+                mSplitMultiDisplayHelper.getDisplayRootTaskLeash(DEFAULT_DISPLAY),
+                mSplitMultiDisplayHelper.getDisplayRootTaskInfo(DEFAULT_DISPLAY));
+
         // Remove touch layers, since offscreen apps coming onscreen will not need their touch
         // layers anymore. populateTouchZones() is called in the end callback to inflate new touch
         // layers in the appropriate places.
@@ -1537,14 +1532,13 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
                     SplitDecorManager decorManager1 = topLeftStage.getDecorManager();
                     SplitDecorManager decorManager2 = bottomRightStage.getDecorManager();
 
-                    WindowContainerTransaction wct = new WindowContainerTransaction();
-
-                    // Restore focus-ability to the windows and divider
-                    wct.setFocusable(rootTaskInfo.token, true);
+                    touchInterceptLayer.release();
 
                     if (enableFlexibleSplit()) {
                         mStageOrderOperator.onDoubleTappedDivider();
                     }
+
+                    WindowContainerTransaction wct = new WindowContainerTransaction();
                     setSideStagePosition(reverseSplitPosition(mSideStagePosition), wct);
                     mSyncQueue.queue(wct);
                     mSyncQueue.runInSync(st -> {
