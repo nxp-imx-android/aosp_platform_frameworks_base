@@ -1697,12 +1697,14 @@ public abstract class WMShellModule {
     static DesktopWindowingEducationPromoController provideDesktopWindowingEducationPromoController(
             Context context,
             AdditionalSystemViewContainer.Factory additionalSystemViewContainerFactory,
-            DisplayController displayController
+            DisplayController displayController,
+            @ShellBackgroundThread MainCoroutineDispatcher bgDispatcher
     ) {
         return new DesktopWindowingEducationPromoController(
                 context,
                 additionalSystemViewContainerFactory,
-                displayController
+                displayController,
+                bgDispatcher
         );
     }
 

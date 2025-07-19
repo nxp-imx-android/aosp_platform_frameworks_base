@@ -19,6 +19,8 @@ package com.android.wm.shell.windowdecor.education
 import android.annotation.ColorInt
 import android.annotation.DimenRes
 import android.annotation.LayoutRes
+import android.annotation.RawRes
+import android.app.ActivityManager.RunningTaskInfo
 import android.content.Context
 import android.content.res.Resources
 import android.graphics.Point
@@ -26,8 +28,10 @@ import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
 import android.view.WindowManager
+import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
+import android.window.DesktopExperienceFlags
 import android.window.DisplayAreaInfo
 import android.window.WindowContainerTransaction
 import androidx.dynamicanimation.animation.DynamicAnimation
@@ -35,15 +39,19 @@ import androidx.dynamicanimation.animation.SpringForce
 import com.android.wm.shell.R
 import com.android.wm.shell.common.DisplayChangeController.OnDisplayChangingListener
 import com.android.wm.shell.common.DisplayController
+import com.android.wm.shell.desktopmode.education.getLottieDrawable
 import com.android.wm.shell.shared.animation.PhysicsAnimator
+import com.android.wm.shell.shared.annotations.ShellBackgroundThread
 import com.android.wm.shell.windowdecor.WindowManagerWrapper
 import com.android.wm.shell.windowdecor.additionalviewcontainer.AdditionalSystemViewContainer
+import kotlin.coroutines.CoroutineContext
 
 /** Controls the lifecycle of an education promo, including showing and hiding it. */
 class DesktopWindowingEducationPromoController(
     private val context: Context,
     private val additionalSystemViewContainerFactory: AdditionalSystemViewContainer.Factory,
     private val displayController: DisplayController,
+    @ShellBackgroundThread private val bgDispatcher: CoroutineContext,
 ) : OnDisplayChangingListener {
     private var educationView: View? = null
     private var animator: PhysicsAnimator<View>? = null
@@ -74,9 +82,9 @@ class DesktopWindowingEducationPromoController(
      * @param viewConfig features of the education.
      * @param taskId is used in the title of popup window created for the education view.
      */
-    fun showEducation(viewConfig: EducationViewConfig, taskId: Int) {
+    suspend fun showEducation(viewConfig: EducationViewConfig, taskInfo: RunningTaskInfo) {
         hideEducation()
-        educationView = createEducationView(viewConfig, taskId)
+        educationView = createEducationView(viewConfig, taskInfo)
         animator = createAnimator()
         animateShowEducationTransition()
         displayController.addDisplayChangingController(this)
@@ -86,7 +94,10 @@ class DesktopWindowingEducationPromoController(
     private fun hideEducation() = animateHideEducationTransition { cleanUp() }
 
     /** Create education view by inflating layout provided. */
-    private fun createEducationView(viewConfig: EducationViewConfig, taskId: Int): View {
+    private suspend fun createEducationView(
+        viewConfig: EducationViewConfig,
+        taskInfo: RunningTaskInfo,
+    ): View {
         val educationView =
             LayoutInflater.from(context)
                 .inflate(viewConfig.viewLayout, /* root= */ null, /* attachToRoot= */ false)
@@ -97,6 +108,18 @@ class DesktopWindowingEducationPromoController(
 
                     requireViewById<TextView>(R.id.education_text).apply {
                         text = viewConfig.educationText
+                    }
+                    if (DesktopExperienceFlags.ENABLE_APP_TO_WEB_EDUCATION_ANIMATION.isTrue) {
+                        requireViewById<ImageView>(R.id.education_image).apply {
+                            setImageDrawable(
+                                getLottieDrawable(
+                                    viewConfig.educationImage,
+                                    context,
+                                    taskInfo,
+                                    bgDispatcher,
+                                )
+                            )
+                        }
                     }
                     setOnTouchListener { _, motionEvent ->
                         if (motionEvent.action == MotionEvent.ACTION_OUTSIDE) {
@@ -111,7 +134,7 @@ class DesktopWindowingEducationPromoController(
                 }
 
         createEducationPopupWindow(
-            taskId,
+            taskInfo.taskId,
             viewConfig.viewGlobalCoordinates,
             loadDimensionPixelSize(viewConfig.widthId),
             loadDimensionPixelSize(viewConfig.heightId),
@@ -206,6 +229,7 @@ class DesktopWindowingEducationPromoController(
         val educationColorScheme: EducationColorScheme,
         val viewGlobalCoordinates: Point,
         val educationText: String,
+        @RawRes val educationImage: Int,
         @DimenRes val widthId: Int,
         @DimenRes val heightId: Int,
     )
