@@ -134,6 +134,7 @@ import com.android.keyguard.logging.SimLogger;
 import com.android.settingslib.fuelgauge.BatteryStatus;
 import com.android.systemui.Flags;
 import com.android.systemui.SysuiTestCase;
+import com.android.systemui.ambient.statusbar.shared.flag.OngoingActivityChipsOnDream;
 import com.android.systemui.biometrics.AuthController;
 import com.android.systemui.biometrics.FingerprintInteractiveToAuthProvider;
 import com.android.systemui.bouncer.domain.interactor.AlternateBouncerInteractor;
@@ -146,6 +147,7 @@ import com.android.systemui.deviceentry.domain.interactor.FaceAuthenticationList
 import com.android.systemui.deviceentry.shared.model.ErrorFaceAuthenticationStatus;
 import com.android.systemui.deviceentry.shared.model.FaceDetectionStatus;
 import com.android.systemui.deviceentry.shared.model.FailedFaceAuthenticationStatus;
+import com.android.systemui.dreams.DreamOverlayCallbackController;
 import com.android.systemui.dump.DumpManager;
 import com.android.systemui.flags.SceneContainerFlagParameterizationKt;
 import com.android.systemui.keyguard.domain.interactor.KeyguardServiceShowLockscreenInteractor;
@@ -252,6 +254,8 @@ public class KeyguardUpdateMonitorTest extends SysuiTestCase {
     @Mock
     private IDreamManager mDreamManager;
     @Mock
+    private DreamOverlayCallbackController mDreamOverlayCallbackController;
+    @Mock
     private KeyguardBypassController mKeyguardBypassController;
     @Mock
     private SubscriptionManager mSubscriptionManager;
@@ -321,6 +325,8 @@ public class KeyguardUpdateMonitorTest extends SysuiTestCase {
     @Captor
     private ArgumentCaptor<IBiometricEnabledOnKeyguardCallback>
             mBiometricEnabledCallbackArgCaptor;
+    @Captor
+    private ArgumentCaptor<DreamOverlayCallbackController.Callback> mDreamOverlayCallbackCaptor;
 
     // Direct executor
     private final Executor mBackgroundExecutor = Runnable::run;
@@ -2477,6 +2483,21 @@ public class KeyguardUpdateMonitorTest extends SysuiTestCase {
         Assert.assertFalse(mKeyguardUpdateMonitor.forceIsDismissibleIsKeepingDeviceUnlocked());
     }
 
+    @EnableFlags(OngoingActivityChipsOnDream.FLAG_NAME)
+    @Test
+    public void isDreamingWithOverlay() {
+        assertThat(mKeyguardUpdateMonitor.isDreamingWithOverlay()).isFalse();
+
+        verify(mDreamOverlayCallbackController).addCallback(mDreamOverlayCallbackCaptor.capture());
+        final DreamOverlayCallbackController.Callback callback =
+                mDreamOverlayCallbackCaptor.getValue();
+        callback.onStartDream();
+        assertThat(mKeyguardUpdateMonitor.isDreamingWithOverlay()).isTrue();
+
+        callback.onWakeUp();
+        assertThat(mKeyguardUpdateMonitor.isDreamingWithOverlay()).isFalse();
+    }
+
     private Intent defaultSimStateChangedIntent() {
         Intent intent = new Intent(TelephonyIntents.ACTION_SIM_STATE_CHANGED);
         intent.putExtra(SubscriptionManager.EXTRA_SLOT_INDEX, 0);
@@ -2686,7 +2707,8 @@ public class KeyguardUpdateMonitorTest extends SysuiTestCase {
                     mInteractionJankMonitor, mLatencyTracker, mActiveUnlockConfig,
                     mKeyguardUpdateMonitorLogger, mSimLogger, mUiEventLogger, () -> mSessionTracker,
                     mTrustManager, mSubscriptionManager, mUserManager,
-                    mDreamManager, mDevicePolicyManager, mSensorPrivacyManager, mTelephonyManager,
+                    mDreamManager, mDreamOverlayCallbackController, mDevicePolicyManager,
+                    mSensorPrivacyManager, mTelephonyManager,
                     mPackageManager, mFingerprintManager, mBiometricManager,
                     mFaceWakeUpTriggersConfig, mDevicePostureController,
                     Optional.of(mInteractiveToAuthProvider),
