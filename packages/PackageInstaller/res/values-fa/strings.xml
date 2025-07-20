@@ -124,7 +124,7 @@
     <string name="unarchive_error_generic_title" msgid="7123457671482449992">"مشکلی پیش آمد"</string>
     <string name="unarchive_error_generic_body" msgid="4486803312463813079">"هنگام بازیابی این برنامه مشکلی پیش آمد"</string>
     <string name="unarchive_error_storage_title" msgid="5080723357273852630">"فضای ذخیره‌سازی کافی نیست"</string>
-    <string name="unarchive_error_storage_body" msgid="6879544407568780524">"برای بازیابی این برنامه، می‌توانید فضای این دستگاه را آزاد کنید. فضای ذخیره‌سازی لازم: <xliff:g id="BYTES">%1$s</xliff:g>"</string>
+    <string name="unarchive_error_storage_body" msgid="6879544407568780524">"‏برای بازیابی این برنامه، می‌توانید فضای ذخیره‌سازی nv این دستگاه آزاد کنید. فضای ذخیره‌سازی لازم: <xliff:g id="BYTES">%1$s</xliff:g>"</string>
     <string name="unarchive_action_required_title" msgid="4971245740162604619">"اقدام لازم است"</string>
     <string name="unarchive_action_required_body" msgid="1679431572983989231">"برای بازیابی این برنامه، مراحل بعدی را دنبال کنید"</string>
     <string name="unarchive_error_installer_disabled_title" msgid="4815715617014985605">"<xliff:g id="INSTALLERNAME">%1$s</xliff:g> غیرفعال است"</string>
