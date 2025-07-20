@@ -41,9 +41,9 @@
     <string name="divider_title" msgid="1963391955593749442">"ਸਪਲਿਟ ਸਕ੍ਰੀਨ ਵਿਭਾਜਕ"</string>
     <string name="accessibility_action_divider_left_full" msgid="1857937769498651238">"ਖੱਬੀ ਐਪ ਨੂੰ ਪੂਰੀ ਸਕ੍ਰੀਨ \'ਤੇ ਖੋਲ੍ਹੋ"</string>
     <string name="accessibility_action_divider_left_10" formatted="false" msgid="8237692006159749086">"10% ਖੱਬਾ, 90% ਸੱਜਾ"</string>
-    <string name="accessibility_action_divider_left_30" formatted="false" msgid="5033298971212011735">"30% ਖੱਬਾ, 70% ਸੱਜਾ"</string>
-    <string name="accessibility_action_divider_left_50" formatted="false" msgid="170317638773112190">"50% ਖੱਬਾ, 50% ਸੱਜਾ"</string>
-    <string name="accessibility_action_divider_left_70" formatted="false" msgid="3986621081137830158">"70% ਖੱਬਾ, 30% ਸੱਜਾ"</string>
+    <string name="accessibility_action_divider_left_30" formatted="false" msgid="5033298971212011735">"ਖੱਬੀ ਐਪ 30% ਹਿੱਸੇ \'ਤੇ , ਸੱਜੀ ਐਪ 70% ਹਿੱਸੇ \'ਤੇ"</string>
+    <string name="accessibility_action_divider_left_50" formatted="false" msgid="170317638773112190">"ਖੱਬੀ ਐਪ 50% ਹਿੱਸੇ \'ਤੇ , ਸੱਜੀ ਐਪ 50% ਹਿੱਸੇ \'ਤੇ"</string>
+    <string name="accessibility_action_divider_left_70" formatted="false" msgid="3986621081137830158">"ਖੱਬੀ ਐਪ 70% ਹਿੱਸੇ \'ਤੇ , ਸੱਜੀ ਐਪ 30% ਹਿੱਸੇ \'ਤੇ"</string>
     <string name="accessibility_action_divider_left_90" formatted="false" msgid="3525922058426249817">"90% ਖੱਬਾ, 10% ਸੱਜਾ"</string>
     <string name="accessibility_action_divider_right_full" msgid="4162106720432709858">"ਸੱਜੀ ਐਪ ਨੂੰ ਪੂਰੀ ਸਕ੍ਰੀਨ \'ਤੇ ਖੋਲ੍ਹੋ"</string>
     <string name="accessibility_action_divider_swap_vertical" msgid="8673406394251984853">"ਉੱਪਰਲੀ ਐਪ ਨੂੰ ਹੇਠਲੀ ਐਪ ਨਾਲ ਬਦਲੋ, ਮੌਜੂਦਾ ਸਪਲਿਟ ਮੋਡ ਰੱਖੋ"</string>
