@@ -75,12 +75,18 @@
     <string name="CLIRDefaultOnNextCallOff" msgid="5036749051007098105">"الإعداد التلقائي لمعرف المتصل هو محظور  . الاتصال التالي: غير محظور"</string>
     <string name="CLIRDefaultOffNextCallOn" msgid="1022781126694885017">"الإعداد التلقائي لمعرف المتصل هو غير محظور  . الاتصال التالي: محظور"</string>
     <string name="CLIRDefaultOffNextCallOff" msgid="2491576172356463443">"الإعداد التلقائي لمعرف المتصل هو غير محظور  . الاتصال التالي: غير محظور"</string>
-    <string name="page_size_compat_apk_warning" msgid="2982396798449041224">"‏هذا التطبيق غير متوافق مع حجم الصفحة الذي يبلغ 16 كيلوبايت. وتعذَّر إكمال عملية التأكُّد من محاذاة ملفات APK. وسيتم تشغيل هذا التطبيق باستخدام الوضع المتوافق مع حجم الصفحة. ولكي يتوافق التطبيق مع الأجهزة بشكلٍ أفضل، يُرجى إعادة تحويله برمجيًا ليصبح متوافقًا مع حجم الصفحة الذي يبلغ 16 كيلوبايت. لمزيد من المعلومات، يُرجى الاطّلاع على الرابط &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
-    <string name="page_size_compat_elf_warning" msgid="6753874059564812651">"‏هذا التطبيق غير متوافق مع حجم الصفحة الذي يبلغ 16 كيلوبايت. تعذَّر إكمال عملية التأكُّد من محاذاة ملفات ELF. سيتم تشغيل هذا التطبيق باستخدام الوضع المتوافق مع حجم الصفحة. لكي يتوافق التطبيق مع الأجهزة بشكلٍ أفضل، يُرجى إعادة تحويله برمجيًا ليصبح متوافقًا مع حجم الصفحة الذي يبلغ 16 كيلوبايت. لمزيد من المعلومات، يُرجى الانتقال إلى الرابط &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
-    <string name="page_size_compat_apk_and_elf_warning" msgid="7628675779500605390">"‏هذا التطبيق غير متوافق مع حجم الصفحة الذي يبلغ 16 كيلوبايت. تعذَّر إكمال عمليات التأكُّد من محاذاة ملفات APK وELF. سيتم تشغيل هذا التطبيق باستخدام الوضع المتوافق مع حجم الصفحة. لكي يتوافق التطبيق مع الأجهزة بشكلٍ أفضل، يُرجى إعادة تحويله برمجيًا ليصبح متوافقًا مع حجم 16 كيلوبايت. لمزيد من المعلومات، يُرجى الاتنقال إلى الرابط &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
-    <string name="page_size_compat_apk_warning_4kb" msgid="6013674159459424986">"‏يظهر هذا التحذير لأنّ هذا التطبيق قابل للتصحيح ويتم اختباره حاليًا. إذا لم تكن أنت المطوّر، يُرجى إبلاغ المطوّر بهذه الأخطاء وطلب تطبيق غير قابل للتصحيح. &lt;br&gt;&lt;br&gt; هذا التطبيق غير متوافق مع صفحة الذاكرة بحجم 16 كيلوبايت. وتعذَّر إكمال عملية التأكُّد من محاذاة ملفات APK. يُرجى اتّباع الخطوات الواردة في &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; &lt;br&gt;&lt;br&gt; لم تتم محاذاة المكتبات التالية مع صفحة الذاكرة بحجم 16 كيلوبايت: &lt;br&gt;&lt;br&gt;"</string>
-    <string name="page_size_compat_elf_warning_4kb" msgid="5189541753040977649">"‏يظهر هذا التحذير لأنّ هذا التطبيق قابل للتصحيح ويتم اختباره حاليًا. إذا لم تكن أنت المطوّر، يُرجى إبلاغ المطوّر بهذه الأخطاء وطلب تطبيق غير قابل للتصحيح. &lt;br&gt;&lt;br&gt; هذا التطبيق غير متوافق مع صفحة الذاكرة بحجم 16 كيلوبايت. وتعذَّر إكمال عملية التأكُّد من محاذاة ملفات ELF. يُرجى اتّباع الخطوات الواردة في &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; &lt;br&gt;&lt;br&gt; لم تتم محاذاة المكتبات التالية مع صفحة الذاكرة بحجم 16 كيلوبايت: &lt;br&gt;&lt;br&gt;"</string>
-    <string name="page_size_compat_apk_and_elf_warning_4kb" msgid="7665028394400479058">"‏يظهر هذا التحذير لأنّ هذا التطبيق قابل للتصحيح ويتم اختباره حاليًا. إذا لم تكن أنت المطوّر، يُرجى إبلاغ المطوّر بهذه الأخطاء وطلب تطبيق غير قابل للتصحيح. &lt;br&gt;&lt;br&gt; هذا التطبيق غير متوافق مع صفحة الذاكرة بحجم 16 كيلوبايت. وتعذَّر إكمال عمليات التأكُّد من محاذاة ملفات APK وELF. يُرجى اتّباع الخطوات الواردة في &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; &lt;br&gt;&lt;br&gt; لم تتم محاذاة المكتبات التالية مع صفحة الذاكرة بحجم 16 كيلوبايت: &lt;br&gt;&lt;br&gt;"</string>
+    <!-- no translation found for page_size_compat_apk_warning (2297836366674721648) -->
+    <skip />
+    <!-- no translation found for page_size_compat_elf_warning (8613720928493005883) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_and_elf_warning (9034695801295605229) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_warning_4kb (5676451039424864495) -->
+    <skip />
+    <!-- no translation found for page_size_compat_elf_warning_4kb (5005239480522831311) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_and_elf_warning_4kb (997926487776340721) -->
+    <skip />
     <string name="page_size_compat_never_show" msgid="3391282612422783097">"عدم الإظهار مرة أخرى"</string>
     <string name="page_size_compat_title" msgid="6497719153872572204">"‏التوافق مع تطبيقات Android"</string>
     <string name="page_size_compat_elf_not_aligned" msgid="7940806102874132630">"‏‫&amp;#8226; %1$s : لم تتم محاذاة قسم LOAD"</string>
@@ -918,7 +924,7 @@
     <string name="policydesc_disableCamera" msgid="3204405908799676104">"يمكنك منع استخدام جميع كاميرات الجهاز."</string>
     <string name="policylab_disableKeyguardFeatures" msgid="5071855750149949741">"إيقاف بعض ميزات قفل الشاشة"</string>
     <string name="policydesc_disableKeyguardFeatures" msgid="6641673177041195957">"منع استخدام بعض ميزات قفل الشاشة"</string>
-    <!-- no translation found for exit_toast_on_long_press_escape (873907401529125943) -->
+    <!-- no translation found for exit_toast_on_long_press_escape (2983932499112557277) -->
     <skip />
   <string-array name="phoneTypes">
     <item msgid="8996339953292723951">"المنزل"</item>
@@ -1846,6 +1852,8 @@
     <string name="owner_name" msgid="8713560351570795743">"المالك"</string>
     <string name="guest_name" msgid="8502103277839834324">"وضع الضيف"</string>
     <string name="headless_system_user_name" msgid="1849150903255530049">"مستخدم النظام"</string>
+    <!-- no translation found for unnamed_user_name (6096699110534542980) -->
+    <skip />
     <string name="error_message_title" msgid="4082495589294631966">"خطأ"</string>
     <string name="error_message_change_not_allowed" msgid="843159705042381454">"لا يسمح المشرف بإجراء هذا التغيير"</string>
     <string name="app_not_found" msgid="3429506115332341800">"لم يتم العثور على تطبيق يمكنه التعامل مع هذا الإجراء."</string>
@@ -2517,7 +2525,8 @@
     <string name="screen_not_shared_sensitive_content" msgid="7058419185079565001">"تم إخفاء محتوى التطبيق بعد تفعيل ميزة \"مشاركة الشاشة\" للحفاظ على أمانك"</string>
     <string name="satellite_notification_title" msgid="4026338973463121526">"تم الاتصال تلقائيًا بالقمر الصناعي"</string>
     <string name="satellite_notification_summary" msgid="5207364139430767162">"‏يمكنك إرسال الرسائل واستلامها بدون شبكة الجوّال أو شبكة Wi-Fi."</string>
-    <string name="satellite_notification_summary_with_data" msgid="6486843676720429049">"يمكنك إرسال الرسائل وتلقّيها واستخدام بيانات محدودة عبر القمر الصناعي"</string>
+    <!-- no translation found for satellite_notification_summary_with_data (8290202758586475712) -->
+    <skip />
     <string name="satellite_notification_manual_title" msgid="1097504441849466279">"هل تريد المراسلة عبر القمر الصناعي؟"</string>
     <string name="satellite_notification_manual_summary" msgid="901206289846283445">"‏يمكنك إرسال الرسائل واستلامها بدون شبكة الجوّال أو شبكة Wi-Fi"</string>
     <string name="satellite_notification_open_message" msgid="4149234979688273729">"فتح تطبيق \"الرسائل\""</string>

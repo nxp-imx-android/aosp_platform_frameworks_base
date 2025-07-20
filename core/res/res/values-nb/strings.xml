@@ -71,12 +71,18 @@
     <string name="CLIRDefaultOnNextCallOff" msgid="5036749051007098105">"Nummervisning er begrenset som standard. Neste anrop: Ikke begrenset"</string>
     <string name="CLIRDefaultOffNextCallOn" msgid="1022781126694885017">"Nummervisning er ikke begrenset som standard. Neste anrop: Begrenset"</string>
     <string name="CLIRDefaultOffNextCallOff" msgid="2491576172356463443">"Nummervisning er ikke begrenset som standard. Neste anrop: Ikke begrenset"</string>
-    <string name="page_size_compat_apk_warning" msgid="2982396798449041224">"Denne appen er ikke kompatibel med 16 kB. Kontrollen av APK-justering mislyktes. Denne appen kjøres i modus for sideformatkompatibilitet. For å få best mulig kompatibilitet bør du kompilere appen på nytt med støtte for 16 kB. Du finner mer informasjon på &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
-    <string name="page_size_compat_elf_warning" msgid="6753874059564812651">"Denne appen er ikke kompatibel med 16 kB. Kontrollen av ELF-justering mislyktes. Denne appen kjøres i modus for sideformatkompatibilitet. For å få best mulig kompatibilitet bør du kompilere appen på nytt med støtte for 16 kB. Du finner mer informasjon på &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
-    <string name="page_size_compat_apk_and_elf_warning" msgid="7628675779500605390">"Denne appen er ikke kompatibel med 16 kB. APK- og ELF-justeringskontrollene mislyktes. Denne appen kjøres i modus for sideformatkompatibilitet. For å få best mulig kompatibilitet bør du kompilere appen på nytt med støtte for 16 kB. Du finner mer informasjon på &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
-    <string name="page_size_compat_apk_warning_4kb" msgid="6013674159459424986">"Denne advarselen vises fordi dette er en feilsøkbar app som testes. Hvis du ikke er utvikleren, kan du rapportere dette til utvikleren og be om en app som ikke er feilsøkbar. &lt;br&gt;&lt;br&gt; Denne appen er ikke kompatibel med 16 kB. Kontrollen av APK-innretting mislyktes. Følg fremgangsmåten på &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; &lt;br&gt;&lt;br&gt; Følgende biblioteker er ikke innrettet for 16 kB: &lt;br&gt;&lt;br&gt;"</string>
-    <string name="page_size_compat_elf_warning_4kb" msgid="5189541753040977649">"Denne advarselen vises fordi dette er en feilsøkbar app som testes. Hvis du ikke er utvikleren, kan du rapportere dette til utvikleren og be om en app som ikke er feilsøkbar. &lt;br&gt;&lt;br&gt; Denne appen er ikke kompatibel med 16 kB. Kontrollen av ELF-innretting mislyktes. Følg fremgangsmåten på &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; &lt;br&gt;&lt;br&gt; Følgende biblioteker er ikke innrettet for 16 kB: &lt;br&gt;&lt;br&gt;"</string>
-    <string name="page_size_compat_apk_and_elf_warning_4kb" msgid="7665028394400479058">"Denne advarselen vises fordi dette er en feilsøkbar app som testes. Hvis du ikke er utvikleren, kan du rapportere dette til utvikleren og be om en app som ikke er feilsøkbar. &lt;br&gt;&lt;br&gt; Denne appen er ikke kompatibel med 16 kB. APK- og ELF-justeringskontrollene mislyktes. Følg fremgangsmåten på &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; &lt;br&gt;&lt;br&gt;Følgende biblioteker er ikke innrettet for 16 kB: &lt;br&gt;&lt;br&gt;"</string>
+    <!-- no translation found for page_size_compat_apk_warning (2297836366674721648) -->
+    <skip />
+    <!-- no translation found for page_size_compat_elf_warning (8613720928493005883) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_and_elf_warning (9034695801295605229) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_warning_4kb (5676451039424864495) -->
+    <skip />
+    <!-- no translation found for page_size_compat_elf_warning_4kb (5005239480522831311) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_and_elf_warning_4kb (997926487776340721) -->
+    <skip />
     <string name="page_size_compat_never_show" msgid="3391282612422783097">"Ikke vis igjen"</string>
     <string name="page_size_compat_title" msgid="6497719153872572204">"Kompatibilitet med Android-apper"</string>
     <string name="page_size_compat_elf_not_aligned" msgid="7940806102874132630">"&amp;#8226; %1$s : LOAD-segmentet er ikke innrettet"</string>
@@ -914,7 +920,7 @@
     <string name="policydesc_disableCamera" msgid="3204405908799676104">"Hindre bruk av alle kameraer på enheten."</string>
     <string name="policylab_disableKeyguardFeatures" msgid="5071855750149949741">"Deaktivering av skjermlåsfunksjoner"</string>
     <string name="policydesc_disableKeyguardFeatures" msgid="6641673177041195957">"Forhindrer bruk av enkelte skjermlåsfunksjoner."</string>
-    <!-- no translation found for exit_toast_on_long_press_escape (873907401529125943) -->
+    <!-- no translation found for exit_toast_on_long_press_escape (2983932499112557277) -->
     <skip />
   <string-array name="phoneTypes">
     <item msgid="8996339953292723951">"Hjemmenummer"</item>
@@ -1842,6 +1848,8 @@
     <string name="owner_name" msgid="8713560351570795743">"Eier"</string>
     <string name="guest_name" msgid="8502103277839834324">"Gjest"</string>
     <string name="headless_system_user_name" msgid="1849150903255530049">"Systembruker"</string>
+    <!-- no translation found for unnamed_user_name (6096699110534542980) -->
+    <skip />
     <string name="error_message_title" msgid="4082495589294631966">"Feil"</string>
     <string name="error_message_change_not_allowed" msgid="843159705042381454">"Denne endringen er ikke tillatt av administratoren"</string>
     <string name="app_not_found" msgid="3429506115332341800">"Finner ingen apper som kan utføre denne handlingen"</string>
@@ -2513,7 +2521,8 @@
     <string name="screen_not_shared_sensitive_content" msgid="7058419185079565001">"Av sikkerhetsgrunner er appinnholdet skjult for skjermdelingen"</string>
     <string name="satellite_notification_title" msgid="4026338973463121526">"Automatisk tilkoblet satellitt"</string>
     <string name="satellite_notification_summary" msgid="5207364139430767162">"Du kan sende og motta meldinger uten mobil- eller wifi-nettverk"</string>
-    <string name="satellite_notification_summary_with_data" msgid="6486843676720429049">"Du kan sende og motta meldinger og bruke begrensede data via satellitt"</string>
+    <!-- no translation found for satellite_notification_summary_with_data (8290202758586475712) -->
+    <skip />
     <string name="satellite_notification_manual_title" msgid="1097504441849466279">"Vil du bruke satellittmeldinger?"</string>
     <string name="satellite_notification_manual_summary" msgid="901206289846283445">"Send og motta meldinger uten mobil- eller wifi-nettverk"</string>
     <string name="satellite_notification_open_message" msgid="4149234979688273729">"Åpne Meldinger"</string>

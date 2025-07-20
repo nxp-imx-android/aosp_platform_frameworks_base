@@ -71,12 +71,18 @@
     <string name="CLIRDefaultOnNextCallOff" msgid="5036749051007098105">"ပုံသေအားဖြင့် ခေါ်ဆိုသူအိုင်ဒီ(Caller ID)အား ကန့်သတ်ထားသည်။ နောက်ထပ်အဝင်ခေါ်ဆိုမှု-ကန့်သတ်မထားပါ။"</string>
     <string name="CLIRDefaultOffNextCallOn" msgid="1022781126694885017">"ပုံသေအားဖြင့် ခေါ်ဆိုသူအိုင်ဒီ(Caller ID)အား ကန့်သတ်မထားပါ။ နောက်ထပ်အဝင်ခေါ်ဆိုမှု-ကန့်သတ်ထားသည်။"</string>
     <string name="CLIRDefaultOffNextCallOff" msgid="2491576172356463443">"ပုံသေအားဖြင့် ခေါ်ဆိုသူအိုင်ဒီ(Caller ID)အား ကန့်သတ်မထားပါ။ နောက်ထပ်အဝင်ခေါ်ဆိုမှု-ကန့်သတ်မထားပါ။"</string>
-    <string name="page_size_compat_apk_warning" msgid="2982396798449041224">"ဤအက်ပ်သည် ၁၆ KB နှင့် တွဲမသုံးနိုင်ပါ။ APK ချိန်ညှိခြင်း စစ်ဆေးမှု မအောင်မြင်ပါ။ ဤအက်ပ်သည် တွဲသုံးနိုင်သော စာမျက်နှာအရွယ်အစားမုဒ်သုံး၍ လုပ်ဆောင်ပါမည်။ အကောင်းဆုံး တွဲသုံးနိုင်မှုအတွက် အပလီကေးရှင်းကို ၁၆ KB ပံ့ပိုးမှုဖြင့် ပြန်လည်တည်ဆောက်ပါ။ နောက်ထပ်အချက်အလက်အတွက် &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; တွင် ကြည့်ပါ"</string>
-    <string name="page_size_compat_elf_warning" msgid="6753874059564812651">"ဤအက်ပ်ကို ၁၆ KB နှင့် တွဲမသုံးနိုင်ပါ။ ELF ချိန်ညှိခြင်း စစ်ဆေးမှု မအောင်မြင်ပါ။ ဤအက်ပ်ကို တွဲသုံးနိုင်သော စာမျက်နှာအရွယ်အစားမုဒ်သုံး၍ လုပ်ဆောင်ပါမည်။ အကောင်းဆုံး တွဲသုံးနိုင်မှုအတွက် အပလီကေးရှင်းကို ၁၆ KB ပံ့ပိုးမှုဖြင့် ပြန်လည်တည်ဆောက်ပါ။ နောက်ထပ်အချက်အလက်အတွက် &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; တွင် ကြည့်ပါ"</string>
-    <string name="page_size_compat_apk_and_elf_warning" msgid="7628675779500605390">"ဤအက်ပ်ကို ၁၆ KB နှင့် တွဲမသုံးနိုင်ပါ။ APK နှင့် ELF ချိန်ညှိခြင်း စစ်ဆေးမှု မအောင်မြင်ပါ။ ဤအက်ပ်ကို တွဲသုံးနိုင်သော စာမျက်နှာအရွယ်အစားမုဒ်သုံး၍ လုပ်ဆောင်ပါမည်။ အကောင်းဆုံး တွဲသုံးနိုင်မှုအတွက် အပလီကေးရှင်းကို ၁၆ KB ပံ့ပိုးမှုဖြင့် ပြန်လည်တည်ဆောက်ပါ။ နောက်ထပ်အချက်အလက်အတွက် &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; တွင် ကြည့်ပါ"</string>
-    <string name="page_size_compat_apk_warning_4kb" msgid="6013674159459424986">"အမှားရှာပြင်နိုင်သော အက်ပ်ဖြစ်သောကြောင့် ဤသတိပေးချက်ကို ပြခြင်းဖြစ်ပြီး ၎င်းကို လောလောဆယ် စမ်းသပ်နေဆဲဖြစ်သည်။ သင်သည် ဆော့ဖ်ဝဲရေးသူ မဟုတ်ပါက ၎င်းကို ဆော့ဖ်ဝဲရေးသူထံသို့ သတင်းပို့ပြီး အမှားရှာပြင်နိုင်ခြင်းမရှိသည့်အက်ပ်ကို တောင်းဆိုပါ။ &lt;br&gt;&lt;br&gt; ဤအက်ပ်သည် ၁၆ KB နှင့် ကိုက်ညီမှုမရှိပါ။ APK ချိန်ညှိခြင်းကို စစ်ဆေး၍ မရလိုက်ပါ။ &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; &lt;br&gt;&lt;br&gt; ရှိ အဆင့်များအတိုင်း လုပ်ဆောင်ပါ။ အောက်ပါဒစ်ဂျစ်တိုက်များကို ၁၆ KB ချိန်ညှိထားခြင်းမရှိပါ- &lt;br&gt;&lt;br&gt;"</string>
-    <string name="page_size_compat_elf_warning_4kb" msgid="5189541753040977649">"အမှားရှာပြင်နိုင်သော အက်ပ်ဖြစ်သောကြောင့် ဤသတိပေးချက်ကို ပြခြင်းဖြစ်ပြီး ၎င်းကို လောလောဆယ် စမ်းသပ်နေဆဲဖြစ်သည်။ သင်သည် ဆော့ဖ်ဝဲရေးသူ မဟုတ်ပါက ၎င်းကို ဆော့ဖ်ဝဲရေးသူထံသို့ သတင်းပို့ပြီး အမှားရှာပြင်နိုင်ခြင်းမရှိသည့်အက်ပ်ကို တောင်းဆိုပါ။ &lt;br&gt;&lt;br&gt; ဤအက်ပ်သည် ၁၆ KB နှင့် ကိုက်ညီမှုမရှိပါ။ ELF ချိန်ညှိခြင်းကို စစ်ဆေး၍ မရလိုက်ပါ။ &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; &lt;br&gt;&lt;br&gt; ရှိ အဆင့်များအတိုင်း လုပ်ဆောင်ပါ။ အောက်ပါဒစ်ဂျစ်တိုက်များကို ၁၆ KB ချိန်ညှိထားခြင်းမရှိပါ- &lt;br&gt;&lt;br&gt;"</string>
-    <string name="page_size_compat_apk_and_elf_warning_4kb" msgid="7665028394400479058">"အမှားရှာပြင်နိုင်သော အက်ပ်ဖြစ်သောကြောင့် ဤသတိပေးချက်ကို ပြခြင်းဖြစ်ပြီး ၎င်းကို လောလောဆယ် စမ်းသပ်နေဆဲဖြစ်သည်။ သင်သည် ဆော့ဖ်ဝဲရေးသူ မဟုတ်ပါက ၎င်းကို ဆော့ဖ်ဝဲရေးသူထံသို့ သတင်းပို့ပြီး အမှားရှာပြင်နိုင်ခြင်းမရှိသည့်အက်ပ်ကို တောင်းဆိုပါ။ &lt;br&gt;&lt;br&gt; ဤအက်ပ်သည် ၁၆ KB နှင့် ကိုက်ညီမှုမရှိပါ။ APK နှင့် ELF ချိန်ညှိခြင်းကို စစ်ဆေး၍ မရလိုက်ပါ။ &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; ရှိ အဆင့်များအတိုင်း လုပ်ဆောင်ပါ။ &lt;br&gt;&lt;br&gt; အောက်ပါဒစ်ဂျစ်တိုက်များကို ၁၆ KB ချိန်ညှိထားခြင်းမရှိပါ- &lt;br&gt;&lt;br&gt;"</string>
+    <!-- no translation found for page_size_compat_apk_warning (2297836366674721648) -->
+    <skip />
+    <!-- no translation found for page_size_compat_elf_warning (8613720928493005883) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_and_elf_warning (9034695801295605229) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_warning_4kb (5676451039424864495) -->
+    <skip />
+    <!-- no translation found for page_size_compat_elf_warning_4kb (5005239480522831311) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_and_elf_warning_4kb (997926487776340721) -->
+    <skip />
     <string name="page_size_compat_never_show" msgid="3391282612422783097">"ထပ်မပြပါနှင့်"</string>
     <string name="page_size_compat_title" msgid="6497719153872572204">"Android အက်ပ် တွဲဖက်သုံးနိုင်မှု"</string>
     <string name="page_size_compat_elf_not_aligned" msgid="7940806102874132630">"&amp;#8226; %1$s - အစိတ်အပိုင်းဖွင့်ခြင်းကို ချိန်ညှိထားခြင်းမရှိပါ"</string>
@@ -914,7 +920,7 @@
     <string name="policydesc_disableCamera" msgid="3204405908799676104">"စက်မှ ကင်မရာအားလုံး အသုံးပြုမှုအား ကန့်သတ်ရန်"</string>
     <string name="policylab_disableKeyguardFeatures" msgid="5071855750149949741">"ဖန်သားပြင် လော့ခ်ချသည့် ဝန်ဆောင်မှုအချို့ ပိတ်ခြင်း"</string>
     <string name="policydesc_disableKeyguardFeatures" msgid="6641673177041195957">"ဖန်သားပြင်လော့ခ်ချသည့် ဝန်ဆောင်မှုအချို့ အသုံးပြုခြင်းကို တားဆီးသည်။"</string>
-    <!-- no translation found for exit_toast_on_long_press_escape (873907401529125943) -->
+    <!-- no translation found for exit_toast_on_long_press_escape (2983932499112557277) -->
     <skip />
   <string-array name="phoneTypes">
     <item msgid="8996339953292723951">"အိမ်"</item>
@@ -1842,6 +1848,8 @@
     <string name="owner_name" msgid="8713560351570795743">"ပိုင်ရှင်"</string>
     <string name="guest_name" msgid="8502103277839834324">"ဧည့်သည်"</string>
     <string name="headless_system_user_name" msgid="1849150903255530049">"စနစ် အသုံးပြုသူ"</string>
+    <!-- no translation found for unnamed_user_name (6096699110534542980) -->
+    <skip />
     <string name="error_message_title" msgid="4082495589294631966">"အမှား"</string>
     <string name="error_message_change_not_allowed" msgid="843159705042381454">"ဤပြောင်းလဲမှုကို သင်၏ စီမံခန့်ခွဲသူက ခွင့်မပြုပါ"</string>
     <string name="app_not_found" msgid="3429506115332341800">"ဤလုပ်ဆောင်ချက်ကို ပြုလုပ်ပေးမည့် အပလီကေးရှင်းမရှိပါ။"</string>
@@ -2513,7 +2521,8 @@
     <string name="screen_not_shared_sensitive_content" msgid="7058419185079565001">"လုံခြုံရေးအတွက် အက်ပ်အကြောင်းအရာကို ဖန်သားပြင် မျှဝေခြင်းတွင် ဖျောက်ထားသည်"</string>
     <string name="satellite_notification_title" msgid="4026338973463121526">"ဂြိုဟ်တုနှင့် အလိုအလျောက် ချိတ်ဆက်ထားသည်"</string>
     <string name="satellite_notification_summary" msgid="5207364139430767162">"မိုဘိုင်း (သို့) Wi-Fi ကွန်ရက်မရှိဘဲ မက်ဆေ့ဂျ်များကို ပို့နိုင်၊ လက်ခံနိုင်သည်"</string>
-    <string name="satellite_notification_summary_with_data" msgid="6486843676720429049">"ဂြိုဟ်တုဖြင့် မက်ဆေ့ဂျ်များ ပေးပို့လက်ခံနိုင်ပြီး အကန့်အသတ်ဖြင့် ဒေတာသုံးနိုင်သည်"</string>
+    <!-- no translation found for satellite_notification_summary_with_data (8290202758586475712) -->
+    <skip />
     <string name="satellite_notification_manual_title" msgid="1097504441849466279">"ဂြိုဟ်တုမှတစ်ဆင့် မက်ဆေ့ဂျ်ပို့ခြင်း သုံးမလား။"</string>
     <string name="satellite_notification_manual_summary" msgid="901206289846283445">"မိုဘိုင်း (သို့) Wi-Fi ကွန်ရက်မရှိဘဲ မက်ဆေ့ဂျ်များ ပို့နိုင်၊ လက်ခံနိုင်သည်"</string>
     <string name="satellite_notification_open_message" msgid="4149234979688273729">"Messages ဖွင့်ရန်"</string>

@@ -73,12 +73,18 @@
     <string name="CLIRDefaultOnNextCallOff" msgid="5036749051007098105">"ID rozmówcy ustawiony jest domyślnie na „zastrzeżony”. Następne połączenie: nie zastrzeżony"</string>
     <string name="CLIRDefaultOffNextCallOn" msgid="1022781126694885017">"ID rozmówcy ustawiony jest domyślnie na „nie zastrzeżony”. Następne połączenie: zastrzeżony"</string>
     <string name="CLIRDefaultOffNextCallOff" msgid="2491576172356463443">"ID rozmówcy ustawiony jest domyślnie na „nie zastrzeżony”. Następne połączenie: nie zastrzeżony"</string>
-    <string name="page_size_compat_apk_warning" msgid="2982396798449041224">"Ta aplikacja nie jest zgodna z trybem 16 KB. Sprawdzenie zgodności pliku APK się nie powiodło. Aplikacja będzie działać w trybie zgodnym z rozmiarem strony. Aby zapewnić najlepszą zgodność, dokonaj ponownej kompilacji, żeby aplikacja obsługiwała 16 KB. Więcej informacji znajdziesz na stronie &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
-    <string name="page_size_compat_elf_warning" msgid="6753874059564812651">"Ta aplikacja nie jest zgodna z trybem 16 KB. Sprawdzenie zgodności ELF się nie powiodło. Aplikacja będzie działać w trybie zgodnym z rozmiarem strony. Aby zapewnić najlepszą zgodność, dokonaj ponownej kompilacji, żeby aplikacja obsługiwała 16 KB. Więcej informacji znajdziesz na stronie &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
-    <string name="page_size_compat_apk_and_elf_warning" msgid="7628675779500605390">"Ta aplikacja nie jest zgodna z trybem 16 KB. Sprawdzenie zgodności pliku APK i ELF się nie powiodło. Aplikacja będzie działać w trybie zgodnym z rozmiarem strony. Aby zapewnić najlepszą zgodność, dokonaj ponownej kompilacji, żeby aplikacja obsługiwała 16 KB. Więcej informacji znajdziesz na stronie &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
-    <string name="page_size_compat_apk_warning_4kb" msgid="6013674159459424986">"To ostrzeżenie wyświetla się, ponieważ jest to aplikacja z możliwością jej debugowania, która przechodzi obecnie testy. Zgłoś to deweloperowi (o ile nim nie jesteś) i poproś o aplikację, której nie można debugować. &lt;br&gt;&lt;br&gt; Ta aplikacja nie jest zgodna z trybem 16 KB. Sprawdzenie zgodności pliku APK się nie powiodło. Wykonaj czynności opisane na stronie &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; Następujące biblioteki są niezgodne z trybem 16 KB: &lt;br&gt;&lt;br&gt;"</string>
-    <string name="page_size_compat_elf_warning_4kb" msgid="5189541753040977649">"To ostrzeżenie wyświetla się, ponieważ jest to aplikacja z możliwością jej debugowania, która przechodzi obecnie testy. Zgłoś to deweloperowi (o ile nim nie jesteś) i poproś o aplikację, której nie można debugować. &lt;br&gt;&lt;br&gt; Ta aplikacja nie jest zgodna z trybem 16 KB. Sprawdzenie zgodności pliku ELF się nie powiodło. Wykonaj czynności opisane na stronie &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; Następujące biblioteki są niezgodne z trybem 16 KB: &lt;br&gt;&lt;br&gt;"</string>
-    <string name="page_size_compat_apk_and_elf_warning_4kb" msgid="7665028394400479058">"To ostrzeżenie wyświetla się, ponieważ jest to aplikacja z możliwością jej debugowania, która przechodzi obecnie testy. Zgłoś to deweloperowi (o ile nim nie jesteś) i poproś o aplikację, której nie można debugować. &lt;br&gt;&lt;br&gt; Ta aplikacja nie jest zgodna z trybem 16 KB. Sprawdzenie zgodności plików APK i ELF się nie powiodło. Wykonaj czynności opisane na stronie &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;. &lt;br&gt;&lt;br&gt; Następujące biblioteki są niezgodne z trybem 16 KB: &lt;br&gt;&lt;br&gt;"</string>
+    <!-- no translation found for page_size_compat_apk_warning (2297836366674721648) -->
+    <skip />
+    <!-- no translation found for page_size_compat_elf_warning (8613720928493005883) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_and_elf_warning (9034695801295605229) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_warning_4kb (5676451039424864495) -->
+    <skip />
+    <!-- no translation found for page_size_compat_elf_warning_4kb (5005239480522831311) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_and_elf_warning_4kb (997926487776340721) -->
+    <skip />
     <string name="page_size_compat_never_show" msgid="3391282612422783097">"Nie pokazuj ponownie"</string>
     <string name="page_size_compat_title" msgid="6497719153872572204">"Zgodność aplikacji na Androida"</string>
     <string name="page_size_compat_elf_not_aligned" msgid="7940806102874132630">"&amp;#8226; %1$s: segment LOAD nie jest dopasowany"</string>
@@ -916,7 +922,7 @@
     <string name="policydesc_disableCamera" msgid="3204405908799676104">"Zapobieganie używaniu wszystkich aparatów w urządzeniu"</string>
     <string name="policylab_disableKeyguardFeatures" msgid="5071855750149949741">"Wył. funkcji blokady ekranu"</string>
     <string name="policydesc_disableKeyguardFeatures" msgid="6641673177041195957">"Zapobieganie użyciu niektórych funkcji blokady ekranu."</string>
-    <!-- no translation found for exit_toast_on_long_press_escape (873907401529125943) -->
+    <!-- no translation found for exit_toast_on_long_press_escape (2983932499112557277) -->
     <skip />
   <string-array name="phoneTypes">
     <item msgid="8996339953292723951">"Dom"</item>
@@ -1839,11 +1845,13 @@
     <string name="hearing_device_switch_hearing_mic_notification_text" msgid="8288368365767284208">"Możesz używać mikrofonu w aparacie słuchowym, aby dzwonić bez użycia rąk. Mikrofon zostanie przełączony tylko na czas połączenia."</string>
     <string name="hearing_device_notification_switch_button" msgid="3619524619430941300">"Przełącz"</string>
     <string name="hearing_device_notification_settings_button" msgid="6673651052880279178">"Ustawienia"</string>
-    <string name="user_switching_message" msgid="1912993630661332336">"Przełączam na użytkownika: <xliff:g id="NAME">%1$s</xliff:g>…"</string>
+    <string name="user_switching_message" msgid="1912993630661332336">"Przełączam na: <xliff:g id="NAME">%1$s</xliff:g>…"</string>
     <string name="user_logging_out_message" msgid="7216437629179710359">"Wylogowuję użytkownika <xliff:g id="NAME">%1$s</xliff:g>…"</string>
     <string name="owner_name" msgid="8713560351570795743">"Właściciel"</string>
     <string name="guest_name" msgid="8502103277839834324">"Gość"</string>
     <string name="headless_system_user_name" msgid="1849150903255530049">"Użytkownik systemu"</string>
+    <!-- no translation found for unnamed_user_name (6096699110534542980) -->
+    <skip />
     <string name="error_message_title" msgid="4082495589294631966">"Błąd"</string>
     <string name="error_message_change_not_allowed" msgid="843159705042381454">"Ta zmiana nie jest dozwolona przez administratora."</string>
     <string name="app_not_found" msgid="3429506115332341800">"Nie znaleziono aplikacji do obsługi tej akcji"</string>
@@ -2515,7 +2523,8 @@
     <string name="screen_not_shared_sensitive_content" msgid="7058419185079565001">"Ze względów bezpieczeństwa zawartość aplikacji jest niewidoczna podczas udostępniania ekranu"</string>
     <string name="satellite_notification_title" msgid="4026338973463121526">"Automatycznie połączono z satelitą"</string>
     <string name="satellite_notification_summary" msgid="5207364139430767162">"Możesz wymieniać wiadomości bez dostępu do sieci komórkowej lub Wi-Fi"</string>
-    <string name="satellite_notification_summary_with_data" msgid="6486843676720429049">"Przez satelitę możesz wysyłać i odbierać wiadomości oraz w ograniczonym stopniu korzystać z transmisji danych"</string>
+    <!-- no translation found for satellite_notification_summary_with_data (8290202758586475712) -->
+    <skip />
     <string name="satellite_notification_manual_title" msgid="1097504441849466279">"Przesyłać wiadomości przez satelitę?"</string>
     <string name="satellite_notification_manual_summary" msgid="901206289846283445">"Wysyłaj i odbieraj wiadomości bez sieci komórkowej czy Wi-Fi"</string>
     <string name="satellite_notification_open_message" msgid="4149234979688273729">"Otwórz Wiadomości"</string>

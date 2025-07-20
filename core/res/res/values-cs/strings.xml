@@ -73,12 +73,18 @@
     <string name="CLIRDefaultOnNextCallOff" msgid="5036749051007098105">"Ve výchozím nastavení je funkce ID volajícího omezena. Příští hovor: Neomezeno"</string>
     <string name="CLIRDefaultOffNextCallOn" msgid="1022781126694885017">"Ve výchozím nastavení není funkce ID volajícího omezena. Příští hovor: Omezeno"</string>
     <string name="CLIRDefaultOffNextCallOff" msgid="2491576172356463443">"Ve výchozím nastavení není funkce ID volajícího omezena. Příští hovor: Neomezeno"</string>
-    <string name="page_size_compat_apk_warning" msgid="2982396798449041224">"Tato aplikace není kompatibilní s 16kB stránkováním. Kontrola zarovnání v souboru APK selhala. Tato aplikace poběží v režimu kompatibility s velikostí stránky. Pro optimální kompatibilitu ji překompilujte s podporou 16kB stránkování. Další informace najdete na stránce &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
-    <string name="page_size_compat_elf_warning" msgid="6753874059564812651">"Tato aplikace není kompatibilní s 16kB stránkováním. Kontrola zarovnání v souboru ELF selhala. Tato aplikace poběží v režimu kompatibility s velikostí stránky. Pro optimální kompatibilitu ji překompilujte s podporou 16kB stránkování. Další informace najdete na stránce &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
-    <string name="page_size_compat_apk_and_elf_warning" msgid="7628675779500605390">"Tato aplikace není kompatibilní s 16kB stránkováním. Kontroly zarovnání v souborech APK a ELF selhaly. Tato aplikace poběží v režimu kompatibility s velikostí stránky. Pro optimální kompatibilitu ji překompilujte s podporou 16kB stránkování. Další informace najdete na stránce &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
-    <string name="page_size_compat_apk_warning_4kb" msgid="6013674159459424986">"Toto varování se zobrazuje, protože se jedná o laditelnou aplikaci, která je momentálně testována. Pokud nejste vývojář, nahlaste to vývojáři a požádejte o neladitelnou aplikaci. &lt;br&gt;&lt;br&gt; Tato aplikace není kompatibilní s 16KB režimem. Kontrola souladu souboru APK selhala. Postupujte podle pokynů na stránce &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; &lt;br&gt;&lt;br&gt; Následující knihovny nejsou zarovnány s 16KB stránkováním: &lt;br&gt;&lt;br&gt;"</string>
-    <string name="page_size_compat_elf_warning_4kb" msgid="5189541753040977649">"Toto varování se zobrazuje, protože se jedná o laditelnou aplikaci, která je momentálně testována. Pokud nejste vývojář, nahlaste to vývojáři a požádejte o neladitelnou aplikaci. &lt;br&gt;&lt;br&gt; Tato aplikace není kompatibilní s 16KB režimem. Kontrola zarovnání souboru ELF selhala. Postupujte podle pokynů na stránce &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; &lt;br&gt;&lt;br&gt; Následující knihovny nejsou zarovnány s 16KB stránkováním: &lt;br&gt;&lt;br&gt;"</string>
-    <string name="page_size_compat_apk_and_elf_warning_4kb" msgid="7665028394400479058">"Toto varování se zobrazuje, protože se jedná o laditelnou aplikaci, která je momentálně testována. Pokud nejste vývojář, nahlaste to vývojáři a požádejte o neladitelnou aplikaci. &lt;br&gt;&lt;br&gt; Tato aplikace není kompatibilní s 16KB režimem. Kontroly zarovnání souborů APK a ELF selhaly. Postupujte podle pokynů na stránce &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;. &lt;br&gt;&lt;br&gt; Následující knihovny nejsou zarovnány s 16KB stránkováním: &lt;br&gt;&lt;br&gt;"</string>
+    <!-- no translation found for page_size_compat_apk_warning (2297836366674721648) -->
+    <skip />
+    <!-- no translation found for page_size_compat_elf_warning (8613720928493005883) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_and_elf_warning (9034695801295605229) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_warning_4kb (5676451039424864495) -->
+    <skip />
+    <!-- no translation found for page_size_compat_elf_warning_4kb (5005239480522831311) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_and_elf_warning_4kb (997926487776340721) -->
+    <skip />
     <string name="page_size_compat_never_show" msgid="3391282612422783097">"Tuto zprávu příště nezobrazovat"</string>
     <string name="page_size_compat_title" msgid="6497719153872572204">"Kompatibilita aplikací pro Android"</string>
     <string name="page_size_compat_elf_not_aligned" msgid="7940806102874132630">"&amp;#8226; %1$s : Segment LOAD není zarovnán"</string>
@@ -916,7 +922,7 @@
     <string name="policydesc_disableCamera" msgid="3204405908799676104">"Zakázat používání všech fotoaparátů zařízení."</string>
     <string name="policylab_disableKeyguardFeatures" msgid="5071855750149949741">"Zakázat některé funkce zámku obrazovky"</string>
     <string name="policydesc_disableKeyguardFeatures" msgid="6641673177041195957">"Zabrání se použití některých funkcí zámku obrazovky."</string>
-    <!-- no translation found for exit_toast_on_long_press_escape (873907401529125943) -->
+    <!-- no translation found for exit_toast_on_long_press_escape (2983932499112557277) -->
     <skip />
   <string-array name="phoneTypes">
     <item msgid="8996339953292723951">"Domů"</item>
@@ -1839,11 +1845,13 @@
     <string name="hearing_device_switch_hearing_mic_notification_text" msgid="8288368365767284208">"K handsfree telefonování můžete použít mikrofon sluchadla. Mikrofon se přepne jen během hovoru."</string>
     <string name="hearing_device_notification_switch_button" msgid="3619524619430941300">"Přepnout"</string>
     <string name="hearing_device_notification_settings_button" msgid="6673651052880279178">"Nastavení"</string>
-    <string name="user_switching_message" msgid="1912993630661332336">"Přepínání na uživatele <xliff:g id="NAME">%1$s</xliff:g>…"</string>
+    <string name="user_switching_message" msgid="1912993630661332336">"Přepínání na: <xliff:g id="NAME">%1$s</xliff:g>…"</string>
     <string name="user_logging_out_message" msgid="7216437629179710359">"Odhlašování uživatele <xliff:g id="NAME">%1$s</xliff:g>…"</string>
     <string name="owner_name" msgid="8713560351570795743">"Vlastník"</string>
     <string name="guest_name" msgid="8502103277839834324">"Host"</string>
     <string name="headless_system_user_name" msgid="1849150903255530049">"Systémový uživatel"</string>
+    <!-- no translation found for unnamed_user_name (6096699110534542980) -->
+    <skip />
     <string name="error_message_title" msgid="4082495589294631966">"Chyba"</string>
     <string name="error_message_change_not_allowed" msgid="843159705042381454">"Administrátor tuto změnu zakázal"</string>
     <string name="app_not_found" msgid="3429506115332341800">"Aplikace potřebná k provedení této akce nebyla nalezena"</string>
@@ -2515,7 +2523,8 @@
     <string name="screen_not_shared_sensitive_content" msgid="7058419185079565001">"Obsah aplikace je z bezpečnostních důvodů při sdílení obrazovky skryt"</string>
     <string name="satellite_notification_title" msgid="4026338973463121526">"Automaticky připojeno k satelitu"</string>
     <string name="satellite_notification_summary" msgid="5207364139430767162">"Zprávy můžete odesílat a přijímat bez mobilní sítě nebo sítě Wi-Fi"</string>
-    <string name="satellite_notification_summary_with_data" msgid="6486843676720429049">"Můžete dostávat a odesílat zprávy a používat omezená data přes satelit"</string>
+    <!-- no translation found for satellite_notification_summary_with_data (8290202758586475712) -->
+    <skip />
     <string name="satellite_notification_manual_title" msgid="1097504441849466279">"Použít satelitní zprávy?"</string>
     <string name="satellite_notification_manual_summary" msgid="901206289846283445">"Odesílejte a přijímejte zprávy bez mobilní sítě nebo Wi-Fi"</string>
     <string name="satellite_notification_open_message" msgid="4149234979688273729">"Otevřít Zprávy"</string>

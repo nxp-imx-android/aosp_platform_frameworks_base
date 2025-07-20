@@ -73,12 +73,18 @@
     <string name="CLIRDefaultOnNextCallOff" msgid="5036749051007098105">"Ідентиф. абонента за умовч. обмеж. Наст. дзвінок: не обмеж."</string>
     <string name="CLIRDefaultOffNextCallOn" msgid="1022781126694885017">"Ідентиф. абонента за умовч. не обмеж. Наст. дзвінок: обмеж."</string>
     <string name="CLIRDefaultOffNextCallOff" msgid="2491576172356463443">"Ідентиф. абонента за умовч. не обмеж. Наст. дзвінок: не обмежений"</string>
-    <string name="page_size_compat_apk_warning" msgid="2982396798449041224">"Цей додаток несумісний зі сторінками пам’яті з розміром 16 КБ. Не вдалося виконати перевірку вирівнювання APK. Цей додаток працюватиме в режимі сумісності з розміром сторінки. Для оптимальної сумісності перекомпілюйте додаток так, щоб він підтримував сторінки пам’яті з розміром 16 КБ. Щоб дізнатися більше, перегляньте статтю &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;."</string>
-    <string name="page_size_compat_elf_warning" msgid="6753874059564812651">"Цей додаток несумісний зі сторінками пам’яті з розміром 16 КБ. Не вдалося виконати перевірку вирівнювання ELF. Цей додаток працюватиме в режимі сумісності з розміром сторінки. Для оптимальної сумісності перекомпілюйте додаток так, щоб він підтримував сторінки пам’яті з розміром 16 КБ. Щоб дізнатися більше, перегляньте статтю &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;."</string>
-    <string name="page_size_compat_apk_and_elf_warning" msgid="7628675779500605390">"Цей додаток несумісний зі сторінками пам’яті з розміром 16 КБ. Не вдалося виконати перевірку вирівнювання APK і ELF. Цей додаток працюватиме в режимі сумісності з розміром сторінки. Для оптимальної сумісності перекомпілюйте додаток так, щоб він підтримував сторінки пам’яті з розміром 16 КБ. Щоб дізнатися більше, перегляньте статтю &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;."</string>
-    <string name="page_size_compat_apk_warning_4kb" msgid="6013674159459424986">"Це попередження відображається, оскільки це налагоджуваний додаток, який зараз тестується. Якщо ви не розробник, повідомте про це розробника й попросіть надати додаток, який не можна налагоджувати. &lt;br&gt;&lt;br&gt; Цей додаток не підтримує сторінки пам’яті розміром 16 КБ. Помилка сумісності APK. Виконайте вказівки на сторінці &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;. &lt;br&gt;&lt;br&gt;. Указані нижче бібліотеки несумісні зі сторінками розміром 16 КБ. &lt;br&gt;&lt;br&gt;"</string>
-    <string name="page_size_compat_elf_warning_4kb" msgid="5189541753040977649">"Це попередження відображається, оскільки це налагоджуваний додаток, який зараз тестується. Якщо ви не розробник, повідомте про це розробника й попросіть надати додаток, який не можна налагоджувати. &lt;br&gt;&lt;br&gt; Цей додаток не підтримує сторінки пам’яті розміром 16 КБ. Помилка сумісності ELF. Виконайте вказівки на сторінці &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;. &lt;br&gt;&lt;br&gt;. Указані нижче бібліотеки несумісні зі сторінками розміром 16 КБ. &lt;br&gt;&lt;br&gt;"</string>
-    <string name="page_size_compat_apk_and_elf_warning_4kb" msgid="7665028394400479058">"Це попередження відображається, оскільки це налагоджуваний додаток, який зараз тестується. Якщо ви не розробник, повідомте про це розробника й попросіть надати додаток, який не можна налагоджувати. &lt;br&gt;&lt;br&gt; Цей додаток не підтримує сторінки пам’яті розміром 16 КБ. Помилка сумісності APK і ELF. Виконайте вказівки на сторінці &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;. &lt;br&gt;&lt;br&gt; Указані нижче бібліотеки несумісні зі сторінками розміром 16 КБ. &lt;br&gt;&lt;br&gt;"</string>
+    <!-- no translation found for page_size_compat_apk_warning (2297836366674721648) -->
+    <skip />
+    <!-- no translation found for page_size_compat_elf_warning (8613720928493005883) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_and_elf_warning (9034695801295605229) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_warning_4kb (5676451039424864495) -->
+    <skip />
+    <!-- no translation found for page_size_compat_elf_warning_4kb (5005239480522831311) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_and_elf_warning_4kb (997926487776340721) -->
+    <skip />
     <string name="page_size_compat_never_show" msgid="3391282612422783097">"Більше не показувати"</string>
     <string name="page_size_compat_title" msgid="6497719153872572204">"Сумісність додатків для Android"</string>
     <string name="page_size_compat_elf_not_aligned" msgid="7940806102874132630">"&amp;#8226; %1$s: сегмент LOAD не узгоджений"</string>
@@ -916,7 +922,7 @@
     <string name="policydesc_disableCamera" msgid="3204405908799676104">"Запобігати використанню всіх камер пристрою."</string>
     <string name="policylab_disableKeyguardFeatures" msgid="5071855750149949741">"Вимкнути деякі функції блокування"</string>
     <string name="policydesc_disableKeyguardFeatures" msgid="6641673177041195957">"Не використовувати деякі функції блокування екрана."</string>
-    <!-- no translation found for exit_toast_on_long_press_escape (873907401529125943) -->
+    <!-- no translation found for exit_toast_on_long_press_escape (2983932499112557277) -->
     <skip />
   <string-array name="phoneTypes">
     <item msgid="8996339953292723951">"Дом."</item>
@@ -1844,6 +1850,8 @@
     <string name="owner_name" msgid="8713560351570795743">"Власник"</string>
     <string name="guest_name" msgid="8502103277839834324">"Гість"</string>
     <string name="headless_system_user_name" msgid="1849150903255530049">"Користувач системи"</string>
+    <!-- no translation found for unnamed_user_name (6096699110534542980) -->
+    <skip />
     <string name="error_message_title" msgid="4082495589294631966">"Помилка"</string>
     <string name="error_message_change_not_allowed" msgid="843159705042381454">"Ця дія заборонена адміністратором"</string>
     <string name="app_not_found" msgid="3429506115332341800">"Не знайдено програму для обробки цієї дії"</string>
@@ -2142,7 +2150,7 @@
     <string name="app_category_maps" msgid="6395725487922533156">"Карти й навігація"</string>
     <string name="app_category_productivity" msgid="1844422703029557883">"Продуктивність"</string>
     <string name="app_category_accessibility" msgid="6643521607848547683">"Доступність"</string>
-    <string name="device_storage_monitor_notification_channel" msgid="5164244565844470758">"Пам’ять пристрою"</string>
+    <string name="device_storage_monitor_notification_channel" msgid="5164244565844470758">"Сховище пристрою"</string>
     <string name="adb_debugging_notification_channel_tv" msgid="4764046459631031496">"Налагодження USB"</string>
     <string name="time_picker_hour_label" msgid="4208590187662336864">"години"</string>
     <string name="time_picker_minute_label" msgid="8307452311269824553">"хвилини"</string>
@@ -2515,7 +2523,8 @@
     <string name="screen_not_shared_sensitive_content" msgid="7058419185079565001">"З міркувань безпеки вміст додатка приховано під час показу екрана"</string>
     <string name="satellite_notification_title" msgid="4026338973463121526">"Автоматично підключено до супутника"</string>
     <string name="satellite_notification_summary" msgid="5207364139430767162">"Ви можете надсилати й отримувати повідомлення, не використовуючи Wi-Fi або мобільну мережу"</string>
-    <string name="satellite_notification_summary_with_data" msgid="6486843676720429049">"Ви можете надсилати й отримувати повідомлення та використовувати обмежений обсяг даних через супутник"</string>
+    <!-- no translation found for satellite_notification_summary_with_data (8290202758586475712) -->
+    <skip />
     <string name="satellite_notification_manual_title" msgid="1097504441849466279">"Скористатися супутниковим обміном повідомленнями?"</string>
     <string name="satellite_notification_manual_summary" msgid="901206289846283445">"Надсилайте й отримуйте текстові повідомлення без мобільної мережі або Wi-Fi"</string>
     <string name="satellite_notification_open_message" msgid="4149234979688273729">"Відкрийте Повідомлення"</string>
