@@ -45,6 +45,46 @@ constructor(private val interactor: ScreenCaptureRecordParametersInteractor) :
             .map { it.shouldShowTaps }
             .hydratedStateOf("ScreenCaptureAudioSourceViewModel#shouldShowTaps", null)
 
+    var shouldRecordDevice: Boolean
+        get() =
+            audioSource == ScreenRecordingAudioSource.MIC_AND_INTERNAL ||
+                audioSource == ScreenRecordingAudioSource.INTERNAL
+        set(value) {
+            if (value) {
+                if (shouldRecordMicrophone) {
+                    setAudioSource(ScreenRecordingAudioSource.MIC_AND_INTERNAL)
+                } else {
+                    setAudioSource(ScreenRecordingAudioSource.INTERNAL)
+                }
+            } else {
+                if (shouldRecordMicrophone) {
+                    setAudioSource(ScreenRecordingAudioSource.MIC)
+                } else {
+                    setAudioSource(ScreenRecordingAudioSource.NONE)
+                }
+            }
+        }
+
+    var shouldRecordMicrophone: Boolean
+        get() =
+            audioSource == ScreenRecordingAudioSource.MIC_AND_INTERNAL ||
+                audioSource == ScreenRecordingAudioSource.MIC
+        set(value) {
+            if (value) {
+                if (shouldRecordDevice) {
+                    setAudioSource(ScreenRecordingAudioSource.MIC_AND_INTERNAL)
+                } else {
+                    setAudioSource(ScreenRecordingAudioSource.MIC)
+                }
+            } else {
+                if (shouldRecordDevice) {
+                    setAudioSource(ScreenRecordingAudioSource.INTERNAL)
+                } else {
+                    setAudioSource(ScreenRecordingAudioSource.NONE)
+                }
+            }
+        }
+
     fun setAudioSource(audioSource: ScreenRecordingAudioSource) {
         interactor.setAudioSource(audioSource)
     }

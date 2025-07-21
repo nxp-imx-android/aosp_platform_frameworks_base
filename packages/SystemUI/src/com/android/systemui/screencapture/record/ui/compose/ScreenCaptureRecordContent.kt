@@ -21,6 +21,7 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import com.android.systemui.lifecycle.rememberViewModel
+import com.android.systemui.screencapture.common.ScreenCaptureScope
 import com.android.systemui.screencapture.common.ui.compose.ScreenCaptureContent
 import com.android.systemui.screencapture.record.largescreen.ui.compose.LargeScreenCaptureRecordContent
 import com.android.systemui.screencapture.record.smallscreen.ui.compose.SmallScreenCaptureRecordContent
@@ -29,6 +30,7 @@ import dagger.Lazy
 import javax.inject.Inject
 
 /** Entry point for Record composable content. */
+@ScreenCaptureScope
 class ScreenCaptureRecordContent
 @Inject
 constructor(
