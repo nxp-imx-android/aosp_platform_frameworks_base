@@ -1683,7 +1683,7 @@ public final class DisplayManager {
     }
 
     /**
-     * Returns the minimum brightness curve, which guarantess that any brightness curve that dips
+     * Returns the minimum brightness curve, which guarantees that any brightness curve that dips
      * below it is rejected by the system.
      * This prevent auto-brightness from setting the screen so dark as to prevent the user from
      * resetting or disabling it, and maps lux to the absolute minimum nits that are still readable
@@ -2232,7 +2232,7 @@ public final class DisplayManager {
                 "fixed_refresh_rate_high_ambient_brightness_thresholds";
 
         /**
-         * Key for refresh rate when the device is in high brightness mode for sunlight visility.
+         * Key for refresh rate when the device is in high brightness mode for sunlight visibility.
          *
          * @see android.provider.DeviceConfig#NAMESPACE_DISPLAY_MANAGER
          * @see android.R.integer#config_defaultRefreshRateInHbmSunlight
