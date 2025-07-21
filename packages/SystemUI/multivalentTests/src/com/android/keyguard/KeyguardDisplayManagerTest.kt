@@ -90,6 +90,7 @@ class KeyguardDisplayManagerTest : SysuiTestCase() {
                 presentationFactory,
                 { shadePositionRepository },
                 testScope.backgroundScope,
+                /* isCentralizedWallpaperPresentationEnabled= */ false,
             )
         whenever(presentationFactory.create(any())).doReturn(connectedDisplayKeyguardPresentation)
 
