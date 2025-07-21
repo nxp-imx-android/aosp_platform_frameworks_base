@@ -160,16 +160,16 @@ public class AutoclickTypePanel {
     // The current corner position of the panel, default to bottom right.
     private @Corner int mCurrentCorner = CORNER_BOTTOM_RIGHT;
 
-    private LinearLayout mLeftClickButton;
-    private LinearLayout mRightClickButton;
-    private LinearLayout mDoubleClickButton;
-    private LinearLayout mDragButton;
-    private LinearLayout mScrollButton;
-    private LinearLayout mPauseButton;
-    private LinearLayout mPositionButton;
-    private LinearLayout mLongPressButton;
+    private ImageButton mLeftClickButton;
+    private ImageButton mRightClickButton;
+    private ImageButton mDoubleClickButton;
+    private ImageButton mDragButton;
+    private ImageButton mScrollButton;
+    private ImageButton mPauseButton;
+    private ImageButton mPositionButton;
+    private ImageButton mLongPressButton;
 
-    private LinearLayout mSelectedButton;
+    private ImageButton mSelectedButton;
     private int mSelectedClickType = AUTOCLICK_TYPE_LEFT_CLICK;
 
     private Drawable mPauseButtonDrawable;
@@ -214,17 +214,17 @@ public class AutoclickTypePanel {
                         .inflate(R.layout.accessibility_autoclick_type_panel, null);
         mContentView.setOnHoverChangedListener(mClickPanelController::onHoverChange);
         mLeftClickButton =
-                mContentView.findViewById(R.id.accessibility_autoclick_left_click_layout);
+                mContentView.findViewById(R.id.accessibility_autoclick_left_click_button);
         mRightClickButton =
-                mContentView.findViewById(R.id.accessibility_autoclick_right_click_layout);
+                mContentView.findViewById(R.id.accessibility_autoclick_right_click_button);
         mDoubleClickButton =
-                mContentView.findViewById(R.id.accessibility_autoclick_double_click_layout);
-        mScrollButton = mContentView.findViewById(R.id.accessibility_autoclick_scroll_layout);
-        mDragButton = mContentView.findViewById(R.id.accessibility_autoclick_drag_layout);
-        mPauseButton = mContentView.findViewById(R.id.accessibility_autoclick_pause_layout);
-        mPositionButton = mContentView.findViewById(R.id.accessibility_autoclick_position_layout);
+                mContentView.findViewById(R.id.accessibility_autoclick_double_click_button);
+        mScrollButton = mContentView.findViewById(R.id.accessibility_autoclick_scroll_button);
+        mDragButton = mContentView.findViewById(R.id.accessibility_autoclick_drag_button);
+        mPauseButton = mContentView.findViewById(R.id.accessibility_autoclick_pause_button);
+        mPositionButton = mContentView.findViewById(R.id.accessibility_autoclick_position_button);
         mLongPressButton =
-                mContentView.findViewById(R.id.accessibility_autoclick_long_press_layout);
+                mContentView.findViewById(R.id.accessibility_autoclick_long_press_button);
 
         // Get status bar height.
         mStatusBarHeight = SystemBarUtils.getStatusBarHeight(mContext);
@@ -360,7 +360,7 @@ public class AutoclickTypePanel {
     /** Reset panel as collapsed state and only displays selected button. */
     public void collapsePanelWithClickType(@AutoclickType int clickType) {
         hideAllClickTypeButtons();
-        final LinearLayout selectedButton = getButtonFromClickType(clickType);
+        final ImageButton selectedButton = getButtonFromClickType(clickType);
         selectedButton.setVisibility(View.VISIBLE);
 
         // Sets the newly selected button.
@@ -374,7 +374,7 @@ public class AutoclickTypePanel {
 
     /** Sets the selected button and updates the newly and previously selected button styling. */
     private void setSelectedClickType(@AutoclickType int clickType) {
-        final LinearLayout selectedButton = getButtonFromClickType(clickType);
+        final ImageButton selectedButton = getButtonFromClickType(clickType);
 
         // Updates the previously selected button styling.
         if (mSelectedButton != null) {
@@ -389,7 +389,7 @@ public class AutoclickTypePanel {
         toggleSelectedButtonStyle(selectedButton, /* isSelected= */ true);
     }
 
-    private void toggleSelectedButtonStyle(@NonNull LinearLayout button, boolean isSelected) {
+    private void toggleSelectedButtonStyle(@NonNull ImageButton button, boolean isSelected) {
         button.setSelected(isSelected);
     }
 
@@ -500,17 +500,16 @@ public class AutoclickTypePanel {
      * without changing the state itself.
      */
     private void updatePauseButtonAppearance() {
-        ImageButton imageButton = (ImageButton) mPauseButton.getChildAt(0);
         if (mPaused) {
             String resumeText = mContext.getString(R.string.accessibility_autoclick_resume);
             mPauseButton.setTooltipText(resumeText);
-            imageButton.setContentDescription(resumeText);
-            imageButton.setImageDrawable(mResumeButtonDrawable);
+            mPauseButton.setContentDescription(resumeText);
+            mPauseButton.setImageDrawable(mResumeButtonDrawable);
         } else {
             String pauseText = mContext.getString(R.string.accessibility_autoclick_pause);
             mPauseButton.setTooltipText(pauseText);
-            imageButton.setContentDescription(pauseText);
-            imageButton.setImageDrawable(mPauseButtonDrawable);
+            mPauseButton.setContentDescription(pauseText);
+            mPauseButton.setImageDrawable(mPauseButtonDrawable);
         }
     }
 
@@ -535,11 +534,11 @@ public class AutoclickTypePanel {
     }
 
     /**
-     * Retrieves the LinearLayout corresponding to the given autoclick type.
+     * Retrieves the ImageButton corresponding to the given autoclick type.
      * @param clickType The autoclick type.
-     * @return The LinearLayout for the specified click type.
+     * @return The ImageButton for the specified click type.
      */
-    private LinearLayout getButtonFromClickType(@AutoclickType int clickType) {
+    private ImageButton getButtonFromClickType(@AutoclickType int clickType) {
         return switch (clickType) {
             case AUTOCLICK_TYPE_LEFT_CLICK -> mLeftClickButton;
             case AUTOCLICK_TYPE_RIGHT_CLICK -> mRightClickButton;
@@ -699,20 +698,19 @@ public class AutoclickTypePanel {
      * @param corner The corner to set the icon for.
      */
     private void updatePositionButtonIcon(@Corner int corner) {
-        ImageButton imageButton = (ImageButton) mPositionButton.getChildAt(/* index= */ 0);
         switch (corner) {
             case CORNER_TOP_LEFT:
-                imageButton.setImageDrawable(mPositionTopLeftDrawable);
+                mPositionButton.setImageDrawable(mPositionTopLeftDrawable);
                 break;
             case CORNER_TOP_RIGHT:
-                imageButton.setImageDrawable(mPositionTopRightDrawable);
+                mPositionButton.setImageDrawable(mPositionTopRightDrawable);
                 break;
             case CORNER_BOTTOM_LEFT:
-                imageButton.setImageDrawable(mPositionBottomLeftDrawable);
+                mPositionButton.setImageDrawable(mPositionBottomLeftDrawable);
                 break;
             case CORNER_BOTTOM_RIGHT:
             default:
-                imageButton.setImageDrawable(mPositionBottomRightDrawable);
+                mPositionButton.setImageDrawable(mPositionBottomRightDrawable);
                 break;
         }
     }

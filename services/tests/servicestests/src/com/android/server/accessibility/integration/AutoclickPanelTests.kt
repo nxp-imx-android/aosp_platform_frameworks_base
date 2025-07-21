@@ -109,7 +109,7 @@ class AutoclickPanelTests {
         assertNotNull(
             findObject(
                 uiDevice,
-                By.res(PAUSE_BUTTON_IMAGE_ID).desc("Pause")
+                By.res(PAUSE_BUTTON_LAYOUT_ID).desc("Pause")
             )
         )
 
@@ -118,7 +118,7 @@ class AutoclickPanelTests {
         assertNotNull(
             findObject(
                 uiDevice,
-                By.res(PAUSE_BUTTON_IMAGE_ID).desc("Resume")
+                By.res(PAUSE_BUTTON_LAYOUT_ID).desc("Resume")
             )
         )
 
@@ -127,7 +127,7 @@ class AutoclickPanelTests {
         assertNotNull(
             findObject(
                 uiDevice,
-                By.res(PAUSE_BUTTON_IMAGE_ID).desc("Pause")
+                By.res(PAUSE_BUTTON_LAYOUT_ID).desc("Pause")
             )
         )
     }
