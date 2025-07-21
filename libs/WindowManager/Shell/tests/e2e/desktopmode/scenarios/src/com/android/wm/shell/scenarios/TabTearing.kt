@@ -60,7 +60,14 @@ abstract class TabTearing(val rotation: Rotation = Rotation.ROTATION_0) :
             wmHelper,
             BrowserAppHelper.Companion.TabDraggingDirection.TOP_LEFT
         )
-        wmHelper.StateSyncBuilder().withAppTransitionIdle().waitForAndVerify()
+        wmHelper.StateSyncBuilder()
+            .withAppTransitionIdle()
+            .withTopVisibleApps(
+                // We need to verify that after tab tearing we have 2 browser windows
+                browserAppHelper.componentMatcher,
+                browserAppHelper.componentMatcher
+            )
+            .waitForAndVerify()
     }
 
     @After
