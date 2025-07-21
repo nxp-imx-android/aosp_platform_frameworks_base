@@ -1419,16 +1419,6 @@ flag {
 }
 
 flag {
-   name: "media_projection_request_attribution_fix"
-   namespace: "systemui"
-   description: "Ensure MediaProjection consent requests are properly attributed"
-   bug: "373581993"
-   metadata {
-       purpose: PURPOSE_BUGFIX
-   }
-}
-
-flag {
   name: "secondary_user_widget_host"
   namespace: "systemui"
   description: "Host communal widgets in the current secondary user on HSUM."
