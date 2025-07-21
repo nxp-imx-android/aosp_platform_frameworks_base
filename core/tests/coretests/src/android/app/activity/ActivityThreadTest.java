@@ -53,7 +53,6 @@ import android.app.IApplicationThread;
 import android.app.PictureInPictureParams;
 import android.app.PictureInPictureUiState;
 import android.app.ResourcesManager;
-import android.app.WindowConfiguration;
 import android.app.servertransaction.ActivityConfigurationChangeItem;
 import android.app.servertransaction.ActivityRelaunchItem;
 import android.app.servertransaction.ClientTransaction;
@@ -66,6 +65,7 @@ import android.app.servertransaction.StopActivityItem;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ApplicationInfo;
+import android.content.res.CameraCompatibilityInfo;
 import android.content.res.CompatibilityInfo;
 import android.content.res.Configuration;
 import android.content.res.Resources;
@@ -352,8 +352,9 @@ public class ActivityThreadTest {
         final Configuration newConfig = new Configuration(originalAppConfig);
         newConfig.seq = BASE_SEQ + 1;
 
-        int sandboxedDisplayRotation = (originalDisplayRotation + 1) % 4;
-        CompatibilityInfo.setOverrideDisplayRotation(sandboxedDisplayRotation);
+        CameraCompatibilityInfo cameraCompatInfo = new CameraCompatibilityInfo.Builder()
+                .setDisplayRotationSandbox((originalDisplayRotation + 1) % 4).build();
+        CompatibilityInfo.setCameraCompatibilityInfo(cameraCompatInfo);
         try {
             // Send process level config change.
             ClientTransaction transaction = newTransaction(activityThread);
@@ -362,10 +363,14 @@ public class ActivityThreadTest {
             appThread.scheduleTransaction(transaction);
             InstrumentationRegistry.getInstrumentation().waitForIdleSync();
 
-            assertDisplayRotation(sandboxedDisplayRotation, app);
+            assertDisplayRotation(cameraCompatInfo.getDisplayRotationSandbox(), app);
 
-            sandboxedDisplayRotation = (sandboxedDisplayRotation + 1) % 4;
-            CompatibilityInfo.setOverrideDisplayRotation(sandboxedDisplayRotation);
+            final CameraCompatibilityInfo newCameraCompatInfo = new CameraCompatibilityInfo
+                    .Builder()
+                    .setDisplayRotationSandbox(
+                            (cameraCompatInfo.getDisplayRotationSandbox() + 1) % 4)
+                    .build();
+            CompatibilityInfo.setCameraCompatibilityInfo(newCameraCompatInfo);
             // Send activity level config change.
             newConfig.seq++;
             transaction = newTransaction(activityThread);
@@ -374,7 +379,7 @@ public class ActivityThreadTest {
             appThread.scheduleTransaction(transaction);
             InstrumentationRegistry.getInstrumentation().waitForIdleSync();
 
-            assertDisplayRotation(sandboxedDisplayRotation, activity);
+            assertDisplayRotation(newCameraCompatInfo.getDisplayRotationSandbox(), activity);
 
             // Execute a local relaunch item with current scaled config (e.g. simulate recreate),
             // the config should not change again.
@@ -382,9 +387,9 @@ public class ActivityThreadTest {
                     () -> activityThread.executeTransaction(
                             newRelaunchResumeTransaction(activity)));
 
-            assertDisplayRotation(sandboxedDisplayRotation, activity);
+            assertDisplayRotation(newCameraCompatInfo.getDisplayRotationSandbox(), activity);
         } finally {
-            CompatibilityInfo.setOverrideDisplayRotation(WindowConfiguration.ROTATION_UNDEFINED);
+            CompatibilityInfo.resetCameraCompatibilityInfo();
             InstrumentationRegistry.getInstrumentation().runOnMainSync(
                     () -> restoreConfig(activityThread, originalAppConfig));
         }

@@ -16,8 +16,8 @@
 
 package android.content.res;
 
+import android.annotation.NonNull;
 import android.annotation.Nullable;
-import android.app.WindowConfiguration;
 import android.compat.annotation.UnsupportedAppUsage;
 import android.content.pm.ActivityInfo;
 import android.content.pm.ApplicationInfo;
@@ -36,9 +36,10 @@ import android.util.MergedConfiguration;
 import android.view.InsetsSourceControl;
 import android.view.InsetsState;
 import android.view.MotionEvent;
-import android.view.Surface;
 import android.view.WindowManager;
 import android.view.WindowManager.LayoutParams;
+
+import java.util.Objects;
 
 /**
  * CompatibilityInfo class keeps the information about the screen compatibility mode that the
@@ -48,6 +49,8 @@ import android.view.WindowManager.LayoutParams;
  */
 @RavenwoodKeepWholeClass
 public class CompatibilityInfo implements Parcelable {
+    private static final String TAG = "CompatibilityInfo";
+
     /** default compatibility info object for compatible applications */
     @UnsupportedAppUsage
     public static final CompatibilityInfo DEFAULT_COMPATIBILITY_INFO = new CompatibilityInfo() {
@@ -133,38 +136,19 @@ public class CompatibilityInfo implements Parcelable {
     public final float applicationDensityInvertedScale;
 
     /**
-     * Application's display rotation.
+     * Information needed to set up camera compatibility mode.
      *
-     * <p>This field is used to sandbox fixed-orientation activities on displays or display areas
-     * with ignoreOrientationRequest, where the display orientation is more likely to be different
-     * from the orientation the activity requested (e.g. in desktop windowing, or letterboxed).
-     * Mainly set for activities which use the display rotation to orient their content, for example
-     * camera previews.
-     *
-     * <p>In the case of camera activities, assuming the wrong posture
-     * can lead to sideways or stretched previews. As part of camera compat treatment for desktop
-     * windowing, the app is sandboxed to believe that the app and the device are in the posture the
-     * app requested. For example for portrait fixed-orientation apps, the app is letterboxed to
-     * portrait, camera feed is cropped to portrait, and the display rotation is changed via this
-     * field, for example to {@link Surface.Rotation#ROTATION_0} on devices with portrait natural
-     * orientation. All of these parameters factor in common calculations for setting up the camera
-     * preview.
+     * <p>CameraCompatibilityInfo is used to sandbox the environment for fixed-orientation camera
+     * activities on displays or display areas with ignoreOrientationRequest, where the display
+     * orientation is more likely to be different from the orientation the activity requested
+     * (e.g. in desktop windowing, or letterboxed). This setup includes sandboxing display rotation,
+     * rotating the camera preview on Camera HAL, letterboxing the activity, and changing the
+     * camera sensor reported orientation. All of these parameters factor in common calculations for
+     * setting up the camera preview, and assuming the wrong posture can lead to sideways or
+     * stretched previews.
      */
-    @Surface.Rotation
-    public int applicationDisplayRotation = WindowConfiguration.ROTATION_UNDEFINED;
-
-    /**
-     * Application's camera feed rotation (using rotate-and-crop).
-     *
-     * <p>This field is used to communicate to the camera framework by how many degrees the camera
-     * feed should be rotated on the Camera HAL before it is sent to the app which uses the camera.
-     *
-     * <p>Rotate-and-crop is a part of camera compat treatment, used to simulate an environment that
-     * the current fixed-orientation app has requested. These apps often make assumptions about
-     * device, camera, and window orientations, which are more decoupled on large screens.
-     */
-    @Surface.Rotation
-    public int applicationCameraRotation = WindowConfiguration.ROTATION_UNDEFINED;
+    public CameraCompatibilityInfo cameraCompatibilityInfo = new CameraCompatibilityInfo.Builder()
+            .build();
 
     /** The process level override inverted scale. See {@link #HAS_OVERRIDE_SCALING}. */
     private static float sOverrideInvertedScale = 1f;
@@ -172,13 +156,9 @@ public class CompatibilityInfo implements Parcelable {
     /** The process level override inverted density scale. See {@link #HAS_OVERRIDE_SCALING}. */
     private static float sOverrideDensityInvertScale = 1f;
 
-    /** The process level override display rotation. */
-    @Surface.Rotation
-    private static int sOverrideDisplayRotation = WindowConfiguration.ROTATION_UNDEFINED;
-
-    /** The process level camera rotate-and-crop rotation. */
-    @Surface.Rotation
-    private static int sOverrideCameraRotation = WindowConfiguration.ROTATION_UNDEFINED;
+    /** The process level override for camera compat mode info. */
+    private static CameraCompatibilityInfo sCameraCompatibilityInfo = new CameraCompatibilityInfo
+            .Builder().build();
 
     @UnsupportedAppUsage
     @Deprecated
@@ -391,14 +371,11 @@ public class CompatibilityInfo implements Parcelable {
         return (mCompatibilityFlags & HAS_OVERRIDE_SCALING) != 0;
     }
 
-    /** Returns {@code true} if {@link #sOverrideDisplayRotation} should be set. */
-    public boolean isOverrideDisplayRotationRequired() {
-        return applicationDisplayRotation != WindowConfiguration.ROTATION_UNDEFINED;
-    }
-
-    /** Returns {@code true} if {@link #sOverrideCameraRotation} should be set. */
-    public boolean isOverrideCameraRotationRequired() {
-        return applicationCameraRotation != WindowConfiguration.ROTATION_UNDEFINED;
+    /**
+     * Returns {@code true} if {@link #sCameraCompatibilityInfo} should be set.
+     */
+    public boolean isOverrideCameraCompatibilityInfoRequired() {
+        return CameraCompatibilityInfo.isCameraCompatModeActive(cameraCompatibilityInfo);
     }
 
     @UnsupportedAppUsage
@@ -673,9 +650,7 @@ public class CompatibilityInfo implements Parcelable {
     }
 
     public void applyToConfiguration(int displayDensity, Configuration inoutConfig) {
-        if (hasOverrideDisplayRotation()) {
-            applyDisplayRotationConfiguration(sOverrideDisplayRotation, inoutConfig);
-        }
+        sCameraCompatibilityInfo.applyToConfigurationIfNeeded(inoutConfig);
         if (hasOverrideScale()) return;
         if (!supportsScreen()) {
             // This is a larger screen device and the app is not
@@ -708,19 +683,9 @@ public class CompatibilityInfo implements Parcelable {
         inoutConfig.windowConfiguration.scale(invertScale);
     }
 
-    /** Changes the WindowConfiguration display rotation for the given configuration. */
-    public static void applyDisplayRotationConfiguration(@Surface.Rotation int displayRotation,
-            Configuration inoutConfig) {
-        if (displayRotation != WindowConfiguration.ROTATION_UNDEFINED) {
-            inoutConfig.windowConfiguration.setDisplayRotation(displayRotation);
-        }
-    }
-
     /** @see #sOverrideInvertedScale and #sOverrideDisplayRotation. */
     public static void applyOverrideIfNeeded(Configuration config) {
-        if (hasOverrideDisplayRotation()) {
-            applyDisplayRotationConfiguration(sOverrideDisplayRotation, config);
-        }
+        sCameraCompatibilityInfo.applyToConfigurationIfNeeded(config);
         if (hasOverrideScale()) {
             scaleConfiguration(sOverrideInvertedScale, sOverrideDensityInvertScale, config);
         }
@@ -728,14 +693,13 @@ public class CompatibilityInfo implements Parcelable {
 
     /** @see #sOverrideInvertedScale and #sOverrideDisplayRotation. */
     public static void applyOverrideIfNeeded(MergedConfiguration mergedConfig) {
-        if (hasOverrideDisplayRotation()) {
-            applyDisplayRotationConfiguration(sOverrideDisplayRotation,
-                    mergedConfig.getGlobalConfiguration());
-            applyDisplayRotationConfiguration(sOverrideDisplayRotation,
-                    mergedConfig.getOverrideConfiguration());
-            applyDisplayRotationConfiguration(sOverrideDisplayRotation,
-                    mergedConfig.getMergedConfiguration());
-        }
+        sCameraCompatibilityInfo.applyToConfigurationIfNeeded(mergedConfig
+                .getGlobalConfiguration());
+        sCameraCompatibilityInfo.applyToConfigurationIfNeeded(mergedConfig
+                .getOverrideConfiguration());
+        sCameraCompatibilityInfo.applyToConfigurationIfNeeded(mergedConfig
+                .getMergedConfiguration());
+
         if (hasOverrideScale()) {
             scaleConfiguration(sOverrideInvertedScale, sOverrideDensityInvertScale,
                     mergedConfig.getGlobalConfiguration());
@@ -772,29 +736,20 @@ public class CompatibilityInfo implements Parcelable {
         return sOverrideDensityInvertScale;
     }
 
-    /** Returns {@code true} if this process is in a environment with override display rotation. */
-    private static boolean hasOverrideDisplayRotation() {
-        return sOverrideDisplayRotation != WindowConfiguration.ROTATION_UNDEFINED;
+    /** @see #sCameraCompatibilityInfo */
+    public static void setCameraCompatibilityInfo(@NonNull CameraCompatibilityInfo
+            cameraCompatibilityInfo) {
+        sCameraCompatibilityInfo = cameraCompatibilityInfo;
     }
 
-    /** @see #sOverrideDisplayRotation */
-    public static void setOverrideDisplayRotation(@Surface.Rotation int displayRotation) {
-        sOverrideDisplayRotation = displayRotation;
+    /** @see #sCameraCompatibilityInfo */
+    public static void resetCameraCompatibilityInfo() {
+        sCameraCompatibilityInfo = new CameraCompatibilityInfo.Builder().build();
     }
 
-    /** @see #sOverrideDisplayRotation */
-    public static int getOverrideDisplayRotation() {
-        return sOverrideDisplayRotation;
-    }
-
-    /** @see #sOverrideCameraRotation */
-    public static void setOverrideCameraRotation(@Surface.Rotation int cameraRotation) {
-        sOverrideCameraRotation = cameraRotation;
-    }
-
-    /** @see #sOverrideCameraRotation */
-    public static int getOverrideCameraRotation() {
-        return sOverrideCameraRotation;
+    /** @see #sCameraCompatibilityInfo */
+    public static CameraCompatibilityInfo getCameraCompatibilityInfo() {
+        return sCameraCompatibilityInfo;
     }
 
     /**
@@ -858,8 +813,7 @@ public class CompatibilityInfo implements Parcelable {
 
         if (!isCompatibilityFlagsEqual(oc)) return false;
         if (!isScaleEqual(oc)) return false;
-        if (!isDisplayRotationEqual(oc)) return false;
-        if (!isCameraRotationEqual(oc)) return false;
+        if (!isCameraCompatibilityInfoEqual(oc)) return false;
         return true;
     }
 
@@ -869,10 +823,7 @@ public class CompatibilityInfo implements Parcelable {
      */
     public int getCompatibilityChangesForConfig(@Nullable CompatibilityInfo o) {
         int changes = 0;
-        if (!isDisplayRotationEqual(o)) {
-            changes |= ActivityInfo.CONFIG_WINDOW_CONFIGURATION;
-        }
-        if (!isCameraRotationEqual(o)) {
+        if (!isCameraCompatibilityInfoEqual(o)) {
             changes |= ActivityInfo.CONFIG_WINDOW_CONFIGURATION;
         }
         if (!isScaleEqual(o) || !isCompatibilityFlagsEqual(o)) {
@@ -893,12 +844,8 @@ public class CompatibilityInfo implements Parcelable {
         return true;
     }
 
-    private boolean isDisplayRotationEqual(@Nullable CompatibilityInfo oc) {
-        return oc != null && oc.applicationDisplayRotation == applicationDisplayRotation;
-    }
-
-    private boolean isCameraRotationEqual(@Nullable CompatibilityInfo oc) {
-        return oc != null && oc.applicationCameraRotation == applicationCameraRotation;
+    private boolean isCameraCompatibilityInfoEqual(@Nullable CompatibilityInfo oc) {
+        return oc != null && Objects.equals(oc.cameraCompatibilityInfo, cameraCompatibilityInfo);
     }
 
     private boolean isCompatibilityFlagsEqual(@Nullable CompatibilityInfo oc) {
@@ -922,14 +869,9 @@ public class CompatibilityInfo implements Parcelable {
             sb.append(" overrideDensityInvScale=");
             sb.append(applicationDensityInvertedScale);
         }
-        if (isOverrideDisplayRotationRequired()) {
-            sb.append(" overrideDisplayRotation=");
-            sb.append(applicationDisplayRotation);
-        }
-        if (com.android.window.flags.Flags.enableCameraCompatCompatibilityInfoRotateAndCropBugfix()
-                && isOverrideCameraRotationRequired()) {
-            sb.append(" overrideCameraRotation=");
-            sb.append(applicationCameraRotation);
+        if (isOverrideCameraCompatibilityInfoRequired()) {
+            sb.append(" cameraCompatibilityInfo=");
+            sb.append(cameraCompatibilityInfo);
         }
         if (!supportsScreen()) {
             sb.append(" resizing");
@@ -953,11 +895,7 @@ public class CompatibilityInfo implements Parcelable {
         result = 31 * result + Float.floatToIntBits(applicationInvertedScale);
         result = 31 * result + Float.floatToIntBits(applicationDensityScale);
         result = 31 * result + Float.floatToIntBits(applicationDensityInvertedScale);
-        result = 31 * result + applicationDisplayRotation;
-        if (com.android.window.flags.Flags
-                .enableCameraCompatCompatibilityInfoRotateAndCropBugfix()) {
-            result = 31 * result + applicationCameraRotation;
-        }
+        result = 31 * result + cameraCompatibilityInfo.hashCode();
         return result;
     }
 
@@ -974,11 +912,7 @@ public class CompatibilityInfo implements Parcelable {
         dest.writeFloat(applicationInvertedScale);
         dest.writeFloat(applicationDensityScale);
         dest.writeFloat(applicationDensityInvertedScale);
-        dest.writeInt(applicationDisplayRotation);
-        if (com.android.window.flags.Flags
-                .enableCameraCompatCompatibilityInfoRotateAndCropBugfix()) {
-            dest.writeInt(applicationCameraRotation);
-        }
+        dest.writeTypedObject(cameraCompatibilityInfo, 0);
     }
 
     @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.P, trackingBug = 115609023)
@@ -1002,11 +936,7 @@ public class CompatibilityInfo implements Parcelable {
         applicationInvertedScale = source.readFloat();
         applicationDensityScale = source.readFloat();
         applicationDensityInvertedScale = source.readFloat();
-        applicationDisplayRotation = source.readInt();
-        if (com.android.window.flags.Flags
-                .enableCameraCompatCompatibilityInfoRotateAndCropBugfix()) {
-            applicationCameraRotation = source.readInt();
-        }
+        cameraCompatibilityInfo = source.readTypedObject(CameraCompatibilityInfo.CREATOR);
     }
 
     /**
