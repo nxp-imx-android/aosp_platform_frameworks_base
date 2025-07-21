@@ -184,7 +184,7 @@ public class DesktopModeLaunchParamsModifierTests extends
     @Test
     @EnableFlags({Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE,
             Flags.FLAG_RESPECT_FULLSCREEN_ACTIVITY_OPTION_IN_DESKTOP_LAUNCH_PARAMS})
-    public void testReturnsSkipIfFullscreenRequestViaActivityOptions() {
+    public void testAppliesFullscreenAndReturnDoneIfRequestViaActivityOptions() {
         setupDesktopModeLaunchParamsModifier();
         when(mTarget.isEnteringDesktopMode(any(), any(), any())).thenReturn(true);
 
@@ -192,8 +192,9 @@ public class DesktopModeLaunchParamsModifierTests extends
         final ActivityOptions options = ActivityOptions.makeBasic();
         options.setLaunchWindowingMode(WINDOWING_MODE_FULLSCREEN);
 
-        assertEquals(RESULT_SKIP,
+        assertEquals(RESULT_DONE,
                 new CalculateRequestBuilder().setTask(task).setOptions(options).calculate());
+        assertEquals(WINDOWING_MODE_FULLSCREEN, mResult.mWindowingMode);
     }
 
     @Test
