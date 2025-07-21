@@ -17,7 +17,6 @@
 package android.view.inputmethod;
 
 import android.annotation.DurationMillisLong;
-import android.annotation.IntDef;
 import android.annotation.MainThread;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
@@ -37,8 +36,6 @@ import com.android.internal.inputmethod.IInputMethod;
 import com.android.internal.inputmethod.InlineSuggestionsRequestInfo;
 import com.android.internal.inputmethod.InputMethodNavButtonFlags;
 
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
 import java.util.List;
 
 /**
@@ -273,14 +270,6 @@ public interface InputMethod {
     @MainThread
     public void revokeSession(InputMethodSession session);
 
-    /** @hide */
-    @IntDef(flag = true, prefix = { "SHOW_" }, value = {
-            SHOW_EXPLICIT,
-            SHOW_FORCED,
-    })
-    @Retention(RetentionPolicy.SOURCE)
-    @interface ShowFlags {}
-
     /**
      * Flag for {@link #showSoftInput}: this show has been explicitly
      * requested by the user.  If not set, the system has decided it may be
@@ -303,21 +292,12 @@ public interface InputMethod {
     /**
      * Request that any soft input part of the input method be shown to the user.
      *
-     * @param resultReceiver The client requesting the show may wish to
-     * be told the impact of their request, which should be supplied here.
-     * The result code should be
-     * {@link InputMethodManager#RESULT_UNCHANGED_SHOWN InputMethodManager.RESULT_UNCHANGED_SHOWN},
-     * {@link InputMethodManager#RESULT_UNCHANGED_HIDDEN InputMethodManager.RESULT_UNCHANGED_HIDDEN},
-     * {@link InputMethodManager#RESULT_SHOWN InputMethodManager.RESULT_SHOWN}, or
-     * {@link InputMethodManager#RESULT_HIDDEN InputMethodManager.RESULT_HIDDEN}.
      * @param statsToken the token tracking the current IME request.
-
      * @hide
      */
     @MainThread
-    public default void showSoftInputWithToken(@ShowFlags int flags, ResultReceiver resultReceiver,
-            @NonNull ImeTracker.Token statsToken) {
-        showSoftInput(flags, resultReceiver);
+    default void showSoftInputWithToken(@NonNull ImeTracker.Token statsToken) {
+        showSoftInput(InputMethod.SHOW_EXPLICIT /* flags */, null /* resultReceiver */);
     }
 
     /**
@@ -332,28 +312,17 @@ public interface InputMethod {
      * {@link InputMethodManager#RESULT_HIDDEN InputMethodManager.RESULT_HIDDEN}.
      */
     @MainThread
-    public void showSoftInput(@ShowFlags int flags, ResultReceiver resultReceiver);
+    public void showSoftInput(int flags, ResultReceiver resultReceiver);
 
     /**
      * Request that any soft input part of the input method be hidden from the user.
      *
-     * @param flags Provides additional information about the hide request.
-     * Currently always 0.
-     * @param resultReceiver The client requesting the show may wish to
-     * be told the impact of their request, which should be supplied here.
-     * The result code should be
-     * {@link InputMethodManager#RESULT_UNCHANGED_SHOWN InputMethodManager.RESULT_UNCHANGED_SHOWN},
-     * {@link InputMethodManager#RESULT_UNCHANGED_HIDDEN InputMethodManager.RESULT_UNCHANGED_HIDDEN},
-     * {@link InputMethodManager#RESULT_SHOWN InputMethodManager.RESULT_SHOWN}, or
-     * {@link InputMethodManager#RESULT_HIDDEN InputMethodManager.RESULT_HIDDEN}.
      * @param statsToken the token tracking the current IME request.
-
      * @hide
      */
     @MainThread
-    public default void hideSoftInputWithToken(int flags, ResultReceiver resultReceiver,
-            @NonNull ImeTracker.Token statsToken) {
-        hideSoftInput(flags, resultReceiver);
+    default void hideSoftInputWithToken(@NonNull ImeTracker.Token statsToken) {
+        hideSoftInput(0 /* flags */, null /* resultReceiver */);
     }
 
     /**

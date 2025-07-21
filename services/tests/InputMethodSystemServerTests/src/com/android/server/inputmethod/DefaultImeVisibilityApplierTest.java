@@ -79,17 +79,16 @@ public class DefaultImeVisibilityApplierTest extends InputMethodManagerServiceTe
     public void testPerformShowIme() throws Exception {
         synchronized (ImfLock.class) {
             mVisibilityApplier.performShowIme(new Binder() /* showInputToken */,
-                    ImeTracker.Token.empty(), 0 /* showFlags */, null /* resultReceiver */,
-                    SHOW_SOFT_INPUT, mUserId);
+                    ImeTracker.Token.empty(), SHOW_SOFT_INPUT, mUserId);
         }
-        verifyShowSoftInput(false, true, 0 /* showFlags */);
+        verifyShowSoftInput(false, true);
     }
 
     @Test
     public void testPerformHideIme() throws Exception {
         synchronized (ImfLock.class) {
             mVisibilityApplier.performHideIme(new Binder() /* hideInputToken */,
-                    ImeTracker.Token.empty(), null /* resultReceiver */, HIDE_SOFT_INPUT, mUserId);
+                    ImeTracker.Token.empty(), HIDE_SOFT_INPUT, mUserId);
         }
         verifyHideSoftInput(false, true);
     }

@@ -32,8 +32,8 @@ message InputMethodManagerServiceProto {
     optional .android.view.inputmethod.EditorInfoProto cur_attribute = 7;
     optional string cur_id = 8;
     reserved 9; // deprecated show_requested
-    optional bool show_explicitly_requested = 10;
-    optional bool show_forced = 11;
+    optional bool show_explicitly_requested = 10 [deprecated=true];
+    optional bool show_forced = 11 [deprecated=true];
     optional bool input_shown = 12;
     optional bool in_fullscreen_mode = 13;
     optional string cur_token = 14;
