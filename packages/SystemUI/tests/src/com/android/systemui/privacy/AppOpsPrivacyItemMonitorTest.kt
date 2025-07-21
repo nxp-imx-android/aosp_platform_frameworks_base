@@ -251,7 +251,7 @@ class AppOpsPrivacyItemMonitorTest : SysuiTestCase() {
         doReturn(
                 listOf(
                     AppOpItem(AppOpsManager.OP_ACTIVATE_VPN, TEST_UID, TEST_PACKAGE_NAME, 0),
-                    AppOpItem(AppOpsManager.OP_COARSE_LOCATION, TEST_UID, TEST_PACKAGE_NAME, 0),
+                    AppOpItem(AppOpsManager.OP_FINE_LOCATION, TEST_UID, TEST_PACKAGE_NAME, 0),
                 )
             )
             .`when`(appOpsController)
@@ -278,7 +278,7 @@ class AppOpsPrivacyItemMonitorTest : SysuiTestCase() {
         doReturn(
                 listOf(
                     AppOpItem(AppOpsManager.OP_CAMERA, TEST_UID, TEST_PACKAGE_NAME, 0),
-                    AppOpItem(AppOpsManager.OP_COARSE_LOCATION, TEST_UID, TEST_PACKAGE_NAME, 0),
+                    AppOpItem(AppOpsManager.OP_FINE_LOCATION, TEST_UID, TEST_PACKAGE_NAME, 0),
                 )
             )
             .`when`(appOpsController)
@@ -295,7 +295,7 @@ class AppOpsPrivacyItemMonitorTest : SysuiTestCase() {
         doReturn(512)
             .`when`(packageManager)
             .getPermissionFlags(
-                "android.permission.ACCESS_COARSE_LOCATION",
+                "android.permission.ACCESS_FINE_LOCATION",
                 "com.google.android.apps.maps",
                 UserHandle.getUserHandleForUid(TEST_UID),
             )
@@ -308,7 +308,7 @@ class AppOpsPrivacyItemMonitorTest : SysuiTestCase() {
                 listOf(
                     // Regular item which should not be filtered
                     AppOpItem(
-                        AppOpsManager.OP_COARSE_LOCATION,
+                        AppOpsManager.OP_FINE_LOCATION,
                         TEST_UID,
                         "com.google.android.apps.maps",
                         0,
@@ -380,7 +380,7 @@ class AppOpsPrivacyItemMonitorTest : SysuiTestCase() {
                 listOf(
                     // Regular item which should not be filtered
                     AppOpItem(
-                        AppOpsManager.OP_COARSE_LOCATION,
+                        AppOpsManager.OP_FINE_LOCATION,
                         TEST_UID,
                         "com.google.android.apps.maps",
                         0,
@@ -410,12 +410,7 @@ class AppOpsPrivacyItemMonitorTest : SysuiTestCase() {
         doReturn(
                 listOf(
                     // Regular item which should not be filtered
-                    AppOpItem(
-                        AppOpsManager.OP_COARSE_LOCATION,
-                        TEST_UID,
-                        "com.google.android.gms",
-                        0,
-                    )
+                    AppOpItem(AppOpsManager.OP_FINE_LOCATION, TEST_UID, "com.google.android.gms", 0)
                 )
             )
             .`when`(appOpsController)
@@ -448,7 +443,7 @@ class AppOpsPrivacyItemMonitorTest : SysuiTestCase() {
         doReturn(512)
             .`when`(packageManager)
             .getPermissionFlags(
-                "android.permission.ACCESS_COARSE_LOCATION",
+                "android.permission.ACCESS_FINE_LOCATION",
                 "com.google.android.apps.maps",
                 UserHandle.getUserHandleForUid(TEST_UID),
             )
@@ -463,7 +458,7 @@ class AppOpsPrivacyItemMonitorTest : SysuiTestCase() {
                 listOf(
                     // Regular item which should not be filtered
                     AppOpItem(
-                        AppOpsManager.OP_COARSE_LOCATION,
+                        AppOpsManager.OP_FINE_LOCATION,
                         TEST_UID,
                         "com.google.android.apps.maps",
                         0,
@@ -531,7 +526,7 @@ class AppOpsPrivacyItemMonitorTest : SysuiTestCase() {
 
         doReturn(
                 listOf(
-                    AppOpItem(AppOpsManager.OP_COARSE_LOCATION, TEST_UID, TEST_PACKAGE_NAME, 0),
+                    AppOpItem(AppOpsManager.OP_FINE_LOCATION, TEST_UID, TEST_PACKAGE_NAME, 0),
                     AppOpItem(AppOpsManager.OP_CAMERA, otherUserUid, TEST_PACKAGE_NAME, 0),
                 )
             )
@@ -559,7 +554,7 @@ class AppOpsPrivacyItemMonitorTest : SysuiTestCase() {
 
         doReturn(
                 listOf(
-                    AppOpItem(AppOpsManager.OP_COARSE_LOCATION, TEST_UID, TEST_PACKAGE_NAME, 0),
+                    AppOpItem(AppOpsManager.OP_FINE_LOCATION, TEST_UID, TEST_PACKAGE_NAME, 0),
                     AppOpItem(AppOpsManager.OP_RECORD_AUDIO, TEST_UID, TEST_PACKAGE_NAME, 0),
                     AppOpItem(AppOpsManager.OP_PHONE_CALL_CAMERA, TEST_UID, TEST_PACKAGE_NAME, 0),
                 )
@@ -587,7 +582,7 @@ class AppOpsPrivacyItemMonitorTest : SysuiTestCase() {
 
         doReturn(
                 listOf(
-                    AppOpItem(AppOpsManager.OP_COARSE_LOCATION, TEST_UID, TEST_PACKAGE_NAME, 0),
+                    AppOpItem(AppOpsManager.OP_FINE_LOCATION, TEST_UID, TEST_PACKAGE_NAME, 0),
                     AppOpItem(AppOpsManager.OP_CAMERA, TEST_UID, TEST_PACKAGE_NAME, 0),
                     AppOpItem(
                         AppOpsManager.OP_PHONE_CALL_MICROPHONE,
