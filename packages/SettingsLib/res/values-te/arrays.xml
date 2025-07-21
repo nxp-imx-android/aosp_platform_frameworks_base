@@ -185,7 +185,7 @@
     <item msgid="3691785423374588514">"1M"</item>
   </string-array>
   <string-array name="select_logd_size_summaries">
-    <item msgid="409235464399258501">"ఆఫ్ చేయబడింది"</item>
+    <item msgid="409235464399258501">"ఆఫ్ అయింది"</item>
     <item msgid="4195153527464162486">"లాగ్ బఫర్‌కి 64K"</item>
     <item msgid="7464037639415220106">"ప్రతి లాగ్ బఫర్‌కు 256K"</item>
     <item msgid="8539423820514360724">"ప్రతి లాగ్ బఫర్‌కు 1M"</item>
