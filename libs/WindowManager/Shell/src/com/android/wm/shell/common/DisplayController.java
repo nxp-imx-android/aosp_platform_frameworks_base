@@ -247,13 +247,18 @@ public class DisplayController {
         final Context ctx = getDisplayContext(displayId);
         if (dl == null || ctx == null) return;
 
-        if (endBounds != null) {
-            // Note that endAbsBounds should ignore any potential rotation changes, so
-            // we still need to rotate the layout after if needed.
-            dl.resizeTo(ctx.getResources(), new Size(endBounds.width(), endBounds.height()));
-        }
-        if (fromRotation != toRotation && toRotation != ROTATION_UNDEFINED) {
+        boolean hasRotationChanged = fromRotation != toRotation && toRotation != ROTATION_UNDEFINED;
+        final Size endSize = endBounds != null
+                ? new Size(endBounds.width(), endBounds.height()) : null;
+
+        if (hasRotationChanged && endSize != null) {
+            // If rotation and display size are happening in sync, we have to follow a convention
+            // that DisplayLayout implements.
+            dl.rotateAndResizeTo(ctx.getResources(), toRotation, endSize);
+        } else if (hasRotationChanged) {
             dl.rotateTo(ctx.getResources(), toRotation);
+        } else if (endBounds != null) {
+            dl.resizeTo(ctx.getResources(), endSize);
         }
     }
 

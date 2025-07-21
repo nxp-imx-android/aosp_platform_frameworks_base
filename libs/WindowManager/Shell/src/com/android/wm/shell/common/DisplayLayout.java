@@ -277,6 +277,17 @@ public class DisplayLayout {
         recalcInsets(res);
     }
 
+    /**
+     * Apply a rotation to this layout followed up by an update to its dimensions in new rotation.
+     */
+    public void rotateAndResizeTo(Resources res, @Surface.Rotation int toRotation,
+            @NonNull Size displaySize) {
+        // The convention is that if attempting to rotate and resize in one go, the new size should
+        // be in the final rotation; so rotate the layout in place first.
+        rotateTo(res, toRotation);
+        resizeTo(res, displaySize);
+    }
+
     /** Update the global bounds of this layout, in DP. */
     public void setGlobalBoundsDp(RectF bounds) {
         mGlobalBoundsDp = bounds;
