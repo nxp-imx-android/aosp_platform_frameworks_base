@@ -3595,10 +3595,10 @@ public class PowerManagerServiceTest {
 
         IBinder mockBinder = mock(IBinder.class);
         doNothing().when(mockBinder).addFrozenStateChangeCallback(any());
-        when(mockBinder.removeFrozenStateChangeCallback(any())).thenReturn(true);
 
         WakeLock wakeLock = acquireWakeLock("frozenTestWakeLock",
                 PowerManager.PARTIAL_WAKE_LOCK, mockBinder, Display.INVALID_DISPLAY);
+        verify(mockBinder).addFrozenStateChangeCallback(wakeLock);
         assertThat(wakeLock.mDisabled).isFalse();
         assertThat(wakeLock.isFrozenLocked()).isFalse();
         advanceTime(1000);
@@ -3614,6 +3614,10 @@ public class PowerManagerServiceTest {
         advanceTime(1000);
         assertThat(wakeLock.mDisabled).isFalse();
         assertThat(wakeLock.isFrozenLocked()).isFalse();
+
+        when(mockBinder.removeFrozenStateChangeCallback(wakeLock)).thenReturn(true);
+        mService.getBinderServiceInstance().releaseWakeLock(mockBinder, 0);
+        verify(mockBinder).removeFrozenStateChangeCallback(wakeLock);
     }
 
     @Test
