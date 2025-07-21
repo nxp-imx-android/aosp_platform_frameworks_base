@@ -36,7 +36,6 @@ import static com.android.dx.mockito.inline.extended.ExtendedMockito.spy;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.spyOn;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.verify;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.when;
-import static com.android.hardware.input.Flags.FLAG_HID_BLUETOOTH_WAKEUP;
 import static com.android.server.policy.PhoneWindowManager.EXTRA_TRIGGER_HUB;
 import static com.android.server.policy.PhoneWindowManager.SHORT_PRESS_POWER_DREAM_OR_AWAKE_OR_SLEEP;
 import static com.android.server.policy.PhoneWindowManager.SHORT_PRESS_POWER_GO_TO_SLEEP;
@@ -587,7 +586,6 @@ public class PhoneWindowManagerTests {
     }
 
     @Test
-    @EnableFlags(FLAG_HID_BLUETOOTH_WAKEUP)
     public void testBluetoothHidConnectionBroadcastCanWakeup() {
         when(mContext.getPackageManager()).thenReturn(mPackageManager);
         when(mPackageManager.hasSystemFeature(PackageManager.FEATURE_PC)).thenReturn(true);
