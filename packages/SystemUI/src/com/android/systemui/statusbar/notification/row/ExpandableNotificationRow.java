@@ -4379,6 +4379,13 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
                 info.addAction(action);
             }
         }
+
+        if (isBundle()) {
+            // Set a content description explicitly for the bundle header because we can't
+            // otherwise merge accessibility information across the ViewGroup/ComposeView boundary.
+            NotificationChildrenContainer childrenContainer = getChildrenContainerNonNull();
+            info.setContentDescription(childrenContainer.getBundleHeaderDescription());
+        }
     }
 
     /** @return whether this row's expansion state can be toggled by an accessibility action. */

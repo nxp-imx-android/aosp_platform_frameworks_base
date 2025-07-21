@@ -49,12 +49,12 @@ import com.android.systemui.statusbar.notification.row.ui.viewmodel.BundleHeader
 import com.android.systemui.statusbar.notification.stack.NotificationListContainer
 import com.android.systemui.util.time.SystemClock
 import dagger.Lazy
+import javax.inject.Inject
+import javax.inject.Provider
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
-import javax.inject.Inject
-import javax.inject.Provider
 
 /** Class that handles inflating BundleEntry view and controller, for use by NodeSpecBuilder. */
 @SysUISingleton
@@ -125,6 +125,7 @@ constructor(
         row.addOnAttachStateChangeListener(
             object : View.OnAttachStateChangeListener {
                 override fun onViewAttachedToWindow(v: View) {}
+
                 override fun onViewDetachedFromWindow(v: View) {
                     scope.cancel()
                     row.removeOnAttachStateChangeListener(this)
@@ -204,14 +205,16 @@ private fun HeaderComposeViewContent(
             )
         DisposableEffect(viewModel) {
             row.setBundleHeaderViewModel(viewModel)
-            onDispose { row.setBundleHeaderViewModel(null) }
+            row.setOnClickListener {
+                viewModel.onHeaderClicked()
+                row.expandNotification()
+            }
+            onDispose {
+                row.setOnClickListener(null)
+                row.setBundleHeaderViewModel(null)
+            }
         }
-        BundleHeader(
-            viewModel,
-            onHeaderClicked = { row.expandNotification() },
-            // to be used only for dismissal coming from an accessibility action.
-            onA11yDismissAction = { row.performDismiss(true) },
-        )
+        BundleHeader(viewModel)
     }
 }
 

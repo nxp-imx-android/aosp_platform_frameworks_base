@@ -78,6 +78,14 @@ constructor(
                 numberOfChildren ?: 0,
             )
 
+    val headerContentDescription: String
+        get() =
+            context.resources.getString(
+                R.string.notification_bundle_header_joined_description,
+                context.resources.getString(titleText),
+                numberOfChildrenContentDescription,
+            )
+
     private var sceneTargetJob: Job? = null
 
     init {
