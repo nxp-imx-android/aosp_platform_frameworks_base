@@ -26,6 +26,7 @@ import android.content.Context;
 import android.os.Binder;
 import android.util.Slog;
 
+import com.android.server.companion.datatransfer.continuity.connectivity.TaskContinuityMessenger;
 import com.android.server.companion.datatransfer.continuity.handoff.InboundHandoffRequestController;
 import com.android.server.companion.datatransfer.continuity.handoff.OutboundHandoffRequestController;
 import com.android.server.companion.datatransfer.continuity.messages.ContinuityDeviceConnected;
@@ -38,7 +39,6 @@ import com.android.server.companion.datatransfer.continuity.messages.TaskContinu
 import com.android.server.companion.datatransfer.continuity.tasks.RemoteTaskStore;
 
 import com.android.server.SystemService;
-import com.android.server.companion.datatransfer.continuity.connectivity.ConnectedAssociationStore;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -49,7 +49,8 @@ import java.util.List;
  * @hide
  *
  */
-public final class TaskContinuityManagerService extends SystemService {
+public final class TaskContinuityManagerService
+    extends SystemService implements TaskContinuityMessenger.Listener {
 
     private static final String TAG = "TaskContinuityManagerService";
 
@@ -57,31 +58,28 @@ public final class TaskContinuityManagerService extends SystemService {
     private OutboundHandoffRequestController mOutboundHandoffRequestController;
     private TaskContinuityManagerServiceImpl mTaskContinuityManagerService;
     private TaskBroadcaster mTaskBroadcaster;
-    private ConnectedAssociationStore mConnectedAssociationStore;
-    private TaskContinuityMessageReceiver mTaskContinuityMessageReceiver;
+    private TaskContinuityMessenger mTaskContinuityMessenger;
     private RemoteTaskStore mRemoteTaskStore;
 
     public TaskContinuityManagerService(Context context) {
         super(context);
-        mConnectedAssociationStore = new ConnectedAssociationStore(context);
 
-        mTaskBroadcaster = new TaskBroadcaster(
-            context,
-            mConnectedAssociationStore);
-
-        mTaskContinuityMessageReceiver = new TaskContinuityMessageReceiver(context);
-        mRemoteTaskStore = new RemoteTaskStore(mConnectedAssociationStore);
+        mTaskContinuityMessenger = new TaskContinuityMessenger(context, this);
+        mTaskBroadcaster = new TaskBroadcaster(context, mTaskContinuityMessenger);
+        mRemoteTaskStore = new RemoteTaskStore(
+            mTaskContinuityMessenger.getConnectedAssociationStore());
         mOutboundHandoffRequestController = new OutboundHandoffRequestController(
             context,
-            mConnectedAssociationStore);
-        mInboundHandoffRequestController = new InboundHandoffRequestController(context);
+            mTaskContinuityMessenger);
+        mInboundHandoffRequestController = new InboundHandoffRequestController(
+            mTaskContinuityMessenger);
     }
 
     @Override
     public void onStart() {
         mTaskContinuityManagerService = new TaskContinuityManagerServiceImpl();
+        mTaskContinuityMessenger.enable();
         mTaskBroadcaster.startBroadcasting();
-        mTaskContinuityMessageReceiver.startListening(this::onTaskContinuityMessageReceived);
         publishBinderService(Context.TASK_CONTINUITY_SERVICE, mTaskContinuityManagerService);
     }
 
@@ -118,9 +116,10 @@ public final class TaskContinuityManagerService extends SystemService {
         }
     }
 
-    private void onTaskContinuityMessageReceived(
+    @Override
+    public void onMessageReceived(
         int associationId,
-        TaskContinuityMessage taskContinuityMessage) {
+        @NonNull TaskContinuityMessage taskContinuityMessage) {
 
         Slog.v(TAG, "Received message from association id: " + associationId);
 

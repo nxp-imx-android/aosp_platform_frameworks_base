@@ -22,20 +22,20 @@ import static android.app.HandoffFailureCode.HANDOFF_FAILURE_UNSUPPORTED_TASK;
 import static android.app.HandoffFailureCode.HANDOFF_FAILURE_UNKNOWN_TASK;
 import static android.app.HandoffFailureCode.HANDOFF_FAILURE_INTERNAL_ERROR;
 import static android.app.HandoffFailureCode.HANDOFF_FAILURE_TIMEOUT;
-import static android.companion.CompanionDeviceManager.MESSAGE_ONEWAY_TASK_CONTINUITY;
 import static android.companion.datatransfer.continuity.TaskContinuityManager.HANDOFF_REQUEST_RESULT_SUCCESS;
 import static android.companion.datatransfer.continuity.TaskContinuityManager.HANDOFF_REQUEST_RESULT_FAILURE_TIMEOUT;
 import static android.companion.datatransfer.continuity.TaskContinuityManager.HANDOFF_REQUEST_RESULT_FAILURE_TASK_NOT_FOUND;
 import static android.companion.datatransfer.continuity.TaskContinuityManager.HANDOFF_REQUEST_RESULT_FAILURE_NO_DATA_PROVIDED_BY_TASK;
 
+import android.annotation.NonNull;
 import android.app.HandoffActivityData;
 import android.app.IHandoffTaskDataReceiver;
-import android.companion.CompanionDeviceManager;
 import android.content.Context;
 import android.os.Binder;
 import android.util.Slog;
 
 import com.android.server.LocalServices;
+import com.android.server.companion.datatransfer.continuity.connectivity.TaskContinuityMessenger;
 import com.android.server.companion.datatransfer.continuity.messages.HandoffRequestMessage;
 import com.android.server.companion.datatransfer.continuity.messages.HandoffRequestResultMessage;
 import com.android.server.companion.datatransfer.continuity.messages.TaskContinuityMessage;
@@ -47,6 +47,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * Responsible for receiving handoff requests from other devices and passing back data needed to
@@ -58,12 +59,15 @@ public class InboundHandoffRequestController extends IHandoffTaskDataReceiver.St
 
     // Map of task id to list of association ids that have a pending handoff request for that task.
     private final Map<Integer, List<Integer>> mPendingHandoffRequests = new HashMap<>();
-    private final CompanionDeviceManager mCompanionDeviceManager;
+    private final TaskContinuityMessenger mTaskContinuityMessenger;
     private final ActivityTaskManagerInternal mActivityTaskManagerInternal;
 
-    public InboundHandoffRequestController(Context context) {
-        mCompanionDeviceManager = context.getSystemService(CompanionDeviceManager.class);
+    public InboundHandoffRequestController(
+        @NonNull TaskContinuityMessenger taskContinuityMessenger) {
+        Objects.requireNonNull(taskContinuityMessenger);
+
         mActivityTaskManagerInternal = LocalServices.getService(ActivityTaskManagerInternal.class);
+        mTaskContinuityMessenger = taskContinuityMessenger;
     }
 
     @Override
@@ -138,14 +142,7 @@ public class InboundHandoffRequestController extends IHandoffTaskDataReceiver.St
             }
 
             Slog.i(TAG, "Sending result message to " + associationIds.size() + " associations.");
-            try {
-                mCompanionDeviceManager.sendMessage(
-                    MESSAGE_ONEWAY_TASK_CONTINUITY,
-                    TaskContinuityMessageSerializer.serialize(handoffRequestResultMessage),
-                    associationIdsArray);
-            } catch (IOException e) {
-                Slog.e(TAG, "Failed to send message to associations " + associationIds, e);
-            }
+            mTaskContinuityMessenger.sendMessage(associationIdsArray, handoffRequestResultMessage);
         }
     }
 

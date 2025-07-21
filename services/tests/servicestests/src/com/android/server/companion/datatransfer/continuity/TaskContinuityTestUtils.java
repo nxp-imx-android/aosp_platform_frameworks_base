@@ -16,27 +16,14 @@
 
 package com.android.server.companion.datatransfer.continuity;
 
-import static com.google.common.truth.Truth.assertThat;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
-import android.app.ActivityManager;
 import android.companion.AssociationInfo;
-import android.companion.CompanionDeviceManager;
-import android.companion.ICompanionDeviceManager;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.ContextWrapper;
 
 import androidx.test.platform.app.InstrumentationRegistry;
 
-import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
-
-import java.io.IOException;
 
 public final class TaskContinuityTestUtils {
 
@@ -46,32 +33,6 @@ public final class TaskContinuityTestUtils {
                 InstrumentationRegistry
                     .getInstrumentation()
                     .getTargetContext()));
-    }
-
-    public static ICompanionDeviceManager createMockCompanionDeviceManager(Context context) {
-        ICompanionDeviceManager mockCompanionDeviceManagerService
-            = mock(ICompanionDeviceManager.class);
-
-        CompanionDeviceManager companionDeviceManager = new CompanionDeviceManager(
-            mockCompanionDeviceManagerService,
-            context);
-
-        when(context.getSystemService(Context.COMPANION_DEVICE_SERVICE))
-            .thenReturn(companionDeviceManager);
-
-        return mockCompanionDeviceManagerService;
-    }
-
-    public static ActivityManager.RunningTaskInfo createRunningTaskInfo(
-        int taskId,
-        String packageName,
-        long lastActiveTime) {
-
-        ActivityManager.RunningTaskInfo taskInfo = new ActivityManager.RunningTaskInfo();
-        taskInfo.taskId = taskId;
-        taskInfo.baseActivity = new ComponentName(packageName, "className");
-        taskInfo.lastActiveTime = lastActiveTime;
-        return taskInfo;
     }
 
     public static AssociationInfo createAssociationInfo(int id, String displayName) {
