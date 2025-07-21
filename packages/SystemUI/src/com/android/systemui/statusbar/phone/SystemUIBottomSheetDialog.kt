@@ -18,6 +18,7 @@ package com.android.systemui.statusbar.phone
 import android.annotation.StyleRes
 import android.app.Dialog
 import android.content.Context
+import android.content.res.Configuration
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
@@ -76,7 +77,7 @@ constructor(
             setType(TYPE_STATUS_BAR_SUB_PANEL)
             addPrivateFlags(SYSTEM_FLAG_SHOW_FOR_ALL_USERS or PRIVATE_FLAG_NO_MOVE_ANIMATION)
             setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
-            setGravity(Gravity.BOTTOM)
+            setGravity(Gravity.BOTTOM or Gravity.CENTER_HORIZONTAL)
             decorView.setPadding(0, 0, 0, 0)
             attributes =
                 attributes.apply {
@@ -174,6 +175,31 @@ constructor(
                             context.resources.getBoolean(R.bool.config_edgeToEdgeBottomSheetDialog)
                         val width = if (edgeToEdgeHorizontally) MATCH_PARENT else WRAP_CONTENT
 
+                        Layout(width, WRAP_CONTENT)
+                    }
+            }
+        }
+
+        class ExternalDisplayDialogWindowLayout
+        @Inject
+        constructor(
+            @Application private val context: Context,
+            private val configurationController: ConfigurationController,
+        ) : WindowLayout {
+            override fun calculate(): Flow<Layout> {
+                return configurationController.onConfigChanged
+                    .onStart { emit(context.resources.configuration) }
+                    .map { config ->
+                        val width =
+                            if (config.orientation == Configuration.ORIENTATION_LANDSCAPE) {
+                                // In landscape, set the window to a fixed width
+                                context.resources.getDimensionPixelSize(
+                                    R.dimen.connected_display_dialog_landscape_width
+                                )
+                            } else {
+                                // In portrait, make the window match the parent
+                                MATCH_PARENT
+                            }
                         Layout(width, WRAP_CONTENT)
                     }
             }
