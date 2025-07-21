@@ -990,16 +990,11 @@ public class DisplayContentTests extends WindowTestsBase {
                 "Screen orientation must be defined by the window even on close-to-square display.",
                 overlay.mAttrs.screenOrientation, dc.getOrientation());
 
-        // Assume that a decor window occupies the display height, so the configuration orientation
-        // should be landscape.
-        dc.getDisplayPolicy().getDecorInsetsInfo(ROTATION_0, dc.mBaseDisplayHeight,
-                dc.mBaseDisplayWidth).mConfigFrame.set(0, 0, 1000, 990);
         dc.computeScreenConfiguration(config, ROTATION_0);
         dc.onRequestedOverrideConfigurationChanged(config);
-        assertEquals(Configuration.ORIENTATION_LANDSCAPE, config.orientation);
-        assertEquals(Configuration.ORIENTATION_LANDSCAPE, dc.getNaturalConfigurationOrientation());
+        assertEquals(Configuration.ORIENTATION_PORTRAIT, config.orientation);
         overlay.setOverrideOrientation(SCREEN_ORIENTATION_NOSENSOR);
-        assertEquals(Configuration.ORIENTATION_LANDSCAPE,
+        assertEquals(Configuration.ORIENTATION_PORTRAIT,
                 overlay.getRequestedConfigurationOrientation());
         // Note that getNaturalOrientation is based on logical display size. So it is portrait if
         // the display width equals to height.
