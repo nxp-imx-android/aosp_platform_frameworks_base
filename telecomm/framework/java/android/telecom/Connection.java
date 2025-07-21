@@ -2777,7 +2777,7 @@ public abstract class Connection extends Conferenceable {
      *     {@link #STATE_AUDIO_PROCESSING}
      */
     @FlaggedApi(Flags.FLAG_ENABLE_AUDIO_PROCESSING_USE_CASE)
-    public final int getAudioProcessingUseCase() {
+    public final @Call.AudioProcessingUseCase int getAudioProcessingUseCase() {
         return mAudioProcessingUseCase;
     }
 
