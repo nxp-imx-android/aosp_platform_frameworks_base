@@ -25,6 +25,7 @@ import static android.content.pm.ActivityInfo.SCREEN_ORIENTATION_BEHIND;
 import static android.content.pm.ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE;
 import static android.content.pm.ActivityInfo.SCREEN_ORIENTATION_NOSENSOR;
 import static android.content.pm.ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
+import static android.content.pm.ActivityInfo.SCREEN_ORIENTATION_SENSOR;
 import static android.content.pm.ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED;
 import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
@@ -1149,6 +1150,12 @@ public class DisplayContentTests extends WindowTestsBase {
         activity.setRequestedOrientation(newOrientation);
 
         assertEquals("The display should be rotated.", 1, dc.getRotation() % 2);
+
+        dc.setIgnoreOrientationRequest(true);
+        activity.setRequestedOrientation(SCREEN_ORIENTATION_SENSOR);
+
+        assertEquals("Sensor orientation must be respected with ignore-orientation-request",
+                SCREEN_ORIENTATION_SENSOR, dc.getLastOrientation());
     }
 
     @Test
