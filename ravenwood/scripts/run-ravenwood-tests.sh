@@ -25,9 +25,18 @@
 #   -f PCRE: Specify inclusion filter in PCRE
 
 set -e
+shopt -s nullglob # if a glob matches no file, expands to an empty string.
 
 # Move to the script's directory
 cd "${0%/*}"
+
+# Find the enablement files. This may be an empty list if there's no match.
+default_enablement_policy=(../texts/*-enablement-policy.txt)
+
+# ROLLING_TF_SUBPROCESS_OUTPUT is often quite behind for large tests.
+# let's disable it by default.
+: ${ROLLING_TF_SUBPROCESS_OUTPUT:=0}
+export ROLLING_TF_SUBPROCESS_OUTPUT
 
 smoke=0
 include_re=""
@@ -93,6 +102,10 @@ esac
 done
 shift $(($OPTIND - 1))
 
+# If the rest of the arguments are available, just run these tests.
+targets=("$@")
+
+
 if (( $with_tools_tests )) ; then
     all_tests=(hoststubgentest tiny-framework-dump-test hoststubgen-invoke-test ravenwood-stats-checker ravenhelpertest)
 fi
@@ -142,12 +155,15 @@ filter_out() {
     filter "$1" -v
 }
 
-# Remove the slow tests.
-targets=( $(
-    for t in "${all_tests[@]}"; do
-        echo $t | filter_in "$include_re" | filter_out "$smoke_exclude_re" | filter_out "$exclude_re" | filter_out "SystemUiRavenTests"
-    done
-) )
+# If targets are not specified in the command line, run all tests w/ the filters.
+if (( "${#targets[@]}" == 0 )) ; then
+    # Filter the tests.
+    targets=( $(
+        for t in "${all_tests[@]}"; do
+            echo $t | filter_in "$include_re" | filter_out "$smoke_exclude_re" | filter_out "$exclude_re"
+        done
+    ) )
+fi
 
 # Show the target tests
 
@@ -158,13 +174,27 @@ done
 
 # Calculate the removed tests.
 
-diff="$(diff  <(echo "${all_tests[@]}" | tr ' ' '\n') <(echo "${targets[@]}" | tr ' ' '\n') | grep -v [0-9] || true)"
+diff="$(diff  <(echo "${all_tests[@]}" | tr ' ' '\n') <(echo "${targets[@]}" | tr ' ' '\n') | grep -v '[0-9]' || true)"
 
 if [[ "$diff" != "" ]]; then
     echo "Excluded tests:"
     echo "$diff"
 fi
 
+# Build the "enablement" policy by merging all the policy files.
+# But if RAVENWOOD_TEST_ENABLEMENT_POLICY is already set, just use it.
+if [[ "$RAVENWOOD_TEST_ENABLEMENT_POLICY" == "" ]] && (( "${#default_enablement_policy[@]}" > 0 )) ; then
+    # This path must be a full path.
+    combined_enablement_policy=/tmp/ravenwood-enablement-$$.txt
+
+    cat "${default_enablement_policy[@]}" >$combined_enablement_policy
+
+    export RAVENWOOD_TEST_ENABLEMENT_POLICY=$combined_enablement_policy
+fi
+
+echo "RAVENWOOD_TEST_ENABLEMENT_POLICY=$RAVENWOOD_TEST_ENABLEMENT_POLICY"
+
+# =========================================================
 
 run() {
     echo "Running: ${@}"
