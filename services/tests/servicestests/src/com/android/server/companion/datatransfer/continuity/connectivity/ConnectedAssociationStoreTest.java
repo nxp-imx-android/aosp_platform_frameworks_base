@@ -88,7 +88,10 @@ public class ConnectedAssociationStoreTest {
         when(mMockContext.getSystemService(Context.COMPANION_DEVICE_SERVICE))
             .thenReturn(mCompanionDeviceManager);
 
-        mConnectedAssociationStore = new ConnectedAssociationStore(mMockContext);
+        mConnectedAssociationStore = new ConnectedAssociationStore(
+            mCompanionDeviceManager,
+            mMockContext.getMainExecutor());
+
         mConnectedAssociationStore.addObserver(mMockObserver);
         verify(mMockCompanionDeviceManagerService).addOnTransportsChangedListener(
                 mListenerCaptor.capture());

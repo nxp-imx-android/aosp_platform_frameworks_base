@@ -41,9 +41,7 @@ public class RemoteTaskStore implements ConnectedAssociationStore.Observer {
     private final RemoteCallbackList<IRemoteTaskListener>
         mRemoteTaskListeners = new RemoteCallbackList<>();
 
-    public RemoteTaskStore(
-        ConnectedAssociationStore connectedAssociationStore) {
-
+    public RemoteTaskStore(ConnectedAssociationStore connectedAssociationStore) {
         mConnectedAssociationStore = connectedAssociationStore;
         mConnectedAssociationStore.addObserver(this);
     }
