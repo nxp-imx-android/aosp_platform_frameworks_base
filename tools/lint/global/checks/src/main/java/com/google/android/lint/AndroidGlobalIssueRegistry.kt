@@ -23,6 +23,7 @@ import com.google.android.lint.aidl.EnforcePermissionDetector
 import com.google.android.lint.aidl.PermissionAnnotationDetector
 import com.google.android.lint.aidl.SimpleManualPermissionEnforcementDetector
 import com.google.android.lint.aidl.SimpleRequiresNoPermissionDetector
+import com.google.android.lint.flags.CheckFlagsRuleDetector
 import com.google.auto.service.AutoService
 
 @AutoService(IssueRegistry::class)
@@ -36,6 +37,7 @@ class AndroidGlobalIssueRegistry : IssueRegistry() {
             PermissionAnnotationDetector.ISSUE_MISSING_PERMISSION_ANNOTATION,
             SimpleManualPermissionEnforcementDetector.ISSUE_SIMPLE_MANUAL_PERMISSION_ENFORCEMENT,
             SimpleRequiresNoPermissionDetector.ISSUE_SIMPLE_REQUIRES_NO_PERMISSION,
+            CheckFlagsRuleDetector.ISSUE_MISSING_CHECK_FLAGS_RULE,
     )
 
     override val api: Int
