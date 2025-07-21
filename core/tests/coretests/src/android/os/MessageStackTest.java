@@ -17,7 +17,9 @@
 package android.os;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 import androidx.test.runner.AndroidJUnit4;
 
@@ -43,6 +45,24 @@ public final class MessageStackTest {
             stack.pushMessage(new Message());
         }
         assertEquals(10, stack.sizeForTest());
+    }
+
+    /**
+     * Verify quitting state
+     */
+    @Test
+    public void testQuitting() {
+        MessageStack stack = new MessageStack();
+        for (int i = 0; i < 10; i++) {
+            stack.pushMessage(new Message());
+        }
+
+        assertFalse(stack.isQuitting());
+
+        stack.pushQuitting(42);
+        assertFalse(stack.pushMessage(new Message()));
+        assertTrue(stack.isQuitting());
+        assertEquals(stack.getQuittingTimestamp(), 42);
     }
 
     /**
