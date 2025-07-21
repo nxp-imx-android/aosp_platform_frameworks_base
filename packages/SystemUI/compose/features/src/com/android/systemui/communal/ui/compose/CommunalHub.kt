@@ -918,6 +918,7 @@ private fun BoxScope.CommunalHubLazyGrid(
     var dragDropState: GridDragDropState? = null
     val arrangementSpacing =
         if (communalResponsiveGrid() && isCompactWindow()) Dimensions.ItemSpacingCompact
+        else if (communalResponsiveGrid() && isMediumWindow()) hubDimensions.ItemSpacingMedium
         else Dimensions.ItemSpacing
     val windowSize = WindowSizeUtils.getWindowSizeCategory(LocalContext.current)
     if (viewModel.isEditMode && viewModel is CommunalEditModeViewModel) {
@@ -1963,12 +1964,13 @@ private fun nonScalableTextSize(sizeInDp: Dp) = with(LocalDensity.current) { siz
 private fun gridContentPadding(isEditMode: Boolean, toolbarHeight: Dp): PaddingValues {
     if (communalResponsiveGrid() && hubEditModeTransition()) {
         val itemSpacing =
-            if (isCompactWindow()) Dimensions.ItemSpacingCompact else Dimensions.ItemSpacing
+            if (isCompactWindow()) Dimensions.ItemSpacingCompact
+            else if (isMediumWindow()) hubDimensions.ItemSpacingMedium else Dimensions.ItemSpacing
         val editModeTopPadding =
             toolbarPadding().calculateTopPadding() + toolbarHeight + itemSpacing
         // For compact windows, allow the bottom spacing to be minimum so that all items shift
-        // down. For large window, use top padding for both vertical directions to ensure items
-        // are centered vertically.
+        // down. For medium and large windows, use top padding for both vertical directions to
+        // ensure items are centered vertically.
         val editModeBottomPadding = if (isCompactWindow()) itemSpacing else editModeTopPadding
 
         val finalTopPadding: Dp
@@ -2065,6 +2067,16 @@ fun isCompactWindow(): Boolean {
     }
 }
 
+/** Medium size in landscape or portrait */
+@Composable
+private fun isMediumWindow(): Boolean {
+    val windowSizeClass = LocalWindowSizeClass.current
+    return remember(windowSizeClass) {
+        windowSizeClass.widthSizeClass == WindowWidthSizeClass.Medium ||
+            windowSizeClass.heightSizeClass == WindowHeightSizeClass.Medium
+    }
+}
+
 private fun Modifier.toolbarHeight(): Modifier {
     return this.thenIf(hubEditModeTransition()) { Modifier.height(Dimensions.ToolbarHeight) }
 }
@@ -2157,6 +2169,15 @@ class Dimensions(val context: Context, val config: Configuration) {
                 }
             } else {
                 9.adjustedDp
+            }
+        }
+
+    val ItemSpacingMedium: Dp
+        get() {
+            return if (config.orientation == Configuration.ORIENTATION_LANDSCAPE) {
+                ItemSpacingCompact
+            } else {
+                ItemSpacing
             }
         }
 
