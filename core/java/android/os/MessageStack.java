@@ -118,6 +118,16 @@ public final class MessageStack {
     }
 
     /**
+     * Check that the message hasn't already been removed or processed elsewhere.
+     */
+    private boolean messageMatches(Message m, MessageQueue.MessageCompare compare, Handler h,
+            int what, Object object, Runnable r, long when) {
+        return !isQuittingMessage(m)
+                && !m.isRemoved()
+                && compare.compareMessage(m, h, what, object, r, when);
+    }
+
+    /**
      * Iterates through messages and creates a reverse-ordered chain of messages to remove.
      */
     public void updateFreelist(MessageQueue.MessageCompare compare, Handler h, int what,
@@ -127,10 +137,7 @@ public final class MessageStack {
         Message firstRemoved = null;
 
         while (current != null) {
-            // Check that the message hasn't already been removed or processed elsewhere.
-            if (!isQuittingMessage(current)
-                    && !current.isRemoved()
-                    && compare.compareMessage(current, h, what, object, r, when)
+            if (messageMatches(current, compare, h, what, object, r, when)
                     && current.markRemoved()) {
                 if (firstRemoved == null) {
                     firstRemoved = current;
@@ -149,6 +156,24 @@ public final class MessageStack {
             firstRemoved.nextFree = freelist;
         // prev points to the last to-be-removed message that was processed.
         } while (!sFreelistHead.compareAndSet(this, freelist, prev));
+    }
+
+    /**
+     * Search our stack for a given set of messages.
+     * @return true if matching messages are found, false otherwise.
+     */
+    public boolean hasMessages(MessageQueue.MessageCompare compare, Handler h, int what,
+            Object object, Runnable r, long when) {
+        Message current = (Message) sTop.getAcquire(this);
+
+        while (current != null) {
+            // Check that the message hasn't already been removed or processed elsewhere.
+            if (messageMatches(current, compare, h, what, object, r, when)) {
+                return true;
+            }
+            current = current.next;
+        }
+        return false;
     }
 
     /**

@@ -133,6 +133,35 @@ public final class MessageStackTest {
     }
 
     /**
+     * Test our basic message search.
+     */
+    @Test
+    public void testHasMessages() {
+        MessageStack stack = new MessageStack();
+        Handler h = new Handler(Looper.getMainLooper());
+        int skipWhat = 1;
+        int findWhat = 2;
+
+        // Interleave message types
+        for (int i = 0; i < 5; i++) {
+            stack.pushMessage(Message.obtain(h, skipWhat));
+            stack.pushMessage(Message.obtain(h, findWhat));
+        }
+
+        assertTrue(stack.hasMessages(new MessageQueue.MatchHandlerWhatAndObject(),
+                h, findWhat, null, null, 0));
+
+        assertFalse(stack.hasMessages(new MessageQueue.MatchHandlerWhatAndObject(),
+                h, 3, null, null, 0));
+
+        stack.updateFreelist(new MessageQueue.MatchHandlerWhatAndObject(),
+                h, findWhat, null, null, 0);
+
+        assertFalse(stack.hasMessages(new MessageQueue.MatchHandlerWhatAndObject(),
+                h, findWhat, null, null, 0));
+    }
+
+    /**
      * Push messages from multiple threads and verify stack and heap sizes.
      */
     @Test
