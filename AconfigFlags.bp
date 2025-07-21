@@ -135,6 +135,7 @@ aconfig_declarations_group {
         "surfaceflinger_flags_java_lib",
         "telecom_flags_core_java_lib",
         "telephony_flags_core_java_lib",
+        "timezone_flags_core_java_lib",
         // !!! KEEP THIS LIST ALPHABETICAL !!!
     ],
 }
@@ -262,6 +263,20 @@ java_aconfig_library {
 cc_aconfig_library {
     name: "telephony_flags_c_lib",
     aconfig_declarations: "telephony_flags",
+}
+
+// Timezone
+aconfig_declarations {
+    name: "timezone_flags",
+    package: "android.timezone.flags",
+    container: "system",
+    srcs: ["core/java/android/timezone/flags/flags.aconfig"],
+}
+
+java_aconfig_library {
+    name: "timezone_flags_core_java_lib",
+    aconfig_declarations: "timezone_flags",
+    defaults: ["framework-minus-apex-aconfig-java-defaults"],
 }
 
 // Window
