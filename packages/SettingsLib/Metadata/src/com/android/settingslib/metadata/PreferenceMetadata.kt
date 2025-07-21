@@ -28,10 +28,10 @@ import androidx.annotation.StringRes
  *
  * Besides the existing APIs, subclass could integrate with following interface to provide more
  * information:
- * - [PreferenceTitleProvider]: provide dynamic title content
- * - [PreferenceSummaryProvider]: provide dynamic summary content (e.g. based on preference value)
- * - [PreferenceIconProvider]: provide dynamic icon content (e.g. based on flag)
- * - [PreferenceAvailabilityProvider]: provide preference availability (e.g. based on flag)
+ * - [AsyncPreferenceTitleProvider]/[PreferenceTitleProvider]: provide dynamic title content
+ * - [AsyncPreferenceSummaryProvider]/[PreferenceSummaryProvider]: provide dynamic summary content (e.g. based on preference value)
+ * - [AsyncPreferenceIconProvider]/[PreferenceIconProvider]: provide dynamic icon content (e.g. based on flag)
+ * - [AsyncPreferenceAvailabilityProvider]/[PreferenceAvailabilityProvider]: provide preference availability (e.g. based on flag)
  * - [PreferenceLifecycleProvider]: provide the lifecycle callbacks and notify state change
  *
  * Notes:
