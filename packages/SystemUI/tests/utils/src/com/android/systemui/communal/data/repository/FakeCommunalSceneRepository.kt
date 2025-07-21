@@ -39,11 +39,16 @@ class FakeCommunalSceneRepository(
 
     override fun freezeAndAnimateToCurrentState() = Unit
 
-    override fun instantlyTransitionTo(scene: SceneKey, overlays: Set<OverlayKey>) {
+    override fun instantlyTransitionTo(scene: SceneKey?, overlays: Set<OverlayKey>?) {
         applicationScope.launch {
-            currentScene.value = scene
-            currentOverlays.value = overlays
-            _transitionState.value = flowOf(ObservableTransitionState.Idle(scene, overlays))
+            if (scene != null) {
+                currentScene.value = scene
+            }
+            if (overlays != null) {
+                currentOverlays.value = overlays
+            }
+            _transitionState.value =
+                flowOf(ObservableTransitionState.Idle(currentScene.value, currentOverlays.value))
         }
     }
 

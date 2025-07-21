@@ -98,7 +98,10 @@ class SceneTransitionLayoutDataSource(
         state.currentTransition?.freezeAndAnimateToCurrentState()
     }
 
-    override fun instantlyTransitionTo(scene: SceneKey, overlays: Set<OverlayKey>) {
-        state.snapTo(scene = scene, overlays = overlays)
+    override fun instantlyTransitionTo(scene: SceneKey?, overlays: Set<OverlayKey>?) {
+        state.snapTo(
+            scene = scene ?: state.transitionState.currentScene,
+            overlays = overlays ?: state.transitionState.currentOverlays,
+        )
     }
 }

@@ -137,6 +137,6 @@ constructor(
 
         override fun freezeAndAnimateToCurrentState() = Unit
 
-        override fun instantlyTransitionTo(scene: SceneKey, overlays: Set<OverlayKey>) = Unit
+        override fun instantlyTransitionTo(scene: SceneKey?, overlays: Set<OverlayKey>?) = Unit
     }
 }
