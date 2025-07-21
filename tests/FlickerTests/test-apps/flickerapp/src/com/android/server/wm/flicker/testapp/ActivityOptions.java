@@ -299,6 +299,12 @@ public class ActivityOptions {
         }
     }
 
+    public static class ScrollToFinish {
+        public static final String LABEL = "ScrollToFinishActivity";
+        public static final ComponentName COMPONENT = new ComponentName(FLICKER_APP_PACKAGE,
+                FLICKER_APP_PACKAGE + ".ScrollToFinishActivity");
+    }
+
     public static final String GAME_ACTIVITY_LAUNCHER_NAME = "GameApp";
     public static final ComponentName GAME_ACTIVITY_COMPONENT_NAME =
             new ComponentName(FLICKER_APP_PACKAGE, FLICKER_APP_PACKAGE + ".GameActivity");
