@@ -20,6 +20,8 @@ import android.graphics.drawable.Drawable
 import android.util.AttributeSet
 import android.view.View
 import android.widget.Button
+import android.widget.RadioButton
+import android.widget.TextView
 import androidx.constraintlayout.widget.ConstraintLayout
 import com.android.wm.shell.R
 import com.android.wm.shell.compatui.DialogContainerSupplier
@@ -34,6 +36,11 @@ class OpenByDefaultDialogView @JvmOverloads constructor(
 ) : ConstraintLayout(context, attrs, defStyleAttr, defStyleRes), DialogContainerSupplier {
 
     private lateinit var dialogContainer: View
+    private lateinit var dialogTitle: TextView
+    private lateinit var dialogSubheader: TextView
+    private lateinit var openInAppButton: RadioButton
+    private lateinit var openInBrowserButton: RadioButton
+    private lateinit var dismissButton: Button
     private lateinit var backgroundDim: Drawable
 
     fun setDismissOnClickListener(callback: (View) -> Unit) {
@@ -45,9 +52,6 @@ class OpenByDefaultDialogView @JvmOverloads constructor(
     }
 
     fun setConfirmButtonClickListener(callback: (View) -> Unit) {
-        val dismissButton = dialogContainer.requireViewById<Button>(
-            R.id.open_by_default_settings_dialog_confirm_button
-        )
         dismissButton.setOnClickListener(callback)
     }
 
@@ -59,7 +63,38 @@ class OpenByDefaultDialogView @JvmOverloads constructor(
         super.onFinishInflate()
         accessibilityPaneTitle = context.getString(R.string.open_by_default_settings_text)
         dialogContainer = requireViewById(R.id.open_by_default_dialog_container)
+        dialogTitle = dialogContainer.requireViewById(R.id.application_name)
+        dialogSubheader = dialogContainer.requireViewById(R.id.dialog_subheader)
+        openInAppButton = dialogContainer.requireViewById(R.id.open_in_app_button)
+        openInBrowserButton = dialogContainer.requireViewById(R.id.open_in_browser_button)
+        dismissButton = dialogContainer.requireViewById(
+            R.id.open_by_default_settings_dialog_confirm_button
+        )
+
         backgroundDim = background.mutate()
         backgroundDim.alpha = 128
+
+        setupA11yTraversal()
+    }
+
+    // Set up a11y focus so that focus loops through elements within the dialog, instead of going to
+    // elements behind the dialog.
+    // TODO: ag/34061541 - once landed, see if we can refactor with simpler fix
+    private fun setupA11yTraversal() {
+        dialogTitle.accessibilityTraversalBefore = R.id.open_by_default_settings_dialog_confirm_button
+        dialogTitle.accessibilityTraversalAfter = R.id.dialog_subheader
+
+        dialogSubheader.accessibilityTraversalBefore = R.id.application_name
+        dialogSubheader.accessibilityTraversalAfter = R.id.open_in_app_button
+
+        openInAppButton.accessibilityTraversalBefore = R.id.dialog_subheader
+        openInAppButton.accessibilityTraversalAfter = R.id.open_in_browser_button
+
+        openInBrowserButton.accessibilityTraversalBefore = R.id.open_in_app_button
+        openInBrowserButton.accessibilityTraversalAfter =
+            R.id.open_by_default_settings_dialog_confirm_button
+
+        dismissButton.accessibilityTraversalBefore = R.id.open_in_browser_button
+        dismissButton.accessibilityTraversalAfter = R.id.application_name
     }
 }
