@@ -138,6 +138,8 @@
     <string name="screenrecord_stop_dialog_message" msgid="6262768207331626817">"Šiuo metu įrašote visą ekraną"</string>
     <string name="screenrecord_stop_dialog_message_specific_app" msgid="5995770227684523244">"Šiuo metu įrašote šią programą: <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
     <string name="screenrecord_stop_dialog_button" msgid="2883812564938194350">"Sustabdyti įrašymą"</string>
+    <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"Norėdami įrašyti pasirinkite programą"</string>
+    <string name="screen_capture_fullscreen_screenshot_button" msgid="4255912593013592954">"Užfiksuoti visą ekraną"</string>
     <string name="screen_capture_region_selection_button" msgid="4437546351856914639">"Užfiksuoti pasirinktą sritį"</string>
     <string name="screen_capture_toolbar_capture_button" msgid="8512731007891496030">"Užfiksuoti"</string>
     <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"Įrašyti"</string>
@@ -565,7 +567,7 @@
     <string name="hub_mode_add_widget_button_text" msgid="4831464661209971729">"Pridėti valdiklį"</string>
     <string name="hub_mode_editing_exit_button_text" msgid="3704686734192264771">"Atlikta"</string>
     <string name="label_for_button_in_empty_state_cta" msgid="7314975555382055823">"Pridėti valdiklių"</string>
-    <string name="title_for_empty_state_cta" msgid="6161654421223450530">"Sparčiai pasiekite mėgstamiausius programų valdiklius neatrakinę planšetinio kompiuterio."</string>
+    <string name="title_for_empty_state_cta" msgid="3515697043504449320">"Sparčiai pasiekite mėgstamiausius programų valdiklius neatrakinę įrenginio."</string>
     <string name="dialog_title_to_allow_any_widget" msgid="1004820948962675644">"Leisti visus valdiklius užrakinimo ekrane?"</string>
     <string name="button_text_to_open_settings" msgid="1987729256950941628">"Atidaryti nustatymus"</string>
     <string name="work_mode_off_title" msgid="5794818421357835873">"Atš. darbo progr. pristabd.?"</string>
@@ -577,14 +579,14 @@
     <string name="accessibility_action_label_remove_widget" msgid="3373779447448758070">"pašalinti valdiklį"</string>
     <string name="accessibility_action_label_place_widget" msgid="1914197458644168978">"padėti pasirinktą valdiklį"</string>
     <string name="communal_widget_picker_title" msgid="1953369090475731663">"Užrakinimo ekrano valdikliai"</string>
-    <string name="communal_widget_picker_description" msgid="490515450110487871">"Visi gali žr. valdiklius užrakinimo ekrane, net užrakinus planšetinį kompiuterį."</string>
+    <string name="communal_widget_picker_description" msgid="6927728582371632782">"Bet kas gali peržiūrėti valdiklius užrakinimo ekrane net tada, kai įrenginys užrakintas"</string>
     <string name="accessibility_action_label_unselect_widget" msgid="1041811747619468698">"atšaukti valdiklio pasirinkimą"</string>
     <string name="accessibility_action_label_shrink_widget" msgid="8259511040536438771">"Sumažinti aukštį"</string>
     <string name="accessibility_action_label_expand_widget" msgid="9190524260912211759">"Padidinti aukštį"</string>
     <string name="accessibility_action_label_umo_show_next" msgid="8033581654789193281">"Rodyti kitą mediją"</string>
     <string name="accessibility_action_label_umo_show_previous" msgid="5935831384525173810">"Rodyti ankstesnę mediją"</string>
     <string name="communal_widgets_disclaimer_title" msgid="1150954395585308868">"Užrakinimo ekrano valdikliai"</string>
-    <string name="communal_widgets_disclaimer_text" msgid="1423545475160506349">"Kad galėtumėte atidaryti programą naudodami valdiklį, turėsite patvirtinti savo tapatybę. Be to, atminkite, kad bet kas gali peržiūrėti valdiklius net tada, kai planšetinis kompiuteris užrakintas. Kai kurie valdikliai gali būti neskirti jūsų užrakinimo ekranui ir gali būti nesaugu juos čia pridėti."</string>
+    <string name="communal_widgets_disclaimer_text" msgid="7363411191173297965">"Kad galėtumėte atidaryti programą naudodami valdiklį, turėsite patvirtinti savo tapatybę. Be to, atminkite, kad bet kas gali peržiūrėti valdiklius net tada, kai įrenginys užrakintas. Kai kurie valdikliai gali būti neskirti jūsų užrakinimo ekranui ir gali būti nesaugu juos čia pridėti."</string>
     <string name="communal_widgets_disclaimer_button" msgid="4423059765740780753">"Supratau"</string>
     <string name="accessibility_glanceable_hub_to_dream_button" msgid="7552776300297055307">"Mygtukas „Rodyti ekrano užsklandą“"</string>
     <string name="hub_onboarding_bottom_sheet_title" msgid="162092881395529947">"Naršymas centro režimu"</string>
@@ -851,7 +853,8 @@
     <string name="notification_guts_recs_summary" msgid="8391881843238947007">"Naujienlaiškiai, rekomenduojama medija ir kt."</string>
     <string name="notification_onboarding_summaries_turn_on" msgid="5050003857531272655">"Įjungti"</string>
     <string name="notification_onboarding_summaries_message" msgid="6061524903176459064">"Dabar ilgesnius pokalbius galima apibendrinti, kad gautumėte trumpas santraukas"</string>
-    <string name="notification_onboarding_bundles_message" msgid="9038023612294384832">"Pranešimų tvarkyklė sugrupuoja ir nutildo žemesnio prioriteto pranešimus"</string>
+    <!-- no translation found for notification_onboarding_bundles_message (4612908213178622912) -->
+    <skip />
     <string name="notification_bundle_header_counter" msgid="5515532701569242265">"{count,plural, =1{# pranešimas}one{# pranešimas}few{# pranešimai}many{# pranešimo}other{# pranešimų}}"</string>
     <string name="inline_done_button" msgid="6043094985588909584">"Atlikta"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"Taikyti"</string>
@@ -1098,6 +1101,8 @@
     <string name="accessibility_key_gesture_dialog_content" msgid="4519838108423437794">"Veiksmo "<annotation id="action_key_icon">"piktograma"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> yra spartusis klavišas, skirtas naudoti <xliff:g id="ID_3">^3</xliff:g>. <xliff:g id="ID_4">^4</xliff:g>"</string>
     <string name="accessibility_key_gesture_dialog_magnifier_intro" msgid="627023269951856071">"Taip galite greitai artinti ekrano vaizdą, kad turinys būtų didesnis."</string>
     <string name="accessibility_key_gesture_dialog_talkback_intro" msgid="1617808784388544741">"„<xliff:g id="ID_1">%1$s</xliff:g>“ yra ekrano skaitytuvas, leidžiantis girdėti garsiai ištartus elementus. Jis gali būti naudingas žmonėms, kuriems sudėtinga matyti ekraną."</string>
+    <!-- no translation found for accessibility_key_gesture_dialog_va_intro (4709198503441288289) -->
+    <skip />
     <string name="accessibility_key_gesture_dialog_positive_button_text" msgid="3670746017523589293">"Įjungti"</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"Užrakinimo ekranas"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"Išjungiama…"</string>
@@ -1338,19 +1343,6 @@
     <string name="media_output_end_session_dialog_summary" msgid="5954520685989877347">"Sustabdyti bendrinamą seansą norint perkelti mediją į kitą įrenginį"</string>
     <string name="media_output_end_session_dialog_stop" msgid="208189434474624412">"Sustabdyti"</string>
     <string name="media_output_dialog_button_stop_sharing" msgid="5043482739689716185">"Nebebendrinti"</string>
-    <string name="media_output_first_broadcast_title" msgid="6292237789860753022">"Kaip veikia transliacija"</string>
-    <string name="media_output_broadcast" msgid="3555580945878071543">"Transliacija"</string>
-    <string name="media_output_first_notify_broadcast_message" msgid="6353857724136398494">"Netoliese esantys žmonės, turintys suderinamus „Bluetooth“ įrenginius, gali klausyti jūsų transliuojamos medijos"</string>
-    <string name="media_output_broadcasting_message" msgid="4150299923404886073">"Kad galėtų klausyti jūsų transliacijos, netoliese esantys žmonės, turintys suderinamus „Bluetooth“ įrenginius, gali nuskaityti jūsų QR kodą arba naudoti jūsų transliacijos pavadinimą ir slaptažodį."</string>
-    <string name="media_output_broadcast_name" msgid="8786127091542624618">"Transliacijos pavadinimas"</string>
-    <string name="media_output_broadcast_code" msgid="870795639644728542">"Slaptažodis"</string>
-    <string name="media_output_broadcast_dialog_save" msgid="7910865591430010198">"Išsaugoti"</string>
-    <string name="media_output_broadcast_starting" msgid="8130153654166235557">"Pradedama…"</string>
-    <string name="media_output_broadcast_start_failed" msgid="3670835946856129775">"Nepavyko transliuoti"</string>
-    <string name="media_output_broadcast_update_error" msgid="1420868236079122521">"Nepavyko išsaugoti. Bandykite dar kartą."</string>
-    <string name="media_output_broadcast_last_update_error" msgid="5484328807296895491">"Nepavyko išsaugoti."</string>
-    <string name="media_output_broadcast_code_hint_no_less_than_min" msgid="4663836092607696185">"Naudokite bent 4 simbolius"</string>
-    <string name="media_output_broadcast_edit_hint_no_more_than_max" msgid="3923625800037673922">"Naudokite daugiausia <xliff:g id="LENGTH">%1$d</xliff:g> simb."</string>
     <string name="build_number_clip_data_label" msgid="3623176728412560914">"Versijos numeris"</string>
     <string name="build_number_copy_toast" msgid="877720921605503046">"Versijos numeris nukopijuotas į iškarpinę."</string>
     <string name="copy_to_clipboard_a11y_action" msgid="4312789069718446749">"kopijuoti į iškarpinę"</string>
@@ -1463,12 +1455,6 @@
     <string name="note_task_button_label" msgid="230135078402003532">"Užrašų kūrimas"</string>
     <string name="note_task_shortcut_long_label" msgid="7729325091147319409">"Užrašų kūrimas, „<xliff:g id="NOTE_TAKING_APP">%1$s</xliff:g>“"</string>
     <string name="audio_sharing_description" msgid="8849060142768870004">"Bendrinamas garsas"</string>
-    <string name="broadcasting_description_is_broadcasting" msgid="765627502786404290">"Transliavimas"</string>
-    <string name="bt_le_audio_broadcast_dialog_title" msgid="3605428497924077811">"Sustabdyti „<xliff:g id="APP_NAME">%1$s</xliff:g>“ transliaciją?"</string>
-    <string name="bt_le_audio_broadcast_dialog_sub_title" msgid="7889684551194225793">"Jei transliuosite „<xliff:g id="SWITCHAPP">%1$s</xliff:g>“ arba pakeisite išvestį, dabartinė transliacija bus sustabdyta"</string>
-    <string name="bt_le_audio_broadcast_dialog_switch_app" msgid="6098768269397105733">"Transliuoti „<xliff:g id="SWITCHAPP">%1$s</xliff:g>“"</string>
-    <string name="bt_le_audio_broadcast_dialog_different_output" msgid="7885102097302562674">"Keisti išvestį"</string>
-    <string name="bt_le_audio_broadcast_dialog_unknown_name" msgid="3791472237793443044">"Nežinoma"</string>
     <string name="dream_time_complication_12_hr_time_format" msgid="4691197486690291529">"h:mm"</string>
     <string name="dream_time_complication_24_hr_time_format" msgid="6248280719733640813">"kk:mm"</string>
     <string name="log_access_confirmation_title" msgid="4843557604739943395">"Leisti „<xliff:g id="LOG_ACCESS_APP_NAME">%s</xliff:g>“ pasiekti visus įrenginio žurnalus?"</string>
@@ -1633,9 +1619,9 @@
     <string name="home_edu_toast_content" msgid="3381071147871955415">"Jei norite eiti į pagrindinį ekraną, jutiklinėje dalyje perbraukite aukštyn trimis pirštais"</string>
     <string name="overview_edu_toast_content" msgid="5797030644017804518">"Peržiūrėkite naujausias programas, jutiklinėje dalyje perbraukę aukštyn trimis pirštais ir palaikę"</string>
     <string name="all_apps_edu_toast_content" msgid="8807496014667211562">"Jei norite peržiūrėti visas programas, paspauskite klaviatūros veiksmų klavišą"</string>
-    <string name="redacted_notification_single_line_title" msgid="212019960919261670">"Paslėpta"</string>
-    <string name="public_notification_single_line_text" msgid="3576190291791654933">"Atrakinkite ir peržiūrėkite"</string>
+    <string name="public_notification_single_line_title" msgid="3161485511931439629">"Atrakinti ir peržiūrėti"</string>
     <string name="redacted_otp_notification_single_line_text" msgid="5179964116354454118">"Atrakinkite ir peržiūrėkite kodą"</string>
+    <string name="empty_notification_single_line_title" msgid="4464430045266180257">"Išskleisti ir peržiūrėti"</string>
     <string name="contextual_education_dialog_title" msgid="4630392552837487324">"Kontekstinis švietimas"</string>
     <string name="back_edu_notification_title" msgid="5624780717751357278">"Naudokite klaviatūrą, kad grįžtumėte atgal"</string>
     <string name="back_edu_notification_content" msgid="2497557451540954068">"Perbraukite į kairę ar dešinę trimis pirštais. Palieskite, kad sužinotumėte daugiau gestų."</string>
@@ -1672,8 +1658,6 @@
     <string name="back_button_on_bouncer" msgid="809134628434396761">"Atgal"</string>
     <string name="pager_dots_previous_content_description" msgid="26963508904918908">"Ankstesnis"</string>
     <string name="pager_dots_next_content_description" msgid="613943992626163120">"Kitas"</string>
-    <!-- no translation found for ambient_cue_autofill_action (9213025887835308128) -->
-    <skip />
-    <!-- no translation found for ambient_cue_expand_action (6803711089932959312) -->
-    <skip />
+    <string name="ambient_cue_autofill_action" msgid="9213025887835308128">"automatiškai pildyti"</string>
+    <string name="ambient_cue_expand_action" msgid="6803711089932959312">"išskleisti"</string>
 </resources>
