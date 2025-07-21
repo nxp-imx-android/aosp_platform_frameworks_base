@@ -37,9 +37,7 @@ import com.android.packageinstaller.v2.model.UninstallFailed
 import com.android.packageinstaller.v2.model.UninstallRepository
 import com.android.packageinstaller.v2.model.UninstallStage
 import com.android.packageinstaller.v2.model.UninstallSuccess
-import com.android.packageinstaller.v2.model.UninstallUserActionRequired
-import com.android.packageinstaller.v2.ui.fragments.UninstallConfirmationFragment
-import com.android.packageinstaller.v2.ui.fragments.UninstallErrorFragment
+import com.android.packageinstaller.v2.ui.fragments.UninstallationFragment
 import com.android.packageinstaller.v2.viewmodel.UninstallViewModel
 import com.android.packageinstaller.v2.viewmodel.UninstallViewModelFactory
 
@@ -52,6 +50,7 @@ class UninstallLaunch : FragmentActivity(), UninstallActionListener {
             UninstallLaunch::class.java.packageName + ".callingActivityName"
         private val LOG_TAG = UninstallLaunch::class.java.simpleName
         private const val TAG_DIALOG = "dialog"
+        private const val TAG_UNINSTALLATION_DIALOG = "uninstallation-dialog"
         private const val ARGS_SAVED_INTENT = "saved_intent"
     }
 
@@ -112,8 +111,7 @@ class UninstallLaunch : FragmentActivity(), UninstallActionListener {
                     UninstallAborted.ABORT_REASON_APP_UNAVAILABLE,
                     UninstallAborted.ABORT_REASON_UNKNOWN,
                     UninstallAborted.ABORT_REASON_USER_NOT_ALLOWED -> {
-                        val errorDialog = UninstallErrorFragment.newInstance(aborted)
-                        showDialogInner(errorDialog)
+                        showUninstallationDialog()
                     }
 
                     else -> {
@@ -123,9 +121,7 @@ class UninstallLaunch : FragmentActivity(), UninstallActionListener {
             }
 
             UninstallStage.STAGE_USER_ACTION_REQUIRED -> {
-                val uar = uninstallStage as UninstallUserActionRequired
-                val confirmationDialog = UninstallConfirmationFragment.newInstance(uar)
-                showDialogInner(confirmationDialog)
+                showUninstallationDialog()
             }
 
             UninstallStage.STAGE_FAILED -> {
@@ -153,15 +149,42 @@ class UninstallLaunch : FragmentActivity(), UninstallActionListener {
         }
     }
 
+    private fun showUninstallationDialog() {
+        val fragment = getUninstallationFragment() ?: UninstallationFragment()
+        fragment.updateUI()
+        showDialogInner(fragment, TAG_UNINSTALLATION_DIALOG)
+    }
+
     /**
-     * Replace any visible dialog by the dialog returned by InstallRepository
+     * Replace any visible dialog by the dialog returned by UninstallRepository with the tag
+     * TAG_DIALOG.
      *
      * @param newDialog The new dialog to display
      */
     private fun showDialogInner(newDialog: DialogFragment?) {
-        val currentDialog = fragmentManager!!.findFragmentByTag(TAG_DIALOG) as DialogFragment?
-        currentDialog?.dismissAllowingStateLoss()
-        newDialog?.show(fragmentManager!!, TAG_DIALOG)
+        showDialogInner(newDialog, TAG_DIALOG)
+    }
+    private fun showDialogInner(newDialog: DialogFragment?, tag: String) {
+        var currentTag: String? = null
+        if (tag == TAG_UNINSTALLATION_DIALOG) {
+            if (getUninstallationFragment() != null) {
+                return
+            }
+            currentTag = TAG_DIALOG
+        } else {
+            currentTag = TAG_UNINSTALLATION_DIALOG
+        }
+
+        val currentDialog = fragmentManager!!.findFragmentByTag(currentTag)
+        if (currentDialog is DialogFragment) {
+            currentDialog.dismissAllowingStateLoss()
+        }
+        newDialog?.show(fragmentManager!!, tag)
+    }
+
+    private fun getUninstallationFragment(): UninstallationFragment? {
+        return (fragmentManager!!.findFragmentByTag(TAG_UNINSTALLATION_DIALOG)
+            ?: return null) as UninstallationFragment?
     }
 
     fun setResult(resultCode: Int, data: Intent?, shouldFinish: Boolean) {
