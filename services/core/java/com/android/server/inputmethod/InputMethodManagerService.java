@@ -4028,9 +4028,9 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
         if (currentImi == null) {
             return false;
         }
-        final ImeSubtypeListItem nextSubtype = userData.mSwitchingController
-                .getNextInputMethod(currentImi, bindingController.getCurrentSubtype(),
-                        onlyCurrentIme, MODE_AUTO, true /* forward */);
+        final ImeSubtypeListItem nextSubtype = userData.mSwitchingController.getNext(currentImi,
+                bindingController.getCurrentSubtype(), onlyCurrentIme, false /* forHardware */,
+                MODE_AUTO, true /* forward */);
         if (nextSubtype == null) {
             return false;
         }
@@ -4047,9 +4047,9 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
         if (currentImi == null) {
             return false;
         }
-        final ImeSubtypeListItem nextSubtype = userData.mSwitchingController
-                .getNextInputMethod(currentImi, bindingController.getCurrentSubtype(),
-                        false /* onlyCurrentIme */, MODE_AUTO, true /* forward */);
+        final ImeSubtypeListItem nextSubtype = userData.mSwitchingController.getNext(currentImi,
+                bindingController.getCurrentSubtype(), false /* onlyCurrentIme */,
+                false /* forHardware */, MODE_AUTO, true /* forward */);
         return nextSubtype != null;
     }
 
@@ -4588,7 +4588,7 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
                 settings.getSelectedInputMethodSubtypeIndex(lastInputMethodId);
 
         final List<ImeSubtypeListItem> items = userData.mSwitchingController
-                .getItemsForImeSwitcherMenu(includeAuxiliary);
+                .getItems(true /* forMenu */, includeAuxiliary);
         if (items.isEmpty()) {
             Slog.w(TAG, "Show switching menu failed, items is empty,"
                     + " showAuxSubtypes: " + showAuxSubtypes
@@ -5242,8 +5242,8 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
             return;
         }
         final var currentSubtype = bindingController.getCurrentSubtype();
-        final var nextItem = userData.mSwitchingController.getNextInputMethodForHardware(
-                currentImi, currentSubtype, false /* onlyCurrentIme */, MODE_AUTO,
+        final var nextItem = userData.mSwitchingController.getNext(currentImi, currentSubtype,
+                false /* onlyCurrentIme */, true /* forHardware */, MODE_AUTO,
                 direction > 0 /* forward */);
         if (nextItem == null) {
             Slog.i(TAG, "Hardware keyboard switching shortcut,"
