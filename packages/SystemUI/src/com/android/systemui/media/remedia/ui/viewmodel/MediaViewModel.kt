@@ -27,7 +27,6 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.ImageBitmap
 import com.android.systemui.animation.Expandable
 import com.android.systemui.classifier.Classifier
 import com.android.systemui.common.shared.model.ContentDescription
@@ -75,7 +74,7 @@ constructor(
             object : MediaCardViewModel {
                 override val key = session.key
                 override val icon = session.appIcon
-                override val background: ImageBitmap?
+                override val background: Icon?
                     get() = session.background
 
                 override val colorScheme: MediaColorScheme?

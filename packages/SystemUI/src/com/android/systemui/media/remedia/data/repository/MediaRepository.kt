@@ -37,6 +37,7 @@ import com.android.systemui.media.NotificationMediaManager
 import com.android.systemui.media.controls.data.model.MediaSortKeyModel
 import com.android.systemui.media.controls.shared.model.MediaData
 import com.android.systemui.media.remedia.data.model.MediaDataModel
+import com.android.systemui.media.remedia.data.model.UpdateArtInfoModel
 import com.android.systemui.media.remedia.shared.model.MediaColorScheme
 import com.android.systemui.media.remedia.shared.model.MediaSessionState
 import com.android.systemui.monet.ColorScheme
@@ -73,7 +74,7 @@ constructor(
     @Application private val applicationScope: CoroutineScope,
     @Background val backgroundDispatcher: CoroutineDispatcher,
     private val systemClock: SystemClock,
-) : MediaRepository, MediaPipelineRepository() {
+) : MediaRepository, MediaPipelineRepository(applicationContext) {
 
     override val currentMedia: SnapshotStateList<MediaDataModel> = mutableStateListOf()
 
@@ -85,8 +86,10 @@ constructor(
     // To store active polling jobs
     private val positionPollers = mutableMapOf<InstanceId, Job>()
 
-    override fun addCurrentUserMediaEntry(data: MediaData): Boolean {
-        return super.addCurrentUserMediaEntry(data).also { addToSortedMedia(data) }
+    override fun addCurrentUserMediaEntry(data: MediaData): UpdateArtInfoModel? {
+        return super.addCurrentUserMediaEntry(data).also { updateModel ->
+            addToSortedMedia(data, updateModel)
+        }
     }
 
     override fun removeCurrentUserMediaEntry(key: InstanceId): MediaData? {
@@ -123,7 +126,7 @@ constructor(
         currentMedia.addAll(sortedMedia.values.toList())
     }
 
-    private fun addToSortedMedia(data: MediaData) {
+    private fun addToSortedMedia(data: MediaData, updateModel: UpdateArtInfoModel?) {
         val sortedMap = TreeMap<MediaSortKeyModel, MediaDataModel>(comparator)
         val currentModel = sortedMedia.values.find { it.instanceId == data.instanceId }
 
@@ -152,7 +155,9 @@ constructor(
                             currentModel?.instanceId?.let { clearControllerState(it) }
                             token?.let { MediaController(applicationContext, it) }
                         }
-                    val mediaModel = toDataModel(controller)
+                    val (icon, background) =
+                        getIconAndBackground(mediaData, currentModel, updateModel)
+                    val mediaModel = toDataModel(controller, icon, background)
                     sortedMap[sortKey] = mediaModel
                     controller?.let { setupController(mediaModel, it) }
 
@@ -190,7 +195,11 @@ constructor(
         clearControllerState(data.instanceId)
     }
 
-    private suspend fun MediaData.toDataModel(controller: MediaController?): MediaDataModel {
+    private suspend fun MediaData.toDataModel(
+        controller: MediaController?,
+        icon: Icon,
+        background: Icon?,
+    ): MediaDataModel {
         return withContext(backgroundDispatcher) {
             val metadata = controller?.metadata
             val currentPlaybackState = controller?.playbackState
@@ -198,18 +207,13 @@ constructor(
             val duration = metadata?.getLong(MediaMetadata.METADATA_KEY_DURATION) ?: 0L
             val position = currentPlaybackState?.position ?: 0L
             val state = currentPlaybackState?.state ?: PlaybackState.STATE_NONE
-
-            val icon = appIcon?.loadDrawable(applicationContext)
-            val background = artwork?.loadDrawable(applicationContext)
             MediaDataModel(
                 instanceId = instanceId,
                 appUid = appUid,
                 packageName = packageName,
                 appName = app.toString(),
-                appIcon =
-                    icon?.let { Icon.Loaded(it, ContentDescription.Loaded(app)) }
-                        ?: getAltIcon(packageName),
-                background = background?.let { Icon.Loaded(background, null) },
+                appIcon = icon,
+                background = background,
                 title = song.toString(),
                 subtitle = artist.toString(),
                 colorScheme = getScheme(artwork, packageName),
@@ -235,6 +239,32 @@ constructor(
                 suggestionData = suggestionData,
                 token = token,
             )
+        }
+    }
+
+    private suspend fun getIconAndBackground(
+        currentData: MediaData,
+        currentModel: MediaDataModel?,
+        updateModel: UpdateArtInfoModel?,
+    ): Pair<Icon, Icon?> {
+        return with(currentData) {
+            val icon =
+                if (currentModel != null && updateModel?.isAppIconUpdated == false) {
+                    currentModel.appIcon
+                } else {
+                    appIcon?.loadDrawable(applicationContext)?.let { drawable ->
+                        Icon.Loaded(drawable, contentDescription = ContentDescription.Loaded(app))
+                    } ?: getAltIcon(packageName)
+                }
+            val background =
+                if (currentModel != null && updateModel?.isBackgroundUpdated == false) {
+                    currentModel.background
+                } else {
+                    artwork?.loadDrawable(applicationContext)?.let { drawable ->
+                        Icon.Loaded(drawable, contentDescription = null)
+                    }
+                }
+            Pair(icon, background)
         }
     }
 

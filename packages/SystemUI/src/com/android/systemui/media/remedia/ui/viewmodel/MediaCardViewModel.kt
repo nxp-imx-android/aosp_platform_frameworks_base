@@ -17,7 +17,6 @@
 package com.android.systemui.media.remedia.ui.viewmodel
 
 import androidx.compose.runtime.Stable
-import androidx.compose.ui.graphics.ImageBitmap
 import com.android.systemui.animation.Expandable
 import com.android.systemui.common.shared.model.Icon
 import com.android.systemui.media.remedia.shared.model.MediaCardActionButtonLayout
@@ -34,7 +33,7 @@ interface MediaCardViewModel {
 
     val icon: Icon
 
-    val background: ImageBitmap?
+    val background: Icon?
 
     val colorScheme: MediaColorScheme?
 

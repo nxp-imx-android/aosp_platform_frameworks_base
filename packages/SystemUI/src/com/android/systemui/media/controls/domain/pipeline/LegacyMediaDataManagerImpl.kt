@@ -49,6 +49,8 @@ import com.android.systemui.media.controls.domain.pipeline.MediaDataManager.Comp
 import com.android.systemui.media.controls.domain.resume.MediaResumeListener
 import com.android.systemui.media.controls.domain.resume.ResumeMediaBrowser
 import com.android.systemui.media.controls.shared.MediaLogger
+import com.android.systemui.media.controls.shared.getActiveTimestamp
+import com.android.systemui.media.controls.shared.isSameMediaData
 import com.android.systemui.media.controls.shared.model.MediaAction
 import com.android.systemui.media.controls.shared.model.MediaButton
 import com.android.systemui.media.controls.shared.model.MediaData

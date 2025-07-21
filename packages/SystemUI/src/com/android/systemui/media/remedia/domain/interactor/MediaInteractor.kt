@@ -24,8 +24,6 @@ import android.content.Intent
 import android.media.session.MediaSession
 import android.provider.Settings
 import android.util.Log
-import androidx.compose.ui.graphics.ImageBitmap
-import androidx.compose.ui.graphics.asImageBitmap
 import com.android.internal.jank.Cuj
 import com.android.internal.logging.InstanceId
 import com.android.settingslib.media.LocalMediaManager.MediaDeviceState
@@ -33,7 +31,6 @@ import com.android.systemui.ActivityIntentHelper
 import com.android.systemui.animation.DialogCuj
 import com.android.systemui.animation.DialogTransitionAnimator
 import com.android.systemui.animation.Expandable
-import com.android.systemui.biometrics.Utils.toBitmap
 import com.android.systemui.common.shared.model.ContentDescription
 import com.android.systemui.common.shared.model.Icon
 import com.android.systemui.common.shared.model.asIcon
@@ -117,11 +114,8 @@ constructor(
             override val appIcon: Icon
                 get() = dataModel.appIcon
 
-            override val background: ImageBitmap?
-                get() =
-                    dataModel.background?.let {
-                        (it as Icon.Loaded).drawable.toBitmap()?.asImageBitmap()
-                    }
+            override val background: Icon?
+                get() = dataModel.background
 
             override val colorScheme: MediaColorScheme?
                 get() = dataModel.colorScheme
