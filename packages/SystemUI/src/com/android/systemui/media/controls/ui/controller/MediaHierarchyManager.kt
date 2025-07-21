@@ -266,6 +266,9 @@ constructor(
     private var hasActiveMedia: Boolean = false
         get() = mediaManager.hasActiveMedia()
 
+    /** Previous value of carouselVisible */
+    private var previousCarouselVisible = false
+
     /** Are we currently waiting on an animation to start? */
     private var animationPending: Boolean = false
     private val startAnimation: Runnable = Runnable { animator.start() }
@@ -1347,9 +1350,10 @@ constructor(
         logger.logUserVisibilityChange(shadeVisible, mediaVisible)
         val carouselVisible = shadeVisible && mediaVisible
         mediaCarouselController.mediaCarouselScrollHandler.visibleToUser = carouselVisible
-        if (carouselVisible) {
+        if (carouselVisible && !previousCarouselVisible) {
             mediaCarouselController.onCarouselVisibleToUser()
         }
+        previousCarouselVisible = carouselVisible
     }
 
     private fun isLockScreenVisibleToUser(): Boolean {
