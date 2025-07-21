@@ -7958,23 +7958,19 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
     private static Boolean sIsPip2ExperimentEnabled = null;
 
     /**
-     * @return {@code true} if PiP2 implementation should be used. Besides the trunk stable flag,
-     * system property can be used to override this read only flag during development.
-     * It's currently limited to phone form factor, i.e., not enabled on ARC / TV.
+     * @return {@code true} if PiP2 implementation should be used.
      *
-     * Special note: if PiP on Desktop Windowing is enabled, override the PiP2 gantry flag to be ON.
+     * Note: if PiP on Desktop Windowing is enabled, override the PiP2 gantry flag to be ON.
+     * Note: For form factors other than phone, such as TV, separate flag needs to be ON.
      */
     static boolean isPip2ExperimentEnabled() {
         if (sIsPip2ExperimentEnabled == null) {
-            final FeatureInfo arcFeature = SystemConfig.getInstance().getAvailableFeatures().get(
-                    "org.chromium.arc");
             final FeatureInfo tvFeature = SystemConfig.getInstance().getAvailableFeatures().get(
                     FEATURE_LEANBACK);
-            final boolean isArc = arcFeature != null && arcFeature.version >= 0;
             final boolean isTv = tvFeature != null && tvFeature.version >= 0;
             final boolean shouldOverridePip2Flag = ENABLE_DESKTOP_WINDOWING_PIP.isTrue();
             sIsPip2ExperimentEnabled = (Flags.enablePip2() || shouldOverridePip2Flag)
-                    && !isArc && !isTv;
+                    && (!isTv || Flags.enablePip2OnTv());
         }
         return sIsPip2ExperimentEnabled;
     }

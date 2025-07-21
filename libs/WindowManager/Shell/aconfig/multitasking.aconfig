@@ -21,6 +21,13 @@ flag {
 }
 
 flag {
+    name: "enable_pip2_on_tv"
+    namespace: "multitasking"
+    description: "Enables the new implementation of PiP (PiP2) on TV"
+    bug: "403347147"
+}
+
+flag {
     name: "enable_new_bubble_animations"
     namespace: "multitasking"
     description: "Enables new animations for expand and collapse for bubbles"
