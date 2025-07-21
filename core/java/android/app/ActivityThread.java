@@ -251,6 +251,7 @@ import com.android.internal.os.SafeZipPathValidatorCallback;
 import com.android.internal.os.SomeArgs;
 import com.android.internal.os.logging.MetricsLoggerWrapper;
 import com.android.internal.policy.DecorView;
+import com.android.internal.protolog.ProtoLog;
 import com.android.internal.util.ArrayUtils;
 import com.android.internal.util.FastPrintWriter;
 import com.android.internal.util.Preconditions;
@@ -4629,6 +4630,11 @@ public final class ActivityThread extends ClientTransactionHandler
                 HardwareRenderer.preload();
             }
         }
+
+        if (android.tracing.Flags.imetrackerProtolog()) {
+            ProtoLog.init();
+        }
+
         WindowManagerGlobal.initialize();
 
         // Hint the GraphicsEnvironment that an activity is launching on the process.
