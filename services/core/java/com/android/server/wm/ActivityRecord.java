@@ -531,7 +531,6 @@ final class ActivityRecord extends WindowToken {
     // window.
     private boolean mVisibleSetFromTransferredStartingWindow;
     boolean nowVisible;     // is this activity's window visible?
-    boolean mClientVisibilityDeferred;// was the visibility change message to client deferred?
     boolean idle;           // has the activity gone idle?
     boolean hasBeenLaunched;// has this activity ever been launched?
     boolean immersive;      // immersive mode (don't interrupt if possible)
@@ -5943,10 +5942,7 @@ final class ActivityRecord extends WindowToken {
             setVisibility(true);
             app.postPendingUiCleanMsg(true);
             if (reportToClient) {
-                mClientVisibilityDeferred = false;
                 makeActiveIfNeeded(starting);
-            } else {
-                mClientVisibilityDeferred = true;
             }
             // The activity may be waiting for stop, but that is no longer appropriate for it.
             mTaskSupervisor.mStoppingActivities.remove(this);

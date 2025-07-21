@@ -19,7 +19,6 @@ package com.android.server.companion.datatransfer.continuity.connectivity;
 import android.annotation.NonNull;
 import android.companion.AssociationInfo;
 import android.companion.CompanionDeviceManager;
-import android.content.Context;
 import android.util.Log;
 
 import java.util.ArrayList;
@@ -29,6 +28,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.Executor;
 
 public class ConnectedAssociationStore {
 
@@ -44,12 +44,12 @@ public class ConnectedAssociationStore {
     }
 
     public ConnectedAssociationStore(
-            @NonNull Context context) {
-        mCompanionDeviceManager = context
-            .getSystemService(CompanionDeviceManager.class);
+        @NonNull CompanionDeviceManager companionDeviceManager,
+        @NonNull Executor executor) {
 
+        mCompanionDeviceManager = companionDeviceManager;
         mCompanionDeviceManager.addOnTransportsChangedListener(
-                context.getMainExecutor(),
+                executor,
                 this::onTransportsChanged);
    }
 

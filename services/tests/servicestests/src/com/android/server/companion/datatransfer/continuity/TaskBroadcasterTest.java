@@ -28,9 +28,7 @@ import static org.mockito.AdditionalMatchers.aryEq;
 
 import static com.android.server.companion.datatransfer.contextsync.BitmapUtils.renderDrawableToByteArray;
 import static com.android.server.companion.datatransfer.continuity.TaskContinuityTestUtils.createMockContext;
-import static com.android.server.companion.datatransfer.continuity.TaskContinuityTestUtils.createMockCompanionDeviceManager;
 import static com.android.server.companion.datatransfer.continuity.TaskContinuityTestUtils.createAssociationInfo;
-import static com.android.server.companion.datatransfer.continuity.TaskContinuityTestUtils.createRunningTaskInfo;
 
 import android.app.ActivityManager;
 import android.app.ActivityManager.RunningTaskInfo;
@@ -43,8 +41,6 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.companion.AssociationInfo;
 import android.companion.IOnTransportsChangedListener;
-import android.companion.CompanionDeviceManager;
-import android.companion.ICompanionDeviceManager;
 import android.companion.AssociationInfo;
 import android.companion.datatransfer.continuity.RemoteTask;
 import android.graphics.Bitmap;
@@ -58,9 +54,8 @@ import android.testing.TestableLooper;
 import androidx.test.platform.app.InstrumentationRegistry;
 
 import com.android.server.companion.datatransfer.continuity.connectivity.ConnectedAssociationStore;
+import com.android.server.companion.datatransfer.continuity.connectivity.TaskContinuityMessenger;
 import com.android.server.companion.datatransfer.continuity.messages.ContinuityDeviceConnected;
-import com.android.server.companion.datatransfer.continuity.messages.TaskContinuityMessage;
-import com.android.server.companion.datatransfer.continuity.messages.TaskContinuityMessageSerializer;
 import com.android.server.companion.datatransfer.continuity.messages.RemoteTaskAddedMessage;
 import com.android.server.companion.datatransfer.continuity.messages.RemoteTaskInfo;
 import com.android.server.companion.datatransfer.continuity.messages.RemoteTaskRemovedMessage;
@@ -88,13 +83,9 @@ public class TaskBroadcasterTest {
 
     private Context mMockContext;
 
-    @Mock
-    private ActivityTaskManager mMockActivityTaskManager;
-
-    private ICompanionDeviceManager mMockCompanionDeviceManagerService;
-
+    @Mock private ActivityTaskManager mMockActivityTaskManager;
+    @Mock private TaskContinuityMessenger mMockTaskContinuityMessenger;
     @Mock private ConnectedAssociationStore mMockConnectedAssociationStore;
-
     @Mock private PackageManager mMockPackageManager;
 
     private TaskBroadcaster mTaskBroadcaster;
@@ -102,17 +93,18 @@ public class TaskBroadcasterTest {
     private Drawable mTaskIcon;
     private byte[] mSerializedTaskIcon;
 
-
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
-        mMockContext =  createMockContext();
-        mMockCompanionDeviceManagerService = createMockCompanionDeviceManager(mMockContext);
+        mMockContext = createMockContext();
 
         when(mMockContext.getSystemService(Context.ACTIVITY_TASK_SERVICE))
             .thenReturn(mMockActivityTaskManager);
 
         when(mMockContext.getPackageManager()).thenReturn(mMockPackageManager);
+
+        when(mMockTaskContinuityMessenger.getConnectedAssociationStore())
+            .thenReturn(mMockConnectedAssociationStore);
 
         Bitmap bitmap = BitmapFactory.decodeResource(
                 mMockContext.getResources(), R.drawable.black_32x32);
@@ -122,7 +114,7 @@ public class TaskBroadcasterTest {
         // Create TaskBroadcaster.
         mTaskBroadcaster = new TaskBroadcaster(
             mMockContext,
-            mMockConnectedAssociationStore);
+            mMockTaskContinuityMessenger);
     }
 
     @Test
@@ -164,7 +156,8 @@ public class TaskBroadcasterTest {
             .thenReturn(Arrays.asList(taskInfo));
 
         // Add a new transport
-        AssociationInfo associationInfo = createAssociationInfo(1, "name");
+        int associationId = 1;
+        AssociationInfo associationInfo = createAssociationInfo(associationId, "name");
         mTaskBroadcaster.onTransportConnected(associationInfo);
 
         // Verify the message is sent.
@@ -174,10 +167,9 @@ public class TaskBroadcasterTest {
                 taskLabel,
                 taskLastActiveTime,
                 mSerializedTaskIcon)));
-        verify(mMockCompanionDeviceManagerService, times(1)).sendMessage(
-            eq(CompanionDeviceManager.MESSAGE_ONEWAY_TASK_CONTINUITY),
-            aryEq(TaskContinuityMessageSerializer.serialize(expectedMessage)),
-            eq(new int[] {1}));
+        verify(mMockTaskContinuityMessenger, times(1)).sendMessage(
+            eq(associationId),
+            eq(expectedMessage));
     }
 
     @Test
@@ -185,7 +177,8 @@ public class TaskBroadcasterTest {
         // Start broadcasting.
         mTaskBroadcaster.startBroadcasting();
         verify(mMockConnectedAssociationStore, times(1)).addObserver(mTaskBroadcaster);
-        AssociationInfo associationInfo = createAssociationInfo(1, "name1");
+        int associationId = 1;
+        AssociationInfo associationInfo = createAssociationInfo(associationId, "name1");
         when(mMockConnectedAssociationStore.getConnectedAssociations())
             .thenReturn(Arrays.asList(associationInfo));
 
@@ -209,10 +202,7 @@ public class TaskBroadcasterTest {
                 taskLabel,
                 taskLastActiveTime,
                 mSerializedTaskIcon));
-        verify(mMockCompanionDeviceManagerService, times(1)).sendMessage(
-                eq(CompanionDeviceManager.MESSAGE_ONEWAY_TASK_CONTINUITY),
-                aryEq(TaskContinuityMessageSerializer.serialize(expectedMessage)),
-                any(int[].class));
+        verify(mMockTaskContinuityMessenger, times(1)).sendMessage(eq(expectedMessage));
     }
 
     @Test
@@ -221,7 +211,8 @@ public class TaskBroadcasterTest {
         int taskId = 123;
         mTaskBroadcaster.startBroadcasting();
         verify(mMockConnectedAssociationStore, times(1)).addObserver(mTaskBroadcaster);
-        AssociationInfo associationInfo = createAssociationInfo(1, "name1");
+        int associationId = 1;
+        AssociationInfo associationInfo = createAssociationInfo(associationId, "name1");
         when(mMockConnectedAssociationStore.getConnectedAssociations())
             .thenReturn(Arrays.asList(associationInfo));
 
@@ -229,10 +220,7 @@ public class TaskBroadcasterTest {
 
         // Verify sendMessage is called
         RemoteTaskRemovedMessage expectedMessage = new RemoteTaskRemovedMessage(taskId);
-        verify(mMockCompanionDeviceManagerService, times(1)).sendMessage(
-                eq(CompanionDeviceManager.MESSAGE_ONEWAY_TASK_CONTINUITY),
-                aryEq(TaskContinuityMessageSerializer.serialize(expectedMessage)),
-                any(int[].class));
+        verify(mMockTaskContinuityMessenger, times(1)).sendMessage(eq(expectedMessage));
     }
 
     @Test
@@ -258,10 +246,7 @@ public class TaskBroadcasterTest {
                 taskLabel,
                 taskLastActiveTime,
                 mSerializedTaskIcon));
-       verify(mMockCompanionDeviceManagerService, times(1)).sendMessage(
-            eq(CompanionDeviceManager.MESSAGE_ONEWAY_TASK_CONTINUITY),
-            aryEq(TaskContinuityMessageSerializer.serialize(expectedMessage)),
-            eq(new int[] {1}));
+       verify(mMockTaskContinuityMessenger, times(1)).sendMessage(eq(expectedMessage));
     }
 
     private ActivityManager.RunningTaskInfo setupTask(
@@ -270,10 +255,11 @@ public class TaskBroadcasterTest {
         long lastActiveTime) throws Exception {
 
         String packageName = "com.example.app";
-        ActivityManager.RunningTaskInfo taskInfo = createRunningTaskInfo(
-            taskId,
-            packageName,
-            lastActiveTime);
+
+        ActivityManager.RunningTaskInfo taskInfo = new ActivityManager.RunningTaskInfo();
+        taskInfo.taskId = taskId;
+        taskInfo.baseActivity = new ComponentName(packageName, "className");
+        taskInfo.lastActiveTime = lastActiveTime;
 
         PackageInfo packageInfo = new PackageInfo();
         packageInfo.packageName = packageName;

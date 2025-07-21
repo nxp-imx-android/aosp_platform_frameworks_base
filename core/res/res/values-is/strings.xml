@@ -71,12 +71,18 @@
     <string name="CLIRDefaultOnNextCallOff" msgid="5036749051007098105">"Númerabirting er sjálfgefið með takmörkunum. Næsta símtal: Án takmarkana"</string>
     <string name="CLIRDefaultOffNextCallOn" msgid="1022781126694885017">"Númerabirting er sjálfgefið án takmarkana. Næsta símtal: Með takmörkunum"</string>
     <string name="CLIRDefaultOffNextCallOff" msgid="2491576172356463443">"Númerabirting er sjálfgefið án takmarkana. Næsta símtal: Án takmarkana"</string>
-    <string name="page_size_compat_apk_warning" msgid="2982396798449041224">"Þetta forrit er ekki samhæft 16 KB. Athugun á samræmi við APK mistókst. Þetta forrit verður keyrt með stillingu sem er samhæf blaðsíðufjölda. Þýddu forritið aftur með stuðningi við 16 KB til að tryggja sem best samhæfi. Frekari upplýsingar má finna á &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
-    <string name="page_size_compat_elf_warning" msgid="6753874059564812651">"Þetta forrit er ekki samhæft 16 KB. Athugun á samræmi við ELF mistókst. Þetta forrit verður keyrt með stillingu sem er samhæf blaðsíðufjölda. Þýddu forritið aftur með stuðningi við 16 KB til að tryggja sem best samhæfi. Frekari upplýsingar má finna á &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
-    <string name="page_size_compat_apk_and_elf_warning" msgid="7628675779500605390">"Þetta forrit er ekki samhæft 16 KB. Athuganir á samræmingu APK og ELF mistókst. Þetta forrit verður keyrt með stillingu sem er samhæf blaðsíðufjölda. Þýddu forritið aftur með stuðningi við 16 KB til að tryggja sem best samhæfi. Frekari upplýsingar má finna á &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
-    <string name="page_size_compat_apk_warning_4kb" msgid="6013674159459424986">"Þessi viðvörun birtist því að þetta er forrit sem hægt er að villuleita sem er í prófun sem stendur. Ef þú ert ekki þróunaraðilinn biðjum við þig að tilkynna þetta til viðkomandi og biðja um forrit sem ekki er hægt að villuleita. &lt;br&gt;&lt;br&gt; Þetta forrit er ekki samhæft 16 KB. Athugun á samræmi við APK mistókst. Fylgdu skrefunum í &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; &lt;br&gt;&lt;br&gt; Eftirfarandi söfn eru ekki 16 KB samstillt: &lt;br&gt;&lt;br&gt;"</string>
-    <string name="page_size_compat_elf_warning_4kb" msgid="5189541753040977649">"Þessi viðvörun birtist því að þetta er forrit sem hægt er að villuleita sem er í prófun sem stendur. Ef þú ert ekki þróunaraðilinn biðjum við þig að tilkynna þetta til viðkomandi og biðja um forrit sem ekki er hægt að villuleita. &lt;br&gt;&lt;br&gt; Þetta forrit er ekki samhæft 16 KB. Athugun á samræmi við ELF mistókst. Fylgdu skrefunum í &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; &lt;br&gt;&lt;br&gt; Eftirfarandi söfn eru ekki 16 KB samstillt: &lt;br&gt;&lt;br&gt;"</string>
-    <string name="page_size_compat_apk_and_elf_warning_4kb" msgid="7665028394400479058">"Þessi viðvörun birtist því að þetta er forrit sem hægt er að villuleita sem er í prófun sem stendur. Ef þú ert ekki þróunaraðilinn biðjum við þig að tilkynna þetta til viðkomandi og biðja um forrit sem ekki er hægt að villuleita. &lt;br&gt;&lt;br&gt; Þetta forrit er ekki samhæft 16 KB. Athuganir á samræmingu APK og ELF mistókst. Fylgdu leiðbeiningunum á &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;. &lt;br&gt;&lt;br&gt; Eftirfarandi söfn eru ekki 16 KB samstillt: &lt;br&gt;&lt;br&gt;"</string>
+    <!-- no translation found for page_size_compat_apk_warning (2297836366674721648) -->
+    <skip />
+    <!-- no translation found for page_size_compat_elf_warning (8613720928493005883) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_and_elf_warning (9034695801295605229) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_warning_4kb (5676451039424864495) -->
+    <skip />
+    <!-- no translation found for page_size_compat_elf_warning_4kb (5005239480522831311) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_and_elf_warning_4kb (997926487776340721) -->
+    <skip />
     <string name="page_size_compat_never_show" msgid="3391282612422783097">"Ekki sýna þetta aftur"</string>
     <string name="page_size_compat_title" msgid="6497719153872572204">"Samhæfi við Android-forrit"</string>
     <string name="page_size_compat_elf_not_aligned" msgid="7940806102874132630">"&amp;#8226; %1$s : LOAD-hluti er ekki samstilltur"</string>
@@ -914,7 +920,7 @@
     <string name="policydesc_disableCamera" msgid="3204405908799676104">"Koma í veg fyrir notkun allra myndavéla tækisins."</string>
     <string name="policylab_disableKeyguardFeatures" msgid="5071855750149949741">"Loka á suma eiginl. skjáláss"</string>
     <string name="policydesc_disableKeyguardFeatures" msgid="6641673177041195957">"Hindra notkun sumra eiginleika skjáláss."</string>
-    <!-- no translation found for exit_toast_on_long_press_escape (873907401529125943) -->
+    <!-- no translation found for exit_toast_on_long_press_escape (2983932499112557277) -->
     <skip />
   <string-array name="phoneTypes">
     <item msgid="8996339953292723951">"Heima"</item>
@@ -1842,6 +1848,8 @@
     <string name="owner_name" msgid="8713560351570795743">"Eigandi"</string>
     <string name="guest_name" msgid="8502103277839834324">"Gestur"</string>
     <string name="headless_system_user_name" msgid="1849150903255530049">"Kerfisnotandi"</string>
+    <!-- no translation found for unnamed_user_name (6096699110534542980) -->
+    <skip />
     <string name="error_message_title" msgid="4082495589294631966">"Villa"</string>
     <string name="error_message_change_not_allowed" msgid="843159705042381454">"Kerfisstjórinn þinn leyfir ekki þessa breytingu"</string>
     <string name="app_not_found" msgid="3429506115332341800">"Ekkert forrit fannst til að meðhöndla þessa aðgerð"</string>
@@ -2513,7 +2521,8 @@
     <string name="screen_not_shared_sensitive_content" msgid="7058419185079565001">"Efni forrits falið í skjádeilingu af öryggisástæðum"</string>
     <string name="satellite_notification_title" msgid="4026338973463121526">"Tengdist sjálfkrafa við gervihnött"</string>
     <string name="satellite_notification_summary" msgid="5207364139430767162">"Þú getur sent og móttekið skilaboð án tengingar við farsímakerfi eða Wi-Fi"</string>
-    <string name="satellite_notification_summary_with_data" msgid="6486843676720429049">"Þú getur sent og móttekið skilaboð og notað takmörkuð gögn gegnum gervihnött"</string>
+    <!-- no translation found for satellite_notification_summary_with_data (8290202758586475712) -->
+    <skip />
     <string name="satellite_notification_manual_title" msgid="1097504441849466279">"Nota skilaboð í gegnum gervihnött?"</string>
     <string name="satellite_notification_manual_summary" msgid="901206289846283445">"Senda og fá skilaboð án tengingar við farsímakerfi eða Wi-Fi-net"</string>
     <string name="satellite_notification_open_message" msgid="4149234979688273729">"Opna Messages"</string>

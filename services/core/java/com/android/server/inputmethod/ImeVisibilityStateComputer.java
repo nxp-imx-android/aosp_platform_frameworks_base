@@ -19,8 +19,6 @@ package com.android.server.inputmethod;
 import static android.accessibilityservice.AccessibilityService.SHOW_MODE_HIDDEN;
 import static android.internal.perfetto.protos.Inputmethodmanagerservice.InputMethodManagerServiceProto.ACCESSIBILITY_REQUESTING_NO_SOFT_KEYBOARD;
 import static android.internal.perfetto.protos.Inputmethodmanagerservice.InputMethodManagerServiceProto.INPUT_SHOWN;
-import static android.internal.perfetto.protos.Inputmethodmanagerservice.InputMethodManagerServiceProto.SHOW_EXPLICITLY_REQUESTED;
-import static android.internal.perfetto.protos.Inputmethodmanagerservice.InputMethodManagerServiceProto.SHOW_FORCED;
 import static android.view.Display.DEFAULT_DISPLAY;
 import static android.view.Display.INVALID_DISPLAY;
 import static android.view.MotionEvent.TOOL_TYPE_UNKNOWN;
@@ -51,7 +49,6 @@ import android.view.MotionEvent;
 import android.view.WindowManager;
 import android.view.inputmethod.Flags;
 import android.view.inputmethod.ImeTracker;
-import android.view.inputmethod.InputMethod;
 import android.view.inputmethod.InputMethodManager;
 
 import com.android.internal.annotations.GuardedBy;
@@ -90,25 +87,6 @@ public final class ImeVisibilityStateComputer {
     @GuardedBy("ImfLock.class")
     private final WeakHashMap<IBinder, ImeTargetWindowState> mRequestWindowStateMap =
             new WeakHashMap<>();
-
-    /**
-     * Set if IME was explicitly told to show the input method.
-     *
-     * @see InputMethodManager#SHOW_IMPLICIT that we set the value is {@code false}.
-     * @see InputMethodManager#HIDE_IMPLICIT_ONLY that system will not hide IME when the value is
-     * {@code true}.
-     */
-    @GuardedBy("ImfLock.class")
-    boolean mRequestedShowExplicitly;
-
-    /**
-     * Set if we were forced to be shown.
-     *
-     * @see InputMethodManager#SHOW_FORCED
-     * @see InputMethodManager#HIDE_NOT_ALWAYS
-     */
-    @GuardedBy("ImfLock.class")
-    boolean mShowForced;
 
     /**
      * Set if we last told the input method to show itself.
@@ -246,93 +224,11 @@ public final class ImeVisibilityStateComputer {
     /**
      * Called when {@link InputMethodManagerService} is processing the show IME request.
      *
-     * @param statsToken The token tracking the current IME request.
      * @return {@code true} when the show request can proceed.
      */
     @GuardedBy("ImfLock.class")
-    boolean onImeShowFlags(@NonNull ImeTracker.Token statsToken,
-            @InputMethodManager.ShowFlags int showFlags) {
-        if (mPolicy.mA11yRequestingNoSoftKeyboard || mPolicy.mImeHiddenByDisplayPolicy) {
-            ImeTracker.forLogging().onFailed(statsToken, ImeTracker.PHASE_SERVER_ACCESSIBILITY);
-            return false;
-        }
-        ImeTracker.forLogging().onProgress(statsToken, ImeTracker.PHASE_SERVER_ACCESSIBILITY);
-        // We only "set" the state corresponding to the flags, as this will be reset
-        // in clearImeShowFlags during a hide request.
-        // Thus, we keep the strongest values set (e.g. an implicit show right after
-        // an explicit show will still be considered explicit, likewise for forced).
-        if ((showFlags & InputMethodManager.SHOW_FORCED) != 0) {
-            mRequestedShowExplicitly = true;
-            mShowForced = true;
-        } else if ((showFlags & InputMethodManager.SHOW_IMPLICIT) == 0) {
-            mRequestedShowExplicitly = true;
-        }
-        return true;
-    }
-
-    /**
-     * Called when {@link InputMethodManagerService} is processing the hide IME request.
-     *
-     * @param statsToken The token tracking the current IME request.
-     * @return {@code true} when the hide request can proceed.
-     */
-    @GuardedBy("ImfLock.class")
-    boolean canHideIme(@NonNull ImeTracker.Token statsToken,
-            @InputMethodManager.HideFlags int hideFlags) {
-        if ((hideFlags & InputMethodManager.HIDE_IMPLICIT_ONLY) != 0
-                && (mRequestedShowExplicitly || mShowForced)) {
-            ProtoLog.v(IME_VIS_STATE_COMPUTER_DEBUG,
-                    "Not hiding: explicit show not cancelled by non-explicit hide");
-            ImeTracker.forLogging().onFailed(statsToken, ImeTracker.PHASE_SERVER_HIDE_IMPLICIT);
-            return false;
-        }
-        if (mShowForced && (hideFlags & InputMethodManager.HIDE_NOT_ALWAYS) != 0) {
-            ProtoLog.v(IME_VIS_STATE_COMPUTER_DEBUG,
-                    "Not hiding: forced show not cancelled by not-always hide");
-            ImeTracker.forLogging().onFailed(statsToken, ImeTracker.PHASE_SERVER_HIDE_NOT_ALWAYS);
-            return false;
-        }
-        ImeTracker.forLogging().onProgress(statsToken, ImeTracker.PHASE_SERVER_HIDE_NOT_ALWAYS);
-        return true;
-    }
-
-    /**
-     * Returns the show flags for IME. This translates from {@link InputMethodManager.ShowFlags}
-     * to {@link InputMethod.ShowFlags}.
-     */
-    @GuardedBy("ImfLock.class")
-    @InputMethod.ShowFlags
-    int getShowFlagsForInputMethodServiceOnly() {
-        int flags = 0;
-        if (mShowForced) {
-            flags |= InputMethod.SHOW_FORCED | InputMethod.SHOW_EXPLICIT;
-        } else if (mRequestedShowExplicitly) {
-            flags |= InputMethod.SHOW_EXPLICIT;
-        }
-        return flags;
-    }
-
-    /**
-     * Returns the show flags for IMM. This translates from {@link InputMethod.ShowFlags}
-     * to {@link InputMethodManager.ShowFlags}.
-     */
-    @GuardedBy("ImfLock.class")
-    @InputMethodManager.ShowFlags
-    int getShowFlags() {
-        int flags = 0;
-        if (mShowForced) {
-            flags |= InputMethodManager.SHOW_FORCED;
-        } else if (!mRequestedShowExplicitly) {
-            flags |= InputMethodManager.SHOW_IMPLICIT;
-        }
-        return flags;
-    }
-
-    @GuardedBy("ImfLock.class")
-    void clearImeShowFlags() {
-        mRequestedShowExplicitly = false;
-        mShowForced = false;
-        mInputShown = false;
+    boolean isAllowedByAccessibilityAndDisplayPolicy() {
+        return !mPolicy.mA11yRequestingNoSoftKeyboard && !mPolicy.mImeHiddenByDisplayPolicy;
     }
 
     @GuardedBy("ImfLock.class")
@@ -673,8 +569,6 @@ public final class ImeVisibilityStateComputer {
 
     @GuardedBy("ImfLock.class")
     void dumpDebug(ProtoOutputStream proto, long fieldId) {
-        proto.write(SHOW_EXPLICITLY_REQUESTED, mRequestedShowExplicitly);
-        proto.write(SHOW_FORCED, mShowForced);
         proto.write(ACCESSIBILITY_REQUESTING_NO_SOFT_KEYBOARD,
                 mPolicy.isA11yRequestNoSoftKeyboard());
         proto.write(INPUT_SHOWN, mInputShown);
@@ -683,8 +577,6 @@ public final class ImeVisibilityStateComputer {
     @GuardedBy("ImfLock.class")
     void dump(@NonNull PrintWriter pw, @NonNull String prefix) {
         final Printer p = new PrintWriterPrinter(pw);
-        p.println(prefix + "mRequestedShowExplicitly=" + mRequestedShowExplicitly
-                + " mShowForced=" + mShowForced);
         p.println(prefix + "mImeHiddenByDisplayPolicy=" + mPolicy.isImeHiddenByDisplayPolicy());
         p.println(prefix + "mInputShown=" + mInputShown);
         p.println(prefix + "mLastImeTargetWindow=" + mLastImeTargetWindow);

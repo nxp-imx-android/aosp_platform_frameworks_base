@@ -71,12 +71,18 @@
     <string name="CLIRDefaultOnNextCallOff" msgid="5036749051007098105">"Дуудлага хийгчийн ID хязгаарлагдсан. Дараагийн дуудлага: Хязгаарлагдаагүй"</string>
     <string name="CLIRDefaultOffNextCallOn" msgid="1022781126694885017">"Дуудлага хийгчийн ID хязгаарлагдаагүй. Дараагийн дуудлага: Хязгаарлагдсан"</string>
     <string name="CLIRDefaultOffNextCallOff" msgid="2491576172356463443">"Дуудлага хийгчийн ID хязгаарлагдсан. Дараагийн дуудлага: Хязгаарлагдсан"</string>
-    <string name="page_size_compat_apk_warning" msgid="2982396798449041224">"Энэ апп 16 КБ-ын хэмжээтэй хуудастай тохиромжгүй байна. APK эгнүүлэлтийн шалгалт амжилтгүй боллоо. Энэ апп хуудасны хэмжээтэй тохирох горимыг ашиглан ажиллана. Хамгийн тохиромжтой байлгахын тулд 16 КБ-ын дэмжлэгээр аппликэйшнийг дахин хөрвүүлнэ үү. Нэмэлт мэдээлэл авах бол &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; холбоосыг харна уу"</string>
-    <string name="page_size_compat_elf_warning" msgid="6753874059564812651">"Энэ апп 16 КБ-ын хэмжээтэй хуудастай тохиромжгүй байна. ELF эгнүүлэлтийн шалгалт амжилтгүй боллоо. Энэ апп хуудасны хэмжээтэй тохирох горимыг ашиглан ажиллана. Хамгийн тохиромжтой байлгахын тулд 16 КБ-ын дэмжлэгээр аппликэйшнийг дахин хөрвүүлнэ үү. Нэмэлт мэдээлэл авах бол &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; холбоосыг харна уу"</string>
-    <string name="page_size_compat_apk_and_elf_warning" msgid="7628675779500605390">"Энэ апп 16 КБ-ын хэмжээтэй хуудастай тохиромжгүй байна. APK, ELF эгнүүлэлтийн шалгалт амжилтгүй боллоо. Энэ апп хуудасны хэмжээтэй тохирох горимыг ашиглан ажиллана. Хамгийн тохиромжтой байлгахын тулд 16 КБ-ын дэмжлэгээр аппликэйшнийг дахин хөрвүүлнэ үү. Нэмэлт мэдээлэл авах бол &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; холбоосыг харна уу"</string>
-    <string name="page_size_compat_apk_warning_4kb" msgid="6013674159459424986">"Энэ нь одоогоор туршигдаж буй дебаг хийх боломжтой апп тул энэ сануулгыг харуулж байна. Хэрэв та хөгжүүлэгч нь биш бол үүнийг хөгжүүлэгчид нь мэдээлж, дебаг хийх боломжгүй апп хүснэ үү. &lt;br&gt;&lt;br&gt; Энэ апп 16 КБ-д тохиромжгүй. APK нийцлийг шалгаж чадсангүй. &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; дээрх алхмуудыг дагана уу. &lt;br&gt;&lt;br&gt; Дараах сангуудыг 16 КБ-тай нийцүүлээгүй: &lt;br&gt;&lt;br&gt;"</string>
-    <string name="page_size_compat_elf_warning_4kb" msgid="5189541753040977649">"Энэ нь одоогоор туршигдаж буй дебаг хийх боломжтой апп тул энэ сануулгыг харуулж байна. Хэрэв та хөгжүүлэгч нь биш бол үүнийг хөгжүүлэгчид нь мэдээлж, дебаг хийх боломжгүй апп хүснэ үү. &lt;br&gt;&lt;br&gt; Энэ апп 16 КБ-д тохиромжгүй. ELF нийцлийг шалгаж чадсангүй. &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; дээрх алхмуудыг дагана уу. &lt;br&gt;&lt;br&gt; Дараах сангуудыг 16 КБ-тай нийцүүлээгүй: &lt;br&gt;&lt;br&gt;"</string>
-    <string name="page_size_compat_apk_and_elf_warning_4kb" msgid="7665028394400479058">"Энэ нь одоогоор туршигдаж буй дебаг хийх боломжтой апп тул энэ сануулгыг харуулж байна. Хэрэв та хөгжүүлэгч нь биш бол үүнийг хөгжүүлэгчид нь мэдээлж, дебаг хийх боломжгүй апп хүснэ үү. &lt;br&gt;&lt;br&gt; Энэ апп 16 КБ-д тохиромжгүй. APK, ELF нийцлийг шалгаж чадсангүй. &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; дээрх алхмуудыг дагана уу. &lt;br&gt;&lt;br&gt; Дараах сангуудыг 16 КБ-тай нийцүүлээгүй: &lt;br&gt;&lt;br&gt;"</string>
+    <!-- no translation found for page_size_compat_apk_warning (2297836366674721648) -->
+    <skip />
+    <!-- no translation found for page_size_compat_elf_warning (8613720928493005883) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_and_elf_warning (9034695801295605229) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_warning_4kb (5676451039424864495) -->
+    <skip />
+    <!-- no translation found for page_size_compat_elf_warning_4kb (5005239480522831311) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_and_elf_warning_4kb (997926487776340721) -->
+    <skip />
     <string name="page_size_compat_never_show" msgid="3391282612422783097">"Дахин бүү харуул"</string>
     <string name="page_size_compat_title" msgid="6497719153872572204">"Android аппын тохиромжтой байдал"</string>
     <string name="page_size_compat_elf_not_aligned" msgid="7940806102874132630">"&amp;#8226; %1$s : LOAD сегментийг эгнүүлээгүй"</string>
@@ -682,8 +688,8 @@
     <string name="permdesc_scene_understanding_coarse" msgid="847344305502345475">"Аппад таны эргэн тойрныг скан хийхийг зөвшөөрнө."</string>
     <string name="permlab_scene_understanding_fine" msgid="2899904960307462936">"таны эргэн тойрны газрыг нарийвчлан скан хийх"</string>
     <string name="permdesc_scene_understanding_fine" msgid="4848943859506977588">"Аппад таны эргэн тойрныг нарийвчлан скан хийхийг зөвшөөрнө."</string>
-    <string name="permlab_xr_tracking_in_background" msgid="8659516810430027774">"XR-н өгөгдлийг ард хянах"</string>
-    <string name="permdesc_xr_tracking_in_background" msgid="3151744132692357005">"Аппад XR-н өгөгдөлд ард хандахыг зөвшөөрнө."</string>
+    <string name="permlab_xr_tracking_in_background" msgid="8659516810430027774">"ард XR-н өгөгдлийг хянах"</string>
+    <string name="permdesc_xr_tracking_in_background" msgid="3151744132692357005">"Аппад ард XR-н өгөгдөлд хандахыг зөвшөөрнө."</string>
     <string name="permlab_capture_keyboard" msgid="4076894823382693032">"товчийг буулгах"</string>
     <string name="permdesc_capture_keyboard" msgid="4192269470684407219">"Систем нь системийн товчлол, үйлдлийг боловсруулах боломжтой болохоос өмнө товчийг буулгахыг аппад зөвшөөрнө."</string>
     <string name="biometric_app_setting_name" msgid="3339209978734534457">"Биометр ашиглах"</string>
@@ -914,7 +920,7 @@
     <string name="policydesc_disableCamera" msgid="3204405908799676104">"Төхөөрөмжийн бүх камерийг ашиглахгүй."</string>
     <string name="policylab_disableKeyguardFeatures" msgid="5071855750149949741">"Дэлгэцийн зарим түгжээний онцлогийг идэвхгүй болгох"</string>
     <string name="policydesc_disableKeyguardFeatures" msgid="6641673177041195957">"Дэлгэц түгжих зарим онцлогийг ашиглахаас урьдчилан хамгаалах"</string>
-    <!-- no translation found for exit_toast_on_long_press_escape (873907401529125943) -->
+    <!-- no translation found for exit_toast_on_long_press_escape (2983932499112557277) -->
     <skip />
   <string-array name="phoneTypes">
     <item msgid="8996339953292723951">"Гэрийн"</item>
@@ -1842,6 +1848,8 @@
     <string name="owner_name" msgid="8713560351570795743">"Өмчлөгч"</string>
     <string name="guest_name" msgid="8502103277839834324">"Зочин"</string>
     <string name="headless_system_user_name" msgid="1849150903255530049">"Системийн хэрэглэгч"</string>
+    <!-- no translation found for unnamed_user_name (6096699110534542980) -->
+    <skip />
     <string name="error_message_title" msgid="4082495589294631966">"Алдаа"</string>
     <string name="error_message_change_not_allowed" msgid="843159705042381454">"Энэ өөрчлөлтийг админ зөвшөөрөөгүй байна"</string>
     <string name="app_not_found" msgid="3429506115332341800">"Энэ ажиллагааг зохицуулах аппликейшн олдсонгүй."</string>
@@ -2513,7 +2521,8 @@
     <string name="screen_not_shared_sensitive_content" msgid="7058419185079565001">"Аюулгүй байдлын үүднээс аппын контентыг дэлгэц хуваалцахаас нуусан"</string>
     <string name="satellite_notification_title" msgid="4026338973463121526">"Хиймэл дагуулд автоматаар холбогдсон"</string>
     <string name="satellite_notification_summary" msgid="5207364139430767162">"Та мобайл эсвэл Wi-Fi сүлжээгүйгээр мессеж илгээх болон хүлээн авах боломжтой"</string>
-    <string name="satellite_notification_summary_with_data" msgid="6486843676720429049">"Та хиймэл дагуулаар мессеж илгээх, хүлээн авах, хязгаарлагдмал дата ашиглах боломжтой"</string>
+    <!-- no translation found for satellite_notification_summary_with_data (8290202758586475712) -->
+    <skip />
     <string name="satellite_notification_manual_title" msgid="1097504441849466279">"Хиймэл дагуулаар дамжин мессеж бичихийг ашиглах уу?"</string>
     <string name="satellite_notification_manual_summary" msgid="901206289846283445">"Хөдөлгөөнт холбооны эсвэл Wi-Fi сүлжээгүйгээр мессеж илгээх болон хүлээн авах"</string>
     <string name="satellite_notification_open_message" msgid="4149234979688273729">"Мессежийг нээх"</string>

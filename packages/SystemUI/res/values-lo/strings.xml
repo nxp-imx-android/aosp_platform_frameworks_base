@@ -138,6 +138,8 @@
     <string name="screenrecord_stop_dialog_message" msgid="6262768207331626817">"ທ່ານກຳລັງບັນທຶກທັງໝົດໜ້າຈໍຂອງທ່ານ"</string>
     <string name="screenrecord_stop_dialog_message_specific_app" msgid="5995770227684523244">"ທ່ານກຳລັງບັນທຶກ <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
     <string name="screenrecord_stop_dialog_button" msgid="2883812564938194350">"ຢຸດການບັນທຶກ"</string>
+    <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"ເລືອກແອັບເພື່ອບັນທຶກ"</string>
+    <string name="screen_capture_fullscreen_screenshot_button" msgid="4255912593013592954">"ຖ່າຍຮູບໜ້າຈໍທັງໝົດ"</string>
     <string name="screen_capture_region_selection_button" msgid="4437546351856914639">"ຖ່າຍຮູບພື້ນທີ່ທີ່ເລືອກ"</string>
     <string name="screen_capture_toolbar_capture_button" msgid="8512731007891496030">"ຖ່າຍຮູບ"</string>
     <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"ບັນທຶກ"</string>
@@ -399,8 +401,7 @@
     <string name="quick_settings_flashlight_camera_in_use" msgid="4820591564526512571">"ມີການໃຊ້ກ້ອງຖ່າຍຮູບຢູ່"</string>
     <string name="flashlight_dialog_title" msgid="4232742718579701241">"ຄວາມແຮງຂອງໄຟສາຍ"</string>
     <string name="quick_settings_flashlight_tile_level_percentage" msgid="2071942013174794819">"<xliff:g id="PERCENTAGE">%1$d</xliff:g>%%"</string>
-    <!-- no translation found for flashlight_dialog_turn_off (5934897539563253348) -->
-    <skip />
+    <string name="flashlight_dialog_turn_off" msgid="5934897539563253348">"ປິດ"</string>
     <string name="quick_settings_cellular_detail_title" msgid="792977203299358893">"ອິນເຕີເນັດມືຖື"</string>
     <string name="quick_settings_cellular_detail_data_usage" msgid="6105969068871138427">"​ການ​​ນຳ​ໃຊ້​​ຂໍ້​ມູນ"</string>
     <string name="quick_settings_cellular_detail_remaining_data" msgid="1136599216568805644">"​ຂໍ້​ມູນ​ທີ່​ຍັງ​ເຫຼືອ"</string>
@@ -566,7 +567,7 @@
     <string name="hub_mode_add_widget_button_text" msgid="4831464661209971729">"ເພີ່ມວິດເຈັດ"</string>
     <string name="hub_mode_editing_exit_button_text" msgid="3704686734192264771">"ແລ້ວໆ"</string>
     <string name="label_for_button_in_empty_state_cta" msgid="7314975555382055823">"ເພີ່ມວິດເຈັດ"</string>
-    <string name="title_for_empty_state_cta" msgid="6161654421223450530">"ຮັບການເຂົ້າເຖິງດ່ວນຫາແອັບວິດເຈັດທີ່ທ່ານມັກໂດຍບໍ່ຕ້ອງປົດລັອກແທັບເລັດຂອງທ່ານ."</string>
+    <string name="title_for_empty_state_cta" msgid="3515697043504449320">"ເຂົ້າເຖິງວິດເຈັດແອັບທີ່ທ່ານມັກໄດ້ຢ່າງວ່ອງໄວໂດຍບໍ່ຕ້ອງປົດລັອກອຸປະກອນຂອງທ່ານ."</string>
     <string name="dialog_title_to_allow_any_widget" msgid="1004820948962675644">"ອະນຸຍາດວິດເຈັດໃດກໍຕາມຢູ່ໜ້າຈໍລັອກບໍ?"</string>
     <string name="button_text_to_open_settings" msgid="1987729256950941628">"ເປີດການຕັ້ງຄ່າ"</string>
     <string name="work_mode_off_title" msgid="5794818421357835873">"ຍົກເລີກການຢຸດຊົ່ວຄາວແອັບບ່ອນເຮັດວຽກບໍ?"</string>
@@ -578,14 +579,14 @@
     <string name="accessibility_action_label_remove_widget" msgid="3373779447448758070">"ລຶບວິດເຈັດອອກ"</string>
     <string name="accessibility_action_label_place_widget" msgid="1914197458644168978">"ວາງວິດເຈັດທີ່ເລືອກ"</string>
     <string name="communal_widget_picker_title" msgid="1953369090475731663">"ວິດເຈັດໃນໜ້າຈໍລັອກ"</string>
-    <string name="communal_widget_picker_description" msgid="490515450110487871">"ທຸກຄົນສາມາດເບິ່ງວິດເຈັດຢູ່ໜ້າຈໍລັອກຂອງທ່ານໄດ້, ເຖິງແມ່ນວ່າແທັບເລັດຂອງທ່ານຈະລັອກຢູ່ກໍຕາມ."</string>
+    <string name="communal_widget_picker_description" msgid="6927728582371632782">"ທຸກຄົນສາມາດເບິ່ງວິດເຈັດຢູ່ໜ້າຈໍລັອກຂອງທ່ານໄດ້, ເຖິງແມ່ນວ່າອຸປະກອນຂອງທ່ານຈະລັອກຢູ່ກໍຕາມ."</string>
     <string name="accessibility_action_label_unselect_widget" msgid="1041811747619468698">"ຍົກເລີກການເລືອກວິດເຈັດ"</string>
     <string name="accessibility_action_label_shrink_widget" msgid="8259511040536438771">"ຫຼຸດຄວາມສູງ"</string>
     <string name="accessibility_action_label_expand_widget" msgid="9190524260912211759">"ເພີ່ມຄວາມສູງ"</string>
     <string name="accessibility_action_label_umo_show_next" msgid="8033581654789193281">"ສະແດງເພງຖັດໄປ"</string>
     <string name="accessibility_action_label_umo_show_previous" msgid="5935831384525173810">"ສະແດງເພງກ່ອນໜ້າ"</string>
     <string name="communal_widgets_disclaimer_title" msgid="1150954395585308868">"ວິດເຈັດໃນໜ້າຈໍລັອກ"</string>
-    <string name="communal_widgets_disclaimer_text" msgid="1423545475160506349">"ເພື່ອເປີດແອັບໂດຍໃຊ້ວິດເຈັດ, ທ່ານຈະຕ້ອງຢັ້ງຢືນວ່າແມ່ນທ່ານ. ນອກຈາກນັ້ນ, ກະລຸນາຮັບຊາບວ່າທຸກຄົນສາມາດເບິ່ງຂໍ້ມູນດັ່ງກ່າວໄດ້, ເຖິງແມ່ນວ່າແທັບເລັດຂອງທ່ານຈະລັອກຢູ່ກໍຕາມ. ວິດເຈັດບາງຢ່າງອາດບໍ່ໄດ້ມີໄວ້ສຳລັບໜ້າຈໍລັອກຂອງທ່ານ ແລະ ອາດບໍ່ປອດໄພທີ່ຈະເພີ່ມໃສ່ບ່ອນນີ້."</string>
+    <string name="communal_widgets_disclaimer_text" msgid="7363411191173297965">"ເພື່ອເປີດແອັບໂດຍໃຊ້ວິດເຈັດ, ທ່ານຈະຕ້ອງຢັ້ງຢືນວ່າແມ່ນທ່ານ. ນອກຈາກນັ້ນ, ກະລຸນາຮັບຊາບວ່າທຸກຄົນສາມາດເບິ່ງຂໍ້ມູນດັ່ງກ່າວໄດ້, ເຖິງແມ່ນວ່າອຸປະກອນຂອງທ່ານຈະລັອກຢູ່ກໍຕາມ. ວິດເຈັດບາງຢ່າງອາດບໍ່ໄດ້ມີໄວ້ສຳລັບໜ້າຈໍລັອກຂອງທ່ານ ແລະ ອາດບໍ່ປອດໄພທີ່ຈະເພີ່ມໃສ່ບ່ອນນີ້."</string>
     <string name="communal_widgets_disclaimer_button" msgid="4423059765740780753">"ເຂົ້າໃຈແລ້ວ"</string>
     <string name="accessibility_glanceable_hub_to_dream_button" msgid="7552776300297055307">"ປຸ່ມສະແດງພາບພັກໜ້າຈໍ"</string>
     <string name="hub_onboarding_bottom_sheet_title" msgid="162092881395529947">"ສຳຫຼວດໂໝດ Hub"</string>
@@ -852,7 +853,8 @@
     <string name="notification_guts_recs_summary" msgid="8391881843238947007">"ຈົດໝາຍຂ່າວ, ສື່ແນະນໍາ ແລະ ອື່ນໆອີກ"</string>
     <string name="notification_onboarding_summaries_turn_on" msgid="5050003857531272655">"ເປີດ"</string>
     <string name="notification_onboarding_summaries_message" msgid="6061524903176459064">"ຕອນນີ້ທ່ານສາມາດສະຫຼຸບການສົນທະນາທີ່ຍາວຂຶ້ນໄດ້ເພື່ອໃຫ້ທ່ານສະຫຼຸບຢ່າງວ່ອງໄວ"</string>
-    <string name="notification_onboarding_bundles_message" msgid="9038023612294384832">"ຕົວຈັດການການແຈ້ງເຕືອນຈະຮວມ ແລະ ປິດສຽງການແຈ້ງເຕືອນທີ່ມີບຸລິມະສິດທີ່ຕໍ່າກວ່າ"</string>
+    <!-- no translation found for notification_onboarding_bundles_message (4612908213178622912) -->
+    <skip />
     <string name="notification_bundle_header_counter" msgid="5515532701569242265">"{count,plural, =1{# ການແຈ້ງເຕືອນ}other{# ການແຈ້ງເຕືອນ}}"</string>
     <string name="inline_done_button" msgid="6043094985588909584">"ແລ້ວໆ"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"ນຳໃຊ້"</string>
@@ -1099,6 +1101,8 @@
     <string name="accessibility_key_gesture_dialog_content" msgid="4519838108423437794">"ຄຳສັ່ງ "<annotation id="action_key_icon">"ໄອຄອນ"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> ແມ່ນຄີລັດເພື່ອໃຊ້ <xliff:g id="ID_3">^3</xliff:g>. <xliff:g id="ID_4">^4</xliff:g>"</string>
     <string name="accessibility_key_gesture_dialog_magnifier_intro" msgid="627023269951856071">"ສິ່ງນີ້ຊ່ວຍໃຫ້ທ່ານສາມາດຊູມເຂົ້າຢູ່ໜ້າຈໍໄດ້ຢ່າງວ່ອງໄວ ເພື່ອເຮັດໃຫ້ເນື້ອຫາໃຫຍ່ຂຶ້ນ."</string>
     <string name="accessibility_key_gesture_dialog_talkback_intro" msgid="1617808784388544741">"<xliff:g id="ID_1">%1$s</xliff:g> ແມ່ນໂປຣແກຣມອ່ານໜ້າຈໍທີ່ອະນຸຍາດໃຫ້ທ່ານໄດ້ຍິນລາຍການເວົ້າດັງໆ. ມັນສາມາດເປັນປະໂຫຍດສຳລັບບຸກຄົນທີ່ປະສົບບັນຫາໃນການເບິ່ງເຫັນໜ້າຈໍ."</string>
+    <!-- no translation found for accessibility_key_gesture_dialog_va_intro (4709198503441288289) -->
+    <skip />
     <string name="accessibility_key_gesture_dialog_positive_button_text" msgid="3670746017523589293">"ເປີດ"</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"ໜ້າຈໍລັອກ"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"ກຳລັງປິດເຄື່ອງ…"</string>
@@ -1339,19 +1343,6 @@
     <string name="media_output_end_session_dialog_summary" msgid="5954520685989877347">"ຢຸດເຊດຊັນທີ່ແບ່ງປັນຂອງທ່ານເພື່ອຍ້າຍມີເດຍໄປຫາອຸປະກອນອື່ນ"</string>
     <string name="media_output_end_session_dialog_stop" msgid="208189434474624412">"ຢຸດ"</string>
     <string name="media_output_dialog_button_stop_sharing" msgid="5043482739689716185">"ຢຸດການແບ່ງປັນ"</string>
-    <string name="media_output_first_broadcast_title" msgid="6292237789860753022">"ການອອກອາກາດເຮັດວຽກແນວໃດ"</string>
-    <string name="media_output_broadcast" msgid="3555580945878071543">"ອອກອາກາດ"</string>
-    <string name="media_output_first_notify_broadcast_message" msgid="6353857724136398494">"ຄົນທີ່ຢູ່ໃກ້ທ່ານທີ່ມີອຸປະກອນ Bluetooth ທີ່ເຂົ້າກັນໄດ້ຈະສາມາດຟັງມີເດຍທີ່ທ່ານກຳລັງອອກອາກາດຢູ່ໄດ້"</string>
-    <string name="media_output_broadcasting_message" msgid="4150299923404886073">"ເພື່ອຟັງການອອກອາກາດຂອງທ່ານ, ຄົນທີ່ຢູ່ໃກ້ຄຽງທີ່ມີອຸປະກອນ Bluetooth ທີ່ເຂົ້າກັນໄດ້ຈະສາມາດສະແກນລະຫັດ QR ຂອງທ່ານ ຫຼື ໃຊ້ຊື່ ແລະ ລະຫັດຜ່ານການອອກອາກາດຂອງທ່ານໄດ້"</string>
-    <string name="media_output_broadcast_name" msgid="8786127091542624618">"ຊື່ການອອກອາກາດ"</string>
-    <string name="media_output_broadcast_code" msgid="870795639644728542">"ລະຫັດຜ່ານ"</string>
-    <string name="media_output_broadcast_dialog_save" msgid="7910865591430010198">"ບັນທຶກ"</string>
-    <string name="media_output_broadcast_starting" msgid="8130153654166235557">"ກໍາລັງເລີ່ມ…"</string>
-    <string name="media_output_broadcast_start_failed" msgid="3670835946856129775">"ບໍ່ສາມາດອອກອາກາດໄດ້"</string>
-    <string name="media_output_broadcast_update_error" msgid="1420868236079122521">"ບໍ່ສາມາດບັນທຶກໄດ້. ກະລຸນາລອງໃໝ່."</string>
-    <string name="media_output_broadcast_last_update_error" msgid="5484328807296895491">"ບໍ່ສາມາດບັນທຶກໄດ້."</string>
-    <string name="media_output_broadcast_code_hint_no_less_than_min" msgid="4663836092607696185">"ໃຊ້ຢ່າງໜ້ອຍ 4 ຕົວອັກສອນ"</string>
-    <string name="media_output_broadcast_edit_hint_no_more_than_max" msgid="3923625800037673922">"ໃຊ້ໜ້ອຍກວ່າ <xliff:g id="LENGTH">%1$d</xliff:g> ຕົວອັກສອນ"</string>
     <string name="build_number_clip_data_label" msgid="3623176728412560914">"ໝາຍເລກສ້າງ"</string>
     <string name="build_number_copy_toast" msgid="877720921605503046">"ສຳເນົາໝາຍເລກສ້າງໄປໃສ່ຄລິບບອດແລ້ວ."</string>
     <string name="copy_to_clipboard_a11y_action" msgid="4312789069718446749">"ສຳເນົາໄປໃສ່ຄລິບບອດ."</string>
@@ -1464,12 +1455,6 @@
     <string name="note_task_button_label" msgid="230135078402003532">"ການຈົດບັນທຶກ"</string>
     <string name="note_task_shortcut_long_label" msgid="7729325091147319409">"ການຈົດບັນທຶກ <xliff:g id="NOTE_TAKING_APP">%1$s</xliff:g>"</string>
     <string name="audio_sharing_description" msgid="8849060142768870004">"ກຳລັງແບ່ງປັນສຽງ"</string>
-    <string name="broadcasting_description_is_broadcasting" msgid="765627502786404290">"ກຳລັງອອກອາກາດ"</string>
-    <string name="bt_le_audio_broadcast_dialog_title" msgid="3605428497924077811">"ຢຸດການອອກອາກາດ <xliff:g id="APP_NAME">%1$s</xliff:g> ບໍ?"</string>
-    <string name="bt_le_audio_broadcast_dialog_sub_title" msgid="7889684551194225793">"ຫາກທ່ານອອກອາກາດ <xliff:g id="SWITCHAPP">%1$s</xliff:g> ຫຼື ປ່ຽນເອົ້າພຸດ, ການອອກອາກາດປັດຈຸບັນຂອງທ່ານຈະຢຸດ"</string>
-    <string name="bt_le_audio_broadcast_dialog_switch_app" msgid="6098768269397105733">"ອອກອາກາດ <xliff:g id="SWITCHAPP">%1$s</xliff:g>"</string>
-    <string name="bt_le_audio_broadcast_dialog_different_output" msgid="7885102097302562674">"ປ່ຽນເອົ້າພຸດ"</string>
-    <string name="bt_le_audio_broadcast_dialog_unknown_name" msgid="3791472237793443044">"ບໍ່ຮູ້ຈັກ"</string>
     <string name="dream_time_complication_12_hr_time_format" msgid="4691197486690291529">"h:mm"</string>
     <string name="dream_time_complication_24_hr_time_format" msgid="6248280719733640813">"kk:mm"</string>
     <string name="log_access_confirmation_title" msgid="4843557604739943395">"ອະນຸຍາດໃຫ້ <xliff:g id="LOG_ACCESS_APP_NAME">%s</xliff:g> ເຂົ້າເຖິງບັນທຶກທັງໝົດຂອງອຸປະກອນບໍ?"</string>
@@ -1634,9 +1619,9 @@
     <string name="home_edu_toast_content" msgid="3381071147871955415">"ເພື່ອໄປຫາໜ້າຫຼັກ, ໃຫ້ໃຊ້ 3 ນິ້ວປັດຂຶ້ນເທິງແຜ່ນສໍາຜັດ"</string>
     <string name="overview_edu_toast_content" msgid="5797030644017804518">"ເພື່ອເບິ່ງແອັບຫຼ້າສຸດ, ໃຫ້ໃຊ້ 3 ນິ້ວປັດຂຶ້ນ ແລ້ວຄ້າງໄວ້ເທິງແຜ່ນສໍາຜັດ"</string>
     <string name="all_apps_edu_toast_content" msgid="8807496014667211562">"ເພື່ອເບິ່ງແອັບທັງໝົດຂອງທ່ານ, ໃຫ້ກົດປຸ່ມຄຳສັ່ງຢູ່ແປ້ນພິມຂອງທ່ານ"</string>
-    <string name="redacted_notification_single_line_title" msgid="212019960919261670">"ປົກປິດໄວ້ແລ້ວ"</string>
-    <string name="public_notification_single_line_text" msgid="3576190291791654933">"ປົດລັອກເພື່ອເບິ່ງ"</string>
+    <string name="public_notification_single_line_title" msgid="3161485511931439629">"ປົດລັອກເພື່ອເບິ່ງ"</string>
     <string name="redacted_otp_notification_single_line_text" msgid="5179964116354454118">"ປົດລັອກເພື່ອເບິ່ງລະຫັດ"</string>
+    <string name="empty_notification_single_line_title" msgid="4464430045266180257">"ຂະຫຍາຍເພື່ອເບິ່ງ"</string>
     <string name="contextual_education_dialog_title" msgid="4630392552837487324">"ການສຶກສາຕາມບໍລິບົດ"</string>
     <string name="back_edu_notification_title" msgid="5624780717751357278">"ໃຊ້ແຜ່ນສໍາຜັດຂອງທ່ານເພື່ອກັບຄືນ"</string>
     <string name="back_edu_notification_content" msgid="2497557451540954068">"ໃຊ້ 3 ນິ້ວປັດຊ້າຍ ຫຼື ຂວາ. ແຕະເພື່ອສຶກສາທ່າທາງເພີ່ມເຕີມ."</string>
@@ -1673,8 +1658,6 @@
     <string name="back_button_on_bouncer" msgid="809134628434396761">"ກັບຄືນ"</string>
     <string name="pager_dots_previous_content_description" msgid="26963508904918908">"ກ່ອນໜ້າ"</string>
     <string name="pager_dots_next_content_description" msgid="613943992626163120">"ຕໍ່ໄປ"</string>
-    <!-- no translation found for ambient_cue_autofill_action (9213025887835308128) -->
-    <skip />
-    <!-- no translation found for ambient_cue_expand_action (6803711089932959312) -->
-    <skip />
+    <string name="ambient_cue_autofill_action" msgid="9213025887835308128">"ຕື່ມຂໍ້ມູນອັດຕະໂນມັດ"</string>
+    <string name="ambient_cue_expand_action" msgid="6803711089932959312">"ຂະຫຍາຍ"</string>
 </resources>

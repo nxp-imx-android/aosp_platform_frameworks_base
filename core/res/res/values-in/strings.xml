@@ -71,12 +71,18 @@
     <string name="CLIRDefaultOnNextCallOff" msgid="5036749051007098105">"ID penelepon diatur default ke \"dibatasi\". Panggilan selanjutnya: Tidak dibatasi."</string>
     <string name="CLIRDefaultOffNextCallOn" msgid="1022781126694885017">"ID penelepon diatur default ke tidak dibatasi. Panggilan selanjutnya: Dibatasi"</string>
     <string name="CLIRDefaultOffNextCallOff" msgid="2491576172356463443">"ID penelepon diatur default ke tidak dibatasi. Panggilan selanjutnya: Tidak dibatasi"</string>
-    <string name="page_size_compat_apk_warning" msgid="2982396798449041224">"Aplikasi ini tidak kompatibel dengan 16 KB. Pemeriksaan keselarasan APK gagal. Aplikasi ini akan dijalankan menggunakan mode yang kompatibel dengan ukuran halaman. Untuk kompatibilitas terbaik, kompilasi ulang aplikasi dengan dukungan 16 KB. Untuk mengetahui informasi selengkapnya, lihat &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
-    <string name="page_size_compat_elf_warning" msgid="6753874059564812651">"Aplikasi ini tidak kompatibel dengan 16 KB. Pemeriksaan keselarasan ELF gagal. Aplikasi ini akan dijalankan menggunakan mode yang kompatibel dengan ukuran halaman. Untuk kompatibilitas terbaik, kompilasi ulang aplikasi dengan dukungan 16 KB. Untuk mengetahui informasi selengkapnya, lihat &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
-    <string name="page_size_compat_apk_and_elf_warning" msgid="7628675779500605390">"Aplikasi ini tidak kompatibel dengan 16 KB. Pemeriksaan keselarasan APK dan ELF gagal. Aplikasi ini akan dijalankan menggunakan mode yang kompatibel dengan ukuran halaman. Untuk kompatibilitas terbaik, kompilasi ulang aplikasi dengan dukungan 16 KB. Untuk mengetahui informasi selengkapnya, lihat &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
-    <string name="page_size_compat_apk_warning_4kb" msgid="6013674159459424986">"Peringatan ini ditampilkan karena aplikasi ini dapat di-debug dan saat ini sedang diuji. Jika Anda bukan developer, laporkan hal ini kepada developer dan minta versi aplikasi yang tidak dapat di-debug. &lt;br&gt;&lt;br&gt; Aplikasi ini tidak kompatibel dengan ukuran halaman 16 KB. Pemeriksaan keselarasan APK gagal. Ikuti langkah-langkah di &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; &lt;br&gt;&lt;br&gt; Library berikut tidak selaras dengan ukuran halaman 16 KB: &lt;br&gt;&lt;br&gt;"</string>
-    <string name="page_size_compat_elf_warning_4kb" msgid="5189541753040977649">"Peringatan ini ditampilkan karena aplikasi ini dapat di-debug dan saat ini sedang diuji. Jika Anda bukan developer, laporkan hal ini kepada developer dan minta versi aplikasi yang tidak dapat di-debug. &lt;br&gt;&lt;br&gt; Aplikasi ini tidak kompatibel dengan ukuran halaman 16 KB. Pemeriksaan keselarasan ELF gagal. Ikuti langkah-langkah di &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; &lt;br&gt;&lt;br&gt; Library berikut tidak selaras dengan ukuran halaman 16 KB: &lt;br&gt;&lt;br&gt;"</string>
-    <string name="page_size_compat_apk_and_elf_warning_4kb" msgid="7665028394400479058">"Peringatan ini ditampilkan karena aplikasi ini dapat di-debug dan saat ini sedang diuji. Jika Anda bukan developer, laporkan hal ini kepada developer dan minta versi aplikasi yang tidak dapat di-debug. &lt;br&gt;&lt;br&gt; Aplikasi ini tidak kompatibel dengan ukuran halaman 16 KB. Pemeriksaan keselarasan APK dan ELF gagal. Ikuti langkah-langkah di &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;. &lt;br&gt;&lt;br&gt; Library berikut tidak selaras dengan ukuran halaman 16 KB: &lt;br&gt;&lt;br&gt;"</string>
+    <!-- no translation found for page_size_compat_apk_warning (2297836366674721648) -->
+    <skip />
+    <!-- no translation found for page_size_compat_elf_warning (8613720928493005883) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_and_elf_warning (9034695801295605229) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_warning_4kb (5676451039424864495) -->
+    <skip />
+    <!-- no translation found for page_size_compat_elf_warning_4kb (5005239480522831311) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_and_elf_warning_4kb (997926487776340721) -->
+    <skip />
     <string name="page_size_compat_never_show" msgid="3391282612422783097">"Jangan Tampilkan Lagi"</string>
     <string name="page_size_compat_title" msgid="6497719153872572204">"Kompatibilitas Aplikasi Android"</string>
     <string name="page_size_compat_elf_not_aligned" msgid="7940806102874132630">"&amp;#8226; %1$s : segmen LOAD tidak selaras"</string>
@@ -914,7 +920,7 @@
     <string name="policydesc_disableCamera" msgid="3204405908799676104">"Mencegah penggunaan semua kamera perangkat."</string>
     <string name="policylab_disableKeyguardFeatures" msgid="5071855750149949741">"Mematikan beberapa fitur kunci layar"</string>
     <string name="policydesc_disableKeyguardFeatures" msgid="6641673177041195957">"Mencegah penggunaan beberapa fitur kunci layar."</string>
-    <!-- no translation found for exit_toast_on_long_press_escape (873907401529125943) -->
+    <!-- no translation found for exit_toast_on_long_press_escape (2983932499112557277) -->
     <skip />
   <string-array name="phoneTypes">
     <item msgid="8996339953292723951">"Rumah"</item>
@@ -1842,6 +1848,8 @@
     <string name="owner_name" msgid="8713560351570795743">"Pemilik"</string>
     <string name="guest_name" msgid="8502103277839834324">"Tamu"</string>
     <string name="headless_system_user_name" msgid="1849150903255530049">"Pengguna Sistem"</string>
+    <!-- no translation found for unnamed_user_name (6096699110534542980) -->
+    <skip />
     <string name="error_message_title" msgid="4082495589294631966">"Kesalahan"</string>
     <string name="error_message_change_not_allowed" msgid="843159705042381454">"Perubahan ini tidak diizinkan oleh admin Anda"</string>
     <string name="app_not_found" msgid="3429506115332341800">"Tidak ada aplikasi yang ditemukan untuk menangani tindakan ini"</string>
@@ -2513,7 +2521,8 @@
     <string name="screen_not_shared_sensitive_content" msgid="7058419185079565001">"Konten aplikasi disembunyikan dari berbagi layar karena alasan keamanan"</string>
     <string name="satellite_notification_title" msgid="4026338973463121526">"Menghubungkan otomatis ke satelit"</string>
     <string name="satellite_notification_summary" msgid="5207364139430767162">"Anda dapat mengirim dan menerima pesan tanpa jaringan seluler atau Wi-Fi"</string>
-    <string name="satellite_notification_summary_with_data" msgid="6486843676720429049">"Anda dapat mengirim dan menerima pesan serta menggunakan data terbatas melalui satelit"</string>
+    <!-- no translation found for satellite_notification_summary_with_data (8290202758586475712) -->
+    <skip />
     <string name="satellite_notification_manual_title" msgid="1097504441849466279">"Gunakan fitur pesan satelit?"</string>
     <string name="satellite_notification_manual_summary" msgid="901206289846283445">"Mengirim dan menerima pesan tanpa jaringan seluler atau Wi-Fi"</string>
     <string name="satellite_notification_open_message" msgid="4149234979688273729">"Buka Message"</string>

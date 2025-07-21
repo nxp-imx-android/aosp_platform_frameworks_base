@@ -71,12 +71,18 @@
     <string name="CLIRDefaultOnNextCallOff" msgid="5036749051007098105">"O valor predeterminado do identificador de chamada é restrinxido. Próxima chamada: non restrinxido"</string>
     <string name="CLIRDefaultOffNextCallOn" msgid="1022781126694885017">"O valor predeterminado do identificador de chamada é non restrinxido. Próxima chamada: restrinxido"</string>
     <string name="CLIRDefaultOffNextCallOff" msgid="2491576172356463443">"O valor predeterminado do identificador de chamada é restrinxido. Próxima chamada: non restrinxido"</string>
-    <string name="page_size_compat_apk_warning" msgid="2982396798449041224">"Esta aplicación non é compatible con 16 kB. Produciuse un erro ao verificar o aliñamento de ficheiros APK. Esta aplicación executarase usando o modo compatible co tamaño de páxina. Para obter a mellor compatibilidade, volve compilar a aplicación con asistencia de 16 kB. Se precisas máis información, atoparala en &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
-    <string name="page_size_compat_elf_warning" msgid="6753874059564812651">"Esta aplicación non é compatible con 16 kB. Produciuse un erro ao verificar o aliñamento de ficheiros ELF. Esta aplicación executarase usando o modo compatible co tamaño de páxina. Para obter a mellor compatibilidade, volve compilar a aplicación con asistencia de 16 kB. Se precisas máis información, atoparala en &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
-    <string name="page_size_compat_apk_and_elf_warning" msgid="7628675779500605390">"Esta aplicación non é compatible con 16 kB. Produciuse un erro ao verificar o aliñamento de ficheiros APK e ELF. Esta aplicación executarase usando o modo compatible co tamaño de páxina. Para obter a mellor compatibilidade, volve compilar a aplicación con asistencia de 16 kB. Se precisas máis información, atoparala en &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
-    <string name="page_size_compat_apk_warning_4kb" msgid="6013674159459424986">"Móstrase este aviso porque esta é unha aplicación depurable que está na fase de proba. Se non es quen a programou, terás que informar esa persoa deste asunto e pedirlle que che facilite unha aplicación non depurable. &lt;br&gt;&lt;br&gt; Esta que estás usando agora non é compatible con 16 kB. Produciuse un erro ao verificar o aliñamento de ficheiros APK. Sigue os pasos indicados en &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; &lt;br&gt;&lt;br&gt; As seguintes librarías non están aliñadas con 16 kB: &lt;br&gt;&lt;br&gt;"</string>
-    <string name="page_size_compat_elf_warning_4kb" msgid="5189541753040977649">"Móstrase este aviso porque esta é unha aplicación depurable que está na fase de proba. Se non es quen a programou, terás que informar esa persoa deste asunto e pedirlle que che facilite unha aplicación non depurable. &lt;br&gt;&lt;br&gt; Esta que estás usando agora non é compatible con 16 kB. Produciuse un erro ao verificar o aliñamento de ficheiros ELF. Sigue os pasos indicados en &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; &lt;br&gt;&lt;br&gt; As seguintes librarías non están aliñadas con 16 kB: &lt;br&gt;&lt;br&gt;"</string>
-    <string name="page_size_compat_apk_and_elf_warning_4kb" msgid="7665028394400479058">"Móstrase este aviso porque esta é unha aplicación depurable que está na fase de proba. Se non es quen a programou, terás que informar esa persoa deste asunto e pedirlle que che facilite unha aplicación non depurable. &lt;br&gt;&lt;br&gt; Esta que estás usando agora non é compatible con 16 kB. Produciuse un erro ao verificar o aliñamento de ficheiros APK e ELF. Sigue os pasos indicados en &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;. &lt;br&gt;&lt;br&gt; As seguintes librarías non están aliñadas con 16 kB: &lt;br&gt;&lt;br&gt;"</string>
+    <!-- no translation found for page_size_compat_apk_warning (2297836366674721648) -->
+    <skip />
+    <!-- no translation found for page_size_compat_elf_warning (8613720928493005883) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_and_elf_warning (9034695801295605229) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_warning_4kb (5676451039424864495) -->
+    <skip />
+    <!-- no translation found for page_size_compat_elf_warning_4kb (5005239480522831311) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_and_elf_warning_4kb (997926487776340721) -->
+    <skip />
     <string name="page_size_compat_never_show" msgid="3391282612422783097">"Non mostrar de novo"</string>
     <string name="page_size_compat_title" msgid="6497719153872572204">"Compatibilidade con aplicacións para Android"</string>
     <string name="page_size_compat_elf_not_aligned" msgid="7940806102874132630">"&amp;#8226; %1$s: O segmento LOAD non está aliñado"</string>
@@ -914,7 +920,7 @@
     <string name="policydesc_disableCamera" msgid="3204405908799676104">"Evitar o uso de todas as cámaras do dispositivo."</string>
     <string name="policylab_disableKeyguardFeatures" msgid="5071855750149949741">"Desactivar algunhas funcións de bloqueo da pantalla"</string>
     <string name="policydesc_disableKeyguardFeatures" msgid="6641673177041195957">"Impide o uso dalgunhas funcións de bloqueo da pantalla."</string>
-    <!-- no translation found for exit_toast_on_long_press_escape (873907401529125943) -->
+    <!-- no translation found for exit_toast_on_long_press_escape (2983932499112557277) -->
     <skip />
   <string-array name="phoneTypes">
     <item msgid="8996339953292723951">"Particular"</item>
@@ -1842,6 +1848,8 @@
     <string name="owner_name" msgid="8713560351570795743">"Propietario"</string>
     <string name="guest_name" msgid="8502103277839834324">"Convidado"</string>
     <string name="headless_system_user_name" msgid="1849150903255530049">"Usuario do sistema"</string>
+    <!-- no translation found for unnamed_user_name (6096699110534542980) -->
+    <skip />
     <string name="error_message_title" msgid="4082495589294631966">"Erro"</string>
     <string name="error_message_change_not_allowed" msgid="843159705042381454">"O administrador non admite este cambio"</string>
     <string name="app_not_found" msgid="3429506115332341800">"Non se atopou ningunha aplicación para procesar esta acción"</string>
@@ -2513,7 +2521,8 @@
     <string name="screen_not_shared_sensitive_content" msgid="7058419185079565001">"Por seguranza, ocultouse o contido da aplicación na pantalla compartida"</string>
     <string name="satellite_notification_title" msgid="4026338973463121526">"Conexión automática ao satélite"</string>
     <string name="satellite_notification_summary" msgid="5207364139430767162">"Podes enviar e recibir mensaxes sen unha rede de telefonía móbil ou wifi"</string>
-    <string name="satellite_notification_summary_with_data" msgid="6486843676720429049">"Podes enviar e recibir mensaxes, ademais de usar datos limitados por satélite"</string>
+    <!-- no translation found for satellite_notification_summary_with_data (8290202758586475712) -->
+    <skip />
     <string name="satellite_notification_manual_title" msgid="1097504441849466279">"Queres usar a mensaxaría por satélite?"</string>
     <string name="satellite_notification_manual_summary" msgid="901206289846283445">"Envía e recibe mensaxes sen ter acceso a redes de telefonía móbil ou wifi"</string>
     <string name="satellite_notification_open_message" msgid="4149234979688273729">"Abrir Mensaxes"</string>
@@ -2525,8 +2534,8 @@
     <string name="unarchival_session_app_label" msgid="6811856981546348205">"Pendente..."</string>
     <string name="satellite_sos_available_notification_title" msgid="5396708154268096124">"SOS por satélite xa está dispoñible"</string>
     <string name="satellite_sos_available_notification_summary" msgid="1727088812951848330">"Podes enviar mensaxes aos servizos de emerxencia se non tes conexión con ningunha rede wifi nin de telefonía móbil. Debes ter definida Mensaxes de Google como aplicación predeterminada de mensaxaría."</string>
-    <string name="satellite_sos_not_supported_notification_title" msgid="2659100983227637285">"Non se admite SOS por satélite"</string>
-    <string name="satellite_sos_not_supported_notification_summary" msgid="1071762454665310549">"Non se admite SOS por satélite neste dispositivo"</string>
+    <string name="satellite_sos_not_supported_notification_title" msgid="2659100983227637285">"Os SOS por satélite non son compatibles"</string>
+    <string name="satellite_sos_not_supported_notification_summary" msgid="1071762454665310549">"Os SOS por satélite non son compatibles con este dispositivo"</string>
     <string name="satellite_sos_not_provisioned_notification_title" msgid="8564738683795406715">"SOS por satélite non se configurou"</string>
     <string name="satellite_sos_not_provisioned_notification_summary" msgid="3127320958911180629">"Asegúrate de ter conexión a Internet e tenta volver facer a configuración"</string>
     <string name="satellite_sos_not_in_allowed_region_notification_title" msgid="3164093193467075926">"SOS por satélite non está dispoñible"</string>
@@ -2538,7 +2547,7 @@
     <string name="satellite_messaging_available_notification_title" msgid="3366657987618784706">"Mensaxaría por satélite dispoñible"</string>
     <string name="satellite_messaging_available_notification_summary" msgid="7573949038500243670">"Podes intercambiar mensaxes por satélite se non tes conexión con ningunha rede wifi nin de telefonía móbil. Debes ter definida Mensaxes de Google como aplicación predeterminada de mensaxaría."</string>
     <string name="satellite_messaging_not_supported_notification_title" msgid="8202139632766878610">"Mensaxaría por satélite non admitida"</string>
-    <string name="satellite_messaging_not_supported_notification_summary" msgid="61629858627638545">"Non se admite a mensaxaría por satélite neste dispositivo"</string>
+    <string name="satellite_messaging_not_supported_notification_summary" msgid="61629858627638545">"A mensaxaría por satélite non é compatible con este dispositivo"</string>
     <string name="satellite_messaging_not_provisioned_notification_title" msgid="961909101918169727">"Mensaxaría por satélite non configurada"</string>
     <string name="satellite_messaging_not_provisioned_notification_summary" msgid="1060961852174442155">"Asegúrate de ter conexión a Internet e tenta volver facer a configuración"</string>
     <string name="satellite_messaging_not_in_allowed_region_notification_title" msgid="2035303593479031655">"Mensaxaría por satélite non dispoñible"</string>

@@ -626,25 +626,18 @@ public class InsetsController implements WindowInsetsController, InsetsAnimation
         final InsetsAnimationSpec mInsetsAnimationSpec;
         @AnimationType
         final int mAnimationType;
-        @LayoutInsetsDuringAnimation
-        final int mLayoutInsetsDuringAnimation;
         @Nullable
         final CancellationSignal mCancellationSignal;
-        final boolean mUseInsetsAnimationThread;
 
         PendingControlRequest(@InsetsType int types,
                 @NonNull WindowInsetsAnimationControlListener listener,
-                @NonNull InsetsAnimationSpec insetsAnimationSpec,
-                @AnimationType int animationType,
-                @LayoutInsetsDuringAnimation int layoutInsetsDuringAnimation,
-                @Nullable CancellationSignal cancellationSignal, boolean useInsetsAnimationThread) {
+                @NonNull InsetsAnimationSpec insetsAnimationSpec, @AnimationType int animationType,
+                @Nullable CancellationSignal cancellationSignal) {
             mTypes = types;
             mListener = listener;
             mInsetsAnimationSpec = insetsAnimationSpec;
             mAnimationType = animationType;
-            mLayoutInsetsDuringAnimation = layoutInsetsDuringAnimation;
             mCancellationSignal = cancellationSignal;
-            mUseInsetsAnimationThread = useInsetsAnimationThread;
         }
     }
 
@@ -1241,11 +1234,8 @@ public class InsetsController implements WindowInsetsController, InsetsAnimation
     }
 
     /**
-     * Handle the {@link #mPendingImeControlRequest} when:
-     * <ul>
-     *     <li> The IME insets is ready to show.
-     *     <li> The IME insets has being requested invisible.
-     * </ul>
+     * Handle the {@link #mPendingImeControlRequest} after a controlled show animation was
+     * requested and the IME control with leash is not available.
      */
     private void handlePendingControlRequest(@NonNull PendingControlRequest pendingRequest,
             @Nullable ImeTracker.Token statsToken) {
@@ -1257,9 +1247,8 @@ public class InsetsController implements WindowInsetsController, InsetsAnimation
         controlAnimationUnchecked(pendingRequest.mTypes, pendingRequest.mCancellationSignal,
                 pendingRequest.mListener, null /* frame */, null /* bounds */,
                 pendingRequest.mInsetsAnimationSpec, pendingRequest.mAnimationType,
-                pendingRequest.mLayoutInsetsDuringAnimation,
-                pendingRequest.mUseInsetsAnimationThread, statsToken,
-                false /* fromPredictiveBack */);
+                LAYOUT_INSETS_DURING_ANIMATION_SHOWN, false /* useInsetsAnimationThread */,
+                statsToken, false /* fromPredictiveBack */);
     }
 
     @Override
@@ -1458,12 +1447,8 @@ public class InsetsController implements WindowInsetsController, InsetsAnimation
                 // If we have control but no leash for any of the controlling sources, we
                 // wait until the leashes are ready. Thus, creating a PendingControlRequest
                 // is always for showing, not hiding.
-                // TODO (b/323319146) remove layoutInsetsDuringAnimation from
-                //  PendingControlRequest, as it is now only used for showing
                 final PendingControlRequest request = new PendingControlRequest(types,
-                        listener, insetsAnimationSpec, animationType,
-                        LAYOUT_INSETS_DURING_ANIMATION_SHOWN,
-                        cancellationSignal, false /* useInsetsAnimationThread */);
+                        listener, insetsAnimationSpec, animationType, cancellationSignal);
                 mPendingImeControlRequest = request;
                 // only add a timeout when the control is not currently showing
                 mHandler.postDelayed(mPendingControlTimeout, PENDING_CONTROL_TIMEOUT_MS);

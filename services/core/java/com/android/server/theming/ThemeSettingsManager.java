@@ -17,6 +17,7 @@
 package com.android.server.theming;
 
 import android.annotation.FlaggedApi;
+import android.annotation.Nullable;
 import android.annotation.UserIdInt;
 import android.content.ContentResolver;
 import android.content.theming.ThemeSettings;
@@ -42,6 +43,7 @@ class ThemeSettingsManager {
      * @param contentResolver The content resolver to use.
      * @return The loaded {@link ThemeSettings}.
      */
+    @Nullable
     ThemeSettings readSettings(@UserIdInt int userId, ContentResolver contentResolver) {
         try {
             return ThemeSettings.fromJson(Settings.Secure.getStringForUser(contentResolver,

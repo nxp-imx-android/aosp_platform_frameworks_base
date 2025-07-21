@@ -22,7 +22,6 @@ import static android.app.HandoffFailureCode.HANDOFF_FAILURE_TIMEOUT;
 import static android.app.HandoffFailureCode.HANDOFF_FAILURE_UNKNOWN_TASK;
 import static android.app.HandoffFailureCode.HANDOFF_FAILURE_UNSUPPORTED_DEVICE;
 import static android.app.HandoffFailureCode.HANDOFF_FAILURE_UNSUPPORTED_TASK;
-import static android.companion.CompanionDeviceManager.MESSAGE_ONEWAY_TASK_CONTINUITY;
 import static android.companion.datatransfer.continuity.TaskContinuityManager.HANDOFF_REQUEST_RESULT_FAILURE_NO_DATA_PROVIDED_BY_TASK;
 import static android.companion.datatransfer.continuity.TaskContinuityManager.HANDOFF_REQUEST_RESULT_FAILURE_TASK_NOT_FOUND;
 import static android.companion.datatransfer.continuity.TaskContinuityManager.HANDOFF_REQUEST_RESULT_FAILURE_TIMEOUT;
@@ -39,11 +38,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.AdditionalMatchers.aryEq;
 
 import android.app.HandoffActivityData;
-import android.companion.CompanionDeviceManager;
-import android.companion.ICompanionDeviceManager;
 import android.content.ComponentName;
-import android.content.Context;
-import android.content.ContextWrapper;
 import android.os.IBinder;
 import android.platform.test.annotations.Presubmit;
 import android.testing.AndroidTestingRunner;
@@ -51,10 +46,9 @@ import android.testing.TestableLooper;
 
 import androidx.test.platform.app.InstrumentationRegistry;
 
+import com.android.server.companion.datatransfer.continuity.connectivity.TaskContinuityMessenger;
 import com.android.server.companion.datatransfer.continuity.messages.HandoffRequestMessage;
 import com.android.server.companion.datatransfer.continuity.messages.HandoffRequestResultMessage;
-import com.android.server.companion.datatransfer.continuity.messages.TaskContinuityMessage;
-import com.android.server.companion.datatransfer.continuity.messages.TaskContinuityMessageSerializer;
 import com.android.server.wm.ActivityTaskManagerInternal;
 import com.android.server.LocalServices;
 
@@ -77,35 +71,21 @@ import java.util.List;
 @TestableLooper.RunWithLooper(setAsMainLooper = true)
 public class InboundHandoffRequestControllerTest {
 
-    @Mock
-    private Context mMockContext;
-    @Mock
-    private ICompanionDeviceManager mMockCompanionDeviceManagerService;
+    @Mock private TaskContinuityMessenger mMockTaskContinuityMessenger;
+    @Mock private ActivityTaskManagerInternal mMockActivityTaskManagerInternal;
 
-    private ActivityTaskManagerInternal mMockActivityTaskManagerInternal;
-
-    private CompanionDeviceManager mCompanionDeviceManager;
     private InboundHandoffRequestController mInboundHandoffRequestController;
 
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
-        mMockContext = Mockito.spy(
-                new ContextWrapper(
-                        InstrumentationRegistry.getInstrumentation().getTargetContext()));
 
-        mCompanionDeviceManager = new CompanionDeviceManager(
-                mMockCompanionDeviceManagerService, mMockContext);
-
-        mMockActivityTaskManagerInternal = mock(ActivityTaskManagerInternal.class);
-
-        when(mMockContext.getSystemService(CompanionDeviceManager.class))
-                .thenReturn(mCompanionDeviceManager);
         LocalServices.addService(
             ActivityTaskManagerInternal.class,
             mMockActivityTaskManagerInternal);
 
-        mInboundHandoffRequestController = new InboundHandoffRequestController(mMockContext);
+        mInboundHandoffRequestController = new InboundHandoffRequestController(
+            mMockTaskContinuityMessenger);
     }
 
      @After
@@ -114,7 +94,7 @@ public class InboundHandoffRequestControllerTest {
     }
 
     @Test
-    public void onHandoffTaskDataRequestSucceeded_sendsSuccessMessage() throws Exception {
+    public void onHandoffTaskDataRequestSucceeded_sendsSuccessMessage() {
         int associationId = 1;
         int taskId = 2;
 
@@ -134,15 +114,13 @@ public class InboundHandoffRequestControllerTest {
                 taskId,
                 HANDOFF_REQUEST_RESULT_SUCCESS,
                 List.of(handoffActivityData));
-        verify(mMockCompanionDeviceManagerService).sendMessage(
-                eq(MESSAGE_ONEWAY_TASK_CONTINUITY),
-                aryEq(TaskContinuityMessageSerializer.serialize(expectedMessage)),
-                any());
+        verify(mMockTaskContinuityMessenger).sendMessage(
+                aryEq(new int[]{associationId}),
+                eq(expectedMessage));
     }
 
     @Test
-    public void onHandoffTaskDataRequestSucceeded_multipleAssociations_sendsToAll()
-            throws Exception {
+    public void onHandoffTaskDataRequestSucceeded_multipleAssociations_sendsToAll() {
 
         int firstAssociationId = 1;
         int secondAssociationId = 2;
@@ -168,59 +146,53 @@ public class InboundHandoffRequestControllerTest {
             taskId,
             HANDOFF_REQUEST_RESULT_SUCCESS,
             List.of(handoffActivityData));
-        verify(mMockCompanionDeviceManagerService).sendMessage(
-                eq(MESSAGE_ONEWAY_TASK_CONTINUITY),
-                eq(TaskContinuityMessageSerializer.serialize(expectedMessage)),
-                aryEq(new int[]{firstAssociationId, secondAssociationId}));
+        verify(mMockTaskContinuityMessenger).sendMessage(
+                aryEq(new int[]{firstAssociationId, secondAssociationId}),
+                eq(expectedMessage));
     }
 
     @Test
-    public void onHandoffTaskDataRequestFailed_sendsFailureMessage_timeout() throws Exception {
+    public void onHandoffTaskDataRequestFailed_sendsFailureMessage_timeout() {
         testHandoffFailure(
                 HANDOFF_FAILURE_TIMEOUT, HANDOFF_REQUEST_RESULT_FAILURE_TIMEOUT);
     }
 
     @Test
-    public void onHandoffTaskDataRequestFailed_sendsFailureMessage_unknownTask() throws Exception {
+    public void onHandoffTaskDataRequestFailed_sendsFailureMessage_unknownTask() {
         testHandoffFailure(
                 HANDOFF_FAILURE_UNKNOWN_TASK, HANDOFF_REQUEST_RESULT_FAILURE_TASK_NOT_FOUND);
     }
 
     @Test
-    public void onHandoffTaskDataRequestFailed_sendsFailureMessage_unsupportedTask()
-            throws Exception {
+    public void onHandoffTaskDataRequestFailed_sendsFailureMessage_unsupportedTask() {
         testHandoffFailure(
                 HANDOFF_FAILURE_UNSUPPORTED_TASK,
                 HANDOFF_REQUEST_RESULT_FAILURE_NO_DATA_PROVIDED_BY_TASK);
     }
 
     @Test
-    public void onHandoffTaskDataRequestFailed_sendsFailureMessage_emptyTask() throws Exception {
+    public void onHandoffTaskDataRequestFailed_sendsFailureMessage_emptyTask() {
         testHandoffFailure(
                 HANDOFF_FAILURE_EMPTY_TASK,
                 HANDOFF_REQUEST_RESULT_FAILURE_NO_DATA_PROVIDED_BY_TASK);
     }
 
     @Test
-    public void onHandoffTaskDataRequestFailed_sendsFailureMessage_unsupportedDevice()
-            throws Exception {
+    public void onHandoffTaskDataRequestFailed_sendsFailureMessage_unsupportedDevice() {
         testHandoffFailure(
                 HANDOFF_FAILURE_UNSUPPORTED_DEVICE,
                 HANDOFF_REQUEST_RESULT_FAILURE_NO_DATA_PROVIDED_BY_TASK);
     }
 
     @Test
-    public void onHandoffTaskDataRequestFailed_sendsFailureMessage_internalError()
-            throws Exception {
+    public void onHandoffTaskDataRequestFailed_sendsFailureMessage_internalError() {
         testHandoffFailure(
                 HANDOFF_FAILURE_INTERNAL_ERROR,
                 HANDOFF_REQUEST_RESULT_FAILURE_NO_DATA_PROVIDED_BY_TASK);
     }
 
 
-    private void testHandoffFailure(int receiverErrorCode, int expectedStatusCode)
-            throws Exception {
-
+    private void testHandoffFailure(int receiverErrorCode, int expectedStatusCode) {
         int associationId = 1;
         int taskId = 1;
 
@@ -234,9 +206,7 @@ public class InboundHandoffRequestControllerTest {
 
         HandoffRequestResultMessage expectedMessage = new HandoffRequestResultMessage(
                 taskId, expectedStatusCode, List.of());
-        verify(mMockCompanionDeviceManagerService).sendMessage(
-                eq(MESSAGE_ONEWAY_TASK_CONTINUITY),
-                eq(TaskContinuityMessageSerializer.serialize(expectedMessage)),
-                aryEq(new int[]{associationId}));
+        verify(mMockTaskContinuityMessenger)
+            .sendMessage(aryEq(new int[]{associationId}),eq(expectedMessage));
     }
 }

@@ -314,7 +314,7 @@ public final class OverlayManagerService extends SystemService {
             onStartUser(UserHandle.USER_SYSTEM);
 
             publishBinderService(Context.OVERLAY_SERVICE, mService);
-            publishLocalService(OverlayManagerService.class, this);
+            publishLocalService(OverlayManagerInternal.class, mInternal);
         } finally {
             traceEnd(TRACE_TAG_RRO);
         }
@@ -993,7 +993,8 @@ public final class OverlayManagerService extends SystemService {
                 // Enforce that the calling process can only register and unregister fabricated
                 // overlays using its package name.
                 final String pkgName = request.overlay.getPackageName();
-                if (callingUid != Process.ROOT_UID && !ArrayUtils.contains(
+                if (callingUid != Process.ROOT_UID && callingUid != Process.SYSTEM_UID
+                        && !ArrayUtils.contains(
                         mPackageManager.getPackagesForUid(callingUid), pkgName)) {
                     throw new IllegalArgumentException("UID " + callingUid + " does not own "
                             + "packageName " + pkgName);
@@ -1197,6 +1198,52 @@ public final class OverlayManagerService extends SystemService {
             return mImpl.getOverlayConfig().isDefaultPartitionOrder();
         }
 
+    };
+
+    private final OverlayManagerInternal mInternal = new OverlayManagerInternal() {
+        public IOverlayManager getService() {
+            return IOverlayManager.Stub.asInterface(mService);
+        }
+
+        @Override
+        public List<OverlayInfo> getOverlayInfosForTarget(@NonNull final String targetPackageName,
+                @NonNull UserHandle user) {
+            try {
+                return getService().getOverlayInfosForTarget(targetPackageName,
+                        user.getIdentifier());
+            } catch (RemoteException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        @Override
+        public OverlayInfo getOverlayInfo(@NonNull final String packageName,
+                @NonNull final UserHandle userHandle) {
+            try {
+                return getService().getOverlayInfo(packageName, userHandle.getIdentifier());
+            } catch (RemoteException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        @Override
+        public OverlayInfo getOverlayInfo(@NonNull OverlayIdentifier overlay,
+                @NonNull UserHandle userHandle) {
+            try {
+                return getService().getOverlayInfoByIdentifier(overlay, userHandle.getIdentifier());
+            } catch (RemoteException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        @Override
+        public void commit(@NonNull OverlayManagerTransaction transaction) {
+            try {
+                getService().commit(transaction);
+            } catch (RemoteException e) {
+                throw new RuntimeException(e);
+            }
+        }
     };
 
     private static final class PackageManagerHelperImpl implements PackageManagerHelper {

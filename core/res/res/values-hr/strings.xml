@@ -72,12 +72,18 @@
     <string name="CLIRDefaultOnNextCallOff" msgid="5036749051007098105">"Zadana postavka ID-a pozivatelja ima ograničenje. Sljedeći poziv: Nije ograničen"</string>
     <string name="CLIRDefaultOffNextCallOn" msgid="1022781126694885017">"Zadana postavka ID-a pozivatelja nema ograničenje. Sljedeći poziv: Ograničen"</string>
     <string name="CLIRDefaultOffNextCallOff" msgid="2491576172356463443">"Zadana postavka ID-a pozivatelja nema ograničenje. Sljedeći poziv: Nije ograničen"</string>
-    <string name="page_size_compat_apk_warning" msgid="2982396798449041224">"Ova aplikacija nije kompatibilna sa 16 KB stranicama. Provjera usklađenosti APK-a nije uspjela. Aplikacija će se pokrenuti u načinu kompatibilnom s formatom stranice. Da biste postigli kompatibilnost, ponovo kompilirajte aplikaciju s podrškom za 16 KB stranice. Više informacija potražite na stranici &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
-    <string name="page_size_compat_elf_warning" msgid="6753874059564812651">"Ova aplikacija nije kompatibilna sa 16 KB stranicama. Provjera usklađenosti ELF-a nije uspjela. Aplikacija će se pokrenuti u načinu kompatibilnom s formatom stranice. Da biste postigli kompatibilnost, ponovo kompilirajte aplikaciju s podrškom za 16 KB stranice. Više informacija potražite na stranici &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
-    <string name="page_size_compat_apk_and_elf_warning" msgid="7628675779500605390">"Ova aplikacija nije kompatibilna sa 16 KB stranicama. Provjere usklađenosti APK-a i ELF-a nisu uspjele. Aplikacija će se pokrenuti u načinu kompatibilnom s formatom stranice. Da biste postigli kompatibilnost, ponovo kompilirajte aplikaciju s podrškom za 16 KB stranice. Više informacija potražite na stranici &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
-    <string name="page_size_compat_apk_warning_4kb" msgid="6013674159459424986">"Upozorenje se prikazuje jer je ovo aplikacija s mogućnošću otklanjanja pogrešaka koja se trenutačno testira. Ako niste razvojni programer, prijavite to razvojnom programeru i zatražite aplikaciju bez mogućnosti otklanjanja pogrešaka. &lt;br&gt;&lt;br&gt; Ova aplikacija nije kompatibilna s načinom rada od 16 KB. Provjera usklađenosti APK-a nije uspjela. Slijedite upute na stranici &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; &lt;br&gt;&lt;br&gt; Sljedeće biblioteke nisu usklađene s načinom rada od 16 KB: &lt;br&gt;&lt;br&gt;"</string>
-    <string name="page_size_compat_elf_warning_4kb" msgid="5189541753040977649">"Upozorenje se prikazuje jer je ovo aplikacija s mogućnošću otklanjanja pogrešaka koja se trenutačno testira. Ako niste razvojni programer, prijavite to razvojnom programeru i zatražite aplikaciju bez mogućnosti otklanjanja pogrešaka. &lt;br&gt;&lt;br&gt; Ova aplikacija nije kompatibilna s načinom rada od 16 KB. Provjera usklađenosti ELF-a nije uspjela. Slijedite upute na stranici &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; &lt;br&gt;&lt;br&gt; Sljedeće biblioteke nisu usklađene s načinom rada od 16 KB: &lt;br&gt;&lt;br&gt;"</string>
-    <string name="page_size_compat_apk_and_elf_warning_4kb" msgid="7665028394400479058">"Upozorenje se prikazuje jer je ovo aplikacija s mogućnošću otklanjanja pogrešaka koja se trenutačno testira. Ako niste razvojni programer, prijavite to razvojnom programeru i zatražite aplikaciju bez mogućnosti otklanjanja pogrešaka. &lt;br&gt;&lt;br&gt; Ova aplikacija nije kompatibilna s načinom rada od 16 KB. Provjere usklađenosti APK-a i ELF-a nisu uspjele. Slijedite upute na stranici &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;. &lt;br&gt;&lt;br&gt; Sljedeće biblioteke nisu usklađene s načinom rada od 16 KB: &lt;br&gt;&lt;br&gt;"</string>
+    <!-- no translation found for page_size_compat_apk_warning (2297836366674721648) -->
+    <skip />
+    <!-- no translation found for page_size_compat_elf_warning (8613720928493005883) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_and_elf_warning (9034695801295605229) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_warning_4kb (5676451039424864495) -->
+    <skip />
+    <!-- no translation found for page_size_compat_elf_warning_4kb (5005239480522831311) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_and_elf_warning_4kb (997926487776340721) -->
+    <skip />
     <string name="page_size_compat_never_show" msgid="3391282612422783097">"Ne prikazuj ponovo"</string>
     <string name="page_size_compat_title" msgid="6497719153872572204">"Kompatibilnost Android aplikacije"</string>
     <string name="page_size_compat_elf_not_aligned" msgid="7940806102874132630">"&amp;#8226; %1$s : segment LOAD nije usklađen"</string>
@@ -915,7 +921,7 @@
     <string name="policydesc_disableCamera" msgid="3204405908799676104">"Spriječite upotrebu svih kamera uređaja."</string>
     <string name="policylab_disableKeyguardFeatures" msgid="5071855750149949741">"Onemogućavanje nekih značajki zaključavanja zaslona"</string>
     <string name="policydesc_disableKeyguardFeatures" msgid="6641673177041195957">"Sprječava upotrebu nekih značajki zaključavanja zaslona."</string>
-    <!-- no translation found for exit_toast_on_long_press_escape (873907401529125943) -->
+    <!-- no translation found for exit_toast_on_long_press_escape (2983932499112557277) -->
     <skip />
   <string-array name="phoneTypes">
     <item msgid="8996339953292723951">"Privatni"</item>
@@ -1843,6 +1849,8 @@
     <string name="owner_name" msgid="8713560351570795743">"Vlasnik"</string>
     <string name="guest_name" msgid="8502103277839834324">"Gost"</string>
     <string name="headless_system_user_name" msgid="1849150903255530049">"Korisnik sustava"</string>
+    <!-- no translation found for unnamed_user_name (6096699110534542980) -->
+    <skip />
     <string name="error_message_title" msgid="4082495589294631966">"Pogreška"</string>
     <string name="error_message_change_not_allowed" msgid="843159705042381454">"Vaš administrator ne dopušta tu promjenu"</string>
     <string name="app_not_found" msgid="3429506115332341800">"Nije pronađena aplikacija za upravljanje ovom radnjom"</string>
@@ -2514,7 +2522,8 @@
     <string name="screen_not_shared_sensitive_content" msgid="7058419185079565001">"Sadržaj aplikacije sakriven je od dijeljenja zaslona radi sigurnosti"</string>
     <string name="satellite_notification_title" msgid="4026338973463121526">"Automatski povezano sa satelitom"</string>
     <string name="satellite_notification_summary" msgid="5207364139430767162">"Možete slati i primati poruke bez mobilne mreže ili Wi-Fi mreže"</string>
-    <string name="satellite_notification_summary_with_data" msgid="6486843676720429049">"Možete slati i primati poruke te koristiti ograničene podatke putem satelita"</string>
+    <!-- no translation found for satellite_notification_summary_with_data (8290202758586475712) -->
+    <skip />
     <string name="satellite_notification_manual_title" msgid="1097504441849466279">"Želite li slati poruke putem satelita?"</string>
     <string name="satellite_notification_manual_summary" msgid="901206289846283445">"Šaljite i primajte poruke kad nije dostupna mobilna ili Wi-Fi mreža"</string>
     <string name="satellite_notification_open_message" msgid="4149234979688273729">"Otvori Poruke"</string>

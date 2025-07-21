@@ -58,15 +58,12 @@ public class AnonymousSourceFragment extends DialogFragment {
 
         // There is no root view here. Ok to pass null view root
         @SuppressWarnings("InflateParams")
-        View dialogView = getLayoutInflater().inflate(
-                UiUtil.getInstallationLayoutResId(requireContext()), null);
+        View dialogView = getLayoutInflater().inflate(R.layout.anonymous_material_layout, null);
         TextView customMessage = dialogView.requireViewById(R.id.custom_message);
         customMessage.setText(R.string.message_anonymous_source_warning);
-        customMessage.setVisibility(View.VISIBLE);
 
         mDialog = UiUtil.getAlertDialog(requireContext(),
-                getString(R.string.title_anonymous_source_warning), dialogView,
-                R.string.button_continue, R.string.button_cancel,
+                /* title= */ "", dialogView, R.string.button_continue, R.string.button_cancel,
                 ((dialog, which) -> mInstallActionListener.onPositiveResponse(
                         InstallUserActionRequired.USER_ACTION_REASON_ANONYMOUS_SOURCE)),
                 ((dialog, which) -> mInstallActionListener.onNegativeResponse(

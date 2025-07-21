@@ -19,6 +19,7 @@ package com.android.systemui.shade.ui.viewmodel
 import android.testing.TestableLooper
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
+import com.android.compose.animation.scene.Back
 import com.android.compose.animation.scene.ObservableTransitionState
 import com.android.compose.animation.scene.SceneKey
 import com.android.compose.animation.scene.Swipe
@@ -80,7 +81,7 @@ class ShadeUserActionsViewModelTest : SysuiTestCase() {
     }
 
     @Test
-    fun upTransitionSceneKey_deviceLocked_lockScreen() =
+    fun upOrBackTransitionSceneKey_deviceLocked_lockScreen() =
         kosmos.runTest {
             val actions by collectLastValue(underTest.actions)
             val homeScene by collectLastValue(homeSceneFamilyResolver.resolvedScene)
@@ -88,11 +89,13 @@ class ShadeUserActionsViewModelTest : SysuiTestCase() {
 
             assertThat((actions?.get(Swipe.Up) as? UserActionResult.ChangeScene)?.toScene)
                 .isEqualTo(SceneFamilies.Home)
+            assertThat((actions?.get(Back) as? UserActionResult.ChangeScene)?.toScene)
+                .isEqualTo(SceneFamilies.Home)
             assertThat(homeScene).isEqualTo(Scenes.Lockscreen)
         }
 
     @Test
-    fun upTransitionSceneKey_deviceUnlocked_gone() =
+    fun upOrBackTransitionSceneKey_deviceUnlocked_gone() =
         kosmos.runTest {
             val actions by collectLastValue(underTest.actions)
             val homeScene by collectLastValue(homeSceneFamilyResolver.resolvedScene)
@@ -101,11 +104,13 @@ class ShadeUserActionsViewModelTest : SysuiTestCase() {
 
             assertThat((actions?.get(Swipe.Up) as? UserActionResult.ChangeScene)?.toScene)
                 .isEqualTo(SceneFamilies.Home)
+            assertThat((actions?.get(Back) as? UserActionResult.ChangeScene)?.toScene)
+                .isEqualTo(SceneFamilies.Home)
             assertThat(homeScene).isEqualTo(Scenes.Gone)
         }
 
     @Test
-    fun upTransitionSceneKey_keyguardDisabled_gone() =
+    fun upOrBackTransitionSceneKey_keyguardDisabled_gone() =
         kosmos.runTest {
             val actions by collectLastValue(underTest.actions)
             val homeScene by collectLastValue(kosmos.homeSceneFamilyResolver.resolvedScene)
@@ -114,11 +119,13 @@ class ShadeUserActionsViewModelTest : SysuiTestCase() {
 
             assertThat((actions?.get(Swipe.Up) as? UserActionResult.ChangeScene)?.toScene)
                 .isEqualTo(SceneFamilies.Home)
+            assertThat((actions?.get(Back) as? UserActionResult.ChangeScene)?.toScene)
+                .isEqualTo(SceneFamilies.Home)
             assertThat(homeScene).isEqualTo(Scenes.Gone)
         }
 
     @Test
-    fun upTransitionSceneKey_authMethodSwipe_lockscreenNotDismissed_goesToLockscreen() =
+    fun upOrBackTransitionSceneKey_authMethodSwipe_lockscreenNotDismissed_goesToLockscreen() =
         kosmos.runTest {
             val actions by collectLastValue(underTest.actions)
             val homeScene by collectLastValue(kosmos.homeSceneFamilyResolver.resolvedScene)
@@ -128,11 +135,13 @@ class ShadeUserActionsViewModelTest : SysuiTestCase() {
 
             assertThat((actions?.get(Swipe.Up) as? UserActionResult.ChangeScene)?.toScene)
                 .isEqualTo(SceneFamilies.Home)
+            assertThat((actions?.get(Back) as? UserActionResult.ChangeScene)?.toScene)
+                .isEqualTo(SceneFamilies.Home)
             assertThat(homeScene).isEqualTo(Scenes.Lockscreen)
         }
 
     @Test
-    fun upTransitionSceneKey_authMethodSwipe_lockscreenDismissed_goesToGone() =
+    fun upOrBackTransitionSceneKey_authMethodSwipe_lockscreenDismissed_goesToGone() =
         kosmos.runTest {
             val actions by collectLastValue(underTest.actions)
             val homeScene by collectLastValue(kosmos.homeSceneFamilyResolver.resolvedScene)
@@ -142,25 +151,29 @@ class ShadeUserActionsViewModelTest : SysuiTestCase() {
 
             assertThat((actions?.get(Swipe.Up) as? UserActionResult.ChangeScene)?.toScene)
                 .isEqualTo(SceneFamilies.Home)
+            assertThat((actions?.get(Back) as? UserActionResult.ChangeScene)?.toScene)
+                .isEqualTo(SceneFamilies.Home)
             assertThat(homeScene).isEqualTo(Scenes.Gone)
         }
 
     @Test
-    fun upTransitionKey_splitShadeEnabled_isGoneToSplitShade() =
+    fun upOrBackTransitionKey_splitShadeEnabled_isGoneToSplitShade() =
         kosmos.runTest {
             val actions by collectLastValue(underTest.actions)
             enableSplitShade()
 
             assertThat(actions?.get(Swipe.Up)?.transitionKey).isEqualTo(ToSplitShade)
+            assertThat(actions?.get(Back)?.transitionKey).isEqualTo(ToSplitShade)
         }
 
     @Test
-    fun upTransitionKey_splitShadeDisable_isNull() =
+    fun upOrBackTransitionKey_splitShadeDisable_isNull() =
         kosmos.runTest {
             val actions by collectLastValue(underTest.actions)
             enableSingleShade()
 
             assertThat(actions?.get(Swipe.Up)?.transitionKey).isNull()
+            assertThat(actions?.get(Back)?.transitionKey).isNull()
         }
 
     @Test
@@ -184,7 +197,7 @@ class ShadeUserActionsViewModelTest : SysuiTestCase() {
         }
 
     @Test
-    fun upTransitionSceneKey_customizing_noTransition() =
+    fun upOrBackTransitionSceneKey_customizing_noTransition() =
         kosmos.runTest {
             val actions by collectLastValue(underTest.actions)
 
@@ -195,10 +208,11 @@ class ShadeUserActionsViewModelTest : SysuiTestCase() {
                     }
                 )
                 .isEmpty()
+            assertThat(actions!!.keys.filterIsInstance<Back>()).isEmpty()
         }
 
     @Test
-    fun upTransitionSceneKey_backToCommunal() =
+    fun upOrBackTransitionSceneKey_backToCommunal() =
         kosmos.runTest {
             val actions by collectLastValue(underTest.actions)
             val currentScene by collectLastValue(sceneInteractor.currentScene)
@@ -209,10 +223,11 @@ class ShadeUserActionsViewModelTest : SysuiTestCase() {
             assertThat(currentScene).isEqualTo(Scenes.Shade)
 
             assertThat(actions?.get(Swipe.Up)).isEqualTo(UserActionResult(Scenes.Communal))
+            assertThat(actions?.get(Back)).isEqualTo(UserActionResult(Scenes.Communal))
         }
 
     @Test
-    fun upTransitionSceneKey_neverGoesBackToShadeScene() =
+    fun upOrBackTransitionSceneKey_neverGoesBackToShadeScene() =
         kosmos.runTest {
             val actions by collectValues(underTest.actions)
             val currentScene by collectLastValue(sceneInteractor.currentScene)
@@ -228,6 +243,12 @@ class ShadeUserActionsViewModelTest : SysuiTestCase() {
                         "Actions on index $index is incorrectly mapping back to the Shade scene!"
                     )
                     .that((map[Swipe.Up] as? UserActionResult.ChangeScene)?.toScene)
+                    .isNotEqualTo(Scenes.Shade)
+
+                assertWithMessage(
+                        "Actions on index $index is incorrectly mapping back to the Shade scene!"
+                    )
+                    .that((map[Back] as? UserActionResult.ChangeScene)?.toScene)
                     .isNotEqualTo(Scenes.Shade)
             }
         }

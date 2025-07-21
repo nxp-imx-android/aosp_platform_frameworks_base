@@ -73,6 +73,8 @@ import com.android.systemui.common.domain.interactor.SysUIStateDisplaysInteracto
 import com.android.systemui.plugins.ActivityStarter;
 import com.android.systemui.qs.shared.QSSettingsPackageRepository;
 import com.android.systemui.res.R;
+import com.android.systemui.shade.domain.interactor.FakeShadeDialogContextInteractor;
+import com.android.systemui.shade.domain.interactor.ShadeDialogContextInteractor;
 import com.android.systemui.statusbar.phone.SystemUIDialog;
 import com.android.systemui.statusbar.phone.SystemUIDialogManager;
 import com.android.systemui.util.concurrency.FakeExecutor;
@@ -111,6 +113,8 @@ public class HearingDevicesDialogDelegateTest extends SysuiTestCase {
     private static final String TEST_PRESET_NAME = "test_preset";
     private static final String SETTINGS_PACKAGE_NAME = "com.android.settings";
     private final FakeExecutor mExecutor = new FakeExecutor(new FakeSystemClock());
+    private final ShadeDialogContextInteractor mShadeDialogContextInteractor =
+            new FakeShadeDialogContextInteractor(mContext);
 
     @Mock
     private SystemUIDialogManager mSystemUIDialogManager;
@@ -402,7 +406,8 @@ public class HearingDevicesDialogDelegateTest extends SysuiTestCase {
                 mAudioManager,
                 mUiEventLogger,
                 mQSSettingsPackageRepository,
-                mInputRoutingFactory
+                mInputRoutingFactory,
+                mShadeDialogContextInteractor
         );
         mDialog = mDialogDelegate.createDialog();
     }

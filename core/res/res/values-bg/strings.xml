@@ -71,12 +71,18 @@
     <string name="CLIRDefaultOnNextCallOff" msgid="5036749051007098105">"Стандартната идентификация на повикванията е „забранено“. За следващото обаждане тя е разрешена."</string>
     <string name="CLIRDefaultOffNextCallOn" msgid="1022781126694885017">"Стандартната идентификация на повикванията е „разрешено“. За следващото обаждане тя е забранена."</string>
     <string name="CLIRDefaultOffNextCallOff" msgid="2491576172356463443">"Стандартната идентификация на повикванията е „разрешено“. За следващото обаждане тя е разрешена."</string>
-    <string name="page_size_compat_apk_warning" msgid="2982396798449041224">"Това приложение не е съвместимо със страници с размер 16 KB. Проверката за съответствие с APK файла не бе успешна. Това приложение ще се изпълнява в режим на съвместимост с размера на страницата. За най-добра съвместимост компилирайте отново приложението така, че да поддържа страници с размер 16 KB. За повече информация вижте &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
-    <string name="page_size_compat_elf_warning" msgid="6753874059564812651">"Това приложение не е съвместимо със страници с размер 16 KB. Проверката за съответствие с ELF файла не бе успешна. Това приложение ще се изпълнява в режим на съвместимост с размера на страницата. За най-добра съвместимост компилирайте отново приложението така, че да поддържа страници с размер 16 KB. За повече информация вижте &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
-    <string name="page_size_compat_apk_and_elf_warning" msgid="7628675779500605390">"Това приложение не е съвместимо със страници с размер 16 KB. Проверките за съответствие с APK и ELF файловете не бяха успешни. Това приложение ще се изпълнява в режим на съвместимост с размера на страницата. За най-добра съвместимост компилирайте отново приложението така, че да поддържа страници с размер 16 KB. За повече информация вижте &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
-    <string name="page_size_compat_apk_warning_4kb" msgid="6013674159459424986">"Настоящото предупреждение се показва, защото това е приложение с възможност за отстраняване на грешки, което понастоящем се тества. Ако не сте програмистът, моля, подайте сигнал до него и поискайте версия без възможност за отстраняване на грешки. &lt;br&gt;&lt;br&gt; Това приложение не е съвместимо със страници с размер 16 KB. Проверката за съответствие с APK файла не бе успешна. Изпълнете стъпките на адрес &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; &lt;br&gt;&lt;br&gt; Следните библиотеки не са настроени за 16 KB: &lt;br&gt;&lt;br&gt;"</string>
-    <string name="page_size_compat_elf_warning_4kb" msgid="5189541753040977649">"Настоящото предупреждение се показва, защото това е приложение с възможност за отстраняване на грешки, което понастоящем се тества. Ако не сте програмистът, моля, подайте сигнал до него и поискайте версия без възможност за отстраняване на грешки. &lt;br&gt;&lt;br&gt; Това приложение не е съвместимо със страници с размер 16 KB. Проверката за съответствие с ELF файла не бе успешна. Изпълнете стъпките на адрес &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; &lt;br&gt;&lt;br&gt; Следните библиотеки не са настроени за 16 KB: &lt;br&gt;&lt;br&gt;"</string>
-    <string name="page_size_compat_apk_and_elf_warning_4kb" msgid="7665028394400479058">"Настоящото предупреждение се показва, защото това е приложение с възможност за отстраняване на грешки, което понастоящем се тества. Ако не сте програмистът, моля, подайте сигнал до него и поискайте версия без възможност за отстраняване на грешки. &lt;br&gt;&lt;br&gt; Това приложение не е съвместимо със страници с размер 16 KB. Проверките за съответствие с APK и ELF файловете не бяха успешни. Изпълнете стъпките на адрес &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;. &lt;br&gt;&lt;br&gt; Следните библиотеки не са настроени за 16 KB: &lt;br&gt;&lt;br&gt;"</string>
+    <!-- no translation found for page_size_compat_apk_warning (2297836366674721648) -->
+    <skip />
+    <!-- no translation found for page_size_compat_elf_warning (8613720928493005883) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_and_elf_warning (9034695801295605229) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_warning_4kb (5676451039424864495) -->
+    <skip />
+    <!-- no translation found for page_size_compat_elf_warning_4kb (5005239480522831311) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_and_elf_warning_4kb (997926487776340721) -->
+    <skip />
     <string name="page_size_compat_never_show" msgid="3391282612422783097">"Да не се показва отново"</string>
     <string name="page_size_compat_title" msgid="6497719153872572204">"Съвместимост на приложенията за Android"</string>
     <string name="page_size_compat_elf_not_aligned" msgid="7940806102874132630">"&amp;#8226; %1$s: Сегментът LOAD не е настроен правилно"</string>
@@ -914,7 +920,7 @@
     <string name="policydesc_disableCamera" msgid="3204405908799676104">"Предотвратява употребата на камерите на всички устройства."</string>
     <string name="policylab_disableKeyguardFeatures" msgid="5071855750149949741">"Изкл. на някои функции за закл. на екрана"</string>
     <string name="policydesc_disableKeyguardFeatures" msgid="6641673177041195957">"Предотвратява използването на някои функции за заключване на екрана."</string>
-    <!-- no translation found for exit_toast_on_long_press_escape (873907401529125943) -->
+    <!-- no translation found for exit_toast_on_long_press_escape (2983932499112557277) -->
     <skip />
   <string-array name="phoneTypes">
     <item msgid="8996339953292723951">"Домашен"</item>
@@ -1842,6 +1848,8 @@
     <string name="owner_name" msgid="8713560351570795743">"Собственик"</string>
     <string name="guest_name" msgid="8502103277839834324">"Гост"</string>
     <string name="headless_system_user_name" msgid="1849150903255530049">"Системен потребител"</string>
+    <!-- no translation found for unnamed_user_name (6096699110534542980) -->
+    <skip />
     <string name="error_message_title" msgid="4082495589294631966">"Грешка"</string>
     <string name="error_message_change_not_allowed" msgid="843159705042381454">"Тази промяна не е разрешена от администратора ви"</string>
     <string name="app_not_found" msgid="3429506115332341800">"Няма намерено приложение за извършване на това действие"</string>
@@ -2513,7 +2521,8 @@
     <string name="screen_not_shared_sensitive_content" msgid="7058419185079565001">"Съдържанието на приложението е скрито от функцията за споделяне на екрана от съображения за сигурност"</string>
     <string name="satellite_notification_title" msgid="4026338973463121526">"Автоматично установена връзка със сателит"</string>
     <string name="satellite_notification_summary" msgid="5207364139430767162">"Можете да изпращате и получавате съобщения без мобилна или Wi-Fi мрежа"</string>
-    <string name="satellite_notification_summary_with_data" msgid="6486843676720429049">"Можете да изпращате и получавате съобщения и да използвате ограничени данни чрез сателит"</string>
+    <!-- no translation found for satellite_notification_summary_with_data (8290202758586475712) -->
+    <skip />
     <string name="satellite_notification_manual_title" msgid="1097504441849466279">"Да се използват ли сателитни съобщения?"</string>
     <string name="satellite_notification_manual_summary" msgid="901206289846283445">"Изпращайте и получавайте съобщения без мобилна или Wi-Fi мрежа"</string>
     <string name="satellite_notification_open_message" msgid="4149234979688273729">"Отваряне на Messages"</string>

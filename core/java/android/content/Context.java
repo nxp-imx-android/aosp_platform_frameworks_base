@@ -4402,6 +4402,7 @@ public abstract class Context {
                 // @hide: POWER_WHITELIST_MANAGER,
                 DEVICE_POLICY_SERVICE,
                 UI_MODE_SERVICE,
+                // @hide: THEME_SERVICE,
                 DOWNLOAD_SERVICE,
                 NFC_SERVICE,
                 BLUETOOTH_SERVICE,
@@ -6398,6 +6399,18 @@ public abstract class Context {
      * @see android.content.om.OverlayManager
      */
     public static final String OVERLAY_SERVICE = "overlay";
+
+    /**
+     * Use with {@link #getSystemService(String)} to retrieve a {@link ThemeManager} for theme
+     * management.
+     *
+     * @see #getSystemService(String)
+     * @see ThemeManager
+     * @hide
+     */
+    @FlaggedApi(android.server.Flags.FLAG_ENABLE_THEME_SERVICE)
+    public static final String THEME_SERVICE = "theme";
+
 
     /**
      * Use with {@link #getSystemService(String)} to manage resources.

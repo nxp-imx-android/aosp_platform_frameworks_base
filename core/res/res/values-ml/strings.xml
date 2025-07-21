@@ -71,12 +71,18 @@
     <string name="CLIRDefaultOnNextCallOff" msgid="5036749051007098105">"നിയന്ത്രിക്കേണ്ട സ്ഥിര കോളർ ഐഡികൾ. അടുത്ത കോൾ: നിയന്ത്രിച്ചിട്ടില്ല"</string>
     <string name="CLIRDefaultOffNextCallOn" msgid="1022781126694885017">"നിയന്ത്രിക്കേണ്ടതല്ലാത്ത സ്ഥിര കോളർ ഐഡികൾ. അടുത്ത കോൾ: നിയന്ത്രിച്ചിട്ടുണ്ട്"</string>
     <string name="CLIRDefaultOffNextCallOff" msgid="2491576172356463443">"നിയന്ത്രിക്കേണ്ടതല്ലാത്ത സ്ഥിര കോളർ ഐഡികൾ. അടുത്ത കോൾ: നിയന്ത്രിച്ചിട്ടില്ല"</string>
-    <string name="page_size_compat_apk_warning" msgid="2982396798449041224">"ഈ ആപ്പ് 16 KB-ക്ക് അനുയോജ്യമല്ല. APK അലൈൻമെന്റ് പരിശോധന നടത്താനായില്ല. പേജ് വലുപ്പത്തിന് അനുയോജ്യമായ മോഡ് ഉപയോഗിച്ച് ഈ ആപ്പ് റൺ ചെയ്യും. മികച്ച അനുയോജ്യതയ്ക്കായി, 16 KB പിന്തുണയോടെ ആപ്പ് വീണ്ടും കംപൈൽ ചെയ്യുക. കൂടുതൽ വിവരങ്ങൾക്ക്, &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; കാണുക"</string>
-    <string name="page_size_compat_elf_warning" msgid="6753874059564812651">"ഈ ആപ്പ് 16 KB-ക്ക് അനുയോജ്യമല്ല. ELF അലൈൻമെന്റ് പരിശോധന നടത്താനായില്ല. പേജ് വലുപ്പത്തിന് അനുയോജ്യമായ മോഡ് ഉപയോഗിച്ച് ഈ ആപ്പ് റൺ ചെയ്യും. മികച്ച അനുയോജ്യതയ്ക്കായി, 16 KB പിന്തുണയോടെ ആപ്പ് വീണ്ടും കംപൈൽ ചെയ്യുക. കൂടുതൽ വിവരങ്ങൾക്ക്, &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; കാണുക"</string>
-    <string name="page_size_compat_apk_and_elf_warning" msgid="7628675779500605390">"ഈ ആപ്പ് 16 KB-ക്ക് അനുയോജ്യമല്ല. APK, ELF അലൈൻമെന്റ് പരിശോധനകൾ നടത്താനായില്ല. പേജ് വലുപ്പത്തിന് അനുയോജ്യമായ മോഡ് ഉപയോഗിച്ച് ഈ ആപ്പ് റൺ ചെയ്യും. മികച്ച അനുയോജ്യതയ്ക്കായി, 16 KB പിന്തുണയോടെ ആപ്പ് വീണ്ടും കംപൈൽ ചെയ്യുക. കൂടുതൽ വിവരങ്ങൾക്ക്, &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; കാണുക"</string>
-    <string name="page_size_compat_apk_warning_4kb" msgid="6013674159459424986">"നിലവിൽ ടെസ്റ്റ് ചെയ്തുകൊണ്ടിരിക്കുന്ന, ഡീബഗ് ചെയ്യാവുന്ന ഒരു ആപ്പ് ആയതിനാലാണ് ഈ മുന്നറിയിപ്പ് കാണിക്കുന്നത്. ഡെവലപ്പർ നിങ്ങളല്ലെങ്കിൽ, ഇത് ഡെവലപ്പർക്ക് റിപ്പോർട്ട് ചെയ്ത് ഡീബഗ് ചെയ്യാനാവാത്ത ഒരു ആപ്പ് ആവശ്യപ്പെടുക. &lt;br&gt;&lt;br&gt; ഈ ആപ്പ് 16 KB-ക്ക് അനുയോജ്യമല്ല. APK അലൈൻമെന്റ് പരിശോധന നടത്താനായില്ല. &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; എന്നതിലെ ഘട്ടങ്ങൾ പിന്തുടരുക &lt;br&gt;&lt;br&gt; ഇനിപ്പറയുന്ന ലൈബ്രറികൾ 16 KB അലൈൻ ചെയ്തിട്ടില്ല: &lt;br&gt;&lt;br&gt;"</string>
-    <string name="page_size_compat_elf_warning_4kb" msgid="5189541753040977649">"നിലവിൽ ടെസ്റ്റ് ചെയ്തുകൊണ്ടിരിക്കുന്ന, ഡീബഗ് ചെയ്യാവുന്ന ഒരു ആപ്പ് ആയതിനാലാണ് ഈ മുന്നറിയിപ്പ് കാണിക്കുന്നത്. ഡെവലപ്പർ നിങ്ങളല്ലെങ്കിൽ, ഇത് ഡെവലപ്പർക്ക് റിപ്പോർട്ട് ചെയ്ത് ഡീബഗ് ചെയ്യാനാവാത്ത ഒരു ആപ്പ് ആവശ്യപ്പെടുക. &lt;br&gt;&lt;br&gt; ഈ ആപ്പ് 16 KB-ക്ക് അനുയോജ്യമല്ല. ELF അലൈൻമെന്റ് പരിശോധന നടത്താനായില്ല. &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; എന്നതിലെ ഘട്ടങ്ങൾ പിന്തുടരുക &lt;br&gt;&lt;br&gt; ഇനിപ്പറയുന്ന ലൈബ്രറികൾ 16 KB അലൈൻ ചെയ്തിട്ടില്ല: &lt;br&gt;&lt;br&gt;"</string>
-    <string name="page_size_compat_apk_and_elf_warning_4kb" msgid="7665028394400479058">"നിലവിൽ ടെസ്റ്റ് ചെയ്തുകൊണ്ടിരിക്കുന്ന, ഡീബഗ് ചെയ്യാവുന്ന ഒരു ആപ്പ് ആയതിനാലാണ് ഈ മുന്നറിയിപ്പ് കാണിക്കുന്നത്. ഡെവലപ്പർ നിങ്ങളല്ലെങ്കിൽ, ഇത് ഡെവലപ്പർക്ക് റിപ്പോർട്ട് ചെയ്ത് ഡീബഗ് ചെയ്യാനാവാത്ത ഒരു ആപ്പ് ആവശ്യപ്പെടുക. &lt;br&gt;&lt;br&gt; ഈ ആപ്പ് 16 KB-ക്ക് അനുയോജ്യമല്ല. APK, ELF അലൈൻമെന്റ് പരിശോധനകൾ നടത്താനായില്ല. &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; എന്നതിലെ ഘട്ടങ്ങൾ പിന്തുടരുക. &lt;br&gt;&lt;br&gt; ഇനിപ്പറയുന്ന ലൈബ്രറികൾ 16 KB അലൈൻ ചെയ്തിട്ടില്ല: &lt;br&gt;&lt;br&gt;"</string>
+    <!-- no translation found for page_size_compat_apk_warning (2297836366674721648) -->
+    <skip />
+    <!-- no translation found for page_size_compat_elf_warning (8613720928493005883) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_and_elf_warning (9034695801295605229) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_warning_4kb (5676451039424864495) -->
+    <skip />
+    <!-- no translation found for page_size_compat_elf_warning_4kb (5005239480522831311) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_and_elf_warning_4kb (997926487776340721) -->
+    <skip />
     <string name="page_size_compat_never_show" msgid="3391282612422783097">"വീണ്ടും കാണിക്കരുത്"</string>
     <string name="page_size_compat_title" msgid="6497719153872572204">"Android ആപ്പിന്റെ അനുയോജ്യത"</string>
     <string name="page_size_compat_elf_not_aligned" msgid="7940806102874132630">"&amp;#8226; %1$s : LOAD സെഗ്മെന്റ് അലൈൻ ചെയ്തിട്ടില്ല"</string>
@@ -914,7 +920,7 @@
     <string name="policydesc_disableCamera" msgid="3204405908799676104">"എല്ലാ ഉപകരണ ക്യാമറകളുടേയും ഉപയോഗം തടയുക."</string>
     <string name="policylab_disableKeyguardFeatures" msgid="5071855750149949741">"ലോക്ക് ഫീച്ചർ പ്രവർത്തന രഹിതമാക്കുക"</string>
     <string name="policydesc_disableKeyguardFeatures" msgid="6641673177041195957">"ചില സ്‌ക്രീൻ ലോക്ക് ഫീച്ചറുകളുടെ ഉപയോഗം തടയുക."</string>
-    <!-- no translation found for exit_toast_on_long_press_escape (873907401529125943) -->
+    <!-- no translation found for exit_toast_on_long_press_escape (2983932499112557277) -->
     <skip />
   <string-array name="phoneTypes">
     <item msgid="8996339953292723951">"വീട്ടിലെ ഫോൺ"</item>
@@ -1842,6 +1848,8 @@
     <string name="owner_name" msgid="8713560351570795743">"ഉടമ"</string>
     <string name="guest_name" msgid="8502103277839834324">"അതിഥി"</string>
     <string name="headless_system_user_name" msgid="1849150903255530049">"സിസ്‌റ്റം ഉപയോക്താവ്"</string>
+    <!-- no translation found for unnamed_user_name (6096699110534542980) -->
+    <skip />
     <string name="error_message_title" msgid="4082495589294631966">"പിശക്"</string>
     <string name="error_message_change_not_allowed" msgid="843159705042381454">"ഈ മാറ്റം നിങ്ങളുടെ അഡ്‌മിൻ അനുവദിക്കുന്നില്ല"</string>
     <string name="app_not_found" msgid="3429506115332341800">"ഈ പ്രവർത്തനം കൈകാര്യം ചെയ്യുന്ന അപ്ലിക്കേഷനുകളൊന്നും കണ്ടെത്തിയില്ല"</string>
@@ -2513,7 +2521,7 @@
     <string name="screen_not_shared_sensitive_content" msgid="7058419185079565001">"സുരക്ഷയ്ക്കായി സ്ക്രീൻ പങ്കിടലിൽ നിന്ന് ആപ്പ് ഉള്ളടക്കം മറച്ചിരിക്കുന്നു"</string>
     <string name="satellite_notification_title" msgid="4026338973463121526">"സാറ്റലൈറ്റിലേക്ക് സ്വയമേവ കണക്റ്റ് ചെയ്തു"</string>
     <string name="satellite_notification_summary" msgid="5207364139430767162">"മൊബൈലോ വൈഫൈ നെറ്റ്‌വർക്കോ ഇല്ലാതെ തന്നെ സന്ദേശങ്ങൾ അയയ്‌ക്കാനും സ്വീകരിക്കാനും നിങ്ങൾക്ക് കഴിയും"</string>
-    <string name="satellite_notification_summary_with_data" msgid="6486843676720429049">"നിങ്ങൾക്ക് സാറ്റലൈറ്റ് വഴി സന്ദേശങ്ങൾ അയയ്‌ക്കാനും സ്വീകരിക്കാനും പരിമിതമായ ഡാറ്റ ഉപയോഗിക്കാനും കഴിയും"</string>
+    <string name="satellite_notification_summary_with_data" msgid="8290202758586475712">"നിങ്ങൾക്ക്, സാറ്റലൈറ്റ് വഴി സന്ദേശങ്ങൾ അയയ്ക്കാനും സ്വീകരിക്കാനും തിരഞ്ഞെടുത്ത ആപ്പുകൾ ഉപയോഗിക്കാനും കഴിയും"</string>
     <string name="satellite_notification_manual_title" msgid="1097504441849466279">"സാറ്റലൈറ്റ് സന്ദേശമയയ്ക്കൽ ഉപയോഗിക്കണോ?"</string>
     <string name="satellite_notification_manual_summary" msgid="901206289846283445">"മൊബൈൽ അല്ലെങ്കിൽ വൈഫൈ നെറ്റ്‌വർക്ക് ഇല്ലാതെ സന്ദേശങ്ങൾ അയയ്ക്കുകയും സ്വീകരിക്കുകയും ചെയ്യുക"</string>
     <string name="satellite_notification_open_message" msgid="4149234979688273729">"Messages തുറക്കുക"</string>

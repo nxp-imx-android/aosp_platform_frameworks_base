@@ -138,6 +138,8 @@
     <string name="screenrecord_stop_dialog_message" msgid="6262768207331626817">"Kasalukuyan mong nire-record ang iyong buong screen"</string>
     <string name="screenrecord_stop_dialog_message_specific_app" msgid="5995770227684523244">"Kasalukuyan mong nire-record ang <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
     <string name="screenrecord_stop_dialog_button" msgid="2883812564938194350">"Huminto sa pag-record"</string>
+    <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"Pumili ng app para mag-record"</string>
+    <string name="screen_capture_fullscreen_screenshot_button" msgid="4255912593013592954">"I-capture ang buong screen"</string>
     <string name="screen_capture_region_selection_button" msgid="4437546351856914639">"I-capture ang piniling bahagi"</string>
     <string name="screen_capture_toolbar_capture_button" msgid="8512731007891496030">"I-capture"</string>
     <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"I-record"</string>
@@ -565,7 +567,7 @@
     <string name="hub_mode_add_widget_button_text" msgid="4831464661209971729">"Magdagdag ng widget"</string>
     <string name="hub_mode_editing_exit_button_text" msgid="3704686734192264771">"Tapos na"</string>
     <string name="label_for_button_in_empty_state_cta" msgid="7314975555382055823">"Magdagdag ng mga widget"</string>
-    <string name="title_for_empty_state_cta" msgid="6161654421223450530">"Makakuha ng mabilis na access sa paborito mong mga widget ng app nang hindi ina-unlock ang iyong tablet."</string>
+    <string name="title_for_empty_state_cta" msgid="3515697043504449320">"Makakuha ng mabilis na access sa mga paborito mong widget ng app nang hindi ina-unlock ang iyong device."</string>
     <string name="dialog_title_to_allow_any_widget" msgid="1004820948962675644">"Payagan ang anumang widget sa lock screen?"</string>
     <string name="button_text_to_open_settings" msgid="1987729256950941628">"Buksan ang mga setting"</string>
     <string name="work_mode_off_title" msgid="5794818421357835873">"I-unpause ang mga work app?"</string>
@@ -577,14 +579,14 @@
     <string name="accessibility_action_label_remove_widget" msgid="3373779447448758070">"alisin ang widget"</string>
     <string name="accessibility_action_label_place_widget" msgid="1914197458644168978">"ilagay ang napiling widget"</string>
     <string name="communal_widget_picker_title" msgid="1953369090475731663">"Mga widget ng lock screen"</string>
-    <string name="communal_widget_picker_description" msgid="490515450110487871">"Makikita ng sinuman ang mga widget sa lock screen, kahit naka-lock ang tablet."</string>
+    <string name="communal_widget_picker_description" msgid="6927728582371632782">"Makikita ng sinuman ang mga widget sa lock screen, kahit naka-lock ang iyong device."</string>
     <string name="accessibility_action_label_unselect_widget" msgid="1041811747619468698">"i-unselect ang widget"</string>
     <string name="accessibility_action_label_shrink_widget" msgid="8259511040536438771">"Bawasan ang taas"</string>
     <string name="accessibility_action_label_expand_widget" msgid="9190524260912211759">"Dagdagan ang taas"</string>
     <string name="accessibility_action_label_umo_show_next" msgid="8033581654789193281">"Ipakita ang susunod"</string>
     <string name="accessibility_action_label_umo_show_previous" msgid="5935831384525173810">"Ipakita ang mga nakaraan"</string>
     <string name="communal_widgets_disclaimer_title" msgid="1150954395585308868">"Mga widget ng lock screen"</string>
-    <string name="communal_widgets_disclaimer_text" msgid="1423545475160506349">"Para magbukas ng app gamit ang isang widget, kakailanganin mong i-verify na ikaw iyan. Bukod pa rito, tandaang puwedeng tingnan ng kahit na sino ang mga ito, kahit na naka-lock ang iyong tablet. Posibleng hindi para sa iyong lock screen ang ilang widget at posibleng hindi ligtas ang mga ito na idagdag dito."</string>
+    <string name="communal_widgets_disclaimer_text" msgid="7363411191173297965">"Para magbukas ng app gamit ang widget, kakailanganin mong i-verify na ikaw iyan. Bukod pa rito, tandaang puwedeng tingnan ng sinuman ang mga ito, kahit na naka-lock ang iyong device. Posibleng hindi para sa iyong lock screen ang ilang widget at posibleng hindi ligtas na idagdag dito ang mga ito."</string>
     <string name="communal_widgets_disclaimer_button" msgid="4423059765740780753">"OK"</string>
     <string name="accessibility_glanceable_hub_to_dream_button" msgid="7552776300297055307">"Button na ipakita ang screensaver"</string>
     <string name="hub_onboarding_bottom_sheet_title" msgid="162092881395529947">"I-explore ang hub mode"</string>
@@ -851,7 +853,8 @@
     <string name="notification_guts_recs_summary" msgid="8391881843238947007">"Mga newsletter, inirerekomendang media, at higit pa"</string>
     <string name="notification_onboarding_summaries_turn_on" msgid="5050003857531272655">"I-on"</string>
     <string name="notification_onboarding_summaries_message" msgid="6061524903176459064">"Puwede na ngayong ibuod ang iyong mas mahahabang pag-uusap para mabigyan ka ng maiikling recap"</string>
-    <string name="notification_onboarding_bundles_message" msgid="9038023612294384832">"Bina-bundle at minu-mute ng organizer ng notification ang mga notification na may mas mababang priyoridad"</string>
+    <!-- no translation found for notification_onboarding_bundles_message (4612908213178622912) -->
+    <skip />
     <string name="notification_bundle_header_counter" msgid="5515532701569242265">"{count,plural, =1{# notification}one{# notification}other{# na notification}}"</string>
     <string name="inline_done_button" msgid="6043094985588909584">"Tapos na"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"Ilapat"</string>
@@ -1098,6 +1101,8 @@
     <string name="accessibility_key_gesture_dialog_content" msgid="4519838108423437794"><annotation id="action_key_icon">"Icon"</annotation>" ng Action + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> ay ang keyboard shortcut na gagamitin sa <xliff:g id="ID_3">^3</xliff:g>. <xliff:g id="ID_4">^4</xliff:g>"</string>
     <string name="accessibility_key_gesture_dialog_magnifier_intro" msgid="627023269951856071">"Nagbibigay-daan sa iyong mabilis na mag-zoom in sa screen para palakihin ang content."</string>
     <string name="accessibility_key_gesture_dialog_talkback_intro" msgid="1617808784388544741">"Isang screen reader ang <xliff:g id="ID_1">%1$s</xliff:g> na nagbibigay-daan sa iyong marinig ang mga item na binibigkas nang malakas. Makakatulong ito sa mga taong nahihirapang makita ang screen."</string>
+    <!-- no translation found for accessibility_key_gesture_dialog_va_intro (4709198503441288289) -->
+    <skip />
     <string name="accessibility_key_gesture_dialog_positive_button_text" msgid="3670746017523589293">"I-on"</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"Lock screen"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"Nagsa-shut down…"</string>
@@ -1338,19 +1343,6 @@
     <string name="media_output_end_session_dialog_summary" msgid="5954520685989877347">"Ihinto ang iyong nakabahaging session para maglipat ng media sa ibang device"</string>
     <string name="media_output_end_session_dialog_stop" msgid="208189434474624412">"Ihinto"</string>
     <string name="media_output_dialog_button_stop_sharing" msgid="5043482739689716185">"Ihinto ang pag-share"</string>
-    <string name="media_output_first_broadcast_title" msgid="6292237789860753022">"Paano gumagana ang pag-broadcast"</string>
-    <string name="media_output_broadcast" msgid="3555580945878071543">"Broadcast"</string>
-    <string name="media_output_first_notify_broadcast_message" msgid="6353857724136398494">"Makakapakinig ang mga taong malapit sa iyo na may mga compatible na Bluetooth device sa media na bino-broadcast mo"</string>
-    <string name="media_output_broadcasting_message" msgid="4150299923404886073">"Para makinig sa iyong broadcast, puwedeng i-scan ng mga tao sa malapit na may mga compatible na Bluetooth device ang QR code mo o puwede nilang gamitin ang pangalan at password ng iyong broadcast"</string>
-    <string name="media_output_broadcast_name" msgid="8786127091542624618">"Pangalan ng Broadcast"</string>
-    <string name="media_output_broadcast_code" msgid="870795639644728542">"Password"</string>
-    <string name="media_output_broadcast_dialog_save" msgid="7910865591430010198">"I-save"</string>
-    <string name="media_output_broadcast_starting" msgid="8130153654166235557">"Nagsisimula…"</string>
-    <string name="media_output_broadcast_start_failed" msgid="3670835946856129775">"Hindi makapag-broadcast"</string>
-    <string name="media_output_broadcast_update_error" msgid="1420868236079122521">"Hindi ma-save. Subukan ulit."</string>
-    <string name="media_output_broadcast_last_update_error" msgid="5484328807296895491">"Hindi ma-save."</string>
-    <string name="media_output_broadcast_code_hint_no_less_than_min" msgid="4663836092607696185">"Gumamit ng hindi bababa sa 4 na character"</string>
-    <string name="media_output_broadcast_edit_hint_no_more_than_max" msgid="3923625800037673922">"Gumamit ng mas kaunti sa <xliff:g id="LENGTH">%1$d</xliff:g> (na) character"</string>
     <string name="build_number_clip_data_label" msgid="3623176728412560914">"Numero ng build"</string>
     <string name="build_number_copy_toast" msgid="877720921605503046">"Nakopya sa clipboard ang numero ng build."</string>
     <string name="copy_to_clipboard_a11y_action" msgid="4312789069718446749">"kopyahin sa clipboard."</string>
@@ -1463,12 +1455,6 @@
     <string name="note_task_button_label" msgid="230135078402003532">"Pagtatala"</string>
     <string name="note_task_shortcut_long_label" msgid="7729325091147319409">"Pagtatala, <xliff:g id="NOTE_TAKING_APP">%1$s</xliff:g>"</string>
     <string name="audio_sharing_description" msgid="8849060142768870004">"Nagse-share ng audio"</string>
-    <string name="broadcasting_description_is_broadcasting" msgid="765627502786404290">"Nagbo-broadcast"</string>
-    <string name="bt_le_audio_broadcast_dialog_title" msgid="3605428497924077811">"Ihinto ang pag-broadcast ng <xliff:g id="APP_NAME">%1$s</xliff:g>?"</string>
-    <string name="bt_le_audio_broadcast_dialog_sub_title" msgid="7889684551194225793">"Kung magbo-broadcast ka ng <xliff:g id="SWITCHAPP">%1$s</xliff:g> o babaguhin mo ang output, hihinto ang iyong kasalukuyang broadcast"</string>
-    <string name="bt_le_audio_broadcast_dialog_switch_app" msgid="6098768269397105733">"I-broadcast ang <xliff:g id="SWITCHAPP">%1$s</xliff:g>"</string>
-    <string name="bt_le_audio_broadcast_dialog_different_output" msgid="7885102097302562674">"Baguhin ang output"</string>
-    <string name="bt_le_audio_broadcast_dialog_unknown_name" msgid="3791472237793443044">"Hindi alam"</string>
     <string name="dream_time_complication_12_hr_time_format" msgid="4691197486690291529">"h:mm"</string>
     <string name="dream_time_complication_24_hr_time_format" msgid="6248280719733640813">"kk:mm"</string>
     <string name="log_access_confirmation_title" msgid="4843557604739943395">"Payagan ang <xliff:g id="LOG_ACCESS_APP_NAME">%s</xliff:g> na i-access ang lahat ng log ng device?"</string>
@@ -1633,9 +1619,9 @@
     <string name="home_edu_toast_content" msgid="3381071147871955415">"Para pumunta sa home, mag-swipe pataas gamit ang tatlong daliri sa touchpad"</string>
     <string name="overview_edu_toast_content" msgid="5797030644017804518">"Para tingnan ang kamakailang app, mag-swipe pataas at i-hold gamit ang tatlong daliri sa touchpad"</string>
     <string name="all_apps_edu_toast_content" msgid="8807496014667211562">"Para tingnan ang lahat ng iyong app, pindutin ang action key sa keyboard mo"</string>
-    <string name="redacted_notification_single_line_title" msgid="212019960919261670">"Na-redact"</string>
-    <string name="public_notification_single_line_text" msgid="3576190291791654933">"I-unlock para tingnan"</string>
+    <string name="public_notification_single_line_title" msgid="3161485511931439629">"I-unlock para tingnan"</string>
     <string name="redacted_otp_notification_single_line_text" msgid="5179964116354454118">"I-unlock para tingnan ang code"</string>
+    <string name="empty_notification_single_line_title" msgid="4464430045266180257">"I-expand para tingnan"</string>
     <string name="contextual_education_dialog_title" msgid="4630392552837487324">"Edukasyon ayon sa konteksto"</string>
     <string name="back_edu_notification_title" msgid="5624780717751357278">"Gamitin ang iyong touchpad para bumalik"</string>
     <string name="back_edu_notification_content" msgid="2497557451540954068">"Mag-swipe pakaliwa o pakanan gamit ang tatlong daliri. I-tap para matuto pa tungkol sa mga galaw."</string>
@@ -1672,8 +1658,6 @@
     <string name="back_button_on_bouncer" msgid="809134628434396761">"Bumalik"</string>
     <string name="pager_dots_previous_content_description" msgid="26963508904918908">"Nakaraan"</string>
     <string name="pager_dots_next_content_description" msgid="613943992626163120">"Susunod"</string>
-    <!-- no translation found for ambient_cue_autofill_action (9213025887835308128) -->
-    <skip />
-    <!-- no translation found for ambient_cue_expand_action (6803711089932959312) -->
-    <skip />
+    <string name="ambient_cue_autofill_action" msgid="9213025887835308128">"autofill"</string>
+    <string name="ambient_cue_expand_action" msgid="6803711089932959312">"i-expand"</string>
 </resources>

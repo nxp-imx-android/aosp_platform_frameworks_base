@@ -72,14 +72,20 @@
     <string name="CLIRDefaultOnNextCallOff" msgid="5036749051007098105">"Par défaut, les numéros des appelants ne sont pas restreints. Appel suivant : non restreint"</string>
     <string name="CLIRDefaultOffNextCallOn" msgid="1022781126694885017">"Par défaut, les numéros des appelants ne sont pas restreints. Appel suivant : restreint"</string>
     <string name="CLIRDefaultOffNextCallOff" msgid="2491576172356463443">"Par défaut, les numéros des appelants ne sont pas restreints. Appel suivant : non restreint"</string>
-    <string name="page_size_compat_apk_warning" msgid="2982396798449041224">"Cette appli n\'est pas compatible avec les pages de 16 ko. Échec de la vérification de l\'alignement de l\'APK. Cette appli sera exécutée dans un mode compatible avec la taille de la page. Pour une compatibilité optimale, veuillez recompiler l\'application de manière à ce que la taille de 16 ko soit prise en charge. Pour en savoir plus, consultez &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
-    <string name="page_size_compat_elf_warning" msgid="6753874059564812651">"Cette appli n\'est pas compatible avec les pages de 16 ko. Échec de la vérification de l\'alignement de l\'ELF. Cette appli sera exécutée dans un mode compatible avec la taille de la page. Pour une compatibilité optimale, veuillez recompiler l\'application afin de prendre en charge les pages de 16 ko. Pour en savoir plus, consultez &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
-    <string name="page_size_compat_apk_and_elf_warning" msgid="7628675779500605390">"Cette appli n\'est pas compatible avec les pages de 16 ko. Échec des vérifications de l\'alignement de l\'APK et de l\'ELF. Cette appli sera exécutée dans un mode compatible avec la taille de la page. Pour une compatibilité optimale, veuillez recompiler l\'application afin de prendre en charge les pages de 16 ko. Pour en savoir plus, consultez &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
-    <string name="page_size_compat_apk_warning_4kb" msgid="6013674159459424986">"Cet avertissement s\'affiche, car il s\'agit d\'une application débogable qui est actuellement en cours de test. Si vous n\'êtes pas le développeur, veuillez le signaler au développeur et lui demander de créer une appli non débogable. &lt;br&gt;&lt;br&gt; Cette appli n\'est pas compatible avec les pages de 16 ko. Échec de la vérification de l\'alignement de l\'APK. Veuillez suivre les étapes sur &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; &lt;br&gt;&lt;br&gt; Les bibliothèques suivantes ne sont pas alignées en 16 ko :&lt;br&gt;&lt;br&gt;"</string>
-    <string name="page_size_compat_elf_warning_4kb" msgid="5189541753040977649">"Cet avertissement s\'affiche, car il s\'agit d\'une application débogable qui est actuellement en cours de test. Si vous n\'êtes pas le développeur, veuillez le signaler au développeur et lui demander de créer une appli non débogable. &lt;br&gt;&lt;br&gt; Cette appli n\'est pas compatible avec les pages de 16 ko. Échec de la vérification de l\'alignement de l\'ELF. Veuillez suivre les étapes sur &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; &lt;br&gt;&lt;br&gt; Les bibliothèques suivantes ne sont pas alignées en 16 ko :&lt;br&gt;&lt;br&gt;"</string>
-    <string name="page_size_compat_apk_and_elf_warning_4kb" msgid="7665028394400479058">"Cet avertissement s\'affiche, car il s\'agit d\'une application débogable qui est actuellement en cours de test. Si vous n\'êtes pas le développeur, veuillez le signaler au développeur et lui demander de créer une appli non débogable. &lt;br&gt;&lt;br&gt; Cette appli n\'est pas compatible avec les pages de 16 ko. Échec des vérifications de l\'alignement de l\'APK et de l\'ELF. Veuillez suivre les étapes sur &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;. &lt;br&gt;&lt;br&gt; Les bibliothèques suivantes ne sont pas alignées en 16 ko : &lt;br&gt;&lt;br&gt;"</string>
+    <!-- no translation found for page_size_compat_apk_warning (2297836366674721648) -->
+    <skip />
+    <!-- no translation found for page_size_compat_elf_warning (8613720928493005883) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_and_elf_warning (9034695801295605229) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_warning_4kb (5676451039424864495) -->
+    <skip />
+    <!-- no translation found for page_size_compat_elf_warning_4kb (5005239480522831311) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_and_elf_warning_4kb (997926487776340721) -->
+    <skip />
     <string name="page_size_compat_never_show" msgid="3391282612422783097">"Ne plus afficher"</string>
-    <string name="page_size_compat_title" msgid="6497719153872572204">"Compatibilité des applications Android"</string>
+    <string name="page_size_compat_title" msgid="6497719153872572204">"Compatibilité des applis Android"</string>
     <string name="page_size_compat_elf_not_aligned" msgid="7940806102874132630">"&amp;#8226; %1$s : le segment LOAD n\'est pas aligné"</string>
     <string name="page_size_compat_apk_not_aligned" msgid="8927901100655245528">"&amp;#8226; %1$s : la bibliothèque non compressée n\'est pas aligné"</string>
     <string name="page_size_compat_apk_and_elf_not_aligned" msgid="1010371834741548905">"&amp;#8226; %1$s : le segment LOAD et la bibliothèque non compressée ne sont pas alignés"</string>
@@ -915,7 +921,7 @@
     <string name="policydesc_disableCamera" msgid="3204405908799676104">"Empêcher l\'utilisation de tous les appareils photos"</string>
     <string name="policylab_disableKeyguardFeatures" msgid="5071855750149949741">"Désactiver des options de verrouillage de l\'écran"</string>
     <string name="policydesc_disableKeyguardFeatures" msgid="6641673177041195957">"Empêcher l\'utilisation de certaines fonctionnalités du verrouillage de l\'écran"</string>
-    <!-- no translation found for exit_toast_on_long_press_escape (873907401529125943) -->
+    <!-- no translation found for exit_toast_on_long_press_escape (2983932499112557277) -->
     <skip />
   <string-array name="phoneTypes">
     <item msgid="8996339953292723951">"Domicile"</item>
@@ -1843,6 +1849,8 @@
     <string name="owner_name" msgid="8713560351570795743">"Propriétaire"</string>
     <string name="guest_name" msgid="8502103277839834324">"Invité"</string>
     <string name="headless_system_user_name" msgid="1849150903255530049">"Utilisateur système"</string>
+    <!-- no translation found for unnamed_user_name (6096699110534542980) -->
+    <skip />
     <string name="error_message_title" msgid="4082495589294631966">"Erreur"</string>
     <string name="error_message_change_not_allowed" msgid="843159705042381454">"Votre administrateur n\'autorise pas cette modification"</string>
     <string name="app_not_found" msgid="3429506115332341800">"Aucune application trouvée pour gérer cette action."</string>
@@ -2514,7 +2522,8 @@
     <string name="screen_not_shared_sensitive_content" msgid="7058419185079565001">"Le contenu de l\'appli est masqué lors du partage d\'écran par mesure de sécurité"</string>
     <string name="satellite_notification_title" msgid="4026338973463121526">"Connecté automatiquement au réseau satellite"</string>
     <string name="satellite_notification_summary" msgid="5207364139430767162">"Vous pouvez envoyer et recevoir des messages sans connexion au réseau mobile ou Wi-Fi"</string>
-    <string name="satellite_notification_summary_with_data" msgid="6486843676720429049">"Vous pouvez envoyer ou recevoir des messages et utiliser une certaine quantité de données par satellite"</string>
+    <!-- no translation found for satellite_notification_summary_with_data (8290202758586475712) -->
+    <skip />
     <string name="satellite_notification_manual_title" msgid="1097504441849466279">"Utiliser la messagerie par satellite ?"</string>
     <string name="satellite_notification_manual_summary" msgid="901206289846283445">"Envoyer et recevoir des messages sans réseau mobile ou Wi-Fi"</string>
     <string name="satellite_notification_open_message" msgid="4149234979688273729">"Ouvrir Messages"</string>

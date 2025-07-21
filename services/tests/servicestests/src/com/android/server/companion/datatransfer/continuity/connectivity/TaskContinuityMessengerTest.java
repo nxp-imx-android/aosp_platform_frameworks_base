@@ -14,10 +14,11 @@
  * limitations under the License.
  */
 
-package com.android.server.companion.datatransfer.continuity;
+package com.android.server.companion.datatransfer.continuity.connectivity;
 
 import static android.companion.CompanionDeviceManager.MESSAGE_ONEWAY_TASK_CONTINUITY;
 
+import static org.mockito.AdditionalMatchers.aryEq;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -29,18 +30,20 @@ import static org.mockito.ArgumentMatchers.eq;
 import android.content.Context;
 import android.content.ContextWrapper;
 import android.companion.IOnMessageReceivedListener;
+import android.companion.IOnTransportsChangedListener;
 import android.companion.CompanionDeviceManager;
 import android.companion.ICompanionDeviceManager;
 import android.companion.AssociationInfo;
+import android.os.RemoteException;
 import android.platform.test.annotations.Presubmit;
 import android.testing.AndroidTestingRunner;
 import android.testing.TestableLooper;
 
 import androidx.test.platform.app.InstrumentationRegistry;
 
+import com.android.server.companion.datatransfer.continuity.connectivity.TaskContinuityMessenger;
 import com.android.server.companion.datatransfer.continuity.messages.ContinuityDeviceConnected;
 import com.android.server.companion.datatransfer.continuity.messages.RemoteTaskInfo;
-import com.android.server.companion.datatransfer.continuity.messages.TaskContinuityMessage;
 import com.android.server.companion.datatransfer.continuity.messages.TaskContinuityMessageSerializer;
 
 import org.junit.Before;
@@ -48,27 +51,26 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import java.util.Arrays;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
-import java.util.ArrayList;
+import java.io.IOException;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Presubmit
 @RunWith(AndroidTestingRunner.class)
 @TestableLooper.RunWithLooper(setAsMainLooper = true)
-public class TaskContinuityMessageReceiverTest {
+public class TaskContinuityMessengerTest {
 
     private Context mMockContext;
-
-    @Mock
-    private ICompanionDeviceManager mMockCompanionDeviceManagerService;
-
+    @Mock private ICompanionDeviceManager mMockCompanionDeviceManagerService;
     private CompanionDeviceManager mCompanionDeviceManager;
+    @Mock private TaskContinuityMessenger.Listener mMockListener;
 
-    private TaskContinuityMessageReceiver mTaskContinuityMessageReceiver;
+    private ArgumentCaptor<IOnTransportsChangedListener> mTransportChangedListenerCaptor
+        = ArgumentCaptor.forClass(IOnTransportsChangedListener.class);
 
-    private List<TaskContinuityMessage> receivedMessages;
+    private TaskContinuityMessenger mTaskContinuityMessenger;
 
     @Before
     public void setUp() {
@@ -88,28 +90,22 @@ public class TaskContinuityMessageReceiverTest {
         when(mMockContext.getSystemService(Context.COMPANION_DEVICE_SERVICE))
             .thenReturn(mCompanionDeviceManager);
 
-        receivedMessages = new ArrayList<>();
-
-        // Create TaskContinuityMessageReceiver.
-        mTaskContinuityMessageReceiver = new TaskContinuityMessageReceiver(mMockContext);
+        // Create TaskContinuityMessenger.
+        mTaskContinuityMessenger = new TaskContinuityMessenger(mMockContext, mMockListener);
+        try {
+            verify(mMockCompanionDeviceManagerService, times(1))
+                .addOnTransportsChangedListener(mTransportChangedListenerCaptor.capture());
+        } catch (RemoteException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Test
-    public void testStopListening_doesNothingIfNotListening()
-        throws Exception {
-
-        mTaskContinuityMessageReceiver.stopListening();
-        Mockito.verifyNoInteractions(mMockCompanionDeviceManagerService);
-    }
-
-    @Test
-    public void testStartAndStopListening_registersListenersAndFlowsMessages()
-        throws Exception {
-
+    public void testEnableAndDisable_registersListenersAndFlowsMessages() throws Exception {
         // Start listening, verifying a message listener is added.
         ArgumentCaptor<IOnMessageReceivedListener> listenerCaptor
             = ArgumentCaptor.forClass(IOnMessageReceivedListener.class);
-        assertThat(mTaskContinuityMessageReceiver.startListening(this::onMessageReceived)).isTrue();
+        mTaskContinuityMessenger.enable();
         verify(mMockCompanionDeviceManagerService, times(1))
             .addOnMessageReceivedListener(
                 eq(MESSAGE_ONEWAY_TASK_CONTINUITY),
@@ -119,6 +115,7 @@ public class TaskContinuityMessageReceiverTest {
 
         // Send a message to the listener.
         int expectedAssociationId = 1;
+        connectAssociations(List.of(expectedAssociationId));
         ContinuityDeviceConnected expectedMessage = new ContinuityDeviceConnected(
                     List.of(new RemoteTaskInfo(1, "label", 1000, new byte[0])));
 
@@ -126,29 +123,64 @@ public class TaskContinuityMessageReceiverTest {
             expectedAssociationId,
             TaskContinuityMessageSerializer.serialize(expectedMessage));
         TestableLooper.get(this).processAllMessages();
-        assertThat(receivedMessages).hasSize(1);
-        assertThat(receivedMessages.get(0)).isEqualTo(expectedMessage);
+        verify(mMockListener, times(1))
+            .onMessageReceived(eq(expectedAssociationId), eq(expectedMessage));
 
         // Stop listening, verifying the message listener is removed.
-        mTaskContinuityMessageReceiver.stopListening();
+        mTaskContinuityMessenger.disable();
         verify(mMockCompanionDeviceManagerService, times(1))
             .removeOnMessageReceivedListener(
                 eq(MESSAGE_ONEWAY_TASK_CONTINUITY),
-                eq(listener));
+                any());
     }
 
     @Test
-    public void testStartListening_returnsFalseIfAlreadyListening()
-        throws Exception {
-
-        assertThat(mTaskContinuityMessageReceiver.startListening(this::onMessageReceived))
-            .isTrue();
-
-        assertThat(mTaskContinuityMessageReceiver.startListening(this::onMessageReceived))
-            .isFalse();
+    public void testSendMessage_sendsMessageToAssociation() throws RemoteException, IOException {
+        int associationId = 1;
+        connectAssociations(List.of(associationId));
+        ContinuityDeviceConnected expectedMessage = new ContinuityDeviceConnected(
+            List.of(new RemoteTaskInfo(1, "label", 1000, new byte[0])));
+        TaskContinuityMessenger.SendMessageResult result
+            = mTaskContinuityMessenger.sendMessage(associationId, expectedMessage);
+        verify(mMockCompanionDeviceManagerService, times(1))
+            .sendMessage(
+                eq(MESSAGE_ONEWAY_TASK_CONTINUITY),
+                eq(TaskContinuityMessageSerializer.serialize(expectedMessage)),
+                aryEq(new int[]{associationId}));
+        assertThat(result).isEqualTo(TaskContinuityMessenger.SendMessageResult.SUCCESS);
     }
 
-    private void onMessageReceived(int associationId, TaskContinuityMessage message) {
-        receivedMessages.add(message);
+    @Test
+    public void testSendMessage_associationNotFound_returnsFailure()
+        throws RemoteException, IOException {
+
+        int associationId = 1;
+        ContinuityDeviceConnected expectedMessage = new ContinuityDeviceConnected(
+            List.of(new RemoteTaskInfo(1, "label", 1000, new byte[0])));
+        TaskContinuityMessenger.SendMessageResult result
+            = mTaskContinuityMessenger.sendMessage(associationId, expectedMessage);
+        verify(mMockCompanionDeviceManagerService, never())
+            .sendMessage(
+                eq(MESSAGE_ONEWAY_TASK_CONTINUITY),
+                eq(TaskContinuityMessageSerializer.serialize(expectedMessage)),
+                aryEq(new int[]{associationId}));
+        assertThat(result)
+            .isEqualTo(TaskContinuityMessenger.SendMessageResult.FAILURE_ASSOCIATION_NOT_FOUND);
+    }
+
+    private void connectAssociations(List<Integer> associationIds) {
+        List<AssociationInfo> associationInfos = associationIds.stream()
+            .map(id -> new AssociationInfo.Builder(id, 0, "com.android.test")
+                    .setDisplayName("name")
+                    .build())
+            .collect(Collectors.toList());
+
+        try {
+            mTransportChangedListenerCaptor.getValue().onTransportsChanged(associationInfos);
+        } catch (RemoteException e) {
+            throw new RuntimeException(e);
+        }
+
+        TestableLooper.get(this).processAllMessages();
     }
 }

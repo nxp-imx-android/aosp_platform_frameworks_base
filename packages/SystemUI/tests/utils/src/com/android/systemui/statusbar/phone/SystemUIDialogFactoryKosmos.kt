@@ -21,7 +21,10 @@ import com.android.systemui.animation.dialogTransitionAnimator
 import com.android.systemui.broadcast.broadcastDispatcher
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.model.sysuiStateInteractor
+import com.android.systemui.statusbar.policy.configurationController
 import com.android.systemui.util.mockito.mock
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 
 val Kosmos.systemUIDialogFactory: SystemUIDialogFactory by
     Kosmos.Fixture {
@@ -45,5 +48,22 @@ val Kosmos.systemUIDialogDotFactory by
             sysuiStateInteractor,
             broadcastDispatcher,
             dialogTransitionAnimator,
+        )
+    }
+
+val Kosmos.systemUIBottomSheetDialogFactory by
+    Kosmos.Fixture {
+        SystemUIBottomSheetDialog.Factory(
+            applicationContext,
+            CoroutineScope(Dispatchers.Main.immediate),
+            {
+                SystemUIBottomSheetDialog.WindowLayout.LimitedEdgeToEdge(
+                    applicationContext,
+                    configurationController,
+                )
+            },
+            configurationController,
+            systemUIDialogManager,
+            sysuiStateInteractor,
         )
     }

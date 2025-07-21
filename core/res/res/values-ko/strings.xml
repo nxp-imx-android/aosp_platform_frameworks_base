@@ -71,12 +71,18 @@
     <string name="CLIRDefaultOnNextCallOff" msgid="5036749051007098105">"발신자 번호가 기본적으로 제한됨으로 설정됩니다. 다음 통화: 제한되지 않음"</string>
     <string name="CLIRDefaultOffNextCallOn" msgid="1022781126694885017">"발신자 번호가 기본적으로 제한되지 않음으로 설정됩니다. 다음 통화: 제한됨"</string>
     <string name="CLIRDefaultOffNextCallOff" msgid="2491576172356463443">"발신자 번호가 기본적으로 제한되지 않음으로 설정됩니다. 다음 통화: 제한되지 않음"</string>
-    <string name="page_size_compat_apk_warning" msgid="2982396798449041224">"이 앱은 16KB와 호환되지 않습니다. APK 정렬 검사에 실패했습니다. 이 앱은 페이지 크기 호환 모드를 사용하여 실행됩니다. 최상의 호환성을 위해 16KB를 지원하도록 애플리케이션을 다시 컴파일하세요. 자세한 내용은 &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;를 참고하세요."</string>
-    <string name="page_size_compat_elf_warning" msgid="6753874059564812651">"이 앱은 16KB와 호환되지 않습니다. ELF 정렬 검사에 실패했습니다. 이 앱은 페이지 크기 호환 모드를 사용하여 실행됩니다. 최상의 호환성을 위해 16KB를 지원하도록 애플리케이션을 다시 컴파일하세요. 자세한 내용은 &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;를 참고하세요."</string>
-    <string name="page_size_compat_apk_and_elf_warning" msgid="7628675779500605390">"이 앱은 16KB와 호환되지 않습니다. APK 및 ELF 정렬 검사에 실패했습니다. 이 앱은 페이지 크기 호환 모드를 사용하여 실행됩니다. 최상의 호환성을 위해 16KB를 지원하도록 애플리케이션을 다시 컴파일하세요. 자세한 내용은 &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;를 참고하세요."</string>
-    <string name="page_size_compat_apk_warning_4kb" msgid="6013674159459424986">"이 앱은 현재 테스트 중인 디버그 가능 앱이므로 이 경고가 표시됩니다. 개발자가 아니라면 개발자에게 이 문제를 보고하고 디버그 불가능한 앱을 요청하세요. &lt;br&gt;&lt;br&gt; 이 앱은 16KB와 호환되지 않습니다. APK 정렬 검사에 실패했습니다. &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;의 단계를 따르세요. &lt;br&gt;&lt;br&gt; 다음 라이브러리가 16KB로 정렬되지 않았습니다. &lt;br&gt;&lt;br&gt;"</string>
-    <string name="page_size_compat_elf_warning_4kb" msgid="5189541753040977649">"이 앱은 현재 테스트 중인 디버그 가능 앱이므로 이 경고가 표시됩니다. 개발자가 아니라면 개발자에게 이 문제를 보고하고 디버그 불가능한 앱을 요청하세요. &lt;br&gt;&lt;br&gt; 이 앱은 16KB와 호환되지 않습니다. ELF 정렬 검사에 실패했습니다. &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;의 단계를 따르세요. &lt;br&gt;&lt;br&gt; 다음 라이브러리가 16KB로 정렬되지 않았습니다. &lt;br&gt;&lt;br&gt;"</string>
-    <string name="page_size_compat_apk_and_elf_warning_4kb" msgid="7665028394400479058">"이 앱은 현재 테스트 중인 디버그 가능 앱이므로 이 경고가 표시됩니다. 개발자가 아니라면 개발자에게 이 문제를 보고하고 디버그 불가능한 앱을 요청하세요. &lt;br&gt;&lt;br&gt; 이 앱은 16KB와 호환되지 않습니다. APK 및 ELF 정렬 검사에 실패했습니다. &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;의 단계를 따르세요. &lt;br&gt;&lt;br&gt; 다음 라이브러리가 16KB로 정렬되지 않았습니다. &lt;br&gt;&lt;br&gt;"</string>
+    <!-- no translation found for page_size_compat_apk_warning (2297836366674721648) -->
+    <skip />
+    <!-- no translation found for page_size_compat_elf_warning (8613720928493005883) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_and_elf_warning (9034695801295605229) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_warning_4kb (5676451039424864495) -->
+    <skip />
+    <!-- no translation found for page_size_compat_elf_warning_4kb (5005239480522831311) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_and_elf_warning_4kb (997926487776340721) -->
+    <skip />
     <string name="page_size_compat_never_show" msgid="3391282612422783097">"다시 표시 안함"</string>
     <string name="page_size_compat_title" msgid="6497719153872572204">"Android 앱 호환성"</string>
     <string name="page_size_compat_elf_not_aligned" msgid="7940806102874132630">"&amp;#8226; %1$s: LOAD 세그먼트가 정렬되지 않음"</string>
@@ -914,7 +920,7 @@
     <string name="policydesc_disableCamera" msgid="3204405908799676104">"모든 기기 카메라의 사용 차단"</string>
     <string name="policylab_disableKeyguardFeatures" msgid="5071855750149949741">"일부 화면 잠금 기능 사용 중지"</string>
     <string name="policydesc_disableKeyguardFeatures" msgid="6641673177041195957">"일부 화면 잠금 기능의 사용을 차단합니다."</string>
-    <!-- no translation found for exit_toast_on_long_press_escape (873907401529125943) -->
+    <!-- no translation found for exit_toast_on_long_press_escape (2983932499112557277) -->
     <skip />
   <string-array name="phoneTypes">
     <item msgid="8996339953292723951">"집"</item>
@@ -1842,6 +1848,8 @@
     <string name="owner_name" msgid="8713560351570795743">"소유자"</string>
     <string name="guest_name" msgid="8502103277839834324">"게스트"</string>
     <string name="headless_system_user_name" msgid="1849150903255530049">"시스템 사용자"</string>
+    <!-- no translation found for unnamed_user_name (6096699110534542980) -->
+    <skip />
     <string name="error_message_title" msgid="4082495589294631966">"오류"</string>
     <string name="error_message_change_not_allowed" msgid="843159705042381454">"관리자가 이 변경을 허용하지 않습니다."</string>
     <string name="app_not_found" msgid="3429506115332341800">"이 작업을 처리하는 애플리케이션을 찾을 수 없습니다."</string>
@@ -2314,11 +2322,11 @@
     <string name="resolver_switch_on_work" msgid="4527096360772311894">"일시중지 해제"</string>
     <string name="resolver_no_work_apps_available" msgid="3298291360133337270">"직장 앱 없음"</string>
     <string name="resolver_no_personal_apps_available" msgid="6284837227019594881">"개인 앱 없음"</string>
-    <string name="miniresolver_open_work" msgid="6286176185835401931">"직장 <xliff:g id="APP">%s</xliff:g> 앱을 여시겠습니까?"</string>
+    <string name="miniresolver_open_work" msgid="6286176185835401931">"업무용 <xliff:g id="APP">%s</xliff:g> 앱을 여시겠습니까?"</string>
     <string name="miniresolver_open_in_personal" msgid="807427577794490375">"개인 <xliff:g id="APP">%s</xliff:g> 앱에서 여시겠습니까?"</string>
-    <string name="miniresolver_open_in_work" msgid="941341494673509916">"직장 <xliff:g id="APP">%s</xliff:g> 앱에서 여시겠습니까?"</string>
-    <string name="miniresolver_call_in_work" msgid="528779988307529039">"직장 앱을 사용한 통화인가요?"</string>
-    <string name="miniresolver_switch_to_work" msgid="1042640606122638596">"직장 앱으로 전환할까요?"</string>
+    <string name="miniresolver_open_in_work" msgid="941341494673509916">"업무용 <xliff:g id="APP">%s</xliff:g> 앱에서 여시겠습니까?"</string>
+    <string name="miniresolver_call_in_work" msgid="528779988307529039">"업무용 앱을 사용한 통화인가요?"</string>
+    <string name="miniresolver_switch_to_work" msgid="1042640606122638596">"업무용 앱으로 전환할까요?"</string>
     <string name="miniresolver_call_information" msgid="6739417525304184083">"귀하의 조직에서 직장 앱을 사용한 통화만 허용합니다."</string>
     <string name="miniresolver_sms_information" msgid="4311292661329483088">"귀하의 조직에서 직장 앱을 사용한 메시지 전송만 허용합니다."</string>
     <string name="miniresolver_private_space_phone_information" msgid="4469511223312488570">"개인 전화 앱에서만 전화를 걸 수 있습니다. 개인 전화로 통화한 내역은 개인 통화 기록에 추가됩니다."</string>
@@ -2513,7 +2521,8 @@
     <string name="screen_not_shared_sensitive_content" msgid="7058419185079565001">"보안을 위해 화면 공유에서 앱 콘텐츠가 숨겨집니다."</string>
     <string name="satellite_notification_title" msgid="4026338973463121526">"위성에 자동 연결됨"</string>
     <string name="satellite_notification_summary" msgid="5207364139430767162">"모바일 또는 Wi-Fi 네트워크 없이 메시지를 주고 받을 수 있습니다"</string>
-    <string name="satellite_notification_summary_with_data" msgid="6486843676720429049">"위성으로 메시지를 주고받을 수 있으며 데이터를 제한적으로 사용할 수도 있습니다."</string>
+    <!-- no translation found for satellite_notification_summary_with_data (8290202758586475712) -->
+    <skip />
     <string name="satellite_notification_manual_title" msgid="1097504441849466279">"위성 메시지를 사용하시겠습니까?"</string>
     <string name="satellite_notification_manual_summary" msgid="901206289846283445">"모바일 또는 Wi-Fi 네트워크 없이 메시지 주고받기"</string>
     <string name="satellite_notification_open_message" msgid="4149234979688273729">"메시지 열기"</string>

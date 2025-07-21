@@ -138,6 +138,8 @@
     <string name="screenrecord_stop_dialog_message" msgid="6262768207331626817">"Po regjistron aktualisht të gjithë ekranin"</string>
     <string name="screenrecord_stop_dialog_message_specific_app" msgid="5995770227684523244">"Po regjistron aktualisht \"<xliff:g id="APP_NAME">%1$s</xliff:g>\""</string>
     <string name="screenrecord_stop_dialog_button" msgid="2883812564938194350">"Ndalo regjistrimin"</string>
+    <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"Zgjidh një aplikacion për të regjistruar"</string>
+    <string name="screen_capture_fullscreen_screenshot_button" msgid="4255912593013592954">"Regjistro të gjithë ekranin"</string>
     <string name="screen_capture_region_selection_button" msgid="4437546351856914639">"Regjistro zonën e zgjedhur"</string>
     <string name="screen_capture_toolbar_capture_button" msgid="8512731007891496030">"Nxirr"</string>
     <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"Regjistro"</string>
@@ -399,8 +401,7 @@
     <string name="quick_settings_flashlight_camera_in_use" msgid="4820591564526512571">"Kamera në përdorim"</string>
     <string name="flashlight_dialog_title" msgid="4232742718579701241">"Fuqia e elektrikut"</string>
     <string name="quick_settings_flashlight_tile_level_percentage" msgid="2071942013174794819">"<xliff:g id="PERCENTAGE">%1$d</xliff:g>%%"</string>
-    <!-- no translation found for flashlight_dialog_turn_off (5934897539563253348) -->
-    <skip />
+    <string name="flashlight_dialog_turn_off" msgid="5934897539563253348">"Çaktivizo"</string>
     <string name="quick_settings_cellular_detail_title" msgid="792977203299358893">"Të dhënat celulare"</string>
     <string name="quick_settings_cellular_detail_data_usage" msgid="6105969068871138427">"Përdorimi i të dhënave"</string>
     <string name="quick_settings_cellular_detail_remaining_data" msgid="1136599216568805644">"Të dhënat e mbetura"</string>
@@ -566,7 +567,7 @@
     <string name="hub_mode_add_widget_button_text" msgid="4831464661209971729">"Shto miniaplikacionin"</string>
     <string name="hub_mode_editing_exit_button_text" msgid="3704686734192264771">"U krye"</string>
     <string name="label_for_button_in_empty_state_cta" msgid="7314975555382055823">"Shto miniaplikacionet"</string>
-    <string name="title_for_empty_state_cta" msgid="6161654421223450530">"Merr qasjen e shpejtë në miniaplikacionet e tua të preferuara pa e shkyçur tabletin."</string>
+    <string name="title_for_empty_state_cta" msgid="3515697043504449320">"Merr qasjen e shpejtë në miniaplikacionet e tua të preferuara pa e shkyçur pajisjen tënde."</string>
     <string name="dialog_title_to_allow_any_widget" msgid="1004820948962675644">"Të lejohet ndonjë miniaplikacion te ekrani i kyçjes?"</string>
     <string name="button_text_to_open_settings" msgid="1987729256950941628">"Hap cilësimet"</string>
     <string name="work_mode_off_title" msgid="5794818421357835873">"Hiq nga pauza apl. e punës?"</string>
@@ -578,14 +579,14 @@
     <string name="accessibility_action_label_remove_widget" msgid="3373779447448758070">"hiq miniaplikacionin"</string>
     <string name="accessibility_action_label_place_widget" msgid="1914197458644168978">"vendos miniaplikacionin e zgjedhur"</string>
     <string name="communal_widget_picker_title" msgid="1953369090475731663">"Miniaplikacionet në ekranin e kyçjes"</string>
-    <string name="communal_widget_picker_description" msgid="490515450110487871">"Çdo person mund të shikojë miniaplikacionet në ekranin tënd të kyçjes, edhe nëse tableti është i kyçur."</string>
+    <string name="communal_widget_picker_description" msgid="6927728582371632782">"Çdo person mund të shikojë miniaplikacionet në ekranin tënd të kyçjes, edhe nëse pajisja jote është e kyçur."</string>
     <string name="accessibility_action_label_unselect_widget" msgid="1041811747619468698">"anulo zgjedhjen e miniaplikacionit"</string>
     <string name="accessibility_action_label_shrink_widget" msgid="8259511040536438771">"Zvogëlo lartësinë"</string>
     <string name="accessibility_action_label_expand_widget" msgid="9190524260912211759">"Rrit lartësinë"</string>
     <string name="accessibility_action_label_umo_show_next" msgid="8033581654789193281">"Shfaq tjetrin"</string>
     <string name="accessibility_action_label_umo_show_previous" msgid="5935831384525173810">"Shfaq të mëparshmin"</string>
     <string name="communal_widgets_disclaimer_title" msgid="1150954395585308868">"Miniaplikacionet në ekranin e kyçjes"</string>
-    <string name="communal_widgets_disclaimer_text" msgid="1423545475160506349">"Për të hapur një aplikacion duke përdorur një miniaplikacion, do të duhet të verifikosh që je ti. Ki parasysh gjithashtu që çdo person mund t\'i shikojë, edhe kur tableti yt është i kyçur. Disa miniaplikacione mund të mos jenë planifikuar për ekranin tënd të kyçjes dhe mund të mos jetë e sigurt t\'i shtosh këtu."</string>
+    <string name="communal_widgets_disclaimer_text" msgid="7363411191173297965">"Për të hapur një aplikacion duke përdorur një miniaplikacion, do të duhet të verifikosh që je ti. Ki parasysh gjithashtu që çdo person mund t\'i shikojë, edhe kur pajisja jote është e kyçur. Disa miniaplikacione mund të mos jenë planifikuar për ekranin tënd të kyçjes dhe mund të mos jetë e sigurt t\'i shtosh këtu."</string>
     <string name="communal_widgets_disclaimer_button" msgid="4423059765740780753">"E kuptova"</string>
     <string name="accessibility_glanceable_hub_to_dream_button" msgid="7552776300297055307">"Shfaq butonin e mbrojtësit të ekranit"</string>
     <string name="hub_onboarding_bottom_sheet_title" msgid="162092881395529947">"Eksploro në modalitetin Hub"</string>
@@ -852,7 +853,8 @@
     <string name="notification_guts_recs_summary" msgid="8391881843238947007">"Buletine, media të rekomanduara etj."</string>
     <string name="notification_onboarding_summaries_turn_on" msgid="5050003857531272655">"Aktivizo"</string>
     <string name="notification_onboarding_summaries_message" msgid="6061524903176459064">"Bisedat e tua më të gjata tani mund të përmblidhen për të të dhënë përmbledhje të shpejta"</string>
-    <string name="notification_onboarding_bundles_message" msgid="9038023612294384832">"Organizuesi i njoftimeve vendos në paketë dhe në heshtje njoftimet me përparësi më të ulët"</string>
+    <!-- no translation found for notification_onboarding_bundles_message (4612908213178622912) -->
+    <skip />
     <string name="notification_bundle_header_counter" msgid="5515532701569242265">"{count,plural, =1{# njoftim}other{# njoftime}}"</string>
     <string name="inline_done_button" msgid="6043094985588909584">"U krye"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"Zbato"</string>
@@ -1099,6 +1101,8 @@
     <string name="accessibility_key_gesture_dialog_content" msgid="4519838108423437794"><annotation id="action_key_icon">"Ikona"</annotation>" e veprimit + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> është shkurtorja e tastierës për të përdorur <xliff:g id="ID_3">^3</xliff:g>. <xliff:g id="ID_4">^4</xliff:g>"</string>
     <string name="accessibility_key_gesture_dialog_magnifier_intro" msgid="627023269951856071">"Kjo të lejon që të zmadhosh me shpejtësi në ekran për ta bërë përmbajtjen më të madhe."</string>
     <string name="accessibility_key_gesture_dialog_talkback_intro" msgid="1617808784388544741">"<xliff:g id="ID_1">%1$s</xliff:g> është një lexues ekrani që të lejon t\'i dëgjosh artikujt të lexuar me zë. Kjo mund të jetë e dobishme për njerëzit që kanë vështirësi në shikimin e ekranit."</string>
+    <!-- no translation found for accessibility_key_gesture_dialog_va_intro (4709198503441288289) -->
+    <skip />
     <string name="accessibility_key_gesture_dialog_positive_button_text" msgid="3670746017523589293">"Aktivizo"</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"Ekrani i kyçjes"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"Po fiket…"</string>
@@ -1339,19 +1343,6 @@
     <string name="media_output_end_session_dialog_summary" msgid="5954520685989877347">"Ndalo sesionin e ndarë për ta zhvendosur median në një pajisje tjetër"</string>
     <string name="media_output_end_session_dialog_stop" msgid="208189434474624412">"Ndalo"</string>
     <string name="media_output_dialog_button_stop_sharing" msgid="5043482739689716185">"Ndalo ndarjen"</string>
-    <string name="media_output_first_broadcast_title" msgid="6292237789860753022">"Si funksionon transmetimi"</string>
-    <string name="media_output_broadcast" msgid="3555580945878071543">"Transmetimi"</string>
-    <string name="media_output_first_notify_broadcast_message" msgid="6353857724136398494">"Personat në afërsi me ty me pajisje të përputhshme me Bluetooth mund të dëgjojnë median që ti po transmeton"</string>
-    <string name="media_output_broadcasting_message" msgid="4150299923404886073">"Për të dëgjuar transmetimin tënd, personat në afërsi me pajisje të përputhshme me Bluetooth mund të skanojnë kodin tënd QR ose të përdorin emrin dhe fjalëkalimin e transmetimit tënd"</string>
-    <string name="media_output_broadcast_name" msgid="8786127091542624618">"Emri i transmetimit"</string>
-    <string name="media_output_broadcast_code" msgid="870795639644728542">"Fjalëkalimi"</string>
-    <string name="media_output_broadcast_dialog_save" msgid="7910865591430010198">"Ruaj"</string>
-    <string name="media_output_broadcast_starting" msgid="8130153654166235557">"Po fillon…"</string>
-    <string name="media_output_broadcast_start_failed" msgid="3670835946856129775">"Nuk mund të transmetohet"</string>
-    <string name="media_output_broadcast_update_error" msgid="1420868236079122521">"Nuk mund të ruhet. Provo përsëri."</string>
-    <string name="media_output_broadcast_last_update_error" msgid="5484328807296895491">"Nuk mund të ruhet."</string>
-    <string name="media_output_broadcast_code_hint_no_less_than_min" msgid="4663836092607696185">"Përdor të paktën 4 karaktere"</string>
-    <string name="media_output_broadcast_edit_hint_no_more_than_max" msgid="3923625800037673922">"Përdor më pak se <xliff:g id="LENGTH">%1$d</xliff:g> karaktere"</string>
     <string name="build_number_clip_data_label" msgid="3623176728412560914">"Numri i ndërtimit"</string>
     <string name="build_number_copy_toast" msgid="877720921605503046">"Numri i ndërtimit u kopjua te kujtesa e fragmenteve"</string>
     <string name="copy_to_clipboard_a11y_action" msgid="4312789069718446749">"kopjo në kujtesën e fragmenteve."</string>
@@ -1464,12 +1455,6 @@
     <string name="note_task_button_label" msgid="230135078402003532">"Mbajtja e shënimeve"</string>
     <string name="note_task_shortcut_long_label" msgid="7729325091147319409">"Mbajtja e shënimeve, <xliff:g id="NOTE_TAKING_APP">%1$s</xliff:g>"</string>
     <string name="audio_sharing_description" msgid="8849060142768870004">"Po ndahet audio"</string>
-    <string name="broadcasting_description_is_broadcasting" msgid="765627502786404290">"Po transmeton"</string>
-    <string name="bt_le_audio_broadcast_dialog_title" msgid="3605428497924077811">"Të ndalohet transmetimi i <xliff:g id="APP_NAME">%1$s</xliff:g>?"</string>
-    <string name="bt_le_audio_broadcast_dialog_sub_title" msgid="7889684551194225793">"Nëse transmeton <xliff:g id="SWITCHAPP">%1$s</xliff:g> ose ndryshon daljen, transmetimi yt aktual do të ndalojë"</string>
-    <string name="bt_le_audio_broadcast_dialog_switch_app" msgid="6098768269397105733">"Transmeto <xliff:g id="SWITCHAPP">%1$s</xliff:g>"</string>
-    <string name="bt_le_audio_broadcast_dialog_different_output" msgid="7885102097302562674">"Ndrysho daljen"</string>
-    <string name="bt_le_audio_broadcast_dialog_unknown_name" msgid="3791472237793443044">"I panjohur"</string>
     <string name="dream_time_complication_12_hr_time_format" msgid="4691197486690291529">"h:mm"</string>
     <string name="dream_time_complication_24_hr_time_format" msgid="6248280719733640813">"kk:mm"</string>
     <string name="log_access_confirmation_title" msgid="4843557604739943395">"Të lejohet që <xliff:g id="LOG_ACCESS_APP_NAME">%s</xliff:g> të ketë qasje te të gjitha evidencat e pajisjes?"</string>
@@ -1634,9 +1619,9 @@
     <string name="home_edu_toast_content" msgid="3381071147871955415">"Për të shkuar tek ekrani bazë, rrëshqit shpejt lart me tre gishta në bllokun me prekje"</string>
     <string name="overview_edu_toast_content" msgid="5797030644017804518">"Për aplikacionet e fundit, rrëshqit shpejt lart dhe mbaj shtypur me tre gishta në bllokun me prekje"</string>
     <string name="all_apps_edu_toast_content" msgid="8807496014667211562">"Për të shikuar të gjitha aplikacionet, shtyp tastin e veprimit në tastierë"</string>
-    <string name="redacted_notification_single_line_title" msgid="212019960919261670">"Redaktuar"</string>
-    <string name="public_notification_single_line_text" msgid="3576190291791654933">"Shkyçe për ta parë"</string>
+    <string name="public_notification_single_line_title" msgid="3161485511931439629">"Shkyçe për ta parë"</string>
     <string name="redacted_otp_notification_single_line_text" msgid="5179964116354454118">"Shkyçe për të parë kodin"</string>
+    <string name="empty_notification_single_line_title" msgid="4464430045266180257">"Zgjero për ta parë"</string>
     <string name="contextual_education_dialog_title" msgid="4630392552837487324">"Edukimi kontekstual"</string>
     <string name="back_edu_notification_title" msgid="5624780717751357278">"Përdor bllokun me prekje për t\'u kthyer prapa"</string>
     <string name="back_edu_notification_content" msgid="2497557451540954068">"Rrëshqit shpejt majtas ose djathtas duke përdorur tre gishta. Trokit për të mësuar më shumë gjeste."</string>
@@ -1673,8 +1658,6 @@
     <string name="back_button_on_bouncer" msgid="809134628434396761">"Prapa"</string>
     <string name="pager_dots_previous_content_description" msgid="26963508904918908">"Prapa"</string>
     <string name="pager_dots_next_content_description" msgid="613943992626163120">"Para"</string>
-    <!-- no translation found for ambient_cue_autofill_action (9213025887835308128) -->
-    <skip />
-    <!-- no translation found for ambient_cue_expand_action (6803711089932959312) -->
-    <skip />
+    <string name="ambient_cue_autofill_action" msgid="9213025887835308128">"plotëso automatikisht"</string>
+    <string name="ambient_cue_expand_action" msgid="6803711089932959312">"zgjero"</string>
 </resources>

@@ -71,12 +71,18 @@
     <string name="CLIRDefaultOnNextCallOff" msgid="5036749051007098105">"預設不顯示本機號碼，但下一通電話顯示。"</string>
     <string name="CLIRDefaultOffNextCallOn" msgid="1022781126694885017">"預設顯示本機號碼，但下一通電話不顯示。"</string>
     <string name="CLIRDefaultOffNextCallOff" msgid="2491576172356463443">"預設顯示本機號碼，下一通電話也繼續顯示。"</string>
-    <string name="page_size_compat_apk_warning" msgid="2982396798449041224">"這個應用程式不支援 16 KB，APK 校驗檢查失敗。這個應用程式將以頁面大小相容性模式執行。為獲得最佳相容性，請重新編譯，讓應用程式支援 16 KB。詳情請參閱 &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
-    <string name="page_size_compat_elf_warning" msgid="6753874059564812651">"這個應用程式不支援 16 KB，ELF 校驗檢查失敗。這個應用程式將以頁面大小相容性模式執行。為獲得最佳相容性，請重新編譯，讓應用程式支援 16 KB。詳情請參閱 &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
-    <string name="page_size_compat_apk_and_elf_warning" msgid="7628675779500605390">"這個應用程式不支援 16 KB，APK 和 ELF 校驗檢查失敗。這個應用程式將以頁面大小相容性模式執行。為獲得最佳相容性，請重新編譯，讓應用程式支援 16 KB。詳情請參閱 &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
-    <string name="page_size_compat_apk_warning_4kb" msgid="6013674159459424986">"這個應用程式處於可偵錯狀態，目前正在測試中，因此你會看到這則警告。如果你不是開發人員，請向他們回報這個問題，並要求提供非偵錯狀態的應用程式。&lt;br&gt;&lt;br&gt;這個應用程式不支援 16 KB。APK 校驗檢查失敗。請按照 &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; 中的步驟操作&lt;br&gt;&lt;br&gt;下列程式庫與 16 KB 不一致：&lt;br&gt;&lt;br&gt;"</string>
-    <string name="page_size_compat_elf_warning_4kb" msgid="5189541753040977649">"這個應用程式處於可偵錯狀態，目前正在測試中，因此你會看到這則警告。如果你不是開發人員，請向他們回報這個問題，並要求提供非偵錯狀態的應用程式。&lt;br&gt;&lt;br&gt;這個應用程式不支援 16 KB。ELF 校驗檢查失敗。請按照 &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; 中的步驟操作&lt;br&gt;&lt;br&gt;下列程式庫與 16 KB 不一致：&lt;br&gt;&lt;br&gt;"</string>
-    <string name="page_size_compat_apk_and_elf_warning_4kb" msgid="7665028394400479058">"這個應用程式處於可偵錯狀態，目前正在測試中，因此你會看到這則警告。如果你不是開發人員，請向他們回報這個問題，並要求提供非偵錯狀態的應用程式。&lt;br&gt;&lt;br&gt;這個應用程式不支援 16 KB。APK 和 ELF 校驗檢查失敗。請按照 &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; 中的步驟操作。&lt;br&gt;&lt;br&gt;下列程式庫與 16 KB 不一致：&lt;br&gt;&lt;br&gt;"</string>
+    <!-- no translation found for page_size_compat_apk_warning (2297836366674721648) -->
+    <skip />
+    <!-- no translation found for page_size_compat_elf_warning (8613720928493005883) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_and_elf_warning (9034695801295605229) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_warning_4kb (5676451039424864495) -->
+    <skip />
+    <!-- no translation found for page_size_compat_elf_warning_4kb (5005239480522831311) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_and_elf_warning_4kb (997926487776340721) -->
+    <skip />
     <string name="page_size_compat_never_show" msgid="3391282612422783097">"不要再顯示"</string>
     <string name="page_size_compat_title" msgid="6497719153872572204">"Android 應用程式相容性"</string>
     <string name="page_size_compat_elf_not_aligned" msgid="7940806102874132630">"&amp;#8226; %1$s : LOAD 區段不一致"</string>
@@ -914,7 +920,7 @@
     <string name="policydesc_disableCamera" msgid="3204405908799676104">"禁止使用所有裝置相機。"</string>
     <string name="policylab_disableKeyguardFeatures" msgid="5071855750149949741">"停用螢幕鎖定的部分功能"</string>
     <string name="policydesc_disableKeyguardFeatures" msgid="6641673177041195957">"禁止使用螢幕鎖定的部分功能。"</string>
-    <!-- no translation found for exit_toast_on_long_press_escape (873907401529125943) -->
+    <!-- no translation found for exit_toast_on_long_press_escape (2983932499112557277) -->
     <skip />
   <string-array name="phoneTypes">
     <item msgid="8996339953292723951">"住家電話"</item>
@@ -1842,6 +1848,8 @@
     <string name="owner_name" msgid="8713560351570795743">"擁有者"</string>
     <string name="guest_name" msgid="8502103277839834324">"訪客"</string>
     <string name="headless_system_user_name" msgid="1849150903255530049">"系統使用者"</string>
+    <!-- no translation found for unnamed_user_name (6096699110534542980) -->
+    <skip />
     <string name="error_message_title" msgid="4082495589294631966">"錯誤"</string>
     <string name="error_message_change_not_allowed" msgid="843159705042381454">"你的管理員不允許這項變更"</string>
     <string name="app_not_found" msgid="3429506115332341800">"找不到支援此操作的應用程式"</string>
@@ -2513,7 +2521,8 @@
     <string name="screen_not_shared_sensitive_content" msgid="7058419185079565001">"為安全起見，分享螢幕畫面隱藏了這個應用程式的內容"</string>
     <string name="satellite_notification_title" msgid="4026338973463121526">"已自動連上衛星"</string>
     <string name="satellite_notification_summary" msgid="5207364139430767162">"你可以收發訊息，沒有行動/Wi-Fi 網路也無妨"</string>
-    <string name="satellite_notification_summary_with_data" msgid="6486843676720429049">"你可以透過有限的衛星數據收發訊息"</string>
+    <!-- no translation found for satellite_notification_summary_with_data (8290202758586475712) -->
+    <skip />
     <string name="satellite_notification_manual_title" msgid="1097504441849466279">"要使用衛星訊息功能嗎？"</string>
     <string name="satellite_notification_manual_summary" msgid="901206289846283445">"即使沒有行動或 Wi-Fi 網路，還是可以收發訊息"</string>
     <string name="satellite_notification_open_message" msgid="4149234979688273729">"開啟「訊息」應用程式"</string>
@@ -2568,7 +2577,7 @@
     <string name="keyboard_shortcut_group_applications_calendar" msgid="3571770335653387606">"日曆"</string>
     <string name="keyboard_shortcut_group_applications_calculator" msgid="6753209559716091507">"計算機"</string>
     <string name="keyboard_shortcut_group_applications_maps" msgid="7950000659522589471">"地圖"</string>
-    <string name="keyboard_shortcut_group_applications_files" msgid="863938400765838051">"檔案"</string>
+    <string name="keyboard_shortcut_group_applications_files" msgid="863938400765838051">"Files"</string>
     <string name="keyboard_shortcut_group_applications" msgid="3010389163951364798">"應用程式"</string>
     <string name="fingerprint_loe_notification_msg" msgid="3927447270148854546">"系統無法再辨識你的指紋，請重新設定「指紋解鎖」。"</string>
     <string name="usb_apm_usb_plugged_in_when_locked_notification_app_title" msgid="285421860627714333">"安全性與隱私權"</string>

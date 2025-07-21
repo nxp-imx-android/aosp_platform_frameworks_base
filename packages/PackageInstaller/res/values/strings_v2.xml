@@ -20,7 +20,6 @@
 
     <!-- Dialog Titles -->
     <string name="title_unknown_source_blocked">Permission required</string>
-    <string name="title_anonymous_source_warning">Install unknown app?</string>
     <string name="title_install_blocked">Install blocked</string>
 
     <string name="title_install_staging">Preparing app&#8230;</string>

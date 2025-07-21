@@ -164,6 +164,7 @@ flag {
     name: "request_key_capture_api"
     namespace: "input"
     description: "Adds support for key capture APIs"
+    is_exported: true
     bug: "375435312"
 }
 

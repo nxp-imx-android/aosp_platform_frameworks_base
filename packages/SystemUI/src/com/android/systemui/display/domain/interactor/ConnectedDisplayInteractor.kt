@@ -17,8 +17,6 @@
 package com.android.systemui.display.domain.interactor
 
 import android.companion.virtual.VirtualDeviceManager
-import android.hardware.display.DisplayManager
-import android.hardware.display.DisplayManager.EXTERNAL_DISPLAY_CONNECTION_PREFERENCE_ASK
 import android.view.Display
 import com.android.app.displaylib.DisplayRepository as DisplayRepositoryFromLib
 import com.android.app.displaylib.ExternalDisplayConnectionType

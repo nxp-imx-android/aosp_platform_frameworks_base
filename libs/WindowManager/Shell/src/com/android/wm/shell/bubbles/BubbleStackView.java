@@ -2535,8 +2535,9 @@ public class BubbleStackView extends FrameLayout
 
     private void stopMonitoringSwipeUpGestureInternal() {
         if (mBubblesNavBarGestureTracker != null) {
-            mBubblesNavBarGestureTracker.stop();
+            final BubblesNavBarGestureTracker tracker = mBubblesNavBarGestureTracker;
             mBubblesNavBarGestureTracker = null;
+            tracker.stop();
             setOnTouchListener(null);
         }
     }

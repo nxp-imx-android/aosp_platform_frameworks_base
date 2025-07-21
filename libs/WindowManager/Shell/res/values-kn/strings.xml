@@ -47,7 +47,7 @@
     <string name="accessibility_action_divider_left_90" formatted="false" msgid="3525922058426249817">"90% ಎಡ, 10% ಬಲ"</string>
     <string name="accessibility_action_divider_right_full" msgid="4162106720432709858">"ಬಲ ಆ್ಯಪ್ ಅನ್ನು ಫುಲ್ ಸ್ಕ್ರೀನ್‌ ಮಾಡಿ"</string>
     <string name="accessibility_action_divider_swap_vertical" msgid="8673406394251984853">"ಮೇಲಿನ ಆ್ಯಪ್ ಅನ್ನು ಕೆಳಗಿನ ಆ್ಯಪ್‌ನೊಂದಿಗೆ ಬದಲಾಯಿಸಿ, ಪ್ರಸ್ತುತ ವಿಭಜನೆಯನ್ನು ಇರಿಸಿ"</string>
-    <string name="accessibility_action_divider_swap_horizontal" msgid="588604748596242580">"ಎಡ ಆ್ಯಪ್ ಅನ್ನು ಬಲ ಆ್ಯಪ್‌ಗಳೊಂದಿಗೆ ಬದಲಾಯಿಸಿ, ಪ್ರಸ್ತುತ ವಿಭಜನೆಯನ್ನು ಇರಿಸಿ"</string>
+    <string name="accessibility_action_divider_swap_horizontal" msgid="588604748596242580">"ಎಡ ಆ್ಯಪ್ ಅನ್ನು ಬಲ ಆ್ಯಪ್‌ನೊಂದಿಗೆ ಸ್ವ್ಯಾಪ್ ಮಾಡಿ, ಪ್ರಸ್ತುತ ವಿಭಜನೆಯನ್ನು ಹಾಗೆಯೇ ಇರಿಸಿ"</string>
     <string name="accessibility_action_divider_top_full" msgid="3986693999427747701">"ಮೇಲಿನ ಆ್ಯಪ್ ಅನ್ನು ಫುಲ್ ಸ್ಕ್ರೀನ್‌ ಮಾಡಿ"</string>
     <string name="accessibility_action_divider_top_10" formatted="false" msgid="6898920573675831044">"10% ಮೇಲೆ, 90% ಕೆಳಗೆ"</string>
     <string name="accessibility_action_divider_top_30" formatted="false" msgid="6515643651303176050">"30% ಮೇಲೆ, 70% ಕೆಳಗೆ"</string>

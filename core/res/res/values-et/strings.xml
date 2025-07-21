@@ -71,12 +71,18 @@
     <string name="CLIRDefaultOnNextCallOff" msgid="5036749051007098105">"Helistaja ID vaikimisi piiratud. Järgmine kõne: pole piiratud"</string>
     <string name="CLIRDefaultOffNextCallOn" msgid="1022781126694885017">"Vaikimisi pole helistaja ID piiratud. Järgmine kõne: piiratud"</string>
     <string name="CLIRDefaultOffNextCallOff" msgid="2491576172356463443">"Helistaja ID pole vaikimisi piiratud. Järgmine kõne: pole piiratud"</string>
-    <string name="page_size_compat_apk_warning" msgid="2982396798449041224">"See rakendus ei ole suurusega 16 kB ühilduv. APK joonduse kontroll ebaõnnestus. Seda rakendust käitatakse lehesuurusega ühilduvas režiimis. Parima ühilduvuse tagamiseks kompileerige rakendus 16 kB toega uuesti. Lisateave: &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
-    <string name="page_size_compat_elf_warning" msgid="6753874059564812651">"See rakendus ei ole suurusega 16 kB ühilduv. ELF-i joonduse kontroll ebaõnnestus. Seda rakendust käitatakse lehesuurusega ühilduvas režiimis. Parima ühilduvuse tagamiseks kompileerige rakendus 16 kB toega uuesti. Lisateave: &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
-    <string name="page_size_compat_apk_and_elf_warning" msgid="7628675779500605390">"See rakendus ei ole suurusega 16 kB ühilduv. APK ja ELF-i joonduse kontroll ebaõnnestus. Seda rakendust käitatakse lehesuurusega ühilduvas režiimis. Parima ühilduvuse tagamiseks kompileerige rakendus 16 kB toega uuesti. Lisateave: &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
-    <string name="page_size_compat_apk_warning_4kb" msgid="6013674159459424986">"See hoiatus kuvatakse, kuna see on silutav rakendus, mida praegu testitakse. Kui te pole arendaja, teavitage sellest arendajat ja paluge mittesilutavat rakendust. &lt;br&gt;&lt;br&gt; See rakendus pole 16 kB-ga ühilduv. APK joonduse kontroll ebaõnnestus. Järgige juhiseid saidil &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; &lt;br&gt;&lt;br&gt; Järgmised teegid pole 16 kB jaoks joondatud: &lt;br&gt;&lt;br&gt;"</string>
-    <string name="page_size_compat_elf_warning_4kb" msgid="5189541753040977649">"See hoiatus kuvatakse, kuna see on silutav rakendus, mida praegu testitakse. Kui te pole arendaja, teavitage sellest arendajat ja paluge mittesilutavat rakendust. &lt;br&gt;&lt;br&gt; See rakendus pole 16 kB-ga ühilduv. ELF-i joonduse kontroll ebaõnnestus. Järgige juhiseid saidil &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; &lt;br&gt;&lt;br&gt; Järgmised teegid pole 16 kB jaoks joondatud: &lt;br&gt;&lt;br&gt;"</string>
-    <string name="page_size_compat_apk_and_elf_warning_4kb" msgid="7665028394400479058">"See hoiatus kuvatakse, kuna see on silutav rakendus, mida praegu testitakse. Kui te pole arendaja, teavitage sellest arendajat ja paluge mittesilutavat rakendust. &lt;br&gt;&lt;br&gt; See rakendus pole 16 kB-ga ühilduv. APK ja ELF-i joonduse kontroll ebaõnnestus. Järgige juhiseid saidil &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;. &lt;br&gt;&lt;br&gt; Järgmised teegid pole 16 kB jaoks joondatud: &lt;br&gt;&lt;br&gt;"</string>
+    <!-- no translation found for page_size_compat_apk_warning (2297836366674721648) -->
+    <skip />
+    <!-- no translation found for page_size_compat_elf_warning (8613720928493005883) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_and_elf_warning (9034695801295605229) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_warning_4kb (5676451039424864495) -->
+    <skip />
+    <!-- no translation found for page_size_compat_elf_warning_4kb (5005239480522831311) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_and_elf_warning_4kb (997926487776340721) -->
+    <skip />
     <string name="page_size_compat_never_show" msgid="3391282612422783097">"Ära kuva uuesti"</string>
     <string name="page_size_compat_title" msgid="6497719153872572204">"Androidi rakenduse ühilduvus"</string>
     <string name="page_size_compat_elf_not_aligned" msgid="7940806102874132630">"&amp;#8226; %1$s : LOAD-segment ei ole joondatud"</string>
@@ -914,7 +920,7 @@
     <string name="policydesc_disableCamera" msgid="3204405908799676104">"Vältige seadme kõigi kaamerate kasutamist."</string>
     <string name="policylab_disableKeyguardFeatures" msgid="5071855750149949741">"Ekraaniluku mõne funktsiooni keelamine"</string>
     <string name="policydesc_disableKeyguardFeatures" msgid="6641673177041195957">"Takistatakse ekraaniluku mõne funktsiooni kasutamist."</string>
-    <!-- no translation found for exit_toast_on_long_press_escape (873907401529125943) -->
+    <!-- no translation found for exit_toast_on_long_press_escape (2983932499112557277) -->
     <skip />
   <string-array name="phoneTypes">
     <item msgid="8996339953292723951">"Kodu"</item>
@@ -1842,6 +1848,8 @@
     <string name="owner_name" msgid="8713560351570795743">"Omanik"</string>
     <string name="guest_name" msgid="8502103277839834324">"Külaline"</string>
     <string name="headless_system_user_name" msgid="1849150903255530049">"Süsteemikasutaja"</string>
+    <!-- no translation found for unnamed_user_name (6096699110534542980) -->
+    <skip />
     <string name="error_message_title" msgid="4082495589294631966">"Viga"</string>
     <string name="error_message_change_not_allowed" msgid="843159705042381454">"Administraator on selle muudatuse keelanud"</string>
     <string name="app_not_found" msgid="3429506115332341800">"Selle toimingu käsitlemiseks ei leitud ühtegi rakendust"</string>
@@ -2513,7 +2521,8 @@
     <string name="screen_not_shared_sensitive_content" msgid="7058419185079565001">"Rakenduse sisu on ekraani jagamisel turvalisuse huvides peidetud"</string>
     <string name="satellite_notification_title" msgid="4026338973463121526">"Satelliidiga loodi automaatselt ühendus"</string>
     <string name="satellite_notification_summary" msgid="5207364139430767162">"Teil on võimalik sõnumeid saata ja vastu võtta ilma mobiilside- ja WiFi-võrguta"</string>
-    <string name="satellite_notification_summary_with_data" msgid="6486843676720429049">"Saate sõnumeid vahetada ja kasutada piiratud andmeid satelliidi kaudu"</string>
+    <!-- no translation found for satellite_notification_summary_with_data (8290202758586475712) -->
+    <skip />
     <string name="satellite_notification_manual_title" msgid="1097504441849466279">"Kas soovite kasutada satelliidipõhist sõnumsidet?"</string>
     <string name="satellite_notification_manual_summary" msgid="901206289846283445">"Sõnumite saatmine ja vastuvõtmine ilma mobiilside- või WiFi-võrguta"</string>
     <string name="satellite_notification_open_message" msgid="4149234979688273729">"Ava rakendus Messages"</string>

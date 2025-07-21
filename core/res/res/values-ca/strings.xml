@@ -72,12 +72,18 @@
     <string name="CLIRDefaultOnNextCallOff" msgid="5036749051007098105">"El valor predeterminat de l\'identificador de trucada és restringit. Trucada següent: no restringit"</string>
     <string name="CLIRDefaultOffNextCallOn" msgid="1022781126694885017">"El valor predeterminat de l\'identificador de trucada és no restringit. Trucada següent: restringit"</string>
     <string name="CLIRDefaultOffNextCallOff" msgid="2491576172356463443">"El valor predeterminat de l\'identificador de trucada és no restringit. Trucada següent: no restringit"</string>
-    <string name="page_size_compat_apk_warning" msgid="2982396798449041224">"Aquesta aplicació no és compatible amb 16 kB. No s\'ha pogut comprovar l\'alineació d\'APK. Aquesta aplicació s\'executarà en el mode compatible amb la mida de la pàgina. Per obtenir la millor compatibilitat, torna a compilar l\'aplicació amb compatibilitat de 16 kB. Per obtenir més informació, consulta &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;."</string>
-    <string name="page_size_compat_elf_warning" msgid="6753874059564812651">"Aquesta aplicació no és compatible amb 16 kB. No s\'ha pogut comprovar l\'alineació d\'ELF. Aquesta aplicació s\'executarà en el mode compatible amb la mida de la pàgina. Per obtenir la millor compatibilitat, torna a compilar l\'aplicació amb compatibilitat de 16 kB. Per obtenir més informació, consulta &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;."</string>
-    <string name="page_size_compat_apk_and_elf_warning" msgid="7628675779500605390">"Aquesta aplicació no és compatible amb 16 kB. No s\'ha pogut comprovar l\'alineació d\'APK i ELF. Aquesta aplicació s\'executarà en el mode compatible amb la mida de la pàgina. Per obtenir la millor compatibilitat, torna a compilar l\'aplicació amb compatibilitat de 16 kB. Per obtenir més informació, consulta &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;."</string>
-    <string name="page_size_compat_apk_warning_4kb" msgid="6013674159459424986">"Aquest advertiment es mostra perquè aquesta és una aplicació depurable que actualment s\'està provant. Si no n\'ets el desenvolupador, informa\'n el desenvolupador i demana-li una aplicació que no sigui depurable. &lt;br&gt;&lt;br&gt; Aquesta aplicació no és compatible amb 16 kB. No s\'ha pogut comprovar l\'alineació d\'APK. Segueix els passos que s\'indiquen a &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;. &lt;br&gt;&lt;br&gt; Les biblioteques següents no estan alineades amb 16 kB: &lt;br&gt;&lt;br&gt;"</string>
-    <string name="page_size_compat_elf_warning_4kb" msgid="5189541753040977649">"Aquest advertiment es mostra perquè aquesta és una aplicació depurable que actualment s\'està provant. Si no n\'ets el desenvolupador, informa\'n el desenvolupador i demana-li una aplicació que no sigui depurable. &lt;br&gt;&lt;br&gt; Aquesta aplicació no és compatible amb 16 kB. No s\'ha pogut comprovar l\'alineació d\'ELF. Segueix els passos que s\'indiquen a &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;. &lt;br&gt;&lt;br&gt; Les biblioteques següents no estan alineades amb 16 kB: &lt;br&gt;&lt;br&gt;"</string>
-    <string name="page_size_compat_apk_and_elf_warning_4kb" msgid="7665028394400479058">"Aquest advertiment es mostra perquè aquesta és una aplicació depurable que actualment s\'està provant. Si no n\'ets el desenvolupador, informa\'n el desenvolupador i demana-li una aplicació que no sigui depurable. &lt;br&gt;&lt;br&gt; Aquesta aplicació no és compatible amb 16 kB. No s\'ha pogut comprovar l\'alineació d\'APK i ELF. Segueix els passos que s\'indiquen a &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;. &lt;br&gt;&lt;br&gt; Les biblioteques següents no estan alineades a 16 kB: &lt;br&gt;&lt;br&gt;"</string>
+    <!-- no translation found for page_size_compat_apk_warning (2297836366674721648) -->
+    <skip />
+    <!-- no translation found for page_size_compat_elf_warning (8613720928493005883) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_and_elf_warning (9034695801295605229) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_warning_4kb (5676451039424864495) -->
+    <skip />
+    <!-- no translation found for page_size_compat_elf_warning_4kb (5005239480522831311) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_and_elf_warning_4kb (997926487776340721) -->
+    <skip />
     <string name="page_size_compat_never_show" msgid="3391282612422783097">"No m\'ho tornis a mostrar"</string>
     <string name="page_size_compat_title" msgid="6497719153872572204">"Compatibilitat amb aplicacions d\'Android"</string>
     <string name="page_size_compat_elf_not_aligned" msgid="7940806102874132630">"&amp;#8226; %1$s: el segment LOAD no està alineat"</string>
@@ -915,7 +921,7 @@
     <string name="policydesc_disableCamera" msgid="3204405908799676104">"Impedeix l\'ús de les càmeres del dispositiu."</string>
     <string name="policylab_disableKeyguardFeatures" msgid="5071855750149949741">"Desactivar funcions de bloqueig"</string>
     <string name="policydesc_disableKeyguardFeatures" msgid="6641673177041195957">"Impedeix l\'ús d\'algunes funcions del bloqueig de pantalla."</string>
-    <!-- no translation found for exit_toast_on_long_press_escape (873907401529125943) -->
+    <!-- no translation found for exit_toast_on_long_press_escape (2983932499112557277) -->
     <skip />
   <string-array name="phoneTypes">
     <item msgid="8996339953292723951">"Casa"</item>
@@ -1843,6 +1849,8 @@
     <string name="owner_name" msgid="8713560351570795743">"Propietari"</string>
     <string name="guest_name" msgid="8502103277839834324">"Convidat"</string>
     <string name="headless_system_user_name" msgid="1849150903255530049">"Usuari del sistema"</string>
+    <!-- no translation found for unnamed_user_name (6096699110534542980) -->
+    <skip />
     <string name="error_message_title" msgid="4082495589294631966">"Error"</string>
     <string name="error_message_change_not_allowed" msgid="843159705042381454">"L\'administrador no permet aquest canvi"</string>
     <string name="app_not_found" msgid="3429506115332341800">"No s\'ha trobat cap aplicació per processar aquesta acció"</string>
@@ -2514,7 +2522,8 @@
     <string name="screen_not_shared_sensitive_content" msgid="7058419185079565001">"Contingut de l\'aplicació amagat de la compartició de pantalla per seguretat"</string>
     <string name="satellite_notification_title" msgid="4026338973463121526">"S\'ha connectat automàticament a un satèl·lit"</string>
     <string name="satellite_notification_summary" msgid="5207364139430767162">"Pots enviar i rebre missatges sense una xarxa mòbil o Wi‑Fi"</string>
-    <string name="satellite_notification_summary_with_data" msgid="6486843676720429049">"Pots enviar i rebre missatges i utilitzar dades limitades per satèl·lit"</string>
+    <!-- no translation found for satellite_notification_summary_with_data (8290202758586475712) -->
+    <skip />
     <string name="satellite_notification_manual_title" msgid="1097504441849466279">"Vols utilitzar els missatges per satèl·lit?"</string>
     <string name="satellite_notification_manual_summary" msgid="901206289846283445">"Envia i rep missatges sense una xarxa mòbil o Wi‑Fi"</string>
     <string name="satellite_notification_open_message" msgid="4149234979688273729">"Obre Missatges"</string>

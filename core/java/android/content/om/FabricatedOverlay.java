@@ -26,6 +26,7 @@ import android.os.FabricatedOverlayInternal;
 import android.os.FabricatedOverlayInternalEntry;
 import android.os.ParcelFileDescriptor;
 import android.text.TextUtils;
+import android.util.ArraySet;
 import android.util.TypedValue;
 
 import com.android.internal.content.om.OverlayManagerImpl;
@@ -34,7 +35,11 @@ import com.android.internal.util.Preconditions;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * FabricatedOverlay describes the content of Fabricated Runtime Resource Overlay (FRRO) that is
@@ -339,7 +344,12 @@ public class FabricatedOverlay {
     }
 
     final FabricatedOverlayInternal mOverlay;
-    private FabricatedOverlay(FabricatedOverlayInternal overlay) {
+
+    /**
+     * @param overlay The internal parcelable to wrap.
+     * @hide
+     */
+    public FabricatedOverlay(FabricatedOverlayInternal overlay) {
         mOverlay = overlay;
     }
 
@@ -394,6 +404,41 @@ public class FabricatedOverlay {
     @Nullable
     public String getTargetOverlayable() {
         return mOverlay.targetOverlayable;
+    }
+
+
+    /**
+     * Exposes the internal FabricatedOverlayInternal so other services can use the parcelable
+     *
+     * @return instance of FabricatedOverlayInternal
+     * @hide
+     */
+    public FabricatedOverlayInternal getInternal() {
+        return mOverlay;
+    }
+
+    /**
+     * Retrieves a list of overlay entries that match any of the specified resource data types.
+     *
+     * @param dataTypes A variable number of resource data types to filter by, as defined in
+     *                  {@link TypedValue}.
+     * @return A non-null list of {@link FabricatedOverlayInternalEntry} objects that match any of
+     *         the given types. The list will be empty if no entries match or if no data types
+     *         are provided.
+     * @hide
+     */
+    @NonNull
+    public List<FabricatedOverlayInternalEntry> getEntries(int... dataTypes) {
+        if (mOverlay.entries == null || dataTypes == null || dataTypes.length == 0) {
+            return Collections.emptyList();
+        }
+        final Set<Integer> typeSet = new ArraySet<>();
+        for (int type : dataTypes) {
+            typeSet.add(type);
+        }
+        return mOverlay.entries.stream()
+                .filter(entry -> typeSet.contains(entry.dataType))
+                .collect(Collectors.toList());
     }
 
     /**

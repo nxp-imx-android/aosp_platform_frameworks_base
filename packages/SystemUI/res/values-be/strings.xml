@@ -138,6 +138,8 @@
     <string name="screenrecord_stop_dialog_message" msgid="6262768207331626817">"Зараз вы запісваеце змесціва ўсяго экрана"</string>
     <string name="screenrecord_stop_dialog_message_specific_app" msgid="5995770227684523244">"Зараз вы запісваеце змесціва праграмы \"<xliff:g id="APP_NAME">%1$s</xliff:g>\""</string>
     <string name="screenrecord_stop_dialog_button" msgid="2883812564938194350">"Спыніць запіс"</string>
+    <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"Выберыце праграму для запісу"</string>
+    <string name="screen_capture_fullscreen_screenshot_button" msgid="4255912593013592954">"Зняць увесь экран"</string>
     <string name="screen_capture_region_selection_button" msgid="4437546351856914639">"Зрабіць здымак выбранай вобласці"</string>
     <string name="screen_capture_toolbar_capture_button" msgid="8512731007891496030">"Зняць"</string>
     <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"Пачаць запіс"</string>
@@ -565,7 +567,7 @@
     <string name="hub_mode_add_widget_button_text" msgid="4831464661209971729">"Дадаць віджэт"</string>
     <string name="hub_mode_editing_exit_button_text" msgid="3704686734192264771">"Гатова"</string>
     <string name="label_for_button_in_empty_state_cta" msgid="7314975555382055823">"Дадаць віджэты"</string>
-    <string name="title_for_empty_state_cta" msgid="6161654421223450530">"Доступ да віджэтаў любімых праграм без разблакіроўкі планшэта."</string>
+    <string name="title_for_empty_state_cta" msgid="3515697043504449320">"Доступ да віджэтаў любімых праграм без разблакіроўкі прылады."</string>
     <string name="dialog_title_to_allow_any_widget" msgid="1004820948962675644">"Дазволіць размяшчаць на экране блакіроўкі любыя віджэты?"</string>
     <string name="button_text_to_open_settings" msgid="1987729256950941628">"Адкрыць налады"</string>
     <string name="work_mode_off_title" msgid="5794818421357835873">"Уключыць працоўныя праграмы?"</string>
@@ -577,14 +579,14 @@
     <string name="accessibility_action_label_remove_widget" msgid="3373779447448758070">"выдаліць віджэт"</string>
     <string name="accessibility_action_label_place_widget" msgid="1914197458644168978">"размясціць выбраны віджэт"</string>
     <string name="communal_widget_picker_title" msgid="1953369090475731663">"Віджэты на экране блакіроўкі"</string>
-    <string name="communal_widget_picker_description" msgid="490515450110487871">"Віджэты на экране блакіроўкі будуць бачныя, нават калі планшэт заблакіраваны."</string>
+    <string name="communal_widget_picker_description" msgid="6927728582371632782">"Віджэты на экране блакіроўкі будуць бачнымі, нават калі прылада заблакіравана."</string>
     <string name="accessibility_action_label_unselect_widget" msgid="1041811747619468698">"скасаваць выбар віджэта"</string>
     <string name="accessibility_action_label_shrink_widget" msgid="8259511040536438771">"Паменшыць вышыню"</string>
     <string name="accessibility_action_label_expand_widget" msgid="9190524260912211759">"Павялічыць вышыню"</string>
     <string name="accessibility_action_label_umo_show_next" msgid="8033581654789193281">"Паказаць наступны"</string>
     <string name="accessibility_action_label_umo_show_previous" msgid="5935831384525173810">"Паказаць папярэдні"</string>
     <string name="communal_widgets_disclaimer_title" msgid="1150954395585308868">"Віджэты на экране блакіроўкі"</string>
-    <string name="communal_widgets_disclaimer_text" msgid="1423545475160506349">"Каб адкрыць праграму з дапамогай віджэта, вам неабходна будзе пацвердзіць сваю асобу. Таксама памятайце, што такія віджэты могуць пабачыць іншыя людзі, нават калі экран планшэта заблакіраваны. Некаторыя віджэты могуць не падыходзіць для выкарыстання на экране блакіроўкі, і дадаваць іх сюды можа быць небяспечна."</string>
+    <string name="communal_widgets_disclaimer_text" msgid="7363411191173297965">"Каб адкрыць праграму з дапамогай віджэта, вам неабходна будзе пацвердзіць сваю асобу. Таксама памятайце, што такія віджэты могуць пабачыць іншыя людзі, нават калі экран прылады заблакіраваны. Некаторыя віджэты могуць не падыходзіць для выкарыстання на экране блакіроўкі, і дадаваць іх сюды можа быць небяспечна."</string>
     <string name="communal_widgets_disclaimer_button" msgid="4423059765740780753">"Зразумела"</string>
     <string name="accessibility_glanceable_hub_to_dream_button" msgid="7552776300297055307">"Кнопка \"Паказаць застаўку\""</string>
     <string name="hub_onboarding_bottom_sheet_title" msgid="162092881395529947">"Паспрабуйце рэжым хаба"</string>
@@ -851,7 +853,8 @@
     <string name="notification_guts_recs_summary" msgid="8391881843238947007">"Рассылкі, рэкамендаваныя медыя і іншае змесціва"</string>
     <string name="notification_onboarding_summaries_turn_on" msgid="5050003857531272655">"Уключыць"</string>
     <string name="notification_onboarding_summaries_message" msgid="6061524903176459064">"Цяпер доўгія размовы можна падсумоўваць у кароткія зводкі"</string>
-    <string name="notification_onboarding_bundles_message" msgid="9038023612294384832">"Інструмент арганізацыі апавяшчэнняў групуе апавяшчэнні з нізкім прыярытэтам і выключае іх гук"</string>
+    <!-- no translation found for notification_onboarding_bundles_message (4612908213178622912) -->
+    <skip />
     <string name="notification_bundle_header_counter" msgid="5515532701569242265">"{count,plural, =1{# апавяшчэнне}one{# апавяшчэнне}few{# апавяшчэнні}many{# апавяшчэнняў}other{# апавяшчэння}}"</string>
     <string name="inline_done_button" msgid="6043094985588909584">"Гатова"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"Прымяніць"</string>
@@ -1098,6 +1101,8 @@
     <string name="accessibility_key_gesture_dialog_content" msgid="4519838108423437794">"Дзеянне "<annotation id="action_key_icon">"icon"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> – гэта спалучэнне клавіш для выкарыстання функцыі \"<xliff:g id="ID_3">^3</xliff:g>\". <xliff:g id="ID_4">^4</xliff:g>"</string>
     <string name="accessibility_key_gesture_dialog_magnifier_intro" msgid="627023269951856071">"Гэта функцыя дазваляе хутка павялічыць маштаб змесціва на экране."</string>
     <string name="accessibility_key_gesture_dialog_talkback_intro" msgid="1617808784388544741">"<xliff:g id="ID_1">%1$s</xliff:g> – гэта праграма чытання з экрана, якая агучвае апісанне элементаў на ім. Яна дапамагае людзям, у якіх узнікаюць складанасці з праглядам экрана."</string>
+    <!-- no translation found for accessibility_key_gesture_dialog_va_intro (4709198503441288289) -->
+    <skip />
     <string name="accessibility_key_gesture_dialog_positive_button_text" msgid="3670746017523589293">"Уключыць"</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"Экран блакіроўкі"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"Ідзе завяршэнне працы…"</string>
@@ -1338,19 +1343,6 @@
     <string name="media_output_end_session_dialog_summary" msgid="5954520685989877347">"Каб перамясціць медыяфайлы на іншую прыладу, спыніце абагулены сеанс"</string>
     <string name="media_output_end_session_dialog_stop" msgid="208189434474624412">"Спыніць"</string>
     <string name="media_output_dialog_button_stop_sharing" msgid="5043482739689716185">"Спыніць абагульванне"</string>
-    <string name="media_output_first_broadcast_title" msgid="6292237789860753022">"Як адбываецца трансляцыя"</string>
-    <string name="media_output_broadcast" msgid="3555580945878071543">"Трансляцыя"</string>
-    <string name="media_output_first_notify_broadcast_message" msgid="6353857724136398494">"Людзі паблізу, у якіх ёсць прылады з Bluetooth, змогуць праслухваць мультымедыйнае змесціва, якое вы трансліруеце"</string>
-    <string name="media_output_broadcasting_message" msgid="4150299923404886073">"Каб слухаць трансляцыю, людзі паблізу, у якіх ёсць сумяшчальныя прылады з Bluetooth, могуць адсканіраваць ваш QR-код або скарыстаць назву і пароль трансляцыі"</string>
-    <string name="media_output_broadcast_name" msgid="8786127091542624618">"Назва трансляцыі"</string>
-    <string name="media_output_broadcast_code" msgid="870795639644728542">"Пароль"</string>
-    <string name="media_output_broadcast_dialog_save" msgid="7910865591430010198">"Захаваць"</string>
-    <string name="media_output_broadcast_starting" msgid="8130153654166235557">"Запускаецца…"</string>
-    <string name="media_output_broadcast_start_failed" msgid="3670835946856129775">"Не ўдалося запусціць трансляцыю"</string>
-    <string name="media_output_broadcast_update_error" msgid="1420868236079122521">"Не ўдалося захаваць. Паўтарыце спробу."</string>
-    <string name="media_output_broadcast_last_update_error" msgid="5484328807296895491">"Не ўдалося захаваць."</string>
-    <string name="media_output_broadcast_code_hint_no_less_than_min" msgid="4663836092607696185">"Скарыстайце не менш як 4 сімвалы"</string>
-    <string name="media_output_broadcast_edit_hint_no_more_than_max" msgid="3923625800037673922">"Колькасць сімвалаў павінна быць меншай за <xliff:g id="LENGTH">%1$d</xliff:g>"</string>
     <string name="build_number_clip_data_label" msgid="3623176728412560914">"Нумар зборкі"</string>
     <string name="build_number_copy_toast" msgid="877720921605503046">"Нумар зборкі скапіраваны ў буфер абмену."</string>
     <string name="copy_to_clipboard_a11y_action" msgid="4312789069718446749">"скапіраваць у буфер абмену."</string>
@@ -1463,12 +1455,6 @@
     <string name="note_task_button_label" msgid="230135078402003532">"Стварэнне нататак"</string>
     <string name="note_task_shortcut_long_label" msgid="7729325091147319409">"Стварэнне нататак, <xliff:g id="NOTE_TAKING_APP">%1$s</xliff:g>"</string>
     <string name="audio_sharing_description" msgid="8849060142768870004">"Ідзе абагульванне аўдыя"</string>
-    <string name="broadcasting_description_is_broadcasting" msgid="765627502786404290">"Перадача даных"</string>
-    <string name="bt_le_audio_broadcast_dialog_title" msgid="3605428497924077811">"Спыніць трансляцыю праграмы \"<xliff:g id="APP_NAME">%1$s</xliff:g>\"?"</string>
-    <string name="bt_le_audio_broadcast_dialog_sub_title" msgid="7889684551194225793">"Пры пераключэнні на праграму \"<xliff:g id="SWITCHAPP">%1$s</xliff:g>\" ці змяненні вываду бягучая трансляцыя спыняецца"</string>
-    <string name="bt_le_audio_broadcast_dialog_switch_app" msgid="6098768269397105733">"Трансляцыя праграмы \"<xliff:g id="SWITCHAPP">%1$s</xliff:g>\""</string>
-    <string name="bt_le_audio_broadcast_dialog_different_output" msgid="7885102097302562674">"Змяненне вываду"</string>
-    <string name="bt_le_audio_broadcast_dialog_unknown_name" msgid="3791472237793443044">"Невядома"</string>
     <string name="dream_time_complication_12_hr_time_format" msgid="4691197486690291529">"h:mm"</string>
     <string name="dream_time_complication_24_hr_time_format" msgid="6248280719733640813">"kk:mm"</string>
     <string name="log_access_confirmation_title" msgid="4843557604739943395">"Дазволіць праграме \"<xliff:g id="LOG_ACCESS_APP_NAME">%s</xliff:g>\" мець доступ да ўсіх журналаў прылады?"</string>
@@ -1633,9 +1619,9 @@
     <string name="home_edu_toast_content" msgid="3381071147871955415">"Каб вярнуцца на галоўны экран, правядзіце па сэнсарнай панэлі трыма пальцамі ўверх"</string>
     <string name="overview_edu_toast_content" msgid="5797030644017804518">"Для прагляду нядаўніх праграм правядзіце па сэнсарнай панэлі трыма пальцамі ўверх і затрымайцеся"</string>
     <string name="all_apps_edu_toast_content" msgid="8807496014667211562">"Каб праглядзець усе праграмы, націсніце на клавішу дзеяння на клавіятуры"</string>
-    <string name="redacted_notification_single_line_title" msgid="212019960919261670">"Схавана"</string>
-    <string name="public_notification_single_line_text" msgid="3576190291791654933">"Разблакіруйце экран, каб праглядзець"</string>
+    <string name="public_notification_single_line_title" msgid="3161485511931439629">"Разблакіруйце экран, каб праглядзець"</string>
     <string name="redacted_otp_notification_single_line_text" msgid="5179964116354454118">"Разблакіруйце экран, каб праглядзець код"</string>
+    <string name="empty_notification_single_line_title" msgid="4464430045266180257">"Разгарніце, каб праглядзець"</string>
     <string name="contextual_education_dialog_title" msgid="4630392552837487324">"Кантэкстнае навучанне"</string>
     <string name="back_edu_notification_title" msgid="5624780717751357278">"Выкарыстайце сэнсарную панэль для вяртання"</string>
     <string name="back_edu_notification_content" msgid="2497557451540954068">"Правядзіце ўлева ці ўправа трыма пальцамі. Націсніце, каб азнаёміцца з іншымі жэстамі."</string>
@@ -1672,8 +1658,6 @@
     <string name="back_button_on_bouncer" msgid="809134628434396761">"Назад"</string>
     <string name="pager_dots_previous_content_description" msgid="26963508904918908">"Назад"</string>
     <string name="pager_dots_next_content_description" msgid="613943992626163120">"Далей"</string>
-    <!-- no translation found for ambient_cue_autofill_action (9213025887835308128) -->
-    <skip />
-    <!-- no translation found for ambient_cue_expand_action (6803711089932959312) -->
-    <skip />
+    <string name="ambient_cue_autofill_action" msgid="9213025887835308128">"аўтазапаўненне"</string>
+    <string name="ambient_cue_expand_action" msgid="6803711089932959312">"разгарнуць"</string>
 </resources>

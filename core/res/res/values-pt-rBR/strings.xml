@@ -72,15 +72,21 @@
     <string name="CLIRDefaultOnNextCallOff" msgid="5036749051007098105">"O identificador de chamadas assume o padrão de restrito. Próxima chamada: Não restrita"</string>
     <string name="CLIRDefaultOffNextCallOn" msgid="1022781126694885017">"O identificador de chamadas assume o padrão de não restrito. Próxima chamada: Restrita"</string>
     <string name="CLIRDefaultOffNextCallOff" msgid="2491576172356463443">"O identificador de chamadas assume o padrão de não restrito. Próxima chamada: Não restrita"</string>
-    <string name="page_size_compat_apk_warning" msgid="2982396798449041224">"Este app não é compatível com 16 KB. Falha na verificação de alinhamento do APK. Este app será executado usando o modo compatível com o tamanho da página. Para melhorar a compatibilidade, é preciso recompilar o aplicativo com suporte a 16 KB. Para mais informações, consulte &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
-    <string name="page_size_compat_elf_warning" msgid="6753874059564812651">"Este app não é compatível com 16 KB. Falha na verificação de alinhamento ELF. Este app será executado usando o modo compatível com o tamanho da página. Para melhorar a compatibilidade, é preciso recompilar o aplicativo com suporte a 16 KB. Para mais informações, consulte &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
-    <string name="page_size_compat_apk_and_elf_warning" msgid="7628675779500605390">"Este app não é compatível com 16 KB. Falha nas verificações de alinhamento do APK e do ELF. Este app será executado usando o modo compatível com o tamanho da página. Para melhorar a compatibilidade, é preciso recompilar o aplicativo com suporte a 16 KB. Para mais informações, consulte &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
-    <string name="page_size_compat_apk_warning_4kb" msgid="6013674159459424986">"Este aviso está sendo mostrado porque este é um app depurável que está sendo testado no momento. Se você não for o desenvolvedor, informe o problema a ele e peça um app que não possa ser depurado. &lt;br&gt;&lt;br&gt; Este app não é compatível com 16 KB. Falha na verificação de alinhamento do APK. Siga as etapas em &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; &lt;br&gt;&lt;br&gt;. As bibliotecas abaixo não estão alinhadas a 16 KB: &lt;br&gt;&lt;br&gt;"</string>
-    <string name="page_size_compat_elf_warning_4kb" msgid="5189541753040977649">"Este aviso está sendo mostrado porque este é um app depurável que está sendo testado no momento. Se você não for o desenvolvedor, informe o problema a ele e peça um app que não possa ser depurado. &lt;br&gt;&lt;br&gt; Este app não é compatível com 16 KB. Falha na verificação de alinhamento ELF. Siga as etapas em &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; &lt;br&gt;&lt;br&gt;. As bibliotecas abaixo não estão alinhadas a 16 KB: &lt;br&gt;&lt;br&gt;"</string>
-    <string name="page_size_compat_apk_and_elf_warning_4kb" msgid="7665028394400479058">"Este aviso está sendo mostrado porque este é um app depurável que está sendo testado no momento. Se você não for o desenvolvedor, informe o problema a ele e peça um app que não possa ser depurado. &lt;br&gt;&lt;br&gt; Este app não é compatível com 16 KB. Falha nas verificações de alinhamento do APK e do ELF. Siga as etapas em &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;. &lt;br&gt;&lt;br&gt; As bibliotecas abaixo não estão alinhadas a 16 KB: &lt;br&gt;&lt;br&gt;"</string>
+    <!-- no translation found for page_size_compat_apk_warning (2297836366674721648) -->
+    <skip />
+    <!-- no translation found for page_size_compat_elf_warning (8613720928493005883) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_and_elf_warning (9034695801295605229) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_warning_4kb (5676451039424864495) -->
+    <skip />
+    <!-- no translation found for page_size_compat_elf_warning_4kb (5005239480522831311) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_and_elf_warning_4kb (997926487776340721) -->
+    <skip />
     <string name="page_size_compat_never_show" msgid="3391282612422783097">"Não mostrar de novo"</string>
     <string name="page_size_compat_title" msgid="6497719153872572204">"Compatibilidade de apps Android"</string>
-    <string name="page_size_compat_elf_not_aligned" msgid="7940806102874132630">"&amp;#8226; %1$s : o segmento LOAD não está alinhado"</string>
+    <string name="page_size_compat_elf_not_aligned" msgid="7940806102874132630">"&amp;#8226; %1$s: o segmento LOAD não está alinhado"</string>
     <string name="page_size_compat_apk_not_aligned" msgid="8927901100655245528">"&amp;#8226; %1$s : a biblioteca descompactada não está alinhada"</string>
     <string name="page_size_compat_apk_and_elf_not_aligned" msgid="1010371834741548905">"&amp;#8226; %1$s : o segmento LOAD e a biblioteca não compactada não estão alinhados"</string>
     <string name="page_size_compat_unknown" msgid="3254222165646410528">"&amp;#8226; %1$s : erro desconhecido"</string>
@@ -915,7 +921,7 @@
     <string name="policydesc_disableCamera" msgid="3204405908799676104">"Impede o uso de todas as câmeras do dispositivo."</string>
     <string name="policylab_disableKeyguardFeatures" msgid="5071855750149949741">"Desativar recursos do bloq. de tela"</string>
     <string name="policydesc_disableKeyguardFeatures" msgid="6641673177041195957">"Impede o uso de alguns recursos do bloqueio de tela."</string>
-    <!-- no translation found for exit_toast_on_long_press_escape (873907401529125943) -->
+    <!-- no translation found for exit_toast_on_long_press_escape (2983932499112557277) -->
     <skip />
   <string-array name="phoneTypes">
     <item msgid="8996339953292723951">"Casa"</item>
@@ -1843,6 +1849,8 @@
     <string name="owner_name" msgid="8713560351570795743">"Proprietário"</string>
     <string name="guest_name" msgid="8502103277839834324">"Visitante"</string>
     <string name="headless_system_user_name" msgid="1849150903255530049">"Usuário do sistema"</string>
+    <!-- no translation found for unnamed_user_name (6096699110534542980) -->
+    <skip />
     <string name="error_message_title" msgid="4082495589294631966">"Erro"</string>
     <string name="error_message_change_not_allowed" msgid="843159705042381454">"Esta alteração não é permitida pelo administrador"</string>
     <string name="app_not_found" msgid="3429506115332341800">"Nenhum app encontrado para executar a ação"</string>
@@ -2514,7 +2522,8 @@
     <string name="screen_not_shared_sensitive_content" msgid="7058419185079565001">"Conteúdo oculto no compartilhamento de tela por segurança"</string>
     <string name="satellite_notification_title" msgid="4026338973463121526">"Conectado automaticamente ao satélite"</string>
     <string name="satellite_notification_summary" msgid="5207364139430767162">"Você pode enviar e receber mensagens sem um dispositivo móvel ou uma rede Wi-Fi"</string>
-    <string name="satellite_notification_summary_with_data" msgid="6486843676720429049">"É possível enviar e receber mensagens e usar dados limitados via satélite"</string>
+    <!-- no translation found for satellite_notification_summary_with_data (8290202758586475712) -->
+    <skip />
     <string name="satellite_notification_manual_title" msgid="1097504441849466279">"Usar mensagens via satélite?"</string>
     <string name="satellite_notification_manual_summary" msgid="901206289846283445">"Enviar e receber mensagens sem uma rede móvel ou Wi-Fi"</string>
     <string name="satellite_notification_open_message" msgid="4149234979688273729">"Abrir o app Mensagens"</string>

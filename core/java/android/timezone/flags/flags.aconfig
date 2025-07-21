@@ -1,0 +1,11 @@
+package: "android.timezone.flags"
+container: "system"
+
+
+flag {
+    name: "expose_time_zone_system_api"
+    # "location" is used by the Android System Time team for feature flags.
+    namespace: "location"
+    description: "Turn time zone methods into system APIs for mainline modules"
+    bug: "432239933"
+}

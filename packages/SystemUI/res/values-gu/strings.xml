@@ -138,6 +138,8 @@
     <string name="screenrecord_stop_dialog_message" msgid="6262768207331626817">"તમે હાલમાં તમારી પૂર્ણ સ્ક્રીન રેકોર્ડ કરી રહ્યાં છો"</string>
     <string name="screenrecord_stop_dialog_message_specific_app" msgid="5995770227684523244">"તમે હાલમાં <xliff:g id="APP_NAME">%1$s</xliff:g> રેકોર્ડ કરી રહ્યાં છો"</string>
     <string name="screenrecord_stop_dialog_button" msgid="2883812564938194350">"રેકોર્ડિંગ રોકો"</string>
+    <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"રેકોર્ડ કરવા માટે ઍપ પસંદ કરો"</string>
+    <string name="screen_capture_fullscreen_screenshot_button" msgid="4255912593013592954">"સંપૂર્ણ સ્ક્રીન કૅપ્ચર કરો"</string>
     <string name="screen_capture_region_selection_button" msgid="4437546351856914639">"પસંદ કરેલું ક્ષેત્ર કૅપ્ચર કરો"</string>
     <string name="screen_capture_toolbar_capture_button" msgid="8512731007891496030">"કૅપ્ચર કરો"</string>
     <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"રેકોર્ડ કરો"</string>
@@ -399,8 +401,7 @@
     <string name="quick_settings_flashlight_camera_in_use" msgid="4820591564526512571">"કૅમેરાનો ઉપયોગ થાય છે"</string>
     <string name="flashlight_dialog_title" msgid="4232742718579701241">"ફ્લૅશલાઇટની ક્ષમતા"</string>
     <string name="quick_settings_flashlight_tile_level_percentage" msgid="2071942013174794819">"<xliff:g id="PERCENTAGE">%1$d</xliff:g>%%"</string>
-    <!-- no translation found for flashlight_dialog_turn_off (5934897539563253348) -->
-    <skip />
+    <string name="flashlight_dialog_turn_off" msgid="5934897539563253348">"બંધ કરો"</string>
     <string name="quick_settings_cellular_detail_title" msgid="792977203299358893">"મોબાઇલ ડેટા"</string>
     <string name="quick_settings_cellular_detail_data_usage" msgid="6105969068871138427">"ડેટા વપરાશ"</string>
     <string name="quick_settings_cellular_detail_remaining_data" msgid="1136599216568805644">"બાકી ડેટા"</string>
@@ -566,7 +567,7 @@
     <string name="hub_mode_add_widget_button_text" msgid="4831464661209971729">"વિજેટ ઉમેરો"</string>
     <string name="hub_mode_editing_exit_button_text" msgid="3704686734192264771">"થઈ ગયું"</string>
     <string name="label_for_button_in_empty_state_cta" msgid="7314975555382055823">"વિજેટ ઉમેરો"</string>
-    <string name="title_for_empty_state_cta" msgid="6161654421223450530">"તમારું ટૅબ્લેટ અનલૉક કર્યા વિના તમારા મનપસંદ ઍપ વિજેટનો ઝડપી ઍક્સેસ મેળવો."</string>
+    <string name="title_for_empty_state_cta" msgid="3515697043504449320">"તમારું ડિવાઇસ અનલૉક કર્યા વિના તમારા મનપસંદ ઍપ વિજેટનો ઝડપી ઍક્સેસ મેળવો."</string>
     <string name="dialog_title_to_allow_any_widget" msgid="1004820948962675644">"લૉક સ્ક્રીન પર કોઈપણ વિજેટને મંજૂરી આપીએ?"</string>
     <string name="button_text_to_open_settings" msgid="1987729256950941628">"સેટિંગ ખોલો"</string>
     <string name="work_mode_off_title" msgid="5794818421357835873">"ઑફિસની થોભાવેલી ઍપ ચાલુ કરીએ?"</string>
@@ -578,17 +579,17 @@
     <string name="accessibility_action_label_remove_widget" msgid="3373779447448758070">"વિજેટ કાઢી નાખો"</string>
     <string name="accessibility_action_label_place_widget" msgid="1914197458644168978">"પસંદ કરેલું વિજેટ મૂકો"</string>
     <string name="communal_widget_picker_title" msgid="1953369090475731663">"લૉક સ્ક્રીન વિજેટ"</string>
-    <string name="communal_widget_picker_description" msgid="490515450110487871">"તમારું ટૅબ્લેટ લૉક કરેલું હોય તો પણ કોઈપણ તમારી લૉક સ્ક્રીન પર વિજેટ જોઈ શકે છે."</string>
+    <string name="communal_widget_picker_description" msgid="6927728582371632782">"તમારું ડિવાઇસ લૉક કરેલું હોય તો પણ કોઈપણ તમારી લૉક સ્ક્રીન પર વિજેટ જોઈ શકે છે."</string>
     <string name="accessibility_action_label_unselect_widget" msgid="1041811747619468698">"વિજેટ નાપસંદ કરો"</string>
     <string name="accessibility_action_label_shrink_widget" msgid="8259511040536438771">"ઊંચાઈ ઘટાડો"</string>
     <string name="accessibility_action_label_expand_widget" msgid="9190524260912211759">"ઊંચાઈ વધારો"</string>
     <string name="accessibility_action_label_umo_show_next" msgid="8033581654789193281">"આગલું બતાવો"</string>
     <string name="accessibility_action_label_umo_show_previous" msgid="5935831384525173810">"પાછલું બતાવો"</string>
     <string name="communal_widgets_disclaimer_title" msgid="1150954395585308868">"લૉક સ્ક્રીન વિજેટ"</string>
-    <string name="communal_widgets_disclaimer_text" msgid="1423545475160506349">"વિજેટનો ઉપયોગ કરીને ઍપ ખોલવા માટે, તમારે એ ચકાસણી કરવાની જરૂર રહેશે કે આ તમે જ છો. તે ઉપરાંત, ધ્યાનમાં રાખો કે તમારું ટૅબ્લેટ લૉક કરેલું હોય તો પણ કોઈપણ વ્યક્તિ તેમને જોઈ શકે છે. અમુક વિજેટ કદાચ તમારી લૉક સ્ક્રીન માટે બનાવવામાં આવ્યા ન હોઈ શકે છે અને તેમને અહીં ઉમેરવાનું અસલામત હોઈ શકે છે."</string>
+    <string name="communal_widgets_disclaimer_text" msgid="7363411191173297965">"વિજેટનો ઉપયોગ કરીને ઍપ ખોલવા માટે, તમારે એ ચકાસણી કરવાની જરૂર રહેશે કે આ તમે જ છો. તે ઉપરાંત, ધ્યાનમાં રાખો કે તમારું ડિવાઇસ લૉક કરેલું હોય તો પણ કોઈપણ વ્યક્તિ તેમને જોઈ શકે છે. અમુક વિજેટ કદાચ તમારી લૉક સ્ક્રીન માટે બનાવવામાં આવ્યા ન હોય તેમ બની શકે છે અને તેમને અહીં ઉમેરવાનું અસલામત હોઈ શકે છે."</string>
     <string name="communal_widgets_disclaimer_button" msgid="4423059765740780753">"સમજાઈ ગયું"</string>
     <string name="accessibility_glanceable_hub_to_dream_button" msgid="7552776300297055307">"સ્ક્રીનસેવર બટન બતાવો"</string>
-    <string name="hub_onboarding_bottom_sheet_title" msgid="162092881395529947">"હબ મોડ શોધખોળ કરો"</string>
+    <string name="hub_onboarding_bottom_sheet_title" msgid="162092881395529947">"હબ મોડ વિશે શોધખોળ કરો"</string>
     <string name="hub_onboarding_bottom_sheet_text" msgid="8589816797970240544">"ચાર્જ કરતી વખતે તમારા મનપસંદ વિજેટ અને સ્ક્રીન સેવર ઍક્સેસ કરો."</string>
     <string name="hub_onboarding_bottom_sheet_action_button" msgid="6161983690157872829">"ચાલો પ્રારંભ કરીએ"</string>
     <string name="glanceable_hub_to_dream_button_tooltip" msgid="9018287673822335829">"ચાર્જ વખતે તમારું મનપસંદ સ્ક્રીનસેવર બતાવો"</string>
@@ -852,7 +853,8 @@
     <string name="notification_guts_recs_summary" msgid="8391881843238947007">"ન્યૂઝલેટર, સુઝાવ આપેલું મીડિયા અને બીજું ઘણું"</string>
     <string name="notification_onboarding_summaries_turn_on" msgid="5050003857531272655">"ચાલુ કરો"</string>
     <string name="notification_onboarding_summaries_message" msgid="6061524903176459064">"તમારી વધુ લાંબી વાતચીતોનો હવે તમને ઝડપી રીકેપ આપવા માટે સારાંશ તૈયાર થઈ શકે છે"</string>
-    <string name="notification_onboarding_bundles_message" msgid="9038023612294384832">"નોટિફિકેશન ઑર્ગેનાઇઝર બંડલ બનાવે છે અને ઓછી પ્રાધાન્યતાવાળા નોટિફિકેશનને સાઇલન્ટ કરે છે"</string>
+    <!-- no translation found for notification_onboarding_bundles_message (4612908213178622912) -->
+    <skip />
     <string name="notification_bundle_header_counter" msgid="5515532701569242265">"{count,plural, =1{# નોટિફિકેશન}one{# નોટિફિકેશન}other{# નોટિફિકેશન}}"</string>
     <string name="inline_done_button" msgid="6043094985588909584">"થઈ ગયું"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"લાગુ કરો"</string>
@@ -1099,6 +1101,8 @@
     <string name="accessibility_key_gesture_dialog_content" msgid="4519838108423437794">"ક્રિયા માટેનું "<annotation id="action_key_icon">"આઇકન"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> એ <xliff:g id="ID_3">^3</xliff:g>નો ઉપયોગ કરવા માટે કીબોર્ડ શૉર્ટકટ છે. <xliff:g id="ID_4">^4</xliff:g>"</string>
     <string name="accessibility_key_gesture_dialog_magnifier_intro" msgid="627023269951856071">"આ તમને કન્ટેન્ટને વધારે મોટું કરવા માટે સ્ક્રીન પર ઝડપથી મોટું કરવાની સુવિધા આપે છે."</string>
     <string name="accessibility_key_gesture_dialog_talkback_intro" msgid="1617808784388544741">"<xliff:g id="ID_1">%1$s</xliff:g> એ એક સ્ક્રીન રીડર છે જે તમને મોટેથી બોલાતી આઇટમને સાંભળવાની સુવિધા આપે છે. સ્ક્રીન જોવામાં મુશ્કેલી થતી હોય, એવા લોકો માટે તે સુવિધા મદદરૂપ થઈ શકે છે."</string>
+    <!-- no translation found for accessibility_key_gesture_dialog_va_intro (4709198503441288289) -->
+    <skip />
     <string name="accessibility_key_gesture_dialog_positive_button_text" msgid="3670746017523589293">"ચાલુ કરો"</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"લૉક સ્ક્રીન"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"શટ ડાઉન કરી રહ્યાં છીએ…"</string>
@@ -1339,19 +1343,6 @@
     <string name="media_output_end_session_dialog_summary" msgid="5954520685989877347">"મીડિયાને બીજા ડિવાઇસ પર ખસેડવા માટે તમારું શેર કરેલું સત્ર રોકો"</string>
     <string name="media_output_end_session_dialog_stop" msgid="208189434474624412">"રોકો"</string>
     <string name="media_output_dialog_button_stop_sharing" msgid="5043482739689716185">"શેર કરવાનું રોકો"</string>
-    <string name="media_output_first_broadcast_title" msgid="6292237789860753022">"બ્રોડકાસ્ટ પ્રક્રિયાની કામ કરવાની રીત"</string>
-    <string name="media_output_broadcast" msgid="3555580945878071543">"બ્રોડકાસ્ટ કરો"</string>
-    <string name="media_output_first_notify_broadcast_message" msgid="6353857724136398494">"સુસંગત બ્લૂટૂથ ડિવાઇસ ધરાવતા નજીકના લોકો તમે જે મીડિયા બ્રોડકાસ્ટ કરી રહ્યાં છો તે સાંભળી શકે છે"</string>
-    <string name="media_output_broadcasting_message" msgid="4150299923404886073">"તમારા બ્રોડકાસ્ટને સાંભળવા માટે, સુસંગત બ્લૂટૂથ ડિવાઇસ ધરાવતા નજીકના લોકો તમારો QR કોડ સ્કૅન કરી શકે છે અથવા તમારા બ્રોડકાસ્ટનું નામ અને પાસવર્ડનો ઉપયોગ કરી શકે છે"</string>
-    <string name="media_output_broadcast_name" msgid="8786127091542624618">"બ્રોડકાસ્ટનું નામ"</string>
-    <string name="media_output_broadcast_code" msgid="870795639644728542">"પાસવર્ડ"</string>
-    <string name="media_output_broadcast_dialog_save" msgid="7910865591430010198">"સાચવો"</string>
-    <string name="media_output_broadcast_starting" msgid="8130153654166235557">"શરૂ થઈ રહ્યું છે…"</string>
-    <string name="media_output_broadcast_start_failed" msgid="3670835946856129775">"બ્રોડકાસ્ટ કરી શકતા નથી"</string>
-    <string name="media_output_broadcast_update_error" msgid="1420868236079122521">"સાચવી શકતા નથી. ફરી પ્રયાસ કરો."</string>
-    <string name="media_output_broadcast_last_update_error" msgid="5484328807296895491">"સાચવી શકતા નથી."</string>
-    <string name="media_output_broadcast_code_hint_no_less_than_min" msgid="4663836092607696185">"ઓછામાં ઓછા 4 અક્ષરનો ઉપયોગ કરો"</string>
-    <string name="media_output_broadcast_edit_hint_no_more_than_max" msgid="3923625800037673922">"<xliff:g id="LENGTH">%1$d</xliff:g> કરતાં ઓછા અક્ષરનો ઉપયોગ કરો"</string>
     <string name="build_number_clip_data_label" msgid="3623176728412560914">"બિલ્ડ નંબર"</string>
     <string name="build_number_copy_toast" msgid="877720921605503046">"બિલ્ડ નંબર ક્લિપબૉર્ડ પર કૉપિ કર્યો."</string>
     <string name="copy_to_clipboard_a11y_action" msgid="4312789069718446749">"ક્લિપબોર્ડ પર કૉપિ કરો."</string>
@@ -1464,12 +1455,6 @@
     <string name="note_task_button_label" msgid="230135078402003532">"નોંધ લેવી"</string>
     <string name="note_task_shortcut_long_label" msgid="7729325091147319409">"નોંધ લેવી, <xliff:g id="NOTE_TAKING_APP">%1$s</xliff:g>"</string>
     <string name="audio_sharing_description" msgid="8849060142768870004">"ઑડિયો શેર કરી રહ્યાં છીએ"</string>
-    <string name="broadcasting_description_is_broadcasting" msgid="765627502786404290">"બ્રૉડકાસ્ટ કરી રહ્યાં છે"</string>
-    <string name="bt_le_audio_broadcast_dialog_title" msgid="3605428497924077811">"<xliff:g id="APP_NAME">%1$s</xliff:g> બ્રોડકાસ્ટ કરવાનું રોકીએ?"</string>
-    <string name="bt_le_audio_broadcast_dialog_sub_title" msgid="7889684551194225793">"જો તમે <xliff:g id="SWITCHAPP">%1$s</xliff:g> બ્રોડકાસ્ટ કરો અથવા આઉટપુટ બદલો, તો તમારું હાલનું બ્રોડકાસ્ટ બંધ થઈ જશે"</string>
-    <string name="bt_le_audio_broadcast_dialog_switch_app" msgid="6098768269397105733">"<xliff:g id="SWITCHAPP">%1$s</xliff:g> બ્રોડકાસ્ટ કરો"</string>
-    <string name="bt_le_audio_broadcast_dialog_different_output" msgid="7885102097302562674">"આઉટપુટ બદલો"</string>
-    <string name="bt_le_audio_broadcast_dialog_unknown_name" msgid="3791472237793443044">"અજાણ"</string>
     <string name="dream_time_complication_12_hr_time_format" msgid="4691197486690291529">"h:mm"</string>
     <string name="dream_time_complication_24_hr_time_format" msgid="6248280719733640813">"kk:mm"</string>
     <string name="log_access_confirmation_title" msgid="4843557604739943395">"શું <xliff:g id="LOG_ACCESS_APP_NAME">%s</xliff:g>ને ડિવાઇસનો બધો લૉગ ઍક્સેસ કરવાની મંજૂરી આપીએ?"</string>
@@ -1634,9 +1619,9 @@
     <string name="home_edu_toast_content" msgid="3381071147871955415">"હોમ સ્ક્રીન પર જવા માટે, ટચપૅડ પર ત્રણ આંગળીઓ વડે ઉપર સ્વાઇપ કરો"</string>
     <string name="overview_edu_toast_content" msgid="5797030644017804518">"તાજેતરની ઍપ જોવા માટે, ટચપૅડ પર ત્રણ આંગળીઓ વડે ઉપર સ્વાઇપ કરો અને દબાવી રાખો"</string>
     <string name="all_apps_edu_toast_content" msgid="8807496014667211562">"તમારી બધી ઍપ જોવા માટે, તમારા કીબોર્ડ પર ઍક્શન કી દબાવો"</string>
-    <string name="redacted_notification_single_line_title" msgid="212019960919261670">"બદલાવેલું"</string>
-    <string name="public_notification_single_line_text" msgid="3576190291791654933">"જોવા માટે અનલૉક કરો"</string>
+    <string name="public_notification_single_line_title" msgid="3161485511931439629">"જોવા માટે અનલૉક કરો"</string>
     <string name="redacted_otp_notification_single_line_text" msgid="5179964116354454118">"કોડ જોવા માટે અનલૉક કરો"</string>
+    <string name="empty_notification_single_line_title" msgid="4464430045266180257">"જોવા માટે મોટું કરો"</string>
     <string name="contextual_education_dialog_title" msgid="4630392552837487324">"સંદર્ભાત્મક શિક્ષણ"</string>
     <string name="back_edu_notification_title" msgid="5624780717751357278">"પાછા જવા માટે તમારા ટચપૅડનો ઉપયોગ કરો"</string>
     <string name="back_edu_notification_content" msgid="2497557451540954068">"ત્રણ આંગળીનો ઉપયોગ કરીને ડાબે અથવા જમણે સ્વાઇપ કરો. સંકેતો વિશે વધુ જાણવા માટે ટૅપ કરો."</string>
@@ -1673,8 +1658,6 @@
     <string name="back_button_on_bouncer" msgid="809134628434396761">"પાછળ"</string>
     <string name="pager_dots_previous_content_description" msgid="26963508904918908">"પાછળ"</string>
     <string name="pager_dots_next_content_description" msgid="613943992626163120">"આગળ"</string>
-    <!-- no translation found for ambient_cue_autofill_action (9213025887835308128) -->
-    <skip />
-    <!-- no translation found for ambient_cue_expand_action (6803711089932959312) -->
-    <skip />
+    <string name="ambient_cue_autofill_action" msgid="9213025887835308128">"ઑટોમૅટિક રીતે ભરવાની સુવિધા"</string>
+    <string name="ambient_cue_expand_action" msgid="6803711089932959312">"મોટું કરો"</string>
 </resources>

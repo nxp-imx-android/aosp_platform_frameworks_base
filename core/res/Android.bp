@@ -156,6 +156,7 @@ android_app {
     generate_product_characteristics_rro: true,
 
     flags_packages: [
+        "android.systemserver.flags-aconfig",
         "android.app.appfunctions.flags-aconfig",
         "android.app.contextualsearch.flags-aconfig",
         "android.app.flags-aconfig",
