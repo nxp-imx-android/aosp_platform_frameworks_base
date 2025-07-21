@@ -39,15 +39,15 @@
     <string name="bubble_not_supported_text" msgid="8843806122229754809">"குமிழை ஆப்ஸ் ஆதரிப்பதில்லை"</string>
     <string name="accessibility_divider" msgid="6407584574218956849">"திரைப் பிரிப்பான்"</string>
     <string name="divider_title" msgid="1963391955593749442">"திரைப் பிரிப்பான்"</string>
-    <string name="accessibility_action_divider_left_full" msgid="1857937769498651238">"இடதுபுறமுள்ள ஆப்ஸை முழுத்திரையில் காட்டும்"</string>
+    <string name="accessibility_action_divider_left_full" msgid="1857937769498651238">"இடதுபுற ஆப்ஸை முழுத்திரையில் காட்டு"</string>
     <string name="accessibility_action_divider_left_10" formatted="false" msgid="8237692006159749086">"இடதுபுறம் 10%, வலதுபுறம் 90%"</string>
     <string name="accessibility_action_divider_left_30" formatted="false" msgid="5033298971212011735">"இடதுபுறம் 30%, வலதுபுறம் 70%"</string>
     <string name="accessibility_action_divider_left_50" formatted="false" msgid="170317638773112190">"இடதுபுறம் 50%, வலதுபுறம் 50%"</string>
     <string name="accessibility_action_divider_left_70" formatted="false" msgid="3986621081137830158">"இடதுபுறம் 70%, வலதுபுறம் 30%"</string>
     <string name="accessibility_action_divider_left_90" formatted="false" msgid="3525922058426249817">"இடதுபுறம் 90%, வலதுபுறம் 10%"</string>
-    <string name="accessibility_action_divider_right_full" msgid="4162106720432709858">"வலதுபுறமுள்ள ஆப்ஸை முழுத்திரையில் காட்டும்"</string>
+    <string name="accessibility_action_divider_right_full" msgid="4162106720432709858">"வலதுபுறமுள்ள ஆப்ஸை முழுத்திரையில் காட்டு"</string>
     <string name="accessibility_action_divider_swap_vertical" msgid="8673406394251984853">"மேலுள்ள ஆப்ஸையும் கீழுள்ள ஆப்ஸையும் மாற்றும், கடைசியாக மாற்றியதைக் காட்டும்"</string>
-    <string name="accessibility_action_divider_swap_horizontal" msgid="588604748596242580">"இடதுபுறமுள்ள ஆப்ஸையும் வலதுபுறமுள்ள ஆப்ஸையும் மாற்றும், கடைசியாக மாற்றியதைக் காட்டும்"</string>
+    <string name="accessibility_action_divider_swap_horizontal" msgid="588604748596242580">"இடது ஆப்ஸையும் வலது ஆப்ஸையும் மாற்று, பிரிப்பு அப்படியே இருக்கட்டும்"</string>
     <string name="accessibility_action_divider_top_full" msgid="3986693999427747701">"மேலுள்ள ஆப்ஸை முழுத்திரையில் காட்டும்"</string>
     <string name="accessibility_action_divider_top_10" formatted="false" msgid="6898920573675831044">"மேல் 10%, கீழ் 90%"</string>
     <string name="accessibility_action_divider_top_30" formatted="false" msgid="6515643651303176050">"மேல் 30%, கீழ் 70%"</string>
@@ -102,7 +102,7 @@
     <string name="user_aspect_ratio_settings_button_hint" msgid="734835849600713016">"அமைப்புகளில் இந்த ஆப்ஸின் தோற்ற விகிதத்தை மாற்றும்"</string>
     <string name="user_aspect_ratio_settings_button_description" msgid="4315566801697411684">"தோற்ற விகிதத்தை மாற்றும்"</string>
     <string name="camera_compat_treatment_suggested_button_description" msgid="8103916969024076767">"கேமரா தொடர்பான சிக்கல்களா?\nமீண்டும் பொருத்த தட்டவும்"</string>
-    <string name="camera_compat_treatment_applied_button_description" msgid="2944157113330703897">"சிக்கல்கள் சரிசெய்யப்படவில்லையா?\nமாற்றியமைக்க தட்டவும்"</string>
+    <string name="camera_compat_treatment_applied_button_description" msgid="2944157113330703897">"சிக்கல்கள் சரிசெய்யப்படவில்லையா?\nமுன்போல் மாற்ற தட்டவும்"</string>
     <string name="camera_compat_dismiss_button_description" msgid="2795364433503817511">"கேமரா தொடர்பான சிக்கல்கள் எதுவும் இல்லையா? நிராகரிக்க தட்டவும்."</string>
     <string name="windowing_app_handle_education_tooltip" msgid="2929643449849791854">"ஆப்ஸ் மெனுவை இங்கே பார்க்கலாம்"</string>
     <string name="windowing_desktop_mode_image_button_education_tooltip" msgid="7171915734817051666">"பல ஆப்ஸை ஒன்றாகத் திறக்க டெஸ்க்டாப் சாளரமாக்குதலுக்குச் செல்லலாம்"</string>

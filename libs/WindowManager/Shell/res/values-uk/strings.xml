@@ -40,14 +40,14 @@
     <string name="accessibility_divider" msgid="6407584574218956849">"Розділювач екрана"</string>
     <string name="divider_title" msgid="1963391955593749442">"Розділювач екрана"</string>
     <string name="accessibility_action_divider_left_full" msgid="1857937769498651238">"Розгорнути додаток ліворуч на весь екран"</string>
-    <string name="accessibility_action_divider_left_10" formatted="false" msgid="8237692006159749086">"Зліва: 10%, справа: 90%"</string>
-    <string name="accessibility_action_divider_left_30" formatted="false" msgid="5033298971212011735">"Зліва: 30%, справа: 70%"</string>
-    <string name="accessibility_action_divider_left_50" formatted="false" msgid="170317638773112190">"Зліва: 50%, справа: 50%"</string>
-    <string name="accessibility_action_divider_left_70" formatted="false" msgid="3986621081137830158">"Зліва: 70%, справа: 30%"</string>
-    <string name="accessibility_action_divider_left_90" formatted="false" msgid="3525922058426249817">"Зліва: 90%, справа: 10%"</string>
+    <string name="accessibility_action_divider_left_10" formatted="false" msgid="8237692006159749086">"Ліворуч: 10%, праворуч: 90%"</string>
+    <string name="accessibility_action_divider_left_30" formatted="false" msgid="5033298971212011735">"Ліворуч: 30%, праворуч: 70%"</string>
+    <string name="accessibility_action_divider_left_50" formatted="false" msgid="170317638773112190">"Ліворуч: 50%, праворуч: 50%"</string>
+    <string name="accessibility_action_divider_left_70" formatted="false" msgid="3986621081137830158">"Ліворуч: 70%, праворуч: 30%"</string>
+    <string name="accessibility_action_divider_left_90" formatted="false" msgid="3525922058426249817">"Ліворуч: 90%, праворуч: 10%"</string>
     <string name="accessibility_action_divider_right_full" msgid="4162106720432709858">"Розгорнути додаток праворуч на весь екран"</string>
-    <string name="accessibility_action_divider_swap_vertical" msgid="8673406394251984853">"Поміняти місцями верхній і нижній додатки, зберегти поточний розмір вікон"</string>
-    <string name="accessibility_action_divider_swap_horizontal" msgid="588604748596242580">"Поміняти місцями додатки ліворуч і праворуч, зберегти поточний розмір вікон"</string>
+    <string name="accessibility_action_divider_swap_vertical" msgid="8673406394251984853">"Поміняти місцями верхній і нижній додатки, зберегти поточний поділ екрана"</string>
+    <string name="accessibility_action_divider_swap_horizontal" msgid="588604748596242580">"Поміняти місцями додатки ліворуч і праворуч, зберегти поточний поділ екрана"</string>
     <string name="accessibility_action_divider_top_full" msgid="3986693999427747701">"Розгорнути верхній додаток на весь екран"</string>
     <string name="accessibility_action_divider_top_10" formatted="false" msgid="6898920573675831044">"Зверху: 10%, знизу: 90%"</string>
     <string name="accessibility_action_divider_top_30" formatted="false" msgid="6515643651303176050">"Зверху: 30%, знизу: 70%"</string>
