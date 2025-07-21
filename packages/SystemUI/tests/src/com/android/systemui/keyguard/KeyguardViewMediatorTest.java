@@ -59,6 +59,7 @@ import com.android.systemui.navigationbar.NavigationModeController;
 import com.android.systemui.statusbar.NotificationShadeDepthController;
 import com.android.systemui.statusbar.NotificationShadeWindowController;
 import com.android.systemui.statusbar.SysuiStatusBarStateController;
+import com.android.systemui.statusbar.phone.CentralSurfaces;
 import com.android.systemui.statusbar.phone.DozeParameters;
 import com.android.systemui.statusbar.phone.ScreenOffAnimationController;
 import com.android.systemui.statusbar.phone.StatusBarKeyguardViewManager;
@@ -72,6 +73,7 @@ import com.android.systemui.util.time.FakeSystemClock;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
@@ -110,6 +112,8 @@ public class KeyguardViewMediatorTest extends SysuiTestCase {
     private FakeExecutor mUiBgExecutor = new FakeExecutor(new FakeSystemClock());
 
     private FalsingCollectorFake mFalsingCollector;
+
+    private @Mock CentralSurfaces mCentralSurfaces;
 
     @Before
     public void setUp() throws Exception {
@@ -228,6 +232,65 @@ public class KeyguardViewMediatorTest extends SysuiTestCase {
                 mViewMediator.mViewMediatorCallback.getBouncerPromptReason());
     }
 
+    @Test
+    public void biometricAuthSuccessForCurrentUserDoesProceed() {
+        final int currentUser = 25;
+        setCurrentUser(currentUser, true);
+
+        mViewMediator.mUpdateCallback.onBiometricAuthenticated(currentUser, null, false);
+
+        verify(mDevicePolicyManager).reportSuccessfulBiometricAttempt(currentUser);
+    }
+
+    @Test
+    public void biometricAuthSuccessForDifferentUserDoesNotProceed() {
+        final int newUser = 40;
+        setCurrentUser(newUser, true);
+
+        final int oldUser = 25;
+        mViewMediator.mUpdateCallback.onBiometricAuthenticated(oldUser, null, false);
+
+        verify(mDevicePolicyManager, never()).reportSuccessfulBiometricAttempt(anyInt());
+    }
+
+    @Test
+    public void testDonePendingExecutesOnHideAnimationFinished() {
+        final int currentUser = 25;
+        setCurrentUser(currentUser, true);
+        mViewMediator.mViewMediatorCallback.keyguardDonePending(true, currentUser);
+
+        final ArgumentCaptor<Runnable> onHideAnimationFinished =
+                ArgumentCaptor.forClass(Runnable.class);
+        verify(mStatusBarKeyguardViewManager).startPreHideAnimation(
+                onHideAnimationFinished.capture());
+
+        onHideAnimationFinished.getValue().run();
+
+        // This is executed when the user is incorrect. Should not be called
+        verify(mCentralSurfaces, never()).instantCollapseNotificationPanel();
+    }
+
+    @Test
+    public void testDonePendingExecutesOnHideAnimationFinishedButTerminatesWhenUserHasChanged() {
+        final int currentUser = 25;
+        setCurrentUser(currentUser, true);
+        mViewMediator.mViewMediatorCallback.keyguardDonePending(true, currentUser);
+
+        final ArgumentCaptor<Runnable> onHideAnimationFinished =
+                ArgumentCaptor.forClass(Runnable.class);
+        verify(mStatusBarKeyguardViewManager).startPreHideAnimation(
+                onHideAnimationFinished.capture());
+
+        // User switched before runnable could execute
+        final int newUser = 40;
+        setCurrentUser(newUser, true);
+
+        onHideAnimationFinished.getValue().run();
+
+        // This is executed when the user is incorrect
+        verify(mCentralSurfaces).instantCollapseNotificationPanel();
+    }
+
     private void createAndStartViewMediator() {
         mViewMediator = new KeyguardViewMediator(
                 mContext,
@@ -257,5 +320,14 @@ public class KeyguardViewMediatorTest extends SysuiTestCase {
                 mNotificationShadeWindowControllerLazy,
                 () -> mActivityLaunchAnimator);
         mViewMediator.start();
+
+        mViewMediator.registerCentralSurfaces(mCentralSurfaces, null, null, null, null, null);
+    }
+
+    private void setCurrentUser(int userId, boolean isSecure) {
+        when(mLockPatternUtils.isSecure(userId)).thenReturn(isSecure);
+        mViewMediator.setCurrentUser(userId);
+        TestableLooper.get(this).processAllMessages();
+        mUiBgExecutor.runAllReady();
     }
 }
