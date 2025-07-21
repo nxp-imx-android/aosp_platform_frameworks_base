@@ -1241,7 +1241,11 @@ constructor(
     }
 
     fun onCarouselVisibleToUser() {
-        if (!enableSuggestedDeviceUi() || !mediaCarouselScrollHandler.visibleToUser) {
+        if (
+            !enableSuggestedDeviceUi() ||
+                !mediaCarouselScrollHandler.visibleToUser ||
+                MediaPlayerData.mediaData().all { it.second.resumption }
+        ) {
             return
         }
         val visibleMediaIndex = mediaCarouselScrollHandler.visibleMediaIndex

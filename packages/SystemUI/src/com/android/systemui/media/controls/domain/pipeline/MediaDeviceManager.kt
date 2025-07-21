@@ -136,7 +136,15 @@ constructor(
                 localMediaManagerFactory.create(data.packageName, controller?.sessionToken)
             val muteAwaitConnectionManager =
                 muteAwaitConnectionManagerFactory.create(localMediaManager)
-            entry = Entry(key, oldKey, controller, localMediaManager, muteAwaitConnectionManager)
+            entry =
+                Entry(
+                    key,
+                    oldKey,
+                    controller,
+                    localMediaManager,
+                    muteAwaitConnectionManager,
+                    data.resumption,
+                )
             entries[key] = entry
             entry.start()
         }
@@ -195,6 +203,7 @@ constructor(
         val controller: MediaController?,
         val localMediaManager: LocalMediaManager,
         val muteAwaitConnectionManager: MediaMuteAwaitConnectionManager,
+        val isResumption: Boolean,
     ) : LocalMediaManager.DeviceCallback, MediaController.Callback() {
 
         val token
@@ -233,7 +242,7 @@ constructor(
                     playbackType = controller?.playbackInfo?.playbackType ?: PLAYBACK_TYPE_UNKNOWN
                     playbackVolumeControlId = controller?.playbackInfo?.volumeControlId
                     controller?.registerCallback(this)
-                    if (enableSuggestedDeviceUi()) {
+                    if (enableSuggestedDeviceUi() && !isResumption) {
                         updateCurrent(notifyListeners = false)
                         updateSuggestion(
                             localMediaManager.getSuggestedDevice(),
@@ -309,7 +318,7 @@ constructor(
         }
 
         override fun onSuggestedDeviceUpdated(state: SuggestedDeviceState?) {
-            if (!enableSuggestedDeviceUi()) {
+            if (!enableSuggestedDeviceUi() || isResumption) {
                 return
             }
             bgExecutor.execute { updateSuggestion(state) }
