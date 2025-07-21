@@ -863,6 +863,14 @@ public final class SystemServiceRegistry {
                 return new SystemVibrator(ctx);
             }});
 
+        registerService(Context.THEME_SERVICE, ThemeManager.class,
+            new CachedServiceFetcher<ThemeManager>() {
+                @Override
+                public ThemeManager createService(ContextImpl ctx) {
+                    return new ThemeManager();
+                }
+            });
+
         registerService(Context.WALLPAPER_SERVICE, WallpaperManager.class,
                 new CachedServiceFetcher<WallpaperManager>() {
             @Override

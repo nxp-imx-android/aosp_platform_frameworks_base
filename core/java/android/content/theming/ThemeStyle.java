@@ -24,7 +24,6 @@ import static java.lang.annotation.RetentionPolicy.SOURCE;
 
 import android.annotation.IntDef;
 import android.annotation.NonNull;
-import android.annotation.Nullable;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
@@ -36,10 +35,6 @@ import java.lang.annotation.Target;
  * @hide
  */
 public final class ThemeStyle {
-
-    private ThemeStyle() {
-    }
-
     /**
      * @hide
      */
@@ -108,14 +103,10 @@ public final class ThemeStyle {
      * @param style The style value.
      * @return The string representation of the style.
      * @throws IllegalArgumentException if the style value is invalid.
+     * @throws NullPointerException if the style value is null.
      */
     @NonNull
-    public static String toString(@Nullable @Type Integer style) {
-        // Throw an exception if style is null
-        if (style == null) {
-            throw new IllegalArgumentException("Invalid style value: null");
-        }
-
+    public static String toString(@Type Integer style) {
         return switch (style) {
             case SPRITZ -> "SPRITZ";
             case TONAL_SPOT -> "TONAL_SPOT";
@@ -137,8 +128,10 @@ public final class ThemeStyle {
      * @param styleName The name of the style.
      * @return The style value.
      * @throws IllegalArgumentException if the style name is invalid.
+     * @throws NullPointerException if the style name is null.
      */
-    public static @Type int valueOf(@Nullable String styleName) {
+    @Type
+    public static  int valueOf(String styleName) {
         return switch (styleName) {
             case "SPRITZ" -> SPRITZ;
             case "TONAL_SPOT" -> TONAL_SPOT;

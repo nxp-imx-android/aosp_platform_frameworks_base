@@ -45,7 +45,7 @@ public class FieldThemeStyleTests {
     }
 
     @Test
-    public void parse_validThemeStyleCaseInsensitive_returnsCorrectStyle() {
+    public void parse_validThemeStyle_wrongCase_returnsNull() {
         Integer parsedValue = mFieldThemeStyle.parse("expressive");
         assertThat(parsedValue).isNull();
     }
@@ -69,8 +69,8 @@ public class FieldThemeStyleTests {
     }
 
     @Test
-    public void serialize_nullThemeStyle_throwsIllegalArgumentException() {
-        assertThrows(IllegalArgumentException.class, () -> {
+    public void serialize_nullThemeStyle_throwsNullPointerException() {
+        assertThrows(NullPointerException.class, () -> {
             mFieldThemeStyle.serialize(null);
         });
     }
@@ -122,5 +122,4 @@ public class FieldThemeStyleTests {
     public void getJsonType_returnsStringClass() {
         assertThat(mFieldThemeStyle.getJsonType()).isEqualTo(String.class);
     }
-
 }
