@@ -140,7 +140,15 @@ sealed interface TransitionState {
                 check(
                     (fromContent == fromOrToScene && toContent == overlay) ||
                         (fromContent == overlay && toContent == fromOrToScene)
-                )
+                ) {
+                    buildString {
+                        appendLine("invalid ShowOrHideOverlay transition:")
+                        appendLine("  fromContent: $fromContent")
+                        appendLine("  toContent: $toContent")
+                        appendLine("  fromOrToScene: $fromOrToScene")
+                        appendLine("  overlay: $overlay")
+                    }
+                }
             }
 
             final override fun computeCurrentOverlays(): Set<OverlayKey> {
@@ -178,7 +186,9 @@ sealed interface TransitionState {
             abstract val effectivelyShownOverlay: OverlayKey
 
             init {
-                check(fromOverlay != toOverlay)
+                check(fromOverlay != toOverlay) {
+                    "fromOverlay ($fromOverlay) and toOverlay ($toOverlay) cannot be the same"
+                }
             }
 
             final override fun computeCurrentOverlays(): Set<OverlayKey> {
@@ -307,12 +317,24 @@ sealed interface TransitionState {
         private var _coroutineScope: CoroutineScope? = null
 
         init {
-            check(fromContent != toContent)
+            check(fromContent != toContent) {
+                "fromContent ($fromContent) and toContent ($toContent) cannot be the same"
+            }
             check(
                 replacedTransition == null ||
                     (replacedTransition.fromContent == fromContent &&
                         replacedTransition.toContent == toContent)
-            )
+            ) {
+                buildString {
+                    appendLine("invalid replacedTransition:")
+                    appendLine("  fromContent: $fromContent")
+                    appendLine("  toContent: $toContent")
+                    appendLine(
+                        "  replacedTransition.fromContent: ${replacedTransition?.fromContent}"
+                    )
+                    appendLine("  replacedTransition.toContent: ${replacedTransition?.toContent}")
+                }
+            }
         }
 
         /**
