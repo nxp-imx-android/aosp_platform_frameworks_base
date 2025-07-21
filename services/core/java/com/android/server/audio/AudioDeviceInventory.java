@@ -93,6 +93,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
@@ -1859,6 +1860,21 @@ public class AudioDeviceInventory {
                 status = addOp.deviceRoleAction(useCase, role, devices);
                 if (status == AudioSystem.SUCCESS) {
                     rolesMap.put(key, new ArrayList(devices));
+                    // Mirrors the behavior in EngineBase::setDevicesRoleForT() to ensure a
+                    // preferred device is not also disabled, and vice-versa.
+                    if (role != AudioSystem.DEVICE_ROLE_NONE) {
+                        int roleToRemove = role == AudioSystem.DEVICE_ROLE_PREFERRED
+                                ? AudioSystem.DEVICE_ROLE_DISABLED
+                                : AudioSystem.DEVICE_ROLE_PREFERRED;
+                        Pair<Integer, Integer> oppositeKey = new Pair<>(useCase, roleToRemove);
+                        List<AudioDeviceAttributes> oppositeDevs = rolesMap.get(oppositeKey);
+                        if (oppositeDevs != null) {
+                            List<AudioDeviceAttributes> filteredDevs = oppositeDevs.stream()
+                                    .filter(e -> !devices.contains(e))
+                                    .collect(Collectors.toList());
+                            rolesMap.put(oppositeKey, filteredDevs);
+                        }
+                    }
                 }
             }
             return status;
