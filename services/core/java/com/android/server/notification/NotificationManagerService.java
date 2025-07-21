@@ -110,7 +110,6 @@ import static android.os.IServiceManager.DUMP_FLAG_PRIORITY_CRITICAL;
 import static android.os.IServiceManager.DUMP_FLAG_PRIORITY_NORMAL;
 import static android.os.PowerWhitelistManager.REASON_NOTIFICATION_SERVICE;
 import static android.os.PowerWhitelistManager.TEMPORARY_ALLOWLIST_TYPE_FOREGROUND_SERVICE_ALLOWED;
-import static android.os.Process.INVALID_UID;
 import static android.os.UserHandle.USER_ALL;
 import static android.os.UserHandle.USER_NULL;
 import static android.os.UserHandle.USER_SYSTEM;
@@ -504,6 +503,7 @@ public class NotificationManagerService extends SystemService {
      */
     private static final int NOTIFICATION_RAPID_CLEAR_THRESHOLD_MS = 5000;
 
+    static final int INVALID_UID = -1;
     static final String ROOT_PKG = "root";
 
     static final String[] DEFAULT_ALLOWED_ADJUSTMENTS = new String[] {
@@ -5184,7 +5184,7 @@ public class NotificationManagerService extends SystemService {
                 String conversationId) {
             if (canNotifyAsPackage(callingPkg, targetPkg, userId)
                     || isCallerSystemOrSystemUiOrShell()) {
-                int targetUid = INVALID_UID;
+                int targetUid = -1;
                 try {
                     targetUid = mPackageManagerClient.getPackageUidAsUser(targetPkg, userId);
                 } catch (NameNotFoundException e) {
@@ -5486,7 +5486,7 @@ public class NotificationManagerService extends SystemService {
                 String targetPkg, @CannotBeSpecialUser @UserIdInt int userId) {
             if (canNotifyAsPackage(callingPkg, targetPkg, userId)
                 || isCallingUidSystem()) {
-                int targetUid = INVALID_UID;
+                int targetUid = -1;
                 try {
                     targetUid = mPackageManagerClient.getPackageUidAsUser(targetPkg, userId);
                 } catch (NameNotFoundException e) {
@@ -7405,6 +7405,9 @@ public class NotificationManagerService extends SystemService {
                 }
             }
             int uid = getUidForPackageAndUser(pkg, user);
+            if (uid == INVALID_UID) {
+                return null;
+            }
             NotificationChannel parentChannel =
                     mPreferencesHelper.getNotificationChannel(pkg, uid, parentId, false);
             if (parentChannel == null) {
@@ -7559,12 +7562,14 @@ public class NotificationManagerService extends SystemService {
         }
 
         private int getUidForPackageAndUser(String pkg, UserHandle user) throws RemoteException {
+            int uid = INVALID_UID;
             final long identity = Binder.clearCallingIdentity();
             try {
-                return mPackageManager.getPackageUid(pkg, 0, user.getIdentifier());
+                uid = mPackageManager.getPackageUid(pkg, 0, user.getIdentifier());
             } finally {
                 Binder.restoreCallingIdentity(identity);
             }
+            return uid;
         }
 
         @Override
@@ -9219,9 +9224,11 @@ public class NotificationManagerService extends SystemService {
                 if (canPostPromoted) {
                     notification.flags |= FLAG_PROMOTED_ONGOING;
                 }
+
             }
         }
     }
+
 
     /**
      * Whether a notification can be non-dismissible.
