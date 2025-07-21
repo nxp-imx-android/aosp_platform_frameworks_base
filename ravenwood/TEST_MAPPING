@@ -5,6 +5,7 @@
     { "name": "ravenhelpertest" },
     { "name": "hoststubgen-test-tiny-test" },
     { "name": "hoststubgen-invoke-test" },
+    { "name": "ravenwood-scripts-sh-golden-test" },
     { "name": "RavenwoodMockitoTest_device" },
     { "name": "RavenwoodBivalentTest_device" },
     { "name": "RavenwoodBivalentTest_device_ravenizer" },
