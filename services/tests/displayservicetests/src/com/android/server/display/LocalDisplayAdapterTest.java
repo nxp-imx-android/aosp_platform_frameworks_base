@@ -943,6 +943,7 @@ public class LocalDisplayAdapterTest {
     @Test
     public void testOnModeAndFrameRateOverridesChanged() throws Exception {
         doReturn(true).when(mFlags).isDispatchDisplayModeWithVsyncOffsetsEnabled();
+        doReturn(true).when(mFlags).isSingleAppEventForModeAndFrameRateOverrideEnabled();
         long appVsyncOffsetNanosMode1 = 100;
         long presentationDeadlineNanosMode1 = 200;
         long appVsyncOffsetNanosMode2 = 101;
@@ -985,7 +986,7 @@ public class LocalDisplayAdapterTest {
         // Returns the values captured from the OnModeAndFrameRateOverridesChanged event.
         assertEquals(newAppVsyncOffsetNanos, displayDeviceInfo.appVsyncOffsetNanos);
         assertEquals(newPresentationDeadlineNanos, displayDeviceInfo.presentationDeadlineNanos);
-        assertThat(mListener.changedDisplays.size()).isEqualTo(2);
+        assertThat(mListener.changedDisplays.size()).isEqualTo(1);
         activeMode = getModeById(displayDeviceInfo, displayDeviceInfo.modeId);
         assertThat(activeMode.matches(1920, 1080, 120f)).isTrue();
     }

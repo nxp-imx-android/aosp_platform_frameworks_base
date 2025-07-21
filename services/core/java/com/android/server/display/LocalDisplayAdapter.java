@@ -1252,17 +1252,30 @@ final class LocalDisplayAdapter extends DisplayAdapter {
             updateDeviceInfoLocked();
         }
 
-        public void onActiveDisplayModeChangedLocked(int sfModeId, float renderFrameRate,
+        private void onActiveDisplayModeChangedLocked(int sfModeId, float renderFrameRate,
                 long appVsyncOffsetNanos, long presentationDeadlineNanos) {
-            if (updateActiveModeLocked(sfModeId, renderFrameRate, appVsyncOffsetNanos,
-                    presentationDeadlineNanos)) {
+            if (updateActiveModeAndFrameOverrideChangedLocked(sfModeId, renderFrameRate,
+                    appVsyncOffsetNanos, presentationDeadlineNanos, mFrameRateOverrides)) {
                 updateDeviceInfoLocked();
             }
         }
 
-        public void onFrameRateOverridesChanged(
+        private void onFrameRateOverridesChangedLocked(
                 DisplayEventReceiver.FrameRateOverride[] overrides) {
-            if (updateFrameRateOverridesLocked(overrides)) {
+            if (updateActiveModeAndFrameOverrideChangedLocked(mActiveSfDisplayMode.id,
+                    mActiveRenderFrameRate, mAppVsyncOffsetNanos, mPresentationDeadlineNanos,
+                    overrides)) {
+                updateDeviceInfoLocked();
+            }
+        }
+
+        private void onModeAndFrameRateOverridesChangedLocked(
+                int sfModeId, float renderFrameRate,
+                long appVsyncOffsetNanos, long presentationDeadlineNanos,
+                DisplayEventReceiver.FrameRateOverride[] overrides) {
+            if (updateActiveModeAndFrameOverrideChangedLocked(sfModeId,
+                    renderFrameRate, appVsyncOffsetNanos,
+                    presentationDeadlineNanos, overrides)) {
                 updateDeviceInfoLocked();
             }
         }
@@ -1299,6 +1312,31 @@ final class LocalDisplayAdapter extends DisplayAdapter {
                 return false;
             }
 
+            mFrameRateOverrides = overrides;
+            return true;
+        }
+
+        private boolean updateActiveModeAndFrameOverrideChangedLocked(int activeSfModeId,
+                float renderFrameRate, long appVsyncOffsetNanos,
+                long presentationDeadlineNanos,
+                DisplayEventReceiver.FrameRateOverride[] overrides) {
+            if (mActiveSfDisplayMode.id == activeSfModeId
+                    && mActiveRenderFrameRate == renderFrameRate
+                    && mAppVsyncOffsetNanos == appVsyncOffsetNanos
+                    && mPresentationDeadlineNanos == presentationDeadlineNanos
+                    && Arrays.equals(overrides, mFrameRateOverrides)
+            ) {
+                return false;
+            }
+            mActiveSfDisplayMode = getModeById(mSfDisplayModes, activeSfModeId);
+            mActiveModeId = findMatchingModeIdLocked(activeSfModeId);
+            if (mActiveModeId == INVALID_MODE_ID) {
+                Slog.w(TAG, "In unknown mode after setting allowed modes"
+                        + ", activeModeId=" + activeSfModeId);
+            }
+            mActiveRenderFrameRate = renderFrameRate;
+            mAppVsyncOffsetNanos = appVsyncOffsetNanos;
+            mPresentationDeadlineNanos = presentationDeadlineNanos;
             mFrameRateOverrides = overrides;
             return true;
         }
@@ -1747,7 +1785,7 @@ final class LocalDisplayAdapter extends DisplayAdapter {
                     }
                     return;
                 }
-                device.onFrameRateOverridesChanged(overrides);
+                device.onFrameRateOverridesChangedLocked(overrides);
             }
         }
 
@@ -1756,14 +1794,39 @@ final class LocalDisplayAdapter extends DisplayAdapter {
                 int modeId, long renderPeriod, long appVsyncOffsetNanos,
                 long presentationDeadlineNanos,
                 DisplayEventReceiver.FrameRateOverride[] overrides) {
-            if (DEBUG) {
-                Slog.d(TAG, "onModeAndFrameRateOverridesChanged");
+            if (getFeatureFlags().isSingleAppEventForModeAndFrameRateOverrideEnabled()) {
+                if (DEBUG) {
+                    Slog.d(TAG, "onModeAndFrameRateOverridesChanged("
+                            + "timestampNanos=" + timestampNanos
+                            + ", physicalDisplayId=" + physicalDisplayId
+                            + ", modeId=" + modeId
+                            + ", renderPeriod=" + renderPeriod
+                            + ", appVsyncOffsetNanos=" + appVsyncOffsetNanos
+                            + ", presentationDeadlineNanos=" + presentationDeadlineNanos
+                            + ", overrides=" + Arrays.toString(overrides) + ")");
+                }
+                synchronized (getSyncRoot()) {
+                    LocalDisplayDevice device = mDevices.get(physicalDisplayId);
+                    if (device == null) {
+                        if (DEBUG) {
+                            Slog.d(TAG, "Received onModeAndFrameRateOverridesChanged"
+                                    + " for unhandled physical display: "
+                                    + "physicalDisplayId=" + physicalDisplayId);
+                        }
+                        return;
+                    }
+                    float renderFrameRate = 1e9f / renderPeriod;
+                    device.onModeAndFrameRateOverridesChangedLocked(modeId, renderFrameRate,
+                            appVsyncOffsetNanos, presentationDeadlineNanos, overrides);
+                }
+            } else {
+                if (DEBUG) {
+                    Slog.d(TAG, "onModeAndFrameRateOverridesChanged");
+                }
+                onModeChanged(timestampNanos, physicalDisplayId, modeId, renderPeriod,
+                        appVsyncOffsetNanos, presentationDeadlineNanos);
+                onFrameRateOverridesChanged(timestampNanos, physicalDisplayId, overrides);
             }
-            //TODO(b/415850294) App should not get two callbacks when
-            // onModeAndFrameRateOverridesChanged is executed.
-            onModeChanged(timestampNanos, physicalDisplayId, modeId, renderPeriod,
-                    appVsyncOffsetNanos, presentationDeadlineNanos);
-            onFrameRateOverridesChanged(timestampNanos, physicalDisplayId, overrides);
         }
 
         @Override
