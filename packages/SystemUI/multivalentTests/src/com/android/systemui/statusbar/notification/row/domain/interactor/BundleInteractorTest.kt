@@ -33,6 +33,8 @@ import com.android.systemui.controls.dagger.ControlsComponentTest.Companion.eq
 import com.android.systemui.controls.ui.ControlActionCoordinatorImplTest.Companion.any
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.notifications.ui.composable.row.BundleHeader
+import com.android.systemui.shade.domain.interactor.ShadeInteractor
+import com.android.systemui.shade.domain.interactor.shadeInteractor
 import com.android.systemui.statusbar.notification.row.data.model.AppData
 import com.android.systemui.statusbar.notification.row.data.repository.BundleRepository
 import com.android.systemui.statusbar.notification.row.data.repository.testBundleRepository
@@ -41,9 +43,11 @@ import com.android.systemui.statusbar.notification.row.icon.appIconProvider
 import com.android.systemui.statusbar.notification.row.icon.mockAppIconProvider
 import com.android.systemui.statusbar.notification.shared.NotificationBundleUi
 import com.android.systemui.testKosmos
+import com.android.systemui.util.time.FakeSystemClock
+import com.android.systemui.util.time.systemClock
 import com.google.common.truth.Truth.assertThat
-import kotlin.test.Test
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
@@ -58,6 +62,7 @@ import org.mockito.junit.MockitoRule
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
 import platform.test.motion.compose.runMonotonicClockTest
+import kotlin.test.Test
 
 @OptIn(ExperimentalCoroutinesApi::class)
 @SmallTest
@@ -69,9 +74,11 @@ class BundleInteractorTest : SysuiTestCase() {
 
     private val kosmos = testKosmos()
     private val testScope = kosmos.testScope
+    private val fakeSystemClock = FakeSystemClock()
 
     private val testBundleRepository: BundleRepository = kosmos.testBundleRepository
-
+    private val mockShadeInteractor = mock<ShadeInteractor>()
+    private val isShadeFullyCollapsedFlow = MutableStateFlow(false)
     private lateinit var underTest: BundleInteractor
 
     private val drawable1: Drawable = ColorDrawable(Color.RED)
@@ -81,6 +88,9 @@ class BundleInteractorTest : SysuiTestCase() {
     @Before
     fun setUp() {
         kosmos.appIconProvider = kosmos.mockAppIconProvider
+        whenever(mockShadeInteractor.isShadeFullyCollapsed).thenReturn(isShadeFullyCollapsedFlow)
+        kosmos.shadeInteractor = mockShadeInteractor
+        kosmos.systemClock = fakeSystemClock
         underTest = kosmos.bundleInteractor
     }
 
@@ -293,4 +303,89 @@ class BundleInteractorTest : SysuiTestCase() {
         // Assert
         assertThat(underTest.state?.currentScene).isEqualTo(BundleHeader.Scenes.Collapsed)
     }
+
+    @Test
+    fun setTargetScene_whenCollapsing_updatesLastCollapseTime() = runMonotonicClockTest {
+        // Arrange
+        val testTime = 20000L
+        fakeSystemClock.setUptimeMillis(testTime)
+        underTest.state =
+            MutableSceneTransitionLayoutState(
+                initialScene = BundleHeader.Scenes.Expanded,
+                motionScheme = MotionScheme.standard(),
+            )
+        underTest.composeScope = this
+
+        // Act
+        underTest.setTargetScene(BundleHeader.Scenes.Collapsed)
+        testScope.runCurrent()
+
+        // Assert
+        assertThat(testBundleRepository.lastCollapseTime).isEqualTo(testTime)
+    }
+
+    @Test
+    fun setTargetScene_whenExpanding_doesNotUpdateLastCollapseTime() = runMonotonicClockTest {
+        // Arrange
+        val initialTime = 11000L
+        testBundleRepository.lastCollapseTime = initialTime
+        fakeSystemClock.setUptimeMillis(20000L)
+        underTest.state =
+            MutableSceneTransitionLayoutState(
+                initialScene = BundleHeader.Scenes.Collapsed,
+                motionScheme = MotionScheme.standard(),
+            )
+        underTest.composeScope = this
+
+        // Act
+        underTest.setTargetScene(BundleHeader.Scenes.Expanded)
+        testScope.runCurrent()
+
+        // Assert
+        assertThat(testBundleRepository.lastCollapseTime).isEqualTo(initialTime)
+    }
+
+    @Test
+    fun observeShadeState_whenShadeCollapsesOnExpandedBundle_updatesState() =
+        testScope.runTest {
+            // Arrange
+            val shadeState =
+                MutableSceneTransitionLayoutState(
+                    initialScene = BundleHeader.Scenes.Expanded,
+                    motionScheme = MotionScheme.standard(),
+                )
+            testBundleRepository.state = shadeState
+            val testTime = 20000L
+            fakeSystemClock.setUptimeMillis(testTime)
+
+            // Act
+            isShadeFullyCollapsedFlow.value = true
+            runCurrent()
+
+            // Assert
+            assertThat(testBundleRepository.lastCollapseTime).isEqualTo(testTime)
+            assertThat(shadeState.currentScene).isEqualTo(BundleHeader.Scenes.Collapsed)
+        }
+
+    @Test
+    fun observeShadeState_whenShadeCollapsesOnCollapsedBundle_doesNothing() =
+        testScope.runTest {
+            // Arrange
+            val shadeState =
+                MutableSceneTransitionLayoutState(
+                    initialScene = BundleHeader.Scenes.Collapsed,
+                    motionScheme = MotionScheme.standard(),
+                )
+            testBundleRepository.state = shadeState
+            val initialTime = 11000L
+            testBundleRepository.lastCollapseTime = initialTime
+            fakeSystemClock.setUptimeMillis(20000L)
+
+            // Act
+            isShadeFullyCollapsedFlow.value = true
+            runCurrent()
+
+            // Assert
+            assertThat(testBundleRepository.lastCollapseTime).isEqualTo(initialTime)
+        }
 }

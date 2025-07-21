@@ -28,6 +28,7 @@ import com.android.compose.animation.scene.SceneKey
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.notifications.ui.composable.row.BundleHeader
 import com.android.systemui.res.R
+import com.android.systemui.shade.domain.interactor.ShadeInteractor
 import com.android.systemui.statusbar.notification.row.dagger.BundleRowScope
 import com.android.systemui.statusbar.notification.row.data.model.AppData
 import com.android.systemui.statusbar.notification.row.data.repository.BundleRepository
@@ -35,12 +36,15 @@ import com.android.systemui.statusbar.notification.row.icon.AppIconProvider
 import com.android.systemui.util.icuMessageFormat
 import com.android.systemui.util.time.SystemClock
 import com.android.systemui.utils.coroutines.flow.mapLatestConflated
-import javax.inject.Inject
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import javax.inject.Inject
 
 /** Provides functionality for UI to interact with a Notification Bundle. */
 @BundleRowScope
@@ -52,6 +56,8 @@ constructor(
     private val context: Context,
     @Background private val backgroundDispatcher: CoroutineDispatcher,
     private val systemClock: SystemClock,
+    private val shadeInteractor: ShadeInteractor,
+    @BundleRowScope private val scope: CoroutineScope,
 ) {
     @get:StringRes
     val titleText: Int
@@ -71,6 +77,27 @@ constructor(
                 R.string.notification_bundle_header_counter,
                 numberOfChildren ?: 0,
             )
+
+    private var sceneTargetJob: Job? = null
+
+    init {
+        observeShadeState()
+    }
+
+    private fun observeShadeState() {
+        scope.launch {
+            shadeInteractor.isShadeFullyCollapsed
+                .filter { isCollapsed -> isCollapsed } // Only act when it becomes true
+                .collect {
+                    if (repository.state?.currentScene == BundleHeader.Scenes.Expanded) {
+                        repository.lastCollapseTime = systemClock.uptimeMillis()
+
+                        // Use snapTo() since the UI is already gone and no animation is needed.
+                        repository.state?.snapTo(BundleHeader.Scenes.Collapsed)
+                    }
+                }
+        }
+    }
 
     /** Filters the list of AppData based on time of last collapse by user. */
     private fun filterByCollapseTime(
@@ -123,9 +150,15 @@ constructor(
     }
 
     fun setTargetScene(scene: SceneKey) {
-        state?.setTargetScene(scene, composeScope!!)
-        if (state?.currentScene == BundleHeader.Scenes.Collapsed) {
-            repository.lastCollapseTime = systemClock.uptimeMillis()
+        sceneTargetJob?.cancel()
+
+        sceneTargetJob = scope.launch {
+            state?.setTargetScene(scene, composeScope!!)
+
+            // [setTargetScene] does not immediately update [currentScene] so we must check [scene]
+            if (scene == BundleHeader.Scenes.Collapsed) {
+                repository.lastCollapseTime = systemClock.uptimeMillis()
+            }
         }
     }
 

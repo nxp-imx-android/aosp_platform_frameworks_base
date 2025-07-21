@@ -20,6 +20,7 @@ import com.android.systemui.statusbar.notification.row.data.repository.BundleRep
 import com.android.systemui.statusbar.notification.row.ui.viewmodel.BundleHeaderViewModel
 import dagger.BindsInstance
 import dagger.Subcomponent
+import kotlinx.coroutines.CoroutineScope
 
 /** This dagger component is used to init the ViewModel and Interactors needed for a bundle row */
 @Subcomponent
@@ -31,6 +32,8 @@ interface BundleRowComponent {
     @Subcomponent.Builder
     interface Builder {
         @BindsInstance fun bindBundleRepository(repository: BundleRepository): Builder
+
+        @BindsInstance fun bindScope(scope: CoroutineScope): Builder
 
         fun build(): BundleRowComponent
     }
