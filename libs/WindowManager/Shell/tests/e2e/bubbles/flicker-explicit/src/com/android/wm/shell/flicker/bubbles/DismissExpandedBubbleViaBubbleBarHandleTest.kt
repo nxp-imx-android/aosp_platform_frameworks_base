@@ -24,10 +24,10 @@ import com.android.wm.shell.Flags
 import com.android.wm.shell.Utils
 import com.android.wm.shell.flicker.bubbles.testcase.DismissExpandedBubbleTestCases
 import com.android.wm.shell.flicker.bubbles.utils.ApplyPerParameterRule
+import com.android.wm.shell.flicker.bubbles.utils.BubbleFlickerTestHelper.dismissBubbleAppViaBubbleBarHandle
+import com.android.wm.shell.flicker.bubbles.utils.BubbleFlickerTestHelper.launchBubbleViaBubbleMenu
 import com.android.wm.shell.flicker.bubbles.utils.FlickerPropertyInitializer
 import com.android.wm.shell.flicker.bubbles.utils.RecordTraceWithTransitionRule
-import com.android.wm.shell.flicker.bubbles.utils.dismissBubbleAppViaBubbleBarHandle
-import com.android.wm.shell.flicker.bubbles.utils.launchBubbleViaBubbleMenu
 import org.junit.Assume.assumeTrue
 import org.junit.Before
 import org.junit.FixMethodOrder

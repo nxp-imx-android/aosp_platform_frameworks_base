@@ -24,12 +24,11 @@ import com.android.wm.shell.Flags
 import com.android.wm.shell.Utils
 import com.android.wm.shell.flicker.bubbles.testcase.ExpandBubbleTestCases
 import com.android.wm.shell.flicker.bubbles.utils.ApplyPerParameterRule
+import com.android.wm.shell.flicker.bubbles.utils.BubbleFlickerTestHelper.collapseBubbleAppViaBackKey
+import com.android.wm.shell.flicker.bubbles.utils.BubbleFlickerTestHelper.expandBubbleAppViaTapOnBubbleStack
+import com.android.wm.shell.flicker.bubbles.utils.BubbleFlickerTestHelper.launchBubbleViaBubbleMenu
 import com.android.wm.shell.flicker.bubbles.utils.FlickerPropertyInitializer
 import com.android.wm.shell.flicker.bubbles.utils.RecordTraceWithTransitionRule
-import com.android.wm.shell.flicker.bubbles.utils.collapseBubbleAppViaBackKey
-import com.android.wm.shell.flicker.bubbles.utils.expandBubbleAppViaTapOnBubbleStack
-import com.android.wm.shell.flicker.bubbles.utils.launchBubbleViaBubbleMenu
-import com.android.wm.shell.flicker.bubbles.utils.setUpBeforeTransition
 import org.junit.Assume.assumeFalse
 import org.junit.Before
 import org.junit.FixMethodOrder
@@ -64,7 +63,6 @@ class ExpandBubbleViaBubbleStackTest(navBar: NavBar) : BubbleFlickerTestBase(),
     companion object : FlickerPropertyInitializer() {
         private val recordTraceWithTransitionRule = RecordTraceWithTransitionRule(
             setUpBeforeTransition = {
-                setUpBeforeTransition(instrumentation, wmHelper)
                 launchBubbleViaBubbleMenu(testApp, tapl, wmHelper)
                 collapseBubbleAppViaBackKey(testApp, tapl, wmHelper)
             },
