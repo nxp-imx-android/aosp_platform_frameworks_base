@@ -307,6 +307,42 @@ class BubbleBarAnimationHelperTest {
     }
 
     @Test
+    fun animateExpansion_withPendingAnimation() {
+        val bubble = createBubble("key").initialize(container)
+        val bbev = bubble.bubbleBarExpandedView!!
+
+        val semaphore = Semaphore(0)
+        var afterCalled = false
+        val after = Runnable {
+            afterCalled = true
+            semaphore.release()
+        }
+
+        var expandedViewWithPendingAnimationBefore: BubbleBarExpandedView? = null
+        var expandedViewWithPendingAnimationAfter: BubbleBarExpandedView? = null
+
+        activityScenario.onActivity {
+            bbev.onTaskCreated()
+            // Make the TaskView invisible so that the animation waits on TaskView visibility.
+            bbev.bubbleTaskView!!.listener
+                .onTaskVisibilityChanged(0, false /* visible */)
+            animationHelper.animateExpansion(bubble, after)
+            expandedViewWithPendingAnimationBefore =
+                animationHelper.expandedViewWithPendingAnimation
+
+            animationHelper.cancelAnimations()
+            expandedViewWithPendingAnimationAfter =
+                animationHelper.expandedViewWithPendingAnimation
+        }
+        getInstrumentation().waitForIdleSync()
+
+        assertThat(semaphore.tryAcquire(5, TimeUnit.SECONDS)).isTrue()
+        assertThat(afterCalled).isTrue()
+        assertThat(expandedViewWithPendingAnimationBefore).isEqualTo(bbev)
+        assertThat(expandedViewWithPendingAnimationAfter).isNull()
+    }
+
+    @Test
     fun onImeTopChanged_noOverlap() {
         val bubble = createBubble(key = "b1").initialize(container)
         val bbev = bubble.bubbleBarExpandedView!!
