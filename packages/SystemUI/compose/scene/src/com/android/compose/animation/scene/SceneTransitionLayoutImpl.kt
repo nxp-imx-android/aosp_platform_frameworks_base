@@ -209,6 +209,7 @@ internal class SceneTransitionLayoutImpl(
 
     // TODO(b/399825091): Remove this.
     private var scenesToAlwaysCompose: MutableList<Scene>? = null
+    private var overlaysToAlwaysCompose: MutableList<Overlay>? = null
 
     init {
         updateContents(builder, layoutDirection, defaultEffectFactory)
@@ -368,7 +369,8 @@ internal class SceneTransitionLayoutImpl(
                     alignment: Alignment,
                     isModal: Boolean,
                     effectFactory: OverscrollFactory?,
-                    content: @Composable (InternalContentScope.() -> Unit),
+                    alwaysCompose: Boolean,
+                    content: @Composable InternalContentScope.() -> Unit,
                 ) {
                     overlaysDefined = true
                     overlaysToRemove.remove(key)
@@ -379,6 +381,10 @@ internal class SceneTransitionLayoutImpl(
                         Content.calculateGlobalZIndex(parentZIndex, ++zIndex, ancestors.size)
                     val factory = effectFactory ?: defaultEffectFactory
                     if (overlay != null) {
+                        check(alwaysCompose == overlay.alwaysCompose) {
+                            "overlay.alwaysCompose can not change"
+                        }
+
                         // Update an existing overlay.
                         overlay.content = content
                         overlay.zIndex = zIndex.toFloat()
@@ -389,7 +395,7 @@ internal class SceneTransitionLayoutImpl(
                         overlay.maybeUpdateEffects(factory)
                     } else {
                         // New overlay.
-                        overlays[key] =
+                        val overlay =
                             Overlay(
                                 key,
                                 this@SceneTransitionLayoutImpl,
@@ -400,7 +406,17 @@ internal class SceneTransitionLayoutImpl(
                                 alignment,
                                 isModal,
                                 factory,
+                                alwaysCompose,
                             )
+                        overlays[key] = overlay
+
+                        if (alwaysCompose) {
+                            (overlaysToAlwaysCompose
+                                    ?: mutableListOf<Overlay>().also {
+                                        overlaysToAlwaysCompose = it
+                                    })
+                                .add(overlay)
+                        }
                     }
                 }
             }
@@ -532,6 +548,8 @@ internal class SceneTransitionLayoutImpl(
 
     private data class SceneToCompose(val scene: Scene, val isInvisible: Boolean)
 
+    private data class OverlayToCompose(val overlay: Overlay, val isInvisible: Boolean)
+
     @Composable
     private fun BoxScope.Overlays() {
         val overlaysOrderedByZIndex = overlaysToComposeOrderedByZIndex()
@@ -539,7 +557,7 @@ internal class SceneTransitionLayoutImpl(
             return
         }
 
-        overlaysOrderedByZIndex.fastForEach { overlay ->
+        overlaysOrderedByZIndex.fastForEach { (overlay, isInvisible) ->
             val key = overlay.key
             key(key) {
                 // We put the overlays inside a Box that is matching the layout size so that they
@@ -561,45 +579,48 @@ internal class SceneTransitionLayoutImpl(
                         )
                     }
 
-                    overlay.Content(Modifier.align(overlay.alignment))
+                    overlay.Content(Modifier.align(overlay.alignment), isInvisible = isInvisible)
                 }
             }
         }
     }
 
-    private fun overlaysToComposeOrderedByZIndex(): List<Overlay> {
+    private fun overlaysToComposeOrderedByZIndex(): List<OverlayToCompose> {
         if (_overlays == null) return emptyList()
 
         val transitions = state.currentTransitions
-        return if (transitions.isEmpty()) {
-                state.transitionState.currentOverlays.map { overlay(it) }
-            } else {
-                buildList {
-                    val visited = mutableSetOf<OverlayKey>()
-                    fun maybeAdd(key: OverlayKey) {
-                        if (visited.add(key)) {
-                            add(overlay(key))
-                        }
-                    }
-
-                    transitions.fastForEach { transition ->
-                        when (transition) {
-                            is TransitionState.Transition.ChangeScene -> {}
-                            is TransitionState.Transition.ShowOrHideOverlay ->
-                                maybeAdd(transition.overlay)
-
-                            is TransitionState.Transition.ReplaceOverlay -> {
-                                maybeAdd(transition.fromOverlay)
-                                maybeAdd(transition.toOverlay)
-                            }
-                        }
-                    }
-
-                    // Make sure that all current overlays are composed.
-                    transitions.last().currentOverlays.forEach { maybeAdd(it) }
+        val overlays = buildList {
+            val visited = mutableSetOf<OverlayKey>()
+            fun maybeAdd(overlay: OverlayKey, isInvisible: Boolean = false) {
+                if (visited.add(overlay)) {
+                    add(OverlayToCompose(overlay(overlay), isInvisible))
                 }
             }
-            .sortedBy { it.zIndex }
+
+            if (transitions.isEmpty()) {
+                state.transitionState.currentOverlays.forEach { maybeAdd(it) }
+            } else {
+                transitions.fastForEach { transition ->
+                    when (transition) {
+                        is TransitionState.Transition.ChangeScene -> {}
+                        is TransitionState.Transition.ShowOrHideOverlay ->
+                            maybeAdd(transition.overlay)
+
+                        is TransitionState.Transition.ReplaceOverlay -> {
+                            maybeAdd(transition.fromOverlay)
+                            maybeAdd(transition.toOverlay)
+                        }
+                    }
+                }
+
+                // Make sure that all current overlays are composed.
+                transitions.last().currentOverlays.forEach { maybeAdd(it) }
+            }
+
+            overlaysToAlwaysCompose?.fastForEach { maybeAdd(it.key, isInvisible = true) }
+        }
+
+        return overlays.sortedBy { it.overlay.zIndex }
     }
 
     internal fun hideOverlays(hide: HideCurrentOverlays) {

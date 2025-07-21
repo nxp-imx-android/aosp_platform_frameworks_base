@@ -141,6 +141,7 @@ interface SceneTransitionLayoutScope<out CS : ContentScope> {
         alignment: Alignment = Alignment.Center,
         isModal: Boolean = true,
         effectFactory: OverscrollFactory? = null,
+        alwaysCompose: Boolean = false,
         content: @Composable CS.() -> Unit,
     )
 }
