@@ -55,6 +55,9 @@ import com.android.systemui.communal.util.WindowSizeUtils.COMPACT_WIDTH
  * Renders a responsive [LazyHorizontalGrid] with dynamic columns and rows. Each cell will maintain
  * the specified aspect ratio, but is otherwise resizeable in order to best fill the available
  * space.
+ *
+ * @param cellAspectRatio The aspect ratio (width / height) for each cell. Use 0f for flexible
+ *   aspect ratio, allowing cells to fill all available space.
  */
 @Composable
 fun ResponsiveLazyHorizontalGrid(
@@ -70,7 +73,6 @@ fun ResponsiveLazyHorizontalGrid(
     overscrollEffect: OverscrollEffect? = rememberOverscrollEffect(),
     content: LazyGridScope.(sizeInfo: SizeInfo) -> Unit,
 ) {
-    check(cellAspectRatio > 0f) { "Aspect ratio must be greater than 0, but was $cellAspectRatio" }
     check(minHorizontalArrangement.value >= 0f && minVerticalArrangement.value >= 0f) {
         "Horizontal and vertical arrangements must be non-negative, but were " +
             "$minHorizontalArrangement and $minVerticalArrangement, respectively."
@@ -195,7 +197,10 @@ private fun calculateUsedSpace(cellSize: Dp, numCells: Int, padding: Dp, cellSpa
     cellSize * numCells + padding + (numCells - 1) * cellSpacing
 
 private fun calculateClosestSize(maxWidth: Dp, maxHeight: Dp, aspectRatio: Float): DpSize {
-    return if (maxWidth / maxHeight > aspectRatio) {
+    return if (aspectRatio <= 0f) {
+        // Flexible aspect ratio. Allow cell to fill max width and height.
+        DpSize(maxWidth, maxHeight)
+    } else if (maxWidth / maxHeight > aspectRatio) {
         // Target is too wide, shrink width
         DpSize(maxHeight * aspectRatio, maxHeight)
     } else {

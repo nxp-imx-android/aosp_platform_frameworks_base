@@ -16,7 +16,6 @@
 
 package com.android.systemui.communal.ui.compose
 
-import android.content.res.Configuration
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
@@ -40,7 +39,6 @@ import androidx.compose.ui.layout.positionInWindow
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.unit.IntRect
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.toSize
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.android.compose.animation.scene.ContentScope
@@ -175,14 +173,9 @@ constructor(
                         } else {
                             constraints.maxHeight - lockIconBounds.top
                         }
-                    // Bias the widgets up by a small offset for visual balance in landscape
-                    // orientation
-                    val verticalOffset =
-                        (if (orientation == Configuration.ORIENTATION_LANDSCAPE) (-3).dp else 0.dp)
-                            .roundToPx()
                     // Use even top and bottom margin for grid to be centered in maxHeight (window)
                     communalGridMaxHeight = constraints.maxHeight - communalGridVerticalMargin * 2
-                    communalGridPositionY = communalGridVerticalMargin + verticalOffset
+                    communalGridPositionY = communalGridVerticalMargin
                 } else {
                     communalGridMaxHeight = lockIconBounds?.top ?: constraints.maxHeight
                     communalGridPositionY = 0
