@@ -71,12 +71,18 @@
     <string name="CLIRDefaultOnNextCallOff" msgid="5036749051007098105">"कॉलर आईडी डिफ़ॉल्ट रूप से सीमित है. अगली कॉल: सीमित नहीं"</string>
     <string name="CLIRDefaultOffNextCallOn" msgid="1022781126694885017">"कॉलर आईडी डिफ़ॉल्ट रूप से सीमित नहीं है. अगली कॉल: सीमित"</string>
     <string name="CLIRDefaultOffNextCallOff" msgid="2491576172356463443">"कॉलर आईडी डिफ़ॉल्ट रूप से सीमित नहीं है. अगली कॉल: सीमित नहीं"</string>
-    <string name="page_size_compat_apk_warning" msgid="2982396798449041224">"यह ऐप्लिकेशन 16 केबी वाले पेजों के साथ काम नहीं करता. APK के अलाइनमेंट की जांच नहीं की जा सकी. यह ऐप्लिकेशन, पेज साइज़ के साथ काम करने वाले मोड का इस्तेमाल करके चलेगा. पेज साइज़ के साथ बेहतर तरीके से काम के लिए, कृपया 16 केबी वाले पेजों के साथ ऐप्लिकेशन को फिर से कंपाइल करें. ज़्यादा जानकारी के लिए, &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; पर जाएं"</string>
-    <string name="page_size_compat_elf_warning" msgid="6753874059564812651">"यह ऐप्लिकेशन 16 केबी वाले पेज साइज़ के साथ काम नहीं करता. इसके लिए ज़रूरी ईएलएफ़ अलाइनमेंट की जांच भी पूरी नहीं हो सकी. यह ऐप्लिकेशन, इस पेज साइज़ के साथ काम करने वाले मोड का इस्तेमाल करके चलेगा. इस पेज साइज़ के साथ बेहतर तरीके से काम के लिए, कृपया ऐप्लिकेशन को 16 केबी वाले पेज साइज़ के साथ फिर से कंपाइल करें. ज़्यादा जानकारी के लिए, &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; पर जाएं"</string>
-    <string name="page_size_compat_apk_and_elf_warning" msgid="7628675779500605390">"यह ऐप्लिकेशन 16 केबी वाले पेज साइज़ के साथ काम नहीं करता. APK और ईएलएफ़ के अलाइनमेंट से जुड़ी ज़रूरी जांच भी पूरी नहीं हो सकी. यह ऐप्लिकेशन, इस पेज साइज़ के साथ काम करने वाले मोड का इस्तेमाल करके चलेगा. इस पेज साइज़ के साथ बेहतर तरीके से काम के लिए, कृपया ऐप्लिकेशन को 16 केबी वाले पेज साइज़ के साथ फिर से कंपाइल करें. ज़्यादा जानकारी के लिए, &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; पर जाएं"</string>
-    <string name="page_size_compat_apk_warning_4kb" msgid="6013674159459424986">"यह चेतावनी इसलिए दिख रही है, क्योंकि इस ऐप्लिकेशन को डीबग किया जा सकता है. फ़िलहाल, इसकी जांच की जा रही है. अगर आप डेवलपर नहीं हैं, तो कृपया डेवलपर को इसकी जानकारी दें और ऐसा ऐप्लिकेशन उपलब्ध कराने के लिए कहें जिसे डीबग नहीं किया जा सकता. &lt;br&gt;&lt;br&gt; यह ऐप्लिकेशन, 16 केबी वाले पेज साइज़ के साथ काम नहीं करता है. APK के अलाइनमेंट की जांच नहीं की जा सकी. कृपया &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; पर दिए गए निर्देशों का पालन करें. &lt;br&gt;&lt;br&gt; ये लाइब्रेरी, 16 केबी वाले पेज साइज़ के साथ अलाइन नहीं हैं: &lt;br&gt;&lt;br&gt;"</string>
-    <string name="page_size_compat_elf_warning_4kb" msgid="5189541753040977649">"यह चेतावनी इसलिए दिख रही है, क्योंकि इस ऐप्लिकेशन को डीबग किया जा सकता है. फ़िलहाल, इसकी जांच की जा रही है. अगर आप डेवलपर नहीं हैं, तो कृपया डेवलपर को इसकी जानकारी दें और ऐसा ऐप्लिकेशन उपलब्ध कराने के लिए कहें जिसे डीबग नहीं किया जा सकता. &lt;br&gt;&lt;br&gt; यह ऐप्लिकेशन, 16 केबी वाले पेज साइज़ के साथ काम नहीं करता है. ELF के अलाइनमेंट की जांच नहीं की जा सकी. कृपया &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; पर दिए गए निर्देशों का पालन करें. &lt;br&gt;&lt;br&gt; ये लाइब्रेरी, 16 केबी वाले पेज साइज़ के साथ अलाइन नहीं हैं: &lt;br&gt;&lt;br&gt;"</string>
-    <string name="page_size_compat_apk_and_elf_warning_4kb" msgid="7665028394400479058">"यह चेतावनी इसलिए दिख रही है, क्योंकि इस ऐप्लिकेशन को डीबग किया जा सकता है. फ़िलहाल, इसकी जांच की जा रही है. अगर आप डेवलपर नहीं हैं, तो कृपया डेवलपर को इसकी जानकारी दें और ऐसा ऐप्लिकेशन उपलब्ध कराने के लिए कहें जिसे डीबग नहीं किया जा सकता. &lt;br&gt;&lt;br&gt; यह ऐप्लिकेशन, 16 केबी वाले पेज साइज़ के साथ काम नहीं करता है. APK और ELF के अलाइनमेंट की जांच नहीं की जा सकी. कृपया &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; पर दिए गए निर्देशों का पालन करें. &lt;br&gt;&lt;br&gt; ये लाइब्रेरी, 16 केबी वाले पेज साइज़ के साथ अलाइन नहीं हैं: &lt;br&gt;&lt;br&gt;"</string>
+    <!-- no translation found for page_size_compat_apk_warning (2297836366674721648) -->
+    <skip />
+    <!-- no translation found for page_size_compat_elf_warning (8613720928493005883) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_and_elf_warning (9034695801295605229) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_warning_4kb (5676451039424864495) -->
+    <skip />
+    <!-- no translation found for page_size_compat_elf_warning_4kb (5005239480522831311) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_and_elf_warning_4kb (997926487776340721) -->
+    <skip />
     <string name="page_size_compat_never_show" msgid="3391282612422783097">"फिर से न दिखाएं"</string>
     <string name="page_size_compat_title" msgid="6497719153872572204">"Android ऐप्लिकेशन के साथ काम करने की सुविधा"</string>
     <string name="page_size_compat_elf_not_aligned" msgid="7940806102874132630">"&amp;#8226; %1$s : लोड सेगमेंट अलाइन नहीं है"</string>
@@ -914,7 +920,7 @@
     <string name="policydesc_disableCamera" msgid="3204405908799676104">"सभी डिवाइस कैमरों का उपयोग रोकें."</string>
     <string name="policylab_disableKeyguardFeatures" msgid="5071855750149949741">"स्‍क्रीन लॉक की कुछ सुविधाएं बंद करना"</string>
     <string name="policydesc_disableKeyguardFeatures" msgid="6641673177041195957">"इससे कुछ स्‍क्रीन लॉक सुविधाओं का इस्तेमाल रोका जाता है."</string>
-    <!-- no translation found for exit_toast_on_long_press_escape (873907401529125943) -->
+    <!-- no translation found for exit_toast_on_long_press_escape (2983932499112557277) -->
     <skip />
   <string-array name="phoneTypes">
     <item msgid="8996339953292723951">"घर"</item>
@@ -1842,6 +1848,8 @@
     <string name="owner_name" msgid="8713560351570795743">"मालिक"</string>
     <string name="guest_name" msgid="8502103277839834324">"मेहमान"</string>
     <string name="headless_system_user_name" msgid="1849150903255530049">"सिस्टम यूज़र"</string>
+    <!-- no translation found for unnamed_user_name (6096699110534542980) -->
+    <skip />
     <string name="error_message_title" msgid="4082495589294631966">"गड़बड़ी"</string>
     <string name="error_message_change_not_allowed" msgid="843159705042381454">"आपका एडमिन इस बदलाव की अनुमति नहीं देता"</string>
     <string name="app_not_found" msgid="3429506115332341800">"इस कार्यवाही को प्रबंधित करने के लिए कोई ऐप्स  नहीं मिला"</string>
@@ -2513,7 +2521,7 @@
     <string name="screen_not_shared_sensitive_content" msgid="7058419185079565001">"स्क्रीन शेयर करने के दौरान सुरक्षा के लिए, ऐप्लिकेशन का कॉन्टेंट छिपाया गया"</string>
     <string name="satellite_notification_title" msgid="4026338973463121526">"सैटलाइट से अपने-आप कनेक्ट हो गया"</string>
     <string name="satellite_notification_summary" msgid="5207364139430767162">"मोबाइल या वाई-फ़ाई नेटवर्क के बिना भी मैसेज भेजे और पाए जा सकते हैं"</string>
-    <string name="satellite_notification_summary_with_data" msgid="6486843676720429049">"सैटलाइट के ज़रिए मैसेज भेजें और पाएं. साथ ही, सीमित डेटा का इस्तेमाल करें"</string>
+    <string name="satellite_notification_summary_with_data" msgid="8290202758586475712">"सैटलाइट के ज़रिए, मैसेज भेजे और रिसीव किए जा सकते हैं. साथ ही, चुनिंदा ऐप्लिकेशन इस्तेमाल किए जा सकते हैं"</string>
     <string name="satellite_notification_manual_title" msgid="1097504441849466279">"क्या आपको सैटलाइट की मदद से मैसेज भेजना है?"</string>
     <string name="satellite_notification_manual_summary" msgid="901206289846283445">"मोबाइल या वाई-फ़ाई नेटवर्क के बिना मैसेज भेजें और पाएं"</string>
     <string name="satellite_notification_open_message" msgid="4149234979688273729">"Messages ऐप्लिकेशन खोलें"</string>

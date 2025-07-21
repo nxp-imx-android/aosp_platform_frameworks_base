@@ -71,12 +71,18 @@
     <string name="CLIRDefaultOnNextCallOff" msgid="5036749051007098105">"預設不顯示來電號碼，但下一通電話則顯示。"</string>
     <string name="CLIRDefaultOffNextCallOn" msgid="1022781126694885017">"預設顯示來電號碼，但下一通電話不顯示。"</string>
     <string name="CLIRDefaultOffNextCallOff" msgid="2491576172356463443">"預設顯示來電號碼，下一通電話也繼續顯示。"</string>
-    <string name="page_size_compat_apk_warning" msgid="2982396798449041224">"此應用程式不兼容 16KB。未能通過 APK 一致性檢查。此應用程式將使用頁面大小兼容模式運行。為達至最佳的兼容性，請將應用程式重新編譯為支援 16KB。詳情請瀏覽 &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
-    <string name="page_size_compat_elf_warning" msgid="6753874059564812651">"此應用程式不兼容 16KB。未能通過電子商務記錄格式一致性檢查。此應用程式將使用頁面大小兼容模式運行。為達至最佳的兼容性，請將應用程式重新編譯為支援 16KB。詳情請瀏覽 &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
-    <string name="page_size_compat_apk_and_elf_warning" msgid="7628675779500605390">"此應用程式不兼容 16KB。未能通過 APK 和電子商務記錄格式一致性檢查。此應用程式將使用頁面大小兼容模式運行。為達至最佳的兼容性，請將應用程式重新編譯為支援 16KB。詳情請瀏覽 &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
-    <string name="page_size_compat_apk_warning_4kb" msgid="6013674159459424986">"由於目前測試的是可偵錯應用程式，因此系統發出此警示。如你不是相關的開發人員，請向相關的開發人員報告此情況，並要求使用非可偵錯應用程式。&lt;br&gt;&lt;br&gt;此應用程式不兼容 16KB，未能通過 APK 對齊檢查。請按照 &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; 的步驟操作&lt;br&gt;&lt;br&gt; 以下資料庫並不與 16KB 對齊：&lt;br&gt;&lt;br&gt;"</string>
-    <string name="page_size_compat_elf_warning_4kb" msgid="5189541753040977649">"由於目前測試的是可偵錯應用程式，因此系統發出此警示。如你不是相關的開發人員，請向相關的開發人員報告此情況，並要求使用非可偵錯應用程式。&lt;br&gt;&lt;br&gt;此應用程式不兼容 16KB，未能通過電子商務記錄格式對齊檢查。請按照 &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; 的步驟操作&lt;br&gt;&lt;br&gt; 以下資料庫並不與 16KB 對齊：&lt;br&gt;&lt;br&gt;"</string>
-    <string name="page_size_compat_apk_and_elf_warning_4kb" msgid="7665028394400479058">"由於目前測試的是可偵錯應用程式，因此系統發出此警示。如你不是相關的開發人員，請向相關的開發人員報告此情況，並要求使用非可偵錯應用程式。&lt;br&gt;&lt;br&gt;此應用程式不兼容 16KB，未能通過 APK 和電子商務記錄格式對齊檢查。請按照 &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; 的步驟操作。&lt;br&gt;&lt;br&gt; 以下資料庫並不與 16KB 對齊：&lt;br&gt;&lt;br&gt;"</string>
+    <!-- no translation found for page_size_compat_apk_warning (2297836366674721648) -->
+    <skip />
+    <!-- no translation found for page_size_compat_elf_warning (8613720928493005883) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_and_elf_warning (9034695801295605229) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_warning_4kb (5676451039424864495) -->
+    <skip />
+    <!-- no translation found for page_size_compat_elf_warning_4kb (5005239480522831311) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_and_elf_warning_4kb (997926487776340721) -->
+    <skip />
     <string name="page_size_compat_never_show" msgid="3391282612422783097">"不要再顯示"</string>
     <string name="page_size_compat_title" msgid="6497719153872572204">"Android 應用程式兼容性"</string>
     <string name="page_size_compat_elf_not_aligned" msgid="7940806102874132630">"&amp;#8226; %1$s：載入區段不一致"</string>
@@ -914,7 +920,7 @@
     <string name="policydesc_disableCamera" msgid="3204405908799676104">"禁止使用所有裝置相機。"</string>
     <string name="policylab_disableKeyguardFeatures" msgid="5071855750149949741">"停用螢幕鎖定功能"</string>
     <string name="policydesc_disableKeyguardFeatures" msgid="6641673177041195957">"禁止使用部分螢幕鎖定功能。"</string>
-    <!-- no translation found for exit_toast_on_long_press_escape (873907401529125943) -->
+    <!-- no translation found for exit_toast_on_long_press_escape (2983932499112557277) -->
     <skip />
   <string-array name="phoneTypes">
     <item msgid="8996339953292723951">"住宅"</item>
@@ -1842,6 +1848,8 @@
     <string name="owner_name" msgid="8713560351570795743">"擁有者"</string>
     <string name="guest_name" msgid="8502103277839834324">"訪客"</string>
     <string name="headless_system_user_name" msgid="1849150903255530049">"系統使用者"</string>
+    <!-- no translation found for unnamed_user_name (6096699110534542980) -->
+    <skip />
     <string name="error_message_title" msgid="4082495589294631966">"錯誤"</string>
     <string name="error_message_change_not_allowed" msgid="843159705042381454">"你的管理員不允許這項變更"</string>
     <string name="app_not_found" msgid="3429506115332341800">"找不到處理這項操作的應用程式"</string>
@@ -2513,7 +2521,8 @@
     <string name="screen_not_shared_sensitive_content" msgid="7058419185079565001">"為安全起見，應用程式內容已從分享螢幕畫面隱藏"</string>
     <string name="satellite_notification_title" msgid="4026338973463121526">"已自動連線至衛星"</string>
     <string name="satellite_notification_summary" msgid="5207364139430767162">"你可在沒有流動/Wi-Fi 網絡的情況下收發訊息"</string>
-    <string name="satellite_notification_summary_with_data" msgid="6486843676720429049">"你可透過衛星傳送和接收訊息，以及使用有限數據"</string>
+    <!-- no translation found for satellite_notification_summary_with_data (8290202758586475712) -->
+    <skip />
     <string name="satellite_notification_manual_title" msgid="1097504441849466279">"要使用衛星訊息嗎？"</string>
     <string name="satellite_notification_manual_summary" msgid="901206289846283445">"在沒有流動網絡或 Wi-Fi 網絡的情況下收發短訊"</string>
     <string name="satellite_notification_open_message" msgid="4149234979688273729">"開啟「訊息」"</string>

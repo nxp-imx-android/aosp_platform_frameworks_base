@@ -71,12 +71,18 @@
     <string name="CLIRDefaultOnNextCallOff" msgid="5036749051007098105">"Deitzailearen identitatea adierazteko zerbitzuaren balio lehenetsiak murriztapenak ezartzen ditu. Hurrengo deia: murriztapenik gabe."</string>
     <string name="CLIRDefaultOffNextCallOn" msgid="1022781126694885017">"Deitzailearen identitatea zerbitzuaren balio lehenetsiak ez du murriztapenik ezartzen. Hurrengo deia: murriztapenekin."</string>
     <string name="CLIRDefaultOffNextCallOff" msgid="2491576172356463443">"Deitzailearen identitatea zerbitzuaren balio lehenetsiak ez du murriztapenik ezartzen. Hurrengo deia: murriztapenik gabe."</string>
-    <string name="page_size_compat_apk_warning" msgid="2982396798449041224">"Aplikazio hau ez da bateragarria 16 KBko bertsioarekin. Ezin izan da egiaztatu APKren lerrokatzea. Orriaren tamainarekin bateragarria den modua erabilita exekutatuko da aplikazioa. Emaitza onenak lortzeko, konpilatu aplikazioa berriro 16 KBko bertsioarekin bateragarria izan dadin. Informazio gehiago lortzeko, joan hona: &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;."</string>
-    <string name="page_size_compat_elf_warning" msgid="6753874059564812651">"Aplikazio hau ez da bateragarria 16 KBko bertsioarekin. Ezin izan da egiaztatu ELFaren lerrokatzea. Orriaren tamainarekin bateragarria den modua erabilita exekutatuko da aplikazioa. Emaitza onenak lortzeko, konpilatu aplikazioa berriro 16 KBko bertsioarekin bateragarria izan dadin. Informazio gehiago lortzeko, joan hona: &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;."</string>
-    <string name="page_size_compat_apk_and_elf_warning" msgid="7628675779500605390">"Aplikazio hau ez da bateragarria 16 KB-ko bertsioarekin. Ezin izan da egiaztatu APK eta ELF arteko lerrokatzea. Orriaren tamainarekin bateragarria den modua erabilita exekutatuko da aplikazioa. Emaitza onenak lortzeko, konpilatu aplikazioa berriro 16 KB-ko bertsioarekin bateragarria izan dadin. Informazio gehiago lortzeko, joan hona: &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;."</string>
-    <string name="page_size_compat_apk_warning_4kb" msgid="6013674159459424986">"Probatzen ari garen aplikazioa araz daitekeelako agertzen da abisu hau. Garatzailea ez bazara, eman horren berri garatzaileari eta eska iezaiozu araztu ezin den aplikazio bat. &lt;br&gt;&lt;br&gt; Aplikazioak ez du onartzen 16 kB-ko orri-tamaina. Ezin izan da egiaztatu APKren lerrokatzea. Jarraitu honako urrats hauei: &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; &lt;br&gt;&lt;br&gt; Liburutegi hauek ez daude lerrokatuta 16 kB-ko orri tamainarekin: &lt;br&gt;&lt;br&gt;"</string>
-    <string name="page_size_compat_elf_warning_4kb" msgid="5189541753040977649">"Probatzen ari garen aplikazioa araz daitekeelako agertzen da abisu hau. Garatzailea ez bazara, eman horren berri garatzaileari eta eska iezaiozu araztu ezin den aplikazio bat. &lt;br&gt;&lt;br&gt; Aplikazioak ez du onartzen 16 kB-ko orri-tamaina. Ezin izan da egiaztatu ELFaren lerrokatzea. Jarraitu honako urrats hauei: &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; &lt;br&gt;&lt;br&gt; Liburutegi hauek ez daude lerrokatuta 16 kB-ko orri tamainarekin: &lt;br&gt;&lt;br&gt;"</string>
-    <string name="page_size_compat_apk_and_elf_warning_4kb" msgid="7665028394400479058">"Probatzen ari garen aplikazioa araz daitekeelako agertzen da abisu hau. Garatzailea ez bazara, eman horren berri garatzaileari eta eska iezaiozu araztu ezin den aplikazio bat. &lt;br&gt;&lt;br&gt; Aplikazioak ez du onartzen 16 kB-ko orri-tamaina. Ezin izan da egiaztatu APK eta ELF arteko lerrokatzea. Jarraitu honako urrats hauei: &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;. &lt;br&gt;&lt;br&gt; Liburutegi hauek ez daude lerrokatuta 16 kB-ko orri tamainarekin: &lt;br&gt;&lt;br&gt;"</string>
+    <!-- no translation found for page_size_compat_apk_warning (2297836366674721648) -->
+    <skip />
+    <!-- no translation found for page_size_compat_elf_warning (8613720928493005883) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_and_elf_warning (9034695801295605229) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_warning_4kb (5676451039424864495) -->
+    <skip />
+    <!-- no translation found for page_size_compat_elf_warning_4kb (5005239480522831311) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_and_elf_warning_4kb (997926487776340721) -->
+    <skip />
     <string name="page_size_compat_never_show" msgid="3391282612422783097">"Ez erakutsi berriro"</string>
     <string name="page_size_compat_title" msgid="6497719153872572204">"Android-erako aplikazioaren bateragarritasuna"</string>
     <string name="page_size_compat_elf_not_aligned" msgid="7940806102874132630">"&amp;#8226; %1$s : KARGA segmentua ez dago lerrokatuta"</string>
@@ -368,9 +374,9 @@
     <string name="permgrouplab_xr_eye_sensitive" msgid="1709596126334620353">"Begien jarraipenaren datuak"</string>
     <string name="permgroupdesc_xr_eye_sensitive" msgid="6050967250223079001">"begi-mugimenduen jarraipen zehatza egin"</string>
     <string name="permgrouplab_xr_tracking" msgid="766634536453394700">"Mugimenduen eta inguruaren datuak"</string>
-    <string name="permgroupdesc_xr_tracking" msgid="812429788288001595">"begien, aurpegiaren eta gorputzaren jarraipena egin eta ingurunea aztertu"</string>
+    <string name="permgroupdesc_xr_tracking" msgid="812429788288001595">"begien, aurpegiaren eta gorputzaren jarraipena egin eta ingurua aztertu"</string>
     <string name="permgrouplab_xr_tracking_sensitive" msgid="4346975608010051186">"Buru-mugimendu zehatzen eta inguruaren datuak"</string>
-    <string name="permgroupdesc_xr_tracking_sensitive" msgid="7925014193164562556">"buruaren jarraipen zehatza egin eta ingurunea aztertu"</string>
+    <string name="permgroupdesc_xr_tracking_sensitive" msgid="7925014193164562556">"buruaren jarraipen zehatza egin eta ingurua aztertu"</string>
     <string name="capability_title_canRetrieveWindowContent" msgid="7554282892101587296">"Leihoko edukia eskuratu."</string>
     <string name="capability_desc_canRetrieveWindowContent" msgid="6195610527625237661">"Arakatu irekita daukazun leihoko edukia."</string>
     <string name="capability_title_canRequestTouchExploration" msgid="327598364696316213">"\"Arakatu ukituta\" aktibatu."</string>
@@ -673,14 +679,14 @@
     <string name="permlab_eye_tracking_fine" msgid="6208991021186455002">"begi-mugimenduen jarraipen zehatza egin"</string>
     <string name="permdesc_eye_tracking_fine" msgid="9215360948852654836">"Zure begiradaren norabidearen jarraipena egiteko baimena ematen dio aplikazioari."</string>
     <string name="permlab_face_tracking" msgid="6052126246676474909">"aurpegi-mugimenduen jarraipena egin"</string>
-    <string name="permdesc_face_tracking" msgid="185815778490412574">"Aurpegiko mugimenduen eta keinuen jarraipena egiteko baimena ematen dio aplikazioari."</string>
+    <string name="permdesc_face_tracking" msgid="185815778490412574">"Aurpegi-mugimenduen eta -keinuen jarraipena egiteko baimena ematen dio aplikazioari."</string>
     <string name="permlab_hand_tracking" msgid="21944950887649088">"esku-mugimenduen jarraipena egin"</string>
     <string name="permdesc_hand_tracking" msgid="8083783248481460669">"Zure esku-mugimenduen jarraipena egiteko baimena ematen dio aplikazioari."</string>
     <string name="permlab_head_tracking" msgid="4304699038992159853">"buru-mugimenduen jarraipena egin"</string>
     <string name="permdesc_head_tracking" msgid="2232184518548944223">"Zure buru-mugimenduen jarraipena egiteko baimena ematen dio aplikazioari."</string>
-    <string name="permlab_scene_understanding_coarse" msgid="8765236119358852920">"inguruko eremua aztertu"</string>
+    <string name="permlab_scene_understanding_coarse" msgid="8765236119358852920">"ingurua aztertu"</string>
     <string name="permdesc_scene_understanding_coarse" msgid="847344305502345475">"Zure ingurunea aztertzeko baimena ematen dio aplikazioari."</string>
-    <string name="permlab_scene_understanding_fine" msgid="2899904960307462936">"inguruko eremua zehaztasunez aztertu"</string>
+    <string name="permlab_scene_understanding_fine" msgid="2899904960307462936">"ingurua zehaztasunez aztertu"</string>
     <string name="permdesc_scene_understanding_fine" msgid="4848943859506977588">"Zure ingurunea zehaztasunez aztertzeko baimena ematen dio aplikazioari."</string>
     <string name="permlab_xr_tracking_in_background" msgid="8659516810430027774">"atzeko planoan EHko datuen jarraipena egin"</string>
     <string name="permdesc_xr_tracking_in_background" msgid="3151744132692357005">"Atzeko planoan EHko datuak erabiltzeko baimena ematen dio aplikazioari."</string>
@@ -914,7 +920,7 @@
     <string name="policydesc_disableCamera" msgid="3204405908799676104">"Eragotzi gailuaren kamerak erabiltzea."</string>
     <string name="policylab_disableKeyguardFeatures" msgid="5071855750149949741">"Desgaitu pantailaren blokeoko eginbide batzuk"</string>
     <string name="policydesc_disableKeyguardFeatures" msgid="6641673177041195957">"Eragotzi pantailaren blokeoko eginbide batzuk erabiltzea."</string>
-    <!-- no translation found for exit_toast_on_long_press_escape (873907401529125943) -->
+    <!-- no translation found for exit_toast_on_long_press_escape (2983932499112557277) -->
     <skip />
   <string-array name="phoneTypes">
     <item msgid="8996339953292723951">"Etxekoa"</item>
@@ -1842,6 +1848,8 @@
     <string name="owner_name" msgid="8713560351570795743">"Jabea"</string>
     <string name="guest_name" msgid="8502103277839834324">"Gonbidatua"</string>
     <string name="headless_system_user_name" msgid="1849150903255530049">"Sistemaren erabiltzailea"</string>
+    <!-- no translation found for unnamed_user_name (6096699110534542980) -->
+    <skip />
     <string name="error_message_title" msgid="4082495589294631966">"Errorea"</string>
     <string name="error_message_change_not_allowed" msgid="843159705042381454">"Administratzaileak ez du eman aldaketa egiteko baimena"</string>
     <string name="app_not_found" msgid="3429506115332341800">"Ez da ekintza gauza dezakeen aplikaziorik aurkitu"</string>
@@ -2513,7 +2521,8 @@
     <string name="screen_not_shared_sensitive_content" msgid="7058419185079565001">"Aplikazioko edukia ezkutatu egin da pantaila partekatzeko eginbidetik, segurtasuna bermatzeko"</string>
     <string name="satellite_notification_title" msgid="4026338973463121526">"Automatikoki konektatu da satelitera"</string>
     <string name="satellite_notification_summary" msgid="5207364139430767162">"Mezuak bidal eta jaso ditzakezu sare mugikorrik edo wifi-sarerik gabe"</string>
-    <string name="satellite_notification_summary_with_data" msgid="6486843676720429049">"Satelite bidez mezuak bidali eta jasotzeko nahiz datuak muga batekin erabiltzeko aukera duzu"</string>
+    <!-- no translation found for satellite_notification_summary_with_data (8290202758586475712) -->
+    <skip />
     <string name="satellite_notification_manual_title" msgid="1097504441849466279">"Satelite bidezko mezularitza erabili nahi duzu?"</string>
     <string name="satellite_notification_manual_summary" msgid="901206289846283445">"Bidali eta jaso mezuak sare mugikorrik edo wifi-sarerik gabe"</string>
     <string name="satellite_notification_open_message" msgid="4149234979688273729">"Ireki Mezuak"</string>

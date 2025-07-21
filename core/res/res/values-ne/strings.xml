@@ -71,12 +71,18 @@
     <string name="CLIRDefaultOnNextCallOff" msgid="5036749051007098105">"कलर ID पूर्वनिर्धारितको लागि रोकावट छ। अर्को कल: रोकावट छैन"</string>
     <string name="CLIRDefaultOffNextCallOn" msgid="1022781126694885017">"कलर ID पूर्वनिर्धारितदेखि प्रतिबन्धित छैन। अर्को कल: प्रतिबन्धित छ"</string>
     <string name="CLIRDefaultOffNextCallOff" msgid="2491576172356463443">"कलर ID पूर्वनिर्धारितको लागि रोकावट छैन। अर्को कल: रोकावट छैन"</string>
-    <string name="page_size_compat_apk_warning" msgid="2982396798449041224">"यो एप १६ के.बि. को पेजसँग कम्प्याटिबल छैन। APK को एलाइनमेन्ट जाँच्न सकिएन। यो एप पेजको साइजसँग कम्प्याटिबल मोड प्रयोग गरेर चलाइने छ। उत्कृष्ट कम्प्याटिबिलिटीका लागि कृपया यो एप १६ के.बि. को पेज प्रयोग गर्न मिल्ने गरी रिकम्पलाइल गर्नुहोस्। यस सम्बन्धमा थप जानकारी प्राप्त गर्न &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; हेर्नुहोस्"</string>
-    <string name="page_size_compat_elf_warning" msgid="6753874059564812651">"यो एप १६ के.बि. को पेजसँग कम्प्याटिबल छैन। ELF को एलाइनमेन्ट जाँच्न सकिएन। यो एप पेजको साइजसँग कम्प्याटिबल मोड प्रयोग गरेर चलाइने छ। उत्कृष्ट कम्प्याटिबिलिटीका लागि कृपया यो एप १६ के.बि. को पेज प्रयोग गर्न मिल्ने गरी रिकम्पलाइल गर्नुहोस्। यस सम्बन्धमा थप जानकारी प्राप्त गर्न &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; हेर्नुहोस्"</string>
-    <string name="page_size_compat_apk_and_elf_warning" msgid="7628675779500605390">"यो एप १६ के.बि. को पेजसँग कम्प्याटिबल छैन। APK र ELF को एलाइनमेन्ट जाँच्न सकिएन। यो एप पेजको साइजसँग कम्प्याटिबल मोड प्रयोग गरेर चलाइने छ। उत्कृष्ट कम्प्याटिबिलिटीका लागि कृपया यो एप १६ के.बि. को पेज प्रयोग गर्न मिल्ने गरी रिकम्पलाइल गर्नुहोस्। यस सम्बन्धमा थप जानकारी प्राप्त गर्न &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; हेर्नुहोस्"</string>
-    <string name="page_size_compat_apk_warning_4kb" msgid="6013674159459424986">"यो एप हाल परीक्षणका क्रममा रहेको डिबग गर्न मिल्ने एप भएकाले यो चेतावनी देखाइएको हो। तपाईं विकासकर्ता होइन भने कृपया यसका बारेमा विकासकर्तालाई रिपोर्ट गर्नुहोस् र डिबग गर्न नमिल्ने एप उपलब्ध गराइदिन अनुरोध गर्नुहोस्। &lt;br&gt;&lt;br&gt; यो एप १६ के.बि. पेज साइजसँग कम्प्याटिबल छैन। APK को एलाइनमेन्ट जाँच्न सकिएन। कृपया &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; मा दिइएका चरणहरू पूरा गर्नुहोस् &lt;br&gt;&lt;br&gt; निम्न लाइब्रेरीहरू १६ के.बि. पेज साइजसँग कम्प्याटिबल छैनन्: &lt;br&gt;&lt;br&gt;"</string>
-    <string name="page_size_compat_elf_warning_4kb" msgid="5189541753040977649">"यो एप हाल परीक्षणका क्रममा रहेको डिबग गर्न मिल्ने एप भएकाले यो चेतावनी देखाइएको हो। तपाईं विकासकर्ता होइन भने कृपया यसका बारेमा विकासकर्तालाई रिपोर्ट गर्नुहोस् र डिबग गर्न नमिल्ने एप उपलब्ध गराइदिन अनुरोध गर्नुहोस्। &lt;br&gt;&lt;br&gt; यो एप १६ के.बि. पेज साइजसँग कम्प्याटिबल छैन। ELF को एलाइनमेन्ट जाँच्न सकिएन। कृपया &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; मा दिइएका चरणहरू पूरा गर्नुहोस् &lt;br&gt;&lt;br&gt; निम्न लाइब्रेरीहरू १६ के.बि. पेज साइजसँग कम्प्याटिबल छैनन्: &lt;br&gt;&lt;br&gt;"</string>
-    <string name="page_size_compat_apk_and_elf_warning_4kb" msgid="7665028394400479058">"यो एप हाल परीक्षणका क्रममा रहेको डिबग गर्न मिल्ने एप भएकाले यो चेतावनी देखाइएको हो। तपाईं विकासकर्ता होइन भने कृपया यसका बारेमा विकासकर्तालाई रिपोर्ट गर्नुहोस् र डिबग गर्न नमिल्ने एप उपलब्ध गराइदिन अनुरोध गर्नुहोस्। &lt;br&gt;&lt;br&gt; यो एप १६ के.बि. पेज साइजसँग कम्प्याटिबल छैन। APK र ELF को एलाइनमेन्ट जाँच्न सकिएन। कृपया &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; मा दिइएका चरणहरू पूरा गर्नुहोस्। &lt;br&gt;&lt;br&gt; निम्न लाइब्रेरीहरू १६ के.बि. पेज साइजसँग कम्प्याटिबल छैनन्: &lt;br&gt;&lt;br&gt;"</string>
+    <!-- no translation found for page_size_compat_apk_warning (2297836366674721648) -->
+    <skip />
+    <!-- no translation found for page_size_compat_elf_warning (8613720928493005883) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_and_elf_warning (9034695801295605229) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_warning_4kb (5676451039424864495) -->
+    <skip />
+    <!-- no translation found for page_size_compat_elf_warning_4kb (5005239480522831311) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_and_elf_warning_4kb (997926487776340721) -->
+    <skip />
     <string name="page_size_compat_never_show" msgid="3391282612422783097">"फेरि नदेखाउनुहोस्"</string>
     <string name="page_size_compat_title" msgid="6497719153872572204">"Android एपको कम्प्याटिबिलिटी"</string>
     <string name="page_size_compat_elf_not_aligned" msgid="7940806102874132630">"&amp;#8226; %1$s : लोड सेगमेन्टको एलाइनमेन्ट मिलेको छैन"</string>
@@ -914,7 +920,7 @@
     <string name="policydesc_disableCamera" msgid="3204405908799676104">"सबै उपकरण क्यामराहरूको प्रयोग रोक्नुहोस्"</string>
     <string name="policylab_disableKeyguardFeatures" msgid="5071855750149949741">"स्क्रिन लकका केही सुविधा असक्षम पार्ने"</string>
     <string name="policydesc_disableKeyguardFeatures" msgid="6641673177041195957">"स्क्रिन लकका केही सुविधाहरूको प्रयोगमा रोक लगाउन।"</string>
-    <!-- no translation found for exit_toast_on_long_press_escape (873907401529125943) -->
+    <!-- no translation found for exit_toast_on_long_press_escape (2983932499112557277) -->
     <skip />
   <string-array name="phoneTypes">
     <item msgid="8996339953292723951">"घर"</item>
@@ -1791,7 +1797,7 @@
     <string name="accessibility_shortcut_on" msgid="5463618449556111344">"सक्रिय गर्नुहोस्"</string>
     <string name="accessibility_shortcut_off" msgid="3651336255403648739">"सक्रिय नगर्नुहोस्"</string>
     <string name="accessibility_shortcut_menu_item_status_on" msgid="6608392117189732543">"अन छ"</string>
-    <string name="accessibility_shortcut_menu_item_status_off" msgid="5531598275559472393">"निष्क्रिय"</string>
+    <string name="accessibility_shortcut_menu_item_status_off" msgid="5531598275559472393">"अफ"</string>
     <string name="accessibility_enable_service_title" msgid="3931558336268541484">"<xliff:g id="SERVICE">%1$s</xliff:g> लाई तपाईंको डिभाइस पूर्ण रूपमा नियन्त्रण गर्न दिने हो?"</string>
     <string name="accessibility_service_warning_description" msgid="291674995220940133">"एक्सेसिबिलिटीसम्बन्धी आवश्यकतामा सहयोग गर्ने एपको पूर्ण नियन्त्रण गर्न दिनु उपयुक्त हुन्छ तर अधिकांश एपका हकमा यस्तो नियन्त्रण उपयुक्त हुँदैन।"</string>
     <string name="accessibility_service_screen_control_title" msgid="190017412626919776">"स्क्रिन हेर्नुहोस् र नियन्त्रण गर्नुहोस्"</string>
@@ -1842,6 +1848,8 @@
     <string name="owner_name" msgid="8713560351570795743">"मालिक"</string>
     <string name="guest_name" msgid="8502103277839834324">"अतिथि"</string>
     <string name="headless_system_user_name" msgid="1849150903255530049">"सिस्टम युजर"</string>
+    <!-- no translation found for unnamed_user_name (6096699110534542980) -->
+    <skip />
     <string name="error_message_title" msgid="4082495589294631966">"त्रुटि"</string>
     <string name="error_message_change_not_allowed" msgid="843159705042381454">"तपाईंका प्रशासकले यो परिवर्तनलाई अनुमति दिनुहुन्न"</string>
     <string name="app_not_found" msgid="3429506115332341800">"यस कार्य सम्हालने कुनै एप भेटिएन"</string>
@@ -2513,7 +2521,8 @@
     <string name="screen_not_shared_sensitive_content" msgid="7058419185079565001">"स्क्रिन सेयर गर्दा सुरक्षाका लागि एपमा भएको सामग्री लुकाइएको छ"</string>
     <string name="satellite_notification_title" msgid="4026338973463121526">"स्याटलाइटमा स्वतः कनेक्ट गरियो"</string>
     <string name="satellite_notification_summary" msgid="5207364139430767162">"तपाईं मोबाइल वा Wi-Fi नेटवर्कविनै म्यासेज पठाउन र प्राप्त गर्न सक्नुहुन्छ"</string>
-    <string name="satellite_notification_summary_with_data" msgid="6486843676720429049">"तपाईं स्याटलाइटमार्फत म्यासेजहरू पठाउन तथा प्राप्त गर्न र सीमित डेटा प्रयोग गर्न सक्नुहुन्छ"</string>
+    <!-- no translation found for satellite_notification_summary_with_data (8290202758586475712) -->
+    <skip />
     <string name="satellite_notification_manual_title" msgid="1097504441849466279">"स्याटलाइटमार्फत म्यासेज पठाउने सुविधा प्रयोग गर्ने हो?"</string>
     <string name="satellite_notification_manual_summary" msgid="901206289846283445">"मोबाइल वा Wi-Fi नेटवर्कविनै म्यासेजहरू पठाउनुहोस् र प्राप्त गर्नुहोस्"</string>
     <string name="satellite_notification_open_message" msgid="4149234979688273729">"Messages खोल्नुहोस्"</string>

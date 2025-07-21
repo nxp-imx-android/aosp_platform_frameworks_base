@@ -71,12 +71,18 @@
     <string name="CLIRDefaultOnNextCallOff" msgid="5036749051007098105">"அழைப்பாளர் ஐடி ஆனது வரையறுக்கப்பட்டது என்பதற்கு இயல்பாக அமைக்கப்பட்டது. அடுத்த அழைப்பு: வரையறுக்கப்படவில்லை"</string>
     <string name="CLIRDefaultOffNextCallOn" msgid="1022781126694885017">"அழைப்பாளர் ஐடி ஆனது வரையறுக்கப்படவில்லை என்பதற்கு இயல்பாக அமைக்கப்பட்டது. அடுத்த அழைப்பு: வரையறுக்கப்பட்டது"</string>
     <string name="CLIRDefaultOffNextCallOff" msgid="2491576172356463443">"அழைப்பாளர் ஐடி ஆனது வரையறுக்கப்படவில்லை என்பதற்கு இயல்பாக அமைக்கப்பட்டது. அடுத்த அழைப்பு: வரையறுக்கப்படவில்லை"</string>
-    <string name="page_size_compat_apk_warning" msgid="2982396798449041224">"இந்த ஆப்ஸ் 16 KB இணக்கத்தன்மை வாய்ந்தது அல்ல. APK சீரமைவைச் சரிபார்க்க முடியவில்லை. பக்க அளவுடனான இணக்கத்தன்மைப் பயன்முறையைப் பயன்படுத்தி இந்த ஆப்ஸ் இயக்கப்படும். சிறந்த இணக்கத்தன்மைக்கு, ஆப்ஸை 16 KB ஆதரவுடன் ரீ-கம்பைல் செய்யவும். கூடுதல் தகவல்களுக்கு, &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; எனும் பக்கத்தைப் பார்க்கவும்."</string>
-    <string name="page_size_compat_elf_warning" msgid="6753874059564812651">"இந்த ஆப்ஸ் 16 KB இணக்கத்தன்மை வாய்ந்தது அல்ல. ELF சீரமைவைச் சரிபார்க்க முடியவில்லை. பக்க அளவுடனான இணக்கத்தன்மைப் பயன்முறையைப் பயன்படுத்தி இந்த ஆப்ஸ் இயக்கப்படும். சிறந்த இணக்கத்தன்மைக்கு, ஆப்ஸை 16 KB ஆதரவுடன் ரீ-கம்பைல் செய்யவும். கூடுதல் தகவல்களுக்கு, &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; எனும் பக்கத்தைப் பார்க்கவும்."</string>
-    <string name="page_size_compat_apk_and_elf_warning" msgid="7628675779500605390">"இந்த ஆப்ஸ் 16 KB இணக்கத்தன்மை வாய்ந்தது அல்ல. APK மற்றும் ELF சீரமைவுகளைச் சரிபார்க்க முடியவில்லை. பக்க அளவுடனான இணக்கத்தன்மைப் பயன்முறையைப் பயன்படுத்தி இந்த ஆப்ஸ் இயக்கப்படும். சிறந்த இணக்கத்தன்மைக்கு, ஆப்ஸை 16 KB ஆதரவுடன் ரீ-கம்பைல் செய்யவும். கூடுதல் தகவல்களுக்கு, &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; எனும் பக்கத்தைப் பார்க்கவும்."</string>
-    <string name="page_size_compat_apk_warning_4kb" msgid="6013674159459424986">"இது தற்போது பரிசோதனையில் உள்ள பிழைதிருத்தக்கூடிய ஆப்ஸ் என்பதால் இந்த எச்சரிக்கை காட்டப்படுகிறது. நீங்கள் டெவெலப்பர் இல்லையென்றால் இதை டெவெலப்பரிடம் புகாரளித்து, பிழைதிருத்தம் செய்ய முடியாத ஆப்ஸைக் கேளுங்கள். &lt;br&gt;&lt;br&gt; இந்த ஆப்ஸ் 16 KB இணக்கத்தன்மை வாய்ந்தது அல்ல. APK சீரமைவைச் சரிபார்க்க முடியவில்லை. &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; பக்கத்தில் உள்ள வழிமுறைகளைப் பின்பற்றவும் &lt;br&gt;&lt;br&gt; பின்வரும் லைப்ரரிகள் 16 KBயில் சீரமைக்கப்படவில்லை: &lt;br&gt;&lt;br&gt;"</string>
-    <string name="page_size_compat_elf_warning_4kb" msgid="5189541753040977649">"இது தற்போது பரிசோதனையில் உள்ள பிழைதிருத்தக்கூடிய ஆப்ஸ் என்பதால் இந்த எச்சரிக்கை காட்டப்படுகிறது. நீங்கள் டெவெலப்பர் இல்லையென்றால் இதை டெவெலப்பரிடம் புகாரளித்து, பிழைதிருத்தம் செய்ய முடியாத ஆப்ஸைக் கேளுங்கள். &lt;br&gt;&lt;br&gt; இந்த ஆப்ஸ் 16 KB இணக்கத்தன்மை வாய்ந்தது அல்ல. ELF சீரமைவைச் சரிபார்க்க முடியவில்லை. &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; பக்கத்தில் உள்ள வழிமுறைகளைப் பின்பற்றவும் &lt;br&gt;&lt;br&gt; பின்வரும் லைப்ரரிகள் 16 KBயில் சீரமைக்கப்படவில்லை: &lt;br&gt;&lt;br&gt;"</string>
-    <string name="page_size_compat_apk_and_elf_warning_4kb" msgid="7665028394400479058">"இது தற்போது பரிசோதனையில் உள்ள பிழைதிருத்தக்கூடிய ஆப்ஸ் என்பதால் இந்த எச்சரிக்கை காட்டப்படுகிறது. நீங்கள் டெவெலப்பர் இல்லையென்றால் இதை டெவெலப்பரிடம் புகாரளித்து, பிழைதிருத்தம் செய்ய முடியாத ஆப்ஸைக் கேளுங்கள். &lt;br&gt;&lt;br&gt; இந்த ஆப்ஸ் 16 KB இணக்கத்தன்மை வாய்ந்தது அல்ல. APK மற்றும் ELF சீரமைவைச் சரிபார்க்க முடியவில்லை. &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; பக்கத்தில் உள்ள வழிமுறைகளைப் பின்பற்றவும். &lt;br&gt;&lt;br&gt; பின்வரும் லைப்ரரிகள் 16 KBயில் சீரமைக்கப்படவில்லை: &lt;br&gt;&lt;br&gt;"</string>
+    <!-- no translation found for page_size_compat_apk_warning (2297836366674721648) -->
+    <skip />
+    <!-- no translation found for page_size_compat_elf_warning (8613720928493005883) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_and_elf_warning (9034695801295605229) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_warning_4kb (5676451039424864495) -->
+    <skip />
+    <!-- no translation found for page_size_compat_elf_warning_4kb (5005239480522831311) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_and_elf_warning_4kb (997926487776340721) -->
+    <skip />
     <string name="page_size_compat_never_show" msgid="3391282612422783097">"மீண்டும் காட்டாதே"</string>
     <string name="page_size_compat_title" msgid="6497719153872572204">"Android ஆப்ஸ் இணக்கத்தன்மை"</string>
     <string name="page_size_compat_elf_not_aligned" msgid="7940806102874132630">"&amp;#8226; %1$s : ஏற்றுவதற்கான பகுதி சீரமைக்கப்படவில்லை"</string>
@@ -914,7 +920,7 @@
     <string name="policydesc_disableCamera" msgid="3204405908799676104">"எல்லா சாதன கேமராக்களைப் பயன்படுத்துவதையும் தடுக்கலாம்."</string>
     <string name="policylab_disableKeyguardFeatures" msgid="5071855750149949741">"திரைப் பூட்டின் சில அம்சங்களை முடக்குதல்"</string>
     <string name="policydesc_disableKeyguardFeatures" msgid="6641673177041195957">"திரைப் பூட்டின் சில அம்சங்களைப் பயன்படுத்துவதைத் தடுக்கும்."</string>
-    <!-- no translation found for exit_toast_on_long_press_escape (873907401529125943) -->
+    <!-- no translation found for exit_toast_on_long_press_escape (2983932499112557277) -->
     <skip />
   <string-array name="phoneTypes">
     <item msgid="8996339953292723951">"வீடு"</item>
@@ -1842,6 +1848,8 @@
     <string name="owner_name" msgid="8713560351570795743">"உரிமையாளர்"</string>
     <string name="guest_name" msgid="8502103277839834324">"கெஸ்ட்"</string>
     <string name="headless_system_user_name" msgid="1849150903255530049">"சிஸ்டம் பயனர்"</string>
+    <!-- no translation found for unnamed_user_name (6096699110534542980) -->
+    <skip />
     <string name="error_message_title" msgid="4082495589294631966">"பிழை"</string>
     <string name="error_message_change_not_allowed" msgid="843159705042381454">"உங்கள் நிர்வாகி இந்த மாற்றத்தை அனுமதிக்கவில்லை"</string>
     <string name="app_not_found" msgid="3429506115332341800">"இந்தச் செயலைச் செய்ய ஆப்ஸ் எதுவுமில்லை"</string>
@@ -2056,7 +2064,7 @@
     <string name="promotional_notification_channel_label" msgid="7414844730492860233">"சலுகைகள்"</string>
     <string name="social_notification_channel_label" msgid="106520267132019945">"சமூகம்"</string>
     <string name="news_notification_channel_label" msgid="4299937455247883311">"செய்திகள்"</string>
-    <string name="recs_notification_channel_label" msgid="4731685669194175453">"பரிந்துரைக்கப்படுவது"</string>
+    <string name="recs_notification_channel_label" msgid="4731685669194175453">"பரிந்துரைக்கப்படுபவை"</string>
     <string name="importance_from_user" msgid="2782756722448800447">"இந்த அறிவிப்புகளின் முக்கியத்துவத்தை அமைத்துள்ளீர்கள்."</string>
     <string name="importance_from_person" msgid="4235804979664465383">"ஈடுபட்டுள்ளவர்களின் காரணமாக, இது முக்கியமானது."</string>
     <string name="notification_history_title_placeholder" msgid="7748630986182249599">"பிரத்தியேக ஆப்ஸ் அறிவிப்பு"</string>
@@ -2513,7 +2521,8 @@
     <string name="screen_not_shared_sensitive_content" msgid="7058419185079565001">"பாதுகாப்பிற்காக, திரைப் பகிர்வில் இருந்து ஆப்ஸ் உள்ளடக்கம் மறைக்கப்பட்டுள்ளது"</string>
     <string name="satellite_notification_title" msgid="4026338973463121526">"சாட்டிலைட்டுடன் தானாக இணைக்கப்பட்டது"</string>
     <string name="satellite_notification_summary" msgid="5207364139430767162">"மொபைல்/வைஃபை நெட்வொர்க் இல்லாமல் நீங்கள் மெசேஜ்களை அனுப்பலாம் பெறலாம்"</string>
-    <string name="satellite_notification_summary_with_data" msgid="6486843676720429049">"சாட்டிலைட் மூலம் நீங்கள் மெசேஜ் அனுப்பலாம் பெறலாம், குறிப்பிட்ட அளவு டேட்டாவைப் பயன்படுத்தலாம்"</string>
+    <!-- no translation found for satellite_notification_summary_with_data (8290202758586475712) -->
+    <skip />
     <string name="satellite_notification_manual_title" msgid="1097504441849466279">"சாட்டிலைட் மெசேஜிங்கைப் பயன்படுத்தவா?"</string>
     <string name="satellite_notification_manual_summary" msgid="901206289846283445">"மொபைல்/வைஃபை நெட்வொர்க் இல்லாமல் மெசேஜ்களை அனுப்பலாம், பெறலாம்"</string>
     <string name="satellite_notification_open_message" msgid="4149234979688273729">"Messages ஆப்ஸைத் திறக்கவும்"</string>
