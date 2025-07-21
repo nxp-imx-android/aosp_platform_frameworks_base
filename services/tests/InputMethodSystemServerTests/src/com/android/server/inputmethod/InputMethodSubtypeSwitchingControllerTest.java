@@ -54,37 +54,6 @@ public final class InputMethodSubtypeSwitchingControllerTest {
     private static final int TEST_IS_DEFAULT_RES_ID = 0;
     private static final String SYSTEM_LOCALE = "en_US";
 
-    @Test
-    public void testImeSubtypeListItem() {
-        final var items = new ArrayList<ImeSubtypeListItem>();
-        createTestItems(items, "LatinIme",
-                List.of("en_US", "fr", "en", "en_uk", "enn", "e", "EN_US"),
-                true /* suitableForHardware */);
-        final ImeSubtypeListItem item_en_us = items.get(0);
-        final ImeSubtypeListItem item_fr = items.get(1);
-        final ImeSubtypeListItem item_en = items.get(2);
-        final ImeSubtypeListItem item_en_uk = items.get(3);
-        final ImeSubtypeListItem item_enn = items.get(4);
-        final ImeSubtypeListItem item_e = items.get(5);
-        final ImeSubtypeListItem item_en_us_allcaps = items.get(6);
-
-        assertTrue(item_en_us.mIsSystemLocale);
-        assertFalse(item_fr.mIsSystemLocale);
-        assertFalse(item_en.mIsSystemLocale);
-        assertFalse(item_en_uk.mIsSystemLocale);
-        assertFalse(item_enn.mIsSystemLocale);
-        assertFalse(item_e.mIsSystemLocale);
-        assertFalse(item_en_us_allcaps.mIsSystemLocale);
-
-        assertTrue(item_en_us.mIsSystemLanguage);
-        assertFalse(item_fr.mIsSystemLanguage);
-        assertTrue(item_en.mIsSystemLanguage);
-        assertTrue(item_en_uk.mIsSystemLanguage);
-        assertFalse(item_enn.mIsSystemLanguage);
-        assertFalse(item_e.mIsSystemLanguage);
-        assertFalse(item_en_us_allcaps.mIsSystemLanguage);
-    }
-
     /** Verifies the static mode. */
     @Test
     public void testModeStatic() {
@@ -552,31 +521,6 @@ public final class InputMethodSubtypeSwitchingControllerTest {
         assertEquals("Equivalent items should have the same order.", 0, item.compareTo(equivalent));
     }
 
-    /**
-     * Verifies that the system locale and system language do not the influence comparison order.
-     */
-    @Test
-    public void testCompareSystemLocaleSystemLanguage() {
-        final var component = new ComponentName("com.example.ime", "Ime");
-        final var japanese = createTestItem(component, "Ime", "A", "ja_JP", 0);
-        final var systemLanguage = createTestItem(component, "Ime", "A", "en_GB", 0);
-        final var systemLocale = createTestItem(component, "Ime", "A", "en_US", 0);
-
-        assertFalse(japanese.mIsSystemLanguage);
-        assertFalse(japanese.mIsSystemLocale);
-        assertTrue(systemLanguage.mIsSystemLanguage);
-        assertFalse(systemLanguage.mIsSystemLocale);
-        assertTrue(systemLocale.mIsSystemLanguage);
-        assertTrue(systemLocale.mIsSystemLocale);
-
-        assertEquals("System language shouldn't influence comparison over non-system language.",
-                0, japanese.compareTo(systemLanguage));
-        assertEquals("System locale shouldn't influence comparison over non-system locale.",
-                0, japanese.compareTo(systemLocale));
-        assertEquals("System locale shouldn't influence comparison over system language.",
-                0, systemLanguage.compareTo(systemLocale));
-    }
-
     /** Verifies that the subtype name does not influence the comparison order. */
     @Test
     public void testCompareSubtypeName() {
@@ -672,12 +616,12 @@ public final class InputMethodSubtypeSwitchingControllerTest {
                 final String subtypeLocale = subtypeLocales.get(i);
                 items.add(new ImeSubtypeListItem(imeName, subtypeLocale, null /* layoutName */,
                         imi, i, true /* showInImeSwitcherMenu */, false /* isAuxiliary */,
-                        suitableForHardware, subtypeLocale, SYSTEM_LOCALE));
+                        suitableForHardware));
             }
         } else {
             items.add(new ImeSubtypeListItem(imeName, null /* subtypeName */, null /* layoutName */,
                     imi, NOT_A_SUBTYPE_INDEX, false /* showInImeSwitcherMenu */,
-                    false /* isAuxiliary */, suitableForHardware, null, SYSTEM_LOCALE));
+                    false /* isAuxiliary */, suitableForHardware));
         }
     }
 
@@ -701,7 +645,7 @@ public final class InputMethodSubtypeSwitchingControllerTest {
                 true /* supportsSwitchingToNextInputMethod */);
         return new ImeSubtypeListItem(imeName, subtypeName, null /* layoutName */,
                 imi, subtypeIndex, true /* showInImeSwitcherMenu */, false /* isAuxiliary */,
-                true /* suitableForHardware */, subtypeLocale, SYSTEM_LOCALE);
+                true /* suitableForHardware */);
     }
 
     /**

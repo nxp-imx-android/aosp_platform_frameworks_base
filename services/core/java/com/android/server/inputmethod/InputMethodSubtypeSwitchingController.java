@@ -118,14 +118,9 @@ final class InputMethodSubtypeSwitchingController {
          */
         final boolean mSuitableForHardware;
 
-        final boolean mIsSystemLocale;
-
-        final boolean mIsSystemLanguage;
-
         ImeSubtypeListItem(@NonNull CharSequence imeName, @Nullable CharSequence subtypeName,
                 @Nullable CharSequence layoutName, @NonNull InputMethodInfo imi, int subtypeIndex,
-                boolean showInImeSwitcherMenu, boolean isAuxiliary, boolean suitableForHardware,
-                @Nullable String subtypeLocale, @NonNull String systemLocale) {
+                boolean showInImeSwitcherMenu, boolean isAuxiliary, boolean suitableForHardware) {
             mImeName = imeName;
             mSubtypeName = subtypeName;
             mLayoutName = layoutName;
@@ -134,22 +129,6 @@ final class InputMethodSubtypeSwitchingController {
             mShowInImeSwitcherMenu = showInImeSwitcherMenu;
             mIsAuxiliary = isAuxiliary;
             mSuitableForHardware = suitableForHardware;
-            if (TextUtils.isEmpty(subtypeLocale)) {
-                mIsSystemLocale = false;
-                mIsSystemLanguage = false;
-            } else {
-                mIsSystemLocale = subtypeLocale.equals(systemLocale);
-                if (mIsSystemLocale) {
-                    mIsSystemLanguage = true;
-                } else {
-                    final String systemLanguage = LocaleUtils.getLanguageFromLocaleString(
-                            systemLocale);
-                    final String subtypeLanguage = LocaleUtils.getLanguageFromLocaleString(
-                            subtypeLocale);
-                    mIsSystemLanguage = systemLanguage.length() >= 2
-                            && systemLanguage.equals(subtypeLanguage);
-                }
-            }
         }
 
         /**
@@ -190,8 +169,6 @@ final class InputMethodSubtypeSwitchingController {
                     + " mShowInImeSwitcherMenu=" + mShowInImeSwitcherMenu
                     + " mIsAuxiliary=" + mIsAuxiliary
                     + " mSuitableForHardware=" + mSuitableForHardware
-                    + " mIsSystemLocale=" + mIsSystemLocale
-                    + " mIsSystemLanguage=" + mIsSystemLanguage
                     + "}";
         }
 
@@ -279,7 +256,6 @@ final class InputMethodSubtypeSwitchingController {
         final int userId = settings.getUserId();
         final Context userAwareContext = context.getUserId() == userId
                 ? context : context.createContextAsUser(UserHandle.of(userId), 0 /* flags */);
-        final String mSystemLocaleStr = SystemLocaleWrapper.get(userId).get(0).toLanguageTag();
 
         final var res = new ArrayList<ImeSubtypeListItem>();
         final var imis = settings.getEnabledInputMethodList();
@@ -296,8 +272,7 @@ final class InputMethodSubtypeSwitchingController {
             if (subtypes.isEmpty()) {
                 res.add(new ImeSubtypeListItem(imeLabel, null /* subtypeName */,
                         null /* layoutName */, imi, NOT_A_SUBTYPE_INDEX, showInImeSwitcherMenu,
-                        false /* isAuxiliary */, true /* suitableForHardware */, null,
-                        mSystemLocaleStr));
+                        false /* isAuxiliary */, true /* suitableForHardware */));
             } else {
                 final var hashCodes = new ArraySet<Integer>();
                 for (int j = 0; j < subtypes.size(); j++) {
@@ -321,8 +296,7 @@ final class InputMethodSubtypeSwitchingController {
                             : subtype.getLayoutDisplayName(userAwareContext, appInfo);
                     res.add(new ImeSubtypeListItem(imeLabel, subtypeLabel, layoutName,
                             imi, j, showInImeSwitcherMenu, subtype.isAuxiliary(),
-                            subtype.isSuitableForPhysicalKeyboardLayoutMapping(),
-                            subtype.getLocale(), mSystemLocaleStr));
+                            subtype.isSuitableForPhysicalKeyboardLayoutMapping()));
                 }
             }
         }
