@@ -15,13 +15,12 @@
  */
 package com.android.server.companion.datatransfer.continuity.tasks;
 
-import android.companion.AssociationInfo;
+import android.annotation.NonNull;
 import android.companion.datatransfer.continuity.IRemoteTaskListener;
 import android.os.RemoteCallbackList;
 import android.os.RemoteException;
 import android.util.Slog;
 
-import com.android.server.companion.datatransfer.continuity.connectivity.ConnectedAssociationStore;
 import com.android.server.companion.datatransfer.continuity.messages.RemoteTaskInfo;
 
 import android.companion.datatransfer.continuity.RemoteTask;
@@ -30,21 +29,15 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
-public class RemoteTaskStore implements ConnectedAssociationStore.Observer {
+public class RemoteTaskStore {
 
     private static final String TAG = "RemoteTaskStore";
 
-    private final ConnectedAssociationStore mConnectedAssociationStore;
-    private final Map<Integer, RemoteDeviceTaskList> mRemoteDeviceTaskLists
-        = new HashMap<>();
-    private final RemoteCallbackList<IRemoteTaskListener>
-        mRemoteTaskListeners = new RemoteCallbackList<>();
-
-    public RemoteTaskStore(ConnectedAssociationStore connectedAssociationStore) {
-        mConnectedAssociationStore = connectedAssociationStore;
-        mConnectedAssociationStore.addObserver(this);
-    }
+    private final Map<Integer, RemoteDeviceTaskList> mRemoteDeviceTaskLists = new HashMap<>();
+    private final RemoteCallbackList<IRemoteTaskListener> mRemoteTaskListeners
+        = new RemoteCallbackList<>();
 
     /**
      * Sets the task list of the given association id to the given tasks.
@@ -53,9 +46,9 @@ public class RemoteTaskStore implements ConnectedAssociationStore.Observer {
      * @param tasks The list of tasks currently available on the device on first
      * connection.
      */
-    public void setTasks(
-        int associationId,
-        List<RemoteTaskInfo> tasks) {
+    public void setTasks(int associationId, @NonNull List<RemoteTaskInfo> tasks) {
+        Objects.requireNonNull(tasks);
+
         synchronized (mRemoteDeviceTaskLists) {
             if (!mRemoteDeviceTaskLists.containsKey(associationId)) {
                 Slog.e(
@@ -70,7 +63,9 @@ public class RemoteTaskStore implements ConnectedAssociationStore.Observer {
         }
     }
 
-      public void addTask(int associationId, RemoteTaskInfo taskInfo) {
+    public void addTask(int associationId, @NonNull RemoteTaskInfo taskInfo) {
+        Objects.requireNonNull(taskInfo);
+
         synchronized (mRemoteDeviceTaskLists) {
             if (!mRemoteDeviceTaskLists.containsKey(associationId)) {
                 Slog.e(
@@ -95,7 +90,9 @@ public class RemoteTaskStore implements ConnectedAssociationStore.Observer {
         }
     }
 
-    public void updateTask(int associationId, RemoteTaskInfo taskInfo) {
+    public void updateTask(int associationId, @NonNull RemoteTaskInfo taskInfo) {
+        Objects.requireNonNull(taskInfo);
+
         synchronized (mRemoteDeviceTaskLists) {
             if (!mRemoteDeviceTaskLists.containsKey(associationId)) {
                 return;
@@ -111,6 +108,7 @@ public class RemoteTaskStore implements ConnectedAssociationStore.Observer {
      * @return A list of the most recent tasks from all devices in the task
      * store.
      */
+    @NonNull
     public List<RemoteTask> getMostRecentTasks() {
         synchronized (mRemoteDeviceTaskLists) {
             List<RemoteTask> mostRecentTasks = new ArrayList<>();
@@ -124,50 +122,53 @@ public class RemoteTaskStore implements ConnectedAssociationStore.Observer {
         }
     }
 
-    public void addListener(IRemoteTaskListener listener) {
+    public void addListener(@NonNull IRemoteTaskListener listener) {
+        Objects.requireNonNull(listener);
+
         synchronized (mRemoteTaskListeners) {
             mRemoteTaskListeners.register(listener);
         }
     }
 
-    public void removeListener(IRemoteTaskListener listener) {
+    public void removeListener(@NonNull IRemoteTaskListener listener) {
+        Objects.requireNonNull(listener);
+
         synchronized (mRemoteTaskListeners) {
             mRemoteTaskListeners.unregister(listener);
         }
     }
 
-    @Override
-    public void onTransportConnected(AssociationInfo associationInfo) {
+    public void addDevice(int id, @NonNull String name) {
+        Objects.requireNonNull(name);
+
         synchronized (mRemoteDeviceTaskLists) {
-            if (!mRemoteDeviceTaskLists.containsKey(associationInfo.getId())) {
+            if (!mRemoteDeviceTaskLists.containsKey(id)) {
                 Slog.v(
                     TAG,
-                    "Creating new RemoteDeviceTaskList for association: "
-                        + associationInfo.getId());
+                    "Creating new RemoteDeviceTaskList for association: " + id);
 
                 RemoteDeviceTaskList taskList
                     = new RemoteDeviceTaskList(
-                        associationInfo.getId(),
-                        associationInfo.getDisplayName().toString(),
+                        id,
+                        name,
                         this::onMostRecentTaskChanged);
 
-                mRemoteDeviceTaskLists.put(associationInfo.getId(), taskList);
+                mRemoteDeviceTaskLists.put(id, taskList);
             } else {
                 Slog.v(
                     TAG,
-                    "Transport already connected for association: " + associationInfo.getId());
+                    "Transport already connected for association: " + id);
             }
         }
     }
 
-    @Override
-    public void onTransportDisconnected(int associationId) {
+    public void removeDevice(int id) {
         synchronized (mRemoteDeviceTaskLists) {
             Slog.v(
                 TAG,
-                "Deleting RemoteDeviceTaskList for association: " + associationId);
+                "Deleting RemoteDeviceTaskList for association: " + id);
 
-            mRemoteDeviceTaskLists.remove(associationId);
+            mRemoteDeviceTaskLists.remove(id);
             notifyListeners();
         }
     }
@@ -179,18 +180,14 @@ public class RemoteTaskStore implements ConnectedAssociationStore.Observer {
     private void notifyListeners() {
        synchronized (mRemoteTaskListeners) {
             List<RemoteTask> remoteTasks = getMostRecentTasks();
-            int i = mRemoteTaskListeners.beginBroadcast();
-            while (i > 0) {
-                i--;
-                try {
-                    mRemoteTaskListeners
-                        .getBroadcastItem(i)
-                        .onRemoteTasksChanged(remoteTasks);
-                } catch (RemoteException e) {
-                    Slog.e(TAG, "Failed to notify listener: " + e.getMessage());
-                }
-            }
-            mRemoteTaskListeners.finishBroadcast();
+            mRemoteTaskListeners.broadcast(
+                (listener) -> {
+                    try {
+                        listener.onRemoteTasksChanged(remoteTasks);
+                    } catch (RemoteException e) {
+                        Slog.e(TAG, "Failed to notify listener: " + e.getMessage());
+                    }
+            });
         }
     }
 }

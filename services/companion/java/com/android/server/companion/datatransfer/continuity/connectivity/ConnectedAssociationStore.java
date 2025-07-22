@@ -19,9 +19,10 @@ package com.android.server.companion.datatransfer.continuity.connectivity;
 import android.annotation.NonNull;
 import android.companion.AssociationInfo;
 import android.companion.CompanionDeviceManager;
-import android.util.Log;
+import android.util.Slog;
 
-import java.util.ArrayList;
+import com.android.internal.annotations.VisibleForTesting;
+
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -29,36 +30,67 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Executor;
+import java.util.function.Consumer;
+import java.util.Objects;
+import javax.annotation.concurrent.GuardedBy;
 
-public class ConnectedAssociationStore {
+class ConnectedAssociationStore {
 
     private static final String TAG = "ConnectedAssociationStore";
 
     private final CompanionDeviceManager mCompanionDeviceManager;
+    private final Listener mListener;
+    private final Executor mExecutor;
     private final Map<Integer, AssociationInfo> mConnectedAssociations = new HashMap<>();
-    private final List<Observer> mObservers = new ArrayList<>();
 
-    public interface Observer {
-        void onTransportConnected(AssociationInfo associationInfo);
-        void onTransportDisconnected(int associationId);
+    @GuardedBy("this")
+    private Consumer<List<AssociationInfo>> mAssociationInfoConsumer;
+
+    interface Listener {
+        void onTransportConnected(@NonNull AssociationInfo associationInfo);
+        void onTransportDisconnected(
+            int associationId,
+            @NonNull Collection<AssociationInfo> connectedAssociations);
     }
 
-    public ConnectedAssociationStore(
+    ConnectedAssociationStore(
         @NonNull CompanionDeviceManager companionDeviceManager,
-        @NonNull Executor executor) {
+        @NonNull Executor executor,
+        @NonNull Listener listener) {
+
+        Objects.requireNonNull(companionDeviceManager);
+        Objects.requireNonNull(executor);
+        Objects.requireNonNull(listener);
 
         mCompanionDeviceManager = companionDeviceManager;
-        mCompanionDeviceManager.addOnTransportsChangedListener(
-                executor,
-                this::onTransportsChanged);
+        mListener = listener;
+        mExecutor = executor;
    }
 
-    public void addObserver(@NonNull Observer observer) {
-        mObservers.add(observer);
+    public void enable() {
+        synchronized (this) {
+            if (mAssociationInfoConsumer != null) {
+                Slog.i(TAG, "ConnectedAssociationStore is already enabled.");
+                return;
+            }
+            mAssociationInfoConsumer = this::onTransportsChanged;
+            mCompanionDeviceManager.addOnTransportsChangedListener(
+                mExecutor,
+                mAssociationInfoConsumer);
+            Slog.i(TAG, "Enabled ConnectedAssociationStore.");
+        }
     }
 
-    public void removeObserver(@NonNull Observer observer) {
-        mObservers.remove(observer);
+    public void disable() {
+        synchronized (this) {
+            if (mAssociationInfoConsumer == null) {
+                Slog.i(TAG, "ConnectedAssociationStore is already disabled.");
+                return;
+            }
+            mCompanionDeviceManager.removeOnTransportsChangedListener(mAssociationInfoConsumer);
+            mAssociationInfoConsumer = null;
+            Slog.i(TAG, "Disabled ConnectedAssociationStore.");
+        }
     }
 
     public Collection<AssociationInfo> getConnectedAssociations() {
@@ -69,7 +101,8 @@ public class ConnectedAssociationStore {
         return mConnectedAssociations.get(associationId);
     }
 
-    private void onTransportsChanged(List<AssociationInfo> associationInfos) {
+    @VisibleForTesting
+    void onTransportsChanged(List<AssociationInfo> associationInfos) {
         Set<Integer> removedAssociations
             = new HashSet<>(mConnectedAssociations.keySet());
 
@@ -85,27 +118,21 @@ public class ConnectedAssociationStore {
         }
 
         for (Integer associationId : removedAssociations) {
-            Log.i(
+            Slog.i(
                 TAG,
                 "Transport disconnected for association: " + associationId);
 
             mConnectedAssociations.remove(associationId);
-
-            for (Observer observer : mObservers) {
-                observer.onTransportDisconnected(associationId);
-            }
+            mListener.onTransportDisconnected(associationId, associationInfos);
         }
 
         for (AssociationInfo associationInfo : addedAssociations) {
-            Log.i(
+            Slog.i(
                 TAG,
                 "Transport connected for association: " + associationInfo.getId());
 
             mConnectedAssociations.put(associationInfo.getId(), associationInfo);
-
-            for (Observer observer : mObservers) {
-                observer.onTransportConnected(associationInfo);
-            }
+            mListener.onTransportConnected(associationInfo);
         }
     }
 }
