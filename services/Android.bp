@@ -108,6 +108,10 @@ filegroup {
         "java/**/*.java",
         "java/**/package.html",
     ],
+    exclude_srcs: [
+        "java/com/android/server/binder_observer/enabled/BinderObserverConfig.java",
+        "java/com/android/server/binder_observer/disabled/BinderObserverConfig.java",
+    ],
     path: "java",
     visibility: ["//visibility:private"],
 }
@@ -307,6 +311,17 @@ vintf_fragment {
 
 // merge all required services into one intermediate jar
 // ============================================================
+
+java_library {
+    name: "binder_observer_config_enabled",
+    srcs: ["java/com/android/server/binder_observer/enabled/BinderObserverConfig.java"],
+}
+
+java_library {
+    name: "binder_observer_config_disabled",
+    srcs: ["java/com/android/server/binder_observer/disabled/BinderObserverConfig.java"],
+}
+
 java_library {
     name: "services.impl",
     defaults: [
@@ -371,6 +386,9 @@ java_library {
     }) + select(release_flag("RELEASE_ANOMALY_DETECTOR"), {
         true: ["services.signal-collectors"],
         default: [],
+    }) + select(release_flag("RELEASE_LIBBINDER_BINDER_OBSERVER"), {
+        true: ["binder_observer_config_enabled"],
+        default: ["binder_observer_config_disabled"],
     }),
 
     libs: [

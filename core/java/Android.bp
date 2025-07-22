@@ -735,6 +735,16 @@ aidl_interface {
     },
 }
 
+filegroup {
+    name: "android-os-binderstatsconsumer-aidl",
+    srcs: [
+        "android/os/binder/IBinderStatsConsumerService.aidl",
+        "android/os/binder/BinderCallsStats.aidl",
+        "android/os/binder/BinderSpamStats.aidl",
+    ],
+    visibility: ["//frameworks/native/libs/binder"],
+}
+
 // utility classes statically linked into wifi-service
 filegroup {
     name: "framework-wifi-service-shared-srcs",
