@@ -21,6 +21,7 @@ import android.app.admin.PolicyValue;
 
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Objects;
 
 abstract class ResolutionMechanism<V> {
 
@@ -41,4 +42,8 @@ abstract class ResolutionMechanism<V> {
     }
 
     abstract android.app.admin.ResolutionMechanism<V> getParcelableResolutionMechanism();
+
+    public boolean isPolicyApplied(PolicyValue<V> value, PolicyValue<V> currentResolvedPolicy) {
+        return Objects.equals(value.getValue(), currentResolvedPolicy.getValue());
+    }
 }

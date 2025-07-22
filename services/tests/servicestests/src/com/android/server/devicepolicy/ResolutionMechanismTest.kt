@@ -25,11 +25,18 @@ import android.os.UserHandle
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.common.truth.Truth.assertThat
 import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
 class ResolutionMechanismTest {
+    private class ResolutionMechanismTestImpl : ResolutionMechanism<Int>() {
+        override fun resolve(adminPolicies: java.util.LinkedHashMap<EnforcingAdmin?,
+                PolicyValue<Int?>?>?): ResolvedPolicy<Int?>? = null
+        override fun getParcelableResolutionMechanism(): android.app.admin
+            .ResolutionMechanism<Int?>? = null
+    }
 
     @Test
     fun resolve_flagUnion() {
@@ -143,6 +150,24 @@ class ResolutionMechanismTest {
         assert(resolvedPolicy != null)
         assert(resolvedPolicy?.resolvedPolicyValue == INT_POLICY_B)
         assertThat(resolvedPolicy?.contributingAdmins).containsExactly(DEVICE_OWNER_ADMIN)
+    }
+
+    @Test
+    fun isPolicyApplied_defaultImplementation_sameValues_returnsTrue() {
+        val resolutionMechanism = ResolutionMechanismTestImpl()
+
+        assertTrue {
+            resolutionMechanism.isPolicyApplied(INT_POLICY_A, INT_POLICY_A)
+        }
+    }
+
+    @Test
+    fun isPolicyApplied_defaultImplementation_differentValues_returnsFalse() {
+        val resolutionMechanism = ResolutionMechanismTestImpl()
+
+        assertFalse {
+            resolutionMechanism.isPolicyApplied(INT_POLICY_A, INT_POLICY_AB)
+        }
     }
 
     companion object {
