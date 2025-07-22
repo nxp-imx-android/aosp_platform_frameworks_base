@@ -270,7 +270,7 @@ public class MockingOomAdjusterTests {
                 anyInt());
         doNothing().when(pr).enqueueProcessChangeItemLocked(anyInt(), anyInt(), anyInt(),
                 anyBoolean());
-        mActiveUids = new ActiveUids(mService, false);
+        mActiveUids = new ActiveUids(null);
         mTestCachedAppOptimizer = new TestCachedAppOptimizer(mService);
         mActivityStateHandlerThread = new HandlerThread("ActivityStateThread");
         mActivityStateHandlerThread.start();
