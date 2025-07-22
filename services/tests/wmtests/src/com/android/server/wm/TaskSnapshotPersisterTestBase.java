@@ -187,6 +187,7 @@ class TaskSnapshotPersisterTestBase extends WindowTestsBase {
         private int mWidth = SNAPSHOT_WIDTH;
         private int mHeight = SNAPSHOT_HEIGHT;
         private int mDensityDpi = 300;
+        private long mCaptureTime = 0;
         private ComponentName mTopActivityComponent = new ComponentName("", "");
 
         TaskSnapshotBuilder() {
@@ -238,6 +239,11 @@ class TaskSnapshotPersisterTestBase extends WindowTestsBase {
             return this;
         }
 
+        TaskSnapshotBuilder setCaptureTime(long captureTime) {
+            mCaptureTime = captureTime;
+            return this;
+        }
+
         TaskSnapshot build() {
             // To satisfy existing tests, ensure the graphics buffer is always 100x100, and
             // compute the ize of the task according to mScaleFraction.
@@ -249,7 +255,7 @@ class TaskSnapshotPersisterTestBase extends WindowTestsBase {
             Canvas c = buffer.lockCanvas();
             c.drawColor(Color.RED);
             buffer.unlockCanvasAndPost(c);
-            return new TaskSnapshot(MOCK_SNAPSHOT_ID, 0 /* captureTime */, mTopActivityComponent,
+            return new TaskSnapshot(MOCK_SNAPSHOT_ID, mCaptureTime, mTopActivityComponent,
                     HardwareBuffer.createFromGraphicBuffer(buffer),
                     ColorSpace.get(ColorSpace.Named.SRGB), ORIENTATION_PORTRAIT,
                     mRotation, taskSize, TEST_CONTENT_INSETS, TEST_LETTERBOX_INSETS,

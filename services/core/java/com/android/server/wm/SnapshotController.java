@@ -38,6 +38,7 @@ import android.window.ITaskSnapshotManager;
 import android.window.TaskSnapshot;
 import android.window.TaskSnapshotManager;
 
+import com.android.internal.annotations.VisibleForTesting;
 import com.android.window.flags.Flags;
 
 import java.io.PrintWriter;
@@ -266,28 +267,46 @@ class SnapshotController {
         mSnapshotPersistQueue.dump(pw, prefix);
     }
 
-    /**
-     * Util method, validate requested resolution.
-     */
-    private static void validateResolution(int resolution) {
-        switch (resolution) {
-            case TaskSnapshotManager.RESOLUTION_ANY:
-            case TaskSnapshotManager.RESOLUTION_HIGH:
-            case TaskSnapshotManager.RESOLUTION_LOW:
-                return;
-            default:
-                throw new IllegalArgumentException("Invalidate resolution=" + resolution);
+    @VisibleForTesting
+    TaskSnapshot getTaskSnapshotInner(int taskId, Task task, long latestCaptureTime,
+            @TaskSnapshotManager.Resolution int retrieveResolution) {
+        synchronized (mService.mGlobalLock) {
+            final TaskSnapshot snapshot = mTaskSnapshotController.getSnapshot(
+                    taskId, retrieveResolution);
+            if (snapshot != null) {
+                if (snapshot.getCaptureTime() > latestCaptureTime) {
+                    snapshot.addReference(TaskSnapshot.REFERENCE_WRITE_TO_PARCEL);
+                    return snapshot;
+                } else {
+                    return null;
+                }
+            }
+            if (latestCaptureTime > 0) {
+                // Return null if the client already has the latest snapshot.
+                final TaskSnapshot inCacheSnapshot = mTaskSnapshotController.getSnapshot(
+                        taskId, TaskSnapshotManager.RESOLUTION_ANY);
+                if (inCacheSnapshot != null) {
+                    if (inCacheSnapshot.getCaptureTime() <= latestCaptureTime) {
+                        return null;
+                    }
+                }
+            }
         }
+        final boolean isLowResolution =
+                retrieveResolution == TaskSnapshotManager.RESOLUTION_LOW;
+        // Don't call this while holding the lock as this operation might hit the disk.
+        return mTaskSnapshotController.getSnapshotFromDisk(taskId,
+                task.mUserId, isLowResolution, TaskSnapshot.REFERENCE_WRITE_TO_PARCEL);
     }
 
     class SnapshotManagerService extends ITaskSnapshotManager.Stub {
 
         @Override
-        public TaskSnapshot getTaskSnapshot(int taskId,
+        public TaskSnapshot getTaskSnapshot(int taskId, long latestCaptureTime,
                 @TaskSnapshotManager.Resolution int retrieveResolution) {
             final long ident = Binder.clearCallingIdentity();
             try {
-                validateResolution(retrieveResolution);
+                TaskSnapshotManager.validateResolution(retrieveResolution);
                 final Task task;
                 synchronized (mService.mGlobalLock) {
                     task = mService.mRoot.anyTaskForId(taskId,
@@ -296,17 +315,9 @@ class SnapshotController {
                         Slog.w(TAG, "getTaskSnapshot: taskId=" + taskId + " not found");
                         return null;
                     }
-                    final TaskSnapshot snapshot = mTaskSnapshotController.getSnapshot(
-                                taskId, retrieveResolution, TaskSnapshot.REFERENCE_WRITE_TO_PARCEL);
-                    if (snapshot != null) {
-                        return snapshot;
-                    }
                 }
-                final boolean isLowResolution =
-                        retrieveResolution == TaskSnapshotManager.RESOLUTION_LOW;
-                // Don't call this while holding the lock as this operation might hit the disk.
-                return mTaskSnapshotController.getSnapshotFromDisk(taskId,
-                        task.mUserId, isLowResolution, TaskSnapshot.REFERENCE_WRITE_TO_PARCEL);
+                return SnapshotController.this.getTaskSnapshotInner(taskId, task, latestCaptureTime,
+                        retrieveResolution);
             } finally {
                 Binder.restoreCallingIdentity(ident);
             }
