@@ -17,6 +17,7 @@
 package com.android.settingslib.widget
 
 import android.content.Context
+import android.icu.text.NumberFormat
 import android.util.AttributeSet
 import android.view.View.GONE
 import android.view.View.VISIBLE
@@ -27,6 +28,7 @@ import androidx.preference.Preference
 import androidx.preference.PreferenceViewHolder
 import com.android.settingslib.widget.preference.menu.R
 import com.google.android.material.button.MaterialButton
+import java.util.Locale
 
 class OrderMenuPreference @JvmOverloads constructor(
     context: Context,
@@ -80,6 +82,7 @@ class OrderMenuPreference @JvmOverloads constructor(
         setupMenuButton(context)
 
         holder.findViewById(R.id.number_frame)?.visibility = if (number in 1..99) VISIBLE else GONE
-        (holder.findViewById(R.id.number) as? TextView)?.text = number.toString()
+        (holder.findViewById(R.id.number) as? TextView)?.text =
+            NumberFormat.getNumberInstance(Locale.getDefault()).format(number)
     }
 }
