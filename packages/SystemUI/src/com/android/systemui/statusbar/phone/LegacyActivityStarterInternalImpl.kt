@@ -45,6 +45,7 @@ import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.dagger.qualifiers.Main
 import com.android.systemui.keyguard.KeyguardViewMediator
 import com.android.systemui.keyguard.WakefulnessLifecycle
+import com.android.systemui.plugins.ActivityStartOptions
 import com.android.systemui.plugins.ActivityStarter
 import com.android.systemui.res.R
 import com.android.systemui.settings.UserTracker
@@ -142,6 +143,7 @@ constructor(
         activityTransitionAnimator.unregister(cookie)
     }
 
+    @Deprecated("Use startActivityDismissingKeyguard(options: ActivityStartOptions) instead")
     override fun startActivityDismissingKeyguard(
         intent: Intent,
         dismissShade: Boolean,
@@ -154,9 +156,27 @@ constructor(
         userHandle: UserHandle?,
         activityOptions: ActivityOptions?,
     ) {
-        val userHandle: UserHandle = userHandle ?: getActivityUserHandle(intent)
+        startActivityDismissingKeyguard(
+            ActivityStartOptions(
+                intent = intent,
+                dismissShade = dismissShade,
+                onlyProvisioned = onlyProvisioned,
+                callback = callback,
+                flags = flags,
+                animationController = animationController,
+                customMessage = customMessage,
+                disallowPipWhileLaunching = disallowEnterPictureInPictureWhileLaunching,
+                userHandle = userHandle,
+                activityOptions = activityOptions,
+            )
+        )
+    }
 
-        if (onlyProvisioned && !deviceProvisionedController.isDeviceProvisioned) return
+    override fun startActivityDismissingKeyguard(options: ActivityStartOptions) {
+        val intent = options.intent
+        val userHandle: UserHandle = options.userHandle ?: getActivityUserHandle(intent)
+
+        if (options.onlyProvisioned && !deviceProvisionedController.isDeviceProvisioned) return
 
         val willLaunchResolverActivity: Boolean =
             activityIntentHelper.wouldLaunchResolverActivity(
@@ -165,19 +185,19 @@ constructor(
             )
 
         val animate =
-            animationController != null &&
+            options.animationController != null &&
                 !willLaunchResolverActivity &&
                 shouldAnimateLaunch(isActivityIntent = true)
         val animController =
             wrapAnimationControllerForShadeOrStatusBar(
-                animationController = animationController,
-                dismissShade = dismissShade,
+                animationController = options.animationController,
+                dismissShade = options.dismissShade,
                 isLaunchForActivity = true,
             )
 
         // If we animate, we will dismiss the shade only once the animation is done. This is
         // taken care of by the StatusBarLaunchAnimationController.
-        val dismissShadeDirectly = dismissShade && animController == null
+        val dismissShadeDirectly = options.dismissShade && animController == null
 
         val runnable = Runnable {
             assistManagerLazy.get().hideAssist()
@@ -187,22 +207,22 @@ constructor(
                 } else {
                     Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
                 }
-            intent.addFlags(flags)
+            intent.addFlags(options.flags)
             val result = intArrayOf(ActivityManager.START_CANCELED)
 
             val startIntent = { optionsBundle: Bundle ->
-                val options = ActivityOptions(optionsBundle)
-                if (activityOptions != null) {
-                    options.update(activityOptions)
+                val activityOptions = ActivityOptions(optionsBundle)
+                if (options.activityOptions != null) {
+                    activityOptions.update(options.activityOptions)
                 }
 
                 // We know that the intent of the caller is to dismiss the keyguard and
                 // this runnable is called right after the keyguard is solved, so we tell
                 // WM that we should dismiss it to avoid flickers when opening an activity
                 // that can also be shown over the keyguard.
-                options.setDismissKeyguardIfInsecure()
-                options.setDisallowEnterPictureInPictureWhileLaunching(
-                    disallowEnterPictureInPictureWhileLaunching
+                activityOptions.setDismissKeyguardIfInsecure()
+                activityOptions.setDisallowEnterPictureInPictureWhileLaunching(
+                    options.disallowPipWhileLaunching
                 )
                 if (CameraIntents.isInsecureCameraIntent(intent)) {
                     // Normally an activity will set it's requested rotation
@@ -213,7 +233,7 @@ constructor(
                     // with physical reality). So, we ask the WindowManager to
                     // force the cross fade animation if an orientation change
                     // happens to occur during the launch.
-                    options.rotationAnimationHint =
+                    activityOptions.rotationAnimationHint =
                         WindowManager.LayoutParams.ROTATION_ANIMATION_SEAMLESS
                 }
                 if (Settings.Panel.ACTION_VOLUME == intent.action) {
@@ -222,7 +242,7 @@ constructor(
                     // as a result.
                     // So we need to disable picture-in-picture mode here
                     // if it is volume panel.
-                    options.setDisallowEnterPictureInPictureWhileLaunching(true)
+                    activityOptions.setDisallowEnterPictureInPictureWhileLaunching(true)
                 }
                 intent.collectExtraIntentKeys()
                 try {
@@ -239,7 +259,7 @@ constructor(
                                 0,
                                 Intent.FLAG_ACTIVITY_NEW_TASK,
                                 null,
-                                options.toBundle(),
+                                activityOptions.toBundle(),
                                 userHandle.identifier,
                             )
                 } catch (e: RemoteException) {
@@ -273,10 +293,10 @@ constructor(
                 }
             }
 
-            callback?.onActivityStarted(result[0])
+            options.callback?.onActivityStarted(result[0])
         }
         val cancelRunnable = Runnable {
-            callback?.onActivityStarted(ActivityManager.START_CANCELED)
+            options.callback?.onActivityStarted(ActivityManager.START_CANCELED)
         }
         // Do not deferKeyguard when occluded because, when keyguard is occluded, we do not launch
         // the activity until keyguard is done. The only exception is when we're on the Hub and want
@@ -295,7 +315,7 @@ constructor(
             willLaunchResolverActivity,
             deferred,
             animate,
-            customMessage,
+            options.customMessage,
         )
     }
 
