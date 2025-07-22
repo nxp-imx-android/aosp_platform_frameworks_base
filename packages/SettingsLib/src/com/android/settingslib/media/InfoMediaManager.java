@@ -83,6 +83,7 @@ import com.android.settingslib.bluetooth.LocalBluetoothManager;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -225,8 +226,9 @@ public abstract class InfoMediaManager {
     private final LocalBluetoothManager mBluetoothManager;
     private final Map<String, RouteListingPreference.Item> mPreferenceItemMap =
             new ConcurrentHashMap<>();
-    private final Map<String, List<SuggestedDeviceInfo>> mSuggestedDeviceMap =
-            new ConcurrentHashMap<>();
+    @GuardedBy("mLock")
+    private final Map<String, List<SuggestedDeviceInfo>> mSuggestedDeviceMap = new HashMap<>();
+    @GuardedBy("mLock")
     @Nullable private SuggestedDeviceState mSuggestedDeviceState;
 
     private final MediaController.Callback mMediaControllerCallback = new MediaControllerCallback();
@@ -673,7 +675,9 @@ public abstract class InfoMediaManager {
 
     @Nullable
     public SuggestedDeviceState getSuggestedDevice() {
-        return mSuggestedDeviceState;
+        synchronized (mLock) {
+            return mSuggestedDeviceState;
+        }
     }
 
     /** Requests a suggestion from other routers. */
@@ -687,10 +691,12 @@ public abstract class InfoMediaManager {
 
     protected void notifyDeviceSuggestionUpdated(
             String suggestingPackageName, @Nullable List<SuggestedDeviceInfo> suggestions) {
-        if (suggestions == null) {
-            mSuggestedDeviceMap.remove(suggestingPackageName);
-        } else {
-            mSuggestedDeviceMap.put(suggestingPackageName, suggestions);
+        synchronized (mLock) {
+            if (suggestions == null) {
+                mSuggestedDeviceMap.remove(suggestingPackageName);
+            } else {
+                mSuggestedDeviceMap.put(suggestingPackageName, suggestions);
+            }
         }
         updateDeviceSuggestion();
     }
@@ -713,7 +719,7 @@ public abstract class InfoMediaManager {
         }
         SuggestedDeviceInfo topSuggestion = null;
         SuggestedDeviceState newSuggestedDeviceState = null;
-        SuggestedDeviceState previousState = mSuggestedDeviceState;
+        SuggestedDeviceState previousState = getSuggestedDevice();
         List<SuggestedDeviceInfo> suggestions = getSuggestions();
         if (suggestions != null && !suggestions.isEmpty()) {
             topSuggestion = suggestions.get(0);
@@ -742,7 +748,9 @@ public abstract class InfoMediaManager {
             newSuggestedDeviceState = null;
         }
         if (!Objects.equals(previousState, newSuggestedDeviceState)) {
-            mSuggestedDeviceState = newSuggestedDeviceState;
+            synchronized (mLock) {
+                mSuggestedDeviceState = newSuggestedDeviceState;
+            }
             return true;
         }
         return false;
@@ -762,33 +770,39 @@ public abstract class InfoMediaManager {
     }
 
     final void onConnectionAttemptedForSuggestion(@NonNull SuggestedDeviceState suggestion) {
-        if (!Objects.equals(suggestion, mSuggestedDeviceState)) {
-            return;
-        }
-        if (mSuggestedDeviceState.getConnectionState() == STATE_DISCONNECTED
-                || mSuggestedDeviceState.getConnectionState() == STATE_CONNECTING_FAILED) {
+        synchronized (mLock) {
+            if (!Objects.equals(suggestion, mSuggestedDeviceState)) {
+                return;
+            }
+            if (mSuggestedDeviceState.getConnectionState() != STATE_DISCONNECTED
+                    && mSuggestedDeviceState.getConnectionState() != STATE_CONNECTING_FAILED) {
+                return;
+            }
             mSuggestedDeviceState =
                     new SuggestedDeviceState(
                             mSuggestedDeviceState.getSuggestedDeviceInfo(), STATE_CONNECTING);
-            dispatchOnSuggestedDeviceUpdated();
         }
+        dispatchOnSuggestedDeviceUpdated();
     }
 
     final void onConnectionAttemptCompletedForSuggestion(
             @NonNull SuggestedDeviceState suggestion, boolean success) {
-        if (!Objects.equals(suggestion, mSuggestedDeviceState)) {
-            return;
+        synchronized (mLock) {
+            if (!Objects.equals(suggestion, mSuggestedDeviceState)) {
+                return;
+            }
+            int state = success ? STATE_CONNECTED : STATE_CONNECTING_FAILED;
+            mSuggestedDeviceState =
+                    new SuggestedDeviceState(mSuggestedDeviceState.getSuggestedDeviceInfo(), state);
         }
-        int state = success ? STATE_CONNECTED : STATE_CONNECTING_FAILED;
-        mSuggestedDeviceState =
-                new SuggestedDeviceState(mSuggestedDeviceState.getSuggestedDeviceInfo(), state);
         dispatchOnSuggestedDeviceUpdated();
     }
 
     private void dispatchOnSuggestedDeviceUpdated() {
-        Log.i(TAG, "dispatchOnSuggestedDeviceUpdated(), state: " + mSuggestedDeviceState);
+        SuggestedDeviceState state = getSuggestedDevice();
+        Log.i(TAG, "dispatchOnSuggestedDeviceUpdated(), state: " + state);
         for (MediaDeviceCallback callback : getCallbacks()) {
-            callback.onSuggestedDeviceUpdated(mSuggestedDeviceState);
+            callback.onSuggestedDeviceUpdated(state);
         }
     }
 
@@ -798,14 +812,16 @@ public abstract class InfoMediaManager {
         // 1. Suggestions from the local router
         // 2. Suggestions from the proxy router if only one proxy router is providing suggestions
         // 3. No suggestion at all if multiple proxy routers are providing suggestions.
-        List<SuggestedDeviceInfo> suggestions = mSuggestedDeviceMap.get(mPackageName);
-        if (suggestions != null) {
-            return suggestions;
-        }
-        if (mSuggestedDeviceMap.size() == 1) {
-            for (List<SuggestedDeviceInfo> packageSuggestions : mSuggestedDeviceMap.values()) {
-                if (packageSuggestions != null) {
-                    return packageSuggestions;
+        synchronized (mLock) {
+            List<SuggestedDeviceInfo> suggestions = mSuggestedDeviceMap.get(mPackageName);
+            if (suggestions != null) {
+                return suggestions;
+            }
+            if (mSuggestedDeviceMap.size() == 1) {
+                for (List<SuggestedDeviceInfo> packageSuggestions : mSuggestedDeviceMap.values()) {
+                    if (packageSuggestions != null) {
+                        return packageSuggestions;
+                    }
                 }
             }
         }
