@@ -44,6 +44,7 @@ import android.hardware.lights.Light;
 import android.hardware.lights.LightState;
 import android.os.IBinder;
 import android.os.IVibratorStateListener;
+import android.os.PointerCaptureMode;
 import android.os.VibrationEffect;
 import android.view.inputmethod.InputMethodInfo;
 import android.view.inputmethod.InputMethodSubtype;
@@ -168,7 +169,7 @@ interface IInputManager {
     boolean setPointerIcon(in PointerIcon icon, int displayId, int deviceId, int pointerId,
             in IBinder inputToken);
 
-    oneway void requestPointerCapture(IBinder inputChannelToken, boolean enabled);
+    oneway void requestPointerCapture(IBinder inputChannelToken, PointerCaptureMode mode);
 
     /** Create an input monitor for gestures. */
     InputMonitor monitorGestureInput(IBinder token, String name, int displayId);

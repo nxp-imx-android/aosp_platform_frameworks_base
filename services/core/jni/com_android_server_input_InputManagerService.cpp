@@ -45,6 +45,7 @@
 #include <binder/IServiceManager.h>
 #include <com_android_input_flags.h>
 #include <dispatcher/Entry.h>
+#include <ftl/enum.h>
 #include <include/gestures.h>
 #include <input/Input.h>
 #include <input/InputFlags.h>
@@ -360,7 +361,7 @@ public:
     void setNonInteractiveDisplays(const std::set<ui::LogicalDisplayId>& displayIds);
     void reloadCalibration();
     void reloadPointerIcons();
-    void requestPointerCapture(const sp<IBinder>& windowToken, bool enabled);
+    void requestPointerCapture(const sp<IBinder>& windowToken, PointerCaptureMode mode);
     bool setPointerIcon(std::variant<std::unique_ptr<SpriteIcon>, PointerIconStyle> icon,
                         ui::LogicalDisplayId displayId, DeviceId deviceId, int32_t pointerId,
                         const sp<IBinder>& inputToken);
@@ -616,7 +617,7 @@ void NativeInputManager::dump(std::string& dump) {
         dump += StringPrintf(INDENT "Pointer Gestures Enabled: %s\n",
                              toString(mLocked.pointerGesturesEnabled));
         dump += StringPrintf(INDENT "Pointer Capture: %s, seq=%" PRIu32 "\n",
-                             mLocked.pointerCaptureRequest.isEnable() ? "Enabled" : "Disabled",
+                             ftl::enum_string(mLocked.pointerCaptureRequest.mode).c_str(),
                              mLocked.pointerCaptureRequest.seq);
     } // release lock
     dump += "\n";
@@ -1703,8 +1704,9 @@ void NativeInputManager::setShowTouches(bool enabled) {
     mInputManager->getChoreographer().setShowTouchesEnabled(enabled);
 }
 
-void NativeInputManager::requestPointerCapture(const sp<IBinder>& windowToken, bool enabled) {
-    mInputManager->getDispatcher().requestPointerCapture(windowToken, enabled);
+void NativeInputManager::requestPointerCapture(const sp<IBinder>& windowToken,
+                                               PointerCaptureMode mode) {
+    mInputManager->getDispatcher().requestPointerCapture(windowToken, mode);
 }
 
 void NativeInputManager::setNonInteractiveDisplays(
@@ -2048,7 +2050,7 @@ void NativeInputManager::setPointerCapture(const PointerCaptureRequest& request)
             return;
         }
 
-        ALOGV("%s pointer capture.", request.isEnable() ? "Enabling" : "Disabling");
+        LOG(VERBOSE) << "Setting pointer capture mode to " << ftl::enum_string(request.mode) << ".";
         mLocked.pointerCaptureRequest = request;
     } // release lock
 
@@ -2530,11 +2532,11 @@ static void nativeSetUserActivityPokeInterval(JNIEnv* env, jobject nativeImplObj
 }
 
 static void nativeRequestPointerCapture(JNIEnv* env, jobject nativeImplObj, jobject tokenObj,
-                                        jboolean enabled) {
+                                        jint mode) {
     NativeInputManager* im = getNativeInputManager(env, nativeImplObj);
     sp<IBinder> windowToken = ibinderForJavaObject(env, tokenObj);
-
-    im->requestPointerCapture(windowToken, enabled);
+    // static_cast is safe because the value was already checked at the Java layer.
+    im->requestPointerCapture(windowToken, static_cast<PointerCaptureMode>(mode));
 }
 
 static void nativeSetInputDispatchMode(JNIEnv* env, jobject nativeImplObj, jboolean enabled,
@@ -3378,7 +3380,7 @@ static const JNINativeMethod gInputManagerMethods[] = {
          (void*)nativeSetFocusedApplication},
         {"setFocusedDisplay", "(I)V", (void*)nativeSetFocusedDisplay},
         {"setMinTimeBetweenUserActivityPokes", "(J)V", (void*)nativeSetUserActivityPokeInterval},
-        {"requestPointerCapture", "(Landroid/os/IBinder;Z)V", (void*)nativeRequestPointerCapture},
+        {"requestPointerCapture", "(Landroid/os/IBinder;I)V", (void*)nativeRequestPointerCapture},
         {"setInputDispatchMode", "(ZZ)V", (void*)nativeSetInputDispatchMode},
         {"setSystemUiLightsOut", "(Z)V", (void*)nativeSetSystemUiLightsOut},
         {"transferTouchGesture", "(Landroid/os/IBinder;Landroid/os/IBinder;ZZ)Z",

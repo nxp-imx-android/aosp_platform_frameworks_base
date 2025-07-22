@@ -58,6 +58,8 @@ import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.PointerIcon;
 import android.view.VerifiedInputEvent;
+import android.view.View;
+import android.view.View.PointerCaptureMode;
 import android.view.WindowManager.LayoutParams;
 import android.view.inputmethod.InputMethodInfo;
 import android.view.inputmethod.InputMethodSubtype;
@@ -1100,16 +1102,17 @@ public final class InputManager {
     /**
      * Request or release pointer capture.
      * <p>
-     * When in capturing mode, the pointer icon disappears and all mouse events are dispatched to
-     * the window which has requested the capture. Relative position changes are available through
-     * {@link MotionEvent#getX} and {@link MotionEvent#getY}.
+     * When in capturing mode, the pointer icon disappears and all mouse and touchpad events are
+     * dispatched to the window which has requested the capture.
      *
-     * @param enable true when requesting pointer capture, false when releasing.
+     * @param mode the capture mode to request.
+     *
+     * @see View#requestPointerCapture()
      *
      * @hide
      */
-    public void requestPointerCapture(IBinder windowToken, boolean enable) {
-        mGlobal.requestPointerCapture(windowToken, enable);
+    public void requestPointerCapture(@NonNull IBinder windowToken, @PointerCaptureMode int mode) {
+        mGlobal.requestPointerCapture(windowToken, mode);
     }
 
     /**
