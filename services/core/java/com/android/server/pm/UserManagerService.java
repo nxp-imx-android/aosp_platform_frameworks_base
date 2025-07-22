@@ -1782,7 +1782,6 @@ public class UserManagerService extends IUserManager.Stub {
 
     private boolean isProfileHidden(int userId) {
         if (android.os.Flags.allowPrivateProfile()
-                && android.multiuser.Flags.enableHidingProfiles()
                 && android.multiuser.Flags.enablePrivateSpaceFeatures()) {
             return getUserPropertiesInternal(userId).getProfileApiVisibility()
                     == UserProperties.PROFILE_API_VISIBILITY_HIDDEN;

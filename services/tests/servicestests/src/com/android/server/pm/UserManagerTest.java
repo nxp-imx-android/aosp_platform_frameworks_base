@@ -1986,7 +1986,6 @@ public final class UserManagerTest {
     }
 
     @Test
-    @RequiresFlagsEnabled(android.multiuser.Flags.FLAG_ENABLE_HIDING_PROFILES)
     public void testGetProfileIdsExcludingHidden() throws Exception {
         int mainUserId = mUserManager.getMainUser().getIdentifier();
         final UserInfo profile = createProfileForUser("Profile",
