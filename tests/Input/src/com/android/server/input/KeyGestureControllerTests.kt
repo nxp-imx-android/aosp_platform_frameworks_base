@@ -99,6 +99,7 @@ import org.mockito.kotlin.times
     com.android.hardware.input.Flags.FLAG_KEYBOARD_A11Y_SHORTCUT_CONTROL,
     com.android.hardware.input.Flags.FLAG_ENABLE_TALKBACK_AND_MAGNIFIER_KEY_GESTURES,
     com.android.hardware.input.Flags.FLAG_ENABLE_VOICE_ACCESS_KEY_GESTURES,
+    com.android.window.flags.Flags.FLAG_CLOSE_TASK_KEYBOARD_SHORTCUT,
     com.android.window.flags.Flags.FLAG_ENABLE_MOVE_TO_NEXT_DISPLAY_SHORTCUT,
     com.android.window.flags.Flags.FLAG_ENABLE_TASK_RESIZING_KEYBOARD_SHORTCUTS,
     com.android.window.flags.Flags.FLAG_KEYBOARD_SHORTCUTS_TO_SWITCH_DESKS,
@@ -1283,7 +1284,7 @@ class KeyGestureControllerTests {
         )
         sendKeys(
             intArrayOf(KeyEvent.KEYCODE_ESCAPE),
-            timeDelayMs = 2 * LONG_PRESS_DELAY_FOR_ESCAPE_MILLIS
+            timeDelayMs = 2 * LONG_PRESS_DELAY_FOR_ESCAPE_MILLIS,
         )
         keyGestureController.unregisterKeyGestureHandler(handler, TEST_PID)
         assertEquals(1, callback)
@@ -1301,7 +1302,7 @@ class KeyGestureControllerTests {
         )
         sendKeys(
             intArrayOf(KeyEvent.KEYCODE_ESCAPE),
-            timeDelayMs = 2 * LONG_PRESS_DELAY_FOR_ESCAPE_MILLIS
+            timeDelayMs = 2 * LONG_PRESS_DELAY_FOR_ESCAPE_MILLIS,
         )
         keyGestureController.unregisterKeyGestureHandler(handler, TEST_PID)
         assertEquals(0, callback)
@@ -1320,7 +1321,7 @@ class KeyGestureControllerTests {
         )
         sendKeys(
             intArrayOf(KeyEvent.KEYCODE_ESCAPE),
-            timeDelayMs = LONG_PRESS_DELAY_FOR_ESCAPE_MILLIS / 2
+            timeDelayMs = LONG_PRESS_DELAY_FOR_ESCAPE_MILLIS / 2,
         )
         keyGestureController.unregisterKeyGestureHandler(handler, TEST_PID)
         assertEquals(0, callback)

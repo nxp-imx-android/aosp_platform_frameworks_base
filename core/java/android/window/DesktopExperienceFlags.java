@@ -58,6 +58,8 @@ public enum DesktopExperienceFlags {
     BASE_DENSITY_FOR_EXTERNAL_DISPLAYS(
             com.android.server.display.feature.flags.Flags::baseDensityForExternalDisplays, true,
             com.android.server.display.feature.flags.Flags.FLAG_BASE_DENSITY_FOR_EXTERNAL_DISPLAYS),
+    CLOSE_TASK_KEYBOARD_SHORTCUT(Flags::closeTaskKeyboardShortcut, false,
+            Flags.FLAG_CLOSE_TASK_KEYBOARD_SHORTCUT),
     CONNECTED_DISPLAYS_CURSOR(com.android.input.flags.Flags::connectedDisplaysCursor, true,
             com.android.input.flags.Flags.FLAG_CONNECTED_DISPLAYS_CURSOR),
     DISPLAY_TOPOLOGY(com.android.server.display.feature.flags.Flags::displayTopology, true,
