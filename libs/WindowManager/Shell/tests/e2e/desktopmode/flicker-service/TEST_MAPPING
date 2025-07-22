@@ -73,6 +73,9 @@
       "name": "WMShellFlickerTestsDesktopMode-maximize-MaximizeAppViaHeaderMenuFlickerTest"
     },
     {
+      "name": "WMShellFlickerTestsDesktopMode-minimize-MinimizeAutoPipAppWindowFlickerTest"
+    },
+    {
       "name": "WMShellFlickerTestsDesktopMode-resizing-ResizeAppToMaximumWindowSizeFlickerTest"
     },
     {
