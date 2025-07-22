@@ -46,7 +46,6 @@ import android.window.IDisplayAreaOrganizer;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.protolog.ProtoLog;
 import com.android.server.policy.WindowManagerPolicy;
-import com.android.window.flags.Flags;
 
 import java.io.PrintWriter;
 import java.util.Comparator;
@@ -820,15 +819,6 @@ public class DisplayArea<T extends WindowContainer> extends WindowContainer<T> {
         void prepareSurfaces() {
             mDimmer.resetDimStates();
             super.prepareSurfaces();
-            Rect dimBounds = null;
-            if (!Flags.useTasksDimOnly()) {
-                dimBounds = mDimmer.getDimBounds();
-                if (dimBounds != null) {
-                    // Bounds need to be relative, as the dim layer is a child.
-                    getBounds(dimBounds);
-                    dimBounds.offsetTo(0 /* newLeft */, 0 /* newTop */);
-                }
-            }
 
             if (mDimmer.hasDimState()) {
                 if (mDimmer.updateDims(getSyncTransaction())) {

@@ -132,7 +132,6 @@ import com.android.internal.protolog.WmProtoLogGroups;
 import com.android.internal.util.function.pooled.PooledLambda;
 import com.android.server.inputmethod.InputMethodManagerInternal;
 import com.android.server.statusbar.StatusBarManagerInternal;
-import com.android.window.flags.Flags;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -561,20 +560,9 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
 
     boolean canApplyDim(@NonNull Task task) {
         if (mTransientLaunches == null) return true;
-        if (Flags.useTasksDimOnly()) {
-            if (task.isSuitableForDimming()) {
-                // Always allow to dim if the dimming occurs at task level (dim parented to task)
-                return true;
-            }
-        } else {
-            final Dimmer dimmer = task.getDimmer();
-            if (dimmer == null) {
-                return false;
-            }
-            if (dimmer.hostIsTask()) {
-                // Always allow to dim if the host only affects its task.
-                return true;
-            }
+        if (task.isSuitableForDimming()) {
+            // Always allow to dim if the dimming occurs at task level (dim parented to task)
+            return true;
         }
 
         // The dimmer host of a translucent task can be a display, then it is not in transient-hide.
