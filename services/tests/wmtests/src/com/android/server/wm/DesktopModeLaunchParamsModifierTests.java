@@ -893,8 +893,8 @@ public class DesktopModeLaunchParamsModifierTests extends
         final int desiredHeight =
                 (int) (LANDSCAPE_DISPLAY_BOUNDS.height() * DESKTOP_MODE_INITIAL_BOUNDS_SCALE);
         final int desiredWidth =
-                (int) (desiredHeight / activity.mAppCompatController
-                        .getAspectRatioOverrides().getSplitScreenAspectRatio());
+                (int) ((desiredHeight / activity.mAppCompatController
+                        .getAspectRatioOverrides().getSplitScreenAspectRatio()) + 0.5f);
 
         assertEquals(RESULT_CONTINUE, new CalculateRequestBuilder().setTask(task)
                 .setActivity(activity).calculate());
@@ -1092,7 +1092,8 @@ public class DesktopModeLaunchParamsModifierTests extends
 
         final int desiredHeight =
                 (int) (LANDSCAPE_DISPLAY_BOUNDS.height() * DESKTOP_MODE_INITIAL_BOUNDS_SCALE);
-        final int desiredWidth = (int) (desiredHeight / userAspectRatioOverrideValueSplitScreen);
+        final int desiredWidth =
+                (int) ((desiredHeight / userAspectRatioOverrideValueSplitScreen) + 0.5f);
 
         assertEquals(RESULT_CONTINUE, new CalculateRequestBuilder().setTask(task)
                 .setActivity(activity).calculate());

@@ -292,7 +292,7 @@ public final class DesktopModeBoundsCalculator {
         if (orientation == ORIENTATION_PORTRAIT) {
             // Portrait activity.
             // Calculate required width given ideal height and aspect ratio.
-            int tempWidth = (int) (targetHeight / aspectRatio);
+            int tempWidth = (int) ((targetHeight / aspectRatio) + 0.5f);
             if (tempWidth <= targetWidth) {
                 // If the calculated width does not exceed the ideal width, overall size is within
                 // ideal size and can be applied.
@@ -319,7 +319,7 @@ public final class DesktopModeBoundsCalculator {
                 // aspect ratio. Instead apply ideal width and calculate required height to respect
                 // aspect ratio.
                 finalWidth = targetWidth;
-                finalHeight = (int) (finalWidth / aspectRatio);
+                finalHeight = (int) ((finalWidth / aspectRatio) + 0.5f);
             }
         }
         return new Size(finalWidth, finalHeight + captionHeight);
