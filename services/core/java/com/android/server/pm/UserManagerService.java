@@ -8772,13 +8772,8 @@ public class UserManagerService extends IUserManager.Stub {
             String errorMessage = (message != null ? (message + ": ") : "")
                     + restriction + " is enabled.";
             Slog.w(LOG_TAG, errorMessage);
-            if (android.multiuser.Flags.showDifferentCreationErrorForUnsupportedDevices()) {
-                throw new UserManager.CheckedUserOperationException(errorMessage,
-                    USER_OPERATION_ERROR_USER_RESTRICTED);
-            } else {
-                throw new UserManager.CheckedUserOperationException(errorMessage,
-                    USER_OPERATION_ERROR_UNKNOWN);
-            }
+            throw new UserManager.CheckedUserOperationException(errorMessage,
+                USER_OPERATION_ERROR_USER_RESTRICTED);
         }
     }
 
