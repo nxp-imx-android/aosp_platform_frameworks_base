@@ -242,7 +242,7 @@ class DesktopTasksController(
     private val desksTransitionObserver: DesksTransitionObserver,
     private val userProfileContexts: UserProfileContexts,
     private val desktopModeCompatPolicy: DesktopModeCompatPolicy,
-    private val dragToDisplayTransitionHandler: DragToDisplayTransitionHandler,
+    private val windowDragTransitionHandler: WindowDragTransitionHandler,
     private val moveToDisplayTransitionHandler: DesktopModeMoveToDisplayTransitionHandler,
     private val homeIntentProvider: HomeIntentProvider,
     private val desktopState: DesktopState,
@@ -4996,6 +4996,7 @@ class DesktopTasksController(
      *   task bounds or just task leash)
      * @param validDragArea the bounds of where the task can be dragged within the display.
      * @param dragStartBounds the bounds of the task before starting dragging.
+     * @return true if caller needs to clear the window drag indicators by itself.
      */
     fun onDragPositioningEnd(
         taskInfo: RunningTaskInfo,
@@ -5006,17 +5007,19 @@ class DesktopTasksController(
         validDragArea: Rect,
         dragStartBounds: Rect,
         motionEvent: MotionEvent,
-    ) {
+    ): Boolean {
         if (taskInfo.configuration.windowConfiguration.windowingMode != WINDOWING_MODE_FREEFORM) {
-            return
+            return true
         }
 
-        val indicator = getVisualIndicator() ?: return
+        val indicator = getVisualIndicator() ?: return true
         val indicatorType =
             indicator.updateIndicatorType(
                 displayId,
                 PointF(inputCoordinate.x, currentDragBounds.top.toFloat()),
             )
+
+        var needDragIndicatorCleanup = true
         when (indicatorType) {
             IndicatorType.TO_FULLSCREEN_INDICATOR -> {
                 val shouldMaximizeWhenDragToTopEdge =
@@ -5092,10 +5095,10 @@ class DesktopTasksController(
                         startBounds = currentDragBounds,
                         endBounds = dragStartBounds,
                     )
-                    return
+                    return true
                 }
 
-                val newDisplayId = motionEvent.getDisplayId()
+                val newDisplayId = motionEvent.displayId
                 val displayAreaInfo = rootTaskDisplayAreaOrganizer.getDisplayAreaInfo(newDisplayId)
                 val isCrossDisplayDrag =
                     DesktopExperienceFlags.ENABLE_CONNECTED_DISPLAYS_WINDOW_DRAG.isTrue() &&
@@ -5121,7 +5124,7 @@ class DesktopTasksController(
                         taskInfo,
                         newDisplayId,
                         constrainedBounds,
-                        dragToDisplayTransitionHandler,
+                        windowDragTransitionHandler,
                         enterReason = EnterReason.APP_HANDLE_DRAG,
                     )
                 } else {
@@ -5129,10 +5132,10 @@ class DesktopTasksController(
                     // leash
                     val wct = WindowContainerTransaction()
                     wct.setBounds(taskInfo.token, destinationBounds)
-                    transitions.startTransition(TRANSIT_CHANGE, wct, /* handler= */ null)
+                    transitions.startTransition(TRANSIT_CHANGE, wct, windowDragTransitionHandler)
                 }
-
                 releaseVisualIndicator()
+                needDragIndicatorCleanup = false
             }
             IndicatorType.TO_DESKTOP_INDICATOR -> {
                 throw IllegalArgumentException(
@@ -5145,6 +5148,7 @@ class DesktopTasksController(
         taskbarDesktopTaskListener?.onTaskbarCornerRoundingUpdate(
             doesAnyTaskRequireTaskbarRounding(taskInfo.displayId)
         )
+        return needDragIndicatorCleanup
     }
 
     /**

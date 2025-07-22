@@ -17,13 +17,17 @@ package com.android.wm.shell.desktopmode
 
 import android.os.IBinder
 import android.view.SurfaceControl
+import android.window.DesktopExperienceFlags
 import android.window.TransitionInfo
 import android.window.TransitionRequestInfo
 import android.window.WindowContainerTransaction
+import com.android.wm.shell.common.MultiDisplayDragMoveIndicatorController
 import com.android.wm.shell.transition.Transitions
 
 /** Handles the transition to drag a window to another display by dragging the caption. */
-class DragToDisplayTransitionHandler : Transitions.TransitionHandler {
+class WindowDragTransitionHandler(
+    private val multiDisplayDragMoveIndicatorController: MultiDisplayDragMoveIndicatorController
+) : Transitions.TransitionHandler {
     override fun handleRequest(
         transition: IBinder,
         request: TransitionRequestInfo,
@@ -48,6 +52,14 @@ class DragToDisplayTransitionHandler : Transitions.TransitionHandler {
             finishTransaction
                 .setWindowCrop(sc, endBounds.width(), endBounds.height())
                 .setPosition(sc, endPosition.x.toFloat(), endPosition.y.toFloat())
+            if (DesktopExperienceFlags.ENABLE_WINDOW_DROP_SMOOTH_TRANSITION.isTrue) {
+                change.taskInfo?.let { taskInfo ->
+                    multiDisplayDragMoveIndicatorController.onDragEnd(
+                        taskInfo.taskId,
+                        finishTransaction,
+                    )
+                }
+            }
         }
 
         startTransaction.apply()

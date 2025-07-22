@@ -1564,12 +1564,20 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
                     // Tasks bounds haven't actually been updated (only its leash), so pass to
                     // DesktopTasksController to allow secondary transformations (i.e. snap resizing
                     // or transforming to fullscreen) before setting new task bounds.
-                    mDesktopTasksController.onDragPositioningEnd(
-                            taskInfo, decoration.getTaskSurface(),
-                            e.getDisplayId(),
-                            new PointF(e.getRawX(dragPointerIdx), e.getRawY(dragPointerIdx)),
-                            newTaskBounds, decoration.calculateValidDragArea(),
-                            new Rect(mOnDragStartInitialBounds), e);
+                    final boolean needDragIndicatorCleanup =
+                            mDesktopTasksController.onDragPositioningEnd(
+                                    taskInfo, decoration.getTaskSurface(), e.getDisplayId(),
+                                    new PointF(e.getRawX(dragPointerIdx),
+                                            e.getRawY(dragPointerIdx)),
+                                    newTaskBounds, decoration.calculateValidDragArea(),
+                                    new Rect(mOnDragStartInitialBounds), e);
+                    if (DesktopExperienceFlags.ENABLE_WINDOW_DROP_SMOOTH_TRANSITION.isTrue()) {
+                        if (needDragIndicatorCleanup) {
+                            mMultiDisplayDragMoveIndicatorController.onDragEnd(taskInfo.taskId,
+                                    mTransactionFactory.get());
+                        }
+                    }
+
                     if (touchingButton) {
                         // We need the input event to not be consumed here to end the ripple
                         // effect on the touched button. We will reset drag state in the ensuing

@@ -1447,7 +1447,10 @@ class DesktopModeWindowDecorViewModelTests : DesktopModeWindowDecorViewModelTest
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_BLOCK_NON_DESKTOP_DISPLAY_WINDOW_DRAG_BUGFIX)
+    @EnableFlags(
+        Flags.FLAG_ENABLE_BLOCK_NON_DESKTOP_DISPLAY_WINDOW_DRAG_BUGFIX,
+        Flags.FLAG_ENABLE_WINDOW_DROP_SMOOTH_TRANSITION,
+    )
     fun testOnFreeformWindowDragEnd_toDesktopModeDisplay_updateBounds() {
         val onTouchListenerCaptor = argumentCaptor<View.OnTouchListener>()
         val decor =
@@ -1469,6 +1472,11 @@ class DesktopModeWindowDecorViewModelTests : DesktopModeWindowDecorViewModelTest
                 on { onDragPositioningMove(any(), any(), any()) } doReturn BOUNDS_AFTER_FIRST_MOVE
                 on { onDragPositioningEnd(any(), any(), any()) } doReturn
                     BOUNDS_ON_DRAG_END_DESKTOP_ACCEPTED
+            }
+            mockDesktopTasksController.stub {
+                on {
+                    onDragPositioningEnd(any(), any(), any(), any(), any(), any(), any(), any())
+                } doReturn false
             }
 
             touchListener.handleMotionEvent(
@@ -1518,6 +1526,7 @@ class DesktopModeWindowDecorViewModelTests : DesktopModeWindowDecorViewModelTest
                     any<Rect>(),
                     any<MotionEvent>(),
                 )
+            verify(mockMultiDisplayDragMoveIndicatorController, never()).onDragEnd(any(), any())
         } else {
             fail("touchListener was not a DesktopModeTouchEventListener as expected.")
         }
@@ -1568,7 +1577,10 @@ class DesktopModeWindowDecorViewModelTests : DesktopModeWindowDecorViewModelTest
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_BLOCK_NON_DESKTOP_DISPLAY_WINDOW_DRAG_BUGFIX)
+    @EnableFlags(
+        Flags.FLAG_ENABLE_BLOCK_NON_DESKTOP_DISPLAY_WINDOW_DRAG_BUGFIX,
+        Flags.FLAG_ENABLE_WINDOW_DROP_SMOOTH_TRANSITION,
+    )
     fun testOnFreeformWindowDragMove_toNonDesktopModeDisplay_setsNoDropIconAndKeepsBounds() {
         val onTouchListenerCaptor = argumentCaptor<View.OnTouchListener>()
         val decor =
@@ -1590,6 +1602,11 @@ class DesktopModeWindowDecorViewModelTests : DesktopModeWindowDecorViewModelTest
                 on { onDragPositioningMove(any(), any(), any()) } doReturn BOUNDS_AFTER_FIRST_MOVE
                 on { onDragPositioningEnd(any(), any(), any()) } doReturn
                     BOUNDS_IGNORED_ON_NON_DESKTOP
+            }
+            mockDesktopTasksController.stub {
+                on {
+                    onDragPositioningEnd(any(), any(), any(), any(), any(), any(), any(), any())
+                } doReturn true
             }
 
             touchListener.handleMotionEvent(
@@ -1673,6 +1690,8 @@ class DesktopModeWindowDecorViewModelTests : DesktopModeWindowDecorViewModelTest
                     any<Rect>(),
                     any<MotionEvent>(),
                 )
+            verify(mockMultiDisplayDragMoveIndicatorController)
+                .onDragEnd(eq(taskInfo.taskId), any())
         } else {
             fail("touchListener was not a DesktopModeTouchEventListener as expected.")
         }

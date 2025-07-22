@@ -126,7 +126,6 @@ import com.android.wm.shell.desktopmode.DesktopTasksTransitionObserver;
 import com.android.wm.shell.desktopmode.DesktopUserRepositories;
 import com.android.wm.shell.desktopmode.DisplayDisconnectTransitionHandler;
 import com.android.wm.shell.desktopmode.DragToDesktopTransitionHandler;
-import com.android.wm.shell.desktopmode.DragToDisplayTransitionHandler;
 import com.android.wm.shell.desktopmode.EnterDesktopTaskTransitionHandler;
 import com.android.wm.shell.desktopmode.ExitDesktopTaskTransitionHandler;
 import com.android.wm.shell.desktopmode.OverviewToDesktopTransitionObserver;
@@ -137,6 +136,7 @@ import com.android.wm.shell.desktopmode.SpringDragToDesktopTransitionHandler;
 import com.android.wm.shell.desktopmode.ToggleResizeDesktopTaskTransitionHandler;
 import com.android.wm.shell.desktopmode.VisualIndicatorUpdateScheduler;
 import com.android.wm.shell.desktopmode.WindowDecorCaptionRepository;
+import com.android.wm.shell.desktopmode.WindowDragTransitionHandler;
 import com.android.wm.shell.desktopmode.compatui.SystemModalsTransitionHandler;
 import com.android.wm.shell.desktopmode.data.DesktopRepositoryInitializer;
 import com.android.wm.shell.desktopmode.data.DesktopRepositoryInitializerImpl;
@@ -921,7 +921,7 @@ public abstract class WMShellModule {
             Optional<DesksTransitionObserver> desksTransitionObserver,
             UserProfileContexts userProfileContexts,
             DesktopModeCompatPolicy desktopModeCompatPolicy,
-            DragToDisplayTransitionHandler dragToDisplayTransitionHandler,
+            WindowDragTransitionHandler windowDragTransitionHandler,
             DesktopModeMoveToDisplayTransitionHandler moveToDisplayTransitionHandler,
             HomeIntentProvider homeIntentProvider,
             DesktopState desktopState,
@@ -969,7 +969,7 @@ public abstract class WMShellModule {
                 desksTransitionObserver.get(),
                 userProfileContexts,
                 desktopModeCompatPolicy,
-                dragToDisplayTransitionHandler,
+                windowDragTransitionHandler,
                 moveToDisplayTransitionHandler,
                 homeIntentProvider,
                 desktopState,
@@ -1160,8 +1160,10 @@ public abstract class WMShellModule {
 
     @WMSingleton
     @Provides
-    static DragToDisplayTransitionHandler provideDragToDisplayTransitionHandler() {
-        return new DragToDisplayTransitionHandler();
+    static WindowDragTransitionHandler provideWindowDragTransitionHandler(
+            MultiDisplayDragMoveIndicatorController multiDisplayDragMoveIndicatorController
+    ) {
+        return new WindowDragTransitionHandler(multiDisplayDragMoveIndicatorController);
     }
 
     @WMSingleton
@@ -1288,12 +1290,11 @@ public abstract class WMShellModule {
             RootTaskDisplayAreaOrganizer rootTaskDisplayAreaOrganizer,
             MultiDisplayDragMoveIndicatorSurface.Factory
                 multiDisplayDragMoveIndicatorSurfaceFactory,
-            @ShellDesktopThread ShellExecutor desktopExecutor,
             DesktopState desktopState
     ) {
         return new MultiDisplayDragMoveIndicatorController(
                 displayController, rootTaskDisplayAreaOrganizer,
-                multiDisplayDragMoveIndicatorSurfaceFactory, desktopExecutor, desktopState);
+                multiDisplayDragMoveIndicatorSurfaceFactory, desktopState);
     }
 
     @WMSingleton
