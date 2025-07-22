@@ -24,7 +24,6 @@ import android.view.View
 import androidx.compose.runtime.getValue
 import com.android.app.tracing.FlowTracing.traceEach
 import com.android.app.tracing.TrackGroupUtils.trackGroup
-import com.android.app.tracing.coroutines.launchTraced as launch
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent.DisplayAware
 import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent.DisplayId
@@ -64,6 +63,7 @@ import com.android.systemui.statusbar.featurepods.popups.StatusBarPopupChips
 import com.android.systemui.statusbar.featurepods.popups.ui.model.PopupChipModel
 import com.android.systemui.statusbar.featurepods.popups.ui.viewmodel.StatusBarPopupChipsViewModel
 import com.android.systemui.statusbar.headsup.shared.StatusBarNoHunBehavior
+import com.android.systemui.statusbar.layout.ui.viewmodel.AppHandlesViewModel
 import com.android.systemui.statusbar.layout.ui.viewmodel.StatusBarBoundsViewModel
 import com.android.systemui.statusbar.layout.ui.viewmodel.StatusBarContentInsetsViewModelStore
 import com.android.systemui.statusbar.notification.domain.interactor.ActiveNotificationsInteractor
@@ -126,6 +126,12 @@ interface HomeStatusBarViewModel : Activatable {
      * Factory to create the view model for storing bounds of child views in/around the status bar.
      */
     val statusBarBoundsViewModelFactory: StatusBarBoundsViewModel.Factory
+
+    /**
+     * Factory to create the view model for storing bounds of app handles overlapping with the
+     * status bar.
+     */
+    val appHandlesViewModelFactory: AppHandlesViewModel.Factory
 
     /**
      * True if the device is currently transitioning from lockscreen to occluded and false
@@ -230,6 +236,7 @@ constructor(
     override val unifiedBatteryViewModel: BatteryViewModel.BasedOnUserSetting.Factory,
     override val systemStatusIconsViewModelFactory: SystemStatusIconsViewModel.Factory,
     override val statusBarBoundsViewModelFactory: StatusBarBoundsViewModel.Factory,
+    override val appHandlesViewModelFactory: AppHandlesViewModel.Factory,
     tableLoggerFactory: TableLogBufferFactory,
     homeStatusBarInteractor: HomeStatusBarInteractor,
     homeStatusBarIconBlockListInteractor: HomeStatusBarIconBlockListInteractor,
@@ -458,7 +465,8 @@ constructor(
                 headsUpNotificationInteractor.statusBarHeadsUpStatus,
                 isTransitioningFromGoneToDream,
                 keyguardInteractor.isKeyguardVisible,
-            ) { isHomeStatusBarAllowed,
+            ) {
+                isHomeStatusBarAllowed,
                 isSecureCameraActive,
                 headsUpState,
                 isGoneToDream,

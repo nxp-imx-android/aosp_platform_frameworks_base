@@ -64,6 +64,7 @@ import com.android.systemui.statusbar.core.StatusBarConnectedDisplays
 import com.android.systemui.statusbar.events.domain.interactor.SystemStatusEventAnimationInteractor
 import com.android.systemui.statusbar.featurepods.popups.StatusBarPopupChips
 import com.android.systemui.statusbar.featurepods.popups.ui.compose.StatusBarPopupChipsContainer
+import com.android.systemui.statusbar.layout.ui.viewmodel.AppHandlesViewModel
 import com.android.systemui.statusbar.notification.icon.ui.viewbinder.ConnectedDisplaysStatusBarNotificationIconViewStore
 import com.android.systemui.statusbar.notification.icon.ui.viewbinder.NotificationIconContainerStatusBarViewBinder
 import com.android.systemui.statusbar.notification.icon.ui.viewbinder.NotificationIconContainerViewBinder
@@ -179,6 +180,10 @@ fun StatusBarRoot(
         } else {
             null
         }
+    val appHandlesViewModel =
+        rememberViewModel("AppHandleBounds") {
+            statusBarViewModel.appHandlesViewModelFactory.create(displayId)
+        }
 
     AndroidView(
         factory = { context ->
@@ -191,7 +196,7 @@ fun StatusBarRoot(
                     phoneStatusBarView = phoneStatusBarView,
                     statusBarViewModel = statusBarViewModel,
                     iconViewStore = iconViewStore,
-                    displayId = displayId,
+                    appHandlesViewModel = appHandlesViewModel,
                     context = context,
                 )
             }
@@ -322,7 +327,7 @@ private fun addStartSideChipsComposable(
     phoneStatusBarView: PhoneStatusBarView,
     statusBarViewModel: HomeStatusBarViewModel,
     iconViewStore: NotificationIconContainerViewBinder.IconViewStore?,
-    displayId: Int,
+    appHandlesViewModel: AppHandlesViewModel,
     context: Context,
 ) {
     val startSideExceptHeadsUp =
@@ -343,7 +348,6 @@ private fun addStartSideChipsComposable(
                 val statusBarBoundsViewModel =
                     rememberViewModel("HomeStatusBar.Bounds") {
                         statusBarViewModel.statusBarBoundsViewModelFactory.create(
-                            displayId = displayId,
                             startSideContainerView = startSideContainerView,
                             clockView = clockView,
                         )
@@ -353,14 +357,14 @@ private fun addStartSideChipsComposable(
 
                 val chipsMaxWidth: Dp =
                     remember(
-                        statusBarBoundsViewModel.appHandleBounds,
+                        appHandlesViewModel.appHandleBounds,
                         statusBarBoundsViewModel.startSideContainerBounds,
                         statusBarBoundsViewModel.clockBounds,
                         isRtl,
                         density,
                     ) {
                         chipsMaxWidth(
-                            appHandles = statusBarBoundsViewModel.appHandleBounds,
+                            appHandles = appHandlesViewModel.appHandleBounds,
                             startSideContainerBounds =
                                 statusBarBoundsViewModel.startSideContainerBounds,
                             clockBounds = statusBarBoundsViewModel.clockBounds,
