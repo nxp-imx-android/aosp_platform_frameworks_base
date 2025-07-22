@@ -155,12 +155,18 @@ object ShadeHeader {
         val foregroundColor: Color
             @Composable @ReadOnlyComposable get
 
+        val onHoveredBackgroundColor: Color
+            @Composable @ReadOnlyComposable get
+
         data object Weak : ChipHighlight {
             override val backgroundColor: Color
                 @Composable get() = MaterialTheme.colorScheme.surface.copy(alpha = 0.3f)
 
             override val foregroundColor: Color
                 @Composable get() = MaterialTheme.colorScheme.onSurface
+
+            override val onHoveredBackgroundColor: Color
+                @Composable get() = backgroundColor
         }
 
         data object Strong : ChipHighlight {
@@ -169,6 +175,20 @@ object ShadeHeader {
 
             override val foregroundColor: Color
                 @Composable get() = MaterialTheme.colorScheme.onSecondary
+
+            override val onHoveredBackgroundColor: Color
+                @Composable get() = backgroundColor
+        }
+
+        data object Transparent : ChipHighlight {
+            override val backgroundColor: Color
+                @Composable get() = Color.Transparent
+
+            override val foregroundColor: Color
+                @Composable get() = MaterialTheme.colorScheme.onSurface
+
+            override val onHoveredBackgroundColor: Color
+                @Composable get() = MaterialTheme.colorScheme.surface.copy(alpha = 0.3f)
         }
     }
 }
@@ -357,6 +377,7 @@ fun ContentScope.OverlayShadeHeader(
             Box(modifier = Modifier.padding(horizontal = horizontalPadding)) {
                 ShadeHighlightChip(
                     backgroundColor = notificationsHighlight.backgroundColor,
+                    onHoveredBackgroundColor = notificationsHighlight.onHoveredBackgroundColor,
                     horizontalArrangement = Arrangement.spacedBy(5.dp),
                     onClick = viewModel::onNotificationIconChipClicked,
                     modifier =
@@ -390,6 +411,7 @@ fun ContentScope.OverlayShadeHeader(
             ) {
                 ShadeHighlightChip(
                     backgroundColor = quickSettingsHighlight.backgroundColor,
+                    onHoveredBackgroundColor = quickSettingsHighlight.onHoveredBackgroundColor,
                     onClick = viewModel::onSystemIconChipClicked,
                     modifier =
                         Modifier.bouncy(

@@ -34,6 +34,7 @@ import com.android.systemui.shade.data.repository.fakePrivacyChipRepository
 import com.android.systemui.shade.domain.interactor.disableDualShade
 import com.android.systemui.shade.domain.interactor.enableDualShade
 import com.android.systemui.shade.domain.interactor.enableSingleShade
+import com.android.systemui.shade.ui.composable.ShadeHeader
 import com.android.systemui.statusbar.pipeline.mobile.data.model.SubscriptionModel
 import com.android.systemui.statusbar.pipeline.mobile.domain.interactor.fakeMobileIconsInteractor
 import com.android.systemui.statusbar.policy.configurationController
@@ -148,6 +149,23 @@ class ShadeHeaderViewModelTest : SysuiTestCase() {
             assertThat(currentScene).isEqualTo(Scenes.Gone)
             assertThat(currentOverlays).contains(Overlays.NotificationsShade)
             assertThat(currentOverlays).doesNotContain(Overlays.QuickSettingsShade)
+        }
+
+    @Test
+    fun enableDesktopFeatureSetTrue_inactiveChipHighlightReturnsTransparent() =
+        kosmos.runTest {
+            setEnableDesktopFeatureSet(enable = true)
+
+            assertThat(underTest.inactiveChipHighlight)
+                .isEqualTo(ShadeHeader.ChipHighlight.Transparent)
+        }
+
+    @Test
+    fun enableDesktopFeatureSetTrue_inactiveChipHighlightReturnsWeak() =
+        kosmos.runTest {
+            setEnableDesktopFeatureSet(enable = false)
+
+            assertThat(underTest.inactiveChipHighlight).isEqualTo(ShadeHeader.ChipHighlight.Weak)
         }
 
     @Test
