@@ -32,6 +32,12 @@ public final class MobileCountries {
     @NonNull
     private final com.android.i18n.timezone.MobileCountries mDelegate;
 
+    /** Create a {@link MobileCountries} entity. This can be used for test networks. */
+    public static MobileCountries createTestCell(String mcc) {
+        return new MobileCountries(
+                com.android.i18n.timezone.MobileCountries.create(mcc, Set.of(""), ""));
+    }
+
     MobileCountries(@NonNull com.android.i18n.timezone.MobileCountries delegate) {
         mDelegate = Objects.requireNonNull(delegate);
     }
@@ -73,5 +79,21 @@ public final class MobileCountries {
         return "MobileCountries{"
                 + "mDelegate=" + mDelegate
                 + '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o instanceof MobileCountries that) {
+            return mDelegate.equals(that.mDelegate);
+        }
+        return false;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(mDelegate);
     }
 }
