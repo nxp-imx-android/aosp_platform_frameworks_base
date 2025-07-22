@@ -95,10 +95,10 @@ class VolumePanelViewModelTest : SysuiTestCase() {
     @Test
     fun orientationChanges_panelOrientationChanges() =
         kosmos.runTest {
-            val volumePanelState by collectLastValue(underTest.volumePanelState)
             testableResources.overrideConfiguration(
                 Configuration().apply { orientation = Configuration.ORIENTATION_PORTRAIT }
             )
+            val volumePanelState by collectLastValue(underTest.volumePanelState)
             assertThat(volumePanelState!!.orientation).isEqualTo(Configuration.ORIENTATION_PORTRAIT)
 
             fakeConfigurationController.onConfigurationChanged(
