@@ -131,6 +131,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -578,6 +579,10 @@ public class HdmiControlService extends SystemService {
 
     // Whether a CEC-enabled sink is connected to the playback device
     private boolean mIsCecAvailable = false;
+
+    // Last three caller that init change of the input source
+    private final LinkedList<Integer> mLastUpdateSourceCallerRecord = new LinkedList<>();
+    private final int mMaxUpdateSourceCallerRecordNum = 3;
 
     // Object that handles logging statsd atoms.
     // Use getAtomWriter() instead of accessing directly, to allow dependency injection for testing.
@@ -2371,6 +2376,7 @@ public class HdmiControlService extends SystemService {
         @Override
         public void deviceSelect(final int deviceId, final IHdmiControlCallback callback) {
             initBinderCall();
+            updateLastActiveSourceCall(Binder.getCallingPid());
             runOnServiceThread(new Runnable() {
                 @Override
                 public void run() {
@@ -2418,6 +2424,7 @@ public class HdmiControlService extends SystemService {
         @Override
         public void portSelect(final int portId, final IHdmiControlCallback callback) {
             initBinderCall();
+            updateLastActiveSourceCall(Binder.getCallingPid());
             runOnServiceThread(new Runnable() {
                 @Override
                 public void run() {
@@ -3022,6 +3029,7 @@ public class HdmiControlService extends SystemService {
             pw.println("mIsCecAvailable: " + mIsCecAvailable);
             pw.println("mCecVersion: " + mCecVersion);
             pw.println("mIsAbsoluteVolumeBehaviorEnabled: " + isAbsoluteVolumeBehaviorEnabled());
+            pw.println("mLastUpdateSourceCallerRecord: " + mLastUpdateSourceCallerRecord.toString());
 
             // System settings
             pw.println("System_settings:");
@@ -3182,6 +3190,13 @@ public class HdmiControlService extends SystemService {
                 Binder.restoreCallingIdentity(token);
             }
         }
+    }
+
+    private void updateLastActiveSourceCall(int clientPid) {
+        if (mLastUpdateSourceCallerRecord.size() == mMaxUpdateSourceCallerRecordNum) {
+            mLastUpdateSourceCallerRecord.removeFirst();
+        }
+        mLastUpdateSourceCallerRecord.add(clientPid);
     }
 
     @VisibleForTesting
