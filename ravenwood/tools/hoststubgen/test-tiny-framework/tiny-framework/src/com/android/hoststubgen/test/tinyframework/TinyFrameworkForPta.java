@@ -24,4 +24,14 @@ public class TinyFrameworkForPta {
 
     public void foo(String arg1, Object arg2) {
     }
+
+    public class Nest1 {
+        public void bar() {
+        }
+
+        public class Nest2 {
+            public void baz() {
+            }
+        }
+    }
 }
