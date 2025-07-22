@@ -20,6 +20,7 @@ import static android.content.pm.ActivityInfo.CONFIG_COLOR_MODE;
 import static android.content.pm.ActivityInfo.CONFIG_DENSITY;
 import static android.content.pm.ActivityInfo.CONFIG_TOUCHSCREEN;
 import static android.view.Display.TYPE_INTERNAL;
+import static android.window.DesktopExperienceFlags.ENABLE_AUTO_RESTART_ON_DISPLAY_MOVE;
 import static android.window.DesktopExperienceFlags.ENABLE_DISPLAY_COMPAT_MODE;
 import static android.window.DesktopExperienceFlags.ENABLE_RESTART_MENU_FOR_CONNECTED_DISPLAYS;
 
@@ -72,6 +73,15 @@ class AppCompatDisplayCompatModePolicy {
     }
 
     /**
+     * Returns whether the app should be restarted when moved to a different display for app-compat.
+     */
+    boolean shouldRestartOnDisplayMove() {
+        // TODO(b/427878712): Discuss opt-in/out policies.
+        return mActivityRecord.mAppCompatController.getDisplayOverrides()
+                .shouldRestartOnDisplayMove();
+    }
+
+    /**
      * Called when the activity is moved to a different display.
      *
      * @param previousDisplay The display the app was on before this display transition.
@@ -87,6 +97,14 @@ class AppCompatDisplayCompatModePolicy {
             return;
         }
         mDisplayChangedWithoutRestart = true;
+
+        if (ENABLE_AUTO_RESTART_ON_DISPLAY_MOVE.isTrue() && shouldRestartOnDisplayMove()) {
+            // At this point, a transition for moving the app between displays should be running, so
+            // the restarting logic below will be queued as a new transition, which means the
+            // configuration change for the display move has been processed when the process is
+            // restarted. This allows the app to be launched in the latest configuration.
+            mActivityRecord.restartProcessIfVisible();
+        }
     }
 
     /**

@@ -143,6 +143,7 @@ import static android.view.WindowManager.PROPERTY_ACTIVITY_EMBEDDING_SPLITS_ENAB
 import static android.view.WindowManager.PROPERTY_ALLOW_UNTRUSTED_ACTIVITY_EMBEDDING_STATE_SHARING;
 import static android.view.WindowManager.TRANSIT_RELAUNCH;
 import static android.view.WindowManager.hasWindowExtensionsEnabled;
+import static android.window.DesktopExperienceFlags.ENABLE_AUTO_RESTART_ON_DISPLAY_MOVE;
 import static android.window.DesktopExperienceFlags.ENABLE_DRAGGING_PIP_ACROSS_DISPLAYS;
 import static android.window.DesktopExperienceFlags.ENABLE_PIP_PARAMS_UPDATE_NOTIFICATION_BUGFIX;
 import static android.window.DesktopExperienceFlags.ENABLE_RESTART_MENU_FOR_CONNECTED_DISPLAYS;
@@ -8778,8 +8779,6 @@ final class ActivityRecord extends WindowToken {
         // configuration.
         mAppCompatController.getSizeCompatModePolicy().clearSizeCompatMode();
         mAppCompatController.getDisplayCompatModePolicy().onProcessRestarted();
-        final boolean fullscreenOverrideChanged =
-                mAppCompatController.getAspectRatioOverrides().resetSystemFullscreenOverrideCache();
 
         if (!attachedToProcess()) {
             return;
@@ -8788,41 +8787,25 @@ final class ActivityRecord extends WindowToken {
         // The restarting state avoids removing this record when process is died.
         setState(RESTARTING_PROCESS, "restartActivityProcess");
 
-        if (!mVisibleRequested || mHaveState) {
-            // Kill its process immediately because the activity should be in background.
-            // The activity state will be update to {@link #DESTROYED} in
-            // {@link ActivityStack#cleanUp} when handling process died.
-            mAtmService.mH.post(() -> {
-                final WindowProcessController wpc;
-                synchronized (mAtmService.mGlobalLock) {
-                    if (!hasProcess()
-                            || app.getReportedProcState() <= PROCESS_STATE_IMPORTANT_FOREGROUND) {
-                        return;
-                    }
-                    wpc = app;
-                }
-                mAtmService.mAmInternal.killProcess(wpc.mName, wpc.mUid, "resetConfig");
-            });
-            return;
-        }
-
-        if (fullscreenOverrideChanged) {
-            task.updateForceResizeOverridesIfNeeded(this);
-        }
-
-        // Process restart may require trampoline activity launch, for which app switching needs to
-        // be enabled. App switching may be allowed only for specific cases while/after Recents is
-        // shown. As when a process is restarted, the user should be interacting with the app, so
-        // it's safe to do this. See b/421048151 for more detail.
-        if (ENABLE_RESTART_MENU_FOR_CONNECTED_DISPLAYS.isTrue()) {
-            mAtmService.resumeAppSwitches();
-        }
-
         if (mTransitionController.isShellTransitionsEnabled()) {
+            if (!ENABLE_AUTO_RESTART_ON_DISPLAY_MOVE.isTrue()
+                    && killInvisibleProcessOrPrepareForRestart()) {
+                return;
+            }
             final Transition transition = new Transition(TRANSIT_RELAUNCH, 0 /* flags */,
                     mTransitionController, mWmService.mSyncEngine);
             mTransitionController.startCollectOrQueue(transition, (deferred) -> {
-                if (mState != RESTARTING_PROCESS || !attachedToProcess()) {
+                if (ENABLE_AUTO_RESTART_ON_DISPLAY_MOVE.isTrue()
+                        && killInvisibleProcessOrPrepareForRestart()) {
+                    transition.abort();
+                    return;
+                }
+                if (!ENABLE_AUTO_RESTART_ON_DISPLAY_MOVE.isTrue()
+                        && mState != RESTARTING_PROCESS) {
+                    transition.abort();
+                    return;
+                }
+                if (!attachedToProcess()) {
                     transition.abort();
                     return;
                 }
@@ -8837,8 +8820,50 @@ final class ActivityRecord extends WindowToken {
                 mAtmService.mChainTracker.end();
             });
         } else {
+            if (killInvisibleProcessOrPrepareForRestart()) {
+                return;
+            }
             scheduleStopForRestartProcess();
         }
+    }
+
+    /**
+     * Returns {@code true} if the process is killed as the app is invisible. Otherwise, do some
+     * preparation to restart the process.
+     */
+    private boolean killInvisibleProcessOrPrepareForRestart() {
+        if (!mVisibleRequested || (!ENABLE_AUTO_RESTART_ON_DISPLAY_MOVE.isTrue() && mHaveState)) {
+            // Kill its process immediately because the activity should be in background.
+            // The activity state will be update to {@link #DESTROYED} in
+            // {@link ActivityStack#cleanUp} when handling process died.
+            mAtmService.mH.post(() -> {
+                final WindowProcessController wpc;
+                synchronized (mAtmService.mGlobalLock) {
+                    if (!hasProcess()
+                            || app.getReportedProcState() <= PROCESS_STATE_IMPORTANT_FOREGROUND) {
+                        return;
+                    }
+                    wpc = app;
+                }
+                mAtmService.mAmInternal.killProcess(wpc.mName, wpc.mUid, "resetConfig");
+            });
+            return true;
+        }
+
+        final boolean fullscreenOverrideChanged =
+                mAppCompatController.getAspectRatioOverrides().resetSystemFullscreenOverrideCache();
+        if (fullscreenOverrideChanged) {
+            task.updateForceResizeOverridesIfNeeded(this);
+        }
+
+        // Process restart may require trampoline activity launch, for which app switching needs to
+        // be enabled. App switching may be allowed only for specific cases while/after Recents is
+        // shown. As when a process is restarted, the user should be interacting with the app, so
+        // it's safe to do this. See b/421048151 for more detail.
+        if (ENABLE_RESTART_MENU_FOR_CONNECTED_DISPLAYS.isTrue()) {
+            mAtmService.resumeAppSwitches();
+        }
+        return false;
     }
 
     private void scheduleStopForRestartProcess() {
