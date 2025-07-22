@@ -676,7 +676,8 @@ class WallpaperController {
 
     private void findWallpaperTarget() {
         mFindResults.reset();
-        if (mService.mAtmService.mSupportsFreeformWindowManagement
+        if (!com.android.window.flags.Flags.doNotForceWallpaperForFreeformTask()
+                && mService.mAtmService.mSupportsFreeformWindowManagement
                 && mDisplayContent.getDefaultTaskDisplayArea()
                 .isRootTaskVisible(WINDOWING_MODE_FREEFORM)) {
             // In freeform mode we set the wallpaper as its own target, so we don't need an

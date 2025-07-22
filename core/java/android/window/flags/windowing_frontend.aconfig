@@ -136,6 +136,17 @@ flag {
 }
 
 flag {
+  name: "do_not_force_wallpaper_for_freeform_task"
+  namespace: "windowing_frontend"
+  description: "Remove legacy condition to reduce overhead"
+  bug: "433694978"
+  is_fixed_read_only: true
+  metadata {
+    purpose: PURPOSE_BUGFIX
+  }
+}
+
+flag {
   name: "bg_priority_for_occluded_freeform_tasks"
   namespace: "windowing_frontend"
   description: "Background priority for occluded freeform tasks"
