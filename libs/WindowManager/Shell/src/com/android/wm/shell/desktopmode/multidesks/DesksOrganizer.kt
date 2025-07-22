@@ -17,6 +17,7 @@ package com.android.wm.shell.desktopmode.multidesks
 
 import android.app.ActivityManager
 import android.app.ActivityOptions
+import android.app.TaskInfo
 import android.window.TransitionInfo
 import android.window.WindowContainerTransaction
 
@@ -48,7 +49,7 @@ interface DesksOrganizer {
     fun moveTaskToDesk(
         wct: WindowContainerTransaction,
         deskId: Int,
-        task: ActivityManager.RunningTaskInfo,
+        task: TaskInfo,
         minimized: Boolean = false,
     )
 

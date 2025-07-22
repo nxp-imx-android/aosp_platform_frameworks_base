@@ -17,6 +17,7 @@
 package com.android.wm.shell.desktopmode
 
 import android.app.ActivityManager
+import android.app.ActivityManager.RecentTaskInfo
 import android.app.ActivityManager.RunningTaskInfo
 import android.app.WindowConfiguration.ACTIVITY_TYPE_HOME
 import android.app.WindowConfiguration.ACTIVITY_TYPE_STANDARD
@@ -25,10 +26,14 @@ import android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN
 import android.app.WindowConfiguration.WINDOWING_MODE_MULTI_WINDOW
 import android.app.WindowConfiguration.WINDOWING_MODE_PINNED
 import android.content.ComponentName
+import android.graphics.Point
 import android.graphics.Rect
 import android.view.Display.DEFAULT_DISPLAY
+import android.window.IWindowContainerToken
+import android.window.WindowContainerToken
 import com.android.wm.shell.MockToken
 import com.android.wm.shell.TestRunningTaskInfoBuilder
+import org.mockito.Mockito.mock
 
 object DesktopTestHelpers {
     /** Create a task that has windowing mode set to [WINDOWING_MODE_FREEFORM] */
@@ -71,6 +76,14 @@ object DesktopTestHelpers {
     /** Create a task that has windowing mode set to [WINDOWING_MODE_FULLSCREEN] */
     fun createFullscreenTask(displayId: Int = DEFAULT_DISPLAY): RunningTaskInfo =
         createFullscreenTaskBuilder(displayId).build()
+
+    fun createRecentTaskInfo(taskId: Int, displayId: Int = DEFAULT_DISPLAY): RecentTaskInfo =
+        RecentTaskInfo().apply {
+            this.taskId = taskId
+            this.displayId = displayId
+            token = WindowContainerToken(mock(IWindowContainerToken::class.java))
+            positionInParent = Point()
+        }
 
     /** Create a task that has windowing mode set to [WINDOWING_MODE_MULTI_WINDOW] */
     fun createSplitScreenTask(displayId: Int = DEFAULT_DISPLAY): RunningTaskInfo =
