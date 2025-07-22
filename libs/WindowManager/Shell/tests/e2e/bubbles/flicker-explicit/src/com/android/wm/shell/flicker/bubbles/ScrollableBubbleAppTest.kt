@@ -19,6 +19,7 @@ package com.android.wm.shell.flicker.bubbles
 import android.platform.test.annotations.Presubmit
 import android.platform.test.annotations.RequiresFlagsEnabled
 import android.tools.NavBar
+import androidx.test.filters.FlakyTest
 import androidx.test.filters.RequiresDevice
 import com.android.server.wm.flicker.helpers.ScrollToFinishHelper
 import com.android.wm.shell.Flags
@@ -60,6 +61,7 @@ import org.junit.runners.MethodSorters
  * - [BubbleFlickerTestBase]
  * - [DismissExpandedBubbleTestCases]
  */
+@FlakyTest(bugId = 433241651)
 @RequiresFlagsEnabled(Flags.FLAG_ENABLE_CREATE_ANY_BUBBLE)
 @RequiresDevice
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
