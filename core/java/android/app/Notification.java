@@ -6197,14 +6197,21 @@ public class Notification implements Parcelable
             updateExpanderAlignment(contentView, p, hasSecondLine);
             setHeaderlessVerticalMargins(contentView, p, hasSecondLine);
 
-            // Update margins to leave space for the top line (but not for headerless views like
-            // HUNS, which use a different layout that already accounts for that). Templates that
-            // have content that will be displayed under the small icon also use a different margin.
-            if (Flags.notificationsRedesignTemplates() && !p.mHeaderless) {
+            if (notificationsRedesignTemplates() && !p.mHeaderless) {
+                // Update margins to leave space for the top line (but not for headerless views like
+                // HUNS, which use a different layout that already accounts for that). Templates
+                // that have content that will be displayed under the small icon also use a
+                // different margin.
                 int margin = getContentMarginTop(mContext,
                         R.dimen.notification_2025_content_margin_top);
                 contentView.setViewLayoutMargin(R.id.notification_main_column,
                         RemoteViews.MARGIN_TOP, margin, COMPLEX_UNIT_PX);
+
+                // Use a slightly larger text margin for expanded text with the redesign
+                int textMarginForLargeIcon = mContext.getResources().getDimensionPixelSize(
+                        R.dimen.notification_2025_text_margin_top);
+                contentView.setViewLayoutMargin(p.mTextViewId, RemoteViews.MARGIN_TOP,
+                        textMarginForLargeIcon, COMPLEX_UNIT_PX);
             }
 
             return contentView;
