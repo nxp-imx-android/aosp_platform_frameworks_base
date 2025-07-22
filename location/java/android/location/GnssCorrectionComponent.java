@@ -118,6 +118,17 @@ public final class GnssCorrectionComponent implements Parcelable {
         dest.writeTypedObject(mPseudorangeCorrection, flags);
     }
 
+    @Override
+    @NonNull
+    public String toString() {
+        StringBuilder builder = new StringBuilder("GnssCorrectionComponent[");
+        builder.append("sourceKey = ").append(mSourceKey);
+        builder.append(", validityInterval = ").append(mValidityInterval);
+        builder.append(", pseudorangeCorrection = ").append(mPseudorangeCorrection);
+        builder.append("]");
+        return builder.toString();
+    }
+
     /**
      * Time interval referenced against the GPS epoch. The start must be less than or equal to the
      * end. When the start equals the end, the interval is empty.
