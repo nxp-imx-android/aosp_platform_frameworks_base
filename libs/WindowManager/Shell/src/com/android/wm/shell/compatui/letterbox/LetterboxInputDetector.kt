@@ -36,9 +36,7 @@ import com.android.internal.protolog.ProtoLog
 import com.android.wm.shell.common.suppliers.WindowSessionSupplier
 import com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_APP_COMPAT
 
-/**
- * This is responsible for detecting events on a given [SurfaceControl].
- */
+/** This is responsible for detecting events on a given [SurfaceControl]. */
 class LetterboxInputDetector(
     private val context: Context,
     private val handler: Handler,
@@ -48,8 +46,7 @@ class LetterboxInputDetector(
 ) {
 
     companion object {
-        @JvmStatic
-        private val TAG = "LetterboxInputDetector"
+        @JvmStatic private val TAG = "LetterboxInputDetector"
     }
 
     private var state: InputDetectorState? = null
@@ -74,7 +71,7 @@ class LetterboxInputDetector(
                     "%s not started for %s on %s",
                     TAG,
                     "$source",
-                    "$key"
+                    "$key",
                 )
             }
         }
@@ -101,9 +98,7 @@ class LetterboxInputDetector(
         }
     }
 
-    /**
-     * The state for a {@link SurfaceControl} for a given displayId.
-     */
+    /** The state for a {@link SurfaceControl} for a given displayId. */
     private class InputDetectorState(
         val context: Context,
         val handler: Handler,
@@ -130,21 +125,22 @@ class LetterboxInputDetector(
                         tx,
                         source,
                         "ShellLetterboxInputSurface $source",
-                        "$TAG creation"
+                        "$TAG creation",
                     )
-                val inputChannel = windowSession.grantInputChannel(
-                    displayId,
-                    inputSurface,
-                    inputToken,
-                    null,
-                    WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
-                    WindowManager.LayoutParams.PRIVATE_FLAG_TRUSTED_OVERLAY,
-                    WindowManager.LayoutParams.INPUT_FEATURE_SPY,
-                    WindowManager.LayoutParams.TYPE_INPUT_CONSUMER,
-                    null,
-                    inputTransferToken,
-                    "$TAG of $source",
-                )
+                val inputChannel =
+                    windowSession.grantInputChannel(
+                        displayId,
+                        inputSurface,
+                        inputToken,
+                        null,
+                        WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
+                        WindowManager.LayoutParams.PRIVATE_FLAG_TRUSTED_OVERLAY,
+                        WindowManager.LayoutParams.INPUT_FEATURE_SPY,
+                        WindowManager.LayoutParams.TYPE_INPUT_CONSUMER,
+                        null,
+                        inputTransferToken,
+                        "$TAG of $source",
+                    )
                 receiver = EventReceiver(context, inputChannel, handler, letterboxListener)
                 return true
             } catch (e: RemoteException) {
@@ -165,7 +161,7 @@ class LetterboxInputDetector(
                     WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
                     WindowManager.LayoutParams.PRIVATE_FLAG_TRUSTED_OVERLAY,
                     WindowManager.LayoutParams.INPUT_FEATURE_SPY,
-                    region
+                    region,
                 )
             } catch (e: RemoteException) {
                 e.rethrowFromSystemServer()
@@ -173,16 +169,12 @@ class LetterboxInputDetector(
         }
 
         fun updateVisibility(tx: Transaction, visible: Boolean) {
-            inputSurface?.let {
-                tx.setVisibility(it, visible)
-            }
+            inputSurface?.let { tx.setVisibility(it, visible) }
         }
 
         fun stop(tx: Transaction) {
             handler.post(::resetInputState)
-            inputSurface?.let { s ->
-                tx.remove(s)
-            }
+            inputSurface?.let { s -> tx.remove(s) }
         }
 
         private fun resetInputState() {
@@ -201,22 +193,17 @@ class LetterboxInputDetector(
         }
     }
 
-    /**
-     * Reads from the provided {@link InputChannel} and identifies a specific event.
-     */
+    /** Reads from the provided {@link InputChannel} and identifies a specific event. */
     private class EventReceiver(
         context: Context,
         inputChannel: InputChannel,
         uiHandler: Handler,
-        listener: GestureDetector.SimpleOnGestureListener
+        listener: GestureDetector.SimpleOnGestureListener,
     ) : InputEventReceiver(inputChannel, uiHandler.looper) {
         private val eventDetector: GestureDetector
 
         init {
-            eventDetector = GestureDetector(
-                context, listener,
-                uiHandler
-            )
+            eventDetector = GestureDetector(context, listener, uiHandler)
         }
 
         override fun onInputEvent(event: InputEvent) {

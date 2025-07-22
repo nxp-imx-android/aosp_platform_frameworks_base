@@ -28,13 +28,11 @@ import javax.inject.Inject
  * This class encapsulate the logic to find the right id for the [Task] used in the [Change].
  */
 @WMSingleton
-class TaskIdResolver @Inject constructor(
-    private val letterboxTaskInfoRepository: LetterboxTaskInfoRepository
-) {
+class TaskIdResolver
+@Inject
+constructor(private val letterboxTaskInfoRepository: LetterboxTaskInfoRepository) {
 
-    /**
-     * @return The id for the Task to consider for the Letterbox bounds update.
-     */
+    /** @return The id for the Task to consider for the Letterbox bounds update. */
     fun getLetterboxTaskId(taskInfo: TaskInfo): Int {
         // We use the taskId itself if in the repository.
         val candidateId = taskInfo.taskId
@@ -47,7 +45,8 @@ class TaskIdResolver @Inject constructor(
         // the Change contains the parent of the Task with letterbox surfaces and not the Task
         // itself.
         if (taskInfo.isMultiWindow) {
-            letterboxTaskInfoRepository.find { key, item -> item.parentTaskId == candidateId }
+            letterboxTaskInfoRepository
+                .find { key, item -> item.parentTaskId == candidateId }
                 .let { items ->
                     if (items.isNotEmpty()) {
                         // In the repository there's a Task that is eligible for letterbox surfaces

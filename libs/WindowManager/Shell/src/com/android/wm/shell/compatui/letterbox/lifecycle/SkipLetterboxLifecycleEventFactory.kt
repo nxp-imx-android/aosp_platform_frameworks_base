@@ -21,8 +21,8 @@ import com.android.wm.shell.dagger.WMSingleton
 import javax.inject.Inject
 
 /**
- * [LetterboxLifecycleEventFactory] implementation that ignore a Change
- * if not related to Letterboxing.
+ * [LetterboxLifecycleEventFactory] implementation that ignore a Change if not related to
+ * Letterboxing.
  */
 @WMSingleton
 class SkipLetterboxLifecycleEventFactory @Inject constructor() : LetterboxLifecycleEventFactory {
@@ -32,6 +32,5 @@ class SkipLetterboxLifecycleEventFactory @Inject constructor() : LetterboxLifecy
 
     // Although this LetterboxLifecycleEventFactory is able to handle the specific Change
     // it returns an empty LetterboxLifecycleEvent to basically ignore the Change.
-    override fun createLifecycleEvent(change: Change): LetterboxLifecycleEvent? =
-        null
+    override fun createLifecycleEvent(change: Change): LetterboxLifecycleEvent? = null
 }

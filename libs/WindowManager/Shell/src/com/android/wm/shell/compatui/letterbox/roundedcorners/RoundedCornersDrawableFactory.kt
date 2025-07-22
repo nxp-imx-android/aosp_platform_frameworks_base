@@ -19,12 +19,15 @@ package com.android.wm.shell.compatui.letterbox.roundedcorners
 import android.graphics.Color
 import android.graphics.drawable.Drawable
 
-/**
- * Abstraction for the object responsible of the creation of the rounded corners Drawables.
- */
+/** Abstraction for the object responsible of the creation of the rounded corners Drawables. */
 interface RoundedCornersDrawableFactory<T : Drawable> {
 
-    enum class Position { TOP_LEFT, TOP_RIGHT, BOTTOM_RIGHT, BOTTOM_LEFT }
+    enum class Position {
+        TOP_LEFT,
+        TOP_RIGHT,
+        BOTTOM_RIGHT,
+        BOTTOM_LEFT,
+    }
 
     /**
      * @param color The color of the rounded corner background.

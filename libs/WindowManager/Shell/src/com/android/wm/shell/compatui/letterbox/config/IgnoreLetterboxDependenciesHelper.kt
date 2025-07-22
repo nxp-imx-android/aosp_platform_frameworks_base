@@ -25,8 +25,6 @@ import android.window.TransitionInfo.Change
  */
 class IgnoreLetterboxDependenciesHelper : LetterboxDependenciesHelper {
 
-    /**
-     * By default the input surface should always be created.
-     */
+    /** By default the input surface should always be created. */
     override fun shouldSupportInputSurface(change: Change): Boolean = true
 }

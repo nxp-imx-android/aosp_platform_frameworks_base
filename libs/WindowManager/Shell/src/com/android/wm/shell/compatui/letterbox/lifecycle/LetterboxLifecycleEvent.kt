@@ -31,12 +31,10 @@ import com.android.wm.shell.shared.TransitionUtil.isOpeningType
 enum class LetterboxLifecycleEventType {
     NONE,
     OPEN,
-    CLOSE
+    CLOSE,
 }
 
-/**
- * Encapsulate all the information required by a [LetterboxLifecycleController]
- */
+/** Encapsulate all the information required by a [LetterboxLifecycleController] */
 data class LetterboxLifecycleEvent(
     val type: LetterboxLifecycleEventType = NONE,
     val taskId: Int = -1,
@@ -47,23 +45,20 @@ data class LetterboxLifecycleEvent(
     val taskLeash: SurfaceControl? = null,
     val isBubble: Boolean = false,
     val isTranslucent: Boolean = false,
-    val supportsInput: Boolean = true
+    val supportsInput: Boolean = true,
 )
 
-/**
- * Extract the [LetterboxKey] from the [LetterboxLifecycleEvent].
- */
+/** Extract the [LetterboxKey] from the [LetterboxLifecycleEvent]. */
 fun LetterboxLifecycleEvent.letterboxKey(): LetterboxKey =
     LetterboxKey(displayId = displayId, taskId = taskId)
 
-/**
- * Maps a [TransitionInfo.Change] mode in a [LetterboxLifecycleEventType].
- */
-fun Change.asLetterboxLifecycleEventType() = when {
-    isClosingType(mode) -> CLOSE
-    isOpeningType(mode) -> OPEN
-    else -> NONE
-}
+/** Maps a [TransitionInfo.Change] mode in a [LetterboxLifecycleEventType]. */
+fun Change.asLetterboxLifecycleEventType() =
+    when {
+        isClosingType(mode) -> CLOSE
+        isOpeningType(mode) -> OPEN
+        else -> NONE
+    }
 
 /**
  * Logic to skip a [Change] if not related to Letterboxing. We always skip changes about closing.
@@ -76,14 +71,12 @@ fun Change.shouldSkipForLetterbox(): Boolean = isClosingType(mode)
  */
 fun Change.isActivityChange(): Boolean = activityTransitionInfo != null
 
-/**
- * Returns [true] if the [Change] is related to a translucent container.
- */
+/** Returns [true] if the [Change] is related to a translucent container. */
 fun Change.isTranslucent() = hasFlags(FLAG_TRANSLUCENT)
 
 /**
- * Returns [true] if the Task hosts Activities. This is true if the Change has Activity as target
- * or if task is a leaf task.
+ * Returns [true] if the Task hosts Activities. This is true if the Change has Activity as target or
+ * if task is a leaf task.
  */
 fun Change.isChangeForALeafTask(): Boolean =
     taskInfo?.appCompatTaskInfo?.isLeafTask ?: isActivityChange()
