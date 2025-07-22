@@ -210,7 +210,7 @@ public abstract class InfoMediaManager {
 
     private static final String TAG = "InfoMediaManager";
     private static final boolean DEBUG = Log.isLoggable(TAG, Log.DEBUG);
-    private final Object mLock = new Object();
+    protected final Object mLock = new Object();
     protected final List<MediaDevice> mMediaDevices = new CopyOnWriteArrayList<>();
     @NonNull protected final Context mContext;
     @NonNull protected final String mPackageName;
@@ -373,9 +373,7 @@ public abstract class InfoMediaManager {
     protected abstract List<MediaRoute2Info> getTransferableRoutes(@NonNull String packageName);
 
     protected final void rebuildDeviceList() {
-        synchronized (mLock) {
-            buildAvailableRoutes();
-        }
+        buildAvailableRoutes();
         updateDeviceSuggestion();
     }
 
@@ -847,29 +845,31 @@ public abstract class InfoMediaManager {
         return didUpdate;
     }
 
-    protected final synchronized void refreshDevices() {
+    protected final void refreshDevices() {
         rebuildDeviceList();
         dispatchDeviceListAdded(mMediaDevices);
     }
 
     // MediaRoute2Info.getType was made public on API 34, but exists since API 30.
     @SuppressWarnings("NewApi")
-    private synchronized void buildAvailableRoutes() {
-        mMediaDevices.clear();
-        RoutingSessionInfo activeSession = getActiveRoutingSession();
+    private void buildAvailableRoutes() {
+        synchronized (mLock) {
+            mMediaDevices.clear();
+            RoutingSessionInfo activeSession = getActiveRoutingSession();
 
-        for (MediaRoute2Info route : getAvailableRoutes(activeSession)) {
-            addMediaDevice(route, activeSession);
-        }
+            for (MediaRoute2Info route : getAvailableRoutes(activeSession)) {
+                addMediaDevice(route, activeSession);
+            }
 
-        // In practice, mMediaDevices should always have at least one route.
-        if (!mMediaDevices.isEmpty()) {
-            // First device on the list is always the first selected route.
-            mCurrentConnectedDevice = mMediaDevices.get(0);
+            // In practice, mMediaDevices should always have at least one route.
+            if (!mMediaDevices.isEmpty()) {
+                // First device on the list is always the first selected route.
+                mCurrentConnectedDevice = mMediaDevices.get(0);
+            }
         }
     }
 
-    private synchronized List<MediaRoute2Info> getAvailableRoutes(
+    private List<MediaRoute2Info> getAvailableRoutes(
             RoutingSessionInfo activeSession) {
         List<MediaRoute2Info> availableRoutes = new ArrayList<>();
 
@@ -1058,7 +1058,7 @@ public abstract class InfoMediaManager {
     @RequiresApi(34)
     static class Api34Impl {
         @DoNotInline
-        static synchronized List<MediaRoute2Info> filterDuplicatedIds(List<MediaRoute2Info> infos) {
+        static List<MediaRoute2Info> filterDuplicatedIds(List<MediaRoute2Info> infos) {
             List<MediaRoute2Info> filteredInfos = new ArrayList<>();
             Set<String> foundDeduplicationIds = new HashSet<>();
             for (MediaRoute2Info mediaRoute2Info : infos) {
