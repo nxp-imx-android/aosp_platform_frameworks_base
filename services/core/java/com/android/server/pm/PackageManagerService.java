@@ -8450,4 +8450,12 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
     String getDeveloperVerificationPolicyDelegatePackageName() {
         return mDeveloperVerificationPolicyDelegatePackage;
     }
+
+    /**
+     * @return The update-owner of the given package name as specified in the system config file.
+     */
+    @Nullable
+    public String getSystemAppUpdateOwnerPackageName(String packageName) {
+        return mInjector.getSystemConfig().getSystemAppUpdateOwnerPackageName(packageName);
+    }
 }
