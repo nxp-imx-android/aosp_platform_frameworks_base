@@ -21,11 +21,6 @@ import static android.view.inputmethod.ImeTracker.DEBUG_IME_VISIBILITY;
 import static com.android.server.EventLogTags.IMF_HIDE_IME;
 import static com.android.server.EventLogTags.IMF_SHOW_IME;
 import static com.android.server.inputmethod.ImeProtoLogGroup.IME_VISIBILITY_APPLIER_DEBUG;
-import static com.android.server.inputmethod.ImeVisibilityStateComputer.STATE_HIDE_IME;
-import static com.android.server.inputmethod.ImeVisibilityStateComputer.STATE_HIDE_IME_EXPLICIT;
-import static com.android.server.inputmethod.ImeVisibilityStateComputer.STATE_HIDE_IME_NOT_ALWAYS;
-import static com.android.server.inputmethod.ImeVisibilityStateComputer.STATE_SHOW_IME;
-import static com.android.server.inputmethod.ImeVisibilityStateComputer.STATE_SHOW_IME_IMPLICIT;
 
 import android.annotation.NonNull;
 import android.annotation.UserIdInt;
@@ -40,7 +35,6 @@ import com.android.internal.inputmethod.SoftInputShowHideReason;
 import com.android.internal.protolog.ProtoLog;
 import com.android.server.LocalServices;
 import com.android.server.wm.ImeTargetVisibilityPolicy;
-import com.android.server.wm.WindowManagerInternal;
 
 import java.util.Objects;
 
@@ -54,14 +48,11 @@ final class DefaultImeVisibilityApplier {
 
     private InputMethodManagerService mService;
 
-    private final WindowManagerInternal mWindowManagerInternal;
-
     @NonNull
     private final ImeTargetVisibilityPolicy mImeTargetVisibilityPolicy;
 
     DefaultImeVisibilityApplier(InputMethodManagerService service) {
         mService = service;
-        mWindowManagerInternal = LocalServices.getService(WindowManagerInternal.class);
         mImeTargetVisibilityPolicy = LocalServices.getService(ImeTargetVisibilityPolicy.class);
     }
 
@@ -136,38 +127,6 @@ final class DefaultImeVisibilityApplier {
                 mService.onShowHideSoftInputRequested(false /* show */, hideInputToken, reason,
                         statsToken, userId);
             }
-        }
-    }
-
-    /**
-     * Applies the IME visibility from {@link android.inputmethodservice.InputMethodService} with
-     * according to the given visibility state.
-     *
-     * @param statsToken the token tracking the current IME request
-     * @param state      the new IME visibility state for the applier to handle
-     * @param userId     the target user when applying the IME visibility state
-     */
-    @GuardedBy("ImfLock.class")
-    void applyImeVisibility(@NonNull ImeTracker.Token statsToken,
-            @ImeVisibilityStateComputer.VisibilityState int state,
-            @UserIdInt int userId) {
-        final var userData = mService.getUserData(userId);
-        switch (state) {
-            case STATE_SHOW_IME:
-            case STATE_HIDE_IME:
-                // no-op
-                break;
-            case STATE_HIDE_IME_EXPLICIT:
-            case STATE_HIDE_IME_NOT_ALWAYS:
-                mService.setImeVisibilityOnFocusedWindowClient(false, userData, statsToken);
-                break;
-            case STATE_SHOW_IME_IMPLICIT:
-                // This can be triggered by IMMS#startInputOrWindowGainedFocus. We need to
-                // set the requestedVisibleTypes in InsetsController first, before applying it.
-                mService.setImeVisibilityOnFocusedWindowClient(true, userData, statsToken);
-                break;
-            default:
-                throw new IllegalArgumentException("Invalid IME visibility state: " + state);
         }
     }
 

@@ -3751,7 +3751,7 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
             }
             final var statsToken = createStatsTokenForFocusedClient(isShow, imeVisRes.getReason(),
                     userId);
-            mVisibilityApplier.applyImeVisibility(statsToken, imeVisRes.getState(), userId);
+            setImeVisibilityOnFocusedWindowClient(imeVisRes.isVisible(), userData, statsToken);
             if (imeVisRes.getReason() == SoftInputShowHideReason.HIDE_UNSPECIFIED_WINDOW) {
                 // If focused display changed, we should unbind current method
                 // to make app window in previous display relayout after Ime
@@ -4583,12 +4583,6 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
     @VisibleForTesting
     DefaultImeVisibilityApplier getVisibilityApplierLocked() {
         return mVisibilityApplier;
-    }
-
-    @GuardedBy("ImfLock.class")
-    void onApplyImeVisibilityFromComputerLocked(@NonNull ImeTracker.Token statsToken,
-            @NonNull ImeVisibilityResult result, @UserIdInt int userId) {
-        mVisibilityApplier.applyImeVisibility(statsToken, result.getState(), userId);
     }
 
     @GuardedBy("ImfLock.class")

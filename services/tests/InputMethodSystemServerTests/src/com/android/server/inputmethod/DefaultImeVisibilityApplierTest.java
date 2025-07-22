@@ -16,19 +16,11 @@
 
 package com.android.server.inputmethod;
 
-import static android.inputmethodservice.InputMethodService.IME_ACTIVE;
-
 import static com.android.internal.inputmethod.SoftInputShowHideReason.HIDE_SOFT_INPUT;
 import static com.android.internal.inputmethod.SoftInputShowHideReason.SHOW_SOFT_INPUT;
-import static com.android.server.inputmethod.ImeVisibilityStateComputer.STATE_HIDE_IME_EXPLICIT;
-import static com.android.server.inputmethod.ImeVisibilityStateComputer.STATE_HIDE_IME_NOT_ALWAYS;
-import static com.android.server.inputmethod.ImeVisibilityStateComputer.STATE_INVALID;
-import static com.android.server.inputmethod.ImeVisibilityStateComputer.STATE_SHOW_IME_IMPLICIT;
 
-import static org.junit.Assert.assertThrows;
 import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 import static java.util.Objects.requireNonNull;
 
@@ -91,52 +83,6 @@ public class DefaultImeVisibilityApplierTest extends InputMethodManagerServiceTe
                     ImeTracker.Token.empty(), HIDE_SOFT_INPUT, mUserId);
         }
         verifyHideSoftInput(false, true);
-    }
-
-    @Test
-    public void testApplyImeVisibility_throwForInvalidState() {
-        assertThrows(IllegalArgumentException.class, () -> {
-            synchronized (ImfLock.class) {
-                mVisibilityApplier.applyImeVisibility(ImeTracker.Token.empty(),
-                        STATE_INVALID, mUserId);
-            }
-        });
-    }
-
-    @Test
-    public void testApplyImeVisibility_hideImeExplicit() throws Exception {
-        synchronized (ImfLock.class) {
-            final var bindingController =
-                    mInputMethodManagerService.getInputMethodBindingController(mUserId);
-            when(bindingController.getImeWindowVis()).thenReturn(IME_ACTIVE);
-            mVisibilityApplier.applyImeVisibility(ImeTracker.Token.empty(),
-                    STATE_HIDE_IME_EXPLICIT, mUserId);
-        }
-        verifySetImeVisibility(true /* setVisible */, false /* invoked */);
-        verifySetImeVisibility(false /* setVisible */, true /* invoked */);
-    }
-
-    @Test
-    public void testApplyImeVisibility_hideNotAlways() throws Exception {
-        synchronized (ImfLock.class) {
-            final var bindingController =
-                    mInputMethodManagerService.getInputMethodBindingController(mUserId);
-            when(bindingController.getImeWindowVis()).thenReturn(IME_ACTIVE);
-            mVisibilityApplier.applyImeVisibility(ImeTracker.Token.empty(),
-                    STATE_HIDE_IME_NOT_ALWAYS, mUserId);
-        }
-        verifySetImeVisibility(true /* setVisible */, false /* invoked */);
-        verifySetImeVisibility(false /* setVisible */, true /* invoked */);
-    }
-
-    @Test
-    public void testApplyImeVisibility_showImeImplicit() throws Exception {
-        synchronized (ImfLock.class) {
-            mVisibilityApplier.applyImeVisibility(ImeTracker.Token.empty(),
-                    STATE_SHOW_IME_IMPLICIT, mUserId);
-        }
-        verifySetImeVisibility(true /* setVisible */, true /* invoked */);
-        verifySetImeVisibility(false /* setVisible */, false /* invoked */);
     }
 
     @Test
