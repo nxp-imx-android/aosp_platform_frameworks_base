@@ -23,6 +23,7 @@ import android.hardware.vibrator.IVibrator;
 import android.hardware.vibrator.IVibratorManager;
 import android.os.Binder;
 import android.os.DeadObjectException;
+import android.os.Handler;
 import android.os.IBinder;
 import android.os.RemoteException;
 import android.os.ServiceManager;
@@ -33,6 +34,9 @@ import android.util.Slog;
 import android.util.SparseArray;
 
 import com.android.internal.annotations.GuardedBy;
+import com.android.server.vibrator.VintfHalVibrator.DefaultHalVibrator;
+import com.android.server.vibrator.VintfHalVibrator.DefaultVibratorSupplier;
+import com.android.server.vibrator.VintfHalVibrator.ManagedVibratorSupplier;
 import com.android.server.vibrator.VintfUtils.VintfSupplier;
 
 import java.util.ArrayList;
@@ -44,25 +48,30 @@ import java.util.function.IntFunction;
 /** Implementations for {@link HalVibratorManager} backed by VINTF objects. */
 class VintfHalVibratorManager {
     private static final String TAG = "VintfHalVibratorManager";
-    private static final int DEFAULT_VIBRATOR_ID = 0;
+    static final int DEFAULT_VIBRATOR_ID = 0;
 
     /** Create {@link HalVibratorManager} based on declared services on device. */
-    static HalVibratorManager createHalVibratorManager(HalNativeHandler nativeHandler) {
-        // TODO(b/422944962): Replace this with Vintf HalVibrator
-        IntFunction<HalVibrator> vibratorFactory = VibratorController::new;
-
+    static HalVibratorManager createHalVibratorManager(
+            Handler handler, HalNativeHandler nativeHandler) {
         if (ServiceManager.isDeclared(IVibratorManager.DESCRIPTOR + "/default")) {
             Slog.v(TAG, "Loading default IVibratorManager service.");
-            return new DefaultHalVibratorManager(new DefaultVibratorManagerSupplier(),
-                    nativeHandler, vibratorFactory);
+            VintfSupplier<IVibratorManager> managerSupplier = new DefaultVibratorManagerSupplier();
+            IntFunction<HalVibrator> vibratorFactory =
+                    vibratorId -> new DefaultHalVibrator(vibratorId,
+                            new ManagedVibratorSupplier(vibratorId, managerSupplier), handler,
+                            nativeHandler);
+            return new DefaultHalVibratorManager(managerSupplier, nativeHandler, vibratorFactory);
         }
         if (ServiceManager.isDeclared(IVibrator.DESCRIPTOR + "/default")) {
             Slog.v(TAG, "Loading default IVibrator service.");
-            return new LegacyHalVibratorManager(new int[] { DEFAULT_VIBRATOR_ID }, vibratorFactory);
+            return new LegacyHalVibratorManager(
+                    new DefaultHalVibrator(DEFAULT_VIBRATOR_ID, new DefaultVibratorSupplier(),
+                            handler, nativeHandler),
+                    nativeHandler);
         }
         Slog.v(TAG, "No default services declared for IVibratorManager or IVibrator."
                 + " Vibrator manager service will proceed without vibrator hardware.");
-        return new LegacyHalVibratorManager(new int[0], vibratorFactory);
+        return new LegacyHalVibratorManager();
     }
 
     /** {@link VintfSupplier} for default {@link IVibratorManager} service. */
@@ -382,28 +391,35 @@ class VintfHalVibratorManager {
     /** Legacy implementation for devices without a declared {@link IVibratorManager} service. */
     static final class LegacyHalVibratorManager implements HalVibratorManager {
         private final int[] mVibratorIds;
-        private final SparseArray<HalVibrator> mVibrators;
+        @Nullable
+        private final HalVibrator mDefaultVibrator;
+        @Nullable
+        private final HalNativeHandler mNativeHandler;
 
-        LegacyHalVibratorManager(@NonNull int[] vibratorIds,
-                IntFunction<HalVibrator> vibratorFactory) {
-            mVibratorIds = vibratorIds;
-            mVibrators = new SparseArray<>(vibratorIds.length);
-            for (int id : vibratorIds) {
-                mVibrators.put(id, vibratorFactory.apply(id));
-            }
+        LegacyHalVibratorManager() {
+            this(null, null);
+        }
+
+        LegacyHalVibratorManager(HalVibrator defaultVibrator, HalNativeHandler nativeHandler) {
+            mVibratorIds = defaultVibrator == null ? new int[0] : new int[] { DEFAULT_VIBRATOR_ID };
+            mDefaultVibrator = defaultVibrator;
+            mNativeHandler = nativeHandler;
         }
 
         @Override
         public void init(@NonNull Callbacks cb, @NonNull HalVibrator.Callbacks vibratorCb) {
-            for (int i = 0; i < mVibrators.size(); i++) {
-                mVibrators.valueAt(i).init(vibratorCb);
+            if (mNativeHandler != null) {
+                mNativeHandler.init(cb, vibratorCb);
+            }
+            if (mDefaultVibrator != null) {
+                mDefaultVibrator.init(vibratorCb);
             }
         }
 
         @Override
         public void onSystemReady() {
-            for (int i = 0; i < mVibrators.size(); i++) {
-                mVibrators.valueAt(i).onSystemReady();
+            if (mDefaultVibrator != null) {
+                mDefaultVibrator.onSystemReady();
             }
         }
 
@@ -421,7 +437,7 @@ class VintfHalVibratorManager {
         @Nullable
         @Override
         public HalVibrator getVibrator(int id) {
-            return mVibrators.get(id);
+            return (id == DEFAULT_VIBRATOR_ID) ? mDefaultVibrator : null;
         }
 
         @Override
@@ -456,11 +472,11 @@ class VintfHalVibratorManager {
 
             pw.println("vibratorIds = " + Arrays.toString(mVibratorIds));
             pw.println("Vibrators:");
-            pw.increaseIndent();
-            for (int i = 0; i < mVibrators.size(); i++) {
-                mVibrators.valueAt(i).dump(pw);
+            if (mDefaultVibrator != null) {
+                pw.increaseIndent();
+                mDefaultVibrator.dump(pw);
+                pw.decreaseIndent();
             }
-            pw.decreaseIndent();
 
             pw.decreaseIndent();
             pw.println();

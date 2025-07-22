@@ -343,7 +343,7 @@ public class VibratorManagerServiceTest {
                     }
 
                     @Override
-                    HalVibratorManager createHalVibratorManager() {
+                    HalVibratorManager createHalVibratorManager(Handler handler) {
                         if (mUseLegacyHalManager) {
                             return mHalHelper.newLegacyVibratorManager();
                         }
@@ -469,7 +469,7 @@ public class VibratorManagerServiceTest {
         vibrate(service, effect, HAPTIC_FEEDBACK_ATTRS);
         service.cancelVibrate(VibrationAttributes.USAGE_FILTER_MATCH_ALL, service);
 
-        assertTrue(service.setAlwaysOnEffect(UID, PACKAGE_NAME, 1, effect, ALARM_ATTRS));
+        service.setAlwaysOnEffect(UID, PACKAGE_NAME, 1, effect, ALARM_ATTRS);
 
         IVibratorStateListener listener = mockVibratorStateListener();
         assertTrue(service.registerVibratorStateListener(1, listener));
@@ -479,15 +479,14 @@ public class VibratorManagerServiceTest {
     @Test
     @EnableFlags({Flags.FLAG_REMOVE_HIDL_SUPPORT, Flags.FLAG_VENDOR_VIBRATION_EFFECTS})
     public void createService_withLegacyManager_initializesEmptyManager() {
+        int defaultVibratorId = VintfHalVibratorManager.DEFAULT_VIBRATOR_ID;
         mUseLegacyHalManager = true;
-        mHalHelper.setVibratorIds(new int[] { 1, 2 });
 
         createService();
         assertThat(mHalHelper.getConnectCount()).isEqualTo(0);
         assertThat(mHalHelper.getCancelSyncedCount()).isEqualTo(0);
         assertThat(mHalHelper.getClearSessionsCount()).isEqualTo(0);
-        assertThat(mHalHelper.getVibratorHelper(1).isInitialized()).isTrue();
-        assertThat(mHalHelper.getVibratorHelper(2).isInitialized()).isTrue();
+        assertThat(mHalHelper.getVibratorHelper(defaultVibratorId).isInitialized()).isTrue();
     }
 
     @Test
@@ -1623,7 +1622,7 @@ public class VibratorManagerServiceTest {
     @Test
     @EnableFlags(Flags.FLAG_REMOVE_HIDL_SUPPORT)
     public void vibrate_withLegacyHal_skipPrepareAndTrigger() throws Exception {
-        // Capabilities ignored by legacy HAL service, as it's backed by single IVibrator.
+        // Capabilities and IDs ignored by legacy HAL service, as it's backed by single IVibrator.
         mHalHelper.setCapabilities(IVibratorManager.CAP_SYNC, IVibratorManager.CAP_PREPARE_ON);
         mHalHelper.setVibratorIds(new int[] { 1, 2 });
         mUseLegacyHalManager = true;
@@ -3054,16 +3053,15 @@ public class VibratorManagerServiceTest {
     @Test
     @EnableFlags({Flags.FLAG_REMOVE_HIDL_SUPPORT, Flags.FLAG_VENDOR_VIBRATION_EFFECTS})
     public void startVibrationSession_withLegacyHal_doesNotStart() throws Exception {
-        // Capabilities ignored by legacy HAL service, as it's backed by single IVibrator.
+        // Capabilities and IDs ignored by legacy HAL service, as it's backed by single IVibrator.
         mHalHelper.setCapabilities(IVibratorManager.CAP_START_SESSIONS);
-        int vibratorId = 1;
-        mHalHelper.setVibratorIds(new int[] { vibratorId });
+        mHalHelper.setVibratorIds(new int[] { 1, 2 });
         mUseLegacyHalManager = true;
         VibratorManagerService service = createSystemReadyService();
 
         IVibrationSessionCallback callback = mockSessionCallbacks();
         VendorVibrationSession session = startSession(service, RINGTONE_ATTRS,
-                callback, vibratorId);
+                callback, VintfHalVibratorManager.DEFAULT_VIBRATOR_ID);
 
         // Make sure all messages are processed before asserting on the session callbacks.
         stopAutoDispatcherAndDispatchAll();

@@ -44,6 +44,7 @@ import android.os.vibrator.RampSegment;
 import android.os.vibrator.StepSegment;
 import android.os.vibrator.VibrationEffectSegment;
 
+import com.android.internal.hidden_from_bootclasspath.android.os.vibrator.Flags;
 import com.android.server.vibrator.VintfHalVibrator.DefaultHalVibrator;
 
 import java.util.ArrayList;
@@ -122,7 +123,9 @@ public final class HalVibratorHelper {
 
     /** Return new and initialized {@link HalVibrator} instance. */
     public HalVibrator newInitializedHalVibrator(int vibratorId, HalVibrator.Callbacks callbacks) {
-        HalVibrator vibrator = newVibratorController(vibratorId);
+        HalVibrator vibrator = Flags.removeHidlSupport()
+                ? newDefaultVibrator(vibratorId, newInitializedNativeHandler(callbacks))
+                : newVibratorController(vibratorId);
         vibrator.init(callbacks);
         vibrator.onSystemReady();
         return vibrator;
@@ -461,7 +464,7 @@ public final class HalVibratorHelper {
         }
     }
 
-    private void scheduleVibrationCallback(HalVibrator.Callbacks callbacks, int vibratorId,
+    void scheduleVibrationCallback(HalVibrator.Callbacks callbacks, int vibratorId,
             long vibrationId, long stepId, long durationMs) {
         mHandler.postDelayed(
                 () -> callbacks.onVibrationStepComplete(vibratorId, vibrationId, stepId),
@@ -623,11 +626,11 @@ public final class HalVibratorHelper {
 
     /** Provides fake implementation of {@link HalNativeHandler} for testing. */
     public final class FakeHalNativeHandler implements HalNativeHandler {
-        private HalVibrator.Callbacks mVibratorCallbacks;
+        private HalVibrator.Callbacks mCallbacks;
 
         @Override
         public void init(HalVibratorManager.Callbacks unused, HalVibrator.Callbacks cb) {
-            mVibratorCallbacks = cb;
+            mCallbacks = cb;
         }
 
         @Override
@@ -721,8 +724,7 @@ public final class HalVibratorHelper {
 
         private void scheduleCallback(int vibratorId, long vibrationId, long stepId,
                 int durationMs) {
-            mHandler.postDelayed(() -> mVibratorCallbacks.onVibrationStepComplete(
-                    vibratorId, vibrationId, stepId), durationMs);
+            scheduleVibrationCallback(mCallbacks, vibratorId, vibrationId, stepId, durationMs);
         }
     }
 
