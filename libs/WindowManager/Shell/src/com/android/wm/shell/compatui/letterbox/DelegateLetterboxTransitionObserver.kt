@@ -37,20 +37,17 @@ class DelegateLetterboxTransitionObserver(
     shellInit: ShellInit,
     private val transitions: Transitions,
     private val letterboxLifecycleController: LetterboxLifecycleController,
-    private val letterboxLifecycleEventFactory: LetterboxLifecycleEventFactory
+    private val letterboxLifecycleEventFactory: LetterboxLifecycleEventFactory,
 ) : Transitions.TransitionObserver {
 
     companion object {
-        @JvmStatic
-        private val TAG = "DelegateLetterboxTransitionObserver"
+        @JvmStatic private val TAG = "DelegateLetterboxTransitionObserver"
     }
 
     init {
         if (appCompatRefactoring()) {
             logV("Initializing LetterboxTransitionObserver")
-            shellInit.addInitCallback({
-                transitions.registerObserver(this)
-            }, this)
+            shellInit.addInitCallback({ transitions.registerObserver(this) }, this)
         }
     }
 
@@ -58,7 +55,7 @@ class DelegateLetterboxTransitionObserver(
         transition: IBinder,
         info: TransitionInfo,
         startTransaction: SurfaceControl.Transaction,
-        finishTransaction: SurfaceControl.Transaction
+        finishTransaction: SurfaceControl.Transaction,
     ) {
         if (info.type == TRANSIT_MOVE_LETTERBOX_REACHABILITY) {
             // Reachability transitions are handled in LetterboxAnimationHandler
@@ -70,7 +67,7 @@ class DelegateLetterboxTransitionObserver(
                     letterboxLifecycleController.onLetterboxLifecycleEvent(
                         event,
                         startTransaction,
-                        finishTransaction
+                        finishTransaction,
                     )
                 }
             }

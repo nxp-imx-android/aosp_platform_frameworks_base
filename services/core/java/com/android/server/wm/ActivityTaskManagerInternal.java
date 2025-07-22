@@ -44,6 +44,7 @@ import android.window.TaskSnapshot;
 
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.app.IVoiceInteractor;
+import com.android.server.am.ActiveUids;
 import com.android.server.am.PendingIntentRecord;
 import com.android.server.am.UserState;
 
@@ -57,7 +58,7 @@ import java.util.Set;
  * Activity Task manager local system service interface.
  * @hide Only for use within system server
  */
-public abstract class ActivityTaskManagerInternal {
+public abstract class ActivityTaskManagerInternal implements ActiveUids.Observer {
 
     /**
      * Type for {@link #notifyAppTransitionStarting}: The transition was started because we drew
@@ -557,8 +558,6 @@ public abstract class ActivityTaskManagerInternal {
     public abstract int finishTopCrashedActivities(
             WindowProcessController crashedApp, String reason);
 
-    public abstract void onUidActive(int uid, int procState);
-    public abstract void onUidInactive(int uid);
     public abstract void onUidProcStateChanged(int uid, int procState);
 
     /** Handle app crash event in {@link android.app.IActivityController} if there is one. */

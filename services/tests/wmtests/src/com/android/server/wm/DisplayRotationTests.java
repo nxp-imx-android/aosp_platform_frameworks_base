@@ -23,6 +23,8 @@ import static android.content.pm.ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
 import static android.content.pm.ActivityInfo.SCREEN_ORIENTATION_SENSOR;
 import static android.content.pm.ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED;
 import static android.content.pm.ActivityInfo.SCREEN_ORIENTATION_USER_PORTRAIT;
+import static android.hardware.devicestate.DeviceState.PROPERTY_FOLDABLE_DISPLAY_CONFIGURATION_OUTER_PRIMARY;
+import static android.hardware.devicestate.DeviceState.PROPERTY_FOLDABLE_HARDWARE_CONFIGURATION_FOLD_IN_CLOSED;
 import static android.view.Display.DEFAULT_DISPLAY;
 import static android.view.DisplayCutout.NO_CUTOUT;
 import static android.view.IWindowManager.FIXED_TO_USER_ROTATION_DEFAULT;
@@ -47,6 +49,8 @@ import static com.android.dx.mockito.inline.extended.ExtendedMockito.when;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.clearInvocations;
 
@@ -62,12 +66,16 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.hardware.devicestate.DeviceState;
 import android.hardware.devicestate.DeviceStateManager;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.PowerManagerInternal;
 import android.os.SystemClock;
+import android.platform.test.annotations.DisableFlags;
+import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
+import android.platform.test.flag.junit.SetFlagsRule;
 import android.provider.Settings;
 import android.view.Display;
 import android.view.DisplayAddress;
@@ -78,6 +86,7 @@ import android.view.WindowManager;
 import androidx.annotation.Nullable;
 import androidx.test.filters.SmallTest;
 
+import com.android.internal.R;
 import com.android.internal.util.test.FakeSettingsProvider;
 import com.android.server.UiThread;
 import com.android.server.policy.WindowManagerPolicy;
@@ -85,11 +94,13 @@ import com.android.server.statusbar.StatusBarManagerInternal;
 import com.android.server.testutils.OffsettableClock;
 import com.android.server.testutils.TestHandler;
 import com.android.server.wm.DisplayContent.FixedRotationTransitionListener;
+import com.android.window.flags.Flags;
 
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Rule;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 
@@ -97,6 +108,8 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.Collections;
+import java.util.List;
+import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.function.IntConsumer;
@@ -111,6 +124,15 @@ import java.util.function.IntConsumer;
 @Presubmit
 public class DisplayRotationTests {
     private static final long UI_HANDLER_WAIT_TIMEOUT_MS = 50;
+    private static final DeviceState DEFAULT_DEVICE_STATE = new DeviceState(
+            new DeviceState.Configuration.Builder(0, "DEFAULT").build());
+    private static final DeviceState FOLDED_DEVICE_STATE = new DeviceState(
+            new DeviceState.Configuration.Builder(1, "FOLDED").setPhysicalProperties(
+                    Set.of(PROPERTY_FOLDABLE_HARDWARE_CONFIGURATION_FOLD_IN_CLOSED,
+                            PROPERTY_FOLDABLE_DISPLAY_CONFIGURATION_OUTER_PRIMARY)).build());
+
+    @Rule
+    public final SetFlagsRule mSetFlagsRule = new SetFlagsRule();
 
     private StatusBarManagerInternal mPreviousStatusBarManagerInternal;
     private static final OffsettableClock sClock = new OffsettableClock.Stopped();
@@ -155,9 +177,13 @@ public class DisplayRotationTests {
         sMockWm = mock(WindowManagerService.class);
         sMockWm.mPowerManagerInternal = mock(PowerManagerInternal.class);
         sMockWm.mPolicy = mock(WindowManagerPolicy.class);
-        WindowTestsBase.setFieldValue(sMockWm, "mRoot", sMockRoot);
         sMockRoot.mDeviceStateAutoRotateSettingController = null;
         sHandler = new TestHandler(null, sClock);
+
+        final WindowManagerService.H wmHandler = mock(WindowManagerService.H.class);
+        when(wmHandler.getLooper()).thenReturn(sHandler.getLooper());
+        WindowTestsBase.setFieldValue(sMockWm, "mRoot", sMockRoot);
+        WindowTestsBase.setFieldValue(sMockWm, "mH", wmHandler);
     }
 
     @AfterClass
@@ -289,6 +315,56 @@ public class DisplayRotationTests {
 
         verify(mockDeviceStateAutoRotateSettingController,
                 times(1)).requestDeviceStateAutoRotateSettingChange(eq(1), eq(false));
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_DEVICE_STATE_AUTO_ROTATE_SETTING_REFACTOR)
+    public void createDeviceStateAutoRotateDependencies_flagEnabled_settingControllerNotNull() {
+        final DeviceStateAutoRotateSettingController settingController =
+                createDeviceStateAutoRotateDependencies(/* isFoldable= */ true,
+                        /* autoRotateEnabled= */ true, /* isDeviceStateConfigNonEmpty= */ true);
+
+        assertNotNull(settingController);
+    }
+
+    @Test
+    @DisableFlags(Flags.FLAG_ENABLE_DEVICE_STATE_AUTO_ROTATE_SETTING_REFACTOR)
+    public void createDeviceStateAutoRotateDependencies_flagDisabled_settingControllerNull() {
+        final DeviceStateAutoRotateSettingController settingController =
+                createDeviceStateAutoRotateDependencies(/* isFoldable= */ true,
+                        /* autoRotateEnabled= */ true, /* isDeviceStateConfigNonEmpty= */ true);
+
+        assertNull(settingController);
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_DEVICE_STATE_AUTO_ROTATE_SETTING_REFACTOR)
+    public void createDeviceStateAutoRotateDependencies_notFoldable_settingControllerNull() {
+        final DeviceStateAutoRotateSettingController settingController =
+                createDeviceStateAutoRotateDependencies(/* isFoldable= */ false,
+                        /* autoRotateEnabled= */ true, /* isDeviceStateConfigNonEmpty= */ true);
+
+        assertNull(settingController);
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_DEVICE_STATE_AUTO_ROTATE_SETTING_REFACTOR)
+    public void createDeviceStateAutoRotateDependencies_autoRotateDisabled_settingControllerNull() {
+        final DeviceStateAutoRotateSettingController settingController =
+                createDeviceStateAutoRotateDependencies(/* isFoldable= */ true,
+                        /* autoRotateEnabled= */ false, /* isDeviceStateConfigNonEmpty= */ true);
+
+        assertNull(settingController);
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_DEVICE_STATE_AUTO_ROTATE_SETTING_REFACTOR)
+    public void createDeviceStateAutoRotateDependencies_dSAutoRotateConfigNull_settingControllerNull() {
+        final DeviceStateAutoRotateSettingController settingController =
+                createDeviceStateAutoRotateDependencies(/* isFoldable= */ true,
+                        /* autoRotateEnabled= */ true, /* isDeviceStateConfigNonEmpty= */ false);
+
+        assertNull(settingController);
     }
 
     @Test
@@ -1413,6 +1489,60 @@ public class DisplayRotationTests {
 
         assertFalse("Display rotation should respect app requested orientation if"
                 + " fixed to user rotation if no auto rotation.", mTarget.isFixedToUserRotation());
+    }
+    private DeviceStateAutoRotateSettingController createDeviceStateAutoRotateDependencies(
+            boolean isFoldable, boolean autoRotateEnabled, boolean isDeviceStateConfigNonEmpty) {
+        // init
+        final Context context = mock(Context.class);
+        final Resources resources = mock(Resources.class);
+        final DeviceStateController deviceStateController = mock(DeviceStateController.class);
+        final ContentResolver resolver = mock(ContentResolver.class);
+        final DeviceStateManager deviceStateManager = mock(DeviceStateManager.class);
+        // setup context
+        when(context.getContentResolver()).thenReturn(resolver);
+        when(context.getResources()).thenReturn(resources);
+        when(context.getSystemService(eq(DeviceStateManager.class))).thenReturn(deviceStateManager);
+        WindowTestsBase.setFieldValue(sMockWm, "mContext", context);
+
+        setDeviceTypeFoldable(isFoldable, deviceStateManager, resources);
+        setAutoRotateEnabled(autoRotateEnabled, resources);
+        setDeviceStateAutoRotateConfig(isDeviceStateConfigNonEmpty, resources);
+
+        return DisplayRotation.createDeviceStateAutoRotateDependencies(context,
+                deviceStateController, sMockWm);
+    }
+    private void setAutoRotateEnabled(boolean isEnabled, Resources mockResources) {
+        when(mockResources.getBoolean(R.bool.config_supportAutoRotation)).thenReturn(isEnabled);
+    }
+
+    private void setDeviceTypeFoldable(boolean isFoldable,
+            DeviceStateManager mockDeviceStateManager, Resources mockResources) {
+        if (mockDeviceStateManager != null) {
+            List<DeviceState> deviceStates;
+            if (isFoldable) {
+                deviceStates = List.of(DEFAULT_DEVICE_STATE, FOLDED_DEVICE_STATE);
+            } else {
+                deviceStates = List.of(DEFAULT_DEVICE_STATE);
+            }
+            when(mockDeviceStateManager.getSupportedDeviceStates()).thenReturn(deviceStates);
+        }
+
+        if (mockResources != null) {
+            when(mockResources.getIntArray(R.array.config_foldedDeviceStates)).thenReturn(
+                    new int[]{PROPERTY_FOLDABLE_DISPLAY_CONFIGURATION_OUTER_PRIMARY,
+                            PROPERTY_FOLDABLE_HARDWARE_CONFIGURATION_FOLD_IN_CLOSED});
+        }
+    }
+
+    private void setDeviceStateAutoRotateConfig(boolean isNonEmpty, Resources mockResources) {
+        if (isNonEmpty) {
+            when(mockResources.getStringArray(
+                    R.array.config_perDeviceStateRotationLockDefaults)).thenReturn(
+                        new String[]{"0:1"});
+        } else {
+            when(mockResources.getStringArray(
+                    R.array.config_perDeviceStateRotationLockDefaults)).thenReturn(new String[]{});
+        }
     }
 
     private void setImmersiveAppCompatRotationLockEnforced(boolean isRotationLockEnforced,

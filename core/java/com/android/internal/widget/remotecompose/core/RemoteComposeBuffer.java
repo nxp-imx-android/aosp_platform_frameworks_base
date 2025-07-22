@@ -37,6 +37,7 @@ import com.android.internal.widget.remotecompose.core.operations.DebugMessage;
 import com.android.internal.widget.remotecompose.core.operations.DrawArc;
 import com.android.internal.widget.remotecompose.core.operations.DrawBitmap;
 import com.android.internal.widget.remotecompose.core.operations.DrawBitmapFontText;
+import com.android.internal.widget.remotecompose.core.operations.DrawBitmapFontTextOnPath;
 import com.android.internal.widget.remotecompose.core.operations.DrawBitmapInt;
 import com.android.internal.widget.remotecompose.core.operations.DrawBitmapScaled;
 import com.android.internal.widget.remotecompose.core.operations.DrawBitmapTextAnchored;
@@ -60,6 +61,7 @@ import com.android.internal.widget.remotecompose.core.operations.FloatFunctionDe
 import com.android.internal.widget.remotecompose.core.operations.FontData;
 import com.android.internal.widget.remotecompose.core.operations.HapticFeedback;
 import com.android.internal.widget.remotecompose.core.operations.Header;
+import com.android.internal.widget.remotecompose.core.operations.IdLookup;
 import com.android.internal.widget.remotecompose.core.operations.ImageAttribute;
 import com.android.internal.widget.remotecompose.core.operations.IntegerExpression;
 import com.android.internal.widget.remotecompose.core.operations.MatrixFromPath;
@@ -143,6 +145,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 
 /** Provides an abstract buffer to encode/decode RemoteCompose operations */
@@ -444,7 +447,24 @@ public class RemoteComposeBuffer {
      * @return id of the BitmapFont
      */
     public int addBitmapFont(int id, @NonNull BitmapFontData.Glyph [] glyphs) {
-        BitmapFontData.apply(mBuffer, id, glyphs);
+        BitmapFontData.apply(mBuffer, id, glyphs, null);
+        return id;
+    }
+
+    /**
+     * Records a bitmap font and returns an ID.
+     *
+     * @param id the id to use
+     * @param glyphs The glyphs that define the bitmap font
+     * @param kerningTable The kerning table, where the key is pairs of glyphs (literally $1$2) and
+     *     the value is the horizontal adjustment in pixels for that glyph pair. Can be empty.
+     * @return id of the BitmapFont
+     */
+    public int addBitmapFont(
+            int id,
+            @NonNull BitmapFontData.Glyph [] glyphs,
+            @NonNull Map<String, Short> kerningTable) {
+        BitmapFontData.apply(mBuffer, id, glyphs, kerningTable);
         return id;
     }
 
@@ -619,6 +639,21 @@ public class RemoteComposeBuffer {
     public void addDrawBitmapFontTextRun(
             int textId, int bitmapFontId, int start, int end, float x, float y) {
         DrawBitmapFontText.apply(mBuffer, textId, bitmapFontId, start, end, x, y);
+    }
+
+    /**
+     * Draw the text with a bitmap font along the path.
+     *
+     * @param textId The text to be drawn
+     * @param bitmapFontId The id of the bitmap font to draw with
+     * @param pathId The id of the path to draw along
+     * @param start The index of the first character in text to draw
+     * @param end (end - 1) is the index of the last character in text to draw
+     * @param yAdj Adjustment away from the path along the normal at that point
+     */
+    public void addDrawBitmapFontTextRunOnPath(
+            int textId, int bitmapFontId, int pathId, int start, int end, float yAdj) {
+        DrawBitmapFontTextOnPath.apply(mBuffer, textId, bitmapFontId, pathId, start, end, yAdj);
     }
 
     /**
@@ -1216,6 +1251,17 @@ public class RemoteComposeBuffer {
      */
     public void textLookup(int id, float dataSet, float index) {
         TextLookup.apply(mBuffer, id, Utils.idFromNan(dataSet), index);
+    }
+
+    /**
+     * This provides access to text in RemoteList
+     *
+     * @param id id of integer to write
+     * @param dataSet the array
+     * @param index index as a float variable
+     */
+    public void idLookup(int id, float dataSet, float index) {
+        IdLookup.apply(mBuffer, id, Utils.idFromNan(dataSet), index);
     }
 
     /**

@@ -519,7 +519,7 @@ public final class DisplayManagerService extends SystemService {
 
     private final Injector mInjector;
 
-    // The minimum brightness curve, which guarantess that any brightness curve that dips below it
+    // The minimum brightness curve, which guarantees that any brightness curve that dips below it
     // is rejected by the system.
     private final Curve mMinimumBrightnessCurve;
     private final Spline mMinimumBrightnessSpline;
@@ -3683,16 +3683,6 @@ public final class DisplayManagerService extends SystemService {
                 mHandler.sendEmptyMessage(MSG_REQUEST_TRAVERSAL);
             }
         }
-    }
-
-    // Check if the target app is in cached mode
-    private boolean isUidCached(int uid) {
-        if (mActivityManagerInternal == null || uid < FIRST_APPLICATION_UID) {
-            return false;
-        }
-        int procState = mActivityManagerInternal.getUidProcessState(uid);
-        int importance = ActivityManager.RunningAppProcessInfo.procStateToImportance(procState);
-        return importance >= IMPORTANCE_CACHED;
     }
 
     // Runs on Handler thread.

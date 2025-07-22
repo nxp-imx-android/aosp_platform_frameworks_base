@@ -91,7 +91,6 @@ import static android.view.WindowManagerGlobal.ADD_PERMISSION_DENIED;
 import static android.view.contentprotection.flags.Flags.createAccessibilityOverlayAppOpEnabled;
 
 import static com.android.hardware.input.Flags.enableNew25q2Keycodes;
-import static com.android.hardware.input.Flags.hidBluetoothWakeup;
 import static com.android.server.policy.SingleKeyGestureEvent.ACTION_CANCEL;
 import static com.android.server.policy.SingleKeyGestureEvent.ACTION_COMPLETE;
 import static com.android.server.policy.SingleKeyGestureEvent.ACTION_START;
@@ -2416,10 +2415,8 @@ public class PhoneWindowManager implements WindowManagerPolicy {
         mContext.registerReceiver(mMultiuserReceiver, filter);
 
         // register for Bluetooth HID profile broadcasts.
-        if (hidBluetoothWakeup()) {
-            filter = new IntentFilter(ACTION_CONNECTION_STATE_CHANGED);
-            mContext.registerReceiver(mBluetoothHidReceiver, filter);
-        }
+        filter = new IntentFilter(ACTION_CONNECTION_STATE_CHANGED);
+        mContext.registerReceiver(mBluetoothHidReceiver, filter);
 
         mVibrator = (Vibrator) mContext.getSystemService(Context.VIBRATOR_SERVICE);
 

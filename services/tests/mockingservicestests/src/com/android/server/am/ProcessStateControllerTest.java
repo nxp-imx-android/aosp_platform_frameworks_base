@@ -43,7 +43,7 @@ public class ProcessStateControllerTest {
         final ActivityManagerService ams = mock(ActivityManagerService.class);
         ams.mAppProfiler = mock(AppProfiler.class);
         ams.mConstants = mock(ActivityManagerConstants.class);
-        final ActiveUids au = new ActiveUids(ams, false);
+        final ActiveUids au = new ActiveUids(null);
         return new ProcessStateController.Builder(ams, ams.mProcessList, au).build();
     }
 

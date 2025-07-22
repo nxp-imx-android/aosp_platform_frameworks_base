@@ -118,7 +118,6 @@ import android.util.AttributeSet;
 import android.util.Dumpable;
 import android.util.EventLog;
 import android.util.Log;
-import android.util.Pair;
 import android.util.PrintWriterPrinter;
 import android.util.Slog;
 import android.util.SparseArray;
@@ -6933,46 +6932,56 @@ public class Activity extends ContextThemeWrapper
     }
 
     /**
-     * Customizes the animation for the activity transition with this activity. This can be called
-     * at any time while the activity still alive.
+     * Customizes the animation for activity transitions.
      *
-     * <p> This is a more robust method of overriding the transition animation at runtime without
-     * relying on {@link #overridePendingTransition(int, int)} which doesn't work for predictive
-     * back. However, the animation set from {@link #overridePendingTransition(int, int)} still
-     * has higher priority when the system is looking for the next transition animation.</p>
-     * <p> The animations resources set by this method will be chosen if and only if the activity is
-     * on top of the task while activity transitions are being played.
-     * For example, if we want to customize the opening transition when launching Activity B which
-     * gets started from Activity A, we should call this method inside B's onCreate with
-     * {@code overrideType = OVERRIDE_TRANSITION_OPEN} because the Activity B will be on top of the
-     * task. And if we want to customize the closing transition when finishing Activity B and back
-     * to Activity A, since B is still above A, we should call this method in Activity B with
-     * {@code overrideType = OVERRIDE_TRANSITION_CLOSE}. </p>
+     * <p>This method provides a robust way to override transition animations at runtime and can be
+     * called at any point in the activity's lifecycle. It is particularly useful for handling
+     * predictive back animations, for which {@link #overridePendingTransition(int, int)} is not
+     * suitable.</p>
      *
-     * <p> If an Activity has called this method, and it also set another activity animation
-     * by {@link Window#setWindowAnimations(int)}, the system will choose the animation set from
-     * this method.</p>
+     * <p>The specified animations will be applied only when this activity is at the top of the
+     * task stack during the transition. For example, to customize the opening animation for an
+     * Activity B started from Activity A, call this method in B's {@code onCreate} with
+     * {@code overrideType = OVERRIDE_TRANSITION_OPEN}. To customize the closing animation when
+     * returning from B to A, call this method in B with
+     * {@code overrideType = OVERRIDE_TRANSITION_CLOSE}.</p>
      *
-     * <p> Note that {@link Window#setWindowAnimations},
-     * {@link #overridePendingTransition(int, int)} and this method will be ignored if the Activity
-     * is started with {@link ActivityOptions#makeSceneTransitionAnimation(Activity, Pair[])}. Also
-     * note that this method can only be used to customize cross-activity transitions but not
-     * cross-task transitions which are fully non-customizable as of Android 11.</p>
+     * <p><b>Animation Precedence:</b></p>
+     * <ul>
+     * <li>Animations set by {@link #overridePendingTransition(int, int)} have the highest
+     * priority.</li>
+     * <li>Animations set by this method have higher priority than those defined by
+     * {@link Window#setWindowAnimations(int)}.</li>
+     * </ul>
      *
-     * @param overrideType {@code OVERRIDE_TRANSITION_OPEN} This animation will be used when
-     *                     starting/entering an activity. {@code OVERRIDE_TRANSITION_CLOSE} This
-     *                     animation will be used when finishing/closing an activity.
-     * @param enterAnim A resource ID of the animation resource to use for the incoming activity.
-     *                  Use 0 for no animation.
-     * @param exitAnim A resource ID of the animation resource to use for the outgoing activity.
-     *                 Use 0 for no animation.
+     * <p><b>Predictive Back Animation:</b></p>
+     * <p>When predictive back is enabled (see {@code enableOnBackInvokedCallback} in the manifest),
+     * the system may control the preview phase of the back animation. The custom transition defined
+     * by {@code enterAnim} and {@code exitAnim} is then applied only after the back gesture is
+     * committed.</p>
+     *
+     * <p><b>Limitations:</b></p>
+     * <ul>
+     * <li>This method, along with {@link #overridePendingTransition(int, int)} and
+     * {@link Window#setWindowAnimations(int)}, is ignored if the activity is started with
+     * {@link ActivityOptions#makeSceneTransitionAnimation(Activity, android.util.Pair[])}.</li>
+     * <li>As of Android 11, this method cannot be used to customize cross-task transitions.</li>
+     * </ul>
+     *
+     * @param overrideType The type of transition to override. Must be either
+     * {@code OVERRIDE_TRANSITION_OPEN} for entering transitions or
+     * {@code OVERRIDE_TRANSITION_CLOSE} for exiting transitions.
+     * @param enterAnim    The resource ID of the animation for the incoming activity. Use 0 for no
+     * animation.
+     * @param exitAnim     The resource ID of the animation for the outgoing activity. Use 0 for no
+     * animation.
      *
      * @see #overrideActivityTransition(int, int, int, int)
      * @see #clearOverrideActivityTransition(int)
-     * @see OnBackInvokedCallback
+     * @see android.window.OnBackInvokedCallback
      * @see #overridePendingTransition(int, int)
      * @see Window#setWindowAnimations(int)
-     * @see ActivityOptions#makeSceneTransitionAnimation(Activity, Pair[])
+     * @see ActivityOptions#makeSceneTransitionAnimation(Activity, android.util.Pair[])
      */
     public void overrideActivityTransition(@OverrideTransition int overrideType,
             @AnimRes int enterAnim, @AnimRes int exitAnim) {
@@ -6980,48 +6989,58 @@ public class Activity extends ContextThemeWrapper
     }
 
     /**
-     * Customizes the animation for the activity transition with this activity. This can be called
-     * at any time while the activity still alive.
+     * Customizes the animation and background color for activity transitions.
      *
-     * <p> This is a more robust method of overriding the transition animation at runtime without
-     * relying on {@link #overridePendingTransition(int, int)} which doesn't work for predictive
-     * back. However, the animation set from {@link #overridePendingTransition(int, int)} still
-     * has higher priority when the system is looking for the next transition animation.</p>
-     * <p> The animations resources set by this method will be chosen if and only if the activity is
-     * on top of the task while activity transitions are being played.
-     * For example, if we want to customize the opening transition when launching Activity B which
-     * gets started from Activity A, we should call this method inside B's onCreate with
-     * {@code overrideType = OVERRIDE_TRANSITION_OPEN} because the Activity B will on top of the
-     * task. And if we want to customize the closing transition when finishing Activity B and back
-     * to Activity A, since B is still is above A, we should call this method in Activity B with
-     * {@code overrideType = OVERRIDE_TRANSITION_CLOSE}. </p>
+     * <p>This method provides a robust way to override transition animations at runtime and can be
+     * called at any point in the activity's lifecycle. It is particularly useful for handling
+     * predictive back animations, for which {@link #overridePendingTransition(int, int)} is not
+     * suitable.</p>
      *
-     * <p> If an Activity has called this method, and it also set another activity animation
-     * by {@link Window#setWindowAnimations(int)}, the system will choose the animation set from
-     * this method.</p>
+     * <p>The specified animations will be applied only when this activity is at the top of the
+     * task stack during the transition. For example, to customize the opening animation for an
+     * Activity B started from Activity A, call this method in B's {@code onCreate} with
+     * {@code overrideType = OVERRIDE_TRANSITION_OPEN}. To customize the closing animation when
+     * returning from B to A, call this method in B with
+     * {@code overrideType = OVERRIDE_TRANSITION_CLOSE}.</p>
      *
-     * <p> Note that {@link Window#setWindowAnimations},
-     * {@link #overridePendingTransition(int, int)} and this method will be ignored if the Activity
-     * is started with {@link ActivityOptions#makeSceneTransitionAnimation(Activity, Pair[])}. Also
-     * note that this method can only be used to customize cross-activity transitions but not
-     * cross-task transitions which are fully non-customizable as of Android 11.</p>
+     * <p><b>Animation Precedence:</b></p>
+     * <ul>
+     * <li>Animations set by {@link #overridePendingTransition(int, int)} have the highest
+     * priority.</li>
+     * <li>Animations set by this method have higher priority than those defined by
+     * {@link Window#setWindowAnimations(int)}.</li>
+     * </ul>
      *
-     * @param overrideType {@code OVERRIDE_TRANSITION_OPEN} This animation will be used when
-     *                     starting/entering an activity. {@code OVERRIDE_TRANSITION_CLOSE} This
-     *                     animation will be used when finishing/closing an activity.
-     * @param enterAnim A resource ID of the animation resource to use for the incoming activity.
-     *                  Use 0 for no animation.
-     * @param exitAnim A resource ID of the animation resource to use for the outgoing activity.
-     *                 Use 0 for no animation.
-     * @param backgroundColor The background color to use for the background during the animation
-     *                        if the animation requires a background. Set to
-     *                        {@link Color#TRANSPARENT} to not override the default color.
+     * <p><b>Predictive Back Animation:</b></p>
+     * <p>When predictive back is enabled (see {@code enableOnBackInvokedCallback} in the manifest),
+     * the system may control the preview phase of the back animation. The custom transition defined
+     * by {@code enterAnim} and {@code exitAnim} is then applied only after the back gesture is
+     * committed.</p>
+     *
+     * <p><b>Limitations:</b></p>
+     * <ul>
+     * <li>This method, along with {@link #overridePendingTransition(int, int)} and
+     * {@link Window#setWindowAnimations(int)}, is ignored if the activity is started with
+     * {@link ActivityOptions#makeSceneTransitionAnimation(Activity, android.util.Pair[])}.</li>
+     * <li>As of Android 11, this method cannot be used to customize cross-task transitions.</li>
+     * </ul>
+     *
+     * @param overrideType    The type of transition to override. Must be either
+     * {@code OVERRIDE_TRANSITION_OPEN} for entering transitions or
+     * {@code OVERRIDE_TRANSITION_CLOSE} for exiting transitions.
+     * @param enterAnim     The resource ID of the animation for the incoming activity. Use 0 for no
+     * animation.
+     * @param exitAnim      The resource ID of the animation for the outgoing activity. Use 0 for no
+     * animation.
+     * @param backgroundColor The background color to display during the animation. Set to
+     * {@link Color#TRANSPARENT} to use the default background color.
+     *
      * @see #overrideActivityTransition(int, int, int)
      * @see #clearOverrideActivityTransition(int)
-     * @see OnBackInvokedCallback
+     * @see android.window.OnBackInvokedCallback
      * @see #overridePendingTransition(int, int)
      * @see Window#setWindowAnimations(int)
-     * @see ActivityOptions#makeSceneTransitionAnimation(Activity, Pair[])
+     * @see ActivityOptions#makeSceneTransitionAnimation(Activity, android.util.Pair[])
      */
     public void overrideActivityTransition(@OverrideTransition int overrideType,
             @AnimRes int enterAnim, @AnimRes int exitAnim, @ColorInt int backgroundColor) {

@@ -2216,23 +2216,23 @@ package android {
   public static final class R.dimen {
     ctor public R.dimen();
     field public static final int app_icon_size = 17104896; // 0x1050000
-    field @FlaggedApi("android.os.material_motion_tokens") public static final int config_motionExpressiveDefaultEffectDamping;
-    field @FlaggedApi("android.os.material_motion_tokens") public static final int config_motionExpressiveDefaultSpatialDamping;
-    field @FlaggedApi("android.os.material_motion_tokens") public static final int config_motionExpressiveFastEffectDamping;
-    field @FlaggedApi("android.os.material_motion_tokens") public static final int config_motionExpressiveFastSpatialDamping;
-    field @FlaggedApi("android.os.material_motion_tokens") public static final int config_motionExpressiveSlowEffectDamping;
-    field @FlaggedApi("android.os.material_motion_tokens") public static final int config_motionExpressiveSlowSpatialDamping;
-    field @FlaggedApi("android.os.material_motion_tokens") public static final int config_motionStandardDefaultEffectDamping;
-    field @FlaggedApi("android.os.material_motion_tokens") public static final int config_motionStandardDefaultSpatialDamping;
-    field @FlaggedApi("android.os.material_motion_tokens") public static final int config_motionStandardFastEffectDamping;
-    field @FlaggedApi("android.os.material_motion_tokens") public static final int config_motionStandardFastSpatialDamping;
-    field @FlaggedApi("android.os.material_motion_tokens") public static final int config_motionStandardSlowEffectDamping;
-    field @FlaggedApi("android.os.material_motion_tokens") public static final int config_motionStandardSlowSpatialDamping;
-    field @FlaggedApi("android.os.material_shape_tokens") public static final int config_shapeCornerRadiusLarge;
-    field @FlaggedApi("android.os.material_shape_tokens") public static final int config_shapeCornerRadiusMedium;
-    field @FlaggedApi("android.os.material_shape_tokens") public static final int config_shapeCornerRadiusSmall;
-    field @FlaggedApi("android.os.material_shape_tokens") public static final int config_shapeCornerRadiusXlarge;
-    field @FlaggedApi("android.os.material_shape_tokens") public static final int config_shapeCornerRadiusXsmall;
+    field @FlaggedApi("android.os.material_motion_tokens") public static final int config_motionExpressiveDefaultEffectDamping = 17104916; // 0x1050014
+    field @FlaggedApi("android.os.material_motion_tokens") public static final int config_motionExpressiveDefaultSpatialDamping = 17104915; // 0x1050013
+    field @FlaggedApi("android.os.material_motion_tokens") public static final int config_motionExpressiveFastEffectDamping = 17104914; // 0x1050012
+    field @FlaggedApi("android.os.material_motion_tokens") public static final int config_motionExpressiveFastSpatialDamping = 17104913; // 0x1050011
+    field @FlaggedApi("android.os.material_motion_tokens") public static final int config_motionExpressiveSlowEffectDamping = 17104918; // 0x1050016
+    field @FlaggedApi("android.os.material_motion_tokens") public static final int config_motionExpressiveSlowSpatialDamping = 17104917; // 0x1050015
+    field @FlaggedApi("android.os.material_motion_tokens") public static final int config_motionStandardDefaultEffectDamping = 17104910; // 0x105000e
+    field @FlaggedApi("android.os.material_motion_tokens") public static final int config_motionStandardDefaultSpatialDamping = 17104909; // 0x105000d
+    field @FlaggedApi("android.os.material_motion_tokens") public static final int config_motionStandardFastEffectDamping = 17104908; // 0x105000c
+    field @FlaggedApi("android.os.material_motion_tokens") public static final int config_motionStandardFastSpatialDamping = 17104907; // 0x105000b
+    field @FlaggedApi("android.os.material_motion_tokens") public static final int config_motionStandardSlowEffectDamping = 17104912; // 0x1050010
+    field @FlaggedApi("android.os.material_motion_tokens") public static final int config_motionStandardSlowSpatialDamping = 17104911; // 0x105000f
+    field @FlaggedApi("android.os.material_shape_tokens") public static final int config_shapeCornerRadiusLarge = 17104922; // 0x105001a
+    field @FlaggedApi("android.os.material_shape_tokens") public static final int config_shapeCornerRadiusMedium = 17104921; // 0x1050019
+    field @FlaggedApi("android.os.material_shape_tokens") public static final int config_shapeCornerRadiusSmall = 17104920; // 0x1050018
+    field @FlaggedApi("android.os.material_shape_tokens") public static final int config_shapeCornerRadiusXlarge = 17104923; // 0x105001b
+    field @FlaggedApi("android.os.material_shape_tokens") public static final int config_shapeCornerRadiusXsmall = 17104919; // 0x1050017
     field public static final int dialog_min_width_major = 17104899; // 0x1050003
     field public static final int dialog_min_width_minor = 17104900; // 0x1050004
     field public static final int notification_large_icon_height = 17104902; // 0x1050006
@@ -2445,7 +2445,7 @@ package android {
     field public static final int accessibilityActionScrollRight = 16908347; // 0x102003b
     field public static final int accessibilityActionScrollToPosition = 16908343; // 0x1020037
     field public static final int accessibilityActionScrollUp = 16908344; // 0x1020038
-    field @FlaggedApi("android.view.accessibility.a11y_selection_api") public static final int accessibilityActionSetExtendedSelection;
+    field @FlaggedApi("android.view.accessibility.a11y_selection_api") public static final int accessibilityActionSetExtendedSelection = 16908383; // 0x102005f
     field public static final int accessibilityActionSetProgress = 16908349; // 0x102003d
     field public static final int accessibilityActionShowOnScreen = 16908342; // 0x1020036
     field public static final int accessibilityActionShowTextSuggestions = 16908376; // 0x1020058
@@ -2529,18 +2529,18 @@ package android {
     ctor public R.integer();
     field public static final int config_longAnimTime = 17694722; // 0x10e0002
     field public static final int config_mediumAnimTime = 17694721; // 0x10e0001
-    field @FlaggedApi("android.os.material_motion_tokens") public static final int config_motionExpressiveDefaultEffectStiffness;
-    field @FlaggedApi("android.os.material_motion_tokens") public static final int config_motionExpressiveDefaultSpatialStiffness;
-    field @FlaggedApi("android.os.material_motion_tokens") public static final int config_motionExpressiveFastEffectStiffness;
-    field @FlaggedApi("android.os.material_motion_tokens") public static final int config_motionExpressiveFastSpatialStiffness;
-    field @FlaggedApi("android.os.material_motion_tokens") public static final int config_motionExpressiveSlowEffectStiffness;
-    field @FlaggedApi("android.os.material_motion_tokens") public static final int config_motionExpressiveSlowSpatialStiffness;
-    field @FlaggedApi("android.os.material_motion_tokens") public static final int config_motionStandardDefaultEffectStiffness;
-    field @FlaggedApi("android.os.material_motion_tokens") public static final int config_motionStandardDefaultSpatialStiffness;
-    field @FlaggedApi("android.os.material_motion_tokens") public static final int config_motionStandardFastEffectStiffness;
-    field @FlaggedApi("android.os.material_motion_tokens") public static final int config_motionStandardFastSpatialStiffness;
-    field @FlaggedApi("android.os.material_motion_tokens") public static final int config_motionStandardSlowEffectStiffness;
-    field @FlaggedApi("android.os.material_motion_tokens") public static final int config_motionStandardSlowSpatialStiffness;
+    field @FlaggedApi("android.os.material_motion_tokens") public static final int config_motionExpressiveDefaultEffectStiffness = 17694733; // 0x10e000d
+    field @FlaggedApi("android.os.material_motion_tokens") public static final int config_motionExpressiveDefaultSpatialStiffness = 17694732; // 0x10e000c
+    field @FlaggedApi("android.os.material_motion_tokens") public static final int config_motionExpressiveFastEffectStiffness = 17694731; // 0x10e000b
+    field @FlaggedApi("android.os.material_motion_tokens") public static final int config_motionExpressiveFastSpatialStiffness = 17694730; // 0x10e000a
+    field @FlaggedApi("android.os.material_motion_tokens") public static final int config_motionExpressiveSlowEffectStiffness = 17694735; // 0x10e000f
+    field @FlaggedApi("android.os.material_motion_tokens") public static final int config_motionExpressiveSlowSpatialStiffness = 17694734; // 0x10e000e
+    field @FlaggedApi("android.os.material_motion_tokens") public static final int config_motionStandardDefaultEffectStiffness = 17694727; // 0x10e0007
+    field @FlaggedApi("android.os.material_motion_tokens") public static final int config_motionStandardDefaultSpatialStiffness = 17694726; // 0x10e0006
+    field @FlaggedApi("android.os.material_motion_tokens") public static final int config_motionStandardFastEffectStiffness = 17694725; // 0x10e0005
+    field @FlaggedApi("android.os.material_motion_tokens") public static final int config_motionStandardFastSpatialStiffness = 17694724; // 0x10e0004
+    field @FlaggedApi("android.os.material_motion_tokens") public static final int config_motionStandardSlowEffectStiffness = 17694729; // 0x10e0009
+    field @FlaggedApi("android.os.material_motion_tokens") public static final int config_motionStandardSlowSpatialStiffness = 17694728; // 0x10e0008
     field public static final int config_shortAnimTime = 17694720; // 0x10e0000
     field @Deprecated public static final int status_bar_notification_info_maxnum = 17694723; // 0x10e0003
   }
@@ -9433,15 +9433,6 @@ package android.app.blob {
 
 }
 
-package android.app.contextualsearch {
-
-  @FlaggedApi("android.app.contextualsearch.flags.self_invocation") public final class ContextualSearchManager {
-    method @FlaggedApi("android.app.contextualsearch.flags.self_invocation") public boolean isContextualSearchAvailable();
-    method @FlaggedApi("android.app.contextualsearch.flags.self_invocation") public void startContextualSearch();
-  }
-
-}
-
 package android.app.jank {
 
   @FlaggedApi("android.app.jank.detailed_app_jank_metrics_api") public final class AppJankStats {
@@ -11392,7 +11383,7 @@ package android.content {
     field public static final int RECEIVER_VISIBLE_TO_INSTANT_APPS = 1; // 0x1
     field public static final String RESTRICTIONS_SERVICE = "restrictions";
     field public static final String ROLE_SERVICE = "role";
-    field @FlaggedApi("com.android.internal.telephony.flags.satellite_state_change_listener") public static final String SATELLITE_SERVICE = "satellite";
+    field public static final String SATELLITE_SERVICE = "satellite";
     field public static final String SEARCH_SERVICE = "search";
     field @FlaggedApi("android.os.security_state_service") public static final String SECURITY_STATE_SERVICE = "security_state";
     field public static final String SENSOR_SERVICE = "sensor";
@@ -33980,6 +33971,7 @@ package android.os {
 
   public static class Build.VERSION_CODES_FULL {
     field public static final int BAKLAVA = 3600000; // 0x36ee80
+    field public static final int BAKLAVA_1 = 3600001; // 0x36ee81
     field public static final int BASE = 100000; // 0x186a0
     field public static final int BASE_1_1 = 200000; // 0x30d40
     field public static final int CUPCAKE = 300000; // 0x493e0
@@ -38330,11 +38322,22 @@ package android.provider {
   }
 
   public static final class ContactsContract.Settings implements android.provider.ContactsContract.SettingsColumns {
+    method @FlaggedApi("android.provider.new_account_attributes_api_enabled") @RequiresPermission(android.Manifest.permission.READ_CONTACTS) public static long getAccountAttributes(@NonNull android.content.ContentResolver, @Nullable android.accounts.Account, @Nullable String);
     method @Deprecated @FlaggedApi("android.provider.new_default_account_api_enabled") @Nullable public static android.accounts.Account getDefaultAccount(@NonNull android.content.ContentResolver);
+    method @FlaggedApi("android.provider.new_account_attributes_api_enabled") @RequiresPermission(android.Manifest.permission.WRITE_CONTACTS) public static void setAccountAttributes(@NonNull android.content.ContentResolver, @Nullable android.accounts.Account, @Nullable String, long);
     field public static final String ACTION_SET_DEFAULT_ACCOUNT = "android.provider.action.SET_DEFAULT_ACCOUNT";
     field public static final String CONTENT_ITEM_TYPE = "vnd.android.cursor.item/setting";
     field public static final String CONTENT_TYPE = "vnd.android.cursor.dir/setting";
     field public static final android.net.Uri CONTENT_URI;
+  }
+
+  @FlaggedApi("android.provider.new_account_attributes_api_enabled") public static final class ContactsContract.Settings.AccountAttributes {
+    field public static final long ATTRIBUTE_DATA_ORIGIN_CLOUD = 4L; // 0x4L
+    field public static final long ATTRIBUTE_DATA_ORIGIN_LOCAL = 1L; // 0x1L
+    field public static final long ATTRIBUTE_DATA_ORIGIN_SIM = 2L; // 0x2L
+    field public static final long ATTRIBUTE_DATA_TYPE_CUSTOM_DECLARED = 32L; // 0x20L
+    field public static final long ATTRIBUTE_SYNC_MODE_DOWN_SYNC = 16L; // 0x10L
+    field public static final long ATTRIBUTE_SYNC_MODE_UP_SYNC = 8L; // 0x8L
   }
 
   protected static interface ContactsContract.SettingsColumns {
@@ -49258,13 +49261,13 @@ package android.telephony.mbms {
 
 package android.telephony.satellite {
 
-  @FlaggedApi("com.android.internal.telephony.flags.satellite_state_change_listener") public final class SatelliteManager {
-    method @FlaggedApi("com.android.internal.telephony.flags.satellite_state_change_listener") @RequiresPermission(anyOf={android.Manifest.permission.READ_BASIC_PHONE_STATE, "android.permission.READ_PRIVILEGED_PHONE_STATE", android.Manifest.permission.READ_PHONE_STATE, "carrier privileges"}) public void registerStateChangeListener(@NonNull java.util.concurrent.Executor, @NonNull android.telephony.satellite.SatelliteStateChangeListener);
-    method @FlaggedApi("com.android.internal.telephony.flags.satellite_state_change_listener") @RequiresPermission(anyOf={android.Manifest.permission.READ_BASIC_PHONE_STATE, "android.permission.READ_PRIVILEGED_PHONE_STATE", android.Manifest.permission.READ_PHONE_STATE, "carrier privileges"}) public void unregisterStateChangeListener(@NonNull android.telephony.satellite.SatelliteStateChangeListener);
+  public final class SatelliteManager {
+    method @RequiresPermission(anyOf={android.Manifest.permission.READ_BASIC_PHONE_STATE, "android.permission.READ_PRIVILEGED_PHONE_STATE", android.Manifest.permission.READ_PHONE_STATE, "carrier privileges"}) public void registerStateChangeListener(@NonNull java.util.concurrent.Executor, @NonNull android.telephony.satellite.SatelliteStateChangeListener);
+    method @RequiresPermission(anyOf={android.Manifest.permission.READ_BASIC_PHONE_STATE, "android.permission.READ_PRIVILEGED_PHONE_STATE", android.Manifest.permission.READ_PHONE_STATE, "carrier privileges"}) public void unregisterStateChangeListener(@NonNull android.telephony.satellite.SatelliteStateChangeListener);
     field @FlaggedApi("com.android.internal.telephony.flags.satellite_25q4_apis") public static final String PROPERTY_SATELLITE_DATA_OPTIMIZED = "android.telephony.PROPERTY_SATELLITE_DATA_OPTIMIZED";
   }
 
-  @FlaggedApi("com.android.internal.telephony.flags.satellite_state_change_listener") public interface SatelliteStateChangeListener {
+  public interface SatelliteStateChangeListener {
     method public void onEnabledStateChanged(boolean);
   }
 
@@ -54903,6 +54906,7 @@ package android.view {
     method public final boolean requestFocusFromTouch();
     method @CallSuper public void requestLayout();
     method public void requestPointerCapture();
+    method @FlaggedApi("com.android.hardware.input.pointer_capture_modes") public void requestPointerCapture(int);
     method public boolean requestRectangleOnScreen(android.graphics.Rect);
     method public boolean requestRectangleOnScreen(android.graphics.Rect, boolean);
     method @FlaggedApi("android.view.accessibility.request_rectangle_with_source") public boolean requestRectangleOnScreen(@NonNull android.graphics.Rect, boolean, int);
@@ -55214,6 +55218,8 @@ package android.view {
     field public static final int OVER_SCROLL_ALWAYS = 0; // 0x0
     field public static final int OVER_SCROLL_IF_CONTENT_SCROLLS = 1; // 0x1
     field public static final int OVER_SCROLL_NEVER = 2; // 0x2
+    field @FlaggedApi("com.android.hardware.input.pointer_capture_modes") public static final int POINTER_CAPTURE_MODE_ABSOLUTE = 1; // 0x1
+    field @FlaggedApi("com.android.hardware.input.pointer_capture_modes") public static final int POINTER_CAPTURE_MODE_UNCAPTURED = 0; // 0x0
     field protected static final int[] PRESSED_ENABLED_FOCUSED_SELECTED_STATE_SET;
     field protected static final int[] PRESSED_ENABLED_FOCUSED_SELECTED_WINDOW_FOCUSED_STATE_SET;
     field protected static final int[] PRESSED_ENABLED_FOCUSED_STATE_SET;

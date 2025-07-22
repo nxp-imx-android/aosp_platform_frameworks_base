@@ -69,7 +69,6 @@ import com.android.systemui.SysuiTestCase;
 import com.android.systemui.animation.DialogTransitionAnimator;
 import com.android.systemui.bluetooth.qsdialog.DeviceItem;
 import com.android.systemui.bluetooth.qsdialog.DeviceItemType;
-import com.android.systemui.common.domain.interactor.SysUIStateDisplaysInteractor;
 import com.android.systemui.plugins.ActivityStarter;
 import com.android.systemui.qs.shared.QSSettingsPackageRepository;
 import com.android.systemui.res.R;
@@ -118,8 +117,6 @@ public class HearingDevicesDialogDelegateTest extends SysuiTestCase {
 
     @Mock
     private SystemUIDialogManager mSystemUIDialogManager;
-    @Mock
-    private SysUIStateDisplaysInteractor mSysUiStateInteractor;
     @Mock
     private DialogTransitionAnimator mDialogTransitionAnimator;
     @Mock
@@ -390,7 +387,6 @@ public class HearingDevicesDialogDelegateTest extends SysuiTestCase {
         mDialogFactory = new SystemUIDialog.Factory(
                 mContext,
                 mSystemUIDialogManager,
-                mSysUiStateInteractor,
                 getFakeBroadcastDispatcher(),
                 mDialogTransitionAnimator
         );

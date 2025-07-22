@@ -14,16 +14,16 @@
  * limitations under the License.
  */
 
-package com.android.wm.shell.functional
+package com.android.wm.shell.functional.minimize
 
 import android.platform.test.annotations.Presubmit
 import android.platform.test.rule.ScreenRecordRule
-import com.android.wm.shell.scenarios.MinimizeWindowOnAppOpen
+import com.android.wm.shell.scenarios.MinimizeAppWindows
 import org.junit.runner.RunWith
 import org.junit.runners.BlockJUnit4ClassRunner
 
-/* Functional test for [MinimizeWindowOnAppOpen]. */
+/* Functional test for [MinimizeAppWindows]. */
 @RunWith(BlockJUnit4ClassRunner::class)
 @Presubmit
 @ScreenRecordRule.ScreenRecord
-class MinimizeWindowOnAppOpenTest : MinimizeWindowOnAppOpen()
+class MinimizeAppWindowsTest : MinimizeAppWindows()

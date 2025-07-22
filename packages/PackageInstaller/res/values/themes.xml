@@ -60,11 +60,6 @@
         <item name="shapeAppearanceOverlay">@style/ShapeAppearance</item>
     </style>
 
-    <style name="Theme.MaterialAlertDialog.Variant" parent="">
-        <item name="buttonBarPositiveButtonStyle">@style/Widget.PackageInstaller.Material.Button</item>
-        <item name="buttonBarNegativeButtonStyle">@style/Widget.PackageInstaller.Material.Button</item>
-    </style>
-
     <style name="Theme.UninstallerActivity"
         parent="@style/Theme.AlertDialogActivity">
     </style>

@@ -76,7 +76,6 @@ import java.util.stream.Collectors;
  * is not reliable.
  */
 @SystemService(Context.SATELLITE_SERVICE)
-@FlaggedApi(Flags.FLAG_SATELLITE_STATE_CHANGE_LISTENER)
 @RequiresFeature(PackageManager.FEATURE_TELEPHONY_SATELLITE)
 public final class SatelliteManager {
     private static final String TAG = "SatelliteManager";
@@ -859,7 +858,6 @@ public final class SatelliteManager {
      * @see SatelliteStateChangeListener
      * @see TelephonyManager#hasCarrierPrivileges()
      */
-    @FlaggedApi(Flags.FLAG_SATELLITE_STATE_CHANGE_LISTENER)
     @RequiresPermission(anyOf = {android.Manifest.permission.READ_BASIC_PHONE_STATE,
             android.Manifest.permission.READ_PRIVILEGED_PHONE_STATE,
             android.Manifest.permission.READ_PHONE_STATE,
@@ -888,7 +886,6 @@ public final class SatelliteManager {
      * @see SatelliteStateChangeListener
      * @see TelephonyManager#hasCarrierPrivileges()
      */
-    @FlaggedApi(Flags.FLAG_SATELLITE_STATE_CHANGE_LISTENER)
     @RequiresPermission(anyOf = {android.Manifest.permission.READ_BASIC_PHONE_STATE,
             android.Manifest.permission.READ_PRIVILEGED_PHONE_STATE,
             android.Manifest.permission.READ_PHONE_STATE,

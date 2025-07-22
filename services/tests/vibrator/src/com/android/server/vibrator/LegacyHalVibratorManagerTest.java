@@ -19,6 +19,7 @@ package com.android.server.vibrator;
 import static com.google.common.truth.Truth.assertThat;
 
 import android.hardware.vibrator.IVibrator;
+import android.os.VibratorInfo;
 import android.os.test.TestLooper;
 
 import com.android.server.vibrator.VintfHalVibratorManager.LegacyHalVibratorManager;
@@ -42,11 +43,11 @@ public class LegacyHalVibratorManagerTest {
 
     @Test
     public void init_returnsAllFalseExceptVibratorIds() {
-        mHelper.setVibratorIds(new int[] { 1, 2 });
         HalVibratorManager manager = mHelper.newLegacyVibratorManager();
         manager.init(mHalCallbackMock, mHalVibratorCallbackMock);
 
-        assertThat(manager.getVibratorIds()).asList().containsExactly(1, 2).inOrder();
+        assertThat(manager.getVibratorIds()).asList()
+                .containsExactly(VintfHalVibratorManager.DEFAULT_VIBRATOR_ID).inOrder();
         assertThat(manager.getCapabilities()).isEqualTo(0);
         assertThat(manager.prepareSynced(new int[] { 1 })).isFalse();
         assertThat(manager.triggerSynced(1)).isFalse();
@@ -57,46 +58,40 @@ public class LegacyHalVibratorManagerTest {
 
     @Test
     public void init_initializesVibrators() {
-        mHelper.setVibratorIds(new int[] { 1, 2 });
         HalVibratorManager manager = mHelper.newLegacyVibratorManager();
         manager.init(mHalCallbackMock, mHalVibratorCallbackMock);
 
-        assertThat(mHelper.getVibratorHelper(1).isInitialized()).isTrue();
-        assertThat(mHelper.getVibratorHelper(2).isInitialized()).isTrue();
+        int defaultVibratorId = VintfHalVibratorManager.DEFAULT_VIBRATOR_ID;
+        assertThat(mHelper.getVibratorHelper(defaultVibratorId).isInitialized()).isTrue();
     }
 
     @Test
-    public void onSystemReady_triggersAllVibratorsOnSystemReady() {
-        mHelper.setVibratorIds(new int[] {1, 2});
-        mHelper.getVibratorHelper(1).setCapabilities(IVibrator.CAP_EXTERNAL_CONTROL);
-        mHelper.getVibratorHelper(2).setCapabilities(IVibrator.CAP_AMPLITUDE_CONTROL);
-        mHelper.getVibratorHelper(2).setLoadInfoToFail();
+    public void onSystemReady_triggersDefaultVibratorOnSystemReady() {
+        int defaultVibratorId = VintfHalVibratorManager.DEFAULT_VIBRATOR_ID;
         HalVibratorManager manager = mHelper.newLegacyVibratorManager();
+        mHelper.getVibratorHelper(defaultVibratorId)
+                .setCapabilities(IVibrator.CAP_EXTERNAL_CONTROL);
+        mHelper.getVibratorHelper(defaultVibratorId).setLoadInfoToFail();
         manager.init(mHalCallbackMock, mHalVibratorCallbackMock);
 
-        assertThat(manager.getVibrator(1).getInfo().getId()).isEqualTo(1);
-        assertThat(manager.getVibrator(2).getInfo().getId()).isEqualTo(2);
+        assertThat(manager.getVibrator(defaultVibratorId).getInfo())
+                .isEqualTo(new VibratorInfo.Builder(defaultVibratorId).build());
 
         manager.onSystemReady();
 
-        // Capabilities from vibrator 2 reloaded after failure.
-        assertThat(manager.getVibrator(1).getInfo().getCapabilities())
+        assertThat(manager.getVibrator(defaultVibratorId).getInfo().getCapabilities())
                 .isEqualTo(IVibrator.CAP_EXTERNAL_CONTROL);
-        assertThat(manager.getVibrator(2).getInfo().getCapabilities())
-                .isEqualTo(IVibrator.CAP_AMPLITUDE_CONTROL);
     }
 
     @Test
-    public void getVibrator_returnsVibratorOnlyForValidIds() {
-        mHelper.setVibratorIds(new int[] { 1, 2 });
+    public void getVibrator_returnsVibratorOnlyForDefaultValidId() {
+        int defaultVibratorId = VintfHalVibratorManager.DEFAULT_VIBRATOR_ID;
         HalVibratorManager manager = mHelper.newLegacyVibratorManager();
 
-        assertThat(manager.getVibrator(-1)).isNull();
-        assertThat(manager.getVibrator(0)).isNull();
-        assertThat(manager.getVibrator(1)).isNotNull();
-        assertThat(manager.getVibrator(1).getInfo().getId()).isEqualTo(1);
-        assertThat(manager.getVibrator(2)).isNotNull();
-        assertThat(manager.getVibrator(2).getInfo().getId()).isEqualTo(2);
-        assertThat(manager.getVibrator(3)).isNull();
+        assertThat(manager.getVibrator(defaultVibratorId - 1)).isNull();
+        assertThat(manager.getVibrator(defaultVibratorId)).isNotNull();
+        assertThat(manager.getVibrator(defaultVibratorId).getInfo().getId())
+                .isEqualTo(defaultVibratorId);
+        assertThat(manager.getVibrator(defaultVibratorId + 1)).isNull();
     }
 }

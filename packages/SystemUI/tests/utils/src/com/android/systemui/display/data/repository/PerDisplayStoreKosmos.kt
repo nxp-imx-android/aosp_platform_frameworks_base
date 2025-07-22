@@ -18,6 +18,7 @@ package com.android.systemui.display.data.repository
 
 import com.android.app.displaylib.DisplayInstanceLifecycleManager
 import com.android.app.displaylib.FakeDisplayInstanceLifecycleManager
+import com.android.app.displaylib.PerDisplayInstanceProviderWithSetup
 import com.android.app.displaylib.PerDisplayInstanceProviderWithTeardown
 import com.android.app.displaylib.PerDisplayInstanceRepositoryImpl
 import com.android.systemui.dump.dumpManager
@@ -54,12 +55,18 @@ val Kosmos.fakePerDisplayStore by
         )
     }
 
-class FakePerDisplayInstanceProviderWithTeardown :
-    PerDisplayInstanceProviderWithTeardown<TestPerDisplayInstance> {
+class FakePerDisplayInstanceProviderWithSetupAndTeardown :
+    PerDisplayInstanceProviderWithTeardown<TestPerDisplayInstance>,
+    PerDisplayInstanceProviderWithSetup<TestPerDisplayInstance> {
     val destroyed = mutableListOf<TestPerDisplayInstance>()
+    val created = mutableListOf<TestPerDisplayInstance>()
 
     override fun destroyInstance(instance: TestPerDisplayInstance) {
         destroyed += instance
+    }
+
+    override fun setupInstance(instance: TestPerDisplayInstance) {
+        created += instance
     }
 
     override fun createInstance(displayId: Int): TestPerDisplayInstance? {
@@ -67,8 +74,8 @@ class FakePerDisplayInstanceProviderWithTeardown :
     }
 }
 
-val Kosmos.fakePerDisplayInstanceProviderWithTeardown by
-    Kosmos.Fixture { FakePerDisplayInstanceProviderWithTeardown() }
+val Kosmos.fakePerDisplayInstanceProviderWithSetupAndTeardown by
+    Kosmos.Fixture { FakePerDisplayInstanceProviderWithSetupAndTeardown() }
 
 val Kosmos.perDisplayDumpHelper by Kosmos.Fixture { PerDisplayRepoDumpHelper(dumpManager) }
 val Kosmos.fakeDisplayInstanceLifecycleManager by
@@ -79,7 +86,7 @@ val Kosmos.fakePerDisplayInstanceRepository by
         { lifecycleManager: DisplayInstanceLifecycleManager? ->
             PerDisplayInstanceRepositoryImpl(
                 debugName = "fakePerDisplayInstanceRepository",
-                instanceProvider = fakePerDisplayInstanceProviderWithTeardown,
+                instanceProvider = fakePerDisplayInstanceProviderWithSetupAndTeardown,
                 lifecycleManager,
                 testScope.backgroundScope,
                 displayRepository,

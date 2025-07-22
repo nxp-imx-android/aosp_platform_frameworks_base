@@ -41,7 +41,7 @@ public class RavenwoodEnablementTest extends RavenwoodRunnerTestBase {
 
     private static final String ENABLEMENT_POLICY = """
             # Enable all tests by default
-            * true  # inline comments should work
+            RavenwoodCoreTest:* true  # inline comments should work
 
             # Disable only the method TestPolicy#testDisabled
             com.android.ravenwoodtest.coretest.RavenwoodEnablementTest$TestPolicy#testDisabled false

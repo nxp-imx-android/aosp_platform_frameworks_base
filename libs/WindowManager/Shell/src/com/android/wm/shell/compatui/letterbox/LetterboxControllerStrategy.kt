@@ -23,22 +23,23 @@ import com.android.wm.shell.dagger.WMSingleton
 import javax.inject.Inject
 
 /**
- * Encapsulate the logic related to the use of a single or multiple surfaces when
- * implementing letterbox in shell.
+ * Encapsulate the logic related to the use of a single or multiple surfaces when implementing
+ * letterbox in shell.
  */
 @WMSingleton
-class LetterboxControllerStrategy @Inject constructor(
-    private val letterboxConfiguration: LetterboxConfiguration
-) {
+class LetterboxControllerStrategy
+@Inject
+constructor(private val letterboxConfiguration: LetterboxConfiguration) {
 
     // Different letterbox implementation modes.
-    enum class LetterboxMode { SINGLE_SURFACE, MULTIPLE_SURFACES }
+    enum class LetterboxMode {
+        SINGLE_SURFACE,
+        MULTIPLE_SURFACES,
+    }
 
-    @Volatile
-    private var currentMode: LetterboxMode = SINGLE_SURFACE
+    @Volatile private var currentMode: LetterboxMode = SINGLE_SURFACE
 
-    @Volatile
-    private var supportsInputSurface: Boolean = false
+    @Volatile private var supportsInputSurface: Boolean = false
 
     fun configureLetterboxMode(event: LetterboxLifecycleEvent) {
         // Decides whether to use a single surface or multiple surfaces for the letterbox.
@@ -47,22 +48,19 @@ class LetterboxControllerStrategy @Inject constructor(
         // The multi surfaces approach is only used when the activity is transparent. The single
         // surface approach is the default one because it is easier and less expensive to handle.
         // TODO(b/377875146): Improve heuristic for single/multiple surfaces
-        currentMode = when {
-            event.isBubble -> SINGLE_SURFACE
-            event.isTranslucent -> MULTIPLE_SURFACES
-            letterboxConfiguration.isLetterboxActivityCornersRounded() -> SINGLE_SURFACE
-            else -> SINGLE_SURFACE
-        }
+        currentMode =
+            when {
+                event.isBubble -> SINGLE_SURFACE
+                event.isTranslucent -> MULTIPLE_SURFACES
+                letterboxConfiguration.isLetterboxActivityCornersRounded() -> SINGLE_SURFACE
+                else -> SINGLE_SURFACE
+            }
         supportsInputSurface = event.supportsInput
     }
 
-    /**
-     * @return The specific mode to use for implementing letterboxing for the given [request].
-     */
+    /** @return The specific mode to use for implementing letterboxing for the given [request]. */
     fun getLetterboxImplementationMode(): LetterboxMode = currentMode
 
-    /**
-     * Tells if the input surface should be created or not. This enabled reachability.
-     */
+    /** Tells if the input surface should be created or not. This enabled reachability. */
     fun shouldSupportInputSurface(): Boolean = supportsInputSurface
 }

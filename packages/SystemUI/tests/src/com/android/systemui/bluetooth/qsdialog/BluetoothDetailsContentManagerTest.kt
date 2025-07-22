@@ -31,7 +31,6 @@ import androidx.test.filters.SmallTest
 import com.android.internal.logging.UiEventLogger
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.bluetooth.ui.viewModel.BluetoothDetailsContentViewModel
-import com.android.systemui.common.domain.interactor.SysUIStateDisplaysInteractor
 import com.android.systemui.coroutines.collectLastValue
 import com.android.systemui.kosmos.testDispatcher
 import com.android.systemui.kosmos.testScope
@@ -80,7 +79,6 @@ class BluetoothDetailsContentManagerTest : SysuiTestCase() {
 
     private val sysuiDialogFactory = mock<SystemUIDialog.Factory>()
     private val dialogManager = mock<SystemUIDialogManager>()
-    private val sysuiStateInteractor = mock<SysUIStateDisplaysInteractor>()
     private val activityStarter = mock<ActivityStarter>()
 
     private val fakeSystemClock = FakeSystemClock()
@@ -125,7 +123,6 @@ class BluetoothDetailsContentManagerTest : SysuiTestCase() {
                     0,
                     SystemUIDialog.DEFAULT_DISMISS_ON_DEVICE_LOCK,
                     dialogManager,
-                    sysuiStateInteractor,
                     fakeBroadcastDispatcher,
                     dialogTransitionAnimator,
                     it.getArgument(0),

@@ -25,24 +25,23 @@ import com.android.wm.shell.dagger.WMSingleton
 import javax.inject.Inject
 
 /**
- * [LetterboxRoundedCornersFactory] implementation returning rounded corners [Drawable]s using
- * SVG format.
+ * [LetterboxRoundedCornersFactory] implementation returning rounded corners [Drawable]s using SVG
+ * format.
  */
 @WMSingleton
-class LetterboxRoundedCornersDrawableFactory @Inject constructor(
-) : RoundedCornersDrawableFactory<LetterboxRoundedCornersDrawable> {
+class LetterboxRoundedCornersDrawableFactory @Inject constructor() :
+    RoundedCornersDrawableFactory<LetterboxRoundedCornersDrawable> {
     override fun getRoundedCornerDrawable(
         color: Color,
         position: Position,
-        radius: Float
+        radius: Float,
     ): LetterboxRoundedCornersDrawable {
         val corners = LetterboxRoundedCornersDrawable(color, radius)
         return when (position) {
             Position.TOP_LEFT -> corners
             Position.TOP_RIGHT -> corners.flip(FLIP_HORIZONTAL)
             Position.BOTTOM_LEFT -> corners.flip(FLIP_VERTICAL)
-            Position.BOTTOM_RIGHT -> corners.flip(FLIP_HORIZONTAL)
-                .flip(FLIP_VERTICAL)
+            Position.BOTTOM_RIGHT -> corners.flip(FLIP_HORIZONTAL).flip(FLIP_VERTICAL)
         }
     }
 }

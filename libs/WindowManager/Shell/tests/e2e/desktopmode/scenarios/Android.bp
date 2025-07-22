@@ -96,10 +96,6 @@ test_module_config {
         "com.android.wm.shell.functional.EnterDesktopWithDragWindowsLimitTest",
         "com.android.wm.shell.functional.FocusAppFromAllAppsTest",
         "com.android.wm.shell.functional.FocusAppFromTaskbarTest",
-        "com.android.wm.shell.functional.MinimizeAppWindowsTest",
-        "com.android.wm.shell.functional.MinimizeAutoPipAppWindowTest",
-        "com.android.wm.shell.functional.MinimizeWindowOnAppOpenTest",
-        "com.android.wm.shell.functional.MinimizeWindowOnAppOpenViaIntentTest",
         "com.android.wm.shell.functional.MoveToNextDisplayTest",
         "com.android.wm.shell.functional.OpenAppWithExternalDisplayConnectedTest",
         "com.android.wm.shell.functional.OpenTrampolineAppInDesktopModeTaskLimitTest",
@@ -134,6 +130,10 @@ test_module_config {
         "com.android.wm.shell.functional.maximize.ExitDesktopWithDragToTopDragZoneTest",
         "com.android.wm.shell.functional.maximize.MaximizeAppWindowTest",
         "com.android.wm.shell.functional.maximize.MaximizeAppWindowWithDragToTopDragZoneInDesktopFirstTest",
+        "com.android.wm.shell.functional.minimize.MinimizeAppWindowsTest",
+        "com.android.wm.shell.functional.minimize.MinimizeAutoPipAppWindowTest",
+        "com.android.wm.shell.functional.minimize.MinimizeWindowOnAppOpenTest",
+        "com.android.wm.shell.functional.minimize.MinimizeWindowOnAppOpenViaIntentTest",
         "com.android.wm.shell.functional.resizing.ResizeAppCornerMultiWindowAndPipTest",
         "com.android.wm.shell.functional.resizing.ResizeAppCornerMultiWindowTest",
         "com.android.wm.shell.functional.resizing.ResizeAppWithCornerResizeTest",
@@ -227,34 +227,6 @@ test_module_config {
     base: "FunctionalTestsDesktopMode",
     test_suites: ["device-tests"],
     include_filters: ["com.android.wm.shell.functional.FocusAppFromTaskbarTest"],
-}
-
-test_module_config {
-    name: "FunctionalTestsDesktopMode-MinimizeAppWindowsTest",
-    base: "FunctionalTestsDesktopMode",
-    test_suites: ["device-tests"],
-    include_filters: ["com.android.wm.shell.functional.MinimizeAppWindowsTest"],
-}
-
-test_module_config {
-    name: "FunctionalTestsDesktopMode-MinimizeAutoPipAppWindowTest",
-    base: "FunctionalTestsDesktopMode",
-    test_suites: ["device-tests"],
-    include_filters: ["com.android.wm.shell.functional.MinimizeAutoPipAppWindowTest"],
-}
-
-test_module_config {
-    name: "FunctionalTestsDesktopMode-MinimizeWindowOnAppOpenTest",
-    base: "FunctionalTestsDesktopMode",
-    test_suites: ["device-tests"],
-    include_filters: ["com.android.wm.shell.functional.MinimizeWindowOnAppOpenTest"],
-}
-
-test_module_config {
-    name: "FunctionalTestsDesktopMode-MinimizeWindowOnAppOpenViaIntentTest",
-    base: "FunctionalTestsDesktopMode",
-    test_suites: ["device-tests"],
-    include_filters: ["com.android.wm.shell.functional.MinimizeWindowOnAppOpenViaIntentTest"],
 }
 
 test_module_config {
@@ -493,6 +465,34 @@ test_module_config {
     base: "FunctionalTestsDesktopMode",
     test_suites: ["device-tests"],
     include_filters: ["com.android.wm.shell.functional.maximize.MaximizeAppWindowWithDragToTopDragZoneInDesktopFirstTest"],
+}
+
+test_module_config {
+    name: "FunctionalTestsDesktopMode-minimize-MinimizeAppWindowsTest",
+    base: "FunctionalTestsDesktopMode",
+    test_suites: ["device-tests"],
+    include_filters: ["com.android.wm.shell.functional.minimize.MinimizeAppWindowsTest"],
+}
+
+test_module_config {
+    name: "FunctionalTestsDesktopMode-minimize-MinimizeAutoPipAppWindowTest",
+    base: "FunctionalTestsDesktopMode",
+    test_suites: ["device-tests"],
+    include_filters: ["com.android.wm.shell.functional.minimize.MinimizeAutoPipAppWindowTest"],
+}
+
+test_module_config {
+    name: "FunctionalTestsDesktopMode-minimize-MinimizeWindowOnAppOpenTest",
+    base: "FunctionalTestsDesktopMode",
+    test_suites: ["device-tests"],
+    include_filters: ["com.android.wm.shell.functional.minimize.MinimizeWindowOnAppOpenTest"],
+}
+
+test_module_config {
+    name: "FunctionalTestsDesktopMode-minimize-MinimizeWindowOnAppOpenViaIntentTest",
+    base: "FunctionalTestsDesktopMode",
+    test_suites: ["device-tests"],
+    include_filters: ["com.android.wm.shell.functional.minimize.MinimizeWindowOnAppOpenViaIntentTest"],
 }
 
 test_module_config {

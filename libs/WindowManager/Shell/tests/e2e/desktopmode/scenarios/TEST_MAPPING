@@ -52,18 +52,6 @@
       "name": "FunctionalTestsDesktopMode-FocusAppFromTaskbarTest"
     },
     {
-      "name": "FunctionalTestsDesktopMode-MinimizeAppWindowsTest"
-    },
-    {
-      "name": "FunctionalTestsDesktopMode-MinimizeAutoPipAppWindowTest"
-    },
-    {
-      "name": "FunctionalTestsDesktopMode-MinimizeWindowOnAppOpenTest"
-    },
-    {
-      "name": "FunctionalTestsDesktopMode-MinimizeWindowOnAppOpenViaIntentTest"
-    },
-    {
       "name": "FunctionalTestsDesktopMode-MoveToNextDisplayTest"
     },
     {
@@ -164,6 +152,18 @@
     },
     {
       "name": "FunctionalTestsDesktopMode-maximize-MaximizeAppWindowWithDragToTopDragZoneInDesktopFirstTest"
+    },
+    {
+      "name": "FunctionalTestsDesktopMode-minimize-MinimizeAppWindowsTest"
+    },
+    {
+      "name": "FunctionalTestsDesktopMode-minimize-MinimizeAutoPipAppWindowTest"
+    },
+    {
+      "name": "FunctionalTestsDesktopMode-minimize-MinimizeWindowOnAppOpenTest"
+    },
+    {
+      "name": "FunctionalTestsDesktopMode-minimize-MinimizeWindowOnAppOpenViaIntentTest"
     },
     {
       "name": "FunctionalTestsDesktopMode-resizing-ResizeAppCornerMultiWindowAndPipTest"

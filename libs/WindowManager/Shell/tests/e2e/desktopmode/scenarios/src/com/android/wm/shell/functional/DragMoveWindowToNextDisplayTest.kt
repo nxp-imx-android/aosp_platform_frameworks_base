@@ -17,6 +17,7 @@
 package com.android.wm.shell.functional
 
 import android.platform.test.annotations.Presubmit
+import android.platform.test.rule.ScreenRecordRule
 import com.android.wm.shell.scenarios.DragMoveWindowToNextDisplay
 import org.junit.runner.RunWith
 import org.junit.runners.BlockJUnit4ClassRunner
@@ -24,4 +25,5 @@ import org.junit.runners.BlockJUnit4ClassRunner
 /* Functional test for [DragMoveWindowToNextDisplay]. */
 @RunWith(BlockJUnit4ClassRunner::class)
 @Presubmit
+@ScreenRecordRule.ScreenRecord
 class DragMoveWindowToNextDisplayTest : DragMoveWindowToNextDisplay()

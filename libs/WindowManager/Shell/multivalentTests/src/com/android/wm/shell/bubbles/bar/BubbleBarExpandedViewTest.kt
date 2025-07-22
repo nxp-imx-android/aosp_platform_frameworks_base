@@ -159,10 +159,18 @@ class BubbleBarExpandedViewTest {
     @Test
     fun animateExpansion_waitsUntilTaskCreated() {
         var animated = false
-        bubbleExpandedView.animateExpansionWhenTaskViewVisible { animated = true }
+        var endRunnableRun = false
+        bubbleExpandedView.animateExpansionWhenTaskViewVisible(
+            { animated = true },
+            { endRunnableRun = true }
+        )
         assertThat(animated).isFalse()
+        assertThat(endRunnableRun).isFalse()
         bubbleExpandedView.onTaskCreated()
         assertThat(animated).isTrue()
+        // The end runnable should not be run unless the animation is canceled by
+        // cancelPendingAnimation.
+        assertThat(endRunnableRun).isFalse()
     }
 
     @Test
@@ -189,8 +197,15 @@ class BubbleBarExpandedViewTest {
         assertThat(taskView.taskView.parent).isEqualTo(expandedView)
 
         var animated = false
-        expandedView.animateExpansionWhenTaskViewVisible { animated = true }
+        var endRunnableRun = false
+        expandedView.animateExpansionWhenTaskViewVisible(
+            { animated = true },
+            { endRunnableRun = true }
+        )
         assertThat(animated).isTrue()
+        // The end runnable should not be run unless the animation is canceled by
+        // cancelPendingAnimation.
+        assertThat(endRunnableRun).isFalse()
     }
 
     @Test
@@ -219,13 +234,61 @@ class BubbleBarExpandedViewTest {
         assertThat(taskView.taskView.parent).isEqualTo(expandedView)
 
         var animated = false
-        expandedView.animateExpansionWhenTaskViewVisible { animated = true }
+        var endRunnableRun = false
+        expandedView.animateExpansionWhenTaskViewVisible(
+            { animated = true },
+            { endRunnableRun = true }
+        )
         assertThat(animated).isFalse()
+        assertThat(endRunnableRun).isFalse()
 
         // send a visible signal to simulate a new surface getting created
         expandedView.onContentVisibilityChanged(true)
 
         assertThat(animated).isTrue()
+        assertThat(endRunnableRun).isFalse()
+    }
+
+
+    @Test
+    fun animateExpansion_taskViewAttachedAndInvisibleThenAnimationCanceled() {
+        val inflater = LayoutInflater.from(context)
+        val expandedView = inflater.inflate(
+            R.layout.bubble_bar_expanded_view, null, false /* attachToRoot */
+        ) as BubbleBarExpandedView
+        val taskView = bubbleTaskViewFactory.create()
+        val taskViewParent = FrameLayout(context)
+        taskViewParent.addView(taskView.taskView)
+        taskView.listener.onTaskCreated(666, ComponentName(context, "BubbleBarExpandedViewTest"))
+        assertThat(taskView.isVisible).isTrue()
+        taskView.listener.onTaskVisibilityChanged(666, false)
+        assertThat(taskView.isVisible).isFalse()
+
+        expandedView.initialize(
+            expandedViewManager,
+            positioner,
+            false /* isOverflow */,
+            bubble,
+            taskView,
+        )
+
+        // the task view should be added to the expanded view
+        assertThat(taskView.taskView.parent).isEqualTo(expandedView)
+
+        var animated = false
+        var endRunnableRun = false
+        expandedView.animateExpansionWhenTaskViewVisible(
+            { animated = true },
+            { endRunnableRun = true }
+        )
+        assertThat(animated).isFalse()
+        assertThat(endRunnableRun).isFalse()
+
+        // Cancel the pending animation.
+        expandedView.cancelPendingAnimation()
+
+        assertThat(animated).isFalse()
+        assertThat(endRunnableRun).isTrue()
     }
 
     private fun BubbleBarExpandedView.menuView(): BubbleBarMenuView {

@@ -28,7 +28,7 @@ import com.android.systemui.keyguard.shared.model.KeyguardState
 import com.android.systemui.keyguard.ui.viewmodel.fakeDeviceEntryIconViewModelTransition
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.statusbar.phone.SystemUIDialogManager
-import com.android.systemui.statusbar.phone.systemUIDialogManager
+import com.android.systemui.statusbar.phone.mockSystemUIDialogManager
 import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.test.runCurrent
@@ -48,7 +48,7 @@ class DeviceEntryUdfpsTouchOverlayViewModelTest : SysuiTestCase() {
         testKosmos().apply {
             fakeFeatureFlagsClassic.apply { set(Flags.FULL_SCREEN_USER_SWITCHER, true) }
         }
-    private val systemUIDialogManager = kosmos.systemUIDialogManager
+    private val systemUIDialogManager = kosmos.mockSystemUIDialogManager
     private val bouncerRepository = kosmos.fakeKeyguardBouncerRepository
     private val keyguardTransitionRepository = kosmos.fakeKeyguardTransitionRepository
     private val testScope = kosmos.testScope

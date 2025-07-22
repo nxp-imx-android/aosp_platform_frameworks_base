@@ -1694,6 +1694,7 @@ public final class PowerManagerService extends SystemService
             }
 
             applyWakeLockFlagsOnAcquireLocked(wakeLock);
+            addFrozenStateChangeCallbacksLocked(wakeLock);
             mDirty |= DIRTY_WAKE_LOCKS;
             updatePowerStateLocked();
             if (notifyAcquire) {
@@ -1864,7 +1865,25 @@ public final class PowerManagerService extends SystemService
         }
     }
 
-    private void removeWakelockFrozenStateReferences(WakeLock wakelock) {
+    private void addFrozenStateChangeCallbacksLocked(WakeLock wakelock) {
+        if (mFeatureFlags.isDisableFrozenProcessWakelocksEnabled()) {
+            try {
+                wakelock.mLock.addFrozenStateChangeCallback(wakelock);
+            } catch (UnsupportedOperationException e) {
+                // Ignore the exception.  The callback is not supported on this platform or on
+                // this binder.  The callback is never supported for local binders.  There is
+                // no error. A log message is provided for debug.
+                if (DEBUG_SPEW) {
+                    Slog.v(TAG, "FrozenStateChangeCallback not supported for this wakelock "
+                            + wakelock.mTag + " " + e.getLocalizedMessage());
+                }
+            } catch (RemoteException e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
+
+    private void removeFrozenStateChangeCallbacksLocked(WakeLock wakelock) {
         if (mFeatureFlags.isDisableFrozenProcessWakelocksEnabled()) {
             try {
                 wakelock.mLock.removeFrozenStateChangeCallback(wakelock);
@@ -1873,6 +1892,8 @@ public final class PowerManagerService extends SystemService
                     Slog.v(TAG, "FrozenStateChangeCallback not supported for this wakelock "
                             + wakelock.mTag + " " + e.getLocalizedMessage());
                 }
+            } catch (IllegalArgumentException e) {
+                Slog.v(TAG, "FrozenStateChangeCallback was already unregistered");
             }
         }
     }
@@ -1900,13 +1921,14 @@ public final class PowerManagerService extends SystemService
 
     @GuardedBy("mLock")
     private void removeWakeLockLocked(WakeLock wakeLock, int index) {
+        removeFrozenStateChangeCallbacksLocked(wakeLock);
         removeWakeLockNoUpdateLocked(wakeLock, index);
         updatePowerStateLocked();
     }
 
     @GuardedBy("mLock")
     private void removeWakeLockDeathLocked(WakeLock wakeLock, int index) {
-        removeWakelockFrozenStateReferences(wakeLock);
+        removeFrozenStateChangeCallbacksLocked(wakeLock);
         removeWakeLockNoUpdateLocked(wakeLock, index, RELEASE_REASON_WAKE_LOCK_DEATH);
         updatePowerStateLocked();
     }
@@ -4517,11 +4539,6 @@ public final class PowerManagerService extends SystemService
     }
 
     @GuardedBy("mLock")
-    private void updateWakeLockDisabledStatesLocked() {
-        updateWakeLockDisabledStatesLocked(mWakeLocks);
-    }
-
-    @GuardedBy("mLock")
     private void updateWakeLockDisabledStatesLocked(List<WakeLock> wakelocks) {
         boolean changed = false;
         int numWakeLocks = wakelocks.size();
@@ -4545,6 +4562,11 @@ public final class PowerManagerService extends SystemService
             mDirty |= DIRTY_WAKE_LOCKS;
             updatePowerStateLocked();
         }
+    }
+
+    @GuardedBy("mLock")
+    private void updateWakeLockDisabledStatesLocked() {
+        updateWakeLockDisabledStatesLocked(mWakeLocks);
     }
 
     @GuardedBy("mLock")
@@ -5687,21 +5709,6 @@ public final class PowerManagerService extends SystemService
             mOwnerPid = ownerPid;
             mUidState = uidState;
             mCallback = callback;
-            if (mFeatureFlags.isDisableFrozenProcessWakelocksEnabled()) {
-                try {
-                    lock.addFrozenStateChangeCallback(this);
-                } catch (UnsupportedOperationException e) {
-                    // Ignore the exception.  The callback is not supported on this platform or on
-                    // this binder.  The callback is never supported for local binders.  There is
-                    // no error. A log message is provided for debug.
-                    if (DEBUG_SPEW) {
-                        Slog.v(TAG, "FrozenStateChangeCallback not supported for this wakelock "
-                                + tag + " " + e.getLocalizedMessage());
-                    }
-                } catch (RemoteException e) {
-                    throw new RuntimeException(e);
-                }
-            }
             linkToDeath();
         }
 

@@ -165,14 +165,6 @@ constructor(
                         modifier = Modifier.fillMaxWidth(),
                     )
                 }
-                // Communicates the bottom position of the drawable area within the shade to NSSL.
-                NotificationStackCutoffGuideline(
-                    stackScrollView = stackScrollView.get(),
-                    viewModel = placeholderViewModel,
-                    modifier =
-                        Modifier.align(Alignment.BottomCenter)
-                            .padding(bottom = notificationStackPadding),
-                )
             }
         }
     }

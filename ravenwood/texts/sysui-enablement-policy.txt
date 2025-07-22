@@ -1,4 +1,4 @@
-* false
+SystemUiRavenTests:* false
 com.android.keyguard.BouncerPanelExpansionCalculatorTest true
 com.android.keyguard.EmergencyButtonControllerTest true
 com.android.keyguard.KeyguardBiometricLockoutLoggerTest true

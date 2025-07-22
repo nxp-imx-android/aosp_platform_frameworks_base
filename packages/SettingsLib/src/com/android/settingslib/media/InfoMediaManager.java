@@ -59,6 +59,7 @@ import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.media.MediaRoute2Info;
 import android.media.RouteListingPreference;
+import android.media.RoutingChangeInfo;
 import android.media.RoutingSessionInfo;
 import android.media.SuggestedDeviceInfo;
 import android.media.session.MediaController;
@@ -315,7 +316,8 @@ public abstract class InfoMediaManager {
 
     protected abstract void unregisterRouter();
 
-    protected abstract void transferToRoute(@NonNull MediaRoute2Info route);
+    protected abstract void transferToRoute(
+            @NonNull MediaRoute2Info route, @NonNull RoutingChangeInfo routingChangeInfo);
 
     protected abstract void selectRoute(
             @NonNull MediaRoute2Info route, @NonNull RoutingSessionInfo info);
@@ -475,7 +477,7 @@ public abstract class InfoMediaManager {
         return mCurrentConnectedDevice;
     }
 
-    /* package */ void connectToDevice(MediaDevice device) {
+    /* package */ void connectToDevice(MediaDevice device, RoutingChangeInfo routingChangeInfo) {
         Log.i(TAG, "connectToDevice(), device = " + device.getName() + "/" + device.getId());
         if (device.mRouteInfo == null) {
             Log.w(TAG, "Unable to connect. RouteInfo is empty");
@@ -483,7 +485,7 @@ public abstract class InfoMediaManager {
         }
 
         device.setConnectedRecord();
-        transferToRoute(device.mRouteInfo);
+        transferToRoute(device.mRouteInfo, routingChangeInfo);
     }
 
     /**

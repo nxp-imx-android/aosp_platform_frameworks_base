@@ -19,9 +19,11 @@ package com.android.systemui.display.data.repository
 import android.view.Display
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
+import com.android.app.displaylib.PerDisplayInstanceProviderWithSetup
 import com.android.app.displaylib.PerDisplayInstanceRepositoryImpl
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.dump.dumpManager
+import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
 import com.android.systemui.testKosmos
@@ -43,7 +45,7 @@ class PerDisplayInstanceRepositoryImplTest : SysuiTestCase() {
     private val testScope = kosmos.testScope
     private val fakeDisplayRepository = kosmos.displayRepository
     private val fakePerDisplayInstanceProviderWithTeardown =
-        kosmos.fakePerDisplayInstanceProviderWithTeardown
+        kosmos.fakePerDisplayInstanceProviderWithSetupAndTeardown
     private val lifecycleManager = kosmos.fakeDisplayInstanceLifecycleManager
 
     private val underTest: PerDisplayInstanceRepositoryImpl<TestPerDisplayInstance> =
@@ -85,6 +87,26 @@ class PerDisplayInstanceRepositoryImplTest : SysuiTestCase() {
     @Test
     fun forDisplay_nonExistingDisplayId_returnsNull() =
         testScope.runTest { assertThat(underTest[NON_EXISTING_DISPLAY_ID]).isNull() }
+
+    @Test
+    fun forDisplay_afterDisplayCreated_setupInvoked() =
+        testScope.runTest {
+            val instance = underTest[NON_DEFAULT_DISPLAY_ID]
+
+            assertThat(fakePerDisplayInstanceProviderWithTeardown.created).containsExactly(instance)
+        }
+
+    @Test
+    fun forDisplay_calledMultipleTimes_setupInvokedOnce() =
+        testScope.runTest {
+            val instance = underTest[NON_DEFAULT_DISPLAY_ID]
+
+            assertThat(fakePerDisplayInstanceProviderWithTeardown.created).containsExactly(instance)
+
+            val instanceAgain = underTest[NON_DEFAULT_DISPLAY_ID]
+
+            assertThat(fakePerDisplayInstanceProviderWithTeardown.created).containsExactly(instance)
+        }
 
     @Test
     fun forDisplay_afterDisplayRemoved_destroyInstanceInvoked() =
@@ -206,6 +228,35 @@ class PerDisplayInstanceRepositoryImplTest : SysuiTestCase() {
 
             // It should fall back to the default instance.
             assertThat(instance).isSameInstanceAs(defaultInstance)
+        }
+
+    @Test
+    fun setupInstance_instanceAvailableFromRepositoryDuringSetup() =
+        kosmos.runTest {
+            lateinit var perDisplayRepo: PerDisplayInstanceRepositoryImpl<TestPerDisplayInstance>
+            var instanceSetUp: TestPerDisplayInstance? = null
+            perDisplayRepo =
+                PerDisplayInstanceRepositoryImpl(
+                    debugName = "fakePerDisplayInstanceRepository",
+                    instanceProvider =
+                        object : PerDisplayInstanceProviderWithSetup<TestPerDisplayInstance> {
+                            override fun setupInstance(instance: TestPerDisplayInstance) {
+                                assertThat(perDisplayRepo[NON_DEFAULT_DISPLAY_ID])
+                                    .isEqualTo(instance)
+                                instanceSetUp = instance
+                            }
+
+                            override fun createInstance(displayId: Int): TestPerDisplayInstance? {
+                                return TestPerDisplayInstance(displayId)
+                            }
+                        },
+                    lifecycleManager = null,
+                    testScope.backgroundScope,
+                    displayRepository,
+                    perDisplayDumpHelper,
+                )
+
+            assertThat(perDisplayRepo[NON_DEFAULT_DISPLAY_ID]).isEqualTo(instanceSetUp)
         }
 
     private fun createDisplay(displayId: Int): Display =

@@ -28,31 +28,28 @@ import javax.inject.Inject
 
 /**
  * This is responsible for listening to the destroy of [Task]s and use the related
- * [LetterboxController] to remove the related surfaces. This makes it easier to detect cases
- * when the letterbox surfaces should be removed completely (e.g. close a task from Recents).
+ * [LetterboxController] to remove the related surfaces. This makes it easier to detect cases when
+ * the letterbox surfaces should be removed completely (e.g. close a task from Recents).
  */
 @WMSingleton
-class LetterboxCleanupAdapter @Inject constructor(
+class LetterboxCleanupAdapter
+@Inject
+constructor(
     shellInit: ShellInit,
     shellTaskOrganizer: ShellTaskOrganizer,
     private val transactionSupplier: TransactionSupplier,
-    private val letterboxController: MixedLetterboxController
+    private val letterboxController: MixedLetterboxController,
 ) : ShellTaskOrganizer.TaskVanishedListener {
 
     init {
         if (appCompatRefactoring()) {
-            shellInit.addInitCallback({
-                shellTaskOrganizer.addTaskVanishedListener(this)
-            }, this)
+            shellInit.addInitCallback({ shellTaskOrganizer.addTaskVanishedListener(this) }, this)
         }
     }
 
     override fun onTaskVanished(taskInfo: RunningTaskInfo) {
         with(transactionSupplier.get()) {
-            letterboxController.destroyLetterboxSurface(
-                taskInfo.letterboxKey(),
-                this
-            )
+            letterboxController.destroyLetterboxSurface(taskInfo.letterboxKey(), this)
             apply()
         }
         letterboxController.dump()

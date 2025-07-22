@@ -2,6 +2,7 @@ package com.android.systemui.statusbar.notification.stack
 
 import android.annotation.DimenRes
 import android.content.pm.PackageManager
+import android.graphics.RectF
 import android.platform.test.annotations.EnableFlags
 import android.platform.test.flag.junit.FlagsParameterization
 import android.view.View
@@ -634,7 +635,7 @@ class StackScrollAlgorithmTest(flags: FlagsParameterization) : SysuiTestCase() {
         fakeHunInShade(
             headsUpTop = headsUpTop,
             stackTop = 2600f, // stack scrolled below the screen
-            stackCutoff = 4000f,
+            stackBottom = 4000f,
             collapsedHeight = 100,
             intrinsicHeight = intrinsicHunHeight,
         )
@@ -881,7 +882,7 @@ class StackScrollAlgorithmTest(flags: FlagsParameterization) : SysuiTestCase() {
         val stackBottom = 2000f
         val stackHeight = stackBottom - stackTop
         ambientState.stackTop = stackTop
-        ambientState.stackCutoff = stackBottom
+        ambientState.drawBounds = RectF(0f, stackTop, 400f, stackBottom)
 
         stackScrollAlgorithm.resetViewStates(ambientState, /* speedBumpIndex= */ 0)
 
@@ -1116,7 +1117,7 @@ class StackScrollAlgorithmTest(flags: FlagsParameterization) : SysuiTestCase() {
     fun resetViewStates_noSpaceForFooter_footerHidden_withSceneContainer() {
         ambientState.isShadeExpanded = true
         ambientState.stackTop = 0f
-        ambientState.stackCutoff = 100f
+        ambientState.drawBounds = RectF(0f, 0f, 400f, 100f)
         val footerView = mockFooterView(height = 200) // no space for the footer in the stack
         hostView.addView(footerView)
 
@@ -1899,7 +1900,7 @@ class StackScrollAlgorithmTest(flags: FlagsParameterization) : SysuiTestCase() {
         headsUpTop: Float,
         headsUpBottom: Float = headsUpTop + intrinsicHeight, // assume all the space available
         stackTop: Float,
-        stackCutoff: Float = 2000f,
+        stackBottom: Float = 2000f,
         fullStackHeight: Float = 3000f,
     ) {
         ambientState.headsUpTop = headsUpTop
@@ -1909,7 +1910,7 @@ class StackScrollAlgorithmTest(flags: FlagsParameterization) : SysuiTestCase() {
             ambientState.headsUpBottom = headsUpBottom
         }
         ambientState.stackTop = stackTop
-        ambientState.stackCutoff = stackCutoff
+        ambientState.drawBounds = RectF(0f, stackTop, 400f, stackBottom)
 
         // shade is fully open
         ambientState.expansionFraction = 1.0f

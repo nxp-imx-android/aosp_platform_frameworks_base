@@ -21,14 +21,14 @@ import com.android.systemui.bouncer.domain.interactor.alternateBouncerInteractor
 import com.android.systemui.keyguard.ui.viewmodel.deviceEntryIconViewModel
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.Kosmos.Fixture
-import com.android.systemui.statusbar.phone.systemUIDialogManager
+import com.android.systemui.statusbar.phone.mockSystemUIDialogManager
 import com.android.systemui.util.mockito.mock
 
 val Kosmos.deviceEntryUdfpsTouchOverlayViewModel by Fixture {
     DeviceEntryUdfpsTouchOverlayViewModel(
         deviceEntryIconViewModel = deviceEntryIconViewModel,
         alternateBouncerInteractor = alternateBouncerInteractor,
-        systemUIDialogManager = systemUIDialogManager,
+        systemUIDialogManager = mockSystemUIDialogManager,
         logger = mock<DeviceEntryIconLogger>(),
     )
 }

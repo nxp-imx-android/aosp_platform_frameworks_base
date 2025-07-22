@@ -832,10 +832,9 @@ public class PowerManagerServiceTest {
 
     @RequiresFlagsEnabled(Flags.FLAG_PARTIAL_SLEEP_WAKELOCKS)
     @Test
-    public void testPartialSleepWakelock_multiplePowerGroups() {
+    public void testPartialSleepWakelock_multiplePowerGroups_sleepDefault() {
         // setup
         final int nonDefaultPowerGroupId = Display.DEFAULT_DISPLAY_GROUP + 1;
-        int displayInNonDefaultGroup = 1;
         final AtomicReference<DisplayManagerInternal.DisplayGroupListener> listener =
                 new AtomicReference<>();
         long eventTime1 = 10;
@@ -858,12 +857,12 @@ public class PowerManagerServiceTest {
         assertThat(mService.getWakefulnessLocked(nonDefaultPowerGroupId))
                 .isEqualTo(WAKEFULNESS_AWAKE);
 
-        // Transition default display to doze, and verify the global wakefulness
-        mService.setWakefulnessLocked(Display.DEFAULT_DISPLAY_GROUP, WAKEFULNESS_DOZING, eventTime1,
+        // Transition default display to sleep, and verify the global wakefulness
+        mService.setWakefulnessLocked(Display.DEFAULT_DISPLAY_GROUP, WAKEFULNESS_ASLEEP, eventTime1,
                 0, PowerManager.GO_TO_SLEEP_REASON_INATTENTIVE, 0, null, null);
         advanceTime(1000);
 
-        // assert that default group is alseep
+        // assert that default group is asleep
         assertWithMessage("Global wakefulness is not awake")
                 .that(mService.getGlobalWakefulnessLocked())
                 .isEqualTo(WAKEFULNESS_AWAKE);
@@ -902,6 +901,89 @@ public class PowerManagerServiceTest {
         assertWithMessage("Secondary group is not awake")
                 .that(mService.getWakefulnessLocked(nonDefaultPowerGroupId))
                 .isEqualTo(WAKEFULNESS_AWAKE);
+
+        mService.getBinderServiceInstance().releaseWakeLock(token, /* flags= */ 0);
+    }
+
+    @RequiresFlagsEnabled(Flags.FLAG_PARTIAL_SLEEP_WAKELOCKS)
+    @Test
+    public void testPartialSleepWakelock_multiplePowerGroups_sleepNonDefault() {
+        // setup
+        final int nonDefaultPowerGroupId = Display.DEFAULT_DISPLAY_GROUP + 1;
+        int displayInNonDefaultGroup = 1;
+        final AtomicReference<DisplayManagerInternal.DisplayGroupListener> listener =
+                new AtomicReference<>();
+        long eventTime1 = 10;
+        final DisplayInfo infoDefault = new DisplayInfo();
+        infoDefault.displayGroupId = Display.DEFAULT_DISPLAY_GROUP;
+        final DisplayInfo infoSecondary = new DisplayInfo();
+        infoSecondary.displayGroupId = nonDefaultPowerGroupId;
+        when(mDisplayManagerInternalMock.getDisplayInfo(Display.DEFAULT_DISPLAY))
+                .thenReturn(infoDefault);
+        when(mDisplayManagerInternalMock.getDisplayInfo(nonDefaultPowerGroupId))
+                .thenReturn(infoSecondary);
+        doAnswer((Answer<Void>) invocation -> {
+            listener.set(invocation.getArgument(0));
+            return null;
+        }).when(mDisplayManagerInternalMock).registerDisplayGroupListener(any());
+
+        createService();
+        startSystem();
+        listener.get().onDisplayGroupAdded(nonDefaultPowerGroupId);
+
+        // Verify all displays are awake.
+        assertThat(mService.getGlobalWakefulnessLocked())
+                .isEqualTo(WAKEFULNESS_AWAKE);
+        assertThat(mService.getWakefulnessLocked(Display.DEFAULT_DISPLAY_GROUP))
+                .isEqualTo(WAKEFULNESS_AWAKE);
+        assertThat(mService.getWakefulnessLocked(nonDefaultPowerGroupId))
+                .isEqualTo(WAKEFULNESS_AWAKE);
+
+        // Transition secondary display to sleep, and verify the global wakefulness
+        mService.setWakefulnessLocked(nonDefaultPowerGroupId, WAKEFULNESS_ASLEEP, eventTime1,
+                0, PowerManager.GO_TO_SLEEP_REASON_INATTENTIVE, 0, null, null);
+        advanceTime(1000);
+
+        // assert that default group is asleep
+        assertWithMessage("Global wakefulness is not awake")
+                .that(mService.getGlobalWakefulnessLocked())
+                .isEqualTo(WAKEFULNESS_AWAKE);
+        assertWithMessage("Default group is not awake")
+                .that(mService.getWakefulnessLocked(Display.DEFAULT_DISPLAY_GROUP))
+                .isEqualTo(WAKEFULNESS_AWAKE);
+        assertWithMessage("Secondary group is not asleep")
+                .that(mService.getWakefulnessLocked(nonDefaultPowerGroupId))
+                .isEqualTo(WAKEFULNESS_ASLEEP);
+
+        // grab sleeplock on non default group
+        // Grab a wakelock
+        final String tag = "sleeplock1";
+        final String packageName = "pkg.name";
+        final IBinder token = new Binder();
+        final int flags = PowerManager.PARTIAL_SLEEP_WAKE_LOCK;
+        mService.getBinderServiceInstance().acquireWakeLock(token, flags, tag, packageName,
+                null /* workSource */, null /* historyTag */, displayInNonDefaultGroup,
+                null /* callback */);
+        advanceTime(1000);
+
+        // try to wake non default group
+        mService.getBinderServiceInstance().wakeUpWithDisplayId(mClock.now(),
+                PowerManager.WAKE_REASON_WAKE_KEY, "", "",
+                displayInNonDefaultGroup);
+
+        advanceTime(1000);
+
+
+        // verify non default group is still asleep + default display is awake
+        assertWithMessage("Global wakefulness is not awake")
+                .that(mService.getGlobalWakefulnessLocked())
+                .isEqualTo(WAKEFULNESS_AWAKE);
+        assertWithMessage("Default group is not awake")
+                .that(mService.getWakefulnessLocked(Display.DEFAULT_DISPLAY_GROUP))
+                .isEqualTo(WAKEFULNESS_AWAKE);
+        assertWithMessage("Secondary group is not asleep")
+                .that(mService.getWakefulnessLocked(nonDefaultPowerGroupId))
+                .isEqualTo(WAKEFULNESS_ASLEEP);
 
         mService.getBinderServiceInstance().releaseWakeLock(token, /* flags= */ 0);
     }
@@ -3595,10 +3677,10 @@ public class PowerManagerServiceTest {
 
         IBinder mockBinder = mock(IBinder.class);
         doNothing().when(mockBinder).addFrozenStateChangeCallback(any());
-        when(mockBinder.removeFrozenStateChangeCallback(any())).thenReturn(true);
 
         WakeLock wakeLock = acquireWakeLock("frozenTestWakeLock",
                 PowerManager.PARTIAL_WAKE_LOCK, mockBinder, Display.INVALID_DISPLAY);
+        verify(mockBinder).addFrozenStateChangeCallback(wakeLock);
         assertThat(wakeLock.mDisabled).isFalse();
         assertThat(wakeLock.isFrozenLocked()).isFalse();
         advanceTime(1000);
@@ -3614,6 +3696,10 @@ public class PowerManagerServiceTest {
         advanceTime(1000);
         assertThat(wakeLock.mDisabled).isFalse();
         assertThat(wakeLock.isFrozenLocked()).isFalse();
+
+        when(mockBinder.removeFrozenStateChangeCallback(wakeLock)).thenReturn(true);
+        mService.getBinderServiceInstance().releaseWakeLock(mockBinder, 0);
+        verify(mockBinder).removeFrozenStateChangeCallback(wakeLock);
     }
 
     @Test

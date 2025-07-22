@@ -21,8 +21,8 @@ import android.window.TransitionInfo.Change
 import com.android.wm.shell.compatui.letterbox.config.LetterboxDependenciesHelper
 
 /**
- * [LetterboxLifecycleEventFactory] implementation which creates a [LetterboxLifecycleEvent] from
- * a [TransitionInfo.Change] using a [TaskInfo] when present.
+ * [LetterboxLifecycleEventFactory] implementation which creates a [LetterboxLifecycleEvent] from a
+ * [TransitionInfo.Change] using a [TaskInfo] when present.
  */
 class TaskInfoLetterboxLifecycleEventFactory(
     private val letterboxDependenciesHelper: LetterboxDependenciesHelper
@@ -34,17 +34,15 @@ class TaskInfoLetterboxLifecycleEventFactory(
             val isLetterboxed = ti.appCompatTaskInfo?.isTopActivityLetterboxed ?: false
             val taskBoundsAbs = change.endAbsBounds
             // The bounds are absolute to the screen but we need them relative to the Task.
-            val taskBounds = Rect(taskBoundsAbs).apply {
-                offset(-taskBoundsAbs.left, -taskBoundsAbs.top)
-            }
+            val taskBounds =
+                Rect(taskBoundsAbs).apply { offset(-taskBoundsAbs.left, -taskBoundsAbs.top) }
             // Letterbox bounds are null when the activity is not letterboxed.
             val letterboxBoundsAbs =
                 if (isLetterboxed) ti.appCompatTaskInfo?.topActivityLetterboxBounds else null
-            val letterboxBounds = letterboxBoundsAbs?.let { absBounds ->
-                Rect(absBounds).apply {
-                    offset(-taskBoundsAbs.left, -taskBoundsAbs.top)
+            val letterboxBounds =
+                letterboxBoundsAbs?.let { absBounds ->
+                    Rect(absBounds).apply { offset(-taskBoundsAbs.left, -taskBoundsAbs.top) }
                 }
-            }
             return LetterboxLifecycleEvent(
                 type = change.asLetterboxLifecycleEventType(),
                 displayId = ti.displayId,
@@ -55,7 +53,7 @@ class TaskInfoLetterboxLifecycleEventFactory(
                 taskLeash = change.leash,
                 isBubble = ti.isAppBubble,
                 isTranslucent = change.isTranslucent(),
-                supportsInput = letterboxDependenciesHelper.shouldSupportInputSurface(change)
+                supportsInput = letterboxDependenciesHelper.shouldSupportInputSurface(change),
             )
         }
         return null

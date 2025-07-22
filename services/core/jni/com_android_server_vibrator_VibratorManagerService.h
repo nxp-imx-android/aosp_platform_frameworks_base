@@ -103,9 +103,28 @@ public:
         if (status.isOk()) {
             mIsDeathRecipientLinked = true;
         } else {
-            ALOGE("%s: Error linking to HAL binder death: %s", __func__, status.getMessage());
+            ALOGE("%s: Error linking to HAL binder death: %s", __func__,
+                  status.getDescription().c_str());
         }
         return mHal;
+    }
+
+    void clear() {
+        std::lock_guard<std::mutex> lock(mMutex);
+        if (mHal == nullptr) {
+            return;
+        }
+        ALOGW("%s: clearing HAL client", __func__);
+        auto binder = mHal->asBinder().get();
+        if (binder && mIsDeathRecipientLinked) {
+            auto status = ndk::ScopedAStatus::fromStatus(
+                    AIBinder_unlinkToDeath(binder, mDeathRecipient.get(), this));
+            if (!status.isOk()) {
+                ALOGE("%s: Error unlinking to HAL binder death: %s", __func__,
+                      status.getDescription().c_str());
+            }
+        }
+        mHal = nullptr;
     }
 
     static void onBinderDied(void* cookie) {

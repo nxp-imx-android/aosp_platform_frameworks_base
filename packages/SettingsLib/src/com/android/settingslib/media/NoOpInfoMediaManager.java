@@ -19,6 +19,7 @@ package com.android.settingslib.media;
 import android.content.Context;
 import android.media.MediaRoute2Info;
 import android.media.RouteListingPreference;
+import android.media.RoutingChangeInfo;
 import android.media.RoutingSessionInfo;
 import android.media.session.MediaController;
 import android.os.UserHandle;
@@ -87,7 +88,8 @@ import java.util.List;
     }
 
     @Override
-    protected void transferToRoute(@NonNull MediaRoute2Info route) {
+    protected void transferToRoute(
+            @NonNull MediaRoute2Info route, @NonNull RoutingChangeInfo routingChangeInfo) {
         // Do nothing.
     }
 

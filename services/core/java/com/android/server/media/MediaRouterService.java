@@ -48,6 +48,7 @@ import android.media.RemoteDisplayState;
 import android.media.RemoteDisplayState.RemoteDisplayInfo;
 import android.media.RouteDiscoveryPreference;
 import android.media.RouteListingPreference;
+import android.media.RoutingChangeInfo;
 import android.media.RoutingSessionInfo;
 import android.media.SuggestedDeviceInfo;
 import android.media.session.MediaSession;
@@ -500,9 +501,16 @@ public final class MediaRouterService extends IMediaRouterService.Stub
             long managerRequestId,
             RoutingSessionInfo oldSession,
             MediaRoute2Info route,
+            RoutingChangeInfo routingChangeInfo,
             Bundle sessionHints) {
         mService2.requestCreateSessionWithRouter2(
-                router, requestId, managerRequestId, oldSession, route, sessionHints);
+                router,
+                requestId,
+                managerRequestId,
+                oldSession,
+                route,
+                routingChangeInfo,
+                sessionHints);
     }
 
     // Binder call
@@ -521,9 +529,12 @@ public final class MediaRouterService extends IMediaRouterService.Stub
 
     // Binder call
     @Override
-    public void transferToRouteWithRouter2(IMediaRouter2 router, String sessionId,
-            MediaRoute2Info route) {
-        mService2.transferToRouteWithRouter2(router, sessionId, route);
+    public void transferToRouteWithRouter2(
+            IMediaRouter2 router,
+            String sessionId,
+            MediaRoute2Info route,
+            RoutingChangeInfo routingChangeInfo) {
+        mService2.transferToRouteWithRouter2(router, sessionId, route, routingChangeInfo);
     }
 
     // Binder call
@@ -638,8 +649,10 @@ public final class MediaRouterService extends IMediaRouterService.Stub
             IMediaRouter2Manager manager,
             int requestId,
             RoutingSessionInfo oldSession,
+            RoutingChangeInfo routingChangeInfo,
             MediaRoute2Info route) {
-        mService2.requestCreateSessionWithManager(manager, requestId, oldSession, route);
+        mService2.requestCreateSessionWithManager(
+                manager, requestId, oldSession, route, routingChangeInfo);
     }
 
     // Binder call
@@ -664,14 +677,16 @@ public final class MediaRouterService extends IMediaRouterService.Stub
             String sessionId,
             MediaRoute2Info route,
             UserHandle transferInitiatorUserHandle,
-            String transferInitiatorPackageName) {
+            String transferInitiatorPackageName,
+            RoutingChangeInfo routingChangeInfo) {
         mService2.transferToRouteWithManager(
                 manager,
                 requestId,
                 sessionId,
                 route,
                 transferInitiatorUserHandle,
-                transferInitiatorPackageName);
+                transferInitiatorPackageName,
+                routingChangeInfo);
     }
 
     // Binder call

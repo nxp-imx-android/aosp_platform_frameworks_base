@@ -37,23 +37,15 @@ import androidx.lifecycle.ViewModelProvider
 import com.android.packageinstaller.R
 import com.android.packageinstaller.v2.model.InstallAborted
 import com.android.packageinstaller.v2.model.InstallFailed
-import com.android.packageinstaller.v2.model.InstallInstalling
 import com.android.packageinstaller.v2.model.InstallRepository
 import com.android.packageinstaller.v2.model.InstallStage
 import com.android.packageinstaller.v2.model.InstallSuccess
 import com.android.packageinstaller.v2.model.InstallUserActionRequired
 import com.android.packageinstaller.v2.model.PackageUtil
 import com.android.packageinstaller.v2.model.PackageUtil.localLogv
-import com.android.packageinstaller.v2.ui.fragments.AnonymousSourceFragment
-import com.android.packageinstaller.v2.ui.fragments.ExternalSourcesBlockedFragment
-import com.android.packageinstaller.v2.ui.fragments.InstallConfirmationFragment
-import com.android.packageinstaller.v2.ui.fragments.InstallFailedFragment
-import com.android.packageinstaller.v2.ui.fragments.InstallInstallingFragment
-import com.android.packageinstaller.v2.ui.fragments.InstallStagingFragment
-import com.android.packageinstaller.v2.ui.fragments.InstallSuccessFragment
-import com.android.packageinstaller.v2.ui.fragments.ParseErrorFragment
-import com.android.packageinstaller.v2.ui.fragments.InstallRestrictionFragment
 import com.android.packageinstaller.v2.ui.fragments.DeveloperVerificationConfirmationFragment
+import com.android.packageinstaller.v2.ui.fragments.InstallRestrictionFragment
+import com.android.packageinstaller.v2.ui.fragments.InstallationFragment
 import com.android.packageinstaller.v2.viewmodel.InstallViewModel
 import com.android.packageinstaller.v2.viewmodel.InstallViewModelFactory
 
@@ -66,6 +58,7 @@ class InstallLaunch : FragmentActivity(), InstallActionListener {
             InstallLaunch::class.java.packageName + ".callingPkgName"
         private val LOG_TAG = InstallLaunch::class.java.simpleName
         private const val TAG_DIALOG = "dialog"
+        private const val TAG_INSTALLATION_DIALOG = "installation-dialog"
         private const val ARGS_SAVED_INTENT = "saved_intent"
     }
 
@@ -132,10 +125,9 @@ class InstallLaunch : FragmentActivity(), InstallActionListener {
     private fun onInstallStageChange(installStage: InstallStage) {
         when (installStage.stageCode) {
             InstallStage.STAGE_STAGING -> {
-                val stagingDialog = InstallStagingFragment()
-                showDialogInner(stagingDialog)
+                showInstallationDialog()
                 installViewModel!!.stagingProgress.observe(this) { progress: Int ->
-                    stagingDialog.setProgress(progress)
+                    getInstallationFragment()?.setProgress(progress)
                 }
             }
 
@@ -146,8 +138,7 @@ class InstallLaunch : FragmentActivity(), InstallActionListener {
                     InstallAborted.ABORT_REASON_INTERNAL_ERROR,
                         -> {
                         if (aborted.errorDialogType == InstallAborted.DLG_PACKAGE_ERROR) {
-                            val parseErrorDialog = ParseErrorFragment.newInstance(aborted)
-                            showDialogInner(parseErrorDialog)
+                            showInstallationDialog()
                         } else {
                             setResult(aborted.activityResultCode, aborted.resultIntent, true)
                         }
@@ -161,32 +152,21 @@ class InstallLaunch : FragmentActivity(), InstallActionListener {
             InstallStage.STAGE_USER_ACTION_REQUIRED -> {
                 val uar = installStage as InstallUserActionRequired
                 when (uar.actionReason) {
-                    InstallUserActionRequired.USER_ACTION_REASON_INSTALL_CONFIRMATION -> {
-                        val actionDialog = InstallConfirmationFragment.newInstance(uar)
-                        showDialogInner(actionDialog)
+                    InstallUserActionRequired.USER_ACTION_REASON_ANONYMOUS_SOURCE,
+                    InstallUserActionRequired.USER_ACTION_REASON_INSTALL_CONFIRMATION,
+                    InstallUserActionRequired.USER_ACTION_REASON_UNKNOWN_SOURCE -> {
+                        showInstallationDialog()
                     }
 
                     InstallUserActionRequired.USER_ACTION_REASON_VERIFICATION_CONFIRMATION -> {
                         val actionDialog = DeveloperVerificationConfirmationFragment(uar)
                         showDialogInner(actionDialog)
                     }
-
-                    InstallUserActionRequired.USER_ACTION_REASON_UNKNOWN_SOURCE -> {
-                        val externalSourceDialog = ExternalSourcesBlockedFragment.newInstance(uar)
-                        showDialogInner(externalSourceDialog)
-                    }
-
-                    InstallUserActionRequired.USER_ACTION_REASON_ANONYMOUS_SOURCE -> {
-                        val anonymousSourceDialog = AnonymousSourceFragment()
-                        showDialogInner(anonymousSourceDialog)
-                    }
                 }
             }
 
             InstallStage.STAGE_INSTALLING -> {
-                val installing = installStage as InstallInstalling
-                val installingDialog = InstallInstallingFragment.newInstance(installing)
-                showDialogInner(installingDialog)
+                showInstallationDialog()
             }
 
             InstallStage.STAGE_SUCCESS -> {
@@ -195,8 +175,7 @@ class InstallLaunch : FragmentActivity(), InstallActionListener {
                     val successIntent = success.resultIntent
                     setResult(RESULT_OK, successIntent, true)
                 } else {
-                    val successDialog = InstallSuccessFragment.newInstance(success)
-                    showDialogInner(successDialog)
+                    showInstallationDialog()
                 }
             }
 
@@ -206,8 +185,7 @@ class InstallLaunch : FragmentActivity(), InstallActionListener {
                     val failureIntent = failed.resultIntent
                     setResult(RESULT_FIRST_USER, failureIntent, true)
                 } else {
-                    val failureDialog = InstallFailedFragment.newInstance(failed)
-                    showDialogInner(failureDialog)
+                    showInstallationDialog()
                 }
             }
 
@@ -258,25 +236,55 @@ class InstallLaunch : FragmentActivity(), InstallActionListener {
         }
         return when (restriction) {
             UserManager.DISALLOW_INSTALL_APPS ->
-                InstallRestrictionFragment.newInstance(R.string.message_no_install_apps_restriction)
+                InstallRestrictionFragment.newInstance(
+                    R.string.message_no_install_apps_restriction)
 
             UserManager.DISALLOW_INSTALL_UNKNOWN_SOURCES,
             UserManager.DISALLOW_INSTALL_UNKNOWN_SOURCES_GLOBALLY ->
-                InstallRestrictionFragment.newInstance(R.string.message_no_install_unknown_apps_restriction)
+                InstallRestrictionFragment.newInstance(
+                    R.string.message_no_install_unknown_apps_restriction)
 
             else -> null
         }
     }
 
+    private fun showInstallationDialog() {
+        val fragment = getInstallationFragment() ?: InstallationFragment()
+        fragment.updateUI()
+        showDialogInner(fragment, TAG_INSTALLATION_DIALOG)
+    }
+
     /**
-     * Replace any visible dialog by the dialog returned by InstallRepository
+     * Replace any visible dialog by the dialog returned by InstallRepository with the tag
+     * TAG_DIALOG.
      *
      * @param newDialog The new dialog to display
      */
     private fun showDialogInner(newDialog: DialogFragment?) {
-        val currentDialog = fragmentManager!!.findFragmentByTag(TAG_DIALOG) as DialogFragment?
-        currentDialog?.dismissAllowingStateLoss()
-        newDialog?.show(fragmentManager!!, TAG_DIALOG)
+        showDialogInner(newDialog, TAG_DIALOG)
+    }
+
+    private fun showDialogInner(newDialog: DialogFragment?, tag: String) {
+        var currentTag: String? = null
+        if (tag == TAG_INSTALLATION_DIALOG) {
+            if (getInstallationFragment() != null) {
+                return
+            }
+            currentTag = TAG_DIALOG
+        } else {
+            currentTag = TAG_INSTALLATION_DIALOG
+        }
+
+        val currentDialog = fragmentManager!!.findFragmentByTag(currentTag)
+        if (currentDialog is DialogFragment) {
+            currentDialog.dismissAllowingStateLoss()
+        }
+        newDialog?.show(fragmentManager!!, tag)
+    }
+
+    private fun getInstallationFragment(): InstallationFragment? {
+        return (fragmentManager!!.findFragmentByTag(TAG_INSTALLATION_DIALOG)
+            ?: return null) as InstallationFragment?
     }
 
     fun setResult(resultCode: Int, data: Intent?, shouldFinish: Boolean) {

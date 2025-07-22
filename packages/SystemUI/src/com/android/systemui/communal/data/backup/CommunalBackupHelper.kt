@@ -22,14 +22,23 @@ import android.app.backup.BackupHelper
 import android.os.ParcelFileDescriptor
 import android.os.UserHandle
 import android.util.Log
+import com.android.systemui.Flags
 import com.android.systemui.Flags.communalHub
+import com.android.systemui.communal.nano.CommunalHubState
 import com.android.systemui.communal.proto.toByteArray
+import com.android.systemui.dagger.qualifiers.Background
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 import java.io.IOException
+import javax.inject.Inject
 
 /** Helps with backup & restore of the communal hub widgets. */
-class CommunalBackupHelper(
+class CommunalBackupHelper
+@Inject
+constructor(
     private val userHandle: UserHandle,
     private val communalBackupUtils: CommunalBackupUtils,
+    @Background private val bgScope: CoroutineScope,
 ) : BackupHelper {
 
     override fun performBackup(
@@ -52,7 +61,18 @@ class CommunalBackupHelper(
             return
         }
 
-        val state = communalBackupUtils.getCommunalHubState()
+        if (Flags.doNotUseRunBlocking()) {
+            bgScope.launch {
+                val state = communalBackupUtils.getCommunalHubState()
+                writeCommunalState(state, data)
+            }
+        } else {
+            val state = communalBackupUtils.getCommunalHubStateBlocking()
+            writeCommunalState(state, data)
+        }
+    }
+
+    private fun writeCommunalState(state: CommunalHubState, data: BackupDataOutput) {
         Log.i(TAG, "Backing up communal state: $state")
 
         val bytes = state.toByteArray()
