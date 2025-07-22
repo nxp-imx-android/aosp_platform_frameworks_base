@@ -119,7 +119,6 @@ public class CoreDocument implements Serializable {
     private boolean mIsUpdateDoc = false;
     private int mHostExceptionID = 0;
     private int mBitmapMemory = 0;
-    private int mBitmapCount = 0;
 
     public CoreDocument() {
         this(new SystemClock());
@@ -837,7 +836,6 @@ public class CoreDocument implements Serializable {
             }
         }
         mBitmapMemory = 0;
-        mBitmapCount = 0;
         mOperations = inflateComponents(mOperations);
 
         mBuffer = buffer;
@@ -871,7 +869,6 @@ public class CoreDocument implements Serializable {
             if (o instanceof BitmapData) {
                 BitmapData bitmap = (BitmapData) o;
                 mBitmapMemory += bitmap.getHeight() * bitmap.getWidth() * 4;
-                mBitmapCount++;
             }
             if (o instanceof Container) {
                 Container container = (Container) o;
