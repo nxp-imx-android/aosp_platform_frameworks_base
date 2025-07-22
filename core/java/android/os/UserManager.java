@@ -6990,8 +6990,9 @@ public class UserManager {
         if (!DEBUG_LOG_DEPRECATION) {
             return;
         }
-        Log.v(DEPRECATION_LOG_TAG, "deprecated call on pkg " + mContext.getPackageName()
-                + " (from user " + mUserId + "):", new Exception());
+        Log.logStackTrace(Log.LOG_ID_MAIN, Log.VERBOSE, DEPRECATION_LOG_TAG,
+                "deprecated call on pkg " + mContext.getPackageName() + " (from user " + mUserId
+                        + "):", /* skippedInitialLines= */ 2);
     }
 
     /**
@@ -7005,7 +7006,8 @@ public class UserManager {
         if (!DEBUG_LOG_DEPRECATION) {
             return;
         }
-        Log.v(DEPRECATION_LOG_TAG, "deprecated call:", new Exception());
+        Log.logStackTrace(Log.LOG_ID_MAIN, Log.VERBOSE, DEPRECATION_LOG_TAG,
+                "deprecated call:", /* skippedInitialLines= */ 2);
     }
 
     /* Cache key for anything that assumes that userIds cannot be re-used without rebooting. */
