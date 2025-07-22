@@ -151,9 +151,9 @@ public final class CachedAppOptimizerTest {
         app.setPid(pid);
         app.info.uid = packageUid;
         // Exact value does not mater, it can be any state for which compaction is allowed.
-        app.mState.setSetProcState(PROCESS_STATE_BOUND_FOREGROUND_SERVICE);
-        app.mState.setSetAdj(940);
-        app.mState.setCurAdj(940);
+        app.setSetProcState(PROCESS_STATE_BOUND_FOREGROUND_SERVICE);
+        app.setSetAdj(940);
+        app.setCurAdj(940);
         return app;
     }
 
@@ -932,8 +932,8 @@ public final class CachedAppOptimizerTest {
         mProcessDependencies.setRssAfterCompaction(rssAfter);
 
         // Use an OOM Adjust value that usually avoids compaction
-        processRecord.mState.setSetAdj(100);
-        processRecord.mState.setCurAdj(100);
+        processRecord.setSetAdj(100);
+        processRecord.setCurAdj(100);
 
         // Compact process full
         mCachedAppOptimizerUnderTest.compactApp(processRecord,
@@ -953,8 +953,8 @@ public final class CachedAppOptimizerTest {
         assertThat(mCachedAppOptimizerUnderTest.mCompactStatsManager
                 .getLastCompactionStats(pid)).isNull();
 
-        processRecord.mState.setSetAdj(100);
-        processRecord.mState.setCurAdj(100);
+        processRecord.setSetAdj(100);
+        processRecord.setCurAdj(100);
 
         // We force a full compaction
         mCachedAppOptimizerUnderTest.compactApp(processRecord,

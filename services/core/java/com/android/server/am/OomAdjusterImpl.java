@@ -104,8 +104,9 @@ import android.util.Slog;
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.server.ServiceThread;
-import com.android.server.am.psc.ProcessStateRecord;
-import com.android.server.am.psc.UidStateRecord;
+import com.android.server.am.psc.ActiveUidsInternal;
+import com.android.server.am.psc.ProcessRecordInternal;
+import com.android.server.am.psc.UidRecordInternal;
 import com.android.server.wm.ActivityServiceConnectionsHolder;
 
 import java.lang.annotation.Retention;
@@ -283,9 +284,9 @@ public class OomAdjusterImpl extends OomAdjuster {
             sb.append(' ');
             sb.append(mApp);
             sb.append(' ');
-            sb.append(mApp != null ? mApp.mState.getCurProcState() : PROCESS_STATE_UNKNOWN);
+            sb.append(mApp != null ? mApp.getCurProcState() : PROCESS_STATE_UNKNOWN);
             sb.append(' ');
-            sb.append(mApp != null ? mApp.mState.getCurAdj() : UNKNOWN_ADJ);
+            sb.append(mApp != null ? mApp.getCurAdj() : UNKNOWN_ADJ);
             sb.append(' ');
             sb.append(Integer.toHexString(System.identityHashCode(mPrev)));
             sb.append(' ');
@@ -309,12 +310,12 @@ public class OomAdjusterImpl extends OomAdjuster {
             final ToIntFunction<ProcessRecord> valueFunction;
             switch (mType) {
                 case ProcessRecordNode.NODE_TYPE_PROC_STATE:
-                    valueFunction = (proc) -> proc.mState.getCurProcState();
-                    mSlotFunction = (proc) -> processStateToSlot(proc.mState.getCurProcState());
+                    valueFunction = (proc) -> proc.getCurProcState();
+                    mSlotFunction = (proc) -> processStateToSlot(proc.getCurProcState());
                     break;
                 case ProcessRecordNode.NODE_TYPE_ADJ:
-                    valueFunction = (proc) -> proc.mState.getCurRawAdj();
-                    mSlotFunction = (proc) -> adjToSlot(proc.mState.getCurRawAdj());
+                    valueFunction = (proc) -> proc.getCurRawAdj();
+                    mSlotFunction = (proc) -> adjToSlot(proc.getCurRawAdj());
                     break;
                 default:
                     valueFunction = (proc) -> 0;
@@ -384,9 +385,9 @@ public class OomAdjusterImpl extends OomAdjuster {
         private int getCurrentSlot(@NonNull ProcessRecord app) {
             switch (mType) {
                 case ProcessRecordNode.NODE_TYPE_PROC_STATE:
-                    return processStateToSlot(app.mState.getCurProcState());
+                    return processStateToSlot(app.getCurProcState());
                 case ProcessRecordNode.NODE_TYPE_ADJ:
-                    return adjToSlot(app.mState.getCurRawAdj());
+                    return adjToSlot(app.getCurRawAdj());
             }
             return ADJ_SLOT_INVALID;
         }
@@ -477,11 +478,12 @@ public class OomAdjusterImpl extends OomAdjuster {
         long mNow;
         int mCachedAdj;
         @OomAdjReason int mOomAdjReason;
-        @NonNull ActiveUids mUids;
+        @NonNull
+        ActiveUidsInternal mUids;
         boolean mFullUpdate;
 
-        void update(ProcessRecord topApp, long now, int cachedAdj,
-                @OomAdjReason int oomAdjReason, @NonNull ActiveUids uids, boolean fullUpdate) {
+        void update(ProcessRecord topApp, long now, int cachedAdj, @OomAdjReason int oomAdjReason,
+                @NonNull ActiveUidsInternal uids, boolean fullUpdate) {
             mTopApp = topApp;
             mNow = now;
             mCachedAdj = cachedAdj;
@@ -530,10 +532,10 @@ public class OomAdjusterImpl extends OomAdjuster {
 
         @Override
         public void accept(Connection unused, ProcessRecord host) {
-            if (host.mState.isReachable()) {
+            if (host.isReachable()) {
                 return;
             }
-            host.mState.setReachable(true);
+            host.setReachable(true);
             mReachables.add(host);
         }
     }
@@ -562,7 +564,7 @@ public class OomAdjusterImpl extends OomAdjuster {
             final long now = mArgs.mNow;
             final @OomAdjReason int oomAdjReason = mArgs.mOomAdjReason;
 
-            if (client.mState.isReachable()) {
+            if (client.isReachable()) {
                 hasReachableClient = true;
                 return;
             }
@@ -595,8 +597,8 @@ public class OomAdjusterImpl extends OomAdjuster {
             final @OomAdjReason int oomAdjReason = args.mOomAdjReason;
             final boolean fullUpdate = args.mFullUpdate;
 
-            final int prevProcState = host.mState.getCurProcState();
-            final int prevAdj = host.mState.getCurRawAdj();
+            final int prevProcState = host.getCurProcState();
+            final int prevAdj = host.getCurRawAdj();
 
             if (unimportantConnectionLSP(conn, host, client)) {
                 return;
@@ -618,10 +620,10 @@ public class OomAdjusterImpl extends OomAdjuster {
         @Override
         public void accept(OomAdjusterArgs args) {
             final ProcessRecord app = args.mApp;
-            final ActiveUids uids = args.mUids;
+            final ActiveUidsInternal uids = args.mUids;
 
             // This process was updated in some way, mark that it was last calculated this sequence.
-            app.mState.setCompletedAdjSeq(mAdjSeq);
+            app.setCompletedAdjSeq(mAdjSeq);
             if (uids != null) {
                 final UidRecord uidRec = app.getUidRecord();
 
@@ -687,7 +689,7 @@ public class OomAdjusterImpl extends OomAdjuster {
     }
 
     private void updateAdjSlotIfNecessary(ProcessRecord app, int prevRawAdj) {
-        if (app.mState.getCurRawAdj() != prevRawAdj) {
+        if (app.getCurRawAdj() != prevRawAdj) {
             mProcessRecordAdjNodes.offer(app);
         }
     }
@@ -697,7 +699,7 @@ public class OomAdjusterImpl extends OomAdjuster {
     }
 
     private void updateProcStateSlotIfNecessary(ProcessRecord app, int prevProcState) {
-        if (app.mState.getCurProcState() != prevProcState) {
+        if (app.getCurProcState() != prevProcState) {
             mProcessRecordProcStateNodes.offer(app);
         }
     }
@@ -765,10 +767,8 @@ public class OomAdjusterImpl extends OomAdjuster {
         final ArrayList<ProcessRecord> lru = mProcessList.getLruProcessesLOSP();
         for (int i = lru.size() - 1; i >= 0; i--) {
             final ProcessRecord app = lru.get(i);
-            final int prevProcState = app.mState.getCurProcState();
-            final int prevAdj = app.mState.getCurRawAdj();
-            app.mState.resetCachedInfo();
-            final UidStateRecord uidRec = app.getUidRecord();
+            app.resetCachedInfo();
+            final UidRecordInternal uidRec = app.getUidRecord();
             if (uidRec != null) {
                 if (DEBUG_UID_OBSERVERS) {
                     Slog.i(TAG_UID_OBSERVERS, "Starting update of " + uidRec);
@@ -837,8 +837,8 @@ public class OomAdjusterImpl extends OomAdjuster {
 
         for (int i = 0, size = targets.size(); i < size; i++) {
             final ProcessRecord target = targets.valueAtUnchecked(i);
-            target.mState.resetCachedInfo();
-            target.mState.setReachable(true);
+            target.resetCachedInfo();
+            target.setReachable(true);
             reachables.add(target);
         }
 
@@ -861,7 +861,7 @@ public class OomAdjusterImpl extends OomAdjuster {
 
         boolean needLruAdjust = false;
         for (int i = 0, size = reachables.size(); i < size; i++) {
-            final ProcessStateRecord state = reachables.get(i).mState;
+            final ProcessRecordInternal state = reachables.get(i);
             state.setReachable(false);
             state.setCompletedAdjSeq(mAdjSeq);
             final int curAdj = state.getCurAdj();
@@ -901,7 +901,7 @@ public class OomAdjusterImpl extends OomAdjuster {
     protected void collectReachableProcessesLSP(@NonNull ArrayList<ProcessRecord> reachables) {
         collectAndMarkReachableProcessesLSP(reachables);
         for (int i = 0, size = reachables.size(); i < size; i++) {
-            final ProcessStateRecord state = reachables.get(i).mState;
+            final ProcessRecordInternal state = reachables.get(i);
             state.setReachable(false);
         }
     }
@@ -929,9 +929,9 @@ public class OomAdjusterImpl extends OomAdjuster {
         boolean initReachables = !Flags.skipUnimportantConnections();
         for (; i < targetCount && !initReachables; i++) {
             final ProcessRecord target = reachables.get(i);
-            final int prevProcState = target.mState.getCurProcState();
-            final int prevAdj = target.mState.getCurRawAdj();
-            final int prevCapability = target.mState.getCurCapability();
+            final int prevProcState = target.getCurProcState();
+            final int prevAdj = target.getCurRawAdj();
+            final int prevCapability = target.getCurCapability();
             final boolean prevShouldNotFreeze = target.mOptRecord.shouldNotFreeze();
 
             args.mApp = target;
@@ -953,8 +953,8 @@ public class OomAdjusterImpl extends OomAdjuster {
 
         for (int size = reachables.size(); i < size; i++) {
             final ProcessRecord reachable = reachables.get(i);
-            final int prevProcState = reachable.mState.getCurProcState();
-            final int prevAdj = reachable.mState.getCurRawAdj();
+            final int prevProcState = reachable.getCurProcState();
+            final int prevAdj = reachable.getCurRawAdj();
 
             args.mApp = reachable;
             computeOomAdjIgnoringReachablesLSP(args);
@@ -1036,7 +1036,7 @@ public class OomAdjusterImpl extends OomAdjuster {
      * This is one of the condition that blocks the skipping of connection evaluation. This method
      * returns false when the given connection has flag {@link Context#BIND_SCHEDULE_LIKE_TOP_APP}
      * but the host process has not set the corresponding flag,
-     * {@link ProcessStateRecord#mScheduleLikeTopApp}.
+     * {@link ProcessRecordInternal#mScheduleLikeTopApp}.
      */
     private static boolean allowSkipForBindScheduleLikeTopApp(ConnectionRecord cr,
             ProcessRecord host) {
@@ -1047,21 +1047,20 @@ public class OomAdjusterImpl extends OomAdjuster {
 
         // Need to check shouldScheduleLikeTopApp otherwise, there will be too many recompute which
         // leads to OOM.
-        return !(cr.hasFlag(Context.BIND_SCHEDULE_LIKE_TOP_APP)
-                && !host.mState.getScheduleLikeTopApp());
+        return !(cr.hasFlag(Context.BIND_SCHEDULE_LIKE_TOP_APP) && !host.getScheduleLikeTopApp());
     }
 
     private static boolean isSandboxAttributedConnection(ConnectionRecord cr, ProcessRecord host) {
         return host.isSdkSandbox && cr.binding.attributedClient != null;
     }
 
-    private static boolean isHighPriorityProcess(ProcessRecord proc) {
-        final boolean isPersistentSystemProcess = proc.mState.getMaxAdj() >= SYSTEM_ADJ
-                && proc.mState.getMaxAdj() < FOREGROUND_APP_ADJ;
+    private static boolean isHighPriorityProcess(ProcessRecordInternal proc) {
+        final boolean isPersistentSystemProcess = proc.getMaxAdj() >= SYSTEM_ADJ
+                && proc.getMaxAdj() < FOREGROUND_APP_ADJ;
 
-        final boolean isEffectivelyForeground = proc.mState.getCurAdj() <= FOREGROUND_APP_ADJ
-                && proc.mState.getCurrentSchedulingGroup() > SCHED_GROUP_BACKGROUND
-                && proc.mState.getCurProcState() <= PROCESS_STATE_TOP;
+        final boolean isEffectivelyForeground = proc.getCurAdj() <= FOREGROUND_APP_ADJ
+                && proc.getCurrentSchedulingGroup() > SCHED_GROUP_BACKGROUND
+                && proc.getCurProcState() <= PROCESS_STATE_TOP;
 
         return isPersistentSystemProcess || isEffectivelyForeground;
     }
@@ -1111,13 +1110,13 @@ public class OomAdjusterImpl extends OomAdjuster {
     @GuardedBy({"mService", "mProcLock"})
     private static boolean selfImportanceLoweredLSP(ProcessRecord app, int prevProcState,
             int prevAdj, int prevCapability, boolean prevShouldNotFreeze) {
-        if (app.mState.getCurProcState() > prevProcState) {
+        if (app.getCurProcState() > prevProcState) {
             return true;
         }
-        if (app.mState.getCurRawAdj() > prevAdj)  {
+        if (app.getCurRawAdj() > prevAdj)  {
             return true;
         }
-        if ((app.mState.getCurCapability() & prevCapability) != prevCapability)  {
+        if ((app.getCurCapability() & prevCapability) != prevCapability)  {
             return true;
         }
         if (!app.mOptRecord.shouldNotFreeze() && prevShouldNotFreeze) {
@@ -1139,14 +1138,14 @@ public class OomAdjusterImpl extends OomAdjuster {
             // Feature not enabled, just return false so the connection is evaluated.
             return false;
         }
-        if (host.mState.getCurProcState() > client.mState.getCurProcState()) {
+        if (host.getCurProcState() > client.getCurProcState()) {
             return false;
         }
-        if (host.mState.getCurRawAdj() > client.mState.getCurRawAdj())  {
+        if (host.getCurRawAdj() > client.getCurRawAdj())  {
             return false;
         }
-        final int serviceCapability = host.mState.getCurCapability();
-        final int clientCapability = client.mState.getCurCapability();
+        final int serviceCapability = host.getCurCapability();
+        final int clientCapability = client.getCurCapability();
         if ((serviceCapability & clientCapability) != clientCapability) {
             // Client has a capability the host does not have.
             if ((clientCapability & PROCESS_CAPABILITY_BFSL) == PROCESS_CAPABILITY_BFSL
@@ -1170,11 +1169,11 @@ public class OomAdjusterImpl extends OomAdjuster {
     @GuardedBy({"mService", "mProcLock"})
     private void computeOomAdjLSP(ProcessRecord app, ProcessRecord topApp, boolean doingAll,
             long now) {
-        final ProcessStateRecord state = app.mState;
+        final ProcessRecordInternal state = app;
 
         // Remove any follow up update this process might have. It will be rescheduled if still
         // needed.
-        app.mState.setFollowupUpdateUptimeMs(NO_FOLLOW_UP_TIME);
+        state.setFollowupUpdateUptimeMs(NO_FOLLOW_UP_TIME);
 
         if (app.getThread() == null) {
             state.setAdjSeq(mAdjSeq);
@@ -1193,7 +1192,7 @@ public class OomAdjusterImpl extends OomAdjuster {
         state.setAdjTarget(null);
 
         // If this UID is currently allowlisted, it should not be frozen.
-        final UidStateRecord uidRec = app.getUidRecord();
+        final UidRecordInternal uidRec = app.getUidRecord();
         app.mOptRecord.setShouldNotFreeze(uidRec != null && uidRec.isCurAllowListed(),
                 ProcessCachedOptimizerRecord.SHOULD_NOT_FREEZE_REASON_UID_ALLOWLISTED, mAdjSeq);
 
@@ -1837,8 +1836,8 @@ public class OomAdjusterImpl extends OomAdjuster {
             return false;
         }
 
-        final ProcessStateRecord state = app.mState;
-        ProcessStateRecord cstate = client.mState;
+        final ProcessRecordInternal state = app;
+        ProcessRecordInternal cstate = client;
         boolean updated = false;
 
         int clientAdj = cstate.getCurRawAdj();
@@ -2294,8 +2293,8 @@ public class OomAdjusterImpl extends OomAdjuster {
             return false;
         }
 
-        final ProcessStateRecord state = app.mState;
-        final ProcessStateRecord cstate = client.mState;
+        final ProcessRecordInternal state = app;
+        final ProcessRecordInternal cstate = client;
 
         if (client == app) {
             // Being our own client is not interesting.

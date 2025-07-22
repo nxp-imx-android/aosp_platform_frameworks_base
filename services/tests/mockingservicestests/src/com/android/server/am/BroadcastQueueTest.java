@@ -77,7 +77,6 @@ import android.os.IBinder;
 import android.os.PowerExemptionManager;
 import android.os.SystemClock;
 import android.os.UserHandle;
-import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.RequiresFlagsEnabled;
 import android.util.ArrayMap;
 import android.util.Log;
@@ -325,7 +324,6 @@ public class BroadcastQueueTest extends BaseBroadcastQueueTest {
         final boolean dead = (behavior == ProcessBehavior.DEAD);
 
         final ProcessRecord r = spy(new ProcessRecord(mAms, ai, processName, ai.uid));
-        r.mState = spy(r.mState);
         r.setPid(mNextPid.getAndIncrement());
         ProcessRecord.updateProcessRecordNodes(r);
         mActiveProcesses.add(r);
@@ -775,7 +773,7 @@ public class BroadcastQueueTest extends BaseBroadcastQueueTest {
         }) {
             // Confirm expected OOM adjustments; we were invoked once to upgrade
             // and once to downgrade
-            verify(receiverApp.mState, times(1).description(String.valueOf(receiverApp)))
+            verify(receiverApp, times(1).description(String.valueOf(receiverApp)))
                     .setReportedProcState(ActivityManager.PROCESS_STATE_RECEIVER);
             verify(mAms, times(2)).enqueueOomAdjTargetLocked(eq(receiverApp));
 

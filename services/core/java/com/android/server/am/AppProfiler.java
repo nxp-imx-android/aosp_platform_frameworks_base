@@ -101,7 +101,6 @@ import com.android.internal.util.FrameworkStatsLog;
 import com.android.internal.util.MemInfoReader;
 import com.android.internal.util.QuickSelect;
 import com.android.server.am.LowMemDetector.MemFactor;
-import com.android.server.am.psc.ProcessStateRecord;
 import com.android.server.power.stats.BatteryStatsImpl;
 import com.android.server.utils.PriorityDump;
 
@@ -1402,12 +1401,11 @@ public class AppProfiler {
                 app -> {
                     final ProcessProfileRecord profile = app.mProfile;
                     final IApplicationThread thread;
-                    final ProcessStateRecord state = app.mState;
-                    int procState = app.mState.getCurProcState();
+                    int procState = app.getCurProcState();
                     if (((procState >= ActivityManager.PROCESS_STATE_IMPORTANT_BACKGROUND
                                             && procState
                                                     < ActivityManager.PROCESS_STATE_CACHED_ACTIVITY)
-                                    || app.mState.isSystemNoUi())
+                                    || app.isSystemNoUi())
                             && app.mProfile.hasPendingUiClean()) {
                         // If this application is now in the background and it
                         // had done UI, then give it the special trim level to
@@ -1427,8 +1425,8 @@ public class AppProfiler {
 
     @GuardedBy({"mService", "mProcLock"})
     private void trimMemoryUiHiddenIfNecessaryLSP(ProcessRecord app) {
-        if ((app.mState.getCurProcState() >= ActivityManager.PROCESS_STATE_IMPORTANT_BACKGROUND
-                || app.mState.isSystemNoUi()) && app.mProfile.hasPendingUiClean()) {
+        if ((app.getCurProcState() >= ActivityManager.PROCESS_STATE_IMPORTANT_BACKGROUND
+                || app.isSystemNoUi()) && app.mProfile.hasPendingUiClean()) {
             // If this application is now in the background and it
             // had done UI, then give it the special trim level to
             // have it free UI resources.
@@ -1589,11 +1587,10 @@ public class AppProfiler {
                 if (rec == dyingProc || rec.getThread() == null) {
                     return;
                 }
-                final ProcessStateRecord state = rec.mState;
                 if (memInfos != null) {
                     memInfos.add(new ProcessMemInfo(rec.processName, rec.getPid(),
-                                state.getSetAdj(), state.getSetProcState(),
-                                state.getAdjType(), rec.makeAdjReason()));
+                                rec.getSetAdj(), rec.getSetProcState(),
+                                rec.getAdjType(), rec.makeAdjReason()));
                 }
                 final ProcessProfileRecord profile = rec.mProfile;
                 if ((profile.getLastLowMemory() + mService.mConstants.GC_MIN_INTERVAL) <= now) {
@@ -1601,7 +1598,7 @@ public class AppProfiler {
                     // state for a GC request.  Make sure to do
                     // heavy/important/visible/foreground processes first.
                     synchronized (mProfilerLock) {
-                        if (state.getSetAdj() <= ProcessList.HEAVY_WEIGHT_APP_ADJ) {
+                        if (rec.getSetAdj() <= ProcessList.HEAVY_WEIGHT_APP_ADJ) {
                             profile.setLastRequestedGc(0);
                         } else {
                             profile.setLastRequestedGc(profile.getLastLowMemory());

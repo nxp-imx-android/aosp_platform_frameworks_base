@@ -1710,7 +1710,7 @@ class BroadcastController {
                 final boolean shareIdentity = (options != null && options.isShareIdentityEnabled());
                 thread.scheduleRegisteredReceiver(
                         resultTo, intent, Activity.RESULT_CANCELED, null, null,
-                        false, false, true, userId, app.mState.getReportedProcState(),
+                        false, false, true, userId, app.getReportedProcState(),
                         shareIdentity ? callingUid : Process.INVALID_UID,
                         shareIdentity ? callingPackage : null);
             } catch (RemoteException e) {
@@ -1731,7 +1731,7 @@ class BroadcastController {
             }
         }
         if (app != null && app.getThread() != null && !app.isKilled()) {
-            return app.mState.getCurProcState();
+            return app.getCurProcState();
         }
         return PROCESS_STATE_NONEXISTENT;
     }

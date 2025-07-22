@@ -1046,7 +1046,7 @@ public final class AppExitInfoTracker {
             info.setReason(ApplicationExitInfo.REASON_UNKNOWN);
             info.setSubReason(ApplicationExitInfo.SUBREASON_UNKNOWN);
             info.setStatus(0);
-            info.setImportance(procStateToImportance(app.mState.getReportedProcState()));
+            info.setImportance(procStateToImportance(app.getReportedProcState()));
             info.setPss(app.mProfile.getLastPss());
             info.setRss(app.mProfile.getLastRss());
             info.setTimestamp(timestamp);

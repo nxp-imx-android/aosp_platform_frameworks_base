@@ -347,8 +347,8 @@ public class CacheOomRanker {
             for (int i = 0; i < numProcessesReRanked; ++i) {
                 RankedProcessRecord scoredProcessRecord = scoredProcessRecords[i];
                 long sinceUpdateMs =
-                        nowMs - scoredProcessRecord.proc.mState.getCacheOomRankerRssTimeMs();
-                if (scoredProcessRecord.proc.mState.getCacheOomRankerRss() != 0
+                        nowMs - scoredProcessRecord.proc.getCacheOomRankerRssTimeMs();
+                if (scoredProcessRecord.proc.getCacheOomRankerRss() != 0
                         && sinceUpdateMs < rssUpdateRateMs) {
                     continue;
                 }
@@ -363,7 +363,7 @@ public class CacheOomRanker {
                 }
                 // First element is total RSS:
                 // frameworks/base/core/jni/android_util_Process.cpp:1192
-                scoredProcessRecord.proc.mState.setCacheOomRankerRss(rss[0], nowMs);
+                scoredProcessRecord.proc.setCacheOomRankerRss(rss[0], nowMs);
                 scoredProcessRecord.proc.mProfile.setLastRss(rss[0]);
             }
         }
@@ -419,7 +419,7 @@ public class CacheOomRanker {
     private static boolean appCanBeReRanked(ProcessRecord process) {
         return !process.isKilledByAm()
                 && process.getThread() != null
-                && process.mState.getCurAdj() >= ProcessList.UNKNOWN_ADJ;
+                && process.getCurAdj() >= ProcessList.UNKNOWN_ADJ;
     }
 
     private static void addToScore(RankedProcessRecord[] scores, float weight) {
@@ -456,8 +456,9 @@ public class CacheOomRanker {
     private static class CacheUseComparator implements Comparator<RankedProcessRecord> {
         @Override
         public int compare(RankedProcessRecord o1, RankedProcessRecord o2) {
-            return Long.compare(o1.proc.mState.getCacheOomRankerUseCount(),
-                    o2.proc.mState.getCacheOomRankerUseCount());
+            return Long.compare(
+                    o1.proc.getCacheOomRankerUseCount(),
+                    o2.proc.getCacheOomRankerUseCount());
         }
     }
 
@@ -466,8 +467,8 @@ public class CacheOomRanker {
         public int compare(RankedProcessRecord o1, RankedProcessRecord o2) {
             // High RSS first to match least recently used.
             return Long.compare(
-                    o2.proc.mState.getCacheOomRankerRss(),
-                    o1.proc.mState.getCacheOomRankerRss());
+                    o2.proc.getCacheOomRankerRss(),
+                    o1.proc.getCacheOomRankerRss());
         }
     }
 
