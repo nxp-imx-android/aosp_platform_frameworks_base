@@ -227,3 +227,13 @@ flag {
   description: "Use random ids for new conversation channels, instead of concatenating parent id and conversation id"
   bug: "432250872"
 }
+
+flag {
+  name: "preferences_throws_on_invalid_uid"
+  namespace: "systemui"
+  description: "Throw IAE when calling getOrCreatePackagePreferences() with INVALID_UID."
+  bug: "390441924"
+  metadata {
+    purpose: PURPOSE_BUGFIX
+  }
+}
