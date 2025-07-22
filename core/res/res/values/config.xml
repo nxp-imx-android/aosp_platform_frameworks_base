@@ -3883,6 +3883,7 @@
          "users" = list of users
          "restart" = restart device
          "emergency" = Launch emergency dialer
+         "lock" = Lock device without requiring strong authentication
          "lockdown" = Lock down device until the user authenticates
          "logout" =  Logout the current user
          "system_update" = Launch System Update screen

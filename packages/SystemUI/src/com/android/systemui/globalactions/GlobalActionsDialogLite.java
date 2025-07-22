@@ -195,6 +195,7 @@ public class GlobalActionsDialogLite implements DialogInterface.OnDismissListene
     private static final String GLOBAL_ACTION_KEY_USERS = "users";
     private static final String GLOBAL_ACTION_KEY_SETTINGS = "settings";
     static final String GLOBAL_ACTION_KEY_LOCKDOWN = "lockdown";
+    static final String GLOBAL_ACTION_KEY_LOCK = "lock";
     private static final String GLOBAL_ACTION_KEY_VOICEASSIST = "voiceassist";
     private static final String GLOBAL_ACTION_KEY_ASSIST = "assist";
     static final String GLOBAL_ACTION_KEY_RESTART = "restart";
@@ -359,7 +360,10 @@ public class GlobalActionsDialogLite implements DialogInterface.OnDismissListene
         GA_CLOSE_TIMEOUT(2148),
 
         @UiEvent(doc = "The global actions standby button was pressed.")
-        GA_STANDBY_PRESS(2210);
+        GA_STANDBY_PRESS(2210),
+
+        @UiEvent(doc = "The global actions lock button was pressed.")
+        GA_LOCK_PRESS(2402);
 
         private final int mId;
 
@@ -711,6 +715,8 @@ public class GlobalActionsDialogLite implements DialogInterface.OnDismissListene
                 if (shouldDisplayLockdown(currentUser.get())) {
                     addIfShouldShowAction(tempActions, new LockDownAction());
                 }
+            } else if (GLOBAL_ACTION_KEY_LOCK.equals(actionKey)) {
+                addIfShouldShowAction(tempActions, new LockAction());
             } else if (GLOBAL_ACTION_KEY_VOICEASSIST.equals(actionKey)) {
                 addIfShouldShowAction(tempActions, getVoiceAssistAction());
             } else if (GLOBAL_ACTION_KEY_ASSIST.equals(actionKey)) {
@@ -1437,6 +1443,45 @@ public class GlobalActionsDialogLite implements DialogInterface.OnDismissListene
             return false;
         }
     }
+
+    @VisibleForTesting
+    class LockAction extends SinglePressAction {
+        LockAction() {
+            super(com.android.systemui.res.R.drawable.ic_global_actions_lockdown,
+                    R.string.global_action_unrestricted_lock);
+        }
+
+        @Override
+        public void onPress() {
+            mLockPatternUtils.requireStrongAuth(STRONG_AUTH_NOT_REQUIRED, UserHandle.USER_ALL);
+
+            mUiEventLogger.log(GlobalActionsEvent.GA_LOCK_PRESS);
+            try {
+                mIWindowManager.lockNow(null);
+                // Lock profiles (if any) on the background thread.
+                mBackgroundExecutor.execute(() -> lockProfiles());
+            } catch (RemoteException e) {
+                Log.e(TAG, "Error while trying to lock device.", e);
+            }
+        }
+
+        @Override
+        public boolean showDuringKeyguard() {
+            return false;
+        }
+
+        @Override
+        public boolean showBeforeProvisioning() {
+            return false;
+        }
+
+        @Override
+        public boolean shouldShow() {
+            // Only show the lock button when the device can show a lock screen.
+            return mKeyguardStateController.isMethodSecure();
+        }
+    }
+
 
     private void lockProfiles() {
         final int currentUserId = getCurrentUser().id;
