@@ -107,6 +107,7 @@ import com.android.wm.shell.compatui.letterbox.lifecycle.LetterboxCleanupAdapter
 import com.android.wm.shell.compatui.letterbox.state.LetterboxTaskListenerAdapter;
 import com.android.wm.shell.crashhandling.ShellCrashHandler;
 import com.android.wm.shell.dagger.back.ShellBackAnimationModule;
+import com.android.wm.shell.dagger.pinnedlayer.PinnedLayerModule;
 import com.android.wm.shell.dagger.pip.PipModule;
 import com.android.wm.shell.desktopmode.CloseDesktopTaskTransitionHandler;
 import com.android.wm.shell.desktopmode.DefaultDragToDesktopTransitionHandler;
@@ -240,8 +241,14 @@ import java.util.Optional;
  * <p>This module only defines Shell dependencies for handheld SystemUI implementation. Common
  * dependencies should go into {@link WMShellBaseModule}.
  */
-@Module(includes = {WMShellBaseModule.class, PipModule.class, ShellBackAnimationModule.class,
-        LetterboxModule.class})
+@Module(
+        includes = {
+            WMShellBaseModule.class,
+            PipModule.class,
+            ShellBackAnimationModule.class,
+            LetterboxModule.class,
+            PinnedLayerModule.class
+        })
 public abstract class WMShellModule {
 
     //
@@ -1108,6 +1115,7 @@ public abstract class WMShellModule {
         }
         return Optional.empty();
     }
+
     @WMSingleton
     @Provides
     static Optional<DesktopTasksLimiter> provideDesktopTasksLimiter(
@@ -1343,14 +1351,12 @@ public abstract class WMShellModule {
 
     @WMSingleton
     @Provides
-    static MultiDisplayDragMoveIndicatorController
-            providesMultiDisplayDragMoveIndicatorController(
+    static MultiDisplayDragMoveIndicatorController providesMultiDisplayDragMoveIndicatorController(
             DisplayController displayController,
             RootTaskDisplayAreaOrganizer rootTaskDisplayAreaOrganizer,
             MultiDisplayDragMoveIndicatorSurface.Factory
-                multiDisplayDragMoveIndicatorSurfaceFactory,
-            ShellDesktopState shellDesktopState
-    ) {
+                    multiDisplayDragMoveIndicatorSurfaceFactory,
+            ShellDesktopState shellDesktopState) {
         return new MultiDisplayDragMoveIndicatorController(
                 displayController, rootTaskDisplayAreaOrganizer,
                 multiDisplayDragMoveIndicatorSurfaceFactory, shellDesktopState);
