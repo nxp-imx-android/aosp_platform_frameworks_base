@@ -334,6 +334,7 @@ object PipUtils {
         pw.println("${innerPrefix1}isPipUmoExperienceEnabled=${PipFlags.isPipUmoExperienceEnabled}")
         pw.println("${innerPrefix1}isPip2ExperimentEnabled=${PipFlags.isPip2ExperimentEnabled}")
         pw.println("${innerPrefix2}enablePip2=${Flags.enablePip2()}")
+        pw.println("${innerPrefix2}enablePip2OnTv=${Flags.enablePip2OnTv()}")
         pw.println("${innerPrefix2}enableDwPip=${ENABLE_DESKTOP_WINDOWING_PIP.isTrue}")
     }
 }
