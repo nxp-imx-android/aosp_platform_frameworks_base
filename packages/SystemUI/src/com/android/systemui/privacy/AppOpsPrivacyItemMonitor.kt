@@ -75,8 +75,7 @@ constructor(
                 AppOpsManager.OP_RECEIVE_EXPLICIT_USER_INTERACTION_AUDIO,
                 AppOpsManager.OP_RECEIVE_SANDBOX_TRIGGER_AUDIO,
             )
-        val OPS_LOCATION =
-            intArrayOf(AppOpsManager.OP_COARSE_LOCATION, AppOpsManager.OP_FINE_LOCATION)
+        val OPS_LOCATION = intArrayOf(AppOpsManager.OP_FINE_LOCATION)
         val OPS = OPS_MIC_CAMERA + OPS_LOCATION
         val USER_INDEPENDENT_OPS =
             intArrayOf(AppOpsManager.OP_PHONE_CALL_CAMERA, AppOpsManager.OP_PHONE_CALL_MICROPHONE)
