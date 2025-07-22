@@ -16,6 +16,8 @@
 
 package com.android.systemui.display.data.repository
 
+import android.util.Log
+import com.android.app.displaylib.PerDisplayInstanceProviderWithSetup
 import com.android.app.displaylib.PerDisplayInstanceProviderWithTeardown
 import com.android.app.displaylib.PerDisplayInstanceRepositoryImpl
 import com.android.app.displaylib.PerDisplayRepository
@@ -32,18 +34,20 @@ import kotlinx.coroutines.cancel
 class DisplayComponentInstanceProvider
 @Inject
 constructor(private val componentFactory: SystemUIDisplaySubcomponent.Factory) :
-    PerDisplayInstanceProviderWithTeardown<SystemUIDisplaySubcomponent> {
+    PerDisplayInstanceProviderWithTeardown<SystemUIDisplaySubcomponent>,
+    PerDisplayInstanceProviderWithSetup<SystemUIDisplaySubcomponent> {
+
     override fun createInstance(displayId: Int): SystemUIDisplaySubcomponent? =
-        runCatching {
-                componentFactory.create(displayId).also { subComponent ->
-                    subComponent.lifecycleListeners.forEachTraced(
-                        "Notifying listeners of a display component creation"
-                    ) {
-                        it.start()
-                    }
-                }
-            }
-            .getOrNull()
+        try {
+            componentFactory.create(displayId)
+        } catch (e: Exception) {
+            Log.e(
+                TAG,
+                "DisplayComponentInstanceProvider cannot create instance for display $displayId",
+                e,
+            )
+            null
+        }
 
     override fun destroyInstance(instance: SystemUIDisplaySubcomponent) {
         traceSection("Destroying a display component instance") {
@@ -54,6 +58,18 @@ constructor(private val componentFactory: SystemUIDisplaySubcomponent.Factory) :
         ) {
             it.stop()
         }
+    }
+
+    override fun setupInstance(instance: SystemUIDisplaySubcomponent) {
+        instance.lifecycleListeners.forEachTraced(
+            "Notifying listeners of a display component creation"
+        ) {
+            it.start()
+        }
+    }
+
+    companion object {
+        private const val TAG = "DisplayComponentInstanceProvider"
     }
 }
 

@@ -24,6 +24,7 @@ import com.android.systemui.testKosmos
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
 
 @RunWith(AndroidJUnit4::class)
@@ -36,13 +37,26 @@ class DisplayComponentInstanceProviderTest : SysuiTestCase() {
         DisplayComponentInstanceProvider(kosmos.fakeSysuiDisplayComponentFactory)
 
     @Test
-    fun createInstance_notifiesLifecycleListenersWithStart() {
+    fun createInstance_doesNotNotifyLifecycleListenersWithStart() {
         val lifecycleListeners =
             (1..10).map { mock<SystemUIDisplaySubcomponent.LifecycleListener>() }
 
         kosmos.sysUiDefaultDisplaySubcomponentLifecycleListeners += lifecycleListeners
 
         underTest.createInstance(displayId = 123)
+
+        lifecycleListeners.forEach { verify(it, never()).start() }
+    }
+
+    @Test
+    fun setupInstance_notifiesLifecycleListenersWithSetupInstance() {
+        val lifecycleListeners =
+            (1..10).map { mock<SystemUIDisplaySubcomponent.LifecycleListener>() }
+
+        kosmos.sysUiDefaultDisplaySubcomponentLifecycleListeners += lifecycleListeners
+
+        val instance = underTest.createInstance(displayId = 123)!!
+        underTest.setupInstance(instance)
 
         lifecycleListeners.forEach { verify(it).start() }
     }
