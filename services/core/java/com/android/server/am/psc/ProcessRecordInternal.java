@@ -543,6 +543,10 @@ public abstract class ProcessRecordInternal {
     @GuardedBy("mServiceLock")
     private boolean mHasRecentTask = false;
 
+    /** Process finish attach application is pending. */
+    @GuardedBy("mServiceLock")
+    private boolean mPendingFinishAttach;
+
     // Below are the cached task info for OomAdjuster only
     private static final int VALUE_INVALID = -1;
     private static final int VALUE_FALSE = 0;
@@ -1391,6 +1395,16 @@ public abstract class ProcessRecordInternal {
     @GuardedBy("mServiceLock")
     public void setFollowupUpdateUptimeMs(long updateUptimeMs) {
         mFollowupUpdateUptimeMs = updateUptimeMs;
+    }
+
+    @GuardedBy("mServiceLock")
+    public void setPendingFinishAttach(boolean pendingFinishAttach) {
+        mPendingFinishAttach = pendingFinishAttach;
+    }
+
+    @GuardedBy("mServiceLock")
+    public boolean isPendingFinishAttach() {
+        return mPendingFinishAttach;
     }
 
     /**

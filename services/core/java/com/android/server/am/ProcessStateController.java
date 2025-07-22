@@ -349,7 +349,8 @@ public class ProcessStateController {
      * Note whether a process is pending attach or not.
      */
     @GuardedBy("mLock")
-    public void setPendingFinishAttach(@NonNull ProcessRecord proc, boolean pendingFinishAttach) {
+    public void setPendingFinishAttach(@NonNull ProcessRecordInternal proc,
+            boolean pendingFinishAttach) {
         proc.setPendingFinishAttach(pendingFinishAttach);
     }
 
