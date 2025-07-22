@@ -95,7 +95,6 @@ import com.android.systemui.media.controls.ui.view.MediaHostState.Companion.EXPA
 import com.android.systemui.media.dagger.MediaModule
 import com.android.systemui.notifications.ui.composable.HeadsUpNotificationSpace
 import com.android.systemui.notifications.ui.composable.NotificationScrollingStack
-import com.android.systemui.notifications.ui.composable.NotificationStackCutoffGuideline
 import com.android.systemui.qs.composefragment.ui.GridAnchor
 import com.android.systemui.qs.footer.ui.compose.FooterActionsWithAnimatedVisibility
 import com.android.systemui.qs.panels.ui.compose.TileGrid
@@ -465,20 +464,6 @@ private fun ContentScope.QuickSettingsScene(
                 Modifier.fillMaxWidth()
                     .offset { IntOffset(x = 0, y = minNotificationStackTop) }
                     .padding(horizontal = shadeHorizontalPadding),
-        )
-        NotificationStackCutoffGuideline(
-            stackScrollView = notificationStackScrollView,
-            viewModel = notificationsPlaceholderViewModel,
-            modifier =
-                Modifier.align(Alignment.BottomCenter)
-                    .navigationBarsPadding()
-                    .offset { IntOffset(x = 0, y = minNotificationStackTop) }
-                    .padding(
-                        start = shadeHorizontalPadding,
-                        top = 0.dp,
-                        end = shadeHorizontalPadding,
-                        bottom = navBarBottomHeight,
-                    ),
         )
     }
 }

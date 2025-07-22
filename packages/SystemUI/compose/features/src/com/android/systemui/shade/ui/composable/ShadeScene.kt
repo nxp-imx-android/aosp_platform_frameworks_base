@@ -91,7 +91,6 @@ import com.android.systemui.media.controls.ui.view.MediaHostState.Companion.EXPA
 import com.android.systemui.media.dagger.MediaModule.QS_PANEL
 import com.android.systemui.media.dagger.MediaModule.QUICK_QS_PANEL
 import com.android.systemui.notifications.ui.composable.NotificationScrollingStack
-import com.android.systemui.notifications.ui.composable.NotificationStackCutoffGuideline
 import com.android.systemui.qs.footer.ui.compose.FooterActionsWithAnimatedVisibility
 import com.android.systemui.qs.panels.ui.compose.QuickQuickSettings
 import com.android.systemui.qs.ui.composable.BrightnessMirror
@@ -393,13 +392,7 @@ private fun ContentScope.SingleShade(
                     .height(navBarHeight)
                     // Intercepts touches, prevents the scrollable container behind from scrolling.
                     .clickable(interactionSource = null, indication = null) { /* do nothing */ }
-        ) {
-            NotificationStackCutoffGuideline(
-                stackScrollView = notificationStackScrollView,
-                viewModel = notificationsPlaceholderViewModel,
-                modifier = Modifier.align(Alignment.TopCenter),
-            )
-        }
+        )
     }
 }
 
@@ -607,13 +600,6 @@ private fun ContentScope.SplitShade(
                 )
             }
         }
-        NotificationStackCutoffGuideline(
-            stackScrollView = notificationStackScrollView,
-            viewModel = notificationsPlaceholderViewModel,
-            modifier =
-                Modifier.align(Alignment.BottomCenter)
-                    .padding(bottom = notificationStackPadding + navBarBottomHeight),
-        )
     }
 }
 

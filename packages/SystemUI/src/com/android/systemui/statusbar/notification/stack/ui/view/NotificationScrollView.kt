@@ -16,6 +16,7 @@
 
 package com.android.systemui.statusbar.notification.stack.ui.view
 
+import android.graphics.RectF
 import android.view.View
 import com.android.systemui.statusbar.notification.stack.shared.model.AccessibilityScrollEvent
 import com.android.systemui.statusbar.notification.stack.shared.model.ShadeScrimShape
@@ -71,11 +72,8 @@ interface NotificationScrollView {
     /** set the y position in px of the top of the stack in this view's coordinates */
     fun setStackTop(stackTop: Float)
 
-    /**
-     * set the bottom-most acceptable y-position of the bottom of the notification stack/ shelf /
-     * footer.
-     */
-    fun setStackCutoff(stackBottom: Float)
+    /** set the area where this can place its content */
+    fun setDrawBounds(bounds: RectF)
 
     /** set the y position in px of the top of the HUN in this view's coordinates */
     fun setHeadsUpTop(headsUpTop: Float)

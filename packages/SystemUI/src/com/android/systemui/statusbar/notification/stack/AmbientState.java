@@ -21,6 +21,7 @@ import static com.android.systemui.statusbar.notification.NotificationUtils.logK
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.content.Context;
+import android.graphics.RectF;
 import android.util.MathUtils;
 
 import androidx.annotation.VisibleForTesting;
@@ -70,7 +71,7 @@ public class AmbientState implements Dumpable {
      */
     private StatusBarKeyguardViewManager mStatusBarKeyguardViewManager;
     private float mStackTop;
-    private float mStackCutoff;
+    private RectF mDrawBounds = new RectF();
     private float mHeadsUpTop;
     private float mHeadsUpBottom;
     private int mScrollY;
@@ -395,19 +396,26 @@ public class AmbientState implements Dumpable {
         this.mStackTop = mStackTop;
     }
 
+    /** @return bounds of the area in view pixels where the NSSL's content can be placed. */
+    @NonNull
+    public RectF getDrawBounds() {
+        if (SceneContainerFlag.isUnexpectedlyInLegacyMode()) return new RectF();
+        return mDrawBounds;
+    }
+
+    /** @see #getDrawBounds()  */
+    public void setDrawBounds(@NonNull RectF drawBounds) {
+        if (SceneContainerFlag.isUnexpectedlyInLegacyMode()) return;
+        mDrawBounds = drawBounds;
+    }
+
     /**
      * Y coordinate in view pixels above which the bottom of the notification stack / shelf / footer
      * must be.
      */
     public float getStackCutoff() {
         if (SceneContainerFlag.isUnexpectedlyInLegacyMode()) return 0f;
-        return mStackCutoff;
-    }
-
-    /** @see #getStackCutoff() */
-    public void setStackCutoff(float stackCutoff) {
-        if (SceneContainerFlag.isUnexpectedlyInLegacyMode()) return;
-        this.mStackCutoff = stackCutoff;
+        return mDrawBounds.bottom;
     }
 
     /** y coordinate of the top position of a pinned HUN */
@@ -875,10 +883,12 @@ public class AmbientState implements Dumpable {
 
     @Override
     public void dump(PrintWriter pw, String[] args) {
-        pw.println("mStackTop=" + mStackTop);
-        pw.println("mStackCutoff=" + mStackCutoff);
-        pw.println("mHeadsUpTop=" + mHeadsUpTop);
-        pw.println("mHeadsUpBottom=" + mHeadsUpBottom);
+        if (SceneContainerFlag.isEnabled()) {
+            pw.println("mStackTop=" + mStackTop);
+            pw.print("mDrawBounds=" + mDrawBounds);
+            pw.println("mHeadsUpTop=" + mHeadsUpTop);
+            pw.println("mHeadsUpBottom=" + mHeadsUpBottom);
+        }
         pw.println("mTopPadding=" + mTopPadding);
         pw.println("mStackTopMargin=" + mStackTopMargin);
         pw.println("mStackTranslation=" + mStackTranslation);
