@@ -207,7 +207,8 @@ class UserController implements Handler.Callback {
     static final int COMPLETE_USER_SWITCH_MSG = 130;
     static final int USER_COMPLETED_EVENT_MSG = 140;
     static final int SCHEDULE_STOP_BACKGROUND_USER_MSG = 150;
-    static final int USER_SWITCHING_DIALOG_ANIMATION_TIMEOUT_MSG = 160;
+    static final int SCHEDULE_JUDGE_FATE_OF_BACKGROUND_USER_MSG = 160;
+    static final int USER_SWITCHING_DIALOG_ANIMATION_TIMEOUT_MSG = 170;
 
     private static final int NO_ARG2 = 0;
 
@@ -249,7 +250,20 @@ class UserController implements Handler.Callback {
      * it is currently playing audio) and we have to reschedule that background stop, we should
      * schedule that stop for this many seconds from now.
      */
-    private static final int POSTPONEMENT_TIME_FOR_BACKGROUND_USER_STOP_SECS = 30 * 60; // 30 mins
+    private static final int POSTPONEMENT_TIME_FOR_BACKGROUND_USER_STOP_SECS = 10 * 60; // 10 mins
+
+    /**
+     * How many seconds to wait until checking whether there has been lmk activity, as required when
+     * passing judgement on whether to automatically stop a background user.
+     * This is actually used for two distinct (but related) purposes:
+     * <ul>
+     * <li>to wait until initial process states settle after the user enters the background
+     * <li>polling frequency to get the latest lmkCount values for subsequent judgements
+     *</ul>
+     * <p>This is NOT directly related to config_backgroundUserConsideredDispensableTimeSecs, which
+     * is generally a much longer time indicating when the background user is declared dispensable.
+     */
+    private static final long POLLING_TIME_FOR_JUDGING_BACKGROUND_USER_SECS = 10 * 60; // 10 mins
 
     @VisibleForTesting
     static final String EXCEPTION_TEMPLATE_CANNOT_START_USER_WHEN_NOT_READY =
@@ -273,12 +287,13 @@ class UserController implements Handler.Callback {
     private int mMaxRunningUsers;
 
     /**
-     * Number of seconds of uptime after a full user enters the background before we attempt
-     * to stop it due to inactivity. Set to -1 to disable scheduling stopping background users.
-     *
-     * Typically set by config_backgroundUserScheduledStopTimeSecs.
+     * Number of seconds of uptime after a full user enters the background before we consider
+     * it as no longer important, and therefore can consider automatically stopping it.
+     * Set to -1 to disable this feature (i.e. don't auto-stop background users after some elapsed
+     * time).
+     * Typically set by config_backgroundUserConsideredDispensableTimeSecs.
      */
-    private int mBackgroundUserScheduledStopTimeSecs = -1;
+    private int mBackgroundUserConsideredDispensableTimeSecs = -1;
 
     // Lock for internal state.
     private final Object mLock = new Object();
@@ -500,14 +515,15 @@ class UserController implements Handler.Callback {
     }
 
     void setInitialConfig(boolean userSwitchUiEnabled, int maxRunningUsers,
-            boolean delayUserDataLocking, int backgroundUserScheduledStopTimeSecs) {
+            boolean delayUserDataLocking, int backgroundUserConsideredDispensableTimeSecs) {
         synchronized (mLock) {
             mUserSwitchUiEnabled = userSwitchUiEnabled;
             mMaxRunningUsers = maxRunningUsers;
             mDelayUserDataLocking = delayUserDataLocking;
             if (android.multiuser.Flags.scheduleStopOfBackgroundUserByDefault()) {
-                // If flag is off, default value of -1 disables scheduling (but not infrastructure).
-                mBackgroundUserScheduledStopTimeSecs = backgroundUserScheduledStopTimeSecs;
+                // If flag is off, the default value of -1 applies, disabling the feature.
+                mBackgroundUserConsideredDispensableTimeSecs
+                        = backgroundUserConsideredDispensableTimeSecs;
             }
             mInitialized = true;
         }
@@ -673,6 +689,7 @@ class UserController implements Handler.Callback {
             }
             if (avoidUsers.contains(userId)) {
                 // Try not to stop these users. Keep track (in order) in case second pass is needed.
+                Slogf.i(TAG, "Avoiding stopping user %d", userId);
                 candidatesForScheduledStopping.add(userId);
                 continue;
             }
@@ -1348,10 +1365,7 @@ class UserController implements Handler.Callback {
             final IStopUserCallback stopUserCallback,
             KeyEvictedCallback keyEvictedCallback) {
         Slogf.i(TAG, "stopSingleUserLU userId=" + userId);
-        if (android.multiuser.Flags.scheduleStopOfBackgroundUser()) {
-            mHandler.removeEqualMessages(SCHEDULE_STOP_BACKGROUND_USER_MSG,
-                    Integer.valueOf(userId));
-        }
+        clearAnyPlansForStoppingBackgroundUser(userId);
         final UserState uss = mStartedUsers.get(userId);
         if (uss == null) {  // User is not started
             // If canDelayDataLockingForUser() is true and allowDelayedLocking is false, we need
@@ -2313,18 +2327,34 @@ class UserController implements Handler.Callback {
             t.traceEnd();
         }
 
-        if (android.multiuser.Flags.scheduleStopOfBackgroundUser()) {
+        if (android.multiuser.Flags.scheduleStopOfBackgroundUserByDefault()) {
+            if (userStartMode != USER_START_MODE_BACKGROUND || isCurrentProfile(userId)) {
+                // User isn't (or is no longer) a background user. Clear any prior plans to stop it.
+                clearAnyPlansForStoppingBackgroundUser(userId);
+            } else {
+                // User is a background user. If it's supposed to only run temporarily, schedule it
+                // for stopping; otherwise, schedule it for eventual background user judgement.
+                if (autoStopUserInSecs > 0 && (needStart || isUserScheduledForStopping(userId))) {
+                    // Request is for a temp start and user wasn't already bg-running-in-perpetuity.
+                    scheduleStopOfBackgroundUser(userId, autoStopUserInSecs);
+                } else {
+                    // This wasn't designated a temporary background run. So clear any previous
+                    // scheduled stops, and initiate a new inactivity trial.
+                    mHandler.removeEqualMessages(SCHEDULE_STOP_BACKGROUND_USER_MSG,
+                            Integer.valueOf(userId));
+                    initiateJudgeFateOfBackgroundUser(userId);
+                }
+            }
+        } else if (android.multiuser.Flags.scheduleStopOfBackgroundUser()) {
             if (userStartMode == USER_START_MODE_BACKGROUND && !isCurrentProfile(userId) &&
-                    (autoStopUserInSecs > 0 || mBackgroundUserScheduledStopTimeSecs > 0)) {
+                    autoStopUserInSecs > 0) {
                 if (!needStart
                         && !mHandler.hasEqualMessages(SCHEDULE_STOP_BACKGROUND_USER_MSG,
                                 Integer.valueOf(userId))) {
                     Slogf.d(TAG, "Not scheduling background user stop: user %d is already running"
                             + " in background in perpetuity, so keep it that way", userId);
-                } else if (autoStopUserInSecs > 0) {
-                    scheduleStopOfBackgroundUser(userId, autoStopUserInSecs);
                 } else {
-                    scheduleStopOfInactiveBackgroundUser(userId);
+                    scheduleStopOfBackgroundUser(userId, autoStopUserInSecs);
                 }
             } else {
                 // This start shouldn't be scheduled for stopping. Clear existing scheduled stops.
@@ -2713,27 +2743,175 @@ class UserController implements Handler.Callback {
     }
 
     /**
-     * Possibly schedules the user to be stopped at a future point. To be used to stop background
-     * users that haven't been actively used in a long time, using the default delay for that.
-     * This is only intended for full users that are currently in the background.
+     * Returns whether the given user is a background user that is possible to be stopped via
+     * scheduled stopping, if the need arises.
      */
-    private void scheduleStopOfInactiveBackgroundUser(@UserIdInt int userId) {
+    private boolean isBackgroundUserEligibleForAutomaticStopping(@UserIdInt int userId) {
         if (!android.multiuser.Flags.scheduleStopOfBackgroundUser()) {
+            return false;
+        }
+        if (UserManager.isVisibleBackgroundUsersEnabled()) {
+            // Feature is not enabled on this device. Consider enabling it after testing it.
+            return false;
+        }
+        if (userId == UserHandle.USER_SYSTEM) {
+            // Never stop system user.
+            return false;
+        }
+        if (isUserVisible(userId)) {
+            // User is visible, possibly on a background display or as an alwaysVisibleUser.
+            return false;
+        }
+        synchronized (mLock) {
+            if (isCurrentProfile(userId)) {
+                // The user, or its parent, is the current user.
+                return false;
+            }
+            final UserState uss = mStartedUsers.get(userId);
+            if (uss == null || uss.state == UserState.STATE_STOPPING
+                    || uss.state == UserState.STATE_SHUTDOWN) {
+                // We've stopped (or are stopping) the user anyway, so no point scheduling.
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Possibly schedules the user to be judged at a future point. Such judgement will
+     * decide whether the background user hasn't been actively used in a long time and
+     * whether to therefore automatically stop it.
+     *
+     * This is only intended for users that are currently in the background.
+     * A newly scheduled trial will replace any previously scheduled trial.
+     */
+    private void initiateJudgeFateOfBackgroundUser(@UserIdInt int userId) {
+        if (mBackgroundUserConsideredDispensableTimeSecs < 0) {
+            // Feature is not enabled on this device.
             return;
         }
-        if (mBackgroundUserScheduledStopTimeSecs <= 0) {
-            // Feature is not enabled on this device.
+        if (!isBackgroundUserEligibleForAutomaticStopping(userId)) {
+            // User is not eligible to be automatically stopped.
+            Slogf.i(TAG, "Exempting user %d from judgement since it is ineligible", userId);
+            return;
+        }
+        if (isUserScheduledForStopping(userId)) {
+            // The user's fate is already sealed; we're planning on stopping it anyway.
+            Slogf.i(TAG, "Skipping judgement of user %d since it scheduled to stop anyway", userId);
             return;
         }
         if (userId == mInjector.getUserManagerInternal().getMainUserId()) {
             // MainUser is currently special for things like Docking, so we'll exempt it for now.
-            Slogf.i(TAG, "Exempting user %d from being stopped due to inactivity by virtue "
-                    + "of it being the main user", userId);
-            mHandler.removeEqualMessages(SCHEDULE_STOP_BACKGROUND_USER_MSG,
-                    Integer.valueOf(userId));
+            Slogf.i(TAG, "Exempting user %d from judgement since it is the main user", userId);
             return;
         }
-        scheduleStopOfBackgroundUser(userId, mBackgroundUserScheduledStopTimeSecs);
+
+        // First clear any existing trial for this user.
+        ceaseJudgeFateOfBackgroundUser(userId);
+
+        Slogf.i(TAG, "Scheduling to judge background user %d in %d seconds", userId,
+                POLLING_TIME_FOR_JUDGING_BACKGROUND_USER_SECS);
+        // It is too soon to record the lmkdKillCount. It takes a few minutes for the new background
+        // user's processes' priorities to drop, so lmks wouldn't reflect on ths user. Moreover,
+        // the user event itself might trigger lmks which we don't want to consider. So wait a bit.
+        // Give a lmk threshold of -1 to signify that we have yet to determine it.
+        final UserAndLmkThreshold userWithoutLmk = new UserAndLmkThreshold(userId, -1);
+        mHandler.sendMessageDelayed(
+                mHandler.obtainMessage(SCHEDULE_JUDGE_FATE_OF_BACKGROUND_USER_MSG, userWithoutLmk),
+                POLLING_TIME_FOR_JUDGING_BACKGROUND_USER_SECS * 1000);
+    }
+
+    /**
+     * Judge the fate of the background user. If the user has been in the background for a long
+     * time, and there has been memory pressure, and it is likely that most of its regular apps have
+     * been killed anyway, then we can sentence it for stopping.
+     *
+     * In implementation, there are multiple phases in this judgement trial:<ul>
+     * <li>Phase 1: Wait a few minutes for its oom scores to deprioritize after entering the bg.
+     * <li>Phase 2: Wait a long time to conclude that the user is indeed dispensable.
+     * <li>Phase 3: Keep polling the lmkCount periodically to see if there has been
+     * memory pressure (i.e. whether the lmkCount has increased above the value at the end of
+     * Phase 1), and if so, render our verdict.
+     * <li>Phase 4: Sentence the user to stopping.
+     * </ul>
+     *
+     * @param userAndLmkThreshold the background user under consideration, coupled with the
+     *                            lmkCountThreshold above which we would decide to stop this user if
+     *                            it had been inactive for sufficiently long. A lmkCountThreshold
+     *                            value below 0 indicates that we haven't yet recorded it.
+     */
+    @VisibleForTesting
+    void processJudgeFateOfBackgroundUser(UserAndLmkThreshold userAndLmkThreshold) {
+        if (mBackgroundUserConsideredDispensableTimeSecs < 0) {
+            // Feature is not enabled on this device. This line should be unreachable.
+            return;
+        }
+        final @UserIdInt int userId = userAndLmkThreshold.userId;
+        if (!isBackgroundUserEligibleForAutomaticStopping(userId)
+                || isUserScheduledForStopping(userId)) {
+            // Sanity check. Make sure the user is still indeed running non-visibly in the
+            // background and isn't already slated for stopping.
+            return;
+        }
+
+        // Phase 1 was already initiated by initiateJudgeFateOfBackgroundUser() and has finished.
+        final int lmkCountThreshold = userAndLmkThreshold.lmkCountThreshold;
+        final int currentLmkCount = mInjector.getLmkdKillCount();
+        Slogf.v(TAG, "Comparing current lmkCount %d with threshold level %d for judgement",
+                currentLmkCount, lmkCountThreshold);
+
+        if (lmkCountThreshold < 0) {
+            // Entering Phase 2. Time to gather evidence.
+            // The user only recently entered the background; now we wait to see if the user stays
+            // there for a long time. We also record the initial lmkCount value.
+            // (Can also happen if lmkdKillCount has yet to give us an initial valid value; we'll
+            // try again later, but don't want to poll too frequently if it isn't working anyway.)
+            Slogf.i(TAG, "Scheduling judgement of background user %d in %d secs with %d lmks",
+                    userId, mBackgroundUserConsideredDispensableTimeSecs, currentLmkCount);
+            mHandler.sendMessageDelayed(mHandler.obtainMessage(
+                    SCHEDULE_JUDGE_FATE_OF_BACKGROUND_USER_MSG,
+                            new UserAndLmkThreshold(userId, currentLmkCount)),
+                    mBackgroundUserConsideredDispensableTimeSecs * 1000);
+        } else if (currentLmkCount <= lmkCountThreshold) {
+            // We are in Phase 3.
+            // currentLmkCount hasn't increased (or is invalid). Check again soon.
+            Slogf.i(TAG, "Judgement: User %d is dispensable; wait %d secs to see if lmks exceed %d",
+                    userId, POLLING_TIME_FOR_JUDGING_BACKGROUND_USER_SECS, lmkCountThreshold);
+            mHandler.sendMessageDelayed(mHandler.obtainMessage(
+                            SCHEDULE_JUDGE_FATE_OF_BACKGROUND_USER_MSG, userAndLmkThreshold),
+                    POLLING_TIME_FOR_JUDGING_BACKGROUND_USER_SECS * 1000);
+        } else { // 0 <= lmkCountThreshold < currentLmkCount
+            // Entering Phase 4.
+            // The user has been in the background for the requisite length of time and lmkCount has
+            // increased. We render the verdict to stop the user.
+            // Rather than stop it immediately, we'll delay the sentence in case the recent lmks
+            // indicate recent CPU stress too, and also to benefit from the scheduling checks.
+            Slogf.i(TAG, "Judgement: User %d is sentenced for stopping", userId);
+            rescheduleStopOfBackgroundUser(userId);
+        }
+    }
+
+    /**
+     * Cancels both SCHEDULE_STOP_BACKGROUND_USER_MSG and SCHEDULE_JUDGE_FATE_OF_BACKGROUND_USER_MSG
+     * for the given user.
+     */
+    private void clearAnyPlansForStoppingBackgroundUser(@UserIdInt Integer userIdInteger) {
+        if (android.multiuser.Flags.scheduleStopOfBackgroundUser()) {
+            mHandler.removeEqualMessages(SCHEDULE_STOP_BACKGROUND_USER_MSG, userIdInteger);
+        }
+        ceaseJudgeFateOfBackgroundUser(userIdInteger);
+    }
+
+    private void ceaseJudgeFateOfBackgroundUser(@UserIdInt Integer userIdInteger) {
+        if (!android.multiuser.Flags.scheduleStopOfBackgroundUserByDefault()) {
+            return;
+        }
+        final UserAndLmkThreshold userAndAnyLmk = new UserAndLmkThreshold(userIdInteger, 0);
+        mHandler.removeEqualMessages(SCHEDULE_JUDGE_FATE_OF_BACKGROUND_USER_MSG, userAndAnyLmk);
+    }
+
+    private boolean isUserScheduledForStopping(@UserIdInt Integer userIdInteger) {
+        return mHandler.hasEqualMessages(SCHEDULE_STOP_BACKGROUND_USER_MSG, userIdInteger);
     }
 
     /**
@@ -2755,6 +2933,9 @@ class UserController implements Handler.Callback {
      * Possibly schedules the user to be stopped after the given number of seconds.
      *
      * This is only intended for background users (including profiles).
+     *
+     * Supplements, rather than replaces, any previous schedule. Ultimately, the future-most
+     * scheduled stop is what matters.
      */
     private boolean scheduleStopOfBackgroundUser(@UserIdInt int userId, int delayUptimeSecs) {
         if (!android.multiuser.Flags.scheduleStopOfBackgroundUser()) {
@@ -2763,31 +2944,15 @@ class UserController implements Handler.Callback {
         if (delayUptimeSecs <= 0) {
             return false;
         }
-        if (UserManager.isVisibleBackgroundUsersEnabled()) {
-            // Feature is not enabled on this device. Consider enabling it after testing it.
+        if (!isBackgroundUserEligibleForAutomaticStopping(userId)) {
+            Slogf.i(TAG, "Not scheduling to stop user %d since it's ineligible", userId);
             return false;
         }
-        if (userId == UserHandle.USER_SYSTEM) {
-            // Never stop system user
-            return false;
-        }
-        if (isUserVisible(userId)) {
-            // User is visible, possibly on a background display or as an alwaysVisibleUser.
-            return false;
-        }
-        synchronized(mLock) {
-            if (isCurrentProfile(userId)) {
-                // Surprisingly, the user, or its parent, is the current user. Refuse to schedule.
-                return false;
-            }
-            final UserState uss = mStartedUsers.get(userId);
-            if (uss == null || uss.state == UserState.STATE_STOPPING
-                    || uss.state == UserState.STATE_SHUTDOWN) {
-                // We've stopped (or are stopping) the user anyway, so don't bother scheduling.
-                return false;
-            }
-        }
-        Slogf.d(TAG, "Scheduling to stop user %d in %d seconds", userId, delayUptimeSecs);
+
+        // We're deciding to stop the user, so its fate is already sealed. No point judging it now.
+        ceaseJudgeFateOfBackgroundUser(userId);
+
+        Slogf.i(TAG, "Scheduling to stop user %d in %d seconds", userId, delayUptimeSecs);
         final int delayUptimeMs = delayUptimeSecs * 1000;
         final Object msgObj = userId;
         mHandler.sendMessageDelayed(
@@ -2808,14 +2973,14 @@ class UserController implements Handler.Callback {
     @VisibleForTesting
     void processScheduledStopOfBackgroundUser(Integer userIdInteger) {
         final int userId = userIdInteger;
-        Slogf.d(TAG, "Considering stopping background user %d due to inactivity", userId);
+        Slogf.d(TAG, "Considering stopping-on-schedule background user %d", userId);
 
-        if (mHandler.hasEqualMessages(SCHEDULE_STOP_BACKGROUND_USER_MSG, userIdInteger)) {
+        if (isUserScheduledForStopping(userIdInteger)) {
             Slogf.i(TAG, "User %d is scheduled for bg stopping later, so wait until then", userId);
             return;
         }
         if (avoidStoppingUserRightNow(userId)) {
-            Slogf.d(TAG, "Rescheduling bg stopping of user %d because it (or its profile) should "
+            Slogf.i(TAG, "Rescheduling bg stopping of user %d because it (or its profile) should "
                     + "not be stopped right now ", userId);
             rescheduleStopOfBackgroundUser(userIdInteger);
             return;
@@ -2834,12 +2999,12 @@ class UserController implements Handler.Callback {
             final UserInfo currentOrTargetUser = getCurrentUserLU();
             if (currentOrTargetUser != null && currentOrTargetUser.isGuest()) {
                 // Don't kill any background users for the sake of a Guest. Just reschedule instead.
-                Slogf.d(TAG, "Current user %d is a Guest, so reschedule bg stopping of user %d",
+                Slogf.i(TAG, "Current user %d is a Guest, so reschedule bg stopping of user %d",
                         currentOrTargetUser.id, userId);
                 rescheduleStopOfBackgroundUser(userIdInteger);
                 return;
             }
-            Slogf.i(TAG, "Stopping background user %d due to inactivity", userId);
+            Slogf.i(TAG, "Stopping-on-schedule background user %d", userId);
             stopUsersLU(userId, /* stopProfileRegardlessOfParent= */ false,
                     /* allowDelayedLocking= */ true, null, null);
         }
@@ -2873,19 +3038,19 @@ class UserController implements Handler.Callback {
         for (int relatedUserId : usersThatWouldStop) {
             if (avoidStoppingUserDueToUpcomingAlarm(relatedUserId)) {
                 // We want this user running soon for alarm-purposes, so don't stop it now.
-                Slogf.d(TAG, "Avoid stopping user %d because user %d will fire an alarm soon",
+                Slogf.d(TAG, "User %d shouldn't be stopped because user %d will fire an alarm soon",
                         userId, relatedUserId);
                 return true;
             }
             if (mInjector.getAudioManagerInternal().isUserPlayingAudio(relatedUserId)) {
                 // User is audible (even if invisibly, e.g. via an alarm), so don't stop it.
-                Slogf.d(TAG, "Avoid stopping user %d because user %d is playing audio",
+                Slogf.d(TAG, "User %d shouldn't be stopped because user %d is playing audio",
                         userId, relatedUserId);
                 return true;
             }
             if (visibleActivityUsers.contains(userId)) {
                 // User is displaying the top activity from a currently visible root task.
-                Slogf.d(TAG, "Avoid stopping user %d because user %d has a visible activity",
+                Slogf.d(TAG, "User %d shouldn't be stopped because user %d has a visible activity",
                         userId, relatedUserId);
                 return true;
             }
@@ -3034,7 +3199,7 @@ class UserController implements Handler.Callback {
         uss.switching = false;
         stopGuestOrEphemeralUserIfBackground(oldUserId);
         stopUserOnSwitchIfEnforced(oldUserId);
-        scheduleStopOfInactiveBackgroundUser(oldUserId);
+        initiateJudgeFateOfBackgroundUser(oldUserId);
 
         t.traceEnd(); // end continueUserSwitch
     }
@@ -3924,8 +4089,8 @@ class UserController implements Handler.Callback {
             pw.println("  isStopUserOnSwitchEnabled():" + isStopUserOnSwitchEnabled());
             pw.println("  mStopUserOnSwitch:" + mStopUserOnSwitch);
             pw.println("  mMaxRunningUsers:" + mMaxRunningUsers);
-            pw.println("  mBackgroundUserScheduledStopTimeSecs:"
-                    + mBackgroundUserScheduledStopTimeSecs);
+            pw.println("  mBackgroundUserConsideredDispensableTimeSecs:"
+                    + mBackgroundUserConsideredDispensableTimeSecs);
             pw.println("  mUserSwitchUiEnabled:" + mUserSwitchUiEnabled);
             pw.println("  mInitialized:" + mInitialized);
             pw.println("  mIsBroadcastSentForSystemUserStarted:"
@@ -4052,6 +4217,9 @@ class UserController implements Handler.Callback {
                 break;
             case SCHEDULE_STOP_BACKGROUND_USER_MSG:
                 processScheduledStopOfBackgroundUser((Integer) msg.obj);
+                break;
+            case SCHEDULE_JUDGE_FATE_OF_BACKGROUND_USER_MSG:
+                processJudgeFateOfBackgroundUser((UserAndLmkThreshold) msg.obj);
                 break;
         }
         return false;
@@ -4248,6 +4416,48 @@ class UserController implements Handler.Callback {
                     + ", autoStopUserInSecs=" + autoStopUserInSecs
                     + ", unlockListener=" + unlockListener
                     + '}';
+        }
+    }
+
+    /**
+     * A class holding a userId and an lmkCountThreshold.
+     * <p>
+     * This is basically just a Pair, except that the equality of two UserAndLmkThreshold objects is
+     * determined *only* by the userId, ignoring the lmkCountThreshold. This means that, when used
+     * as the obj in {@code mHandler.removeEqualMessage()}, all messages with for the same userId
+     * will be purposefully removed, regardless of the lmkCountThreshold values.
+     */
+    @VisibleForTesting
+    static class UserAndLmkThreshold {
+        public @UserIdInt int userId;
+        public int lmkCountThreshold;
+
+        public UserAndLmkThreshold(int userId, int lmkCountThreshold) {
+            this.userId = userId;
+            this.lmkCountThreshold = lmkCountThreshold;
+        }
+
+        /**
+         * Two UserAndLmkThreshold objects are considered equal if and only if their {@code userId}
+         * fields are equal. The {@code lmkCountThreshold} is not considered in this comparison.
+         */
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            return userId == ((UserAndLmkThreshold) o).userId;
+        }
+
+        @Override
+        public int hashCode() {
+            // Must use the same fields as equals() to ensure that equal objects have the same hash!
+            return Objects.hash(userId);
+        }
+
+        @Override
+        public String toString() {
+            return "UserAndLmkThreshold{userId=" + userId
+                    + ", lmkCountThreshold=" + lmkCountThreshold + "}";
         }
     }
 
@@ -4589,5 +4799,15 @@ class UserController implements Handler.Callback {
             }
             return visibleActivityUsers;
         }
+
+        /**
+         * Returns the number of more-important-than-cached low memory kills that have occurred.
+         * Returns -1 if the value is unavailable.
+         */
+        int getLmkdKillCount() {
+            final Integer lmk = ProcessList.getLmkdKillCount(0, ProcessList.CACHED_APP_MIN_ADJ - 1);
+            return lmk != null && lmk >= 0 ? lmk : -1;
+        }
+
     }
 }
