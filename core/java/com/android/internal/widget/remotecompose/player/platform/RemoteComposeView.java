@@ -56,7 +56,7 @@ public class RemoteComposeView extends FrameLayout implements View.OnAttachState
     static final boolean USE_VIEW_AREA_CLICK = true; // Use views to represent click areas
     static final float DEFAULT_FRAME_RATE = 60f;
     static final float POST_TO_NEXT_FRAME_THRESHOLD = 60f;
-    private static final int sMaxBitmapMemory = 20 * 1024 * 1024;
+    private static final int MAX_BITMAP_MEMORY = 20 * 1024 * 1024;
     private String mErrorMessage = "";
 
     Clock mClock;
@@ -190,7 +190,7 @@ public class RemoteComposeView extends FrameLayout implements View.OnAttachState
         mMaxFrameRate = DEFAULT_FRAME_RATE;
         mDocument.initializeContext(mARContext);
         mDisable = false;
-        if (mDocument.getDocument().bitmapMemory() > sMaxBitmapMemory) {
+        if (mDocument.getDocument().bitmapMemory() > MAX_BITMAP_MEMORY) {
             mDisable = true;
             mErrorMessage =
                     "Bitmap memory "
