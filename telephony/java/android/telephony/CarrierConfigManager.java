@@ -11565,7 +11565,8 @@ public class CarrierConfigManager {
                 KEY_TELEPHONY_NETWORK_CAPABILITY_PRIORITIES_STRING_ARRAY, new String[] {
                         "eims:90", "supl:80", "mms:70", "xcap:70", "cbs:50", "mcx:50", "fota:50",
                         "ims:40", "rcs:40", "dun:30", "enterprise:20", "internet:20",
-                        "prioritize_bandwidth:20", "prioritize_latency:20"
+                        "prioritize_bandwidth:20", "prioritize_latency:20",
+                        "prioritize_unified_communications:20"
                 });
         sDefaults.putStringArray(
                 KEY_TELEPHONY_DATA_SETUP_RETRY_RULES_STRING_ARRAY, new String[] {
@@ -11579,7 +11580,8 @@ public class CarrierConfigManager {
                                 + "-3|65543|65547|2252|2253|2254, retry_interval=2500",
                         "capabilities=mms|supl|cbs|rcs, retry_interval=2000",
                         "capabilities=internet|enterprise|dun|ims|fota|xcap|mcx|"
-                                + "prioritize_bandwidth|prioritize_latency, retry_interval="
+                                + "prioritize_bandwidth|prioritize_latency|"
+                                + "prioritize_unified_communications, retry_interval="
                                 + "2500|3000|5000|10000|15000|20000|40000|60000|120000|240000|"
                                 + "600000|1200000|1800000, maximum_retries=20"
                 });
