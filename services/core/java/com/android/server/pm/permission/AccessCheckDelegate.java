@@ -308,20 +308,27 @@ public interface AccessCheckDelegate extends CheckPermissionDelegate, CheckOpsDe
                 @NonNull String persistentDeviceId, @UserIdInt int userId,
                 @NonNull QuadFunction<String, String, String, Integer, Integer> superImpl) {
             boolean useShellDelegate;
+            boolean hasOverridePermissionStates;
 
             synchronized (mLock) {
                 useShellDelegate = !SHELL_PKG.equals(packageName)
                         && TextUtils.equals(mDelegatePackage, packageName)
                         && isDelegatePermission(permissionName);
+                hasOverridePermissionStates = mOverridePermissionStates != null;
+            }
 
-                if (!useShellDelegate && mOverridePermissionStates != null) {
-                    int uid = LocalServices.getService(PackageManagerInternal.class)
-                                    .getPackageUid(packageName, 0, userId);
-                    if (uid >= 0) {
-                        Map<String, Integer> permissionGrants = mOverridePermissionStates.get(uid);
-                        if (permissionGrants != null
-                                && permissionGrants.containsKey(permissionName)) {
-                            return permissionGrants.get(permissionName);
+            if (!useShellDelegate && hasOverridePermissionStates) {
+                int uid = LocalServices.getService(PackageManagerInternal.class)
+                        .getPackageUid(packageName, 0, userId);
+                if (uid >= 0) {
+                    synchronized (mLock) {
+                        if (mOverridePermissionStates != null) {
+                            Map<String, Integer> permissionGrants =
+                                    mOverridePermissionStates.get(uid);
+                            if (permissionGrants != null
+                                    && permissionGrants.containsKey(permissionName)) {
+                                return permissionGrants.get(permissionName);
+                            }
                         }
                     }
                 }
