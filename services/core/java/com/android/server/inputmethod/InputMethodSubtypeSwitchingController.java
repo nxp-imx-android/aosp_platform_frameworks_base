@@ -237,7 +237,7 @@ final class InputMethodSubtypeSwitchingController {
             if (empty1 || empty2) {
                 return (empty1 ? 1 : 0) - (empty2 ? 1 : 0);
             }
-            return cs1.toString().compareTo(cs2.toString());
+            return CharSequence.compare(cs1, cs2);
         }
     }
 
@@ -299,14 +299,14 @@ final class InputMethodSubtypeSwitchingController {
                         false /* isAuxiliary */, true /* suitableForHardware */, null,
                         mSystemLocaleStr));
             } else {
-                final var hashCodes = new ArraySet<String>();
+                final var hashCodes = new ArraySet<Integer>();
                 for (int j = 0; j < subtypes.size(); j++) {
-                    hashCodes.add(String.valueOf(subtypes.get(j).hashCode()));
+                    hashCodes.add(subtypes.get(j).hashCode());
                 }
                 final int subtypeCount = imi.getSubtypeCount();
                 for (int j = 0; j < subtypeCount; j++) {
                     final InputMethodSubtype subtype = imi.getSubtypeAt(j);
-                    final String hashCode = String.valueOf(subtype.hashCode());
+                    final int hashCode = subtype.hashCode();
                     if (!hashCodes.contains(hashCode)) {
                         continue;
                     }
