@@ -52,9 +52,6 @@
       "name": "FunctionalTestsDesktopMode-FocusAppFromTaskbarTest"
     },
     {
-      "name": "FunctionalTestsDesktopMode-MinimizeAppWindowsTest"
-    },
-    {
       "name": "FunctionalTestsDesktopMode-MinimizeAutoPipAppWindowTest"
     },
     {
@@ -164,6 +161,9 @@
     },
     {
       "name": "FunctionalTestsDesktopMode-maximize-MaximizeAppWindowWithDragToTopDragZoneInDesktopFirstTest"
+    },
+    {
+      "name": "FunctionalTestsDesktopMode-minimize-MinimizeAppWindowsTest"
     },
     {
       "name": "FunctionalTestsDesktopMode-resizing-ResizeAppCornerMultiWindowAndPipTest"
