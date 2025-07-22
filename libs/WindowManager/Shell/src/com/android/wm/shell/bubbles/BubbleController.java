@@ -1611,6 +1611,7 @@ public class BubbleController implements ConfigurationChangeListener,
 
         final Bubble b = mBubbleData.getAnyBubbleWithKey(key);
         if (b == null) {
+            Log.w(TAG, "launcher attempting to expand a non-existent bubble: " + key);
             return;
         }
         final boolean wasExpanded = (mLayerView != null && mLayerView.isExpanded());
