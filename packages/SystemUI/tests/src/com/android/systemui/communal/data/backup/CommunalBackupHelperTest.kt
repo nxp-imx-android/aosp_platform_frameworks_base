@@ -33,7 +33,12 @@ import com.android.systemui.communal.data.db.CommunalDatabase
 import com.android.systemui.communal.data.db.CommunalWidgetDao
 import com.android.systemui.communal.proto.toCommunalHubState
 import com.android.systemui.communal.shared.model.SpanValue
+import com.android.systemui.kosmos.runCurrent
+import com.android.systemui.kosmos.runTest
+import com.android.systemui.kosmos.testDispatcher
+import com.android.systemui.kosmos.testScope
 import com.android.systemui.lifecycle.InstantTaskExecutorRule
+import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
 import java.io.File
 import java.io.FileInputStream
@@ -46,7 +51,9 @@ import org.junit.runner.RunWith
 @SmallTest
 @RunWith(AndroidJUnit4::class)
 class CommunalBackupHelperTest : SysuiTestCase() {
-    @JvmField @Rule val instantTaskExecutor = InstantTaskExecutorRule()
+    @JvmField
+    @Rule
+    val instantTaskExecutor = InstantTaskExecutorRule()
 
     private lateinit var database: CommunalDatabase
     private lateinit var dao: CommunalWidgetDao
@@ -56,6 +63,10 @@ class CommunalBackupHelperTest : SysuiTestCase() {
     private lateinit var backupDataFile: File
 
     private lateinit var underTest: CommunalBackupHelper
+
+    private val kosmos = testKosmos()
+    private val testDispatcher = kosmos.testDispatcher
+    private val testScope = kosmos.testScope
 
     @Before
     fun setup() {
@@ -67,20 +78,36 @@ class CommunalBackupHelperTest : SysuiTestCase() {
         CommunalDatabase.setInstance(database)
 
         dao = database.communalWidgetDao()
-        backupUtils = CommunalBackupUtils(context)
+        backupUtils = CommunalBackupUtils(context, testDispatcher)
 
         backupDataFile = File(context.cacheDir, "backup_data_file")
         onTeardown { backupDataFile.delete() }
 
-        underTest = CommunalBackupHelper(UserHandle.SYSTEM, backupUtils)
+        underTest = CommunalBackupHelper(UserHandle.SYSTEM, backupUtils, testScope)
     }
 
     @Test
     @EnableFlags(Flags.FLAG_COMMUNAL_HUB)
-    fun backupAndRestoreCommunalHub() {
+    @DisableFlags(Flags.FLAG_DO_NOT_USE_RUN_BLOCKING)
+    fun backupAndRestoreCommunalHub_withRunBlocking() {
         val expectedWidgets = setUpDatabase()
-
         underTest.performBackup(oldState = null, data = getBackupDataOutput(), newState = null)
+        restoreAndAssertBackedUpState(expectedWidgets)
+    }
+
+    @Test
+    @EnableFlags(
+        Flags.FLAG_COMMUNAL_HUB,
+        Flags.FLAG_DO_NOT_USE_RUN_BLOCKING
+    )
+    fun backupAndRestoreCommunalHub_withoutRunBlocking() = kosmos.runTest {
+        val expectedWidgets = setUpDatabase()
+        underTest.performBackup(oldState = null, data = getBackupDataOutput(), newState = null)
+        runCurrent()
+        restoreAndAssertBackedUpState(expectedWidgets)
+    }
+
+    private fun restoreAndAssertBackedUpState(expectedWidgets: List<FakeWidgetMetadata>) {
         underTest.restoreEntity(getBackupDataInputStream())
 
         // Verify restored state matches backed-up state
@@ -107,7 +134,7 @@ class CommunalBackupHelperTest : SysuiTestCase() {
     fun backup_skippedForNonSystemUser() {
         setUpDatabase()
 
-        val helper = CommunalBackupHelper(UserHandle.CURRENT, backupUtils)
+        val helper = CommunalBackupHelper(UserHandle.CURRENT, backupUtils, testScope)
         helper.performBackup(oldState = null, data = getBackupDataOutput(), newState = null)
 
         // Verify nothing written to the backup

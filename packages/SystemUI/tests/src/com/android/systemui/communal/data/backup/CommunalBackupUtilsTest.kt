@@ -16,9 +16,12 @@
 
 package com.android.systemui.communal.data.backup
 
+import android.platform.test.annotations.DisableFlags
+import android.platform.test.annotations.EnableFlags
 import androidx.room.Room
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
+import com.android.systemui.Flags
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.communal.data.db.CommunalDatabase
 import com.android.systemui.communal.data.db.CommunalWidgetDao
@@ -26,7 +29,11 @@ import com.android.systemui.communal.nano.CommunalHubState
 import com.android.systemui.communal.shared.model.SpanValue
 import com.android.systemui.communal.shared.model.toFixed
 import com.android.systemui.communal.shared.model.toResponsive
+import com.android.systemui.kosmos.runTest
+import com.android.systemui.kosmos.testDispatcher
+import com.android.systemui.kosmos.useUnconfinedTestDispatcher
 import com.android.systemui.lifecycle.InstantTaskExecutorRule
+import com.android.systemui.testKosmos
 import com.google.common.truth.Correspondence
 import com.google.common.truth.Truth.assertThat
 import java.io.FileNotFoundException
@@ -47,6 +54,9 @@ class CommunalBackupUtilsTest : SysuiTestCase() {
     private lateinit var dao: CommunalWidgetDao
     private lateinit var underTest: CommunalBackupUtils
 
+    private val kosmos = testKosmos().useUnconfinedTestDispatcher()
+    private val testDispatcher = kosmos.testDispatcher
+
     @Before
     fun setup() {
         database =
@@ -56,7 +66,7 @@ class CommunalBackupUtilsTest : SysuiTestCase() {
         CommunalDatabase.setInstance(database)
 
         dao = database.communalWidgetDao()
-        underTest = CommunalBackupUtils(context)
+        underTest = CommunalBackupUtils(context, testDispatcher)
     }
 
     @After
@@ -66,7 +76,36 @@ class CommunalBackupUtilsTest : SysuiTestCase() {
     }
 
     @Test
-    fun getCommunalHubState_returnsExpectedWidgets() {
+    @DisableFlags(Flags.FLAG_DO_NOT_USE_RUN_BLOCKING)
+    fun getCommunalHubState_returnsExpectedWidgets_withRunBlocking() {
+        val expectedWidgets = addWidgetsToDatabase()
+
+        // Get communal hub state
+        val state = underTest.getCommunalHubStateBlocking()
+        val actualWidgets = state.widgets.toList()
+
+        // Verify the state contains widgets as expected
+        assertThat(actualWidgets)
+            .comparingElementsUsing(represents)
+            .containsExactlyElementsIn(expectedWidgets)
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_DO_NOT_USE_RUN_BLOCKING)
+    fun getCommunalHubState_returnsExpectedWidgets_withoutRunBlocking() = kosmos.runTest {
+        val expectedWidgets = addWidgetsToDatabase()
+
+        // Get communal hub state
+        val state = underTest.getCommunalHubState()
+        val actualWidgets = state.widgets.toList()
+
+        // Verify the state contains widgets as expected
+        assertThat(actualWidgets)
+            .comparingElementsUsing(represents)
+            .containsExactlyElementsIn(expectedWidgets)
+    }
+
+    private fun addWidgetsToDatabase(): List<FakeWidgetMetadata> {
         // Set up database
         val expectedWidgets =
             listOf(
@@ -96,14 +135,7 @@ class CommunalBackupUtilsTest : SysuiTestCase() {
             dao.addWidget(it.widgetId, it.componentName, it.rank, it.userSerialNumber, it.spanY)
         }
 
-        // Get communal hub state
-        val state = underTest.getCommunalHubState()
-        val actualWidgets = state.widgets.toList()
-
-        // Verify the state contains widgets as expected
-        assertThat(actualWidgets)
-            .comparingElementsUsing(represents)
-            .containsExactlyElementsIn(expectedWidgets)
+        return expectedWidgets
     }
 
     @Test
