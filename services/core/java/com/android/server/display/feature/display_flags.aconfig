@@ -462,3 +462,10 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "enable_logging_for_display_events"
+    namespace: "display_manager"
+    description: "Enable logging statistics for display event occurrences."
+    bug: "433479938"
+}
