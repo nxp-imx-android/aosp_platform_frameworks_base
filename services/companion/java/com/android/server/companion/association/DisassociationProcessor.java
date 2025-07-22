@@ -113,7 +113,17 @@ public class DisassociationProcessor {
     public void disassociate(int id, String reason) {
         Slog.i(TAG, "Disassociating id=[" + id + "]...");
 
-        final AssociationInfo association = mAssociationStore.getAssociationWithCallerChecks(id);
+        final AssociationInfo association;
+        try {
+            // Attempt to get the association.
+            association = mAssociationStore.getAssociationWithCallerChecks(id);
+        } catch (IllegalArgumentException e) {
+            // The association does not exist. This is NOT an error for disassociation.
+            // It means our job is already done. Log it and return successfully.
+            Slog.w(TAG, "Association id=" + id + " is already disassociated.");
+            return;
+        }
+
         final int userId = association.getUserId();
         final String packageName = association.getPackageName();
         final String deviceProfile = association.getDeviceProfile();
