@@ -27,6 +27,7 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.runBlocking
 import org.mockito.kotlin.mock
 
 /** Creates a mock display. */
@@ -56,6 +57,14 @@ class FakeDisplayRepository @Inject constructor() : DisplayRepository {
     private val displayRemovalEventFlow = MutableSharedFlow<Int>(replay = 0)
     private val displayIdsWithSystemDecorationsFlow = MutableStateFlow<Set<Int>>(emptySet())
 
+    init {
+        runBlocking { addDisplay(Display.DEFAULT_DISPLAY) }
+    }
+
+    fun addDisplayBlocking(displayId: Int) {
+        runBlocking { addDisplay(displayId) }
+    }
+
     suspend fun addDisplay(displayId: Int, type: Int = Display.TYPE_EXTERNAL) {
         addDisplay(display(type, id = displayId))
     }
@@ -77,6 +86,10 @@ class FakeDisplayRepository @Inject constructor() : DisplayRepository {
         displayIdFlow.value += display.displayId
         displayAdditionEventFlow.emit(display)
         displayIdsWithSystemDecorationsFlow.value += display.displayId
+    }
+
+    fun removeDisplayBlocking(displayId: Int) {
+        runBlocking { removeDisplay(displayId) }
     }
 
     suspend fun removeDisplay(displayId: Int) {

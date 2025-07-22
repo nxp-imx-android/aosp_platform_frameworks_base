@@ -26,7 +26,6 @@ import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.animation.DialogTransitionAnimator
 import com.android.systemui.broadcast.BroadcastDispatcher
-import com.android.systemui.common.domain.interactor.SysUIStateDisplaysInteractor
 import com.android.systemui.flags.FeatureFlagsClassic
 import com.android.systemui.mediaprojection.MediaProjectionMetricsLogger
 import com.android.systemui.mediaprojection.SessionCreationSource
@@ -71,7 +70,6 @@ class RecordIssueDialogDelegateTest : SysuiTestCase() {
     private lateinit var screenCaptureDisabledDialogDelegate: ScreenCaptureDisabledDialogDelegate
     @Mock private lateinit var screenCaptureDisabledDialog: SystemUIDialog
 
-    @Mock private lateinit var sysUIStateDisplaysInteractor: SysUIStateDisplaysInteractor
     @Mock private lateinit var systemUIDialogManager: SystemUIDialogManager
     @Mock private lateinit var broadcastDispatcher: BroadcastDispatcher
     private val systemClock = FakeSystemClock()
@@ -96,7 +94,6 @@ class RecordIssueDialogDelegateTest : SysuiTestCase() {
                 SystemUIDialog.Factory(
                     context,
                     systemUIDialogManager,
-                    sysUIStateDisplaysInteractor,
                     broadcastDispatcher,
                     mDialogTransitionAnimator,
                 )

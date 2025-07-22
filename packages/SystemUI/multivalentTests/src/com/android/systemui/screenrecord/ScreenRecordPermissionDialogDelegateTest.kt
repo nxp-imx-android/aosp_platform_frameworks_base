@@ -34,7 +34,6 @@ import com.android.systemui.Dependency
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.animation.DialogTransitionAnimator
 import com.android.systemui.broadcast.BroadcastDispatcher
-import com.android.systemui.common.domain.interactor.SysUIStateDisplaysInteractor
 import com.android.systemui.display.data.repository.FakeDisplayWindowPropertiesRepository
 import com.android.systemui.mediaprojection.MediaProjectionMetricsLogger
 import com.android.systemui.mediaprojection.appselector.MediaProjectionAppSelectorActivity
@@ -88,7 +87,6 @@ class ScreenRecordPermissionDialogDelegateTest : SysuiTestCase() {
             SystemUIDialog.Factory(
                 context,
                 Dependency.get(SystemUIDialogManager::class.java),
-                Dependency.get(SysUIStateDisplaysInteractor::class.java),
                 Dependency.get(BroadcastDispatcher::class.java),
                 Dependency.get(DialogTransitionAnimator::class.java),
             )
