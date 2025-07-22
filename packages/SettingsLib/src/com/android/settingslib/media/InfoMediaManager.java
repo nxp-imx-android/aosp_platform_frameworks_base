@@ -74,6 +74,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 
+import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.settingslib.R;
 import com.android.settingslib.bluetooth.CachedBluetoothDevice;
@@ -211,11 +212,13 @@ public abstract class InfoMediaManager {
     private static final String TAG = "InfoMediaManager";
     private static final boolean DEBUG = Log.isLoggable(TAG, Log.DEBUG);
     protected final Object mLock = new Object();
-    protected final List<MediaDevice> mMediaDevices = new CopyOnWriteArrayList<>();
+    @GuardedBy("mLock")
+    protected final List<MediaDevice> mMediaDevices = new ArrayList<>();
     @NonNull protected final Context mContext;
     @NonNull protected final String mPackageName;
     @NonNull protected final UserHandle mUserHandle;
     private final Collection<MediaDeviceCallback> mCallbacks = new CopyOnWriteArrayList<>();
+    @GuardedBy("mLock")
     private MediaDevice mCurrentConnectedDevice;
     private MediaController mMediaController;
     private PlaybackInfo mLastKnownPlaybackInfo;
@@ -378,7 +381,8 @@ public abstract class InfoMediaManager {
     }
 
     protected final void notifyCurrentConnectedDeviceChanged() {
-        final String id = mCurrentConnectedDevice != null ? mCurrentConnectedDevice.getId() : null;
+        MediaDevice device = getCurrentConnectedDevice();
+        final String id = device != null ? device.getId() : null;
         dispatchConnectedDeviceChanged(id);
     }
 
@@ -388,14 +392,20 @@ public abstract class InfoMediaManager {
         Api34Impl.onRouteListingPreferenceUpdated(routeListingPreference, mPreferenceItemMap);
     }
 
+    @VisibleForTesting
+    @Nullable
     protected final MediaDevice findMediaDevice(@NonNull String id) {
-        for (MediaDevice mediaDevice : mMediaDevices) {
-            if (mediaDevice.getId().equals(id)) {
-                return mediaDevice;
-            }
+        return getMediaDevices().stream()
+                .filter(device -> device.getId().equals(id))
+                .findFirst()
+                .orElse(null);
+    }
+
+    @NonNull
+    private List<MediaDevice> getMediaDevices() {
+        synchronized (mLock) {
+            return new ArrayList<>(mMediaDevices);
         }
-        Log.e(TAG, "findMediaDevice() can't find device with id: " + id);
-        return null;
     }
 
     /**
@@ -412,7 +422,9 @@ public abstract class InfoMediaManager {
         if (!mCallbacks.contains(callback)) {
             mCallbacks.add(callback);
             if (wasEmpty) {
-                mMediaDevices.clear();
+                synchronized (mLock) {
+                    mMediaDevices.clear();
+                }
                 registerRouter();
                 if (mMediaController != null) {
                     mMediaController.registerCallback(mMediaControllerCallback);
@@ -472,7 +484,9 @@ public abstract class InfoMediaManager {
      * @return MediaDevice
      */
     MediaDevice getCurrentConnectedDevice() {
-        return mCurrentConnectedDevice;
+        synchronized (mLock) {
+            return mCurrentConnectedDevice;
+        }
     }
 
     /* package */ void connectToDevice(MediaDevice device, RoutingChangeInfo routingChangeInfo) {
@@ -689,7 +703,7 @@ public abstract class InfoMediaManager {
             dispatchOnSuggestedDeviceUpdated();
         }
         if (updateMediaDevicesSuggestionState()) {
-            dispatchDeviceListAdded(mMediaDevices);
+            dispatchDeviceListAdded(getMediaDevices());
         }
     }
 
@@ -736,13 +750,15 @@ public abstract class InfoMediaManager {
 
     private boolean isSuggestedDeviceSelected(
             @NonNull SuggestedDeviceState newSuggestedDeviceState) {
-        return mMediaDevices.stream().anyMatch(device ->
-                device.isSelected()
-                && Objects.equals(
-                        device.getId(),
-                        newSuggestedDeviceState
-                                .getSuggestedDeviceInfo()
-                                .getRouteId()));
+        synchronized (mLock) {
+            return mMediaDevices.stream().anyMatch(device ->
+                    device.isSelected()
+                            && Objects.equals(
+                            device.getId(),
+                            newSuggestedDeviceState
+                                    .getSuggestedDeviceInfo()
+                                    .getRouteId()));
+        }
     }
 
     final void onConnectionAttemptedForSuggestion(@NonNull SuggestedDeviceState suggestion) {
@@ -847,7 +863,7 @@ public abstract class InfoMediaManager {
 
     protected final void refreshDevices() {
         rebuildDeviceList();
-        dispatchDeviceListAdded(mMediaDevices);
+        dispatchDeviceListAdded(getMediaDevices());
     }
 
     // MediaRoute2Info.getType was made public on API 34, but exists since API 30.
@@ -858,7 +874,7 @@ public abstract class InfoMediaManager {
             RoutingSessionInfo activeSession = getActiveRoutingSession();
 
             for (MediaRoute2Info route : getAvailableRoutes(activeSession)) {
-                addMediaDevice(route, activeSession);
+                addMediaDeviceLocked(route, activeSession);
             }
 
             // In practice, mMediaDevices should always have at least one route.
@@ -905,11 +921,13 @@ public abstract class InfoMediaManager {
 
     // MediaRoute2Info.getType was made public on API 34, but exists since API 30.
     @SuppressWarnings("NewApi")
+    @GuardedBy("mLock")
     @VisibleForTesting
-    void addMediaDevice(@NonNull MediaRoute2Info route, @NonNull RoutingSessionInfo activeSession) {
+    void addMediaDeviceLocked(@NonNull MediaRoute2Info route,
+            @NonNull RoutingSessionInfo activeSession) {
         DynamicRouteAttributes dynamicRouteAttributes =
                 getDynamicRouteAttributes(activeSession, route);
-        MediaDevice mediaDevice = createMediaDeviceFromRoute(route, dynamicRouteAttributes);
+        MediaDevice mediaDevice = createMediaDeviceFromRouteLocked(route, dynamicRouteAttributes);
         if (mediaDevice != null) {
             if (mediaDevice.isSelected()) {
                 mediaDevice.setState(STATE_SELECTED);
@@ -918,8 +936,9 @@ public abstract class InfoMediaManager {
         }
     }
 
+    @GuardedBy("mLock")
     @Nullable
-    private MediaDevice createMediaDeviceFromRoute(@NonNull MediaRoute2Info route,
+    private MediaDevice createMediaDeviceFromRouteLocked(@NonNull MediaRoute2Info route,
             @NonNull DynamicRouteAttributes dynamicRouteAttributes) {
         final int deviceType = route.getType();
         MediaDevice mediaDevice = null;
