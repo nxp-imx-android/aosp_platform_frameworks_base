@@ -16,6 +16,7 @@
 
 package com.android.systemui.display.dagger
 
+import com.android.systemui.SysUICutoutProvider
 import com.android.systemui.common.ui.ConfigurationState
 import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent.PerDisplaySingleton
 import com.android.systemui.display.data.repository.DisplayStateRepository
@@ -66,6 +67,8 @@ interface SystemUIDisplaySubcomponent {
     @get:DisplayAware val systemBarUtilsState: SystemBarUtilsState
 
     @get:DisplayAware val configurationState: ConfigurationState
+
+    @get:DisplayAware val sysUICutoutProvider: SysUICutoutProvider
 
     @Subcomponent.Factory
     interface Factory {

@@ -19,6 +19,10 @@ package com.android.systemui.display.dagger
 import android.content.Context
 import android.view.Display
 import com.android.app.displaylib.DisplayRepository
+import com.android.systemui.CameraProtectionLoader
+import com.android.systemui.CameraProtectionLoaderImpl
+import com.android.systemui.SysUICutoutProvider
+import com.android.systemui.SysUICutoutProviderImpl
 import com.android.systemui.coroutines.newTracingContext
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.dagger.qualifiers.Background
@@ -69,7 +73,19 @@ interface PerDisplayCommonModule {
     @DisplayAware
     fun sysUiDarkIconDispatcher(impl: DarkIconDispatcherImpl): SysuiDarkIconDispatcher
 
+    @Binds @DisplayAware fun sysUICutoutProvider(impl: SysUICutoutProviderImpl): SysUICutoutProvider
+
     companion object {
+
+        @Provides
+        @PerDisplaySingleton
+        @DisplayAware
+        fun cameraProtectionLoader(
+            factory: CameraProtectionLoaderImpl.Factory,
+            @DisplayAware context: Context,
+        ): CameraProtectionLoader {
+            return factory.create(context)
+        }
 
         @Provides
         @PerDisplaySingleton
