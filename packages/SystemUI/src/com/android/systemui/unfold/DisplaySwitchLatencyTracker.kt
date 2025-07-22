@@ -29,6 +29,7 @@ import com.android.systemui.display.data.repository.DeviceStateRepository.Device
 import com.android.systemui.keyguard.domain.interactor.KeyguardInteractor
 import com.android.systemui.power.domain.interactor.PowerInteractor
 import com.android.systemui.shared.system.SysUiStatsLog
+import com.android.systemui.statusbar.notification.domain.interactor.ActiveNotificationsInteractor
 import com.android.systemui.unfold.DisplaySwitchLatencyTracker.DisplaySwitchLatencyEvent
 import com.android.systemui.unfold.DisplaySwitchLatencyTracker.TrackingResult.CORRUPTED
 import com.android.systemui.unfold.DisplaySwitchLatencyTracker.TrackingResult.SUCCESS
@@ -61,6 +62,7 @@ constructor(
     private val powerInteractor: PowerInteractor,
     private val screenTimeoutPolicyRepository: ScreenTimeoutPolicyRepository,
     private val keyguardInteractor: KeyguardInteractor,
+    private val activeNotificationsInteractor: ActiveNotificationsInteractor,
     @UnfoldTracking private val scope: CoroutineScope,
     private val displaySwitchLatencyLogger: DisplaySwitchLatencyLogger,
     private val systemClock: SystemClock,
@@ -277,7 +279,11 @@ constructor(
             } else {
                 HAS_SCREEN_WAKELOCKS
             }
-        return copy(screenWakelockStatus = screenWakelockStatus, fromState = getFromState())
+        return copy(
+            screenWakelockStatus = screenWakelockStatus,
+            fromState = getFromState(),
+            notificationCount = activeNotificationsInteractor.allNotificationsCountValue,
+        )
     }
 
     /**
