@@ -19,6 +19,8 @@ package com.android.systemui.media.controls.domain.pipeline
 import android.content.Context
 import android.graphics.drawable.Drawable
 import android.media.MediaRouter2Manager
+import android.media.RoutingChangeInfo
+import android.media.RoutingChangeInfo.ENTRY_POINT_SYSTEM_MEDIA_CONTROLS
 import android.media.RoutingSessionInfo
 import android.media.session.MediaController
 import android.media.session.MediaController.PlaybackInfo
@@ -350,7 +352,15 @@ constructor(
                                 name = it.suggestedDeviceInfo.getDeviceDisplayName(),
                                 icon = it.getIcon(context),
                                 connectionState = it.connectionState,
-                                connect = { localMediaManager.connectSuggestedDevice(it) },
+                                connect = {
+                                    localMediaManager.connectSuggestedDevice(
+                                        it,
+                                        RoutingChangeInfo(
+                                            ENTRY_POINT_SYSTEM_MEDIA_CONTROLS,
+                                            /* isSuggested= */ true,
+                                        ),
+                                    )
+                                },
                             )
                         },
                     onSuggestionSpaceVisible = requestSuggestionRunnable,

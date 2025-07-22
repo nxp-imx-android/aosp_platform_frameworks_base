@@ -25,6 +25,7 @@ import android.media.MediaRouter2.RoutingController;
 import android.media.MediaRouter2Manager;
 import android.media.RouteDiscoveryPreference;
 import android.media.RouteListingPreference;
+import android.media.RoutingChangeInfo;
 import android.media.RoutingSessionInfo;
 import android.media.SuggestedDeviceInfo;
 import android.media.session.MediaController;
@@ -202,8 +203,9 @@ public final class RouterInfoMediaManager extends InfoMediaManager {
     }
 
     @Override
-    protected void transferToRoute(@NonNull MediaRoute2Info route) {
-        mRouter.transferTo(route);
+    protected void transferToRoute(
+            @NonNull MediaRoute2Info route, @NonNull RoutingChangeInfo routingChangeInfo) {
+        mRouter.transferTo(route, routingChangeInfo);
     }
 
     @Override

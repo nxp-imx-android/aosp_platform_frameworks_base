@@ -18,6 +18,7 @@ package com.android.systemui.media.dialog;
 
 import static android.media.RouteListingPreference.ACTION_TRANSFER_MEDIA;
 import static android.media.RouteListingPreference.EXTRA_ROUTE_ID;
+import static android.media.RoutingChangeInfo.ENTRY_POINT_SYSTEM_OUTPUT_SWITCHER;
 import static android.provider.Settings.ACTION_BLUETOOTH_SETTINGS;
 
 import static com.android.media.flags.Flags.allowOutputSwitcherListRearrangementWithinTimeout;
@@ -38,6 +39,7 @@ import android.media.INearbyMediaDevicesUpdateCallback;
 import android.media.MediaMetadata;
 import android.media.MediaRoute2Info;
 import android.media.NearbyDevice;
+import android.media.RoutingChangeInfo;
 import android.media.RoutingSessionInfo;
 import android.media.session.MediaController;
 import android.media.session.MediaSession;
@@ -686,9 +688,14 @@ public class MediaSwitchingController
 
         mMetricLogger.updateOutputEndPoints(getCurrentConnectedMediaDevice(), device);
 
-        ThreadUtils.postOnBackgroundThread(() -> {
-            mLocalMediaManager.connectDevice(device);
-        });
+        ThreadUtils.postOnBackgroundThread(
+                () -> {
+                    mLocalMediaManager.connectDevice(
+                            device,
+                            new RoutingChangeInfo(
+                                    ENTRY_POINT_SYSTEM_OUTPUT_SWITCHER,
+                                    device.isSuggestedDevice()));
+                });
     }
 
     private List<MediaItem> getOutputDeviceList(boolean addConnectDeviceButton) {
