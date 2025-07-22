@@ -399,41 +399,49 @@ public final class BroadcastHelper {
             // Limit sending of the PACKAGE_CHANGED broadcast to only the system, the application
             // itself and applications with the same UID when the component is not exported.
 
+            final ArrayList<String> targetPackages = new ArrayList<>();
             // First, send the PACKAGE_CHANGED broadcast to the system.
             if (!TextUtils.equals(packageName, "android")) {
-                tracePackageChangedBroadcastEvent(true /* applyFlag */, reasonForTrace, packageName,
-                        "android" /* targetPackageName */, "notExported" /* targetComponent */,
-                        notExportedComponentNames.size(), callingPackageNameForTrace);
-                sendPackageChangedBroadcastWithPermissions(packageName, dontKillApp,
-                        notExportedComponentNames, packageUid, reason, userIds, instantUserIds,
-                        broadcastAllowList, "android" /* targetPackageName */,
-                        null /* requiredPermissions */, null /* bOptions */);
+                targetPackages.add("android");
             }
 
             // Second, send the PACKAGE_CHANGED broadcast to the application itself.
-            tracePackageChangedBroadcastEvent(true /* applyFlag */, reasonForTrace, packageName,
-                    packageName /* targetPackageName */, "notExported" /* targetComponent */,
-                    notExportedComponentNames.size(), callingPackageNameForTrace);
-            sendPackageChangedBroadcastWithPermissions(packageName, dontKillApp,
-                    notExportedComponentNames, packageUid, reason, userIds, instantUserIds,
-                    broadcastAllowList, packageName /* targetPackageName */,
-                    null /* requiredPermissions */, null /* bOptions */);
+            targetPackages.add(packageName);
 
             // Third, send the PACKAGE_CHANGED broadcast to the applications with the same UID.
             for (int i = 0; i < sharedUidPackages.length; i++) {
                 final String sharedPackage = sharedUidPackages[i];
-                if (TextUtils.equals(packageName, sharedPackage)) {
-                    continue;
+                if (!TextUtils.equals(packageName, sharedPackage)) {
+                    targetPackages.add(sharedPackage);
                 }
-                tracePackageChangedBroadcastEvent(true /* applyFlag */, reasonForTrace, packageName,
-                        sharedPackage /* targetPackageName */, "notExported" /* targetComponent */,
+            }
+
+            if (android.content.pm.Flags.consolidatePackageChangedBroadcasts()) {
+                final Bundle bOptions = BroadcastOptions.makeBasic()
+                        .setIncludedPackages(targetPackages.toArray(
+                                new String[targetPackages.size()]))
+                        .toBundle();
+                tracePackageChangedBroadcastEvent(true /* applyFlag */, reasonForTrace,
+                        packageName, "<explicit-pkg-list>" /* targetPackageName */,
+                        "notExported" /* targetComponent */,
                         notExportedComponentNames.size(), callingPackageNameForTrace);
                 sendPackageChangedBroadcastWithPermissions(packageName, dontKillApp,
                         notExportedComponentNames, packageUid, reason, userIds, instantUserIds,
-                        broadcastAllowList, sharedPackage /* targetPackageName */,
-                        null /* requiredPermissions */, null /* bOptions */);
+                        broadcastAllowList, null /* targetPackageName */,
+                        null /* requiredPermissions */, bOptions);
+            } else {
+                for (int i = 0; i < targetPackages.size(); ++i) {
+                    final String targetPackageName = targetPackages.get(i);
+                    tracePackageChangedBroadcastEvent(true /* applyFlag */, reasonForTrace,
+                            packageName, targetPackageName,
+                            "notExported" /* targetComponent */,
+                            notExportedComponentNames.size(), callingPackageNameForTrace);
+                    sendPackageChangedBroadcastWithPermissions(packageName, dontKillApp,
+                            notExportedComponentNames, packageUid, reason, userIds, instantUserIds,
+                            broadcastAllowList, targetPackageName,
+                            null /* requiredPermissions */, null /* bOptions */);
+                }
             }
-
         }
 
         if (!exportedComponentNames.isEmpty()) {
