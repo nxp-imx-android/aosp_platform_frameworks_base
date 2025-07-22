@@ -248,6 +248,25 @@ fun ShortPill(
                                     maxLines = 1,
                                     modifier = Modifier.padding(horizontal = 8.dp),
                                 )
+                            } else if (
+                                filteredActions.size == 1 &&
+                                    action.actionType == ActionType.MR &&
+                                    action.icon.repeatCount > 0
+                            ) {
+                                Text(
+                                    text = action.label,
+                                    color = outlineColor,
+                                    style = actionTextStyle,
+                                    overflow = TextOverflow.Ellipsis,
+                                    maxLines = 1,
+                                    modifier = Modifier.padding(start = 8.dp).weight(1f),
+                                )
+                                Text(
+                                    text = "+${action.icon.repeatCount}",
+                                    style = MaterialTheme.typography.labelMedium,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    modifier = Modifier.padding(start = 6.dp, end = 3.dp),
+                                )
                             }
                         }
                     }
