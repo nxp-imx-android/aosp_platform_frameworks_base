@@ -47,7 +47,10 @@ import static android.view.WindowManager.DISPLAY_IME_POLICY_HIDE;
 import static android.view.WindowManager.DISPLAY_IME_POLICY_LOCAL;
 import static android.view.inputmethod.ConnectionlessHandwritingCallback.CONNECTIONLESS_HANDWRITING_ERROR_OTHER;
 import static android.view.inputmethod.ConnectionlessHandwritingCallback.CONNECTIONLESS_HANDWRITING_ERROR_UNSUPPORTED;
+import static android.view.inputmethod.ImeTracker.DEBUG_IME_VISIBILITY;
 
+import static com.android.server.EventLogTags.IMF_HIDE_IME;
+import static com.android.server.EventLogTags.IMF_SHOW_IME;
 import static com.android.server.inputmethod.ImeProtoLogGroup.IMMS_DEBUG;
 import static com.android.server.inputmethod.ImeVisibilityStateComputer.ImeTargetWindowState;
 import static com.android.server.inputmethod.ImeVisibilityStateComputer.ImeVisibilityResult;
@@ -193,6 +196,7 @@ import com.android.server.inputmethod.InputMethodSubtypeSwitchingController.ImeS
 import com.android.server.pm.UserManagerInternal;
 import com.android.server.statusbar.StatusBarManagerInternal;
 import com.android.server.utils.PriorityDump;
+import com.android.server.wm.ImeTargetVisibilityPolicy;
 import com.android.server.wm.WindowManagerInternal;
 
 import java.io.FileDescriptor;
@@ -435,11 +439,8 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
     @MultiUserUnawareField
     private final InputMethodMenuController mMenuController;
     private final InputMethodMenuControllerNew mMenuControllerNew;
-
-    @GuardedBy("ImfLock.class")
-    @SharedByAllUsersField
     @NonNull
-    private final DefaultImeVisibilityApplier mVisibilityApplier;
+    private final ImeTargetVisibilityPolicy mImeTargetVisibilityPolicy;
 
     /**
      * Cache the result of {@code LocalServices.getService(AudioManagerInternal.class)}.
@@ -1246,6 +1247,7 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
             mImePlatformCompatUtils = new ImePlatformCompatUtils();
             mInputMethodDeviceConfigs = new InputMethodDeviceConfigs();
             mUserManagerInternal = LocalServices.getService(UserManagerInternal.class);
+            mImeTargetVisibilityPolicy = LocalServices.getService(ImeTargetVisibilityPolicy.class);
 
             mSlotIme = mContext.getString(com.android.internal.R.string.status_bar_ime);
 
@@ -1265,7 +1267,6 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
             mMenuController = new InputMethodMenuController(this);
             mMenuControllerNew = Flags.imeSwitcherRevamp()
                     ? new InputMethodMenuControllerNew() : null;
-            mVisibilityApplier = new DefaultImeVisibilityApplier(this);
 
             mClientController = new ClientController(mPackageManagerInternal);
             mClientController.addClientControllerCallback(c -> onClientRemoved(c));
@@ -3382,7 +3383,7 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
             userData.mCurStatsToken = null;
 
             maybeReportToolType(userId);
-            mVisibilityApplier.performShowIme(windowToken, statsToken, reason, userId);
+            performShowIme(windowToken, statsToken, reason, userData);
             visibilityStateComputer.setInputShown(true);
             return true;
         } else {
@@ -3390,6 +3391,40 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
             userData.mCurStatsToken = statsToken;
         }
         return false;
+    }
+
+    /**
+     * Performs showing IME on top of the given window.
+     *
+     * @param showInputToken a token that represents the requester to show IME
+     * @param statsToken     the token tracking the current IME request
+     * @param reason         the reason for requesting to show IME
+     * @param userData       the data of the target user when performing show IME
+     */
+    @GuardedBy("ImfLock.class")
+    void performShowIme(IBinder showInputToken, @NonNull ImeTracker.Token statsToken,
+            @SoftInputShowHideReason int reason, UserData userData) {
+        final var bindingController = userData.mBindingController;
+        final IInputMethodInvoker curMethod = bindingController.getCurMethod();
+        if (curMethod != null) {
+            ProtoLog.v(IMMS_DEBUG,
+                    "Calling %s.showSoftInput(%s) for reason: %s", curMethod,
+                    showInputToken, InputMethodDebug.softInputDisplayReasonToString(reason));
+            // TODO(b/192412909): Check if we can always call onShowHideSoftInputRequested() or not.
+            if (curMethod.showSoftInput(statsToken)) {
+                if (DEBUG_IME_VISIBILITY) {
+                    EventLog.writeEvent(IMF_SHOW_IME,
+                            statsToken.getTag(),
+                            Objects.toString(userData.mImeBindingState.mFocusedWindow),
+                            InputMethodDebug.softInputDisplayReasonToString(reason),
+                            InputMethodDebug.softInputModeToString(
+                                    userData.mImeBindingState.mFocusedWindowSoftInputMode));
+                }
+                // TODO(b/419459695): Check if we still need to pass the input token
+                onShowHideSoftInputRequested(true /* show */, showInputToken, reason,
+                        statsToken, userData.mUserId);
+            }
+        }
     }
 
     @GuardedBy("ImfLock.class")
@@ -3463,7 +3498,7 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
             // IMMS#mInputShown and the user's ImeWindowVis should be resolved spontaneously in
             // the final state.
             ImeTracker.forLogging().onProgress(statsToken, ImeTracker.PHASE_SERVER_SHOULD_HIDE);
-            mVisibilityApplier.performHideIme(windowToken, statsToken, reason, userId);
+            performHideIme(windowToken, statsToken, reason, userData);
         } else {
             ImeTracker.forLogging().onCancelled(statsToken, ImeTracker.PHASE_SERVER_SHOULD_HIDE);
         }
@@ -3474,6 +3509,44 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
                 ImeTracker.PHASE_SERVER_WAIT_IME);
         userData.mCurStatsToken = null;
         return shouldHideSoftInput;
+    }
+
+    /**
+     * Performs hiding IME to the given window
+     *
+     * @param hideInputToken a token that represents the requester to hide IME
+     * @param statsToken     the token tracking the current IME request
+     * @param reason         the reason for requesting to hide IME
+     * @param userData       the data of the target user when performing show IME
+     */
+    @GuardedBy("ImfLock.class")
+    void performHideIme(IBinder hideInputToken, @NonNull ImeTracker.Token statsToken,
+            @SoftInputShowHideReason int reason, UserData userData) {
+        final var bindingController = userData.mBindingController;
+        final IInputMethodInvoker curMethod = bindingController.getCurMethod();
+        if (curMethod != null) {
+            // The IME will report its visible state again after the following message finally
+            // delivered to the IME process as an IPC.  Hence the inconsistency between
+            // IMMS#mInputShown and IMMS#mImeWindowVis should be resolved spontaneously in
+            // the final state.
+            ProtoLog.v(IMMS_DEBUG,
+                    "Calling %s.hideSoftInput(%s) for reason: %s", curMethod, hideInputToken,
+                    InputMethodDebug.softInputDisplayReasonToString(reason));
+            // TODO(b/192412909): Check if we can always call onShowHideSoftInputRequested() or not.
+            if (curMethod.hideSoftInput(statsToken)) {
+                if (DEBUG_IME_VISIBILITY) {
+                    EventLog.writeEvent(IMF_HIDE_IME,
+                            statsToken.getTag(),
+                            Objects.toString(userData.mImeBindingState.mFocusedWindow),
+                            InputMethodDebug.softInputDisplayReasonToString(reason),
+                            InputMethodDebug.softInputModeToString(
+                                    userData.mImeBindingState.mFocusedWindowSoftInputMode));
+                }
+                // TODO(b/419459695): Check if we still need to pass the input token
+                onShowHideSoftInputRequested(false /* show */, hideInputToken, reason,
+                        statsToken, userData.mUserId);
+            }
+        }
     }
 
     /**
@@ -4580,12 +4653,6 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
     }
 
     @GuardedBy("ImfLock.class")
-    @VisibleForTesting
-    DefaultImeVisibilityApplier getVisibilityApplierLocked() {
-        return mVisibilityApplier;
-    }
-
-    @GuardedBy("ImfLock.class")
     void setEnabledSessionLocked(SessionState session, @NonNull UserData userData) {
         if (userData.mEnabledSession != session) {
             if (userData.mEnabledSession != null && userData.mEnabledSession.mSession != null) {
@@ -4899,7 +4966,7 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
                 final Boolean showScreenshot = visibilityStateComputer.shouldShowImeScreenshot(
                         userData.mImeBindingState.mFocusedWindow, interactive);
                 if (showScreenshot != null) {
-                    mVisibilityApplier.applyImeScreenshotVisibility(
+                    applyImeScreenshotVisibility(
                             userData.mImeBindingState.mFocusedWindow, showScreenshot, userId);
                 }
                 // Eligible IME processes use new "setInteractive" protocol.
@@ -5386,6 +5453,60 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
                 setInputMethodLocked(nextImi.getId(), i, userId);
                 return;
             }
+        }
+    }
+
+
+    /**
+     * Applies the IME screenshot visibility on the given IME target window.
+     *
+     * @param imeTarget the token of the IME target window.
+     * @param show      whether to show or remove the screenshot.
+     * @param userId    the ID of the user to apply the screenshot visibility for.
+     */
+    @GuardedBy("ImfLock.class")
+    void applyImeScreenshotVisibility(IBinder imeTarget, boolean show, @UserIdInt int userId) {
+        final var userData = getUserData(userId);
+        final var bindingController = userData.mBindingController;
+        final int displayId = bindingController.getDisplayIdToShowIme();
+        if (show) {
+            showImeScreenshot(imeTarget, displayId, userId);
+        } else {
+            removeImeScreenshot(imeTarget, displayId, userId);
+        }
+    }
+
+    /**
+     * Shows the IME screenshot and attaches it to the given IME target window.
+     *
+     * @param imeTarget the token of the IME target window.
+     * @param displayId the ID of the display to show the screenshot on.
+     * @param userId    the ID of the user to show the screenshot for.
+     */
+    @VisibleForTesting
+    @GuardedBy("ImfLock.class")
+    void showImeScreenshot(IBinder imeTarget, int displayId, @UserIdInt int userId) {
+        if (mImeTargetVisibilityPolicy.showImeScreenshot(imeTarget, displayId)) {
+            onShowHideSoftInputRequested(false /* show */, imeTarget,
+                    SoftInputShowHideReason.SHOW_IME_SCREENSHOT_FROM_IMMS, null /* statsToken */,
+                    userId);
+        }
+    }
+
+    /**
+     * Removes the IME screenshot from the given display.
+     *
+     * @param imeTarget the token of the IME target window.
+     * @param displayId the ID of the display to remove the screenshot from.
+     * @param userId    the ID of the user to remove the screenshot for.
+     */
+    @VisibleForTesting
+    @GuardedBy("ImfLock.class")
+    void removeImeScreenshot(IBinder imeTarget, int displayId, @UserIdInt int userId) {
+        if (mImeTargetVisibilityPolicy.removeImeScreenshot(displayId)) {
+            onShowHideSoftInputRequested(false /* show */, imeTarget,
+                    SoftInputShowHideReason.REMOVE_IME_SCREENSHOT_FROM_IMMS, null /* statsToken */,
+                    userId);
         }
     }
 

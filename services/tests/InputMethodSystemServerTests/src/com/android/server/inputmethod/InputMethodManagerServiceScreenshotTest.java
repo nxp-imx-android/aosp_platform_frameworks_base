@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 The Android Open Source Project
+ * Copyright (C) 2025 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,76 +19,60 @@ package com.android.server.inputmethod;
 import static com.android.internal.inputmethod.SoftInputShowHideReason.HIDE_SOFT_INPUT;
 import static com.android.internal.inputmethod.SoftInputShowHideReason.SHOW_SOFT_INPUT;
 
-import static org.mockito.Mockito.eq;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 
 import static java.util.Objects.requireNonNull;
 
-import android.annotation.Nullable;
 import android.os.Binder;
 import android.os.RemoteException;
-import android.platform.test.flag.junit.CheckFlagsRule;
-import android.platform.test.flag.junit.DeviceFlagsValueProvider;
 import android.view.Display;
 import android.view.inputmethod.ImeTracker;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 
-import com.android.internal.annotations.GuardedBy;
-
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-/**
- * Test the behavior of {@link DefaultImeVisibilityApplier} when performing or applying the IME
- * visibility state.
- *
- * <p>Build/Install/Run:
- * atest FrameworksInputMethodSystemServerTests:DefaultImeVisibilityApplierTest
- */
 @RunWith(AndroidJUnit4.class)
-public class DefaultImeVisibilityApplierTest extends InputMethodManagerServiceTestBase {
+public class InputMethodManagerServiceScreenshotTest extends InputMethodManagerServiceTestBase {
 
-    private final DeviceFlagsValueProvider mFlagsValueProvider = new DeviceFlagsValueProvider();
-
-    @Rule
-    public final CheckFlagsRule mCheckFlagsRule = new CheckFlagsRule(mFlagsValueProvider);
-    private DefaultImeVisibilityApplier mVisibilityApplier;
+    UserData mUserData;
 
     @Before
     public void setUp() throws RemoteException {
         super.setUp();
         synchronized (ImfLock.class) {
-            mVisibilityApplier = mInputMethodManagerService.getVisibilityApplierLocked();
-            setAttachedClientLocked(requireNonNull(
-                    mInputMethodManagerService.getClientStateLocked(mMockInputMethodClient)));
+            mUserData = mInputMethodManagerService.getUserData(mUserId);
+            mUserData.mCurClient = requireNonNull(
+                    mInputMethodManagerService.getClientStateLocked(mMockInputMethodClient));
         }
     }
 
     @Test
     public void testPerformShowIme() throws Exception {
         synchronized (ImfLock.class) {
-            mVisibilityApplier.performShowIme(new Binder() /* showInputToken */,
-                    ImeTracker.Token.empty(), SHOW_SOFT_INPUT, mUserId);
+            mInputMethodManagerService.performShowIme(new Binder() /* showInputToken */,
+                    ImeTracker.Token.empty(), SHOW_SOFT_INPUT, mUserData);
         }
-        verifyShowSoftInput(false, true);
+        verifyShowSoftInput(true /* showSoftInput */);
     }
 
     @Test
     public void testPerformHideIme() throws Exception {
         synchronized (ImfLock.class) {
-            mVisibilityApplier.performHideIme(new Binder() /* hideInputToken */,
-                    ImeTracker.Token.empty(), HIDE_SOFT_INPUT, mUserId);
+            mInputMethodManagerService.performHideIme(new Binder() /* hideInputToken */,
+                    ImeTracker.Token.empty(), HIDE_SOFT_INPUT, mUserData);
         }
-        verifyHideSoftInput(false, true);
+        verifyHideSoftInput(true /* hideSoftInput */);
     }
 
     @Test
     public void testShowImeScreenshot() {
         synchronized (ImfLock.class) {
-            mVisibilityApplier.showImeScreenshot(mWindowToken, Display.DEFAULT_DISPLAY, mUserId);
+            mInputMethodManagerService.showImeScreenshot(mWindowToken, Display.DEFAULT_DISPLAY,
+                    mUserId);
         }
 
         verify(mMockImeTargetVisibilityPolicy).showImeScreenshot(eq(mWindowToken),
@@ -98,14 +82,10 @@ public class DefaultImeVisibilityApplierTest extends InputMethodManagerServiceTe
     @Test
     public void testRemoveImeScreenshot() {
         synchronized (ImfLock.class) {
-            mVisibilityApplier.removeImeScreenshot(mWindowToken, Display.DEFAULT_DISPLAY, mUserId);
+            mInputMethodManagerService.removeImeScreenshot(mWindowToken, Display.DEFAULT_DISPLAY,
+                    mUserId);
         }
 
         verify(mMockImeTargetVisibilityPolicy).removeImeScreenshot(eq(Display.DEFAULT_DISPLAY));
-    }
-
-    @GuardedBy("ImfLock.class")
-    private void setAttachedClientLocked(@Nullable ClientState cs) {
-        mInputMethodManagerService.getUserData(mUserId).mCurClient = cs;
     }
 }
