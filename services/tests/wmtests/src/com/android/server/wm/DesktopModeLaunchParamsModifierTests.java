@@ -21,6 +21,7 @@ import static android.app.WindowConfiguration.ACTIVITY_TYPE_STANDARD;
 import static android.app.WindowConfiguration.ACTIVITY_TYPE_UNDEFINED;
 import static android.app.WindowConfiguration.WINDOWING_MODE_FREEFORM;
 import static android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN;
+import static android.app.WindowConfiguration.WINDOWING_MODE_UNDEFINED;
 import static android.content.pm.ActivityInfo.LAUNCH_SINGLE_INSTANCE;
 import static android.content.pm.ActivityInfo.OVERRIDE_MIN_ASPECT_RATIO_LARGE_VALUE;
 import static android.content.pm.ActivityInfo.OVERRIDE_MIN_ASPECT_RATIO_MEDIUM_VALUE;
@@ -40,6 +41,7 @@ import static android.content.res.Configuration.ORIENTATION_PORTRAIT;
 import static android.util.DisplayMetrics.DENSITY_DEFAULT;
 import static android.view.Surface.ROTATION_90;
 
+import static com.android.dx.mockito.inline.extended.ExtendedMockito.doCallRealMethod;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.doReturn;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.spyOn;
 import static com.android.internal.policy.SystemBarUtils.getDesktopViewAppHeaderHeightPx;
@@ -452,6 +454,7 @@ public class DesktopModeLaunchParamsModifierTests extends
 
     @Test
     @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE)
+    @DisableFlags(Flags.FLAG_IGNORE_CURRENT_PARAMS_IN_DESKTOP_LAUNCH_PARAMS)
     public void testReturnsSkipIfCurrentParamsHasBounds() {
         setupDesktopModeLaunchParamsModifier();
 
@@ -459,6 +462,19 @@ public class DesktopModeLaunchParamsModifierTests extends
                 ACTIVITY_TYPE_STANDARD).build();
         mCurrent.mBounds.set(/* left */ 0, /* top */ 0, /* right */ 100, /* bottom */ 100);
         assertEquals(RESULT_SKIP, new CalculateRequestBuilder().setTask(task).calculate());
+    }
+
+    @Test
+    @EnableFlags({Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE,
+            Flags.FLAG_IGNORE_CURRENT_PARAMS_IN_DESKTOP_LAUNCH_PARAMS})
+    public void testIgnoreCurrentParamsBounds() {
+        setupDesktopModeLaunchParamsModifier();
+
+        final Task task = new TaskBuilder(mSupervisor).setActivityType(
+                ACTIVITY_TYPE_STANDARD).build();
+        mCurrent.mBounds.set(/* left */ 0, /* top */ 0, /* right */ 100, /* bottom */ 100);
+        new CalculateRequestBuilder().setTask(task).calculate();
+        assertNotEquals(mCurrent.mBounds, mResult.mBounds);
     }
 
     @Test
@@ -1880,6 +1896,7 @@ public class DesktopModeLaunchParamsModifierTests extends
 
     @Test
     @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE)
+    @DisableFlags(Flags.FLAG_IGNORE_CURRENT_PARAMS_IN_DESKTOP_LAUNCH_PARAMS)
     public void testInheritWindowingModeFromCurrentParams() {
         setupDesktopModeLaunchParamsModifier();
 
@@ -1893,6 +1910,25 @@ public class DesktopModeLaunchParamsModifierTests extends
         assertEquals(task.getRootTask().getDisplayArea(), mResult.mPreferredTaskDisplayArea);
         assertNotEquals(currTaskDisplayArea, mResult.mPreferredTaskDisplayArea);
         assertEquals(WINDOWING_MODE_FREEFORM, mResult.mWindowingMode);
+    }
+
+    @Test
+    @EnableFlags({Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE,
+            Flags.FLAG_IGNORE_CURRENT_PARAMS_IN_DESKTOP_LAUNCH_PARAMS})
+    public void testDoesntInheritWindowingModeFromCurrentParams() {
+        setupDesktopModeLaunchParamsModifier();
+        doCallRealMethod().when(mTarget).isEnteringDesktopMode(any(), any(), any());
+
+        final Task task = new TaskBuilder(mSupervisor).setActivityType(
+                ACTIVITY_TYPE_STANDARD).build();
+        final TaskDisplayArea currTaskDisplayArea = mock(TaskDisplayArea.class);
+        mCurrent.mPreferredTaskDisplayArea = currTaskDisplayArea;
+        mCurrent.mWindowingMode = WINDOWING_MODE_FREEFORM;
+
+        assertEquals(RESULT_SKIP, new CalculateRequestBuilder().setTask(task).calculate());
+        assertEquals(task.getRootTask().getDisplayArea(), mResult.mPreferredTaskDisplayArea);
+        assertNotEquals(currTaskDisplayArea, mResult.mPreferredTaskDisplayArea);
+        assertEquals(WINDOWING_MODE_UNDEFINED, mResult.mWindowingMode);
     }
 
     @Test
