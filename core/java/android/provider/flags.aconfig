@@ -87,3 +87,12 @@ flag {
     description: "Feature flag to expose SYSTEM_UPDATE_SETTINGS as a public API"
     bug: "417458670"
 }
+
+# OWNER = liefuliu
+flag {
+    name: "new_account_attributes_api_enabled"
+    is_exported: true
+    namespace: "contacts"
+    description: "Enable the new Account Attributes APIs for contacts"
+    bug: "330326187"
+}

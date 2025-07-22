@@ -38321,11 +38321,22 @@ package android.provider {
   }
 
   public static final class ContactsContract.Settings implements android.provider.ContactsContract.SettingsColumns {
+    method @FlaggedApi("android.provider.new_account_attributes_api_enabled") @RequiresPermission(android.Manifest.permission.READ_CONTACTS) public static long getAccountAttributes(@NonNull android.content.ContentResolver, @Nullable android.accounts.Account, @Nullable String);
     method @Deprecated @FlaggedApi("android.provider.new_default_account_api_enabled") @Nullable public static android.accounts.Account getDefaultAccount(@NonNull android.content.ContentResolver);
+    method @FlaggedApi("android.provider.new_account_attributes_api_enabled") @RequiresPermission(android.Manifest.permission.WRITE_CONTACTS) public static void setAccountAttributes(@NonNull android.content.ContentResolver, @Nullable android.accounts.Account, @Nullable String, long);
     field public static final String ACTION_SET_DEFAULT_ACCOUNT = "android.provider.action.SET_DEFAULT_ACCOUNT";
     field public static final String CONTENT_ITEM_TYPE = "vnd.android.cursor.item/setting";
     field public static final String CONTENT_TYPE = "vnd.android.cursor.dir/setting";
     field public static final android.net.Uri CONTENT_URI;
+  }
+
+  @FlaggedApi("android.provider.new_account_attributes_api_enabled") public static final class ContactsContract.Settings.AccountAttributes {
+    field public static final long ATTRIBUTE_DATA_ORIGIN_CLOUD = 4L; // 0x4L
+    field public static final long ATTRIBUTE_DATA_ORIGIN_LOCAL = 1L; // 0x1L
+    field public static final long ATTRIBUTE_DATA_ORIGIN_SIM = 2L; // 0x2L
+    field public static final long ATTRIBUTE_DATA_TYPE_CUSTOM_DECLARED = 32L; // 0x20L
+    field public static final long ATTRIBUTE_SYNC_MODE_DOWN_SYNC = 16L; // 0x10L
+    field public static final long ATTRIBUTE_SYNC_MODE_UP_SYNC = 8L; // 0x8L
   }
 
   protected static interface ContactsContract.SettingsColumns {
