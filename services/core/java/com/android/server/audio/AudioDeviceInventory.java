@@ -90,6 +90,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Stream;
@@ -1381,8 +1382,13 @@ public class AudioDeviceInventory {
     private void saveSetPreferredDevices(int strategy,
                                                @NonNull List<AudioDeviceAttributes> devices) {
         mPreferredDevices.put(strategy, devices);
-        List<AudioDeviceAttributes> nonDefaultDevices = mNonDefaultDevices.get(strategy);
-        if (nonDefaultDevices != null) {
+
+        List<AudioDeviceAttributes> nonDefaultDevices =
+                Optional.ofNullable(mNonDefaultDevices.get(strategy))
+                        .map(ArrayList::new)
+                        .orElseGet(ArrayList::new);
+
+        if (!nonDefaultDevices.isEmpty()) {
             nonDefaultDevices.removeAll(devices);
 
             if (nonDefaultDevices.isEmpty()) {
@@ -1405,10 +1411,10 @@ public class AudioDeviceInventory {
     @GuardedBy("mDevicesLock")
     private void saveSetDeviceAsNonDefault(int strategy,
                                                  @NonNull AudioDeviceAttributes device) {
-        List<AudioDeviceAttributes> nonDefaultDevices = mNonDefaultDevices.get(strategy);
-        if (nonDefaultDevices == null) {
-            nonDefaultDevices = new ArrayList<>();
-        }
+        List<AudioDeviceAttributes> nonDefaultDevices =
+                Optional.ofNullable(mNonDefaultDevices.get(strategy))
+                        .map(ArrayList::new)
+                        .orElseGet(ArrayList::new);
 
         if (!nonDefaultDevices.contains(device)) {
             nonDefaultDevices.add(device);
@@ -1417,9 +1423,12 @@ public class AudioDeviceInventory {
         mNonDefaultDevices.put(strategy, nonDefaultDevices);
         dispatchNonDefaultDevice(strategy, nonDefaultDevices);
 
-        List<AudioDeviceAttributes> preferredDevices = mPreferredDevices.get(strategy);
+        List<AudioDeviceAttributes> preferredDevices =
+                Optional.ofNullable(mPreferredDevices.get(strategy))
+                        .map(ArrayList::new)
+                        .orElseGet(ArrayList::new);
 
-        if (preferredDevices != null) {
+        if (!preferredDevices.isEmpty()) {
             preferredDevices.remove(device);
             mPreferredDevices.put(strategy, preferredDevices);
 
@@ -1430,8 +1439,12 @@ public class AudioDeviceInventory {
     @GuardedBy("mDevicesLock")
     private void saveRemoveDeviceAsNonDefault(int strategy,
                                                     @NonNull AudioDeviceAttributes device) {
-        List<AudioDeviceAttributes> nonDefaultDevices = mNonDefaultDevices.get(strategy);
-        if (nonDefaultDevices != null) {
+        List<AudioDeviceAttributes> nonDefaultDevices =
+                Optional.ofNullable(mNonDefaultDevices.get(strategy))
+                        .map(ArrayList::new)
+                        .orElseGet(ArrayList::new);
+
+        if (!nonDefaultDevices.isEmpty()) {
             nonDefaultDevices.remove(device);
             mNonDefaultDevices.put(strategy, nonDefaultDevices);
             dispatchNonDefaultDevice(strategy, nonDefaultDevices);
