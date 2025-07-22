@@ -59,9 +59,9 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.kotlin.any
 import org.mockito.kotlin.argThat
+import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.doAnswer
 import org.mockito.kotlin.eq
-import org.mockito.kotlin.inOrder
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
 import org.mockito.kotlin.times
@@ -222,10 +222,6 @@ class MultiDisplayVeiledResizeTaskPositionerTest : ShellTestCase() {
             STARTING_BOUNDS.left.toFloat() + 60,
             STARTING_BOUNDS.top.toFloat() + 100,
         )
-        val rectAfterMove = Rect(STARTING_BOUNDS)
-        rectAfterMove.offset(60, 100)
-        verify(mockTransaction)
-            .setPosition(any(), eq(rectAfterMove.left.toFloat()), eq(rectAfterMove.top.toFloat()))
 
         val endBounds =
             taskPositioner.onDragPositioningEnd(
@@ -240,6 +236,41 @@ class MultiDisplayVeiledResizeTaskPositionerTest : ShellTestCase() {
         verify(mockWindowDecoration, never()).hideResizeVeil()
         verify(mockMultiDisplayDragMoveIndicatorController, never()).onDragEnd(any(), any())
         Assert.assertEquals(rectAfterEnd, endBounds)
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_WINDOW_DROP_SMOOTH_TRANSITION)
+    fun testDragResize_movesTask_movesTaskSurfaceOffscreen() = runOnUiThread {
+        whenever(spyDisplayLayout0.width()).thenReturn(DISPLAY_BOUNDS.width())
+        whenever(spyDisplayLayout0.height()).thenReturn(DISPLAY_BOUNDS.height())
+
+        taskPositioner.onDragPositioningStart(
+            CTRL_TYPE_UNDEFINED,
+            DISPLAY_ID_0,
+            STARTING_BOUNDS.left.toFloat(),
+            STARTING_BOUNDS.top.toFloat(),
+        )
+
+        taskPositioner.onDragPositioningMove(
+            DISPLAY_ID_0,
+            STARTING_BOUNDS.left.toFloat() + 60,
+            STARTING_BOUNDS.top.toFloat() + 100,
+        )
+
+        val leftAfterMoveCaptor = argumentCaptor<Float>()
+        val topAfterMoveCaptor = argumentCaptor<Float>()
+        verify(mockTransaction)
+            .setPosition(
+                eq(mockSurfaceControl),
+                leftAfterMoveCaptor.capture(),
+                topAfterMoveCaptor.capture(),
+            )
+        val rectAfterMove = Rect(STARTING_BOUNDS)
+        rectAfterMove.offsetTo(
+            leftAfterMoveCaptor.firstValue.toInt(),
+            topAfterMoveCaptor.firstValue.toInt(),
+        )
+        Assert.assertFalse(DISPLAY_BOUNDS.intersect(rectAfterMove))
     }
 
     @Test
@@ -275,12 +306,6 @@ class MultiDisplayVeiledResizeTaskPositionerTest : ShellTestCase() {
 
         taskPositioner.onDragPositioningMove(DISPLAY_ID_1, 200f, 1900f)
 
-        val rectAfterMove = Rect(200, -50, 300, 50)
-        verify(mockTransaction)
-            .setPosition(any(), eq(rectAfterMove.left.toFloat()), eq(rectAfterMove.top.toFloat()))
-        verify(mockTransaction)
-            .setAlpha(eq(mockWindowDecoration.taskSurface), eq(ALPHA_FOR_TRANSLUCENT_WINDOW))
-
         val endBounds = taskPositioner.onDragPositioningEnd(DISPLAY_ID_1, 300f, 450f)
         val rectAfterEnd = Rect(300, 450, 500, 650)
 
@@ -288,6 +313,37 @@ class MultiDisplayVeiledResizeTaskPositionerTest : ShellTestCase() {
         verify(mockWindowDecoration, never()).hideResizeVeil()
         verify(mockMultiDisplayDragMoveIndicatorController, never()).onDragEnd(any(), any())
         Assert.assertEquals(rectAfterEnd, endBounds)
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_WINDOW_DROP_SMOOTH_TRANSITION)
+    fun testDragResize_movesTaskToNewDisplay_movesTaskSurfaceOffscreen() = runOnUiThread {
+        whenever(spyDisplayLayout0.width()).thenReturn(DISPLAY_BOUNDS.width())
+        whenever(spyDisplayLayout0.height()).thenReturn(DISPLAY_BOUNDS.height())
+
+        taskPositioner.onDragPositioningStart(
+            CTRL_TYPE_UNDEFINED,
+            DISPLAY_ID_0,
+            STARTING_BOUNDS.left.toFloat(),
+            STARTING_BOUNDS.top.toFloat(),
+        )
+
+        taskPositioner.onDragPositioningMove(DISPLAY_ID_1, 200f, 1900f)
+
+        val leftAfterMoveCaptor = argumentCaptor<Float>()
+        val topAfterMoveCaptor = argumentCaptor<Float>()
+        verify(mockTransaction)
+            .setPosition(
+                eq(mockSurfaceControl),
+                leftAfterMoveCaptor.capture(),
+                topAfterMoveCaptor.capture(),
+            )
+        val rectAfterMove = Rect(STARTING_BOUNDS)
+        rectAfterMove.offsetTo(
+            leftAfterMoveCaptor.firstValue.toInt(),
+            topAfterMoveCaptor.firstValue.toInt(),
+        )
+        Assert.assertFalse(DISPLAY_BOUNDS.intersect(rectAfterMove))
     }
 
     @Test
@@ -300,37 +356,58 @@ class MultiDisplayVeiledResizeTaskPositionerTest : ShellTestCase() {
             STARTING_BOUNDS.top.toFloat(),
         )
 
-        val inOrder = inOrder(mockTransaction)
-
         // Move to the display 1
         taskPositioner.onDragPositioningMove(DISPLAY_ID_1, 200f, 800f)
-        val rectAfterMove = Rect(200, -600, 300, -400)
-        inOrder
-            .verify(mockTransaction)
-            .setPosition(any(), eq(rectAfterMove.left.toFloat()), eq(rectAfterMove.top.toFloat()))
-        inOrder
-            .verify(mockTransaction)
-            .setAlpha(eq(mockWindowDecoration.taskSurface), eq(ALPHA_FOR_TRANSLUCENT_WINDOW))
 
         // Moving back to the original display
         taskPositioner.onDragPositioningMove(DISPLAY_ID_0, 100f, 1500f)
-        rectAfterMove.set(100, 1500, 200, 1700)
-        inOrder
-            .verify(mockTransaction)
-            .setPosition(any(), eq(rectAfterMove.left.toFloat()), eq(rectAfterMove.top.toFloat()))
-        inOrder
-            .verify(mockTransaction)
-            .setAlpha(eq(mockWindowDecoration.taskSurface), eq(ALPHA_FOR_VISIBLE_WINDOW))
 
         // Finish the drag move on the original display
         val endBounds = taskPositioner.onDragPositioningEnd(DISPLAY_ID_0, 50f, 50f)
-        rectAfterMove.set(50, 50, 150, 150)
+        val rectAfterMove = Rect(50, 50, 150, 150)
 
         verify(mockWindowDecoration, never()).showResizeVeil(any())
         verify(mockWindowDecoration, never()).hideResizeVeil()
         verify(mockMultiDisplayDragMoveIndicatorController, never()).onDragEnd(any(), any())
         Assert.assertEquals(rectAfterMove, endBounds)
     }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_WINDOW_DROP_SMOOTH_TRANSITION)
+    fun testDragResize_movesTaskToNewDisplayThenBackToOriginalDisplay_movesTaskSurfaceOffscreen() =
+        runOnUiThread {
+            whenever(spyDisplayLayout0.width()).thenReturn(DISPLAY_BOUNDS.width())
+            whenever(spyDisplayLayout0.height()).thenReturn(DISPLAY_BOUNDS.height())
+
+            taskPositioner.onDragPositioningStart(
+                CTRL_TYPE_UNDEFINED,
+                DISPLAY_ID_0,
+                STARTING_BOUNDS.left.toFloat(),
+                STARTING_BOUNDS.top.toFloat(),
+            )
+
+            // Move to the display 1
+            taskPositioner.onDragPositioningMove(DISPLAY_ID_1, 200f, 800f)
+
+            // Moving back to the original display
+            taskPositioner.onDragPositioningMove(DISPLAY_ID_0, 100f, 1500f)
+
+            // Check that setPosition is only called once and the surface is outside of display.
+            val leftAfterMoveCaptor = argumentCaptor<Float>()
+            val topAfterMoveCaptor = argumentCaptor<Float>()
+            verify(mockTransaction)
+                .setPosition(
+                    eq(mockSurfaceControl),
+                    leftAfterMoveCaptor.capture(),
+                    topAfterMoveCaptor.capture(),
+                )
+            val rectAfterMove = Rect(STARTING_BOUNDS)
+            rectAfterMove.offsetTo(
+                leftAfterMoveCaptor.firstValue.toInt(),
+                topAfterMoveCaptor.firstValue.toInt(),
+            )
+            Assert.assertFalse(DISPLAY_BOUNDS.intersect(rectAfterMove))
+        }
 
     @Test
     fun testDragResize_resize_boundsUpdateOnEnd() = runOnUiThread {
@@ -720,8 +797,6 @@ class MultiDisplayVeiledResizeTaskPositionerTest : ShellTestCase() {
         private const val NAVBAR_HEIGHT = 50
         private const val CAPTION_HEIGHT = 50
         private const val DISALLOWED_AREA_FOR_END_BOUNDS_HEIGHT = 10
-        private const val ALPHA_FOR_TRANSLUCENT_WINDOW = 0.7f
-        private const val ALPHA_FOR_VISIBLE_WINDOW = 1.0f
         private val DISPLAY_BOUNDS = Rect(0, 0, 2400, 1600)
         private val STARTING_BOUNDS = Rect(100, 100, 200, 200)
         private val STABLE_BOUNDS_LANDSCAPE =
