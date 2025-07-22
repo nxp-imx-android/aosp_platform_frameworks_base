@@ -363,21 +363,28 @@ public class InstallationFragment extends DialogFragment {
 
         // If there is an activity entry, show the positive button
         final Intent resultIntent = installStage.getResultIntent();
+        boolean hasEntry = false;
         if (resultIntent != null) {
             final List<ResolveInfo> list =
                     requireContext().getPackageManager().queryIntentActivities(resultIntent, 0);
             if (!list.isEmpty()) {
-                Button positiveButton = UiUtil.getAlertDialogPositiveButton(dialog);
-                if (positiveButton != null) {
-                    positiveButton.setVisibility(View.VISIBLE);
-                    UiUtil.applyFilledButtonStyle(requireContext(), positiveButton);
-                    positiveButton.setText(R.string.button_open);
-                    positiveButton.setOnClickListener(view -> {
-                        Log.i(LOG_TAG, "Finished installing and launching "
-                                + installStage.getAppLabel());
-                        mInstallActionListener.openInstalledApp(resultIntent);
-                    });
-                }
+                hasEntry = true;
+            }
+        }
+
+        Button positiveButton = UiUtil.getAlertDialogPositiveButton(dialog);
+        if (positiveButton != null) {
+            if (hasEntry) {
+                positiveButton.setVisibility(View.VISIBLE);
+                UiUtil.applyFilledButtonStyle(requireContext(), positiveButton);
+                positiveButton.setText(R.string.button_open);
+                positiveButton.setOnClickListener(view -> {
+                    Log.i(LOG_TAG, "Finished installing and launching "
+                            + installStage.getAppLabel());
+                    mInstallActionListener.openInstalledApp(resultIntent);
+                });
+            } else {
+                positiveButton.setVisibility(View.GONE);
             }
         }
 
