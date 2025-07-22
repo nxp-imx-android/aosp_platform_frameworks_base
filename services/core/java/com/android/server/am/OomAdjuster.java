@@ -995,7 +995,7 @@ public abstract class OomAdjuster {
                         targetAdj += 10 + mConstants.TIERED_CACHED_ADJ_UI_TIER_SIZE;
                     }
                     state.setCurRawAdj(targetAdj);
-                    state.setCurAdj(psr.modifyRawOomAdj(targetAdj));
+                    state.setCurAdj(applyBindAboveClientToAdj(psr.hasAboveClient(), targetAdj));
                 }
             }
         } else {
@@ -1096,8 +1096,10 @@ public abstract class OomAdjuster {
                             // This process is a cached process holding activities...
                             // assign it the next cached value for that type, and then
                             // step that cached level.
-                            state.setCurRawAdj(curCachedAdj + curCachedImpAdj);
-                            state.setCurAdj(psr.modifyRawOomAdj(curCachedAdj + curCachedImpAdj));
+                            final int rawAdj = curCachedAdj + curCachedImpAdj;
+                            state.setCurRawAdj(rawAdj);
+                            state.setCurAdj(
+                                    applyBindAboveClientToAdj(psr.hasAboveClient(), rawAdj));
                             if (DEBUG_LRU) {
                                 Slog.d(TAG_LRU, "Assigning activity LRU #" + i
                                         + " adj: " + state.getCurAdj()
@@ -1124,7 +1126,8 @@ public abstract class OomAdjuster {
                             // cached level will be treated as empty (since their process
                             // state is still as a service), which is what we want.
                             state.setCurRawAdj(curEmptyAdj);
-                            state.setCurAdj(psr.modifyRawOomAdj(curEmptyAdj));
+                            state.setCurAdj(
+                                    applyBindAboveClientToAdj(psr.hasAboveClient(), curEmptyAdj));
                             if (DEBUG_LRU) {
                                 Slog.d(TAG_LRU, "Assigning empty LRU #" + i
                                         + " adj: " + state.getCurAdj()
@@ -1863,7 +1866,7 @@ public abstract class OomAdjuster {
         final ProcessRecordInternal state = app;
         state.setCurRawAdj(adj);
 
-        adj = app.mServices.modifyRawOomAdj(adj);
+        adj = applyBindAboveClientToAdj(app.mServices.hasAboveClient(), adj);
         if (adj > state.getMaxAdj()) {
             adj = state.getMaxAdj();
             if (adj <= PERCEPTIBLE_LOW_APP_ADJ) {
@@ -1874,6 +1877,32 @@ public abstract class OomAdjuster {
         state.setCurAdj(adj);
 
         return schedGroup;
+    }
+
+    private static int applyBindAboveClientToAdj(boolean hasAboveClient, int adj) {
+        if (hasAboveClient) {
+            // If this process has bound to any services with BIND_ABOVE_CLIENT,
+            // then we need to drop its adjustment to be lower than the service's
+            // in order to honor the request.  We want to drop it by one adjustment
+            // level...  but there is special meaning applied to various levels so
+            // we will skip some of them.
+            if (adj < ProcessList.FOREGROUND_APP_ADJ) {
+                // System process will not get dropped, ever
+            } else if (adj < ProcessList.VISIBLE_APP_ADJ) {
+                adj = ProcessList.VISIBLE_APP_ADJ;
+            } else if (adj < ProcessList.PERCEPTIBLE_APP_ADJ) {
+                adj = ProcessList.PERCEPTIBLE_APP_ADJ;
+            } else if (adj < ProcessList.PERCEPTIBLE_LOW_APP_ADJ) {
+                adj = ProcessList.PERCEPTIBLE_LOW_APP_ADJ;
+            } else if (adj < ProcessList.SERVICE_ADJ) {
+                adj = ProcessList.SERVICE_ADJ;
+            } else if (adj < ProcessList.CACHED_APP_MIN_ADJ) {
+                adj = ProcessList.CACHED_APP_MIN_ADJ;
+            } else if (adj < ProcessList.CACHED_APP_MAX_ADJ) {
+                adj++;
+            }
+        }
+        return adj;
     }
 
     @GuardedBy({"mService", "mProcLock"})
