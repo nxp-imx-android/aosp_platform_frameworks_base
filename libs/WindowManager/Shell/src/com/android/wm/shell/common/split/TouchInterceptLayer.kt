@@ -18,12 +18,16 @@ package com.android.wm.shell.common.split
 import android.app.TaskInfo
 import android.content.Context
 import android.graphics.PixelFormat
+import android.graphics.Rect
+import android.graphics.Region
 import android.os.Binder
 import android.view.SurfaceControl
 import android.view.SurfaceControlViewHost
 import android.view.View
+import android.view.ViewTreeObserver.InternalInsetsInfo.TOUCHABLE_INSETS_REGION
 import android.view.WindowManager
 import android.view.WindowlessWindowManager
+import java.lang.Integer.MAX_VALUE
 
 /**
  * Manages a touchable surface that is intended to intercept touches.
@@ -44,14 +48,12 @@ class TouchInterceptLayer(
     ) {
         rootView = View(context.createConfigurationContext(rootTaskInfo.configuration))
 
-        // Set WM flags, tokens, and sizing on the touchable view. It will be the same size as its
-        // parent
-        // TODO (b/349828130): It's a bit wasteful to have the touch zone cover the whole app
-        //  surface, even extending offscreen (keeps buffer active in memory), so can trim it down
-        //  to the visible onscreen area in a future patch.
+        // Set WM flags, tokens, and sizing on the touchable view. Create the smallest sized surface
+        // possible for performance reasons. We don't use MATCH_PARENT here because there isn't
+        // actually a parent (like in normal windows) to resolve a size from, and can result in
+        // an empty input region in the future.
         val lp = WindowManager.LayoutParams(
-            rootTaskInfo.configuration.windowConfiguration.bounds.width(),
-            rootTaskInfo.configuration.windowConfiguration.bounds.height(),
+            1, 1,
             WindowManager.LayoutParams.TYPE_INPUT_CONSUMER,
             WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
             PixelFormat.TRANSPARENT
@@ -83,6 +85,13 @@ class TouchInterceptLayer(
         // as an optimization to SurfaceFlinger so we don't need to render the transparent surface
         rootView?.setWillNotDraw(true)
         rootView?.parent?.requestTransparentRegion(rootView)
+
+        // Workaround for ensuring that we receive touches outside the bounds of the surface (input
+        // currently uses the touchable region to determine if the window should receive events).
+        // TODO(b/433258252): We can revert to using the full root bounds when there is a way to
+        //                    declare that we don't want a buffer
+        wwm.setInsets(viewHost!!.windowToken, TOUCHABLE_INSETS_REGION, Rect(), Rect(),
+            Region(-MAX_VALUE / 2, -MAX_VALUE / 2, MAX_VALUE / 2, MAX_VALUE / 2))
 
         // Create a transaction so that we can activate and reposition our surface.
         val t = SurfaceControl.Transaction()
