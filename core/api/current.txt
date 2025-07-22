@@ -2216,23 +2216,23 @@ package android {
   public static final class R.dimen {
     ctor public R.dimen();
     field public static final int app_icon_size = 17104896; // 0x1050000
-    field @FlaggedApi("android.os.material_motion_tokens") public static final int config_motionExpressiveDefaultEffectDamping;
-    field @FlaggedApi("android.os.material_motion_tokens") public static final int config_motionExpressiveDefaultSpatialDamping;
-    field @FlaggedApi("android.os.material_motion_tokens") public static final int config_motionExpressiveFastEffectDamping;
-    field @FlaggedApi("android.os.material_motion_tokens") public static final int config_motionExpressiveFastSpatialDamping;
-    field @FlaggedApi("android.os.material_motion_tokens") public static final int config_motionExpressiveSlowEffectDamping;
-    field @FlaggedApi("android.os.material_motion_tokens") public static final int config_motionExpressiveSlowSpatialDamping;
-    field @FlaggedApi("android.os.material_motion_tokens") public static final int config_motionStandardDefaultEffectDamping;
-    field @FlaggedApi("android.os.material_motion_tokens") public static final int config_motionStandardDefaultSpatialDamping;
-    field @FlaggedApi("android.os.material_motion_tokens") public static final int config_motionStandardFastEffectDamping;
-    field @FlaggedApi("android.os.material_motion_tokens") public static final int config_motionStandardFastSpatialDamping;
-    field @FlaggedApi("android.os.material_motion_tokens") public static final int config_motionStandardSlowEffectDamping;
-    field @FlaggedApi("android.os.material_motion_tokens") public static final int config_motionStandardSlowSpatialDamping;
-    field @FlaggedApi("android.os.material_shape_tokens") public static final int config_shapeCornerRadiusLarge;
-    field @FlaggedApi("android.os.material_shape_tokens") public static final int config_shapeCornerRadiusMedium;
-    field @FlaggedApi("android.os.material_shape_tokens") public static final int config_shapeCornerRadiusSmall;
-    field @FlaggedApi("android.os.material_shape_tokens") public static final int config_shapeCornerRadiusXlarge;
-    field @FlaggedApi("android.os.material_shape_tokens") public static final int config_shapeCornerRadiusXsmall;
+    field @FlaggedApi("android.os.material_motion_tokens") public static final int config_motionExpressiveDefaultEffectDamping = 17104916; // 0x1050014
+    field @FlaggedApi("android.os.material_motion_tokens") public static final int config_motionExpressiveDefaultSpatialDamping = 17104915; // 0x1050013
+    field @FlaggedApi("android.os.material_motion_tokens") public static final int config_motionExpressiveFastEffectDamping = 17104914; // 0x1050012
+    field @FlaggedApi("android.os.material_motion_tokens") public static final int config_motionExpressiveFastSpatialDamping = 17104913; // 0x1050011
+    field @FlaggedApi("android.os.material_motion_tokens") public static final int config_motionExpressiveSlowEffectDamping = 17104918; // 0x1050016
+    field @FlaggedApi("android.os.material_motion_tokens") public static final int config_motionExpressiveSlowSpatialDamping = 17104917; // 0x1050015
+    field @FlaggedApi("android.os.material_motion_tokens") public static final int config_motionStandardDefaultEffectDamping = 17104910; // 0x105000e
+    field @FlaggedApi("android.os.material_motion_tokens") public static final int config_motionStandardDefaultSpatialDamping = 17104909; // 0x105000d
+    field @FlaggedApi("android.os.material_motion_tokens") public static final int config_motionStandardFastEffectDamping = 17104908; // 0x105000c
+    field @FlaggedApi("android.os.material_motion_tokens") public static final int config_motionStandardFastSpatialDamping = 17104907; // 0x105000b
+    field @FlaggedApi("android.os.material_motion_tokens") public static final int config_motionStandardSlowEffectDamping = 17104912; // 0x1050010
+    field @FlaggedApi("android.os.material_motion_tokens") public static final int config_motionStandardSlowSpatialDamping = 17104911; // 0x105000f
+    field @FlaggedApi("android.os.material_shape_tokens") public static final int config_shapeCornerRadiusLarge = 17104922; // 0x105001a
+    field @FlaggedApi("android.os.material_shape_tokens") public static final int config_shapeCornerRadiusMedium = 17104921; // 0x1050019
+    field @FlaggedApi("android.os.material_shape_tokens") public static final int config_shapeCornerRadiusSmall = 17104920; // 0x1050018
+    field @FlaggedApi("android.os.material_shape_tokens") public static final int config_shapeCornerRadiusXlarge = 17104923; // 0x105001b
+    field @FlaggedApi("android.os.material_shape_tokens") public static final int config_shapeCornerRadiusXsmall = 17104919; // 0x1050017
     field public static final int dialog_min_width_major = 17104899; // 0x1050003
     field public static final int dialog_min_width_minor = 17104900; // 0x1050004
     field public static final int notification_large_icon_height = 17104902; // 0x1050006
@@ -2445,7 +2445,7 @@ package android {
     field public static final int accessibilityActionScrollRight = 16908347; // 0x102003b
     field public static final int accessibilityActionScrollToPosition = 16908343; // 0x1020037
     field public static final int accessibilityActionScrollUp = 16908344; // 0x1020038
-    field @FlaggedApi("android.view.accessibility.a11y_selection_api") public static final int accessibilityActionSetExtendedSelection;
+    field @FlaggedApi("android.view.accessibility.a11y_selection_api") public static final int accessibilityActionSetExtendedSelection = 16908383; // 0x102005f
     field public static final int accessibilityActionSetProgress = 16908349; // 0x102003d
     field public static final int accessibilityActionShowOnScreen = 16908342; // 0x1020036
     field public static final int accessibilityActionShowTextSuggestions = 16908376; // 0x1020058
@@ -2529,18 +2529,18 @@ package android {
     ctor public R.integer();
     field public static final int config_longAnimTime = 17694722; // 0x10e0002
     field public static final int config_mediumAnimTime = 17694721; // 0x10e0001
-    field @FlaggedApi("android.os.material_motion_tokens") public static final int config_motionExpressiveDefaultEffectStiffness;
-    field @FlaggedApi("android.os.material_motion_tokens") public static final int config_motionExpressiveDefaultSpatialStiffness;
-    field @FlaggedApi("android.os.material_motion_tokens") public static final int config_motionExpressiveFastEffectStiffness;
-    field @FlaggedApi("android.os.material_motion_tokens") public static final int config_motionExpressiveFastSpatialStiffness;
-    field @FlaggedApi("android.os.material_motion_tokens") public static final int config_motionExpressiveSlowEffectStiffness;
-    field @FlaggedApi("android.os.material_motion_tokens") public static final int config_motionExpressiveSlowSpatialStiffness;
-    field @FlaggedApi("android.os.material_motion_tokens") public static final int config_motionStandardDefaultEffectStiffness;
-    field @FlaggedApi("android.os.material_motion_tokens") public static final int config_motionStandardDefaultSpatialStiffness;
-    field @FlaggedApi("android.os.material_motion_tokens") public static final int config_motionStandardFastEffectStiffness;
-    field @FlaggedApi("android.os.material_motion_tokens") public static final int config_motionStandardFastSpatialStiffness;
-    field @FlaggedApi("android.os.material_motion_tokens") public static final int config_motionStandardSlowEffectStiffness;
-    field @FlaggedApi("android.os.material_motion_tokens") public static final int config_motionStandardSlowSpatialStiffness;
+    field @FlaggedApi("android.os.material_motion_tokens") public static final int config_motionExpressiveDefaultEffectStiffness = 17694733; // 0x10e000d
+    field @FlaggedApi("android.os.material_motion_tokens") public static final int config_motionExpressiveDefaultSpatialStiffness = 17694732; // 0x10e000c
+    field @FlaggedApi("android.os.material_motion_tokens") public static final int config_motionExpressiveFastEffectStiffness = 17694731; // 0x10e000b
+    field @FlaggedApi("android.os.material_motion_tokens") public static final int config_motionExpressiveFastSpatialStiffness = 17694730; // 0x10e000a
+    field @FlaggedApi("android.os.material_motion_tokens") public static final int config_motionExpressiveSlowEffectStiffness = 17694735; // 0x10e000f
+    field @FlaggedApi("android.os.material_motion_tokens") public static final int config_motionExpressiveSlowSpatialStiffness = 17694734; // 0x10e000e
+    field @FlaggedApi("android.os.material_motion_tokens") public static final int config_motionStandardDefaultEffectStiffness = 17694727; // 0x10e0007
+    field @FlaggedApi("android.os.material_motion_tokens") public static final int config_motionStandardDefaultSpatialStiffness = 17694726; // 0x10e0006
+    field @FlaggedApi("android.os.material_motion_tokens") public static final int config_motionStandardFastEffectStiffness = 17694725; // 0x10e0005
+    field @FlaggedApi("android.os.material_motion_tokens") public static final int config_motionStandardFastSpatialStiffness = 17694724; // 0x10e0004
+    field @FlaggedApi("android.os.material_motion_tokens") public static final int config_motionStandardSlowEffectStiffness = 17694729; // 0x10e0009
+    field @FlaggedApi("android.os.material_motion_tokens") public static final int config_motionStandardSlowSpatialStiffness = 17694728; // 0x10e0008
     field public static final int config_shortAnimTime = 17694720; // 0x10e0000
     field @Deprecated public static final int status_bar_notification_info_maxnum = 17694723; // 0x10e0003
   }
