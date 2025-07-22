@@ -33,16 +33,12 @@ import com.android.systemui.broadcast.BroadcastDispatcher
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.deviceentry.domain.interactor.DeviceEntryFaceAuthInteractor
-import com.android.systemui.deviceentry.domain.interactor.DeviceEntryInteractor
 import com.android.systemui.keyguard.data.repository.KeyguardRepository
 import com.android.systemui.keyguard.shared.model.KeyguardState
-import com.android.systemui.power.domain.interactor.PowerInteractor
 import com.android.systemui.res.R
-import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.shade.PulsingGestureListener
 import com.android.systemui.shade.ShadeDisplayAware
 import com.android.systemui.shared.settings.data.repository.SecureSettingsRepository
-import com.android.systemui.statusbar.phone.StatusBarKeyguardViewManager
 import com.android.systemui.statusbar.policy.AccessibilityManagerWrapper
 import com.android.systemui.util.time.SystemClock
 import javax.inject.Inject
@@ -73,11 +69,8 @@ constructor(
     private val logger: UiEventLogger,
     broadcastDispatcher: BroadcastDispatcher,
     private val accessibilityManager: AccessibilityManagerWrapper,
-    private val statusBarKeyguardViewManager: StatusBarKeyguardViewManager,
     private val pulsingGestureListener: PulsingGestureListener,
     private val faceAuthInteractor: DeviceEntryFaceAuthInteractor,
-    private val deviceEntryInteractor: DeviceEntryInteractor,
-    private val powerInteractor: PowerInteractor,
     private val secureSettingsRepository: SecureSettingsRepository,
     private val powerManager: PowerManager,
     private val systemClock: SystemClock,
@@ -219,11 +212,7 @@ constructor(
     /** Notifies that the lockscreen has been clicked at position [x], [y]. */
     fun onClick(x: Float, y: Float) {
         pulsingGestureListener.onSingleTapUp(x, y)
-        if (faceAuthInteractor.canFaceAuthRun()) {
-            faceAuthInteractor.onNotificationPanelClicked()
-        } else {
-            attemptDeviceEntry()
-        }
+        faceAuthInteractor.onNotificationPanelClicked()
     }
 
     /** Notifies that the lockscreen has been double clicked. */
@@ -288,23 +277,6 @@ constructor(
                     AccessibilityManager.FLAG_CONTENT_CONTROLS,
             )
             .toLong()
-    }
-
-    private fun attemptDeviceEntry() {
-        if (isDeviceAwake()) {
-            if (SceneContainerFlag.isEnabled) {
-                deviceEntryInteractor.attemptDeviceEntry()
-            } else {
-                statusBarKeyguardViewManager.showPrimaryBouncer(
-                    true,
-                    "KeyguardTouchHandlingInteractor#attemptDeviceEntry",
-                )
-            }
-        }
-    }
-
-    private fun isDeviceAwake(): Boolean {
-        return powerInteractor.detailedWakefulness.value.isAwake()
     }
 
     enum class LogEvents(private val _id: Int) : UiEventLogger.UiEventEnum {

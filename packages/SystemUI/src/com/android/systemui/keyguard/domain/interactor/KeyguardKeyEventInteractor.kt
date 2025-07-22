@@ -21,7 +21,6 @@ import android.media.AudioManager
 import android.view.KeyEvent
 import com.android.systemui.back.domain.interactor.BackActionInteractor
 import com.android.systemui.dagger.SysUISingleton
-import com.android.systemui.deviceentry.domain.interactor.DeviceEntryInteractor
 import com.android.systemui.keyevent.domain.interactor.SysUIKeyEventHandler.Companion.handleAction
 import com.android.systemui.media.controls.util.MediaSessionLegacyHelperWrapper
 import com.android.systemui.plugins.ActivityStarter.OnDismissAction
@@ -45,7 +44,6 @@ constructor(
     private val shadeController: ShadeController,
     private val mediaSessionLegacyHelperWrapper: MediaSessionLegacyHelperWrapper,
     private val backActionInteractor: BackActionInteractor,
-    private val deviceEntryInteractor: DeviceEntryInteractor,
     private val powerInteractor: PowerInteractor,
     private val keyguardMediaKeyInteractor: KeyguardMediaKeyInteractor,
 ) {
@@ -138,14 +136,10 @@ constructor(
                 return true
             }
             StatusBarState.KEYGUARD -> {
-                if (SceneContainerFlag.isEnabled) {
-                    deviceEntryInteractor.attemptDeviceEntry()
-                } else {
-                    statusBarKeyguardViewManager.showPrimaryBouncer(
-                        true,
-                        "KeyguardKeyEventInteractor#collapseShadeLockedOrShowPrimaryBouncer",
-                    )
-                }
+                statusBarKeyguardViewManager.showPrimaryBouncer(
+                    true,
+                    "KeyguardKeyEventInteractor#collapseShadeLockedOrShowPrimaryBouncer",
+                )
                 return true
             }
         }
