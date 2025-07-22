@@ -71,6 +71,7 @@ public class BroadcastOptions extends ComponentOptions {
     private @Nullable IntentFilter mDeliveryGroupMatchingFilter;
     private @DeferralPolicy int mDeferralPolicy;
     private @Nullable String[] mIncludedPackages;
+    private @Nullable String mDebugReason;
 
     /** @hide */
     @IntDef(flag = true, prefix = { "FLAG_" }, value = {
@@ -240,6 +241,11 @@ public class BroadcastOptions extends ComponentOptions {
             "android:broadcast.includedPackageNames";
 
     /**
+     * Corresponds to {@link #setDebugReason(String)}
+     */
+    private static final String KEY_DEBUG_REASON = "android:broadcast.debugReason";
+
+    /**
      * The list of delivery group policies which specify how multiple broadcasts belonging to
      * the same delivery group has to be handled.
      * @hide
@@ -365,6 +371,7 @@ public class BroadcastOptions extends ComponentOptions {
                 IntentFilter.class);
         mDeferralPolicy = opts.getInt(KEY_DEFERRAL_POLICY, DEFERRAL_POLICY_DEFAULT);
         mIncludedPackages = opts.getStringArray(KEY_INCLUDED_PACKAGES);
+        mDebugReason = opts.getString(KEY_DEBUG_REASON);
     }
 
     /** @hide */
@@ -1144,6 +1151,31 @@ public class BroadcastOptions extends ComponentOptions {
     }
 
     /**
+     * Set the reason for triggering the broadcast. This is meant to be used for
+     * debugging and logging purposes.
+     *
+     * <p> This will only take effect when used by core uids, as determined by
+     * {@link UserHandle#isCore(int)}.
+     *
+     * @hide
+     */
+    public BroadcastOptions setDebugReason(@Nullable String debugReason) {
+        mDebugReason = debugReason;
+        return this;
+    }
+
+    /**
+     * Get the reason for triggering the broadcast, that was previously set using
+     * {@link #setDebugReason(String)}.
+     *
+     * @hide
+     */
+    @Nullable
+    public String getDebugReason() {
+        return mDebugReason;
+    }
+
+    /**
      * Returns the created options as a Bundle, which can be passed to
      * {@link android.content.Context#sendBroadcast(android.content.Intent)
      * Context.sendBroadcast(Intent)} and related methods.
@@ -1211,6 +1243,9 @@ public class BroadcastOptions extends ComponentOptions {
         }
         if (!ArrayUtils.isEmpty(mIncludedPackages)) {
             b.putStringArray(KEY_INCLUDED_PACKAGES, mIncludedPackages);
+        }
+        if (mDebugReason != null) {
+            b.putString(KEY_DEBUG_REASON, mDebugReason);
         }
         return b;
     }
