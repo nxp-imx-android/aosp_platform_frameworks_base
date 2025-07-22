@@ -3742,7 +3742,7 @@
   <public type="bool" name="config_enableDefaultNotesForWorkProfile" id="0x0111000b" />
 
   <!-- ===============================================================
-    Resources added in version NEXT of the platform
+    Resources added in version VANILLA_ICE_CREAM (35) of the platform
 
     NOTE: After this version of the platform is forked, changes cannot be made to the root
     branch's groups for that release. Only merge changes to the forked platform branch.
@@ -3921,7 +3921,7 @@
   <public type="color" name="system_error_1000" id="0x010600d1" />
 
   <!-- ===============================================================
-    Resources added in version NEXT of the platform
+    Resources added in version BAKLAVA (36) of the platform
 
     NOTE: After this version of the platform is forked, changes cannot be made to the root
     branch's groups for that release. Only merge changes to the forked platform branch.
