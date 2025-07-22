@@ -84,6 +84,7 @@ import com.android.wm.shell.common.split.SplitWindowManager.ParentContainerCallb
 import com.android.wm.shell.protolog.ShellProtoLogGroup;
 import com.android.wm.shell.shared.annotations.ShellMainThread;
 import com.android.wm.shell.shared.desktopmode.DesktopState;
+import com.android.wm.shell.shared.split.SplitScreenConstants;
 import com.android.wm.shell.shared.split.SplitScreenConstants.PersistentSnapPosition;
 import com.android.wm.shell.shared.split.SplitScreenConstants.SnapPosition;
 import com.android.wm.shell.shared.split.SplitScreenConstants.SplitPosition;
@@ -1255,11 +1256,11 @@ public final class SplitLayout implements DisplayInsetsController.OnInsetsChange
                     && dimLayer != null) {
                 float instantaneousAlpha = 0f;
                 if (goingOffscreen) {
-                    instantaneousAlpha = moveProgress * ResizingEffectPolicy.DEFAULT_OFFSCREEN_DIM;
+                    instantaneousAlpha = moveProgress * SplitScreenConstants.DEFAULT_OFFSCREEN_DIM;
                 }
                 if (comingOnscreen) {
                     instantaneousAlpha =
-                            (1f - moveProgress) * ResizingEffectPolicy.DEFAULT_OFFSCREEN_DIM;
+                            (1f - moveProgress) * SplitScreenConstants.DEFAULT_OFFSCREEN_DIM;
                 }
                 t.setAlpha(dimLayer, instantaneousAlpha);
                 t.setVisibility(dimLayer, instantaneousAlpha > 0.001f);
