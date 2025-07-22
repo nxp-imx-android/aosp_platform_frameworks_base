@@ -42,8 +42,10 @@ import java.util.Set;
  * <p>
  * This class lets a caller start contextual search by calling {@link #startContextualSearch}
  * method.
+ *
+ * @hide
  */
-@FlaggedApi(Flags.FLAG_SELF_INVOCATION)
+@SystemApi
 public final class ContextualSearchManager {
 
     /**
@@ -260,8 +262,11 @@ public final class ContextualSearchManager {
      *
      * @see #startContextualSearch()
      * @return true if contextual search is available on the device, false otherwise.
+     *
+     * @hide
      */
     @FlaggedApi(Flags.FLAG_SELF_INVOCATION)
+    @SystemApi
     public boolean isContextualSearchAvailable() {
         if (DEBUG) Log.d(TAG, "isContextualSearchAvailable");
         try {
@@ -290,6 +295,8 @@ public final class ContextualSearchManager {
      * <p>This method will fail silently if Contextual Search is not available on the device.
      *
      * @param entrypoint the invocation entrypoint
+     * @throws SecurityException if the caller does not have the {@link ACCESS_CONTEXTUAL_SEARCH}
+     * permission.
      *
      * @hide
      */
@@ -322,8 +329,11 @@ public final class ContextualSearchManager {
      *
      * @see #isContextualSearchAvailable()
      * @throws SecurityException if the caller does not have a foreground Activity.
+     *
+     * @hide
      */
     @FlaggedApi(Flags.FLAG_SELF_INVOCATION)
+    @SystemApi
     public void startContextualSearch() {
         if (DEBUG) Log.d(TAG, "startContextualSearch from app");
         try {
