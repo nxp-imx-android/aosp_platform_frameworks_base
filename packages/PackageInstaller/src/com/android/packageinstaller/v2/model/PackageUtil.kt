@@ -54,28 +54,14 @@ object PackageUtil {
     const val localLogv = false
 
     const val ARGS_ABORT_REASON: String = "abort_reason"
-    const val ARGS_ACTION_REASON: String = "action_reason"
-    const val ARGS_ACTIVITY_RESULT_CODE: String = "activity_result_code"
     const val ARGS_APP_DATA_SIZE: String = "app_data_size"
-    const val ARGS_APP_LABEL: String = "app_label"
     const val ARGS_APP_SNIPPET: String = "app_snippet"
     const val ARGS_BUTTON_TEXT: String = "button_text"
-    const val ARGS_ERROR_DIALOG_TYPE: String = "error_dialog_type"
-    const val ARGS_EXISTING_OWNER: String = "existing_owner"
     const val ARGS_INSTALLER_LABEL: String = "installer_label"
     const val ARGS_INSTALLER_PACKAGE: String = "installer_pkg"
-    const val ARGS_IS_ARCHIVE: String = "is_archive"
-    const val ARGS_IS_CLONE_USER: String = "clone_user"
-    const val ARGS_IS_UPDATING: String = "is_updating"
-    const val ARGS_LEGACY_CODE: String = "legacy_code"
     const val ARGS_MESSAGE: String = "message"
-    const val ARGS_NEW_OWNER: String = "new_owner"
     const val ARGS_PENDING_INTENT: String = "pending_intent"
     const val ARGS_REQUIRED_BYTES: String = "required_bytes"
-    const val ARGS_RESULT_INTENT: String = "result_intent"
-    const val ARGS_SHOULD_RETURN_RESULT: String = "should_return_result"
-    const val ARGS_SOURCE_PKG: String = "source_pkg"
-    const val ARGS_STATUS_CODE: String = "status_code"
     const val ARGS_TITLE: String = "title"
     const val ARGS_UNARCHIVAL_STATUS: String = "unarchival_status"
 
@@ -153,7 +139,7 @@ object PackageUtil {
     @JvmStatic
     fun isPermissionGranted(context: Context, permission: String, callingUid: Int): Boolean {
         return (context.checkPermission(permission, -1, callingUid)
-            == PackageManager.PERMISSION_GRANTED)
+                == PackageManager.PERMISSION_GRANTED)
     }
 
     /**
@@ -206,7 +192,7 @@ object PackageUtil {
             ) {
                 Log.e(
                     LOG_TAG, "Requesting uid " + callingUid + " needs to declare permission "
-                        + Manifest.permission.REQUEST_INSTALL_PACKAGES
+                            + Manifest.permission.REQUEST_INSTALL_PACKAGES
                 )
                 return false
             }
@@ -509,17 +495,18 @@ object PackageUtil {
         return if (userHandle == profileHandle) {
             true
         } else userManager.getProfileParent(profileHandle) != null
-            && userManager.getProfileParent(profileHandle) == userHandle
+                && userManager.getProfileParent(profileHandle) == userHandle
     }
 
     /**
-    * @return If the device supports the material design in the package installer
+     * @return If the device supports the material design in the package installer
      */
     @JvmStatic
     fun isMaterialDesignEnabled(context: Context): Boolean {
         return android.content.pm.Flags.usePiaV2()
                 && context.resources.getBoolean(
-            android.R.bool.config_enableMaterialDesignInPackageInstaller)
+            android.R.bool.config_enableMaterialDesignInPackageInstaller
+        )
     }
 
     /**

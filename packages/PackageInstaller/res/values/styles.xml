@@ -69,7 +69,6 @@
 
     <!-- Material design -->
     <style name="Widget.PackageInstaller.Material.ButtonBar" parent="">
-        <item name="android:paddingBottom">16dp</item>
         <item name="android:textAppearance">@android:style/TextAppearance.DeviceDefault.Widget.Button</item>
     </style>
 
@@ -80,7 +79,8 @@
     </style>
 
     <style name="Widget.PackageInstaller.Material.Button" parent="@style/Widget.Material3.Button.TextButton.Dialog">
-        <item name="android:insetTop">8dp</item>
+        <item name="android:insetBottom">4dp</item>
+        <item name="android:insetTop">4dp</item>
         <item name="android:layout_marginStart">8dp</item>
         <item name="android:minHeight">@dimen/button_min_height</item>
         <item name="android:textAppearance">@style/TextAppearance.PackageInstaller.LabelLarge</item>
@@ -88,8 +88,8 @@
     </style>
 
     <style name="Widget.PackageInstaller.Material.Button.Colored" parent="@style/Widget.Material3.Button">
-        <item name="android:insetBottom">0dp</item>
-        <item name="android:insetTop">8dp</item>
+        <item name="android:insetBottom">4dp</item>
+        <item name="android:insetTop">4dp</item>
         <item name="android:layout_marginStart">8dp</item>
         <item name="android:minHeight">@dimen/button_min_height</item>
         <item name="android:paddingHorizontal">16dp</item>
@@ -99,8 +99,8 @@
     </style>
 
     <style name="Widget.PackageInstaller.Material.Button.Outlined" parent="@style/Widget.Material3.Button.OutlinedButton">
-        <item name="android:insetBottom">0dp</item>
-        <item name="android:insetTop">8dp</item>
+        <item name="android:insetBottom">4dp</item>
+        <item name="android:insetTop">4dp</item>
         <item name="android:layout_marginStart">8dp</item>
         <item name="android:minHeight">@dimen/button_min_height</item>
         <item name="android:paddingHorizontal">16dp</item>
