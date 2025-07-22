@@ -812,7 +812,6 @@ class MediaHierarchyManagerTest : SysuiTestCase() {
                 testScope = testScope,
             )
             goToLockedShade()
-            clearInvocations(mediaCarouselController)
 
             statusBarCallback.value.onStateChanged(StatusBarState.SHADE_LOCKED)
 
@@ -828,7 +827,6 @@ class MediaHierarchyManagerTest : SysuiTestCase() {
                 testScope = testScope,
             )
             goToLockedShade()
-            clearInvocations(mediaCarouselController)
 
             statusBarCallback.value.onDozingChanged(false)
 
@@ -836,12 +834,22 @@ class MediaHierarchyManagerTest : SysuiTestCase() {
         }
 
     @Test
-    fun testStatusBarOnExpandedChanged_carouselVisibleToUser() {
+    fun testStatusBarOnExpandedChangedToTrue_carouselVisibleToUser() {
         setHomeScreenShadeVisibleToUser()
 
         statusBarCallback.value.onExpandedChanged(true)
 
         verify(mediaCarouselController).onCarouselVisibleToUser()
+    }
+
+    @Test
+    fun testStatusBarOnExpandedChangedToFalse_carouselVisibleToUser() {
+        setHomeScreenShadeVisibleToUser()
+
+        statusBarCallback.value.onExpandedChanged(true)
+        statusBarCallback.value.onExpandedChanged(false)
+
+        verify(mediaCarouselController, times(1)).onCarouselVisibleToUser()
     }
 
     private fun setHomeScreenShadeVisibleToUser() {
