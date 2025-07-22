@@ -110,3 +110,13 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "disallow_dream_on_auto_projection"
+    namespace: "systemui"
+    description: "Disallows dreaming when Android Auto projected display is active"
+    bug: "413508543"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
