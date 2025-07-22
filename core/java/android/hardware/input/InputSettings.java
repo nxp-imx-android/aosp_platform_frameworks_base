@@ -715,7 +715,7 @@ public class InputSettings {
         }
 
         return Settings.System.getIntForUser(context.getContentResolver(),
-            Settings.System.MOUSE_SCROLLING_ACCELERATION, 0, UserHandle.USER_CURRENT) != 0;
+            Settings.System.MOUSE_SCROLLING_ACCELERATION, 1, UserHandle.USER_CURRENT) == 1;
     }
 
     /**
