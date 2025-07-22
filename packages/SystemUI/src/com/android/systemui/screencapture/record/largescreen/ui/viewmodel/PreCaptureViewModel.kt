@@ -17,8 +17,7 @@
 package com.android.systemui.screencapture.record.largescreen.ui.viewmodel
 
 import android.content.Context
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.unit.Dp
+import android.graphics.Rect
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.lifecycle.HydratedActivatable
@@ -64,6 +63,7 @@ constructor(
     private val isShowingUIFlow = MutableStateFlow(true)
     private val captureTypeSource = MutableStateFlow(ScreenCaptureType.SCREENSHOT)
     private val captureRegionSource = MutableStateFlow(ScreenCaptureRegion.FULLSCREEN)
+    private val regionBoxSource = MutableStateFlow<Rect?>(null)
 
     val icons: ScreenCaptureIcons? by iconProvider.icons.hydratedStateOf()
 
@@ -74,6 +74,8 @@ constructor(
 
     // TODO(b/423697394) Init default value to be user's previously selected option
     val captureRegion: ScreenCaptureRegion by captureRegionSource.hydratedStateOf()
+
+    val regionBox: Rect? by regionBoxSource.hydratedStateOf()
 
     val screenRecordingSupported = featuresInteractor.screenRecordingSupported
 
@@ -102,6 +104,10 @@ constructor(
         captureRegionSource.value = selectedRegion
     }
 
+    fun updateRegionBox(bounds: Rect) {
+        regionBoxSource.value = bounds
+    }
+
     fun takeFullscreenScreenshot() {
         require(captureTypeSource.value == ScreenCaptureType.SCREENSHOT)
         require(captureRegionSource.value == ScreenCaptureRegion.FULLSCREEN)
@@ -117,8 +123,21 @@ constructor(
         }
     }
 
-    fun onPartialRegionDragEnd(offset: Offset, width: Dp, height: Dp) {
-        // TODO(b/427541309) Update region box position and size.
+    fun takePartialScreenshot() {
+        require(captureTypeSource.value == ScreenCaptureType.SCREENSHOT)
+        require(captureRegionSource.value == ScreenCaptureRegion.PARTIAL)
+
+        val regionBoxRect = requireNotNull(regionBoxSource.value)
+
+        // Finishing the activity is not guaranteed to complete before the screenshot is taken.
+        // Since the pre-capture UI should not be included in the screenshot, hide the UI first.
+        hideUI()
+        closeUI()
+
+        backgroundScope.launch {
+            // TODO(b/430361425) Pass in current display as argument.
+            screenshotInteractor.takePartialScreenshot(regionBoxRect)
+        }
     }
 
     /**
