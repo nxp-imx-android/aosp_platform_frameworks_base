@@ -27,6 +27,7 @@ import android.platform.test.annotations.EnableFlags
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
+import com.android.systemui.shade.display.StatusBarTouchShadeDisplayPolicy
 import com.android.systemui.statusbar.CommandQueue
 import com.google.common.truth.Truth.assertThat
 import org.junit.Before
@@ -47,6 +48,7 @@ class SysUIKeyGestureEventInitializerTest : SysuiTestCase() {
     @JvmField @Rule var mockitoRule = MockitoJUnit.rule()
     @Mock private lateinit var inputManager: InputManager
     @Mock private lateinit var commandQueue: CommandQueue
+    @Mock private lateinit var shadeDisplayPolicy: StatusBarTouchShadeDisplayPolicy
     @Captor private lateinit var keyGestureEventsCaptor: ArgumentCaptor<List<Int>>
     @Captor
     private lateinit var keyGestureEventHandlerCaptor: ArgumentCaptor<KeyGestureEventHandler>
@@ -55,7 +57,7 @@ class SysUIKeyGestureEventInitializerTest : SysuiTestCase() {
 
     @Before
     fun setup() {
-        underTest = SysUIKeyGestureEventInitializer(inputManager, commandQueue)
+        underTest = SysUIKeyGestureEventInitializer(inputManager, commandQueue, shadeDisplayPolicy)
     }
 
     @Test
@@ -101,6 +103,7 @@ class SysUIKeyGestureEventInitializerTest : SysuiTestCase() {
             /* focusedToken= */ null,
         )
 
+        verify(shadeDisplayPolicy).onNotificationPanelKeyboardShortcut()
         verify(commandQueue).toggleNotificationsPanel()
     }
 
@@ -118,6 +121,7 @@ class SysUIKeyGestureEventInitializerTest : SysuiTestCase() {
             /* focusedToken= */ null,
         )
 
+        verify(shadeDisplayPolicy).onQSPanelKeyboardShortcut()
         verify(commandQueue).toggleQuickSettingsPanel()
     }
 
