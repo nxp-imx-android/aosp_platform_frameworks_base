@@ -67,6 +67,9 @@
       "name": "WMShellFlickerTestsDesktopMode-keyboardshortcuts-MinimizeAppsWithKeyboardFlickerTest"
     },
     {
+      "name": "WMShellFlickerTestsDesktopMode-keyboardshortcuts-OpenAppFromAllAppsUsingKeyboardFlickerTest"
+    },
+    {
       "name": "WMShellFlickerTestsDesktopMode-keyboardshortcuts-OpenBrowserWithKeyboardShortcutFlickerTest"
     },
     {
