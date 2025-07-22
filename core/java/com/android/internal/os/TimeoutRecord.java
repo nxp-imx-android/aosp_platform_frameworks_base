@@ -220,6 +220,14 @@ public class TimeoutRecord {
         return this;
     }
 
+    /**
+     * Return the expired timer.
+     */
+    @Nullable
+    public AutoCloseable getExpiredTimer() {
+        return mExpiredTimer;
+    }
+
     /** Close the ExpiredTimer, if one is present. getExpiredTimer will return null after this. */
     public void closeExpiredTimer() {
         try {
