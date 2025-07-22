@@ -84,9 +84,9 @@ interface SceneDataSource {
      *
      * The change is instantaneous and not animated; it will be observable in the next frame and
      * there will be no transition animation.
+     *
+     * When either one of [scene] or [overlays] is `null`, their current value in the scene
+     * transition layout state is used.
      */
-    fun instantlyTransitionTo(
-        scene: SceneKey = currentScene.value,
-        overlays: Set<OverlayKey> = currentOverlays.value,
-    )
+    fun instantlyTransitionTo(scene: SceneKey? = null, overlays: Set<OverlayKey>? = null)
 }

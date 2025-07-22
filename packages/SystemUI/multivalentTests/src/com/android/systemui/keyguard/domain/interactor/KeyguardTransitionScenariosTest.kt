@@ -83,7 +83,6 @@ import org.mockito.Mockito.clearInvocations
 import org.mockito.Mockito.reset
 import org.mockito.Mockito.verify
 import org.mockito.MockitoAnnotations
-import org.mockito.kotlin.any
 import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.eq
 import platform.test.runner.parameterized.ParameterizedAndroidJunit4
@@ -1476,7 +1475,7 @@ class KeyguardTransitionScenariosTest(flags: FlagsParameterization?) : SysuiTest
                 )
             if (Flags.communalPowerTransitionFix()) {
                 verify(communalSceneRepository)
-                    .instantlyTransitionTo(eq(CommunalScenes.Blank), any())
+                    .instantlyTransitionTo(eq(CommunalScenes.Blank), anyOrNull())
             } else {
                 verify(communalSceneRepository).changeScene(eq(CommunalScenes.Blank), anyOrNull())
             }

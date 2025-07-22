@@ -165,8 +165,7 @@ class FromDozingTransitionInteractorTest(flags: FlagsParameterization?) : SysuiT
 
             // If dreaming is possible and communal is available, then we should transition to
             // GLANCEABLE_HUB when waking up due to power button press.
-            verify(fakeCommunalSceneRepository)
-                .instantlyTransitionTo(CommunalScenes.Communal, emptySet())
+            verify(fakeCommunalSceneRepository).instantlyTransitionTo(CommunalScenes.Communal, null)
         }
 
     @Test
