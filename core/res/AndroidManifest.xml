@@ -10031,6 +10031,14 @@
             android:exported="true">
         </provider>
 
+        <provider
+            android:name="com.android.server.appfunctions.AppFunctionAccessHistoryProvider"
+            android:featureFlag="android.permission.flags.app_function_access_api_enabled"
+            android:authorities="com.android.appfunction.accesshistory"
+            android:singleUser="true"
+            android:exported="true">
+        </provider>
+
         <meta-data
             android:name="com.android.server.patch.25239169"
             android:value="true" />
