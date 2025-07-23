@@ -17,6 +17,7 @@
 package com.android.wm.shell.scenarios
 
 import android.app.Instrumentation
+import android.tools.Rotation
 import android.tools.traces.parsers.WindowManagerStateHelper
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.uiautomator.UiDevice
@@ -32,21 +33,27 @@ import org.junit.Test
 
 /** Base scenario test for minimizing the app entering pip on leave automatically */
 @Ignore("Test Base Class")
-abstract class MinimizeAutoPipAppWindow : TestScenarioBase() {
+abstract class MinimizeAutoPipAppWindow(
+    val rotation: Rotation = Rotation.ROTATION_0
+) : TestScenarioBase(rotation) {
     private val instrumentation: Instrumentation = InstrumentationRegistry.getInstrumentation()
     private val wmHelper = WindowManagerStateHelper(instrumentation)
     private val device = UiDevice.getInstance(instrumentation)
     private val testApp = DesktopModeAppHelper(SimpleAppHelper(instrumentation))
     private val pipApp = PipAppHelper(instrumentation)
-    private val pipAppDesktopMode = DesktopModeAppHelper(pipApp)
+    val pipAppDesktopMode = DesktopModeAppHelper(pipApp)
+
+    val appInDesktop: ArrayList<DesktopModeAppHelper> = ArrayList()
 
     @Before
     fun setup() {
         Assume.assumeTrue(Flags.enableMinimizeButton())
         Assume.assumeTrue(com.android.wm.shell.Flags.enablePip2())
         testApp.enterDesktopMode(wmHelper, device)
+        appInDesktop.add(testApp)
         pipApp.launchViaIntent(wmHelper)
         pipApp.enableAutoEnterForPipActivity()
+        appInDesktop.add(pipAppDesktopMode)
     }
 
     @Test

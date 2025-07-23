@@ -181,6 +181,14 @@ fun FlickerTest.appWindowHasDesktopModeInitialBoundsAtTheEnd(component: ICompone
     }
 }
 
+fun FlickerTest.appWindowBecomesPinned(component: IComponentMatcher) {
+    assertWm {
+        invoke("appWindowIsNotPinned") { it.isNotPinned(component) }
+            .then()
+            .invoke("appWindowIsPinned") { it.isPinned(component) }
+    }
+}
+
 fun FlickerTest.tilingDividerBecomesVisibleThenInvisible() {
     assertLayers {
         this.isInvisible(TILING_SPLIT_DIVIDER)
