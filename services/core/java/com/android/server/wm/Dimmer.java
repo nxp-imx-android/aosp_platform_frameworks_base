@@ -27,7 +27,6 @@ import android.view.SurfaceControl;
 
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.protolog.ProtoLog;
-import com.android.window.flags.Flags;
 
 
 /**
@@ -88,12 +87,6 @@ class Dimmer {
                 t.setAlpha(mDimSurface, 0f);
                 mIsVisible = true;
             }
-        }
-
-        void adjustSurfaceLayout(@NonNull SurfaceControl.Transaction t) {
-            // TODO: Once we use geometry from hierarchy this falls away.
-            t.setPosition(mDimSurface, mDimBounds.left, mDimBounds.top);
-            t.setWindowCrop(mDimSurface, mDimBounds.width(), mDimBounds.height());
         }
 
         /**
@@ -166,8 +159,7 @@ class Dimmer {
          * Whether anyone is currently requesting the dim
          */
         boolean isDimming() {
-            return mLastDimmingWindow != null
-                    && (mHostContainer.isVisibleRequested() || !Flags.useTasksDimOnly());
+            return mLastDimmingWindow != null && mHostContainer.isVisibleRequested();
         }
 
         @NonNull
@@ -275,9 +267,6 @@ class Dimmer {
             return false;
         } else {
             // Someone is dimming, show the requested changes
-            if (!Flags.useTasksDimOnly()) {
-                mDimState.adjustSurfaceLayout(t);
-            }
             if (!mDimState.mIsVisible && mDimState.mLastDimmingWindow != null
                     && mDimState.mLastDimmingWindow.mActivityRecord != null
                     && mDimState.mLastDimmingWindow.mActivityRecord.mStartingData != null) {

@@ -34,7 +34,6 @@ import android.util.proto.ProtoOutputStream;
 import android.view.SurfaceControl;
 
 import com.android.internal.protolog.ProtoLog;
-import com.android.window.flags.Flags;
 
 import java.io.PrintWriter;
 
@@ -170,9 +169,7 @@ public class DimmerAnimationHelper {
                         ? mRequestedProperties.mGeometryParent.getSurfaceControl() : null,
                 mRequestedProperties.mDimmingContainer != startProperties.mDimmingContainer
                         ? mRequestedProperties.mDimmingContainer.getSurfaceControl() : null, t);
-        if (Flags.useTasksDimOnly()) {
-            setBounds(dim, mCurrentProperties.mDimmingContainer, t);
-        }
+        setBounds(dim, mCurrentProperties.mDimmingContainer, t);
 
         if (!startProperties.hasSameVisualProperties(mRequestedProperties)) {
             EventLogTags.writeWmDimCancelAnim(dim.mDimSurface.getLayerId(), "new target values");

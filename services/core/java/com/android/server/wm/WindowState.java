@@ -5117,18 +5117,12 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
             // If the window is visible from surface flinger perspective (mWinAnimator.getShown())
             // but not window manager visible (!isVisibleNow()), it can still be the parent of the
             // dim, but can not create a new surface or continue a dim alone.
-            Dimmer dimmer;
-            WindowContainer<?> geometryParent = null;
-            if (Flags.useTasksDimOnly()) {
-                geometryParent = getDimParent();
-                dimmer = getDimController();
-                if (dimmer == null) {
-                    ProtoLog.e(WM_DEBUG_DIMMER, "WindowState %s does not have task or"
-                            + " display area for dimming", this);
-                    return;
-                }
-            } else {
-                dimmer = getDimmer();
+            final Dimmer dimmer = getDimController();
+            final WindowContainer<?> geometryParent = getDimParent();
+            if (dimmer == null) {
+                ProtoLog.e(WM_DEBUG_DIMMER, "WindowState %s does not have task or"
+                        + " display area for dimming", this);
+                return;
             }
 
             if (isVisibleNow()) {

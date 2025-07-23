@@ -3234,7 +3234,7 @@ class TaskFragment extends WindowContainer<WindowContainer> {
 
     /** Bounds to be used for dimming, as well as touch related tests. */
     void getDimBounds(@NonNull Rect out) {
-        if (Flags.useTasksDimOnly() && mDimmer.hasDimState()) {
+        if (mDimmer.hasDimState()) {
             out.set(mDimmer.getDimBounds());
         } else {
             if (mIsEmbedded && isDimmingOnParentTask() && getDimmer().getDimBounds() != null) {
@@ -3274,19 +3274,8 @@ class TaskFragment extends WindowContainer<WindowContainer> {
         mDimmer.resetDimStates();
         super.prepareSurfaces();
 
-        if (!Flags.useTasksDimOnly()) {
-            final Rect dimBounds = mDimmer.getDimBounds();
-            if (dimBounds != null) {
-                // Bounds need to be relative, as the dim layer is a child.
-                dimBounds.offsetTo(0 /* newLeft */, 0 /* newTop */);
-                if (mDimmer.updateDims(getSyncTransaction())) {
-                    scheduleAnimation();
-                }
-            }
-        } else {
-            if (mDimmer.updateDims(getSyncTransaction())) {
-                scheduleAnimation();
-            }
+        if (mDimmer.updateDims(getSyncTransaction())) {
+            scheduleAnimation();
         }
     }
 

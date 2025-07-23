@@ -34,8 +34,6 @@ import static org.mockito.Mockito.when;
 
 import android.graphics.Rect;
 import android.platform.test.annotations.Presubmit;
-import android.platform.test.annotations.RequiresFlagsDisabled;
-import android.platform.test.annotations.RequiresFlagsEnabled;
 import android.view.SurfaceControl;
 import android.view.SurfaceSession;
 
@@ -44,7 +42,6 @@ import androidx.annotation.Nullable;
 
 import com.android.server.testutils.StubTransaction;
 import com.android.server.wm.utils.MockAnimationAdapter;
-import com.android.window.flags.Flags;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -183,22 +180,6 @@ public class DimmerTests extends WindowTestsBase {
     }
 
     @Test
-    @RequiresFlagsDisabled(Flags.FLAG_USE_TASKS_DIM_ONLY)
-    public void testUpdateDimsAppliesCrop() {
-        mDimmer.adjustAppearance(mChild1, 1, 1);
-        mDimmer.adjustPosition(mChild1, mChild1);
-
-        int width = 100;
-        int height = 300;
-        mDimmer.getDimBounds().set(0, 0, width, height);
-        mDimmer.updateDims(mTransaction);
-
-        verify(mTransaction).setWindowCrop(mDimmer.getDimLayer(), width, height);
-        verify(mTransaction).show(mDimmer.getDimLayer());
-    }
-
-    @Test
-    @RequiresFlagsEnabled(Flags.FLAG_USE_TASKS_DIM_ONLY)
     public void testBoundsInActivityEmbeddingForWholeTask() {
         final WindowState dimmingWindow = getMockDimmingContainer();
         TestActivityEmbeddingMock embedding = new TestActivityEmbeddingMock();
@@ -214,7 +195,6 @@ public class DimmerTests extends WindowTestsBase {
     }
 
     @Test
-    @RequiresFlagsEnabled(Flags.FLAG_USE_TASKS_DIM_ONLY)
     public void testBoundsInActivityEmbeddingForTaskFragmentOnly() {
         final WindowState dimmingWindow = getMockDimmingContainer();
         TestActivityEmbeddingMock embedding = new TestActivityEmbeddingMock();
@@ -235,7 +215,6 @@ public class DimmerTests extends WindowTestsBase {
     }
 
     @Test
-    @RequiresFlagsEnabled(Flags.FLAG_USE_TASKS_DIM_ONLY)
     public void testDimBoundsAdaptToResizing() {
         // First call with some generic bounds
         mDimmer.adjustAppearance(mChild1, 0.5f, 1);
@@ -305,27 +284,6 @@ public class DimmerTests extends WindowTestsBase {
         mDimmer.updateDims(mTransaction);
         verify(mTransaction).show(dimLayer);
         verify(mTransaction, never()).remove(dimLayer);
-    }
-
-    @Test
-    @RequiresFlagsDisabled(Flags.FLAG_USE_TASKS_DIM_ONLY)
-    public void testDimUpdateWhileDimming() {
-        final float alpha = 0.8f;
-        mDimmer.adjustAppearance(mChild1, alpha, 20);
-        mDimmer.adjustPosition(mChild1, mChild1);
-        final Rect bounds = mDimmer.getDimBounds();
-
-        SurfaceControl dimLayer = mDimmer.getDimLayer();
-        bounds.set(0, 0, 10, 10);
-        mDimmer.updateDims(mTransaction);
-        verify(mTransaction).setWindowCrop(dimLayer, bounds.width(), bounds.height());
-        verify(mTransaction, times(1)).show(dimLayer);
-        verify(mTransaction).setPosition(dimLayer, 0, 0);
-
-        bounds.set(10, 10, 30, 30);
-        mDimmer.updateDims(mTransaction);
-        verify(mTransaction).setWindowCrop(dimLayer, bounds.width(), bounds.height());
-        verify(mTransaction).setPosition(dimLayer, 10, 10);
     }
 
     @Test
