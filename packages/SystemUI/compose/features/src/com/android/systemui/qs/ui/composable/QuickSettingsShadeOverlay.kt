@@ -300,6 +300,7 @@ private fun ContentScope.QuickSettingsLayout(
             modifier =
                 Modifier.fillMaxWidth().requiredHeight(QuickSettingsShade.Dimensions.ToolbarHeight),
             viewModel = toolbarViewModel,
+            isFullyVisible = { layoutState.isIdle(contentKey) },
         )
 
         VerticalSeparator(QuickSettingsShade.Dimensions.ShortPadding)
