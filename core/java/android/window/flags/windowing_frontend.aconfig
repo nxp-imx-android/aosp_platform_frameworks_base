@@ -191,17 +191,6 @@ flag {
 }
 
 flag {
-  name: "get_dimmer_on_closing"
-  namespace: "windowing_frontend"
-  description: "Change check for when to ignore a closing task's dim"
-  bug: "329233513"
-  is_fixed_read_only: true
-  metadata {
-    purpose: PURPOSE_BUGFIX
-  }
-}
-
-flag {
   name: "update_dims_when_window_shown"
   namespace: "windowing_frontend"
   description: "Check if we need to update dim layers when a new window draws the first frame"
