@@ -1976,6 +1976,15 @@ static void SpecializeCommon(JNIEnv* env, uid_t uid, gid_t gid, jintArray gids, 
                                  : CREATE_ERROR("createProcessGroup(%d, %d) failed: %s", uid,
                                                 /* pid= */ 0, strerror(-rc)));
         }
+
+        if (is_system_server && UsePerAppMemcg()) {
+            // Assign system_server to the correct memory cgroup.
+            // Not all devices mount memcg so check if it is mounted first
+            // to avoid unnecessarily printing errors and denials in the logs.
+            if (!SetTaskProfiles(getpid(), std::vector<std::string>{"SystemMemoryProcess"})) {
+                ALOGE("couldn't add process %d into system memcg group", getpid());
+            }
+        }
     }
 
     SetGids(env, gids, is_child_zygote, fail_fn);
@@ -2628,15 +2637,6 @@ static jint com_android_internal_os_Zygote_nativeForkSystemServer(
       if (waitpid(pid, &status, WNOHANG) == pid) {
           ALOGE("System server process %d has died. Restarting Zygote!", pid);
           RuntimeAbort(env, __LINE__, "System server process has died. Restarting Zygote!");
-      }
-
-      if (UsePerAppMemcg()) {
-          // Assign system_server to the correct memory cgroup.
-          // Not all devices mount memcg so check if it is mounted first
-          // to avoid unnecessarily printing errors and denials in the logs.
-          if (!SetTaskProfiles(pid, std::vector<std::string>{"SystemMemoryProcess"})) {
-              ALOGE("couldn't add process %d into system memcg group", pid);
-          }
       }
   }
   return pid;
