@@ -63,9 +63,12 @@ test_module_config {
     exclude_filters: [
         "com.android.wm.shell.flicker.bubbles.BubbleBarMovesTest",
         "com.android.wm.shell.flicker.bubbles.CollapseBubbleAppViaBackTest",
+        "com.android.wm.shell.flicker.bubbles.CollapseBubbleAppViaTouchOutsideTest",
+        "com.android.wm.shell.flicker.bubbles.DismissExpandedBubbleViaBubbleBarHandleTest",
         "com.android.wm.shell.flicker.bubbles.DismissExpandedBubbleViaBubbleViewTest",
         "com.android.wm.shell.flicker.bubbles.EnterBubbleViaBubbleMenuTest",
         "com.android.wm.shell.flicker.bubbles.EnterBubbleViaDragToBubbleBarTest",
+        "com.android.wm.shell.flicker.bubbles.EnterBubbleViaOverflowMenuTest",
         "com.android.wm.shell.flicker.bubbles.EnterBubbleWithImeViaBubbleMenuTest",
         "com.android.wm.shell.flicker.bubbles.ExpandBubbleViaBubbleStackTest",
         "com.android.wm.shell.flicker.bubbles.ExpandBubbleWithImeViaBubbleBarTest",
@@ -100,6 +103,13 @@ test_module_config {
     base: "WMShellExplicitFlickerTestsBubbles",
     test_suites: ["device-tests"],
     include_filters: ["com.android.wm.shell.flicker.bubbles.EnterBubbleViaDragToBubbleBarTest"],
+}
+
+test_module_config {
+    name: "WMShellExplicitFlickerTestsBubbles-EnterBubbleViaOverflowMenuTest",
+    base: "WMShellExplicitFlickerTestsBubbles",
+    test_suites: ["device-tests"],
+    include_filters: ["com.android.wm.shell.flicker.bubbles.EnterBubbleViaOverflowMenuTest"],
 }
 
 test_module_config {
