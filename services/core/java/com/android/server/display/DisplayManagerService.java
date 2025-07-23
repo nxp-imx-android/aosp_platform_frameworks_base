@@ -689,9 +689,12 @@ public final class DisplayManagerService extends SystemService {
             final var backupManager = new BackupManager(mContext);
             Consumer<Pair<DisplayTopology, DisplayTopologyGraph>> topologyChangedCallback =
                     update -> {
-                        DisplayTopologyGraph graph = update.second;
-                        if (mInputManagerInternal != null && graph != null) {
-                            mInputManagerInternal.setDisplayTopology(graph);
+                        if (mInputManagerInternal != null) {
+                            Slog.d(TAG,
+                                    "Sending topology graph to Input Manager: " + update.second);
+                            mInputManagerInternal.setDisplayTopology(update.second);
+                        } else {
+                            Slog.w(TAG, "Not sending topology, mInputManagerInternal is null");
                         }
                         deliverTopologyUpdate(update.first);
                     };
@@ -843,6 +846,11 @@ public final class DisplayManagerService extends SystemService {
         synchronized (mSyncRoot) {
             mWindowManagerInternal = LocalServices.getService(WindowManagerInternal.class);
             mInputManagerInternal = LocalServices.getService(InputManagerInternal.class);
+            if (mDisplayTopologyCoordinator != null) {
+                DisplayTopologyGraph graph = mDisplayTopologyCoordinator.getTopology().getGraph();
+                Slog.d(TAG, "Sending topology graph to Input Manager: " + graph);
+                mInputManagerInternal.setDisplayTopology(graph);
+            }
             mActivityManagerInternal = LocalServices.getService(ActivityManagerInternal.class);
 
             ActivityManager activityManager = mContext.getSystemService(ActivityManager.class);

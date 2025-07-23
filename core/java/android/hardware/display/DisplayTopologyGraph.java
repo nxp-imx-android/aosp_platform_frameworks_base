@@ -19,12 +19,14 @@ package android.hardware.display;
 import android.annotation.FlaggedApi;
 import android.annotation.TestApi;
 import android.graphics.RectF;
+import android.util.IndentingPrintWriter;
 import android.util.SparseArray;
 
 import androidx.annotation.NonNull;
 
 import com.android.server.display.feature.flags.Flags;
 
+import java.io.StringWriter;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -66,6 +68,27 @@ public class DisplayTopologyGraph {
             displayNodes.put(displayNode.mDisplayId, displayNode);
         }
         return displayNodes;
+    }
+
+    /**
+     * Print the object's state and debug information into the given stream.
+     * @hide
+     * @param pw The stream to dump information to.
+     */
+    public void dump(IndentingPrintWriter pw) {
+        pw.println("DisplayTopologyGraph{" + "mPrimaryDisplayId=" + mPrimaryDisplayId + '}');
+        pw.increaseIndent();
+        for (DisplayNode displayNode : mDisplayNodes) {
+            displayNode.dump(pw);
+        }
+        pw.decreaseIndent();
+    }
+
+    @Override
+    public String toString() {
+        StringWriter out = new StringWriter();
+        dump(new IndentingPrintWriter(out));
+        return out.toString();
     }
 
     /** Node representation of a display, including its {@link AdjacentEdge} */
@@ -110,6 +133,23 @@ public class DisplayTopologyGraph {
          */
         public @NonNull List<AdjacentEdge> getAdjacentEdges() {
             return Collections.unmodifiableList(Arrays.asList(mAdjacentEdges));
+        }
+
+        /**
+         * Print the object's state and debug information into the given stream.
+         * @hide
+         * @param pw The stream to dump information to.
+         */
+        public void dump(IndentingPrintWriter pw) {
+            pw.println("DisplayNode{" + "displayId=" + mDisplayId + ", density=" + mDensity
+                    + ", bounds=" + mBoundsInGlobalDp + '}');
+            if (mAdjacentEdges != null) {
+                pw.increaseIndent();
+                for (AdjacentEdge edge : mAdjacentEdges) {
+                    pw.println(edge);
+                }
+                pw.decreaseIndent();
+            }
         }
     }
 
