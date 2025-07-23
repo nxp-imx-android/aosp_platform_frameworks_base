@@ -330,17 +330,19 @@ class SourceLoader(
             throw GeneralUserErrorException("No source files found.")
         }
 
+        fun loadClasses(list: Iterable<PsiClass>?) {
+            list?.forEach { clazz ->
+                loadClass(clazz)?.let { classes.add(it) }
+
+                loadClasses(clazz.innerClasses.asIterable())
+            }
+        }
+
         log.iTime("Parsing source files") {
             log.withIndent {
                 for (file in psiFiles.asSequence().distinct()) {
                     val classesInFile = (file as? PsiClassOwner)?.classes?.toList()
-                    classesInFile?.forEach { clazz ->
-                        loadClass(clazz)?.let { classes.add(it) }
-
-                        clazz.innerClasses.forEach { inner ->
-                            loadClass(inner)?.let { classes.add(it) }
-                        }
-                    }
+                    loadClasses(classesInFile)
                 }
             }
         }

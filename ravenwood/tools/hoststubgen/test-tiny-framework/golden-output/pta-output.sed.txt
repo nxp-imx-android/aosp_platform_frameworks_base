@@ -36,6 +36,22 @@ apply "tiny-framework/src/com/android/hoststubgen/test/tinyframework/TinyFramewo
 # add annotation to method com.android.hoststubgen.test.tinyframework.TinyFrameworkForPta.foo(Ljava/lang/String;Ljava/lang/Object;)V
 25i\
     @android.ravenwood.annotation.RavenwoodKeep
+
+# add class annotation to com.android.hoststubgen.test.tinyframework.TinyFrameworkForPta$Nest1
+28i\
+    @android.ravenwood.annotation.RavenwoodKeepPartialClass
+
+# add annotation to method com.android.hoststubgen.test.tinyframework.TinyFrameworkForPta$Nest1.bar*
+29i\
+        @android.ravenwood.annotation.RavenwoodKeep
+
+# add class annotation to com.android.hoststubgen.test.tinyframework.TinyFrameworkForPta$Nest1$Nest2
+32i\
+        @android.ravenwood.annotation.RavenwoodKeepPartialClass
+
+# add annotation to method com.android.hoststubgen.test.tinyframework.TinyFrameworkForPta$Nest1$Nest2.baz*
+33i\
+            @android.ravenwood.annotation.RavenwoodKeep
 __END_OF_SCRIPT__
 
 #==============================================================================
@@ -251,6 +267,14 @@ com.android.hoststubgen.test.tinyframework.TinyFrameworkForPta
 
 # add to annotation allowlist
 $a\
+com.android.hoststubgen.test.tinyframework.TinyFrameworkForPta$Nest1
+
+# add to annotation allowlist
+$a\
+com.android.hoststubgen.test.tinyframework.TinyFrameworkForPta$Nest1$Nest2
+
+# add to annotation allowlist
+$a\
 com.android.hoststubgen.test.tinyframework.TinyFrameworkForTextPolicy
 
 # add to annotation allowlist
@@ -414,6 +438,18 @@ apply "policy-override-tiny-framework.txt" <<'__END_OF_SCRIPT__'
 
 # remove method policy com.android.hoststubgen.test.tinyframework.TinyFrameworkForPta.foo(Ljava/lang/String;Ljava/lang/Object;)V
 94s/^/#[PTA]: /
+
+# remove class policy on com.android.hoststubgen.test.tinyframework.TinyFrameworkForPta$Nest1
+96s/^/#[PTA]: /
+
+# remove method policy com.android.hoststubgen.test.tinyframework.TinyFrameworkForPta$Nest1.bar*
+97s/^/#[PTA]: /
+
+# remove class policy on com.android.hoststubgen.test.tinyframework.TinyFrameworkForPta$Nest1$Nest2
+99s/^/#[PTA]: /
+
+# remove method policy com.android.hoststubgen.test.tinyframework.TinyFrameworkForPta$Nest1$Nest2.baz*
+100s/^/#[PTA]: /
 __END_OF_SCRIPT__
 
 echo "All files updated successfully!"

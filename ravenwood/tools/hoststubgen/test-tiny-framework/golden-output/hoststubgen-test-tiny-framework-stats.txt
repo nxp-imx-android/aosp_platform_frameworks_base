@@ -373,6 +373,28 @@ com.android.hoststubgen.test.tinyframework
   0
   2
 com.android.hoststubgen.test.tinyframework
+  TinyFrameworkForPta$Nest1
+  0
+  com.android.hoststubgen.test.tinyframework.TinyFrameworkForPta$Nest1
+  bar
+  bar()V
+  1
+  Keep
+  file-override
+  0
+  2
+com.android.hoststubgen.test.tinyframework
+  TinyFrameworkForPta$Nest1$Nest2
+  0
+  com.android.hoststubgen.test.tinyframework.TinyFrameworkForPta$Nest1$Nest2
+  baz
+  baz()V
+  1
+  Keep
+  file-override
+  0
+  2
+com.android.hoststubgen.test.tinyframework
   TinyFrameworkForTextPolicy
   0
   com.android.hoststubgen.test.tinyframework.TinyFrameworkForTextPolicy

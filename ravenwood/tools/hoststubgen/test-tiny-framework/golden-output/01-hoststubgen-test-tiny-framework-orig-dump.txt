@@ -1353,6 +1353,94 @@ SourceFile: "TinyFrameworkExceptionTester.java"
 RuntimeInvisibleAnnotations:
   x: #x()
     android.hosttest.annotation.HostSideTestWholeClassKeep
+## Class: com/android/hoststubgen/test/tinyframework/TinyFrameworkForPta$Nest1$Nest2.class
+  Compiled from "TinyFrameworkForPta.java"
+public class com.android.hoststubgen.test.tinyframework.TinyFrameworkForPta$Nest1$Nest2
+  minor version: 0
+  major version: 65
+  flags: (0x0021) ACC_PUBLIC, ACC_SUPER
+  this_class: #x                          // com/android/hoststubgen/test/tinyframework/TinyFrameworkForPta$Nest1$Nest2
+  super_class: #x                         // java/lang/Object
+  interfaces: 0, fields: 0, methods: 2, attributes: 3
+Constant pool:
+{
+  public com.android.hoststubgen.test.tinyframework.TinyFrameworkForPta$Nest1$Nest2(com.android.hoststubgen.test.tinyframework.TinyFrameworkForPta$Nest1);
+    descriptor: (Lcom/android/hoststubgen/test/tinyframework/TinyFrameworkForPta$Nest1;)V
+    flags: (0x0001) ACC_PUBLIC
+    Code:
+      stack=1, locals=2, args_size=2
+         x: aload_0
+         x: invokespecial #x                  // Method java/lang/Object."<init>":()V
+         x: return
+      LineNumberTable:
+      LocalVariableTable:
+        Start  Length  Slot  Name   Signature
+            0       5     0  this   Lcom/android/hoststubgen/test/tinyframework/TinyFrameworkForPta$Nest1$Nest2;
+            0       5     1 this$1   Lcom/android/hoststubgen/test/tinyframework/TinyFrameworkForPta$Nest1;
+    MethodParameters:
+      Name                           Flags
+      <no name>                      final mandated
+
+  public void baz();
+    descriptor: ()V
+    flags: (0x0001) ACC_PUBLIC
+    Code:
+      stack=0, locals=1, args_size=1
+         x: return
+      LineNumberTable:
+      LocalVariableTable:
+        Start  Length  Slot  Name   Signature
+            0       1     0  this   Lcom/android/hoststubgen/test/tinyframework/TinyFrameworkForPta$Nest1$Nest2;
+}
+SourceFile: "TinyFrameworkForPta.java"
+NestHost: class com/android/hoststubgen/test/tinyframework/TinyFrameworkForPta
+InnerClasses:
+  public #x= #x of #x;                 // Nest1=class com/android/hoststubgen/test/tinyframework/TinyFrameworkForPta$Nest1 of class com/android/hoststubgen/test/tinyframework/TinyFrameworkForPta
+  public #x= #x of #x;                  // Nest2=class com/android/hoststubgen/test/tinyframework/TinyFrameworkForPta$Nest1$Nest2 of class com/android/hoststubgen/test/tinyframework/TinyFrameworkForPta$Nest1
+## Class: com/android/hoststubgen/test/tinyframework/TinyFrameworkForPta$Nest1.class
+  Compiled from "TinyFrameworkForPta.java"
+public class com.android.hoststubgen.test.tinyframework.TinyFrameworkForPta$Nest1
+  minor version: 0
+  major version: 65
+  flags: (0x0021) ACC_PUBLIC, ACC_SUPER
+  this_class: #x                          // com/android/hoststubgen/test/tinyframework/TinyFrameworkForPta$Nest1
+  super_class: #x                         // java/lang/Object
+  interfaces: 0, fields: 0, methods: 2, attributes: 3
+Constant pool:
+{
+  public com.android.hoststubgen.test.tinyframework.TinyFrameworkForPta$Nest1(com.android.hoststubgen.test.tinyframework.TinyFrameworkForPta);
+    descriptor: (Lcom/android/hoststubgen/test/tinyframework/TinyFrameworkForPta;)V
+    flags: (0x0001) ACC_PUBLIC
+    Code:
+      stack=1, locals=2, args_size=2
+         x: aload_0
+         x: invokespecial #x                  // Method java/lang/Object."<init>":()V
+         x: return
+      LineNumberTable:
+      LocalVariableTable:
+        Start  Length  Slot  Name   Signature
+            0       5     0  this   Lcom/android/hoststubgen/test/tinyframework/TinyFrameworkForPta$Nest1;
+            0       5     1 this$0   Lcom/android/hoststubgen/test/tinyframework/TinyFrameworkForPta;
+    MethodParameters:
+      Name                           Flags
+      <no name>                      final mandated
+
+  public void bar();
+    descriptor: ()V
+    flags: (0x0001) ACC_PUBLIC
+    Code:
+      stack=0, locals=1, args_size=1
+         x: return
+      LineNumberTable:
+      LocalVariableTable:
+        Start  Length  Slot  Name   Signature
+            0       1     0  this   Lcom/android/hoststubgen/test/tinyframework/TinyFrameworkForPta$Nest1;
+}
+SourceFile: "TinyFrameworkForPta.java"
+NestHost: class com/android/hoststubgen/test/tinyframework/TinyFrameworkForPta
+InnerClasses:
+  public #x= #x of #x;                  // Nest1=class com/android/hoststubgen/test/tinyframework/TinyFrameworkForPta$Nest1 of class com/android/hoststubgen/test/tinyframework/TinyFrameworkForPta
+  public #x= #x of #x;                  // Nest2=class com/android/hoststubgen/test/tinyframework/TinyFrameworkForPta$Nest1$Nest2 of class com/android/hoststubgen/test/tinyframework/TinyFrameworkForPta$Nest1
 ## Class: com/android/hoststubgen/test/tinyframework/TinyFrameworkForPta.class
   Compiled from "TinyFrameworkForPta.java"
 public class com.android.hoststubgen.test.tinyframework.TinyFrameworkForPta
@@ -1361,7 +1449,7 @@ public class com.android.hoststubgen.test.tinyframework.TinyFrameworkForPta
   flags: (0x0021) ACC_PUBLIC, ACC_SUPER
   this_class: #x                          // com/android/hoststubgen/test/tinyframework/TinyFrameworkForPta
   super_class: #x                         // java/lang/Object
-  interfaces: 0, fields: 0, methods: 3, attributes: 1
+  interfaces: 0, fields: 0, methods: 3, attributes: 3
 Constant pool:
 {
   public com.android.hoststubgen.test.tinyframework.TinyFrameworkForPta();
@@ -1399,6 +1487,12 @@ Constant pool:
       LineNumberTable:
 }
 SourceFile: "TinyFrameworkForPta.java"
+NestMembers:
+  com/android/hoststubgen/test/tinyframework/TinyFrameworkForPta$Nest1
+  com/android/hoststubgen/test/tinyframework/TinyFrameworkForPta$Nest1$Nest2
+InnerClasses:
+  public #x= #x of #x;                  // Nest1=class com/android/hoststubgen/test/tinyframework/TinyFrameworkForPta$Nest1 of class com/android/hoststubgen/test/tinyframework/TinyFrameworkForPta
+  public #x= #x of #x;                 // Nest2=class com/android/hoststubgen/test/tinyframework/TinyFrameworkForPta$Nest1$Nest2 of class com/android/hoststubgen/test/tinyframework/TinyFrameworkForPta$Nest1
 ## Class: com/android/hoststubgen/test/tinyframework/TinyFrameworkForTextPolicy.class
   Compiled from "TinyFrameworkForTextPolicy.java"
 public class com.android.hoststubgen.test.tinyframework.TinyFrameworkForTextPolicy
