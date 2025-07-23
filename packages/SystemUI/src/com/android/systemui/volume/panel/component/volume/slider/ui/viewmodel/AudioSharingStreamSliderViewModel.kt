@@ -103,7 +103,7 @@ constructor(
         volumeChanges.tryEmit(newValue.roundToInt())
     }
 
-    override fun onValueChangeFinished() {
+    override fun onValueChangeFinished(newValue: Float) {
         uiEventLogger.log(VolumePanelUiEvent.VOLUME_PANEL_AUDIO_SHARING_SLIDER_TOUCHED)
     }
 
