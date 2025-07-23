@@ -18,7 +18,6 @@ package com.android.server.autofill;
 
 import static android.Manifest.permission.MANAGE_AUTO_FILL;
 import static android.content.Context.AUTOFILL_MANAGER_SERVICE;
-import static android.service.autofill.Flags.fixGetAutofillComponent;
 import static android.view.autofill.AutofillManager.MAX_TEMP_AUGMENTED_SERVICE_DURATION_MS;
 import static android.view.autofill.AutofillManager.getSmartSuggestionModeToString;
 
@@ -1921,12 +1920,8 @@ public final class AutofillManagerService
 
             try {
                 synchronized (mLock) {
-                    final AutofillManagerServiceImpl service;
-                    if (fixGetAutofillComponent()) {
-                        service = getServiceForUserWithLocalBinderIdentityLocked(userId);
-                    } else {
-                        service = peekServiceForUserWithLocalBinderIdentityLocked(userId);
-                    }
+                    final AutofillManagerServiceImpl service =
+                            getServiceForUserWithLocalBinderIdentityLocked(userId);
                     if (service != null) {
                         componentName = service.getServiceComponentName();
                     } else if (sVerbose) {
