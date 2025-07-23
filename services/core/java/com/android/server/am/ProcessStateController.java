@@ -195,10 +195,10 @@ public class ProcessStateController {
         private boolean mUnlocking = false;
         private boolean mExpandedNotificationShade = false;
         private ProcessRecord mTopProcess = null;
-        private ProcessRecord mHomeProcess = null;
-        private ProcessRecord mHeavyWeightProcess = null;
+        private ProcessRecordInternal mHomeProcess = null;
+        private ProcessRecordInternal mHeavyWeightProcess = null;
         private ProcessRecord mShowingUiWhileDozingProcess = null;
-        private ProcessRecord mPreviousProcess = null;
+        private ProcessRecordInternal mPreviousProcess = null;
 
         private void commitStagedState() {
             mUnlocking = mUnlockingStaged;
@@ -235,12 +235,12 @@ public class ProcessStateController {
         }
 
         @Nullable
-        public ProcessRecord getHomeProcess() {
+        public ProcessRecordInternal getHomeProcess() {
             return mHomeProcess;
         }
 
         @Nullable
-        public ProcessRecord getHeavyWeightProcess() {
+        public ProcessRecordInternal getHeavyWeightProcess() {
             return mHeavyWeightProcess;
         }
 
@@ -250,7 +250,7 @@ public class ProcessStateController {
         }
 
         @Nullable
-        public ProcessRecord getPreviousProcess() {
+        public ProcessRecordInternal getPreviousProcess() {
             return mPreviousProcess;
         }
     }
@@ -275,17 +275,17 @@ public class ProcessStateController {
     }
 
     @GuardedBy("mLock")
-    private void setPreviousProcess(@Nullable ProcessRecord proc) {
+    private void setPreviousProcess(@Nullable ProcessRecordInternal proc) {
         mGlobalState.mPreviousProcess = proc;
     }
 
     @GuardedBy("mLock")
-    private void setHomeProcess(@Nullable ProcessRecord proc) {
+    private void setHomeProcess(@Nullable ProcessRecordInternal proc) {
         mGlobalState.mHomeProcess = proc;
     }
 
     @GuardedBy("mLock")
-    private void setHeavyWeightProcess(@Nullable ProcessRecord proc) {
+    private void setHeavyWeightProcess(@Nullable ProcessRecordInternal proc) {
         mGlobalState.mHeavyWeightProcess = proc;
     }
 
@@ -890,7 +890,8 @@ public class ProcessStateController {
         public void setPreviousProcessAsync(@Nullable WindowProcessController wpc) {
             if (!Flags.pushActivityStateToOomadjuster()) return;
 
-            final ProcessRecord prev = wpc != null ? (ProcessRecord) wpc.mOwner : null;
+            final ProcessRecordInternal prev = wpc != null
+                    ? (ProcessRecordInternal) wpc.mOwner : null;
             getBatchSession().stage(() -> mPsc.setPreviousProcess(prev));
         }
 
@@ -901,7 +902,8 @@ public class ProcessStateController {
         public void setHomeProcessAsync(@Nullable WindowProcessController wpc) {
             if (!Flags.pushActivityStateToOomadjuster()) return;
 
-            final ProcessRecord home = wpc != null ? (ProcessRecord) wpc.mOwner : null;
+            final ProcessRecordInternal home = wpc != null
+                    ? (ProcessRecordInternal) wpc.mOwner : null;
             getBatchSession().stage(() -> mPsc.setHomeProcess(home));
         }
 

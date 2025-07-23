@@ -525,16 +525,16 @@ public abstract class OomAdjuster {
         @Nullable ProcessRecord getTopProcess();
 
         /** The current Home process. */
-        @Nullable ProcessRecord getHomeProcess();
+        @Nullable ProcessRecordInternal getHomeProcess();
 
         /** The current Heavy Weight process. */
-        @Nullable ProcessRecord getHeavyWeightProcess();
+        @Nullable ProcessRecordInternal getHeavyWeightProcess();
 
         /** The current process showing UI if the device is in doze. */
         @Nullable ProcessRecord getShowingUiWhileDozingProcess();
 
         /** The previous process that showed an activity. */
-        @Nullable ProcessRecord getPreviousProcess();
+        @Nullable ProcessRecordInternal getPreviousProcess();
     }
 
     boolean isChangeEnabled(@CachedCompatChangeId int cachedCompatChangeId,
@@ -1891,7 +1891,7 @@ public abstract class OomAdjuster {
         }
     }
 
-    protected boolean isHomeProcess(ProcessRecord proc) {
+    protected boolean isHomeProcess(ProcessRecordInternal proc) {
         if (Flags.pushActivityStateToOomadjuster()) {
             return mGlobalState.getHomeProcess() == proc;
         } else {
@@ -1899,7 +1899,7 @@ public abstract class OomAdjuster {
         }
     }
 
-    protected boolean isHeavyWeightProcess(ProcessRecord proc) {
+    protected boolean isHeavyWeightProcess(ProcessRecordInternal proc) {
         if (Flags.pushActivityStateToOomadjuster()) {
             return mGlobalState.getHeavyWeightProcess() == proc;
         } else {
@@ -1915,7 +1915,7 @@ public abstract class OomAdjuster {
         }
     }
 
-    protected boolean isPreviousProcess(ProcessRecord proc) {
+    protected boolean isPreviousProcess(ProcessRecordInternal proc) {
         if (Flags.pushActivityStateToOomadjuster()) {
             return mGlobalState.getPreviousProcess() == proc;
         } else {
