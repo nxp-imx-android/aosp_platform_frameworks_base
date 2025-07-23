@@ -77,7 +77,7 @@ public class KeyguardTransitionHandler
         implements Transitions.TransitionHandler, KeyguardChangeListener,
         TaskStackListenerCallback {
     private static final boolean ENABLE_NEW_KEYGUARD_SHELL_TRANSITIONS =
-            Flags.ensureKeyguardDoesTransitionStarting();
+            Flags.ensureKeyguardDoesTransitionStartingBugFix();
 
     private static final String TAG = "KeyguardTransition";
 

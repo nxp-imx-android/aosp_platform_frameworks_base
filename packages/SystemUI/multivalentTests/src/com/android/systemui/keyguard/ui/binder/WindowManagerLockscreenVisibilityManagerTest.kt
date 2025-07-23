@@ -100,7 +100,7 @@ class WindowManagerLockscreenVisibilityManagerTest : SysuiTestCase() {
     }
 
     @Test
-    @RequiresFlagsDisabled(Flags.FLAG_ENSURE_KEYGUARD_DOES_TRANSITION_STARTING)
+    @RequiresFlagsDisabled(Flags.FLAG_ENSURE_KEYGUARD_DOES_TRANSITION_STARTING_BUG_FIX)
     fun testLockscreenVisible_andAodVisible_without_keyguard_shell_transitions() {
         underTest.setLockscreenShown(true)
         uiBgExecutor.runAllReady()
@@ -113,7 +113,7 @@ class WindowManagerLockscreenVisibilityManagerTest : SysuiTestCase() {
     }
 
     @Test
-    @RequiresFlagsEnabled(Flags.FLAG_ENSURE_KEYGUARD_DOES_TRANSITION_STARTING)
+    @RequiresFlagsEnabled(Flags.FLAG_ENSURE_KEYGUARD_DOES_TRANSITION_STARTING_BUG_FIX)
     fun testLockscreenVisible_andAodVisible_with_keyguard_shell_transitions() {
         underTest.setLockscreenShown(true)
         uiBgExecutor.runAllReady()
@@ -126,7 +126,7 @@ class WindowManagerLockscreenVisibilityManagerTest : SysuiTestCase() {
     }
 
     @Test
-    @RequiresFlagsDisabled(Flags.FLAG_ENSURE_KEYGUARD_DOES_TRANSITION_STARTING)
+    @RequiresFlagsDisabled(Flags.FLAG_ENSURE_KEYGUARD_DOES_TRANSITION_STARTING_BUG_FIX)
     fun testGoingAway_whenLockscreenVisible_thenSurfaceMadeVisible_without_keyguard_shell_transitions() {
         underTest.setLockscreenShown(true)
         uiBgExecutor.runAllReady()
@@ -145,7 +145,7 @@ class WindowManagerLockscreenVisibilityManagerTest : SysuiTestCase() {
     }
 
     @Test
-    @RequiresFlagsEnabled(Flags.FLAG_ENSURE_KEYGUARD_DOES_TRANSITION_STARTING)
+    @RequiresFlagsEnabled(Flags.FLAG_ENSURE_KEYGUARD_DOES_TRANSITION_STARTING_BUG_FIX)
     fun testGoingAway_whenLockscreenVisible_thenSurfaceMadeVisible_with_keyguard_shell_transitions() {
         underTest.setLockscreenShown(true)
         uiBgExecutor.runAllReady()
@@ -164,7 +164,7 @@ class WindowManagerLockscreenVisibilityManagerTest : SysuiTestCase() {
     }
 
     @Test
-    @RequiresFlagsDisabled(Flags.FLAG_ENSURE_KEYGUARD_DOES_TRANSITION_STARTING)
+    @RequiresFlagsDisabled(Flags.FLAG_ENSURE_KEYGUARD_DOES_TRANSITION_STARTING_BUG_FIX)
     fun testSurfaceVisible_whenLockscreenNotShowing_doesNotTriggerGoingAway_without_keyguard_shell_transitions() {
         underTest.setLockscreenShown(false)
         underTest.setAodVisible(false)
@@ -180,7 +180,7 @@ class WindowManagerLockscreenVisibilityManagerTest : SysuiTestCase() {
     }
 
     @Test
-    @RequiresFlagsEnabled(Flags.FLAG_ENSURE_KEYGUARD_DOES_TRANSITION_STARTING)
+    @RequiresFlagsEnabled(Flags.FLAG_ENSURE_KEYGUARD_DOES_TRANSITION_STARTING_BUG_FIX)
     fun testSurfaceVisible_whenLockscreenNotShowing_doesNotTriggerGoingAway_with_keyguard_shell_transitions() {
         underTest.setLockscreenShown(false)
         underTest.setAodVisible(false)
@@ -196,7 +196,7 @@ class WindowManagerLockscreenVisibilityManagerTest : SysuiTestCase() {
     }
 
     @Test
-    @RequiresFlagsDisabled(Flags.FLAG_ENSURE_KEYGUARD_DOES_TRANSITION_STARTING)
+    @RequiresFlagsDisabled(Flags.FLAG_ENSURE_KEYGUARD_DOES_TRANSITION_STARTING_BUG_FIX)
     fun testAodVisible_noLockscreenShownCallYet_doesNotShowLockscreenUntilLater_without_keyguard_shell_transitions() {
         underTest.setAodVisible(false)
         uiBgExecutor.runAllReady()
@@ -209,7 +209,7 @@ class WindowManagerLockscreenVisibilityManagerTest : SysuiTestCase() {
     }
 
     @Test
-    @RequiresFlagsEnabled(Flags.FLAG_ENSURE_KEYGUARD_DOES_TRANSITION_STARTING)
+    @RequiresFlagsEnabled(Flags.FLAG_ENSURE_KEYGUARD_DOES_TRANSITION_STARTING_BUG_FIX)
     fun testAodVisible_noLockscreenShownCallYet_doesNotShowLockscreenUntilLater_with_keyguard_shell_transitions() {
         underTest.setAodVisible(false)
         uiBgExecutor.runAllReady()
@@ -222,7 +222,7 @@ class WindowManagerLockscreenVisibilityManagerTest : SysuiTestCase() {
     }
 
     @Test
-    @RequiresFlagsDisabled(Flags.FLAG_ENSURE_KEYGUARD_DOES_TRANSITION_STARTING)
+    @RequiresFlagsDisabled(Flags.FLAG_ENSURE_KEYGUARD_DOES_TRANSITION_STARTING_BUG_FIX)
     fun setSurfaceBehindVisibility_goesAwayFirst_andIgnoresSecondCall_without_keyguard_shell_transitions() {
         underTest.setLockscreenShown(true)
         uiBgExecutor.runAllReady()
@@ -236,7 +236,7 @@ class WindowManagerLockscreenVisibilityManagerTest : SysuiTestCase() {
     }
 
     @Test
-    @RequiresFlagsEnabled(Flags.FLAG_ENSURE_KEYGUARD_DOES_TRANSITION_STARTING)
+    @RequiresFlagsEnabled(Flags.FLAG_ENSURE_KEYGUARD_DOES_TRANSITION_STARTING_BUG_FIX)
     fun setSurfaceBehindVisibility_goesAwayFirst_andIgnoresSecondCall_with_keyguard_shell_transitions() {
         underTest.setLockscreenShown(true)
         uiBgExecutor.runAllReady()
@@ -251,7 +251,7 @@ class WindowManagerLockscreenVisibilityManagerTest : SysuiTestCase() {
     }
 
     @Test
-    @RequiresFlagsDisabled(Flags.FLAG_ENSURE_KEYGUARD_DOES_TRANSITION_STARTING)
+    @RequiresFlagsDisabled(Flags.FLAG_ENSURE_KEYGUARD_DOES_TRANSITION_STARTING_BUG_FIX)
     fun setSurfaceBehindVisibility_falseSetsLockscreenVisibility_without_keyguard_shell_transitions() {
         underTest.setLockscreenShown(true)
         uiBgExecutor.runAllReady()
@@ -267,7 +267,7 @@ class WindowManagerLockscreenVisibilityManagerTest : SysuiTestCase() {
     }
 
     @Test
-    @RequiresFlagsEnabled(Flags.FLAG_ENSURE_KEYGUARD_DOES_TRANSITION_STARTING)
+    @RequiresFlagsEnabled(Flags.FLAG_ENSURE_KEYGUARD_DOES_TRANSITION_STARTING_BUG_FIX)
     fun setSurfaceBehindVisibility_falseSetsLockscreenVisibility_with_keyguard_shell_transitions() {
         underTest.setLockscreenShown(true)
         uiBgExecutor.runAllReady()
@@ -309,7 +309,7 @@ class WindowManagerLockscreenVisibilityManagerTest : SysuiTestCase() {
     }
 
     @Test
-    @RequiresFlagsDisabled(Flags.FLAG_ENSURE_KEYGUARD_DOES_TRANSITION_STARTING)
+    @RequiresFlagsDisabled(Flags.FLAG_ENSURE_KEYGUARD_DOES_TRANSITION_STARTING_BUG_FIX)
     fun lockscreenEventuallyShown_ifReshown_afterGoingAwayExecutionDelayed() {
         underTest.setLockscreenShown(true)
         uiBgExecutor.runAllReady()

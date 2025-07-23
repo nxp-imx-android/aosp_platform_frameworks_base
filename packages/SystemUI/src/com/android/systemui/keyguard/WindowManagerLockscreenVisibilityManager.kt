@@ -124,7 +124,7 @@ constructor(
     private var goingAwayRemoteAnimationFinishedCallback: IRemoteAnimationFinishedCallback? = null
 
     private val enableNewKeyguardShellTransitions: Boolean =
-        Flags.ensureKeyguardDoesTransitionStarting()
+        Flags.ensureKeyguardDoesTransitionStartingBugFix()
 
     /**
      * Set the visibility of the surface behind the keyguard, making the appropriate calls to Window
