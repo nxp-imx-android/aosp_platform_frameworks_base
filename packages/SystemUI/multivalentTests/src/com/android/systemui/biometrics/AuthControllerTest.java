@@ -824,7 +824,7 @@ public class AuthControllerTest extends SysuiTestCase {
         showDialog(new int[]{1} /* sensorIds */, false /* credentialAllowed */);
 
         // THEN callback should be received
-        verify(callback).onBiometricPromptShown();
+        verify(callback).onBiometricPromptShown(any());
     }
 
     @Test
@@ -840,7 +840,7 @@ public class AuthControllerTest extends SysuiTestCase {
                 mAuthController.mCurrentDialog.getRequestId());
 
         // THEN callback should be received
-        verify(callback).onBiometricPromptDismissed();
+        verify(callback).onBiometricPromptDismissed(BiometricPrompt.DISMISSED_REASON_USER_CANCEL);
     }
 
     @Test
@@ -854,7 +854,8 @@ public class AuthControllerTest extends SysuiTestCase {
         mAuthController.hideAuthenticationDialog(mAuthController.mCurrentDialog.getRequestId());
 
         // THEN callback should be received
-        verify(callback).onBiometricPromptDismissed();
+        verify(callback).onBiometricPromptDismissed(
+                BiometricPrompt.DISMISSED_REASON_SERVER_REQUESTED);
     }
 
     @Test

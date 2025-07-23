@@ -232,7 +232,7 @@ public class AuthController implements
             mCurrentDialog = null;
 
             for (Callback cb : mCallbacks) {
-                cb.onBiometricPromptDismissed();
+                cb.onBiometricPromptDismissed(reason);
             }
 
             try {
@@ -1165,7 +1165,7 @@ public class AuthController implements
 
         mCurrentDialog.dismissFromSystemServer();
         for (Callback cb : mCallbacks) {
-            cb.onBiometricPromptDismissed();
+            cb.onBiometricPromptDismissed(BiometricPrompt.DISMISSED_REASON_SERVER_REQUESTED);
         }
 
         // BiometricService will have already sent the callback to the client in this case.
@@ -1291,7 +1291,7 @@ public class AuthController implements
 
         mReceiver = (IBiometricSysuiReceiver) args.arg2;
         for (Callback cb : mCallbacks) {
-            cb.onBiometricPromptShown();
+            cb.onBiometricPromptShown(promptInfo);
         }
         mCurrentDialog = newDialog;
 
@@ -1345,7 +1345,7 @@ public class AuthController implements
         }
 
         for (Callback cb : mCallbacks) {
-            cb.onBiometricPromptDismissed();
+            cb.onBiometricPromptDismissed(reason);
         }
 
         mReceiver = null;
@@ -1458,9 +1458,23 @@ public class AuthController implements
         default void onBiometricPromptShown() {}
 
         /**
+         * Called when the biometric prompt starts showing.
+         */
+        default void onBiometricPromptShown(PromptInfo promptInfo) {
+            onBiometricPromptShown();
+        }
+
+        /**
          * Called when the biometric prompt is no longer showing.
          */
         default void onBiometricPromptDismissed() {}
+
+        /**
+         * Called when the biometric prompt is no longer showing.
+         */
+        default void onBiometricPromptDismissed(@BiometricPrompt.DismissedReason int reason) {
+            onBiometricPromptDismissed();
+        }
 
         /**
          * Called when the location of the fingerprint sensor changes. The location in pixels can

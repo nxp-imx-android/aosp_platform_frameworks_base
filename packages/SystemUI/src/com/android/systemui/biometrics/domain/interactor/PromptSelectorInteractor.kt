@@ -16,12 +16,14 @@
 
 package com.android.systemui.biometrics.domain.interactor
 
+import android.app.StatusBarManager.SESSION_BIOMETRIC_PROMPT
 import android.hardware.biometrics.BiometricManager
 import android.hardware.biometrics.Flags
 import android.hardware.biometrics.IIdentityCheckStateListener
 import android.hardware.biometrics.PromptInfo
 import android.util.Log
 import com.android.internal.widget.LockPatternUtils
+import com.android.systemui.biometrics.BiometricPromptLogger
 import com.android.systemui.biometrics.Utils
 import com.android.systemui.biometrics.Utils.getCredentialType
 import com.android.systemui.biometrics.Utils.isDeviceCredentialAllowed
@@ -41,6 +43,8 @@ import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.display.domain.interactor.DisplayStateInteractor
 import com.android.systemui.display.shared.model.isDefaultOrientation
 import com.android.systemui.kairos.awaitClose
+import com.android.systemui.log.SessionTracker
+import com.android.systemui.shared.system.SysUiStatsLog
 import com.android.systemui.util.kotlin.combine
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
@@ -147,6 +151,8 @@ constructor(
     private val lockPatternUtils: LockPatternUtils,
     private val biometricManager: BiometricManager?,
     @Background private val bgScope: CoroutineScope,
+    private val sessionTracker: SessionTracker,
+    private val biometricPromptLogger: BiometricPromptLogger,
 ) : PromptSelectorInteractor {
 
     override val prompt: Flow<BiometricPromptRequest.Biometric?> =
@@ -216,6 +222,26 @@ constructor(
         callbackFlow {
                 val updateWatchRangingState = { state: Int ->
                     Log.d(TAG, "authenticationState updated: $state")
+                    when (state) {
+                        WatchRangingState.WATCH_RANGING_STARTED.ordinal -> {
+                            logEvent(
+                                SysUiStatsLog
+                                    .BIOMETRIC_PROMPT_EVENT__EVENT__EVENT_TYPE_WATCH_RANGING_STARTED
+                            )
+                        }
+                        WatchRangingState.WATCH_RANGING_STOPPED.ordinal -> {
+                            logEvent(
+                                SysUiStatsLog
+                                    .BIOMETRIC_PROMPT_EVENT__EVENT__EVENT_TYPE_WATCH_RANGING_ENDED
+                            )
+                        }
+                        WatchRangingState.WATCH_RANGING_SUCCESSFUL.ordinal -> {
+                            logEvent(
+                                SysUiStatsLog
+                                    .BIOMETRIC_PROMPT_EVENT__EVENT__EVENT_TYPE_WATCH_RANGING_SUCCESS
+                            )
+                        }
+                    }
                     trySendWithFailureLogging(
                         WatchRangingState.entries.first { it.ordinal == state },
                         TAG,
@@ -286,6 +312,8 @@ constructor(
             // isLandscape value is not important when onSwitchToCredential is true
             isLandscape = false,
         )
+
+        logEvent(SysUiStatsLog.BIOMETRIC_PROMPT_EVENT__EVENT__EVENT_TYPE_CREDENTIAL_VIEW_SHOWN)
     }
 
     override fun onSwitchToAuth() {
@@ -301,10 +329,14 @@ constructor(
             onSwitchToCredential = false,
             isLandscape = !displayStateInteractor.currentRotation.value.isDefaultOrientation(),
         )
+
+        logEvent(SysUiStatsLog.BIOMETRIC_PROMPT_EVENT__EVENT__EVENT_TYPE_BIOMETRIC_VIEW_SHOWN)
     }
 
     override fun onSwitchToFallback() {
         _currentView.value = BiometricPromptView.FALLBACK
+
+        logEvent(SysUiStatsLog.BIOMETRIC_PROMPT_EVENT__EVENT__EVENT_TYPE_FALLBACK_VIEW_SHOWN)
     }
 
     override fun setPrompt(
@@ -375,6 +407,13 @@ constructor(
     override fun resetPrompt(requestId: Long) {
         _currentView.value = BiometricPromptView.BIOMETRIC
         promptRepository.unsetPrompt(requestId)
+    }
+
+    fun logEvent(event: Int) {
+        biometricPromptLogger.logPromptEvent(
+            sessionTracker.getSessionId(SESSION_BIOMETRIC_PROMPT),
+            event,
+        )
     }
 
     companion object {
