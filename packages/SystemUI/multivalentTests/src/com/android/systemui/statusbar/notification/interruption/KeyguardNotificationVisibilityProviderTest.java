@@ -23,6 +23,7 @@ import static android.app.NotificationManager.IMPORTANCE_HIGH;
 import static android.app.NotificationManager.IMPORTANCE_LOW;
 import static android.app.NotificationManager.IMPORTANCE_MIN;
 import static android.app.NotificationManager.VISIBILITY_NO_OVERRIDE;
+import static android.security.Flags.FLAG_SECURE_LOCK_DEVICE;
 
 import static com.android.systemui.statusbar.StatusBarState.KEYGUARD;
 import static com.android.systemui.statusbar.StatusBarState.SHADE;
@@ -56,9 +57,9 @@ import com.android.systemui.SysuiTestCase;
 import com.android.systemui.ambient.statusbar.shared.flag.OngoingActivityChipsOnDream;
 import com.android.systemui.dagger.SysUISingleton;
 import com.android.systemui.dagger.qualifiers.Main;
-import com.android.systemui.flags.FakeFeatureFlagsClassic;
-import com.android.systemui.flags.FeatureFlagsClassic;
+import com.android.systemui.kosmos.KosmosJavaAdapter;
 import com.android.systemui.plugins.statusbar.StatusBarStateController;
+import com.android.systemui.securelockdevice.domain.interactor.SecureLockDeviceInteractor;
 import com.android.systemui.settings.UserTracker;
 import com.android.systemui.statusbar.NotificationLockscreenUserManager;
 import com.android.systemui.statusbar.RankingBuilder;
@@ -103,7 +104,7 @@ public class KeyguardNotificationVisibilityProviderTest  extends SysuiTestCase {
     @Mock private UserTracker mUserTracker;
     private final FakeSettings mSecureSettings = new FakeSettings();
     private final FakeGlobalSettings mGlobalSettings = new FakeGlobalSettings();
-    private final FakeFeatureFlagsClassic mFeatureFlags = new FakeFeatureFlagsClassic();
+    private final KosmosJavaAdapter mKosmos = new KosmosJavaAdapter(this);
 
     private KeyguardNotificationVisibilityProvider mKeyguardNotificationVisibilityProvider;
     private NotificationEntry mEntry;
@@ -125,7 +126,7 @@ public class KeyguardNotificationVisibilityProviderTest  extends SysuiTestCase {
                                 mUserTracker,
                                 mSecureSettings,
                                 mGlobalSettings,
-                                mFeatureFlags);
+                                mKosmos.getSecureLockDeviceInteractor());
         mKeyguardNotificationVisibilityProvider = component.getProvider();
         for (CoreStartable startable : component.getCoreStartables().values()) {
             startable.start();
@@ -461,6 +462,21 @@ public class KeyguardNotificationVisibilityProviderTest  extends SysuiTestCase {
         assertTrue(mKeyguardNotificationVisibilityProvider.shouldHideNotification(mEntry));
     }
 
+    @EnableFlags(FLAG_SECURE_LOCK_DEVICE)
+    @Test
+    public void secure_lock_device() {
+        // GIVEN an 'unfiltered-keyguard-showing' state
+        setupUnfilteredState(mEntry);
+
+        // WHEN the notification's user is in secure lock device:
+        mKosmos.getFakeSecureLockDeviceRepository().onSecureLockDeviceEnabled();
+        mKosmos.getTestDispatcher().getScheduler().runCurrent();
+
+        // THEN filter out the entry
+        assertTrue(mKeyguardNotificationVisibilityProvider.shouldHideNotification(mEntry));
+    }
+
+
     @Test
     public void publicMode_settingsDisallow() {
         // GIVEN an 'unfiltered-keyguard-showing' state
@@ -702,6 +718,8 @@ public class KeyguardNotificationVisibilityProviderTest  extends SysuiTestCase {
         when(mLockscreenUserManager.getCurrentUserId()).thenReturn(CURR_USER_ID);
         when(mKeyguardUpdateMonitor.isUserInLockdown(NOTIF_USER_ID)).thenReturn(false);
         when(mKeyguardUpdateMonitor.isUserInLockdown(CURR_USER_ID)).thenReturn(false);
+        // neither the current user nor the notification's user is in secure lock device
+        mKosmos.getFakeSecureLockDeviceRepository().onSecureLockDeviceDisabled();
 
         // not in public mode
         when(mLockscreenUserManager.isLockscreenPublicMode(CURR_USER_ID)).thenReturn(false);
@@ -745,7 +763,7 @@ public class KeyguardNotificationVisibilityProviderTest  extends SysuiTestCase {
                     @BindsInstance UserTracker userTracker,
                     @BindsInstance SecureSettings secureSettings,
                     @BindsInstance GlobalSettings globalSettings,
-                    @BindsInstance FeatureFlagsClassic featureFlags
+                    @BindsInstance SecureLockDeviceInteractor secureLockDeviceInteractor
             );
         }
     }
