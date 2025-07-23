@@ -20,6 +20,7 @@ import android.content.ComponentName
 import com.android.app.tracing.coroutines.launchTraced as launch
 import com.android.compose.animation.scene.SceneKey
 import com.android.systemui.Flags
+import com.android.systemui.Flags.hubEditModeTransition
 import com.android.systemui.classifier.Classifier
 import com.android.systemui.classifier.domain.interactor.FalsingInteractor
 import com.android.systemui.communal.dagger.CommunalModule.Companion.SWIPE_TO_HUB
@@ -236,6 +237,14 @@ constructor(
         MutableStateFlow(false)
     val isEnableWorkProfileDialogShowing: Flow<Boolean> =
         _isEnableWorkProfileDialogShowing.asStateFlow()
+
+    // SystemUI begins animating to the edit mode layout (e.g., pushing down widgets) as soon as the
+    // transition to edit mode starts. It then animates back to the original layout before the edit
+    // mode activity fully finishes, ensuring a smooth visual transition.
+    override val shouldShowEditModeLayout: Flow<Boolean> =
+        if (hubEditModeTransition())
+            communalSceneInteractor.editModeState.map { it != null && it > EditModeState.STARTING }
+        else flowOf(false)
 
     private val isUiBlurredByBouncer =
         if (Flags.bouncerUiRevamp()) {

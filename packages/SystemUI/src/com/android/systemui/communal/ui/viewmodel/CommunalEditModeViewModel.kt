@@ -112,6 +112,8 @@ constructor(
     override val isCommunalContentVisible: Flow<Boolean> =
         if (Flags.hubEditModeTransition()) flowOf(true) else editModeShowing
 
+    override val shouldShowEditModeLayout: Flow<Boolean> = flowOf(true)
+
     val showDisclaimer: Flow<Boolean> =
         allOf(editModeShowing, not(communalInteractor.isDisclaimerDismissed))
 
