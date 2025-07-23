@@ -29,7 +29,6 @@ import android.content.Context;
 import android.content.pm.PackageManagerInternal;
 import android.graphics.Region;
 import android.hardware.input.InputManager;
-import android.hardware.input.InputManagerGlobal;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
