@@ -485,3 +485,11 @@ flag {
      description: "Disallow the removal of a user, if it is the last admin user"
      bug: "394970894"
 }
+
+flag {
+     name: "user_restriction_config_wifi_shared_private"
+     is_exported: true
+     namespace: "multiuser"
+     description: "For user restrictions about adding or editing shared or private Wi-Fi configurations"
+     bug: "390240471"
+}
