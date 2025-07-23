@@ -127,6 +127,9 @@ public final class InputWindowHandle {
     // security concerns
     public int touchOcclusionMode = TouchOcclusionMode.BLOCK_UNTRUSTED;
 
+    // Globally unique layer ID for the surface / window.
+    public int layerId;
+
     // Id of process and user that owns the window.
     public int ownerPid;
     public int ownerUid;
@@ -189,6 +192,7 @@ public final class InputWindowHandle {
         // Do not copy ptr to prevent this copy from sharing the same native object.
         ptr = 0;
         inputApplicationHandle = new InputApplicationHandle(other.inputApplicationHandle);
+        layerId = other.layerId;
         token = other.token;
         windowToken = other.windowToken;
         name = other.name;
