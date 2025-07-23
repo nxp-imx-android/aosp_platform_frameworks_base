@@ -209,8 +209,8 @@ public class InputMethodManagerServiceWindowGainedFocusTest
                         startInputOrWindowGainedFocus(
                                 DEFAULT_SOFT_INPUT_FLAG, true /* forwardNavigation */))
                 .isEqualTo(InputBindResult.INVALID_USER);
-        verifyShowSoftInput(false /* setVisible */, false /* showSoftInput */);
-        verifyHideSoftInput(false /* setNotVisible */, false /* hideSoftInput */);
+        verifyShowSoftInput(false /* showSoftInput */);
+        verifyHideSoftInput(false /* hideSoftInput */);
     }
 
     @Test
@@ -237,8 +237,8 @@ public class InputMethodManagerServiceWindowGainedFocusTest
                             startInputOrWindowGainedFocus(
                                     DEFAULT_SOFT_INPUT_FLAG, true /* forwardNavigation */))
                     .isEqualTo(inputBingResult[i]);
-            verifyShowSoftInput(false /* setVisible */, false /* showSoftInput */);
-            verifyHideSoftInput(false /* setNotVisible */, false /* hideSoftInput */);
+            verifyShowSoftInput(false /* showSoftInput */);
+            verifyHideSoftInput(false /* hideSoftInput */);
         }
     }
 
