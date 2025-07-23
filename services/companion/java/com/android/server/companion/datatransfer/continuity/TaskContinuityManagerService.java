@@ -71,7 +71,8 @@ public final class TaskContinuityManagerService
         mRemoteTaskStore = new RemoteTaskStore();
         mOutboundHandoffRequestController = new OutboundHandoffRequestController(
             context,
-            mTaskContinuityMessenger);
+            mTaskContinuityMessenger,
+            mRemoteTaskStore);
         mInboundHandoffRequestController = new InboundHandoffRequestController(
             mTaskContinuityMessenger);
     }
