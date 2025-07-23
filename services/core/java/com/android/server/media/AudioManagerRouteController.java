@@ -289,23 +289,31 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
     @Override
     @NonNull
-    public synchronized List<MediaRoute2Info> getSelectableRoutes() {
-        if (currentOutputIsBLEBroadcast()) {
+    public List<MediaRoute2Info> getSelectableRoutes() {
+        List<MediaRoute2Info> selectedRoutes;
+        List<MediaRoute2Info> availableRoutes;
+        synchronized (this) {
+            selectedRoutes = getSelectedRoutes();
+            availableRoutes = getAvailableRoutes();
+        }
+        if (!mBluetoothRouteController.isLEAudioBroadcastSupported()
+                || currentOutputIsBLEBroadcast()
+                || selectedRoutes.getFirst().getType() != MediaRoute2Info.TYPE_BLE_HEADSET
+                || selectedRoutes.size() >= mBroadcastingMaxSinks) {
             return Collections.emptyList();
         } else {
-            return getAvailableRoutes().stream()
+            return availableRoutes.stream()
                     .filter(
                             route ->
-                                    !maxBroadcastDeviceReached()
-                                            && !getSelectedRoutes().contains(route)
-                                            && isRouteSelectable(route))
+                                    !selectedRoutes.contains(route)
+                                            && route.getType() == MediaRoute2Info.TYPE_BLE_HEADSET)
                     .toList();
         }
     }
 
     @Override
     @NonNull
-    public synchronized List<MediaRoute2Info> getDeselectableRoutes() {
+    public List<MediaRoute2Info> getDeselectableRoutes() {
         if (currentOutputIsBLEBroadcast()) {
             // When broadcasting, all selected routes are deselectable.
             return getSelectedRoutes();
@@ -388,7 +396,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
     }
 
     @Override
-    public synchronized void deselectRoute(long requestId, @NonNull String routeId) {
+    public void deselectRoute(long requestId, @NonNull String routeId) {
         if (!currentOutputIsBLEBroadcast()) {
             // Unexpected result.
             Slog.e(TAG, "Unable to deselect route: " + routeId + " ,requestId: " + requestId);
@@ -802,27 +810,6 @@ import java.util.concurrent.CopyOnWriteArrayList;
                 mAudioManager.getDevicesForAttributes(MEDIA_USAGE_AUDIO_ATTRIBUTES);
         return !devicesForMedia.isEmpty()
                 && devicesForMedia.getFirst().getType() == AudioDeviceInfo.TYPE_BLE_BROADCAST;
-    }
-
-    /**
-     * @return true if maximum number of broadcast devices reached
-     */
-    private boolean maxBroadcastDeviceReached() {
-        return getSelectedRoutes().size() >= mBroadcastingMaxSinks;
-    }
-
-    /**
-     * Checks if a given route should be displayed as selectable route. This function checks: 1) if
-     * LE Audio broadcast is support for the device, 2) if the current selected route is a BLE
-     * headset and 3) the target route is a BLE headset.
-     *
-     * @param targetRoute the route for checking
-     * @return true if the target route should be displayed as a selectable route
-     */
-    private synchronized boolean isRouteSelectable(MediaRoute2Info targetRoute) {
-        return mBluetoothRouteController.isLEAudioBroadcastSupported()
-                && getSelectedRoutes().getFirst().getType() == MediaRoute2Info.TYPE_BLE_HEADSET
-                && targetRoute.getType() == MediaRoute2Info.TYPE_BLE_HEADSET;
     }
 
     /**
