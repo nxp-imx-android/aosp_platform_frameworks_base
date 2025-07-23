@@ -19,7 +19,7 @@ package com.android.server.companion.datatransfer.continuity.handoff;
 import static android.companion.datatransfer.continuity.TaskContinuityManager.HANDOFF_REQUEST_RESULT_FAILURE_DEVICE_NOT_FOUND;
 import static android.companion.datatransfer.continuity.TaskContinuityManager.HANDOFF_REQUEST_RESULT_FAILURE_NO_DATA_PROVIDED_BY_TASK;
 import static android.companion.datatransfer.continuity.TaskContinuityManager.HANDOFF_REQUEST_RESULT_SUCCESS;
-import static android.companion.datatransfer.continuity.TaskContinuityManager.HANDOFF_REQUEST_RESULT_FAILURE_SENDER_LOST_CONNECTION;
+import static android.companion.datatransfer.continuity.TaskContinuityManager.HANDOFF_REQUEST_RESULT_FAILURE_OTHER_INTERNAL_ERROR;
 
 import com.android.server.companion.datatransfer.continuity.connectivity.TaskContinuityMessenger;
 import com.android.server.companion.datatransfer.continuity.messages.HandoffRequestMessage;
@@ -98,7 +98,7 @@ public class OutboundHandoffRequestController {
                     finishHandoffRequest(
                         associationId,
                         taskId,
-                        HANDOFF_REQUEST_RESULT_FAILURE_SENDER_LOST_CONNECTION);
+                        HANDOFF_REQUEST_RESULT_FAILURE_OTHER_INTERNAL_ERROR);
                     break;
                 case TaskContinuityMessenger.SendMessageResult.FAILURE_ASSOCIATION_NOT_FOUND:
                     Slog.w(TAG, "Association " + associationId + " is not connected.");
@@ -112,7 +112,7 @@ public class OutboundHandoffRequestController {
                     finishHandoffRequest(
                         associationId,
                         taskId,
-                        HANDOFF_REQUEST_RESULT_FAILURE_SENDER_LOST_CONNECTION);
+                        HANDOFF_REQUEST_RESULT_FAILURE_OTHER_INTERNAL_ERROR);
                     break;
             }
         }
@@ -141,7 +141,7 @@ public class OutboundHandoffRequestController {
                 finishHandoffRequest(
                     associationId,
                     handoffRequestResultMessage.taskId(),
-                    HANDOFF_REQUEST_RESULT_FAILURE_NO_DATA_PROVIDED_BY_TASK);
+                    HANDOFF_REQUEST_RESULT_FAILURE_OTHER_INTERNAL_ERROR);
                 return;
             } else {
                 finishHandoffRequest(

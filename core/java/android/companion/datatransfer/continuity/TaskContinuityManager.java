@@ -103,6 +103,12 @@ public class TaskContinuityManager {
      */
     public static final int HANDOFF_REQUEST_RESULT_FAILURE_DEVICE_NOT_FOUND = 5;
 
+    /**
+     * Indicates a request for handoff failed because of an internal error outside of Handoff's data
+     * transfer flow.
+     */
+    public static final int HANDOFF_REQUEST_RESULT_FAILURE_OTHER_INTERNAL_ERROR = 6;
+
     /** @hide */
     public TaskContinuityManager(
         @NonNull Context context,
