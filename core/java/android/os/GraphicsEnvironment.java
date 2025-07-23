@@ -145,7 +145,7 @@ public class GraphicsEnvironment {
 
         // Setup ANGLE and pass down ANGLE details to the C++ code
         Trace.traceBegin(Trace.TRACE_TAG_GRAPHICS, "setupAngle");
-        if (setupAngle(context, coreSettings, pm, packageName)) {
+        if (setupAngle(context, coreSettings, pm, packageName, appInfoWithMetaData)) {
             mShouldUseAngle = true;
             setGpuStats(ANGLE_DRIVER_NAME, ANGLE_DRIVER_VERSION_NAME, ANGLE_DRIVER_VERSION_CODE,
                     0, packageName, getVulkanVersion(pm));
@@ -401,9 +401,16 @@ public class GraphicsEnvironment {
      *    “angle_gl_driver_selection_pkgs” and “angle_gl_driver_selection_values” settings); if it
      *    forces a choice.
      * 3) The per-application ANGLE allowlist contained in the platform. This is an array of
-     *    strings containing package names that should use ANGLE.
+     *    strings containing package names that should use ANGLE starting in Android 16.
+     * 4) The per-application ANGLE denylist contained in the platform. This is an array of strings
+     *    containing package names that should not use ANGLE. And games not in this list will
+     *    default to use ANGLE.
      */
-    private String queryAngleChoice(Context context, Bundle bundle, String packageName) {
+    private String queryAngleChoice(
+            Context context,
+            Bundle bundle,
+            String packageName,
+            ApplicationInfo applicationInfoWithMetaData) {
         // Make sure we have a good package name
         if (TextUtils.isEmpty(packageName)) {
             Log.v(TAG, "No package name specified; use the system driver");
@@ -468,16 +475,13 @@ public class GraphicsEnvironment {
                 return ANGLE_GL_DRIVER_CHOICE_NATIVE;
             }
         }
-
         Log.v(TAG, packageName + " is not listed in per-application setting");
 
         // Check the per-device allowlist shipped in the platform
         String[] angleAllowListPackages =
                 context.getResources().getStringArray(R.array.config_angleAllowList);
-
         String allowListPackageList = String.join(" ", angleAllowListPackages);
         Log.v(TAG, "ANGLE allowlist from config: " + allowListPackageList);
-
         for (String allowedPackage : angleAllowListPackages) {
             if (allowedPackage.equals(packageName)) {
                 Log.v(
@@ -488,12 +492,28 @@ public class GraphicsEnvironment {
                 return ANGLE_GL_DRIVER_CHOICE_ANGLE;
             }
         }
-        Log.v(
-                TAG,
-                packageName
-                        + " is not listed in ANGLE allowlist or settings, returning default");
 
-        // The user either chose default or an invalid value; go with the default driver.
+        // Check the per-device denylist shipped in the platform
+        if (android.os.Flags.enableAngleDenyList()) {
+            // Check the per-device denylist
+            String[] angleDenyListPackages =
+                    context.getResources().getStringArray(R.array.config_angleDenyList);
+            for (String deniedPackage : angleDenyListPackages) {
+                if (deniedPackage.equals(packageName)) {
+                    Log.v(TAG, packageName
+                            + " is listed in ANGLE denylist, disabling ANGLE");
+                    return ANGLE_GL_DRIVER_CHOICE_NATIVE;
+                }
+            }
+            if (android.os.Flags.enableAngleForGames()
+                    && applicationInfoWithMetaData.category == ApplicationInfo.CATEGORY_GAME
+                    && SystemProperties.getInt("ro.vendor.api_level", 0) >= 202604) {
+                Log.v(TAG, packageName + " is in GAME category, enabling ANGLE");
+                return ANGLE_GL_DRIVER_CHOICE_ANGLE;
+            }
+        }
+
+        Log.v(TAG, "No special selections for ANGLE, returning default driver choice");
         return ANGLE_GL_DRIVER_CHOICE_DEFAULT;
     }
 
@@ -550,16 +570,24 @@ public class GraphicsEnvironment {
     /**
      * Determine whether ANGLE should be used, and if so, pass
      * down the necessary details to the C++ GraphicsEnv class via GraphicsEnv::setAngleInfo().
+     * <p>
+     * If ANGLE is the system driver or the various flags indicate it should be used, attempt to
+     * set up ANGLE from the APK first, so the updatable libraries are used. If APK setup fails,
+     * attempt to set up the system ANGLE. Return false if both fail.
      *
      * @param context - Context of the application.
      * @param bundle - Bundle of the application.
      * @param packageManager - PackageManager of the application process.
      * @param packageName - package name of the application.
-     * @return true: can set up to use ANGLE successfully.
-     *         false: can not set up to use ANGLE (not on allowlist, ANGLE not present, etc.)
+     * @return true: can set up to use ANGLE successfully. false: can not set up to use ANGLE (not
+     *     on allowlist, ANGLE not present, etc.)
      */
-    private boolean setupAngle(Context context, Bundle bundle, PackageManager packageManager,
-            String packageName) {
+    private boolean setupAngle(
+            Context context,
+            Bundle bundle,
+            PackageManager packageManager,
+            String packageName,
+            ApplicationInfo applicationInfoWithMetaData) {
 
         // There are three values involved in deciding whether to load ANGLE.
         // In order of precedence:
@@ -593,7 +621,11 @@ public class GraphicsEnvironment {
 
         if (android.os.Flags.queryAngleChoiceFlag()) {
             // Check settings choice first, as the highest priority
-            final String settingsChoice = queryAngleChoice(context, bundle, packageName);
+            final String settingsChoice = queryAngleChoice(
+                    context,
+                    bundle,
+                    packageName,
+                    applicationInfoWithMetaData);
 
             if (settingsChoice.equals(ANGLE_GL_DRIVER_CHOICE_ANGLE)) {
                  // If choice was ANGLE, we explicitly want to set it up
@@ -636,7 +668,11 @@ public class GraphicsEnvironment {
 
             // The ANGLE choice only makes sense if ANGLE is not the system driver.
             if (!eglDriverName.equals(ANGLE_DRIVER_NAME)) {
-                final String angleChoice = queryAngleChoice(context, bundle, packageName);
+                final String angleChoice = queryAngleChoice(
+                        context,
+                        bundle,
+                        packageName,
+                        applicationInfoWithMetaData);
                 if (angleChoice.equals(ANGLE_GL_DRIVER_CHOICE_DEFAULT)) {
                     return false;
                 }
