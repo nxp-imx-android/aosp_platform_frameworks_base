@@ -3515,6 +3515,10 @@
     <string name="media_output_end_session_dialog_stop">Stop</string>
     <!-- Button text for stopping sharing [CHAR LIMIT=60] -->
     <string name="media_output_dialog_button_stop_sharing">Stop sharing</string>
+    <!-- Button text when doing audio sharing. [CHAR LIMIT=60] -->
+    <string name="media_output_dialog_button_sharing_audio">Sharing audio</string>
+    <!-- Button text for triggering audio sharing. [CHAR LIMIT=60] -->
+    <string name="media_output_dialog_button_share_audio">Share audio</string>
 
     <!-- Label for clip data when copying the build number off QS [CHAR LIMIT=NONE]-->
     <string name="build_number_clip_data_label">Build number</string>
