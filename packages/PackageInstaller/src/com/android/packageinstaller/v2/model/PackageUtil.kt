@@ -53,17 +53,7 @@ object PackageUtil {
     private const val SPLIT_APK_SUFFIX = ".apk"
     const val localLogv = false
 
-    const val ARGS_ABORT_REASON: String = "abort_reason"
-    const val ARGS_APP_DATA_SIZE: String = "app_data_size"
-    const val ARGS_APP_SNIPPET: String = "app_snippet"
-    const val ARGS_BUTTON_TEXT: String = "button_text"
-    const val ARGS_INSTALLER_LABEL: String = "installer_label"
-    const val ARGS_INSTALLER_PACKAGE: String = "installer_pkg"
     const val ARGS_MESSAGE: String = "message"
-    const val ARGS_PENDING_INTENT: String = "pending_intent"
-    const val ARGS_REQUIRED_BYTES: String = "required_bytes"
-    const val ARGS_TITLE: String = "title"
-    const val ARGS_UNARCHIVAL_STATUS: String = "unarchival_status"
 
     /**
      * Determines if the UID belongs to the system downloads provider and returns the
