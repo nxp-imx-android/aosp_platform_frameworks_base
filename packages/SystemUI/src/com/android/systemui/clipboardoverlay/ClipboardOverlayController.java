@@ -20,6 +20,7 @@ import static android.content.Intent.ACTION_CLOSE_SYSTEM_DIALOGS;
 
 import static com.android.internal.config.sysui.SystemUiDeviceConfigFlags.CLIPBOARD_OVERLAY_SHOW_ACTIONS;
 import static com.android.systemui.Flags.clipboardAnnounceLiveRegion;
+import static com.android.systemui.Flags.clipboardOverlayMultiuser;
 import static com.android.systemui.Flags.showClipboardIndication;
 import static com.android.systemui.clipboardoverlay.ClipboardOverlayEvent.CLIPBOARD_OVERLAY_ACTION_SHOWN;
 import static com.android.systemui.clipboardoverlay.ClipboardOverlayEvent.CLIPBOARD_OVERLAY_ACTION_TAPPED;
@@ -58,8 +59,11 @@ import com.android.systemui.broadcast.BroadcastDispatcher;
 import com.android.systemui.broadcast.BroadcastSender;
 import com.android.systemui.clipboardoverlay.dagger.ClipboardOverlayModule.OverlayWindowContext;
 import com.android.systemui.dagger.qualifiers.Background;
+import com.android.systemui.plugins.ActivityStartOptions;
+import com.android.systemui.plugins.ActivityStarter;
 import com.android.systemui.res.R;
 import com.android.systemui.screenshot.TimeoutHandler;
+import com.android.systemui.settings.UserTracker;
 
 import kotlin.Unit;
 
@@ -92,6 +96,8 @@ public class ClipboardOverlayController implements ClipboardListener.ClipboardOv
     private final ClipboardImageLoader mClipboardImageLoader;
     private final ClipboardTransitionExecutor mTransitionExecutor;
     private final ClipboardInputEventReceiver mClipboardInputEventReceiver;
+    private final ActivityStarter mActivityStarter;
+    private final UserTracker mUserTracker;
 
 
     private final ClipboardOverlayView mView;
@@ -125,6 +131,8 @@ public class ClipboardOverlayController implements ClipboardListener.ClipboardOv
             BroadcastDispatcher broadcastDispatcher,
             BroadcastSender broadcastSender,
             TimeoutHandler timeoutHandler,
+            ActivityStarter activityStarter,
+            UserTracker userTracker,
             ClipboardOverlayUtils clipboardUtils,
             @Background Executor bgExecutor,
             ClipboardImageLoader clipboardImageLoader,
@@ -139,6 +147,8 @@ public class ClipboardOverlayController implements ClipboardListener.ClipboardOv
         mTransitionExecutor = transitionExecutor;
         mClipboardInputEventReceiver = clipboardInputEventReceiver;
         mClipboardIndicationProvider = clipboardIndicationProvider;
+        mActivityStarter = activityStarter;
+        mUserTracker = userTracker;
 
         mClipboardLogger = new ClipboardLogger(uiEventLogger);
         mIntentCreator = intentCreator;
@@ -475,7 +485,14 @@ public class ClipboardOverlayController implements ClipboardListener.ClipboardOv
                 if (!mCancelled) {
                     mClipboardLogger.logSessionComplete(event);
                     if (intent != null) {
-                        mContext.startActivity(intent);
+                        if (clipboardOverlayMultiuser()) {
+                            mActivityStarter.startActivityDismissingKeyguard(
+                                    new ActivityStartOptions(intent, false, false, null,
+                                            intent.getFlags(), null, null, false,
+                                            mUserTracker.getUserHandle(), null));
+                        } else {
+                            mContext.startActivity(intent);
+                        }
                     }
                     hideImmediate();
                 }
@@ -529,13 +546,15 @@ public class ClipboardOverlayController implements ClipboardListener.ClipboardOv
     @Override
     public void onRemoteCopyButtonTapped() {
         finish(CLIPBOARD_OVERLAY_REMOTE_COPY_TAPPED,
-                mIntentCreator.getRemoteCopyIntent(mClipboardModel.getClipData(), mContext));
+                mIntentCreator.getRemoteCopyIntent(
+                        mClipboardModel.getClipData(), mContext));
     }
 
     @Override
     public void onShareButtonTapped() {
         Intent shareIntent =
-                mIntentCreator.getShareIntent(mClipboardModel.getClipData(), mContext);
+                mIntentCreator.getShareIntent(
+                        mClipboardModel.getClipData(), mContext);
         switch (mClipboardModel.getType()) {
             case TEXT:
             case URI:
@@ -555,10 +574,10 @@ public class ClipboardOverlayController implements ClipboardListener.ClipboardOv
                         mIntentCreator.getTextEditorIntent(mContext));
                 break;
             case IMAGE:
-                mIntentCreator.getImageEditIntentAsync(mClipboardModel.getUri(), mContext,
-                        intent -> {
-                            finishWithSharedTransition(CLIPBOARD_OVERLAY_EDIT_TAPPED, intent);
-                        });
+                mIntentCreator.getImageEditIntentAsync(
+                        mClipboardModel.getUri(), mContext,
+                        intent -> finishWithSharedTransition(
+                                CLIPBOARD_OVERLAY_EDIT_TAPPED, intent));
                 break;
             default:
                 Log.w(TAG, "Got preview tapped callback for non-editable type "
