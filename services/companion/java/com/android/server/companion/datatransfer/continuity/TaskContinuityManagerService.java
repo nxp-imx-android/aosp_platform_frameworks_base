@@ -17,6 +17,7 @@
 package com.android.server.companion.datatransfer.continuity;
 
 import android.annotation.NonNull;
+import android.companion.AssociationInfo;
 import android.companion.CompanionDeviceManager;
 import android.companion.datatransfer.continuity.IHandoffRequestCallback;
 import android.companion.datatransfer.continuity.ITaskContinuityManager;
@@ -42,6 +43,7 @@ import com.android.server.SystemService;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Collection;
 
 /**
  * Service to handle task continuity features
@@ -66,8 +68,7 @@ public final class TaskContinuityManagerService
 
         mTaskContinuityMessenger = new TaskContinuityMessenger(context, this);
         mTaskBroadcaster = new TaskBroadcaster(context, mTaskContinuityMessenger);
-        mRemoteTaskStore = new RemoteTaskStore(
-            mTaskContinuityMessenger.getConnectedAssociationStore());
+        mRemoteTaskStore = new RemoteTaskStore();
         mOutboundHandoffRequestController = new OutboundHandoffRequestController(
             context,
             mTaskContinuityMessenger);
@@ -79,7 +80,6 @@ public final class TaskContinuityManagerService
     public void onStart() {
         mTaskContinuityManagerService = new TaskContinuityManagerServiceImpl();
         mTaskContinuityMessenger.enable();
-        mTaskBroadcaster.startBroadcasting();
         publishBinderService(Context.TASK_CONTINUITY_SERVICE, mTaskContinuityManagerService);
     }
 
@@ -113,6 +113,26 @@ public final class TaskContinuityManagerService
             } finally {
                 Binder.restoreCallingIdentity(ident);
             }
+        }
+    }
+
+    @Override
+    public void onAssociationConnected(@NonNull AssociationInfo associationInfo) {
+        mRemoteTaskStore.addDevice(
+            associationInfo.getId(),
+            associationInfo.getDisplayName().toString());
+
+        mTaskBroadcaster.onDeviceConnected(associationInfo.getId());
+    }
+
+    @Override
+    public void onAssociationDisconnected(
+        int associationId,
+        @NonNull Collection<AssociationInfo> connectedAssociations) {
+
+        mRemoteTaskStore.removeDevice(associationId);
+        if (connectedAssociations.isEmpty()) {
+            mTaskBroadcaster.onAllDevicesDisconnected();
         }
     }
 

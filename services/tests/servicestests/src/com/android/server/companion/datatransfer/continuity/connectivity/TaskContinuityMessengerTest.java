@@ -67,9 +67,6 @@ public class TaskContinuityMessengerTest {
     private CompanionDeviceManager mCompanionDeviceManager;
     @Mock private TaskContinuityMessenger.Listener mMockListener;
 
-    private ArgumentCaptor<IOnTransportsChangedListener> mTransportChangedListenerCaptor
-        = ArgumentCaptor.forClass(IOnTransportsChangedListener.class);
-
     private TaskContinuityMessenger mTaskContinuityMessenger;
 
     @Before
@@ -92,12 +89,7 @@ public class TaskContinuityMessengerTest {
 
         // Create TaskContinuityMessenger.
         mTaskContinuityMessenger = new TaskContinuityMessenger(mMockContext, mMockListener);
-        try {
-            verify(mMockCompanionDeviceManagerService, times(1))
-                .addOnTransportsChangedListener(mTransportChangedListenerCaptor.capture());
-        } catch (RemoteException e) {
-            throw new RuntimeException(e);
-        }
+
     }
 
     @Test
@@ -137,6 +129,8 @@ public class TaskContinuityMessengerTest {
     @Test
     public void testSendMessage_sendsMessageToAssociation() throws RemoteException, IOException {
         int associationId = 1;
+
+        mTaskContinuityMessenger.enable();
         connectAssociations(List.of(associationId));
         ContinuityDeviceConnected expectedMessage = new ContinuityDeviceConnected(
             List.of(new RemoteTaskInfo(1, "label", 1000, new byte[0])));
@@ -169,6 +163,15 @@ public class TaskContinuityMessengerTest {
     }
 
     private void connectAssociations(List<Integer> associationIds) {
+        ArgumentCaptor<IOnTransportsChangedListener> listenerCaptor
+            = ArgumentCaptor.forClass(IOnTransportsChangedListener.class);
+        try {
+            verify(mMockCompanionDeviceManagerService, times(1))
+                .addOnTransportsChangedListener(listenerCaptor.capture());
+        } catch (RemoteException e) {
+            throw new RuntimeException(e);
+        }
+
         List<AssociationInfo> associationInfos = associationIds.stream()
             .map(id -> new AssociationInfo.Builder(id, 0, "com.android.test")
                     .setDisplayName("name")
@@ -176,7 +179,7 @@ public class TaskContinuityMessengerTest {
             .collect(Collectors.toList());
 
         try {
-            mTransportChangedListenerCaptor.getValue().onTransportsChanged(associationInfos);
+            listenerCaptor.getValue().onTransportsChanged(associationInfos);
         } catch (RemoteException e) {
             throw new RuntimeException(e);
         }
