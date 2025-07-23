@@ -194,6 +194,9 @@ public abstract class ProcessRecordInternal {
      */
     public abstract boolean hasAboveClient();
 
+    /** Returns true if there is an active instrumentation running in this process. */
+    public abstract boolean hasActiveInstrumentation();
+
     // Enable this to trace all OomAdjuster state transitions
     private static final boolean TRACE_OOM_ADJ = false;
 

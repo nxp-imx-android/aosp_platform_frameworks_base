@@ -1335,7 +1335,7 @@ public abstract class OomAdjuster {
                     app.killLocked("isolated not needed", ApplicationExitInfo.REASON_OTHER,
                             ApplicationExitInfo.SUBREASON_ISOLATED_NOT_NEEDED, true);
                 } else if (app.isSdkSandbox && psr.numberOfRunningServices() <= 0
-                        && app.getActiveInstrumentation() == null) {
+                        && !app.hasActiveInstrumentation()) {
                     // If this is an SDK sandbox process and there are no services running it, we
                     // aggressively kill the sandbox as we usually don't want to re-use the same
                     // sandbox again.
@@ -2003,7 +2003,7 @@ public abstract class OomAdjuster {
     public abstract boolean computeProviderHostOomAdjLSP(ContentProviderConnection conn,
             ProcessRecord app, ProcessRecord client, boolean dryRun);
 
-    protected int getDefaultCapability(ProcessRecord app, int procState) {
+    protected int getDefaultCapability(ProcessRecordInternal app, int procState) {
         final int networkCapabilities =
                 NetworkPolicyManager.getDefaultProcessNetworkCapabilities(procState);
         final int baseCapabilities;
@@ -2014,7 +2014,7 @@ public abstract class OomAdjuster {
                 baseCapabilities = PROCESS_CAPABILITY_ALL; // BFSL allowed
                 break;
             case PROCESS_STATE_BOUND_TOP:
-                if (app.getActiveInstrumentation() != null) {
+                if (app.hasActiveInstrumentation()) {
                     baseCapabilities = PROCESS_CAPABILITY_BFSL |
                             PROCESS_CAPABILITY_ALL_IMPLICIT;
                 } else {
@@ -2022,7 +2022,7 @@ public abstract class OomAdjuster {
                 }
                 break;
             case PROCESS_STATE_FOREGROUND_SERVICE:
-                if (app.getActiveInstrumentation() != null) {
+                if (app.hasActiveInstrumentation()) {
                     baseCapabilities = PROCESS_CAPABILITY_ALL_IMPLICIT;
                 } else {
                     // Capability from foreground service is conditional depending on
