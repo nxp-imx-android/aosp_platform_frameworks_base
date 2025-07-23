@@ -81,9 +81,6 @@ final class SessionMetrics {
     private long mDeveloperVerifierRequestSentMillis;
     private long mDeveloperVerificationDurationMillis;
 
-    private long mDeveloperVerifierRetryRequestSentMillis;
-    private long mDeveloperVerificationRetryDurationMillis;
-
     private int mDeveloperVerifierUid = INVALID_UID;
     private int mIsDeveloperVerificationBypassedReason =
             DeveloperVerificationSession.DEVELOPER_VERIFICATION_BYPASSED_REASON_UNSPECIFIED;
@@ -100,7 +97,6 @@ final class SessionMetrics {
             mDeveloperVerificationUserActionRequiredReason;
     private @PackageInstaller.DeveloperVerificationUserResponse int
             mDeveloperVerificationUserResponse;
-    private int mDeveloperVerificationRetryCount;
     private @PackageInstaller.DeveloperVerificationFailedReason int
             mDeveloperVerificationFailureReason;
     @Nullable
@@ -212,11 +208,6 @@ final class SessionMetrics {
         mDeveloperVerifierRequestSentMillis = System.currentTimeMillis();
     }
 
-    public void onDeveloperVerificationRetryRequestSent(int retryCount) {
-        mDeveloperVerifierRetryRequestSentMillis = System.currentTimeMillis();
-        mDeveloperVerificationRetryCount = retryCount;
-    }
-
     public void onDeveloperVerificationBypassed(int bypassReason) {
         mIsDeveloperVerificationBypassedReason = bypassReason;
     }
@@ -234,15 +225,9 @@ final class SessionMetrics {
     public void onDeveloperVerificationFinished(DeveloperVerificationStatusInternal status) {
         mDeveloperVerificationStatus = status;
         final long responseReceivedMillis = System.currentTimeMillis();
-        if (mDeveloperVerifierRequestSentMillis != 0
-                && mDeveloperVerifierRetryRequestSentMillis == 0) {
+        if (mDeveloperVerifierRequestSentMillis != 0) {
             mDeveloperVerificationDurationMillis =
                     responseReceivedMillis - mDeveloperVerifierRequestSentMillis;
-        } else if (mDeveloperVerifierRetryRequestSentMillis != 0) {
-            // Calculate the last retry duration
-            // TODO(b/418283971): Change the metrics definition to track multiple retries.
-            mDeveloperVerificationRetryDurationMillis =
-                    responseReceivedMillis - mDeveloperVerifierRetryRequestSentMillis;
         }
     }
 
@@ -338,7 +323,7 @@ final class SessionMetrics {
                                 mDeveloperVerificationUserActionRequiredReason),
                         getTranslatedDeveloperVerificationUserResponseForStats(
                                 mDeveloperVerificationUserResponse),
-                        mDeveloperVerificationRetryCount,
+                        /* retryCount= */ 0,
                         mDeveloperVerificationStatus.isLiteVerification(),
                         getTranslatedDeveloperVerificationFailedReasonForStats(
                                 mDeveloperVerificationFailureReason),
@@ -346,7 +331,7 @@ final class SessionMetrics {
                         mDeveloperVerificationCancelled,
                         mDeveloperVerificationDurationMillis,
                         developerVerificationPrepDurationMillis,
-                        mDeveloperVerificationRetryDurationMillis,
+                        /* retryDuration= */ 0L,
                         developerVerifierConnectionDurationMillis,
                         mWasUserResponseReceived,
                         mWasDeveloperVerificationUserResponseReceived

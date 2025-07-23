@@ -27,8 +27,6 @@
     <!-- [CHAR LIMIT=15] -->
     <string name="cancel">Cancel</string>
     <!-- [CHAR LIMIT=15] -->
-    <string name="try_again">Try again</string>
-    <!-- [CHAR LIMIT=15] -->
     <string name="install_anyway">Install anyway</string>
     <!-- [CHAR LIMIT=15] -->
     <string name="dont_install">Don\'t install</string>

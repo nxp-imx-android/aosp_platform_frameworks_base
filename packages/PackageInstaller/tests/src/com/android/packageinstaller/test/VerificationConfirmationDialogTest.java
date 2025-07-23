@@ -16,15 +16,11 @@
 
 package com.android.packageinstaller.test;
 
-import static android.content.pm.PackageInstaller.DEVELOPER_VERIFICATION_FAILED_REASON_NETWORK_UNAVAILABLE;
 import static android.content.pm.PackageInstaller.DEVELOPER_VERIFICATION_FAILED_REASON_DEVELOPER_BLOCKED;
+import static android.content.pm.PackageInstaller.DEVELOPER_VERIFICATION_FAILED_REASON_NETWORK_UNAVAILABLE;
 import static android.content.pm.PackageInstaller.DEVELOPER_VERIFICATION_FAILED_REASON_UNKNOWN;
 import static android.content.pm.PackageInstaller.DEVELOPER_VERIFICATION_POLICY_BLOCK_FAIL_CLOSED;
 import static android.content.pm.PackageInstaller.DEVELOPER_VERIFICATION_POLICY_BLOCK_FAIL_OPEN;
-
-import static com.android.packageinstaller.ConfirmDeveloperVerification.FLAG_VERIFICATION_FAILED_MAY_BYPASS;
-import static com.android.packageinstaller.ConfirmDeveloperVerification.FLAG_VERIFICATION_FAILED_MAY_RETRY;
-import static com.android.packageinstaller.ConfirmDeveloperVerification.FLAG_VERIFICATION_FAILED_MAY_RETRY_MAY_BYPASS;
 
 import static com.google.common.truth.Truth.assertThat;
 
@@ -41,61 +37,61 @@ public class VerificationConfirmationDialogTest {
 
     @Test
     public void policyOpen_packageBlocked_onlyAck() {
-        int flag = ConfirmDeveloperVerification.getUserConfirmationDialogFlag(
+        boolean isBypassAllowed = ConfirmDeveloperVerification.isBypassAllowed(
                 new DeveloperVerificationUserConfirmationInfo(
                         DEVELOPER_VERIFICATION_POLICY_BLOCK_FAIL_OPEN,
                         DEVELOPER_VERIFICATION_FAILED_REASON_DEVELOPER_BLOCKED));
 
-        assertThat(flag).isEqualTo(0);
+        assertThat(isBypassAllowed).isFalse();
     }
 
     @Test
-    public void policyOpen_noNetwork_mayRetryMayBypass() {
-        int flag = ConfirmDeveloperVerification.getUserConfirmationDialogFlag(
+    public void policyOpen_noNetwork_mayBypass() {
+        boolean isBypassAllowed = ConfirmDeveloperVerification.isBypassAllowed(
                 new DeveloperVerificationUserConfirmationInfo(
                         DEVELOPER_VERIFICATION_POLICY_BLOCK_FAIL_OPEN,
                         DEVELOPER_VERIFICATION_FAILED_REASON_NETWORK_UNAVAILABLE));
 
-        assertThat(flag).isEqualTo(FLAG_VERIFICATION_FAILED_MAY_RETRY_MAY_BYPASS);
+        assertThat(isBypassAllowed).isTrue();
     }
 
     @Test
     public void policyOpen_unknown_mayBypass() {
-        int flag = ConfirmDeveloperVerification.getUserConfirmationDialogFlag(
+        boolean isBypassAllowed = ConfirmDeveloperVerification.isBypassAllowed(
                 new DeveloperVerificationUserConfirmationInfo(
                         DEVELOPER_VERIFICATION_POLICY_BLOCK_FAIL_OPEN,
                         DEVELOPER_VERIFICATION_FAILED_REASON_UNKNOWN));
 
-        assertThat(flag).isEqualTo(FLAG_VERIFICATION_FAILED_MAY_BYPASS);
+        assertThat(isBypassAllowed).isTrue();
     }
 
     @Test
     public void policyClosed_packageBlocked_onlyAck() {
-        int flag = ConfirmDeveloperVerification.getUserConfirmationDialogFlag(
+        boolean isBypassAllowed = ConfirmDeveloperVerification.isBypassAllowed(
                 new DeveloperVerificationUserConfirmationInfo(
                         DEVELOPER_VERIFICATION_POLICY_BLOCK_FAIL_CLOSED,
                         DEVELOPER_VERIFICATION_FAILED_REASON_DEVELOPER_BLOCKED));
 
-        assertThat(flag).isEqualTo(0);
+        assertThat(isBypassAllowed).isFalse();
     }
 
     @Test
-    public void policyClosed_noNetwork_mayRetry() {
-        int flag = ConfirmDeveloperVerification.getUserConfirmationDialogFlag(
+    public void policyClosed_noNetwork_onlyAck() {
+        boolean isBypassAllowed = ConfirmDeveloperVerification.isBypassAllowed(
                 new DeveloperVerificationUserConfirmationInfo(
                         DEVELOPER_VERIFICATION_POLICY_BLOCK_FAIL_CLOSED,
                         DEVELOPER_VERIFICATION_FAILED_REASON_NETWORK_UNAVAILABLE));
 
-        assertThat(flag).isEqualTo(FLAG_VERIFICATION_FAILED_MAY_RETRY);
+        assertThat(isBypassAllowed).isFalse();
     }
 
     @Test
     public void policyClosed_unknown_onlyAck() {
-        int flag = ConfirmDeveloperVerification.getUserConfirmationDialogFlag(
+        boolean isBypassAllowed = ConfirmDeveloperVerification.isBypassAllowed(
                 new DeveloperVerificationUserConfirmationInfo(
                         DEVELOPER_VERIFICATION_POLICY_BLOCK_FAIL_CLOSED,
                         DEVELOPER_VERIFICATION_FAILED_REASON_UNKNOWN));
 
-        assertThat(flag).isEqualTo(0);
+        assertThat(isBypassAllowed).isFalse();
     }
 }
