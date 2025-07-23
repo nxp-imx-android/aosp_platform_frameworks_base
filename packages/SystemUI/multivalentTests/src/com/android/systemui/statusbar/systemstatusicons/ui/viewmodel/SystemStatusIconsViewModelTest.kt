@@ -50,6 +50,7 @@ import com.android.systemui.statusbar.pipeline.wifi.data.repository.fakeWifiRepo
 import com.android.systemui.statusbar.pipeline.wifi.shared.model.WifiNetworkModel
 import com.android.systemui.statusbar.policy.bluetooth.data.repository.bluetoothRepository
 import com.android.systemui.statusbar.policy.data.repository.fakeZenModeRepository
+import com.android.systemui.statusbar.policy.domain.interactor.fakeTtyStatusInteractor
 import com.android.systemui.statusbar.policy.fakeDataSaverController
 import com.android.systemui.statusbar.policy.fakeHotspotController
 import com.android.systemui.statusbar.policy.fakeNextAlarmController
@@ -75,11 +76,12 @@ class SystemStatusIconsViewModelTest : SysuiTestCase() {
 
     private val kosmos = testKosmos().useUnconfinedTestDispatcher()
 
-    private val underTest by lazy {
-        kosmos.systemStatusIconsViewModelFactory.create(kosmos.testableContext).apply {
-            activateIn(kosmos.testScope)
+    private val Kosmos.underTest by
+        Kosmos.Fixture {
+            kosmos.systemStatusIconsViewModelFactory.create(kosmos.testableContext).apply {
+                activateIn(kosmos.testScope)
+            }
         }
-    }
 
     private lateinit var slotAirplane: String
     private lateinit var slotBluetooth: String
@@ -90,6 +92,7 @@ class SystemStatusIconsViewModelTest : SysuiTestCase() {
     private lateinit var slotManagedProfile: String
     private lateinit var slotMute: String
     private lateinit var slotNextAlarm: String
+    private lateinit var slotTty: String
     private lateinit var slotVibrate: String
     private lateinit var slotVpn: String
     private lateinit var slotWifi: String
@@ -108,6 +111,7 @@ class SystemStatusIconsViewModelTest : SysuiTestCase() {
             context.getString(com.android.internal.R.string.status_bar_managed_profile)
         slotMute = context.getString(com.android.internal.R.string.status_bar_mute)
         slotNextAlarm = context.getString(com.android.internal.R.string.status_bar_alarm_clock)
+        slotTty = context.getString(com.android.internal.R.string.status_bar_tty)
         slotVibrate = context.getString(com.android.internal.R.string.status_bar_volume)
         slotVpn = context.getString(com.android.internal.R.string.status_bar_vpn)
         slotWifi = context.getString(com.android.internal.R.string.status_bar_wifi)
@@ -214,6 +218,7 @@ class SystemStatusIconsViewModelTest : SysuiTestCase() {
             showZenMode()
             showBluetooth()
             showConnectedDisplay()
+            showTty()
             showDataSaver()
             showAirplaneMode()
             showNextAlarm()
@@ -233,6 +238,7 @@ class SystemStatusIconsViewModelTest : SysuiTestCase() {
                     slotHotspot,
                     slotManagedProfile,
                     slotNextAlarm,
+                    slotTty,
                     slotVibrate,
                     slotVpn,
                     slotZen,
@@ -254,6 +260,7 @@ class SystemStatusIconsViewModelTest : SysuiTestCase() {
                     slotManagedProfile,
                     slotMute,
                     slotNextAlarm,
+                    slotTty,
                     slotVpn,
                     slotWifi,
                     slotZen,
@@ -341,5 +348,9 @@ class SystemStatusIconsViewModelTest : SysuiTestCase() {
     private fun Kosmos.showManagedProfile() {
         managedProfileRepository.currentProfileInfo.value =
             ProfileInfo(userId = 10, iconResId = 12345, contentDescription = "Work profile")
+    }
+
+    private fun Kosmos.showTty() {
+        fakeTtyStatusInteractor.isEnabled.value = true
     }
 }

@@ -33,6 +33,7 @@ import com.android.systemui.statusbar.systemstatusicons.mobile.ui.viewmodel.Mobi
 import com.android.systemui.statusbar.systemstatusicons.profile.ui.viewmodel.ManagedProfileIconViewModel
 import com.android.systemui.statusbar.systemstatusicons.ringer.ui.viewmodel.MuteIconViewModel
 import com.android.systemui.statusbar.systemstatusicons.ringer.ui.viewmodel.VibrateIconViewModel
+import com.android.systemui.statusbar.systemstatusicons.tty.ui.viewmodel.TtyIconViewModel
 import com.android.systemui.statusbar.systemstatusicons.vpn.ui.viewmodel.VpnIconViewModel
 import com.android.systemui.statusbar.systemstatusicons.wifi.ui.viewmodel.WifiIconViewModel
 import com.android.systemui.statusbar.systemstatusicons.zenmode.ui.viewmodel.ZenModeIconViewModel
@@ -65,6 +66,7 @@ constructor(
     mobileSystemStatusIconsViewModelFactory: MobileSystemStatusIconsViewModel.Factory,
     muteIconViewModelFactory: MuteIconViewModel.Factory,
     nextAlarmIconViewModelFactory: NextAlarmIconViewModel.Factory,
+    ttyIconViewModelFactory: TtyIconViewModel.Factory,
     vibrateIconViewModelFactory: VibrateIconViewModel.Factory,
     vpnIconViewModelFactory: VpnIconViewModel.Factory,
     wifiIconViewModelFactory: WifiIconViewModel.Factory,
@@ -89,6 +91,7 @@ constructor(
     private val mobileIcons by lazy { mobileSystemStatusIconsViewModelFactory.create(context) }
     private val muteIcon by lazy { muteIconViewModelFactory.create(context) }
     private val nextAlarmIcon by lazy { nextAlarmIconViewModelFactory.create(context) }
+    private val ttyIcon by lazy { ttyIconViewModelFactory.create(context) }
     private val vibrateIcon by lazy { vibrateIconViewModelFactory.create(context) }
     private val vpnIcon by lazy { vpnIconViewModelFactory.create(context) }
     private val wifiIcon by lazy { wifiIconViewModelFactory.create(context) }
@@ -106,6 +109,7 @@ constructor(
             mobileIcons,
             muteIcon,
             nextAlarmIcon,
+            ttyIcon,
             vibrateIcon,
             vpnIcon,
             wifiIcon,
@@ -141,6 +145,7 @@ constructor(
             launch { mobileIcons.activate() }
             launch { muteIcon.activate() }
             launch { nextAlarmIcon.activate() }
+            launch { ttyIcon.activate() }
             launch { vibrateIcon.activate() }
             launch { vpnIcon.activate() }
             launch { wifiIcon.activate() }
