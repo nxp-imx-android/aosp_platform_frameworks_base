@@ -323,5 +323,6 @@ public class SecureSettings {
         Settings.Secure.HDR_BRIGHTNESS_BOOST_LEVEL,
         Settings.Secure.IDENTITY_CHECK_ENABLED_V1,
         Settings.Secure.IDENTITY_CHECK_PROMO_CARD_SHOWN,
+        Settings.Secure.IDENTITY_CHECK_NOTIFICATION_VIEW_DETAILS_CLICKED,
     };
 }

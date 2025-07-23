@@ -519,5 +519,7 @@ public class SecureSettingsValidators {
         VALIDATORS.put(Secure.IDENTITY_CHECK_ENABLED_V1, new InclusiveIntegerRangeValidator(0, 1));
         VALIDATORS.put(Secure.IDENTITY_CHECK_PROMO_CARD_SHOWN,
                 new InclusiveIntegerRangeValidator(0, 1));
+        VALIDATORS.put(Secure.IDENTITY_CHECK_NOTIFICATION_VIEW_DETAILS_CLICKED,
+                new InclusiveIntegerRangeValidator(0, 1));
     }
 }
