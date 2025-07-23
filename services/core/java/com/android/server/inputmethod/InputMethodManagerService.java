@@ -192,7 +192,6 @@ import com.android.server.inputmethod.InputMethodSubtypeSwitchingController.ImeS
 import com.android.server.pm.UserManagerInternal;
 import com.android.server.statusbar.StatusBarManagerInternal;
 import com.android.server.utils.PriorityDump;
-import com.android.server.wm.ImeTargetVisibilityPolicy;
 import com.android.server.wm.WindowManagerInternal;
 
 import java.io.FileDescriptor;
@@ -435,8 +434,6 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
     @MultiUserUnawareField
     private final InputMethodMenuController mMenuController;
     private final InputMethodMenuControllerNew mMenuControllerNew;
-    @NonNull
-    private final ImeTargetVisibilityPolicy mImeTargetVisibilityPolicy;
 
     /**
      * Cache the result of {@code LocalServices.getService(AudioManagerInternal.class)}.
@@ -1243,7 +1240,6 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
             mImePlatformCompatUtils = new ImePlatformCompatUtils();
             mInputMethodDeviceConfigs = new InputMethodDeviceConfigs();
             mUserManagerInternal = LocalServices.getService(UserManagerInternal.class);
-            mImeTargetVisibilityPolicy = LocalServices.getService(ImeTargetVisibilityPolicy.class);
 
             mSlotIme = mContext.getString(com.android.internal.R.string.status_bar_ime);
 
@@ -5422,7 +5418,7 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
     @VisibleForTesting
     @GuardedBy("ImfLock.class")
     void showImeScreenshot(IBinder imeTarget, int displayId, @UserIdInt int userId) {
-        if (mImeTargetVisibilityPolicy.showImeScreenshot(imeTarget, displayId)) {
+        if (mWindowManagerInternal.showImeScreenshot(imeTarget, displayId)) {
             onShowHideSoftInputRequested(false /* show */, imeTarget,
                     SoftInputShowHideReason.SHOW_IME_SCREENSHOT_FROM_IMMS, null /* statsToken */,
                     userId);
@@ -5439,7 +5435,7 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
     @VisibleForTesting
     @GuardedBy("ImfLock.class")
     void removeImeScreenshot(IBinder imeTarget, int displayId, @UserIdInt int userId) {
-        if (mImeTargetVisibilityPolicy.removeImeScreenshot(displayId)) {
+        if (mWindowManagerInternal.removeImeScreenshot(displayId)) {
             onShowHideSoftInputRequested(false /* show */, imeTarget,
                     SoftInputShowHideReason.REMOVE_IME_SCREENSHOT_FROM_IMMS, null /* statsToken */,
                     userId);

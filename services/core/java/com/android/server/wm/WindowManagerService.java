@@ -1514,8 +1514,6 @@ public class WindowManagerService extends IWindowManager.Stub
         mConstants.start(new HandlerExecutor(mH));
 
         LocalServices.addService(WindowManagerInternal.class, new LocalService());
-        LocalServices.addService(
-                ImeTargetVisibilityPolicy.class, new ImeTargetVisibilityPolicyImpl());
         mEmbeddedWindowController = new EmbeddedWindowController(mAtmService, inputManager);
 
         mDisplayAreaPolicyProvider = DisplayAreaPolicy.Provider.fromResources(
@@ -8346,6 +8344,38 @@ public class WindowManagerService extends IWindowManager.Stub
         }
 
         @Override
+        public boolean showImeScreenshot(@NonNull IBinder imeTarget, int displayId) {
+            synchronized (mGlobalLock) {
+                final WindowState imeTargetWindow = mWindowMap.get(imeTarget);
+                if (imeTargetWindow == null) {
+                    return false;
+                }
+                final DisplayContent dc = mRoot.getDisplayContent(displayId);
+                if (dc == null) {
+                    Slog.w(TAG, "Invalid displayId:" + displayId + ", fail to show IME screenshot");
+                    return false;
+                }
+
+                dc.showImeScreenshot(imeTargetWindow);
+                return true;
+            }
+        }
+
+        @Override
+        public boolean removeImeScreenshot(int displayId) {
+            synchronized (mGlobalLock) {
+                final DisplayContent dc = mRoot.getDisplayContent(displayId);
+                if (dc == null) {
+                    Slog.w(TAG, "Invalid displayId:" + displayId
+                            + ", fail to remove IME screenshot");
+                    return false;
+                }
+                dc.removeImeScreenshotImmediately();
+                return true;
+            }
+        }
+
+        @Override
         public boolean isHardKeyboardAvailable() {
             synchronized (mGlobalLock) {
                 return mHardKeyboardAvailable;
@@ -9015,40 +9045,6 @@ public class WindowManagerService extends IWindowManager.Stub
                 }
             }
             WindowManagerService.this.requestAssistScreenshotInternal(receiver, displayId);
-        }
-    }
-
-    private final class ImeTargetVisibilityPolicyImpl extends ImeTargetVisibilityPolicy {
-
-        @Override
-        public boolean showImeScreenshot(@NonNull IBinder imeTarget, int displayId) {
-            synchronized (mGlobalLock) {
-                final WindowState imeTargetWindow = mWindowMap.get(imeTarget);
-                if (imeTargetWindow == null) {
-                    return false;
-                }
-                final DisplayContent dc = mRoot.getDisplayContent(displayId);
-                if (dc == null) {
-                    Slog.w(TAG, "Invalid displayId:" + displayId + ", fail to show IME screenshot");
-                    return false;
-                }
-
-                dc.showImeScreenshot(imeTargetWindow);
-                return true;
-            }
-        }
-        @Override
-        public boolean removeImeScreenshot(int displayId) {
-            synchronized (mGlobalLock) {
-                final DisplayContent dc = mRoot.getDisplayContent(displayId);
-                if (dc == null) {
-                    Slog.w(TAG, "Invalid displayId:" + displayId
-                            + ", fail to remove IME screenshot");
-                    return false;
-                }
-                dc.removeImeScreenshotImmediately();
-                return true;
-            }
         }
     }
 

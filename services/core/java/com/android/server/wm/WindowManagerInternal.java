@@ -714,6 +714,23 @@ public abstract class WindowManagerInternal {
     public abstract void updateImeTargetWindow(@NonNull IBinder windowToken);
 
     /**
+     * Shows the IME screenshot and attaches it to the given IME target window.
+     *
+     * @param imeTarget the token of the IME target window.
+     * @param displayId the ID of the display to show the screenshot on.
+     * @return {@code true} if successful, {@code false} otherwise.
+     */
+    public abstract boolean showImeScreenshot(@NonNull IBinder imeTarget, int displayId);
+
+    /**
+     * Removes the IME screenshot from the given display.
+     *
+     * @param displayId The target display of showing IME screenshot.
+     * @return {@code true} if successful, {@code false} otherwise.
+     */
+    public abstract boolean removeImeScreenshot(int displayId);
+
+    /**
       * Returns true when the hardware keyboard is available.
       */
     public abstract boolean isHardKeyboardAvailable();
