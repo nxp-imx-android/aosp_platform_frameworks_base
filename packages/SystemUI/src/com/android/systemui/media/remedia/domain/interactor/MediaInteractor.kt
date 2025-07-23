@@ -75,6 +75,8 @@ interface MediaInteractor {
 
     /** Open media settings. */
     fun openMediaSettings()
+
+    fun reorderMedia()
 }
 
 @SysUISingleton
@@ -104,6 +106,10 @@ constructor(
 
     override fun openMediaSettings() {
         activityStarter.startActivity(settingsIntent, true)
+    }
+
+    override fun reorderMedia() {
+        repository.reorderMedia()
     }
 
     private fun toMediaSessionModel(dataModel: MediaDataModel): MediaSessionModel {
