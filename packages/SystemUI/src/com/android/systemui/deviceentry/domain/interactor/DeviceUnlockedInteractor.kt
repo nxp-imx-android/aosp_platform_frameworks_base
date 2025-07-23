@@ -183,6 +183,10 @@ constructor(
     val deviceUnlockStatus: StateFlow<DeviceUnlockStatus> =
         repository.deviceUnlockStatus.asStateFlow()
 
+    /** Helper property to check if the device is unlocked. */
+    val isUnlocked: Boolean
+        get() = deviceUnlockStatus.value.isUnlocked
+
     /** A [Channel] of "lock now" requests where the values are the debugging reasons. */
     private val lockNowRequests = Channel<String>()
 
