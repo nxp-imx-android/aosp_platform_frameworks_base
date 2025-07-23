@@ -232,7 +232,7 @@ flag {
   name: "preferences_throws_on_invalid_uid"
   namespace: "systemui"
   description: "Throw IAE when calling getOrCreatePackagePreferences() with INVALID_UID."
-  bug: "390441924"
+  bug: "430250142"
   metadata {
     purpose: PURPOSE_BUGFIX
   }
