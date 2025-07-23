@@ -16,17 +16,17 @@
 
 package com.android.server.inputmethod;
 
-import static com.android.server.inputmethod.InputMethodMenuControllerNew.getMenuItems;
-import static com.android.server.inputmethod.InputMethodMenuControllerNew.getSelectedIndex;
+import static com.android.server.inputmethod.InputMethodMenuController.getMenuItems;
+import static com.android.server.inputmethod.InputMethodMenuController.getSelectedIndex;
 import static com.android.server.inputmethod.InputMethodSubtypeSwitchingControllerTest.addTestImeSubtypeListItems;
 import static com.android.server.inputmethod.InputMethodUtils.NOT_A_SUBTYPE_INDEX;
 
 import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.truth.Truth.assertWithMessage;
 
-import com.android.server.inputmethod.InputMethodMenuControllerNew.DividerItem;
-import com.android.server.inputmethod.InputMethodMenuControllerNew.HeaderItem;
-import com.android.server.inputmethod.InputMethodMenuControllerNew.SubtypeItem;
+import com.android.server.inputmethod.InputMethodMenuController.DividerItem;
+import com.android.server.inputmethod.InputMethodMenuController.HeaderItem;
+import com.android.server.inputmethod.InputMethodMenuController.SubtypeItem;
 import com.android.server.inputmethod.InputMethodSubtypeSwitchingController.ImeSubtypeListItem;
 
 import org.junit.Test;

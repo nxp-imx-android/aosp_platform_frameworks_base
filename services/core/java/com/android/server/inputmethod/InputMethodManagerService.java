@@ -402,7 +402,7 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
 
     private final UserManagerInternal mUserManagerInternal;
     @MultiUserUnawareField
-    private final InputMethodMenuControllerNew mMenuControllerNew;
+    private final InputMethodMenuController mMenuController;
 
     /**
      * Cache the result of {@code LocalServices.getService(AudioManagerInternal.class)}.
@@ -669,7 +669,7 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
                     }
                     final int userId = mCurrentImeUserId;
                     final var bindingController = getInputMethodBindingController(userId);
-                    mMenuControllerNew.hide(bindingController.getCurTokenDisplayId(), userId);
+                    mMenuController.hide(bindingController.getCurTokenDisplayId(), userId);
                 }
             } else {
                 Slog.w(TAG, "Unexpected intent " + intent);
@@ -1214,7 +1214,7 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
                     bindingControllerForTesting != null ? bindingControllerForTesting
                             : bindingControllerFactory, visibilityStateComputerFactory);
 
-            mMenuControllerNew = new InputMethodMenuControllerNew();
+            mMenuController = new InputMethodMenuController();
 
             mClientController = new ClientController(mPackageManagerInternal);
             mClientController.addClientControllerCallback(this::onClientRemoved);
@@ -1794,7 +1794,7 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
                     ImeTracker.PHASE_SERVER_WAIT_IME);
             userData.mCurStatsToken = null;
             // TODO: Make mMenuController multi-user aware
-            mMenuControllerNew.hide(bindingController.getCurTokenDisplayId(), userId);
+            mMenuController.hide(bindingController.getCurTokenDisplayId(), userId);
         }
     }
 
@@ -2574,7 +2574,7 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
             @UserIdInt int userId) {
         // When the IME switcher dialog is shown, the IME switcher button should be hidden.
         // TODO(b/305849394): Make mMenuController multi-user aware.
-        if (mMenuControllerNew.isShowing()) {
+        if (mMenuController.isShowing()) {
             return false;
         }
         // When we are switching IMEs, the IME switcher button should be hidden.
@@ -2750,7 +2750,7 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
                 vis &= ~InputMethodService.IME_VISIBLE;
             }
             // TODO(b/305849394): Make mMenuController multi-user aware.
-            if (mMenuControllerNew.isShowing() || !Objects.equals(bindingController.getCurId(),
+            if (mMenuController.isShowing() || !Objects.equals(bindingController.getCurId(),
                     bindingController.getSelectedMethodId())) {
                 // When the IME switcher dialog is shown, or we are switching IMEs,
                 // the back button should be in the default state (as if the IME is not shown).
@@ -3873,7 +3873,7 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
      */
     @IInputMethodManagerImpl.PermissionVerified(Manifest.permission.TEST_INPUT_METHOD)
     public boolean isInputMethodPickerShownForTest() {
-        return mMenuControllerNew.isShowing();
+        return mMenuController.isShowing();
     }
 
     @IInputMethodManagerImpl.PermissionVerified(allOf = {
@@ -4616,7 +4616,7 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
             }
         }
 
-        mMenuControllerNew.show(imList, lastInputMethodId, selectedSubtypeIndex, isScreenLocked,
+        mMenuController.show(imList, lastInputMethodId, selectedSubtypeIndex, isScreenLocked,
                 displayId, userId);
     }
 
@@ -5480,7 +5480,7 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
                 if (visibilityStateComputer.getLastImeTargetWindow()
                         != userData.mImeBindingState.mFocusedWindow) {
                     final var bindingController = getInputMethodBindingController(userId);
-                    mMenuControllerNew.hide(bindingController.getCurTokenDisplayId(), userId);
+                    mMenuController.hide(bindingController.getCurTokenDisplayId(), userId);
                 }
             }
         }
@@ -5766,8 +5766,8 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
                     ? Arrays.toString(mStylusIds.toArray()) : ""));
         }
         // TODO(b/305849394): Make mMenuController multi-user aware.
-        p.println("  mMenuControllerNew:");
-        mMenuControllerNew.dump(p, "    ");
+        p.println("  mMenuController:");
+        mMenuController.dump(p, "    ");
         dumpClientController(p);
         dumpUserRepository(p);
 
