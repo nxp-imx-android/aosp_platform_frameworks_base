@@ -46,40 +46,55 @@ import java.util.List;
 @RunWith(AndroidTestingRunner.class)
 public class RemoteTaskStoreTest {
 
-    private final IRemoteTaskListener mRemoteTaskListener = new IRemoteTaskListener.Stub() {
+    private class FakeRemoteTaskListener extends IRemoteTaskListener.Stub {
+        List<List<RemoteTask>> remoteTasksReportedToListener = new ArrayList<>();
+
         @Override
         public void onRemoteTasksChanged(List<RemoteTask> remoteTasks) {
             remoteTasksReportedToListener.add(remoteTasks);
         }
-    };
 
-    private final List<List<RemoteTask>> remoteTasksReportedToListener = new ArrayList<>();
+        public void verifyReportedTasks(List<List<RemoteTask>> expectedTasks) {
+            assertThat(remoteTasksReportedToListener).hasSize(expectedTasks.size());
+            for (int i = 0; i < expectedTasks.size(); i++) {
+                assertThat(remoteTasksReportedToListener.get(i))
+                    .containsExactlyElementsIn(expectedTasks.get(i));
+            }
+        }
+    }
+
     private RemoteTaskStore taskStore;
 
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
-
-        remoteTasksReportedToListener.clear();
         taskStore = new RemoteTaskStore();
-        taskStore.addListener(mRemoteTaskListener);
+    }
+
+    @Test
+    public void addListener_notifiesListenerOfCurrentTasks() {
+        FakeRemoteTaskListener listener = new FakeRemoteTaskListener();
+        taskStore.addListener(listener);
+        listener.verifyReportedTasks(List.of(Collections.emptyList()));
     }
 
     @Test
     public void addDevice_addsDeviceAndNotifiesListeners() {
+        FakeRemoteTaskListener listener = new FakeRemoteTaskListener();
+        taskStore.addListener(listener);
+
         // Simulate a new association being connected.
         int deviceId = 1;
         String deviceName = "name";
         taskStore.addDevice(deviceId, deviceName);
-        assertThat(remoteTasksReportedToListener).hasSize(0);
+        listener.verifyReportedTasks(List.of(Collections.emptyList()));
 
         // Add tasks to the new association.
         RemoteTaskInfo remoteTaskInfo = new RemoteTaskInfo(1, "task1", 100L, new byte[0]);
         RemoteTask remoteTask = remoteTaskInfo.toRemoteTask(deviceId, deviceName);
 
         taskStore.setTasks(deviceId, Collections.singletonList(remoteTaskInfo));
-        assertThat(remoteTasksReportedToListener).hasSize(1);
-        assertThat(remoteTasksReportedToListener.get(0)).containsExactly(remoteTask);
+        listener.verifyReportedTasks(List.of(Collections.emptyList(), List.of(remoteTask)));
 
         // Verify the most recent task is added to the task store.
         assertThat(taskStore.getMostRecentTasks()).containsExactly(remoteTask);
@@ -87,6 +102,9 @@ public class RemoteTaskStoreTest {
 
     @Test
     public void setTasks_doesNotSetIfDeviceNotAdded() {
+        FakeRemoteTaskListener listener = new FakeRemoteTaskListener();
+        taskStore.addListener(listener);
+
         RemoteTaskInfo remoteTaskInfo = new RemoteTaskInfo(1, "task1", 100L, new byte[0]);
 
         // Add the task. Since ConnectedAssociationStore does not have this
@@ -94,11 +112,14 @@ public class RemoteTaskStoreTest {
         taskStore.setTasks(0, Collections.singletonList(remoteTaskInfo));
 
         assertThat(taskStore.getMostRecentTasks()).isEmpty();
-        assertThat(remoteTasksReportedToListener).isEmpty();
+        listener.verifyReportedTasks(List.of(Collections.emptyList()));
     }
 
     @Test
     public void removeTask_removesTask() {
+        FakeRemoteTaskListener listener = new FakeRemoteTaskListener();
+        taskStore.addListener(listener);
+
         // Setup an association.
         int deviceId = 1;
         String deviceName = "name";
@@ -115,17 +136,22 @@ public class RemoteTaskStoreTest {
             Arrays.asList(mostRecentTaskInfo, secondMostRecentTaskInfo));
 
         assertThat(taskStore.getMostRecentTasks()).containsExactly(mostRecentTask);
-        assertThat(remoteTasksReportedToListener).hasSize(1);
-        assertThat(remoteTasksReportedToListener.get(0)).containsExactly(mostRecentTask);
+        listener.verifyReportedTasks(List.of(Collections.emptyList(), List.of(mostRecentTask)));
 
         taskStore.removeTask(deviceId, mostRecentTaskInfo.id());
+        listener.verifyReportedTasks(
+            List.of(
+                Collections.emptyList(),
+                List.of(mostRecentTask),
+                List.of(secondMostRecentTask)));
         assertThat(taskStore.getMostRecentTasks()).containsExactly(secondMostRecentTask);
-        assertThat(remoteTasksReportedToListener).hasSize(2);
-        assertThat(remoteTasksReportedToListener.get(1)).containsExactly(secondMostRecentTask);
     }
 
     @Test
     public void removeDevice_removesDeviceAndNotifiesListeners() {
+        FakeRemoteTaskListener listener = new FakeRemoteTaskListener();
+        taskStore.addListener(listener);
+
         // Create a fake association info, and have connected association store
         // return it.
         int deviceId = 1;
@@ -134,22 +160,24 @@ public class RemoteTaskStoreTest {
 
         // Set tasks for the association.
         RemoteTaskInfo remoteTaskInfo = new RemoteTaskInfo(1, "task1", 100L, new byte[0]);
+        RemoteTask remoteTask = remoteTaskInfo.toRemoteTask(deviceId, deviceName);
         taskStore.setTasks(deviceId, Collections.singletonList(remoteTaskInfo));
-        assertThat(remoteTasksReportedToListener).hasSize(1);
-        assertThat(remoteTasksReportedToListener.get(0))
-            .containsExactly(remoteTaskInfo.toRemoteTask(deviceId, deviceName));
+        listener.verifyReportedTasks(List.of(Collections.emptyList(), List.of(remoteTask)));
 
         // Simulate the association being disconnected.
         taskStore.removeDevice(deviceId);
 
         // Verify the most recent task is added to the task store.
         assertThat(taskStore.getMostRecentTasks()).isEmpty();
-        assertThat(remoteTasksReportedToListener).hasSize(2);
-        assertThat(remoteTasksReportedToListener.get(1)).isEmpty();
+        listener.verifyReportedTasks(
+            List.of(Collections.emptyList(), List.of(remoteTask), Collections.emptyList()));
     }
 
     @Test
     public void addTask_addsTaskToAssociationAndNotifiesListeners() {
+        FakeRemoteTaskListener listener = new FakeRemoteTaskListener();
+        taskStore.addListener(listener);
+
         // Create a fake association info, and have connected association store return it.
         int deviceId = 1;
         String deviceName = "name";
@@ -159,8 +187,7 @@ public class RemoteTaskStoreTest {
         RemoteTask remoteTask = remoteTaskInfo.toRemoteTask(deviceId, deviceName);
         taskStore.setTasks(deviceId, Collections.singletonList(remoteTaskInfo));
         assertThat(taskStore.getMostRecentTasks()).containsExactly(remoteTask);
-        assertThat(remoteTasksReportedToListener).hasSize(1);
-        assertThat(remoteTasksReportedToListener.get(0)).containsExactly(remoteTask);
+        listener.verifyReportedTasks(List.of(Collections.emptyList(), List.of(remoteTask)));
 
         // Add a new task to the association.
         RemoteTaskInfo newRemoteTaskInfo = new RemoteTaskInfo(2, "task2", 200L, new byte[0]);
@@ -169,8 +196,11 @@ public class RemoteTaskStoreTest {
 
         // Verify the most recent tasks are added to the task store.
         assertThat(taskStore.getMostRecentTasks()).containsExactly(newRemoteTask);
-        assertThat(remoteTasksReportedToListener).hasSize(2);
-        assertThat(remoteTasksReportedToListener.get(1)).containsExactly(newRemoteTask);
+        listener.verifyReportedTasks(
+            List.of(
+                Collections.emptyList(),
+                List.of(remoteTask),
+                List.of(newRemoteTask)));
     }
 
     @Test
@@ -182,6 +212,9 @@ public class RemoteTaskStoreTest {
 
     @Test
     public void updateTask_updatesTaskAndNotifiesListeners() {
+        FakeRemoteTaskListener listener = new FakeRemoteTaskListener();
+        taskStore.addListener(listener);
+
         // Create a fake association info, and have connected association store return it.
         int deviceId = 1;
         String deviceName = "name";
@@ -191,8 +224,7 @@ public class RemoteTaskStoreTest {
         RemoteTask initialTask = initialTaskInfo.toRemoteTask(deviceId, deviceName);
         taskStore.setTasks(deviceId, Collections.singletonList(initialTaskInfo));
         assertThat(taskStore.getMostRecentTasks()).containsExactly(initialTask);
-        assertThat(remoteTasksReportedToListener).hasSize(1);
-        assertThat(remoteTasksReportedToListener.get(0)).containsExactly(initialTask);
+        listener.verifyReportedTasks(List.of(Collections.emptyList(), List.of(initialTask)));
 
         RemoteTaskInfo updatedTaskInfo = new RemoteTaskInfo(
             initialTaskInfo.id(),
@@ -203,7 +235,7 @@ public class RemoteTaskStoreTest {
         RemoteTask updatedTask = updatedTaskInfo.toRemoteTask(deviceId, deviceName);
         taskStore.updateTask(deviceId, updatedTaskInfo);
         assertThat(taskStore.getMostRecentTasks()).containsExactly(updatedTask);
-        assertThat(remoteTasksReportedToListener).hasSize(2);
-        assertThat(remoteTasksReportedToListener.get(1)).containsExactly(updatedTask);
+        listener.verifyReportedTasks(
+            List.of(Collections.emptyList(), List.of(initialTask), List.of(updatedTask)));
     }
 }

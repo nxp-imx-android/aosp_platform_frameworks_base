@@ -150,20 +150,6 @@ public class TaskContinuityManager {
     }
 
     /**
-     * Returns a list of tasks currently running on the remote devices owned by the user.
-     */
-    @NonNull
-    public List<RemoteTask> getRemoteTasks() {
-        // TODO: joeantonetti - Optimize this call by caching the most recent state pushed to
-        // mListenerHolder.
-        try {
-            return mService.getRemoteTasks();
-        } catch (RemoteException e) {
-            throw e.rethrowFromSystemServer();
-        }
-    }
-
-    /**
      * Registers a listener to be notified when the list of remote tasks changes.
      *
      * @param executor The executor to be used to invoke the listener.
@@ -264,6 +250,9 @@ public class TaskContinuityManager {
         @GuardedBy("mListeners")
         private boolean mRegistered = false;
 
+        @GuardedBy("mListeners")
+        private final List<RemoteTask> mLastReceivedRemoteTasks = new ArrayList<>();
+
         public RemoteTaskListenerHolder(ITaskContinuityManager service) {}
 
         /**
@@ -283,6 +272,10 @@ public class TaskContinuityManager {
                 if (!mRegistered) {
                     mService.registerRemoteTaskListener(this);
                     mRegistered = true;
+                } else {
+                    executor.execute(() ->
+                        listener.onRemoteTasksChanged(mLastReceivedRemoteTasks)
+                    );
                 }
 
                 mListeners.put(listener, executor);
@@ -311,6 +304,9 @@ public class TaskContinuityManager {
         @Override
         public void onRemoteTasksChanged(List<RemoteTask> remoteTasks) throws RemoteException {
             synchronized(mListeners) {
+                mLastReceivedRemoteTasks.clear();
+                mLastReceivedRemoteTasks.addAll(remoteTasks);
+
                 for (Map.Entry<RemoteTaskListener, Executor> entry : mListeners.entrySet()) {
                     RemoteTaskListener listener = entry.getKey();
                     Executor executor = entry.getValue();
