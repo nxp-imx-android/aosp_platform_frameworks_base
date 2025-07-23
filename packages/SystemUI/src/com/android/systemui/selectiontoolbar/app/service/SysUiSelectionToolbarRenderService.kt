@@ -29,11 +29,7 @@ class SysUiSelectionToolbarRenderService : SelectionToolbarRenderService() {
     // Only show one toolbar, dismiss the old ones and remove from cache
     private val toolbarCache = mutableMapOf<Int, RemoteSelectionToolbar>()
 
-    override fun onShow(
-        uid: Int,
-        showInfo: ShowInfo,
-        callbackWrapper: RemoteCallbackWrapper,
-    ) {
+    override fun onShow(uid: Int, showInfo: ShowInfo, callbackWrapper: RemoteCallbackWrapper) {
         val existingToolbar = toolbarCache[uid]
         // Only allow one package to create one toolbar
         if (existingToolbar != null) {
@@ -51,7 +47,7 @@ class SysUiSelectionToolbarRenderService : SelectionToolbarRenderService() {
                 ::onPasteAction,
             )
         toolbarCache[uid] = toolbar
-        toolbar.show(showInfo)
+        mainThreadHandler.post { toolbar.show(showInfo) }
 
         Slog.v(TAG, "onShow() for uid: $uid")
     }
@@ -60,7 +56,7 @@ class SysUiSelectionToolbarRenderService : SelectionToolbarRenderService() {
         val toolbar = toolbarCache[uid]
         if (toolbar != null) {
             Slog.v(TAG, "onHide() for uid: $uid")
-            toolbar.hide(uid)
+            mainThreadHandler.post { toolbar.hide(uid) }
         }
     }
 
@@ -72,8 +68,8 @@ class SysUiSelectionToolbarRenderService : SelectionToolbarRenderService() {
     private fun removeAndDismissToolbar(uid: Int) {
         val toolbar = toolbarCache[uid]
         if (toolbar != null) {
-            toolbar.dismiss(uid)
-            toolbarCache.remove(uid)
+            mainThreadHandler.post { toolbar.dismiss(uid) }
+            toolbarCache -= uid
         }
     }
 
