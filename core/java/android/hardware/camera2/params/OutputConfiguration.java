@@ -1168,6 +1168,21 @@ public final class OutputConfiguration implements Parcelable {
     }
 
     /**
+     * Update the configured surface size to the latest surface size.
+     * This function must be called right before any binder call sent to cameraserver
+     * that references OutputConfiguration.
+     * This is needed in order to update the cached surface size which may have changed
+     * after OutputConfiguration's construction.
+     *
+     * @hide
+     */
+    public void updateCachedSurfaceSize() {
+       Surface surface = getSurface();
+        if (surface != null) {
+            mConfiguredSize = SurfaceUtils.getSurfaceSize(surface);
+        }
+    }
+    /**
      * Add a surface to this OutputConfiguration.
      *
      * <p> This function can be called before or after {@link
@@ -1719,12 +1734,13 @@ public final class OutputConfiguration implements Parcelable {
     }
 
     /**
-     * Get the configured size associated with this {@link OutputConfiguration}.
+     * Get the latest configured size associated with this {@link OutputConfiguration}.
      *
      * @return The configured size associated with this {@link OutputConfiguration}.
      */
     @FlaggedApi(Flags.FLAG_OUTPUT_CONFIGURATION_GETTER)
     public @NonNull Size getConfiguredSize() {
+        updateCachedSurfaceSize();
         return mConfiguredSize;
     }
 
@@ -1858,8 +1874,12 @@ public final class OutputConfiguration implements Parcelable {
         dest.writeInt(mRotation);
         dest.writeInt(mSurfaceGroupId);
         dest.writeInt(mSurfaceType);
-        dest.writeInt(mConfiguredSize.getWidth());
-        dest.writeInt(mConfiguredSize.getHeight());
+        // Note: If / When OutputConfiguration becomes an auto-generated Parcelable,
+        // OutputConfiguration.updateCachedSurfaceSize() needs to
+        // be called before calling any binder call that references OutputConfiguration.
+        Size configuredSize = getConfiguredSize();
+        dest.writeInt(configuredSize.getWidth());
+        dest.writeInt(configuredSize.getHeight());
         dest.writeInt(mIsDeferredConfig ? 1 : 0);
         dest.writeInt(mIsShared ? 1 : 0);
         dest.writeTypedList(mSurfaces);
@@ -2006,7 +2026,7 @@ public final class OutputConfiguration implements Parcelable {
     private final int mSurfaceType;
 
     // The size, format, and dataspace of the surface when OutputConfiguration is created.
-    private final Size mConfiguredSize;
+    private Size mConfiguredSize;
     private final int mConfiguredFormat;
     private final int mConfiguredDataspace;
     // The public facing format, a combination of mConfiguredFormat and mConfiguredDataspace
