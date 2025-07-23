@@ -27,6 +27,9 @@ import static android.content.pm.PackageManager.USER_MIN_ASPECT_RATIO_DISPLAY_SI
 import static android.content.pm.PackageManager.USER_MIN_ASPECT_RATIO_FULLSCREEN;
 import static android.content.pm.PackageManager.USER_MIN_ASPECT_RATIO_SPLIT_SCREEN;
 import static android.content.pm.PackageManager.USER_MIN_ASPECT_RATIO_UNSET;
+import static android.internal.perfetto.protos.Windowmanagerservice.ActivityRecordProto.IS_USER_FULLSCREEN_OVERRIDE_ENABLED;
+import static android.internal.perfetto.protos.Windowmanagerservice.ActivityRecordProto.SHOULD_ENABLE_USER_ASPECT_RATIO_SETTINGS;
+import static android.internal.perfetto.protos.Windowmanagerservice.ActivityRecordProto.SHOULD_OVERRIDE_MIN_ASPECT_RATIO;
 import static android.view.Display.DEFAULT_DISPLAY;
 import static android.view.WindowManager.PROPERTY_COMPAT_ALLOW_MIN_ASPECT_RATIO_OVERRIDE;
 import static android.view.WindowManager.PROPERTY_COMPAT_ALLOW_ORIENTATION_OVERRIDE;
@@ -50,6 +53,7 @@ import android.content.res.Resources;
 import android.graphics.Rect;
 import android.os.RemoteException;
 import android.util.Slog;
+import android.util.proto.ProtoOutputStream;
 
 import com.android.internal.R;
 import com.android.internal.annotations.VisibleForTesting;
@@ -355,6 +359,13 @@ class AppCompatAspectRatioOverrides {
             return mAppCompatConfiguration.getFixedOrientationLetterboxAspectRatio();
         }
         return getDisplaySizeMinAspectRatio();
+    }
+
+    public void dumpDebug(@NonNull ProtoOutputStream proto) {
+        proto.write(SHOULD_OVERRIDE_MIN_ASPECT_RATIO, shouldOverrideMinAspectRatio());
+        proto.write(SHOULD_ENABLE_USER_ASPECT_RATIO_SETTINGS,
+                shouldEnableUserAspectRatioSettings());
+        proto.write(IS_USER_FULLSCREEN_OVERRIDE_ENABLED, isUserFullscreenOverrideEnabled());
     }
 
     private static class UserAspectRatioState {
