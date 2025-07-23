@@ -244,8 +244,7 @@ public class NotificationManagerZenTest {
     }
 
     @Test
-    @RequiresFlagsEnabled(FLAG_STRICT_ZEN_RULE_COMPONENT_VALIDATION)
-    public void updateAutomaticZenRule_switchToInvalidCpsButWithValidConfigActivity_cpsGone() {
+    public void updateAutomaticZenRule_switchToInvalidCpsButWithValidConfigActivity_cpsReverts() {
         AutomaticZenRule original = new AutomaticZenRule.Builder("OK so far", CONDITION_ID)
                 .setOwner(CONDITION_PROVIDER_SERVICE)
                 .setConfigurationActivity(CONFIGURATION_ACTIVITY)
@@ -257,9 +256,10 @@ public class NotificationManagerZenTest {
                 .build();
         mNotificationManager.updateAutomaticZenRule(ruleId, sneaky);
 
+        // Unlike for configurationActivity, an app cannot modify the CPS associated to an AZR.
         AutomaticZenRule savedAzr = mNotificationManager.getAutomaticZenRule(ruleId);
         assertThat(savedAzr).isNotNull();
-        assertThat(savedAzr.getOwner()).isNull();
+        assertThat(savedAzr.getOwner()).isEqualTo(CONDITION_PROVIDER_SERVICE);
         assertThat(savedAzr.getConfigurationActivity()).isEqualTo(CONFIGURATION_ACTIVITY);
     }
 
