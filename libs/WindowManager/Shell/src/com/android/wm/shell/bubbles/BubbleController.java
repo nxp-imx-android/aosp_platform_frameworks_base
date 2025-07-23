@@ -781,11 +781,18 @@ public class BubbleController implements ConfigurationChangeListener,
      */
     private void onStatusBarVisibilityChanged(boolean visible) {
         if (mStackView != null) {
+            //Checks if the status bar is currently immersive due to Split-Screen mode.
+            final boolean isSplitStatusBarImmersive = mSplitScreenController.get()
+                    .map(SplitScreenController::isStatusBarImmersive)
+                    .orElse(false);
             // Hide the stack temporarily if the status bar has been made invisible, and the stack
             // is collapsed. An expanded stack should remain visible until collapsed.
-            mStackView.setTemporarilyInvisible(!visible && !isStackExpanded());
-            ProtoLog.d(WM_SHELL_BUBBLES, "onStatusBarVisibilityChanged=%b stackExpanded=%b",
-                    visible, isStackExpanded());
+            mStackView.setTemporarilyInvisible(!visible && !isStackExpanded()
+                    && !isSplitStatusBarImmersive);
+            ProtoLog.d(WM_SHELL_BUBBLES,
+                    "onStatusBarVisibilityChanged=%b stackExpanded=%b "
+                            + "isSplitStatusBarImmersive=%b",
+                    visible, isStackExpanded(), isSplitStatusBarImmersive);
         }
     }
 

@@ -1043,6 +1043,14 @@ public class SplitScreenController implements SplitDragPolicy.Starter,
     }
 
     /**
+     * Returns whether the status bar is in immersive mode.
+     * @return true if the status bar is in immersive mode.
+     */
+    public boolean isStatusBarImmersive() {
+        return mStageCoordinator.isStatusBarImmersive();
+    }
+
+    /**
      * Return the {@param exitReason} as a string.
      */
     public static String exitReasonToString(int exitReason) {
