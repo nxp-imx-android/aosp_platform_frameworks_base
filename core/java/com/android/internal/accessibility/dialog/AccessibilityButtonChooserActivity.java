@@ -27,8 +27,11 @@ import static com.android.internal.accessibility.util.AccessibilityStatsLogUtils
 import android.annotation.Nullable;
 import android.app.Activity;
 import android.content.ComponentName;
+import android.graphics.Insets;
 import android.os.Bundle;
 import android.provider.Settings;
+import android.view.ViewGroup;
+import android.view.WindowInsets;
 import android.view.accessibility.AccessibilityManager;
 import android.widget.GridView;
 import android.widget.TextView;
@@ -94,5 +97,18 @@ public class AccessibilityButtonChooserActivity extends Activity {
             Settings.Secure.putString(getContentResolver(), key, mTargets.get(position).getId());
             finish();
         });
+
+        if (android.view.accessibility.Flags.buttonChooserActivityBottomMarginSystemBar()) {
+            final WindowInsets windowInsets =
+                    getWindowManager().getCurrentWindowMetrics().getWindowInsets();
+            final Insets insets = windowInsets.getInsetsIgnoringVisibility(
+                    WindowInsets.Type.systemBars());
+
+            final ViewGroup.MarginLayoutParams params =
+                    (ViewGroup.MarginLayoutParams) gridview.getLayoutParams();
+
+            params.bottomMargin = insets.bottom;
+            gridview.setLayoutParams(params);
+        }
     }
 }

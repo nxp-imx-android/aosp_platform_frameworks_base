@@ -80,6 +80,13 @@ flag {
 }
 
 flag {
+    name: "button_chooser_activity_bottom_margin_system_bar"
+    namespace: "accessibility"
+    description: "Uses system bar insets as a bottom margin for AccessibilityButtonChooserActivity, preventing overlap."
+    bug: "433572832"
+}
+
+flag {
     name: "cleanup_accessibility_warning_dialog"
     namespace: "accessibility"
     description: "Cleans up duplicated or broken logic surrounding the accessibility warning dialog."
