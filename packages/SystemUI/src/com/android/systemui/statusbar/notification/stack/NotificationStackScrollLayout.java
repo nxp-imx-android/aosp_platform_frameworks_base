@@ -116,7 +116,6 @@ import com.android.systemui.statusbar.notification.headsup.HeadsUpAnimationEvent
 import com.android.systemui.statusbar.notification.headsup.HeadsUpAnimator;
 import com.android.systemui.statusbar.notification.headsup.HeadsUpTouchHelper;
 import com.android.systemui.statusbar.notification.headsup.HeadsUpUtil;
-import com.android.systemui.statusbar.notification.headsup.NotificationsHunSharedAnimationValues;
 import com.android.systemui.statusbar.notification.promoted.PromotedNotificationUi;
 import com.android.systemui.statusbar.notification.row.ActivatableNotificationView;
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow;
@@ -235,7 +234,6 @@ public class NotificationStackScrollLayout
     private String mLastInitViewDumpString;
     private long mLastInitViewElapsedRealtime;
 
-    @Nullable
     private final HeadsUpAnimator mHeadsUpAnimator;
     /**
      * The algorithm which calculates the properties for our children
@@ -685,11 +683,7 @@ public class NotificationStackScrollLayout
         mExpandHelper.setEventSource(this);
         mExpandHelper.setScrollAdapter(mScrollAdapter);
 
-        if (NotificationsHunSharedAnimationValues.isEnabled()) {
-            mHeadsUpAnimator = new HeadsUpAnimator(context, /* systemBarUtilsProxy= */ null);
-        } else {
-            mHeadsUpAnimator = null;
-        }
+        mHeadsUpAnimator = new HeadsUpAnimator(context, /* systemBarUtilsProxy= */ null);
         mStackScrollAlgorithm =  new StackScrollAlgorithm(context, this, mHeadsUpAnimator);
         mStateAnimator = new StackStateAnimator(context, this, mHeadsUpAnimator);
         setOutlineProvider(mOutlineProvider);
@@ -1300,12 +1294,7 @@ public class NotificationStackScrollLayout
     @Override
     public void setHeadsUpBottom(float headsUpBottom) {
         if (SceneContainerFlag.isUnexpectedlyInLegacyMode()) return;
-        if (NotificationsHunSharedAnimationValues.isEnabled()) {
-            mHeadsUpAnimator.setHeadsUpAppearHeightBottom(Math.round(headsUpBottom));
-        } else if (mAmbientState.getHeadsUpBottom() != headsUpBottom) {
-            mAmbientState.setHeadsUpBottom(headsUpBottom);
-            mStateAnimator.setHeadsUpAppearHeightBottom(Math.round(headsUpBottom));
-        }
+        mHeadsUpAnimator.setHeadsUpAppearHeightBottom(Math.round(headsUpBottom));
     }
 
     @Override
@@ -5345,14 +5334,8 @@ public class NotificationStackScrollLayout
         SceneContainerFlag.assertInLegacyMode();
         mAmbientState.setMaxHeadsUpTranslation(height - bottomBarHeight);
 
-        if (NotificationsHunSharedAnimationValues.isEnabled()) {
-            mHeadsUpAnimator.setHeadsUpAppearHeightBottom(height);
-            mHeadsUpAnimator.setStackTopMargin(mAmbientState.getStackTopMargin());
-        } else {
-            mStackScrollAlgorithm.setHeadsUpAppearHeightBottom(height);
-            mStateAnimator.setHeadsUpAppearHeightBottom(height);
-            mStateAnimator.setStackTopMargin(mAmbientState.getStackTopMargin());
-        }
+        mHeadsUpAnimator.setHeadsUpAppearHeightBottom(height);
+        mHeadsUpAnimator.setStackTopMargin(mAmbientState.getStackTopMargin());
 
         requestChildrenUpdate();
     }

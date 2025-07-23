@@ -36,7 +36,6 @@ import com.android.systemui.statusbar.notification.SourceType;
 import com.android.systemui.statusbar.notification.emptyshade.ui.view.EmptyShadeView;
 import com.android.systemui.statusbar.notification.footer.ui.view.FooterView;
 import com.android.systemui.statusbar.notification.headsup.HeadsUpAnimator;
-import com.android.systemui.statusbar.notification.headsup.NotificationsHunSharedAnimationValues;
 import com.android.systemui.statusbar.notification.row.ActivatableNotificationView;
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow;
 import com.android.systemui.statusbar.notification.row.ExpandableView;
@@ -82,7 +81,6 @@ public class StackScrollAlgorithm {
     private float mQuickQsOffsetHeight;
     private float mSmallCornerRadius;
     private float mLargeCornerRadius;
-    private int mHeadsUpAppearHeightBottom;
     private int mHeadsUpCyclingPadding;
 
     public StackScrollAlgorithm(
@@ -126,9 +124,7 @@ public class StackScrollAlgorithm {
         mQuickQsOffsetHeight = SystemBarUtils.getQuickQsOffsetHeight(context);
         mSmallCornerRadius = res.getDimension(R.dimen.notification_corner_radius_small);
         mLargeCornerRadius = res.getDimension(R.dimen.notification_corner_radius);
-        if (NotificationsHunSharedAnimationValues.isEnabled()) {
-            mHeadsUpAnimator.updateResources(context);
-        }
+        mHeadsUpAnimator.updateResources(context);
     }
 
     /**
@@ -265,11 +261,6 @@ public class StackScrollAlgorithm {
      */
     public float getNotificationSquishinessFraction(AmbientState ambientState) {
         return getExpansionFractionWithoutShelf(mTempAlgorithmState, ambientState);
-    }
-
-    public void setHeadsUpAppearHeightBottom(int headsUpAppearHeightBottom) {
-        NotificationsHunSharedAnimationValues.assertInLegacyMode();
-        mHeadsUpAppearHeightBottom = headsUpAppearHeightBottom;
     }
 
     /**
@@ -1010,9 +1001,7 @@ public class StackScrollAlgorithm {
                             childState.setZTranslation(baseZ);
                         }
                         if (isTopEntry && row.isAboveShelf()) {
-                            float headsUpBottom = NotificationsHunSharedAnimationValues.isEnabled()
-                                    ? mHeadsUpAnimator.getHeadsUpAppearHeightBottom()
-                                    : ambientState.getHeadsUpBottom();
+                            float headsUpBottom = mHeadsUpAnimator.getHeadsUpAppearHeightBottom();
                             clampHunToMaxTranslation(
                                     /* headsUpTop =  */ headsUpTranslation,
                                     /* headsUpBottom =  */ headsUpBottom,
@@ -1103,23 +1092,11 @@ public class StackScrollAlgorithm {
                 } else if (!ambientState.isDozing()) {
                     boolean shouldHunAppearFromBottom =
                             shouldHunAppearFromBottom(ambientState, childState);
-                    if (NotificationsHunSharedAnimationValues.isEnabled()) {
-                        int yTranslation =
-                                mHeadsUpAnimator.getHeadsUpYTranslation(
-                                        shouldHunAppearFromBottom,
-                                        row.hasStatusBarChipDuringHeadsUpAnimation());
-                        childState.setYTranslation(yTranslation);
-                    } else {
-                        if (shouldHunAppearFromBottom) {
-                            // move to the bottom of the screen
-                            childState.setYTranslation(
-                                    mHeadsUpAppearHeightBottom + mHeadsUpAppearStartAboveScreen);
-                        } else {
-                            // move to the top of the screen
-                            childState.setYTranslation(-ambientState.getStackTopMargin()
-                                    - mHeadsUpAppearStartAboveScreen);
-                        }
-                    }
+                    int yTranslation =
+                            mHeadsUpAnimator.getHeadsUpYTranslation(
+                                    shouldHunAppearFromBottom,
+                                    row.hasStatusBarChipDuringHeadsUpAnimation());
+                    childState.setYTranslation(yTranslation);
                 } else {
                     // Make sure row yTranslation is at maximum the HUN yTranslation,
                     // which accounts for AmbientState.stackTopMargin in split-shade.
