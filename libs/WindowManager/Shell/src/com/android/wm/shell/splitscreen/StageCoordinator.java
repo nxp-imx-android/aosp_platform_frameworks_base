@@ -41,6 +41,7 @@ import static com.android.window.flags.Flags.enableNonDefaultDisplaySplit;
 import static com.android.wm.shell.Flags.enableEnterSplitRemoveBubble;
 import static com.android.wm.shell.Flags.enableFlexibleSplit;
 import static com.android.wm.shell.Flags.enableFlexibleTwoAppSplit;
+import static com.android.wm.shell.Flags.splitDisableChildTaskBounds;
 import static com.android.wm.shell.common.split.SplitLayout.PARALLAX_ALIGN_CENTER;
 import static com.android.wm.shell.common.split.SplitLayout.PARALLAX_FLEX_HYBRID;
 import static com.android.wm.shell.common.split.SplitLayout.RESTING_DIM_LAYER;
@@ -2541,6 +2542,9 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
             wct.setAdjacentRootSet(mMainStage.mRootTaskInfo.token, mSideStage.mRootTaskInfo.token);
             mSplitLayout.getInvisibleBounds(mTempRect1);
             wct.setBounds(mSideStage.mRootTaskInfo.token, mTempRect1);
+        }
+        if (splitDisableChildTaskBounds()) {
+            wct.setDisallowOverrideBoundsForChildren(rootTaskInfo.token, true);
         }
         mSyncQueue.queue(wct);
         if (!enableFlexibleSplit()) {
