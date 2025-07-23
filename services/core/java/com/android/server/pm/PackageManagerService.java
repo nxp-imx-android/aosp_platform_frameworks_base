@@ -4517,6 +4517,8 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
         if (dexUseManager != null) {
             dexUseManager.systemReady();
         }
+
+        PackageMetrics.logInvalidationMetrics();
     }
 
     public PackageFreezer freezePackage(String packageName, @CanBeALL @UserIdInt int userId,

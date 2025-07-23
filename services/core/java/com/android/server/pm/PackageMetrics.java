@@ -42,7 +42,10 @@ import android.text.TextUtils;
 import android.util.Pair;
 import android.util.Slog;
 import android.util.SparseArray;
+import android.util.SparseIntArray;
 
+import com.android.internal.annotations.GuardedBy;
+import com.android.internal.os.BackgroundThread;
 import com.android.internal.util.FrameworkStatsLog;
 import com.android.server.LocalServices;
 import com.android.server.SystemServiceManager;
@@ -57,6 +60,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
@@ -203,11 +207,18 @@ public final class PackageMetrics {
             "static_shared_library_changed";
     public static final String STRING_TEST = "test";
 
+    private static final long LOG_INVALIDATION_METRICS_TIMEOUT_MS = Duration.ofMinutes(
+            5).toMillis();
+
     private final long mInstallStartTimestampMillis;
     private final SparseArray<InstallStep> mInstallSteps = new SparseArray<>();
     private final InstallRequest mInstallRequest;
 
     private static SystemServiceManager sSystemServiceManager = null;
+    @GuardedBy("sInvalidationMetrics")
+    private static SparseArray<SparseIntArray> sInvalidationMetrics = new SparseArray<>();
+    @GuardedBy("sInvalidationMetrics")
+    private static boolean sOkayToWrite = false;
 
     PackageMetrics(InstallRequest installRequest) {
         // New instance is used for tracking installation metrics only.
@@ -621,18 +632,7 @@ public final class PackageMetrics {
      * Metrics for reporting what kind of reason to call the invalidation.
      */
     public static void reportCacheInvalidationEvent(int cacheType, int invalidationReason) {
-        if (sSystemServiceManager == null) {
-            sSystemServiceManager = LocalServices.getService(SystemServiceManager.class);
-            if (sSystemServiceManager == null) {
-                return;
-            }
-        }
-        if (!sSystemServiceManager.isBootCompleted()) {
-            return;
-        }
-        // TODO(b/430272418): Implement a local counter for periodic metrics reporting.
-        FrameworkStatsLog.write(FrameworkStatsLog.PACKAGE_MANAGER_CACHE_INVALIDATION_REPORTED,
-                cacheType, invalidationReason);
+        storeInvalidationMetrics(cacheType, invalidationReason);
     }
 
     private static int convertPackageChangedReasonStringToInteger(String reason,
@@ -657,5 +657,53 @@ public final class PackageMetrics {
             default ->
                     FrameworkStatsLog.PACKAGE_CHANGED_BROADCAST_REPORTED__REASON__PACKAGE_CHANGED_REASON_UNSPECIFIED;
         };
+    }
+
+    private static void storeInvalidationMetrics(int cacheType, int invalidationReason) {
+        synchronized (sInvalidationMetrics) {
+            SparseIntArray invalidationMetrics = sInvalidationMetrics.get(cacheType);
+            if (invalidationMetrics == null) {
+                invalidationMetrics = new SparseIntArray();
+                sInvalidationMetrics.put(cacheType, invalidationMetrics);
+            }
+            invalidationMetrics.put(invalidationReason,
+                    invalidationMetrics.get(invalidationReason) + 1);
+        }
+    }
+
+    /**
+     * Log invalidation metrics to statsd.
+     */
+    public static void logInvalidationMetrics() {
+        synchronized (sInvalidationMetrics) {
+            if (sSystemServiceManager == null) {
+                sSystemServiceManager = LocalServices.getService(SystemServiceManager.class);
+            }
+            if (!sOkayToWrite && sSystemServiceManager != null
+                    && sSystemServiceManager.isBootCompleted()) {
+                sOkayToWrite = true;
+            }
+            if (sOkayToWrite) {
+                final int cacheTypeSize = sInvalidationMetrics.size();
+                for (int i = 0; i < cacheTypeSize; i++) {
+                    final int cacheType = sInvalidationMetrics.keyAt(i);
+                    final SparseIntArray invalidationMetrics = sInvalidationMetrics.get(cacheType);
+                    if (invalidationMetrics == null) {
+                        continue;
+                    }
+                    final int reasonSize = invalidationMetrics.size();
+                    for (int j = 0; j < reasonSize; j++) {
+                        final int reason = invalidationMetrics.keyAt(j);
+                        final int counts = invalidationMetrics.get(reason);
+                        FrameworkStatsLog.write(
+                                FrameworkStatsLog.PACKAGE_MANAGER_CACHE_INVALIDATION_REPORTED,
+                                cacheType, reason, counts);
+                    }
+                }
+                sInvalidationMetrics.clear();
+            }
+            BackgroundThread.getHandler().postDelayed(() -> logInvalidationMetrics(),
+                    LOG_INVALIDATION_METRICS_TIMEOUT_MS);
+        }
     }
 }
