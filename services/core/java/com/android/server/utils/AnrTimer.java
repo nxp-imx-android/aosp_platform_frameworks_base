@@ -301,10 +301,10 @@ public class AnrTimer<V> implements AutoCloseable {
     /**
      * A target process may be modified when its timer expires.  The modification (if any) will be
      * undone if the expiration is discarded, but is persisted if the expiration is accepted.  If
-     * the expiration is accepted, then a TimerLock is returned to the client.  The client must
-     * close the TimerLock to complete the state machine.
+     * the expiration is accepted, then a ExpiredTimer is returned to the client.  The client must
+     * close the ExpiredTimer to complete the state machine.
      */
-    private class TimerLock implements AutoCloseable {
+    public static class ExpiredTimer implements AutoCloseable {
         // Detect failures to close.
         private final CloseGuard mGuard = new CloseGuard();
 
@@ -314,7 +314,11 @@ public class AnrTimer<V> implements AutoCloseable {
         // Allow multiple calls to close().
         private boolean mClosed = false;
 
-        TimerLock() {
+        // The timer ID.
+        final int mTimerId;
+
+        ExpiredTimer(int id) {
+            mTimerId = id;
             mGuard.open("AnrTimer.release");
         }
 
@@ -401,9 +405,13 @@ public class AnrTimer<V> implements AutoCloseable {
     @GuardedBy("mLock")
     private final ArrayMap<V, Integer> mTimerIdMap = new ArrayMap<>();
 
-    /** Reverse map from timer ID to client argument. */
+    /** Reverse map from timer ID to client argument, needed by the expire() callback. */
     @GuardedBy("mLock")
     private final SparseArray<V> mTimerArgMap = new SparseArray<>();
+
+    /** Map from timer ID to ExpiredTimer. */
+    @GuardedBy("mLock")
+    private final SparseArray<ExpiredTimer> mExpiredTimers = new SparseArray<>();
 
     /** The highwater mark of started, but not closed, timers. */
     @GuardedBy("mLock")
@@ -528,7 +536,7 @@ public class AnrTimer<V> implements AutoCloseable {
         abstract boolean cancel(@NonNull V arg);
 
         @Nullable
-        abstract TimerLock accept(@NonNull V arg);
+        abstract ExpiredTimer accept(@NonNull V arg);
 
         abstract boolean discard(@NonNull V arg);
 
@@ -564,7 +572,7 @@ public class AnrTimer<V> implements AutoCloseable {
         /** accept() is a no-op when the feature is disabled. */
         @Override
         @Nullable
-        TimerLock accept(@NonNull V arg) {
+        ExpiredTimer accept(@NonNull V arg) {
             return null;
         }
 
@@ -684,28 +692,31 @@ public class AnrTimer<V> implements AutoCloseable {
 
         /**
          * Accept a timer in the framework-level handler.  The timeout has been accepted and the
-         * client's timeout handler is executing.  If the function returns a non-null TimerLock then
-         * the associated process may have been paused (or otherwise modified in preparation for
-         * debugging). The TimerLock must be closed to allow the process to continue, or to be
-         * dumped in an AnrReport.
+         * client's timeout handler is executing.  If the function returns a non-null ExpiredTimer
+         * then the associated process may have been paused (or otherwise modified in preparation
+         * for debugging). The ExpiredTimer must be closed.
          */
         @Override
         @Nullable
-        TimerLock accept(@NonNull V arg) {
+        ExpiredTimer accept(@NonNull V arg) {
             synchronized (mLock) {
-                Integer timer = removeLocked(arg);
+                ExpiredTimer timer = removeLockedTimer(arg);
                 if (timer == null) {
                     notFoundLocked("accept", arg);
                     return null;
                 }
                 // Race conditions may lead to timer acceptance after the service was closed.
                 if (mNative == 0) return null;
-                boolean accepted = nativeAnrTimerAccept(mNative, timer);
+                boolean accepted = nativeAnrTimerAccept(mNative, timer.mTimerId);
                 trace("accept", timer);
                 // If "accepted" is true then the native layer has pending operations against this
-                // timer.  Wrap the timer ID in a TimerLock and return it to the caller.  If
+                // timer.  Wrap the timer ID in a ExpiredTimer and return it to the caller.  If
                 // "accepted" is false then the native later does not have any pending operations.
-                return accepted ? new TimerLock() : null;
+                if (!accepted) {
+                    timer.close();
+                    timer = null;
+                }
+                return timer;
             }
         }
 
@@ -771,14 +782,31 @@ public class AnrTimer<V> implements AutoCloseable {
         }
 
         /**
+         * Delete the entries associated with arg from the maps and return the ExpiredTimer of the
+         * timer, if any.
+         */
+        @GuardedBy("mLock")
+        private ExpiredTimer removeLockedTimer(V arg) {
+            final Integer r = mTimerIdMap.remove(arg);
+            ExpiredTimer l = null;
+            if (r != null) {
+                mTimerArgMap.remove(r);
+                l = mExpiredTimers.removeReturnOld(r);
+            }
+            return l;
+        }
+
+        /**
          * Delete the entries associated with arg from the maps and return the ID of the timer, if
-         * any.
+         * any.  If there is a ExpiredTimer present, it is closed.
          */
         @GuardedBy("mLock")
         private Integer removeLocked(V arg) {
-            Integer r = mTimerIdMap.remove(arg);
+            final Integer r = mTimerIdMap.remove(arg);
             if (r != null) {
                 mTimerArgMap.remove(r);
+                ExpiredTimer l = mExpiredTimers.removeReturnOld(r);
+                if (l != null) l.close();
             }
             return r;
         }
@@ -843,9 +871,9 @@ public class AnrTimer<V> implements AutoCloseable {
     /**
      * Accept the expired timer associated with arg.  This indicates that the caller considers the
      * timer expiration to be a true ANR.  (See {@link #discard} for an alternate response.)  The
-     * function stores a {@link TimerLock} in the {@link TimeoutRecord} argument.  The TimerLock
-     * records information about the expired timer for retrieval during ANR report generation.
-     * After this call, the timer does not exist.
+     * function stores a {@link ExpiredTimer} in the {@link TimeoutRecord} argument.  The
+     * ExpiredTimer records information about the expired timer for retrieval during ANR report
+     * generation.  After this call, the timer does not exist.
      *
      * It is a protocol error to accept a running timer, however, the running timer will be
      * canceled.
@@ -887,7 +915,7 @@ public class AnrTimer<V> implements AutoCloseable {
     @Keep
     private boolean expire(int timerId, int pid, int uid, long elapsedMs) {
         trace("expired", timerId, pid, uid, mLabel, elapsedMs);
-        V arg = null;
+        final V arg;
         synchronized (mLock) {
             arg = mTimerArgMap.get(timerId);
             if (arg == null) {
@@ -896,6 +924,7 @@ public class AnrTimer<V> implements AutoCloseable {
                 mTotalErrors++;
                 return false;
             }
+            mExpiredTimers.put(timerId, new ExpiredTimer(timerId));
             mTotalExpired++;
         }
         final Message msg = Message.obtain(mHandler, mWhat, arg);
@@ -963,6 +992,19 @@ public class AnrTimer<V> implements AutoCloseable {
     @VisibleForTesting
     public void setTime(long now) {
         mFeature.setTime(now);
+    }
+
+    /**
+     * Return the ExpiredTimer associated with a TimeoutRecord.  The TimeoutRecord is not modified.
+     */
+    @Nullable
+    public static ExpiredTimer expiredTimer(TimeoutRecord tr) {
+        AutoCloseable expiredTimer = tr.getExpiredTimer();
+        if (expiredTimer instanceof ExpiredTimer lock) {
+            return lock;
+        } else {
+            return null;
+        }
     }
 
     /**

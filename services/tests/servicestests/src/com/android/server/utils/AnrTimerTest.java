@@ -31,6 +31,7 @@ import android.util.Log;
 import androidx.test.filters.SmallTest;
 
 import com.android.internal.annotations.GuardedBy;
+import com.android.internal.os.TimeoutRecord;
 
 import org.junit.Ignore;
 import org.junit.Test;
@@ -52,7 +53,7 @@ public class AnrTimerTest {
     private static final int MSG_TIMEOUT = 1;
 
     // The test argument includes a pid and uid, and a tag.  The tag is used to distinguish
-    // different message instances.  Additional fields (like what) capture delivery information
+    // different message instances.  Additional fields (like "what") capture delivery information
     // that is checked by the test.
     private static class TestArg {
         final int pid;
@@ -528,6 +529,48 @@ public class AnrTimerTest {
                 new TestResult(t2, 0)         // t2, 160ms (100% of 160)
             };
             validate(expected, actual);
+        }
+    }
+
+    /**
+     * Test the ExpiredTimer feature.
+     */
+    @Test
+    public void testExpiredTimer() throws Exception {
+        assumeTrue(AnrTimer.nativeTimersSupported());
+        AnrTimer.Args args =
+                new AnrTimer.Args()
+                .enable(true)
+                .testMode(true);
+
+        Helper helper = new Helper(1);
+        TestArg t1 = new TestArg(1, 1);
+        TestArg t2 = new TestArg(2, 2);
+        try (TestAnrTimer timer = new TestAnrTimer(helper, args)) {
+            Stepper stepper = new Stepper(timer, helper);
+
+            timer.start(t1, 100);
+            stepper.stepAndWait(100);
+            timer.start(t2, 100);
+            stepper.stepAndWait(200);
+            TestResult[] result = helper.results(2);
+
+            assertThat(timer.discard(t1)).isTrue();
+            assertThat(timer.discard(t1)).isFalse();
+            TimeoutRecord tr1a = TimeoutRecord.forApp("testing purposes");
+            timer.accept(t1, tr1a);
+            assertThat(tr1a.getExpiredTimer()).isNull();
+
+            TimeoutRecord tr2a = TimeoutRecord.forApp("testing purposes");
+            timer.accept(t2, tr2a);
+            assertThat(tr2a.getExpiredTimer()).isNotNull();
+            assertThat(tr2a.getExpiredTimer()).isNotNull();
+            tr2a.closeExpiredTimer();
+            assertThat(tr2a.getExpiredTimer()).isNull();
+            assertThat(timer.discard(t2)).isFalse();
+            TimeoutRecord tr2b = TimeoutRecord.forApp("testing purposes");
+            timer.accept(t2, tr2b);
+            assertThat(tr2b.getExpiredTimer()).isNull();
         }
     }
 
