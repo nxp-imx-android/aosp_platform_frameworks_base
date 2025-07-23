@@ -247,9 +247,9 @@ public class HeadsUpManagerImpl
                 }
             }
         };
-        globalSettings.registerContentObserverSync(
+        globalSettings.registerContentObserverAsync(
                 globalSettings.getUriFor(SETTING_HEADS_UP_SNOOZE_LENGTH_MS),
-                /* notifyForDescendants = */ false,
+                /* notifyForDescendants= */ false,
                 settingsObserver);
 
         statusBarStateController.addCallback(mStatusBarStateListener);
