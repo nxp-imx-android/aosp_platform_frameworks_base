@@ -1290,6 +1290,16 @@ flag {
 }
 
 flag {
+    name:"media_frame_dimensions_fix"
+    namespace: "systemui"
+    description: "measure and layout media frame when the desired location of media carousel changes"
+    bug: "417204970"
+    metadata {
+      purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
   namespace: "systemui"
   name: "enable_view_capture_tracing"
   description: "Enables view capture tracing in System UI."

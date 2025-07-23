@@ -1446,23 +1446,26 @@ private fun ContentScope.MediaObject(
                 },
                 update = { view ->
                     view.update()
-                    // Update layout params if host view bounds are higher than its child.
-                    val height = mediaHost.hostView.height
-                    val width = mediaHost.hostView.width
-                    var measure = false
-                    mediaHost.hostView.children.forEach { child ->
-                        if (
-                            child is FrameLayout && (height > child.height || width > child.width)
-                        ) {
-                            measure = true
-                            child.layoutParams = FrameLayout.LayoutParams(width, height)
+                    if (!Flags.mediaFrameDimensionsFix()) {
+                        // Update layout params if host view bounds are higher than its child.
+                        val height = mediaHost.hostView.height
+                        val width = mediaHost.hostView.width
+                        var measure = false
+                        mediaHost.hostView.children.forEach { child ->
+                            if (
+                                child is FrameLayout &&
+                                    (height > child.height || width > child.width)
+                            ) {
+                                measure = true
+                                child.layoutParams = FrameLayout.LayoutParams(width, height)
+                            }
                         }
-                    }
-                    if (measure) {
-                        mediaHost.hostView.measurementManager.onMeasure(
-                            MeasurementInput(width, height)
-                        )
-                        mediaLogger.logMediaSize("update size in compose", width, height)
+                        if (measure) {
+                            mediaHost.hostView.measurementManager.onMeasure(
+                                MeasurementInput(width, height)
+                            )
+                            mediaLogger.logMediaSize("update size in compose", width, height)
+                        }
                     }
                 },
                 onReset = {},
