@@ -16,18 +16,24 @@
 
 package com.android.systemui.qs.ui.viewmodel
 
+import com.android.systemui.dagger.qualifiers.Main
 import com.android.systemui.lifecycle.ExclusiveActivatable
 import com.android.systemui.scene.domain.interactor.SceneInteractor
+import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.shade.domain.interactor.ShadeInteractor
+import com.android.systemui.shade.domain.interactor.ShadeModeInteractor
+import com.android.systemui.shade.shared.model.ShadeMode
 import com.android.systemui.statusbar.notification.stack.domain.interactor.NotificationStackAppearanceInteractor
 import com.android.systemui.statusbar.notification.stack.shared.model.ShadeScrimShape
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 /**
  * Models UI state used to render the content of the quick settings shade overlay.
@@ -38,7 +44,9 @@ import kotlinx.coroutines.launch
 class QuickSettingsShadeOverlayContentViewModel
 @AssistedInject
 constructor(
+    @Main private val mainDispatcher: CoroutineDispatcher,
     val shadeInteractor: ShadeInteractor,
+    val shadeModeInteractor: ShadeModeInteractor,
     val sceneInteractor: SceneInteractor,
     val notificationStackAppearanceInteractor: NotificationStackAppearanceInteractor,
 ) : ExclusiveActivatable() {
@@ -50,10 +58,29 @@ constructor(
                     .distinctUntilChanged()
                     .filter { !it }
                     .collect {
-                        shadeInteractor.collapseQuickSettingsShade(
-                            loggingReason = "device became non-interactive"
-                        )
+                        withContext(mainDispatcher) {
+                            shadeInteractor.collapseQuickSettingsShade(
+                                loggingReason = "device became non-interactive"
+                            )
+                        }
                     }
+            }
+
+            launch {
+                shadeModeInteractor.shadeMode.collect { shadeMode ->
+                    withContext(mainDispatcher) {
+                        val loggingReason = "Fold or rotate while on quick settings shade"
+                        when (shadeMode) {
+                            is ShadeMode.Single ->
+                                sceneInteractor.snapToScene(Scenes.QuickSettings, loggingReason)
+
+                            is ShadeMode.Split ->
+                                sceneInteractor.snapToScene(Scenes.Shade, loggingReason)
+
+                            is ShadeMode.Dual -> Unit // Standard case, nothing to do
+                        }
+                    }
+                }
             }
         }
 

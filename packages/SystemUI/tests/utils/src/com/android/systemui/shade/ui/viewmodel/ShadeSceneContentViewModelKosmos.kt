@@ -19,6 +19,7 @@ package com.android.systemui.shade.ui.viewmodel
 import com.android.systemui.deviceentry.domain.interactor.deviceEntryInteractor
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.Kosmos.Fixture
+import com.android.systemui.kosmos.testDispatcher
 import com.android.systemui.media.controls.domain.pipeline.interactor.mediaCarouselInteractor
 import com.android.systemui.qs.footerActionsController
 import com.android.systemui.qs.footerActionsViewModelFactory
@@ -32,6 +33,7 @@ import com.android.systemui.unfold.domain.interactor.unfoldTransitionInteractor
 
 val Kosmos.shadeSceneContentViewModel: ShadeSceneContentViewModel by Fixture {
     ShadeSceneContentViewModel(
+        mainDispatcher = testDispatcher,
         shadeHeaderViewModelFactory = shadeHeaderViewModelFactory,
         quickQuickSettingsViewModel = quickQuickSettingsViewModelFactory,
         qsSceneAdapter = qsSceneAdapter,
@@ -47,7 +49,7 @@ val Kosmos.shadeSceneContentViewModel: ShadeSceneContentViewModel by Fixture {
     )
 }
 
-val Kosmos.shadeSceneContentViewModelFactory : ShadeSceneContentViewModel.Factory by Fixture {
+val Kosmos.shadeSceneContentViewModelFactory: ShadeSceneContentViewModel.Factory by Fixture {
     object : ShadeSceneContentViewModel.Factory {
         override fun create(): ShadeSceneContentViewModel {
             return shadeSceneContentViewModel
