@@ -1482,8 +1482,7 @@ public class CachedBluetoothDevice implements Comparable<CachedBluetoothDevice> 
         if (mBluetoothManager == null) {
             mBluetoothManager = LocalBluetoothManager.getInstance(mContext, null);
         }
-        boolean isTempBond = Flags.enableTemporaryBondDevicesUi()
-                && BluetoothUtils.isTemporaryBondDevice(getDevice());
+        boolean isTempBond = BluetoothUtils.isTemporaryBondDevice(getDevice());
         if (BluetoothUtils.hasConnectedBroadcastSource(this, mBluetoothManager)) {
             // Gets summary for the buds which are in the audio sharing.
             int groupId = BluetoothUtils.getGroupId(this);
@@ -1686,8 +1685,7 @@ public class CachedBluetoothDevice implements Comparable<CachedBluetoothDevice> 
                 rightBattery = getRightBatteryLevel();
             }
 
-            boolean isTempBond = Flags.enableTemporaryBondDevicesUi()
-                    && BluetoothUtils.isTemporaryBondDevice(getDevice());
+            boolean isTempBond = BluetoothUtils.isTemporaryBondDevice(getDevice());
             // Set default string with battery level in device connected situation.
             if (isTwsBatteryAvailable(leftBattery, rightBattery)) {
                 stringRes =
