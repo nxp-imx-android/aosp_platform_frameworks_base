@@ -315,6 +315,7 @@ android.os.UserBatteryConsumer
 android.os.UserHandle
 android.os.UserManager
 android.os.VibrationAttributes
+android.os.WaitState
 android.os.WakeLockStats
 android.os.WorkSource
 
