@@ -170,6 +170,30 @@ class ResolutionMechanismTest {
         }
     }
 
+    @Test
+    fun isPolicyApplied_flagUnion_flagSet_returnTrue() {
+        val resolutionMechanism = FlagUnion()
+
+        assertTrue { resolutionMechanism.isPolicyApplied(INT_POLICY_A,
+            INT_POLICY_AB) }
+    }
+
+    @Test
+    fun isPolicyApplied_flagUnion_flagNotSet_returnFalse() {
+        val resolutionMechanism = FlagUnion()
+
+        assertFalse { resolutionMechanism.isPolicyApplied(INT_POLICY_C,
+            INT_POLICY_AB) }
+    }
+
+    @Test
+    fun isPolicyApplied_flagUnion_someFlagsNotSet_returnFalse() {
+        val resolutionMechanism = FlagUnion()
+
+        assertFalse { resolutionMechanism.isPolicyApplied(INT_POLICY_AB,
+            INT_POLICY_A) }
+    }
+
     companion object {
         private const val SYSTEM_USER_ID = UserHandle.USER_SYSTEM
         private val SYSTEM_ADMIN = EnforcingAdmin.createSystemEnforcingAdmin("system_entity")
@@ -186,6 +210,7 @@ class ResolutionMechanismTest {
 
         private val INT_POLICY_A = IntegerPolicyValue(1 shl 7)
         private val INT_POLICY_B = IntegerPolicyValue(1 shl 8)
-        private val INT_POLICY_AB = IntegerPolicyValue(1 shl 7 or 1 shl 8)
+        private val INT_POLICY_C = IntegerPolicyValue(1 shl 9)
+        private val INT_POLICY_AB = IntegerPolicyValue((1 shl 7) or (1 shl 8))
     }
 }
