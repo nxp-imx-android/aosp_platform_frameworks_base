@@ -194,6 +194,37 @@ class ResolutionMechanismTest {
             INT_POLICY_A) }
     }
 
+    @Test
+    fun isPolicyApplied_packageSetUnion_setIncluded_returnsTrue() {
+        val resolutionMechanism = PackageSetUnion()
+
+        assertTrue {
+            resolutionMechanism.isPolicyApplied(PackageSetPolicyValue(setOf("package1")),
+                PackageSetPolicyValue(setOf("package1", "package2")))
+        }
+    }
+
+    @Test
+    fun isPolicyApplied_packageSetUnion_setDoesNotIntersect_returnsFalse() {
+        val resolutionMechanism = PackageSetUnion()
+
+        assertFalse {
+            resolutionMechanism.isPolicyApplied(PackageSetPolicyValue(setOf("package3")),
+                PackageSetPolicyValue(setOf("package1", "package2")))
+        }
+    }
+
+    @Test
+    fun isPolicyApplied_packageSetUnion_setPartiallyIncluded_returnsFalse() {
+        val resolutionMechanism = PackageSetUnion()
+
+        assertFalse {
+            resolutionMechanism.isPolicyApplied(
+                PackageSetPolicyValue(setOf("package1", "package3")),
+                PackageSetPolicyValue(setOf("package1", "package2")))
+        }
+    }
+
     companion object {
         private const val SYSTEM_USER_ID = UserHandle.USER_SYSTEM
         private val SYSTEM_ADMIN = EnforcingAdmin.createSystemEnforcingAdmin("system_entity")

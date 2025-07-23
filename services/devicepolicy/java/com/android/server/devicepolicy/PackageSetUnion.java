@@ -43,6 +43,29 @@ final class PackageSetUnion extends ResolutionMechanism<Set<String>> {
                 // Since it's union, all admins contribute to the final value.
                 adminPolicies.keySet());
     }
+    /**
+     * Checks whether the given policy {@code value} is considered applied
+     * based on the {@code resolvedPolicy} and the {@code PackageSetUnion} resolution
+     * mechanism.
+     *
+     * <p> The check passes if all packages found in the {@code value} parameter are also found
+     * in the {@code resolvedPolicy} set.
+     *
+     * @param value the policy value representing the set of packages to check for.
+     * @param resolvedPolicy The current resolved policy value, represented by a set of packages.
+     *
+     * @return true if all packages in {@code value} are found within
+     *         {@code resolvedPolicy}, false otherwise.
+     */
+    @Override
+    public boolean isPolicyApplied(@NonNull PolicyValue<Set<String>> value,
+            @NonNull PolicyValue<Set<String>> resolvedPolicy) {
+        Objects.requireNonNull(value, "Input PolicyValue 'value' cannot be null.");
+        Objects.requireNonNull(value, "Input PolicyValue 'resolvedPolicy' "
+                + "cannot be null");
+
+        return resolvedPolicy.getValue().containsAll(value.getValue());
+    }
 
     @Override
     StringSetUnion getParcelableResolutionMechanism() {
