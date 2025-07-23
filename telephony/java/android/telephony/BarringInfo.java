@@ -16,6 +16,7 @@
 
 package android.telephony;
 
+import android.annotation.FlaggedApi;
 import android.annotation.IntDef;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
@@ -25,6 +26,8 @@ import android.annotation.TestApi;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.util.SparseArray;
+
+import com.android.internal.telephony.flags.Flags;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -308,7 +311,9 @@ public final class BarringInfo implements Parcelable {
      *
      * @hide
      */
-    public CellIdentity getCellIdentity() {
+    @SystemApi
+    @FlaggedApi(Flags.FLAG_CELL_IDENTITY_FOR_BARRING_INFO)
+    public @Nullable CellIdentity getCellIdentity() {
         return mCellIdentity;
     }
 

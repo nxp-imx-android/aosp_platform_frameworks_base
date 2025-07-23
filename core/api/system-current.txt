@@ -15241,6 +15241,7 @@ package android.telephony {
   public final class BarringInfo implements android.os.Parcelable {
     ctor public BarringInfo();
     method @NonNull public android.telephony.BarringInfo createLocationInfoSanitizedCopy();
+    method @FlaggedApi("com.android.internal.telephony.flags.cell_identity_for_barring_info") @Nullable public android.telephony.CellIdentity getCellIdentity();
   }
 
   @Deprecated public final class CallAttributes implements android.os.Parcelable {
