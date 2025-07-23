@@ -2478,7 +2478,7 @@ public final class SmsManager {
             RESULT_RIL_NO_NETWORK_FOUND,
             RESULT_RIL_DEVICE_IN_USE,
             RESULT_RIL_ABORTED,
-            RESULT_SMS_SEND_FAIL_AFTER_MAX_RETRY
+            RESULT_SMS_SEND_FAILED_AFTER_MAX_RETRY
     })
     @Retention(RetentionPolicy.SOURCE)
     public @interface Result {}
@@ -2835,11 +2835,16 @@ public final class SmsManager {
     public static final int RESULT_RIL_ABORTED = 137;
 
     /**
-     * SMS send failed due to exceeding max retry count
+     * Indicates that the SMS sending operation failed because all allowed retry attempts
+     * were exhausted without successfully sending the message.
+     * <p>
+     * This is distinct from {@link #RESULT_SMS_SEND_RETRY_FAILED}, which signals a single failed
+     * retry attempt where further retries might still be scheduled.
+     * In contrast, {@code RESULT_SMS_SEND_FAILED_AFTER_MAX_RETRY} signifies that the maximum retry
+     * limit has been surpassed, and no more attempts will be made for this SMS message.
      */
     @FlaggedApi(Flags.FLAG_SATELLITE_25Q4_APIS)
-    public static final int RESULT_SMS_SEND_FAIL_AFTER_MAX_RETRY = 138;
-
+    public static final int RESULT_SMS_SEND_FAILED_AFTER_MAX_RETRY = 138;
 
     // SMS receiving results sent as a "result" extra in {@link Intents.SMS_REJECTED_ACTION}
 
