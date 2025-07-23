@@ -18,7 +18,6 @@ package com.android.server.companion.datatransfer.continuity;
 
 import android.annotation.NonNull;
 import android.companion.AssociationInfo;
-import android.companion.CompanionDeviceManager;
 import android.companion.datatransfer.continuity.IHandoffRequestCallback;
 import android.companion.datatransfer.continuity.ITaskContinuityManager;
 import android.companion.datatransfer.continuity.IRemoteTaskListener;
@@ -41,9 +40,8 @@ import com.android.server.companion.datatransfer.continuity.tasks.RemoteTaskStor
 
 import com.android.server.SystemService;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Collection;
+import java.util.Objects;
 
 /**
  * Service to handle task continuity features
@@ -87,11 +85,13 @@ public final class TaskContinuityManagerService
     private final class TaskContinuityManagerServiceImpl extends ITaskContinuityManager.Stub {
         @Override
         public void registerRemoteTaskListener(@NonNull IRemoteTaskListener listener) {
+            Objects.requireNonNull(listener);
             mRemoteTaskStore.addListener(listener);
         }
 
         @Override
         public void unregisterRemoteTaskListener(@NonNull IRemoteTaskListener listener) {
+            Objects.requireNonNull(listener);
             mRemoteTaskStore.removeListener(listener);
         }
 
@@ -100,6 +100,9 @@ public final class TaskContinuityManagerService
             int associationId,
             int remoteTaskId,
             @NonNull IHandoffRequestCallback callback) {
+
+            Objects.requireNonNull(callback);
+
             final long ident = Binder.clearCallingIdentity();
             try {
                 mOutboundHandoffRequestController.requestHandoff(
@@ -114,6 +117,8 @@ public final class TaskContinuityManagerService
 
     @Override
     public void onAssociationConnected(@NonNull AssociationInfo associationInfo) {
+        Objects.requireNonNull(associationInfo);
+
         mRemoteTaskStore.addDevice(
             associationInfo.getId(),
             associationInfo.getDisplayName().toString());
@@ -125,6 +130,8 @@ public final class TaskContinuityManagerService
     public void onAssociationDisconnected(
         int associationId,
         @NonNull Collection<AssociationInfo> connectedAssociations) {
+
+        Objects.requireNonNull(connectedAssociations);
 
         mRemoteTaskStore.removeDevice(associationId);
         if (connectedAssociations.isEmpty()) {
@@ -138,27 +145,18 @@ public final class TaskContinuityManagerService
         @NonNull TaskContinuityMessage taskContinuityMessage) {
 
         Slog.v(TAG, "Received message from association id: " + associationId);
-
-        switch (taskContinuityMessage) {
+        switch (Objects.requireNonNull(taskContinuityMessage)) {
             case ContinuityDeviceConnected continuityDeviceConnected:
-                mRemoteTaskStore.setTasks(
-                    associationId,
-                    continuityDeviceConnected.remoteTasks());
+                mRemoteTaskStore.setTasks(associationId, continuityDeviceConnected.remoteTasks());
                 break;
             case RemoteTaskAddedMessage remoteTaskAddedMessage:
-                mRemoteTaskStore.addTask(
-                    associationId,
-                    remoteTaskAddedMessage.task());
+                mRemoteTaskStore.addTask(associationId, remoteTaskAddedMessage.task());
                 break;
             case RemoteTaskRemovedMessage remoteTaskRemovedMessage:
-                mRemoteTaskStore.removeTask(
-                    associationId,
-                    remoteTaskRemovedMessage.taskId());
+                mRemoteTaskStore.removeTask(associationId, remoteTaskRemovedMessage.taskId());
                 break;
             case RemoteTaskUpdatedMessage remoteTaskUpdatedMessage:
-                mRemoteTaskStore.updateTask(
-                    associationId,
-                    remoteTaskUpdatedMessage.task());
+                mRemoteTaskStore.updateTask(associationId, remoteTaskUpdatedMessage.task());
                 break;
             case HandoffRequestResultMessage handoffRequestResultMessage:
                 mOutboundHandoffRequestController.onHandoffRequestResultMessageReceived(
