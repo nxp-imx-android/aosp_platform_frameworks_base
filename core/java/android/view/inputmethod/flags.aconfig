@@ -214,3 +214,10 @@ flag {
   description: "Set server visibility before performLayout to avoid additional window layout traversal."
   bug: "427863960"
 }
+
+flag {
+  name: "deprecate_input_method_show_hide_flags"
+  namespace: "input_method"
+  description: "Deprecate unsupported show/hide flags."
+  bug: "322992891"
+}
