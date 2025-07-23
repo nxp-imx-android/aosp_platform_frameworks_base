@@ -75,7 +75,7 @@ final class VibratorController implements HalVibrator {
 
     @Override
     public void init(@NonNull Callbacks callbacks) {
-        Trace.traceBegin(TRACE_TAG_VIBRATOR, "VibratorController#init");
+        Trace.traceBegin(TRACE_TAG_VIBRATOR, "HalVibrator.init");
         try {
             int vibratorId = mVibratorInfo.getId();
             mNativeWrapper.init(vibratorId, callbacks);
@@ -98,7 +98,7 @@ final class VibratorController implements HalVibrator {
 
     @Override
     public void onSystemReady() {
-        Trace.traceBegin(TRACE_TAG_VIBRATOR, "VibratorController#onSystemReady");
+        Trace.traceBegin(TRACE_TAG_VIBRATOR, "HalVibrator.onSystemReady");
         try {
             // Early check outside lock, for quick return.
             if (mVibratorInfoLoadSuccessful) {
@@ -174,8 +174,8 @@ final class VibratorController implements HalVibrator {
     @Override
     public boolean setExternalControl(boolean externalControl) {
         Trace.traceBegin(TRACE_TAG_VIBRATOR,
-                externalControl ? "VibratorController#enableExternalControl"
-                : "VibratorController#disableExternalControl");
+                externalControl ? "HalVibrator.enableExternalControl"
+                : "HalVibrator.disableExternalControl");
         try {
             if (!mVibratorInfo.hasCapability(IVibrator.CAP_EXTERNAL_CONTROL)) {
                 return false;
@@ -193,7 +193,8 @@ final class VibratorController implements HalVibrator {
 
     @Override
     public boolean setAlwaysOn(int id, @Nullable PrebakedSegment prebaked) {
-        Trace.traceBegin(TRACE_TAG_VIBRATOR, "VibratorController#updateAlwaysOn");
+        Trace.traceBegin(TRACE_TAG_VIBRATOR,
+                prebaked != null ? "HalVibrator.enableAlwaysOn" : "HalVibrator.disableAlwaysOn");
         try {
             if (!mVibratorInfo.hasCapability(IVibrator.CAP_ALWAYS_ON_CONTROL)) {
                 return false;
@@ -214,7 +215,7 @@ final class VibratorController implements HalVibrator {
 
     @Override
     public boolean setAmplitude(float amplitude) {
-        Trace.traceBegin(TRACE_TAG_VIBRATOR, "VibratorController#setAmplitude");
+        Trace.traceBegin(TRACE_TAG_VIBRATOR, "HalVibrator.setAmplitude");
         try {
             boolean success = false;
             synchronized (mLock) {
@@ -234,7 +235,7 @@ final class VibratorController implements HalVibrator {
 
     @Override
     public long on(long vibrationId, long stepId, long milliseconds) {
-        Trace.traceBegin(TRACE_TAG_VIBRATOR, "VibratorController#on");
+        Trace.traceBegin(TRACE_TAG_VIBRATOR, "HalVibrator.onMillis");
         try {
             synchronized (mLock) {
                 long duration = mNativeWrapper.on(milliseconds, vibrationId, stepId);
@@ -250,7 +251,7 @@ final class VibratorController implements HalVibrator {
 
     @Override
     public long on(long vibrationId, long stepId, VibrationEffect.VendorEffect vendorEffect) {
-        Trace.traceBegin(TRACE_TAG_VIBRATOR, "VibratorController#on (vendor)");
+        Trace.traceBegin(TRACE_TAG_VIBRATOR, "HalVibrator.onVendor");
         synchronized (mLock) {
             Parcel vendorData = Parcel.obtain();
             try {
@@ -272,7 +273,7 @@ final class VibratorController implements HalVibrator {
 
     @Override
     public long on(long vibrationId, long stepId, PrebakedSegment prebaked) {
-        Trace.traceBegin(TRACE_TAG_VIBRATOR, "VibratorController#on (Prebaked)");
+        Trace.traceBegin(TRACE_TAG_VIBRATOR, "HalVibrator.onPrebaked");
         try {
             synchronized (mLock) {
                 long duration = mNativeWrapper.perform(prebaked.getEffectId(),
@@ -289,7 +290,7 @@ final class VibratorController implements HalVibrator {
 
     @Override
     public long on(long vibrationId, long stepId, PrimitiveSegment[] primitives) {
-        Trace.traceBegin(TRACE_TAG_VIBRATOR, "VibratorController#on (Primitive)");
+        Trace.traceBegin(TRACE_TAG_VIBRATOR, "HalVibrator.onPrimitives");
         try {
             if (!mVibratorInfo.hasCapability(IVibrator.CAP_COMPOSE_EFFECTS)) {
                 return 0;
@@ -308,7 +309,7 @@ final class VibratorController implements HalVibrator {
 
     @Override
     public long on(long vibrationId, long stepId, RampSegment[] primitives) {
-        Trace.traceBegin(TRACE_TAG_VIBRATOR, "VibratorController#on (PWLE)");
+        Trace.traceBegin(TRACE_TAG_VIBRATOR, "HalVibrator.onPwleV1");
         try {
             if (!mVibratorInfo.hasCapability(IVibrator.CAP_COMPOSE_PWLE_EFFECTS)) {
                 return 0;
@@ -329,7 +330,7 @@ final class VibratorController implements HalVibrator {
 
     @Override
     public long on(long vibrationId, long stepId, PwlePoint[] pwlePoints) {
-        Trace.traceBegin(TRACE_TAG_VIBRATOR, "VibratorController#on (PWLE v2)");
+        Trace.traceBegin(TRACE_TAG_VIBRATOR, "HalVibrator.onPwleV2");
         try {
             if (!mVibratorInfo.hasCapability(IVibrator.CAP_COMPOSE_PWLE_EFFECTS_V2)) {
                 return 0;
@@ -348,7 +349,7 @@ final class VibratorController implements HalVibrator {
 
     @Override
     public boolean off() {
-        Trace.traceBegin(TRACE_TAG_VIBRATOR, "VibratorController#off");
+        Trace.traceBegin(TRACE_TAG_VIBRATOR, "HalVibrator.off");
         try {
             synchronized (mLock) {
                 mNativeWrapper.off();
@@ -390,6 +391,13 @@ final class VibratorController implements HalVibrator {
      */
     @GuardedBy("mLock")
     private void updateStateAndNotifyListenersLocked(State state) {
+        if (mCurrentState == State.IDLE && state == State.VIBRATING) {
+            // First vibrate command.
+            Trace.asyncTraceBegin(TRACE_TAG_VIBRATOR, "HalVibrator.vibration", 0);
+        } else if (mCurrentState == State.VIBRATING && state == State.IDLE) {
+            // First off after a vibrate command.
+            Trace.asyncTraceEnd(TRACE_TAG_VIBRATOR, "HalVibrator.vibration", 0);
+        }
         boolean previousIsVibrating = isVibrating(mCurrentState);
         final boolean newIsVibrating = isVibrating(state);
         mCurrentState = state;

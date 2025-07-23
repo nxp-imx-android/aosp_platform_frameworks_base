@@ -55,6 +55,12 @@ static jmethodID sMethodIdOnVibrationComplete;
 static std::mutex gManagerMutex;
 static vibrator::ManagerHalController* gManager GUARDED_BY(gManagerMutex) = nullptr;
 
+// Log debug messages about metrics events logged to statsd.
+// Enable this via "adb shell setprop persist.log.tag.VibratorManagerService DEBUG"
+// or "adb shell setprop persist.log.tag.Vibrator_All DEBUG" (requires reboot).
+const bool DEBUG = __android_log_is_loggable(ANDROID_LOG_DEBUG, LOG_TAG, ANDROID_LOG_INFO) ||
+        __android_log_is_loggable(ANDROID_LOG_DEBUG, "Vibrator_All", ANDROID_LOG_INFO);
+
 // IVibratorCallback implementation for HalVibrator.Callbacks.
 class VibrationCallback : public BnVibratorCallback {
 public:
@@ -66,6 +72,10 @@ public:
     virtual ~VibrationCallback() = default;
 
     ndk::ScopedAStatus onComplete() override {
+        if (DEBUG) {
+            ALOGD("%s(%d, %d, %d)", __func__, static_cast<int32_t>(mVibratorId),
+                  static_cast<int32_t>(mVibrationId), static_cast<int32_t>(mStepId));
+        }
         auto env = GetOrAttachJNIEnvironment(sJvm);
         if (env->IsSameObject(mCallbackRef, NULL)) {
             ALOGE("Null reference to vibrator service callbacks");
@@ -374,7 +384,9 @@ static jlong nativeGetFinalizer(JNIEnv* /* env */, jclass /* clazz */) {
 
 static jboolean nativeTriggerSyncedWithCallback(JNIEnv* env, jclass /* clazz */, jlong ptr,
                                                 jlong vibrationId) {
-    ALOGD("%s", __func__);
+    if (DEBUG) {
+        ALOGD("%s(%d)", __func__, static_cast<int32_t>(vibrationId));
+    }
     auto service = toNativeService(ptr, __func__);
     auto hal = loadManagerHal(service, __func__);
     if (hal == nullptr) {
@@ -390,7 +402,9 @@ static jboolean nativeTriggerSyncedWithCallback(JNIEnv* env, jclass /* clazz */,
 
 static jobject nativeStartSessionWithCallback(JNIEnv* env, jclass /* clazz */, jlong ptr,
                                               jlong sessionId, jintArray vibratorIds) {
-    ALOGD("%s", __func__);
+    if (DEBUG) {
+        ALOGD("%s(%d)", __func__, static_cast<int32_t>(sessionId));
+    }
     auto service = toNativeService(ptr, __func__);
     auto hal = loadManagerHal(service, __func__);
     if (hal == nullptr) {
@@ -412,7 +426,10 @@ static jobject nativeStartSessionWithCallback(JNIEnv* env, jclass /* clazz */, j
 static jint nativeVibratorOnWithCallback(JNIEnv* env, jclass /* clazz */, jlong ptr,
                                          jint vibratorId, jlong vibrationId, jlong stepId,
                                          jint durationMs) {
-    ALOGD("%s", __func__);
+    if (DEBUG) {
+        ALOGD("%s(%d, %d, %d)", __func__, static_cast<int32_t>(vibratorId),
+              static_cast<int32_t>(vibrationId), static_cast<int32_t>(stepId));
+    }
     auto service = toNativeService(ptr, __func__);
     auto hal = loadVibratorHal(service, static_cast<int32_t>(vibratorId), __func__);
     if (service == nullptr || hal == nullptr) {
@@ -430,7 +447,10 @@ static jint nativeVibratorPerformVendorEffectWithCallback(JNIEnv* env, jclass /*
                                                           jlong ptr, jint vibratorId,
                                                           jlong vibrationId, jlong stepId,
                                                           jobject vendorEffect) {
-    ALOGD("%s", __func__);
+    if (DEBUG) {
+        ALOGD("%s(%d, %d, %d)", __func__, static_cast<int32_t>(vibratorId),
+              static_cast<int32_t>(vibrationId), static_cast<int32_t>(stepId));
+    }
     auto service = toNativeService(ptr, __func__);
     auto hal = loadVibratorHal(service, static_cast<int32_t>(vibratorId), __func__);
     if (service == nullptr || hal == nullptr) {
@@ -448,7 +468,10 @@ static jint nativeVibratorPerformEffectWithCallback(JNIEnv* env, jclass /* clazz
                                                     jint vibratorId, jlong vibrationId,
                                                     jlong stepId, jint effectId,
                                                     jint effectStrength) {
-    ALOGD("%s", __func__);
+    if (DEBUG) {
+        ALOGD("%s(%d, %d, %d)", __func__, static_cast<int32_t>(vibratorId),
+              static_cast<int32_t>(vibrationId), static_cast<int32_t>(stepId));
+    }
     auto service = toNativeService(ptr, __func__);
     auto hal = loadVibratorHal(service, static_cast<int32_t>(vibratorId), __func__);
     if (service == nullptr || hal == nullptr) {
@@ -467,7 +490,10 @@ static jint nativeVibratorPerformEffectWithCallback(JNIEnv* env, jclass /* clazz
 static jint nativeVibratorComposeEffectWithCallback(JNIEnv* env, jclass /* clazz */, jlong ptr,
                                                     jint vibratorId, jlong vibrationId,
                                                     jlong stepId, jobject compositeEffects) {
-    ALOGD("%s", __func__);
+    if (DEBUG) {
+        ALOGD("%s(%d, %d, %d)", __func__, static_cast<int32_t>(vibratorId),
+              static_cast<int32_t>(vibrationId), static_cast<int32_t>(stepId));
+    }
     auto service = toNativeService(ptr, __func__);
     auto hal = loadVibratorHal(service, static_cast<int32_t>(vibratorId), __func__);
     if (service == nullptr || hal == nullptr) {
@@ -484,7 +510,10 @@ static jint nativeVibratorComposeEffectWithCallback(JNIEnv* env, jclass /* clazz
 static jint nativeVibratorComposePwleEffectWithCallback(JNIEnv* env, jclass /* clazz */, jlong ptr,
                                                         jint vibratorId, jlong vibrationId,
                                                         jlong stepId, jobject pwles) {
-    ALOGD("%s", __func__);
+    if (DEBUG) {
+        ALOGD("%s(%d, %d, %d)", __func__, static_cast<int32_t>(vibratorId),
+              static_cast<int32_t>(vibrationId), static_cast<int32_t>(stepId));
+    }
     auto service = toNativeService(ptr, __func__);
     auto hal = loadVibratorHal(service, static_cast<int32_t>(vibratorId), __func__);
     if (service == nullptr || hal == nullptr) {
@@ -502,7 +531,10 @@ static jint nativeVibratorComposePwleV2EffectWithCallback(JNIEnv* env, jclass /*
                                                           jlong ptr, jint vibratorId,
                                                           jlong vibrationId, jlong stepId,
                                                           jobject composite) {
-    ALOGD("%s", __func__);
+    if (DEBUG) {
+        ALOGD("%s(%d, %d, %d)", __func__, static_cast<int32_t>(vibratorId),
+              static_cast<int32_t>(vibrationId), static_cast<int32_t>(stepId));
+    }
     auto service = toNativeService(ptr, __func__);
     auto hal = loadVibratorHal(service, static_cast<int32_t>(vibratorId), __func__);
     if (service == nullptr || hal == nullptr) {
