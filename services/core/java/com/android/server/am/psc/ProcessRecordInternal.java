@@ -187,6 +187,13 @@ public abstract class ProcessRecordInternal {
      */
     public abstract boolean hasCompatChange(@CachedCompatChangeId int cachedCompatChangeId);
 
+    /**
+     * Returns whether this process has bound to a service with
+     * {@link android.content.Context#BIND_ABOVE_CLIENT}.
+     * TODO(b/425766486): Remove it once ProcessRecordInternal could access ProcessServiceRecord.
+     */
+    public abstract boolean hasAboveClient();
+
     // Enable this to trace all OomAdjuster state transitions
     private static final boolean TRACE_OOM_ADJ = false;
 

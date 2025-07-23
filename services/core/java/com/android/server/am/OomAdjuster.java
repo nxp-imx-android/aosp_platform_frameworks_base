@@ -1927,20 +1927,18 @@ public abstract class OomAdjuster {
      * @return The proposed change to the schedGroup.
      */
     @GuardedBy({"mService", "mProcLock"})
-    protected int setIntermediateAdjLSP(ProcessRecord app, int adj, int schedGroup) {
-        final ProcessRecordInternal state = app;
-        state.setCurRawAdj(adj);
+    protected int setIntermediateAdjLSP(ProcessRecordInternal app, int adj, int schedGroup) {
+        app.setCurRawAdj(adj);
 
-        adj = applyBindAboveClientToAdj(app.mServices.hasAboveClient(), adj);
-        if (adj > state.getMaxAdj()) {
-            adj = state.getMaxAdj();
+        adj = applyBindAboveClientToAdj(app.hasAboveClient(), adj);
+        if (adj > app.getMaxAdj()) {
+            adj = app.getMaxAdj();
             if (adj <= PERCEPTIBLE_LOW_APP_ADJ) {
                 schedGroup = SCHED_GROUP_DEFAULT;
             }
         }
 
-        state.setCurAdj(adj);
-
+        app.setCurAdj(adj);
         return schedGroup;
     }
 

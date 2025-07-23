@@ -1168,6 +1168,11 @@ class ProcessRecord extends ProcessRecordInternal implements WindowProcessListen
                 false/* default */);
     }
 
+    @Override
+    public boolean hasAboveClient() {
+        return mServices.hasAboveClient();
+    }
+
     boolean hasActivitiesOrRecentTasks() {
         return mWindowProcessController.hasActivitiesOrRecentTasks();
     }
