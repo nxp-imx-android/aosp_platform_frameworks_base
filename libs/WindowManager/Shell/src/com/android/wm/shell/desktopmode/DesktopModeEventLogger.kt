@@ -31,6 +31,7 @@ import com.android.internal.util.FrameworkStatsLog
 import com.android.wm.shell.EventLogTags
 import com.android.wm.shell.common.DisplayController
 import com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_DESKTOP_MODE
+import com.android.wm.shell.shared.desktopmode.DesktopModeTransitionSource
 import java.security.SecureRandom
 import java.util.Random
 import java.util.concurrent.atomic.AtomicInteger
@@ -461,6 +462,23 @@ class DesktopModeEventLogger {
             }
         }
 
+        /**
+         * Returns corresponding desktop mode enter [EnterReason] for a
+         * [DesktopModeTransitionSource].
+         */
+        @JvmStatic
+        fun DesktopModeTransitionSource.getEnterReason(): EnterReason =
+            when (this) {
+                DesktopModeTransitionSource.APP_HANDLE_MENU_BUTTON ->
+                    EnterReason.APP_HANDLE_MENU_BUTTON
+                DesktopModeTransitionSource.OVERVIEW_TASK_MENU -> EnterReason.OVERVIEW_TASK_MENU
+                DesktopModeTransitionSource.KEYBOARD_SHORTCUT -> EnterReason.KEYBOARD_SHORTCUT_ENTER
+                DesktopModeTransitionSource.RECENTS -> EnterReason.RECENTS
+                DesktopModeTransitionSource.TASK_DRAG -> EnterReason.APP_HANDLE_DRAG
+                DesktopModeTransitionSource.ADB_COMMAND -> EnterReason.ADB_COMMAND
+                else -> EnterReason.UNKNOWN_ENTER
+            }
+
         // Default value used when the task was not minimized.
         @VisibleForTesting
         const val UNSET_MINIMIZE_REASON =
@@ -551,6 +569,16 @@ class DesktopModeEventLogger {
             OVERVIEW_TASK_MENU(
                 FrameworkStatsLog.DESKTOP_MODE_UICHANGED__ENTER_REASON__OVERVIEW_TASK_MENU
             ),
+            ADB_COMMAND(FrameworkStatsLog.DESKTOP_MODE_UICHANGED__ENTER_REASON__ADB_COMMAND),
+            RECENTS(FrameworkStatsLog.DESKTOP_MODE_UICHANGED__ENTER_REASON__RECENTS),
+            EXIT_PIP(FrameworkStatsLog.DESKTOP_MODE_UICHANGED__ENTER_REASON__EXIT_PIP),
+            DISPLAY_CONNECT(
+                FrameworkStatsLog.DESKTOP_MODE_UICHANGED__ENTER_REASON__DISPLAY_CONNECT
+            ),
+            DESK_REPARENT(FrameworkStatsLog.DESKTOP_MODE_UICHANGED__ENTER_REASON__DESK_REPARENT),
+            APP_SELF_REPOSITION(
+                FrameworkStatsLog.DESKTOP_MODE_UICHANGED__ENTER_REASON__APP_SELF_REPOSITION
+            ),
         }
 
         /**
@@ -575,6 +603,20 @@ class DesktopModeEventLogger {
             TASK_MOVED_TO_BACK(
                 FrameworkStatsLog.DESKTOP_MODE_UICHANGED__EXIT_REASON__TASK_MOVED_TO_BACK
             ),
+            DISPLAY_DISCONNECTED(
+                FrameworkStatsLog.DESKTOP_MODE_UICHANGED__EXIT_REASON__DISPLAY_DISCONNECTED
+            ),
+            FULLSCREEN_LAUNCH(
+                FrameworkStatsLog.DESKTOP_MODE_UICHANGED__EXIT_REASON__FULLSCREEN_LAUNCH
+            ),
+            ADB_COMMAND_EXIT(
+                FrameworkStatsLog.DESKTOP_MODE_UICHANGED__EXIT_REASON__ADB_COMMAND_EXIT
+            ),
+            TASK_MOVED_FROM_DESK(
+                FrameworkStatsLog.DESKTOP_MODE_UICHANGED__EXIT_REASON__TASK_MOVED_FROM_DESK
+            ),
+            RECENTS_DISMISS(FrameworkStatsLog.DESKTOP_MODE_UICHANGED__EXIT_REASON__RECENTS_DISMISS),
+            ENTER_PIP(FrameworkStatsLog.DESKTOP_MODE_UICHANGED__EXIT_REASON__ENTER_PIP),
         }
 
         /**
