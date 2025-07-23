@@ -87,6 +87,7 @@ import com.android.app.tracing.traceSection
 import com.android.internal.annotations.VisibleForTesting
 import com.android.internal.jank.Cuj.CUJ_DESKTOP_MODE_ENTER_APP_HANDLE_DRAG_HOLD
 import com.android.internal.jank.Cuj.CUJ_DESKTOP_MODE_ENTER_APP_HANDLE_DRAG_RELEASE
+import com.android.internal.jank.Cuj.CUJ_DESKTOP_MODE_MOVE_FROM_SPLIT_SCREEN
 import com.android.internal.jank.Cuj.CUJ_DESKTOP_MODE_SNAP_RESIZE
 import com.android.internal.jank.InteractionJankMonitor
 import com.android.internal.policy.DesktopModeCompatPolicy
@@ -5229,14 +5230,27 @@ class DesktopTasksController(
                 latencyTracker.onActionStart(
                     LatencyTracker.ACTION_DESKTOP_MODE_ENTER_APP_HANDLE_DRAG
                 )
-                // Start a new jank interaction for the drag release to desktop window animation.
-                interactionJankMonitor.begin(
-                    taskSurface,
-                    context,
-                    handler,
-                    CUJ_DESKTOP_MODE_ENTER_APP_HANDLE_DRAG_RELEASE,
-                    "to_desktop",
-                )
+                if (
+                    taskInfo.configuration.windowConfiguration.getWindowingMode() ===
+                        WINDOWING_MODE_MULTI_WINDOW
+                ) {
+                    interactionJankMonitor.begin(
+                        taskSurface,
+                        context,
+                        handler,
+                        CUJ_DESKTOP_MODE_MOVE_FROM_SPLIT_SCREEN,
+                    )
+                } else {
+                    // Start a new jank interaction for the drag release to desktop window
+                    // animation.
+                    interactionJankMonitor.begin(
+                        taskSurface,
+                        context,
+                        handler,
+                        CUJ_DESKTOP_MODE_ENTER_APP_HANDLE_DRAG_RELEASE,
+                        "to_desktop",
+                    )
+                }
                 desktopModeUiEventLogger.log(
                     taskInfo,
                     DesktopUiEventEnum.DESKTOP_WINDOW_APP_HANDLE_DRAG_TO_DESKTOP_MODE,

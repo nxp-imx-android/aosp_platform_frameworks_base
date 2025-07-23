@@ -19,6 +19,7 @@ package com.android.wm.shell.desktopmode;
 import static android.app.WindowConfiguration.WINDOWING_MODE_FREEFORM;
 
 import static com.android.internal.jank.Cuj.CUJ_DESKTOP_MODE_ENTER_MODE_APP_HANDLE_MENU;
+import static com.android.internal.jank.Cuj.CUJ_DESKTOP_MODE_MOVE_FROM_SPLIT_SCREEN;
 import static com.android.wm.shell.desktopmode.DesktopModeTransitionTypes.getEnterTransitionType;
 import static com.android.wm.shell.desktopmode.DesktopModeTransitionTypes.isEnterDesktopModeTransition;
 
@@ -203,6 +204,7 @@ public class EnterDesktopTaskTransitionHandler implements Transitions.Transition
                 mTransitions.getMainExecutor().execute(
                         () -> finishCallback.onTransitionFinished(null));
                 mInteractionJankMonitor.end(CUJ_DESKTOP_MODE_ENTER_MODE_APP_HANDLE_MENU);
+                mInteractionJankMonitor.end(CUJ_DESKTOP_MODE_MOVE_FROM_SPLIT_SCREEN);
             }
         });
         animator.start();

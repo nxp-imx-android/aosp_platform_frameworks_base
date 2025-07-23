@@ -40,6 +40,7 @@ import com.android.internal.annotations.VisibleForTesting
 import com.android.internal.dynamicanimation.animation.SpringForce
 import com.android.internal.jank.Cuj.CUJ_DESKTOP_MODE_ENTER_APP_HANDLE_DRAG_HOLD
 import com.android.internal.jank.Cuj.CUJ_DESKTOP_MODE_ENTER_APP_HANDLE_DRAG_RELEASE
+import com.android.internal.jank.Cuj.CUJ_DESKTOP_MODE_MOVE_FROM_SPLIT_SCREEN
 import com.android.internal.jank.InteractionJankMonitor
 import com.android.internal.protolog.ProtoLog
 import com.android.internal.util.LatencyTracker
@@ -1002,6 +1003,7 @@ sealed class DragToDesktopTransitionHandler(
             // This transition being aborted is neither the start, nor the cancel transition, so
             // it must be the finish transition (DRAG_RELEASE); cancel its jank interaction.
             interactionJankMonitor.cancel(CUJ_DESKTOP_MODE_ENTER_APP_HANDLE_DRAG_RELEASE)
+            interactionJankMonitor.cancel(CUJ_DESKTOP_MODE_MOVE_FROM_SPLIT_SCREEN)
         }
     }
 
@@ -1497,6 +1499,7 @@ constructor(
                 startTransitionFinishCb.onTransitionFinished(/* wct= */ null)
                 clearState()
                 interactionJankMonitor.end(CUJ_DESKTOP_MODE_ENTER_APP_HANDLE_DRAG_RELEASE)
+                interactionJankMonitor.end(CUJ_DESKTOP_MODE_MOVE_FROM_SPLIT_SCREEN)
             })
             .start()
     }
