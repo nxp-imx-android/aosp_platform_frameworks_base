@@ -129,9 +129,16 @@ public class UninstallationFragment extends DialogFragment {
     }
 
     private void updateUninstallAbortedUI(Dialog dialog, UninstallAborted uninstallStage) {
-        mAppSnippet.setVisibility(View.GONE);
         mKeepDataLayout.setVisibility(View.GONE);
         mCustomMessageTextView.setVisibility(View.VISIBLE);
+
+        if (uninstallStage.getAppIcon() != null) {
+            mAppSnippet.setVisibility(View.VISIBLE);
+            mAppIcon.setImageDrawable(uninstallStage.getAppIcon());
+            mAppLabelTextView.setText(uninstallStage.getAppLabel());
+        } else {
+            mAppSnippet.setVisibility(View.GONE);
+        }
 
         // Set the title and the message
         dialog.setTitle(uninstallStage.getDialogTitleResource());

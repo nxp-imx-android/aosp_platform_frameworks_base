@@ -146,6 +146,21 @@ class UnarchiveRepository(private val context: Context) {
             Intent.EXTRA_INTENT,
             PendingIntent::class.java
         )
+
+        val appPackageName = intent.getStringExtra(PackageInstaller.EXTRA_PACKAGE_NAME)
+        var appSnippet: PackageUtil.AppSnippet? = null
+        if (appPackageName != null) {
+            try {
+                val applicationInfo = packageManager.getApplicationInfo(
+                    appPackageName,
+                    PackageManager.ApplicationInfoFlags.of(PackageManager.MATCH_ARCHIVED_PACKAGES)
+                )
+                appSnippet = getAppSnippet(context, applicationInfo)
+            } catch (e: NameNotFoundException) {
+                Log.e(LOG_TAG, "Invalid packageName $appPackageName: ", e)
+            }
+        }
+
         when (unarchivalStatus) {
             PackageInstaller.UNARCHIVAL_ERROR_USER_ACTION_NEEDED -> {
                 if (pendingIntent == null) {
@@ -196,7 +211,8 @@ class UnarchiveRepository(private val context: Context) {
             installerPackageName,
             installerAppTitle,
             requiredBytes,
-            pendingIntent
+            pendingIntent,
+            appSnippet
         )
     }
 

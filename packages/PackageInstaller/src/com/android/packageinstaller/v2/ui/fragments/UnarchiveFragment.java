@@ -160,6 +160,12 @@ public class UnarchiveFragment extends DialogFragment {
                 customMessage =
                         getString(R.string.message_restore_error_user_action_needed,
                                 installerAppTitle);
+
+                if (unarchiveStage.getAppIcon() != null) {
+                    mAppSnippet.setVisibility(View.VISIBLE);
+                    mAppIcon.setImageDrawable(unarchiveStage.getAppIcon());
+                    mAppLabelTextView.setText(unarchiveStage.getAppLabel());
+                }
             }
 
             case PackageInstaller.UNARCHIVAL_ERROR_INSUFFICIENT_STORAGE -> {
@@ -171,6 +177,12 @@ public class UnarchiveFragment extends DialogFragment {
                         getString(R.string.message_restore_error_less_storage),
                         Formatter.formatShortFileSize(requireContext(), requiredBytes));
                 customMessage = Html.fromHtml(message, Html.FROM_HTML_MODE_LEGACY);
+
+                if (unarchiveStage.getAppIcon() != null) {
+                    mAppSnippet.setVisibility(View.VISIBLE);
+                    mAppIcon.setImageDrawable(unarchiveStage.getAppIcon());
+                    mAppLabelTextView.setText(unarchiveStage.getAppLabel());
+                }
             }
 
             case PackageInstaller.UNARCHIVAL_ERROR_NO_CONNECTIVITY -> {

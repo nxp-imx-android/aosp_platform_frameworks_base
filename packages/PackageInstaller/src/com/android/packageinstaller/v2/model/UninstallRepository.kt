@@ -54,7 +54,6 @@ import com.android.packageinstaller.v2.model.PackageUtil.getMaxTargetSdkVersionF
 import com.android.packageinstaller.v2.model.PackageUtil.getPackageNameForUid
 import com.android.packageinstaller.v2.model.PackageUtil.isPermissionGranted
 import com.android.packageinstaller.v2.model.PackageUtil.isProfileOfOrSame
-import com.android.packageinstaller.v2.model.UninstallAborted.Companion.ABORT_REASON_UNINSTALL_DONE
 import android.content.pm.Flags as PmFlags
 import android.multiuser.Flags as MultiuserFlags
 
@@ -134,30 +133,6 @@ class UninstallRepository(private val context: Context) {
             return UninstallAborted(UninstallAborted.ABORT_REASON_APP_UNAVAILABLE)
         }
 
-        uninstallFromAllUsers = intent.getBooleanExtra(Intent.EXTRA_UNINSTALL_ALL_USERS, false)
-        if (uninstallFromAllUsers && !userManager!!.isAdminUser) {
-            Log.e(LOG_TAG, "Only admin user can request uninstall for all users")
-            return UninstallAborted(UninstallAborted.ABORT_REASON_USER_NOT_ALLOWED)
-        }
-
-        uninstalledUser = intent.getParcelableExtra(Intent.EXTRA_USER, UserHandle::class.java)
-        if (uninstalledUser == null) {
-            uninstalledUser = Process.myUserHandle()
-        } else {
-            if (uninstalledUser!! != Process.myUserHandle()) {
-                val isCurrentUserProfileOwner =
-                    Process.myUserHandle() == userManager!!.getProfileParent(uninstalledUser!!)
-                if (!isCurrentUserProfileOwner) {
-                    Log.e(
-                        LOG_TAG,
-                        "User " + Process.myUserHandle() + " can't request uninstall " +
-                                "for user " + uninstalledUser
-                    )
-                    return UninstallAborted(UninstallAborted.ABORT_REASON_USER_NOT_ALLOWED)
-                }
-            }
-        }
-
         callback = intent.getParcelableExtra(
             PackageInstaller.EXTRA_CALLBACK, PackageManager.UninstallCompleteCallback::class.java
         )
@@ -177,6 +152,36 @@ class UninstallRepository(private val context: Context) {
         if (targetAppInfo == null) {
             Log.e(LOG_TAG, "Invalid packageName: $targetPackageName")
             return UninstallAborted(UninstallAborted.ABORT_REASON_APP_UNAVAILABLE)
+        }
+
+        uninstallFromAllUsers = intent.getBooleanExtra(Intent.EXTRA_UNINSTALL_ALL_USERS, false)
+        if (uninstallFromAllUsers && !userManager!!.isAdminUser) {
+            Log.e(LOG_TAG, "Only admin user can request uninstall for all users")
+            return UninstallAborted(
+                UninstallAborted.ABORT_REASON_USER_NOT_ALLOWED,
+                getAppSnippet(context, targetAppInfo!!)
+            )
+        }
+
+        uninstalledUser = intent.getParcelableExtra(Intent.EXTRA_USER, UserHandle::class.java)
+        if (uninstalledUser == null) {
+            uninstalledUser = Process.myUserHandle()
+        } else {
+            if (uninstalledUser!! != Process.myUserHandle()) {
+                val isCurrentUserProfileOwner =
+                    Process.myUserHandle() == userManager!!.getProfileParent(uninstalledUser!!)
+                if (!isCurrentUserProfileOwner) {
+                    Log.e(
+                        LOG_TAG,
+                        "User " + Process.myUserHandle() + " can't request uninstall " +
+                                "for user " + uninstalledUser
+                    )
+                    return UninstallAborted(
+                        UninstallAborted.ABORT_REASON_USER_NOT_ALLOWED,
+                        getAppSnippet(context, targetAppInfo!!)
+                    )
+                }
+            }
         }
 
         // The class name may have been specified (e.g. when deleting an app from all apps)
@@ -533,7 +538,7 @@ class UninstallRepository(private val context: Context) {
             callback!!.onUninstallComplete(targetPackageName!!, legacyStatus, message)
 
             // Since the caller already received the results, just finish the app at this point
-            uninstallResult.value = UninstallAborted(ABORT_REASON_UNINSTALL_DONE)
+            uninstallResult.value = UninstallAborted(UninstallAborted.ABORT_REASON_UNINSTALL_DONE)
             return
         }
         val returnResult = intent.getBooleanExtra(Intent.EXTRA_RETURN_RESULT, false)

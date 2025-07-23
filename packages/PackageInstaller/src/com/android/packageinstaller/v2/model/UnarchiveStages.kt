@@ -60,5 +60,12 @@ data class UnarchiveError(
     val installerPackageName: String?,
     val installerAppTitle: String?,
     val requiredBytes: Long,
-    val pendingIntent: PendingIntent?
-) : UnarchiveStage(STAGE_ERROR)
+    val pendingIntent: PendingIntent?,
+    val appSnippet: PackageUtil.AppSnippet? = null
+) : UnarchiveStage(STAGE_ERROR) {
+    val appIcon: Drawable?
+        get() = appSnippet?.icon
+
+    val appLabel: String?
+        get() = appSnippet?.let { appSnippet.label as String? }
+}
