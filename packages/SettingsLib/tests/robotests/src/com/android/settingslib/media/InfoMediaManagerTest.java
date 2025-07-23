@@ -553,6 +553,7 @@ public class InfoMediaManagerTest {
         when(info.getClientPackageName()).thenReturn(TEST_PACKAGE_NAME);
         when(info.getSelectableRoutes()).thenReturn(list);
         when(route2Info.getId()).thenReturn(TEST_ID);
+        when(route2Info.getName()).thenReturn(TEST_NAME);
         when(route2Info.getClientPackageName()).thenReturn(TEST_PACKAGE_NAME);
 
         assertThat(mInfoMediaManager.addDeviceToPlayMedia(device)).isTrue();
@@ -594,6 +595,7 @@ public class InfoMediaManagerTest {
         when(info.getClientPackageName()).thenReturn(TEST_PACKAGE_NAME);
         when(info.getSelectedRoutes()).thenReturn(list);
         when(route2Info.getId()).thenReturn(TEST_ID);
+        when(route2Info.getName()).thenReturn(TEST_NAME);
         when(route2Info.getClientPackageName()).thenReturn(TEST_PACKAGE_NAME);
 
         assertThat(mInfoMediaManager.removeDeviceFromPlayMedia(device)).isTrue();
