@@ -363,10 +363,10 @@ interface IAudioService {
     oneway void setCsd(float csd);
 
     @EnforcePermission("MODIFY_AUDIO_SETTINGS_PRIVILEGED")
-    oneway void forceUseFrameworkMel(boolean useFrameworkMel);
+    void forceUseFrameworkMel(boolean useFrameworkMel);
 
     @EnforcePermission("MODIFY_AUDIO_SETTINGS_PRIVILEGED")
-    oneway void forceComputeCsdOnAllDevices(boolean computeCsdOnAllDevices);
+    void forceComputeCsdOnAllDevices(boolean computeCsdOnAllDevices);
 
     @EnforcePermission("MODIFY_AUDIO_SETTINGS_PRIVILEGED")
     boolean isCsdEnabled();
