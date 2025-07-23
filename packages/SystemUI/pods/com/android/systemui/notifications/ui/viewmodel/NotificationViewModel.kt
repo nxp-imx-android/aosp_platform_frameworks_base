@@ -37,6 +37,16 @@ public interface NotificationViewModel {
     /** The content text of the notification, shown below the title. */
     public val text: String?
 
+    /**
+     * Fields that appear in the top line of the notification, in the order that they appear (when
+     * present). Note that these have a built-in priority associated with them, so if we cannot fit
+     * all of them in the available space, the lower priority ones may be shrunk or even hidden.
+     */
+    public val appName: String
+    public val headerTextSecondary: String?
+    public val headerText: String?
+    public val verificationText: String?
+
     /** How many lines of text can be displayed when the notification is expanded. */
     public val maxLinesWhenExpanded: Int
     /** The maximum height of the notification. */
