@@ -21,12 +21,12 @@ import android.content.Intent;
 import android.os.RemoteCallback;
 import android.perftests.utils.BenchmarkState;
 import android.view.View;
-
 import androidx.test.filters.LargeTest;
 
 import com.android.compatibility.common.util.ActivitiesWatcher.ActivityWatcher;
 import com.android.perftests.contentcapture.R;
 
+import org.junit.Assert;
 import org.junit.Test;
 
 @LargeTest
@@ -228,6 +228,42 @@ public class LoginTest extends AbstractContentCapturePerfTestCase {
                 view.onVisibilityAggregated(true);
                 state.pauseTiming();
             });
+            state.resumeTiming();
+        }
+    }
+
+    @Test
+    public void testNotifyVirtualChildrenAppearedWithCustomView() throws Throwable {
+        // Arrange
+        MyContentCaptureService service = enableService();
+        CustomTestActivity activity = launchActivity(
+                R.layout.test_export_virtual_assist_node_activity, 0);
+        // TODO: Add multiple views with virtual children and check the performance.
+        View hostView = activity.findViewById(R.id.custom_view_with_a11y_provider);
+        hostView.setImportantForContentCapture(View.IMPORTANT_FOR_CONTENT_CAPTURE_YES);
+        // Expected: 1 for a11y host node (-1), 3 for virtual children (1, 2, 3)
+        // 1 for host view
+        int expectedViewAppeared = 5;
+        long eventTimeoutMs = 20000;
+        BenchmarkState state = mPerfStatusReporter.getBenchmarkState();
+
+        // Act
+        while (state.keepRunning()) {
+            state.pauseTiming();
+            service.clearEvents();
+            // Trigger content capture structure provision.
+            sInstrumentation.runOnMainSync(() -> hostView.setVisibility(View.GONE));
+            sInstrumentation.waitForIdleSync();
+            state.resumeTiming();
+            sInstrumentation.runOnMainSync(() -> hostView.setVisibility(View.VISIBLE));
+            sInstrumentation.waitForIdleSync();
+            state.pauseTiming();
+            service.waitForAppearedEvents(expectedViewAppeared, eventTimeoutMs);
+
+            // Assert
+            Assert.assertEquals("Expected " + expectedViewAppeared
+                            + " TYPE_VIEW_APPEARED events", expectedViewAppeared,
+                    service.getAppearedCount());
             state.resumeTiming();
         }
     }
