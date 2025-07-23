@@ -3016,7 +3016,7 @@ public final class SystemServer implements Dumpable {
         mSystemServiceManager.startService(ClipboardService.class);
         t.traceEnd();
 
-        if (!isTv) {
+        if (!isTv && !isWatch) {
             // Selection toolbar service
             t.traceBegin("StartSelectionToolbarManagerService");
             mSystemServiceManager.startService(SelectionToolbarManagerService.class);
