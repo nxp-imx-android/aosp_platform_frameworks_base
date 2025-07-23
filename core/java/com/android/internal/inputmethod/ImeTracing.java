@@ -66,20 +66,6 @@ public abstract class ImeTracing {
     }
 
     /**
-     * Transmits the information from client or InputMethodService side to the server, in order to
-     * be stored persistently to the current IME tracing dump.
-     *
-     * @param protoDump client or service side information to be stored by the server
-     * @param source where the information is coming from, refer to {@see #IME_TRACING_FROM_CLIENT}
-     * and {@see #IME_TRACING_FROM_IMS}
-     * @param where
-     */
-    protected void sendToService(byte[] protoDump, int source, String where) {
-        InputMethodManagerGlobal.startProtoDump(protoDump, source, where,
-                e -> Log.e(TAG, "Exception while sending ime-related dump to server", e));
-    }
-
-    /**
      * Start IME trace.
      */
     @RequiresPermission(android.Manifest.permission.CONTROL_UI_TRACING)

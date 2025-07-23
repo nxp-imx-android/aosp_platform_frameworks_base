@@ -93,9 +93,7 @@ import android.hardware.input.InputManager;
 import android.inputmethodservice.InputMethodService;
 import android.inputmethodservice.InputMethodService.BackDispositionMode;
 import android.inputmethodservice.InputMethodService.ImeWindowVisibility;
-import android.internal.perfetto.protos.Inputmethodeditor.InputMethodClientsTraceProto;
 import android.internal.perfetto.protos.Inputmethodeditor.InputMethodManagerServiceTraceProto;
-import android.internal.perfetto.protos.Inputmethodeditor.InputMethodServiceTraceProto;
 import android.media.AudioManagerInternal;
 import android.net.Uri;
 import android.os.Binder;
@@ -141,9 +139,7 @@ import android.view.inputmethod.Flags;
 import android.view.inputmethod.ImeTracker;
 import android.view.inputmethod.InputConnection;
 import android.view.inputmethod.InputMethod;
-import android.view.inputmethod.InputMethodEditorTraceProto.InputMethodClientsTraceFileProto;
 import android.view.inputmethod.InputMethodEditorTraceProto.InputMethodManagerServiceTraceFileProto;
-import android.view.inputmethod.InputMethodEditorTraceProto.InputMethodServiceTraceFileProto;
 import android.view.inputmethod.InputMethodInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.view.inputmethod.InputMethodSubtype;
@@ -4444,58 +4440,6 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
         }
 
         return stylusIds;
-    }
-
-    /**
-     * Starting point for dumping the IME tracing information in proto format.
-     *
-     * @param protoDump dump information from the IME client side
-     */
-    @BinderThread
-    @Override
-    public void startProtoDump(byte[] protoDump, int source, String where) {
-        if (protoDump == null && source != ImeTracing.IME_TRACING_FROM_IMMS) {
-            // Dump not triggered from IMMS, but no proto information provided.
-            return;
-        }
-        ImeTracing tracingInstance = ImeTracing.getInstance();
-        if (!tracingInstance.isAvailable() || !tracingInstance.isEnabled()) {
-            return;
-        }
-
-        ProtoOutputStream proto = new ProtoOutputStream();
-        switch (source) {
-            case ImeTracing.IME_TRACING_FROM_CLIENT:
-                final long client_token = proto.start(InputMethodClientsTraceFileProto.ENTRY);
-                proto.write(InputMethodClientsTraceProto.ELAPSED_REALTIME_NANOS,
-                        SystemClock.elapsedRealtimeNanos());
-                proto.write(InputMethodClientsTraceProto.WHERE, where);
-                proto.write(InputMethodClientsTraceProto.CLIENT, protoDump);
-                proto.end(client_token);
-                break;
-            case ImeTracing.IME_TRACING_FROM_IMS:
-                final long service_token = proto.start(InputMethodServiceTraceFileProto.ENTRY);
-                proto.write(InputMethodServiceTraceProto.ELAPSED_REALTIME_NANOS,
-                        SystemClock.elapsedRealtimeNanos());
-                proto.write(InputMethodServiceTraceProto.WHERE, where);
-                proto.write(InputMethodServiceTraceProto.INPUT_METHOD_SERVICE, protoDump);
-                proto.end(service_token);
-                break;
-            case ImeTracing.IME_TRACING_FROM_IMMS:
-                final long managerservice_token =
-                        proto.start(InputMethodManagerServiceTraceFileProto.ENTRY);
-                proto.write(InputMethodManagerServiceTraceProto.ELAPSED_REALTIME_NANOS,
-                        SystemClock.elapsedRealtimeNanos());
-                proto.write(InputMethodManagerServiceTraceProto.WHERE, where);
-                dumpDebug(proto,
-                        InputMethodManagerServiceTraceProto.INPUT_METHOD_MANAGER_SERVICE);
-                proto.end(managerservice_token);
-                break;
-            default:
-                // Dump triggered by a source not recognised.
-                return;
-        }
-        tracingInstance.addToBuffer(proto, source);
     }
 
     @BinderThread
