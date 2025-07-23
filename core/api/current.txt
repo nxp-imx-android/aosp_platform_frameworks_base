@@ -25131,9 +25131,11 @@ package android.media {
     field public static final String KEY_SLOW_MOTION_MARKERS = "slow-motion-markers";
     field public static final String KEY_STRIDE = "stride";
     field public static final String KEY_TEMPORAL_LAYERING = "ts-schema";
+    field @FlaggedApi("android.media.codec.temporal_layer_encoding") public static final String KEY_TEMPORAL_LAYER_ID = "temporal-layer-id";
     field public static final String KEY_TILE_HEIGHT = "tile-height";
     field public static final String KEY_TILE_WIDTH = "tile-width";
     field public static final String KEY_TRACK_ID = "track-id";
+    field @FlaggedApi("android.media.codec.temporal_layer_encoding") public static final String KEY_VIDEO_BITRATE_LAYERING = "video-bitrate-layering";
     field public static final String KEY_VIDEO_ENCODING_STATISTICS_LEVEL = "video-encoding-statistics-level";
     field public static final String KEY_VIDEO_QP_AVERAGE = "video-qp-average";
     field public static final String KEY_VIDEO_QP_B_MAX = "video-qp-b-max";
