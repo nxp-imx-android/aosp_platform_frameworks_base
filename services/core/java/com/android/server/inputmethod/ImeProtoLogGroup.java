@@ -24,8 +24,6 @@ public enum ImeProtoLogGroup implements IProtoLogGroup {
     // TODO(b/393561240): add info/warn/error log level and replace in IMMS
     IMMS_DEBUG(Consts.ENABLE_DEBUG, false, false,
             InputMethodManagerService.TAG),
-    IME_VISIBILITY_APPLIER_DEBUG(Consts.ENABLE_DEBUG, false, false,
-            DefaultImeVisibilityApplier.TAG),
     IME_VIS_STATE_COMPUTER_DEBUG(Consts.ENABLE_DEBUG, false, false,
             ImeVisibilityStateComputer.TAG);
 

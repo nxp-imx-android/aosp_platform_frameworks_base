@@ -23,6 +23,7 @@ filegroup {
         ":messagequeue-gen",
         ":ranging_stack_mock_initializer",
         ":systemfeatures-gen-srcs",
+        ":framework-network-security-config-sources",
     ],
     // Exactly one MessageQueue.java will be added to srcs by messagequeue-gen
     exclude_srcs: [

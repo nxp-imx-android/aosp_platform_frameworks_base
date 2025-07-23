@@ -35,10 +35,14 @@ import com.android.systemui.qs.FooterActionsController
 import com.android.systemui.qs.footer.ui.viewmodel.FooterActionsViewModel
 import com.android.systemui.scene.domain.interactor.sceneInteractor
 import com.android.systemui.scene.domain.startable.sceneContainerStartable
+import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.settings.brightness.ui.viewmodel.brightnessMirrorViewModelFactory
 import com.android.systemui.shade.domain.interactor.disableDualShade
+import com.android.systemui.shade.domain.interactor.enableDualShade
+import com.android.systemui.shade.domain.interactor.enableSingleShade
 import com.android.systemui.shade.domain.interactor.enableSplitShade
+import com.android.systemui.shade.domain.interactor.shadeInteractor
 import com.android.systemui.shade.domain.interactor.shadeModeInteractor
 import com.android.systemui.shade.ui.viewmodel.shadeHeaderViewModelFactory
 import com.android.systemui.testKosmos
@@ -127,12 +131,33 @@ class QuickSettingsSceneContentViewModelTest : SysuiTestCase() {
         }
 
     @Test
-    fun shadeModeChange_switchToShadeScene() =
+    fun shadeModeChange_split_switchToShadeScene() =
         kosmos.runTest {
             val scene by collectLastValue(sceneInteractor.currentScene)
+
+            enableSingleShade()
+            shadeInteractor.expandQuickSettingsShade("test")
+            assertThat(scene).isEqualTo(Scenes.QuickSettings)
 
             enableSplitShade()
 
             assertThat(scene).isEqualTo(Scenes.Shade)
+        }
+
+    @Test
+    fun shadeModeChange_dual_switchToOverlay() =
+        kosmos.runTest {
+            val scene by collectLastValue(sceneInteractor.currentScene)
+            val overlays by collectLastValue(sceneInteractor.currentOverlays)
+
+            enableSingleShade()
+            shadeInteractor.expandQuickSettingsShade("test")
+            assertThat(scene).isEqualTo(Scenes.QuickSettings)
+            assertThat(overlays).isEmpty()
+
+            enableDualShade()
+
+            assertThat(scene).isEqualTo(Scenes.Lockscreen)
+            assertThat(overlays).containsExactly(Overlays.QuickSettingsShade)
         }
 }

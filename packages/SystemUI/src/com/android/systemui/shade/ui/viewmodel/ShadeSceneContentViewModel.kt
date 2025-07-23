@@ -19,6 +19,7 @@ package com.android.systemui.shade.ui.viewmodel
 import androidx.compose.runtime.getValue
 import androidx.lifecycle.LifecycleOwner
 import com.android.app.tracing.coroutines.launchTraced as launch
+import com.android.systemui.dagger.qualifiers.Main
 import com.android.systemui.deviceentry.domain.interactor.DeviceEntryInteractor
 import com.android.systemui.lifecycle.ExclusiveActivatable
 import com.android.systemui.lifecycle.Hydrator
@@ -28,6 +29,8 @@ import com.android.systemui.qs.footer.ui.viewmodel.FooterActionsViewModel
 import com.android.systemui.qs.panels.ui.viewmodel.QuickQuickSettingsViewModel
 import com.android.systemui.qs.ui.adapter.QSSceneAdapter
 import com.android.systemui.scene.domain.interactor.SceneInteractor
+import com.android.systemui.scene.shared.model.Overlays
+import com.android.systemui.scene.shared.model.SceneFamilies
 import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.settings.brightness.ui.viewModel.BrightnessMirrorViewModel
 import com.android.systemui.shade.domain.interactor.ShadeModeInteractor
@@ -37,9 +40,12 @@ import com.android.systemui.unfold.domain.interactor.UnfoldTransitionInteractor
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import java.util.concurrent.atomic.AtomicBoolean
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.withContext
 
 /**
  * Models UI state used to render the content of the shade scene.
@@ -50,12 +56,13 @@ import kotlinx.coroutines.flow.map
 class ShadeSceneContentViewModel
 @AssistedInject
 constructor(
+    @Main private val mainDispatcher: CoroutineDispatcher,
     val qsSceneAdapter: QSSceneAdapter,
     val quickQuickSettingsViewModel: QuickQuickSettingsViewModel.Factory,
     val shadeHeaderViewModelFactory: ShadeHeaderViewModel.Factory,
     val brightnessMirrorViewModelFactory: BrightnessMirrorViewModel.Factory,
     val mediaCarouselInteractor: MediaCarouselInteractor,
-    shadeModeInteractor: ShadeModeInteractor,
+    private val shadeModeInteractor: ShadeModeInteractor,
     disableFlagsInteractor: DisableFlagsInteractor,
     private val footerActionsViewModelFactory: FooterActionsViewModel.Factory,
     private val footerActionsController: FooterActionsController,
@@ -106,6 +113,21 @@ constructor(
     override suspend fun onActivated(): Nothing {
         coroutineScope {
             launch { hydrator.activate() }
+
+            launch {
+                shadeModeInteractor.shadeMode
+                    .filter { it is ShadeMode.Dual }
+                    .collect {
+                        withContext(mainDispatcher) {
+                            val loggingReason = "Unfold or rotate while on notifications shade"
+                            sceneInteractor.snapToScene(SceneFamilies.Home, loggingReason)
+                            sceneInteractor.instantlyShowOverlay(
+                                Overlays.NotificationsShade,
+                                loggingReason,
+                            )
+                        }
+                    }
+            }
 
             awaitCancellation()
         }

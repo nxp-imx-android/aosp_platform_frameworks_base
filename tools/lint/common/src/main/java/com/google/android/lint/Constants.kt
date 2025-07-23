@@ -22,6 +22,7 @@ const val CLASS_STUB = "Stub"
 const val CLASS_CONTEXT = "android.content.Context"
 const val CLASS_ACTIVITY_MANAGER_SERVICE = "com.android.server.am.ActivityManagerService"
 const val CLASS_ACTIVITY_MANAGER_INTERNAL = "android.app.ActivityManagerInternal"
+const val CLASS_PERMISSION_CHECKER = "android.content.PermissionChecker"
 
 // Enforce permission APIs
 val ENFORCE_PERMISSION_METHODS = listOf(

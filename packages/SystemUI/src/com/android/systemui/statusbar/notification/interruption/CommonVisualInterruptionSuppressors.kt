@@ -99,7 +99,7 @@ class PeekDisabledSuppressor(
                 }
             }
 
-        globalSettings.registerContentObserverSync(
+        globalSettings.registerContentObserverAsync(
             globalSettings.getUriFor(HEADS_UP_NOTIFICATIONS_ENABLED),
             /* notifyForDescendants = */ true,
             observer,

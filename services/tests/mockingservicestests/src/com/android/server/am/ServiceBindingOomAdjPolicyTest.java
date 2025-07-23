@@ -32,6 +32,10 @@ import static android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_SYSTEM_EXEM
 import static android.os.UserHandle.USER_SYSTEM;
 import static android.platform.test.flag.junit.SetFlagsRule.DefaultInitValueType.DEVICE_DEFAULT;
 
+import static com.android.server.am.OomAdjuster.CPU_TIME_REASON_NONE;
+import static com.android.server.am.OomAdjuster.CPU_TIME_REASON_OTHER;
+import static com.android.server.am.OomAdjuster.IMPLICIT_CPU_TIME_REASON_NONE;
+import static com.android.server.am.OomAdjuster.IMPLICIT_CPU_TIME_REASON_OTHER;
 import static com.android.server.am.ProcessCachedOptimizerRecord.SHOULD_NOT_FREEZE_REASON_NONE;
 import static com.android.server.am.ProcessList.CACHED_APP_MIN_ADJ;
 import static com.android.server.am.ProcessList.HOME_APP_ADJ;
@@ -772,20 +776,43 @@ public final class ServiceBindingOomAdjPolicyTest {
         mProcessList.removeLruProcessLocked(app);
     }
 
+    private boolean containsCpuTime(int cap) {
+        return (cap & PROCESS_CAPABILITY_CPU_TIME) != 0;
+    }
+
+    private boolean containsImplicitCpuTime(int cap) {
+        return (cap & PROCESS_CAPABILITY_IMPLICIT_CPU_TIME) != 0;
+    }
+
+    @OomAdjuster.CpuTimeReasons
+    private int defaultCpuTimeReasons(int cap) {
+        return containsCpuTime(cap) ? CPU_TIME_REASON_OTHER : CPU_TIME_REASON_NONE;
+    }
+
+    @OomAdjuster.ImplicitCpuTimeReasons
+    private int defaultImplicitCpuTimeReasons(int cap) {
+        return containsImplicitCpuTime(cap) ? IMPLICIT_CPU_TIME_REASON_OTHER
+                : IMPLICIT_CPU_TIME_REASON_NONE;
+    }
+
     @SuppressWarnings("GuardedBy")
     private ProcessRecord makeProcessRecord(int pid, int uid, int packageUid, Integer definingUid,
             int connectionGroup, int procState, int adj, int cap, long pss, long rss,
             String processName, String packageName, ActivityManagerService ams) {
         final ProcessRecord app = ApplicationExitInfoTest.makeProcessRecord(pid, uid, packageUid,
                 definingUid, connectionGroup, procState, pss, rss, processName, packageName, ams);
-        app.mState.setCurRawProcState(procState);
-        app.mState.setCurProcState(procState);
-        app.mState.setSetProcState(procState);
-        app.mState.setCurRawAdj(adj);
-        app.mState.setCurAdj(adj);
-        app.mState.setSetAdj(adj);
-        app.mState.setCurCapability(cap);
-        app.mState.setSetCapability(cap);
+        app.setCurRawProcState(procState);
+        app.setCurProcState(procState);
+        app.setSetProcState(procState);
+        app.setCurRawAdj(adj);
+        app.setCurAdj(adj);
+        app.setSetAdj(adj);
+        app.setCurCapability(cap);
+        app.addCurCpuTimeReasons(defaultCpuTimeReasons(cap));
+        app.addCurImplicitCpuTimeReasons(defaultImplicitCpuTimeReasons(cap));
+        app.setSetCapability(cap);
+        app.setSetCpuTimeReasons(defaultCpuTimeReasons(cap));
+        app.setSetImplicitCpuTimeReasons(defaultImplicitCpuTimeReasons(cap));
         return app;
     }
 

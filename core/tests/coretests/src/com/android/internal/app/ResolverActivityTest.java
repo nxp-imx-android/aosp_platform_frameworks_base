@@ -1193,7 +1193,6 @@ public class ResolverActivityTest {
     @Test
     public void testTriggerFromPrivateProfile_withoutWorkProfile() throws RemoteException {
         mSetFlagsRule.enableFlags(android.os.Flags.FLAG_ALLOW_PRIVATE_PROFILE,
-                android.multiuser.Flags.FLAG_ALLOW_RESOLVER_SHEET_FOR_PRIVATE_SPACE,
                 android.multiuser.Flags.FLAG_ENABLE_PRIVATE_SPACE_FEATURES);
         markPrivateProfileUserAvailable();
         Intent sendIntent = createSendImageIntent();
@@ -1215,7 +1214,6 @@ public class ResolverActivityTest {
     @Test
     public void testTriggerFromPrivateProfile_withWorkProfilePresent(){
         mSetFlagsRule.enableFlags(android.os.Flags.FLAG_ALLOW_PRIVATE_PROFILE,
-                android.multiuser.Flags.FLAG_ALLOW_RESOLVER_SHEET_FOR_PRIVATE_SPACE,
                 android.multiuser.Flags.FLAG_ENABLE_PRIVATE_SPACE_FEATURES);
         ResolverActivity.ENABLE_TABBED_VIEW = false;
         markPrivateProfileUserAvailable();

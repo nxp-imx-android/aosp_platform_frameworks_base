@@ -17,14 +17,18 @@
 package com.android.systemui.qs.ui.viewmodel
 
 import com.android.systemui.kosmos.Kosmos
+import com.android.systemui.kosmos.testDispatcher
 import com.android.systemui.scene.domain.interactor.sceneInteractor
 import com.android.systemui.shade.domain.interactor.shadeInteractor
+import com.android.systemui.shade.domain.interactor.shadeModeInteractor
 import com.android.systemui.statusbar.notification.stack.domain.interactor.notificationStackAppearanceInteractor
 
 val Kosmos.quickSettingsShadeOverlayContentViewModel: QuickSettingsShadeOverlayContentViewModel by
     Kosmos.Fixture {
         QuickSettingsShadeOverlayContentViewModel(
+            mainDispatcher = testDispatcher,
             shadeInteractor = shadeInteractor,
+            shadeModeInteractor = shadeModeInteractor,
             sceneInteractor = sceneInteractor,
             notificationStackAppearanceInteractor = notificationStackAppearanceInteractor,
         )

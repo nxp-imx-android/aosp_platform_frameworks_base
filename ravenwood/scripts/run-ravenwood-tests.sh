@@ -46,7 +46,6 @@ smoke_exclude_re=""
 dry_run=""
 exclude_large_tests=0
 atest_opts=""
-build_only=0
 list_options=""
 with_tools_tests=1
 
@@ -72,11 +71,6 @@ case "$opt" in
     t)
         # Redirect log to terminal
         export RAVENWOOD_LOG_OUT=-
-        ;;
-    b)
-        # Build only
-        build_only=1
-        ATEST=m
         ;;
     a)
         # atest options (e.g. "-t")
@@ -105,14 +99,19 @@ shift $(($OPTIND - 1))
 # If the rest of the arguments are available, just run these tests.
 targets=("$@")
 
-
 if (( $with_tools_tests )) ; then
-    all_tests=(hoststubgentest tiny-framework-dump-test hoststubgen-invoke-test ravenwood-stats-checker ravenhelpertest)
+    all_tests=(hoststubgentest tiny-framework-dump-test hoststubgen-invoke-test ravenwood-stats-checker ravenhelpertest ravenwood-scripts-sh-golden-test)
 fi
-all_raven_tests=( $( ./list-ravenwood-tests.sh $list_options ) )
+
+# Allow replacing 'list-ravenwood-tests.sh' with  $LIST_TEST_COMMAND.
+all_raven_tests=( $( "${LIST_TEST_COMMAND:=./list-ravenwood-tests.sh}" $list_options ) )
 
 all_tests+=( "${all_raven_tests[@]}" )
 
+# ROLLING_TF_SUBPROCESS_OUTPUT is often quite behind for large tests.
+# let's disable it by default.
+: ${ROLLING_TF_SUBPROCESS_OUTPUT:=0}
+export ROLLING_TF_SUBPROCESS_OUTPUT
 
 get_smoke_re() {
     # Extract tests from smoke-excluded-tests.txt
@@ -185,7 +184,7 @@ fi
 # But if RAVENWOOD_TEST_ENABLEMENT_POLICY is already set, just use it.
 if [[ "$RAVENWOOD_TEST_ENABLEMENT_POLICY" == "" ]] && (( "${#default_enablement_policy[@]}" > 0 )) ; then
     # This path must be a full path.
-    combined_enablement_policy=/tmp/ravenwood-enablement-$$.txt
+    combined_enablement_policy=/tmp/ravenwood-enablement-@@@$$@@@.txt
 
     cat "${default_enablement_policy[@]}" >$combined_enablement_policy
 
@@ -219,19 +218,17 @@ if (( $exclude_large_tests )) ; then
 fi
 
 # Add per-module arguments
-if (( ! $build_only )) ; then
-    extra_args+=("--")
+extra_args+=("--")
 
-    # Need to add the following two options for each module.
-    # But we can't add it to non-ravenwood tests, so use $all_raven_tests
-    # instead of $targets.
-    for module in "${all_raven_tests[@]}" ; do
-        for anno in "${exclude_annos[@]}" ; do
-            extra_args+=(
-                "--module-arg $module:exclude-annotation:$anno"
-                )
-        done
+# Need to add the following two options for each module.
+# But we can't add it to non-ravenwood tests, so use $all_raven_tests
+# instead of $targets.
+for module in "${all_raven_tests[@]}" ; do
+    for anno in "${exclude_annos[@]}" ; do
+        extra_args+=(
+            "--module-arg $module:exclude-annotation:$anno"
+            )
     done
-fi
+done
 
 run $dry_run ${ATEST:-atest} --class-level-report $atest_opts "${targets[@]}" "${extra_args[@]}"

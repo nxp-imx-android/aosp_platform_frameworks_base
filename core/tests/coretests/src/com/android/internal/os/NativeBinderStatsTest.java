@@ -49,6 +49,7 @@ public class NativeBinderStatsTest {
 
     @Before
     public void setup() {
+        FakeSettingsProvider.clearSettingsProvider();
         mContext = spy(new ContextWrapper(InstrumentationRegistry.getTargetContext()));
         mResolver = new MockContentResolver(mContext);
         mResolver.addProvider(Settings.AUTHORITY, new FakeSettingsProvider());

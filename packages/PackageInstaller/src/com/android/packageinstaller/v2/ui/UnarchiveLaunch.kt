@@ -34,12 +34,9 @@ import androidx.lifecycle.ViewModelProvider
 import com.android.packageinstaller.R
 import com.android.packageinstaller.v2.model.PackageUtil
 import com.android.packageinstaller.v2.model.UnarchiveAborted
-import com.android.packageinstaller.v2.model.UnarchiveError
 import com.android.packageinstaller.v2.model.UnarchiveRepository
 import com.android.packageinstaller.v2.model.UnarchiveStage
-import com.android.packageinstaller.v2.model.UnarchiveUserActionRequired
-import com.android.packageinstaller.v2.ui.fragments.UnarchiveConfirmationFragment
-import com.android.packageinstaller.v2.ui.fragments.UnarchiveErrorFragment
+import com.android.packageinstaller.v2.ui.fragments.UnarchiveFragment
 import com.android.packageinstaller.v2.viewmodel.UnarchiveViewModel
 import com.android.packageinstaller.v2.viewmodel.UnarchiveViewModelFactory
 
@@ -55,6 +52,7 @@ class UnarchiveLaunch : FragmentActivity(), UnarchiveActionListener {
         private val LOG_TAG = UnarchiveLaunch::class.java.simpleName
 
         private const val TAG_DIALOG = "dialog"
+        private const val TAG_UNARCHIVE_DIALOG = "unarchive-dialog"
 
         private const val ACTION_UNARCHIVE_DIALOG: String =
             "com.android.intent.action.UNARCHIVE_DIALOG"
@@ -109,15 +107,11 @@ class UnarchiveLaunch : FragmentActivity(), UnarchiveActionListener {
             }
 
             UnarchiveStage.STAGE_USER_ACTION_REQUIRED -> {
-                val uar = stage as UnarchiveUserActionRequired
-                val confirmationDialog = UnarchiveConfirmationFragment.newInstance(uar)
-                showDialogInner(confirmationDialog)
+                showUnarchiveDialog()
             }
 
             UnarchiveStage.STAGE_ERROR -> {
-                val error = stage as UnarchiveError
-                val errorDialog = UnarchiveErrorFragment.newInstance(error)
-                showDialogInner(errorDialog)
+                showUnarchiveDialog()
             }
         }
     }
@@ -131,7 +125,7 @@ class UnarchiveLaunch : FragmentActivity(), UnarchiveActionListener {
         installerPkg: String?,
         pi: PendingIntent?
     ) {
-        // Allow the error handling actvities to start in the background.
+        // Allow the error handling activities to start in the background.
         val options = BroadcastOptions.makeBasic()
         options.setPendingIntentBackgroundActivityStartMode(
             ActivityOptions.MODE_BACKGROUND_ACTIVITY_START_ALLOWED
@@ -176,6 +170,13 @@ class UnarchiveLaunch : FragmentActivity(), UnarchiveActionListener {
                 // Do nothing. The rest of the dialogs are purely informational.
             }
         }
+        finish()
+    }
+
+    private fun showUnarchiveDialog() {
+        val fragment = getUnarchiveFragment() ?: UnarchiveFragment()
+        fragment.updateUI()
+        showDialogInner(fragment, TAG_UNARCHIVE_DIALOG)
     }
 
     /**
@@ -184,8 +185,29 @@ class UnarchiveLaunch : FragmentActivity(), UnarchiveActionListener {
      * @param newDialog The new dialog to display
      */
     private fun showDialogInner(newDialog: DialogFragment?) {
-        val currentDialog = fragmentManager!!.findFragmentByTag(TAG_DIALOG) as DialogFragment?
-        currentDialog?.dismissAllowingStateLoss()
-        newDialog?.show(fragmentManager!!, TAG_DIALOG)
+        showDialogInner(newDialog, TAG_DIALOG)
+    }
+
+    private fun showDialogInner(newDialog: DialogFragment?, tag: String) {
+        var currentTag: String? = null
+        if (tag == TAG_UNARCHIVE_DIALOG) {
+            if (getUnarchiveFragment() != null) {
+                return
+            }
+            currentTag = TAG_DIALOG
+        } else {
+            currentTag = TAG_UNARCHIVE_DIALOG
+        }
+
+        val currentDialog = fragmentManager!!.findFragmentByTag(currentTag)
+        if (currentDialog is DialogFragment) {
+            currentDialog.dismissAllowingStateLoss()
+        }
+        newDialog?.show(fragmentManager!!, tag)
+    }
+
+    private fun getUnarchiveFragment(): UnarchiveFragment? {
+        return (fragmentManager!!.findFragmentByTag(TAG_UNARCHIVE_DIALOG)
+            ?: return null) as UnarchiveFragment?
     }
 }

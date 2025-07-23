@@ -84,11 +84,19 @@ data class UninstallFailed(
     }
 }
 
-data class UninstallAborted(val abortReason: Int) : UninstallStage(STAGE_ABORTED) {
-
+data class UninstallAborted(
+    val abortReason: Int,
+    val appSnippet: PackageUtil.AppSnippet? = null
+) : UninstallStage(STAGE_ABORTED) {
     var dialogTitleResource = 0
     var dialogTextResource = 0
     val activityResultCode = Activity.RESULT_FIRST_USER
+
+    val appIcon: Drawable?
+        get() = appSnippet?.icon
+
+    val appLabel: String?
+        get() = appSnippet?.let { appSnippet.label as String? }
 
     init {
         when (abortReason) {

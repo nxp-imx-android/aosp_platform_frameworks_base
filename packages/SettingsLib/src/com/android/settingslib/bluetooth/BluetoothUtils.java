@@ -1228,10 +1228,6 @@ public class BluetoothUtils {
      */
     public static void setTemporaryBondMetadata(@Nullable BluetoothDevice device) {
         if (device == null) return;
-        if (!Flags.enableTemporaryBondDevicesUi()) {
-            Log.d(TAG, "Skip setTemporaryBondMetadata, flag is disabled");
-            return;
-        }
         String fastPairCustomizedMeta = getStringMetaData(device,
                 METADATA_FAST_PAIR_CUSTOMIZED_FIELDS);
         String fullContentWithTag = generateExpressionWithTag(TEMP_BOND_TYPE,

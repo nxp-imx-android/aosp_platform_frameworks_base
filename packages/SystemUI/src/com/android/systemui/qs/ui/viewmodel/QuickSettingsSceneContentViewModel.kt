@@ -19,7 +19,7 @@ package com.android.systemui.qs.ui.viewmodel
 import androidx.compose.runtime.getValue
 import androidx.lifecycle.LifecycleOwner
 import com.android.app.tracing.coroutines.launchTraced as launch
-import com.android.systemui.dagger.qualifiers.Main;
+import com.android.systemui.dagger.qualifiers.Main
 import com.android.systemui.lifecycle.ExclusiveActivatable
 import com.android.systemui.lifecycle.Hydrator
 import com.android.systemui.media.controls.domain.pipeline.interactor.MediaCarouselInteractor
@@ -27,6 +27,8 @@ import com.android.systemui.qs.FooterActionsController
 import com.android.systemui.qs.footer.ui.viewmodel.FooterActionsViewModel
 import com.android.systemui.qs.ui.adapter.QSSceneAdapter
 import com.android.systemui.scene.domain.interactor.SceneInteractor
+import com.android.systemui.scene.shared.model.Overlays
+import com.android.systemui.scene.shared.model.SceneFamilies
 import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.settings.brightness.ui.viewModel.BrightnessMirrorViewModel
 import com.android.systemui.shade.domain.interactor.ShadeModeInteractor
@@ -62,7 +64,8 @@ constructor(
     private val sceneInteractor: SceneInteractor,
     @Main private val mainDispatcher: CoroutineDispatcher,
 ) : ExclusiveActivatable() {
-    val qsContainerViewModel = qsContainerViewModelFactory.create(supportsBrightnessMirroring = true)
+    val qsContainerViewModel =
+        qsContainerViewModelFactory.create(supportsBrightnessMirroring = true)
 
     private val hydrator = Hydrator("QuickSettingsSceneContentViewModel.hydrator")
 
@@ -86,6 +89,7 @@ constructor(
             launch { hydrator.activate() }
 
             launch { qsContainerViewModel.activate() }
+
             qsContainerViewModel.editModeViewModel.isEditing
                 .filter { it }
                 .onEach { sceneInteractor.changeScene(Scenes.QSEditMode, loggingReason = "") }
@@ -93,11 +97,25 @@ constructor(
 
             launch(context = mainDispatcher) {
                 shadeModeInteractor.shadeMode.collect { shadeMode ->
-                    if (shadeMode is ShadeMode.Split) {
-                        sceneInteractor.snapToScene(Scenes.Shade, "Unfold while on QS")
+                    when (shadeMode) {
+                        is ShadeMode.Split ->
+                            sceneInteractor.snapToScene(
+                                Scenes.Shade,
+                                loggingReason = "Unfold while on Quick Settings",
+                            )
+                        is ShadeMode.Dual -> {
+                            val loggingReason = "Unfold or rotate while on Quick Settings"
+                            sceneInteractor.snapToScene(SceneFamilies.Home, loggingReason)
+                            sceneInteractor.instantlyShowOverlay(
+                                Overlays.QuickSettingsShade,
+                                loggingReason,
+                            )
+                        }
+                        else -> Unit
                     }
                 }
             }
+
             awaitCancellation()
         }
     }

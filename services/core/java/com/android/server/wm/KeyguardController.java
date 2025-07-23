@@ -77,7 +77,7 @@ import java.util.ArrayList;
 class KeyguardController {
 
     private static final boolean ENABLE_NEW_KEYGUARD_SHELL_TRANSITIONS =
-            Flags.ensureKeyguardDoesTransitionStarting();
+            Flags.ensureKeyguardDoesTransitionStartingBugFix();
 
     private static final boolean REMOVE_DEFAULT_DISPLAY_USAGE =
             Flags.keyguardRemoveDefaultDisplayUsage();

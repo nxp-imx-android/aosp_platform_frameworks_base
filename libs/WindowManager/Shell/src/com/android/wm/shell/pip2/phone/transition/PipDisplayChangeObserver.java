@@ -88,7 +88,7 @@ public class PipDisplayChangeObserver implements Transitions.TransitionObserver 
 
     private void onDisplayChangeStarting(@NonNull TransitionInfo info) {
         final TransitionInfo.Change pipChange = PipTransitionUtils.getPipChange(info);
-        if (pipChange == null) return;
+        if (pipChange == null || !mPipTransitionState.isPipStateIdle()) return;
 
         // We do not care about the extras in this case - just make sure to send a non-empty one;
         // since otherwise PipTransitionState might throw an exception.
@@ -103,7 +103,7 @@ public class PipDisplayChangeObserver implements Transitions.TransitionObserver 
 
     private void onDisplayChangeFinished(@NonNull TransitionInfo info) {
         final TransitionInfo.Change pipChange = PipTransitionUtils.getPipChange(info);
-        if (pipChange == null) return;
+        if (pipChange == null || !mPipTransitionState.isInPip()) return;
 
         final Rect endBounds = pipChange.getEndAbsBounds();
         mPipBoundsState.setBounds(endBounds);

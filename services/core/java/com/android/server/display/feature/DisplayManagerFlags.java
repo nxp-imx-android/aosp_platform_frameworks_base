@@ -270,6 +270,11 @@ public class DisplayManagerFlags {
             Flags::enableOnDisplayAddedInObserver
     );
 
+    private final FlagState mIsLoggingForDisplayEventsEnabled = new FlagState(
+            Flags.FLAG_ENABLE_LOGGING_FOR_DISPLAY_EVENTS,
+            Flags::enableLoggingForDisplayEvents
+    );
+
     /** Returns whether power throttling clamper is enabled on not. */
     public boolean isPowerThrottlingClamperEnabled() {
         return mPowerThrottlingClamperFlagState.isEnabled();
@@ -551,6 +556,10 @@ public class DisplayManagerFlags {
         return mIsOnDisplayAddedInObserverEnabled.isEnabled();
     }
 
+    public boolean isDisplayEventsLoggingEnabled() {
+        return mIsLoggingForDisplayEventsEnabled.isEnabled();
+    }
+
     /**
      * dumps all flagstates
      * @param pw printWriter
@@ -606,6 +615,7 @@ public class DisplayManagerFlags {
         pw.println(" " + mEnsureColorFadeWhenTurningOn);
         pw.println(" " + mIsOnDisplayAddedInObserverEnabled);
         pw.println(" " + mEnableUpdatedDisplayConnectionDialogFlagState);
+        pw.println(" " + mIsLoggingForDisplayEventsEnabled);
     }
 
     private static class FlagState {

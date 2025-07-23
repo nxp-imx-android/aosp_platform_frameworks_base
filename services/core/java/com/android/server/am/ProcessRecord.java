@@ -68,7 +68,7 @@ import com.android.internal.os.Zygote;
 import com.android.server.FgThread;
 import com.android.server.am.OomAdjusterImpl.ProcessRecordNode;
 import com.android.server.am.psc.PlatformCompatCache.CachedCompatChangeId;
-import com.android.server.am.psc.ProcessStateRecord;
+import com.android.server.am.psc.ProcessRecordInternal;
 import com.android.server.wm.WindowProcessController;
 import com.android.server.wm.WindowProcessListener;
 
@@ -82,7 +82,7 @@ import java.util.function.Consumer;
  * Full information about a particular process that
  * is currently running.
  */
-class ProcessRecord implements WindowProcessListener, ProcessStateRecord.ProcessRecordReader {
+class ProcessRecord extends ProcessRecordInternal implements WindowProcessListener {
     static final String TAG = TAG_WITH_CLASS_NAME ? "ProcessRecord" : TAG_AM;
 
     final ActivityManagerService mService; // where we came from
@@ -94,8 +94,6 @@ class ProcessRecord implements WindowProcessListener, ProcessStateRecord.Process
     // =========================================================
     volatile ApplicationInfo info; // all about the first app in the process
     final ProcessInfo processInfo; // if non-null, process-specific manifest info
-    final boolean isolated;     // true if this is a special isolated process
-    public final boolean isSdkSandbox; // true if this is an SDK sandbox process
     final boolean appZygote;    // true if this is forked from the app zygote
     final int uid;              // uid of process; may be different from 'info' if isolated
     final int userId;           // user of process.
@@ -187,12 +185,6 @@ class ProcessRecord implements WindowProcessListener, ProcessStateRecord.Process
      */
     @GuardedBy("mService")
     private boolean mPendingStart;
-
-    /**
-     * Process finish attach application is pending.
-     */
-    @GuardedBy("mService")
-    private boolean mPendingFinishAttach;
 
     /**
      * Seq no. Indicating the latest process start associated with this process record.
@@ -410,11 +402,6 @@ class ProcessRecord implements WindowProcessListener, ProcessStateRecord.Process
     final ProcessErrorStateRecord mErrorState;
 
     /**
-     * All about the process state info (proc state, oom adj score) in this process.
-     */
-    ProcessStateRecord mState;
-
-    /**
      * All about the state info of the optimizer when the process is cached.
      */
     final ProcessCachedOptimizerRecord mOptRecord;
@@ -556,14 +543,14 @@ class ProcessRecord implements WindowProcessListener, ProcessStateRecord.Process
             pw.print(prefix); pw.print("isolatedEntryPointArgs=");
             pw.println(Arrays.toString(mIsolatedEntryPointArgs));
         }
-        if (mState.getSetProcState() > ActivityManager.PROCESS_STATE_SERVICE) {
+        if (getSetProcState() > ActivityManager.PROCESS_STATE_SERVICE) {
             mProfile.dumpCputime(pw, prefix);
         }
         if (mProfile.hasPendingUiClean()) {
             pw.print(prefix); pw.print("pendingUiClean="); pw.println(mProfile.hasPendingUiClean());
         }
         mProfile.dumpPss(pw, prefix, nowUptime);
-        mState.dump(pw, prefix, nowUptime);
+        super.dump(pw, prefix, nowUptime);
         mErrorState.dump(pw, prefix, nowUptime);
         mServices.dump(pw, prefix, nowUptime);
         mProviders.dump(pw, prefix, nowUptime);
@@ -580,6 +567,8 @@ class ProcessRecord implements WindowProcessListener, ProcessStateRecord.Process
     ProcessRecord(ActivityManagerService _service, ApplicationInfo _info, String _processName,
             int _uid, String _sdkSandboxClientAppPackage, int _definingUid,
             String _definingProcessName) {
+        super(_processName, _uid, _service, _service.mProcLock);
+
         mService = _service;
         mProcLock = _service.mProcLock;
         info = _info;
@@ -605,8 +594,6 @@ class ProcessRecord implements WindowProcessListener, ProcessStateRecord.Process
             }
         }
         processInfo = procInfo;
-        isolated = Process.isIsolated(_uid);
-        isSdkSandbox = Process.isSdkSandboxUid(_uid);
         appZygote = (UserHandle.getAppId(_uid) >= Process.FIRST_APP_ZYGOTE_ISOLATED_UID
                 && UserHandle.getAppId(_uid) <= Process.LAST_APP_ZYGOTE_ISOLATED_UID);
         uid = _uid;
@@ -629,13 +616,13 @@ class ProcessRecord implements WindowProcessListener, ProcessStateRecord.Process
         mErrorState = new ProcessErrorStateRecord(this);
         mWindowProcessController = new WindowProcessController(
                 mService.mActivityTaskManager, info, processName, uid, userId, this, this);
-        mState = new ProcessStateRecord(processName, uid, mWindowProcessController, mProfile, this,
-                mService, mService.mProcLock);
+
+
         mOptRecord = new ProcessCachedOptimizerRecord(this);
         final long now = SystemClock.uptimeMillis();
         mProfile.init(now);
         mOptRecord.init(now);
-        mState.init(now);
+        super.init(mWindowProcessController, mProfile, now);
         mPkgList.put(_info.packageName, new ProcessStats.ProcessStateHolder(_info.longVersionCode));
         updateProcessRecordNodes(this);
     }
@@ -714,11 +701,6 @@ class ProcessRecord implements WindowProcessListener, ProcessStateRecord.Process
         }
     }
 
-    @GuardedBy({"mService", "mProcLock"})
-    int getSetAdj() {
-        return mState.getSetAdj();
-    }
-
     @GuardedBy(anyOf = {"mService", "mProcLock"})
     IApplicationThread getThread() {
         return mThread;
@@ -729,20 +711,6 @@ class ProcessRecord implements WindowProcessListener, ProcessStateRecord.Process
         return mOnewayThread;
     }
 
-    @GuardedBy(anyOf = {"mService", "mProcLock"})
-    int getCurProcState() {
-        return mState.getCurProcState();
-    }
-
-    @GuardedBy(anyOf = {"mService", "mProcLock"})
-    int getSetProcState() {
-        return mState.getSetProcState();
-    }
-
-    @GuardedBy(anyOf = {"mService", "mProcLock"})
-    int getSetCapability() {
-        return mState.getSetCapability();
-    }
 
     @GuardedBy({"mService", "mProcLock"})
     public void makeActive(ApplicationThreadDeferred thread, ProcessStatsService tracker) {
@@ -838,18 +806,8 @@ class ProcessRecord implements WindowProcessListener, ProcessStateRecord.Process
     }
 
     @GuardedBy("mService")
-    void setPendingFinishAttach(boolean pendingFinishAttach) {
-        mPendingFinishAttach = pendingFinishAttach;
-    }
-
-    @GuardedBy("mService")
-    boolean isPendingFinishAttach() {
-        return mPendingFinishAttach;
-    }
-
-    @GuardedBy("mService")
     boolean isThreadReady() {
-        return mThread != null && !mPendingFinishAttach;
+        return mThread != null && !isPendingFinishAttach();
     }
 
     @GuardedBy("mService")
@@ -1170,12 +1128,6 @@ class ProcessRecord implements WindowProcessListener, ProcessStateRecord.Process
     }
 
     @Override
-    @GuardedBy("mService")
-    public boolean isCached() {
-        return mState.isCached();
-    }
-
-    @Override
     public boolean hasActivities() {
         return mWindowProcessController.hasActivities();
     }
@@ -1237,7 +1189,7 @@ class ProcessRecord implements WindowProcessListener, ProcessStateRecord.Process
         makeInactive(processStats);
         setWaitingToKill(null);
 
-        mState.onCleanupApplicationRecordLSP();
+        super.onCleanupApplicationRecordLSP();
         mService.mProcessStateController.onCleanupApplicationRecord(mServices);
         mReceivers.onCleanupApplicationRecordLocked();
         mService.mOomAdjuster.onProcessEndLocked(this);
@@ -1331,7 +1283,7 @@ class ProcessRecord implements WindowProcessListener, ProcessStateRecord.Process
             }
             if (mService != null && (noisy || info.uid == mService.mCurOomAdjUid)) {
                 mService.reportUidInfoMessageLocked(TAG,
-                        "Killing " + toShortString() + " (adj " + mState.getSetAdj()
+                        "Killing " + toShortString() + " (adj " + getSetAdj()
                         + "): " + reason, info.uid);
             }
             // Since the process is getting killed, reset the freezable related state.
@@ -1340,7 +1292,7 @@ class ProcessRecord implements WindowProcessListener, ProcessStateRecord.Process
             if (mPid > 0) {
                 mService.mProcessList.noteAppKill(this, reasonCode, subReason, description);
                 EventLog.writeEvent(EventLogTags.AM_KILL,
-                        userId, mPid, processName, mState.getSetAdj(), reason, getRss(mPid));
+                        userId, mPid, processName, getSetAdj(), reason, getRss(mPid));
                 Process.killProcessQuiet(mPid);
                 killProcessGroupIfNecessaryLocked(asyncKPG);
             } else {
@@ -1406,8 +1358,8 @@ class ProcessRecord implements WindowProcessListener, ProcessStateRecord.Process
 
     @GuardedBy(anyOf = {"mService", "mProcLock"})
     String makeAdjReason() {
-        final Object adjSource = mState.getAdjSource();
-        final Object adjTarget = mState.getAdjTarget();
+        final Object adjSource = getAdjSource();
+        final Object adjTarget = getAdjTarget();
         if (adjSource == null && adjTarget == null) {
             return null;
         }

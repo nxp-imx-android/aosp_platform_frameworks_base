@@ -61,6 +61,7 @@ import android.os.UserHandle;
 import android.os.SystemClock;
 import android.security.Flags;
 import android.util.Slog;
+import android.content.pm.PackageManager;
 
 import com.android.server.LocalServices;
 import java.lang.Runnable;
@@ -108,7 +109,7 @@ public class UsbDataAdvancedProtectionHook extends AdvancedProtectionHook {
     private static final int NOTIFICATION_CHARGE_DATA = 1;
     private static final int NOTIFICATION_DATA = 2;
 
-    private static final int DELAY_DISABLE_MILLIS = 5000;
+    private static final int DELAY_DISABLE_MILLIS = 15000;
     private static final int USB_DATA_CHANGE_MAX_RETRY_ATTEMPTS = 3;
     private static final long USB_PORT_POWER_BRICK_CONNECTION_CHECK_TIMEOUT_DEFAULT_MILLIS = 3000;
     private static final long USB_PD_COMPLIANCE_CHECK_TIMEOUT_DEFAULT_MILLIS = 1000;
@@ -186,6 +187,11 @@ public class UsbDataAdvancedProtectionHook extends AdvancedProtectionHook {
             Context context, boolean enabled, AdvancedProtectionService advancedProtectionService) {
         super(context, enabled);
         mContext = context;
+        if (!mContext.getPackageManager().hasSystemFeature(PackageManager.FEATURE_USB_HOST)
+                && !mContext.getPackageManager()
+                        .hasSystemFeature(PackageManager.FEATURE_USB_ACCESSORY)) {
+            return;
+        }
         mUsbManager = Objects.requireNonNull(mContext.getSystemService(UsbManager.class));
         mNotificationManager =
                 Objects.requireNonNull(mContext.getSystemService(NotificationManager.class));
@@ -205,12 +211,13 @@ public class UsbDataAdvancedProtectionHook extends AdvancedProtectionHook {
     @Override
     public boolean isAvailable() {
         boolean usbDataProtectionEnabled =
-                // TODO(b/418846176): Set fallback default to false once product flag is set
-                SystemProperties.getBoolean(USB_DATA_PROTECTION_ENABLE_SYSTEM_PROPERTY, true);
+                SystemProperties.getBoolean(USB_DATA_PROTECTION_ENABLE_SYSTEM_PROPERTY, false);
         if (!usbDataProtectionEnabled) {
             Slog.d(TAG, "USB data protection is disabled through system property");
         }
         return Flags.aapmFeatureUsbDataProtection()
+                && (mContext.getPackageManager().hasSystemFeature(PackageManager.FEATURE_USB_HOST) || mContext.getPackageManager()
+                        .hasSystemFeature(PackageManager.FEATURE_USB_ACCESSORY))
                 && mAdvancedProtectionService.isUsbDataProtectionEnabled()
                 && mCanSetUsbDataSignal
                 && usbDataProtectionEnabled;

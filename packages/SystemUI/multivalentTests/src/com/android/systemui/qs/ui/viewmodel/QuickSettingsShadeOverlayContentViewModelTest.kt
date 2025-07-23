@@ -37,12 +37,15 @@ import com.android.systemui.scene.domain.startable.sceneContainerStartable
 import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.shade.domain.interactor.enableDualShade
+import com.android.systemui.shade.domain.interactor.enableSingleShade
+import com.android.systemui.shade.domain.interactor.enableSplitShade
 import com.android.systemui.shade.domain.interactor.shadeInteractor
 import com.android.systemui.statusbar.notification.stack.shared.model.ShadeScrimBounds
 import com.android.systemui.statusbar.notification.stack.shared.model.ShadeScrimShape
 import com.android.systemui.statusbar.notification.stack.ui.viewmodel.notificationScrollViewModel
 import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
@@ -50,6 +53,7 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 
+@OptIn(ExperimentalCoroutinesApi::class)
 @SmallTest
 @RunWith(AndroidJUnit4::class)
 @TestableLooper.RunWithLooper
@@ -108,6 +112,42 @@ class QuickSettingsShadeOverlayContentViewModelTest : SysuiTestCase() {
 
             lockDevice()
             assertThat(isShadeTouchable).isFalse()
+            assertThat(currentOverlays).doesNotContain(Overlays.QuickSettingsShade)
+        }
+
+    @Test
+    fun shadeModeChanged_single_switchesToQuickSettingsScene() =
+        testScope.runTest {
+            val currentScene by collectLastValue(sceneInteractor.currentScene)
+            val currentOverlays by collectLastValue(sceneInteractor.currentOverlays)
+
+            kosmos.enableDualShade()
+            kosmos.shadeInteractor.expandQuickSettingsShade("test")
+            runCurrent()
+            assertThat(currentScene).isEqualTo(Scenes.Lockscreen)
+            assertThat(currentOverlays).contains(Overlays.QuickSettingsShade)
+
+            kosmos.enableSingleShade()
+            runCurrent()
+            assertThat(currentScene).isEqualTo(Scenes.QuickSettings)
+            assertThat(currentOverlays).doesNotContain(Overlays.QuickSettingsShade)
+        }
+
+    @Test
+    fun shadeModeChanged_split_switchesToShadeScene() =
+        testScope.runTest {
+            val currentScene by collectLastValue(sceneInteractor.currentScene)
+            val currentOverlays by collectLastValue(sceneInteractor.currentOverlays)
+
+            kosmos.enableDualShade()
+            kosmos.shadeInteractor.expandQuickSettingsShade("test")
+            runCurrent()
+            assertThat(currentScene).isEqualTo(Scenes.Lockscreen)
+            assertThat(currentOverlays).contains(Overlays.QuickSettingsShade)
+
+            kosmos.enableSplitShade()
+            runCurrent()
+            assertThat(currentScene).isEqualTo(Scenes.Shade)
             assertThat(currentOverlays).doesNotContain(Overlays.QuickSettingsShade)
         }
 

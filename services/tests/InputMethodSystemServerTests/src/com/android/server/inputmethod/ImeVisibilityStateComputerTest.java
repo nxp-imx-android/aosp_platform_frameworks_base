@@ -26,15 +26,13 @@ import static android.view.WindowManager.DISPLAY_IME_POLICY_LOCAL;
 import static android.view.WindowManager.LayoutParams.SOFT_INPUT_STATE_UNCHANGED;
 
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.verify;
-import static com.android.internal.inputmethod.SoftInputShowHideReason.HIDE_WHEN_INPUT_TARGET_INVISIBLE;
 import static com.android.server.inputmethod.ImeVisibilityStateComputer.ImeTargetWindowState;
-import static com.android.server.inputmethod.ImeVisibilityStateComputer.ImeVisibilityResult;
-import static com.android.server.inputmethod.ImeVisibilityStateComputer.STATE_HIDE_IME_EXPLICIT;
 import static com.android.server.inputmethod.InputMethodManagerService.FALLBACK_DISPLAY_ID;
 import static com.android.server.inputmethod.InputMethodManagerService.ImeDisplayValidator;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.notNull;
 
 import android.annotation.UserIdInt;
@@ -263,18 +261,14 @@ public class ImeVisibilityStateComputerTest extends InputMethodManagerServiceTes
             mComputer.setHasVisibleImeLayeringOverlay(true /* visibleAndNotRemoved */);
             mComputer.onImeInputTargetVisibilityChanged(testImeInputTarget,
                     false /* visibleAndNotRemoved */);
-            final ArgumentCaptor<ImeVisibilityResult> resultCaptor = ArgumentCaptor.forClass(
-                    ImeVisibilityResult.class);
-            final ArgumentCaptor<Integer> userIdCaptor = ArgumentCaptor.forClass(Integer.class);
-            verify(mInputMethodManagerService).onApplyImeVisibilityFromComputerLocked(
-                    notNull() /* statsToken */, resultCaptor.capture(), userIdCaptor.capture());
-            final ImeVisibilityResult result = resultCaptor.getValue();
-            final int userId = userIdCaptor.getValue();
+            final ArgumentCaptor<UserData> userDataCaptor = ArgumentCaptor.forClass(UserData.class);
+            verify(mInputMethodManagerService).setImeVisibilityOnFocusedWindowClient(
+                    eq(false) /* visible */, userDataCaptor.capture(), notNull() /* statsToken */);
+            final UserData userData = userDataCaptor.getValue();
 
             // Verify the computer will callback hiding IME state to IMMS.
-            assertThat(result.getState()).isEqualTo(STATE_HIDE_IME_EXPLICIT);
-            assertThat(result.getReason()).isEqualTo(HIDE_WHEN_INPUT_TARGET_INVISIBLE);
-            assertThat(userId).isEqualTo(mUserId);
+            assertThat(userData).isNotNull();
+            assertThat(userData.mUserId).isEqualTo(mUserId);
         }
     }
 

@@ -30,14 +30,15 @@ import android.util.proto.ProtoUtils;
 import com.android.internal.annotations.CompositeRWLock;
 import com.android.internal.annotations.GuardedBy;
 import com.android.server.am.UidObserverController.ChangeRecord;
-import com.android.server.am.psc.UidStateRecord;
+import com.android.server.am.psc.ProcessRecordInternal;
+import com.android.server.am.psc.UidRecordInternal;
 
 import java.util.function.Consumer;
 
 /**
  * Overall information about a uid that has actively running processes.
  */
-public final class UidRecord extends UidStateRecord {
+public final class UidRecord extends UidRecordInternal {
     @CompositeRWLock({"mService", "mProcLock"})
     private ArraySet<ProcessRecord> mProcRecords = new ArraySet<>();
 
@@ -148,8 +149,9 @@ public final class UidRecord extends UidStateRecord {
         }
     }
 
+    @Override
     @GuardedBy(anyOf = {"mService", "mProcLock"})
-    ProcessRecord getProcessRecordByIndex(int idx) {
+    public ProcessRecord getProcessRecordByIndex(int idx) {
         return mProcRecords.valueAt(idx);
     }
 
@@ -201,14 +203,18 @@ public final class UidRecord extends UidStateRecord {
         return mUidIsFrozen;
     }
 
+    @Override
     @GuardedBy({"mService", "mProcLock"})
-    void addProcess(ProcessRecord app) {
-        mProcRecords.add(app);
+    public void addProcess(ProcessRecordInternal app) {
+        // Only ProcessRecord extends ProcessRecordInternal, so it's safe to cast directly.
+        mProcRecords.add((ProcessRecord) app);
     }
 
+    @Override
     @GuardedBy({"mService", "mProcLock"})
-    void removeProcess(ProcessRecord app) {
-        mProcRecords.remove(app);
+    public void removeProcess(ProcessRecordInternal app) {
+        // Only ProcessRecord extends ProcessRecordInternal, so it's safe to cast directly.
+        mProcRecords.remove((ProcessRecord) app);
     }
 
     @GuardedBy("mService")

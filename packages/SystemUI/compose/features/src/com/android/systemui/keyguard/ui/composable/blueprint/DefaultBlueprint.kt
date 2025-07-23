@@ -26,7 +26,6 @@ import com.android.systemui.keyguard.ui.composable.LockscreenTouchHandling
 import com.android.systemui.keyguard.ui.composable.element.AmbientIndicationElement
 import com.android.systemui.keyguard.ui.composable.element.AodPromotedNotificationAreaElement
 import com.android.systemui.keyguard.ui.composable.element.DateAndWeatherElement
-import com.android.systemui.keyguard.ui.composable.element.HeadsUpNotificationsElement
 import com.android.systemui.keyguard.ui.composable.element.IndicationAreaElement
 import com.android.systemui.keyguard.ui.composable.element.LargeClockElement
 import com.android.systemui.keyguard.ui.composable.element.LockElement
@@ -56,7 +55,6 @@ constructor(
     private val shortcutElement: ShortcutElement,
     private val indicationAreaElement: IndicationAreaElement,
     private val settingsMenuElement: SettingsMenuElement,
-    private val headsUpNotificationsElement: HeadsUpNotificationsElement,
     private val notificationsElement: NotificationElement,
     private val aodPromotedNotificationAreaElement: AodPromotedNotificationAreaElement,
     private val smallClockElement: SmallClockElement,
@@ -71,12 +69,6 @@ constructor(
 
     @Composable
     override fun ContentScope.Content(viewModel: LockscreenContentViewModel, modifier: Modifier) {
-        val isBypassEnabled = viewModel.isBypassEnabled
-
-        if (isBypassEnabled) {
-            with(headsUpNotificationsElement) { HeadsUpNotifications() }
-        }
-
         LockscreenTouchHandling(
             viewModelFactory = viewModel.touchHandlingFactory,
             modifier = modifier,

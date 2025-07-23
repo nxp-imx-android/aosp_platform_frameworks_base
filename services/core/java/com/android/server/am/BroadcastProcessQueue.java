@@ -38,7 +38,6 @@ import android.util.TimeUtils;
 
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.os.SomeArgs;
-import com.android.server.am.psc.ProcessStateRecord;
 
 import dalvik.annotation.optimization.NeverCompile;
 
@@ -108,7 +107,7 @@ class BroadcastProcessQueue {
     private boolean mTimeoutScheduled;
 
      /**
-     * Snapshotted value of {@link ProcessStateRecord#getCurProcState()} before
+     * Snapshotted value of {@link ProcessRecord#getCurProcState()} before
      * dispatching the current broadcast to the receiver in this process.
      */
     int lastProcessState;

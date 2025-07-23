@@ -747,13 +747,13 @@ public class CacheOomRankerTest {
         app.setPid(mNextPid++);
         app.info.uid = mNextPackageUid++;
         // Exact value does not mater, it can be any state for which compaction is allowed.
-        app.mState.setSetProcState(PROCESS_STATE_BOUND_FOREGROUND_SERVICE);
-        app.mState.setCurAdj(setAdj);
+        app.setSetProcState(PROCESS_STATE_BOUND_FOREGROUND_SERVICE);
+        app.setCurAdj(setAdj);
         app.setLastActivityTime(lastActivityTime);
         mPidToRss.put(app.getPid(), lastRss);
         for (int i = 0; i < wentToForegroundCount; ++i) {
-            app.mState.setSetProcState(ActivityManager.PROCESS_STATE_FOREGROUND_SERVICE);
-            app.mState.setSetProcState(ActivityManager.PROCESS_STATE_CACHED_RECENT);
+            app.setSetProcState(ActivityManager.PROCESS_STATE_FOREGROUND_SERVICE);
+            app.setSetProcState(ActivityManager.PROCESS_STATE_CACHED_RECENT);
         }
         // Sets the thread returned by ProcessRecord#getThread, which we use to check whether the
         // app is currently launching.

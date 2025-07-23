@@ -59,6 +59,7 @@ import static android.internal.perfetto.protos.Windowmanagerservice.TaskProto.RO
 import static android.internal.perfetto.protos.Windowmanagerservice.TaskProto.SURFACE_HEIGHT;
 import static android.internal.perfetto.protos.Windowmanagerservice.TaskProto.SURFACE_WIDTH;
 import static android.internal.perfetto.protos.Windowmanagerservice.TaskProto.TASK_FRAGMENT;
+import static android.internal.perfetto.protos.Windowmanagerservice.TaskProto.TASK_NAME;
 import static android.internal.perfetto.protos.Windowmanagerservice.WindowContainerChildProto.TASK;
 import static android.os.Trace.TRACE_TAG_WINDOW_MANAGER;
 import static android.provider.Settings.Secure.USER_SETUP_COMPLETE;
@@ -3322,9 +3323,7 @@ class Task extends TaskFragment {
         // Once at the root task level, we want to check {@link #isTranslucent(ActivityRecord)}.
         // If true, we want to get the Dimmer from the level above since we don't want to animate
         // the dim with the Task.
-        if (!isRootTask() || isTranslucentAndVisible()
-                || (Flags.getDimmerOnClosing() ? isTranslucentForTransition()
-                                                : isTranslucent(null))) {
+        if (!isRootTask() || isTranslucentAndVisible() || isTranslucentForTransition()) {
             return super.getDimmer();
         }
 
@@ -3343,25 +3342,7 @@ class Task extends TaskFragment {
         mDimmer.resetDimStates();
         super.prepareSurfaces();
 
-        Rect dimBounds = null;
-        if (!Flags.useTasksDimOnly()) {
-            dimBounds = mDimmer.getDimBounds();
-            if (dimBounds != null) {
-                getDimBounds(dimBounds);
-
-                // Bounds need to be relative, as the dim layer is a child.
-                if (inFreeformWindowingMode()) {
-                    getBounds(mTmpRect);
-                    dimBounds.offset(-mTmpRect.left, -mTmpRect.top);
-                } else {
-                    dimBounds.offsetTo(0, 0);
-                }
-            }
-        }
-
-        final SurfaceControl.Transaction t = getSyncTransaction();
-
-        if (mDimmer.hasDimState() && mDimmer.updateDims(t)) {
+        if (mDimmer.hasDimState() && mDimmer.updateDims(getSyncTransaction())) {
             scheduleAnimation();
         }
     }
@@ -6508,6 +6489,9 @@ class Task extends TaskFragment {
         }
         proto.write(RESIZE_MODE, mResizeMode);
         proto.write(FILLS_PARENT, matchParentBounds());
+        if (mName != null) {
+            proto.write(TASK_NAME, mName);
+        }
         getRawBounds().dumpDebug(proto, BOUNDS);
 
         if (mLastNonFullscreenBounds != null) {

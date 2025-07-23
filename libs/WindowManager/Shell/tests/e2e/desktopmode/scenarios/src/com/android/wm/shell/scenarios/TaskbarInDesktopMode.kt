@@ -61,8 +61,19 @@ abstract class TaskbarInDesktopMode(
         calculatorAppHelper
     )
 
+    // This is a subset of the list above, having only apps that are reliable for identifying a
+    // taskbar visual indicator using content description labels.
+    private val appHelpersToTestTaskbarIndicator = listOf(
+        simpleAppHelper,
+        youtubeAppHelper,
+        browserAppHelper,
+    )
+
     private val appsMap: Map<DesktopModeAppHelper, StandardAppHelper> =
         appHelpers.associateBy { DesktopModeAppHelper(it) }
+
+    private val appsToTestTaskbarIndicatorMap: Map<DesktopModeAppHelper, StandardAppHelper> =
+        appHelpersToTestTaskbarIndicator.associateBy { DesktopModeAppHelper(it) }
 
     @Test
     open fun taskbarHasOpenedAppsIcons() {
@@ -79,10 +90,52 @@ abstract class TaskbarInDesktopMode(
         }
     }
 
+    @Test
+    open fun taskbarHasOpenedAppsVisualIndicators() {
+        appsToTestTaskbarIndicatorMap.entries.forEachIndexed { index, entry ->
+            val desktopApp = entry.key
+            val appHelper = entry.value
+
+            if (index == 0) {
+                desktopApp.enterDesktopMode(wmHelper, device)
+            } else {
+                desktopApp.launchViaIntent(wmHelper)
+            }
+
+            val appIcon = tapl.launchedAppState.taskbar?.getAppIconForRunningApp(appHelper.appName)
+            assertThat(appIcon).isNotNull()
+            assertThat(appIcon?.appName?.split("\\s+".toRegex())?.last()).isEqualTo(ACTIVE_LABEL)
+        }
+    }
+
+    @Test
+    open fun taskbarHasMinimizedAppsVisualIndicators() {
+        appsMap.entries.forEachIndexed { index, entry ->
+            val desktopApp = entry.key
+            val appHelper = entry.value
+
+            if (index == 0) {
+                desktopApp.enterDesktopMode(wmHelper, device)
+            } else {
+                desktopApp.launchViaIntent(wmHelper)
+            }
+            desktopApp.minimizeDesktopApp(wmHelper, device)
+
+            val appIcon = tapl.launchedAppState.taskbar?.getAppIconForRunningApp(appHelper.appName)
+            assertThat(appIcon).isNotNull()
+            assertThat(appIcon?.appName?.split("\\s+".toRegex())?.last()).isEqualTo(MINIMIZED_LABEL)
+        }
+    }
+
     @After
     fun teardown() {
         appsMap.keys.reversed().forEach { desktopApp ->
             desktopApp.exit(wmHelper)
         }
+    }
+
+    private companion object {
+        const val ACTIVE_LABEL = "Active"
+        const val MINIMIZED_LABEL = "Minimised"
     }
 }

@@ -311,7 +311,7 @@ fun ContentScope.QuickSettingsLayout(
                                 volumeSliderViewModel.onValueChanged(volumeSliderState, newValue)
                             },
                             onValueChangeFinished = {
-                                volumeSliderViewModel.onValueChangeFinished()
+                                volumeSliderViewModel.onValueChangeFinished(it)
                             },
                             onIconTapped = { volumeSliderViewModel.toggleMuted(volumeSliderState) },
                             sliderColors = PlatformSliderDefaults.defaultPlatformSliderColors(),

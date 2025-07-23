@@ -79,13 +79,17 @@ class FakeSceneDataSource(initialSceneKey: SceneKey, val testScope: TestScope) :
         freezeAndAnimateToCurrentStateCallCount++
     }
 
-    override fun instantlyTransitionTo(scene: SceneKey, overlays: Set<OverlayKey>) {
+    override fun instantlyTransitionTo(scene: SceneKey?, overlays: Set<OverlayKey>?) {
         if (_isPaused) {
             _pendingScene = scene
             pendingOverlays = overlays
         } else {
-            _currentScene.value = scene
-            _currentOverlays.value = overlays
+            if (scene != null) {
+                _currentScene.value = scene
+            }
+            if (overlays != null) {
+                _currentOverlays.value = overlays
+            }
         }
     }
 

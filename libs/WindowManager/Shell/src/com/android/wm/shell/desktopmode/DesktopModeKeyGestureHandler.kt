@@ -30,6 +30,7 @@ import com.android.internal.protolog.ProtoLog
 import com.android.wm.shell.ShellTaskOrganizer
 import com.android.wm.shell.common.DisplayController
 import com.android.wm.shell.common.ShellExecutor
+import com.android.wm.shell.desktopmode.DesktopModeEventLogger.Companion.EnterReason
 import com.android.wm.shell.desktopmode.DesktopModeEventLogger.Companion.MinimizeReason
 import com.android.wm.shell.desktopmode.common.ToggleTaskSizeInteraction
 import com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_DESKTOP_MODE
@@ -75,7 +76,12 @@ class DesktopModeKeyGestureHandler(
                 logV("Key gesture MOVE_TO_NEXT_DISPLAY is handled")
                 getGloballyFocusedTaskToMoveToNextDisplay()?.let {
                     mainExecutor.execute {
-                        desktopTasksController.get().moveToNextDesktopDisplay(it.taskId)
+                        desktopTasksController
+                            .get()
+                            .moveToNextDesktopDisplay(
+                                it.taskId,
+                                EnterReason.KEYBOARD_SHORTCUT_ENTER,
+                            )
                     }
                 }
             }

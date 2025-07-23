@@ -37,6 +37,7 @@ import android.util.SparseArray;
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.server.ServiceThread;
+import com.android.server.am.psc.ProcessRecordInternal;
 import com.android.server.wm.WindowProcessController;
 
 import java.lang.ref.WeakReference;
@@ -175,7 +176,7 @@ public class ProcessStateController {
     private static class GlobalState implements OomAdjuster.GlobalState {
         private boolean mIsAwake = true;
         // TODO(b/369300367): Maintaining global state for backup processes is a bit convoluted.
-        //  ideally the state gets migrated to ProcessStateRecord.
+        //  ideally the state gets migrated to ProcessRecordInternal.
         private final SparseArray<ProcessRecord> mBackupTargets = new SparseArray<>();
         private boolean mIsLastMemoryLevelNormal = true;
 
@@ -332,8 +333,8 @@ public class ProcessStateController {
      * Set the maximum adj score a process can be assigned.
      */
     @GuardedBy("mLock")
-    public void setMaxAdj(@NonNull ProcessRecord proc, int adj) {
-        proc.mState.setMaxAdj(adj);
+    public void setMaxAdj(@NonNull ProcessRecordInternal proc, int adj) {
+        proc.setMaxAdj(adj);
     }
 
     /**
@@ -348,7 +349,8 @@ public class ProcessStateController {
      * Note whether a process is pending attach or not.
      */
     @GuardedBy("mLock")
-    public void setPendingFinishAttach(@NonNull ProcessRecord proc, boolean pendingFinishAttach) {
+    public void setPendingFinishAttach(@NonNull ProcessRecordInternal proc,
+            boolean pendingFinishAttach) {
         proc.setPendingFinishAttach(pendingFinishAttach);
     }
 
@@ -363,12 +365,12 @@ public class ProcessStateController {
 
     @GuardedBy("mLock")
     void forceProcessStateUpTo(@NonNull ProcessRecord proc, int newState) {
-        final int prevProcState = proc.mState.getReportedProcState();
+        final int prevProcState = proc.getReportedProcState();
         if (prevProcState > newState) {
             synchronized (mProcLock) {
-                proc.mState.setReportedProcState(newState);
-                proc.mState.setCurProcState(newState);
-                proc.mState.setCurRawProcState(newState);
+                proc.setReportedProcState(newState);
+                proc.setCurProcState(newState);
+                proc.setCurRawProcState(newState);
                 mOomAdjuster.onProcessStateChanged(proc, prevProcState);
             }
         }
@@ -382,11 +384,11 @@ public class ProcessStateController {
      */
     @GuardedBy("mLock")
     public boolean setHasTopUi(@NonNull ProcessRecord proc, boolean hasTopUi) {
-        if (proc.mState.getHasTopUi() == hasTopUi) return false;
+        if (proc.getHasTopUi() == hasTopUi) return false;
         if (DEBUG_OOM_ADJ) {
             Slog.d(TAG, "Setting hasTopUi=" + hasTopUi + " for pid=" + proc.getPid());
         }
-        proc.mState.setHasTopUi(hasTopUi);
+        proc.setHasTopUi(hasTopUi);
         return true;
     }
 
@@ -396,9 +398,9 @@ public class ProcessStateController {
      * @return true if the state changed, otherwise returns false.
      */
     @GuardedBy("mLock")
-    public boolean setHasOverlayUi(@NonNull ProcessRecord proc, boolean hasOverlayUi) {
-        if (proc.mState.getHasOverlayUi() == hasOverlayUi) return false;
-        proc.mState.setHasOverlayUi(hasOverlayUi);
+    public boolean setHasOverlayUi(@NonNull ProcessRecordInternal proc, boolean hasOverlayUi) {
+        if (proc.getHasOverlayUi() == hasOverlayUi) return false;
+        proc.setHasOverlayUi(hasOverlayUi);
         return true;
     }
 
@@ -411,12 +413,12 @@ public class ProcessStateController {
     @GuardedBy("mLock")
     public boolean setRunningRemoteAnimation(@NonNull ProcessRecord proc,
             boolean runningRemoteAnimation) {
-        if (proc.mState.isRunningRemoteAnimation() == runningRemoteAnimation) return false;
+        if (proc.isRunningRemoteAnimation() == runningRemoteAnimation) return false;
         if (DEBUG_OOM_ADJ) {
             Slog.i(TAG, "Setting runningRemoteAnimation=" + runningRemoteAnimation
                     + " for pid=" + proc.getPid());
         }
-        proc.mState.setRunningRemoteAnimation(runningRemoteAnimation);
+        proc.setIsRunningRemoteAnimation(runningRemoteAnimation);
         return true;
     }
 
@@ -424,40 +426,41 @@ public class ProcessStateController {
      * Note that the process is showing a toast.
      */
     @GuardedBy("mLock")
-    public void setForcingToImportant(@NonNull ProcessRecord proc,
+    public void setForcingToImportant(@NonNull ProcessRecordInternal proc,
             @Nullable Object forcingToImportant) {
-        if (proc.mState.getForcingToImportant() == forcingToImportant) return;
-        proc.mState.setForcingToImportant(forcingToImportant);
+        if (proc.getForcingToImportant() == forcingToImportant) return;
+        proc.setForcingToImportant(forcingToImportant);
     }
 
     /**
      * Note that the process has shown UI at some point in its life.
      */
     @GuardedBy("mLock")
-    public void setHasShownUi(@NonNull ProcessRecord proc, boolean hasShownUi) {
+    public void setHasShownUi(@NonNull ProcessRecordInternal proc, boolean hasShownUi) {
         // This arguably should be turned into an internal state of OomAdjuster.
-        if (proc.mState.getHasShownUi() == hasShownUi) return;
-        proc.mState.setHasShownUi(hasShownUi);
+        if (proc.getHasShownUi() == hasShownUi) return;
+        proc.setHasShownUi(hasShownUi);
     }
 
     @GuardedBy("mLock")
-    private void setHasActivity(@NonNull ProcessRecord proc, boolean hasActivity) {
-        proc.mState.setHasActivities(hasActivity);
+    private void setHasActivity(@NonNull ProcessRecordInternal proc, boolean hasActivity) {
+        proc.setHasActivities(hasActivity);
     }
 
     @GuardedBy("mLock")
-    private void setActivityStateFlags(@NonNull ProcessRecord proc, int flags) {
-        proc.mState.setActivityStateFlags(flags);
+    private void setActivityStateFlags(@NonNull ProcessRecordInternal proc, int flags) {
+        proc.setActivityStateFlags(flags);
     }
 
     @GuardedBy("mLock")
-    private void setPerceptibleTaskStoppedTimeMillis(@NonNull ProcessRecord proc, long uptimeMs) {
-        proc.mState.setPerceptibleTaskStoppedTimeMillis(uptimeMs);
+    private void setPerceptibleTaskStoppedTimeMillis(@NonNull ProcessRecordInternal proc,
+            long uptimeMs) {
+        proc.setPerceptibleTaskStoppedTimeMillis(uptimeMs);
     }
 
     @GuardedBy("mLock")
-    private void setHasRecentTasks(@NonNull ProcessRecord proc, boolean hasRecentTasks) {
-        proc.mState.setHasRecentTask(hasRecentTasks);
+    private void setHasRecentTasks(@NonNull ProcessRecordInternal proc, boolean hasRecentTasks) {
+        proc.setHasRecentTask(hasRecentTasks);
     }
 
     /********************** Content Provider State Events **********************/
@@ -905,7 +908,7 @@ public class ProcessStateController {
         public void setHasActivityAsync(@NonNull WindowProcessController wpc, boolean hasActivity) {
             if (!Flags.pushActivityStateToOomadjuster()) return;
 
-            final ProcessRecord activity = (ProcessRecord) wpc.mOwner;
+            final ProcessRecordInternal activity = (ProcessRecordInternal) wpc.mOwner;
             getBatchSession().enqueue(() -> mPsc.setHasActivity(activity, hasActivity));
         }
 
@@ -916,7 +919,7 @@ public class ProcessStateController {
                 long perceptibleStopTimeMs) {
             if (!Flags.pushActivityStateToOomadjuster()) return;
 
-            final ProcessRecord activity = (ProcessRecord) wpc.mOwner;
+            final ProcessRecordInternal activity = (ProcessRecordInternal) wpc.mOwner;
             getBatchSession().enqueue(() -> {
                 mPsc.setActivityStateFlags(activity, flags);
                 mPsc.setPerceptibleTaskStoppedTimeMillis(activity, perceptibleStopTimeMs);
@@ -930,7 +933,7 @@ public class ProcessStateController {
                 boolean hasRecentTasks) {
             if (!Flags.pushActivityStateToOomadjuster()) return;
 
-            final ProcessRecord proc = (ProcessRecord) wpc.mOwner;
+            final ProcessRecordInternal proc = (ProcessRecordInternal) wpc.mOwner;
             getBatchSession().enqueue(() -> mPsc.setHasRecentTasks(proc, hasRecentTasks));
         }
 

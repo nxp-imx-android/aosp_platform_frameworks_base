@@ -175,7 +175,6 @@ import com.android.internal.pm.pkg.parsing.ParsingPackageUtils;
 import com.android.internal.util.ArrayUtils;
 import com.android.internal.util.CollectionUtils;
 import com.android.server.EventLogTags;
-import com.android.server.SystemConfig;
 import com.android.server.criticalevents.CriticalEventLog;
 import com.android.server.pm.dex.DexManager;
 import com.android.server.pm.parsing.PackageCacher;
@@ -336,8 +335,7 @@ final class InstallPackageHelper {
         final String oldUpdateOwner =
                 pkgAlreadyExists ? oldPkgSetting.getInstallSource().mUpdateOwnerPackageName : null;
         final String updateOwnerFromSysconfig = isApex || !pkgSetting.isSystem() ? null
-                : mPm.mInjector.getSystemConfig().getSystemAppUpdateOwnerPackageName(
-                        parsedPackage.getPackageName());
+                : mPm.getSystemAppUpdateOwnerPackageName(parsedPackage.getPackageName());
         final boolean isUpdateOwnershipDenylisted =
                 mUpdateOwnershipHelper.isUpdateOwnershipDenylisted(parsedPackage.getPackageName());
         final boolean isUpdateOwnershipEnabled = oldUpdateOwner != null;
@@ -483,12 +481,11 @@ final class InstallPackageHelper {
         if (listItems != null && !listItems.isEmpty()) {
             mUpdateOwnershipHelper.addToUpdateOwnerDenyList(pkgSetting.getPackageName(),
                     listItems);
-            SystemConfig config = SystemConfig.getInstance();
             synchronized (mPm.mLock) {
                 for (String unownedPackage : listItems) {
                     PackageSetting unownedSetting = mPm.mSettings.getPackageLPr(unownedPackage);
                     if (unownedSetting != null
-                            && config.getSystemAppUpdateOwnerPackageName(unownedPackage) == null) {
+                            && mPm.getSystemAppUpdateOwnerPackageName(unownedPackage) == null) {
                         unownedSetting.setUpdateOwnerPackage(null);
                     }
                 }

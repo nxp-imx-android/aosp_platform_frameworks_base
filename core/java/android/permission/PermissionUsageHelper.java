@@ -121,7 +121,6 @@ public class PermissionUsageHelper implements AppOpsManager.OnOpActiveChangedLis
     }
 
     private static final List<String> LOCATION_OPS = List.of(
-            OPSTR_COARSE_LOCATION,
             OPSTR_FINE_LOCATION
     );
 

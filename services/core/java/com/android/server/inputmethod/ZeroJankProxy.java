@@ -301,11 +301,6 @@ final class ZeroJankProxy implements IInputMethodManagerImpl.Callback {
     }
 
     @Override
-    public void startProtoDump(byte[] bytes, int i, String s) {
-        mInner.startProtoDump(bytes, i, s);
-    }
-
-    @Override
     public boolean isImeTraceEnabled() {
         return mInner.isImeTraceEnabled();
     }

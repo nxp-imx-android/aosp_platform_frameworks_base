@@ -19,11 +19,9 @@ package com.android.server.companion.datatransfer.continuity;
 import static com.android.server.companion.datatransfer.contextsync.BitmapUtils.renderDrawableToByteArray;
 
 import android.annotation.NonNull;
-import android.app.ActivityManager;
 import android.app.ActivityManager.RunningTaskInfo;
 import android.app.ActivityTaskManager;
 import android.app.TaskStackListener;
-import android.companion.AssociationInfo;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.pm.PackageInfo;
@@ -32,7 +30,6 @@ import android.graphics.drawable.Drawable;
 import android.os.RemoteException;
 import android.util.Slog;
 
-import com.android.server.companion.datatransfer.continuity.connectivity.ConnectedAssociationStore;
 import com.android.server.companion.datatransfer.continuity.connectivity.TaskContinuityMessenger;
 import com.android.server.companion.datatransfer.continuity.messages.ContinuityDeviceConnected;
 import com.android.server.companion.datatransfer.continuity.messages.RemoteTaskAddedMessage;
@@ -41,21 +38,16 @@ import com.android.server.companion.datatransfer.continuity.messages.RemoteTaskU
 import com.android.server.companion.datatransfer.continuity.messages.RemoteTaskInfo;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * Responsible for broadcasting recent tasks on the current device to the user's
  *
  * other devices via {@link CompanionDeviceManager}.
  */
-class TaskBroadcaster
-    extends TaskStackListener
-    implements ConnectedAssociationStore.Observer {
+class TaskBroadcaster extends TaskStackListener {
 
     private static final String TAG = "TaskBroadcaster";
 
@@ -64,7 +56,7 @@ class TaskBroadcaster
     private final TaskContinuityMessenger mTaskContinuityMessenger;
     private final PackageManager mPackageManager;
 
-    private boolean mIsBroadcasting = false;
+    private boolean mIsListeningToActivityTaskManager = false;
 
     public TaskBroadcaster(
         @NonNull Context context,
@@ -79,73 +71,48 @@ class TaskBroadcaster
         mTaskContinuityMessenger = taskContinuityMessenger;
     }
 
-    void startBroadcasting(){
-        if (mIsBroadcasting) {
-            Slog.v(TAG, "TaskBroadcaster is already broadcasting");
-            return;
-        }
-
-        Slog.v(TAG, "Starting broadcasting");
-        mTaskContinuityMessenger.getConnectedAssociationStore().addObserver(this);
-        mActivityTaskManager.registerTaskStackListener(this);
-
-        mIsBroadcasting = true;
-    }
-
-    void stopBroadcasting(){
-        if (!mIsBroadcasting) {
-            Slog.v(TAG, "TaskBroadcaster is not broadcasting");
-            return;
-        }
-
-        Slog.v(TAG, "Stopping broadcasting");
-        mIsBroadcasting = false;
-        mTaskContinuityMessenger.getConnectedAssociationStore().removeObserver(this);
-        mActivityTaskManager.unregisterTaskStackListener(this);
-    }
-
-    @Override
-    public void onTransportConnected(AssociationInfo associationInfo) {
-        Slog.v(
-            TAG,
-            "Transport connected for association id: " + associationInfo.getId());
-        sendDeviceConnectedMessage(associationInfo.getId());
-    }
-
-    @Override
-    public void onTransportDisconnected(int associationId) {
-        Slog.v(
-            TAG,
-            "Transport disconnected for association id: " + associationId);
-    }
-
-    @Override
-    public void onTaskCreated(
-        int taskId,
-        ComponentName componentName) throws RemoteException {
-
-        Slog.v(TAG, "onTaskCreated: taskId=" + taskId);
-
-        ActivityManager.RunningTaskInfo taskInfo = getRunningTask(taskId);
-
-        if (taskInfo != null) {
-            RemoteTaskInfo remoteTaskInfo = createRemoteTaskInfo(taskInfo);
-            if (remoteTaskInfo == null) {
-                Slog.w(TAG, "Could not create RemoteTaskInfo for task: " + taskInfo.taskId);
-                return;
+    public void onDeviceConnected(int id) {
+        Slog.v(TAG, "Transport connected for association id: " + id);
+        sendDeviceConnectedMessage(id);
+        synchronized (this) {
+            if (!mIsListeningToActivityTaskManager) {
+                mActivityTaskManager.registerTaskStackListener(this);
+                mIsListeningToActivityTaskManager = true;
             }
-
-            RemoteTaskAddedMessage taskAddedMessage = new RemoteTaskAddedMessage(remoteTaskInfo);
-            mTaskContinuityMessenger.sendMessage(taskAddedMessage);
-        } else {
-            Slog.w(TAG, "Could not find RunningTaskInfo for taskId: " + taskId);
         }
+    }
+
+    public void onAllDevicesDisconnected() {
+        synchronized (this) {
+            if (mIsListeningToActivityTaskManager) {
+                mActivityTaskManager.unregisterTaskStackListener(this);
+                mIsListeningToActivityTaskManager = false;
+            }
+        }
+    }
+
+    @Override
+    public void onTaskCreated(int taskId, ComponentName componentName) throws RemoteException {
+        Slog.v(TAG, "onTaskCreated: taskId=" + taskId);
+        RunningTaskInfo taskInfo = getRunningTask(taskId);
+        if (taskInfo == null) {
+            Slog.w(TAG, "Could not find RunningTaskInfo for taskId: " + taskId);
+            return;
+        }
+
+        RemoteTaskInfo remoteTaskInfo = createRemoteTaskInfo(taskInfo);
+        if (remoteTaskInfo == null) {
+            Slog.w(TAG, "Could not create RemoteTaskInfo for task: " + taskInfo.taskId);
+            return;
+        }
+
+        RemoteTaskAddedMessage taskAddedMessage = new RemoteTaskAddedMessage(remoteTaskInfo);
+        mTaskContinuityMessenger.sendMessage(taskAddedMessage);
     }
 
     @Override
     public void onTaskRemoved(int taskId) throws RemoteException {
         Slog.v(TAG, "onTaskRemoved: taskId=" + taskId);
-
         RemoteTaskRemovedMessage taskRemovedMessage = new RemoteTaskRemovedMessage(taskId);
         mTaskContinuityMessenger.sendMessage(taskRemovedMessage);
     }
@@ -170,17 +137,10 @@ class TaskBroadcaster
             "Sending device connected message for association id: "
                 + associationId);
 
-        List<ActivityManager.RunningTaskInfo> runningTasks = getRunningTasks();
-
-        List<RemoteTaskInfo> remoteTasks = new ArrayList<>();
-        for (ActivityManager.RunningTaskInfo taskInfo : runningTasks) {
-            RemoteTaskInfo remoteTaskInfo = createRemoteTaskInfo(taskInfo);
-            if (remoteTaskInfo != null) {
-                remoteTasks.add(remoteTaskInfo);
-            } else {
-                Slog.w(TAG, "Could not create RemoteTaskInfo for task: " + taskInfo.taskId);
-            }
-        }
+        List<RemoteTaskInfo> remoteTasks = getRunningTasks().stream()
+            .map(this::createRemoteTaskInfo)
+            .filter(Objects::nonNull)
+            .collect(Collectors.toList());
 
         ContinuityDeviceConnected deviceConnectedMessage
             = new ContinuityDeviceConnected(remoteTasks);
@@ -188,10 +148,10 @@ class TaskBroadcaster
         mTaskContinuityMessenger.sendMessage(associationId, deviceConnectedMessage);
     }
 
-    private ActivityManager.RunningTaskInfo getRunningTask(int taskId) {
-        List<ActivityManager.RunningTaskInfo> runningTasks = getRunningTasks();
+    private RunningTaskInfo getRunningTask(int taskId) {
+        List<RunningTaskInfo> runningTasks = getRunningTasks();
         if (runningTasks != null) {
-            for (ActivityManager.RunningTaskInfo info : runningTasks) {
+            for (RunningTaskInfo info : runningTasks) {
                 if (info.taskId == taskId) {
                     return info;
                 }
@@ -201,11 +161,11 @@ class TaskBroadcaster
         return null;
     }
 
-    private List<ActivityManager.RunningTaskInfo> getRunningTasks() {
+    private List<RunningTaskInfo> getRunningTasks() {
         return mActivityTaskManager.getTasks(Integer.MAX_VALUE, true);
     }
 
-    private RemoteTaskInfo createRemoteTaskInfo(ActivityManager.RunningTaskInfo taskInfo) {
+    private RemoteTaskInfo createRemoteTaskInfo(RunningTaskInfo taskInfo) {
         PackageInfo packageInfo;
         try {
             packageInfo = mPackageManager.getPackageInfo(

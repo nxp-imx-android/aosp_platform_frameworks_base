@@ -72,6 +72,7 @@ import com.android.compose.animation.scene.animateContentFloatAsState
 import com.android.compose.animation.scene.content.state.TransitionState
 import com.android.compose.modifiers.padding
 import com.android.compose.modifiers.thenIf
+import com.android.compose.theme.LocalAndroidColorScheme
 import com.android.internal.jank.InteractionJankMonitor
 import com.android.systemui.common.ui.compose.windowinsets.CutoutLocation
 import com.android.systemui.common.ui.compose.windowinsets.LocalDisplayCutout
@@ -207,33 +208,33 @@ private fun ContentScope.ShadeScene(
     shadeSession: SaveableSession,
     usingCollapsedLandscapeMedia: Boolean,
 ) {
-    when (viewModel.shadeMode) {
-        is ShadeMode.Single ->
-            SingleShade(
-                notificationStackScrollView = notificationStackScrollView,
-                viewModel = viewModel,
-                headerViewModel = headerViewModel,
-                notificationsPlaceholderViewModel = notificationsPlaceholderViewModel,
-                mediaCarouselController = mediaCarouselController,
-                mediaHost = qqsMediaHost,
-                modifier = modifier,
-                shadeSession = shadeSession,
-                usingCollapsedLandscapeMedia = usingCollapsedLandscapeMedia,
-                jankMonitor = jankMonitor,
-            )
-        is ShadeMode.Split ->
-            SplitShade(
-                notificationStackScrollView = notificationStackScrollView,
-                viewModel = viewModel,
-                headerViewModel = headerViewModel,
-                notificationsPlaceholderViewModel = notificationsPlaceholderViewModel,
-                mediaCarouselController = mediaCarouselController,
-                mediaHost = qsMediaHost,
-                modifier = modifier,
-                shadeSession = shadeSession,
-                jankMonitor = jankMonitor,
-            )
-        is ShadeMode.Dual -> error("Dual shade is implemented separately as an overlay.")
+    if (viewModel.shadeMode is ShadeMode.Split) {
+        SplitShade(
+            notificationStackScrollView = notificationStackScrollView,
+            viewModel = viewModel,
+            headerViewModel = headerViewModel,
+            notificationsPlaceholderViewModel = notificationsPlaceholderViewModel,
+            mediaCarouselController = mediaCarouselController,
+            mediaHost = qsMediaHost,
+            modifier = modifier,
+            shadeSession = shadeSession,
+            jankMonitor = jankMonitor,
+        )
+    } else {
+        // Compose SingleShade even if we're in Dual shade mode; the view-model will take care of
+        // switching scenes.
+        SingleShade(
+            notificationStackScrollView = notificationStackScrollView,
+            viewModel = viewModel,
+            headerViewModel = headerViewModel,
+            notificationsPlaceholderViewModel = notificationsPlaceholderViewModel,
+            mediaCarouselController = mediaCarouselController,
+            mediaHost = qqsMediaHost,
+            modifier = modifier,
+            shadeSession = shadeSession,
+            usingCollapsedLandscapeMedia = usingCollapsedLandscapeMedia,
+            jankMonitor = jankMonitor,
+        )
     }
 }
 
@@ -252,8 +253,7 @@ private fun ContentScope.SingleShade(
 ) {
     val cutout = LocalDisplayCutout.current
     val cutoutInsets = WindowInsets.Companion.displayCutout
-    // TODO(b/428779792): update color to match BC25 spec
-    val shadePanelColor = Color.Gray.copy(alpha = 0.32f)
+    val shadePanelColor = LocalAndroidColorScheme.current.surfaceEffect1
     mediaHost.expansion = if (usingCollapsedLandscapeMedia && isLandscape()) COLLAPSED else EXPANDED
 
     var maxNotifScrimTop by remember { mutableIntStateOf(0) }

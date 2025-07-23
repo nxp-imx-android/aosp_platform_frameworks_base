@@ -16,8 +16,6 @@
 
 package com.android.server.companion.datatransfer.continuity.handoff;
 
-import static com.android.server.companion.datatransfer.continuity.TaskContinuityTestUtils.createMockContext;
-
 import static com.google.common.truth.Truth.assertThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.times;
@@ -32,6 +30,7 @@ import static org.mockito.ArgumentMatchers.any;
 import com.android.server.companion.datatransfer.continuity.connectivity.TaskContinuityMessenger;
 import com.android.server.companion.datatransfer.continuity.messages.HandoffRequestMessage;
 import com.android.server.companion.datatransfer.continuity.messages.HandoffRequestResultMessage;
+import com.android.server.companion.datatransfer.continuity.tasks.RemoteTaskStore;
 
 import android.app.ActivityManager;
 import android.app.HandoffActivityData;
@@ -55,21 +54,21 @@ import java.util.List;
 
 public class OutboundHandoffRequestControllerTest {
 
-    private Context mContext;
-
+    @Mock private Context mMockContext;
     @Mock private TaskContinuityMessenger mMockTaskContinuityMessenger;
     @Mock private PackageManager mMockPackageManager;
+    @Mock private RemoteTaskStore mMockRemoteTaskStore;
 
     private OutboundHandoffRequestController mOutboundHandoffRequestController;
 
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
-        mContext = createMockContext();
-        doReturn(mMockPackageManager).when(mContext).getPackageManager();
+        doReturn(mMockPackageManager).when(mMockContext).getPackageManager();
         mOutboundHandoffRequestController = new OutboundHandoffRequestController(
-            mContext,
-            mMockTaskContinuityMessenger);
+            mMockContext,
+            mMockTaskContinuityMessenger,
+            mMockRemoteTaskStore);
     }
 
     @Test
@@ -108,7 +107,7 @@ public class OutboundHandoffRequestControllerTest {
             eq(expectedComponentName), eq(PackageManager.MATCH_DEFAULT_ONLY)))
             .thenReturn(new ActivityInfo());
         doReturn(ActivityManager.START_SUCCESS)
-            .when(mContext).startActivitiesAsUser(any(), any(), any());
+            .when(mMockContext).startActivitiesAsUser(any(), any(), any());
 
         HandoffRequestResultMessage handoffRequestResultMessage = new HandoffRequestResultMessage(
             taskId,
@@ -120,7 +119,7 @@ public class OutboundHandoffRequestControllerTest {
 
         // Verify the intent was launched.
         ArgumentCaptor<Intent[]> intentCaptor = ArgumentCaptor.forClass(Intent[].class);
-        verify(mContext, times(1)).startActivitiesAsUser(intentCaptor.capture(), any(), any());
+        verify(mMockContext, times(1)).startActivitiesAsUser(intentCaptor.capture(), any(), any());
         Intent actualIntent = intentCaptor.getValue()[0];
         assertThat(actualIntent.getComponent()).isEqualTo(expectedComponentName);
         assertThat(actualIntent.getExtras().size()).isEqualTo(1);
@@ -134,6 +133,9 @@ public class OutboundHandoffRequestControllerTest {
             associationId,
             taskId,
             TaskContinuityManager.HANDOFF_REQUEST_RESULT_SUCCESS);
+
+        // Verify the task was removed from the store.
+        verify(mMockRemoteTaskStore).removeTask(associationId, taskId);
     }
 
     @Test
@@ -214,7 +216,7 @@ public class OutboundHandoffRequestControllerTest {
             failureStatusCode);
 
         // Verify no intent was launched.
-        verify(mContext, never()).startActivitiesAsUser(any(), any(), any());
+        verify(mMockContext, never()).startActivitiesAsUser(any(), any(), any());
     }
 
     @Test
@@ -247,6 +249,6 @@ public class OutboundHandoffRequestControllerTest {
             TaskContinuityManager.HANDOFF_REQUEST_RESULT_FAILURE_NO_DATA_PROVIDED_BY_TASK);
 
         // Verify no intent was launched.
-        verify(mContext, never()).startActivitiesAsUser(any(), any(), any());
+        verify(mMockContext, never()).startActivitiesAsUser(any(), any(), any());
     }
 }

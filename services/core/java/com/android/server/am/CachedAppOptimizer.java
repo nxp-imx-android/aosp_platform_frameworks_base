@@ -716,7 +716,7 @@ public class CachedAppOptimizer {
             app.mOptRecord.setForceCompact(force);
             mPendingCompactionProcesses.add(app);
             mCompactionHandler.sendMessage(mCompactionHandler.obtainMessage(
-                    COMPACT_PROCESS_MSG, app.mState.getCurAdj(), app.mState.getSetProcState()));
+                    COMPACT_PROCESS_MSG, app.getCurAdj(), app.getSetProcState()));
             return true;
         }
 
@@ -1199,7 +1199,7 @@ public class CachedAppOptimizer {
             return;
         }
 
-        if (app.mState.getSetAdj() >= ProcessList.CACHED_APP_MIN_ADJ) {
+        if (app.getSetAdj() >= ProcessList.CACHED_APP_MIN_ADJ) {
             final IApplicationThread thread = app.getThread();
             if (thread != null) {
                 try {
@@ -1489,7 +1489,7 @@ public class CachedAppOptimizer {
         if (useCompaction()) {
             synchronized (mProcLock) {
                 // only full-compact if process is cached
-                if (frozenProc.mState.getSetAdj() >= mCompactThrottleMinOomAdj) {
+                if (frozenProc.getSetAdj() >= mCompactThrottleMinOomAdj) {
                     compactApp(frozenProc, CompactProfile.FULL, CompactSource.APP, false);
                 }
             }
@@ -1554,7 +1554,7 @@ public class CachedAppOptimizer {
 
             // don't compact if the process has returned to perceptible
             // and this is only a cached/home/prev compaction
-            if (proc.mState.getSetAdj() <= ProcessList.PERCEPTIBLE_APP_ADJ) {
+            if (proc.getSetAdj() <= ProcessList.PERCEPTIBLE_APP_ADJ) {
                 if (DEBUG_COMPACTION) {
                     Slog.d(TAG_AM,
                             "Skipping compaction as process " + name + " is "
@@ -2046,7 +2046,7 @@ public class CachedAppOptimizer {
                 if (mFreezerOverride) {
                     opt.setFreezerOverride(true);
                     Slog.d(TAG_AM, "Skipping freeze for process " + pid
-                            + " " + name + " curAdj = " + proc.mState.getCurAdj()
+                            + " " + name + " curAdj = " + proc.getCurAdj()
                             + "(override)");
                     return;
                 }

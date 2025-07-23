@@ -1,4 +1,4 @@
-package: "com.android.microxr.flags"
+package: "com.android.microxr"
 container: "system"
 
 flag {

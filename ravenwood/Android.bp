@@ -79,6 +79,22 @@ filegroup {
     visibility: ["//visibility:private"],
 }
 
+filegroup {
+    name: "ravenwood-all-text-files",
+    srcs: [
+        "texts/*",
+    ],
+    visibility: [":__subpackages__"],
+}
+
+filegroup {
+    name: "ravenwood-all-scripts",
+    srcs: [
+        "scripts/*",
+    ],
+    visibility: [":__subpackages__"],
+}
+
 // Common code that is shared across host and device.
 java_library {
     name: "ravenwood-common-utils",

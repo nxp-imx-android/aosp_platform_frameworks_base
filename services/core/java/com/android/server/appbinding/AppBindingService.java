@@ -143,7 +143,15 @@ public class AppBindingService extends Binder {
         }
     }
 
-    /** Get the list of services bound to a specific finder class. */
+    /**
+     * Get the list of services bound to a specific finder class.
+     *
+     * This method will block until all connections are established or a timeout occurs.
+     *
+     * <p><b>NOTE: This method should be called from a background thread other than
+     * {@link BackgroundThread}, otherwise the {@link PersistentConnection} callbacks will not be
+     * delivered until after this method returns.</b></p>
+     */
     public List<AppServiceConnection> getAppServiceConnections(
             Class<? extends AppServiceFinder<?, ?>> appServiceFinderClass, int userId) {
         List<AppServiceConnection> serviceConnections = new ArrayList<>();
@@ -153,15 +161,21 @@ public class AppBindingService extends Binder {
                 if (app.getClass() != appServiceFinderClass) {
                     continue;
                 }
-                serviceConnections.addAll(getBoundConnectionsLocked(userId, app));
+                serviceConnections.addAll(getBoundConnectionsBlockingLocked(userId, app));
             }
         }
         return serviceConnections;
     }
 
-    /** Get the connection bound to a specific finder. If the connection does not
-     * already exist, create one.  */
-    private List<AppServiceConnection> getBoundConnectionsLocked(int userId, AppServiceFinder app) {
+    /**
+     * Get the connection bound to a specific finder, ensuring it's bound.
+     *
+     * This method will block until all connections are established or a timeout occurs.
+     *
+     * <p><b>NOTE: This method must be called from a background thread.</b></p>
+     */
+    private List<AppServiceConnection> getBoundConnectionsBlockingLocked(int userId,
+            AppServiceFinder app) {
         Set<String> targetPackages = app.getTargetPackages(userId);
         List<AppServiceConnection> connections = new ArrayList<>();
         for (String targetPackage : targetPackages) {
@@ -180,11 +194,16 @@ public class AppBindingService extends Binder {
                                     targetPackage,
                                     service.getComponentName());
                     mConnections.add(conn);
-                    conn.bind();
                 }
             }
             if (conn != null) {
-                connections.add(conn);
+                conn.bind();
+                if (conn.awaitConnection()) {
+                    connections.add(conn);
+                } else {
+                    Slogf.w(TAG, "Failed to establish connection for %s, user %d, package %s",
+                            app.getAppDescription(), userId, targetPackage);
+                }
             }
         }
         return connections;

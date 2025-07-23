@@ -1276,7 +1276,7 @@ final class ServiceRecord extends Binder implements ComponentName.WithComponentN
 
     void updateProcessStateOnRequest() {
         mProcessStateOnRequest = app != null && app.getThread() != null && !app.isKilled()
-                ? app.mState.getCurProcState() : PROCESS_STATE_NONEXISTENT;
+                ? app.getCurProcState() : PROCESS_STATE_NONEXISTENT;
     }
 
     @NonNull
@@ -1909,12 +1909,12 @@ final class ServiceRecord extends Binder implements ComponentName.WithComponentN
      * @return {@code true} if the host process has updated its oom adj scores.
      */
     boolean wasOomAdjUpdated() {
-        return app != null && app.mState.getAdjSeq() > mAdjSeq;
+        return app != null && app.getAdjSeq() > mAdjSeq;
     }
 
     void updateOomAdjSeq() {
         if (app != null) {
-            mAdjSeq = app.mState.getAdjSeq();
+            mAdjSeq = app.getAdjSeq();
         }
     }
 }

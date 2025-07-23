@@ -99,6 +99,7 @@ import com.android.compose.modifiers.thenIf
 import com.android.compose.nestedscroll.OnStopScope
 import com.android.compose.nestedscroll.PriorityNestedScrollConnection
 import com.android.compose.nestedscroll.ScrollController
+import com.android.compose.theme.LocalAndroidColorScheme
 import com.android.internal.jank.Cuj.CUJ_NOTIFICATION_SHADE_SCROLL_FLING
 import com.android.internal.jank.InteractionJankMonitor
 import com.android.systemui.common.ui.compose.windowinsets.LocalScreenCornerRadius
@@ -320,8 +321,7 @@ fun ContentScope.NotificationScrollingStack(
     val density = LocalDensity.current
     val screenCornerRadius = LocalScreenCornerRadius.current
     val scrimCornerRadius = dimensionResource(R.dimen.notification_scrim_corner_radius)
-    // TODO(b/428779792): update color to match BC25 spec
-    val surfaceEffect0Color = Color.Gray.copy(alpha = 0.5f)
+    val surfaceEffect0Color = LocalAndroidColorScheme.current.surfaceEffect0
     val scrollState =
         shadeSession.rememberSaveableSession(saver = ScrollState.Saver, key = "ScrollState") {
             ScrollState(initial = 0)

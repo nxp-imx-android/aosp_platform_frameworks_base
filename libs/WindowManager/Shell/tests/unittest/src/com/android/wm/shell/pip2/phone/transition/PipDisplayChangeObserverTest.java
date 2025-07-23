@@ -25,6 +25,7 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.when;
 import static org.mockito.kotlin.VerificationKt.clearInvocations;
 import static org.mockito.kotlin.VerificationKt.never;
 import static org.mockito.kotlin.VerificationKt.verify;
@@ -105,6 +106,8 @@ public class PipDisplayChangeObserverTest {
 
     @Test
     public void onTransitionStarting_withPipChange_updatesPipState() {
+        when(mMockPipTransitionState.isPipStateIdle()).thenReturn(true);
+
         final IBinder transition = new Binder();
         final TransitionInfo info = createPipBoundsChangingWithDisplayInfo();
         mPipDisplayChangeObserver.onTransitionReady(transition, info, mStartTx, mFinishTx);
@@ -121,7 +124,29 @@ public class PipDisplayChangeObserverTest {
     }
 
     @Test
+    public void onTransitionStarting_withNonIdlePipChange_updatesPipState() {
+        when(mMockPipTransitionState.isPipStateIdle()).thenReturn(false);
+
+        final IBinder transition = new Binder();
+        final TransitionInfo info = createPipBoundsChangingWithDisplayInfo();
+        mPipDisplayChangeObserver.onTransitionReady(transition, info, mStartTx, mFinishTx);
+
+        mPipDisplayChangeObserver.onTransitionStarting(transition);
+
+        verify(mMockPipTransitionState).setIsDisplayChangeScheduled(false);
+
+        // Can't have state advancements when in a non-idle PiP state.
+        verify(mMockPipTransitionState, never()).setState(anyInt(), any());
+
+        assertNotNull("Transition should remain cached during animation",
+                mPipDisplayChangeObserver.getDisplayChangeTransitions().get(transition));
+    }
+
+    @Test
     public void onTransitionFinished_withPipChange_updatesPipStateAndCleansUp() {
+        when(mMockPipTransitionState.isPipStateIdle()).thenReturn(true);
+        when(mMockPipTransitionState.isInPip()).thenReturn(true);
+
         final IBinder transition = new Binder();
         final TransitionInfo info = createPipBoundsChangingWithDisplayInfo();
         mPipDisplayChangeObserver.onTransitionReady(transition, info, mStartTx, mFinishTx);
@@ -138,6 +163,9 @@ public class PipDisplayChangeObserverTest {
 
     @Test
     public void onTransitionMerged_withPipChange_updatesPipStateAndCleansUp() {
+        when(mMockPipTransitionState.isPipStateIdle()).thenReturn(true);
+        when(mMockPipTransitionState.isInPip()).thenReturn(true);
+
         final IBinder mergedTransition = new Binder();
         final IBinder playingTransition = new Binder();
         final TransitionInfo info = createPipBoundsChangingWithDisplayInfo();

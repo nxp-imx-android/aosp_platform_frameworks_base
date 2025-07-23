@@ -43,10 +43,12 @@ import com.android.systemui.media.controls.data.repository.mediaFilterRepository
 import com.android.systemui.media.controls.shared.model.MediaData
 import com.android.systemui.res.R
 import com.android.systemui.scene.domain.interactor.sceneInteractor
+import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.shade.domain.interactor.enableDualShade
 import com.android.systemui.shade.domain.interactor.enableSingleShade
 import com.android.systemui.shade.domain.interactor.enableSplitShade
+import com.android.systemui.shade.domain.interactor.shadeInteractor
 import com.android.systemui.shade.shared.model.ShadeMode
 import com.android.systemui.statusbar.disableflags.data.repository.fakeDisableFlagsRepository
 import com.android.systemui.testKosmos
@@ -134,6 +136,44 @@ class ShadeSceneContentViewModelTest : SysuiTestCase() {
 
             enableDualShade()
             assertThat(underTest.shadeMode).isEqualTo(ShadeMode.Dual)
+        }
+
+    @Test
+    fun shadeModeChange_dualOnLockscreen_switchToOverlay() =
+        kosmos.runTest {
+            setDeviceEntered(false)
+            val scene by collectLastValue(sceneInteractor.currentScene)
+            val overlays by collectLastValue(sceneInteractor.currentOverlays)
+
+            enableSingleShade()
+
+            shadeInteractor.expandNotificationsShade("test")
+            assertThat(scene).isEqualTo(Scenes.Shade)
+            assertThat(overlays).isEmpty()
+
+            enableDualShade()
+
+            assertThat(scene).isEqualTo(Scenes.Lockscreen)
+            assertThat(overlays).containsExactly(Overlays.NotificationsShade)
+        }
+
+    @Test
+    fun shadeModeChange_dualOnGone_switchToOverlay() =
+        kosmos.runTest {
+            setDeviceEntered(true)
+            val scene by collectLastValue(sceneInteractor.currentScene)
+            val overlays by collectLastValue(sceneInteractor.currentOverlays)
+
+            enableSingleShade()
+
+            shadeInteractor.expandNotificationsShade("test")
+            assertThat(scene).isEqualTo(Scenes.Shade)
+            assertThat(overlays).isEmpty()
+
+            enableDualShade()
+
+            assertThat(scene).isEqualTo(Scenes.Gone)
+            assertThat(overlays).containsExactly(Overlays.NotificationsShade)
         }
 
     @Test

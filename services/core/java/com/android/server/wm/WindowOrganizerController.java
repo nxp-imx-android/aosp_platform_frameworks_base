@@ -1273,7 +1273,8 @@ class WindowOrganizerController extends IWindowOrganizerController.Stub
                 }
                 // Disable reachability when an InputMethod is visible.
                 final DisplayContent dc = wc.mDisplayContent;
-                if (dc != null && dc.mInputMethodWindow.isVisible()) {
+                if (dc != null && dc.mInputMethodWindow != null
+                        && dc.mInputMethodWindow.isVisible()) {
                     break;
                 }
                 final Task currentTask = wc.asTask();

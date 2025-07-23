@@ -76,7 +76,7 @@ class SceneDataSourceDelegator(applicationScope: CoroutineScope, config: SceneCo
         delegateMutable.value.freezeAndAnimateToCurrentState()
     }
 
-    override fun instantlyTransitionTo(scene: SceneKey, overlays: Set<OverlayKey>) {
+    override fun instantlyTransitionTo(scene: SceneKey?, overlays: Set<OverlayKey>?) {
         delegateMutable.value.instantlyTransitionTo(scene = scene, overlays = overlays)
     }
 
@@ -115,6 +115,6 @@ class SceneDataSourceDelegator(applicationScope: CoroutineScope, config: SceneCo
 
         override fun freezeAndAnimateToCurrentState() = Unit
 
-        override fun instantlyTransitionTo(scene: SceneKey, overlays: Set<OverlayKey>) = Unit
+        override fun instantlyTransitionTo(scene: SceneKey?, overlays: Set<OverlayKey>?) = Unit
     }
 }

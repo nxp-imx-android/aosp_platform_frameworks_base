@@ -993,8 +993,11 @@ class WallpaperController {
      */
     SurfaceControl mirrorWallpaperSurface() {
         final WindowState wallpaperWindowState = getTopVisibleWallpaper();
-        return wallpaperWindowState != null
-                ? SurfaceControl.mirrorSurface(wallpaperWindowState.mToken.getSurfaceControl())
+        final SurfaceControl wallpaperSurfaceControl = wallpaperWindowState != null
+            ? wallpaperWindowState.mToken.getSurfaceControl()
+            : null;
+        return wallpaperSurfaceControl != null
+                ? SurfaceControl.mirrorSurface(wallpaperSurfaceControl)
                 : null;
     }
 

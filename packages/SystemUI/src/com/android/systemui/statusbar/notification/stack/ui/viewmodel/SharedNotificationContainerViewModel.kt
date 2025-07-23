@@ -565,23 +565,17 @@ constructor(
                             }
                         Dual ->
                             combineTransform(
-                                shadeModeInteractor.isShadeLayoutWide,
                                 headsUpNotificationInteractor.get().isHeadsUpOrAnimatingAway,
                                 shadeInteractor.shadeExpansion,
                                 shadeInteractor.qsExpansion,
                                 bouncerInteractor.bouncerExpansion,
                             ) {
-                                isShadeLayoutWide,
                                 isHeadsUpOrAnimatingAway,
                                 shadeExpansion,
                                 qsExpansion,
                                 bouncerExpansion ->
                                 if (bouncerExpansion > 0f) {
                                     emit(1 - bouncerExpansion)
-                                } else if (isShadeLayoutWide) {
-                                    if (shadeExpansion > 0f) {
-                                        emit(1f)
-                                    }
                                 } else if (isHeadsUpOrAnimatingAway) {
                                     // Ensure HUNs will be visible in QS shade (at least while
                                     // unlocked)

@@ -63,7 +63,7 @@ constructor(
                         fullscreen = loadIcon(R.drawable.ic_screen_capture_fullscreen),
                         region = loadIcon(R.drawable.ic_screen_capture_region),
                         appWindow = loadIcon(R.drawable.ic_screen_capture_window),
-                        moreOptions = loadIcon(R.drawable.ic_more_vert),
+                        moreOptions = loadIcon(R.drawable.ic_settings),
                     )
                 )
             }

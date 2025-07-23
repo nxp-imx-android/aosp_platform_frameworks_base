@@ -2,13 +2,6 @@ package: "com.android.window.flags"
 container: "system"
 
 flag {
-  name: "nav_bar_transparent_by_default"
-  namespace: "windowing_frontend"
-  description: "Make nav bar color transparent by default when targeting SDK 35 or greater"
-  bug: "232195501"
-}
-
-flag {
     name: "apply_lifecycle_on_pip_change"
     namespace: "windowing_frontend"
     description: "Make pip activity lifecyle change with windowing mode"
@@ -198,28 +191,6 @@ flag {
 }
 
 flag {
-  name: "get_dimmer_on_closing"
-  namespace: "windowing_frontend"
-  description: "Change check for when to ignore a closing task's dim"
-  bug: "329233513"
-  is_fixed_read_only: true
-  metadata {
-    purpose: PURPOSE_BUGFIX
-  }
-}
-
-flag {
-  name: "use_tasks_dim_only"
-  namespace: "windowing_frontend"
-  description: "Only use the task's dim and reparent it to the display area when needed instead of coordinating multiple dimmers"
-  bug: "352522056"
-  is_fixed_read_only: true
-  metadata {
-    purpose: PURPOSE_BUGFIX
-  }
-}
-
-flag {
   name: "update_dims_when_window_shown"
   namespace: "windowing_frontend"
   description: "Check if we need to update dim layers when a new window draws the first frame"
@@ -241,11 +212,14 @@ flag {
 }
 
 flag {
-  name: "ensure_keyguard_does_transition_starting"
+  name: "ensure_keyguard_does_transition_starting_bug_fix"
   namespace: "windowing_frontend"
   description: "Ensure that keyguard is the one starting transitions, instead of delegating to Core"
   bug: "364930619"
   is_fixed_read_only: true
+  metadata {
+      purpose: PURPOSE_BUGFIX
+  }
 }
 
 flag {

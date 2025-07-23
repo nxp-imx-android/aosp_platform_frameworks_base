@@ -17,6 +17,7 @@
 package com.google.android.lint.aidl
 
 const val ANNOTATION_ENFORCE_PERMISSION = "android.annotation.EnforcePermission"
+const val ANNOTATION_REQUIRES_PERMISSION = "android.annotation.RequiresPermission"
 const val ANNOTATION_REQUIRES_NO_PERMISSION = "android.annotation.RequiresNoPermission"
 const val ANNOTATION_PERMISSION_MANUALLY_ENFORCED = "android.annotation.PermissionManuallyEnforced"
 

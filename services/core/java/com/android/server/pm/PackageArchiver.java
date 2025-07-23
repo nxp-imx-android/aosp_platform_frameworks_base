@@ -1282,6 +1282,7 @@ public class PackageArchiver {
             // Error already logged.
             return null;
         }
+        dialogIntent.putExtra(PackageInstaller.EXTRA_PACKAGE_NAME, appPackageName);
         dialogIntent.putExtra(EXTRA_INSTALLER_TITLE, installerTitle);
         return dialogIntent;
     }

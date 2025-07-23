@@ -41,4 +41,9 @@ public interface NotificationViewModel {
     public val maxLinesWhenExpanded: Int
     /** The maximum height of the notification. */
     public val maxHeightDp: Int
+    /**
+     * The maximum aspect ratio that the large icon supports. The height of the large icon is fixed,
+     * so this determines its maximum width relative to that.
+     */
+    public val maxLargeIconAspectRatio: Float
 }
