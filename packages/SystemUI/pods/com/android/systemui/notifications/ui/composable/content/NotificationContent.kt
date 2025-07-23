@@ -110,7 +110,13 @@ private fun HeaderWithLargeIcon(
             firstLine()
             secondLine()
         }
-        viewModel.largeIcon?.let { LargeIcon(it, Modifier.padding(start = 16.dp, end = 8.dp)) }
+        viewModel.largeIcon?.let {
+            LargeIcon(
+                it,
+                Modifier.padding(start = 16.dp, end = 8.dp),
+                viewModel.maxLargeIconAspectRatio,
+            )
+        }
         Expander(expanded = viewModel.isExpanded, modifier = Modifier.padding(top = 4.dp))
     }
 }
