@@ -45,7 +45,7 @@ constructor(
 
     val isDesktopToolbarEnabled: Boolean = Flags.desktopScreenCapture()
 
-    val shouldShowNewToolbar: Boolean = isNewScreenRecordToolbarEnabled && isDesktopToolbarEnabled
+    val shouldShowNewToolbar: Boolean = isNewScreenRecordToolbarEnabled || isDesktopToolbarEnabled
 
     val isLargeScreen: Flow<Boolean?> =
         configurationController.onConfigChanged
