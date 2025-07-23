@@ -18,7 +18,6 @@ package com.android.systemui.qs.panels.ui.compose.toolbar
 
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedContentScope
-import androidx.compose.animation.Crossfade
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionLayout
 import androidx.compose.animation.SharedTransitionScope
@@ -135,7 +134,7 @@ private fun SharedTransitionScope.StandardToolbarLayout(
         ToolbarTextFeedback(
             viewModelFactory = viewModel.textFeedbackContentViewModelFactory,
             buildNumberViewModelFactory = viewModel.buildNumberViewModelFactory,
-            modifier = Modifier.weight(1f),
+            modifier = Modifier.weight(1f).align(Alignment.CenterVertically),
         )
     }
 }
@@ -187,10 +186,10 @@ private fun ToolbarTextFeedback(
             }
         val hasTextFeedback = viewModel.textFeedback !is TextFeedbackViewModel.NoFeedback
 
-        Crossfade(
+        AnimatedContent(
             targetState = hasTextFeedback,
             modifier = Modifier.align(Alignment.Center),
-            label = "Toolbar.ShowTextFeedback",
+            label = "Toolbar.ToolbarTextFeedback",
         ) { showTextFeedback ->
             if (showTextFeedback) {
                 TextFeedback(model = viewModel.textFeedback)
