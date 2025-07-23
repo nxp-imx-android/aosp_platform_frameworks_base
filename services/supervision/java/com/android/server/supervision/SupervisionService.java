@@ -54,7 +54,6 @@ import android.content.pm.UserInfo;
 import android.os.Binder;
 import android.os.Bundle;
 import android.os.IBinder;
-import android.os.IInterface;
 import android.os.PersistableBundle;
 import android.os.Process;
 import android.os.RemoteException;
@@ -68,6 +67,7 @@ import android.util.SparseArray;
 import com.android.internal.R;
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
+import com.android.internal.os.BackgroundThread;
 import com.android.internal.util.DumpUtils;
 import com.android.internal.util.FunctionalUtils.RemoteExceptionIgnoringConsumer;
 import com.android.internal.util.IndentingPrintWriter;
@@ -82,6 +82,7 @@ import com.android.server.utils.Slogf;
 import java.io.FileDescriptor;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.Executor;
@@ -387,15 +388,14 @@ public class SupervisionService extends ISupervisionManager.Stub {
                 mSupervisionSettings.saveUserData();
             }
         }
-        Binder.withCleanCallingIdentity(
-                () -> {
-                    updateWebContentFilters(userId, enabled);
-                    dispatchSupervisionEvent(
-                            userId, listener -> listener.onSetSupervisionEnabled(userId, enabled));
-                    if (!enabled) {
-                        clearAllDevicePoliciesAndSuspendedPackages(userId);
-                    }
-                });
+        BackgroundThread.getExecutor().execute(() -> {
+            updateWebContentFilters(userId, enabled);
+            dispatchSupervisionEvent(
+                    userId, listener -> listener.onSetSupervisionEnabled(userId, enabled));
+            if (!enabled) {
+               clearAllDevicePoliciesAndSuspendedPackages(userId);
+            }
+        });
     }
 
     @NonNull
@@ -420,10 +420,8 @@ public class SupervisionService extends ISupervisionManager.Stub {
             if (binder == null) {
                 Slogf.d(
                         SupervisionLog.TAG,
-                        "Failed to bind to SupervisionAppService for %s now",
+                        "Failed to bind to SupervisionAppService for %s",
                         targetPackage);
-
-                dispatchSupervisionAppServiceWhenConnected(conn, action);
                 continue;
             }
 
@@ -436,10 +434,10 @@ public class SupervisionService extends ISupervisionManager.Stub {
     private void dispatchSupervisionEvent(
             @UserIdInt int userId,
             @NonNull RemoteExceptionIgnoringConsumer<ISupervisionListener> action) {
-        ArrayList<ISupervisionListener> listeners = new ArrayList<>();
 
         // Add SupervisionAppServices listeners before the platform listeners.
-        listeners.addAll(getSupervisionAppServiceListeners(userId, action));
+        ArrayList<ISupervisionListener> listeners = new ArrayList<>(
+                getSupervisionAppServiceListeners(userId, action));
 
         synchronized (getLockObject()) {
             mSupervisionListeners.forEach(
@@ -450,7 +448,7 @@ public class SupervisionService extends ISupervisionManager.Stub {
                     });
         }
 
-        listeners.forEach(listener -> action.accept(listener));
+        listeners.forEach(action);
     }
 
     private void clearAllDevicePoliciesAndSuspendedPackages(@UserIdInt int userId) {
@@ -459,20 +457,19 @@ public class SupervisionService extends ISupervisionManager.Stub {
         }
 
         enforcePermission(MANAGE_ROLE_HOLDERS);
-        List<String> supervisionPackages = new ArrayList<>();
-        supervisionPackages.addAll(
-                mInjector.getRoleHoldersAsUser(
-                        RoleManager.ROLE_SUPERVISION, UserHandle.of(userId)));
-        supervisionPackages.addAll(
-                mInjector.getRoleHoldersAsUser(
-                        RoleManager.ROLE_SYSTEM_SUPERVISION, UserHandle.of(userId)));
-
-        for (String supervisionPackage : supervisionPackages) {
-            clearDevicePoliciesAndSuspendedPackagesFor(userId, supervisionPackage);
+        List<String> roles =  Arrays.asList(RoleManager.ROLE_SYSTEM_SUPERVISION,
+                RoleManager.ROLE_SUPERVISION);
+        for (String role : roles) {
+            List<String> supervisionPackages =
+                    mInjector.getRoleHoldersAsUser(role, UserHandle.of(userId));
+            for (String supervisionPackage : supervisionPackages) {
+                clearDevicePoliciesAndSuspendedPackagesFor(userId, supervisionPackage, role);
+            }
         }
     }
 
-    private void clearDevicePoliciesAndSuspendedPackagesFor(int userId, String supervisionPackage) {
+    private void clearDevicePoliciesAndSuspendedPackagesFor(int userId, String supervisionPackage,
+            String roleName) {
         DevicePolicyManagerInternal dpmi = mInjector.getDpmInternal();
         if (dpmi != null) {
             dpmi.removePoliciesForAdmins(supervisionPackage, userId);
@@ -482,36 +479,8 @@ public class SupervisionService extends ISupervisionManager.Stub {
         if (pmi != null) {
             pmi.unsuspendForSuspendingPackage(supervisionPackage, userId, userId);
         }
-    }
 
-    private void dispatchSupervisionAppServiceWhenConnected(
-            AppServiceConnection conn,
-            @NonNull RemoteExceptionIgnoringConsumer<ISupervisionListener> action) {
-        // This listener will be notified when the connection changes.
-        AppServiceConnection.ConnectionStatusListener connectionListener =
-                new AppServiceConnection.ConnectionStatusListener() {
-                    @Override
-                    public void onConnected(
-                            @NonNull AppServiceConnection connection, @NonNull IInterface service) {
-                        try {
-                            ISupervisionListener binder = (ISupervisionListener) service;
-                            Binder.withCleanCallingIdentity(() -> action.accept(binder));
-                        } finally {
-                            connection.removeConnectionStatusListener(this);
-                        }
-                    }
-
-                    @Override
-                    public void onDisconnected(@NonNull AppServiceConnection connection) {
-                        connection.removeConnectionStatusListener(this);
-                    }
-
-                    @Override
-                    public void onBinderDied(@NonNull AppServiceConnection connection) {
-                        connection.removeConnectionStatusListener(this);
-                    }
-                };
-        conn.addConnectionStatusListener(connectionListener);
+        mInjector.removeRoleHoldersAsUser(roleName, supervisionPackage, UserHandle.of(userId));
     }
 
     /**
@@ -618,13 +587,13 @@ public class SupervisionService extends ISupervisionManager.Stub {
     static class Injector {
         public Context context;
 
-        private DevicePolicyManagerInternal mDpmInternal;
         private AppBindingService mAppBindingService;
+        private DevicePolicyManagerInternal mDpmInternal;
         private KeyguardManager mKeyguardManager;
         private PackageManager mPackageManager;
         private PackageManagerInternal mPackageManagerInternal;
-        private UserManagerInternal mUserManagerInternal;
         private RoleManager mRoleManager;
+        private UserManagerInternal mUserManagerInternal;
 
         Injector(Context context) {
             this.context = context;
@@ -685,6 +654,22 @@ public class SupervisionService extends ISupervisionManager.Stub {
         @NonNull
         List<String> getRoleHoldersAsUser(String roleName, UserHandle user) {
             return mRoleManager.getRoleHoldersAsUser(roleName, user);
+        }
+
+        void removeRoleHoldersAsUser(String roleName, String packageName, UserHandle user) {
+            mRoleManager.removeRoleHolderAsUser(
+                    roleName,
+                    packageName,
+                    0,
+                    user,
+                    context.getMainExecutor(),
+                    success -> {
+                        if (!success) {
+                            Slogf.e(SupervisionLog.TAG, "Failed to remove role %s fro %s",
+                                    packageName, roleName);
+                        }
+                    });
+
         }
     }
 
