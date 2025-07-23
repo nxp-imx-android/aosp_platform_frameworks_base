@@ -4475,7 +4475,7 @@ public abstract class PackageManager {
      * device. The device likely requires a companion phone to access features of apps. User input
      * can be a variety of touchpad on the glasses, audio and the companion phone.
      */
-    @FlaggedApi(com.android.microxr.flags.Flags.FLAG_XR_GLASSES_FEATURE)
+    @FlaggedApi(com.android.microxr.Flags.FLAG_XR_GLASSES_FEATURE)
     @SdkConstant(SdkConstantType.FEATURE)
     public static final String FEATURE_GLASSES = "android.hardware.type.glasses";
 
