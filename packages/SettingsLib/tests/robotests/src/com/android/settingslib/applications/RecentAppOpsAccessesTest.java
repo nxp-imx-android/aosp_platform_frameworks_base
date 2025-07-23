@@ -141,8 +141,7 @@ public class RecentAppOpsAccessesTest {
     @Test
     public void testGetAppList_quietModeDisabled_shouldFilterRecentAccesses() {
         mSetFlagsRule.enableFlags(
-                android.multiuser.Flags.FLAG_SUPPORT_AUTOLOCK_FOR_PRIVATE_SPACE,
-                android.multiuser.Flags.FLAG_HANDLE_INTERLEAVED_SETTINGS_FOR_PRIVATE_SPACE);
+                android.multiuser.Flags.FLAG_SUPPORT_AUTOLOCK_FOR_PRIVATE_SPACE);
         when(mUserManager.isQuietModeEnabled(any())).thenReturn(false);
 
         List<RecentAppOpsAccess.Access> requests = mRecentAppOpsAccess.getAppList(false);
@@ -158,8 +157,7 @@ public class RecentAppOpsAccessesTest {
     @Test
     public void testGetAppList_quietModeEnabledShowInQuietDefault_shouldFilterRecentAccesses() {
         mSetFlagsRule.enableFlags(
-                android.multiuser.Flags.FLAG_SUPPORT_AUTOLOCK_FOR_PRIVATE_SPACE,
-                android.multiuser.Flags.FLAG_HANDLE_INTERLEAVED_SETTINGS_FOR_PRIVATE_SPACE);
+                android.multiuser.Flags.FLAG_SUPPORT_AUTOLOCK_FOR_PRIVATE_SPACE);
         when(mUserManager.isQuietModeEnabled(any())).thenReturn(true);
         when(mUserManager.getUserProperties(any())).thenReturn(mUserProperties);
         when(mUserProperties.getShowInQuietMode())
@@ -178,8 +176,7 @@ public class RecentAppOpsAccessesTest {
     @Test
     public void testGetAppList_quietModeEnabledShowInQuietHidden_shouldNotFilterRecentAccesses() {
         mSetFlagsRule.enableFlags(
-                android.multiuser.Flags.FLAG_SUPPORT_AUTOLOCK_FOR_PRIVATE_SPACE,
-                android.multiuser.Flags.FLAG_HANDLE_INTERLEAVED_SETTINGS_FOR_PRIVATE_SPACE);
+                android.multiuser.Flags.FLAG_SUPPORT_AUTOLOCK_FOR_PRIVATE_SPACE);
         when(mUserManager.isQuietModeEnabled(any())).thenReturn(true);
         when(mUserManager.getUserProperties(any())).thenReturn(mUserProperties);
         when(mUserProperties.getShowInQuietMode())
