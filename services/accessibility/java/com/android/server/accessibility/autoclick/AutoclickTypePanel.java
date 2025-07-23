@@ -135,7 +135,7 @@ public class AutoclickTypePanel {
         void onHoverChange(boolean hovered);
     }
 
-    private final Context mContext;
+    private Context mContext;
 
     private AutoclickTypeLinearLayout mContentView;
 
@@ -455,6 +455,9 @@ public class AutoclickTypePanel {
             if (mIsPanelShown) {
                 mWindowManager.removeView(mContentView);
             }
+
+            // Update mContext with the new configuration.
+            mContext = mContext.createConfigurationContext(newConfig);
 
             // Always re-inflate the views and resources to adopt the new configuration.
             // This is important even if the panel is hidden.
