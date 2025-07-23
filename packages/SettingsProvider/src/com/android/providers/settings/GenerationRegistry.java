@@ -71,8 +71,8 @@ final class GenerationRegistry {
     private static final String DEFAULT_MAP_KEY_FOR_UNSET_SETTINGS = "";
 
     @VisibleForTesting(visibility = VisibleForTesting.Visibility.PRIVATE)
-    // Minimum number of backing stores; supports 3 users
-    static final int MIN_NUM_BACKING_STORE = 8;
+    // Minimum number of backing stores; supports 7 users
+    static final int MIN_NUM_BACKING_STORE = 16;
     // Maximum number of backing stores; supports 18 users
     static final int MAX_NUM_BACKING_STORE = 38;
 
@@ -81,10 +81,10 @@ final class GenerationRegistry {
     GenerationRegistry(int maxNumUsers) {
         // Add some buffer to maxNumUsers to accommodate corner cases when the actual number of
         // users in the system exceeds the limit
-        maxNumUsers = maxNumUsers + 2;
+        maxNumUsers = maxNumUsers + 6;
         // Number of backing stores needed for N users is (N + N + 1 + 1) = N * 2 + 2
         // N Secure backing stores and N System backing stores, 1 Config and 1 Global for all users
-        // However, we always make sure that at least 3 users and at most 18 users are supported.
+        // However, we always make sure that at least 7 users and at most 18 users are supported.
         mMaxNumBackingStore = Math.min(Math.max(maxNumUsers * 2 + 2, MIN_NUM_BACKING_STORE),
                 MAX_NUM_BACKING_STORE);
     }

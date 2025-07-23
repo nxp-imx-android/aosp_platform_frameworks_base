@@ -1354,7 +1354,7 @@ class UserController implements Handler.Callback {
      * @param userId User Id to stop and lock the data.
      * @param allowDelayedLocking When set, do not lock user after stopping. Locking can happen
      *                            later when number of unlocked users reaches
-     *                            {@code mMaxRunnngUsers}. Note that this is respected only when
+     *                            {@code mMaxRunningUsers}. Note that this is respected only when
      *                            delayed locking is enabled for this user and {@keyEvictedCallback}
      *                            is null. Otherwise the user nonetheless will be locked.
      * @param stopUserCallback Callback to notify that user has stopped.

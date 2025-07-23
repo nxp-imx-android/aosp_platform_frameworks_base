@@ -2501,7 +2501,10 @@ public class UserManager {
     public static final int USER_OPERATION_ERROR_LOW_STORAGE = 5;
 
     /**
-     * Indicates user operation failed because maximum user limit has been reached.
+     * Indicates user operation failed because a relevant maximum user limit has been reached.
+     *
+     * <p>This could include the situation in which limit is 0, such as if a particular type of user
+     * is not enabled or is ineligible to be added to the requested parent.
      */
     public static final int USER_OPERATION_ERROR_MAX_USERS = 6;
 
@@ -2703,14 +2706,14 @@ public class UserManager {
     }
 
     /**
-     * Returns whether this device supports multiple users with their own login and customizable
-     * space.
+     * Returns whether this device supports multiple switchable users with their own login and
+     * customizable space.
      * <p>Note that, even if false, multiple users might still be possible, as long as no login UI
      * is required; e.g., profiles might still be supported, as they do not require a login UI.
      * @return whether the device supports multiple switchable users.
      */
     public static boolean supportsMultipleUsers() {
-        return getMaxSupportedUsers() > 1
+        return getMaxSwitchableUsers() > 1
                 && SystemProperties.getBoolean("fw.show_multiuserui",
                 Resources.getSystem().getBoolean(R.bool.config_enableMultiUserUI));
     }
@@ -5409,10 +5412,10 @@ public class UserManager {
      * Returns how many users of the given type are currently allowed on the device, including ones
      * that already exist.
      *
-     * Takes into account the maximum number of users allowed on the device (of that type, and in
-     * general), as well as how many users of other types are already on the device (which thereby
-     * already count towards the device maximum). Does not take into account UserRestrictions.
-     * It is consistent with {@link #getRemainingCreatableUserCount(String)}.
+     * Takes into account whether the user type is supported and maximum user limits, but does not
+     * take into account UserRestrictions.
+     * It is consistent with {@link #getRemainingCreatableUserCount(String)}, with the following
+     * caveat:
      *
      * The value will be no less than the number of users of that type that currently exist (even if
      * that value exceeds the maximum allowed, for whatever reason).
@@ -5429,9 +5432,6 @@ public class UserManager {
             throw new UnsupportedOperationException("This method requires flag consistentMaxUsers");
         }
         try {
-            // Note: If we get rid of the overall device max, this should be the same as
-            // UMS.getMaxSupportedUsersOfType(). But even then it can still technically differ if
-            // the max gets exceeded for any reason.
             return mService.getCurrentAllowedNumberOfUsers(userType);
         } catch (RemoteException re) {
             throw re.rethrowFromSystemServer();
@@ -6546,22 +6546,37 @@ public class UserManager {
     }
 
     /**
-     * Returns the maximum number of users (of any type) that can be created on this device.
-     * A return value of 1 means that it is a single-user device.
+     * @deprecated There is no longer a device-wide maximum number of users that includes all user
+     *             types. This will instead return {@link #getMaxSwitchableUsers()}, which is a
+     *             special combined limit set for switchable users.
+     * @hide
+     */
+    // TODO(b/394178333): Switch all callers to getMaxSwitchableUsers().
+    @Deprecated
+    @UnsupportedAppUsage
+    public static int getMaxSupportedUsers() {
+        return getMaxSwitchableUsers();
+    }
+
+    /**
+     * Returns the maximum number of (regular) switchable users that can be created on this device.
+     * This includes the System user (unless it is a <i>non-interactive</i> headless system user),
+     * Secondary users, and Restricted profiles, but excludes Guests and Demo users.
+     * It does not include {@link #isProfile() profiles}, since they cannot be switched to.
      *
-     * This value is based on the device's limitation of total number of users. This is typically
-     * limited by storage considerations, not UX considerations (which depends on user type).
-     * Note that this includes all types of users, including profile and guest users
-     * (if {@link android.multiuser.Flags#consistentMaxUsersIncludingGuests()} is true).
+     * This is typically the maximum possible number of users that can show up in a user switcher
+     * (other than Guest users, which typically already occupy a spot even if no Guest is currently
+     * on the device).
      *
-     * Under very rare circumstances, the number of users on the device can exceed this amount
-     * (such as if it were decreased during an OTA but more users had already been created).
+     * A return value of 1 means that additional switchable users cannot be created.
+     *
+     * Under very rare circumstances, the number of switchable users on the device can exceed this
+     * amount (such as if it were decreased during an OTA but more users had already been created).
      *
      * @return a value greater than or equal to 1
      * @hide
      */
-    @UnsupportedAppUsage
-    public static int getMaxSupportedUsers() {
+    public static int getMaxSwitchableUsers() {
         return Math.max(1, SystemProperties.getInt("fw.max_users",
                 Resources.getSystem().getInteger(R.integer.config_multiuserMaximumUsers)));
     }
@@ -6918,7 +6933,7 @@ public class UserManager {
                 aliveUserCount++;
             }
         }
-        return aliveUserCount < getMaxSupportedUsers();
+        return aliveUserCount < getMaxSwitchableUsers();
     }
 
     /** Legacy version of {@link #canAddMoreUsers(String)}. Do not use. */
