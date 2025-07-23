@@ -16,17 +16,12 @@
 
 package com.android.server.companion.datatransfer.continuity;
 
-import static com.android.server.companion.datatransfer.contextsync.BitmapUtils.renderDrawableToByteArray;
-
 import android.annotation.NonNull;
 import android.app.ActivityManager.RunningTaskInfo;
 import android.app.ActivityTaskManager;
 import android.app.TaskStackListener;
 import android.content.ComponentName;
 import android.content.Context;
-import android.content.pm.PackageInfo;
-import android.content.pm.PackageManager;
-import android.graphics.drawable.Drawable;
 import android.os.RemoteException;
 import android.util.Slog;
 
@@ -36,6 +31,8 @@ import com.android.server.companion.datatransfer.continuity.messages.RemoteTaskA
 import com.android.server.companion.datatransfer.continuity.messages.RemoteTaskRemovedMessage;
 import com.android.server.companion.datatransfer.continuity.messages.RemoteTaskUpdatedMessage;
 import com.android.server.companion.datatransfer.continuity.messages.RemoteTaskInfo;
+import com.android.server.companion.datatransfer.continuity.tasks.PackageMetadata;
+import com.android.server.companion.datatransfer.continuity.tasks.PackageMetadataCache;
 
 import java.io.IOException;
 import java.util.List;
@@ -54,7 +51,7 @@ class TaskBroadcaster extends TaskStackListener {
     private final Context mContext;
     private final ActivityTaskManager mActivityTaskManager;
     private final TaskContinuityMessenger mTaskContinuityMessenger;
-    private final PackageManager mPackageManager;
+    private final PackageMetadataCache mPackageMetadataCache;
 
     private boolean mIsListeningToActivityTaskManager = false;
 
@@ -67,7 +64,7 @@ class TaskBroadcaster extends TaskStackListener {
 
         mContext = context;
         mActivityTaskManager = context.getSystemService(ActivityTaskManager.class);
-        mPackageManager = context.getPackageManager();
+        mPackageMetadataCache = new PackageMetadataCache(context.getPackageManager());
         mTaskContinuityMessenger = taskContinuityMessenger;
     }
 
@@ -166,26 +163,17 @@ class TaskBroadcaster extends TaskStackListener {
     }
 
     private RemoteTaskInfo createRemoteTaskInfo(RunningTaskInfo taskInfo) {
-        PackageInfo packageInfo;
-        try {
-            packageInfo = mPackageManager.getPackageInfo(
-                taskInfo.baseActivity.getPackageName(),
-                PackageManager.GET_META_DATA);
-        } catch (PackageManager.NameNotFoundException e) {
-            Slog.e(TAG, "Failed to get package info for task: " + taskInfo.taskId, e);
+        PackageMetadata packageMetadata = mPackageMetadataCache.getMetadataForPackage(
+            taskInfo.baseActivity.getPackageName());
+        if (packageMetadata == null) {
+            Slog.w(TAG, "Could not get package metadata for task: " + taskInfo.taskId);
             return null;
         }
 
-        String baseApplicationLabel = mPackageManager.getApplicationLabel(
-            packageInfo.applicationInfo).toString();
-
-        Drawable baseApplicationIcon = mPackageManager.getApplicationIcon(
-            packageInfo.applicationInfo);
-
         return new RemoteTaskInfo(
             taskInfo.taskId,
-            baseApplicationLabel,
+            packageMetadata.label(),
             taskInfo.lastActiveTime,
-            renderDrawableToByteArray(baseApplicationIcon));
+            packageMetadata.icon());
     }
 }
