@@ -161,8 +161,15 @@ final class ConnectionRecord implements OomAdjusterImpl.Connection{
     }
 
     @Override
-    public boolean transmitsCpuTime() {
-        return !hasFlag(Context.BIND_ALLOW_FREEZE) || mOngoingCalls;
+    public int cpuTimeTransmissionType() {
+        if (mOngoingCalls) {
+            return CPU_TIME_TRANSMISSION_NORMAL;
+        }
+        if (hasFlag(Context.BIND_ALLOW_FREEZE)) {
+            return CPU_TIME_TRANSMISSION_NONE;
+        }
+        return hasFlag(Context.BIND_SIMULATE_ALLOW_FREEZE) ? CPU_TIME_TRANSMISSION_LEGACY
+                : CPU_TIME_TRANSMISSION_NORMAL;
     }
 
     public long getFlags() {
