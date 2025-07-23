@@ -441,11 +441,7 @@ public class DozeSensors {
         }
 
         if (!anyListening) {
-            if (Flags.registerContentObserversAsync()) {
-                mSecureSettings.unregisterContentObserverAsync(mSettingsObserver);
-            } else {
-                mSecureSettings.unregisterContentObserverSync(mSettingsObserver);
-            }
+            mSecureSettings.unregisterContentObserverAsync(mSettingsObserver);
         } else if (!mSettingRegistered) {
             for (TriggerSensor s : mTriggerSensors) {
                 s.registerSettingsObserver(mSettingsObserver);
@@ -769,13 +765,8 @@ public class DozeSensors {
 
         public void registerSettingsObserver(ContentObserver settingsObserver) {
             if (mConfigured && !TextUtils.isEmpty(mSetting)) {
-                if (Flags.registerContentObserversAsync()) {
-                    mSecureSettings.registerContentObserverForUserAsync(
-                            mSetting, mSettingsObserver, UserHandle.USER_ALL);
-                } else {
-                    mSecureSettings.registerContentObserverForUserSync(
-                            mSetting, mSettingsObserver, UserHandle.USER_ALL);
-                }
+                mSecureSettings.registerContentObserverForUserAsync(
+                        mSetting, mSettingsObserver, UserHandle.USER_ALL);
             }
         }
 

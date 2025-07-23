@@ -518,25 +518,15 @@ public class DozeParameters implements
         }
 
         void observe() {
-            if (Flags.registerContentObserversAsync()) {
-                mSecureSettings.registerContentObserverForUserAsync(mQuickPickupGesture,
-                        this, UserHandle.USER_ALL);
-                mSecureSettings.registerContentObserverForUserAsync(mPickupGesture,
-                        this, UserHandle.USER_ALL);
-                mSecureSettings.registerContentObserverForUserAsync(mAlwaysOnEnabled,
-                        this, UserHandle.USER_ALL,
-                        // The register calls are called in order, so this ensures that update()
-                        // is called after them all and value retrieval isn't racy.
-                        () -> mHandler.post(() -> update(null)));
-            } else {
-                ContentResolver resolver = mContext.getContentResolver();
-                resolver.registerContentObserver(mQuickPickupGesture, false, this,
-                        UserHandle.USER_ALL);
-                resolver.registerContentObserver(mPickupGesture, false, this, UserHandle.USER_ALL);
-                resolver.registerContentObserver(mAlwaysOnEnabled, false, this,
-                        UserHandle.USER_ALL);
-                update(null);
-            }
+            mSecureSettings.registerContentObserverForUserAsync(mQuickPickupGesture,
+                    this, UserHandle.USER_ALL);
+            mSecureSettings.registerContentObserverForUserAsync(mPickupGesture,
+                    this, UserHandle.USER_ALL);
+            mSecureSettings.registerContentObserverForUserAsync(mAlwaysOnEnabled,
+                    this, UserHandle.USER_ALL,
+                    // The register calls are called in order, so this ensures that update()
+                    // is called after them all and value retrieval isn't racy.
+                    () -> mHandler.post(() -> update(null)));
         }
 
         @Override
