@@ -248,13 +248,6 @@ flag {
 }
 
 flag {
-    name: "enable_launcher_apps_hidden_profile_checks"
-    namespace: "profile_experiences"
-    description: "Enable extra check to limit access to hidden profiles data in Launcher apps APIs."
-    bug: "321988638"
-}
-
-flag {
     name: "reorder_wallpaper_during_user_switch"
     namespace: "multiuser"
     description: "Reorder loading home and lock screen wallpapers during a user switch."

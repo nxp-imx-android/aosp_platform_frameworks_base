@@ -719,8 +719,7 @@ public class LauncherApps {
             anyOf = {ACCESS_HIDDEN_PROFILES_FULL, ACCESS_HIDDEN_PROFILES})
     public List<UserHandle> getProfiles() {
         if (mUserManager.isManagedProfile()
-                || (android.multiuser.Flags.enableLauncherAppsHiddenProfileChecks()
-                    && android.os.Flags.allowPrivateProfile()
+                || (android.os.Flags.allowPrivateProfile()
                     && android.multiuser.Flags.enablePrivateSpaceFeatures()
                     && mUserManager.isPrivateProfile())) {
             // If it's a managed or private profile, only return the current profile.
@@ -728,15 +727,11 @@ public class LauncherApps {
             result.add(android.os.Process.myUserHandle());
             return result;
         } else {
-            if (android.multiuser.Flags.enableLauncherAppsHiddenProfileChecks()) {
-                try {
-                    return mService.getUserProfiles();
-                } catch (RemoteException re) {
-                    throw re.rethrowFromSystemServer();
-                }
+            try {
+                return mService.getUserProfiles();
+            } catch (RemoteException re) {
+                throw re.rethrowFromSystemServer();
             }
-
-            return mUserManager.getUserProfiles();
         }
     }
 
