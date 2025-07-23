@@ -18,17 +18,16 @@ package com.android.wm.shell.compatui.letterbox.lifecycle
 
 import android.testing.AndroidTestingRunner
 import android.view.WindowManager
-import android.window.TransitionInfo.FLAG_TRANSLUCENT
 import androidx.test.filters.SmallTest
 import com.android.wm.shell.ShellTestCase
 import com.android.wm.shell.compatui.letterbox.lifecycle.LetterboxLifecycleEventType.CLOSE
 import com.android.wm.shell.compatui.letterbox.lifecycle.LetterboxLifecycleEventType.OPEN
 import com.android.wm.shell.util.testLetterboxLifecycleEvent
+import org.junit.Test
+import org.junit.runner.RunWith
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
-import org.junit.Test
-import org.junit.runner.RunWith
 
 /**
  * Tests for [LetterboxLifecycleEvent].
@@ -156,15 +155,21 @@ class LetterboxLifecycleEventTest : ShellTestCase() {
     }
 
     @Test
-    fun `isTranslucent returns true if the FLAG_TRANSLUCENT flag is present in Change`() {
+    fun `isTranslucent returns the value from TaskInfo `() {
         testLetterboxLifecycleEvent {
-            inputChange { }
+            inputChange {
+                runningTaskInfo { ti ->
+                    ti.isTopActivityTransparent = false
+                }
+            }
             useChange { change ->
                 assertFalse(change.isTranslucent())
             }
 
             inputChange {
-                flags = FLAG_TRANSLUCENT
+                runningTaskInfo { ti ->
+                    ti.isTopActivityTransparent = true
+                }
             }
             useChange { change ->
                 assertTrue(change.isTranslucent())

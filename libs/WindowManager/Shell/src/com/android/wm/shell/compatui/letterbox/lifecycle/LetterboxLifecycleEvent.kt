@@ -20,7 +20,6 @@ import android.app.TaskInfo
 import android.graphics.Rect
 import android.view.SurfaceControl
 import android.window.TransitionInfo.Change
-import android.window.TransitionInfo.FLAG_TRANSLUCENT
 import android.window.WindowContainerToken
 import com.android.wm.shell.compatui.letterbox.LetterboxKey
 import com.android.wm.shell.compatui.letterbox.lifecycle.LetterboxLifecycleEventType.CLOSE
@@ -73,7 +72,7 @@ fun Change.shouldSkipForLetterbox(): Boolean = isClosingType(mode)
 fun Change.isActivityChange(): Boolean = activityTransitionInfo != null
 
 /** Returns [true] if the [Change] is related to a translucent container. */
-fun Change.isTranslucent() = hasFlags(FLAG_TRANSLUCENT)
+fun Change.isTranslucent() = taskInfo?.isTopActivityTransparent ?: false
 
 /** Returns [true] if the related [Task] is a leaf task. */
 val TaskInfo.isALeafTask: Boolean
