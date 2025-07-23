@@ -47,6 +47,7 @@ import android.annotation.Nullable;
 import android.annotation.RequiresPermission;
 import android.app.ActivityManager;
 import android.app.AppOpsManager;
+import android.app.compat.CompatChanges;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
@@ -2773,7 +2774,8 @@ class MediaRouter2ServiceImpl {
                 boolean hasAllInSet = true;
                 for (String permission : permissionSet) {
                     if (mContext.checkPermission(permission, mPid, mUid)
-                            != PackageManager.PERMISSION_GRANTED) {
+                            != PackageManager.PERMISSION_GRANTED
+                            && !permissionAllowedForAppCompat(permission)) {
                         hasAllInSet = false;
                         break;
                     }
@@ -2799,6 +2801,32 @@ class MediaRouter2ServiceImpl {
             return TextUtils.formatSimple(
                     "Router %s (id=%d,pid=%d,userId=%d,uid=%d)",
                     mPackageName, mRouterId, mPid, mUserRecord.mUserId, mUid);
+        }
+
+        /**
+         * Returns whether the given permission should be considered to be satisfied because of the
+         * app compatibility setting for local networking restrictions.
+         *
+         * TODO(b/386260596): This is a temporary workaround, which we hope to remove in the next
+         * release.
+         */
+        private boolean permissionAllowedForAppCompat(String permission) {
+            if (!Flags.enableRouteVisibilityControlCompatFixes()) {
+                return false;
+            }
+            // TODO(b/386260596) - replace this string with a Manifest.permission constant once
+            // one is available.
+            if (TextUtils.equals(permission, "android.permission.ACCESS_LOCAL_NETWORK")) {
+                // TODO(b/386260596) - this id is defined as RESTRICT_LOCAL_NETWORK in the
+                //  connectivity module's ConnectivityCompatChanges.java - see if we can move it to
+                //  a shared location so we can avoid duplicating it here.
+                if (!CompatChanges.isChangeEnabled(365139289L, mUid)) {
+                    return true;
+                }
+                return mContext.checkPermission(Manifest.permission.NEARBY_WIFI_DEVICES, mPid, mUid)
+                        == PackageManager.PERMISSION_GRANTED;
+            }
+            return false;
         }
     }
 
