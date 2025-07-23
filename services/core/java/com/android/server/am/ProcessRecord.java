@@ -187,12 +187,6 @@ class ProcessRecord extends ProcessRecordInternal implements WindowProcessListen
     private boolean mPendingStart;
 
     /**
-     * Process finish attach application is pending.
-     */
-    @GuardedBy("mService")
-    private boolean mPendingFinishAttach;
-
-    /**
      * Seq no. Indicating the latest process start associated with this process record.
      */
     @GuardedBy("mService")
@@ -812,18 +806,8 @@ class ProcessRecord extends ProcessRecordInternal implements WindowProcessListen
     }
 
     @GuardedBy("mService")
-    void setPendingFinishAttach(boolean pendingFinishAttach) {
-        mPendingFinishAttach = pendingFinishAttach;
-    }
-
-    @GuardedBy("mService")
-    boolean isPendingFinishAttach() {
-        return mPendingFinishAttach;
-    }
-
-    @GuardedBy("mService")
     boolean isThreadReady() {
-        return mThread != null && !mPendingFinishAttach;
+        return mThread != null && !isPendingFinishAttach();
     }
 
     @GuardedBy("mService")
