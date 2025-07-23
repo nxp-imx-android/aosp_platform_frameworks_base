@@ -822,9 +822,11 @@ public class NotificationAssistantsTest extends UiServiceTestCase {
 
         ArrayList<String> expected = new ArrayList<>(List.of(DEFAULT_ALLOWED_ADJUSTMENTS));
 
+        /* TODO: b/433554352 - restore when summarization is disabled by default again
         if (android.app.Flags.nmSummarizationOnboardingUi()) {
             expected.remove(KEY_SUMMARIZATION);
         }
+         */
 
         assertThat(mAssistants.getAllowedAssistantAdjustments(mZero.id))
                 .containsExactlyElementsIn(expected);
