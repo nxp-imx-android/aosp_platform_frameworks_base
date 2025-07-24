@@ -55,3 +55,13 @@ flag {
     purpose: PURPOSE_BUGFIX
   }
 }
+
+flag {
+  name: "fix_wallpaper_crops_on_restore"
+  namespace: "systemui"
+  description: "Preserve center for wallpaper crops on restore"
+  bug: "332937943"
+  metadata {
+    purpose: PURPOSE_BUGFIX
+  }
+}
