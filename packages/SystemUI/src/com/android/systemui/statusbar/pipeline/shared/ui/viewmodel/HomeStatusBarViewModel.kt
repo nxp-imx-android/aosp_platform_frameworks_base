@@ -25,6 +25,7 @@ import androidx.compose.runtime.getValue
 import com.android.app.tracing.FlowTracing.traceEach
 import com.android.app.tracing.TrackGroupUtils.trackGroup
 import com.android.systemui.dagger.qualifiers.Background
+import com.android.systemui.desktop.domain.interactor.DesktopInteractor
 import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent.DisplayAware
 import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent.DisplayId
 import com.android.systemui.keyguard.domain.interactor.KeyguardInteractor
@@ -222,6 +223,9 @@ interface HomeStatusBarViewModel : Activatable {
     /** [IsAreaDark] applicable for this status bar's display and content area */
     val areaDark: IsAreaDark
 
+    /** True if the desktop status bar is enabled. */
+    val isDesktopStatusBarEnabled: Boolean
+
     /** Interface for the assisted factory, to allow for providing a fake in tests */
     interface HomeStatusBarViewModelFactory {
         fun create(): HomeStatusBarViewModel
@@ -242,6 +246,7 @@ constructor(
     homeStatusBarIconBlockListInteractor: HomeStatusBarIconBlockListInteractor,
     lightsOutInteractor: LightsOutInteractor,
     notificationsInteractor: ActiveNotificationsInteractor,
+    desktopInteractor: DesktopInteractor,
     darkIconInteractor: DarkIconInteractor,
     headsUpNotificationInteractor: HeadsUpNotificationInteractor,
     keyguardTransitionInteractor: KeyguardTransitionInteractor,
@@ -425,6 +430,13 @@ constructor(
                 isInitial = false,
             )
         }
+
+    override val isDesktopStatusBarEnabled: Boolean by
+        hydrator.hydratedStateOf(
+            traceName = "isDesktopStatusBarEnabled",
+            initialValue = false,
+            source = desktopInteractor.isDesktopFeatureSetEnabled,
+        )
 
     /**
      * True if the current SysUI state can show the home status bar (aka this status bar), and false
