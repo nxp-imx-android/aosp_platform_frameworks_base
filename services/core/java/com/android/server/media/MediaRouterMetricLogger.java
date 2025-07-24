@@ -30,11 +30,12 @@ import static com.android.server.media.MediaRouterStatsLog.MEDIA_ROUTER_EVENT_RE
 import android.annotation.NonNull;
 import android.media.MediaRoute2ProviderService;
 import android.util.Log;
+import android.util.LruCache;
 import android.util.Slog;
+
 import com.android.internal.annotations.VisibleForTesting;
+
 import java.io.PrintWriter;
-import java.util.LinkedHashMap;
-import java.util.Map;
 
 /**
  * Logs metrics for MediaRouter2.
@@ -47,11 +48,23 @@ final class MediaRouterMetricLogger {
     private static final int REQUEST_INFO_CACHE_CAPACITY = 100;
 
     /** LRU cache to store request info. */
-    private final RequestInfoCache mRequestInfoCache;
+    private final LruCache<Long, RequestInfo> mRequestInfoCache;
 
     /** Constructor for {@link MediaRouterMetricLogger}. */
     public MediaRouterMetricLogger() {
-        mRequestInfoCache = new RequestInfoCache(REQUEST_INFO_CACHE_CAPACITY);
+        mRequestInfoCache =
+                new LruCache<>(REQUEST_INFO_CACHE_CAPACITY) {
+                    @Override
+                    protected void entryRemoved(
+                            boolean evicted, Long key, RequestInfo oldValue, RequestInfo newValue) {
+                        if (evicted) {
+                            Slog.d(TAG, "Evicted request info: " + oldValue.mUniqueRequestId);
+                            logOperationTriggered(
+                                    oldValue.mEventType,
+                                    MEDIA_ROUTER_EVENT_REPORTED__RESULT__RESULT_UNSPECIFIED);
+                        }
+                    }
+                };
     }
 
     /**
@@ -179,40 +192,17 @@ final class MediaRouterMetricLogger {
         return mRequestInfoCache.size();
     }
 
+    @VisibleForTesting
+    public int getRequestInfoCacheCapacity() {
+        return REQUEST_INFO_CACHE_CAPACITY;
+    }
+
     private void logMediaRouterEvent(int eventType, int result) {
         MediaRouterStatsLog.write(
                 MediaRouterStatsLog.MEDIA_ROUTER_EVENT_REPORTED, eventType, result);
 
         if (DEBUG) {
             Slog.d(TAG, "logMediaRouterEvent: " + eventType + " " + result);
-        }
-    }
-
-    /** A cache for storing request info that evicts entries when it reaches its capacity. */
-    class RequestInfoCache extends LinkedHashMap<Long, RequestInfo> {
-
-        public final int capacity;
-
-        /**
-         * Constructor for {@link RequestInfoCache}.
-         *
-         * @param capacity The maximum capacity of the cache.
-         */
-        public RequestInfoCache(int capacity) {
-            super(capacity, 1.0f, true);
-            this.capacity = capacity;
-        }
-
-        @Override
-        protected boolean removeEldestEntry(Map.Entry<Long, RequestInfo> eldest) {
-            boolean shouldRemove = size() > capacity;
-            if (shouldRemove) {
-                Slog.d(TAG, "Evicted request info: " + eldest.getValue());
-                logOperationTriggered(
-                        eldest.getValue().mEventType,
-                        MEDIA_ROUTER_EVENT_REPORTED__RESULT__RESULT_UNSPECIFIED);
-            }
-            return shouldRemove;
         }
     }
 
