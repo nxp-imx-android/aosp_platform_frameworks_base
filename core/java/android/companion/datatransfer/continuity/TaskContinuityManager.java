@@ -103,6 +103,12 @@ public class TaskContinuityManager {
      */
     public static final int HANDOFF_REQUEST_RESULT_FAILURE_DEVICE_NOT_FOUND = 5;
 
+    /**
+     * Indicates a request for handoff failed because of an internal error outside of Handoff's data
+     * transfer flow.
+     */
+    public static final int HANDOFF_REQUEST_RESULT_FAILURE_OTHER_INTERNAL_ERROR = 6;
+
     /** @hide */
     public TaskContinuityManager(
         @NonNull Context context,
@@ -141,20 +147,6 @@ public class TaskContinuityManager {
             int associationId,
             int remoteTaskId,
             @HandoffRequestResultCode int resultCode);
-    }
-
-    /**
-     * Returns a list of tasks currently running on the remote devices owned by the user.
-     */
-    @NonNull
-    public List<RemoteTask> getRemoteTasks() {
-        // TODO: joeantonetti - Optimize this call by caching the most recent state pushed to
-        // mListenerHolder.
-        try {
-            return mService.getRemoteTasks();
-        } catch (RemoteException e) {
-            throw e.rethrowFromSystemServer();
-        }
     }
 
     /**
@@ -258,6 +250,9 @@ public class TaskContinuityManager {
         @GuardedBy("mListeners")
         private boolean mRegistered = false;
 
+        @GuardedBy("mListeners")
+        private final List<RemoteTask> mLastReceivedRemoteTasks = new ArrayList<>();
+
         public RemoteTaskListenerHolder(ITaskContinuityManager service) {}
 
         /**
@@ -277,6 +272,10 @@ public class TaskContinuityManager {
                 if (!mRegistered) {
                     mService.registerRemoteTaskListener(this);
                     mRegistered = true;
+                } else {
+                    executor.execute(() ->
+                        listener.onRemoteTasksChanged(mLastReceivedRemoteTasks)
+                    );
                 }
 
                 mListeners.put(listener, executor);
@@ -305,6 +304,9 @@ public class TaskContinuityManager {
         @Override
         public void onRemoteTasksChanged(List<RemoteTask> remoteTasks) throws RemoteException {
             synchronized(mListeners) {
+                mLastReceivedRemoteTasks.clear();
+                mLastReceivedRemoteTasks.addAll(remoteTasks);
+
                 for (Map.Entry<RemoteTaskListener, Executor> entry : mListeners.entrySet()) {
                     RemoteTaskListener listener = entry.getKey();
                     Executor executor = entry.getValue();
