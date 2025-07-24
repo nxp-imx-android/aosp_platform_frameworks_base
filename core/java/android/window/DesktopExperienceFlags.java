@@ -189,6 +189,8 @@ public enum DesktopExperienceFlags {
             Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND),
     ENABLE_MULTIPLE_DESKTOPS_FRONTEND(Flags::enableMultipleDesktopsFrontend, true,
             Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_FRONTEND),
+    ENABLE_MULTI_DISPLAY_HOME_FOCUS_BUG_FIX(Flags::enableMultiDisplayHomeFocusBugFix,
+            true, Flags.FLAG_ENABLE_MULTI_DISPLAY_HOME_FOCUS_BUG_FIX),
     ENABLE_NESTED_TASKS_WITH_INDEPENDENT_BOUNDS_BUGFIX(
             Flags::nestedTasksWithIndependentBoundsBugfix, true,
             Flags.FLAG_NESTED_TASKS_WITH_INDEPENDENT_BOUNDS_BUGFIX),

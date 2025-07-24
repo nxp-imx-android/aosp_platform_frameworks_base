@@ -996,6 +996,16 @@ flag {
 }
 
 flag {
+    name: "enable_multi_display_home_focus_bug_fix"
+    namespace: "lse_desktop_experience"
+    description: "Fix home focus behavior in multi display environment"
+    bug: "371096166"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "enable_multi_display_split"
     namespace: "lse_desktop_experience"
     description: "Enables split screen on multiple displays at the same time"
