@@ -17,6 +17,10 @@
 package com.android.compose.gesture
 
 import androidx.compose.foundation.gestures.Orientation
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.pointer.PointerType
@@ -106,11 +110,34 @@ private class OverscrollToDismissNode(
     private val gestureContext =
         DistanceGestureContext(0f, InputDirection.Max, directionChangeSlop = 1f)
 
+    private var dragState: DragState by mutableStateOf(DragState.Idle)
+
+    enum class DragState {
+        Idle,
+        Dragging,
+        Dismissed,
+    }
+
+    private val spec = derivedStateOf {
+        with(motionBuilderContext) {
+            when (dragState) {
+                DragState.Idle -> fixedSpatialValueSpec(0f, SnapBackSpring)
+                DragState.Dragging -> spatialMotionSpec { after(0f, MagneticDetach()) }
+                DragState.Dismissed ->
+                    fixedSpatialValueSpec(
+                        contentBoxWidth.toFloat(),
+                        SnapBackSpring,
+                        listOf(isDismissedState with true),
+                    )
+            }
+        }
+    }
+
     private val motionValue =
         MotionValue(
-            gestureContext::dragOffset,
-            gestureContext,
-            motionBuilderContext.fixedSpatialValueSpec(0f),
+            input = { gestureContext.dragOffset },
+            gestureContext = gestureContext,
+            spec = spec::value,
         )
 
     private var delegateNode =
@@ -161,7 +188,7 @@ private class OverscrollToDismissNode(
     ): NestedDraggable.Controller {
         overscrollSign = sign
         gestureContext.reset(dragOffset = motionValue.output, direction = InputDirection.Max)
-        motionValue.spec = motionBuilderContext.spatialMotionSpec { after(0f, MagneticDetach()) }
+        dragState = DragState.Dragging
 
         return this
     }
@@ -187,16 +214,7 @@ private class OverscrollToDismissNode(
                 currentState == MagneticDetach.State.Attached ||
                     (currentState == MagneticDetach.State.Detached && isFlingInOppositeDirection)
 
-            motionValue.spec =
-                if (settleAttached) {
-                    motionBuilderContext.fixedSpatialValueSpec(0f, SnapBackSpring)
-                } else {
-                    motionBuilderContext.fixedSpatialValueSpec(
-                        contentBoxWidth.toFloat(),
-                        SnapBackSpring,
-                        listOf(isDismissedState with true),
-                    )
-                }
+            dragState = if (settleAttached) DragState.Idle else DragState.Dismissed
         }
         return velocity
     }

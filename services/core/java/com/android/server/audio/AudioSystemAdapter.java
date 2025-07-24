@@ -663,10 +663,6 @@ public class AudioSystemAdapter implements AudioSystem.RoutingUpdateCallback,
      * @return a list of AudioMixes that are registered in the audio policy manager.
      */
     public List<AudioMix> getRegisteredPolicyMixes() {
-        if (!Flags.audioMixTestApi()) {
-            return Collections.emptyList();
-        }
-
         List<AudioMix> audioMixes = new ArrayList<>();
         int result = AudioSystem.getRegisteredPolicyMixes(audioMixes);
         if (result != AudioSystem.SUCCESS) {

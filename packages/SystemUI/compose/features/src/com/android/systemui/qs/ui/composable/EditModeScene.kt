@@ -17,27 +17,27 @@
 package com.android.systemui.qs.ui.composable
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.colorResource
+import com.android.compose.animation.scene.ContentScope
 import com.android.compose.animation.scene.UserAction
 import com.android.compose.animation.scene.UserActionResult
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.lifecycle.ExclusiveActivatable
+import com.android.systemui.lifecycle.rememberViewModel
+import com.android.systemui.qs.panels.ui.compose.EditMode
 import com.android.systemui.qs.ui.viewmodel.EditModeSceneActionsViewModel
 import com.android.systemui.qs.ui.viewmodel.EditModeSceneContentViewModel
+import com.android.systemui.res.R
 import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.scene.ui.composable.Scene
-import kotlinx.coroutines.flow.Flow
-import javax.inject.Inject
-import com.android.compose.animation.scene.ContentScope
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.testTag
-import com.android.systemui.lifecycle.rememberViewModel
 import com.android.systemui.shade.ui.composable.Shade
-import androidx.compose.ui.res.colorResource
-import com.android.systemui.qs.panels.ui.compose.EditMode
-import com.android.systemui.res.R
+import javax.inject.Inject
+import kotlinx.coroutines.flow.Flow
 
 @SysUISingleton
 class EditModeScene
@@ -58,16 +58,16 @@ constructor(
 
     override val userActions: Flow<Map<UserAction, UserActionResult>> = actionsViewModel.actions
 
+    override val alwaysCompose: Boolean = false
+
     @Composable
     override fun ContentScope.Content(modifier: Modifier) {
-        val viewModel = rememberViewModel("edit_mode_scene_view_model") {
-            contentViewModelFactory.create()
-        }
+        val viewModel =
+            rememberViewModel("edit_mode_scene_view_model") { contentViewModelFactory.create() }
 
         Box(
             modifier =
-                Modifier
-                    .fillMaxSize()
+                Modifier.fillMaxSize()
                     .element(Shade.Elements.BackgroundScrim)
                     .background(colorResource(R.color.shade_scrim_background_dark))
         )

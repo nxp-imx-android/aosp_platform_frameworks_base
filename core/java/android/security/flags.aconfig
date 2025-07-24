@@ -50,6 +50,16 @@ flag {
 }
 
 flag {
+    name: "scrypt_parameter_change"
+    namespace: "security"
+    description: "Use n=9 instead of n=11 for scrypt for lock screen knowledge factors"
+    bug: "416772194"
+    metadata {
+      purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "software_ratelimiter"
     namespace: "security"
     description: "Enable support for SoftwareRateLimiter in LockSettingsService"
@@ -150,4 +160,11 @@ flag {
     description: "If enabled, the XML application flag usesCleartextTraffic is ignored for targetSdk version C+."
     bug: "415007211"
     is_fixed_read_only: true
+}
+
+flag {
+    name: "enable_talisman_service"
+    namespace: "cross_device_authentication"
+    description: "Enable the Talisman service."
+    bug: "433283951"
 }

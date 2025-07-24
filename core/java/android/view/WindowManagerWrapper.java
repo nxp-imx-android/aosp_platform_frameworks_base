@@ -130,11 +130,6 @@ public class WindowManagerWrapper implements WindowManager {
     }
 
     @Override
-    public void setShouldShowSystemDecors(int displayId, boolean shouldShow) {
-        mBase.setShouldShowSystemDecors(displayId, shouldShow);
-    }
-
-    @Override
     public boolean shouldShowSystemDecors(int displayId) {
         return mBase.shouldShowSystemDecors(displayId);
     }

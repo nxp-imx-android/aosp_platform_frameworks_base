@@ -24,7 +24,6 @@ import android.app.job.JobScheduler;
 import android.app.job.JobService;
 import android.appwidget.AppWidgetManagerInternal;
 import android.content.ComponentName;
-import android.content.Context;
 import android.util.Slog;
 
 import com.android.internal.os.BackgroundThread;
@@ -40,10 +39,9 @@ public class ReportWidgetEventsJob extends JobService {
     private static final String NAMESPACE =
             "com.android.server.appwidget.AppWidgetServiceImpl.ReportWidgetEventsJob";
 
-    static void schedule(Context context, long periodMillis) {
+    static void schedule(JobScheduler jobScheduler, long periodMillis) {
         try {
-            JobScheduler jobScheduler = context.getSystemService(JobScheduler.class)
-                    .forNamespace(NAMESPACE);
+            jobScheduler = jobScheduler.forNamespace(NAMESPACE);
 
             // If periodMillis is 0 or less, do not schedule a job. The event will be reported to
             // UsageStatsManager as soon as it is received from the widget view.
@@ -52,7 +50,8 @@ public class ReportWidgetEventsJob extends JobService {
                 return;
             }
 
-            ComponentName component = new ComponentName(context, ReportWidgetEventsJob.class);
+            ComponentName component = new ComponentName("android",
+                    ReportWidgetEventsJob.class.getName());
             JobInfo newJob = new JobInfo.Builder(JOB_ID, component)
                     .setRequiresDeviceIdle(false)
                     .setPeriodic(periodMillis)

@@ -14379,10 +14379,6 @@ public class AudioService extends IAudioService.Stub
      * @return list of registered audio mixes
      */
     public List<AudioMix> getRegisteredPolicyMixes() {
-        if (!android.media.audiopolicy.Flags.audioMixTestApi()) {
-            return Collections.emptyList();
-        }
-
         synchronized (mAudioPolicies) {
             return mAudioSystem.getRegisteredPolicyMixes();
         }

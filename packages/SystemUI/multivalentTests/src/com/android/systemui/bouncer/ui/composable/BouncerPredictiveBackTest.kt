@@ -255,6 +255,7 @@ class BouncerPredictiveBackTest : SysuiTestCase() {
     private class FakeLockscreen : ExclusiveActivatable(), Scene {
         override val key: SceneKey = Scenes.Lockscreen
         override val userActions: Flow<Map<UserAction, UserActionResult>> = flowOf()
+        override val alwaysCompose: Boolean = false
 
         @Composable
         override fun ContentScope.Content(modifier: Modifier) {

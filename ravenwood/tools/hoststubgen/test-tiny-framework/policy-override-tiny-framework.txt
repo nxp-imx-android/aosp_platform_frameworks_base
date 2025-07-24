@@ -92,3 +92,9 @@ class com.android.hoststubgen.test.tinyframework.TinyFrameworkForPta keep
     method <clinit> keep    # Keep static initializer
     method <init>   keep    # Keep implicit ctor
     method foo  (Ljava/lang/String;Ljava/lang/Object;)V keep    # keep multi-arg method
+
+class com.android.hoststubgen.test.tinyframework.TinyFrameworkForPta$Nest1 keep
+    method bar   keep
+
+class com.android.hoststubgen.test.tinyframework.TinyFrameworkForPta$Nest1$Nest2 keep
+    method baz   keep

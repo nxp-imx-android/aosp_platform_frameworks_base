@@ -129,7 +129,9 @@ TEST_F(FlaggedResourcesTest, TwoValuesSameDisabledFlag) {
          </resources>)",
       compiled_files_dir, &diag,
       {"--feature-flags", "test.package.falseFlag:ro=false,test.package.trueFlag:ro=true"}));
-  ASSERT_TRUE(diag.GetLog().contains("duplicate value for resource 'bool/bool1'"));
+  ASSERT_TRUE(
+      diag.GetLog().contains("duplicate flag disabled value for resource 'bool/bool1' with config "
+                             "'' and flag 'test.package.falseFlag'"));
 }
 
 TEST_F(FlaggedResourcesTest, TwoValuesSameDisabledFlagDifferentFiles) {
@@ -158,7 +160,9 @@ TEST_F(FlaggedResourcesTest, TwoValuesSameDisabledFlagDifferentFiles) {
   };
 
   ASSERT_FALSE(Link(link_args, compiled_files_dir, &diag));
-  ASSERT_TRUE(diag.GetLog().contains("duplicate value for resource 'bool1'"));
+  ASSERT_TRUE(
+      diag.GetLog().contains("duplicate flag_disabled_values value for resource 'bool/bool1' with "
+                             "config '' and flag 'test.package.falseFlag'"));
 }
 
 TEST_F(FlaggedResourcesTest, EnabledXmlElementAttributeRemoved) {
@@ -168,20 +172,6 @@ TEST_F(FlaggedResourcesTest, EnabledXmlElementAttributeRemoved) {
   std::string output;
   DumpXmlTreeToString(loaded_apk.get(), "res/layout-v36/layout1.xml", &output);
   ASSERT_TRUE(output.contains("FIND_ME"));
-}
-
-TEST_F(FlaggedResourcesTest, ReadWriteFlagInPathFails) {
-  test::TestDiagnosticsImpl diag;
-  const std::string compiled_files_dir = GetTestPath("compiled");
-  ASSERT_FALSE(CompileFile(GetTestPath("res/values/flag(!test.package.rwFlag)/bools.xml"),
-                           R"(<resources>
-                                <bool name="bool1">false</bool>
-                              </resources>)",
-                           compiled_files_dir, &diag,
-                           {"--feature-flags", "test.package.rwFlag=false"}));
-
-  ASSERT_TRUE(diag.GetLog().contains(
-      "Only read only flags may be used with resources: test.package.rwFlag"));
 }
 
 TEST_F(FlaggedResourcesTest, ReadWriteFlagInXmlGetsFlagged) {
@@ -229,6 +219,38 @@ TEST_F(FlaggedResourcesTest, ReadWriteFlagInXmlGetsFlagged) {
   // There should only be 2 entry that has the FLAG_USES_FEATURE_FLAGS bit of flags set to 1, the
   // three versions of the layout file that has flags
   ASSERT_EQ(fields_flagged, 3);
+}
+
+TEST_F(FlaggedResourcesTest, ReadWriteFlagChunk) {
+  const std::string compiled_files_dir = GetTestPath("compiled");
+  ASSERT_TRUE(CompileFile(GetTestPath("res/values/strings.xml"),
+                          R"(<resources  xmlns:android="http://schemas.android.com/apk/res/android">
+                                <string name="text1" android:featureFlag="test.package.rwFlag">foobar</string>
+                              </resources>)",
+                          compiled_files_dir, &noop_diag,
+                          {"--feature-flags", "test.package.rwFlag"}));
+  const std::string out_apk = GetTestPath("out.apk");
+  std::vector<std::string> link_args = {
+      "--manifest",
+      GetDefaultManifest(),
+      "-o",
+      out_apk,
+  };
+
+  ASSERT_TRUE(Link(link_args, compiled_files_dir, &noop_diag));
+
+  auto loaded_apk = LoadedApk::LoadApkFromPath(out_apk, &noop_diag);
+
+  std::string output;
+  DumpChunksToString(loaded_apk.get(), &output);
+
+  std::string expected =
+      R"OUT_END(    [RES_TABLE_FLAGGED] chunkSize: 120 headerSize: 16 name: test.package.rwFlag negated: false
+      [ResTable_type] chunkSize: 104 headerSize: 84 id: 0x01 name: string flags: 0x00 (DENSE) entryCount: 1 entryStart: 88 config: 
+        [ResTable_entry] id: 0x0000 name: text1 keyIndex: 0 size: 8 flags: 0x0000
+          [Res_value] size: 8 dataType: 0x03 data: 0x00000000 ("foobar"))OUT_END";
+
+  ASSERT_TRUE(output.contains(expected));
 }
 
 }  // namespace aapt

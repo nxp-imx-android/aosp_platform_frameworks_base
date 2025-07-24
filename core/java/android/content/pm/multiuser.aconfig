@@ -174,17 +174,6 @@ flag {
 }
 
 flag {
-    name: "cache_user_info_read_only"
-    namespace: "multiuser"
-    description: "Cache UserInfo to avoid unnecessary binder calls"
-    bug: "161915546"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-  }
-  is_fixed_read_only: true
-}
-
-flag {
     name: "cache_user_start_realtime_read_only"
     namespace: "multiuser"
     description: "Cache getUserStartRealtime to avoid unnecessary binder calls"
@@ -231,13 +220,6 @@ flag {
     namespace: "profile_experiences"
     description: "Add permission to access API hidden users data via system APIs"
     bug: "321988638"
-}
-
-flag {
-    name: "handle_interleaved_settings_for_private_space"
-    namespace: "profile_experiences"
-    description: "Handle listing of private space apps in settings pages with interleaved content"
-    bug: "323212460"
 }
 
 flag {
@@ -353,16 +335,6 @@ flag {
 }
 
 flag {
-  name: "modify_private_space_secondary_unlock_setup_flow"
-  namespace: "profile_experiences"
-  description: "Updates to setting up secondary unlock factor from Settings for the first time"
-  bug: "332850595"
-  metadata {
-    purpose: PURPOSE_BUGFIX
-  }
-}
-
-flag {
   name: "fix_large_display_private_space_settings"
   namespace: "profile_experiences"
   description: "Fix tablet and foldable specific bugs for private space"
@@ -378,16 +350,6 @@ flag {
   description: "Refactorings related to unicorn mode to work on HSUM mode (Read only flag)"
   bug: "339201286"
   is_fixed_read_only: true
-  metadata {
-    purpose: PURPOSE_BUGFIX
-  }
-}
-
-flag {
-  name: "show_custom_unlock_title_inside_private_profile"
-  namespace: "profile_experiences"
-  description: "When private space is unlocked show dynamic title in unlock factor screens based on lock factor set for the profile"
-  bug: "323835257"
   metadata {
     purpose: PURPOSE_BUGFIX
   }
@@ -484,4 +446,12 @@ flag {
      namespace: "multiuser"
      description: "Disallow the removal of a user, if it is the last admin user"
      bug: "394970894"
+}
+
+flag {
+     name: "user_restriction_config_wifi_shared_private"
+     is_exported: true
+     namespace: "multiuser"
+     description: "For user restrictions about adding or editing shared or private Wi-Fi configurations"
+     bug: "390240471"
 }

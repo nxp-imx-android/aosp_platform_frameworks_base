@@ -6599,6 +6599,15 @@ public abstract class Context {
 
     /**
      * Use with {@link #getSystemService(String)} to retrieve an
+     * {@link android.security.talisman.TalismanManager}.
+     * @see #getSystemService(String)
+     * @see android.security.talisman.TalismanManager
+     * @hide
+     */
+    public static final String TALISMAN_SERVICE = "talisman";
+
+    /**
+     * Use with {@link #getSystemService(String)} to retrieve an
      * {@link android.security.advancedprotection.AdvancedProtectionManager}
      * @see #getSystemService(String)
      * @see android.security.advancedprotection.AdvancedProtectionManager
@@ -6815,7 +6824,6 @@ public abstract class Context {
      * @hide
      */
     @SystemApi
-    @FlaggedApi(android.app.ondeviceintelligence.flags.Flags.FLAG_ENABLE_ON_DEVICE_INTELLIGENCE)
     public static final String ON_DEVICE_INTELLIGENCE_SERVICE = "on_device_intelligence";
 
     /**

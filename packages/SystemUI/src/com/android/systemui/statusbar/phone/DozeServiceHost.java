@@ -201,6 +201,16 @@ public final class DozeServiceHost implements DozeHost {
         for (Callback callback : mCallbacks) {
             callback.onPowerSaveChanged(active);
         }
+
+        if (com.android.systemui.Flags.newDozingKeyguardStates()) {
+            if (active) {
+                // listen for screen off fingerprint pulse events when battery saver
+                // is suppressing AOD
+                startCollectingScreenOffFingerprintPulseEvents();
+            } else if (!listenForScreenOffFingerprintPulseEvents()) {
+                stopCollectingUsUdfpsScreenOffPulseEvents();
+            }
+        }
     }
 
     /**
@@ -577,7 +587,8 @@ public final class DozeServiceHost implements DozeHost {
     private boolean listenForScreenOffFingerprintPulseEvents() {
         return mDeviceEntryFingerprintAuthInteractor.isSensorUnderDisplay().getValue()
                 && mAmbientDisplayConfiguration.screenOffUdfpsEnabled(mContext.getUserId())
-                && !mAmbientDisplayConfiguration.alwaysOnEnabled(mContext.getUserId());
+                && (!mAmbientDisplayConfiguration.alwaysOnEnabled(mContext.getUserId())
+                || isPowerSaveActive());
     }
 
     private void startCollectingScreenOffFingerprintPulseEvents() {

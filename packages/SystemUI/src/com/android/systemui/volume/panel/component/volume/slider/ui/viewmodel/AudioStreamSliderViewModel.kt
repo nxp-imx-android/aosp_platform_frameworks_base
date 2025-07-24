@@ -135,7 +135,7 @@ constructor(
         volumeChanges.tryEmit(newValue.roundToInt())
     }
 
-    override fun onValueChangeFinished(newValue: Float) {
+    override fun onValueChangeFinished() {
         uiEventByStream[audioStream]?.let { uiEventLogger.log(it) }
     }
 

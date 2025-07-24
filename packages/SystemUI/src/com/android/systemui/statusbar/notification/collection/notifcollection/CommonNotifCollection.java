@@ -51,6 +51,13 @@ public interface CommonNotifCollection {
     @NonNull Collection<NotificationEntry> getAllNotifs();
 
     /**
+     * Returns the list of all known bundles, i.e. the bundles that are defined in BundleSpec.
+     *
+     * The returned collection is read-only, unsorted, unfiltered, and ungrouped.
+     */
+    @NonNull Collection<BundleEntry> getAllBundles();
+
+    /**
      * Returns the notification entry for the given notification key;
      * the returned entry (if present) may be in any state.
      */

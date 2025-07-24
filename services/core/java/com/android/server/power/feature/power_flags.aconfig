@@ -99,3 +99,13 @@ flag {
     bug: "401624085"
     is_fixed_read_only: true
 }
+
+flag {
+    name: "extra_logging_separate_timeout"
+    namespace: "power"
+    description: "Adds extra logs to triage some test flakiness"
+    bug: "428848574"
+    metadata {
+      purpose: PURPOSE_BUGFIX
+    }
+}

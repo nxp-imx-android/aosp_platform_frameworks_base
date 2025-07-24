@@ -440,6 +440,10 @@ public class AccessibilitySecurityPolicy {
     /**
      * Returns the parent userId of the profile according to the specified userId.
      *
+     * <p>For accessibility purposes, a supervising profile, which is a shell profile used for
+     * setting up parental controls and doesn't have its own accessibility settings, is viewed as a
+     * child of the current user.
+     *
      * @param userId The userId to check
      * @return the parent userId of the profile, or self if no parent exist
      */
@@ -447,6 +451,12 @@ public class AccessibilitySecurityPolicy {
         if (userId != mAccessibilityUserManager.getCurrentUserIdLocked()) {
             final long identity = Binder.clearCallingIdentity();
             try {
+                if (android.multiuser.Flags.allowSupervisingProfile()) {
+                    UserInfo userInfo = mUserManager.getUserInfo(userId);
+                    if (userInfo != null && userInfo.isSupervisingProfile()) {
+                        return mAccessibilityUserManager.getCurrentUserIdLocked();
+                    }
+                }
                 UserInfo parent = mUserManager.getProfileParent(userId);
                 if (parent != null) {
                     return parent.getUserHandle().getIdentifier();

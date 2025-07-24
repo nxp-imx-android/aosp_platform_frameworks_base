@@ -1075,6 +1075,7 @@ java_aconfig_library {
 // Multi user
 aconfig_declarations {
     name: "android.multiuser.flags-aconfig",
+    exportable: true,
     package: "android.multiuser",
     container: "system",
     srcs: ["core/java/android/content/pm/multiuser.aconfig"],
@@ -1084,6 +1085,18 @@ java_aconfig_library {
     name: "android.multiuser.flags-aconfig-java",
     aconfig_declarations: "android.multiuser.flags-aconfig",
     defaults: ["framework-minus-apex-aconfig-java-defaults"],
+    min_sdk_version: "30",
+}
+
+java_aconfig_library {
+    name: "android.multiuser.flags-aconfig-java-export",
+    aconfig_declarations: "android.multiuser.flags-aconfig",
+    defaults: ["framework-minus-apex-aconfig-java-defaults"],
+    mode: "exported",
+    apex_available: [
+        "//apex_available:platform",
+        "com.android.wifi",
+    ],
     min_sdk_version: "30",
 }
 

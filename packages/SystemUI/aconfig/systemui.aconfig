@@ -171,16 +171,6 @@ flag {
 }
 
 flag {
-    name: "notifications_hun_shared_animation_values"
-    namespace: "systemui"
-    description: "Adds a shared class for fetching HUN animation values."
-    bug: "393369891"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "notification_avalanche_throttle_hun"
     namespace: "systemui"
     description: "During notification avalanche, throttle HUNs showing in fast succession."
@@ -907,16 +897,6 @@ flag {
 }
 
 flag {
-    name: "notify_power_manager_user_activity_background"
-    namespace: "systemui"
-    description: "Decide whether to notify the user activity to power manager in the background thread."
-    bug: "325203885"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "qs_tile_focus_state"
     namespace: "systemui"
     description: "enables new focus outline for qs tiles when focused on with physical keyboard"
@@ -1321,16 +1301,6 @@ flag {
   namespace: "systemui"
   description: "Enables custom actions for sounddose notifications"
   bug: "345227709"
-}
-
-flag {
-  namespace: "systemui"
-  name: "register_content_observers_async"
-  description: "Use new Async API to register content observers"
-  bug: "316922634"
-  metadata {
-    purpose: PURPOSE_BUGFIX
-  }
 }
 
 flag {
@@ -2152,6 +2122,16 @@ flag {
     namespace: "systemui"
     description: "Enable glanceable hub by default (this flag is intended to enable GH for DF only)."
     bug: "428215526"
+    metadata {
+      purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
+    name: "enable_output_switcher_audio_sharing_button"
+    namespace: "cross_device_experiences"
+    description: "Enables audio sharing quick button in the output switcher."
+    bug: "423772889"
     metadata {
       purpose: PURPOSE_BUGFIX
     }

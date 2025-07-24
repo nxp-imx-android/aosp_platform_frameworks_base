@@ -358,6 +358,7 @@ import com.android.server.FgThread;
 import com.android.server.LocalServices;
 import com.android.server.UiThread;
 import com.android.server.Watchdog;
+import com.android.server.am.UserState;
 import com.android.server.input.InputManagerService;
 import com.android.server.inputmethod.InputMethodManagerInternal;
 import com.android.server.pm.UserManagerInternal;
@@ -3930,7 +3931,8 @@ public class WindowManagerService extends IWindowManager.Stub
                 confirm);
     }
 
-    public void setCurrentUser(@UserIdInt int newUserId) {
+    /** Update the current user. */
+    public void setCurrentUser(@UserIdInt int newUserId, UserState uss) {
         synchronized (mGlobalLock) {
             final TransitionController controller = mAtmService.getTransitionController();
             final Runnable applyUserChange = () -> {
@@ -3941,6 +3943,10 @@ public class WindowManagerService extends IWindowManager.Stub
 
                 // Hide windows that should not be seen by the new user.
                 mRoot.switchUser(newUserId);
+                if (DesktopExperienceFlags.ENABLE_APPLY_DESK_ACTIVATION_ON_USER_SWITCH.isTrue()) {
+                    // Restore the new user's previous windows or home.
+                    mRoot.switchUser(newUserId, uss);
+                }
                 mWindowPlacerLocked.performSurfacePlacement();
 
                 // Notify whether the root docked task exists for the current user
@@ -7948,34 +7954,6 @@ public class WindowManagerService extends IWindowManager.Stub
                 return false;
             }
             return displayContent.isDefaultDisplay || displayContent.allowContentModeSwitch();
-        }
-    }
-
-    @Override
-    public void setShouldShowSystemDecors(int displayId, boolean shouldShow) {
-        if (!checkCallingPermission(INTERNAL_SYSTEM_WINDOW, "setShouldShowSystemDecors()")) {
-            throw new SecurityException("Requires INTERNAL_SYSTEM_WINDOW permission");
-        }
-        final long origId = Binder.clearCallingIdentity();
-        try {
-            synchronized (mGlobalLock) {
-                final DisplayContent displayContent = getDisplayContentOrCreate(displayId, null);
-                if (displayContent == null) {
-                    ProtoLog.w(WM_ERROR, "Attempted to set system decors flag to a display that "
-                            + "does not exist: %d", displayId);
-                    return;
-                }
-                if (!displayContent.isTrusted()) {
-                    throw new SecurityException("Attempted to set system decors flag to an "
-                            + "untrusted virtual display: " + displayId);
-                }
-
-                mDisplayWindowSettings.setShouldShowSystemDecorsLocked(displayContent, shouldShow);
-
-                displayContent.reconfigureDisplayLocked();
-            }
-        } finally {
-            Binder.restoreCallingIdentity(origId);
         }
     }
 

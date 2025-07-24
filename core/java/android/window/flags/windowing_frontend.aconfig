@@ -140,6 +140,17 @@ flag {
 }
 
 flag {
+  name: "do_not_force_wallpaper_for_freeform_task"
+  namespace: "windowing_frontend"
+  description: "Remove legacy condition to reduce overhead"
+  bug: "433694978"
+  is_fixed_read_only: true
+  metadata {
+    purpose: PURPOSE_BUGFIX
+  }
+}
+
+flag {
   name: "bg_priority_for_occluded_freeform_tasks"
   namespace: "windowing_frontend"
   description: "Background priority for occluded freeform tasks"
@@ -445,6 +456,16 @@ flag {
     description: "Trigger the removal of the starting window from the task in case the shared starting data is not attached to itself."
     bug: "405253899"
     is_fixed_read_only: true
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
+    name: "polish_close_wallpaper_includes_open_change"
+    namespace: "windowing_frontend"
+    description: "Record the initial z-order while collecting window containers, keep the wallpaper always at the bottom, and use a cross-fade animation when a close wallpaper transition includes an open target."
+    bug: "421436197"
     metadata {
         purpose: PURPOSE_BUGFIX
     }

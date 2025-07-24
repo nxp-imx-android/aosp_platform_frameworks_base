@@ -1095,3 +1095,13 @@ test_module_config {
     ],
     include_filters: ["com.android.server.supervision"],
 }
+
+test_module_config {
+    name: "FrameworksServicesTests_incident",
+    base: "FrameworksServicesTests",
+    test_suites: [
+        "automotive-tests",
+        "device-tests",
+    ],
+    include_filters: ["com.android.server.incident"],
+}

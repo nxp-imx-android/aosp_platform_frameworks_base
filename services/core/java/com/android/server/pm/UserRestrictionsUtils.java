@@ -80,6 +80,8 @@ public class UserRestrictionsUtils {
 
     public static final Set<String> USER_RESTRICTIONS = newSetWithUniqueCheck(new String[] {
             UserManager.DISALLOW_CONFIG_WIFI,
+            UserManager.DISALLOW_CONFIG_WIFI_PRIVATE,
+            UserManager.DISALLOW_CONFIG_WIFI_SHARED,
             UserManager.DISALLOW_CONFIG_LOCALE,
             UserManager.DISALLOW_MODIFY_ACCOUNTS,
             UserManager.DISALLOW_INSTALL_APPS,

@@ -227,6 +227,9 @@ open class SettingsPreferenceGroupAdapter(preferenceGroup: PreferenceGroup) :
         isSelected: Boolean,
         isHighlighted: Boolean = false,
     ): Int {
+        if (position !in mItemPositionStates.indices) {
+            return 0
+        }
         val positionState = mItemPositionStates[position]
         return when (positionState) {
             // preference is the first of the section

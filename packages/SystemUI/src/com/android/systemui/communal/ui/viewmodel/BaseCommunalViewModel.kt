@@ -106,6 +106,12 @@ abstract class BaseCommunalViewModel(
      */
     private var currentScrollIndex = 0
 
+    /**
+     * Whether to show edit mode layout, like pushing the widgets down to make space for the toolbar
+     * on top.
+     */
+    abstract val shouldShowEditModeLayout: Flow<Boolean>
+
     fun signalUserInteraction() {
         communalInteractor.signalUserInteraction()
     }

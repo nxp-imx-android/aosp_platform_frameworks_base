@@ -19,6 +19,7 @@ package com.android.systemui.qs.panels.ui.compose
 import android.platform.test.flag.junit.FlagsParameterization
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.test.ExperimentalTestApi
@@ -84,6 +85,7 @@ class ResizingTest(flags: FlagsParameterization) : SysuiTestCase() {
                 allTiles = listState.tiles.filterIsInstance<TileGridCell>().map { it.tile },
                 modifier = Modifier.fillMaxSize(),
                 snapshotViewModel = remember { snapshotViewModelFactory.create() },
+                topBarActions = remember { mutableStateListOf() },
                 onStopEditing = {},
             ) { action ->
                 when (action) {

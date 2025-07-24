@@ -52,6 +52,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInteropFilter
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.semantics.isTraversalGroup
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -100,7 +102,10 @@ fun PinPad(viewModel: PinBouncerViewModel, verticalSpacing: Dp, modifier: Modifi
         columns = columns,
         verticalSpacing = verticalSpacing,
         horizontalSpacing = calculateHorizontalSpacingBetweenColumns(gridWidth = 300.dp),
-        modifier = modifier.focusRequester(focusRequester).sysuiResTag("pin_pad_grid"),
+        modifier =
+            modifier.focusRequester(focusRequester).sysuiResTag("pin_pad_grid").semantics {
+                isTraversalGroup = true
+            },
     ) {
         repeat(9) { index ->
             DigitButton(

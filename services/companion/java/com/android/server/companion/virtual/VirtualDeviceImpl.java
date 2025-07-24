@@ -1219,9 +1219,6 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub
     }
 
     private boolean hasCustomAudioInputSupportInternal() {
-        if (!android.media.audiopolicy.Flags.audioMixTestApi()) {
-            return false;
-        }
         if (!android.media.audiopolicy.Flags.recordAudioDeviceAwarePermission()) {
             return false;
         }

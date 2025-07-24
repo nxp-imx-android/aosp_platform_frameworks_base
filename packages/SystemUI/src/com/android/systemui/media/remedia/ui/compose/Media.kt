@@ -94,7 +94,6 @@ import androidx.compose.ui.geometry.center
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.CompositingStrategy
-import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.StrokeCap
@@ -139,6 +138,7 @@ import com.android.compose.ui.graphics.painter.rememberDrawablePainter
 import com.android.mechanics.spec.builder.rememberMotionBuilderContext
 import com.android.systemui.animation.Expandable
 import com.android.systemui.common.shared.model.Icon
+import com.android.systemui.common.shared.model.asImageBitmap
 import com.android.systemui.common.ui.compose.Icon
 import com.android.systemui.common.ui.compose.PagerDots
 import com.android.systemui.common.ui.compose.load
@@ -763,16 +763,17 @@ private fun ContentScope.CompactCardForeground(
 /** Renders the background of a card, loading the artwork and showing an overlay on top of it. */
 @Composable
 private fun CardBackground(
-    image: ImageBitmap?,
+    image: Icon?,
     colorScheme: AnimatedColorScheme,
     modifier: Modifier = Modifier,
 ) {
     Crossfade(targetState = image, modifier = modifier) { imageOrNull ->
-        if (imageOrNull != null) {
+        val backgroundImage = imageOrNull?.let { (it as Icon.Loaded).asImageBitmap() }
+        if (backgroundImage != null) {
             // Loaded art.
             val gradientBaseColor = colorScheme.background
             Image(
-                bitmap = imageOrNull,
+                bitmap = backgroundImage,
                 contentDescription = null,
                 contentScale = ContentScale.Crop,
                 modifier =

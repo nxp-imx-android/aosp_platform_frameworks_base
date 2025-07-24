@@ -436,6 +436,14 @@ void SerializeTableToPb(const ResourceTable& table, pb::ResourceTable* out_table
           SerializeValueToPb(*config_value->value, pb_config_value->mutable_value(),
                              source_pool.get());
         }
+
+        for (const ResourceConfigValue* config_value : entry.readwrite_flag_values) {
+          pb::ConfigValue* pb_config_value = pb_entry->add_readwrite_flag_config_value();
+          SerializeConfig(config_value->config, pb_config_value->mutable_config());
+          pb_config_value->mutable_config()->set_product(config_value->product);
+          SerializeValueToPb(*config_value->value, pb_config_value->mutable_value(),
+                             source_pool.get());
+        }
       }
     }
   }

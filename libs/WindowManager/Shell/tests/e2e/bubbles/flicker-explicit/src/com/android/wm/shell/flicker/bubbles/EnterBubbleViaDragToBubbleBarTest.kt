@@ -19,6 +19,7 @@ package com.android.wm.shell.flicker.bubbles
 import android.platform.test.annotations.Presubmit
 import android.platform.test.annotations.RequiresFlagsEnabled
 import android.tools.NavBar
+import android.tools.traces.component.ComponentNameMatcher.Companion.LAUNCHER
 import android.tools.traces.component.ComponentNameMatcher.Companion.TASK_BAR
 import androidx.test.filters.FlakyTest
 import androidx.test.filters.RequiresDevice
@@ -101,6 +102,14 @@ class EnterBubbleViaDragToBubbleBarTest(navBar: NavBar) : BubbleFlickerTestBase(
     @FlakyTest(bugId = 428630722)
     @Test
     override fun focusChanges() {
-        eventLogSubject.focusChanges(TASK_BAR.toWindowName(), testApp.toWindowName())
+        eventLogSubject.focusChanges(
+            LAUNCHER.toWindowName(),
+            // Tap on the task bar.
+            TASK_BAR.toWindowName(),
+            // Drag an icon from task bar to the bubble bar location.
+            LAUNCHER.toWindowName(),
+            // The bubble app launches.
+            testApp.toWindowName()
+        )
     }
 }

@@ -1067,18 +1067,13 @@ public class DisplayContentTests extends WindowTestsBase {
                 .setDisplay(dc)
                 .setCreateActivity(true)
                 .build();
-        doReturn(true).when(rootTask).isVisible();
 
         final Task freeformRootTask = new TaskBuilder(mSupervisor)
                 .setDisplay(dc)
                 .setCreateActivity(true)
                 .setWindowingMode(WINDOWING_MODE_FREEFORM)
                 .build();
-        doReturn(true).when(freeformRootTask).isVisible();
         freeformRootTask.getTopChild().setBounds(100, 100, 300, 400);
-
-        assertTrue(dc.getDefaultTaskDisplayArea().isRootTaskVisible(WINDOWING_MODE_FREEFORM));
-
         freeformRootTask.getTopNonFinishingActivity().setOrientation(SCREEN_ORIENTATION_LANDSCAPE);
         rootTask.getTopNonFinishingActivity().setOrientation(SCREEN_ORIENTATION_PORTRAIT);
         assertEquals(SCREEN_ORIENTATION_PORTRAIT, dc.getOrientation());

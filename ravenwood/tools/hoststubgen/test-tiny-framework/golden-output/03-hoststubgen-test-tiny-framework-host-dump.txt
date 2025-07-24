@@ -1565,6 +1565,80 @@ RuntimeVisibleAnnotations:
     )
   x: #x()
     android.hosttest.annotation.HostSideTestWholeClassKeep
+## Class: com/android/hoststubgen/test/tinyframework/TinyFrameworkForPta$Nest1$Nest2.class
+  Compiled from "TinyFrameworkForPta.java"
+public class com.android.hoststubgen.test.tinyframework.TinyFrameworkForPta$Nest1$Nest2
+  minor version: 0
+  major version: 65
+  flags: (0x0021) ACC_PUBLIC, ACC_SUPER
+  this_class: #x                          // com/android/hoststubgen/test/tinyframework/TinyFrameworkForPta$Nest1$Nest2
+  super_class: #x                         // java/lang/Object
+  interfaces: 0, fields: 0, methods: 1, attributes: 4
+Constant pool:
+{
+  public void baz();
+    descriptor: ()V
+    flags: (0x0001) ACC_PUBLIC
+    Code:
+      stack=0, locals=1, args_size=1
+         x: return
+      LineNumberTable:
+      LocalVariableTable:
+        Start  Length  Slot  Name   Signature
+            0       1     0  this   Lcom/android/hoststubgen/test/tinyframework/TinyFrameworkForPta$Nest1$Nest2;
+    RuntimeVisibleAnnotations:
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="file-override"
+        )
+}
+InnerClasses:
+  public #x= #x of #x;                 // Nest1=class com/android/hoststubgen/test/tinyframework/TinyFrameworkForPta$Nest1 of class com/android/hoststubgen/test/tinyframework/TinyFrameworkForPta
+  public #x= #x of #x;                  // Nest2=class com/android/hoststubgen/test/tinyframework/TinyFrameworkForPta$Nest1$Nest2 of class com/android/hoststubgen/test/tinyframework/TinyFrameworkForPta$Nest1
+SourceFile: "TinyFrameworkForPta.java"
+RuntimeVisibleAnnotations:
+  x: #x(#x=s#x)
+    com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+      reason="file-override"
+    )
+NestHost: class com/android/hoststubgen/test/tinyframework/TinyFrameworkForPta
+## Class: com/android/hoststubgen/test/tinyframework/TinyFrameworkForPta$Nest1.class
+  Compiled from "TinyFrameworkForPta.java"
+public class com.android.hoststubgen.test.tinyframework.TinyFrameworkForPta$Nest1
+  minor version: 0
+  major version: 65
+  flags: (0x0021) ACC_PUBLIC, ACC_SUPER
+  this_class: #x                          // com/android/hoststubgen/test/tinyframework/TinyFrameworkForPta$Nest1
+  super_class: #x                         // java/lang/Object
+  interfaces: 0, fields: 0, methods: 1, attributes: 4
+Constant pool:
+{
+  public void bar();
+    descriptor: ()V
+    flags: (0x0001) ACC_PUBLIC
+    Code:
+      stack=0, locals=1, args_size=1
+         x: return
+      LineNumberTable:
+      LocalVariableTable:
+        Start  Length  Slot  Name   Signature
+            0       1     0  this   Lcom/android/hoststubgen/test/tinyframework/TinyFrameworkForPta$Nest1;
+    RuntimeVisibleAnnotations:
+      x: #x(#x=s#x)
+        com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+          reason="file-override"
+        )
+}
+InnerClasses:
+  public #x= #x of #x;                  // Nest1=class com/android/hoststubgen/test/tinyframework/TinyFrameworkForPta$Nest1 of class com/android/hoststubgen/test/tinyframework/TinyFrameworkForPta
+  public #x= #x of #x;                  // Nest2=class com/android/hoststubgen/test/tinyframework/TinyFrameworkForPta$Nest1$Nest2 of class com/android/hoststubgen/test/tinyframework/TinyFrameworkForPta$Nest1
+SourceFile: "TinyFrameworkForPta.java"
+RuntimeVisibleAnnotations:
+  x: #x(#x=s#x)
+    com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
+      reason="file-override"
+    )
+NestHost: class com/android/hoststubgen/test/tinyframework/TinyFrameworkForPta
 ## Class: com/android/hoststubgen/test/tinyframework/TinyFrameworkForPta.class
   Compiled from "TinyFrameworkForPta.java"
 public class com.android.hoststubgen.test.tinyframework.TinyFrameworkForPta
@@ -1573,7 +1647,7 @@ public class com.android.hoststubgen.test.tinyframework.TinyFrameworkForPta
   flags: (0x0021) ACC_PUBLIC, ACC_SUPER
   this_class: #x                          // com/android/hoststubgen/test/tinyframework/TinyFrameworkForPta
   super_class: #x                         // java/lang/Object
-  interfaces: 0, fields: 0, methods: 3, attributes: 2
+  interfaces: 0, fields: 0, methods: 3, attributes: 4
 Constant pool:
 {
   public com.android.hoststubgen.test.tinyframework.TinyFrameworkForPta();
@@ -1625,12 +1699,18 @@ Constant pool:
           reason="file-override (Keep static initializer)"
         )
 }
+InnerClasses:
+  public #x= #x of #x;                  // Nest1=class com/android/hoststubgen/test/tinyframework/TinyFrameworkForPta$Nest1 of class com/android/hoststubgen/test/tinyframework/TinyFrameworkForPta
+  public #x= #x of #x;                 // Nest2=class com/android/hoststubgen/test/tinyframework/TinyFrameworkForPta$Nest1$Nest2 of class com/android/hoststubgen/test/tinyframework/TinyFrameworkForPta$Nest1
 SourceFile: "TinyFrameworkForPta.java"
 RuntimeVisibleAnnotations:
   x: #x(#x=s#x)
     com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
       reason="file-override"
     )
+NestMembers:
+  com/android/hoststubgen/test/tinyframework/TinyFrameworkForPta$Nest1
+  com/android/hoststubgen/test/tinyframework/TinyFrameworkForPta$Nest1$Nest2
 ## Class: com/android/hoststubgen/test/tinyframework/TinyFrameworkForTextPolicy.class
   Compiled from "TinyFrameworkForTextPolicy.java"
 public class com.android.hoststubgen.test.tinyframework.TinyFrameworkForTextPolicy

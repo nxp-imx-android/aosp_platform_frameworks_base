@@ -553,6 +553,7 @@ public class InfoMediaManagerTest {
         when(info.getClientPackageName()).thenReturn(TEST_PACKAGE_NAME);
         when(info.getSelectableRoutes()).thenReturn(list);
         when(route2Info.getId()).thenReturn(TEST_ID);
+        when(route2Info.getName()).thenReturn(TEST_NAME);
         when(route2Info.getClientPackageName()).thenReturn(TEST_PACKAGE_NAME);
 
         assertThat(mInfoMediaManager.addDeviceToPlayMedia(device)).isTrue();
@@ -594,6 +595,7 @@ public class InfoMediaManagerTest {
         when(info.getClientPackageName()).thenReturn(TEST_PACKAGE_NAME);
         when(info.getSelectedRoutes()).thenReturn(list);
         when(route2Info.getId()).thenReturn(TEST_ID);
+        when(route2Info.getName()).thenReturn(TEST_NAME);
         when(route2Info.getClientPackageName()).thenReturn(TEST_PACKAGE_NAME);
 
         assertThat(mInfoMediaManager.removeDeviceFromPlayMedia(device)).isTrue();
@@ -862,19 +864,19 @@ public class InfoMediaManagerTest {
 
         when(route2Info.getType()).thenReturn(TYPE_REMOTE_SPEAKER);
         when(route2Info.getId()).thenReturn(TEST_ID);
-        mInfoMediaManager.addMediaDevice(route2Info, TEST_SYSTEM_ROUTING_SESSION);
+        mInfoMediaManager.addMediaDeviceLocked(route2Info, TEST_SYSTEM_ROUTING_SESSION);
         assertThat(mInfoMediaManager.mMediaDevices.get(0) instanceof InfoMediaDevice).isTrue();
 
         when(route2Info.getType()).thenReturn(TYPE_USB_DEVICE);
         when(route2Info.getId()).thenReturn(TEST_ID);
         mInfoMediaManager.mMediaDevices.clear();
-        mInfoMediaManager.addMediaDevice(route2Info, TEST_SYSTEM_ROUTING_SESSION);
+        mInfoMediaManager.addMediaDeviceLocked(route2Info, TEST_SYSTEM_ROUTING_SESSION);
         assertThat(mInfoMediaManager.mMediaDevices.get(0) instanceof PhoneMediaDevice).isTrue();
 
         when(route2Info.getType()).thenReturn(TYPE_WIRED_HEADSET);
         when(route2Info.getId()).thenReturn(TEST_ID);
         mInfoMediaManager.mMediaDevices.clear();
-        mInfoMediaManager.addMediaDevice(route2Info, TEST_SYSTEM_ROUTING_SESSION);
+        mInfoMediaManager.addMediaDeviceLocked(route2Info, TEST_SYSTEM_ROUTING_SESSION);
         assertThat(mInfoMediaManager.mMediaDevices.get(0) instanceof PhoneMediaDevice).isTrue();
 
         when(route2Info.getType()).thenReturn(TYPE_BLUETOOTH_A2DP);
@@ -885,12 +887,12 @@ public class InfoMediaManagerTest {
         when(cachedBluetoothDeviceManager.findDevice(any(BluetoothDevice.class)))
                 .thenReturn(cachedDevice);
         mInfoMediaManager.mMediaDevices.clear();
-        mInfoMediaManager.addMediaDevice(route2Info, TEST_SYSTEM_ROUTING_SESSION);
+        mInfoMediaManager.addMediaDeviceLocked(route2Info, TEST_SYSTEM_ROUTING_SESSION);
         assertThat(mInfoMediaManager.mMediaDevices.get(0) instanceof BluetoothMediaDevice).isTrue();
 
         when(route2Info.getType()).thenReturn(TYPE_BUILTIN_SPEAKER);
         mInfoMediaManager.mMediaDevices.clear();
-        mInfoMediaManager.addMediaDevice(route2Info, TEST_SYSTEM_ROUTING_SESSION);
+        mInfoMediaManager.addMediaDeviceLocked(route2Info, TEST_SYSTEM_ROUTING_SESSION);
         assertThat(mInfoMediaManager.mMediaDevices.get(0) instanceof PhoneMediaDevice).isTrue();
     }
 
@@ -908,7 +910,7 @@ public class InfoMediaManagerTest {
                 .thenReturn(null);
 
         mInfoMediaManager.mMediaDevices.clear();
-        mInfoMediaManager.addMediaDevice(route2Info, TEST_SYSTEM_ROUTING_SESSION);
+        mInfoMediaManager.addMediaDeviceLocked(route2Info, TEST_SYSTEM_ROUTING_SESSION);
 
         assertThat(mInfoMediaManager.mMediaDevices.size()).isEqualTo(0);
     }
@@ -925,7 +927,7 @@ public class InfoMediaManagerTest {
         when(cachedBluetoothDeviceManager.findDevice(any(BluetoothDevice.class))).thenReturn(null);
 
         mInfoMediaManager.mMediaDevices.clear();
-        mInfoMediaManager.addMediaDevice(bluetoothRoute, TEST_SYSTEM_ROUTING_SESSION);
+        mInfoMediaManager.addMediaDeviceLocked(bluetoothRoute, TEST_SYSTEM_ROUTING_SESSION);
 
         assertThat(mInfoMediaManager.mMediaDevices.size()).isEqualTo(0);
     }

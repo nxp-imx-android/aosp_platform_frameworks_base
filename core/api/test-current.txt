@@ -2077,7 +2077,7 @@ package android.media {
     method @FlaggedApi("android.media.audio.focus_freeze_test_api") @RequiresPermission("android.permission.QUERY_AUDIO_STATE") public long getFocusUnmuteDelayAfterFadeOutForTest();
     method @Nullable public static android.media.AudioHalVersionInfo getHalVersion();
     method public static final int[] getPublicStreamTypes();
-    method @FlaggedApi("android.media.audiopolicy.audio_mix_test_api") @NonNull public java.util.List<android.media.audiopolicy.AudioMix> getRegisteredPolicyMixes();
+    method @NonNull public java.util.List<android.media.audiopolicy.AudioMix> getRegisteredPolicyMixes();
     method @NonNull public java.util.List<java.lang.Integer> getReportedSurroundFormats();
     method @RequiresPermission(android.Manifest.permission.MODIFY_AUDIO_SETTINGS_PRIVILEGED) public float getRs2Value();
     method public int getStreamMinVolumeInt(int);
@@ -2268,7 +2268,7 @@ package android.media.audiofx {
 package android.media.audiopolicy {
 
   public class AudioPolicy {
-    method @FlaggedApi("android.media.audiopolicy.audio_mix_test_api") @NonNull public java.util.List<android.media.audiopolicy.AudioMix> getMixes();
+    method @NonNull public java.util.List<android.media.audiopolicy.AudioMix> getMixes();
   }
 
   public static class AudioPolicy.Builder {
@@ -3994,7 +3994,6 @@ package android.view {
     method @RequiresPermission(android.Manifest.permission.ACCESS_SURFACE_FLINGER) public default boolean replaceContentOnDisplayWithMirror(int, @NonNull android.view.Window);
     method @RequiresPermission(android.Manifest.permission.ACCESS_SURFACE_FLINGER) public default boolean replaceContentOnDisplayWithSc(int, @NonNull android.view.SurfaceControl);
     method public default void setDisplayImePolicy(int, int);
-    method public default void setShouldShowSystemDecors(int, boolean);
     method public default void setShouldShowWithInsecureKeyguard(int, boolean);
     method public default boolean shouldShowSystemDecors(int);
     method @Nullable public default android.graphics.Bitmap snapshotTaskForRecents(@IntRange(from=0) int);

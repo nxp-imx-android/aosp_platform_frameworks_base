@@ -73,8 +73,7 @@ class DreamUserActionsViewModelTest : SysuiTestCase() {
 
             setUpState(isShadeTouchable = true, isDeviceUnlocked = false)
             assertThat(actions).isNotEmpty()
-            assertThat(actions?.get(Swipe.Up))
-                .isEqualTo(UserActionResult.ShowOverlay(Overlays.Bouncer))
+            assertThat(actions?.get(Swipe.Up)).isEqualTo(UserActionResult(Scenes.Lockscreen))
             assertThat(actions?.get(Swipe.Down)).isEqualTo(UserActionResult(Scenes.Shade))
             assertThat(actions?.get(Swipe.Start)).isNull()
             assertThat(actions?.get(Swipe.End)).isNull()
@@ -99,8 +98,7 @@ class DreamUserActionsViewModelTest : SysuiTestCase() {
 
             setUpState(isShadeTouchable = true, isDeviceUnlocked = false)
             assertThat(actions).isNotEmpty()
-            assertThat(actions?.get(Swipe.Up))
-                .isEqualTo(UserActionResult.ShowOverlay(Overlays.Bouncer))
+            assertThat(actions?.get(Swipe.Up)).isEqualTo(UserActionResult(Scenes.Lockscreen))
             assertThat(actions?.get(Swipe.Down))
                 .isEqualTo(UserActionResult(Scenes.Shade, ToSplitShade))
             assertThat(actions?.get(Swipe.Start)).isNull()
@@ -127,8 +125,7 @@ class DreamUserActionsViewModelTest : SysuiTestCase() {
 
             setUpState(isShadeTouchable = true, isDeviceUnlocked = false)
             assertThat(actions).isNotEmpty()
-            assertThat(actions?.get(Swipe.Up))
-                .isEqualTo(UserActionResult.ShowOverlay(Overlays.Bouncer))
+            assertThat(actions?.get(Swipe.Up)).isEqualTo(UserActionResult(Scenes.Lockscreen))
             assertThat(actions?.get(Swipe.Down))
                 .isEqualTo(UserActionResult.ShowOverlay(Overlays.NotificationsShade))
             assertThat(actions?.get(Swipe.Start)).isNull()

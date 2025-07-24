@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 The Android Open Source Project
+ * Copyright (C) 2025 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,17 +14,12 @@
  * limitations under the License.
  */
 
-package com.android.systemui
+package android.service.security.talisman;
 
-import android.content.Context
-import org.mockito.kotlin.mock
+import android.service.security.talisman.TalismanNeeds;
+import android.os.IRemoteCallback;
 
-class FakeSysUICutoutProviderFactory : SysUICutoutProviderImpl.Factory {
-
-    override fun create(
-        context: Context,
-        cameraProtectionLoader: CameraProtectionLoader,
-    ): SysUICutoutProviderImpl {
-        return mock<SysUICutoutProviderImpl>()
-    }
+/** @hide */
+oneway interface ITalismanService {
+    void reportTalismanNeeds(in TalismanNeeds needs);
 }

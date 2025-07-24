@@ -567,6 +567,32 @@ static bool DeserializePackageFromPb(const pb::Package& pb_package, const ResStr
           return false;
         }
       }
+
+      // read/write flags
+      for (const pb::ConfigValue& pb_config_value : pb_entry.readwrite_flag_config_value()) {
+        const pb::Configuration& pb_config = pb_config_value.config();
+
+        ConfigDescription config;
+        if (!DeserializeConfigFromPb(pb_config, &config, out_error)) {
+          return false;
+        }
+
+        ResourceConfigValue* config_value = entry->FindOrCreateReadWriteFlagValue(
+            FeatureFlagAttribute{.name = pb_config_value.value().item().flag_name(),
+                                 .negated = pb_config_value.value().item().flag_negated()},
+            config, pb_config.product());
+
+        if (config_value->value != nullptr) {
+          *out_error = "duplicate configuration in resource table";
+          return false;
+        }
+
+        config_value->value = DeserializeValueFromPb(pb_config_value.value(), src_pool, config,
+                                                     &out_table->string_pool, files, out_error);
+        if (config_value->value == nullptr) {
+          return false;
+        }
+      }
     }
   }
 

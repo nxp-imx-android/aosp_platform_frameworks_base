@@ -86,11 +86,6 @@ public final class TaskContinuityManagerService
 
     private final class TaskContinuityManagerServiceImpl extends ITaskContinuityManager.Stub {
         @Override
-        public List<RemoteTask> getRemoteTasks() {
-            return mRemoteTaskStore.getMostRecentTasks();
-        }
-
-        @Override
         public void registerRemoteTaskListener(@NonNull IRemoteTaskListener listener) {
             mRemoteTaskStore.addListener(listener);
         }

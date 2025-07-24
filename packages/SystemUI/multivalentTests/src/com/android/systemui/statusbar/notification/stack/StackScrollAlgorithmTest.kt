@@ -31,7 +31,6 @@ import com.android.systemui.statusbar.notification.footer.ui.view.FooterView
 import com.android.systemui.statusbar.notification.footer.ui.view.FooterView.FooterViewState
 import com.android.systemui.statusbar.notification.headsup.AvalancheController
 import com.android.systemui.statusbar.notification.headsup.HeadsUpAnimator
-import com.android.systemui.statusbar.notification.headsup.NotificationsHunSharedAnimationValues
 import com.android.systemui.statusbar.notification.promoted.PromotedNotificationUi
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow
 import com.android.systemui.statusbar.notification.row.ExpandableView
@@ -118,10 +117,7 @@ class StackScrollAlgorithmTest(flags: FlagsParameterization) : SysuiTestCase() {
         @JvmStatic
         @Parameters(name = "{0}")
         fun getParams(): List<FlagsParameterization> {
-            return FlagsParameterization.allCombinationsOf(
-                    NotificationsHunSharedAnimationValues.FLAG_NAME
-                )
-                .andSceneContainer()
+            return FlagsParameterization.allCombinationsOf().andSceneContainer()
         }
     }
 
@@ -144,15 +140,9 @@ class StackScrollAlgorithmTest(flags: FlagsParameterization) : SysuiTestCase() {
 
         hostView.addView(notificationRow)
 
-        if (NotificationsHunSharedAnimationValues.isEnabled) {
-            headsUpAnimator = HeadsUpAnimator(context, kosmos.fakeSystemBarUtilsProxy)
-        }
+        headsUpAnimator = HeadsUpAnimator(context, kosmos.fakeSystemBarUtilsProxy)
         stackScrollAlgorithm =
-            StackScrollAlgorithm(
-                context,
-                hostView,
-                if (::headsUpAnimator.isInitialized) headsUpAnimator else null,
-            )
+            StackScrollAlgorithm(context, hostView, headsUpAnimator)
     }
 
     private fun isTv(): Boolean {
@@ -754,11 +744,7 @@ class StackScrollAlgorithmTest(flags: FlagsParameterization) : SysuiTestCase() {
         ambientState.setLayoutMinHeight(2500) // Mock the height of shade
         ambientState.stackY = 2500f // Scroll over the max translation
         stackScrollAlgorithm.setIsExpanded(true) // Mark the shade open
-        if (NotificationsHunSharedAnimationValues.isEnabled) {
-            headsUpAnimator.headsUpAppearHeightBottom = bottomOfScreen.toInt()
-        } else {
-            stackScrollAlgorithm.setHeadsUpAppearHeightBottom(bottomOfScreen.toInt())
-        }
+        headsUpAnimator.headsUpAppearHeightBottom = bottomOfScreen.toInt()
         whenever(notificationRow.mustStayOnScreen()).thenReturn(true)
         whenever(notificationRow.isHeadsUp).thenReturn(true)
         whenever(notificationRow.isAboveShelf).thenReturn(true)
@@ -774,9 +760,7 @@ class StackScrollAlgorithmTest(flags: FlagsParameterization) : SysuiTestCase() {
         val topMargin = 100f
         ambientState.maxHeadsUpTranslation = 2000f
         ambientState.stackTopMargin = topMargin.toInt()
-        if (NotificationsHunSharedAnimationValues.isEnabled) {
-            headsUpAnimator.stackTopMargin = topMargin.toInt()
-        }
+        headsUpAnimator.stackTopMargin = topMargin.toInt()
         whenever(notificationRow.intrinsicHeight).thenReturn(100)
         whenever(notificationRow.isHeadsUpAnimatingAway).thenReturn(true)
 
@@ -786,17 +770,17 @@ class StackScrollAlgorithmTest(flags: FlagsParameterization) : SysuiTestCase() {
     }
 
     @Test
-    @EnableFlags(NotificationsHunSharedAnimationValues.FLAG_NAME, PromotedNotificationUi.FLAG_NAME)
+    @EnableFlags(PromotedNotificationUi.FLAG_NAME)
     fun resetViewStates_hunAnimatingAway_noStatusBarChip_hunTranslatedToTopOfScreen() {
         val topMargin = 100f
         ambientState.maxHeadsUpTranslation = 2000f
         ambientState.stackTopMargin = topMargin.toInt()
-        headsUpAnimator?.stackTopMargin = topMargin.toInt()
+        headsUpAnimator.stackTopMargin = topMargin.toInt()
         whenever(notificationRow.intrinsicHeight).thenReturn(100)
 
         val statusBarHeight = 432
         kosmos.fakeSystemBarUtilsProxy.fakeStatusBarHeight = statusBarHeight
-        headsUpAnimator!!.updateResources(context)
+        headsUpAnimator.updateResources(context)
 
         whenever(notificationRow.isHeadsUpAnimatingAway).thenReturn(true)
         whenever(notificationRow.hasStatusBarChipDuringHeadsUpAnimation()).thenReturn(false)
@@ -807,17 +791,17 @@ class StackScrollAlgorithmTest(flags: FlagsParameterization) : SysuiTestCase() {
     }
 
     @Test
-    @EnableFlags(NotificationsHunSharedAnimationValues.FLAG_NAME, PromotedNotificationUi.FLAG_NAME)
+    @EnableFlags(PromotedNotificationUi.FLAG_NAME)
     fun resetViewStates_hunAnimatingAway_withStatusBarChip_hunTranslatedToBottomOfStatusBar() {
         val topMargin = 100f
         ambientState.maxHeadsUpTranslation = 2000f
         ambientState.stackTopMargin = topMargin.toInt()
-        headsUpAnimator?.stackTopMargin = topMargin.toInt()
+        headsUpAnimator.stackTopMargin = topMargin.toInt()
         whenever(notificationRow.intrinsicHeight).thenReturn(100)
 
         val statusBarHeight = 432
         kosmos.fakeSystemBarUtilsProxy.fakeStatusBarHeight = statusBarHeight
-        headsUpAnimator!!.updateResources(context)
+        headsUpAnimator.updateResources(context)
 
         whenever(notificationRow.isHeadsUpAnimatingAway).thenReturn(true)
         whenever(notificationRow.hasStatusBarChipDuringHeadsUpAnimation()).thenReturn(true)
@@ -1904,11 +1888,7 @@ class StackScrollAlgorithmTest(flags: FlagsParameterization) : SysuiTestCase() {
         fullStackHeight: Float = 3000f,
     ) {
         ambientState.headsUpTop = headsUpTop
-        if (NotificationsHunSharedAnimationValues.isEnabled) {
-            headsUpAnimator.headsUpAppearHeightBottom = headsUpBottom.roundToInt()
-        } else {
-            ambientState.headsUpBottom = headsUpBottom
-        }
+        headsUpAnimator.headsUpAppearHeightBottom = headsUpBottom.roundToInt()
         ambientState.stackTop = stackTop
         ambientState.drawBounds = RectF(0f, stackTop, 400f, stackBottom)
 

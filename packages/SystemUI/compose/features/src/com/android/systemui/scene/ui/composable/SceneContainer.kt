@@ -230,6 +230,7 @@ fun SceneContainer(
                     key = sceneKey,
                     userActions = userActionsByContentKey.getOrDefault(sceneKey, emptyMap()),
                     effectFactory = offsetOverscrollEffectFactory,
+                    alwaysCompose = scene.alwaysCompose,
                 ) {
                     // Activate the scene.
                     LaunchedEffect(scene) { scene.activate() }
@@ -247,6 +248,7 @@ fun SceneContainer(
                     key = overlayKey,
                     userActions = userActionsByContentKey.getOrDefault(overlayKey, emptyMap()),
                     effectFactory = overlayEffectFactory,
+                    alwaysCompose = overlay.alwaysCompose,
                 ) {
                     // Activate the overlay.
                     LaunchedEffect(overlay) { overlay.activate() }

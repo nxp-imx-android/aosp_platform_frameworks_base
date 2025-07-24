@@ -108,4 +108,6 @@ interface IPackageInstaller {
 
     @EnforcePermission("SET_DEVELOPER_VERIFICATION_USER_RESPONSE")
     DeveloperVerificationUserConfirmationInfo getDeveloperVerificationUserConfirmationInfo(int sessionId);
+
+    void addDeveloperVerificationExperiment(String packageName, int verificationPolicy, in int[] results);
 }

@@ -322,15 +322,6 @@ public final class WindowManagerImpl implements WindowManager {
     }
 
     @Override
-    public void setShouldShowSystemDecors(int displayId, boolean shouldShow) {
-        try {
-            WindowManagerGlobal.getWindowManagerService()
-                    .setShouldShowSystemDecors(displayId, shouldShow);
-        } catch (RemoteException e) {
-        }
-    }
-
-    @Override
     public boolean shouldShowSystemDecors(int displayId) {
         try {
             return WindowManagerGlobal.getWindowManagerService().shouldShowSystemDecors(displayId);

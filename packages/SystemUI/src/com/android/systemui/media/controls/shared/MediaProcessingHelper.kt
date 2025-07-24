@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 The Android Open Source Project
+ * Copyright (C) 2025 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.systemui.media.controls.domain.pipeline
+package com.android.systemui.media.controls.shared
 
 import android.annotation.WorkerThread
 import android.app.PendingIntent
@@ -125,7 +125,7 @@ private fun areCustomActionsEqual(
 }
 
 @WorkerThread
-private fun areIconsEqual(context: Context, new: Icon?, old: Icon?): Boolean {
+fun areIconsEqual(context: Context, new: Icon?, old: Icon?): Boolean {
     if (new == old) return true
     if (new == null || old == null || new.type != old.type) return false
     return if (new.type == Icon.TYPE_BITMAP || new.type == Icon.TYPE_ADAPTIVE_BITMAP) {
@@ -137,7 +137,7 @@ private fun areIconsEqual(context: Context, new: Icon?, old: Icon?): Boolean {
         // actually equal.
         new.sameAs(old) || new.bitmap.sameAs(old.bitmap)
     } else if (new.type == Icon.TYPE_DATA || new.type == Icon.TYPE_RESOURCE) {
-        return new.sameAs(old);
+        return new.sameAs(old)
     } else {
         val newDrawable = new.loadDrawable(context)
         val oldDrawable = old.loadDrawable(context)

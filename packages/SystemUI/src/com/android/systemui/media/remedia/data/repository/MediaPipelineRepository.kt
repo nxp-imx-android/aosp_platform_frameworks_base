@@ -16,15 +16,19 @@
 
 package com.android.systemui.media.remedia.data.repository
 
+import android.content.Context
 import com.android.internal.logging.InstanceId
+import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.media.controls.data.model.MediaSortKeyModel
+import com.android.systemui.media.controls.shared.areIconsEqual
 import com.android.systemui.media.controls.shared.model.MediaData
+import com.android.systemui.media.remedia.data.model.UpdateArtInfoModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
 /** An abstract repository class that holds fields and functions called by media pipeline. */
-abstract class MediaPipelineRepository {
+abstract class MediaPipelineRepository(@Application private val applicationContext: Context) {
 
     protected val mutableUserEntries: MutableStateFlow<Map<InstanceId, MediaData>> =
         MutableStateFlow(LinkedHashMap())
@@ -66,13 +70,13 @@ abstract class MediaPipelineRepository {
         return mediaData
     }
 
-    /** @return whether the added media data already exists. */
-    open fun addCurrentUserMediaEntry(data: MediaData): Boolean {
+    /** @return the old existing media data. */
+    open fun addCurrentUserMediaEntry(data: MediaData): UpdateArtInfoModel? {
         val entries = LinkedHashMap<InstanceId, MediaData>(mutableUserEntries.value)
-        val update = mutableUserEntries.value.containsKey(data.instanceId)
+        val existing = mutableUserEntries.value[data.instanceId]
         entries[data.instanceId] = data
         mutableUserEntries.value = entries
-        return update
+        return existing?.let { getUpdateInfoModel(it, data) }
     }
 
     /**
@@ -107,4 +111,11 @@ abstract class MediaPipelineRepository {
     fun hasActiveMedia() = mutableUserEntries.value.any { it.value.active }
 
     abstract fun clearCurrentUserMedia()
+
+    private fun getUpdateInfoModel(old: MediaData, new: MediaData): UpdateArtInfoModel {
+        return UpdateArtInfoModel(
+            isBackgroundUpdated = !areIconsEqual(applicationContext, new.artwork, old.artwork),
+            isAppIconUpdated = !areIconsEqual(applicationContext, new.appIcon, old.appIcon),
+        )
+    }
 }

@@ -21,10 +21,9 @@ import android.graphics.Rect
 import android.util.RotationUtils
 import android.view.Display
 import android.view.DisplayCutout
+import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent.PerDisplaySingleton
 import com.android.systemui.display.naturalBounds
-import dagger.assisted.Assisted
-import dagger.assisted.AssistedFactory
-import dagger.assisted.AssistedInject
+import javax.inject.Inject
 
 interface SysUICutoutProvider {
 
@@ -37,11 +36,12 @@ interface SysUICutoutProvider {
     fun cutoutInfoForCurrentDisplayAndRotation(): SysUICutoutInformation?
 }
 
+@PerDisplaySingleton
 class SysUICutoutProviderImpl
-@AssistedInject
+@Inject
 constructor(
-    @Assisted private val context: Context,
-    @Assisted private val cameraProtectionLoader: CameraProtectionLoader,
+    private val context: Context,
+    private val cameraProtectionLoader: CameraProtectionLoader,
 ) : SysUICutoutProvider {
 
     private val cameraProtectionList by lazy {
@@ -80,13 +80,5 @@ constructor(
             /* rotation = */ display.rotation,
         )
         return rotatedBoundsOut
-    }
-
-    @AssistedFactory
-    interface Factory {
-        fun create(
-            context: Context,
-            cameraProtectionLoader: CameraProtectionLoader,
-        ): SysUICutoutProviderImpl
     }
 }

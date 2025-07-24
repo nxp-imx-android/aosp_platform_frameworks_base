@@ -69,7 +69,7 @@ enum class ResourceType {
   kXml,
 };
 
-enum class FlagStatus { NoFlag = 0, Disabled = 1, Enabled = 2 };
+enum class FlagStatus { NoFlag = 0, Disabled = 1, Enabled = 2, RWFlag = 3 };
 
 struct FeatureFlagAttribute {
   std::string name;
@@ -80,6 +80,8 @@ struct FeatureFlagAttribute {
   }
 
   bool operator==(const FeatureFlagAttribute& o) const = default;
+
+  std::partial_ordering operator<=>(const FeatureFlagAttribute& o) const = default;
 };
 
 android::StringPiece to_string(ResourceType type);

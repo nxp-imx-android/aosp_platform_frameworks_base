@@ -45,6 +45,17 @@
 
         <!-- For Expressive Switch -->
         <item name="expressiveSwitchStyle">@style/SettingslibSwitchStyle.Expressive</item>
+
+        <!-- Expressive Design: overridable styles/themes for Preferences -->
+        <item name="expressivePreferenceTheme">@style/ExpressivePreferenceTheme</item>
+        <item name="expressivePreferenceIconFrameStyle">@style/ExpressivePreferenceIconFrameStyle</item>
+        <item name="expressivePreferenceIconStyle">@style/ExpressivePreferenceIconStyle</item>
+        <item name="expressivePreferenceTextFrameStyle">@style/ExpressivePreferenceTextFrameStyle</item>
+        <item name="expressivePreferenceTextFrameTitleStyle">@style/ExpressivePreferenceTextFrameTitleStyle</item>
+        <item name="expressivePreferenceTextFrameSummaryStyle">@style/ExpressivePreferenceTextFrameSummaryStyle</item>
+        <item name="expressiveTwoTargetDividerStyle">@style/ExpressiveTwoTargetDividerStyle</item>
+        <item name="expressiveTwoTargetDividerImageViewStyle">@style/ExpressiveTwoTargetDividerImageViewStyle</item>
+        <item name="expressiveTwoTargetDividerViewStyle">@style/ExpressiveTwoTargetDividerViewStyle</item>
     </style>
 
     <!-- Using in SubSettings page including injected settings page -->
@@ -84,12 +95,6 @@
         <item name="android:buttonBarPositiveButtonStyle">@style/Widget.SettingsLib.DialogButton.Filled</item>
         <item name="android:buttonBarNegativeButtonStyle">@style/Widget.SettingsLib.DialogButton.Outline</item>
         <item name="android:buttonBarNeutralButtonStyle">@style/Widget.SettingsLib.DialogButton</item>
-    </style>
-
-    <style name="Theme.DeviceDefault.AlertDialog.SettingsLib.Expressive.Vertical">
-        <item name="android:buttonBarStyle">@style/Widget.SettingsLib.ButtonBar.Vertical</item>
-        <item name="android:buttonBarPositiveButtonStyle">@style/Widget.SettingsLib.DialogButton.Filled.Vertical</item>
-        <item name="android:buttonBarNegativeButtonStyle">@style/Widget.SettingsLib.DialogButton.Filled.Vertical.Negative</item>
     </style>
 
     <style name="Theme.DeviceDefault.Dialog.Alert.DayNight" parent="@android:style/Theme.DeviceDefault.Light.Dialog.Alert" />

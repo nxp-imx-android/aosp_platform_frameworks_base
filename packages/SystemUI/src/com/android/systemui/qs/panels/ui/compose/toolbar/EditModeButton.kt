@@ -18,10 +18,7 @@ package com.android.systemui.qs.panels.ui.compose.toolbar
 
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.displayCutout
-import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.wrapContentHeight
-import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -41,12 +38,9 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.geometry.Offset
@@ -58,6 +52,7 @@ import androidx.compose.ui.layout.layout
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.DpSize
@@ -70,7 +65,7 @@ import androidx.compose.ui.window.PopupPositionProvider
 import com.android.systemui.Flags
 import com.android.systemui.common.ui.icons.Edit
 import com.android.systemui.qs.panels.ui.compose.toolbar.EditModeButtonDefaults.SpacingBetweenTooltipAndAnchor
-import com.android.systemui.qs.panels.ui.compose.toolbar.EditModeButtonDefaults.TooltipHeight
+import com.android.systemui.qs.panels.ui.compose.toolbar.EditModeButtonDefaults.TooltipMaxWidth
 import com.android.systemui.qs.panels.ui.viewmodel.toolbar.EditModeButtonViewModel
 import com.android.systemui.qs.ui.compose.borderOnFocus
 import com.android.systemui.res.R
@@ -93,6 +88,12 @@ fun EditModeButton(
         val tooltipState = rememberTooltipState(isPersistent = true)
         val showTooltip = tooltipEnabled && isVisible && viewModel.showTooltip
         LaunchedEffect(showTooltip) { if (showTooltip) tooltipState.show() }
+
+        // Make sure to dismiss the tooltip if it's still visible when it shouldn't be due to always
+        // composing QS.
+        LaunchedEffect(isVisible) {
+            if (!isVisible && tooltipState.isVisible) tooltipState.dismiss()
+        }
 
         val density = LocalDensity.current
         val windowContainerSizePx =
@@ -120,13 +121,13 @@ fun EditModeButton(
             tooltip = {
                 DisposableEffect(Unit) { onDispose(viewModel::onTooltipDisposed) }
                 PlainTooltip(
-                    shape = CircleShape,
+                    shape = RoundedCornerShape(16.dp),
                     containerColor = tertiaryColor,
                     contentColor = MaterialTheme.colorScheme.onTertiary,
                     shadowElevation = EditModeButtonDefaults.TooltipShadowElevation,
+                    maxWidth = TooltipMaxWidth,
                     modifier =
-                        Modifier.height(TooltipHeight)
-                            .layoutCaret(
+                        Modifier.layoutCaret(
                                 caretPath,
                                 density,
                                 windowContainerSizePx,
@@ -141,8 +142,10 @@ fun EditModeButton(
                 ) {
                     Text(
                         stringResource(R.string.qs_edit_mode_tooltip),
-                        modifier =
-                            Modifier.fillMaxHeight().wrapContentHeight(Alignment.CenterVertically),
+                        style = MaterialTheme.typography.labelLarge,
+                        textAlign = TextAlign.Center,
+                        maxLines = 2,
+                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 12.dp),
                     )
                 }
             },
@@ -317,6 +320,6 @@ private fun Modifier.layoutCaret(
 
 private object EditModeButtonDefaults {
     val SpacingBetweenTooltipAndAnchor = 4.dp
-    val TooltipHeight = 40.dp
+    val TooltipMaxWidth = 360.dp
     val TooltipShadowElevation = 2.dp
 }

@@ -16,18 +16,19 @@
 
 package com.android.server.companion.datatransfer.continuity.tasks;
 
+import android.annotation.NonNull;
+import android.annotation.Nullable;
 import android.companion.datatransfer.continuity.RemoteTask;
 import android.util.Slog;
 
 import com.android.server.companion.datatransfer.continuity.messages.RemoteTaskInfo;
 
 import java.util.function.Consumer;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Collection;
 import java.util.Comparator;
-import java.util.HashSet;
 import java.util.PriorityQueue;
 import java.util.Set;
+import java.util.Objects;
 
 /**
  * Tracks remote tasks currently available on a specific remote device.
@@ -43,12 +44,12 @@ class RemoteDeviceTaskList {
 
     RemoteDeviceTaskList(
         int associationId,
-        String deviceName,
-        Consumer<RemoteTask> onMostRecentTaskChangedListener) {
+        @NonNull String deviceName,
+        @NonNull Consumer<RemoteTask> onMostRecentTaskChangedListener) {
 
         mAssociationId = associationId;
-        mDeviceName = deviceName;
-        mOnMostRecentTaskChangedListener = onMostRecentTaskChangedListener;
+        mDeviceName = Objects.requireNonNull(deviceName);
+        mOnMostRecentTaskChangedListener = Objects.requireNonNull(onMostRecentTaskChangedListener);
         mTasks = new PriorityQueue<>(new Comparator<RemoteTaskInfo>() {
             @Override
             public int compare(RemoteTaskInfo task1, RemoteTaskInfo task2) {
@@ -75,6 +76,7 @@ class RemoteDeviceTaskList {
     /**
      * Returns the device name of the remote device.
      */
+    @NonNull
     String getDeviceName() {
         return mDeviceName;
     }
@@ -83,7 +85,9 @@ class RemoteDeviceTaskList {
      * Adds a task to the list of tasks currently available on the remote
      * device.
      */
-    void addTask(RemoteTaskInfo taskInfo) {
+    void addTask(@NonNull RemoteTaskInfo taskInfo) {
+        Objects.requireNonNull(taskInfo);
+
         synchronized (mTasks) {
             Slog.v(TAG, "Adding task: " + taskInfo.id() + " to association: " + mAssociationId);
             int previousTopTaskId
@@ -102,7 +106,9 @@ class RemoteDeviceTaskList {
     /**
      * Sets the list of tasks currently available on the remote device.
      */
-    void setTasks(List<RemoteTaskInfo> tasks) {
+    void setTasks(@NonNull Collection<RemoteTaskInfo> tasks) {
+        Objects.requireNonNull(tasks);
+
         synchronized (mTasks) {
             Slog.v(TAG, "Setting remote tasks for association: " + mAssociationId);
             mTasks.clear();
@@ -130,7 +136,9 @@ class RemoteDeviceTaskList {
     }
 
     // Replaces tasks with the same ID as provided and notifies listeners.
-    void updateTask(RemoteTaskInfo taskInfo) {
+    void updateTask(@NonNull RemoteTaskInfo taskInfo) {
+        Objects.requireNonNull(taskInfo);
+
         synchronized(mTasks) {
             Slog.v(
                 TAG,
@@ -156,6 +164,7 @@ class RemoteDeviceTaskList {
      * Gets the most recently used task on this device, or null if there are no
      * tasks.
      */
+    @Nullable
     RemoteTask getMostRecentTask() {
         synchronized (mTasks) {
             Slog.v(TAG, "Getting most recent task for association: " + mAssociationId);

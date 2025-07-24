@@ -472,13 +472,6 @@ flag {
 }
 
 flag {
-    namespace: "system_performance"
-    name: "zygote_app_launch_latency_ablation"
-    description: "Fast is overrated. Let's make Android slower."
-    bug: "423047108"
-}
-
-flag {
     namespace: "wear_services"
     name: "bugreport_deferred_consent_screenshot_fix"
     description: "Stops always taking a screenshot when consent is deferred."

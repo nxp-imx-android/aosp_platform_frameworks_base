@@ -38,7 +38,6 @@ import com.android.systemui.statusbar.StatusBarState;
 import com.android.systemui.statusbar.notification.collection.NotificationEntry;
 import com.android.systemui.statusbar.notification.data.repository.HeadsUpRepository;
 import com.android.systemui.statusbar.notification.headsup.AvalancheController;
-import com.android.systemui.statusbar.notification.headsup.NotificationsHunSharedAnimationValues;
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow;
 import com.android.systemui.statusbar.notification.row.ExpandableView;
 import com.android.systemui.statusbar.notification.shared.NotificationBundleUi;
@@ -73,7 +72,6 @@ public class AmbientState implements Dumpable {
     private float mStackTop;
     private RectF mDrawBounds = new RectF();
     private float mHeadsUpTop;
-    private float mHeadsUpBottom;
     private int mScrollY;
     private float mOverScrollTopAmount;
     private float mOverScrollBottomAmount;
@@ -428,19 +426,6 @@ public class AmbientState implements Dumpable {
     public void setHeadsUpTop(float mHeadsUpTop) {
         if (SceneContainerFlag.isUnexpectedlyInLegacyMode()) return;
         this.mHeadsUpTop = mHeadsUpTop;
-    }
-
-    /** the bottom-most y position where we can draw pinned HUNs  */
-    public float getHeadsUpBottom() {
-        if (SceneContainerFlag.isUnexpectedlyInLegacyMode()) return 0f;
-        NotificationsHunSharedAnimationValues.assertInLegacyMode();
-        return mHeadsUpBottom;
-    }
-
-    /** @see #getHeadsUpBottom() */
-    public void setHeadsUpBottom(float headsUpBottom) {
-        if (SceneContainerFlag.isUnexpectedlyInLegacyMode()) return;
-        mHeadsUpBottom = headsUpBottom;
     }
 
     public int getScrollY() {
@@ -887,7 +872,6 @@ public class AmbientState implements Dumpable {
             pw.println("mStackTop=" + mStackTop);
             pw.print("mDrawBounds=" + mDrawBounds);
             pw.println("mHeadsUpTop=" + mHeadsUpTop);
-            pw.println("mHeadsUpBottom=" + mHeadsUpBottom);
         }
         pw.println("mTopPadding=" + mTopPadding);
         pw.println("mStackTopMargin=" + mStackTopMargin);

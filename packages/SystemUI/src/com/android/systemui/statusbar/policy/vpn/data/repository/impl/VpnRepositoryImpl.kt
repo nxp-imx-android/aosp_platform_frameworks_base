@@ -16,6 +16,7 @@
 
 package com.android.systemui.statusbar.policy.vpn.data.repository.impl
 
+import android.annotation.SuppressLint
 import android.content.pm.PackageManager
 import android.net.ConnectivityManager
 import android.net.LinkProperties
@@ -45,6 +46,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.scan
 import kotlinx.coroutines.flow.stateIn
 
+@SuppressLint("MissingPermission")
 @SysUISingleton
 class VpnRepositoryImpl
 @Inject
@@ -64,6 +66,12 @@ constructor(
      */
     private val internalState: StateFlow<VpnInternalState> =
         conflatedCallbackFlow<(VpnInternalState) -> VpnInternalState> {
+                val vpnNetworkRequest =
+                    NetworkRequest.Builder()
+                        .clearCapabilities()
+                        .addTransportType(NetworkCapabilities.TRANSPORT_VPN)
+                        .build()
+
                 val callback =
                     object : ConnectivityManager.NetworkCallback() {
                         override fun onAvailable(network: Network) {
@@ -147,7 +155,7 @@ constructor(
             }
             .scan(VpnInternalState()) { state, transform -> transform(state) }
             .flowOn(bgDispatcher)
-            .stateIn(scope, SharingStarted.Eagerly, VpnInternalState())
+            .stateIn(scope, SharingStarted.WhileSubscribed(), VpnInternalState())
 
     override val vpnState: StateFlow<VpnState> =
         internalState
@@ -168,12 +176,6 @@ constructor(
 
         return VpnState(isEnabled = isEnabled, isBranded = isBranded, isValidated = isValidated)
     }
-
-    private val vpnNetworkRequest =
-        NetworkRequest.Builder()
-            .clearCapabilities()
-            .addTransportType(NetworkCapabilities.TRANSPORT_VPN)
-            .build()
 
     /** Internal state holder that contains both the property cache and the final VPN state. */
     private data class VpnInternalState(

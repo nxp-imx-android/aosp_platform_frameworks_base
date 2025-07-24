@@ -55,6 +55,7 @@ import android.app.PendingIntent;
 import android.app.StatsManager;
 import android.app.admin.DevicePolicyManagerInternal;
 import android.app.admin.DevicePolicyManagerInternal.OnCrossProfileWidgetProvidersChangeListener;
+import android.app.job.JobScheduler;
 import android.app.usage.UsageEvents;
 import android.app.usage.UsageStatsManager;
 import android.app.usage.UsageStatsManagerInternal;
@@ -330,6 +331,7 @@ class AppWidgetServiceImpl extends IAppWidgetService.Stub implements WidgetBacku
     private UserManager mUserManager;
     private AppOpsManager mAppOpsManager;
     private KeyguardManager mKeyguardManager;
+    private JobScheduler mJobScheduler;
     private DevicePolicyManagerInternal mDevicePolicyManagerInternal;
     private PackageManagerInternal mPackageManagerInternal;
     private ActivityManagerInternal mActivityManagerInternal;
@@ -384,6 +386,7 @@ class AppWidgetServiceImpl extends IAppWidgetService.Stub implements WidgetBacku
         mUserManager = (UserManager) mContext.getSystemService(Context.USER_SERVICE);
         mAppOpsManager = (AppOpsManager) mContext.getSystemService(Context.APP_OPS_SERVICE);
         mKeyguardManager = (KeyguardManager) mContext.getSystemService(KEYGUARD_SERVICE);
+        mJobScheduler = (JobScheduler) mContext.getSystemService(Context.JOB_SCHEDULER_SERVICE);
         mDevicePolicyManagerInternal = LocalServices.getService(DevicePolicyManagerInternal.class);
         mPackageManagerInternal = LocalServices.getService(PackageManagerInternal.class);
         if (removeAppWidgetServiceIoFromCriticalPath()) {
@@ -419,7 +422,6 @@ class AppWidgetServiceImpl extends IAppWidgetService.Stub implements WidgetBacku
         mWidgetEventsReportIntervalMs = DeviceConfig.getLong(NAMESPACE_SYSTEMUI,
                 SystemUiDeviceConfigFlags.WIDGET_EVENTS_REPORT_INTERVAL_MS,
                 DEFAULT_WIDGET_EVENTS_REPORT_INTERVAL_MS);
-        ReportWidgetEventsJob.schedule(mContext, mWidgetEventsReportIntervalMs);
         DeviceConfig.addOnPropertiesChangedListener(NAMESPACE_SYSTEMUI,
                 new HandlerExecutor(mCallbackHandler), this::handleSystemUiDeviceConfigChange);
 
@@ -458,6 +460,9 @@ class AppWidgetServiceImpl extends IAppWidgetService.Stub implements WidgetBacku
         mAppOpsManagerInternal = LocalServices.getService(AppOpsManagerInternal.class);
         mUsageStatsManagerInternal = LocalServices.getService(UsageStatsManagerInternal.class);
         registerPullCallbacks();
+        // Schedule may take several milliseconds due to lock contention
+        BackgroundThread.getExecutor().execute(
+                () -> ReportWidgetEventsJob.schedule(mJobScheduler, mWidgetEventsReportIntervalMs));
     }
 
     /**
@@ -5638,7 +5643,7 @@ class AppWidgetServiceImpl extends IAppWidgetService.Stub implements WidgetBacku
                 mWidgetEventsReportIntervalMs = properties.getLong(
                         SystemUiDeviceConfigFlags.WIDGET_EVENTS_REPORT_INTERVAL_MS,
                         /* defaultValue = */ mWidgetEventsReportIntervalMs);
-                ReportWidgetEventsJob.schedule(mContext, mWidgetEventsReportIntervalMs);
+                ReportWidgetEventsJob.schedule(mJobScheduler, mWidgetEventsReportIntervalMs);
             }
         }
     }

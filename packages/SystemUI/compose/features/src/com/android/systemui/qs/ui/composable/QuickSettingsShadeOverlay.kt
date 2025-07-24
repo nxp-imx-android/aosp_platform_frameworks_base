@@ -115,6 +115,8 @@ constructor(
 
     override val userActions: Flow<Map<UserAction, UserActionResult>> = actionsViewModel.actions
 
+    override val alwaysCompose: Boolean = true
+
     override suspend fun activate(): Nothing {
         actionsViewModel.activate()
     }
@@ -311,7 +313,7 @@ fun ContentScope.QuickSettingsLayout(
                                 volumeSliderViewModel.onValueChanged(volumeSliderState, newValue)
                             },
                             onValueChangeFinished = {
-                                volumeSliderViewModel.onValueChangeFinished(it)
+                                volumeSliderViewModel.onValueChangeFinished()
                             },
                             onIconTapped = { volumeSliderViewModel.toggleMuted(volumeSliderState) },
                             sliderColors = PlatformSliderDefaults.defaultPlatformSliderColors(),

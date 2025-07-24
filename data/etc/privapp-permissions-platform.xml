@@ -261,6 +261,7 @@ applications that come with the platform
         <permission name="android.permission.SUBSTITUTE_NOTIFICATION_APP_NAME"/>
         <!-- Required so Telecom can check permission for data delivery -->
         <permission name="android.permission.UPDATE_APP_OPS_STATS"/>
+        <permission name="android.permission.CHANGE_DEVICE_IDLE_TEMP_WHITELIST"/>
     </privapp-permissions>
 
     <privapp-permissions package="com.android.sharedstoragebackup">

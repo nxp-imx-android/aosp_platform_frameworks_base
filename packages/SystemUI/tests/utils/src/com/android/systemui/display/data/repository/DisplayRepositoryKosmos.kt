@@ -22,6 +22,7 @@ import android.os.fakeHandler
 import android.view.Display
 import android.view.mockIWindowManager
 import com.android.app.displaylib.fakes.FakePerDisplayRepository
+import com.android.systemui.SysUICutoutProvider
 import com.android.systemui.common.ui.ConfigurationState
 import com.android.systemui.common.ui.configurationState
 import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent
@@ -103,6 +104,9 @@ fun Kosmos.createFakeDisplaySubcomponent(
 
         override val configurationState: ConfigurationState
             get() = configurationState
+
+        override val sysUICutoutProvider: SysUICutoutProvider
+            get() = mock<SysUICutoutProvider>()
 
         override val homeStatusBarComponentFactory: HomeStatusBarComponent.Factory
             get() = mock<HomeStatusBarComponent.Factory>()

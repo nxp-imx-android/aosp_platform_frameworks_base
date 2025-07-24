@@ -1831,13 +1831,16 @@
     <string name="keyguard_indication_trust_unlocked">Kept unlocked by TrustAgent</string>
 
     <!-- Message asking the user to authenticate with primary authentication methods (PIN/pattern/password) or biometrics after the device is locked by adaptive auth. [CHAR LIMIT=70] -->
-    <string name="kg_prompt_after_adaptive_auth_lock">Device was locked, too many authentication attempts</string>
+    <string name="kg_prompt_after_adaptive_auth_lock">Screen locked. Too many authentication attempts.</string>
 
     <!-- Indication on the keyguard that appears after the device is locked by adaptive auth. [CHAR LIMIT=60] -->
-    <string name="keyguard_indication_after_adaptive_auth_lock">Device locked\nFailed authentication</string>
+    <string name="keyguard_indication_after_adaptive_auth_lock">Screen locked\nFailed authentication</string>
 
     <!-- Indication on the keyguard that appears after the device is locked by adaptive auth. [CHAR LIMIT=60] -->
     <string name="keyguard_indication_after_watch_disconnected">Locked by your watch</string>
+
+    <!-- Indication on the keyguard that appears after the device is locked by secure lock device. [CHAR LIMIT=48] -->
+    <string name="keyguard_indication_after_secure_lock_device">Locked with 2-step verification</string>
 
     <!-- Accessibility string for current zen mode and selected exit condition. A template that simply concatenates existing mode string and the current condition description. [CHAR LIMIT=20] -->
     <string name="zen_mode_and_condition"><xliff:g id="zen_mode" example="Priority interruptions only">%1$s</xliff:g>. <xliff:g id="exit_condition" example="For one hour">%2$s</xliff:g></string>
@@ -2738,6 +2741,12 @@
 
     <!-- Tooltip for the edit mode button indicating that tiles can be resized [CHAR LIMIT=60] -->
     <string name="qs_edit_mode_tooltip">Resize Quick Settings tiles</string>
+
+    <!-- Edit mode menu entry for Settings [CHAR LIMIT=20] -->
+    <string name="qs_edit_settings">Settings</string>
+
+    <!-- Edit mode menu for extra options -->
+    <string name="qs_edit_menu_content_description">Options</string>
 
     <!-- SysUI Tuner: Options for how clock is displayed [CHAR LIMIT=NONE] -->
     <string name="tuner_time">Time</string>

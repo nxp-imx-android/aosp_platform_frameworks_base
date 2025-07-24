@@ -54,6 +54,8 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.consumeWindowInsets
+import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -61,6 +63,9 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredHeightIn
+import androidx.compose.foundation.layout.requiredWidthIn
+import androidx.compose.foundation.layout.safeContent
+import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.systemBars
@@ -78,9 +83,10 @@ import androidx.compose.foundation.text.InlineTextContent
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.automirrored.filled.Undo
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
@@ -88,6 +94,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.MenuItemColors
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -96,6 +103,7 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -106,6 +114,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -123,6 +132,7 @@ import androidx.compose.ui.layout.layout
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInRoot
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
@@ -142,6 +152,7 @@ import androidx.compose.ui.text.style.Hyphens
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
@@ -154,6 +165,7 @@ import com.android.compose.theme.LocalAndroidColorScheme
 import com.android.compose.ui.graphics.painter.rememberDrawablePainter
 import com.android.systemui.common.shared.model.Icon
 import com.android.systemui.common.ui.compose.load
+import com.android.systemui.common.ui.icons.MoreVert
 import com.android.systemui.common.ui.icons.Undo
 import com.android.systemui.qs.flags.QsEditModeTabs
 import com.android.systemui.qs.panels.shared.model.SizedTileImpl
@@ -193,6 +205,7 @@ import com.android.systemui.qs.panels.ui.model.TileGridCell
 import com.android.systemui.qs.panels.ui.viewmodel.EditModeTabViewModel
 import com.android.systemui.qs.panels.ui.viewmodel.EditTileViewModel
 import com.android.systemui.qs.panels.ui.viewmodel.EditTileViewModelConstants.APP_ICON_INLINE_CONTENT_ID
+import com.android.systemui.qs.panels.ui.viewmodel.EditTopBarActionViewModel
 import com.android.systemui.qs.panels.ui.viewmodel.InfiniteGridSnapshotViewModel
 import com.android.systemui.qs.pipeline.shared.TileSpec
 import com.android.systemui.qs.shared.model.TileCategory
@@ -267,10 +280,121 @@ sealed interface EditAction {
 }
 
 @Composable
+private fun SingleTopBarAction(
+    editTopBarActionViewModel: EditTopBarActionViewModel,
+    modifier: Modifier = Modifier,
+) {
+    IconButton(
+        onClick = { editTopBarActionViewModel.onClick() },
+        colors =
+            IconButtonDefaults.iconButtonColors(
+                containerColor = Color.Transparent,
+                contentColor = MaterialTheme.colorScheme.onSurface,
+            ),
+        modifier = modifier,
+    ) {
+        Icon(
+            editTopBarActionViewModel.icon,
+            contentDescription = stringResource(id = editTopBarActionViewModel.labelId),
+        )
+    }
+}
+
+@Composable
+private fun TopBarActionOverflow(
+    actionsViewModel: SnapshotStateList<EditTopBarActionViewModel>,
+    modifier: Modifier = Modifier,
+) {
+    var showMenu by remember { mutableStateOf(false) }
+
+    Box(modifier = modifier) {
+        val density = LocalDensity.current
+        val offset =
+            with(density) {
+                val safeContent = WindowInsets.safeDrawing
+                val layoutDirection = LocalLayoutDirection.current
+                DpOffset(
+                    -safeContent.getLeft(this, layoutDirection).toDp(),
+                    -safeContent.getTop(this).toDp(),
+                )
+            }
+        IconButton(
+            onClick = { showMenu = !showMenu },
+            colors =
+                IconButtonDefaults.iconButtonColors(
+                    containerColor = Color.Transparent,
+                    contentColor = MaterialTheme.colorScheme.onSurface,
+                ),
+        ) {
+            Icon(
+                MoreVert,
+                contentDescription = stringResource(R.string.qs_edit_menu_content_description),
+            )
+        }
+        DropdownMenu(
+            expanded = showMenu,
+            onDismissRequest = { showMenu = false },
+            shape = RoundedCornerShape(26.dp),
+            modifier = Modifier.testTag(OPTIONS_DROP_DOWN_TEST_TAG).requiredWidthIn(min = 216.dp),
+            containerColor = MaterialTheme.colorScheme.surfaceBright,
+            offset = offset,
+        ) {
+            actionsViewModel.forEach { action ->
+                key(action.labelId) {
+                    DropdownMenuElement(action, dismissDropdown = { showMenu = false })
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun DropdownMenuElement(
+    action: EditTopBarActionViewModel,
+    dismissDropdown: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    DropdownMenuItem(
+        onClick = {
+            action.onClick()
+            dismissDropdown()
+        },
+        text = {
+            Box(modifier = Modifier.padding(start = 6.dp)) {
+                Text(
+                    text = stringResource(action.labelId),
+                    style = MaterialTheme.typography.labelLarge,
+                    modifier = Modifier.wrapContentHeight(Alignment.CenterVertically),
+                )
+            }
+        },
+        leadingIcon = {
+            Icon(action.icon, contentDescription = null, modifier = Modifier.size(20.dp))
+        },
+        colors = menuItemColors(),
+        contentPadding = PaddingValues(16.dp),
+        modifier = modifier.heightIn(min = 52.dp),
+    )
+}
+
+@ReadOnlyComposable
+@Composable
+private fun menuItemColors() =
+    MenuItemColors(
+        textColor = MaterialTheme.colorScheme.onSurface,
+        leadingIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+        trailingIconColor = Color.Transparent,
+        disabledTextColor = Color.Transparent,
+        disabledLeadingIconColor = Color.Transparent,
+        disabledTrailingIconColor = Color.Transparent,
+    )
+
+@Composable
 fun DefaultEditTileGrid(
     listState: EditTileListState,
     allTiles: List<EditTileViewModel>,
     snapshotViewModel: InfiniteGridSnapshotViewModel,
+    topBarActions: SnapshotStateList<EditTopBarActionViewModel>,
     modifier: Modifier = Modifier,
     scrollState: ScrollState = rememberScrollState(),
     onStopEditing: () -> Unit = {},
@@ -288,7 +412,7 @@ fun DefaultEditTileGrid(
     }
 
     Scaffold(
-        modifier = modifier,
+        modifier = modifier.consumeWindowInsets(WindowInsets.displayCutout),
         containerColor = Color.Transparent,
         topBar = {
             EditModeTopBar(onStopEditing = onStopEditing, modifier = Modifier.statusBarsPadding()) {
@@ -311,6 +435,11 @@ fun DefaultEditTileGrid(
                                 stringResource(id = com.android.internal.R.string.undo),
                         )
                     }
+                }
+                if (topBarActions.size == 1) {
+                    SingleTopBarAction(topBarActions.single())
+                } else if (topBarActions.size > 1) {
+                    TopBarActionOverflow(topBarActions)
                 }
             }
         },
@@ -1371,3 +1500,4 @@ private object EditModeTileDefaults {
 
 private const val CURRENT_TILES_GRID_TEST_TAG = "CurrentTilesGrid"
 private const val AVAILABLE_TILES_GRID_TEST_TAG = "AvailableTilesGrid"
+private const val OPTIONS_DROP_DOWN_TEST_TAG = "OptionsDropdown"

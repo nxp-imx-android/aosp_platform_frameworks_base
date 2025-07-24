@@ -44,7 +44,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
-import android.net.Uri;
 import android.provider.DeviceConfig;
 import android.util.Log;
 import android.view.MotionEvent;
@@ -100,9 +99,6 @@ public class ClipboardOverlayController implements ClipboardListener.ClipboardOv
     private final IntentCreator mIntentCreator;
 
     private Runnable mOnSessionCompleteListener;
-    private Runnable mOnRemoteCopyTapped;
-    private Runnable mOnShareTapped;
-    private Runnable mOnPreviewTapped;
 
     private BroadcastReceiver mCloseDialogsReceiver;
     private BroadcastReceiver mScreenshotReceiver;
@@ -279,12 +275,10 @@ public class ClipboardOverlayController implements ClipboardListener.ClipboardOv
                     mView.showTextPreview(model.getText().toString(), false);
                 }
                 mView.setEditAccessibilityAction(true);
-                mOnPreviewTapped = this::editText;
                 onViewReady.run();
                 break;
             case IMAGE:
                 mView.setEditAccessibilityAction(true);
-                mOnPreviewTapped = () -> editImage(model.getUri());
                 if (model.isSensitive()) {
                     mView.showImagePreview(null);
                     onViewReady.run();
@@ -309,7 +303,6 @@ public class ClipboardOverlayController implements ClipboardListener.ClipboardOv
             maybeShowRemoteCopy(model.getClipData());
         }
         if (model.getType() != ClipboardModel.Type.OTHER) {
-            mOnShareTapped = () -> shareContent(model.getClipData());
             mView.showShareChip();
         }
     }
@@ -370,11 +363,6 @@ public class ClipboardOverlayController implements ClipboardListener.ClipboardOv
         if (packageManager.resolveActivity(
                 remoteCopyIntent, PackageManager.ResolveInfoFlags.of(0)) != null) {
             mView.setRemoteCopyVisibility(true);
-            mOnRemoteCopyTapped = () -> {
-                mClipboardLogger.logSessionComplete(CLIPBOARD_OVERLAY_REMOTE_COPY_TAPPED);
-                mContext.startActivity(remoteCopyIntent);
-                animateOut();
-            };
         } else {
             mView.setRemoteCopyVisibility(false);
         }
@@ -397,26 +385,6 @@ public class ClipboardOverlayController implements ClipboardListener.ClipboardOv
             }
             return Unit.INSTANCE;
         });
-    }
-
-    private void editImage(Uri uri) {
-        mClipboardLogger.logSessionComplete(CLIPBOARD_OVERLAY_EDIT_TAPPED);
-        mIntentCreator.getImageEditIntentAsync(uri, mContext, intent -> {
-            mContext.startActivity(intent);
-            animateOut();
-        });
-    }
-
-    private void editText() {
-        mClipboardLogger.logSessionComplete(CLIPBOARD_OVERLAY_EDIT_TAPPED);
-        mContext.startActivity(mIntentCreator.getTextEditorIntent(mContext));
-        animateOut();
-    }
-
-    private void shareContent(ClipData clip) {
-        mClipboardLogger.logSessionComplete(CLIPBOARD_OVERLAY_SHARE_TAPPED);
-        mContext.startActivity(mIntentCreator.getShareIntent(clip, mContext));
-        animateOut();
     }
 
     private void animateInWithAnnouncement(ClipboardModel.Type type) {
@@ -547,9 +515,6 @@ public class ClipboardOverlayController implements ClipboardListener.ClipboardOv
     }
 
     private void reset() {
-        mOnRemoteCopyTapped = null;
-        mOnShareTapped = null;
-        mOnPreviewTapped = null;
         mShowingUi = false;
         mView.reset();
         mTimeoutHandler.cancelTimeout();

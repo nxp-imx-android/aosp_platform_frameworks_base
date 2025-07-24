@@ -4532,6 +4532,14 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
         }
     }
 
+    /**
+     * Returns whether the status bar is in immersive mode.
+     * @return true if the status bar is in immersive mode.
+     */
+    public boolean isStatusBarImmersive() {
+        return mStatusBarHider.isStatusBarImmersive();
+    }
+
     @NeverCompile
     @Override
     public void dump(@NonNull PrintWriter pw, String prefix) {

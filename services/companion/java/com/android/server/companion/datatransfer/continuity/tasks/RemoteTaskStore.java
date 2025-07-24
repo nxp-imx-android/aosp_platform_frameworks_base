@@ -127,6 +127,13 @@ public class RemoteTaskStore {
 
         synchronized (mRemoteTaskListeners) {
             mRemoteTaskListeners.register(listener);
+            List<RemoteTask> remoteTasks = getMostRecentTasks();
+            try {
+                listener.onRemoteTasksChanged(remoteTasks);
+            } catch (RemoteException e) {
+                Slog.e(TAG, "Failed to notify new listener of initial task state: "
+                    + e.getMessage());
+            }
         }
     }
 

@@ -36,6 +36,7 @@ import com.android.systemui.plugins.statusbar.StatusBarStateController
 import com.android.systemui.statusbar.SmartReplyController
 import com.android.systemui.statusbar.notification.BundleInteractionLogger
 import com.android.systemui.statusbar.notification.ColorUpdateLogger
+import com.android.systemui.statusbar.notification.NotificationActivityStarter
 import com.android.systemui.statusbar.notification.collection.EntryAdapter
 import com.android.systemui.statusbar.notification.collection.EntryAdapterFactory
 import com.android.systemui.statusbar.notification.collection.NotificationEntry
@@ -116,6 +117,7 @@ class ExpandableNotificationRowControllerTest : SysuiTestCase() {
     private val entryAdapterFactory: EntryAdapterFactory = mock()
     private val bundleInteractionLogger: BundleInteractionLogger = mock()
     private lateinit var controller: ExpandableNotificationRowController
+    private val notificationActivityStarter: NotificationActivityStarter = mock()
 
     @Before
     fun setUp() {
@@ -167,6 +169,7 @@ class ExpandableNotificationRowControllerTest : SysuiTestCase() {
             entryAdapterFactory,
             kosmos.windowRootViewBlurInteractor,
             bundleInteractionLogger,
+            notificationActivityStarter,
         )
     }
 

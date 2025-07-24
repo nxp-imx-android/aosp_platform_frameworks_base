@@ -378,13 +378,13 @@ private class TextPolicyToAnnotationConverter(
             val readableName = "$className.$methodName$methodDesc"
             log.v("Found simple method policy: $readableName - ${policy.policy}")
 
+            val ci = findClass(className) ?: return
 
             // Inner method to get the matching methods for this policy.
             //
             // If this policy can't be converted for any reason, it'll return null.
             // Otherwise, it'll return a pair of method list and the annotation string.
             fun getMethods(): Pair<List<MethodInfo>, String>? {
-                val ci = findClass(className) ?: return null
                 val methods = ci.findMethods(methodName, methodDesc)
                 if (methods == null) {
                     warnOnCurrentPolicy("Method not found: $readableName")
@@ -414,7 +414,6 @@ private class TextPolicyToAnnotationConverter(
             if (methodName == CLASS_INITIALIZER_NAME) {
                 annotations.getClassInitializerPolicy(policy.policy)?.let { annotation ->
                     // Add "KeepStaticInitializer".
-                    val ci = findClass(className)!!
                     addOperation(
                         SourceOperation(
                             ci.location.file,
@@ -438,7 +437,6 @@ private class TextPolicyToAnnotationConverter(
                 //
                 // We may as well add "@KeepAllConstructor".
                 if (methodName == CTOR_NAME) {
-                    val ci = findClass(className)!!
                     addOperation(
                         SourceOperation(
                             ci.location.file,

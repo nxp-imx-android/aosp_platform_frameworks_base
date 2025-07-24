@@ -153,6 +153,8 @@ constructor(
 
     override val userActions: Flow<Map<UserAction, UserActionResult>> = actionsViewModel.actions
 
+    override val alwaysCompose: Boolean = false
+
     @Composable
     override fun ContentScope.Content(modifier: Modifier) {
         val viewModel =

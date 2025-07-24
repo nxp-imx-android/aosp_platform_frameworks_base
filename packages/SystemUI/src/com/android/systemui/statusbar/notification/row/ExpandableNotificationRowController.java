@@ -51,6 +51,7 @@ import com.android.systemui.statusbar.SmartReplyController;
 import com.android.systemui.statusbar.notification.BundleInteractionLogger;
 import com.android.systemui.statusbar.notification.ColorUpdateLogger;
 import com.android.systemui.statusbar.notification.FeedbackIcon;
+import com.android.systemui.statusbar.notification.NotificationActivityStarter;
 import com.android.systemui.statusbar.notification.collection.EntryAdapterFactory;
 import com.android.systemui.statusbar.notification.collection.NotificationEntry;
 import com.android.systemui.statusbar.notification.collection.PipelineEntry;
@@ -128,6 +129,7 @@ public class ExpandableNotificationRowController implements NotifViewController 
     private final NotificationSettingsController mSettingsController;
     private final EntryAdapterFactory mEntryAdapterFactory;
     private final WindowRootViewBlurInteractor mWindowRootViewBlurInteractor;
+    private final NotificationActivityStarter mNotificationActivityStarter;
     private final Context mContext;
 
     @VisibleForTesting
@@ -295,7 +297,8 @@ public class ExpandableNotificationRowController implements NotifViewController 
             NotificationRebindingTracker notificationRebindingTracker,
             EntryAdapterFactory entryAdapterFactory,
             WindowRootViewBlurInteractor windowRootViewBlurInteractor,
-            BundleInteractionLogger bundleInteractionLogger) {
+            BundleInteractionLogger bundleInteractionLogger,
+            NotificationActivityStarter notificationActivityStarter) {
         mView = view;
         mContext = context;
         mListContainer = listContainer;
@@ -334,6 +337,7 @@ public class ExpandableNotificationRowController implements NotifViewController 
         mEntryAdapterFactory = entryAdapterFactory;
         mWindowRootViewBlurInteractor = windowRootViewBlurInteractor;
         mBundleInteractionLogger = bundleInteractionLogger;
+        mNotificationActivityStarter = notificationActivityStarter;
     }
 
     String loadsGutsAppName(Context context, PipelineEntry pipelineEntry) {
@@ -399,7 +403,8 @@ public class ExpandableNotificationRowController implements NotifViewController 
                 mStatusBarService,
                 mUiEventLogger,
                 mNotificationRebindingTracker,
-                mBundleInteractionLogger
+                mBundleInteractionLogger,
+                mNotificationActivityStarter
         );
         mView.setDescendantFocusability(ViewGroup.FOCUS_BLOCK_DESCENDANTS);
         if (mAllowLongPress) {

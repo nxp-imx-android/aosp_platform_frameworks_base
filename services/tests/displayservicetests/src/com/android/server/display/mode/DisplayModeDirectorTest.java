@@ -4021,6 +4021,11 @@ public class DisplayModeDirectorTest {
             return mock(SystemRequestObserver.class);
         }
 
+        @Override
+        public ModeChangeObserver getModeChangeObserver(VotesStorage votesStorage, Looper looper) {
+            return mock(ModeChangeObserver.class);
+        }
+
         protected Display createDisplay(int id) {
             return new Display(DisplayManagerGlobal.getInstance(), id, mDisplayInfo,
                     ApplicationProvider.getApplicationContext().getResources());

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 The Android Open Source Project
+ * Copyright (C) 2025 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,11 +14,16 @@
  * limitations under the License.
  */
 
-package com.android.systemui
+package com.android.systemui.qs.panels.ui.viewmodel
 
 import com.android.systemui.kosmos.Kosmos
+import com.android.systemui.plugins.activityStarter
 
-val Kosmos.fakeSysUICutoutProviderFactory by Kosmos.Fixture { FakeSysUICutoutProviderFactory() }
-
-var Kosmos.sysUICutoutProviderFactory: SysUICutoutProviderImpl.Factory by
-    Kosmos.Fixture { fakeSysUICutoutProviderFactory }
+val Kosmos.editTopBarActionsViewModelFactory by
+    Kosmos.Fixture {
+        object : EditTopBarActionsViewModel.Factory {
+            override fun create(): EditTopBarActionsViewModel {
+                return EditTopBarActionsViewModel(activityStarter)
+            }
+        }
+    }

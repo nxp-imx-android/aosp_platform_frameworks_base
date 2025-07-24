@@ -246,9 +246,49 @@ public class OutboundHandoffRequestControllerTest {
         callback.verifyInvoked(
             associationId,
             taskId,
-            TaskContinuityManager.HANDOFF_REQUEST_RESULT_FAILURE_NO_DATA_PROVIDED_BY_TASK);
+            TaskContinuityManager.HANDOFF_REQUEST_RESULT_FAILURE_OTHER_INTERNAL_ERROR);
 
         // Verify no intent was launched.
+        verify(mMockContext, never()).startActivitiesAsUser(any(), any(), any());
+    }
+
+    @Test
+    public void testRequestHandoff_serializationFailure_returnsFailure() {
+        verifyTaskContinuityMessengerFailureCausesFailure(
+            TaskContinuityMessenger.SendMessageResult.FAILURE_MESSAGE_SERIALIZATION_FAILED,
+            TaskContinuityManager.HANDOFF_REQUEST_RESULT_FAILURE_OTHER_INTERNAL_ERROR);
+    }
+
+    @Test
+    public void testRequestHandoff_internalError_returnsFailure() {
+        verifyTaskContinuityMessengerFailureCausesFailure(
+            TaskContinuityMessenger.SendMessageResult.FAILURE_INTERNAL_ERROR,
+            TaskContinuityManager.HANDOFF_REQUEST_RESULT_FAILURE_OTHER_INTERNAL_ERROR);
+    }
+
+    @Test
+    public void testRequestHandoff_associationNotFound_returnsFailure() {
+        verifyTaskContinuityMessengerFailureCausesFailure(
+            TaskContinuityMessenger.SendMessageResult.FAILURE_ASSOCIATION_NOT_FOUND,
+            TaskContinuityManager.HANDOFF_REQUEST_RESULT_FAILURE_DEVICE_NOT_FOUND);
+    }
+
+    private void verifyTaskContinuityMessengerFailureCausesFailure(
+        TaskContinuityMessenger.SendMessageResult sendMessageResult,
+        int expectedStatusCode) {
+
+        int associationId = 1;
+        int taskId = 1;
+        doReturn(sendMessageResult)
+            .when(mMockTaskContinuityMessenger).sendMessage(
+                eq(associationId),
+                any());
+        FakeHandoffRequestCallback callback = new FakeHandoffRequestCallback();
+        mOutboundHandoffRequestController.requestHandoff(
+            associationId,
+            taskId,
+            callback);
+        callback.verifyInvoked(associationId, taskId, expectedStatusCode);
         verify(mMockContext, never()).startActivitiesAsUser(any(), any(), any());
     }
 }

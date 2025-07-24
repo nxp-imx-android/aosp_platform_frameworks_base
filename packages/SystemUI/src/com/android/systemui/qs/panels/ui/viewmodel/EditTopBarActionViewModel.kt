@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 The Android Open Source Project
+ * Copyright (C) 2025 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,22 +14,14 @@
  * limitations under the License.
  */
 
-#pragma once
+package com.android.systemui.qs.panels.ui.viewmodel
 
-#include "android-base/macros.h"
-#include "process/IResourceTableConsumer.h"
+import androidx.annotation.StringRes
+import androidx.compose.ui.graphics.vector.ImageVector
 
-namespace aapt {
-
-// Removes any resource that are behind disabled flags.
-class FlagDisabledResourceRemover : public IResourceTableConsumer {
- public:
-  FlagDisabledResourceRemover() = default;
-
-  bool Consume(IAaptContext* context, ResourceTable* table) override;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(FlagDisabledResourceRemover);
-};
-
-}  // namespace aapt
+/** View model for an action that should appear in the top app bar of [DefaultEditTileGrid]. */
+data class EditTopBarActionViewModel(
+    val icon: ImageVector,
+    @StringRes val labelId: Int,
+    val onClick: () -> Unit,
+)

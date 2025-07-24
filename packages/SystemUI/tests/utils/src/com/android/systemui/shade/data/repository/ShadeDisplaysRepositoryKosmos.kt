@@ -46,6 +46,7 @@ val Kosmos.anyExternalShadeDisplayPolicy: AnyExternalShadeDisplayPolicy by
 val Kosmos.statusBarTouchShadeDisplayPolicy: StatusBarTouchShadeDisplayPolicy by
     Kosmos.Fixture {
         StatusBarTouchShadeDisplayPolicy(
+            focusedDisplayRepository = fakeFocusedDisplayRepository,
             displayRepository = displayRepository,
             backgroundScope = testScope.backgroundScope,
             qsShadeElement = { qsElement },

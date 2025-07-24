@@ -17,7 +17,9 @@
 package android.os;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 import androidx.test.runner.AndroidJUnit4;
 
@@ -43,6 +45,24 @@ public final class MessageStackTest {
             stack.pushMessage(new Message());
         }
         assertEquals(10, stack.sizeForTest());
+    }
+
+    /**
+     * Verify quitting state
+     */
+    @Test
+    public void testQuitting() {
+        MessageStack stack = new MessageStack();
+        for (int i = 0; i < 10; i++) {
+            stack.pushMessage(new Message());
+        }
+
+        assertFalse(stack.isQuitting());
+
+        stack.pushQuitting(42);
+        assertFalse(stack.pushMessage(new Message()));
+        assertTrue(stack.isQuitting());
+        assertEquals(stack.getQuittingTimestamp(), 42);
     }
 
     /**
@@ -110,6 +130,35 @@ public final class MessageStackTest {
 
         assertEquals(0, stack.sizeForTest());
         assertEquals(0, stack.combinedHeapSizesForTest());
+    }
+
+    /**
+     * Test our basic message search.
+     */
+    @Test
+    public void testHasMessages() {
+        MessageStack stack = new MessageStack();
+        Handler h = new Handler(Looper.getMainLooper());
+        int skipWhat = 1;
+        int findWhat = 2;
+
+        // Interleave message types
+        for (int i = 0; i < 5; i++) {
+            stack.pushMessage(Message.obtain(h, skipWhat));
+            stack.pushMessage(Message.obtain(h, findWhat));
+        }
+
+        assertTrue(stack.hasMessages(new MessageQueue.MatchHandlerWhatAndObject(),
+                h, findWhat, null, null, 0));
+
+        assertFalse(stack.hasMessages(new MessageQueue.MatchHandlerWhatAndObject(),
+                h, 3, null, null, 0));
+
+        stack.updateFreelist(new MessageQueue.MatchHandlerWhatAndObject(),
+                h, findWhat, null, null, 0);
+
+        assertFalse(stack.hasMessages(new MessageQueue.MatchHandlerWhatAndObject(),
+                h, findWhat, null, null, 0));
     }
 
     /**

@@ -8887,7 +8887,6 @@
     <!-- @SystemApi Allows an app to use the on-device intelligence service.
              <p>Protection level: signature|privileged
              @hide
-         @FlaggedApi("android.app.ondeviceintelligence.flags.enable_on_device_intelligence")
         -->
     <permission android:name="android.permission.USE_ON_DEVICE_INTELLIGENCE"
         android:protectionLevel="signature|privileged" />
@@ -8896,7 +8895,6 @@
     <!-- @SystemApi Allows an app to bind the on-device intelligence service.
              <p>Protection level: signature|privileged
              @hide
-         @FlaggedApi("android.app.ondeviceintelligence.flags.enable_on_device_intelligence")
         -->
     <permission android:name="android.permission.BIND_ON_DEVICE_INTELLIGENCE_SERVICE"
         android:protectionLevel="signature|privileged" />
@@ -8905,7 +8903,6 @@
     <!-- @SystemApi Allows an app to bind the on-device sandboxed service.
              <p>Protection level: signature|privileged
              @hide
-         @FlaggedApi("android.app.ondeviceintelligence.flags.enable_on_device_intelligence")
         -->
     <permission android:name="android.permission.BIND_ON_DEVICE_SANDBOXED_INFERENCE_SERVICE"
         android:protectionLevel="signature"/>

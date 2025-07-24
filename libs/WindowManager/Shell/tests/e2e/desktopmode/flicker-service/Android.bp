@@ -67,6 +67,7 @@ test_module_config {
         "com.android.wm.shell.flicker.maximize.MaximizeAppFlickerTest",
         "com.android.wm.shell.flicker.maximize.MaximizeAppNonResizableFlickerTest",
         "com.android.wm.shell.flicker.maximize.MaximizeAppViaHeaderMenuFlickerTest",
+        "com.android.wm.shell.flicker.minimize.MinimizeAppsFlickerTest",
         "com.android.wm.shell.flicker.minimize.MinimizeAutoPipAppWindowFlickerTest",
         "com.android.wm.shell.flicker.resizing.ResizeAppToMaximumWindowSizeFlickerTest",
         "com.android.wm.shell.flicker.resizing.ResizeAppToMinimumWindowSizeFlickerTest",
@@ -93,6 +94,13 @@ test_module_config {
     base: "WMShellFlickerTestsDesktopMode",
     test_suites: ["device-tests"],
     include_filters: ["com.android.wm.shell.flicker.keyboardshortcuts.AltTabSwitchInDesktopModeFlickerTest"],
+}
+
+test_module_config {
+    name: "WMShellFlickerTestsDesktopMode-keyboardshortcuts-OpenBrowserWithKeyboardShortcutFlickerTest",
+    base: "WMShellFlickerTestsDesktopMode",
+    test_suites: ["device-tests"],
+    include_filters: ["com.android.wm.shell.flicker.keyboardshortcuts.OpenBrowserWithKeyboardShortcutFlickerTest"],
 }
 
 test_module_config {
@@ -254,6 +262,13 @@ test_module_config {
     base: "WMShellFlickerTestsDesktopMode",
     test_suites: ["device-tests"],
     include_filters: ["com.android.wm.shell.flicker.maximize.MaximizeAppViaHeaderMenuFlickerTest"],
+}
+
+test_module_config {
+    name: "WMShellFlickerTestsDesktopMode-minimize-MinimizeAppsFlickerTest",
+    base: "WMShellFlickerTestsDesktopMode",
+    test_suites: ["device-tests"],
+    include_filters: ["com.android.wm.shell.flicker.minimize.MinimizeAppsFlickerTest"],
 }
 
 test_module_config {

@@ -102,7 +102,7 @@ fun ColumnVolumeSliders(
                 onValueChange = { newValue: Float ->
                     sliderViewModel.onValueChanged(sliderState, newValue)
                 },
-                onValueChangeFinished = { sliderViewModel.onValueChangeFinished(it) },
+                onValueChangeFinished = { sliderViewModel.onValueChangeFinished() },
                 onIconTapped = { sliderViewModel.toggleMuted(sliderState) },
                 sliderColors = sliderColors,
                 hapticsViewModelFactory = sliderViewModel.getSliderHapticsViewModelFactory(),
@@ -188,7 +188,7 @@ fun ColumnVolumeSliders(
                             onValueChange = { newValue: Float ->
                                 sliderViewModel.onValueChanged(sliderState, newValue)
                             },
-                            onValueChangeFinished = { sliderViewModel.onValueChangeFinished(it) },
+                            onValueChangeFinished = { sliderViewModel.onValueChangeFinished() },
                             onIconTapped = { sliderViewModel.toggleMuted(sliderState) },
                             sliderColors = sliderColors,
                             hapticsViewModelFactory =
