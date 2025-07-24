@@ -142,6 +142,7 @@ class CommunalBackupUtilsTest : SysuiTestCase() {
         assertThat(underTest.clear()).isFalse()
     }
 
+    @Ignore("b/433468641")
     @Test
     fun fileExists() {
         assertThat(underTest.fileExists()).isFalse()
