@@ -41,7 +41,7 @@ public final class MessageStack {
     private final MessageHeap mAsyncHeap = new MessageHeap();
 
     // This points to the most-recently processed message. Comparison with mTopValue will indicate
-    // whether some messages still need to be processed.
+    // whether some messages still need to be processed. This value excludes the quitting sentinel.
     private Message mLooperProcessed = null;
 
     static {
@@ -56,17 +56,75 @@ public final class MessageStack {
         }
     }
 
+    private static final Object QUITTING_NODE_OBJ = new Object();
+
+    private boolean isQuittingMessage(Message m) {
+        return m != null && m.obj == QUITTING_NODE_OBJ;
+    }
+
     /**
      * Pushes a message onto the top of the stack with a CAS.
+     * @return true if successfully pushed; false if the stack is quitting.
      */
-    public void pushMessage(Message m) {
-        // TODO: This should fail if the current top value is the shutdown sentinel.
+    public boolean pushMessage(Message m) {
         Message current;
         do {
             current = mTopValue;
+            if (isQuittingMessage(current)) {
+                return false;
+            }
             m.next = current;
         } while (!sTop.weakCompareAndSetRelease(this, current, m));
+        return true;
+    }
 
+    /**
+     * Pushes a quitting message onto the top of the stack.
+     * After this call no more messages can be pushed onto the stack.
+     * @return true if pushed, false if there was already a quitting message
+     */
+    public boolean pushQuitting(long when) {
+        Message quittingMsg = Message.obtain();
+        quittingMsg.obj = QUITTING_NODE_OBJ;
+        quittingMsg.when = when;
+        /* Should never go into the heap, initialize idx to an impossible value */
+        quittingMsg.heapIndex = -1;
+        final boolean ret = pushMessage(quittingMsg);
+        if (!ret) {
+            quittingMsg.recycleUnchecked();
+        }
+
+        return ret;
+    }
+
+    /**
+     * Query if we are in a quitting state.
+     * @return true if we have a quitting message on top of the stack.
+     */
+    public boolean isQuitting() {
+        return isQuittingMessage((Message) sTop.getAcquire(this));
+    }
+
+    /**
+     * Gets timestamp of quitting message.
+     * @return timestamp, or throws an exception if no quitting message exists.
+     */
+    public long getQuittingTimestamp() throws IllegalStateException {
+        Message m = (Message) sTop.getAcquire(this);
+        if (!isQuittingMessage(m)) {
+            throw new IllegalStateException();
+        }
+        return m.when;
+    }
+
+    /**
+     * Check that the message hasn't already been removed or processed elsewhere.
+     */
+    private boolean messageMatches(Message m, MessageQueue.MessageCompare compare, Handler h,
+            int what, Object object, Runnable r, long when) {
+        return !isQuittingMessage(m)
+                && !m.isRemoved()
+                && compare.compareMessage(m, h, what, object, r, when);
     }
 
     /**
@@ -79,9 +137,7 @@ public final class MessageStack {
         Message firstRemoved = null;
 
         while (current != null) {
-            // Check that the message hasn't already been removed or processed elsewhere.
-            if (!current.isRemoved()
-                    && compare.compareMessage(current, h, what, object, r, when)
+            if (messageMatches(current, compare, h, what, object, r, when)
                     && current.markRemoved()) {
                 if (firstRemoved == null) {
                     firstRemoved = current;
@@ -103,10 +159,36 @@ public final class MessageStack {
     }
 
     /**
+     * Search our stack for a given set of messages.
+     * @return true if matching messages are found, false otherwise.
+     */
+    public boolean hasMessages(MessageQueue.MessageCompare compare, Handler h, int what,
+            Object object, Runnable r, long when) {
+        Message current = (Message) sTop.getAcquire(this);
+
+        while (current != null) {
+            // Check that the message hasn't already been removed or processed elsewhere.
+            if (messageMatches(current, compare, h, what, object, r, when)) {
+                return true;
+            }
+            current = current.next;
+        }
+        return false;
+    }
+
+    /**
      * Adds not-yet-processed messages into the MessageHeap and creates backlinks.
      */
     public void heapSweep() {
         Message current = (Message) sTop.getAcquire(this);
+
+        if (current != null && isQuittingMessage(current)) {
+            if (current.next != null) {
+                current.next.prev = current;
+            }
+            current = current.next;
+        }
+
         Message prevLooperProcessed = mLooperProcessed;
         mLooperProcessed = current;
 
