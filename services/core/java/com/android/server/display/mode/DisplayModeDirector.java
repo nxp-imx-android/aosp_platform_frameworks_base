@@ -248,7 +248,7 @@ public class DisplayModeDirector {
         mDisplayObserver = new DisplayObserver(context, handler, mVotesStorage, injector);
         mSensorObserver = new ProximitySensorObserver(mVotesStorage, injector);
         mSkinThermalStatusObserver = new SkinThermalStatusObserver(injector, mVotesStorage);
-        mModeChangeObserver = new ModeChangeObserver(mVotesStorage, injector, handler.getLooper());
+        mModeChangeObserver = mInjector.getModeChangeObserver(mVotesStorage, handler.getLooper());
         mHbmObserver = new HbmObserver(injector, mVotesStorage, BackgroundThread.getHandler(),
                 mDeviceConfigDisplaySettings);
         mSystemRequestObserver = mInjector.getSystemRequestObserver(mVotesStorage);
@@ -273,9 +273,8 @@ public class DisplayModeDirector {
         mSensorObserver.observe();
         mHbmObserver.observe();
         mSkinThermalStatusObserver.observe();
-        if (mDisplayManagerFlags.isDisplayConfigErrorHalEnabled()) {
-            mModeChangeObserver.observe();
-        }
+        mModeChangeObserver.observe();
+
         synchronized (mLock) {
             // We may have a listener already registered before the call to start, so go ahead and
             // notify them to pick up our newly initialized state.
@@ -3169,6 +3168,8 @@ public class DisplayModeDirector {
         AmbientFilter getAmbientFilter(Resources res);
 
         SystemRequestObserver getSystemRequestObserver(VotesStorage votesStorage);
+
+        ModeChangeObserver getModeChangeObserver(VotesStorage votesStorage, Looper looper);
     }
 
     @VisibleForTesting
@@ -3326,6 +3327,11 @@ public class DisplayModeDirector {
         @Override
         public SystemRequestObserver getSystemRequestObserver(VotesStorage votesStorage) {
             return new SystemRequestObserver(votesStorage);
+        }
+
+        @Override
+        public ModeChangeObserver getModeChangeObserver(VotesStorage votesStorage, Looper looper) {
+            return new ModeChangeObserver(votesStorage, this, looper);
         }
 
         private DisplayManager getDisplayManager() {
