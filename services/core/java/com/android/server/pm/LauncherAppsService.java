@@ -591,7 +591,6 @@ public class LauncherAppsService extends SystemService {
 
         private boolean areHiddenApisChecksEnabled() {
             return android.os.Flags.allowPrivateProfile()
-                    && Flags.enableHidingProfiles()
                     && Flags.enablePermissionToAccessHiddenProfiles()
                     && Flags.enablePrivateSpaceFeatures();
         }

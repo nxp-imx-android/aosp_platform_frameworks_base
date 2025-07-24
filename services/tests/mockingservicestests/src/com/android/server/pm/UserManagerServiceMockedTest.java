@@ -833,7 +833,6 @@ public final class UserManagerServiceMockedTest {
     @EnableFlags({
         FLAG_ALLOW_PRIVATE_PROFILE,
         FLAG_ENABLE_PRIVATE_SPACE_FEATURES,
-        android.multiuser.Flags.FLAG_ENABLE_HIDING_PROFILES
     })
     public void testGetProfileIdsExcludingHidden() {
         assumeTrue(mUms.canAddPrivateProfile(0));
