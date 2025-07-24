@@ -902,7 +902,9 @@ public class BiometricService extends SystemService {
                 // "List<? extends SensorPropertiesInternal> ...
                 final SensorPropertiesInternal prop = SensorPropertiesInternal
                         .from(sensor.impl.getSensorProperties(opPackageName));
-                sensors.add(prop);
+                if (prop != null) {
+                    sensors.add(prop);
+                }
             }
 
             return sensors;

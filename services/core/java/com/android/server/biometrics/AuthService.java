@@ -82,6 +82,7 @@ import com.android.server.companion.virtual.VirtualDeviceManagerInternal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * System service that provides an interface for authenticating with biometrics and
@@ -268,7 +269,8 @@ public class AuthService extends SystemService {
             try {
                 // Get the result from BiometricService, since it is the source of truth for all
                 // biometric sensors.
-                return mInjector.getBiometricService().getSensorProperties(opPackageName);
+                return mInjector.getBiometricService().getSensorProperties(opPackageName)
+                        .stream().filter(p -> p != null).collect(Collectors.toList());
             } finally {
                 Binder.restoreCallingIdentity(identity);
             }
