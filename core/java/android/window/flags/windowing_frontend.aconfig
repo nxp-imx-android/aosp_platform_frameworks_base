@@ -462,6 +462,16 @@ flag {
 }
 
 flag {
+    name: "polish_close_wallpaper_includes_open_change"
+    namespace: "windowing_frontend"
+    description: "Record the initial z-order while collecting window containers, keep the wallpaper always at the bottom, and use a cross-fade animation when a close wallpaper transition includes an open target."
+    bug: "421436197"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "predictive_back_callback_cancellation_fix"
     namespace: "windowing_frontend"
     description: "Fixes a bug that caused the wrong callback to receive onBackCancelled sometimes"

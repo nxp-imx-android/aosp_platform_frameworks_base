@@ -618,7 +618,8 @@ public class Transitions implements RemoteCallable<Transitions>,
                 return zSplitLine + numChanges - i;
             }
         } else if (mode == TRANSIT_CLOSE || mode == TRANSIT_TO_BACK) {
-            if (isOpening) {
+            if (isOpening || (change.hasFlags(FLAG_IS_WALLPAPER)
+                    && com.android.window.flags.Flags.polishCloseWallpaperIncludesOpenChange())) {
                 // put on bottom and leave visible
                 return zSplitLine - i;
             } else {
