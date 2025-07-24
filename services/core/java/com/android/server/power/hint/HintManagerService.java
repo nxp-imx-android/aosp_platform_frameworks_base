@@ -33,6 +33,7 @@ import static com.android.internal.util.FrameworkStatsLog.GPU_HEADROOM_REPORTED_
 import static com.android.internal.util.FrameworkStatsLog.GPU_HEADROOM_REPORTED__TYPE__AVERAGE;
 import static com.android.internal.util.FrameworkStatsLog.GPU_HEADROOM_REPORTED__TYPE__UNKNOWN_CALCULATION_TYPE;
 import static com.android.server.power.hint.Flags.resetOnForkEnabled;
+import static com.android.server.power.hint.Flags.useSysuiSessionTag;
 
 import android.Manifest;
 import android.adpf.ISessionManager;
@@ -40,11 +41,14 @@ import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.app.ActivityManager;
 import android.app.ActivityManagerInternal;
+import android.app.IActivityManager;
 import android.app.StatsManager;
 import android.app.UidObserver;
+import android.app.role.RoleManager;
 import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
+import android.content.pm.PackageManagerInternal;
 import android.hardware.power.ChannelConfig;
 import android.hardware.power.CpuHeadroomParams;
 import android.hardware.power.CpuHeadroomResult;
@@ -198,6 +202,7 @@ public final class HintManagerService extends SystemService {
     private final NativeWrapper mNativeWrapper;
     private final CleanUpHandler mCleanUpHandler;
 
+    private final IActivityManager mActivityManager;
     private final ActivityManagerInternal mAmInternal;
 
     private final Context mContext;
@@ -244,6 +249,8 @@ public final class HintManagerService extends SystemService {
     private boolean mEnforceCpuHeadroomUserModeCpuTimeCheck = false;
 
     private ISessionManager mSessionManager;
+
+    private int mSysuiUid = Process.INVALID_UID;
 
     // this cache tracks the expiration time of the items and performs cleanup on lookup
     private static class HeadroomCache<K, V> {
@@ -325,6 +332,7 @@ public final class HintManagerService extends SystemService {
         mNativeWrapper.halInit();
         mHintSessionPreferredRate = mNativeWrapper.halGetHintSessionPreferredRate();
         mUidObserver = new MyUidObserver();
+        mActivityManager = Objects.requireNonNull(injector.getIActivityManager());
         mAmInternal = Objects.requireNonNull(
                 LocalServices.getService(ActivityManagerInternal.class));
         mPowerHal = injector.createIPower();
@@ -462,6 +470,9 @@ public final class HintManagerService extends SystemService {
         IPower createIPower() {
             return IPower.Stub.asInterface(
                 ServiceManager.waitForDeclaredService(IPower.DESCRIPTOR + "/default"));
+        }
+        IActivityManager getIActivityManager() {
+            return ActivityManager.getService();
         }
     }
 
@@ -655,13 +666,16 @@ public final class HintManagerService extends SystemService {
     private void systemReady() {
         Slogf.v(TAG, "Initializing HintManager service...");
         try {
-            ActivityManager.getService().registerUidObserver(mUidObserver,
+            mActivityManager.registerUidObserver(mUidObserver,
                     ActivityManager.UID_OBSERVER_PROCSTATE | ActivityManager.UID_OBSERVER_GONE,
                     ActivityManager.PROCESS_STATE_UNKNOWN, null);
         } catch (RemoteException e) {
             // ignored; both services live in system_server
         }
 
+        PackageManagerInternal pm = LocalServices.getService(PackageManagerInternal.class);
+        mSysuiUid = pm.getPackageUid(pm.getSystemUiServiceComponent().getPackageName(),
+            PackageManager.MATCH_SYSTEM_ONLY, UserHandle.USER_SYSTEM);
     }
 
     private void registerStatsCallbacks() {
@@ -1448,20 +1462,8 @@ public final class HintManagerService extends SystemService {
                     }
                 }
 
-                if (tag == SessionTag.APP) {
-                    // If the category of the app is a game,
-                    // we change the session tag to SessionTag.GAME
-                    // as it was not previously classified
-                    switch (getUidApplicationCategory(callingUid)) {
-                        case ApplicationInfo.CATEGORY_GAME -> tag = SessionTag.GAME;
-                        case ApplicationInfo.CATEGORY_UNDEFINED ->
-                            // We use CATEGORY_UNDEFINED to filter the case when
-                            // PackageManager.NameNotFoundException is caught,
-                            // which should not happen.
-                            tag = SessionTag.APP;
-                        default -> tag = SessionTag.APP;
-                    }
-                }
+                tag = updateSessionTag(tag, callingUid);
+
                 config.id = -1;
                 Long halSessionPtr = null;
                 if (mConfigCreationSupport.get()) {
@@ -2119,6 +2121,51 @@ public final class HintManagerService extends SystemService {
             FrameworkStatsLog.write(FrameworkStatsLog.PERFORMANCE_HINT_SESSION_REPORTED, uid,
                     sessionId, targetDuration, tids.length, sessionTag,
                     powerEfficiency, graphicsPipeline);
+        }
+
+        private @SessionTag int updateSessionTag(@SessionTag int incomingTag, int callingUid) {
+            if (useSysuiSessionTag() && (isUidSysui(callingUid) || isUidLauncher(callingUid))) {
+                return SessionTag.SYSUI;
+            }
+
+            if (incomingTag != SessionTag.APP) {
+                return incomingTag;
+            }
+
+            return switch (getUidApplicationCategory(callingUid)) {
+                case ApplicationInfo.CATEGORY_GAME -> SessionTag.GAME;
+                case ApplicationInfo.CATEGORY_UNDEFINED ->
+                    // We use CATEGORY_UNDEFINED to filter the case when
+                    // PackageManager.NameNotFoundException is caught,
+                    // which should not happen.
+                    SessionTag.APP;
+                default -> SessionTag.APP;
+            };
+        }
+
+        private boolean isUidSysui(int uid) {
+            return mSysuiUid != Process.INVALID_UID && mSysuiUid == uid;
+        }
+
+        private boolean isUidLauncher(int uid) {
+            RoleManager roleManager = Objects.requireNonNull(
+                    mContext.getSystemService(RoleManager.class));
+
+            List<String> packages = roleManager.getRoleHolders(RoleManager.ROLE_HOME);
+            if (packages.size() != 1) {
+                Slog.w(TAG, "Unexpected number of role holders for ROLE_HOME.");
+                return false;
+            }
+
+            int launcherUid;
+            try {
+                launcherUid = mPackageManager.getPackageUid(packages.getFirst(),
+                        PackageManager.MATCH_DEFAULT_ONLY);
+            } catch (PackageManager.NameNotFoundException exception) {
+                return false;
+            }
+
+            return uid == launcherUid;
         }
 
         private int getUidApplicationCategory(int uid) {
