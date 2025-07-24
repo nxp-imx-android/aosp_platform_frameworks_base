@@ -2251,6 +2251,7 @@
         orientation when the vertical space is limited
     -->
     <dimen name="volume_dialog_slider_vertical_margin">124dp</dimen>
+    <dimen name="volume_dialog_slider_vertical_margin_with_captions_toggle">130dp</dimen>
     <dimen name="volume_dialog_half_opened_offset">-128dp</dimen>
     <dimen name="volume_dialog_slider_max_deviation">56dp</dimen>
 
