@@ -47,6 +47,7 @@ import androidx.annotation.WorkerThread
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LifecycleRegistry
@@ -135,6 +136,7 @@ constructor(
     private lateinit var shareWifiButton: LinearLayout
     private lateinit var addNetworkButton: LinearLayout
     private lateinit var airplaneModeButton: LinearLayout
+    private lateinit var wifiButtonsContainer: ConstraintLayout
     private var alertDialog: AlertDialog? = null
     private var canChangeWifiState = false
     private var wifiNetworkHeight = 0
@@ -276,6 +278,7 @@ constructor(
             internetDetailsContentController.setAirplaneModeDisabled()
         }
         airplaneModeSummaryTextView = contentView.requireViewById(R.id.airplane_mode_summary)
+        wifiButtonsContainer = contentView.requireViewById(R.id.wifi_buttons_container)
     }
 
     private fun setWifiLayout() {
@@ -442,12 +445,10 @@ constructor(
             setProgressBarVisible(false)
         }
 
-        airplaneModeButton.visibility =
-            if (internetContent.isAirplaneModeEnabled) View.VISIBLE else View.GONE
-
         updateEthernetUI(internetContent)
         updateMobileUI(internetContent)
         updateWifiUI(internetContent)
+        updateButtonsLayout(internetContent)
     }
 
     private fun getStartingInternetContent(): InternetContent {
@@ -738,6 +739,35 @@ constructor(
                 visibility = View.VISIBLE
             }
         }
+    }
+
+    @MainThread
+    private fun updateButtonsLayout(internetContent: InternetContent) {
+        airplaneModeButton.visibility =
+            if (internetContent.isAirplaneModeEnabled) View.VISIBLE else View.GONE
+
+        val apmVisible = airplaneModeButton.visibility == View.VISIBLE
+        val shareVisible = shareWifiButton.visibility == View.VISIBLE
+        if (!apmVisible && !shareVisible) return
+
+        val shareParams = shareWifiButton.layoutParams as ConstraintLayout.LayoutParams
+        shareWifiButton.minimumWidth = 0
+
+        if (apmVisible) {
+            shareParams.matchConstraintDefaultWidth =
+                ConstraintLayout.LayoutParams.MATCH_CONSTRAINT_WRAP
+        } else {
+            shareParams.matchConstraintDefaultWidth =
+                ConstraintLayout.LayoutParams.MATCH_CONSTRAINT_SPREAD
+
+            // By setting `MATCH_CONSTRAINT_SPREAD`, we ask ConstraintLayout to expand this
+            // `shareWifiButton`. However, due to layout timing, this change may not be reflected
+            // immediately. To force the button to occupy the full width on the very next layout
+            // pass, we set its minimumWidth to the exact current width of the parent container.
+            shareWifiButton.minimumWidth = wifiButtonsContainer.width
+        }
+
+        shareWifiButton.layoutParams = shareParams
     }
 
     @MainThread
