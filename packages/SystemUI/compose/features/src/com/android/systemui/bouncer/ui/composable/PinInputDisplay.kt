@@ -57,6 +57,7 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.layout
@@ -96,11 +97,13 @@ fun PinInputDisplay(viewModel: PinBouncerViewModel, modifier: Modifier = Modifie
     val borderColor = colorResource(R.color.bouncer_password_focus_color)
     val pinInputHeight = dimensionResource(id = R.dimen.keyguard_password_field_height)
     val pinInputWidth = dimensionResource(id = R.dimen.keyguard_password_field_width)
+    val roundedShape = remember { RoundedCornerShape(16.dp) }
     val pinInputModifier =
         modifier.thenIf(isPinDisplayBorderVisible) {
-            Modifier.border(width = 3.dp, color = borderColor, shape = RoundedCornerShape(16.dp))
+            Modifier.border(width = 3.dp, color = borderColor, shape = roundedShape)
                 .height(pinInputHeight)
                 .width(pinInputWidth)
+                .clip(roundedShape)
         }
 
     // The display comes in two different flavors:
@@ -188,6 +191,7 @@ private fun HintingPinInputDisplay(
     val dotColor = MaterialTheme.colorScheme.onSurfaceVariant
     Row(
         verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.Center,
         modifier = modifier.height(shapeAnimations.shapeSize),
     ) {
         pinEntryDrawable.forEachIndexed { index, drawable ->
