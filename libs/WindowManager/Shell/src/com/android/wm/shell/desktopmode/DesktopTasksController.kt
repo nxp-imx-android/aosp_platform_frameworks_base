@@ -695,8 +695,12 @@ class DesktopTasksController(
     /** Start a disconnect transition directly in Shell. */
     fun disconnectDisplay(disconnectedDisplayId: Int) {
         logD("disconnectDisplay: disconnectedDisplayId=$disconnectedDisplayId")
-        val disconnectReparentDisplay =
+        var disconnectReparentDisplay =
             UserManager.get(userProfileContexts.userContext).mainDisplayIdAssignedToUser
+        // If user has no default display configured, fall back to DEFAULT_DISPLAY
+        if (disconnectReparentDisplay == INVALID_DISPLAY) {
+            disconnectReparentDisplay = DEFAULT_DISPLAY
+        }
         val wct = WindowContainerTransaction()
         val runOnTransitStart =
             addOnDisplayDisconnectChanges(wct, disconnectedDisplayId, disconnectReparentDisplay)
