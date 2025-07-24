@@ -16,6 +16,8 @@
 
 package com.android.systemui.screencapture.record.largescreen.ui.viewmodel
 
+import android.graphics.Bitmap
+import android.graphics.Rect
 import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
 import android.view.WindowManager
@@ -29,6 +31,7 @@ import com.android.systemui.kosmos.testScope
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
 import com.android.systemui.lifecycle.activateIn
 import com.android.systemui.screencapture.ui.mockScreenCaptureActivity
+import com.android.systemui.screenshot.mockImageCapture
 import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
 import kotlin.test.assertFailsWith
@@ -39,10 +42,13 @@ import org.junit.runner.RunWith
 import org.mockito.ArgumentCaptor
 import org.mockito.ArgumentMatchers.isNull
 import org.mockito.Captor
+import org.mockito.Mock
 import org.mockito.MockitoAnnotations
 import org.mockito.kotlin.any
+import org.mockito.kotlin.eq
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
+import org.mockito.kotlin.whenever
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
@@ -50,6 +56,7 @@ class PreCaptureViewModelTest : SysuiTestCase() {
     private val kosmos = testKosmos().useUnconfinedTestDispatcher()
     private val testScope = kosmos.testScope
 
+    @Mock private lateinit var mockBitmap: Bitmap
     @Captor private lateinit var screenshotRequestCaptor: ArgumentCaptor<ScreenshotRequest>
     private val viewModel: PreCaptureViewModel by lazy { kosmos.preCaptureViewModel }
 
@@ -142,6 +149,18 @@ class PreCaptureViewModelTest : SysuiTestCase() {
         }
 
     @Test
+    fun updateRegionBox_updatesState() =
+        testScope.runTest {
+            // State is initially null.
+            assertThat(viewModel.regionBox).isNull()
+
+            val regionBox = Rect(0, 0, 100, 100)
+            viewModel.updateRegionBox(regionBox)
+
+            assertThat(viewModel.regionBox).isEqualTo(regionBox)
+        }
+
+    @Test
     fun takeFullscreenScreenshot_callsScreenshotInteractor() =
         testScope.runTest {
             viewModel.updateCaptureType(ScreenCaptureType.SCREENSHOT)
@@ -175,6 +194,56 @@ class PreCaptureViewModelTest : SysuiTestCase() {
             assertFailsWith(IllegalArgumentException::class) {
                 viewModel.takeFullscreenScreenshot()
             }
+        }
+
+    @Test
+    fun takePartialScreenshot_callsScreenshotInteractor() =
+        testScope.runTest {
+            viewModel.updateCaptureType(ScreenCaptureType.SCREENSHOT)
+            viewModel.updateCaptureRegion(ScreenCaptureRegion.PARTIAL)
+
+            val regionBox = Rect(0, 0, 100, 100)
+            viewModel.updateRegionBox(regionBox)
+
+            whenever(kosmos.mockImageCapture.captureDisplay(any(), eq(regionBox)))
+                .thenReturn(mockBitmap)
+
+            viewModel.takePartialScreenshot()
+
+            verify(kosmos.mockScreenshotHelper, times(1))
+                .takeScreenshot(screenshotRequestCaptor.capture(), any(), isNull())
+            val capturedRequest = screenshotRequestCaptor.value
+            assertThat(capturedRequest.type).isEqualTo(WindowManager.TAKE_SCREENSHOT_PROVIDED_IMAGE)
+            assertThat(capturedRequest.bitmap).isEqualTo(mockBitmap)
+            assertThat(capturedRequest.boundsInScreen).isEqualTo(regionBox)
+        }
+
+    @Test
+    fun takePartialScreenshot_validatesCaptureType() =
+        testScope.runTest {
+            viewModel.updateCaptureType(ScreenCaptureType.SCREEN_RECORD)
+            viewModel.updateCaptureRegion(ScreenCaptureRegion.PARTIAL)
+
+            assertFailsWith(IllegalArgumentException::class) { viewModel.takePartialScreenshot() }
+        }
+
+    @Test
+    fun takePartialScreenshot_validatesCaptureRegion() =
+        testScope.runTest {
+            viewModel.updateCaptureType(ScreenCaptureType.SCREENSHOT)
+            viewModel.updateCaptureRegion(ScreenCaptureRegion.FULLSCREEN)
+
+            assertFailsWith(IllegalArgumentException::class) { viewModel.takePartialScreenshot() }
+        }
+
+    @Test
+    fun takePartialScreenshot_validatesRegionBoxIsNotNull() =
+        testScope.runTest {
+            viewModel.updateCaptureType(ScreenCaptureType.SCREENSHOT)
+            viewModel.updateCaptureRegion(ScreenCaptureRegion.PARTIAL)
+
+            // viewModel.regionBox is null by default
+            assertFailsWith(IllegalArgumentException::class) { viewModel.takePartialScreenshot() }
         }
 
     @Test

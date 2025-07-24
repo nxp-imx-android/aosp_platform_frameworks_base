@@ -24,7 +24,9 @@ import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import com.android.systemui.res.R
@@ -74,7 +76,9 @@ fun PreCaptureUI(viewModel: PreCaptureViewModel) {
                 RegionBox(
                     initialWidth = 100.dp,
                     initialHeight = 100.dp,
-                    onDragEnd = viewModel::onPartialRegionDragEnd,
+                    onDragEnd = { _: Offset, _: Dp, _: Dp ->
+                        // TODO(b/427541309) Update the region box in the viewmodel.
+                    },
                     drawableLoaderViewModel = viewModel,
                 )
             }
