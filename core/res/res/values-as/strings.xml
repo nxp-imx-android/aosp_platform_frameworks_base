@@ -2521,8 +2521,7 @@
     <string name="screen_not_shared_sensitive_content" msgid="7058419185079565001">"সুৰক্ষাৰ বাবে এপৰ সমল স্ক্ৰীণ শ্বেয়াৰ কৰাৰ পৰা লুকুৱাই ৰখা হৈছে"</string>
     <string name="satellite_notification_title" msgid="4026338973463121526">"উপগ্ৰহৰ সৈতে স্বয়ংক্ৰিয়ভাৱে সংযুক্ত হৈছে"</string>
     <string name="satellite_notification_summary" msgid="5207364139430767162">"আপুনি ম’বাইল বা ৱাই-ফাই নেটৱৰ্কৰ জৰিয়তে পাঠ বাৰ্তা পঠিয়াব বা লাভ কৰিব পাৰে"</string>
-    <!-- no translation found for satellite_notification_summary_with_data (8290202758586475712) -->
-    <skip />
+    <string name="satellite_notification_summary_with_data" msgid="8290202758586475712">"আপুনি উপগ্ৰহৰ জৰিয়তে বাৰ্তা পঠিয়াব আৰু লাভ কৰিব পাৰে আৰু নিৰ্দিষ্ট কিছমান এপ্ ব্যৱহাৰ কৰিব পাৰে"</string>
     <string name="satellite_notification_manual_title" msgid="1097504441849466279">"উপগ্ৰহৰ জৰিয়তে বাৰ্তা বিনিময়ৰ সুবিধাটো ব্যৱহাৰ কৰিবনে?"</string>
     <string name="satellite_notification_manual_summary" msgid="901206289846283445">"আপুনি কোনো ম’বাইল বা ৱাই-ফাই নেটৱৰ্ক নোহোৱাকৈ বাৰ্তা পঠিয়াওক আৰু লাভ কৰক"</string>
     <string name="satellite_notification_open_message" msgid="4149234979688273729">"Messages খোলক"</string>

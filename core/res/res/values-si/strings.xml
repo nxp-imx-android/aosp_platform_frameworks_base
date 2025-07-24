@@ -2521,8 +2521,7 @@
     <string name="screen_not_shared_sensitive_content" msgid="7058419185079565001">"ආරක්ෂාව සඳහා යෙදුම් අන්තර්ගතය තිරය බෙදා ගැනීමෙන් සඟවා ඇත"</string>
     <string name="satellite_notification_title" msgid="4026338973463121526">"චන්ද්‍රිකාවට ස්වයංක්‍රීයව සම්බන්ධ වේ"</string>
     <string name="satellite_notification_summary" msgid="5207364139430767162">"ඔබට ජංගම හෝ Wi-Fi ජාලයක් නොමැතිව පණිවිඩ යැවීමට සහ ලැබීමට හැක"</string>
-    <!-- no translation found for satellite_notification_summary_with_data (8290202758586475712) -->
-    <skip />
+    <string name="satellite_notification_summary_with_data" msgid="8290202758586475712">"ඔබට චන්ද්‍රිකා හරහා පණිවිඩ යැවීමට සහ ලැබීමට සහ තෝරාගත් යෙදුම් භාවිතා කිරීමට හැක"</string>
     <string name="satellite_notification_manual_title" msgid="1097504441849466279">"චන්ද්‍රිකා පණිවිඩ යැවීම භාවිතා කරන්න ද?"</string>
     <string name="satellite_notification_manual_summary" msgid="901206289846283445">"ජංගම හෝ Wi-Fi ජාලයකින් තොරව පණිවිඩ යැවීම සහ ලැබීම"</string>
     <string name="satellite_notification_open_message" msgid="4149234979688273729">"Messages විවෘත කරන්න"</string>

@@ -72,18 +72,12 @@
     <string name="CLIRDefaultOnNextCallOff" msgid="5036749051007098105">"El Identificador de llamadas está predeterminado en restringido. Llamada siguiente: no restringido"</string>
     <string name="CLIRDefaultOffNextCallOn" msgid="1022781126694885017">"El identificador de llamadas está predeterminado en no restringido. Llamada siguiente: restringida"</string>
     <string name="CLIRDefaultOffNextCallOff" msgid="2491576172356463443">"El Identificador de llamadas está predeterminado en no restringido. Llamada siguiente: no restringido"</string>
-    <!-- no translation found for page_size_compat_apk_warning (2297836366674721648) -->
-    <skip />
-    <!-- no translation found for page_size_compat_elf_warning (8613720928493005883) -->
-    <skip />
-    <!-- no translation found for page_size_compat_apk_and_elf_warning (9034695801295605229) -->
-    <skip />
-    <!-- no translation found for page_size_compat_apk_warning_4kb (5676451039424864495) -->
-    <skip />
-    <!-- no translation found for page_size_compat_elf_warning_4kb (5005239480522831311) -->
-    <skip />
-    <!-- no translation found for page_size_compat_apk_and_elf_warning_4kb (997926487776340721) -->
-    <skip />
+    <string name="page_size_compat_apk_warning" msgid="2297836366674721648">"Esta app no es compatible con 16 KB. No se pudo verificar la alineación del APK. Esta app se ejecutará con el modo de compatibilidad de tamaño de página. Para obtener mejores resultados, vuelve a compilar la aplicación con la compatibilidad de 16 KB. Para obtener más información, consulta &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;. &lt;br&gt;&lt;br&gt; Las siguientes bibliotecas no están alineadas en 16 KB: &lt;br&gt;&lt;br&gt;"</string>
+    <string name="page_size_compat_elf_warning" msgid="8613720928493005883">"Esta app no es compatible con 16 KB. No se pudo verificar la alineación de ELF. Esta app se ejecutará con el modo de compatibilidad de tamaño de página. Para obtener mejores resultados, vuelve a compilar la aplicación con la compatibilidad de 16 KB. Para obtener más información, consulta &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;. &lt;br&gt;&lt;br&gt; Las siguientes bibliotecas no están alineadas en 16 KB: &lt;br&gt;&lt;br&gt;"</string>
+    <string name="page_size_compat_apk_and_elf_warning" msgid="9034695801295605229">"Esta app no es compatible con 16 KB. No se pudieron verificar las alineaciones de APK y ELF. Esta app se ejecutará con el modo de compatibilidad de tamaño de página. Para obtener mejores resultados, vuelve a compilar la aplicación con la compatibilidad de 16 KB. Para obtener más información, consulta &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;. &lt;br&gt;&lt;br&gt; Las siguientes bibliotecas no están alineadas en 16 KB: &lt;br&gt;&lt;br&gt;"</string>
+    <string name="page_size_compat_apk_warning_4kb" msgid="5676451039424864495">"Se muestra esta advertencia porque la app que actualmente se está probando es depurable. Infórmale la situación al desarrollador, si tú no lo eres, y pídele una app no depurable. &lt;br&gt;&lt;br&gt; Esta app no es compatible con 16 KB. No se pudo verificar la alineación del APK. Sigue los pasos que se indican en &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; &lt;br&gt;&lt;br&gt; Las siguientes bibliotecas no están alineadas en 16 KB: &lt;br&gt;&lt;br&gt;"</string>
+    <string name="page_size_compat_elf_warning_4kb" msgid="5005239480522831311">"Se muestra esta advertencia porque la app que actualmente se está probando es depurable. Infórmale la situación al desarrollador, si tú no lo eres, y pídele una app no depurable. &lt;br&gt;&lt;br&gt; Esta app no es compatible con 16 KB. No se pudo verificar la alineación de ELF. Sigue los pasos que se indican en &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; &lt;br&gt;&lt;br&gt; Las siguientes bibliotecas no están alineadas en 16 KB: &lt;br&gt;&lt;br&gt;"</string>
+    <string name="page_size_compat_apk_and_elf_warning_4kb" msgid="997926487776340721">"Se muestra esta advertencia porque la app que actualmente se está probando es depurable. Infórmale la situación al desarrollador, si tú no lo eres, y pídele una app no depurable. &lt;br&gt;&lt;br&gt; Esta app no es compatible con 16 KB. No se pudieron verificar las alineaciones de APK y ELF. Sigue los pasos que se indican en &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;. &lt;br&gt;&lt;br&gt; Las siguientes bibliotecas no están alineadas en 16 KB: &lt;br&gt;&lt;br&gt;"</string>
     <string name="page_size_compat_never_show" msgid="3391282612422783097">"No volver a mostrar"</string>
     <string name="page_size_compat_title" msgid="6497719153872572204">"Compatibilidad de apps para Android"</string>
     <string name="page_size_compat_elf_not_aligned" msgid="7940806102874132630">"&amp;#8226; %1$s: El segmento LOAD no está alineado"</string>
@@ -921,8 +915,7 @@
     <string name="policydesc_disableCamera" msgid="3204405908799676104">"Evita el uso de todas las cámaras del dispositivo."</string>
     <string name="policylab_disableKeyguardFeatures" msgid="5071855750149949741">"Inhabilitar func. del bloqueo"</string>
     <string name="policydesc_disableKeyguardFeatures" msgid="6641673177041195957">"Evita el uso de algunas funciones de bloqueo de pantalla."</string>
-    <!-- no translation found for exit_toast_on_long_press_escape (2983932499112557277) -->
-    <skip />
+    <string name="exit_toast_on_long_press_escape" msgid="2983932499112557277">"Mantén presionada la tecla Esc para cerrar esta app"</string>
   <string-array name="phoneTypes">
     <item msgid="8996339953292723951">"Casa"</item>
     <item msgid="7740243458912727194">"Celular"</item>
@@ -1849,8 +1842,7 @@
     <string name="owner_name" msgid="8713560351570795743">"Propietario"</string>
     <string name="guest_name" msgid="8502103277839834324">"Invitado"</string>
     <string name="headless_system_user_name" msgid="1849150903255530049">"Usuario del sistema"</string>
-    <!-- no translation found for unnamed_user_name (6096699110534542980) -->
-    <skip />
+    <string name="unnamed_user_name" msgid="6096699110534542980">"Usuario"</string>
     <string name="error_message_title" msgid="4082495589294631966">"Error"</string>
     <string name="error_message_change_not_allowed" msgid="843159705042381454">"Tu administrador no permite este cambio"</string>
     <string name="app_not_found" msgid="3429506115332341800">"No se encontró una aplicación para manejar esta acción."</string>
