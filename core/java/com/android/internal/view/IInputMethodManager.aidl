@@ -81,7 +81,7 @@ interface IInputMethodManager {
     @EnforcePermission("TEST_INPUT_METHOD")
     @JavaPassthrough(annotation="@android.annotation.RequiresPermission(value = "
             + "android.Manifest.permission.TEST_INPUT_METHOD)")
-    void hideSoftInputFromServerForTest();
+    oneway void hideSoftInputFromServerForTest();
 
     // TODO(b/418839448): merge with startInputOrWindowGainedFocus once
     //                    WINDOW_FOCUS_GAIN_REPORT_ONLY uses async method.
@@ -117,13 +117,13 @@ interface IInputMethodManager {
             in ImeOnBackInvokedDispatcher imeDispatcher, boolean imeRequestedVisible,
             int startInputSeq);
 
-    void showInputMethodPickerFromClient(in IInputMethodClient client,
+    oneway void showInputMethodPickerFromClient(in IInputMethodClient client,
             int auxiliarySubtypeMode);
 
     @EnforcePermission(allOf = {"WRITE_SECURE_SETTINGS", "INTERACT_ACROSS_USERS_FULL"})
     @JavaPassthrough(annotation="@android.annotation.RequiresPermission(allOf = {android.Manifest."
     + "permission.WRITE_SECURE_SETTINGS, android.Manifest.permission.INTERACT_ACROSS_USERS_FULL})")
-    void showInputMethodPickerFromSystem(int auxiliarySubtypeMode, int displayId);
+    oneway void showInputMethodPickerFromSystem(int auxiliarySubtypeMode, int displayId);
 
     @EnforcePermission("TEST_INPUT_METHOD")
     @JavaPassthrough(annotation="@android.annotation.RequiresPermission(value = "
