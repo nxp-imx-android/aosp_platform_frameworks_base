@@ -24,6 +24,7 @@ build target produces a jar file that is included in the overall build output
 5. Run `prebuilts/cmdline-tools/update-android-global-lint-checker.sh
    <build_number>`. The script will create a commit that you can upload for
    approval to the `prebuilts/cmdline-tools` subproject.
+   - *Tip*: Find a green build from [targets=aosp_arm64-trunk_staging-userdebug](https://android-build.corp.google.com/build_explorer/branch/git_main/?gridSize=20&targets=aosp_arm64-trunk_staging-userdebug&selectionType=MOST_RECENT_N_BUILDS&numBuilds=20&buildType=default) to match the update script.
 6. Done! Your lint check should be applied in lint report builds across the
    entire tree!
 
