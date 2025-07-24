@@ -145,6 +145,9 @@
       "name": "FunctionalTestsDesktopMode-keyboardshortcuts-ExitDesktopFromKeyboardShortcutTest"
     },
     {
+      "name": "FunctionalTestsDesktopMode-keyboardshortcuts-OpenBrowserWithKeyboardShortcutTest"
+    },
+    {
       "name": "FunctionalTestsDesktopMode-maximize-ExitDesktopWithDragToTopDragZoneTest"
     },
     {
