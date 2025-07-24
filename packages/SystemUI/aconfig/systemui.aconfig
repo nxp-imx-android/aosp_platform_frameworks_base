@@ -897,16 +897,6 @@ flag {
 }
 
 flag {
-    name: "notify_power_manager_user_activity_background"
-    namespace: "systemui"
-    description: "Decide whether to notify the user activity to power manager in the background thread."
-    bug: "325203885"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "qs_tile_focus_state"
     namespace: "systemui"
     description: "enables new focus outline for qs tiles when focused on with physical keyboard"
