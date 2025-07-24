@@ -504,14 +504,13 @@ public class TouchExplorer extends BaseEventStreamTransformation
 
                 // We have just decided that the user is touch,
                 // exploring so start sending events.
-                mSendHoverEnterAndMoveDelayed.addEvent(event,
-                        Flags.eventDispatcherRawEvent() ? rawEvent : mState.getLastReceivedEvent());
+                mSendHoverEnterAndMoveDelayed.addEvent(event, rawEvent);
                 mSendHoverEnterAndMoveDelayed.forceSendAndRemove();
                 mSendHoverExitDelayed.cancel();
                 mDispatcher.sendMotionEvent(
                         event,
                         ACTION_HOVER_MOVE,
-                        Flags.eventDispatcherRawEvent() ? rawEvent : event,
+                        rawEvent,
                         pointerIdBits,
                         policyFlags);
                 return true;
@@ -1129,8 +1128,7 @@ public class TouchExplorer extends BaseEventStreamTransformation
             mDispatcher.sendMotionEvent(
                     event,
                     ACTION_HOVER_EXIT,
-                    Flags.eventDispatcherRawEvent() ? mState.getLastReceivedRawEvent() :
-                            mState.getLastReceivedEvent(),
+                    mState.getLastReceivedRawEvent(),
                     pointerIdBits,
                     policyFlags);
         }
@@ -1152,8 +1150,7 @@ public class TouchExplorer extends BaseEventStreamTransformation
             mDispatcher.sendMotionEvent(
                     event,
                     ACTION_HOVER_ENTER,
-                    Flags.eventDispatcherRawEvent() ? mState.getLastReceivedRawEvent() :
-                            mState.getLastReceivedEvent(),
+                    mState.getLastReceivedRawEvent(),
                     pointerIdBits,
                     policyFlags);
         }
