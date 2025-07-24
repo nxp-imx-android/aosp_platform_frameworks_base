@@ -4060,14 +4060,7 @@ public class UserManager {
             Manifest.permission.QUERY_USERS})
     @CachedProperty(api = "user_manager_user_data")
     public UserInfo getUserInfo(@UserIdInt int userId) {
-        if (android.multiuser.Flags.cacheUserInfoReadOnly()) {
-            return UserManagerCache.getUserInfo(mService::getUserInfo, userId);
-        }
-        try {
-            return mService.getUserInfo(userId);
-        } catch (RemoteException re) {
-            throw re.rethrowFromSystemServer();
-        }
+        return UserManagerCache.getUserInfo(mService::getUserInfo, userId);
     }
 
     /**
@@ -6655,12 +6648,10 @@ public class UserManager {
      * @hide
      */
     public static final void invalidateCacheOnUserDataChanged() {
-        if (android.multiuser.Flags.cacheUserInfoReadOnly()) {
-            // TODO(b/383175685): Rename the invalidation call to make it clearer that it
-            // invalidates the caches for both getProfiles and getUserInfo (since they both use the
-            // same user_manager_user_data CachedProperty.api).
-            UserManagerCache.invalidateProfiles();
-        }
+        // TODO(b/383175685): Rename the invalidation call to make it clearer that it
+        // invalidates the caches for both getProfiles and getUserInfo (since they both use the
+        // same user_manager_user_data CachedProperty.api).
+         UserManagerCache.invalidateProfiles();
     }
 
     /**

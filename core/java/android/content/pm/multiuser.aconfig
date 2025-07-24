@@ -174,17 +174,6 @@ flag {
 }
 
 flag {
-    name: "cache_user_info_read_only"
-    namespace: "multiuser"
-    description: "Cache UserInfo to avoid unnecessary binder calls"
-    bug: "161915546"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-  }
-  is_fixed_read_only: true
-}
-
-flag {
     name: "cache_user_start_realtime_read_only"
     namespace: "multiuser"
     description: "Cache getUserStartRealtime to avoid unnecessary binder calls"
