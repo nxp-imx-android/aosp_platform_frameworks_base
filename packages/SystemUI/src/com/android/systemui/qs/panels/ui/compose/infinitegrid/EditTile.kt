@@ -1035,14 +1035,14 @@ private fun LazyGridItemScope.TileGridCell(
         LaunchedEffect(canLayoutTile, dragAndDropState.dragInProgress) {
             isSelectable = canLayoutTile && !dragAndDropState.dragInProgress
         }
-        val selectableModifier =
-            Modifier.selectableTile(cell.tile.tileSpec, selectionState)
-                .dragAndDropTileSource(
-                    SizedTileImpl(cell.tile, cell.width),
-                    dragAndDropState,
-                    DragType.Move,
-                    selectionState::unSelect,
-                )
+        val selectableModifier = Modifier.selectableTile(cell.tile.tileSpec, selectionState)
+        val draggableModifier =
+            Modifier.dragAndDropTileSource(
+                SizedTileImpl(cell.tile, cell.width),
+                dragAndDropState,
+                DragType.Move,
+                selectionState::unSelect,
+            )
 
         val toggleSelectionLabel = stringResource(R.string.accessibility_qs_edit_toggle_selection)
         val placeTileLabel = stringResource(R.string.accessibility_qs_edit_place_tile_action)
@@ -1087,8 +1087,9 @@ private fun LazyGridItemScope.TileGridCell(
                         customActions = actions
                     }
                 }
-                .thenIf(isSelectable) { selectableModifier }
+                .thenIf(isSelectable) { draggableModifier }
                 .tileBackground { backgroundColor }
+                .thenIf(isSelectable) { selectableModifier }
         ) {
             EditTile(
                 tile = cell.tile,
@@ -1152,16 +1153,15 @@ private fun AvailableTileGridCell(
         modifier =
             modifier
                 .graphicsLayer { this.alpha = alpha }
-                .clickable(enabled = !cell.isCurrent, onClick = onClick, onClickLabel = clickLabel)
-                .semantics {
+                .semantics(mergeDescendants = true) {
                     if (stateDescription != null) {
                         this.stateDescription = stateDescription
                     } else {
-                        // This is needed due to b/418803616. When a clickable element that doesn't
-                        // have semantics is slightly out of bounds of a scrollable container, it
-                        // will be found by talkback. Because the text is off screen, it will say
-                        // "Unlabelled". Instead, give it a role (that is also meaningful when on
-                        // screen), and it will be skipped when not visible.
+                        // This is needed due to b/418803616. When a clickable element that
+                        // doesn't have semantics is slightly out of bounds of a scrollable
+                        // container, it will be found by talkback. Because the text is off screen,
+                        // it will say "Unlabelled". Instead, give it a role (that is also
+                        // meaningful when on screen), and it will be skipped when not visible.
                         this.role = Role.Button
                     }
                 },
@@ -1179,7 +1179,16 @@ private fun AvailableTileGridCell(
                         selectionState.unSelect()
                     }
                 }
-            Box(draggableModifier.fillMaxSize().tileBackground { colors.background }) {
+            Box(
+                Modifier.then(draggableModifier)
+                    .fillMaxSize()
+                    .tileBackground { colors.background }
+                    .clickable(
+                        enabled = !cell.isCurrent,
+                        onClick = onClick,
+                        onClickLabel = clickLabel,
+                    )
+            ) {
                 // Icon
                 SmallTileContent(
                     iconProvider = { cell.icon },
