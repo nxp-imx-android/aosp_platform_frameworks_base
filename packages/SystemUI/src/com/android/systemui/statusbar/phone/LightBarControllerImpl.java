@@ -60,7 +60,8 @@ import java.util.ArrayList;
  * Controls how light status bar flag applies to the icons.
  */
 public class LightBarControllerImpl implements
-        BatteryController.BatteryStateChangeCallback, LightBarController {
+        BatteryController.BatteryStateChangeCallback, LightBarController,
+        NavigationModeController.ModeChangedListener {
 
     private static final String TAG = "LightBarController";
     private static final boolean DEBUG_NAVBAR = Compile.IS_DEBUG;
@@ -127,9 +128,6 @@ public class LightBarControllerImpl implements
 
     private final String mDumpableName;
 
-    private final NavigationModeController.ModeChangedListener mNavigationModeListener =
-            (mode) -> mNavigationMode = mode;
-
     @AssistedInject
     public LightBarControllerImpl(
             @Assisted int displayId,
@@ -158,7 +156,7 @@ public class LightBarControllerImpl implements
     public void start() {
         mDumpManager.registerCriticalDumpable(mDumpableName, this);
         mBatteryController.addCallback(this);
-        mNavigationMode = mNavModeController.addListener(mNavigationModeListener);
+        mNavigationMode = mNavModeController.addListener(this);
         JavaAdapterKt.collectFlow(
                 mCoroutineScope,
                 mMainContext,
@@ -170,7 +168,7 @@ public class LightBarControllerImpl implements
     public void stop() {
         mDumpManager.unregisterDumpable(mDumpableName);
         mBatteryController.removeCallback(this);
-        mNavModeController.removeListener(mNavigationModeListener);
+        mNavModeController.removeListener(this);
     }
 
     @Override
@@ -477,6 +475,14 @@ public class LightBarControllerImpl implements
             pw.println(" NavigationBarTransitionsController:");
             mNavigationBarController.dump(pw, args);
             pw.println();
+        }
+    }
+
+    @Override
+    public void onNavigationModeChanged(int mode) {
+        mNavigationMode = mode;
+        if (android.view.accessibility.Flags.lightBarUpdateButtonTintOnNavModeChange()) {
+            updateNavigation();
         }
     }
 
