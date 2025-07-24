@@ -65,13 +65,6 @@ flag {
 }
 
 flag {
-    name: "allow_shortcut_chooser_on_lockscreen"
-    namespace: "accessibility"
-    description: "Allows the a11y shortcut disambig dialog to appear on the lockscreen"
-    bug: "303871725"
-}
-
-flag {
     name: "braille_display_hid"
     namespace: "accessibility"
     is_exported: true
@@ -87,25 +80,11 @@ flag {
 }
 
 flag {
-    name: "cleanup_accessibility_warning_dialog"
-    namespace: "accessibility"
-    description: "Cleans up duplicated or broken logic surrounding the accessibility warning dialog."
-    bug: "303511250"
-}
-
-flag {
     name: "collection_info_item_counts"
     namespace: "accessibility"
     is_exported: true
     description: "Fields for total items and the number of important for accessibility items in a collection"
     bug: "302376158"
-}
-
-flag {
-    name: "copy_events_for_gesture_detection"
-    namespace: "accessibility"
-    description: "Creates copies of MotionEvents and GestureEvents in GestureMatcher"
-    bug: "280130713"
 }
 
 flag {
@@ -117,7 +96,6 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
-
 
 flag {
     name: "deprecate_accessibility_announcement_apis"
@@ -271,16 +249,6 @@ flag {
 }
 
 flag {
-    name: "restore_a11y_shortcut_target_service"
-    namespace: "accessibility"
-    description: "Perform merging and other bug fixes for SettingsProvider restore of ACCESSIBILITY_SHORTCUT_TARGET_SERVICES secure setting"
-    bug: "341374402"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "skip_accessibility_warning_dialog_for_trusted_services"
     namespace: "accessibility"
     description: "Skips showing the accessibility warning dialog for trusted services."
@@ -323,11 +291,4 @@ flag {
     description: "Feature flag for adding tri-state checked api"
     bug: "333784774"
     is_exported: true
-}
-
-flag {
-    namespace: "accessibility"
-    name: "update_always_on_a11y_service"
-    description: "Updates the Always-On A11yService state when the user changes the enablement of the shortcut."
-    bug: "298869916"
 }
