@@ -126,6 +126,8 @@ public class UninstallationFragment extends DialogFragment {
                 updateUserActionRequiredUI(mDialog, (UninstallUserActionRequired) uninstallStage);
             }
         }
+
+        UiUtil.updateButtonBarLayoutIfNeeded(requireContext(), mDialog);
     }
 
     private void updateUninstallAbortedUI(Dialog dialog, UninstallAborted uninstallStage) {

@@ -188,6 +188,8 @@ public class InstallationFragment extends DialogFragment {
                 updateUserActionRequiredUI(mDialog, (InstallUserActionRequired) installStage);
             }
         }
+
+        UiUtil.updateButtonBarLayoutIfNeeded(requireContext(), mDialog);
     }
 
     private void updateInstallAbortedUI(Dialog dialog, InstallAborted installStage) {
