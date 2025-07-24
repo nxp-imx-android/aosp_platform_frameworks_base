@@ -453,8 +453,24 @@ public final class SystemServiceRegistry {
                     @Override
                     public SelectionToolbarManager createService(ContextImpl ctx)
                             throws ServiceNotFoundException {
-                        IBinder b = ServiceManager.getServiceOrThrow(
-                                Context.SELECTION_TOOLBAR_SERVICE);
+                        final PackageManager pm = ctx.getPackageManager();
+                        final boolean serviceRequired =
+                                !pm.hasSystemFeature(PackageManager.FEATURE_WATCH)
+                                && !pm.hasSystemFeature(PackageManager.FEATURE_LEANBACK);
+                        // If the service is required on the device, use `getServiceOrThrow`, which
+                        // will throw an Exception if the service is missing.
+                        // If the service is not required on the device, use `getService`. This
+                        // method simply returns `null` if the service is absent. Avoiding the
+                        // Exception is critical for such devices, because the Exception may cause
+                        // process crashes, and we do not want that given that the service is not
+                        // mandatory.
+                        IBinder b = serviceRequired
+                                ? ServiceManager.getServiceOrThrow(
+                                        Context.SELECTION_TOOLBAR_SERVICE)
+                                : ServiceManager.getService(Context.SELECTION_TOOLBAR_SERVICE);
+                        if (b == null) {
+                            return null;
+                        }
                         return new SelectionToolbarManager(
                                 ISelectionToolbarManager.Stub.asInterface(b));
                     }});
