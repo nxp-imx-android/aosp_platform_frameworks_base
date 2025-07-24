@@ -20,7 +20,6 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.IIntentSender
 import android.content.pm.ShortcutInfo
-import android.graphics.Insets
 import android.graphics.Rect
 import android.os.UserHandle
 import android.platform.test.annotations.EnableFlags
@@ -32,9 +31,7 @@ import androidx.test.filters.SmallTest
 import androidx.test.platform.app.InstrumentationRegistry
 import com.android.wm.shell.Flags.FLAG_ENABLE_BUBBLE_ANYTHING
 import com.android.wm.shell.bubbles.BubbleController
-import com.android.wm.shell.bubbles.BubblePositioner
 import com.android.wm.shell.shared.bubbles.BubbleBarLocation
-import com.android.wm.shell.shared.bubbles.DeviceConfig
 import com.android.wm.shell.shared.bubbles.DragZoneFactory
 import com.android.wm.shell.shared.bubbles.DropTargetView
 import com.google.common.truth.Truth.assertThat
@@ -56,7 +53,6 @@ class DragToBubbleControllerTest {
 
     @get:Rule val animatorTestRule = AnimatorTestRule()
     private val context = getApplicationContext<Context>()
-    private val bubblePositioner: BubblePositioner = mock()
     private val bubbleController: BubbleController = mock()
 
     private lateinit var dragToBubbleController: DragToBubbleController
@@ -76,8 +72,7 @@ class DragToBubbleControllerTest {
 
     @Before
     fun setUp() {
-        bubblePositioner.stub { on { currentConfig } doReturn createDeviceConfig() }
-        dragToBubbleController = DragToBubbleController(context, bubblePositioner, bubbleController)
+        dragToBubbleController = DragToBubbleController(context, bubbleController)
         dropTargetContainer = dragToBubbleController.getDropTargetContainer()
     }
 
@@ -222,19 +217,5 @@ class DragToBubbleControllerTest {
         bubbleController.stub {
             on { getBubbleBarLocation() } doReturn bubbleBarLocation
         }
-    }
-
-    private fun createDeviceConfig(
-        isLargeScreen: Boolean = true,
-        isSmallTablet: Boolean = false,
-        isLandscape: Boolean = true,
-        isRtl: Boolean = false,
-        windowBounds: Rect = Rect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT),
-        insets: Insets = Insets.NONE,
-    ) = DeviceConfig(isLargeScreen, isSmallTablet, isLandscape, isRtl, windowBounds, insets)
-
-    companion object {
-        const val SCREEN_WIDTH = 2000
-        const val SCREEN_HEIGHT = 1000
     }
 }

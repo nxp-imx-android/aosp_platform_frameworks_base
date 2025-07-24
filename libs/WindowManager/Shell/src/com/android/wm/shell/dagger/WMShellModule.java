@@ -24,7 +24,6 @@ import static android.window.DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_MODALS_PO
 import static android.window.DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_TASK_LIMIT;
 
 import static com.android.systemui.Flags.enableViewCaptureTracing;
-import static com.android.window.flags.Flags.enableInorderTransitionCallbacksForDesktop;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
@@ -1931,8 +1930,8 @@ public abstract class WMShellModule {
     @WMSingleton
     @Provides
     static DragToBubbleController getDragToBubbleController(Context context,
-            BubblePositioner bubblePositioner, BubbleController bubbleController) {
-        return new DragToBubbleController(context, bubblePositioner, bubbleController);
+            BubbleController bubbleController) {
+        return new DragToBubbleController(context, bubbleController);
     }
 
     //
