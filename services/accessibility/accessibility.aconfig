@@ -313,13 +313,3 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
-
-flag {
-    name: "touch_explorer_use_virtual_device_id"
-    namespace: "accessibility"
-    description: "Use a VIRTUAL device id for injected TouchExplorer events to avoid temporary conflicts with real pointer touches still on the screen when TouchExplorer starts up."
-    bug: "364408887"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}

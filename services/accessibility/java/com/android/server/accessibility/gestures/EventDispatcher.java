@@ -140,9 +140,7 @@ public class EventDispatcher {
             event.getPointerProperties(i, p);
             properties[i] = p;
         }
-        final int deviceId = Flags.touchExplorerUseVirtualDeviceId()
-                ? VIRTUAL_TOUCHSCREEN_DEVICE_ID
-                : rawEvent.getDeviceId();
+        final int deviceId = VIRTUAL_TOUCHSCREEN_DEVICE_ID;
         event = MotionEvent.obtain(downTime, event.getEventTime(), event.getAction(),
                 event.getPointerCount(), properties, coords,
                 event.getMetaState(), event.getButtonState(),
