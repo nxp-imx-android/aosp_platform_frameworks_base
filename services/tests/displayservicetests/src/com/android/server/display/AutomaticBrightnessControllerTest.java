@@ -588,12 +588,12 @@ public class AutomaticBrightnessControllerTest {
 
         // Now let's do the same for idle mode
         mController.switchMode(AUTO_BRIGHTNESS_MODE_IDLE, /* sendUpdate= */ true);
-        // Called once when configuring in setUp(), once when configuring in the test,
-        // once when switching,
+        // Called once when configuring in setUp(), twice when configuring in the test,
+        // once when switching, once when sending sensor event,
         // setAmbientLux() is called twice and once in updateAutoBrightness(),
         // nextAmbientLightBrighteningTransition() and nextAmbientLightDarkeningTransition() are
         // called twice each.
-        verify(mBrightnessMappingStrategy, times(10)).getMode();
+        verify(mBrightnessMappingStrategy, times(12)).getMode();
         // Called when switching.
         verify(mBrightnessMappingStrategy, times(1)).getShortTermModelTimeout();
         verify(mBrightnessMappingStrategy, times(1)).getUserBrightness();
