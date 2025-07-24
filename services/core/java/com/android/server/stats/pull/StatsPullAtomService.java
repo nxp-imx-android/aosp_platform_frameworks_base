@@ -50,8 +50,10 @@ import static android.telephony.TelephonyManager.UNKNOWN_CARRIER_ID;
 import static android.util.MathUtils.constrain;
 import static android.view.Display.HdrCapabilities.HDR_TYPE_INVALID;
 
+import static com.android.internal.os.ProcfsMemoryUtil.DmaBufType;
 import static com.android.internal.os.ProcfsMemoryUtil.getProcessCmdlines;
 import static com.android.internal.os.ProcfsMemoryUtil.readCmdlineFromProcfs;
+import static com.android.internal.os.ProcfsMemoryUtil.readDmabufFromProcfs;
 import static com.android.internal.os.ProcfsMemoryUtil.readMemorySnapshotFromProcfs;
 import static com.android.internal.util.ConcurrentUtils.DIRECT_EXECUTOR;
 import static com.android.internal.util.FrameworkStatsLog.ACCESSIBILITY_SHORTCUT_STATS__GESTURE_SHORTCUT_TYPE__TRIPLE_TAP;
@@ -2549,11 +2551,17 @@ public class StatsPullAtomService extends SystemService {
             if (snapshot == null) {
                 continue;
             }
-            pulledData.add(FrameworkStatsLog.buildStatsEvent(atomTag, managedProcess.uid,
-                    managedProcess.processName,
-                    // RSS high-water mark in bytes.
-                    snapshot.rssHighWaterMarkInKilobytes * 1024L,
-                    snapshot.rssHighWaterMarkInKilobytes));
+            final int dmaBufRssHighWaterMarkInKilobytes =
+                    readDmabufFromProcfs(DmaBufType.RSS_HWM, managedProcess.pid);
+            pulledData.add(
+                    FrameworkStatsLog.buildStatsEvent(
+                            atomTag,
+                            managedProcess.uid,
+                            managedProcess.processName,
+                            // RSS high-water mark in bytes.
+                            snapshot.rssHighWaterMarkInKilobytes * 1024L,
+                            snapshot.rssHighWaterMarkInKilobytes,
+                            dmaBufRssHighWaterMarkInKilobytes));
         }
         // Complement the data with native system processes
         SparseArray<String> processCmdlines = getProcessCmdlines();
@@ -2564,11 +2572,17 @@ public class StatsPullAtomService extends SystemService {
             if (snapshot == null) {
                 continue;
             }
-            pulledData.add(FrameworkStatsLog.buildStatsEvent(atomTag, snapshot.uid,
-                    processCmdlines.valueAt(i),
-                    // RSS high-water mark in bytes.
-                    snapshot.rssHighWaterMarkInKilobytes * 1024L,
-                    snapshot.rssHighWaterMarkInKilobytes));
+            final int dmaBufRssHighWaterMarkInKilobytes =
+                    readDmabufFromProcfs(DmaBufType.RSS_HWM, processCmdlines.keyAt(i));
+            pulledData.add(
+                    FrameworkStatsLog.buildStatsEvent(
+                            atomTag,
+                            snapshot.uid,
+                            processCmdlines.valueAt(i),
+                            // RSS high-water mark in bytes.
+                            snapshot.rssHighWaterMarkInKilobytes * 1024L,
+                            snapshot.rssHighWaterMarkInKilobytes,
+                            dmaBufRssHighWaterMarkInKilobytes));
         }
         // Invoke rss_hwm_reset binary to reset RSS HWM counters for all processes.
         SystemProperties.set("sys.rss_hwm_reset.on", "1");
@@ -2600,13 +2614,25 @@ public class StatsPullAtomService extends SystemService {
             if (snapshot == null) {
                 continue;
             }
-            pulledData.add(FrameworkStatsLog.buildStatsEvent(atomTag, managedProcess.uid,
-                    managedProcess.processName, managedProcess.pid, managedProcess.oomScore,
-                    snapshot.rssInKilobytes, snapshot.anonRssInKilobytes, snapshot.swapInKilobytes,
-                    snapshot.anonRssInKilobytes + snapshot.swapInKilobytes,
-                    gpuMemPerPid.get(managedProcess.pid), managedProcess.hasForegroundServices,
-                    snapshot.rssShmemKilobytes, managedProcess.mHostingComponentTypes,
-                    managedProcess.mHistoricalHostingComponentTypes));
+            final int dmaBufRssInKilobytes =
+                    readDmabufFromProcfs(DmaBufType.RSS, managedProcess.pid);
+            pulledData.add(
+                    FrameworkStatsLog.buildStatsEvent(
+                            atomTag,
+                            managedProcess.uid,
+                            managedProcess.processName,
+                            managedProcess.pid,
+                            managedProcess.oomScore,
+                            snapshot.rssInKilobytes,
+                            snapshot.anonRssInKilobytes,
+                            snapshot.swapInKilobytes,
+                            snapshot.anonRssInKilobytes + snapshot.swapInKilobytes,
+                            gpuMemPerPid.get(managedProcess.pid),
+                            managedProcess.hasForegroundServices,
+                            snapshot.rssShmemKilobytes,
+                            managedProcess.mHostingComponentTypes,
+                            managedProcess.mHistoricalHostingComponentTypes,
+                            dmaBufRssInKilobytes));
         }
         // Complement the data with native system processes. Given these measurements can be taken
         // in response to LMKs happening, we want to first collect the managed app stats (to
@@ -2620,16 +2646,25 @@ public class StatsPullAtomService extends SystemService {
             if (snapshot == null) {
                 continue;
             }
-            pulledData.add(FrameworkStatsLog.buildStatsEvent(atomTag, snapshot.uid,
-                    processCmdlines.valueAt(i), pid,
-                    -1001 /*Placeholder for native processes, OOM_SCORE_ADJ_MIN - 1.*/,
-                    snapshot.rssInKilobytes, snapshot.anonRssInKilobytes, snapshot.swapInKilobytes,
-                    snapshot.anonRssInKilobytes + snapshot.swapInKilobytes,
-                    gpuMemPerPid.get(pid), false /* has_foreground_services */,
-                    snapshot.rssShmemKilobytes,
-                    // Native processes don't really have a hosting component type.
-                    HOSTING_COMPONENT_TYPE_EMPTY,
-                    HOSTING_COMPONENT_TYPE_EMPTY));
+            final int dmaBufRssInKilobytes = readDmabufFromProcfs(DmaBufType.RSS, pid);
+            pulledData.add(
+                    FrameworkStatsLog.buildStatsEvent(
+                            atomTag,
+                            snapshot.uid,
+                            processCmdlines.valueAt(i),
+                            pid,
+                            -1001 /*Placeholder for native processes, OOM_SCORE_ADJ_MIN - 1.*/,
+                            snapshot.rssInKilobytes,
+                            snapshot.anonRssInKilobytes,
+                            snapshot.swapInKilobytes,
+                            snapshot.anonRssInKilobytes + snapshot.swapInKilobytes,
+                            gpuMemPerPid.get(pid),
+                            false /* has_foreground_services */,
+                            snapshot.rssShmemKilobytes,
+                            // Native processes don't really have a hosting component type.
+                            HOSTING_COMPONENT_TYPE_EMPTY,
+                            HOSTING_COMPONENT_TYPE_EMPTY,
+                            dmaBufRssInKilobytes));
         }
         return StatsManager.PULL_SUCCESS;
     }
