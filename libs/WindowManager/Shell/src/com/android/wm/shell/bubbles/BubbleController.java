@@ -2381,6 +2381,11 @@ public class BubbleController implements ConfigurationChangeListener,
     private void setIsBubble(@NonNull final Bubble b, final boolean isBubble) {
         Objects.requireNonNull(b);
         b.setIsBubble(isBubble);
+        if (b.isApp() && isBubble) {
+            Bubble bubble = mBubbleData.getOrCreateBubble(null, b);
+            expandStackAndSelectAppBubble(bubble, null, UpdateSource.DRAG_BUBBLE);
+            return;
+        }
         mSysuiProxy.getPendingOrActiveEntry(b.getKey(), (entry) -> {
             mMainExecutor.execute(() -> {
                 if (entry != null) {

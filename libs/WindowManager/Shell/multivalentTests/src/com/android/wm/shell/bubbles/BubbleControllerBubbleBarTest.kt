@@ -16,11 +16,14 @@
 
 package com.android.wm.shell.bubbles
 
+import android.app.ActivityManager
+import android.content.ComponentName
 import android.content.Context
 import android.content.pm.LauncherApps
 import android.graphics.Insets
 import android.graphics.Rect
 import android.os.Handler
+import android.os.UserHandle
 import android.os.UserManager
 import android.platform.test.annotations.EnableFlags
 import android.platform.test.flag.junit.SetFlagsRule
@@ -62,7 +65,10 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.mockito.kotlin.any
+import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import java.util.Optional
 
@@ -80,6 +86,7 @@ class BubbleControllerBubbleBarTest {
     @get:Rule val setFlagsRule = SetFlagsRule()
 
     private val context = ApplicationProvider.getApplicationContext<Context>()
+    private val bubbleTransitions = mock<BubbleTransitions>()
 
     private lateinit var bubbleController: BubbleController
     private lateinit var uiEventLoggerFake: UiEventLoggerFake
@@ -134,6 +141,7 @@ class BubbleControllerBubbleBarTest {
                 bgExecutor,
             )
         bubbleController.asBubbles().setSysuiProxy(mock<SysuiProxy>())
+        bubbleController.setInflateSynchronously(true)
 
         shellInit.init()
 
@@ -406,6 +414,34 @@ class BubbleControllerBubbleBarTest {
             .isEqualTo(BubbleLogger.Event.BUBBLE_BAR_OVERFLOW_REMOVE_BACK_TO_BAR.id)
     }
 
+    @EnableFlags(Flags.FLAG_ENABLE_BUBBLE_BAR, Flags.FLAG_ENABLE_CREATE_ANY_BUBBLE)
+    @Test
+    fun promoteBubbleFromOverflow_shouldStartNewTransition() {
+        addBubble()
+        val bubble = addAppBubble()
+
+        assertThat(bubbleData.hasAnyBubbleWithKey(bubble.key)).isTrue()
+
+        // Dismiss the bubble so it's in the overflow
+        bubbleController.removeBubble(bubble.key, Bubbles.DISMISS_USER_GESTURE)
+        val overflowBubble = bubbleData.getOverflowBubbleWithKey(bubble.key)
+        assertThat(overflowBubble).isNotNull()
+
+        bubbleController.promoteBubbleFromOverflow(overflowBubble)
+
+        verify(bubbleTransitions).startLaunchIntoOrConvertToBubble(
+            any(),
+            any(),
+            any(),
+            any(),
+            eq(null),
+            any(),
+            any(),
+            eq(true),
+            eq(null)
+        )
+    }
+
     private fun expandAndSelectBubble(key: String) {
         getInstrumentation().runOnMainSync {
             bubbleController.expandStackAndSelectBubbleFromLauncher(key, 0)
@@ -417,6 +453,23 @@ class BubbleControllerBubbleBarTest {
         bubble.setInflateSynchronously(true)
         bubble.setShouldAutoExpand(autoExpand)
         bubbleController.inflateAndAdd(bubble,
+            /* suppressFlyout= */ true,
+            /* showInShade= */ true,
+            /* bubbleBarLocation = */ null,
+        )
+        return bubble
+    }
+
+    private fun addAppBubble(): Bubble {
+        val taskInfo = ActivityManager.RunningTaskInfo().apply {
+            taskId = 123
+            baseActivity = ComponentName("com.example.app", "com.example.app.MainActivity")
+        }
+        val bubble =
+            Bubble.createTaskBubble(taskInfo, UserHandle.of(0), null, mainExecutor, bgExecutor)
+        bubble.setInflateSynchronously(true)
+        bubbleController.inflateAndAdd(
+            bubble,
             /* suppressFlyout= */ true,
             /* showInShade= */ true,
             /* bubbleBarLocation = */ null,
@@ -464,7 +517,7 @@ class BubbleControllerBubbleBarTest {
             surfaceSynchronizer,
             FloatingContentCoordinator(),
             bubbleDataRepository,
-            mock<BubbleTransitions>(),
+            bubbleTransitions,
             mock<IStatusBarService>(),
             mock<WindowManager>(),
             mock<DisplayInsetsController>(),
