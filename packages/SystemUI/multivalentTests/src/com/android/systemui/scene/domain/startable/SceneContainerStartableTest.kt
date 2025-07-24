@@ -2381,6 +2381,8 @@ class SceneContainerStartableTest : SysuiTestCase() {
     fun switchFromDreamToLockscreen_whenLockedAndDreamStopped() =
         kosmos.runTest {
             val currentScene by collectLastValue(sceneInteractor.currentScene)
+            val currentOverlays by collectLastValue(sceneInteractor.currentOverlays)
+
             prepareState(initialSceneKey = Scenes.Dream)
             underTest.start()
             testScope.advanceTimeBy(KeyguardInteractor.IS_ABLE_TO_DREAM_DELAY_MS)
@@ -2389,11 +2391,19 @@ class SceneContainerStartableTest : SysuiTestCase() {
             testScope.advanceTimeBy(KeyguardInteractor.IS_ABLE_TO_DREAM_DELAY_MS)
             runCurrent()
             assertThat(currentScene).isEqualTo(Scenes.Dream)
+            emulateOverlayTransition(
+                transitionStateFlow =
+                    MutableStateFlow(ObservableTransitionState.Idle(Scenes.Dream)),
+                toOverlay = Overlays.Bouncer,
+            )
+            assertThat(currentOverlays).contains(Overlays.Bouncer)
+            runCurrent()
 
             keyguardInteractor.setDreaming(false)
             testScope.advanceTimeBy(KeyguardInteractor.IS_ABLE_TO_DREAM_DELAY_MS)
             runCurrent()
             assertThat(currentScene).isEqualTo(Scenes.Lockscreen)
+            assertThat(currentOverlays).contains(Overlays.Bouncer)
         }
 
     @Test

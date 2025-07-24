@@ -88,6 +88,10 @@ import com.android.systemui.util.println
 import com.android.systemui.utils.coroutines.flow.conflatedCallbackFlow
 import com.google.android.msdl.data.model.MSDLToken
 import com.google.android.msdl.domain.MSDLPlayer
+import dagger.Lazy
+import java.io.PrintWriter
+import java.util.Optional
+import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.coroutineScope
@@ -106,10 +110,6 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import dagger.Lazy
-import java.io.PrintWriter
-import java.util.Optional
-import javax.inject.Inject
 
 /**
  * Hooks up business logic that manipulates the state of the [SceneInteractor] for the system UI
@@ -302,9 +302,13 @@ constructor(
                                         is ObservableTransitionState.Idle -> {
                                             if (transitionState.currentScene == Scenes.Dream) {
                                                 false to "dream is showing"
-                                            } else if (transitionState.currentScene != Scenes.Gone) {
+                                            } else if (
+                                                transitionState.currentScene != Scenes.Gone
+                                            ) {
                                                 true to "scene is not Gone"
-                                            } else if (transitionState.currentOverlays.isNotEmpty()) {
+                                            } else if (
+                                                transitionState.currentOverlays.isNotEmpty()
+                                            ) {
                                                 true to "overlay is shown"
                                             } else {
                                                 false to "scene is Gone and no overlays are shown"
@@ -650,6 +654,7 @@ constructor(
                         switchToScene(
                             targetSceneKey = SceneFamilies.Home,
                             loggingReason = "dream stopped",
+                            hideAllOverlays = deviceUnlockedInteractor.isUnlocked,
                         )
                     }
                 }
@@ -992,12 +997,14 @@ constructor(
         loggingReason: String,
         sceneState: Any? = null,
         freezeAndAnimateToCurrentState: Boolean = false,
+        hideAllOverlays: Boolean = true,
     ) {
         sceneInteractor.changeScene(
             toScene = targetSceneKey,
             loggingReason = loggingReason,
             sceneState = sceneState,
             forceSettleToTargetScene = freezeAndAnimateToCurrentState,
+            hideAllOverlays = hideAllOverlays,
         )
     }
 
