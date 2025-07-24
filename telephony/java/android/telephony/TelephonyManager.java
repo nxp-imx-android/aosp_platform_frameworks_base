@@ -18058,10 +18058,6 @@ public class TelephonyManager {
             throw new IllegalStateException("telephony service is null.");
         }
 
-        if (executor == null || callback == null) {
-            throw new IllegalArgumentException("TelephonyCallback and executor must be non-null");
-        }
-
         TelephonyRegistryManager mgr = mContext.getSystemService(TelephonyRegistryManager.class);
 
         if (mgr == null) throw new IllegalStateException("telephony service is null.");
