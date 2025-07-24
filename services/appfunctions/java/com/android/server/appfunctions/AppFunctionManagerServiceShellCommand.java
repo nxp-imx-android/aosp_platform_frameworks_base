@@ -59,6 +59,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 /** Shell command implementation for the {@link AppFunctionManagerService}. */
 public class AppFunctionManagerServiceShellCommand extends ShellCommand {
+    private static final long DEFAULT_EXECUTE_TIMEOUT_SECONDS = 30;
+
     @NonNull private final Context mContext;
     @NonNull private final IAppFunctionManager mService;
 
@@ -83,7 +85,8 @@ public class AppFunctionManagerServiceShellCommand extends ShellCommand {
         pw.println();
         pw.println(
                 "  execute-app-function --package <PACKAGE_NAME> --function <FUNCTION_ID> "
-                        + "--parameters <PARAMETERS_JSON> [--user <USER_ID>]");
+                        + "--parameters <PARAMETERS_JSON> [--user <USER_ID>]"
+                        + "[--timeout-duration <SECONDS>]");
         pw.println(
                 "    Executes an app function for the given package with the provided parameters "
                         + " and returns the result as a JSON string");
@@ -95,6 +98,10 @@ public class AppFunctionManagerServiceShellCommand extends ShellCommand {
         pw.println(
                 "    --user <USER_ID> (optional): The user ID to execute the function under. "
                         + "Defaults to the current user.");
+        pw.println(
+                "    --timeout-duration <SECONDS> (optional): The timeout for the function "
+                        + "execution in seconds. Defaults to " + DEFAULT_EXECUTE_TIMEOUT_SECONDS
+                        + " seconds.");
         pw.println();
         pw.println(
                 "  set-enabled --package <PACKAGE_NAME> --function <FUNCTION_ID> "
@@ -346,6 +353,7 @@ public class AppFunctionManagerServiceShellCommand extends ShellCommand {
         String functionId = null;
         String parametersJson = null;
         int userId = ActivityManager.getCurrentUser();
+        long timeoutDurationSeconds = DEFAULT_EXECUTE_TIMEOUT_SECONDS;
         String opt;
 
         while ((opt = getNextOption()) != null) {
@@ -364,6 +372,14 @@ public class AppFunctionManagerServiceShellCommand extends ShellCommand {
                         userId = UserHandle.parseUserArg(getNextArgRequired());
                     } catch (NumberFormatException e) {
                         pw.println("Invalid user ID: " + getNextArg() + ". Using current user.");
+                    }
+                    break;
+                case "--timeout-duration":
+                    try {
+                        timeoutDurationSeconds = Long.parseLong(getNextArgRequired());
+                    } catch (NumberFormatException e) {
+                        pw.println("Invalid timeout duration: " + getNextArg()
+                                + ". Using default of " + DEFAULT_EXECUTE_TIMEOUT_SECONDS + "s.");
                     }
                     break;
                 default:
@@ -438,7 +454,7 @@ public class AppFunctionManagerServiceShellCommand extends ShellCommand {
 
         ICancellationSignal cancellationSignal = mService.executeAppFunction(request, callback);
 
-        boolean returned = countDownLatch.await(10, TimeUnit.SECONDS);
+        boolean returned = countDownLatch.await(timeoutDurationSeconds, TimeUnit.SECONDS);
         if (!returned) {
             pw.println("Timed out");
             cancellationSignal.cancel();
