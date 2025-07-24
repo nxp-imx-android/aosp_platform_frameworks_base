@@ -5294,6 +5294,10 @@ public class PhoneWindowManager implements WindowManagerPolicy {
         // We only care about default and default-adjacent groups
         if (displayGroupId != Display.DEFAULT_DISPLAY_GROUP
                 && !mPowerManagerInternal.isDefaultGroupAdjacent(displayGroupId)) {
+            if (com.android.server.power.feature.flags.Flags.extraLoggingSeparateTimeout()) {
+                Slog.i(TAG, "Not signalling isReadyToSignalSleep because it's a non default "
+                        + "adjacent group " + displayGroupId);
+            }
             return false;
         }
 
@@ -5301,6 +5305,15 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                 !mPowerManagerInternal.isAnyDefaultAdjacentGroupInteractive();
         boolean isDefaultGroupNonInteractive =
                 !mPowerManagerInternal.isGroupInteractive(Display.DEFAULT_DISPLAY_GROUP);
+        if (com.android.server.power.feature.flags.Flags.extraLoggingSeparateTimeout()) {
+            Slog.i(TAG, "Started going to sleep check status for group " + displayGroupId
+                    + " : "
+                    + (areAllDefaultAdjacentGroupsNonInteractive && isDefaultGroupNonInteractive)
+                    + " areAllDefaultAdjacentGroupsNonInteractive "
+                    + areAllDefaultAdjacentGroupsNonInteractive
+                    + " isDefaultGroupNonInteractive "
+                    + isDefaultGroupNonInteractive);
+        }
         return areAllDefaultAdjacentGroupsNonInteractive && isDefaultGroupNonInteractive;
     }
 
@@ -5361,6 +5374,10 @@ public class PhoneWindowManager implements WindowManagerPolicy {
     @Override
     public void startedGoingToSleep(int displayGroupId,
             @PowerManager.GoToSleepReason int pmSleepReason) {
+        if (!isReadyToSignalSleep(displayGroupId)) {
+            return;
+        }
+
         if (DEBUG_WAKEUP) {
             Slog.i(TAG, "Started going to sleep... (groupId=" + displayGroupId + " why="
                     + WindowManagerPolicyConstants.offReasonToString(
@@ -5368,16 +5385,21 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                                     pmSleepReason)) + ")");
         }
 
-        if (!isReadyToSignalSleep(displayGroupId)) {
-            return;
-        }
-
         mRequestedOrSleepingDefaultDisplay = true;
         mIsGoingToSleep = true;
         setPendingSleepingGroup(displayGroupId);
 
         if (mKeyguardDelegate != null) {
+            if (com.android.server.power.feature.flags.Flags.extraLoggingSeparateTimeout()) {
+                Slog.i(TAG, "Notifying keyguard about onGoingToSleep displayGroupId "
+                        + displayGroupId);
+            }
             mKeyguardDelegate.onStartedGoingToSleep(pmSleepReason);
+        } else {
+            if (com.android.server.power.feature.flags.Flags.extraLoggingSeparateTimeout()) {
+                Slog.i(TAG, "Not notifying keyguard about onGoingToSleep displayGroupId "
+                        + displayGroupId);
+            }
         }
     }
 
