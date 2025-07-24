@@ -994,7 +994,7 @@ public class BubbleTransitions {
                 mExpandedViewAnimator.removeViewFromTransition(priorView);
                 mPriorBubble = null;
             }
-            if (!animate || mTransitionProgress.isReadyToAnimate()) {
+            if (mTransitionProgress.isReadyToAnimate()) {
                 playAnimation(animate);
             }
         }
@@ -1280,7 +1280,7 @@ public class BubbleTransitions {
                 mExpandedViewAnimator.removeViewFromTransition(priorView);
                 mPriorBubble = null;
             }
-            if (!animate || mTransitionProgress.isReadyToAnimate()) {
+            if (mTransitionProgress.isReadyToAnimate()) {
                 playAnimation(animate);
             }
         }
