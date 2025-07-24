@@ -17,8 +17,12 @@
 package com.android.systemui.common.shared.model
 
 import android.annotation.DrawableRes
+import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
 import androidx.compose.runtime.Stable
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.core.graphics.drawable.toBitmap
 import com.android.systemui.common.shared.model.Icon.Loaded
 
 /**
@@ -33,9 +37,9 @@ sealed class Icon {
      * An icon that is already loaded.
      *
      * @param res The resource ID of the icon. For when we want to have Loaded icon, but still keep
-     * a reference to the resource id. A use case would be for tests that have to compare animated
-     * drawables. It should only be used for SystemUI/frameworks resources and not for other
-     * packages' resources as they may collide with SystemUI.
+     *   a reference to the resource id. A use case would be for tests that have to compare animated
+     *   drawables. It should only be used for SystemUI/frameworks resources and not for other
+     *   packages' resources as they may collide with SystemUI.
      */
     data class Loaded
     @JvmOverloads
@@ -88,3 +92,21 @@ fun Drawable.asIcon(
     contentDescription: ContentDescription? = null,
     @DrawableRes res: Int? = null,
 ): Loaded = Loaded(this, contentDescription, res)
+
+/**
+ * Creates [ImageBitmap] for a given [Icon.Loaded]. It avoids IllegalArgumentException by providing
+ * 1x1 bitmap if [Drawable.getIntrinsicWidth] or [Drawable.getIntrinsicHeight] is <= 0
+ */
+fun Loaded.asImageBitmap(): ImageBitmap {
+    return with(drawable) {
+        if (this is BitmapDrawable) {
+            bitmap.asImageBitmap()
+        } else {
+            toBitmap(
+                    width = intrinsicWidth.takeIf { it > 0 } ?: 1,
+                    height = intrinsicWidth.takeIf { it > 0 } ?: 1,
+                )
+                .asImageBitmap()
+        }
+    }
+}

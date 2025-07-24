@@ -16,12 +16,15 @@
 
 package com.android.systemui.media.controls.data.repository
 
+import android.content.Context
 import com.android.internal.logging.InstanceId
 import com.android.systemui.dagger.SysUISingleton
+import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.media.controls.data.model.MediaSortKeyModel
 import com.android.systemui.media.controls.shared.model.MediaCommonModel
 import com.android.systemui.media.controls.shared.model.MediaData
 import com.android.systemui.media.controls.shared.model.MediaDataLoadingModel
+import com.android.systemui.media.remedia.data.model.UpdateArtInfoModel
 import com.android.systemui.media.remedia.data.repository.MediaPipelineRepository
 import com.android.systemui.util.time.SystemClock
 import java.util.TreeMap
@@ -31,8 +34,12 @@ import kotlinx.coroutines.flow.asStateFlow
 
 /** A repository that holds the state of filtered media data on the device. */
 @SysUISingleton
-class MediaFilterRepository @Inject constructor(private val systemClock: SystemClock) :
-    MediaPipelineRepository() {
+class MediaFilterRepository
+@Inject
+constructor(
+    @Application private val applicationContext: Context,
+    private val systemClock: SystemClock,
+) : MediaPipelineRepository(applicationContext) {
 
     private val _currentMedia: MutableStateFlow<List<MediaCommonModel>> =
         MutableStateFlow(mutableListOf())
@@ -40,9 +47,12 @@ class MediaFilterRepository @Inject constructor(private val systemClock: SystemC
 
     private var sortedMedia = TreeMap<MediaSortKeyModel, MediaCommonModel>(comparator)
 
-    override fun addCurrentUserMediaEntry(data: MediaData): Boolean {
-        return super.addCurrentUserMediaEntry(data).also {
-            addMediaDataLoadingState(MediaDataLoadingModel.Loaded(data.instanceId), it)
+    override fun addCurrentUserMediaEntry(data: MediaData): UpdateArtInfoModel? {
+        return super.addCurrentUserMediaEntry(data).also { updateModel ->
+            addMediaDataLoadingState(
+                MediaDataLoadingModel.Loaded(data.instanceId),
+                isUpdate = updateModel != null,
+            )
         }
     }
 
