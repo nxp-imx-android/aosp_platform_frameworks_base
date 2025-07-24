@@ -228,7 +228,7 @@ final class ZeroJankProxy implements IInputMethodManagerImpl.Callback {
     @Override
     public void showInputMethodPickerFromClient(IInputMethodClient client,
             int auxiliarySubtypeMode) {
-        offload(() -> mInner.showInputMethodPickerFromClient(client, auxiliarySubtypeMode));
+        mInner.showInputMethodPickerFromClient(client, auxiliarySubtypeMode);
     }
 
     @IInputMethodManagerImpl.PermissionVerified(allOf = {
