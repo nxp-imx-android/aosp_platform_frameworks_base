@@ -27,7 +27,6 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import androidx.test.filters.FlakyTest
 import androidx.test.filters.SmallTest
 import com.android.internal.R
 import com.android.systemui.SysuiTestCase
@@ -171,29 +170,25 @@ class NotificationTemplateViewWrapperTest : SysuiTestCase() {
     }
 
     @Test
-    @FlakyTest
     fun actionViewDetached_pendingIntentListenersDeregistered() {
-        ViewUtils.detachView(root)
         val pi =
-            PendingIntent.getActivity(
+            Mockito.spy(PendingIntent.getActivity(
                 mContext,
                 System.currentTimeMillis().toInt(),
                 Intent(Intent.ACTION_VIEW),
                 PendingIntent.FLAG_IMMUTABLE
-            )
-        val spy = Mockito.spy(pi)
-        createActionWithPendingIntent(spy)
-        val wrapper = NotificationTemplateViewWrapper(mContext, view, row)
-        wrapper.onContentUpdated(row)
-        ViewUtils.attachView(root)
-        looper.processAllMessages()
+            ))
+        val mockView = Mockito.mock(View::class.java)
+        val handler = ActionPendingIntentCancellationHandler(pi, mockView, null)
 
-        ViewUtils.detachView(root)
+        handler.onViewAttachedToWindow(mockView)
         looper.processAllMessages()
-
         val captor = ArgumentCaptor.forClass(CancelListener::class.java)
-        verify(spy, times(1)).registerCancelListener(captor.capture())
-        verify(spy, times(1)).unregisterCancelListener(captor.value)
+        verify(pi, times(1)).registerCancelListener(captor.capture())
+
+        handler.onViewDetachedFromWindow(mockView)
+        looper.processAllMessages()
+        verify(pi, times(1)).unregisterCancelListener(captor.value)
     }
 
     @Test
