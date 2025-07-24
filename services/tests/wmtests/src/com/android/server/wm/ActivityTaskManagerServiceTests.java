@@ -469,13 +469,13 @@ public class ActivityTaskManagerServiceTests extends WindowTestsBase {
         // Check adding decoration
         doReturn(true).when(newDisp1).allowContentModeSwitch();
         doReturn(true).when(newDisp1).isSystemDecorationsSupported();
-        mAtm.mWindowManager.setShouldShowSystemDecors(newDisp1.mDisplayId, true);
+        mAtm.mWindowManager.mDisplayWindowSettings.setShouldShowSystemDecorsLocked(newDisp1, true);
         assertEquals(1, desktopModeEligibleChanged.size());
         assertEquals(newDisp1.mDisplayId, (int) desktopModeEligibleChanged.get(0));
         desktopModeEligibleChanged.clear();
         // Check removing decoration
         doReturn(false).when(newDisp1).isSystemDecorationsSupported();
-        mAtm.mWindowManager.setShouldShowSystemDecors(newDisp1.mDisplayId, false);
+        mAtm.mWindowManager.mDisplayWindowSettings.setShouldShowSystemDecorsLocked(newDisp1, false);
         assertEquals(1, desktopModeEligibleChanged.size());
         assertEquals(newDisp1.mDisplayId, (int) desktopModeEligibleChanged.get(0));
         desktopModeEligibleChanged.clear();
@@ -502,14 +502,14 @@ public class ActivityTaskManagerServiceTests extends WindowTestsBase {
 
         // Check adding decoration
         doReturn(true).when(newDisp1).isSystemDecorationsSupported();
-        mAtm.mWindowManager.setShouldShowSystemDecors(newDisp1.mDisplayId, true);
+        mAtm.mWindowManager.mDisplayWindowSettings.setShouldShowSystemDecorsLocked(newDisp1, true);
         assertEquals(1, displayAddSystemDecorations.size());
         assertEquals(newDisp1.mDisplayId, (int) displayAddSystemDecorations.get(0));
         displayAddSystemDecorations.clear();
 
         // Check removing decoration
         doReturn(false).when(newDisp1).isSystemDecorationsSupported();
-        mAtm.mWindowManager.setShouldShowSystemDecors(newDisp1.mDisplayId, false);
+        mAtm.mWindowManager.mDisplayWindowSettings.setShouldShowSystemDecorsLocked(newDisp1, false);
         assertEquals(1, displayRemoveSystemDecorations.size());
         assertEquals(newDisp1.mDisplayId, (int) displayRemoveSystemDecorations.get(0));
         displayRemoveSystemDecorations.clear();

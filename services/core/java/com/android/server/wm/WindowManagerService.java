@@ -7952,34 +7952,6 @@ public class WindowManagerService extends IWindowManager.Stub
     }
 
     @Override
-    public void setShouldShowSystemDecors(int displayId, boolean shouldShow) {
-        if (!checkCallingPermission(INTERNAL_SYSTEM_WINDOW, "setShouldShowSystemDecors()")) {
-            throw new SecurityException("Requires INTERNAL_SYSTEM_WINDOW permission");
-        }
-        final long origId = Binder.clearCallingIdentity();
-        try {
-            synchronized (mGlobalLock) {
-                final DisplayContent displayContent = getDisplayContentOrCreate(displayId, null);
-                if (displayContent == null) {
-                    ProtoLog.w(WM_ERROR, "Attempted to set system decors flag to a display that "
-                            + "does not exist: %d", displayId);
-                    return;
-                }
-                if (!displayContent.isTrusted()) {
-                    throw new SecurityException("Attempted to set system decors flag to an "
-                            + "untrusted virtual display: " + displayId);
-                }
-
-                mDisplayWindowSettings.setShouldShowSystemDecorsLocked(displayContent, shouldShow);
-
-                displayContent.reconfigureDisplayLocked();
-            }
-        } finally {
-            Binder.restoreCallingIdentity(origId);
-        }
-    }
-
-    @Override
     public @DisplayImePolicy int getDisplayImePolicy(int displayId) {
         if (!checkCallingPermission(INTERNAL_SYSTEM_WINDOW, "getDisplayImePolicy()")) {
             throw new SecurityException("Requires INTERNAL_SYSTEM_WINDOW permission");

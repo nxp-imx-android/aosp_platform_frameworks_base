@@ -742,17 +742,6 @@ interface IWindowManager
     boolean shouldShowSystemDecors(int displayId);
 
     /**
-     * Sets that the display should show system decors.
-     * <p>
-     * System decors include status bar, navigation bar, launcher.
-     * </p>
-     *
-     * @param displayId The id of the display.
-     * @param shouldShow Indicates that the display should show system decors.
-     */
-    void setShouldShowSystemDecors(int displayId, boolean shouldShow);
-
-    /**
      * Indicates that the display is eligible for the desktop mode from WindowManager's perspective.
      * This includes:
      * - The default display;
