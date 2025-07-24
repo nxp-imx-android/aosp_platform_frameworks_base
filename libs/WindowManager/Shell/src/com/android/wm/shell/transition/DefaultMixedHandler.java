@@ -525,22 +525,22 @@ public class DefaultMixedHandler implements MixedTransitionHandler,
     }
 
     private void setRecentsTransitionDuringSplit(IBinder transition, int displayId) {
-        ProtoLog.v(ShellProtoLogGroup.WM_SHELL_TRANSITIONS, " Got a recents request while "
-                + "Split-Screen is foreground, so treat it as Mixed.");
+        ProtoLog.v(ShellProtoLogGroup.WM_SHELL_TRANSITIONS,
+                " Got a recents request while Split-Screen is foreground, so treat it as Mixed.");
         mActiveTransitions.add(createRecentsMixedTransition(
                 MixedTransition.TYPE_RECENTS_DURING_SPLIT, transition, displayId));
     }
 
     private void setRecentsTransitionDuringKeyguard(IBinder transition, int displayId) {
-        ProtoLog.v(ShellProtoLogGroup.WM_SHELL_TRANSITIONS, " Got a recents request while "
-                + "keyguard is visible, so treat it as Mixed.");
+        ProtoLog.v(ShellProtoLogGroup.WM_SHELL_TRANSITIONS,
+                " Got a recents request while keyguard is visible, so treat it as Mixed.");
         mActiveTransitions.add(createRecentsMixedTransition(
                 MixedTransition.TYPE_RECENTS_DURING_KEYGUARD, transition, displayId));
     }
 
     private void setRecentsTransitionDuringDesktop(IBinder transition, int displayId) {
-        ProtoLog.v(ShellProtoLogGroup.WM_SHELL_TRANSITIONS, " Got a recents request while "
-                + "desktop mode is active, so treat it as Mixed.");
+        ProtoLog.v(ShellProtoLogGroup.WM_SHELL_TRANSITIONS,
+                " Got a recents request while desktop mode is active, so treat it as Mixed.");
         mActiveTransitions.add(createRecentsMixedTransition(
                 MixedTransition.TYPE_RECENTS_DURING_DESKTOP, transition, displayId));
     }

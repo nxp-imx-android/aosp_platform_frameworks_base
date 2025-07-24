@@ -49,6 +49,7 @@ import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -213,6 +214,24 @@ public class RecentsTransitionHandlerTest extends ShellTestCase {
             mMocksInit.close();
             mMocksInit = null;
         }
+    }
+
+    @Test
+    public void testStartRecentsTransitionTwiceCancelsFirst() throws Exception {
+        final IRecentsAnimationRunner runner1 = mock(IRecentsAnimationRunner.class);
+        final IRecentsAnimationRunner runner2 = mock(IRecentsAnimationRunner.class);
+
+        final IBinder transition1 = startRecentsTransition(/* synthetic= */ true, runner1);
+        verify(runner1).onAnimationStart(any(), any(), any(), any(), any(), any());
+
+        // Start a new recents transition and verify the original runner is canceled and we don't
+        // start the new transition either
+        final IBinder transition2 = startRecentsTransition(/* synthetic= */ true, runner2);
+        assertNull(transition2);
+        verify(runner1).onAnimationCanceled(any(), any());
+        verify(runner2, never()).onAnimationStart(any(), any(), any(), any(), any(), any());
+
+        assertNull(mRecentsTransitionHandler.findController(transition1));
     }
 
     @Test
