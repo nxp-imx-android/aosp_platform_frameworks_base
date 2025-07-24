@@ -1997,10 +1997,10 @@ class PermissionService(private val service: AccessCheckingService) :
 
         val permission = service.getState { with(policy) { getPermissions()[permissionName] } }
         if (permission == null || !permission.isAppOp) {
-            packageNames.toTypedArray()
+            return packageNames.toTypedArray()
         }
 
-        packageManagerLocal.withUnfilteredSnapshot().use { snapshot ->
+        packageManagerLocal.withFilteredSnapshot().use { snapshot ->
             snapshot.packageStates.forEach { (_, packageState) ->
                 if (packageState.isApex) {
                     return@forEach
