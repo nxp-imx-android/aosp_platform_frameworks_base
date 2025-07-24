@@ -6067,9 +6067,7 @@ public final class ViewRootImpl implements ViewParent,
             return false;
         }
 
-        if (android.view.accessibility.Flags.focusRectMinSize()) {
-            adjustAccessibilityFocusedRectBoundsIfNeeded(bounds);
-        }
+        adjustAccessibilityFocusedRectBoundsIfNeeded(bounds);
 
         return true;
     }
