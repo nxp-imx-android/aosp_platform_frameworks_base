@@ -40,7 +40,7 @@ constructor(
     @Background private val backgroundContext: CoroutineContext,
     @Background private val backgroundHandler: Handler,
 ) {
-    suspend fun takeFullscreenScreenshot(displayId: Int = DEFAULT_DISPLAY) {
+    suspend fun takeFullscreenScreenshot(displayId: Int) {
         val request =
             ScreenshotRequest.Builder(
                     WindowManager.TAKE_SCREENSHOT_FULLSCREEN,
