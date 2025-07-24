@@ -77,9 +77,12 @@ import com.android.systemui.keyguard.KeyguardIndicationRotateTextViewController;
 import com.android.systemui.keyguard.ScreenLifecycle;
 import com.android.systemui.keyguard.domain.interactor.KeyguardInteractorFactory;
 import com.android.systemui.keyguard.util.IndicationHelper;
+import com.android.systemui.kosmos.KosmosJavaAdapter;
 import com.android.systemui.plugins.FalsingManager;
 import com.android.systemui.plugins.statusbar.StatusBarStateController;
 import com.android.systemui.res.R;
+import com.android.systemui.securelockdevice.data.repository.FakeSecureLockDeviceRepository;
+import com.android.systemui.securelockdevice.domain.interactor.SecureLockDeviceInteractor;
 import com.android.systemui.settings.UserTracker;
 import com.android.systemui.statusbar.phone.KeyguardBypassController;
 import com.android.systemui.statusbar.phone.KeyguardIndicationTextView;
@@ -100,7 +103,6 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 public class KeyguardIndicationControllerBaseTest extends SysuiTestCase {
-
     protected static final String ORGANIZATION_NAME = "organization";
 
     protected static final ComponentName DEVICE_OWNER_COMPONENT = new ComponentName(
@@ -108,6 +110,8 @@ public class KeyguardIndicationControllerBaseTest extends SysuiTestCase {
             "bar");
 
     protected static final int TEST_STRING_RES = R.string.keyguard_indication_trust_unlocked;
+
+    protected KosmosJavaAdapter mKosmos = new KosmosJavaAdapter(this);
 
     protected String mDisclosureWithOrganization;
     protected String mDisclosureGeneric;
@@ -193,6 +197,8 @@ public class KeyguardIndicationControllerBaseTest extends SysuiTestCase {
     protected ScreenLifecycle.Observer mScreenObserver;
     protected BroadcastReceiver mBroadcastReceiver;
     protected IndicationHelper mIndicationHelper;
+    protected FakeSecureLockDeviceRepository mSecureLockDeviceRepository;
+    protected SecureLockDeviceInteractor mSecureLockDeviceInteractor;
     protected FakeExecutor mExecutor = new FakeExecutor(new FakeSystemClock());
     protected TestableLooper mTestableLooper;
     protected final int mCurrentUserId = 1;
@@ -210,6 +216,8 @@ public class KeyguardIndicationControllerBaseTest extends SysuiTestCase {
         MockitoAnnotations.initMocks(this);
         mInstrumentation = InstrumentationRegistry.getInstrumentation();
         mTestableLooper = TestableLooper.get(this);
+        mSecureLockDeviceRepository = mKosmos.getFakeSecureLockDeviceRepository();
+        mSecureLockDeviceInteractor = mKosmos.getSecureLockDeviceInteractor();
         mTextView = new KeyguardIndicationTextView(mContext);
         mTextView.setAnimationsEnabled(false);
 
@@ -300,7 +308,8 @@ public class KeyguardIndicationControllerBaseTest extends SysuiTestCase {
                 mBiometricMessageInteractor,
                 mDeviceEntryFingerprintAuthInteractor,
                 mDeviceEntryFaceAuthInteractor,
-                mUserLogoutInteractor
+                mUserLogoutInteractor,
+                () -> mSecureLockDeviceInteractor
         );
         mController.init();
         mController.setIndicationArea(mIndicationArea);

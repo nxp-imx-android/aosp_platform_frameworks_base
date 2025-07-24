@@ -23,6 +23,7 @@ import static android.hardware.biometrics.BiometricFaceConstants.FACE_ACQUIRED_T
 import static android.hardware.biometrics.BiometricFaceConstants.FACE_ERROR_TIMEOUT;
 import static android.hardware.biometrics.BiometricSourceType.FACE;
 import static android.hardware.biometrics.BiometricSourceType.FINGERPRINT;
+import static android.security.Flags.secureLockDevice;
 import static android.view.View.GONE;
 import static android.view.View.VISIBLE;
 
@@ -42,6 +43,7 @@ import static com.android.systemui.keyguard.KeyguardIndicationRotateTextViewCont
 import static com.android.systemui.keyguard.KeyguardIndicationRotateTextViewController.INDICATION_TYPE_LOGOUT;
 import static com.android.systemui.keyguard.KeyguardIndicationRotateTextViewController.INDICATION_TYPE_OWNER_INFO;
 import static com.android.systemui.keyguard.KeyguardIndicationRotateTextViewController.INDICATION_TYPE_PERSISTENT_UNLOCK_MESSAGE;
+import static com.android.systemui.keyguard.KeyguardIndicationRotateTextViewController.INDICATION_TYPE_SECURE_LOCK_DEVICE;
 import static com.android.systemui.keyguard.KeyguardIndicationRotateTextViewController.INDICATION_TYPE_TRUST;
 import static com.android.systemui.keyguard.KeyguardIndicationRotateTextViewController.INDICATION_TYPE_USER_LOCKED;
 import static com.android.systemui.keyguard.KeyguardIndicationRotateTextViewController.INDICATION_TYPE_WATCH_DISCONNECTED;
@@ -112,6 +114,7 @@ import com.android.systemui.log.core.LogLevel;
 import com.android.systemui.plugins.FalsingManager;
 import com.android.systemui.plugins.statusbar.StatusBarStateController;
 import com.android.systemui.res.R;
+import com.android.systemui.securelockdevice.domain.interactor.SecureLockDeviceInteractor;
 import com.android.systemui.settings.UserTracker;
 import com.android.systemui.statusbar.phone.KeyguardBypassController;
 import com.android.systemui.statusbar.phone.KeyguardIndicationTextView;
@@ -122,6 +125,8 @@ import com.android.systemui.util.AlarmTimeout;
 import com.android.systemui.util.concurrency.DelayableExecutor;
 import com.android.systemui.util.wakelock.SettableWakeLock;
 import com.android.systemui.util.wakelock.WakeLock;
+
+import dagger.Lazy;
 
 import java.io.PrintWriter;
 import java.text.NumberFormat;
@@ -164,6 +169,7 @@ public class KeyguardIndicationController {
     private final KeyguardLogger mKeyguardLogger;
     private final UserTracker mUserTracker;
     private final BouncerMessageInteractor mBouncerMessageInteractor;
+    private final Lazy<SecureLockDeviceInteractor> mSecureLockDeviceInteractor;
 
     private ViewGroup mIndicationArea;
     private KeyguardIndicationTextView mTopIndicationView;
@@ -319,7 +325,8 @@ public class KeyguardIndicationController {
             BiometricMessageInteractor biometricMessageInteractor,
             DeviceEntryFingerprintAuthInteractor deviceEntryFingerprintAuthInteractor,
             DeviceEntryFaceAuthInteractor deviceEntryFaceAuthInteractor,
-            UserLogoutInteractor userLogoutInteractor
+            UserLogoutInteractor userLogoutInteractor,
+            Lazy<SecureLockDeviceInteractor> secureLockDeviceInteractor
     ) {
         mContext = context;
         mBroadcastDispatcher = broadcastDispatcher;
@@ -352,7 +359,7 @@ public class KeyguardIndicationController {
         mDeviceEntryFingerprintAuthInteractor = deviceEntryFingerprintAuthInteractor;
         mDeviceEntryFaceAuthInteractor = deviceEntryFaceAuthInteractor;
         mUserLogoutInteractor = userLogoutInteractor;
-
+        mSecureLockDeviceInteractor = secureLockDeviceInteractor;
 
         mFaceAcquiredMessageDeferral = faceHelpMessageDeferral.create();
 
@@ -532,6 +539,9 @@ public class KeyguardIndicationController {
         updateLockScreenAdaptiveAuthMsg(userId);
         if (showLockedByYourWatchKeyguardIndicator()) {
             updateLockScreenWatchDisconnectedMsg(userId);
+        }
+        if (secureLockDevice()) {
+            updateLockScreenSecureLockDeviceMsg();
         }
     }
 
@@ -822,7 +832,6 @@ public class KeyguardIndicationController {
             mRotateTextViewController.hideIndication(INDICATION_TYPE_ADAPTIVE_AUTH);
         }
     }
-
     private void updateLockScreenWatchDisconnectedMsg(int userId) {
         final boolean deviceLocked = mAuthenticationFlags != null
                 && mAuthenticationFlags.isSomeAuthRequiredAfterWatchDisconnected();
@@ -838,6 +847,23 @@ public class KeyguardIndicationController {
                     true);
         } else {
             mRotateTextViewController.hideIndication(INDICATION_TYPE_WATCH_DISCONNECTED);
+        }
+    }
+
+    private void updateLockScreenSecureLockDeviceMsg() {
+        boolean isSecureLockDeviceEnabled = secureLockDevice()
+                && mSecureLockDeviceInteractor.get().isSecureLockDeviceEnabled().getValue();
+        if (isSecureLockDeviceEnabled) {
+            mRotateTextViewController.updateIndication(
+                    INDICATION_TYPE_SECURE_LOCK_DEVICE,
+                    new KeyguardIndication.Builder()
+                            .setMessage(mContext.getString(
+                                    R.string.keyguard_indication_after_secure_lock_device))
+                            .setTextColor(getInitialTextColorState())
+                            .build(),
+                    true);
+        } else {
+            mRotateTextViewController.hideIndication(INDICATION_TYPE_SECURE_LOCK_DEVICE);
         }
     }
 
