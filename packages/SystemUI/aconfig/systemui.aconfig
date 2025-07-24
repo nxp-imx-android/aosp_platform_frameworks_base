@@ -2136,3 +2136,13 @@ flag {
       purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "enable_output_switcher_audio_sharing_button"
+    namespace: "cross_device_experiences"
+    description: "Enables audio sharing quick button in the output switcher."
+    bug: "423772889"
+    metadata {
+      purpose: PURPOSE_BUGFIX
+    }
+}
