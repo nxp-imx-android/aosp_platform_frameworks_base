@@ -174,9 +174,24 @@ class SyntheticPasswordManager {
     // The security strength of the synthetic password, in bytes
     private static final int SYNTHETIC_PASSWORD_SECURITY_STRENGTH = 256 / 8;
 
-    private static final int PASSWORD_SCRYPT_LOG_N = 11;
+    /*
+     * These scrypt parameters are chosen to keep the scrypt time below 50ms or so, even in the
+     * worst case (e.g., a watch form-factor device with the scrypt code running on an
+     * energy-efficient CPU at a reduced frequency).
+     *
+     * The purpose of the scrypt step is just to slow down brute-force attacks on high-entropy
+     * LSKFs. In practice, LSKFs are usually low-entropy, e.g. 4 or 6-digit PINs. With that little
+     * entropy, the scrypt step provides no meaningful security benefit anyway, and the real
+     * security comes from the "hardware" rate-limiting done by Gatekeeper or Weaver.
+     *
+     * Thus, while scrypt is still done to provide some value for rare high-entropy LSKFs, it's
+     * tuned to always be quick enough so that users barely feel the cost.
+     */
+    private static final int PASSWORD_SCRYPT_LOG_N = 9;
+    private static final int PASSWORD_SCRYPT_LOG_N__OLD = 11;
     private static final int PASSWORD_SCRYPT_LOG_R = 3;
     private static final int PASSWORD_SCRYPT_LOG_P = 1;
+
     private static final int PASSWORD_SALT_LENGTH = 16;
     private static final int STRETCHED_LSKF_LENGTH = 32;
     private static final String TAG = "SyntheticPasswordManager";
@@ -385,7 +400,11 @@ class SyntheticPasswordManager {
 
         public static PasswordData create(int credentialType, int pinLength) {
             PasswordData result = new PasswordData();
-            result.scryptLogN = PASSWORD_SCRYPT_LOG_N;
+            if (android.security.Flags.scryptParameterChange()) {
+                result.scryptLogN = PASSWORD_SCRYPT_LOG_N;
+            } else {
+                result.scryptLogN = PASSWORD_SCRYPT_LOG_N__OLD;
+            }
             result.scryptLogR = PASSWORD_SCRYPT_LOG_R;
             result.scryptLogP = PASSWORD_SCRYPT_LOG_P;
             result.credentialType = credentialType;
