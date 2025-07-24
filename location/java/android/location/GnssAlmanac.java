@@ -318,10 +318,11 @@ public final class GnssAlmanac implements Parcelable {
         /**
          * Inclination in semi-circles.
          *
-         * <p>For GPS and Galileo, this is the difference between the inclination angle at reference
-         * time and the nominal inclination in semi-circles.
+         * <p>For GPS, QZSS(QZO) and Galileo, this is the difference between the inclination angle
+         * at referencetime and the nominal inclination in semi-circles.
          *
-         * <p>For Beidou and QZSS, this is the inclination angle at reference time in semi-circles.
+         * <p>For Beidou and QZSS(GEO/QGEO), this is the inclination angle at reference time
+         * in semi-circles.
          */
         private final double mInclination;
 
@@ -419,10 +420,11 @@ public final class GnssAlmanac implements Parcelable {
         /**
          * Returns the inclination in semi-circles.
          *
-         * <p>For GPS and Galileo, this is the difference between the inclination angle at reference
-         * time and the nominal inclination in semi-circles.
+         * <p>For GPS, QZSS(QZO) and Galileo, this is the difference between the inclination angle
+         * at reference time and the nominal inclination in semi-circles.
          *
-         * <p>For Beidou and QZSS, this is the inclination angle at reference time in semi-circles.
+         * <p>For Beidou and QZSS(GEO/QGEO), this is the inclination angle at reference time in
+         * semi-circles.
          */
         @FloatRange(from = -1.0f, to = 1.0f)
         public double getInclination() {
@@ -605,11 +607,11 @@ public final class GnssAlmanac implements Parcelable {
             /**
              * Sets the inclination in semi-circles.
              *
-             * <p>For GPS and Galileo, this is the difference between the inclination angle at
-             * reference time and the nominal inclination in semi-circles.
+             * <p>For GPS, QZSS(QZO) and Galileo, this is the difference between the inclination
+             * angle at reference time and the nominal inclination in semi-circles.
              *
-             * <p>For Beidou and QZSS, this is the inclination angle at reference time in
-             * semi-circles.
+             * <p>For Beidou and QZSS(GEO/QGEO), this is the inclination angle at reference time
+             * in semi-circles.
              */
             @NonNull
             public Builder setInclination(@FloatRange(from = -1.0f, to = 1.0f) double inclination) {
