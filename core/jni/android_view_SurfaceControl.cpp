@@ -867,6 +867,13 @@ static void nativeSetContentPriority(JNIEnv* env, jclass clazz, jlong transactio
     transaction->setContentPriority(surfaceControl, priority);
 }
 
+static void nativeSetSystemContentPriority(JNIEnv* env, jclass clazz, jlong transactionObj,
+                                           jlong surfaceControlObj, jint priority) {
+    auto transaction = reinterpret_cast<SurfaceComposerClient::Transaction*>(transactionObj);
+    auto surfaceControl = SpFromRawPtr<SurfaceControl>(surfaceControlObj);
+    transaction->setSystemContentPriority(surfaceControl, priority);
+}
+
 static void nativeSetCachingHint(JNIEnv* env, jclass clazz, jlong transactionObj,
                                  jlong nativeObject, jint cachingHint) {
     auto transaction = reinterpret_cast<SurfaceComposerClient::Transaction*>(transactionObj);
@@ -2884,6 +2891,7 @@ static const JNINativeMethod sSurfaceControlMethods[] = {
     {"nativeEnableDebugLogCallPoints", "(J)V", (void*)nativeEnableDebugLogCallPoints },
     {"nativeSetPictureProfileId", "(JJJ)V", (void*)nativeSetPictureProfileId },
     {"nativeSetContentPriority", "(JJI)V", (void*)nativeSetContentPriority },
+    {"nativeSetSystemContentPriority", "(JJI)V", (void*)nativeSetSystemContentPriority },
         // clang-format on
 };
 
