@@ -78,6 +78,14 @@ class BundleEntry(spec: BundleSpec) : PipelineEntry(spec.key) {
         return false
     }
 
+    fun onDensityOrFontScaleChanged() {
+        row?.onDensityOrFontScaleChanged()
+    }
+
+    fun onUiModeChanged() {
+        row?.onUiModeChanged()
+    }
+
     /**
      * Returns whether this bundle be cleared when the user wants to "clear all" notifications.
      *

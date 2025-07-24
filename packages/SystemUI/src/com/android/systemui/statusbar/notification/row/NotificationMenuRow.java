@@ -25,16 +25,20 @@ import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.ValueAnimator;
 import android.annotation.Nullable;
+import android.app.NotificationManager;
 import android.content.Context;
+import android.content.Intent;
 import android.content.res.Resources;
 import android.graphics.Point;
 import android.graphics.drawable.Drawable;
 import android.os.Handler;
 import android.os.Looper;
+import android.os.RemoteException;
 import android.provider.Settings;
 import android.service.notification.NotificationListenerService;
 import android.service.notification.StatusBarNotification;
 import android.util.ArrayMap;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -48,11 +52,16 @@ import com.android.systemui.Flags;
 import com.android.systemui.plugins.statusbar.NotificationMenuRowPlugin;
 import com.android.systemui.res.R;
 import com.android.systemui.statusbar.AlphaOptimizedImageView;
+import com.android.systemui.statusbar.notification.NotificationActivityStarter;
 import com.android.systemui.statusbar.notification.collection.NotificationClassificationUiFlag;
 import com.android.systemui.statusbar.notification.people.PeopleNotificationIdentifier;
 import com.android.systemui.statusbar.notification.row.NotificationGuts.GutsContent;
 import com.android.systemui.statusbar.notification.shared.NotificationBundleUi;
 import com.android.systemui.statusbar.notification.stack.NotificationStackScrollLayout;
+
+import kotlin.Unit;
+import kotlin.jvm.functions.Function0;
+import kotlin.jvm.functions.Function2;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -60,6 +69,8 @@ import java.util.Map;
 
 public class NotificationMenuRow implements NotificationMenuRowPlugin, View.OnClickListener,
         ExpandableNotificationRow.LayoutListener {
+
+    private static final String TAG = "NotificationMenuRow";
 
     // Notification must be swiped at least this fraction of a single menu item to show menu
     private static final float SWIPED_FAR_ENOUGH_MENU_FRACTION = 0.25f;
@@ -118,14 +129,18 @@ public class NotificationMenuRow implements NotificationMenuRowPlugin, View.OnCl
 
     private final PeopleNotificationIdentifier mPeopleNotificationIdentifier;
 
+    private NotificationActivityStarter mNotificationActivityStarter;
+
     public NotificationMenuRow(Context context,
-            PeopleNotificationIdentifier peopleNotificationIdentifier) {
+            PeopleNotificationIdentifier peopleNotificationIdentifier,
+            NotificationActivityStarter notificationActivityStarter) {
         mContext = context;
         mShouldShowMenu = context.getResources().getBoolean(R.bool.config_showNotificationGear);
         mHandler = new Handler(Looper.getMainLooper());
         mLeftMenuItems = new ArrayList<>();
         mRightMenuItems = new ArrayList<>();
         mPeopleNotificationIdentifier = peopleNotificationIdentifier;
+        mNotificationActivityStarter = notificationActivityStarter;
     }
 
     @Override
@@ -289,7 +304,7 @@ public class NotificationMenuRow implements NotificationMenuRowPlugin, View.OnCl
                 || NotificationBundleUi.isEnabled()) && isBundled) {
             mInfoItem = createBundledInfoItem(mContext);
         } else if (mParent.isBundle()) {
-            mInfoItem = createBundleHeaderInfoItem(mContext);
+            mInfoItem = createBundleHeaderInfoItem();
         } else {
             mInfoItem = createInfoItem(mContext);
         }
@@ -775,13 +790,63 @@ public class NotificationMenuRow implements NotificationMenuRowPlugin, View.OnCl
                 NotificationMenuItem.OMIT_FROM_SWIPE_MENU);
     }
 
-    static NotificationMenuItem createBundleHeaderInfoItem(Context context) {
-        BundleHeaderGutsContent infoContent = new BundleHeaderGutsContent(context);
+    NotificationMenuItem createBundleHeaderInfoItem() {
+        BundleHeaderGutsContent infoContent = new BundleHeaderGutsContent(mContext);
+        initializeBundleHeaderGutsContent(infoContent);
         // TODO(b/409748420): correct infoDescription?
         String infoDescription =
-                context.getResources().getString(R.string.notification_menu_gear_description);
-        return new NotificationMenuItem(context, infoDescription, infoContent,
+                mContext.getResources().getString(R.string.notification_menu_gear_description);
+        return new NotificationMenuItem(mContext, infoDescription, infoContent,
                 NotificationMenuItem.OMIT_FROM_SWIPE_MENU);
+    }
+
+    /**
+     * Sets up the {@link BundleHeaderGutsContent} inside the notification row's guts.
+     * @param gutsContent view to set up/bind within {@code mParent}
+     */
+    @VisibleForTesting
+    void initializeBundleHeaderGutsContent(BundleHeaderGutsContent gutsContent) {
+
+        NotificationGuts guts = mParent.getGuts();
+
+        Function0<Unit> onSettingsClicked = () -> {
+            guts.resetFalsingCheck();
+            startBundleSettingsActivity(0, mParent);
+            return Unit.INSTANCE;
+        };
+
+        Function0<Unit> onDismissBundle = () -> {
+            guts.resetFalsingCheck();
+            mParent.getDismissButtonOnClickListener().onClick(gutsContent.getContentView());
+            return Unit.INSTANCE;
+        };
+
+        Function2<Integer, Boolean, Unit> enableBundle = (type, enable) -> {
+            try {
+                mContext.getSystemService(NotificationManager.class)
+                        .setAssistantClassificationTypeState(type, enable);
+                if (!enable) {
+                    // if disabling a bundle, we also need to re-sort all notifications in it
+                    List<ExpandableNotificationRow> children = mParent.getAttachedChildren();
+                    if (children != null) {
+                        for (ExpandableNotificationRow child : children) {
+                            child.getEntryAdapter().onBundleDisabledForEntry();
+                        }
+                    }
+                }
+            } catch (Exception e) {
+                Log.e(TAG, "Couldn't set bundle state", e);
+            }
+            return Unit.INSTANCE;
+        };
+
+        gutsContent.bindNotification(mParent, onSettingsClicked, onDismissBundle, enableBundle);
+    }
+
+    private void startBundleSettingsActivity(final int appUid,
+            ExpandableNotificationRow row) {
+        final Intent intent = new Intent(Settings.ACTION_NOTIFICATION_BUNDLES);
+        mNotificationActivityStarter.startNotificationGutsIntent(intent, appUid, row);
     }
 
     static NotificationMenuItem createInfoItem(Context context) {

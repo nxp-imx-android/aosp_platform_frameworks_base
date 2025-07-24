@@ -248,12 +248,6 @@ public class NotificationGutsManager implements NotifGutsViewManager, CoreStarta
      */
     public static final String EXTRA_SHOW_FRAGMENT_ARGUMENTS = ":settings:show_fragment_args";
 
-    private void startBundleSettingsActivity(final int appUid,
-            ExpandableNotificationRow row) {
-        final Intent intent = new Intent(Settings.ACTION_NOTIFICATION_BUNDLES);
-        mNotificationActivityStarter.startNotificationGutsIntent(intent, appUid, row);
-    }
-
     private void startAppNotificationSettingsActivity(String packageName, final int appUid,
             final NotificationChannel channel, ExpandableNotificationRow row) {
         final Intent intent = new Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS);
@@ -363,8 +357,6 @@ public class NotificationGutsManager implements NotifGutsViewManager, CoreStarta
                 initializeDemoteView(sbn, ppgc);
             } else if (gutsContent instanceof BundledNotificationInfo bni) {
                 initializeBundledNotificationInfo(row, sbn, ranking, bni);
-            } else if (gutsContent instanceof BundleHeaderGutsContent bhgc) {
-                initializeBundleHeaderGutsContent(row, bhgc);
             }
             return true;
         } catch (Exception e) {
@@ -498,49 +490,10 @@ public class NotificationGutsManager implements NotifGutsViewManager, CoreStarta
                 row.getDismissButtonOnClickListener());
     }
 
-    /**
-     * Sets up the {@link BundleHeaderGutsContent} inside the notification row's guts.
-     * @param row view to set up the guts for
-     * @param gutsContent view to set up/bind within {@code row}
-     */
-    @VisibleForTesting
-    void initializeBundleHeaderGutsContent(
-            final ExpandableNotificationRow row,
-            BundleHeaderGutsContent gutsContent) {
-
-        NotificationGuts guts = row.getGuts();
-
-        Function0<Unit> onSettingsClicked = () -> {
-            guts.resetFalsingCheck();
-            startBundleSettingsActivity(0, row);
-            return Unit.INSTANCE;
-        };
-
-        Function0<Unit> onDismissBundle = () -> {
-            guts.resetFalsingCheck();
-            row.getDismissButtonOnClickListener().onClick(gutsContent.getContentView());
-            return Unit.INSTANCE;
-        };
-
-        Function2<Integer, Boolean, Unit> enableBundle = (type, enable) -> {
-            try {
-                mNotificationManager.setAssistantClassificationTypeState(type, enable);
-                if (!enable) {
-                    // if disabling a bundle, we also need to re-sort all notifications in it
-                    List<ExpandableNotificationRow> children = row.getAttachedChildren();
-                    if (children != null) {
-                        for (ExpandableNotificationRow child : children) {
-                            child.getEntryAdapter().onBundleDisabledForEntry();
-                        }
-                    }
-                }
-            } catch (RemoteException e) {
-                Log.e(TAG, "Couldn't set bundle state", e);
-            }
-            return Unit.INSTANCE;
-        };
-
-        gutsContent.bindNotification(row, onSettingsClicked, onDismissBundle, enableBundle);
+    private void startBundleSettingsActivity(final int appUid,
+            ExpandableNotificationRow row) {
+        final Intent intent = new Intent(Settings.ACTION_NOTIFICATION_BUNDLES);
+        mNotificationActivityStarter.startNotificationGutsIntent(intent, appUid, row);
     }
 
     /**

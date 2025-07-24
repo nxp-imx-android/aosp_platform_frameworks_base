@@ -61,6 +61,7 @@ import com.android.systemui.statusbar.notification.BundleInteractionLogger
 import com.android.systemui.statusbar.notification.ColorUpdateLogger
 import com.android.systemui.statusbar.notification.ConversationNotificationManager
 import com.android.systemui.statusbar.notification.ConversationNotificationProcessor
+import com.android.systemui.statusbar.notification.NotificationActivityStarter
 import com.android.systemui.statusbar.notification.collection.BundleEntry
 import com.android.systemui.statusbar.notification.collection.BundleSpec
 import com.android.systemui.statusbar.notification.collection.GroupEntryBuilder
@@ -474,6 +475,7 @@ class ExpandableNotificationRowBuilder(
             Mockito.mock(UiEventLogger::class.java, STUB_ONLY),
             Mockito.mock(NotificationRebindingTracker::class.java, STUB_ONLY),
             Mockito.mock(BundleInteractionLogger::class.java, STUB_ONLY),
+            Mockito.mock(NotificationActivityStarter::class.java, STUB_ONLY),
         )
         row.setAboveShelfChangedListener {}
         return row

@@ -671,7 +671,7 @@ class NotificationGutsManagerTest(flags: FlagsParameterization) : SysuiTestCase(
         row: ExpandableNotificationRow
     ): NotificationMenuRowPlugin.MenuItem {
         val menuRow: NotificationMenuRowPlugin =
-            NotificationMenuRow(mContext, peopleNotificationIdentifier)
+            NotificationMenuRow(mContext, peopleNotificationIdentifier, notificationActivityStarter)
         menuRow.createMenu(row)
 
         val menuItem = menuRow.getLongpressMenuItem(mContext)

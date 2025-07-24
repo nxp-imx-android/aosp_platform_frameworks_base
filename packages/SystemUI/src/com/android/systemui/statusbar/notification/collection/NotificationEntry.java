@@ -803,7 +803,9 @@ public final class NotificationEntry extends ListEntry {
     }
 
     public void onDensityOrFontScaleChanged() {
-        if (row != null) row.onDensityOrFontScaleChanged();
+        if (row != null) {
+            row.onDensityOrFontScaleChanged();
+        }
     }
 
     public boolean areGutsExposed() {
