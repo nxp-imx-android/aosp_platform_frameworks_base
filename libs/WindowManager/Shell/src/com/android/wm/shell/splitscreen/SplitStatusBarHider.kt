@@ -93,6 +93,7 @@ class SplitStatusBarHider(
         updateStatusBarBehavior(currentSplitState, leftRightSplit, isSplitVisible)
     }
 
+    fun isStatusBarImmersive(): Boolean = statusBarImmersiveForSplit
     /**
      * Determines if we want to put the status bar in immersive mode or not based on
      * [currentSplitState], [isLeftRightSplit], and [isSplitVisible].
@@ -180,8 +181,8 @@ class SplitStatusBarHider(
         return hideStatusBarForSplitState(currentSplitState)
     }
 
-    private fun hideStatusBarForSplitState(splitState: Int) : Boolean {
-        return when(splitState) {
+    private fun hideStatusBarForSplitState(splitState: Int): Boolean {
+        return when (splitState) {
             SNAP_TO_2_10_90 -> true
             SNAP_TO_2_90_10 -> true
             ANIMATING_OFFSCREEN_TAP -> true
