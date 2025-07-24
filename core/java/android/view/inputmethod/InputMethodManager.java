@@ -2335,9 +2335,10 @@ public final class InputMethodManager {
     public static final int SHOW_FORCED = 0x0002;
 
     /**
-     * Synonym for {@link #showSoftInput(View, int, ResultReceiver)} without
-     * a result receiver: explicitly request that the current input method's
-     * soft input area be shown to the user, if needed.
+     * Explicitly request that the current input method's soft input area be
+     * shown to the user, if needed.  Call this if the user interacts with
+     * your view in such a way that they have expressed they would like to
+     * start performing input into it.
      *
      * @param view The currently focused view, which would like to receive soft keyboard input.
      *             Note that this view is only considered focused here if both it itself has
@@ -2345,7 +2346,10 @@ public final class InputMethodManager {
      *             {@link View#hasWindowFocus window focus}. Otherwise the call fails and
      *             returns {@code false}.
      * @return {@code true} if a request was sent to system_server, {@code false} otherwise. Note:
-     * this does not return result of the request. For result use {@param resultReceiver} instead.
+     * this does not return result of the request. If result is needed, use
+     * {@link android.view.WindowInsetsController#show} instead and set a
+     * {@link View.OnApplyWindowInsetsListener} and verify the provided {@link WindowInsets} for
+     * the visibility of IME.
      */
     public boolean showSoftInput(View view, @ShowFlags int flags) {
         // Re-dispatch if there is a context mismatch.
@@ -2578,9 +2582,10 @@ public final class InputMethodManager {
     public static final int HIDE_NOT_ALWAYS = 0x0002;
 
     /**
-     * Synonym for {@link #hideSoftInputFromWindow(IBinder, int, ResultReceiver)}
-     * without a result: request to hide the soft input window from the
-     * context of the window that is currently accepting input.
+     * Request to hide the soft input window from the context of the window
+     * that is currently accepting input.  This should be called as a result
+     * of the user doing some actually than fairly explicitly requests to
+     * have the input window hidden.
      *
      * @param windowToken The token of the window that is making the request,
      * as returned by {@link View#getWindowToken() View.getWindowToken()}.
@@ -2591,7 +2596,10 @@ public final class InputMethodManager {
      *
      * <p>For apps targeting releases before Android Baklava: returns {@code true} if a request
      * was sent to system_server, {@code false} otherwise. Note: This does not return the result
-     * of that request (i.e. whether the IME was actually hidden).
+     * of that request (i.e. whether the IME was actually hidden). If result is needed, use
+     * {@link android.view.WindowInsetsController#hide} instead and set a
+     * {@link View.OnApplyWindowInsetsListener} and verify the provided {@link WindowInsets} for
+     * the visibility of IME.
      */
     public boolean hideSoftInputFromWindow(IBinder windowToken, @HideFlags int flags) {
         return hideSoftInputFromWindow(windowToken, flags, null);
