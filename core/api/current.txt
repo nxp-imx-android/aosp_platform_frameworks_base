@@ -47778,6 +47778,13 @@ package android.telephony {
     method public void onCarrierNetworkChange(boolean);
   }
 
+  @FlaggedApi("com.android.internal.telephony.flags.telephony_satellite_apis") public static interface TelephonyCallback.CarrierRoamingNtnListener {
+    method public default void onCarrierRoamingNtnAvailableServicesChanged(@NonNull int[]);
+    method public default void onCarrierRoamingNtnEligibleStateChanged(boolean);
+    method public void onCarrierRoamingNtnModeChanged(boolean);
+    method public default void onCarrierRoamingNtnSignalStrengthChanged(@NonNull android.telephony.satellite.NtnSignalStrength);
+  }
+
   public static interface TelephonyCallback.CellInfoListener {
     method @RequiresPermission(allOf={android.Manifest.permission.READ_PHONE_STATE, android.Manifest.permission.ACCESS_FINE_LOCATION}) public void onCellInfoChanged(@NonNull java.util.List<android.telephony.CellInfo>);
   }
@@ -49275,6 +49282,19 @@ package android.telephony.mbms {
 }
 
 package android.telephony.satellite {
+
+  @FlaggedApi("com.android.internal.telephony.flags.telephony_satellite_apis") public final class NtnSignalStrength implements android.os.Parcelable {
+    ctor public NtnSignalStrength(@Nullable android.telephony.satellite.NtnSignalStrength);
+    method public int describeContents();
+    method public int getLevel();
+    method public void writeToParcel(@NonNull android.os.Parcel, int);
+    field @NonNull public static final android.os.Parcelable.Creator<android.telephony.satellite.NtnSignalStrength> CREATOR;
+    field public static final int NTN_SIGNAL_STRENGTH_GOOD = 3; // 0x3
+    field public static final int NTN_SIGNAL_STRENGTH_GREAT = 4; // 0x4
+    field public static final int NTN_SIGNAL_STRENGTH_MODERATE = 2; // 0x2
+    field public static final int NTN_SIGNAL_STRENGTH_NONE = 0; // 0x0
+    field public static final int NTN_SIGNAL_STRENGTH_POOR = 1; // 0x1
+  }
 
   public final class SatelliteManager {
     method @RequiresPermission(anyOf={android.Manifest.permission.READ_BASIC_PHONE_STATE, "android.permission.READ_PRIVILEGED_PHONE_STATE", android.Manifest.permission.READ_PHONE_STATE, "carrier privileges"}) public void registerStateChangeListener(@NonNull java.util.concurrent.Executor, @NonNull android.telephony.satellite.SatelliteStateChangeListener);
