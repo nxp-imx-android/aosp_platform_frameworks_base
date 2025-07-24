@@ -2132,6 +2132,16 @@ public class PackageInstallerService extends IPackageInstaller.Stub implements
         return verifierComponentName;
     }
 
+    @Override
+    public void addDeveloperVerificationExperiment(String packageName, int verificationPolicy,
+            int[] results) {
+        List<Integer> resultsList = new ArrayList<>(results.length);
+        for (int i = 0; i < results.length; i++) {
+            resultsList.add(results[i]);
+        }
+        mDeveloperVerifierController.addExperiment(packageName, verificationPolicy, resultsList);
+    }
+
     void onUserAdded(int userId) {
         synchronized (mDeveloperVerificationPolicyPerUser) {
             mDeveloperVerificationPolicyPerUser.put(userId, DEFAULT_VERIFICATION_POLICY);

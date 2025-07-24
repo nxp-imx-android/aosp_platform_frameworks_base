@@ -56,6 +56,7 @@ import static android.content.pm.PackageManager.INSTALL_STAGED;
 import static android.content.pm.PackageManager.INSTALL_SUCCEEDED;
 import static android.content.pm.verify.developer.DeveloperVerificationSession.DEVELOPER_VERIFICATION_BYPASSED_REASON_ADB;
 import static android.content.pm.verify.developer.DeveloperVerificationSession.DEVELOPER_VERIFICATION_BYPASSED_REASON_EMERGENCY;
+import static android.content.pm.verify.developer.DeveloperVerificationSession.DEVELOPER_VERIFICATION_BYPASSED_REASON_TEST;
 import static android.content.pm.verify.developer.DeveloperVerificationSession.DEVELOPER_VERIFICATION_INCOMPLETE_NETWORK_UNAVAILABLE;
 import static android.os.Process.INVALID_UID;
 import static android.provider.DeviceConfig.NAMESPACE_PACKAGE_MANAGER_SERVICE;
@@ -3032,18 +3033,28 @@ public class PackageInstallerSession extends IPackageInstallerSession.Stub {
             onSessionVerificationFailure(e.error, errorMsg, /* extras= */ null);
         }
         if (shouldUseVerificationService()) {
-            // Send the request to the verifier and wait for its response before the rest of
-            // the installation can proceed.
-            if (isMultiPackage()) {
+            final String packageName = getPackageName();
+            if (mDeveloperVerifierController.hasExperiments(packageName)) {
+                // This is a local testing environment. Use previously configured test results
+                // instead of doing the real verification.
+                mDeveloperVerifierController.startLocalExperiment(
+                        packageName, mDeveloperVerifierCallback);
+                synchronized (mMetrics) {
+                    mMetrics.onDeveloperVerificationBypassed(
+                            DEVELOPER_VERIFICATION_BYPASSED_REASON_TEST);
+                }
+            } else if (isMultiPackage()) {
                 // TODO(b/360129657) perform developer verification on each children session before
                 // moving on to the next installation stage.
                 resumeVerify();
             } else { // Not a parent session
+                // Send the request to the verifier and wait for its response before the rest of
+                // the installation can proceed.
                 final var infoPair = getSigningInfoAndDeclaredLibraries();
                 final SigningInfo signingInfo = infoPair.first;
                 final List<SharedLibraryInfo> declaredLibraries = infoPair.second;
                 if (!mDeveloperVerifierController.startVerificationSession(
-                        mPm::snapshotComputer, userId, sessionId, getPackageName(),
+                        mPm::snapshotComputer, userId, sessionId, packageName,
                         Uri.fromFile(stageDir), signingInfo,
                         declaredLibraries, mCurrentVerificationPolicy.get(),
                         /* extensionParams= */ params.extensionParams,
@@ -3274,7 +3285,7 @@ public class PackageInstallerSession extends IPackageInstallerSession.Stub {
          * Called by the session itself when the verifier cannot be connected because of infeasible
          * reasons such as it's not installed on the target user.
          */
-        private void onConnectionInfeasible() {
+        public void onConnectionInfeasible() {
             mHandler.post(() -> {
                 mDeveloperVerificationStatusInternal.setInternalStatus(
                         DeveloperVerificationStatusInternal.STATUS_INFEASIBLE);

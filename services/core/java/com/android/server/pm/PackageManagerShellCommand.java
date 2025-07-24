@@ -404,6 +404,8 @@ class PackageManagerShellCommand extends ShellCommand {
                     return runGetDeveloperVerificationPolicy();
                 case "get-developer-verification-service-provider":
                     return runGetDeveloperVerificationServiceProvider();
+                case "set-developer-verification-result":
+                    return runSetDeveloperVerificationResult();
                 default: {
                     if (ART_SERVICE_COMMANDS.contains(cmd)) {
                         return runArtServiceCommand();
@@ -4720,6 +4722,31 @@ class PackageManagerShellCommand extends ShellCommand {
         return 0;
     }
 
+    private int runSetDeveloperVerificationResult() {
+        final PrintWriter pw = getOutPrintWriter();
+        try {
+            final IPackageInstaller installer = mInterface.getPackageInstaller();
+            final String packageName = getNextArgRequired();
+            final int policy = Integer.parseInt(getNextArgRequired());
+            final int firstResult = Integer.parseInt(getNextArgRequired());
+            final List<Integer> results = new ArrayList<>(1);
+            results.add(firstResult);
+            String nextResult;
+            while ((nextResult = getNextArg()) != null) {
+                results.add(Integer.parseInt(nextResult));
+            }
+            final int[] resultArray = new int[results.size()];
+            for (int i = 0; i < results.size(); i++) {
+                resultArray[i] = results.get(i);
+            }
+            installer.addDeveloperVerificationExperiment(packageName, policy, resultArray);
+        } catch (Exception e) {
+            pw.println("Failure [" + e.getMessage() + "]");
+            return 1;
+        }
+        return 0;
+    }
+
     @Override
     public void onHelp() {
         final PrintWriter pw = getOutPrintWriter();
@@ -5150,10 +5177,31 @@ class PackageManagerShellCommand extends ShellCommand {
         pw.println("      --user: return the agent of the given user (SYSTEM_USER if unspecified)");
         pw.println("  get-package-storage-stats [--user <USER_ID>] <PACKAGE>");
         pw.println("    Return the storage stats for the given app, if present");
-        pw.println("  get-verification-policy [--user USER_ID]");
+        pw.println("  get-developer-verification-policy [--user USER_ID]");
         pw.println("    Display current verification enforcement policy which will be applied to");
         pw.println("    all the future installation sessions");
         pw.println("      --user: show the policy of the given user (SYSTEM_USER if unspecified)");
+        pw.println("  get-developer-verification-service-provider");
+        pw.println("    Displays component name of developer verification service provider.");
+        pw.println("      --user: show the policy of the given user (SYSTEM_USER if unspecified)");
+        pw.println("  set-developer-verification-result PACKAGE POLICY RESULT [RESULT...]");
+        pw.println("    Set the developer verification enforcement policy and the result(s)");
+        pw.println("    in sequence for the next N verification sessions for the given app where");
+        pw.println("    N equals to the number of specified result(s).");
+        pw.println("      The valid verification policy values are:");
+        pw.println("        0 [none]: Do not block installs, regardless of verification result.");
+        pw.println("        1 [open]: Only block installs when verification fails.");
+        pw.println("        2 [warning]: The same as fail open.");
+        pw.println("        3 [closed]: Block installs when verification fails or cannot perform.");
+        pw.println("      The valid verification result values are:");
+        pw.println("        0 [invalid]: An invalid result value which will be skipped.");
+        pw.println("        1 [pass]: Verification passed.");
+        pw.println("        2 [reject]: Verification failed.");
+        pw.println("        3 [incomplete unknown]: Verification did not perform due to unknown.");
+        pw.println("        4 [incomplete network]: Verification did not perform due to network.");
+        pw.println("        5 [timeout]: Verification timed out.");
+        pw.println("        6 [disconnect]: Verification service disconnected.");
+        pw.println("        7 [infeasible]: Verification service was unavailable.");
         pw.println("");
         pw.println("");
         printArtServiceHelp();
