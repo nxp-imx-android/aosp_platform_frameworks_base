@@ -48,7 +48,7 @@ constructor(
     private val device = UiDevice.getInstance(instrumentation)
     private val testApp1 = DesktopModeAppHelper(SimpleAppHelper(instrumentation))
     private val testApp2 = DesktopModeAppHelper(NonResizeableAppHelper(instrumentation))
-    private val testApp3 = DesktopModeAppHelper(NewTasksAppHelper(instrumentation))
+    val testApp3 = DesktopModeAppHelper(NewTasksAppHelper(instrumentation))
 
     val appInDesktop: ArrayList<DesktopModeAppHelper> = ArrayList()
 
