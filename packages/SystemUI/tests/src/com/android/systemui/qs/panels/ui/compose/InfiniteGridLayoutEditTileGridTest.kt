@@ -16,16 +16,23 @@
 
 package com.android.systemui.qs.panels.ui.compose
 
+import android.platform.test.annotations.DisableFlags
+import android.platform.test.annotations.EnableFlags
 import android.platform.test.flag.junit.FlagsParameterization
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.test.assertCountEquals
+import androidx.compose.ui.test.assertTextEquals
 import androidx.compose.ui.test.click
 import androidx.compose.ui.test.doubleClick
+import androidx.compose.ui.test.filter
+import androidx.compose.ui.test.hasClickAction
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onChildren
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
@@ -35,6 +42,8 @@ import androidx.compose.ui.test.performTouchInput
 import androidx.test.filters.SmallTest
 import com.android.compose.theme.PlatformTheme
 import com.android.systemui.SysuiTestCase
+import com.android.systemui.flags.DisableSceneContainer
+import com.android.systemui.flags.EnableSceneContainer
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.collectLastValue
 import com.android.systemui.kosmos.runTest
@@ -67,20 +76,21 @@ class InfiniteGridLayoutEditTileGridTest(flags: FlagsParameterization) : SysuiTe
 
     @get:Rule val composeRule = createComposeRule()
 
-    private val kosmos =
-        testKosmos().useUnconfinedTestDispatcher().apply {
-            currentTilesInteractor.setTiles(TestEditTiles)
-            editModeViewModel.startEditing()
-            usingMediaInComposeFragment = false
-        }
+    private val kosmos = testKosmos().useUnconfinedTestDispatcher()
 
     private val Kosmos.underTest by Kosmos.Fixture { infiniteGridLayout }
 
     @Before
-    fun setUp() =
+    fun setUp() {
+        kosmos.apply {
+            currentTilesInteractor.setTiles(TestEditTiles)
+            editModeViewModel.startEditing()
+            usingMediaInComposeFragment = false
+        }
         kosmos.run {
             iconTilesInteractor.setLargeTiles(defaultLargeTilesRepository.defaultLargeTiles)
         }
+    }
 
     @Composable
     private fun TestEditTileGrid() {
@@ -296,6 +306,69 @@ class InfiniteGridLayoutEditTileGridTest(flags: FlagsParameterization) : SysuiTe
                 .containsExactly("internet", "bt", "dnd", "cast")
         }
 
+    @Test
+    @DisableSceneContainer
+    @DisableFlags(QsEditModeTabs.FLAG_NAME)
+    fun bothFlagsDisabled_noExtraOptions() =
+        kosmos.runTest {
+            composeRule.setContent { TestEditTileGrid() }
+            composeRule.waitForIdle()
+
+            composeRule.onNodeWithContentDescription("Settings").assertDoesNotExist()
+            composeRule.onNodeWithContentDescription("Reset").assertDoesNotExist()
+            composeRule.onNodeWithContentDescription("Options").assertDoesNotExist()
+        }
+
+    @Test
+    @EnableSceneContainer
+    @DisableFlags(QsEditModeTabs.FLAG_NAME)
+    fun onlySceneContainer_onlySettingsOption() =
+        kosmos.runTest {
+            composeRule.setContent { TestEditTileGrid() }
+            composeRule.waitForIdle()
+
+            composeRule.onNodeWithContentDescription("Settings").assertExists()
+            composeRule.onNodeWithContentDescription("Reset").assertDoesNotExist()
+            composeRule.onNodeWithContentDescription("Options").assertDoesNotExist()
+        }
+
+    @Test
+    @DisableSceneContainer
+    @EnableFlags(QsEditModeTabs.FLAG_NAME)
+    fun onlyEditModeTabs_onlyResetOption() =
+        kosmos.runTest {
+            composeRule.setContent { TestEditTileGrid() }
+            composeRule.waitForIdle()
+
+            composeRule.onNodeWithContentDescription("Settings").assertDoesNotExist()
+            composeRule.onNodeWithContentDescription("Reset").assertExists()
+            composeRule.onNodeWithContentDescription("Options").assertDoesNotExist()
+        }
+
+    @Test
+    @EnableSceneContainer
+    @EnableFlags(QsEditModeTabs.FLAG_NAME)
+    fun bothFlags_menuWithOptions() =
+        kosmos.runTest {
+            composeRule.setContent { TestEditTileGrid() }
+            composeRule.waitForIdle()
+
+            composeRule.onNodeWithTag(OPTIONS_DROP_DOWN_TEST_TAG).assertDoesNotExist()
+            composeRule.onNodeWithContentDescription("Settings").assertDoesNotExist()
+            composeRule.onNodeWithContentDescription("Reset").assertDoesNotExist()
+            composeRule.onNodeWithContentDescription("Options").assertExists().performClick()
+
+            composeRule
+                .onNodeWithTag(OPTIONS_DROP_DOWN_TEST_TAG)
+                .onChildren()
+                .filter(hasClickAction())
+                .assertCountEquals(2)
+                .run {
+                    get(0).assertTextEquals("Settings")
+                    get(1).assertTextEquals("Reset")
+                }
+        }
+
     private fun assertLargeTiles(largeSpecs: Set<String>) =
         kosmos.run {
             assertThat(dynamicIconTilesViewModel.largeTilesState.value.map { it.spec })
@@ -309,6 +382,7 @@ class InfiniteGridLayoutEditTileGridTest(flags: FlagsParameterization) : SysuiTe
         fun data() = FlagsParameterization.progressionOf(QsEditModeTabs.FLAG_NAME)
 
         private const val AVAILABLE_TILES_GRID_TEST_TAG = "AvailableTilesGrid"
+        private const val OPTIONS_DROP_DOWN_TEST_TAG = "OptionsDropdown"
         private val TestEditTiles =
             listOf(
                 TileSpec.create("internet"),
