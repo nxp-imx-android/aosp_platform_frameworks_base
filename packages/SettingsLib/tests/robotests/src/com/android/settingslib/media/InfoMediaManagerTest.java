@@ -65,7 +65,6 @@ import com.android.settingslib.bluetooth.CachedBluetoothDevice;
 import com.android.settingslib.bluetooth.CachedBluetoothDeviceManager;
 import com.android.settingslib.bluetooth.LocalBluetoothManager;
 import com.android.settingslib.media.InfoMediaManager.Api34Impl;
-import com.android.settingslib.media.InfoMediaManager.SuggestedDeviceState;
 
 import com.google.common.collect.ImmutableList;
 
@@ -158,7 +157,7 @@ public class InfoMediaManagerTest {
     private ArgumentCaptor<DeviceSuggestionsUpdatesCallback> mDeviceSuggestionsUpdatesCallback;
 
     @Captor
-    private ArgumentCaptor<InfoMediaManager.SuggestedDeviceState> mSuggestedDeviceStateCaptor;
+    private ArgumentCaptor<SuggestedDeviceState> mSuggestedDeviceStateCaptor;
 
     private RouterInfoMediaManager mInfoMediaManager;
     private Context mContext;

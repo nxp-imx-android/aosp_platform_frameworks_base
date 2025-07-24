@@ -31,10 +31,10 @@ import androidx.annotation.WorkerThread
 import com.android.media.flags.Flags.enableOutputSwitcherPersonalAudioSharing
 import com.android.settingslib.bluetooth.LocalBluetoothManager
 import com.android.settingslib.flags.Flags.enableLeAudioSharing
-import com.android.settingslib.media.InfoMediaManager.SuggestedDeviceState
 import com.android.settingslib.media.LocalMediaManager
 import com.android.settingslib.media.MediaDevice
 import com.android.settingslib.media.PhoneMediaDevice
+import com.android.settingslib.media.SuggestedDeviceState
 import com.android.settingslib.media.flags.Flags
 import com.android.systemui.Flags.enableSuggestedDeviceUi
 import com.android.systemui.dagger.qualifiers.Background
