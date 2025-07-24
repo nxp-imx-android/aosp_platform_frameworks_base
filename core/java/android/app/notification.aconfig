@@ -375,6 +375,13 @@ flag {
   }
 }
 
+flag {
+  name: "nm_summarization_all"
+  namespace: "notifications"
+  description: "Allows the NAS to summarize notifications of any type"
+  bug: "430487852"
+}
+
 # End: exported flags that cannot be removed
 
 

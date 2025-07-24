@@ -6535,6 +6535,7 @@ package android.app {
     method public String getShortcutId();
     method public android.graphics.drawable.Icon getSmallIcon();
     method public String getSortKey();
+    method @FlaggedApi("android.app.nm_summarization_all") @Nullable public CharSequence getSummarizedContent();
     method public long getTimeoutAfter();
     method public boolean hasImage();
     method @FlaggedApi("android.app.api_rich_ongoing") public boolean hasPromotableCharacteristics();
@@ -6874,6 +6875,7 @@ package android.app {
     method @Deprecated public android.app.Notification.Builder setSound(android.net.Uri, android.media.AudioAttributes);
     method @NonNull public android.app.Notification.Builder setStyle(android.app.Notification.Style);
     method @NonNull public android.app.Notification.Builder setSubText(CharSequence);
+    method @FlaggedApi("android.app.nm_summarization_all") @NonNull public android.app.Notification.Builder setSummarizedContent(@Nullable CharSequence);
     method @NonNull public android.app.Notification.Builder setTicker(CharSequence);
     method @Deprecated public android.app.Notification.Builder setTicker(CharSequence, android.widget.RemoteViews);
     method @NonNull public android.app.Notification.Builder setTimeoutAfter(long);
