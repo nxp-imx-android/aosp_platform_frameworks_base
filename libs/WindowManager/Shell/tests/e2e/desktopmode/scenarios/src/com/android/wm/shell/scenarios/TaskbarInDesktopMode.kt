@@ -136,6 +136,6 @@ abstract class TaskbarInDesktopMode(
 
     private companion object {
         const val ACTIVE_LABEL = "Active"
-        const val MINIMIZED_LABEL = "Minimised"
+        const val MINIMIZED_LABEL = "Minimized"
     }
 }
