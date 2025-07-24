@@ -40,6 +40,7 @@ import com.android.internal.inputmethod.IImeTracker;
 import com.android.internal.inputmethod.IInputMethodClient;
 import com.android.internal.inputmethod.IRemoteAccessibilityInputConnection;
 import com.android.internal.inputmethod.IRemoteInputConnection;
+import com.android.internal.inputmethod.InputBindResult;
 import com.android.internal.inputmethod.InputMethodInfoSafeList;
 import com.android.internal.inputmethod.SoftInputShowHideReason;
 import com.android.internal.inputmethod.StartInputFlags;
@@ -307,12 +308,39 @@ final class IInputMethodManagerGlobalInvoker {
         }
     }
 
+    @AnyThread
+    @NonNull
+    @RequiresPermission(value = Manifest.permission.INTERACT_ACROSS_USERS_FULL, conditional = true)
+    static InputBindResult startInputOrWindowGainedFocus(@StartInputReason int startInputReason,
+            @NonNull IInputMethodClient client, @Nullable IBinder windowToken,
+            @StartInputFlags int startInputFlags,
+            @WindowManager.LayoutParams.SoftInputModeFlags int softInputMode,
+            @WindowManager.LayoutParams.Flags int windowFlags, @Nullable EditorInfo editorInfo,
+            @Nullable IRemoteInputConnection remoteInputConnection,
+            @Nullable IRemoteAccessibilityInputConnection remoteAccessibilityInputConnection,
+            int unverifiedTargetSdkVersion, @UserIdInt int userId,
+            @NonNull ImeOnBackInvokedDispatcher imeDispatcher, boolean imeRequestedVisible) {
+        final IInputMethodManager service = getService();
+        if (service == null) {
+            return InputBindResult.NULL;
+        }
+        try {
+            return service.startInputOrWindowGainedFocus(startInputReason, client, windowToken,
+                    startInputFlags, softInputMode, windowFlags, editorInfo, remoteInputConnection,
+                    remoteAccessibilityInputConnection, unverifiedTargetSdkVersion, userId,
+                    imeDispatcher, imeRequestedVisible);
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
     /**
      * Returns a sequence number for startInput.
      */
     @AnyThread
+    @NonNull
     @RequiresPermission(value = Manifest.permission.INTERACT_ACROSS_USERS_FULL, conditional = true)
-    static int startInputOrWindowGainedFocus(@StartInputReason int startInputReason,
+    static int startInputOrWindowGainedFocusAsync(@StartInputReason int startInputReason,
             @NonNull IInputMethodClient client, @Nullable IBinder windowToken,
             @StartInputFlags int startInputFlags,
             @WindowManager.LayoutParams.SoftInputModeFlags int softInputMode,
@@ -326,7 +354,7 @@ final class IInputMethodManagerGlobalInvoker {
             return -1;
         }
         try {
-            service.startInputOrWindowGainedFocus(startInputReason, client, windowToken,
+            service.startInputOrWindowGainedFocusAsync(startInputReason, client, windowToken,
                     startInputFlags, softInputMode, windowFlags, editorInfo, remoteInputConnection,
                     remoteAccessibilityInputConnection, unverifiedTargetSdkVersion, userId,
                     imeDispatcher, imeRequestedVisible, advanceAngGetStartInputSequenceNumber());
