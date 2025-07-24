@@ -15,6 +15,7 @@ package android {
     field public static final String ACCESS_FINE_LOCATION = "android.permission.ACCESS_FINE_LOCATION";
     field @FlaggedApi("android.multiuser.enable_permission_to_access_hidden_profiles") public static final String ACCESS_HIDDEN_PROFILES = "android.permission.ACCESS_HIDDEN_PROFILES";
     field @FlaggedApi("android.provider.launcher_data_access") public static final String ACCESS_LAUNCHER_DATA = "android.permission.ACCESS_LAUNCHER_DATA";
+    field @FlaggedApi("android.permission.flags.access_local_network_permission_enabled") public static final String ACCESS_LOCAL_NETWORK = "android.permission.ACCESS_LOCAL_NETWORK";
     field public static final String ACCESS_LOCATION_EXTRA_COMMANDS = "android.permission.ACCESS_LOCATION_EXTRA_COMMANDS";
     field public static final String ACCESS_MEDIA_LOCATION = "android.permission.ACCESS_MEDIA_LOCATION";
     field public static final String ACCESS_NETWORK_STATE = "android.permission.ACCESS_NETWORK_STATE";
