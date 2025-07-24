@@ -28,12 +28,10 @@ import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.content.ActivityNotFoundException;
-import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.content.pm.UserInfo;
 import android.content.res.Resources;
@@ -43,10 +41,8 @@ import android.debug.AdbNotifications;
 import android.debug.AdbProtoEnums;
 import android.debug.AdbTransportType;
 import android.debug.PairDevice;
-import android.net.ConnectivityManager;
 import android.net.LocalSocket;
 import android.net.LocalSocketAddress;
-import android.net.NetworkInfo;
 import android.net.Uri;
 import android.net.wifi.WifiConfiguration;
 import android.net.wifi.WifiInfo;
@@ -160,7 +156,7 @@ public class AdbDebuggingManager {
     // A list of keys connected via wifi
     private final Set<String> mWifiConnectedKeys = new HashSet<>();
     // The current info of the adbwifi connection.
-    private AdbConnectionInfo mAdbConnectionInfo = new AdbConnectionInfo();
+    private final AdbConnectionInfo mAdbConnectionInfo = new AdbConnectionInfo();
 
     // Polls for a tls port property when adb wifi is enabled
     private AdbConnectionPortPoller mConnectionPortPoller;
@@ -455,129 +451,12 @@ public class AdbDebuggingManager {
         }
     }
 
-    private static class AdbConnectionInfo {
-        private String mBssid;
-        private String mSsid;
-        private int mPort;
-
-        AdbConnectionInfo() {
-            mBssid = "";
-            mSsid = "";
-            mPort = -1;
-        }
-
-        AdbConnectionInfo(String bssid, String ssid) {
-            mBssid = bssid;
-            mSsid = ssid;
-        }
-
-        AdbConnectionInfo(AdbConnectionInfo other) {
-            mBssid = other.mBssid;
-            mSsid = other.mSsid;
-            mPort = other.mPort;
-        }
-
-        public String getBSSID() {
-            return mBssid;
-        }
-
-        public String getSSID() {
-            return mSsid;
-        }
-
-        public int getPort() {
-            return mPort;
-        }
-
-        public void setPort(int port) {
-            mPort = port;
-        }
-
-        public void clear() {
-            mBssid = "";
-            mSsid = "";
-            mPort = -1;
-        }
-    }
-
-    private void setAdbConnectionInfo(AdbConnectionInfo info) {
-        synchronized (mAdbConnectionInfo) {
-            if (info == null) {
-                mAdbConnectionInfo.clear();
-                return;
-            }
-            mAdbConnectionInfo = info;
-        }
-    }
-
-    private AdbConnectionInfo getAdbConnectionInfo() {
-        synchronized (mAdbConnectionInfo) {
-            return new AdbConnectionInfo(mAdbConnectionInfo);
-        }
-    }
-
     class AdbDebuggingHandler extends Handler {
         private NotificationManager mNotificationManager;
         private boolean mAdbNotificationShown;
 
-        private final BroadcastReceiver mBroadcastReceiver = new BroadcastReceiver() {
-            @Override
-            public void onReceive(Context context, Intent intent) {
-                String action = intent.getAction();
-                // We only care about when wifi is disabled, and when there is a wifi network
-                // change.
-                if (WifiManager.WIFI_STATE_CHANGED_ACTION.equals(action)) {
-                    int state = intent.getIntExtra(
-                            WifiManager.EXTRA_WIFI_STATE, WifiManager.WIFI_STATE_DISABLED);
-                    if (state == WifiManager.WIFI_STATE_DISABLED) {
-                        Slog.i(TAG, "Wifi disabled. Disabling adbwifi.");
-                        Settings.Global.putInt(mContentResolver,
-                                Settings.Global.ADB_WIFI_ENABLED, 0);
-                    }
-                } else if (WifiManager.NETWORK_STATE_CHANGED_ACTION.equals(action)) {
-                    // We only care about wifi type connections
-                    NetworkInfo networkInfo = (NetworkInfo) intent.getParcelableExtra(
-                            WifiManager.EXTRA_NETWORK_INFO, android.net.NetworkInfo.class);
-                    if (networkInfo.getType() == ConnectivityManager.TYPE_WIFI) {
-                        // Check for network disconnect
-                        if (!networkInfo.isConnected()) {
-                            Slog.i(TAG, "Network disconnected. Disabling adbwifi.");
-                            Settings.Global.putInt(mContentResolver,
-                                    Settings.Global.ADB_WIFI_ENABLED, 0);
-                            return;
-                        }
-
-                        WifiManager wifiManager =
-                                (WifiManager) mContext.getSystemService(Context.WIFI_SERVICE);
-                        WifiInfo wifiInfo = wifiManager.getConnectionInfo();
-                        if (wifiInfo == null || wifiInfo.getNetworkId() == -1) {
-                            Slog.i(TAG, "Not connected to any wireless network."
-                                    + " Not enabling adbwifi.");
-                            Settings.Global.putInt(mContentResolver,
-                                    Settings.Global.ADB_WIFI_ENABLED, 0);
-                            return;
-                        }
-
-                        synchronized (mAdbConnectionInfo) {
-                            // Check for network change
-                            final String bssid = wifiInfo.getBSSID();
-                            if (TextUtils.isEmpty(bssid)) {
-                                Slog.e(TAG,
-                                        "Unable to get the wifi ap's BSSID. Disabling adbwifi.");
-                                Settings.Global.putInt(mContentResolver,
-                                        Settings.Global.ADB_WIFI_ENABLED, 0);
-                                return;
-                            }
-                            if (!TextUtils.equals(bssid, mAdbConnectionInfo.getBSSID())) {
-                                Slog.i(TAG, "Detected wifi network change. Disabling adbwifi.");
-                                Settings.Global.putInt(mContentResolver,
-                                        Settings.Global.ADB_WIFI_ENABLED, 0);
-                            }
-                        }
-                    }
-                }
-            }
-        };
+        private final AdbBroadcastReceiver mBroadcastReceiver =
+                new AdbBroadcastReceiver(mContext, mAdbConnectionInfo);
 
         private static final String ADB_NOTIFICATION_CHANNEL_ID_TV = "usbdevicemanager.adb.tv";
 
@@ -928,11 +807,8 @@ public class AdbDebuggingManager {
                         break;
                     }
 
-                    setAdbConnectionInfo(currentInfo);
-                    IntentFilter intentFilter =
-                            new IntentFilter(WifiManager.WIFI_STATE_CHANGED_ACTION);
-                    intentFilter.addAction(WifiManager.NETWORK_STATE_CHANGED_ACTION);
-                    mContext.registerReceiver(mBroadcastReceiver, intentFilter);
+                    mAdbConnectionInfo.copy(currentInfo);
+                    mBroadcastReceiver.register();
 
                     ensureAdbDebuggingThreadAlive();
                     startTLSPortPoller();
@@ -947,8 +823,8 @@ public class AdbDebuggingManager {
                         break;
                     }
                     mAdbWifiEnabled = false;
-                    setAdbConnectionInfo(null);
-                    mContext.unregisterReceiver(mBroadcastReceiver);
+                    mAdbConnectionInfo.clear();
+                    mBroadcastReceiver.unregister();
 
                     stopAdbdWifi();
 
@@ -971,14 +847,11 @@ public class AdbDebuggingManager {
                         break;
                     }
 
-                    setAdbConnectionInfo(newInfo);
+                    mAdbConnectionInfo.copy(newInfo);
                     Settings.Global.putInt(mContentResolver,
                             Settings.Global.ADB_WIFI_ENABLED, 1);
-                    IntentFilter intentFilter =
-                            new IntentFilter(WifiManager.WIFI_STATE_CHANGED_ACTION);
-                    intentFilter.addAction(WifiManager.NETWORK_STATE_CHANGED_ACTION);
-                    mContext.registerReceiver(mBroadcastReceiver, intentFilter);
 
+                    mBroadcastReceiver.register();
                     ensureAdbDebuggingThreadAlive();
                     startTLSPortPoller();
                     startAdbdWifi();
@@ -1067,9 +940,7 @@ public class AdbDebuggingManager {
                 case MSG_SERVER_CONNECTED: {
                     int port = (int) msg.obj;
                     onAdbdWifiServerConnected(port);
-                    synchronized (mAdbConnectionInfo) {
-                        mAdbConnectionInfo.setPort(port);
-                    }
+                    mAdbConnectionInfo.setPort(port);
                     break;
                 }
                 case MSG_SERVER_DISCONNECTED: {
@@ -1551,11 +1422,7 @@ public class AdbDebuggingManager {
      * Returns the port adbwifi is currently opened on.
      */
     public int getAdbWirelessPort() {
-        AdbConnectionInfo info = getAdbConnectionInfo();
-        if (info == null) {
-            return 0;
-        }
-        return info.getPort();
+        return mAdbConnectionInfo.getPort();
     }
 
     /**
