@@ -193,7 +193,6 @@ import java.util.stream.IntStream;
 public class TelephonyManager {
     private static final String TAG = "TelephonyManager";
 
-    private TelephonyRegistryManager mTelephonyRegistryMgr;
     /**
      * To expand the error codes for {@link TelephonyManager#updateAvailableNetworks} and
      * {@link TelephonyManager#setPreferredOpportunisticDataSubscription}.
@@ -18062,17 +18061,16 @@ public class TelephonyManager {
         if (executor == null || callback == null) {
             throw new IllegalArgumentException("TelephonyCallback and executor must be non-null");
         }
-        mTelephonyRegistryMgr = (TelephonyRegistryManager)
-                mContext.getSystemService(Context.TELEPHONY_REGISTRY_SERVICE);
-        if (mTelephonyRegistryMgr != null) {
-            mTelephonyRegistryMgr.registerTelephonyCallback(
-                    includeLocationData != INCLUDE_LOCATION_DATA_FINE,
-                    includeLocationData == INCLUDE_LOCATION_DATA_NONE,
-                    executor, mSubId, getOpPackageName(),
-                    getAttributionTag(), callback, getITelephony() != null);
-        } else {
-            throw new IllegalStateException("telephony service is null.");
-        }
+
+        TelephonyRegistryManager mgr = mContext.getSystemService(TelephonyRegistryManager.class);
+
+        if (mgr == null) throw new IllegalStateException("telephony service is null.");
+
+        mgr.registerTelephonyCallback(
+                includeLocationData != INCLUDE_LOCATION_DATA_FINE,
+                includeLocationData == INCLUDE_LOCATION_DATA_NONE,
+                executor, mSubId, getOpPackageName(),
+                getAttributionTag(), callback, getITelephony() != null);
     }
 
     /**
@@ -18081,22 +18079,21 @@ public class TelephonyManager {
      * @param callback The {@link TelephonyCallback} object to unregister.
      */
     public void unregisterTelephonyCallback(@NonNull TelephonyCallback callback) {
-
         if (mContext == null) {
             throw new IllegalStateException("telephony service is null.");
         }
 
-        if (callback.callback == null) {
-            return;
-        }
+        Objects.requireNonNull(callback,
+                "unregisterTelephonyCallback: cannot unregister a null callback");
 
-        mTelephonyRegistryMgr = mContext.getSystemService(TelephonyRegistryManager.class);
-        if (mTelephonyRegistryMgr != null) {
-            mTelephonyRegistryMgr.unregisterTelephonyCallback(mSubId, getOpPackageName(),
-                    getAttributionTag(), callback, getITelephony() != null);
-        } else {
-            throw new IllegalStateException("telephony service is null.");
-        }
+        if (callback.callback == null) return; // Already unregistered
+
+        TelephonyRegistryManager mgr = mContext.getSystemService(TelephonyRegistryManager.class);
+
+        if (mgr == null) throw new IllegalStateException("telephony service is null.");
+
+        mgr.unregisterTelephonyCallback(mSubId, getOpPackageName(),
+                getAttributionTag(), callback, getITelephony() != null);
     }
 
     /** @hide */
@@ -19061,11 +19058,12 @@ public class TelephonyManager {
             throw new IllegalArgumentException(
                     "CarrierPrivilegesCallback and executor must be non-null");
         }
-        mTelephonyRegistryMgr = mContext.getSystemService(TelephonyRegistryManager.class);
-        if (mTelephonyRegistryMgr == null) {
-            throw new IllegalStateException("Telephony registry service is null");
-        }
-        mTelephonyRegistryMgr.addCarrierPrivilegesCallback(logicalSlotIndex, executor, callback);
+
+        TelephonyRegistryManager mgr = mContext.getSystemService(TelephonyRegistryManager.class);
+
+        if (mgr == null) throw new IllegalStateException("telephony service is null.");
+
+        mgr.addCarrierPrivilegesCallback(logicalSlotIndex, executor, callback);
     }
 
     /**
@@ -19081,11 +19079,11 @@ public class TelephonyManager {
         } else if (callback == null) {
             throw new IllegalArgumentException("CarrierPrivilegesCallback must be non-null");
         }
-        mTelephonyRegistryMgr = mContext.getSystemService(TelephonyRegistryManager.class);
-        if (mTelephonyRegistryMgr == null) {
-            throw new IllegalStateException("Telephony registry service is null");
-        }
-        mTelephonyRegistryMgr.removeCarrierPrivilegesCallback(callback);
+        TelephonyRegistryManager mgr = mContext.getSystemService(TelephonyRegistryManager.class);
+
+        if (mgr == null) throw new IllegalStateException("telephony service is null.");
+
+        mgr.removeCarrierPrivilegesCallback(callback);
     }
 
     /**
