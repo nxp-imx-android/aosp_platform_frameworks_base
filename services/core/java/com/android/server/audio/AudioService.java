@@ -476,6 +476,7 @@ public class AudioService extends IAudioService.Stub
     private static final int MSG_UPDATE_A11Y_SERVICE_UIDS = 35;
     private static final int MSG_UPDATE_AUDIO_MODE = 36;
     private static final int MSG_RECORDING_CONFIG_CHANGE = 37;
+    private static final int MSG_BT_DEV_CHANGED = 38;
     private static final int MSG_UPDATE_AUDIO_MODE_SIGNAL = 39;
     private static final int MSG_DISPATCH_AUDIO_MODE = 40;
     private static final int MSG_ROUTING_UPDATED = 41;
@@ -9158,8 +9159,11 @@ public class AudioService extends IAudioService.Stub
         sDeviceLogger.enqueue(new EventLogger.StringEvent("BluetoothActiveDeviceChanged for "
                 + BluetoothProfile.getProfileName(profile) + ", device update " + previousDevice
                 + " -> " + newDevice).printLog(TAG));
-        mDeviceBroker.queueOnBluetoothActiveDeviceChanged(new AudioDeviceBroker.BtDeviceChangedData(
-                newDevice, previousDevice, info, "AudioService"));
+        AudioDeviceBroker.BtDeviceChangedData data =
+                new AudioDeviceBroker.BtDeviceChangedData(newDevice, previousDevice, info,
+                        "AudioService");
+        sendMsg(mAudioHandler, MSG_BT_DEV_CHANGED, SENDMSG_QUEUE, 0, 0,
+                /*obj*/ data, /*delay*/ 0);
     }
 
     /** only public for mocking/spying, do not call outside of AudioService */
@@ -11266,6 +11270,11 @@ public class AudioService extends IAudioService.Stub
                         onUpdateAudioMode(info.getMode(), info.getPid(), info.getPackageName(),
                                 info.getForce(), msg.what == MSG_UPDATE_AUDIO_MODE_SIGNAL);
                     }
+                    break;
+
+                case MSG_BT_DEV_CHANGED:
+                    mDeviceBroker.queueOnBluetoothActiveDeviceChanged(
+                            (AudioDeviceBroker.BtDeviceChangedData) msg.obj);
                     break;
 
                 case MSG_DISPATCH_AUDIO_MODE:
