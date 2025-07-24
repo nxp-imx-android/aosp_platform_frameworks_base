@@ -162,14 +162,9 @@ final class IInputMethodManagerImpl extends IInputMethodManager.Stub {
 
         int getInputMethodWindowVisibleHeight(IInputMethodClient client);
 
-        void reportPerceptibleAsync(IBinder windowToken, boolean perceptible);
+        void reportPerceptible(@NonNull IBinder windowToken, boolean perceptible);
 
-        @PermissionVerified(allOf = {
-                Manifest.permission.INTERACT_ACROSS_USERS_FULL,
-                Manifest.permission.INTERNAL_SYSTEM_WINDOW})
-        void removeImeSurface(int displayId);
-
-        void removeImeSurfaceFromWindowAsync(IBinder windowToken);
+        void removeImeSurfaceFromWindow(@NonNull IBinder windowToken);
 
         boolean isImeTraceEnabled();
 
@@ -385,23 +380,13 @@ final class IInputMethodManagerImpl extends IInputMethodManager.Stub {
     }
 
     @Override
-    public void reportPerceptibleAsync(@NonNull IBinder windowToken, boolean perceptible) {
-        mCallback.reportPerceptibleAsync(windowToken, perceptible);
-    }
-
-    @EnforcePermission(allOf = {
-            Manifest.permission.INTERNAL_SYSTEM_WINDOW,
-            Manifest.permission.INTERACT_ACROSS_USERS_FULL})
-    @Override
-    public void removeImeSurface(int displayId) {
-        super.removeImeSurface_enforcePermission();
-
-        mCallback.removeImeSurface(displayId);
+    public void reportPerceptible(@NonNull IBinder windowToken, boolean perceptible) {
+        mCallback.reportPerceptible(windowToken, perceptible);
     }
 
     @Override
-    public void removeImeSurfaceFromWindowAsync(IBinder windowToken) {
-        mCallback.removeImeSurfaceFromWindowAsync(windowToken);
+    public void removeImeSurfaceFromWindow(@NonNull IBinder windowToken) {
+        mCallback.removeImeSurfaceFromWindow(windowToken);
     }
 
     @Override
