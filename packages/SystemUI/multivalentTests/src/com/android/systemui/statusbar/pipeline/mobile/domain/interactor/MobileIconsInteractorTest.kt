@@ -938,6 +938,20 @@ abstract class MobileIconsInteractorTestBase : SysuiTestCase() {
             assertThat(latest).isFalse()
         }
 
+    /** Regression test for b/431929674 */
+    @Test
+    @EnableFlags(NewStatusBarIcons.FLAG_NAME, StatusBarRootModernization.FLAG_NAME)
+    fun isStackable_removeAllSubscriptions() =
+        kosmos.runTest {
+            val latest by collectLastValue(underTest.isStackable)
+
+            connectionsRepository.setSubscriptions(listOf(SUB_1, SUB_2))
+            assertThat(latest).isTrue()
+
+            connectionsRepository.setSubscriptions(emptyList())
+            assertThat(latest).isFalse()
+        }
+
     @Test
     @EnableFlags(NewStatusBarIcons.FLAG_NAME, StatusBarRootModernization.FLAG_NAME)
     fun isStackable_checksForTerrestrialConnections() =
