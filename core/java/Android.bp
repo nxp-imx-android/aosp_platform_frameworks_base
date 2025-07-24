@@ -31,6 +31,7 @@ filegroup {
         ":dropboxmanager_aidl_sources",
         ":dynamic_instrumentation_manager_aidl_sources",
         "android/os/*MessageQueue/**/*.java",
+        "android/os/DeliQueue/**/*.java",
         "android/ranging/**/*.java",
     ],
     visibility: ["//frameworks/base"],
