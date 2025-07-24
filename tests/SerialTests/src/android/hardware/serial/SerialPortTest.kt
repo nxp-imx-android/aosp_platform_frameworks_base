@@ -116,7 +116,7 @@ class SerialPortTest {
         verify(backendService).requestOpen(eq("ttyUSB0"), eq(flags), eq(exclusive),
             eq(context.packageName), responseCallback.capture())
         responseCallback.value.onError(
-            ISerialPortResponseCallback.ErrorCode.ERROR_ACCESS_DENIED, 0, "Access denied"
+            ISerialPortResponseCallback.ErrorCode.ERROR_ACCESS_DENIED, "Access denied"
         )
 
         assertNull(outcomeResult)
@@ -146,7 +146,7 @@ class SerialPortTest {
         verify(backendService).requestOpen(eq("ttyUSB0"), eq(flags), eq(exclusive),
             eq(context.packageName), responseCallback.capture())
         responseCallback.value.onError(
-            ISerialPortResponseCallback.ErrorCode.ERROR_READING_DRIVERS, 0, "Test Error"
+            ISerialPortResponseCallback.ErrorCode.ERROR_OPENING_PORT, "Test Error"
         )
 
         assertNull(outcomeResult)
