@@ -16,7 +16,6 @@
 
 package android.app.ondeviceintelligence;
 
-import static android.app.ondeviceintelligence.flags.Flags.FLAG_ENABLE_ON_DEVICE_INTELLIGENCE;
 import static android.app.ondeviceintelligence.flags.Flags.FLAG_ON_DEVICE_INTELLIGENCE_25Q4;
 
 import android.annotation.FlaggedApi;
@@ -38,7 +37,6 @@ import java.util.function.Consumer;
  * @hide
  */
 @SystemApi
-@FlaggedApi(FLAG_ENABLE_ON_DEVICE_INTELLIGENCE)
 public interface ProcessingCallback {
     /**
      * Invoked when request has been processed and result is ready to be propagated to the

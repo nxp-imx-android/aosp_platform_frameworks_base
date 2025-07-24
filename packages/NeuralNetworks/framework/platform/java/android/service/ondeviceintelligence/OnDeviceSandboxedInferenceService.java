@@ -17,7 +17,6 @@
 package android.service.ondeviceintelligence;
 
 import static android.app.ondeviceintelligence.OnDeviceIntelligenceManager.AUGMENT_REQUEST_CONTENT_BUNDLE_KEY;
-import static android.app.ondeviceintelligence.flags.Flags.FLAG_ENABLE_ON_DEVICE_INTELLIGENCE;
 import static android.app.ondeviceintelligence.flags.Flags.FLAG_ON_DEVICE_INTELLIGENCE_25Q4;
 
 import static com.android.internal.util.function.pooled.PooledLambda.obtainMessage;
@@ -103,7 +102,6 @@ import java.util.function.Consumer;
  * @hide
  */
 @SystemApi
-@FlaggedApi(FLAG_ENABLE_ON_DEVICE_INTELLIGENCE)
 public abstract class OnDeviceSandboxedInferenceService extends Service {
     private static final String TAG = OnDeviceSandboxedInferenceService.class.getSimpleName();
 

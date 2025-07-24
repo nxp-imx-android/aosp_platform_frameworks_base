@@ -17,7 +17,6 @@
 package android.app.ondeviceintelligence;
 
 import static android.app.ondeviceintelligence.flags.Flags.FLAG_DMABUF_INFO;
-import static android.app.ondeviceintelligence.flags.Flags.FLAG_ENABLE_ON_DEVICE_INTELLIGENCE;
 import static android.app.ondeviceintelligence.flags.Flags.FLAG_ON_DEVICE_INTELLIGENCE_25Q4;
 
 import android.Manifest;
@@ -71,7 +70,6 @@ import java.util.function.LongConsumer;
  */
 @SystemApi
 @SystemService(Context.ON_DEVICE_INTELLIGENCE_SERVICE)
-@FlaggedApi(FLAG_ENABLE_ON_DEVICE_INTELLIGENCE)
 public final class OnDeviceIntelligenceManager {
     /**
      * @hide

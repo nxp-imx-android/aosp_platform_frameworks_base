@@ -9298,50 +9298,6 @@
 
     <issue
         id="FlaggedApi"
-        message="Class `OnDeviceIntelligenceManager` is a flagged API and should be inside an `if (Flags.enableOnDeviceIntelligence())` check (or annotate the surrounding method `?` with `@FlaggedApi(Flags.FLAG_ENABLE_ON_DEVICE_INTELLIGENCE) to transfer requirement to caller`)"
-        errorLine1="        registerService(Context.ON_DEVICE_INTELLIGENCE_SERVICE, OnDeviceIntelligenceManager.class,"
-        errorLine2="                                                                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="frameworks/base/core/java/android/app/SystemServiceRegistry.java"
-            line="1638"
-            column="65"/>
-    </issue>
-
-    <issue
-        id="FlaggedApi"
-        message="Field `ON_DEVICE_INTELLIGENCE_SERVICE` is a flagged API and should be inside an `if (Flags.enableOnDeviceIntelligence())` check (or annotate the surrounding method `?` with `@FlaggedApi(Flags.FLAG_ENABLE_ON_DEVICE_INTELLIGENCE) to transfer requirement to caller`)"
-        errorLine1="        registerService(Context.ON_DEVICE_INTELLIGENCE_SERVICE, OnDeviceIntelligenceManager.class,"
-        errorLine2="                                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="frameworks/base/core/java/android/app/SystemServiceRegistry.java"
-            line="1638"
-            column="33"/>
-    </issue>
-
-    <issue
-        id="FlaggedApi"
-        message="Field `ON_DEVICE_INTELLIGENCE_SERVICE` is a flagged API and should be inside an `if (Flags.enableOnDeviceIntelligence())` check (or annotate the surrounding method `createService` with `@FlaggedApi(Flags.FLAG_ENABLE_ON_DEVICE_INTELLIGENCE) to transfer requirement to caller`)"
-        errorLine1="                                Context.ON_DEVICE_INTELLIGENCE_SERVICE);"
-        errorLine2="                                        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="frameworks/base/core/java/android/app/SystemServiceRegistry.java"
-            line="1644"
-            column="41"/>
-    </issue>
-
-    <issue
-        id="FlaggedApi"
-        message="Method `OnDeviceIntelligenceManager()` is a flagged API and should be inside an `if (Flags.enableOnDeviceIntelligence())` check (or annotate the surrounding method `createService` with `@FlaggedApi(Flags.FLAG_ENABLE_ON_DEVICE_INTELLIGENCE) to transfer requirement to caller`)"
-        errorLine1="                        return new OnDeviceIntelligenceManager(ctx.getOuterContext(), manager);"
-        errorLine2="                               ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="frameworks/base/core/java/android/app/SystemServiceRegistry.java"
-            line="1647"
-            column="32"/>
-    </issue>
-
-    <issue
-        id="FlaggedApi"
         message="Class `E2eeContactKeysManager` is a flagged API and should be inside an `if (Flags.userKeys())` check (or annotate the surrounding method `?` with `@FlaggedApi(Flags.FLAG_USER_KEYS) to transfer requirement to caller`)"
         errorLine1="        registerService(Context.CONTACT_KEYS_SERVICE, E2eeContactKeysManager.class,"
         errorLine2="                                                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
