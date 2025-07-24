@@ -644,6 +644,12 @@ public final class ApplicationStartInfo implements Parcelable {
      * Timestamp {@link #START_TIMESTAMP_FULLY_DRAWN} is never guaranteed to be available as it is
      * dependant on devloper calling {@link Activity#reportFullyDrawn}.
      * </p>
+     *
+     * <p class="note">
+     * Note: The timestamp {@link #START_TIMESTAMP_LAUNCH} for starts of type
+     * {@link #START_COMPONENT_SERVICE} may be incorrect in
+     * {@link android.os.Build.VERSION_CODES#BAKLAVA} and below.
+     * </p>
      */
     public @NonNull Map<Integer, Long> getStartupTimestamps() {
         if (mStartupTimestampsNs == null) {
