@@ -115,6 +115,17 @@ flag {
 }
 
 flag {
+    name: "enable_backup_and_restore_display_window_settings"
+    namespace: "lse_desktop_experience"
+    description: "Enables backup and restore for display window settings."
+    bug: "346499008"
+    is_fixed_read_only: true
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "enable_block_non_desktop_display_window_drag_bugfix"
     namespace: "lse_desktop_experience"
     description: "Block window drag to a non-desktop-mode display."
