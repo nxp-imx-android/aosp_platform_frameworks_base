@@ -76,6 +76,7 @@ import com.android.systemui.util.view.ViewUtil
 import com.google.common.truth.Truth.assertThat
 import java.util.Optional
 import java.util.function.BooleanSupplier
+import org.junit.Assume
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -146,6 +147,16 @@ class PhoneStatusBarViewControllerTest(flags: FlagsParameterization) : SysuiTest
         whenever(statusBarContentInsetsProvider.getStatusBarContentInsetsForCurrentRotation())
             .thenReturn(Insets.NONE)
         whenever(mStatusOverlayHoverListenerFactory.createDarkAwareListener(any()))
+            .thenReturn(mStatusOverlayHoverListener)
+        whenever(
+                mStatusOverlayHoverListenerFactory.createDarkAwareListener(
+                    any(),
+                    eq(0),
+                    eq(0),
+                    eq(6),
+                    eq(6),
+                )
+            )
             .thenReturn(mStatusOverlayHoverListener)
 
         val parent = FrameLayout(mContext) // add parent to keep layout params
@@ -246,14 +257,16 @@ class PhoneStatusBarViewControllerTest(flags: FlagsParameterization) : SysuiTest
         val view = createViewMock(view)
         val endSideContainer = spy(view.requireViewById<View>(R.id.system_icons))
         whenever(view.requireViewById<View>(R.id.system_icons)).thenReturn(endSideContainer)
-        val statusContainer = spy(view.requireViewById<View>(R.id.status_bar_start_side_content))
+        val startSideContainer = spy(view.requireViewById<View>(R.id.status_bar_start_side_content))
         whenever(view.requireViewById<View>(R.id.status_bar_start_side_content))
-            .thenReturn(statusContainer)
+            .thenReturn(startSideContainer)
 
         controller = createAndInitController(view)
 
         verify(endSideContainer).setOnHoverListener(any())
-        verify(statusContainer).setOnTouchListener(any())
+        verify(endSideContainer).setOnTouchListener(any())
+        verify(startSideContainer).setOnHoverListener(any())
+        verify(startSideContainer).setOnTouchListener(any())
     }
 
     @Test
@@ -712,15 +725,117 @@ class PhoneStatusBarViewControllerTest(flags: FlagsParameterization) : SysuiTest
     }
 
     @Test
-    fun statusIconContainerIsNotHandlingTouchScreenTouches() {
+    fun shadeIsExpandedOnStartSideContentTap_flagOn() {
+        Assume.assumeTrue(mContext.resources.getBoolean(R.bool.config_statusBarTapToExpandShade))
+        val view = createViewMock(view)
+        controller = createAndInitController(view)
+
+        val startSideContainer = view.requireViewById<View>(R.id.status_bar_start_side_content)
+        startSideContainer.dispatchTouchEvent(
+            getActionDownEventFromSource(InputDevice.SOURCE_TOUCHSCREEN)
+        )
+        startSideContainer.dispatchTouchEvent(
+            getActionUpEventFromSource(InputDevice.SOURCE_TOUCHSCREEN)
+        )
+
+        verify(shadeControllerImpl).animateExpandShade()
+        verify(shadeControllerImpl, never()).animateExpandQs()
+    }
+
+    @Test
+    fun shadeIsNotExpandedOnStartSideContentTap_flagoff() {
+        Assume.assumeFalse(mContext.resources.getBoolean(R.bool.config_statusBarTapToExpandShade))
+        val view = createViewMock(view)
+        controller = createAndInitController(view)
+
+        val startSideContainer = view.requireViewById<View>(R.id.status_bar_start_side_content)
+        startSideContainer.dispatchTouchEvent(
+            getActionDownEventFromSource(InputDevice.SOURCE_TOUCHSCREEN)
+        )
+        startSideContainer.dispatchTouchEvent(
+            getActionUpEventFromSource(InputDevice.SOURCE_TOUCHSCREEN)
+        )
+
+        verify(shadeControllerImpl, never()).animateExpandShade()
+    }
+
+    @Test
+    fun statusIconContainerIsHandlingTouchScreenTaps_singleShade_expandsNotificationsShade_flagOn() {
+        Assume.assumeTrue(mContext.resources.getBoolean(R.bool.config_statusBarTapToExpandShade))
+        kosmos.enableSingleShade()
         val view = createViewMock(view)
         controller = createAndInitController(view)
         val statusContainer = view.requireViewById<View>(R.id.system_icons)
-        val handled =
-            statusContainer.dispatchTouchEvent(
-                getActionUpEventFromSource(InputDevice.SOURCE_TOUCHSCREEN)
-            )
-        assertThat(handled).isFalse()
+        statusContainer.dispatchTouchEvent(
+            getActionDownEventFromSource(InputDevice.SOURCE_TOUCHSCREEN)
+        )
+        statusContainer.dispatchTouchEvent(
+            getActionUpEventFromSource(InputDevice.SOURCE_TOUCHSCREEN)
+        )
+
+        verify(shadeControllerImpl).animateExpandShade()
+        verify(shadeControllerImpl, never()).animateExpandQs()
+    }
+
+    @Test
+    @EnableSceneContainer
+    fun statusIconContainerIsNotHandlingTouchScreenTaps_flagOff() {
+        Assume.assumeFalse(mContext.resources.getBoolean(R.bool.config_statusBarTapToExpandShade))
+        kosmos.enableSingleShade()
+        val view = createViewMock(view)
+        controller = createAndInitController(view)
+        val statusContainer = view.requireViewById<View>(R.id.system_icons)
+        statusContainer.dispatchTouchEvent(
+            getActionDownEventFromSource(InputDevice.SOURCE_TOUCHSCREEN)
+        )
+        statusContainer.dispatchTouchEvent(
+            getActionUpEventFromSource(InputDevice.SOURCE_TOUCHSCREEN)
+        )
+
+        verify(shadeControllerImpl, never()).animateExpandShade()
+    }
+
+    @Test
+    @EnableSceneContainer
+    fun statusIconContainerIsHandlingTouchScreenTaps_dualShade_expandsQuickSettingsShade_flagOn() {
+        Assume.assumeTrue(mContext.resources.getBoolean(R.bool.config_statusBarTapToExpandShade))
+        kosmos.enableDualShade()
+        val view = createViewMock(view)
+        controller = createAndInitController(view)
+        val endSideContainer = view.requireViewById<View>(R.id.system_icons)
+        endSideContainer.dispatchTouchEvent(
+            getActionDownEventFromSource(InputDevice.SOURCE_TOUCHSCREEN)
+        )
+        endSideContainer.dispatchTouchEvent(
+            getActionUpEventFromSource(InputDevice.SOURCE_TOUCHSCREEN)
+        )
+
+        verify(shadeControllerImpl, never()).animateExpandShade()
+        verify(shadeControllerImpl).animateExpandQs()
+    }
+
+    @Test
+    @EnableSceneContainer
+    fun statusIconContainerIsNotHandlingTouchScreenTaps_dualShade_flagOff() {
+        Assume.assumeFalse(mContext.resources.getBoolean(R.bool.config_statusBarTapToExpandShade))
+        kosmos.enableDualShade()
+        val view = createViewMock(view)
+        controller = createAndInitController(view)
+        val endSideContainer = view.requireViewById<View>(R.id.system_icons)
+        endSideContainer.dispatchTouchEvent(
+            getActionDownEventFromSource(InputDevice.SOURCE_TOUCHSCREEN)
+        )
+        endSideContainer.dispatchTouchEvent(
+            getActionUpEventFromSource(InputDevice.SOURCE_TOUCHSCREEN)
+        )
+
+        verify(shadeControllerImpl, never()).animateExpandQs()
+    }
+
+    private fun getActionDownEventFromSource(source: Int): MotionEvent {
+        val ev = MotionEvent.obtain(0, 0, MotionEvent.ACTION_DOWN, 0f, 0f, 0)
+        ev.source = source
+        return ev
     }
 
     private fun getActionUpEventFromSource(source: Int): MotionEvent {

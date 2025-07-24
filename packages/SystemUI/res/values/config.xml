@@ -1203,4 +1203,7 @@
 
     <!-- Whether to hide notifications shade when the user presses ALL_APPS key. -->
     <bool name="config_enableHideNotificationsShadeOnAllAppsKey">false</bool>
+
+    <!-- Indicates whether the tapping to open qs panel is supported -->
+    <bool name="config_statusBarTapToExpandShade">false</bool>
 </resources>

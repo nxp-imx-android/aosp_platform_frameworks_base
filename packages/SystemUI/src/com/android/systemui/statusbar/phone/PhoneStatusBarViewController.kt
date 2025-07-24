@@ -18,6 +18,7 @@ package com.android.systemui.statusbar.phone
 import android.app.StatusBarManager.WINDOW_STATUS_BAR
 import android.util.Log
 import android.view.Display.DEFAULT_DISPLAY
+import android.view.GestureDetector
 import android.view.InputDevice
 import android.view.MotionEvent
 import android.view.View
@@ -112,6 +113,42 @@ private constructor(
             }
         }
 
+    // Creates a [View.OnTouchListener] that handles mouse clicks and finger taps.
+    private fun createClickListener(v: View, onClick: () -> Unit): View.OnTouchListener {
+        val gestureDetector =
+            GestureDetector(
+                mView.context,
+                object : GestureDetector.SimpleOnGestureListener() {
+                    override fun onDown(e: MotionEvent): Boolean {
+                        // Return true here to receive subsequent events, which are then
+                        // handled by onSingleTapUp.
+                        return true
+                    }
+
+                    override fun onSingleTapUp(e: MotionEvent): Boolean {
+                        dispatchEventToShadeDisplayPolicy(e)
+                        v.performClick()
+                        onClick()
+                        return true
+                    }
+                },
+            )
+        return View.OnTouchListener { _, event ->
+            // Handle mouse clicks separately.
+            if (event.source == InputDevice.SOURCE_MOUSE) {
+                if (event.action == MotionEvent.ACTION_UP) {
+                    dispatchEventToShadeDisplayPolicy(event)
+                    v.performClick()
+                    onClick()
+                }
+                return@OnTouchListener true
+            }
+
+            // For all other (touch) events, delegate to the GestureDetector.
+            return@OnTouchListener gestureDetector.onTouchEvent(event)
+        }
+    }
+
     private fun dispatchEventToShadeDisplayPolicy(event: MotionEvent) {
         if (ShadeWindowGoesAround.isEnabled) {
             // Notify the shade display policy that the status bar was touched. This may cause
@@ -166,15 +203,14 @@ private constructor(
         endSideContainer.setOnHoverListener(
             statusOverlayHoverListenerFactory.createDarkAwareListener(endSideContainer)
         )
-        endSideContainer.setOnTouchListener(
-            createMouseClickListener {
-                if (shadeModeInteractor.isDualShade) {
-                    shadeController.animateExpandQs()
-                } else {
-                    shadeController.animateExpandShade()
-                }
-            }
-        )
+
+        if (statusBarTapToExpandShadeEnabled()) {
+            endSideContainer.setOnTouchListener(
+                createClickListener(endSideContainer) { animateExpandQs() }
+            )
+        } else {
+            endSideContainer.setOnTouchListener(createMouseClickListener { animateExpandQs() })
+        }
 
         startSideContainer = mView.requireViewById(R.id.status_bar_start_side_content)
         startSideContainer.setOnHoverListener(
@@ -184,9 +220,27 @@ private constructor(
                 bottomHoverMargin = 6,
             )
         )
-        startSideContainer.setOnTouchListener(
-            createMouseClickListener { shadeController.animateExpandShade() }
-        )
+        if (statusBarTapToExpandShadeEnabled()) {
+            startSideContainer.setOnTouchListener(
+                createClickListener(startSideContainer) { shadeController.animateExpandShade() }
+            )
+        } else {
+            startSideContainer.setOnTouchListener(
+                createMouseClickListener { shadeController.animateExpandShade() }
+            )
+        }
+    }
+
+    private fun statusBarTapToExpandShadeEnabled(): Boolean {
+        return context.resources.getBoolean(R.bool.config_statusBarTapToExpandShade)
+    }
+
+    private fun animateExpandQs() {
+        if (shadeModeInteractor.isDualShade) {
+            shadeController.animateExpandQs()
+        } else {
+            shadeController.animateExpandShade()
+        }
     }
 
     @VisibleForTesting
