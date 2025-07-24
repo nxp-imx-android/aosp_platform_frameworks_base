@@ -151,3 +151,10 @@ flag {
     bug: "415007211"
     is_fixed_read_only: true
 }
+
+flag {
+    name: "enable_talisman_service"
+    namespace: "cross_device_authentication"
+    description: "Enable the Talisman service."
+    bug: "433283951"
+}
