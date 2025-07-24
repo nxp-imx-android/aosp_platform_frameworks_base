@@ -256,7 +256,7 @@ public class InputMethodManagerServiceWindowGainedFocusTest
                         + ", softInputAdjustFlag="
                         + InputMethodDebug.softInputModeToString(mSoftInputAdjustment));
 
-        return mInputMethodManagerService.startInputOrWindowGainedFocusWithResult(
+        return mInputMethodManagerService.startInputOrWindowGainedFocus(
                 StartInputReason.WINDOW_FOCUS_GAIN /* startInputReason */,
                 mMockInputMethodClient /* client */,
                 mWindowToken /* windowToken */,
