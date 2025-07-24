@@ -99,7 +99,7 @@ fun VolumeSlider(
     sliderColors: PlatformSliderColors,
     modifier: Modifier = Modifier,
     hapticsViewModelFactory: SliderHapticsViewModel.Factory?,
-    onValueChangeFinished: ((Float) -> Unit)? = null,
+    onValueChangeFinished: (() -> Unit)? = null,
     button: (@Composable RowScope.() -> Unit)? = null,
     showLabel: Boolean = true,
 ) {
@@ -146,7 +146,7 @@ fun VolumeSlider(
                     value = state.value,
                     valueRange = state.valueRange,
                     onValueChanged = onValueChange,
-                    onValueChangeFinished = { onValueChangeFinished?.invoke(it) },
+                    onValueChangeFinished = { onValueChangeFinished?.invoke() },
                     colors = materialSliderColors,
                     isEnabled = state.isEnabled,
                     stepDistance = state.step,
@@ -262,7 +262,7 @@ private fun LegacyVolumeSlider(
     sliderColors: PlatformSliderColors,
     hapticsViewModelFactory: SliderHapticsViewModel.Factory?,
     modifier: Modifier = Modifier,
-    onValueChangeFinished: ((Float) -> Unit)? = null,
+    onValueChangeFinished: (() -> Unit)? = null,
 ) {
     val value by valueState(state)
     val interactionSource = remember { MutableInteractionSource() }
@@ -322,7 +322,7 @@ private fun LegacyVolumeSlider(
         },
         onValueChangeFinished = {
             hapticsViewModel?.onValueChangeEnded()
-            onValueChangeFinished?.invoke(value)
+            onValueChangeFinished?.invoke()
         },
         enabled = state.isEnabled,
         icon = {
