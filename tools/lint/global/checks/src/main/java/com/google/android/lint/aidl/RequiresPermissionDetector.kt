@@ -28,6 +28,7 @@ import com.android.tools.lint.detector.api.Severity
 import com.android.tools.lint.detector.api.SourceCodeScanner
 import com.google.android.lint.CLASS_CONTEXT
 import com.google.android.lint.CLASS_PERMISSION_CHECKER
+import com.google.android.lint.CLASS_PERMISSION_MANAGER
 import com.intellij.psi.PsiClass
 import com.intellij.psi.PsiMethod
 import org.jetbrains.uast.UAnnotation
@@ -168,20 +169,22 @@ class RequiresPermissionDetector : Detector(), SourceCodeScanner {
         }
 
         private fun checkEnforcement(node: UCallExpression, method: PsiMethod) {
-            if (context.evaluator.isMemberInSubClassOf(method, CLASS_CONTEXT, false) &&
-                method.name.matches(CONTEXT_ENFORCEMENT_METHOD_REGEX)) {
-                node.valueArguments.getOrNull(0)?.let { arg ->
+            fun extractPermissionFromArgument(node: UCallExpression, index: Int) {
+                node.valueArguments.getOrNull(index)?.let { arg ->
                     ConstantEvaluator.evaluate(context, arg)?.toString()?.let {
                         enforcedPermissions.allOf.add(it)
                     }
                 }
-            } else if (context.evaluator.isMemberInSubClassOf(method, CLASS_PERMISSION_CHECKER, false) &&
-                method.name.matches(PERMISSION_CHECKER_ENFORCEMENT_METHOD_REGEX)) {
-                node.valueArguments.getOrNull(1)?.let { arg ->
-                    ConstantEvaluator.evaluate(context, arg)?.toString()?.let {
-                        enforcedPermissions.allOf.add(it)
-                    }
-                }
+            }
+            if (context.evaluator.isMemberInSubClassOf(method, CLASS_CONTEXT, false)
+                && method.name.matches(CONTEXT_ENFORCEMENT_METHOD_REGEX)) {
+                extractPermissionFromArgument(node, 0)
+            } else if (context.evaluator.isMemberInSubClassOf(method, CLASS_PERMISSION_CHECKER, false)
+                && method.name.matches(PERMISSION_CHECKER_ENFORCEMENT_METHOD_REGEX)) {
+                extractPermissionFromArgument(node, 1)
+            } else if (context.evaluator.isMemberInSubClassOf(method, CLASS_PERMISSION_MANAGER, false)
+                && method.name.matches(PERMISSION_MANAGER_ENFORCEMENT_METHOD_REGEX)) {
+                extractPermissionFromArgument(node, 0)
             }
         }
     }
@@ -269,6 +272,8 @@ class RequiresPermissionDetector : Detector(), SourceCodeScanner {
             "^(enforce|check)(Calling)?(OrSelf)?Permission$".toRegex()
         private val PERMISSION_CHECKER_ENFORCEMENT_METHOD_REGEX =
             "^check.*Permission$".toRegex()
+        private val PERMISSION_MANAGER_ENFORCEMENT_METHOD_REGEX =
+            "^checkPermission.*".toRegex()
 
         @JvmField
         val ISSUE_MISSING_OR_MISMATCHED_REQUIRES_PERMISSION_ANNOTATION = Issue.create(
