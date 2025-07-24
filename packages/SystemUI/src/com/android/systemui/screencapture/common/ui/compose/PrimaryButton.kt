@@ -37,11 +37,17 @@ fun PrimaryButton(
     text: String,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
+    enabled: Boolean = true,
     icon: IconModel? = null,
     contentPadding: PaddingValues = ButtonPaddings,
     iconPadding: Dp = 5.dp,
 ) {
-    PlatformButton(onClick = onClick, modifier = modifier, contentPadding = contentPadding) {
+    PlatformButton(
+        onClick = onClick,
+        modifier = modifier,
+        enabled = enabled,
+        contentPadding = contentPadding,
+    ) {
         if (icon != null) {
             Icon(icon = icon, modifier = Modifier.size(20.dp).align(Alignment.CenterVertically))
             Spacer(Modifier.size(iconPadding))
