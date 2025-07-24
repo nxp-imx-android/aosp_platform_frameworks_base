@@ -74,6 +74,7 @@ abstract class TabTearingDesktopWindowingLimit(val rotation: Rotation = Rotation
         wmHelper
             .StateSyncBuilder()
             .withWindowSurfaceDisappeared(mailAppHelper.componentMatcher)
+            // We need to verify that after tab tearing we have 2 browser windows
             .withTopVisibleApps(browserAppHelper.componentMatcher, browserAppHelper.componentMatcher)
             .waitForAndVerify()
     }
