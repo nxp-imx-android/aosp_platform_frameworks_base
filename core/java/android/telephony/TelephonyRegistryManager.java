@@ -1554,13 +1554,18 @@ public class TelephonyRegistryManager {
             @NonNull @CallbackExecutor Executor executor,
             int subId, String pkgName, String attributionTag, @NonNull TelephonyCallback callback,
             boolean notifyNow) {
-        if (callback == null) {
-            throw new IllegalStateException("telephony service is null.");
-        }
+        Objects.requireNonNull(executor, "registerTelephonyCallback: executor cannot be null.");
+        Objects.requireNonNull(callback, "registerTelephonyCallback: callback cannot be null.");
+
         callback.init(executor);
+        final int[] events = getEventsFromCallback(callback).stream().mapToInt(i -> i).toArray();
+        if (events.length == 0) {
+            throw new IllegalArgumentException(
+                    "registerTelephonyCallback(): callback must implement at least one listener.");
+        }
+
         listenFromCallback(renounceFineLocationAccess, renounceCoarseLocationAccess, subId,
-                pkgName, attributionTag, callback,
-                getEventsFromCallback(callback).stream().mapToInt(i -> i).toArray(), notifyNow);
+                pkgName, attributionTag, callback, events, notifyNow);
     }
 
     /**

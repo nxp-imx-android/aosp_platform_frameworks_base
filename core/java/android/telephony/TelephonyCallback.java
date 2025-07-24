@@ -47,6 +47,7 @@ import java.time.Duration;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.Executor;
 import java.util.stream.Collectors;
@@ -805,9 +806,7 @@ public class TelephonyCallback {
      * @hide
      */
     public void init(@NonNull @CallbackExecutor Executor executor) {
-        if (executor == null) {
-            throw new IllegalArgumentException("TelephonyCallback Executor must be non-null");
-        }
+        Objects.requireNonNull(executor, "TelephonyCallback Executor must be non-null");
         callback = new IPhoneStateListenerStub(this, executor);
     }
 
