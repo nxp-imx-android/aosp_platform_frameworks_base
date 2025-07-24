@@ -16,10 +16,13 @@
 
 package android.os;
 
+import android.ravenwood.annotation.RavenwoodKeepWholeClass;
+
 /**
  * Encapsulates the waiting logic of DeliQueue/MessageQueue
  * @hide
  */
+@RavenwoodKeepWholeClass
 public final class WaitState {
     private static final long IS_COUNTER = 1L  << 63;
     private static final long HAS_SYNC_BARRIER = 1L << 62;
