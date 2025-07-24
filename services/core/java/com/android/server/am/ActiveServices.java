@@ -5773,7 +5773,7 @@ public final class ActiveServices {
             return null;
         }
 
-        final long startTimeNs = SystemClock.elapsedRealtimeNanos();
+        final long startTimeNs = SystemClock.uptimeNanos();
 
         if (DEBUG_SERVICE) {
             Slog.v(TAG_SERVICE, "Bringing up " + r + " " + r.intent + " fg=" + r.fgRequired);
