@@ -35,6 +35,8 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.android.systemui.Flags
 import com.android.systemui.common.ui.compose.PagerDots
+import com.android.systemui.compose.modifiers.sysUiResTagContainer
+import com.android.systemui.compose.modifiers.sysuiResTag
 import com.android.systemui.statusbar.policy.ui.dialog.viewmodel.ModesDialogViewModel
 
 @Composable
@@ -89,7 +91,12 @@ fun ModeTileGrid(
     } else {
         LazyVerticalGrid(
             columns = GridCells.Fixed(1),
-            modifier = modifier.fillMaxWidth().heightIn(max = 280.dp),
+            modifier =
+                modifier
+                    .fillMaxWidth()
+                    .heightIn(max = 280.dp)
+                    .sysUiResTagContainer()
+                    .sysuiResTag("scroll_view"),
             verticalArrangement = Arrangement.spacedBy(verticalSpacing),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
