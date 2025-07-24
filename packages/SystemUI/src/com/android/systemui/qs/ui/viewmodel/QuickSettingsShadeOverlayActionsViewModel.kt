@@ -50,7 +50,7 @@ constructor(private val editModeViewModel: EditModeViewModel) : UserActionsViewM
                         put(Swipe.Up, hideQuickSettings)
                     }
                     put(
-                        Swipe.Down(fromSource = SceneContainerArea.TopEdgeStartHalf),
+                        Swipe.Down(fromSource = SceneContainerArea.StartHalf),
                         ShowOverlay(
                             Overlays.NotificationsShade,
                             hideCurrentOverlays =
