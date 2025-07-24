@@ -79,6 +79,7 @@ import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
 @SmallTest
@@ -127,9 +128,17 @@ public class DozeTriggersTest extends SysuiTestCase {
     @Before
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
+
+        ArgumentCaptor<Boolean> boolCaptor = ArgumentCaptor.forClass(Boolean.class);
+        doAnswer(invocation ->
+                when(mHost.isPulsePending()).thenReturn(boolCaptor.getValue())
+        ).when(mHost).setPulsePending(boolCaptor.capture());
+
         setupDozeTriggers(
                 mConfig,
                 DozeConfigurationUtil.createMockParameters());
+
+        doAnswer(invocation -> null).when(mHost).addCallback(mHostCallbackCaptor.capture());
     }
 
     private void setupDozeTriggers(
@@ -165,11 +174,6 @@ public class DozeTriggersTest extends SysuiTestCase {
         mTriggers.transitionTo(DozeMachine.State.INITIALIZED, DozeMachine.State.DOZE);
         clearInvocations(mMachine);
 
-        ArgumentCaptor<Boolean> boolCaptor = ArgumentCaptor.forClass(Boolean.class);
-        doAnswer(invocation ->
-                when(mHost.isPulsePending()).thenReturn(boolCaptor.getValue())
-        ).when(mHost).setPulsePending(boolCaptor.capture());
-
         when(mHost.isPulsingBlocked()).thenReturn(false);
         mProximitySensor.setLastEvent(new ThresholdSensorEvent(true, 1));
         captor.getValue().onNotificationAlerted(null /* pulseSuppressedListener */);
@@ -190,10 +194,9 @@ public class DozeTriggersTest extends SysuiTestCase {
     public void testOnNotification_startsPulseRequest() {
         // GIVEN device is dozing
         Runnable pulseSuppressListener = mock(Runnable.class);
-        when(mMachine.getState()).thenReturn(DozeMachine.State.DOZE);
-        doAnswer(invocation -> null).when(mHost).addCallback(mHostCallbackCaptor.capture());
         mTriggers.transitionTo(UNINITIALIZED, DozeMachine.State.INITIALIZED);
         mTriggers.transitionTo(DozeMachine.State.INITIALIZED, DozeMachine.State.DOZE);
+        when(mMachine.getState()).thenReturn(DozeMachine.State.DOZE);
         clearInvocations(mMachine);
 
         // WHEN receive an alerting notification
@@ -210,7 +213,6 @@ public class DozeTriggersTest extends SysuiTestCase {
         // GIVEN device is dozing
         Runnable pulseSuppressListener = mock(Runnable.class);
         when(mMachine.getState()).thenReturn(DozeMachine.State.DOZE);
-        doAnswer(invocation -> null).when(mHost).addCallback(mHostCallbackCaptor.capture());
         mTriggers.transitionTo(UNINITIALIZED, DozeMachine.State.INITIALIZED);
         mTriggers.transitionTo(DozeMachine.State.INITIALIZED, DozeMachine.State.DOZE);
         clearInvocations(mMachine);
@@ -231,7 +233,6 @@ public class DozeTriggersTest extends SysuiTestCase {
         // GIVEN device is pulsing
         Runnable pulseSuppressListener = mock(Runnable.class);
         when(mMachine.getState()).thenReturn(DozeMachine.State.DOZE_PULSING);
-        doAnswer(invocation -> null).when(mHost).addCallback(mHostCallbackCaptor.capture());
         mTriggers.transitionTo(UNINITIALIZED, DozeMachine.State.INITIALIZED);
         mTriggers.transitionTo(DozeMachine.State.INITIALIZED, DozeMachine.State.DOZE_PULSING);
         clearInvocations(mMachine);
@@ -248,7 +249,6 @@ public class DozeTriggersTest extends SysuiTestCase {
     @Test
     public void testOnNotification_noPulseIfPulseIsNotPendingAnymore() {
         when(mMachine.getState()).thenReturn(DozeMachine.State.DOZE);
-        doAnswer(invocation -> null).when(mHost).addCallback(mHostCallbackCaptor.capture());
 
         mTriggers.transitionTo(UNINITIALIZED, DozeMachine.State.INITIALIZED);
         mTriggers.transitionTo(DozeMachine.State.INITIALIZED, DozeMachine.State.DOZE);
@@ -256,6 +256,7 @@ public class DozeTriggersTest extends SysuiTestCase {
         when(mHost.isPulsingBlocked()).thenReturn(false);
 
         // GIVEN pulsePending = false
+        Mockito.reset(mHost); // remove the isPulsePending mocked answer in setup
         when(mHost.isPulsePending()).thenReturn(false);
 
         // WHEN prox check returns FAR
@@ -321,7 +322,7 @@ public class DozeTriggersTest extends SysuiTestCase {
 
     @Test
     public void testDockEventListener_registerAndUnregister() {
-        mTriggers.transitionTo(UNINITIALIZED, DozeMachine.State.INITIALIZED);
+        mTriggers.transitionTo(UNINITIALIZED, DozeMachine.State.INITIALIZED); // beverlyt
         verify(mDockManager).addListener(any());
 
         mTriggers.transitionTo(DozeMachine.State.DOZE, DozeMachine.State.FINISH);
@@ -339,26 +340,227 @@ public class DozeTriggersTest extends SysuiTestCase {
 
     @Test
     public void testQuickPickup() {
-        // GIVEN device is in doze (screen blank, but running doze sensors)
+        // GIVEN device is in doze
         when(mMachine.getState()).thenReturn(DozeMachine.State.DOZE);
         InstanceId keyguardSessionId = InstanceId.fakeInstanceId(99);
         when(mSessionTracker.getSessionId(StatusBarManager.SESSION_KEYGUARD))
                 .thenReturn(keyguardSessionId);
 
-        ArgumentCaptor<Boolean> boolCaptor = ArgumentCaptor.forClass(Boolean.class);
-        doAnswer(invocation ->
-                when(mHost.isPulsePending()).thenReturn(boolCaptor.getValue())
-        ).when(mHost).setPulsePending(boolCaptor.capture());
-
         // WHEN quick pick up is triggered
         mTriggers.onSensor(DozeLog.REASON_SENSOR_QUICK_PICKUP, 100, 100, null);
 
         // THEN request pulse
-        verify(mMachine).requestPulse(anyInt());
+        verify(mMachine).requestPulse(DozeLog.REASON_SENSOR_QUICK_PICKUP);
 
         // THEN a log is taken that quick pick up was triggered
         verify(mUiEventLogger)
                 .log(DozingUpdateUiEvent.DOZING_UPDATE_QUICK_PICKUP, keyguardSessionId);
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_NEW_DOZING_KEYGUARD_STATES)
+    public void quickPickup_whileAlreadyPulsing() {
+        // GIVEN device is already pulsing
+        when(mMachine.getState()).thenReturn(DozeMachine.State.DOZE_PULSING);
+
+        // WHEN quick pick up is triggered
+        mTriggers.onSensor(DozeLog.REASON_SENSOR_QUICK_PICKUP, 100, 100, null);
+
+        // THEN don't request pulse
+        verify(mMachine, never()).requestPulse(anyInt());
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_NEW_DOZING_KEYGUARD_STATES)
+    public void quickPickup_whileAlreadyPulsingWithoutUI() {
+        // GIVEN device is already pulsing without UI
+        when(mMachine.getState()).thenReturn(DozeMachine.State.DOZE_PULSING_WITHOUT_UI);
+
+        // WHEN quick pick up is triggered
+        mTriggers.onSensor(DozeLog.REASON_SENSOR_QUICK_PICKUP, 100, 100, null);
+
+        // THEN don't request pulse
+        verify(mMachine, never()).requestPulse(anyInt());
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_NEW_DOZING_KEYGUARD_STATES)
+    public void quickPickup_whileAlreadyPulsingAuthUI() {
+        // GIVEN device is already pulsing auth UI
+        when(mMachine.getState()).thenReturn(DozeMachine.State.DOZE_PULSING_AUTH_UI);
+
+        // WHEN udpfs longpress is triggered
+        mTriggers.onSensor(DozeLog.REASON_SENSOR_QUICK_PICKUP, 100, 100, null);
+
+        // THEN don't request pulse
+        verify(mMachine, never()).requestPulse(anyInt());
+    }
+
+    @Test
+    public void udfpsLongpress() {
+        // GIVEN device is in doze
+        when(mMachine.getState()).thenReturn(DozeMachine.State.DOZE);
+
+        // WHEN udfps longpress up is triggered
+        mTriggers.onSensor(DozeLog.REASON_SENSOR_UDFPS_LONG_PRESS, 100, 100, null);
+
+        // THEN request pulse
+        verify(mMachine).requestPulse(DozeLog.REASON_SENSOR_UDFPS_LONG_PRESS);
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_NEW_DOZING_KEYGUARD_STATES)
+    public void udfpsLongpress_whileAlreadyPulsingWithoutUI() {
+        // GIVEN device is already pulsing auth UI
+        when(mMachine.getState()).thenReturn(DozeMachine.State.DOZE_PULSING_WITHOUT_UI);
+
+        // WHEN udpfs longpress is triggered
+        mTriggers.onSensor(DozeLog.PULSE_REASON_SENSOR_LONG_PRESS, 100, 100, null);
+
+        // THEN don't request pulse
+        verify(mMachine, never()).requestPulse(anyInt());
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_NEW_DOZING_KEYGUARD_STATES)
+    public void udfpsLongpress_whileAlreadyPulsingAuthUI() {
+        // GIVEN device is already pulsing auth UI
+        when(mMachine.getState()).thenReturn(DozeMachine.State.DOZE_PULSING_AUTH_UI);
+
+        // WHEN udpfs longpress is triggered
+        mTriggers.onSensor(DozeLog.PULSE_REASON_SENSOR_LONG_PRESS, 100, 100, null);
+
+        // THEN don't request pulse
+        verify(mMachine, never()).requestPulse(anyInt());
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_NEW_DOZING_KEYGUARD_STATES)
+    public void udfpsLongpress_whileAlreadyPulsing() {
+        // GIVEN device is already pulsing auth UI
+        when(mMachine.getState()).thenReturn(DozeMachine.State.DOZE_PULSING);
+
+        // WHEN quick pick up is triggered
+        mTriggers.onSensor(DozeLog.PULSE_REASON_SENSOR_LONG_PRESS, 100, 100, null);
+
+        // THEN don't request pulse
+        verify(mMachine, never()).requestPulse(anyInt());
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_NEW_DOZING_KEYGUARD_STATES)
+    public void fingerprintPulseShowAuthUI() {
+        // GIVEN device is in DOZE
+        mTriggers.transitionTo(UNINITIALIZED, DozeMachine.State.INITIALIZED);
+        mTriggers.transitionTo(DozeMachine.State.INITIALIZED, DozeMachine.State.DOZE);
+        when(mMachine.getState()).thenReturn(DozeMachine.State.DOZE);
+
+        // WHEN PULSE_REASON_FINGERPRINT_PULSE_SHOW_AUTH_UI is triggered
+        mHostCallbackCaptor.getValue().onFingerprintPulseWhileScreenOff(null);
+
+        // THEN request pulse
+        verify(mMachine).requestPulse(DozeLog.PULSE_REASON_FINGERPRINT_PULSE_SHOW_AUTH_UI);
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_NEW_DOZING_KEYGUARD_STATES)
+    public void fingerprintPulseShowAuthUI_whileAlreadyPulsingWithoutUI() {
+        // GIVEN device is pulsing showing no UI
+        mTriggers.transitionTo(UNINITIALIZED, DozeMachine.State.INITIALIZED);
+        mTriggers.transitionTo(DozeMachine.State.INITIALIZED,
+                DozeMachine.State.DOZE_PULSING_WITHOUT_UI);
+        when(mMachine.getState()).thenReturn(DozeMachine.State.DOZE_PULSING_WITHOUT_UI);
+
+        // WHEN PULSE_REASON_FINGERPRINT_PULSE_SHOW_AUTH_UI is triggered
+        mHostCallbackCaptor.getValue().onFingerprintPulseWhileScreenOff(null);
+
+        // THEN immediately requests state
+        verify(mMachine).requestState(DozeMachine.State.DOZE_PULSING_AUTH_UI);
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_NEW_DOZING_KEYGUARD_STATES)
+    public void fingerprintPulseShowAuthUI_whileAlreadyPulsing() {
+        // GIVEN device is pulsing showing no UI
+        mTriggers.transitionTo(UNINITIALIZED, DozeMachine.State.INITIALIZED);
+        mTriggers.transitionTo(DozeMachine.State.INITIALIZED, DozeMachine.State.DOZE_PULSING);
+        when(mMachine.getState()).thenReturn(DozeMachine.State.DOZE_PULSING);
+
+        // WHEN PULSE_REASON_FINGERPRINT_PULSE_SHOW_AUTH_UI is triggered
+        mHostCallbackCaptor.getValue().onFingerprintPulseWhileScreenOff(null);
+
+        // THEN doesn't request a new state since device is already pulsing
+        verify(mMachine, never()).requestState(any());
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_NEW_DOZING_KEYGUARD_STATES)
+    public void fingerprintPulseShowAuthUI_whileAlreadyShowingAuthUI() {
+        // GIVEN device is pulsing showing no UI
+        mTriggers.transitionTo(UNINITIALIZED, DozeMachine.State.INITIALIZED);
+        mTriggers.transitionTo(DozeMachine.State.INITIALIZED,
+                DozeMachine.State.DOZE_PULSING_AUTH_UI);
+        when(mMachine.getState()).thenReturn(DozeMachine.State.DOZE_PULSING_AUTH_UI);
+
+        // WHEN PULSE_REASON_FINGERPRINT_PULSE_SHOW_AUTH_UI is triggered
+        mHostCallbackCaptor.getValue().onFingerprintPulseWhileScreenOff(null);
+
+        // THEN doesn't request a new state since device is already showing auth ui
+        verify(mMachine, never()).requestState(any());
+    }
+
+
+    @Test
+    @EnableFlags(Flags.FLAG_NEW_DOZING_KEYGUARD_STATES)
+    public void fingerprintPulseShowFullUI_whileAlreadyPulsingWithoutUI() {
+        // GIVEN device is pulsing showing no UI
+        mTriggers.transitionTo(UNINITIALIZED, DozeMachine.State.INITIALIZED);
+        mTriggers.transitionTo(DozeMachine.State.INITIALIZED,
+                DozeMachine.State.DOZE_PULSING_WITHOUT_UI);
+        when(mMachine.getState()).thenReturn(DozeMachine.State.DOZE_PULSING_WITHOUT_UI);
+
+        // WHEN PULSE_REASON_FINGERPRINT_PULSE_SHOW_AUTH_UI is triggered
+        mHostCallbackCaptor.getValue().onFingerprintPulseWhileScreenOff(null);
+        mHostCallbackCaptor.getValue().onFingerprintPulseWhileScreenOff(null);
+        mHostCallbackCaptor.getValue().onFingerprintPulseWhileScreenOff(null);
+
+        // THEN immediately requests state
+        verify(mMachine).requestState(DozeMachine.State.DOZE_PULSING);
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_NEW_DOZING_KEYGUARD_STATES)
+    public void fingerprintPulseShowFullUI_whileAlreadyPulsing() {
+        // GIVEN device is pulsing showing no UI
+        mTriggers.transitionTo(UNINITIALIZED, DozeMachine.State.INITIALIZED);
+        mTriggers.transitionTo(DozeMachine.State.INITIALIZED, DozeMachine.State.DOZE_PULSING);
+        when(mMachine.getState()).thenReturn(DozeMachine.State.DOZE_PULSING);
+
+        // WHEN PULSE_REASON_FINGERPRINT_PULSE_SHOW_FULL_UI is triggered
+        mHostCallbackCaptor.getValue().onFingerprintPulseWhileScreenOff(null);
+        mHostCallbackCaptor.getValue().onFingerprintPulseWhileScreenOff(null);
+        mHostCallbackCaptor.getValue().onFingerprintPulseWhileScreenOff(null);
+
+        // THEN doesn't request a new state since device is already pulsing
+        verify(mMachine, never()).requestState(any());
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_NEW_DOZING_KEYGUARD_STATES)
+    public void fingerprintPulseShowFullUI_whileAlreadyShowingAuthUI() {
+        // GIVEN device is pulsing showing auth UI
+        mTriggers.transitionTo(UNINITIALIZED, DozeMachine.State.INITIALIZED);
+        mTriggers.transitionTo(DozeMachine.State.INITIALIZED,
+                DozeMachine.State.DOZE_PULSING_AUTH_UI);
+        when(mMachine.getState()).thenReturn(DozeMachine.State.DOZE_PULSING_AUTH_UI);
+
+        // WHEN PULSE_REASON_FINGERPRINT_PULSE_SHOW_FULL_UI is triggered
+        mHostCallbackCaptor.getValue().onFingerprintPulseWhileScreenOff(null);
+        mHostCallbackCaptor.getValue().onFingerprintPulseWhileScreenOff(null);
+        mHostCallbackCaptor.getValue().onFingerprintPulseWhileScreenOff(null);
+
+        // THEN immediately requests state
+        verify(mMachine).requestState(DozeMachine.State.DOZE_PULSING);
     }
 
     @Test
@@ -527,11 +729,6 @@ public class DozeTriggersTest extends SysuiTestCase {
     public void testOnUltrasonicScreenOffUnlock_shouldNotRequestPulseImmediately() {
         when(mMachine.getState()).thenReturn(DozeMachine.State.DOZE);
 
-        ArgumentCaptor<Boolean> boolCaptor = ArgumentCaptor.forClass(Boolean.class);
-        doAnswer(invocation ->
-                when(mHost.isPulsePending()).thenReturn(boolCaptor.getValue())
-        ).when(mHost).setPulsePending(boolCaptor.capture());
-
         when(mKeyguardUpdateMonitor.isFingerprintLockedOut()).thenReturn(false);
         when(mKeyguardUpdateMonitor.isUnlockingWithFingerprintAllowed()).thenReturn(true);
         when(mHost.isCollectingUsUdfpsScreenOffPulseEvents()).thenReturn(true);
@@ -550,11 +747,6 @@ public class DozeTriggersTest extends SysuiTestCase {
     })
     public void testOnUltrasonicScreenOffUnlock_shouldRequestPulseImmediately_fpsLockout() {
         when(mMachine.getState()).thenReturn(DozeMachine.State.DOZE);
-
-        ArgumentCaptor<Boolean> boolCaptor = ArgumentCaptor.forClass(Boolean.class);
-        doAnswer(invocation ->
-                when(mHost.isPulsePending()).thenReturn(boolCaptor.getValue())
-        ).when(mHost).setPulsePending(boolCaptor.capture());
 
         when(mKeyguardUpdateMonitor.isFingerprintLockedOut()).thenReturn(true);
         when(mKeyguardUpdateMonitor.isUnlockingWithFingerprintAllowed()).thenReturn(true);
@@ -575,11 +767,6 @@ public class DozeTriggersTest extends SysuiTestCase {
     public void testOnUltrasonicScreenOffUnlock_shouldRequestPulseImmediately_fpsNotAllowed() {
         when(mMachine.getState()).thenReturn(DozeMachine.State.DOZE);
 
-        ArgumentCaptor<Boolean> boolCaptor = ArgumentCaptor.forClass(Boolean.class);
-        doAnswer(invocation ->
-                when(mHost.isPulsePending()).thenReturn(boolCaptor.getValue())
-        ).when(mHost).setPulsePending(boolCaptor.capture());
-
         when(mKeyguardUpdateMonitor.isFingerprintLockedOut()).thenReturn(false);
         when(mKeyguardUpdateMonitor.isUnlockingWithFingerprintAllowed()).thenReturn(false);
         when(mHost.isCollectingUsUdfpsScreenOffPulseEvents()).thenReturn(true);
@@ -599,11 +786,6 @@ public class DozeTriggersTest extends SysuiTestCase {
     public void testOnUltrasonicScreenOffUnlock_shouldRequestPulseImmediately_notCollecting() {
         when(mMachine.getState()).thenReturn(DozeMachine.State.DOZE);
 
-        ArgumentCaptor<Boolean> boolCaptor = ArgumentCaptor.forClass(Boolean.class);
-        doAnswer(invocation ->
-                when(mHost.isPulsePending()).thenReturn(boolCaptor.getValue())
-        ).when(mHost).setPulsePending(boolCaptor.capture());
-
         when(mKeyguardUpdateMonitor.isFingerprintLockedOut()).thenReturn(false);
         when(mKeyguardUpdateMonitor.isUnlockingWithFingerprintAllowed()).thenReturn(true);
         when(mHost.isCollectingUsUdfpsScreenOffPulseEvents()).thenReturn(false);
@@ -620,11 +802,6 @@ public class DozeTriggersTest extends SysuiTestCase {
     @DisableFlags(Flags.FLAG_UDFPS_SCREEN_OFF_UNLOCK_FLICKER)
     public void testOnUltrasonicScreenOffUnlock_shouldRequestPulseImmediately_flagDisabled() {
         when(mMachine.getState()).thenReturn(DozeMachine.State.DOZE);
-
-        ArgumentCaptor<Boolean> boolCaptor = ArgumentCaptor.forClass(Boolean.class);
-        doAnswer(invocation ->
-                when(mHost.isPulsePending()).thenReturn(boolCaptor.getValue())
-        ).when(mHost).setPulsePending(boolCaptor.capture());
 
         when(mKeyguardUpdateMonitor.isFingerprintLockedOut()).thenReturn(false);
         when(mKeyguardUpdateMonitor.isUnlockingWithFingerprintAllowed()).thenReturn(true);
