@@ -38,9 +38,6 @@ namespace flags {
 constexpr bool high_contrast_text_small_text_rect() {
     return false;
 }
-constexpr bool high_contrast_text_inner_text_color() {
-    return false;
-}
 }  // namespace flags
 #endif // __linux__
 
@@ -162,12 +159,8 @@ public:
             // inner
             gDrawTextBlobMode = DrawTextBlobMode::HctInner;
             Paint innerPaint(paint);
-            if (flags::high_contrast_text_inner_text_color()) {
-                adjustHighContrastInnerTextColor(&lab);
-                simplifyPaint(uirenderer::LabToSRGB(lab, 1.0f), &innerPaint);
-            } else {
-                simplifyPaint(darken ? SkColors::kBlack : SkColors::kWhite, &innerPaint);
-            }
+            adjustHighContrastInnerTextColor(&lab);
+            simplifyPaint(uirenderer::LabToSRGB(lab, 1.0f), &innerPaint);
             innerPaint.setStyle(SkPaint::kFill_Style);
             canvas->drawGlyphs(glyphFunc, glyphCount, innerPaint, x, y, totalAdvance);
             gDrawTextBlobMode = DrawTextBlobMode::Normal;
