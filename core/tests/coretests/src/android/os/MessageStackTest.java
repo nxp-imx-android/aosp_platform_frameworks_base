@@ -105,6 +105,7 @@ public final class MessageStackTest {
         Handler h = new Handler(Looper.getMainLooper());
         int removeWhat = 1;
         int keepWhat = 2;
+        int neverPushedWhat = 3;
 
         // Interleave to-remove and to-keep messages.
         for (int i = 0; i < 5; i++) {
@@ -112,8 +113,12 @@ public final class MessageStackTest {
             stack.pushMessage(Message.obtain(h, keepWhat));
         }
         stack.heapSweep();
-        stack.updateFreelist(new MessageQueue.MatchHandlerWhatAndObject(),
-                h, removeWhat, null, null, 0);
+        assertTrue(stack.updateFreelist(new MessageQueue.MatchHandlerWhatAndObject(),
+                h, removeWhat, null, null, 0));
+
+        // Try deleting a message we never pushed
+        assertFalse(stack.updateFreelist(new MessageQueue.MatchHandlerWhatAndObject(),
+                h, neverPushedWhat, null, null, 0));
 
         assertEquals(5, stack.freelistSizeForTest());
         stack.drainFreelist();
