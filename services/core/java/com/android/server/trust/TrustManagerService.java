@@ -1162,8 +1162,7 @@ public class TrustManagerService extends SystemService {
         for (int i = 0; i < mActiveAgents.size(); i++) {
             AgentInfo info = mActiveAgents.valueAt(i);
             if (info.agent.isConnected()) {
-                info.agent.updateDevicePolicyFeatures();
-                changed = true;
+                changed |= info.agent.updateDevicePolicyFeatures();
             }
         }
         if (changed) {
