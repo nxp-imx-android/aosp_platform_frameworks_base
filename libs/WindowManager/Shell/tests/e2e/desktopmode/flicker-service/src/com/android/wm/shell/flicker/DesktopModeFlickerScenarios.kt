@@ -549,8 +549,7 @@ class DesktopModeFlickerScenarios {
                     } +
                     listOf(
                         AppWindowBecomesInvisible(DESKTOP_MODE_APP),
-                        AppWindowOnTopAtEnd(LAUNCHER),
-                        AppWindowIsInvisibleAtEnd(DESKTOP_WALLPAPER),
+                        AppWindowOnTopAtEnd(DESKTOP_WALLPAPER),
                     ).associateBy({ it }, { AssertionInvocationGroup.BLOCKING })
             )
         val OPEN_UNLIMITED_APPS =
