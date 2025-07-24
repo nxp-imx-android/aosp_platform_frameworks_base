@@ -1440,7 +1440,7 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
         mDesktopModeUiEventLogger.log(mTaskInfo,
                 DesktopUiEventEnum.DESKTOP_WINDOW_MAXIMIZE_BUTTON_REVEAL_MENU);
         mMaximizeMenu = mMaximizeMenuFactory.create(mSyncQueue, mRootTaskDisplayAreaOrganizer,
-                mDisplayController, mWindowDecorationActions, mTaskInfo, mContext,
+                mDisplayController, mWindowDecorationActions, mTaskInfo, mDecorWindowContext,
                 (width, height) -> calculateMaximizeMenuPosition(width, height),
                 mSurfaceControlTransactionSupplier, mDesktopModeUiEventLogger);
 
