@@ -46,8 +46,8 @@ class ResolutionMechanismTest {
 
         val resolvedPolicy = FlagUnion().resolve(adminPolicies)
 
-        assert(resolvedPolicy != null)
-        assert(resolvedPolicy?.resolvedPolicyValue == INT_POLICY_AB)
+        assertThat(resolvedPolicy).isNotNull()
+        assertThat(resolvedPolicy?.resolvedPolicyValue).isEqualTo(INT_POLICY_AB)
         assertThat(resolvedPolicy?.contributingAdmins)
             .containsExactly(SYSTEM_ADMIN, DEVICE_OWNER_ADMIN)
     }
@@ -60,8 +60,8 @@ class ResolutionMechanismTest {
 
         val resolvedPolicy = MostRecent<Integer>().resolve(adminPolicies)
 
-        assert(resolvedPolicy != null)
-        assert(resolvedPolicy?.resolvedPolicyValue == INT_POLICY_B)
+        assertThat(resolvedPolicy).isNotNull()
+        assertThat(resolvedPolicy?.resolvedPolicyValue).isEqualTo(INT_POLICY_B)
         assertThat(resolvedPolicy?.contributingAdmins).containsExactly(DEVICE_OWNER_ADMIN)
     }
 
@@ -75,7 +75,7 @@ class ResolutionMechanismTest {
             MostRestrictive<Boolean>(listOf(BooleanPolicyValue(false), BooleanPolicyValue(true)))
                 .resolve(adminPolicies)
 
-        assert(resolvedPolicy != null)
+        assertThat(resolvedPolicy).isNotNull()
         resolvedPolicy?.resolvedPolicyValue?.value?.let { assertFalse(it) }
         assertThat(resolvedPolicy?.contributingAdmins).containsExactly(SYSTEM_ADMIN)
     }
@@ -91,7 +91,7 @@ class ResolutionMechanismTest {
             MostRestrictive(listOf(BooleanPolicyValue(false), BooleanPolicyValue(true)))
                 .resolve(adminPolicies)
 
-        assert(resolvedPolicy != null)
+        assertThat(resolvedPolicy).isNotNull()
         resolvedPolicy?.resolvedPolicyValue?.value?.let { assertFalse(it) }
         assertThat(resolvedPolicy?.contributingAdmins)
             .containsExactly(SYSTEM_ADMIN, DEVICE_ADMIN)
@@ -111,7 +111,7 @@ class ResolutionMechanismTest {
 
         val resolvedPolicy = StringSetIntersection().resolve(adminPolicies)
 
-        assert(resolvedPolicy != null)
+        assertThat(resolvedPolicy).isNotNull()
         assertThat(resolvedPolicy?.resolvedPolicyValue?.value).containsExactly("package1")
         assertThat(resolvedPolicy?.contributingAdmins)
             .containsExactly(SYSTEM_ADMIN, DEVICE_OWNER_ADMIN)
@@ -131,7 +131,7 @@ class ResolutionMechanismTest {
 
         val resolvedPolicy = PackageSetUnion().resolve(adminPolicies)
 
-        assert(resolvedPolicy != null)
+        assertThat(resolvedPolicy).isNotNull()
         assertThat(resolvedPolicy?.resolvedPolicyValue?.value)
             .containsExactly("package1", "package2", "package3")
         assertThat(resolvedPolicy?.contributingAdmins)
@@ -147,8 +147,8 @@ class ResolutionMechanismTest {
         val resolvedPolicy =
             TopPriority<Integer>(listOf(EnforcingAdmin.DPC_AUTHORITY)).resolve(adminPolicies)
 
-        assert(resolvedPolicy != null)
-        assert(resolvedPolicy?.resolvedPolicyValue == INT_POLICY_B)
+        assertThat(resolvedPolicy).isNotNull()
+        assertThat(resolvedPolicy?.resolvedPolicyValue).isEqualTo(INT_POLICY_B)
         assertThat(resolvedPolicy?.contributingAdmins).containsExactly(DEVICE_OWNER_ADMIN)
     }
 
