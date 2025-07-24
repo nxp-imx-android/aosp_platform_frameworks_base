@@ -330,11 +330,13 @@ public abstract class DevicePolicyManagerInternal {
     public abstract List<Bundle> getApplicationRestrictionsPerAdminForUser(
             String packageName, @UserIdInt int userId);
 
-    /**
-     *  Returns a list of users who set a user restriction on a given user.
-     */
-    public abstract List<EnforcingUser> getUserRestrictionSources(String restriction,
-                @UserIdInt int userId);
+    /** Returns a list of users who set a user restriction on a given user. */
+    public abstract List<EnforcingUser> getUserRestrictionSources(
+            String restriction, @UserIdInt int userId);
+
+    /** Sets a user restriction on a given user. */
+    public abstract void setUserRestrictionForUser(
+            @NonNull String systemEntity, String key, boolean enabled, @UserIdInt int targetUser);
 
     /**
      * Enforces resolved security logging policy, should only be invoked from device policy engine.
@@ -352,9 +354,14 @@ public abstract class DevicePolicyManagerInternal {
     public abstract void setInternalEventsCallback(
             @Nullable Consumer<List<SecurityLog.SecurityEvent>> callback);
 
-    /**
-     * Removes all policies associated with admins with `packageName` and `userId`.
-     */
+    /** Removes all policies associated with admins with the given `packageNames` and `userId`. */
     public abstract void removePoliciesForAdmins(
-            @NonNull String packageName, @UserIdInt int userId);
+            @UserIdInt int userId, @NonNull List<String> packageNames);
+
+    /**
+     * Removes all local policies for the given `userId` associated with admins with the given
+     * `systemEntities` authorities.
+     */
+    public abstract void removeLocalPoliciesForSystemEntities(
+            @UserIdInt int userId, @NonNull List<String> systemEntities);
 }

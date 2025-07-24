@@ -16463,6 +16463,16 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
         }
 
         @Override
+        public void setUserRestrictionForUser(
+                @NonNull String systemEntity,
+                String key,
+                boolean enabled,
+                @UserIdInt int targetUser) {
+            DevicePolicyManagerService.this.setUserRestrictionForUser(
+                    systemEntity, key, enabled, targetUser);
+        }
+
+        @Override
         public void enforceSecurityLoggingPolicy(boolean enabled) {
             Boolean auditLoggingEnabled = mDevicePolicyEngine.getResolvedPolicy(
                     PolicyDefinition.AUDIT_LOGGING, UserHandle.USER_ALL);
@@ -16484,8 +16494,14 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
 
         @Override
         public void removePoliciesForAdmins(
-                @NonNull String packageName, @UserIdInt int userId) {
-            mDevicePolicyEngine.removePoliciesForAdmins(packageName, userId);
+                @UserIdInt int userId, @NonNull List<String> packageNames) {
+            mDevicePolicyEngine.removePoliciesForAdmins(userId, packageNames);
+        }
+
+        @Override
+        public void removeLocalPoliciesForSystemEntities(
+                @UserIdInt int userId, @NonNull List<String> systemEntities) {
+            mDevicePolicyEngine.removeLocalPoliciesForSystemEntities(userId, systemEntities);
         }
 
         private List<EnforcingUser> getEnforcingUsers(Set<EnforcingAdmin> admins) {

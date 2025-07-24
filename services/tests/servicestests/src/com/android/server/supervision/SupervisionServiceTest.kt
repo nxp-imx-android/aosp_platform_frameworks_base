@@ -79,6 +79,7 @@ import org.mockito.Mockito.timeout
 import org.mockito.junit.MockitoJUnit
 import org.mockito.junit.MockitoRule
 import org.mockito.kotlin.any
+import org.mockito.kotlin.argThat
 import org.mockito.kotlin.clearInvocations
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
@@ -311,6 +312,11 @@ class SupervisionServiceTest {
         setSupervisionEnabledForUser(USER_ID, false)
 
         assertThat(service.isSupervisionEnabledForUser(USER_ID)).isFalse()
+        verify(mockDpmInternal)
+            .removePoliciesForAdmins(
+                eq(USER_ID),
+                argThat { toSet() == supervisionRoleHolders.values.toSet() },
+            )
         for (packageName in supervisionRoleHolders.values) {
             verify(mockPackageManagerInternal)
                 .unsuspendForSuspendingPackage(eq(packageName), eq(USER_ID), eq(USER_ID))
@@ -400,6 +406,7 @@ class SupervisionServiceTest {
         assertThat(service.createConfirmSupervisionCredentialsIntent(context.getUserId())).isNull()
     }
 
+    @Test
     fun shouldAllowBypassingSupervisionRoleQualification_returnsTrue() {
         assertThat(service.isSupervisionEnabledForUser(USER_ID)).isFalse()
         assertThat(service.shouldAllowBypassingSupervisionRoleQualification()).isTrue()
