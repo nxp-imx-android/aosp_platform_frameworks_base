@@ -138,6 +138,12 @@
     <string name="screenrecord_stop_dialog_message" msgid="6262768207331626817">"ನೀವು ಪ್ರಸ್ತುತ ನಿಮ್ಮ ಸಂಪೂರ್ಣ ಸ್ಕ್ರೀನ್ ಅನ್ನು ರೆಕಾರ್ಡ್ ಮಾಡುತ್ತಿದ್ದೀರಿ"</string>
     <string name="screenrecord_stop_dialog_message_specific_app" msgid="5995770227684523244">"ನೀವು ಪ್ರಸ್ತುತ <xliff:g id="APP_NAME">%1$s</xliff:g> ಅನ್ನು ರೆಕಾರ್ಡ್ ಮಾಡುತ್ತಿದ್ದೀರಿ"</string>
     <string name="screenrecord_stop_dialog_button" msgid="2883812564938194350">"ರೆಕಾರ್ಡಿಂಗ್ ನಿಲ್ಲಿಸಿ"</string>
+    <!-- no translation found for screen_record_record_device_audio_label (5363057443124085198) -->
+    <skip />
+    <!-- no translation found for screen_record_record_microphone_label (4685753707185662381) -->
+    <skip />
+    <!-- no translation found for screen_record_should_show_touches_label (2203962566795833783) -->
+    <skip />
     <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"ರೆಕಾರ್ಡ್ ಮಾಡಲು ಆ್ಯಪ್ ಅನ್ನು ಆಯ್ಕೆಮಾಡಿ"</string>
     <string name="screen_capture_fullscreen_screenshot_button" msgid="4255912593013592954">"ಸಂಪೂರ್ಣ ಸ್ಕ್ರೀನ್ ಕ್ಯಾಪ್ಚರ್ ಮಾಡಿ"</string>
     <string name="screen_capture_region_selection_button" msgid="4437546351856914639">"ಆಯ್ದ ಪ್ರದೇಶವನ್ನು ಕ್ಯಾಪ್ಚರ್ ಮಾಡಿ"</string>
@@ -1507,7 +1513,17 @@
     <string name="connected_display_dialog_dual_display_stop_warning" msgid="4174707498892447947">"ನಿಮ್ಮ ಒಳಗಿನ ಡಿಸ್‌ಪ್ಲೇ ಅನ್ನು ಪ್ರತಿಬಿಂಬಿಸಲಾಗುತ್ತದೆ. ನಿಮ್ಮ ಫ್ರಂಟ್ ಡಿಸ್‌ಪ್ಲೇ ಅನ್ನು ಆಫ್ ಮಾಡಲಾಗುತ್ತದೆ."</string>
     <string name="mirror_display" msgid="2515262008898122928">"ಮಿರರ್ ಡಿಸ್‌ಪ್ಲೇ"</string>
     <string name="dismiss_dialog" msgid="2195508495854675882">"ವಜಾಗೊಳಿಸಿ"</string>
+    <!-- no translation found for connected_display_dialog_title (307028192512988669) -->
+    <skip />
+    <!-- no translation found for remember_choice (2063510191006325221) -->
+    <skip />
+    <!-- no translation found for start_desktop_mode (5459815912537830841) -->
+    <skip />
+    <!-- no translation found for start_mirroring (3611044878130481882) -->
+    <skip />
     <string name="connected_display_icon_desc" msgid="6373560639989971997">"ಡಿಸ್‌ಪ್ಲೇ ಕನೆಕ್ಟ್ ಆಗಿದೆ"</string>
+    <!-- no translation found for connected_display_extended_mode_text (2457269692913653696) -->
+    <skip />
     <string name="privacy_dialog_title" msgid="5201413527644766025">"ಮೈಕ್ರೊಫೋನ್‌, ಕ್ಯಾಮರಾ ಹಾಗೂ ಸ್ಥಳ"</string>
     <string name="privacy_dialog_summary" msgid="2458769652125995409">"ಇತ್ತೀಚಿನ ಆ್ಯಪ್ ಬಳಕೆ"</string>
     <string name="privacy_dialog_more_button" msgid="7610604080293562345">"ಇತ್ತೀಚಿನ ಆ್ಯಕ್ಸೆಸ್ ಅನ್ನು ನೋಡಿ"</string>

@@ -138,6 +138,9 @@
     <string name="screenrecord_stop_dialog_message" msgid="6262768207331626817">"מתבצעת כרגע הקלטה של כל המסך שלך"</string>
     <string name="screenrecord_stop_dialog_message_specific_app" msgid="5995770227684523244">"מתבצעת כרגע הקלטה של <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
     <string name="screenrecord_stop_dialog_button" msgid="2883812564938194350">"הפסקת ההקלטה"</string>
+    <string name="screen_record_record_device_audio_label" msgid="5363057443124085198">"הקלטת אודיו מהמכשיר"</string>
+    <string name="screen_record_record_microphone_label" msgid="4685753707185662381">"הקלטת המיקרופון"</string>
+    <string name="screen_record_should_show_touches_label" msgid="2203962566795833783">"הצגת נגיעות"</string>
     <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"בחירת אפליקציה להקלטה"</string>
     <string name="screen_capture_fullscreen_screenshot_button" msgid="4255912593013592954">"צילום של כל המסך"</string>
     <string name="screen_capture_region_selection_button" msgid="4437546351856914639">"צילום האזור שנבחר"</string>
@@ -853,8 +856,7 @@
     <string name="notification_guts_recs_summary" msgid="8391881843238947007">"ניוזלטרים, המלצות על מדיה ועוד"</string>
     <string name="notification_onboarding_summaries_turn_on" msgid="5050003857531272655">"הפעלה"</string>
     <string name="notification_onboarding_summaries_message" msgid="6061524903176459064">"עכשיו אפשר לסכם את השיחות הארוכות כדי לקבל תקצירים מהירים"</string>
-    <!-- no translation found for notification_onboarding_bundles_message (4612908213178622912) -->
-    <skip />
+    <string name="notification_onboarding_bundles_message" msgid="4612908213178622912">"הכלי לארגון התראות מקבץ ומשתיק התראות פחות חשובות. אפשר להוסיף עוד קטגוריות בהגדרות."</string>
     <string name="notification_bundle_header_counter" msgid="5515532701569242265">"{count,plural, =1{התראה אחת}one{‫# התראות}two{‫# התראות}other{‫# התראות}}"</string>
     <string name="inline_done_button" msgid="6043094985588909584">"סיום"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"אישור"</string>
@@ -1101,8 +1103,7 @@
     <string name="accessibility_key_gesture_dialog_content" msgid="4519838108423437794">"מקש הפעולה "<annotation id="action_key_icon">"סמל"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> הוא מקש הקיצור לשימוש בתכונה <xliff:g id="ID_3">^3</xliff:g>. <xliff:g id="ID_4">^4</xliff:g>"</string>
     <string name="accessibility_key_gesture_dialog_magnifier_intro" msgid="627023269951856071">"כך אפשר להגדיל במהירות למסך כדי להגדיל את התוכן, כדי לראות טוב יותר את התוכן."</string>
     <string name="accessibility_key_gesture_dialog_talkback_intro" msgid="1617808784388544741">"‫<xliff:g id="ID_1">%1$s</xliff:g> הוא קורא מסך שמאפשר לשמוע הקראה של פריטים. זה יכול להועיל לאנשים שמתקשים לראות את המסך."</string>
-    <!-- no translation found for accessibility_key_gesture_dialog_va_intro (4709198503441288289) -->
-    <skip />
+    <string name="accessibility_key_gesture_dialog_va_intro" msgid="4709198503441288289">"עם <xliff:g id="ID_1">%1$s</xliff:g> אפשר לשלוט במכשיר באמצעות הקול."</string>
     <string name="accessibility_key_gesture_dialog_positive_button_text" msgid="3670746017523589293">"הפעלה"</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"מסך נעילה"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"בתהליך כיבוי…"</string>
@@ -1509,7 +1510,12 @@
     <string name="connected_display_dialog_dual_display_stop_warning" msgid="4174707498892447947">"המסך הפנימי שלך ישוכפל. המסך החיצוני שלך יכובה."</string>
     <string name="mirror_display" msgid="2515262008898122928">"תצוגת מראה"</string>
     <string name="dismiss_dialog" msgid="2195508495854675882">"סגירה"</string>
+    <string name="connected_display_dialog_title" msgid="307028192512988669">"חיבור לתצוגה חיצונית"</string>
+    <string name="remember_choice" msgid="2063510191006325221">"לא צריך לשאול אותי שוב"</string>
+    <string name="start_desktop_mode" msgid="5459815912537830841">"שולחן העבודה"</string>
+    <string name="start_mirroring" msgid="3611044878130481882">"מראה"</string>
     <string name="connected_display_icon_desc" msgid="6373560639989971997">"המסך מחובר"</string>
+    <string name="connected_display_extended_mode_text" msgid="2457269692913653696">"מחובר לתצוגה חיצונית"</string>
     <string name="privacy_dialog_title" msgid="5201413527644766025">"מיקרופון, מצלמה ומיקום"</string>
     <string name="privacy_dialog_summary" msgid="2458769652125995409">"נעשה שימוש לאחרונה באפליקציות"</string>
     <string name="privacy_dialog_more_button" msgid="7610604080293562345">"צפייה בהרשאות הגישה האחרונות"</string>

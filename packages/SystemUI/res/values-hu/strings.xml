@@ -138,6 +138,12 @@
     <string name="screenrecord_stop_dialog_message" msgid="6262768207331626817">"Jelenleg a teljes képernyőről felvételt készít"</string>
     <string name="screenrecord_stop_dialog_message_specific_app" msgid="5995770227684523244">"Jelenleg a következőről készít felvételt: <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
     <string name="screenrecord_stop_dialog_button" msgid="2883812564938194350">"Felvétel leállítása"</string>
+    <!-- no translation found for screen_record_record_device_audio_label (5363057443124085198) -->
+    <skip />
+    <!-- no translation found for screen_record_record_microphone_label (4685753707185662381) -->
+    <skip />
+    <!-- no translation found for screen_record_should_show_touches_label (2203962566795833783) -->
+    <skip />
     <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"Válassza ki a felvenni kívánt alkalmazást"</string>
     <string name="screen_capture_fullscreen_screenshot_button" msgid="4255912593013592954">"Teljes képernyő rögzítése"</string>
     <string name="screen_capture_region_selection_button" msgid="4437546351856914639">"Kijelölt terület rögzítése"</string>
@@ -1507,7 +1513,17 @@
     <string name="connected_display_dialog_dual_display_stop_warning" msgid="4174707498892447947">"A belső kijelző tükrözve lesz. Az elülső kijelző ki lesz kapcsolva."</string>
     <string name="mirror_display" msgid="2515262008898122928">"Kijelző tükrözése"</string>
     <string name="dismiss_dialog" msgid="2195508495854675882">"Elvetés"</string>
+    <!-- no translation found for connected_display_dialog_title (307028192512988669) -->
+    <skip />
+    <!-- no translation found for remember_choice (2063510191006325221) -->
+    <skip />
+    <!-- no translation found for start_desktop_mode (5459815912537830841) -->
+    <skip />
+    <!-- no translation found for start_mirroring (3611044878130481882) -->
+    <skip />
     <string name="connected_display_icon_desc" msgid="6373560639989971997">"Kijelző csatlakoztatva"</string>
+    <!-- no translation found for connected_display_extended_mode_text (2457269692913653696) -->
+    <skip />
     <string name="privacy_dialog_title" msgid="5201413527644766025">"Mikrofon, kamera és hely"</string>
     <string name="privacy_dialog_summary" msgid="2458769652125995409">"Legutóbbi alkalmazáshasználat"</string>
     <string name="privacy_dialog_more_button" msgid="7610604080293562345">"Legutóbbi hozzáférés"</string>
