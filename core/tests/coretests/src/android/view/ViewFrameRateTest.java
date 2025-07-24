@@ -1246,33 +1246,33 @@ public class ViewFrameRateTest {
         int[] twoPairs = {800, 80, 300, 30};
         int[] threePairs = {1000, 120, 800, 80, 600, 60};
 
-        int[][] mappings = View.parseFrameRateMapping("");
+        int[][] mappings = View.NoPreloadHolder.parseFrameRateMapping("");
         assertTrue(mappings == null);
 
-        mappings = View.parseFrameRateMapping("::");
+        mappings = View.NoPreloadHolder.parseFrameRateMapping("::");
         assertTrue(mappings == null);
 
-        mappings = View.parseFrameRateMapping("80@800:30@300");
+        mappings = View.NoPreloadHolder.parseFrameRateMapping("80@800:30@300");
         for (int i = 0; i < twoPairs.length; i++) {
             assertEquals(twoPairs[i], mappings[i / 2][i % 2]);
         }
 
-        mappings = View.parseFrameRateMapping("80@800:60@600:120@1000");
+        mappings = View.NoPreloadHolder.parseFrameRateMapping("80@800:60@600:120@1000");
         for (int i = 0; i < threePairs.length; i++) {
             assertEquals(threePairs[i], mappings[i / 2][i % 2]);
         }
 
-        mappings = View.parseFrameRateMapping("80@@800:60@@@600:120@1000");
+        mappings = View.NoPreloadHolder.parseFrameRateMapping("80@@800:60@@@600:120@1000");
         for (int i = 0; i < threePairs.length; i++) {
             assertEquals(threePairs[i], mappings[i / 2][i % 2]);
         }
 
-        mappings = View.parseFrameRateMapping(":120@1000:::60@600::80@800:");
+        mappings = View.NoPreloadHolder.parseFrameRateMapping(":120@1000:::60@600::80@800:");
         for (int i = 0; i < threePairs.length; i++) {
             assertEquals(threePairs[i], mappings[i / 2][i % 2]);
         }
 
-        mappings = View.parseFrameRateMapping(":120@@1000:::60@600::80@@@800:");
+        mappings = View.NoPreloadHolder.parseFrameRateMapping(":120@@1000:::60@600::80@@@800:");
         for (int i = 0; i < threePairs.length; i++) {
             assertEquals(threePairs[i], mappings[i / 2][i % 2]);
         }
