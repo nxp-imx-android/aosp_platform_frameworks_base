@@ -21,6 +21,7 @@ import com.android.systemui.accessibility.domain.interactor.accessibilityInterac
 import com.android.systemui.biometrics.domain.interactor.udfpsOverlayInteractor
 import com.android.systemui.biometrics.udfpsUtils
 import com.android.systemui.deviceentry.domain.interactor.deviceEntryUdfpsInteractor
+import com.android.systemui.deviceentry.ui.viewmodel.AlternateBouncerUdfpsAccessibilityOverlayViewModel
 import com.android.systemui.deviceentry.ui.viewmodel.DeviceEntryUdfpsAccessibilityOverlayViewModel
 import com.android.systemui.keyguard.ui.viewmodel.deviceEntryForegroundIconViewModel
 import com.android.systemui.keyguard.ui.viewmodel.deviceEntryIconViewModel
@@ -36,5 +37,16 @@ val Kosmos.deviceEntryUdfpsAccessibilityOverlayViewModel by
             accessibilityInteractor = accessibilityInteractor,
             deviceEntryIconViewModel = deviceEntryIconViewModel,
             deviceEntryFgIconViewModel = deviceEntryForegroundIconViewModel,
+        )
+    }
+
+val Kosmos.alternateBouncerUdfpsAccessibilityOverlayViewModel by
+    Kosmos.Fixture {
+        AlternateBouncerUdfpsAccessibilityOverlayViewModel(
+            applicationContext = applicationContext,
+            deviceEntryUdfpsInteractor = deviceEntryUdfpsInteractor,
+            udfpsOverlayInteractor = udfpsOverlayInteractor,
+            udfpsUtils = udfpsUtils,
+            accessibilityInteractor = accessibilityInteractor,
         )
     }

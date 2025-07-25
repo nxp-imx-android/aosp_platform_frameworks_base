@@ -24,6 +24,7 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -50,6 +51,7 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.viewinterop.AndroidView
 import com.airbnb.lottie.compose.LottieAnimation
 import com.airbnb.lottie.compose.LottieClipSpec
 import com.airbnb.lottie.compose.LottieCompositionSpec
@@ -62,6 +64,9 @@ import com.android.compose.modifiers.width
 import com.android.systemui.Flags.bpColors
 import com.android.systemui.biometrics.BiometricAuthIconAssets
 import com.android.systemui.bouncer.shared.model.SecureLockDeviceBouncerActionButtonModel
+import com.android.systemui.deviceentry.ui.binder.UdfpsAccessibilityOverlayBinder
+import com.android.systemui.deviceentry.ui.view.UdfpsAccessibilityOverlay
+import com.android.systemui.deviceentry.ui.viewmodel.AlternateBouncerUdfpsAccessibilityOverlayViewModel
 import com.android.systemui.lifecycle.rememberActivated
 import com.android.systemui.res.R
 import com.android.systemui.securelockdevice.ui.viewmodel.SecureLockDeviceBiometricAuthContentViewModel
@@ -123,6 +128,7 @@ fun SecureLockDeviceContent(
             )
         }
 
+        val hasUdfps: Boolean = secureLockDeviceViewModel.iconViewModel.hasUdfpsState
         val iconSize: Pair<Int, Int> = secureLockDeviceViewModel.iconViewModel.iconSizeState
         val iconBottomPadding =
             dimensionResource(R.dimen.biometric_prompt_portrait_medium_bottom_padding)
@@ -135,6 +141,14 @@ fun SecureLockDeviceContent(
                         .padding(bottom = iconBottomPadding)
                         .width { iconSize.first }
                         .height { iconSize.second },
+            )
+        }
+
+        val shouldListenForBiometricAuth = secureLockDeviceViewModel.shouldListenForBiometricAuth
+        if (hasUdfps && shouldListenForBiometricAuth) {
+            UdfpsA11yOverlay(
+                viewModel = secureLockDeviceViewModel.udfpsAccessibilityOverlayViewModel,
+                modifier = Modifier.fillMaxHeight(),
             )
         }
     }
@@ -285,4 +299,20 @@ fun ButtonArea(
             )
         }
     }
+}
+
+@Composable
+fun UdfpsA11yOverlay(
+    viewModel: AlternateBouncerUdfpsAccessibilityOverlayViewModel,
+    modifier: Modifier = Modifier,
+) {
+    AndroidView(
+        factory = { context ->
+            val view =
+                UdfpsAccessibilityOverlay(context).apply { id = R.id.udfps_accessibility_overlay }
+            UdfpsAccessibilityOverlayBinder.bind(view, viewModel)
+            view
+        },
+        modifier = modifier,
+    )
 }
