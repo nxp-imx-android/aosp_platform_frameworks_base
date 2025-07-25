@@ -32,7 +32,6 @@ import android.hardware.input.VirtualTouchEvent;
  *
  * @hide
  */
- // TODO(b/419771135): Split IVirtualInputDevice into IVirtual[Mouse|Keyboard|etc]
 interface IVirtualInputDevice {
 
     /**
