@@ -64,6 +64,7 @@ static struct {
     jfieldID scaleFactor;
     jfieldID touchableRegion;
     jfieldID touchOcclusionMode;
+    jfieldID layerId;
     jfieldID ownerPid;
     jfieldID ownerUid;
     jfieldID packageName;
@@ -270,6 +271,7 @@ jobject android_view_InputWindowHandle_fromWindowInfo(JNIEnv* env,
 
     env->SetIntField(inputWindowHandle, gInputWindowHandleClassInfo.touchOcclusionMode,
                      static_cast<int32_t>(windowInfo.touchOcclusionMode));
+    env->SetIntField(inputWindowHandle, gInputWindowHandleClassInfo.layerId, windowInfo.id);
     env->SetIntField(inputWindowHandle, gInputWindowHandleClassInfo.ownerPid,
                      windowInfo.ownerPid.val());
     env->SetIntField(inputWindowHandle, gInputWindowHandleClassInfo.ownerUid,
@@ -379,6 +381,8 @@ int register_android_view_InputWindowHandle(JNIEnv* env) {
             "touchableRegion", "Landroid/graphics/Region;");
 
     GET_FIELD_ID(gInputWindowHandleClassInfo.touchOcclusionMode, clazz, "touchOcclusionMode", "I");
+
+    GET_FIELD_ID(gInputWindowHandleClassInfo.layerId, clazz, "layerId", "I");
 
     GET_FIELD_ID(gInputWindowHandleClassInfo.ownerPid, clazz,
             "ownerPid", "I");
