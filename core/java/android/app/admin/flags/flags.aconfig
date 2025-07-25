@@ -486,6 +486,16 @@ flag {
 }
 
 flag {
+  name: "remove_hack_in_policy_engine"
+  namespace: "enterprise"
+  description: "[Coexistence] Remove hack for handling user control disabled policy result code in the policy engine."
+  bug: "285532044"
+  metadata {
+    purpose: PURPOSE_BUGFIX
+  }
+}
+
+flag {
   name: "enforcing_admin_get_component_name_enabled"
   namespace: "enterprise"
   description: "Enables the getter API for componentName field of EnforcingAdmin"

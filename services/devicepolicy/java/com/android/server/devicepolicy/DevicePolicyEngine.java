@@ -290,16 +290,7 @@ final class DevicePolicyEngine {
                 if (policyChanged) {
                     onLocalPolicyChangedLocked(policyDefinition, enforcingAdmin, userId);
                 }
-                boolean policyApplied = Objects.equals(
-                        localPolicyState.getCurrentResolvedPolicy(), value);
-                // TODO(b/285532044): remove hack and handle properly
-                if (!policyApplied && shouldApplyPackageSetUnionPolicyHack(policyDefinition)) {
-                    PolicyValue<Set<String>> parsedValue = (PolicyValue<Set<String>>) value;
-                    PolicyValue<Set<String>> parsedResolvedValue =
-                            (PolicyValue<Set<String>>) localPolicyState.getCurrentResolvedPolicy();
-                    policyApplied = (parsedResolvedValue != null && parsedValue != null
-                            && parsedResolvedValue.getValue().containsAll(parsedValue.getValue()));
-                }
+                boolean policyApplied = isPolicyApplied(policyDefinition, localPolicyState, value);
                 policyUpdateResult = policyApplied ?
                         RESULT_POLICY_SET : RESULT_FAILURE_CONFLICTING_ADMIN_POLICY;
                 sendPolicyResultToAdmin(
@@ -377,17 +368,7 @@ final class DevicePolicyEngine {
                         ? onLocalPolicyChangedLocked(policyDefinition, enforcingAdmin, userId)
                         : AndroidFuture.completedFuture(false);
 
-                policyApplied = Objects.equals(
-                        localPolicyState.getCurrentResolvedPolicy(), value);
-                // TODO(b/285532044): remove hack and handle properly
-                if (!policyApplied && shouldApplyPackageSetUnionPolicyHack(policyDefinition)) {
-                    PolicyValue<Set<String>> parsedValue = (PolicyValue<Set<String>>) value;
-                    PolicyValue<Set<String>> parsedResolvedValue =
-                            (PolicyValue<Set<String>>) localPolicyState.getCurrentResolvedPolicy();
-                    policyApplied = (parsedResolvedValue != null && parsedValue != null
-                            && parsedResolvedValue.getValue().containsAll(parsedValue.getValue()));
-                }
-
+                policyApplied = isPolicyApplied(policyDefinition, localPolicyState, value);
                 sendPolicyResultToAdmin(
                         enforcingAdmin,
                         policyDefinition,
@@ -838,21 +819,9 @@ final class DevicePolicyEngine {
                 if (policyChanged) {
                     onGlobalPolicyChangedLocked(policyDefinition, enforcingAdmin);
                 }
-
-                boolean policyAppliedGlobally = Objects.equals(
-                        globalPolicyState.getCurrentResolvedPolicy(), value);
-                // TODO(b/285532044): remove hack and handle properly
-                if (!policyAppliedGlobally
-                        && shouldApplyPackageSetUnionPolicyHack(policyDefinition)) {
-                    PolicyValue<Set<String>> parsedValue = (PolicyValue<Set<String>>) value;
-                    PolicyValue<Set<String>> parsedResolvedValue =
-                            (PolicyValue<Set<String>>) globalPolicyState.getCurrentResolvedPolicy();
-                    policyAppliedGlobally = (parsedResolvedValue != null && parsedValue != null
-                            && parsedResolvedValue.getValue().containsAll(parsedValue.getValue()));
-                }
-
-                policyUpdateResult = policyAppliedGlobally && policyAppliedOnAllUsers ?
-                        RESULT_POLICY_SET : RESULT_FAILURE_CONFLICTING_ADMIN_POLICY;
+                boolean policyApplied = isPolicyApplied(policyDefinition, globalPolicyState, value);
+                policyUpdateResult = policyApplied && policyAppliedOnAllUsers
+                        ? RESULT_POLICY_SET : RESULT_FAILURE_CONFLICTING_ADMIN_POLICY;
 
                 sendPolicyResultToAdmin(
                         enforcingAdmin,
@@ -915,25 +884,11 @@ final class DevicePolicyEngine {
                         ? onGlobalPolicyChangedAsyncLocked(policyDefinition, enforcingAdmin)
                         : AndroidFuture.completedFuture(false);
 
-                boolean policyAppliedGlobally = Objects.equals(
-                        globalPolicyState.getCurrentResolvedPolicy(), value);
-                // TODO(b/285532044): remove hack and handle properly
-                if (!policyAppliedGlobally
-                        && shouldApplyPackageSetUnionPolicyHack(policyDefinition)) {
-                    PolicyValue<Set<String>> parsedValue = (PolicyValue<Set<String>>) value;
-                    PolicyValue<Set<String>> parsedResolvedValue =
-                            (PolicyValue<Set<String>>)
-                                    globalPolicyState.getCurrentResolvedPolicy();
-                    policyAppliedGlobally = (parsedResolvedValue != null && parsedValue != null
-                            && parsedResolvedValue.getValue().containsAll(
-                                    parsedValue.getValue()));
-                }
-
-                final boolean finalPolicyAppliedGlobally = policyAppliedGlobally;
+                boolean policyApplied = isPolicyApplied(policyDefinition, globalPolicyState, value);
                 policyApplicationFuture = policyApplicationFuture.thenCombine(enforcementFuture,
                         (previousStatus, policyEnforced) -> {
                     int currentStatus = computePolicyUpdateResult(
-                            policyChanged, finalPolicyAppliedGlobally, policyEnforced);
+                            policyChanged, policyApplied, policyEnforced);
                     currentStatus = combinePolicyUpdateResults(previousStatus, currentStatus);
 
                     sendPolicyResultToAdmin(
@@ -1165,19 +1120,7 @@ final class DevicePolicyEngine {
                         userId);
 
             }
-            // TODO(b/285532044): remove hack and handle properly
-            if (shouldApplyPackageSetUnionPolicyHack(policyDefinition)) {
-                if (!Objects.equals(value, localPolicyState.getCurrentResolvedPolicy())) {
-                    PolicyValue<Set<String>> parsedValue = (PolicyValue<Set<String>>) value;
-                    PolicyValue<Set<String>> parsedResolvedValue =
-                            (PolicyValue<Set<String>>) localPolicyState.getCurrentResolvedPolicy();
-                    isAdminPolicyApplied &= (parsedResolvedValue != null && parsedValue != null
-                            && parsedResolvedValue.getValue().containsAll(parsedValue.getValue()));
-                }
-            } else {
-                isAdminPolicyApplied &= Objects.equals(
-                        value, localPolicyState.getCurrentResolvedPolicy());
-            }
+            isAdminPolicyApplied = isPolicyApplied(policyDefinition, localPolicyState, value);
         }
         return isAdminPolicyApplied;
     }
@@ -1234,22 +1177,8 @@ final class DevicePolicyEngine {
                         userId);
             }
 
-            final boolean isAdminPolicyApplied;
-            // TODO(b/285532044): remove hack and handle properly
-            if (shouldApplyPackageSetUnionPolicyHack(policyDefinition)) {
-                if (Objects.equals(value, localPolicyState.getCurrentResolvedPolicy())) {
-                    isAdminPolicyApplied = true;
-                } else {
-                    PolicyValue<Set<String>> parsedValue = (PolicyValue<Set<String>>) value;
-                    PolicyValue<Set<String>> parsedResolvedValue =
-                            (PolicyValue<Set<String>>) localPolicyState.getCurrentResolvedPolicy();
-                    isAdminPolicyApplied = (parsedResolvedValue != null && parsedValue != null
-                            && parsedResolvedValue.getValue().containsAll(parsedValue.getValue()));
-                }
-            } else {
-                isAdminPolicyApplied = Objects.equals(
-                        value, localPolicyState.getCurrentResolvedPolicy());
-            }
+            final boolean isAdminPolicyApplied = isPolicyApplied(
+                    policyDefinition, localPolicyState, value);
 
             finalStatusFuture = finalStatusFuture.thenCombine(enforcementFuture,
                     (previousStatus, policyEnforced) -> {
@@ -1259,6 +1188,55 @@ final class DevicePolicyEngine {
                     });
         }
         return finalStatusFuture;
+    }
+
+    /**
+     * Checks if the given {@code policyValue} is considered applied based on the current
+     * {@code policyState}
+     *
+     * <p>The method's behavior is currently influenced by the
+     * {@code Flags.removeHackInPolicyEngine()} flag:
+     * <ul>
+     *   <li>If the flag is true, the check is delegated directly to
+     *   {@link PolicyState#isPolicyApplied}.
+     *   <li>If the flag is false, legacy behavior is maintained. This includes special handling
+     *       for package set union policies (as determined by
+     *       {@code shouldApplyPackageSetUnionPolicyHack}).
+     *       In this case, {@code policyValue} is considered applied if its set of strings
+     *       is a subset of the current resolved policy's set of strings. For other policy types,
+     *       it checks for direct equality between the {@code policyState}'s current resolved policy
+     *       and the given {@code policyValue}.
+     * </ul>
+     * The legacy pathway and its special handling are slated for removal as part of b/285532044.
+     *
+     * @param <V> The type of the policy value.
+     * @param policyDefinition The definition of the policy. Used in the legacy path to determine if
+     *                         the package set hack should be applied.
+     * @param policyState The current state of the policy, which contains the current resolved
+     *                    policy value.
+     * @param policyValue The specific policy value to check if it is applied.
+     * @return {@code true} if the {@code policyValue} is considered applied according to the
+     *         active logic path, {@code false} otherwise.
+     */
+    private <V> boolean isPolicyApplied(PolicyDefinition<V> policyDefinition,
+            PolicyState<V> policyState, PolicyValue<V> policyValue) {
+        boolean policyApplied;
+        if (Flags.removeHackInPolicyEngine()) {
+            policyApplied = policyState.isPolicyApplied(policyValue);
+        } else {
+            // TODO(b/285532044): remove hack and handle properly
+            if (shouldApplyPackageSetUnionPolicyHack(policyDefinition)) {
+                PolicyValue<Set<String>> parsedValue = (PolicyValue<Set<String>>) policyValue;
+                PolicyValue<Set<String>> parsedResolvedValue =
+                        (PolicyValue<Set<String>>)
+                                policyState.getCurrentResolvedPolicy();
+                policyApplied = (parsedResolvedValue != null && parsedValue != null
+                        && parsedResolvedValue.getValue().containsAll(parsedValue.getValue()));
+            } else {
+                policyApplied = Objects.equals(policyState.getCurrentResolvedPolicy(), policyValue);
+            }
+        }
+        return policyApplied;
     }
 
     // TODO(b/403524773): Find a simpler aggregated representation of policy update status instead
