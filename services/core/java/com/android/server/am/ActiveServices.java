@@ -926,6 +926,16 @@ public final class ActiveServices {
         Trace.instant(Trace.TRACE_TAG_ACTIVITY_MANAGER, message + serviceName);
     }
 
+    private static void traceInstantFgs(@NonNull String message, @NonNull ServiceRecord service) {
+        if (!Trace.isTagEnabled(Trace.TRACE_TAG_ACTIVITY_MANAGER)) {
+            return;
+        }
+        final String serviceName = (service.getComponentName() != null)
+                ? service.getComponentName().toShortString() : "(?)";
+        Trace.instant(Trace.TRACE_TAG_ACTIVITY_MANAGER,
+                message + serviceName + "; fgsType: " + service.foregroundServiceType);
+    }
+
     ComponentName startServiceLocked(IApplicationThread caller, Intent service, String resolvedType,
             int callingPid, int callingUid, boolean fgRequired, String callingPackage,
             @Nullable String callingFeatureId, final int userId, boolean isSdkSandboxService,
@@ -2173,7 +2183,7 @@ public final class ActiveServices {
             if (notification == null) {
                 throw new IllegalArgumentException("null notification");
             }
-            traceInstant("startForeground(): ", r);
+            traceInstantFgs("startForeground(): ", r);
             final int foregroundServiceStartType = foregroundServiceType;
             // Instant apps need permission to create foreground services.
             if (r.appInfo.isInstantApp()) {
@@ -2752,7 +2762,7 @@ public final class ActiveServices {
             }
         } else {
             if (r.isForeground) {
-                traceInstant("stopForeground(): ", r);
+                traceInstantFgs("stopForeground(): ", r);
                 final ServiceMap smap = getServiceMapLocked(r.userId);
                 if (smap != null) {
                     decActiveForegroundAppLocked(smap, r);
@@ -3591,7 +3601,7 @@ public final class ActiveServices {
                     Slog.i(TAG_SERVICE, "Short FGS started: " + sr);
                 }
             }
-            traceInstant("short FGS start/extend: ", sr);
+            traceInstantFgs("short FGS start/extend: ", sr);
             mAm.mProcessStateController.setShortFgsInfo(sr, SystemClock.uptimeMillis());
 
             // We'll restart the timeout.
@@ -3637,7 +3647,7 @@ public final class ActiveServices {
                 return;
             }
             Slog.e(TAG_SERVICE, "Short FGS timed out: " + sr);
-            traceInstant("short FGS timeout: ", sr);
+            traceInstantFgs("short FGS timeout: ", sr);
 
             logFGSStateChangeLocked(sr,
                     FOREGROUND_SERVICE_STATE_CHANGED__STATE__TIMED_OUT,
@@ -3694,7 +3704,7 @@ public final class ActiveServices {
             }
 
             Slog.e(TAG_SERVICE, "Short FGS procstate demoted: " + sr);
-            traceInstant("short FGS demote: ", sr);
+            traceInstantFgs("short FGS demote: ", sr);
 
             mAm.updateOomAdjLocked(sr.app, OOM_ADJ_REASON_SHORT_FGS_TIMEOUT);
         }
@@ -3728,7 +3738,7 @@ public final class ActiveServices {
                 Slog.e(TAG_SERVICE, message);
             }
 
-            traceInstant("short FGS ANR: ", sr);
+            traceInstantFgs("short FGS ANR: ", sr);
 
             mAm.appNotResponding(sr.app, tr);
 
@@ -3824,7 +3834,7 @@ public final class ActiveServices {
             }
         }
 
-        traceInstant("FGS start: ", sr);
+        traceInstantFgs("FGS (time-limited) start: ", sr);
         final long nowUptime = SystemClock.uptimeMillis();
 
         // Fetch/create/update the fgs info for the time-limited type.
@@ -3923,7 +3933,7 @@ public final class ActiveServices {
 
             Slog.e(TAG_SERVICE, "FGS (" + ServiceInfo.foregroundServiceTypeToLabel(fgsType)
                     + ") timed out: " + sr);
-            traceInstant("FGS timed out: ", sr);
+            traceInstantFgs("FGS (time-limited) timed out: ", sr);
 
             final TimeLimitedFgsInfo fgsTypeInfo = getFgsTimeLimitedInfo(sr.appInfo.uid, fgsType);
             if (fgsTypeInfo != null) {
@@ -3974,7 +3984,7 @@ public final class ActiveServices {
                     + " did not stop within its timeout: " + sr.getComponentName();
             // Crash the app
             Slog.e(TAG_SERVICE, "FGS Crashed: " + sr);
-            traceInstant("FGS Crash: ", sr);
+            traceInstantFgs("FGS (time-limited) Crash: ", sr);
             if (sr.app != null) {
                 mAm.crashApplicationWithTypeWithExtras(sr.app.uid, sr.app.getPid(),
                         sr.app.info.packageName, sr.app.userId, reason, false /*force*/,
