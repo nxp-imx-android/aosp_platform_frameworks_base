@@ -43,6 +43,7 @@ import com.android.server.wm.WindowProcessController;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
@@ -64,6 +65,11 @@ public class ProcessStateController {
     private final Consumer<ProcessRecord> mTopChangeCallback;
 
     private final GlobalState mGlobalState = new GlobalState();
+
+    /**
+     * Queue for staging asynchronous events. The queue will be drained before each update.
+     */
+    private final ConcurrentLinkedQueue<Runnable> mStagingQueue = new ConcurrentLinkedQueue<>();
 
     private ProcessStateController(ActivityManagerService ams, ProcessList processList,
             ActiveUids activeUids, ServiceThread handlerThread,
@@ -115,7 +121,7 @@ public class ProcessStateController {
      */
     @GuardedBy("mLock")
     public boolean runUpdate(@NonNull ProcessRecord proc, @OomAdjReason int oomAdjReason) {
-        mGlobalState.commitStagedState();
+        commitStagedEvents();
         return mOomAdjuster.updateOomAdjLocked(proc, oomAdjReason);
     }
 
@@ -124,15 +130,16 @@ public class ProcessStateController {
      */
     @GuardedBy("mLock")
     public void runPendingUpdate(@OomAdjReason int oomAdjReason) {
-        mGlobalState.commitStagedState();
+        commitStagedEvents();
         mOomAdjuster.updateOomAdjPendingTargetsLocked(oomAdjReason);
     }
 
     /**
      * Trigger an update on all processes.
      */
+    @GuardedBy("mLock")
     public void runFullUpdate(@OomAdjReason int oomAdjReason) {
-        mGlobalState.commitStagedState();
+        commitStagedEvents();
         mOomAdjuster.updateOomAdjLocked(oomAdjReason);
     }
 
@@ -140,8 +147,9 @@ public class ProcessStateController {
      * Trigger an update on any processes that have been marked for follow up during a previous
      * update.
      */
+    @GuardedBy("mLock")
     public void runFollowUpUpdate() {
-        mGlobalState.commitStagedState();
+        commitStagedEvents();
         mOomAdjuster.updateOomAdjFollowUpTargetsLocked();
     }
 
@@ -151,7 +159,7 @@ public class ProcessStateController {
      * @param looper which looper to post the async work to.
      */
     public ActivityStateAsyncUpdater createActivityStateAsyncUpdater(Looper looper) {
-        return new ActivityStateAsyncUpdater(this, looper);
+        return new ActivityStateAsyncUpdater(this, looper, mStagingQueue);
     }
 
     /**
@@ -776,6 +784,19 @@ public class ProcessStateController {
         }
     }
 
+    @GuardedBy("mLock")
+    private void commitStagedEvents() {
+        mGlobalState.commitStagedState();
+
+        if (Flags.pushActivityStateToOomadjuster()) {
+            // Drain any activity state changes from the staging queue.
+            final ConcurrentLinkedQueue<Runnable> queue = mStagingQueue;
+            while (!queue.isEmpty()) {
+                queue.poll().run();
+            }
+        }
+    }
+
     /**
      * Helper class for sending Activity related state from Window Manager to
      * ProcessStateController. Because ProcessStateController is guarded by a lock WindowManager
@@ -788,11 +809,14 @@ public class ProcessStateController {
     public static class ActivityStateAsyncUpdater {
         private final ProcessStateController mPsc;
         private final Looper mLooper;
+        private ConcurrentLinkedQueue<Runnable> mStagingQueue;
         private AsyncBatchSession mBatchSession;
 
-        private ActivityStateAsyncUpdater(ProcessStateController psc, Looper looper) {
+        private ActivityStateAsyncUpdater(ProcessStateController psc, Looper looper,
+                ConcurrentLinkedQueue<Runnable> stagingQueue) {
             mPsc = psc;
             mLooper = looper;
+            mStagingQueue = stagingQueue;
         }
 
         /**
@@ -829,7 +853,7 @@ public class ProcessStateController {
         public void setExpandedNotificationShadeAsync(boolean expandedShade) {
             if (!Flags.pushActivityStateToOomadjuster()) return;
 
-            getBatchSession().enqueue(() -> mPsc.setExpandedNotificationShade(expandedShade));
+            getBatchSession().stage(() -> mPsc.setExpandedNotificationShade(expandedShade));
         }
 
         /**
@@ -840,7 +864,7 @@ public class ProcessStateController {
             if (!Flags.pushActivityStateToOomadjuster()) return;
 
             final ProcessRecord top = wpc != null ? (ProcessRecord) wpc.mOwner : null;
-            getBatchSession().enqueue(() -> {
+            getBatchSession().stage(() -> {
                 mPsc.setTopProcess(top);
                 if (clearPrev) {
                     mPsc.setPreviousProcess(null);
@@ -857,7 +881,7 @@ public class ProcessStateController {
         public void setTopProcessStateAsync(@ActivityManager.ProcessState int procState) {
             if (!Flags.pushActivityStateToOomadjuster()) return;
 
-            getBatchSession().enqueue(() -> mPsc.setTopProcessState(procState));
+            getBatchSession().stage(() -> mPsc.setTopProcessState(procState));
         }
 
         /**
@@ -867,7 +891,7 @@ public class ProcessStateController {
             if (!Flags.pushActivityStateToOomadjuster()) return;
 
             final ProcessRecord prev = wpc != null ? (ProcessRecord) wpc.mOwner : null;
-            getBatchSession().enqueue(() -> mPsc.setPreviousProcess(prev));
+            getBatchSession().stage(() -> mPsc.setPreviousProcess(prev));
         }
 
 
@@ -878,7 +902,7 @@ public class ProcessStateController {
             if (!Flags.pushActivityStateToOomadjuster()) return;
 
             final ProcessRecord home = wpc != null ? (ProcessRecord) wpc.mOwner : null;
-            getBatchSession().enqueue(() -> mPsc.setHomeProcess(home));
+            getBatchSession().stage(() -> mPsc.setHomeProcess(home));
         }
 
 
@@ -889,7 +913,7 @@ public class ProcessStateController {
             if (!Flags.pushActivityStateToOomadjuster()) return;
 
             final ProcessRecord heavy = wpc != null ? (ProcessRecord) wpc.mOwner : null;
-            getBatchSession().enqueue(() -> mPsc.setHeavyWeightProcess(heavy));
+            getBatchSession().stage(() -> mPsc.setHeavyWeightProcess(heavy));
         }
 
         /**
@@ -899,7 +923,7 @@ public class ProcessStateController {
             if (!Flags.pushActivityStateToOomadjuster()) return;
 
             final ProcessRecord dozeUi = wpc != null ? (ProcessRecord) wpc.mOwner : null;
-            getBatchSession().enqueue(() -> mPsc.setVisibleDozeUiProcess(dozeUi));
+            getBatchSession().stage(() -> mPsc.setVisibleDozeUiProcess(dozeUi));
         }
 
         /**
@@ -909,7 +933,7 @@ public class ProcessStateController {
             if (!Flags.pushActivityStateToOomadjuster()) return;
 
             final ProcessRecordInternal activity = (ProcessRecordInternal) wpc.mOwner;
-            getBatchSession().enqueue(() -> mPsc.setHasActivity(activity, hasActivity));
+            getBatchSession().stage(() -> mPsc.setHasActivity(activity, hasActivity));
         }
 
         /**
@@ -920,7 +944,7 @@ public class ProcessStateController {
             if (!Flags.pushActivityStateToOomadjuster()) return;
 
             final ProcessRecordInternal activity = (ProcessRecordInternal) wpc.mOwner;
-            getBatchSession().enqueue(() -> {
+            getBatchSession().stage(() -> {
                 mPsc.setActivityStateFlags(activity, flags);
                 mPsc.setPerceptibleTaskStoppedTimeMillis(activity, perceptibleStopTimeMs);
             });
@@ -934,14 +958,14 @@ public class ProcessStateController {
             if (!Flags.pushActivityStateToOomadjuster()) return;
 
             final ProcessRecordInternal proc = (ProcessRecordInternal) wpc.mOwner;
-            getBatchSession().enqueue(() -> mPsc.setHasRecentTasks(proc, hasRecentTasks));
+            getBatchSession().stage(() -> mPsc.setHasRecentTasks(proc, hasRecentTasks));
         }
 
         private AsyncBatchSession getBatchSession() {
             if (mBatchSession == null) {
                 final Handler h = new Handler(mLooper);
                 final Runnable update = () -> mPsc.runFullUpdate(OOM_ADJ_REASON_ACTIVITY);
-                mBatchSession = new AsyncBatchSession(h, mPsc.mLock, update);
+                mBatchSession = new AsyncBatchSession(h, mPsc.mLock, mStagingQueue, update);
             }
             return mBatchSession;
         }
@@ -950,6 +974,7 @@ public class ProcessStateController {
     public static class AsyncBatchSession implements AutoCloseable {
         final Handler mHandler;
         final Object mLock;
+        final ConcurrentLinkedQueue<Runnable> mStagingQueue;
         private final Runnable mUpdateRunnable;
         private final Runnable mLockedUpdateRunnable;
         private boolean mRunUpdate = false;
@@ -958,9 +983,11 @@ public class ProcessStateController {
 
         private ArrayList<Runnable> mBatchList = new ArrayList<>();
 
-        AsyncBatchSession(Handler handler, Object lock, Runnable updateRunnable) {
+        AsyncBatchSession(Handler handler, Object lock,
+                ConcurrentLinkedQueue<Runnable> stagingQueue, Runnable updateRunnable) {
             mHandler = handler;
             mLock = lock;
+            mStagingQueue = stagingQueue;
             mUpdateRunnable = updateRunnable;
             mLockedUpdateRunnable = () -> {
                 synchronized (lock) {
@@ -977,6 +1004,15 @@ public class ProcessStateController {
             if (isActive()) {
                 mBoostPriority = true;
             }
+        }
+
+        /**
+         * Stage the runnable to be run on the next ProcessStateController update. The work may be
+         * opportunistically run if an update triggers before the WindowManager posted update is
+         * handled.
+         */
+        public void stage(Runnable runnable) {
+            mStagingQueue.add(runnable);
         }
 
         /**
