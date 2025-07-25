@@ -90,7 +90,7 @@ class NotifCollectionCache<V>(
 
             // Using elapsedRealtime since it's guaranteed to be monotonic, as we don't want a
             // timezone/clock change to break us
-            val now = UseElapsedRealtimeForCreationTime.getCurrentTime(systemClock)
+            val now = systemClock.elapsedRealtime()
 
             // Cannot purge the same entry from two threads simultaneously
             synchronized(key) {

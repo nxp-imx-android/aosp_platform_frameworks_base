@@ -155,26 +155,6 @@ flag {
 }
 
 flag {
-  name: "expanding_public_view"
-  namespace: "systemui"
-  description: "enables user expanding the public view of a notification"
-  bug: "398853084"
-  metadata {
-    purpose: PURPOSE_BUGFIX
-  }
-}
-
-flag {
-  name: "notif_entry_creation_time_use_elapsed_realtime"
-  namespace: "systemui"
-  description: "makes the notification entry expect its creation time to be elapsedRealtime, not uptimeMillis"
-  bug: "389606876"
-  metadata {
-    purpose: PURPOSE_BUGFIX
-  }
-}
-
-flag {
   name: "backup_restore_logging"
   namespace: "systemui"
   description: "Adds logging for notification/modes backup and restore events"
