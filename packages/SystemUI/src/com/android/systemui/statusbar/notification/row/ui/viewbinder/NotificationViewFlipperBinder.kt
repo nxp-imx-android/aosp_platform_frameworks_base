@@ -31,7 +31,7 @@ object NotificationViewFlipperBinder {
             // If the ViewFlipper is not set to AutoStart, the pause binding is meaningless
             return DisposableHandle {}
         }
-        return viewFlipper.repeatWhenAttached {
+        return viewFlipper.repeatWhenAttached(assertOnMainThread = false) {
             viewModel.isPaused.collect { viewFlipper.setInhibited(it) }
         }
     }
