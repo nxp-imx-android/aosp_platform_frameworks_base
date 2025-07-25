@@ -365,6 +365,8 @@
     <string name="screen_capture_toolbar_capture_button">Capture</string>
     <!-- Button text in the toolbar for choosing the screen recording type. [CHAR LIMIT=35] -->
     <string name="screen_capture_toolbar_record_button">Record</string>
+    <!-- Button text for screen sharing [CHAR LIMIT=35] -->
+    <string name="screen_share_toolbar_share_button">Share</string>
 
     <!-- Content description for the status bar chip shown to the user when they're sharing their screen to another app on the device [CHAR LIMIT=NONE] -->
     <string name="share_to_app_chip_accessibility_label">Sharing screen</string>
