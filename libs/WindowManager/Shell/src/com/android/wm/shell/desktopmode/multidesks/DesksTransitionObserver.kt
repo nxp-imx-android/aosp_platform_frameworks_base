@@ -199,6 +199,7 @@ class DesksTransitionObserver(
             is DeskTransition.DeactivateDesk -> handleDeactivateDeskTransition(info, deskTransition)
             is DeskTransition.ChangeDeskDisplay -> handleChangeDeskDisplay(info, deskTransition)
             is DeskTransition.RemoveDisplay -> handleRemoveDisplay(deskTransition)
+            is DeskTransition.AddTaskToDesk -> handleAddTaskToDesk(deskTransition)
         }
     }
 
@@ -255,6 +256,25 @@ class DesksTransitionObserver(
         logD("handleRemoveDisplay: %s", deskTransition)
         desktopUserRepositories.forAllRepositories { desktopRepository ->
             desktopRepository.removeDisplay(deskTransition.displayId)
+        }
+    }
+
+    private fun handleAddTaskToDesk(deskTransition: DeskTransition.AddTaskToDesk) {
+        logD("handleAddTaskToDesk: %s", deskTransition)
+        val taskRepository = desktopUserRepositories.getProfile(deskTransition.userId)
+        taskRepository.addTaskToDesk(
+            deskTransition.displayId,
+            deskTransition.deskId,
+            deskTransition.taskId,
+            !deskTransition.minimized,
+            deskTransition.taskBounds,
+        )
+        if (deskTransition.minimized) {
+            taskRepository.minimizeTaskInDesk(
+                deskTransition.displayId,
+                deskTransition.deskId,
+                deskTransition.taskId,
+            )
         }
     }
 

@@ -977,7 +977,7 @@ class DesktopTasksController(
         val boundsByTaskId = repository.getPreservedTaskBounds(uniqueDisplayId)
         val activeDeskId = repository.getPreservedActiveDesk(uniqueDisplayId)
         val wct = WindowContainerTransaction()
-        var runOnTransitStart: RunOnTransitStart? = null
+        var runOnTransitStartList = mutableListOf<RunOnTransitStart>()
         val destDisplayLayout = displayController.getDisplayLayout(displayId) ?: return
         val tilingReconnectHandler =
             TilingDisplayReconnectEventHandler(repository, snapEventHandler, transitions, displayId)
@@ -997,26 +997,29 @@ class DesktopTasksController(
                 )
                 val isActiveDesk = preservedDeskId == activeDeskId
                 if (isActiveDesk) {
-                    runOnTransitStart =
+                    runOnTransitStartList.add(
                         addDeskActivationChanges(
                             deskId = newDeskId,
                             wct = wct,
                             userId = userId,
                             enterReason = EnterReason.DISPLAY_CONNECT,
                         )
+                    )
                 }
 
                 preservedTaskIds.asReversed().forEach { taskId ->
                     if (!excludedTasks.contains(taskId)) {
                         addRestoreTaskToDeskChanges(
-                            wct = wct,
-                            destinationDisplayLayout = destDisplayLayout,
-                            deskId = newDeskId,
-                            taskId = taskId,
-                            userId = userId,
-                            uniqueDisplayId = uniqueDisplayId,
-                            taskBounds = boundsByTaskId[taskId],
-                        )
+                                wct = wct,
+                                destinationDisplayLayout = destDisplayLayout,
+                                deskId = newDeskId,
+                                taskId = taskId,
+                                userId = userId,
+                                displayId = displayId,
+                                uniqueDisplayId = uniqueDisplayId,
+                                taskBounds = boundsByTaskId[taskId],
+                            )
+                            ?.let { runOnTransitStartList.add(it) }
                     }
                 }
 
@@ -1035,7 +1038,7 @@ class DesktopTasksController(
             }
             val transition = transitions.startTransition(TRANSIT_CHANGE, wct, null)
             tilingReconnectHandler.activationBinder = transition
-            runOnTransitStart?.invoke(transition)
+            runOnTransitStartList.forEach { it.invoke(transition) }
             repository.removePreservedDisplay(uniqueDisplayId)
         }
     }
@@ -1046,9 +1049,10 @@ class DesktopTasksController(
         deskId: Int,
         taskId: Int,
         userId: Int,
+        displayId: Int,
         uniqueDisplayId: String,
         taskBounds: Rect?,
-    ) {
+    ): RunOnTransitStart? {
         logD(
             "addRestoreTaskToDeskChanges: taskId=$taskId; deskId=$deskId; userId=$userId; " +
                 "taskBounds=$taskBounds; uniqueDisplayId=$uniqueDisplayId"
@@ -1058,7 +1062,7 @@ class DesktopTasksController(
         val task = shellTaskOrganizer.getRunningTaskInfo(taskId)
         if (task == null) {
             logE("restoreDisplay: Could not find running task info for taskId=$taskId.")
-            return
+            return null
         }
         desksOrganizer.moveTaskToDesk(wct, deskId, task, minimized = minimized)
         wct.setDensityDpi(task.token, destinationDisplayLayout.densityDpi())
@@ -1067,6 +1071,19 @@ class DesktopTasksController(
         if (!minimized) {
             // Bring display to front if task is not minimized to ensure display focus.
             wct.reorder(task.token, /* onTop= */ true, /* includingParents= */ true)
+        }
+        return { transition ->
+            desksTransitionObserver.addPendingTransition(
+                DeskTransition.AddTaskToDesk(
+                    token = transition,
+                    userId = userId,
+                    displayId = displayId,
+                    deskId = deskId,
+                    taskId = taskId,
+                    taskBounds = taskBounds,
+                    minimized = minimized,
+                )
+            )
         }
     }
 

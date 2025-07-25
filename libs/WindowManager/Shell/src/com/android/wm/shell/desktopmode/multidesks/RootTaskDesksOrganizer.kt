@@ -520,8 +520,11 @@ class RootTaskDesksOrganizer(
                         },
                 )
             createDeskRootRequests.remove(deskRequest)
-            deskRequest.onCreateCallback.onCreated(deskId)
-            createDeskMinimizationRoot(displayId = appearingInDisplayId, deskId = deskId)
+            createDeskMinimizationRoot(
+                displayId = appearingInDisplayId,
+                deskId = deskId,
+                callback = deskRequest.onCreateCallback,
+            )
             return
         }
         // Check if there's any pending minimization container creation requests under this display.
@@ -532,6 +535,7 @@ class RootTaskDesksOrganizer(
         val deskMinimizationRoot = DeskMinimizationRoot(deskId, taskInfo, leash)
         deskMinimizationRootsByDeskId[deskId] = deskMinimizationRoot
         createDeskMinimizationRootRequests.remove(deskMinimizationRootRequest)
+        deskMinimizationRootRequest.callback.onCreated(deskId)
         hideMinimizationRoot(deskMinimizationRoot)
     }
 
@@ -630,9 +634,17 @@ class RootTaskDesksOrganizer(
         }
     }
 
-    private fun createDeskMinimizationRoot(displayId: Int, deskId: Int) {
+    private fun createDeskMinimizationRoot(
+        displayId: Int,
+        deskId: Int,
+        callback: OnCreateCallback,
+    ) {
         createDeskMinimizationRootRequests +=
-            CreateDeskMinimizationRootRequest(displayId = displayId, deskId = deskId)
+            CreateDeskMinimizationRootRequest(
+                displayId = displayId,
+                deskId = deskId,
+                callback = callback,
+            )
         shellTaskOrganizer.createRootTask(
             TaskOrganizer.CreateRootTaskRequest()
                 .setName("MinimizedDesk_$deskId")
@@ -723,7 +735,11 @@ class RootTaskDesksOrganizer(
         val onCreateCallback: OnCreateCallback,
     )
 
-    private data class CreateDeskMinimizationRootRequest(val displayId: Int, val deskId: Int)
+    private data class CreateDeskMinimizationRootRequest(
+        val displayId: Int,
+        val deskId: Int,
+        val callback: OnCreateCallback,
+    )
 
     private fun logD(msg: String, vararg arguments: Any?) {
         ProtoLog.d(WM_SHELL_DESKTOP_MODE, "%s: $msg", TAG, *arguments)
