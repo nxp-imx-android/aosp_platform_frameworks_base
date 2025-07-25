@@ -35,6 +35,7 @@ import com.android.systemui.actioncorner.data.model.ActionCornerRegion.BOTTOM_RI
 import com.android.systemui.actioncorner.data.model.ActionCornerState.ActiveActionCorner
 import com.android.systemui.actioncorner.data.repository.ActionCornerSettingRepository
 import com.android.systemui.actioncorner.data.repository.FakeActionCornerRepository
+import com.android.systemui.inputdevice.data.repository.FakePointerDeviceRepository
 import com.android.systemui.keyguard.domain.interactor.windowManagerLockscreenVisibilityInteractor
 import com.android.systemui.keyguard.shared.model.KeyguardState
 import com.android.systemui.keyguard.shared.model.TransitionStep
@@ -74,14 +75,16 @@ class ActionCornerInteractorTest : SysuiTestCase() {
 
     private val Kosmos.launcherProxyService by Fixture { mock<LauncherProxyService>() }
     private val Kosmos.commandQueue by Fixture { mock<CommandQueue>() }
+    private val Kosmos.fakePointerRepository by Fixture { FakePointerDeviceRepository() }
 
     private val Kosmos.underTest by Fixture {
         ActionCornerInteractor(
             actionCornerRepository,
             launcherProxyService,
             actionCornerSettingRepository,
-            fakeUserSetupRepository,
+            fakePointerRepository,
             windowManagerLockscreenVisibilityInteractor,
+            fakeUserSetupRepository,
             commandQueue,
         )
     }
@@ -89,6 +92,7 @@ class ActionCornerInteractorTest : SysuiTestCase() {
     @Before
     fun setUp() {
         kosmos.fakeUserSetupRepository.setUserSetUp(true)
+        kosmos.fakePointerRepository.setIsAnyPointerConnected(true)
         kosmos.underTest.activateIn(kosmos.testScope)
     }
 
@@ -164,6 +168,22 @@ class ActionCornerInteractorTest : SysuiTestCase() {
             actionCornerRepository.addState(ActiveActionCorner(BOTTOM_LEFT, DEFAULT_DISPLAY))
             verify(launcherProxyService, never()).onActionCornerActivated(OVERVIEW, DEFAULT_DISPLAY)
         }
+
+    @Test
+    fun noActionConfigured_cursorMovesIntoActiveArea_actionNotTriggered() = unlockScreenAndRunTest {
+        // No action configured to corners by default
+        actionCornerRepository.addState(ActiveActionCorner(BOTTOM_LEFT, DEFAULT_DISPLAY))
+        verify(launcherProxyService, never()).onActionCornerActivated(OVERVIEW, DEFAULT_DISPLAY)
+    }
+
+    @Test
+    fun activeActionCorner_pointerDeviceDisconnected_actionNotTriggered() = unlockScreenAndRunTest {
+        settingsRepository.setInt(ACTION_CORNER_BOTTOM_LEFT_ACTION, ACTION_CORNER_ACTION_OVERVIEW)
+        fakePointerRepository.setIsAnyPointerConnected(false)
+
+        actionCornerRepository.addState(ActiveActionCorner(BOTTOM_LEFT, DEFAULT_DISPLAY))
+        verify(launcherProxyService, never()).onActionCornerActivated(OVERVIEW, DEFAULT_DISPLAY)
+    }
 
     private fun unlockScreenAndRunTest(testBody: suspend Kosmos.() -> Unit) =
         kosmos.runTest {
