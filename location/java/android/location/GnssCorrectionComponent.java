@@ -210,7 +210,10 @@ public final class GnssCorrectionComponent implements Parcelable {
         /** Correction to be added to the measured pseudorange, in meters. */
         private final double mCorrectionMeters;
 
-        /** Uncertainty of the correction, in meters. */
+        /**
+         * Uncertainty of the correction, in meters.
+         * If the uncertainty is not available, this field should be set to 0.
+         */
         private final double mCorrectionUncertaintyMeters;
 
         /**
@@ -225,7 +228,8 @@ public final class GnssCorrectionComponent implements Parcelable {
          * Creates a PseudorangeCorrection.
          *
          * @param correctionMeters Correction to be added to the measured pseudorange, in meters.
-         * @param correctionUncertaintyMeters Uncertainty of the correction, in meters.
+         * @param correctionUncertaintyMeters Uncertainty of the correction, in meters. If the
+         *     uncertainty is not available, this field should be set to 0.
          * @param correctionRateMetersPerSecond Linear approximation of the change in correction
          *     over time. Intended usage is to adjust the correction using the formula:
          *     correctionMeters + correctionRateMetersPerSecond * delta_seconds Where
