@@ -769,7 +769,7 @@ public class AbstractAccessibilityServiceConnectionTest {
         final DisplayManager displayManager = new DisplayManager(mMockContext);
         when(mMockContext.getSystemService(Context.DISPLAY_SERVICE)).thenReturn(displayManager);
 
-        mServiceConnection.takeScreenshot(Display.DEFAULT_DISPLAY + 1,
+        mServiceConnection.takeScreenshot(Display.INVALID_DISPLAY,
                 new RemoteCallback(mMockListener));
         mHandler.sendLastMessage();
 
