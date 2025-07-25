@@ -428,6 +428,16 @@ flag {
 }
 
 flag {
+    name: "enable_desktop_first_top_fullscreen_bugfix"
+    namespace: "lse_desktop_experience"
+    description: "Fix desktop-first policy for the case where any fullscreen app is focused."
+    bug: "431066262"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "enable_desktop_ime_bugfix"
     namespace: "lse_desktop_experience"
     description: "Enables bugfix to handle IME interactions in desktop windowing."
