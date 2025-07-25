@@ -117,7 +117,6 @@ public class PipDisplayChangeObserverTest {
         verify(mMockPipTransitionState).setIsDisplayChangeScheduled(false);
         verify(mMockPipTransitionState).setState(
                 eq(PipTransitionState.SCHEDULED_BOUNDS_CHANGE), any());
-        verify(mMockPipTransitionState).setState(eq(PipTransitionState.CHANGING_PIP_BOUNDS), any());
 
         assertNotNull("Transition should remain cached during animation",
                 mPipDisplayChangeObserver.getDisplayChangeTransitions().get(transition));

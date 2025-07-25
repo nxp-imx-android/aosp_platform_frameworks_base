@@ -483,8 +483,6 @@ public class PipTransitionState {
                 return isPipStateIdle() && !mPipDesktopState.isDragToDesktopInProgress();
             case CHANGING_PIP_BOUNDS:
                 return mState == SCHEDULED_BOUNDS_CHANGE;
-            case CHANGED_PIP_BOUNDS:
-                return mState == CHANGING_PIP_BOUNDS;
             default:
                 return true;
         }
