@@ -18,6 +18,10 @@ package com.android.systemui.media.dialog;
 
 import static android.media.RoutingChangeInfo.ENTRY_POINT_SYSTEM_OUTPUT_SWITCHER;
 
+import static com.android.systemui.media.dialog.MediaItem.MediaItemType.TYPE_DEVICE;
+import static com.android.systemui.media.dialog.MediaItem.MediaItemType.TYPE_DEVICE_GROUP;
+import static com.android.systemui.media.dialog.MediaItem.MediaItemType.TYPE_GROUP_DIVIDER;
+
 import static com.google.common.truth.Truth.assertThat;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -28,6 +32,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.after;
 import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -700,7 +705,7 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
             if (item.getMediaDevice().isPresent()) {
                 devices.add(item.getMediaDevice().get());
             }
-            if (item.getMediaItemType() == MediaItem.MediaItemType.TYPE_GROUP_DIVIDER) {
+            if (item.getMediaItemType() == TYPE_GROUP_DIVIDER) {
                 dividerSize++;
             }
         }
@@ -741,6 +746,147 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
 
         assertThat(devices.getFirst().isMutingExpectedDevice()).isFalse();
         assertThat(mMediaSwitchingController.hasMutingExpectedDevice()).isFalse();
+    }
+
+    @Test
+    @EnableFlags({
+            Flags.FLAG_ENABLE_OUTPUT_SWITCHER_REDESIGN,
+            Flags.FLAG_ENABLE_OUTPUT_SWITCHER_PERSONAL_AUDIO_SHARING
+    })
+    public void onDeviceListUpdate_groupPlaybackAndExpanded_allSelectedDevicesOnTop() {
+        when(mMediaDevice1.isSelected()).thenReturn(true);
+        when(mMediaDevice2.isSelected()).thenReturn(true);
+        mMediaSwitchingController.setGroupListCollapsed(false);
+
+        doAnswer(invocation -> {
+            LocalMediaManager.DeviceCallback callback = invocation.getArgument(0);
+            callback.onDeviceListUpdate(mMediaDevices);
+            return null;
+        }).when(mLocalMediaManager).registerCallback(any());
+        doReturn(true).when(mLocalMediaManager).isMediaSessionAvailableForVolumeControl();
+
+        mMediaSwitchingController.start(mCb);
+
+        List<MediaItem> resultList = mMediaSwitchingController.getMediaItemList();
+
+        assertThat(resultList.get(0).getMediaItemType()).isEqualTo(TYPE_GROUP_DIVIDER);
+        assertThat(resultList.get(0).getTitle()).isEqualTo(
+                mContext.getString(R.string.media_output_group_title_connected_speakers));
+        assertThat(resultList.get(0).isExpandableDivider()).isTrue();
+
+        assertThat(resultList.get(1).getMediaItemType()).isEqualTo(TYPE_DEVICE);
+        assertThat(resultList.get(1).getMediaDevice().get()).isEqualTo(mMediaDevice1);
+
+        assertThat(resultList.get(2).getMediaItemType()).isEqualTo(TYPE_DEVICE);
+        assertThat(resultList.get(2).getMediaDevice().get()).isEqualTo(mMediaDevice2);
+
+        assertThat(resultList.size()).isEqualTo(3);
+    }
+
+    @Test
+    @EnableFlags({
+            Flags.FLAG_ENABLE_OUTPUT_SWITCHER_REDESIGN,
+            Flags.FLAG_ENABLE_OUTPUT_SWITCHER_PERSONAL_AUDIO_SHARING
+    })
+    public void onDeviceListUpdate_groupPlaybackAndCollapsed_groupControlAtTheTop() {
+        when(mMediaDevice1.isSelected()).thenReturn(true);
+        when(mMediaDevice2.isSelected()).thenReturn(true);
+        mMediaSwitchingController.setGroupListCollapsed(true);
+
+        doAnswer(invocation -> {
+            LocalMediaManager.DeviceCallback callback = invocation.getArgument(0);
+            callback.onDeviceListUpdate(mMediaDevices);
+            return null;
+        }).when(mLocalMediaManager).registerCallback(any());
+        doReturn(true).when(mLocalMediaManager).isMediaSessionAvailableForVolumeControl();
+
+        mMediaSwitchingController.start(mCb);
+        List<MediaItem> resultList = mMediaSwitchingController.getMediaItemList();
+
+        assertThat(resultList.get(0).getMediaItemType()).isEqualTo(TYPE_GROUP_DIVIDER);
+        assertThat(resultList.get(0).getTitle()).isEqualTo(
+                mContext.getString(R.string.media_output_group_title_connected_speakers));
+        assertThat(resultList.get(0).isExpandableDivider()).isTrue();
+
+        assertThat(resultList.get(1).getMediaItemType()).isEqualTo(TYPE_DEVICE_GROUP);
+
+        assertThat(resultList.size()).isEqualTo(2);
+    }
+
+    @Test
+    @EnableFlags({
+            Flags.FLAG_ENABLE_OUTPUT_SWITCHER_REDESIGN,
+            Flags.FLAG_ENABLE_OUTPUT_SWITCHER_PERSONAL_AUDIO_SHARING
+    })
+    public void onDeviceListUpdate_sessionVolumeUnavailable_noGroupControl() {
+        when(mMediaDevice1.isSelected()).thenReturn(true);
+        when(mMediaDevice2.isSelected()).thenReturn(true);
+        mMediaSwitchingController.setGroupListCollapsed(true);
+
+        doAnswer(invocation -> {
+            LocalMediaManager.DeviceCallback callback = invocation.getArgument(0);
+            callback.onDeviceListUpdate(mMediaDevices);
+            return null;
+        }).when(mLocalMediaManager).registerCallback(any());
+        doReturn(false).when(mLocalMediaManager).isMediaSessionAvailableForVolumeControl();
+
+        mMediaSwitchingController.start(mCb);
+
+        mMediaSwitchingController.setGroupListCollapsed(true);
+        mMediaSwitchingController.clearMediaItemList();
+        mMediaSwitchingController.onDeviceListUpdate(mMediaDevices);
+
+        List<MediaItem> resultList = mMediaSwitchingController.getMediaItemList();
+
+        assertThat(resultList.get(0).getMediaItemType()).isEqualTo(TYPE_DEVICE);
+        assertThat(resultList.get(0).getMediaDevice().get()).isEqualTo(mMediaDevice1);
+
+        assertThat(resultList.get(1).getMediaItemType()).isEqualTo(TYPE_DEVICE);
+        assertThat(resultList.get(1).getMediaDevice().get()).isEqualTo(mMediaDevice2);
+
+        assertThat(resultList.size()).isEqualTo(2);
+    }
+
+    @Test
+    @EnableFlags({
+            Flags.FLAG_ENABLE_OUTPUT_SWITCHER_REDESIGN,
+            Flags.FLAG_ENABLE_OUTPUT_SWITCHER_PERSONAL_AUDIO_SHARING
+    })
+    public void onDeviceListUpdate_groupPlaybackCreatedLater_noGroupControl() {
+        when(mMediaDevice1.isSelected()).thenReturn(true);
+        when(mMediaDevice2.isSelected()).thenReturn(false);
+
+        mMediaSwitchingController.setGroupListCollapsed(true);
+        doReturn(false).when(mLocalMediaManager).isMediaSessionAvailableForVolumeControl();
+
+        doAnswer(invocation -> {
+            LocalMediaManager.DeviceCallback callback = invocation.getArgument(0);
+            callback.onDeviceListUpdate(mMediaDevices);
+            return null;
+        }).when(mLocalMediaManager).registerCallback(any());
+
+        mMediaSwitchingController.start(mCb);
+
+        // Add second selected device after the initial update.
+        when(mMediaDevice2.isSelected()).thenReturn(true);
+        // Skip 2+ seconds to prevent the list cleanup on refresh.
+        mClock.advanceTime(2500);
+        mMediaSwitchingController.onDeviceListUpdate(mMediaDevices);
+
+        List<MediaItem> resultList = mMediaSwitchingController.getMediaItemList();
+
+        assertThat(resultList.get(0).getMediaItemType()).isEqualTo(TYPE_DEVICE);
+        assertThat(resultList.get(0).getMediaDevice().get()).isEqualTo(mMediaDevice1);
+
+        assertThat(resultList.get(1).getMediaItemType()).isEqualTo(TYPE_GROUP_DIVIDER);
+        assertThat(resultList.get(1).hasTopSeparator()).isTrue();
+        assertThat(resultList.get(1).getTitle()).isEqualTo(
+                mContext.getString(R.string.media_output_group_title_speakers_and_displays));
+
+        assertThat(resultList.get(2).getMediaItemType()).isEqualTo(TYPE_DEVICE);
+        assertThat(resultList.get(2).getMediaDevice().get()).isEqualTo(mMediaDevice2);
+
+        assertThat(resultList.size()).isEqualTo(3);
     }
 
     @Test
