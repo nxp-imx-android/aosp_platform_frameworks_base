@@ -3113,6 +3113,9 @@ final class ActivityManagerShellCommand extends ShellCommand {
 
     int runLogoutUser(PrintWriter pw) {
         int userId = UserHandle.parseUserArg(getNextArgRequired());
+        if (userId == UserHandle.USER_CURRENT) {
+            userId = mInternal.getCurrentUserId();
+        }
         if (!mInternal.logoutUser(userId)) {
             getErrPrintWriter().println("Failed to logout user: " + userId);
             return -1;
