@@ -82,7 +82,7 @@ private fun TopRow(viewModel: BundleHeaderGutsViewModel, modifier: Modifier = Mo
         verticalAlignment = Alignment.CenterVertically,
         modifier = modifier.padding(vertical = 16.dp),
     ) {
-        BundleIcon(viewModel.bundleIcon, modifier = Modifier.padding(end = 16.dp))
+        BundleIcon(viewModel.bundleIcon, collapsed = true, modifier = Modifier.padding(end = 16.dp))
         Text(
             text = stringResource(viewModel.titleText),
             style = MaterialTheme.typography.titleMediumEmphasized,
