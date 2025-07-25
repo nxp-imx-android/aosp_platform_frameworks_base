@@ -978,8 +978,9 @@ class ProcessRecord extends ProcessRecordInternal implements WindowProcessListen
         return mInstr;
     }
 
+    @Override
     @GuardedBy(anyOf = {"mService", "mProcLock"})
-    boolean hasActiveInstrumentation() {
+    public boolean hasActiveInstrumentation() {
         return mInstr != null;
     }
 

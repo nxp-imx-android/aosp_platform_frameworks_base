@@ -1302,7 +1302,7 @@ public class OomAdjusterImpl extends OomAdjuster {
             if (DEBUG_OOM_ADJ_REASON || logUid == appUid) {
                 reportOomAdjMessageLocked(TAG_OOM_ADJ, "Making running remote anim: " + app);
             }
-        } else if (app.getActiveInstrumentation() != null) {
+        } else if (app.hasActiveInstrumentation()) {
             // Don't want to kill running instrumentation.
             adj = FOREGROUND_APP_ADJ;
             schedGroup = SCHED_GROUP_DEFAULT;
