@@ -81,6 +81,13 @@ public abstract class DevicePolicyManagerInternal {
             OnCrossProfileWidgetProvidersChangeListener listener);
 
     /**
+     * Notifies the listeners that the cross profile widget provider list has changed.
+     *
+     * Should only be called by {@link com.android.server.devicepolicy.PolicyEnforcerCallbacks}.
+     */
+    public abstract void notifyCrossProfileProvidersChanged(int userId, List<String> packages);
+
+    /**
      * @param userHandle the handle of the user whose profile owner is being fetched.
      * @return the configured supervision app if it exists and is the device owner or policy owner.
      * @deprecated Use {@link android.app.supervision.SupervisionManagerInternal} methods instead.
