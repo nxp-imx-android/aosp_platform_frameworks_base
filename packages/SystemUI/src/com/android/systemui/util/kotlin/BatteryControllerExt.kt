@@ -42,17 +42,3 @@ fun BatteryController.isDevicePluggedIn(): Flow<Boolean> {
         }
         .onStart { emit(isPluggedIn) }
 }
-
-fun BatteryController.isExtremePowerSaverEnabled(): Flow<Boolean> {
-    return conflatedCallbackFlow {
-            val batteryCallback =
-                object : BatteryController.BatteryStateChangeCallback {
-                    override fun onExtremeBatterySaverChanged(isExtreme: Boolean) {
-                        trySend(isExtreme)
-                    }
-                }
-            addCallback(batteryCallback)
-            awaitClose { removeCallback(batteryCallback) }
-        }
-        .onStart { emit(isExtremeSaverOn) }
-}

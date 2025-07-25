@@ -43,6 +43,14 @@ class FakeBatteryControllerImpl : BatteryController {
             }
         }
 
+    var _isExtremePowerSave = false
+        set(value) {
+            if (field != value) {
+                field = value
+                listeners.forEach { it.onExtremeBatterySaverChanged(field) }
+            }
+        }
+
     var _isPluggedIn = false
         set(value) {
             if (field != value) {
