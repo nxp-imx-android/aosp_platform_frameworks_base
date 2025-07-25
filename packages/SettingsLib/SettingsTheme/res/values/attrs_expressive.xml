@@ -24,37 +24,4 @@
     </declare-styleable>
 
     <attr name="expressiveSwitchStyle" format="reference" />
-
-    <!-- Theme attributes to override Expressive Design Preference styles -->
-    <attr name="expressivePreferenceTheme" format="reference" />
-    <attr name="expressivePreferenceRootLayoutStyle" format="reference" />
-    <attr name="expressivePreferenceWidgetFrameStyle" format="reference" />
-
-    <attr name="expressivePreferenceIconFrameStyle" format="reference" />
-    <attr name="expressivePreferenceIconStyle" format="reference" />
-
-    <attr name="expressivePreferenceTextFrameStyle" format="reference" />
-    <attr name="expressivePreferenceTextFrameTitleStyle" format="reference" />
-    <attr name="expressivePreferenceTextFrameSummaryStyle" format="reference" />
-
-    <attr name="expressiveTwoTargetPreferenceTheme" format="reference" />
-    <attr name="expressiveTwoTargetPreferenceRootStyle" format="reference" />
-    <attr name="expressiveTwoTargetPreferenceWidgetFrameStyle" format="reference" />
-
-    <attr name="expressiveTwoTargetDividerStyle" format="reference" />
-    <attr name="expressiveTwoTargetDividerImageViewStyle" format="reference" />
-    <attr name="expressiveTwoTargetDividerViewStyle" format="reference" />
-
-    <attr name="expressiveSelectorWithWidgetPreferenceTheme" format="reference" />
-    <attr name="expressiveSelectorWithWidgetPreferenceRootLayoutStyle" format="reference" />
-    <attr name="expressiveSelectorWithWidgetPreferenceWidgetFrameStyle" format="reference" />
-    <attr name="expressiveSelectorWithWidgetPreferenceIconStyle" format="reference" />
-    <attr name="expressiveSelectorWithWidgetPreferenceTextContainerStyle" format="reference" />
-    <attr name="expressiveSelectorWithWidgetPreferenceTitleStyle" format="reference" />
-    <attr name="expressiveSelectorWithWidgetPreferenceSummaryContainerStyle" format="reference" />
-    <attr name="expressiveSelectorWithWidgetPreferenceSummaryStyle" format="reference" />
-    <attr name="expressiveSelectorWithWidgetPreferenceAppendixStyle" format="reference" />
-    <attr name="expressiveSelectorWithWidgetPreferenceExtraWidgetContainerStyle" format="reference" />
-    <attr name="expressiveSelectorWithWidgetPreferenceExtraWidgetDividerStyle" format="reference" />
-    <attr name="expressiveSelectorWithWidgetPreferenceExtraWidgetImageStyle" format="reference" />
 </resources>

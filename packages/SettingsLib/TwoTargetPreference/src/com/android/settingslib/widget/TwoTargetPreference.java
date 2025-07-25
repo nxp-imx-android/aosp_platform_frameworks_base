@@ -17,15 +17,12 @@
 package com.android.settingslib.widget;
 
 import android.content.Context;
-import android.content.res.Resources;
-import android.content.res.TypedArray;
 import android.util.AttributeSet;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 
 import androidx.annotation.IntDef;
-import androidx.annotation.NonNull;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceViewHolder;
 
@@ -55,22 +52,22 @@ public class TwoTargetPreference extends Preference {
 
     public TwoTargetPreference(Context context, AttributeSet attrs,
             int defStyleAttr, int defStyleRes) {
-        super(applyExpressivePreferenceThemeOverlay(context), attrs, defStyleAttr, defStyleRes);
+        super(context, attrs, defStyleAttr, defStyleRes);
         init(context);
     }
 
     public TwoTargetPreference(Context context, AttributeSet attrs, int defStyleAttr) {
-        super(applyExpressivePreferenceThemeOverlay(context), attrs, defStyleAttr);
+        super(context, attrs, defStyleAttr);
         init(context);
     }
 
     public TwoTargetPreference(Context context, AttributeSet attrs) {
-        super(applyExpressivePreferenceThemeOverlay(context), attrs);
+        super(context, attrs);
         init(context);
     }
 
     public TwoTargetPreference(Context context) {
-        super(applyExpressivePreferenceThemeOverlay(context));
+        super(context);
         init(context);
     }
 
@@ -123,19 +120,5 @@ public class TwoTargetPreference extends Preference {
 
     protected int getSecondTargetResId() {
         return 0;
-    }
-
-    @NonNull
-    private static Context applyExpressivePreferenceThemeOverlay(@NonNull Context context) {
-        TypedArray typedArray = context.obtainStyledAttributes(new int[] {
-                com.android.settingslib.widget.theme.R.attr
-                        .expressiveTwoTargetPreferenceTheme});
-        // Since the context is shared, only try to apply the theme if it 's not resolved.
-        if (typedArray.getResourceId(0, Resources.ID_NULL) == Resources.ID_NULL) {
-            context.getTheme().applyStyle(
-                    R.style.ThemeOverlay_ExpressiveTwoTargetPreference, false);
-        }
-        typedArray.recycle();
-        return context;
     }
 }
