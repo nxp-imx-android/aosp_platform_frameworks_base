@@ -18,11 +18,14 @@
 
 package com.android.systemui.volume.ui.compose.slider
 
+import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.AnimationSpec
 import androidx.compose.animation.core.Spring
-import androidx.compose.animation.core.animate
 import androidx.compose.animation.core.spring
 import androidx.compose.foundation.gestures.Orientation
+import androidx.compose.foundation.interaction.DragInteraction
+import androidx.compose.foundation.interaction.Interaction
+import androidx.compose.foundation.interaction.InteractionSource
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
@@ -31,11 +34,14 @@ import androidx.compose.material3.SliderColors
 import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.SliderState
 import androidx.compose.material3.VerticalSlider
+import androidx.compose.material3.rememberSliderState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.FloatState
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
@@ -53,10 +59,59 @@ import com.android.systemui.haptics.slider.compose.ui.SliderHapticsViewModel
 import com.android.systemui.lifecycle.rememberViewModel
 import com.android.systemui.volume.haptics.ui.VolumeHapticsConfigs
 import kotlin.math.round
-import kotlinx.coroutines.Job
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.milliseconds
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 private val DefaultAnimationSpec =
     spring<Float>(dampingRatio = Spring.DampingRatioNoBouncy, stiffness = Spring.StiffnessMedium)
+
+/**
+ * Filters out values if they update more often that the [debounceDuration] after the drag finishes.
+ * The actual [incomingValue] will be eventually emitted to keep the slider aligned with the
+ * upcoming values.
+ *
+ * This helps with the rapid slider changes when the incoming values appear with a slight delay.
+ * This allows slider to smoothly catchup later.
+ */
+@Composable
+private fun debouncedValueState(
+    incomingValue: Float,
+    sliderState: SliderState,
+    debounceDuration: Duration,
+    interactionSource: InteractionSource,
+): FloatState {
+    val valueState = remember { mutableFloatStateOf(incomingValue) }
+    var debounceStartTimestamp by remember { mutableLongStateOf(0) }
+    var debouncedValue by remember { mutableFloatStateOf(incomingValue) }
+    val currentTimestamp = System.currentTimeMillis()
+    val shouldDebounce =
+        currentTimestamp - debounceStartTimestamp < debounceDuration.inWholeMilliseconds
+    LaunchedEffect(interactionSource) {
+        interactionSource.interactions.collect { interaction: Interaction ->
+            when (interaction) {
+                is DragInteraction.Stop -> {
+                    debounceStartTimestamp = System.currentTimeMillis()
+                    debouncedValue = sliderState.value
+                }
+            }
+        }
+    }
+    LaunchedEffect(shouldDebounce) {
+        if (shouldDebounce) {
+            delay(debounceDuration)
+            valueState.floatValue = incomingValue
+        }
+    }
+    valueState.floatValue =
+        if (shouldDebounce) {
+            debouncedValue
+        } else {
+            incomingValue
+        }
+    return valueState
+}
 
 @Composable
 fun Slider(
@@ -84,33 +139,45 @@ fun Slider(
     },
 ) {
     require(stepDistance >= 0f) { "stepDistance must not be negative" }
-    val coroutineScope = rememberCoroutineScope()
-    var animationJob: Job? by remember { mutableStateOf(null) }
-    val sliderState = remember(valueRange) { SliderState(value = value, valueRange = valueRange) }
+    val sliderState = rememberSliderState(value = value, valueRange = valueRange)
     val hapticsViewModel =
         haptics.rememberViewModel(sliderState.value, valueRange, interactionSource)
-    LaunchedEffect(value) {
-        if (!sliderState.isDragging && sliderState.value != value) {
-            animationJob =
-                launchTraced("Slider#animateValue") {
-                    animate(
-                        initialValue = sliderState.value,
-                        targetValue = value,
-                        animationSpec = animationSpec,
-                    ) { animatedValue, _ ->
-                        sliderState.value = animatedValue
-                        if (haptics is Haptics.Enabled && !haptics.isDiscrete()) {
-                            hapticsViewModel?.onValueChange(animatedValue)
-                        }
+    val debouncedValue by
+        debouncedValueState(
+            incomingValue = value,
+            sliderState = sliderState,
+            interactionSource = interactionSource,
+            debounceDuration = 100.milliseconds,
+        )
+
+    // We use Animatable for the slider animation to preserve animation velocity when receiving
+    // consecutive value updates
+    val animatable = remember { Animatable(debouncedValue) }
+    val coroutineScope = rememberCoroutineScope()
+
+    SideEffect {
+        if (sliderState.isDragging) return@SideEffect
+        if (animatable.targetValue != debouncedValue && sliderState.value != debouncedValue) {
+            coroutineScope.launchTraced("Slider#animateValue") {
+                if (!animatable.isRunning) {
+                    // Set initial value. sliderState.value should equal to the current
+                    // animation value otherwise, so there is no need to update it
+                    animatable.snapTo(sliderState.value)
+                }
+                animatable.animateTo(targetValue = debouncedValue, animationSpec = animationSpec) {
+                    sliderState.value = this.value
+                    if (haptics is Haptics.Enabled && !haptics.isDiscrete()) {
+                        hapticsViewModel?.onValueChange(this.value)
                     }
                 }
+            }
         }
     }
 
     val valueChange: (Float) -> Unit = { newValue ->
         if (sliderState.isDragging) {
-            animationJob?.cancel()
             sliderState.value = newValue
+            coroutineScope.launch { animatable.snapTo(newValue) }
         }
         hapticsViewModel?.addVelocityDataPoint(newValue)
         if (haptics is Haptics.Enabled && !haptics.isDiscrete()) {
@@ -121,7 +188,7 @@ fun Slider(
     val semantics =
         createSemantics(
             accessibilityParams,
-            value,
+            debouncedValue,
             valueRange,
             valueChange,
             isEnabled,
@@ -131,19 +198,6 @@ fun Slider(
     sliderState.onValueChangeFinished = {
         hapticsViewModel?.onValueChangeEnded()
         onValueChangeFinished?.invoke(sliderState.value)
-        if (sliderState.value != value) {
-            animationJob?.cancel()
-            animationJob =
-                coroutineScope.launchTraced("Slider#animateValue") {
-                    animate(
-                        initialValue = sliderState.value,
-                        targetValue = value,
-                        animationSpec = animationSpec,
-                    ) { animatedValue, _ ->
-                        sliderState.value = animatedValue
-                    }
-                }
-        }
     }
     sliderState.onValueChange = valueChange
 
