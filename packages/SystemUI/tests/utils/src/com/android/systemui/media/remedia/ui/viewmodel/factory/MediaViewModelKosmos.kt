@@ -22,6 +22,7 @@ import com.android.systemui.media.remedia.domain.interactor.mediaInteractor
 import com.android.systemui.media.remedia.ui.viewmodel.MediaCarouselVisibility
 import com.android.systemui.media.remedia.ui.viewmodel.MediaViewModel
 import com.android.systemui.media.remedia.ui.viewmodel.mediaFalsingSystem
+import com.android.systemui.statusbar.notification.collection.provider.visualStabilityProvider
 
 val Kosmos.mediaViewModelFactory by
     Kosmos.Fixture {
@@ -33,6 +34,7 @@ val Kosmos.mediaViewModelFactory by
                 return MediaViewModel(
                     interactor = mediaInteractor,
                     falsingSystem = mediaFalsingSystem,
+                    visualStabilityProvider = visualStabilityProvider,
                     context = context,
                     carouselVisibility = carouselVisibility,
                 )
