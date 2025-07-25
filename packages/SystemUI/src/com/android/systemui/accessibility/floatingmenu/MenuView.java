@@ -284,9 +284,7 @@ class MenuView extends FrameLayout implements
         onPositionChanged();
 
         boolean shouldSendFeatureChangeNotification =
-                com.android.systemui.Flags.floatingMenuNotifyTargetsChangedOnStrictDiff()
-                    ? !areFeatureListsIdentical(targetFeatures, newTargetFeatures)
-                    : true;
+                !areFeatureListsIdentical(targetFeatures, newTargetFeatures);
         if (mFeaturesChangeListener != null && shouldSendFeatureChangeNotification) {
             mFeaturesChangeListener.onChange(newTargetFeatures);
         }
