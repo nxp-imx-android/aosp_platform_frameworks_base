@@ -969,7 +969,8 @@ public class DesktopModeLaunchParamsModifierTests extends
 
         final int desiredHeight =
                 (int) (PORTRAIT_DISPLAY_BOUNDS.height() * DESKTOP_MODE_INITIAL_BOUNDS_SCALE);
-        final int desiredWidth = (int) (desiredHeight / OVERRIDE_MIN_ASPECT_RATIO_LARGE_VALUE);
+        final int desiredWidth =
+                (int) ((desiredHeight / OVERRIDE_MIN_ASPECT_RATIO_LARGE_VALUE) + 0.5f);
 
         assertEquals(RESULT_CONTINUE, new CalculateRequestBuilder().setTask(task)
                 .setActivity(activity).calculate());
@@ -1190,7 +1191,8 @@ public class DesktopModeLaunchParamsModifierTests extends
 
         final int desiredHeight =
                 (int) (PORTRAIT_DISPLAY_BOUNDS.height() * DESKTOP_MODE_INITIAL_BOUNDS_SCALE);
-        final int desiredWidth = (int) (desiredHeight / userAspectRatioOverrideValue16_9);
+        final int desiredWidth =
+                (int) ((desiredHeight / userAspectRatioOverrideValue16_9) + 0.5f);
 
         assertEquals(RESULT_CONTINUE, new CalculateRequestBuilder().setTask(task)
                 .setActivity(activity).calculate());
@@ -1448,7 +1450,7 @@ public class DesktopModeLaunchParamsModifierTests extends
         final int desiredHeight =
                 (int) (PORTRAIT_DISPLAY_BOUNDS.height() * DESKTOP_MODE_INITIAL_BOUNDS_SCALE);
         final int desiredWidth =
-                (int) ((desiredHeight - captionHeight) / displayAspectRatio);
+                (int) (((desiredHeight - captionHeight) / displayAspectRatio) + 0.5f);
 
         assertEquals(RESULT_CONTINUE, new CalculateRequestBuilder().setTask(task)
                 .setActivity(activity).calculate());

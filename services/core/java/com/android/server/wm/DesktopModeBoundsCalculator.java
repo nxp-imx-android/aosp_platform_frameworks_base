@@ -54,7 +54,7 @@ import java.util.function.Consumer;
 public final class DesktopModeBoundsCalculator {
 
     public static final float DESKTOP_MODE_INITIAL_BOUNDS_SCALE = SystemProperties
-            .getInt("persist.wm.debug.desktop_mode_initial_bounds_scale", 75) / 100f;
+            .getInt("persist.wm.debug.desktop_mode_initial_bounds_scale", 72) / 100f;
     public static final int DESKTOP_MODE_LANDSCAPE_APP_PADDING = SystemProperties
             .getInt("persist.wm.debug.desktop_mode_landscape_app_padding", 25);
 
