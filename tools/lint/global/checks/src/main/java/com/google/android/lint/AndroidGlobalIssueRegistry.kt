@@ -35,12 +35,13 @@ class AndroidGlobalIssueRegistry : IssueRegistry() {
             EnforcePermissionDetector.ISSUE_MISMATCHING_ENFORCE_PERMISSION,
             EnforcePermissionDetector.ISSUE_ENFORCE_PERMISSION_HELPER,
             EnforcePermissionDetector.ISSUE_MISUSING_ENFORCE_PERMISSION,
-            RequiresPermissionDetector.ISSUE_MISSING_OR_MISMATCHED_REQUIRES_PERMISSION_ANNOTATION,
-            RequiresPermissionDetector.ISSUE_INCORRECT_REQUIRES_PERMISSION_PROPAGATION,
-            PermissionAnnotationDetector.ISSUE_MISSING_PERMISSION_ANNOTATION,
+            // TODO(b/264451752): re-enable new rules one by one once this is built from source
+            // RequiresPermissionDetector.ISSUE_MISSING_OR_MISMATCHED_REQUIRES_PERMISSION_ANNOTATION,
+            // RequiresPermissionDetector.ISSUE_INCORRECT_REQUIRES_PERMISSION_PROPAGATION,
+            // PermissionAnnotationDetector.ISSUE_MISSING_PERMISSION_ANNOTATION,
             SimpleManualPermissionEnforcementDetector.ISSUE_SIMPLE_MANUAL_PERMISSION_ENFORCEMENT,
-            SimpleRequiresNoPermissionDetector.ISSUE_SIMPLE_REQUIRES_NO_PERMISSION,
-            CheckFlagsRuleDetector.ISSUE_MISSING_CHECK_FLAGS_RULE,
+            // SimpleRequiresNoPermissionDetector.ISSUE_SIMPLE_REQUIRES_NO_PERMISSION,
+            // CheckFlagsRuleDetector.ISSUE_MISSING_CHECK_FLAGS_RULE,
     )
 
     override val api: Int
