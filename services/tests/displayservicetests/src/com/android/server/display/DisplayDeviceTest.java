@@ -85,7 +85,8 @@ public class DisplayDeviceTest {
         mDisplayDeviceInfo.xDpi = 0.5f;
         mDisplayDeviceInfo.yDpi = 1.0f;
         DisplayDevice displayDevice = new FakeDisplayDevice(mDisplayDeviceInfo,
-                mMockDisplayAdapter, /*isAnisotropyCorrectionEnabled=*/ true);
+                mMockDisplayAdapter);
+        displayDevice.setAnisotropyCorrectionEnabled(true);
         assertThat(displayDevice.getDisplaySurfaceDefaultSizeLocked()).isEqualTo(
                 PORTRAIT_DOUBLE_WIDTH);
     }
@@ -96,7 +97,8 @@ public class DisplayDeviceTest {
         mDisplayDeviceInfo.xDpi = 0.5f;
         mDisplayDeviceInfo.yDpi = 1.0f;
         DisplayDevice displayDevice = new FakeDisplayDevice(mDisplayDeviceInfo,
-                mMockDisplayAdapter, /*isAnisotropyCorrectionEnabled=*/ true);
+                mMockDisplayAdapter);
+        displayDevice.setAnisotropyCorrectionEnabled(true);
         assertThat(displayDevice.getDisplaySurfaceDefaultSizeLocked()).isEqualTo(PORTRAIT_SIZE);
     }
 
@@ -121,7 +123,8 @@ public class DisplayDeviceTest {
         mDisplayDeviceInfo.xDpi = 0.5f;
         mDisplayDeviceInfo.yDpi = 1.0f;
         DisplayDevice displayDevice = new FakeDisplayDevice(mDisplayDeviceInfo,
-                mMockDisplayAdapter, /*isAnisotropyCorrectionEnabled=*/ true);
+                mMockDisplayAdapter);
+        displayDevice.setAnisotropyCorrectionEnabled(true);
         displayDevice.setProjectionLocked(mMockTransaction, ROTATION_90, new Rect(), new Rect());
         assertThat(displayDevice.getDisplaySurfaceDefaultSizeLocked()).isEqualTo(
                 LANDSCAPE_DOUBLE_HEIGHT);
@@ -133,7 +136,8 @@ public class DisplayDeviceTest {
         mDisplayDeviceInfo.xDpi = 0.5f;
         mDisplayDeviceInfo.yDpi = 1.0f;
         DisplayDevice displayDevice = new FakeDisplayDevice(mDisplayDeviceInfo,
-                mMockDisplayAdapter, /*isAnisotropyCorrectionEnabled=*/ true);
+                mMockDisplayAdapter);
+        displayDevice.setAnisotropyCorrectionEnabled(true);
         displayDevice.setProjectionLocked(mMockTransaction, ROTATION_90, new Rect(), new Rect());
         assertThat(displayDevice.getDisplaySurfaceDefaultSizeLocked()).isEqualTo(LANDSCAPE_SIZE);
     }
@@ -225,14 +229,8 @@ public class DisplayDeviceTest {
         private final DisplayDeviceInfo mDisplayDeviceInfo;
 
         FakeDisplayDevice(DisplayDeviceInfo displayDeviceInfo, DisplayAdapter displayAdapter) {
-            this(displayDeviceInfo, displayAdapter, /*isAnisotropyCorrectionEnabled=*/ false);
-        }
-
-        FakeDisplayDevice(DisplayDeviceInfo displayDeviceInfo, DisplayAdapter displayAdapter,
-                boolean isAnisotropyCorrectionEnabled) {
             super(displayAdapter, /* displayToken= */ null, /* uniqueId= */ "",
-                    InstrumentationRegistry.getInstrumentation().getContext(),
-                    isAnisotropyCorrectionEnabled);
+                    InstrumentationRegistry.getInstrumentation().getContext());
             mDisplayDeviceInfo = displayDeviceInfo;
         }
 

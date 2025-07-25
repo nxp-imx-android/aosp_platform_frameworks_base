@@ -271,8 +271,7 @@ final class LocalDisplayAdapter extends DisplayAdapter {
                 SurfaceControl.DynamicDisplayInfo dynamicInfo,
                 SurfaceControl.DesiredDisplayModeSpecs modeSpecs, boolean isFirstDisplay) {
             super(LocalDisplayAdapter.this, displayToken, UNIQUE_ID_PREFIX + physicalDisplayId,
-                    getContext(),
-                    getFeatureFlags().isPixelAnisotropyCorrectionInLogicalDisplayEnabled());
+                    getContext());
             mPhysicalDisplayId = physicalDisplayId;
             mIsFirstDisplay = isFirstDisplay;
             updateDisplayPropertiesLocked(staticDisplayInfo, dynamicInfo, modeSpecs);

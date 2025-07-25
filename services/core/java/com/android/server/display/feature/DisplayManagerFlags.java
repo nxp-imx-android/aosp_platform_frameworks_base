@@ -101,11 +101,6 @@ public class DisplayManagerFlags {
             Flags.FLAG_FAST_HDR_TRANSITIONS,
             Flags::fastHdrTransitions);
 
-    private final FlagState mPixelAnisotropyCorrectionEnabled = new FlagState(
-            Flags.FLAG_ENABLE_PIXEL_ANISOTROPY_CORRECTION,
-            Flags::enablePixelAnisotropyCorrection
-    );
-
     private final FlagState mSensorBasedBrightnessThrottling = new FlagState(
             Flags.FLAG_SENSOR_BASED_BRIGHTNESS_THROTTLING,
             Flags::sensorBasedBrightnessThrottling
@@ -357,10 +352,6 @@ public class DisplayManagerFlags {
         return mFastHdrTransitions.isEnabled();
     }
 
-    public boolean isPixelAnisotropyCorrectionInLogicalDisplayEnabled() {
-        return mPixelAnisotropyCorrectionEnabled.isEnabled();
-    }
-
     public boolean isSensorBasedBrightnessThrottlingEnabled() {
         return mSensorBasedBrightnessThrottling.isEnabled();
     }
@@ -572,7 +563,6 @@ public class DisplayManagerFlags {
         pw.println(" " + mBrightnessWearBedtimeModeClamperFlagState);
         pw.println(" " + mAutoBrightnessModesFlagState);
         pw.println(" " + mFastHdrTransitions);
-        pw.println(" " + mPixelAnisotropyCorrectionEnabled);
         pw.println(" " + mSensorBasedBrightnessThrottling);
         pw.println(" " + mRefactorDisplayPowerController);
         pw.println(" " + mDozeBrightnessStrategy);
