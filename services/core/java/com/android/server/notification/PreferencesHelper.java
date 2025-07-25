@@ -169,7 +169,7 @@ public class PreferencesHelper implements RankingConfig {
     private static final String ATT_SHOW_BADGE = "show_badge";
     private static final String ATT_APP_USER_LOCKED_FIELDS = "app_user_locked_fields";
     private static final String ATT_ENABLED = "enabled";
-    private static final String ATT_HIDE_SILENT = "hide_gentle";
+    private static final String ATT_HIDE_SILENT = "hide_silent";
     private static final String ATT_SENT_INVALID_MESSAGE = "sent_invalid_msg";
     private static final String ATT_SENT_VALID_MESSAGE = "sent_valid_msg";
     private static final String ATT_USER_DEMOTED_INVALID_MSG_APP = "user_demote_msg_app";
@@ -182,7 +182,7 @@ public class PreferencesHelper implements RankingConfig {
     private static final int DEFAULT_VISIBILITY = NotificationManager.VISIBILITY_NO_OVERRIDE;
     private static final int DEFAULT_IMPORTANCE = NotificationManager.IMPORTANCE_UNSPECIFIED;
     @VisibleForTesting
-    static final boolean DEFAULT_HIDE_SILENT_STATUS_BAR_ICONS = false;
+    static final boolean DEFAULT_HIDE_SILENT_STATUS_BAR_ICONS = true;
     private static final boolean DEFAULT_SHOW_BADGE = true;
 
     private static final boolean DEFAULT_APP_LOCKED_IMPORTANCE  = false;
