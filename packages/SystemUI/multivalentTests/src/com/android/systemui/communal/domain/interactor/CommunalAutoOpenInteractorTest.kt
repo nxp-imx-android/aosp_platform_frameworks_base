@@ -22,7 +22,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.Flags.FLAG_GLANCEABLE_HUB_V2
 import com.android.systemui.SysuiTestCase
-import com.android.systemui.common.data.repository.batteryRepository
+import com.android.systemui.common.data.repository.batteryRepositoryDeprecated
 import com.android.systemui.common.data.repository.fake
 import com.android.systemui.communal.data.model.FEATURE_AUTO_OPEN
 import com.android.systemui.communal.data.model.FEATURE_MANUAL_OPEN
@@ -83,14 +83,14 @@ class CommunalAutoOpenInteractorTest : SysuiTestCase() {
                 MAIN_USER_ID,
             )
 
-            batteryRepository.fake.setDevicePluggedIn(false)
+            batteryRepositoryDeprecated.fake.setDevicePluggedIn(false)
             assertThat(shouldAutoOpen).isFalse()
             assertThat(suppressionReason)
                 .isEqualTo(
                     SuppressionReason.ReasonWhenToAutoShow(FEATURE_AUTO_OPEN or FEATURE_MANUAL_OPEN)
                 )
 
-            batteryRepository.fake.setDevicePluggedIn(true)
+            batteryRepositoryDeprecated.fake.setDevicePluggedIn(true)
             assertThat(shouldAutoOpen).isTrue()
             assertThat(suppressionReason).isNull()
         }
@@ -107,7 +107,7 @@ class CommunalAutoOpenInteractorTest : SysuiTestCase() {
                 MAIN_USER_ID,
             )
 
-            batteryRepository.fake.setDevicePluggedIn(true)
+            batteryRepositoryDeprecated.fake.setDevicePluggedIn(true)
             fakeDockManager.setIsDocked(false)
 
             assertThat(shouldAutoOpen).isFalse()
@@ -134,7 +134,7 @@ class CommunalAutoOpenInteractorTest : SysuiTestCase() {
                 MAIN_USER_ID,
             )
 
-            batteryRepository.fake.setDevicePluggedIn(true)
+            batteryRepositoryDeprecated.fake.setDevicePluggedIn(true)
             posturingRepository.fake.emitPositionState(
                 PositionState(
                     stationary = ConfidenceLevel.Positive(confidence = 1f),
@@ -172,7 +172,7 @@ class CommunalAutoOpenInteractorTest : SysuiTestCase() {
                 MAIN_USER_ID,
             )
 
-            batteryRepository.fake.setDevicePluggedIn(true)
+            batteryRepositoryDeprecated.fake.setDevicePluggedIn(true)
             posturingRepository.fake.emitPositionState(PositionState())
             fakeDockManager.setIsDocked(true)
 

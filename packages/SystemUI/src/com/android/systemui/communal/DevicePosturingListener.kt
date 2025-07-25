@@ -23,7 +23,7 @@ import android.service.dreams.Flags.allowDreamWhenPostured
 import com.android.app.tracing.coroutines.launchInTraced
 import com.android.app.tracing.coroutines.launchTraced
 import com.android.systemui.CoreStartable
-import com.android.systemui.common.domain.interactor.BatteryInteractor
+import com.android.systemui.common.domain.interactor.BatteryInteractorDeprecated
 import com.android.systemui.communal.posturing.domain.interactor.PosturingInteractor
 import com.android.systemui.communal.posturing.domain.interactor.PosturingInteractor.Companion.SLIDING_WINDOW_DURATION
 import com.android.systemui.communal.posturing.shared.model.PosturedState
@@ -59,7 +59,7 @@ constructor(
     private val dreamManager: DreamManager,
     private val posturingInteractor: PosturingInteractor,
     dreamSettingsInteractor: DreamSettingsInteractor,
-    private val batteryInteractor: BatteryInteractor,
+    private val batteryInteractorDeprecated: BatteryInteractorDeprecated,
     @Background private val bgScope: CoroutineScope,
     @CommunalTableLog private val tableLogBuffer: TableLogBuffer,
     private val wakeLockBuilder: WakeLock.Builder,
@@ -79,7 +79,7 @@ constructor(
     // if posturing signal is not needed.
     private val preconditions =
         allOf(
-            batteryInteractor.isDevicePluggedIn,
+            batteryInteractorDeprecated.isDevicePluggedIn,
             dreamSettingsInteractor.whenToDream.map { it == WhenToDream.WHILE_POSTURED },
         )
 
@@ -107,7 +107,7 @@ constructor(
             return
         }
 
-        batteryInteractor.isDevicePluggedIn
+        batteryInteractorDeprecated.isDevicePluggedIn
             .logDiffsForTable(
                 tableLogBuffer = tableLogBuffer,
                 columnName = "isDevicePluggedIn",

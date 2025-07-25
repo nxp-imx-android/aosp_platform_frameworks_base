@@ -16,7 +16,7 @@
 
 package com.android.systemui.communal.domain.interactor
 
-import com.android.systemui.common.domain.interactor.BatteryInteractor
+import com.android.systemui.common.domain.interactor.BatteryInteractorDeprecated
 import com.android.systemui.communal.dagger.CommunalModule.Companion.SWIPE_TO_HUB
 import com.android.systemui.communal.data.model.FEATURE_AUTO_OPEN
 import com.android.systemui.communal.data.model.FEATURE_MANUAL_OPEN
@@ -43,7 +43,7 @@ class CommunalAutoOpenInteractor
 constructor(
     communalSettingsInteractor: CommunalSettingsInteractor,
     @Background private val backgroundContext: CoroutineContext,
-    private val batteryInteractor: BatteryInteractor,
+    private val batteryInteractorDeprecated: BatteryInteractorDeprecated,
     private val posturingInteractor: PosturingInteractor,
     private val dockManager: DockManager,
     @Named(SWIPE_TO_HUB) private val allowSwipeAlways: Boolean,
@@ -52,14 +52,18 @@ constructor(
         communalSettingsInteractor.whenToStartHub
             .flatMapLatestConflated { whenToStartHub ->
                 when (whenToStartHub) {
-                    WhenToStartHub.WHILE_CHARGING -> batteryInteractor.isDevicePluggedIn
+                    WhenToStartHub.WHILE_CHARGING -> batteryInteractorDeprecated.isDevicePluggedIn
                     WhenToStartHub.WHILE_DOCKED -> {
-                        allOf(batteryInteractor.isDevicePluggedIn, dockManager.retrieveIsDocked())
+                        allOf(
+                            batteryInteractorDeprecated.isDevicePluggedIn,
+                            dockManager.retrieveIsDocked(),
+                        )
                     }
                     WhenToStartHub.WHILE_CHARGING_AND_POSTURED -> {
                         // Only listen to posturing if applicable to avoid running the posturing
                         // CHRE nanoapp when not needed.
-                        batteryInteractor.isDevicePluggedIn.flatMapLatestConflated { isCharging ->
+                        batteryInteractorDeprecated.isDevicePluggedIn.flatMapLatestConflated {
+                            isCharging ->
                             if (isCharging) {
                                 posturingInteractor.postured
                             } else {

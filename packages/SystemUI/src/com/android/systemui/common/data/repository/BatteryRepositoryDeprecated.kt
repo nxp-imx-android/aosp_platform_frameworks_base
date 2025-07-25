@@ -26,15 +26,21 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.stateIn
 
-interface BatteryRepository {
+@Deprecated(
+    "Use com.android.systemui.statusbar.pipeline.battery.data.repository.BatteryRepository instead"
+)
+interface BatteryRepositoryDeprecated {
     val isDevicePluggedIn: Flow<Boolean>
 }
 
 @SysUISingleton
-class BatteryRepositoryImpl
+@Deprecated(
+    "Use com.android.systemui.statusbar.pipeline.battery.data.repository.BatteryRepositoryImpl instead"
+)
+class BatteryRepositoryDeprecatedImpl
 @Inject
 constructor(@Background bgScope: CoroutineScope, batteryController: BatteryController) :
-    BatteryRepository {
+    BatteryRepositoryDeprecated {
 
     /** Returns {@code true} if the device is currently plugged in or wireless charging. */
     override val isDevicePluggedIn: Flow<Boolean> =

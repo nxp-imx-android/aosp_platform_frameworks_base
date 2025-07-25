@@ -27,7 +27,7 @@ import com.android.systemui.Flags.FLAG_GLANCEABLE_HUB_V2
 import com.android.systemui.Flags.glanceableHubV2
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.bouncer.data.repository.fakeKeyguardBouncerRepository
-import com.android.systemui.common.data.repository.batteryRepository
+import com.android.systemui.common.data.repository.batteryRepositoryDeprecated
 import com.android.systemui.common.data.repository.fake
 import com.android.systemui.communal.data.repository.communalSceneRepository
 import com.android.systemui.communal.domain.interactor.setCommunalAvailable
@@ -215,7 +215,7 @@ class FromDreamingTransitionInteractorTest(flags: FlagsParameterization?) : Sysu
                     1,
                     user.id,
                 )
-                batteryRepository.fake.setDevicePluggedIn(true)
+                batteryRepositoryDeprecated.fake.setDevicePluggedIn(true)
             } else {
                 whenever(dreamManager.canStartDreaming(anyBoolean())).thenReturn(true)
             }

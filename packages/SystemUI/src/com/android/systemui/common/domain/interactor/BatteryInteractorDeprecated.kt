@@ -14,21 +14,18 @@
  * limitations under the License.
  */
 
-package com.android.systemui.common.data.repository
+package com.android.systemui.common.domain.interactor
 
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import com.android.systemui.common.data.repository.BatteryRepositoryDeprecated
+import com.android.systemui.dagger.SysUISingleton
+import javax.inject.Inject
 
-class FakeBatteryRepository : BatteryRepository {
-    private val _isDevicePluggedIn = MutableStateFlow(false)
-
-    override val isDevicePluggedIn: Flow<Boolean> = _isDevicePluggedIn.asStateFlow()
-
-    fun setDevicePluggedIn(isPluggedIn: Boolean) {
-        _isDevicePluggedIn.value = isPluggedIn
-    }
+@SysUISingleton
+@Deprecated(
+    "Use com.android.systemui.statusbar.pipeline.battery.domain.interactor.BatteryInteractor instead"
+)
+class BatteryInteractorDeprecated
+@Inject
+constructor(batteryRepositoryDeprecated: BatteryRepositoryDeprecated) {
+    val isDevicePluggedIn = batteryRepositoryDeprecated.isDevicePluggedIn
 }
-
-val BatteryRepository.fake
-    get() = this as FakeBatteryRepository
