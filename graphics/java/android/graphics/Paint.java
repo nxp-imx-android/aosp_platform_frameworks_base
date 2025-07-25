@@ -753,7 +753,13 @@ public class Paint {
         setTextLocales(LocaleList.getAdjustedDefault());
         resetElegantTextHeight();
         mFontFeatureSettings = null;
-        mFontVariationSettings = null;
+        if (com.android.text.flags.Flags.fixPaintResetInconsistency()) {
+            setFontVariationSettings(null);
+            setFontVariationOverride(null);
+            setTypeface(null);
+        } else {
+            mFontVariationSettings = null;
+        }
 
         mShadowLayerRadius = 0.0f;
         mShadowLayerDx = 0.0f;
