@@ -32,6 +32,7 @@ import com.android.systemui.statusbar.chips.ui.viewmodel.ongoingActivityChipsVie
 import com.android.systemui.statusbar.chips.uievents.statusBarChipsUiEventLogger
 import com.android.systemui.statusbar.events.domain.interactor.systemStatusEventAnimationInteractor
 import com.android.systemui.statusbar.featurepods.popups.ui.viewmodel.statusBarPopupChipsViewModelFactory
+import com.android.systemui.statusbar.layout.ui.viewmodel.appHandlesViewModelFactory
 import com.android.systemui.statusbar.layout.ui.viewmodel.multiDisplayStatusBarContentInsetsViewModelStore
 import com.android.systemui.statusbar.layout.ui.viewmodel.statusBarBoundsViewModelFactory
 import com.android.systemui.statusbar.notification.domain.interactor.activeNotificationsInteractor
@@ -74,6 +75,7 @@ var Kosmos.homeStatusBarViewModelFactory: (Int) -> HomeStatusBarViewModel by
                 batteryViewModelBasedOnSettingFactory,
                 systemStatusIconsViewModelFactory,
                 statusBarBoundsViewModelFactory,
+                appHandlesViewModelFactory,
                 tableLogBufferFactory,
                 homeStatusBarInteractor,
                 homeStatusBarIconBlockListInteractor,

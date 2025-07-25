@@ -31,6 +31,7 @@ import com.android.systemui.statusbar.chips.ui.model.MultipleOngoingActivityChip
 import com.android.systemui.statusbar.chips.ui.model.OngoingActivityChipModel
 import com.android.systemui.statusbar.events.shared.model.SystemEventAnimationState.Idle
 import com.android.systemui.statusbar.featurepods.popups.ui.model.PopupChipModel
+import com.android.systemui.statusbar.layout.ui.viewmodel.AppHandlesViewModel
 import com.android.systemui.statusbar.layout.ui.viewmodel.StatusBarBoundsViewModel
 import com.android.systemui.statusbar.phone.domain.interactor.IsAreaDark
 import com.android.systemui.statusbar.pipeline.battery.ui.viewmodel.BatteryNextToPercentViewModel
@@ -96,10 +97,15 @@ class FakeHomeStatusBarViewModel(
     override val statusBarBoundsViewModelFactory: StatusBarBoundsViewModel.Factory =
         object : StatusBarBoundsViewModel.Factory {
             override fun create(
-                displayId: Int,
                 startSideContainerView: View,
                 clockView: Clock,
             ): StatusBarBoundsViewModel = mock(StatusBarBoundsViewModel::class.java)
+        }
+
+    override val appHandlesViewModelFactory: AppHandlesViewModel.Factory =
+        object : AppHandlesViewModel.Factory {
+            override fun create(displayId: Int): AppHandlesViewModel =
+                mock(AppHandlesViewModel::class.java)
         }
 
     override val shouldShowOperatorNameView = MutableStateFlow(false)
