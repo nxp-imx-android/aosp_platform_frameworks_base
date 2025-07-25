@@ -211,6 +211,8 @@ public class UiUtil {
                     context.getColor(R.color.onPrimaryColor)));
             materialButton.setStrokeColor(
                     ColorStateList.valueOf(context.getColor(android.R.color.transparent)));
+            materialButton.setRippleColor(ColorStateList.valueOf(
+                    context.getColor(R.color.m3_button_ripple_color_selector)));
         }
     }
 
@@ -231,6 +233,8 @@ public class UiUtil {
                     ColorStateList.valueOf(context.getColor(R.color.primaryColor)));
             materialButton.setStrokeColor(
                     ColorStateList.valueOf(context.getColor(R.color.outlineVariantColor)));
+            materialButton.setRippleColor(ColorStateList.valueOf(
+                    context.getColor(R.color.m3_button_ripple_color_selector)));
         }
     }
 
@@ -251,6 +255,8 @@ public class UiUtil {
                     ColorStateList.valueOf(context.getColor(R.color.primaryColor)));
             materialButton.setStrokeColor(
                     ColorStateList.valueOf(context.getColor(android.R.color.transparent)));
+            materialButton.setRippleColor(ColorStateList.valueOf(
+                    context.getColor(R.color.m3_text_button_ripple_color_selector)));
         }
     }
 
