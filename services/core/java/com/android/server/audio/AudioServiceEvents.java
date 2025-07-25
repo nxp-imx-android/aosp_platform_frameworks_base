@@ -278,6 +278,7 @@ public class AudioServiceEvents {
         static final int VOL_ADJUST_GROUP_VOL = 11;
         static final int VOL_MASTER_MUTE = 12;
         static final int VOL_ABS_DEVICE_ENABLED_ERROR = 13;
+        static final int VOL_SET_ABS_VOL = 14;
 
         final int mOp;
         final int mStream;
@@ -338,6 +339,19 @@ public class AudioServiceEvents {
             mVal2 = 0;
             mVal3 = -1;
             mStream = -1;
+            mCaller = null;
+            mGroupName = null;
+            logMetricEvent();
+        }
+
+        /** used for VOL_SET_ABS_VOL */
+        VolumeEvent(int op, int stream, int index, int device, boolean muted) {
+            mOp = op;
+            mVal1 = index;
+            // unused
+            mVal2 = device;
+            mVal3 = muted ? 1 : 0;
+            mStream = stream;
             mCaller = null;
             mGroupName = null;
             logMetricEvent();
@@ -502,6 +516,16 @@ public class AudioServiceEvents {
                             .set(MediaMetrics.Property.INDEX, mVal1)
                             .record();
                     return;
+                case VOL_SET_ABS_VOL:
+                    new MediaMetrics.Item(mMetricsId)
+                            .set(MediaMetrics.Property.EVENT, "setAbsoluteVolume")
+                            .set(MediaMetrics.Property.STREAM_TYPE,
+                                    AudioSystem.streamToString(mStream))
+                            .set(MediaMetrics.Property.INDEX, mVal3 == 1 ? 0 : mVal1)
+                            .set(MediaMetrics.Property.DEVICE,
+                                    AudioSystem.getOutputDeviceName(mVal2))
+                            .record();
+                    return;
                 case VOL_VOICE_ACTIVITY_CONTEXTUAL_VOLUME:
                     new MediaMetrics.Item(mMetricsId)
                             .set(MediaMetrics.Property.EVENT, "voiceActivityContextualVolume")
@@ -592,6 +616,13 @@ public class AudioServiceEvents {
                 case VOL_SET_AVRCP_VOL:
                     return new StringBuilder("setAvrcpVolume:")
                             .append(" index:").append(mVal1)
+                            .toString();
+                case VOL_SET_ABS_VOL:
+                    return new StringBuilder("setAbsoluteVolume:")
+                            .append(" stream:").append(AudioSystem.streamToString(mStream))
+                            .append(" index:").append(mVal1)
+                            .append(" muted:").append(mVal3 == 1 ? "true" : "false")
+                            .append(" device:").append(AudioSystem.getOutputDeviceName(mVal2))
                             .toString();
                 case VOL_ADJUST_VOL_UID:
                     return new StringBuilder("adjustStreamVolumeForUid(stream:")
