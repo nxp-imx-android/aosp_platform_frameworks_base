@@ -5716,9 +5716,8 @@ public class AudioService extends IAudioService.Stub
                     // full volume device shouldn't update the mute state
                     /* canChangeMute= */ canChangeMuteAndUpdateController
                             && !isFullVolumeDevice(deviceType));
-            index = streamState.getIndex(deviceType);
-
         }
+        index = streamState.getIndex(deviceType);
 
         handleAbsoluteVolume(streamType, streamTypeAlias, deviceAttr, index, streamState.mIsMuted,
                 flags);
