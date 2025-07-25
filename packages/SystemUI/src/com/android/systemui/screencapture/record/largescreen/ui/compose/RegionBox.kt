@@ -35,8 +35,10 @@ import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.PointerInputChange
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.layout
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import com.android.systemui.screencapture.common.ui.viewmodel.DrawableLoaderViewModel
@@ -304,6 +306,31 @@ fun RegionBox(
                 boxHeightDp,
                 currentRect,
                 drawableLoaderViewModel = drawableLoaderViewModel,
+            )
+
+            /** Vertical spacing in DP between the region box and the dimensions pill below it. */
+            val pillVerticalSpacingDp = 16.dp
+
+            RegionDimensionsPill(
+                widthPx = currentRect.width.roundToInt(),
+                heightPx = currentRect.height.roundToInt(),
+                modifier =
+                    Modifier.layout { measurable, _ ->
+                        // Measure the pill's layout size, then center it horizontally based on the
+                        // currentRect.
+                        val dimensionsPillPlaceable = measurable.measure(Constraints())
+                        val pillX =
+                            currentRect.left +
+                                (currentRect.width - dimensionsPillPlaceable.width) / 2
+                        val pillY =
+                            currentRect.bottom + with(density) { pillVerticalSpacingDp.toPx() }
+                        layout(dimensionsPillPlaceable.width, dimensionsPillPlaceable.height) {
+                            dimensionsPillPlaceable.placeRelative(
+                                pillX.roundToInt(),
+                                pillY.roundToInt(),
+                            )
+                        }
+                    },
             )
         }
     }
