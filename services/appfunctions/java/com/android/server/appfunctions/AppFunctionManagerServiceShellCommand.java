@@ -23,6 +23,7 @@ import static android.app.appfunctions.AppFunctionManager.ACCESS_FLAG_OTHER_GRAN
 import static com.android.server.appfunctions.AppSearchDataJsonConverter.convertGenericDocumentsToJsonArray;
 import static com.android.server.appfunctions.AppSearchDataJsonConverter.convertJsonToGenericDocument;
 import static com.android.server.appfunctions.AppSearchDataJsonConverter.searchResultToJsonObject;
+import static com.android.server.appfunctions.AppSearchDataYamlConverter.convertGenericDocumentsToYaml;
 
 import android.annotation.NonNull;
 import android.app.ActivityManager;
@@ -86,7 +87,7 @@ public class AppFunctionManagerServiceShellCommand extends ShellCommand {
         pw.println(
                 "  execute-app-function --package <PACKAGE_NAME> --function <FUNCTION_ID> "
                         + "--parameters <PARAMETERS_JSON> [--user <USER_ID>]"
-                        + "[--timeout-duration <SECONDS>]");
+                        + "[--timeout-duration <SECONDS>] [--brief-yaml]");
         pw.println(
                 "    Executes an app function for the given package with the provided parameters "
                         + " and returns the result as a JSON string");
@@ -102,6 +103,8 @@ public class AppFunctionManagerServiceShellCommand extends ShellCommand {
                 "    --timeout-duration <SECONDS> (optional): The timeout for the function "
                         + "execution in seconds. Defaults to " + DEFAULT_EXECUTE_TIMEOUT_SECONDS
                         + " seconds.");
+        pw.println(
+                "    --brief-yaml (optional): Prints a concise yaml output.");
         pw.println();
         pw.println(
                 "  set-enabled --package <PACKAGE_NAME> --function <FUNCTION_ID> "
@@ -354,6 +357,7 @@ public class AppFunctionManagerServiceShellCommand extends ShellCommand {
         String parametersJson = null;
         int userId = ActivityManager.getCurrentUser();
         long timeoutDurationSeconds = DEFAULT_EXECUTE_TIMEOUT_SECONDS;
+        boolean briefYaml = false;
         String opt;
 
         while ((opt = getNextOption()) != null) {
@@ -381,6 +385,9 @@ public class AppFunctionManagerServiceShellCommand extends ShellCommand {
                         pw.println("Invalid timeout duration: " + getNextArg()
                                 + ". Using default of " + DEFAULT_EXECUTE_TIMEOUT_SECONDS + "s.");
                     }
+                    break;
+                case "--brief-yaml":
+                    briefYaml = true;
                     break;
                 default:
                     pw.println("Unknown option: " + opt);
@@ -414,6 +421,7 @@ public class AppFunctionManagerServiceShellCommand extends ShellCommand {
 
         CountDownLatch countDownLatch = new CountDownLatch(1);
         final AtomicInteger resultCode = new AtomicInteger(0);
+        final boolean finalBriefYaml = briefYaml;
         IExecuteAppFunctionCallback callback =
                 new IExecuteAppFunctionCallback.Stub() {
 
@@ -431,14 +439,26 @@ public class AppFunctionManagerServiceShellCommand extends ShellCommand {
                             }
                             // HACK: GenericDocument doesn't tell whether a property is singular
                             // or repeated. We always assume the return is an array here.
-                            JSONArray functionReturnJson =
+                            if (finalBriefYaml) {
+                                String functionReturnYaml =
+                                        convertGenericDocumentsToYaml(
+                                            functionReturn,
+                                            /*keepEmptyValues=*/ false,
+                                            /*keepNullValues=*/ false,
+                                            /*keepGenericDocumentProperties=*/ false
+                                        );
+                                pw.println(functionReturnYaml);
+                            } else {
+                                JSONArray functionReturnJson =
                                     convertGenericDocumentsToJsonArray(functionReturn);
-                            pw.println(functionReturnJson.toString(/*indentSpace=*/ 2));
+                                pw.println(functionReturnJson.toString(/*indentSpace=*/ 2));
+                            }
                         } catch (JSONException e) {
                             pw.println("Failed to convert the function response to JSON.");
                             resultCode.set(-1);
+                        } finally {
+                            countDownLatch.countDown();
                         }
-                        countDownLatch.countDown();
                     }
 
                     @Override
