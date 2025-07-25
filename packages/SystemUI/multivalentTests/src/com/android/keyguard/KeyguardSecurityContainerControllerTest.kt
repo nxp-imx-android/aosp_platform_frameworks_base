@@ -91,6 +91,7 @@ import com.android.systemui.util.mockito.mock
 import com.android.systemui.util.mockito.whenever
 import com.android.systemui.util.settings.GlobalSettings
 import com.android.systemui.util.time.FakeSystemClock
+import com.android.systemui.util.wrapper.LockPatternCheckerWrapper
 import com.android.systemui.window.domain.interactor.windowRootViewBlurInteractor
 import com.google.common.truth.Truth
 import junit.framework.Assert
@@ -163,6 +164,7 @@ class KeyguardSecurityContainerControllerTest : SysuiTestCase() {
     @Mock private lateinit var devicePolicyManager: DevicePolicyManager
     @Mock private lateinit var mUserActivityNotifier: UserActivityNotifier
     @Mock private lateinit var bouncerInteractor: BouncerInteractor
+    @Mock private lateinit var lockPatternChecker: LockPatternCheckerWrapper
 
     @Captor
     private lateinit var swipeListenerArgumentCaptor:
@@ -247,6 +249,7 @@ class KeyguardSecurityContainerControllerTest : SysuiTestCase() {
                 keyguardKeyboardInteractor,
                 null,
                 mUserActivityNotifier,
+                lockPatternChecker,
             )
 
         kosmos = testKosmos()

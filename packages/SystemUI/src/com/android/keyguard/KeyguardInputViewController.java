@@ -46,6 +46,7 @@ import com.android.systemui.statusbar.policy.DevicePostureController;
 import com.android.systemui.user.domain.interactor.SelectedUserInteractor;
 import com.android.systemui.util.ViewController;
 import com.android.systemui.util.concurrency.DelayableExecutor;
+import com.android.systemui.util.wrapper.LockPatternCheckerWrapper;
 
 import javax.inject.Inject;
 
@@ -221,6 +222,7 @@ public abstract class KeyguardInputViewController<T extends KeyguardInputView>
         private final BouncerHapticPlayer mBouncerHapticPlayer;
         private final UserActivityNotifier mUserActivityNotifier;
         private final InputManager mInputManager;
+        private final LockPatternCheckerWrapper mLockPatternCheckerWrapper;
 
         @Inject
         public Factory(KeyguardUpdateMonitor keyguardUpdateMonitor,
@@ -238,7 +240,8 @@ public abstract class KeyguardInputViewController<T extends KeyguardInputView>
                 KeyguardKeyboardInteractor keyguardKeyboardInteractor,
                 BouncerHapticPlayer bouncerHapticPlayer,
                 UserActivityNotifier userActivityNotifier,
-                InputManager inputManager) {
+                InputManager inputManager,
+                LockPatternCheckerWrapper lockPatternCheckerWrapper) {
             mKeyguardUpdateMonitor = keyguardUpdateMonitor;
             mLockPatternUtils = lockPatternUtils;
             mLatencyTracker = latencyTracker;
@@ -258,6 +261,7 @@ public abstract class KeyguardInputViewController<T extends KeyguardInputView>
             mBouncerHapticPlayer = bouncerHapticPlayer;
             mUserActivityNotifier = userActivityNotifier;
             mInputManager = inputManager;
+            mLockPatternCheckerWrapper = lockPatternCheckerWrapper;
         }
 
         /** Create a new {@link KeyguardInputViewController}. */
@@ -281,7 +285,8 @@ public abstract class KeyguardInputViewController<T extends KeyguardInputView>
                         mInputMethodManager, emergencyButtonController, mMainExecutor, mResources,
                         mFalsingCollector, mKeyguardViewController,
                         mDevicePostureController, mFeatureFlags, mSelectedUserInteractor,
-                        mKeyguardKeyboardInteractor, mBouncerHapticPlayer, mUserActivityNotifier);
+                        mKeyguardKeyboardInteractor, mBouncerHapticPlayer, mUserActivityNotifier,
+                        mLockPatternCheckerWrapper);
             } else if (keyguardInputView instanceof KeyguardPINView) {
                 return new KeyguardPinViewController((KeyguardPINView) keyguardInputView,
                         mKeyguardUpdateMonitor, securityMode, mLockPatternUtils,
@@ -289,7 +294,7 @@ public abstract class KeyguardInputViewController<T extends KeyguardInputView>
                         emergencyButtonController, mFalsingCollector,
                         mDevicePostureController, mFeatureFlags, mSelectedUserInteractor,
                         mUiEventLogger, mKeyguardKeyboardInteractor, mBouncerHapticPlayer,
-                        mUserActivityNotifier, mInputManager);
+                        mUserActivityNotifier, mInputManager, mLockPatternCheckerWrapper);
             } else if (keyguardInputView instanceof KeyguardSimPinView) {
                 return new KeyguardSimPinViewController((KeyguardSimPinView) keyguardInputView,
                         mKeyguardUpdateMonitor, securityMode, mLockPatternUtils,
@@ -297,7 +302,7 @@ public abstract class KeyguardInputViewController<T extends KeyguardInputView>
                         mTelephonyManager, mFalsingCollector,
                         emergencyButtonController, mFeatureFlags, mSelectedUserInteractor,
                         mKeyguardKeyboardInteractor, mBouncerHapticPlayer, mUserActivityNotifier,
-                        mInputManager);
+                        mInputManager, mLockPatternCheckerWrapper);
             } else if (keyguardInputView instanceof KeyguardSimPukView) {
                 return new KeyguardSimPukViewController((KeyguardSimPukView) keyguardInputView,
                         mKeyguardUpdateMonitor, securityMode, mLockPatternUtils,
@@ -305,7 +310,7 @@ public abstract class KeyguardInputViewController<T extends KeyguardInputView>
                         mTelephonyManager, mFalsingCollector,
                         emergencyButtonController, mFeatureFlags, mSelectedUserInteractor,
                         mKeyguardKeyboardInteractor, mBouncerHapticPlayer, mUserActivityNotifier,
-                        mInputManager);
+                        mInputManager, mLockPatternCheckerWrapper);
             }
 
             throw new RuntimeException("Unable to find controller for " + keyguardInputView);
