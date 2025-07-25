@@ -65,6 +65,7 @@ rust_library {
     rustlibs: [
         "activitymanager_structured_aidl-rust",
         "libanyhow",
+        "libatrace_rust",
         "libbinder_rs",
         "libdlext_bindgen",
         "liblogger",
