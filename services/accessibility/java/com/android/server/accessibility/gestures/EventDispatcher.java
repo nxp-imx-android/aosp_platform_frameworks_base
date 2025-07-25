@@ -320,8 +320,7 @@ public class EventDispatcher {
                 sendMotionEvent(
                         prototype,
                         action,
-                        Flags.eventDispatcherRawEvent() ? mState.getLastReceivedRawEvent() :
-                                mState.getLastReceivedEvent(),
+                        mState.getLastReceivedRawEvent(),
                         pointerIdBits,
                         policyFlags);
             }
@@ -351,8 +350,7 @@ public class EventDispatcher {
                 sendMotionEvent(
                         event,
                         action,
-                        Flags.eventDispatcherRawEvent() ? mState.getLastReceivedRawEvent() :
-                                mState.getLastReceivedEvent(),
+                        mState.getLastReceivedRawEvent(),
                         pointerIdBits,
                         policyFlags);
             }
@@ -419,9 +417,7 @@ public class EventDispatcher {
                 continue;
             }
             final int action = computeInjectionAction(MotionEvent.ACTION_POINTER_UP, i);
-            sendMotionEvent(prototype, action,
-                    Flags.eventDispatcherRawEvent() ? mState.getLastReceivedRawEvent() :
-                            mState.getLastReceivedEvent(),
+            sendMotionEvent(prototype, action, mState.getLastReceivedRawEvent(),
                     pointerIdBits, policyFlags);
             pointerIdBits &= ~(1 << pointerId);
         }

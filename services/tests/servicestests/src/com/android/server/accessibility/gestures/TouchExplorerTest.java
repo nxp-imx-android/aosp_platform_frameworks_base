@@ -468,7 +468,6 @@ public class TouchExplorerTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_EVENT_DISPATCHER_RAW_EVENT)
     public void testSendHoverExitIfNeeded_lastSentHoverEnter_sendsHoverExit_withCorrectRawEvent() {
         final MotionEvent rawEvent = downEvent();
         final MotionEvent modifiedEvent = hoverEnterEvent();
