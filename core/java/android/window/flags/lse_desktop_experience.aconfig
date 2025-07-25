@@ -115,6 +115,16 @@ flag {
 }
 
 flag {
+    name: "enable_auto_restart_on_display_move"
+    namespace: "lse_desktop_experience"
+    description: "Automatically restarts apps upon display move to fix density issues"
+    bug: "427878712"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "enable_backup_and_restore_display_window_settings"
     namespace: "lse_desktop_experience"
     description: "Enables backup and restore for display window settings."
