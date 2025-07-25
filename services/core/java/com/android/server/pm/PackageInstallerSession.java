@@ -29,7 +29,6 @@ import static android.content.pm.PackageInstaller.DEVELOPER_VERIFICATION_POLICY_
 import static android.content.pm.PackageInstaller.DEVELOPER_VERIFICATION_USER_RESPONSE_ABORT;
 import static android.content.pm.PackageInstaller.DEVELOPER_VERIFICATION_USER_RESPONSE_ERROR;
 import static android.content.pm.PackageInstaller.DEVELOPER_VERIFICATION_USER_RESPONSE_INSTALL_ANYWAY;
-import static android.content.pm.PackageInstaller.DEVELOPER_VERIFICATION_USER_RESPONSE_RETRY;
 import static android.content.pm.PackageInstaller.DeveloperVerificationUserConfirmationInfo.DEVELOPER_VERIFICATION_USER_ACTION_NEEDED_REASON_DEVELOPER_BLOCKED;
 import static android.content.pm.PackageInstaller.DeveloperVerificationUserConfirmationInfo.DEVELOPER_VERIFICATION_USER_ACTION_NEEDED_REASON_LITE_VERIFICATION;
 import static android.content.pm.PackageInstaller.DeveloperVerificationUserConfirmationInfo.DEVELOPER_VERIFICATION_USER_ACTION_NEEDED_REASON_NETWORK_UNAVAILABLE;
@@ -252,7 +251,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Predicate;
-import java.util.function.Supplier;
 
 public class PackageInstallerSession extends IPackageInstallerSession.Stub {
     private static final String TAG = "PackageInstallerSession";
@@ -458,10 +456,6 @@ public class PackageInstallerSession extends IPackageInstallerSession.Stub {
      */
     private final AtomicInteger mCurrentVerificationPolicy;
     /**
-     * Tracks how many times the developer verification has been retried as requested by the user.
-     */
-    private AtomicInteger mDeveloperVerificationRetryCount = new AtomicInteger(0);
-    /**
      * Note all calls must be done outside {@link #mLock} to prevent lock inversion.
      */
     private final StagingManager mStagingManager;
@@ -486,7 +480,7 @@ public class PackageInstallerSession extends IPackageInstallerSession.Stub {
 
     /**
      * Indicates the reason why a verification needs user action. Used to check whether a user can
-     * retry verification.
+     * bypass verification.
      */
     private @DeveloperVerificationUserConfirmationInfo.UserActionNeededReason int
             mVerificationUserActionNeededReason =
@@ -3058,7 +3052,7 @@ public class PackageInstallerSession extends IPackageInstallerSession.Stub {
                         Uri.fromFile(stageDir), signingInfo,
                         declaredLibraries, mCurrentVerificationPolicy.get(),
                         /* extensionParams= */ params.extensionParams,
-                        mDeveloperVerifierCallback, /* retry= */ false)) {
+                        mDeveloperVerifierCallback)) {
                     // A verifier is installed but cannot be connected. Maybe notify user.
                     mDeveloperVerifierCallback.onConnectionInfeasible();
                 }
@@ -3158,32 +3152,6 @@ public class PackageInstallerSession extends IPackageInstallerSession.Stub {
             }
         }
         return false;
-    }
-
-    private void retryDeveloperVerificationSession(Supplier<Computer> snapshotSupplier) {
-        final SigningInfo signingInfo;
-        final List<SharedLibraryInfo> declaredLibraries;
-        synchronized (mLock) {
-            signingInfo = new SigningInfo(mSigningDetails);
-            declaredLibraries =
-                    mPackageLite == null ? null : mPackageLite.getDeclaredLibraries();
-        }
-        // TODO (b/360130528): limit the number of times user can retry
-        mDeveloperVerificationRetryCount.getAndIncrement();
-        // Send the request to the verifier and wait for its response before the rest of
-        // the installation can proceed.
-        if (!mDeveloperVerifierController.startVerificationSession(snapshotSupplier, userId,
-                sessionId, getPackageName(),
-                stageDir == null ? Uri.EMPTY : Uri.fromFile(stageDir), signingInfo,
-                declaredLibraries, mCurrentVerificationPolicy.get(), /* extensionParams= */ null,
-                mDeveloperVerifierCallback, /* retry = */ true)) {
-            // A verifier is installed but cannot be connected. Maybe prompt the user again.
-            mDeveloperVerifierCallback.onConnectionInfeasible();
-        }
-        synchronized (mMetrics) {
-            mMetrics.onDeveloperVerificationRetryRequestSent(
-                    mDeveloperVerificationRetryCount.get());
-        }
     }
 
     private void resumeVerify() {
@@ -5238,10 +5206,6 @@ public class PackageInstallerSession extends IPackageInstallerSession.Stub {
                 onSessionVerificationFailure(INSTALL_FAILED_VERIFICATION_FAILURE, errorMsg, bundle);
             }
 
-            case DEVELOPER_VERIFICATION_USER_RESPONSE_RETRY -> {
-                retryDeveloperVerificationSession(mPm::snapshotComputer /* retry= */);
-            }
-
             case DEVELOPER_VERIFICATION_USER_RESPONSE_INSTALL_ANYWAY -> resumeVerify();
             default -> throw new IllegalArgumentException("Invalid user response " + userResponse);
         }
@@ -5249,8 +5213,8 @@ public class PackageInstallerSession extends IPackageInstallerSession.Stub {
 
     /**
      * Translate user action code to verification failure code. When the user rejected the
-     * user action to bypass or retry the verification, or when the user intervention was not
-     * allowed, the verification failure reason code will be returned to the installer together with
+     * user action to bypass the verification, or when the user intervention was not allowed,
+     * the verification failure reason code will be returned to the installer together with
      * the failure status code.
      */
     private static @PackageInstaller.DeveloperVerificationFailedReason int

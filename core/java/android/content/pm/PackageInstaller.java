@@ -955,6 +955,7 @@ public class PackageInstaller {
     public static final int DEVELOPER_VERIFICATION_USER_RESPONSE_ABORT = 1;
     /**
      * For an incomplete developer verification, the user has asked to retry the verification.
+     * Notice that this is currently not supported.
      * @hide
      */
     @FlaggedApi(Flags.FLAG_VERIFICATION_SERVICE)
