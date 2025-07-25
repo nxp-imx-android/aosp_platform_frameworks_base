@@ -1127,8 +1127,7 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
      */
     private void prepareTasksForSplitScreen(int[] taskIds, WindowContainerTransaction wct,
             Bundle[] bundles) {
-        if (com.android.window.flags.Flags.fixLayoutRestoredTask()
-                && taskIds.length != bundles.length) {
+        if (taskIds.length != bundles.length) {
             Slog.w(TAG, "The length of taskIds and bundles are not the same.");
             return;
         }
@@ -1139,7 +1138,7 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
             if (task != null) {
                 wct.setWindowingMode(task.getToken(), WINDOWING_MODE_UNDEFINED)
                         .setBounds(task.getToken(), null /* bounds */);
-            } else if (com.android.window.flags.Flags.fixLayoutRestoredTask()) {
+            } else {
                 // Clear the task bounds via Bundle once the Task is restored.
                 ActivityOptions options = ActivityOptions.fromBundle(bundles[i]);
                 if (options == null) {
