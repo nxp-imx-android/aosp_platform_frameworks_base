@@ -225,6 +225,24 @@ class ResolutionMechanismTest {
         }
     }
 
+    @Test
+    fun isPolicyApplied_mostRecent_sameValues_returnsTrue() {
+        val resolutionMechanism = MostRecent<Int>()
+
+        assertTrue {
+            resolutionMechanism.isPolicyApplied(INT_POLICY_A, INT_POLICY_A)
+        }
+    }
+
+    @Test
+    fun isPolicyApplied_mostRecent_differentValues_returnsFalse() {
+        val resolutionMechanism = MostRecent<Int>()
+
+        assertFalse {
+            resolutionMechanism.isPolicyApplied(INT_POLICY_A, INT_POLICY_AB)
+        }
+    }
+
     companion object {
         private const val SYSTEM_USER_ID = UserHandle.USER_SYSTEM
         private val SYSTEM_ADMIN = EnforcingAdmin.createSystemEnforcingAdmin("system_entity")
@@ -239,9 +257,9 @@ class ResolutionMechanismTest {
                 SYSTEM_USER_ID,
             )
 
-        private val INT_POLICY_A = IntegerPolicyValue(1 shl 7)
-        private val INT_POLICY_B = IntegerPolicyValue(1 shl 8)
-        private val INT_POLICY_C = IntegerPolicyValue(1 shl 9)
-        private val INT_POLICY_AB = IntegerPolicyValue((1 shl 7) or (1 shl 8))
+        private val INT_POLICY_A: PolicyValue<Int> = IntegerPolicyValue(1 shl 7)
+        private val INT_POLICY_B: PolicyValue<Int> = IntegerPolicyValue(1 shl 8)
+        private val INT_POLICY_C: PolicyValue<Int> = IntegerPolicyValue(1 shl 9)
+        private val INT_POLICY_AB: PolicyValue<Int> = IntegerPolicyValue((1 shl 7) or (1 shl 8))
     }
 }
