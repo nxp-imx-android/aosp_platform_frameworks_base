@@ -102,7 +102,7 @@ class VirtualInputDeviceController {
 
     VirtualInputDeviceController(@NonNull Handler handler, @NonNull InputManagerService service) {
         this(new NativeWrapper(), handler, service,
-                // Verify that virtual devices are not created on the handler thread.
+                // Verify that virtual input devices are not created on the handler thread.
                 () -> !handler.getLooper().isCurrentThread());
     }
 
@@ -848,7 +848,10 @@ class VirtualInputDeviceController {
         }
     }
 
-    /** An internal exception that is thrown to indicate an error when opening a virtual device. */
+    /**
+     * An internal exception that is thrown to indicate an error when opening a virtual input
+     * device.
+     */
     static class DeviceCreationException extends Exception {
         DeviceCreationException(String message) {
             super(message);
@@ -876,8 +879,8 @@ class VirtualInputDeviceController {
             String phys, Supplier<Long> deviceOpener) throws DeviceCreationException {
         if (!mThreadVerifier.isValidThread()) {
             throw new IllegalStateException(
-                    "Virtual device creation should happen on an auxiliary thread (e.g. binder "
-                            + "thread) and not from the handler's thread.");
+                    "Virtual input device creation should happen on an auxiliary thread (e.g. "
+                            + "binder thread) and not from the handler's thread.");
         }
         validateDeviceName(deviceName);
 
@@ -908,12 +911,24 @@ class VirtualInputDeviceController {
                     deviceToken.linkToDeath(binderDeathRecipient, /* flags= */ 0);
                 } catch (RemoteException e) {
                     throw new DeviceCreationException(
-                            "Client died before virtual device could be created.", e);
+                            "Client died before virtual input device could be created.", e);
                 }
             } catch (DeviceCreationException e) {
                 mNativeWrapper.closeUinput(ptr);
                 throw e;
             }
+
+            InputDeviceDescriptor device = new InputDeviceDescriptor(this, ptr,
+                binderDeathRecipient, type, displayId, phys, deviceName, inputDeviceId,
+                deviceToken);
+            synchronized (mLock) {
+                if (mInputDeviceDescriptors.containsKey(deviceToken)) {
+                    throw new DeviceCreationException("Cannot create new virtual input device "
+                        + "with an existing token.");
+                }
+                mInputDeviceDescriptors.put(deviceToken, device);
+            }
+            return device;
         } catch (DeviceCreationException e) {
             mService.removeUniqueIdAssociationByPort(phys);
             if (disableSettingsForVirtualDevices()) {
@@ -921,14 +936,6 @@ class VirtualInputDeviceController {
             }
             throw e;
         }
-
-        InputDeviceDescriptor device = new InputDeviceDescriptor(this, ptr, binderDeathRecipient,
-                type, displayId, phys, deviceName, inputDeviceId, deviceToken);
-        synchronized (mLock) {
-            mInputDeviceDescriptors.put(deviceToken, device);
-        }
-
-        return device;
     }
 
     @VisibleForTesting
