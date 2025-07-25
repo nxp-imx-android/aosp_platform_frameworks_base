@@ -1635,7 +1635,6 @@ public class ViewRootImplTest {
     }
 
     @Test
-    @EnableFlags(android.view.accessibility.Flags.FLAG_FOCUS_RECT_MIN_SIZE)
     public void testAdjustAccessibilityFocusedBounds_largeEnoughBoundsAreUnchanged() {
         final int strokeWidth = sContext.getSystemService(AccessibilityManager.class)
                 .getAccessibilityFocusStrokeWidth();
@@ -1651,7 +1650,6 @@ public class ViewRootImplTest {
     }
 
     @Test
-    @EnableFlags(android.view.accessibility.Flags.FLAG_FOCUS_RECT_MIN_SIZE)
     public void testAdjustAccessibilityFocusedBounds_smallBoundsAreExpanded() {
         final int strokeWidth = sContext.getSystemService(AccessibilityManager.class)
                 .getAccessibilityFocusStrokeWidth();
