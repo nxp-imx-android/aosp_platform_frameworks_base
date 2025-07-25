@@ -149,7 +149,7 @@ public final class Trace {
     private static native void nativeTraceCounter(long tag, String name, long value);
     @FastNative
     private static native void nativeTraceBegin(long tag, String name);
-    @FastNative
+    @CriticalNative
     private static native void nativeTraceEnd(long tag);
     @FastNative
     private static native void nativeAsyncTraceBegin(long tag, String name, int cookie);

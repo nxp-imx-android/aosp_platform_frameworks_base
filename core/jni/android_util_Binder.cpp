@@ -1245,8 +1245,7 @@ static void android_os_Binder_flushPendingCommands(JNIEnv* env, jobject clazz)
     IPCThreadState::self()->flushCommands();
 }
 
-static jlong android_os_Binder_getNativeBBinderHolder(JNIEnv* env, jobject clazz)
-{
+static jlong android_os_Binder_getNativeBBinderHolder(CRITICAL_JNI_PARAMS) {
     JavaBBinderHolder* jbh = new JavaBBinderHolder();
     return (jlong) jbh;
 }
@@ -1317,6 +1316,7 @@ static const JNINativeMethod gBinderMethods[] = {
     { "markVintfStability", "()V", (void*)android_os_Binder_markVintfStability},
     { "forceDowngradeToSystemStability", "()V", (void*)android_os_Binder_forceDowngradeToSystemStability},
     { "flushPendingCommands", "()V", (void*)android_os_Binder_flushPendingCommands },
+    // @CriticalNative
     { "getNativeBBinderHolder", "()J", (void*)android_os_Binder_getNativeBBinderHolder },
     { "getNativeFinalizer", "()J", (void*)android_os_Binder_getNativeFinalizer },
     { "blockUntilThreadAvailable", "()V", (void*)android_os_Binder_blockUntilThreadAvailable },

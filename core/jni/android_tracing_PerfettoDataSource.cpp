@@ -396,22 +396,22 @@ void nativeStopDonePerfettoInstanceLocked(JNIEnv* /* env */, jclass /* clazz */,
     PerfettoDsImplReleaseInstanceLocked(datasource->dataSource.impl, instance_idx);
 }
 
-bool nativePerfettoDsTraceIterateBegin(JNIEnv* /* env */, jclass /* clazz */, jlong dataSourcePtr) {
+bool nativePerfettoDsTraceIterateBegin(CRITICAL_JNI_PARAMS_COMMA jlong dataSourcePtr) {
     sp<PerfettoDataSource> datasource = reinterpret_cast<PerfettoDataSource*>(dataSourcePtr);
     return datasource->TraceIterateBegin();
 }
 
-bool nativePerfettoDsTraceIterateNext(JNIEnv* /* env */, jclass /* clazz */, jlong dataSourcePtr) {
+bool nativePerfettoDsTraceIterateNext(CRITICAL_JNI_PARAMS_COMMA jlong dataSourcePtr) {
     sp<PerfettoDataSource> datasource = reinterpret_cast<PerfettoDataSource*>(dataSourcePtr);
     return datasource->TraceIterateNext();
 }
 
-void nativePerfettoDsTraceIterateBreak(JNIEnv* /* env */, jclass /* clazz */, jlong dataSourcePtr) {
+void nativePerfettoDsTraceIterateBreak(CRITICAL_JNI_PARAMS_COMMA jlong dataSourcePtr) {
     sp<PerfettoDataSource> datasource = reinterpret_cast<PerfettoDataSource*>(dataSourcePtr);
     return datasource->TraceIterateBreak();
 }
 
-jint nativeGetPerfettoDsInstanceIndex(JNIEnv* /* env */, jclass /* clazz */, jlong dataSourcePtr) {
+jint nativeGetPerfettoDsInstanceIndex(CRITICAL_JNI_PARAMS_COMMA jlong dataSourcePtr) {
     sp<PerfettoDataSource> datasource = reinterpret_cast<PerfettoDataSource*>(dataSourcePtr);
     return (jint)datasource->GetInstanceIndex();
 }
@@ -453,12 +453,13 @@ const JNINativeMethod gMethods[] = {
         {"nativeStopDonePerfettoInstanceLocked", "(JI)V",
          (void*)nativeStopDonePerfettoInstanceLocked},
 
+        {"nativeWritePackets", "(J[[B)V", (void*)nativeWritePackets},
+
+        // ----------- @CriticalNative  ----------------
         {"nativePerfettoDsTraceIterateBegin", "(J)Z", (void*)nativePerfettoDsTraceIterateBegin},
         {"nativePerfettoDsTraceIterateNext", "(J)Z", (void*)nativePerfettoDsTraceIterateNext},
         {"nativePerfettoDsTraceIterateBreak", "(J)V", (void*)nativePerfettoDsTraceIterateBreak},
-        {"nativeGetPerfettoDsInstanceIndex", "(J)I", (void*)nativeGetPerfettoDsInstanceIndex},
-
-        {"nativeWritePackets", "(J[[B)V", (void*)nativeWritePackets}};
+        {"nativeGetPerfettoDsInstanceIndex", "(J)I", (void*)nativeGetPerfettoDsInstanceIndex}};
 
 const JNINativeMethod gMethodsTracingContext[] = {
         /* name, signature, funcPtr */
