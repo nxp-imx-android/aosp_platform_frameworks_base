@@ -59,11 +59,6 @@ android_test {
 
     dxflags: ["--core-library"],
 
-    aaptflags: [
-        "-0 .dat",
-        "-0 .gld",
-        "-c fa",
-    ],
     static_libs: [
         "TestParameterInjector",
         "android-common",
@@ -162,31 +157,6 @@ android_test {
     ],
 }
 
-// FrameworksCoreTestsRavenwood pulls in the R.java class from this one.
-// Note, "FrameworksCoreTests" and "FrameworksCoreTests-resonly" _might_ not have indentical
-// R.java (not sure if there's a guarantee), but that doesn't matter as long as
-// FrameworksCoreTestsRavenwood consistently uses the R definition in this module.
-android_app {
-    name: "FrameworksCoreTests-resonly",
-    defaults: ["FrameworksCoreTests-resources"],
-
-    // FrameworksCoreTestsRavenwood references the .aapt.srcjar
-    use_resource_processor: false,
-    libs: [
-        "android.test.runner.stubs",
-        "framework-res",
-        "org.apache.http.legacy.stubs",
-    ],
-    uses_libs: [
-        "android.test.runner",
-    ],
-    optional_uses_libs: [
-        "org.apache.http.legacy",
-    ],
-    sdk_version: "core_platform",
-    resource_zips: [":FrameworksCoreTests_apks_as_resources"],
-}
-
 // Rules to copy all the test apks to the intermediate raw resource directory
 java_genrule {
     name: "FrameworksCoreTests_apks_as_resources",
@@ -251,6 +221,8 @@ android_library {
 
 android_ravenwood_test {
     name: "FrameworksCoreTestsRavenwood",
+    defaults: ["FrameworksCoreTests-resources"],
+    build_resources: true,
     libs: [
         "android.test.base.stubs",
         "android.test.mock.stubs",
@@ -309,19 +281,12 @@ android_ravenwood_test {
         ":FrameworksCoreTestDoubles-sources",
         ":FrameworksCoreTests-aidl",
         ":FrameworksCoreTests-helpers",
-
-        // Pull in R.java from FrameworksCoreTests-resonly, not from FrameworksCoreTests,
-        // to avoid having a dependency to FrameworksCoreTests.
-        // This way, when updating source files and running this test, we don't need to
-        // rebuild the entire FrameworksCoreTests, which would be slow.
-        ":FrameworksCoreTests-resonly{.aapt.srcjar}",
     ],
     exclude_srcs: [
         "src/android/content/res/FontScaleConverterActivityTest.java",
         "src/android/graphics/GraphicsPerformanceTests.java",
         "src/android/graphics/drawable/StateListDrawableTest.java",
     ],
-    resource_apk: "FrameworksCoreTests-resonly",
     aidl: {
         generate_get_transaction_name: true,
         local_include_dirs: ["aidl"],
@@ -331,6 +296,7 @@ android_ravenwood_test {
         "res/xml/power_profile_test_cpu_legacy.xml",
         "res/xml/power_profile_test_modem.xml",
     ],
+    resource_zips: [":FrameworksCoreTests_apks_as_resources"],
     sdk_version: "core_platform",
     auto_gen_config: true,
     team: "trendy_team_ravenwood",

@@ -16,13 +16,10 @@
 
 package android.platform.test.ravenwood;
 
-import static android.os.Process.FIRST_APPLICATION_UID;
 import static android.os.UserHandle.SYSTEM;
 
 import static com.android.modules.utils.ravenwood.RavenwoodHelper.RavenwoodInternal.RAVENWOOD_RUNTIME_PATH_JAVA_SYSPROP;
 import static com.android.ravenwood.common.RavenwoodInternalUtils.getRavenwoodRuntimePath;
-import static com.android.ravenwood.common.RavenwoodInternalUtils.parseNullableInt;
-import static com.android.ravenwood.common.RavenwoodInternalUtils.withDefault;
 
 import static org.junit.Assert.assertThrows;
 
@@ -37,8 +34,6 @@ import android.graphics.Typeface;
 import android.icu.util.ULocale;
 import android.os.Binder;
 import android.os.Build;
-import android.os.Build.VERSION_CODES;
-import android.os.HandlerThread;
 import android.os.Process_ravenwood;
 import android.os.ServiceManager;
 import android.os.ServiceManager.ServiceNotFoundException;
@@ -104,9 +99,6 @@ public class RavenwoodDriver {
         }
     }
 
-    private static final String MAIN_THREAD_NAME = "Ravenwood:Main";
-    private static final String TEST_THREAD_NAME = "Ravenwood:Test";
-
     private static final String LIBRAVENWOOD_INITIALIZER_NAME = "ravenwood_initializer";
     private static final String RAVENWOOD_NATIVE_RUNTIME_NAME = "ravenwood_runtime";
 
@@ -169,16 +161,10 @@ public class RavenwoodDriver {
     @GuardedBy("sInitializationLock")
     private static Throwable sExceptionFromGlobalInit;
 
-    private static final int DEFAULT_TARGET_SDK_LEVEL = VERSION_CODES.CUR_DEVELOPMENT;
-    private static final String DEFAULT_PACKAGE_NAME = "com.android.ravenwoodtests.defaultname";
-    private static final String DEFAULT_INSTRUMENTATION_CLASS =
-            "androidx.test.runner.AndroidJUnitRunner";
-
     /**
      * Initialize the global environment.
      */
     public static void globalInitOnce() {
-        Thread.currentThread().setName(TEST_THREAD_NAME);
         synchronized (sInitializationLock) {
             if (!sInitialized) {
                 // globalInitOnce() is called from class initializer, which cause
@@ -244,6 +230,7 @@ public class RavenwoodDriver {
         // Make sure libravenwood_runtime is loaded.
         System.load(RavenwoodInternalUtils.getJniLibraryPath(RAVENWOOD_NATIVE_RUNTIME_NAME));
 
+        // TODO: Why do we use a random PID? We can get the real PID via JNI. Why not use that?
         final int pid = new Random().nextInt(100, 32768);
         Log_ravenwood.setPid(pid);
         Log_ravenwood.setLogLevels(getLogTags());
@@ -299,14 +286,14 @@ public class RavenwoodDriver {
         ActivityManager.init$ravenwood(SYSTEM.getIdentifier());
 
         // Initialize the "environment".
-        var env = createEnvironment(pid);
+        RavenwoodEnvironment.init(pid);
 
         // Start app lifecycle.
         RavenwoodAppDriver.init();
 
         // TODO(b/428775903) Make sure nothing would try to access compat-IDs before this call.
         // We may want to do it within initAppDriver().
-        initializeCompatIds(env);
+        initializeCompatIds();
     }
 
     /**
@@ -319,31 +306,6 @@ public class RavenwoodDriver {
             logTags = System.getenv(ANDROID_LOG_TAGS);
         }
         return logTags;
-    }
-
-    private static RavenwoodEnvironment createEnvironment(int pid) throws Exception {
-        final var props = RavenwoodSystemProperties.readProperties("ravenwood.properties");
-
-        // TODO(b/377765941) Read them from the manifest too?
-        var targetSdkLevel = withDefault(
-                parseNullableInt(props.get("targetSdkVersionInt")), DEFAULT_TARGET_SDK_LEVEL);
-        var targetPackageName = withDefault(props.get("packageName"), DEFAULT_PACKAGE_NAME);
-        var testPackageName = withDefault(props.get("instPackageName"), targetPackageName);
-        var instrumentationClass = withDefault(props.get("instrumentationClass"),
-                DEFAULT_INSTRUMENTATION_CLASS);
-
-        // TODO: Why do we use a random PID? We can get the real PID via JNI. Why not use that?
-
-        return RavenwoodEnvironment.init(
-                FIRST_APPLICATION_UID,
-                pid,
-                targetSdkLevel,
-                targetPackageName,
-                testPackageName,
-                instrumentationClass,
-                Thread.currentThread(), // Test thread
-                new HandlerThread(MAIN_THREAD_NAME)
-        );
     }
 
     /**
@@ -410,11 +372,13 @@ public class RavenwoodDriver {
         }
     }
 
-    private static void initializeCompatIds(RavenwoodEnvironment env) {
+    private static void initializeCompatIds() {
         // Set up compat-IDs for the app side.
         // TODO: Inside the system server, all the compat-IDs should be enabled,
         // Due to the `AppCompatCallbacks.install(new long[0], new long[0] ...` call in
         // SystemServer.
+
+        var env = RavenwoodEnvironment.getInstance();
 
         // Compat framework only uses the package name and the target SDK level.
         ApplicationInfo appInfo = new ApplicationInfo();
@@ -588,16 +552,5 @@ public class RavenwoodDriver {
 
         var itz = android.icu.util.TimeZone.getDefault();
         Log.i(TAG, "  android.icu.util.TimeZone="  + itz.getDisplayName() + " / " + itz);
-    }
-
-    /**
-     * @return the name of the current test module.
-     *
-     * The current version "guesses" the name from the current directory name.
-     *
-     * TODO: Write the real module name in ravenwood.go to ravenwood.properties and use that.
-     */
-    public static String getTestModuleName() {
-        return sInitialDirectory.getName();
     }
 }

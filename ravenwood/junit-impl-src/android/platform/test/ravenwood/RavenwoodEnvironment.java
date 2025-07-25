@@ -15,6 +15,11 @@
  */
 package android.platform.test.ravenwood;
 
+import static android.os.Process.FIRST_APPLICATION_UID;
+
+import static com.android.ravenwood.common.RavenwoodInternalUtils.parseNullableInt;
+import static com.android.ravenwood.common.RavenwoodInternalUtils.withDefault;
+
 import static org.junit.Assert.assertNotNull;
 
 import android.annotation.NonNull;
@@ -24,6 +29,7 @@ import android.app.LoadedApk;
 import android.app.RavenwoodAppDriver;
 import android.app.ResourcesManager;
 import android.content.res.Resources;
+import android.os.Build;
 import android.os.HandlerThread;
 import android.os.Looper;
 import android.util.Log;
@@ -70,14 +76,19 @@ public final class RavenwoodEnvironment {
         return Objects.requireNonNull(sInstance.get(), "RavenwoodEnvironment not initialized");
     }
 
-    private static final File RAVENWOOD_TARGET_RESOURCE_APK =
-            new File("ravenwood-res-apks/ravenwood-res.apk");
-    private static final File RAVENWOOD_INST_RESOURCE_APK =
-            new File("ravenwood-res-apks/ravenwood-inst-res.apk");
-
     private static final File RAVENWOOD_EMPTY_RESOURCES_APK =
             new File(RavenwoodInternalUtils.getRavenwoodRuntimePath(),
                     "/ravenwood-data/ravenwood-empty-res.apk");
+
+    private static final String MAIN_THREAD_NAME = "Ravenwood:Main";
+    private static final String TEST_THREAD_NAME = "Ravenwood:Test";
+
+    private static final String RESOURCE_APK_DIR = "ravenwood-res-apks";
+
+    private static final int DEFAULT_TARGET_SDK_LEVEL = Build.VERSION_CODES.CUR_DEVELOPMENT;
+    private static final String DEFAULT_PACKAGE_NAME = "com.android.ravenwoodtests.defaultname";
+    private static final String DEFAULT_INSTRUMENTATION_CLASS =
+            "androidx.test.runner.AndroidJUnitRunner";
 
     private final Object mLock = new Object();
 
@@ -93,6 +104,15 @@ public final class RavenwoodEnvironment {
 
     @NonNull
     private final String mInstrumentationClass;
+
+    @NonNull
+    private final String mModuleName;
+
+    @Nullable
+    private final String mResourceApk;
+
+    @Nullable
+    private final String mTargetResourceApk;
 
     /** Represents the filesystem root. */
     private final File mRootDir;
@@ -120,6 +140,9 @@ public final class RavenwoodEnvironment {
             @NonNull String targetPackageName,
             @NonNull String instPackageName,
             @NonNull String instrumentationClass,
+            @NonNull String moduleName,
+            @Nullable String resourceApk,
+            @Nullable String targetResourceApk,
             @NonNull Thread testThread,
             @NonNull HandlerThread mainThread
     ) throws IOException {
@@ -129,6 +152,9 @@ public final class RavenwoodEnvironment {
         mTargetPackageName = Objects.requireNonNull(targetPackageName);
         mInstPackageName = Objects.requireNonNull(instPackageName);
         mInstrumentationClass = Objects.requireNonNull(instrumentationClass);
+        mModuleName = Objects.requireNonNull(moduleName);
+        mResourceApk = resourceApk;
+        mTargetResourceApk = targetResourceApk;
         mTestThread = testThread;
         mMainThread = mainThread;
 
@@ -146,30 +172,37 @@ public final class RavenwoodEnvironment {
     /**
      * Create and initialize the singleton instance. Also initializes {@link RavenwoodVmState}.
      */
-    public static RavenwoodEnvironment init(
-            int uid,
-            int pid,
-            int targetSdkLevel,
-            @NonNull String targetPackageName,
-            @NonNull String instPackageName,
-            @NonNull String instrumentationClass,
-            @NonNull Thread testThread,
-            @NonNull HandlerThread mainThread
-    ) throws IOException {
+    public static void init(int pid) throws IOException {
+        final var props = RavenwoodSystemProperties.readProperties("ravenwood.properties");
+
+        // TODO(b/377765941) Read them from the manifest too?
+        var targetSdkLevel = withDefault(
+                parseNullableInt(props.get("targetSdkVersionInt")), DEFAULT_TARGET_SDK_LEVEL);
+        var testPackageName = withDefault(props.get("packageName"), DEFAULT_PACKAGE_NAME);
+        var targetPackageName = withDefault(props.get("targetPackageName"), testPackageName);
+        var instrumentationClass = withDefault(props.get("instrumentationClass"),
+                DEFAULT_INSTRUMENTATION_CLASS);
+        var moduleName = withDefault(props.get("moduleName"), testPackageName);
+        var resourceApk = withDefault(props.get("resourceApk"), null);
+        var targetResourceApk = withDefault(props.get("targetResourceApk"), null);
+
+        Thread.currentThread().setName(TEST_THREAD_NAME);
         final var instance = new RavenwoodEnvironment(
-                uid,
+                FIRST_APPLICATION_UID,
                 pid,
                 targetSdkLevel,
                 targetPackageName,
-                instPackageName,
+                testPackageName,
                 instrumentationClass,
-                testThread,
-                mainThread);
+                moduleName,
+                resourceApk,
+                targetResourceApk,
+                Thread.currentThread(), // Test thread,
+                new HandlerThread(MAIN_THREAD_NAME));
         if (!sInstance.compareAndSet(null, instance)) {
             throw new RuntimeException("RavenwoodEnvironment already initialized!");
         }
         RavenwoodVmState.init(instance.getUid(), instance.getPid(), instance.getTargetSdkLevel());
-        return instance;
     }
 
     /**
@@ -200,6 +233,10 @@ public final class RavenwoodEnvironment {
     @NonNull
     public String getInstPackageName() {
         return mInstPackageName;
+    }
+
+    public String getTestModuleName() {
+        return mModuleName;
     }
 
     @NonNull
@@ -300,19 +337,16 @@ public final class RavenwoodEnvironment {
      * @param packageName package name, or "android" to load the system resources.
      */
     public File getResourcesApkFile(@NonNull String packageName) {
-        if (packageName.equals(getTargetPackageName())) {
-            if (RAVENWOOD_TARGET_RESOURCE_APK.exists()) {
-                return RAVENWOOD_TARGET_RESOURCE_APK;
+        if (packageName.equals(getInstPackageName())) {
+            if (mResourceApk != null) {
+                return new File(RESOURCE_APK_DIR, mResourceApk);
             }
             // fall-through and use the default resources.
-
-        } else if (packageName.equals(getInstPackageName())) {
-            if (RAVENWOOD_INST_RESOURCE_APK.exists()) {
-                return RAVENWOOD_INST_RESOURCE_APK;
+        } else if (packageName.equals(getTargetPackageName())) {
+            if (mTargetResourceApk != null) {
+                return new File(RESOURCE_APK_DIR, mTargetResourceApk);
             }
             // fall-through and use the default resources.
-
-
         } else if (packageName.equals(RavenwoodInternalUtils.ANDROID_PACKAGE_NAME)) {
             // fall-through and use the default resources.
 
