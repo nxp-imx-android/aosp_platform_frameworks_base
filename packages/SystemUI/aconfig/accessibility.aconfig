@@ -73,16 +73,6 @@ flag {
 }
 
 flag {
-    name: "update_corner_radius_on_display_changed"
-    namespace: "accessibility"
-    description: "Updates the corner radius to the magnification fullscreen border when the display changes."
-    bug: "335113174"
-    metadata {
-      purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "update_window_magnifier_bottom_boundary"
     namespace: "accessibility"
     description: "Update the window magnifier boundary at the bottom to the top of the system gesture inset."

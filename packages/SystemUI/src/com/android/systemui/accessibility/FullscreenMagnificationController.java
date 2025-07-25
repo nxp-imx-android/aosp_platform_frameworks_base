@@ -57,7 +57,6 @@ import androidx.annotation.UiThread;
 
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.policy.ScreenDecorationsUtils;
-import com.android.systemui.Flags;
 import com.android.systemui.dagger.qualifiers.Main;
 import com.android.systemui.res.R;
 import com.android.systemui.util.leak.RotationUtils;
@@ -283,9 +282,7 @@ public class FullscreenMagnificationController implements ComponentCallbacks {
     void cleanUpBorder() {
         mContext.unregisterComponentCallbacks(this);
 
-        if (Flags.updateCornerRadiusOnDisplayChanged()) {
-            mDisplayManager.unregisterDisplayListener(mDisplayListener);
-        }
+        mDisplayManager.unregisterDisplayListener(mDisplayListener);
 
         if (mSurfaceControlViewHost != null) {
             mSurfaceControlViewHost.release();
@@ -357,9 +354,7 @@ public class FullscreenMagnificationController implements ComponentCallbacks {
             } catch (Exception e) {
                 Log.w(TAG, "Failed to register rotation watcher", e);
             }
-            if (Flags.updateCornerRadiusOnDisplayChanged()) {
-                applyCornerRadiusToBorder();
-            }
+            applyCornerRadiusToBorder();
             // A new SurfaceControl was created, so attachment is necessary.
             mShouldAttachOverlay = true;
         }
@@ -387,9 +382,7 @@ public class FullscreenMagnificationController implements ComponentCallbacks {
                 mShouldAttachOverlay = false;
             }
         }
-        if (Flags.updateCornerRadiusOnDisplayChanged()) {
-            mDisplayManager.registerDisplayListener(mDisplayListener, mHandler);
-        }
+        mDisplayManager.registerDisplayListener(mDisplayListener, mHandler);
 
         applyTouchableRegion();
     }
@@ -447,11 +440,9 @@ public class FullscreenMagnificationController implements ComponentCallbacks {
             final int newWidth = mWindowBounds.width() + 2 * mBorderOffset;
             final int newHeight = mWindowBounds.height() + 2 * mBorderOffset;
             mSurfaceControlViewHost.relayout(newWidth, newHeight);
-            if (Flags.updateCornerRadiusOnDisplayChanged()) {
-                // Recenter the border
-                mTransaction.setPosition(
-                        mBorderSurfaceControl, -mBorderOffset, -mBorderOffset).apply();
-            }
+            // Recenter the border
+            mTransaction.setPosition(
+                    mBorderSurfaceControl, -mBorderOffset, -mBorderOffset).apply();
         }
 
         // Rotating from Landscape to ReverseLandscape will not trigger the config changes in
