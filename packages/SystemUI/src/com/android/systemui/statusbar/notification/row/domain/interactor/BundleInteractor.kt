@@ -104,15 +104,9 @@ constructor(
         rawAppDataList: List<AppData>,
         collapseTime: Long,
     ): List<AppData> {
-        return if (collapseTime == 0L) {
-            rawAppDataList
-        } else {
-            rawAppDataList.filter { appData ->
-                val addedTime = appData.timeAddedToBundle
-                val shouldKeep = addedTime > collapseTime
-                shouldKeep
-            }
-        }
+        // Always show app icons in bundle header
+        // and keep filtering infra for now
+        return rawAppDataList
     }
 
     /** Converts a list of AppData to a list of Drawables by fetching icons */
