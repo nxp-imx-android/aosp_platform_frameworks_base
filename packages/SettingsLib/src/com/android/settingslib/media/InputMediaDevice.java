@@ -52,6 +52,8 @@ public class InputMediaDevice extends MediaDevice {
 
     private final boolean mIsVolumeFixed;
 
+    private final boolean mIsSelected;
+
     private final String mProductName;
 
     private InputMediaDevice(
@@ -62,6 +64,7 @@ public class InputMediaDevice extends MediaDevice {
             int maxVolume,
             int currentVolume,
             boolean isVolumeFixed,
+            boolean isSelected,
             @Nullable String productName) {
         super(context, /* routeInfo= */ null, /* dynamicRouteAttributes= */ null,
                 /* rlpItem= */ null);
@@ -71,6 +74,7 @@ public class InputMediaDevice extends MediaDevice {
         mMaxVolume = maxVolume;
         mCurrentVolume = currentVolume;
         mIsVolumeFixed = isVolumeFixed;
+        mIsSelected = isSelected;
         mProductName = productName;
         initDeviceRecord();
     }
@@ -84,6 +88,7 @@ public class InputMediaDevice extends MediaDevice {
             int maxVolume,
             int currentVolume,
             boolean isVolumeFixed,
+            boolean isSelected,
             @Nullable String productName) {
         if (!isSupportedInputDevice(audioDeviceInfoType)) {
             return null;
@@ -97,6 +102,7 @@ public class InputMediaDevice extends MediaDevice {
                 maxVolume,
                 currentVolume,
                 isVolumeFixed,
+                isSelected,
                 productName);
     }
 
@@ -196,5 +202,15 @@ public class InputMediaDevice extends MediaDevice {
     @Override
     public boolean isVolumeFixed() {
         return mIsVolumeFixed;
+    }
+
+    @Override
+    public boolean isSelected() {
+        return mIsSelected;
+    }
+
+    @Override
+    public boolean isInputDevice() {
+        return true;
     }
 }

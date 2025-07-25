@@ -29,6 +29,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.internal.widget.RecyclerView
 import com.android.media.flags.Flags
+import com.android.settingslib.media.InputMediaDevice
 import com.android.settingslib.media.LocalMediaManager.MediaDeviceState.STATE_CONNECTED
 import com.android.settingslib.media.LocalMediaManager.MediaDeviceState.STATE_CONNECTING
 import com.android.settingslib.media.LocalMediaManager.MediaDeviceState.STATE_CONNECTING_FAILED
@@ -319,6 +320,46 @@ class MediaOutputAdapterTest : SysuiTestCase() {
             mGroupButton.performClick()
         }
         verify(mMediaSwitchingController).addDeviceToPlayMedia(mMediaDevice2)
+    }
+
+    @Test
+    fun onBindViewHolder_inputDeviceWithOtherGroupDevices_hasNoGroupCheckbox() {
+        mMediaSwitchingController.stub {
+            on { isGroupListCollapsed } doReturn false
+            on { isVolumeControlEnabledForSession } doReturn true
+            on { hasGroupPlayback() } doReturn true
+        }
+        mMediaDevice1.stub {
+            on { isSelected() } doReturn true
+            on { isDeselectable() } doReturn true
+        }
+        mMediaDevice2.stub {
+            on { isSelectable() } doReturn true
+            on { isDeselectable() } doReturn true
+        }
+        val inputDevice: InputMediaDevice =
+            mock<InputMediaDevice>() {
+                    on { id } doReturn INPUT_TEST_DEVICE_ID
+                    on { name } doReturn INPUT_TEST_DEVICE_NAME
+                    on { isInputDevice() } doReturn true
+                    on { isSelected() } doReturn true
+                    on { isDeselectable() } doReturn false
+                }
+                .also {
+                    whenever(mMediaSwitchingController.getDeviceIconCompat(it)) doReturn mIconCompat
+                }
+
+        updateAdapterWithDevices(listOf(mMediaDevice1, mMediaDevice2, inputDevice))
+
+        // Selected output device has a group checkbox.
+        createAndBindDeviceViewHolder(position = 0).apply {
+            assertThat(mGroupButton.visibility).isEqualTo(VISIBLE)
+        }
+
+        // Selected input device doesn't have a group checkbox.
+        createAndBindDeviceViewHolder(position = 2).apply {
+            assertThat(mGroupButton.visibility).isEqualTo(GONE)
+        }
     }
 
     @Test
@@ -819,8 +860,10 @@ class MediaOutputAdapterTest : SysuiTestCase() {
     companion object {
         private const val TEST_DEVICE_NAME_1 = "test_device_name_1"
         private const val TEST_DEVICE_NAME_2 = "test_device_name_2"
+        private const val INPUT_TEST_DEVICE_NAME = "input_test_device_name"
         private const val TEST_DEVICE_ID_1 = "test_device_id_1"
         private const val TEST_DEVICE_ID_2 = "test_device_id_2"
+        private const val INPUT_TEST_DEVICE_ID = "input_test_device_id"
         private const val TEST_SESSION_NAME = "test_session_name"
         private const val TEST_CUSTOM_SUBTEXT = "custom subtext"
 

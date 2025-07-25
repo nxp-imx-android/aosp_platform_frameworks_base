@@ -664,6 +664,7 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
                         MAX_VOLUME,
                         CURRENT_VOLUME,
                         VOLUME_FIXED_TRUE,
+                        /* isSelected= */ true,
                         PRODUCT_NAME_BUILTIN_MIC);
         final MediaDevice mediaDevice4 =
                 InputMediaDevice.create(
@@ -674,6 +675,7 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
                         MAX_VOLUME,
                         CURRENT_VOLUME,
                         VOLUME_FIXED_TRUE,
+                        /* isSelected= */ false,
                         PRODUCT_NAME_WIRED_HEADSET);
         final List<MediaDevice> inputDevices = new ArrayList<>();
         inputDevices.add(mediaDevice3);
@@ -1506,6 +1508,7 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
                         MAX_VOLUME,
                         CURRENT_VOLUME,
                         VOLUME_FIXED_TRUE,
+                        /* isSelected= */ false,
                         PRODUCT_NAME_BUILTIN_MIC);
         mMediaSwitchingController.connectDevice(inputMediaDevice);
 

@@ -408,6 +408,10 @@ public abstract class MediaDevice implements Comparable<MediaDevice> {
         return mRouteInfo.getType() == TYPE_BLE_HEADSET;
     }
 
+    public boolean isInputDevice() {
+        return false;
+    }
+
     /**
      * Get application label from MediaDevice.
      *
