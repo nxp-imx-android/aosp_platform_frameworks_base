@@ -490,6 +490,7 @@ public class BatteryControllerImpl extends BroadcastReceiver implements BatteryC
     }
 
     private void fireBatteryUnknownStateChanged() {
+        mLogger.logBatteryUnknownStateChangedCallback(mStateUnknown);
         dispatchSafeChange((callback) -> callback.onBatteryUnknownStateChanged(mStateUnknown));
     }
 
