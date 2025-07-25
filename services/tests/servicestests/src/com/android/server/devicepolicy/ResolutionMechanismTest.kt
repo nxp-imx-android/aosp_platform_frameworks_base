@@ -261,6 +261,51 @@ class ResolutionMechanismTest {
         }
     }
 
+    @Test
+    fun isPolicyApplied_stringSetIntersection_sameValues_returnsTrue() {
+        val resolutionMechanism = StringSetIntersection()
+        val policyA = PackageSetPolicyValue(setOf("package1", "package2"))
+        val policyB = PackageSetPolicyValue(setOf("package2", "package1"))
+
+        assertTrue {
+            resolutionMechanism.isPolicyApplied(policyA, policyB)
+        }
+    }
+
+    @Test
+    fun isPolicyApplied_stringSetIntersection_differentValues_returnsFalse() {
+        val resolutionMechanism = StringSetIntersection()
+        val policyA = PackageSetPolicyValue(setOf("package1"))
+        val policyB = PackageSetPolicyValue(setOf("package2"))
+
+        assertFalse {
+            resolutionMechanism.isPolicyApplied(policyA, policyB)
+        }
+    }
+
+    @Test
+    fun isPolicyApplied_stringSetIntersection_policyIsSubsetOfResolvedPolicy_returnsFalse() {
+        val resolutionMechanism = StringSetIntersection()
+        val policyA = PackageSetPolicyValue(setOf("package1"))
+        val policyB = PackageSetPolicyValue(setOf("package1", "package2"))
+
+        assertFalse {
+            resolutionMechanism.isPolicyApplied(policyA, policyB)
+        }
+    }
+
+    @Test
+    fun isPolicyApplied_stringSetIntersection_resolvedPolicyIsSubsetOfPolicy_returnsFalse() {
+        val resolutionMechanism = StringSetIntersection()
+        val policyA = PackageSetPolicyValue(setOf("package1", "package2"))
+        val policyB = PackageSetPolicyValue(setOf("package1"))
+
+        assertFalse {
+            resolutionMechanism.isPolicyApplied(policyA, policyB)
+        }
+    }
+
+
     companion object {
         private const val SYSTEM_USER_ID = UserHandle.USER_SYSTEM
         private val SYSTEM_ADMIN = EnforcingAdmin.createSystemEnforcingAdmin("system_entity")
