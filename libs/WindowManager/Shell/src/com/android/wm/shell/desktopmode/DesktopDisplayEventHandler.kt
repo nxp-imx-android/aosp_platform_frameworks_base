@@ -185,16 +185,20 @@ class DesktopDisplayEventHandler(
     }
 
     private fun handlePotentialReconnect(displayId: Int): Boolean {
-        val uniqueDisplayId = displayController.getDisplay(displayId)?.uniqueId
-        uniqueDisplayId?.let {
-            uniqueIdByDisplayId[displayId] = it
-            if (
-                DesktopExperienceFlags.ENABLE_DISPLAY_RECONNECT_INTERACTION.isTrue &&
-                    desktopUserRepositories.current.hasPreservedDisplayForUniqueDisplayId(it)
-            ) {
-                desktopTasksController.restoreDisplay(displayId, it)
-                return true
-            }
+        val uniqueDisplayId = displayController.getDisplay(displayId)?.uniqueId ?: return false
+        uniqueIdByDisplayId[displayId] = uniqueDisplayId
+        if (
+            DesktopExperienceFlags.ENABLE_DISPLAY_RECONNECT_INTERACTION.isTrue &&
+                desktopUserRepositories.current.hasPreservedDisplayForUniqueDisplayId(
+                    uniqueDisplayId
+                )
+        ) {
+            desktopTasksController.restoreDisplay(
+                displayId = displayId,
+                uniqueDisplayId = uniqueDisplayId,
+                userId = desktopUserRepositories.current.userId,
+            )
+            return true
         }
         return false
     }

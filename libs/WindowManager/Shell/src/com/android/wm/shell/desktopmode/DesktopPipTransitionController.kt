@@ -316,6 +316,7 @@ class DesktopPipTransitionController(
                 wct = wct,
                 deskId = deskId,
                 displayId = displayId,
+                userId = taskInfo.userId,
                 willExitDesktop = true,
                 removingLastTaskId = taskId,
                 exitReason = ExitReason.ENTER_PIP,
