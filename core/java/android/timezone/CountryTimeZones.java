@@ -96,11 +96,14 @@ public final class CountryTimeZones {
     public static final class OffsetResult {
 
         private final TimeZone mTimeZone;
+        @Nullable private final String mCountryIsoCode;
         private final boolean mIsOnlyMatch;
 
         /** Creates an instance with the supplied information. */
-        public OffsetResult(@NonNull TimeZone timeZone, boolean isOnlyMatch) {
+        public OffsetResult(@NonNull TimeZone timeZone, @Nullable String countryIsoCode,
+                boolean isOnlyMatch) {
             mTimeZone = Objects.requireNonNull(timeZone);
+            mCountryIsoCode = countryIsoCode;
             mIsOnlyMatch = isOnlyMatch;
         }
 
@@ -110,6 +113,12 @@ public final class CountryTimeZones {
         @NonNull
         public TimeZone getTimeZone() {
             return mTimeZone;
+        }
+
+        /** Returns the country ISO code where the time zone matched. */
+        @Nullable
+        public String getCountryIsoCode() {
+            return mCountryIsoCode;
         }
 
         /**
@@ -129,18 +138,20 @@ public final class CountryTimeZones {
             }
             OffsetResult that = (OffsetResult) o;
             return mIsOnlyMatch == that.mIsOnlyMatch
-                    && mTimeZone.getID().equals(that.mTimeZone.getID());
+                    && mTimeZone.getID().equals(that.mTimeZone.getID())
+                    && Objects.equals(mCountryIsoCode, that.mCountryIsoCode);
         }
 
         @Override
         public int hashCode() {
-            return Objects.hash(mTimeZone, mIsOnlyMatch);
+            return Objects.hash(mTimeZone, mCountryIsoCode, mIsOnlyMatch);
         }
 
         @Override
         public String toString() {
             return "OffsetResult{"
                     + "mTimeZone(ID)=" + mTimeZone.getID()
+                    + ", mCountryIsoCode=" + mCountryIsoCode
                     + ", mIsOnlyMatch=" + mIsOnlyMatch
                     + '}';
         }
@@ -225,8 +236,8 @@ public final class CountryTimeZones {
                 mDelegate.lookupByOffsetWithBias(
                         whenMillis, bias, totalOffsetMillis, isDst);
         return delegateOffsetResult == null ? null :
-                new OffsetResult(
-                        delegateOffsetResult.getTimeZone(), delegateOffsetResult.isOnlyMatch());
+                new OffsetResult(delegateOffsetResult.getTimeZone(), mDelegate.getCountryIso(),
+                        delegateOffsetResult.isOnlyMatch());
     }
 
     /**
@@ -247,8 +258,8 @@ public final class CountryTimeZones {
         com.android.i18n.timezone.CountryTimeZones.OffsetResult delegateOffsetResult =
                 mDelegate.lookupByOffsetWithBias(whenMillis, bias, totalOffsetMillis);
         return delegateOffsetResult == null ? null :
-                new OffsetResult(
-                        delegateOffsetResult.getTimeZone(), delegateOffsetResult.isOnlyMatch());
+                new OffsetResult(delegateOffsetResult.getTimeZone(), mDelegate.getCountryIso(),
+                        delegateOffsetResult.isOnlyMatch());
     }
 
     /**
