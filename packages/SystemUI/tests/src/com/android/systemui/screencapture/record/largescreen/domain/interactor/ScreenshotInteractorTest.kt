@@ -19,7 +19,6 @@ package com.android.systemui.screencapture.record.largescreen.domain.interactor
 import android.graphics.Bitmap
 import android.graphics.Rect
 import android.os.UserHandle
-import android.view.Display.DEFAULT_DISPLAY
 import android.view.WindowManager
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
@@ -79,13 +78,14 @@ class ScreenshotInteractorTest : SysuiTestCase() {
     }
 
     @Test
-    fun takePartialScreenshot_makesCorrectRequestAndCallsScreenshotHelper() {
+    fun takePartialScreenshot_callsScreenshotHelper_withCorrectRequest() {
         testScope.runTest {
             val bounds = Rect(0, 0, 100, 100)
-            whenever(kosmos.mockImageCapture.captureDisplay(eq(DEFAULT_DISPLAY), eq(bounds)))
+            val displayId = 3
+            whenever(kosmos.mockImageCapture.captureDisplay(eq(displayId), eq(bounds)))
                 .thenReturn(mockBitmap)
 
-            interactor.takePartialScreenshot(bounds)
+            interactor.takePartialScreenshot(bounds, displayId)
 
             val screenshotRequestCaptor = argumentCaptor<ScreenshotRequest>()
             verify(kosmos.mockImageCapture, times(1)).captureDisplay(any(), eq(bounds))
@@ -98,7 +98,7 @@ class ScreenshotInteractorTest : SysuiTestCase() {
                 .isEqualTo(WindowManager.ScreenshotSource.SCREENSHOT_SCREEN_CAPTURE_UI)
             assertThat(capturedRequest.bitmap).isEqualTo(mockBitmap)
             assertThat(capturedRequest.boundsInScreen).isEqualTo(bounds)
-            assertThat(capturedRequest.displayId).isEqualTo(DEFAULT_DISPLAY)
+            assertThat(capturedRequest.displayId).isEqualTo(displayId)
             assertThat(capturedRequest.userId).isEqualTo(UserHandle.USER_CURRENT)
         }
     }

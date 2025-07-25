@@ -134,8 +134,7 @@ constructor(
         closeUI()
 
         backgroundScope.launch {
-            // TODO(b/430361425) Pass in current display as argument.
-            screenshotInteractor.takePartialScreenshot(regionBoxRect)
+            screenshotInteractor.takePartialScreenshot(regionBoxRect, displayId)
         }
     }
 
