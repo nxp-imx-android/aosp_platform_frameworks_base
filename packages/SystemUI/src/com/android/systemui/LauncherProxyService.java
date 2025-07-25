@@ -34,6 +34,7 @@ import static com.android.systemui.shared.system.QuickStepContract.SYSUI_STATE_C
 import static com.android.systemui.shared.system.QuickStepContract.SYSUI_STATE_DEVICE_DOZING;
 import static com.android.systemui.shared.system.QuickStepContract.SYSUI_STATE_DEVICE_DREAMING;
 import static com.android.systemui.shared.system.QuickStepContract.SYSUI_STATE_FREEFORM_ACTIVE_IN_DESKTOP_MODE;
+import static com.android.systemui.shared.system.QuickStepContract.SYSUI_STATE_NAVIGATION_BAR_DISABLED;
 import static com.android.systemui.shared.system.QuickStepContract.SYSUI_STATE_STATUS_BAR_KEYGUARD_GOING_AWAY;
 import static com.android.systemui.shared.system.QuickStepContract.SYSUI_STATE_STATUS_BAR_KEYGUARD_SHOWING;
 import static com.android.systemui.shared.system.QuickStepContract.SYSUI_STATE_STATUS_BAR_KEYGUARD_SHOWING_OCCLUDED;
@@ -925,6 +926,10 @@ public class LauncherProxyService implements CallbackController<LauncherProxyLis
         if (navBarView != null) {
             navBarView.updateDisabledSystemUiStateFlags(displaySysuiState);
         }
+
+        displaySysuiState.setFlag(SYSUI_STATE_NAVIGATION_BAR_DISABLED,
+                !mNavBarControllerLazy.get().canCreateNavBarOrTaskBar(displayId))
+                .commitUpdate();
     }
 
     /** Force updates SystemUI state flags prior to sending them to Launcher. */
