@@ -25,9 +25,7 @@ import android.app.usage.NetworkStatsManager;
 import android.content.Context;
 import android.content.pm.PackageManagerInternal;
 import android.media.AudioManager;
-import android.media.IAudioService;
 import android.net.ConnectivityManager;
-import android.os.ServiceManager;
 import android.os.SystemProperties;
 import android.telecom.TelecomManager;
 import android.text.TextUtils;
@@ -74,10 +72,9 @@ public class AppStateHelper {
      * True if the app owns the audio focus.
      */
     private boolean hasAudioFocus(String packageName) {
-        var audioService = IAudioService.Stub.asInterface(
-                ServiceManager.getService(Context.AUDIO_SERVICE));
+        var audioManager = mContext.getSystemService(AudioManager.class);
         try {
-            return audioService.hasAudioFocus(packageName);
+            return audioManager.hasAudioFocus(packageName);
         } catch (Exception ignore) {
         }
         return false;
