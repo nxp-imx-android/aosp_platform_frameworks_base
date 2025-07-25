@@ -77,10 +77,7 @@ public class AppStateHelper {
         var audioService = IAudioService.Stub.asInterface(
                 ServiceManager.getService(Context.AUDIO_SERVICE));
         try {
-            var focusInfos = audioService.getFocusStack();
-            int size = focusInfos.size();
-            var audioFocusPackage = (size > 0) ? focusInfos.get(size - 1).getPackageName() : null;
-            return TextUtils.equals(packageName, audioFocusPackage);
+            return audioService.hasAudioFocus(packageName);
         } catch (Exception ignore) {
         }
         return false;
