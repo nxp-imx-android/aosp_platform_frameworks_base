@@ -181,7 +181,6 @@ public class TouchExplorerTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_TOUCH_EXPLORER_USE_VIRTUAL_DEVICE_ID)
     public void testOneFingerMove_injectedEventsUseVirtualDeviceId() {
         goFromStateClearTo(STATE_TOUCH_EXPLORING_1FINGER);
         // Wait for transiting to touch exploring state.

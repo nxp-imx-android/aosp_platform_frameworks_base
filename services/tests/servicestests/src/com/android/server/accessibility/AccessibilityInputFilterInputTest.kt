@@ -232,7 +232,6 @@ class AccessibilityInputFilterInputTest {
      * These get converted into HOVER_ENTER -> HOVER_MOVE -> HOVER_EXIT events by the input filter.
      */
     @Test
-    @EnableFlags(Flags.FLAG_TOUCH_EXPLORER_USE_VIRTUAL_DEVICE_ID)
     fun testSingleDeviceTouchEventsWithAllA11yFeatures() {
         enableFeatures(ALL_A11Y_FEATURES)
 
@@ -272,7 +271,6 @@ class AccessibilityInputFilterInputTest {
      * These get converted into HOVER_ENTER -> HOVER_EXIT -> HOVER_ENTER events by the input filter.
      */
     @Test
-    @EnableFlags(Flags.FLAG_TOUCH_EXPLORER_USE_VIRTUAL_DEVICE_ID)
     fun testTouchDownCancelDownWithAllA11yFeatures() {
         enableFeatures(ALL_A11Y_FEATURES)
 
@@ -314,7 +312,6 @@ class AccessibilityInputFilterInputTest {
      * This test is the same as above, but for stylus events.
      */
     @Test
-    @EnableFlags(Flags.FLAG_TOUCH_EXPLORER_USE_VIRTUAL_DEVICE_ID)
     fun testStylusDownCancelDownWithAllA11yFeatures() {
         enableFeatures(ALL_A11Y_FEATURES)
 
@@ -354,7 +351,6 @@ class AccessibilityInputFilterInputTest {
      * Enable all a11y features and send a stylus stream and then a touch stream.
      */
     @Test
-    @EnableFlags(Flags.FLAG_TOUCH_EXPLORER_USE_VIRTUAL_DEVICE_ID)
     fun testStylusThenTouch() {
         enableFeatures(ALL_A11Y_FEATURES)
 
@@ -396,7 +392,6 @@ class AccessibilityInputFilterInputTest {
      * from the dispatcher.
      */
     @Test
-    @EnableFlags(Flags.FLAG_TOUCH_EXPLORER_USE_VIRTUAL_DEVICE_ID)
     fun testSingleDeviceTouchEventsDisableFeaturesMidGesture() {
         enableFeatures(ALL_A11Y_FEATURES)
 
@@ -489,10 +484,7 @@ class AccessibilityInputFilterInputTest {
      * interleaved.
      */
     @Test
-    @EnableFlags(
-        Flags.FLAG_HANDLE_MULTI_DEVICE_INPUT,
-        Flags.FLAG_TOUCH_EXPLORER_USE_VIRTUAL_DEVICE_ID
-    )
+    @EnableFlags(Flags.FLAG_HANDLE_MULTI_DEVICE_INPUT)
     fun testMultiDeviceEventsWithAllA11yFeatures() {
         enableFeatures(ALL_A11Y_FEATURES)
 
@@ -570,10 +562,7 @@ class AccessibilityInputFilterInputTest {
      * while stylus is active. Check that the latest device is always given preference.
      */
     @Test
-    @EnableFlags(
-        Flags.FLAG_HANDLE_MULTI_DEVICE_INPUT,
-        Flags.FLAG_TOUCH_EXPLORER_USE_VIRTUAL_DEVICE_ID
-    )
+    @EnableFlags(Flags.FLAG_HANDLE_MULTI_DEVICE_INPUT)
     fun testStylusWithTouchInTheMiddle() {
         enableFeatures(ALL_A11Y_FEATURES)
 
