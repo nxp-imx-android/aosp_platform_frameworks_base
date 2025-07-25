@@ -1832,7 +1832,6 @@ public abstract class WMShellModule {
     @WMSingleton
     @Provides
     static Optional<DesktopImeHandler> provideDesktopImeHandler(
-            Optional<DesktopTasksController> desktopTasksController,
             Optional<DesktopUserRepositories> desktopUserRepositories,
             FocusTransitionObserver focusTransitionObserver,
             DisplayImeController displayImeController,
@@ -1849,7 +1848,7 @@ public abstract class WMShellModule {
             return Optional.empty();
         }
         return Optional.of(
-                new DesktopImeHandler(desktopTasksController.get(), desktopUserRepositories.get(),
+                new DesktopImeHandler(desktopUserRepositories.get(),
                         focusTransitionObserver, shellTaskOrganizer,
                         displayImeController, desktopModeWindowDecorViewModel, displayController,
                         transitions, mainExecutor,

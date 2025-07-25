@@ -19,6 +19,9 @@ package com.android.wm.shell.desktopmode
 import android.app.ActivityManager.RunningTaskInfo
 import android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN
 import android.content.pm.ActivityInfo
+import android.content.pm.UserInfo
+import android.content.pm.UserInfo.FLAG_FULL
+import android.content.pm.UserInfo.FLAG_MAIN
 import android.graphics.Rect
 import android.hardware.input.InputManager
 import android.hardware.input.InputManager.KeyGestureEventHandler
@@ -52,6 +55,7 @@ import com.android.wm.shell.desktopmode.common.ToggleTaskSizeInteraction
 import com.android.wm.shell.desktopmode.data.DesktopRepository
 import com.android.wm.shell.shared.desktopmode.FakeDesktopConfig
 import com.android.wm.shell.shared.desktopmode.FakeDesktopState
+import com.android.wm.shell.sysui.ShellController
 import com.android.wm.shell.sysui.ShellInit
 import com.android.wm.shell.transition.FocusTransitionObserver
 import com.android.wm.shell.windowdecor.DesktopModeWindowDecorViewModel
@@ -68,12 +72,11 @@ import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.mockito.Mockito.anyInt
-import org.mockito.Mockito.spy
-import org.mockito.Mockito.verify
 import org.mockito.kotlin.any
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.spy
+import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.mockito.quality.Strictness
 
@@ -98,6 +101,7 @@ class DesktopModeKeyGestureHandlerTest : ShellTestCase() {
     private val desktopModeWindowDecorViewModel = mock<DesktopModeWindowDecorViewModel>()
     private val desktopTasksController = mock<DesktopTasksController>()
     private val desktopState = FakeDesktopState()
+    private val shellController = mock<ShellController>()
 
     private lateinit var desktopModeKeyGestureHandler: DesktopModeKeyGestureHandler
     private lateinit var keyGestureEventHandler: KeyGestureEventHandler
@@ -120,8 +124,11 @@ class DesktopModeKeyGestureHandlerTest : ShellTestCase() {
         testScope = CoroutineScope(Dispatchers.Unconfined + SupervisorJob())
         shellInit = spy(ShellInit(testExecutor))
 
-        whenever(shellTaskOrganizer.getRunningTasks(anyInt())).thenAnswer { runningTasks }
-        whenever(displayController.getDisplayLayout(anyInt())).thenReturn(displayLayout)
+        whenever(shellController.currentUserId).thenReturn(DEFAULT_USER_ID)
+        whenever(shellController.currentUserProfiles)
+            .thenReturn(listOf(UserInfo(DEFAULT_USER_ID, "default", FLAG_FULL or FLAG_MAIN)))
+        whenever(shellTaskOrganizer.getRunningTasks(any())).thenAnswer { runningTasks }
+        whenever(displayController.getDisplayLayout(any())).thenReturn(displayLayout)
         whenever(displayLayout.getStableBounds(any())).thenAnswer { i ->
             (i.arguments.first() as Rect).set(STABLE_BOUNDS)
         }
@@ -131,7 +138,7 @@ class DesktopModeKeyGestureHandlerTest : ShellTestCase() {
         desktopUserRepositories =
             DesktopUserRepositories(
                 ShellInit(TestShellExecutor()),
-                shellController = mock(),
+                shellController,
                 persistentRepository = mock(),
                 repositoryInitializer = mock(),
                 testScope,
@@ -207,7 +214,11 @@ class DesktopModeKeyGestureHandlerTest : ShellTestCase() {
         testExecutor.flushAll()
 
         verify(desktopTasksController)
-            .moveToNextDesktopDisplay(task.taskId, EnterReason.KEYBOARD_SHORTCUT_ENTER)
+            .moveToNextDesktopDisplay(
+                taskId = task.taskId,
+                userId = shellController.currentUserId,
+                enterReason = EnterReason.KEYBOARD_SHORTCUT_ENTER,
+            )
     }
 
     @Test
@@ -231,7 +242,9 @@ class DesktopModeKeyGestureHandlerTest : ShellTestCase() {
         whenever(shellTaskOrganizer.getRunningTasks()).thenReturn(arrayListOf(task))
         whenever(focusTransitionObserver.hasGlobalFocus(eq(task))).thenReturn(false)
         whenever(focusTransitionObserver.globallyFocusedDisplayId).thenReturn(DEFAULT_DISPLAY)
-        whenever(desktopTasksController.getFocusedNonDesktopTasks(DEFAULT_DISPLAY))
+        whenever(
+                desktopTasksController.getFocusedNonDesktopTasks(DEFAULT_DISPLAY, repository.userId)
+            )
             .thenReturn(listOf(task))
         desktopState.isProjected = true
 
@@ -246,7 +259,11 @@ class DesktopModeKeyGestureHandlerTest : ShellTestCase() {
         testExecutor.flushAll()
 
         verify(desktopTasksController)
-            .moveToNextDesktopDisplay(task.taskId, EnterReason.KEYBOARD_SHORTCUT_ENTER)
+            .moveToNextDesktopDisplay(
+                taskId = task.taskId,
+                userId = repository.userId,
+                enterReason = EnterReason.KEYBOARD_SHORTCUT_ENTER,
+            )
     }
 
     @Test
@@ -362,7 +379,7 @@ class DesktopModeKeyGestureHandlerTest : ShellTestCase() {
         testExecutor.flushAll()
 
         verify(desktopTasksController)
-            .activatePreviousDesk(displayId, EnterReason.KEYBOARD_SHORTCUT_ENTER)
+            .activatePreviousDesk(displayId, DEFAULT_USER_ID, EnterReason.KEYBOARD_SHORTCUT_ENTER)
     }
 
     @Test
@@ -378,7 +395,7 @@ class DesktopModeKeyGestureHandlerTest : ShellTestCase() {
         testExecutor.flushAll()
 
         verify(desktopTasksController)
-            .activateNextDesk(displayId, EnterReason.KEYBOARD_SHORTCUT_ENTER)
+            .activateNextDesk(displayId, DEFAULT_USER_ID, EnterReason.KEYBOARD_SHORTCUT_ENTER)
     }
 
     private fun setUpDesktopTask(
@@ -409,6 +426,7 @@ class DesktopModeKeyGestureHandlerTest : ShellTestCase() {
     }
 
     private companion object {
+        private const val DEFAULT_USER_ID = 0
         const val SECOND_DISPLAY = 2
         val STABLE_BOUNDS = Rect(0, 0, 1000, 1000)
     }

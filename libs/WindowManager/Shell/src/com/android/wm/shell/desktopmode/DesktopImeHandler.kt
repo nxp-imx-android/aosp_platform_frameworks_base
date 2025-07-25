@@ -45,7 +45,6 @@ import java.util.Optional
 
 /** Handles the interactions between IME and desktop tasks */
 class DesktopImeHandler(
-    private val tasksController: DesktopTasksController,
     private val userRepositories: DesktopUserRepositories,
     private val focusTransitionObserver: FocusTransitionObserver,
     private val shellTaskOrganizer: ShellTaskOrganizer,
@@ -94,7 +93,7 @@ class DesktopImeHandler(
         isFloating: Boolean,
         t: Transaction?,
     ): Int {
-        if (!tasksController.isAnyDeskActive(displayId) || isFloating) {
+        if (!userRepositories.current.isAnyDeskActive(displayId) || isFloating) {
             return IME_ANIMATION_DEFAULT
         }
 

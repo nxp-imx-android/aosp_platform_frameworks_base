@@ -42,6 +42,10 @@ import android.content.pm.ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
 import android.content.pm.ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
 import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
+import android.content.pm.UserInfo
+import android.content.pm.UserInfo.FLAG_FULL
+import android.content.pm.UserInfo.FLAG_MAIN
+import android.content.pm.UserInfo.FLAG_PROFILE
 import android.content.res.Configuration.ORIENTATION_LANDSCAPE
 import android.content.res.Configuration.ORIENTATION_PORTRAIT
 import android.content.res.Resources
@@ -313,6 +317,9 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     // Mock running tasks are registered here so we can get the list from mock shell task organizer
     private val runningTasks = mutableListOf<RunningTaskInfo>()
 
+    private val DEFAULT_USER_ID = 0
+    private val DEFAULT_USER_WORK_PROFILE_ID = 100
+
     private val SECONDARY_DISPLAY_ID = 1
     private val DISPLAY_DIMENSION_SHORT = 1600
     private val DISPLAY_DIMENSION_LONG = 2560
@@ -345,6 +352,14 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
 
         spyContext = spy(mContext)
         shellInit = spy(ShellInit(testExecutor))
+        whenever(shellController.currentUserId).thenReturn(DEFAULT_USER_ID)
+        whenever(shellController.currentUserProfiles)
+            .thenReturn(
+                listOf(
+                    UserInfo(DEFAULT_USER_ID, "default", FLAG_FULL or FLAG_MAIN),
+                    UserInfo(DEFAULT_USER_WORK_PROFILE_ID, "default_work", FLAG_PROFILE),
+                )
+            )
         userRepositories =
             DesktopUserRepositories(
                 shellInit,
@@ -525,7 +540,13 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     fun doesAnyTaskRequireTaskbarRounding_onlyFreeFormTaskIsRunning_returnFalse() {
         setUpFreeformTask()
 
-        assertThat(controller.doesAnyTaskRequireTaskbarRounding(DEFAULT_DISPLAY)).isFalse()
+        assertThat(
+                controller.doesAnyTaskRequireTaskbarRounding(
+                    displayId = DEFAULT_DISPLAY,
+                    userId = taskRepository.userId,
+                )
+            )
+            .isFalse()
     }
 
     @Test
@@ -559,7 +580,13 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     fun doesAnyTaskRequireTaskbarRounding_fullScreenTaskIsRunning_returnTrue() {
         val stableBounds = Rect().also { displayLayout.getStableBounds(it) }
         setUpFreeformTask(bounds = stableBounds, active = true)
-        assertThat(controller.doesAnyTaskRequireTaskbarRounding(DEFAULT_DISPLAY)).isTrue()
+        assertThat(
+                controller.doesAnyTaskRequireTaskbarRounding(
+                    displayId = DEFAULT_DISPLAY,
+                    userId = taskRepository.userId,
+                )
+            )
+            .isTrue()
     }
 
     @Test
@@ -598,7 +625,13 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
             bounds = Rect(stableBounds.left, stableBounds.top, 500, stableBounds.bottom)
         )
 
-        assertThat(controller.doesAnyTaskRequireTaskbarRounding(DEFAULT_DISPLAY)).isTrue()
+        assertThat(
+                controller.doesAnyTaskRequireTaskbarRounding(
+                    displayId = DEFAULT_DISPLAY,
+                    userId = taskRepository.userId,
+                )
+            )
+            .isTrue()
     }
 
     @Test
@@ -767,8 +800,9 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         taskRepository.setActiveDesk(DEFAULT_DISPLAY, deskId = 1)
 
         controller.activateDesk(
-            deskId,
-            RemoteTransition(TestRemoteTransition()),
+            deskId = deskId,
+            userId = taskRepository.userId,
+            remoteTransition = RemoteTransition(TestRemoteTransition()),
             enterReason = EnterReason.UNKNOWN_ENTER,
         )
 
@@ -1413,7 +1447,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         val testComponent = ComponentName(/* package */ "test.package", /* class */ "test.class")
         existingTask.topActivity = testComponent
         existingTask.configuration.windowConfiguration.setBounds(Rect(0, 0, 500, 500))
-        // Set up new instance of already existing task in a different user.
+        // Set up new instance of already existing task in a different user profile.
         val launchingTask =
             setUpFullscreenTask().apply {
                 topActivityInfo =
@@ -1421,7 +1455,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
                         launchMode = LAUNCH_SINGLE_INSTANCE
                         applicationInfo = ApplicationInfo()
                     }
-                userId = 100
+                userId = DEFAULT_USER_WORK_PROFILE_ID
             }
         launchingTask.topActivity = testComponent
 
@@ -2003,7 +2037,15 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         val task = setUpFullscreenTask()
         spyController.moveTaskToDefaultDeskAndActivate(task.taskId, transitionSource = ADB_COMMAND)
         verify(spyController, times(1))
-            .moveTaskToDesk(anyInt(), anyInt(), any(), eq(ADB_COMMAND), eq(null), eq(null))
+            .moveTaskToDesk(
+                anyInt(),
+                anyInt(),
+                anyInt(),
+                any(),
+                eq(ADB_COMMAND),
+                eq(null),
+                eq(null),
+            )
 
         clearInvocations(desksOrganizer)
 
@@ -2012,7 +2054,15 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
             transitionSource = OVERVIEW_TASK_MENU,
         )
         verify(spyController, times(1))
-            .moveTaskToDesk(anyInt(), anyInt(), any(), eq(OVERVIEW_TASK_MENU), eq(null), eq(null))
+            .moveTaskToDesk(
+                anyInt(),
+                anyInt(),
+                anyInt(),
+                any(),
+                eq(OVERVIEW_TASK_MENU),
+                eq(null),
+                eq(null),
+            )
     }
 
     @Test
@@ -2024,14 +2074,22 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         val task = setUpFullscreenTask()
         spyController.moveTaskToDefaultDeskAndActivate(task.taskId, transitionSource = UNKNOWN)
         verify(spyController, times(0))
-            .moveTaskToDesk(anyInt(), anyInt(), any(), eq(UNKNOWN), eq(null), eq(null))
+            .moveTaskToDesk(anyInt(), anyInt(), anyInt(), any(), eq(UNKNOWN), eq(null), eq(null))
 
         spyController.moveTaskToDefaultDeskAndActivate(
             task.taskId,
             transitionSource = KEYBOARD_SHORTCUT,
         )
         verify(spyController, times(0))
-            .moveTaskToDesk(anyInt(), anyInt(), any(), eq(KEYBOARD_SHORTCUT), eq(null), eq(null))
+            .moveTaskToDesk(
+                anyInt(),
+                anyInt(),
+                anyInt(),
+                any(),
+                eq(KEYBOARD_SHORTCUT),
+                eq(null),
+                eq(null),
+            )
 
         spyController.moveTaskToDefaultDeskAndActivate(
             task.taskId,
@@ -2039,6 +2097,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         )
         verify(spyController, times(0))
             .moveTaskToDesk(
+                anyInt(),
                 anyInt(),
                 anyInt(),
                 any(),
@@ -2049,7 +2108,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
 
         spyController.moveTaskToDefaultDeskAndActivate(task.taskId, transitionSource = TASK_DRAG)
         verify(spyController, times(0))
-            .moveTaskToDesk(anyInt(), anyInt(), any(), eq(TASK_DRAG), eq(null), eq(null))
+            .moveTaskToDesk(anyInt(), anyInt(), anyInt(), any(), eq(TASK_DRAG), eq(null), eq(null))
     }
 
     @Test
@@ -4273,7 +4332,11 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         taskRepository.addDesk(displayId = SECOND_DISPLAY, deskId = SECOND_DISPLAY)
         val task = setUpFreeformTask(displayId = SECOND_DISPLAY)
 
-        controller.moveToNextDesktopDisplay(task.taskId, EnterReason.UNKNOWN_ENTER)
+        controller.moveToNextDesktopDisplay(
+            taskId = task.taskId,
+            userId = taskRepository.userId,
+            enterReason = EnterReason.UNKNOWN_ENTER,
+        )
 
         val wct =
             getLatestWct(
@@ -4319,7 +4382,11 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
             taskBounds = TASK_BOUNDS,
         )
 
-        controller.moveToNextDesktopDisplay(task.taskId, EnterReason.UNKNOWN_ENTER)
+        controller.moveToNextDesktopDisplay(
+            taskId = task.taskId,
+            userId = taskRepository.userId,
+            enterReason = EnterReason.UNKNOWN_ENTER,
+        )
 
         val wct =
             getLatestWct(
@@ -4351,7 +4418,11 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         // Set up a task on the default display
         val task = setUpFreeformTask(displayId = DEFAULT_DISPLAY)
 
-        controller.moveToNextDesktopDisplay(task.taskId, EnterReason.UNKNOWN_ENTER)
+        controller.moveToNextDesktopDisplay(
+            taskId = task.taskId,
+            userId = taskRepository.userId,
+            enterReason = EnterReason.UNKNOWN_ENTER,
+        )
 
         val verificationMode =
             if (isDesktopModeSupportedOnDestination) {
@@ -4393,7 +4464,11 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         // Set up a task on the default display
         val task = setUpFreeformTask(displayId = DEFAULT_DISPLAY)
 
-        controller.moveToNextDesktopDisplay(task.taskId, EnterReason.UNKNOWN_ENTER)
+        controller.moveToNextDesktopDisplay(
+            taskId = task.taskId,
+            userId = taskRepository.userId,
+            enterReason = EnterReason.UNKNOWN_ENTER,
+        )
 
         verify(transitions, never())
             .startTransition(
@@ -7763,8 +7838,9 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         taskRepository.setActiveDesk(DEFAULT_DISPLAY, deskId = 1)
 
         controller.activateDesk(
-            deskId,
-            RemoteTransition(TestRemoteTransition()),
+            deskId = deskId,
+            userId = taskRepository.userId,
+            remoteTransition = RemoteTransition(TestRemoteTransition()),
             enterReason = EnterReason.UNKNOWN_ENTER,
         )
 
@@ -7798,8 +7874,9 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         taskRepository.setActiveDesk(DEFAULT_DISPLAY, deskId = 1)
 
         controller.activateDesk(
-            deskId,
-            RemoteTransition(TestRemoteTransition()),
+            deskId = deskId,
+            userId = taskRepository.userId,
+            remoteTransition = RemoteTransition(TestRemoteTransition()),
             enterReason = EnterReason.UNKNOWN_ENTER,
         )
 
@@ -7827,8 +7904,9 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         taskRepository.setActiveDesk(DEFAULT_DISPLAY, deskId = 1)
 
         controller.activateDesk(
-            deskId,
-            RemoteTransition(TestRemoteTransition()),
+            deskId = deskId,
+            userId = taskRepository.userId,
+            remoteTransition = RemoteTransition(TestRemoteTransition()),
             enterReason = EnterReason.UNKNOWN_ENTER,
         )
 
@@ -7850,8 +7928,9 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         taskRepository.setActiveDesk(DEFAULT_DISPLAY, deskId = previouslyActiveDeskId)
 
         controller.activateDesk(
-            activatingDeskId,
-            RemoteTransition(TestRemoteTransition()),
+            deskId = activatingDeskId,
+            userId = taskRepository.userId,
+            remoteTransition = RemoteTransition(TestRemoteTransition()),
             enterReason = EnterReason.UNKNOWN_ENTER,
         )
 
@@ -7877,7 +7956,11 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         taskRepository.addDesk(displayId = DEFAULT_DISPLAY, deskId = 2)
         taskRepository.setActiveDesk(displayId = DEFAULT_DISPLAY, deskId = 2)
 
-        controller.activatePreviousDesk(DEFAULT_DISPLAY, enterReason = EnterReason.UNKNOWN_ENTER)
+        controller.activatePreviousDesk(
+            displayId = DEFAULT_DISPLAY,
+            userId = DEFAULT_USER_ID,
+            enterReason = EnterReason.UNKNOWN_ENTER,
+        )
 
         verify(desksOrganizer).activateDesk(any(), eq(1), skipReorder = eq(false))
     }
@@ -7892,7 +7975,11 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         taskRepository.addDesk(displayId = DEFAULT_DISPLAY, deskId = 2)
         taskRepository.setActiveDesk(displayId = DEFAULT_DISPLAY, deskId = 1)
 
-        controller.activateNextDesk(DEFAULT_DISPLAY, enterReason = EnterReason.UNKNOWN_ENTER)
+        controller.activateNextDesk(
+            displayId = DEFAULT_DISPLAY,
+            userId = DEFAULT_USER_ID,
+            enterReason = EnterReason.UNKNOWN_ENTER,
+        )
 
         verify(desksOrganizer).activateDesk(any(), eq(2), skipReorder = eq(false))
     }
@@ -7905,7 +7992,11 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     fun activatePreviousDesk_deskDoesNotExist_doesNotActivate() {
         taskRepository.setActiveDesk(displayId = DEFAULT_DISPLAY, deskId = 0)
 
-        controller.activatePreviousDesk(DEFAULT_DISPLAY, enterReason = EnterReason.UNKNOWN_ENTER)
+        controller.activatePreviousDesk(
+            displayId = DEFAULT_DISPLAY,
+            userId = DEFAULT_USER_ID,
+            enterReason = EnterReason.UNKNOWN_ENTER,
+        )
 
         verify(desksOrganizer, never()).activateDesk(any(), any(), skipReorder = any())
     }
@@ -7919,7 +8010,11 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         taskRepository.addDesk(displayId = DEFAULT_DISPLAY, deskId = 1)
         taskRepository.setActiveDesk(displayId = DEFAULT_DISPLAY, deskId = 1)
 
-        controller.activateNextDesk(DEFAULT_DISPLAY, enterReason = EnterReason.UNKNOWN_ENTER)
+        controller.activateNextDesk(
+            displayId = DEFAULT_DISPLAY,
+            userId = DEFAULT_USER_ID,
+            enterReason = EnterReason.UNKNOWN_ENTER,
+        )
 
         verify(desksOrganizer, never()).activateDesk(any(), any(), skipReorder = any())
     }
@@ -7932,7 +8027,11 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     fun activatePreviousDesk_noDeskActive_doesNotActivate() {
         taskRepository.setDeskInactive(deskId = 0)
 
-        controller.activatePreviousDesk(DEFAULT_DISPLAY, enterReason = EnterReason.UNKNOWN_ENTER)
+        controller.activatePreviousDesk(
+            displayId = DEFAULT_DISPLAY,
+            userId = DEFAULT_USER_ID,
+            enterReason = EnterReason.UNKNOWN_ENTER,
+        )
 
         verify(desksOrganizer, never()).activateDesk(any(), any(), any())
     }
@@ -7945,7 +8044,11 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     fun activateNextDesk_noDeskActive_doesNotActivate() {
         taskRepository.setDeskInactive(deskId = 0)
 
-        controller.activateNextDesk(DEFAULT_DISPLAY, enterReason = EnterReason.UNKNOWN_ENTER)
+        controller.activateNextDesk(
+            displayId = DEFAULT_DISPLAY,
+            userId = DEFAULT_USER_ID,
+            enterReason = EnterReason.UNKNOWN_ENTER,
+        )
 
         verify(desksOrganizer, never()).activateDesk(any(), any(), any())
     }
@@ -7965,7 +8068,11 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         taskRepository.addDesk(displayId = 6, deskId = 4)
         taskRepository.setActiveDesk(displayId = 6, deskId = 4)
 
-        controller.activatePreviousDesk(INVALID_DISPLAY, enterReason = EnterReason.UNKNOWN_ENTER)
+        controller.activatePreviousDesk(
+            displayId = INVALID_DISPLAY,
+            userId = DEFAULT_USER_ID,
+            enterReason = EnterReason.UNKNOWN_ENTER,
+        )
 
         verify(desksOrganizer).activateDesk(any(), eq(1), skipReorder = eq(false))
     }
@@ -7985,7 +8092,11 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         taskRepository.addDesk(displayId = 6, deskId = 4)
         taskRepository.setActiveDesk(displayId = 6, deskId = 3)
 
-        controller.activateNextDesk(INVALID_DISPLAY, enterReason = EnterReason.UNKNOWN_ENTER)
+        controller.activateNextDesk(
+            displayId = INVALID_DISPLAY,
+            userId = DEFAULT_USER_ID,
+            enterReason = EnterReason.UNKNOWN_ENTER,
+        )
 
         verify(desksOrganizer).activateDesk(any(), eq(4), skipReorder = eq(false))
     }
@@ -10922,6 +11033,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
             launchingTaskId = null,
             deskId = 0,
             displayId = DEFAULT_DISPLAY,
+            userId = taskRepository.userId,
         )
 
         val latestWct = getLatestDesktopMixedTaskWct(type = TRANSIT_OPEN)
@@ -10948,6 +11060,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
             launchingTaskId = null,
             deskId = 0,
             displayId = DEFAULT_DISPLAY,
+            userId = taskRepository.userId,
         )
 
         verify(desktopModeEnterExitTransitionListener).onEnterDesktopModeTransitionStarted(any())
@@ -10987,6 +11100,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
             launchingTaskId = launchingTask.taskId,
             deskId = inactiveDesk,
             displayId = DEFAULT_DISPLAY,
+            userId = taskRepository.userId,
         )
 
         verify(desksOrganizer).activateDesk(any(), eq(inactiveDesk), skipReorder = eq(false))
@@ -11028,6 +11142,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
             launchingTaskId = null,
             deskId = 0,
             displayId = DEFAULT_DISPLAY,
+            userId = taskRepository.userId,
         )
 
         val latestWct = getLatestDesktopMixedTaskWct(type = TRANSIT_OPEN)
@@ -11042,8 +11157,9 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         val task1 = setUpFreeformTask()
 
         controller.activateDesk(
-            DEFAULT_DISPLAY,
-            RemoteTransition(TestRemoteTransition()),
+            deskId = DEFAULT_DISPLAY,
+            userId = taskRepository.userId,
+            remoteTransition = RemoteTransition(TestRemoteTransition()),
             enterReason = EnterReason.UNKNOWN_ENTER,
         )
 
