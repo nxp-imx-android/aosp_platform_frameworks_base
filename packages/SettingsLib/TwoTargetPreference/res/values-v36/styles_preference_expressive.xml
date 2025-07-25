@@ -22,6 +22,14 @@
     <style name="ExpressiveTwoTargetPreferenceTheme">
         <item name="expressiveTwoTargetPreferenceRootStyle">@style/ExpressiveTwoTargetPreferenceRootStyle</item>
         <item name="expressiveTwoTargetPreferenceWidgetFrameStyle">@style/ExpressiveTwoTargetPreferenceWidgetFrameStyle</item>
+        <item name="expressivePreferenceIconFrameStyle">@style/ExpressivePreferenceIconFrameStyle</item>
+        <item name="expressivePreferenceIconStyle">@style/ExpressivePreferenceIconStyle</item>
+        <item name="expressivePreferenceTextFrameStyle">@style/ExpressivePreferenceTextFrameStyle</item>
+        <item name="expressivePreferenceTextFrameTitleStyle">@style/ExpressivePreferenceTextFrameTitleStyle</item>
+        <item name="expressivePreferenceTextFrameSummaryStyle">@style/ExpressivePreferenceTextFrameSummaryStyle</item>
+        <item name="expressiveTwoTargetDividerStyle">@style/ExpressiveTwoTargetDividerStyle</item>
+        <item name="expressiveTwoTargetDividerImageViewStyle">@style/ExpressiveTwoTargetDividerImageViewStyle</item>
+        <item name="expressiveTwoTargetDividerViewStyle">@style/ExpressiveTwoTargetDividerViewStyle</item>
     </style>
 
     <style name="ExpressiveTwoTargetPreferenceRootStyle">
