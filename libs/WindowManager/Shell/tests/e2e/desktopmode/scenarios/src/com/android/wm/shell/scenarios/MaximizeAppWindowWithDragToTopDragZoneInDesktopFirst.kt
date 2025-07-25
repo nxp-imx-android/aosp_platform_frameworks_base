@@ -49,7 +49,7 @@ abstract class MaximizeAppWindowWithDragToTopDragZoneInDesktopFirst(
     private val instrumentation: Instrumentation = InstrumentationRegistry.getInstrumentation()
     private val wmHelper = WindowManagerStateHelper(instrumentation)
     private val device = UiDevice.getInstance(instrumentation)
-    private val testApp = DesktopModeAppHelper(SimpleAppHelper(instrumentation))
+    val testApp = DesktopModeAppHelper(SimpleAppHelper(instrumentation))
 
     @get:Rule(order = 0)
     val checkFlagsRule = DeviceFlagsValueProvider.createCheckFlagsRule()
