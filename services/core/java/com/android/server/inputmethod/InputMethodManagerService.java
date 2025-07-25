@@ -218,7 +218,7 @@ import java.util.function.IntFunction;
  * This class provides a system service that manages input methods.
  */
 public final class InputMethodManagerService implements IInputMethodManagerImpl.Callback,
-        ZeroJankProxy.Callback, Handler.Callback {
+        Handler.Callback {
 
     // Virtual device id for test.
     private static final Integer VIRTUAL_STYLUS_ID_FOR_TEST = 999999;
@@ -1815,10 +1815,10 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
         }
     }
 
+    @VisibleForTesting
     @Nullable
     @GuardedBy("ImfLock.class")
-    @Override
-    public ClientState getClientStateLocked(IInputMethodClient client) {
+    ClientState getClientStateLocked(@NonNull IInputMethodClient client) {
         return mClientController.getClient(client.asBinder());
     }
 
@@ -3557,24 +3557,42 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
         return imeClientFocus == WindowManagerInternal.ImeClientFocusResult.HAS_IME_FOCUS;
     }
 
-    //TODO(b/418839448): merge with startInputOrWindowGainedFocus once WINDOW_FOCUS_GAIN_REPORT_ONLY
-    // uses async method.
     @Override
-    public void startInputOrWindowGainedFocusAsync(@StartInputReason int startInputReason,
-            IInputMethodClient client, IBinder windowToken, @StartInputFlags int startInputFlags,
+    public void startInputOrWindowGainedFocus(
+            @StartInputReason int startInputReason, @NonNull IInputMethodClient client,
+            @Nullable IBinder windowToken, @StartInputFlags int startInputFlags,
             @SoftInputModeFlags int softInputMode,
             @WindowManager.LayoutParams.Flags int windowFlags, @Nullable EditorInfo editorInfo,
-            IRemoteInputConnection inputConnection,
-            IRemoteAccessibilityInputConnection remoteAccessibilityInputConnection,
+            @Nullable IRemoteInputConnection inputConnection,
+            @Nullable IRemoteAccessibilityInputConnection remoteAccessibilityInputConnection,
             int unverifiedTargetSdkVersion, @UserIdInt int userId,
             @NonNull ImeOnBackInvokedDispatcher imeDispatcher, boolean imeRequestedVisible,
             int startInputSeq) {
-        // implemented by ZeroJankProxy
+        final var res = startInputOrWindowGainedFocusWithResult(startInputReason, client,
+                windowToken, startInputFlags, softInputMode, windowFlags, editorInfo,
+                inputConnection, remoteAccessibilityInputConnection, unverifiedTargetSdkVersion,
+                userId, imeDispatcher, imeRequestedVisible);
+        synchronized (ImfLock.class) {
+            final ClientState cs = mClientController.getClient(client.asBinder());
+            if (cs != null) {
+                cs.mClient.onStartInputResult(res, startInputSeq);
+                // For first-time client bind, MSG_BIND should arrive after MSG_START_INPUT_RESULT.
+                if (res.result == InputBindResult.ResultCode.SUCCESS_WAITING_IME_SESSION) {
+                    requestClientSessionLocked(cs, userId);
+                    requestClientSessionForAccessibilityLocked(cs);
+                }
+            } else {
+                // client is unbound.
+                Slog.i(TAG, "Client that requested startInputOrWindowGainedFocus is no longer"
+                        + " bound. InputBindResult: " + res + " for startInputSeq: "
+                        + startInputSeq);
+            }
+        }
     }
 
+    @VisibleForTesting
     @NonNull
-    @Override
-    public InputBindResult startInputOrWindowGainedFocus(
+    InputBindResult startInputOrWindowGainedFocusWithResult(
             @StartInputReason int startInputReason, IInputMethodClient client, IBinder windowToken,
             @StartInputFlags int startInputFlags, @SoftInputModeFlags int softInputMode,
             @WindowManager.LayoutParams.Flags int windowFlags, @Nullable EditorInfo editorInfo,

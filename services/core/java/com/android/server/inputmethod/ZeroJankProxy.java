@@ -53,7 +53,6 @@ import android.view.inputmethod.InputMethodManager;
 import android.view.inputmethod.InputMethodSubtype;
 import android.window.ImeOnBackInvokedDispatcher;
 
-import com.android.internal.annotations.GuardedBy;
 import com.android.internal.inputmethod.DirectBootAwareness;
 import com.android.internal.inputmethod.IBooleanListener;
 import com.android.internal.inputmethod.IConnectionlessHandwritingCallback;
@@ -61,7 +60,6 @@ import com.android.internal.inputmethod.IImeTracker;
 import com.android.internal.inputmethod.IInputMethodClient;
 import com.android.internal.inputmethod.IRemoteAccessibilityInputConnection;
 import com.android.internal.inputmethod.IRemoteInputConnection;
-import com.android.internal.inputmethod.InputBindResult;
 import com.android.internal.inputmethod.InputMethodInfoSafeList;
 import com.android.internal.inputmethod.StartInputFlags;
 import com.android.internal.inputmethod.StartInputReason;
@@ -80,15 +78,10 @@ import java.util.concurrent.Executor;
  */
 final class ZeroJankProxy implements IInputMethodManagerImpl.Callback {
 
-    interface Callback extends IInputMethodManagerImpl.Callback {
-        @GuardedBy("ImfLock.class")
-        ClientState getClientStateLocked(IInputMethodClient client);
-    }
-
-    private final Callback mInner;
+    private final IInputMethodManagerImpl.Callback mInner;
     private final Executor mExecutor;
 
-    ZeroJankProxy(Executor executor, Callback inner) {
+    ZeroJankProxy(Executor executor, IInputMethodManagerImpl.Callback inner) {
         mInner = inner;
         mExecutor = executor;
     }
@@ -176,53 +169,20 @@ final class ZeroJankProxy implements IInputMethodManagerImpl.Callback {
 
     @RequiresPermission(android.Manifest.permission.INTERACT_ACROSS_USERS_FULL)
     @Override
-    public void startInputOrWindowGainedFocusAsync(
-            @StartInputReason int startInputReason,
-            IInputMethodClient client, IBinder windowToken,
-            @StartInputFlags int startInputFlags,
+    public void startInputOrWindowGainedFocus(
+            @StartInputReason int startInputReason, @NonNull IInputMethodClient client,
+            @Nullable IBinder windowToken, @StartInputFlags int startInputFlags,
             @WindowManager.LayoutParams.SoftInputModeFlags int softInputMode,
             @WindowManager.LayoutParams.Flags int windowFlags, @Nullable EditorInfo editorInfo,
-            IRemoteInputConnection inputConnection,
-            IRemoteAccessibilityInputConnection remoteAccessibilityInputConnection,
+            @Nullable IRemoteInputConnection inputConnection,
+            @Nullable IRemoteAccessibilityInputConnection remoteAccessibilityInputConnection,
             int unverifiedTargetSdkVersion, @UserIdInt int userId,
             @NonNull ImeOnBackInvokedDispatcher imeDispatcher, boolean imeRequestedVisible,
             int startInputSeq) {
-        offload(() -> {
-            InputBindResult result = mInner.startInputOrWindowGainedFocus(startInputReason, client,
-                    windowToken, startInputFlags, softInputMode, windowFlags,
-                    editorInfo,
-                    inputConnection, remoteAccessibilityInputConnection,
-                    unverifiedTargetSdkVersion,
-                    userId, imeDispatcher, imeRequestedVisible);
-            sendOnStartInputResult(client, result, startInputSeq);
-            // For first-time client bind, MSG_BIND should arrive after MSG_START_INPUT_RESULT.
-            if (result.result == InputBindResult.ResultCode.SUCCESS_WAITING_IME_SESSION) {
-                InputMethodManagerService imms = ((InputMethodManagerService) mInner);
-                synchronized (ImfLock.class) {
-                    ClientState cs = imms.getClientStateLocked(client);
-                    if (cs != null) {
-                        imms.requestClientSessionLocked(cs, userId);
-                        imms.requestClientSessionForAccessibilityLocked(cs);
-                    }
-                }
-            }
-        });
-    }
-
-    @RequiresPermission(android.Manifest.permission.INTERACT_ACROSS_USERS_FULL)
-    @Override
-    public InputBindResult startInputOrWindowGainedFocus(
-            @StartInputReason int startInputReason,
-            IInputMethodClient client, IBinder windowToken,
-            @StartInputFlags int startInputFlags,
-            @WindowManager.LayoutParams.SoftInputModeFlags int softInputMode,
-            @WindowManager.LayoutParams.Flags int windowFlags, @Nullable EditorInfo editorInfo,
-            IRemoteInputConnection inputConnection,
-            IRemoteAccessibilityInputConnection remoteAccessibilityInputConnection,
-            int unverifiedTargetSdkVersion, @UserIdInt int userId,
-            @NonNull ImeOnBackInvokedDispatcher imeDispatcher, boolean imeRequestedVisible) {
-        // Should never be called when flag is enabled i.e. when this proxy is used.
-        return null;
+        offload(() -> mInner.startInputOrWindowGainedFocus(startInputReason, client,
+                windowToken, startInputFlags, softInputMode, windowFlags, editorInfo,
+                inputConnection, remoteAccessibilityInputConnection, unverifiedTargetSdkVersion,
+                userId, imeDispatcher, imeRequestedVisible, startInputSeq));
     }
 
     @Override
@@ -399,21 +359,6 @@ final class ZeroJankProxy implements IInputMethodManagerImpl.Callback {
     public void dump(@NonNull FileDescriptor fd, @NonNull PrintWriter fout,
             @Nullable String[] args) {
         mInner.dump(fd, fout, args);
-    }
-
-    private void sendOnStartInputResult(
-            IInputMethodClient client, InputBindResult res, int startInputSeq) {
-        synchronized (ImfLock.class) {
-            final ClientState cs = mInner.getClientStateLocked(client);
-            if (cs != null) {
-                cs.mClient.onStartInputResult(res, startInputSeq);
-            } else {
-                // client is unbound.
-                Slog.i(TAG, "Client that requested startInputOrWindowGainedFocus is no longer"
-                        + " bound. InputBindResult: " + res + " for startInputSeq: "
-                        + startInputSeq);
-            }
-        }
     }
 }
 
