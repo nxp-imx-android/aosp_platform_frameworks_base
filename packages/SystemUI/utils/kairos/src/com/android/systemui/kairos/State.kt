@@ -229,12 +229,12 @@ internal constructor(
         nameData.forceInit()
     }
 
-    private val input: CoalescingMutableEvents<Lazy<T>, Lazy<T>?> =
+    private val input: CoalescingMutableEvents<(T) -> T, ((T) -> T)> =
         CoalescingMutableEvents(
             nameData = nameData.mapName { "$it-inputEvents" },
-            coalesce = { _, new -> new },
+            coalesce = { old, new -> { new(old.value(it)) } },
             network = network,
-            getInitialValue = { null },
+            getInitialValue = { { it } },
         )
 
     override val init: Init<StateImpl<T>>
@@ -244,10 +244,13 @@ internal constructor(
     //  - at least for the BuildScope smart-constructor, we can avoid the network.transaction { }
     //    call since we're already in a transaction
     internal val state = run {
-        val changes = input.impl
+        val updates = input.impl
         val state: StateSource<T> = StateSource(initialValue, nameData)
-        val forced = mapImpl({ changes.activated() }, nameData + "forced") { it, _ -> it!!.value }
-        val calm = distinctChanges({ forced }, nameData + "calm", state)
+        val changes =
+            mapImpl({ updates.activated() }, nameData + "forced") { update, _ ->
+                update(state.getCurrentWithEpoch(this).first)
+            }
+        val calm = distinctChanges({ changes }, nameData + "calm", state)
         @Suppress("DeferredResultUnused")
         network.transaction("MutableState.init") {
             calm.activate(evalScope = this, downstream = Schedulable.S(state))?.let {
@@ -271,7 +274,20 @@ internal constructor(
      * Multiple invocations of [setValue] that occur before a transaction are conflated; only the
      * most recent value is used.
      */
-    fun setValue(value: T) = input.emit(lazyOf(value))
+    fun setValue(value: T) = input.emit { value }
+
+    /**
+     * Updates the value held by this [State] to the value returned from applying the current state
+     * to [block].
+     *
+     * Invoking will cause a [state change event][State.changes] to emit with the new value, which
+     * will then be applied (and thus returned by [TransactionScope.sample]) after the transaction
+     * is complete.
+     *
+     * Multiple invocations of [update] that occur before a transaction are coalesced and applied in
+     * order during the next transaction.
+     */
+    fun update(block: (T) -> T) = input.emit(block)
 
     /**
      * Sets the value held by this [State]. The [DeferredValue] will not be queried until this
@@ -284,7 +300,7 @@ internal constructor(
      * Multiple invocations of [setValue] that occur before a transaction are conflated; only the
      * most recent value is used.
      */
-    fun setValueDeferred(value: DeferredValue<T>) = input.emit(value.unwrapped)
+    fun setValueDeferred(value: DeferredValue<T>) = input.emit { value.unwrapped.value }
 
     override fun toString(): String = "${super.toString()}[$nameData]"
 }
