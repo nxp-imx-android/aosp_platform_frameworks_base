@@ -17,6 +17,7 @@
 package com.android.systemui.statusbar.notification.collection.render
 
 import android.content.Context
+import android.view.View
 import android.view.ViewGroup
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -25,6 +26,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.repeatOnLifecycle
 import com.android.compose.theme.PlatformTheme
 import com.android.systemui.dagger.SysUISingleton
+import com.android.systemui.dagger.qualifiers.Main
 import com.android.systemui.initOnBackPressedDispatcherOwner
 import com.android.systemui.lifecycle.rememberViewModel
 import com.android.systemui.lifecycle.repeatWhenAttached
@@ -47,6 +49,10 @@ import com.android.systemui.statusbar.notification.row.ui.viewmodel.BundleHeader
 import com.android.systemui.statusbar.notification.stack.NotificationListContainer
 import com.android.systemui.util.time.SystemClock
 import dagger.Lazy
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
 import javax.inject.Inject
 import javax.inject.Provider
 
@@ -63,6 +69,7 @@ constructor(
     val systemClock: SystemClock,
     val logger: RowInflaterTaskLogger,
     val userTracker: UserTracker,
+    @Main private val mainDispatcher: CoroutineDispatcher,
     private val presenterLazy: Lazy<NotificationPresenter?>? = null,
     private val iconManager: IconManager,
 ) : PipelineDumpable {
@@ -114,8 +121,23 @@ constructor(
     }
 
     private fun initBundleHeaderView(bundleEntry: BundleEntry, row: ExpandableNotificationRow) {
+        val scope = CoroutineScope(SupervisorJob() + mainDispatcher)
+        row.addOnAttachStateChangeListener(
+            object : View.OnAttachStateChangeListener {
+                override fun onViewAttachedToWindow(v: View) {}
+                override fun onViewDetachedFromWindow(v: View) {
+                    scope.cancel()
+                    row.removeOnAttachStateChangeListener(this)
+                }
+            }
+        )
+
         val bundleRowComponent =
-            bundleRowComponentBuilder.bindBundleRepository(bundleEntry.bundleRepository).build()
+            bundleRowComponentBuilder
+                .bindBundleRepository(bundleEntry.bundleRepository)
+                .bindScope(scope)
+                .build()
+
         val headerComposeView = ComposeView(context)
         row.setBundleHeaderView(headerComposeView)
         headerComposeView.repeatWhenAttached {
