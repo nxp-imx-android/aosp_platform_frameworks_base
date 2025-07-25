@@ -30,7 +30,6 @@ import com.android.systemui.scene.domain.interactor.SceneInteractor
 import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.scene.shared.model.SceneFamilies
 import com.android.systemui.scene.shared.model.Scenes
-import com.android.systemui.settings.brightness.ui.viewModel.BrightnessMirrorViewModel
 import com.android.systemui.shade.domain.interactor.ShadeModeInteractor
 import com.android.systemui.shade.shared.model.ShadeMode
 import com.android.systemui.shade.ui.viewmodel.ShadeHeaderViewModel
@@ -53,7 +52,6 @@ import kotlinx.coroutines.flow.onEach
 class QuickSettingsSceneContentViewModel
 @AssistedInject
 constructor(
-    val brightnessMirrorViewModelFactory: BrightnessMirrorViewModel.Factory,
     val shadeHeaderViewModelFactory: ShadeHeaderViewModel.Factory,
     val qsSceneAdapter: QSSceneAdapter,
     qsContainerViewModelFactory: QuickSettingsContainerViewModel.Factory,

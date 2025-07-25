@@ -37,7 +37,6 @@ import com.android.systemui.scene.domain.interactor.sceneInteractor
 import com.android.systemui.scene.domain.startable.sceneContainerStartable
 import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.scene.shared.model.Scenes
-import com.android.systemui.settings.brightness.ui.viewmodel.brightnessMirrorViewModelFactory
 import com.android.systemui.shade.domain.interactor.disableDualShade
 import com.android.systemui.shade.domain.interactor.enableDualShade
 import com.android.systemui.shade.domain.interactor.enableSingleShade
@@ -78,7 +77,6 @@ class QuickSettingsSceneContentViewModelTest : SysuiTestCase() {
                 }
             underTest =
                 QuickSettingsSceneContentViewModel(
-                    brightnessMirrorViewModelFactory = brightnessMirrorViewModelFactory,
                     shadeHeaderViewModelFactory = shadeHeaderViewModelFactory,
                     qsSceneAdapter = fakeQsSceneAdapter,
                     qsContainerViewModelFactory = kosmos.quickSettingsContainerViewModelFactory,

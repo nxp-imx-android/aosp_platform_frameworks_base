@@ -26,32 +26,33 @@ import com.android.systemui.media.controls.domain.pipeline.interactor.mediaCarou
 import com.android.systemui.qs.footerActionsController
 import com.android.systemui.qs.footerActionsViewModelFactory
 import com.android.systemui.qs.ui.adapter.FakeQSSceneAdapter
-import com.android.systemui.settings.brightness.ui.viewmodel.brightnessMirrorViewModelFactory
-import com.android.systemui.shade.ui.viewmodel.shadeHeaderViewModelFactory
-import com.android.systemui.shade.domain.interactor.shadeModeInteractor
 import com.android.systemui.scene.domain.interactor.sceneInteractor
+import com.android.systemui.shade.domain.interactor.shadeModeInteractor
+import com.android.systemui.shade.ui.viewmodel.shadeHeaderViewModelFactory
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.stub
 
 val Kosmos.quickSettingsSceneContentViewModel by Fixture {
     QuickSettingsSceneContentViewModel(
-        brightnessMirrorViewModelFactory = brightnessMirrorViewModelFactory,
         shadeHeaderViewModelFactory = shadeHeaderViewModelFactory,
-        qsSceneAdapter = FakeQSSceneAdapter({
-            // The Quick Settings content installs this view as a child of FrameLayout so its layout
-            // params are required.
-            val view = mock<View>()
-            view.stub {
-                on { layoutParams } doReturn FrameLayout.LayoutParams(
-                    ViewGroup.MarginLayoutParams(
-                        ViewGroup.LayoutParams.MATCH_PARENT,
-                        ViewGroup.LayoutParams.MATCH_PARENT,
-                    )
-                )
-            }
-            view
-        }),
+        qsSceneAdapter =
+            FakeQSSceneAdapter({
+                // The Quick Settings content installs this view as a child of FrameLayout so its
+                // layout
+                // params are required.
+                val view = mock<View>()
+                view.stub {
+                    on { layoutParams } doReturn
+                        FrameLayout.LayoutParams(
+                            ViewGroup.MarginLayoutParams(
+                                ViewGroup.LayoutParams.MATCH_PARENT,
+                                ViewGroup.LayoutParams.MATCH_PARENT,
+                            )
+                        )
+                }
+                view
+            }),
         qsContainerViewModelFactory = quickSettingsContainerViewModelFactory,
         footerActionsViewModelFactory = footerActionsViewModelFactory,
         footerActionsController = footerActionsController,

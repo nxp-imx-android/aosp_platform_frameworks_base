@@ -16,17 +16,7 @@
 
 package com.android.systemui.qs.ui.composable
 
-import androidx.activity.compose.BackHandler
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.expandVertically
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.shrinkVertically
-import androidx.compose.animation.slideInVertically
-import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clipScrollableContainer
 import androidx.compose.foundation.gestures.Orientation
@@ -36,7 +26,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.displayCutoutPadding
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -51,7 +40,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -68,7 +56,6 @@ import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.android.compose.animation.scene.ContentScope
 import com.android.compose.animation.scene.UserAction
 import com.android.compose.animation.scene.UserActionResult
@@ -107,11 +94,9 @@ import com.android.systemui.res.R
 import com.android.systemui.scene.session.ui.composable.SaveableSession
 import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.scene.ui.composable.Scene
-import com.android.systemui.settings.brightness.ui.viewModel.BrightnessMirrorViewModel
 import com.android.systemui.shade.ui.composable.CollapsedShadeHeader
 import com.android.systemui.shade.ui.composable.ExpandedShadeHeader
 import com.android.systemui.shade.ui.composable.Shade
-import com.android.systemui.shade.ui.composable.ShadeHeader
 import com.android.systemui.shade.ui.viewmodel.ShadeHeaderViewModel
 import com.android.systemui.statusbar.notification.stack.ui.view.NotificationScrollView
 import com.android.systemui.statusbar.notification.stack.ui.viewmodel.NotificationsPlaceholderViewModel
@@ -153,10 +138,6 @@ constructor(
     override fun ContentScope.Content(modifier: Modifier) {
         val viewModel =
             rememberViewModel("QuickSettingsScene-viewModel") { contentViewModelFactory.create() }
-        val brightnessMirrorViewModel =
-            rememberViewModel("QuickSettingsScene-brightnessMirrorViewModel") {
-                viewModel.brightnessMirrorViewModelFactory.create()
-            }
         val notificationsPlaceholderViewModel =
             rememberViewModel("QuickSettingsScene-notifPlaceholderViewModel") {
                 notificationsPlaceholderViewModelFactory.create()
@@ -165,7 +146,6 @@ constructor(
             notificationStackScrollView = notificationStackScrollView.get(),
             viewModel = viewModel,
             headerViewModel = viewModel.qsContainerViewModel.shadeHeaderViewModel,
-            brightnessMirrorViewModel = brightnessMirrorViewModel,
             notificationsPlaceholderViewModel = notificationsPlaceholderViewModel,
             mediaCarouselController = mediaCarouselController,
             mediaHost = mediaHost,
@@ -187,7 +167,6 @@ private fun ContentScope.QuickSettingsScene(
     notificationStackScrollView: NotificationScrollView,
     viewModel: QuickSettingsSceneContentViewModel,
     headerViewModel: ShadeHeaderViewModel,
-    brightnessMirrorViewModel: BrightnessMirrorViewModel,
     notificationsPlaceholderViewModel: NotificationsPlaceholderViewModel,
     mediaCarouselController: MediaCarouselController,
     mediaHost: MediaHost,
@@ -196,7 +175,8 @@ private fun ContentScope.QuickSettingsScene(
     jankMonitor: InteractionJankMonitor,
 ) {
     val cutoutLocation = LocalDisplayCutout.current().location
-    val brightnessMirrorShowing by brightnessMirrorViewModel.isShowing.collectAsStateWithLifecycle()
+    val brightnessMirrorShowing =
+        viewModel.qsContainerViewModel.brightnessSliderViewModel.showMirror
     val contentAlpha by
         animateFloatAsState(
             targetValue = if (brightnessMirrorShowing) 0f else 1f,
@@ -229,14 +209,7 @@ private fun ContentScope.QuickSettingsScene(
                 .thenIf(cutoutLocation != CutoutLocation.CENTER) { Modifier.displayCutoutPadding() }
     ) {
         val density = LocalDensity.current
-        val isCustomizing by viewModel.qsSceneAdapter.isCustomizing.collectAsStateWithLifecycle()
-        val isCustomizerShowing by
-            viewModel.qsSceneAdapter.isCustomizerShowing.collectAsStateWithLifecycle()
-        val customizingAnimationDuration by
-            viewModel.qsSceneAdapter.customizerAnimationDuration.collectAsStateWithLifecycle()
         val screenHeight = with(density) { LocalConfiguration.current.screenHeightDp.dp.toPx() }
-
-        BackHandler(enabled = isCustomizing) { viewModel.qsSceneAdapter.requestCloseCustomizer() }
 
         val lifecycleOwner = LocalLifecycleOwner.current
         val footerActionsViewModel =
@@ -256,34 +229,10 @@ private fun ContentScope.QuickSettingsScene(
                 is TransitionState.Transition -> state.fromContent == Scenes.QuickSettings
             }
 
-        LaunchedEffect(isCustomizing, scrollState) {
-            if (isCustomizing) {
-                scrollState.scrollTo(0)
-            }
-        }
-
         // ############# NAV BAR paddings ###############
 
         val navBarBottomHeight =
             WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
-        val bottomPadding by
-            animateDpAsState(
-                targetValue = if (isCustomizing) 0.dp else navBarBottomHeight,
-                animationSpec = tween(customizingAnimationDuration),
-                label = "animateQSSceneBottomPaddingAsState",
-            )
-        val topPadding by
-            animateDpAsState(
-                targetValue = if (isCustomizing) ShadeHeader.Dimensions.StatusBarHeight else 0.dp,
-                animationSpec = tween(customizingAnimationDuration),
-                label = "animateQSSceneTopPaddingAsState",
-            )
-
-        LaunchedEffect(navBarBottomHeight, density) {
-            with(density) {
-                viewModel.qsSceneAdapter.applyBottomNavBarPadding(navBarBottomHeight.roundToPx())
-            }
-        }
 
         // ############# Media ###############
         val isMediaVisible = viewModel.isMediaVisible
@@ -304,55 +253,24 @@ private fun ContentScope.QuickSettingsScene(
             modifier =
                 Modifier.fillMaxSize()
                     .overscroll(verticalOverscrollEffect)
-                    .padding(
-                        top = topPadding.coerceAtLeast(0.dp),
-                        bottom = bottomPadding.coerceAtLeast(0.dp),
-                    ),
+                    .padding(bottom = navBarBottomHeight.coerceAtLeast(0.dp)),
         ) {
             Box(modifier = Modifier.fillMaxSize().weight(1f)) {
-                val shadeHeaderAndQuickSettingsModifier =
-                    if (isCustomizerShowing) {
-                        Modifier.fillMaxHeight().align(Alignment.TopCenter)
-                    } else {
+                Column(
+                    modifier =
                         Modifier.verticalScroll(scrollState, enabled = isScrollable)
                             .clipScrollableContainer(Orientation.Horizontal)
                             .fillMaxWidth()
                             .wrapContentHeight(unbounded = true)
                             .align(Alignment.TopCenter)
-                    }
-
-                Column(
-                    modifier =
-                        shadeHeaderAndQuickSettingsModifier.sysuiResTag("expanded_qs_scroll_view")
+                            .sysuiResTag("expanded_qs_scroll_view")
                 ) {
                     when (LocalWindowSizeClass.current.widthSizeClass) {
                         WindowWidthSizeClass.Compact ->
-                            AnimatedVisibility(
-                                visible = !isCustomizing,
-                                enter =
-                                    expandVertically(
-                                        animationSpec = tween(customizingAnimationDuration),
-                                        expandFrom = Alignment.Top,
-                                    ) +
-                                        slideInVertically(
-                                            animationSpec = tween(customizingAnimationDuration)
-                                        ) +
-                                        fadeIn(tween(customizingAnimationDuration)),
-                                exit =
-                                    shrinkVertically(
-                                        animationSpec = tween(customizingAnimationDuration),
-                                        shrinkTowards = Alignment.Top,
-                                    ) +
-                                        slideOutVertically(
-                                            animationSpec = tween(customizingAnimationDuration)
-                                        ) +
-                                        fadeOut(tween(customizingAnimationDuration)),
-                            ) {
-                                ExpandedShadeHeader(
-                                    viewModel = headerViewModel,
-                                    modifier = Modifier.padding(horizontal = 16.dp),
-                                )
-                            }
+                            ExpandedShadeHeader(
+                                viewModel = headerViewModel,
+                                modifier = Modifier.padding(horizontal = 16.dp),
+                            )
                         else ->
                             CollapsedShadeHeader(viewModel = headerViewModel, isSplitShade = false)
                     }
@@ -364,6 +282,7 @@ private fun ContentScope.QuickSettingsScene(
                                     horizontal =
                                         dimensionResource(id = R.dimen.qs_horizontal_margin)
                                 )
+                                .sysuiResTag("quick_settings_panel")
                     ) {
                         BrightnessSliderContainer(
                             viewModel.qsContainerViewModel.brightnessSliderViewModel,
@@ -383,9 +302,7 @@ private fun ContentScope.QuickSettingsScene(
                         val content: @Composable () -> Unit = {
                             TileGrid(
                                 viewModel.qsContainerViewModel.tileGridViewModel,
-                                modifier =
-                                    Modifier.sysuiResTag("quick_settings_panel")
-                                        .layoutId(QSMediaMeasurePolicy.LayoutId.QS),
+                                modifier = Modifier.layoutId(QSMediaMeasurePolicy.LayoutId.QS),
                             )
 
                             MediaCarousel(
@@ -423,8 +340,8 @@ private fun ContentScope.QuickSettingsScene(
 
             FooterActionsWithAnimatedVisibility(
                 viewModel = footerActionsViewModel,
-                isCustomizing = isCustomizing,
-                customizingAnimationDuration = customizingAnimationDuration,
+                isCustomizing = false,
+                customizingAnimationDuration = 0,
                 lifecycleOwner = lifecycleOwner,
                 modifier =
                     Modifier.align(Alignment.CenterHorizontally)
