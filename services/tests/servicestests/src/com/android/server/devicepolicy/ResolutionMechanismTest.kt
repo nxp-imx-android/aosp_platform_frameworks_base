@@ -243,6 +243,24 @@ class ResolutionMechanismTest {
         }
     }
 
+    @Test
+    fun isPolicyApplied_mostRestrictive_sameValues_returnsTrue() {
+        val resolutionMechanism = MostRestrictive<Int>(listOf())
+
+        assertTrue {
+            resolutionMechanism.isPolicyApplied(INT_POLICY_A, INT_POLICY_A)
+        }
+    }
+
+    @Test
+    fun isPolicyApplied_mostRestrictive_differentValues_returnsFalse() {
+        val resolutionMechanism = MostRestrictive<Int>(listOf())
+
+        assertFalse {
+            resolutionMechanism.isPolicyApplied(INT_POLICY_A, INT_POLICY_AB )
+        }
+    }
+
     companion object {
         private const val SYSTEM_USER_ID = UserHandle.USER_SYSTEM
         private val SYSTEM_ADMIN = EnforcingAdmin.createSystemEnforcingAdmin("system_entity")
