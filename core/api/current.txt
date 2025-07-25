@@ -8555,6 +8555,7 @@ package android.app.admin {
     method public boolean setPermittedCrossProfileNotificationListeners(@NonNull android.content.ComponentName, @Nullable java.util.List<java.lang.String>);
     method @RequiresPermission(value=android.Manifest.permission.MANAGE_DEVICE_POLICY_INPUT_METHODS, conditional=true) public boolean setPermittedInputMethods(@Nullable android.content.ComponentName, java.util.List<java.lang.String>);
     method public void setPersonalAppsSuspended(@NonNull android.content.ComponentName, boolean);
+    method @FlaggedApi("android.app.admin.flags.policy_streamlining") public <T> void setPolicy(@NonNull android.app.admin.PolicyIdentifier<T>, int, @Nullable T);
     method public void setPreferentialNetworkServiceConfigs(@NonNull java.util.List<android.app.admin.PreferentialNetworkServiceConfig>);
     method public void setPreferentialNetworkServiceEnabled(boolean);
     method public void setProfileEnabled(@NonNull android.content.ComponentName);
@@ -8760,6 +8761,9 @@ package android.app.admin {
     field public static final int PERSONAL_APPS_SUSPENDED_PROFILE_TIMEOUT = 2; // 0x2
     field public static final String POLICY_DISABLE_CAMERA = "policy_disable_camera";
     field public static final String POLICY_DISABLE_SCREEN_CAPTURE = "policy_disable_screen_capture";
+    field @FlaggedApi("android.app.admin.flags.policy_streamlining") public static final int POLICY_SCOPE_DEVICE = 2; // 0x2
+    field @FlaggedApi("android.app.admin.flags.policy_streamlining") public static final int POLICY_SCOPE_PARENT = 3; // 0x3
+    field @FlaggedApi("android.app.admin.flags.policy_streamlining") public static final int POLICY_SCOPE_USER = 1; // 0x1
     field public static final int PRIVATE_DNS_MODE_OFF = 1; // 0x1
     field public static final int PRIVATE_DNS_MODE_OPPORTUNISTIC = 2; // 0x2
     field public static final int PRIVATE_DNS_MODE_PROVIDER_HOSTNAME = 3; // 0x3
@@ -8870,6 +8874,10 @@ package android.app.admin {
     field public static final int PACKAGE_POLICY_ALLOWLIST = 3; // 0x3
     field public static final int PACKAGE_POLICY_ALLOWLIST_AND_SYSTEM = 2; // 0x2
     field public static final int PACKAGE_POLICY_BLOCKLIST = 1; // 0x1
+  }
+
+  @FlaggedApi("android.app.admin.flags.policy_streamlining") public final class PolicyIdentifier<T> {
+    field @FlaggedApi("android.app.admin.flags.policy_streamlining") @NonNull public static final android.app.admin.PolicyIdentifier<java.lang.Boolean> SCREEN_CAPTURE_DISABLED;
   }
 
   public abstract class PolicyUpdateReceiver extends android.content.BroadcastReceiver {
