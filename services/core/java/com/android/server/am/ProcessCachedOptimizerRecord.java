@@ -37,7 +37,7 @@ import java.util.concurrent.Executor;
 /**
  * The state info of app when it's cached, used by the optimizer.
  */
-final class ProcessCachedOptimizerRecord {
+public final class ProcessCachedOptimizerRecord {
 
     static final int SHOULD_NOT_FREEZE_REASON_NONE = 1;
     static final int SHOULD_NOT_FREEZE_REASON_UID_ALLOWLISTED = 1 << 1;

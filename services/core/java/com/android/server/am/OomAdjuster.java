@@ -1994,7 +1994,7 @@ public abstract class OomAdjuster {
      */
     @GuardedBy({"mService", "mProcLock"})
     public abstract boolean computeServiceHostOomAdjLSP(ConnectionRecord cr, ProcessRecord app,
-            ProcessRecord client, long now, boolean dryRun);
+            ProcessRecordInternal client, long now, boolean dryRun);
 
     /**
      * Computes the impact on {@code app} the provider connections from {@code client} has.
@@ -2139,7 +2139,7 @@ public abstract class OomAdjuster {
      * @return the CPU capability from a client (of a service binding or provider).
      */
     protected static int getCpuCapabilitiesFromClient(ProcessRecordInternal app,
-            ProcessRecord client, OomAdjusterImpl.Connection conn) {
+            ProcessRecordInternal client, OomAdjusterImpl.Connection conn) {
         final int clientCpuCaps = client.getCurCapability() & ALL_CPU_TIME_CAPABILITIES;
         final @CpuTimeReasons int clientCpuReasons = client.getCurCpuTimeReasons();
         final @ImplicitCpuTimeReasons int clientImplicitCpuReasons =
@@ -2800,7 +2800,7 @@ public abstract class OomAdjuster {
                         + "/" + app.getPid()
                         + "/" + state.getCurAdj()
                         + "/" + oldOomAdj
-                        + "/" + opt.shouldNotFreezeReason()
+                        + "/" + app.shouldNotFreezeReason()
                         + "/" + cpuTimeReasons
                         + "/" + implicitCpuTimeReasons);
                 Trace.instantForTrack(Trace.TRACE_TAG_ACTIVITY_MANAGER,
@@ -2809,8 +2809,8 @@ public abstract class OomAdjuster {
                         + " pid: " + app.getPid()
                         + " isFreezeExempt: " + opt.isFreezeExempt()
                         + " isFrozen: " + opt.isFrozen()
-                        + " shouldNotFreeze: " + opt.shouldNotFreeze()
-                        + " shouldNotFreezeReason: " + opt.shouldNotFreezeReason()
+                        + " shouldNotFreeze: " + app.shouldNotFreeze()
+                        + " shouldNotFreezeReason: " + app.shouldNotFreezeReason()
                         + " curAdj: " + state.getCurAdj()
                         + " oldOomAdj: " + oldOomAdj
                         + " immediate: " + immediate

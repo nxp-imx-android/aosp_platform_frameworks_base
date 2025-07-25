@@ -41,6 +41,7 @@ import com.android.internal.annotations.CompositeRWLock;
 import com.android.internal.annotations.GuardedBy;
 import com.android.server.am.Flags;
 import com.android.server.am.OomAdjuster;
+import com.android.server.am.ProcessCachedOptimizerRecord.ShouldNotFreezeReason;
 import com.android.server.am.psc.PlatformCompatCache.CachedCompatChangeId;
 
 import java.io.PrintWriter;
@@ -196,6 +197,16 @@ public abstract class ProcessRecordInternal {
 
     /** Returns true if there is an active instrumentation running in this process. */
     public abstract boolean hasActiveInstrumentation();
+
+    /** Returns whether this process should be exempt from freezing. */
+    public abstract boolean shouldNotFreeze();
+
+    /** Sets whether this process should be exempt from freezing and records the reason. */
+    public abstract boolean setShouldNotFreeze(boolean shouldNotFreeze, boolean dryRun,
+            @ShouldNotFreezeReason int reason, int adjSeq);
+
+    /** Returns the aggregated reasons why this process is currently exempt from freezing. */
+    public abstract @ShouldNotFreezeReason int shouldNotFreezeReason();
 
     // Enable this to trace all OomAdjuster state transitions
     private static final boolean TRACE_OOM_ADJ = false;
