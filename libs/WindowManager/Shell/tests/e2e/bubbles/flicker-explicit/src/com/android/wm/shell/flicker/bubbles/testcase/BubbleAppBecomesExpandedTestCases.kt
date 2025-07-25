@@ -19,30 +19,34 @@ package com.android.wm.shell.flicker.bubbles.testcase
 import android.tools.traces.component.ComponentNameMatcher
 import android.tools.traces.component.ComponentNameMatcher.Companion.BUBBLE
 import android.tools.traces.component.ComponentNameMatcher.Companion.LAUNCHER
+import android.tools.traces.component.IComponentNameMatcher
 import com.android.wm.shell.flicker.bubbles.utils.BubbleFlickerSubjects
 import org.junit.Test
 
 /**
  * The test cases to verify [testApp] goes to expanded bubble state, which verifies [testApp]
- * replaces [LAUNCHER] to be top and visible and has rounded corner at the end of transition.
+ * replaces [previousApp] to be top and visible and has rounded corner at the end of transition.
  */
 interface BubbleAppBecomesExpandedTestCases : BubbleFlickerSubjects {
 
+    val previousApp: IComponentNameMatcher
+        get() = LAUNCHER
+
     /**
-     * Verifies the focus changed from launcher to bubble app.
+     * Verifies the focus changed from [previousApp] to bubble app.
      */
     @Test
     fun focusChanges() {
-        eventLogSubject.focusChanges(LAUNCHER.toWindowName(), testApp.toWindowName())
+        eventLogSubject.focusChanges(previousApp.toWindowName(), testApp.toWindowName())
     }
 
     /**
-     * Verifies the bubble app replaces launcher to be the top window.
+     * Verifies the bubble app replaces [previousApp] to be the top window.
      */
     @Test
-    fun appWindowReplacesLauncherAsTopWindow() {
+    fun appWindowReplacesPreviousAppAsTopWindow() {
         wmTraceSubject
-            .isAppWindowOnTop(LAUNCHER)
+            .isAppWindowOnTop(previousApp)
             .then()
             .isAppWindowOnTop(
                 ComponentNameMatcher.SNAPSHOT

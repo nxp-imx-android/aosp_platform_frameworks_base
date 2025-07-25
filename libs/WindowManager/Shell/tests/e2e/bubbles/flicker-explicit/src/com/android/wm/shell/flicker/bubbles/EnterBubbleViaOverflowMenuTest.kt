@@ -104,7 +104,7 @@ class EnterBubbleViaOverflowMenuTest(navBar: NavBar) : BubbleFlickerTestBase(),
         )
     }
 
-    override fun appWindowReplacesLauncherAsTopWindow() {
+    override fun appWindowReplacesPreviousAppAsTopWindow() {
         wmTraceSubject
             // Before clicking the overflow, the focused app is messageApp.
             .isAppWindowOnTop(messageApp)
