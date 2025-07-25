@@ -160,8 +160,7 @@ final class InstallRequest {
     @NonNull
     private int[] mUpdateBroadcastInstantUserIds = EMPTY_INT_ARRAY;
 
-    @NonNull
-    private final ArrayList<String> mWarnings = new ArrayList<>();
+    @NonNull private final ArrayList<String> mWarnings;
 
     @Nullable
     private DomainSet mPreVerifiedDomains;
@@ -198,6 +197,7 @@ final class InstallRequest {
         mDependencyInstallerEnabled = params.mDependencyInstallerEnabled;
         mMissingSharedLibraryCount = params.mMissingSharedLibraryCount;
         mDeveloperVerificationStatus = params.mDeveloperVerificationStatus;
+        mWarnings = new ArrayList<>(params.mWarnings);
     }
 
     // Install existing package as user
@@ -220,6 +220,7 @@ final class InstallRequest {
         mDependencyInstallerEnabled = false;
         mMissingSharedLibraryCount = 0;
         mDeveloperVerificationStatus = null;
+        mWarnings = new ArrayList<>();
     }
 
     // addForInit
@@ -245,6 +246,7 @@ final class InstallRequest {
         mDependencyInstallerEnabled = false;
         mMissingSharedLibraryCount = 0;
         mDeveloperVerificationStatus = null;
+        mWarnings = new ArrayList<>();
     }
 
     @Nullable

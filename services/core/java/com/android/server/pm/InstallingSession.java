@@ -108,6 +108,7 @@ class InstallingSession {
     final boolean mDependencyInstallerEnabled;
     final int mMissingSharedLibraryCount;
     @Nullable final DeveloperVerificationStatusInternal mDeveloperVerificationStatus;
+    final List<String> mWarnings;
 
     // For move install
     InstallingSession(OriginInfo originInfo, MoveInfo moveInfo, IPackageInstallObserver2 observer,
@@ -146,6 +147,7 @@ class InstallingSession {
         mDependencyInstallerEnabled = false;
         mMissingSharedLibraryCount = 0;
         mDeveloperVerificationStatus = null;
+        mWarnings = new ArrayList<>();
     }
 
     InstallingSession(int sessionId, File stagedDir, IPackageInstallObserver2 observer,
@@ -154,7 +156,8 @@ class InstallingSession {
             PackageLite packageLite, DomainSet preVerifiedDomains, PackageManagerService pm,
             boolean hasAppMetadatafile, boolean dependencyInstallerEnabled,
             int missingSharedLibraryCount,
-            DeveloperVerificationStatusInternal developerVerificationStatus) {
+            DeveloperVerificationStatusInternal developerVerificationStatus,
+            List<String> warnings) {
         mPm = pm;
         mUser = user;
         mOriginInfo = OriginInfo.fromStagedFile(stagedDir);
@@ -188,6 +191,7 @@ class InstallingSession {
         mDependencyInstallerEnabled = dependencyInstallerEnabled;
         mMissingSharedLibraryCount = missingSharedLibraryCount;
         mDeveloperVerificationStatus = developerVerificationStatus;
+        mWarnings = new ArrayList<>(warnings);
     }
 
     @Override
