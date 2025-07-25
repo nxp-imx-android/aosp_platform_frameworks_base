@@ -144,7 +144,7 @@ public class DeveloperVerificationConfirmationFragment extends DialogFragment {
      * Returns whether the user can choose to bypass the verification result and force installation,
      * based on the verification policy and the reason for user action.
      */
-    private static boolean isBypassAllowed(
+    public static boolean isBypassAllowed(
             PackageInstaller.DeveloperVerificationUserConfirmationInfo verificationInfo) {
         int userActionNeededReason = verificationInfo.getUserActionNeededReason();
         int verificationPolicy = verificationInfo.getVerificationPolicy();
