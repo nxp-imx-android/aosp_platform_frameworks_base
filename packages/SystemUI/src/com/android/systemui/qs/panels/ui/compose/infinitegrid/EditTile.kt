@@ -249,11 +249,14 @@ private fun EditModeTopBar(
         navigationIcon = {
             IconButton(
                 onClick = onStopEditing,
-                modifier = Modifier.drawBehind { drawCircle(surfaceEffect2) },
+                colors =
+                    IconButtonDefaults.iconButtonColors(
+                        containerColor = surfaceEffect2,
+                        contentColor = MaterialTheme.colorScheme.onSurface,
+                    ),
             ) {
                 Icon(
                     Icons.AutoMirrored.Filled.ArrowBack,
-                    tint = MaterialTheme.colorScheme.onSurface,
                     contentDescription =
                         stringResource(id = com.android.internal.R.string.action_bar_up_description),
                 )
