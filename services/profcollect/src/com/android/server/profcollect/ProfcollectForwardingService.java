@@ -23,6 +23,7 @@ import static android.content.Intent.ACTION_SCREEN_ON;
 
 import android.Manifest;
 import android.annotation.RequiresPermission;
+import android.app.ActivityManager;
 import android.app.job.JobInfo;
 import android.app.job.JobParameters;
 import android.app.job.JobScheduler;
@@ -43,6 +44,7 @@ import android.os.ServiceManager;
 import android.os.SystemProperties;
 import android.os.UpdateEngine;
 import android.os.UpdateEngineCallback;
+import android.os.UserHandle;
 import android.provider.DeviceConfig;
 import android.provider.Settings;
 import android.provider.Settings.SettingNotFoundException;
@@ -438,7 +440,8 @@ public final class ProfcollectForwardingService extends SystemService {
                     .setPackage("com.android.shell")
                     .setAction("com.android.shell.action.PROFCOLLECT_UPLOAD")
                     .putExtra("filename", reportName);
-            pfs.getContext().sendBroadcast(intent);
+            pfs.getContext().sendBroadcastAsUser(intent,
+                    UserHandle.of(ActivityManager.getCurrentUser()));
         });
     }
 
