@@ -43,7 +43,6 @@ import com.android.packageinstaller.v2.model.InstallSuccess
 import com.android.packageinstaller.v2.model.InstallUserActionRequired
 import com.android.packageinstaller.v2.model.PackageUtil
 import com.android.packageinstaller.v2.model.PackageUtil.localLogv
-import com.android.packageinstaller.v2.ui.fragments.DeveloperVerificationConfirmationFragment
 import com.android.packageinstaller.v2.ui.fragments.InstallRestrictionFragment
 import com.android.packageinstaller.v2.ui.fragments.InstallationFragment
 import com.android.packageinstaller.v2.viewmodel.InstallViewModel
@@ -154,13 +153,9 @@ class InstallLaunch : FragmentActivity(), InstallActionListener {
                 when (uar.actionReason) {
                     InstallUserActionRequired.USER_ACTION_REASON_ANONYMOUS_SOURCE,
                     InstallUserActionRequired.USER_ACTION_REASON_INSTALL_CONFIRMATION,
-                    InstallUserActionRequired.USER_ACTION_REASON_UNKNOWN_SOURCE -> {
-                        showInstallationDialog()
-                    }
-
+                    InstallUserActionRequired.USER_ACTION_REASON_UNKNOWN_SOURCE,
                     InstallUserActionRequired.USER_ACTION_REASON_VERIFICATION_CONFIRMATION -> {
-                        val actionDialog = DeveloperVerificationConfirmationFragment(uar)
-                        showDialogInner(actionDialog)
+                        showInstallationDialog()
                     }
                 }
             }
