@@ -16,6 +16,7 @@
 
 package com.android.systemui.screencapture.record.largescreen.ui.compose
 
+import android.graphics.Rect as IntRect
 import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.Box
@@ -31,18 +32,29 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
-import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.pointer.PointerInputChange
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import com.android.systemui.res.R
 import com.android.systemui.screencapture.common.ui.compose.PrimaryButton
 import com.android.systemui.screencapture.common.ui.compose.loadIcon
 import com.android.systemui.screencapture.common.ui.viewmodel.DrawableLoaderViewModel
+import kotlin.math.max
+import kotlin.math.min
+import kotlin.math.roundToInt
+
+// The different modes of interaction that the user can have with the RegionBox.
+private enum class DragMode {
+    DRAWING,
+    MOVING,
+    RESIZING,
+    NONE,
+}
 
 /**
  * Determines which zone (corner or edge) of a box is being touched based on the press offset.
@@ -59,6 +71,18 @@ private fun getTouchedZone(
     startOffset: Offset,
     touchAreaPx: Float,
 ): ResizeZone? {
+    // Check if the touch is within the touch area of the box.
+    val touchedZone =
+        Rect(
+            left = -touchAreaPx,
+            top = -touchAreaPx,
+            right = boxWidth + touchAreaPx,
+            bottom = boxHeight + touchAreaPx,
+        )
+    if (!touchedZone.contains(startOffset)) {
+        return null
+    }
+
     val isTouchingTop = startOffset.y in -touchAreaPx..touchAreaPx
     val isTouchingBottom = startOffset.y in (boxHeight - touchAreaPx)..(boxHeight + touchAreaPx)
     val isTouchingLeft = startOffset.x in -touchAreaPx..touchAreaPx
@@ -82,107 +106,146 @@ private fun getTouchedZone(
 }
 
 /**
- * A stateful composable that manages the size and position of a resizable RegionBox.
+ * A class that encapsulates the state and logic for the RegionBox composable.
  *
- * @param initialWidth The initial width of the box.
- * @param initialHeight The initial height of the box.
- * @param onDragEnd A callback function that is invoked with the final offset, width, and height
- *   when the user finishes a drag gesture.
- * @param initialOffset The initial top-left offset of the box. Default is (0, 0), which is the
- *   parent's top-left corner.
+ * @param minSizePx The minimum size of the box in pixels.
+ * @param touchAreaPx The size of the touch area for resizing in pixels.
+ */
+private class RegionBoxState(private val minSizePx: Float, private val touchAreaPx: Float) {
+    var rect by mutableStateOf<Rect?>(null)
+        private set
+
+    private var dragMode by mutableStateOf(DragMode.NONE)
+    private var resizeZone by mutableStateOf<ResizeZone?>(null)
+
+    // The offset of the initial press when the user starts a drag gesture.
+    private var newBoxStartOffset by mutableStateOf(Offset.Zero)
+
+    // Must remember the screen size for the drag logic. Initial values are set to 0.
+    var screenWidth by mutableStateOf(0f)
+    var screenHeight by mutableStateOf(0f)
+
+    fun startDrag(startOffset: Offset) {
+        val currentRect = rect
+
+        if (currentRect == null) {
+            // If the box is not yet created, it is a drawing drag.
+            dragMode = DragMode.DRAWING
+            newBoxStartOffset = startOffset
+        } else {
+            // The offset of the existing box.
+            val currentRectOffset = startOffset - currentRect.topLeft
+            val touchedZone =
+                getTouchedZone(
+                    currentRect.width,
+                    currentRect.height,
+                    currentRectOffset,
+                    touchAreaPx,
+                )
+            when {
+                touchedZone != null -> {
+                    // If the drag was initiated within the current rectangle's drag-to-resize touch
+                    // zone, it is a resizing drag.
+                    dragMode = DragMode.RESIZING
+                    resizeZone = touchedZone
+                }
+                currentRect.contains(startOffset) -> {
+                    // If the drag was initiated inside the rectangle and not within the touch
+                    // zones, it is a moving drag.
+                    dragMode = DragMode.MOVING
+                }
+                else -> {
+                    // The touch was initiated outside of the rectangle and its touch zone.
+                    dragMode = DragMode.DRAWING
+                    newBoxStartOffset = startOffset
+                }
+            }
+        }
+    }
+
+    fun drag(endOffset: Offset, dragAmount: Offset) {
+        val currentRect = rect
+        when (dragMode) {
+            DragMode.DRAWING -> {
+                // Ensure that the box remains within the boundaries of the screen.
+                val newBoxEndOffset =
+                    Offset(
+                        x = endOffset.x.coerceIn(0f, screenWidth),
+                        y = endOffset.y.coerceIn(0f, screenHeight),
+                    )
+                rect =
+                    Rect(
+                        left = min(newBoxStartOffset.x, newBoxEndOffset.x),
+                        top = min(newBoxStartOffset.y, newBoxEndOffset.y),
+                        right = max(newBoxStartOffset.x, newBoxEndOffset.x),
+                        bottom = max(newBoxStartOffset.y, newBoxEndOffset.y),
+                    )
+            }
+            DragMode.MOVING -> {
+                if (currentRect != null) {
+                    val newOffset = currentRect.topLeft + dragAmount
+
+                    // Constrain the new position within the parent's boundaries
+                    val constrainedLeft = newOffset.x.coerceIn(0f, screenWidth - currentRect.width)
+                    val constrainedTop = newOffset.y.coerceIn(0f, screenHeight - currentRect.height)
+
+                    rect =
+                        currentRect.translate(
+                            translateX = constrainedLeft - currentRect.left,
+                            translateY = constrainedTop - currentRect.top,
+                        )
+                }
+            }
+            DragMode.RESIZING -> {
+                if (currentRect != null && resizeZone != null) {
+                    rect =
+                        resizeZone!!.processResizeDrag(
+                            currentRect,
+                            dragAmount,
+                            minSizePx,
+                            screenWidth,
+                            screenHeight,
+                        )
+                }
+            }
+            DragMode.NONE -> {
+                // Do nothing.
+            }
+        }
+    }
+
+    fun dragEnd() {
+        dragMode = DragMode.NONE
+        resizeZone = null
+    }
+}
+
+/**
+ * A composable that allows the user to create, move, resize, and redraw a rectangular region.
+ *
+ * @param onRegionSelected A callback function that is invoked with the final rectangle when the
+ *   user finishes a drag gesture. This rectangle is used for taking a screenshot. The rectangle is
+ *   of type [android.graphics.Rect] because the screenshot API requires int values.
+ * @param drawableLoaderViewModel The view model that is used to load drawables.
  * @param modifier The modifier to be applied to the composable.
  */
 @Composable
 fun RegionBox(
-    initialWidth: Dp,
-    initialHeight: Dp,
-    onDragEnd: (offset: Offset, width: Dp, height: Dp) -> Unit,
+    onRegionSelected: (rect: IntRect) -> Unit,
     drawableLoaderViewModel: DrawableLoaderViewModel,
-    initialOffset: Offset = Offset.Zero,
     modifier: Modifier = Modifier,
 ) {
+    val density = LocalDensity.current
+
     // The minimum size allowed for the box.
     val minSize = 1.dp
-
-    val density = LocalDensity.current
     val minSizePx = remember(density) { with(density) { minSize.toPx() } }
 
-    // State for the region box's geometry.
-    var rect by remember {
-        mutableStateOf(
-            with(density) {
-                // offset is how far from the parent's top-left corner the box should be placed.
-                Rect(offset = initialOffset, size = Size(initialWidth.toPx(), initialHeight.toPx()))
-            }
-        )
-    }
-
-    val onBoxDrag: (dragAmount: Offset, maxWidth: Float, maxHeight: Float) -> Unit =
-        { dragAmount, maxWidth, maxHeight ->
-            val newOffset = rect.topLeft + dragAmount
-
-            // Constrain the new position within the parent's boundaries
-            val constrainedLeft: Float = newOffset.x.coerceIn(0f, maxWidth - rect.width)
-            val constrainedTop: Float = newOffset.y.coerceIn(0f, maxHeight - rect.height)
-
-            rect =
-                rect.translate(
-                    translateX = constrainedLeft - rect.left,
-                    translateY = constrainedTop - rect.top,
-                )
-        }
-
-    ResizableRectangle(
-        rect = rect,
-        onResizeDrag = { dragAmount, zone, maxWidth, maxHeight ->
-            rect = zone.processResizeDrag(rect, dragAmount, minSizePx, maxWidth, maxHeight)
-        },
-        onBoxDrag = onBoxDrag,
-        onDragEnd = {
-            onDragEnd(
-                Offset(rect.left, rect.top),
-                with(density) { rect.width.toDp() },
-                with(density) { rect.height.toDp() },
-            )
-        },
-        drawableLoaderViewModel = drawableLoaderViewModel,
-        modifier = modifier,
-    )
-}
-
-/**
- * A box with a border that can be resized by dragging its zone (corner or edge), and moved by
- * dragging its body.
- *
- * @param rect The current geometry of the region box.
- * @param onResizeDrag Callback invoked when a corner or edge is dragged.
- * @param onBoxDrag Callback invoked when the main body of the box is dragged.
- * @param onDragEnd Callback invoked when a drag gesture finishes.
- * @param modifier The modifier to be applied to the composable.
- */
-@Composable
-private fun ResizableRectangle(
-    rect: Rect,
-    onResizeDrag: (dragAmount: Offset, zone: ResizeZone, maxWidth: Float, maxHeight: Float) -> Unit,
-    onBoxDrag: (dragAmount: Offset, maxWidth: Float, maxHeight: Float) -> Unit,
-    onDragEnd: () -> Unit,
-    drawableLoaderViewModel: DrawableLoaderViewModel,
-    modifier: Modifier = Modifier,
-) {
-    // The width of the border stroke around the region box.
-    val borderStrokeWidth = 4.dp
     // The touch area for detecting an edge or corner resize drag.
     val touchArea = 48.dp
+    val touchAreaPx = remember(density) { with(density) { touchArea.toPx() } }
 
-    // Must remember the screen size for the drag logic. Initial values are set to 0.
-    var screenWidth by remember { mutableStateOf(0f) }
-    var screenHeight by remember { mutableStateOf(0f) }
-
-    val density = LocalDensity.current
-    val touchAreaPx = with(density) { touchArea.toPx() }
-
-    // The zone being dragged for resizing, if any.
-    var draggedZone by remember { mutableStateOf<ResizeZone?>(null) }
+    val state = remember { RegionBoxState(minSizePx, touchAreaPx) }
 
     Box(
         modifier =
@@ -190,67 +253,66 @@ private fun ResizableRectangle(
                 .fillMaxSize()
                 // .onSizeChanged gives us the final size of this box, which is the screen size,
                 // after it has been drawn.
-                .onSizeChanged { sizeInPixels ->
-                    screenWidth = sizeInPixels.width.toFloat()
-                    screenHeight = sizeInPixels.height.toFloat()
+                .onSizeChanged { sizeInPixels: IntSize ->
+                    state.screenWidth = sizeInPixels.width.toFloat()
+                    state.screenHeight = sizeInPixels.height.toFloat()
+                }
+                .pointerInput(Unit) {
+                    detectDragGestures(
+                        onDragStart = { startOffset: Offset -> state.startDrag(startOffset) },
+                        onDrag = { change: PointerInputChange, dragAmount: Offset ->
+                            change.consume()
+                            state.drag(change.position, dragAmount)
+                        },
+                        onDragEnd = {
+                            state.dragEnd()
+                            state.rect?.let { rect: Rect ->
+                                // Store the rectangle to the ViewModel for taking a screenshot.
+                                // The screenshot API requires a Rect class with int values.
+                                onRegionSelected(
+                                    IntRect(
+                                        rect.left.roundToInt(),
+                                        rect.top.roundToInt(),
+                                        rect.right.roundToInt(),
+                                        rect.bottom.roundToInt(),
+                                    )
+                                )
+                            }
+                        },
+                        onDragCancel = { state.dragEnd() },
+                    )
                 }
     ) {
-        Box(
-            modifier =
-                Modifier.graphicsLayer(translationX = rect.left, translationY = rect.top)
-                    .size(
-                        width = with(density) { rect.width.toDp() },
-                        height = with(density) { rect.height.toDp() },
-                    )
-                    .border(borderStrokeWidth, MaterialTheme.colorScheme.onSurfaceVariant)
-                    .pointerInput(screenWidth, screenHeight, onResizeDrag, onBoxDrag, onDragEnd) {
-                        detectDragGestures(
-                            onDragStart = { startOffset ->
-                                draggedZone =
-                                    getTouchedZone(
-                                        boxWidth = size.width.toFloat(),
-                                        boxHeight = size.height.toFloat(),
-                                        startOffset = startOffset,
-                                        touchAreaPx = touchAreaPx,
-                                    )
-                            },
-                            onDragEnd = {
-                                draggedZone = null
-                                onDragEnd()
-                            },
-                            onDrag = { change, dragAmount ->
-                                change.consume()
+        // The width of the border stroke around the region box.
+        val borderStrokeWidth = 4.dp
 
-                                // Create a stable and local copy of the draggedZone. This
-                                // ensures that the value does not change in the onResizeDrag
-                                // callback.
-                                val currentZone = draggedZone
-
-                                if (currentZone != null) {
-                                    // If currentZone has a value, it means we are dragging a zone
-                                    // for resizing.
-                                    onResizeDrag(dragAmount, currentZone, screenWidth, screenHeight)
-                                } else {
-                                    // If currentZone is null, it means we are dragging the box.
-                                    onBoxDrag(dragAmount, screenWidth, screenHeight)
-                                }
-                            },
+        state.rect?.let { currentRect ->
+            Box(
+                modifier =
+                    Modifier.graphicsLayer(
+                            translationX = currentRect.left,
+                            translationY = currentRect.top,
                         )
+                        .size(
+                            width = with(density) { currentRect.width.toDp() },
+                            height = with(density) { currentRect.height.toDp() },
+                        )
+                        .border(borderStrokeWidth, MaterialTheme.colorScheme.onSurfaceVariant),
+                contentAlignment = Alignment.Center,
+            ) {
+                PrimaryButton(
+                    text = stringResource(id = R.string.screen_capture_region_selection_button),
+                    onClick = {
+                        // TODO(b/417534202): trigger a screenshot of the selected area.
                     },
-            contentAlignment = Alignment.Center,
-        ) {
-            PrimaryButton(
-                text = stringResource(id = R.string.screen_capture_region_selection_button),
-                onClick = {
-                    // TODO(b/417534202): trigger a screenshot of the selected area.
-                },
-                icon =
-                    loadIcon(
-                        viewModel = drawableLoaderViewModel,
-                        resId = R.drawable.ic_screen_capture_camera,
-                        contentDescription = null,
-                    ),
-            )
+                    icon =
+                        loadIcon(
+                            viewModel = drawableLoaderViewModel,
+                            resId = R.drawable.ic_screen_capture_camera,
+                            contentDescription = null,
+                        ),
+                )
+            }
         }
     }
 }

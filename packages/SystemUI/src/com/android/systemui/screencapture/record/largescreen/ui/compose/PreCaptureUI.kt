@@ -16,6 +16,7 @@
 
 package com.android.systemui.screencapture.record.largescreen.ui.compose
 
+import android.graphics.Rect
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -24,9 +25,7 @@ import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import com.android.systemui.res.R
@@ -74,11 +73,7 @@ fun PreCaptureUI(viewModel: PreCaptureViewModel) {
                 // TODO(b/427541309) Set the initial width and height of the RegionBox based on the
                 // viewmodel state.
                 RegionBox(
-                    initialWidth = 100.dp,
-                    initialHeight = 100.dp,
-                    onDragEnd = { _: Offset, _: Dp, _: Dp ->
-                        // TODO(b/427541309) Update the region box in the viewmodel.
-                    },
+                    onRegionSelected = { rect: Rect -> viewModel.updateRegionBox(rect) },
                     drawableLoaderViewModel = viewModel,
                 )
             }
