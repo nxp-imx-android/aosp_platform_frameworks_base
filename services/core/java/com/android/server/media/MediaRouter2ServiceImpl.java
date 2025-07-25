@@ -1569,6 +1569,7 @@ class MediaRouter2ServiceImpl {
         mMediaRouterMetricLogger.addRequestInfo(
                 uniqueRequestId,
                 MEDIA_ROUTER_EVENT_REPORTED__EVENT_TYPE__EVENT_TYPE_CREATE_SESSION);
+        mMediaRouterMetricLogger.notifyRoutingChangeRequested(uniqueRequestId, routingChangeInfo);
         userHandler.sendMessage(
                 obtainMessage(
                         UserHandler::requestCreateSessionWithRouter2OnHandler,
@@ -3627,10 +3628,13 @@ class MediaRouter2ServiceImpl {
             }
 
             provider.releaseSession(uniqueRequestId, sessionId);
+            mMediaRouterMetricLogger.notifySessionEnd(sessionId);
         }
 
-        private void onSessionCreatedOnHandler(@NonNull MediaRoute2Provider provider,
-                long uniqueRequestId, @NonNull RoutingSessionInfo sessionInfo) {
+        private void onSessionCreatedOnHandler(
+                @NonNull MediaRoute2Provider provider,
+                long uniqueRequestId,
+                @NonNull RoutingSessionInfo sessionInfo) {
             SessionCreationRequest matchingRequest = null;
 
             for (SessionCreationRequest request : mSessionCreationRequests) {
@@ -3687,6 +3691,8 @@ class MediaRouter2ServiceImpl {
             // Log the success result.
             mMediaRouterMetricLogger.logRequestResult(
                     uniqueRequestId, MEDIA_ROUTER_EVENT_REPORTED__RESULT__RESULT_SUCCESS);
+            mMediaRouterMetricLogger.notifyRoutingChange(
+                    uniqueRequestId, sessionInfo, matchingRequest.mRouterRecord.mUid);
         }
 
         /**

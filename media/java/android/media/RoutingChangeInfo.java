@@ -39,13 +39,6 @@ public final class RoutingChangeInfo implements Parcelable {
     private final boolean mIsSuggested;
 
     /**
-     * Unspecified default value.
-     *
-     * @hide
-     */
-    public static final int ENTRY_POINT_UNSPECIFIED = 0;
-
-    /**
      * Indicates that a routing session started as the result of selecting a route from the output
      * switcher.
      *
@@ -95,7 +88,6 @@ public final class RoutingChangeInfo implements Parcelable {
     @IntDef(
             prefix = "ENTRY_POINT",
             value = {
-                ENTRY_POINT_UNSPECIFIED,
                 ENTRY_POINT_SYSTEM_OUTPUT_SWITCHER,
                 ENTRY_POINT_SYSTEM_MEDIA_CONTROLS,
                 ENTRY_POINT_LOCAL_ROUTER_UNSPECIFIED,
