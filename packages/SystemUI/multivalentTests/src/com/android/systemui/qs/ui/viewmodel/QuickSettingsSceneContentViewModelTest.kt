@@ -78,7 +78,6 @@ class QuickSettingsSceneContentViewModelTest : SysuiTestCase() {
             underTest =
                 QuickSettingsSceneContentViewModel(
                     shadeHeaderViewModelFactory = shadeHeaderViewModelFactory,
-                    qsSceneAdapter = fakeQsSceneAdapter,
                     qsContainerViewModelFactory = kosmos.quickSettingsContainerViewModelFactory,
                     footerActionsViewModelFactory = footerActionsViewModelFactory,
                     footerActionsController = footerActionsController,

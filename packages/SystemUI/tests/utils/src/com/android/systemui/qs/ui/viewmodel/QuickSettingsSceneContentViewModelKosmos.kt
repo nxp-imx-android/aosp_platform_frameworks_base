@@ -16,43 +16,19 @@
 
 package com.android.systemui.qs.ui.viewmodel
 
-import android.view.View
-import android.view.ViewGroup
-import android.widget.FrameLayout
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.Kosmos.Fixture
 import com.android.systemui.kosmos.testDispatcher
 import com.android.systemui.media.controls.domain.pipeline.interactor.mediaCarouselInteractor
 import com.android.systemui.qs.footerActionsController
 import com.android.systemui.qs.footerActionsViewModelFactory
-import com.android.systemui.qs.ui.adapter.FakeQSSceneAdapter
 import com.android.systemui.scene.domain.interactor.sceneInteractor
 import com.android.systemui.shade.domain.interactor.shadeModeInteractor
 import com.android.systemui.shade.ui.viewmodel.shadeHeaderViewModelFactory
-import org.mockito.kotlin.doReturn
-import org.mockito.kotlin.mock
-import org.mockito.kotlin.stub
 
 val Kosmos.quickSettingsSceneContentViewModel by Fixture {
     QuickSettingsSceneContentViewModel(
         shadeHeaderViewModelFactory = shadeHeaderViewModelFactory,
-        qsSceneAdapter =
-            FakeQSSceneAdapter({
-                // The Quick Settings content installs this view as a child of FrameLayout so its
-                // layout
-                // params are required.
-                val view = mock<View>()
-                view.stub {
-                    on { layoutParams } doReturn
-                        FrameLayout.LayoutParams(
-                            ViewGroup.MarginLayoutParams(
-                                ViewGroup.LayoutParams.MATCH_PARENT,
-                                ViewGroup.LayoutParams.MATCH_PARENT,
-                            )
-                        )
-                }
-                view
-            }),
         qsContainerViewModelFactory = quickSettingsContainerViewModelFactory,
         footerActionsViewModelFactory = footerActionsViewModelFactory,
         footerActionsController = footerActionsController,

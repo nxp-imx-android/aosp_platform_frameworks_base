@@ -47,8 +47,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.CompositingStrategy
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.layout.Layout
-import androidx.compose.ui.layout.layoutId
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLifecycleOwner
@@ -275,66 +273,57 @@ private fun ContentScope.QuickSettingsScene(
                             CollapsedShadeHeader(viewModel = headerViewModel, isSplitShade = false)
                     }
                     Spacer(modifier = Modifier.height(16.dp))
-                    Column(
+                    QuickSettingsPanelLayout(
+                        brightness =
+                            @Composable {
+                                BrightnessSliderContainer(
+                                    viewModel.qsContainerViewModel.brightnessSliderViewModel,
+                                    containerColors =
+                                        ContainerColors(
+                                            Color.Transparent,
+                                            ContainerColors.defaultContainerColor,
+                                        ),
+                                    modifier =
+                                        Modifier.padding(
+                                            vertical =
+                                                dimensionResource(
+                                                    id = R.dimen.qs_brightness_margin_top
+                                                )
+                                        ),
+                                )
+                            },
+                        tiles =
+                            @Composable {
+                                Box {
+                                    GridAnchor()
+                                    TileGrid(viewModel.qsContainerViewModel.tileGridViewModel)
+                                }
+                            },
+                        media =
+                            @Composable {
+                                MediaCarousel(
+                                    isVisible = isMediaVisible,
+                                    mediaHost = mediaHost,
+                                    modifier =
+                                        Modifier.fillMaxWidth()
+                                            .padding(
+                                                horizontal =
+                                                    dimensionResource(
+                                                        id = R.dimen.qs_horizontal_margin
+                                                    )
+                                            ),
+                                    carouselController = mediaCarouselController,
+                                )
+                            },
+                        mediaInRow = mediaInRow,
                         modifier =
                             Modifier.element(ElementKeys.QuickSettingsContent)
                                 .padding(
                                     horizontal =
                                         dimensionResource(id = R.dimen.qs_horizontal_margin)
                                 )
-                                .sysuiResTag("quick_settings_panel")
-                    ) {
-                        BrightnessSliderContainer(
-                            viewModel.qsContainerViewModel.brightnessSliderViewModel,
-                            containerColors =
-                                ContainerColors(
-                                    Color.Transparent,
-                                    ContainerColors.defaultContainerColor,
-                                ),
-                            modifier =
-                                Modifier.padding(
-                                    vertical =
-                                        dimensionResource(id = R.dimen.qs_brightness_margin_top)
-                                ),
-                        )
-                        GridAnchor()
-                        // This view has its own horizontal padding
-                        val content: @Composable () -> Unit = {
-                            TileGrid(
-                                viewModel.qsContainerViewModel.tileGridViewModel,
-                                modifier = Modifier.layoutId(QSMediaMeasurePolicy.LayoutId.QS),
-                            )
-
-                            MediaCarousel(
-                                isVisible = isMediaVisible,
-                                mediaHost = mediaHost,
-                                modifier =
-                                    Modifier.fillMaxWidth()
-                                        .layoutId(QSMediaMeasurePolicy.LayoutId.Media)
-                                        .padding(
-                                            horizontal =
-                                                dimensionResource(id = R.dimen.qs_horizontal_margin)
-                                        ),
-                                carouselController = mediaCarouselController,
-                            )
-                        }
-                        val landscapeQsMediaMeasurePolicy = remember {
-                            QSMediaMeasurePolicy(
-                                { viewModel.qsSceneAdapter.qsHeight },
-                                { mediaOffset.roundToPx() },
-                            )
-                        }
-                        Column(modifier = Modifier.padding(horizontal = shadeHorizontalPadding)) {
-                            if (mediaInRow) {
-                                Layout(
-                                    content = content,
-                                    measurePolicy = landscapeQsMediaMeasurePolicy,
-                                )
-                            } else {
-                                content()
-                            }
-                        }
-                    }
+                                .sysuiResTag("quick_settings_panel"),
+                    )
                 }
             }
 
