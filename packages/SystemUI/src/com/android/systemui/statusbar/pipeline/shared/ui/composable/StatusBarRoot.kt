@@ -81,6 +81,7 @@ import com.android.systemui.statusbar.pipeline.battery.ui.composable.ShowPercent
 import com.android.systemui.statusbar.pipeline.battery.ui.composable.UnifiedBattery
 import com.android.systemui.statusbar.pipeline.battery.ui.viewmodel.BatteryViewModel
 import com.android.systemui.statusbar.pipeline.shared.ui.binder.HomeStatusBarIconBlockListBinder
+import com.android.systemui.statusbar.pipeline.shared.ui.binder.HomeStatusBarTouchExclusionRegionBinder
 import com.android.systemui.statusbar.pipeline.shared.ui.binder.HomeStatusBarViewBinder
 import com.android.systemui.statusbar.pipeline.shared.ui.view.SystemStatusIconsLayoutHelper
 import com.android.systemui.statusbar.pipeline.shared.ui.viewmodel.HomeStatusBarViewModel
@@ -200,6 +201,11 @@ fun StatusBarRoot(
                     context = context,
                 )
             }
+
+            HomeStatusBarTouchExclusionRegionBinder.bind(
+                phoneStatusBarView,
+                appHandlesViewModel.touchableExclusionRegion,
+            )
 
             if (StatusBarChipsModernization.isEnabled) {
                 // Make sure the primary chip is hidden when StatusBarChipsModernization is

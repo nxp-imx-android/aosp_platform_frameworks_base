@@ -18,6 +18,7 @@ package com.android.systemui.statusbar.layout.ui.viewmodel
 
 import android.content.testableContext
 import android.graphics.Rect
+import android.graphics.Region
 import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -38,6 +39,7 @@ import com.android.wm.shell.windowdecor.viewholder.AppHandleIdentifier.AppHandle
 import com.android.wm.shell.windowdecor.viewholder.AppHandleIdentifier.AppHandleWindowingMode.APP_HANDLE_WINDOWING_MODE_SPLIT_SCREEN
 import com.google.common.truth.Truth.assertThat
 import java.util.Optional
+import kotlin.test.assertEquals
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -173,4 +175,114 @@ class AppHandlesViewModelTest : SysuiTestCase() {
 
             assertThat(underTest.appHandleBounds).isEmpty()
         }
+
+    @Test
+    @DisableFlags(StatusBarAppHandleTracking.FLAG_NAME)
+    fun touchableExclusionRegion_emptyIfFlagDisabled() =
+        kosmos.runTest {
+            val taskId = 10
+            val rect = Rect(1, 2, 3, 4)
+            fakeAppHandles.setAppHandles(
+                mapOf(
+                    taskId to
+                        AppHandleIdentifier(
+                            rect = rect,
+                            displayId = testableContext.displayId,
+                            taskId = taskId,
+                            windowingMode = APP_HANDLE_WINDOWING_MODE_FULLSCREEN,
+                        )
+                )
+            )
+
+            assertThat(underTest.touchableExclusionRegion.isEmpty)
+        }
+
+    @Test
+    @EnableFlags(StatusBarAppHandleTracking.FLAG_NAME)
+    fun touchableExclusionRegion_emptyRegionIfNoAppHandleBoundsReported() =
+        kosmos.runTest {
+            fakeAppHandles.setAppHandles(emptyMap())
+            assertThat(underTest.touchableExclusionRegion.isEmpty)
+        }
+
+    @Test
+    @EnableFlags(StatusBarAppHandleTracking.FLAG_NAME)
+    fun touchableExclusionRegion_regionContainsSingleAppHandleBounds() =
+        kosmos.runTest {
+            val taskId = 10
+            val rect = Rect(1, 2, 3, 4)
+            fakeAppHandles.setAppHandles(
+                mapOf(
+                    taskId to
+                        AppHandleIdentifier(
+                            rect = rect,
+                            displayId = testableContext.displayId,
+                            taskId = taskId,
+                            windowingMode = APP_HANDLE_WINDOWING_MODE_FULLSCREEN,
+                        )
+                )
+            )
+
+            underTest.touchableExclusionRegion.containsExactly(rect)
+        }
+
+    @Test
+    @EnableFlags(StatusBarAppHandleTracking.FLAG_NAME)
+    fun touchableExclusionRegion_regionContainsMultipleAppHandleBounds() =
+        kosmos.runTest {
+            val taskId1 = 10
+            val rect1 = Rect(1, 2, 3, 4)
+
+            val taskId2 = 20
+            val rect2 = Rect(5, 6, 7, 8)
+            fakeAppHandles.setAppHandles(
+                mapOf(
+                    taskId1 to
+                        AppHandleIdentifier(
+                            rect = rect1,
+                            displayId = testableContext.displayId,
+                            taskId = taskId1,
+                            windowingMode = APP_HANDLE_WINDOWING_MODE_SPLIT_SCREEN,
+                        ),
+                    taskId2 to
+                        AppHandleIdentifier(
+                            rect = rect2,
+                            displayId = testableContext.displayId,
+                            taskId = taskId2,
+                            windowingMode = APP_HANDLE_WINDOWING_MODE_SPLIT_SCREEN,
+                        ),
+                )
+            )
+
+            underTest.touchableExclusionRegion.containsExactly(rect1, rect2)
+        }
+
+    @Test
+    @EnableFlags(StatusBarAppHandleTracking.FLAG_NAME)
+    fun touchableExclusionRegion_notForThisDisplay_empty() =
+        kosmos.runTest {
+            val taskId = 10
+            val rect = Rect(1, 2, 3, 4)
+            fakeAppHandles.setAppHandles(
+                mapOf(
+                    taskId to
+                        AppHandleIdentifier(
+                            rect = rect,
+                            displayId = testableContext.displayId + 2,
+                            taskId = taskId,
+                            windowingMode = APP_HANDLE_WINDOWING_MODE_FULLSCREEN,
+                        )
+                )
+            )
+
+            assertThat(underTest.touchableExclusionRegion.isEmpty)
+        }
+
+    /** Checks that region is equal to the union of the given rects. */
+    private fun Region.containsExactly(vararg rects: Rect) {
+        val intersect = Region.obtain()
+        rects.forEach { intersect.op(it, intersect, Region.Op.UNION) }
+        assertEquals(intersect, this)
+        intersect.recycle()
+    }
 }

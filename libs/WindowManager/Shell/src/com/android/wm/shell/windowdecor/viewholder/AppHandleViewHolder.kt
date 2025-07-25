@@ -138,6 +138,12 @@ class AppHandleViewHolder(
         setVisibility(isCaptionVisible)
         captionHandle.imageTintList = ColorStateList.valueOf(getCaptionHandleBarColor(taskInfo))
         this.taskInfo = taskInfo
+        if (
+            DesktopExperienceFlags.ENABLE_REMOVE_STATUS_BAR_INPUT_LAYER.isTrue &&
+                DesktopExperienceFlags.ENABLE_APP_HANDLE_POSITION_REPORTING.isTrue
+        ) {
+            return
+        }
         // If handle is not in status bar region(i.e., bottom stage in vertical split),
         // do not create an input layer
         if (position.y >= SystemBarUtils.getStatusBarHeight(context) || !showInputLayer) {
@@ -270,7 +276,13 @@ class AppHandleViewHolder(
      * visible.
      */
     fun disposeStatusBarInputLayer() {
-        if (!statusBarInputLayerExists) return
+        if (
+            !statusBarInputLayerExists ||
+                (DesktopExperienceFlags.ENABLE_REMOVE_STATUS_BAR_INPUT_LAYER.isTrue &&
+                    DesktopExperienceFlags.ENABLE_APP_HANDLE_POSITION_REPORTING.isTrue)
+        ) {
+            return
+        }
         statusBarInputLayerExists = false
         statusBarInputLayer?.view?.setOnTouchListener(null)
         handler.post {
