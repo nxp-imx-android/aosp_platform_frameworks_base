@@ -385,8 +385,7 @@ class WindowStateAnimator {
                 logWithStack(TAG, "Window " + this + " destroying surface "
                         + mSurfaceControl + ", session " + mSession);
             }
-            ProtoLog.i(WM_SHOW_SURFACE_ALLOC, "SURFACE DESTROY: %s. %s",
-                    mWin, new RuntimeException());
+            ProtoLog.i(WM_SHOW_SURFACE_ALLOC, "SURFACE DESTROY: %s", mWin);
             destroySurface(t);
             if (mWallpaperControllerLocked.isWallpaperTarget(mWin)) {
                 mWin.requestUpdateWallpaperIfNeeded();

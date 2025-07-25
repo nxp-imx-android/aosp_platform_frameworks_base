@@ -2661,9 +2661,8 @@ public class WindowManagerService extends IWindowManager.Stub
             win.mInRelayout = true;
 
             win.setViewVisibility(viewVisibility);
-            ProtoLog.i(WM_DEBUG_SCREEN_ON,
-                    "Relayout %s: oldVis=%d newVis=%d. %s", win, oldVisibility,
-                            viewVisibility, new RuntimeException());
+            ProtoLog.i(WM_DEBUG_SCREEN_ON, "Relayout %s: oldVis=%d newVis=%d", win, oldVisibility,
+                    viewVisibility);
             if (becameVisible) {
                 onWindowVisible(win);
             }
@@ -4028,10 +4027,8 @@ public class WindowManagerService extends IWindowManager.Stub
     public void enableScreenAfterBoot() {
         synchronized (mGlobalLock) {
             ProtoLog.i(WM_DEBUG_BOOT, "enableScreenAfterBoot: mDisplayEnabled=%b "
-                            + "mForceDisplayEnabled=%b mShowingBootMessages=%b mSystemBooted=%b. "
-                            + "%s",
-                    mDisplayEnabled, mForceDisplayEnabled, mShowingBootMessages, mSystemBooted,
-                    new RuntimeException("here"));
+                            + "mForceDisplayEnabled=%b mShowingBootMessages=%b mSystemBooted=%b",
+                    mDisplayEnabled, mForceDisplayEnabled, mShowingBootMessages, mSystemBooted);
             if (mSystemBooted) {
                 return;
             }
@@ -4056,10 +4053,8 @@ public class WindowManagerService extends IWindowManager.Stub
 
     void enableScreenIfNeededLocked() {
         ProtoLog.i(WM_DEBUG_BOOT, "enableScreenIfNeededLocked: mDisplayEnabled=%b "
-                        + "mForceDisplayEnabled=%b mShowingBootMessages=%b mSystemBooted=%b. "
-                        + "%s",
-                mDisplayEnabled, mForceDisplayEnabled, mShowingBootMessages, mSystemBooted,
-                new RuntimeException("here"));
+                        + "mForceDisplayEnabled=%b mShowingBootMessages=%b mSystemBooted=%b",
+                mDisplayEnabled, mForceDisplayEnabled, mShowingBootMessages, mSystemBooted);
         if (mDisplayEnabled) {
             return;
         }
@@ -4091,9 +4086,8 @@ public class WindowManagerService extends IWindowManager.Stub
         synchronized (mGlobalLock) {
             ProtoLog.i(WM_DEBUG_BOOT, "performEnableScreen: mDisplayEnabled=%b"
                             + " mForceDisplayEnabled=%b" + " mShowingBootMessages=%b"
-                            + " mSystemBooted=%b. %s", mDisplayEnabled,
-                    mForceDisplayEnabled, mShowingBootMessages, mSystemBooted,
-                    new RuntimeException("here"));
+                            + " mSystemBooted=%b", mDisplayEnabled, mForceDisplayEnabled,
+                    mShowingBootMessages, mSystemBooted);
             if (mDisplayEnabled) {
                 return;
             }
@@ -4187,9 +4181,8 @@ public class WindowManagerService extends IWindowManager.Stub
         synchronized (mGlobalLock) {
             ProtoLog.i(WM_DEBUG_BOOT, "showBootMessage: msg=%s always=%b"
                             + " mAllowBootMessages=%b mShowingBootMessages=%b"
-                            + " mSystemBooted=%b. %s", msg, always, mAllowBootMessages,
-                    mShowingBootMessages, mSystemBooted,
-                    new RuntimeException("here"));
+                            + " mSystemBooted=%b", msg, always, mAllowBootMessages,
+                    mShowingBootMessages, mSystemBooted);
             if (!mAllowBootMessages) {
                 return;
             }
@@ -4213,9 +4206,8 @@ public class WindowManagerService extends IWindowManager.Stub
     public void hideBootMessagesLocked() {
         ProtoLog.i(WM_DEBUG_BOOT, "hideBootMessagesLocked: mDisplayEnabled=%b"
                         + " mForceDisplayEnabled=%b mShowingBootMessages=%b"
-                        + " mSystemBooted=%b. %s", mDisplayEnabled, mForceDisplayEnabled,
-                mShowingBootMessages, mSystemBooted,
-                new RuntimeException("here"));
+                        + " mSystemBooted=%b", mDisplayEnabled, mForceDisplayEnabled,
+                mShowingBootMessages, mSystemBooted);
         if (mShowingBootMessages) {
             mShowingBootMessages = false;
             mPolicy.hideBootMessages();
