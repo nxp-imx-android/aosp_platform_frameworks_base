@@ -168,29 +168,6 @@ final class IInputMethodManagerGlobalInvoker {
         }
     }
 
-    /**
-     * Invokes {@link IInputMethodManager#removeImeSurface()}
-     *
-     * @param displayId display ID from which this request originates
-     * @param exceptionHandler an optional {@link RemoteException} handler
-     */
-    @AnyThread
-    @RequiresPermission(allOf = {
-            Manifest.permission.INTERNAL_SYSTEM_WINDOW,
-            Manifest.permission.INTERACT_ACROSS_USERS_FULL})
-    static void removeImeSurface(int displayId,
-            @Nullable Consumer<RemoteException> exceptionHandler) {
-        final IInputMethodManager service = getService();
-        if (service == null) {
-            return;
-        }
-        try {
-            service.removeImeSurface(displayId);
-        } catch (RemoteException e) {
-            handleRemoteExceptionOrRethrow(e, exceptionHandler);
-        }
-    }
-
     @AnyThread
     static void addClient(@NonNull IInputMethodClient client,
             @NonNull IRemoteInputConnection fallbackInputConnection, int untrustedDisplayId) {
@@ -502,26 +479,26 @@ final class IInputMethodManagerGlobalInvoker {
     }
 
     @AnyThread
-    static void reportPerceptibleAsync(@NonNull IBinder windowToken, boolean perceptible) {
+    static void reportPerceptible(@NonNull IBinder windowToken, boolean perceptible) {
         final IInputMethodManager service = getService();
         if (service == null) {
             return;
         }
         try {
-            service.reportPerceptibleAsync(windowToken, perceptible);
+            service.reportPerceptible(windowToken, perceptible);
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }
     }
 
     @AnyThread
-    static void removeImeSurfaceFromWindowAsync(@NonNull IBinder windowToken) {
+    static void removeImeSurfaceFromWindow(@NonNull IBinder windowToken) {
         final IInputMethodManager service = getService();
         if (service == null) {
             return;
         }
         try {
-            service.removeImeSurfaceFromWindowAsync(windowToken);
+            service.removeImeSurfaceFromWindow(windowToken);
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }

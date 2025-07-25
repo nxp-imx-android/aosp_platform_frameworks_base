@@ -170,15 +170,22 @@ interface IInputMethodManager {
     // TODO(Bug 113914148): Consider removing this.
     int getInputMethodWindowVisibleHeight(in IInputMethodClient client);
 
-    oneway void reportPerceptibleAsync(in IBinder windowToken, boolean perceptible);
+    /**
+     * Reports whether the IME is currently perceptible or not.
+     *
+     * @param windowToken the IME client window.
+     * @param perceptible whether the source is perceptible or not.
+     *
+     * @see InsetsAnimationControlCallbacks#reportPerceptible
+     */
+    oneway void reportPerceptible(in IBinder windowToken, boolean perceptible);
 
-    @EnforcePermission(allOf = {"INTERNAL_SYSTEM_WINDOW", "INTERACT_ACROSS_USERS_FULL"})
-    @JavaPassthrough(annotation="@android.annotation.RequiresPermission(allOf = {android.Manifest."
-    + "permission.INTERNAL_SYSTEM_WINDOW, android.Manifest.permission.INTERACT_ACROSS_USERS_FULL})")
-    void removeImeSurface(int displayId);
-
-    /** Remove the IME surface. Requires passing the currently focused window. */
-    oneway void removeImeSurfaceFromWindowAsync(in IBinder windowToken);
+    /**
+     * Remove the IME surface if the given window is the currently focused IME Client window.
+     *
+     * @param windowToken the IME client window.
+     */
+    oneway void removeImeSurfaceFromWindow(in IBinder windowToken);
 
     @JavaPassthrough(annotation="@android.annotation.RequiresNoPermission")
     boolean isImeTraceEnabled();

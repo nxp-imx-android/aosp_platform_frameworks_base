@@ -282,22 +282,13 @@ final class ZeroJankProxy implements IInputMethodManagerImpl.Callback {
     }
 
     @Override
-    public void reportPerceptibleAsync(@NonNull IBinder windowToken, boolean perceptible) {
-        // Already async TODO(b/293640003): ordering issues?
-        mInner.reportPerceptibleAsync(windowToken, perceptible);
-    }
-
-    @IInputMethodManagerImpl.PermissionVerified(allOf = {
-            Manifest.permission.INTERACT_ACROSS_USERS_FULL,
-            Manifest.permission.INTERNAL_SYSTEM_WINDOW})
-    @Override
-    public void removeImeSurface(int displayId) {
-        mInner.removeImeSurface(displayId);
+    public void reportPerceptible(@NonNull IBinder windowToken, boolean perceptible) {
+        mInner.reportPerceptible(windowToken, perceptible);
     }
 
     @Override
-    public void removeImeSurfaceFromWindowAsync(IBinder windowToken) {
-        mInner.removeImeSurfaceFromWindowAsync(windowToken);
+    public void removeImeSurfaceFromWindow(@NonNull IBinder windowToken) {
+        mInner.removeImeSurfaceFromWindow(windowToken);
     }
 
     @Override

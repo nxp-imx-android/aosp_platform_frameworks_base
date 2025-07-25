@@ -97,6 +97,7 @@ import android.view.ImeFocusController;
 import android.view.InputChannel;
 import android.view.InputEvent;
 import android.view.InputEventSender;
+import android.view.InsetsAnimationControlCallbacks;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewRootImpl;
@@ -830,12 +831,16 @@ public final class InputMethodManager {
     }
 
     /**
-     * Reports whether the IME is currently perceptible or not, according to the leash applied by
-     * {@link android.view.WindowInsetsController}.
+     * Reports whether the IME is currently perceptible or not.
+     *
+     * @param windowToken the IME client window.
+     * @param perceptible whether the source is perceptible or not.
+     *
+     * @see InsetsAnimationControlCallbacks#reportPerceptible
      * @hide
      */
     public void reportPerceptible(@NonNull IBinder windowToken, boolean perceptible) {
-        IInputMethodManagerGlobalInvoker.reportPerceptibleAsync(windowToken, perceptible);
+        IInputMethodManagerGlobalInvoker.reportPerceptible(windowToken, perceptible);
     }
 
     private static boolean hasViewImeRequestedVisible(View view) {
@@ -3905,13 +3910,14 @@ public final class InputMethodManager {
     }
 
     /**
-     * Notify IME directly to remove surface as it is no longer visible.
-     * @param windowToken The client window token that requests the IME to remove its surface.
+     * Remove the IME surface if the given window is the currently focused IME Client window.
+     *
+     * @param windowToken the IME client window.
      * @hide
      */
-    public void removeImeSurface(@NonNull IBinder windowToken) {
+    public void removeImeSurfaceFromWindow(@NonNull IBinder windowToken) {
         synchronized (mH) {
-            IInputMethodManagerGlobalInvoker.removeImeSurfaceFromWindowAsync(windowToken);
+            IInputMethodManagerGlobalInvoker.removeImeSurfaceFromWindow(windowToken);
         }
     }
 
