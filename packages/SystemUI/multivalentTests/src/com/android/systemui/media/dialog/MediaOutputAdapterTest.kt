@@ -688,9 +688,11 @@ class MediaOutputAdapterTest : SysuiTestCase() {
     }
 
     @Test
+    @EnableFlags(Flags.FLAG_ENABLE_OUTPUT_SWITCHER_PERSONAL_AUDIO_SHARING)
     fun multipleSelectedDevices_listCollapsed_verifySessionControl() {
         mMediaSwitchingController.stub {
             on { isGroupListCollapsed } doReturn true
+            // TODO: remove once FLAG_ENABLE_OUTPUT_SWITCHER_PERSONAL_AUDIO_SHARING is cleaned up.
             on { isVolumeControlEnabledForSession } doReturn true
         }
         initializeSession()
@@ -700,6 +702,7 @@ class MediaOutputAdapterTest : SysuiTestCase() {
             assertThat(mSlider.visibility).isEqualTo(VISIBLE)
             assertThat(mTitleText.visibility).isEqualTo(VISIBLE)
             assertThat(mSlider.value).isEqualTo(TEST_CURRENT_VOLUME)
+            assertThat(mSlider.isEnabled).isTrue()
         }
 
         val viewHolder =
