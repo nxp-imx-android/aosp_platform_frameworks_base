@@ -16,8 +16,6 @@
 
 #include "idmap2d/Idmap2Service.h"
 
-#include <android_content_res.h>
-#include <fcntl.h>
 #include <sys/stat.h>   // umask
 #include <sys/types.h>  // umask
 
@@ -41,6 +39,7 @@
 #include "idmap2/PrettyPrintVisitor.h"
 #include "idmap2/Result.h"
 #include "idmap2/SysTrace.h"
+#include <fcntl.h>
 
 using android::base::StringPrintf;
 using android::binder::Status;
@@ -52,9 +51,7 @@ using android::idmap2::IdmapConstraints;
 using android::idmap2::IdmapHeader;
 using android::idmap2::OverlayResourceContainer;
 using android::idmap2::PrettyPrintVisitor;
-using android::idmap2::Result;
 using android::idmap2::TargetResourceContainer;
-using android::idmap2::Unit;
 using android::idmap2::utils::kIdmapCacheDir;
 using android::idmap2::utils::kIdmapFilePermissionMask;
 using android::idmap2::utils::RandomStringForPath;
@@ -152,37 +149,31 @@ Status Idmap2Service::verifyIdmap(const std::string& target_path, const std::str
     return ok();
   }
 
-  std::optional<Result<Unit>> up_to_date;
-  if (android_content_res_idmap_crc_is_mtime()) {
-    up_to_date = header->IsUpToDate(
-        target_path, overlay_path, overlay_name, toTimeT(getFileModDate(target_path.c_str())),
-        toTimeT(getFileModDate(overlay_path.c_str())),
-        ConvertAidlArgToPolicyBitmask(fulfilled_policies), enforce_overlayable);
-  } else {
-    const auto target = GetTargetContainer(target_path);
-    if (!target) {
-      *_aidl_return = false;
-      LOG(WARNING) << "failed to load target '" << target_path << "'";
-      return ok();
-    }
-    const auto overlay = OverlayResourceContainer::FromPath(overlay_path);
-    if (!overlay) {
-      *_aidl_return = false;
-      LOG(WARNING) << "failed to load overlay '" << overlay_path << "'";
-      return ok();
-    }
-    up_to_date =
-        header->IsUpToDate(*GetPointer(*target), **overlay, overlay_name,
-                           ConvertAidlArgToPolicyBitmask(fulfilled_policies), enforce_overlayable);
+  const auto target = GetTargetContainer(target_path);
+  if (!target) {
+    *_aidl_return = false;
+    LOG(WARNING) << "failed to load target '" << target_path << "'";
+    return ok();
   }
+
+  const auto overlay = OverlayResourceContainer::FromPath(overlay_path);
+  if (!overlay) {
+    *_aidl_return = false;
+    LOG(WARNING) << "failed to load overlay '" << overlay_path << "'";
+    return ok();
+  }
+
+  auto up_to_date =
+      header->IsUpToDate(*GetPointer(*target), **overlay, overlay_name,
+                         ConvertAidlArgToPolicyBitmask(fulfilled_policies), enforce_overlayable);
 
   std::unique_ptr<const IdmapConstraints> newConstraints =
           ConvertAidlConstraintsToIdmapConstraints(constraints);
 
-  *_aidl_return = static_cast<bool>(*up_to_date && (*oldConstraints == *newConstraints));
-  if (!*up_to_date) {
+  *_aidl_return = static_cast<bool>(up_to_date && (*oldConstraints == *newConstraints));
+  if (!up_to_date) {
     LOG(WARNING) << "idmap '" << idmap_path
-                 << "' not up to date : " << up_to_date->GetErrorMessage();
+                 << "' not up to date : " << up_to_date.GetErrorMessage();
   }
   return ok();
 }

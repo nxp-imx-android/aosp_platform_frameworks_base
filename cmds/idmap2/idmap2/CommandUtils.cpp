@@ -16,20 +16,15 @@
 
 #include "idmap2/CommandUtils.h"
 
-#include <android_content_res.h>
-
 #include <fstream>
 #include <memory>
 #include <string>
 #include <vector>
 
-#include "androidfw/misc.h"
 #include "idmap2/Idmap.h"
 #include "idmap2/Result.h"
 #include "idmap2/SysTrace.h"
 
-using android::getFileModDate;
-using android::toTimeT;
 using android::idmap2::Error;
 using android::idmap2::IdmapHeader;
 using android::idmap2::OverlayResourceContainer;
@@ -47,25 +42,21 @@ Result<Unit> Verify(const std::string& idmap_path, const std::string& target_pat
   if (!header) {
     return Error("failed to parse idmap header");
   }
-  std::optional<Result<Unit>> header_ok;
-  if (android_content_res_idmap_crc_is_mtime()) {
-    header_ok = header->IsUpToDate(
-        target_path, overlay_path, overlay_name, toTimeT(getFileModDate(target_path.c_str())),
-        toTimeT(getFileModDate(overlay_path.c_str())), fulfilled_policies, enforce_overlayable);
-  } else {
-    auto target = TargetResourceContainer::FromPath(target_path);
-    if (!target) {
-      return Error("failed to load target '%s'", target_path.c_str());
-    }
-    auto overlay = OverlayResourceContainer::FromPath(overlay_path);
-    if (!overlay) {
-      return Error("failed to load overlay '%s'", overlay_path.c_str());
-    }
-    header_ok = header->IsUpToDate(**target, **overlay, overlay_name, fulfilled_policies,
-                                   enforce_overlayable);
+
+  auto target = TargetResourceContainer::FromPath(target_path);
+  if (!target) {
+    return Error("failed to load target '%s'", target_path.c_str());
   }
-  if (!*header_ok) {
-    return Error(header_ok->GetError(), "idmap not up to date");
+
+  auto overlay = OverlayResourceContainer::FromPath(overlay_path);
+  if (!overlay) {
+    return Error("failed to load overlay '%s'", overlay_path.c_str());
+  }
+
+  const auto header_ok = header->IsUpToDate(**target, **overlay, overlay_name, fulfilled_policies,
+                                            enforce_overlayable);
+  if (!header_ok) {
+    return Error(header_ok.GetError(), "idmap not up to date");
   }
   return Unit{};
 }
