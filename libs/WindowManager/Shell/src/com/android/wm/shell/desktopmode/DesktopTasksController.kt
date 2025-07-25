@@ -126,6 +126,7 @@ import com.android.wm.shell.desktopmode.DragToDesktopTransitionHandler.Companion
 import com.android.wm.shell.desktopmode.DragToDesktopTransitionHandler.DragToDesktopStateListener
 import com.android.wm.shell.desktopmode.ExitDesktopTaskTransitionHandler.FULLSCREEN_ANIMATION_DURATION
 import com.android.wm.shell.desktopmode.common.ToggleTaskSizeInteraction
+import com.android.wm.shell.desktopmode.data.DesktopRepository.Companion.INVALID_DESK_ID
 import com.android.wm.shell.desktopmode.data.DesktopRepository.DeskChangeListener
 import com.android.wm.shell.desktopmode.data.DesktopRepository.VisibleTasksListener
 import com.android.wm.shell.desktopmode.data.DesktopRepositoryInitializer
@@ -4612,7 +4613,7 @@ class DesktopTasksController(
                 .forEach { taskId ->
                     val runningTaskInfo = shellTaskOrganizer.getRunningTaskInfo(taskId)
                     if (runningTaskInfo == null) {
-                        wct.startTask(taskId, createActivityOptionsForStartTask().toBundle())
+                        wct.startTask(taskId, createActivityOptionsForStartTask(deskId).toBundle())
                     } else {
                         desksOrganizer.reorderTaskToFront(wct, deskId, runningTaskInfo)
                     }
@@ -4809,7 +4810,7 @@ class DesktopTasksController(
                     // Task is not running, start it.
                     wct.startTask(
                         taskIdToReorderToFront,
-                        createActivityOptionsForStartTask().toBundle(),
+                        createActivityOptionsForStartTask(deskId).toBundle(),
                     )
                 }
                 else -> {
@@ -5629,11 +5630,16 @@ class DesktopTasksController(
         }
     }
 
-    private fun createActivityOptionsForStartTask(): ActivityOptions {
-        return ActivityOptions.makeBasic().apply {
-            launchWindowingMode = WINDOWING_MODE_FREEFORM
-            splashScreenStyle = SPLASH_SCREEN_STYLE_ICON
+    private fun createActivityOptionsForStartTask(deskId: Int = INVALID_DESK_ID): ActivityOptions {
+        val activityOptions =
+            ActivityOptions.makeBasic().apply {
+                launchWindowingMode = WINDOWING_MODE_FREEFORM
+                splashScreenStyle = SPLASH_SCREEN_STYLE_ICON
+            }
+        if (deskId != INVALID_DESK_ID) {
+            desksOrganizer.addLaunchDeskToActivityOptions(activityOptions, deskId)
         }
+        return activityOptions
     }
 
     private fun dump(pw: PrintWriter, prefix: String) {
