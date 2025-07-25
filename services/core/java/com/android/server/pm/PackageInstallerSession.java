@@ -30,7 +30,6 @@ import static android.content.pm.PackageInstaller.DEVELOPER_VERIFICATION_USER_RE
 import static android.content.pm.PackageInstaller.DEVELOPER_VERIFICATION_USER_RESPONSE_ERROR;
 import static android.content.pm.PackageInstaller.DEVELOPER_VERIFICATION_USER_RESPONSE_INSTALL_ANYWAY;
 import static android.content.pm.PackageInstaller.DeveloperVerificationUserConfirmationInfo.DEVELOPER_VERIFICATION_USER_ACTION_NEEDED_REASON_DEVELOPER_BLOCKED;
-import static android.content.pm.PackageInstaller.DeveloperVerificationUserConfirmationInfo.DEVELOPER_VERIFICATION_USER_ACTION_NEEDED_REASON_LITE_VERIFICATION;
 import static android.content.pm.PackageInstaller.DeveloperVerificationUserConfirmationInfo.DEVELOPER_VERIFICATION_USER_ACTION_NEEDED_REASON_NETWORK_UNAVAILABLE;
 import static android.content.pm.PackageInstaller.DeveloperVerificationUserConfirmationInfo.DEVELOPER_VERIFICATION_USER_ACTION_NEEDED_REASON_UNKNOWN;
 import static android.content.pm.PackageInstaller.EXTRA_DEVELOPER_VERIFICATION_EXTENSION_RESPONSE;
@@ -3397,20 +3396,10 @@ public class PackageInstallerSession extends IPackageInstallerSession.Stub {
                     return;
                 }
                 if (statusReceived.isVerified()) {
-                    if (statusReceived.isLiteVerification()) {
-                        // This is a lite verification. Need further user action.
-                        mVerificationUserActionNeededReason =
-                                DEVELOPER_VERIFICATION_USER_ACTION_NEEDED_REASON_LITE_VERIFICATION;
-                        mVerificationFailedMessage = "This package could only be verified with "
-                                + "lite verification.";
-                        maybeSendUserActionForVerification(/* blockingFailure= */ false,
-                                /* extensionResponse= */ null);
-                    } else {
-                        // Verified. Continue with the rest of the verification and install.
-                        // TODO(b/360129657): also add extension response to successful install
-                        // results
-                        resumeVerify();
-                    }
+                    // Verified. Continue with the rest of the verification and install.
+                    // TODO(b/360129657): also add extension response to successful install
+                    // results
+                    resumeVerify();
                     return;
                 }
 

@@ -167,9 +167,6 @@
         this app\'s developer. Apps from unverified developers may be unsafe,
         so the app was not installed.&lt;/p>
         &lt;p>&lt;a href="">Learn more about developer verification&lt;/a>&lt;/p></string>
-    <!-- Message presented in a dialog box when only the lite verification could be performed on the installation. [CHAR LIMIT=none]-->
-    <string name="lite_verification_summary">&lt;p>This app is owned by ADI Lite Developer and bypasses
-        the standard verification process. Do you want to proceed with installation?&lt;/p></string>
     <string name="install_without_verifying_summary">If you install without verifying, keep in
         mind apps from unverified developers may put your device and data at risk.</string>
     <string name="cannot_install_app_blocked_title">App developer unverified</string>

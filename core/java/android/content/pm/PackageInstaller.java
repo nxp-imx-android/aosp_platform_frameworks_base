@@ -5089,6 +5089,7 @@ public class PackageInstaller {
         /**
          * Developer verification requires user intervention because only the lite version of the
          * verification was completed on the request, not the full verification.
+         * <p>Notice that it is currently not supported.</p>
          */
         public static final int DEVELOPER_VERIFICATION_USER_ACTION_NEEDED_REASON_LITE_VERIFICATION =
                 3;
