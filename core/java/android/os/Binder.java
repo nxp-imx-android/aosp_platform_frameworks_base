@@ -1365,6 +1365,7 @@ public class Binder implements IBinder {
         }
     }
 
+    @CriticalNative
     private static native long getNativeBBinderHolder();
 
     /**
