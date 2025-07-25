@@ -29,11 +29,11 @@ import com.android.wm.shell.Utils
 import com.android.wm.shell.flicker.bubbles.testcase.ExpandBubbleTestCases
 import com.android.wm.shell.flicker.bubbles.testcase.ImeBecomesVisibleAndBubbleIsShrunkTestCase
 import com.android.wm.shell.flicker.bubbles.utils.ApplyPerParameterRule
+import com.android.wm.shell.flicker.bubbles.utils.BubbleFlickerTestHelper.collapseBubbleAppViaBackKey
+import com.android.wm.shell.flicker.bubbles.utils.BubbleFlickerTestHelper.expandBubbleAppViaBubbleBar
+import com.android.wm.shell.flicker.bubbles.utils.BubbleFlickerTestHelper.launchBubbleViaBubbleMenu
 import com.android.wm.shell.flicker.bubbles.utils.FlickerPropertyInitializer
 import com.android.wm.shell.flicker.bubbles.utils.RecordTraceWithTransitionRule
-import com.android.wm.shell.flicker.bubbles.utils.collapseBubbleAppViaBackKey
-import com.android.wm.shell.flicker.bubbles.utils.expandBubbleAppViaBubbleBar
-import com.android.wm.shell.flicker.bubbles.utils.launchBubbleViaBubbleMenu
 import org.junit.Assume.assumeTrue
 import org.junit.Before
 import org.junit.FixMethodOrder
@@ -92,7 +92,7 @@ class ExpandBubbleWithImeViaBubbleBarTest(navBar: NavBar) : BubbleFlickerTestBas
                     .waitForAndVerify()
             },
             transition = {
-                expandBubbleAppViaBubbleBar(uiDevice, testApp, wmHelper)
+                expandBubbleAppViaBubbleBar(testApp, uiDevice, wmHelper)
                 testApp.waitIMEShown(wmHelper)
                 bitmapAtEnd = instrumentation.uiAutomation.takeScreenshot()
                 imeInset = testApp.retrieveImeBottomInset()
