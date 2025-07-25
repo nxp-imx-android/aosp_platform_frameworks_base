@@ -18,7 +18,9 @@ package com.android.systemui.common.domain.interactor
 
 import com.android.systemui.common.data.repository.BatteryRepositoryDeprecated
 import com.android.systemui.dagger.SysUISingleton
+import com.android.systemui.statusbar.pipeline.battery.shared.StatusBarUniversalBatteryDataSource
 import javax.inject.Inject
+import kotlinx.coroutines.flow.Flow
 
 @SysUISingleton
 @Deprecated(
@@ -26,6 +28,10 @@ import javax.inject.Inject
 )
 class BatteryInteractorDeprecated
 @Inject
-constructor(batteryRepositoryDeprecated: BatteryRepositoryDeprecated) {
-    val isDevicePluggedIn = batteryRepositoryDeprecated.isDevicePluggedIn
+constructor(private val batteryRepositoryDeprecated: BatteryRepositoryDeprecated) {
+    val isDevicePluggedIn: Flow<Boolean>
+        get() {
+            StatusBarUniversalBatteryDataSource.assertInLegacyMode()
+            return batteryRepositoryDeprecated.isDevicePluggedIn
+        }
 }

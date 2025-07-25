@@ -18,6 +18,7 @@ package com.android.systemui.common.data.repository
 
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Background
+import com.android.systemui.statusbar.pipeline.battery.shared.StatusBarUniversalBatteryDataSource
 import com.android.systemui.statusbar.policy.BatteryController
 import com.android.systemui.util.kotlin.isDevicePluggedIn
 import javax.inject.Inject
@@ -39,12 +40,17 @@ interface BatteryRepositoryDeprecated {
 )
 class BatteryRepositoryDeprecatedImpl
 @Inject
-constructor(@Background bgScope: CoroutineScope, batteryController: BatteryController) :
-    BatteryRepositoryDeprecated {
+constructor(
+    @Background private val bgScope: CoroutineScope,
+    private val batteryController: BatteryController,
+) : BatteryRepositoryDeprecated {
 
     /** Returns {@code true} if the device is currently plugged in or wireless charging. */
-    override val isDevicePluggedIn: Flow<Boolean> =
-        batteryController
-            .isDevicePluggedIn()
-            .stateIn(bgScope, SharingStarted.WhileSubscribed(), batteryController.isPluggedIn)
+    override val isDevicePluggedIn: Flow<Boolean>
+        get() {
+            StatusBarUniversalBatteryDataSource.assertInLegacyMode()
+            return batteryController
+                .isDevicePluggedIn()
+                .stateIn(bgScope, SharingStarted.WhileSubscribed(), batteryController.isPluggedIn)
+        }
 }

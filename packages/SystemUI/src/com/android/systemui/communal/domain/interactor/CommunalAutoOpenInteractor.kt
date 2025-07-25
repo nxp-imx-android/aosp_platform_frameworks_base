@@ -27,6 +27,8 @@ import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.dock.DockManager
 import com.android.systemui.dock.retrieveIsDocked
+import com.android.systemui.statusbar.pipeline.battery.domain.interactor.BatteryInteractor
+import com.android.systemui.statusbar.pipeline.battery.shared.StatusBarUniversalBatteryDataSource
 import com.android.systemui.util.kotlin.BooleanFlowOperators.allOf
 import com.android.systemui.utils.coroutines.flow.flatMapLatestConflated
 import javax.inject.Inject
@@ -44,26 +46,30 @@ constructor(
     communalSettingsInteractor: CommunalSettingsInteractor,
     @Background private val backgroundContext: CoroutineContext,
     private val batteryInteractorDeprecated: BatteryInteractorDeprecated,
+    batteryInteractor: BatteryInteractor,
     private val posturingInteractor: PosturingInteractor,
     private val dockManager: DockManager,
     @Named(SWIPE_TO_HUB) private val allowSwipeAlways: Boolean,
 ) {
+    private val isDevicePluggedIn =
+        if (StatusBarUniversalBatteryDataSource.isEnabled) {
+            batteryInteractor.isPluggedIn
+        } else {
+            batteryInteractorDeprecated.isDevicePluggedIn
+        }
+
     val shouldAutoOpen: Flow<Boolean> =
         communalSettingsInteractor.whenToStartHub
             .flatMapLatestConflated { whenToStartHub ->
                 when (whenToStartHub) {
-                    WhenToStartHub.WHILE_CHARGING -> batteryInteractorDeprecated.isDevicePluggedIn
+                    WhenToStartHub.WHILE_CHARGING -> isDevicePluggedIn
                     WhenToStartHub.WHILE_DOCKED -> {
-                        allOf(
-                            batteryInteractorDeprecated.isDevicePluggedIn,
-                            dockManager.retrieveIsDocked(),
-                        )
+                        allOf(isDevicePluggedIn, dockManager.retrieveIsDocked())
                     }
                     WhenToStartHub.WHILE_CHARGING_AND_POSTURED -> {
                         // Only listen to posturing if applicable to avoid running the posturing
                         // CHRE nanoapp when not needed.
-                        batteryInteractorDeprecated.isDevicePluggedIn.flatMapLatestConflated {
-                            isCharging ->
+                        isDevicePluggedIn.flatMapLatestConflated { isCharging ->
                             if (isCharging) {
                                 posturingInteractor.postured
                             } else {

@@ -36,6 +36,8 @@ import com.android.systemui.lowlight.shell.LowLightShellCommand
 import com.android.systemui.lowlightclock.LowLightDockEvent
 import com.android.systemui.lowlightclock.LowLightLogger
 import com.android.systemui.power.domain.interactor.PowerInteractor
+import com.android.systemui.statusbar.pipeline.battery.domain.interactor.BatteryInteractor
+import com.android.systemui.statusbar.pipeline.battery.shared.StatusBarUniversalBatteryDataSource
 import com.android.systemui.user.domain.interactor.UserLockedInteractor
 import com.android.systemui.util.kotlin.BooleanFlowOperators.allOf
 import com.android.systemui.util.kotlin.BooleanFlowOperators.anyOf
@@ -76,13 +78,20 @@ constructor(
     private val lowLightBehaviorShellCommand: LowLightBehaviorShellCommand,
     private val lowLightShellCommand: LowLightShellCommand,
     batteryInteractorDeprecated: BatteryInteractorDeprecated,
+    batteryInteractor: BatteryInteractor,
 ) : CoreStartable {
 
     /** Whether the screen is currently on. */
     private val isScreenOn = not(displayStateInteractor.isDefaultDisplayOff).distinctUntilChanged()
 
     /** Whether device is plugged in */
-    private val isPluggedIn = batteryInteractorDeprecated.isDevicePluggedIn.distinctUntilChanged()
+    private val isPluggedIn =
+        if (StatusBarUniversalBatteryDataSource.isEnabled) {
+                batteryInteractor.isPluggedIn
+            } else {
+                batteryInteractorDeprecated.isDevicePluggedIn
+            }
+            .distinctUntilChanged()
 
     /** Whether the device is currently in a low-light environment. */
     private val isLowLightFromSensor =

@@ -50,6 +50,9 @@ import com.android.systemui.kosmos.useUnconfinedTestDispatcher
 import com.android.systemui.power.domain.interactor.PowerInteractor.Companion.setAwakeForTest
 import com.android.systemui.power.domain.interactor.powerInteractor
 import com.android.systemui.statusbar.domain.interactor.keyguardOcclusionInteractor
+import com.android.systemui.statusbar.pipeline.battery.shared.StatusBarUniversalBatteryDataSource
+import com.android.systemui.statusbar.policy.batteryController
+import com.android.systemui.statusbar.policy.fake
 import com.android.systemui.testKosmos
 import com.android.systemui.user.data.repository.fakeUserRepository
 import com.android.systemui.util.settings.fakeSettings
@@ -215,7 +218,11 @@ class FromDreamingTransitionInteractorTest(flags: FlagsParameterization?) : Sysu
                     1,
                     user.id,
                 )
-                batteryRepositoryDeprecated.fake.setDevicePluggedIn(true)
+                if (StatusBarUniversalBatteryDataSource.isEnabled) {
+                    batteryController.fake._isPluggedIn = true
+                } else {
+                    batteryRepositoryDeprecated.fake.setDevicePluggedIn(true)
+                }
             } else {
                 whenever(dreamManager.canStartDreaming(anyBoolean())).thenReturn(true)
             }

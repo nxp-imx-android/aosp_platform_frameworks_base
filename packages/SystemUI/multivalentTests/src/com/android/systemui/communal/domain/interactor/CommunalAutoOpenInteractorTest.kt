@@ -16,6 +16,7 @@
 
 package com.android.systemui.communal.domain.interactor
 
+import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
 import android.provider.Settings
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -39,6 +40,9 @@ import com.android.systemui.kosmos.advanceTimeBy
 import com.android.systemui.kosmos.collectLastValue
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
+import com.android.systemui.statusbar.pipeline.battery.shared.StatusBarUniversalBatteryDataSource
+import com.android.systemui.statusbar.policy.batteryController
+import com.android.systemui.statusbar.policy.fake
 import com.android.systemui.testKosmos
 import com.android.systemui.user.data.repository.FakeUserRepository.Companion.MAIN_USER_ID
 import com.android.systemui.user.data.repository.fakeUserRepository
@@ -72,7 +76,8 @@ class CommunalAutoOpenInteractorTest : SysuiTestCase() {
     }
 
     @Test
-    fun testStartWhileCharging() =
+    @DisableFlags(StatusBarUniversalBatteryDataSource.FLAG_NAME)
+    fun testStartWhileCharging_universalBatteryFlagOff() =
         kosmos.runTest {
             val shouldAutoOpen by collectLastValue(underTest.shouldAutoOpen)
             val suppressionReason by collectLastValue(underTest.suppressionReason)
@@ -96,7 +101,33 @@ class CommunalAutoOpenInteractorTest : SysuiTestCase() {
         }
 
     @Test
-    fun testStartWhileDocked() =
+    @EnableFlags(StatusBarUniversalBatteryDataSource.FLAG_NAME)
+    fun testStartWhileCharging_universalBatteryFlagOn() =
+        kosmos.runTest {
+            val shouldAutoOpen by collectLastValue(underTest.shouldAutoOpen)
+            val suppressionReason by collectLastValue(underTest.suppressionReason)
+
+            fakeSettings.putIntForUser(
+                Settings.Secure.WHEN_TO_START_GLANCEABLE_HUB,
+                Settings.Secure.GLANCEABLE_HUB_START_CHARGING,
+                MAIN_USER_ID,
+            )
+
+            batteryController.fake._isPluggedIn = false
+            assertThat(shouldAutoOpen).isFalse()
+            assertThat(suppressionReason)
+                .isEqualTo(
+                    SuppressionReason.ReasonWhenToAutoShow(FEATURE_AUTO_OPEN or FEATURE_MANUAL_OPEN)
+                )
+
+            batteryController.fake._isPluggedIn = true
+            assertThat(shouldAutoOpen).isTrue()
+            assertThat(suppressionReason).isNull()
+        }
+
+    @Test
+    @DisableFlags(StatusBarUniversalBatteryDataSource.FLAG_NAME)
+    fun testStartWhileDocked_universalBatteryFlagOff() =
         kosmos.runTest {
             val shouldAutoOpen by collectLastValue(underTest.shouldAutoOpen)
             val suppressionReason by collectLastValue(underTest.suppressionReason)
@@ -123,7 +154,36 @@ class CommunalAutoOpenInteractorTest : SysuiTestCase() {
         }
 
     @Test
-    fun testStartWhilePostured() =
+    @EnableFlags(StatusBarUniversalBatteryDataSource.FLAG_NAME)
+    fun testStartWhileDocked_universalBatteryFlagOn() =
+        kosmos.runTest {
+            val shouldAutoOpen by collectLastValue(underTest.shouldAutoOpen)
+            val suppressionReason by collectLastValue(underTest.suppressionReason)
+
+            fakeSettings.putIntForUser(
+                Settings.Secure.WHEN_TO_START_GLANCEABLE_HUB,
+                Settings.Secure.GLANCEABLE_HUB_START_DOCKED,
+                MAIN_USER_ID,
+            )
+
+            batteryController.fake._isPluggedIn = true
+            fakeDockManager.setIsDocked(false)
+
+            assertThat(shouldAutoOpen).isFalse()
+            assertThat(suppressionReason)
+                .isEqualTo(
+                    SuppressionReason.ReasonWhenToAutoShow(FEATURE_AUTO_OPEN or FEATURE_MANUAL_OPEN)
+                )
+
+            fakeDockManager.setIsDocked(true)
+            fakeDockManager.setDockEvent(DockManager.STATE_DOCKED)
+            assertThat(shouldAutoOpen).isTrue()
+            assertThat(suppressionReason).isNull()
+        }
+
+    @Test
+    @DisableFlags(StatusBarUniversalBatteryDataSource.FLAG_NAME)
+    fun testStartWhilePostured_universalBatteryFlagOff() =
         kosmos.runTest {
             val shouldAutoOpen by collectLastValue(underTest.shouldAutoOpen)
             val suppressionReason by collectLastValue(underTest.suppressionReason)
@@ -161,7 +221,47 @@ class CommunalAutoOpenInteractorTest : SysuiTestCase() {
         }
 
     @Test
-    fun testStartNever() =
+    @EnableFlags(StatusBarUniversalBatteryDataSource.FLAG_NAME)
+    fun testStartWhilePostured_universalBatteryFlagOn() =
+        kosmos.runTest {
+            val shouldAutoOpen by collectLastValue(underTest.shouldAutoOpen)
+            val suppressionReason by collectLastValue(underTest.suppressionReason)
+
+            fakeSettings.putIntForUser(
+                Settings.Secure.WHEN_TO_START_GLANCEABLE_HUB,
+                Settings.Secure.GLANCEABLE_HUB_START_CHARGING_UPRIGHT,
+                MAIN_USER_ID,
+            )
+
+            batteryController.fake._isPluggedIn = true
+            posturingRepository.fake.emitPositionState(
+                PositionState(
+                    stationary = ConfidenceLevel.Positive(confidence = 1f),
+                    orientation = ConfidenceLevel.Negative(confidence = 1f),
+                )
+            )
+
+            assertThat(shouldAutoOpen).isFalse()
+            assertThat(suppressionReason)
+                .isEqualTo(
+                    SuppressionReason.ReasonWhenToAutoShow(FEATURE_AUTO_OPEN or FEATURE_MANUAL_OPEN)
+                )
+
+            advanceTimeBy(1.milliseconds)
+            posturingRepository.fake.emitPositionState(
+                PositionState(
+                    stationary = ConfidenceLevel.Positive(confidence = 1f),
+                    orientation = ConfidenceLevel.Positive(confidence = 1f),
+                )
+            )
+            advanceTimeBySlidingWindowAndRun()
+            assertThat(shouldAutoOpen).isTrue()
+            assertThat(suppressionReason).isNull()
+        }
+
+    @Test
+    @DisableFlags(StatusBarUniversalBatteryDataSource.FLAG_NAME)
+    fun testStartNever_universalBatteryFlagOff() =
         kosmos.runTest {
             val shouldAutoOpen by collectLastValue(underTest.shouldAutoOpen)
             val suppressionReason by collectLastValue(underTest.suppressionReason)
@@ -173,6 +273,30 @@ class CommunalAutoOpenInteractorTest : SysuiTestCase() {
             )
 
             batteryRepositoryDeprecated.fake.setDevicePluggedIn(true)
+            posturingRepository.fake.emitPositionState(PositionState())
+            fakeDockManager.setIsDocked(true)
+
+            assertThat(shouldAutoOpen).isFalse()
+            assertThat(suppressionReason)
+                .isEqualTo(
+                    SuppressionReason.ReasonWhenToAutoShow(FEATURE_AUTO_OPEN or FEATURE_MANUAL_OPEN)
+                )
+        }
+
+    @Test
+    @EnableFlags(StatusBarUniversalBatteryDataSource.FLAG_NAME)
+    fun testStartNever_universalBatteryFlagOn() =
+        kosmos.runTest {
+            val shouldAutoOpen by collectLastValue(underTest.shouldAutoOpen)
+            val suppressionReason by collectLastValue(underTest.suppressionReason)
+
+            fakeSettings.putIntForUser(
+                Settings.Secure.WHEN_TO_START_GLANCEABLE_HUB,
+                Settings.Secure.GLANCEABLE_HUB_START_NEVER,
+                MAIN_USER_ID,
+            )
+
+            batteryController.fake._isPluggedIn = true
             posturingRepository.fake.emitPositionState(PositionState())
             fakeDockManager.setIsDocked(true)
 
