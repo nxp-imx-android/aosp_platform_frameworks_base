@@ -32,7 +32,6 @@ import static com.android.internal.util.FrameworkStatsLog.GPU_HEADROOM_REPORTED_
 import static com.android.internal.util.FrameworkStatsLog.GPU_HEADROOM_REPORTED__TYPE__MIN;
 import static com.android.internal.util.FrameworkStatsLog.GPU_HEADROOM_REPORTED__TYPE__AVERAGE;
 import static com.android.internal.util.FrameworkStatsLog.GPU_HEADROOM_REPORTED__TYPE__UNKNOWN_CALCULATION_TYPE;
-import static com.android.server.power.hint.Flags.adpfSessionTag;
 import static com.android.server.power.hint.Flags.resetOnForkEnabled;
 
 import android.Manifest;
@@ -317,11 +316,7 @@ public final class HintManagerService extends SystemService {
         mContext = context;
         mCleanUpHandler = new CleanUpHandler(createCleanUpThread().getLooper());
         mNonIsolatedTids = new HashMap<>();
-        if (adpfSessionTag()) {
-            mPackageManager = mContext.getPackageManager();
-        } else {
-            mPackageManager = null;
-        }
+        mPackageManager = mContext.getPackageManager();
         mActiveSessions = new ArrayMap<>();
         mChannelMap = new ArrayMap<>();
         mSessionSnapshotMap = new ArrayMap<>();
@@ -1453,7 +1448,7 @@ public final class HintManagerService extends SystemService {
                     }
                 }
 
-                if (adpfSessionTag() && tag == SessionTag.APP) {
+                if (tag == SessionTag.APP) {
                     // If the category of the app is a game,
                     // we change the session tag to SessionTag.GAME
                     // as it was not previously classified
