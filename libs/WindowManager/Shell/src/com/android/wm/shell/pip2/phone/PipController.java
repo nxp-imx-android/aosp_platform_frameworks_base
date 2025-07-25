@@ -33,6 +33,7 @@ import android.graphics.Insets;
 import android.graphics.Point;
 import android.graphics.Rect;
 import android.os.Bundle;
+import android.os.Debug;
 import android.util.Log;
 import android.view.SurfaceControl;
 import android.window.DesktopExperienceFlags;
@@ -382,6 +383,14 @@ public class PipController implements ConfigurationChangeListener,
         if (Flags.enablePipBoxShadows()) {
             if (mPipTransitionState.isInPip()) {
                 SurfaceControl pipLeash = mPipTransitionState.getPinnedTaskLeash();
+                if (pipLeash == null) {
+                    // TODO (b/433316431): Remove once onThemeChange pip leash NPE is root-caused.
+                    Log.wtf(TAG, String.format("""
+                        PipTransitionState#isInPip()=true without a valid leash;
+                        callers=%s""", Debug.getCallers(4)));
+                    return;
+                }
+
                 mPipSurfaceTransactionHelper.onThemeChanged(mContext);
                 SurfaceControl.Transaction tx = mSurfaceControlTransactionFactory.getTransaction();
                 mPipSurfaceTransactionHelper.shadow(tx, pipLeash, true /* applyShadowRadius */);
