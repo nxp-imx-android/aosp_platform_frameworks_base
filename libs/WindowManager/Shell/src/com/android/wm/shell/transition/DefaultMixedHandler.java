@@ -54,6 +54,7 @@ import com.android.wm.shell.bubbles.BubbleTransitions;
 import com.android.wm.shell.common.ComponentUtils;
 import com.android.wm.shell.desktopmode.DesktopTasksController;
 import com.android.wm.shell.keyguard.KeyguardTransitionHandler;
+import com.android.wm.shell.pinnedlayer.phone.PinnedLayerController;
 import com.android.wm.shell.pip.PipTransitionController;
 import com.android.wm.shell.protolog.ShellProtoLogGroup;
 import com.android.wm.shell.recents.RecentsTransitionHandler;
@@ -90,6 +91,7 @@ public class DefaultMixedHandler implements MixedTransitionHandler,
     private BubbleTransitions mBubbleTransitions;
     private UnfoldTransitionHandler mUnfoldHandler;
     private ActivityEmbeddingController mActivityEmbeddingController;
+    private @Nullable PinnedLayerController mPinnedLayerController;
 
     abstract static class MixedTransition {
 
@@ -338,9 +340,12 @@ public class DefaultMixedHandler implements MixedTransitionHandler,
     @VisibleForTesting
     final ArrayList<MixedTransition> mActiveTransitions = new ArrayList<>();
 
-    public DefaultMixedHandler(@NonNull ShellInit shellInit, @NonNull Transitions player,
+    public DefaultMixedHandler(
+            @NonNull ShellInit shellInit,
+            @NonNull Transitions player,
             Optional<SplitScreenController> splitScreenControllerOptional,
             @Nullable PipTransitionController pipTransitionController,
+            @Nullable PinnedLayerController pinnedLayerController,
             Optional<RecentsTransitionHandler> recentsHandlerOptional,
             KeyguardTransitionHandler keyguardHandler,
             Optional<DesktopTasksController> desktopTasksControllerOptional,
@@ -355,6 +360,7 @@ public class DefaultMixedHandler implements MixedTransitionHandler,
             shellInit.addInitCallback(() -> {
                 mPipHandler = pipTransitionController;
                 pipTransitionController.setMixedHandler(this);
+                mPinnedLayerController = pinnedLayerController;
                 mSplitHandler = splitScreenControllerOptional.get().getTransitionHandler();
                 mPlayer.addHandler(this);
                 if (mSplitHandler != null) {
