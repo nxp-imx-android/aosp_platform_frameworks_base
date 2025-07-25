@@ -27,7 +27,7 @@ import com.android.systemui.Flags.FLAG_GLANCEABLE_HUB_V2
 import com.android.systemui.Flags.glanceableHubV2
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.bouncer.data.repository.fakeKeyguardBouncerRepository
-import com.android.systemui.common.data.repository.batteryRepository
+import com.android.systemui.common.data.repository.batteryRepositoryDeprecated
 import com.android.systemui.common.data.repository.fake
 import com.android.systemui.communal.data.repository.communalSceneRepository
 import com.android.systemui.communal.domain.interactor.setCommunalAvailable
@@ -50,6 +50,9 @@ import com.android.systemui.kosmos.useUnconfinedTestDispatcher
 import com.android.systemui.power.domain.interactor.PowerInteractor.Companion.setAwakeForTest
 import com.android.systemui.power.domain.interactor.powerInteractor
 import com.android.systemui.statusbar.domain.interactor.keyguardOcclusionInteractor
+import com.android.systemui.statusbar.pipeline.battery.shared.StatusBarUniversalBatteryDataSource
+import com.android.systemui.statusbar.policy.batteryController
+import com.android.systemui.statusbar.policy.fake
 import com.android.systemui.testKosmos
 import com.android.systemui.user.data.repository.fakeUserRepository
 import com.android.systemui.util.settings.fakeSettings
@@ -215,7 +218,11 @@ class FromDreamingTransitionInteractorTest(flags: FlagsParameterization?) : Sysu
                     1,
                     user.id,
                 )
-                batteryRepository.fake.setDevicePluggedIn(true)
+                if (StatusBarUniversalBatteryDataSource.isEnabled) {
+                    batteryController.fake._isPluggedIn = true
+                } else {
+                    batteryRepositoryDeprecated.fake.setDevicePluggedIn(true)
+                }
             } else {
                 whenever(dreamManager.canStartDreaming(anyBoolean())).thenReturn(true)
             }

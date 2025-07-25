@@ -40,6 +40,11 @@ class BatteryInteractor @Inject constructor(repo: BatteryRepository) {
     val isFull = level.map { isBatteryFull(it) }
 
     /**
+     * True if the phone is plugged in. Note that this does not always mean the device is charging
+     */
+    val isPluggedIn = repo.isPluggedIn
+
+    /**
      * For the sake of battery views, consider it to be "charging" if plugged in. This allows users
      * to easily confirm that the device is properly plugged in, even if its' technically not
      * charging due to issues with the source.

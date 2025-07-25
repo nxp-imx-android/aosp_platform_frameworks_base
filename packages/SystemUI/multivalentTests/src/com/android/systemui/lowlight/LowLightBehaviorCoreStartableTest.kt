@@ -21,9 +21,9 @@ import android.provider.Settings
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
-import com.android.systemui.common.data.repository.batteryRepository
+import com.android.systemui.common.data.repository.batteryRepositoryDeprecated
 import com.android.systemui.common.data.repository.fake
-import com.android.systemui.common.domain.interactor.batteryInteractor
+import com.android.systemui.common.domain.interactor.batteryInteractorDeprecated
 import com.android.systemui.display.data.repository.displayRepository
 import com.android.systemui.display.domain.interactor.displayStateInteractor
 import com.android.systemui.dreams.domain.interactor.dreamSettingsInteractorKosmos
@@ -49,6 +49,10 @@ import com.android.systemui.lowlightclock.LowLightLogger
 import com.android.systemui.power.domain.interactor.PowerInteractor.Companion.setAwakeForTest
 import com.android.systemui.power.domain.interactor.powerInteractor
 import com.android.systemui.res.R
+import com.android.systemui.statusbar.pipeline.battery.domain.interactor.batteryInteractor
+import com.android.systemui.statusbar.pipeline.battery.shared.StatusBarUniversalBatteryDataSource
+import com.android.systemui.statusbar.policy.batteryController
+import com.android.systemui.statusbar.policy.fake
 import com.android.systemui.testKosmos
 import com.android.systemui.user.data.repository.fakeUserRepository
 import com.android.systemui.user.domain.interactor.selectedUserInteractor
@@ -87,6 +91,7 @@ class LowLightBehaviorCoreStartableTest : SysuiTestCase() {
                 lowLightBehaviorShellCommand = lowLightBehaviorShellCommand,
                 lowLightShellCommand = lowLightShellCommand,
                 scope = backgroundScope,
+                batteryInteractorDeprecated = batteryInteractorDeprecated,
                 batteryInteractor = batteryInteractor,
             )
         }
@@ -96,7 +101,11 @@ class LowLightBehaviorCoreStartableTest : SysuiTestCase() {
     }
 
     private fun Kosmos.setBatteryPluggedIn(pluggedIn: Boolean) {
-        batteryRepository.fake.setDevicePluggedIn(pluggedIn)
+        if (StatusBarUniversalBatteryDataSource.isEnabled) {
+            batteryController.fake._isPluggedIn = pluggedIn
+        } else {
+            batteryRepositoryDeprecated.fake.setDevicePluggedIn(pluggedIn)
+        }
     }
 
     private fun Kosmos.setDreamEnabled(enabled: Boolean) {
@@ -151,7 +160,7 @@ class LowLightBehaviorCoreStartableTest : SysuiTestCase() {
         }
         kosmos.lowLightRepository.addAction(LowLightDisplayBehavior.LOW_LIGHT_DREAM, action)
 
-        kosmos.batteryRepository.fake.setDevicePluggedIn(true)
+        kosmos.batteryRepositoryDeprecated.fake.setDevicePluggedIn(true)
     }
 
     @Test

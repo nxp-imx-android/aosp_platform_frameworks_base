@@ -383,6 +383,16 @@ flag {
 }
 
 flag {
+    name: "status_bar_universal_battery_data_source"
+    namespace: "systemui"
+    description: "Refactors SysUI to always use the battery data source in status bar"
+    bug: "434194794"
+    metadata {
+      purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
   name: "status_bar_system_status_icons_in_compose"
   namespace: "systemui"
   description: "Use compose for displaying icons in the status bar system status area"
