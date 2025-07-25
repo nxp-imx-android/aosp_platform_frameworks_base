@@ -23,15 +23,13 @@ import android.util.Slog;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
- * This class will poll for a period of time for adbd to write the port
- * it connected to.
+ * This class will poll for a period of time for adbd to write the port it connected to.
  *
- * TODO(joshuaduong): The port is being sent via system property because the adbd socket
- * (AdbDebuggingManager) is not created when ro.adb.secure=0. Thus, we must communicate the
- * port through different means. A better fix would be to always start AdbDebuggingManager, but
- * it needs to adjust accordingly on whether ro.adb.secure is set.
+ * <p>TODO(joshuaduong): The port is being sent via system property because the adbd socket
+ * (AdbDebuggingManager) is not created when ro.adb.secure=0. Thus, we must communicate the port
+ * through different means. A better fix would be to always start AdbDebuggingManager, but it needs
+ * to adjust accordingly on whether ro.adb.secure is set.
  */
-
 class AdbConnectionPortPoller extends Thread {
 
     private static final String TAG = AdbConnectionPortPoller.class.getSimpleName();
