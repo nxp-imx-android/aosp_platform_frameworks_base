@@ -97,8 +97,11 @@
          http://clients.txtnation.com/entries/197192-china-premium-sms-short-code-requirements -->
     <shortcode country="cn" premium="1066.*" free="1065.*" />
 
+    <!-- Ivory Coast: 1-5 digits (standard system default, not country specific) -->
+    <shortcode country="ci" pattern="\\d{1,5}" free="9911" />
+
     <!-- Colombia: 1-6 digits (not confirmed) -->
-    <shortcode country="co" pattern="\\d{1,6}" free="890350|908160|892255|898002|898880|899960|899948|87739|85517|491289|890119" />
+    <shortcode country="co" pattern="\\d{1,6}" free="890350|908160|892255|898002|898880|899960|899948|87739|85517|491289|890119|899035" />
 
     <!-- Costa Rica  -->
     <shortcode country="cr" pattern="\\d{1,6}" free="466453" />
@@ -123,7 +126,7 @@
     <shortcode country="do" pattern="\\d{1,6}" free="912892|912" />
 
     <!-- Algeria: 1-5 digits, known premium codes listed -->
-    <shortcode country="dz" pattern="\\d{1,5}" free="63071" />
+    <shortcode country="dz" pattern="\\d{1,5}" free="63071|60101" />
 
     <!-- Ecuador: 1-6 digits (standard system default, not country specific) -->
     <shortcode country="ec" pattern="\\d{1,6}" free="466453|18512" />
@@ -178,7 +181,7 @@
     <shortcode country="hn" pattern="\\d{4,6}" free="466453" />
 
     <!-- India: 1-5 digits (standard system default, not country specific) -->
-    <shortcode country="in" pattern="\\d{1,5}" free="59336|53969|51034" />
+    <shortcode country="in" pattern="\\d{1,5}" free="59336|53969" />
 
     <!-- Indonesia: 1-5 digits (standard system default, not country specific) -->
     <shortcode country="id" pattern="\\d{1,5}" free="99477|6006|46645|363|93457|99265|77413" />
@@ -200,8 +203,8 @@
     <!-- Jordan: 1-5 digits (standard system default, not country specific) -->
     <shortcode country="jo" pattern="\\d{1,5}" free="99066|99390" />
 
-    <!-- Japan: 8083 used by SOFTBANK_DCB_2 -->
-    <shortcode country="jp" pattern="\\d{1,5}" free="8083" />
+    <!-- Japan: 8083 used by SOFTBANK_DCB_2 ,standard : 1 - 5 digits-->
+    <shortcode country="jp" pattern="\\d{1,5}" free="8083" standard="\\d{1,5}" />
 
     <!-- Kenya: 5 digits, known premium codes listed -->
     <shortcode country="ke" pattern="\\d{5}" free="21725|21562|40520|23342|40023|24088|23054" />
@@ -217,6 +220,9 @@
 
     <!-- Kuwait: 1-5 digits (standard system default, not country specific) -->
     <shortcode country="kw" pattern="\\d{1,5}" free="1378|50420|94006|55991|50976|7112" />
+
+    <!-- Sri Lanka: 1-5 digits (standard system default, not country specific) -->
+    <shortcode country="lk" pattern="\\d{1,5}" free="2245" />
 
     <!-- Lesotho: 4-5 digits, known codes listed -->
     <shortcode country="ls" pattern="\\d{4,5}" free="32012" />
@@ -333,7 +339,7 @@
     <shortcode country="sk" premium="\\d{4}" free="116\\d{3}|8000" />
 
     <!-- Senegal(SN): 1-5 digits (standard system default, not country specific) -->
-    <shortcode country="sn" pattern="\\d{1,5}" free="21215|21098|21217" />
+    <shortcode country="sn" pattern="\\d{1,5}" free="21215|21098|21217|21097" />
 
     <!-- El Salvador(SV): 1-5 digits (standard system default, not country specific) -->
     <shortcode country="sv" pattern="\\d{4,6}" free="466453" />
@@ -363,7 +369,7 @@
     <shortcode country="ua" pattern="\\d{4}" premium="444[3-9]|70[579]4|7540" />
 
     <!-- Uganda(UG): 4 digits (standard system default, not country specific) -->
-    <shortcode country="ug" pattern="\\d{4}" free="8009" />
+    <shortcode country="ug" pattern="\\d{4}" free="8009|8555" />
 
     <!-- USA: 5-6 digits (premium codes from https://www.premiumsmsrefunds.com/ShortCodes.htm),
          visual voicemail code for T-Mobile: 122 -->
