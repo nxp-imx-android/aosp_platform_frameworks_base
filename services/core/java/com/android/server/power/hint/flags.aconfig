@@ -7,3 +7,10 @@ flag {
     description: "Set reset_on_fork flag."
     bug: "370988407"
 }
+
+flag {
+    name: "use_sysui_session_tag"
+    namespace: "window_surfaces"
+    description: "Use SessionTag.SYSUI for system ui and launcher processes."
+    bug: "359965565"
+}
