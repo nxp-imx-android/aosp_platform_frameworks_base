@@ -341,11 +341,13 @@ private fun ContentScope.SingleShade(
                         rememberViewModel(traceName = "shade_scene_qqs") {
                             viewModel.quickQuickSettingsViewModel.create()
                         }
-                    QuickQuickSettings(
-                        qqsViewModel,
-                        listening = { true },
-                        modifier = Modifier.sysuiResTag("quick_qs_panel"),
-                    )
+                    if (viewModel.isQsEnabled) {
+                        QuickQuickSettings(
+                            qqsViewModel,
+                            listening = { true },
+                            modifier = Modifier.sysuiResTag("quick_qs_panel"),
+                        )
+                    }
                 }
 
                 ShadeMediaCarousel(
