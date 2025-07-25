@@ -28,6 +28,7 @@ import com.android.wm.shell.compatui.letterbox.lifecycle.LetterboxLifecycleContr
 import com.android.wm.shell.compatui.letterbox.lifecycle.LetterboxLifecycleEventFactory;
 import com.android.wm.shell.compatui.letterbox.lifecycle.MultiLetterboxLifecycleEventFactory;
 import com.android.wm.shell.compatui.letterbox.lifecycle.SkipLetterboxLifecycleEventFactory;
+import com.android.wm.shell.compatui.letterbox.lifecycle.TaskIdResolver;
 import com.android.wm.shell.compatui.letterbox.lifecycle.TaskInfoLetterboxLifecycleEventFactory;
 import com.android.wm.shell.compatui.letterbox.state.LetterboxTaskInfoRepository;
 import com.android.wm.shell.sysui.ShellInit;
@@ -61,7 +62,8 @@ public abstract class LetterboxModule {
     static LetterboxLifecycleEventFactory provideLetterboxLifecycleEventFactory(
             @NonNull SkipLetterboxLifecycleEventFactory skipLetterboxLifecycleEventFactory,
             @NonNull LetterboxTaskInfoRepository letterboxTaskInfoRepository,
-            @NonNull LetterboxDependenciesHelper letterboxDependenciesHelper
+            @NonNull LetterboxDependenciesHelper letterboxDependenciesHelper,
+            @NonNull TaskIdResolver taskIdResolver
     ) {
         // The order of the LetterboxLifecycleEventFactory implementation matters because the
         // first that can handle a Change will be chosen for the LetterboxLifecycleEvent creation.
@@ -72,7 +74,8 @@ public abstract class LetterboxModule {
                 new ActivityLetterboxLifecycleEventFactory(letterboxTaskInfoRepository,
                         letterboxDependenciesHelper),
                 // Creates a LetterboxLifecycleEvent in case of Task transitions.
-                new TaskInfoLetterboxLifecycleEventFactory(letterboxDependenciesHelper)
+                new TaskInfoLetterboxLifecycleEventFactory(letterboxDependenciesHelper,
+                        letterboxTaskInfoRepository, taskIdResolver)
         ));
     }
 

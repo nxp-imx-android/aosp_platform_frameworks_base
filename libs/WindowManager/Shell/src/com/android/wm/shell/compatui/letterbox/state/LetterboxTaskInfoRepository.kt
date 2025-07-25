@@ -16,10 +16,12 @@
 
 package com.android.wm.shell.compatui.letterbox.state
 
+import android.app.ActivityManager.RunningTaskInfo
 import android.app.ActivityTaskManager
 import android.view.SurfaceControl
 import android.window.WindowContainerToken
 import com.android.internal.protolog.ProtoLog
+import com.android.wm.shell.compatui.letterbox.lifecycle.isALeafTask
 import com.android.wm.shell.dagger.WMSingleton
 import com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_APP_COMPAT
 import com.android.wm.shell.repository.GenericRepository
@@ -45,3 +47,28 @@ class LetterboxTaskInfoRepository @Inject constructor() :
             ProtoLog.v(WM_SHELL_APP_COMPAT, "%s: %s", "TaskInfoMemoryRepository", msg)
         }
     )
+
+/**
+ * We assume that only leaf Tasks will be present in the [LetterboxTaskInfoRepository]. This method
+ * is responsible for keeping this invariant always true.
+ */
+fun LetterboxTaskInfoRepository.updateTaskLeafState(
+    taskInfo: RunningTaskInfo,
+    leash: SurfaceControl,
+) {
+    if (taskInfo.isALeafTask) {
+        insert(
+            key = taskInfo.taskId,
+            item =
+                LetterboxTaskInfoState(
+                    containerToken = taskInfo.token,
+                    containerLeash = leash,
+                    parentTaskId = taskInfo.parentTaskId,
+                    taskId = taskInfo.taskId,
+                ),
+            overrideIfPresent = true,
+        )
+    } else {
+        delete(taskInfo.taskId)
+    }
+}

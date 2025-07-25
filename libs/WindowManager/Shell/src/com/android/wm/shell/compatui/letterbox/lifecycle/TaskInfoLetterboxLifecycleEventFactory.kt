@@ -18,14 +18,19 @@ package com.android.wm.shell.compatui.letterbox.lifecycle
 
 import android.graphics.Rect
 import android.window.TransitionInfo.Change
+import com.android.window.flags.Flags
 import com.android.wm.shell.compatui.letterbox.config.LetterboxDependenciesHelper
+import com.android.wm.shell.compatui.letterbox.state.LetterboxTaskInfoRepository
+import com.android.wm.shell.compatui.letterbox.state.updateTaskLeafState
 
 /**
  * [LetterboxLifecycleEventFactory] implementation which creates a [LetterboxLifecycleEvent] from a
  * [TransitionInfo.Change] using a [TaskInfo] when present.
  */
 class TaskInfoLetterboxLifecycleEventFactory(
-    private val letterboxDependenciesHelper: LetterboxDependenciesHelper
+    private val letterboxDependenciesHelper: LetterboxDependenciesHelper,
+    private val letterboxTaskInfoRepository: LetterboxTaskInfoRepository,
+    private val taskIdResolver: TaskIdResolver,
 ) : LetterboxLifecycleEventFactory {
     override fun canHandle(change: Change): Boolean = change.taskInfo != null
 
@@ -43,18 +48,53 @@ class TaskInfoLetterboxLifecycleEventFactory(
                 letterboxBoundsAbs?.let { absBounds ->
                     Rect(absBounds).apply { offset(-taskBoundsAbs.left, -taskBoundsAbs.top) }
                 }
-            return LetterboxLifecycleEvent(
-                type = change.asLetterboxLifecycleEventType(),
-                displayId = ti.displayId,
-                taskId = ti.taskId,
-                taskBounds = taskBounds,
-                letterboxBounds = letterboxBounds,
-                containerToken = ti.token,
-                taskLeash = change.leash,
-                isBubble = ti.isAppBubble,
-                isTranslucent = change.isTranslucent(),
-                supportsInput = letterboxDependenciesHelper.shouldSupportInputSurface(change),
-            )
+            val shouldSupportInput = letterboxDependenciesHelper.shouldSupportInputSurface(change)
+            if (Flags.appCompatRefactoringFixMultiwindowTaskHierarchy()) {
+                // Because the [TransitionObserver] is invoked before the [OnTaskAppearedListener]s
+                // it's important to store the information about the Task to be reused below for the
+                // actual Task resolution given its id and parentId. Only Leaf tasks are stored
+                // because they are the only ones with the capability of containing letterbox
+                // surfaces.
+                letterboxTaskInfoRepository.updateTaskLeafState(ti, change.leash)
+                // If the task is not a leaf task the related entry is not present in the
+                // Repository. The taskIdResolver will then search for a task which is a direct
+                // child. If no Task is found the same id will be used later and the event
+                // will be null resulting in a skipped event.
+                // If the task is a leaf task the related entry will be present in the Repository
+                // and the effectiveTaskId will be the correct taskId to use for the event.
+                val effectiveTaskId = taskIdResolver.getLetterboxTaskId(ti)
+                // The effectiveTaskId will then be the taskId of a leaf task (using parentId or
+                // not) or the id of a missing task (no leaf). In the former case we need to use the
+                // related token and leash. In the latter case the method returns null as mentioned
+                // above.
+                letterboxTaskInfoRepository.find(effectiveTaskId)?.let { item ->
+                    return LetterboxLifecycleEvent(
+                        type = change.asLetterboxLifecycleEventType(),
+                        displayId = ti.displayId,
+                        taskId = effectiveTaskId,
+                        taskBounds = taskBounds,
+                        letterboxBounds = letterboxBounds,
+                        containerToken = item.containerToken,
+                        taskLeash = item.containerLeash,
+                        isBubble = ti.isAppBubble,
+                        isTranslucent = change.isTranslucent(),
+                        supportsInput = shouldSupportInput,
+                    )
+                }
+            } else {
+                return LetterboxLifecycleEvent(
+                    type = change.asLetterboxLifecycleEventType(),
+                    displayId = ti.displayId,
+                    taskId = ti.taskId,
+                    taskBounds = taskBounds,
+                    letterboxBounds = letterboxBounds,
+                    containerToken = ti.token,
+                    taskLeash = change.leash,
+                    isBubble = ti.isAppBubble,
+                    isTranslucent = change.isTranslucent(),
+                    supportsInput = shouldSupportInput,
+                )
+            }
         }
         return null
     }
