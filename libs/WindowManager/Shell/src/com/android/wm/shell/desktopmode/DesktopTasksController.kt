@@ -824,7 +824,7 @@ class DesktopTasksController(
                         )
                         destDisplayLayout?.densityDpi()?.let { wct.setDensityDpi(task.token, it) }
                     }
-                    desksOrganizer.removeDesk(wct, deskId, userId)
+                    desksOrganizer.removeDesk(wct, deskId, desktopRepository.userId)
                     runOnTransitStartSet.add { transition ->
                         desksTransitionObserver.addPendingTransition(
                             DeskTransition.RemoveDesk(
