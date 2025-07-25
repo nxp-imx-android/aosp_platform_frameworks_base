@@ -68,6 +68,7 @@ test_module_config {
         "com.android.wm.shell.flicker.bubbles.LaunchMultipleBubbleTest",
         "com.android.wm.shell.flicker.bubbles.ScrollableBubbleAppTest",
         "com.android.wm.shell.flicker.bubbles.SwitchBetweenBubblesTest",
+        "com.android.wm.shell.flicker.bubbles.ExpandedBubbleAppMoveTest",
     ],
 }
 
@@ -139,6 +140,13 @@ test_module_config {
     base: "WMShellExplicitFlickerTestsBubbles",
     test_suites: ["device-tests"],
     include_filters: ["com.android.wm.shell.flicker.bubbles.ExpandBubbleWithImeViaBubbleBarTest"],
+}
+
+test_module_config {
+    name: "WMShellExplicitFlickerTestsBubbles-ExpandedBubbleAppMoveTest",
+    base: "WMShellExplicitFlickerTestsBubbles",
+    test_suites: ["device-tests"],
+    include_filters: ["com.android.wm.shell.flicker.bubbles.ExpandedBubbleAppMoveTest"],
 }
 
 test_module_config {
