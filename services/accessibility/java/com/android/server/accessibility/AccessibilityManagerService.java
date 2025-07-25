@@ -5777,14 +5777,17 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
             if (display == null) {
                 return false;
             }
-            // Private virtual displays are created by the ap and is not allowed to access by other
-            // aps. We assume we could ignore them.
-            // The exceptional case is for bubbles. Because the bubbles use the activityView, and
+            // Untrusted private virtual displays are created by an app and are not allowed to be
+            // accessed by other apps. We assume we could ignore them.
+            // Trusted private virtual displays can host activities, as long as they are launched
+            // by the display owner or an app already on the display.
+            // Another exception is bubbles. Because the bubbles use the activityView, and
             // the virtual display of the activityView is private, so if the owner UID of the
             // private virtual display is the one of system ui which creates the virtual display of
             // bubbles, then this private virtual display should track the windows.
             if (display.getType() == Display.TYPE_VIRTUAL
                     && (display.getFlags() & Display.FLAG_PRIVATE) != 0
+                    && (display.getFlags() & Display.FLAG_TRUSTED) == 0
                     && display.getOwnerUid() != mSystemUiUid) {
                 return false;
             }
