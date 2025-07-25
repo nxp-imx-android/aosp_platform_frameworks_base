@@ -30,9 +30,11 @@ import androidx.core.util.forEach
 import androidx.core.util.valueIterator
 import com.android.internal.annotations.VisibleForTesting
 import com.android.internal.protolog.ProtoLog
+import com.android.wm.shell.common.WorkSerializer
 import com.android.wm.shell.desktopmode.DisplayDeskState
 import com.android.wm.shell.desktopmode.data.persistence.DesktopPersistentRepository
 import com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_DESKTOP_MODE
+import com.android.wm.shell.shared.annotations.ShellBackgroundThread
 import com.android.wm.shell.shared.annotations.ShellMainThread
 import com.android.wm.shell.shared.desktopmode.DesktopConfig
 import java.io.PrintWriter
@@ -45,6 +47,7 @@ import kotlinx.coroutines.launch
 class DesktopRepository(
     private val persistentRepository: DesktopPersistentRepository,
     @ShellMainThread private val mainCoroutineScope: CoroutineScope,
+    @ShellBackgroundThread private val bgCoroutineScope: CoroutineScope,
     val userId: Int,
     val desktopConfig: DesktopConfig,
 ) {
@@ -61,6 +64,8 @@ class DesktopRepository(
     private val deskChangeListeners = ArrayMap<DeskChangeListener, Executor>()
     private val activeTasksListeners = ArraySet<ActiveTasksListener>()
     private val visibleTasksListeners = ArrayMap<VisibleTasksListener, Executor>()
+
+    private val persistentUpdateQueue = WorkSerializer(bgCoroutineScope)
 
     /* Tracks corner/caption regions of desktop tasks, used to determine gesture exclusion. */
     private val desktopExclusionRegions = SparseArray<Region>()
@@ -1172,7 +1177,7 @@ class DesktopRepository(
             return
         }
         if (DesktopExperienceFlags.REPOSITORY_BASED_PERSISTENCE.isTrue) {
-            mainCoroutineScope.launch {
+            persistentUpdateQueue.post {
                 try {
                     logD("updatePersistentRepository user=%d display=%d", userId, displayId)
                     persistentRepository.addOrUpdateRepository(userId, desks)

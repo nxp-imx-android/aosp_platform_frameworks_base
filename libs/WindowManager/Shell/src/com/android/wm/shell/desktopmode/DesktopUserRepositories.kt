@@ -46,6 +46,7 @@ class DesktopUserRepositories(
     private val persistentRepository: DesktopPersistentRepository,
     private val repositoryInitializer: DesktopRepositoryInitializer,
     @ShellMainThread private val mainCoroutineScope: CoroutineScope,
+    @ShellMainThread private val bgCoroutineScope: CoroutineScope,
     private val userManager: UserManager,
     desktopState: DesktopState,
     desktopConfig: DesktopConfig,
@@ -65,6 +66,7 @@ class DesktopUserRepositories(
                     ?: DesktopRepository(
                             persistentRepository,
                             mainCoroutineScope,
+                            bgCoroutineScope,
                             userId,
                             desktopConfig,
                         )
