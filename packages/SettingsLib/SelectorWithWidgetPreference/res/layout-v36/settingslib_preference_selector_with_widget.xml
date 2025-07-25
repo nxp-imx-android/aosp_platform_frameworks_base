@@ -19,43 +19,91 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:theme="?expressiveSelectorWithWidgetPreferenceTheme"
-    style="?expressiveSelectorWithWidgetPreferenceRootLayoutStyle">
+    android:background="?android:attr/selectableItemBackground"
+    android:gravity="center_vertical"
+    android:minHeight="?android:attr/listPreferredItemHeightSmall"
+    android:paddingStart="?android:attr/listPreferredItemPaddingStart"
+    android:paddingEnd="?android:attr/listPreferredItemPaddingEnd">
 
     <LinearLayout
         android:id="@android:id/widget_frame"
-        style="?expressiveSelectorWithWidgetPreferenceWidgetFrameStyle" />
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:minWidth="@dimen/settingslib_expressive_space_medium3"
+        android:minHeight="@dimen/settingslib_expressive_space_medium3"
+        android:layout_marginEnd="@dimen/settingslib_expressive_space_extrasmall6"
+        android:orientation="vertical"/>
 
-    <include layout="@layout/settingslib_expressive_preference_icon_frame" />
+    <include layout="@layout/settingslib_expressive_preference_icon_frame"/>
 
-    <LinearLayout style="?expressiveSelectorWithWidgetPreferenceTextContainerStyle">
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:orientation="vertical"
+        android:paddingTop="@dimen/settingslib_expressive_space_small1"
+        android:paddingBottom="@dimen/settingslib_expressive_space_small1"
+        android:paddingEnd="?android:attr/listPreferredItemPaddingEnd">
 
         <TextView
             android:id="@android:id/title"
-            style="?expressiveSelectorWithWidgetPreferenceTitleStyle" />
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:maxLines="2"
+            android:ellipsize="end"
+            android:hyphenationFrequency="normalFast"
+            android:lineBreakWordStyle="phrase"
+            android:textAppearance="?android:attr/textAppearanceListItem"/>
 
         <LinearLayout
             android:id="@+id/summary_container"
-            style="?expressiveSelectorWithWidgetPreferenceSummaryContainerStyle">
-
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:visibility="gone">
             <TextView
                 android:id="@android:id/summary"
-                style="?expressiveSelectorWithWidgetPreferenceSummaryStyle" />
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:textAppearance="?android:attr/textAppearanceSmall"
+                android:textAlignment="viewStart"
+                android:hyphenationFrequency="normalFast"
+                android:lineBreakWordStyle="phrase"
+                android:textColor="?android:attr/textColorSecondary"/>
 
             <TextView
                 android:id="@+id/appendix"
-                style="?expressiveSelectorWithWidgetPreferenceAppendixStyle" />
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:textAppearance="?android:attr/textAppearanceSmall"
+                android:textAlignment="viewEnd"
+                android:textColor="?android:attr/textColorSecondary"
+                android:maxLines="1"
+                android:visibility="gone"
+                android:ellipsize="end"/>
         </LinearLayout>
     </LinearLayout>
 
     <LinearLayout
         android:id="@+id/selector_extra_widget_container"
-        style="?expressiveSelectorWithWidgetPreferenceExtraWidgetContainerStyle">
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
 
         <include layout="@layout/settingslib_expressive_two_target_divider" />
 
         <ImageView
             android:id="@+id/selector_extra_widget"
-            style="?expressiveSelectorWithWidgetPreferenceExtraWidgetImageStyle" />
+            android:layout_width="match_parent"
+            android:minWidth="@dimen/settingslib_expressive_space_medium4"
+            android:layout_height="fill_parent"
+            android:src="@drawable/ic_settings_accent"
+            android:scaleType="centerInside"
+            android:contentDescription="@string/settings_label"
+            android:layout_gravity="center"
+            android:background="?android:attr/selectableItemBackground"/>
     </LinearLayout>
 </LinearLayout>
