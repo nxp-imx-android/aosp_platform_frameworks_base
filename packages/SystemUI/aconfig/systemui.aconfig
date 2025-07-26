@@ -648,6 +648,13 @@ flag {
 }
 
 flag {
+    name: "status_bar_for_desktop"
+    namespace: "systemui"
+    description: "Feature flag for the new desktop status bar"
+    bug: "433589833"
+}
+
+flag {
     name: "status_bar_rudimentary_battery"
     namespace: "systemui"
     description: "Bugfix flag to control the percentage-outside-battery behavior"
