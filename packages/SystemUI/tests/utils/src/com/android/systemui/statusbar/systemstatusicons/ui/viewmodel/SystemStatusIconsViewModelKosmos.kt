@@ -28,6 +28,7 @@ import com.android.systemui.statusbar.systemstatusicons.hotspot.ui.viewmodel.hot
 import com.android.systemui.statusbar.systemstatusicons.mobile.ui.viewmodel.mobileSystemStatusIconsViewModelFactory
 import com.android.systemui.statusbar.systemstatusicons.ringer.ui.viewmodel.muteIconViewModelFactory
 import com.android.systemui.statusbar.systemstatusicons.ringer.ui.viewmodel.vibrateIconViewModelFactory
+import com.android.systemui.statusbar.systemstatusicons.tty.ui.viewmodel.ttyIconViewModelFactory
 import com.android.systemui.statusbar.systemstatusicons.vpn.ui.viewmodel.vpnIconViewModelFactory
 import com.android.systemui.statusbar.systemstatusicons.wifi.ui.viewmodel.wifiIconViewModelFactory
 import com.android.systemui.statusbar.systemstatusicons.zenmode.ui.viewmodel.zenModeIconViewModelFactory
@@ -49,6 +50,7 @@ val Kosmos.systemStatusIconsViewModelFactory by
                         mobileSystemStatusIconsViewModelFactory,
                     muteIconViewModelFactory = muteIconViewModelFactory,
                     nextAlarmIconViewModelFactory = nextAlarmIconViewModelFactory,
+                    ttyIconViewModelFactory = ttyIconViewModelFactory,
                     vibrateIconViewModelFactory = vibrateIconViewModelFactory,
                     vpnIconViewModelFactory = vpnIconViewModelFactory,
                     wifiIconViewModelFactory = wifiIconViewModelFactory,

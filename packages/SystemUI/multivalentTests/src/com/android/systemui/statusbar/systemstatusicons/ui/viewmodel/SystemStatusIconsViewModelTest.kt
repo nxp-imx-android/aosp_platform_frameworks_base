@@ -19,19 +19,21 @@ import android.app.AlarmManager
 import android.app.AutomaticZenRule
 import android.app.PendingIntent
 import android.bluetooth.BluetoothProfile
+import android.content.Intent
 import android.content.testableContext
 import android.media.AudioManager
 import android.platform.test.annotations.EnableFlags
-import android.view.Display
+import android.telecom.TelecomManager
+import android.view.Display.TYPE_EXTERNAL
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.settingslib.bluetooth.CachedBluetoothDevice
 import com.android.settingslib.notification.modes.TestModeBuilder
 import com.android.settingslib.volume.shared.model.RingerMode
 import com.android.systemui.SysuiTestCase
+import com.android.systemui.broadcast.broadcastDispatcher
 import com.android.systemui.display.data.repository.display
 import com.android.systemui.display.data.repository.displayRepository
-import com.android.systemui.keyguard.data.repository.fakeKeyguardRepository
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.testScope
@@ -82,6 +84,7 @@ class SystemStatusIconsViewModelTest : SysuiTestCase() {
     private lateinit var slotHotspot: String
     private lateinit var slotMute: String
     private lateinit var slotNextAlarm: String
+    private lateinit var slotTty: String
     private lateinit var slotVibrate: String
     private lateinit var slotVpn: String
     private lateinit var slotWifi: String
@@ -98,6 +101,7 @@ class SystemStatusIconsViewModelTest : SysuiTestCase() {
         slotHotspot = context.getString(com.android.internal.R.string.status_bar_hotspot)
         slotMute = context.getString(com.android.internal.R.string.status_bar_mute)
         slotNextAlarm = context.getString(com.android.internal.R.string.status_bar_alarm_clock)
+        slotTty = context.getString(com.android.internal.R.string.status_bar_tty)
         slotVibrate = context.getString(com.android.internal.R.string.status_bar_volume)
         slotVpn = context.getString(com.android.internal.R.string.status_bar_vpn)
         slotWifi = context.getString(com.android.internal.R.string.status_bar_wifi)
@@ -192,14 +196,15 @@ class SystemStatusIconsViewModelTest : SysuiTestCase() {
     fun iconViewModels_emptyOrderList_allIconsShownInAlphabeticalOrder() =
         kosmos.runTest {
             statusBarConfigIconSlotNames = emptyArray()
+            assertThat(underTest.activeSlotNames).isEmpty()
 
             showZenMode()
             showBluetooth()
-            showConnectedDisplay()
             showDataSaver()
             showAirplaneMode()
             showNextAlarm()
             showEthernet()
+            showTty()
             showVibrate()
             showHotspot()
             showVpn()
@@ -213,6 +218,7 @@ class SystemStatusIconsViewModelTest : SysuiTestCase() {
                     slotEthernet,
                     slotHotspot,
                     slotNextAlarm,
+                    slotTty,
                     slotVibrate,
                     slotVpn,
                     slotZen,
@@ -262,17 +268,8 @@ class SystemStatusIconsViewModelTest : SysuiTestCase() {
         )
     }
 
-    private suspend fun Kosmos.showConnectedDisplay(isSecure: Boolean = false) {
-        fakeKeyguardRepository.setKeyguardShowing(!isSecure)
-        displayRepository.setDefaultDisplayOff(false)
-        val flags = if (isSecure) Display.FLAG_SECURE else 0
-        displayRepository.addDisplay(
-            display(
-                type = Display.TYPE_EXTERNAL,
-                flags = flags,
-                id = (displayRepository.displays.value.maxOfOrNull { it.displayId } ?: 0) + 1,
-            )
-        )
+    private suspend fun Kosmos.showConnectedDisplay() {
+        displayRepository.addDisplay(display(type = TYPE_EXTERNAL, id = 1))
     }
 
     private fun Kosmos.showEthernet() {
@@ -286,6 +283,14 @@ class SystemStatusIconsViewModelTest : SysuiTestCase() {
     private fun Kosmos.showNextAlarm() {
         val alarmClockInfo = AlarmManager.AlarmClockInfo(1L, mock<PendingIntent>())
         fakeNextAlarmController.setNextAlarm(alarmClockInfo)
+    }
+
+    private fun Kosmos.showTty() {
+        val intent =
+            Intent(TelecomManager.ACTION_CURRENT_TTY_MODE_CHANGED).apply {
+                putExtra(TelecomManager.EXTRA_CURRENT_TTY_MODE, TelecomManager.TTY_MODE_FULL)
+            }
+        broadcastDispatcher.sendIntentToMatchingReceiversOnly(context, intent)
     }
 
     private fun Kosmos.showVibrate() {
