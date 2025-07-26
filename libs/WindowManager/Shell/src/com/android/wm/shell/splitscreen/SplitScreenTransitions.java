@@ -264,6 +264,7 @@ class SplitScreenTransitions {
                 startTransaction.show(leash);
             }
         }
+
         startTransaction.apply();
         onFinish(null /* wct */);
     }
@@ -287,13 +288,19 @@ class SplitScreenTransitions {
                 startTransaction.setWindowCrop(leash, change.getEndAbsBounds().width(),
                         change.getEndAbsBounds().height());
 
+                final SurfaceControl snapshot = change.getSnapshot();
+                if (snapshot == null || !snapshot.isValid()) {
+                    ProtoLog.d(WM_SHELL_SPLIT_SCREEN,
+                            "change[%s]: snapshot is null or invalid", change);
+                    continue;
+                }
                 SplitDecorManager decor = rootDecorMap.get(change.getContainer());
 
                 // This is to ensure onFinished be called after all animations ended.
                 ValueAnimator va = new ValueAnimator();
                 mAnimations.add(va);
 
-                decor.setScreenshotIfNeeded(change.getSnapshot(), startTransaction);
+                decor.setScreenshotIfNeeded(snapshot, startTransaction);
                 decor.onResized(startTransaction, animated -> {
                     mAnimations.remove(va);
                     if (animated) {
@@ -304,8 +311,8 @@ class SplitScreenTransitions {
                 });
             }
         }
-
         startTransaction.apply();
+
         onFinish(null /* wct */);
     }
 
