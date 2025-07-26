@@ -50,6 +50,7 @@ import static com.android.server.DeviceIdleController.stateToString;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.any;
@@ -61,6 +62,7 @@ import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.longThat;
 import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.clearInvocations;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.timeout;
@@ -91,6 +93,7 @@ import android.os.PowerManagerInternal;
 import android.os.PowerSaveState;
 import android.os.SystemClock;
 import android.os.WearModeManagerInternal;
+import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.EnableFlags;
 import android.platform.test.flag.junit.SetFlagsRule;
 import android.provider.DeviceConfig;
@@ -831,6 +834,51 @@ public class DeviceIdleControllerTest {
 
         mDeviceIdleController.becomeInactiveIfAppropriateLocked();
         verifyLightStateConditions(LIGHT_STATE_INACTIVE);
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_NON_SCHEDULED_EXIT_FROM_IDLE_PENDING)
+    public void testTransitionPastIdlePending_idleAfterInactiveIsZero() {
+        setAlarmSoon(false);
+        mConstants.IDLE_AFTER_INACTIVE_TIMEOUT = 0;
+        enterDeepState(STATE_INACTIVE);
+        clearInvocations(mDeviceIdleController);
+
+        mDeviceIdleController.stepIdleStateLocked("testing");
+
+        // Expect that the step function above goes past STATE_IDLE_PENDING without scheduling
+        // any alarm, because IDLE_AFTER_INACTIVE_TIMEOUT = 0.
+        assertNotEquals(STATE_IDLE_PENDING, mDeviceIdleController.getState());
+        verify(mDeviceIdleController, never()).scheduleAlarmLocked(0);
+    }
+
+    @Test
+    @DisableFlags(Flags.FLAG_ENABLE_NON_SCHEDULED_EXIT_FROM_IDLE_PENDING)
+    public void testTransitionPastIdlePending_idleAfterInactiveIsZero_nonScheduledExitFlagOff() {
+        setAlarmSoon(false);
+        mConstants.IDLE_AFTER_INACTIVE_TIMEOUT = 0;
+        enterDeepState(STATE_INACTIVE);
+        clearInvocations(mDeviceIdleController);
+
+        mDeviceIdleController.stepIdleStateLocked("testing");
+
+        verifyStateConditions(STATE_IDLE_PENDING);
+        verify(mDeviceIdleController).scheduleAlarmLocked(0);
+    }
+
+    @Test
+    public void testTransitionPastIdlePending_idleAfterInactiveIsNotZero() {
+        setAlarmSoon(false);
+        mConstants.IDLE_AFTER_INACTIVE_TIMEOUT = 352;
+        enterDeepState(STATE_INACTIVE);
+        clearInvocations(mDeviceIdleController);
+
+        mDeviceIdleController.stepIdleStateLocked("testing");
+
+        // Because IDLE_AFTER_INACTIVE_TIMEOUT > 0, we expect the state to stay at
+        // STATE_IDLE_PENDING, and an alarm to be scheduled to step past this state.
+        verifyStateConditions(STATE_IDLE_PENDING);
+        verify(mDeviceIdleController).scheduleAlarmLocked(352);
     }
 
     @Test
