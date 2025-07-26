@@ -203,9 +203,6 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
         // only care about latest one.
         mAnimApp = appThread;
 
-        for (int i = 0; i < mStateListeners.size(); i++) {
-            mStateListeners.get(i).onTransitionStateChanged(TRANSITION_STATE_REQUESTED);
-        }
         // TODO(b/366021931): Formalize this later
         final boolean isSyntheticRequest = options.getBoolean(
                 "is_synthetic_recents_transition", /* defaultValue= */ false);
@@ -214,6 +211,25 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
         int displayId = activityOptions.getLaunchDisplayId();
         if (displayId == INVALID_DISPLAY) {
             displayId = DEFAULT_DISPLAY;
+        }
+
+        // If there is an existing recents transition for the given display then we're not handling
+        // the gesture correctly from the calling end. Canceling and starting a new transition is
+        // possible but the legacy recents animation runner interface is not suited to handle events
+        // from overlapping controllers. We just opt to log the error and preferably prevent this on
+        // the calling end.
+        final RecentsController lastController = findControllerForDisplay(displayId);
+        if (lastController != null) {
+            lastController.cancel(lastController.isSyntheticTransition()
+                    ? "existing_running_synthetic_transition"
+                    : "existing_running_transition");
+            ProtoLog.v(ShellProtoLogGroup.WM_SHELL_RECENTS_TRANSITION,
+                    "startRecentsTransition: Skipping due to existing transition");
+            return null;
+        }
+
+        for (int i = 0; i < mStateListeners.size(); i++) {
+            mStateListeners.get(i).onTransitionStateChanged(TRANSITION_STATE_REQUESTED);
         }
         if (isSyntheticRequest) {
             transition = startSyntheticRecentsTransition(listener, displayId);
@@ -231,16 +247,9 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
             int displayId) {
         ProtoLog.v(ShellProtoLogGroup.WM_SHELL_RECENTS_TRANSITION,
                 "RecentsTransitionHandler.startRecentsTransition(synthetic)");
-        final RecentsController lastController = getLastController();
-        if (lastController != null) {
-            lastController.cancel(lastController.isSyntheticTransition()
-                    ? "existing_running_synthetic_transition"
-                    : "existing_running_transition");
-            return null;
-        }
 
         // Create a new synthetic transition and start it immediately
-        final RecentsController controller = new RecentsController(listener);
+        final RecentsController controller = new RecentsController(listener, displayId);
         controller.startSyntheticTransition(displayId);
         mControllers.add(controller);
         return SYNTHETIC_TRANSITION;
@@ -280,7 +289,7 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
             setTransitionForMixer.accept(transition);
         }
 
-        final RecentsController controller = new RecentsController(listener);
+        final RecentsController controller = new RecentsController(listener, displayId);
         if (transition != null) {
             controller.setTransition(transition);
             mControllers.add(controller);
@@ -303,11 +312,17 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
     }
 
     /**
-     * Returns if there is currently a pending or active recents transition.
+     * Finds an existing controller for the provided {@param displayId}.
      */
     @Nullable
-    private RecentsController getLastController() {
-        return !mControllers.isEmpty() ? mControllers.getLast() : null;
+    private RecentsController findControllerForDisplay(int displayId) {
+        for (int i = 0; i < mControllers.size(); i++) {
+            final RecentsController controller = mControllers.get(i);
+            if (controller.mDisplayId == displayId) {
+                return controller;
+            }
+        }
+        return null;
     }
 
     /**
@@ -392,6 +407,7 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
     class RecentsController extends IRecentsAnimationController.Stub {
 
         private final int mInstanceId;
+        private final int mDisplayId;
 
         private IRecentsAnimationRunner mListener;
         private IBinder.DeathRecipient mDeathHandler;
@@ -461,8 +477,9 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
         // This stores the pending finish transaction to merge with the actual finish transaction
         private SurfaceControl.Transaction mPendingFinishTransaction;
 
-        RecentsController(IRecentsAnimationRunner listener) {
+        RecentsController(IRecentsAnimationRunner listener, int displayId) {
             mInstanceId = System.identityHashCode(this);
+            mDisplayId = displayId;
             mListener = listener;
             mDeathHandler = () -> {
                 mExecutor.execute(() -> {

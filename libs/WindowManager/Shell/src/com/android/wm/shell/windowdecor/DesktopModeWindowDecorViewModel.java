@@ -37,6 +37,7 @@ import static com.android.wm.shell.desktopmode.DesktopModeVisualIndicator.Indica
 import static com.android.wm.shell.desktopmode.DesktopModeVisualIndicator.IndicatorType.TO_SPLIT_LEFT_INDICATOR;
 import static com.android.wm.shell.desktopmode.DesktopModeVisualIndicator.IndicatorType.TO_SPLIT_RIGHT_INDICATOR;
 import static com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_DESKTOP_MODE;
+import static com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_WINDOW_DECORATION;
 import static com.android.wm.shell.shared.multiinstance.ManageWindowsViewContainer.MANAGE_WINDOWS_MINIMUM_INSTANCES;
 import static com.android.wm.shell.shared.split.SplitScreenConstants.SPLIT_POSITION_BOTTOM_OR_RIGHT;
 import static com.android.wm.shell.shared.split.SplitScreenConstants.SPLIT_POSITION_TOP_OR_LEFT;
@@ -1171,6 +1172,7 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
             }
             final int id = v.getId();
             if (id == R.id.close_window) {
+                ProtoLog.d(WM_SHELL_WINDOW_DECORATION, "onClick close_window: taskId=%d", mTaskId);
                 if (isTaskInSplitScreen(mTaskId)) {
                     mSplitScreenController.moveTaskToFullscreen(getOtherSplitTask(mTaskId).taskId,
                             SplitScreenController.EXIT_REASON_DESKTOP_MODE);
@@ -1195,8 +1197,16 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
                     }
                 }
             } else if (id == R.id.back_button) {
+                ProtoLog.d(WM_SHELL_WINDOW_DECORATION, "onClick back_button: taskId=%d", mTaskId);
                 mTaskOperations.injectBackKey(decoration.getTaskInfo().displayId);
             } else if (id == R.id.caption_handle || id == R.id.open_menu_button) {
+                if (id == R.id.caption_handle) {
+                    ProtoLog.d(WM_SHELL_WINDOW_DECORATION, "onClick caption_handle: taskId=%d",
+                            mTaskId);
+                } else {
+                    ProtoLog.d(WM_SHELL_WINDOW_DECORATION, "onClick open_menu_button: taskId=%d",
+                            mTaskId);
+                }
                 if (id == R.id.caption_handle && !decoration.getTaskInfo().isFreeform()) {
                     // Clicking the App Handle.
                     mDesktopModeUiEventLogger.log(decoration.getTaskInfo(),
@@ -1208,6 +1218,8 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
                     openHandleMenu(mTaskId);
                 }
             } else if (id == R.id.maximize_window) {
+                ProtoLog.d(WM_SHELL_WINDOW_DECORATION, "onClick maximize_window: taskId=%d",
+                        mTaskId);
                 // TODO(b/346441962): move click detection logic into the decor's
                 //  {@link AppHeaderViewHolder}. Let it encapsulate the that and have it report
                 //  back to the decoration using
@@ -1228,6 +1240,8 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
                             getInputMethod(mMotionEvent));
                 }
             } else if (id == R.id.minimize_window) {
+                ProtoLog.d(WM_SHELL_WINDOW_DECORATION, "onClick minimize_window: taskId=%d",
+                        mTaskId);
                 if (DesktopExperienceFlags
                         .ENABLE_DESKTOP_APP_HEADER_STATE_CHANGE_ANNOUNCEMENTS.isTrue()) {
                     final int nextFocusedTaskId = mDesktopTasksController

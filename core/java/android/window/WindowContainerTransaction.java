@@ -302,6 +302,33 @@ public final class WindowContainerTransaction implements Parcelable {
     }
 
     /**
+     * Sets whether to allow the child tasks to have override bounds.
+     *
+     * <p>When {@code true}, the system will ensure the child tasks of the given root task
+     * will have no override bounds. That is, the override bounds of the existing child tasks
+     * will be cleared, and the override bounds of any newly added child tasks afterward will
+     * also be cleared. This mechanism is specifically designed to be applied to a root task
+     * created by an organizer only.
+     *
+     * @param rootTaskContainer The window container of the task that created by organizer.
+     * @param disallowOverrideBoundsForChildren {@code true} to avoid the child tasks to have
+     *                                                   override bounds, {@code false} otherwise.
+     * @hide
+     */
+    @NonNull
+    public WindowContainerTransaction setDisallowOverrideBoundsForChildren(
+            @NonNull WindowContainerToken rootTaskContainer,
+            boolean disallowOverrideBoundsForChildren) {
+        final HierarchyOp hierarchyOp = new HierarchyOp.Builder(
+                HierarchyOp.HIERARCHY_OP_TYPE_DISALLOW_OVERRIDE_BOUNDS_FOR_CHILDREN)
+                .setContainer(rootTaskContainer.asBinder())
+                .setDisallowOverrideBoundsForChildren(disallowOverrideBoundsForChildren)
+                .build();
+        mHierarchyOps.add(hierarchyOp);
+        return this;
+    }
+
+    /**
      * Sets whether a container or its children should be hidden. When {@code false}, the existing
      * visibility of the container applies, but when {@code true} the container will be forced
      * to be hidden.
@@ -1932,6 +1959,7 @@ public final class WindowContainerTransaction implements Parcelable {
         public static final int HIERARCHY_OP_TYPE_APP_COMPAT_REACHABILITY = 24;
         public static final int HIERARCHY_OP_TYPE_SET_SAFE_REGION_BOUNDS = 25;
         public static final int HIERARCHY_OP_TYPE_SET_SYSTEM_BAR_VISIBILITY_OVERRIDE = 26;
+        public static final int HIERARCHY_OP_TYPE_DISALLOW_OVERRIDE_BOUNDS_FOR_CHILDREN = 27;
 
         @IntDef(prefix = {"HIERARCHY_OP_TYPE_"}, value = {
                 HIERARCHY_OP_TYPE_REPARENT,
@@ -1961,6 +1989,7 @@ public final class WindowContainerTransaction implements Parcelable {
                 HIERARCHY_OP_TYPE_APP_COMPAT_REACHABILITY,
                 HIERARCHY_OP_TYPE_SET_SAFE_REGION_BOUNDS,
                 HIERARCHY_OP_TYPE_SET_SYSTEM_BAR_VISIBILITY_OVERRIDE,
+                HIERARCHY_OP_TYPE_DISALLOW_OVERRIDE_BOUNDS_FOR_CHILDREN,
         })
         @Retention(RetentionPolicy.SOURCE)
         public @interface HierarchyOpType {
@@ -2049,6 +2078,8 @@ public final class WindowContainerTransaction implements Parcelable {
 
         @Nullable
         private Rect mSafeRegionBounds;
+
+        private boolean mDisallowOverrideBoundsForChildren;
 
         /** Creates a hierarchy operation for reparenting a container within the hierarchy. */
         @NonNull
@@ -2246,6 +2277,7 @@ public final class WindowContainerTransaction implements Parcelable {
             mForciblyShowingInsetsTypes = copy.mForciblyShowingInsetsTypes;
             mForciblyHidingInsetsTypes = copy.mForciblyHidingInsetsTypes;
             mSafeRegionBounds = copy.mSafeRegionBounds;
+            mDisallowOverrideBoundsForChildren = copy.mDisallowOverrideBoundsForChildren;
         }
 
         private HierarchyOp(@NonNull Parcel in) {
@@ -2275,6 +2307,7 @@ public final class WindowContainerTransaction implements Parcelable {
             mForciblyShowingInsetsTypes = in.readInt();
             mForciblyHidingInsetsTypes = in.readInt();
             mSafeRegionBounds = in.readTypedObject(Rect.CREATOR);
+            mDisallowOverrideBoundsForChildren = in.readBoolean();
         }
 
         @HierarchyOpType
@@ -2405,6 +2438,10 @@ public final class WindowContainerTransaction implements Parcelable {
             return mSafeRegionBounds;
         }
 
+        public boolean getDisallowOverrideBoundsForChildren() {
+            return mDisallowOverrideBoundsForChildren;
+        }
+
         /** Gets a string representation of a hierarchy-op type. */
         public static String hopToString(@HierarchyOpType int type) {
             switch (type) {
@@ -2439,6 +2476,8 @@ public final class WindowContainerTransaction implements Parcelable {
                 case HIERARCHY_OP_TYPE_SET_SAFE_REGION_BOUNDS: return "setSafeRegionBounds";
                 case HIERARCHY_OP_TYPE_SET_SYSTEM_BAR_VISIBILITY_OVERRIDE:
                     return "setSystemBarVisibilityOverride";
+                case HIERARCHY_OP_TYPE_DISALLOW_OVERRIDE_BOUNDS_FOR_CHILDREN:
+                    return "disallowOverrideBoundsForChildren";
                 default: return "HOP(" + type + ")";
             }
         }
@@ -2549,6 +2588,11 @@ public final class WindowContainerTransaction implements Parcelable {
                             .append(" mForciblyHidingInsetsTypes=")
                             .append(WindowInsets.Type.toString(mForciblyHidingInsetsTypes));
                     break;
+                case HIERARCHY_OP_TYPE_DISALLOW_OVERRIDE_BOUNDS_FOR_CHILDREN:
+                    sb.append(" container=").append(mContainer)
+                            .append(" mDisallowOverrideBoundsForChildren=")
+                            .append(mDisallowOverrideBoundsForChildren);
+                    break;
                 default:
                     sb.append("container=").append(mContainer)
                             .append(" reparent=").append(mReparent)
@@ -2587,6 +2631,7 @@ public final class WindowContainerTransaction implements Parcelable {
             dest.writeInt(mForciblyShowingInsetsTypes);
             dest.writeInt(mForciblyHidingInsetsTypes);
             dest.writeTypedObject(mSafeRegionBounds, flags);
+            dest.writeBoolean(mDisallowOverrideBoundsForChildren);
         }
 
         @Override
@@ -2675,6 +2720,8 @@ public final class WindowContainerTransaction implements Parcelable {
 
             @Nullable
             private Rect mSafeRegionBounds;
+
+            private boolean mDisallowOverrideBoundsForChildren;
 
             Builder(@HierarchyOpType int type) {
                 mType = type;
@@ -2805,6 +2852,12 @@ public final class WindowContainerTransaction implements Parcelable {
                 return this;
             }
 
+            Builder setDisallowOverrideBoundsForChildren(
+                    boolean disallowOverrideBoundsForChildren) {
+                mDisallowOverrideBoundsForChildren = disallowOverrideBoundsForChildren;
+                return this;
+            }
+
             @NonNull
             HierarchyOp build() {
                 final HierarchyOp hierarchyOp = new HierarchyOp(mType);
@@ -2837,6 +2890,7 @@ public final class WindowContainerTransaction implements Parcelable {
                 hierarchyOp.mForciblyShowingInsetsTypes = mForciblyShowingInsetsTypes;
                 hierarchyOp.mForciblyHidingInsetsTypes = mForciblyHidingInsetsTypes;
                 hierarchyOp.mSafeRegionBounds = mSafeRegionBounds;
+                hierarchyOp.mDisallowOverrideBoundsForChildren = mDisallowOverrideBoundsForChildren;
                 return hierarchyOp;
             }
         }

@@ -95,7 +95,8 @@ class DelegateLetterboxTransitionObserverTest : ShellTestCase() {
 
     @Test
     @EnableFlags(Flags.FLAG_APP_COMPAT_REFACTORING)
-    fun `LetterboxLifecycleController for not leaf tasks`() {
+    @DisableFlags(Flags.FLAG_APP_COMPAT_REFACTORING_FIX_MULTIWINDOW_TASK_HIERARCHY)
+    fun `With flag disabled LetterboxLifecycleController ignored for not leaf tasks`() {
         runTestScenario { r ->
             executeTransitionObserverTest(observerFactory = r.observerFactory) {
                 r.invokeShellInit()
@@ -108,6 +109,29 @@ class DelegateLetterboxTransitionObserverTest : ShellTestCase() {
                 }
                 validateOnTransitionReady {
                     r.checkLifecycleControllerInvoked(times = 0)
+                }
+            }
+        }
+    }
+
+    @Test
+    @EnableFlags(
+        Flags.FLAG_APP_COMPAT_REFACTORING,
+        Flags.FLAG_APP_COMPAT_REFACTORING_FIX_MULTIWINDOW_TASK_HIERARCHY
+    )
+    fun `With flag enabled LetterboxLifecycleController not for not leaf tasks`() {
+        runTestScenario { r ->
+            executeTransitionObserverTest(observerFactory = r.observerFactory) {
+                r.invokeShellInit()
+                transitionInfo {
+                    addChange {
+                        runningTaskInfo { ti ->
+                            ti.appCompatTaskInfo.setIsLeafTask(false)
+                        }
+                    }
+                }
+                validateOnTransitionReady {
+                    r.checkLifecycleControllerInvoked(times = 1)
                 }
             }
         }

@@ -23,6 +23,7 @@ import static android.media.MediaRoute2ProviderService.REASON_REJECTED;
 import static android.media.MediaRoute2ProviderService.REASON_ROUTE_NOT_AVAILABLE;
 import static android.media.MediaRoute2ProviderService.REASON_UNIMPLEMENTED;
 import static android.media.MediaRoute2ProviderService.REASON_UNKNOWN_ERROR;
+
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.verify;
 import static com.android.server.media.MediaRouterStatsLog.MEDIA_ROUTER_EVENT_REPORTED;
 import static com.android.server.media.MediaRouterStatsLog.MEDIA_ROUTER_EVENT_REPORTED__EVENT_TYPE__EVENT_TYPE_CREATE_SESSION;
@@ -35,10 +36,13 @@ import static com.android.server.media.MediaRouterStatsLog.MEDIA_ROUTER_EVENT_RE
 import static com.android.server.media.MediaRouterStatsLog.MEDIA_ROUTER_EVENT_REPORTED__RESULT__RESULT_UNIMPLEMENTED;
 import static com.android.server.media.MediaRouterStatsLog.MEDIA_ROUTER_EVENT_REPORTED__RESULT__RESULT_UNKNOWN_ERROR;
 import static com.android.server.media.MediaRouterStatsLog.MEDIA_ROUTER_EVENT_REPORTED__RESULT__RESULT_UNSPECIFIED;
+
 import static com.google.common.truth.Truth.assertThat;
 
 import androidx.test.runner.AndroidJUnit4;
+
 import com.android.modules.utils.testing.ExtendedMockitoRule;
+
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -136,5 +140,32 @@ public class MediaRouterMetricLoggerTest {
         mLogger.addRequestInfo(
                 123, MEDIA_ROUTER_EVENT_REPORTED__EVENT_TYPE__EVENT_TYPE_CREATE_SESSION);
         assertThat(mLogger.getRequestCacheSize()).isEqualTo(1);
+    }
+
+    @Test
+    public void addRequestInfo_whenCacheFull_evictsFromCacheAndLogsUnspecified() {
+        assertThat(mLogger.getRequestCacheSize()).isEqualTo(0);
+
+        // Fill the cache to capacity.
+        int cacheCapacity = mLogger.getRequestInfoCacheCapacity();
+        for (int i = 0; i < cacheCapacity; i++) {
+            mLogger.addRequestInfo(
+                    /* uniqueRequestId= */ i,
+                    MEDIA_ROUTER_EVENT_REPORTED__EVENT_TYPE__EVENT_TYPE_CREATE_SESSION);
+        }
+
+        // Add one more request to trigger eviction.
+        mLogger.addRequestInfo(
+                /* uniqueRequestId= */ cacheCapacity,
+                MEDIA_ROUTER_EVENT_REPORTED__EVENT_TYPE__EVENT_TYPE_CREATE_SESSION);
+
+        // Verify cache size is correct and generic result gets logged.
+        assertThat(mLogger.getRequestCacheSize()).isEqualTo(cacheCapacity);
+        verify(
+                () ->
+                        MediaRouterStatsLog.write(
+                                MEDIA_ROUTER_EVENT_REPORTED,
+                                MEDIA_ROUTER_EVENT_REPORTED__EVENT_TYPE__EVENT_TYPE_CREATE_SESSION,
+                                MEDIA_ROUTER_EVENT_REPORTED__RESULT__RESULT_UNSPECIFIED));
     }
 }

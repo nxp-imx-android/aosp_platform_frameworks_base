@@ -17,6 +17,8 @@
 package com.android.systemui.statusbar.notification.row.ui.viewmodel
 
 import android.platform.test.annotations.EnableFlags
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.MotionScheme
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.compose.animation.scene.MutableSceneTransitionLayoutState
@@ -24,9 +26,10 @@ import com.android.systemui.SysuiTestCase
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.lifecycle.activateIn
 import com.android.systemui.notifications.ui.composable.row.BundleHeader
+import com.android.systemui.statusbar.notification.row.domain.interactor.BundleInteractor
 import com.android.systemui.statusbar.notification.shared.NotificationBundleUi
 import com.android.systemui.testKosmos
-import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.MutableStateFlow
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -39,52 +42,56 @@ import org.mockito.kotlin.whenever
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @EnableFlags(NotificationBundleUi.FLAG_NAME)
 class BundleHeaderViewModelTest : SysuiTestCase() {
 
     @get:Rule val rule: MockitoRule = MockitoJUnit.rule()
-
     private val kosmos = testKosmos()
 
-    @Mock lateinit var mockSceneTransitionLayoutState: MutableSceneTransitionLayoutState
-    @Mock lateinit var mockComposeScope: CoroutineScope
-
+    @Mock private lateinit var mockBundleInteractor: BundleInteractor
     private lateinit var underTest: BundleHeaderViewModel
 
     @Before
     fun setup() {
-        underTest = kosmos.bundleHeaderViewModelFactory.create()
+        whenever(mockBundleInteractor.previewIcons).thenReturn(MutableStateFlow(emptyList()))
+        underTest = BundleHeaderViewModel(mockBundleInteractor)
         underTest.activateIn(kosmos.testScope)
-
-        underTest.state = mockSceneTransitionLayoutState
-        underTest.composeScope = mockComposeScope
     }
 
     @Test
     fun onHeaderClicked_toggles_expansion_state_to_expanded() {
         // Arrange
-        whenever(mockSceneTransitionLayoutState.currentScene)
-            .thenReturn(BundleHeader.Scenes.Collapsed)
+        val state =
+            MutableSceneTransitionLayoutState(
+                initialScene = BundleHeader.Scenes.Collapsed,
+                motionScheme = MotionScheme.standard(),
+            )
+        underTest.state = state
+        whenever(mockBundleInteractor.state).thenReturn(state)
 
         // Act
         underTest.onHeaderClicked()
 
         // Assert
-        verify(mockSceneTransitionLayoutState)
-            .setTargetScene(BundleHeader.Scenes.Expanded, mockComposeScope)
+        verify(mockBundleInteractor).setTargetScene(BundleHeader.Scenes.Expanded)
     }
 
     @Test
     fun onHeaderClicked_toggles_expansion_state_to_collapsed() {
         // Arrange
-        whenever(mockSceneTransitionLayoutState.currentScene)
-            .thenReturn(BundleHeader.Scenes.Expanded)
+        val state =
+            MutableSceneTransitionLayoutState(
+                initialScene = BundleHeader.Scenes.Expanded,
+                motionScheme = MotionScheme.standard(),
+            )
+        underTest.state = state
+        whenever(mockBundleInteractor.state).thenReturn(state)
 
         // Act
         underTest.onHeaderClicked()
 
         // Assert
-        verify(mockSceneTransitionLayoutState)
-            .setTargetScene(BundleHeader.Scenes.Collapsed, mockComposeScope)
+        verify(mockBundleInteractor).setTargetScene(BundleHeader.Scenes.Collapsed)
     }
 }

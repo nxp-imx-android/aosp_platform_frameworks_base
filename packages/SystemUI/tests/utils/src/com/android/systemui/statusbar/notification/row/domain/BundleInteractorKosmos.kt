@@ -19,6 +19,8 @@ package com.android.systemui.statusbar.notification.row.domain
 import android.content.applicationContext
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.testDispatcher
+import com.android.systemui.kosmos.testScope
+import com.android.systemui.shade.domain.interactor.shadeInteractor
 import com.android.systemui.statusbar.notification.row.data.repository.testBundleRepository
 import com.android.systemui.statusbar.notification.row.domain.interactor.BundleInteractor
 import com.android.systemui.statusbar.notification.row.icon.appIconProvider
@@ -32,5 +34,9 @@ val Kosmos.bundleInteractor by
             context = applicationContext,
             backgroundDispatcher = testDispatcher,
             systemClock = systemClock,
+            shadeInteractor = shadeInteractor,
+            // Use background task that is allowed to run for the duration of the test; this task
+            // will be canceled automatically
+            scope = testScope.backgroundScope
         )
     }

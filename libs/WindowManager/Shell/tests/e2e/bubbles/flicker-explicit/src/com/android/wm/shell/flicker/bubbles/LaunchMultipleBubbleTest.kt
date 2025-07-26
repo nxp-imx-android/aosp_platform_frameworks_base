@@ -28,11 +28,11 @@ import com.android.wm.shell.Utils
 import com.android.wm.shell.flicker.bubbles.testcase.BubbleAlwaysVisibleTestCases
 import com.android.wm.shell.flicker.bubbles.testcase.BubbleAppBecomesExpandedTestCases
 import com.android.wm.shell.flicker.bubbles.utils.ApplyPerParameterRule
+import com.android.wm.shell.flicker.bubbles.utils.BubbleFlickerTestHelper.dismissMultipleBubbles
+import com.android.wm.shell.flicker.bubbles.utils.BubbleFlickerTestHelper.launchBubbleViaBubbleMenu
+import com.android.wm.shell.flicker.bubbles.utils.BubbleFlickerTestHelper.launchMultipleBubbleAppsViaBubbleMenuAndCollapse
 import com.android.wm.shell.flicker.bubbles.utils.FlickerPropertyInitializer
 import com.android.wm.shell.flicker.bubbles.utils.RecordTraceWithTransitionRule
-import com.android.wm.shell.flicker.bubbles.utils.dismissMultipleBubbles
-import com.android.wm.shell.flicker.bubbles.utils.launchBubbleViaBubbleMenu
-import com.android.wm.shell.flicker.bubbles.utils.launchMultipleBubbleAppsViaBubbleMenuAndCollapse
 import com.google.common.truth.Truth.assertWithMessage
 import org.junit.FixMethodOrder
 import org.junit.Rule

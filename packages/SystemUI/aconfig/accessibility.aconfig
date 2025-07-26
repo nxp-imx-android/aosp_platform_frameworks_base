@@ -73,16 +73,6 @@ flag {
 }
 
 flag {
-    name: "update_corner_radius_on_display_changed"
-    namespace: "accessibility"
-    description: "Updates the corner radius to the magnification fullscreen border when the display changes."
-    bug: "335113174"
-    metadata {
-      purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "update_window_magnifier_bottom_boundary"
     namespace: "accessibility"
     description: "Update the window magnifier boundary at the bottom to the top of the system gesture inset."
@@ -117,16 +107,6 @@ flag {
     namespace: "accessibility"
     description: "Update hearing device icon in floating menu according to the connection status."
     bug: "357882387"
-}
-
-flag {
-    name: "floating_menu_notify_targets_changed_on_strict_diff"
-    namespace: "accessibility"
-    description: "Only notify listeners that the list of accessibility targets has changed if the lists are not identical."
-    bug: "376473165"
-    metadata {
-      purpose: PURPOSE_BUGFIX
-    }
 }
 
 flag {

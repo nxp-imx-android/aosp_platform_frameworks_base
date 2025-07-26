@@ -16,24 +16,19 @@
 
 package com.android.packageinstaller.v2.ui.fragments;
 
-import static android.content.pm.PackageInstaller.DEVELOPER_VERIFICATION_POLICY_BLOCK_FAIL_OPEN;
-import static android.content.pm.PackageInstaller.DEVELOPER_VERIFICATION_POLICY_BLOCK_FAIL_WARN;
+import static android.content.pm.PackageInstaller.DEVELOPER_VERIFICATION_POLICY_BLOCK_FAIL_CLOSED;
 import static android.content.pm.PackageInstaller.DEVELOPER_VERIFICATION_USER_RESPONSE_ABORT;
 import static android.content.pm.PackageInstaller.DEVELOPER_VERIFICATION_USER_RESPONSE_INSTALL_ANYWAY;
-import static android.content.pm.PackageInstaller.DEVELOPER_VERIFICATION_USER_RESPONSE_RETRY;
 import static android.content.pm.PackageInstaller.DeveloperVerificationUserConfirmationInfo.DEVELOPER_VERIFICATION_USER_ACTION_NEEDED_REASON_DEVELOPER_BLOCKED;
 import static android.content.pm.PackageInstaller.DeveloperVerificationUserConfirmationInfo.DEVELOPER_VERIFICATION_USER_ACTION_NEEDED_REASON_LITE_VERIFICATION;
 import static android.content.pm.PackageInstaller.DeveloperVerificationUserConfirmationInfo.DEVELOPER_VERIFICATION_USER_ACTION_NEEDED_REASON_NETWORK_UNAVAILABLE;
 import static android.content.pm.PackageInstaller.DeveloperVerificationUserConfirmationInfo.DEVELOPER_VERIFICATION_USER_ACTION_NEEDED_REASON_UNKNOWN;
 
-import static com.android.packageinstaller.ConfirmDeveloperVerification.FLAG_VERIFICATION_FAILED_MAY_BYPASS;
-import static com.android.packageinstaller.ConfirmDeveloperVerification.FLAG_VERIFICATION_FAILED_MAY_RETRY;
-import static com.android.packageinstaller.ConfirmDeveloperVerification.FLAG_VERIFICATION_FAILED_MAY_RETRY_MAY_BYPASS;
-
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.pm.PackageInstaller;
 import android.content.pm.PackageInstaller.DeveloperVerificationUserConfirmationInfo;
 import android.os.Bundle;
 import android.util.Log;
@@ -79,7 +74,7 @@ public class DeveloperVerificationConfirmationFragment extends DialogFragment {
         DeveloperVerificationUserConfirmationInfo verificationInfo =
                 mDialogData.getVerificationInfo();
         assert verificationInfo != null;
-        int dialogTypeFlag = getUserConfirmationDialogFlag(verificationInfo);
+        boolean isBypassAllowed = isBypassAllowed(verificationInfo);
         int userActionNeededReasonReason = verificationInfo.getUserActionNeededReason();
         int msgResId = getDialogMessageResourceId(userActionNeededReasonReason);
 
@@ -88,27 +83,7 @@ public class DeveloperVerificationConfirmationFragment extends DialogFragment {
                 .setTitle(mDialogData.getAppLabel())
                 .setMessage(msgResId);
 
-        if ((dialogTypeFlag & FLAG_VERIFICATION_FAILED_MAY_RETRY_MAY_BYPASS)
-                == FLAG_VERIFICATION_FAILED_MAY_RETRY_MAY_BYPASS) {
-            // allow retry and bypass
-            builder.setPositiveButton(R.string.try_again,
-                            (dialog, which) -> mInstallActionListener.setVerificationUserResponse(
-                                    DEVELOPER_VERIFICATION_USER_RESPONSE_RETRY))
-                    .setNegativeButton(R.string.dont_install,
-                            (dialog, which) -> mInstallActionListener.setVerificationUserResponse(
-                                    DEVELOPER_VERIFICATION_USER_RESPONSE_ABORT))
-                    .setNeutralButton(R.string.install_anyway,
-                            (dialog, which) -> mInstallActionListener.setVerificationUserResponse(
-                                    DEVELOPER_VERIFICATION_USER_RESPONSE_INSTALL_ANYWAY));
-        } else if ((dialogTypeFlag & FLAG_VERIFICATION_FAILED_MAY_RETRY) != 0) {
-            // only allow retry
-            builder.setPositiveButton(R.string.ok,
-                            (dialog, which) -> mInstallActionListener.setVerificationUserResponse(
-                                    DEVELOPER_VERIFICATION_USER_RESPONSE_ABORT))
-                    .setNegativeButton(R.string.try_again,
-                            (dialog, which) -> mInstallActionListener.setVerificationUserResponse(
-                                    DEVELOPER_VERIFICATION_USER_RESPONSE_RETRY));
-        } else if ((dialogTypeFlag & FLAG_VERIFICATION_FAILED_MAY_BYPASS) != 0) {
+        if (isBypassAllowed) {
             // only allow bypass
             builder.setPositiveButton(R.string.dont_install,
                             (dialog, which) -> mInstallActionListener.setVerificationUserResponse(
@@ -166,41 +141,26 @@ public class DeveloperVerificationConfirmationFragment extends DialogFragment {
     }
 
     /**
-     * Returns the correct type of dialog based on the verification policy and the reason for user
-     * action
+     * Returns whether the user can choose to bypass the verification result and force installation,
+     * based on the verification policy and the reason for user action.
      */
-    private int getUserConfirmationDialogFlag(
-            DeveloperVerificationUserConfirmationInfo verificationInfo) {
+    private static boolean isBypassAllowed(
+            PackageInstaller.DeveloperVerificationUserConfirmationInfo verificationInfo) {
         int userActionNeededReason = verificationInfo.getUserActionNeededReason();
         int verificationPolicy = verificationInfo.getVerificationPolicy();
 
         return switch (userActionNeededReason) {
-            case DEVELOPER_VERIFICATION_USER_ACTION_NEEDED_REASON_DEVELOPER_BLOCKED -> 0;
+            case DEVELOPER_VERIFICATION_USER_ACTION_NEEDED_REASON_DEVELOPER_BLOCKED -> false;
 
-            case DEVELOPER_VERIFICATION_USER_ACTION_NEEDED_REASON_NETWORK_UNAVAILABLE -> {
-                int flag = FLAG_VERIFICATION_FAILED_MAY_RETRY;
-                if (verificationPolicy == DEVELOPER_VERIFICATION_POLICY_BLOCK_FAIL_OPEN
-                        || verificationPolicy == DEVELOPER_VERIFICATION_POLICY_BLOCK_FAIL_WARN) {
-                    flag |= FLAG_VERIFICATION_FAILED_MAY_BYPASS;
-                }
-                yield flag;
-            }
-
-            case DEVELOPER_VERIFICATION_USER_ACTION_NEEDED_REASON_UNKNOWN -> {
-                int flag = 0;
-                if (verificationPolicy == DEVELOPER_VERIFICATION_POLICY_BLOCK_FAIL_OPEN
-                        || verificationPolicy == DEVELOPER_VERIFICATION_POLICY_BLOCK_FAIL_WARN) {
-                    flag |= FLAG_VERIFICATION_FAILED_MAY_BYPASS;
-                }
-                yield flag;
-            }
-
-            case DEVELOPER_VERIFICATION_USER_ACTION_NEEDED_REASON_LITE_VERIFICATION ->
-                    FLAG_VERIFICATION_FAILED_MAY_BYPASS;
+            case DEVELOPER_VERIFICATION_USER_ACTION_NEEDED_REASON_NETWORK_UNAVAILABLE,
+                 DEVELOPER_VERIFICATION_USER_ACTION_NEEDED_REASON_UNKNOWN,
+                 DEVELOPER_VERIFICATION_USER_ACTION_NEEDED_REASON_LITE_VERIFICATION ->
+                    // Only disallow bypass if policy is closed.
+                    verificationPolicy != DEVELOPER_VERIFICATION_POLICY_BLOCK_FAIL_CLOSED;
 
             default -> {
                 Log.e(LOG_TAG, "Unknown user action needed reason: " + userActionNeededReason);
-                yield 0;
+                yield false;
             }
         };
     }

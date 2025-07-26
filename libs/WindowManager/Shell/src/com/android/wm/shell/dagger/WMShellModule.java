@@ -1437,6 +1437,7 @@ public abstract class WMShellModule {
             DesktopPersistentRepository desktopPersistentRepository,
             DesktopRepositoryInitializer desktopRepositoryInitializer,
             @ShellMainThread CoroutineScope mainScope,
+            @ShellBackgroundThread CoroutineScope bgScope,
             UserManager userManager,
             DesktopState desktopState,
             DesktopConfig desktopConfig
@@ -1444,7 +1445,7 @@ public abstract class WMShellModule {
         return new DesktopUserRepositories(shellInit, shellController,
                 desktopPersistentRepository,
                 desktopRepositoryInitializer,
-                mainScope, userManager, desktopState, desktopConfig);
+                mainScope, bgScope, userManager, desktopState, desktopConfig);
     }
 
     @WMSingleton
@@ -1930,8 +1931,8 @@ public abstract class WMShellModule {
     @WMSingleton
     @Provides
     static DragToBubbleController getDragToBubbleController(Context context,
-            BubblePositioner bubblePositioner, BubbleController bubbleController) {
-        return new DragToBubbleController(context, bubblePositioner, bubbleController);
+            BubbleController bubbleController) {
+        return new DragToBubbleController(context, bubbleController);
     }
 
     //

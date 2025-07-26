@@ -345,7 +345,7 @@ public class InsetsSourceConsumer {
     /**
      * Reports that this source's perceptibility has changed
      *
-     * @param perceptible true if the source is perceptible, false otherwise.
+     * @param perceptible whether the source is perceptible or not.
      * @see InsetsAnimationControlCallbacks#reportPerceptible
      */
     public void onPerceptible(boolean perceptible) {
@@ -365,7 +365,7 @@ public class InsetsSourceConsumer {
         if (mType == WindowInsets.Type.ime()) {
             final IBinder window = mController.getHost().getWindowToken();
             if (window != null) {
-                mController.getHost().getInputMethodManager().removeImeSurface(window);
+                mController.getHost().getInputMethodManager().removeImeSurfaceFromWindow(window);
             }
         }
     }

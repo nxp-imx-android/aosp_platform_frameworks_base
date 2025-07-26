@@ -344,7 +344,7 @@ class AppHeaderController(
                     displayController = displayController,
                     windowDecorationActions = windowDecorationActions,
                     taskInfo = taskInfo,
-                    decorWindowContext = context,
+                    decorWindowContext = decorWindowContext,
                     positionSupplier = { width, height ->
                         calculateMaximizeMenuPosition(width, height)
                     },

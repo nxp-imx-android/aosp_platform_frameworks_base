@@ -137,19 +137,8 @@ public class MotionEventInjector extends BaseEventStreamTransformation implement
                 && mOpenTouchGestureInProgress) {
             return;
         }
-        if (Flags.motionEventInjectorCancelFix()) {
-            // Pass this real event down the stream unmodified.
-            super.onMotionEvent(event, rawEvent, policyFlags);
-        } else {
-            cancelAnyPendingInjectedEvents();
-            if (!android.view.accessibility.Flags
-                    .preventA11yNontoolFromInjectingIntoSensitiveViews()) {
-                // Indicate that the input event is injected from accessibility, to let applications
-                // distinguish it from events injected by other means.
-                policyFlags |= WindowManagerPolicyConstants.FLAG_INJECTED_FROM_ACCESSIBILITY;
-            }
-            sendMotionEventToNext(event, rawEvent, policyFlags);
-        }
+        // Pass this real event down the stream unmodified.
+        super.onMotionEvent(event, rawEvent, policyFlags);
     }
 
     @Override
@@ -189,11 +178,9 @@ public class MotionEventInjector extends BaseEventStreamTransformation implement
         MotionEvent motionEvent = (MotionEvent) message.obj;
         int policyFlags = WindowManagerPolicyConstants.FLAG_PASS_TO_USER
                 | WindowManagerPolicyConstants.FLAG_INJECTED_FROM_ACCESSIBILITY;
-        if (android.view.accessibility.Flags.preventA11yNontoolFromInjectingIntoSensitiveViews()) {
-            boolean fromAccessibilityTool = message.arg2 == 1;
-            if (fromAccessibilityTool) {
-                policyFlags |= WindowManagerPolicyConstants.FLAG_INJECTED_FROM_ACCESSIBILITY_TOOL;
-            }
+        boolean fromAccessibilityTool = message.arg2 == 1;
+        if (fromAccessibilityTool) {
+            policyFlags |= WindowManagerPolicyConstants.FLAG_INJECTED_FROM_ACCESSIBILITY_TOOL;
         }
         sendMotionEventToNext(motionEvent, motionEvent, policyFlags);
         boolean isEndOfSequence = message.arg1 != 0;
@@ -234,10 +221,6 @@ public class MotionEventInjector extends BaseEventStreamTransformation implement
         }
         if (!continuingGesture) {
             cancelAnyPendingInjectedEvents();
-            if (!Flags.motionEventInjectorCancelFix()) {
-                // Injected gestures have been canceled, but real gestures still need cancelling
-                cancelInjectedGestureInProgress();
-            }
         }
         mServiceInterfaceForCurrentGesture = serviceInterface;
 
@@ -354,13 +337,10 @@ public class MotionEventInjector extends BaseEventStreamTransformation implement
                     obtainMotionEvent(now, now, MotionEvent.ACTION_CANCEL, getLastTouchPoints(), 1);
             int policyFlags = WindowManagerPolicyConstants.FLAG_PASS_TO_USER
                     | WindowManagerPolicyConstants.FLAG_INJECTED_FROM_ACCESSIBILITY;
-            if (android.view.accessibility.Flags
-                    .preventA11yNontoolFromInjectingIntoSensitiveViews()) {
-                // ACTION_CANCEL events are internal system details for event stream state
-                // management and not used for performing new actions, so always treat them as
-                // originating from an accessibility tool.
-                policyFlags |= WindowManagerPolicyConstants.FLAG_INJECTED_FROM_ACCESSIBILITY_TOOL;
-            }
+            // ACTION_CANCEL events are internal system details for event stream state
+            // management and not used for performing new actions, so always treat them as
+            // originating from an accessibility tool.
+            policyFlags |= WindowManagerPolicyConstants.FLAG_INJECTED_FROM_ACCESSIBILITY_TOOL;
             sendMotionEventToNext(cancelEvent, cancelEvent, policyFlags);
             mOpenTouchGestureInProgress = false;
         }

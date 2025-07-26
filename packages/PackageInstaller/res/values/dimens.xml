@@ -53,6 +53,8 @@
     <dimen name="dialog_inter_element_vertical_margin">12dp</dimen>
     <dimen name="alert_dialog_radius">28dp</dimen>
     <dimen name="alert_dialog_dim_amount">0.6</dimen>
+    <dimen name="indeterminate_progress_bar_padding">26dp</dimen>
+    <dimen name="progress_bar_margin_top">32dp</dimen>
     <!-- 364dp for the portrait mode -->
     <dimen name="alert_dialog_min_width_minor">96.5%</dimen>
     <!-- Override the values for the buttonbar paddings in M3 MaterialAlertDialog -->

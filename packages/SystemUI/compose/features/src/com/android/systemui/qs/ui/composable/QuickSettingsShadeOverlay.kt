@@ -22,15 +22,14 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredHeight
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.systemGestureExclusion
 import androidx.compose.foundation.verticalScroll
@@ -51,6 +50,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.android.compose.PlatformSliderDefaults
@@ -115,7 +115,7 @@ constructor(
 
     override val userActions: Flow<Map<UserAction, UserActionResult>> = actionsViewModel.actions
 
-    override val alwaysCompose: Boolean = true
+    override val alwaysCompose: Boolean = false
 
     override suspend fun activate(): Nothing {
         actionsViewModel.activate()
@@ -242,7 +242,6 @@ fun ContentScope.QuickSettingsLayout(
     modifier: Modifier = Modifier,
 ) {
     Column(
-        verticalArrangement = Arrangement.spacedBy(QuickSettingsShade.Dimensions.Padding),
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier =
             modifier.padding(
@@ -251,20 +250,25 @@ fun ContentScope.QuickSettingsLayout(
             ),
     ) {
         if (isFullWidthShade()) {
+            VerticalSeparator()
             QuickSettingsOverlayHeader(
                 viewModel = viewModel.shadeHeaderViewModel,
-                modifier =
-                    Modifier.element(QuickSettingsShade.Elements.Header)
-                        .padding(top = QuickSettingsShade.Dimensions.Padding),
+                modifier = Modifier.element(QuickSettingsShade.Elements.Header),
             )
+
+            VerticalSeparator()
         }
+
         Toolbar(
             modifier =
                 Modifier.fillMaxWidth().requiredHeight(QuickSettingsShade.Dimensions.ToolbarHeight),
             viewModel = viewModel.toolbarViewModel,
         )
+
+        // TODO(b/428805936): Double check this padding.
+        VerticalSeparator()
+
         Column(
-            verticalArrangement = Arrangement.spacedBy(QuickSettingsShade.Dimensions.Padding),
             modifier = Modifier.fillMaxWidth().verticalScroll(rememberScrollState()),
         ) {
             MediaCarousel(
@@ -274,6 +278,10 @@ fun ContentScope.QuickSettingsLayout(
                 usingCollapsedLandscapeMedia = true,
                 modifier = Modifier.padding(horizontal = QuickSettingsShade.Dimensions.Padding),
             )
+
+            if (viewModel.showMedia) {
+                VerticalSeparator()
+            }
 
             Box(
                 Modifier.systemGestureExclusionInShade(
@@ -291,6 +299,8 @@ fun ContentScope.QuickSettingsLayout(
                     modifier = Modifier.fillMaxWidth(),
                 )
             }
+
+            VerticalSeparator()
 
             val volumeSliderViewModel = viewModel.volumeSliderViewModel
             if (volumeSliderViewModel != null) {
@@ -340,13 +350,26 @@ fun ContentScope.QuickSettingsLayout(
                         }
                     }
                 }
+
+                VerticalSeparator()
             }
 
             GridAnchor()
+
+            // TODO(b/428805936): Double check this padding.
+            VerticalSeparator(QuickSettingsShade.Dimensions.Padding)
+
             TileGrid(viewModel = viewModel.tileGridViewModel, modifier = Modifier.fillMaxWidth())
-            Spacer(Modifier.padding(bottom = QuickSettingsShade.Dimensions.Padding))
+
+            // TODO(b/428805936): Double check this padding.
+            VerticalSeparator(QuickSettingsShade.Dimensions.Padding * 2)
         }
     }
+}
+
+@Composable
+private fun VerticalSeparator(height: Dp = QuickSettingsShade.Dimensions.Padding) {
+    Spacer(Modifier.height(height = height))
 }
 
 object QuickSettingsShade {

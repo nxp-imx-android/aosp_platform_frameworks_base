@@ -21,8 +21,9 @@ import android.view.SurfaceControl
 import com.android.window.flags.Flags
 import com.android.wm.shell.ShellTaskOrganizer
 import com.android.wm.shell.ShellTaskOrganizer.TaskAppearedListener
+import com.android.wm.shell.ShellTaskOrganizer.TaskInfoChangedListener
 import com.android.wm.shell.ShellTaskOrganizer.TaskVanishedListener
-import com.android.wm.shell.compatui.letterbox.lifecycle.TaskIdResolver
+import com.android.wm.shell.compatui.letterbox.lifecycle.isALeafTask
 import com.android.wm.shell.dagger.WMSingleton
 import com.android.wm.shell.sysui.ShellInit
 import javax.inject.Inject
@@ -38,8 +39,7 @@ constructor(
     shellInit: ShellInit,
     shellTaskOrganizer: ShellTaskOrganizer,
     private val letterboxTaskInfoRepository: LetterboxTaskInfoRepository,
-    private val taskIdResolver: TaskIdResolver,
-) : TaskVanishedListener, TaskAppearedListener {
+) : TaskVanishedListener, TaskAppearedListener, TaskInfoChangedListener {
 
     init {
         if (Flags.appCompatRefactoring()) {
@@ -47,6 +47,9 @@ constructor(
                 {
                     shellTaskOrganizer.addTaskAppearedListener(this)
                     shellTaskOrganizer.addTaskVanishedListener(this)
+                    if (Flags.appCompatRefactoringFixMultiwindowTaskHierarchy()) {
+                        shellTaskOrganizer.addTaskInfoChangedListener(this)
+                    }
                 },
                 this,
             )
@@ -55,17 +58,7 @@ constructor(
 
     override fun onTaskAppeared(taskInfo: RunningTaskInfo, leash: SurfaceControl) {
         if (Flags.appCompatRefactoringFixMultiwindowTaskHierarchy()) {
-            letterboxTaskInfoRepository.insert(
-                key = taskInfo.taskId,
-                item =
-                    LetterboxTaskInfoState(
-                        containerToken = taskInfo.token,
-                        containerLeash = leash,
-                        parentTaskId = taskInfo.parentTaskId,
-                        taskId = taskIdResolver.getLetterboxTaskId(taskInfo),
-                    ),
-                overrideIfPresent = true,
-            )
+            letterboxTaskInfoRepository.updateTaskLeafState(taskInfo, leash)
         } else {
             letterboxTaskInfoRepository.insert(
                 key = taskInfo.taskId,
@@ -73,6 +66,12 @@ constructor(
                     LetterboxTaskInfoState(containerToken = taskInfo.token, containerLeash = leash),
                 overrideIfPresent = true,
             )
+        }
+    }
+
+    override fun onTaskInfoChanged(taskInfo: RunningTaskInfo) {
+        if (!taskInfo.isALeafTask) {
+            letterboxTaskInfoRepository.delete(taskInfo.taskId)
         }
     }
 

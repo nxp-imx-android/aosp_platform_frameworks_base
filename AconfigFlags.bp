@@ -2168,3 +2168,9 @@ java_aconfig_library {
     aconfig_declarations: "android.hardware.serial.flags-aconfig",
     defaults: ["framework-minus-apex-aconfig-java-defaults"],
 }
+
+rust_aconfig_library {
+    name: "libandroid_hardware_serial_flags_rust",
+    crate_name: "android_hardware_serial_flags",
+    aconfig_declarations: "android.hardware.serial.flags-aconfig",
+}

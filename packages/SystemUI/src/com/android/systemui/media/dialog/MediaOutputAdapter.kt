@@ -371,7 +371,7 @@ class MediaOutputAdapter(controller: MediaSwitchingController) :
                 // casting devices without group volume control, so disabling seek bar will be
                 // unnecessary when Flags.enableOutputSwitcherPersonalAudioSharing() is on.
                 isVolumeControlAllowed =
-                    !Flags.enableOutputSwitcherPersonalAudioSharing() &&
+                    Flags.enableOutputSwitcherPersonalAudioSharing() ||
                         mController.isVolumeControlEnabledForSession,
                 currentVolume = mController.sessionVolume,
                 maxVolume = mController.sessionVolumeMax,

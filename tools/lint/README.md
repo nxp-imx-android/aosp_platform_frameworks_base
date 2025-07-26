@@ -6,7 +6,7 @@ in AOSP. These checks are broken down into two subdirectories:
 1. [Global Checks](#android-global-lint-checker)
 2. [Framework Checks](#android-framework-lint-checker)
 
-# [Android Global Lint Checker](/global)
+# [Android Global Lint Checker](./global)
 Checks written here are executed for the entire tree. The `AndroidGlobalLintChecker`
 build target produces a jar file that is included in the overall build output
 (`AndroidGlobalLintChecker.jar`).  This file is then downloaded as a prebuilt under the
@@ -15,7 +15,7 @@ build target produces a jar file that is included in the overall build output
 ## How to add new global lint checks
 1. Write your detector with its issues and put it into
    `global/checks/src/main/java/com/google/android/lint`.
-2. Add your detector's issues into `AndroidGlobalIssueRegistry`'s `issues`
+2. Add your detector's issues into `AndroidGlobalIssueRegistry.kt`'s `issues`
    field.
 3. Write unit tests for your detector in one file and put it into
    `global/checks/test/java/com/google/android/lint`.
@@ -28,7 +28,7 @@ build target produces a jar file that is included in the overall build output
 6. Done! Your lint check should be applied in lint report builds across the
    entire tree!
 
-# [Android Framework Lint Checker](/framework)
+# [Android Framework Lint Checker](./framework)
 
 Checks written here are going to be executed for modules that opt in to those (e.g. any
 `services.XXX` module) and results will be automatically reported on CLs on gerrit.
@@ -37,7 +37,8 @@ Checks written here are going to be executed for modules that opt in to those (e
 
 1. Write your detector with its issues and put it into
    `framework/checks/src/main/java/com/google/android/lint`.
-2. Add your detector's issues into `AndroidFrameworkIssueRegistry`'s `issues` field.
+2. Add your detector's issues into `AndroidFrameworkIssueRegistry.kt`'s `issues`
+   field.
 3. Write unit tests for your detector in one file and put it into
    `framework/checks/test/java/com/google/android/lint`.
 4. Done! Your lint checks should be applied in lint report builds for modules that include
@@ -59,7 +60,9 @@ java_library_static {
 ```
 m out/soong/.intermediates/frameworks/base/services/autofill/services.autofill/android_common/lint/lint-report.html
 ```
-   (Lint report can be found in the same path, i.e. `out/../lint-report.html`)
+   Replace `services/autofill/` with the appropriate directory path and replace
+   `services.autofill` with your module's name. After you run the command, the
+   lint report can be found in the same path, i.e. `out/../lint-report.html`.
 
 3. Now lint issues should appear on gerrit!
 

@@ -292,6 +292,7 @@ import static com.android.server.devicepolicy.DevicePolicyStatsLog.DEVICE_POLICY
 import static com.android.server.devicepolicy.DevicePolicyStatsLog.DEVICE_POLICY_STATE__PASSWORD_COMPLEXITY__COMPLEXITY_MEDIUM;
 import static com.android.server.devicepolicy.DevicePolicyStatsLog.DEVICE_POLICY_STATE__PASSWORD_COMPLEXITY__COMPLEXITY_NONE;
 import static com.android.server.devicepolicy.DevicePolicyStatsLog.DEVICE_POLICY_STATE__PASSWORD_COMPLEXITY__COMPLEXITY_UNSPECIFIED;
+import static com.android.server.devicepolicy.PolicyDefinition.CROSS_PROFILE_WIDGET_PROVIDER;
 import static com.android.server.devicepolicy.TransferOwnershipMetadataManager.ADMIN_TYPE_DEVICE_OWNER;
 import static com.android.server.devicepolicy.TransferOwnershipMetadataManager.ADMIN_TYPE_PROFILE_OWNER;
 import static com.android.server.pm.PackageManagerService.PLATFORM_PACKAGE_NAME;
@@ -3669,6 +3670,44 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
         return true;
     }
 
+    @GuardedBy("getLockObject()")
+    private boolean maybeMigrateCrossProfileWidgetProvider(String backupId) {
+        if (!Flags.crossProfileWidgetProviderBulkApis()) {
+            return false;
+        }
+        if (mOwners.isCrossProfileWidgetProviderMigrated()) {
+            return false;
+        }
+
+        Slog.i(LOG_TAG, "Migrating Cross Profile Widget Provider to policy engine");
+
+        // Create backup if none exists
+        mDevicePolicyEngine.createBackup(backupId);
+        try {
+            iterateThroughDpcAdminsLocked((admin, enforcingAdmin) -> {
+                if (admin.crossProfileWidgetProviders == null
+                        || admin.crossProfileWidgetProviders.isEmpty()) {
+                    Slog.i(LOG_TAG, "Skip setting empty cross profile widget providers");
+                    return;
+                }
+                int userId = enforcingAdmin.getUserId();
+                Slog.i(LOG_TAG, "Setting Cross Profile Widget Provider");
+                mDevicePolicyEngine.setLocalPolicy(
+                        CROSS_PROFILE_WIDGET_PROVIDER,
+                        enforcingAdmin,
+                        new PackageSetPolicyValue(Set.copyOf(admin.crossProfileWidgetProviders)),
+                        userId);
+            });
+        } catch (Exception e) {
+            Slog.wtf(LOG_TAG,
+                    "Failed to migrate Cross Profile Widget Provider to policy engine", e);
+        }
+
+        Slog.i(LOG_TAG, "Marking Cross Profile Widget Provider migration complete");
+        mOwners.markCrossProfileWidgetProviderMigrated();
+        return true;
+    }
+
     /** Register callbacks for statsd pulled atoms. */
     private void registerStatsCallbacks() {
         final StatsManager statsManager = mContext.getSystemService(StatsManager.class);
@@ -5004,6 +5043,48 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
     @Override
     public boolean addCrossProfileWidgetProvider(ComponentName admin, String callerPackageName,
             String packageName) {
+        if (Flags.crossProfileWidgetProviderBulkApis()) {
+            Objects.requireNonNull(callerPackageName, "callerPackageName is null");
+            Objects.requireNonNull(packageName, "packageName is null");
+
+            CallerIdentity caller = getCallerIdentity(admin, callerPackageName);
+
+            enforcePermission(
+                    MANAGE_DEVICE_POLICY_PROFILE_INTERACTION,
+                    callerPackageName,
+                    caller.getUserId());
+            EnforcingAdmin enforcingAdmin = getEnforcingAdminForCaller(admin, callerPackageName);
+
+            synchronized (getLockObject()) {
+                Set<String> currentPackageNames =
+                        mDevicePolicyEngine.getLocalPolicySetByAdmin(
+                                CROSS_PROFILE_WIDGET_PROVIDER, enforcingAdmin, caller.getUserId());
+                if (currentPackageNames == null) {
+                    currentPackageNames = Collections.EMPTY_SET;
+                }
+
+                if (currentPackageNames.contains(packageName)) {
+                    return false;
+                }
+
+                Set<String> updatedPackageNames = new HashSet<>(currentPackageNames);
+                updatedPackageNames.add(packageName);
+
+                mDevicePolicyEngine.setLocalPolicy(
+                        CROSS_PROFILE_WIDGET_PROVIDER,
+                        enforcingAdmin,
+                        new PackageSetPolicyValue(updatedPackageNames),
+                        caller.getUserId());
+            }
+
+            DevicePolicyEventLogger
+                    .createEvent(DevicePolicyEnums.ADD_CROSS_PROFILE_WIDGET_PROVIDER)
+                    .setAdmin(caller.getPackageName())
+                    .write();
+
+            return true;
+        }
+
         CallerIdentity caller = getCallerIdentity(admin);
 
         Objects.requireNonNull(admin, "ComponentName is null");
@@ -5042,8 +5123,69 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
     }
 
     @Override
+    public void setCrossProfileWidgetProviders(
+            String callerPackageName, List<String> packageNames) {
+        Objects.requireNonNull(callerPackageName, "callerPackageName is null");
+        Objects.requireNonNull(packageNames, "packageNames is null");
+
+        CallerIdentity caller = getCallerIdentity(callerPackageName);
+
+        enforcePermission(
+                MANAGE_DEVICE_POLICY_PROFILE_INTERACTION,
+                callerPackageName,
+                caller.getUserId());
+        EnforcingAdmin enforcingAdmin = getEnforcingAdminForCaller(
+                /* admin= */ null,
+                callerPackageName);
+
+        mDevicePolicyEngine.setLocalPolicy(
+                CROSS_PROFILE_WIDGET_PROVIDER,
+                enforcingAdmin,
+                new PackageSetPolicyValue(Set.copyOf(packageNames)),
+                caller.getUserId());
+    }
+
+    @Override
     public boolean removeCrossProfileWidgetProvider(ComponentName admin, String callerPackageName,
             String packageName) {
+        if (Flags.crossProfileWidgetProviderBulkApis()) {
+            Objects.requireNonNull(callerPackageName, "callerPackageName is null");
+            Objects.requireNonNull(packageName, "packageNames is null");
+
+            CallerIdentity caller = getCallerIdentity(admin);
+            enforcePermission(
+                    MANAGE_DEVICE_POLICY_PROFILE_INTERACTION,
+                    callerPackageName,
+                    caller.getUserId());
+            EnforcingAdmin enforcingAdmin = getEnforcingAdminForCaller(admin, callerPackageName);
+
+            Set<String> currentPackageNames =
+                    mDevicePolicyEngine.getLocalPolicySetByAdmin(
+                            CROSS_PROFILE_WIDGET_PROVIDER, enforcingAdmin, caller.getUserId());
+
+            if (currentPackageNames == null || !currentPackageNames.contains(packageName)) {
+                return false;
+            }
+
+            Set<String> updatedPackageNames = new HashSet<>(currentPackageNames);
+            updatedPackageNames.remove(packageName);
+
+            // TODO: This should be a read-modify-write operation. Update the policy transactionally
+            // when the device policy engine supports that.
+            mDevicePolicyEngine.setLocalPolicy(
+                    CROSS_PROFILE_WIDGET_PROVIDER,
+                    enforcingAdmin,
+                    new PackageSetPolicyValue(updatedPackageNames),
+                    caller.getUserId());
+
+            DevicePolicyEventLogger
+                    .createEvent(DevicePolicyEnums.REMOVE_CROSS_PROFILE_WIDGET_PROVIDER)
+                    .setAdmin(caller.getPackageName())
+                    .write();
+
+            return true;
+        }
+
         CallerIdentity caller = getCallerIdentity(admin);
 
         Objects.requireNonNull(admin, "ComponentName is null");
@@ -5084,6 +5226,28 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
     @Override
     public List<String> getCrossProfileWidgetProviders(ComponentName admin,
             String callerPackageName) {
+        if (Flags.crossProfileWidgetProviderBulkApis()) {
+            Objects.requireNonNull(callerPackageName, "callerPackageName is null");
+
+            CallerIdentity caller = getCallerIdentity(admin);
+            enforcePermission(
+                    MANAGE_DEVICE_POLICY_PROFILE_INTERACTION,
+                    callerPackageName,
+                    caller.getUserId());
+            EnforcingAdmin enforcingAdmin =
+                    getEnforcingAdminForCaller(admin, callerPackageName);
+
+            Set<String> packageNames =
+                    mDevicePolicyEngine.getLocalPolicySetByAdmin(
+                            CROSS_PROFILE_WIDGET_PROVIDER, enforcingAdmin, caller.getUserId());
+
+            if (packageNames == null) {
+                return Collections.emptyList();
+            }
+
+            return List.copyOf(packageNames);
+        }
+
         CallerIdentity caller = getCallerIdentity(admin);
 
         Objects.requireNonNull(admin, "ComponentName is null");
@@ -15983,6 +16147,16 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
         @Override
         public List<String> getCrossProfileWidgetProviders(int profileId) {
             synchronized (getLockObject()) {
+                if (Flags.crossProfileWidgetProviderBulkApis()) {
+                    Set<String> packageNames =
+                            mDevicePolicyEngine.getResolvedPolicy(
+                                    CROSS_PROFILE_WIDGET_PROVIDER, profileId);
+                    if (packageNames == null) {
+                        return Collections.emptyList();
+                    }
+                    return List.copyOf(packageNames);
+                }
+
                 if (mOwners == null) {
                     return Collections.emptyList();
                 }
@@ -16048,16 +16222,19 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
             }
         }
 
-        private void notifyCrossProfileProvidersChanged(int userId, List<String> packages) {
-            final List<OnCrossProfileWidgetProvidersChangeListener> listeners;
-            synchronized (getLockObject()) {
-                listeners = new ArrayList<>(mWidgetProviderListeners);
-            }
-            final int listenerCount = listeners.size();
-            for (int i = 0; i < listenerCount; i++) {
-                OnCrossProfileWidgetProvidersChangeListener listener = listeners.get(i);
-                listener.onCrossProfileWidgetProvidersChanged(userId, packages);
-            }
+        @Override
+        public void notifyCrossProfileProvidersChanged(int userId, List<String> packages) {
+            mHandler.post(() -> {
+                final List<OnCrossProfileWidgetProvidersChangeListener> listeners;
+                synchronized (getLockObject()) {
+                    listeners = new ArrayList<>(mWidgetProviderListeners);
+                }
+                final int listenerCount = listeners.size();
+                for (int i = 0; i < listenerCount; i++) {
+                    OnCrossProfileWidgetProvidersChangeListener listener = listeners.get(i);
+                    listener.onCrossProfileWidgetProvidersChanged(userId, packages);
+                }
+            });
         }
 
         @Override
@@ -16463,6 +16640,16 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
         }
 
         @Override
+        public void setUserRestrictionForUser(
+                @NonNull String systemEntity,
+                String key,
+                boolean enabled,
+                @UserIdInt int targetUser) {
+            DevicePolicyManagerService.this.setUserRestrictionForUser(
+                    systemEntity, key, enabled, targetUser);
+        }
+
+        @Override
         public void enforceSecurityLoggingPolicy(boolean enabled) {
             Boolean auditLoggingEnabled = mDevicePolicyEngine.getResolvedPolicy(
                     PolicyDefinition.AUDIT_LOGGING, UserHandle.USER_ALL);
@@ -16484,8 +16671,14 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
 
         @Override
         public void removePoliciesForAdmins(
-                @NonNull String packageName, @UserIdInt int userId) {
-            mDevicePolicyEngine.removePoliciesForAdmins(packageName, userId);
+                @UserIdInt int userId, @NonNull List<String> packageNames) {
+            mDevicePolicyEngine.removePoliciesForAdmins(userId, packageNames);
+        }
+
+        @Override
+        public void removeLocalPoliciesForSystemEntities(
+                @UserIdInt int userId, @NonNull List<String> systemEntities) {
+            mDevicePolicyEngine.removeLocalPoliciesForSystemEntities(userId, systemEntities);
         }
 
         private List<EnforcingUser> getEnforcingUsers(Set<EnforcingAdmin> admins) {
@@ -24666,6 +24859,13 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
                 maybeMigrateApplicationRestrictionsLocked(appRestrictionsBackupId);
         if (appRestrictionsMigrated) {
             Slogf.i(LOG_TAG, "Backup made: " + appRestrictionsBackupId);
+        }
+
+        String crossProfileWidgetProviderBackupId = "37.3.cross-profile-widget-provider";
+        boolean crossProfileWidgetProviderMigrated =
+                maybeMigrateCrossProfileWidgetProvider(crossProfileWidgetProviderBackupId);
+        if (crossProfileWidgetProviderMigrated) {
+            Slogf.i(LOG_TAG, "Backup made: " + crossProfileWidgetProviderBackupId);
         }
 
         // Additional migration steps should repeat the pattern above with a new backupId.

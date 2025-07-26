@@ -35,7 +35,6 @@ import com.android.systemui.cursorposition.data.model.CursorPosition
 import com.android.systemui.cursorposition.domain.data.repository.multiDisplayCursorPositionRepository
 import com.android.systemui.display.data.repository.fakeDisplayWindowPropertiesRepository
 import com.android.systemui.display.shared.model.DisplayWindowProperties
-import com.android.systemui.inputdevice.data.repository.FakePointerDeviceRepository
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.Kosmos.Fixture
 import com.android.systemui.kosmos.advanceTimeBy
@@ -43,8 +42,6 @@ import com.android.systemui.kosmos.backgroundScope
 import com.android.systemui.kosmos.collectLastValue
 import com.android.systemui.kosmos.collectValues
 import com.android.systemui.kosmos.runTest
-import com.android.systemui.kosmos.testDispatcher
-import com.android.systemui.kosmos.testScope
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
 import com.android.systemui.testKosmos
 import com.android.systemui.util.settings.data.repository.userAwareSecureSettingsRepository
@@ -67,19 +64,12 @@ import org.mockito.kotlin.whenever
 class ActionCornerRepositoryTest : SysuiTestCase() {
     @get:Rule val mockitoRule: MockitoRule = MockitoJUnit.rule()
     private val kosmos = testKosmos().useUnconfinedTestDispatcher()
-    private val Kosmos.fakePointerRepository by Fixture { FakePointerDeviceRepository() }
     private val settingsRepository = kosmos.userAwareSecureSettingsRepository
 
     private val Kosmos.underTest by Fixture {
         ActionCornerRepositoryImpl(
             cursorPositionRepository,
             kosmos.fakeDisplayWindowPropertiesRepository,
-            kosmos.fakePointerRepository,
-            ActionCornerSettingRepository(
-                settingsRepository,
-                testScope.backgroundScope,
-                testDispatcher,
-            ),
             kosmos.backgroundScope,
         )
     }
@@ -92,7 +82,6 @@ class ActionCornerRepositoryTest : SysuiTestCase() {
     fun setup() {
         whenever(windowManager.currentWindowMetrics).thenReturn(metrics)
         displayRepository.insert(createDisplayWindowProperties())
-        kosmos.fakePointerRepository.setIsAnyPointerConnected(true)
     }
 
     @Test
@@ -226,18 +215,6 @@ class ActionCornerRepositoryTest : SysuiTestCase() {
     }
 
     @Test
-    fun activeActionCorner_pointerDeviceDisconnected_inactiveActionCorner() = setUpAndRunTest {
-        val model by collectLastValue(underTest.actionCornerState)
-
-        val actionCornerPos = display.bottomRightCursorPos
-        addCursorPosition(actionCornerPos)
-
-        fakePointerRepository.setIsAnyPointerConnected(false)
-
-        assertThat(model).isEqualTo(InactiveActionCorner)
-    }
-
-    @Test
     fun actionCornerState_remainsInactive_whenCursorMovesIntoActiveArea_butDebounceNotMet() =
         setUpAndRunTest {
             val model by collectLastValue(underTest.actionCornerState)
@@ -246,18 +223,6 @@ class ActionCornerRepositoryTest : SysuiTestCase() {
             cursorPositionRepository.addCursorPosition(actionCornerPos)
 
             // Debounce duration has not elapsed yet
-            assertThat(model).isEqualTo(InactiveActionCorner)
-        }
-
-    @Test
-    fun noActionConfigured_cursorMovesIntoActiveArea_remainInactiveActionCorner() =
-        kosmos.runTest {
-            // No action configured to corners by default
-            val model by collectLastValue(underTest.actionCornerState)
-
-            val actionCornerPos = display.bottomRightCursorPos
-            addCursorPosition(actionCornerPos)
-
             assertThat(model).isEqualTo(InactiveActionCorner)
         }
 

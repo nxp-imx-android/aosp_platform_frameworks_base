@@ -38,6 +38,7 @@ import com.android.systemui.media.remedia.shared.model.MediaColorScheme
 import com.android.systemui.media.remedia.shared.model.MediaSessionState
 import com.android.systemui.plugins.FalsingManager
 import com.android.systemui.res.R
+import com.android.systemui.statusbar.notification.collection.provider.VisualStabilityProvider
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
@@ -53,6 +54,7 @@ class MediaViewModel
 constructor(
     private val interactor: MediaInteractor,
     private val falsingSystem: MediaFalsingSystem,
+    val visualStabilityProvider: VisualStabilityProvider,
     @Assisted private val context: Context,
     @Assisted private val carouselVisibility: MediaCarouselVisibility,
 ) : ExclusiveActivatable() {
@@ -308,6 +310,7 @@ constructor(
     }
 
     override suspend fun onActivated(): Nothing {
+        visualStabilityProvider.addPersistentReorderingAllowedListener { interactor.reorderMedia() }
         awaitCancellation()
     }
 

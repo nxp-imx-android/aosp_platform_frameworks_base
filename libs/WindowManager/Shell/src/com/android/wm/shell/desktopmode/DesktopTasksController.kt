@@ -699,8 +699,12 @@ class DesktopTasksController(
     /** Start a disconnect transition directly in Shell. */
     fun disconnectDisplay(disconnectedDisplayId: Int) {
         logD("disconnectDisplay: disconnectedDisplayId=$disconnectedDisplayId")
-        val disconnectReparentDisplay =
+        var disconnectReparentDisplay =
             UserManager.get(userProfileContexts.userContext).mainDisplayIdAssignedToUser
+        // If user has no default display configured, fall back to DEFAULT_DISPLAY
+        if (disconnectReparentDisplay == INVALID_DISPLAY) {
+            disconnectReparentDisplay = DEFAULT_DISPLAY
+        }
         val wct = WindowContainerTransaction()
         val runOnTransitStart =
             addOnDisplayDisconnectChanges(wct, disconnectedDisplayId, disconnectReparentDisplay)
@@ -824,7 +828,7 @@ class DesktopTasksController(
                         )
                         destDisplayLayout?.densityDpi()?.let { wct.setDensityDpi(task.token, it) }
                     }
-                    desksOrganizer.removeDesk(wct, deskId, userId)
+                    desksOrganizer.removeDesk(wct, deskId, desktopRepository.userId)
                     runOnTransitStartSet.add { transition ->
                         desksTransitionObserver.addPendingTransition(
                             DeskTransition.RemoveDesk(
@@ -2031,6 +2035,14 @@ class DesktopTasksController(
     /** Move task to the next display which can host desktop tasks. */
     fun moveToNextDesktopDisplay(taskId: Int, enterReason: EnterReason) =
         moveToNextDisplay(taskId, enterReason) { displayId ->
+            if (
+                DesktopExperienceFlags.MOVE_TO_NEXT_DISPLAY_SHORTCUT_WITH_PROJECTED_MODE.isTrue &&
+                    desktopState.isProjectedMode() &&
+                    displayId == DEFAULT_DISPLAY
+            ) {
+                logD("moveToNextDesktopDisplay: Moving to default display during projected mode.")
+                return@moveToNextDisplay true
+            }
             if (!desktopState.isDesktopModeSupportedOnDisplay(displayId)) {
                 logD(
                     "moveToNextDesktopDisplay: Skip displayId=$displayId as desktop mode " +
@@ -2137,54 +2149,76 @@ class DesktopTasksController(
             return
         }
 
-        val destinationDeskId = taskRepository.getDefaultDeskId(displayId)
-        if (destinationDeskId == null) {
-            logW("moveToDisplay: desk not found for display: $displayId")
-            return
-        }
-        snapEventHandler.removeTaskIfTiled(task.displayId, task.taskId)
-        // TODO: b/393977830 and b/397437641 - do not assume that freeform==desktop.
-        if (!task.isFreeform) {
-            addMoveToDeskTaskChanges(wct = wct, task = task, deskId = destinationDeskId)
-        } else {
-            if (DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
-                desksOrganizer.moveTaskToDesk(wct, destinationDeskId, task)
-            }
-            if (bounds != null) {
-                wct.setBounds(task.token, bounds)
-            } else if (DesktopExperienceFlags.ENABLE_MOVE_TO_NEXT_DISPLAY_SHORTCUT.isTrue) {
-                applyFreeformDisplayChange(wct, task, displayId, destinationDeskId)
-            }
-        }
+        val activationRunnable: RunOnTransitStart?
+        val deactivationRunnable: RunOnTransitStart?
 
-        if (!DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
-            wct.reparent(task.token, displayAreaInfo.token, /* onTop= */ true)
-        }
-
-        val activationRunnable =
-            addDeskActivationChanges(destinationDeskId, wct, task, enterReason = enterReason)
-
-        val sourceDisplayId = task.displayId
-        val sourceDeskId = taskRepository.getDeskIdForTask(task.taskId)
-        val shouldExitDesktopIfNeeded =
-            ENABLE_PER_DISPLAY_DESKTOP_WALLPAPER_ACTIVITY.isTrue ||
-                DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue
-        val isLastTask =
-            sourceDeskId?.let { taskRepository.isOnlyTaskInDesk(task.taskId, it) } ?: false
-        val deactivationRunnable =
-            if (shouldExitDesktopIfNeeded) {
-                performDesktopExitCleanupIfNeeded(
-                    taskId = task.taskId,
-                    deskId = sourceDeskId,
-                    displayId = sourceDisplayId,
-                    wct = wct,
-                    removingLastTaskId = if (isLastTask) task.taskId else null,
-                    forceToFullscreen = false,
-                    exitReason = ExitReason.TASK_MOVED_FROM_DESK,
+        if (
+            DesktopExperienceFlags.MOVE_TO_NEXT_DISPLAY_SHORTCUT_WITH_PROJECTED_MODE.isTrue &&
+                desktopState.isProjectedMode() &&
+                displayId == DEFAULT_DISPLAY
+        ) {
+            logV("moveToDisplay: moving task to default display during projected mode")
+            activationRunnable = null
+            deactivationRunnable =
+                addMoveToFullscreenChanges(
+                    wct,
+                    task,
+                    willExitDesktop(
+                        triggerTaskId = task.taskId,
+                        displayId = task.displayId,
+                        forceExitDesktop = false,
+                    ),
+                    displayId,
                 )
-            } else {
-                null
+        } else {
+            val destinationDeskId = taskRepository.getDefaultDeskId(displayId)
+            if (destinationDeskId == null) {
+                logW("moveToDisplay: desk not found for display: $displayId")
+                return
             }
+            snapEventHandler.removeTaskIfTiled(task.displayId, task.taskId)
+            // TODO: b/393977830 and b/397437641 - do not assume that freeform==desktop.
+            if (!task.isFreeform) {
+                addMoveToDeskTaskChanges(wct = wct, task = task, deskId = destinationDeskId)
+            } else {
+                if (DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
+                    desksOrganizer.moveTaskToDesk(wct, destinationDeskId, task)
+                }
+                if (bounds != null) {
+                    wct.setBounds(task.token, bounds)
+                } else if (DesktopExperienceFlags.ENABLE_MOVE_TO_NEXT_DISPLAY_SHORTCUT.isTrue) {
+                    applyFreeformDisplayChange(wct, task, displayId, destinationDeskId)
+                }
+            }
+
+            if (!DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
+                wct.reparent(task.token, displayAreaInfo.token, /* onTop= */ true)
+            }
+
+            activationRunnable =
+                addDeskActivationChanges(destinationDeskId, wct, task, enterReason = enterReason)
+            val sourceDisplayId = task.displayId
+            val sourceDeskId = taskRepository.getDeskIdForTask(task.taskId)
+            val shouldExitDesktopIfNeeded =
+                ENABLE_PER_DISPLAY_DESKTOP_WALLPAPER_ACTIVITY.isTrue ||
+                    DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue
+            val isLastTask =
+                sourceDeskId?.let { taskRepository.isOnlyTaskInDesk(task.taskId, it) } ?: false
+            deactivationRunnable =
+                if (shouldExitDesktopIfNeeded) {
+                    performDesktopExitCleanupIfNeeded(
+                        taskId = task.taskId,
+                        deskId = sourceDeskId,
+                        displayId = sourceDisplayId,
+                        wct = wct,
+                        removingLastTaskId = if (isLastTask) task.taskId else null,
+                        forceToFullscreen = false,
+                        exitReason = ExitReason.TASK_MOVED_FROM_DESK,
+                    )
+                } else {
+                    null
+                }
+        }
         if (DesktopExperienceFlags.ENABLE_DISPLAY_FOCUS_IN_SHELL_TRANSITIONS.isTrue) {
             // Bring the destination display to top with includingParents=true, so that the
             // destination display gains the display focus, which makes the top task in the display

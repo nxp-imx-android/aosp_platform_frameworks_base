@@ -57,6 +57,7 @@ import com.android.systemui.settings.UserTracker
 import com.android.systemui.shade.ShadeViewController
 import com.android.systemui.shade.display.StatusBarTouchShadeDisplayPolicy
 import com.android.systemui.shared.recents.ILauncherProxy
+import com.android.systemui.shared.system.QuickStepContract.SYSUI_STATE_NAVIGATION_BAR_DISABLED
 import com.android.systemui.shared.system.QuickStepContract.SYSUI_STATE_WAKEFULNESS_MASK
 import com.android.systemui.shared.system.QuickStepContract.WAKEFULNESS_ASLEEP
 import com.android.systemui.shared.system.QuickStepContract.WAKEFULNESS_AWAKE
@@ -242,6 +243,18 @@ class LauncherProxyServiceTest : SysuiTestCase() {
     }
 
     @Test
+    fun navigationBarController_cannotCreateNavBarOrTaskbarSetsSysUIFlagToNAVIGATION_BAR_DISABLED() {
+        whenever(navBarController.canCreateNavBarOrTaskBar(anyInt())).thenReturn(false)
+        subject.updateSystemUiStateFlags()
+
+        verify(launcherProxy)
+            .onSystemUiStateChanged(
+                longThat { (it and SYSUI_STATE_NAVIGATION_BAR_DISABLED) != 0L },
+                eq(Display.DEFAULT_DISPLAY),
+            )
+    }
+
+    @Test
     @DisableFlags(Flags.FLAG_KEYGUARD_WM_STATE_REFACTOR)
     fun connectToLauncherService_primaryUserNoVisibleBgUsersSupported_expectBindService() {
         `when`(processWrapper.isSystemUser).thenReturn(true)
@@ -347,11 +360,12 @@ class LauncherProxyServiceTest : SysuiTestCase() {
                 }
 
             whenever(statusBarWinController.windowRootView).thenReturn(mock(ViewGroup::class.java))
-            whenever(shadeViewController
-                .handleExternalTouch(argThat<MotionEvent> { displayId == event.displayId }))
+            whenever(
+                    shadeViewController.handleExternalTouch(
+                        argThat<MotionEvent> { displayId == event.displayId }
+                    )
+                )
                 .thenReturn(true)
-
-
 
             subject.mSysUiProxy.onStatusBarTrackpadEvent(event)
             verify(statusBarShadeDisplayPolicy)
@@ -433,6 +447,7 @@ class LauncherProxyServiceTest : SysuiTestCase() {
         }
 
     private fun createLauncherProxyService(ctx: Context): LauncherProxyService {
+        whenever(navBarController.canCreateNavBarOrTaskBar(anyInt())).thenReturn(true)
         return LauncherProxyService(
             ctx,
             executor,

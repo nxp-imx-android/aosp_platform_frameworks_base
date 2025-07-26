@@ -29,17 +29,13 @@ import com.android.systemui.cursorposition.data.model.CursorPosition
 import com.android.systemui.cursorposition.data.repository.MultiDisplayCursorPositionRepository
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.display.data.repository.DisplayWindowPropertiesRepository
-import com.android.systemui.inputdevice.data.repository.PointerDeviceRepository
 import javax.inject.Inject
 import kotlin.time.Duration.Companion.milliseconds
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 
@@ -60,25 +56,12 @@ class ActionCornerRepositoryImpl
 constructor(
     cursorRepository: MultiDisplayCursorPositionRepository,
     private val displayWindowPropertiesRepository: DisplayWindowPropertiesRepository,
-    pointerDeviceRepository: PointerDeviceRepository,
-    actionCornerSettingRepository: ActionCornerSettingRepository,
     @Background private val backgroundScope: CoroutineScope,
 ) : ActionCornerRepository {
 
     override val actionCornerState: StateFlow<ActionCornerState> =
-        combine(
-                pointerDeviceRepository.isAnyPointerDeviceConnected,
-                actionCornerSettingRepository.isAnyActionConfigured,
-            ) { isConnected, isAnyActionConfigured ->
-                isConnected && isAnyActionConfigured
-            }
-            .flatMapLatest { shouldMonitorCursorPosition ->
-                if (shouldMonitorCursorPosition) {
-                    cursorRepository.cursorPositions.map(::mapToActionCornerState)
-                } else {
-                    flowOf(InactiveActionCorner)
-                }
-            }
+        cursorRepository.cursorPositions
+            .map(::mapToActionCornerState)
             .distinctUntilChanged()
             .debounce { state ->
                 if (state is ActiveActionCorner) {

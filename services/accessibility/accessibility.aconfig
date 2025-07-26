@@ -11,16 +11,6 @@ flag {
 }
 
 flag {
-    name: "allow_secure_screenshots"
-    namespace: "accessibility"
-    description: "Allow certain AccessibilityServices to take screenshots of FLAG_SECURE screens"
-    bug: "373705911"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "always_allow_observing_touch_events"
     namespace: "accessibility"
     description: "Always allows InputFilter observing SOURCE_TOUCHSCREEN events, even if touch exploration is enabled."
@@ -163,16 +153,6 @@ flag {
 }
 
 flag {
-    name: "event_dispatcher_raw_event"
-    namespace: "accessibility"
-    description: "Fixes EventDispatcher#sendMotionEvent callers to properly provide raw event"
-    bug: "385812366"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "fix_drag_pointer_when_ending_drag"
     namespace: "accessibility"
     description: "Send the correct pointer id when transitioning from dragging to delegating states."
@@ -211,16 +191,6 @@ flag {
     namespace: "accessibility"
     description: "Use A11yManagerService's Lifecycle to change users, instead of listening for user changed events."
     bug: "393626471"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
-    name: "motion_event_injector_cancel_fix"
-    namespace: "accessibility"
-    description: "Fix the ACTION_CANCEL logic used in MotionEventInjector to avoid InputDispatcher inconsistency"
-    bug: "384451671"
     metadata {
         purpose: PURPOSE_BUGFIX
     }
@@ -309,16 +279,6 @@ flag {
     namespace: "accessibility"
     description: "When sending an A11y event, TouchExplorer will include its displayId"
     bug: "431092453"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
-    name: "touch_explorer_use_virtual_device_id"
-    namespace: "accessibility"
-    description: "Use a VIRTUAL device id for injected TouchExplorer events to avoid temporary conflicts with real pointer touches still on the screen when TouchExplorer starts up."
-    bug: "364408887"
     metadata {
         purpose: PURPOSE_BUGFIX
     }

@@ -157,6 +157,10 @@ public class AutoclickTypePanel {
 
     private int mStatusBarHeight = 0;
 
+    // True when the fully expanded panel is wider than the screen display so certain buttons need
+    // to be hidden.
+    private boolean mIsExpandedPanelWiderThanScreen = false;
+
     // The current corner position of the panel, default to bottom right.
     private @Corner int mCurrentCorner = CORNER_BOTTOM_RIGHT;
 
@@ -354,6 +358,14 @@ public class AutoclickTypePanel {
         updatePauseButtonAppearance();
         mContentView.post(() -> {
             updatePositionButtonIcon(getVisualCorner());
+
+            // If the expanded panel is too wide for the display, hide the rightmost buttons.
+            if (mContentView.getWidth()
+                    >= mContext.getResources().getDisplayMetrics().widthPixels) {
+                mIsExpandedPanelWiderThanScreen = true;
+                mPauseButton.setVisibility(View.GONE);
+                mPositionButton.setVisibility(View.GONE);
+            }
         });
     }
 
@@ -474,6 +486,12 @@ public class AutoclickTypePanel {
     /** Toggles the panel expanded or collapsed state. */
     private void togglePanelExpansion(@AutoclickType int clickType) {
         if (mExpanded) {
+            // When collapsing the panel show these buttons again.
+            if (mIsExpandedPanelWiderThanScreen) {
+                mPauseButton.setVisibility(View.VISIBLE);
+                mPositionButton.setVisibility(View.VISIBLE);
+            }
+
             // If the panel is already in expanded state, we should collapse it by hiding all
             // buttons except the one user selected.
             collapsePanelWithClickType(clickType);
@@ -483,6 +501,12 @@ public class AutoclickTypePanel {
 
             // Add spacing when panel is expanded.
             adjustPanelSpacing(/* isExpanded= */ true);
+
+            // If the expanded panel is too wide for the display, hide the rightmost buttons.
+            if (mIsExpandedPanelWiderThanScreen) {
+                mPauseButton.setVisibility(View.GONE);
+                mPositionButton.setVisibility(View.GONE);
+            }
 
             // Toggle the state.
             mExpanded = true;
@@ -968,6 +992,11 @@ public class AutoclickTypePanel {
 
     PointerIcon getCurrentCursorForTesting() {
         return mCurrentCursor;
+    }
+
+    @VisibleForTesting
+    void setIsExpandedPanelWiderThanScreenForTesting(boolean isExpandedPanelWiderThanScreen) {
+        mIsExpandedPanelWiderThanScreen = isExpandedPanelWiderThanScreen;
     }
 
     /**

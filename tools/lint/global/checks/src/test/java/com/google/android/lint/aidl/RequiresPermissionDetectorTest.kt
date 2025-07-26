@@ -252,6 +252,23 @@ class RequiresPermissionDetectorTest : LintDetectorTest() {
             .expectClean()
     }
 
+    fun testPermissionEnforcementViaPermissionManager_CorrectlyAnnotatedAndEnforced_Passes() {
+        lint().files(kotlin("""
+            package test.pkg
+            import android.permission.PermissionManager
+            class FooBinder(val permissionManager: PermissionManager): IFoo.Stub() {
+                @android.annotation.RequiresPermission(android.Manifest.permission.BLUETOOTH_CONNECT)
+                override fun connect() {
+                    permissionManager.checkPermissionForDataDeliveryFromDataSource(android.Manifest.permission.BLUETOOTH_CONNECT, null, "connect")
+                }
+            }
+            """).indented(),
+            *stubs
+        )
+            .run()
+            .expectClean()
+    }
+
     fun testAllOf_MatchingAnnotationButIncorrectAnyOfInsteadOfAllOf_Fails() {
         lint().files(kotlin("""
             package test.pkg
@@ -602,11 +619,25 @@ class RequiresPermissionDetectorTest : LintDetectorTest() {
         """
     ).indented()
 
-    private val permissionCheckStub: TestFile = java(
+    private val permissionCheckerStub: TestFile = java(
         """
         package android.content;
         public class PermissionChecker {
             public static int checkCallingOrSelfPermission(Context context, String permission) { return 0; }
+        }
+        """
+    ).indented()
+
+    private val permissionManagerStub: TestFile = java(
+        """
+        package android.permission;
+        public class PermissionManager {
+            public int checkPermissionForDataDeliveryFromDataSource(
+                    String permission,
+                    AttributionSource attributionSource,
+                    String message) {
+                return 0;
+            }
         }
         """
     ).indented()
@@ -658,7 +689,8 @@ class RequiresPermissionDetectorTest : LintDetectorTest() {
         contextStub,
         broadcastStub,
         intentStub,
-        permissionCheckStub,
+        permissionCheckerStub,
+        permissionManagerStub,
         binderStub,
         interfaceIFooStub,
     )

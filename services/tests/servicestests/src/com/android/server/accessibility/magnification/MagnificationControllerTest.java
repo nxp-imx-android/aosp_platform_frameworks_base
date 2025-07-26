@@ -664,6 +664,46 @@ public class MagnificationControllerTest {
     }
 
     @Test
+    public void isAnyMagnificationActivated_noMagnificationActivatedByDefault_returnFalse() {
+        // By default both fullscreen and window magnification are deactivated
+        assertThat(mMagnificationController.isAnyMagnificationActivated(TEST_DISPLAY)).isFalse();
+    }
+
+    @Test
+    public void isAnyMagnificationActivated_activatingFullScreenMagnification_returnTrue()
+            throws RemoteException {
+        setMagnificationEnabled(MODE_FULLSCREEN);
+        assertThat(mMagnificationController.isAnyMagnificationActivated(TEST_DISPLAY)).isTrue();
+    }
+
+    @Test
+    public void isAnyMagnificationActivated_deactivatingFullScreenMagnification_returnFalse()
+            throws RemoteException {
+        setMagnificationEnabled(MODE_FULLSCREEN);
+
+        mScreenMagnificationController.reset(TEST_DISPLAY, /* animate= */ false);
+
+        assertThat(mMagnificationController.isAnyMagnificationActivated(TEST_DISPLAY)).isFalse();
+    }
+
+    @Test
+    public void isAnyMagnificationActivated_activatingWindowMagnification_returnTrue()
+            throws RemoteException {
+        setMagnificationEnabled(MODE_WINDOW);
+        assertThat(mMagnificationController.isAnyMagnificationActivated(TEST_DISPLAY)).isTrue();
+    }
+
+    @Test
+    public void isAnyMagnificationActivated_deactivatingWindowMagnification_returnFalse()
+            throws RemoteException {
+        setMagnificationEnabled(MODE_WINDOW);
+
+        mMagnificationConnectionManager.disableWindowMagnification(TEST_DISPLAY, false);
+
+        assertThat(mMagnificationController.isAnyMagnificationActivated(TEST_DISPLAY)).isFalse();
+    }
+
+    @Test
     public void onMagnificationRequest_windowMagnifying_disableWindow() throws RemoteException {
         setMagnificationEnabled(MODE_WINDOW);
 

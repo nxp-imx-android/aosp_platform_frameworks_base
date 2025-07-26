@@ -4541,7 +4541,7 @@ public class Notification implements Parcelable
     }
 
     /**
-     * The small icon representing this notification in the status bar and content view.
+     * The small icon representing this notification in the status bar.
      *
      * @return the small icon representing this notification
      *
@@ -5089,8 +5089,7 @@ public class Notification implements Parcelable
 
         /**
          * Set the small icon, which will be used to represent the notification in the
-         * status bar and content view (unless overridden there by a
-         * {@link #setLargeIcon(Bitmap) large icon}).
+         * status bar.
          *
          * @param icon an Icon object to use
          * @see Notification#icon
@@ -5471,8 +5470,8 @@ public class Notification implements Parcelable
          * Add a large icon to the notification content view.
          *
          * <p>In the platform template, this image will be shown either on the right of the
-         * notification, with an aspect ratio of up to 16:9, or (when the notification is grouped)
-         * on the left in place of the {@link #setSmallIcon(Icon) small icon}.
+         * notification, with an aspect ratio of up to 16:9, or on the left when the notification
+         * is grouped.
          */
         @NonNull
         public Builder setLargeIcon(Bitmap b) {
@@ -5483,8 +5482,8 @@ public class Notification implements Parcelable
          * Add a large icon to the notification content view.
          *
          * <p>In the platform template, this image will be shown either on the right of the
-         * notification, with an aspect ratio of up to 16:9, or (when the notification is grouped)
-         * on the left in place of the {@link #setSmallIcon(Icon) small icon}.
+         * notification, with an aspect ratio of up to 16:9, or on the left when the notification
+         * is grouped.
          */
         @NonNull
         public Builder setLargeIcon(Icon icon) {
@@ -6197,14 +6196,21 @@ public class Notification implements Parcelable
             updateExpanderAlignment(contentView, p, hasSecondLine);
             setHeaderlessVerticalMargins(contentView, p, hasSecondLine);
 
-            // Update margins to leave space for the top line (but not for headerless views like
-            // HUNS, which use a different layout that already accounts for that). Templates that
-            // have content that will be displayed under the small icon also use a different margin.
-            if (Flags.notificationsRedesignTemplates() && !p.mHeaderless) {
+            if (notificationsRedesignTemplates() && !p.mHeaderless) {
+                // Update margins to leave space for the top line (but not for headerless views like
+                // HUNS, which use a different layout that already accounts for that). Templates
+                // that have content that will be displayed under the small icon also use a
+                // different margin.
                 int margin = getContentMarginTop(mContext,
                         R.dimen.notification_2025_content_margin_top);
                 contentView.setViewLayoutMargin(R.id.notification_main_column,
                         RemoteViews.MARGIN_TOP, margin, COMPLEX_UNIT_PX);
+
+                // Use a slightly larger text margin for expanded text with the redesign
+                int textMarginForLargeIcon = mContext.getResources().getDimensionPixelSize(
+                        R.dimen.notification_2025_text_margin_top);
+                contentView.setViewLayoutMargin(p.mTextViewId, RemoteViews.MARGIN_TOP,
+                        textMarginForLargeIcon, COMPLEX_UNIT_PX);
             }
 
             return contentView;

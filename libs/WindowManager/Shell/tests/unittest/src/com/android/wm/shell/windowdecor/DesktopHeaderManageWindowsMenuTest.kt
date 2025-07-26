@@ -43,6 +43,7 @@ import com.android.wm.shell.sysui.ShellInit
 import com.android.wm.shell.windowdecor.additionalviewcontainer.AdditionalSystemViewContainer
 import com.google.common.truth.Truth.assertThat
 import kotlin.test.assertNotNull
+import kotlinx.coroutines.test.TestScope
 import org.junit.After
 import org.junit.Assert.fail
 import org.junit.Before
@@ -92,6 +93,7 @@ class DesktopHeaderManageWindowsMenuTest : ShellTestCase() {
                 persistentRepository = mock(),
                 repositoryInitializer = mock(),
                 mainCoroutineScope = mock(),
+                bgCoroutineScope = TestScope(),
                 userManager = mockUserManager,
                 desktopState = desktopState,
                 desktopConfig = desktopConfig,

@@ -462,6 +462,15 @@ public class MagnificationController implements MagnificationConnectionManager.C
 
     @Override
     public boolean isMagnificationActivated(int displayId) {
+        return isAnyMagnificationActivated(displayId);
+    }
+
+    /**
+     * Return {@code true} if either full-screen magnification or window magnification is activated.
+     *
+     * @param displayId The logical display id
+     */
+    public boolean isAnyMagnificationActivated(int displayId) {
         return mFullScreenMagnificationController.isActivated(displayId)
                 || getMagnificationConnectionManager().isWindowMagnifierEnabled(displayId);
     }

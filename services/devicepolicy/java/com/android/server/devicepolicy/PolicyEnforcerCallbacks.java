@@ -225,6 +225,23 @@ final class PolicyEnforcerCallbacks {
         });
     }
 
+    public static CompletableFuture<Boolean> setCrossProfileWidgetProviderPolicy(
+            Set<String> policy, Context context, Integer userId, PolicyKey policyKey) {
+        if (!Flags.crossProfileWidgetProviderBulkApis()) {
+            Slogf.w(
+                    LOG_TAG,
+                    "Call setCrossProfileWidgetProviderPolicy while flag is off");
+            return AndroidFuture.completedFuture(true);
+        }
+        final var devicePolicyManagerInternal =
+                LocalServices.getService(DevicePolicyManagerInternal.class);
+        if (policy == null) {
+            policy = Collections.emptySet();
+        }
+        devicePolicyManagerInternal.notifyCrossProfileProvidersChanged(userId, List.copyOf(policy));
+        return AndroidFuture.completedFuture(true);
+    }
+
     // TODO: when a local policy exists for a user, this callback will be invoked for this user
     // individually as well as for USER_ALL. This can be optimized by separating local and global
     // enforcement in the policy engine.

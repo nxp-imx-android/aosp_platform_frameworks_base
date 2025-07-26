@@ -233,7 +233,7 @@ public class DeveloperVerifierControllerTest {
         assertThat(mDeveloperVerifierController.startVerificationSession(
                 mSnapshotSupplier, 0, TEST_ID, TEST_PACKAGE_NAME, TEST_PACKAGE_URI,
                 TEST_SIGNING_INFO, mTestDeclaredLibraries, TEST_POLICY, mTestExtensionParams,
-                mSessionCallback, /* retry= */ false)).isTrue();
+                mSessionCallback)).isTrue();
         verify(mMockService, times(1)).onVerificationRequired(
                 any(DeveloperVerificationSession.class));
         callbacks.onBinderDied();
@@ -249,11 +249,11 @@ public class DeveloperVerifierControllerTest {
         assertThat(mDeveloperVerifierController.startVerificationSession(
                 mSnapshotSupplier, 0, TEST_ID, TEST_PACKAGE_NAME, TEST_PACKAGE_URI,
                 TEST_SIGNING_INFO, mTestDeclaredLibraries, TEST_POLICY, mTestExtensionParams,
-                mSessionCallback, /* retry= */ false)).isTrue();
+                mSessionCallback)).isTrue();
         assertThat(mDeveloperVerifierController.startVerificationSession(
                 mSnapshotSupplier, 0, TEST_ID, TEST_PACKAGE_NAME, TEST_PACKAGE_URI,
                 TEST_SIGNING_INFO, mTestDeclaredLibraries, TEST_POLICY, mTestExtensionParams,
-                mSessionCallback, /* retry= */ true)).isTrue();
+                mSessionCallback)).isTrue();
         mDeveloperVerifierController.notifyVerificationTimeout(TEST_ID, 0);
         verify(mMockService, times(1)).onVerificationTimeout(eq(TEST_ID));
     }
@@ -263,7 +263,7 @@ public class DeveloperVerifierControllerTest {
         assertThat(mDeveloperVerifierController.startVerificationSession(
                 mSnapshotSupplier, 0, TEST_ID, TEST_PACKAGE_NAME, TEST_PACKAGE_URI,
                 TEST_SIGNING_INFO, mTestDeclaredLibraries, TEST_POLICY, mTestExtensionParams,
-                mSessionCallback, /* retry= */ false)).isTrue();
+                mSessionCallback)).isTrue();
         mDeveloperVerifierController.notifyPackageNameAvailable(TEST_PACKAGE_NAME, 0);
         verify(mMockService).onPackageNameAvailable(eq(TEST_PACKAGE_NAME));
     }
@@ -273,7 +273,7 @@ public class DeveloperVerifierControllerTest {
         assertThat(mDeveloperVerifierController.startVerificationSession(
                 mSnapshotSupplier, 0, TEST_ID, TEST_PACKAGE_NAME, TEST_PACKAGE_URI,
                 TEST_SIGNING_INFO, mTestDeclaredLibraries, TEST_POLICY, mTestExtensionParams,
-                mSessionCallback, /* retry= */ false)).isTrue();
+                mSessionCallback)).isTrue();
         mDeveloperVerifierController.notifyVerificationCancelled(TEST_PACKAGE_NAME, 0);
         verify(mMockService).onVerificationCancelled(eq(TEST_PACKAGE_NAME));
     }
@@ -303,42 +303,11 @@ public class DeveloperVerifierControllerTest {
     }
 
     @Test
-    public void testNotifyVerificationRetry() throws Exception {
-        ArgumentCaptor<DeveloperVerificationSession> captor =
-                ArgumentCaptor.forClass(DeveloperVerificationSession.class);
-        assertThat(mDeveloperVerifierController.startVerificationSession(
-                mSnapshotSupplier, 0, TEST_ID, TEST_PACKAGE_NAME, TEST_PACKAGE_URI,
-                TEST_SIGNING_INFO, mTestDeclaredLibraries, TEST_POLICY, mTestExtensionParams,
-                mSessionCallback, /* retry= */ true)).isTrue();
-        // Test the auto-disconnect job is canceled when the request is sent out
-        verify(mInjector, times(1)).removeCallbacks(eq(mHandler), any(Runnable.class));
-        // Test that the remote service has received the request with correct params
-        verify(mMockService).onVerificationRetry(captor.capture());
-        DeveloperVerificationSession session = captor.getValue();
-        assertThat(session.getId()).isEqualTo(TEST_ID);
-        assertThat(session.getInstallSessionId()).isEqualTo(TEST_ID);
-        assertThat(session.getPackageName()).isEqualTo(TEST_PACKAGE_NAME);
-        assertThat(session.getStagedPackageUri()).isEqualTo(TEST_PACKAGE_URI);
-        assertThat(session.getSigningInfo().getSigningDetails())
-                .isEqualTo(TEST_SIGNING_INFO.getSigningDetails());
-        List<SharedLibraryInfo> declaredLibraries = session.getDeclaredLibraries();
-        // SharedLibraryInfo doesn't have a "equals" method, so we have to check it indirectly
-        assertThat(declaredLibraries.getFirst().toString())
-                .isEqualTo(TEST_SHARED_LIBRARY_INFO1.toString());
-        assertThat(declaredLibraries.get(1).toString())
-                .isEqualTo(TEST_SHARED_LIBRARY_INFO2.toString());
-        // We can't directly test with PersistableBundle.equals() because the parceled bundle's
-        // structure is different, but all the key/value pairs should be preserved as before.
-        assertThat(session.getExtensionParams().getString(TEST_KEY))
-                .isEqualTo(mTestExtensionParams.getString(TEST_KEY));
-    }
-
-    @Test
     public void testNotifyVerificationTimeout() throws Exception {
         assertThat(mDeveloperVerifierController.startVerificationSession(
                 mSnapshotSupplier, 0, TEST_ID, TEST_PACKAGE_NAME, TEST_PACKAGE_URI,
                 TEST_SIGNING_INFO, mTestDeclaredLibraries, TEST_POLICY, mTestExtensionParams,
-                mSessionCallback, /* retry= */ true)).isTrue();
+                mSessionCallback)).isTrue();
         // Test the auto-disconnect job is canceled when the request is sent out
         verify(mInjector, times(1)).removeCallbacks(eq(mHandler), any(Runnable.class));
         mDeveloperVerifierController.notifyVerificationTimeout(TEST_ID, 0);
@@ -359,7 +328,7 @@ public class DeveloperVerifierControllerTest {
         assertThat(mDeveloperVerifierController.startVerificationSession(
                 mSnapshotSupplier, 0, TEST_ID, TEST_PACKAGE_NAME, TEST_PACKAGE_URI,
                 TEST_SIGNING_INFO, mTestDeclaredLibraries, TEST_POLICY, mTestExtensionParams,
-                mSessionCallback, /* retry= */ false)).isTrue();
+                mSessionCallback)).isTrue();
         verify(mHandler, times(1)).sendMessageAtTime(
                 argThat(argument -> argument.obj != null), anyLong());
         verify(mSessionCallback, times(1)).onTimeout();
@@ -371,42 +340,6 @@ public class DeveloperVerifierControllerTest {
         Runnable autoDisconnectRunnable = runnableCaptor.getValue();
         verify(mHandler, times(1)).sendMessageAtTime(
                 argThat(argument -> argument.getCallback() == autoDisconnectRunnable), anyLong());
-    }
-
-    @Test
-    public void testRequestTimeoutWithRetryPass() throws Exception {
-        // Only let the first request timeout and let the second one pass
-        when(mHandler.sendMessageAtTime(argThat(argument -> argument.obj != null), anyLong()))
-                .thenAnswer(
-                        i -> {
-                            ((Message) i.getArguments()[0]).getCallback().run();
-                            return true;
-                        })
-                .thenAnswer(i -> true);
-        assertThat(mDeveloperVerifierController.startVerificationSession(
-                mSnapshotSupplier, 0, TEST_ID, TEST_PACKAGE_NAME, TEST_PACKAGE_URI,
-                TEST_SIGNING_INFO, mTestDeclaredLibraries, TEST_POLICY, mTestExtensionParams,
-                mSessionCallback, /* retry= */ false)).isTrue();
-        verify(mHandler, times(1)).sendMessageAtTime(
-                argThat(argument -> argument.obj != null), anyLong());
-        verify(mSessionCallback, times(1)).onTimeout();
-        verify(mInjector, times(2)).getCurrentTimeMillis();
-        verify(mInjector, times(1)).stopTimeoutCountdown(eq(mHandler), any());
-        // Then retry
-        ArgumentCaptor<DeveloperVerificationSession> captor =
-                ArgumentCaptor.forClass(DeveloperVerificationSession.class);
-        assertThat(mDeveloperVerifierController.startVerificationSession(
-                mSnapshotSupplier, 0, TEST_ID, TEST_PACKAGE_NAME, TEST_PACKAGE_URI,
-                TEST_SIGNING_INFO, mTestDeclaredLibraries, TEST_POLICY, mTestExtensionParams,
-                mSessionCallback, /* retry= */ true)).isTrue();
-        verify(mMockService).onVerificationRetry(captor.capture());
-        DeveloperVerificationSession session = captor.getValue();
-        DeveloperVerificationStatus status = new DeveloperVerificationStatus.Builder().setVerified(
-                true).build();
-        session.reportVerificationComplete(status);
-        verify(mSessionCallback, times(1)).onVerificationCompleteReceived(
-                eq(status), eq(null));
-        verify(mInjector, times(2)).stopTimeoutCountdown(eq(mHandler), any());
     }
 
     @Test
@@ -592,7 +525,7 @@ public class DeveloperVerifierControllerTest {
         assertThat(mDeveloperVerifierController.startVerificationSession(
                 mSnapshotSupplier, 0, TEST_ID, TEST_PACKAGE_NAME, TEST_PACKAGE_URI,
                 TEST_SIGNING_INFO, mTestDeclaredLibraries, TEST_POLICY, mTestExtensionParams,
-                mSessionCallback, /* retry= */ false)).isTrue();
+                mSessionCallback)).isTrue();
         verify(mMockService).onVerificationRequired(captor.capture());
         return captor.getValue();
     }
@@ -649,7 +582,7 @@ public class DeveloperVerifierControllerTest {
         mDeveloperVerifierController.startVerificationSession(
                 mSnapshotSupplier, 0, TEST_ID, TEST_PACKAGE_NAME, TEST_PACKAGE_URI,
                 TEST_SIGNING_INFO, mTestDeclaredLibraries, TEST_POLICY, mTestExtensionParams,
-                mSessionCallback, /* retry= */ false);
+                mSessionCallback);
         verify(mHandler, times(3)).sendMessageAtTime(
                 argThat(argument -> argument.obj != null), anyLong());
         verify(mInjector, times(6)).getCurrentTimeMillis();
@@ -683,7 +616,7 @@ public class DeveloperVerifierControllerTest {
         assertThat(mDeveloperVerifierController.startVerificationSession(
                 mSnapshotSupplier, /* userId= */ 0, TEST_ID, TEST_PACKAGE_NAME, TEST_PACKAGE_URI,
                 TEST_SIGNING_INFO, mTestDeclaredLibraries, TEST_POLICY, mTestExtensionParams,
-                mSessionCallback, /* retry= */ false)).isTrue();
+                mSessionCallback)).isTrue();
         verify(mMockService).onVerificationRequired(sessionCaptor.capture());
         verify(mInjector, times(1)).removeCallbacks(eq(mHandler),
                 runnableCaptor.capture());
@@ -720,7 +653,7 @@ public class DeveloperVerifierControllerTest {
         assertThat(mDeveloperVerifierController.startVerificationSession(
                 mSnapshotSupplier, /* userId= */ 10, TEST_ID2, TEST_PACKAGE_NAME, TEST_PACKAGE_URI,
                 TEST_SIGNING_INFO, mTestDeclaredLibraries, TEST_POLICY, mTestExtensionParams,
-                mSessionCallbackSecondaryUser, /* retry= */ false)).isTrue();
+                mSessionCallbackSecondaryUser)).isTrue();
         verify(mMockServiceSecondaryUser).onVerificationRequired(captorSecondaryUser.capture());
 
         // Set first response to success

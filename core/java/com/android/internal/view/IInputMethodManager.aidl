@@ -81,7 +81,7 @@ interface IInputMethodManager {
     @EnforcePermission("TEST_INPUT_METHOD")
     @JavaPassthrough(annotation="@android.annotation.RequiresPermission(value = "
             + "android.Manifest.permission.TEST_INPUT_METHOD)")
-    void hideSoftInputFromServerForTest();
+    oneway void hideSoftInputFromServerForTest();
 
     // TODO(b/418839448): merge with startInputOrWindowGainedFocus once
     //                    WINDOW_FOCUS_GAIN_REPORT_ONLY uses async method.
@@ -117,13 +117,13 @@ interface IInputMethodManager {
             in ImeOnBackInvokedDispatcher imeDispatcher, boolean imeRequestedVisible,
             int startInputSeq);
 
-    void showInputMethodPickerFromClient(in IInputMethodClient client,
+    oneway void showInputMethodPickerFromClient(in IInputMethodClient client,
             int auxiliarySubtypeMode);
 
     @EnforcePermission(allOf = {"WRITE_SECURE_SETTINGS", "INTERACT_ACROSS_USERS_FULL"})
     @JavaPassthrough(annotation="@android.annotation.RequiresPermission(allOf = {android.Manifest."
     + "permission.WRITE_SECURE_SETTINGS, android.Manifest.permission.INTERACT_ACROSS_USERS_FULL})")
-    void showInputMethodPickerFromSystem(int auxiliarySubtypeMode, int displayId);
+    oneway void showInputMethodPickerFromSystem(int auxiliarySubtypeMode, int displayId);
 
     @EnforcePermission("TEST_INPUT_METHOD")
     @JavaPassthrough(annotation="@android.annotation.RequiresPermission(value = "
@@ -170,15 +170,22 @@ interface IInputMethodManager {
     // TODO(Bug 113914148): Consider removing this.
     int getInputMethodWindowVisibleHeight(in IInputMethodClient client);
 
-    oneway void reportPerceptibleAsync(in IBinder windowToken, boolean perceptible);
+    /**
+     * Reports whether the IME is currently perceptible or not.
+     *
+     * @param windowToken the IME client window.
+     * @param perceptible whether the source is perceptible or not.
+     *
+     * @see InsetsAnimationControlCallbacks#reportPerceptible
+     */
+    oneway void reportPerceptible(in IBinder windowToken, boolean perceptible);
 
-    @EnforcePermission(allOf = {"INTERNAL_SYSTEM_WINDOW", "INTERACT_ACROSS_USERS_FULL"})
-    @JavaPassthrough(annotation="@android.annotation.RequiresPermission(allOf = {android.Manifest."
-    + "permission.INTERNAL_SYSTEM_WINDOW, android.Manifest.permission.INTERACT_ACROSS_USERS_FULL})")
-    void removeImeSurface(int displayId);
-
-    /** Remove the IME surface. Requires passing the currently focused window. */
-    oneway void removeImeSurfaceFromWindowAsync(in IBinder windowToken);
+    /**
+     * Remove the IME surface if the given window is the currently focused IME Client window.
+     *
+     * @param windowToken the IME client window.
+     */
+    oneway void removeImeSurfaceFromWindow(in IBinder windowToken);
 
     @JavaPassthrough(annotation="@android.annotation.RequiresNoPermission")
     boolean isImeTraceEnabled();

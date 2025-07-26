@@ -25,11 +25,11 @@ import com.android.wm.shell.Flags
 import com.android.wm.shell.Utils
 import com.android.wm.shell.flicker.bubbles.testcase.ExpandBubbleTestCases
 import com.android.wm.shell.flicker.bubbles.utils.ApplyPerParameterRule
+import com.android.wm.shell.flicker.bubbles.utils.BubbleFlickerTestHelper.collapseBubbleAppViaTouchOutside
+import com.android.wm.shell.flicker.bubbles.utils.BubbleFlickerTestHelper.expandBubbleAppViaBubbleBar
+import com.android.wm.shell.flicker.bubbles.utils.BubbleFlickerTestHelper.launchBubbleViaBubbleMenu
 import com.android.wm.shell.flicker.bubbles.utils.FlickerPropertyInitializer
 import com.android.wm.shell.flicker.bubbles.utils.RecordTraceWithTransitionRule
-import com.android.wm.shell.flicker.bubbles.utils.collapseBubbleAppViaTouchOutside
-import com.android.wm.shell.flicker.bubbles.utils.expandBubbleAppViaBubbleBar
-import com.android.wm.shell.flicker.bubbles.utils.launchBubbleViaBubbleMenu
 import com.google.common.truth.Truth.assertWithMessage
 import org.junit.Assume.assumeTrue
 import org.junit.Before
@@ -81,7 +81,7 @@ class BubbleBarMovesTest(navBar: NavBar) : BubbleFlickerTestBase(), ExpandBubble
                 Root.get().bubbleBar.dragToTheOtherSide()
                 val bubbleBarAfterTransition = Root.get().bubbleBar.visibleCenter
                 bubbleBarPosChanges = (bubbleBarBeforeTransition != bubbleBarAfterTransition)
-                expandBubbleAppViaBubbleBar(uiDevice, testApp, wmHelper)
+                expandBubbleAppViaBubbleBar(testApp, uiDevice, wmHelper)
             },
             tearDownAfterTransition = { testApp.exit(wmHelper) }
         )

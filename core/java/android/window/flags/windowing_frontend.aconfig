@@ -480,3 +480,10 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "fallback_transition_player"
+    namespace: "windowing_frontend"
+    description: "Use a fallback transition-player while sysui is starting or crashed."
+    bug: "365884835"
+}

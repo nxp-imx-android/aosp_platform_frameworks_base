@@ -47,7 +47,7 @@ import com.android.systemui.SysuiTestCase
 import com.android.systemui.animation.activityTransitionAnimator
 import com.android.systemui.broadcast.broadcastDispatcher
 import com.android.systemui.classifier.falsingCollector
-import com.android.systemui.common.data.repository.batteryRepository
+import com.android.systemui.common.data.repository.batteryRepositoryDeprecated
 import com.android.systemui.common.data.repository.fake
 import com.android.systemui.communal.data.model.FEATURE_AUTO_OPEN
 import com.android.systemui.communal.data.model.SuppressionReason
@@ -366,7 +366,7 @@ class KeyguardViewMediatorTestKt : SysuiTestCase() {
 
     private fun Kosmos.enableHubOnCharging() {
         communalSettingsInteractor.setSuppressionReasons(emptyList())
-        batteryRepository.fake.setDevicePluggedIn(true)
+        batteryRepositoryDeprecated.fake.setDevicePluggedIn(true)
     }
 
     private fun Kosmos.disableHubShowingAutomatically() {

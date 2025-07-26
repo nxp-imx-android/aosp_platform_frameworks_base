@@ -19,8 +19,9 @@ package com.android.wm.shell.compatui.letterbox
 import android.os.IBinder
 import android.view.SurfaceControl
 import android.window.TransitionInfo
+import android.window.TransitionInfo.Change
 import com.android.internal.protolog.ProtoLog
-import com.android.window.flags.Flags.appCompatRefactoring
+import com.android.window.flags.Flags
 import com.android.wm.shell.compatui.letterbox.lifecycle.LetterboxLifecycleController
 import com.android.wm.shell.compatui.letterbox.lifecycle.LetterboxLifecycleEventFactory
 import com.android.wm.shell.compatui.letterbox.lifecycle.isChangeForALeafTask
@@ -45,7 +46,7 @@ class DelegateLetterboxTransitionObserver(
     }
 
     init {
-        if (appCompatRefactoring()) {
+        if (Flags.appCompatRefactoring()) {
             logV("Initializing LetterboxTransitionObserver")
             shellInit.addInitCallback({ transitions.registerObserver(this) }, this)
         }
@@ -62,7 +63,7 @@ class DelegateLetterboxTransitionObserver(
             return
         }
         info.changes.forEach { change ->
-            if (change.isChangeForALeafTask() && letterboxLifecycleEventFactory.canHandle(change)) {
+            if (taskAllowed(change) && letterboxLifecycleEventFactory.canHandle(change)) {
                 letterboxLifecycleEventFactory.createLifecycleEvent(change)?.let { event ->
                     letterboxLifecycleController.onLetterboxLifecycleEvent(
                         event,
@@ -77,4 +78,12 @@ class DelegateLetterboxTransitionObserver(
     private fun logV(msg: String) {
         ProtoLog.v(WM_SHELL_APP_COMPAT, "%s: %s", TAG, msg)
     }
+
+    // When the flag is disabled all the changes related to leaf Tasks are skipped. This is because
+    // a leaf task surfaces should not be the parent of letterbox surfaces.
+    // When the flag is enabled, leaf Tasks are handled to cover the case of split screen when
+    // Task in the Change is not a leaf Task but it's still useful to find the actual leaf Task used
+    // to identify the right letterbox surfaces. Check [TaskIdResolver] for additional information.
+    private fun taskAllowed(change: Change): Boolean =
+        Flags.appCompatRefactoringFixMultiwindowTaskHierarchy() || change.isChangeForALeafTask()
 }

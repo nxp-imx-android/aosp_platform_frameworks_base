@@ -67,6 +67,7 @@ import com.android.internal.app.procstats.ProcessStats;
 import com.android.internal.os.Zygote;
 import com.android.server.FgThread;
 import com.android.server.am.OomAdjusterImpl.ProcessRecordNode;
+import com.android.server.am.ProcessCachedOptimizerRecord.ShouldNotFreezeReason;
 import com.android.server.am.psc.PlatformCompatCache.CachedCompatChangeId;
 import com.android.server.am.psc.ProcessRecordInternal;
 import com.android.server.wm.WindowProcessController;
@@ -978,8 +979,9 @@ class ProcessRecord extends ProcessRecordInternal implements WindowProcessListen
         return mInstr;
     }
 
+    @Override
     @GuardedBy(anyOf = {"mService", "mProcLock"})
-    boolean hasActiveInstrumentation() {
+    public boolean hasActiveInstrumentation() {
         return mInstr != null;
     }
 
@@ -1166,6 +1168,28 @@ class ProcessRecord extends ProcessRecordInternal implements WindowProcessListen
     public boolean hasCompatChange(@CachedCompatChangeId int cachedCompatChangeId) {
         return mService.mOomAdjuster.isChangeEnabled(cachedCompatChangeId, info,
                 false/* default */);
+    }
+
+    @Override
+    public boolean hasAboveClient() {
+        return mServices.hasAboveClient();
+    }
+
+
+    @Override
+    public boolean shouldNotFreeze() {
+        return mOptRecord.shouldNotFreeze();
+    }
+
+    @Override
+    public boolean setShouldNotFreeze(boolean shouldNotFreeze, boolean dryRun,
+            @ShouldNotFreezeReason int reason, int adjSeq) {
+        return mOptRecord.setShouldNotFreeze(shouldNotFreeze, dryRun, reason, adjSeq);
+    }
+
+    @Override
+    public @ShouldNotFreezeReason int shouldNotFreezeReason() {
+        return mOptRecord.shouldNotFreezeReason();
     }
 
     boolean hasActivitiesOrRecentTasks() {

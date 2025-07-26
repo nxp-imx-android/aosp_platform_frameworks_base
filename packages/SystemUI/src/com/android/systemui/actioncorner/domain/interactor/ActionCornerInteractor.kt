@@ -32,6 +32,7 @@ import com.android.systemui.actioncorner.data.model.ActionType.QUICK_SETTINGS
 import com.android.systemui.actioncorner.data.repository.ActionCornerRepository
 import com.android.systemui.actioncorner.data.repository.ActionCornerSettingRepository
 import com.android.systemui.dagger.SysUISingleton
+import com.android.systemui.inputdevice.data.repository.PointerDeviceRepository
 import com.android.systemui.keyguard.domain.interactor.WindowManagerLockscreenVisibilityInteractor
 import com.android.systemui.lifecycle.ExclusiveActivatable
 import com.android.systemui.shared.system.actioncorner.ActionCornerConstants
@@ -44,6 +45,8 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.map
 
 @SysUISingleton
 class ActionCornerInteractor
@@ -52,19 +55,28 @@ constructor(
     private val repository: ActionCornerRepository,
     private val launcherProxyService: LauncherProxyService,
     private val actionCornerSettingRepository: ActionCornerSettingRepository,
-    private val userSetupRepository: UserSetupRepository,
+    private val pointerDeviceRepository: PointerDeviceRepository,
     private val lockscreenVisibilityInteractor: WindowManagerLockscreenVisibilityInteractor,
+    private val userSetupRepository: UserSetupRepository,
     private val commandQueue: CommandQueue,
 ) : ExclusiveActivatable() {
 
     override suspend fun onActivated(): Nothing {
-        userSetupRepository.isUserSetUp
-            .combine(lockscreenVisibilityInteractor.lockscreenVisibility) {
-                isUserSetUp,
-                isLockscreenVisible ->
-                isUserSetUp && !isLockscreenVisible
+        combine(
+                pointerDeviceRepository.isAnyPointerDeviceConnected,
+                actionCornerSettingRepository.isAnyActionConfigured,
+                userSetupRepository.isUserSetUp,
+            ) { isConnected, isAnyActionConfigured, isUserSetUp ->
+                isConnected && isAnyActionConfigured && isUserSetUp
             }
             .distinctUntilChanged()
+            .flatMapLatest { shouldCheckLockscreenVisibility ->
+                if (shouldCheckLockscreenVisibility) {
+                    lockscreenVisibilityInteractor.lockscreenVisibility.map { !it }
+                } else {
+                    flowOf(false)
+                }
+            }
             .flatMapLatest { shouldMonitorActionCorner ->
                 if (shouldMonitorActionCorner) {
                     repository.actionCornerState.filterIsInstance<ActiveActionCorner>()

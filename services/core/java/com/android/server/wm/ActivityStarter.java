@@ -1986,8 +1986,7 @@ class ActivityStarter {
             // To prevent interruption of the user's current focus, if a launch request
             // originates from activities within the same visible task, the task should not be
             // moved to the front, or an unfocused Task could be moved to top unexpectedly.
-            if (com.android.window.flags.Flags.fixMovingUnfocusedTask() && !avoidMoveToFront()
-                    && sourceRecord != null && sourceRecord.getTask() == targetTask
+            if (!avoidMoveToFront() && sourceRecord != null && sourceRecord.getTask() == targetTask
                     && targetTask.isVisible() && targetTask.inMultiWindowMode()) {
                 mCanMoveToFrontCode = MOVE_TO_FRONT_AVOID_VISIBLE_MULTI_WINDOW;
             }

@@ -589,3 +589,10 @@ flag {
     description: "Limit the number of sensor privacy listeners allowed per uid"
     bug: "400358935"
 }
+
+flag {
+    name: "deprecate_default_permission_pregrant_policy"
+    namespace: "permissions"
+    description: "Add support for deprecating unused Default Permission Pregrant Policy"
+    bug: "420985100"
+}

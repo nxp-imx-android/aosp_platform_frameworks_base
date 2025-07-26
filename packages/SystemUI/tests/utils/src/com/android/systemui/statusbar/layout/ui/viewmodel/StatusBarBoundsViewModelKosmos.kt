@@ -16,23 +16,18 @@
 
 package com.android.systemui.statusbar.layout.ui.viewmodel
 
-import android.content.testableContext
 import android.view.View
-import com.android.systemui.concurrency.fakeExecutor
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.backgroundScope
 import com.android.systemui.statusbar.policy.Clock
-import java.util.Optional
 import org.mockito.kotlin.mock
 
 var Kosmos.mockStatusBarStartSideContainerView by Kosmos.Fixture { mock<View>() }
 var Kosmos.mockStatusBarClockView by Kosmos.Fixture { mock<Clock>() }
-val Kosmos.fakeAppHandles by Kosmos.Fixture { FakeAppHandles() }
 
 val Kosmos.statusBarBoundsViewModel by
     Kosmos.Fixture {
         statusBarBoundsViewModelFactory.create(
-            displayId = testableContext.displayId,
             startSideContainerView = mockStatusBarStartSideContainerView,
             clockView = mockStatusBarClockView,
         )
@@ -42,15 +37,11 @@ val Kosmos.statusBarBoundsViewModelFactory: StatusBarBoundsViewModel.Factory by
     Kosmos.Fixture {
         object : StatusBarBoundsViewModel.Factory {
             override fun create(
-                displayId: Int,
                 startSideContainerView: View,
                 clockView: Clock,
             ): StatusBarBoundsViewModel {
                 return StatusBarBoundsViewModel(
                     backgroundScope = backgroundScope,
-                    sysuiMainExecutor = fakeExecutor,
-                    appHandles = Optional.of(fakeAppHandles),
-                    thisDisplayId = displayId,
                     startSideContainerView = startSideContainerView,
                     clockView = clockView,
                 )

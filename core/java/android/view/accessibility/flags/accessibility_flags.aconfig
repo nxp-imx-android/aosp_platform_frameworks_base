@@ -157,16 +157,6 @@ flag {
 }
 
 flag {
-    name: "focus_rect_min_size"
-    namespace: "accessibility"
-    description: "Ensures the a11y focus rect is big enough to be drawn as visible"
-    bug: "368667566"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "force_invert_color"
     namespace: "accessibility"
     description: "Enable force force-dark for smart inversion and dark theme everywhere"
@@ -235,16 +225,6 @@ flag {
     namespace: "accessibility"
     description: "Adds a setting for users to change the order of the navbar's 3 main buttons."
     bug: "410601652"
-}
-
-flag {
-    name: "prevent_a11y_nontool_from_injecting_into_sensitive_views"
-    namespace: "accessibility"
-    description: "Prevents injected gestures from A11yServices without isAccessibilityTool=true from reaching AccessibilityDataSensitive UI elements"
-    bug: "284180538"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
 }
 
 flag {

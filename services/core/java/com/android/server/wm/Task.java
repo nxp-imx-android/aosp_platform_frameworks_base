@@ -531,6 +531,11 @@ class Task extends TaskFragment {
     private boolean mForceNonResizeOverride;
 
     /**
+     * Whether the child tasks can have override bounds.
+     */
+    private boolean mDisallowOverrideBoundsForChildren;
+
+    /**
      * If the window is allowed to be repositioned by {@link
      * android.app.ActivityManager.AppTask#moveTaskTo}.
      */
@@ -1235,7 +1240,23 @@ class Task extends TaskFragment {
             setInitialBoundsIfNeeded();
         }
 
+        // Clear the override bounds if any ancestor requested to.
+        if (!isOverrideBoundsAllowed()) {
+            setBounds(null);
+        }
+
         mRootWindowContainer.updateUIDsPresentOnDisplay();
+    }
+
+    private boolean isOverrideBoundsAllowed() {
+        Task parentTask = getParent() != null ? getParent().asTask() : null;
+        while (parentTask != null) {
+            if (parentTask.mDisallowOverrideBoundsForChildren) {
+                return false;
+            }
+            parentTask = parentTask.getParent().asTask();
+        }
+        return true;
     }
 
     @Override
@@ -2894,6 +2915,11 @@ class Task extends TaskFragment {
     public int setBounds(Rect bounds) {
         if (isRootTask()) {
             return setBounds(getRequestedOverrideBounds(), bounds);
+        }
+
+        if (!isOverrideBoundsAllowed() && bounds != null && !bounds.isEmpty()) {
+            Slog.w(TAG, "Not allowed to set override bounds " + bounds + " for " + this);
+            return BOUNDS_CHANGE_NONE;
         }
 
         final int boundsChange = super.setBounds(bounds);
@@ -5382,8 +5408,7 @@ class Task extends TaskFragment {
         }
 
         // Slot the activity into the history root task and proceed
-        ProtoLog.i(WM_DEBUG_ADD_REMOVE, "Adding activity %s to task %s callers: %s", r,
-                activityTask, new RuntimeException("here"));
+        ProtoLog.i(WM_DEBUG_ADD_REMOVE, "Adding activity %s to task %s", r, activityTask);
 
         if (isActivityTypeHomeOrRecents() && getActivityBelow(r) == null) {
             // If this is the first activity, don't do any fancy animations,
@@ -6060,6 +6085,9 @@ class Task extends TaskFragment {
         if (mDisablePip) {
             pw.println(prefix + "  mDisablePip=true");
         }
+        if (mDisallowOverrideBoundsForChildren) {
+            pw.println(prefix + "  mDisallowOverrideBoundsForChildren=true");
+        }
         if (mLastNonFullscreenBounds != null) {
             pw.print(prefix); pw.print("  mLastNonFullscreenBounds=");
             pw.println(mLastNonFullscreenBounds);
@@ -6464,6 +6492,31 @@ class Task extends TaskFragment {
      */
     @SelfMovable int getSelfMovable() {
         return mSelfMovable;
+    }
+
+    /**
+     * Sets whether the child tasks can have override bounds.
+     *
+     * @param disallowOverrideBoundsForChildren whether to disallow the override bounds
+     * @return a bitmask representing the types of bounds changes made to the child tasks.
+     */
+    int setDisallowOverrideBoundsForChildren(boolean disallowOverrideBoundsForChildren) {
+        if (!mCreatedByOrganizer) {
+            Slog.w(TAG, "Can only disable child bounds override on tasks created by organizer");
+            return BOUNDS_CHANGE_NONE;
+        }
+        mDisallowOverrideBoundsForChildren = disallowOverrideBoundsForChildren;
+
+        final int[] boundsChange = new int[1];
+        if (disallowOverrideBoundsForChildren) {
+            forAllTasks(task -> {
+                if (task == this) {
+                    return;
+                }
+                boundsChange[0] |= task.setBounds(null);
+            });
+        }
+        return boundsChange[0];
     }
 
     @Override

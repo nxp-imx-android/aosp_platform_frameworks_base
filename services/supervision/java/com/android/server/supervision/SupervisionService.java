@@ -459,22 +459,25 @@ public class SupervisionService extends ISupervisionManager.Stub {
         enforcePermission(MANAGE_ROLE_HOLDERS);
         List<String> roles =  Arrays.asList(RoleManager.ROLE_SYSTEM_SUPERVISION,
                 RoleManager.ROLE_SUPERVISION);
+        List<String> supervisionPackages = new ArrayList<>();
         for (String role : roles) {
-            List<String> supervisionPackages =
+            List<String> supervisionPackagesPerRole =
                     mInjector.getRoleHoldersAsUser(role, UserHandle.of(userId));
-            for (String supervisionPackage : supervisionPackages) {
-                clearDevicePoliciesAndSuspendedPackagesFor(userId, supervisionPackage, role);
+            supervisionPackages.addAll(supervisionPackagesPerRole);
+            // TODO(b/432705581): Consider adding a method that takes a list of packages to clear
+            // suspension for, instead of calling for each package in a loop.
+            for (String supervisionPackage : supervisionPackagesPerRole) {
+                clearSuspendedPackagesFor(userId, supervisionPackage, role);
             }
+        }
+
+        DevicePolicyManagerInternal dpmi = mInjector.getDpmInternal();
+        if (dpmi != null) {
+            dpmi.removePoliciesForAdmins(userId, supervisionPackages);
         }
     }
 
-    private void clearDevicePoliciesAndSuspendedPackagesFor(int userId, String supervisionPackage,
-            String roleName) {
-        DevicePolicyManagerInternal dpmi = mInjector.getDpmInternal();
-        if (dpmi != null) {
-            dpmi.removePoliciesForAdmins(supervisionPackage, userId);
-        }
-
+    private void clearSuspendedPackagesFor(int userId, String supervisionPackage, String roleName) {
         PackageManagerInternal pmi = mInjector.getPackageManagerInternal();
         if (pmi != null) {
             pmi.unsuspendForSuspendingPackage(supervisionPackage, userId, userId);

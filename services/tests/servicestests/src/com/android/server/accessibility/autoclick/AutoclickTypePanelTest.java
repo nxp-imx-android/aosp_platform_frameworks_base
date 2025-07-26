@@ -207,6 +207,32 @@ public class AutoclickTypePanelTest {
     }
 
     @Test
+    public void togglePanelExpansion_largeScreen_AllButtonsShowing() {
+        mAutoclickTypePanel.setIsExpandedPanelWiderThanScreenForTesting(false);
+
+        // Close and re-expand the panel.
+        mLeftClickButton.callOnClick();
+        mLeftClickButton.callOnClick();
+
+        // Expect the buttons to be shown because the screen can fit the whole panel.
+        assertThat(mPauseButton.getVisibility()).isEqualTo(View.VISIBLE);
+        assertThat(mPositionButton.getVisibility()).isEqualTo(View.VISIBLE);
+    }
+
+    @Test
+    public void togglePanelExpansion_smallScreen_HideButtons() {
+        mAutoclickTypePanel.setIsExpandedPanelWiderThanScreenForTesting(true);
+
+        // Close and re-expand the panel.
+        mLeftClickButton.callOnClick();
+        mLeftClickButton.callOnClick();
+
+        // Expect the buttons to be hidden because the screen is too small.
+        assertThat(mPauseButton.getVisibility()).isEqualTo(View.GONE);
+        assertThat(mPositionButton.getVisibility()).isEqualTo(View.GONE);
+    }
+
+    @Test
     public void clickLeftClickButton_resumeAutoClick() {
         // Pause autoclick.
         mPauseButton.callOnClick();

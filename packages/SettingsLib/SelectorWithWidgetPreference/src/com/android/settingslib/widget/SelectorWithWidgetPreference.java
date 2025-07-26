@@ -17,6 +17,7 @@
 package com.android.settingslib.widget;
 
 import android.content.Context;
+import android.content.res.Resources;
 import android.content.res.TypedArray;
 import android.text.TextUtils;
 import android.util.AttributeSet;
@@ -86,7 +87,7 @@ public class SelectorWithWidgetPreference extends CheckBoxPreference {
      */
     public SelectorWithWidgetPreference(@NonNull Context context, @Nullable AttributeSet attrs,
             int defStyle) {
-        super(context, attrs, defStyle);
+        super(applyExpressivePreferenceThemeOverlay(context), attrs, defStyle);
         init(context, attrs, defStyle, /* defStyleRes= */ 0);
     }
 
@@ -98,7 +99,7 @@ public class SelectorWithWidgetPreference extends CheckBoxPreference {
      * @param attrs   The attributes of the XML tag that is inflating the preference
      */
     public SelectorWithWidgetPreference(Context context, AttributeSet attrs) {
-        super(context, attrs);
+        super(applyExpressivePreferenceThemeOverlay(context), attrs);
         init(context, attrs, /* defStyleAttr= */ 0, /* defStyleRes= */ 0);
     }
 
@@ -109,7 +110,7 @@ public class SelectorWithWidgetPreference extends CheckBoxPreference {
      * @param isCheckbox Whether this preference should display as a checkbox.
      */
     public SelectorWithWidgetPreference(Context context, boolean isCheckbox) {
-        super(context, null);
+        super(applyExpressivePreferenceThemeOverlay(context), null);
         mIsCheckBox = isCheckbox;
         init(context, /* attrs= */ null, /* defStyleAttr= */ 0, /* defStyleRes= */ 0);
     }
@@ -247,6 +248,20 @@ public class SelectorWithWidgetPreference extends CheckBoxPreference {
         mTitleMaxLines =
                 a.getInt(R.styleable.SelectorWithWidgetPreference_titleMaxLines, DEFAULT_MAX_LINES);
         a.recycle();
+    }
+
+    @NonNull
+    private static Context applyExpressivePreferenceThemeOverlay(@NonNull Context context) {
+        TypedArray typedArray = context.obtainStyledAttributes(new int[] {
+                com.android.settingslib.widget.theme.R.attr
+                        .expressiveSelectorWithWidgetPreferenceTheme});
+        // Since the context is shared, only try to apply the theme if it 's not resolved.
+        if (typedArray.getResourceId(0, Resources.ID_NULL) == Resources.ID_NULL) {
+            context.getTheme().applyStyle(
+                    R.style.ThemeOverlay_ExpressiveSelectorWithWidgetPreference, false);
+        }
+        typedArray.recycle();
+        return context;
     }
 
     @VisibleForTesting(otherwise = VisibleForTesting.NONE)

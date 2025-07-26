@@ -117,20 +117,6 @@ public class UiUtil {
      * If material design is enabled, return the MaterialAlertDialog. Otherwise, return the
      * system AlertDialog.
      */
-    public static Dialog getAlertDialog(@NonNull Context context, @NonNull String title,
-            @NonNull View contentView, @NonNull String positiveBtnText,
-            @NonNull String negativeBtnText,
-            @Nullable DialogInterface.OnClickListener positiveBtnListener,
-            @Nullable DialogInterface.OnClickListener negativeBtnListener) {
-        return getAlertDialog(context, title, contentView, positiveBtnText,
-                negativeBtnText, positiveBtnListener, negativeBtnListener,
-                /* themeResId= */ 0);
-    }
-
-    /**
-     * If material design is enabled, return the MaterialAlertDialog. Otherwise, return the
-     * system AlertDialog.
-     */
     public static Dialog getAlertDialog(@NonNull Context context,
             @NonNull String title, @NonNull View contentView, @StringRes int positiveBtnTextResId,
             @StringRes int negativeBtnTextResId,

@@ -97,6 +97,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Predicate;
 
 /**
  * Class responsible for setting, resolving, and enforcing policies set by multiple management
@@ -2075,33 +2076,51 @@ final class DevicePolicyEngine {
     }
 
     /**
-     * Removes all local and global policies set by enforcing admins with
-     * `packageName` and `userId`.
+     * Removes all local and global policies set by enforcing admins with a package `packageNames`
+     * and `userId`.
      */
-    void removePoliciesForAdmins(
-            String packageName, @UserIdInt int userId) {
+    void removePoliciesForAdmins(@UserIdInt int userId, List<String> packageNames) {
         synchronized (mLock) {
-            Set<PolicyKey> globalPolicies = new HashSet<>(mGlobalPolicies.keySet());
-            for (PolicyKey policy : globalPolicies) {
-                PolicyState<?> policyState = mGlobalPolicies.get(policy);
+            for (PolicyState<?> policyState : mGlobalPolicies.values()) {
                 for (EnforcingAdmin admin : policyState.getPoliciesSetByAdmins().keySet()) {
-                    if (admin.getPackageName().equals(packageName) &&
-                            admin.getUserId() == userId) {
+                    if (packageNames.contains(admin.getPackageName())
+                            && admin.getUserId() == userId) {
                         removeGlobalPolicy(policyState.getPolicyDefinition(), admin);
                     }
                 }
             }
 
-            if (mLocalPolicies.containsKey(userId)) {
-                Set<PolicyKey> localPolicies = new HashSet<>(mLocalPolicies.get(userId).keySet());
-                for (PolicyKey policy : localPolicies) {
-                    PolicyState<?> policyState = mLocalPolicies.get(userId).get(policy);
-                    for (EnforcingAdmin admin : policyState.getPoliciesSetByAdmins().keySet()) {
-                        if (admin.getPackageName().equals(packageName) &&
-                                admin.getUserId() == userId) {
-                            removeLocalPolicy(
-                                    policyState.getPolicyDefinition(), admin, userId);
-                        }
+            removeLocalPoliciesForAdminsLocked(
+                    userId,
+                    admin ->
+                            packageNames.contains(admin.getPackageName())
+                                    && admin.getUserId() == userId);
+        }
+    }
+
+    /**
+     * Removes all local policies set by enforcing admins with a system entity in `systemEntities`
+     * for the given `userId`.
+     */
+    void removeLocalPoliciesForSystemEntities(@UserIdInt int userId, List<String> systemEntities) {
+        synchronized (mLock) {
+            removeLocalPoliciesForAdminsLocked(
+                    userId, admin -> systemEntities.contains(admin.getSystemEntity()));
+        }
+    }
+
+    /**
+     * Removes all local policies set on the given `userId` by EnforcingAdmins matching the given
+     * `adminPredicate`.
+     */
+    void removeLocalPoliciesForAdminsLocked(
+            @UserIdInt int userId, Predicate<EnforcingAdmin> adminPredicate) {
+        if (mLocalPolicies.containsKey(userId)) {
+            for (PolicyState<?> policyState : mLocalPolicies.get(userId).values()) {
+                for (EnforcingAdmin admin : policyState.getPoliciesSetByAdmins().keySet()) {
+                    if (adminPredicate.test(admin)) {
+                        CompletableFuture<Integer> unused =
+                                removeLocalPolicy(policyState.getPolicyDefinition(), admin, userId);
                     }
                 }
             }

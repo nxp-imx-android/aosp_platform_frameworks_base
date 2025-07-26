@@ -88,22 +88,28 @@ fun ContentScope.ExpansionControl(
     modifier: Modifier = Modifier,
 ) {
     val textColor = MaterialTheme.colorScheme.onSurface
+    val shouldShowNumber = numberToShow != null
     Box(modifier = modifier) {
         // The background is a shared Element and therefore can't be the parent of a different
         // shared Element (the chevron), otherwise the child can't be animated.
         PillBackground(modifier = Modifier.matchParentSize())
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.padding(vertical = 2.dp, horizontal = 6.dp),
+            modifier =
+                Modifier.padding(
+                    top = 2.dp,
+                    bottom = 2.dp,
+                    start = 6.dp,
+                    end = if (shouldShowNumber) 4.dp else 6.dp,
+                ),
         ) {
             val iconSizeDp = with(LocalDensity.current) { 16.sp.toDp() }
 
-            if (numberToShow != null) {
+            if (shouldShowNumber) {
                 Text(
                     text = numberToShow.toString(),
                     style = MaterialTheme.typography.labelSmallEmphasized,
                     color = textColor,
-                    modifier = Modifier.padding(end = 2.dp),
                 )
             }
             Chevron(collapsed = collapsed, modifier = Modifier.size(iconSizeDp), color = textColor)

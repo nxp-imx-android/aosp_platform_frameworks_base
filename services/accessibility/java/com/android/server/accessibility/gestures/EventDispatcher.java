@@ -140,9 +140,7 @@ public class EventDispatcher {
             event.getPointerProperties(i, p);
             properties[i] = p;
         }
-        final int deviceId = Flags.touchExplorerUseVirtualDeviceId()
-                ? VIRTUAL_TOUCHSCREEN_DEVICE_ID
-                : rawEvent.getDeviceId();
+        final int deviceId = VIRTUAL_TOUCHSCREEN_DEVICE_ID;
         event = MotionEvent.obtain(downTime, event.getEventTime(), event.getAction(),
                 event.getPointerCount(), properties, coords,
                 event.getMetaState(), event.getButtonState(),
@@ -322,8 +320,7 @@ public class EventDispatcher {
                 sendMotionEvent(
                         prototype,
                         action,
-                        Flags.eventDispatcherRawEvent() ? mState.getLastReceivedRawEvent() :
-                                mState.getLastReceivedEvent(),
+                        mState.getLastReceivedRawEvent(),
                         pointerIdBits,
                         policyFlags);
             }
@@ -353,8 +350,7 @@ public class EventDispatcher {
                 sendMotionEvent(
                         event,
                         action,
-                        Flags.eventDispatcherRawEvent() ? mState.getLastReceivedRawEvent() :
-                                mState.getLastReceivedEvent(),
+                        mState.getLastReceivedRawEvent(),
                         pointerIdBits,
                         policyFlags);
             }
@@ -421,9 +417,7 @@ public class EventDispatcher {
                 continue;
             }
             final int action = computeInjectionAction(MotionEvent.ACTION_POINTER_UP, i);
-            sendMotionEvent(prototype, action,
-                    Flags.eventDispatcherRawEvent() ? mState.getLastReceivedRawEvent() :
-                            mState.getLastReceivedEvent(),
+            sendMotionEvent(prototype, action, mState.getLastReceivedRawEvent(),
                     pointerIdBits, policyFlags);
             pointerIdBits &= ~(1 << pointerId);
         }

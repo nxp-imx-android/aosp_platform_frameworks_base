@@ -3323,7 +3323,7 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
 
     @BinderThread
     @Override
-    public void reportPerceptibleAsync(@NonNull IBinder windowToken, boolean perceptible) {
+    public void reportPerceptible(@NonNull IBinder windowToken, boolean perceptible) {
         Binder.withCleanCallingIdentity(() -> {
             Objects.requireNonNull(windowToken, "windowToken must not be null");
             synchronized (ImfLock.class) {
@@ -4257,16 +4257,8 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
         });
     }
 
-    @IInputMethodManagerImpl.PermissionVerified(allOf = {
-            Manifest.permission.INTERACT_ACROSS_USERS_FULL,
-            Manifest.permission.INTERNAL_SYSTEM_WINDOW})
     @Override
-    public void removeImeSurface(int displayId) {
-        mHandler.obtainMessage(MSG_REMOVE_IME_SURFACE).sendToTarget();
-    }
-
-    @Override
-    public void removeImeSurfaceFromWindowAsync(IBinder windowToken) {
+    public void removeImeSurfaceFromWindow(@NonNull IBinder windowToken) {
         // No permission check, because we'll only execute the request if the calling window is
         // also the current IME client.
         mHandler.obtainMessage(MSG_REMOVE_IME_SURFACE_FROM_WINDOW, windowToken).sendToTarget();

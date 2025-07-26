@@ -91,7 +91,6 @@ import android.os.Process;
 import android.os.RemoteCallback;
 import android.os.RemoteException;
 import android.os.test.FakePermissionEnforcer;
-import android.platform.test.annotations.EnableFlags;
 import android.platform.test.flag.junit.SetFlagsRule;
 import android.util.Pair;
 import android.view.Display;
@@ -770,7 +769,7 @@ public class AbstractAccessibilityServiceConnectionTest {
         final DisplayManager displayManager = new DisplayManager(mMockContext);
         when(mMockContext.getSystemService(Context.DISPLAY_SERVICE)).thenReturn(displayManager);
 
-        mServiceConnection.takeScreenshot(Display.DEFAULT_DISPLAY + 1,
+        mServiceConnection.takeScreenshot(Display.INVALID_DISPLAY,
                 new RemoteCallback(mMockListener));
         mHandler.sendLastMessage();
 
@@ -786,7 +785,6 @@ public class AbstractAccessibilityServiceConnectionTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ALLOW_SECURE_SCREENSHOTS)
     public void takeScreenshot_standardService_cannotCaptureSecureLayers() {
         setPreinstalledA11yTool(false);
 
@@ -801,7 +799,6 @@ public class AbstractAccessibilityServiceConnectionTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ALLOW_SECURE_SCREENSHOTS)
     public void takeScreenshot_preinstalledA11yTool_canCaptureSecureLayers() {
         setPreinstalledA11yTool(true);
 
@@ -827,7 +824,6 @@ public class AbstractAccessibilityServiceConnectionTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ALLOW_SECURE_SCREENSHOTS)
     public void takeScreenshotOfWindow_standardWindow_standardService_cannotCaptureSecureLayers()
             throws Exception {
         setPreinstalledA11yTool(false);
@@ -846,7 +842,6 @@ public class AbstractAccessibilityServiceConnectionTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ALLOW_SECURE_SCREENSHOTS)
     public void takeScreenshotOfWindow_standardWindow_preinstalledA11yTool_canCaptureSecureLayers()
             throws Exception {
         setPreinstalledA11yTool(true);
@@ -865,7 +860,6 @@ public class AbstractAccessibilityServiceConnectionTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ALLOW_SECURE_SCREENSHOTS)
     public void takeScreenshotOfWindow_secureWindow_standardService_sendsCallbackError()
             throws Exception {
         setPreinstalledA11yTool(false);
@@ -880,7 +874,6 @@ public class AbstractAccessibilityServiceConnectionTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ALLOW_SECURE_SCREENSHOTS)
     public void takeScreenshotOfWindow_secureWindow_preinstalledA11yTool_canCaptureSecureLayers()
             throws Exception {
         setPreinstalledA11yTool(true);

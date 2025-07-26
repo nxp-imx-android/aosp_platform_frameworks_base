@@ -23,7 +23,7 @@ import android.service.dreams.Flags.allowDreamWhenPostured
 import com.android.app.tracing.coroutines.launchInTraced
 import com.android.app.tracing.coroutines.launchTraced
 import com.android.systemui.CoreStartable
-import com.android.systemui.common.domain.interactor.BatteryInteractor
+import com.android.systemui.common.domain.interactor.BatteryInteractorDeprecated
 import com.android.systemui.communal.posturing.domain.interactor.PosturingInteractor
 import com.android.systemui.communal.posturing.domain.interactor.PosturingInteractor.Companion.SLIDING_WINDOW_DURATION
 import com.android.systemui.communal.posturing.shared.model.PosturedState
@@ -37,6 +37,8 @@ import com.android.systemui.log.table.logDiffsForTable
 import com.android.systemui.power.domain.interactor.PowerInteractor
 import com.android.systemui.statusbar.commandline.Command
 import com.android.systemui.statusbar.commandline.CommandRegistry
+import com.android.systemui.statusbar.pipeline.battery.domain.interactor.BatteryInteractor
+import com.android.systemui.statusbar.pipeline.battery.shared.StatusBarUniversalBatteryDataSource
 import com.android.systemui.util.kotlin.BooleanFlowOperators.allOf
 import com.android.systemui.util.wakelock.WakeLock
 import com.android.systemui.utils.coroutines.flow.flatMapLatestConflated
@@ -59,6 +61,7 @@ constructor(
     private val dreamManager: DreamManager,
     private val posturingInteractor: PosturingInteractor,
     dreamSettingsInteractor: DreamSettingsInteractor,
+    private val batteryInteractorDeprecated: BatteryInteractorDeprecated,
     private val batteryInteractor: BatteryInteractor,
     @Background private val bgScope: CoroutineScope,
     @CommunalTableLog private val tableLogBuffer: TableLogBuffer,
@@ -75,11 +78,18 @@ constructor(
             .build()
     }
 
+    private val isDevicePluggedIn =
+        if (StatusBarUniversalBatteryDataSource.isEnabled) {
+            batteryInteractor.isPluggedIn
+        } else {
+            batteryInteractorDeprecated.isDevicePluggedIn
+        }
+
     // Only subscribe to posturing if applicable to avoid running the posturing CHRE nanoapp
     // if posturing signal is not needed.
     private val preconditions =
         allOf(
-            batteryInteractor.isDevicePluggedIn,
+            isDevicePluggedIn,
             dreamSettingsInteractor.whenToDream.map { it == WhenToDream.WHILE_POSTURED },
         )
 
@@ -107,7 +117,7 @@ constructor(
             return
         }
 
-        batteryInteractor.isDevicePluggedIn
+        isDevicePluggedIn
             .logDiffsForTable(
                 tableLogBuffer = tableLogBuffer,
                 columnName = "isDevicePluggedIn",

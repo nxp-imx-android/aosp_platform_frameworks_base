@@ -49,7 +49,8 @@ import kotlinx.coroutines.flow.onStart
  * function, if the view was already attached), automatically canceling the work when the `View`
  * becomes detached.
  *
- * Only use from the main thread.
+ * Only use from the main thread. (Unless you are sure that the view is freshly inflated and not
+ * attached to a window, in which case you can pass `assertOnMainThread = false`.)
  *
  * When [block] is run, it is run in the context of a [ViewLifecycleOwner] which the caller can use
  * to launch jobs, with confidence that the jobs will be properly canceled when the view is
@@ -63,6 +64,9 @@ import kotlinx.coroutines.flow.onStart
  *   invoked on.
  * @param block The block of code that should be run when the view becomes attached. It can end up
  *   being invoked multiple times if the view is reattached after being detached.
+ * @param assertOnMainThread In general, callers should always be on the main thread. However, in
+ *   some rare cases views are inflated on a background thread. If the caller knows that the view is
+ *   freshly inflated, they can choose to skip this assertion.
  * @return A [DisposableHandle] to invoke when the caller of the function destroys its [View] and is
  *   no longer interested in the [block] being run the next time its attached. Calling this is an
  *   optional optimization as the logic will be properly cleaned up and destroyed each time the view
@@ -71,9 +75,12 @@ import kotlinx.coroutines.flow.onStart
 @MainThread
 fun View.repeatWhenAttached(
     coroutineContext: CoroutineContext = EmptyCoroutineContext,
+    assertOnMainThread: Boolean = true,
     block: suspend LifecycleOwner.(View) -> Unit,
 ): DisposableHandle {
-    Assert.isMainThread()
+    if (assertOnMainThread) {
+        Assert.isMainThread()
+    }
     val view = this
     // The suspend block will run on the app's main thread unless the caller supplies a different
     // dispatcher to use. We don't want it to run on the Dispatchers.Default thread pool as

@@ -65,7 +65,9 @@ public class InstallationFragment extends DialogFragment {
     private TextView mAppLabelTextView = null;
     private View mAppSnippet = null;
     private TextView mCustomMessageTextView = null;
+    private View mCustomViewPanel = null;
     private ProgressBar mProgressBar = null;
+    private ProgressBar mIndeterminateProgressBar = null;
     private View mTitleTemplate = null;
 
     @Override
@@ -87,6 +89,8 @@ public class InstallationFragment extends DialogFragment {
         mAppSnippet = dialogView.requireViewById(R.id.app_snippet);
         mAppIcon = dialogView.requireViewById(R.id.app_icon);
         mAppLabelTextView = dialogView.requireViewById(R.id.app_label);
+        mCustomViewPanel = dialogView.requireViewById(R.id.custom_view_panel);
+        mIndeterminateProgressBar = dialogView.requireViewById(R.id.indeterminate_progress_bar);
         mProgressBar = dialogView.requireViewById(R.id.progress_bar);
         mCustomMessageTextView = dialogView.requireViewById(R.id.custom_message);
 
@@ -156,6 +160,14 @@ public class InstallationFragment extends DialogFragment {
             mCustomMessageTextView.setPadding(0, 0, 0, 0);
         }
 
+        // Reset the paddings of the custom view panel
+        final int paddingHorizontal = mCustomViewPanel.getPaddingStart();
+        final int paddingTop = mCustomViewPanel.getPaddingTop();
+        final int paddingBottom =
+                getResources().getDimensionPixelOffset(R.dimen.alert_dialog_inner_padding);
+        mCustomViewPanel.setPadding(paddingHorizontal, paddingTop,
+                paddingHorizontal, paddingBottom);
+
         switch (installStage.getStageCode()) {
             case InstallStage.STAGE_ABORTED -> {
                 updateInstallAbortedUI(mDialog, (InstallAborted) installStage);
@@ -179,8 +191,10 @@ public class InstallationFragment extends DialogFragment {
     }
 
     private void updateInstallAbortedUI(Dialog dialog, InstallAborted installStage) {
-        mProgressBar.setVisibility(View.GONE);
         mAppSnippet.setVisibility(View.GONE);
+        mIndeterminateProgressBar.setVisibility(View.GONE);
+        mProgressBar.setVisibility(View.GONE);
+
         mCustomMessageTextView.setVisibility(View.VISIBLE);
 
         // Set the message
@@ -212,9 +226,11 @@ public class InstallationFragment extends DialogFragment {
     }
 
     private void updateInstallFailedUI(Dialog dialog, InstallFailed installStage) {
+        mIndeterminateProgressBar.setVisibility(View.GONE);
+        mProgressBar.setVisibility(View.GONE);
+
         mAppSnippet.setVisibility(View.VISIBLE);
         mCustomMessageTextView.setVisibility(View.VISIBLE);
-        mProgressBar.setVisibility(View.GONE);
 
         Log.i(LOG_TAG, "Installation status code: " + installStage.getLegacyCode());
 
@@ -286,14 +302,22 @@ public class InstallationFragment extends DialogFragment {
     }
 
     private void updateInstallInstallingUI(Dialog dialog, InstallInstalling installStage) {
-        mProgressBar.setVisibility(View.VISIBLE);
-        mAppSnippet.setVisibility(View.VISIBLE);
         mCustomMessageTextView.setVisibility(View.GONE);
+        mProgressBar.setVisibility(View.GONE);
+
+        mAppSnippet.setVisibility(View.VISIBLE);
+        mIndeterminateProgressBar.setVisibility(View.VISIBLE);
+
+        // Update the padding of the custom view panel
+        final int paddingHorizontal = mCustomViewPanel.getPaddingStart();
+        final int paddingTop = mCustomViewPanel.getPaddingTop();
+        final int paddingBottom = 0;
+        mCustomViewPanel.setPadding(paddingHorizontal, paddingTop,
+                paddingHorizontal, paddingBottom);
 
         // Set the app icon, label and progress bar
         mAppIcon.setImageDrawable(installStage.getAppIcon());
         mAppLabelTextView.setText(installStage.getAppLabel());
-        mProgressBar.setIndeterminate(true);
 
         // Set the title
         final int titleResId = installStage.isAppUpdating()
@@ -315,16 +339,16 @@ public class InstallationFragment extends DialogFragment {
     }
 
     private void updateInstallStagingUI(@NonNull Dialog dialog) {
-        mProgressBar.setVisibility(View.VISIBLE);
         mAppSnippet.setVisibility(View.GONE);
         mCustomMessageTextView.setVisibility(View.GONE);
+        mIndeterminateProgressBar.setVisibility(View.GONE);
+
+        mProgressBar.setVisibility(View.VISIBLE);
 
         // Set the title
         dialog.setTitle(R.string.title_install_staging);
 
         // Set the progress bar
-        mProgressBar.setIndeterminate(false);
-        mProgressBar.setMax(100);
         mProgressBar.setProgress(0);
 
         // Hide the positive button
@@ -348,9 +372,11 @@ public class InstallationFragment extends DialogFragment {
     }
 
     private void updateInstallSuccessUI(Dialog dialog, InstallSuccess installStage) {
-        mProgressBar.setVisibility(View.GONE);
-        mAppSnippet.setVisibility(View.VISIBLE);
         mCustomMessageTextView.setVisibility(View.GONE);
+        mIndeterminateProgressBar.setVisibility(View.GONE);
+        mProgressBar.setVisibility(View.GONE);
+
+        mAppSnippet.setVisibility(View.VISIBLE);
 
         // Set the app icon and label
         mAppIcon.setImageDrawable(installStage.getAppIcon());
@@ -418,8 +444,10 @@ public class InstallationFragment extends DialogFragment {
     }
 
     private void updateUnknownSourceUI(Dialog dialog, InstallUserActionRequired installStage) {
-        mAppSnippet.setVisibility(View.VISIBLE);
+        mIndeterminateProgressBar.setVisibility(View.GONE);
         mProgressBar.setVisibility(View.GONE);
+
+        mAppSnippet.setVisibility(View.VISIBLE);
         mCustomMessageTextView.setVisibility(View.VISIBLE);
 
         // Set the app icon and label
@@ -459,7 +487,9 @@ public class InstallationFragment extends DialogFragment {
 
     private void updateAnonymousSourceUI(Dialog dialog, InstallUserActionRequired installStage) {
         mAppSnippet.setVisibility(View.GONE);
+        mIndeterminateProgressBar.setVisibility(View.GONE);
         mProgressBar.setVisibility(View.GONE);
+
         mCustomMessageTextView.setVisibility(View.VISIBLE);
 
         // Hide the title and set the message
@@ -505,9 +535,11 @@ public class InstallationFragment extends DialogFragment {
 
     private void updateInstallConfirmationUI(Dialog dialog,
             InstallUserActionRequired installStage) {
-        mAppSnippet.setVisibility(View.VISIBLE);
-        mProgressBar.setVisibility(View.GONE);
         mCustomMessageTextView.setVisibility(View.GONE);
+        mIndeterminateProgressBar.setVisibility(View.GONE);
+        mProgressBar.setVisibility(View.GONE);
+
+        mAppSnippet.setVisibility(View.VISIBLE);
 
         // Set the app icon and label
         mAppIcon.setImageDrawable(installStage.getAppIcon());

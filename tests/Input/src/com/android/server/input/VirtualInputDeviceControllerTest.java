@@ -80,6 +80,7 @@ public class VirtualInputDeviceControllerTest {
     private static final String LANGUAGE_TAG = "en-US";
     private static final String LAYOUT_TYPE = "qwerty";
     private static final String NAME = "testInputDeviceName";
+    private static final String NAME_2 = "testInputDeviceName2";
     private static final long EVENT_TIMESTAMP = 5000L;
 
     private TestableLooper mTestableLooper;
@@ -226,6 +227,15 @@ public class VirtualInputDeviceControllerTest {
                 IllegalArgumentException.class,
                 () -> mInputController.createDpad(
                         NAME, VENDOR_ID, PRODUCT_ID, TOKEN_2, DISPLAY_ID_2));
+    }
+
+    @Test
+    public void createInputDevice_duplicateTokensAreNotAllowed() {
+        mInputController.createDpad(NAME, VENDOR_ID, PRODUCT_ID, TOKEN_1, DISPLAY_ID_1);
+        assertThrows("Device tokens need to be unique",
+                IllegalArgumentException.class,
+                () -> mInputController.createDpad(
+                        NAME_2, VENDOR_ID, PRODUCT_ID, TOKEN_1, DISPLAY_ID_2));
     }
 
     @Test

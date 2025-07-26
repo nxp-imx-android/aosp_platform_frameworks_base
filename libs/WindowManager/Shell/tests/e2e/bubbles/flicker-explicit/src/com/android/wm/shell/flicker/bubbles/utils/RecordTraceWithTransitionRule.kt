@@ -17,7 +17,12 @@
 package com.android.wm.shell.flicker.bubbles.utils
 
 import android.tools.io.Reader
+import android.tools.traces.monitors.PerfettoTraceMonitor
+import android.tools.traces.monitors.ScreenRecorder
+import android.tools.traces.monitors.events.EventLogMonitor
+import android.tools.traces.monitors.withTracing
 import android.util.Log
+import androidx.test.platform.app.InstrumentationRegistry
 import org.junit.AssumptionViolatedException
 import org.junit.rules.TestRule
 import org.junit.runner.Description
@@ -27,7 +32,7 @@ import org.junit.runners.model.Statement
 /**
  * A [org.junit.ClassRule] to record trace with transition.
  *
- * @sample com.android.wm.shell.flicker.bubbles.samples.RecordTraceWithTransitionRuleSample
+ * @sample com.android.wm.shell.flicker.bubbles.samples.recordTraceWithTransitionRuleSample
  *
  * @property setUpBeforeTransition the operation to initialize the environment before transition
  *                                   if specified
@@ -82,6 +87,28 @@ class RecordTraceWithTransitionRule(
             }
         }
     }
+
+    /**
+     * A helper method to record the trace while [transition] is running.
+     *
+     * @sample com.android.wm.shell.flicker.bubbles.samples.runTransitionWithTraceSample
+     *
+     * @param transition the transition to verify.
+     * @return a [Reader] that can read the trace data from.
+     */
+    private fun runTransitionWithTrace(transition: () -> Unit): Reader =
+        withTracing(
+            traceMonitors = listOf(
+                ScreenRecorder(InstrumentationRegistry.getInstrumentation().targetContext),
+                PerfettoTraceMonitor.newBuilder()
+                    .enableTransitionsTrace()
+                    .enableLayersTrace()
+                    .enableWindowManagerTrace()
+                    .build(),
+                EventLogMonitor()
+            ),
+            predicate = transition
+        )
 
     companion object {
         private const val TAG = "TransitionRule"

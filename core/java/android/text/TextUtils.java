@@ -526,7 +526,7 @@ public class TextUtils {
      * A simple string splitter.
      *
      * <p>If the final character in the string to split is the delimiter then no empty string will
-     * be returned for the empty string after that delimeter. That is, splitting <tt>"a,b,"</tt> on
+     * be returned for the empty string after that delimiter. That is, splitting <tt>"a,b,"</tt> on
      * comma will return <tt>"a", "b"</tt>, not <tt>"a", "b", ""</tt>.
      */
     public static class SimpleStringSplitter implements StringSplitter, Iterator<String> {
@@ -537,7 +537,7 @@ public class TextUtils {
 
         /**
          * Initializes the splitter. setString may be called later.
-         * @param delimiter the delimeter on which to split
+         * @param delimiter the delimiter on which to split
          */
         public SimpleStringSplitter(char delimiter) {
             mDelimiter = delimiter;

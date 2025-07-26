@@ -1699,7 +1699,8 @@ public class InsetsController implements WindowInsetsController, InsetsAnimation
                         // should be reported at this point.
                         reportRequestedVisibleTypes(!Flags.reportAnimatingInsetsTypes()
                                 ? runner.getStatsToken() : null);
-                        mHost.getInputMethodManager().removeImeSurface(mHost.getWindowToken());
+                        mHost.getInputMethodManager()
+                                .removeImeSurfaceFromWindow(mHost.getWindowToken());
                     }
                 }
                 break;
