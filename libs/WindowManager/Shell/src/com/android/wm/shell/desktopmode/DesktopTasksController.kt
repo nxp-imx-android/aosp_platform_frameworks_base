@@ -3482,6 +3482,18 @@ class DesktopTasksController(
                 // If there is an active desk on the target display, then it is already in desktop
                 // windowing so the new task should also be placed in desktop windowing.
                 anyDeskActive -> true
+                DesktopExperienceFlags.ENABLE_DESKTOP_FIRST_TOP_FULLSCREEN_BUGFIX.isTrue ->
+                    // Here we have no desk activated, but check if we really want to force a task
+                    // into desktop.
+                    if (rootTaskDisplayAreaOrganizer.isDisplayDesktopFirst(task.displayId)) {
+                        // In desktop-first mode, we force to activate desk only when the
+                        // desktop-first policy can be applied.
+                        shouldForceEnterDesktop
+                    } else {
+                        // In touch-first mode, new tasks should be forced into desktop, while known
+                        // desktop tasks should be moved outside of desktop.
+                        !isKnownDesktopTask
+                    }
                 // If there is some desk on target display and it's been marked as a "desktop-first"
                 // display, activate the desk and place the task in desktop windowing.
                 shouldForceEnterDesktop -> true
@@ -3771,6 +3783,28 @@ class DesktopTasksController(
         }
 
         val isDesktopFirst = rootTaskDisplayAreaOrganizer.isDisplayDesktopFirst(targetDisplayId)
+        if (DesktopExperienceFlags.ENABLE_DESKTOP_FIRST_TOP_FULLSCREEN_BUGFIX.isTrue) {
+            val anyDeskActive = isAnyDeskActive(targetDisplayId)
+            val focusedTask = focusTransitionObserver.getFocusedTaskOnDisplay(targetDisplayId)
+            val isFullscreenFocused = focusedTask?.isFullscreen == true
+            val isNonHomeFocused = focusedTask?.activityType != ACTIVITY_TYPE_HOME
+            logV(
+                "shouldForceEnterDesktopByDesktopFirstPolicy: anyDeskActive=%s " +
+                    "isFullscreenFocused=%s isNonHomeFocused=%s",
+                anyDeskActive,
+                isFullscreenFocused,
+                isNonHomeFocused,
+            )
+            if (isDesktopFirst && !anyDeskActive && isFullscreenFocused && isNonHomeFocused) {
+                logV(
+                    "shouldForceEnterDesktopByDesktopFirstPolicy: no switch as the other " +
+                        "fullscreen task is focused on desktop-first display#%s",
+                    targetDisplayId,
+                )
+                return false
+            }
+        }
+
         if (
             DesktopExperienceFlags.ENABLE_DESKTOP_FIRST_FULLSCREEN_REFOCUS_BUGFIX.isTrue &&
                 isDesktopFirst &&
