@@ -22,13 +22,15 @@ import static android.view.WindowManager.DOCKED_LEFT;
 import static android.view.WindowManager.DOCKED_RIGHT;
 import static android.view.WindowManager.DOCKED_TOP;
 
-import static com.android.wm.shell.common.split.ResizingEffectPolicy.DEFAULT_OFFSCREEN_DIM;
 import static com.android.wm.shell.shared.animation.Interpolators.DIM_INTERPOLATOR;
 import static com.android.wm.shell.shared.animation.Interpolators.FAST_DIM_INTERPOLATOR;
 import static com.android.wm.shell.shared.split.SplitScreenConstants.ANIMATING_OFFSCREEN_TAP;
+import static com.android.wm.shell.shared.split.SplitScreenConstants.DEFAULT_OFFSCREEN_DIM;
 
 import android.graphics.Point;
 import android.graphics.Rect;
+
+import com.android.wm.shell.shared.split.SplitScreenConstants;
 
 /**
  * Calculation class, used when
@@ -106,7 +108,7 @@ public class FlexHybridParallaxSpec implements ParallaxSpec {
     /**
      * Used by {@link #getDimValue} to determine the amount to dim an app. Starts at zero and ramps
      * up to the default amount of dimming for an offscreen app,
-     * {@link ResizingEffectPolicy#DEFAULT_OFFSCREEN_DIM}.
+     * {@link SplitScreenConstants#DEFAULT_OFFSCREEN_DIM}.
      */
     private float slowDim(float progress) {
         return DIM_INTERPOLATOR.getInterpolation(progress) * DEFAULT_OFFSCREEN_DIM;
@@ -114,7 +116,7 @@ public class FlexHybridParallaxSpec implements ParallaxSpec {
 
     /**
      * Used by {@link #getDimValue} to determine the amount to dim an app. Starts at
-     * {@link ResizingEffectPolicy#DEFAULT_OFFSCREEN_DIM} and ramps up to 100% dim (full black).
+     * {@link SplitScreenConstants#DEFAULT_OFFSCREEN_DIM} and ramps up to 100% dim (full black).
      */
     private float fastDim(float progress) {
         return DEFAULT_OFFSCREEN_DIM + (FAST_DIM_INTERPOLATOR.getInterpolation(progress)
