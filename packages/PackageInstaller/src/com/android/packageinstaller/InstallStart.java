@@ -98,10 +98,7 @@ public class InstallStart extends Activity {
         String intentAction = intent.getAction();
         final boolean isSessionInstall =
                 PackageInstaller.ACTION_CONFIRM_PRE_APPROVAL.equals(intentAction)
-                || PackageInstaller.ACTION_CONFIRM_INSTALL.equals(intentAction)
-                || (Flags.verificationService()
-                && PackageInstaller.ACTION_CONFIRM_DEVELOPER_VERIFICATION.equals(
-                        intentAction));
+                || PackageInstaller.ACTION_CONFIRM_INSTALL.equals(intentAction);
 
         // If the activity was started via a PackageInstaller session, we retrieve the originating
         // UID from that session
@@ -216,12 +213,7 @@ public class InstallStart extends Activity {
                 originatingUidFromSession);
         nextActivity.putExtra(PackageInstallerActivity.EXTRA_IS_TRUSTED_SOURCE, isTrustedSource);
 
-        if (Flags.verificationService()
-                && PackageInstaller.ACTION_CONFIRM_DEVELOPER_VERIFICATION.equals(
-                        intentAction)) {
-            nextActivity.setClass(this, ConfirmDeveloperVerification.class);
-            nextActivity.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
-        } else if (isSessionInstall) {
+        if (isSessionInstall) {
             nextActivity.setClass(this, PackageInstallerActivity.class);
             nextActivity.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
         } else {
