@@ -2521,8 +2521,7 @@
     <string name="screen_not_shared_sensitive_content" msgid="7058419185079565001">"ეკრანის გაზიარებისას აპის კონტენტი დამალულია უსაფრთხოების მიზნით"</string>
     <string name="satellite_notification_title" msgid="4026338973463121526">"სატელიტთან ავტომატურად დაკავშირებულია"</string>
     <string name="satellite_notification_summary" msgid="5207364139430767162">"შეგიძლიათ გაგზავნოთ და მიიღოთ შეტყობინებები მობილური ან Wi-Fi ქსელის გარეშე"</string>
-    <!-- no translation found for satellite_notification_summary_with_data (8290202758586475712) -->
-    <skip />
+    <string name="satellite_notification_summary_with_data" msgid="8290202758586475712">"შეგიძლიათ, გააგზავნოთ და მიიღოთ შეტყობინებები და გამოიყენოთ ზოგიერთი აპი სატელიტის საშუალებით"</string>
     <string name="satellite_notification_manual_title" msgid="1097504441849466279">"გსურთ შეტყობინებების სატელიტური მიმოცვლის გამოყენება?"</string>
     <string name="satellite_notification_manual_summary" msgid="901206289846283445">"შეტყობინებების გაგზავნა და მიღება მობილური ან Wi-Fi ქსელის გარეშე"</string>
     <string name="satellite_notification_open_message" msgid="4149234979688273729">"Messages-ის გახსნა"</string>

@@ -2521,8 +2521,7 @@
     <string name="screen_not_shared_sensitive_content" msgid="7058419185079565001">"Përmbajtja e aplikacionit është fshehur nga ndarja e ekranit për arsye sigurie"</string>
     <string name="satellite_notification_title" msgid="4026338973463121526">"U lidh automatikisht me satelitin"</string>
     <string name="satellite_notification_summary" msgid="5207364139430767162">"Mund të dërgosh dhe të marrësh mesazhe pa një rrjet celular apo rrjet Wi-Fi"</string>
-    <!-- no translation found for satellite_notification_summary_with_data (8290202758586475712) -->
-    <skip />
+    <string name="satellite_notification_summary_with_data" msgid="8290202758586475712">"Mund të dërgosh dhe të marrësh mesazhe dhe të përdorësh aplikacione të zgjedhura nëpërmjet satelitit"</string>
     <string name="satellite_notification_manual_title" msgid="1097504441849466279">"Të përdoret shkëmbimi i mesazheve nëpërmjet satelitit?"</string>
     <string name="satellite_notification_manual_summary" msgid="901206289846283445">"Dërgo dhe merr mesazhe pa një rrjet celular ose Wi-Fi"</string>
     <string name="satellite_notification_open_message" msgid="4149234979688273729">"Hap \"Mesazhet\""</string>
