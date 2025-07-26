@@ -16,12 +16,12 @@
 
 package com.android.server.wm;
 
-import static android.app.CameraCompatTaskInfo.CAMERA_COMPAT_FREEFORM_LANDSCAPE_DEVICE_IN_LANDSCAPE;
-import static android.app.CameraCompatTaskInfo.CAMERA_COMPAT_FREEFORM_LANDSCAPE_DEVICE_IN_PORTRAIT;
-import static android.app.CameraCompatTaskInfo.CAMERA_COMPAT_FREEFORM_NONE;
-import static android.app.CameraCompatTaskInfo.CAMERA_COMPAT_FREEFORM_PORTRAIT_DEVICE_IN_LANDSCAPE;
-import static android.app.CameraCompatTaskInfo.CAMERA_COMPAT_FREEFORM_PORTRAIT_DEVICE_IN_PORTRAIT;
-import static android.app.CameraCompatTaskInfo.CAMERA_COMPAT_FREEFORM_UNSPECIFIED;
+import static android.app.CameraCompatTaskInfo.CAMERA_COMPAT_LANDSCAPE_DEVICE_IN_LANDSCAPE;
+import static android.app.CameraCompatTaskInfo.CAMERA_COMPAT_LANDSCAPE_DEVICE_IN_PORTRAIT;
+import static android.app.CameraCompatTaskInfo.CAMERA_COMPAT_NONE;
+import static android.app.CameraCompatTaskInfo.CAMERA_COMPAT_PORTRAIT_DEVICE_IN_LANDSCAPE;
+import static android.app.CameraCompatTaskInfo.CAMERA_COMPAT_PORTRAIT_DEVICE_IN_PORTRAIT;
+import static android.app.CameraCompatTaskInfo.CAMERA_COMPAT_UNSPECIFIED;
 import static android.app.WindowConfiguration.ROTATION_UNDEFINED;
 import static android.app.WindowConfiguration.WINDOW_CONFIG_APP_BOUNDS;
 import static android.app.WindowConfiguration.WINDOW_CONFIG_DISPLAY_ROTATION;
@@ -50,16 +50,16 @@ import com.android.internal.protolog.WmProtoLogGroups;
 import com.android.window.flags.Flags;
 
 /**
- * Policy for camera compatibility freeform treatment.
+ * Policy for camera compatibility simulate requested orientation treatment.
  *
- * <p>The treatment is applied to a fixed-orientation camera activity in freeform windowing mode.
+ * <p>This treatment can be applied to a fixed-orientation activity while camera is open.
  * The treatment letterboxes or pillarboxes the activity to the expected orientation and provides
  * changes to the camera and display orientation signals to match those expected on a portrait
  * device in that orientation (for example, on a standard phone).
  */
-final class CameraCompatFreeformPolicy implements AppCompatCameraStatePolicy,
+final class AppCompatCameraSimReqOrientationPolicy implements AppCompatCameraStatePolicy,
         ActivityRefresher.Evaluator {
-    private static final String TAG = TAG_WITH_CLASS_NAME ? "CameraCompatFreeformPolicy" : TAG_WM;
+    private static final String TAG = TAG_WITH_CLASS_NAME ? "AppCompatCameraSROPolicy" : TAG_WM;
 
     @NonNull
     private final DisplayContent mDisplayContent;
@@ -81,7 +81,7 @@ final class CameraCompatFreeformPolicy implements AppCompatCameraStatePolicy,
      */
     private boolean mIsRunning;
 
-    CameraCompatFreeformPolicy(@NonNull DisplayContent displayContent,
+    AppCompatCameraSimReqOrientationPolicy(@NonNull DisplayContent displayContent,
             @NonNull CameraStateMonitor cameraStateMonitor,
             @NonNull AppCompatCameraStateSource cameraStateNotifier,
             @NonNull ActivityRefresher activityRefresher) {
@@ -340,7 +340,7 @@ final class CameraCompatFreeformPolicy implements AppCompatCameraStatePolicy,
 
     boolean isCameraRunningAndWindowingModeEligible(@NonNull ActivityRecord activity) {
         return  activity.mAppCompatController.getCameraOverrides()
-                .shouldApplyFreeformTreatmentForCameraCompat()
+                .shouldApplyCameraCompatSimReqOrientationTreatment()
                 && activity.inFreeformWindowingMode()
                 && mCameraStateMonitor.isCameraRunningForActivity(activity);
     }
@@ -349,13 +349,13 @@ final class CameraCompatFreeformPolicy implements AppCompatCameraStatePolicy,
         // Camera compat should direct aspect ratio when in camera compat mode, unless an app has a
         // different camera compat aspect ratio set: this allows per-app camera compat override
         // aspect ratio to be smaller than the default.
-        return isInFreeformCameraCompatMode(activity) && !activity.mAppCompatController
+        return isInCameraCompatMode(activity) && !activity.mAppCompatController
                 .getCameraOverrides().isOverrideMinAspectRatioForCameraEnabled();
     }
 
-    boolean isInFreeformCameraCompatMode(@NonNull ActivityRecord activity) {
-        return getCameraCompatMode(activity) != CAMERA_COMPAT_FREEFORM_UNSPECIFIED
-                && getCameraCompatMode(activity) != CAMERA_COMPAT_FREEFORM_NONE;
+    boolean isInCameraCompatMode(@NonNull ActivityRecord activity) {
+        return getCameraCompatMode(activity) != CAMERA_COMPAT_UNSPECIFIED
+                && getCameraCompatMode(activity) != CAMERA_COMPAT_NONE;
     }
 
     float getCameraCompatAspectRatio(@NonNull ActivityRecord activityRecord) {
@@ -366,17 +366,17 @@ final class CameraCompatFreeformPolicy implements AppCompatCameraStatePolicy,
         return MIN_FIXED_ORIENTATION_LETTERBOX_ASPECT_RATIO;
     }
 
-    @CameraCompatTaskInfo.FreeformCameraCompatMode
+    @CameraCompatTaskInfo.CameraCompatMode
     int getCameraCompatMode(@NonNull ActivityRecord topActivity) {
         if (!isTreatmentEnabledForActivity(topActivity, /* shouldCheckOrientation= */ true)) {
-            return CAMERA_COMPAT_FREEFORM_NONE;
+            return CAMERA_COMPAT_NONE;
         }
 
         // This treatment targets only devices with portrait natural orientation, which most tablets
         // have.
         if (!mCameraDisplayRotationProvider.isCameraDeviceNaturalOrientationPortrait()) {
             // TODO(b/365725400): handle landscape natural orientation.
-            return CAMERA_COMPAT_FREEFORM_NONE;
+            return CAMERA_COMPAT_NONE;
         }
 
         final int appOrientation = topActivity.getRequestedConfigurationOrientation();
@@ -384,19 +384,19 @@ final class CameraCompatFreeformPolicy implements AppCompatCameraStatePolicy,
                 .isCameraDeviceOrientationPortrait();
         if (appOrientation == ORIENTATION_PORTRAIT) {
             if (isDisplayRotationPortrait) {
-                return CAMERA_COMPAT_FREEFORM_PORTRAIT_DEVICE_IN_PORTRAIT;
+                return CAMERA_COMPAT_PORTRAIT_DEVICE_IN_PORTRAIT;
             } else {
-                return CAMERA_COMPAT_FREEFORM_PORTRAIT_DEVICE_IN_LANDSCAPE;
+                return CAMERA_COMPAT_PORTRAIT_DEVICE_IN_LANDSCAPE;
             }
         } else if (appOrientation == ORIENTATION_LANDSCAPE) {
             if (isDisplayRotationPortrait) {
-                return CAMERA_COMPAT_FREEFORM_LANDSCAPE_DEVICE_IN_PORTRAIT;
+                return CAMERA_COMPAT_LANDSCAPE_DEVICE_IN_PORTRAIT;
             } else {
-                return CAMERA_COMPAT_FREEFORM_LANDSCAPE_DEVICE_IN_LANDSCAPE;
+                return CAMERA_COMPAT_LANDSCAPE_DEVICE_IN_LANDSCAPE;
             }
         }
 
-        return CAMERA_COMPAT_FREEFORM_NONE;
+        return CAMERA_COMPAT_NONE;
     }
 
     /**
@@ -408,7 +408,6 @@ final class CameraCompatFreeformPolicy implements AppCompatCameraStatePolicy,
      *     <li>Treatment is enabled.
      *     <li>Camera is active for the package.
      *     <li>The app has a fixed orientation if {@code checkOrientation} is true.
-     *     <li>The app is in freeform windowing mode.
      * </ul>
      *
      * @param checkOrientation Whether to take apps orientation into account for this check. Only
@@ -423,7 +422,7 @@ final class CameraCompatFreeformPolicy implements AppCompatCameraStatePolicy,
             boolean checkOrientation) {
         int orientation = activity.getRequestedConfigurationOrientation();
         return activity.mAppCompatController.getCameraOverrides()
-                .shouldApplyFreeformTreatmentForCameraCompat()
+                .shouldApplyCameraCompatSimReqOrientationTreatment()
                 && mCameraStateMonitor.isCameraRunningForActivity(activity)
                 && (!checkOrientation || orientation != ORIENTATION_UNDEFINED)
                 && activity.inFreeformWindowingMode()

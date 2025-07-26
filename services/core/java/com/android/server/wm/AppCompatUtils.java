@@ -231,8 +231,8 @@ final class AppCompatUtils {
         appCompatTaskInfo.setEligibleForUserAspectRatioButton(eligibleForAspectRatioButton);
         // Obsolete way of sending camera compat mode data to CameraManager.
         if (!Flags.enableCameraCompatCompatibilityInfoRotateAndCropBugfix()) {
-            appCompatTaskInfo.cameraCompatTaskInfo.freeformCameraCompatMode =
-                    AppCompatCameraPolicy.getCameraCompatFreeformMode(top);
+            appCompatTaskInfo.cameraCompatTaskInfo.cameraCompatMode =
+                    AppCompatCameraPolicy.getCameraCompatSimReqOrientationMode(top);
             appCompatTaskInfo.cameraCompatTaskInfo.displayRotation =
                     Flags.enableCameraCompatCheckDeviceRotationBugfix()
                             ? AppCompatCameraPolicy.getCameraDeviceRotation(top)
@@ -348,8 +348,8 @@ final class AppCompatUtils {
         info.topActivityLetterboxHeight = TaskInfo.PROPERTY_VALUE_UNSET;
         info.topActivityAppBounds.setEmpty();
         info.topActivityLetterboxBounds = null;
-        info.cameraCompatTaskInfo.freeformCameraCompatMode =
-                CameraCompatTaskInfo.CAMERA_COMPAT_FREEFORM_UNSPECIFIED;
+        info.cameraCompatTaskInfo.cameraCompatMode =
+                CameraCompatTaskInfo.CAMERA_COMPAT_UNSPECIFIED;
         info.topNonResizableActivityAspectRatio = TaskInfo.PROPERTY_VALUE_UNSET;
         info.clearTopActivityFlags();
     }

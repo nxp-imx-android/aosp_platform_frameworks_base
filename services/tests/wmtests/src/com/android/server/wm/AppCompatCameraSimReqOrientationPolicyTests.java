@@ -16,12 +16,12 @@
 
 package com.android.server.wm;
 
-import static android.app.CameraCompatTaskInfo.CAMERA_COMPAT_FREEFORM_LANDSCAPE_DEVICE_IN_LANDSCAPE;
-import static android.app.CameraCompatTaskInfo.CAMERA_COMPAT_FREEFORM_LANDSCAPE_DEVICE_IN_PORTRAIT;
-import static android.app.CameraCompatTaskInfo.CAMERA_COMPAT_FREEFORM_NONE;
-import static android.app.CameraCompatTaskInfo.CAMERA_COMPAT_FREEFORM_PORTRAIT_DEVICE_IN_LANDSCAPE;
-import static android.app.CameraCompatTaskInfo.CAMERA_COMPAT_FREEFORM_PORTRAIT_DEVICE_IN_PORTRAIT;
-import static android.app.CameraCompatTaskInfo.FreeformCameraCompatMode;
+import static android.app.CameraCompatTaskInfo.CAMERA_COMPAT_LANDSCAPE_DEVICE_IN_LANDSCAPE;
+import static android.app.CameraCompatTaskInfo.CAMERA_COMPAT_LANDSCAPE_DEVICE_IN_PORTRAIT;
+import static android.app.CameraCompatTaskInfo.CAMERA_COMPAT_NONE;
+import static android.app.CameraCompatTaskInfo.CAMERA_COMPAT_PORTRAIT_DEVICE_IN_LANDSCAPE;
+import static android.app.CameraCompatTaskInfo.CAMERA_COMPAT_PORTRAIT_DEVICE_IN_PORTRAIT;
+import static android.app.CameraCompatTaskInfo.CameraCompatMode;
 import static android.app.WindowConfiguration.WINDOWING_MODE_FREEFORM;
 import static android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN;
 import static android.app.servertransaction.ActivityLifecycleItem.ON_PAUSE;
@@ -89,15 +89,15 @@ import java.util.concurrent.Executor;
 import java.util.function.Consumer;
 
 /**
- * Tests for {@link CameraCompatFreeformPolicy}.
+ * Tests for {@link AppCompatCameraSimReqOrientationPolicy}.
  *
  * Build/Install/Run:
- *  atest WmTests:CameraCompatFreeformPolicyTests
+ *  atest WmTests:AppCompatCameraSimReqOrientationPolicyTests
  */
 @SmallTest
 @Presubmit
 @RunWith(WindowTestRunner.class)
-public class CameraCompatFreeformPolicyTests extends WindowTestsBase {
+public class AppCompatCameraSimReqOrientationPolicyTests extends WindowTestsBase {
     @Rule
     public TestRule compatChangeRule = new PlatformCompatChangeRule();
 
@@ -109,7 +109,7 @@ public class CameraCompatFreeformPolicyTests extends WindowTestsBase {
     @Test
     @DisableFlags(FLAG_ENABLE_CAMERA_COMPAT_FOR_DESKTOP_WINDOWING)
     @EnableCompatChanges({OVERRIDE_CAMERA_COMPAT_ENABLE_FREEFORM_WINDOWING_TREATMENT})
-    public void testFeatureDisabled_cameraCompatFreeformPolicyNotCreated() {
+    public void testFeatureDisabled_cameraCompatSimReqOrientationPolicyNotCreated() {
         runTestScenario((robot) -> {
             robot.configureActivity(SCREEN_ORIENTATION_PORTRAIT);
 
@@ -294,7 +294,7 @@ public class CameraCompatFreeformPolicyTests extends WindowTestsBase {
 
             robot.onCameraOpened(CAMERA_ID_1, TEST_PACKAGE_1);
 
-            robot.assertInCameraCompatMode(CAMERA_COMPAT_FREEFORM_PORTRAIT_DEVICE_IN_PORTRAIT);
+            robot.assertInCameraCompatMode(CAMERA_COMPAT_PORTRAIT_DEVICE_IN_PORTRAIT);
             robot.assertActivityRefreshRequested(/* refreshRequested */ false);
         });
     }
@@ -309,7 +309,7 @@ public class CameraCompatFreeformPolicyTests extends WindowTestsBase {
 
             robot.onCameraOpened(CAMERA_ID_1, TEST_PACKAGE_1);
 
-            robot.assertInCameraCompatMode(CAMERA_COMPAT_FREEFORM_PORTRAIT_DEVICE_IN_LANDSCAPE);
+            robot.assertInCameraCompatMode(CAMERA_COMPAT_PORTRAIT_DEVICE_IN_LANDSCAPE);
             robot.assertActivityRefreshRequested(/* refreshRequested */ false);
         });
     }
@@ -324,7 +324,7 @@ public class CameraCompatFreeformPolicyTests extends WindowTestsBase {
 
             robot.onCameraOpened(CAMERA_ID_1, TEST_PACKAGE_1);
 
-            robot.assertInCameraCompatMode(CAMERA_COMPAT_FREEFORM_LANDSCAPE_DEVICE_IN_PORTRAIT);
+            robot.assertInCameraCompatMode(CAMERA_COMPAT_LANDSCAPE_DEVICE_IN_PORTRAIT);
             robot.assertActivityRefreshRequested(/* refreshRequested */ false);
         });
     }
@@ -339,7 +339,7 @@ public class CameraCompatFreeformPolicyTests extends WindowTestsBase {
 
             robot.onCameraOpened(CAMERA_ID_1, TEST_PACKAGE_1);
 
-            robot.assertInCameraCompatMode(CAMERA_COMPAT_FREEFORM_LANDSCAPE_DEVICE_IN_LANDSCAPE);
+            robot.assertInCameraCompatMode(CAMERA_COMPAT_LANDSCAPE_DEVICE_IN_LANDSCAPE);
             robot.assertActivityRefreshRequested(/* refreshRequested */ false);
         });
     }
@@ -354,7 +354,7 @@ public class CameraCompatFreeformPolicyTests extends WindowTestsBase {
 
             robot.onCameraOpened(CAMERA_ID_1, TEST_PACKAGE_1);
             robot.callOnActivityConfigurationChanging(/* letterboxNew= */ true,
-                /* lastLetterbox= */ false);
+                    /* lastLetterbox= */ false);
             robot.assertActivityRefreshRequested(/* refreshRequested */ true);
             robot.onCameraClosed(CAMERA_ID_1);
             robot.onCameraOpened(CAMERA_ID_1, TEST_PACKAGE_1);
@@ -362,7 +362,7 @@ public class CameraCompatFreeformPolicyTests extends WindowTestsBase {
             robot.callOnActivityConfigurationChanging(/* letterboxNew= */ true,
                     /* lastLetterbox= */ true);
 
-            robot.assertInCameraCompatMode(CAMERA_COMPAT_FREEFORM_PORTRAIT_DEVICE_IN_LANDSCAPE);
+            robot.assertInCameraCompatMode(CAMERA_COMPAT_PORTRAIT_DEVICE_IN_LANDSCAPE);
             robot.assertActivityRefreshRequested(/* refreshRequested */ true);
         });
     }
@@ -646,18 +646,20 @@ public class CameraCompatFreeformPolicyTests extends WindowTestsBase {
     /**
      * Runs a test scenario providing a Robot.
      */
-    void runTestScenario(@NonNull Consumer<CameraCompatFreeformPolicyRobotTests> consumer) {
-        final CameraCompatFreeformPolicyRobotTests robot =
-                new CameraCompatFreeformPolicyRobotTests(this);
+    void runTestScenario(@NonNull Consumer<AppCompatCameraSimReqOrientationPolicyRobotTests>
+            consumer) {
+        final AppCompatCameraSimReqOrientationPolicyRobotTests robot =
+                new AppCompatCameraSimReqOrientationPolicyRobotTests(this);
         consumer.accept(robot);
     }
 
-    private static class CameraCompatFreeformPolicyRobotTests extends AppCompatRobotBase {
+    private static class AppCompatCameraSimReqOrientationPolicyRobotTests
+            extends AppCompatRobotBase {
         private final WindowTestsBase mWindowTestsBase;
 
         private CameraManager.AvailabilityCallback mCameraAvailabilityCallback;
 
-        CameraCompatFreeformPolicyRobotTests(@NonNull WindowTestsBase windowTestsBase) {
+        AppCompatCameraSimReqOrientationPolicyRobotTests(@NonNull WindowTestsBase windowTestsBase) {
             super(windowTestsBase);
             mWindowTestsBase = windowTestsBase;
             setupCameraManager();
@@ -668,8 +670,9 @@ public class CameraCompatFreeformPolicyTests extends WindowTestsBase {
         void onPostDisplayContentCreation(@NonNull DisplayContent displayContent) {
             super.onPostDisplayContentCreation(displayContent);
             spyOn(displayContent.mAppCompatCameraPolicy);
-            if (displayContent.mAppCompatCameraPolicy.mCameraCompatFreeformPolicy != null) {
-                spyOn(displayContent.mAppCompatCameraPolicy.mCameraCompatFreeformPolicy);
+            if (displayContent.mAppCompatCameraPolicy.mSimReqOrientationPolicy
+                    != null) {
+                spyOn(displayContent.mAppCompatCameraPolicy.mSimReqOrientationPolicy);
             }
         }
 
@@ -815,12 +818,12 @@ public class CameraCompatFreeformPolicyTests extends WindowTestsBase {
                     /* delta= */ 0.001);
         }
 
-        private void assertInCameraCompatMode(@FreeformCameraCompatMode int mode) {
+        private void assertInCameraCompatMode(@CameraCompatMode int mode) {
             assertEquals(mode, cameraCompatFreeformPolicy().getCameraCompatMode(activity().top()));
         }
 
         private void assertNotInCameraCompatMode() {
-            assertInCameraCompatMode(CAMERA_COMPAT_FREEFORM_NONE);
+            assertInCameraCompatMode(CAMERA_COMPAT_NONE);
         }
 
         private void assertActivityRefreshRequested(boolean refreshRequested) {
@@ -902,8 +905,8 @@ public class CameraCompatFreeformPolicyTests extends WindowTestsBase {
             assertEquals(expectedRotation, compatInfo.applicationCameraRotation);
         }
 
-        CameraCompatFreeformPolicy cameraCompatFreeformPolicy() {
-            return activity().displayContent().mAppCompatCameraPolicy.mCameraCompatFreeformPolicy;
+        AppCompatCameraSimReqOrientationPolicy cameraCompatFreeformPolicy() {
+            return activity().displayContent().mAppCompatCameraPolicy.mSimReqOrientationPolicy;
         }
     }
 }
