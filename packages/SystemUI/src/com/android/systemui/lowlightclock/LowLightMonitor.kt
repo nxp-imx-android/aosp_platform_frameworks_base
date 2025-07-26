@@ -30,6 +30,7 @@ import com.android.systemui.dreams.shared.model.WhenToDream
 import com.android.systemui.keyguard.domain.interactor.KeyguardInteractor
 import com.android.systemui.keyguard.shared.model.DozeStateModel.Companion.isDozeOff
 import com.android.systemui.lowlight.AmbientLightModeMonitor
+import com.android.systemui.lowlight.dagger.LowLightModule.Companion.LOW_LIGHT_MONITOR
 import com.android.systemui.power.domain.interactor.PowerInteractor
 import com.android.systemui.statusbar.commandline.Command
 import com.android.systemui.statusbar.commandline.CommandRegistry
@@ -77,7 +78,7 @@ constructor(
     private val userLockedInteractor: UserLockedInteractor,
     keyguardInteractor: KeyguardInteractor,
     powerInteractor: PowerInteractor,
-    private val ambientLightModeMonitor: AmbientLightModeMonitor,
+    @Named(LOW_LIGHT_MONITOR) private val ambientLightModeMonitor: AmbientLightModeMonitor?,
     private val uiEventLogger: UiEventLogger,
 ) : CoreStartable {
 
@@ -107,27 +108,29 @@ constructor(
         if (Flags.lowLightDreamBehavior()) {
             MutableStateFlow(false)
         } else {
-            conflatedCallbackFlow {
-                    ambientLightModeMonitor.start { lowLightMode: Int -> trySend(lowLightMode) }
-                    awaitClose { ambientLightModeMonitor.stop() }
-                }
-                .filterNot { it == AmbientLightModeMonitor.AMBIENT_LIGHT_MODE_UNDECIDED }
-                .map { it == AmbientLightModeMonitor.AMBIENT_LIGHT_MODE_DARK }
-                .distinctUntilChanged()
-                .onEach { isLowLight ->
-                    uiEventLogger.log(
-                        if (isLowLight) LowLightDockEvent.AMBIENT_LIGHT_TO_DARK
-                        else LowLightDockEvent.AMBIENT_LIGHT_TO_LIGHT
+            ambientLightModeMonitor?.let { monitor ->
+                conflatedCallbackFlow {
+                        monitor.start { lowLightMode: Int -> trySend(lowLightMode) }
+                        awaitClose { monitor.stop() }
+                    }
+                    .filterNot { it == AmbientLightModeMonitor.AMBIENT_LIGHT_MODE_UNDECIDED }
+                    .map { it == AmbientLightModeMonitor.AMBIENT_LIGHT_MODE_DARK }
+                    .distinctUntilChanged()
+                    .onEach { isLowLight ->
+                        uiEventLogger.log(
+                            if (isLowLight) LowLightDockEvent.AMBIENT_LIGHT_TO_DARK
+                            else LowLightDockEvent.AMBIENT_LIGHT_TO_LIGHT
+                        )
+                    }
+                    // AmbientLightModeMonitor only supports a single callback, so ensure this is
+                    // re-used
+                    // if there are multiple subscribers.
+                    .stateIn(
+                        scope,
+                        started = SharingStarted.WhileSubscribed(replayExpirationMillis = 0),
+                        initialValue = false,
                     )
-                }
-                // AmbientLightModeMonitor only supports a single callback, so ensure this is
-                // re-used
-                // if there are multiple subscribers.
-                .stateIn(
-                    scope,
-                    started = SharingStarted.WhileSubscribed(replayExpirationMillis = 0),
-                    initialValue = false,
-                )
+            } ?: MutableStateFlow(false)
         }
 
     private val isLowLight: Flow<Boolean> =

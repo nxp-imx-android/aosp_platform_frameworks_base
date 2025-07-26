@@ -22,13 +22,11 @@ import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
 import android.util.Log
-import com.android.systemui.dagger.SysUISingleton
-import com.android.systemui.lowlight.dagger.LowLightModule.Companion.LIGHT_SENSOR
+import com.android.systemui.lowlight.dagger.AmbientLightModeModule.Companion.MONITOR_LIGHT_SENSOR
+import com.android.systemui.lowlight.shared.model.LightSensor
 import com.android.systemui.util.sensors.AsyncSensorManager
-import java.util.Optional
 import javax.inject.Inject
 import javax.inject.Named
-import javax.inject.Provider
 
 interface AmbientLightModeMonitor {
     companion object {
@@ -76,13 +74,11 @@ interface AmbientLightModeMonitor {
  *   light mode.
  * @property sensorManager the sensor manager used to register sensor event updates.
  */
-@SysUISingleton
 class AmbientLightModeMonitorImpl
 @Inject
 constructor(
-    private val algorithm: Optional<AmbientLightModeMonitor.DebounceAlgorithm>,
     private val sensorManager: AsyncSensorManager,
-    @Named(LIGHT_SENSOR) private val lightSensor: Optional<Provider<Sensor>>,
+    @Named(MONITOR_LIGHT_SENSOR) private val lightSensor: LightSensor,
 ) : AmbientLightModeMonitor {
     companion object {
         private const val TAG = "AmbientLightModeMonitor"
@@ -92,32 +88,24 @@ constructor(
     override fun start(callback: AmbientLightModeMonitor.Callback) {
         if (DEBUG) Log.d(TAG, "start monitoring ambient light mode")
 
-        if (lightSensor.isEmpty || lightSensor.get().get() == null) {
-            if (DEBUG) Log.w(TAG, "light sensor not available")
-            return
+        lightSensor.apply {
+            algorithm.start(callback)
+            sensorManager.registerListener(
+                mSensorEventListener,
+                sensor,
+                SensorManager.SENSOR_DELAY_NORMAL,
+            )
         }
-
-        if (algorithm.isEmpty) {
-            if (DEBUG) Log.w(TAG, "debounce algorithm not available")
-            return
-        }
-
-        algorithm.get().start(callback)
-        sensorManager.registerListener(
-            mSensorEventListener,
-            lightSensor.get().get(),
-            SensorManager.SENSOR_DELAY_NORMAL,
-        )
     }
 
     /** Stop monitoring the current ambient light mode. */
     override fun stop() {
         if (DEBUG) Log.d(TAG, "stop monitoring ambient light mode")
 
-        if (algorithm.isPresent) {
-            algorithm.get().stop()
+        lightSensor.apply {
+            algorithm.stop()
+            sensorManager.unregisterListener(mSensorEventListener)
         }
-        sensorManager.unregisterListener(mSensorEventListener)
     }
 
     private val mSensorEventListener: SensorEventListener =
@@ -128,9 +116,7 @@ constructor(
                     return
                 }
 
-                if (algorithm.isPresent) {
-                    algorithm.get().onUpdateLightSensorEvent(event.values[0])
-                }
+                lightSensor.apply { algorithm.onUpdateLightSensorEvent(event.values[0]) }
             }
 
             override fun onAccuracyChanged(sensor: Sensor, accuracy: Int) {
