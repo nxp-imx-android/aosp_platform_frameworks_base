@@ -239,3 +239,10 @@ flag {
   bug: "430485331"
 }
 
+flag {
+  name: "fix_paint_reset_inconsistency"
+  namespace: "text"
+  description: "Paint.reset method clears members but some of them doesn't clear in native members. Call setter to clear members and native instances."
+  bug: "417989314"
+
+}
