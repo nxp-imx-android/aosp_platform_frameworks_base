@@ -17,6 +17,7 @@
 package com.android.systemui.statusbar.pipeline.shared.ui.viewmodel
 
 import android.content.testableContext
+import com.android.systemui.desktop.domain.interactor.desktopInteractor
 import com.android.systemui.keyguard.domain.interactor.keyguardInteractor
 import com.android.systemui.keyguard.domain.interactor.keyguardTransitionInteractor
 import com.android.systemui.kosmos.Kosmos
@@ -81,6 +82,7 @@ var Kosmos.homeStatusBarViewModelFactory: (Int) -> HomeStatusBarViewModel by
                 homeStatusBarIconBlockListInteractor,
                 lightsOutInteractor,
                 activeNotificationsInteractor,
+                desktopInteractor,
                 darkIconInteractor,
                 headsUpNotificationInteractor,
                 keyguardTransitionInteractor,
