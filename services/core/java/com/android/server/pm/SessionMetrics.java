@@ -96,7 +96,7 @@ final class SessionMetrics {
     private @PackageInstaller.DeveloperVerificationUserConfirmationInfo.UserActionNeededReason int
             mDeveloperVerificationUserActionRequiredReason;
     private @PackageInstaller.DeveloperVerificationUserResponse int
-            mDeveloperVerificationUserResponse;
+            mDeveloperVerificationUserResponse = -1;
     private @PackageInstaller.DeveloperVerificationFailedReason int
             mDeveloperVerificationFailureReason;
     @Nullable
