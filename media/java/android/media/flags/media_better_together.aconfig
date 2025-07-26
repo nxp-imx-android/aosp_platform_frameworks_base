@@ -201,6 +201,16 @@ flag {
 }
 
 flag {
+    name: "enable_route_visibility_control_compat_fixes"
+    namespace: "media_better_together"
+    description: "App compatability fixes for the route visibility control API"
+    bug: "433312596"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "enable_screen_off_scanning"
     is_exported: true
     namespace: "media_solutions"

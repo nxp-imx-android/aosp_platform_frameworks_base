@@ -101,13 +101,13 @@ class FullScreenMagnificationMouseFollowingTest {
         )
 
     @get:Rule(order = 4)
+    val desktopMouseRule = DesktopMouseTestRule()
+
+    @get:Rule(order = 5)
     val magnificationAccessibilityServiceRule =
         InstrumentedAccessibilityServiceTestRule<TestMagnificationAccessibilityService>(
             TestMagnificationAccessibilityService::class.java, false
         )
-
-    @get:Rule(order = 5)
-    val desktopMouseRule = DesktopMouseTestRule()
 
     @get:Rule(order = 6)
     val a11yDumpRule: AccessibilityDumpOnFailureRule = AccessibilityDumpOnFailureRule()

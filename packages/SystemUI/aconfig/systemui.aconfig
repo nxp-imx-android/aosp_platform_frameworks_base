@@ -228,13 +228,6 @@ flag {
 }
 
 flag {
-    name: "scene_container_desktop"
-    namespace: "systemui"
-    description: "Desktop specific flag which enables the scene container framework go/flexiglass."
-    bug: "283121968"
-}
-
-flag {
     name: "visual_interruptions_refactor"
     namespace: "systemui"
     description: "Enables the refactored version of the code to decide when notifications "
@@ -645,6 +638,13 @@ flag {
     namespace: "systemui"
     description: "Feature flag for replacing the status bar fragment with a compose root"
     bug: "364360986"
+}
+
+flag {
+    name: "status_bar_for_desktop"
+    namespace: "systemui"
+    description: "Feature flag for the new desktop status bar"
+    bug: "433589833"
 }
 
 flag {

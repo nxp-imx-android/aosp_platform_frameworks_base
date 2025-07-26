@@ -22,7 +22,6 @@ import static android.content.pm.ActivityInfo.CONFIG_LAYOUT_DIRECTION;
 import static android.content.pm.ActivityInfo.CONFIG_LOCALE;
 import static android.content.pm.ActivityInfo.CONFIG_SMALLEST_SCREEN_SIZE;
 import static android.content.pm.ActivityInfo.CONFIG_UI_MODE;
-import static android.window.DesktopExperienceFlags.DesktopExperienceFlag;
 
 import static com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_INIT;
 import static com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_SYSUI_EVENTS;
@@ -45,7 +44,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.VisibleForTesting;
 
 import com.android.internal.protolog.ProtoLog;
-import com.android.wm.shell.Flags;
 import com.android.wm.shell.common.DisplayInsetsController;
 import com.android.wm.shell.common.DisplayInsetsController.OnInsetsChangedListener;
 import com.android.wm.shell.common.ExternalInterfaceBinder;
@@ -66,10 +64,6 @@ import java.util.function.Supplier;
  */
 public class ShellController {
     private static final String TAG = ShellController.class.getSimpleName();
-
-    public static final DesktopExperienceFlag FIX_MISSING_USER_CHANGE_CALLBACKS_FLAG =
-            new DesktopExperienceFlag(Flags::fixMissingUserChangeCallbacks, true,
-                    Flags.FLAG_FIX_MISSING_USER_CHANGE_CALLBACKS);
 
     private final Context mContext;
     private final ShellInit mShellInit;
@@ -154,11 +148,9 @@ public class ShellController {
         mUserManager = userManager;
         mMainExecutor = mainExecutor;
         shellInit.addInitCallback(this::onInit, this);
-        if (FIX_MISSING_USER_CHANGE_CALLBACKS_FLAG.isTrue()) {
-            final int currentUserId = ActivityManager.getCurrentUser();
-            updateCurrentUser(currentUserId, getOrCreateUserContext(currentUserId));
-            updateProfiles(getUserProfiles(currentUserId));
-        }
+        final int currentUserId = ActivityManager.getCurrentUser();
+        updateCurrentUser(currentUserId, getOrCreateUserContext(currentUserId));
+        updateProfiles(getUserProfiles(currentUserId));
     }
 
     private void onInit() {
@@ -166,12 +158,10 @@ public class ShellController {
         mShellCommandHandler.addDumpCallback(this::dump, this);
         mDisplayInsetsController.addInsetsChangedListener(
                 mContext.getDisplayId(), mInsetsChangeListener);
-        if (FIX_MISSING_USER_CHANGE_CALLBACKS_FLAG.isTrue()) {
-            // Update current user again, in case it changed between the constructor and |onInit|.
-            final int currentUserId = ActivityManager.getCurrentUser();
-            updateCurrentUser(currentUserId, getOrCreateUserContext(currentUserId));
-            updateProfiles(getUserProfiles(currentUserId));
-        }
+        // Update current user again, in case it changed between the constructor and |onInit|.
+        final int currentUserId = ActivityManager.getCurrentUser();
+        updateCurrentUser(currentUserId, getOrCreateUserContext(currentUserId));
+        updateProfiles(getUserProfiles(currentUserId));
     }
 
     /**
@@ -220,10 +210,8 @@ public class ShellController {
     public void addUserChangeListener(UserChangeListener listener) {
         mUserChangeListeners.remove(listener);
         mUserChangeListeners.add(listener);
-        if (FIX_MISSING_USER_CHANGE_CALLBACKS_FLAG.isTrue()) {
-            listener.onUserChanged(mUserId, mUserContext);
-            listener.onUserProfilesChanged(mProfiles);
-        }
+        listener.onUserChanged(mUserId, mUserContext);
+        listener.onUserProfilesChanged(mProfiles);
     }
 
     /**
@@ -348,8 +336,7 @@ public class ShellController {
 
     @VisibleForTesting
     void onUserChanged(int newUserId, @NonNull Context userContext) {
-        if (FIX_MISSING_USER_CHANGE_CALLBACKS_FLAG.isTrue()
-                && !updateCurrentUser(newUserId, userContext)) {
+        if (!updateCurrentUser(newUserId, userContext)) {
             // No change, do not notify listeners.
             return;
         }
@@ -365,7 +352,7 @@ public class ShellController {
 
     @VisibleForTesting
     void onUserProfilesChanged(@NonNull List<UserInfo> profiles) {
-        if (FIX_MISSING_USER_CHANGE_CALLBACKS_FLAG.isTrue() && !updateProfiles(profiles)) {
+        if (!updateProfiles(profiles)) {
             // No change, do not notify listeners.
             return;
         }

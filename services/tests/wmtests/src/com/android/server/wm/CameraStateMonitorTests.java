@@ -158,8 +158,8 @@ public final class CameraStateMonitorTests extends WindowTestsBase {
         void onPostDisplayContentCreation(@NonNull DisplayContent displayContent) {
             super.onPostDisplayContentCreation(displayContent);
             spyOn(displayContent.mAppCompatCameraPolicy);
-            if (displayContent.mAppCompatCameraPolicy.mCameraCompatFreeformPolicy != null) {
-                spyOn(displayContent.mAppCompatCameraPolicy.mCameraCompatFreeformPolicy);
+            if (displayContent.mAppCompatCameraPolicy.mSimReqOrientationPolicy != null) {
+                spyOn(displayContent.mAppCompatCameraPolicy.mSimReqOrientationPolicy);
             }
 
             mFakePolicyCannotCloseOnce = new FakeAppCompatCameraStatePolicy(true);

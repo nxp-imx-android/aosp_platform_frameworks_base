@@ -487,8 +487,8 @@ public class AppCompatAspectRatioOverridesTest extends WindowTestsBase {
             if (displayContent.mAppCompatCameraPolicy.hasDisplayRotationCompatPolicy()) {
                 spyOn(displayContent.mAppCompatCameraPolicy.mDisplayRotationCompatPolicy);
             }
-            if (displayContent.mAppCompatCameraPolicy.hasCameraCompatFreeformPolicy()) {
-                spyOn(displayContent.mAppCompatCameraPolicy.mCameraCompatFreeformPolicy);
+            if (displayContent.mAppCompatCameraPolicy.hasSimReqOrientationPolicy()) {
+                spyOn(displayContent.mAppCompatCameraPolicy.mSimReqOrientationPolicy);
             }
         }
 

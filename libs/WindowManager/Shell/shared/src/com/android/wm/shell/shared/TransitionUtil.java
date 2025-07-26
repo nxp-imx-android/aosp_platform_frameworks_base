@@ -243,14 +243,6 @@ public class TransitionUtil {
             t.setLayer(leash, Integer.MAX_VALUE);
             return;
         }
-        if (isDimLayer(change)) {
-            // When a dim layer gets reparented onto the transition root, we need to zero out its
-            // position so that it's in line with everything else on the transition root. Also,
-            // we need to set a crop because we don't want it applying MATCH_PARENT on the whole
-            // root surface.
-            t.setPosition(leash, 0, 0);
-            t.setCrop(leash, change.getEndAbsBounds());
-        }
 
         // Put all the OPEN/SHOW on top
         if ((change.getFlags() & FLAG_IS_WALLPAPER) != 0) {
@@ -304,12 +296,8 @@ public class TransitionUtil {
         // Copied Transitions setup code (which expects bottom-to-top order, so we swap here)
         setupLeash(leashSurface, change, info.getChanges().size() - order, info, t);
         t.reparent(change.getLeash(), leashSurface);
-        if (!isDimLayer(change)) {
-            // Most leashes going onto the transition root should have their alpha set here to make
-            // them visible. But dim layers should be left untouched (their alpha value is their
-            // actual dim value).
-            t.setAlpha(change.getLeash(), 1.0f);
-        }
+
+        t.setAlpha(change.getLeash(), 1.0f);
         if (!isDividerBar(change)) {
             // For divider, don't modify its inner leash position when creating the outer leash
             // for the transition. In case the position being wrong after the transition finished.

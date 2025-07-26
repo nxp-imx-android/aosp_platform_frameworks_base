@@ -138,6 +138,9 @@
     <string name="screenrecord_stop_dialog_message" msgid="6262768207331626817">"Actualmente, estás grabando toda la pantalla"</string>
     <string name="screenrecord_stop_dialog_message_specific_app" msgid="5995770227684523244">"Actualmente, estás grabando <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
     <string name="screenrecord_stop_dialog_button" msgid="2883812564938194350">"Detener grabación"</string>
+    <string name="screen_record_record_device_audio_label" msgid="5363057443124085198">"Grabar audio del dispositivo"</string>
+    <string name="screen_record_record_microphone_label" msgid="4685753707185662381">"Grabar con el micrófono"</string>
+    <string name="screen_record_should_show_touches_label" msgid="2203962566795833783">"Mostrar toques"</string>
     <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"Elige una app para grabar"</string>
     <string name="screen_capture_fullscreen_screenshot_button" msgid="4255912593013592954">"Capturar toda la pantalla"</string>
     <string name="screen_capture_region_selection_button" msgid="4437546351856914639">"Capturar área seleccionada"</string>
@@ -1507,7 +1510,12 @@
     <string name="connected_display_dialog_dual_display_stop_warning" msgid="4174707498892447947">"Se duplicará la pantalla interior. Se apagará la pantalla frontal."</string>
     <string name="mirror_display" msgid="2515262008898122928">"Duplicar pantalla"</string>
     <string name="dismiss_dialog" msgid="2195508495854675882">"Descartar"</string>
+    <string name="connected_display_dialog_title" msgid="307028192512988669">"Conéctate a una pantalla externa"</string>
+    <string name="remember_choice" msgid="2063510191006325221">"No volver a preguntar"</string>
+    <string name="start_desktop_mode" msgid="5459815912537830841">"Escritorio"</string>
+    <string name="start_mirroring" msgid="3611044878130481882">"Duplicar"</string>
     <string name="connected_display_icon_desc" msgid="6373560639989971997">"Pantalla conectada"</string>
+    <string name="connected_display_extended_mode_text" msgid="2457269692913653696">"Te conectaste a una pantalla externa"</string>
     <string name="privacy_dialog_title" msgid="5201413527644766025">"Micrófono, cámara y ubicación"</string>
     <string name="privacy_dialog_summary" msgid="2458769652125995409">"Uso reciente en apps"</string>
     <string name="privacy_dialog_more_button" msgid="7610604080293562345">"Ver accesos recientes"</string>

@@ -19,10 +19,12 @@ package com.android.internal.widget;
 import static android.app.admin.DevicePolicyManager.PASSWORD_QUALITY_MANAGED;
 import static android.app.admin.DevicePolicyManager.PASSWORD_QUALITY_UNSPECIFIED;
 
+import static com.android.internal.widget.LockPatternUtils.StrongAuthTracker.PRIMARY_AUTH_REQUIRED_FOR_SECURE_LOCK_DEVICE;
 import static com.android.internal.widget.LockPatternUtils.StrongAuthTracker.SOME_AUTH_REQUIRED_AFTER_TRUSTAGENT_EXPIRED;
 import static com.android.internal.widget.LockPatternUtils.StrongAuthTracker.STRONG_AUTH_NOT_REQUIRED;
 import static com.android.internal.widget.LockPatternUtils.StrongAuthTracker.STRONG_AUTH_REQUIRED_AFTER_LOCKOUT;
 import static com.android.internal.widget.LockPatternUtils.StrongAuthTracker.STRONG_AUTH_REQUIRED_AFTER_USER_LOCKDOWN;
+import static com.android.internal.widget.LockPatternUtils.StrongAuthTracker.STRONG_BIOMETRIC_AUTH_REQUIRED_FOR_SECURE_LOCK_DEVICE;
 
 import static com.google.common.truth.Truth.assertThat;
 
@@ -52,8 +54,8 @@ import android.os.RemoteException;
 import android.os.UserHandle;
 import android.os.UserManager;
 import android.platform.test.annotations.DisableFlags;
-import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.DisabledOnRavenwood;
+import android.platform.test.annotations.EnableFlags;
 import android.platform.test.flag.junit.SetFlagsRule;
 import android.platform.test.ravenwood.RavenwoodRule;
 import android.provider.Settings;
@@ -302,6 +304,52 @@ public class LockPatternUtilsTest {
     }
 
     @Test
+    public void biometricsAllowedUpdates_onSecureLockDeviceStrongAuthFlagChanges() {
+        // Creates strong auth tracker
+        TestStrongAuthTracker tracker = createStrongAuthTracker();
+        tracker.changeStrongAuth(STRONG_AUTH_NOT_REQUIRED);
+
+        // Mock auth flag changes when enabling secure lock device
+        tracker.changeStrongAuth(
+                PRIMARY_AUTH_REQUIRED_FOR_SECURE_LOCK_DEVICE
+                        | STRONG_BIOMETRIC_AUTH_REQUIRED_FOR_SECURE_LOCK_DEVICE);
+
+        // Non-strong biometrics are not allowed during secure lock device
+        tracker.changeIsNonStrongBiometricAllowed(false);
+
+        // User has not completed any authentication, all biometrics should be disallowed
+        assertFalse(tracker.isBiometricAllowedForUser(
+                /* isStrongBiometric = */ false, DEMO_USER_ID));
+
+        assertFalse(tracker.isBiometricAllowedForUser(
+                /* isStrongBiometric = */ true, DEMO_USER_ID));
+
+        // After primary auth, secure lock device clears
+        // PRIMARY_AUTH_REQUIRED_FOR_SECURE_LOCK_DEVICE flag, only
+        // STRONG_BIOMETRIC_AUTH_REQUIRED_FOR_SECURE_LOCK_DEVICE is set
+        tracker.changeStrongAuth(STRONG_BIOMETRIC_AUTH_REQUIRED_FOR_SECURE_LOCK_DEVICE);
+
+        // Non-strong biometrics should still be disallowed
+        assertFalse(tracker.isBiometricAllowedForUser(
+                /* isStrongBiometric = */ false, DEMO_USER_ID));
+
+        // Strong biometrics should be allowed
+        assertTrue(tracker.isBiometricAllowedForUser(
+                /* isStrongBiometric = */ true, DEMO_USER_ID));
+
+        // After biometric auth, secure lock device is disabled
+        tracker.changeStrongAuth(STRONG_AUTH_NOT_REQUIRED);
+        tracker.changeIsNonStrongBiometricAllowed(true);
+
+        // All biometrics should be re-allowed
+        assertTrue(tracker.isBiometricAllowedForUser(
+                /* isStrongBiometric = */ false, DEMO_USER_ID));
+
+        assertTrue(tracker.isBiometricAllowedForUser(
+                /* isStrongBiometric = */ true, DEMO_USER_ID));
+    }
+
+    @Test
     public void testUserFrp_isNotRegularUser() throws Exception {
         assertTrue(LockPatternUtils.USER_FRP < 0);
     }
@@ -374,6 +422,10 @@ public class LockPatternUtilsTest {
 
         public void changeStrongAuth(@StrongAuthFlags int strongAuthFlags) {
             handleStrongAuthRequiredChanged(strongAuthFlags, DEMO_USER_ID);
+        }
+
+        public void changeIsNonStrongBiometricAllowed(boolean allowed) {
+            handleIsNonStrongBiometricAllowedChanged(allowed, DEMO_USER_ID);
         }
     }
 

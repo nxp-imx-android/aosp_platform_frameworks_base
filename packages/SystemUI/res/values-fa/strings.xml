@@ -138,6 +138,12 @@
     <string name="screenrecord_stop_dialog_message" msgid="6262768207331626817">"اکنون درحال ضبط کل صفحه‌نمایش هستید"</string>
     <string name="screenrecord_stop_dialog_message_specific_app" msgid="5995770227684523244">"اکنون درحال ضبط <xliff:g id="APP_NAME">%1$s</xliff:g> هستید"</string>
     <string name="screenrecord_stop_dialog_button" msgid="2883812564938194350">"توقف ضبط"</string>
+    <!-- no translation found for screen_record_record_device_audio_label (5363057443124085198) -->
+    <skip />
+    <!-- no translation found for screen_record_record_microphone_label (4685753707185662381) -->
+    <skip />
+    <!-- no translation found for screen_record_should_show_touches_label (2203962566795833783) -->
+    <skip />
     <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"برنامه‌ای را برای ضبط کردن انتخاب کنید"</string>
     <string name="screen_capture_fullscreen_screenshot_button" msgid="4255912593013592954">"ضبط کل صفحه"</string>
     <string name="screen_capture_region_selection_button" msgid="4437546351856914639">"ضبط بخش انتخاب‌شده"</string>
@@ -853,8 +859,7 @@
     <string name="notification_guts_recs_summary" msgid="8391881843238947007">"خبرنامه‌ها، رسانه‌های توصیه‌شده، و…"</string>
     <string name="notification_onboarding_summaries_turn_on" msgid="5050003857531272655">"روشن کردن"</string>
     <string name="notification_onboarding_summaries_message" msgid="6061524903176459064">"اکنون می‌توان مکالمه‌های طولانی‌تر را خلاصه کرد تا خلاصه‌ای سریع به شما ارائه شود"</string>
-    <!-- no translation found for notification_onboarding_bundles_message (4612908213178622912) -->
-    <skip />
+    <string name="notification_onboarding_bundles_message" msgid="4612908213178622912">"«سازمان‌دهنده اعلان» می‌تواند اعلان‌های دارای اولویت کمتر را بسته‌بندی و بی‌صدا کند. دسته‌های بیشتر در «تنظیمات» اضافه کنید."</string>
     <string name="notification_bundle_header_counter" msgid="5515532701569242265">"{count,plural, =1{‫# اعلان}one{‫# اعلان}other{‫# اعلان}}"</string>
     <string name="inline_done_button" msgid="6043094985588909584">"تمام"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"اعمال"</string>
@@ -1101,8 +1106,7 @@
     <string name="accessibility_key_gesture_dialog_content" msgid="4519838108423437794">"‏کنش "<annotation id="action_key_icon">"icon"</annotation>" و <xliff:g id="ID_1">^1</xliff:g> و <xliff:g id="ID_2">^2</xliff:g> میان‌بر صفحه‌کلید برای استفاده از <xliff:g id="ID_3">^3</xliff:g> است. <xliff:g id="ID_4">^4</xliff:g>"</string>
     <string name="accessibility_key_gesture_dialog_magnifier_intro" msgid="627023269951856071">"به شما امکان می‌دهد صفحه‌نمایش را به‌سرعت زوم‌پیش کنید تا محتوا درشت‌تر نمایش داده شود."</string>
     <string name="accessibility_key_gesture_dialog_talkback_intro" msgid="1617808784388544741">"‫<xliff:g id="ID_1">%1$s</xliff:g> صفحه‌خوانی است که به شما امکان می‌دهد موارد روی صفحه را با صدای بلند بشنوید. این ویژگی برای افرادی که دیدن صفحه‌نمایش برایشان دشوار است می‌تواند مفید باشد."</string>
-    <!-- no translation found for accessibility_key_gesture_dialog_va_intro (4709198503441288289) -->
-    <skip />
+    <string name="accessibility_key_gesture_dialog_va_intro" msgid="4709198503441288289">"«<xliff:g id="ID_1">%1$s</xliff:g>» به شما امکان می‌دهد دستگاهتان را به‌صورت دست‌آزاد کنترل کنید."</string>
     <string name="accessibility_key_gesture_dialog_positive_button_text" msgid="3670746017523589293">"روشن کردن"</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"صفحه قفل"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"درحال خاموش شدن…"</string>
@@ -1509,7 +1513,17 @@
     <string name="connected_display_dialog_dual_display_stop_warning" msgid="4174707498892447947">"نمایشگر داخلی شما قرینه‌سازی می‌شود. نمایشگر جلو خاموش می‌شود."</string>
     <string name="mirror_display" msgid="2515262008898122928">"قرینه‌سازی نمایشگر"</string>
     <string name="dismiss_dialog" msgid="2195508495854675882">"بستن"</string>
+    <!-- no translation found for connected_display_dialog_title (307028192512988669) -->
+    <skip />
+    <!-- no translation found for remember_choice (2063510191006325221) -->
+    <skip />
+    <!-- no translation found for start_desktop_mode (5459815912537830841) -->
+    <skip />
+    <!-- no translation found for start_mirroring (3611044878130481882) -->
+    <skip />
     <string name="connected_display_icon_desc" msgid="6373560639989971997">"نمایشگر متصل شد"</string>
+    <!-- no translation found for connected_display_extended_mode_text (2457269692913653696) -->
+    <skip />
     <string name="privacy_dialog_title" msgid="5201413527644766025">"میکروفون، دوربین، و مکان"</string>
     <string name="privacy_dialog_summary" msgid="2458769652125995409">"استفاده اخیر از برنامه"</string>
     <string name="privacy_dialog_more_button" msgid="7610604080293562345">"دیدن دسترسی اخیر"</string>

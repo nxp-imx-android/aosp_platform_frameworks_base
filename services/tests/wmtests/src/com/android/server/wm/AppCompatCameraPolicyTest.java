@@ -86,52 +86,52 @@ public class AppCompatCameraPolicyTest extends WindowTestsBase {
 
     @Test
     @EnableFlags(FLAG_ENABLE_CAMERA_COMPAT_FOR_DESKTOP_WINDOWING)
-    public void testCameraCompatFreeformPolicy_presentWhenEnabledAndDW() {
+    public void testSimReqOrientationPolicy_presentWhenEnabledAndDW() {
         runTestScenario((robot) -> {
             robot.dw().allowEnterDesktopMode(/* isAllowed= */ true);
             robot.activity().createActivityWithComponentInNewTaskAndDisplay();
-            robot.checkTopActivityHasCameraCompatFreeformPolicy(/* exists= */ true);
+            robot.checkTopActivityHasSimReqOrientationPolicy(/* exists= */ true);
         });
     }
 
     @Test
     @EnableFlags(FLAG_ENABLE_CAMERA_COMPAT_FOR_DESKTOP_WINDOWING)
-    public void testCameraCompatFreeformPolicy_notPresentWhenNoDW() {
+    public void testSimReqOrientationPolicy_notPresentWhenNoDW() {
         runTestScenario((robot) -> {
             robot.dw().allowEnterDesktopMode(/* isAllowed= */ false);
             robot.activity().createActivityWithComponentInNewTaskAndDisplay();
-            robot.checkTopActivityHasCameraCompatFreeformPolicy(/* exists= */ false);
+            robot.checkTopActivityHasSimReqOrientationPolicy(/* exists= */ false);
         });
     }
 
     @Test
     @DisableFlags(FLAG_ENABLE_CAMERA_COMPAT_FOR_DESKTOP_WINDOWING)
-    public void testCameraCompatFreeformPolicy_notPresentWhenNoFlag() {
+    public void testSimReqOrientationPolicy_notPresentWhenNoFlag() {
         runTestScenario((robot) -> {
             robot.dw().allowEnterDesktopMode(/* isAllowed= */ true);
             robot.activity().createActivityWithComponentInNewTaskAndDisplay();
-            robot.checkTopActivityHasCameraCompatFreeformPolicy(/* exists= */ false);
+            robot.checkTopActivityHasSimReqOrientationPolicy(/* exists= */ false);
         });
     }
 
     @Test
     @EnableFlags(FLAG_ENABLE_CAMERA_COMPAT_FOR_DESKTOP_WINDOWING)
-    public void testCameraCompatFreeformPolicy_notPresentWhenNoFlagAndNoDW() {
+    public void testSimReqOrientationPolicy_notPresentWhenNoFlagAndNoDW() {
         runTestScenario((robot) -> {
             robot.dw().allowEnterDesktopMode(/* isAllowed= */ false);
             robot.activity().createActivityWithComponentInNewTaskAndDisplay();
-            robot.checkTopActivityHasCameraCompatFreeformPolicy(/* exists= */ false);
+            robot.checkTopActivityHasSimReqOrientationPolicy(/* exists= */ false);
         });
     }
 
     @Test
     @EnableFlags(FLAG_ENABLE_CAMERA_COMPAT_FOR_DESKTOP_WINDOWING)
-    public void testCameraCompatFreeformPolicy_startedWhenEnabledAndDW() {
+    public void testSimReqOrientationPolicy_startedWhenEnabledAndDW() {
         runTestScenario((robot) -> {
             robot.dw().allowEnterDesktopMode(/* isAllowed= */ true);
             robot.activity().createActivityWithComponentInNewTaskAndDisplay();
-            robot.checkTopActivityHasCameraCompatFreeformPolicy(/* exists= */ true);
-            robot.checkTopActivityCameraCompatFreeformPolicyIsRunning();
+            robot.checkTopActivityHasSimReqOrientationPolicy(/* exists= */ true);
+            robot.checkTopActivitySimReqOrientationPolicyIsRunning();
         });
     }
 
@@ -141,7 +141,7 @@ public class AppCompatCameraPolicyTest extends WindowTestsBase {
         runTestScenario((robot) -> {
             robot.dw().allowEnterDesktopMode(true);
             robot.activity().createActivityWithComponentInNewTaskAndDisplay();
-            robot.checkTopActivityHasCameraCompatFreeformPolicy(/* exists= */ true);
+            robot.checkTopActivityHasSimReqOrientationPolicy(/* exists= */ true);
             robot.checkTopActivityHasCameraStateMonitor(/* exists= */ true);
         });
     }
@@ -152,7 +152,7 @@ public class AppCompatCameraPolicyTest extends WindowTestsBase {
         runTestScenario((robot) -> {
             robot.dw().allowEnterDesktopMode(true);
             robot.activity().createActivityWithComponentInNewTaskAndDisplay();
-            robot.checkTopActivityHasCameraCompatFreeformPolicy(/* exists= */ true);
+            robot.checkTopActivityHasSimReqOrientationPolicy(/* exists= */ true);
             robot.checkTopActivityHasCameraStateMonitor(/* exists= */ true);
             robot.checkTopActivityCameraStateMonitorIsListeningToCameraChanges();
         });
@@ -186,7 +186,7 @@ public class AppCompatCameraPolicyTest extends WindowTestsBase {
             robot.conf().enableCameraCompatForceRotateTreatmentAtBuildTime(/* enabled= */ false);
             robot.activity().createActivityWithComponentInNewTaskAndDisplay();
             robot.checkTopActivityHasDisplayRotationCompatPolicy(/* exists= */ false);
-            robot.checkTopActivityHasCameraCompatFreeformPolicy(/* exists= */ false);
+            robot.checkTopActivityHasSimReqOrientationPolicy(/* exists= */ false);
             robot.checkTopActivityHasCameraStateMonitor(/* exists= */ false);
         });
     }
@@ -300,8 +300,8 @@ public class AppCompatCameraPolicyTest extends WindowTestsBase {
             if (displayContent.mAppCompatCameraPolicy.mDisplayRotationCompatPolicy != null) {
                 spyOn(displayContent.mAppCompatCameraPolicy.mDisplayRotationCompatPolicy);
             }
-            if (displayContent.mAppCompatCameraPolicy.mCameraCompatFreeformPolicy != null) {
-                spyOn(displayContent.mAppCompatCameraPolicy.mCameraCompatFreeformPolicy);
+            if (displayContent.mAppCompatCameraPolicy.mSimReqOrientationPolicy != null) {
+                spyOn(displayContent.mAppCompatCameraPolicy.mSimReqOrientationPolicy);
             }
         }
 
@@ -310,9 +310,9 @@ public class AppCompatCameraPolicyTest extends WindowTestsBase {
                     .hasDisplayRotationCompatPolicy());
         }
 
-        void checkTopActivityHasCameraCompatFreeformPolicy(boolean exists) {
+        void checkTopActivityHasSimReqOrientationPolicy(boolean exists) {
             assertEquals(exists, activity().top().mDisplayContent.mAppCompatCameraPolicy
-                    .hasCameraCompatFreeformPolicy());
+                    .hasSimReqOrientationPolicy());
         }
 
         void checkTopActivityHasCameraStateMonitor(boolean exists) {
@@ -325,9 +325,9 @@ public class AppCompatCameraPolicyTest extends WindowTestsBase {
                     .mDisplayRotationCompatPolicy.isRunning());
         }
 
-        void checkTopActivityCameraCompatFreeformPolicyIsRunning() {
+        void checkTopActivitySimReqOrientationPolicyIsRunning() {
             assertTrue(activity().top().mDisplayContent.mAppCompatCameraPolicy
-                    .mCameraCompatFreeformPolicy.isRunning());
+                    .mSimReqOrientationPolicy.isRunning());
         }
 
         void checkTopActivityCameraStateMonitorIsListeningToCameraChanges() {

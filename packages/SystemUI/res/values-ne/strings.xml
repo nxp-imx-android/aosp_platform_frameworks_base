@@ -138,6 +138,12 @@
     <string name="screenrecord_stop_dialog_message" msgid="6262768207331626817">"तपाईं अहिले आफ्नो डिभाइसको पूरै स्क्रिन रेकर्ड गरिरहनुभएको छ"</string>
     <string name="screenrecord_stop_dialog_message_specific_app" msgid="5995770227684523244">"तपाईं अहिले <xliff:g id="APP_NAME">%1$s</xliff:g> रेकर्ड गरिरहनुभएको छ"</string>
     <string name="screenrecord_stop_dialog_button" msgid="2883812564938194350">"रेकर्ड गर्न छाड्नुहोस्"</string>
+    <!-- no translation found for screen_record_record_device_audio_label (5363057443124085198) -->
+    <skip />
+    <!-- no translation found for screen_record_record_microphone_label (4685753707185662381) -->
+    <skip />
+    <!-- no translation found for screen_record_should_show_touches_label (2203962566795833783) -->
+    <skip />
     <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"स्क्रिन रेकर्ड गर्न कुनै एप छान्नुहोस्"</string>
     <string name="screen_capture_fullscreen_screenshot_button" msgid="4255912593013592954">"पूरै स्क्रिन क्याप्चर गर्नुहोस्"</string>
     <string name="screen_capture_region_selection_button" msgid="4437546351856914639">"चयन गरिएको क्षेत्रको स्क्रिनसट लिनुहोस्"</string>
@@ -853,8 +859,7 @@
     <string name="notification_guts_recs_summary" msgid="8391881843238947007">"न्युजलेटर, सिफारिस गरिएका मिडिया र अन्य कुरा"</string>
     <string name="notification_onboarding_summaries_turn_on" msgid="5050003857531272655">"अन गर्नुहोस्"</string>
     <string name="notification_onboarding_summaries_message" msgid="6061524903176459064">"तपाईंलाई छोटा रिक्यापहरू उपलब्ध गराउन अब तपाईंका लामा वार्तालापहरूको सारांश बनाउन सकिने छ"</string>
-    <!-- no translation found for notification_onboarding_bundles_message (4612908213178622912) -->
-    <skip />
+    <string name="notification_onboarding_bundles_message" msgid="4612908213178622912">"नोटिफिकेसन व्यवस्थित गर्ने सुविधाले खासै महत्त्वपूर्ण नभएका नोटिफिकेसनहरू एकै ठाउँमा राख्छ र साइलेन्ट पार्छ। सेटिङमा गई थप कोटीहरू हाल्नुहोस्।"</string>
     <string name="notification_bundle_header_counter" msgid="5515532701569242265">"{count,plural, =1{# नोटिफिकेसन}other{# वटा नोटिफिकेसन}}"</string>
     <string name="inline_done_button" msgid="6043094985588909584">"सम्पन्न भयो"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"लागू गर्नुहोस्"</string>
@@ -1101,8 +1106,7 @@
     <string name="accessibility_key_gesture_dialog_content" msgid="4519838108423437794">"एक्सन "<annotation id="action_key_icon">"आइकन"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> भनेको <xliff:g id="ID_3">^3</xliff:g> प्रयोग गर्नका लागि किबोर्डको सर्टकट हो। <xliff:g id="ID_4">^4</xliff:g>"</string>
     <string name="accessibility_key_gesture_dialog_magnifier_intro" msgid="627023269951856071">"तपाईं यसका सहायताले स्क्रिनमा तुरुन्तै जुम इन गरेर त्यसमा भएको कन्टेन्ट अझ ठुलो बनाउन सक्नुहुन्छ।"</string>
     <string name="accessibility_key_gesture_dialog_talkback_intro" msgid="1617808784388544741">"<xliff:g id="ID_1">%1$s</xliff:g> भनेको विभिन्न वस्तुहरू ठुलो आवाजमा पढेर सुनाउने स्क्रिन रिडर हो। स्क्रिनमा भएको कुरा देख्न गाह्रो हुने मान्छेहरूका लागि यो सुविधा उपयोगी हुन सक्छ।"</string>
-    <!-- no translation found for accessibility_key_gesture_dialog_va_intro (4709198503441288289) -->
-    <skip />
+    <string name="accessibility_key_gesture_dialog_va_intro" msgid="4709198503441288289">"तपाईं <xliff:g id="ID_1">%1$s</xliff:g> प्रयोग गरेर आफ्नो डिभाइस ह्यान्ड्सफ्री तरिकाले नियन्त्रण गर्न सक्नुहुन्छ।"</string>
     <string name="accessibility_key_gesture_dialog_positive_button_text" msgid="3670746017523589293">"अन गर्नुहोस्"</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"लक स्क्रिन"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"सट डाउन गरिँदै छ..."</string>
@@ -1509,7 +1513,17 @@
     <string name="connected_display_dialog_dual_display_stop_warning" msgid="4174707498892447947">"तपाईंको भित्री डिस्प्ले मिरर गरिने छ। तपाईंको अगाडिको डिस्प्ले अफ गरिने छ।"</string>
     <string name="mirror_display" msgid="2515262008898122928">"डिस्प्ले मिरर गर्नुहोस्"</string>
     <string name="dismiss_dialog" msgid="2195508495854675882">"खारेज गर्नुहोस्"</string>
+    <!-- no translation found for connected_display_dialog_title (307028192512988669) -->
+    <skip />
+    <!-- no translation found for remember_choice (2063510191006325221) -->
+    <skip />
+    <!-- no translation found for start_desktop_mode (5459815912537830841) -->
+    <skip />
+    <!-- no translation found for start_mirroring (3611044878130481882) -->
+    <skip />
     <string name="connected_display_icon_desc" msgid="6373560639989971997">"डिस्प्ले कनेक्ट गरिएको छ"</string>
+    <!-- no translation found for connected_display_extended_mode_text (2457269692913653696) -->
+    <skip />
     <string name="privacy_dialog_title" msgid="5201413527644766025">"माइक्रोफोन, क्यामेरा र लोकेसन"</string>
     <string name="privacy_dialog_summary" msgid="2458769652125995409">"एपको हालसालैको प्रयोग"</string>
     <string name="privacy_dialog_more_button" msgid="7610604080293562345">"हालसालै एक्सेस गर्ने एप हेर्नुहोस्"</string>

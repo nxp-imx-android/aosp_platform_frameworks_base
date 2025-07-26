@@ -905,10 +905,14 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
                         ProtoLog.v(ShellProtoLogGroup.WM_SHELL_RECENTS_TRANSITION,
                                 "  unhandled root taskId=%d", taskInfo.taskId);
                     }
-                } else if (TransitionUtil.isDividerBar(change)
-                        || TransitionUtil.isDimLayer(change)) {
+                } else if (TransitionUtil.isDividerBar(change)) {
                     final RemoteAnimationTarget target = TransitionUtil.newTarget(change,
                             belowLayers - i, info, t, mLeashMap);
+                    // Add this as a app and we will separate them on launcher side by window type.
+                    apps.add(target);
+                } else if (TransitionUtil.isDimLayer(change)) {
+                    final RemoteAnimationTarget target = TransitionUtil.newTarget(change,
+                            belowLayers - i, change.getLeash());
                     // Add this as a app and we will separate them on launcher side by window type.
                     apps.add(target);
                 } else {

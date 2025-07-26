@@ -898,14 +898,14 @@ public class MockingOomAdjusterTests {
     @Test
     @EnableFlags(Flags.FLAG_CPU_TIME_CAPABILITY_BASED_FREEZE_POLICY)
     public void testUpdateOomAdjFreezeState_allowFreezeBinding_ongoingBinderCalls() {
-        ProcessRecord app = spy(makeDefaultProcessRecord(MOCKAPP_PID, MOCKAPP_UID,
-                MOCKAPP_PROCESSNAME, MOCKAPP_PACKAGENAME, true));
+        ProcessRecord app = makeDefaultProcessRecord(MOCKAPP_PID, MOCKAPP_UID, MOCKAPP_PROCESSNAME,
+                MOCKAPP_PACKAGENAME, true);
         WindowProcessController wpc = app.getWindowProcessController();
         setHasActivity(wpc, true);
         setActivityStateFlags(wpc, ACTIVITY_STATE_FLAG_IS_VISIBLE);
 
-        final ProcessRecord app2 = spy(makeDefaultProcessRecord(MOCKAPP3_PID, MOCKAPP3_UID,
-                MOCKAPP3_PROCESSNAME, MOCKAPP3_PACKAGENAME, false));
+        final ProcessRecord app2 = makeDefaultProcessRecord(MOCKAPP3_PID, MOCKAPP3_UID,
+                MOCKAPP3_PROCESSNAME, MOCKAPP3_PACKAGENAME, false);
 
         // App with a visible activity binds to app2 with ALLOW_FREEZE.
         final IBinder mockBinder = mock(IBinder.class);
@@ -933,14 +933,14 @@ public class MockingOomAdjusterTests {
     @Test
     @EnableFlags(Flags.FLAG_CPU_TIME_CAPABILITY_BASED_FREEZE_POLICY)
     public void testUpdateOomAdjFreezeState_simulateAllowFreezeBinding_ongoingBinderCalls() {
-        ProcessRecord app = spy(makeDefaultProcessRecord(MOCKAPP_PID, MOCKAPP_UID,
-                MOCKAPP_PROCESSNAME, MOCKAPP_PACKAGENAME, true));
+        ProcessRecord app = makeDefaultProcessRecord(MOCKAPP_PID, MOCKAPP_UID,
+                MOCKAPP_PROCESSNAME, MOCKAPP_PACKAGENAME, true);
         WindowProcessController wpc = app.getWindowProcessController();
         setHasActivity(wpc, true);
         setActivityStateFlags(wpc, ACTIVITY_STATE_FLAG_IS_VISIBLE);
 
-        final ProcessRecord app2 = spy(makeDefaultProcessRecord(MOCKAPP3_PID, MOCKAPP3_UID,
-                MOCKAPP3_PROCESSNAME, MOCKAPP3_PACKAGENAME, false));
+        final ProcessRecord app2 = makeDefaultProcessRecord(MOCKAPP3_PID, MOCKAPP3_UID,
+                MOCKAPP3_PROCESSNAME, MOCKAPP3_PACKAGENAME, false);
 
         // App with a visible activity binds to app2 with SIMULATE_ALLOW_FREEZE.
         final IBinder mockBinder = mock(IBinder.class);
@@ -3993,8 +3993,8 @@ public class MockingOomAdjusterTests {
         final int numberOfApps = 5;
         final ProcessRecord[] apps = new ProcessRecord[numberOfApps];
         for (int i = 0; i < numberOfApps; i++) {
-            apps[i] = spy(makeDefaultProcessRecord(MOCKAPP_PID + i, MOCKAPP_UID + i,
-                    MOCKAPP_PROCESSNAME + i, MOCKAPP_PACKAGENAME + i, true));
+            apps[i] = makeDefaultProcessRecord(MOCKAPP_PID + i, MOCKAPP_UID + i,
+                    MOCKAPP_PROCESSNAME + i, MOCKAPP_PACKAGENAME + i, true);
         }
         updateOomAdj(apps);
         for (int i = 1; i < numberOfApps; i++) {

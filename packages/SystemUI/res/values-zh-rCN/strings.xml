@@ -138,6 +138,12 @@
     <string name="screenrecord_stop_dialog_message" msgid="6262768207331626817">"您正在录制整个屏幕"</string>
     <string name="screenrecord_stop_dialog_message_specific_app" msgid="5995770227684523244">"您正在录制“<xliff:g id="APP_NAME">%1$s</xliff:g>”"</string>
     <string name="screenrecord_stop_dialog_button" msgid="2883812564938194350">"停止录制"</string>
+    <!-- no translation found for screen_record_record_device_audio_label (5363057443124085198) -->
+    <skip />
+    <!-- no translation found for screen_record_record_microphone_label (4685753707185662381) -->
+    <skip />
+    <!-- no translation found for screen_record_should_show_touches_label (2203962566795833783) -->
+    <skip />
     <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"选择要录制的应用"</string>
     <string name="screen_capture_fullscreen_screenshot_button" msgid="4255912593013592954">"截取整个屏幕"</string>
     <string name="screen_capture_region_selection_button" msgid="4437546351856914639">"截取所选区域"</string>
@@ -853,8 +859,7 @@
     <string name="notification_guts_recs_summary" msgid="8391881843238947007">"简报、推荐的媒体等"</string>
     <string name="notification_onboarding_summaries_turn_on" msgid="5050003857531272655">"开启"</string>
     <string name="notification_onboarding_summaries_message" msgid="6061524903176459064">"现在，系统可以为您总结较长的对话，以便您快速了解重点"</string>
-    <!-- no translation found for notification_onboarding_bundles_message (4612908213178622912) -->
-    <skip />
+    <string name="notification_onboarding_bundles_message" msgid="4612908213178622912">"通知整理工具会将优先级较低的通知归为一组并静音。您可以在“设置”中添加更多类别。"</string>
     <string name="notification_bundle_header_counter" msgid="5515532701569242265">"{count,plural, =1{# 条通知}other{# 条通知}}"</string>
     <string name="inline_done_button" msgid="6043094985588909584">"完成"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"应用"</string>
@@ -1101,8 +1106,7 @@
     <string name="accessibility_key_gesture_dialog_content" msgid="4519838108423437794">"操作"<annotation id="action_key_icon">"图标"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> 是使用<xliff:g id="ID_3">^3</xliff:g>的键盘快捷键。<xliff:g id="ID_4">^4</xliff:g>"</string>
     <string name="accessibility_key_gesture_dialog_magnifier_intro" msgid="627023269951856071">"这可让您快速放大界面上的内容。"</string>
     <string name="accessibility_key_gesture_dialog_talkback_intro" msgid="1617808784388544741">"<xliff:g id="ID_1">%1$s</xliff:g> 是一款屏幕阅读器，可让您听到大声朗读的内容。对于查看界面有困难的用户，这项功能非常实用。"</string>
-    <!-- no translation found for accessibility_key_gesture_dialog_va_intro (4709198503441288289) -->
-    <skip />
+    <string name="accessibility_key_gesture_dialog_va_intro" msgid="4709198503441288289">"借助<xliff:g id="ID_1">%1$s</xliff:g>，您无需动手就能控制设备。"</string>
     <string name="accessibility_key_gesture_dialog_positive_button_text" msgid="3670746017523589293">"开启"</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"锁定屏幕"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"正在关机…"</string>
@@ -1509,7 +1513,17 @@
     <string name="connected_display_dialog_dual_display_stop_warning" msgid="4174707498892447947">"系统将镜像您的内屏，而关闭外屏。"</string>
     <string name="mirror_display" msgid="2515262008898122928">"镜像到显示屏"</string>
     <string name="dismiss_dialog" msgid="2195508495854675882">"关闭"</string>
+    <!-- no translation found for connected_display_dialog_title (307028192512988669) -->
+    <skip />
+    <!-- no translation found for remember_choice (2063510191006325221) -->
+    <skip />
+    <!-- no translation found for start_desktop_mode (5459815912537830841) -->
+    <skip />
+    <!-- no translation found for start_mirroring (3611044878130481882) -->
+    <skip />
     <string name="connected_display_icon_desc" msgid="6373560639989971997">"显示屏已连接"</string>
+    <!-- no translation found for connected_display_extended_mode_text (2457269692913653696) -->
+    <skip />
     <string name="privacy_dialog_title" msgid="5201413527644766025">"麦克风、摄像头和位置信息"</string>
     <string name="privacy_dialog_summary" msgid="2458769652125995409">"近期被应用使用的情况"</string>
     <string name="privacy_dialog_more_button" msgid="7610604080293562345">"查看近期使用情况"</string>

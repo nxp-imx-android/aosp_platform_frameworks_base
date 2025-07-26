@@ -188,7 +188,7 @@ class AppCompatCameraOverrides {
      * <li>Activity is opted-in using per-app override, or the treatment is enabled for all apps.
      * </ul>
      */
-    boolean shouldApplyFreeformTreatmentForCameraCompat() {
+    boolean shouldApplyCameraCompatSimReqOrientationTreatment() {
         return DesktopModeFlags.ENABLE_CAMERA_COMPAT_SIMULATE_REQUESTED_ORIENTATION.isTrue()
                 && (shouldEnableCameraCompatSimulateRequestedOrientationTreatmentForApp()
                 || shouldForceEnableCameraCompatSimulateRequestedOrientationTreatment());
@@ -254,7 +254,7 @@ class AppCompatCameraOverrides {
         proto.write(SHOULD_REFRESH_ACTIVITY_VIA_PAUSE_FOR_CAMERA_COMPAT,
                 shouldRefreshActivityViaPauseForCameraCompat());
         proto.write(SHOULD_ALLOW_SIMULATE_REQUESTED_ORIENTATION_FOR_CAMERA_COMPAT,
-                shouldApplyFreeformTreatmentForCameraCompat());
+                shouldApplyCameraCompatSimReqOrientationTreatment());
     }
 
     static class AppCompatCameraOverridesState {

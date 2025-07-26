@@ -37,9 +37,6 @@ import android.view.SurfaceControl;
  * usually when the divider is being moved around by the user (or during an animation).
  */
 class ResizingEffectPolicy {
-    /** The default amount to dim an app that is partially offscreen. */
-    public static float DEFAULT_OFFSCREEN_DIM = 0.32f;
-
     private final SplitLayout mSplitLayout;
     /** The parallax algorithm we are currently using. */
     private final int mParallaxType;

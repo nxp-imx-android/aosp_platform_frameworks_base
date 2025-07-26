@@ -3933,9 +3933,17 @@ public class DeviceIdleController extends SystemService
                 // for motion and sleep some more while doing so.
                 startMonitoringMotionLocked();
                 long delay = mConstants.IDLE_AFTER_INACTIVE_TIMEOUT;
-                scheduleAlarmLocked(delay);
-                moveToStateLocked(STATE_IDLE_PENDING, reason);
-                break;
+                if (delay == 0 && Flags.enableNonScheduledExitFromIdlePending()) {
+                    moveToStateLocked(STATE_IDLE_PENDING, reason);
+                    if (DEBUG) {
+                        Slog.d(TAG, "Fall through IDLE_PENDING: IDLE_AFTER_INACTIVE_TIMEOUT is 0");
+                    }
+                    // fall through
+                } else {
+                    scheduleAlarmLocked(delay);
+                    moveToStateLocked(STATE_IDLE_PENDING, reason);
+                    break;
+                }
             case STATE_IDLE_PENDING:
                 cancelLocatingLocked();
                 mLocated = false;

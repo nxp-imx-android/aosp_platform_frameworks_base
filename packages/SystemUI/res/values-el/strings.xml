@@ -138,6 +138,12 @@
     <string name="screenrecord_stop_dialog_message" msgid="6262768207331626817">"Αυτή τη στιγμή εγγράφετε ολόκληρη την οθόνη σας"</string>
     <string name="screenrecord_stop_dialog_message_specific_app" msgid="5995770227684523244">"Αυτή τη στιγμή εγγράφετε το <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
     <string name="screenrecord_stop_dialog_button" msgid="2883812564938194350">"Διακοπή εγγραφής"</string>
+    <!-- no translation found for screen_record_record_device_audio_label (5363057443124085198) -->
+    <skip />
+    <!-- no translation found for screen_record_record_microphone_label (4685753707185662381) -->
+    <skip />
+    <!-- no translation found for screen_record_should_show_touches_label (2203962566795833783) -->
+    <skip />
     <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"Επιλογή εφαρμογής για εγγραφή"</string>
     <string name="screen_capture_fullscreen_screenshot_button" msgid="4255912593013592954">"Λήψη ολόκληρης της οθόνης"</string>
     <string name="screen_capture_region_selection_button" msgid="4437546351856914639">"Λήψη επιλεγμένης περιοχής"</string>
@@ -853,8 +859,7 @@
     <string name="notification_guts_recs_summary" msgid="8391881843238947007">"Ενημερωτικά δελτία, προτεινόμενα μέσα και άλλα"</string>
     <string name="notification_onboarding_summaries_turn_on" msgid="5050003857531272655">"Ενεργοποίηση"</string>
     <string name="notification_onboarding_summaries_message" msgid="6061524903176459064">"Οι μεγαλύτερες συνομιλίες σας μπορούν πλέον να συνοψίζονται, για να λαμβάνετε γρήγορες ανασκοπήσεις"</string>
-    <!-- no translation found for notification_onboarding_bundles_message (4612908213178622912) -->
-    <skip />
+    <string name="notification_onboarding_bundles_message" msgid="4612908213178622912">"Ο Διοργανωτής ειδοποιήσεων ομαδοποιεί και θέτει σε σίγαση τις ειδοποιήσεις χαμηλότερης προτεραιότητας. Προσθέστε περισσότερες κατηγορίες στις Ρυθμίσεις."</string>
     <string name="notification_bundle_header_counter" msgid="5515532701569242265">"{count,plural, =1{# ειδοποίηση}other{# ειδοποιήσεις}}"</string>
     <string name="inline_done_button" msgid="6043094985588909584">"Τέλος"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"Εφαρμογή"</string>
@@ -1101,8 +1106,7 @@
     <string name="accessibility_key_gesture_dialog_content" msgid="4519838108423437794">"Η ενέργεια "<annotation id="action_key_icon">"εικονίδιο"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> είναι η συντόμευση πληκτρολογίου για τη χρήση της λειτουργίας <xliff:g id="ID_3">^3</xliff:g>. <xliff:g id="ID_4">^4</xliff:g>"</string>
     <string name="accessibility_key_gesture_dialog_magnifier_intro" msgid="627023269951856071">"Με αυτόν τον τρόπο, μπορείτε να μεγεθύνετε γρήγορα την οθόνη προκειμένου το περιεχόμενο να εμφανίζεται μεγαλύτερο."</string>
     <string name="accessibility_key_gesture_dialog_talkback_intro" msgid="1617808784388544741">"Η λειτουργία <xliff:g id="ID_1">%1$s</xliff:g> είναι ένας αναγνώστης οθόνης που σας επιτρέπει να ακούτε την εκφώνηση των στοιχείων. Μπορεί να βοηθήσει άτομα που αντιμετωπίζουν κάποιο πρόβλημα με την παρακολούθηση του περιεχομένου της οθόνης."</string>
-    <!-- no translation found for accessibility_key_gesture_dialog_va_intro (4709198503441288289) -->
-    <skip />
+    <string name="accessibility_key_gesture_dialog_va_intro" msgid="4709198503441288289">"Η εφαρμογή <xliff:g id="ID_1">%1$s</xliff:g> σας επιτρέπει να ελέγχετε τη συσκευή σας handsfree."</string>
     <string name="accessibility_key_gesture_dialog_positive_button_text" msgid="3670746017523589293">"Ενεργοποίηση"</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"Οθόνη κλειδώματος"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"Τερματισμός λειτουργίας…"</string>
@@ -1509,7 +1513,17 @@
     <string name="connected_display_dialog_dual_display_stop_warning" msgid="4174707498892447947">"Θα γίνει κατοπτρισμός της εσωτερικής προβολής. Η μπροστινή οθόνη θα απενεργοποιηθεί."</string>
     <string name="mirror_display" msgid="2515262008898122928">"Κατοπτρισμός οθόνης"</string>
     <string name="dismiss_dialog" msgid="2195508495854675882">"Παράβλεψη"</string>
+    <!-- no translation found for connected_display_dialog_title (307028192512988669) -->
+    <skip />
+    <!-- no translation found for remember_choice (2063510191006325221) -->
+    <skip />
+    <!-- no translation found for start_desktop_mode (5459815912537830841) -->
+    <skip />
+    <!-- no translation found for start_mirroring (3611044878130481882) -->
+    <skip />
     <string name="connected_display_icon_desc" msgid="6373560639989971997">"Η οθόνη είναι συνδεδεμένη"</string>
+    <!-- no translation found for connected_display_extended_mode_text (2457269692913653696) -->
+    <skip />
     <string name="privacy_dialog_title" msgid="5201413527644766025">"Μικρόφωνο, Κάμερα, Τοποθεσία"</string>
     <string name="privacy_dialog_summary" msgid="2458769652125995409">"Πρόσφατη χρήση εφαρμογής"</string>
     <string name="privacy_dialog_more_button" msgid="7610604080293562345">"Εμφάνιση πρόσφατης πρόσβασης"</string>

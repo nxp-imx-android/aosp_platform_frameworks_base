@@ -2523,8 +2523,7 @@
     <string name="screen_not_shared_sensitive_content" msgid="7058419185079565001">"З міркувань безпеки вміст додатка приховано під час показу екрана"</string>
     <string name="satellite_notification_title" msgid="4026338973463121526">"Автоматично підключено до супутника"</string>
     <string name="satellite_notification_summary" msgid="5207364139430767162">"Ви можете надсилати й отримувати повідомлення, не використовуючи Wi-Fi або мобільну мережу"</string>
-    <!-- no translation found for satellite_notification_summary_with_data (8290202758586475712) -->
-    <skip />
+    <string name="satellite_notification_summary_with_data" msgid="8290202758586475712">"Ви можете обмінюватися повідомленнями й використовувати вибрані додатки через супутник"</string>
     <string name="satellite_notification_manual_title" msgid="1097504441849466279">"Скористатися супутниковим обміном повідомленнями?"</string>
     <string name="satellite_notification_manual_summary" msgid="901206289846283445">"Надсилайте й отримуйте текстові повідомлення без мобільної мережі або Wi-Fi"</string>
     <string name="satellite_notification_open_message" msgid="4149234979688273729">"Відкрийте Повідомлення"</string>
