@@ -22,14 +22,11 @@ import android.view.ViewGroup
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.CubicBezierEasing
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxSize
@@ -39,7 +36,6 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -50,7 +46,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.graphicsLayer
@@ -94,8 +89,6 @@ import com.android.systemui.privacy.PrivacyItem
 import com.android.systemui.res.R
 import com.android.systemui.scene.shared.model.DualShadeEducationElement
 import com.android.systemui.scene.shared.model.Scenes
-import com.android.systemui.shade.ui.composable.ShadeHeader.Dimensions.ChipPaddingHorizontal
-import com.android.systemui.shade.ui.composable.ShadeHeader.Dimensions.ChipPaddingVertical
 import com.android.systemui.shade.ui.composable.ShadeHeader.Values.ClockScale
 import com.android.systemui.shade.ui.viewmodel.ShadeHeaderViewModel
 import com.android.systemui.statusbar.core.NewStatusBarIcons
@@ -234,7 +227,7 @@ fun ContentScope.CollapsedShadeHeader(
                     if (isSplitShade) {
                         ShadeCarrierGroup(viewModel = viewModel)
                     }
-                    HighlightChip(
+                    ShadeHighlightChip(
                         onClick = {
                             if (isSplitShade) {
                                 viewModel.onSystemIconChipClicked()
@@ -317,7 +310,7 @@ fun ContentScope.ExpandedShadeHeader(
                     textColor = colorAttr(android.R.attr.textColorPrimary),
                     modifier = Modifier.widthIn(max = 90.dp),
                 )
-                HighlightChip {
+                ShadeHighlightChip {
                     val paddingEnd =
                         with(LocalDensity.current) {
                             (if (NewStatusBarIcons.isEnabled) 3.sp else 6.sp).toDp()
@@ -359,7 +352,7 @@ fun ContentScope.OverlayShadeHeader(
         modifier = modifier,
         startContent = {
             Box(modifier = Modifier.padding(horizontal = horizontalPadding)) {
-                HighlightChip(
+                ShadeHighlightChip(
                     backgroundColor = notificationsHighlight.backgroundColor,
                     horizontalArrangement = Arrangement.spacedBy(5.dp),
                     onClick = viewModel::onNotificationIconChipClicked,
@@ -392,7 +385,7 @@ fun ContentScope.OverlayShadeHeader(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.padding(horizontal = horizontalPadding),
             ) {
-                HighlightChip(
+                ShadeHighlightChip(
                     backgroundColor = quickSettingsHighlight.backgroundColor,
                     onClick = viewModel::onSystemIconChipClicked,
                     modifier =
@@ -782,34 +775,6 @@ private fun ContentScope.StatusIcons(
             }
         },
         modifier = modifier,
-    )
-}
-
-@Composable
-private fun HighlightChip(
-    modifier: Modifier = Modifier,
-    backgroundColor: Color = Color.Unspecified,
-    horizontalArrangement: Arrangement.Horizontal = Arrangement.Start,
-    onClick: () -> Unit = {},
-    content: @Composable RowScope.() -> Unit,
-) {
-    val interactionSource = remember { MutableInteractionSource() }
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = horizontalArrangement,
-        modifier =
-            modifier
-                .clip(RoundedCornerShape(25.dp))
-                .clickable(
-                    interactionSource = interactionSource,
-                    indication = null,
-                    onClick = onClick,
-                )
-                .thenIf(backgroundColor != Color.Unspecified) {
-                    Modifier.background(backgroundColor)
-                        .padding(horizontal = ChipPaddingHorizontal, vertical = ChipPaddingVertical)
-                },
-        content = content,
     )
 }
 
