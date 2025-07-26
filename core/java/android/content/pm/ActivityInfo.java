@@ -1892,6 +1892,8 @@ public class ActivityInfo extends ComponentInfo implements Parcelable {
         supportsSizeChanges = orig.supportsSizeChanges;
         requiredDisplayCategory = orig.requiredDisplayCategory;
         requireContentUriPermissionFromCaller = orig.requireContentUriPermissionFromCaller;
+        launchToken = orig.launchToken;
+        persistableMode = orig.persistableMode;
     }
 
     /**
