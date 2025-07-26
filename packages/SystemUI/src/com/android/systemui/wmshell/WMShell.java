@@ -28,7 +28,6 @@ import static com.android.systemui.shared.system.QuickStepContract.SYSUI_STATE_O
 import static com.android.systemui.shared.system.QuickStepContract.SYSUI_STATE_QUICK_SETTINGS_EXPANDED;
 import static com.android.systemui.shared.system.QuickStepContract.SYSUI_STATE_STATUS_BAR_KEYGUARD_SHOWING;
 import static com.android.systemui.shared.system.QuickStepContract.SYSUI_STATE_STATUS_BAR_KEYGUARD_SHOWING_OCCLUDED;
-import static com.android.wm.shell.sysui.ShellController.FIX_MISSING_USER_CHANGE_CALLBACKS_FLAG;
 
 import android.content.Context;
 import android.content.pm.UserInfo;
@@ -257,11 +256,9 @@ public final class WMShell implements
 
         // Subscribe to user changes
         mUserTracker.addCallback(mUserChangedCallback, mContext.getMainExecutor());
-        if (FIX_MISSING_USER_CHANGE_CALLBACKS_FLAG.isTrue()) {
-            mUserChangedCallback.onUserChanged(mUserTracker.getUserId(),
-                    mContext.createContextAsUser(mUserTracker.getUserHandle(), 0 /* flags */));
-            mUserChangedCallback.onProfilesChanged(mUserTracker.getUserProfiles());
-        }
+        mUserChangedCallback.onUserChanged(mUserTracker.getUserId(),
+                mContext.createContextAsUser(mUserTracker.getUserHandle(), 0 /* flags */));
+        mUserChangedCallback.onProfilesChanged(mUserTracker.getUserProfiles());
 
         mCommandQueue.addCallback(this);
         mCommandRegistry.registerCommand("wmshell-passthrough", () -> mShellCommand);
