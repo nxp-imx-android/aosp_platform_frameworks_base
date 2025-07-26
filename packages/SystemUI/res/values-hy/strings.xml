@@ -138,6 +138,9 @@
     <string name="screenrecord_stop_dialog_message" msgid="6262768207331626817">"Դուք ներկայումս տեսագրում եք ձեր ամբողջ էկրանը"</string>
     <string name="screenrecord_stop_dialog_message_specific_app" msgid="5995770227684523244">"Դուք ներկայումս տեսագրում եք <xliff:g id="APP_NAME">%1$s</xliff:g> հավելվածը"</string>
     <string name="screenrecord_stop_dialog_button" msgid="2883812564938194350">"Կանգնեցնել տեսագրումը"</string>
+    <string name="screen_record_record_device_audio_label" msgid="5363057443124085198">"Ձայնագրել սարքից"</string>
+    <string name="screen_record_record_microphone_label" msgid="4685753707185662381">"Ձայնագրել խոսափողից"</string>
+    <string name="screen_record_should_show_touches_label" msgid="2203962566795833783">"Ցույց տալ հպումները"</string>
     <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"Ընտրեք հավելված՝ տեսագրելու համար"</string>
     <string name="screen_capture_fullscreen_screenshot_button" msgid="4255912593013592954">"Նկարել ամբողջ էկրանը"</string>
     <string name="screen_capture_region_selection_button" msgid="4437546351856914639">"Սքրինշոթ անել ընտրված հատվածը"</string>
@@ -567,7 +570,7 @@
     <string name="hub_mode_add_widget_button_text" msgid="4831464661209971729">"Ավելացնել վիջեթ"</string>
     <string name="hub_mode_editing_exit_button_text" msgid="3704686734192264771">"Պատրաստ է"</string>
     <string name="label_for_button_in_empty_state_cta" msgid="7314975555382055823">"Ավելացնել վիջեթներ"</string>
-    <string name="title_for_empty_state_cta" msgid="3515697043504449320">"Հեշտությամբ օգտվեք ձեր սիրելի հավելվածներից, նույնիսկ երբ սարքը կողպված է։"</string>
+    <string name="title_for_empty_state_cta" msgid="3515697043504449320">"Օգտվեք ձեր սիրելի հավելված­ներից, նույնիսկ երբ սարքը կողպված է։"</string>
     <string name="dialog_title_to_allow_any_widget" msgid="1004820948962675644">"Թույլատրե՞լ վիջեթների ցուցադրումը կողպէկրանին"</string>
     <string name="button_text_to_open_settings" msgid="1987729256950941628">"Բացել կարգավորումները"</string>
     <string name="work_mode_off_title" msgid="5794818421357835873">"Վերսկսե՞լ աշխ. հավելվածները"</string>
@@ -853,8 +856,7 @@
     <string name="notification_guts_recs_summary" msgid="8391881843238947007">"Տեղեկագրեր, առաջարկվող մեդիա և ավելին"</string>
     <string name="notification_onboarding_summaries_turn_on" msgid="5050003857531272655">"Միացնել"</string>
     <string name="notification_onboarding_summaries_message" msgid="6061524903176459064">"Այժմ երկար զրույցները կարելի է համառոտ ներկայացնել կարճ ամփոփագրերում"</string>
-    <!-- no translation found for notification_onboarding_bundles_message (4612908213178622912) -->
-    <skip />
+    <string name="notification_onboarding_bundles_message" msgid="4612908213178622912">"Ծանուցումների կառավարիչը միավորում է ոչ առաջնահերթ ծանուցումները և անջատում դրանց ձայնը։ Կարգավորումներում կարող եք այլ կատեգորիաներ ավելացնել։"</string>
     <string name="notification_bundle_header_counter" msgid="5515532701569242265">"{count,plural, =1{# ծանուցում}one{# ծանուցում}other{# ծանուցում}}"</string>
     <string name="inline_done_button" msgid="6043094985588909584">"Պատրաստ է"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"Կիրառել"</string>
@@ -1101,8 +1103,7 @@
     <string name="accessibility_key_gesture_dialog_content" msgid="4519838108423437794">"Գործողության "<annotation id="action_key_icon">"պատկերակ"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g>․ սա ստեղնային դյուրանցում է, որը միացնում է «<xliff:g id="ID_3">^3</xliff:g>» գործառույթը։ <xliff:g id="ID_4">^4</xliff:g>"</string>
     <string name="accessibility_key_gesture_dialog_magnifier_intro" msgid="627023269951856071">"Այն թույլ է տալիս արագ խոշորացնել էկրանը՝ բովանդակությունն ավելի պարզ տեսնելու համար։"</string>
     <string name="accessibility_key_gesture_dialog_talkback_intro" msgid="1617808784388544741">"<xliff:g id="ID_1">%1$s</xliff:g>-ն էկրանի ընթերցիչ է, որը բարձրաձայն հնչեցնում է ցուցադրված տարրերը։ Սա կարող է օգտակար լինել այն մարդկանց համար, որոնք էկրանը տեսնելու հետ կապված դժվարություններ ունեն։"</string>
-    <!-- no translation found for accessibility_key_gesture_dialog_va_intro (4709198503441288289) -->
-    <skip />
+    <string name="accessibility_key_gesture_dialog_va_intro" msgid="4709198503441288289">"<xliff:g id="ID_1">%1$s</xliff:g> հավելվածը թույլ է տալիս կառավարել սարքը ձայնային հրահանգների միջոցով։"</string>
     <string name="accessibility_key_gesture_dialog_positive_button_text" msgid="3670746017523589293">"Միացնել"</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"Կողպէկրան"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"Անջատվում է…"</string>
@@ -1509,7 +1510,12 @@
     <string name="connected_display_dialog_dual_display_stop_warning" msgid="4174707498892447947">"Ներքին էկրանը կհայելապատճենվի։ Առջևի էկրանը կանջատվի։"</string>
     <string name="mirror_display" msgid="2515262008898122928">"Հայելապատճենել էկրանը"</string>
     <string name="dismiss_dialog" msgid="2195508495854675882">"Փակել"</string>
+    <string name="connected_display_dialog_title" msgid="307028192512988669">"Միանալ արտաքին էկրանին"</string>
+    <string name="remember_choice" msgid="2063510191006325221">"Այլևս չհարցնել"</string>
+    <string name="start_desktop_mode" msgid="5459815912537830841">"Համակարգիչ"</string>
+    <string name="start_mirroring" msgid="3611044878130481882">"Հայելապատճենել"</string>
     <string name="connected_display_icon_desc" msgid="6373560639989971997">"Էկրանը միացած է"</string>
+    <string name="connected_display_extended_mode_text" msgid="2457269692913653696">"Դուք միացաք արտաքին էկրանին"</string>
     <string name="privacy_dialog_title" msgid="5201413527644766025">"Խոսափող, տեսախցիկ և տեղադրություն"</string>
     <string name="privacy_dialog_summary" msgid="2458769652125995409">"Հավելվածի վերջին օգտագործումը"</string>
     <string name="privacy_dialog_more_button" msgid="7610604080293562345">"Տեսնել վերջին օգտագործումը"</string>

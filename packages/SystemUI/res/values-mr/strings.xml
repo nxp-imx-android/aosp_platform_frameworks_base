@@ -138,6 +138,12 @@
     <string name="screenrecord_stop_dialog_message" msgid="6262768207331626817">"तुम्ही सध्या तुमची संपूर्ण स्क्रीन रेकॉर्ड करत आहात"</string>
     <string name="screenrecord_stop_dialog_message_specific_app" msgid="5995770227684523244">"तुम्ही सध्या <xliff:g id="APP_NAME">%1$s</xliff:g> रेकॉर्ड करत आहात"</string>
     <string name="screenrecord_stop_dialog_button" msgid="2883812564938194350">"रेकॉर्ड करणे थांबवा"</string>
+    <!-- no translation found for screen_record_record_device_audio_label (5363057443124085198) -->
+    <skip />
+    <!-- no translation found for screen_record_record_microphone_label (4685753707185662381) -->
+    <skip />
+    <!-- no translation found for screen_record_should_show_touches_label (2203962566795833783) -->
+    <skip />
     <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"रेकॉर्ड करण्यासाठी अ‍ॅप निवडा"</string>
     <string name="screen_capture_fullscreen_screenshot_button" msgid="4255912593013592954">"संपूर्ण स्क्रीन कॅप्चर करा"</string>
     <string name="screen_capture_region_selection_button" msgid="4437546351856914639">"निवडलेला भाग कॅप्चर करा"</string>
@@ -853,8 +859,7 @@
     <string name="notification_guts_recs_summary" msgid="8391881843238947007">"बातमीपत्रक, शिफारस केलेला मीडिया आणि आणखी बरेच काही"</string>
     <string name="notification_onboarding_summaries_turn_on" msgid="5050003857531272655">"सुरू करा"</string>
     <string name="notification_onboarding_summaries_message" msgid="6061524903176459064">"तुमच्या दीर्घ संभाषणांचा आता सारांश दिला जाऊ शकतो, जेणेकरून तुम्हाला जलद रीकॅप मिळतील."</string>
-    <!-- no translation found for notification_onboarding_bundles_message (4612908213178622912) -->
-    <skip />
+    <string name="notification_onboarding_bundles_message" msgid="4612908213178622912">"नोटिफिकेशन ऑर्गनायझर कमी प्राधान्य असलेली नोटिफिकेशन बंडल करून, सायलंट करतो. सेटिंग्ज मध्ये आणखी वर्गवाऱ्या जोडा."</string>
     <string name="notification_bundle_header_counter" msgid="5515532701569242265">"{count,plural, =1{# नोटिफिकेशन}other{# नोटिफिकेशन}}"</string>
     <string name="inline_done_button" msgid="6043094985588909584">"पूर्ण झाले"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"लागू करा"</string>
@@ -1101,8 +1106,7 @@
     <string name="accessibility_key_gesture_dialog_content" msgid="4519838108423437794">"कृती "<annotation id="action_key_icon">"आयकन"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> हा <xliff:g id="ID_3">^3</xliff:g> वापरण्यासाठीचा कीबोर्ड शॉर्टकट आहे. <xliff:g id="ID_4">^4</xliff:g>"</string>
     <string name="accessibility_key_gesture_dialog_magnifier_intro" msgid="627023269951856071">"यामुळे आशय मोठा करण्यासाठी तुम्हाला स्क्रीनवर झटपट झूम इन करता येते."</string>
     <string name="accessibility_key_gesture_dialog_talkback_intro" msgid="1617808784388544741">"<xliff:g id="ID_1">%1$s</xliff:g> हा स्क्रीन रीडर आहे, ज्यामुळे तुम्हाला मोठ्याने बोललेले आयटम ऐकू येतात. स्क्रीनकडे पाहण्यात समस्या असलेल्या लोकांसाठी ते उपयुक्त असू शकते."</string>
-    <!-- no translation found for accessibility_key_gesture_dialog_va_intro (4709198503441288289) -->
-    <skip />
+    <string name="accessibility_key_gesture_dialog_va_intro" msgid="4709198503441288289">"<xliff:g id="ID_1">%1$s</xliff:g> मुळे तुम्हाला तुमचे डिव्हाइस हँड्स-फ्री नियंत्रित करता येते."</string>
     <string name="accessibility_key_gesture_dialog_positive_button_text" msgid="3670746017523589293">"सुरू करा"</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"लॉक स्‍क्रीन"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"बंद होत आहे…"</string>
@@ -1509,7 +1513,17 @@
     <string name="connected_display_dialog_dual_display_stop_warning" msgid="4174707498892447947">"तुमचा अंतर्गत डिस्प्ले मिरर केला जाईल. तुमचा पुढील डिस्प्ले बंद केला जाईल."</string>
     <string name="mirror_display" msgid="2515262008898122928">"डिस्प्ले मिरर करा"</string>
     <string name="dismiss_dialog" msgid="2195508495854675882">"डिसमिस करा"</string>
+    <!-- no translation found for connected_display_dialog_title (307028192512988669) -->
+    <skip />
+    <!-- no translation found for remember_choice (2063510191006325221) -->
+    <skip />
+    <!-- no translation found for start_desktop_mode (5459815912537830841) -->
+    <skip />
+    <!-- no translation found for start_mirroring (3611044878130481882) -->
+    <skip />
     <string name="connected_display_icon_desc" msgid="6373560639989971997">"डिस्प्ले कनेक्ट केला आहे"</string>
+    <!-- no translation found for connected_display_extended_mode_text (2457269692913653696) -->
+    <skip />
     <string name="privacy_dialog_title" msgid="5201413527644766025">"मायक्रोफोन, कॅमेरा आणि स्थान"</string>
     <string name="privacy_dialog_summary" msgid="2458769652125995409">"अलीकडील अ‍ॅप वापर"</string>
     <string name="privacy_dialog_more_button" msgid="7610604080293562345">"अलीकडील अ‍ॅक्सेस पहा"</string>
