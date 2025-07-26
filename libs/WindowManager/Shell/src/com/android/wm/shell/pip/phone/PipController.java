@@ -725,10 +725,6 @@ public class PipController implements PipTransitionController.PipTransitionCallb
                     });
         });
 
-        if (!ShellController.FIX_MISSING_USER_CHANGE_CALLBACKS_FLAG.isTrue()) {
-            mMediaController.registerSessionListenerForCurrentUser();
-        }
-
         mShellController.addConfigurationChangeListener(this);
         mShellController.addKeyguardChangeListener(this);
         mShellController.addUserChangeListener(this);
