@@ -900,13 +900,16 @@ public class BiometricService extends SystemService {
             for (BiometricSensor sensor : mSensors) {
                 // Explicitly re-create as the super class, since AIDL doesn't play nicely with
                 // "List<? extends SensorPropertiesInternal> ...
-                final SensorPropertiesInternal prop = SensorPropertiesInternal
-                        .from(sensor.impl.getSensorProperties(opPackageName));
-                if (prop != null) {
-                    sensors.add(prop);
+                SensorPropertiesInternal sensorProperties =
+                        sensor.impl.getSensorProperties(opPackageName);
+                if (sensorProperties != null) {
+                    final SensorPropertiesInternal prop = SensorPropertiesInternal.from(
+                            sensorProperties);
+                    if (prop != null) {
+                      sensors.add(prop);
+                    }
                 }
             }
-
             return sensors;
         }
 
