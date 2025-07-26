@@ -113,13 +113,6 @@ class IdmapHeader {
     return version_;
   }
 
-  // NOTE: The CRC fields used to be literal crc32, but now are just a way to identify if the
-  // corresponding file has changed, so it's a stat.st_mtime now.
-  // This means we may get false positives when the file changes, but the resources inside stay
-  // the same. But it is so much faster to get and verify (a single stat() call instead of fully
-  // parsing a zip archive and calculating a crc of the resources inside), that it is worth it:
-  // false positives just make us re-create the idmaps occasionally and cause no correctness bugs.
-
   inline uint32_t GetTargetCrc() const {
     return target_crc_;
   }

@@ -98,8 +98,6 @@ struct ZipAssetsProvider : public AssetsProvider {
   bool ForEachFile(const std::string& root_path,
                    base::function_ref<void(StringPiece, FileType)> f) const override;
 
-  ModDate GetModDate() const;
-
   WARN_UNUSED std::optional<std::string_view> GetPath() const override;
   WARN_UNUSED const std::string& GetDebugName() const override;
   WARN_UNUSED UpToDate IsUpToDate() const override;
