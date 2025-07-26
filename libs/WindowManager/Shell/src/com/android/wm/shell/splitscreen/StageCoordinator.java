@@ -3219,7 +3219,8 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
                     mSplitTransitions.setEnterTransition(transition, request.getRemoteTransition(),
                             TRANSIT_SPLIT_SCREEN_PAIR_OPEN, !mIsDropEnteringSplitInvisible,
                             SNAP_TO_2_50_50);
-                } else if (enableFlexibleTwoAppSplit() && isSplitScreenVisible() && isOpening) {
+                } else if (enableFlexibleTwoAppSplit() && isSplitScreenVisible() && isOpening
+                        && requestHasLaunchAdjacentFlag(request)) {
                     // launching into an existing split stage; possibly launchAdjacent
                     // If we're replacing a pip-able app, we need to let mixed handler take care of
                     // it. Otherwise we'll just treat it as an enter+resize
