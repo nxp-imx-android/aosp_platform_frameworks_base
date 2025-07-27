@@ -69,6 +69,12 @@ constructor(
     private var selectedCardIndex: Int by mutableIntStateOf(0)
         private set
 
+    /** The index of the currently visible card across different locations of media carousel */
+    val currentIndex: Int by derivedStateOf { interactor.currentCarouselIndex }
+
+    /** Whether media carousel should scroll to the first card in the list after composition */
+    val scrollToFirst: Boolean by derivedStateOf { interactor.shouldScrollToFirst }
+
     /** The current list of cards to show in the UI. */
     val cards: List<MediaCardViewModel> by derivedStateOf {
         interactor.sessions.mapIndexed { sessionIndex, session ->
@@ -307,6 +313,12 @@ constructor(
     fun onCardSelected(cardIndex: Int) {
         check(cardIndex >= 0 && cardIndex < cards.size)
         selectedCardIndex = cardIndex
+        interactor.storeCurrentCarouselIndex(selectedCardIndex)
+    }
+
+    /** Notifies that the carousel is reordered and first card is now visible on screen. */
+    fun onScrollToFirstCard() {
+        interactor.resetScrollToFirst()
     }
 
     override suspend fun onActivated(): Nothing {
