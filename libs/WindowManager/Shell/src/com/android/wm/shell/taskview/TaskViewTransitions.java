@@ -57,6 +57,7 @@ import androidx.annotation.VisibleForTesting;
 import com.android.internal.protolog.ProtoLog;
 import com.android.wm.shell.Flags;
 import com.android.wm.shell.ShellTaskOrganizer;
+import com.android.wm.shell.common.ShellExecutor;
 import com.android.wm.shell.common.SyncTransactionQueue;
 import com.android.wm.shell.shared.TransitionUtil;
 import com.android.wm.shell.shared.bubbles.BubbleAnythingFlagHelper;
@@ -457,6 +458,15 @@ public class TaskViewTransitions implements Transitions.TransitionHandler, TaskV
     }
 
     /**
+     * See {@link #setTaskViewVisible(TaskViewTaskController, boolean, boolean, boolean, boolean)}.
+     */
+    public void setTaskViewVisible(TaskViewTaskController taskView, boolean visible,
+            boolean reorder, boolean syncHiddenWithVisibilityOnReorder) {
+        setTaskViewVisible(taskView, visible, reorder, syncHiddenWithVisibilityOnReorder,
+                false /* nonBlockingIfPossible */);
+    }
+
+    /**
      * Starts a new transition to make the given {@code taskView} visible and optionally
      * reordering it.
      *
@@ -468,11 +478,16 @@ public class TaskViewTransitions implements Transitions.TransitionHandler, TaskV
      *                                          the task with the target visibility when
      *                                          reordering. This only takes effect if {@code
      *                                          reorder} is {@code true}.
+     * @param nonBlockingIfPossible If true, the wct will be executed in a non-blocking way when
+     *                              possible. It is possible if {@link #mShellExecutor} is an
+     *                              instance of {@link ShellExecutor} that supports posting a
+     *                              Runnable after the current execution.
      * @throws IllegalStateException If the flag {@link FLAG_ENABLE_CREATE_ANY_BUBBLE} is not
      *                               enabled.
      */
     public void setTaskViewVisible(TaskViewTaskController taskView, boolean visible,
-            boolean reorder, boolean syncHiddenWithVisibilityOnReorder) {
+            boolean reorder, boolean syncHiddenWithVisibilityOnReorder,
+            boolean nonBlockingIfPossible) {
         final TaskViewRepository.TaskViewState state = useRepo()
                 ? mTaskViewRepo.byTaskView(taskView)
                 : mTaskViews.get(taskView);
@@ -504,7 +519,11 @@ public class TaskViewTransitions implements Transitions.TransitionHandler, TaskV
         final PendingTransition pending = new PendingTransition(
                 visible ? TRANSIT_TO_FRONT : TRANSIT_TO_BACK, wct, taskView, null /* cookie */);
         mPending.add(pending);
-        startNextTransition();
+        if (nonBlockingIfPossible && mShellExecutor instanceof ShellExecutor executor) {
+            executor.executeDelayed(this::startNextTransition, 0);
+        } else {
+            startNextTransition();
+        }
         // visibility is reported in transition.
     }
 

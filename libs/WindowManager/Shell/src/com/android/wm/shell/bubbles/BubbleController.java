@@ -3744,9 +3744,12 @@ public class BubbleController implements ConfigurationChangeListener,
                 if (!visible && !mBubbleData.hasBubbleInStackWithTaskView(taskView)) {
                     return;
                 }
+                // The transaction to hide the TaskView can be executed on the executor to avoid
+                // blocking the calling thread.
+                final boolean nonBlocking = !visible;
                 // Use reorder instead of always-on-top with hidden.
                 mBaseTransitions.setTaskViewVisible(taskView, visible, true /* reorder */,
-                        false /* toggleHiddenOnReorder */);
+                        false /* toggleHiddenOnReorder */, nonBlocking);
             } else {
                 mBaseTransitions.setTaskViewVisible(taskView, visible);
             }
