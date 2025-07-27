@@ -124,6 +124,7 @@ import android.os.PowerManagerInternal;
 import android.os.Process;
 import android.os.SystemClock;
 import android.os.UserHandle;
+import android.platform.test.annotations.DesktopTest;
 import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
@@ -3840,6 +3841,7 @@ public class MockingOomAdjusterTests {
     @SuppressWarnings("GuardedBy")
     @Test
     @EnableFlags(Flags.FLAG_PERCEPTIBLE_TASKS)
+    @DesktopTest(cujs = {"b/429993976"})
     public void testPerceptibleAdjustment() {
         ProcessRecord app = makeDefaultProcessRecord(MOCKAPP_PID, MOCKAPP_UID, MOCKAPP_PROCESSNAME,
                 MOCKAPP_PACKAGENAME, true);
@@ -3886,6 +3888,7 @@ public class MockingOomAdjusterTests {
     @SuppressWarnings("GuardedBy")
     @Test
     @EnableFlags(Flags.FLAG_PERCEPTIBLE_TASKS)
+    @DesktopTest(cujs = {"b/429993976"})
     public void testUpdateOomAdjPerceptible() {
         ProcessRecord app = makeDefaultProcessRecord(MOCKAPP_PID, MOCKAPP_UID, MOCKAPP_PROCESSNAME,
                 MOCKAPP_PACKAGENAME, true);
