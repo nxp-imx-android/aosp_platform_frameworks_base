@@ -61,6 +61,7 @@ import com.android.systemui.statusbar.chips.ui.compose.OngoingActivityChips
 import com.android.systemui.statusbar.core.NewStatusBarIcons
 import com.android.systemui.statusbar.core.RudimentaryBattery
 import com.android.systemui.statusbar.core.StatusBarConnectedDisplays
+import com.android.systemui.statusbar.core.StatusBarForDesktop
 import com.android.systemui.statusbar.events.domain.interactor.SystemStatusEventAnimationInteractor
 import com.android.systemui.statusbar.featurepods.popups.StatusBarPopupChips
 import com.android.systemui.statusbar.featurepods.popups.ui.compose.StatusBarPopupChipsContainer
@@ -184,6 +185,12 @@ fun StatusBarRoot(
         rememberViewModel("AppHandleBounds") {
             statusBarViewModel.appHandlesViewModelFactory.create(displayId)
         }
+
+    // Let the DesktopStatusBar compose all the UI if [isDesktopStatusBarEnabled] is true.
+    if (StatusBarForDesktop.isEnabled && statusBarViewModel.isDesktopStatusBarEnabled) {
+        DesktopStatusBar(viewModel = statusBarViewModel)
+        return
+    }
 
     AndroidView(
         factory = { context ->

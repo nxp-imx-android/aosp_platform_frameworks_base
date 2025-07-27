@@ -159,6 +159,15 @@ class FakeHomeStatusBarViewModel(
     override val areaDark: IsAreaDark by
         hydrator.hydratedStateOf(traceName = "areaDark", source = isAreaDarkSource)
 
+    val desktopStatusBarEnabledSource = MutableStateFlow(false)
+
+    override val isDesktopStatusBarEnabled: Boolean by
+        hydrator.hydratedStateOf(
+            traceName = "areaDark",
+            source = desktopStatusBarEnabledSource,
+            initialValue = false,
+        )
+
     override suspend fun onActivated(): Nothing {
         hydrator.activate()
     }

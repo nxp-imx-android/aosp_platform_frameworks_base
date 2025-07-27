@@ -339,32 +339,6 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
     }
 
     /**
-     * Figures out the targetIMuser for a given {@link Binder} IPC. In case
-     * {@code callingProcessUserId} is SYSTEM user, then it will return the owner of the display
-     * associated with the {@code client} passed as parameter.
-     *
-     * @param callingProcessUserId the user ID of the calling process
-     * @param client               the input method client used to retrieve the user id in case
-     *                             {@code callingProcessUserId} is assigned to SYSTEM user
-     * @return the user ID to be used for this {@link Binder} call
-     */
-    @GuardedBy("ImfLock.class")
-    @UserIdInt
-    @BinderThread
-    private int resolveImeUserIdLocked(@UserIdInt int callingProcessUserId,
-            @NonNull IInputMethodClient client) {
-        if (mConcurrentMultiUserModeEnabled) {
-            if (callingProcessUserId == UserHandle.USER_SYSTEM) {
-                final var clientState = mClientController.getClient(client.asBinder());
-                return mUserManagerInternal.getUserAssignedToDisplay(
-                        clientState.mSelfReportedDisplayId);
-            }
-            return callingProcessUserId;
-        }
-        return mCurrentImeUserId;
-    }
-
-    /**
      * Figures out the target IME user ID associated with the given {@code displayId}.
      *
      * @param displayId the display ID to be queried about
@@ -2103,7 +2077,7 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
                         (startInputFlags & StartInputFlags.INITIAL_CONNECTION) != 0, userId);
             }
 
-            InputBindResult bindResult = tryReuseConnectionLocked(bindingController, cs, userId);
+            final var bindResult = tryReuseConnectionLocked(bindingController);
             if (bindResult != null) {
                 return bindResult;
             }
@@ -2223,9 +2197,8 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
 
     @GuardedBy("ImfLock.class")
     @Nullable
-    private InputBindResult tryReuseConnectionLocked(
-            @NonNull InputMethodBindingController bindingController, @NonNull ClientState cs,
-            @UserIdInt int userId) {
+    private static InputBindResult tryReuseConnectionLocked(
+            @NonNull InputMethodBindingController bindingController) {
         if (bindingController.hasMainConnection()) {
             if (bindingController.getCurMethod() != null) {
                 return new InputBindResult(

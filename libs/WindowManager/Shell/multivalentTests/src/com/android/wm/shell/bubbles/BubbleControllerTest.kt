@@ -386,6 +386,7 @@ class BubbleControllerTest(flags: FlagsParameterization) {
                 true, /* visible */
                 true, /* reorder */
                 false, /* syncHiddenWithVisibilityOnReorder */
+                false, /* nonBlockingIfPossible */
             )
         } else {
             verify(baseTransitions).setTaskViewVisible(taskView, true /* visible */)
@@ -407,6 +408,7 @@ class BubbleControllerTest(flags: FlagsParameterization) {
             any(), /* visible */
             any(), /* reorder */
             any(), /* syncHiddenWithVisibilityOnReorder */
+            any(), /* nonBlockingIfPossible */
         )
     }
 
