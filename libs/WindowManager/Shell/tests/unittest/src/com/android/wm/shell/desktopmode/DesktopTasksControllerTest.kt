@@ -4202,6 +4202,48 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         assertThat(configChange.windowingMode).isEqualTo(WINDOWING_MODE_FULLSCREEN)
     }
 
+    @Test
+    @EnableFlags(
+        FLAG_ENABLE_MOVE_TO_NEXT_DISPLAY_SHORTCUT,
+        FLAG_MOVE_TO_NEXT_DISPLAY_SHORTCUT_WITH_PROJECTED_MODE,
+    )
+    fun moveToNextDesktopDisplay_projectedMode_cleansUpSourceDisplay() {
+        // Setup state where a desktop task is running on a secondary display while the device is in
+        // projected mode
+        desktopState.isProjected = true
+        whenever(rootTaskDisplayAreaOrganizer.displayIds)
+            .thenReturn(intArrayOf(DEFAULT_DISPLAY, SECOND_DISPLAY))
+        val defaultDisplayArea = DisplayAreaInfo(MockToken().token(), DEFAULT_DISPLAY, 0)
+        whenever(rootTaskDisplayAreaOrganizer.getDisplayAreaInfo(DEFAULT_DISPLAY))
+            .thenReturn(defaultDisplayArea)
+        val deskId = SECOND_DISPLAY
+        taskRepository.addDesk(displayId = SECOND_DISPLAY, deskId = deskId)
+        taskRepository.setActiveDesk(displayId = SECOND_DISPLAY, deskId = deskId)
+        val task = setUpFreeformTask(displayId = SECOND_DISPLAY)
+        // Explicitly add task to the desk because removing the last task in a desk triggers desktop
+        // mode cleanup.
+        taskRepository.addTaskToDesk(
+            displayId = SECOND_DISPLAY,
+            deskId = deskId,
+            taskId = task.taskId,
+            isVisible = true,
+            taskBounds = TASK_BOUNDS,
+        )
+
+        controller.moveToNextDesktopDisplay(task.taskId, EnterReason.UNKNOWN_ENTER)
+
+        val wct =
+            getLatestWct(
+                type = TRANSIT_CHANGE,
+                handlerClass = DesktopModeMoveToDisplayTransitionHandler::class.java,
+            )
+
+        // Verify that cleanup (e.g. resetting the launcher) is performed on the source display
+        // where the task originated from.
+        wct.assertPendingIntent(launchHomeIntent(SECOND_DISPLAY))
+        wct.assertPendingIntentActivityOptionsLaunchDisplayId(SECOND_DISPLAY)
+    }
+
     private fun moveToNextDesktopDisplay_moveIifDesktopModeSupportedOnDestination(
         isDesktopModeSupportedOnDestination: Boolean
     ) {

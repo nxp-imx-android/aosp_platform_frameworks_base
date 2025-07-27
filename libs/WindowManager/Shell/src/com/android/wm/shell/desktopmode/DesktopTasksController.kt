@@ -4186,10 +4186,30 @@ class DesktopTasksController(
             return performDesktopExitCleanUp(
                 wct = wct,
                 deskId = deskId,
-                displayId = displayId,
+                displayId =
+                    if (
+                        DesktopExperienceFlags.MOVE_TO_NEXT_DISPLAY_SHORTCUT_WITH_PROJECTED_MODE
+                            .isTrue
+                    ) {
+                        // Use the source display ID for clean up when the bug fix flag is enabled.
+                        taskInfo.displayId
+                    } else {
+                        // Before the bug fix, display move is not considered.
+                        displayId
+                    },
                 willExitDesktop = true,
                 removingLastTaskId = if (isLastTask) taskInfo.taskId else null,
-                shouldEndUpAtHome = false,
+                shouldEndUpAtHome =
+                    if (
+                        DesktopExperienceFlags.MOVE_TO_NEXT_DISPLAY_SHORTCUT_WITH_PROJECTED_MODE
+                            .isTrue
+                    ) {
+                        // If the last task is moved from the display, it should go to home.
+                        displayId != taskInfo.displayId
+                    } else {
+                        // Before the bug fix, display move is not considered.
+                        false
+                    },
                 exitReason = ExitReason.FULLSCREEN_LAUNCH,
             )
         }
