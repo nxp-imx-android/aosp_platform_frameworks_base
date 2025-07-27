@@ -22,6 +22,8 @@ import static android.media.RoutingChangeInfo.ENTRY_POINT_SYSTEM_OUTPUT_SWITCHER
 import static android.provider.Settings.ACTION_BLUETOOTH_SETTINGS;
 
 import static com.android.media.flags.Flags.allowOutputSwitcherListRearrangementWithinTimeout;
+import static com.android.media.flags.Flags.enableOutputSwitcherRedesign;
+import static com.android.systemui.media.dialog.MediaItem.MediaItemType.TYPE_GROUP_DIVIDER;
 
 import android.app.KeyguardManager;
 import android.app.Notification;
@@ -158,6 +160,7 @@ public class MediaSwitchingController
     private boolean mIsGroupListCollapsed = true;
     private boolean mHasAdjustVolumeUserRestriction = false;
     private long mStartTime;
+    @Nullable private Boolean mGroupSelectedItems = null; // Unset until the first render.
 
     @VisibleForTesting
     final InputRouteManager.InputDeviceCallback mInputDeviceCallback =
@@ -321,6 +324,14 @@ public class MediaSwitchingController
         boolean isListEmpty = mOutputMediaItemListProxy.isEmpty();
         if (isListEmpty || !mIsRefreshing) {
             buildMediaItems(devices);
+            if (mGroupSelectedItems == null) {
+                // Decide whether to group devices only during the initial render.
+                // Avoid grouping broadcast devices because grouped volume control is not
+                // available for broadcast session.
+                mGroupSelectedItems =
+                        hasGroupPlayback() && (!Flags.enableOutputSwitcherPersonalAudioSharing()
+                                || isVolumeControlEnabledForSession());
+            }
             mCallback.onDeviceListChanged();
         } else {
             synchronized (mMediaDevicesLock) {
@@ -638,10 +649,13 @@ public class MediaSwitchingController
     }
 
     boolean hasGroupPlayback() {
-        long selectedCount = mOutputMediaItemListProxy.getOutputMediaItemList().stream()
+        return getSelectedDeviceItems().size() > 1;
+    }
+
+    List<MediaItem> getSelectedDeviceItems() {
+        return mOutputMediaItemListProxy.getOutputMediaItemList().stream()
                 .filter(item -> item.getMediaDevice().map(MediaDevice::isSelected).orElse(
-                        false)).count();
-        return selectedCount > 1;
+                        false)).toList();
     }
 
     @Nullable
@@ -701,10 +715,44 @@ public class MediaSwitchingController
     private List<MediaItem> getOutputDeviceList(boolean addConnectDeviceButton) {
         List<MediaItem> mediaItems = new ArrayList<>(
                 mOutputMediaItemListProxy.getOutputMediaItemList());
+        if (enableOutputSwitcherRedesign()) {
+            addSeparatorForTheFirstGroupDivider(mediaItems);
+            coalesceSelectedDevices(mediaItems);
+        }
         if (addConnectDeviceButton) {
             attachConnectNewDeviceItemIfNeeded(mediaItems);
         }
         return mediaItems;
+    }
+
+
+    private void addSeparatorForTheFirstGroupDivider(List<MediaItem> outputList) {
+        for (int i = 0; i < outputList.size(); i++) {
+            MediaItem item = outputList.get(i);
+            if (item.getMediaItemType() == TYPE_GROUP_DIVIDER) {
+                outputList.set(i,
+                        MediaItem.createGroupDividerWithSeparatorMediaItem(item.getTitle()));
+                break;
+            }
+        }
+    }
+
+    /**
+     * If there are 2+ selected devices, adds an "Connected speakers" expandable group divider and
+     * displays a single session control instead of individual device controls.
+     */
+    private void coalesceSelectedDevices(List<MediaItem> outputList) {
+        List<MediaItem> selectedDevices = getSelectedDeviceItems();
+
+        if (Boolean.TRUE.equals(mGroupSelectedItems) && hasGroupPlayback()) {
+            outputList.removeAll(selectedDevices);
+            if (isGroupListCollapsed()) {
+                outputList.addFirst(MediaItem.createDeviceGroupMediaItem());
+            } else {
+                outputList.addAll(0, selectedDevices);
+            }
+            outputList.addFirst(getConnectedSpeakersExpandableGroupDivider());
+        }
     }
 
     private void addInputDevices(List<MediaItem> mediaItems) {
