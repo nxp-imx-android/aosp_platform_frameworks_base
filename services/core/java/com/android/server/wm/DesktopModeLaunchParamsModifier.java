@@ -195,10 +195,11 @@ class DesktopModeLaunchParamsModifier implements LaunchParamsModifier {
             return RESULT_SKIP;
         }
 
-        // TODO(b/419222219): Remove inheritance on currentParams.
-        // Copy over any values.
-        outParams.set(currentParams);
-        outParams.mPreferredTaskDisplayArea = suggestedDisplayArea;
+        if (!DesktopExperienceFlags.IGNORE_CURRENT_PARAMS_IN_DESKTOP_LAUNCH_PARAMS.isTrue()) {
+            // Copy over any values.
+            outParams.set(currentParams);
+            outParams.mPreferredTaskDisplayArea = suggestedDisplayArea;
+        }
 
         boolean isFullscreenInDeskTask = inDesktopFirstContainer && requestFullscreen;
         if (source != null && source.getTask() != null) {
@@ -240,7 +241,9 @@ class DesktopModeLaunchParamsModifier implements LaunchParamsModifier {
             return RESULT_CONTINUE;
         }
 
-        if (!currentParams.mBounds.isEmpty() && !inDesktopMode) {
+        if (!currentParams.mBounds.isEmpty() && !inDesktopMode
+                && !DesktopExperienceFlags.IGNORE_CURRENT_PARAMS_IN_DESKTOP_LAUNCH_PARAMS.isTrue()
+        ) {
             appendLog("currentParams has bounds set, not overriding");
             return RESULT_SKIP;
         }
@@ -321,7 +324,8 @@ class DesktopModeLaunchParamsModifier implements LaunchParamsModifier {
             @NonNull LaunchParamsController.LaunchParams currentParams) {
         return (task != null && task.inFreeformWindowingMode())
                 || (options != null && options.getLaunchWindowingMode() == WINDOWING_MODE_FREEFORM)
-                || currentParams.mWindowingMode == WINDOWING_MODE_FREEFORM;
+                || (currentParams.mWindowingMode == WINDOWING_MODE_FREEFORM
+                && !DesktopExperienceFlags.IGNORE_CURRENT_PARAMS_IN_DESKTOP_LAUNCH_PARAMS.isTrue());
     }
 
     /**
@@ -331,10 +335,23 @@ class DesktopModeLaunchParamsModifier implements LaunchParamsModifier {
             @NonNull Task task,
             @Nullable ActivityOptions options,
             @NonNull LaunchParamsController.LaunchParams currentParams) {
-        return isCompatibleDesktopWindowingMode(task.getWindowingMode())
-                && (options == null
-                    || isCompatibleDesktopWindowingMode(options.getLaunchWindowingMode()))
-                && isCompatibleDesktopWindowingMode(currentParams.mWindowingMode);
+        // 1. Check the task's own windowing mode.
+        final boolean isTaskWindowModeCompatible =
+                isCompatibleDesktopWindowingMode(task.getWindowingMode());
+        // 2. Check the windowing mode from ActivityOptions, if they exist.
+        // If options are null, we consider it compatible.
+        final boolean isOptionsWindowModeCompatible = options == null
+                || isCompatibleDesktopWindowingMode(options.getLaunchWindowingMode());
+        // 3. Check the windowing mode from the current launch parameters.
+        // This check can be skipped if the IGNORE_CURRENT_PARAMS_IN_DESKTOP_LAUNCH_PARAMS flag is
+        // true.
+        final boolean isCurrentParamsWindowModeCompatible =
+                isCompatibleDesktopWindowingMode(currentParams.mWindowingMode)
+                        || DesktopExperienceFlags.IGNORE_CURRENT_PARAMS_IN_DESKTOP_LAUNCH_PARAMS
+                        .isTrue();
+        // All checks must pass for the source window modes to be considered compatible.
+        return isTaskWindowModeCompatible && isOptionsWindowModeCompatible
+                && isCurrentParamsWindowModeCompatible;
     }
 
     /**
