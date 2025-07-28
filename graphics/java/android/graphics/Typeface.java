@@ -80,7 +80,6 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiConsumer;
 
 /**
@@ -104,19 +103,19 @@ public class Typeface {
     }
 
     /** The default NORMAL typeface object */
-    public static final Typeface DEFAULT;
+    public static final Typeface DEFAULT = null;
     /**
      * The default BOLD typeface object. Note: this may be not actually be
      * bold, depending on what fonts are installed. Call getStyle() to know
      * for sure.
      */
-    public static final Typeface DEFAULT_BOLD;
+    public static final Typeface DEFAULT_BOLD = null;
     /** The NORMAL style of the default sans serif typeface. */
-    public static final Typeface SANS_SERIF;
+    public static final Typeface SANS_SERIF = null;
     /** The NORMAL style of the default serif typeface. */
-    public static final Typeface SERIF;
+    public static final Typeface SERIF = null;
     /** The NORMAL style of the default monospace typeface. */
-    public static final Typeface MONOSPACE;
+    public static final Typeface MONOSPACE = null;
 
     /**
      * The default {@link Typeface}s for different text styles.
@@ -215,54 +214,16 @@ public class Typeface {
     }
 
     /**
-     * DO NOT USE THIS FIELD DIRECTLY: This value is now 0 in case of pending Typeface.
      * @hide
      */
     @UnsupportedAppUsage
     public final long native_instance;
 
-    /** @hide */
-    public long getNativeInstance() {
-        if (mPendingTypeface != null) {
-            Typeface pendingTypeface = mPendingTypeface.get();
-            if (pendingTypeface == null) {
-                throw new IllegalStateException("The Typeface is not fully initialized.");
-            }
-            return pendingTypeface.getNativeInstance();
-        } else {
-            return native_instance;
-        }
-    }
+    private final Typeface mDerivedFrom;
 
-    private final @Nullable Typeface mDerivedFrom;
+    private final String mSystemFontFamilyName;
 
-    private final @Nullable String mSystemFontFamilyName;
-
-    private final @Nullable Runnable mCleaner;
-
-    /**
-     * A special reference for lazily initializing static Typeface fields (e.g., Typeface.SERIF).
-     *
-     * Problem: Public static final Typeface fields must be initialized when the Typeface class is
-     * loaded by Zygote. However, the actual font resources aren't available until later, during
-     * application startup. Since these fields are final, they cannot be reassigned.
-     *
-     * Solution: These fields are initially assigned a placeholder (referring to null) for pending
-     * Typeface objects in Zygote. Later, during app startup, this field is updated to point
-     * to the fully initialized Typeface.
-     */
-    private final @Nullable AtomicReference<Typeface> mPendingTypeface;
-
-    private void completeTypefaceInitialization(@NonNull Typeface initializedTypeface) {
-        if (mPendingTypeface == null) {
-            throw new IllegalStateException(
-                    "Do not call this method other than placeholder Typeface.");
-        }
-        if (!mPendingTypeface.compareAndSet(null, initializedTypeface)) {
-            throw new IllegalStateException("The pending Typeface is already initialized."
-                    + " Do not call this method multiple times.");
-        }
-    }
+    private final Runnable mCleaner;
 
     /** @hide */
     @IntDef(value = {NORMAL, BOLD, ITALIC, BOLD_ITALIC})
@@ -291,30 +252,6 @@ public class Typeface {
      */
     public static final String DEFAULT_FAMILY = "sans-serif";
 
-    static {
-        if (Flags.doNotOverwriteStaticFinalField()) {
-            DEFAULT_BOLD = new Typeface(Typeface.BOLD, 700, null);
-            SANS_SERIF = new Typeface(Typeface.NORMAL, 400, "sans-serif");
-            SERIF = new Typeface(Typeface.NORMAL, 400, "serif");
-            MONOSPACE = new Typeface(Typeface.NORMAL, 400, "monospace");
-            // To pass an existing Typeface reference check with Typeface.DEFAULT,
-            // e.g., Typeface.DEFAULT == Typeface.SANS_SERIF, use the same instance if the default
-            // family matches with the other key of the static field.
-            DEFAULT = switch (DEFAULT_FAMILY) {
-                case "sans-serif" -> SANS_SERIF;
-                case "serif" -> SERIF;
-                case "monospace" -> MONOSPACE;
-                default -> new Typeface(Typeface.NORMAL, 400, null);
-            };
-        } else {
-            DEFAULT = null;
-            DEFAULT_BOLD = null;
-            SANS_SERIF = null;
-            SERIF = null;
-            MONOSPACE = null;
-        }
-    }
-
     // Style value for building typeface.
     private static final int STYLE_NORMAL = 0;
     private static final int STYLE_ITALIC = 1;
@@ -332,7 +269,7 @@ public class Typeface {
     private static void setDefault(Typeface t) {
         synchronized (SYSTEM_FONT_MAP_LOCK) {
             sDefaultTypeface = t;
-            nativeSetDefault(t.getNativeInstance());
+            nativeSetDefault(t.native_instance);
         }
     }
 
@@ -981,7 +918,7 @@ public class Typeface {
             final int italic =
                     (mStyle == null || mStyle.getSlant() == FontStyle.FONT_SLANT_UPRIGHT) ?  0 : 1;
             return new Typeface(nativeCreateFromArray(
-                    ptrArray, fallbackTypeface.getNativeInstance(), weight, italic), null);
+                    ptrArray, fallbackTypeface.native_instance, weight, italic), null);
         }
     }
 
@@ -1030,7 +967,7 @@ public class Typeface {
             return family;
         }
 
-        final long ni = family.getNativeInstance();
+        final long ni = family.native_instance;
 
         Typeface typeface;
         synchronized (sStyledCacheLock) {
@@ -1103,10 +1040,10 @@ public class Typeface {
 
         Typeface typeface;
         synchronized(sWeightCacheLock) {
-            SparseArray<Typeface> innerCache = sWeightTypefaceCache.get(base.getNativeInstance());
+            SparseArray<Typeface> innerCache = sWeightTypefaceCache.get(base.native_instance);
             if (innerCache == null) {
                 innerCache = new SparseArray<>(4);
-                sWeightTypefaceCache.put(base.getNativeInstance(), innerCache);
+                sWeightTypefaceCache.put(base.native_instance, innerCache);
             } else {
                 typeface = innerCache.get(key);
                 if (typeface != null) {
@@ -1115,8 +1052,7 @@ public class Typeface {
             }
 
             typeface = new Typeface(
-                    nativeCreateFromTypefaceWithExactStyle(base.getNativeInstance(), weight,
-                            italic),
+                    nativeCreateFromTypefaceWithExactStyle(base.native_instance, weight, italic),
                     base.getSystemFontFamilyName());
             innerCache.put(key, typeface);
         }
@@ -1149,12 +1085,11 @@ public class Typeface {
             final String key = axesToVarKey(axes);
 
             synchronized (sVariableCacheLock) {
-                LruCache<String, Typeface> innerCache = sVariableCache.get(
-                        base.getNativeInstance());
+                LruCache<String, Typeface> innerCache = sVariableCache.get(base.native_instance);
                 if (innerCache == null) {
                     // Cache up to 16 var instance per root Typeface
                     innerCache = new LruCache<>(16);
-                    sVariableCache.put(base.getNativeInstance(), innerCache);
+                    sVariableCache.put(base.native_instance, innerCache);
                 } else {
                     Typeface cached = innerCache.get(key);
                     if (cached != null) {
@@ -1162,7 +1097,7 @@ public class Typeface {
                     }
                 }
                 Typeface typeface = new Typeface(
-                        nativeCreateFromTypefaceWithVariation(base.getNativeInstance(), axes),
+                        nativeCreateFromTypefaceWithVariation(base.native_instance, axes),
                         base.getSystemFontFamilyName(), base);
                 innerCache.put(key, typeface);
                 return typeface;
@@ -1171,7 +1106,7 @@ public class Typeface {
 
         final Typeface base = family == null ? Typeface.DEFAULT : family;
         Typeface typeface = new Typeface(
-                nativeCreateFromTypefaceWithVariation(base.getNativeInstance(), axes),
+                nativeCreateFromTypefaceWithVariation(base.native_instance, axes),
                 base.getSystemFontFamilyName());
         return typeface;
     }
@@ -1323,7 +1258,7 @@ public class Typeface {
             ptrArray[i] = families[i].mNativePtr;
         }
         return new Typeface(nativeCreateFromArray(
-                ptrArray, fallbackTypeface.getNativeInstance(), weight, italic), null);
+                ptrArray, fallbackTypeface.native_instance, weight, italic), null);
     }
 
     // don't allow clients to call this directly
@@ -1352,20 +1287,6 @@ public class Typeface {
         mWeight = nativeGetWeight(ni);
         mSystemFontFamilyName = systemFontFamilyName;
         mDerivedFrom = derivedFrom;
-        mPendingTypeface = null;
-    }
-
-    // Constructor for pending Typeface. Do not use this other than Zygote init.
-    /** @hide */
-    @VisibleForTesting
-    public Typeface(@Style int style, int weight, @Nullable String systemFontFamilyName) {
-        native_instance = 0;
-        mCleaner = () -> {};
-        mStyle = style;
-        mWeight = weight;
-        mSystemFontFamilyName = systemFontFamilyName;
-        mDerivedFrom = null;
-        mPendingTypeface = new AtomicReference<>(null);
     }
 
     /**
@@ -1408,7 +1329,7 @@ public class Typeface {
             }
             final int weight = alias.getWeight();
             final Typeface newFace = weight == 400 ? base : new Typeface(
-                    nativeCreateWeightAlias(base.getNativeInstance(), weight), alias.getName());
+                    nativeCreateWeightAlias(base.native_instance, weight), alias.getName());
             outSystemFontMap.put(alias.getName(), newFace);
         }
     }
@@ -1416,7 +1337,7 @@ public class Typeface {
     private static void registerGenericFamilyNative(@NonNull String familyName,
             @Nullable Typeface typeface) {
         if (typeface != null) {
-            nativeRegisterGenericFamily(familyName, typeface.getNativeInstance());
+            nativeRegisterGenericFamily(familyName, typeface.native_instance);
         }
     }
 
@@ -1433,7 +1354,7 @@ public class Typeface {
         ByteArrayOutputStream namesBytes = new ByteArrayOutputStream();
         int i = 0;
         for (Map.Entry<String, Typeface> entry : fontMap.entrySet()) {
-            nativePtrs[i++] = entry.getValue().getNativeInstance();
+            nativePtrs[i++] = entry.getValue().native_instance;
             writeString(namesBytes, entry.getKey());
         }
         // int (typefacesBytesCount), typefaces, namesBytes
@@ -1562,29 +1483,6 @@ public class Typeface {
     }
 
     /** @hide */
-    @GuardedBy("SYSTEM_FONT_MAP_LOCK")
-    @VisibleForTesting
-    public static void initializePendingTypefaceLocked(Typeface pending, String familyName,
-            Map<String, Typeface> systemFontMap) {
-
-        Typeface typeface = systemFontMap.get(familyName);
-        if (typeface == null) {
-            // If the requested font family is not installed, fall back to the default font family.
-            // This is a long-standing behavior.
-            Log.i(TAG, "The typeface for " + familyName + " is not installed in this device.");
-            pending.completeTypefaceInitialization(systemFontMap.get(DEFAULT_FAMILY));
-        } else {
-            pending.completeTypefaceInitialization(typeface);
-        }
-
-        // The pending typeface is now fully initialized.
-        // To ensure that instance equality checks (e.g.,
-        // `Typeface.SANS_SERIF == Typeface.create("sans-serif", Typeface.NORMAL)`)
-        // pass, replace the instance in the system font map with the pending Typeface.
-        systemFontMap.put(familyName, pending);
-    }
-
-    /** @hide */
     @VisibleForTesting
     public static void setSystemFontMap(Map<String, Typeface> systemFontMap) {
         synchronized (SYSTEM_FONT_MAP_LOCK) {
@@ -1593,38 +1491,16 @@ public class Typeface {
 
             // We can't assume DEFAULT_FAMILY available on Roboletric.
             if (sSystemFontMap.containsKey(DEFAULT_FAMILY)) {
-                if (Flags.doNotOverwriteStaticFinalField()) {
-                    initializePendingTypefaceLocked(SANS_SERIF, "sans-serif", sSystemFontMap);
-                    initializePendingTypefaceLocked(SERIF, "serif", sSystemFontMap);
-                    initializePendingTypefaceLocked(MONOSPACE, "monospace", sSystemFontMap);
-
-                    setDefault(sSystemFontMap.get(DEFAULT_FAMILY));
-
-                    // Skip initializing Typeface.DEFAULT if it is an alias for another static field
-                    // (e.g., SANS_SERIF), as that field has already been initialized.
-                    if (DEFAULT != SANS_SERIF && DEFAULT != SERIF && DEFAULT != MONOSPACE) {
-                        DEFAULT.completeTypefaceInitialization(
-                                create(DEFAULT_FAMILY, Typeface.NORMAL));
-                    }
-                    DEFAULT_BOLD.completeTypefaceInitialization(
-                            create(DEFAULT_FAMILY, Typeface.BOLD));
-                } else {
-                    setDefault(sSystemFontMap.get(DEFAULT_FAMILY));
-
-                    // Set up defaults and typefaces exposed in public API
-                    // Use sDefaultTypeface here, because create(String, int) uses DEFAULT as
-                    // fallback.
-                    nativeForceSetStaticFinalField("DEFAULT",
-                            create(sDefaultTypeface, Typeface.NORMAL));
-                    nativeForceSetStaticFinalField("DEFAULT_BOLD",
-                            create(sDefaultTypeface, Typeface.BOLD));
-                    nativeForceSetStaticFinalField("SANS_SERIF",
-                            create("sans-serif", Typeface.NORMAL));
-                    nativeForceSetStaticFinalField("SERIF", create("serif", Typeface.NORMAL));
-                    nativeForceSetStaticFinalField("MONOSPACE",
-                            create("monospace", Typeface.NORMAL));
-                }
+                setDefault(sSystemFontMap.get(DEFAULT_FAMILY));
             }
+
+            // Set up defaults and typefaces exposed in public API
+            // Use sDefaultTypeface here, because create(String, int) uses DEFAULT as fallback.
+            nativeForceSetStaticFinalField("DEFAULT", create(sDefaultTypeface, 0));
+            nativeForceSetStaticFinalField("DEFAULT_BOLD", create(sDefaultTypeface, Typeface.BOLD));
+            nativeForceSetStaticFinalField("SANS_SERIF", create("sans-serif", 0));
+            nativeForceSetStaticFinalField("SERIF", create("serif", 0));
+            nativeForceSetStaticFinalField("MONOSPACE", create("monospace", 0));
 
             sDefaults = new Typeface[]{
                 DEFAULT,
@@ -1794,7 +1670,7 @@ public class Typeface {
     public static void loadNativeSystemFonts() {
         synchronized (SYSTEM_FONT_MAP_LOCK) {
             for (var type : sSystemFontMap.values()) {
-                nativeAddFontCollections(type.getNativeInstance());
+                nativeAddFontCollections(type.native_instance);
             }
         }
     }
@@ -1812,7 +1688,7 @@ public class Typeface {
 
         Typeface typeface = (Typeface) o;
 
-        return mStyle == typeface.mStyle && getNativeInstance() == typeface.getNativeInstance();
+        return mStyle == typeface.mStyle && native_instance == typeface.native_instance;
     }
 
     @Override
@@ -1822,7 +1698,7 @@ public class Typeface {
          * http://developer.android.com/reference/java/lang/Object.html
          */
         int result = 17;
-        result = 31 * result + (int) (getNativeInstance() ^ (getNativeInstance() >>> 32));
+        result = 31 * result + (int) (native_instance ^ (native_instance >>> 32));
         result = 31 * result + mStyle;
         return result;
     }
@@ -1831,7 +1707,7 @@ public class Typeface {
     public boolean isSupportedAxes(int axis) {
         synchronized (this) {
             if (mSupportedAxes == null) {
-                mSupportedAxes = nativeGetSupportedAxes(getNativeInstance());
+                mSupportedAxes = nativeGetSupportedAxes(native_instance);
                 if (mSupportedAxes == null) {
                     mSupportedAxes = EMPTY_AXES;
                 }

@@ -1596,7 +1596,7 @@ public class Paint {
      * @return         typeface
      */
     public Typeface setTypeface(Typeface typeface) {
-        final long typefaceNative = typeface == null ? 0 : typeface.getNativeInstance();
+        final long typefaceNative = typeface == null ? 0 : typeface.native_instance;
         nSetTypeface(mNativePaint, typefaceNative);
         mTypeface = typeface;
         return typeface;
