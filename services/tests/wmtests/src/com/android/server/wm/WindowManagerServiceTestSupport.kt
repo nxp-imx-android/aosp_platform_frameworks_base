@@ -100,7 +100,6 @@ object WindowManagerServiceTestSupport {
     fun tearDownService() {
         LocalServices.removeServiceForTest(WindowManagerPolicy::class.java)
         LocalServices.removeServiceForTest(WindowManagerInternal::class.java)
-        LocalServices.removeServiceForTest(ImeTargetVisibilityPolicy::class.java)
         LocalServices.removeServiceForTest(
             ConfigurationChangeSetting.ConfigurationChangeSettingInternal::class.java
         )

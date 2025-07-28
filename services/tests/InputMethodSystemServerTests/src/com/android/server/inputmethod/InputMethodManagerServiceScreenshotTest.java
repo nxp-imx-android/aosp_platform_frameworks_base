@@ -75,7 +75,7 @@ public class InputMethodManagerServiceScreenshotTest extends InputMethodManagerS
                     mUserId);
         }
 
-        verify(mMockImeTargetVisibilityPolicy).showImeScreenshot(eq(mWindowToken),
+        verify(mMockWindowManagerInternal).showImeScreenshot(eq(mWindowToken),
                 eq(Display.DEFAULT_DISPLAY));
     }
 
@@ -86,6 +86,6 @@ public class InputMethodManagerServiceScreenshotTest extends InputMethodManagerS
                     mUserId);
         }
 
-        verify(mMockImeTargetVisibilityPolicy).removeImeScreenshot(eq(Display.DEFAULT_DISPLAY));
+        verify(mMockWindowManagerInternal).removeImeScreenshot(eq(Display.DEFAULT_DISPLAY));
     }
 }
