@@ -17,6 +17,7 @@
 package com.android.systemui.screencapture.record.largescreen.ui.compose
 
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.platform.LocalContext
 import com.android.systemui.lifecycle.rememberViewModel
 import com.android.systemui.screencapture.common.ScreenCaptureScope
 import com.android.systemui.screencapture.common.ui.compose.ScreenCaptureContent
@@ -30,8 +31,9 @@ constructor(private val viewModelFactory: PreCaptureViewModel.Factory) : ScreenC
 
     @Composable
     override fun Content() {
+        val displayId = LocalContext.current.displayId
         val viewModel: PreCaptureViewModel =
-            rememberViewModel("PreCaptureViewModel") { viewModelFactory.create() }
+            rememberViewModel("PreCaptureViewModel") { viewModelFactory.create(displayId) }
 
         if (viewModel.isShowingUI) {
             PreCaptureUI(viewModel = viewModel)

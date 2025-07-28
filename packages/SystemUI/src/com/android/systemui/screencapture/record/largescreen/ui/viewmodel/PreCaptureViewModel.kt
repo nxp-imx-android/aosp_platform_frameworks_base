@@ -22,12 +22,13 @@ import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.lifecycle.HydratedActivatable
 import com.android.systemui.res.R
-import com.android.systemui.screencapture.common.ScreenCapture
 import com.android.systemui.screencapture.common.ui.viewmodel.DrawableLoaderViewModel
 import com.android.systemui.screencapture.common.ui.viewmodel.DrawableLoaderViewModelImpl
+import com.android.systemui.screencapture.domain.interactor.ScreenCaptureUiInteractor
 import com.android.systemui.screencapture.record.largescreen.domain.interactor.ScreenCaptureRecordLargeScreenFeaturesInteractor
 import com.android.systemui.screencapture.record.largescreen.domain.interactor.ScreenshotInteractor
 import com.android.systemui.screencapture.ui.ScreenCaptureActivity
+import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.CoroutineScope
@@ -51,21 +52,20 @@ enum class ScreenCaptureRegion {
 class PreCaptureViewModel
 @AssistedInject
 constructor(
-    @ScreenCapture private val activity: ScreenCaptureActivity,
+    @Assisted private val displayId: Int,
     @Application private val applicationContext: Context,
     @Background private val backgroundScope: CoroutineScope,
     private val iconProvider: ScreenCaptureIconProvider,
     private val screenshotInteractor: ScreenshotInteractor,
     private val featuresInteractor: ScreenCaptureRecordLargeScreenFeaturesInteractor,
     private val drawableLoaderViewModelImpl: DrawableLoaderViewModelImpl,
+    private val screenCaptureUiInteractor: ScreenCaptureUiInteractor,
 ) : HydratedActivatable(), DrawableLoaderViewModel by drawableLoaderViewModelImpl {
 
     private val isShowingUIFlow = MutableStateFlow(true)
     private val captureTypeSource = MutableStateFlow(ScreenCaptureType.SCREENSHOT)
     private val captureRegionSource = MutableStateFlow(ScreenCaptureRegion.FULLSCREEN)
     private val regionBoxSource = MutableStateFlow<Rect?>(null)
-
-    val displayId by lazy { activity.displayId }
 
     val icons: ScreenCaptureIcons? by iconProvider.icons.hydratedStateOf()
 
@@ -155,7 +155,9 @@ constructor(
 
     /** Closes the UI by finishing the parent [ScreenCaptureActivity]. */
     fun closeUI() {
-        activity.finish()
+        screenCaptureUiInteractor.hide(
+            com.android.systemui.screencapture.common.shared.model.ScreenCaptureType.RECORD
+        )
     }
 
     override suspend fun onActivated() {
@@ -250,6 +252,6 @@ constructor(
 
     @AssistedFactory
     interface Factory {
-        fun create(): PreCaptureViewModel
+        fun create(displayId: Int): PreCaptureViewModel
     }
 }

@@ -16,15 +16,12 @@
 
 package com.android.systemui.qs.tiles.impl.screenrecord.domain.interactor
 
-import android.content.Context
-import android.content.Intent
 import android.media.projection.StopReason
 import android.util.Log
 import com.android.internal.jank.InteractionJankMonitor
 import com.android.systemui.animation.DialogCuj
 import com.android.systemui.animation.DialogTransitionAnimator
 import com.android.systemui.animation.Expandable
-import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.dagger.qualifiers.Main
 import com.android.systemui.keyguard.domain.interactor.KeyguardInteractor
@@ -36,8 +33,8 @@ import com.android.systemui.qs.tiles.base.domain.model.QSTileInput
 import com.android.systemui.qs.tiles.base.shared.model.QSTileUserAction
 import com.android.systemui.screencapture.common.shared.model.ScreenCaptureActivityIntentParameters
 import com.android.systemui.screencapture.common.shared.model.ScreenCaptureType
+import com.android.systemui.screencapture.domain.interactor.ScreenCaptureUiInteractor
 import com.android.systemui.screencapture.record.domain.interactor.ScreenCaptureRecordFeaturesInteractor
-import com.android.systemui.screencapture.ui.ScreenCaptureActivity
 import com.android.systemui.screenrecord.ScreenRecordUxController
 import com.android.systemui.screenrecord.data.model.ScreenRecordModel
 import com.android.systemui.screenrecord.data.repository.ScreenRecordRepository
@@ -50,7 +47,6 @@ import kotlinx.coroutines.withContext
 class ScreenRecordTileUserActionInteractor
 @Inject
 constructor(
-    @Application private val context: Context,
     @Main private val mainContext: CoroutineContext,
     @Background private val backgroundContext: CoroutineContext,
     private val screenRecordRepository: ScreenRecordRepository,
@@ -60,6 +56,7 @@ constructor(
     private val keyguardDismissUtil: KeyguardDismissUtil,
     private val dialogTransitionAnimator: DialogTransitionAnimator,
     private val panelInteractor: PanelInteractor,
+    private val screenCaptureUiInteractor: ScreenCaptureUiInteractor,
     private val mediaProjectionMetricsLogger: MediaProjectionMetricsLogger,
 ) : QSTileUserActionInteractor<ScreenRecordModel> {
     override suspend fun handleInput(input: QSTileInput<ScreenRecordModel>): Unit =
@@ -67,20 +64,18 @@ constructor(
             when (action) {
                 is QSTileUserAction.Click -> {
                     if (ScreenCaptureRecordFeaturesInteractor.shouldShowNewToolbar) {
-                        val intent = Intent(context, ScreenCaptureActivity::class.java)
-
                         // TODO(b/412723197): pass actual params here.
-                        ScreenCaptureActivityIntentParameters(
-                                ScreenCaptureType.RECORD,
-                                isUserConsentRequired = false,
-                                resultReceiver = null,
-                                mediaProjection = null,
-                                hostAppUserHandle = user,
-                                hostAppUid = 0,
-                            )
-                            .fillIntent(intent)
                         activityStarter.postQSRunnableDismissingKeyguard {
-                            activityStarter.startActivity(intent, true)
+                            screenCaptureUiInteractor.show(
+                                ScreenCaptureActivityIntentParameters(
+                                    ScreenCaptureType.RECORD,
+                                    isUserConsentRequired = false,
+                                    resultReceiver = null,
+                                    mediaProjection = null,
+                                    hostAppUserHandle = user,
+                                    hostAppUid = 0,
+                                )
+                            )
                         }
                     } else {
                         when (data) {
