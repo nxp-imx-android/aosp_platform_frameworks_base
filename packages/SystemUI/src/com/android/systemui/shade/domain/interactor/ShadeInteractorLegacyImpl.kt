@@ -28,6 +28,7 @@ import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
@@ -82,6 +83,9 @@ constructor(
             .traceAsCounter("panel_expansion") { (it * 100f).toInt() }
             .stateIn(scope, SharingStarted.Eagerly, 0f)
 
+    @Deprecated("Do not use. isNotificationsExpanded is only relevant in SceneContainer")
+    override val isNotificationsExpanded: StateFlow<Boolean> = MutableStateFlow(false)
+
     override val qsExpansion: StateFlow<Float> = repository.qsExpansion
 
     override val isQsExpanded: StateFlow<Boolean> = repository.legacyIsQsExpanded
@@ -135,6 +139,18 @@ constructor(
     ) {
         throw UnsupportedOperationException(
             "collapseQuickSettingsShade() is not supported in legacy shade"
+        )
+    }
+
+    override fun toggleNotificationsShade(loggingReason: String, transitionKey: TransitionKey?) {
+        throw UnsupportedOperationException(
+            "toggleNotificationShade() is not supported in legacy shade"
+        )
+    }
+
+    override fun toggleQuickSettingsShade(loggingReason: String, transitionKey: TransitionKey?) {
+        throw UnsupportedOperationException(
+            "toggleQuickSettingsShade() is not supported in legacy shade"
         )
     }
 
