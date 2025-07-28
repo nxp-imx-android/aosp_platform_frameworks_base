@@ -1175,6 +1175,10 @@ class ProcessRecord extends ProcessRecordInternal implements WindowProcessListen
         return mServices.hasAboveClient();
     }
 
+    @Override
+    public void setTreatLikeActivity(boolean treatLikeActivity) {
+        mServices.setTreatLikeActivity(treatLikeActivity);
+    }
 
     @Override
     public boolean shouldNotFreeze() {
@@ -1190,6 +1194,11 @@ class ProcessRecord extends ProcessRecordInternal implements WindowProcessListen
     @Override
     public @ShouldNotFreezeReason int shouldNotFreezeReason() {
         return mOptRecord.shouldNotFreezeReason();
+    }
+
+    @Override
+    public int getApplicationUid() {
+        return info.uid;
     }
 
     boolean hasActivitiesOrRecentTasks() {

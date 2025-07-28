@@ -32,6 +32,7 @@ import android.util.proto.ProtoUtils;
 
 import com.android.internal.app.procstats.AssociationState;
 import com.android.internal.app.procstats.ProcessStats;
+import com.android.server.am.psc.ProcessRecordInternal;
 import com.android.server.wm.ActivityServiceConnectionsHolder;
 
 import java.io.PrintWriter;
@@ -148,8 +149,8 @@ final class ConnectionRecord implements OomAdjusterImpl.Connection{
     }
 
     @Override
-    public void computeHostOomAdjLSP(OomAdjuster oomAdjuster, ProcessRecord host,
-            ProcessRecord client, long now, ProcessRecord topApp, boolean doingAll,
+    public void computeHostOomAdjLSP(OomAdjuster oomAdjuster, ProcessRecordInternal host,
+            ProcessRecordInternal client, long now, ProcessRecordInternal topApp, boolean doingAll,
             int oomAdjReason, int cachedAdj) {
         oomAdjuster.computeServiceHostOomAdjLSP(this, host, client, now, false);
     }
