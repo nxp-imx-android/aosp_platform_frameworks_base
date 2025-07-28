@@ -41,6 +41,7 @@ java_defaults {
 java_defaults {
     name: "SystemUI_pod_defaults_impl",
     libs: [
+        "dagger2",
         "jsr330",
     ],
     lint: {
@@ -50,6 +51,10 @@ java_defaults {
     kotlincflags: [
         "-Xexplicit-api=strict",
         "-Xjvm-default=all",
+    ],
+    plugins: [
+        // Needed so that @Provides methods in Dagger are correctly generated.
+        "dagger2-compiler",
     ],
     // TODO(b/423659894): Once SysUI stands up its Dagger graph in its own build target, this
     // visibility should be updated to just that build target.
@@ -68,6 +73,7 @@ java_library {
         "com.android.systemui.retail-impl",
         "com.android.systemui.retail.data-api",
         "com.android.systemui.retail.domain-api",
+        "com.android.systemui.statusbar.pipeline.airplane.shared-api",
         "com.android.systemui.util.kotlin",
         "com.android.systemui.util.settings-api",
         "com.android.systemui.util.time-api",
@@ -82,6 +88,7 @@ java_library {
     static_libs: [
         "com.android.systemui.pods-api-aosp-handheld",
         "com.android.systemui.retail-impl",
+        "com.android.systemui.statusbar.pipeline.airplane.shared-impl",
         "com.android.systemui.util.time-impl",
     ],
     visibility: ["//frameworks/base/packages/SystemUI:__pkg__"],
