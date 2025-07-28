@@ -18,6 +18,7 @@ package android.app;
 
 import static android.annotation.Dimension.DP;
 import static android.app.Flags.FLAG_NM_SUMMARIZATION;
+import static android.app.Flags.FLAG_NM_SUMMARIZATION_ALL;
 import static android.app.Flags.FLAG_NOTIFICATION_IS_ANIMATED_ACTION_API;
 import static android.app.Flags.FLAG_HIDE_STATUS_BAR_NOTIFICATION;
 import static android.app.Flags.notificationsRedesignTemplates;
@@ -1248,6 +1249,12 @@ public class Notification implements Parcelable
      */
     public static final String EXTRA_CONTAINS_SUMMARIZATION
             = "android.app.extra.contains_summarization";
+
+    /**
+     * @hide
+     */
+    public static final String EXTRA_APP_SUMMARIZATION
+            = "android.app.extra.app_summarization";
 
     /**
      * {@link #extras} key: this is the title of the notification,
@@ -4847,6 +4854,22 @@ public class Notification implements Parcelable
             return this;
         }
 
+        /**
+         * Sets the text that was computationally summarized from other sources, if applicable. The
+         * OS may choose to display this content instead of the original notification content on
+         * some surfaces and may add styling to indicate to the user that this was computationally
+         * generated.
+         */
+        @FlaggedApi(FLAG_NM_SUMMARIZATION_ALL)
+        @NonNull
+        public Builder setSummarizedContent(@Nullable CharSequence summarizedContent) {
+            mN.extras.putCharSequence(EXTRA_APP_SUMMARIZATION, summarizedContent);
+            if (Flags.nmSummarization()) {
+                setHasSummarizedContent(!TextUtils.isEmpty(summarizedContent));
+            }
+            return this;
+        }
+
         private ContrastColorUtil getColorUtil() {
             if (mColorUtil == null) {
                 mColorUtil = ContrastColorUtil.getInstance(mContext);
@@ -8381,11 +8404,23 @@ public class Notification implements Parcelable
     }
 
     /**
-     * Returns whether this notification contains computationally summarized text.
+     * Returns whether this notification contains computationally summarized text. The
+     * OS may choose to display this content instead of the original notification content on
+     * some surfaces and may add styling to indicate to the user that this was computationally
+     * generated.
      */
     @FlaggedApi(FLAG_NM_SUMMARIZATION)
     public boolean hasSummarizedContent() {
         return extras != null && extras.getBoolean(EXTRA_CONTAINS_SUMMARIZATION);
+    }
+
+    /**
+     * Returns app provided computationally summarized text that represents the content of the
+     * notification.
+     */
+    @FlaggedApi(FLAG_NM_SUMMARIZATION_ALL)
+    public @Nullable CharSequence getSummarizedContent() {
+        return extras != null ? extras.getCharSequence(EXTRA_APP_SUMMARIZATION) : null;
     }
 
     /**
