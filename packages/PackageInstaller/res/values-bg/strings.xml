@@ -21,7 +21,6 @@
     <string name="update" msgid="3932142540719227615">"Актуализиране"</string>
     <string name="done" msgid="6632441120016885253">"Готово"</string>
     <string name="cancel" msgid="1018267193425558088">"Отказ"</string>
-    <string name="try_again" msgid="3754399538069264237">"Нов опит"</string>
     <string name="install_anyway" msgid="8794642873773384969">"Инсталиране въпреки това"</string>
     <string name="dont_install" msgid="414055123295505225">"Без инсталиране"</string>
     <string name="installing" msgid="4921993079741206516">"Инсталира се..."</string>

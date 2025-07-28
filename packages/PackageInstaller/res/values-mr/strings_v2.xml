@@ -1,0 +1,211 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 
+  ~ Copyright (C) 2025 The Android Open Source Project
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~      https://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+   -->
+
+<resources xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+    <!-- no translation found for title_unknown_source_blocked (50770689337399043) -->
+    <skip />
+    <!-- no translation found for title_install_blocked (8292546042865448054) -->
+    <skip />
+    <!-- no translation found for title_install_staging (6207460764383813714) -->
+    <skip />
+    <!-- no translation found for title_install (6806728682404990326) -->
+    <skip />
+    <!-- no translation found for title_installing (3738380766257176010) -->
+    <skip />
+    <!-- no translation found for title_installed (6551855346109302601) -->
+    <skip />
+    <!-- no translation found for title_reinstall (1750856338036455388) -->
+    <skip />
+    <!-- no translation found for title_reinstalling (8194821341725321638) -->
+    <skip />
+    <!-- no translation found for title_reinstalled (4805694558041089418) -->
+    <skip />
+    <!-- no translation found for title_update (1747328630716712391) -->
+    <skip />
+    <!-- no translation found for title_update_ownership_change (6628818356381453406) -->
+    <skip />
+    <!-- no translation found for title_updating (5449073288264173554) -->
+    <skip />
+    <!-- no translation found for title_updated (3286125118804971449) -->
+    <skip />
+    <!-- no translation found for title_cant_install_app (8683361719005005686) -->
+    <skip />
+    <!-- no translation found for title_install_failed_blocked (4864724257000850526) -->
+    <skip />
+    <!-- no translation found for title_install_failed_incompatible (9153043742028690470) -->
+    <skip />
+    <!-- no translation found for title_install_failed_invalid_package (3390527559613519562) -->
+    <skip />
+    <!-- no translation found for title_install_failed_less_storage (4854855960405469248) -->
+    <skip />
+    <!-- no translation found for title_install_failed_not_installed (8014023519071426269) -->
+    <skip />
+    <!-- no translation found for title_uninstall (428653424812685605) -->
+    <skip />
+    <!-- no translation found for title_uninstall_clone (7974889929002929136) -->
+    <skip />
+    <!-- no translation found for title_uninstall_updates_system_app (4827243291196043359) -->
+    <skip />
+    <!-- no translation found for title_uninstall_updates_system_app_all_users (5720572619103268328) -->
+    <skip />
+    <!-- no translation found for title_uninstall_all_users (2008934480150627653) -->
+    <skip />
+    <!-- no translation found for title_uninstall_other_user (7739452181899248303) -->
+    <skip />
+    <!-- no translation found for title_uninstall_app_not_found (501803094061097579) -->
+    <skip />
+    <!-- no translation found for title_uninstall_user_not_allowed (1555448944495159635) -->
+    <skip />
+    <!-- no translation found for title_uninstall_failed (4522950368147075143) -->
+    <skip />
+    <!-- no translation found for title_archive (2876455228073419830) -->
+    <skip />
+    <!-- no translation found for title_archive_all_users (5904736601499520543) -->
+    <skip />
+    <!-- no translation found for title_archive_other_user (5996047192919423497) -->
+    <skip />
+    <!-- no translation found for title_restore (8934911753892124574) -->
+    <skip />
+    <!-- no translation found for title_restore_error_user_action_needed (5696944142011800104) -->
+    <skip />
+    <!-- no translation found for title_restore_error_less_storage (1702198163928260711) -->
+    <skip />
+    <!-- no translation found for title_restore_error_offline (4611160277876184886) -->
+    <skip />
+    <!-- no translation found for title_restore_error_installer_disabled (6955341343521073762) -->
+    <skip />
+    <!-- no translation found for title_restore_error_installer_absent (4650702260526161948) -->
+    <skip />
+    <!-- no translation found for title_restore_error_generic (3675732737839176301) -->
+    <skip />
+    <!-- no translation found for message_update_owner_change (721928859405955082) -->
+    <skip />
+    <!-- no translation found for message_update_owner_change (7398850682198100493) -->
+    <skip />
+    <!-- no translation found for message_update_owner_change (8415571223941666411) -->
+    <skip />
+    <!-- no translation found for message_external_source_blocked (1404860482919177902) -->
+    <skip />
+    <!-- no translation found for message_external_source_blocked (1394622045008552842) -->
+    <skip />
+    <!-- no translation found for message_external_source_blocked (1532513823566863443) -->
+    <skip />
+    <!-- no translation found for message_external_source_blocked (2781541659935183726) -->
+    <skip />
+    <!-- no translation found for message_anonymous_source_warning (4012873091955414109) -->
+    <skip />
+    <!-- no translation found for message_anonymous_source_warning (5167072167473447125) -->
+    <skip />
+    <!-- no translation found for message_anonymous_source_warning (6827454085562760175) -->
+    <skip />
+    <!-- no translation found for message_install_failed_blocked (8289588872577100349) -->
+    <skip />
+    <!-- no translation found for message_install_failed_conflict (1707670432024473123) -->
+    <skip />
+    <!-- no translation found for message_install_failed_incompatible (184079710727317076) -->
+    <skip />
+    <!-- no translation found for message_install_failed_invalid (6607567121196588310) -->
+    <skip />
+    <!-- no translation found for message_install_failed_less_storage (5263281541675717769) -->
+    <skip />
+    <!-- no translation found for message_parse_failed (205300138438352785) -->
+    <skip />
+    <!-- no translation found for message_no_install_apps_restriction (6772323689748831650) -->
+    <skip />
+    <!-- no translation found for message_no_install_unknown_apps_restriction (6111967131011920924) -->
+    <skip />
+    <!-- no translation found for message_uninstall_with_clone_instance (12594156305221478) -->
+    <skip />
+    <!-- no translation found for message_delete_clone_app (6632017049227330363) -->
+    <skip />
+    <!-- no translation found for message_uninstall_updates_system_app (1246198093614610171) -->
+    <skip />
+    <!-- no translation found for message_uninstall_updates_system_app_all_users (1659615085602508659) -->
+    <skip />
+    <!-- no translation found for message_uninstall_work_profile (224587253086750763) -->
+    <skip />
+    <!-- no translation found for message_uninstall_private_space (2815872500665141251) -->
+    <skip />
+    <!-- no translation found for message_uninstall_app_not_found (1228396155188846293) -->
+    <skip />
+    <!-- no translation found for message_uninstall_user_not_allowed (4812707444447008148) -->
+    <skip />
+    <!-- no translation found for message_uninstall_failed (4678598986902459187) -->
+    <skip />
+    <!-- no translation found for message_uninstall_keep_data (3955153594868206983) -->
+    <skip />
+    <!-- no translation found for message_archive (943853731737315850) -->
+    <skip />
+    <!-- no translation found for message_archive_all_users (4664139369764501351) -->
+    <skip />
+    <!-- no translation found for message_archive_other_user (6465828676043191175) -->
+    <skip />
+    <!-- no translation found for message_archive_work_profile (7601504268820630858) -->
+    <skip />
+    <!-- no translation found for message_archive_private_space (4873651645762576624) -->
+    <skip />
+    <!-- no translation found for message_restore (8402726798623569969) -->
+    <skip />
+    <!-- no translation found for message_restore_error_user_action_needed (2206904734076205208) -->
+    <skip />
+    <!-- no translation found for message_restore_error_less_storage (4945507738776981462) -->
+    <skip />
+    <!-- no translation found for message_restore_error_offline (4212551781323276126) -->
+    <skip />
+    <!-- no translation found for message_restore_error_installer_disabled (1089791898782445342) -->
+    <skip />
+    <!-- no translation found for message_restore_error_installer_absent (8492838251989389724) -->
+    <skip />
+    <!-- no translation found for message_restore_error_generic (5903850636679929406) -->
+    <skip />
+    <!-- no translation found for message_uninstall_activity (3263352475743590167) -->
+    <skip />
+    <!-- no translation found for button_install (7434013176505680162) -->
+    <skip />
+    <!-- no translation found for button_update (3046719350226327526) -->
+    <skip />
+    <!-- no translation found for button_update_anyway (6674207037708730779) -->
+    <skip />
+    <!-- no translation found for button_done (3408025390982260629) -->
+    <skip />
+    <!-- no translation found for button_open (6892684987374117955) -->
+    <skip />
+    <!-- no translation found for button_cancel (6690491435205617214) -->
+    <skip />
+    <string name="button_continue" msgid="107501685249826244">"पुढे सुरू ठेवा"</string>
+    <!-- no translation found for button_close (7187308556466275899) -->
+    <skip />
+    <!-- no translation found for button_uninstall (6317309210023038915) -->
+    <skip />
+    <!-- no translation found for button_delete (1050833585936159792) -->
+    <skip />
+    <!-- no translation found for button_reinstall (476377927808336418) -->
+    <skip />
+    <!-- no translation found for button_manage_apps (957735904821659812) -->
+    <skip />
+    <!-- no translation found for button_archive (2719647830439699121) -->
+    <skip />
+    <!-- no translation found for button_restore (4388317532933866637) -->
+    <skip />
+    <!-- no translation found for button_uninstall_updates_system_app (5510230756003755497) -->
+    <skip />
+    <!-- no translation found for button_settings (3837571366246132287) -->
+    <skip />
+    <!-- no translation found for string_cloned_app_label (3596634458716024562) -->
+    <skip />
+</resources>
