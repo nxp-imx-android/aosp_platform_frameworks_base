@@ -60,15 +60,12 @@ final class VoteSummary {
      */
     public Set<Integer> rejectedModeIds = new HashSet<>();
 
-    final boolean mIsDisplayResolutionRangeVotingEnabled;
-
     private final boolean mSupportedModesVoteEnabled;
     private final boolean mSupportsFrameRateOverride;
     private final boolean mLoggingEnabled;
 
-    VoteSummary(boolean isDisplayResolutionRangeVotingEnabled, boolean supportedModesVoteEnabled,
+    VoteSummary(boolean supportedModesVoteEnabled,
             boolean loggingEnabled, boolean supportsFrameRateOverride) {
-        mIsDisplayResolutionRangeVotingEnabled = isDisplayResolutionRangeVotingEnabled;
         mSupportedModesVoteEnabled = supportedModesVoteEnabled;
         mLoggingEnabled = loggingEnabled;
         mSupportsFrameRateOverride = supportsFrameRateOverride;
@@ -102,7 +99,7 @@ final class VoteSummary {
         if (height == Vote.INVALID_SIZE || width == Vote.INVALID_SIZE) {
             width = defaultMode.getPhysicalWidth();
             height = defaultMode.getPhysicalHeight();
-        } else if (mIsDisplayResolutionRangeVotingEnabled) {
+        } else {
             updateSummaryWithBestAllowedResolution(modes);
         }
         if (mLoggingEnabled) {
@@ -447,8 +444,6 @@ final class VoteSummary {
                 + ", supportedRefreshRates=" + supportedRefreshRates
                 + ", supportedModeIds=" + supportedModeIds
                 + ", rejectedModeIds=" + rejectedModeIds
-                + ", mIsDisplayResolutionRangeVotingEnabled="
-                + mIsDisplayResolutionRangeVotingEnabled
                 + ", mSupportedModesVoteEnabled=" + mSupportedModesVoteEnabled
                 + ", mSupportsFrameRateOverride=" + mSupportsFrameRateOverride + " }";
     }

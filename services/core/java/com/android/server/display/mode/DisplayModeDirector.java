@@ -179,23 +179,6 @@ public class DisplayModeDirector {
     @DisplayManager.SwitchingType
     private int mModeSwitchingType = DisplayManager.SWITCHING_TYPE_WITHIN_GROUPS;
 
-    /**
-     * Whether resolution range voting feature is enabled.
-     */
-    private final boolean mIsDisplayResolutionRangeVotingEnabled;
-
-    /**
-     * Whether user preferred mode voting feature is enabled.
-     */
-    private final boolean mIsUserPreferredModeVoteEnabled;
-
-    /**
-     * Whether limit display mode feature is enabled.
-     */
-    private final boolean mIsExternalDisplayLimitModeEnabled;
-
-    private final boolean mIsDisplaysRefreshRatesSynchronizationEnabled;
-
     private final boolean mIsBackUpSmoothDisplayAndForcePeakRefreshRateEnabled;
 
     private final boolean mHasArrSupportFlagEnabled;
@@ -215,13 +198,6 @@ public class DisplayModeDirector {
             @NonNull Injector injector,
             @NonNull DisplayManagerFlags displayManagerFlags,
             @NonNull DisplayDeviceConfigProvider displayDeviceConfigProvider) {
-        mIsDisplayResolutionRangeVotingEnabled = displayManagerFlags
-                .isDisplayResolutionRangeVotingEnabled();
-        mIsUserPreferredModeVoteEnabled = displayManagerFlags.isUserPreferredModeVoteEnabled();
-        mIsExternalDisplayLimitModeEnabled = displayManagerFlags
-            .isExternalDisplayLimitModeEnabled();
-        mIsDisplaysRefreshRatesSynchronizationEnabled = displayManagerFlags
-            .isDisplaysRefreshRatesSynchronizationEnabled();
         mIsBackUpSmoothDisplayAndForcePeakRefreshRateEnabled = displayManagerFlags
                 .isBackUpSmoothDisplayAndForcePeakRefreshRateEnabled();
         mHasArrSupportFlagEnabled = displayManagerFlags.hasArrSupportFlag();
@@ -328,8 +304,7 @@ public class DisplayModeDirector {
 
             List<Display.Mode> availableModes = new ArrayList<>();
             availableModes.add(defaultMode);
-            VoteSummary primarySummary = new VoteSummary(mIsDisplayResolutionRangeVotingEnabled,
-                    isVrrSupportedLocked(displayId),
+            VoteSummary primarySummary = new VoteSummary(isVrrSupportedLocked(displayId),
                     mLoggingEnabled, mSupportsFrameRateOverride);
             int lowestConsideredPriority = Vote.MIN_PRIORITY;
             int highestConsideredPriority = Vote.MAX_PRIORITY;
@@ -369,8 +344,7 @@ public class DisplayModeDirector {
                 lowestConsideredPriority++;
             }
 
-            VoteSummary appRequestSummary = new VoteSummary(mIsDisplayResolutionRangeVotingEnabled,
-                    isVrrSupportedLocked(displayId),
+            VoteSummary appRequestSummary = new VoteSummary(isVrrSupportedLocked(displayId),
                     mLoggingEnabled, mSupportsFrameRateOverride);
 
             appRequestSummary.applyVotes(votes,
@@ -1458,15 +1432,11 @@ public class DisplayModeDirector {
         private boolean isExternalDisplayLimitModeEnabled() {
             return mExternalDisplayPeakWidth > 0
                 && mExternalDisplayPeakHeight > 0
-                && mExternalDisplayPeakRefreshRate > 0
-                && mIsExternalDisplayLimitModeEnabled
-                && mIsDisplayResolutionRangeVotingEnabled
-                && mIsUserPreferredModeVoteEnabled;
+                && mExternalDisplayPeakRefreshRate > 0;
         }
 
         private boolean isRefreshRateSynchronizationEnabled() {
-            return mRefreshRateSynchronizationEnabled
-                && mIsDisplaysRefreshRatesSynchronizationEnabled;
+            return mRefreshRateSynchronizationEnabled;
         }
 
         public void observe() {
@@ -1600,15 +1570,12 @@ public class DisplayModeDirector {
         }
 
         private void removeUserSettingDisplayPreferredSize(int displayId) {
-            if (!mIsUserPreferredModeVoteEnabled) {
-                return;
-            }
             mVotesStorage.updateVote(displayId, Vote.PRIORITY_USER_SETTING_DISPLAY_PREFERRED_SIZE,
                     null);
         }
 
         private void updateUserSettingDisplayPreferredSize(@Nullable DisplayInfo info) {
-            if (info == null || !mIsUserPreferredModeVoteEnabled) {
+            if (info == null) {
                 return;
             }
 
@@ -1618,8 +1585,7 @@ public class DisplayModeDirector {
                 return;
             }
 
-            if (info.type == Display.TYPE_EXTERNAL
-                    && !isRefreshRateSynchronizationEnabled()) {
+            if (info.type == Display.TYPE_EXTERNAL && !isRefreshRateSynchronizationEnabled()) {
                 mVotesStorage.updateVote(info.displayId,
                         Vote.PRIORITY_USER_SETTING_DISPLAY_PREFERRED_SIZE,
                         Vote.forSizeAndPhysicalRefreshRatesRange(

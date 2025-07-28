@@ -45,10 +45,6 @@ public class DisplayManagerFlags {
             Flags.FLAG_ENABLE_DISPLAY_OFFLOAD,
             Flags::enableDisplayOffload);
 
-    private final FlagState mExternalDisplayLimitModeState = new FlagState(
-            Flags.FLAG_ENABLE_MODE_LIMIT_FOR_EXTERNAL_DISPLAY,
-            Flags::enableModeLimitForExternalDisplay);
-
     private final FlagState mDisplayTopology = new FlagState(
             Flags.FLAG_DISPLAY_TOPOLOGY,
             DesktopExperienceFlags.DISPLAY_TOPOLOGY::isTrue);
@@ -271,35 +267,9 @@ public class DisplayManagerFlags {
         return mPowerThrottlingClamperFlagState.isEnabled();
     }
 
-    /** Returns whether resolution range voting feature is enabled or not. */
-    public boolean isDisplayResolutionRangeVotingEnabled() {
-        return isExternalDisplayLimitModeEnabled();
-    }
-
-    /**
-     * @return Whether user preferred mode is added as a vote in
-     *      {@link com.android.server.display.mode.DisplayModeDirector}
-     */
-    public boolean isUserPreferredModeVoteEnabled() {
-        return isExternalDisplayLimitModeEnabled();
-    }
-
-    /**
-     * @return Whether external display mode limitation is enabled.
-     */
-    public boolean isExternalDisplayLimitModeEnabled() {
-        return mExternalDisplayLimitModeState.isEnabled();
-    }
 
     public boolean isDisplayTopologyEnabled() {
         return mDisplayTopology.isEnabled();
-    }
-
-    /**
-     * @return Whether displays refresh rate synchronization is enabled.
-     */
-    public boolean isDisplaysRefreshRatesSynchronizationEnabled() {
-        return isExternalDisplayLimitModeEnabled();
     }
 
     /** Returns whether displayoffload is enabled on not */
@@ -553,7 +523,6 @@ public class DisplayManagerFlags {
         pw.println(" " + mBackUpSmoothDisplayAndForcePeakRefreshRateFlagState);
         pw.println(" " + mConnectedDisplayErrorHandlingFlagState);
         pw.println(" " + mDisplayOffloadFlagState);
-        pw.println(" " + mExternalDisplayLimitModeState);
         pw.println(" " + mDisplayTopology);
         pw.println(" " + mDisplayTopologyApi);
         pw.println(" " + mPowerThrottlingClamperFlagState);
