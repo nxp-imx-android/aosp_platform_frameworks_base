@@ -240,6 +240,15 @@ flag {
 }
 
 flag {
+  name: "do_not_overwrite_static_final_field"
+  namespace: "text"
+  description: "Removing code that write static final field which will not be supported in the upcoming Java"
+  bug: "421199194"
+  # Being read only because this is used in Zygote
+  is_fixed_read_only: true
+}
+
+flag {
   name: "fix_paint_reset_inconsistency"
   namespace: "text"
   description: "Paint.reset method clears members but some of them doesn't clear in native members. Call setter to clear members and native instances."
