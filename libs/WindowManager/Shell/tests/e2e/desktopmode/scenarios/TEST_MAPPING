@@ -13,6 +13,9 @@
       "name": "FunctionalTestsDesktopMode-AltTabSwitchOutDesktopModeTest"
     },
     {
+      "name": "FunctionalTestsDesktopMode-AltTabSwitchToUnminimizeInDesktopModeFlickerTest"
+    },
+    {
       "name": "FunctionalTestsDesktopMode-CatchAll"
     },
     {
