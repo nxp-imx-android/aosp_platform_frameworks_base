@@ -153,6 +153,7 @@ public class InstallationFragment extends DialogFragment {
 
         // Get the current install stage
         final InstallStage installStage = getCurrentInstallStage();
+        this.setCancelable(true);
 
         // show the title and reset the paddings of the custom message textview
         if (mTitleTemplate != null) {
@@ -188,6 +189,8 @@ public class InstallationFragment extends DialogFragment {
                 updateUserActionRequiredUI(mDialog, (InstallUserActionRequired) installStage);
             }
         }
+
+        UiUtil.updateButtonBarLayoutIfNeeded(requireContext(), mDialog);
     }
 
     private void updateInstallAbortedUI(Dialog dialog, InstallAborted installStage) {
@@ -220,9 +223,6 @@ public class InstallationFragment extends DialogFragment {
                         installStage.getActivityResultCode(), installStage.getResultIntent());
             });
         }
-
-        // Cancelable is false
-        this.setCancelable(false);
     }
 
     private void updateInstallFailedUI(Dialog dialog, InstallFailed installStage) {
@@ -297,8 +297,6 @@ public class InstallationFragment extends DialogFragment {
                 mInstallActionListener.onNegativeResponse(installStage.getStageCode());
             });
         }
-
-        this.setCancelable(true);
     }
 
     private void updateInstallInstallingUI(Dialog dialog, InstallInstalling installStage) {
@@ -424,8 +422,6 @@ public class InstallationFragment extends DialogFragment {
                 mInstallActionListener.onNegativeResponse(installStage.getStageCode());
             });
         }
-
-        this.setCancelable(true);
     }
 
     private void updateUserActionRequiredUI(Dialog dialog, InstallUserActionRequired installStage) {
@@ -481,8 +477,6 @@ public class InstallationFragment extends DialogFragment {
                 mInstallActionListener.onNegativeResponse(installStage.getStageCode());
             });
         }
-
-        this.setCancelable(true);
     }
 
     private void updateAnonymousSourceUI(Dialog dialog, InstallUserActionRequired installStage) {
@@ -529,8 +523,6 @@ public class InstallationFragment extends DialogFragment {
                 mInstallActionListener.onNegativeResponse(installStage.getStageCode());
             });
         }
-
-        this.setCancelable(true);
     }
 
     private void updateInstallConfirmationUI(Dialog dialog,
@@ -603,8 +595,6 @@ public class InstallationFragment extends DialogFragment {
                 mInstallActionListener.onNegativeResponse(installStage.getStageCode());
             });
         }
-
-        this.setCancelable(true);
     }
 
     /**
