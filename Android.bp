@@ -547,6 +547,7 @@ java_library {
         enabled: false,
 
     },
+    javac_shard_size: 150,
 }
 
 // This "framework" module is NOT installed to the device. It's
