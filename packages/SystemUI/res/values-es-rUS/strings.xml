@@ -714,9 +714,13 @@
     <string name="monitoring_description_pin_protection" msgid="1983580207046670355">"Algunos controles de tu dispositivo, como los límites diarios y el tiempo de descanso, solo se pueden cambiar con un PIN."</string>
     <string name="legacy_vpn_name" msgid="4174223520162559145">"VPN"</string>
     <string name="keyguard_indication_trust_unlocked" msgid="7395154975733744547">"TrustAgent lo mantiene desbloqueado"</string>
-    <string name="kg_prompt_after_adaptive_auth_lock" msgid="2587481497846342760">"Se bloqueó el dispositivo; demasiados intentos de autenticación"</string>
-    <string name="keyguard_indication_after_adaptive_auth_lock" msgid="2323400645470712787">"Dispositivo bloqueado\nFalló la autenticación"</string>
+    <!-- no translation found for kg_prompt_after_adaptive_auth_lock (6065186971000690782) -->
+    <skip />
+    <!-- no translation found for keyguard_indication_after_adaptive_auth_lock (5240600662061340872) -->
+    <skip />
     <string name="keyguard_indication_after_watch_disconnected" msgid="8133476870585660478">"Bloqueado por el reloj"</string>
+    <!-- no translation found for keyguard_indication_after_secure_lock_device (4358906300665255820) -->
+    <skip />
     <string name="zen_mode_and_condition" msgid="5043165189511223718">"<xliff:g id="ZEN_MODE">%1$s</xliff:g>. <xliff:g id="EXIT_CONDITION">%2$s</xliff:g>"</string>
     <string name="accessibility_volume_settings" msgid="1458961116951564784">"Configuración de sonido"</string>
     <string name="volume_odi_captions_tip" msgid="8825655463280990941">"Muestra subtítulos automáticos"</string>
@@ -1058,6 +1062,10 @@
     <string name="qs_edit" msgid="5583565172803472437">"Editar"</string>
     <string name="qs_edit_tiles" msgid="2105215324060865035">"Editar tarjetas"</string>
     <string name="qs_edit_mode_tooltip" msgid="4164112885539479781">"Cambia el tamaño de las tarjetas de Configuración rápida"</string>
+    <!-- no translation found for qs_edit_settings (3243175290660574156) -->
+    <skip />
+    <!-- no translation found for qs_edit_menu_content_description (4420651071119623791) -->
+    <skip />
     <string name="tuner_time" msgid="2450785840990529997">"Hora"</string>
   <string-array name="clock_options">
     <item msgid="3986445361435142273">"Mostrar horas, minutos y segundos"</item>
@@ -1100,7 +1108,7 @@
     <string name="accessibility_quick_settings_power_menu" msgid="6820426108301758412">"Menú de encendido"</string>
     <string name="accessibility_quick_settings_page" msgid="7506322631645550961">"Página <xliff:g id="ID_1">%1$d</xliff:g> de <xliff:g id="ID_2">%2$d</xliff:g>"</string>
     <string name="accessibility_key_gesture_dialog_title" msgid="7614965716626605518">"¿Quieres activar <xliff:g id="ID_1">%1$s</xliff:g>?"</string>
-    <string name="accessibility_key_gesture_dialog_content" msgid="4519838108423437794">"La combinación de teclas para usar <xliff:g id="ID_3">^3</xliff:g> es "<annotation id="action_key_icon">"ícono"</annotation>" de acción + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g>. <xliff:g id="ID_4">^4</xliff:g>"</string>
+    <string name="accessibility_key_gesture_dialog_content" msgid="4519838108423437794">"La combinación de teclas para usar <xliff:g id="ID_3">^3</xliff:g> es "<annotation id="action_key_icon">"ícono"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g>. <xliff:g id="ID_4">^4</xliff:g>"</string>
     <string name="accessibility_key_gesture_dialog_magnifier_intro" msgid="627023269951856071">"Esto te permite acercar rápidamente la pantalla para que el contenido se muestre en un tamaño más grande."</string>
     <string name="accessibility_key_gesture_dialog_talkback_intro" msgid="1617808784388544741">"<xliff:g id="ID_1">%1$s</xliff:g> es un lector de pantalla que te permite escuchar los elementos en voz alta. Puede ser útil para las personas con dificultades para ver la pantalla."</string>
     <string name="accessibility_key_gesture_dialog_va_intro" msgid="4709198503441288289">"<xliff:g id="ID_1">%1$s</xliff:g> te permite controlar tu dispositivo sin usar las manos."</string>

@@ -138,12 +138,9 @@
     <string name="screenrecord_stop_dialog_message" msgid="6262768207331626817">"ඔබ දැනට ඔබේ සම්පූර්ණ තිරය පටිගත කරමින් සිටී"</string>
     <string name="screenrecord_stop_dialog_message_specific_app" msgid="5995770227684523244">"ඔබ දැනට <xliff:g id="APP_NAME">%1$s</xliff:g> පටිගත කරමින් සිටී"</string>
     <string name="screenrecord_stop_dialog_button" msgid="2883812564938194350">"පටිගත කිරීම නවත්වන්න"</string>
-    <!-- no translation found for screen_record_record_device_audio_label (5363057443124085198) -->
-    <skip />
-    <!-- no translation found for screen_record_record_microphone_label (4685753707185662381) -->
-    <skip />
-    <!-- no translation found for screen_record_should_show_touches_label (2203962566795833783) -->
-    <skip />
+    <string name="screen_record_record_device_audio_label" msgid="5363057443124085198">"උපාංග ශ්‍රව්‍ය පටිගත කරන්න"</string>
+    <string name="screen_record_record_microphone_label" msgid="4685753707185662381">"මයික්‍රෆෝනය පටිගත කරන්න"</string>
+    <string name="screen_record_should_show_touches_label" msgid="2203962566795833783">"ස්පර්ශ පෙන්වන්න"</string>
     <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"පටිගත කිරීමට යෙදුමක් තෝරා ගන්න"</string>
     <string name="screen_capture_fullscreen_screenshot_button" msgid="4255912593013592954">"මුළු තිරයම ග්‍රහණය කරගන්න"</string>
     <string name="screen_capture_region_selection_button" msgid="4437546351856914639">"තෝරාගත් ප්‍රදේශය ග්‍රහණය කරන්න"</string>
@@ -573,7 +570,7 @@
     <string name="hub_mode_add_widget_button_text" msgid="4831464661209971729">"විජට්ටුව එක් කරන්න"</string>
     <string name="hub_mode_editing_exit_button_text" msgid="3704686734192264771">"නිමයි"</string>
     <string name="label_for_button_in_empty_state_cta" msgid="7314975555382055823">"විජට් එක් කරන්න"</string>
-    <string name="title_for_empty_state_cta" msgid="3515697043504449320">"ඔබේ උපාංගය අගුළු හැරීමෙන් තොරව ඔබේ ප්‍රියතම යෙදුම් විජට් වෙත ඉක්මන් ප්‍රවේශය ලබා ගන්න."</string>
+    <string name="title_for_empty_state_cta" msgid="3515697043504449320">"උපාංගය අගුළු හැරීමෙන් තොරව ඔබේ ප්‍රියතම යෙදුම් විජට් වෙත ඉක්මන් ප්‍රවේශය ලබා ගන්න."</string>
     <string name="dialog_title_to_allow_any_widget" msgid="1004820948962675644">"අගුළු තිරය මත ඕනෑම විජට් එකකට ඉඩ දෙන්න"</string>
     <string name="button_text_to_open_settings" msgid="1987729256950941628">"සැකසීම් විවෘත කරන්න"</string>
     <string name="work_mode_off_title" msgid="5794818421357835873">"කාර්ය යෙදුම් විරාම නොකරන්න ද?"</string>
@@ -717,9 +714,13 @@
     <string name="monitoring_description_pin_protection" msgid="1983580207046670355">"දෛනික සීමාවන් සහ අක්‍රිය කාලය වැනි ඔබේ උපාංගයේ සමහර පාලනයන් වෙනස් කළ හැක්කේ PIN අංකයකින් පමණි."</string>
     <string name="legacy_vpn_name" msgid="4174223520162559145">"VPN"</string>
     <string name="keyguard_indication_trust_unlocked" msgid="7395154975733744547">"TrustAgent මඟින් අඟුලු දමා තබා ගන්න"</string>
-    <string name="kg_prompt_after_adaptive_auth_lock" msgid="2587481497846342760">"උපාංගය අගුළු දමා ඇත, බොහෝ සත්‍යාපන උත්සාහයන් ගණනකි"</string>
-    <string name="keyguard_indication_after_adaptive_auth_lock" msgid="2323400645470712787">"උපාංගය අගුළු දමා ඇත\nසත්‍යාපනය අසමත් විය"</string>
+    <!-- no translation found for kg_prompt_after_adaptive_auth_lock (6065186971000690782) -->
+    <skip />
+    <!-- no translation found for keyguard_indication_after_adaptive_auth_lock (5240600662061340872) -->
+    <skip />
     <string name="keyguard_indication_after_watch_disconnected" msgid="8133476870585660478">"ඔබේ ඔරලෝසුවෙන් අගුළු දමා ඇත"</string>
+    <!-- no translation found for keyguard_indication_after_secure_lock_device (4358906300665255820) -->
+    <skip />
     <string name="zen_mode_and_condition" msgid="5043165189511223718">"<xliff:g id="ZEN_MODE">%1$s</xliff:g>. <xliff:g id="EXIT_CONDITION">%2$s</xliff:g>"</string>
     <string name="accessibility_volume_settings" msgid="1458961116951564784">"ශබ්ද සැකසීම්"</string>
     <string name="volume_odi_captions_tip" msgid="8825655463280990941">"මාධ්‍ය ස්වයංක්‍රීයව සිරස්තල"</string>
@@ -1061,6 +1062,10 @@
     <string name="qs_edit" msgid="5583565172803472437">"සංස්කරණය"</string>
     <string name="qs_edit_tiles" msgid="2105215324060865035">"ටයිල් සංස්කරණය කරන්න"</string>
     <string name="qs_edit_mode_tooltip" msgid="4164112885539479781">"ඉක්මන් සැකසුම් ටයිල් ප්‍රතිප්‍රමාණ කරන්න"</string>
+    <!-- no translation found for qs_edit_settings (3243175290660574156) -->
+    <skip />
+    <!-- no translation found for qs_edit_menu_content_description (4420651071119623791) -->
+    <skip />
     <string name="tuner_time" msgid="2450785840990529997">"වේලාව"</string>
   <string-array name="clock_options">
     <item msgid="3986445361435142273">"පැය, මිනිත්තු, සහ තත්පර පෙන්වන්න"</item>
@@ -1513,17 +1518,12 @@
     <string name="connected_display_dialog_dual_display_stop_warning" msgid="4174707498892447947">"ඔබේ අභ්‍යන්තර සංදර්ශකය පිළිබිඹු වනු ඇත. ඔබේ ඉදිරිපස සංදර්ශකය ක්‍රියාවිරහිත වනු ඇත."</string>
     <string name="mirror_display" msgid="2515262008898122928">"සංදර්ශකය දර්පණය කරන්න"</string>
     <string name="dismiss_dialog" msgid="2195508495854675882">"අස් කරන්න"</string>
-    <!-- no translation found for connected_display_dialog_title (307028192512988669) -->
-    <skip />
-    <!-- no translation found for remember_choice (2063510191006325221) -->
-    <skip />
-    <!-- no translation found for start_desktop_mode (5459815912537830841) -->
-    <skip />
-    <!-- no translation found for start_mirroring (3611044878130481882) -->
-    <skip />
+    <string name="connected_display_dialog_title" msgid="307028192512988669">"බාහිර සංදර්ශකයට සම්බන්ධ වන්න"</string>
+    <string name="remember_choice" msgid="2063510191006325221">"නැවත මගෙන් නොඅසන්න"</string>
+    <string name="start_desktop_mode" msgid="5459815912537830841">"ඩෙස්ක්ටොපය"</string>
+    <string name="start_mirroring" msgid="3611044878130481882">"දර්පණය"</string>
     <string name="connected_display_icon_desc" msgid="6373560639989971997">"සංදර්ශකය සම්බන්ධ කර ඇත"</string>
-    <!-- no translation found for connected_display_extended_mode_text (2457269692913653696) -->
-    <skip />
+    <string name="connected_display_extended_mode_text" msgid="2457269692913653696">"බාහිර සංදර්ශකයට සම්බන්ධ කර ඇත"</string>
     <string name="privacy_dialog_title" msgid="5201413527644766025">"මයික්‍රෆෝනය, කැමරාව සහ ස්ථානය"</string>
     <string name="privacy_dialog_summary" msgid="2458769652125995409">"මෑත යෙදුම් භාවිතය"</string>
     <string name="privacy_dialog_more_button" msgid="7610604080293562345">"මෑත ප්‍රවේශය බලන්න"</string>

@@ -138,12 +138,9 @@
     <string name="screenrecord_stop_dialog_message" msgid="6262768207331626817">"तुम्ही सध्या तुमची संपूर्ण स्क्रीन रेकॉर्ड करत आहात"</string>
     <string name="screenrecord_stop_dialog_message_specific_app" msgid="5995770227684523244">"तुम्ही सध्या <xliff:g id="APP_NAME">%1$s</xliff:g> रेकॉर्ड करत आहात"</string>
     <string name="screenrecord_stop_dialog_button" msgid="2883812564938194350">"रेकॉर्ड करणे थांबवा"</string>
-    <!-- no translation found for screen_record_record_device_audio_label (5363057443124085198) -->
-    <skip />
-    <!-- no translation found for screen_record_record_microphone_label (4685753707185662381) -->
-    <skip />
-    <!-- no translation found for screen_record_should_show_touches_label (2203962566795833783) -->
-    <skip />
+    <string name="screen_record_record_device_audio_label" msgid="5363057443124085198">"डिव्हाइसचा ऑडिओ रेकॉर्ड करा"</string>
+    <string name="screen_record_record_microphone_label" msgid="4685753707185662381">"मायक्रोफोन वापरून रेकॉर्ड करा"</string>
+    <string name="screen_record_should_show_touches_label" msgid="2203962566795833783">"स्पर्श दाखवा"</string>
     <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"रेकॉर्ड करण्यासाठी अ‍ॅप निवडा"</string>
     <string name="screen_capture_fullscreen_screenshot_button" msgid="4255912593013592954">"संपूर्ण स्क्रीन कॅप्चर करा"</string>
     <string name="screen_capture_region_selection_button" msgid="4437546351856914639">"निवडलेला भाग कॅप्चर करा"</string>
@@ -717,9 +714,13 @@
     <string name="monitoring_description_pin_protection" msgid="1983580207046670355">"तुमच्या डिव्हाइसवरील काही नियंत्रणे, जसे की दैनिक मर्यादा आणि डाउनटाइम फक्त पिन वापरून बदलता येतात."</string>
     <string name="legacy_vpn_name" msgid="4174223520162559145">"VPN"</string>
     <string name="keyguard_indication_trust_unlocked" msgid="7395154975733744547">"TrustAgent ने अनलॉक ठेवले"</string>
-    <string name="kg_prompt_after_adaptive_auth_lock" msgid="2587481497846342760">"डिव्हाइस लॉक केले होते, ऑथेंटिकेशनचे खूप वेळा प्रयत्न केले गेले"</string>
-    <string name="keyguard_indication_after_adaptive_auth_lock" msgid="2323400645470712787">"डिव्हाइस लॉक केले आहे\nऑथेंटिकेशन यशस्वी झाले नाही"</string>
+    <!-- no translation found for kg_prompt_after_adaptive_auth_lock (6065186971000690782) -->
+    <skip />
+    <!-- no translation found for keyguard_indication_after_adaptive_auth_lock (5240600662061340872) -->
+    <skip />
     <string name="keyguard_indication_after_watch_disconnected" msgid="8133476870585660478">"तुमच्या वॉचने लॉक केले आहे"</string>
+    <!-- no translation found for keyguard_indication_after_secure_lock_device (4358906300665255820) -->
+    <skip />
     <string name="zen_mode_and_condition" msgid="5043165189511223718">"<xliff:g id="ZEN_MODE">%1$s</xliff:g>. <xliff:g id="EXIT_CONDITION">%2$s</xliff:g>"</string>
     <string name="accessibility_volume_settings" msgid="1458961116951564784">"आवाज सेटिंग्ज"</string>
     <string name="volume_odi_captions_tip" msgid="8825655463280990941">"मीडियाला आपोआप सबटायटल द्या"</string>
@@ -1061,6 +1062,10 @@
     <string name="qs_edit" msgid="5583565172803472437">"संपादित करा"</string>
     <string name="qs_edit_tiles" msgid="2105215324060865035">"टाइल संपादित करा"</string>
     <string name="qs_edit_mode_tooltip" msgid="4164112885539479781">"क्विक सेटिंग्ज टाइलचा आकार बदला"</string>
+    <!-- no translation found for qs_edit_settings (3243175290660574156) -->
+    <skip />
+    <!-- no translation found for qs_edit_menu_content_description (4420651071119623791) -->
+    <skip />
     <string name="tuner_time" msgid="2450785840990529997">"वेळ"</string>
   <string-array name="clock_options">
     <item msgid="3986445361435142273">"तास, मिनिटे आणि सेकंद दर्शवा"</item>
@@ -1513,17 +1518,12 @@
     <string name="connected_display_dialog_dual_display_stop_warning" msgid="4174707498892447947">"तुमचा अंतर्गत डिस्प्ले मिरर केला जाईल. तुमचा पुढील डिस्प्ले बंद केला जाईल."</string>
     <string name="mirror_display" msgid="2515262008898122928">"डिस्प्ले मिरर करा"</string>
     <string name="dismiss_dialog" msgid="2195508495854675882">"डिसमिस करा"</string>
-    <!-- no translation found for connected_display_dialog_title (307028192512988669) -->
-    <skip />
-    <!-- no translation found for remember_choice (2063510191006325221) -->
-    <skip />
-    <!-- no translation found for start_desktop_mode (5459815912537830841) -->
-    <skip />
-    <!-- no translation found for start_mirroring (3611044878130481882) -->
-    <skip />
+    <string name="connected_display_dialog_title" msgid="307028192512988669">"बाह्य डिस्प्लेशी कनेक्ट करा"</string>
+    <string name="remember_choice" msgid="2063510191006325221">"मला पुन्हा विचारू नका"</string>
+    <string name="start_desktop_mode" msgid="5459815912537830841">"डेस्कटॉप"</string>
+    <string name="start_mirroring" msgid="3611044878130481882">"मिरर"</string>
     <string name="connected_display_icon_desc" msgid="6373560639989971997">"डिस्प्ले कनेक्ट केला आहे"</string>
-    <!-- no translation found for connected_display_extended_mode_text (2457269692913653696) -->
-    <skip />
+    <string name="connected_display_extended_mode_text" msgid="2457269692913653696">"बाह्य डिस्प्लेशी कनेक्ट केले आहे"</string>
     <string name="privacy_dialog_title" msgid="5201413527644766025">"मायक्रोफोन, कॅमेरा आणि स्थान"</string>
     <string name="privacy_dialog_summary" msgid="2458769652125995409">"अलीकडील अ‍ॅप वापर"</string>
     <string name="privacy_dialog_more_button" msgid="7610604080293562345">"अलीकडील अ‍ॅक्सेस पहा"</string>
