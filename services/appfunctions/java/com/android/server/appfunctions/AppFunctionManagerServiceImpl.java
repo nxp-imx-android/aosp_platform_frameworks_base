@@ -75,6 +75,7 @@ import android.os.RemoteException;
 import android.os.ResultReceiver;
 import android.os.ShellCallback;
 import android.os.UserHandle;
+import android.os.UserManager;
 import android.permission.flags.Flags;
 import android.provider.DeviceConfig;
 import android.text.TextUtils;
@@ -149,7 +150,10 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
                 context,
                 new RemoteServiceCallerImpl<>(
                         context, IAppFunctionService.Stub::asInterface, THREAD_POOL_EXECUTOR),
-                new CallerValidatorImpl(context, appFunctionAccessServiceInterface),
+                new CallerValidatorImpl(
+                        context,
+                        appFunctionAccessServiceInterface,
+                        Objects.requireNonNull(context.getSystemService(UserManager.class))),
                 new ServiceHelperImpl(context),
                 new ServiceConfigImpl(),
                 new AppFunctionsLoggerWrapper(context),
