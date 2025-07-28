@@ -21,6 +21,8 @@ import android.app.TaskInfo
 import android.app.WallpaperColors
 import android.app.WallpaperManager
 import android.content.ComponentName
+import android.content.res.Configuration
+import android.hardware.display.DisplayManager
 import android.os.Bundle
 import android.util.Log
 import android.view.WindowManager
@@ -42,8 +44,10 @@ import androidx.fragment.app.FragmentActivity
 class DesktopWallpaperActivity : FragmentActivity() {
 
     private var wallpaperManager: WallpaperManager? = null
+    private var displayManager: DisplayManager? = null
     // TODO(b/432710419): Refresh current user on user change if needed
     private var currentUser: Int = getCurrentUser()
+    private var initialDisplayId: Int? = null
 
     private val wallpaperColorsListener =
         object : WallpaperManager.OnColorsChangedListener {
@@ -53,6 +57,25 @@ class DesktopWallpaperActivity : FragmentActivity() {
                 if (userId == currentUser) {
                     updateStatusBarIconColors(colors)
                 }
+            }
+        }
+
+    private val displayRemovedListener =
+        object : DisplayManager.DisplayListener {
+            override fun onDisplayAdded(displayId: Int) {
+                // No-op
+            }
+
+            override fun onDisplayRemoved(displayId: Int) {
+                // DesktopWallpaperActivity should never move to another display; if this
+                // activity's display is removed, finish the activity.
+                if (displayId == initialDisplayId) {
+                    finish()
+                }
+            }
+
+            override fun onDisplayChanged(displayId: Int) {
+                // No-op
             }
         }
 
@@ -80,13 +103,25 @@ class DesktopWallpaperActivity : FragmentActivity() {
         wallpaperManager = getSystemService(WallpaperManager::class.java)
         wallpaperManager?.addOnColorsChangedListener(wallpaperColorsListener, mainThreadHandler)
 
+        // Handle self-removal on display disconnect
+        displayManager = getSystemService(DisplayManager::class.java)
+        displayManager?.registerDisplayListener(displayRemovedListener, mainThreadHandler)
+
         // Set the initial color of status bar icons on activity creation.
-        updateStatusBarIconColors(wallpaperManager?.getWallpaperColors(WallpaperManager.FLAG_SYSTEM, currentUser))
+        updateStatusBarIconColors(
+            wallpaperManager?.getWallpaperColors(WallpaperManager.FLAG_SYSTEM, currentUser)
+        )
+        initialDisplayId = displayId
     }
 
     override fun onDestroy() {
         super.onDestroy()
         wallpaperManager?.removeOnColorsChangedListener(wallpaperColorsListener)
+        displayManager?.unregisterDisplayListener(displayRemovedListener)
+    }
+
+    override fun onMovedToDisplay(displayId: Int, config: Configuration?) {
+        finish()
     }
 
     override fun onTopResumedActivityChanged(isTopResumedActivity: Boolean) {

@@ -767,7 +767,6 @@ class DesktopTasksController(
             )
         }
         snapEventHandler.onDisplayDisconnected(disconnectedDisplayId)
-        removeWallpaperTask(wct, disconnectedDisplayId)
         removeHomeTask(wct, disconnectedDisplayId)
         userRepositories.forAllRepositories { desktopRepository ->
             val userId = desktopRepository.userId
