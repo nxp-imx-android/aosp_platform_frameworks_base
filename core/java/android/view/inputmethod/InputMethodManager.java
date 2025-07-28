@@ -1449,14 +1449,60 @@ public final class InputMethodManager {
                     final ImeTracker.Token statsToken = (ImeTracker.Token) args.arg2;
                     synchronized (mH) {
                         if (mCurRootView != null) {
-                            final var insetsController = mCurRootView.getInsetsController();
-                            if (insetsController != null) {
-                                ImeTracker.forLogging().onProgress(statsToken,
-                                        ImeTracker.PHASE_CLIENT_HANDLE_SET_IME_VISIBILITY);
-                                if (visible) {
-                                    insetsController.show(WindowInsets.Type.ime(), statsToken);
+                            ImeTracker.forLogging().onProgress(statsToken,
+                                    ImeTracker.PHASE_CLIENT_HANDLE_SET_IME_VISIBILITY);
+
+                            final View view = mCurRootView.getView();
+                            if (view == null) {
+                                if (android.tracing.Flags.imetrackerProtolog()) {
+                                    ProtoLog.w(INPUT_METHOD_MANAGER_WITH_LOGCAT,
+                                            "Received input visibility: no view available");
                                 } else {
-                                    insetsController.hide(WindowInsets.Type.ime(), statsToken);
+                                    Log.w(TAG, "Received input visibility: no view available");
+                                }
+                                ImeTracker.forLogging().onFailed(statsToken,
+                                        ImeTracker.PHASE_CLIENT_VIEW_HANDLER_AVAILABLE);
+                                return;
+                            }
+
+                            Handler vh = view.getHandler();
+                            if (vh == null) {
+                                // If the view doesn't have a handler, something has changed out
+                                // from under us.
+                                ImeTracker.forLogging().onFailed(statsToken,
+                                        ImeTracker.PHASE_CLIENT_VIEW_HANDLER_AVAILABLE);
+                                return;
+                            }
+                            ImeTracker.forLogging().onProgress(statsToken,
+                                    ImeTracker.PHASE_CLIENT_VIEW_HANDLER_AVAILABLE);
+
+                            if (vh.getLooper() != Looper.myLooper()) {
+                                // The view is running on a different thread than our own, so we
+                                // need to reschedule our work for over there.
+                                if (android.tracing.Flags.imetrackerProtolog()) {
+                                    ProtoLog.v(INPUT_METHOD_MANAGER_DEBUG,
+                                            "Received input visibility: reschedule to view thread");
+                                } else if (DEBUG) {
+                                    Log.v(TAG,
+                                            "Received input visibility: reschedule to view thread");
+                                }
+                                final var viewRootImpl = mCurRootView;
+
+                                if (visible) {
+                                    vh.post(() -> viewRootImpl.getInsetsController().show(
+                                            WindowInsets.Type.ime(), statsToken));
+                                } else {
+                                    vh.post(() -> viewRootImpl.getInsetsController().hide(
+                                            WindowInsets.Type.ime(), statsToken));
+                                }
+                            } else {
+                                final var insetsController = mCurRootView.getInsetsController();
+                                if (insetsController != null) {
+                                    if (visible) {
+                                        insetsController.show(WindowInsets.Type.ime(), statsToken);
+                                    } else {
+                                        insetsController.hide(WindowInsets.Type.ime(), statsToken);
+                                    }
                                 }
                             }
                         } else {
