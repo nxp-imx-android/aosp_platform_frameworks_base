@@ -9,9 +9,6 @@ package {
 
 android_ravenwood_test {
     name: "RavenwoodResApkTest",
-
-    resource_apk: "RavenwoodResApkTest-res",
-
     static_libs: [
         "androidx.annotation_annotation",
         "androidx.test.ext.junit",
@@ -21,8 +18,11 @@ android_ravenwood_test {
     ],
     srcs: [
         "test/**/*.java",
-        ":RavenwoodResApkTest-res{.aapt.srcjar}",
+    ],
+    flags_packages: [
+        "com.android.internal.os.flags-aconfig",
     ],
     sdk_version: "test_current",
     auto_gen_config: true,
+    build_resources: true,
 }

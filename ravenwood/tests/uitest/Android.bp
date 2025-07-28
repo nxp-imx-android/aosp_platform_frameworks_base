@@ -18,6 +18,10 @@ java_defaults {
     srcs: [
         "test/**/*.java",
     ],
+    uses_libs: [
+        "android.test.runner",
+        "android.test.base",
+    ],
     auto_gen_config: true,
 }
 
@@ -25,22 +29,7 @@ android_ravenwood_test {
     name: "RavenwoodUiTest",
     defaults: ["ravenwood-uitest-defaults"],
     package_name: "com.android.ravenwoodtest.uitest",
-
-    srcs: [
-        ":RavenwoodUiTest-res{.aapt.srcjar}",
-    ],
-    resource_apk: "RavenwoodUiTest-res",
-}
-
-android_app {
-    name: "RavenwoodUiTest-res",
-    use_resource_processor: false,
-    // Intentionally has no srcs files for faster rebuild.
-    sdk_version: "current",
-    uses_libs: [
-        "android.test.runner",
-        "android.test.base",
-    ],
+    build_resources: true,
 }
 
 android_test {
@@ -51,9 +40,5 @@ android_test {
     ],
     static_libs: [
         "ravenwood-junit",
-    ],
-    uses_libs: [
-        "android.test.runner",
-        "android.test.base",
     ],
 }
