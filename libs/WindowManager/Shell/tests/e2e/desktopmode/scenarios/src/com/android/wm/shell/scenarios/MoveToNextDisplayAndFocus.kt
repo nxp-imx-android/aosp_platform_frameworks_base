@@ -17,7 +17,6 @@
 package com.android.wm.shell.scenarios
 
 import android.platform.test.annotations.EnableFlags
-import android.tools.PlatformConsts.DEFAULT_DISPLAY
 import android.tools.traces.parsers.WindowManagerStateHelper
 import android.view.KeyEvent.KEYCODE_MINUS
 import android.view.KeyEvent.META_META_ON
@@ -28,9 +27,7 @@ import com.android.server.wm.flicker.helpers.KeyEventHelper
 import com.android.server.wm.flicker.helpers.MailAppHelper
 import com.android.server.wm.flicker.helpers.SimpleAppHelper
 import com.android.window.flags.Flags
-import com.android.wm.shell.shared.desktopmode.DesktopState
 import org.junit.After
-import org.junit.Assume
 import org.junit.Before
 import org.junit.Ignore
 import org.junit.Rule
@@ -45,10 +42,10 @@ import platform.test.desktop.SimulatedConnectedDisplayTestRule
 @EnableFlags(
     Flags.FLAG_ENABLE_DISPLAY_FOCUS_IN_SHELL_TRANSITIONS,
 )
-abstract class MoveToNextDisplayAndFocus() {
+abstract class MoveToNextDisplayAndFocus() : TestScenarioBase() {
     private val wmHelper = WindowManagerStateHelper(getInstrumentation())
-
     private val device = UiDevice.getInstance(getInstrumentation())
+
     private val testAppInMainDisplay = DesktopModeAppHelper(SimpleAppHelper(getInstrumentation()))
     private val testAppInExternalDisplay =
             DesktopModeAppHelper(MailAppHelper(getInstrumentation()))
@@ -59,10 +56,6 @@ abstract class MoveToNextDisplayAndFocus() {
     @Before
     fun setup() {
         connectedDisplayRule.setupTestDisplay()
-        Assume.assumeTrue(
-            DesktopState.fromContext(getInstrumentation().context)
-                .isDesktopModeSupportedOnDisplay(DEFAULT_DISPLAY)
-        )
         testAppInMainDisplay.launchViaIntent(wmHelper)
         testAppInExternalDisplay.launchViaIntent(wmHelper)
     }
