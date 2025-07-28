@@ -35,16 +35,15 @@ import com.android.systemui.shade.data.repository.fakeShadeDisplaysRepository
 import com.android.systemui.shade.shared.flag.ShadeWindowGoesAround
 import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 
 @SmallTest
-@OptIn(ExperimentalCoroutinesApi::class)
 @RunWith(AndroidJUnit4::class)
 @EnableFlags(ShadeWindowGoesAround.FLAG_NAME)
 class ShadeDisplayStateInteractorTest : SysuiTestCase() {
+
     private val kosmos = testKosmos().useUnconfinedTestDispatcher()
     private val secondaryDisplayStateRepository = FakeDisplayStateRepository()
     private val secondaryDisplayStateInteractor =
@@ -96,6 +95,27 @@ class ShadeDisplayStateInteractorTest : SysuiTestCase() {
             fakeShadeDisplaysRepository.setDisplayId(DEFAULT_DISPLAY)
 
             assertThat(isWideScreen).isFalse()
+        }
+
+    @Test
+    fun isLargeScreen_afterDisplayChange_returnsCorrectValue() =
+        kosmos.runTest {
+            defaultDisplayStateRepository.setIsLargeScreen(false)
+            secondaryDisplayStateRepository.setIsLargeScreen(true)
+
+            fakeShadeDisplaysRepository.setDisplayId(DEFAULT_DISPLAY)
+
+            val isLargeScreen by collectLastValue(underTest.isLargeScreen)
+
+            assertThat(isLargeScreen).isFalse()
+
+            fakeShadeDisplaysRepository.setDisplayId(SECONDARY_DISPLAY)
+
+            assertThat(isLargeScreen).isTrue()
+
+            fakeShadeDisplaysRepository.setDisplayId(DEFAULT_DISPLAY)
+
+            assertThat(isLargeScreen).isFalse()
         }
 
     private companion object {

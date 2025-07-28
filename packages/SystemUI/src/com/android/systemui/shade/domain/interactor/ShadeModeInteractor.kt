@@ -78,7 +78,7 @@ constructor(
     @Background applicationScope: CoroutineScope,
     @Background backgroundDispatcher: CoroutineDispatcher,
     @ShadeDisplayAware private val context: Context,
-    private val repository: ShadeRepository,
+    repository: ShadeRepository,
     secureSettingsRepository: SecureSettingsRepository,
     @SceneFrameworkTableLog private val tableLogBuffer: TableLogBuffer,
 ) : ShadeModeInteractor {
@@ -92,32 +92,39 @@ constructor(
             flowOf(false)
         }
 
+    private val isSplitShadeEnabled: Boolean =
+        !SceneContainerFlag.isEnabled ||
+            !context.resources.getBoolean(R.bool.config_disableSplitShade)
+
+    private val isLargeScreen: StateFlow<Boolean> = repository.isLargeScreen
+
     override val isShadeLayoutWide: StateFlow<Boolean> = repository.isShadeLayoutWide
 
     private val shadeModeInitialValue: ShadeMode
         get() =
             determineShadeMode(
                 isDualShadeEnabled = DUAL_SHADE_ENABLED_DEFAULT,
-                isShadeLayoutWide = repository.isShadeLayoutWide.value,
+                isShadeLayoutWide = isShadeLayoutWide.value,
+                isLargeScreen = isLargeScreen.value,
             )
 
     override val shadeMode: StateFlow<ShadeMode> =
-        combine(isDualShadeEnabled, repository.isShadeLayoutWide, ::determineShadeMode)
+        combine(isDualShadeEnabled, isShadeLayoutWide, isLargeScreen, ::determineShadeMode)
             .logDiffsForTable(tableLogBuffer = tableLogBuffer, initialValue = shadeModeInitialValue)
             .stateIn(applicationScope, SharingStarted.Eagerly, initialValue = shadeModeInitialValue)
 
     private fun determineShadeMode(
         isDualShadeEnabled: Boolean,
         isShadeLayoutWide: Boolean,
+        isLargeScreen: Boolean,
     ): ShadeMode {
+        if (!SceneContainerFlag.isEnabled) {
+            return if (isShadeLayoutWide) ShadeMode.Split else ShadeMode.Single
+        }
+
         return when {
             isDualShadeEnabled -> ShadeMode.Dual
-            isShadeLayoutWide ->
-                if (context.resources.getBoolean(R.bool.config_disableSplitShade)) {
-                    ShadeMode.Dual
-                } else {
-                    ShadeMode.Split
-                }
+            isLargeScreen -> if (isSplitShadeEnabled) ShadeMode.Split else ShadeMode.Dual
             else -> ShadeMode.Single
         }
     }

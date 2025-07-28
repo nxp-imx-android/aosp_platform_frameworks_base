@@ -27,10 +27,13 @@ import com.android.systemui.shade.shared.flag.ShadeWindowGoesAround
 import dagger.Lazy
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 
 /**
@@ -39,46 +42,57 @@ import kotlinx.coroutines.flow.stateIn
  * This is needed as the shade can change display, and we want to use the correct
  * [DisplayStateInteractor] (as there is a different instance per display).
  */
+@OptIn(ExperimentalCoroutinesApi::class)
 @SysUISingleton
 class ShadeDisplayStateInteractor
 @Inject
 constructor(
-    @Application private val applicationScope: CoroutineScope,
-    private val displayStateInteractor: DisplayStateInteractor,
+    @Application applicationScope: CoroutineScope,
+    displayStateInteractor: DisplayStateInteractor,
     shadeDisplaysInteractor: Lazy<ShadeDisplaysInteractor>,
     private val displaySubcomponentRepository: PerDisplayRepository<SystemUIDisplaySubcomponent>,
 ) {
-    val isWideScreen: StateFlow<Boolean> =
+    private val shadeDisplayInteractor: Flow<DisplayStateInteractor> =
         if (ShadeWindowGoesAround.isEnabled) {
             shadeDisplaysInteractor
                 .get()
                 .displayId
-                .flatMapLatest { displayId -> getIsWideScreenFlowForDisplay(displayId) }
-                .distinctUntilChanged()
-                .traceEach("$TAG#isWideScreen", logcat = true)
-                .stateIn(
-                    applicationScope,
-                    SharingStarted.Eagerly,
-                    initialValue = displayStateInteractor.isWideScreen.value,
-                )
+                .map { displayId ->
+                    val displaySpecificInteractor =
+                        displaySubcomponentRepository[displayId]?.displayStateInteractor
+                    if (displaySpecificInteractor != null) {
+                        displaySpecificInteractor
+                    } else {
+                        Log.e(TAG, "Couldn't get displayStateInteractor for display $displayId. ")
+                        displayStateInteractor
+                    }
+                }
+                .traceEach("$TAG#shadeDisplayInteractor", logcat = true)
         } else {
-            displayStateInteractor.isWideScreen
+            flowOf(displayStateInteractor)
         }
 
-    private fun getIsWideScreenFlowForDisplay(displayId: Int): StateFlow<Boolean> {
-        val displaySpecificInteractor =
-            displaySubcomponentRepository[displayId]?.displayStateInteractor
-        return if (displaySpecificInteractor != null) {
-            displaySpecificInteractor.isWideScreen
-        } else {
-            Log.e(
-                TAG,
-                "Couldn't get displayStateInteractor for display $displayId. " +
-                    "\"isWideScreen\" might be wrong.",
+    /** @see DisplayStateInteractor.isWideScreen */
+    val isWideScreen: StateFlow<Boolean> =
+        shadeDisplayInteractor
+            .flatMapLatest { it.isWideScreen }
+            .traceEach("$TAG#isWideScreen", logcat = true)
+            .stateIn(
+                applicationScope,
+                SharingStarted.Eagerly,
+                initialValue = displayStateInteractor.isWideScreen.value,
             )
-            displayStateInteractor.isWideScreen
-        }
-    }
+
+    /** @see DisplayStateInteractor.isLargeScreen */
+    val isLargeScreen: StateFlow<Boolean> =
+        shadeDisplayInteractor
+            .flatMapLatest { it.isLargeScreen }
+            .traceEach("$TAG#isLargeScreen", logcat = true)
+            .stateIn(
+                applicationScope,
+                SharingStarted.Eagerly,
+                initialValue = displayStateInteractor.isLargeScreen.value,
+            )
 
     private companion object {
         const val TAG = "ShadeDisplayStateInteractor"
