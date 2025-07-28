@@ -128,6 +128,7 @@ import com.android.wm.shell.shared.annotations.ShellBackgroundThread;
 import com.android.wm.shell.shared.annotations.ShellMainThread;
 import com.android.wm.shell.shared.bubbles.BubbleAnythingFlagHelper;
 import com.android.wm.shell.shared.bubbles.BubbleBarLocation;
+import com.android.wm.shell.shared.bubbles.BubbleBarLocation.UpdateLocationRequest;
 import com.android.wm.shell.shared.bubbles.BubbleBarLocation.UpdateSource;
 import com.android.wm.shell.shared.bubbles.BubbleBarUpdate;
 import com.android.wm.shell.shared.bubbles.BubbleDropTargetBoundsProvider;
@@ -1676,7 +1677,11 @@ public class BubbleController implements ConfigurationChangeListener,
         if (!BubbleAnythingFlagHelper.enableCreateAnyBubble()) return;
         Bubble b = mBubbleData.getOrCreateBubble(info); // Removes from overflow
         ProtoLog.v(WM_SHELL_BUBBLES, "expandStackAndSelectBubble - shortcut=%s", info);
-        expandStackAndSelectAppBubble(b, bubbleBarLocation, UpdateSource.APP_ICON_DRAG);
+        UpdateLocationRequest updateLocationRequest =
+                bubbleBarLocation == null
+                        ? null
+                        : new UpdateLocationRequest(bubbleBarLocation, UpdateSource.APP_ICON_DRAG);
+        expandStackAndSelectAppBubble(b, updateLocationRequest);
     }
 
     /**
@@ -1689,7 +1694,11 @@ public class BubbleController implements ConfigurationChangeListener,
         if (!BubbleAnythingFlagHelper.enableCreateAnyBubble()) return;
         Bubble b = mBubbleData.getOrCreateBubble(intent, user); // Removes from overflow
         ProtoLog.v(WM_SHELL_BUBBLES, "expandStackAndSelectBubble - intent=%s", intent);
-        expandStackAndSelectAppBubble(b, bubbleBarLocation, UpdateSource.APP_ICON_DRAG);
+        UpdateLocationRequest updateLocationRequest =
+                bubbleBarLocation == null
+                        ? null
+                        : new UpdateLocationRequest(bubbleBarLocation, UpdateSource.APP_ICON_DRAG);
+        expandStackAndSelectAppBubble(b, updateLocationRequest);
     }
 
     /**
@@ -1704,20 +1713,31 @@ public class BubbleController implements ConfigurationChangeListener,
         Bubble b = mBubbleData.getOrCreateBubble(pendingIntent, user); // Removes from overflow
         ProtoLog.v(WM_SHELL_BUBBLES, "expandStackAndSelectBubble - pendingIntent=%s",
                 pendingIntent);
-        expandStackAndSelectAppBubble(b, bubbleBarLocation, UpdateSource.APP_ICON_DRAG);
+        UpdateLocationRequest updateLocationRequest =
+                bubbleBarLocation == null
+                        ? null
+                        : new UpdateLocationRequest(bubbleBarLocation, UpdateSource.APP_ICON_DRAG);
+        expandStackAndSelectAppBubble(b, updateLocationRequest);
     }
 
-    void expandStackAndSelectAppBubble(Bubble b, @Nullable BubbleBarLocation bubbleBarLocation,
-            @UpdateSource int source) {
+    void expandStackAndSelectAppBubble(Bubble b) {
+        expandStackAndSelectAppBubble(b, /* updateLocationRequest= */ null);
+    }
+
+    void expandStackAndSelectAppBubble(Bubble b,
+            @Nullable UpdateLocationRequest updateLocationRequest) {
         if (!BubbleAnythingFlagHelper.enableCreateAnyBubble()) return;
-        BubbleBarLocation updateLocation = isShowingAsBubbleBar() ? bubbleBarLocation : null;
-        if (updateLocation != null) {
+        BubbleBarLocation location =
+                isShowingAsBubbleBar() && updateLocationRequest != null
+                        ? updateLocationRequest.getLocation()
+                        : null;
+        if (location != null) {
             // does not update the bubble bar location of the bubble bar, just expanded view
-            updateExpandedViewForBubbleBarLocation(updateLocation, source);
+            updateExpandedViewForBubbleBarLocation(location, updateLocationRequest.getSource());
         }
         if (b.isInflated()) {
             // mBubbleData should be updated with the new location to update the bubble bar location
-            mBubbleData.setSelectedBubbleAndExpandStack(b, updateLocation);
+            mBubbleData.setSelectedBubbleAndExpandStack(b, location);
         } else {
             b.enable(Notification.BubbleMetadata.FLAG_AUTO_EXPAND_BUBBLE);
 
@@ -1725,10 +1745,9 @@ public class BubbleController implements ConfigurationChangeListener,
                 ensureBubbleViewsAndWindowCreated();
                 mBubbleTransitions.startLaunchIntoOrConvertToBubble(b, mExpandedViewManager,
                         mBubbleTaskViewFactory, mBubblePositioner, mStackView, mLayerView,
-                        mBubbleIconFactory, mInflateSynchronously, bubbleBarLocation);
+                        mBubbleIconFactory, mInflateSynchronously, location);
             } else {
-                inflateAndAdd(b, /* suppressFlyout= */ true, /* showInShade= */ false,
-                        updateLocation);
+                inflateAndAdd(b, /* suppressFlyout= */ true, /* showInShade= */ false, location);
             }
         }
     }
@@ -2391,7 +2410,7 @@ public class BubbleController implements ConfigurationChangeListener,
         b.setIsBubble(isBubble);
         if (b.isApp() && isBubble) {
             Bubble bubble = mBubbleData.getOrCreateBubble(null, b);
-            expandStackAndSelectAppBubble(bubble, null, UpdateSource.DRAG_BUBBLE);
+            expandStackAndSelectAppBubble(bubble);
             return;
         }
         mSysuiProxy.getPendingOrActiveEntry(b.getKey(), (entry) -> {
