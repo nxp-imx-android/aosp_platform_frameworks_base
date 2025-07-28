@@ -1300,7 +1300,10 @@ class ProcessRecord extends ProcessRecordInternal implements WindowProcessListen
     void killLocked(String reason, String description, @Reason int reasonCode,
             @SubReason int subReason, boolean noisy, boolean asyncKPG) {
         if (!mKilledByAm) {
-            Trace.traceBegin(Trace.TRACE_TAG_ACTIVITY_MANAGER, "kill");
+            if (Trace.isTagEnabled(Trace.TRACE_TAG_ACTIVITY_MANAGER)) {
+                Trace.traceBegin(Trace.TRACE_TAG_ACTIVITY_MANAGER,
+                        "kill/" + processName + "/" + reasonCode + "/" + subReason);
+            }
             if (reasonCode == ApplicationExitInfo.REASON_ANR
                     && mErrorState.getAnrAnnotation() != null) {
                 description = description + ": " + mErrorState.getAnrAnnotation();
