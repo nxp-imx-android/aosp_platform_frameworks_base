@@ -38,7 +38,9 @@ import org.junit.Assume.assumeTrue
 import org.junit.Before
 import org.junit.FixMethodOrder
 import org.junit.Rule
+import org.junit.runner.RunWith
 import org.junit.runners.MethodSorters
+import org.junit.runners.Parameterized
 
 /**
  * Test tapping on bubble bar to expand a bubble that was in collapsed state and show IME.
@@ -64,6 +66,7 @@ import org.junit.runners.MethodSorters
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 @Presubmit
 @FlakyTest(bugId = 421000153)
+@RunWith(Parameterized::class)
 class ExpandBubbleWithImeViaBubbleBarTest(navBar: NavBar) : BubbleFlickerTestBase(),
     ExpandBubbleTestCases, ImeBecomesVisibleAndBubbleIsShrunkTestCase {
 
@@ -102,6 +105,10 @@ class ExpandBubbleWithImeViaBubbleBarTest(navBar: NavBar) : BubbleFlickerTestBas
 
         override val testApp
             get() = ImeShownOnAppStartHelper(instrumentation, Rotation.ROTATION_0)
+
+        @Parameterized.Parameters(name = "{0}")
+        @JvmStatic
+        fun data(): List<NavBar> = listOf(NavBar.MODE_GESTURAL, NavBar.MODE_3BUTTON)
     }
 
     @get:Rule

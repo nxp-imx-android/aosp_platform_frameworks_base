@@ -21,7 +21,6 @@ import android.platform.test.annotations.RequiresFlagsEnabled
 import android.tools.NavBar
 import android.tools.traces.component.ComponentNameMatcher.Companion.LAUNCHER
 import android.tools.traces.component.ComponentNameMatcher.Companion.TASK_BAR
-import androidx.test.filters.FlakyTest
 import androidx.test.filters.RequiresDevice
 import com.android.wm.shell.Flags
 import com.android.wm.shell.Utils
@@ -37,7 +36,9 @@ import org.junit.FixMethodOrder
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TestRule
+import org.junit.runner.RunWith
 import org.junit.runners.MethodSorters
+import org.junit.runners.Parameterized
 
 /**
  * Test entering bubble via dragging the [testApp] icon from task bar to bubble bar location.
@@ -61,6 +62,7 @@ import org.junit.runners.MethodSorters
 @RequiresDevice
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 @Presubmit
+@RunWith(Parameterized::class)
 class EnterBubbleViaDragToBubbleBarTest(navBar: NavBar) : BubbleFlickerTestBase(),
     EnterBubbleTestCases {
 
@@ -72,6 +74,10 @@ class EnterBubbleViaDragToBubbleBarTest(navBar: NavBar) : BubbleFlickerTestBase(
             transition = { launchBubbleViaDragToBubbleBar(testApp, tapl, wmHelper) },
             tearDownAfterTransition = { testApp.exit(wmHelper) }
         )
+
+        @Parameterized.Parameters(name = "{0}")
+        @JvmStatic
+        fun data(): List<NavBar> = listOf(NavBar.MODE_GESTURAL, NavBar.MODE_3BUTTON)
     }
 
     @get:Rule
@@ -90,7 +96,6 @@ class EnterBubbleViaDragToBubbleBarTest(navBar: NavBar) : BubbleFlickerTestBase(
         super.setUp()
     }
 
-    @FlakyTest(bugId = 428630722)
     @Test
     override fun focusChanges() {
         eventLogSubject.focusChanges(
