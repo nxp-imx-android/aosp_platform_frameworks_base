@@ -145,7 +145,8 @@ public class MediaQualityService extends SystemService {
     // A global lock for ambient backlight objects.
     private final Object mAmbientBacklightLock = new Object();
 
-    private final Map<Long, Long> mOriginalToCurrent = new HashMap<>();
+    private final Map<Long, PictureProfile> mOriginalHandleToCurrentPictureProfile =
+            new HashMap<>();
     private final BiMap<Long, Long> mCurrentPictureHandleToOriginal = new BiMap<>();
     private final Set<Long> mPictureProfileForHal = new HashSet<>();
 
@@ -371,8 +372,7 @@ public class MediaQualityService extends SystemService {
                             pp.getPackageName(),
                             pp.getInputId(),
                             pp.getParameters());
-                    if (mPictureProfileForHal
-                            .contains(values.getAsLong(BaseParameters.PARAMETER_ID))) {
+                    if (mPictureProfileForHal.contains(dbId)) {
                         if (DEBUG) {
                             Slog.d(TAG, "updatePictureProfile: "
                                     + "notify manager and HAL about the picture profile update");
@@ -386,6 +386,22 @@ public class MediaQualityService extends SystemService {
                         }
                         updateDatabaseOnPictureProfileAndNotifyManager(
                                 values, pp.getParameters(), callingUid, callingPid, false);
+                    }
+                    // Keep cache in sync with database, and check for profile id and handle of the
+                    // updated picture profile, because user might call this with a picture profile
+                    // without handle or profileId.
+                    PictureProfile cachedPp = mOriginalHandleToCurrentPictureProfile.get(dbId);
+                    if (cachedPp != null) {
+                        if (pp.getProfileId() == null
+                                || pp.getHandle() == PictureProfileHandle.NONE) {
+                            cachedPp = new PictureProfile.Builder(cachedPp)
+                                    .setProfileId(cachedPp.getProfileId())
+                                    .setParameters(pp.getParameters())
+                                    .build();
+                            mOriginalHandleToCurrentPictureProfile.put(dbId, cachedPp);
+                        } else {
+                            mOriginalHandleToCurrentPictureProfile.put(dbId, pp);
+                        }
                     }
                     if (isPackageDefaultPictureProfile(pp)) {
                         if (DEBUG) {
@@ -606,7 +622,7 @@ public class MediaQualityService extends SystemService {
             if (defaultPictureProfileId != -1) {
                 synchronized (mPictureProfileLock) {
                     PictureProfile currentDefaultPictureProfile =
-                            getCurrentPictureProfile(defaultPictureProfileId);
+                            mOriginalHandleToCurrentPictureProfile.get(defaultPictureProfileId);
                     if (currentDefaultPictureProfile != null) {
                         if (DEBUG) {
                             Slog.d(TAG, "getDefaultPictureProfile: "
@@ -846,7 +862,7 @@ public class MediaQualityService extends SystemService {
                     PictureProfile p = MediaQualityUtils.convertCursorToPictureProfileWithTempId(
                             cursor, mPictureProfileTempIdMap);
                     handle = p.getHandle().getId();
-                    PictureProfile current = getCurrentPictureProfile(handle);
+                    PictureProfile current = mOriginalHandleToCurrentPictureProfile.get(handle);
                     if (current != null) {
                         if (DEBUG) {
                             Slog.d(TAG, "handle returned is " + current.getHandle().getId());
@@ -2282,7 +2298,7 @@ public class MediaQualityService extends SystemService {
                     if (param.getTag() == PictureParameter.activeProfile
                             && !param.getActiveProfile()) {
                         synchronized (mPictureProfileLock) {
-                            mOriginalToCurrent.remove(dbId);
+                            mOriginalHandleToCurrentPictureProfile.remove(dbId);
                             mCurrentPictureHandleToOriginal.removeValue(dbId);
                         }
                         break;
@@ -2353,7 +2369,8 @@ public class MediaQualityService extends SystemService {
             mHandler.post(() -> {
                 synchronized (mPictureProfileLock) {
                     // get from map if exists
-                    PictureProfile previous = getCurrentPictureProfile(profileHandle);
+                    PictureProfile previous = mOriginalHandleToCurrentPictureProfile
+                            .get(profileHandle);
                     if (previous == null) {
                         Slog.d(TAG, "Previous profile not in the map");
                         // get from DB if not exists
@@ -2429,7 +2446,8 @@ public class MediaQualityService extends SystemService {
                             // profile
                             PictureProfile currentCopy = PictureProfile.copyFrom(currentSdr);
                             currentCopy.addStringParameter(PREVIOUS_STREAM_STATUS, profileStatus);
-                            putCurrentPictureProfile(profileHandle, currentSdr.getHandle().getId());
+                            putCurrentPictureProfile(profileHandle, currentSdr.getHandle().getId(),
+                                    currentSdr);
                             mMqManagerNotifier.notifyOnPictureProfileUpdated(
                                     currentCopy.getProfileId(), currentCopy, Process.INVALID_UID,
                                     Process.INVALID_PID);
@@ -2452,7 +2470,8 @@ public class MediaQualityService extends SystemService {
                         // PREVIOUS_STREAM_STATUS is used for one time, so copy the current profile
                         PictureProfile currentCopy = PictureProfile.copyFrom(current);
                         currentCopy.addStringParameter(PREVIOUS_STREAM_STATUS, profileStatus);
-                        putCurrentPictureProfile(profileHandle, current.getHandle().getId());
+                        putCurrentPictureProfile(profileHandle, current.getHandle().getId(),
+                                current);
                         // TODO: use package name to notify
                         mMqManagerNotifier.notifyOnPictureProfileUpdated(
                                 currentCopy.getProfileId(), currentCopy, Process.INVALID_UID,
@@ -2487,7 +2506,8 @@ public class MediaQualityService extends SystemService {
                         // PREVIOUS_STREAM_STATUS is used for one time, so copy the current profile
                         PictureProfile currentCopy = PictureProfile.copyFrom(current);
                         currentCopy.addStringParameter(PREVIOUS_STREAM_STATUS, profileStatus);
-                        putCurrentPictureProfile(profileHandle, current.getHandle().getId());
+                        putCurrentPictureProfile(profileHandle, current.getHandle().getId(),
+                                current);
                         // TODO: use package name to notify
                         mMqManagerNotifier.notifyOnPictureProfileUpdated(
                                 currentCopy.getProfileId(), currentCopy, Process.INVALID_UID,
@@ -2887,22 +2907,9 @@ public class MediaQualityService extends SystemService {
         return list.getFirst();
     }
 
-    private PictureProfile getCurrentPictureProfile(Long originalHandle) {
-        Long currentHandle = mOriginalToCurrent.get(originalHandle);
-        if (currentHandle == null) {
-            return null;
-        }
-        return mMqDatabaseUtils.getPictureProfile(currentHandle, /* includeParams= */ true);
-    }
-
-    private void putCurrentPictureProfile(Long originalHandle, Long currentHandle) {
-        if (DEBUG) {
-            Slog.d(TAG, "putCurrentPictureProfile: put originalHandle: " + originalHandle
-                    + " currentHandle: " + currentHandle + " into mOriginalToCurrent " + " remove "
-                    + "originalHandle from mCurrentPictureHandleToOriginal and put "
-                    + "current and original handle in mCurrentPictureHandleToOriginal");
-        }
-        mOriginalToCurrent.put(originalHandle, currentHandle);
+    private void putCurrentPictureProfile(Long originalHandle, Long currentHandle,
+            PictureProfile currentPictureProfile) {
+        mOriginalHandleToCurrentPictureProfile.put(originalHandle, currentPictureProfile);
         mCurrentPictureHandleToOriginal.removeValue(originalHandle);
         mCurrentPictureHandleToOriginal.put(currentHandle, originalHandle);
         if (DEBUG) {
