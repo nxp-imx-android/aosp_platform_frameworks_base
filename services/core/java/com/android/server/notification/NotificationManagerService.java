@@ -388,6 +388,7 @@ import com.android.internal.util.ConcurrentUtils;
 import com.android.internal.util.DumpUtils;
 import com.android.internal.util.FrameworkStatsLog;
 import com.android.internal.util.Preconditions;
+import com.android.internal.util.VibrationStatsWriter;
 import com.android.internal.util.XmlUtils;
 import com.android.internal.util.function.TriPredicate;
 import com.android.internal.widget.LockPatternUtils;
@@ -2992,7 +2993,8 @@ public class NotificationManagerService extends SystemService {
 
         mAttentionHelper = new NotificationAttentionHelper(getContext(), mNotificationLock,
                 lightsManager, mAccessibilityManager, mPackageManagerClient, userManager,
-                usageStats, mNotificationManagerPrivate, mZenModeHelper, flagResolver);
+                usageStats, mNotificationManagerPrivate, mZenModeHelper, flagResolver,
+                VibrationStatsWriter.getInstance(getContext()));
 
         // register for various Intents.
         // If this is called within a test, make sure to unregister the intent receivers by
