@@ -525,12 +525,9 @@ public class TvPipMenuController implements PipMenuController, TvPipMenuView.Lis
         ProtoLog.d(ShellProtoLogGroup.WM_SHELL_PICTURE_IN_PICTURE,
                 "%s: requestPipMenuFocus(%b)", TAG, focus);
 
-        try {
-            WindowManagerGlobal.getWindowSession().grantEmbeddedWindowFocus(null /* window */,
-                    mSystemWindows.getFocusGrantToken(mPipMenuView), focus);
-        } catch (Exception e) {
+        if (!mSystemWindows.requestInputFocus(mPipMenuView, focus)) {
             ProtoLog.e(ShellProtoLogGroup.WM_SHELL_PICTURE_IN_PICTURE,
-                    "%s: Unable to update focus, %s", TAG, e);
+                    "%s: Unable to update focus", TAG);
         }
     }
 

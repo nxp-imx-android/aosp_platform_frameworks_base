@@ -24,13 +24,11 @@ import android.content.Context;
 import android.graphics.Rect;
 import android.os.Debug;
 import android.os.Handler;
-import android.os.RemoteException;
 import android.util.Size;
 import android.view.MotionEvent;
 import android.view.SurfaceControl;
 import android.view.View;
 import android.view.ViewRootImpl;
-import android.view.WindowManagerGlobal;
 
 import com.android.internal.protolog.ProtoLog;
 import com.android.wm.shell.common.DisplayController;
@@ -531,12 +529,9 @@ public class PhonePipMenuController implements PipMenuController {
             // Do not grant focus if IME is visible, which can cause the focus being granted
             // back and forth in between the IME and PiP menu, and causes flicker.
             final boolean grantFocus = !mIsImeVisible && (menuState != MENU_STATE_NONE);
-            try {
-                WindowManagerGlobal.getWindowSession().grantEmbeddedWindowFocus(null /* window */,
-                        mSystemWindows.getFocusGrantToken(mPipMenuView), grantFocus);
-            } catch (RemoteException e) {
+            if (!mSystemWindows.requestInputFocus(mPipMenuView, grantFocus)) {
                 ProtoLog.e(ShellProtoLogGroup.WM_SHELL_PICTURE_IN_PICTURE,
-                        "%s: Unable to update focus as menu appears/disappears, %s", TAG, e);
+                        "%s: Unable to update focus as menu appears/disappears", TAG);
             }
         }
     }

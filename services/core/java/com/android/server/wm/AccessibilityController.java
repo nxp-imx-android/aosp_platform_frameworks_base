@@ -92,6 +92,7 @@ import com.android.server.wm.AccessibilityWindowsPopulator.AccessibilityWindow;
 import com.android.server.wm.WindowManagerInternal.AccessibilityControllerInternal;
 import com.android.server.wm.WindowManagerInternal.MagnificationCallbacks;
 import com.android.server.wm.WindowManagerInternal.WindowsForAccessibilityCallback;
+import com.android.window.flags.Flags;
 
 import java.io.File;
 import java.io.IOException;
@@ -205,7 +206,7 @@ final class AccessibilityController {
                 mWindowsForAccessibilityObserver.remove(displayId);
             }
             mAccessibilityWindowsPopulator.setWindowsNotification(true);
-            observer = new WindowsForAccessibilityObserver(mService, displayId, callback,
+            observer = new WindowsForAccessibilityObserver(this, mService, displayId, callback,
                     mAccessibilityWindowsPopulator);
             mWindowsForAccessibilityObserver.put(displayId, observer);
             mAllObserversInitialized &= observer.mInitialized;
@@ -1147,6 +1148,8 @@ final class AccessibilityController {
 
         private static final boolean DEBUG = false;
 
+        private final AccessibilityController mAccessibilityController;
+
         private final WindowManagerService mService;
 
         private final Handler mHandler;
@@ -1163,9 +1166,11 @@ final class AccessibilityController {
         private boolean mInitialized;
         private final AccessibilityWindowsPopulator mA11yWindowsPopulator;
 
-        WindowsForAccessibilityObserver(WindowManagerService windowManagerService,
-                int displayId, WindowsForAccessibilityCallback callback,
+        WindowsForAccessibilityObserver(AccessibilityController accessibilityController,
+                WindowManagerService windowManagerService, int displayId,
+                WindowsForAccessibilityCallback callback,
                 AccessibilityWindowsPopulator accessibilityWindowsPopulator) {
+            mAccessibilityController = accessibilityController;
             mService = windowManagerService;
             mCallback = callback;
             mDisplayId = displayId;
@@ -1218,8 +1223,21 @@ final class AccessibilityController {
             final IBinder topFocusedWindowToken;
 
             synchronized (mService.mGlobalLock) {
-                final WindowState topFocusedWindowState = getTopFocusWindow();
-                if (topFocusedWindowState == null) {
+                // Gets the top focused display Id and window token for supporting multi-display.
+                if (Flags.useInputReportedFocusForAccessibility()) {
+                    topFocusedDisplayId = mAccessibilityController.mFocusedDisplay;
+                    topFocusedWindowToken = mAccessibilityController.mFocusedWindow.get(
+                            topFocusedDisplayId);
+                } else {
+                    final WindowState topFocusedWindowState =
+                            mService.mRoot.getTopFocusedDisplayContent().mCurrentFocus;
+                    topFocusedDisplayId = mService.mRoot.getTopFocusedDisplayContent()
+                            .getDisplayId();
+                    topFocusedWindowToken = topFocusedWindowState != null
+                            ? topFocusedWindowState.mClient.asBinder()
+                            : null;
+                }
+                if (topFocusedWindowToken == null) {
                     if (DEBUG) {
                         Slog.d(LOG_TAG, "top focused window is null, compute it again later");
                     }
@@ -1236,11 +1254,7 @@ final class AccessibilityController {
                 display.getRealSize(screenSize);
 
                 mA11yWindowsPopulator.populateVisibleWindowsOnScreenLocked(
-                        mDisplayId, visibleWindows);
-
-                // Gets the top focused display Id and window token for supporting multi-display.
-                topFocusedDisplayId = mService.mRoot.getTopFocusedDisplayContent().getDisplayId();
-                topFocusedWindowToken = topFocusedWindowState.mClient.asBinder();
+                        mDisplayId, visibleWindows, topFocusedWindowToken);
             }
 
             mCallback.onAccessibilityWindowsChanged(forceSend, topFocusedDisplayId,
@@ -1251,10 +1265,6 @@ final class AccessibilityController {
                 window.getWindowInfo().recycle();
             }
             mInitialized = true;
-        }
-
-        private WindowState getTopFocusWindow() {
-            return mService.mRoot.getTopFocusedDisplayContent().mCurrentFocus;
         }
 
         @Override
