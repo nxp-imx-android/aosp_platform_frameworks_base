@@ -115,25 +115,25 @@ public final class LmkdStatsReporter {
             case DIRECT_RECL_STUCK:
                 return FrameworkStatsLog.LMK_KILL_OCCURRED__REASON__DIRECT_RECL_STUCK;
             case VENDOR_KILL_REASON_1:
-                return FrameworkStatsLog.LMK_KILL_OCCURRED__REASON__VENDOR_KILL_REASON_1;
+                return FrameworkStatsLog.LMK_KILL_OCCURRED__REASON__VENDOR_KILL_REASON1;
             case VENDOR_KILL_REASON_2:
-                return FrameworkStatsLog.LMK_KILL_OCCURRED__REASON__VENDOR_KILL_REASON_2;
+                return FrameworkStatsLog.LMK_KILL_OCCURRED__REASON__VENDOR_KILL_REASON2;
             case VENDOR_KILL_REASON_3:
-                return FrameworkStatsLog.LMK_KILL_OCCURRED__REASON__VENDOR_KILL_REASON_3;
+                return FrameworkStatsLog.LMK_KILL_OCCURRED__REASON__VENDOR_KILL_REASON3;
             case VENDOR_KILL_REASON_4:
-                return FrameworkStatsLog.LMK_KILL_OCCURRED__REASON__VENDOR_KILL_REASON_4;
+                return FrameworkStatsLog.LMK_KILL_OCCURRED__REASON__VENDOR_KILL_REASON4;
             case VENDOR_KILL_REASON_5:
-                return FrameworkStatsLog.LMK_KILL_OCCURRED__REASON__VENDOR_KILL_REASON_5;
+                return FrameworkStatsLog.LMK_KILL_OCCURRED__REASON__VENDOR_KILL_REASON5;
             case VENDOR_KILL_REASON_6:
-                return FrameworkStatsLog.LMK_KILL_OCCURRED__REASON__VENDOR_KILL_REASON_6;
+                return FrameworkStatsLog.LMK_KILL_OCCURRED__REASON__VENDOR_KILL_REASON6;
             case VENDOR_KILL_REASON_7:
-                return FrameworkStatsLog.LMK_KILL_OCCURRED__REASON__VENDOR_KILL_REASON_7;
+                return FrameworkStatsLog.LMK_KILL_OCCURRED__REASON__VENDOR_KILL_REASON7;
             case VENDOR_KILL_REASON_8:
-                return FrameworkStatsLog.LMK_KILL_OCCURRED__REASON__VENDOR_KILL_REASON_8;
+                return FrameworkStatsLog.LMK_KILL_OCCURRED__REASON__VENDOR_KILL_REASON8;
             case VENDOR_KILL_REASON_9:
-                return FrameworkStatsLog.LMK_KILL_OCCURRED__REASON__VENDOR_KILL_REASON_9;
+                return FrameworkStatsLog.LMK_KILL_OCCURRED__REASON__VENDOR_KILL_REASON9;
             case VENDOR_KILL_REASON_10:
-                return FrameworkStatsLog.LMK_KILL_OCCURRED__REASON__VENDOR_KILL_REASON_10;
+                return FrameworkStatsLog.LMK_KILL_OCCURRED__REASON__VENDOR_KILL_REASON10;
             default:
                 return FrameworkStatsLog.LMK_KILL_OCCURRED__REASON__UNKNOWN;
         }
