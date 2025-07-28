@@ -859,7 +859,7 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
 
         // Do not bother checking the dismiss button's target visibility if the notification cannot
         // be dismissed.
-        if (!canEntryBeDismissed()) {
+        if (!canExpandableViewBeDismissed()) {
             return false;
         }
 

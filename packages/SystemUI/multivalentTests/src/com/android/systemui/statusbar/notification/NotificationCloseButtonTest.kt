@@ -26,7 +26,7 @@ import com.android.systemui.Flags
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.statusbar.notification.collection.provider.mockNotificationDismissibilityProvider
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow
-import com.android.systemui.statusbar.notification.row.createRow
+import com.android.systemui.statusbar.notification.row.createInitializedRow
 import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
 import org.junit.Test
@@ -48,7 +48,7 @@ class NotificationCloseButtonTest : SysuiTestCase() {
     @DisableFlags(Flags.FLAG_NOTIFICATION_ADD_X_ON_HOVER_TO_DISMISS)
     fun verifyWhenFeatureDisabled() {
         // By default, the close button should be gone.
-        val row = kosmos.createRow()
+        val row = kosmos.createInitializedRow()
         val closeButton = getCloseButton(row)
         assertThat(closeButton).isNotNull()
         assertThat(closeButton.visibility).isEqualTo(View.GONE)
@@ -73,7 +73,7 @@ class NotificationCloseButtonTest : SysuiTestCase() {
         whenever(kosmos.mockNotificationDismissibilityProvider.isDismissable(any()))
             .thenReturn(true)
         // By default, the close button should be gone.
-        val row = kosmos.createRow()
+        val row = kosmos.createInitializedRow()
         val closeButton = getCloseButton(row)
         assertThat(closeButton).isNotNull()
         assertThat(closeButton.visibility).isEqualTo(View.GONE)
@@ -111,7 +111,7 @@ class NotificationCloseButtonTest : SysuiTestCase() {
         // By default, the close button should be gone.
         whenever(kosmos.mockNotificationDismissibilityProvider.isDismissable(any()))
             .thenReturn(false)
-        val row = kosmos.createRow()
+        val row = kosmos.createInitializedRow()
         val closeButton = getCloseButton(row)
         assertThat(closeButton).isNotNull()
         assertThat(closeButton.visibility).isEqualTo(View.GONE)
