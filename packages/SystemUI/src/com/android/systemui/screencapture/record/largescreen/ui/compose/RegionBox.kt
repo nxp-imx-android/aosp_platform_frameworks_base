@@ -37,12 +37,8 @@ import androidx.compose.ui.input.pointer.PointerInputChange
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
-import com.android.systemui.res.R
-import com.android.systemui.screencapture.common.ui.compose.PrimaryButton
-import com.android.systemui.screencapture.common.ui.compose.loadIcon
 import com.android.systemui.screencapture.common.ui.viewmodel.DrawableLoaderViewModel
 import kotlin.math.max
 import kotlin.math.min
@@ -287,32 +283,28 @@ fun RegionBox(
         val borderStrokeWidth = 4.dp
 
         state.rect?.let { currentRect ->
+            val boxWidthDp = with(density) { currentRect.width.toDp() }
+            val boxHeightDp = with(density) { currentRect.height.toDp() }
+
+            // The box that represents the region.
             Box(
                 modifier =
                     Modifier.graphicsLayer(
                             translationX = currentRect.left,
                             translationY = currentRect.top,
                         )
-                        .size(
-                            width = with(density) { currentRect.width.toDp() },
-                            height = with(density) { currentRect.height.toDp() },
-                        )
+                        .size(width = boxWidthDp, height = boxHeightDp)
                         .border(borderStrokeWidth, MaterialTheme.colorScheme.onSurfaceVariant),
                 contentAlignment = Alignment.Center,
-            ) {
-                PrimaryButton(
-                    text = stringResource(id = R.string.screen_capture_region_selection_button),
-                    onClick = {
-                        // TODO(b/417534202): trigger a screenshot of the selected area.
-                    },
-                    icon =
-                        loadIcon(
-                            viewModel = drawableLoaderViewModel,
-                            resId = R.drawable.ic_screen_capture_camera,
-                            contentDescription = null,
-                        ),
-                )
-            }
+            ) {}
+
+            // The screenshot button that is positioned inside or outside the region box.
+            RegionScreenshotButton(
+                boxWidthDp,
+                boxHeightDp,
+                currentRect,
+                drawableLoaderViewModel = drawableLoaderViewModel,
+            )
         }
     }
 }
