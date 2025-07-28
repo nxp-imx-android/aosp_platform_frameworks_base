@@ -23,6 +23,8 @@ import com.android.systemui.kosmos.testCase
 import com.android.systemui.statusbar.notification.collection.BundleSpec
 import com.android.systemui.statusbar.notification.collection.NotificationEntry
 import com.android.systemui.statusbar.notification.collection.buildPromotedOngoingEntry
+import org.mockito.Mockito
+import org.mockito.kotlin.whenever
 
 var Kosmos.expandableNotificationRowBuilder by
     Kosmos.Fixture {
@@ -43,6 +45,12 @@ fun Kosmos.createRowBundle(spec: BundleSpec): ExpandableNotificationRow {
 
 fun Kosmos.createRow(): ExpandableNotificationRow {
     return expandableNotificationRowBuilder.createRow()
+}
+
+fun Kosmos.createInitializedRow(): ExpandableNotificationRow {
+    val row = Mockito.spy(createRow())
+    whenever(row.hasFinishedInitialization()).thenReturn(true)
+    return row
 }
 
 fun Kosmos.createPromotedOngoingRow(): ExpandableNotificationRow {
