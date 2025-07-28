@@ -384,6 +384,8 @@
     <string name="share_to_app_stop_dialog_message_single_app_generic">You\'re currently sharing an app</string>
     <!-- Text telling a user that they're currently sharing something to an app [CHAR LIMIT=100] -->
     <string name="share_to_app_stop_dialog_message_generic">You\'re currently sharing with an app</string>
+    <!-- Text telling a user that they're currently sharing something to an app [CHAR LIMIT=100] -->
+    <string name="share_to_app_stop_dialog_message_with_host_app">You\'re currently sharing with <xliff:g id="host_app_name" example="Screen Recorder App">%1$s</xliff:g></string>
     <!-- Button to stop screen sharing [CHAR LIMIT=35] -->
     <string name="share_to_app_stop_dialog_button">Stop sharing</string>
 
