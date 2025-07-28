@@ -1,6 +1,5 @@
 package: "android.os"
 container: "system"
-container: "system"
 
 # keep-sorted start block=yes newline_separated=yes
 flag {
