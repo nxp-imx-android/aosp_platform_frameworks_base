@@ -326,6 +326,10 @@ public class KeyguardSimPinViewController
             if (mIsInTestMode) return;
             Log.v(TAG, "call supplyIccLockPin(subid=" + mSubId + ")");
             TelephonyManager telephonyManager = mTelephonyManager.createForSubscriptionId(mSubId);
+            if (telephonyManager == null) {
+                Log.w(LOG_TAG, "Null telephonyManager, cannot validate SimPin");
+                return;
+            }
             final PinResult result = telephonyManager.supplyIccLockPin(mPin);
             Log.v(TAG, "supplyIccLockPin returned: " + result.toString());
             mView.post(() -> onSimCheckResponse(result));
