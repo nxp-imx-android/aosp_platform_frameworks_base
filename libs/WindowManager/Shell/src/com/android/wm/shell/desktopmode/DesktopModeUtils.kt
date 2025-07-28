@@ -48,7 +48,7 @@ import kotlin.math.max
 import kotlin.math.min
 
 val DESKTOP_MODE_INITIAL_BOUNDS_SCALE: Float =
-    SystemProperties.getInt("persist.wm.debug.desktop_mode_initial_bounds_scale", 75) / 100f
+    SystemProperties.getInt("persist.wm.debug.desktop_mode_initial_bounds_scale", 72) / 100f
 
 val DESKTOP_MODE_LANDSCAPE_APP_PADDING: Int =
     SystemProperties.getInt("persist.wm.debug.desktop_mode_landscape_app_padding", 25)

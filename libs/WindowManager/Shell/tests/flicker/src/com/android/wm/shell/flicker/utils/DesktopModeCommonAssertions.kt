@@ -162,7 +162,7 @@ fun FlickerTest.appWindowHasDesktopModeInitialBoundsAtTheEnd(component: ICompone
             entry.physicalDisplayBounds ?: error("Missing physical display bounds")
         val stableBounds = WindowUtils.getInsetDisplayBounds(scenario.endRotation)
         val desktopModeInitialBoundsScale =
-            SystemProperties.getInt("persist.wm.debug.desktop_mode_initial_bounds_scale", 75) /
+            SystemProperties.getInt("persist.wm.debug.desktop_mode_initial_bounds_scale", 72) /
                 100f
 
         val desiredWidth = displayBounds.width().times(desktopModeInitialBoundsScale)

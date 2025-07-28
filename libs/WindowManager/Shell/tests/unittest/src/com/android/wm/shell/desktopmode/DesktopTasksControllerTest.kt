@@ -316,12 +316,12 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     private val SECONDARY_DISPLAY_ID = 1
     private val DISPLAY_DIMENSION_SHORT = 1600
     private val DISPLAY_DIMENSION_LONG = 2560
-    private val DEFAULT_LANDSCAPE_BOUNDS = Rect(320, 75, 2240, 1275)
-    private val DEFAULT_PORTRAIT_BOUNDS = Rect(200, 165, 1400, 2085)
+    private val DEFAULT_LANDSCAPE_BOUNDS = Rect(358, 93, 2201, 1245)
+    private val DEFAULT_PORTRAIT_BOUNDS = Rect(224, 193, 1376, 2036)
     private val RESIZABLE_LANDSCAPE_BOUNDS = Rect(25, 435, 1575, 1635)
-    private val RESIZABLE_PORTRAIT_BOUNDS = Rect(680, 75, 1880, 1275)
+    private val RESIZABLE_PORTRAIT_BOUNDS = Rect(680, 93, 1880, 1245)
     private val UNRESIZABLE_LANDSCAPE_BOUNDS = Rect(25, 448, 1575, 1611)
-    private val UNRESIZABLE_PORTRAIT_BOUNDS = Rect(830, 75, 1730, 1275)
+    private val UNRESIZABLE_PORTRAIT_BOUNDS = Rect(848, 93, 1712, 1245)
     private val wallpaperToken = MockToken().token()
     private val homeComponentName = ComponentName(HOME_LAUNCHER_PACKAGE_NAME, /* class */ "")
     private val secondDisplayArea =
@@ -9778,7 +9778,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         testOnUnhandledDrag(
             DesktopModeVisualIndicator.IndicatorType.TO_DESKTOP_INDICATOR,
             PointF(1200f, 700f),
-            Rect(240, 700, 2160, 1900),
+            Rect(279, 700, 2122, 1852),
             tabTearingMinimizeAnimationFlagEnabled = true,
             tabTearingLaunchAnimationFlagEnabled = true,
         )
@@ -9791,7 +9791,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         testOnUnhandledDrag(
             DesktopModeVisualIndicator.IndicatorType.TO_DESKTOP_INDICATOR,
             PointF(1200f, 700f),
-            Rect(240, 700, 2160, 1900),
+            Rect(279, 700, 2122, 1852),
             tabTearingMinimizeAnimationFlagEnabled = true,
             tabTearingLaunchAnimationFlagEnabled = false,
         )
@@ -9804,7 +9804,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         testOnUnhandledDrag(
             DesktopModeVisualIndicator.IndicatorType.TO_DESKTOP_INDICATOR,
             PointF(1200f, 700f),
-            Rect(240, 700, 2160, 1900),
+            Rect(279, 700, 2122, 1852),
             tabTearingMinimizeAnimationFlagEnabled = false,
             tabTearingLaunchAnimationFlagEnabled = true,
         )
@@ -9819,7 +9819,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         testOnUnhandledDrag(
             DesktopModeVisualIndicator.IndicatorType.TO_DESKTOP_INDICATOR,
             PointF(1200f, 700f),
-            Rect(240, 700, 2160, 1900),
+            Rect(279, 700, 2122, 1852),
             tabTearingMinimizeAnimationFlagEnabled = false,
             tabTearingLaunchAnimationFlagEnabled = false,
         )
@@ -10006,7 +10006,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         testOnUnhandledDrag(
             DesktopModeVisualIndicator.IndicatorType.NO_INDICATOR,
             PointF(1200f, 700f),
-            Rect(240, 700, 2160, 1900),
+            Rect(279, 700, 2122, 1852),
             tabTearingMinimizeAnimationFlagEnabled = true,
             tabTearingLaunchAnimationFlagEnabled = true,
             destinationDisplayId = SECOND_DISPLAY,
@@ -10029,7 +10029,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         testOnUnhandledDrag(
             DesktopModeVisualIndicator.IndicatorType.NO_INDICATOR,
             PointF(1200f, 700f),
-            Rect(240, 700, 2160, 1900),
+            Rect(279, 700, 2122, 1852),
             tabTearingMinimizeAnimationFlagEnabled = true,
             tabTearingLaunchAnimationFlagEnabled = true,
             destinationDisplayId = SECOND_DISPLAY,
@@ -10049,7 +10049,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         testOnUnhandledDrag(
             DesktopModeVisualIndicator.IndicatorType.NO_INDICATOR,
             PointF(1200f, 700f),
-            Rect(240, 700, 2160, 1900),
+            Rect(279, 700, 2122, 1852),
             tabTearingMinimizeAnimationFlagEnabled = true,
             tabTearingLaunchAnimationFlagEnabled = true,
             destinationDisplayId = SECOND_DISPLAY,
