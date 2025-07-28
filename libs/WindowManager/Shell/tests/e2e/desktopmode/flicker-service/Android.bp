@@ -84,6 +84,8 @@ test_module_config {
         "com.android.wm.shell.flicker.resizing.SnapResizeAppWindowRightWithButtonFlickerTest",
         "com.android.wm.shell.flicker.resizing.SnapResizeAppWindowRightWithDragFlickerTest",
         "com.android.wm.shell.flicker.resizing.SnapResizeAppWindowRightWithKeyboardFlickerTest",
+        "com.android.wm.shell.flicker.resizing.SnapResizeNonResizableAppWindowLeftWithDragFlickerTest",
+        "com.android.wm.shell.flicker.resizing.SnapResizeNonResizableAppWindowRightWithDragFlickerTest",
         "com.android.wm.shell.flicker.tiling.TilingDividerResizingAppsFlickerTest",
         "com.android.wm.shell.flicker.tiling.TilingDividerShownAfterHomeSwipeFlickerTest",
         "com.android.wm.shell.flicker.tiling.TilingDividerShownAfterOverviewFlickerTest",
@@ -384,6 +386,20 @@ test_module_config {
     base: "WMShellFlickerTestsDesktopMode",
     test_suites: ["device-tests"],
     include_filters: ["com.android.wm.shell.flicker.resizing.SnapResizeAppWindowRightWithKeyboardFlickerTest"],
+}
+
+test_module_config {
+    name: "WMShellFlickerTestsDesktopMode-resizing-SnapResizeNonResizableAppWindowLeftWithDragFlickerTest",
+    base: "WMShellFlickerTestsDesktopMode",
+    test_suites: ["device-tests"],
+    include_filters: ["com.android.wm.shell.flicker.resizing.SnapResizeNonResizableAppWindowLeftWithDragFlickerTest"],
+}
+
+test_module_config {
+    name: "WMShellFlickerTestsDesktopMode-resizing-SnapResizeNonResizableAppWindowRightWithDragFlickerTest",
+    base: "WMShellFlickerTestsDesktopMode",
+    test_suites: ["device-tests"],
+    include_filters: ["com.android.wm.shell.flicker.resizing.SnapResizeNonResizableAppWindowRightWithDragFlickerTest"],
 }
 
 test_module_config {

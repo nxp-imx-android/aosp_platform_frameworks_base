@@ -198,6 +198,19 @@ fun FlickerTest.appWindowOnDefaultDisplayAtEnd(component: IComponentMatcher) {
     }
 }
 
+fun FlickerTest.appWindowReturnsToStartBoundsAndPosition(component: IComponentMatcher){
+    assertLayers {
+        val startRegion = first().visibleRegion(component)
+        val endRegion = last().visibleRegion(component)
+
+        endRegion
+            .hasSameTopPosition(startRegion.region.bounds)
+            .hasSameBottomPosition(startRegion.region.bounds)
+            .hasSameLeftPosition(startRegion.region.bounds)
+            .hasSameRightPosition(startRegion.region.bounds)
+    }
+}
+
 fun FlickerTest.tilingDividerBecomesVisibleThenInvisible() {
     assertLayers {
         this.isInvisible(TILING_SPLIT_DIVIDER)
