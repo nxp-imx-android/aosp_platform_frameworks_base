@@ -118,6 +118,7 @@ import com.android.wm.shell.desktopmode.DesktopModeEventLogger.Companion.Minimiz
 import com.android.wm.shell.desktopmode.DesktopModeEventLogger.Companion.ResizeTrigger
 import com.android.wm.shell.desktopmode.DesktopModeEventLogger.Companion.UnminimizeReason
 import com.android.wm.shell.desktopmode.DesktopModeEventLogger.Companion.getEnterReason
+import com.android.wm.shell.desktopmode.DesktopModeEventLogger.Companion.getExitReason
 import com.android.wm.shell.desktopmode.DesktopModeUiEventLogger.DesktopUiEventEnum
 import com.android.wm.shell.desktopmode.DesktopModeVisualIndicator.DragStartState
 import com.android.wm.shell.desktopmode.DesktopModeVisualIndicator.IndicatorType
@@ -403,9 +404,16 @@ class DesktopTasksController(
         userId: Int = shellController.currentUserId,
         remoteTransition: RemoteTransition? = null,
         taskIdToReorderToFront: Int? = null,
+        transitionSource: DesktopModeTransitionSource,
     ) {
         logV("showDesktopApps")
-        activateDefaultDeskInDisplay(displayId, userId, remoteTransition, taskIdToReorderToFront)
+        activateDefaultDeskInDisplay(
+            displayId,
+            userId,
+            remoteTransition,
+            taskIdToReorderToFront,
+            transitionSource,
+        )
     }
 
     /** Returns whether the given display has an active desk. */
@@ -577,6 +585,7 @@ class DesktopTasksController(
         userId: Int = shellController.currentUserId,
         enforceDeskLimit: Boolean = true,
         activateDesk: Boolean = false,
+        enterReason: EnterReason = EnterReason.UNKNOWN_ENTER,
         onResult: ((Int) -> Unit) = {},
     ) {
         logV(
@@ -603,7 +612,7 @@ class DesktopTasksController(
                 repository.addDesk(displayId = displayId, deskId = deskId)
                 onResult(deskId)
                 if (activateDesk) {
-                    activateDesk(deskId)
+                    activateDesk(deskId, enterReason = enterReason)
                 }
             }
         }
@@ -4373,9 +4382,15 @@ class DesktopTasksController(
         userId: Int,
         remoteTransition: RemoteTransition? = null,
         taskIdToReorderToFront: Int? = null,
+        transitionSource: DesktopModeTransitionSource,
     ) {
         val deskId = getOrCreateDefaultDeskId(displayId, userId) ?: return
-        activateDesk(deskId, remoteTransition, taskIdToReorderToFront)
+        activateDesk(
+            deskId,
+            remoteTransition,
+            taskIdToReorderToFront,
+            enterReason = transitionSource.getEnterReason(),
+        )
     }
 
     /**
@@ -4506,7 +4521,7 @@ class DesktopTasksController(
     }
 
     /** Activates the desk at the given index if it exists. */
-    fun activatePreviousDesk(displayId: Int) {
+    fun activatePreviousDesk(displayId: Int, enterReason: EnterReason) {
         if (
             !DesktopExperienceFlags.ENABLE_KEYBOARD_SHORTCUTS_TO_SWITCH_DESKS.isTrue ||
                 !DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue
@@ -4539,14 +4554,11 @@ class DesktopTasksController(
             return
         }
         logV("activatePreviousDesk from deskId=%d to deskId=%d", activeDeskId, destinationDeskId)
-        activateDesk(
-            destinationDeskId,
-            transitionSource = DesktopModeTransitionSource.KEYBOARD_SHORTCUT,
-        )
+        activateDesk(destinationDeskId, enterReason = enterReason)
     }
 
     /** Activates the desk at the given index if it exists. */
-    fun activateNextDesk(displayId: Int) {
+    fun activateNextDesk(displayId: Int, enterReason: EnterReason) {
         if (
             !DesktopExperienceFlags.ENABLE_KEYBOARD_SHORTCUTS_TO_SWITCH_DESKS.isTrue ||
                 !DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue
@@ -4579,10 +4591,7 @@ class DesktopTasksController(
             return
         }
         logV("activateNextDesk from deskId=%d to deskId=%d", activeDeskId, destinationDeskId)
-        activateDesk(
-            destinationDeskId,
-            transitionSource = DesktopModeTransitionSource.KEYBOARD_SHORTCUT,
-        )
+        activateDesk(destinationDeskId, enterReason = enterReason)
     }
 
     /**
@@ -4593,7 +4602,7 @@ class DesktopTasksController(
         deskId: Int,
         remoteTransition: RemoteTransition? = null,
         taskIdToReorderToFront: Int? = null,
-        transitionSource: DesktopModeTransitionSource = DesktopModeTransitionSource.UNKNOWN,
+        enterReason: EnterReason,
     ) =
         traceSection(
             Trace.TRACE_TAG_WINDOW_MANAGER,
@@ -4633,12 +4642,7 @@ class DesktopTasksController(
 
             val wct = WindowContainerTransaction()
             val runOnTransitStart =
-                addDeskActivationChanges(
-                    deskId,
-                    wct,
-                    newTaskInFront,
-                    enterReason = transitionSource.getEnterReason(),
-                )
+                addDeskActivationChanges(deskId, wct, newTaskInFront, enterReason = enterReason)
 
             // Put task with [taskIdToReorderToFront] to front.
             when (newTaskInFront) {
@@ -4754,14 +4758,13 @@ class DesktopTasksController(
 
     /** Removes the default desk in the given display. */
     @Deprecated("Deprecated with multi-desks.", ReplaceWith("removeDesk()"))
-    fun removeDefaultDeskInDisplay(displayId: Int, userId: Int = shellController.currentUserId) {
+    fun removeDefaultDeskInDisplay(
+        displayId: Int,
+        userId: Int = shellController.currentUserId,
+        exitReason: ExitReason,
+    ) {
         val deskId = getOrCreateDefaultDeskId(displayId, userId) ?: return
-        removeDesk(
-            displayId = displayId,
-            deskId = deskId,
-            userId = userId,
-            exitReason = ExitReason.RETURN_HOME_OR_OVERVIEW,
-        )
+        removeDesk(displayId = displayId, deskId = deskId, userId = userId, exitReason = exitReason)
     }
 
     /**
@@ -5729,15 +5732,15 @@ class DesktopTasksController(
             }
         }
 
-        override fun removeDesk(deskId: Int) {
+        override fun removeDesk(deskId: Int, transitionSource: DesktopModeTransitionSource) {
             executeRemoteCallWithTaskPermission(controller, "removeDesk") { c ->
-                c.removeDesk(deskId, exitReason = ExitReason.RECENTS_DISMISS)
+                c.removeDesk(deskId, exitReason = transitionSource.getExitReason())
             }
         }
 
-        override fun removeAllDesks() {
+        override fun removeAllDesks(transitionSource: DesktopModeTransitionSource) {
             executeRemoteCallWithTaskPermission(controller, "removeAllDesks") { c ->
-                c.removeAllDesks(exitReason = ExitReason.RECENTS_DISMISS)
+                c.removeAllDesks(exitReason = transitionSource.getExitReason())
             }
         }
 
@@ -5752,7 +5755,7 @@ class DesktopTasksController(
                     deskId,
                     remoteTransition,
                     if (taskIdInFront != INVALID_TASK_ID) taskIdInFront else null,
-                    transitionSource,
+                    transitionSource.getEnterReason(),
                 )
             }
         }
@@ -5761,6 +5764,7 @@ class DesktopTasksController(
             displayId: Int,
             remoteTransition: RemoteTransition?,
             taskIdInFront: Int,
+            transitionSource: DesktopModeTransitionSource,
         ) {
             executeRemoteCallWithTaskPermission(controller, "showDesktopApps") { c ->
                 c.showDesktopApps(
@@ -5768,6 +5772,7 @@ class DesktopTasksController(
                     remoteTransition = remoteTransition,
                     taskIdToReorderToFront =
                         if (taskIdInFront != INVALID_TASK_ID) taskIdInFront else null,
+                    transitionSource = transitionSource,
                 )
             }
         }
@@ -5837,15 +5842,24 @@ class DesktopTasksController(
             }
         }
 
-        override fun removeDefaultDeskInDisplay(displayId: Int) {
+        override fun removeDefaultDeskInDisplay(
+            displayId: Int,
+            transitionSource: DesktopModeTransitionSource,
+        ) {
             executeRemoteCallWithTaskPermission(controller, "removeDefaultDeskInDisplay") { c ->
-                c.removeDefaultDeskInDisplay(displayId)
+                c.removeDefaultDeskInDisplay(
+                    displayId = displayId,
+                    exitReason = transitionSource.getExitReason(),
+                )
             }
         }
 
-        override fun moveToExternalDisplay(taskId: Int) {
+        override fun moveToExternalDisplay(
+            taskId: Int,
+            transitionSource: DesktopModeTransitionSource,
+        ) {
             executeRemoteCallWithTaskPermission(controller, "moveTaskToExternalDisplay") { c ->
-                c.moveToNextDisplay(taskId, enterReason = EnterReason.OVERVIEW_TASK_MENU)
+                c.moveToNextDisplay(taskId, enterReason = transitionSource.getEnterReason())
             }
         }
 

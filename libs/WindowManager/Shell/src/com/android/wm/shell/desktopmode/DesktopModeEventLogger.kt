@@ -476,7 +476,18 @@ class DesktopModeEventLogger {
                 DesktopModeTransitionSource.RECENTS -> EnterReason.RECENTS
                 DesktopModeTransitionSource.TASK_DRAG -> EnterReason.APP_HANDLE_DRAG
                 DesktopModeTransitionSource.ADB_COMMAND -> EnterReason.ADB_COMMAND
+                DesktopModeTransitionSource.TASKBAR -> EnterReason.TASKBAR_ICON
                 else -> EnterReason.UNKNOWN_ENTER
+            }
+
+        /**
+         * Returns corresponding desktop mode exit [ExitReason] for a [DesktopModeTransitionSource].
+         */
+        @JvmStatic
+        fun DesktopModeTransitionSource.getExitReason(): ExitReason =
+            when (this) {
+                DesktopModeTransitionSource.RECENTS -> ExitReason.RECENTS_DISMISS
+                else -> ExitReason.UNKNOWN_EXIT
             }
 
         // Default value used when the task was not minimized.
@@ -579,6 +590,7 @@ class DesktopModeEventLogger {
             APP_SELF_REPOSITION(
                 FrameworkStatsLog.DESKTOP_MODE_UICHANGED__ENTER_REASON__APP_SELF_REPOSITION
             ),
+            TASKBAR_ICON(FrameworkStatsLog.DESKTOP_MODE_UICHANGED__ENTER_REASON__TASKBAR_ICON),
         }
 
         /**
