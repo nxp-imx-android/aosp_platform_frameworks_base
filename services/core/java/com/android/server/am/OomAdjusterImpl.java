@@ -105,6 +105,7 @@ import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.server.ServiceThread;
 import com.android.server.am.psc.ActiveUidsInternal;
+import com.android.server.am.psc.ConnectionRecordInternal;
 import com.android.server.am.psc.ProcessRecordInternal;
 import com.android.server.am.psc.UidRecordInternal;
 import com.android.server.wm.ActivityServiceConnectionsHolder;
@@ -1848,8 +1849,8 @@ public class OomAdjusterImpl extends OomAdjuster {
 
     @GuardedBy({"mService", "mProcLock"})
     @Override
-    public boolean computeServiceHostOomAdjLSP(ConnectionRecord cr, ProcessRecordInternal app,
-            ProcessRecordInternal client, long now, boolean dryRun) {
+    public boolean computeServiceHostOomAdjLSP(ConnectionRecordInternal cr,
+            ProcessRecordInternal app, ProcessRecordInternal client, long now, boolean dryRun) {
         if (app.isPendingFinishAttach()) {
             // We've set the attaching process state in the computeInitialOomAdjLSP. Skip it here.
             return false;
@@ -1986,7 +1987,7 @@ public class OomAdjusterImpl extends OomAdjuster {
                     clientAdj = adj;
                     clientProcState = procState;
                 } else {
-                    if (now >= (cr.binding.service.lastActivity
+                    if (now >= (cr.getServiceLastActivityTimeMillis()
                             + mConstants.MAX_SERVICE_INACTIVITY)) {
                         // This service has not seen activity within
                         // recent memory, so allow it to drop to the
@@ -2180,7 +2181,7 @@ public class OomAdjusterImpl extends OomAdjuster {
                 app.setAdjTypeCode(ActivityManager.RunningAppProcessInfo.REASON_SERVICE_IN_USE);
                 app.setAdjSource(client);
                 app.setAdjSourceProcState(clientProcState);
-                app.setAdjTarget(cr.binding.service.instanceName);
+                app.setAdjTarget(cr.getServiceInstanceName());
                 if (reportDebugMsgs) {
                     reportOomAdjMessageLocked(TAG_OOM_ADJ, "Raise to " + adjType
                             + ": " + app + ", due to " + client
@@ -2224,7 +2225,7 @@ public class OomAdjusterImpl extends OomAdjuster {
                 app.setAdjType("cch-as-act");
             }
         }
-        final ActivityServiceConnectionsHolder a = cr.activity;
+        final ActivityServiceConnectionsHolder a = cr.getActivity();
         if (cr.hasFlag(Context.BIND_ADJUST_WITH_ACTIVITY)) {
             if (a != null && adj > FOREGROUND_APP_ADJ
                     && a.isActivityVisible()) {
@@ -2245,7 +2246,7 @@ public class OomAdjusterImpl extends OomAdjuster {
                     app.setAdjTypeCode(ActivityManager.RunningAppProcessInfo.REASON_SERVICE_IN_USE);
                     app.setAdjSource(a);
                     app.setAdjSourceProcState(procState);
-                    app.setAdjTarget(cr.binding.service.instanceName);
+                    app.setAdjTarget(cr.getServiceInstanceName());
                     if (reportDebugMsgs) {
                         reportOomAdjMessageLocked(TAG_OOM_ADJ,
                                 "Raise to service w/activity: " + app);

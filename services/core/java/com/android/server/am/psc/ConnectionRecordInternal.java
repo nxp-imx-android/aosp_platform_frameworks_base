@@ -16,18 +16,43 @@
 
 package com.android.server.am.psc;
 
+import android.content.ComponentName;
+import android.content.Context;
 import android.ravenwood.annotation.RavenwoodKeepWholeClass;
+
+import com.android.server.am.OomAdjuster;
+import com.android.server.am.OomAdjusterImpl;
+import com.android.server.wm.ActivityServiceConnectionsHolder;
 
 /**
  * An abstract base class encapsulating common internal properties and state for a single binding
  * to a service.
  */
 @RavenwoodKeepWholeClass
-public abstract class ConnectionRecordInternal {
+public abstract class ConnectionRecordInternal implements OomAdjusterImpl.Connection {
     /** The service binding operation. */
     private final long mFlags;
     /** Whether there are currently ongoing transactions over this service connection. */
     private boolean mOngoingCalls;
+
+    /** Returns the {@link ActivityServiceConnectionsHolder} associated with this connection. */
+    public abstract ActivityServiceConnectionsHolder getActivity();
+
+    /**
+     * Returns the last activity time of the service associated with this connection,
+     * in milliseconds.
+     * TODO(b/425766486): Remove it once ConnectionRecordInternal could access ServiceRecord.
+     */
+    public abstract long getServiceLastActivityTimeMillis();
+
+    /**
+     * Returns the {@link ComponentName} of the service instance that this connection is bound to.
+     * TODO(b/425766486): Remove it once ConnectionRecordInternal could access ServiceRecord.
+     */
+    public abstract ComponentName getServiceInstanceName();
+
+    /** Tracks the current process state and sequence number for association management. */
+    public abstract void trackProcState(int procState, int seq);
 
     public ConnectionRecordInternal(long flags) {
         this.mFlags = flags;
@@ -78,5 +103,30 @@ public abstract class ConnectionRecordInternal {
             return true;
         }
         return false;
+    }
+
+    @Override
+    public void computeHostOomAdjLSP(OomAdjuster oomAdjuster, ProcessRecordInternal host,
+            ProcessRecordInternal client, long now, ProcessRecordInternal topApp, boolean doingAll,
+            int oomAdjReason, int cachedAdj) {
+        oomAdjuster.computeServiceHostOomAdjLSP(this, host, client, now, false);
+    }
+
+    @Override
+    public boolean canAffectCapabilities() {
+        return hasFlag(Context.BIND_INCLUDE_CAPABILITIES
+                | Context.BIND_BYPASS_USER_NETWORK_RESTRICTIONS);
+    }
+
+    @Override
+    public int cpuTimeTransmissionType() {
+        if (mOngoingCalls) {
+            return CPU_TIME_TRANSMISSION_NORMAL;
+        }
+        if (hasFlag(Context.BIND_ALLOW_FREEZE)) {
+            return CPU_TIME_TRANSMISSION_NONE;
+        }
+        return hasFlag(Context.BIND_SIMULATE_ALLOW_FREEZE) ? CPU_TIME_TRANSMISSION_LEGACY
+                : CPU_TIME_TRANSMISSION_NORMAL;
     }
 }

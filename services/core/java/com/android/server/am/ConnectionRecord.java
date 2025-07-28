@@ -33,7 +33,6 @@ import android.util.proto.ProtoUtils;
 import com.android.internal.app.procstats.AssociationState;
 import com.android.internal.app.procstats.ProcessStats;
 import com.android.server.am.psc.ConnectionRecordInternal;
-import com.android.server.am.psc.ProcessRecordInternal;
 import com.android.server.wm.ActivityServiceConnectionsHolder;
 
 import java.io.PrintWriter;
@@ -42,7 +41,7 @@ import java.io.PrintWriter;
  * Description of a single binding to a service.
  */
 @RavenwoodKeepWholeClass
-final class ConnectionRecord extends ConnectionRecordInternal implements OomAdjusterImpl.Connection{
+final class ConnectionRecord extends ConnectionRecordInternal {
     BoundServiceSession mBoundServiceSession;  // The associated bound service session if created.
     final AppBindRecord binding;    // The application/service binding.
     final ActivityServiceConnectionsHolder<ConnectionRecord> activity;  // If non-null, the owning activity.
@@ -141,28 +140,18 @@ final class ConnectionRecord extends ConnectionRecordInternal implements OomAdju
     }
 
     @Override
-    public void computeHostOomAdjLSP(OomAdjuster oomAdjuster, ProcessRecordInternal host,
-            ProcessRecordInternal client, long now, ProcessRecordInternal topApp, boolean doingAll,
-            int oomAdjReason, int cachedAdj) {
-        oomAdjuster.computeServiceHostOomAdjLSP(this, host, client, now, false);
+    public ActivityServiceConnectionsHolder<ConnectionRecord> getActivity() {
+        return activity;
     }
 
     @Override
-    public boolean canAffectCapabilities() {
-        return hasFlag(Context.BIND_INCLUDE_CAPABILITIES
-                | Context.BIND_BYPASS_USER_NETWORK_RESTRICTIONS);
+    public long getServiceLastActivityTimeMillis() {
+        return binding.service.lastActivity;
     }
 
     @Override
-    public int cpuTimeTransmissionType() {
-        if (getOngoingCalls()) {
-            return CPU_TIME_TRANSMISSION_NORMAL;
-        }
-        if (hasFlag(Context.BIND_ALLOW_FREEZE)) {
-            return CPU_TIME_TRANSMISSION_NONE;
-        }
-        return hasFlag(Context.BIND_SIMULATE_ALLOW_FREEZE) ? CPU_TIME_TRANSMISSION_LEGACY
-                : CPU_TIME_TRANSMISSION_NORMAL;
+    public ComponentName getServiceInstanceName() {
+        return binding.service.instanceName;
     }
 
     public void startAssociationIfNeeded() {
@@ -191,6 +180,7 @@ final class ConnectionRecord extends ConnectionRecordInternal implements OomAdju
         }
     }
 
+    @Override
     public void trackProcState(int procState, int seq) {
         if (association != null) {
             synchronized (mProcStatsLock) {
