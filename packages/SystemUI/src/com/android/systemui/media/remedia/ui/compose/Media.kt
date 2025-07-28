@@ -1260,7 +1260,7 @@ private fun ContentScope.PlayPauseAction(
             enabled = viewModel.onClick != null,
             colors = ButtonDefaults.buttonColors(containerColor = buttonColor),
             shape = RoundedCornerShape(cornerRadius),
-            modifier = Modifier.size(buttonSize).sysuiResTag(MediaRes.PLAY_PAUSE_BTN),
+            modifier = Modifier.size(buttonSize),
         ) {
             when (viewModel.state) {
                 is MediaSessionState.Playing,
@@ -1285,7 +1285,7 @@ private fun ContentScope.PlayPauseAction(
                             painter = painter,
                             contentDescription = viewModel.icon?.contentDescription?.load(),
                             tint = iconColor,
-                            modifier = Modifier.size(24.dp),
+                            modifier = Modifier.size(24.dp).sysuiResTag(MediaRes.PLAY_PAUSE_BTN),
                         )
                     }
                 }
