@@ -169,6 +169,7 @@ public class PipExpandHandler implements Transitions.TransitionHandler {
                 return false;
             }
         }
+        mPipTransitionState.setState(PipTransitionState.EXITING_PIP);
         mFinishCallback = finishCallback;
 
         // The parent change if we were in a multi-activity PiP; null if single activity PiP.
@@ -316,6 +317,7 @@ public class PipExpandHandler implements Transitions.TransitionHandler {
         if (pipChange == null || pipChange.getLeash() == null) {
             return false;
         }
+        mPipTransitionState.setState(PipTransitionState.EXITING_PIP);
         mFinishCallback = finishCallback;
 
         // Get the original parent before PiP. If original task hosting the PiP activity was

@@ -13,6 +13,9 @@
       "name": "FunctionalTestsDesktopMode-AltTabSwitchOutDesktopModeTest"
     },
     {
+      "name": "FunctionalTestsDesktopMode-AltTabSwitchToUnminimizeInDesktopModeFlickerTest"
+    },
+    {
       "name": "FunctionalTestsDesktopMode-CatchAll"
     },
     {
@@ -85,7 +88,16 @@
       "name": "FunctionalTestsDesktopMode-fundamentals-CloseAllAppsWithBackNavigationTest"
     },
     {
+      "name": "FunctionalTestsDesktopMode-fundamentals-DragAppWindowMultiWindowAndPipTest"
+    },
+    {
+      "name": "FunctionalTestsDesktopMode-fundamentals-DragAppWindowSingleWindowTest"
+    },
+    {
       "name": "FunctionalTestsDesktopMode-fundamentals-EnterDesktopFromSplitScreenWithAppHandleMenuTest"
+    },
+    {
+      "name": "FunctionalTestsDesktopMode-fundamentals-EnterDesktopWithAppHandleMenuExistingWindowsTest"
     },
     {
       "name": "FunctionalTestsDesktopMode-fundamentals-EnterDesktopWithAppHandleMenuTest"
@@ -95,6 +107,9 @@
     },
     {
       "name": "FunctionalTestsDesktopMode-fundamentals-EnterSplitScreenWithAppHandleMenuTest"
+    },
+    {
+      "name": "FunctionalTestsDesktopMode-fundamentals-EnterSplitScreenWithDragTest"
     },
     {
       "name": "FunctionalTestsDesktopMode-fundamentals-ExitDesktopToFullScreenWithAppHeaderMenuTest"
@@ -118,10 +133,13 @@
       "name": "FunctionalTestsDesktopMode-fundamentals-SwitchFocusBetweenAppsTest"
     },
     {
+      "name": "FunctionalTestsDesktopMode-fundamentals-SwitchToHomeFromDesktopTest"
+    },
+    {
       "name": "FunctionalTestsDesktopMode-fundamentals-SwitchToOverviewFromDesktopTest"
     },
     {
-      "name": "FunctionalTestsDesktopMode-fundamentals-SwitchToHomeFromDesktopTest"
+      "name": "FunctionalTestsDesktopMode-fundamentals-TaskbarInDesktopModeTest"
     },
     {
       "name": "FunctionalTestsDesktopMode-fundamentals-focus-ClickAndFocusTest"
@@ -155,6 +173,15 @@
     },
     {
       "name": "FunctionalTestsDesktopMode-maximize-MaximizeAppWindowWithDragToTopDragZoneInDesktopFirstTest"
+    },
+    {
+      "name": "FunctionalTestsDesktopMode-mediaprojection-StartAppMediaProjectionResizeAndDragTest"
+    },
+    {
+      "name": "FunctionalTestsDesktopMode-mediaprojection-StartAppMediaProjectionWithMaxDesktopWindowsTest"
+    },
+    {
+      "name": "FunctionalTestsDesktopMode-mediaprojection-StartScreenMediaProjectionWithMaxDesktopWindowsTest"
     },
     {
       "name": "FunctionalTestsDesktopMode-minimize-MinimizeAppWindowsTest"
@@ -191,6 +218,9 @@
     },
     {
       "name": "FunctionalTestsDesktopMode-resizing-SnapResizeAppWindowWithKeyboardTest"
+    },
+    {
+      "name": "FunctionalTestsDesktopMode-tiling-TilingTest"
     }
   ]
 }

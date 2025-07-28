@@ -19,6 +19,7 @@ import static com.android.wm.shell.pip2.phone.PipTransition.ANIMATING_BOUNDS_CHA
 import static com.android.wm.shell.pip2.phone.PipTransition.PIP_DESTINATION_BOUNDS;
 
 import android.annotation.Nullable;
+import android.app.TaskInfo;
 import android.content.Context;
 import android.graphics.Rect;
 import android.graphics.RectF;
@@ -143,6 +144,8 @@ public class PipDisplayTransferHandler implements
                         "%s Animating PiP display change to=%d", TAG, mTargetDisplayId);
 
                 final SurfaceControl pipLeash = mPipTransitionState.getPinnedTaskLeash();
+                final TaskInfo pipTaskInfo = mPipTransitionState.getPipTaskInfo();
+                final TaskInfo pipCandidateTaskInfo = mPipTransitionState.getPipCandidateTaskInfo();
                 final int duration = extra.getInt(ANIMATING_BOUNDS_CHANGE_DURATION,
                         PipTransition.BOUNDS_CHANGE_JUMPCUT_DURATION);
                 final Transaction startTx = extra.getParcelable(
@@ -166,6 +169,11 @@ public class PipDisplayTransferHandler implements
                 // TODO(b/414864788): Refactor transition states setting during display transfer
                 mPipTransitionState.setState(PipTransitionState.EXITING_PIP);
                 mPipTransitionState.setState(PipTransitionState.EXITED_PIP);
+
+                // Set PiP task states to make sure they're not null after we exited PiP
+                mPipTransitionState.setPinnedTaskLeash(pipLeash);
+                mPipTransitionState.setPipTaskInfo(pipTaskInfo);
+                mPipTransitionState.setPipCandidateTaskInfo(pipCandidateTaskInfo);
 
                 final PipResizeAnimator animator = mPipResizeAnimatorSupplier.get(mContext,
                         mPipSurfaceTransactionHelper, pipLeash, startTx, finishTx,

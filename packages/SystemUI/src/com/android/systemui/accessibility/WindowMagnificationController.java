@@ -1675,9 +1675,8 @@ class WindowMagnificationController implements View.OnTouchListener, SurfaceHold
     }
 
     private boolean canOverlapWithBottomGestureInsets() {
-        return !Flags.updateWindowMagnifierBottomBoundary()
-                || (Flags.updateWindowMagnifierBottomBoundaryWithMouse()
-                && mIsMouseOrKeyboardConnected);
+        return Flags.updateWindowMagnifierBottomBoundaryWithMouse()
+                && mIsMouseOrKeyboardConnected;
     }
 
     public void dump(PrintWriter pw) {

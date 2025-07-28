@@ -209,8 +209,10 @@ constructor(
     // Return the single display to be screenshot based upon the request.
     private suspend fun getDisplayToScreenshot(screenshotRequest: ScreenshotRequest): Display {
         return when (screenshotRequest.source) {
-            ScreenshotSource.SCREENSHOT_OVERVIEW ->
-                // Show on the display where overview was shown if available.
+            // For screenshots from Overview or the Screen Capture UI, use the display where the UI
+            // was shown, if available.
+            ScreenshotSource.SCREENSHOT_OVERVIEW,
+            ScreenshotSource.SCREENSHOT_SCREEN_CAPTURE_UI ->
                 displayRepository.getDisplay(screenshotRequest.displayId)
                     ?: displayRepository.getDisplay(Display.DEFAULT_DISPLAY)
                     ?: error("Can't find default display")

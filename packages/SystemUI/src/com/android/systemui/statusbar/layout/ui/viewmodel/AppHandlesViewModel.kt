@@ -17,6 +17,7 @@
 package com.android.systemui.statusbar.layout.ui.viewmodel
 
 import android.graphics.Rect
+import android.graphics.Region
 import androidx.compose.runtime.getValue
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.dagger.qualifiers.Main
@@ -36,6 +37,7 @@ import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 
 /** View model for on-screen bounds of app handles overlapping with the status bar. */
@@ -74,6 +76,24 @@ constructor(
             traceName = "StatusBar.appHandleBounds",
             initialValue = emptyList(),
             source = _appHandleBounds,
+        )
+
+    private val _touchableExclusionRegion: Flow<Region> =
+        _appHandleBounds.map { appHandles ->
+            val exclusionRegion = Region.obtain()
+            appHandles.forEach { exclusionRegion.op(it, Region.Op.UNION) }
+            exclusionRegion
+        }
+
+    /**
+     * The on-screen bounds that should be excluded from the status bar's touchable region due to
+     * its overlap with app handles.
+     */
+    val touchableExclusionRegion: Region by
+        hydrator.hydratedStateOf(
+            traceName = "StatusBar.touchableExclusionRegion",
+            initialValue = Region.obtain(),
+            source = _touchableExclusionRegion,
         )
 
     override suspend fun onActivated(): Nothing {

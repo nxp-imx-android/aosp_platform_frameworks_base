@@ -676,9 +676,17 @@ public final class MediaFormat {
      * When capture rate is different than the frame rate, it means that the
      * video is acquired at a different rate than the playback, which produces
      * slow motion or timelapse effect during playback. Application can use the
-     * value of this key to tell the relative speed ratio between capture and
-     * playback rates when the video was recorded.
+     * value of this key to set a capture rate that differs from the playback
+     * rate. If unspecified, the system uses the playback frame rate as the
+     * capture rate (e.g. normal speed).
      * </p>
+     *
+     * <p>However, Specifying capture rates that are nearly equal to the frame
+     * rate are at risk of causing frame drops and other visual artifacts in
+     * the output. To avoid such artifacts, the capture rate should be at
+     * least a factor of 2 away from the frame rate.
+     * {@code  GraphicBufferSource#calculateCodecTimestamp_l}</p>
+     *
      * <p>
      * The associated value is an integer or a float.
      * </p>

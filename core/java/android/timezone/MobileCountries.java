@@ -19,6 +19,7 @@ package android.timezone;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 
+import com.android.internal.annotations.VisibleForTesting;
 import java.util.Objects;
 import java.util.Set;
 
@@ -27,15 +28,27 @@ import java.util.Set;
  *
  * @hide
  */
-public class MobileCountries {
+public final class MobileCountries {
 
     @NonNull
     private final com.android.i18n.timezone.MobileCountries mDelegate;
 
-    /** Create a {@link MobileCountries} entity. This can be used for test networks. */
+    /**
+     * Create a {@link MobileCountries} entity. This can be used for test networks (i.e. integration
+     * tests).
+     */
     public static MobileCountries createTestCell(String mcc) {
         return new MobileCountries(
                 com.android.i18n.timezone.MobileCountries.create(mcc, Set.of(""), ""));
+    }
+
+    /** Create a {@link MobileCountries} entity for tests (i.e. unit tests). */
+    @VisibleForTesting
+    public static MobileCountries createForTest(
+            String mcc, String mnc, Set<String> countryIsoCodes, String defaultCountryIsoCode) {
+        return new MobileCountries(
+                com.android.i18n.timezone.MobileCountries.create(
+                        mcc, mnc, countryIsoCodes, defaultCountryIsoCode));
     }
 
     MobileCountries(@NonNull com.android.i18n.timezone.MobileCountries delegate) {

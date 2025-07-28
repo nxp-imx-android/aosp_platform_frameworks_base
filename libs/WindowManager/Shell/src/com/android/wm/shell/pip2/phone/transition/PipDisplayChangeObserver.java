@@ -98,7 +98,6 @@ public class PipDisplayChangeObserver implements Transitions.TransitionObserver 
         // transition can never start playing while another PiP transition is already playing.
         // This should help us block any interactions with PiP during this period.
         mPipTransitionState.setState(PipTransitionState.SCHEDULED_BOUNDS_CHANGE, extra);
-        mPipTransitionState.setState(PipTransitionState.CHANGING_PIP_BOUNDS, extra);
     }
 
     private void onDisplayChangeFinished(@NonNull TransitionInfo info) {

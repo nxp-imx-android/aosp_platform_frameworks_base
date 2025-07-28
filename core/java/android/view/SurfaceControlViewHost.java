@@ -624,4 +624,20 @@ public class SurfaceControlViewHost {
         }
         return wm.transferTouchGesture(embeddedToken, hostToken);
     }
+
+    /**
+     * Requests input focus for the given embedded view root, to be used for cases where the
+     * embedded window is not rooted to any window (otherwise focus is managed by the hosting
+     * SurfaceView).
+     *
+     * WM will enforce that callers also hold the INTERNAL_SYSTEM_WINDOW permission.
+     * If `focused` is false, WM will resolve focus on the next window.
+     * @hide
+     */
+    public boolean requestInputFocus(boolean focused) {
+        if (mViewRoot == null) {
+            return false;
+        }
+        return mWm.requestInputFocus(mViewRoot, focused);
+    }
 }

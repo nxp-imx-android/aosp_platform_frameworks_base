@@ -24,15 +24,20 @@ import static android.content.pm.PackageInstaller.DeveloperVerificationUserConfi
 import static android.content.pm.PackageInstaller.DeveloperVerificationUserConfirmationInfo.DEVELOPER_VERIFICATION_USER_ACTION_NEEDED_REASON_NETWORK_UNAVAILABLE;
 import static android.content.pm.PackageInstaller.DeveloperVerificationUserConfirmationInfo.DEVELOPER_VERIFICATION_USER_ACTION_NEEDED_REASON_UNKNOWN;
 
-import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.pm.PackageInstaller;
 import android.content.pm.PackageInstaller.DeveloperVerificationUserConfirmationInfo;
+import android.content.res.ColorStateList;
+import android.content.res.Resources;
+import android.graphics.Typeface;
 import android.os.Bundle;
+import android.text.Html;
 import android.util.Log;
+import android.view.View;
 import android.widget.Button;
+import android.widget.ImageView;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -41,6 +46,7 @@ import androidx.fragment.app.DialogFragment;
 import com.android.packageinstaller.R;
 import com.android.packageinstaller.v2.model.InstallUserActionRequired;
 import com.android.packageinstaller.v2.ui.InstallActionListener;
+import com.android.packageinstaller.v2.ui.UiUtil;
 
 public class DeveloperVerificationConfirmationFragment extends DialogFragment {
 
@@ -50,10 +56,18 @@ public class DeveloperVerificationConfirmationFragment extends DialogFragment {
     @NonNull
     private InstallActionListener mInstallActionListener;
     @NonNull
-    private AlertDialog mDialog;
-    private Button mPositiveBtn;
-    private Button mNegativeBtn;
-    private Button mNeutralBtn;
+    private Dialog mDialog;
+    private boolean mIsBypassAllowed;
+    private ImageView mAppIcon;
+    private TextView mAppLabelTextView;
+    private View mAppSnippet;
+    private View mMoreDetailsClickableLayout;
+    private View mMoreDetailsExpandedLayout;
+    private TextView mInstallWithoutVerifyingTextView;
+    private String mCustomMessage;
+    private TextView mCustomMessageTextView;
+
+    private boolean mIsExpanded;
 
     public DeveloperVerificationConfirmationFragment(
             @NonNull InstallUserActionRequired dialogData) {
@@ -70,61 +84,83 @@ public class DeveloperVerificationConfirmationFragment extends DialogFragment {
     @NonNull
     public Dialog onCreateDialog(@Nullable Bundle savedInstanceState) {
         Log.i(LOG_TAG, "Creating " + LOG_TAG + "\n" + mDialogData);
+        // There is no root view here. Ok to pass null view root
+        @SuppressWarnings("InflateParams")
+        View dialogView = getLayoutInflater().inflate(
+                R.layout.verification_confirmation_fragment_layout, null);
+        mAppSnippet = dialogView.requireViewById(R.id.app_snippet);
+        mAppIcon = dialogView.requireViewById(R.id.app_icon);
+        mAppLabelTextView = dialogView.requireViewById(R.id.app_label);
+        mMoreDetailsClickableLayout = dialogView.requireViewById(
+                R.id.more_details_clickable_layout);
+        mMoreDetailsExpandedLayout = dialogView.requireViewById(
+                R.id.more_details_expanded_layout);
+        mInstallWithoutVerifyingTextView = dialogView.requireViewById(
+                R.id.install_without_verifying_text);
+        mCustomMessageTextView = dialogView.requireViewById(R.id.custom_message);
 
         DeveloperVerificationUserConfirmationInfo verificationInfo =
                 mDialogData.getVerificationInfo();
         assert verificationInfo != null;
-        boolean isBypassAllowed = isBypassAllowed(verificationInfo);
+        mIsBypassAllowed = isBypassAllowed(verificationInfo);
         int userActionNeededReasonReason = verificationInfo.getUserActionNeededReason();
+        int titleResId = getDialogTitleResourceId(userActionNeededReasonReason);
         int msgResId = getDialogMessageResourceId(userActionNeededReasonReason);
+        mCustomMessage = getString(msgResId);
+        mDialog = UiUtil.getAlertDialog(requireContext(), getString(titleResId),
+                dialogView, R.string.ok, Resources.ID_NULL,
+                (dialog, which) -> mInstallActionListener.setVerificationUserResponse(
+                        DEVELOPER_VERIFICATION_USER_RESPONSE_ABORT),
+                null);
 
-        AlertDialog.Builder builder = new AlertDialog.Builder(requireActivity())
-                .setIcon(mDialogData.getAppIcon())
-                .setTitle(mDialogData.getAppLabel())
-                .setMessage(msgResId);
-
-        if (isBypassAllowed) {
-            // only allow bypass
-            builder.setPositiveButton(R.string.dont_install,
-                            (dialog, which) -> mInstallActionListener.setVerificationUserResponse(
-                                    DEVELOPER_VERIFICATION_USER_RESPONSE_ABORT))
-                    .setNegativeButton(R.string.install_anyway,
-                            (dialog, which) -> mInstallActionListener.setVerificationUserResponse(
-                                    DEVELOPER_VERIFICATION_USER_RESPONSE_INSTALL_ANYWAY));
-        } else {
-            // allow only acknowledging the error
-            builder.setPositiveButton(
-                    (userActionNeededReasonReason
-                            == DEVELOPER_VERIFICATION_USER_ACTION_NEEDED_REASON_DEVELOPER_BLOCKED)
-                            ? R.string.close : R.string.ok,
-                    (dialog, which) -> mInstallActionListener.setVerificationUserResponse(
-                            DEVELOPER_VERIFICATION_USER_RESPONSE_ABORT));
-        }
-        builder.setOnCancelListener(dialog ->
-                mInstallActionListener.setVerificationUserResponse(
-                        DEVELOPER_VERIFICATION_USER_RESPONSE_ABORT));
-
-        mDialog = builder.create();
         return mDialog;
+    }
+
+    private void updateUI() {
+        if (!isAdded()) {
+            return;
+        }
+
+        mCustomMessageTextView.setText(Html.fromHtml(mCustomMessage, Html.FROM_HTML_MODE_LEGACY));
+
+        mAppSnippet.setVisibility(View.VISIBLE);
+        mAppIcon.setImageDrawable(mDialogData.getAppIcon());
+        mAppLabelTextView.setText(mDialogData.getAppLabel());
+
+        if (mIsBypassAllowed) {
+            if (!mIsExpanded) {
+                mMoreDetailsClickableLayout.setVisibility(View.VISIBLE);
+                mMoreDetailsExpandedLayout.setVisibility(View.GONE);
+            }
+
+            mMoreDetailsClickableLayout.setOnClickListener(v -> {
+                mIsExpanded = true;
+                mMoreDetailsClickableLayout.setVisibility(View.GONE);
+                mMoreDetailsExpandedLayout.setVisibility(View.VISIBLE);
+                mInstallWithoutVerifyingTextView.setTypeface(
+                        mInstallWithoutVerifyingTextView.getTypeface(), Typeface.BOLD);
+                mInstallWithoutVerifyingTextView.setOnClickListener(v1 -> {
+                    mInstallActionListener.setVerificationUserResponse(
+                            DEVELOPER_VERIFICATION_USER_RESPONSE_INSTALL_ANYWAY);
+                    mDialog.dismiss();
+                });
+            });
+        }
     }
 
     @Override
     public void onStart() {
         super.onStart();
-        mPositiveBtn = mDialog.getButton(DialogInterface.BUTTON_POSITIVE);
-        mNegativeBtn = mDialog.getButton(DialogInterface.BUTTON_NEGATIVE);
-        mNeutralBtn = mDialog.getButton(DialogInterface.BUTTON_NEUTRAL);
+        updateUI();
     }
 
     @Override
     public void onPause() {
         super.onPause();
         // Don't allow the buttons to be clicked as there might be overlays
-        Button[] buttons = {mPositiveBtn, mNegativeBtn, mNeutralBtn};
-        for (Button button : buttons) {
-            if (button != null) {
-                button.setEnabled(false);
-            }
+        Button button = UiUtil.getAlertDialogPositiveButton(mDialog);
+        if (button != null) {
+            button.setEnabled(false);
         }
     }
 
@@ -132,11 +168,9 @@ public class DeveloperVerificationConfirmationFragment extends DialogFragment {
     public void onResume() {
         super.onResume();
         // Re-enable the buttons since they were disabled when activity was paused
-        Button[] buttons = {mPositiveBtn, mNegativeBtn, mNeutralBtn};
-        for (Button button : buttons) {
-            if (button != null) {
-                button.setEnabled(true);
-            }
+        Button button = UiUtil.getAlertDialogPositiveButton(mDialog);
+        if (button != null) {
+            button.setEnabled(true);
         }
     }
 
@@ -165,18 +199,30 @@ public class DeveloperVerificationConfirmationFragment extends DialogFragment {
         };
     }
 
+    private int getDialogTitleResourceId(int userActionNeededReason) {
+        return switch (userActionNeededReason) {
+            case DEVELOPER_VERIFICATION_USER_ACTION_NEEDED_REASON_UNKNOWN ->
+                    R.string.cannot_install_verification_unavailable_title;
+
+            case DEVELOPER_VERIFICATION_USER_ACTION_NEEDED_REASON_NETWORK_UNAVAILABLE ->
+                    R.string.cannot_install_verification_no_internet_title;
+
+            default -> R.string.cannot_install_app_blocked_title;
+        };
+    }
+
     private int getDialogMessageResourceId(int userActionNeededReason) {
         return switch (userActionNeededReason) {
             case DEVELOPER_VERIFICATION_USER_ACTION_NEEDED_REASON_UNKNOWN ->
                     R.string.cannot_install_verification_unavailable_summary;
 
             case DEVELOPER_VERIFICATION_USER_ACTION_NEEDED_REASON_NETWORK_UNAVAILABLE ->
-                    R.string.verification_incomplete_summary;
+                    R.string.cannot_install_verification_no_internet_summary;
 
             case DEVELOPER_VERIFICATION_USER_ACTION_NEEDED_REASON_LITE_VERIFICATION ->
                     R.string.lite_verification_summary;
 
-            default -> R.string.cannot_install_package_summary;
+            default -> R.string.cannot_install_app_blocked_summary;
         };
     }
 }

@@ -1,6 +1,9 @@
 {
   "wm": [
     {
+      "name": "WMShellExplicitFlickerTestsBubbles-BubbleBarMovesTest"
+    },
+    {
       "name": "WMShellExplicitFlickerTestsBubbles-CatchAll"
     },
     {
@@ -23,6 +26,12 @@
     },
     {
       "name": "WMShellExplicitFlickerTestsBubbles-ExpandBubbleWithImeViaBubbleBarTest"
+    },
+    {
+      "name": "WMShellExplicitFlickerTestsBubbles-LaunchMultipleBubbleTest"
+    },
+    {
+      "name": "WMShellExplicitFlickerTestsBubbles-ScrollableBubbleAppTest"
     }
   ]
 }

@@ -67,11 +67,11 @@ import android.util.SparseArray;
 import com.android.internal.R;
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
-import com.android.internal.os.BackgroundThread;
 import com.android.internal.util.DumpUtils;
 import com.android.internal.util.FunctionalUtils.RemoteExceptionIgnoringConsumer;
 import com.android.internal.util.IndentingPrintWriter;
 import com.android.server.LocalServices;
+import com.android.server.ServiceThread;
 import com.android.server.SystemService;
 import com.android.server.appbinding.AppBindingService;
 import com.android.server.appbinding.AppServiceConnection;
@@ -113,6 +113,11 @@ public class SupervisionService extends ISupervisionManager.Stub {
     @GuardedBy("getLockObject()")
     final ArrayMap<IBinder, SupervisionListenerRecord> mSupervisionListeners = new ArrayMap<>();
 
+    // We need to create a new background thread here because the AppBindingService uses the
+    // BackgroundThread for its connection callbacks. Using the same thread would block while
+    // waiting for those callbacks, preventing the new connections from being perceived.
+    final ServiceThread mServiceThread;
+
     @GuardedBy("getLockObject()")
     final SupervisionSettings mSupervisionSettings = SupervisionSettings.getInstance();
 
@@ -123,6 +128,7 @@ public class SupervisionService extends ISupervisionManager.Stub {
     @VisibleForTesting
     SupervisionService(Injector injector) {
         mInjector = injector;
+        mServiceThread = injector.getServiceThread();
         mInjector.getUserManagerInternal().addUserLifecycleListener(new UserLifecycleListener());
     }
 
@@ -388,14 +394,18 @@ public class SupervisionService extends ISupervisionManager.Stub {
                 mSupervisionSettings.saveUserData();
             }
         }
-        BackgroundThread.getExecutor().execute(() -> {
-            updateWebContentFilters(userId, enabled);
-            dispatchSupervisionEvent(
-                    userId, listener -> listener.onSetSupervisionEnabled(userId, enabled));
-            if (!enabled) {
-               clearAllDevicePoliciesAndSuspendedPackages(userId);
-            }
-        });
+        mServiceThread
+                .getThreadExecutor()
+                .execute(
+                        () -> {
+                            updateWebContentFilters(userId, enabled);
+                            dispatchSupervisionEvent(
+                                    userId,
+                                    listener -> listener.onSetSupervisionEnabled(userId, enabled));
+                            if (!enabled) {
+                                clearAllDevicePoliciesAndSuspendedPackages(userId);
+                            }
+                        });
     }
 
     @NonNull
@@ -436,8 +446,8 @@ public class SupervisionService extends ISupervisionManager.Stub {
             @NonNull RemoteExceptionIgnoringConsumer<ISupervisionListener> action) {
 
         // Add SupervisionAppServices listeners before the platform listeners.
-        ArrayList<ISupervisionListener> listeners = new ArrayList<>(
-                getSupervisionAppServiceListeners(userId, action));
+        ArrayList<ISupervisionListener> listeners =
+                new ArrayList<>(getSupervisionAppServiceListeners(userId, action));
 
         synchronized (getLockObject()) {
             mSupervisionListeners.forEach(
@@ -457,8 +467,8 @@ public class SupervisionService extends ISupervisionManager.Stub {
         }
 
         enforcePermission(MANAGE_ROLE_HOLDERS);
-        List<String> roles =  Arrays.asList(RoleManager.ROLE_SYSTEM_SUPERVISION,
-                RoleManager.ROLE_SUPERVISION);
+        List<String> roles =
+                Arrays.asList(RoleManager.ROLE_SYSTEM_SUPERVISION, RoleManager.ROLE_SUPERVISION);
         List<String> supervisionPackages = new ArrayList<>();
         for (String role : roles) {
             List<String> supervisionPackagesPerRole =
@@ -570,9 +580,9 @@ public class SupervisionService extends ISupervisionManager.Stub {
     /**
      * Enforces that the caller can set supervision enabled state.
      *
-     * This is restricted to the callers with the root, shell, or system uid or callers with the
-     * BYPASS_ROLE_QUALIFICATION permission. This permission is only granted to the
-     * SYSTEM_SHELL role holder.
+     * <p>This is restricted to the callers with the root, shell, or system uid or callers with the
+     * BYPASS_ROLE_QUALIFICATION permission. This permission is only granted to the SYSTEM_SHELL
+     * role holder.
      */
     private void enforceCallerCanSetSupervisionEnabled() {
         checkCallAuthorization(isCallerSystem() || hasCallingPermission(BYPASS_ROLE_QUALIFICATION));
@@ -659,6 +669,14 @@ public class SupervisionService extends ISupervisionManager.Stub {
             return mRoleManager.getRoleHoldersAsUser(roleName, user);
         }
 
+        @NonNull
+        ServiceThread getServiceThread() {
+            ServiceThread thread =
+                    new ServiceThread(SupervisionLog.TAG, Process.THREAD_PRIORITY_BACKGROUND, true);
+            thread.start();
+            return thread;
+        }
+
         void removeRoleHoldersAsUser(String roleName, String packageName, UserHandle user) {
             mRoleManager.removeRoleHolderAsUser(
                     roleName,
@@ -668,11 +686,13 @@ public class SupervisionService extends ISupervisionManager.Stub {
                     context.getMainExecutor(),
                     success -> {
                         if (!success) {
-                            Slogf.e(SupervisionLog.TAG, "Failed to remove role %s fro %s",
-                                    packageName, roleName);
+                            Slogf.e(
+                                    SupervisionLog.TAG,
+                                    "Failed to remove role %s fro %s",
+                                    packageName,
+                                    roleName);
                         }
                     });
-
         }
     }
 

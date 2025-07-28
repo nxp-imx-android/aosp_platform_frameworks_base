@@ -121,7 +121,7 @@ class AccessibilityServiceConnection extends AbstractAccessibilityServiceConnect
 
         @RequiresNoPermission
         @Override
-        public void sessionCreated(IAccessibilityInputMethodSession session, int id) {
+        public void sessionCreated(@NonNull IAccessibilityInputMethodSession session, int id) {
             Trace.traceBegin(TRACE_TAG_WINDOW_MANAGER, "ASC.sessionCreated");
             final long ident = Binder.clearCallingIdentity();
             try {

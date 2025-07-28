@@ -27,7 +27,7 @@ On a properly set up device, it is expected that this app never drops a frame.
 ### Helpful "flags" to flip
 
 The source code (in
-`app/src/main/java/com/prefabulated/bouncyball/BouncyBallActivity.java`) has a
+`app/src/main/java/com/android/test/bouncyball/BouncyBallActivity.java`) has a
 few constants which can be changed to help with debugging and testing.  The
 app needs to be recompiled after any of these have been changed.
 
@@ -55,7 +55,7 @@ $ adb install ${ANDROID_PRODUCT_OUT}/system/app/BouncyBallTest/BouncyBallTest.ap
 Assuming the app is installed on the device:
 
 ```
-$ adb shell am start com.prefabulated.bouncyball/com.prefabulated.bouncyball.BouncyBallActivity
+$ adb shell am start com.android.test.bouncyball/com.android.test.bouncyball.BouncyBallActivity
 ```
 
 ## Using Perfetto for analysis

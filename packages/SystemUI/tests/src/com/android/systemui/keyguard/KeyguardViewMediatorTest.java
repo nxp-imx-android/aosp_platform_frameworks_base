@@ -25,6 +25,7 @@ import static com.android.internal.widget.LockPatternUtils.StrongAuthTracker.SOM
 import static com.android.internal.widget.LockPatternUtils.StrongAuthTracker.STRONG_AUTH_REQUIRED_AFTER_DPM_LOCK_NOW;
 import static com.android.internal.widget.LockPatternUtils.StrongAuthTracker.STRONG_AUTH_REQUIRED_AFTER_NON_STRONG_BIOMETRICS_TIMEOUT;
 import static com.android.internal.widget.LockPatternUtils.StrongAuthTracker.STRONG_AUTH_REQUIRED_AFTER_USER_LOCKDOWN;
+import static com.android.systemui.Flags.FLAG_KEYGUARD_SHOW_CANCELS_ALL_PENDING_EXITS;
 import static com.android.systemui.Flags.FLAG_KEYGUARD_WM_STATE_REFACTOR;
 import static com.android.systemui.Flags.FLAG_SIM_PIN_BOUNCER_RESET;
 import static com.android.systemui.keyguard.KeyguardViewMediator.DELAYED_KEYGUARD_ACTION;
@@ -1039,6 +1040,37 @@ public class KeyguardViewMediatorTest extends SysuiTestCase {
 
     @Test
     @TestableLooper.RunWithLooper(setAsMainLooper = true)
+    @EnableFlags(FLAG_KEYGUARD_SHOW_CANCELS_ALL_PENDING_EXITS)
+    public void testStartKeyguardExitAnimation_isCanceledWhenDismissibleKeyguardIsShown() {
+        when(mUpdateMonitor.isDeviceProvisioned()).thenReturn(true);
+
+        startMockKeyguardExitAnimation();
+        assertTrue(mViewMediator.isAnimatingBetweenKeyguardAndSurfaceBehind());
+
+        mViewMediator.showDismissibleKeyguard();
+        TestableLooper.get(this).processAllMessages();
+
+        mViewMediator.mViewMediatorCallback.keyguardDonePending(mDefaultUserId);
+        mViewMediator.mViewMediatorCallback.readyForKeyguardDone();
+        TestableLooper.get(this).processAllMessages();
+        verify(mKeyguardUnlockAnimationController, never())
+                .notifyFinishedKeyguardExitAnimation(false);
+    }
+
+    @Test
+    @TestableLooper.RunWithLooper(setAsMainLooper = true)
+    @EnableFlags(FLAG_KEYGUARD_SHOW_CANCELS_ALL_PENDING_EXITS)
+    public void testStartKeyguardExitAnimation_isCanceledWhenGoingAwayIsReset() {
+        when(mUpdateMonitor.isDeviceProvisioned()).thenReturn(true);
+
+        startMockKeyguardExitAnimation(/* goingAway=*/false);
+        assertFalse(mViewMediator.isAnimatingBetweenKeyguardAndSurfaceBehind());
+        verify(mKeyguardUnlockAnimationController, never())
+                .notifyFinishedKeyguardExitAnimation(false);
+    }
+
+    @Test
+    @TestableLooper.RunWithLooper(setAsMainLooper = true)
     public void testKeyguardDelayedOnGoingToSleep_ifScreenOffAnimationWillPlayButIsntPlayingYet() {
         mViewMediator.onSystemReady();
         TestableLooper.get(this).processAllMessages();
@@ -1248,6 +1280,13 @@ public class KeyguardViewMediatorTest extends SysuiTestCase {
      * Configures mocks appropriately, then starts the keyguard exit animation.
      */
     private void startMockKeyguardExitAnimation() {
+        startMockKeyguardExitAnimation(true);
+    }
+
+    /**
+     * Configures mocks appropriately, then starts the keyguard exit animation.
+     */
+    private void startMockKeyguardExitAnimation(boolean goingAway) {
         mViewMediator.onSystemReady();
         processAllMessagesAndBgExecutorMessages();
 
@@ -1261,7 +1300,7 @@ public class KeyguardViewMediatorTest extends SysuiTestCase {
         };
         IRemoteAnimationFinishedCallback callback = mock(IRemoteAnimationFinishedCallback.class);
 
-        when(mKeyguardStateController.isKeyguardGoingAway()).thenReturn(true);
+        when(mKeyguardStateController.isKeyguardGoingAway()).thenReturn(goingAway);
         mViewMediator.mKeyguardGoingAwayRunnable.run();
         mViewMediator.startKeyguardExitAnimation(TRANSIT_OLD_KEYGUARD_GOING_AWAY, apps, wallpapers,
                 null, callback);

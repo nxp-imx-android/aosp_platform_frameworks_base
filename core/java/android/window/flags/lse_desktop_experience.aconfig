@@ -1181,6 +1181,16 @@ flag {
 }
 
 flag {
+    name: "enable_remove_status_bar_input_layer"
+    namespace: "lse_desktop_experience"
+    description: "Removes app handle bounds from the status bar's touchable region so that input is sent directly to the app handle."
+    bug: "412444139"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "enable_request_fullscreen_bugfix"
     namespace: "lse_desktop_experience"
     description: "Fixes split to fullscreen restoration using the Activity#requestFullscreenMode API"
@@ -1529,6 +1539,17 @@ flag {
     description: "Forces incompatible tasks opening in desktop to be fullscreen via the desktop /n"
                  "mode launch params modifier."
     bug: "423860499"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
+    name: "ignore_current_params_in_desktop_launch_params"
+    namespace: "lse_desktop_experience"
+    description: "Ignore the current params when resolving desktop specific launch params in the /n"
+                 "desktop mode launch params modifier."
+    bug: "419222219"
     metadata {
         purpose: PURPOSE_BUGFIX
     }

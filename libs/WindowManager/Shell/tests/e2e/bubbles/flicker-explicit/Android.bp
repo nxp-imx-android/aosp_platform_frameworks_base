@@ -50,16 +50,27 @@ android_test {
 // Auto generated section, don't update it manually
 
 test_module_config {
+    name: "WMShellExplicitFlickerTestsBubbles-BubbleBarMovesTest",
+    base: "WMShellExplicitFlickerTestsBubbles",
+    test_suites: ["device-tests"],
+    include_filters: ["com.android.wm.shell.flicker.bubbles.BubbleBarMovesTest"],
+}
+
+test_module_config {
     name: "WMShellExplicitFlickerTestsBubbles-CatchAll",
     base: "WMShellExplicitFlickerTestsBubbles",
     test_suites: ["device-tests"],
     exclude_filters: [
+        "com.android.wm.shell.flicker.bubbles.BubbleBarMovesTest",
         "com.android.wm.shell.flicker.bubbles.CollapseBubbleAppViaBackTest",
         "com.android.wm.shell.flicker.bubbles.DismissExpandedBubbleViaBubbleViewTest",
         "com.android.wm.shell.flicker.bubbles.EnterBubbleViaBubbleMenuTest",
+        "com.android.wm.shell.flicker.bubbles.EnterBubbleViaDragToBubbleBarTest",
         "com.android.wm.shell.flicker.bubbles.EnterBubbleWithImeViaBubbleMenuTest",
         "com.android.wm.shell.flicker.bubbles.ExpandBubbleViaBubbleStackTest",
         "com.android.wm.shell.flicker.bubbles.ExpandBubbleWithImeViaBubbleBarTest",
+        "com.android.wm.shell.flicker.bubbles.LaunchMultipleBubbleTest",
+        "com.android.wm.shell.flicker.bubbles.ScrollableBubbleAppTest",
     ],
 }
 
@@ -87,8 +98,8 @@ test_module_config {
 test_module_config {
     name: "WMShellExplicitFlickerTestsBubbles-EnterBubbleViaDragToBubbleBarTest",
     base: "WMShellExplicitFlickerTestsBubbles",
-    include_filters: ["com.android.wm.shell.flicker.bubbles.EnterBubbleViaDragToBubbleBarTest"],
     test_suites: ["device-tests"],
+    include_filters: ["com.android.wm.shell.flicker.bubbles.EnterBubbleViaDragToBubbleBarTest"],
 }
 
 test_module_config {
@@ -110,4 +121,18 @@ test_module_config {
     base: "WMShellExplicitFlickerTestsBubbles",
     test_suites: ["device-tests"],
     include_filters: ["com.android.wm.shell.flicker.bubbles.ExpandBubbleWithImeViaBubbleBarTest"],
+}
+
+test_module_config {
+    name: "WMShellExplicitFlickerTestsBubbles-LaunchMultipleBubbleTest",
+    base: "WMShellExplicitFlickerTestsBubbles",
+    test_suites: ["device-tests"],
+    include_filters: ["com.android.wm.shell.flicker.bubbles.LaunchMultipleBubbleTest"],
+}
+
+test_module_config {
+    name: "WMShellExplicitFlickerTestsBubbles-ScrollableBubbleAppTest",
+    base: "WMShellExplicitFlickerTestsBubbles",
+    test_suites: ["device-tests"],
+    include_filters: ["com.android.wm.shell.flicker.bubbles.ScrollableBubbleAppTest"],
 }

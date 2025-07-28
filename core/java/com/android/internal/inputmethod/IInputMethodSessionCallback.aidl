@@ -25,5 +25,5 @@ import com.android.internal.inputmethod.IInputMethodSession;
  */
 
 oneway interface IInputMethodSessionCallback {
-    void sessionCreated(IInputMethodSession session);
+    void sessionCreated(@nullable IInputMethodSession session);
 }

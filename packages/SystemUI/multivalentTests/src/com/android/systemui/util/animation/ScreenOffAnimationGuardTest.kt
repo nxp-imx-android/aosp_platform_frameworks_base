@@ -18,6 +18,7 @@ package com.android.systemui.util.animation
 
 import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
+import android.animation.AnimatorTestRule
 import android.animation.ValueAnimator
 import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
@@ -30,14 +31,17 @@ import com.android.systemui.log.assertLogsWtfs
 import com.android.systemui.runOnMainThreadAndWaitForIdleSync
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
+import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
-class ScreenOffAnimationGuardKtTest : SysuiTestCase() {
+class ScreenOffAnimationGuardTest : SysuiTestCase() {
 
     private val kosmos = Kosmos()
+
+    @get:Rule public val animatorTestRuleX = androidx.core.animation.AnimatorTestRule()
 
     @Test
     @EnableFlags(Flags.FLAG_SCREEN_OFF_ANIMATION_GUARD_ENABLED)
@@ -46,7 +50,7 @@ class ScreenOffAnimationGuardKtTest : SysuiTestCase() {
 
         val latch = CountDownLatch(1)
         valueAnimator.enableScreenOffAnimationGuard({ false })
-        valueAnimator.duration = 10
+        valueAnimator.duration = 100
         valueAnimator.addListener(
             object : AnimatorListenerAdapter() {
                 override fun onAnimationEnd(animation: Animator) {
@@ -67,10 +71,52 @@ class ScreenOffAnimationGuardKtTest : SysuiTestCase() {
 
         val latch = CountDownLatch(1)
         valueAnimator.enableScreenOffAnimationGuard({ true })
-        valueAnimator.duration = 10
+        valueAnimator.duration = 100
         valueAnimator.addListener(
             object : AnimatorListenerAdapter() {
                 override fun onAnimationEnd(animation: Animator) {
+                    latch.countDown()
+                }
+            }
+        )
+
+        assertLogsWtfs {
+            runOnMainThreadAndWaitForIdleSync { valueAnimator.start() }
+            latch.await(1, TimeUnit.SECONDS)
+        }
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_SCREEN_OFF_ANIMATION_GUARD_ENABLED)
+    fun enableScreenOffAnimationGuardX_screenOn_allGood() {
+        val valueAnimator = androidx.core.animation.ValueAnimator.ofFloat(0.0f, 1.0f)
+        val latch = CountDownLatch(1)
+        valueAnimator.enableScreenOffAnimationGuard({ false })
+        valueAnimator.duration = 100
+        valueAnimator.addListener(
+            object : androidx.core.animation.AnimatorListenerAdapter() {
+                override fun onAnimationEnd(animation: androidx.core.animation.Animator) {
+                    latch.countDown()
+                }
+            }
+        )
+        runOnMainThreadAndWaitForIdleSync { valueAnimator.start() }
+
+        latch.await(1, TimeUnit.SECONDS)
+        // No Log.WTF
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_SCREEN_OFF_ANIMATION_GUARD_ENABLED)
+    fun enableScreenOffAnimationGuardX_screenOff_reportsWtf() {
+        val valueAnimator = androidx.core.animation.ValueAnimator.ofFloat(0.0f, 1.0f)
+
+        val latch = CountDownLatch(1)
+        valueAnimator.enableScreenOffAnimationGuard({ true })
+        valueAnimator.duration = 100
+        valueAnimator.addListener(
+            object : androidx.core.animation.AnimatorListenerAdapter() {
+                override fun onAnimationEnd(animation: androidx.core.animation.Animator) {
                     latch.countDown()
                 }
             }
@@ -89,7 +135,7 @@ class ScreenOffAnimationGuardKtTest : SysuiTestCase() {
 
         val latch = CountDownLatch(1)
         valueAnimator.enableScreenOffAnimationGuard({ true })
-        valueAnimator.duration = 10
+        valueAnimator.duration = 100
         valueAnimator.addListener(
             object : AnimatorListenerAdapter() {
                 override fun onAnimationEnd(animation: Animator) {

@@ -225,6 +225,8 @@ public enum DesktopExperienceFlags {
             Flags.FLAG_ENABLE_REJECT_HOME_TRANSITION),
     ENABLE_REMOVE_DESK_ON_LAST_TASK_REMOVAL(Flags::removeDeskOnLastTaskRemoval, false,
             Flags.FLAG_REMOVE_DESK_ON_LAST_TASK_REMOVAL),
+    ENABLE_REMOVE_STATUS_BAR_INPUT_LAYER(Flags::enableRemoveStatusBarInputLayer, false,
+            Flags.FLAG_ENABLE_REMOVE_STATUS_BAR_INPUT_LAYER),
     ENABLE_REQUEST_FULLSCREEN_REFACTOR(
             Flags::enableRequestFullscreenRefactor, false,
             Flags.FLAG_ENABLE_REQUEST_FULLSCREEN_REFACTOR),
@@ -280,6 +282,9 @@ public enum DesktopExperienceFlags {
     HANDLE_INCOMPATIBLE_TASKS_IN_DESKTOP_LAUNCH_PARAMS(
             Flags::handleIncompatibleTasksInDesktopLaunchParams, false,
             Flags.FLAG_HANDLE_INCOMPATIBLE_TASKS_IN_DESKTOP_LAUNCH_PARAMS),
+    IGNORE_CURRENT_PARAMS_IN_DESKTOP_LAUNCH_PARAMS(
+            Flags::ignoreCurrentParamsInDesktopLaunchParams, false,
+            Flags.FLAG_IGNORE_CURRENT_PARAMS_IN_DESKTOP_LAUNCH_PARAMS),
     IGNORE_OVERRIDE_TASK_BOUNDS_IF_INCOMPATIBLE_WITH_DISPLAY(
             Flags::ignoreOverrideTaskBoundsIfIncompatibleWithDisplay, false,
             Flags.FLAG_IGNORE_OVERRIDE_TASK_BOUNDS_IF_INCOMPATIBLE_WITH_DISPLAY),

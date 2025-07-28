@@ -65,6 +65,8 @@ constructor(
     private val captureRegionSource = MutableStateFlow(ScreenCaptureRegion.FULLSCREEN)
     private val regionBoxSource = MutableStateFlow<Rect?>(null)
 
+    val displayId by lazy { activity.displayId }
+
     val icons: ScreenCaptureIcons? by iconProvider.icons.hydratedStateOf()
 
     val isShowingUI: Boolean by isShowingUIFlow.hydratedStateOf()
@@ -117,10 +119,7 @@ constructor(
         hideUI()
         closeUI()
 
-        backgroundScope.launch {
-            // TODO(b/430361425) Pass in current display as argument.
-            screenshotInteractor.takeFullscreenScreenshot()
-        }
+        backgroundScope.launch { screenshotInteractor.takeFullscreenScreenshot(displayId) }
     }
 
     fun takePartialScreenshot() {

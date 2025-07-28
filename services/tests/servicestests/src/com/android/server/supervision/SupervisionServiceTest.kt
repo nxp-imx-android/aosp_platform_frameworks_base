@@ -58,8 +58,8 @@ import android.provider.Settings.Secure.SEARCH_CONTENT_FILTERS_ENABLED
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import com.android.internal.R
-import com.android.internal.os.BackgroundThread
 import com.android.server.LocalServices
+import com.android.server.ServiceThread
 import com.android.server.SystemService.TargetUser
 import com.android.server.pm.UserManagerInternal
 import com.android.server.supervision.SupervisionService.ACTION_CONFIRM_SUPERVISION_CREDENTIALS
@@ -97,6 +97,7 @@ class SupervisionServiceTest {
     @get:Rule val checkFlagsRule = DeviceFlagsValueProvider.createCheckFlagsRule()
     @get:Rule val mocks: MockitoRule = MockitoJUnit.rule()
     @get:Rule val setFlagsRule = SetFlagsRule()
+    @get:Rule val serviceThreadRule = ServiceThreadRule()
 
     @Mock private lateinit var mockDpmInternal: DevicePolicyManagerInternal
     @Mock private lateinit var mockKeyguardManager: KeyguardManager
@@ -136,7 +137,7 @@ class SupervisionServiceTest {
         // supervision CTS tests use to enable supervision.
         context.permissions[BYPASS_ROLE_QUALIFICATION] = PERMISSION_GRANTED
 
-        injector = TestInjector(context)
+        injector = TestInjector(context, serviceThreadRule.serviceThread)
         service = SupervisionService(injector)
         lifecycle = SupervisionService.Lifecycle(context, service)
         lifecycle.registerProfileOwnerListener()
@@ -286,12 +287,10 @@ class SupervisionServiceTest {
         putSecureSetting(SEARCH_CONTENT_FILTERS_ENABLED, 1)
 
         setSupervisionEnabledForUser(USER_ID, true)
-        awaitBackgroundThreadIdle()
         assertThat(getSecureSetting(BROWSER_CONTENT_FILTERS_ENABLED)).isEqualTo(1)
         assertThat(getSecureSetting(SEARCH_CONTENT_FILTERS_ENABLED)).isEqualTo(1)
 
         setSupervisionEnabledForUser(USER_ID, false)
-        awaitBackgroundThreadIdle()
         assertThat(getSecureSetting(BROWSER_CONTENT_FILTERS_ENABLED)).isEqualTo(-1)
         assertThat(getSecureSetting(SEARCH_CONTENT_FILTERS_ENABLED)).isEqualTo(-1)
     }
@@ -339,13 +338,11 @@ class SupervisionServiceTest {
         assertThat(service.isSupervisionEnabledForUser(USER_ID)).isFalse()
 
         setSupervisionEnabledForUserInternal(USER_ID, true)
-        awaitBackgroundThreadIdle()
         assertThat(service.isSupervisionEnabledForUser(USER_ID)).isTrue()
         assertThat(getSecureSetting(BROWSER_CONTENT_FILTERS_ENABLED)).isEqualTo(1)
         assertThat(getSecureSetting(SEARCH_CONTENT_FILTERS_ENABLED)).isEqualTo(0)
 
         setSupervisionEnabledForUserInternal(USER_ID, false)
-        awaitBackgroundThreadIdle()
         assertThat(service.isSupervisionEnabledForUser(USER_ID)).isFalse()
         assertThat(getSecureSetting(BROWSER_CONTENT_FILTERS_ENABLED)).isEqualTo(-1)
         assertThat(getSecureSetting(SEARCH_CONTENT_FILTERS_ENABLED)).isEqualTo(0)
@@ -548,7 +545,7 @@ class SupervisionServiceTest {
         service.setSupervisionEnabledForUser(userId, enabled)
         assertThat(service.isSupervisionEnabledForUser(userId)).isEqualTo(enabled)
 
-        awaitBackgroundThreadIdle()
+        injector.awaitServiceThreadIdle()
 
         verifySupervisionListeners(userId, enabled, listeners)
     }
@@ -565,7 +562,7 @@ class SupervisionServiceTest {
         service.mInternal.setSupervisionEnabledForUser(userId, enabled)
         assertThat(service.isSupervisionEnabledForUser(userId)).isEqualTo(enabled)
 
-        awaitBackgroundThreadIdle()
+        injector.awaitServiceThreadIdle()
 
         verifySupervisionListeners(userId, enabled, listeners)
     }
@@ -660,21 +657,6 @@ class SupervisionServiceTest {
         return Settings.Secure.getIntForUser(context.contentResolver, name, USER_ID)
     }
 
-    /**
-     * Awaits for the background thread to become idle, ensuring all pending tasks are completed.
-     *
-     * This method uses `runWithScissors` with a timeout to wait for the background thread's handler
-     * to process all queued tasks. It asserts that the operation completes successfully within the
-     * timeout.
-     *
-     * @see android.os.Handler.runWithScissors
-     */
-    private fun awaitBackgroundThreadIdle() {
-        val timeout = 1.seconds.inWholeMilliseconds
-        val success = BackgroundThread.getHandler().runWithScissors({}, timeout)
-        assertWithMessage("Waiting on the background thread timed out").that(success).isTrue()
-    }
-
     private companion object {
         const val USER_ID = 0
         const val APP_UID = USER_ID * UserHandle.PER_USER_RANGE
@@ -697,7 +679,7 @@ class SupervisionServiceTest {
 
 typealias SupervisionListenerMap = Map<Int, Pair<ISupervisionListener, IBinder>>
 
-private class TestInjector(val context: Context) :
+private class TestInjector(val context: Context, private val serviceThread: ServiceThread) :
     SupervisionService.Injector(context) {
     private val roleHolders = mutableMapOf<Pair<String, UserHandle>, List<String>>()
 
@@ -713,6 +695,25 @@ private class TestInjector(val context: Context) :
 
     fun setRoleHoldersAsUser(roleName: String, user: UserHandle, packages: List<String>) {
         roleHolders[Pair(roleName, user)] = packages
+    }
+
+    override fun getServiceThread(): ServiceThread {
+        return serviceThread
+    }
+
+    /**
+     * Awaits for the service thread to become idle, ensuring all pending tasks are completed.
+     *
+     * This method uses `runWithScissors` with a timeout to wait for the service thread's handler to
+     * process all queued tasks. It asserts that the operation completes successfully within the
+     * timeout.
+     *
+     * @see android.os.Handler.runWithScissors
+     */
+    fun awaitServiceThreadIdle() {
+        val timeout = 1.seconds.inWholeMilliseconds
+        val success = serviceThread.threadHandler.runWithScissors({}, timeout)
+        assertWithMessage("Waiting on the service thread timed out").that(success).isTrue()
     }
 }
 

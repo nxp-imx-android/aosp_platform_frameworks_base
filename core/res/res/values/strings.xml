@@ -867,6 +867,9 @@
     <!-- label for item that locks the phone and enforces that it can't be unlocked without strong authentication. [CHAR LIMIT=24] -->
     <string name="global_action_lockdown">Lockdown</string>
 
+    <!-- label for item in phone options dialog that locks the phone and doesn't enforce unlocking with strong authentication. [CHAR LIMIT=24] -->
+    <string name="global_action_unrestricted_lock">Lock</string>
+
     <!-- @deprecated No longer used. -->
     <string name="status_bar_notification_info_overflow">999+</string>
 

@@ -74,7 +74,6 @@ import com.android.server.ServiceThread;
 import com.android.server.SystemService;
 import com.android.server.input.InputManagerInternal;
 import com.android.server.pm.UserManagerInternal;
-import com.android.server.wm.ImeTargetVisibilityPolicy;
 import com.android.server.wm.WindowManagerInternal;
 
 import org.junit.After;
@@ -124,7 +123,6 @@ public class InputMethodManagerServiceTestBase {
     @Mock protected IInputMethod mMockInputMethod;
     @Mock protected IBinder mMockInputMethodBinder;
     @Mock protected IInputManager mMockIInputManager;
-    @Mock protected ImeTargetVisibilityPolicy mMockImeTargetVisibilityPolicy;
     @Mock protected IProtoLogConfigurationService.Stub mMockProtoLogConfigurationService;
 
     protected Context mContext;
@@ -182,7 +180,6 @@ public class InputMethodManagerServiceTestBase {
         addLocalServiceMock(PackageManagerInternal.class, mMockPackageManagerInternal);
         addLocalServiceMock(InputManagerInternal.class, mMockInputManagerInternal);
         addLocalServiceMock(UserManagerInternal.class, mMockUserManagerInternal);
-        addLocalServiceMock(ImeTargetVisibilityPolicy.class, mMockImeTargetVisibilityPolicy);
 
         doReturn(mMockIInputMethodManager)
                 .when(() -> ServiceManager.getServiceOrThrow(Context.INPUT_METHOD_SERVICE));

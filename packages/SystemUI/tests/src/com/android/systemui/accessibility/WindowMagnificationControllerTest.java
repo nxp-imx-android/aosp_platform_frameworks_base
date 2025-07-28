@@ -64,7 +64,6 @@ import android.hardware.input.InputManager;
 import android.os.Handler;
 import android.os.RemoteException;
 import android.os.SystemClock;
-import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.EnableFlags;
 import android.provider.Settings;
 import android.testing.TestableLooper;
@@ -443,27 +442,6 @@ public class WindowMagnificationControllerTest extends SysuiTestCase {
         when(mMockInputManager.getInputDevice(1)).thenReturn(
                 new InputDevice.Builder().setSources(InputDevice.SOURCE_MOUSE).build());
 
-        final WindowManager wm = mContext.getSystemService(WindowManager.class);
-        final Rect bounds = wm.getCurrentWindowMetrics().getBounds();
-        setSystemGestureInsets();
-
-        mInstrumentation.runOnMainSync(() -> {
-            mWindowMagnificationController.updateWindowMagnificationInternal(Float.NaN, Float.NaN,
-                    bounds.bottom);
-        });
-        ReferenceTestUtils.waitForCondition(this::hasMagnificationOverlapFlag);
-
-        mInstrumentation.runOnMainSync(() -> {
-            mWindowMagnificationController.deleteWindowMagnification();
-        });
-
-        verify(mMirrorWindowControl).destroyControl();
-        assertThat(hasMagnificationOverlapFlag()).isFalse();
-    }
-
-    @Test
-    @DisableFlags(Flags.FLAG_UPDATE_WINDOW_MAGNIFIER_BOTTOM_BOUNDARY)
-    public void deleteWindowMagnification_enableAtTheBottom_overlapFlagIsFalse() {
         final WindowManager wm = mContext.getSystemService(WindowManager.class);
         final Rect bounds = wm.getCurrentWindowMetrics().getBounds();
         setSystemGestureInsets();
@@ -1284,23 +1262,6 @@ public class WindowMagnificationControllerTest extends SysuiTestCase {
     }
 
     @Test
-    @DisableFlags(Flags.FLAG_UPDATE_WINDOW_MAGNIFIER_BOTTOM_BOUNDARY)
-    public void moveWindowMagnificationToTheBottom_enabledWithGestureInset_overlapFlagIsTrue() {
-        final Rect bounds = mWindowManager.getCurrentWindowMetrics().getBounds();
-        setSystemGestureInsets();
-        mInstrumentation.runOnMainSync(() -> {
-            mWindowMagnificationController.updateWindowMagnificationInternal(Float.NaN, Float.NaN,
-                    Float.NaN);
-        });
-
-        mInstrumentation.runOnMainSync(() -> {
-            mWindowMagnificationController.moveWindowMagnifier(0, bounds.height());
-        });
-
-        ReferenceTestUtils.waitForCondition(() -> hasMagnificationOverlapFlag());
-    }
-
-    @Test
     @EnableFlags(Flags.FLAG_UPDATE_WINDOW_MAGNIFIER_BOTTOM_BOUNDARY_WITH_MOUSE)
     public void moveWindowMagnificationToTheBottom_withoutMouse_stopsAtSystemGestureTop() {
         // Makes sure any non-mouse device allows magnification overlaps with system gesture.
@@ -1336,7 +1297,6 @@ public class WindowMagnificationControllerTest extends SysuiTestCase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_UPDATE_WINDOW_MAGNIFIER_BOTTOM_BOUNDARY)
     public void moveWindowMagnificationToTheBottom_stopsAtSystemGestureTop() {
         final Rect bounds = mWindowManager.getCurrentWindowMetrics().getBounds();
         setSystemGestureInsets();

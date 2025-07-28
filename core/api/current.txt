@@ -6535,6 +6535,7 @@ package android.app {
     method public String getShortcutId();
     method public android.graphics.drawable.Icon getSmallIcon();
     method public String getSortKey();
+    method @FlaggedApi("android.app.nm_summarization_all") @Nullable public CharSequence getSummarizedContent();
     method public long getTimeoutAfter();
     method public boolean hasImage();
     method @FlaggedApi("android.app.api_rich_ongoing") public boolean hasPromotableCharacteristics();
@@ -6874,6 +6875,7 @@ package android.app {
     method @Deprecated public android.app.Notification.Builder setSound(android.net.Uri, android.media.AudioAttributes);
     method @NonNull public android.app.Notification.Builder setStyle(android.app.Notification.Style);
     method @NonNull public android.app.Notification.Builder setSubText(CharSequence);
+    method @FlaggedApi("android.app.nm_summarization_all") @NonNull public android.app.Notification.Builder setSummarizedContent(@Nullable CharSequence);
     method @NonNull public android.app.Notification.Builder setTicker(CharSequence);
     method @Deprecated public android.app.Notification.Builder setTicker(CharSequence, android.widget.RemoteViews);
     method @NonNull public android.app.Notification.Builder setTimeoutAfter(long);
@@ -9507,7 +9509,7 @@ package android.app.job {
     method public long getTriggerContentUpdateDelay();
     method @Nullable public android.app.job.JobInfo.TriggerContentUri[] getTriggerContentUris();
     method public boolean isExpedited();
-    method @Deprecated @FlaggedApi("android.app.job.ignore_important_while_foreground") public boolean isImportantWhileForeground();
+    method @Deprecated public boolean isImportantWhileForeground();
     method public boolean isPeriodic();
     method public boolean isPersisted();
     method public boolean isPrefetch();
@@ -44101,6 +44103,7 @@ package android.telecom {
     method public boolean can(int);
     method public static String capabilitiesToString(int);
     method public android.telecom.PhoneAccountHandle getAccountHandle();
+    method @FlaggedApi("com.android.server.telecom.flags.call_details_get_associated_user_api") @NonNull public android.os.UserHandle getAssociatedUser();
     method public int getCallCapabilities();
     method public int getCallDirection();
     method public int getCallProperties();

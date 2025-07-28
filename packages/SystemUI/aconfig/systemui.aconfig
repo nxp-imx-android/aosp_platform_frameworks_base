@@ -1436,6 +1436,16 @@ flag {
 }
 
 flag {
+   name: "keyguard_show_cancels_all_pending_exits"
+   namespace: "systemui"
+   description: "When keyguard becomes visible, prevent any preexisting exit calls from proceeding"
+   bug: "395640609"
+   metadata {
+       purpose: PURPOSE_BUGFIX
+   }
+}
+
+flag {
     name: "qs_tile_detailed_view"
     namespace: "systemui"
     description: "Enables the tile detailed view UI."

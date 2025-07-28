@@ -806,17 +806,14 @@ public class NotificationMenuRow implements NotificationMenuRowPlugin, View.OnCl
      */
     @VisibleForTesting
     void initializeBundleHeaderGutsContent(BundleHeaderGutsContent gutsContent) {
-
-        NotificationGuts guts = mParent.getGuts();
-
         Function0<Unit> onSettingsClicked = () -> {
-            guts.resetFalsingCheck();
+            mParent.getGuts().resetFalsingCheck();
             startBundleSettingsActivity(0, mParent);
             return Unit.INSTANCE;
         };
 
         Function0<Unit> onDismissBundle = () -> {
-            guts.resetFalsingCheck();
+            mParent.getGuts().resetFalsingCheck();
             mParent.getDismissButtonOnClickListener().onClick(gutsContent.getContentView());
             return Unit.INSTANCE;
         };

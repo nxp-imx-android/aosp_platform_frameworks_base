@@ -138,9 +138,9 @@ class VintfHalVibratorManager {
         }
 
         @Override
-        public void init(@NonNull Callbacks cb, @NonNull HalVibrator.Callbacks vibratorCb) {
+        public void init(@NonNull Callbacks cb, @NonNull HalVibrator.Callbacks vibratorCallbacks) {
             mCallbacks = new CallbacksWrapper(cb);
-            mNativeHandler.init(mCallbacks, vibratorCb);
+            mNativeHandler.init(mCallbacks, vibratorCallbacks);
 
             // Load vibrator hardware info. The vibrator ids and manager capabilities are loaded
             // once and assumed unchanged for the lifecycle of this service. Each vibrator can still
@@ -155,7 +155,7 @@ class VintfHalVibratorManager {
             mVibratorIds = vibratorIds.orElseGet(() -> new int[0]);
             for (int id : mVibratorIds) {
                 HalVibrator vibrator = mVibratorFactory.apply(id);
-                vibrator.init(vibratorCb);
+                vibrator.init(vibratorCallbacks);
                 mVibrators.put(id, vibrator);
             }
 

@@ -14,16 +14,16 @@
  * limitations under the License.
  */
 
-package com.prefabulated.bouncyball;
+package com.android.wm.shell.functional
 
-import android.app.Application;
-import android.test.ApplicationTestCase;
+import android.platform.test.annotations.Presubmit
+import android.platform.test.rule.ScreenRecordRule
+import com.android.wm.shell.scenarios.AltTabSwitchToUnminimizeInDesktopMode
+import org.junit.runner.RunWith
+import org.junit.runners.BlockJUnit4ClassRunner
 
-/**
- * <a href="http://d.android.com/tools/testing/testing_android.html">Testing Fundamentals</a>
- */
-public class ApplicationTest extends ApplicationTestCase<Application> {
-    public ApplicationTest() {
-        super(Application.class);
-    }
-}
+/* Functional test for [AltTabSwitchToUnminimizeInDesktopMode]. */
+@RunWith(BlockJUnit4ClassRunner::class)
+@Presubmit
+@ScreenRecordRule.ScreenRecord
+class AltTabSwitchToUnminimizeInDesktopModeTest : AltTabSwitchToUnminimizeInDesktopMode()
