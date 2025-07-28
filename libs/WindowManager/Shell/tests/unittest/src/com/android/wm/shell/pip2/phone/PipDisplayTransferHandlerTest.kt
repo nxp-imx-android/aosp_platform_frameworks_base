@@ -231,6 +231,8 @@ class PipDisplayTransferHandlerTest : ShellTestCase() {
         extra.putParcelable(PIP_DESTINATION_BOUNDS, destinationBounds)
         pipDisplayTransferHandler.mWaitingForDisplayTransfer = true
         pipDisplayTransferHandler.mTargetDisplayId = TARGET_DISPLAY_ID
+        mockPipTransitionState.pipTaskInfo = mockTaskInfo
+        mockPipTransitionState.pipCandidateTaskInfo = mockTaskInfo
 
         pipDisplayTransferHandler.onPipTransitionStateChanged(
             UNDEFINED,
@@ -240,6 +242,9 @@ class PipDisplayTransferHandlerTest : ShellTestCase() {
 
         verify(mockPipTransitionState).state = eq(EXITING_PIP)
         verify(mockPipTransitionState).state = eq(EXITED_PIP)
+        verify(mockPipTransitionState).pinnedTaskLeash = eq(mockLeash)
+        verify(mockPipTransitionState).pipTaskInfo = eq(mockTaskInfo)
+        verify(mockPipTransitionState).pipCandidateTaskInfo = eq(mockTaskInfo)
         verify(mockPipResizeAnimator).start()
     }
 
