@@ -1181,6 +1181,16 @@ flag {
 }
 
 flag {
+    name: "enable_remove_status_bar_input_layer"
+    namespace: "lse_desktop_experience"
+    description: "Removes app handle bounds from the status bar's touchable region so that input is sent directly to the app handle."
+    bug: "412444139"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "enable_request_fullscreen_bugfix"
     namespace: "lse_desktop_experience"
     description: "Fixes split to fullscreen restoration using the Activity#requestFullscreenMode API"
