@@ -338,11 +338,7 @@ constructor(
                         lockscreenToGlanceableHubTransitionViewModel.keyguardAlpha,
                         lockscreenToGoneTransitionViewModel.lockscreenAlpha(viewState),
                         lockscreenToOccludedTransitionViewModel.lockscreenAlpha,
-                        if (Flags.newDozingKeyguardStates()) {
-                            lockscreenToPrimaryBouncerTransitionViewModel.lockscreenAlpha(viewState)
-                        } else {
-                            lockscreenToPrimaryBouncerTransitionViewModel.lockscreenAlpha
-                        },
+                        lockscreenToPrimaryBouncerTransitionViewModel.lockscreenAlpha,
                         occludedToAlternateBouncerTransitionViewModel.lockscreenAlpha,
                         occludedToAodTransitionViewModel.lockscreenAlpha,
                         occludedToDozingTransitionViewModel.lockscreenAlpha,
