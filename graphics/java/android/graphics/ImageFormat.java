@@ -195,7 +195,7 @@ public class ImageFormat {
     /**
      * <p>Android YUV P010 format.</p>
      *
-     * P010 is a 4:2:0 YCbCr semiplanar format comprised of a WxH Y plane
+     * P010 is a 10-bit 4:2:0 YCbCr semiplanar format comprised of a WxH Y plane
      * followed by a Wx(H/2) CbCr plane. Each sample is represented by a 16-bit
      * little-endian value, with the lower 6 bits set to zero.
      *
@@ -214,7 +214,7 @@ public class ImageFormat {
     /**
      * <p>Android YUV P210 format.</p>
      *
-     * P210 is a 4:2:2 YCbCr semiplanar format comprised of a WxH Y plane
+     * P210 is a 10-bit 4:2:2 YCbCr semiplanar format comprised of a WxH Y plane
      * followed by a WxH CbCr plane. Each sample is represented by a 16-bit
      * little-endian value, with the lower 6 bits set to zero.
      *
