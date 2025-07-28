@@ -26,6 +26,7 @@ import android.hardware.biometrics.BiometricRequestConstants.REASON_ENROLL_ENROL
 import android.hardware.biometrics.BiometricRequestConstants.REASON_ENROLL_FIND_SENSOR
 import android.hardware.biometrics.BiometricRequestConstants.RequestReason
 import android.hardware.fingerprint.IUdfpsOverlayControllerCallback
+import android.os.Build
 import android.os.RemoteException
 import android.os.Trace
 import android.util.Log
@@ -213,6 +214,9 @@ constructor(
         addViewRunnable =
             kotlinx.coroutines.Runnable {
                 Trace.setCounter("UdfpsAddView", 1)
+                if (Build.IS_DEBUGGABLE) {
+                    Log.d(TAG, "adding view=$view")
+                }
                 windowManager.addView(view, coreLayoutParams.updateDimensions(animation))
             }
         if (powerInteractor.detailedWakefulness.value.isAwake()) {
@@ -250,10 +254,14 @@ constructor(
     /** Hide the overlay or return false and do nothing if it is already hidden. */
     fun hide(): Boolean {
         val wasShowing = isShowing
+        Log.d(TAG, "hideUdfpsControllerOverlay wasShowing=$wasShowing")
 
         udfpsDisplayModeProvider.disable(null)
         getTouchOverlay()?.apply {
             if (this.parent != null) {
+                if (Build.IS_DEBUGGABLE) {
+                    Log.d(TAG, "removing view=$this")
+                }
                 windowManager.removeView(this)
             }
             Trace.setCounter("UdfpsAddView", 0)
