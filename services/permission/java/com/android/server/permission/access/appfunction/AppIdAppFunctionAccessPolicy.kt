@@ -358,14 +358,14 @@ class AppIdAppFunctionAccessPolicy : SchemePolicy() {
     companion object {
         private val LOG_TAG = AppIdAppFunctionAccessPolicy::class.java.simpleName
 
-        // Grant logic ordering goes as follows: USER flags override OTHER flags.
+        // Grant logic ordering goes as follows: OTHER flags override USER flags.
         // If no other DENIED flags are applied, PREGRANTED or UPGRADE flag means granted.
         fun isAccessGranted(flags: Int): Boolean {
-            if (flags.hasAnyBit(ACCESS_FLAG_MASK_USER)) {
-                return flags.hasBits(ACCESS_FLAG_USER_GRANTED)
-            }
             if (flags.hasAnyBit(ACCESS_FLAG_MASK_OTHER)) {
                 return flags.hasBits(ACCESS_FLAG_OTHER_GRANTED)
+            }
+            if (flags.hasAnyBit(ACCESS_FLAG_MASK_USER)) {
+                return flags.hasBits(ACCESS_FLAG_USER_GRANTED)
             }
             return flags.hasAnyBit(ACCESS_FLAG_PREGRANTED or ACCESS_FLAG_UPGRADE_GRANTED)
         }

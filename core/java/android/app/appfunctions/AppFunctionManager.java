@@ -356,6 +356,25 @@ public final class AppFunctionManager {
     public static final int ACCESS_FLAG_UPGRADE_GRANTED = 1 << 1;
 
     /**
+     * A flag indicating the user granted the app function access state through UI
+     *
+     * @hide
+     */
+    @FlaggedApi(Flags.FLAG_APP_FUNCTION_ACCESS_API_ENABLED)
+    @SystemApi
+    public static final int ACCESS_FLAG_USER_GRANTED = 1 << 2;
+
+    /**
+     * A flag indicating the app function access state has been denied by the user. If set,
+     * overrides the {@link #ACCESS_FLAG_PREGRANTED} flag.
+     *
+     * @hide
+     */
+    @FlaggedApi(Flags.FLAG_APP_FUNCTION_ACCESS_API_ENABLED)
+    @SystemApi
+    public static final int ACCESS_FLAG_USER_DENIED = 1 << 3;
+
+    /**
      * A flag indicating the app function access is granted through a mechanism not tied to any
      * other flag (e.g. ADB)
      *
@@ -363,7 +382,7 @@ public final class AppFunctionManager {
      */
     @FlaggedApi(Flags.FLAG_APP_FUNCTION_ACCESS_API_ENABLED)
     @SystemApi
-    public static final int ACCESS_FLAG_OTHER_GRANTED = 1 << 2;
+    public static final int ACCESS_FLAG_OTHER_GRANTED = 1 << 4;
 
     /**
      * A flag indicating the app function access state has been denied by some other mechanism not
@@ -373,25 +392,7 @@ public final class AppFunctionManager {
      */
     @FlaggedApi(Flags.FLAG_APP_FUNCTION_ACCESS_API_ENABLED)
     @SystemApi
-    public static final int ACCESS_FLAG_OTHER_DENIED = 1 << 3;
-
-    /**
-     * A flag indicating the user granted the app function access state through UI
-     *
-     * @hide
-     */
-    @FlaggedApi(Flags.FLAG_APP_FUNCTION_ACCESS_API_ENABLED)
-    @SystemApi
-    public static final int ACCESS_FLAG_USER_GRANTED = 1 << 4;
-
-    /**
-     * A flag indicating the app function access state has been denied by the user
-     *
-     * @hide
-     */
-    @FlaggedApi(Flags.FLAG_APP_FUNCTION_ACCESS_API_ENABLED)
-    @SystemApi
-    public static final int ACCESS_FLAG_USER_DENIED = 1 << 5;
+    public static final int ACCESS_FLAG_OTHER_DENIED = 1 << 5;
 
     /**
      * All USER flags
