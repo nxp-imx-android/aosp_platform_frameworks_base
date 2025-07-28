@@ -240,6 +240,17 @@ java_aconfig_library {
     defaults: ["framework-minus-apex-aconfig-java-defaults"],
 }
 
+java_aconfig_library {
+    name: "telecom_flags_core_java_aconfig_java_exported_lib",
+    aconfig_declarations: "telecom_flags",
+    mode: "exported",
+    min_sdk_version: "30",
+    defaults: ["framework-minus-apex-aconfig-java-defaults"],
+    apex_available: [
+        "com.android.permission",
+    ],
+}
+
 // Telephony
 java_aconfig_library {
     name: "telephony_flags_core_java_lib",

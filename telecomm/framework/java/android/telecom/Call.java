@@ -1137,9 +1137,9 @@ public final class Call {
          * Gets the user that originated the call
          * @return The user
          *
-         * @hide
          */
-        public UserHandle getAssociatedUser() {
+        @FlaggedApi(Flags.FLAG_CALL_DETAILS_GET_ASSOCIATED_USER_API)
+        public @NonNull UserHandle getAssociatedUser() {
             return mAssociatedUser;
         }
 
