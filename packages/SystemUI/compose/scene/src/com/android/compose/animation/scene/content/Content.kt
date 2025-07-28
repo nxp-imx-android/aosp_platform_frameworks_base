@@ -24,6 +24,8 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
@@ -43,6 +45,11 @@ import androidx.compose.ui.node.ModifierNodeElement
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.IntSize
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.LifecycleRegistry
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.android.compose.animation.scene.Ancestor
 import com.android.compose.animation.scene.AnimatedState
 import com.android.compose.animation.scene.ContentKey
@@ -167,17 +174,42 @@ internal sealed class Content(
         // automatically used when calling rememberOverscrollEffect().
         val isElevationPossible =
             layoutImpl.state.isElevationPossible(content = key, element = null)
-        Box(
-            modifier.then(ContentElement(this, isElevationPossible, isInvisible)).thenIf(
-                layoutImpl.implicitTestTags
-            ) {
-                Modifier.testTag(key.testTag)
+
+        val content =
+            @Composable {
+                Box(
+                    modifier.then(ContentElement(this, isElevationPossible, isInvisible)).thenIf(
+                        layoutImpl.implicitTestTags
+                    ) {
+                        Modifier.testTag(key.testTag)
+                    }
+                ) {
+                    CompositionLocalProvider(LocalOverscrollFactory provides lastFactory) {
+                        scope.content()
+                    }
+                }
             }
-        ) {
-            CompositionLocalProvider(LocalOverscrollFactory provides lastFactory) {
-                scope.content()
-            }
+
+        if (alwaysCompose) {
+            AlwaysComposedContent(isInvisible, content)
+        } else {
+            content()
         }
+    }
+
+    @Composable
+    private fun AlwaysComposedContent(isInvisible: Boolean, content: @Composable () -> Unit) {
+        val maxState = if (isInvisible) Lifecycle.State.CREATED else Lifecycle.State.RESUMED
+        val parentLifecycle = LocalLifecycleOwner.current.lifecycle
+        val lifecycleOwner =
+            remember(parentLifecycle) { RestrictedLifecycleOwner(parentLifecycle, maxState) }
+        DisposableEffect(lifecycleOwner) { onDispose { lifecycleOwner.destroy() } }
+
+        if (maxState != lifecycleOwner.maxLifecycleState) {
+            SideEffect { lifecycleOwner.maxLifecycleState = maxState }
+        }
+
+        CompositionLocalProvider(LocalLifecycleOwner provides lifecycleOwner, content)
     }
 
     fun areNestedSwipesAllowed(): Boolean = nestedScrollControlState.isOuterScrollAllowed
@@ -376,5 +408,35 @@ internal class ContentScopeImpl(
             lookaheadScope = layoutImpl.lookaheadScope,
             implicitTestTags = layoutImpl.implicitTestTags,
         )
+    }
+}
+
+/** A [LifecycleOwner] that follows its [parentLifecycle] but is capped at [maxLifecycleState]. */
+private class RestrictedLifecycleOwner(
+    val parentLifecycle: Lifecycle,
+    maxLifecycleState: Lifecycle.State,
+) : LifecycleOwner {
+    override val lifecycle = LifecycleRegistry(this)
+
+    var maxLifecycleState = maxLifecycleState
+        set(value) {
+            field = value
+            updateState()
+        }
+
+    private val observer = LifecycleEventObserver { _, _ -> updateState() }
+
+    init {
+        updateState()
+        parentLifecycle.addObserver(observer)
+    }
+
+    private fun updateState() {
+        lifecycle.currentState = minOf(this.maxLifecycleState, parentLifecycle.currentState)
+    }
+
+    fun destroy() {
+        parentLifecycle.removeObserver(observer)
+        lifecycle.currentState = Lifecycle.State.DESTROYED
     }
 }
