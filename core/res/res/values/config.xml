@@ -1537,6 +1537,17 @@
          wrong guesses, improving usability. -->
     <bool name="config_softwareLskfRateLimiterEnforcing">false</bool>
 
+    <!-- Default value of the setting that controls whether animations should be disabled while
+         entering the PIN on the lockscreen.
+         False means animations should be enabled by default.
+         True means animations should be disabled by default. -->
+    <bool name="config_lockPinEnhancedPrivacyDefault">false</bool>
+
+    <!-- Default value for the setting that controls whether lock pattern is visible as user enters.
+         True means the pattern should be visible by default.
+         False means the pattern should not be visible by default. -->
+    <bool name="config_lockPatternVisibleDefault">true</bool>
+
     <!-- Control the behavior when the user long presses the home button.
             0 - Nothing
             1 - Launch all apps intent

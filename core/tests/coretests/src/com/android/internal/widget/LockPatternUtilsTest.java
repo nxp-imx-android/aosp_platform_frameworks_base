@@ -47,8 +47,7 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.ContextWrapper;
 import android.content.pm.UserInfo;
-import android.hardware.input.IInputManager;
-import android.hardware.input.InputManagerGlobal;
+import android.content.res.Resources;
 import android.os.Looper;
 import android.os.RemoteException;
 import android.os.UserHandle;
@@ -60,7 +59,6 @@ import android.platform.test.flag.junit.SetFlagsRule;
 import android.platform.test.ravenwood.RavenwoodRule;
 import android.provider.Settings;
 import android.test.mock.MockContentResolver;
-import android.view.InputDevice;
 
 import androidx.test.InstrumentationRegistry;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
@@ -94,6 +92,8 @@ public class LockPatternUtilsTest {
     private static final int DEMO_USER_ID = 5;
 
     private LockPatternUtils mLockPatternUtils;
+
+    private Resources mResources;
 
     private void configureTest(boolean isSecure, boolean isDemoUser, int deviceDemoMode)
             throws Exception {
@@ -458,155 +458,65 @@ public class LockPatternUtilsTest {
         };
     }
 
-    private InputManagerGlobal.TestSession configureExternalHardwareTest(InputDevice[] devices)
-            throws RemoteException {
-        final Context context = new ContextWrapper(InstrumentationRegistry.getTargetContext());
+    private void configureSensitiveInputVisibilityTest() throws RemoteException {
+        final Context context = spy(new ContextWrapper(InstrumentationRegistry.getTargetContext()));
         final ILockSettings ils = mock(ILockSettings.class);
         when(ils.getBoolean(anyString(), anyBoolean(), anyInt())).thenThrow(RemoteException.class);
         mLockPatternUtils = new LockPatternUtils(context, ils);
 
-        IInputManager inputManagerMock = mock(IInputManager.class);
-
-        int[] deviceIds = new int[devices.length];
-
-        for (int i = 0; i < devices.length; i++) {
-            when(inputManagerMock.getInputDevice(i)).thenReturn(devices[i]);
-        }
-
-        when(inputManagerMock.getInputDeviceIds()).thenReturn(deviceIds);
-        InputManagerGlobal.TestSession session =
-                InputManagerGlobal.createTestSession(inputManagerMock);
-
-        return session;
+        mResources = spy(context.getResources());
+        when(context.getResources()).thenReturn(mResources);
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_HIDE_LAST_CHAR_WITH_PHYSICAL_INPUT)
-    public void isPinEnhancedPrivacyEnabled_noDevicesAttached() throws RemoteException {
-        InputManagerGlobal.TestSession session = configureExternalHardwareTest(new InputDevice[0]);
-        assertFalse(mLockPatternUtils.isPinEnhancedPrivacyEnabled(USER_ID));
-        session.close();
-    }
-
-    @Test
-    @EnableFlags(Flags.FLAG_HIDE_LAST_CHAR_WITH_PHYSICAL_INPUT)
-    public void isPinEnhancedPrivacyEnabled_noEnabledDeviceAttached() throws RemoteException {
-        InputDevice.Builder builder = new InputDevice.Builder();
-        builder.setEnabled(false);
-        InputManagerGlobal.TestSession session =
-                configureExternalHardwareTest(new InputDevice[]{builder.build()});
-        assertFalse(mLockPatternUtils.isPinEnhancedPrivacyEnabled(USER_ID));
-        session.close();
-    }
-
-    @Test
-    @EnableFlags(Flags.FLAG_HIDE_LAST_CHAR_WITH_PHYSICAL_INPUT)
-    public void isPinEnhancedPrivacyEnabled_withoutHwKeyboard() throws RemoteException {
-        InputDevice.Builder builder = new InputDevice.Builder();
-        builder.setEnabled(true).setSources(InputDevice.SOURCE_TOUCHSCREEN);
-        InputManagerGlobal.TestSession session =
-                configureExternalHardwareTest(new InputDevice[]{builder.build()});
-        assertFalse(mLockPatternUtils.isPinEnhancedPrivacyEnabled(USER_ID));
-        session.close();
-    }
-
-    @Test
-    @EnableFlags(Flags.FLAG_HIDE_LAST_CHAR_WITH_PHYSICAL_INPUT)
-    public void isPinEnhancedPrivacyEnabled_withoutFullHwKeyboard() throws RemoteException {
-        InputDevice.Builder builder = new InputDevice.Builder();
-        builder
-                .setEnabled(true)
-                .setSources(InputDevice.SOURCE_KEYBOARD)
-                .setKeyboardType(InputDevice.KEYBOARD_TYPE_NON_ALPHABETIC);
-        InputManagerGlobal.TestSession session =
-                configureExternalHardwareTest(new InputDevice[]{builder.build()});
-        assertFalse(mLockPatternUtils.isPinEnhancedPrivacyEnabled(USER_ID));
-        session.close();
-    }
-
-    @Test
-    @DisableFlags(Flags.FLAG_HIDE_LAST_CHAR_WITH_PHYSICAL_INPUT)
-    public void isPinEnhancedPrivacyEnabled_withHwKeyboardOldDefault() throws RemoteException {
-        InputDevice.Builder builder = new InputDevice.Builder();
-        builder
-                .setEnabled(true)
-                .setSources(InputDevice.SOURCE_KEYBOARD)
-                .setKeyboardType(InputDevice.KEYBOARD_TYPE_ALPHABETIC);
-        InputManagerGlobal.TestSession session =
-                configureExternalHardwareTest(new InputDevice[]{builder.build()});
-        assertFalse(mLockPatternUtils.isPinEnhancedPrivacyEnabled(USER_ID));
-        session.close();
-    }
-
-    @Test
-    @EnableFlags(Flags.FLAG_HIDE_LAST_CHAR_WITH_PHYSICAL_INPUT)
-    public void isPinEnhancedPrivacyEnabled_withHwKeyboard() throws RemoteException {
-        InputDevice.Builder builder = new InputDevice.Builder();
-        builder
-                .setEnabled(true)
-                .setSources(InputDevice.SOURCE_KEYBOARD)
-                .setKeyboardType(InputDevice.KEYBOARD_TYPE_ALPHABETIC);
-        InputManagerGlobal.TestSession session =
-                configureExternalHardwareTest(new InputDevice[]{builder.build()});
-        assertTrue(mLockPatternUtils.isPinEnhancedPrivacyEnabled(USER_ID));
-        session.close();
-    }
-
-    @Test
-    @EnableFlags(Flags.FLAG_HIDE_LAST_CHAR_WITH_PHYSICAL_INPUT)
-    public void isVisiblePatternEnabled_noDevices() throws RemoteException {
-        InputManagerGlobal.TestSession session = configureExternalHardwareTest(new InputDevice[0]);
+    @EnableFlags(Flags.FLAG_USE_DEFAULT_VISIBILITY_FOR_SENSITIVE_INPUTS)
+    public void isVisiblePatternEnabled_WhenConfigValueTrue() throws RemoteException {
+        configureSensitiveInputVisibilityTest();
+        when(mResources.getBoolean(com.android.internal.R.bool.config_lockPatternVisibleDefault))
+                .thenReturn(true);
         assertTrue(mLockPatternUtils.isVisiblePatternEnabled(USER_ID));
-        session.close();
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_HIDE_LAST_CHAR_WITH_PHYSICAL_INPUT)
-    public void isVisiblePatternEnabled_noEnabledDevices() throws RemoteException {
-        InputDevice.Builder builder = new InputDevice.Builder();
-        builder.setEnabled(false);
-        InputManagerGlobal.TestSession session =
-                configureExternalHardwareTest(new InputDevice[]{builder.build()});
-        assertTrue(mLockPatternUtils.isVisiblePatternEnabled(USER_ID));
-        session.close();
-    }
-
-    @Test
-    @EnableFlags(Flags.FLAG_HIDE_LAST_CHAR_WITH_PHYSICAL_INPUT)
-    public void isVisiblePatternEnabled_noPointingDevices() throws RemoteException {
-        InputDevice.Builder builder = new InputDevice.Builder();
-        builder
-                .setEnabled(true)
-                .setSources(InputDevice.SOURCE_TOUCHSCREEN);
-        InputManagerGlobal.TestSession session =
-                configureExternalHardwareTest(new InputDevice[]{builder.build()});
-        assertTrue(mLockPatternUtils.isVisiblePatternEnabled(USER_ID));
-        session.close();
-    }
-
-    @Test
-    @EnableFlags(Flags.FLAG_HIDE_LAST_CHAR_WITH_PHYSICAL_INPUT)
-    public void isVisiblePatternEnabled_externalPointingDevice() throws RemoteException {
-        InputDevice.Builder builder = new InputDevice.Builder();
-        builder
-                .setEnabled(true)
-                .setSources(InputDevice.SOURCE_CLASS_POINTER);
-        InputManagerGlobal.TestSession session =
-                configureExternalHardwareTest(new InputDevice[]{builder.build()});
+    @EnableFlags(Flags.FLAG_USE_DEFAULT_VISIBILITY_FOR_SENSITIVE_INPUTS)
+    public void isVisiblePatternEnabled_WhenConfigValueFalse() throws RemoteException {
+        configureSensitiveInputVisibilityTest();
+        when(mResources.getBoolean(com.android.internal.R.bool.config_lockPatternVisibleDefault))
+                .thenReturn(false);
         assertFalse(mLockPatternUtils.isVisiblePatternEnabled(USER_ID));
-        session.close();
     }
 
     @Test
-    @DisableFlags(Flags.FLAG_HIDE_LAST_CHAR_WITH_PHYSICAL_INPUT)
-    public void isVisiblePatternEnabled_externalPointingDeviceOldDefault() throws RemoteException {
-        InputDevice.Builder builder = new InputDevice.Builder();
-        builder
-                .setEnabled(true)
-                .setSources(InputDevice.SOURCE_CLASS_POINTER);
-        InputManagerGlobal.TestSession session =
-                configureExternalHardwareTest(new InputDevice[]{builder.build()});
+    @DisableFlags(Flags.FLAG_USE_DEFAULT_VISIBILITY_FOR_SENSITIVE_INPUTS)
+    public void isVisiblePatternEnabled_OldDefault() throws RemoteException {
+        configureSensitiveInputVisibilityTest();
         assertTrue(mLockPatternUtils.isVisiblePatternEnabled(USER_ID));
-        session.close();
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_USE_DEFAULT_VISIBILITY_FOR_SENSITIVE_INPUTS)
+    public void isPinEnhancedPrivacyEnabled_WhenConfigValueTrue() throws RemoteException {
+        configureSensitiveInputVisibilityTest();
+        when(mResources.getBoolean(
+                        com.android.internal.R.bool.config_lockPinEnhancedPrivacyDefault))
+                .thenReturn(true);
+        assertTrue(mLockPatternUtils.isPinEnhancedPrivacyEnabled(USER_ID));
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_USE_DEFAULT_VISIBILITY_FOR_SENSITIVE_INPUTS)
+    public void isPinEnhancedPrivacyEnabled_WhenConfigValueFalse() throws RemoteException {
+        configureSensitiveInputVisibilityTest();
+        when(mResources.getBoolean(
+                        com.android.internal.R.bool.config_lockPinEnhancedPrivacyDefault))
+                .thenReturn(false);
+        assertFalse(mLockPatternUtils.isPinEnhancedPrivacyEnabled(USER_ID));
+    }
+
+    @Test
+    @DisableFlags(Flags.FLAG_USE_DEFAULT_VISIBILITY_FOR_SENSITIVE_INPUTS)
+    public void isPinEnhancedPrivacyEnabled_OldDefault() throws RemoteException {
+        configureSensitiveInputVisibilityTest();
+        assertFalse(mLockPatternUtils.isPinEnhancedPrivacyEnabled(USER_ID));
     }
 }
