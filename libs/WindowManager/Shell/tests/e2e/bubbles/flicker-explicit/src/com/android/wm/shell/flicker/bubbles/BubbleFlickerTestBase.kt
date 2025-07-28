@@ -48,7 +48,8 @@ import org.junit.runners.Parameterized
  * The base class of Bubble flicker tests, which includes:
  * - Generic tests: checks there's no flicker in visible windows/layers
  * - Launcher visibility tests: checks launcher window/layer is always visible
- * - System Bars tests; checks the visibility of navigation and status bar
+ * - System Bars tests: checks the visibility of navigation and status bar
+ * - Verify all tests with both gestural and 3-button navigation mode
  */
 @RunWith(Parameterized::class)
 abstract class BubbleFlickerTestBase : BubbleFlickerSubjects {

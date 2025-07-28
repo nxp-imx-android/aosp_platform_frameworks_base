@@ -38,7 +38,6 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TestRule
 import org.junit.runners.MethodSorters
-import org.junit.runners.Parameterized
 
 /**
  * Test entering bubble via dragging the [testApp] icon from task bar to bubble bar location.
@@ -73,12 +72,6 @@ class EnterBubbleViaDragToBubbleBarTest(navBar: NavBar) : BubbleFlickerTestBase(
             transition = { launchBubbleViaDragToBubbleBar(testApp, tapl, wmHelper) },
             tearDownAfterTransition = { testApp.exit(wmHelper) }
         )
-
-        // TODO(b/428566420): LauncherInstrumentation doesn't support to drag to bubble bar on 3
-        //  button nav mode.
-        @Parameterized.Parameters(name = "{0}")
-        @JvmStatic
-        fun data(): List<NavBar> = listOf(NavBar.MODE_GESTURAL)
     }
 
     @get:Rule
