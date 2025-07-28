@@ -2042,8 +2042,7 @@ public class QuotaControllerTest {
 
 
     @Test
-    @EnableFlags({Flags.FLAG_ADJUST_QUOTA_DEFAULT_CONSTANTS,
-            Flags.FLAG_ADDITIONAL_QUOTA_FOR_SYSTEM_INSTALLER})
+    @EnableFlags(Flags.FLAG_ADJUST_QUOTA_DEFAULT_CONSTANTS)
     public void testGetTimeUntilQuotaConsumedLocked_Installer_Tuning() {
         PackageInfo pi = new PackageInfo();
         pi.packageName = SOURCE_PACKAGE;
@@ -3780,7 +3779,6 @@ public class QuotaControllerTest {
         assertEquals(84 * SECOND_IN_MILLIS, mQuotaController.getEJGracePeriodTempAllowlistMs());
         assertEquals(83 * SECOND_IN_MILLIS, mQuotaController.getEJGracePeriodTopAppMs());
 
-        mSetFlagsRule.enableFlags(Flags.FLAG_ADDITIONAL_QUOTA_FOR_SYSTEM_INSTALLER);
         setDeviceConfigLong(QcConstants.KEY_ALLOWED_TIME_PER_PERIOD_ADDITION_INSTALLER_MS,
                 6 * MINUTE_IN_MILLIS);
         assertEquals(6 * MINUTE_IN_MILLIS,
@@ -3888,12 +3886,10 @@ public class QuotaControllerTest {
         assertEquals(0, mQuotaController.getEJGracePeriodTempAllowlistMs());
         assertEquals(0, mQuotaController.getEJGracePeriodTopAppMs());
 
-        mSetFlagsRule.enableFlags(Flags.FLAG_ADDITIONAL_QUOTA_FOR_SYSTEM_INSTALLER);
         setDeviceConfigLong(QcConstants.KEY_ALLOWED_TIME_PER_PERIOD_ADDITION_INSTALLER_MS,
                 -MINUTE_IN_MILLIS);
         assertEquals(0,
                 mQuotaController.getAllowedTimePeriodAdditionInstallerMs());
-        mSetFlagsRule.disableFlags(Flags.FLAG_ADDITIONAL_QUOTA_FOR_SYSTEM_INSTALLER);
 
         // Invalid configurations.
         // In_QUOTA_BUFFER should never be greater than ALLOWED_TIME_PER_PERIOD
@@ -3913,14 +3909,12 @@ public class QuotaControllerTest {
         assertTrue(mQuotaController.getAllowedTimePeriodAdditionInstallerMs()
                 <= mQuotaController.getAllowedTimePerPeriodMs()[FREQUENT_INDEX]);
 
-        mSetFlagsRule.enableFlags(Flags.FLAG_ADDITIONAL_QUOTA_FOR_SYSTEM_INSTALLER);
         // ALLOWED_TIME_PER_PERIOD_ADDITION_INSTALLER should never be greater than
         // ALLOWED_TIME_PER_PERIOD.
         setDeviceConfigLong(QcConstants.KEY_ALLOWED_TIME_PER_PERIOD_ADDITION_INSTALLER_MS,
                  15 * MINUTE_IN_MILLIS);
         assertTrue(mQuotaController.getInQuotaBufferMs()
                 <= mQuotaController.getAllowedTimePerPeriodMs()[EXEMPTED_INDEX]);
-        mSetFlagsRule.disableFlags(Flags.FLAG_ADDITIONAL_QUOTA_FOR_SYSTEM_INSTALLER);
 
         // Test larger than a day. Controller should cap at one day.
         setDeviceConfigLong(QcConstants.KEY_ALLOWED_TIME_PER_PERIOD_EXEMPTED_MS,
@@ -4001,11 +3995,9 @@ public class QuotaControllerTest {
         assertEquals(HOUR_IN_MILLIS, mQuotaController.getEJGracePeriodTempAllowlistMs());
         assertEquals(HOUR_IN_MILLIS, mQuotaController.getEJGracePeriodTopAppMs());
 
-        mSetFlagsRule.enableFlags(Flags.FLAG_ADDITIONAL_QUOTA_FOR_SYSTEM_INSTALLER);
         setDeviceConfigLong(QcConstants.KEY_ALLOWED_TIME_PER_PERIOD_ADDITION_INSTALLER_MS,
                 25 * HOUR_IN_MILLIS);
         assertEquals(0, mQuotaController.getAllowedTimePeriodAdditionInstallerMs());
-        mSetFlagsRule.disableFlags(Flags.FLAG_ADDITIONAL_QUOTA_FOR_SYSTEM_INSTALLER);
     }
 
     /** Tests that TimingSessions aren't saved when the device is charging. */

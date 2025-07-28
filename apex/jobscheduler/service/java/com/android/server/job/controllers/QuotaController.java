@@ -1107,7 +1107,6 @@ public final class QuotaController extends StateController {
         final long baseLimitMs = mAllowedTimePerPeriodMs[standbyBucket];
         if (Flags.adjustQuotaDefaultConstants()
                 && !isCompatOverridedForQuotaConstantAdjustment()
-                && Flags.additionalQuotaForSystemInstaller()
                 && standbyBucket == EXEMPTED_INDEX
                 && mSystemInstallers.contains(userId, pkgName)) {
             return baseLimitMs + mAllowedTimePeriodAdditionaInstallerMs;
@@ -4103,16 +4102,14 @@ public final class QuotaController extends StateController {
                 mShouldReevaluateConstraints = true;
             }
 
-            if (Flags.additionalQuotaForSystemInstaller()) {
-                // The additions must be in the range
-                // [0 minutes, exempted window size - active limit].
-                long newAdditionInstallerMs = Math.max(0,
-                        Math.min(mBucketPeriodsMs[EXEMPTED_INDEX] - newAllowedTimeExemptedMs,
-                                ALLOWED_TIME_PER_PERIOD_ADDITION_INSTALLER_MS));
-                if (mAllowedTimePeriodAdditionaInstallerMs != newAdditionInstallerMs) {
-                    mAllowedTimePeriodAdditionaInstallerMs = newAdditionInstallerMs;
-                    mShouldReevaluateConstraints = true;
-                }
+            // The additions must be in the range
+            // [0 minutes, exempted window size - active limit].
+            long newAdditionInstallerMs = Math.max(0,
+                    Math.min(mBucketPeriodsMs[EXEMPTED_INDEX] - newAllowedTimeExemptedMs,
+                            ALLOWED_TIME_PER_PERIOD_ADDITION_INSTALLER_MS));
+            if (mAllowedTimePeriodAdditionaInstallerMs != newAdditionInstallerMs) {
+                mAllowedTimePeriodAdditionaInstallerMs = newAdditionInstallerMs;
+                mShouldReevaluateConstraints = true;
             }
         }
 
@@ -4559,8 +4556,6 @@ public final class QuotaController extends StateController {
         pw.println("Aconfig Flags:");
         pw.println("    " + Flags.FLAG_ADJUST_QUOTA_DEFAULT_CONSTANTS
                 + ": " + Flags.adjustQuotaDefaultConstants());
-        pw.println("    " + Flags.FLAG_ADDITIONAL_QUOTA_FOR_SYSTEM_INSTALLER
-                + ": " + Flags.additionalQuotaForSystemInstaller());
         pw.println();
 
         pw.println("Current elapsed time: " + sElapsedRealtimeClock.millis());
