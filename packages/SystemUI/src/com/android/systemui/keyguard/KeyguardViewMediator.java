@@ -41,7 +41,6 @@ import static com.android.internal.widget.LockPatternUtils.StrongAuthTracker.STR
 import static com.android.internal.widget.LockPatternUtils.StrongAuthTracker.STRONG_AUTH_REQUIRED_AFTER_USER_LOCKDOWN;
 import static com.android.internal.widget.LockPatternUtils.StrongAuthTracker.STRONG_AUTH_REQUIRED_FOR_UNATTENDED_UPDATE;
 import static com.android.systemui.DejankUtils.whitelistIpcs;
-import static com.android.systemui.Flags.keyguardShowCancelsAllPendingExits;
 import static com.android.systemui.Flags.simPinBouncerReset;
 import static com.android.systemui.keyguard.ui.viewmodel.LockscreenToDreamingTransitionViewModel.DREAMING_ANIMATION_DURATION_MS;
 
@@ -3104,16 +3103,6 @@ public class KeyguardViewMediator implements CoreStartable,
             setShowingLocked(true, hidingOrGoingAway /* force */, "handleShowInner");
             mHiding = false;
 
-            if (keyguardShowCancelsAllPendingExits()) {
-                // Make sure to remove any pending exit animation requests that would override a
-                // SHOW
-                mIsKeyguardExitAnimationCanceled = true;
-                mHandler.removeMessages(START_KEYGUARD_EXIT_ANIM);
-                mHandler.removeMessages(HIDE);
-                mKeyguardInteractor.showKeyguard();
-                mKeyguardStateController.notifyKeyguardGoingAway(false);
-            }
-
             if (!KeyguardWmStateRefactor.isEnabled()) {
                 // Handled directly in StatusBarKeyguardViewManager if enabled.
                 mKeyguardViewControllerLazy.get().show(options);
@@ -3336,15 +3325,10 @@ public class KeyguardViewMediator implements CoreStartable,
         Log.d(TAG, "handleStartKeyguardExitAnimation startTime=" + startTime
                 + " fadeoutDuration=" + fadeoutDuration);
         int currentUserId = mSelectedUserInteractor.getSelectedUserId();
-        if (!KeyguardWmStateRefactor.isEnabled() && (mGoingAwayRequestedForUserId != currentUserId
-                || !mKeyguardStateController.isKeyguardGoingAway())) {
-            if (!mKeyguardStateController.isKeyguardGoingAway()) {
-                Log.e(TAG, "Keyguard no longer going away, not processing exit animation");
-            } else {
-                Log.e(TAG, "Not executing handleStartKeyguardExitAnimationInner() due to userId "
-                        + "mismatch. Requested: " + mGoingAwayRequestedForUserId + ", current: "
-                        + currentUserId);
-            }
+        if (!KeyguardWmStateRefactor.isEnabled() && mGoingAwayRequestedForUserId != currentUserId) {
+            Log.e(TAG, "Not executing handleStartKeyguardExitAnimationInner() due to userId "
+                    + "mismatch. Requested: " + mGoingAwayRequestedForUserId + ", current: "
+                    + currentUserId);
             if (finishedCallback != null) {
                 // There will not execute animation, send a finish callback to ensure the remote
                 // animation won't hang there.
