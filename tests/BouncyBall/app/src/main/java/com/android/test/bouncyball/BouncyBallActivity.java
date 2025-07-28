@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.prefabulated.bouncyball;
+package com.android.test.bouncyball;
 
 import android.hardware.display.DisplayManager;
 import android.os.Bundle;
