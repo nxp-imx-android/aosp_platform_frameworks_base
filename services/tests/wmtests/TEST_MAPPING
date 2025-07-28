@@ -1,10 +1,16 @@
 {
   "wm": [
     {
+      "name": "WmTests-CatchAll"
+    },
+    {
       "name": "WmTests-policy-DeferredKeyActionExecutorTests"
     },
     {
       "name": "WmTests-policy-KeyGestureEventTests"
+    },
+    {
+      "name": "WmTests-policy-KeyGestureEventTvTests"
     },
     {
       "name": "WmTests-policy-PhoneWindowManagerTests"
@@ -73,6 +79,18 @@
       "name": "WmTests-wm-AppCompatCameraPolicyTest"
     },
     {
+      "name": "WmTests-wm-AppCompatCameraRotationStateTests"
+    },
+    {
+      "name": "WmTests-wm-AppCompatCameraStateSourceTests"
+    },
+    {
+      "name": "WmTests-wm-AppCompatCameraStateStrategyForPackageTests"
+    },
+    {
+      "name": "WmTests-wm-AppCompatCameraStateStrategyForTaskTests"
+    },
+    {
       "name": "WmTests-wm-AppCompatConfigurationPersisterTest"
     },
     {
@@ -86,6 +104,9 @@
     },
     {
       "name": "WmTests-wm-AppCompatLetterboxOverrideTest"
+    },
+    {
+      "name": "WmTests-wm-AppCompatLetterboxPolicyStateTest"
     },
     {
       "name": "WmTests-wm-AppCompatLetterboxPolicyTest"
@@ -139,10 +160,13 @@
       "name": "WmTests-wm-CameraCompatFreeformPolicyTests"
     },
     {
+      "name": "WmTests-wm-CameraIdAppPairsSetTests"
+    },
+    {
       "name": "WmTests-wm-CameraIdPackageNameBiMappingTests"
     },
     {
-      "name": "WmTests-wm-CameraStateMonitorImplTests"
+      "name": "WmTests-wm-CameraStateMonitorTests"
     },
     {
       "name": "WmTests-wm-ClientLifecycleManagerTests"
@@ -248,6 +272,9 @@
     },
     {
       "name": "WmTests-wm-DualDisplayAreaGroupPolicyTest"
+    },
+    {
+      "name": "WmTests-wm-EmulatorDisplayOverlayTests"
     },
     {
       "name": "WmTests-wm-FrameRateSelectionPriorityTests"
@@ -497,9 +524,6 @@
     },
     {
       "name": "WmTests-wm-utils-WmDisplayCutoutTest"
-    },
-    {
-      "name": "WmTests-CatchAll"
     }
   ]
 }
