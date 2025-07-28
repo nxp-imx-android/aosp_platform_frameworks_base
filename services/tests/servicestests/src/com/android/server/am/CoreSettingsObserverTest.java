@@ -20,9 +20,9 @@ import static androidx.test.platform.app.InstrumentationRegistry.getInstrumentat
 
 import static com.android.server.am.ActivityManagerService.Injector;
 
+import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.truth.Truth.assertWithMessage;
 
-import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.anyInt;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -67,6 +67,7 @@ public class CoreSettingsObserverTest {
     private static final int TEST_INT = 111;
     private static final float TEST_FLOAT = 3.14f;
     private static final String TEST_STRING = "testString";
+    private static final float TOLERANCE = 0.001f;
 
     @Rule
     public ServiceThreadRule mServiceThreadRule = new ServiceThreadRule();
@@ -99,6 +100,7 @@ public class CoreSettingsObserverTest {
     public void setUp() {
         MockitoAnnotations.initMocks(this);
 
+        // Mock context and content resolver.
         final Context originalContext = getInstrumentation().getTargetContext();
         when(mContext.getApplicationInfo()).thenReturn(originalContext.getApplicationInfo());
         mContentResolver = new MockContentResolver(mContext);
@@ -114,6 +116,7 @@ public class CoreSettingsObserverTest {
         when(mockTypedArray.length()).thenReturn(1);
         when(mResources.obtainTypedArray(anyInt())).thenReturn(mockTypedArray);
 
+        // Initialize ActivityManagerService and CoreSettingsObserver.
         mAms = new ActivityManagerService(new TestInjector(mContext),
                 mServiceThreadRule.getThread());
         mCoreSettingsObserver = new CoreSettingsObserver(mAms);
@@ -127,23 +130,23 @@ public class CoreSettingsObserverTest {
 
         final Bundle settingsBundle = getPopulatedBundle();
 
-        assertEquals("Unexpected value of " + TEST_SETTING_SECURE_INT,
-                TEST_INT, settingsBundle.getInt(TEST_SETTING_SECURE_INT));
-        assertEquals("Unexpected value of " + TEST_SETTING_GLOBAL_FLOAT,
-                TEST_FLOAT, settingsBundle.getFloat(TEST_SETTING_GLOBAL_FLOAT), 0);
-        assertEquals("Unexpected value of " + TEST_SETTING_SYSTEM_STRING,
-                TEST_STRING, settingsBundle.getString(TEST_SETTING_SYSTEM_STRING));
+        // Assert that the bundle contains the correct values.
+        assertThat(settingsBundle.getInt(TEST_SETTING_SECURE_INT)).isEqualTo(TEST_INT);
+        assertThat(settingsBundle.getFloat(TEST_SETTING_GLOBAL_FLOAT)).isWithin(TOLERANCE).of(
+                TEST_FLOAT);
+        assertThat(settingsBundle.getString(TEST_SETTING_SYSTEM_STRING)).isEqualTo(TEST_STRING);
     }
 
     @Test
     public void testPopulateSettings_settingNotSet() {
         final Bundle settingsBundle = getPopulatedBundle();
 
-        assertWithMessage("Bundle should not contain " + TEST_SETTING_SECURE_INT)
+        // Assert that the bundle does not contain any of the test settings.
+        assertWithMessage("Bundle should not contain %s", TEST_SETTING_SECURE_INT)
                 .that(settingsBundle.keySet()).doesNotContain(TEST_SETTING_SECURE_INT);
-        assertWithMessage("Bundle should not contain " + TEST_SETTING_GLOBAL_FLOAT)
+        assertWithMessage("Bundle should not contain %s", TEST_SETTING_GLOBAL_FLOAT)
                 .that(settingsBundle.keySet()).doesNotContain(TEST_SETTING_GLOBAL_FLOAT);
-        assertWithMessage("Bundle should not contain " + TEST_SETTING_SYSTEM_STRING)
+        assertWithMessage("Bundle should not contain %s", TEST_SETTING_SYSTEM_STRING)
                 .that(settingsBundle.keySet()).doesNotContain(TEST_SETTING_SYSTEM_STRING);
     }
 
@@ -153,24 +156,26 @@ public class CoreSettingsObserverTest {
         Settings.Global.putFloat(mContentResolver, TEST_SETTING_GLOBAL_FLOAT, TEST_FLOAT);
         Settings.System.putString(mContentResolver, TEST_SETTING_SYSTEM_STRING, TEST_STRING);
 
+        // Trigger the observer and get the populated bundle.
         Bundle settingsBundle = getPopulatedBundle();
 
-        assertEquals("Unexpected value of " + TEST_SETTING_SECURE_INT,
-                TEST_INT, settingsBundle.getInt(TEST_SETTING_SECURE_INT));
-        assertEquals("Unexpected value of " + TEST_SETTING_GLOBAL_FLOAT,
-                TEST_FLOAT, settingsBundle.getFloat(TEST_SETTING_GLOBAL_FLOAT), 0);
-        assertEquals("Unexpected value of " + TEST_SETTING_SYSTEM_STRING,
-                TEST_STRING, settingsBundle.getString(TEST_SETTING_SYSTEM_STRING));
+        // Assert that the bundle contains the correct values initially.
+        assertThat(settingsBundle.getInt(TEST_SETTING_SECURE_INT)).isEqualTo(TEST_INT);
+        assertThat(settingsBundle.getFloat(TEST_SETTING_GLOBAL_FLOAT)).isWithin(TOLERANCE).of(
+                TEST_FLOAT);
+        assertThat(settingsBundle.getString(TEST_SETTING_SYSTEM_STRING)).isEqualTo(TEST_STRING);
 
+        // Delete one of the settings.
         Settings.Global.putString(mContentResolver, TEST_SETTING_GLOBAL_FLOAT, null);
+        // Trigger the observer again.
         settingsBundle = getPopulatedBundle();
 
-        assertWithMessage("Bundle should not contain " + TEST_SETTING_GLOBAL_FLOAT)
+        // Assert that the deleted setting is no longer in the bundle.
+        assertWithMessage("Bundle should not contain %s", TEST_SETTING_GLOBAL_FLOAT)
                 .that(settingsBundle.keySet()).doesNotContain(TEST_SETTING_GLOBAL_FLOAT);
-        assertEquals("Unexpected value of " + TEST_SETTING_SECURE_INT,
-                TEST_INT, settingsBundle.getInt(TEST_SETTING_SECURE_INT));
-        assertEquals("Unexpected value of " + TEST_SETTING_SYSTEM_STRING,
-                TEST_STRING, settingsBundle.getString(TEST_SETTING_SYSTEM_STRING));
+        // Assert that the other settings remain.
+        assertThat(settingsBundle.getInt(TEST_SETTING_SECURE_INT)).isEqualTo(TEST_INT);
+        assertThat(settingsBundle.getString(TEST_SETTING_SYSTEM_STRING)).isEqualTo(TEST_STRING);
     }
 
     @Test
@@ -182,7 +187,7 @@ public class CoreSettingsObserverTest {
 
     private Bundle getPopulatedBundle() {
         mCoreSettingsObserver.onChange(false);
-        return mCoreSettingsObserver.getCoreSettingsLocked().getBundle(
+        return mCoreSettingsObserver.getCoreSettings().getBundle(
                 String.valueOf(Context.DEVICE_ID_DEFAULT));
     }
 

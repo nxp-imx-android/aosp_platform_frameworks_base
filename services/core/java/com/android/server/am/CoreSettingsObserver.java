@@ -17,6 +17,7 @@
 package com.android.server.am;
 
 import android.annotation.NonNull;
+import android.annotation.Nullable;
 import android.app.ActivityThread;
 import android.companion.virtual.VirtualDevice;
 import android.companion.virtual.VirtualDeviceManager;
@@ -27,11 +28,13 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.provider.DeviceConfig;
 import android.provider.Settings;
-import android.util.Slog;
+import android.util.IntArray;
 import android.widget.WidgetFlags;
 
 import com.android.internal.R;
+import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
+import com.android.server.utils.Slogf;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -49,6 +52,9 @@ import java.util.Objects;
 final class CoreSettingsObserver extends ContentObserver {
 
     private static final String TAG = "CoreSettingsObserver";
+    private static final boolean DEBUG = false;
+
+    private final Object mLock = new Object();
 
     private static class DeviceConfigEntry<T> {
         String namespace;
@@ -170,9 +176,12 @@ final class CoreSettingsObserver extends ContentObserver {
     }
     private static volatile boolean sDeviceConfigContextEntriesLoaded = false;
 
+    @GuardedBy("mLock")
     private final Bundle mCoreSettings = new Bundle();
 
     private final ActivityManagerService mActivityManagerService;
+
+    @Nullable
     private VirtualDeviceManager mVirtualDeviceManager;
 
     public CoreSettingsObserver(ActivityManagerService activityManagerService) {
@@ -200,87 +209,127 @@ final class CoreSettingsObserver extends ContentObserver {
                         .getInteger(R.integer.config_defaultAnalogClockSecondsHandFps)));
     }
 
-    public Bundle getCoreSettingsLocked() {
-        return mCoreSettings.deepCopy();
+    /**
+     * Gets a deep copy of the core settings.
+     */
+    public Bundle getCoreSettings() {
+        synchronized (mLock) {
+            return mCoreSettings.deepCopy();
+        }
     }
 
     @Override
     public void onChange(boolean selfChange) {
-        synchronized (mActivityManagerService) {
-            sendCoreSettings();
+        if (DEBUG) {
+            Slogf.d(TAG, "Core settings changed, selfChange: %b", selfChange);
         }
+        sendCoreSettings();
     }
 
-    private void sendCoreSettings() {
-        final Context context = mActivityManagerService.mContext;
-        if (android.companion.virtualdevice.flags.Flags.deviceAwareSettingsOverride()) {
-            final List<Integer> deviceIds = new ArrayList<>();
+    private IntArray getVirtualDeviceIds() {
+        if (mVirtualDeviceManager == null) {
+            mVirtualDeviceManager = mActivityManagerService.mContext.getSystemService(
+                    VirtualDeviceManager.class);
             if (mVirtualDeviceManager == null) {
-                mVirtualDeviceManager = mActivityManagerService.mContext.getSystemService(
-                        VirtualDeviceManager.class);
+                return new IntArray(0);
             }
-            if (mVirtualDeviceManager != null) {
-                final List<VirtualDevice> virtualDevices =
-                        mVirtualDeviceManager.getVirtualDevices();
-                for (VirtualDevice virtualDevice : virtualDevices) {
-                    deviceIds.add(virtualDevice.getDeviceId());
-                }
-            }
-
-            Bundle globalSettingsBundle = new Bundle();
-            populateSettings(context, globalSettingsBundle, sGlobalSettingToTypeMap);
-            Bundle deviceConfigBundle = new Bundle();
-            populateSettingsFromDeviceConfig(deviceConfigBundle);
-
-            deviceIds.add(Context.DEVICE_ID_DEFAULT);
-            for (int deviceId : deviceIds) {
-                final Bundle deviceBundle = new Bundle();
-                Context deviceContext = null;
-                try {
-                    deviceContext = context.createDeviceContext(deviceId);
-                } catch (IllegalArgumentException e) {
-                    Slog.w(TAG, "Exception during Context#createDeviceContext", e);
-                }
-
-                if (deviceContext != null) {
-                    populateSettings(deviceContext, deviceBundle, sSecureSettingToTypeMap);
-                    populateSettings(deviceContext, deviceBundle, sSystemSettingToTypeMap);
-
-                    // Copy global settings and device config values, as they don't vary across
-                    // devices.
-                    deviceBundle.putAll(globalSettingsBundle);
-                    deviceBundle.putAll(deviceConfigBundle);
-
-                    mCoreSettings.putBundle(String.valueOf(deviceId), deviceBundle);
-                }
-            }
-        } else {
-            populateSettings(context, mCoreSettings, sSecureSettingToTypeMap);
-            populateSettings(context, mCoreSettings, sSystemSettingToTypeMap);
-            populateSettings(context, mCoreSettings, sGlobalSettingToTypeMap);
-            populateSettingsFromDeviceConfig(mCoreSettings);
         }
 
-        mActivityManagerService.onCoreSettingsChange(mCoreSettings);
+        List<VirtualDevice> virtualDevices = mVirtualDeviceManager.getVirtualDevices();
+        IntArray deviceIds = new IntArray(virtualDevices.size());
+        for (int i = 0; i < virtualDevices.size(); i++) {
+            deviceIds.add(virtualDevices.get(i).getDeviceId());
+        }
+        return deviceIds;
+    }
+
+    /**
+     * Populates the core settings bundle with the latest values and sends them to app processes
+     * via {@link ActivityThread}.
+     */
+    private void sendCoreSettings() {
+        Context context = mActivityManagerService.mContext;
+
+        // Create a temporary bundle to store the settings that will be sent.
+        Bundle settingsToSend;
+
+        if (android.companion.virtualdevice.flags.Flags.deviceAwareSettingsOverride()) {
+            IntArray deviceIds = getVirtualDeviceIds();
+            deviceIds.add(Context.DEVICE_ID_DEFAULT);
+            settingsToSend = new Bundle(deviceIds.size());
+
+            // Global settings and device config values do not vary across devices, so we can
+            // populate them once.
+            Bundle globalSettingsBundle = new Bundle(sGlobalSettingToTypeMap.size());
+            populateSettings(context, globalSettingsBundle, sGlobalSettingToTypeMap);
+            Bundle deviceConfigBundle = new Bundle(sDeviceConfigEntries.size());
+            populateSettingsFromDeviceConfig(deviceConfigBundle);
+
+            for (int i = 0; i < deviceIds.size(); i++) {
+                int deviceId = deviceIds.get(i);
+                Context deviceContext = null;
+                if (deviceId == Context.DEVICE_ID_DEFAULT) {
+                    deviceContext = context;
+                } else {
+                    try {
+                        deviceContext = context.createDeviceContext(deviceId);
+                    } catch (IllegalArgumentException e) {
+                        Slogf.e(TAG, e, "Exception during Context#createDeviceContext "
+                                + "for deviceId: %d", deviceId);
+                        continue;
+                    }
+                }
+
+                if (DEBUG) {
+                    Slogf.d(TAG, "Populating settings for deviceId: %d", deviceId);
+                }
+                Bundle deviceBundle = new Bundle();
+                populateSettings(deviceContext, deviceBundle, sSecureSettingToTypeMap);
+                populateSettings(deviceContext, deviceBundle, sSystemSettingToTypeMap);
+
+                // Copy global settings and device config values.
+                deviceBundle.putAll(globalSettingsBundle);
+                deviceBundle.putAll(deviceConfigBundle);
+
+                settingsToSend.putBundle(String.valueOf(deviceId), deviceBundle);
+            }
+        } else {
+            if (DEBUG) {
+                Slogf.d(TAG, "Populating settings for default device");
+            }
+
+            // For non-device-aware case, populate all settings into the single bundle.
+            settingsToSend = new Bundle();
+            populateSettings(context, settingsToSend, sSecureSettingToTypeMap);
+            populateSettings(context, settingsToSend, sSystemSettingToTypeMap);
+            populateSettings(context, settingsToSend, sGlobalSettingToTypeMap);
+            populateSettingsFromDeviceConfig(settingsToSend);
+        }
+
+        synchronized (mLock) {
+            mCoreSettings.clear();
+            mCoreSettings.putAll(settingsToSend);
+        }
+
+        mActivityManagerService.onCoreSettingsChange(settingsToSend);
     }
 
     private void beginObserveCoreSettings() {
+        ContentResolver cr = mActivityManagerService.mContext.getContentResolver();
+
         for (String setting : sSecureSettingToTypeMap.keySet()) {
             Uri uri = Settings.Secure.getUriFor(setting);
-            mActivityManagerService.mContext.getContentResolver().registerContentObserver(
-                    uri, false, this);
+            cr.registerContentObserver(uri, false, this);
         }
 
         for (String setting : sSystemSettingToTypeMap.keySet()) {
             Uri uri = Settings.System.getUriFor(setting);
-            mActivityManagerService.mContext.getContentResolver().registerContentObserver(
-                    uri, false, this);
+            cr.registerContentObserver(uri, false, this);
         }
 
         for (String setting : sGlobalSettingToTypeMap.keySet()) {
             Uri uri = Settings.Global.getUriFor(setting);
-            mActivityManagerService.mContext.getContentResolver().registerContentObserver(
-                    uri, false, this);
+            cr.registerContentObserver(uri, false, this);
         }
 
         HashSet<String> deviceConfigNamespaces = new HashSet<>();
@@ -294,6 +343,13 @@ final class CoreSettingsObserver extends ContentObserver {
         }
     }
 
+    /**
+     * Populates the given bundle with settings from the given map.
+     *
+     * @param context The context to use for retrieving the settings.
+     * @param snapshot The bundle to populate.
+     * @param map The map of settings to retrieve.
+     */
     @VisibleForTesting
     void populateSettings(Context context, Bundle snapshot, Map<String, Class<?>> map) {
         final ContentResolver cr = context.getContentResolver();
@@ -312,14 +368,18 @@ final class CoreSettingsObserver extends ContentObserver {
                 continue;
             }
             Class<?> type = entry.getValue();
-            if (type == String.class) {
-                snapshot.putString(setting, value);
-            } else if (type == int.class) {
-                snapshot.putInt(setting, Integer.parseInt(value));
-            } else if (type == float.class) {
-                snapshot.putFloat(setting, Float.parseFloat(value));
-            } else if (type == long.class) {
-                snapshot.putLong(setting, Long.parseLong(value));
+            try {
+                if (type == String.class) {
+                    snapshot.putString(setting, value);
+                } else if (type == int.class) {
+                    snapshot.putInt(setting, Integer.parseInt(value));
+                } else if (type == float.class) {
+                    snapshot.putFloat(setting, Float.parseFloat(value));
+                } else if (type == long.class) {
+                    snapshot.putLong(setting, Long.parseLong(value));
+                }
+            } catch (NumberFormatException e) {
+                Slogf.w(TAG, e, "Couldn't parse %s for %s", value, setting);
             }
         }
     }
