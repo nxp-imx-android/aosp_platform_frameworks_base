@@ -66,6 +66,8 @@ import android.view.Display;
 import android.view.DisplayInfo;
 import android.view.MotionEvent;
 import android.view.WindowManager;
+import android.widget.Toast;
+import android.window.DesktopExperienceFlags;
 
 import com.android.internal.R;
 import com.android.internal.annotations.VisibleForTesting;
@@ -85,6 +87,7 @@ import com.android.systemui.dagger.SysUISingleton;
 import com.android.systemui.dagger.qualifiers.Application;
 import com.android.systemui.dagger.qualifiers.Background;
 import com.android.systemui.dagger.qualifiers.Main;
+import com.android.systemui.display.data.repository.FocusedDisplayRepository;
 import com.android.systemui.doze.DozeReceiver;
 import com.android.systemui.keyguard.WakefulnessLifecycle;
 import com.android.systemui.keyguard.data.repository.BiometricType;
@@ -198,6 +201,9 @@ public class AuthController implements
     @NonNull private final PromptFallbackViewModel.Factory mPromptFallbackViewModelFactory;
 
     private final WindowManagerProvider mWindowManagerProvider;
+    private final FocusedDisplayRepository mFocusedDisplayRepository;
+
+    private Toast mSecondaryDisplayToast;
 
     @VisibleForTesting
     final TaskStackListener mTaskStackListener = new TaskStackListener() {
@@ -243,6 +249,8 @@ public class AuthController implements
             } catch (RemoteException e) {
                 Log.e(TAG, "Remote exception", e);
             }
+
+            cancelSecondaryDisplayToast();
         }
     }
 
@@ -548,6 +556,7 @@ public class AuthController implements
     @Override
     public void onDismissed(@BiometricPrompt.DismissedReason int reason,
             @Nullable byte[] credentialAttestation, long requestId) {
+        cancelSecondaryDisplayToast();
         if (mCurrentDialog != null && requestId != mCurrentDialog.getRequestId()) {
             Log.w(TAG, "requestId doesn't match, skip onDismissed");
             return;
@@ -731,7 +740,8 @@ public class AuthController implements
             @NonNull KeyguardManager keyguardManager,
             @NonNull MSDLPlayer msdlPlayer,
             WindowManagerProvider windowManagerProvider,
-            @NonNull PromptFallbackViewModel.Factory promptFallbackViewModelFactory) {
+            @NonNull PromptFallbackViewModel.Factory promptFallbackViewModelFactory,
+            @NonNull FocusedDisplayRepository focusedDisplayRepository) {
         mContext = context;
         mExecution = execution;
         mUserManager = userManager;
@@ -794,6 +804,7 @@ public class AuthController implements
         mSensorPrivacyManager = context.getSystemService(SensorPrivacyManager.class);
 
         mWindowManagerProvider = windowManagerProvider;
+        mFocusedDisplayRepository = focusedDisplayRepository;
     }
 
     // TODO(b/229290039): UDFPS controller should manage its dimensions on its own. Remove this.
@@ -1151,6 +1162,8 @@ public class AuthController implements
     public void hideAuthenticationDialog(long requestId) {
         if (DEBUG) Log.d(TAG, "hideAuthenticationDialog: " + mCurrentDialog);
 
+        cancelSecondaryDisplayToast();
+
         if (mCurrentDialog == null) {
             // Could be possible if the caller canceled authentication after credential success
             // but before the client was notified.
@@ -1240,6 +1253,8 @@ public class AuthController implements
 
     private void showDialog(SomeArgs args, boolean skipAnimation,
             @Nullable PromptViewModel viewModel) {
+        mExecution.assertIsMainThread();
+
         mCurrentDialogArgs = args;
 
         final PromptInfo promptInfo = (PromptInfo) args.arg1;
@@ -1253,6 +1268,8 @@ public class AuthController implements
         final String opPackageName = (String) args.arg6;
         final long operationId = args.argl1;
         final long requestId = args.argl2;
+
+        cancelSecondaryDisplayToast();
 
         // Create a new dialog but do not replace the current one yet.
         final AuthContainerView newDialog = buildDialog(
@@ -1303,10 +1320,35 @@ public class AuthController implements
             WindowManager wm = getWindowManagerForUser(userId);
             if (wm != null) {
                 mCurrentDialog.show(wm);
+                maybeShowSecondaryDisplayToast();
             } else {
                 closeDialog(BiometricPrompt.DISMISSED_REASON_ERROR_NO_WM,
                         "unable to get WM instance for user");
             }
+        }
+    }
+
+    private void maybeShowSecondaryDisplayToast() {
+        if (!DesktopExperienceFlags.SHOW_BIOMETRIC_PROMPT_SECONDARY_DISPLAY_TOAST.isTrue()) return;
+        int focusedDisplayId = mFocusedDisplayRepository.getFocusedDisplayId().getValue();
+        if (focusedDisplayId != Display.DEFAULT_DISPLAY) {
+            Display focusedDisplay = mDisplayManager.getDisplay(focusedDisplayId);
+            if (focusedDisplay != null) {
+                mSecondaryDisplayToast = Toast.makeText(
+                        mContext.createDisplayContext(focusedDisplay),
+                        R.string.biometric_dialog_secondary_display_toast,
+                        Toast.LENGTH_LONG);
+                mSecondaryDisplayToast.show();
+            }
+        }
+    }
+
+    private void cancelSecondaryDisplayToast() {
+        mExecution.assertIsMainThread();
+
+        if (mSecondaryDisplayToast != null) {
+            mSecondaryDisplayToast.cancel();
+            mSecondaryDisplayToast = null;
         }
     }
 
