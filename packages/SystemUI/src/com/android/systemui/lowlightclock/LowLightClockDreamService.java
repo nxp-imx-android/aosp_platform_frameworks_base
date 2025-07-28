@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 The Android Open Source Project
+ * Copyright (C) 2025 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.google.android.systemui.lowlightclock;
+package com.android.systemui.lowlightclock;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
@@ -28,9 +28,6 @@ import android.widget.TextView;
 
 import com.android.dream.lowlight.LowLightTransitionCoordinator;
 import com.android.systemui.Flags;
-import com.android.systemui.lowlightclock.ChargingStatusProvider;
-import com.android.systemui.lowlightclock.LowLightClockAnimationProvider;
-import com.android.systemui.lowlightclock.LowLightDisplayController;
 import com.android.systemui.res.R;
 
 import java.util.Optional;
