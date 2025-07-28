@@ -1388,9 +1388,10 @@ public abstract class WMShellModule {
             Transitions transitions,
             Context context,
             InteractionJankMonitor interactionJankMonitor,
-            @ShellMainThread Handler handler) {
+            @ShellMainThread Handler handler,
+            DisplayController displayController) {
         return new ExitDesktopTaskTransitionHandler(
-                transitions, context, interactionJankMonitor, handler);
+                transitions, context, interactionJankMonitor, handler, displayController);
     }
 
     @WMSingleton
