@@ -24,11 +24,13 @@ import android.widget.FrameLayout
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -203,18 +205,23 @@ private fun ChipBody(
 
         model.decorativeIcon?.let {
             val context = LocalContext.current
-            Icon(
-                icon = it.icon,
-                tint = Color(it.colors.text(context)),
+            Box(
                 modifier =
                     modifier
+                        .size(width = 24.dp, height = 16.dp)
                         .background(
                             color = Color(it.colors.background(context).defaultColor),
                             shape = it.backgroundShape,
                         )
-                        .padding(vertical = 2.dp, horizontal = 8.dp)
-                        .size(12.dp),
-            )
+            ) {
+                Icon(
+                    icon = it.icon,
+                    tint = Color(it.colors.text(context)),
+                    modifier = Modifier.align(Alignment.Center).size(14.dp),
+                )
+            }
+
+            Spacer(modifier.width(4.dp))
         }
     }
 }
