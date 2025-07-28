@@ -161,6 +161,12 @@ interface HomeStatusBarViewModel : Activatable {
     /** Invoked each time a chip's on-screen bounds have changed. */
     fun onChipBoundsChanged(key: String, bounds: RectF)
 
+    /** Notifies that the system icons container was clicked. */
+    fun onSystemIconChipClicked()
+
+    /** Notifies that the notification icons container was clicked. */
+    fun onNotificationIconChipClicked()
+
     /**
      * The multiple ongoing activity chips that should be shown on the left-hand side of the status
      * bar.
@@ -252,9 +258,9 @@ constructor(
     keyguardTransitionInteractor: KeyguardTransitionInteractor,
     keyguardInteractor: KeyguardInteractor,
     override val operatorNameViewModel: StatusBarOperatorNameViewModel,
-    sceneInteractor: SceneInteractor,
+    private val sceneInteractor: SceneInteractor,
     sceneContainerOcclusionInteractor: SceneContainerOcclusionInteractor,
-    shadeInteractor: ShadeInteractor,
+    private val shadeInteractor: ShadeInteractor,
     shareToAppChipViewModel: ShareToAppChipViewModel,
     @DisplayAware private val ongoingActivityChipsViewModel: OngoingActivityChipsViewModel,
     statusBarPopupChipsViewModelFactory: StatusBarPopupChipsViewModel.Factory,
@@ -593,6 +599,24 @@ constructor(
 
     override fun onChipBoundsChanged(key: String, bounds: RectF) {
         ongoingActivityChipsViewModel.onChipBoundsChanged(key, bounds)
+    }
+
+    override fun onSystemIconChipClicked() {
+        if (SceneContainerFlag.isUnexpectedlyInLegacyMode()) {
+            return
+        }
+        shadeInteractor.toggleQuickSettingsShade(
+            loggingReason = "HomeStatusBarViewModel.onSystemIconChipClicked"
+        )
+    }
+
+    override fun onNotificationIconChipClicked() {
+        if (SceneContainerFlag.isUnexpectedlyInLegacyMode()) {
+            return
+        }
+        shadeInteractor.toggleNotificationsShade(
+            loggingReason = "HomeStatusBarViewModel.onNotificationIconChipClicked"
+        )
     }
 
     private val hasOngoingActivityChips =
