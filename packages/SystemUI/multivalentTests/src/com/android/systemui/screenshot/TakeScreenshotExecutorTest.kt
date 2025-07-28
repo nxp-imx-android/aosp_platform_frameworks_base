@@ -22,7 +22,6 @@ import com.android.systemui.SysuiTestCase
 import com.android.systemui.display.data.repository.FakeDisplayRepository
 import com.android.systemui.display.data.repository.display
 import com.android.systemui.screenshot.proxy.ScreenshotProxy
-import com.android.systemui.util.mockito.any
 import com.android.systemui.util.mockito.eq
 import com.android.systemui.util.mockito.kotlinArgumentCaptor as ArgumentCaptor
 import com.android.systemui.util.mockito.whenever
@@ -40,6 +39,7 @@ import org.mockito.Mockito.never
 import org.mockito.Mockito.times
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.verifyNoMoreInteractions
+import org.mockito.kotlin.any
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.stub
@@ -314,6 +314,50 @@ class TakeScreenshotExecutorTest : SysuiTestCase() {
 
             verify(controller).handleScreenshot(dataCaptor.capture(), any(), any())
 
+            assertThat(dataCaptor.value.displayId).isEqualTo(Display.DEFAULT_DISPLAY)
+
+            screenshotExecutor.onDestroy()
+        }
+
+    @Test
+    @EnableFlags(Flags.FLAG_SCREENSHOT_MULTIDISPLAY_FOCUS_CHANGE)
+    fun executeScreenshots_fromScreenCaptureUI_honorsDisplayArgument() =
+        testScope.runTest {
+            val displayId = 1
+            setDisplays(display(TYPE_INTERNAL, id = 0), display(TYPE_EXTERNAL, id = displayId))
+            val request =
+                createScreenshotRequest(
+                    displayId = displayId,
+                    source = WindowManager.ScreenshotSource.SCREENSHOT_SCREEN_CAPTURE_UI,
+                )
+            val onSaved = { _: Uri? -> }
+            screenshotExecutor.executeScreenshots(request, onSaved, callback)
+
+            val dataCaptor = ArgumentCaptor<ScreenshotData>()
+            verify(controller).handleScreenshot(dataCaptor.capture(), any(), any())
+            assertThat(dataCaptor.value.displayId).isEqualTo(displayId)
+
+            screenshotExecutor.onDestroy()
+        }
+
+    @Test
+    @EnableFlags(Flags.FLAG_SCREENSHOT_MULTIDISPLAY_FOCUS_CHANGE)
+    fun executeScreenshots_fromScreenCaptureUI_withInvalidDisplay_usesDefaultDisplay() =
+        testScope.runTest {
+            setDisplays(
+                display(TYPE_INTERNAL, id = Display.DEFAULT_DISPLAY),
+                display(TYPE_EXTERNAL, id = 1),
+            )
+            val request =
+                createScreenshotRequest(
+                    displayId = 5,
+                    source = WindowManager.ScreenshotSource.SCREENSHOT_SCREEN_CAPTURE_UI,
+                )
+            val onSaved = { _: Uri? -> }
+            screenshotExecutor.executeScreenshots(request, onSaved, callback)
+
+            val dataCaptor = ArgumentCaptor<ScreenshotData>()
+            verify(controller).handleScreenshot(dataCaptor.capture(), any(), any())
             assertThat(dataCaptor.value.displayId).isEqualTo(Display.DEFAULT_DISPLAY)
 
             screenshotExecutor.onDestroy()

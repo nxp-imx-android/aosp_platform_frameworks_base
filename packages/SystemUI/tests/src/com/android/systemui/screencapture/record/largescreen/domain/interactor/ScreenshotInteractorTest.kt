@@ -63,9 +63,10 @@ class ScreenshotInteractorTest : SysuiTestCase() {
     }
 
     @Test
-    fun takeFullscreenScreenshot_makesCorrectRequestAndCallsScreenshotHelper() {
+    fun takeFullscreenScreenshot_callsScreenshotHelper_withCorrectRequest() {
         testScope.runTest {
-            interactor.takeFullscreenScreenshot()
+            val displayId = 3
+            interactor.takeFullscreenScreenshot(displayId)
 
             verify(kosmos.mockScreenshotHelper, times(1))
                 .takeScreenshot(screenshotRequestCaptor.capture(), any(), isNull())
@@ -74,7 +75,7 @@ class ScreenshotInteractorTest : SysuiTestCase() {
             assertThat(capturedRequest.type).isEqualTo(WindowManager.TAKE_SCREENSHOT_FULLSCREEN)
             assertThat(capturedRequest.source)
                 .isEqualTo(WindowManager.ScreenshotSource.SCREENSHOT_SCREEN_CAPTURE_UI)
-            assertThat(capturedRequest.displayId).isEqualTo(DEFAULT_DISPLAY)
+            assertThat(capturedRequest.displayId).isEqualTo(displayId)
         }
     }
 
