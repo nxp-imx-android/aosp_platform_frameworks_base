@@ -847,10 +847,8 @@ public final class QuotaController extends StateController {
             final boolean isInPrivilegedState = mTopAppCache.get(jobStatus.getSourceUid())
                     || isTopStartedJobLocked(jobStatus)
                     || isUidInForeground(jobStatus.getSourceUid());
-            final boolean isJobImportant = jobStatus.getEffectivePriority() >= JobInfo.PRIORITY_HIGH
-                    || (!android.app.job.Flags.ignoreImportantWhileForeground()
-                            && (jobStatus.getFlags()
-                                    & JobInfo.FLAG_IMPORTANT_WHILE_FOREGROUND) != 0);
+            final boolean isJobImportant =
+                    jobStatus.getEffectivePriority() >= JobInfo.PRIORITY_HIGH;
             if (isInPrivilegedState && isJobImportant) {
                 return mConstants.RUNTIME_FREE_QUOTA_MAX_LIMIT_MS;
             }
