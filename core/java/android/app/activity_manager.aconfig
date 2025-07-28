@@ -161,3 +161,13 @@ flag {
          purpose: PURPOSE_BUGFIX
      }
 }
+
+flag {
+    namespace: "telecom"
+    name: "system_dialer_phone_call_fgs_grant"
+    description: "Ensures that the system dialer app can use a phone call fgs."
+    bug: "425971621"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
