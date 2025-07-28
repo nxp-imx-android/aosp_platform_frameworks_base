@@ -27,15 +27,19 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.test.assert
+import androidx.compose.ui.test.assertHeightIsEqualTo
 import androidx.compose.ui.test.hasStateDescription
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.unit.dp
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.compose.theme.PlatformTheme
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.brightness.ui.viewmodel.BrightnessSliderViewModel
 import com.android.systemui.common.shared.model.asIcon
+import com.android.systemui.compose.modifiers.resIdToTestTag
 import com.android.systemui.haptics.slider.sliderHapticsViewModelFactory
 import com.android.systemui.res.R
 import com.android.systemui.testKosmos
@@ -86,9 +90,15 @@ class BrightnessSliderTest : SysuiTestCase() {
                 }
             }
         }
+
         composeRule
             .onNodeWithText(context.getString(R.string.accessibility_brightness))
             .assert(hasStateDescription("12%"))
+
+        // Verify the slider's height.
+        composeRule
+            .onNodeWithTag(resIdToTestTag("slider"))
+            .assertHeightIsEqualTo(52.dp)
     }
 
     @Test
