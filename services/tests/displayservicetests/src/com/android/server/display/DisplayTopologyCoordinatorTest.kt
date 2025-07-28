@@ -17,6 +17,7 @@
 package com.android.server.display
 
 import android.hardware.display.DisplayTopology
+import android.hardware.display.DisplayTopology.POSITION_RIGHT
 import android.hardware.display.DisplayTopologyGraph
 import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
@@ -27,6 +28,7 @@ import android.view.DisplayInfo
 import com.android.server.display.feature.DisplayManagerFlags
 import com.android.server.display.feature.flags.Flags
 import com.google.common.truth.Truth.assertThat
+import org.junit.Assert.assertThrows
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -428,8 +430,6 @@ class DisplayTopologyCoordinatorTest {
 
     @Test
     fun updateDisplay_notChanged() {
-        addDisplay()
-
         for (displayInfo in displayInfos) {
             coordinator.onDisplayChanged(displayInfo)
         }
@@ -525,8 +525,6 @@ class DisplayTopologyCoordinatorTest {
 
     @Test
     fun removeDisplay() {
-        addDisplay()
-
         val displaysToRemove = listOf(0, 2, 3).map { displayInfos[it] }
         for (displayInfo in displaysToRemove) {
             whenever(mockTopology.removeDisplay(displayInfo.displayId)).thenReturn(true)
@@ -655,5 +653,93 @@ class DisplayTopologyCoordinatorTest {
         )
         verify(mockTopologyStore).saveTopology(topology)
         verify(mockTopologySavedCallback).invoke()
+    }
+
+    @Test
+    fun setTopology_null_throwsException() {
+        assertThrows(IllegalArgumentException::class.java) {
+            coordinator.topology = null
+        }
+    }
+
+    @Test
+    fun setTopology_addDisplays_throwsException() {
+        val newTopology = mock<DisplayTopology>()
+        whenever(newTopology.allNodesIdMap()).thenReturn(mapOf(1 to mock(), 2 to mock()))
+        assertThrows(IllegalArgumentException::class.java) {
+            coordinator.topology = newTopology
+        }
+    }
+
+    @Test
+    fun setTopology_removeDisplays_throwsException() {
+        whenever(mockTopology.allNodesIdMap()).thenReturn(mapOf(1 to mock(), 2 to mock()))
+        assertThrows(IllegalArgumentException::class.java) {
+            coordinator.topology = mock()
+        }
+    }
+
+    @Test
+    fun setTopology_changeDensity_throwsException() {
+        whenever(mockTopology.allNodesIdMap()).thenReturn(
+            mapOf(
+                1 to DisplayTopology.TreeNode(
+                    /* displayId= */ 1,
+                    /* logicalWidth= */ 100,
+                    /* logicalHeight= */ 100,
+                    /* logicalDensity= */ 100,
+                    /* position= */ POSITION_RIGHT,
+                    /* offset= */ 0f
+                )
+            )
+        )
+        val newTopology = mock<DisplayTopology>()
+        whenever(newTopology.allNodesIdMap()).thenReturn(
+            mapOf(
+                1 to DisplayTopology.TreeNode(
+                    /* displayId= */ 1,
+                    /* logicalWidth= */ 100,
+                    /* logicalHeight= */ 100,
+                    /* logicalDensity= */ 150,
+                    /* position= */ POSITION_RIGHT,
+                    /* offset= */ 0f
+                )
+            )
+        )
+        assertThrows(IllegalArgumentException::class.java) {
+            coordinator.topology = newTopology
+        }
+    }
+
+    @Test
+    fun setTopology_resizeDisplay_throwsException() {
+        whenever(mockTopology.allNodesIdMap()).thenReturn(
+            mapOf(
+                1 to DisplayTopology.TreeNode(
+                    /* displayId= */ 1,
+                    /* logicalWidth= */ 100,
+                    /* logicalHeight= */ 100,
+                    /* logicalDensity= */ 100,
+                    /* position= */ POSITION_RIGHT,
+                    /* offset= */ 0f
+                )
+            )
+        )
+        val newTopology = mock<DisplayTopology>()
+        whenever(newTopology.allNodesIdMap()).thenReturn(
+            mapOf(
+                1 to DisplayTopology.TreeNode(
+                    /* displayId= */ 1,
+                    /* logicalWidth= */ 150,
+                    /* logicalHeight= */ 150,
+                    /* logicalDensity= */ 100,
+                    /* position= */ POSITION_RIGHT,
+                    /* offset= */ 0f
+                )
+            )
+        )
+        assertThrows(IllegalArgumentException::class.java) {
+            coordinator.topology = newTopology
+        }
     }
 }

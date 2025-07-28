@@ -191,7 +191,6 @@ import com.android.internal.os.BackgroundThread;
 import com.android.internal.util.ArrayUtils;
 import com.android.internal.util.DumpUtils;
 import com.android.internal.util.FrameworkStatsLog;
-import com.android.internal.util.NamedLock;
 import com.android.internal.util.SettingsWrapper;
 import com.android.server.AnimationThread;
 import com.android.server.DisplayThread;
@@ -513,6 +512,9 @@ public final class DisplayManagerService extends SystemService {
     // Whether the system has finished booting or not.
     private boolean mSystemReady;
 
+    @GuardedBy("mSyncRoot")
+    private boolean mStopped;
+
     // The top inset of the default display.
     // This gets persisted so that the boot animation knows how to transition from the display's
     // full size to the size configured by the user. Right now we only persist and animate the top
@@ -562,6 +564,7 @@ public final class DisplayManagerService extends SystemService {
     private boolean mMinimalPostProcessingAllowed;
 
     // Receives notifications about changes to Settings.
+    @Nullable
     private SettingsObserver mSettingsObserver;
 
     // Receives notifications about changes to task stack.
@@ -1012,6 +1015,7 @@ public final class DisplayManagerService extends SystemService {
     }
 
     @VisibleForTesting
+    @Nullable
     ContentObserver getSettingsObserver() {
         return mSettingsObserver;
     }
@@ -2533,6 +2537,9 @@ public final class DisplayManagerService extends SystemService {
     }
 
     private void registerDisplayAdapterLocked(DisplayAdapter adapter) {
+        if (mStopped) {
+            return;
+        }
         mDisplayAdapters.add(adapter);
         adapter.registerLocked();
     }
@@ -4220,14 +4227,16 @@ public final class DisplayManagerService extends SystemService {
     @VisibleForTesting
     void stop() {
         synchronized (mSyncRoot) {
+            mStopped = true;
             for (int i = 0; i < mDisplayPowerControllers.size(); i++) {
                 mDisplayPowerControllers.valueAt(i).stop();
             }
             for (DisplayAdapter adapter : mDisplayAdapters) {
-                if (adapter instanceof LocalDisplayAdapter) {
-                    ((LocalDisplayAdapter) adapter).stop();
-                }
+                adapter.stop();
             }
+        }
+        if (mSettingsObserver != null) {
+            mContext.getContentResolver().unregisterContentObserver(mSettingsObserver);
         }
     }
 

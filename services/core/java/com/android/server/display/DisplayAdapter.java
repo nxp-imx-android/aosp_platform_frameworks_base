@@ -107,6 +107,8 @@ abstract class DisplayAdapter {
     public void dumpLocked(PrintWriter pw) {
     }
 
+    public void stop() {}
+
     /**
      * Sends a display device event to the display adapter listener asynchronously.
      */

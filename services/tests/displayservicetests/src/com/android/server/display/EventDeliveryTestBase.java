@@ -60,7 +60,7 @@ public abstract class EventDeliveryTestBase {
     private static final String TEST_EVENT_MASK = "EVENT_MASK";
 
     private Instrumentation mInstrumentation;
-    private Context mContext;
+    protected Context mContext;
     protected DisplayManager mDisplayManager;
     private ActivityManager mActivityManager;
     private ActivityManager.OnUidImportanceListener mUidImportanceListener;

@@ -42,6 +42,8 @@ android_test {
         "surfaceflinger_flags_java_lib",
         "testables",
         "TestParameterInjector",
+        "desktop-test-lib",
+        "platform-test-rules",
     ],
 
     defaults: [
