@@ -203,9 +203,9 @@ class DesktopModeShellCommandHandler(
                 return false
             }
         controller.moveTaskToFront(
-            /* taskId= */ taskId,
-            /* remoteTransition= */ null,
-            /* unminimizeReason= */ UnminimizeReason.UNKNOWN,
+            taskId = taskId,
+            remoteTransition = null,
+            unminimizeReason = UnminimizeReason.UNKNOWN,
         )
         return true
     }

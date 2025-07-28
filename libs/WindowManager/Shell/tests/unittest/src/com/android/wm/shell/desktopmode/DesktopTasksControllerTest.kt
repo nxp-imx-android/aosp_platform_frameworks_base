@@ -647,7 +647,10 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         markTaskHidden(task1)
         markTaskHidden(task2)
 
-        controller.showDesktopApps(DEFAULT_DISPLAY, RemoteTransition(TestRemoteTransition()))
+        controller.showDesktopApps(
+            displayId = DEFAULT_DISPLAY,
+            remoteTransition = RemoteTransition(TestRemoteTransition()),
+        )
 
         val wct =
             getLatestWct(type = TRANSIT_TO_FRONT, handlerClass = OneShotRemoteHandler::class.java)
@@ -668,7 +671,10 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         markTaskHidden(task1)
         markTaskHidden(task2)
 
-        controller.showDesktopApps(DEFAULT_DISPLAY, RemoteTransition(TestRemoteTransition()))
+        controller.showDesktopApps(
+            displayId = DEFAULT_DISPLAY,
+            remoteTransition = RemoteTransition(TestRemoteTransition()),
+        )
 
         val wct =
             getLatestWct(type = TRANSIT_TO_FRONT, handlerClass = OneShotRemoteHandler::class.java)
@@ -691,9 +697,9 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         markTaskHidden(task2)
 
         controller.showDesktopApps(
-            DEFAULT_DISPLAY,
-            RemoteTransition(TestRemoteTransition()),
-            task1.taskId,
+            displayId = DEFAULT_DISPLAY,
+            remoteTransition = RemoteTransition(TestRemoteTransition()),
+            taskIdToReorderToFront = task1.taskId,
         )
 
         val wct =
@@ -723,9 +729,9 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         freeformTasks.forEach { markTaskHidden(it) }
 
         controller.showDesktopApps(
-            DEFAULT_DISPLAY,
-            RemoteTransition(TestRemoteTransition()),
-            task1.taskId,
+            displayId = DEFAULT_DISPLAY,
+            remoteTransition = RemoteTransition(TestRemoteTransition()),
+            taskIdToReorderToFront = task1.taskId,
         )
 
         val wct =
@@ -817,7 +823,10 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
 
         assertThat(taskRepository.getExpandedTasksOrdered(SECOND_DISPLAY)).contains(task1.taskId)
         assertThat(taskRepository.getExpandedTasksOrdered(SECOND_DISPLAY)).contains(task2.taskId)
-        controller.showDesktopApps(SECOND_DISPLAY, RemoteTransition(TestRemoteTransition()))
+        controller.showDesktopApps(
+            displayId = SECOND_DISPLAY,
+            remoteTransition = RemoteTransition(TestRemoteTransition()),
+        )
 
         val wct =
             getLatestWct(type = TRANSIT_TO_FRONT, handlerClass = OneShotRemoteHandler::class.java)
@@ -837,7 +846,10 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         taskRepository.addDesk(displayId = SECOND_DISPLAY, deskId = 2)
         setUpHomeTask(SECOND_DISPLAY)
 
-        controller.showDesktopApps(SECOND_DISPLAY, RemoteTransition(TestRemoteTransition()))
+        controller.showDesktopApps(
+            displayId = SECOND_DISPLAY,
+            remoteTransition = RemoteTransition(TestRemoteTransition()),
+        )
 
         val wct =
             getLatestWct(type = TRANSIT_TO_FRONT, handlerClass = OneShotRemoteHandler::class.java)
@@ -855,7 +867,10 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         taskRepository.addDesk(displayId = SECOND_DISPLAY, deskId = SECOND_DISPLAY)
         setUpHomeTask(SECOND_DISPLAY)
 
-        controller.showDesktopApps(SECOND_DISPLAY, RemoteTransition(TestRemoteTransition()))
+        controller.showDesktopApps(
+            displayId = SECOND_DISPLAY,
+            remoteTransition = RemoteTransition(TestRemoteTransition()),
+        )
 
         val wct =
             getLatestWct(type = TRANSIT_TO_FRONT, handlerClass = OneShotRemoteHandler::class.java)
@@ -871,7 +886,10 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         taskRepository.addDesk(displayId = SECOND_DISPLAY, deskId = SECOND_DISPLAY)
         val homeTask = setUpHomeTask(SECOND_DISPLAY)
 
-        controller.showDesktopApps(SECOND_DISPLAY, RemoteTransition(TestRemoteTransition()))
+        controller.showDesktopApps(
+            displayId = SECOND_DISPLAY,
+            remoteTransition = RemoteTransition(TestRemoteTransition()),
+        )
 
         val wct =
             getLatestWct(type = TRANSIT_TO_FRONT, handlerClass = OneShotRemoteHandler::class.java)
@@ -890,7 +908,10 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         markTaskVisible(task1)
         markTaskVisible(task2)
 
-        controller.showDesktopApps(DEFAULT_DISPLAY, RemoteTransition(TestRemoteTransition()))
+        controller.showDesktopApps(
+            displayId = DEFAULT_DISPLAY,
+            remoteTransition = RemoteTransition(TestRemoteTransition()),
+        )
 
         val wct =
             getLatestWct(type = TRANSIT_TO_FRONT, handlerClass = OneShotRemoteHandler::class.java)
@@ -914,7 +935,10 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         markTaskHidden(task1)
         markTaskHidden(task2)
 
-        controller.showDesktopApps(SECOND_DISPLAY, RemoteTransition(TestRemoteTransition()))
+        controller.showDesktopApps(
+            displayId = SECOND_DISPLAY,
+            remoteTransition = RemoteTransition(TestRemoteTransition()),
+        )
 
         val wct =
             getLatestWct(type = TRANSIT_TO_FRONT, handlerClass = OneShotRemoteHandler::class.java)
@@ -935,7 +959,10 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         markTaskVisible(task1)
         markTaskVisible(task2)
 
-        controller.showDesktopApps(DEFAULT_DISPLAY, RemoteTransition(TestRemoteTransition()))
+        controller.showDesktopApps(
+            displayId = DEFAULT_DISPLAY,
+            remoteTransition = RemoteTransition(TestRemoteTransition()),
+        )
 
         val wct =
             getLatestWct(type = TRANSIT_TO_FRONT, handlerClass = OneShotRemoteHandler::class.java)
@@ -958,7 +985,10 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         markTaskHidden(task1)
         markTaskVisible(task2)
 
-        controller.showDesktopApps(DEFAULT_DISPLAY, RemoteTransition(TestRemoteTransition()))
+        controller.showDesktopApps(
+            displayId = DEFAULT_DISPLAY,
+            remoteTransition = RemoteTransition(TestRemoteTransition()),
+        )
 
         val wct =
             getLatestWct(type = TRANSIT_TO_FRONT, handlerClass = OneShotRemoteHandler::class.java)
@@ -979,7 +1009,10 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         markTaskHidden(task1)
         markTaskVisible(task2)
 
-        controller.showDesktopApps(DEFAULT_DISPLAY, RemoteTransition(TestRemoteTransition()))
+        controller.showDesktopApps(
+            displayId = DEFAULT_DISPLAY,
+            remoteTransition = RemoteTransition(TestRemoteTransition()),
+        )
 
         val wct =
             getLatestWct(type = TRANSIT_TO_FRONT, handlerClass = OneShotRemoteHandler::class.java)
@@ -997,7 +1030,10 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         markTaskHidden(task1)
         markTaskVisible(task2)
 
-        controller.showDesktopApps(DEFAULT_DISPLAY, RemoteTransition(TestRemoteTransition()))
+        controller.showDesktopApps(
+            displayId = DEFAULT_DISPLAY,
+            remoteTransition = RemoteTransition(TestRemoteTransition()),
+        )
 
         val wct =
             getLatestWct(type = TRANSIT_TO_FRONT, handlerClass = OneShotRemoteHandler::class.java)
@@ -1016,7 +1052,10 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     fun showDesktopApps_noActiveTasks_reorderHomeToTop_desktopWallpaperDisabled() {
         val homeTask = setUpHomeTask()
 
-        controller.showDesktopApps(DEFAULT_DISPLAY, RemoteTransition(TestRemoteTransition()))
+        controller.showDesktopApps(
+            displayId = DEFAULT_DISPLAY,
+            remoteTransition = RemoteTransition(TestRemoteTransition()),
+        )
 
         val wct =
             getLatestWct(type = TRANSIT_TO_FRONT, handlerClass = OneShotRemoteHandler::class.java)
@@ -1029,8 +1068,10 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     fun showDesktopApps_noActiveTasks_desktopWallpaperEnabled_addsDesktopWallpaper() {
         whenever(desktopWallpaperActivityTokenProvider.getToken()).thenReturn(null)
 
-        controller.showDesktopApps(DEFAULT_DISPLAY, RemoteTransition(TestRemoteTransition()))
-
+        controller.showDesktopApps(
+            displayId = DEFAULT_DISPLAY,
+            remoteTransition = RemoteTransition(TestRemoteTransition()),
+        )
         val wct =
             getLatestWct(type = TRANSIT_TO_FRONT, handlerClass = OneShotRemoteHandler::class.java)
         wct.assertPendingIntentAt(index = 0, desktopWallpaperIntent)
@@ -1040,7 +1081,10 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     @DisableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_WALLPAPER_ACTIVITY)
     fun showDesktopApps_noActiveTasks_desktopWallpaperEnabled_reordersDesktopWallpaper() {
-        controller.showDesktopApps(DEFAULT_DISPLAY, RemoteTransition(TestRemoteTransition()))
+        controller.showDesktopApps(
+            displayId = DEFAULT_DISPLAY,
+            remoteTransition = RemoteTransition(TestRemoteTransition()),
+        )
 
         val wct =
             getLatestWct(type = TRANSIT_TO_FRONT, handlerClass = OneShotRemoteHandler::class.java)
@@ -1061,7 +1105,10 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         markTaskHidden(taskDefaultDisplay)
         markTaskHidden(taskSecondDisplay)
 
-        controller.showDesktopApps(DEFAULT_DISPLAY, RemoteTransition(TestRemoteTransition()))
+        controller.showDesktopApps(
+            displayId = DEFAULT_DISPLAY,
+            remoteTransition = RemoteTransition(TestRemoteTransition()),
+        )
 
         val wct =
             getLatestWct(type = TRANSIT_TO_FRONT, handlerClass = OneShotRemoteHandler::class.java)
@@ -1085,7 +1132,10 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         markTaskHidden(taskDefaultDisplay)
         markTaskHidden(taskSecondDisplay)
 
-        controller.showDesktopApps(DEFAULT_DISPLAY, RemoteTransition(TestRemoteTransition()))
+        controller.showDesktopApps(
+            displayId = DEFAULT_DISPLAY,
+            remoteTransition = RemoteTransition(TestRemoteTransition()),
+        )
 
         val wct =
             getLatestWct(type = TRANSIT_TO_FRONT, handlerClass = OneShotRemoteHandler::class.java)
@@ -1109,7 +1159,10 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         markTaskHidden(taskDefaultDisplay)
         markTaskHidden(taskSecondDisplay)
 
-        controller.showDesktopApps(DEFAULT_DISPLAY, RemoteTransition(TestRemoteTransition()))
+        controller.showDesktopApps(
+            displayId = DEFAULT_DISPLAY,
+            remoteTransition = RemoteTransition(TestRemoteTransition()),
+        )
 
         val wct =
             getLatestWct(type = TRANSIT_TO_FRONT, handlerClass = OneShotRemoteHandler::class.java)
@@ -1133,7 +1186,10 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         markTaskHidden(taskDefaultDisplay)
         markTaskHidden(taskSecondDisplay)
 
-        controller.showDesktopApps(DEFAULT_DISPLAY, RemoteTransition(TestRemoteTransition()))
+        controller.showDesktopApps(
+            displayId = DEFAULT_DISPLAY,
+            remoteTransition = RemoteTransition(TestRemoteTransition()),
+        )
 
         val wct =
             getLatestWct(type = TRANSIT_TO_FRONT, handlerClass = OneShotRemoteHandler::class.java)
@@ -1154,7 +1210,10 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         markTaskHidden(freeformTask)
         markTaskHidden(minimizedTask)
         taskRepository.minimizeTask(DEFAULT_DISPLAY, minimizedTask.taskId)
-        controller.showDesktopApps(DEFAULT_DISPLAY, RemoteTransition(TestRemoteTransition()))
+        controller.showDesktopApps(
+            displayId = DEFAULT_DISPLAY,
+            remoteTransition = RemoteTransition(TestRemoteTransition()),
+        )
 
         val wct =
             getLatestWct(type = TRANSIT_TO_FRONT, handlerClass = OneShotRemoteHandler::class.java)
@@ -1177,7 +1236,10 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         markTaskHidden(freeformTask)
         markTaskHidden(minimizedTask)
         taskRepository.minimizeTask(DEFAULT_DISPLAY, minimizedTask.taskId)
-        controller.showDesktopApps(DEFAULT_DISPLAY, RemoteTransition(TestRemoteTransition()))
+        controller.showDesktopApps(
+            displayId = DEFAULT_DISPLAY,
+            remoteTransition = RemoteTransition(TestRemoteTransition()),
+        )
 
         val wct =
             getLatestWct(type = TRANSIT_TO_FRONT, handlerClass = OneShotRemoteHandler::class.java)
@@ -10764,7 +10826,11 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
                     )
                 }
 
-            controller.restoreDisplay(SECOND_DISPLAY_ON_RECONNECT, SECOND_DISPLAY_UNIQUE_ID)
+            controller.restoreDisplay(
+                displayId = SECOND_DISPLAY_ON_RECONNECT,
+                uniqueDisplayId = SECOND_DISPLAY_UNIQUE_ID,
+                userId = taskRepository.userId,
+            )
             runCurrent()
 
             verify(transitions).startTransition(anyInt(), wctCaptor.capture(), anyOrNull())

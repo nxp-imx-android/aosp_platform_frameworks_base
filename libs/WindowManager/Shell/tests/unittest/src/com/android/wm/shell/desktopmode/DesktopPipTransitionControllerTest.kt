@@ -75,6 +75,7 @@ class DesktopPipTransitionControllerTest(flags: FlagsParameterization) : ShellTe
     private val taskInfo =
         createFreeformTask().apply {
             lastParentTaskIdBeforePip = ActivityTaskManager.INVALID_TASK_ID
+            userId = mockDesktopRepository.userId
         }
     private val freeformParentTask =
         createFreeformTask().apply { lastNonFullscreenBounds = FREEFORM_BOUNDS }
@@ -312,6 +313,7 @@ class DesktopPipTransitionControllerTest(flags: FlagsParameterization) : ShellTe
                     wct = wct,
                     deskId = DESK_ID,
                     displayId = DEFAULT_DISPLAY,
+                    userId = taskInfo.userId,
                     willExitDesktop = true,
                     removingLastTaskId = taskInfo.taskId,
                     exitReason = ExitReason.ENTER_PIP,
@@ -322,6 +324,7 @@ class DesktopPipTransitionControllerTest(flags: FlagsParameterization) : ShellTe
                     wct = any(),
                     deskId = anyOrNull(),
                     displayId = any(),
+                    userId = any(),
                     willExitDesktop = any(),
                     removingLastTaskId = anyOrNull(),
                     shouldEndUpAtHome = any(),

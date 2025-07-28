@@ -342,7 +342,8 @@ class DesktopDisplayEventHandlerTest : ShellTestCase() {
             handler.onDeskRemoved(DEFAULT_DISPLAY, deskId = 1)
             runCurrent()
 
-            verify(mockDesktopTasksController, never()).createDesk(DEFAULT_DISPLAY)
+            verify(mockDesktopTasksController, never())
+                .createDesk(eq(DEFAULT_DISPLAY), any(), any(), any(), any())
             verify(mockDesksOrganizer, never())
                 .warmUpDefaultDesk(DEFAULT_DISPLAY, mockDesktopRepository.userId)
         }
@@ -443,7 +444,7 @@ class DesktopDisplayEventHandlerTest : ShellTestCase() {
             .thenReturn(true)
         onDisplaysChangedListenerCaptor.lastValue.onDesktopModeEligibleChanged(externalDisplayId)
         verify(mockDesktopTasksController)
-            .restoreDisplay(eq(externalDisplayId), eq(UNIQUE_DISPLAY_ID))
+            .restoreDisplay(eq(externalDisplayId), eq(UNIQUE_DISPLAY_ID), eq(PRIMARY_USER_ID))
     }
 
     private fun addDisplay(displayId: Int, withTda: Boolean = false) {
