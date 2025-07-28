@@ -71,18 +71,12 @@
     <string name="CLIRDefaultOnNextCallOff" msgid="5036749051007098105">"Zəng edənin kimliyi defolt olaraq qadağan deyil. Növbəti zəng: Qadağan deyil"</string>
     <string name="CLIRDefaultOffNextCallOn" msgid="1022781126694885017">"Zəng edənin kimliyi defolt olaraq qadağan deyil. Növbəti zəng: Qadağandır"</string>
     <string name="CLIRDefaultOffNextCallOff" msgid="2491576172356463443">"Zəng edənin kimliyi defolt olaraq qadağan deyil. Növbəti zəng: Qadağan deyil"</string>
-    <!-- no translation found for page_size_compat_apk_warning (2297836366674721648) -->
-    <skip />
-    <!-- no translation found for page_size_compat_elf_warning (8613720928493005883) -->
-    <skip />
-    <!-- no translation found for page_size_compat_apk_and_elf_warning (9034695801295605229) -->
-    <skip />
-    <!-- no translation found for page_size_compat_apk_warning_4kb (5676451039424864495) -->
-    <skip />
-    <!-- no translation found for page_size_compat_elf_warning_4kb (5005239480522831311) -->
-    <skip />
-    <!-- no translation found for page_size_compat_apk_and_elf_warning_4kb (997926487776340721) -->
-    <skip />
+    <string name="page_size_compat_apk_warning" msgid="2297836366674721648">"Bu tətbiq 16 KB ilə uyğunlaşmır. APK düzləndirmə yoxlaması alınmadı. Bu tətbiq səhifə ölçüsünə uyğun rejimdən istifadə edilməklə icra ediləcək. Ən yaxşı uyğunluq üçün tətbiqi 16 KB dəstəyi ilə yenidən tərtib edin. Ətraflı məlumat üçün nəzər salın: &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; &lt;br&gt;&lt;br&gt; Aşağıdakı mediatekalar 16 KB ilə düzləndirilməyib: &lt;br&gt;&lt;br&gt;"</string>
+    <string name="page_size_compat_elf_warning" msgid="8613720928493005883">"Bu tətbiq 16 KB ilə uyğunlaşmır. ELF düzləndirmə yoxlaması alınmadı. Bu tətbiq səhifə ölçüsünə uyğun rejimdən istifadə edilməklə icra ediləcək. Ən yaxşı uyğunluq üçün tətbiqi 16 KB dəstəyi ilə yenidən tərtib edin. Ətraflı məlumat üçün nəzər salın: &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; &lt;br&gt;&lt;br&gt; Aşağıdakı mediatekalar 16 KB ilə düzləndirilməyib: &lt;br&gt;&lt;br&gt;"</string>
+    <string name="page_size_compat_apk_and_elf_warning" msgid="9034695801295605229">"Bu tətbiq 16 KB ilə uyğunlaşmır. APK və ELF düzləndirmə yoxlamaları alınmadı. Bu tətbiq səhifə ölçüsünə uyğun rejimdən istifadə edilməklə icra ediləcək. Ən yaxşı uyğunluq üçün tətbiqi 16 KB dəstəyi ilə yenidən tərtib edin. Ətraflı məlumat üçün nəzər salın: &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; &lt;br&gt;&lt;br&gt; Aşağıdakı mediatekalar 16 KB ilə düzləndirilməyib: &lt;br&gt;&lt;br&gt;"</string>
+    <string name="page_size_compat_apk_warning_4kb" msgid="5676451039424864495">"Bu xəbərdarlıq hazırda sınaqdan keçirilən və sazlana bilən tətbiq olduğu üçün göstərilir. Tərtibatçı deyilsinizsə, bunu tərtibatçıya bildirin və sazlana bilməyən tətbiq istəyin. &lt;br&gt;&lt;br&gt; Bu tətbiq 16 KB ilə uyğun deyil. APK düzləndirmə yoxlaması alınmadı. &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; ünvanındakı addımlara əməl edin &lt;br&gt;&lt;br&gt; Aşağıdakı mediatekalar 16 KB ilə düzləndirilməyib: &lt;br&gt;&lt;br&gt;"</string>
+    <string name="page_size_compat_elf_warning_4kb" msgid="5005239480522831311">"Bu xəbərdarlıq hazırda sınaqdan keçirilən və sazlana bilən tətbiq olduğu üçün göstərilir. Tərtibatçı deyilsinizsə, bunu tərtibatçıya bildirin və sazlana bilməyən tətbiq istəyin. &lt;br&gt;&lt;br&gt; Bu tətbiq 16 KB ilə uyğun deyil. ELF düzləndirmə yoxlaması alınmadı. &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; ünvanındakı addımlara əməl edin &lt;br&gt;&lt;br&gt; Aşağıdakı mediatekalar 16 KB ilə düzləndirilməyib: &lt;br&gt;&lt;br&gt;"</string>
+    <string name="page_size_compat_apk_and_elf_warning_4kb" msgid="997926487776340721">"Bu xəbərdarlıq hazırda sınaqdan keçirilən və sazlana bilən tətbiq olduğu üçün göstərilir. Tərtibatçı deyilsinizsə, bunu tərtibatçıya bildirin və sazlana bilməyən tətbiq istəyin. &lt;br&gt;&lt;br&gt; Bu tətbiq 16 KB ilə uyğun deyil. APK və ELF düzləndirmə yoxlamaları alınmadı. &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; ünvanındakı addımlara əməl edin. &lt;br&gt;&lt;br&gt; Aşağıdakı mediatekalar 16 KB ilə düzləndirilməyib: &lt;br&gt;&lt;br&gt;"</string>
     <string name="page_size_compat_never_show" msgid="3391282612422783097">"Bir daha göstərməyin"</string>
     <string name="page_size_compat_title" msgid="6497719153872572204">"Android tətbiqi uyğunluğu"</string>
     <string name="page_size_compat_elf_not_aligned" msgid="7940806102874132630">"&amp;#8226; %1$s : LOAD seqmenti düzləndirilməyib"</string>
@@ -920,8 +914,7 @@
     <string name="policydesc_disableCamera" msgid="3204405908799676104">"Bütün cihaz kameralarının istifadəsini əngəllə."</string>
     <string name="policylab_disableKeyguardFeatures" msgid="5071855750149949741">"Ekran kilidini deaktiv etmək"</string>
     <string name="policydesc_disableKeyguardFeatures" msgid="6641673177041195957">"Bəzi ekran funksiyaları istifadəsinin qarşısını almaq."</string>
-    <!-- no translation found for exit_toast_on_long_press_escape (2983932499112557277) -->
-    <skip />
+    <string name="exit_toast_on_long_press_escape" msgid="2983932499112557277">"Bu tətbiqi bağlamaq üçün Esc düyməsinə basıb saxlayın"</string>
   <string-array name="phoneTypes">
     <item msgid="8996339953292723951">"Ev"</item>
     <item msgid="7740243458912727194">"Mobil"</item>
@@ -1848,8 +1841,7 @@
     <string name="owner_name" msgid="8713560351570795743">"Sahib"</string>
     <string name="guest_name" msgid="8502103277839834324">"Qonaq"</string>
     <string name="headless_system_user_name" msgid="1849150903255530049">"Sistem istifadəçisi"</string>
-    <!-- no translation found for unnamed_user_name (6096699110534542980) -->
-    <skip />
+    <string name="unnamed_user_name" msgid="6096699110534542980">"İstifadəçi"</string>
     <string name="error_message_title" msgid="4082495589294631966">"Xəta"</string>
     <string name="error_message_change_not_allowed" msgid="843159705042381454">"Bu dəyişikliyə admin tərəfindən icazə verilmir"</string>
     <string name="app_not_found" msgid="3429506115332341800">"Bu əməliyyatı idarə etmək üçün heç bir tətbiq tapılmadı."</string>

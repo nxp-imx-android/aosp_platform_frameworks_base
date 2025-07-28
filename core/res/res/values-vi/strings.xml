@@ -71,18 +71,12 @@
     <string name="CLIRDefaultOnNextCallOff" msgid="5036749051007098105">"Số gọi đến mặc định thành bị giới hạn. Cuộc gọi tiếp theo. Không bị giới hạn"</string>
     <string name="CLIRDefaultOffNextCallOn" msgid="1022781126694885017">"Số gọi đến mặc định thành không bị giới hạn. Cuộc gọi tiếp theo. Bị giới hạn"</string>
     <string name="CLIRDefaultOffNextCallOff" msgid="2491576172356463443">"Số gọi đến mặc định thành không bị giới hạn. Cuộc gọi tiếp theo. Không bị giới hạn"</string>
-    <!-- no translation found for page_size_compat_apk_warning (2297836366674721648) -->
-    <skip />
-    <!-- no translation found for page_size_compat_elf_warning (8613720928493005883) -->
-    <skip />
-    <!-- no translation found for page_size_compat_apk_and_elf_warning (9034695801295605229) -->
-    <skip />
-    <!-- no translation found for page_size_compat_apk_warning_4kb (5676451039424864495) -->
-    <skip />
-    <!-- no translation found for page_size_compat_elf_warning_4kb (5005239480522831311) -->
-    <skip />
-    <!-- no translation found for page_size_compat_apk_and_elf_warning_4kb (997926487776340721) -->
-    <skip />
+    <string name="page_size_compat_apk_warning" msgid="2297836366674721648">"Ứng dụng này không tương thích với kích thước trang 16 KB. Không kiểm tra được cách căn chỉnh của tệp APK. Ứng dụng này sẽ chạy ở chế độ tương thích với kích thước trang. Để đảm bảo khả năng tương thích tốt nhất, vui lòng biên dịch lại ứng dụng ở chế độ hỗ trợ kích thước trang 16 KB. Để biết thêm thông tin, hãy xem &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; &lt;br&gt;&lt;br&gt; Các thư viện sau đây không được căn chỉnh theo kích thước trang 16 KB: &lt;br&gt;&lt;br&gt;"</string>
+    <string name="page_size_compat_elf_warning" msgid="8613720928493005883">"Ứng dụng này không tương thích với kích thước trang 16 KB. Không kiểm tra được cách căn chỉnh của tệp ELF. Ứng dụng này sẽ chạy ở chế độ tương thích với kích thước trang. Để đảm bảo khả năng tương thích tốt nhất, vui lòng biên dịch lại ứng dụng ở chế độ hỗ trợ kích thước trang 16 KB. Để biết thêm thông tin, hãy xem &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; &lt;br&gt;&lt;br&gt; Các thư viện sau đây không được căn chỉnh theo kích thước trang 16 KB: &lt;br&gt;&lt;br&gt;"</string>
+    <string name="page_size_compat_apk_and_elf_warning" msgid="9034695801295605229">"Ứng dụng này không tương thích với kích thước trang 16 KB. Không kiểm tra được cách căn chỉnh của tệp APK và tệp ELF. Ứng dụng này sẽ chạy ở chế độ tương thích với kích thước trang. Để đảm bảo khả năng tương thích tốt nhất, vui lòng biên dịch lại ứng dụng ở chế độ hỗ trợ kích thước trang 16 KB. Để biết thêm thông tin, hãy xem &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; &lt;br&gt;&lt;br&gt; Các thư viện sau đây không được căn chỉnh theo kích thước trang 16 KB: &lt;br&gt;&lt;br&gt;"</string>
+    <string name="page_size_compat_apk_warning_4kb" msgid="5676451039424864495">"Cảnh báo này xuất hiện vì ứng dụng có thể gỡ lỗi này đang trong giai đoạn thử nghiệm. Nếu bạn không phải là nhà phát triển, hãy báo cáo vấn đề này cho nhà phát triển và yêu cầu cung cấp một ứng dụng không thể gỡ lỗi. &lt;br&gt;&lt;br&gt; Ứng dụng này không tương thích với kích thước trang 16 KB. Không kiểm tra được cách căn chỉnh của tệp APK. Vui lòng làm theo các bước trên &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; &lt;br&gt;&lt;br&gt; Các thư viện sau đây không được căn chỉnh theo kích thước trang 16 KB: &lt;br&gt;&lt;br&gt;"</string>
+    <string name="page_size_compat_elf_warning_4kb" msgid="5005239480522831311">"Cảnh báo này xuất hiện vì ứng dụng có thể gỡ lỗi này đang trong giai đoạn thử nghiệm. Nếu bạn không phải là nhà phát triển, hãy báo cáo vấn đề này cho nhà phát triển và yêu cầu cung cấp một ứng dụng không thể gỡ lỗi. &lt;br&gt;&lt;br&gt; Ứng dụng này không tương thích với kích thước trang 16 KB. Không kiểm tra được cách căn chỉnh của tệp ELF. Vui lòng làm theo các bước trên &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; &lt;br&gt;&lt;br&gt; Các thư viện sau đây không được căn chỉnh theo kích thước trang 16 KB: &lt;br&gt;&lt;br&gt;"</string>
+    <string name="page_size_compat_apk_and_elf_warning_4kb" msgid="997926487776340721">"Cảnh báo này xuất hiện vì ứng dụng có thể gỡ lỗi này đang trong giai đoạn thử nghiệm. Nếu bạn không phải là nhà phát triển, hãy báo cáo vấn đề này cho nhà phát triển và yêu cầu cung cấp một ứng dụng không thể gỡ lỗi. &lt;br&gt;&lt;br&gt; Ứng dụng này không tương thích với kích thước trang 16 KB. Không kiểm tra được cách căn chỉnh của tệp APK và tệp ELF. Vui lòng làm theo các bước trên &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;. &lt;br&gt;&lt;br&gt; Các thư viện sau đây không được căn chỉnh theo kích thước trang 16 KB: &lt;br&gt;&lt;br&gt;"</string>
     <string name="page_size_compat_never_show" msgid="3391282612422783097">"Không hiện lại"</string>
     <string name="page_size_compat_title" msgid="6497719153872572204">"Khả năng tương thích của ứng dụng Android"</string>
     <string name="page_size_compat_elf_not_aligned" msgid="7940806102874132630">"&amp;#8226; %1$s: Phân đoạn TẢI không tương thích"</string>
@@ -920,8 +914,7 @@
     <string name="policydesc_disableCamera" msgid="3204405908799676104">"Ngăn sử dụng tất cả máy ảnh của thiết bị."</string>
     <string name="policylab_disableKeyguardFeatures" msgid="5071855750149949741">"Tắt một số tính năng của phương thức khóa màn hình"</string>
     <string name="policydesc_disableKeyguardFeatures" msgid="6641673177041195957">"Ngăn sử dụng một số tính năng của phương thức khóa màn hình."</string>
-    <!-- no translation found for exit_toast_on_long_press_escape (2983932499112557277) -->
-    <skip />
+    <string name="exit_toast_on_long_press_escape" msgid="2983932499112557277">"Nhấn và giữ phím Esc để đóng ứng dụng này"</string>
   <string-array name="phoneTypes">
     <item msgid="8996339953292723951">"Nhà riêng"</item>
     <item msgid="7740243458912727194">"Di động"</item>
@@ -1848,8 +1841,7 @@
     <string name="owner_name" msgid="8713560351570795743">"Chủ sở hữu"</string>
     <string name="guest_name" msgid="8502103277839834324">"Khách"</string>
     <string name="headless_system_user_name" msgid="1849150903255530049">"Người dùng hệ thống"</string>
-    <!-- no translation found for unnamed_user_name (6096699110534542980) -->
-    <skip />
+    <string name="unnamed_user_name" msgid="6096699110534542980">"Người dùng"</string>
     <string name="error_message_title" msgid="4082495589294631966">"Lỗi"</string>
     <string name="error_message_change_not_allowed" msgid="843159705042381454">"Quản trị viên của bạn không cho phép thực hiện thay đổi này"</string>
     <string name="app_not_found" msgid="3429506115332341800">"Không tìm thấy ứng dụng nào để xử lý tác vụ này"</string>

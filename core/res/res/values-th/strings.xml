@@ -71,18 +71,12 @@
     <string name="CLIRDefaultOnNextCallOff" msgid="5036749051007098105">"หมายเลขผู้โทรได้รับการตั้งค่าเริ่มต้นเป็นถูกจำกัด การโทรครั้งต่อไป: ไม่จำกัด"</string>
     <string name="CLIRDefaultOffNextCallOn" msgid="1022781126694885017">"หมายเลขผู้โทรได้รับการตั้งค่าเริ่มต้นเป็นไม่จำกัด การโทรครั้งต่อไป: ถูกจำกัด"</string>
     <string name="CLIRDefaultOffNextCallOff" msgid="2491576172356463443">"หมายเลขผู้โทรได้รับการตั้งค่าเริ่มต้นเป็นไม่จำกัด การโทรครั้งต่อไป: ไม่จำกัด"</string>
-    <!-- no translation found for page_size_compat_apk_warning (2297836366674721648) -->
-    <skip />
-    <!-- no translation found for page_size_compat_elf_warning (8613720928493005883) -->
-    <skip />
-    <!-- no translation found for page_size_compat_apk_and_elf_warning (9034695801295605229) -->
-    <skip />
-    <!-- no translation found for page_size_compat_apk_warning_4kb (5676451039424864495) -->
-    <skip />
-    <!-- no translation found for page_size_compat_elf_warning_4kb (5005239480522831311) -->
-    <skip />
-    <!-- no translation found for page_size_compat_apk_and_elf_warning_4kb (997926487776340721) -->
-    <skip />
+    <string name="page_size_compat_apk_warning" msgid="2297836366674721648">"แอปนี้ไม่รองรับขนาดหน้า 16 KB ผลการตรวจสอบการทำ Alignment APK คือไม่ผ่าน ด้วยเหตุนี้ แอปจะทำงานโดยใช้โหมดการใช้งานร่วมกับขนาดหน้าได้ เพื่อให้ใช้งานร่วมกันได้อย่างดีที่สุด โปรดคอมไพล์แอปพลิเคชันอีกครั้งโดยให้มีการรองรับขนาดหน้า 16 KB ดูข้อมูลเพิ่มเติมได้ที่ &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; &lt;br&gt;&lt;br&gt; ไลบรารีต่อไปนี้ไม่จัดเรียงตามรูปแบบความจำขนาด 16 KB: &lt;br&gt;&lt;br&gt;"</string>
+    <string name="page_size_compat_elf_warning" msgid="8613720928493005883">"แอปนี้ไม่รองรับขนาดหน้า 16 KB ผลการตรวจสอบการทำ Alignment ELF คือไม่ผ่าน ด้วยเหตุนี้ แอปจะทำงานโดยใช้โหมดการใช้งานร่วมกับขนาดหน้าได้ เพื่อให้ใช้งานร่วมกันได้อย่างดีที่สุด โปรดคอมไพล์แอปพลิเคชันอีกครั้งโดยให้มีการรองรับขนาดหน้า 16 KB ดูข้อมูลเพิ่มเติมได้ที่ &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; &lt;br&gt;&lt;br&gt; ไลบรารีต่อไปนี้ไม่จัดเรียงตามรูปแบบความจำขนาด 16 KB: &lt;br&gt;&lt;br&gt;"</string>
+    <string name="page_size_compat_apk_and_elf_warning" msgid="9034695801295605229">"แอปนี้ไม่รองรับขนาดหน้า 16 KB ผลการตรวจสอบการ Alignment ของ APK และ ELF คือไม่ผ่าน ด้วยเหตุนี้ แอปจะทำงานโดยใช้โหมดการใช้งานร่วมกับขนาดหน้าได้ เพื่อให้ใช้งานร่วมกันได้อย่างดีที่สุด โปรดคอมไพล์แอปพลิเคชันอีกครั้งโดยให้มีการรองรับขนาดหน้า 16 KB ดูข้อมูลเพิ่มเติมได้ที่ &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; &lt;br&gt;&lt;br&gt; ไลบรารีต่อไปนี้ไม่จัดเรียงตามรูปแบบความจำขนาด 16 KB: &lt;br&gt;&lt;br&gt;"</string>
+    <string name="page_size_compat_apk_warning_4kb" msgid="5676451039424864495">"แสดงคําเตือนนี้เนื่องจากเป็นแอปที่แก้ไขข้อบกพร่องได้ซึ่งกําลังทดสอบอยู่ในขณะนี้ หากคุณไม่ใช่นักพัฒนาแอป โปรดรายงานปัญหานี้ให้นักพัฒนาแอปทราบและขอแอปที่ไม่สามารถแก้ไขข้อบกพร่องได้ &lt;br&gt;&lt;br&gt; แอปนี้ไม่รองรับขนาดหน้า 16 KB ผลการตรวจสอบการทำ Alignment APK คือไม่ผ่าน โปรดทำตามขั้นตอนใน &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; &lt;br&gt;&lt;br&gt; ไลบรารีต่อไปนี้ไม่จัดเรียงตามรูปแบบความจำขนาด 16 KB: &lt;br&gt;&lt;br&gt;"</string>
+    <string name="page_size_compat_elf_warning_4kb" msgid="5005239480522831311">"แสดงคําเตือนนี้เนื่องจากเป็นแอปที่แก้ไขข้อบกพร่องได้ซึ่งกําลังทดสอบอยู่ในขณะนี้ หากคุณไม่ใช่นักพัฒนาแอป โปรดรายงานปัญหานี้ให้นักพัฒนาแอปทราบและขอแอปที่ไม่สามารถแก้ไขข้อบกพร่องได้ &lt;br&gt;&lt;br&gt; แอปนี้ไม่รองรับขนาดหน้า 16 KB ผลการตรวจสอบการทำ Alignment ELF คือไม่ผ่าน โปรดทำตามขั้นตอนใน &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; &lt;br&gt;&lt;br&gt; ไลบรารีต่อไปนี้ไม่จัดเรียงตามรูปแบบความจำขนาด 16 KB: &lt;br&gt;&lt;br&gt;"</string>
+    <string name="page_size_compat_apk_and_elf_warning_4kb" msgid="997926487776340721">"แสดงคําเตือนนี้เนื่องจากเป็นแอปที่แก้ไขข้อบกพร่องได้ซึ่งกําลังทดสอบอยู่ในขณะนี้ หากคุณไม่ใช่นักพัฒนาแอป โปรดรายงานปัญหานี้ให้นักพัฒนาแอปทราบและขอแอปที่ไม่สามารถแก้ไขข้อบกพร่องได้ &lt;br&gt;&lt;br&gt; แอปนี้ไม่รองรับขนาดหน้า 16 KB ผลการตรวจสอบการ Alignment ของ APK และ ELF คือไม่ผ่าน โปรดทำตามขั้นตอนใน &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; &lt;br&gt;&lt;br&gt; ไลบรารีต่อไปนี้ไม่จัดเรียงตามรูปแบบความจำขนาด 16 KB: &lt;br&gt;&lt;br&gt;"</string>
     <string name="page_size_compat_never_show" msgid="3391282612422783097">"ไม่ต้องแสดงอีก"</string>
     <string name="page_size_compat_title" msgid="6497719153872572204">"ความเข้ากันได้ของแอป Android"</string>
     <string name="page_size_compat_elf_not_aligned" msgid="7940806102874132630">"&amp;#8226; %1$s : กลุ่ม \"LOAD\" มีปัญหาด้านการทำ Alignment"</string>
@@ -920,8 +914,7 @@
     <string name="policydesc_disableCamera" msgid="3204405908799676104">"ป้องกันการใช้กล้องถ่ายรูปของอุปกรณ์ทั้งหมด"</string>
     <string name="policylab_disableKeyguardFeatures" msgid="5071855750149949741">"ปิดฟีเจอร์ล็อกหน้าจอบางอย่าง"</string>
     <string name="policydesc_disableKeyguardFeatures" msgid="6641673177041195957">"ป้องกันการใช้ฟีเจอร์บางอย่างของการล็อกหน้าจอ"</string>
-    <!-- no translation found for exit_toast_on_long_press_escape (2983932499112557277) -->
-    <skip />
+    <string name="exit_toast_on_long_press_escape" msgid="2983932499112557277">"กดแป้น ESC ค้างไว้เพื่อปิดแอปนี้"</string>
   <string-array name="phoneTypes">
     <item msgid="8996339953292723951">"บ้าน"</item>
     <item msgid="7740243458912727194">"มือถือ"</item>
@@ -1848,8 +1841,7 @@
     <string name="owner_name" msgid="8713560351570795743">"เจ้าของ"</string>
     <string name="guest_name" msgid="8502103277839834324">"ผู้ใช้ชั่วคราว"</string>
     <string name="headless_system_user_name" msgid="1849150903255530049">"ผู้ใช้ระบบ"</string>
-    <!-- no translation found for unnamed_user_name (6096699110534542980) -->
-    <skip />
+    <string name="unnamed_user_name" msgid="6096699110534542980">"ผู้ใช้"</string>
     <string name="error_message_title" msgid="4082495589294631966">"ข้อผิดพลาด"</string>
     <string name="error_message_change_not_allowed" msgid="843159705042381454">"ผู้ดูแลระบบไม่อนุญาตให้ทำการเปลี่ยนแปลงนี้"</string>
     <string name="app_not_found" msgid="3429506115332341800">"ไม่พบแอปพลิเคชันสำหรับการทำงานนี้"</string>

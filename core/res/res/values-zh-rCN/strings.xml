@@ -71,18 +71,12 @@
     <string name="CLIRDefaultOnNextCallOff" msgid="5036749051007098105">"默认不显示本机号码，但在下一次通话中显示"</string>
     <string name="CLIRDefaultOffNextCallOn" msgid="1022781126694885017">"默认显示本机号码，但在下一次通话中不显示"</string>
     <string name="CLIRDefaultOffNextCallOff" msgid="2491576172356463443">"默认显示本机号码，在下一次通话中也显示"</string>
-    <!-- no translation found for page_size_compat_apk_warning (2297836366674721648) -->
-    <skip />
-    <!-- no translation found for page_size_compat_elf_warning (8613720928493005883) -->
-    <skip />
-    <!-- no translation found for page_size_compat_apk_and_elf_warning (9034695801295605229) -->
-    <skip />
-    <!-- no translation found for page_size_compat_apk_warning_4kb (5676451039424864495) -->
-    <skip />
-    <!-- no translation found for page_size_compat_elf_warning_4kb (5005239480522831311) -->
-    <skip />
-    <!-- no translation found for page_size_compat_apk_and_elf_warning_4kb (997926487776340721) -->
-    <skip />
+    <string name="page_size_compat_apk_warning" msgid="2297836366674721648">"此应用不符合 16 KB 对齐要求。APK 文件对齐检查失败。此应用将以页面大小兼容模式运行。为获得最佳兼容性，请将此应用重新编译为支持 16 KB。如需了解详情，请参阅 &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; &lt;br&gt;&lt;br&gt;以下库未进行 16 KB 对齐：&lt;br&gt;&lt;br&gt;"</string>
+    <string name="page_size_compat_elf_warning" msgid="8613720928493005883">"此应用不符合 16 KB 对齐要求。ELF 文件对齐检查失败。此应用将以页面大小兼容模式运行。为获得最佳兼容性，请将此应用重新编译为支持 16 KB。如需了解详情，请参阅 &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; &lt;br&gt;&lt;br&gt;以下库未进行 16 KB 对齐：&lt;br&gt;&lt;br&gt;"</string>
+    <string name="page_size_compat_apk_and_elf_warning" msgid="9034695801295605229">"此应用不符合 16 KB 对齐要求。APK 和 ELF 文件对齐检查失败。此应用将以页面大小兼容模式运行。为获得最佳兼容性，请将此应用重新编译为支持 16 KB。如需了解详情，请参阅 &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; &lt;br&gt;&lt;br&gt;以下库未进行 16 KB 对齐：&lt;br&gt;&lt;br&gt;"</string>
+    <string name="page_size_compat_apk_warning_4kb" msgid="5676451039424864495">"由于当前正在测试的是可调试应用，因此系统会显示此警告。如果您不是开发者，请将此问题报告给开发者，并要求提供不可调试的应用。&lt;br&gt;&lt;br&gt;此应用不符合 16 KB 对齐要求。APK 文件对齐检查失败。请按照 &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; 中的步骤操作。&lt;br&gt;&lt;br&gt;以下库未进行 16 KB 对齐：&lt;br&gt;&lt;br&gt;"</string>
+    <string name="page_size_compat_elf_warning_4kb" msgid="5005239480522831311">"由于当前正在测试的是可调试应用，因此系统会显示此警告。如果您不是开发者，请将此问题报告给开发者，并要求提供不可调试的应用。&lt;br&gt;&lt;br&gt;此应用不符合 16 KB 对齐要求。ELF 文件对齐检查失败。请按照 &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; 中的步骤操作。&lt;br&gt;&lt;br&gt;以下库未进行 16 KB 对齐：&lt;br&gt;&lt;br&gt;"</string>
+    <string name="page_size_compat_apk_and_elf_warning_4kb" msgid="997926487776340721">"由于当前正在测试的是可调试应用，因此系统会显示此警告。如果您不是开发者，请将此问题报告给开发者，并要求提供不可调试的应用。&lt;br&gt;&lt;br&gt;此应用不符合 16 KB 对齐要求。APK 和 ELF 文件对齐检查失败。请按照 &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; 中的步骤操作。&lt;br&gt;&lt;br&gt;以下库未进行 16 KB 对齐：&lt;br&gt;&lt;br&gt;"</string>
     <string name="page_size_compat_never_show" msgid="3391282612422783097">"不再显示"</string>
     <string name="page_size_compat_title" msgid="6497719153872572204">"Android 应用兼容性"</string>
     <string name="page_size_compat_elf_not_aligned" msgid="7940806102874132630">"&amp;#8226; %1$s：加载段未对齐"</string>
@@ -920,8 +914,7 @@
     <string name="policydesc_disableCamera" msgid="3204405908799676104">"禁止使用所有设备摄像头。"</string>
     <string name="policylab_disableKeyguardFeatures" msgid="5071855750149949741">"停用屏幕锁定的部分功能"</string>
     <string name="policydesc_disableKeyguardFeatures" msgid="6641673177041195957">"禁止使用屏幕锁定的部分功能。"</string>
-    <!-- no translation found for exit_toast_on_long_press_escape (2983932499112557277) -->
-    <skip />
+    <string name="exit_toast_on_long_press_escape" msgid="2983932499112557277">"长按 Esc 键即可关闭此应用"</string>
   <string-array name="phoneTypes">
     <item msgid="8996339953292723951">"住宅"</item>
     <item msgid="7740243458912727194">"手机"</item>
@@ -1848,8 +1841,7 @@
     <string name="owner_name" msgid="8713560351570795743">"机主"</string>
     <string name="guest_name" msgid="8502103277839834324">"访客"</string>
     <string name="headless_system_user_name" msgid="1849150903255530049">"系统用户"</string>
-    <!-- no translation found for unnamed_user_name (6096699110534542980) -->
-    <skip />
+    <string name="unnamed_user_name" msgid="6096699110534542980">"用户"</string>
     <string name="error_message_title" msgid="4082495589294631966">"错误"</string>
     <string name="error_message_change_not_allowed" msgid="843159705042381454">"您的管理员不允许进行这项更改"</string>
     <string name="app_not_found" msgid="3429506115332341800">"找不到可处理此操作的应用"</string>

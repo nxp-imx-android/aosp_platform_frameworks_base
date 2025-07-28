@@ -71,18 +71,12 @@
     <string name="CLIRDefaultOnNextCallOff" msgid="5036749051007098105">"i-ID yomshayeli ishintshela kokuvinjiwe. Ucingo olulandelayo: Aluvinjelwe"</string>
     <string name="CLIRDefaultOffNextCallOn" msgid="1022781126694885017">"I-ID Yomshayeli ishintshela kokungavinjelwe. Ucingo olulandelayo: Luvinjelwe"</string>
     <string name="CLIRDefaultOffNextCallOff" msgid="2491576172356463443">"I-ID Yomshayeli ishintshela kokungavinjelwe. Ucingo olulandelayo: Aluvinjelwe"</string>
-    <!-- no translation found for page_size_compat_apk_warning (2297836366674721648) -->
-    <skip />
-    <!-- no translation found for page_size_compat_elf_warning (8613720928493005883) -->
-    <skip />
-    <!-- no translation found for page_size_compat_apk_and_elf_warning (9034695801295605229) -->
-    <skip />
-    <!-- no translation found for page_size_compat_apk_warning_4kb (5676451039424864495) -->
-    <skip />
-    <!-- no translation found for page_size_compat_elf_warning_4kb (5005239480522831311) -->
-    <skip />
-    <!-- no translation found for page_size_compat_apk_and_elf_warning_4kb (997926487776340721) -->
-    <skip />
+    <string name="page_size_compat_apk_warning" msgid="2297836366674721648">"Le app ayihambelani no-16 KB. Ukuhlolwa kokuqondanisa i-APK kuhlulekile. Le app izoqaliswa kusetshenziswa imodi yokuhambelana yosayizi wekhasi. Ukuze kube nokuhambelana okuhle kakhulu, sicela uhlanganise kabusha i-app ngosekelo lwe-16 KB. Ukuze uthole imininingwane eyengeziwe, bheka &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; &lt;br&gt;&lt;br&gt; Amalabhulari awaqondiswanga no-16 KB: &lt;br&gt;&lt;br&gt;"</string>
+    <string name="page_size_compat_elf_warning" msgid="8613720928493005883">"Le app ayihambelani no-16 KB. Ukuhlolwa kokuqondanisa i-ELF kuhlulekile. Le app izoqaliswa kusetshenziswa imodi yokuhambelana yosayizi wekhasi. Ukuze kube nokuhambelana okuhle kakhulu, sicela uhlanganise kabusha i-app ngosekelo lwe-16 KB. Ukuze uthole imininingwane eyengeziwe, bheka &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; &lt;br&gt;&lt;br&gt; Amalabhulari awaqondiswanga no-16 KB: &lt;br&gt;&lt;br&gt;"</string>
+    <string name="page_size_compat_apk_and_elf_warning" msgid="9034695801295605229">"Le app ayihambelani no-16 KB. Ukuhlola ukuqondanisa i-APK ne-ELF kuhlulekile. Le app izoqaliswa kusetshenziswa imodi yokuhambelana yosayizi wekhasi. Ukuze kube nokuhambelana okuhle kakhulu, sicela uhlanganise kabusha i-app ngosekelo lwe-16 KB. Ukuze uthole imininingwane eyengeziwe, bheka &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; &lt;br&gt;&lt;br&gt; Amalabhulari awaqondiswanga no-16 KB: &lt;br&gt;&lt;br&gt;"</string>
+    <string name="page_size_compat_apk_warning_4kb" msgid="5676451039424864495">"Lesi sixwayiso sivela ngoba lena yi-app esuswa amaphutha esahlolwa njengamanje. Uma ungeyena unjiniyela, sicela ubike lokhu kunjiniyela futhi ucele i-app engasuswa amaphutha. &lt;br&gt;&lt;br&gt; Le app ayihambisani no-16 KB. Ukuhlolwa kokuqondanisa i-APK kuhlulekile. Sicela ulandele izinyathelo kokuthi &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; &lt;br&gt;&lt;br&gt; Amalabhulari alandelayo awaqondanisiwe no-16KB: &lt;br&gt;&lt;br&gt;"</string>
+    <string name="page_size_compat_elf_warning_4kb" msgid="5005239480522831311">"Lesi sixwayiso sivela ngoba lena yi-app esuswa amaphutha esahlolwa njengamanje. Uma ungeyena unjiniyela, sicela ubike lokhu kunjiniyela futhi ucele i-app engasuswa amaphutha. &lt;br&gt;&lt;br&gt; Le app ayihambisani no-16 KB. Ukuhlolwa kokuqondanisa i-ELF kuhlulekile. Sicela ulandele izinyathelo kokuthi &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; &lt;br&gt;&lt;br&gt; Amalabhulari alandelayo awaqondanisiwe no-16KB: &lt;br&gt;&lt;br&gt;"</string>
+    <string name="page_size_compat_apk_and_elf_warning_4kb" msgid="997926487776340721">"Lesi sixwayiso sivela ngoba lena yi-app esuswa amaphutha esahlolwa njengamanje. Uma ungeyena unjiniyela, sicela ubike lokhu kunjiniyela futhi ucele i-app engasuswa amaphutha. &lt;br&gt;&lt;br&gt; Le app ayihambisani no-16 KB. Ukuhlola ukuqondanisa i-APK ne-ELF kuhlulekile. Sicela ulandele izinyathelo kokuthi &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; &lt;br&gt;&lt;br&gt; Amalabhulari alandelayo awaqondanisiwe no-16 KB: &lt;br&gt;&lt;br&gt;"</string>
     <string name="page_size_compat_never_show" msgid="3391282612422783097">"Ungaphindi ubonise futhi"</string>
     <string name="page_size_compat_title" msgid="6497719153872572204">"Ukuhambelana kwe-Android App"</string>
     <string name="page_size_compat_elf_not_aligned" msgid="7940806102874132630">"&amp;#8226; %1$s : Ingxenye ye-LOAD ayiqondanisiwe"</string>
@@ -920,8 +914,7 @@
     <string name="policydesc_disableCamera" msgid="3204405908799676104">"Vimbela ukusetshenziswa kwamadivaysi wonke wamakhamera"</string>
     <string name="policylab_disableKeyguardFeatures" msgid="5071855750149949741">"Khubaza ezinye izici zokukhiya isikrini"</string>
     <string name="policydesc_disableKeyguardFeatures" msgid="6641673177041195957">"Vikela ukusebenzisa izici zokukhiya isikrini."</string>
-    <!-- no translation found for exit_toast_on_long_press_escape (2983932499112557277) -->
-    <skip />
+    <string name="exit_toast_on_long_press_escape" msgid="2983932499112557277">"Chofoza isikhathi eside inkinobho ethi Esc ukuze uvale le app"</string>
   <string-array name="phoneTypes">
     <item msgid="8996339953292723951">"Ekhaya"</item>
     <item msgid="7740243458912727194">"Iselula"</item>
@@ -1848,8 +1841,7 @@
     <string name="owner_name" msgid="8713560351570795743">"Umnikazi"</string>
     <string name="guest_name" msgid="8502103277839834324">"Isivakashi"</string>
     <string name="headless_system_user_name" msgid="1849150903255530049">"Umsebenzisi Wesistimu"</string>
-    <!-- no translation found for unnamed_user_name (6096699110534542980) -->
-    <skip />
+    <string name="unnamed_user_name" msgid="6096699110534542980">"Umsebenzisi"</string>
     <string name="error_message_title" msgid="4082495589294631966">"Iphutha"</string>
     <string name="error_message_change_not_allowed" msgid="843159705042381454">"Lolu shintsho aluvunyelwe umlawuli wakho"</string>
     <string name="app_not_found" msgid="3429506115332341800">"Alukho uhlelo lokusebenza olutholakele lokuphatha lesi senzo"</string>

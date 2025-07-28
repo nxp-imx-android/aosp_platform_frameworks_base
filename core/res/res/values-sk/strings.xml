@@ -73,18 +73,12 @@
     <string name="CLIRDefaultOnNextCallOff" msgid="5036749051007098105">"V predvolenom nastavení je identifikácia volajúceho obmedzená. Ďalší hovor: Bez obmedzenia"</string>
     <string name="CLIRDefaultOffNextCallOn" msgid="1022781126694885017">"V predvolenom nastavení nie je identifikácia volajúceho obmedzená. Ďalší hovor: Obmedzené"</string>
     <string name="CLIRDefaultOffNextCallOff" msgid="2491576172356463443">"V predvolenom nastavení nie je identifikácia volajúceho obmedzená. Ďalší hovor: Bez obmedzenia"</string>
-    <!-- no translation found for page_size_compat_apk_warning (2297836366674721648) -->
-    <skip />
-    <!-- no translation found for page_size_compat_elf_warning (8613720928493005883) -->
-    <skip />
-    <!-- no translation found for page_size_compat_apk_and_elf_warning (9034695801295605229) -->
-    <skip />
-    <!-- no translation found for page_size_compat_apk_warning_4kb (5676451039424864495) -->
-    <skip />
-    <!-- no translation found for page_size_compat_elf_warning_4kb (5005239480522831311) -->
-    <skip />
-    <!-- no translation found for page_size_compat_apk_and_elf_warning_4kb (997926487776340721) -->
-    <skip />
+    <string name="page_size_compat_apk_warning" msgid="2297836366674721648">"Táto aplikácia nie je kompatibilná s režimom 16 kB. Nepodarilo sa skontrolovať zosúladenie súboru APK. Táto aplikácia bude spustená v režime kompatibilnom s veľkosťou stránky. Ak chcete dosiahnuť najlepšiu kompatibilitu, znova skompilujte aplikáciu s podporou 16 kB. Ďalšie informácie nájdete na &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; &lt;br&gt;&lt;br&gt; Nasledujúce knižnice nie sú zosúladené s režimom 16 kB: &lt;br&gt;&lt;br&gt;"</string>
+    <string name="page_size_compat_elf_warning" msgid="8613720928493005883">"Táto aplikácia nie je kompatibilná s režimom 16 kB. Nepodarilo sa skontrolovať zosúladenie formátu ELF. Táto aplikácia bude spustená v režime kompatibilnom s veľkosťou stránky. Ak chcete dosiahnuť najlepšiu kompatibilitu, znova skompilujte aplikáciu s podporou 16 kB. Ďalšie informácie nájdete na &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; &lt;br&gt;&lt;br&gt; Nasledujúce knižnice nie sú zosúladené s režimom 16 kB: &lt;br&gt;&lt;br&gt;"</string>
+    <string name="page_size_compat_apk_and_elf_warning" msgid="9034695801295605229">"Táto aplikácia nie je kompatibilná s režimom 16 kB. Nepodarilo sa skontrolovať zosúladenie súboru APK a formátu ELF. Táto aplikácia bude spustená v režime kompatibilnom s veľkosťou stránky. Ak chcete dosiahnuť najlepšiu kompatibilitu, znova skompilujte aplikáciu s podporou 16 kB. Ďalšie informácie nájdete na &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; &lt;br&gt;&lt;br&gt; Nasledujúce knižnice nie sú zosúladené s režimom 16 kB: &lt;br&gt;&lt;br&gt;"</string>
+    <string name="page_size_compat_apk_warning_4kb" msgid="5676451039424864495">"Toto upozornenie sa zobrazuje, pretože ide o laditeľnú aplikáciu, ktorá sa momentálne testuje. Ak nie ste vývojár, nahláste to príslušnému vývojárovi a požiadajte o neladiteľnú aplikáciu. &lt;br&gt;&lt;br&gt; Táto aplikácia nie je kompatibilná s režimom 16 kB. Nepodarilo sa skontrolovať zosúladenie súboru APK. Postupujte podľa pokynov na &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; &lt;br&gt;&lt;br&gt; Nasledujúce knižnice nie sú zosúladené s režimom 16 kB: &lt;br&gt;&lt;br&gt;"</string>
+    <string name="page_size_compat_elf_warning_4kb" msgid="5005239480522831311">"Toto upozornenie sa zobrazuje, pretože ide o laditeľnú aplikáciu, ktorá sa momentálne testuje. Ak nie ste vývojár, nahláste to príslušnému vývojárovi a požiadajte o neladiteľnú aplikáciu. &lt;br&gt;&lt;br&gt; Táto aplikácia nie je kompatibilná s režimom 16 kB. Nepodarilo sa skontrolovať zosúladenie formátu ELF. Postupujte podľa pokynov na &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; &lt;br&gt;&lt;br&gt; Nasledujúce knižnice nie sú zosúladené s režimom 16 kB: &lt;br&gt;&lt;br&gt;"</string>
+    <string name="page_size_compat_apk_and_elf_warning_4kb" msgid="997926487776340721">"Toto upozornenie sa zobrazuje, pretože ide o laditeľnú aplikáciu, ktorá sa momentálne testuje. Ak nie ste vývojár, nahláste to príslušnému vývojárovi a požiadajte o neladiteľnú aplikáciu. &lt;br&gt;&lt;br&gt; Táto aplikácia nie je kompatibilná s režimom 16 kB. Nepodarilo sa skontrolovať zosúladenie súboru APK a formátu ELF. Postupujte podľa pokynov na &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;. &lt;br&gt;&lt;br&gt; Nasledujúce knižnice nie sú zosúladené s režimom 16 kB: &lt;br&gt;&lt;br&gt;"</string>
     <string name="page_size_compat_never_show" msgid="3391282612422783097">"Nabudúce nezobrazovať"</string>
     <string name="page_size_compat_title" msgid="6497719153872572204">"Kompatibilita s aplikáciami pre Android"</string>
     <string name="page_size_compat_elf_not_aligned" msgid="7940806102874132630">"&amp;#8226; %1$s : segment LOAD nie je zosúladený"</string>
@@ -922,8 +916,7 @@
     <string name="policydesc_disableCamera" msgid="3204405908799676104">"Zakázať používanie všetkých fotoaparátov zariadenia."</string>
     <string name="policylab_disableKeyguardFeatures" msgid="5071855750149949741">"Deaktivovať niektoré funkcie zámky obrazovky"</string>
     <string name="policydesc_disableKeyguardFeatures" msgid="6641673177041195957">"Zabrániť používaniu niektorých funkcií zámky obrazovky."</string>
-    <!-- no translation found for exit_toast_on_long_press_escape (2983932499112557277) -->
-    <skip />
+    <string name="exit_toast_on_long_press_escape" msgid="2983932499112557277">"Túto aplikáciu zavriete dlhým stlačením klávesa Esc"</string>
   <string-array name="phoneTypes">
     <item msgid="8996339953292723951">"Domov"</item>
     <item msgid="7740243458912727194">"Mobil"</item>
@@ -1850,8 +1843,7 @@
     <string name="owner_name" msgid="8713560351570795743">"Vlastník"</string>
     <string name="guest_name" msgid="8502103277839834324">"Hosť"</string>
     <string name="headless_system_user_name" msgid="1849150903255530049">"Používateľ systému"</string>
-    <!-- no translation found for unnamed_user_name (6096699110534542980) -->
-    <skip />
+    <string name="unnamed_user_name" msgid="6096699110534542980">"Používateľ"</string>
     <string name="error_message_title" msgid="4082495589294631966">"Chyba"</string>
     <string name="error_message_change_not_allowed" msgid="843159705042381454">"Správca túto zmenu zakázal"</string>
     <string name="app_not_found" msgid="3429506115332341800">"Aplikácia potrebná na spracovanie tejto akcie sa nenašla"</string>
