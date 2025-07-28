@@ -151,7 +151,7 @@ class VintfHalVibrator {
 
         @Override
         public void init(@NonNull Callbacks callbacks) {
-            Trace.traceBegin(TRACE_TAG_VIBRATOR, "DefaultHalVibrator#init");
+            Trace.traceBegin(TRACE_TAG_VIBRATOR, "HalVibrator.init");
             try {
                 mCallbacks = callbacks;
                 int capabilities = getValue(IVibrator::getCapabilities,
@@ -173,7 +173,7 @@ class VintfHalVibrator {
 
         @Override
         public void onSystemReady() {
-            Trace.traceBegin(TRACE_TAG_VIBRATOR, "DefaultHalVibrator#onSystemReady");
+            Trace.traceBegin(TRACE_TAG_VIBRATOR, "HalVibrator.onSystemReady");
             try {
                 VibratorInfo info = loadVibratorInfo(mVibratorId);
                 synchronized (mLock) {
@@ -234,8 +234,8 @@ class VintfHalVibrator {
         @Override
         public boolean setExternalControl(boolean enabled) {
             Trace.traceBegin(TRACE_TAG_VIBRATOR,
-                    enabled ? "DefaultHalVibrator#enableExternalControl"
-                            : "DefaultHalVibrator#disableExternalControl");
+                    enabled ? "HalVibrator.enableExternalControl"
+                            : "HalVibrator.disableExternalControl");
             try {
                 State newState = enabled ? State.UNDER_EXTERNAL_CONTROL : State.IDLE;
                 synchronized (mLock) {
@@ -258,8 +258,8 @@ class VintfHalVibrator {
         @Override
         public boolean setAlwaysOn(int id, @Nullable PrebakedSegment prebaked) {
             Trace.traceBegin(TRACE_TAG_VIBRATOR,
-                    prebaked != null ? "DefaultHalVibrator#alwaysOnEnable"
-                                     : "DefaultHalVibrator#alwaysOnDisable");
+                    prebaked != null ? "HalVibrator.enableAlwaysOn"
+                                     : "HalVibrator.disableAlwaysOn");
             try {
                 synchronized (mLock) {
                     if (!mVibratorInfo.hasCapability(IVibrator.CAP_ALWAYS_ON_CONTROL)) {
@@ -288,7 +288,7 @@ class VintfHalVibrator {
 
         @Override
         public boolean setAmplitude(float amplitude) {
-            Trace.traceBegin(TRACE_TAG_VIBRATOR, "DefaultHalVibrator#setAmplitude");
+            Trace.traceBegin(TRACE_TAG_VIBRATOR, "HalVibrator.setAmplitude");
             try {
                 synchronized (mLock) {
                     if (!mVibratorInfo.hasCapability(IVibrator.CAP_AMPLITUDE_CONTROL)) {
@@ -309,7 +309,7 @@ class VintfHalVibrator {
 
         @Override
         public long on(long vibrationId, long stepId, long milliseconds) {
-            Trace.traceBegin(TRACE_TAG_VIBRATOR, "DefaultHalVibrator#on");
+            Trace.traceBegin(TRACE_TAG_VIBRATOR, "HalVibrator.onMillis");
             try {
                 synchronized (mLock) {
                     int result;
@@ -342,7 +342,7 @@ class VintfHalVibrator {
 
         @Override
         public long on(long vibrationId, long stepId, VibrationEffect.VendorEffect effect) {
-            Trace.traceBegin(TRACE_TAG_VIBRATOR, "DefaultHalVibrator#on (vendor)");
+            Trace.traceBegin(TRACE_TAG_VIBRATOR, "HalVibrator.onVendor");
             try {
                 synchronized (mLock) {
                     if (!mVibratorInfo.hasCapability(IVibrator.CAP_PERFORM_VENDOR_EFFECTS)) {
@@ -370,7 +370,7 @@ class VintfHalVibrator {
 
         @Override
         public long on(long vibrationId, long stepId, PrebakedSegment prebaked) {
-            Trace.traceBegin(TRACE_TAG_VIBRATOR, "DefaultHalVibrator#on (prebaked)");
+            Trace.traceBegin(TRACE_TAG_VIBRATOR, "HalVibrator.onPrebaked");
             try {
                 synchronized (mLock) {
                     int result;
@@ -406,7 +406,7 @@ class VintfHalVibrator {
 
         @Override
         public long on(long vibrationId, long stepId, PrimitiveSegment[] primitives) {
-            Trace.traceBegin(TRACE_TAG_VIBRATOR, "DefaultHalVibrator#on (primitives)");
+            Trace.traceBegin(TRACE_TAG_VIBRATOR, "HalVibrator.onPrimitives");
             try {
                 synchronized (mLock) {
                     if (!mVibratorInfo.hasCapability(IVibrator.CAP_COMPOSE_EFFECTS)) {
@@ -441,7 +441,7 @@ class VintfHalVibrator {
 
         @Override
         public long on(long vibrationId, long stepId, RampSegment[] primitives) {
-            Trace.traceBegin(TRACE_TAG_VIBRATOR, "DefaultHalVibrator#on (pwle v1)");
+            Trace.traceBegin(TRACE_TAG_VIBRATOR, "HalVibrator.onPwleV1");
             try {
                 synchronized (mLock) {
                     if (!mVibratorInfo.hasCapability(IVibrator.CAP_COMPOSE_PWLE_EFFECTS)) {
@@ -478,7 +478,7 @@ class VintfHalVibrator {
 
         @Override
         public long on(long vibrationId, long stepId, PwlePoint[] pwlePoints) {
-            Trace.traceBegin(TRACE_TAG_VIBRATOR, "DefaultHalVibrator#on (pwle v2)");
+            Trace.traceBegin(TRACE_TAG_VIBRATOR, "HalVibrator.onPwleV2");
             try {
                 synchronized (mLock) {
                     if (!mVibratorInfo.hasCapability(IVibrator.CAP_COMPOSE_PWLE_EFFECTS_V2)) {
@@ -513,7 +513,7 @@ class VintfHalVibrator {
 
         @Override
         public boolean off() {
-            Trace.traceBegin(TRACE_TAG_VIBRATOR, "DefaultHalVibrator#off");
+            Trace.traceBegin(TRACE_TAG_VIBRATOR, "HalVibrator.off");
             try {
                 synchronized (mLock) {
                     boolean result = VintfUtils.runNoThrow(mHalSupplier,
@@ -561,6 +561,13 @@ class VintfHalVibrator {
 
         @GuardedBy("mLock")
         private void updateStateAndNotifyListenersLocked(State state) {
+            if (mCurrentState == State.IDLE && state == State.VIBRATING) {
+                // First vibrate command.
+                Trace.asyncTraceBegin(TRACE_TAG_VIBRATOR, "HalVibrator.vibration", 0);
+            } else if (mCurrentState == State.VIBRATING && state == State.IDLE) {
+                // First off after a vibrate command.
+                Trace.asyncTraceEnd(TRACE_TAG_VIBRATOR, "HalVibrator.vibration", 0);
+            }
             boolean previousIsVibrating = isVibrating();
             mCurrentState = state;
             final boolean newIsVibrating = isVibrating();

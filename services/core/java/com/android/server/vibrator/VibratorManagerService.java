@@ -123,8 +123,6 @@ public class VibratorManagerService extends IVibratorManagerService.Stub {
     private static final String EXTERNAL_VIBRATOR_SERVICE = "external_vibrator_service";
     private static final String VIBRATOR_CONTROL_SERVICE =
             "android.frameworks.vibrator.IVibratorControlService/default";
-    // To enable these logs, run:
-    // 'adb shell setprop persist.log.tag.VibratorManagerService DEBUG && adb reboot'
     private static final boolean DEBUG = VibratorDebugUtils.isDebuggable(TAG);
     private static final VibrationAttributes DEFAULT_ATTRIBUTES =
             new VibrationAttributes.Builder().build();
@@ -1907,7 +1905,7 @@ public class VibratorManagerService extends IVibratorManagerService.Stub {
                         }
                         finishAppOpModeLocked(mCurrentSession.getCallerInfo());
                         clearCurrentSessionLocked();
-                        Trace.asyncTraceEnd(Trace.TRACE_TAG_VIBRATOR, "vibration", 0);
+                        Trace.asyncTraceEnd(TRACE_TAG_VIBRATOR, "vibration", 0);
                         // Start next vibration if it's waiting for the thread.
                         maybeStartNextSessionLocked();
                     } else if (mCurrentSession instanceof VendorVibrationSession session) {
