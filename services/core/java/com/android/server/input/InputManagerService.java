@@ -3934,8 +3934,7 @@ public class InputManagerService extends IInputManager.Stub
         @Override
         public long interceptKeyCombinationBeforeAccessibility(@NonNull KeyEvent event) {
             if (fixKeyboardInterceptorPolicyCall()) {
-                return mKeyGestureController.interceptKeyBeforeDispatching(/* focusedToken= */null,
-                        event, /* policyFlags= */0);
+                return mKeyGestureController.interceptKeyCombinationBeforeAccessibility(event);
             } else {
                 return mWindowManagerCallbacks.interceptKeyBeforeDispatching(
                         /* focusedToken= */null, event)
