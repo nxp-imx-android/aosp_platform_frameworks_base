@@ -42,14 +42,14 @@ class SqueezeEffectInteractorTest : SysuiTestCase() {
         }
 
     @Test
-    fun powerButtonSemantics_powerKeyNotDownAsSingleGestureAndDisabled_isNull() =
+    fun powerButtonSemantics_powerKeyNotDownAsSingleGestureAndDisabled_cancelsSqueeze() =
         kosmos.runTest {
             fakeSqueezeEffectRepository.isEffectEnabled.value = false
             fakeSqueezeEffectRepository.isPowerButtonPressedAsSingleGesture.value = false
 
             val powerButtonSemantics by collectLastValue(underTest.powerButtonSemantics)
 
-            assertThat(powerButtonSemantics).isNull()
+            assertThat(powerButtonSemantics).isEqualTo(PowerButtonSemantics.CANCEL_SQUEEZE)
         }
 
     @Test
@@ -114,7 +114,7 @@ class SqueezeEffectInteractorTest : SysuiTestCase() {
         }
 
     @Test
-    fun powerButtonSemantics_onLPPAndDisabledAndPowerKeyNotAsSingleGesture_isNull() =
+    fun powerButtonSemantics_onLPPAndDisabledAndPowerKeyNotAsSingleGesture_cancelsSqueeze() =
         kosmos.runTest {
             fakeSqueezeEffectRepository.isEffectEnabled.value = false
             fakeSqueezeEffectRepository.isPowerButtonPressedAsSingleGesture.value = false
@@ -122,6 +122,6 @@ class SqueezeEffectInteractorTest : SysuiTestCase() {
 
             val powerButtonSemantics by collectLastValue(underTest.powerButtonSemantics)
 
-            assertThat(powerButtonSemantics).isNull()
+            assertThat(powerButtonSemantics).isEqualTo(PowerButtonSemantics.CANCEL_SQUEEZE)
         }
 }
