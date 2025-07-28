@@ -185,14 +185,6 @@ public class PipTransitionStateTest extends ShellTestCase {
     }
 
     @Test
-    public void testShouldTransitionToState_changingPipBounds_withoutScheduling_returnsFalse() {
-        mPipTransitionState.setState(PipTransitionState.ENTERED_PIP);
-
-        Assert.assertFalse(mPipTransitionState.shouldTransitionToState(
-                PipTransitionState.CHANGING_PIP_BOUNDS));
-    }
-
-    @Test
     public void shouldTransitionToState_scheduledBoundsChangeWhileChangingBounds_returnsFalse() {
         Bundle extra = new Bundle();
         extra.putParcelable(EXTRA_ENTRY_KEY, mEmptyParcelable);

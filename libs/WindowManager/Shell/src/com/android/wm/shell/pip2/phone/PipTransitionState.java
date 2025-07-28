@@ -481,8 +481,6 @@ public class PipTransitionState {
                 // - there is no drag-to-desktop gesture in progress; otherwise the PiP resize
                 //   transition will block the drag-to-desktop transitions from finishing
                 return isPipStateIdle() && !mPipDesktopState.isDragToDesktopInProgress();
-            case CHANGING_PIP_BOUNDS:
-                return mState == SCHEDULED_BOUNDS_CHANGE;
             default:
                 return true;
         }
