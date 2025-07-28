@@ -64,8 +64,6 @@ class FakeSecurityController(private val fakeState: FakeState = FakeState()) : S
     override fun getDeviceOwnerComponentOnAnyUser(): ComponentName? =
         fakeState.deviceOwnerComponentOnAnyUser
 
-    override fun getDeviceOwnerType(admin: ComponentName?): Int = 0
-
     override fun isFinancedDevice(): Boolean = false
 
     override fun isNetworkLoggingEnabled(): Boolean = fakeState.isNetworkLoggingEnabled

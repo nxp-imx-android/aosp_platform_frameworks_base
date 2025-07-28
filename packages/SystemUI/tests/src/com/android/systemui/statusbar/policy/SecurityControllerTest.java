@@ -16,7 +16,6 @@
 
 package com.android.systemui.statusbar.policy;
 
-import static android.app.admin.DevicePolicyManager.DEVICE_OWNER_TYPE_FINANCED;
 import static android.net.NetworkCapabilities.TRANSPORT_VPN;
 
 import static org.junit.Assert.assertEquals;
@@ -171,9 +170,6 @@ public class SecurityControllerTest extends SysuiTestCase {
     @Test
     public void testIsFinancedDevice() {
         when(mDevicePolicyManager.isFinancedDevice()).thenReturn(true);
-        // TODO(b/259908270): remove
-        when(mDevicePolicyManager.getDeviceOwnerType(DEVICE_OWNER_COMPONENT))
-                .thenReturn(DEVICE_OWNER_TYPE_FINANCED);
         assertEquals(mSecurityController.isFinancedDevice(), true);
     }
 

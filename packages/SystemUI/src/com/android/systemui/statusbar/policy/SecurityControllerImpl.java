@@ -22,7 +22,6 @@ import android.annotation.Nullable;
 import android.annotation.SuppressLint;
 import android.app.admin.DeviceAdminInfo;
 import android.app.admin.DevicePolicyManager;
-import android.app.admin.DevicePolicyManager.DeviceOwnerType;
 import android.app.supervision.SupervisionManager;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
@@ -291,13 +290,6 @@ public class SecurityControllerImpl implements SecurityController {
     @Nullable
     public ComponentName getDeviceOwnerComponentOnAnyUser() {
         return mDevicePolicyManager.getDeviceOwnerComponentOnAnyUser();
-    }
-
-    // TODO(b/259908270): remove
-    @Override
-    @DeviceOwnerType
-    public int getDeviceOwnerType(@NonNull ComponentName admin) {
-        return mDevicePolicyManager.getDeviceOwnerType(admin);
     }
 
     @Override
