@@ -850,7 +850,7 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
                             // appearing before the animation itself starts.
                             // TODO: b/399160023 remove this when we stop using transition-type
                             //  checks in transition utils.
-                            t.hide(target.leash);
+                            t.setAlpha(target.leash, 0f);
                         } else {
                             ProtoLog.v(ShellProtoLogGroup.WM_SHELL_RECENTS_TRANSITION,
                                     "  not handling home taskId=%d", taskInfo.taskId);

@@ -283,7 +283,7 @@ public class RecentsTransitionHandlerTest extends ShellTestCase {
                 mock(Transitions.TransitionFinishCallback.class));
         mMainExecutor.flushAll();
 
-        verify(startT).hide(controller.getLeashMapForTesting().get(homeLeash));
+        verify(startT).setAlpha(controller.getLeashMapForTesting().get(homeLeash), 0);
     }
 
     @Test
