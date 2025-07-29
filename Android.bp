@@ -398,6 +398,7 @@ java_defaults {
         "bouncycastle-repackaged-unbundled",
         "com.android.sysprop.foldlockbehavior",
         "com.android.sysprop.view",
+        "com.android.sysprop.nativebinderstats",
         "framework-internal-utils",
         "dropboxmanager_aidl-java",
         "dynamic_instrumentation_manager_aidl-java",
