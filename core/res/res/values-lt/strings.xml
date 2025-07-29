@@ -73,18 +73,12 @@
     <string name="CLIRDefaultOnNextCallOff" msgid="5036749051007098105">"Skambintojo ID pagal numatytuosius nustatymus yra apribotas. Kitas skambutis: neapribotas"</string>
     <string name="CLIRDefaultOffNextCallOn" msgid="1022781126694885017">"Skambintojo ID pagal numatytuosius nustatymus nustatomas į neapribotą. Kitas skambutis: apribotas"</string>
     <string name="CLIRDefaultOffNextCallOff" msgid="2491576172356463443">"Skambintojo ID pagal numatytuosius nustatymus yra neapribotas. Kitas skambutis: neapribotas"</string>
-    <!-- no translation found for page_size_compat_apk_warning (2297836366674721648) -->
-    <skip />
-    <!-- no translation found for page_size_compat_elf_warning (8613720928493005883) -->
-    <skip />
-    <!-- no translation found for page_size_compat_apk_and_elf_warning (9034695801295605229) -->
-    <skip />
-    <!-- no translation found for page_size_compat_apk_warning_4kb (5676451039424864495) -->
-    <skip />
-    <!-- no translation found for page_size_compat_elf_warning_4kb (5005239480522831311) -->
-    <skip />
-    <!-- no translation found for page_size_compat_apk_and_elf_warning_4kb (997926487776340721) -->
-    <skip />
+    <string name="page_size_compat_apk_warning" msgid="2297836366674721648">"Ši programa nesuderinama su 16 KB. APK suderinimo patikra nepavyko. Ši programa bus paleista naudojant su puslapio dydžiu suderintą režimą. Kad užtikrintumėte geriausią suderinamumą, iš naujo sukompiliuokite programą su 16 KB palaikymu. Jei reikia daugiau informacijos, žr. &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; &lt;br&gt;&lt;br&gt; Toliau pateiktos bibliotekos nėra suderinamos su 16 KB. &lt;br&gt;&lt;br&gt;"</string>
+    <string name="page_size_compat_elf_warning" msgid="8613720928493005883">"Ši programa nesuderinama su 16 KB. ELF suderinimo patikra nepavyko. Ši programa bus paleista naudojant su puslapio dydžiu suderintą režimą. Kad užtikrintumėte geriausią suderinamumą, iš naujo sukompiliuokite programą su 16 KB palaikymu. Jei reikia daugiau informacijos, žr. &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; &lt;br&gt;&lt;br&gt; Toliau pateiktos bibliotekos nėra suderinamos su 16 KB. &lt;br&gt;&lt;br&gt;"</string>
+    <string name="page_size_compat_apk_and_elf_warning" msgid="9034695801295605229">"Ši programa nesuderinama su 16 KB. APK ir ELF suderinimo patikros nepavyko. Ši programa bus paleista naudojant su puslapio dydžiu suderintą režimą. Kad užtikrintumėte geriausią suderinamumą, iš naujo sukompiliuokite programą su 16 KB palaikymu. Jei reikia daugiau informacijos, žr. &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; &lt;br&gt;&lt;br&gt; Toliau pateiktos bibliotekos nėra suderinamos su 16 KB. &lt;br&gt;&lt;br&gt;"</string>
+    <string name="page_size_compat_apk_warning_4kb" msgid="5676451039424864495">"Šis perspėjimas rodomas, nes tai yra derinama programa, kuri šiuo metu išbandoma. Jei nesate kūrėjas (-a), praneškite apie tai kūrėjui ir paprašykite nederinamos programos. &lt;br&gt;&lt;br&gt; Ši programa nesuderinama su 16 KB. APK suderinimo patikra nepavyko. Atlikite veiksmus, nurodytus &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; &lt;br&gt;&lt;br&gt; Toliau pateiktos bibliotekos nėra suderinamos su 16 KB. &lt;br&gt;&lt;br&gt;"</string>
+    <string name="page_size_compat_elf_warning_4kb" msgid="5005239480522831311">"Šis perspėjimas rodomas, nes tai yra derinama programa, kuri šiuo metu išbandoma. Jei nesate kūrėjas (-a), praneškite apie tai kūrėjui ir paprašykite nederinamos programos. &lt;br&gt;&lt;br&gt; Ši programa nesuderinama su 16 KB. ELF suderinimo patikra nepavyko. Atlikite veiksmus, nurodytus &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; &lt;br&gt;&lt;br&gt; Toliau pateiktos bibliotekos nėra suderinamos su 16 KB. &lt;br&gt;&lt;br&gt;"</string>
+    <string name="page_size_compat_apk_and_elf_warning_4kb" msgid="997926487776340721">"Šis perspėjimas rodomas, nes tai yra derinama programa, kuri šiuo metu išbandoma. Jei nesate kūrėjas (-a), praneškite apie tai kūrėjui ir paprašykite nederinamos programos. &lt;br&gt;&lt;br&gt; Ši programa nesuderinama su 16 KB. APK ir ELF suderinimo patikros nepavyko. Atlikite veiksmus, nurodytus &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;. &lt;br&gt;&lt;br&gt; Toliau nurodytos bibliotekos nėra suderinamos su 16 KB. &lt;br&gt;&lt;br&gt;"</string>
     <string name="page_size_compat_never_show" msgid="3391282612422783097">"Daugiau nerodyti"</string>
     <string name="page_size_compat_title" msgid="6497719153872572204">"„Android“ programų suderinamumas"</string>
     <string name="page_size_compat_elf_not_aligned" msgid="7940806102874132630">"&amp;#8226; %1$s: LOAD segmentas nesuderintas"</string>
@@ -922,8 +916,7 @@
     <string name="policydesc_disableCamera" msgid="3204405908799676104">"Neleisti naudoti visų įrenginio fotoaparatų."</string>
     <string name="policylab_disableKeyguardFeatures" msgid="5071855750149949741">"Išj. kai kurias ekran. užr. f."</string>
     <string name="policydesc_disableKeyguardFeatures" msgid="6641673177041195957">"Neleisti naudoti kai kurių ekrano užrakto funkcijų."</string>
-    <!-- no translation found for exit_toast_on_long_press_escape (2983932499112557277) -->
-    <skip />
+    <string name="exit_toast_on_long_press_escape" msgid="2983932499112557277">"Ilgai paspauskite klavišą „Esc“, kad uždarytumėte šią programą"</string>
   <string-array name="phoneTypes">
     <item msgid="8996339953292723951">"Namų"</item>
     <item msgid="7740243458912727194">"Mobilusis"</item>
@@ -1850,8 +1843,7 @@
     <string name="owner_name" msgid="8713560351570795743">"Savininkas"</string>
     <string name="guest_name" msgid="8502103277839834324">"Svečias"</string>
     <string name="headless_system_user_name" msgid="1849150903255530049">"Sistemos naudotojas"</string>
-    <!-- no translation found for unnamed_user_name (6096699110534542980) -->
-    <skip />
+    <string name="unnamed_user_name" msgid="6096699110534542980">"Naudotojas"</string>
     <string name="error_message_title" msgid="4082495589294631966">"Klaida"</string>
     <string name="error_message_change_not_allowed" msgid="843159705042381454">"Administratorius neleidžia atlikti šio pakeitimo"</string>
     <string name="app_not_found" msgid="3429506115332341800">"Nerasta programa šiam veiksmui apdoroti"</string>

@@ -71,18 +71,12 @@
     <string name="CLIRDefaultOnNextCallOff" msgid="5036749051007098105">"Nade-default sa pinaghihigpitan ang Caller ID. Susunod na tawag: hindi pinaghihigpitan"</string>
     <string name="CLIRDefaultOffNextCallOn" msgid="1022781126694885017">"Naka-default sa hindi pinaghihigpitan ang Caller ID. Susunod na tawag: Pinaghihigpitan"</string>
     <string name="CLIRDefaultOffNextCallOff" msgid="2491576172356463443">"Naka-default na hindi pinaghihigpitan ang Caller ID. Susunod na tawag: Hindi pinaghihigpitan"</string>
-    <!-- no translation found for page_size_compat_apk_warning (2297836366674721648) -->
-    <skip />
-    <!-- no translation found for page_size_compat_elf_warning (8613720928493005883) -->
-    <skip />
-    <!-- no translation found for page_size_compat_apk_and_elf_warning (9034695801295605229) -->
-    <skip />
-    <!-- no translation found for page_size_compat_apk_warning_4kb (5676451039424864495) -->
-    <skip />
-    <!-- no translation found for page_size_compat_elf_warning_4kb (5005239480522831311) -->
-    <skip />
-    <!-- no translation found for page_size_compat_apk_and_elf_warning_4kb (997926487776340721) -->
-    <skip />
+    <string name="page_size_compat_apk_warning" msgid="2297836366674721648">"Hindi 16 KB compatible ang app na ito. Hindi pumasa ang alignment check sa APK. Patatakbuhin ang app na ito gamit ang page size compatible mode. Para sa pinakamahusay na compatibility, paki-recompile ang application nang may suporta sa 16 KB. Para sa higit pang impormasyon, tingnan ang &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; &lt;br&gt;&lt;br&gt; Hindi naka-align sa 16 KB ang mga sumusunod na library: &lt;br&gt;&lt;br&gt;"</string>
+    <string name="page_size_compat_elf_warning" msgid="8613720928493005883">"Hindi 16 KB compatible ang app na ito. Hindi pumasa ang alignment check sa ELF. Patatakbuhin ang app na ito gamit ang page size compatible mode. Para sa pinakamahusay na compatibility, paki-recompile ang application nang may suporta sa 16 KB. Para sa higit pang impormasyon, tingnan ang &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; &lt;br&gt;&lt;br&gt; Hindi naka-align sa 16 KB ang mga sumusunod na library: &lt;br&gt;&lt;br&gt;"</string>
+    <string name="page_size_compat_apk_and_elf_warning" msgid="9034695801295605229">"Hindi 16 KB compatible ang app na ito. Hindi pumasa ang mga alignment check sa APK at ELF. Patatakbuhin ang app na ito gamit ang page size compatible mode. Para sa pinakamahusay na compatibility, paki-recompile ang application nang may suporta sa 16 KB. Para sa higit pang impormasyon, tingnan ang &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; &lt;br&gt;&lt;br&gt; Hindi naka-align sa 16 KB ang mga sumusunod na library: &lt;br&gt;&lt;br&gt;"</string>
+    <string name="page_size_compat_apk_warning_4kb" msgid="5676451039424864495">"Lumalabas ang babalang ito dahil isa itong nade-debug na app na kasalukuyang tine-test. Kung hindi ikaw ang developer, iulat ito sa developer at humingi ng hindi nade-debug na app. &lt;br&gt;&lt;br&gt; Hindi compatible sa 16 KB ang app na ito. Hindi pumasa ang alignment check sa APK. Sundin ang mga hakbang sa &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; &lt;br&gt;&lt;br&gt; Hindi naka-align sa 16 KB ang mga sumusunod na library: &lt;br&gt;&lt;br&gt;"</string>
+    <string name="page_size_compat_elf_warning_4kb" msgid="5005239480522831311">"Lumalabas ang babalang ito dahil isa itong nade-debug na app na kasalukuyang tine-test. Kung hindi ikaw ang developer, iulat ito sa developer at humingi ng hindi nade-debug na app. &lt;br&gt;&lt;br&gt; Hindi compatible sa 16 KB ang app na ito. Hindi pumasa ang alignment check sa ELF. Sundin ang mga hakbang sa &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; &lt;br&gt;&lt;br&gt; Hindi naka-align sa 16 KB ang mga sumusunod na library: &lt;br&gt;&lt;br&gt;"</string>
+    <string name="page_size_compat_apk_and_elf_warning_4kb" msgid="997926487776340721">"Lumalabas ang babalang ito dahil isa itong nade-debug na app na kasalukuyang tine-test. Kung hindi ikaw ang developer, iulat ito sa developer at humingi ng hindi nade-debug na app. &lt;br&gt;&lt;br&gt; Hindi compatible sa 16 KB ang app na ito. Hindi pumasa ang mga alignment check sa APK at ELF. Sundin ang mga hakbang sa &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;. &lt;br&gt;&lt;br&gt; Hindi naka-align sa 16 KB ang mga sumusunod na library: &lt;br&gt;&lt;br&gt;"</string>
     <string name="page_size_compat_never_show" msgid="3391282612422783097">"Huwag Nang Ipakita Ulit"</string>
     <string name="page_size_compat_title" msgid="6497719153872572204">"Compatibility ng Android App"</string>
     <string name="page_size_compat_elf_not_aligned" msgid="7940806102874132630">"&amp;#8226; %1$s : Hindi naka-align ang LOAD segment"</string>
@@ -920,8 +914,7 @@
     <string name="policydesc_disableCamera" msgid="3204405908799676104">"Pigilan ang paggamit sa lahat ng camera ng device."</string>
     <string name="policylab_disableKeyguardFeatures" msgid="5071855750149949741">"I-disable ilang screen lock feature"</string>
     <string name="policydesc_disableKeyguardFeatures" msgid="6641673177041195957">"Pigilan ang paggamit ng ilang feature ng screen lock."</string>
-    <!-- no translation found for exit_toast_on_long_press_escape (2983932499112557277) -->
-    <skip />
+    <string name="exit_toast_on_long_press_escape" msgid="2983932499112557277">"Pindutin nang matagal ang Esc key para isara ang app na ito"</string>
   <string-array name="phoneTypes">
     <item msgid="8996339953292723951">"Home"</item>
     <item msgid="7740243458912727194">"Mobile"</item>
@@ -1848,8 +1841,7 @@
     <string name="owner_name" msgid="8713560351570795743">"May-ari"</string>
     <string name="guest_name" msgid="8502103277839834324">"Bisita"</string>
     <string name="headless_system_user_name" msgid="1849150903255530049">"User ng System"</string>
-    <!-- no translation found for unnamed_user_name (6096699110534542980) -->
-    <skip />
+    <string name="unnamed_user_name" msgid="6096699110534542980">"User"</string>
     <string name="error_message_title" msgid="4082495589294631966">"Error"</string>
     <string name="error_message_change_not_allowed" msgid="843159705042381454">"Hindi pinapayagan ng iyong admin ang pagbabagong ito"</string>
     <string name="app_not_found" msgid="3429506115332341800">"Walang nakitang application na mangangasiwa sa pagkilos na ito"</string>

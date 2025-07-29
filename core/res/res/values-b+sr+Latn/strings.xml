@@ -72,18 +72,12 @@
     <string name="CLIRDefaultOnNextCallOff" msgid="5036749051007098105">"ID pozivaoca je podrazumevano ograničen. Sledeći poziv: Nije ograničen."</string>
     <string name="CLIRDefaultOffNextCallOn" msgid="1022781126694885017">"ID pozivaoca podrazumevano nije ograničen. Sledeći poziv: ograničen."</string>
     <string name="CLIRDefaultOffNextCallOff" msgid="2491576172356463443">"ID pozivaoca podrazumevano nije ograničen. Sledeći poziv: Nije ograničen."</string>
-    <!-- no translation found for page_size_compat_apk_warning (2297836366674721648) -->
-    <skip />
-    <!-- no translation found for page_size_compat_elf_warning (8613720928493005883) -->
-    <skip />
-    <!-- no translation found for page_size_compat_apk_and_elf_warning (9034695801295605229) -->
-    <skip />
-    <!-- no translation found for page_size_compat_apk_warning_4kb (5676451039424864495) -->
-    <skip />
-    <!-- no translation found for page_size_compat_elf_warning_4kb (5005239480522831311) -->
-    <skip />
-    <!-- no translation found for page_size_compat_apk_and_elf_warning_4kb (997926487776340721) -->
-    <skip />
+    <string name="page_size_compat_apk_warning" msgid="2297836366674721648">"Ova aplikacija nije kompatibilna sa veličinom stranice od 16 kB. Provera usklađenosti APK-a nije uspela. Ova aplikacija će raditi pomoću režima kompatibilnog sa veličinom stranice. Da biste obezbedili najbolju kompatibilnost, ponovo kompajlirajte aplikaciju sa podrškom za veličinu stranice od 16 kB. Više informacija potražite na &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; &lt;br&gt;&lt;br&gt; Sledeće biblioteke nisu usklađene sa stranicama od 16 kB: &lt;br&gt;&lt;br&gt;"</string>
+    <string name="page_size_compat_elf_warning" msgid="8613720928493005883">"Ova aplikacija nije kompatibilna sa veličinom stranice od 16 kB. Provera usklađenosti ELF-a nije uspela. Ova aplikacija će raditi pomoću režima kompatibilnog sa veličinom stranice. Da biste obezbedili najbolju kompatibilnost, ponovo kompajlirajte aplikaciju sa podrškom za veličinu stranice od 16 kB. Više informacija potražite na &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; &lt;br&gt;&lt;br&gt; Sledeće biblioteke nisu usklađene sa stranicama od 16 kB: &lt;br&gt;&lt;br&gt;"</string>
+    <string name="page_size_compat_apk_and_elf_warning" msgid="9034695801295605229">"Ova aplikacija nije kompatibilna sa veličinom stranice od 16 kB. Provere usklađenosti APK-a i ELF-a nisu uspele. Ova aplikacija će raditi pomoću režima kompatibilnog sa veličinom stranice. Da biste obezbedili najbolju kompatibilnost, ponovo kompajlirajte aplikaciju sa podrškom za veličinu stranice od 16 kB. Više informacija potražite na &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; &lt;br&gt;&lt;br&gt; Sledeće biblioteke nisu usklađene sa stranicama od 16 kB: &lt;br&gt;&lt;br&gt;"</string>
+    <string name="page_size_compat_apk_warning_4kb" msgid="5676451039424864495">"Ovo upozorenje se prikazuje jer je ovo aplikacija sa otklonjivim greškama koja se trenutno testira. Prijavite ovo programeru, ako to niste vi, i zatražite aplikaciju bez otklonjivih grešaka. &lt;br&gt;&lt;br&gt; Ova aplikacija nije kompatibilna sa stranicama od 16 kB. Provera usklađenosti APK-a nije uspela. Pratite korake na &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; &lt;br&gt;&lt;br&gt; Sledeće biblioteke nisu usklađene sa stranicama od 16 kB: &lt;br&gt;&lt;br&gt;"</string>
+    <string name="page_size_compat_elf_warning_4kb" msgid="5005239480522831311">"Ovo upozorenje se prikazuje jer je ovo aplikacija sa otklonjivim greškama koja se trenutno testira. Prijavite ovo programeru, ako to niste vi, i zatražite aplikaciju bez otklonjivih grešaka. &lt;br&gt;&lt;br&gt; Ova aplikacija nije kompatibilna sa stranicama od 16 kB. Provera usklađenosti ELF-a nije uspela. Pratite korake na &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; &lt;br&gt;&lt;br&gt; Sledeće biblioteke nisu usklađene sa stranicama od 16 kB: &lt;br&gt;&lt;br&gt;"</string>
+    <string name="page_size_compat_apk_and_elf_warning_4kb" msgid="997926487776340721">"Ovo upozorenje se prikazuje jer je ovo aplikacija sa otklonjivim greškama koja se trenutno testira. Prijavite ovo programeru, ako to niste vi, i zatražite aplikaciju bez otklonjivih grešaka. &lt;br&gt;&lt;br&gt; Ova aplikacija nije kompatibilna sa stranicama od 16 kB. Provere usklađenosti APK-a i ELF-a nisu uspele. Pratite korake na &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;. &lt;br&gt;&lt;br&gt; Sledeće biblioteke nisu usklađene sa stranicama od 16 kB: &lt;br&gt;&lt;br&gt;"</string>
     <string name="page_size_compat_never_show" msgid="3391282612422783097">"Ne prikazuj ponovo"</string>
     <string name="page_size_compat_title" msgid="6497719153872572204">"Kompatibilnost Android aplikacija"</string>
     <string name="page_size_compat_elf_not_aligned" msgid="7940806102874132630">"&amp;#8226; %1$s: LOAD segment nije usklađen"</string>
@@ -921,8 +915,7 @@
     <string name="policydesc_disableCamera" msgid="3204405908799676104">"Sprečite korišćenje svih kamera uređaja."</string>
     <string name="policylab_disableKeyguardFeatures" msgid="5071855750149949741">"Onemogućavanje funkcija zaklj. ekrana"</string>
     <string name="policydesc_disableKeyguardFeatures" msgid="6641673177041195957">"Sprečava korišćenje nekih funkcija zaključavanja ekrana."</string>
-    <!-- no translation found for exit_toast_on_long_press_escape (2983932499112557277) -->
-    <skip />
+    <string name="exit_toast_on_long_press_escape" msgid="2983932499112557277">"Dugo pritisnite ESC da biste zatvorili ovu aplikaciju"</string>
   <string-array name="phoneTypes">
     <item msgid="8996339953292723951">"Kuća"</item>
     <item msgid="7740243458912727194">"Mobilni"</item>
@@ -1849,8 +1842,7 @@
     <string name="owner_name" msgid="8713560351570795743">"Vlasnik"</string>
     <string name="guest_name" msgid="8502103277839834324">"Gost"</string>
     <string name="headless_system_user_name" msgid="1849150903255530049">"Sistemski korisnik"</string>
-    <!-- no translation found for unnamed_user_name (6096699110534542980) -->
-    <skip />
+    <string name="unnamed_user_name" msgid="6096699110534542980">"Korisnik"</string>
     <string name="error_message_title" msgid="4082495589294631966">"Greška"</string>
     <string name="error_message_change_not_allowed" msgid="843159705042381454">"Administrator nije dozvolio ovu promenu"</string>
     <string name="app_not_found" msgid="3429506115332341800">"Nije pronađena nijedna aplikacija koja bi mogla da obavi ovu radnju"</string>

@@ -71,18 +71,12 @@
     <string name="CLIRDefaultOnNextCallOff" msgid="5036749051007098105">"ਪ੍ਰਤਿਬੰਧਿਤ ਕਰਨ ਲਈ ਕਾਲਰ ਆਈ.ਡੀ. ਪੂਰਵ-ਨਿਰਧਾਰਤ। ਅਗਲੀ ਕਾਲ: ਪ੍ਰਤਿਬੰਧਿਤ ਨਹੀਂ"</string>
     <string name="CLIRDefaultOffNextCallOn" msgid="1022781126694885017">"ਪ੍ਰਤਿਬੰਧਿਤ ਨਾ ਕਰਨ ਲਈ ਕਾਲਰ ਆਈ.ਡੀ. ਪੂਰਵ-ਨਿਰਧਾਰਤ। ਅਗਲੀ ਕਾਲ: ਪ੍ਰਤਿਬੰਧਿਤ"</string>
     <string name="CLIRDefaultOffNextCallOff" msgid="2491576172356463443">"ਪ੍ਰਤਿਬੰਧਿਤ ਨਾ ਕਰਨ ਲਈ ਕਾਲਰ ਆਈ.ਡੀ. ਪੂਰਵ-ਨਿਰਧਾਰਤ। ਅਗਲੀ ਕਾਲ: ਪ੍ਰਤਿਬੰਧਿਤ ਨਹੀਂ"</string>
-    <!-- no translation found for page_size_compat_apk_warning (2297836366674721648) -->
-    <skip />
-    <!-- no translation found for page_size_compat_elf_warning (8613720928493005883) -->
-    <skip />
-    <!-- no translation found for page_size_compat_apk_and_elf_warning (9034695801295605229) -->
-    <skip />
-    <!-- no translation found for page_size_compat_apk_warning_4kb (5676451039424864495) -->
-    <skip />
-    <!-- no translation found for page_size_compat_elf_warning_4kb (5005239480522831311) -->
-    <skip />
-    <!-- no translation found for page_size_compat_apk_and_elf_warning_4kb (997926487776340721) -->
-    <skip />
+    <string name="page_size_compat_apk_warning" msgid="2297836366674721648">"ਇਹ ਐਪ 16 KB ਦੇ ਅਨੁਰੂਪ ਨਹੀਂ ਹੈ। APK ਦੀ ਇਕਸਾਰਤਾ ਦੀ ਜਾਂਚ ਕਰਨਾ ਅਸਫਲ ਰਿਹਾ। ਇਹ ਐਪ ਪੰਨੇ ਦੇ ਆਕਾਰ ਦੇ ਅਨੁਰੂਪ ਮੋਡ ਦੀ ਵਰਤੋਂ ਕਰ ਕੇ ਚੱਲੇਗੀ। ਬਿਹਤਰ ਅਨੁਰੂਪਤਾ ਲਈ, ਕਿਰਪਾ ਕਰਕੇ 16 KB ਵਾਲੇ ਪੰਨਿਆਂ ਨਾਲ ਐਪਲੀਕੇਸ਼ਨ ਦਾ ਮੁੜ-ਸੰਕਲਨ ਕਰੋ। ਹੋਰ ਜਾਣਕਾਰੀ ਲਈ, &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; ਦੇਖੋ &lt;br&gt;&lt;br&gt; ਅੱਗੇ ਦਿੱਤੀਆਂ ਲਾਇਬ੍ਰੇਰੀਆਂ 16 KB ਮੁਤਾਬਕ ਇਕਸਾਰ ਨਹੀਂ ਹਨ: &lt;br&gt;&lt;br&gt;"</string>
+    <string name="page_size_compat_elf_warning" msgid="8613720928493005883">"ਇਹ ਐਪ 16 KB ਦੇ ਅਨੁਰੂਪ ਨਹੀਂ ਹੈ। ELF ਦੀ ਇਕਸਾਰਤਾ ਦੀ ਜਾਂਚ ਕਰਨਾ ਅਸਫਲ ਰਿਹਾ। ਇਹ ਐਪ ਪੰਨੇ ਦੇ ਆਕਾਰ ਦੇ ਅਨੁਰੂਪ ਮੋਡ ਦੀ ਵਰਤੋਂ ਕਰ ਕੇ ਚੱਲੇਗੀ। ਬਿਹਤਰ ਅਨੁਰੂਪਤਾ ਲਈ, ਕਿਰਪਾ ਕਰਕੇ 16 KB ਵਾਲੇ ਪੰਨਿਆਂ ਨਾਲ ਐਪਲੀਕੇਸ਼ਨ ਦਾ ਮੁੜ-ਸੰਕਲਨ ਕਰੋ। ਹੋਰ ਜਾਣਕਾਰੀ ਲਈ, &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; ਦੇਖੋ &lt;br&gt;&lt;br&gt; ਅੱਗੇ ਦਿੱਤੀਆਂ ਲਾਇਬ੍ਰੇਰੀਆਂ 16 KB ਮੁਤਾਬਕ ਇਕਸਾਰ ਨਹੀਂ ਹਨ: &lt;br&gt;&lt;br&gt;"</string>
+    <string name="page_size_compat_apk_and_elf_warning" msgid="9034695801295605229">"ਇਹ ਐਪ 16 KB ਦੇ ਅਨੁਰੂਪ ਨਹੀਂ ਹੈ। APK ਅਤੇ ELF ਦੀ ਇਕਸਾਰਤਾ ਦੀ ਜਾਂਚ ਕਰਨਾ ਅਸਫਲ ਰਿਹਾ। ਇਹ ਐਪ ਪੰਨੇ ਦੇ ਆਕਾਰ ਦੇ ਅਨੁਰੂਪ ਮੋਡ ਦੀ ਵਰਤੋਂ ਕਰ ਕੇ ਚੱਲੇਗੀ। ਬਿਹਤਰ ਅਨੁਰੂਪਤਾ ਲਈ, ਕਿਰਪਾ ਕਰਕੇ 16 KB ਵਾਲੇ ਪੰਨਿਆਂ ਨਾਲ ਐਪਲੀਕੇਸ਼ਨ ਦਾ ਮੁੜ-ਸੰਕਲਨ ਕਰੋ। ਹੋਰ ਜਾਣਕਾਰੀ ਲਈ, &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; ਦੇਖੋ &lt;br&gt;&lt;br&gt; ਅੱਗੇ ਦਿੱਤੀਆਂ ਲਾਇਬ੍ਰੇਰੀਆਂ 16 KB ਮੁਤਾਬਕ ਇਕਸਾਰ ਨਹੀਂ ਹਨ: &lt;br&gt;&lt;br&gt;"</string>
+    <string name="page_size_compat_apk_warning_4kb" msgid="5676451039424864495">"ਇਹ ਚਿਤਾਵਨੀ ਇਸ ਲਈ ਦਿਖਾਈ ਜਾ ਰਹੀ ਹੈ ਕਿਉਂਕਿ ਇਹ ਡੀਬੱਗਯੋਗ ਐਪ ਹੈ ਜਿਸਦੀ ਫ਼ਿਲਹਾਲ ਜਾਂਚ ਕੀਤੀ ਜਾ ਰਹੀ ਹੈ। ਜੇ ਤੁਸੀਂ ਵਿਕਾਸਕਾਰ ਨਹੀਂ ਹੋ, ਤਾਂ ਕਿਰਪਾ ਕਰਕੇ ਵਿਕਾਸਕਾਰ ਨੂੰ ਇਸਦੀ ਰਿਪੋਰਟ ਕਰੋ ਅਤੇ ਗੈਰ-ਡੀਬੱਗਯੋਗ ਐਪ ਲਈ ਕਹੋ। &lt;br&gt;&lt;br&gt; ਇਹ ਐਪ 16 KB ਅਨੁਰੂਪ ਨਹੀਂ ਹੈ। APK ਦੀ ਇਕਸਾਰਤਾ ਦੀ ਜਾਂਚ ਕਰਨਾ ਅਸਫਲ ਰਿਹਾ। ਕਿਰਪਾ ਕਰਕੇ &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; \'ਤੇ ਜਾ ਕੇ ਪੜਾਵਾਂ ਦੀ ਪਾਲਣਾ ਕਰੋ &lt;br&gt;&lt;br&gt; ਅੱਗੇ ਦਿੱਤੀਆਂ ਲਾਇਬ੍ਰੇਰੀਆਂ 16 KB ਮੁਤਾਬਕ ਇਕਸਾਰ ਨਹੀਂ ਹਨ: &lt;br&gt;&lt;br&gt;"</string>
+    <string name="page_size_compat_elf_warning_4kb" msgid="5005239480522831311">"ਇਹ ਚਿਤਾਵਨੀ ਇਸ ਲਈ ਦਿਖਾਈ ਜਾ ਰਹੀ ਹੈ ਕਿਉਂਕਿ ਇਹ ਡੀਬੱਗਯੋਗ ਐਪ ਹੈ ਜਿਸਦੀ ਫ਼ਿਲਹਾਲ ਜਾਂਚ ਕੀਤੀ ਜਾ ਰਹੀ ਹੈ। ਜੇ ਤੁਸੀਂ ਵਿਕਾਸਕਾਰ ਨਹੀਂ ਹੋ, ਤਾਂ ਕਿਰਪਾ ਕਰਕੇ ਵਿਕਾਸਕਾਰ ਨੂੰ ਇਸਦੀ ਰਿਪੋਰਟ ਕਰੋ ਅਤੇ ਗੈਰ-ਡੀਬੱਗਯੋਗ ਐਪ ਲਈ ਕਹੋ। &lt;br&gt;&lt;br&gt; ਇਹ ਐਪ 16 KB ਅਨੁਰੂਪ ਨਹੀਂ ਹੈ। ELF ਦੀ ਇਕਸਾਰਤਾ ਦੀ ਜਾਂਚ ਕਰਨਾ ਅਸਫਲ ਰਿਹਾ। ਕਿਰਪਾ ਕਰਕੇ &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; \'ਤੇ ਜਾ ਕੇ ਪੜਾਵਾਂ ਦੀ ਪਾਲਣਾ ਕਰੋ &lt;br&gt;&lt;br&gt; ਅੱਗੇ ਦਿੱਤੀਆਂ ਲਾਇਬ੍ਰੇਰੀਆਂ 16 KB ਮੁਤਾਬਕ ਇਕਸਾਰ ਨਹੀਂ ਹਨ: &lt;br&gt;&lt;br&gt;"</string>
+    <string name="page_size_compat_apk_and_elf_warning_4kb" msgid="997926487776340721">"ਇਹ ਚਿਤਾਵਨੀ ਇਸ ਲਈ ਦਿਖਾਈ ਜਾ ਰਹੀ ਹੈ ਕਿਉਂਕਿ ਇਹ ਡੀਬੱਗਯੋਗ ਐਪ ਹੈ ਜਿਸਦੀ ਫ਼ਿਲਹਾਲ ਜਾਂਚ ਕੀਤੀ ਜਾ ਰਹੀ ਹੈ। ਜੇ ਤੁਸੀਂ ਵਿਕਾਸਕਾਰ ਨਹੀਂ ਹੋ, ਤਾਂ ਕਿਰਪਾ ਕਰਕੇ ਵਿਕਾਸਕਾਰ ਨੂੰ ਇਸਦੀ ਰਿਪੋਰਟ ਕਰੋ ਅਤੇ ਗੈਰ-ਡੀਬੱਗਯੋਗ ਐਪ ਲਈ ਕਹੋ। &lt;br&gt;&lt;br&gt; ਇਹ ਐਪ 16 KB ਅਨੁਰੂਪ ਨਹੀਂ ਹੈ। APK ਅਤੇ ELF ਦੀ ਇਕਸਾਰਤਾ ਦੀ ਜਾਂਚ ਕਰਨਾ ਅਸਫਲ ਰਿਹਾ। ਕਿਰਪਾ ਕਰਕੇ &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; \'ਤੇ ਜਾ ਕੇ ਪੜਾਵਾਂ ਦੀ ਪਾਲਣਾ ਕਰੋ। &lt;br&gt;&lt;br&gt; ਅੱਗੇ ਦਿੱਤੀਆਂ ਲਾਇਬ੍ਰੇਰੀਆਂ 16 KB ਮੁਤਾਬਕ ਇਕਸਾਰ ਨਹੀਂ ਹਨ: &lt;br&gt;&lt;br&gt;"</string>
     <string name="page_size_compat_never_show" msgid="3391282612422783097">"ਦੁਬਾਰਾ ਨਾ ਦਿਖਾਓ"</string>
     <string name="page_size_compat_title" msgid="6497719153872572204">"Android ਐਪ ਦੀ ਅਨੁਰੂਪਤਾ"</string>
     <string name="page_size_compat_elf_not_aligned" msgid="7940806102874132630">"&amp;#8226; %1$s : ਲੋਡ ਹਿੱਸਾ ਇਕਸਾਰ ਨਹੀਂ ਹੈ"</string>
@@ -920,8 +914,7 @@
     <string name="policydesc_disableCamera" msgid="3204405908799676104">"ਸਾਰੇ ਡੀਵਾਈਸ ਕੈਮਰਿਆਂ ਦੀ ਵਰਤੋਂ ਰੋਕੋ।"</string>
     <string name="policylab_disableKeyguardFeatures" msgid="5071855750149949741">"ਸਕ੍ਰੀਨ ਲਾਕ ਦੀਆਂ ਕੁਝ ਵਿਸ਼ੇਸ਼ਤਾਵਾਂ ਬੰਦ ਕਰੋ"</string>
     <string name="policydesc_disableKeyguardFeatures" msgid="6641673177041195957">"ਸਕ੍ਰੀਨ ਲਾਕ ਦੀਆਂ ਕੁਝ ਵਿਸ਼ੇਸ਼ਤਾਵਾਂ ਦੀ ਵਰਤੋਂ ਰੋਕੋ।"</string>
-    <!-- no translation found for exit_toast_on_long_press_escape (2983932499112557277) -->
-    <skip />
+    <string name="exit_toast_on_long_press_escape" msgid="2983932499112557277">"ਇਸ ਐਪ ਨੂੰ ਬੰਦ ਕਰਨ ਲਈ Esc ਕੁੰਜੀ ਨੂੰ ਦਬਾਈ ਰੱਖੋ"</string>
   <string-array name="phoneTypes">
     <item msgid="8996339953292723951">"ਘਰ"</item>
     <item msgid="7740243458912727194">"ਮੋਬਾਈਲ"</item>
@@ -1848,8 +1841,7 @@
     <string name="owner_name" msgid="8713560351570795743">"ਮਾਲਕ"</string>
     <string name="guest_name" msgid="8502103277839834324">"ਮਹਿਮਾਨ"</string>
     <string name="headless_system_user_name" msgid="1849150903255530049">"ਸਿਸਟਮ ਯੂਜ਼ਰ"</string>
-    <!-- no translation found for unnamed_user_name (6096699110534542980) -->
-    <skip />
+    <string name="unnamed_user_name" msgid="6096699110534542980">"ਵਰਤੋਂਕਾਰ"</string>
     <string name="error_message_title" msgid="4082495589294631966">"ਅਸ਼ੁੱਧੀ"</string>
     <string name="error_message_change_not_allowed" msgid="843159705042381454">"ਤੁਹਾਡੇ ਪ੍ਰਸ਼ਾਸਕ ਵੱਲੋਂ ਇਸ ਤਬਦੀਲੀ ਦੀ ਇਜਾਜ਼ਤ ਨਹੀਂ ਹੈ"</string>
     <string name="app_not_found" msgid="3429506115332341800">"ਇਸ ਕਾਰਵਾਈ ਨੂੰ ਸੰਭਾਲਣ ਲਈ ਕੋਈ ਐਪਲੀਕੇਸ਼ਨ ਨਹੀਂ ਮਿਲੀ।"</string>

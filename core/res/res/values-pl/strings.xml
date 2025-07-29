@@ -73,18 +73,12 @@
     <string name="CLIRDefaultOnNextCallOff" msgid="5036749051007098105">"ID rozmówcy ustawiony jest domyślnie na „zastrzeżony”. Następne połączenie: nie zastrzeżony"</string>
     <string name="CLIRDefaultOffNextCallOn" msgid="1022781126694885017">"ID rozmówcy ustawiony jest domyślnie na „nie zastrzeżony”. Następne połączenie: zastrzeżony"</string>
     <string name="CLIRDefaultOffNextCallOff" msgid="2491576172356463443">"ID rozmówcy ustawiony jest domyślnie na „nie zastrzeżony”. Następne połączenie: nie zastrzeżony"</string>
-    <!-- no translation found for page_size_compat_apk_warning (2297836366674721648) -->
-    <skip />
-    <!-- no translation found for page_size_compat_elf_warning (8613720928493005883) -->
-    <skip />
-    <!-- no translation found for page_size_compat_apk_and_elf_warning (9034695801295605229) -->
-    <skip />
-    <!-- no translation found for page_size_compat_apk_warning_4kb (5676451039424864495) -->
-    <skip />
-    <!-- no translation found for page_size_compat_elf_warning_4kb (5005239480522831311) -->
-    <skip />
-    <!-- no translation found for page_size_compat_apk_and_elf_warning_4kb (997926487776340721) -->
-    <skip />
+    <string name="page_size_compat_apk_warning" msgid="2297836366674721648">"Ta aplikacja jest niezgodna z trybem 16 KB. Sprawdzenie zgodności pliku APK się nie powiodło. Ta aplikacja będzie działać w trybie zgodnym z rozmiarem strony. Aby uzyskać najlepszą zgodność i zapewnić obsługę trybu 16 KB przez aplikację, zrekompiluj ją. Więcej informacji znajdziesz na stronie &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; &lt;br&gt;&lt;br&gt; Następujące biblioteki są niezgodne z trybem 16 KB: &lt;br&gt;&lt;br&gt;"</string>
+    <string name="page_size_compat_elf_warning" msgid="8613720928493005883">"Ta aplikacja jest niezgodna z trybem 16 KB. Sprawdzenie zgodności pliku ELF się nie powiodło. Ta aplikacja będzie działać w trybie zgodnym z rozmiarem strony. Aby uzyskać najlepszą zgodność i zapewnić obsługę trybu 16 KB przez aplikację, zrekompiluj ją. Więcej informacji znajdziesz na stronie &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; &lt;br&gt;&lt;br&gt; Następujące biblioteki są niezgodne z trybem 16 KB: &lt;br&gt;&lt;br&gt;"</string>
+    <string name="page_size_compat_apk_and_elf_warning" msgid="9034695801295605229">"Ta aplikacja jest niezgodna z trybem 16 KB. Sprawdzenie zgodności plików APK i ELF się nie powiodło. Ta aplikacja będzie działać w trybie zgodnym z rozmiarem strony. Aby uzyskać najlepszą zgodność i zapewnić obsługę trybu 16 KB przez aplikację, zrekompiluj ją. Więcej informacji znajdziesz na stronie &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; &lt;br&gt;&lt;br&gt; Następujące biblioteki są niezgodne z trybem 16 KB: &lt;br&gt;&lt;br&gt;"</string>
+    <string name="page_size_compat_apk_warning_4kb" msgid="5676451039424864495">"To ostrzeżenie wyświetla się, ponieważ jest to aplikacja z możliwością jej debugowania, która przechodzi obecnie testy. Zgłoś to deweloperowi (o ile nim nie jesteś) i poproś o aplikację, której nie można debugować. &lt;br&gt;&lt;br&gt; Ta aplikacja jest niezgodna z trybem 16 KB. Sprawdzenie zgodności pliku APK się nie powiodło. Wykonaj czynności opisane na stronie &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; &lt;br&gt;&lt;br&gt; Następujące biblioteki są niezgodne z trybem 16 KB: &lt;br&gt;&lt;br&gt;"</string>
+    <string name="page_size_compat_elf_warning_4kb" msgid="5005239480522831311">"To ostrzeżenie wyświetla się, ponieważ jest to aplikacja z możliwością jej debugowania, która przechodzi obecnie testy. Zgłoś to deweloperowi (o ile nim nie jesteś) i poproś o aplikację, której nie można debugować. &lt;br&gt;&lt;br&gt; Ta aplikacja jest niezgodna z trybem 16 KB. Sprawdzenie zgodności pliku ELF się nie powiodło. Wykonaj czynności opisane na stronie &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; &lt;br&gt;&lt;br&gt; Następujące biblioteki są niezgodne z trybem 16 KB: &lt;br&gt;&lt;br&gt;"</string>
+    <string name="page_size_compat_apk_and_elf_warning_4kb" msgid="997926487776340721">"To ostrzeżenie wyświetla się, ponieważ jest to aplikacja z możliwością jej debugowania, która przechodzi obecnie testy. Zgłoś to deweloperowi (o ile nim nie jesteś) i poproś o aplikację, której nie można debugować. &lt;br&gt;&lt;br&gt; Ta aplikacja jest niezgodna z trybem 16 KB. Sprawdzenie zgodności plików APK i ELF się nie powiodło. Wykonaj czynności opisane na stronie &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;. &lt;br&gt;&lt;br&gt; Następujące biblioteki są niezgodne z trybem 16 KB: &lt;br&gt;&lt;br&gt;"</string>
     <string name="page_size_compat_never_show" msgid="3391282612422783097">"Nie pokazuj ponownie"</string>
     <string name="page_size_compat_title" msgid="6497719153872572204">"Zgodność aplikacji na Androida"</string>
     <string name="page_size_compat_elf_not_aligned" msgid="7940806102874132630">"&amp;#8226; %1$s: segment LOAD nie jest dopasowany"</string>
@@ -922,8 +916,7 @@
     <string name="policydesc_disableCamera" msgid="3204405908799676104">"Zapobieganie używaniu wszystkich aparatów w urządzeniu"</string>
     <string name="policylab_disableKeyguardFeatures" msgid="5071855750149949741">"Wył. funkcji blokady ekranu"</string>
     <string name="policydesc_disableKeyguardFeatures" msgid="6641673177041195957">"Zapobieganie użyciu niektórych funkcji blokady ekranu."</string>
-    <!-- no translation found for exit_toast_on_long_press_escape (2983932499112557277) -->
-    <skip />
+    <string name="exit_toast_on_long_press_escape" msgid="2983932499112557277">"Aby zamknąć tę aplikację, przytrzymaj klawisz Esc"</string>
   <string-array name="phoneTypes">
     <item msgid="8996339953292723951">"Dom"</item>
     <item msgid="7740243458912727194">"Komórka"</item>
@@ -1850,8 +1843,7 @@
     <string name="owner_name" msgid="8713560351570795743">"Właściciel"</string>
     <string name="guest_name" msgid="8502103277839834324">"Gość"</string>
     <string name="headless_system_user_name" msgid="1849150903255530049">"Użytkownik systemu"</string>
-    <!-- no translation found for unnamed_user_name (6096699110534542980) -->
-    <skip />
+    <string name="unnamed_user_name" msgid="6096699110534542980">"Użytkownik"</string>
     <string name="error_message_title" msgid="4082495589294631966">"Błąd"</string>
     <string name="error_message_change_not_allowed" msgid="843159705042381454">"Ta zmiana nie jest dozwolona przez administratora."</string>
     <string name="app_not_found" msgid="3429506115332341800">"Nie znaleziono aplikacji do obsługi tej akcji"</string>

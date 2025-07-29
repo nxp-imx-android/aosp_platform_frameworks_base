@@ -71,18 +71,12 @@
     <string name="CLIRDefaultOnNextCallOff" msgid="5036749051007098105">"Η αναγνώριση κλήσης βρίσκεται από προεπιλογή στην \"περιορισμένη\". Επόμενη κλήση: Μη περιορισμένη"</string>
     <string name="CLIRDefaultOffNextCallOn" msgid="1022781126694885017">"Η αναγνώριση κλήσης βρίσκεται από προεπιλογή στην \"μη περιορισμένη\". Επόμενη κλήση: Περιορισμένη."</string>
     <string name="CLIRDefaultOffNextCallOff" msgid="2491576172356463443">"Η αναγνώριση κλήσης βρίσκεται από προεπιλογή στην \"μη περιορισμένη\". Επόμενη κλήση: Μη περιορισμένη"</string>
-    <!-- no translation found for page_size_compat_apk_warning (2297836366674721648) -->
-    <skip />
-    <!-- no translation found for page_size_compat_elf_warning (8613720928493005883) -->
-    <skip />
-    <!-- no translation found for page_size_compat_apk_and_elf_warning (9034695801295605229) -->
-    <skip />
-    <!-- no translation found for page_size_compat_apk_warning_4kb (5676451039424864495) -->
-    <skip />
-    <!-- no translation found for page_size_compat_elf_warning_4kb (5005239480522831311) -->
-    <skip />
-    <!-- no translation found for page_size_compat_apk_and_elf_warning_4kb (997926487776340721) -->
-    <skip />
+    <string name="page_size_compat_apk_warning" msgid="2297836366674721648">"Αυτή η εφαρμογή δεν είναι συμβατή για 16 KB. Ο έλεγχος ευθυγράμμισης APK απέτυχε. Αυτή η εφαρμογή θα εκτελεστεί χρησιμοποιώντας τη λειτουργία συμβατότητας μεγέθους σελίδας. Για τη βέλτιστη συμβατότητα, επαναμεταγλωττίστε την εφαρμογή με υποστήριξη 16 KB. Για περισσότερες πληροφορίες, ανατρέξτε στη διεύθυνση &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; &lt;br&gt;&lt;br&gt; Οι ακόλουθες βιβλιοθήκες δεν έχουν ευθυγραμμιστεί με μέγεθος σελίδας 16 KB: &lt;br&gt;&lt;br&gt;"</string>
+    <string name="page_size_compat_elf_warning" msgid="8613720928493005883">"Αυτή η εφαρμογή δεν είναι συμβατή για 16 KB. Ο έλεγχος ευθυγράμμισης ELF απέτυχε. Αυτή η εφαρμογή θα εκτελεστεί χρησιμοποιώντας τη λειτουργία συμβατότητας μεγέθους σελίδας. Για τη βέλτιστη συμβατότητα, επαναμεταγλωττίστε την εφαρμογή με υποστήριξη 16 KB. Για περισσότερες πληροφορίες, ανατρέξτε στη διεύθυνση &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; &lt;br&gt;&lt;br&gt; Οι ακόλουθες βιβλιοθήκες δεν έχουν ευθυγραμμιστεί με μέγεθος σελίδας 16 KB: &lt;br&gt;&lt;br&gt;"</string>
+    <string name="page_size_compat_apk_and_elf_warning" msgid="9034695801295605229">"Αυτή η εφαρμογή δεν είναι συμβατή για 16 KB. Οι έλεγχοι ευθυγράμμισης APK και ELF απέτυχαν. Αυτή η εφαρμογή θα εκτελεστεί χρησιμοποιώντας τη λειτουργία συμβατότητας μεγέθους σελίδας. Για τη βέλτιστη συμβατότητα, επαναμεταγλωττίστε την εφαρμογή με υποστήριξη 16 KB. Για περισσότερες πληροφορίες, ανατρέξτε στη διεύθυνση &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; &lt;br&gt;&lt;br&gt; Οι ακόλουθες βιβλιοθήκες δεν έχουν ευθυγραμμιστεί με μέγεθος σελίδας 16 KB: &lt;br&gt;&lt;br&gt;"</string>
+    <string name="page_size_compat_apk_warning_4kb" msgid="5676451039424864495">"Βλέπετε αυτή την ειδοποίηση επειδή η εφαρμογή έχει δυνατότητα αποσφαλμάτωσης και βρίσκεται σε φάση δοκιμών. Εάν δεν είστε ο προγραμματιστής, αναφέρετε το ζήτημα στον προγραμματιστή και ζητήστε μια εφαρμογή χωρίς δυνατότητα αποσφαλμάτωσης. &lt;br&gt;&lt;br&gt; Αυτή η εφαρμογή δεν είναι συμβατή με μέγεθος σελίδας 16 KB. Ο έλεγχος ευθυγράμμισης APK απέτυχε. Ακολουθήστε τα βήματα στη διεύθυνση &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; &lt;br&gt;&lt;br&gt; Οι ακόλουθες βιβλιοθήκες δεν έχουν ευθυγραμμιστεί με μέγεθος σελίδας 16 KB: &lt;br&gt;&lt;br&gt;"</string>
+    <string name="page_size_compat_elf_warning_4kb" msgid="5005239480522831311">"Βλέπετε αυτή την ειδοποίηση επειδή η εφαρμογή έχει δυνατότητα αποσφαλμάτωσης και βρίσκεται σε φάση δοκιμών. Εάν δεν είστε ο προγραμματιστής, αναφέρετε το ζήτημα στον προγραμματιστή και ζητήστε μια εφαρμογή χωρίς δυνατότητα αποσφαλμάτωσης. &lt;br&gt;&lt;br&gt; Αυτή η εφαρμογή δεν είναι συμβατή με μέγεθος σελίδας 16 KB. Ο έλεγχος ευθυγράμμισης ELF απέτυχε. Ακολουθήστε τα βήματα στη διεύθυνση &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; &lt;br&gt;&lt;br&gt; Οι ακόλουθες βιβλιοθήκες δεν έχουν ευθυγραμμιστεί με μέγεθος σελίδας 16 KB: &lt;br&gt;&lt;br&gt;"</string>
+    <string name="page_size_compat_apk_and_elf_warning_4kb" msgid="997926487776340721">"Βλέπετε αυτή την ειδοποίηση επειδή η εφαρμογή έχει δυνατότητα αποσφαλμάτωσης και βρίσκεται σε φάση δοκιμών. Εάν δεν είστε ο προγραμματιστής, αναφέρετε το ζήτημα στον προγραμματιστή και ζητήστε μια εφαρμογή χωρίς δυνατότητα αποσφαλμάτωσης. &lt;br&gt;&lt;br&gt; Αυτή η εφαρμογή δεν είναι συμβατή με μέγεθος σελίδας 16 KB. Οι έλεγχοι ευθυγράμμισης APK και ELF απέτυχαν. Ακολουθήστε τα βήματα στη διεύθυνση &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;. &lt;br&gt;&lt;br&gt; Οι παρακάτω βιβλιοθήκες δεν έχουν ευθυγραμμιστεί με μέγεθος σελίδας 16 KB: &lt;br&gt;&lt;br&gt;"</string>
     <string name="page_size_compat_never_show" msgid="3391282612422783097">"Να μην εμφανιστεί ξανά"</string>
     <string name="page_size_compat_title" msgid="6497719153872572204">"Συμβατότητα εφαρμογών Android"</string>
     <string name="page_size_compat_elf_not_aligned" msgid="7940806102874132630">"&amp;#8226; %1$s : Το τμήμα LOAD δεν έχει ευθυγραμμιστεί"</string>
@@ -920,8 +914,7 @@
     <string name="policydesc_disableCamera" msgid="3204405908799676104">"Να αποτρέπεται η χρήση των φωτογραφικών μηχανών της συσκευής."</string>
     <string name="policylab_disableKeyguardFeatures" msgid="5071855750149949741">"Απενεργοπ. λειτ. κλειδ. οθόνης"</string>
     <string name="policydesc_disableKeyguardFeatures" msgid="6641673177041195957">"Να αποτρέπεται η χρήση ορισμένων λειτουργιών του κλειδώματος οθόνης."</string>
-    <!-- no translation found for exit_toast_on_long_press_escape (2983932499112557277) -->
-    <skip />
+    <string name="exit_toast_on_long_press_escape" msgid="2983932499112557277">"Πατήστε παρατεταμένα το πλήκτρο Esc για να κλείσετε αυτή την εφαρμογή"</string>
   <string-array name="phoneTypes">
     <item msgid="8996339953292723951">"Σπίτι"</item>
     <item msgid="7740243458912727194">"Κινητό"</item>
@@ -1848,8 +1841,7 @@
     <string name="owner_name" msgid="8713560351570795743">"Κάτοχος"</string>
     <string name="guest_name" msgid="8502103277839834324">"Επισκέπτης"</string>
     <string name="headless_system_user_name" msgid="1849150903255530049">"Χρήστης συστήματος"</string>
-    <!-- no translation found for unnamed_user_name (6096699110534542980) -->
-    <skip />
+    <string name="unnamed_user_name" msgid="6096699110534542980">"Χρήστης"</string>
     <string name="error_message_title" msgid="4082495589294631966">"Σφάλμα"</string>
     <string name="error_message_change_not_allowed" msgid="843159705042381454">"Αυτή η αλλαγή δεν επιτρέπεται από το διαχειριστή σας"</string>
     <string name="app_not_found" msgid="3429506115332341800">"Δεν υπάρχει εφαρμογή για τη διαχείριση αυτής της ενέργειας"</string>

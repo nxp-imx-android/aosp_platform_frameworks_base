@@ -71,18 +71,12 @@
     <string name="CLIRDefaultOnNextCallOff" msgid="5036749051007098105">"നിയന്ത്രിക്കേണ്ട സ്ഥിര കോളർ ഐഡികൾ. അടുത്ത കോൾ: നിയന്ത്രിച്ചിട്ടില്ല"</string>
     <string name="CLIRDefaultOffNextCallOn" msgid="1022781126694885017">"നിയന്ത്രിക്കേണ്ടതല്ലാത്ത സ്ഥിര കോളർ ഐഡികൾ. അടുത്ത കോൾ: നിയന്ത്രിച്ചിട്ടുണ്ട്"</string>
     <string name="CLIRDefaultOffNextCallOff" msgid="2491576172356463443">"നിയന്ത്രിക്കേണ്ടതല്ലാത്ത സ്ഥിര കോളർ ഐഡികൾ. അടുത്ത കോൾ: നിയന്ത്രിച്ചിട്ടില്ല"</string>
-    <!-- no translation found for page_size_compat_apk_warning (2297836366674721648) -->
-    <skip />
-    <!-- no translation found for page_size_compat_elf_warning (8613720928493005883) -->
-    <skip />
-    <!-- no translation found for page_size_compat_apk_and_elf_warning (9034695801295605229) -->
-    <skip />
-    <!-- no translation found for page_size_compat_apk_warning_4kb (5676451039424864495) -->
-    <skip />
-    <!-- no translation found for page_size_compat_elf_warning_4kb (5005239480522831311) -->
-    <skip />
-    <!-- no translation found for page_size_compat_apk_and_elf_warning_4kb (997926487776340721) -->
-    <skip />
+    <string name="page_size_compat_apk_warning" msgid="2297836366674721648">"ഈ ആപ്പ് 16 KB-ക്ക് അനുയോജ്യമല്ല. APK അലൈൻമെന്റ് പരിശോധന നടത്താനായില്ല. പേജ് വലുപ്പത്തിന് അനുയോജ്യമായ മോഡ് ഉപയോഗിച്ച് ഈ ആപ്പ് റൺ ചെയ്യും. മികച്ച അനുയോജ്യതയ്ക്കായി, 16 KB പിന്തുണയോടെ ആപ്പ് വീണ്ടും കംപൈൽ ചെയ്യുക. കൂടുതൽ വിവരങ്ങൾക്ക്, &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; കാണുക &lt;br&gt;&lt;br&gt; ഇനിപ്പറയുന്ന ലൈബ്രറികൾ 16 KB അലൈൻ ചെയ്തിട്ടില്ല: &lt;br&gt;&lt;br&gt;"</string>
+    <string name="page_size_compat_elf_warning" msgid="8613720928493005883">"ഈ ആപ്പ് 16 KB-ക്ക് അനുയോജ്യമല്ല. ELF അലൈൻമെന്റ് പരിശോധന നടത്താനായില്ല. പേജ് വലുപ്പത്തിന് അനുയോജ്യമായ മോഡ് ഉപയോഗിച്ച് ഈ ആപ്പ് റൺ ചെയ്യും. മികച്ച അനുയോജ്യതയ്ക്കായി, 16 KB പിന്തുണയോടെ ആപ്പ് വീണ്ടും കംപൈൽ ചെയ്യുക. കൂടുതൽ വിവരങ്ങൾക്ക്, &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; കാണുക &lt;br&gt;&lt;br&gt; ഇനിപ്പറയുന്ന ലൈബ്രറികൾ 16 KB അലൈൻ ചെയ്തിട്ടില്ല: &lt;br&gt;&lt;br&gt;"</string>
+    <string name="page_size_compat_apk_and_elf_warning" msgid="9034695801295605229">"ഈ ആപ്പ് 16 KB-ക്ക് അനുയോജ്യമല്ല. APK, ELF അലൈൻമെന്റ് പരിശോധനകൾ നടത്താനായില്ല. പേജ് വലുപ്പത്തിന് അനുയോജ്യമായ മോഡ് ഉപയോഗിച്ച് ഈ ആപ്പ് റൺ ചെയ്യും. മികച്ച അനുയോജ്യതയ്ക്കായി, 16 KB പിന്തുണയോടെ ആപ്പ് വീണ്ടും കംപൈൽ ചെയ്യുക. കൂടുതൽ വിവരങ്ങൾക്ക്, &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; കാണുക &lt;br&gt;&lt;br&gt; ഇനിപ്പറയുന്ന ലൈബ്രറികൾ 16 KB അലൈൻ ചെയ്തിട്ടില്ല: &lt;br&gt;&lt;br&gt;"</string>
+    <string name="page_size_compat_apk_warning_4kb" msgid="5676451039424864495">"നിലവിൽ ടെസ്റ്റ് ചെയ്തുകൊണ്ടിരിക്കുന്ന, ഡീബഗ് ചെയ്യാവുന്ന ഒരു ആപ്പ് ആയതിനാലാണ് ഈ മുന്നറിയിപ്പ് കാണിക്കുന്നത്. ഡെവലപ്പർ നിങ്ങളല്ലെങ്കിൽ, ഇത് ഡെവലപ്പർക്ക് റിപ്പോർട്ട് ചെയ്ത് ഡീബഗ് ചെയ്യാനാവാത്ത ഒരു ആപ്പ് ആവശ്യപ്പെടുക. &lt;br&gt;&lt;br&gt; ഈ ആപ്പ് 16 KB-ക്ക് അനുയോജ്യമല്ല. APK അലൈൻമെന്റ് പരിശോധന നടത്താനായില്ല. &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; എന്നതിലെ ഘട്ടങ്ങൾ പിന്തുടരുക &lt;br&gt;&lt;br&gt; ഇനിപ്പറയുന്ന ലൈബ്രറികൾ 16 KB അലൈൻ ചെയ്തിട്ടില്ല: &lt;br&gt;&lt;br&gt;"</string>
+    <string name="page_size_compat_elf_warning_4kb" msgid="5005239480522831311">"നിലവിൽ ടെസ്റ്റ് ചെയ്തുകൊണ്ടിരിക്കുന്ന, ഡീബഗ് ചെയ്യാവുന്ന ഒരു ആപ്പ് ആയതിനാലാണ് ഈ മുന്നറിയിപ്പ് കാണിക്കുന്നത്. ഡെവലപ്പർ നിങ്ങളല്ലെങ്കിൽ, ഇത് ഡെവലപ്പർക്ക് റിപ്പോർട്ട് ചെയ്ത് ഡീബഗ് ചെയ്യാനാവാത്ത ഒരു ആപ്പ് ആവശ്യപ്പെടുക. &lt;br&gt;&lt;br&gt; ഈ ആപ്പ് 16 KB-ക്ക് അനുയോജ്യമല്ല. ELF അലൈൻമെന്റ് പരിശോധന നടത്താനായില്ല. &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; എന്നതിലെ ഘട്ടങ്ങൾ പിന്തുടരുക &lt;br&gt;&lt;br&gt; ഇനിപ്പറയുന്ന ലൈബ്രറികൾ 16 KB അലൈൻ ചെയ്തിട്ടില്ല: &lt;br&gt;&lt;br&gt;"</string>
+    <string name="page_size_compat_apk_and_elf_warning_4kb" msgid="997926487776340721">"നിലവിൽ ടെസ്റ്റ് ചെയ്തുകൊണ്ടിരിക്കുന്ന, ഡീബഗ് ചെയ്യാവുന്ന ഒരു ആപ്പ് ആയതിനാലാണ് ഈ മുന്നറിയിപ്പ് കാണിക്കുന്നത്. ഡെവലപ്പർ നിങ്ങളല്ലെങ്കിൽ, ഇത് ഡെവലപ്പർക്ക് റിപ്പോർട്ട് ചെയ്ത് ഡീബഗ് ചെയ്യാനാവാത്ത ഒരു ആപ്പ് ആവശ്യപ്പെടുക. &lt;br&gt;&lt;br&gt; ഈ ആപ്പ് 16 KB-ക്ക് അനുയോജ്യമല്ല. APK, ELF അലൈൻമെന്റ് പരിശോധനകൾ നടത്താനായില്ല. &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; എന്നതിലെ ഘട്ടങ്ങൾ പിന്തുടരുക. &lt;br&gt;&lt;br&gt; ഇനിപ്പറയുന്ന ലൈബ്രറികൾ 16 KB അലൈൻ ചെയ്തിട്ടില്ല: &lt;br&gt;&lt;br&gt;"</string>
     <string name="page_size_compat_never_show" msgid="3391282612422783097">"വീണ്ടും കാണിക്കരുത്"</string>
     <string name="page_size_compat_title" msgid="6497719153872572204">"Android ആപ്പിന്റെ അനുയോജ്യത"</string>
     <string name="page_size_compat_elf_not_aligned" msgid="7940806102874132630">"&amp;#8226; %1$s : LOAD സെഗ്മെന്റ് അലൈൻ ചെയ്തിട്ടില്ല"</string>
@@ -920,8 +914,7 @@
     <string name="policydesc_disableCamera" msgid="3204405908799676104">"എല്ലാ ഉപകരണ ക്യാമറകളുടേയും ഉപയോഗം തടയുക."</string>
     <string name="policylab_disableKeyguardFeatures" msgid="5071855750149949741">"ലോക്ക് ഫീച്ചർ പ്രവർത്തന രഹിതമാക്കുക"</string>
     <string name="policydesc_disableKeyguardFeatures" msgid="6641673177041195957">"ചില സ്‌ക്രീൻ ലോക്ക് ഫീച്ചറുകളുടെ ഉപയോഗം തടയുക."</string>
-    <!-- no translation found for exit_toast_on_long_press_escape (2983932499112557277) -->
-    <skip />
+    <string name="exit_toast_on_long_press_escape" msgid="2983932499112557277">"ഈ ആപ്പ് അടയ്ക്കാൻ Esc കീ ദീർഘനേരം അമർത്തുക"</string>
   <string-array name="phoneTypes">
     <item msgid="8996339953292723951">"വീട്ടിലെ ഫോൺ"</item>
     <item msgid="7740243458912727194">"മൊബൈൽ"</item>
@@ -1848,8 +1841,7 @@
     <string name="owner_name" msgid="8713560351570795743">"ഉടമ"</string>
     <string name="guest_name" msgid="8502103277839834324">"അതിഥി"</string>
     <string name="headless_system_user_name" msgid="1849150903255530049">"സിസ്‌റ്റം ഉപയോക്താവ്"</string>
-    <!-- no translation found for unnamed_user_name (6096699110534542980) -->
-    <skip />
+    <string name="unnamed_user_name" msgid="6096699110534542980">"ഉപയോക്താവ്"</string>
     <string name="error_message_title" msgid="4082495589294631966">"പിശക്"</string>
     <string name="error_message_change_not_allowed" msgid="843159705042381454">"ഈ മാറ്റം നിങ്ങളുടെ അഡ്‌മിൻ അനുവദിക്കുന്നില്ല"</string>
     <string name="app_not_found" msgid="3429506115332341800">"ഈ പ്രവർത്തനം കൈകാര്യം ചെയ്യുന്ന അപ്ലിക്കേഷനുകളൊന്നും കണ്ടെത്തിയില്ല"</string>

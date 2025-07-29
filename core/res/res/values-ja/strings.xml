@@ -71,18 +71,12 @@
     <string name="CLIRDefaultOnNextCallOff" msgid="5036749051007098105">"既定: 発信者番号非通知、次の発信: 通知"</string>
     <string name="CLIRDefaultOffNextCallOn" msgid="1022781126694885017">"既定: 発信者番号通知、次の発信: 非通知"</string>
     <string name="CLIRDefaultOffNextCallOff" msgid="2491576172356463443">"既定: 発信者番号通知、次の発信: 通知"</string>
-    <!-- no translation found for page_size_compat_apk_warning (2297836366674721648) -->
-    <skip />
-    <!-- no translation found for page_size_compat_elf_warning (8613720928493005883) -->
-    <skip />
-    <!-- no translation found for page_size_compat_apk_and_elf_warning (9034695801295605229) -->
-    <skip />
-    <!-- no translation found for page_size_compat_apk_warning_4kb (5676451039424864495) -->
-    <skip />
-    <!-- no translation found for page_size_compat_elf_warning_4kb (5005239480522831311) -->
-    <skip />
-    <!-- no translation found for page_size_compat_apk_and_elf_warning_4kb (997926487776340721) -->
-    <skip />
+    <string name="page_size_compat_apk_warning" msgid="2297836366674721648">"このアプリは 16 KB アライメントではありません。APK のアライメント チェックが失敗しました。このアプリはページサイズ互換モードを使用して実行されます。最適な互換性を実現するには、16 KB をサポートするようにアプリケーションを再コンパイルしてください。詳しくは、&lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; をご覧ください。&lt;br&gt;&lt;br&gt;以下のライブラリは 16 KB アライメントではありません。&lt;br&gt;&lt;br&gt;"</string>
+    <string name="page_size_compat_elf_warning" msgid="8613720928493005883">"このアプリは 16 KB アライメントではありません。ELF のアライメント チェックに失敗しました。このアプリはページサイズ互換モードを使用して実行されます。最適な互換性を実現するには、16 KB をサポートするようにアプリケーションを再コンパイルしてください。詳しくは、&lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; をご覧ください。&lt;br&gt;&lt;br&gt;以下のライブラリは 16 KB アライメントではありません。&lt;br&gt;&lt;br&gt;"</string>
+    <string name="page_size_compat_apk_and_elf_warning" msgid="9034695801295605229">"このアプリは 16 KB アライメントではありません。APK と ELF のアライメント チェックが失敗しました。このアプリはページサイズ互換モードを使用して実行されます。最適な互換性を実現するには、16 KB をサポートするようにアプリケーションを再コンパイルしてください。詳しくは、&lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; をご覧ください。&lt;br&gt;&lt;br&gt;以下のライブラリは 16 KB アライメントではありません。&lt;br&gt;&lt;br&gt;"</string>
+    <string name="page_size_compat_apk_warning_4kb" msgid="5676451039424864495">"現在テスト中のデバッグ可能なアプリであるため、この警告が表示されています。デベロッパー以外のユーザーは、デベロッパーに報告して、デバッグできないアプリをリクエストしてください。&lt;br&gt;&lt;br&gt;このアプリは 16 KB アライメントではありません。APK のアライメント チェックが失敗しました。&lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; の手順に沿って対応してください。&lt;br&gt;&lt;br&gt;以下のライブラリは 16 KB アライメントではありません。&lt;br&gt;&lt;br&gt;"</string>
+    <string name="page_size_compat_elf_warning_4kb" msgid="5005239480522831311">"現在テスト中のデバッグ可能なアプリであるため、この警告が表示されています。デベロッパー以外のユーザーは、デベロッパーに報告して、デバッグできないアプリをリクエストしてください。&lt;br&gt;&lt;br&gt;このアプリは 16 KB アライメントではありません。ELF のアライメント チェックに失敗しました。&lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; の手順に沿って対応してください。&lt;br&gt;&lt;br&gt;以下のライブラリは 16 KB アライメントではありません。&lt;br&gt;&lt;br&gt;"</string>
+    <string name="page_size_compat_apk_and_elf_warning_4kb" msgid="997926487776340721">"現在テスト中のデバッグ可能なアプリであるため、この警告が表示されています。デベロッパー以外のユーザーは、デベロッパーに報告して、デバッグできないアプリをリクエストしてください。&lt;br&gt;&lt;br&gt;このアプリは 16 KB アライメントではありません。APK と ELF のアライメント チェックが失敗しました。&lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; の手順に沿って対応してください。&lt;br&gt;&lt;br&gt;以下のライブラリは 16 KB アライメントではありません。&lt;br&gt;&lt;br&gt;"</string>
     <string name="page_size_compat_never_show" msgid="3391282612422783097">"次回から表示しない"</string>
     <string name="page_size_compat_title" msgid="6497719153872572204">"Android アプリの互換性"</string>
     <string name="page_size_compat_elf_not_aligned" msgid="7940806102874132630">"&amp;#8226; %1$s: LOAD セグメントが一致しません"</string>
@@ -920,8 +914,7 @@
     <string name="policydesc_disableCamera" msgid="3204405908799676104">"すべてのデバイスカメラを使用できないようにします。"</string>
     <string name="policylab_disableKeyguardFeatures" msgid="5071855750149949741">"画面ロックの一部機能を無効化"</string>
     <string name="policydesc_disableKeyguardFeatures" msgid="6641673177041195957">"画面ロックの一部の機能の使用を禁止します。"</string>
-    <!-- no translation found for exit_toast_on_long_press_escape (2983932499112557277) -->
-    <skip />
+    <string name="exit_toast_on_long_press_escape" msgid="2983932499112557277">"このアプリを閉じるには、Esc キーを長押しします"</string>
   <string-array name="phoneTypes">
     <item msgid="8996339953292723951">"自宅"</item>
     <item msgid="7740243458912727194">"携帯"</item>
@@ -1848,8 +1841,7 @@
     <string name="owner_name" msgid="8713560351570795743">"所有者"</string>
     <string name="guest_name" msgid="8502103277839834324">"ゲスト"</string>
     <string name="headless_system_user_name" msgid="1849150903255530049">"システム ユーザー"</string>
-    <!-- no translation found for unnamed_user_name (6096699110534542980) -->
-    <skip />
+    <string name="unnamed_user_name" msgid="6096699110534542980">"ユーザー"</string>
     <string name="error_message_title" msgid="4082495589294631966">"エラー"</string>
     <string name="error_message_change_not_allowed" msgid="843159705042381454">"この変更は管理者によって許可されていません"</string>
     <string name="app_not_found" msgid="3429506115332341800">"この操作を行うアプリが見つかりません"</string>

@@ -71,18 +71,12 @@
     <string name="CLIRDefaultOnNextCallOff" msgid="5036749051007098105">"কলাৰ আইডি সীমিত কৰিবলৈ পূর্বনির্ধাৰণ কৰা হৈছে। পৰৱৰ্তী কল: সীমিত কৰা হৈছে"</string>
     <string name="CLIRDefaultOffNextCallOn" msgid="1022781126694885017">"কলাৰ আইডি সীমিত নকৰিবলৈ পূর্বনির্ধাৰণ কৰা হৈছে। পৰৱৰ্তী কল: সীমিত কৰা হোৱা নাই"</string>
     <string name="CLIRDefaultOffNextCallOff" msgid="2491576172356463443">"কলাৰ আইডি সীমিত নকৰিবলৈ পূর্বনির্ধাৰণ কৰা হৈছে। পৰৱৰ্তী কল: সীমিত কৰা হোৱা নাই"</string>
-    <!-- no translation found for page_size_compat_apk_warning (2297836366674721648) -->
-    <skip />
-    <!-- no translation found for page_size_compat_elf_warning (8613720928493005883) -->
-    <skip />
-    <!-- no translation found for page_size_compat_apk_and_elf_warning (9034695801295605229) -->
-    <skip />
-    <!-- no translation found for page_size_compat_apk_warning_4kb (5676451039424864495) -->
-    <skip />
-    <!-- no translation found for page_size_compat_elf_warning_4kb (5005239480522831311) -->
-    <skip />
-    <!-- no translation found for page_size_compat_apk_and_elf_warning_4kb (997926487776340721) -->
-    <skip />
+    <string name="page_size_compat_apk_warning" msgid="2297836366674721648">"এই এপ্‌টো ১৬ কেবিৰ সমিল নহয়। APKৰ শাৰীবিন্যাস পৰীক্ষা বিফল হৈছে। এই এপ্‌টো পৃষ্ঠাৰ আকাৰৰ সমিল ম’ড ব্যৱহাৰ কৰি চলোৱা হ’ব। উত্তম সমিলতাৰ বাবে, অনুগ্ৰহ কৰি এপ্লিকেশ্বনটো ১৬ কেবিৰ সমৰ্থনৰ সৈতে পুনৰ সংকলন কৰক। অধিক তথ্যৰ বাবে, &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; &lt;br&gt;&lt;br&gt; চাওক। তলত উল্লেখিত লাইব্ৰেৰীসমূহৰ ১৬ কেবিৰ শাৰীবিন্যাস কৰা হোৱা নাই: &lt;br&gt;&lt;br&gt;"</string>
+    <string name="page_size_compat_elf_warning" msgid="8613720928493005883">"এই এপ্‌টো ১৬ কেবিৰ সমিল নহয়। ELFৰ শাৰীবিন্যাস পৰীক্ষা বিফল হৈছে। এই এপ্‌টো পৃষ্ঠাৰ আকাৰৰ সমিল ম’ড ব্যৱহাৰ কৰি চলোৱা হ’ব। উত্তম সমিলতাৰ বাবে, অনুগ্ৰহ কৰি এপ্লিকেশ্বনটো ১৬ কেবিৰ সমৰ্থনৰ সৈতে পুনৰ সংকলন কৰক। অধিক তথ্যৰ বাবে, &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; &lt;br&gt;&lt;br&gt; চাওক। তলত উল্লেখিত লাইব্ৰেৰীসমূহৰ ১৬ কেবিৰ শাৰীবিন্যাস কৰা হোৱা নাই: &lt;br&gt;&lt;br&gt;"</string>
+    <string name="page_size_compat_apk_and_elf_warning" msgid="9034695801295605229">"এই এপ্‌টো ১৬ কেবিৰ সমিল নহয়। APK আৰু ELFৰ শাৰীবিন্যাস পৰীক্ষা বিফল হৈছে। এই এপ্‌টো পৃষ্ঠাৰ আকাৰৰ সমিল ম’ড ব্যৱহাৰ কৰি চলোৱা হ’ব। উত্তম সমিলতাৰ বাবে, অনুগ্ৰহ কৰি এপ্লিকেশ্বনটো ১৬ কেবিৰ সমৰ্থনৰ সৈতে পুনৰ সংকলন কৰক। অধিক তথ্যৰ বাবে, &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; &lt;br&gt;&lt;br&gt; চাওক। তলত উল্লেখিত লাইব্ৰেৰীসমূহৰ ১৬ কেবিৰ শাৰীবিন্যাস কৰা হোৱা নাই: &lt;br&gt;&lt;br&gt;"</string>
+    <string name="page_size_compat_apk_warning_4kb" msgid="5676451039424864495">"এই সকীয়নি দেখুওৱা হৈছে কাৰণ এইটো এটা ডিবাগ কৰিব পৰা এপ্‌ যিটো বৰ্তমান পৰীক্ষা কৰি থকা হৈছে। যদি আপুনি বিকাশকৰ্তাগৰাকী নহয়, তেন্তে অনুগ্ৰহ কৰি বিকাশকৰ্তাগৰাকীক এইটো ৰিপ’ৰ্ট কৰক আৰু এটা ডিবাগ কৰিব নোৱাৰা এপৰ বাবে অনুৰোধ কৰক। &lt;br&gt;&lt;br&gt; এই এপ্‌টো ১৬ কেবিৰ সমিল নহয়। APKৰ শাৰীবিন্যাস পৰীক্ষা বিফল হৈছে। অনুগ্ৰহ কৰি &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; &lt;br&gt;&lt;br&gt;ত দিয়া পদক্ষেপসমূহ অনুসৰণ কৰক তলত উল্লেখিত লাইব্ৰেৰীসমূহৰ ১৬ কেবিৰ শাৰীবিন্যাস কৰা হোৱা নাই: &lt;br&gt;&lt;br&gt;"</string>
+    <string name="page_size_compat_elf_warning_4kb" msgid="5005239480522831311">"এই সকীয়নি দেখুওৱা হৈছে কাৰণ এইটো এটা ডিবাগ কৰিব পৰা এপ্‌ যিটো বৰ্তমান পৰীক্ষা কৰি থকা হৈছে। যদি আপুনি বিকাশকৰ্তাগৰাকী নহয়, তেন্তে অনুগ্ৰহ কৰি বিকাশকৰ্তাগৰাকীক এইটো ৰিপ’ৰ্ট কৰক আৰু এটা ডিবাগ কৰিব নোৱাৰা এপৰ বাবে অনুৰোধ কৰক। &lt;br&gt;&lt;br&gt; এই এপ্‌টো ১৬ কেবিৰ সমিল নহয়। ELFৰ শাৰীবিন্যাস পৰীক্ষা বিফল হৈছে। অনুগ্ৰহ কৰি &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; &lt;br&gt;&lt;br&gt;ত দিয়া পদক্ষেপসমূহ অনুসৰণ কৰক তলত উল্লেখিত লাইব্ৰেৰীসমূহৰ ১৬ কেবিৰ শাৰীবিন্যাস কৰা হোৱা নাই: &lt;br&gt;&lt;br&gt;"</string>
+    <string name="page_size_compat_apk_and_elf_warning_4kb" msgid="997926487776340721">"এই সকীয়নি দেখুওৱা হৈছে কাৰণ এইটো এটা ডিবাগ কৰিব পৰা এপ্‌ যিটো বৰ্তমান পৰীক্ষা কৰি থকা হৈছে। যদি আপুনি বিকাশকৰ্তাগৰাকী নহয়, তেন্তে অনুগ্ৰহ কৰি বিকাশকৰ্তাগৰাকীক এইটো ৰিপ’ৰ্ট কৰক আৰু এটা ডিবাগ কৰিব নোৱাৰা এপৰ বাবে অনুৰোধ কৰক। &lt;br&gt;&lt;br&gt; এই এপ্‌টো ১৬ কেবিৰ সমিল নহয়। APK আৰু ELFৰ শাৰীবিন্যাস পৰীক্ষা বিফল হৈছে। অনুগ্ৰহ কৰি &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;ত দিয়া পদক্ষেপসমূহ অনুসৰণ কৰক। &lt;br&gt;&lt;br&gt; তলত উল্লেখিত লাইব্ৰেৰীসমূহৰ ১৬ কেবিৰ শাৰীবিন্যাস কৰা হোৱা নাই: &lt;br&gt;&lt;br&gt;"</string>
     <string name="page_size_compat_never_show" msgid="3391282612422783097">"পুনৰাই নেদেখুৱাব"</string>
     <string name="page_size_compat_title" msgid="6497719153872572204">"Android এপৰ সামঞ্জস্যতা"</string>
     <string name="page_size_compat_elf_not_aligned" msgid="7940806102874132630">"&amp;#8226; %1$s : LOAD খণ্ডৰ শাৰীবিন্যাস কৰা হোৱা নাই"</string>
@@ -920,8 +914,7 @@
     <string name="policydesc_disableCamera" msgid="3204405908799676104">"আটাইবোৰ ডিভাইচৰ কেমেৰা ব্যৱহাৰ কৰাত বাধা দিয়ক।"</string>
     <string name="policylab_disableKeyguardFeatures" msgid="5071855750149949741">"স্ক্ৰীন লকৰ কিছুমান সুবিধা অক্ষম কৰক"</string>
     <string name="policydesc_disableKeyguardFeatures" msgid="6641673177041195957">"স্ক্ৰীন লকৰ কিছুমান সুবিধা ব্যৱহাৰ হোৱাত বাধা দিয়ক।"</string>
-    <!-- no translation found for exit_toast_on_long_press_escape (2983932499112557277) -->
-    <skip />
+    <string name="exit_toast_on_long_press_escape" msgid="2983932499112557277">"এই এপ্‌টো বন্ধ কৰিবলৈ এ’ছ্‌কে’প কীটো দীঘলীয়া সময় ধৰি টিপি থাকক"</string>
   <string-array name="phoneTypes">
     <item msgid="8996339953292723951">"ঘৰ"</item>
     <item msgid="7740243458912727194">"ম’বাইল"</item>
@@ -1848,8 +1841,7 @@
     <string name="owner_name" msgid="8713560351570795743">"গৰাকী"</string>
     <string name="guest_name" msgid="8502103277839834324">"অতিথি"</string>
     <string name="headless_system_user_name" msgid="1849150903255530049">"ছিষ্টেম ব্যৱহাৰকাৰী"</string>
-    <!-- no translation found for unnamed_user_name (6096699110534542980) -->
-    <skip />
+    <string name="unnamed_user_name" msgid="6096699110534542980">"ব্যৱহাৰকাৰী"</string>
     <string name="error_message_title" msgid="4082495589294631966">"আসোঁৱাহ"</string>
     <string name="error_message_change_not_allowed" msgid="843159705042381454">"আপোনাৰ প্ৰশাসকে এই অৱস্থাটো সলনি কৰিবলৈ অনুমতি নিদিয়ে"</string>
     <string name="app_not_found" msgid="3429506115332341800">"এই কাৰ্যটো পৰিচালনা কৰিবলৈ কোনো এপ্লিকেশ্বন পোৱা নগ\'ল"</string>

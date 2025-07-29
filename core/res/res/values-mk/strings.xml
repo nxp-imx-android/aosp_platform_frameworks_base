@@ -71,18 +71,12 @@
     <string name="CLIRDefaultOnNextCallOff" msgid="5036749051007098105">"Стандардно, ID на повикувач е скриен. Следен повик: не е скриен"</string>
     <string name="CLIRDefaultOffNextCallOn" msgid="1022781126694885017">"Стандардно, ID на повикувач не е скриен. Следен повик: скриен"</string>
     <string name="CLIRDefaultOffNextCallOff" msgid="2491576172356463443">"Стандардно, ID на повикувач не е скриен. Следен повик: не е скриен"</string>
-    <!-- no translation found for page_size_compat_apk_warning (2297836366674721648) -->
-    <skip />
-    <!-- no translation found for page_size_compat_elf_warning (8613720928493005883) -->
-    <skip />
-    <!-- no translation found for page_size_compat_apk_and_elf_warning (9034695801295605229) -->
-    <skip />
-    <!-- no translation found for page_size_compat_apk_warning_4kb (5676451039424864495) -->
-    <skip />
-    <!-- no translation found for page_size_compat_elf_warning_4kb (5005239480522831311) -->
-    <skip />
-    <!-- no translation found for page_size_compat_apk_and_elf_warning_4kb (997926487776340721) -->
-    <skip />
+    <string name="page_size_compat_apk_warning" msgid="2297836366674721648">"Апликацијава не е компатибилна со 16 KB. Проверката за усогласување на APK е неуспешна. Апликацијава ќе се извршува со режим компатибилен со големината на страницата. За најдобра компатибилност, рекомпилирајте ја апликацијата со поддршка за 16 KB. За повеќе информации, одете на &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; &lt;br&gt;&lt;br&gt; Следниве збирки не се усогласени со 16 KB: &lt;br&gt;&lt;br&gt;"</string>
+    <string name="page_size_compat_elf_warning" msgid="8613720928493005883">"Апликацијава не е компатибилна со 16 KB. Проверката за усогласување на ELF е неуспешна. Апликацијава ќе се извршува со режим компатибилен со големината на страницата. За најдобра компатибилност, рекомпилирајте ја апликацијата со поддршка за 16 KB. За повеќе информации, одете на &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; &lt;br&gt;&lt;br&gt; Следниве збирки не се усогласени со 16 KB: &lt;br&gt;&lt;br&gt;"</string>
+    <string name="page_size_compat_apk_and_elf_warning" msgid="9034695801295605229">"Апликацијава не е компатибилна со 16 KB. Проверките за усогласување на APK и ELF се неуспешни. Апликацијава ќе се извршува со режим компатибилен со големината на страницата. За најдобра компатибилност, рекомпилирајте ја апликацијата со поддршка за 16 KB. За повеќе информации, одете на &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; &lt;br&gt;&lt;br&gt; Следниве збирки не се усогласени со 16 KB: &lt;br&gt;&lt;br&gt;"</string>
+    <string name="page_size_compat_apk_warning_4kb" msgid="5676451039424864495">"Предупредувањево се прикажува бидејќи ова е апликација на којашто може да се отстрануваат грешки и којашто се тестира во моментов. Ако вие не сте програмерот, пријавете го ова кај програмерот и побарајте апликација на којашто не може да се отстрануваат грешки. &lt;br&gt;&lt;br&gt; Апликацијава не е компатибилна со 16 KB. Проверката за усогласување на APK е неуспешна. Следете ги чекорите на &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; &lt;br&gt;&lt;br&gt; Следниве збирки не се усогласени со 16 KB: &lt;br&gt;&lt;br&gt;"</string>
+    <string name="page_size_compat_elf_warning_4kb" msgid="5005239480522831311">"Предупредувањево се прикажува бидејќи ова е апликација на којашто може да се отстрануваат грешки и којашто се тестира во моментов. Ако вие не сте програмерот, пријавете го ова кај програмерот и побарајте апликација на којашто не може да се отстрануваат грешки. &lt;br&gt;&lt;br&gt; Апликацијава не е компатибилна со 16 KB. Проверката за усогласување на ELF е неуспешна. Следете ги чекорите на &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; &lt;br&gt;&lt;br&gt; Следниве збирки не се усогласени со 16 KB: &lt;br&gt;&lt;br&gt;"</string>
+    <string name="page_size_compat_apk_and_elf_warning_4kb" msgid="997926487776340721">"Предупредувањево се прикажува бидејќи ова е апликација на којашто може да се отстрануваат грешки и којашто се тестира во моментов. Ако вие не сте програмерот, пријавете го ова кај програмерот и побарајте апликација на којашто не може да се отстрануваат грешки. &lt;br&gt;&lt;br&gt; Апликацијава не е компатибилна со 16 KB. Проверките за усогласување на APK и ELF се неуспешни. Следете ги чекорите на &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;. &lt;br&gt;&lt;br&gt; Следниве збирки не се усогласени со 16 KB: &lt;br&gt;&lt;br&gt;"</string>
     <string name="page_size_compat_never_show" msgid="3391282612422783097">"Не прикажувај повторно"</string>
     <string name="page_size_compat_title" msgid="6497719153872572204">"Компатибилност на апликациите за Android"</string>
     <string name="page_size_compat_elf_not_aligned" msgid="7940806102874132630">"&amp;#8226; %1$s : Сегментот LOAD не е усогласен"</string>
@@ -920,8 +914,7 @@
     <string name="policydesc_disableCamera" msgid="3204405908799676104">"Спречи употреба на сите камери на уредот."</string>
     <string name="policylab_disableKeyguardFeatures" msgid="5071855750149949741">"Оневозможување функции за заклучување на екранот"</string>
     <string name="policydesc_disableKeyguardFeatures" msgid="6641673177041195957">"Го спречува користењето на некои функции за заклучување на екранот."</string>
-    <!-- no translation found for exit_toast_on_long_press_escape (2983932499112557277) -->
-    <skip />
+    <string name="exit_toast_on_long_press_escape" msgid="2983932499112557277">"Долго притиснете го копчето Esc за да ја затворите апликацијава"</string>
   <string-array name="phoneTypes">
     <item msgid="8996339953292723951">"Дома"</item>
     <item msgid="7740243458912727194">"Мобилен"</item>
@@ -1848,8 +1841,7 @@
     <string name="owner_name" msgid="8713560351570795743">"Сопственик"</string>
     <string name="guest_name" msgid="8502103277839834324">"Гостин"</string>
     <string name="headless_system_user_name" msgid="1849150903255530049">"Системски корисник"</string>
-    <!-- no translation found for unnamed_user_name (6096699110534542980) -->
-    <skip />
+    <string name="unnamed_user_name" msgid="6096699110534542980">"Корисник"</string>
     <string name="error_message_title" msgid="4082495589294631966">"Грешка"</string>
     <string name="error_message_change_not_allowed" msgid="843159705042381454">"Администраторот не ја дозволува промената"</string>
     <string name="app_not_found" msgid="3429506115332341800">"Не се пронајдени апликации да се изврши ова дејство"</string>

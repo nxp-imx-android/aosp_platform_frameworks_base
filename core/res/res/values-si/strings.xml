@@ -71,18 +71,12 @@
     <string name="CLIRDefaultOnNextCallOff" msgid="5036749051007098105">"අමතන්නාගේ ID සුපුරුදු අනුව සීමා වී ඇත. මීළඟ ඇමතුම: සීමා කර නැත"</string>
     <string name="CLIRDefaultOffNextCallOn" msgid="1022781126694885017">"අමතන්නාගේ ID සුපුරුදු අනුව සීමා වී නැත. මීළඟ ඇමතුම: සීමා කර ඇත"</string>
     <string name="CLIRDefaultOffNextCallOff" msgid="2491576172356463443">"අමතන්නාගේ ID සුපුරුදු අනුව සීමා වී නැත. මීළඟ ඇමතුම: සීමා කර ඇත"</string>
-    <!-- no translation found for page_size_compat_apk_warning (2297836366674721648) -->
-    <skip />
-    <!-- no translation found for page_size_compat_elf_warning (8613720928493005883) -->
-    <skip />
-    <!-- no translation found for page_size_compat_apk_and_elf_warning (9034695801295605229) -->
-    <skip />
-    <!-- no translation found for page_size_compat_apk_warning_4kb (5676451039424864495) -->
-    <skip />
-    <!-- no translation found for page_size_compat_elf_warning_4kb (5005239480522831311) -->
-    <skip />
-    <!-- no translation found for page_size_compat_apk_and_elf_warning_4kb (997926487776340721) -->
-    <skip />
+    <string name="page_size_compat_apk_warning" msgid="2297836366674721648">"මෙම යෙදුම 16 KB අනුකූල නොවේ. APK පෙළගැස්වීමේ පරීක්ෂාව අසමත් විය. මෙම යෙදුම පිටු ප්‍රමාණයට ගැළපෙන ප්‍රකාරය භාවිතයෙන් ධාවනය වනු ඇත. හොඳම ගැළපුම සඳහා, 16 KB සහාය ඇතිව යෙදුම නැවත සම්පාදනය කරන්න. වැඩිපුර තොරතුරු සඳහා, &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; බලන්න &lt;br&gt;&lt;br&gt; පහත පුස්තකාල 16 KB පෙළගස්වා නොමැත: &lt;br&gt;&lt;br&gt;"</string>
+    <string name="page_size_compat_elf_warning" msgid="8613720928493005883">"මෙම යෙදුම 16 KB අනුකූල නොවේ. ELF පෙළගැස්වීමේ පරීක්ෂාව අසමත් විය. මෙම යෙදුම පිටු ප්‍රමාණයට ගැළපෙන ප්‍රකාරය භාවිතයෙන් ධාවනය වනු ඇත. හොඳම ගැළපුම සඳහා, 16 KB සහාය ඇතිව යෙදුම නැවත සම්පාදනය කරන්න. වැඩිපුර තොරතුරු සඳහා, &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; බලන්න &lt;br&gt;&lt;br&gt; පහත පුස්තකාල 16 KB පෙළගස්වා නොමැත: &lt;br&gt;&lt;br&gt;"</string>
+    <string name="page_size_compat_apk_and_elf_warning" msgid="9034695801295605229">"මෙම යෙදුම 16 KB අනුකූල නොවේ. APK සහ ELF පෙළගැස්වීමේ පරීක්ෂාවන් අසමත් විය. මෙම යෙදුම පිටු ප්‍රමාණයට ගැළපෙන ප්‍රකාරය භාවිතයෙන් ධාවනය වනු ඇත. හොඳම ගැළපුම සඳහා, 16 KB සහාය ඇතිව යෙදුම නැවත සම්පාදනය කරන්න. වැඩිපුර තොරතුරු සඳහා, &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; බලන්න &lt;br&gt;&lt;br&gt; පහත පුස්තකාල 16 KB පෙළගස්වා නොමැත: &lt;br&gt;&lt;br&gt;"</string>
+    <string name="page_size_compat_apk_warning_4kb" msgid="5676451039424864495">"මෙම අනතුරු ඇඟවීම පෙන්වන්නේ මෙය දැනට පරීක්ෂා කරමින් පවතින දෝෂහරණය කළ හැකි යෙදුමක් වන බැවිනි. ඔබ සංවර්ධකයා නොවේ නම්, මෙය සංවර්ධකයාට වාර්තා කර නිදොස්කරණය කළ නොහැකි යෙදුමක් ඉල්ලා සිටින්න. &lt;br&gt;&lt;br&gt; මෙම යෙදුම 16 KB අනුකූල නොවේ. APK පෙළගැස්වීමේ පරීක්ෂාව අසමත් විය. &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; හි පියවර අනුගමනය කරන්න &lt;br&gt;&lt;br&gt; පහත පුස්තකාල 16 KB පෙළගස්වා නොමැත: &lt;br&gt;&lt;br&gt;"</string>
+    <string name="page_size_compat_elf_warning_4kb" msgid="5005239480522831311">"මෙම අනතුරු ඇඟවීම පෙන්වන්නේ මෙය දැනට පරීක්ෂා කරමින් පවතින දෝෂහරණය කළ හැකි යෙදුමක් වන බැවිනි. ඔබ සංවර්ධකයා නොවේ නම්, මෙය සංවර්ධකයාට වාර්තා කර නිදොස්කරණය කළ නොහැකි යෙදුමක් ඉල්ලා සිටින්න. &lt;br&gt;&lt;br&gt; මෙම යෙදුම 16 KB අනුකූල නොවේ. ELF පෙළගැස්වීමේ පරීක්ෂාව අසමත් විය. &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; හි පියවර අනුගමනය කරන්න &lt;br&gt;&lt;br&gt; පහත පුස්තකාල 16 KB පෙළගස්වා නොමැත: &lt;br&gt;&lt;br&gt;"</string>
+    <string name="page_size_compat_apk_and_elf_warning_4kb" msgid="997926487776340721">"මෙම අනතුරු ඇඟවීම පෙන්වන්නේ මෙය දැනට පරීක්ෂා කරමින් පවතින දෝෂහරණය කළ හැකි යෙදුමක් වන බැවිනි. ඔබ සංවර්ධකයා නොවේ නම්, මෙය සංවර්ධකයාට වාර්තා කර නිදොස්කරණය කළ නොහැකි යෙදුමක් ඉල්ලා සිටින්න. &lt;br&gt;&lt;br&gt; මෙම යෙදුම 16 KB අනුකූල නොවේ. APK සහ ELF පෙළගැස්වීමේ පරීක්ෂාවන් අසමත් විය. &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; හි පියවර අනුගමනය කරන්න. &lt;br&gt;&lt;br&gt; පහත පුස්තකාල 16 KB පෙළගස්වා නොමැත: &lt;br&gt;&lt;br&gt;"</string>
     <string name="page_size_compat_never_show" msgid="3391282612422783097">"නැවත නොපෙන්වන්න"</string>
     <string name="page_size_compat_title" msgid="6497719153872572204">"Android යෙදුම් ගැළපෙන බව"</string>
     <string name="page_size_compat_elf_not_aligned" msgid="7940806102874132630">"&amp;#8226; %1$s : LOAD කොටස පෙළගස්වා නැත"</string>
@@ -920,8 +914,7 @@
     <string name="policydesc_disableCamera" msgid="3204405908799676104">"සියලු උපාංග කැමරාවල භාවිතය වලක්වන්න."</string>
     <string name="policylab_disableKeyguardFeatures" msgid="5071855750149949741">"සමහර තිර අගුලු විශේෂාංග අබල කරන්න"</string>
     <string name="policydesc_disableKeyguardFeatures" msgid="6641673177041195957">"සමහර තිර අගුලු විශේෂාංග භාවිතය වළක්වන්න."</string>
-    <!-- no translation found for exit_toast_on_long_press_escape (2983932499112557277) -->
-    <skip />
+    <string name="exit_toast_on_long_press_escape" msgid="2983932499112557277">"මෙම යෙදුම වැසීමට Esc යතුර දිගු වේලාවක් ඔබන්න"</string>
   <string-array name="phoneTypes">
     <item msgid="8996339953292723951">"නිවස"</item>
     <item msgid="7740243458912727194">"ජංගම"</item>
@@ -1848,8 +1841,7 @@
     <string name="owner_name" msgid="8713560351570795743">"හිමිකරු"</string>
     <string name="guest_name" msgid="8502103277839834324">"ආගන්තුක"</string>
     <string name="headless_system_user_name" msgid="1849150903255530049">"පද්ධති පරිශීලක"</string>
-    <!-- no translation found for unnamed_user_name (6096699110534542980) -->
-    <skip />
+    <string name="unnamed_user_name" msgid="6096699110534542980">"පරිශීලක"</string>
     <string name="error_message_title" msgid="4082495589294631966">"දෝෂය"</string>
     <string name="error_message_change_not_allowed" msgid="843159705042381454">"ඔබගේ පරිපාලක විසින් මෙම වෙනස් කිරීමට ඉඩ නොදේ"</string>
     <string name="app_not_found" msgid="3429506115332341800">"මෙම ක්‍රියාව හසුරුවීමට යෙදුමක් සොයාගත්තේ නැත"</string>
