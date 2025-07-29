@@ -491,17 +491,33 @@ internal fun willDecayFasterThanAnimating(
     //
     // For the decay, we can use a simple binary search given that once the decay has reached
     // the target value it will never change direction.
-    val decayDuration = binarySearch { timeMs ->
-        hasReachedTargetOffset(
-            converter.convertFromVector(
-                decayAnimationSpecVector.getValueFromNanos(
-                    playTimeNanos = timeMs * MillisToNanos,
-                    initialValue = initialOffsetVector,
-                    initialVelocity = initialVelocityVector,
+    val decayDuration =
+        try {
+            binarySearch { timeMs ->
+                hasReachedTargetOffset(
+                    converter.convertFromVector(
+                        decayAnimationSpecVector.getValueFromNanos(
+                            playTimeNanos = timeMs * MillisToNanos,
+                            initialValue = initialOffsetVector,
+                            initialVelocity = initialVelocityVector,
+                        )
+                    )
                 )
+            }
+        } catch (e: Exception) {
+            // TODO(b/431165757): Find the root cause of the crash and remove this log.
+            throw IllegalStateException(
+                buildString {
+                    appendLine("binarySearch() threw an exception")
+                    appendLine("  initialOffset=$initialOffset")
+                    appendLine("  targetOffset=$targetOffset")
+                    appendLine("  initialVelocity=$initialVelocity")
+                    appendLine("  decayAnimationSpec=$decayAnimationSpec")
+                    appendLine("  animationSpec=$animationSpec")
+                },
+                e,
             )
-        )
-    }
+        }
 
     // For the animation we can't use binary search given that springs and eased interpolations
     // can oscillate around the target offset. Given that it's ok to estimate this duration, we
