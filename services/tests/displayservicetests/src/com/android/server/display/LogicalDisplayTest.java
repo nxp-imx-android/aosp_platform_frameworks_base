@@ -158,8 +158,8 @@ public class LogicalDisplayTest {
     public void testNoLetterbox_noAnisotropyCorrectionForInternalDisplay() {
         mDisplayDeviceInfo.type = Display.TYPE_INTERNAL;
         mLogicalDisplay = new LogicalDisplay(DISPLAY_ID, LAYER_STACK, mDisplayDevice,
-                /*isAnisotropyCorrectionEnabled=*/ true,
                 /*isSyncedResolutionSwitchEnabled=*/ true);
+        mLogicalDisplay.setAnisotropyCorrectionEnabled(true);
 
         // In case of Anisotropy of pixels, then the content should be rescaled so it would adjust
         // to using the whole screen. This is because display will rescale it back to fill the
@@ -187,8 +187,8 @@ public class LogicalDisplayTest {
     public void testNoLetterbox_anisotropyCorrection() {
         mDisplayDeviceInfo.type = Display.TYPE_EXTERNAL;
         mLogicalDisplay = new LogicalDisplay(DISPLAY_ID, LAYER_STACK, mDisplayDevice,
-                /*isAnisotropyCorrectionEnabled=*/ true,
                 /*isSyncedResolutionSwitchEnabled=*/ true);
+        mLogicalDisplay.setAnisotropyCorrectionEnabled(true);
 
         // In case of Anisotropy of pixels, then the content should be rescaled so it would adjust
         // to using the whole screen. This is because display will rescale it back to fill the
@@ -216,8 +216,8 @@ public class LogicalDisplayTest {
     public void testLetterbox_anisotropyCorrectionYDpi() {
         mDisplayDeviceInfo.type = Display.TYPE_EXTERNAL;
         mLogicalDisplay = new LogicalDisplay(DISPLAY_ID, LAYER_STACK, mDisplayDevice,
-                /*isAnisotropyCorrectionEnabled=*/ true,
                 /*isSyncedResolutionSwitchEnabled=*/ true);
+        mLogicalDisplay.setAnisotropyCorrectionEnabled(true);
 
         DisplayInfo displayInfo = new DisplayInfo();
         displayInfo.logicalWidth = DISPLAY_WIDTH;
@@ -274,8 +274,8 @@ public class LogicalDisplayTest {
     public void testPillarbox_anisotropyCorrection() {
         mDisplayDeviceInfo.type = Display.TYPE_EXTERNAL;
         mLogicalDisplay = new LogicalDisplay(DISPLAY_ID, LAYER_STACK, mDisplayDevice,
-                /*isAnisotropyCorrectionEnabled=*/ true,
                 /*isSyncedResolutionSwitchEnabled=*/ true);
+        mLogicalDisplay.setAnisotropyCorrectionEnabled(true);
 
         DisplayInfo displayInfo = new DisplayInfo();
         displayInfo.logicalWidth = DISPLAY_WIDTH;
@@ -303,8 +303,8 @@ public class LogicalDisplayTest {
     public void testNoPillarbox_anisotropyCorrectionYDpi() {
         mDisplayDeviceInfo.type = Display.TYPE_EXTERNAL;
         mLogicalDisplay = new LogicalDisplay(DISPLAY_ID, LAYER_STACK, mDisplayDevice,
-                /*isAnisotropyCorrectionEnabled=*/ true,
                 /*isSyncedResolutionSwitchEnabled=*/ true);
+        mLogicalDisplay.setAnisotropyCorrectionEnabled(true);
 
         // In case of Anisotropy of pixels, then the content should be rescaled so it would adjust
         // to using the whole screen. This is because display will rescale it back to fill the
@@ -387,7 +387,6 @@ public class LogicalDisplayTest {
     @Test
     public void testSetDisplaySizeIsCalledDuringConfigureDisplayLocked() {
         mLogicalDisplay = new LogicalDisplay(DISPLAY_ID, LAYER_STACK, mDisplayDevice,
-                /*isAnisotropyCorrectionEnabled=*/ true,
                 /*isSyncedResolutionSwitchEnabled=*/ true);
         mLogicalDisplay.updateLocked(mDeviceRepo, mSyntheticModeManager);
         SurfaceControl.Transaction t = mock(SurfaceControl.Transaction.class);

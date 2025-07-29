@@ -57,17 +57,6 @@ import java.util.Queue;
  * Manages content recording for a particular {@link DisplayContent}.
  */
 final class ContentRecorder implements WindowContainerListener {
-
-    /**
-     * Maximum acceptable anisotropy for the output image.
-     *
-     * <p>Necessary to avoid unnecessary scaling when the anisotropy is almost the same, as it is
-     * not exact anyway. For external displays, we expect an anisotropy of about 2% even if the
-     * pixels are, in fact, square due to the imprecision of the display's actual size (rounded to
-     * the nearest cm).
-     */
-    private static final float MAX_ANISOTROPY = 0.025f;
-
     /**
      * The display content this class is handling recording for.
      */
@@ -118,21 +107,15 @@ final class ContentRecorder implements WindowContainerListener {
     @WindowConfiguration.WindowingMode
     private int mLastWindowingMode = WINDOWING_MODE_UNDEFINED;
 
-    private final boolean mCorrectForAnisotropicPixels;
-
     ContentRecorder(@NonNull DisplayContent displayContent) {
-        this(displayContent, new RemoteMediaProjectionManagerWrapper(displayContent.mDisplayId),
-                !new DisplayManagerFlags().isPixelAnisotropyCorrectionInLogicalDisplayEnabled()
-                        && displayContent.getDisplayInfo().type == Display.TYPE_EXTERNAL);
+        this(displayContent, new RemoteMediaProjectionManagerWrapper(displayContent.mDisplayId));
     }
 
     @VisibleForTesting
     ContentRecorder(@NonNull DisplayContent displayContent,
-            @NonNull MediaProjectionManagerWrapper mediaProjectionManager,
-            boolean correctForAnisotropicPixels) {
+            @NonNull MediaProjectionManagerWrapper mediaProjectionManager) {
         mDisplayContent = displayContent;
         mMediaProjectionManager = mediaProjectionManager;
-        mCorrectForAnisotropicPixels = correctForAnisotropicPixels;
     }
 
     /**
@@ -600,26 +583,13 @@ final class ContentRecorder implements WindowContainerListener {
             int outputSizeX, int outputSizeY,
             float outputDpiX, float outputDpiY,
             PointF scaleOut) {
-        float relAnisotropy = (inputDpiY / inputDpiX) / (outputDpiY / outputDpiX);
-        if (!mCorrectForAnisotropicPixels
-                || (relAnisotropy > (1 - MAX_ANISOTROPY) && relAnisotropy < (1 + MAX_ANISOTROPY))) {
-            // Calculate the scale to apply to the root mirror SurfaceControl to fit the size of the
-            // output surface.
-            float scaleX = outputSizeX / (float) inputSizeX;
-            float scaleY = outputSizeY / (float) inputSizeY;
-            float scale = Math.min(scaleX, scaleY);
-            scaleOut.x = scale;
-            scaleOut.y = scale;
-            return;
-        }
-
-        float relDpiX = outputDpiX / inputDpiX;
-        float relDpiY = outputDpiY / inputDpiY;
-
-        float scale = Math.min(outputSizeX / relDpiX / inputSizeX,
-                outputSizeY / relDpiY / inputSizeY);
-        scaleOut.x = scale * relDpiX;
-        scaleOut.y = scale * relDpiY;
+        // Calculate the scale to apply to the root mirror SurfaceControl to fit the size of the
+        // output surface.
+        float scaleX = outputSizeX / (float) inputSizeX;
+        float scaleY = outputSizeY / (float) inputSizeY;
+        float scale = Math.min(scaleX, scaleY);
+        scaleOut.x = scale;
+        scaleOut.y = scale;
     }
 
     /**

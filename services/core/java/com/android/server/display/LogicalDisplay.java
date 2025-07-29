@@ -219,18 +219,17 @@ final class LogicalDisplay {
      * 3. If a setting on the display itself is set to "fill the entire display panel" then the
      * display will stretch the pixels to fill the display fully.
      */
-    private final boolean mIsAnisotropyCorrectionEnabled;
+    private boolean mIsAnisotropyCorrectionEnabled;
 
     private final boolean mSyncedResolutionSwitchEnabled;
 
     private boolean mCanHostTasks;
 
     LogicalDisplay(int displayId, int layerStack, DisplayDevice primaryDisplayDevice) {
-        this(displayId, layerStack, primaryDisplayDevice, false, false);
+        this(displayId, layerStack, primaryDisplayDevice, false);
     }
 
     LogicalDisplay(int displayId, int layerStack, DisplayDevice primaryDisplayDevice,
-            boolean isAnisotropyCorrectionEnabled,
             boolean isSyncedResolutionSwitchEnabled) {
         mDisplayId = displayId;
         mLayerStack = layerStack;
@@ -242,11 +241,15 @@ final class LogicalDisplay {
         mThermalBrightnessThrottlingDataId = DisplayDeviceConfig.DEFAULT_ID;
         mPowerThrottlingDataId = DisplayDeviceConfig.DEFAULT_ID;
         mBaseDisplayInfo.thermalBrightnessThrottlingDataId = mThermalBrightnessThrottlingDataId;
-        mIsAnisotropyCorrectionEnabled = isAnisotropyCorrectionEnabled;
         mSyncedResolutionSwitchEnabled = isSyncedResolutionSwitchEnabled;
 
         // No need to initialize mCanHostTasks here; it's handled in
         // DisplayManagerService#setupLogicalDisplay().
+    }
+
+    public void setAnisotropyCorrectionEnabled(boolean enabled) {
+        mIsAnisotropyCorrectionEnabled = enabled;
+        mPrimaryDisplayDevice.setAnisotropyCorrectionEnabled(enabled);
     }
 
     public void setDevicePositionLocked(int position) {
@@ -423,6 +426,9 @@ final class LogicalDisplay {
             setPrimaryDisplayDeviceLocked(null);
             return;
         }
+
+        // TODO(b/375563565): Implement per-display setting to enable/disable anisotropy correction.
+        setAnisotropyCorrectionEnabled(true);
 
         // Bootstrap the logical display using its associated primary physical display.
         // We might use more elaborate configurations later.  It's possible that the
