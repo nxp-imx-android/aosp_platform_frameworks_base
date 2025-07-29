@@ -141,6 +141,7 @@ import android.os.RemoteException;
 import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
+import android.platform.test.annotations.RequiresFlagsDisabled;
 import android.provider.DeviceConfig;
 import android.util.MutableBoolean;
 import android.view.DisplayInfo;
@@ -1137,6 +1138,7 @@ public class ActivityRecordTests extends WindowTestsBase {
      * Verify that when finishing the top focused activity on top display, the root task order
      * will be changed by adjusting focus.
      */
+    @RequiresFlagsDisabled(Flags.FLAG_POLISH_CLOSE_WALLPAPER_INCLUDES_OPEN_CHANGE)
     @Test
     public void testFinishActivityIfPossible_adjustStackOrder() {
         final ActivityRecord activity = createActivityWithTask();
@@ -1165,6 +1167,7 @@ public class ActivityRecordTests extends WindowTestsBase {
      * Verify that when finishing the top focused activity while root task was created by organizer,
      * the stack order will be changed by adjusting focus.
      */
+    @RequiresFlagsDisabled(Flags.FLAG_POLISH_CLOSE_WALLPAPER_INCLUDES_OPEN_CHANGE)
     @Test
     public void testFinishActivityIfPossible_adjustStackOrderOrganizedRoot() {
         // Make mStack be a the root task that created by task organizer
@@ -1194,6 +1197,7 @@ public class ActivityRecordTests extends WindowTestsBase {
      * activity on default display, the preferred top stack on default display should be changed by
      * adjusting focus.
      */
+    @RequiresFlagsDisabled(Flags.FLAG_POLISH_CLOSE_WALLPAPER_INCLUDES_OPEN_CHANGE)
     @Test
     public void testFinishActivityIfPossible_PreferredTopStackChanged() {
         final ActivityRecord activity = createActivityWithTask();
