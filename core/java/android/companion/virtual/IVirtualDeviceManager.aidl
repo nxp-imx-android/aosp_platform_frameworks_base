@@ -22,6 +22,8 @@ import android.companion.virtual.IVirtualDeviceListener;
 import android.companion.virtual.IVirtualDeviceSoundEffectListener;
 import android.companion.virtual.VirtualDevice;
 import android.companion.virtual.VirtualDeviceParams;
+import android.companion.virtual.computercontrol.ComputerControlSessionParams;
+import android.companion.virtual.computercontrol.IComputerControlSession;
 import android.content.AttributionSource;
 
 /**
@@ -50,11 +52,13 @@ interface IVirtualDeviceManager {
             in VirtualDeviceParams params, in IVirtualDeviceActivityListener activityListener,
             in IVirtualDeviceSoundEffectListener soundEffectListener);
 
+    /**
+     * Creates a new computer control session.
+     */
     @EnforcePermission("ACCESS_COMPUTER_CONTROL")
-    IVirtualDevice createLocalVirtualDevice(
+    IComputerControlSession createComputerControlSession(
             in IBinder token, in AttributionSource attributionSource,
-            in VirtualDeviceParams params, in IVirtualDeviceActivityListener activityListener,
-            in IVirtualDeviceSoundEffectListener soundEffectListener);
+            in ComputerControlSessionParams params);
 
     /**
      * Returns the details of all available virtual devices.

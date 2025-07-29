@@ -84,7 +84,7 @@ public class VirtualDpad extends VirtualInputDevice {
      * Returns whether the given key code is supported by this Dpad device.
      * @hide
      */
-    public boolean isKeyCodeSupported(int keyCode) {
+    public static boolean isKeyCodeSupported(int keyCode) {
         return SUPPORTED_KEY_CODES.contains(keyCode);
     }
 }
