@@ -36,21 +36,22 @@ import com.android.systemui.screencapture.common.ui.compose.loadIcon
 import com.android.systemui.screencapture.common.ui.viewmodel.DrawableLoaderViewModel
 
 /**
- * A composable that represents the screenshot button that is positioned inside or outside the
- * region box.
+ * A composable that represents the button that is positioned inside or outside the region box.
  *
  * @param boxWidthDp The width of the region box in dp.
  * @param boxHeightDp The height of the region box in dp.
  * @param currentRect The current region box.
  * @param drawableLoaderViewModel The view model that is used to load drawables.
+ * @param onClick A callback function that is invoked when this button is clicked.
  * @param modifier The modifier to be applied to the composable.
  */
 @Composable
-fun RegionScreenshotButton(
+fun RegionBoxButton(
     boxWidthDp: Dp,
     boxHeightDp: Dp,
     currentRect: Rect,
     drawableLoaderViewModel: DrawableLoaderViewModel,
+    onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val density = LocalDensity.current
@@ -59,8 +60,8 @@ fun RegionScreenshotButton(
     val buttonWidthDp = with(density) { buttonSize.width.toDp() }
     val buttonHeightDp = with(density) { buttonSize.height.toDp() }
 
-    // Check if the box dimensions is smaller than the screenshot button. If so, the button
-    // will be positioned outside the box.
+    // Check if the box dimensions is smaller than the button. If so, the button will be positioned
+    // outside the box.
     val isButtonOutside = boxWidthDp < buttonWidthDp || boxHeightDp < buttonHeightDp
 
     // The translation of the button in the X direction.
@@ -92,20 +93,18 @@ fun RegionScreenshotButton(
     PrimaryButton(
         modifier =
             modifier
-                .onSizeChanged { screenshotButtonSize -> buttonSize = screenshotButtonSize }
+                .onSizeChanged { size -> buttonSize = size }
                 .graphicsLayer {
                     translationX = targetTranslationX
                     translationY = targetTranslationY
                 },
         text = stringResource(id = R.string.screen_capture_region_selection_button),
-        onClick = {
-            // TODO(b/417534202): trigger a screenshot of the selected area.
-        },
         icon =
             loadIcon(
                 viewModel = drawableLoaderViewModel,
                 resId = R.drawable.ic_screen_capture_camera,
                 contentDescription = null,
             ),
+        onClick = onClick,
     )
 }
