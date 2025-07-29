@@ -551,8 +551,7 @@ public class NotificationShadeWindowControllerImpl implements NotificationShadeW
                 || (shouldScrimVisibilityKeepWindowVisible && areScrimsNotTransparent))
                 || state.launchingActivityFromNotification;
 
-        if (Flags.instantHideShade() && state.launchingActivityFromNotification
-                && state.forceHideAfterActivityLaunch) {
+        if (state.launchingActivityFromNotification && state.forceHideAfterActivityLaunch) {
             // If we're at the end of a launch animation, we must force the window to be hidden to
             // avoid flickers caused by async state updates.
             isExpanded = false;
@@ -811,8 +810,7 @@ public class NotificationShadeWindowControllerImpl implements NotificationShadeW
 
     @Override
     public void setKeyguardFadingAway(boolean keyguardFadingAway) {
-        if (Flags.instantHideShade()
-                && keyguardFadingAway && mCurrentState.forceHideAfterActivityLaunch) {
+        if (keyguardFadingAway && mCurrentState.forceHideAfterActivityLaunch) {
             // If we're force-hiding the window at the end of an activity launch, we should not mark
             // it as fading away, or we might end up in the wrong state once the force-hiding flag
             // is reset.

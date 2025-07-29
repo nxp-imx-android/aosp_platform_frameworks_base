@@ -16,14 +16,12 @@
 
 package com.android.systemui.shade
 
-import android.platform.test.annotations.EnableFlags
 import android.testing.TestableLooper.RunWithLooper
 import android.view.Display
 import android.view.WindowManager
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.internal.statusbar.IStatusBarService
-import com.android.systemui.Flags
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.assist.AssistManager
 import com.android.systemui.flags.DisableSceneContainer
@@ -197,7 +195,6 @@ class ShadeControllerImplTest : SysuiTestCase() {
         assertThat(windowRootViewVisibilityInteractor.isLockscreenOrShadeVisible.value).isFalse()
     }
 
-    @EnableFlags(Flags.FLAG_INSTANT_HIDE_SHADE)
     @Test
     fun visible_launchAnimationEnds_windowControllerInstantlyHidden() {
         // GIVEN the shade is currently expanded

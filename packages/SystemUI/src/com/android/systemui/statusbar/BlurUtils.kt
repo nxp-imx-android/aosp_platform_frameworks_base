@@ -281,7 +281,7 @@ constructor(
         if (viewRootImpl == null || !supportsBlursOnWindows()) return
 
         val builder =
-            if (!Flags.instantHideShade() || viewRootImpl.surfaceControl?.isValid == true) {
+            if (viewRootImpl.surfaceControl?.isValid == true) {
                 updateTransactionApplier(viewRootImpl)
                 SyncRtSurfaceTransactionApplier.SurfaceParams.Builder(viewRootImpl.surfaceControl)
             } else {

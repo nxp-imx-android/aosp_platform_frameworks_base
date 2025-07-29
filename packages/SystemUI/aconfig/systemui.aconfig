@@ -2004,16 +2004,6 @@ flag {
 }
 
 flag {
-    name: "instant_hide_shade"
-    namespace: "systemui"
-    description: "Enables the Shade to hide instantaneously at the end of a launch animation, preventing flickers."
-    bug: "419304171"
-    metadata {
-      purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "dream_preview_tap_dismiss"
     namespace: "systemui"
     description: "Dismisses dream in preview on tap"
