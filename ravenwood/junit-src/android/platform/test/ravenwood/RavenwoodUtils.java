@@ -22,8 +22,11 @@ import android.os.Looper;
 import android.os.MessageQueue;
 import android.util.Log;
 
+import com.android.internal.annotations.GuardedBy;
 import com.android.ravenwood.common.SneakyThrow;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -38,15 +41,24 @@ public class RavenwoodUtils {
 
     private static final int DEFAULT_TIMEOUT_SECONDS = 10;
 
-    private class MainHandlerHolder {
-        static Handler sMainHandler = new Handler(Looper.getMainLooper());
+    @GuardedBy("sHandlers")
+    private static final Map<Looper, Handler> sHandlers = new HashMap<>();
+
+    /**
+     * Return a handler for any looper.
+     */
+    @NonNull
+    private static Handler getHandler(@NonNull Looper looper) {
+        synchronized (sHandlers) {
+            return sHandlers.computeIfAbsent(looper, (l) -> new Handler(l));
+        }
     }
 
     /**
      * Returns the main thread handler.
      */
     public static Handler getMainHandler() {
-        return MainHandlerHolder.sMainHandler;
+        return getHandler(Looper.getMainLooper());
     }
 
     /**
@@ -123,6 +135,9 @@ public class RavenwoodUtils {
     public static void waitForLooperDone(Looper looper) {
         var idler = new Idler();
         looper.getQueue().addIdleHandler(idler);
+        // Wake up the queue, if sleeping.
+        getHandler(looper).post(() -> {});
+
         idler.waitForIdle();
 
         sPendingExceptionThrower.run();
