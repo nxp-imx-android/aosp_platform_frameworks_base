@@ -24,7 +24,8 @@ import com.android.compose.animation.scene.UserActionResult.HideOverlay
 import com.android.compose.animation.scene.UserActionResult.ShowOverlay
 import com.android.compose.animation.scene.UserActionResult.ShowOverlay.HideCurrentOverlays
 import com.android.systemui.scene.shared.model.Overlays
-import com.android.systemui.scene.ui.viewmodel.SceneContainerArea
+import com.android.systemui.scene.ui.viewmodel.SceneContainerArea.EndHalf
+import com.android.systemui.scene.ui.viewmodel.SceneContainerArea.TopEdgeEndHalf
 import com.android.systemui.scene.ui.viewmodel.UserActionsViewModel
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
@@ -34,15 +35,18 @@ class NotificationsShadeOverlayActionsViewModel @AssistedInject constructor() :
     UserActionsViewModel() {
 
     override suspend fun hydrateActions(setActions: (Map<UserAction, UserActionResult>) -> Unit) {
+        val hideNotificationsShade = HideOverlay(Overlays.NotificationsShade)
+        val openQuickSettingsShade =
+            ShowOverlay(
+                Overlays.QuickSettingsShade,
+                hideCurrentOverlays = HideCurrentOverlays.Some(Overlays.NotificationsShade),
+            )
         setActions(
             mapOf(
-                Swipe.Up to HideOverlay(Overlays.NotificationsShade),
-                Back to HideOverlay(Overlays.NotificationsShade),
-                Swipe.Down(fromSource = SceneContainerArea.EndHalf) to
-                    ShowOverlay(
-                        Overlays.QuickSettingsShade,
-                        hideCurrentOverlays = HideCurrentOverlays.Some(Overlays.NotificationsShade),
-                    ),
+                Swipe.Up to hideNotificationsShade,
+                Back to hideNotificationsShade,
+                Swipe.Down(fromSource = EndHalf) to openQuickSettingsShade,
+                Swipe.Down(fromSource = TopEdgeEndHalf) to openQuickSettingsShade,
             )
         )
     }

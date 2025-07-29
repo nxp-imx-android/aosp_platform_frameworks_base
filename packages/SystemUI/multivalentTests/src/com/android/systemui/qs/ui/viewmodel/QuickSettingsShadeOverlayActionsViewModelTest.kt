@@ -107,4 +107,13 @@ class QuickSettingsShadeOverlayActionsViewModelTest : SysuiTestCase() {
             assertThat((action.hideCurrentOverlays as HideCurrentOverlays.Some).overlays)
                 .containsExactly(Overlays.QuickSettingsShade)
         }
+
+    @Test
+    fun downFromTopEdgeStartHalf_switchesToNotificationsShade() =
+        kosmos.runTest {
+            val action = actions?.get(Swipe.Down(fromSource = SceneContainerArea.TopEdgeStartHalf))
+            assertThat((action as ShowOverlay).overlay).isEqualTo(Overlays.NotificationsShade)
+            assertThat((action.hideCurrentOverlays as HideCurrentOverlays.Some).overlays)
+                .containsExactly(Overlays.QuickSettingsShade)
+        }
 }
