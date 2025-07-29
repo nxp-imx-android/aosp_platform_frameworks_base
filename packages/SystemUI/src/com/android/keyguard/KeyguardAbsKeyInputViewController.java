@@ -41,6 +41,7 @@ import com.android.systemui.classifier.FalsingCollector;
 import com.android.systemui.flags.FeatureFlags;
 import com.android.systemui.res.R;
 import com.android.systemui.user.domain.interactor.SelectedUserInteractor;
+import com.android.systemui.util.wrapper.LockPatternCheckerWrapper;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -53,6 +54,7 @@ public abstract class KeyguardAbsKeyInputViewController<T extends KeyguardAbsKey
     private final FalsingCollector mFalsingCollector;
     private final EmergencyButtonController mEmergencyButtonController;
     private final UserActivityNotifier mUserActivityNotifier;
+    private final LockPatternCheckerWrapper mLockPatternChecker;
     private CountDownTimer mCountdownTimer;
     private boolean mDismissing;
     protected AsyncTask<?, ?, ?> mPendingLockCheck;
@@ -87,7 +89,9 @@ public abstract class KeyguardAbsKeyInputViewController<T extends KeyguardAbsKey
             EmergencyButtonController emergencyButtonController,
             FeatureFlags featureFlags, SelectedUserInteractor selectedUserInteractor,
             BouncerHapticPlayer bouncerHapticPlayer,
-            UserActivityNotifier userActivityNotifier) {
+            UserActivityNotifier userActivityNotifier,
+            LockPatternCheckerWrapper lockPatternCheckerWrapper
+    ) {
         super(view, securityMode, keyguardSecurityCallback, emergencyButtonController,
                 messageAreaControllerFactory, featureFlags, selectedUserInteractor,
                 bouncerHapticPlayer);
@@ -97,6 +101,7 @@ public abstract class KeyguardAbsKeyInputViewController<T extends KeyguardAbsKey
         mFalsingCollector = falsingCollector;
         mEmergencyButtonController = emergencyButtonController;
         mUserActivityNotifier = userActivityNotifier;
+        mLockPatternChecker = lockPatternCheckerWrapper;
     }
 
     abstract void resetState();
@@ -246,7 +251,7 @@ public abstract class KeyguardAbsKeyInputViewController<T extends KeyguardAbsKey
         mLatencyTracker.onActionStart(ACTION_CHECK_CREDENTIAL_UNLOCKED);
 
         mKeyguardUpdateMonitor.setCredentialAttempted();
-        mPendingLockCheck = LockPatternChecker.checkCredential(
+        mPendingLockCheck = mLockPatternChecker.checkCredential(
                 mLockPatternUtils,
                 password,
                 userId,

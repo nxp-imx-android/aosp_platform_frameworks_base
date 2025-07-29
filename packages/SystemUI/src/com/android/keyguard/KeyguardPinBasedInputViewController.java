@@ -35,6 +35,7 @@ import android.view.View.OnTouchListener;
 import android.view.ViewGroup;
 
 import com.android.internal.util.LatencyTracker;
+import com.android.internal.widget.LockPatternChecker;
 import com.android.internal.widget.LockPatternUtils;
 import com.android.keyguard.KeyguardSecurityModel.SecurityMode;
 import com.android.keyguard.domain.interactor.KeyguardKeyboardInteractor;
@@ -43,6 +44,7 @@ import com.android.systemui.classifier.FalsingCollector;
 import com.android.systemui.flags.FeatureFlags;
 import com.android.systemui.res.R;
 import com.android.systemui.user.domain.interactor.SelectedUserInteractor;
+import com.android.systemui.util.wrapper.LockPatternCheckerWrapper;
 
 public abstract class KeyguardPinBasedInputViewController<T extends KeyguardPinBasedInputView>
         extends KeyguardAbsKeyInputViewController<T> implements InputManager.InputDeviceListener {
@@ -87,11 +89,12 @@ public abstract class KeyguardPinBasedInputViewController<T extends KeyguardPinB
             KeyguardKeyboardInteractor keyguardKeyboardInteractor,
             BouncerHapticPlayer bouncerHapticPlayer,
             UserActivityNotifier userActivityNotifier,
-            InputManager inputManager) {
+            InputManager inputManager,
+            LockPatternCheckerWrapper lockPatternCheckerWrapper) {
         super(view, keyguardUpdateMonitor, securityMode, lockPatternUtils, keyguardSecurityCallback,
                 messageAreaControllerFactory, latencyTracker, falsingCollector,
                 emergencyButtonController, featureFlags, selectedUserInteractor,
-                bouncerHapticPlayer, userActivityNotifier);
+                bouncerHapticPlayer, userActivityNotifier, lockPatternCheckerWrapper);
         mFalsingCollector = falsingCollector;
         mKeyguardKeyboardInteractor = keyguardKeyboardInteractor;
         mPasswordEntry = mView.findViewById(mView.getPasswordTextViewId());
