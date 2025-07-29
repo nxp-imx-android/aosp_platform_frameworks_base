@@ -1660,6 +1660,9 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub
     }
 
     void playSoundEffect(int effectType) {
+        if (mSoundEffectListener == null) {
+            return;
+        }
         try {
             mSoundEffectListener.onPlaySoundEffect(effectType);
         } catch (RemoteException exception) {
