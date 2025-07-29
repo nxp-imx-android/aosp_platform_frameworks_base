@@ -398,6 +398,11 @@ public interface WindowManager extends ViewManager {
      * @hide
      */
     int TRANSIT_CLOSE_PREPARE_BACK_NAVIGATION = 14;
+    /**
+     * Lock task mode is starting.
+     * @hide
+     */
+    int TRANSIT_START_LOCK_TASK_MODE = 15;
 
     /**
      * The first slot for custom transition types. Callers (like Shell) can make use of custom
@@ -429,6 +434,7 @@ public interface WindowManager extends ViewManager {
             TRANSIT_SLEEP,
             TRANSIT_PREPARE_BACK_NAVIGATION,
             TRANSIT_CLOSE_PREPARE_BACK_NAVIGATION,
+            TRANSIT_START_LOCK_TASK_MODE,
             TRANSIT_FIRST_CUSTOM
     })
     @Retention(RetentionPolicy.SOURCE)

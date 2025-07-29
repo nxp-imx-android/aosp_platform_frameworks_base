@@ -74,6 +74,7 @@ import static android.view.Display.DEFAULT_DISPLAY;
 import static android.view.Display.INVALID_DISPLAY;
 import static android.view.WindowManager.TRANSIT_CHANGE;
 import static android.view.WindowManager.TRANSIT_PIP;
+import static android.view.WindowManager.TRANSIT_START_LOCK_TASK_MODE;
 import static android.view.WindowManager.TRANSIT_TO_FRONT;
 import static android.view.WindowManagerPolicyConstants.KEYGUARD_GOING_AWAY_FLAG_TO_LAUNCHER_CLEAR_SNAPSHOT;
 import static android.window.DesktopExperienceFlags.ENABLE_DESKTOP_WINDOWING_PIP;
@@ -252,6 +253,7 @@ import android.view.RemoteAnimationDefinition;
 import android.view.WindowManager;
 import android.window.BackAnimationAdapter;
 import android.window.BackNavigationInfo;
+import android.window.DesktopExperienceFlags;
 import android.window.ITaskSnapshotManager;
 import android.window.IWindowOrganizerController;
 import android.window.SplashScreenView.SplashScreenViewParcelable;
@@ -2681,10 +2683,30 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
                 if (task == null) {
                     return;
                 }
-
-                // When starting lock task mode the root task must be in front and focused
-                task.getRootTask().moveToFront("startSystemLockTaskMode");
-                startLockTaskMode(task, true /* isSystemCaller */);
+                if (DesktopExperienceFlags.ENABLE_DESKTOP_WINDOWING_ENTERPRISE_BUGFIX.isTrue()
+                        && getTransitionController().isShellTransitionsEnabled()) {
+                    final Transition transition = new Transition(TRANSIT_START_LOCK_TASK_MODE,
+                            0 /* flags */,
+                            getTransitionController(), mWindowManager.mSyncEngine);
+                    getTransitionController().startCollectOrQueue(transition,
+                            (deferred) -> {
+                                final ActionChain chain = mChainTracker.start(
+                                        "startSystemLockTaskMOde",
+                                        transition);
+                                getTransitionController().requestStartTransition(transition, task,
+                                        null /* remoteTransition */, null /* displayChange */);
+                                chain.collect(task);
+                                // When starting lock task mode the root task must be in front
+                                // and focused
+                                task.getRootTask().moveToFront("startSystemLockTaskMode");
+                                startLockTaskMode(task, true /* isSystemCaller */);
+                                transition.setReady(task, true);
+                                mChainTracker.end();
+                            });
+                } else {
+                    task.getRootTask().moveToFront("startSystemLockTaskMode");
+                    startLockTaskMode(task, true /* isSystemCaller */);
+                }
             }
         } finally {
             Binder.restoreCallingIdentity(ident);
