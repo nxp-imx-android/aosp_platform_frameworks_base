@@ -93,7 +93,7 @@ fun ActionList(
     padding: PaddingValues = PaddingValues(0.dp),
     horizontalAlignment: Alignment.Horizontal = Alignment.CenterHorizontally,
     portrait: Boolean = true,
-    pillCenter: Offset = Offset.Zero,
+    pillOffset: Float = 0f,
     rotation: Int = 0,
 ) {
     val density = LocalDensity.current
@@ -343,15 +343,22 @@ fun ActionList(
                             chipWidthPx = it.width
                         }
                         .graphicsLayer {
+                            val chipsTotalHeightPx =
+                                childHeights.sum().toFloat() +
+                                    columnSpacingPx * (childHeights.size - 1)
                             if (portrait) {
                                 translationY = (1f - translation) * appxColumnY
                                 translationX = 0f
                             } else {
                                 if (rotation == ROTATION_90) {
-                                    translationY = (1f - translation) * (appxColumnY - pillCenter.y)
+                                    translationY =
+                                        (1f - translation) *
+                                            (pillOffset - chipsTotalHeightPx + appxColumnY)
                                     translationX = (1f - translation) * chipWidthPx.toFloat()
                                 } else if (rotation == ROTATION_270) {
-                                    translationY = (1f - translation) * (appxColumnY - pillCenter.y)
+                                    translationY =
+                                        (1f - translation) *
+                                            (pillOffset - chipsTotalHeightPx + appxColumnY)
                                     translationX = (translation - 1f) * chipWidthPx.toFloat()
                                 }
                             }
