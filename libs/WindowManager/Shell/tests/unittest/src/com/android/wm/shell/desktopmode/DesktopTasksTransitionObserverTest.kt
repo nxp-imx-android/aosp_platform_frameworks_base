@@ -18,6 +18,7 @@ package com.android.wm.shell.desktopmode
 
 import android.app.ActivityManager.RunningTaskInfo
 import android.app.WindowConfiguration.WINDOWING_MODE_FREEFORM
+import android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
@@ -261,6 +262,60 @@ class DesktopTasksTransitionObserverTest : ShellTestCase() {
             .addPendingMixedTransition(
                 DesktopMixedTransitionHandler.PendingMixedTransition.Close(mockTransition)
             )
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_CLOSE_TASK_ANIMATION_IN_DTC_BUGFIX)
+    fun onTransitionReady_closingTaskAndExitDesktop_notAddPendingMixedTransition() {
+        val mockTransition = Mockito.mock(IBinder::class.java)
+        val task = createTaskInfo(1, WINDOWING_MODE_FREEFORM)
+        whenever(taskRepository.isAnyDeskActive(any())).thenReturn(false)
+        whenever(mixedHandler.hasTransition(mockTransition)).thenReturn(false)
+
+        transitionObserver.onTransitionReady(
+            transition = mockTransition,
+            info = createCloseTransition(listOf(task)),
+            startTransaction = mock(),
+            finishTransaction = mock(),
+        )
+
+        verify(mixedHandler, never()).addPendingMixedTransition(any())
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_CLOSE_TASK_ANIMATION_IN_DTC_BUGFIX)
+    fun onTransitionReady_closingTaskNotFreeform_notAddPendingMixedTransition() {
+        val mockTransition = Mockito.mock(IBinder::class.java)
+        val task = createTaskInfo(1, WINDOWING_MODE_FULLSCREEN)
+        whenever(taskRepository.isAnyDeskActive(any())).thenReturn(true)
+        whenever(mixedHandler.hasTransition(mockTransition)).thenReturn(false)
+
+        transitionObserver.onTransitionReady(
+            transition = mockTransition,
+            info = createCloseTransition(listOf(task)),
+            startTransaction = mock(),
+            finishTransaction = mock(),
+        )
+
+        verify(mixedHandler, never()).addPendingMixedTransition(any())
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_CLOSE_TASK_ANIMATION_IN_DTC_BUGFIX)
+    fun onTransitionReady_notClosingTask_notAddPendingMixedTransition() {
+        val mockTransition = Mockito.mock(IBinder::class.java)
+        val task = createTaskInfo(1, WINDOWING_MODE_FREEFORM)
+        whenever(taskRepository.isAnyDeskActive(any())).thenReturn(true)
+        whenever(mixedHandler.hasTransition(mockTransition)).thenReturn(false)
+
+        transitionObserver.onTransitionReady(
+            transition = mockTransition,
+            info = createOpenChangeTransition(task),
+            startTransaction = mock(),
+            finishTransaction = mock(),
+        )
+
+        verify(mixedHandler, never()).addPendingMixedTransition(any())
     }
 
     @Test
