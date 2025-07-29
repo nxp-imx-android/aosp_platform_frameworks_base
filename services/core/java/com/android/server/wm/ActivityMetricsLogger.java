@@ -815,8 +815,9 @@ class ActivityMetricsLogger {
         // launch time when resuming from back stack. E.g. launch 2 independent tasks in a short
         // time, the transition info of the first task should not keep active until it becomes
         // visible such as after the top task is finished.
-        for (int i = mTransitionInfoList.size() - 2; i >= 0; i--) {
-            final TransitionInfo prevInfo = mTransitionInfoList.get(i);
+        final int index = mTransitionInfoList.size() - 2;
+        if (index >= 0) {
+            final TransitionInfo prevInfo = mTransitionInfoList.get(index);
             if (prevInfo.mIsDrawn || !prevInfo.mLastLaunchedActivity.isVisibleRequested()) {
                 scheduleCheckActivityToBeDrawn(prevInfo.mLastLaunchedActivity, 0 /* delay */);
             }
