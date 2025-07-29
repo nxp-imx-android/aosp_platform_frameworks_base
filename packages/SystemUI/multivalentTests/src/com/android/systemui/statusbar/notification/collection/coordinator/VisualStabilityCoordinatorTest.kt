@@ -49,7 +49,6 @@ import com.android.systemui.statusbar.notification.collection.GroupEntry
 import com.android.systemui.statusbar.notification.collection.GroupEntryBuilder
 import com.android.systemui.statusbar.notification.collection.NotificationEntry
 import com.android.systemui.statusbar.notification.collection.NotificationEntryBuilder
-import com.android.systemui.statusbar.notification.collection.UseElapsedRealtimeForCreationTime
 import com.android.systemui.statusbar.notification.collection.listbuilder.pluggable.NotifStabilityManager
 import com.android.systemui.statusbar.notification.collection.listbuilder.pluggable.Pluggable.PluggableListener
 import com.android.systemui.statusbar.notification.collection.notifPipeline
@@ -321,10 +320,7 @@ class VisualStabilityCoordinatorTest(flags: FlagsParameterization) : SysuiTestCa
             setPulsing(true)
 
             // WHEN we temporarily allow section changes for this notification entry
-            underTest.temporarilyAllowSectionChanges(
-                entry,
-                UseElapsedRealtimeForCreationTime.getCurrentTime(fakeSystemClock),
-            )
+            underTest.temporarilyAllowSectionChanges(entry, fakeSystemClock.elapsedRealtime())
 
             // THEN group changes aren't allowed
             assertThat(notifStabilityManager.isParentChangeAllowed(entry)).isFalse()
@@ -350,10 +346,7 @@ class VisualStabilityCoordinatorTest(flags: FlagsParameterization) : SysuiTestCa
             setPulsing(false)
 
             // WHEN we temporarily allow section changes for this notification entry
-            underTest.temporarilyAllowSectionChanges(
-                entry,
-                UseElapsedRealtimeForCreationTime.getCurrentTime(fakeSystemClock),
-            )
+            underTest.temporarilyAllowSectionChanges(entry, fakeSystemClock.elapsedRealtime())
 
             // THEN the notification list is invalidated
             verifyStabilityManagerWasInvalidated(times(1))
@@ -369,10 +362,7 @@ class VisualStabilityCoordinatorTest(flags: FlagsParameterization) : SysuiTestCa
             setPulsing(false)
 
             // WHEN we temporarily allow section changes for this notification entry
-            underTest.temporarilyAllowSectionChanges(
-                entry,
-                UseElapsedRealtimeForCreationTime.getCurrentTime(fakeSystemClock),
-            )
+            underTest.temporarilyAllowSectionChanges(entry, fakeSystemClock.elapsedRealtime())
 
             // THEN invalidate is not called because this entry was never suppressed from reordering
             verifyStabilityManagerWasInvalidated(never())
@@ -389,10 +379,7 @@ class VisualStabilityCoordinatorTest(flags: FlagsParameterization) : SysuiTestCa
             assertThat(notifStabilityManager.isSectionChangeAllowed(entry)).isTrue()
 
             // WHEN we temporarily allow section changes for this notification entry
-            underTest.temporarilyAllowSectionChanges(
-                entry,
-                UseElapsedRealtimeForCreationTime.getCurrentTime(fakeSystemClock),
-            )
+            underTest.temporarilyAllowSectionChanges(entry, fakeSystemClock.elapsedRealtime())
 
             // THEN invalidate is not called because this entry was never suppressed from
             // reordering;
@@ -425,10 +412,7 @@ class VisualStabilityCoordinatorTest(flags: FlagsParameterization) : SysuiTestCa
             setPulsing(true)
 
             // WHEN we temporarily allow section changes for this notification entry
-            underTest.temporarilyAllowSectionChanges(
-                entry,
-                UseElapsedRealtimeForCreationTime.getCurrentTime(fakeSystemClock),
-            )
+            underTest.temporarilyAllowSectionChanges(entry, fakeSystemClock.elapsedRealtime())
             // can now reorder, so invalidates
             verifyStabilityManagerWasInvalidated(times(1))
 
