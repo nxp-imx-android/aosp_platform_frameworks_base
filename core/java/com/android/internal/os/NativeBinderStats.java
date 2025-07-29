@@ -20,6 +20,7 @@ import android.content.Context;
 import android.database.ContentObserver;
 import android.net.Uri;
 import android.provider.Settings;
+import android.sysprop.NativeBinderStatsProperties;
 import android.util.KeyValueListParser;
 import android.util.Slog;
 
@@ -74,16 +75,69 @@ public class NativeBinderStats {
 
     private final Context mContext;
 
+    private final PropertiesWrapper mPropertiesWrapper;
+
     private final SettingsObserver mSettingsObserver;
 
     public NativeBinderStats(Context context) {
+        this(context, new PropertiesWrapper());
+    }
+
+    @VisibleForTesting
+    public NativeBinderStats(Context context, PropertiesWrapper propertiesWrapper) {
         mContext = context;
+        mPropertiesWrapper = propertiesWrapper;
         mSettingsObserver = new SettingsObserver(context);
     }
 
     public void systemReady() {
         // Start observing settings.
         mSettingsObserver.register();
+    }
+
+    /**
+     * A wrapper around System properties for testability.
+     */
+    @VisibleForTesting
+    public static class PropertiesWrapper {
+        /** Sets the enabled property. */
+        public void setEnabled(boolean value) {
+            NativeBinderStatsProperties.enabled(value);
+        }
+
+        /** Sets the process_sharding property. */
+        public void setProcessSharding(int value) {
+            NativeBinderStatsProperties.process_sharding(value);
+        }
+
+        /**
+         * Sets the spam_sharding property.
+         */
+        public void setSpamSharding(int value) {
+            NativeBinderStatsProperties.spam_sharding(value);
+        }
+
+        /**
+         * Sets the call_sharding property.
+         */
+        public void setCallSharding(int value) {
+            NativeBinderStatsProperties.call_sharding(value);
+        }
+
+        /** Like {@link #setProcessSharding} but for system_server. */
+        public void setSystemProcessSharding(int value) {
+            NativeBinderStatsProperties.system_process_sharding(value);
+        }
+
+        /** Like {@link #setSpamSharding} but for system_server. */
+        public void setSystemSpamSharding(int value) {
+            NativeBinderStatsProperties.system_spam_sharding(value);
+        }
+
+        /** Like {@link #setCallSharding} but for system_server. */
+        public void setSystemCallSharding(int value) {
+            NativeBinderStatsProperties.system_call_sharding(value);
+        }
     }
 
     @VisibleForTesting
@@ -138,7 +192,15 @@ public class NativeBinderStats {
                     mParser.getInt(KEY_SYSTEM_SPAM_SHARDING, DEFAULT_SYSTEM_SPAM_SHARDING);
             mSystemCallSharding =
                     mParser.getInt(KEY_SYSTEM_CALL_SHARDING, DEFAULT_SYSTEM_CALL_SHARDING);
-            // TODO(b/407694522): If settings change, propagate to other processes.
+
+            mPropertiesWrapper.setEnabled(mEnabled);
+            mPropertiesWrapper.setProcessSharding(mProcessSharding);
+            mPropertiesWrapper.setSpamSharding(mSpamSharding);
+            mPropertiesWrapper.setCallSharding(mCallSharding);
+            mPropertiesWrapper.setSystemProcessSharding(mSystemProcessSharding);
+            mPropertiesWrapper.setSystemSpamSharding(mSystemSpamSharding);
+            mPropertiesWrapper.setSystemCallSharding(mSystemCallSharding);
+
             Slog.i(
                     TAG,
                     String.format(
