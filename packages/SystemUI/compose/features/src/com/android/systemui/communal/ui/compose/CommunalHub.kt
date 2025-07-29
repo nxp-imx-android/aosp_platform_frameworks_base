@@ -576,6 +576,7 @@ private fun DisclaimerBottomSheetContent(onButtonClicked: () -> Unit) {
             text = stringResource(R.string.communal_widgets_disclaimer_title),
             style = MaterialTheme.typography.headlineMedium,
             color = colors.onSurface,
+            textAlign = TextAlign.Center,
         )
         Spacer(modifier = Modifier.height(16.dp))
         Text(
