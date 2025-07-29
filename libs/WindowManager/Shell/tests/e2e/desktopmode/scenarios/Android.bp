@@ -112,6 +112,7 @@ test_module_config {
         "com.android.wm.shell.functional.UnmaximizeAppWindowTest",
         "com.android.wm.shell.functional.UnminimizeAppFromAllAppsTest",
         "com.android.wm.shell.functional.UnminimizeAppFromTaskbarTest",
+        "com.android.wm.shell.functional.externaldisplay.MaximizeAppWindowWithDragToTopDragZoneInDesktopFirstTest",
         "com.android.wm.shell.functional.externaldisplay.OpenAppWithExternalDisplayConnectedTest",
         "com.android.wm.shell.functional.fundamentals.CloseAllAppsViaAppHeaderExitTest",
         "com.android.wm.shell.functional.fundamentals.CloseAllAppsWithBackNavigationTest",
@@ -143,7 +144,6 @@ test_module_config {
         "com.android.wm.shell.functional.keyboardshortcuts.OpenBrowserWithKeyboardShortcutTest",
         "com.android.wm.shell.functional.maximize.ExitDesktopWithDragToTopDragZoneTest",
         "com.android.wm.shell.functional.maximize.MaximizeAppWindowTest",
-        "com.android.wm.shell.functional.maximize.MaximizeAppWindowWithDragToTopDragZoneInDesktopFirstTest",
         "com.android.wm.shell.functional.mediaprojection.StartAppMediaProjectionResizeAndDragTest",
         "com.android.wm.shell.functional.mediaprojection.StartAppMediaProjectionWithMaxDesktopWindowsTest",
         "com.android.wm.shell.functional.mediaprojection.StartScreenMediaProjectionWithMaxDesktopWindowsTest",
@@ -301,6 +301,13 @@ test_module_config {
     base: "FunctionalTestsDesktopMode",
     test_suites: ["device-tests"],
     include_filters: ["com.android.wm.shell.functional.UnminimizeAppFromTaskbarTest"],
+}
+
+test_module_config {
+    name: "FunctionalTestsDesktopMode-externaldisplay-MaximizeAppWindowWithDragToTopDragZoneInDesktopFirstTest",
+    base: "FunctionalTestsDesktopMode",
+    test_suites: ["device-tests"],
+    include_filters: ["com.android.wm.shell.functional.externaldisplay.MaximizeAppWindowWithDragToTopDragZoneInDesktopFirstTest"],
 }
 
 test_module_config {
@@ -518,13 +525,6 @@ test_module_config {
     base: "FunctionalTestsDesktopMode",
     test_suites: ["device-tests"],
     include_filters: ["com.android.wm.shell.functional.maximize.MaximizeAppWindowTest"],
-}
-
-test_module_config {
-    name: "FunctionalTestsDesktopMode-maximize-MaximizeAppWindowWithDragToTopDragZoneInDesktopFirstTest",
-    base: "FunctionalTestsDesktopMode",
-    test_suites: ["device-tests"],
-    include_filters: ["com.android.wm.shell.functional.maximize.MaximizeAppWindowWithDragToTopDragZoneInDesktopFirstTest"],
 }
 
 test_module_config {

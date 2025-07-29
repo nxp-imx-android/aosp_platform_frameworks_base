@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.wm.shell.flicker.maximize
+package com.android.wm.shell.flicker.externaldisplay
 
 import androidx.test.filters.RequiresDevice
 import android.tools.NavBar
@@ -35,8 +35,8 @@ import org.junit.runner.RunWith
 import org.junit.runners.Parameterized
 
 /**
- * Maximize app window by dragging it to the top drag zone in desktop-first display.
- *
+ * Maximize app window by dragging it to the top drag zone in desktop-first display when an
+ * external display is connected.
  * Test with 3 button navigation because the expected bottom inset of the stable bounds is higher
  * than actual.
  *

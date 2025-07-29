@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.wm.shell.functional.maximize
+package com.android.wm.shell.functional.externaldisplay
 
 import android.platform.test.annotations.Presubmit
 import android.platform.test.rule.ScreenRecordRule

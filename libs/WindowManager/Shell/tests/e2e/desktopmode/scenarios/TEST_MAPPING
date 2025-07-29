@@ -79,6 +79,9 @@
       "name": "FunctionalTestsDesktopMode-UnminimizeAppFromTaskbarTest"
     },
     {
+      "name": "FunctionalTestsDesktopMode-externaldisplay-MaximizeAppWindowWithDragToTopDragZoneInDesktopFirstTest"
+    },
+    {
       "name": "FunctionalTestsDesktopMode-externaldisplay-OpenAppWithExternalDisplayConnectedTest"
     },
     {
@@ -170,9 +173,6 @@
     },
     {
       "name": "FunctionalTestsDesktopMode-maximize-MaximizeAppWindowTest"
-    },
-    {
-      "name": "FunctionalTestsDesktopMode-maximize-MaximizeAppWindowWithDragToTopDragZoneInDesktopFirstTest"
     },
     {
       "name": "FunctionalTestsDesktopMode-mediaprojection-StartAppMediaProjectionResizeAndDragTest"
