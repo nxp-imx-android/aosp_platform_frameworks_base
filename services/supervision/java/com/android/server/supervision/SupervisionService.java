@@ -39,6 +39,7 @@ import android.app.role.OnRoleHoldersChangedListener;
 import android.app.role.RoleManager;
 import android.app.supervision.ISupervisionListener;
 import android.app.supervision.ISupervisionManager;
+import android.app.supervision.SupervisionManager;
 import android.app.supervision.SupervisionManagerInternal;
 import android.app.supervision.SupervisionRecoveryInfo;
 import android.app.supervision.flags.Flags;
@@ -60,6 +61,7 @@ import android.os.RemoteException;
 import android.os.ResultReceiver;
 import android.os.ShellCallback;
 import android.os.UserHandle;
+import android.os.UserManager;
 import android.provider.Settings;
 import android.util.ArrayMap;
 import android.util.SparseArray;
@@ -67,6 +69,7 @@ import android.util.SparseArray;
 import com.android.internal.R;
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
+import com.android.internal.os.BackgroundThread;
 import com.android.internal.util.DumpUtils;
 import com.android.internal.util.FunctionalUtils.RemoteExceptionIgnoringConsumer;
 import com.android.internal.util.IndentingPrintWriter;
@@ -101,6 +104,10 @@ public class SupervisionService extends ISupervisionManager.Stub {
     static final String ACTION_CONFIRM_SUPERVISION_CREDENTIALS =
             "android.app.supervision.action.CONFIRM_SUPERVISION_CREDENTIALS";
 
+    @VisibleForTesting
+    static final List<String> SYSTEM_ENTITIES =
+            List.of(SupervisionManager.SUPERVISION_SYSTEM_ENTITY);
+
     // TODO(b/362756788): Does this need to be a LockGuard lock?
     private final Object mLockDoNoUseDirectly = new Object();
 
@@ -108,6 +115,7 @@ public class SupervisionService extends ISupervisionManager.Stub {
     private final SparseArray<SupervisionUserData> mUserData = new SparseArray<>();
 
     private final Injector mInjector;
+    private final RoleObserver mRoleObserver;
     final SupervisionManagerInternal mInternal = new SupervisionManagerInternalImpl();
 
     @GuardedBy("getLockObject()")
@@ -130,6 +138,8 @@ public class SupervisionService extends ISupervisionManager.Stub {
         mInjector = injector;
         mServiceThread = injector.getServiceThread();
         mInjector.getUserManagerInternal().addUserLifecycleListener(new UserLifecycleListener());
+        mRoleObserver = new RoleObserver();
+        mRoleObserver.register();
     }
 
     /**
@@ -211,12 +221,17 @@ public class SupervisionService extends ISupervisionManager.Stub {
     /** Set the Supervision Recovery Info. */
     @Override
     public void setSupervisionRecoveryInfo(SupervisionRecoveryInfo recoveryInfo) {
-        if (Flags.persistentSupervisionSettings()) {
-            mSupervisionSettings.saveRecoveryInfo(recoveryInfo);
-        } else {
+        if (!Flags.persistentSupervisionSettings()) {
             SupervisionRecoveryInfoStorage.getInstance(mInjector.context)
                     .saveRecoveryInfo(recoveryInfo);
+            return;
         }
+
+        synchronized (getLockObject()) {
+            mSupervisionSettings.saveRecoveryInfo(recoveryInfo);
+        }
+
+        maybeApplyUserRestrictions();
     }
 
     /** Returns the Supervision Recovery Info or null if recovery is not set. */
@@ -404,6 +419,8 @@ public class SupervisionService extends ISupervisionManager.Stub {
                                     listener -> listener.onSetSupervisionEnabled(userId, enabled));
                             if (!enabled) {
                                 clearAllDevicePoliciesAndSuspendedPackages(userId);
+                            } else {
+                                maybeApplyUserRestrictionsFor(UserHandle.of(userId));
                             }
                         });
     }
@@ -483,7 +500,15 @@ public class SupervisionService extends ISupervisionManager.Stub {
 
         DevicePolicyManagerInternal dpmi = mInjector.getDpmInternal();
         if (dpmi != null) {
+            // Ideally all policy removals would be done atomically in a single call, but there
+            // isn't a good way to handle that right now so they will be done separately.
+            // It is currently safe to separate them because no restrictions are set by the
+            // system entity when supervision role holders are present anyway.
             dpmi.removePoliciesForAdmins(userId, supervisionPackages);
+            // We're only setting local policies for now, but if we ever were to add a global policy
+            // we should also clear that here, if there are no longer any users with supervision
+            // enabled.
+            dpmi.removeLocalPoliciesForSystemEntities(userId, SYSTEM_ENTITIES);
         }
     }
 
@@ -494,6 +519,44 @@ public class SupervisionService extends ISupervisionManager.Stub {
         }
 
         mInjector.removeRoleHoldersAsUser(roleName, supervisionPackage, UserHandle.of(userId));
+    }
+
+    private void maybeApplyUserRestrictions() {
+        List<UserInfo> users =
+                mInjector.getUserManagerInternal().getUsers(/* excludeDying= */ false);
+
+        for (var user : users) {
+            maybeApplyUserRestrictionsFor(user.getUserHandle());
+        }
+    }
+
+    private void maybeApplyUserRestrictionsFor(@NonNull UserHandle user) {
+        DevicePolicyManagerInternal dpmi = mInjector.getDpmInternal();
+        if (dpmi != null) {
+            boolean enabled = shouldApplyFactoryResetRestriction(user);
+            dpmi.setUserRestrictionForUser(
+                    SupervisionManager.SUPERVISION_SYSTEM_ENTITY,
+                    UserManager.DISALLOW_FACTORY_RESET,
+                    enabled,
+                    user.getIdentifier());
+        }
+    }
+
+    private boolean shouldApplyFactoryResetRestriction(@NonNull UserHandle user) {
+        List<String> supervisionRoleHolders =
+                mInjector.getRoleHoldersAsUser(RoleManager.ROLE_SUPERVISION, user);
+        @UserIdInt int userId = user.getIdentifier();
+
+        synchronized (getLockObject()) {
+            // If there are no Supervision role holders to otherwise enforce restrictions, set a
+            // factory reset restriction by default when supervision is enabled and recovery info is
+            // set.
+            SupervisionRecoveryInfo recoveryInfo = mSupervisionSettings.getRecoveryInfo();
+            return supervisionRoleHolders.isEmpty()
+                    && getUserDataLocked(userId).supervisionEnabled
+                    && recoveryInfo != null
+                    && recoveryInfo.getState() == SupervisionRecoveryInfo.STATE_VERIFIED;
+        }
     }
 
     /**
@@ -688,7 +751,7 @@ public class SupervisionService extends ISupervisionManager.Stub {
                         if (!success) {
                             Slogf.e(
                                     SupervisionLog.TAG,
-                                    "Failed to remove role %s fro %s",
+                                    "Failed to remove role %s for %s",
                                     packageName,
                                     roleName);
                         }
@@ -797,6 +860,22 @@ public class SupervisionService extends ISupervisionManager.Stub {
                 if (Flags.persistentSupervisionSettings()) {
                     mSupervisionSettings.saveUserData();
                 }
+            }
+        }
+    }
+
+    private final class RoleObserver implements OnRoleHoldersChangedListener {
+        RoleObserver() {}
+
+        void register() {
+            mInjector.addOnRoleHoldersChangedListenerAsUser(
+                    BackgroundThread.getExecutor(), this, UserHandle.ALL);
+        }
+
+        @Override
+        public void onRoleHoldersChanged(@NonNull String roleName, @NonNull UserHandle user) {
+            if (RoleManager.ROLE_SUPERVISION.equals(roleName)) {
+                maybeApplyUserRestrictionsFor(user);
             }
         }
     }
