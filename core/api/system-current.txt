@@ -14942,6 +14942,15 @@ package android.telecom {
     method @Deprecated public void onPhoneDestroyed(android.telecom.Phone);
   }
 
+  @FlaggedApi("com.android.server.telecom.flags.local_voicemail") public abstract class LocalVoicemailService extends android.app.Service {
+    ctor public LocalVoicemailService();
+    method public final void disconnectCall();
+    method @NonNull public java.util.concurrent.Executor getExecutor();
+    method @Nullable public android.os.IBinder onBind(@Nullable android.content.Intent);
+    method @RequiresPermission(allOf={android.Manifest.permission.CALL_AUDIO_INTERCEPTION, android.Manifest.permission.MODIFY_AUDIO_ROUTING, android.Manifest.permission.RECORD_AUDIO}) public abstract void onVoicemailRequested(@NonNull android.telecom.Call.Details);
+    field public static final String SERVICE_INTERFACE = "android.telecom.LocalVoicemailService";
+  }
+
   public class ParcelableCallAnalytics implements android.os.Parcelable {
     ctor public ParcelableCallAnalytics(long, long, int, boolean, boolean, int, int, boolean, String, boolean, java.util.List<android.telecom.ParcelableCallAnalytics.AnalyticsEvent>, java.util.List<android.telecom.ParcelableCallAnalytics.EventTiming>);
     ctor public ParcelableCallAnalytics(android.os.Parcel);
