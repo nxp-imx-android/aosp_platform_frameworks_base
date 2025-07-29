@@ -61,7 +61,6 @@ import androidx.annotation.UiThread
 import com.android.app.animation.Interpolators
 import com.android.internal.annotations.VisibleForTesting
 import com.android.internal.policy.ScreenDecorationsUtils
-import com.android.systemui.Flags.animationLibraryDelayLeashCleanup
 import com.android.systemui.Flags.animationLibraryShellMigration
 import com.android.systemui.Flags.moveTransitionAnimationLayer
 import com.android.systemui.animation.TransitionAnimator.Companion.toTransitionState
@@ -2366,18 +2365,15 @@ constructor(
                                     )
                                 }
                             }
-                            if (animationLibraryDelayLeashCleanup()) {
-                                // This cleanup is not time-sensitive as it is just to avoid leaking
-                                // leashes. By delaying it, we make (reasonably) sure that the
-                                // finish callback above is executed before the reparent
-                                // transaction, which avoids flaky flickers. Unfortunately both are
-                                // async, so we need to resort to this hacky solution. Fortunately
-                                // none of this will be necessary as soon as b/397180418 is done.
-                                Handler(Looper.getMainLooper())
-                                    .postDelayed(cleanUpTransitionLeash, 500L)
-                            } else {
-                                cleanUpTransitionLeash()
-                            }
+
+                            // This cleanup is not time-sensitive as it is just to avoid leaking
+                            // leashes. By delaying it, we make (reasonably) sure that the finish
+                            // callback above is executed before the reparent transaction, which
+                            // avoids flaky flickers. Unfortunately both are async, so we need to
+                            // resort to this hacky solution. Fortunately none of this will be
+                            // necessary as soon as b/397180418 is done.
+                            Handler(Looper.getMainLooper())
+                                .postDelayed(cleanUpTransitionLeash, 500L)
                         }
 
                         if (DEBUG_TRANSITION_ANIMATION) {
