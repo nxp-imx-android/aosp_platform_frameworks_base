@@ -7652,4 +7652,7 @@
          power button. -->
     <integer name="config_turnOffTvToastSuppressionDelayMs">0</integer>
 
+    <!-- The delay in milliseconds to show the toast after the user presses the power button. -->
+    <integer name="config_turnOffTvToastPostDelayMs">0</integer>
+
 </resources>
