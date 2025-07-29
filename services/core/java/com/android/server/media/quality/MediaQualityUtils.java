@@ -50,6 +50,7 @@ import android.os.Parcel;
 import android.os.PersistableBundle;
 import android.util.Log;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -1457,6 +1458,8 @@ public final class MediaQualityUtils {
                     json.put(key, bundle.getBoolean(key));
                 } else if (value instanceof Double) {
                     json.put(key, Double.toString(bundle.getDouble(key)));
+                } else if (value instanceof int[]) {
+                    json.put(key, new JSONArray(bundle.getIntArray(key)));
                 }
             } catch (JSONException e) {
                 Log.e(TAG, "Unable to serialize ", e);
@@ -1495,6 +1498,8 @@ public final class MediaQualityUtils {
                         bundle.putDouble(key, (Double) value);
                     } else if (value instanceof Long) {
                         bundle.putLong(key, (Long) value);
+                    } else if (value instanceof int[]) {
+                        bundle.putIntArray(key, (int[]) value);
                     }
                 }
             } catch (JSONException e) {
