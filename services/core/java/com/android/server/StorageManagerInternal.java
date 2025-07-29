@@ -154,6 +154,28 @@ public abstract class StorageManagerInternal {
     public abstract boolean isCeStoragePrepared(@UserIdInt int userId);
 
     /**
+     * Protects a user's CE storage using the given secret.
+     *
+     * <p>This is intended to be used only by LockSettingsService.
+     *
+     * @param userId ID of the user whose CE storage to protect
+     * @param secret the secret with which the CE storage will be protected
+     * @throws RuntimeException on failure
+     */
+    public abstract void setCeStorageProtection(@UserIdInt int userId, byte[] secret);
+
+    /**
+     * Unlocks a user's CE storage using the given secret.
+     *
+     * <p>This is intended to be used only by LockSettingsService.
+     *
+     * @param userId ID of the user whose CE storage to unlock
+     * @param secret the secret with which the CE storage will be unlocked
+     * @throws RuntimeException on failure
+     */
+    public abstract void unlockCeStorage(@UserIdInt int userId, byte[] secret);
+
+    /**
      * A listener for changes to the cloud provider.
      */
     public interface CloudProviderChangeListener {

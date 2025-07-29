@@ -43,7 +43,6 @@ import android.hardware.face.FaceManager;
 import android.hardware.fingerprint.FingerprintManager;
 import android.os.FileUtils;
 import android.os.IProgressListener;
-import android.os.RemoteException;
 import android.os.UserHandle;
 import android.os.UserManager;
 import android.os.storage.IStorageManager;
@@ -58,6 +57,7 @@ import com.android.internal.util.test.FakeSettingsProviderRule;
 import com.android.internal.widget.LockPatternUtils;
 import com.android.internal.widget.LockscreenCredential;
 import com.android.server.LocalServices;
+import com.android.server.StorageManagerInternal;
 import com.android.server.locksettings.recoverablekeystore.RecoverableKeyStoreManager;
 import com.android.server.pm.UserManagerInternal;
 import com.android.server.wm.WindowManagerInternal;
@@ -167,9 +167,11 @@ public abstract class BaseLockSettingsServiceTests {
         mInjector =
                 new LockSettingsServiceTestable.MockInjector(
                         mContext,
-                        mStorage, mStrongAuth,
+                        mStorage,
+                        mStrongAuth,
                         mActivityManager,
-                        setUpStorageManagerMock(),
+                        mock(IStorageManager.class),
+                        setUpStorageManagerInternalMock(),
                         mSpManager,
                         mGsiService,
                         mRecoverableKeyStoreManager,
@@ -306,8 +308,8 @@ public abstract class BaseLockSettingsServiceTests {
         return userInfo;
     }
 
-    private IStorageManager setUpStorageManagerMock() throws RemoteException {
-        final IStorageManager sm = mock(IStorageManager.class);
+    private StorageManagerInternal setUpStorageManagerInternalMock() {
+        final StorageManagerInternal sm = mock(StorageManagerInternal.class);
 
         doAnswer(invocation -> {
             Object[] args = invocation.getArguments();
