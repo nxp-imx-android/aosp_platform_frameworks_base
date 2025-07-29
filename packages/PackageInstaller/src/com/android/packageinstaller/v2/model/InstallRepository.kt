@@ -29,10 +29,12 @@ import android.content.pm.ApplicationInfo
 import android.content.pm.Flags
 import android.content.pm.PackageInfo
 import android.content.pm.PackageInstaller
+import android.content.pm.PackageInstaller.DEVELOPER_VERIFICATION_USER_RESPONSE_ABORT
+import android.content.pm.PackageInstaller.DEVELOPER_VERIFICATION_USER_RESPONSE_ERROR
+import android.content.pm.PackageInstaller.DEVELOPER_VERIFICATION_USER_RESPONSE_INSTALL_ANYWAY
+import android.content.pm.PackageInstaller.DeveloperVerificationUserConfirmationInfo
 import android.content.pm.PackageInstaller.SessionInfo
 import android.content.pm.PackageInstaller.SessionParams
-import android.content.pm.PackageInstaller.DEVELOPER_VERIFICATION_USER_RESPONSE_ERROR
-import android.content.pm.PackageInstaller.DeveloperVerificationUserConfirmationInfo
 import android.content.pm.PackageManager
 import android.content.pm.PackageManager.COMPONENT_ENABLED_STATE_DISABLED
 import android.net.Uri
@@ -844,14 +846,49 @@ class InstallRepository(private val context: Context) {
         confirmationSnippet = confirmationSnippet as InstallUserActionRequired
         val appSnippet = PackageUtil.getAppSnippet(
                 context, confirmationSnippet.appLabel, confirmationSnippet.appIcon)
+        val sessionInfo = packageInstaller.getSessionInfo(sessionId)
+        val stubPackageInfo = generateStubPackageInfo(sessionInfo?.getAppPackageName())
+        val isAppUpdating = isAppUpdating(stubPackageInfo)
 
         // Since InstallUserActionRequired returned by generateConfirmationSnippet is immutable,
         // create a new InstallUserActionRequired with the required data
         return InstallUserActionRequired(
+            isAppUpdating = isAppUpdating,
             actionReason = USER_ACTION_REASON_VERIFICATION_CONFIRMATION,
             appSnippet = appSnippet,
             verificationInfo = verificationInfo
         )
+    }
+
+    fun setNegativeVerificationUserResponse(): InstallStage {
+        if (PackageInstaller.ACTION_CONFIRM_DEVELOPER_VERIFICATION != intent.action) {
+            Log.e(LOG_TAG, "Cannot set verification response for this request: $intent")
+            return InstallAborted(ABORT_REASON_INTERNAL_ERROR)
+        }
+        if (localLogv) {
+            Log.d(LOG_TAG, "Setting negative verification user response")
+        }
+        packageInstaller.setDeveloperVerificationUserResponse(
+            sessionId, DEVELOPER_VERIFICATION_USER_RESPONSE_ABORT
+        )
+        return InstallAborted(
+            ABORT_REASON_DONE, activityResultCode = Activity.RESULT_OK
+        )
+    }
+
+    fun setPositiveVerificationUserResponse(): InstallStage {
+        if (PackageInstaller.ACTION_CONFIRM_DEVELOPER_VERIFICATION != intent.action) {
+            Log.e(LOG_TAG, "Cannot set verification response for this request: $intent")
+            return InstallAborted(ABORT_REASON_INTERNAL_ERROR)
+        }
+        if (localLogv) {
+            Log.d(LOG_TAG, "Setting positive verification user response")
+        }
+        packageInstaller.setDeveloperVerificationUserResponse(
+            sessionId, DEVELOPER_VERIFICATION_USER_RESPONSE_INSTALL_ANYWAY
+        )
+        return InstallAborted(
+            ABORT_REASON_DONE, activityResultCode = Activity.RESULT_OK)
     }
 
     /**
@@ -1105,18 +1142,6 @@ class InstallRepository(private val context: Context) {
         sessionStager!!.cancel()
         stagingJob.cancel()
         cleanupStagingSession()
-    }
-
-    fun setUserVerificationResponse(responseCode: Int) {
-        if (PackageInstaller.ACTION_CONFIRM_DEVELOPER_VERIFICATION != intent.action) {
-            Log.e(LOG_TAG, "Cannot set verification response for this request: $intent")
-            _installResult.value = InstallAborted(ABORT_REASON_INTERNAL_ERROR)
-            return
-        }
-        packageInstaller.setDeveloperVerificationUserResponse(sessionId, responseCode)
-        _installResult.value = InstallAborted(
-            ABORT_REASON_DONE, activityResultCode = Activity.RESULT_OK
-        )
     }
 
     val stagingProgress: LiveData<Int>

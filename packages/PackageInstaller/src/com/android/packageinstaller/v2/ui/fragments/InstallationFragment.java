@@ -17,8 +17,6 @@
 package com.android.packageinstaller.v2.ui.fragments;
 
 import static android.content.pm.PackageInstaller.DEVELOPER_VERIFICATION_POLICY_BLOCK_FAIL_CLOSED;
-import static android.content.pm.PackageInstaller.DEVELOPER_VERIFICATION_USER_RESPONSE_ABORT;
-import static android.content.pm.PackageInstaller.DEVELOPER_VERIFICATION_USER_RESPONSE_INSTALL_ANYWAY;
 import static android.content.pm.PackageInstaller.DeveloperVerificationUserConfirmationInfo.DEVELOPER_VERIFICATION_USER_ACTION_NEEDED_REASON_DEVELOPER_BLOCKED;
 import static android.content.pm.PackageInstaller.DeveloperVerificationUserConfirmationInfo.DEVELOPER_VERIFICATION_USER_ACTION_NEEDED_REASON_NETWORK_UNAVAILABLE;
 import static android.content.pm.PackageInstaller.DeveloperVerificationUserConfirmationInfo.DEVELOPER_VERIFICATION_USER_ACTION_NEEDED_REASON_UNKNOWN;
@@ -636,41 +634,34 @@ public class InstallationFragment extends DialogFragment {
         mAppIcon.setImageDrawable(installStage.getAppIcon());
         mAppLabelTextView.setText(installStage.getAppLabel());
 
-        TextView installWithoutVerifyingTextView = dialog.requireViewById(
-                R.id.install_without_verifying_text);
-
         PackageInstaller.DeveloperVerificationUserConfirmationInfo verificationInfo =
                 installStage.getVerificationInfo();
         assert verificationInfo != null;
 
         // Set title and main message
         int titleResId = getVerificationConfirmationTitleResourceId(installStage.getActionReason());
-        int msgResId = getVerificationConfirmationMessageResourceId(installStage.getActionReason());
+        int msgResId = getVerificationConfirmationMessageResourceId(
+                installStage.getActionReason(), installStage.isAppUpdating(),
+                verificationInfo.getVerificationPolicy());
         dialog.setTitle(titleResId);
         mCustomMessageTextView.setText(
                 Html.fromHtml(getString(msgResId), Html.FROM_HTML_MODE_LEGACY));
-        // Set positive button
-        Button positiveButton = UiUtil.getAlertDialogPositiveButton(dialog);
-        if (positiveButton != null) {
-            positiveButton.setVisibility(View.VISIBLE);
-            positiveButton.setText(R.string.ok);
-            positiveButton.setFilterTouchesWhenObscured(true);
-            UiUtil.applyOutlinedButtonStyle(requireContext(), positiveButton);
-            positiveButton.setOnClickListener(view -> {
-                mInstallActionListener.setVerificationUserResponse(
-                               DEVELOPER_VERIFICATION_USER_RESPONSE_ABORT);
-            });
-        }
-        // Set cancel action
-        mDialog.setCanceledOnTouchOutside(true);
-        mDialog.setOnCancelListener(view -> {
-            mInstallActionListener.setVerificationUserResponse(
-                    DEVELOPER_VERIFICATION_USER_RESPONSE_ABORT);
-        });
-        // Hide negative button
+
+        // Set negative button
         Button negativeButton = UiUtil.getAlertDialogNegativeButton(dialog);
         if (negativeButton != null) {
-            negativeButton.setVisibility(View.GONE);
+            negativeButton.setVisibility(View.VISIBLE);
+            negativeButton.setText(R.string.ok);
+            negativeButton.setFilterTouchesWhenObscured(true);
+            UiUtil.applyOutlinedButtonStyle(requireContext(), negativeButton);
+            negativeButton.setOnClickListener(view -> {
+                mInstallActionListener.onNegativeResponse(installStage.getStageCode());
+            });
+        }
+        // Hide positive button
+        Button positiveButton = UiUtil.getAlertDialogPositiveButton(dialog);
+        if (positiveButton != null) {
+            positiveButton.setVisibility(View.GONE);
         }
 
         if (isVerificationBypassAllowed(verificationInfo)) {
@@ -688,11 +679,20 @@ public class InstallationFragment extends DialogFragment {
                 mIsMoreDetailsExpanded = true;
                 mMoreDetailsClickableLayout.setVisibility(View.GONE);
                 mMoreDetailsExpandedLayout.setVisibility(View.VISIBLE);
+                TextView installWithoutVerifyingTextView = dialog.requireViewById(
+                        R.id.install_without_verifying_text);
+                TextView moreDetailsExpandedTextView =
+                        dialog.requireViewById(R.id.more_details_expanded_text);
+                if (installStage.isAppUpdating()) {
+                    moreDetailsExpandedTextView.setText(
+                            R.string.more_details_expanded_update_summary);
+                    installWithoutVerifyingTextView.setText(R.string.update_without_verifying);
+                }
                 installWithoutVerifyingTextView.setTypeface(
                         installWithoutVerifyingTextView.getTypeface(), Typeface.BOLD);
                 installWithoutVerifyingTextView.setOnClickListener(v1 -> {
-                    mInstallActionListener.setVerificationUserResponse(
-                            DEVELOPER_VERIFICATION_USER_RESPONSE_INSTALL_ANYWAY);
+                    mInstallActionListener.onPositiveResponse(
+                            InstallUserActionRequired.USER_ACTION_REASON_VERIFICATION_CONFIRMATION);
                 });
             });
         }
@@ -710,15 +710,30 @@ public class InstallationFragment extends DialogFragment {
         };
     }
 
-    private int getVerificationConfirmationMessageResourceId(int userActionNeededReason) {
+    private int getVerificationConfirmationMessageResourceId(
+            int userActionNeededReason, boolean isAppUpdating, int policy) {
         return switch (userActionNeededReason) {
-            case DEVELOPER_VERIFICATION_USER_ACTION_NEEDED_REASON_UNKNOWN ->
-                    R.string.cannot_install_verification_unavailable_summary;
+            case DEVELOPER_VERIFICATION_USER_ACTION_NEEDED_REASON_UNKNOWN -> {
+                if (policy == DEVELOPER_VERIFICATION_POLICY_BLOCK_FAIL_CLOSED) {
+                    yield isAppUpdating
+                            ? R.string.cannot_update_verification_unavailable_fail_closed_summary
+                            : R.string.cannot_install_verification_unavailable_fail_closed_summary;
+                } else {
+                    yield isAppUpdating
+                            ? R.string.cannot_update_verification_unavailable_summary
+                            : R.string.cannot_install_verification_unavailable_summary;
+                }
+            }
 
             case DEVELOPER_VERIFICATION_USER_ACTION_NEEDED_REASON_NETWORK_UNAVAILABLE ->
-                    R.string.cannot_install_verification_no_internet_summary;
+                    isAppUpdating
+                        ? R.string.cannot_update_verification_no_internet_summary
+                        : R.string.cannot_install_verification_no_internet_summary;
 
-            default -> R.string.cannot_install_app_blocked_summary;
+            default ->
+                isAppUpdating
+                        ? R.string.cannot_update_app_blocked_summary
+                        : R.string.cannot_install_app_blocked_summary;
         };
     }
 
