@@ -308,11 +308,8 @@ public final class InputMethodManager {
     private static final String SUBTYPE_MODE_VOICE = "voice";
 
     /**
-     * Provide this to {@link IInputMethodManagerGlobalInvoker#startInputOrWindowGainedFocus(int,
-     * IInputMethodClient, IBinder, int, int, int, EditorInfo,
-     * com.android.internal.inputmethod.IRemoteInputConnection, IRemoteAccessibilityInputConnection,
-     * int, int, ImeOnBackInvokedDispatcher)} to receive
-     * {@link android.window.OnBackInvokedCallback} registrations from IME.
+     * Provide this to {@link IInputMethodManagerGlobalInvoker#startInputOrWindowGainedFocus}
+     * to receive {@link android.window.OnBackInvokedCallback} registrations from IME.
      */
     private final ImeOnBackInvokedDispatcher mImeDispatcher =
             new ImeOnBackInvokedDispatcher(Handler.getMain()) {
@@ -326,12 +323,12 @@ public final class InputMethodManager {
 
     /**
      * A runnable that reports {@link InputConnection} opened event for calls to
-     * {@link IInputMethodManagerGlobalInvoker#startInputOrWindowGainedFocusAsync}.
+     * {@link IInputMethodManagerGlobalInvoker#startInputOrWindowGainedFocus}.
      */
     private abstract static class ReportInputConnectionOpenedRunner implements Runnable {
         /**
          * Sequence number to track startInput requests to
-         * {@link IInputMethodManagerGlobalInvoker#startInputOrWindowGainedFocusAsync}
+         * {@link IInputMethodManagerGlobalInvoker#startInputOrWindowGainedFocus}
          */
         int mSequenceNum;
         ReportInputConnectionOpenedRunner(int sequenceNum) {
@@ -939,7 +936,6 @@ public final class InputMethodManager {
 
                 // ignore the result
                 Trace.traceBegin(TRACE_TAG_WINDOW_MANAGER, "IMM.startInputOrWindowGainedFocus");
-                //TODO(b/418839448): use async method.
                 IInputMethodManagerGlobalInvoker.startInputOrWindowGainedFocus(
                         StartInputReason.WINDOW_FOCUS_GAIN_REPORT_ONLY, mClient,
                         viewForWindowFocus.getWindowToken(), startInputFlags, softInputMode,
@@ -3639,7 +3635,7 @@ public final class InputMethodManager {
 
             // async result delivered via MSG_START_INPUT_RESULT.
             final int startInputSeq =
-                    IInputMethodManagerGlobalInvoker.startInputOrWindowGainedFocusAsync(
+                    IInputMethodManagerGlobalInvoker.startInputOrWindowGainedFocus(
                             startInputReason, mClient, windowGainingFocus, startInputFlags,
                             softInputMode, windowFlags, editorInfo, servedInputConnection,
                             servedInputConnection == null ? null
@@ -3651,9 +3647,8 @@ public final class InputMethodManager {
             // Create a runnable for delayed notification to the app that the InputConnection is
             // initialized and ready for use.
             if (ic != null) {
-                final int seqId = startInputSeq;
                 if (Flags.invalidateInputCallsRestart()) {
-                    mLastPendingStartSeqId = seqId;
+                    mLastPendingStartSeqId = startInputSeq;
                 }
                 mReportInputConnectionOpenedRunner =
                         new ReportInputConnectionOpenedRunner(startInputSeq) {
@@ -3663,13 +3658,13 @@ public final class InputMethodManager {
                                     ProtoLog.v(INPUT_METHOD_MANAGER_DEBUG,
                                             "Calling View.onInputConnectionOpened: view=%s, ic=%s, "
                                                     + "editorInfo=%s, handler=%s, startInputSeq=%s",
-                                            view, ic, editorInfo, icHandler, seqId);
+                                            view, ic, editorInfo, icHandler, startInputSeq);
                                 } else if (DEBUG) {
                                     Log.v(TAG, "Calling View.onInputConnectionOpened: view= "
                                             + view
                                             + ", ic=" + ic + ", editorInfo=" + editorInfo
                                             + ", handler="
-                                            + icHandler + ", startInputSeq=" + seqId);
+                                            + icHandler + ", startInputSeq=" + startInputSeq);
                                 }
                                 reportInputConnectionOpened(ic, editorInfo, icHandler, view);
                             }
