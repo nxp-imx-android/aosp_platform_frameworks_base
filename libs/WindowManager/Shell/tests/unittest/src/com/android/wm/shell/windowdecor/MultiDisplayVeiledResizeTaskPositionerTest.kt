@@ -23,6 +23,7 @@ import android.graphics.Rect
 import android.os.Handler
 import android.os.IBinder
 import android.os.Looper
+import android.platform.test.annotations.EnableFlags
 import android.testing.AndroidTestingRunner
 import android.testing.TestableResources
 import android.view.Display
@@ -37,6 +38,7 @@ import android.window.WindowContainerToken
 import androidx.test.filters.SmallTest
 import androidx.test.internal.runner.junit4.statement.UiThreadStatement.runOnUiThread
 import com.android.internal.jank.InteractionJankMonitor
+import com.android.window.flags.Flags
 import com.android.wm.shell.ShellTaskOrganizer
 import com.android.wm.shell.ShellTestCase
 import com.android.wm.shell.common.DisplayController
@@ -590,6 +592,28 @@ class MultiDisplayVeiledResizeTaskPositionerTest : ShellTestCase() {
             )
         // Display has rotated; we expect a new stable bounds.
         verify(spyDisplayLayout0, times(2)).getStableBounds(any())
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_DRAG_END_STABLE_BOUNDS_RESET)
+    fun testDragResize_displayHasChanged_refetchStableBounds() = runOnUiThread {
+        // Start drag on display 0
+        taskPositioner.onDragPositioningStart(
+            CTRL_TYPE_UNDEFINED,
+            DISPLAY_ID_0,
+            STARTING_BOUNDS.left.toFloat(),
+            STARTING_BOUNDS.top.toFloat(),
+        )
+
+        // First drag; we should fetch stable bounds for display 0.
+        verify(spyDisplayLayout0, times(1)).getStableBounds(any())
+
+        // End drag on display 1
+        taskPositioner.onDragPositioningEnd(DISPLAY_ID_1, 200f, 800f)
+        mockWindowDecoration.taskInfo.apply { displayId = DISPLAY_ID_1 }
+
+        // Display has changed; we expect a new stable bounds for display 1.
+        verify(spyDisplayLayout1, times(1)).getStableBounds(any())
     }
 
     @Test
