@@ -21,7 +21,7 @@
 set -e
 
 # Tests that shouldn't be in presubmit.
-EXEMPT='^(SystemUiRavenTests)$'
+EXEMPT='^(SystemUiRavenTests|CtsViewTestCasesRavenwood)$'
 
 is_car() {
     local module="$1"
