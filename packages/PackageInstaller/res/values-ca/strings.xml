@@ -21,7 +21,6 @@
     <string name="update" msgid="3932142540719227615">"Actualitza"</string>
     <string name="done" msgid="6632441120016885253">"Fet"</string>
     <string name="cancel" msgid="1018267193425558088">"Cancel·la"</string>
-    <string name="try_again" msgid="3754399538069264237">"Torna-ho a provar"</string>
     <string name="install_anyway" msgid="8794642873773384969">"Instal·la igualment"</string>
     <string name="dont_install" msgid="414055123295505225">"No instal·lis"</string>
     <string name="installing" msgid="4921993079741206516">"S\'està instal·lant…"</string>
