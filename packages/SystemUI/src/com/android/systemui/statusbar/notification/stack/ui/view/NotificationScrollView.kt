@@ -69,6 +69,11 @@ interface NotificationScrollView {
      */
     fun setBlurRadius(radius: Float)
 
+    /** Set whether this view is active for touch, focus, and accessibility. */
+    fun setInteractive(blurredOut: Boolean)
+
+    fun setEnabled(enabled: Boolean)
+
     /** set the y position in px of the top of the stack in this view's coordinates */
     fun setStackTop(stackTop: Float)
 

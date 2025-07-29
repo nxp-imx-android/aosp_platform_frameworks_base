@@ -237,6 +237,13 @@ constructor(
             flowOf(0f)
         }
 
+    /**
+     * Whether the Notifications are interactive for touches, accessibility, and focus. When false,
+     * scene container will handle touches.
+     */
+    val interactive: Flow<Boolean> =
+        blurFraction.map { it != 1f }.distinctUntilChanged().dumpWhileCollecting("interactive")
+
     /** Whether we should close any open notification guts. */
     val shouldCloseGuts: Flow<Boolean> = stackAppearanceInteractor.shouldCloseGuts
 

@@ -96,6 +96,7 @@ constructor(
             launch { viewModel.qsExpandFraction.collectTraced { view.setQsExpandFraction(it) } }
             if (Flags.notificationShadeBlur()) {
                 launch { viewModel.blurRadius(maxBlurRadius).collect(view::setBlurRadius) }
+                launch { viewModel.interactive.collectTraced(view::setInteractive) }
             }
 
             launch {
