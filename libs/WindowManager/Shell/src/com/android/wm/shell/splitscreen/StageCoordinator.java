@@ -2540,7 +2540,7 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
             // TODO: consider support 3 splits
 
             // Make the stages adjacent to each other so they occlude what's behind them.
-            wct.setAdjacentRootSet(mMainStage.mRootTaskInfo.token, mSideStage.mRootTaskInfo.token);
+            wct.setAdjacentRoots(mMainStage.mRootTaskInfo.token, mSideStage.mRootTaskInfo.token);
             mSplitLayout.getInvisibleBounds(mTempRect1);
             wct.setBounds(mSideStage.mRootTaskInfo.token, mTempRect1);
         }
