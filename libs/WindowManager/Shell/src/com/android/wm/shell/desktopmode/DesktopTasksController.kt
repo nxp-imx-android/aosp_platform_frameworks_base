@@ -165,6 +165,7 @@ import com.android.wm.shell.shared.split.SplitScreenConstants.SPLIT_POSITION_BOT
 import com.android.wm.shell.shared.split.SplitScreenConstants.SPLIT_POSITION_TOP_OR_LEFT
 import com.android.wm.shell.splitscreen.SplitScreenController
 import com.android.wm.shell.splitscreen.SplitScreenController.EXIT_REASON_DESKTOP_MODE
+import com.android.wm.shell.sysui.KeyguardChangeListener
 import com.android.wm.shell.sysui.ShellCommandHandler
 import com.android.wm.shell.sysui.ShellController
 import com.android.wm.shell.sysui.ShellInit
@@ -256,7 +257,8 @@ class DesktopTasksController(
     RemoteCallable<DesktopTasksController>,
     Transitions.TransitionHandler,
     DragAndDropController.DragAndDropListener,
-    UserChangeListener {
+    UserChangeListener,
+    KeyguardChangeListener {
 
     private val desktopMode: DesktopModeImpl
     private var visualIndicator: DesktopModeVisualIndicator? = null
@@ -354,6 +356,7 @@ class DesktopTasksController(
             }
         )
         dragAndDropController.addListener(this)
+        shellController.addKeyguardChangeListener(this)
     }
 
     @VisibleForTesting
@@ -810,6 +813,25 @@ class DesktopTasksController(
         }
     }
 
+    override fun onKeyguardVisibilityChanged(
+        visible: Boolean,
+        occluded: Boolean,
+        animatingDismiss: Boolean,
+    ) {
+        if (visible) return
+        val displaysByUniqueId = displayController.allDisplaysByUniqueId ?: return
+        for (displayIdByUniqueId in displaysByUniqueId) {
+            val taskRepository = userRepositories.current
+            if (taskRepository.hasPreservedDisplayForUniqueDisplayId(displayIdByUniqueId.key)) {
+                restoreDisplay(
+                    displayIdByUniqueId.value,
+                    displayIdByUniqueId.key,
+                    taskRepository.userId,
+                )
+            }
+        }
+    }
+
     private fun handleExtendedModeDisconnect(
         desktopRepository: DesktopRepository,
         wct: WindowContainerTransaction,
@@ -948,6 +970,8 @@ class DesktopTasksController(
         )
         // TODO: b/365873835 - Utilize DesktopTask data class once it is
         //  implemented in DesktopRepository.
+        // Do not handle restoration while locked; it will be handled when keyguard is gone.
+        if (keyguardManager.isKeyguardLocked) return
         val repository = userRepositories.getProfile(userId)
         val preservedTaskIdsByDeskId = repository.getPreservedTasksByDeskIdInZOrder(uniqueDisplayId)
         val boundsByTaskId = repository.getPreservedTaskBounds(uniqueDisplayId)
