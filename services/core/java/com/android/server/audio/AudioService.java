@@ -14580,6 +14580,21 @@ public class AudioService extends IAudioService.Stub
     }
 
     /**
+     * Checks if a given package currently holds any type of audio focus.
+     * <p>This method considers all forms of audio focus, including traditional exclusive/transient
+     * focus from the main focus stack and concurrent focus when multi-audio focus is enabled.
+     *
+     * @param packageName The package name to check for audio focus.
+     * @return {@code true} if the package holds any audio focus, {@code false} otherwise.
+     */
+    @android.annotation.EnforcePermission(QUERY_AUDIO_STATE)
+    public boolean hasAudioFocus(String packageName) {
+        super.hasAudioFocus_enforcePermission();
+
+        return mMediaFocusControl.hasAudioFocus(packageName);
+    }
+
+    /**
      * @param focusLoser non-null entry that may be in the stack
      * @see AudioPolicy#sendFocusLossAndUpdate(AudioFocusInfo)
      */

@@ -251,9 +251,31 @@ public class MediaFocusControl implements PlayerFocusEnforcer {
         }
     }
 
+    /*package*/ boolean hasAudioFocus(String packageName) {
+        synchronized (mAudioFocusLock) {
+            Iterator<FocusRequester> stackIterator = mFocusStack.iterator();
+            while (stackIterator.hasNext()) {
+                if (stackIterator.next().hasSamePackage(packageName)) {
+                    return true;
+                }
+            }
+
+            if (mMultiAudioFocusEnabled) {
+                Iterator<FocusRequester> listIterator = mMultiAudioFocusList.iterator();
+                while (listIterator.hasNext()) {
+                    if (listIterator.next().hasSamePackage(packageName)) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
     /*package*/ boolean hasAudioFocusUsers() {
         synchronized (mAudioFocusLock) {
-            return !mFocusStack.empty();
+            return !mFocusStack.empty() || (mMultiAudioFocusEnabled
+                    && !mMultiAudioFocusList.isEmpty());
         }
     }
 
