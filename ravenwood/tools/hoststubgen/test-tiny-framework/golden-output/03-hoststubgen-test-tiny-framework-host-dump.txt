@@ -2434,7 +2434,7 @@ Constant pool:
     RuntimeVisibleAnnotations:
       x: #x(#x=s#x)
         com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
-          reason="class-wide in com/android/hoststubgen/test/tinyframework/TinyFrameworkMethodCallReplace$ConstructorTester [inner-reason: file-override]"
+          reason="class-wide in com/android/hoststubgen/test/tinyframework/TinyFrameworkMethodCallReplace$ConstructorTester [inner-reason: class-wide in com/android/hoststubgen/test/tinyframework/TinyFrameworkMethodCallReplace [inner-reason: class-annotation]]"
         )
 
   public com.android.hoststubgen.test.tinyframework.TinyFrameworkMethodCallReplace$ConstructorTester(int);
@@ -2456,7 +2456,7 @@ Constant pool:
     RuntimeVisibleAnnotations:
       x: #x(#x=s#x)
         com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
-          reason="file-override"
+          reason="class-wide in com/android/hoststubgen/test/tinyframework/TinyFrameworkMethodCallReplace$ConstructorTester [inner-reason: class-wide in com/android/hoststubgen/test/tinyframework/TinyFrameworkMethodCallReplace [inner-reason: class-annotation]]"
         )
 }
 InnerClasses:
@@ -2465,7 +2465,7 @@ SourceFile: "TinyFrameworkMethodCallReplace.java"
 RuntimeVisibleAnnotations:
   x: #x(#x=s#x)
     com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
-      reason="file-override"
+      reason="class-wide in com/android/hoststubgen/test/tinyframework/TinyFrameworkMethodCallReplace [inner-reason: class-annotation]"
     )
 NestHost: class com/android/hoststubgen/test/tinyframework/TinyFrameworkMethodCallReplace
 ## Class: com/android/hoststubgen/test/tinyframework/TinyFrameworkMethodCallReplace$ReplaceTo.class
@@ -2494,7 +2494,7 @@ Constant pool:
     RuntimeVisibleAnnotations:
       x: #x(#x=s#x)
         com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
-          reason="class-wide in com/android/hoststubgen/test/tinyframework/TinyFrameworkMethodCallReplace$ReplaceTo [inner-reason: class-wide in com/android/hoststubgen/test/tinyframework/TinyFrameworkMethodCallReplace [inner-reason: file-override]]"
+          reason="class-wide in com/android/hoststubgen/test/tinyframework/TinyFrameworkMethodCallReplace$ReplaceTo [inner-reason: class-wide in com/android/hoststubgen/test/tinyframework/TinyFrameworkMethodCallReplace [inner-reason: class-annotation]]"
         )
 
   public static void startThread(java.lang.Thread);
@@ -2515,7 +2515,7 @@ Constant pool:
     RuntimeVisibleAnnotations:
       x: #x(#x=s#x)
         com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
-          reason="class-wide in com/android/hoststubgen/test/tinyframework/TinyFrameworkMethodCallReplace$ReplaceTo [inner-reason: class-wide in com/android/hoststubgen/test/tinyframework/TinyFrameworkMethodCallReplace [inner-reason: file-override]]"
+          reason="class-wide in com/android/hoststubgen/test/tinyframework/TinyFrameworkMethodCallReplace$ReplaceTo [inner-reason: class-wide in com/android/hoststubgen/test/tinyframework/TinyFrameworkMethodCallReplace [inner-reason: class-annotation]]"
         )
 
   public static int add(int, int);
@@ -2535,7 +2535,7 @@ Constant pool:
     RuntimeVisibleAnnotations:
       x: #x(#x=s#x)
         com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
-          reason="class-wide in com/android/hoststubgen/test/tinyframework/TinyFrameworkMethodCallReplace$ReplaceTo [inner-reason: class-wide in com/android/hoststubgen/test/tinyframework/TinyFrameworkMethodCallReplace [inner-reason: file-override]]"
+          reason="class-wide in com/android/hoststubgen/test/tinyframework/TinyFrameworkMethodCallReplace$ReplaceTo [inner-reason: class-wide in com/android/hoststubgen/test/tinyframework/TinyFrameworkMethodCallReplace [inner-reason: class-annotation]]"
         )
 
   public static com.android.hoststubgen.test.tinyframework.TinyFrameworkMethodCallReplace$ConstructorTester newConstructorTester(int);
@@ -2557,7 +2557,7 @@ Constant pool:
     RuntimeVisibleAnnotations:
       x: #x(#x=s#x)
         com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
-          reason="class-wide in com/android/hoststubgen/test/tinyframework/TinyFrameworkMethodCallReplace$ReplaceTo [inner-reason: class-wide in com/android/hoststubgen/test/tinyframework/TinyFrameworkMethodCallReplace [inner-reason: file-override]]"
+          reason="class-wide in com/android/hoststubgen/test/tinyframework/TinyFrameworkMethodCallReplace$ReplaceTo [inner-reason: class-wide in com/android/hoststubgen/test/tinyframework/TinyFrameworkMethodCallReplace [inner-reason: class-annotation]]"
         )
 }
 InnerClasses:
@@ -2567,7 +2567,7 @@ SourceFile: "TinyFrameworkMethodCallReplace.java"
 RuntimeVisibleAnnotations:
   x: #x(#x=s#x)
     com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
-      reason="class-wide in com/android/hoststubgen/test/tinyframework/TinyFrameworkMethodCallReplace [inner-reason: file-override]"
+      reason="class-wide in com/android/hoststubgen/test/tinyframework/TinyFrameworkMethodCallReplace [inner-reason: class-annotation]"
     )
 NestHost: class com/android/hoststubgen/test/tinyframework/TinyFrameworkMethodCallReplace
 ## Class: com/android/hoststubgen/test/tinyframework/TinyFrameworkMethodCallReplace.class
@@ -2596,7 +2596,7 @@ Constant pool:
     RuntimeVisibleAnnotations:
       x: #x(#x=s#x)
         com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
-          reason="class-wide in com/android/hoststubgen/test/tinyframework/TinyFrameworkMethodCallReplace [inner-reason: file-override]"
+          reason="class-wide in com/android/hoststubgen/test/tinyframework/TinyFrameworkMethodCallReplace [inner-reason: class-annotation]"
         )
 
   public static boolean nonStaticMethodCallReplaceTester() throws java.lang.Exception;
@@ -2632,7 +2632,7 @@ Constant pool:
     RuntimeVisibleAnnotations:
       x: #x(#x=s#x)
         com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
-          reason="class-wide in com/android/hoststubgen/test/tinyframework/TinyFrameworkMethodCallReplace [inner-reason: file-override]"
+          reason="class-wide in com/android/hoststubgen/test/tinyframework/TinyFrameworkMethodCallReplace [inner-reason: class-annotation]"
         )
 
   public static int staticMethodCallReplaceTester();
@@ -2648,7 +2648,7 @@ Constant pool:
     RuntimeVisibleAnnotations:
       x: #x(#x=s#x)
         com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
-          reason="class-wide in com/android/hoststubgen/test/tinyframework/TinyFrameworkMethodCallReplace [inner-reason: file-override]"
+          reason="class-wide in com/android/hoststubgen/test/tinyframework/TinyFrameworkMethodCallReplace [inner-reason: class-annotation]"
         )
 
   public static com.android.hoststubgen.test.tinyframework.TinyFrameworkMethodCallReplace$ConstructorTester constructorReplaceTester(int);
@@ -2672,7 +2672,7 @@ Constant pool:
     RuntimeVisibleAnnotations:
       x: #x(#x=s#x)
         com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
-          reason="class-wide in com/android/hoststubgen/test/tinyframework/TinyFrameworkMethodCallReplace [inner-reason: file-override]"
+          reason="class-wide in com/android/hoststubgen/test/tinyframework/TinyFrameworkMethodCallReplace [inner-reason: class-annotation]"
         )
 
   private static int originalAdd(int, int);
@@ -2694,7 +2694,7 @@ Constant pool:
     RuntimeVisibleAnnotations:
       x: #x(#x=s#x)
         com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
-          reason="file-override"
+          reason="class-wide in com/android/hoststubgen/test/tinyframework/TinyFrameworkMethodCallReplace [inner-reason: class-annotation]"
         )
 
   private static void lambda$nonStaticMethodCallReplaceTester$0(java.util.concurrent.atomic.AtomicBoolean);
@@ -2714,7 +2714,7 @@ Constant pool:
     RuntimeVisibleAnnotations:
       x: #x(#x=s#x)
         com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
-          reason="is-synthetic-method [inner-reason: file-override]"
+          reason="is-synthetic-method [inner-reason: class-annotation]"
         )
 }
 InnerClasses:
@@ -2725,7 +2725,7 @@ SourceFile: "TinyFrameworkMethodCallReplace.java"
 RuntimeVisibleAnnotations:
   x: #x(#x=s#x)
     com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
-      reason="file-override"
+      reason="class-annotation"
     )
   x: #x()
     android.hosttest.annotation.HostSideTestWholeClassKeep
@@ -4369,7 +4369,7 @@ SourceFile: "C2.java"
 RuntimeVisibleAnnotations:
   x: #x(#x=s#x)
     com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
-      reason="file-override"
+      reason="extends com.android.hoststubgen.test.tinyframework.subclasstest.C1"
     )
 ## Class: com/android/hoststubgen/test/tinyframework/subclasstest/C3.class
   Compiled from "C3.java"
@@ -4387,7 +4387,7 @@ SourceFile: "C3.java"
 RuntimeVisibleAnnotations:
   x: #x(#x=s#x)
     com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
-      reason="file-override"
+      reason="extends com.android.hoststubgen.test.tinyframework.subclasstest.C1"
     )
 ## Class: com/android/hoststubgen/test/tinyframework/subclasstest/CA.class
   Compiled from "CA.java"
@@ -4585,7 +4585,7 @@ SourceFile: "I2.java"
 RuntimeVisibleAnnotations:
   x: #x(#x=s#x)
     com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
-      reason="file-override"
+      reason="extends com.android.hoststubgen.test.tinyframework.subclasstest.I1"
     )
 ## Class: com/android/hoststubgen/test/tinyframework/subclasstest/I3.class
   Compiled from "I3.java"
@@ -4603,7 +4603,7 @@ SourceFile: "I3.java"
 RuntimeVisibleAnnotations:
   x: #x(#x=s#x)
     com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep(
-      reason="file-override"
+      reason="extends com.android.hoststubgen.test.tinyframework.subclasstest.I1"
     )
 ## Class: com/android/hoststubgen/test/tinyframework/subclasstest/IA.class
   Compiled from "IA.java"
