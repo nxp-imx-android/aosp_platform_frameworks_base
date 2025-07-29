@@ -64,7 +64,6 @@ java_library {
     static_libs: [
         "com.android.systemui.dagger-api",
         "com.android.systemui.log.table-api",
-        "com.android.systemui.retail-impl",
         "com.android.systemui.retail.data-api",
         "com.android.systemui.retail.domain-api",
         "com.android.systemui.util.kotlin",
