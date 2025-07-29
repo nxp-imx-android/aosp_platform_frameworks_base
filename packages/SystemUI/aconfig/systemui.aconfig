@@ -1933,16 +1933,6 @@ flag {
 }
 
 flag {
-    name: "animation_library_delay_leash_cleanup"
-    namespace: "systemui"
-    description: "Clean up the transition leash with a delay to ensure that the finish callback happens first, avoiding flickers"
-    bug: "356065603"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
    name: "new_dozing_keyguard_states"
    namespace: "systemui"
    description: "Adds new dozing keyguard states for more robust animations to/from dozing."
