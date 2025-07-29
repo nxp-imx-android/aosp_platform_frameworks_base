@@ -4579,7 +4579,7 @@ package android.window {
     method @NonNull public android.window.WindowContainerTransaction requestFocusOnTaskFragment(@NonNull android.os.IBinder);
     method @NonNull public android.window.WindowContainerTransaction scheduleFinishEnterPip(@NonNull android.window.WindowContainerToken, @NonNull android.graphics.Rect);
     method @NonNull public android.window.WindowContainerTransaction setActivityWindowingMode(@NonNull android.window.WindowContainerToken, int);
-    method @Deprecated @NonNull public android.window.WindowContainerTransaction setAdjacentRoots(@NonNull android.window.WindowContainerToken, @NonNull android.window.WindowContainerToken);
+    method @NonNull public android.window.WindowContainerTransaction setAdjacentRoots(@NonNull android.window.WindowContainerToken...);
     method @NonNull public android.window.WindowContainerTransaction setAdjacentTaskFragments(@NonNull android.os.IBinder, @NonNull android.os.IBinder, @Nullable android.window.WindowContainerTransaction.TaskFragmentAdjacentParams);
     method @NonNull public android.window.WindowContainerTransaction setAppBounds(@NonNull android.window.WindowContainerToken, @NonNull android.graphics.Rect);
     method @NonNull public android.window.WindowContainerTransaction setBounds(@NonNull android.window.WindowContainerToken, @NonNull android.graphics.Rect);
