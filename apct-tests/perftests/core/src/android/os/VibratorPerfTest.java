@@ -249,9 +249,9 @@ public class VibratorPerfTest {
         long elapsedTimeNs = 0;
         ManualBenchmarkState state = mStatusReporter.getBenchmarkState();
         while (state.keepRunning(elapsedTimeNs)) {
-            long startTimeNs = SystemClock.elapsedRealtimeNanos();
+            long startTimeNs = System.nanoTime();
             mVibrator.areEffectsSupported(effects);
-            elapsedTimeNs = SystemClock.elapsedRealtimeNanos() - startTimeNs;
+            elapsedTimeNs = System.nanoTime() - startTimeNs;
         }
     }
 
@@ -263,9 +263,9 @@ public class VibratorPerfTest {
         long elapsedTimeNs = 0;
         ManualBenchmarkState state = mStatusReporter.getBenchmarkState();
         while (state.keepRunning(elapsedTimeNs)) {
-            long startTimeNs = SystemClock.elapsedRealtimeNanos();
+            long startTimeNs = System.nanoTime();
             mVibrator.arePrimitivesSupported(primitives);
-            elapsedTimeNs = SystemClock.elapsedRealtimeNanos() - startTimeNs;
+            elapsedTimeNs = System.nanoTime() - startTimeNs;
         }
     }
 
@@ -274,9 +274,9 @@ public class VibratorPerfTest {
         long elapsedTimeNs = 0;
         ManualBenchmarkState state = mStatusReporter.getBenchmarkState();
         while (state.keepRunning(elapsedTimeNs)) {
-            long startTimeNs = SystemClock.elapsedRealtimeNanos();
+            long startTimeNs = System.nanoTime();
             mVibrator.cancel();
-            elapsedTimeNs = SystemClock.elapsedRealtimeNanos() - startTimeNs;
+            elapsedTimeNs = System.nanoTime() - startTimeNs;
         }
     }
 
@@ -293,9 +293,9 @@ public class VibratorPerfTest {
             mVibrator.vibrate(effect);
             SystemClock.sleep(SERVICE_DELAY_MS);
 
-            long startTimeNs = SystemClock.elapsedRealtimeNanos();
+            long startTimeNs = System.nanoTime();
             mVibrator.cancel();
-            elapsedTimeNs = SystemClock.elapsedRealtimeNanos() - startTimeNs;
+            elapsedTimeNs = System.nanoTime() - startTimeNs;
         }
     }
 
@@ -358,9 +358,9 @@ public class VibratorPerfTest {
      * become idle before next iteration.
      */
     private long measureVibrate(VibrationEffect effect) {
-        long startTimeNs = SystemClock.elapsedRealtimeNanos();
+        long startTimeNs = System.nanoTime();
         mVibrator.vibrate(effect);
-        long latencyNs = SystemClock.elapsedRealtimeNanos() - startTimeNs;
+        long latencyNs = System.nanoTime() - startTimeNs;
 
         // Rate-limiting, stop vibration and wait for service to become idle.
         mVibrator.cancel();
@@ -376,9 +376,9 @@ public class VibratorPerfTest {
      * to become idle before next iteration.
      */
     private long measureVibrateWithTraces(VibrationEffect effect) throws InterruptedException {
-        long startTimeNs = SystemClock.elapsedRealtimeNanos();
+        long startTimeNs = System.nanoTime();
         mVibrator.vibrate(effect);
-        long latencyNs = SystemClock.elapsedRealtimeNanos() - startTimeNs;
+        long latencyNs = System.nanoTime() - startTimeNs;
 
         mStateListener.awaitVibrating(5, SECONDS);
         mStateListener.awaitIdle(5, SECONDS);
@@ -398,14 +398,12 @@ public class VibratorPerfTest {
      */
     private long measureVibrateWithStateChangeLatency(ManualBenchmarkState state,
             VibrationEffect effect, long durationMs) throws InterruptedException {
-        long vibrateTimeNs = SystemClock.elapsedRealtimeNanos();
+        long vibrateTimeNs = System.nanoTime();
         mVibrator.vibrate(effect);
-        long vibrateLatencyNs = SystemClock.elapsedRealtimeNanos() - vibrateTimeNs;
+        long vibrateLatencyNs = System.nanoTime() - vibrateTimeNs;
 
-        long startTimeNs = mStateListener.awaitVibrating(5, SECONDS)
-                ? SystemClock.elapsedRealtimeNanos() : -1;
-        long stopTimeNs = mStateListener.awaitIdle(5, SECONDS)
-                ? SystemClock.elapsedRealtimeNanos() : -1;
+        long startTimeNs = mStateListener.awaitVibrating(5, SECONDS) ? System.nanoTime() : -1;
+        long stopTimeNs = mStateListener.awaitIdle(5, SECONDS) ? System.nanoTime() : -1;
         mStateListener.resetCounters();
 
         // Rate-limiting, wait for service to clean-up previous vibration and become idle.
