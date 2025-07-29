@@ -17,12 +17,14 @@ package com.android.wm.shell.windowdecor.common.viewhost
 
 import android.content.res.Configuration
 import android.graphics.Region
+import android.platform.test.annotations.EnableFlags
 import android.testing.AndroidTestingRunner
 import android.testing.TestableLooper.RunWithLooper
 import android.view.SurfaceControl
 import android.view.View
 import android.view.WindowManager
 import androidx.test.filters.SmallTest
+import com.android.window.flags.Flags
 import com.android.wm.shell.ShellTestCase
 import com.android.wm.shell.TestShellExecutor
 import com.android.wm.shell.sysui.ShellInit
@@ -127,12 +129,26 @@ class PooledWindowDecorViewHostSupplierTest : ShellTestCase() {
         assertThat(viewHost2.released).isTrue()
     }
 
+    @Test
+    @EnableFlags(Flags.FLAG_CLEAR_REUSABLE_SCVH_ON_RELEASE)
+    fun release_resetsViewHost() = runTest {
+        supplier = createSupplier(maxPoolSize = 5)
+
+        val viewHost = FakeWindowDecorViewHost()
+        supplier.release(viewHost, StubTransaction())
+
+        assertThat(viewHost.reset).isEqualTo(true)
+    }
+
     private fun CoroutineScope.createSupplier(maxPoolSize: Int, preWarmSize: Int = 0) =
         PooledWindowDecorViewHostSupplier(context, this, testShellInit, maxPoolSize, preWarmSize)
             .also { testShellInit.init() }
 
     private class FakeWindowDecorViewHost : WindowDecorViewHost {
         var released = false
+            private set
+
+        var reset = false
             private set
 
         override val surfaceControl: SurfaceControl
@@ -155,6 +171,10 @@ class PooledWindowDecorViewHostSupplierTest : ShellTestCase() {
 
         override fun release(t: SurfaceControl.Transaction) {
             released = true
+        }
+
+        override fun reset() {
+            reset = true
         }
     }
 }

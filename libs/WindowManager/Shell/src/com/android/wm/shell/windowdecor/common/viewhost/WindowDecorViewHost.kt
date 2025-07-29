@@ -47,6 +47,9 @@ interface WindowDecorViewHost {
         touchableRegion: Region? = null,
     )
 
+    /** Synchronously reset the view hierarchy of this view host. */
+    fun reset()
+
     /** Releases the underlying [View] hierarchy and removes the backing [SurfaceControl]. */
     fun release(t: SurfaceControl.Transaction)
 }

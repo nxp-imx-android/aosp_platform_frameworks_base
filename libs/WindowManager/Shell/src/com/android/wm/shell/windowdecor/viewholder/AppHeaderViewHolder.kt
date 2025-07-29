@@ -72,6 +72,7 @@ import com.android.wm.shell.windowdecor.common.OPACITY_55
 import com.android.wm.shell.windowdecor.common.OPACITY_65
 import com.android.wm.shell.windowdecor.common.Theme
 import com.android.wm.shell.windowdecor.common.createBackgroundDrawable
+import com.android.wm.shell.windowdecor.extension.identityHashCode
 import com.android.wm.shell.windowdecor.extension.isLightCaptionBarAppearance
 import com.android.wm.shell.windowdecor.extension.isTransparentCaptionBarAppearance
 import com.android.wm.shell.windowdecor.viewholder.util.AppHeaderDimensions
@@ -976,9 +977,12 @@ class AppHeaderViewHolder(
         maximizeWindowButton.cancelLongPress()
     }
 
-    companion object {
-        private const val TAG = "DesktopModeAppControlsWindowDecorationViewHolder"
+    @OptIn(ExperimentalStdlibApi::class)
+    override fun toString(): String {
+        return "AppHandleViewHolder(rootView=${rootView.identityHashCode.toHexString()})"
+    }
 
+    companion object {
         private const val DARK_THEME_UNFOCUSED_OPACITY = 140 // 55%
         private const val LIGHT_THEME_UNFOCUSED_OPACITY = 166 // 65%
         private const val FOCUSED_OPACITY = 255
