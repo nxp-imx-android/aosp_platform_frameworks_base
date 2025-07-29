@@ -45,17 +45,6 @@
 
         <!-- For Expressive Switch -->
         <item name="expressiveSwitchStyle">@style/SettingslibSwitchStyle.Expressive</item>
-
-        <!-- Expressive Design: overridable styles/themes for Preferences -->
-        <item name="expressivePreferenceTheme">@style/ExpressivePreferenceTheme</item>
-        <item name="expressivePreferenceIconFrameStyle">@style/ExpressivePreferenceIconFrameStyle</item>
-        <item name="expressivePreferenceIconStyle">@style/ExpressivePreferenceIconStyle</item>
-        <item name="expressivePreferenceTextFrameStyle">@style/ExpressivePreferenceTextFrameStyle</item>
-        <item name="expressivePreferenceTextFrameTitleStyle">@style/ExpressivePreferenceTextFrameTitleStyle</item>
-        <item name="expressivePreferenceTextFrameSummaryStyle">@style/ExpressivePreferenceTextFrameSummaryStyle</item>
-        <item name="expressiveTwoTargetDividerStyle">@style/ExpressiveTwoTargetDividerStyle</item>
-        <item name="expressiveTwoTargetDividerImageViewStyle">@style/ExpressiveTwoTargetDividerImageViewStyle</item>
-        <item name="expressiveTwoTargetDividerViewStyle">@style/ExpressiveTwoTargetDividerViewStyle</item>
     </style>
 
     <!-- Using in SubSettings page including injected settings page -->
