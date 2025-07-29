@@ -45605,6 +45605,7 @@ package android.telephony {
     field public static final String KEY_INCLUDE_LTE_FOR_NR_ADVANCED_THRESHOLD_BANDWIDTH_BOOL = "include_lte_for_nr_advanced_threshold_bandwidth_bool";
     field public static final String KEY_IS_IMS_CONFERENCE_SIZE_ENFORCED_BOOL = "is_ims_conference_size_enforced_bool";
     field public static final String KEY_IS_OPPORTUNISTIC_SUBSCRIPTION_BOOL = "is_opportunistic_subscription_bool";
+    field @FlaggedApi("com.android.internal.telephony.flags.log_calls_answered_elsewhere") public static final String KEY_LOG_CALLS_ANSWERED_ELSEWHERE_BOOL = "log_calls_answered_elsewhere_bool";
     field public static final String KEY_LTE_ENABLED_BOOL = "lte_enabled_bool";
     field public static final String KEY_LTE_RSRQ_THRESHOLDS_INT_ARRAY = "lte_rsrq_thresholds_int_array";
     field public static final String KEY_LTE_RSSNR_THRESHOLDS_INT_ARRAY = "lte_rssnr_thresholds_int_array";
