@@ -2279,6 +2279,9 @@
 
     <!-- Spacing attributes to overwrite -->
     <dimen name="aux_spacing_overlay_panel_shape_radius">46dp</dimen>
+    <dimen name="overlay_qs_layout_brightness_thumb_height">52dp</dimen>
+    <dimen name="overlay_qs_layout_brightness_thumb_width">4dp</dimen>
+    <dimen name="overlay_qs_layout_brightness_track_height">40dp</dimen>
     <!-- Spacing attributes to overwrite end -->
 
     <!-- Tile Details start-->
