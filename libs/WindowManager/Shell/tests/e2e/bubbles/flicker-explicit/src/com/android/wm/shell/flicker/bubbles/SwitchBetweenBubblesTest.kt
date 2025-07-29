@@ -24,8 +24,7 @@ import android.tools.traces.component.ComponentNameMatcher.Companion.LAUNCHER
 import androidx.test.filters.RequiresDevice
 import com.android.wm.shell.Flags
 import com.android.wm.shell.Utils
-import com.android.wm.shell.flicker.bubbles.testcase.BubbleAlwaysVisibleTestCases
-import com.android.wm.shell.flicker.bubbles.testcase.BubbleAppBecomesExpandedTestCases
+import com.android.wm.shell.flicker.bubbles.testcase.MultipleBubbleExpandBubbleAppTestCases
 import com.android.wm.shell.flicker.bubbles.utils.ApplyPerParameterRule
 import com.android.wm.shell.flicker.bubbles.utils.BubbleFlickerTestHelper.collapseBubbleAppViaBackKey
 import com.android.wm.shell.flicker.bubbles.utils.BubbleFlickerTestHelper.launchBubbleViaBubbleMenu
@@ -57,7 +56,7 @@ import org.junit.runners.Parameterized
  *
  * Verified tests:
  * - [BubbleFlickerTestBase]
- * - [BubbleAlwaysVisibleTestCases]
+ * - [MultipleBubbleExpandBubbleAppTestCases]
  * - [previousApp] becomes invisible.
  */
 @RequiresFlagsEnabled(Flags.FLAG_ENABLE_CREATE_ANY_BUBBLE)
@@ -66,7 +65,7 @@ import org.junit.runners.Parameterized
 @Presubmit
 @RunWith(Parameterized::class)
 class SwitchBetweenBubblesTest(navBar: NavBar) : BubbleFlickerTestBase(),
-    BubbleAlwaysVisibleTestCases, BubbleAppBecomesExpandedTestCases
+    MultipleBubbleExpandBubbleAppTestCases
 {
     companion object : FlickerPropertyInitializer() {
         private val previousApp = MessagingAppHelper()

@@ -104,6 +104,7 @@ class RecordTraceWithTransitionRule(
                     .enableTransitionsTrace()
                     .enableLayersTrace()
                     .enableWindowManagerTrace()
+                    .enableViewCaptureTrace()
                     .build(),
                 EventLogMonitor()
             ),

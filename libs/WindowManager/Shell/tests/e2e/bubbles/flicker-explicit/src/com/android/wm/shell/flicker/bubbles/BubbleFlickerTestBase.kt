@@ -18,7 +18,6 @@ package com.android.wm.shell.flicker.bubbles
 
 import android.platform.test.flag.junit.CheckFlagsRule
 import android.platform.test.flag.junit.DeviceFlagsValueProvider
-import android.tools.NavBar
 import android.tools.Tag
 import android.tools.device.apphelpers.StandardAppHelper
 import android.tools.flicker.assertions.SubjectsParser
@@ -41,15 +40,11 @@ import com.android.wm.shell.flicker.bubbles.utils.FlickerPropertyInitializer
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-import org.junit.runner.RunWith
-import org.junit.runners.Parameterized
 
 /**
  * The base class of Bubble flicker tests, which includes:
  * - Generic tests: checks there's no flicker in visible windows/layers
- * - Launcher visibility tests: checks launcher window/layer is always visible
- * - System Bars tests: checks the visibility of navigation and status bar
- * - Verify all tests with both gestural and 3-button navigation mode
+ * - System Bars tests; checks the visibility of navigation and status bar
  */
 abstract class BubbleFlickerTestBase : BubbleFlickerSubjects {
 
@@ -180,27 +175,6 @@ abstract class BubbleFlickerTestBase : BubbleFlickerSubjects {
     }
 
 // endregion
-
-// region Launcher visibility tests
-
-    /**
-     * Verifies the launcher window is always visible.
-     */
-    @Test
-    fun launcherWindowIsAlwaysVisible() {
-        wmTraceSubject.isAppWindowVisible(ComponentNameMatcher.LAUNCHER).forAllEntries()
-    }
-
-    /**
-     * Verifies the launcher layer is always visible.
-     */
-    @Test
-    fun launcherLayerIsAlwaysVisible() {
-        layersTraceSubject.isVisible(ComponentNameMatcher.LAUNCHER).forAllEntries()
-    }
-
-// endregion
-
 // region System bars tests
 
     /**

@@ -24,9 +24,11 @@ import org.junit.Test
  * is also dismissed.
  *
  * - [BubbleAppBecomesNotExpandedTestCases]
+ * - [LauncherAlwaysVisibleTestCases]
  * - [BUBBLE] is visible and then disappear
  */
-interface DismissExpandedBubbleTestCases : BubbleAppBecomesNotExpandedTestCases {
+interface DismissExpandedBubbleTestCases : BubbleAppBecomesNotExpandedTestCases,
+    LauncherAlwaysVisibleTestCases {
 
 // region Bubble related tests
 
