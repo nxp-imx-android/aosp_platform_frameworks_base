@@ -16,6 +16,8 @@
 
 package com.android.server.inputmethod;
 
+import static android.view.ViewProtoLogGroups.IME_TRACKER;
+
 import static com.google.common.truth.Truth.assertWithMessage;
 
 import android.annotation.NonNull;
@@ -23,6 +25,7 @@ import android.view.inputmethod.ImeTracker;
 
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.inputmethod.SoftInputShowHideReason;
+import com.android.internal.protolog.ProtoLog;
 import com.android.server.inputmethod.ImeTrackerService.History;
 import com.android.server.testutils.OffsettableClock;
 import com.android.server.testutils.TestHandler;
@@ -60,6 +63,7 @@ public class ImeTrackerServiceTest {
         mHandler = new TestHandler(null /* callback */, mClock);
         mHistory = new History();
         mRecordedEntries = new ArrayList<>();
+        ProtoLog.init(IME_TRACKER);
         mService = new ImeTrackerService(mHistory, mHandler, TIMEOUT_MS, mRecordedEntries::add);
     }
 

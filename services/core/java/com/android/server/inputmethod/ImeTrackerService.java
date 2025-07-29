@@ -16,12 +16,15 @@
 
 package com.android.server.inputmethod;
 
+import static android.view.ViewProtoLogGroups.IME_TRACKER;
+
 import android.Manifest;
 import android.annotation.DurationMillisLong;
 import android.annotation.EnforcePermission;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.os.Handler;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.inputmethod.ImeTracker;
 
@@ -31,6 +34,7 @@ import com.android.internal.infra.AndroidFuture;
 import com.android.internal.inputmethod.IImeTracker;
 import com.android.internal.inputmethod.InputMethodDebug;
 import com.android.internal.inputmethod.SoftInputShowHideReason;
+import com.android.internal.protolog.ProtoLog;
 import com.android.internal.util.FrameworkStatsLog;
 
 import java.io.PrintWriter;
@@ -114,12 +118,12 @@ public final class ImeTrackerService extends IImeTracker.Stub {
             if (entry != null) {
                 if (!entry.mTag.equals(tag)) {
                     // Tags don't match as the ID is being reused after the initial entry completed.
-                    Log.i(TAG, tag + ": onStart on previously finished token");
+                    log("%s: onStart on previously finished token", tag);
                     return;
                 }
                 if (entry.mStarted) {
-                    Log.i(TAG, tag + ": onStart on previously started and not finished token: "
-                            + entry.mTag);
+                    log("%s: onStart on previously started and not finished token: %s", tag,
+                            entry.mTag);
                     return;
                 }
 
@@ -188,15 +192,15 @@ public final class ImeTrackerService extends IImeTracker.Stub {
         if (entry != null) {
             if (!entry.mTag.equals(tag)) {
                 //  Tags don't match as the ID is being reused after the initial entry completed.
-                Log.i(TAG, tag + ": onFinished on previously finished token at "
-                        + ImeTracker.Debug.phaseToString(phase) + " with "
-                        + ImeTracker.Debug.statusToString(status));
+                log("%s: onFinished on previously finished token at %s with %s", tag,
+                        ImeTracker.Debug.phaseToString(phase),
+                        ImeTracker.Debug.statusToString(status));
                 return;
             }
             if (entry.mFinished) {
-                Log.i(TAG, tag + ": onFinished on previously finished but active token at "
-                        + ImeTracker.Debug.phaseToString(phase)
-                        + " with " + ImeTracker.Debug.statusToString(status));
+                log("%s: onFinished on previously finished but active token at %s with %s", tag,
+                        ImeTracker.Debug.phaseToString(phase),
+                        ImeTracker.Debug.statusToString(status));
                 return;
             }
 
@@ -207,9 +211,9 @@ public final class ImeTrackerService extends IImeTracker.Stub {
             }
         } else {
             if (mHistory.isCompleted(id)) {
-                Log.i(TAG, tag + ": onFinished on previously finished token at "
-                        + ImeTracker.Debug.phaseToString(phase)
-                        + " with " + ImeTracker.Debug.statusToString(status));
+                log("%s: onFinished on previously finished token at %s with %s", tag,
+                        ImeTracker.Debug.phaseToString(phase),
+                        ImeTracker.Debug.statusToString(status));
                 return;
             }
 
@@ -239,8 +243,7 @@ public final class ImeTrackerService extends IImeTracker.Stub {
                 return;
             }
 
-            Log.i(TAG, entry.mTag + ": onTimeout at "
-                    + ImeTracker.Debug.phaseToString(entry.mPhase));
+            log("%s: onTimeout at %s", entry.mTag, ImeTracker.Debug.phaseToString(entry.mPhase));
 
             entry.onFinish(ImeTracker.STATUS_TIMEOUT, entry.mPhase);
 
@@ -363,6 +366,16 @@ public final class ImeTrackerService extends IImeTracker.Stub {
     private void registerTimeout(long id, @NonNull History.Entry entry) {
         // Register a delayed task to handle the case where the new entry times out.
         mHandler.postDelayed(() -> onTimeout(id, entry), entry /* token */, mTimeoutMs);
+    }
+
+    private static void log(@NonNull String messageString, @NonNull Object... args) {
+        if (android.tracing.Flags.imetrackerProtolog()) {
+            ProtoLog.i(IME_TRACKER, messageString, args);
+        } else {
+            // Log only to logcat
+            final var message = TextUtils.formatSimple(messageString, args);
+            Log.i(TAG, message);
+        }
     }
 
     /**
