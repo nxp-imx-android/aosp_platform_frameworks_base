@@ -28,7 +28,9 @@ import static org.mockito.ArgumentMatchers.matches;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 
+import android.os.SystemClock;
 import android.os.Trace;
+import android.util.Log;
 import android.util.Slog;
 
 import androidx.test.filters.SmallTest;
@@ -52,6 +54,9 @@ import java.util.List;
 @SmallTest
 @RunWith(AndroidJUnit4.class)
 public final class TimingsTraceAndSlogTest {
+
+    // Used to log staments during the test
+    private static final String DA_REAL_TAG = TimingsTraceAndSlogTest.class.getSimpleName();
 
     private static final String TAG = "TEST";
 
@@ -118,14 +123,33 @@ public final class TimingsTraceAndSlogTest {
 
     @Test
     public void testOneLevel() throws Exception {
+        testOneLevel(/* sleepTimeMs= */ 0);
+    }
+
+    @Test
+    public void testOneLevel_sleepsTwoDigits() throws Exception {
+        testOneLevel(/* sleepTimeMs= */ 10);
+    }
+
+    @Test
+    public void testOneLevel_sleepsThreeDigits() throws Exception {
+        testOneLevel(/* sleepTimeMs= */ 100);
+    }
+
+    private void testOneLevel(int sleepTimeMs) throws Exception {
         TimingsTraceAndSlog log = new TimingsTraceAndSlog(TAG, TRACE_TAG_APP);
         log.traceBegin("test");
+        if (sleepTimeMs > 0) {
+            // Sleep to make sure logged duration have more than 0 digits
+            Log.v(DA_REAL_TAG, "Sleeping " + sleepTimeMs + " ms");
+            SystemClock.sleep(sleepTimeMs);
+        }
         log.traceEnd();
 
         verify((MockedVoidMethod) () -> Trace.traceBegin(TRACE_TAG_APP, "test"));
         verify((MockedVoidMethod) () -> Trace.traceEnd(TRACE_TAG_APP));
         verify((MockedVoidMethod) () -> Slog.d(TAG, "test"));
-        verify((MockedVoidMethod) () -> Slog.v(eq(TAG), matches("test took to complete: \\dms")));
+        verify((MockedVoidMethod) () -> Slog.v(eq(TAG), matches("test took to complete: \\d+ms")));
     }
 
     @Test
