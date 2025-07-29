@@ -21,7 +21,10 @@
     <string name="update" msgid="3932142540719227615">"I-update"</string>
     <string name="done" msgid="6632441120016885253">"Tapos na"</string>
     <string name="cancel" msgid="1018267193425558088">"Kanselahin"</string>
-    <string name="install_anyway" msgid="8794642873773384969">"I-install"</string>
+    <!-- no translation found for install_without_verifying (7606774834125762618) -->
+    <skip />
+    <!-- no translation found for more_details (3643407086654820243) -->
+    <skip />
     <string name="dont_install" msgid="414055123295505225">"Huwag i-install"</string>
     <string name="installing" msgid="4921993079741206516">"Nag-i-install…"</string>
     <string name="installing_app" msgid="1165095864863849422">"Ini-install ang <xliff:g id="PACKAGE_LABEL">%1$s</xliff:g>…"</string>
@@ -45,10 +48,6 @@
     <string name="unknown_apps_admin_dlg_text" msgid="4456572224020176095">"Hindi pinapayagan ng iyong admin ang pag-install ng mga app na nakuha mula sa mga hindi kilalang source"</string>
     <string name="unknown_apps_user_restriction_dlg_text" msgid="151020786933988344">"Hindi maaaring mag-install ang user na ito ng mga hindi kilalang app"</string>
     <string name="install_apps_user_restriction_dlg_text" msgid="2154119597001074022">"Hindi pinapayagan ang user na ito na mag-install ng mga app"</string>
-    <string name="verification_incomplete_summary" msgid="40478808885845735">"Hindi pa na-install ang app dahil hindi maisagawa ang pag-verify. Pakisubukan ulit."</string>
-    <string name="cannot_install_verification_unavailable_summary" msgid="2469994565312971465"><p>"Babala: Hindi maisagawa ang pag-verify ng app. "</p><p><a href="">"Matuto pa"</a>" tungkol sa pag-verify ng package"</p></string>
-    <string name="cannot_install_package_summary" msgid="3358675485628657234"><p>"Hindi puwedeng i-install ang app na ito dahil na-block ito. "</p><p><a href="">"Matuto pa"</a>" tungkol sa pag-verify ng package"</p></string>
-    <string name="lite_verification_summary" msgid="3211866126230002977"><p>"Pagmamay-ari ng ADI Lite Developer ang app na ito at bina-bypass nito ang karaniwang proseso ng pag-verify. Gusto mo bang magpatuloy sa pag-install?"</p></string>
     <string name="ok" msgid="7871959885003339302">"OK"</string>
     <string name="archive" msgid="4447791830199354721">"I-archive"</string>
     <string name="update_anyway" msgid="8792432341346261969">"I-update pa rin"</string>

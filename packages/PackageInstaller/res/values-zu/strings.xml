@@ -21,7 +21,10 @@
     <string name="update" msgid="3932142540719227615">"Vuselela"</string>
     <string name="done" msgid="6632441120016885253">"Kwenziwe"</string>
     <string name="cancel" msgid="1018267193425558088">"Khansela"</string>
-    <string name="install_anyway" msgid="8794642873773384969">"Yifake kulungile"</string>
+    <!-- no translation found for install_without_verifying (7606774834125762618) -->
+    <skip />
+    <!-- no translation found for more_details (3643407086654820243) -->
+    <skip />
     <string name="dont_install" msgid="414055123295505225">"Ungayifaki"</string>
     <string name="installing" msgid="4921993079741206516">"Iyafaka..."</string>
     <string name="installing_app" msgid="1165095864863849422">"Ifaka i-<xliff:g id="PACKAGE_LABEL">%1$s</xliff:g>…"</string>
@@ -45,10 +48,6 @@
     <string name="unknown_apps_admin_dlg_text" msgid="4456572224020176095">"Umlawuli wakho akavumeli ukufakwa kwezinhlelo zokusebenza ezitholwe kusukela kumithombo engaziwa"</string>
     <string name="unknown_apps_user_restriction_dlg_text" msgid="151020786933988344">"Izinhlelo zokusebenza ezingaziwa azikwazi ukufakwa ilo msebenzisi"</string>
     <string name="install_apps_user_restriction_dlg_text" msgid="2154119597001074022">"Lo msebenzisi akavunyelwe ukufaka izinhlelo zokusebenza"</string>
-    <string name="verification_incomplete_summary" msgid="40478808885845735">"Ayikafakwa i-app okwamanje ngenxa yokuthi ukuqinisekisa akwenzekanga. Sicela uzame futhi."</string>
-    <string name="cannot_install_verification_unavailable_summary" msgid="2469994565312971465"><p>"Isexwayiso: Ukuqinisekiswa kwe-app akwenzekanga. "</p><p><a href="">"Funda kabanzi"</a>" ngokuqinisekisa iphakheji"</p></string>
-    <string name="cannot_install_package_summary" msgid="3358675485628657234"><p>"Le app ngeke ifakwe ngenxa yokuthi ivinjiwe. "</p><p><a href="">"Funda kabanzi"</a>" ngokuqinisekisa iphakheji"</p></string>
-    <string name="lite_verification_summary" msgid="3211866126230002977"><p>"Umnikazi wale app i-ADI Lite Developer futhi yephula inqubo ejwayelekile yokuqinisekisa. Ufuna ukuqhubeka nokuyifaka?"</p></string>
     <string name="ok" msgid="7871959885003339302">"KULUNGILE"</string>
     <string name="archive" msgid="4447791830199354721">"Ingobo yomlando"</string>
     <string name="update_anyway" msgid="8792432341346261969">"Buyekeza noma kunjalo"</string>

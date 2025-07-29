@@ -21,7 +21,10 @@
     <string name="update" msgid="3932142540719227615">"اپ ڈیٹ کریں"</string>
     <string name="done" msgid="6632441120016885253">"ہو گیا"</string>
     <string name="cancel" msgid="1018267193425558088">"منسوخ کریں"</string>
-    <string name="install_anyway" msgid="8794642873773384969">"بہر حال انسٹال کریں"</string>
+    <!-- no translation found for install_without_verifying (7606774834125762618) -->
+    <skip />
+    <!-- no translation found for more_details (3643407086654820243) -->
+    <skip />
     <string name="dont_install" msgid="414055123295505225">"انسٹال نہ کریں"</string>
     <string name="installing" msgid="4921993079741206516">"انسٹال ہو رہی ہے…"</string>
     <string name="installing_app" msgid="1165095864863849422">"<xliff:g id="PACKAGE_LABEL">%1$s</xliff:g> کو انسٹال کیا جا رہا ہے…"</string>
@@ -45,10 +48,6 @@
     <string name="unknown_apps_admin_dlg_text" msgid="4456572224020176095">"آپ کا منتظم نامعلوم ذرائع سے حاصل شدہ ایپس کو انسٹال کرنے کی اجازت نہیں دیتا ہے"</string>
     <string name="unknown_apps_user_restriction_dlg_text" msgid="151020786933988344">"یہ صارف نامعلوم ایپس کو انسٹال نہیں کر سکتا"</string>
     <string name="install_apps_user_restriction_dlg_text" msgid="2154119597001074022">"اس صارف کو ایپس انسٹال کرنے کی اجازت نہیں ہے"</string>
-    <string name="verification_incomplete_summary" msgid="40478808885845735">"ایپ ابھی تک انسٹال نہیں ہے کیونکہ توثیق نہیں ہو سکی۔ براہ کرم دوبارہ کوشش کریں۔"</string>
-    <string name="cannot_install_verification_unavailable_summary" msgid="2469994565312971465"><p>"وارننگ: ایپ کی توثیق نہیں ہو سکی۔ "</p><p>"پیکیج کی تصدیق کے بارے میں "<a href="">"مزید جانیں"</a></p></string>
-    <string name="cannot_install_package_summary" msgid="3358675485628657234"><p>"اس ایپ کو انسٹال نہیں کیا جا سکتا کیونکہ اسے بلاک کر دیا گیا ہے۔ "</p><p>"پیکیج کی تصدیق کے بارے میں "<a href="">"مزید جانیں"</a></p></string>
-    <string name="lite_verification_summary" msgid="3211866126230002977">"‏"<p>"یہ ایپ ADI Lite ڈیولپر کی ملکیت ہے اور معیاری تصدیقی عمل کو بائی پاس کرتی ہے۔ کیا آپ انسٹالیشن کے ساتھ جاری رکھنا چاہتے ہیں؟"</p></string>
     <string name="ok" msgid="7871959885003339302">"ٹھیک ہے"</string>
     <string name="archive" msgid="4447791830199354721">"آرکائیو کریں"</string>
     <string name="update_anyway" msgid="8792432341346261969">"بہر حال اپ ڈیٹ کریں"</string>

@@ -21,7 +21,10 @@
     <string name="update" msgid="3932142540719227615">"ଅପଡେଟ୍ କରନ୍ତୁ"</string>
     <string name="done" msgid="6632441120016885253">"ହୋଇଗଲା"</string>
     <string name="cancel" msgid="1018267193425558088">"ବାତିଲ କରନ୍ତୁ"</string>
-    <string name="install_anyway" msgid="8794642873773384969">"ଯେ କୌଣସି ମତେ ଇନଷ୍ଟଲ କର"</string>
+    <!-- no translation found for install_without_verifying (7606774834125762618) -->
+    <skip />
+    <!-- no translation found for more_details (3643407086654820243) -->
+    <skip />
     <string name="dont_install" msgid="414055123295505225">"ଇନଷ୍ଟଲ କର ନାହିଁ"</string>
     <string name="installing" msgid="4921993079741206516">"ଇନଷ୍ଟଲ୍‌ କରାଯାଉଛି…"</string>
     <string name="installing_app" msgid="1165095864863849422">"<xliff:g id="PACKAGE_LABEL">%1$s</xliff:g> ଇନଷ୍ଟଲ୍‌ କରାଯାଉଛି…"</string>
@@ -45,10 +48,6 @@
     <string name="unknown_apps_admin_dlg_text" msgid="4456572224020176095">"ଅଜଣା ସୋର୍ସରୁ ଆସିଥିବା ଆପଗୁଡ଼ିକ ଇନଷ୍ଟଲ୍‌ କରିବାକୁ ଆପଣଙ୍କ ଆଡମିନ୍‍ ଅନୁମତି ଦିଅନ୍ତି ନାହିଁ"</string>
     <string name="unknown_apps_user_restriction_dlg_text" msgid="151020786933988344">"ଏହି ୟୁଜରଙ୍କ ଦ୍ୱାରା ଅଜଣା ଆପ୍‍ ଇନଷ୍ଟଲ୍‍ କରାଯାଇପାରିବ ନାହିଁ"</string>
     <string name="install_apps_user_restriction_dlg_text" msgid="2154119597001074022">"ଏହି ୟୁଜର୍‌ ଆପ୍‍ ଇନଷ୍ଟଲ୍‍ କରିପାରିବେ ନାହିଁ"</string>
-    <string name="verification_incomplete_summary" msgid="40478808885845735">"ଯାଞ୍ଚକରଣ ହୋଇନପାରିବା ଯୋଗୁଁ ଆପ ଏପର୍ଯ୍ୟନ୍ତ ଇନଷ୍ଟଲ ହୋଇନାହିଁ। ଦୟାକରି ପୁଣି ଚେଷ୍ଟା କରନ୍ତୁ।"</string>
-    <string name="cannot_install_verification_unavailable_summary" msgid="2469994565312971465"><p>"ଚେତାବନୀ: ଆପ ଯାଞ୍ଚକରଣ ହୋଇପାରିଲା ନାହିଁ। "</p><p><a href="">"ପେକେଜ ଯାଞ୍ଚକରଣ"</a>" ବିଷୟରେ ଅଧିକ ଜାଣନ୍ତୁ"</p></string>
-    <string name="cannot_install_package_summary" msgid="3358675485628657234"><p>"ଏହି ଆପକୁ ବ୍ଲକ କରାଯାଇଥିବା ଯୋଗୁଁ ଏହାକୁ ଇନଷ୍ଟଲ କରାଯାଇପାରିବ ନାହିଁ। "</p><p><a href="">"ପେକେଜ ଯାଞ୍ଚକରଣ"</a>" ବିଷୟରେ ଅଧିକ ଜାଣନ୍ତୁ"</p></string>
-    <string name="lite_verification_summary" msgid="3211866126230002977"><p>"ଏହି ଆପ ADI Lite ଡେଭେଲପରଙ୍କ ମାଲିକାନାରେ ଅଛି ଏବଂ ଏହା ଷ୍ଟାଣ୍ଡାର୍ଡ ଯାଞ୍ଚକରଣ ପ୍ରକ୍ରିୟାକୁ ବାଇପାସ କରେ। ଆପଣ ଇନଷ୍ଟଲେସନ ସହିତ ଆଗକୁ ବଢ଼ିବାକୁ ଚାହୁଁଛନ୍ତି?"</p></string>
     <string name="ok" msgid="7871959885003339302">"ଠିକ୍ ଅଛି"</string>
     <string name="archive" msgid="4447791830199354721">"ଆର୍କାଇଭ କରନ୍ତୁ"</string>
     <string name="update_anyway" msgid="8792432341346261969">"ଯେ କୌଣସି ମତେ ଅପଡେଟ କରନ୍ତୁ"</string>

@@ -17,195 +17,114 @@
 
 <resources xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
-    <!-- no translation found for title_unknown_source_blocked (50770689337399043) -->
-    <skip />
-    <!-- no translation found for title_install_blocked (8292546042865448054) -->
-    <skip />
-    <!-- no translation found for title_install_staging (6207460764383813714) -->
-    <skip />
-    <!-- no translation found for title_install (6806728682404990326) -->
-    <skip />
-    <!-- no translation found for title_installing (3738380766257176010) -->
-    <skip />
-    <!-- no translation found for title_installed (6551855346109302601) -->
-    <skip />
-    <!-- no translation found for title_reinstall (1750856338036455388) -->
-    <skip />
-    <!-- no translation found for title_reinstalling (8194821341725321638) -->
-    <skip />
-    <!-- no translation found for title_reinstalled (4805694558041089418) -->
-    <skip />
-    <!-- no translation found for title_update (1747328630716712391) -->
-    <skip />
-    <!-- no translation found for title_update_ownership_change (6628818356381453406) -->
-    <skip />
-    <!-- no translation found for title_updating (5449073288264173554) -->
-    <skip />
-    <!-- no translation found for title_updated (3286125118804971449) -->
-    <skip />
-    <!-- no translation found for title_cant_install_app (8683361719005005686) -->
-    <skip />
-    <!-- no translation found for title_install_failed_blocked (4864724257000850526) -->
-    <skip />
-    <!-- no translation found for title_install_failed_incompatible (9153043742028690470) -->
-    <skip />
-    <!-- no translation found for title_install_failed_invalid_package (3390527559613519562) -->
-    <skip />
-    <!-- no translation found for title_install_failed_less_storage (4854855960405469248) -->
-    <skip />
-    <!-- no translation found for title_install_failed_not_installed (8014023519071426269) -->
-    <skip />
-    <!-- no translation found for title_uninstall (428653424812685605) -->
-    <skip />
-    <!-- no translation found for title_uninstall_clone (7974889929002929136) -->
-    <skip />
-    <!-- no translation found for title_uninstall_updates_system_app (4827243291196043359) -->
-    <skip />
-    <!-- no translation found for title_uninstall_updates_system_app_all_users (5720572619103268328) -->
-    <skip />
-    <!-- no translation found for title_uninstall_all_users (2008934480150627653) -->
-    <skip />
-    <!-- no translation found for title_uninstall_other_user (7739452181899248303) -->
-    <skip />
-    <!-- no translation found for title_uninstall_app_not_found (501803094061097579) -->
-    <skip />
-    <!-- no translation found for title_uninstall_user_not_allowed (1555448944495159635) -->
-    <skip />
-    <!-- no translation found for title_uninstall_failed (4522950368147075143) -->
-    <skip />
-    <!-- no translation found for title_archive (2876455228073419830) -->
-    <skip />
-    <!-- no translation found for title_archive_all_users (5904736601499520543) -->
-    <skip />
-    <!-- no translation found for title_archive_other_user (5996047192919423497) -->
-    <skip />
-    <!-- no translation found for title_restore (8934911753892124574) -->
-    <skip />
-    <!-- no translation found for title_restore_error_user_action_needed (5696944142011800104) -->
-    <skip />
-    <!-- no translation found for title_restore_error_less_storage (1702198163928260711) -->
-    <skip />
-    <!-- no translation found for title_restore_error_offline (4611160277876184886) -->
-    <skip />
-    <!-- no translation found for title_restore_error_installer_disabled (6955341343521073762) -->
-    <skip />
-    <!-- no translation found for title_restore_error_installer_absent (4650702260526161948) -->
-    <skip />
-    <!-- no translation found for title_restore_error_generic (3675732737839176301) -->
-    <skip />
-    <!-- no translation found for message_update_owner_change (721928859405955082) -->
-    <skip />
-    <!-- no translation found for message_update_owner_change (7398850682198100493) -->
-    <skip />
-    <!-- no translation found for message_update_owner_change (8415571223941666411) -->
-    <skip />
-    <!-- no translation found for message_external_source_blocked (1404860482919177902) -->
-    <skip />
-    <!-- no translation found for message_external_source_blocked (1394622045008552842) -->
-    <skip />
-    <!-- no translation found for message_external_source_blocked (1532513823566863443) -->
-    <skip />
-    <!-- no translation found for message_external_source_blocked (2781541659935183726) -->
-    <skip />
-    <!-- no translation found for message_anonymous_source_warning (4012873091955414109) -->
-    <skip />
-    <!-- no translation found for message_anonymous_source_warning (5167072167473447125) -->
-    <skip />
-    <!-- no translation found for message_anonymous_source_warning (6827454085562760175) -->
-    <skip />
-    <!-- no translation found for message_install_failed_blocked (8289588872577100349) -->
-    <skip />
-    <!-- no translation found for message_install_failed_conflict (1707670432024473123) -->
-    <skip />
-    <!-- no translation found for message_install_failed_incompatible (184079710727317076) -->
-    <skip />
-    <!-- no translation found for message_install_failed_invalid (6607567121196588310) -->
-    <skip />
-    <!-- no translation found for message_install_failed_less_storage (5263281541675717769) -->
-    <skip />
-    <!-- no translation found for message_parse_failed (205300138438352785) -->
-    <skip />
-    <!-- no translation found for message_no_install_apps_restriction (6772323689748831650) -->
-    <skip />
-    <!-- no translation found for message_no_install_unknown_apps_restriction (6111967131011920924) -->
-    <skip />
-    <!-- no translation found for message_uninstall_with_clone_instance (12594156305221478) -->
-    <skip />
-    <!-- no translation found for message_delete_clone_app (6632017049227330363) -->
-    <skip />
-    <!-- no translation found for message_uninstall_updates_system_app (1246198093614610171) -->
-    <skip />
-    <!-- no translation found for message_uninstall_updates_system_app_all_users (1659615085602508659) -->
-    <skip />
-    <!-- no translation found for message_uninstall_work_profile (224587253086750763) -->
-    <skip />
-    <!-- no translation found for message_uninstall_private_space (2815872500665141251) -->
-    <skip />
-    <!-- no translation found for message_uninstall_app_not_found (1228396155188846293) -->
-    <skip />
-    <!-- no translation found for message_uninstall_user_not_allowed (4812707444447008148) -->
-    <skip />
-    <!-- no translation found for message_uninstall_failed (4678598986902459187) -->
-    <skip />
-    <!-- no translation found for message_uninstall_keep_data (3955153594868206983) -->
-    <skip />
-    <!-- no translation found for message_archive (943853731737315850) -->
-    <skip />
-    <!-- no translation found for message_archive_all_users (4664139369764501351) -->
-    <skip />
-    <!-- no translation found for message_archive_other_user (6465828676043191175) -->
-    <skip />
-    <!-- no translation found for message_archive_work_profile (7601504268820630858) -->
-    <skip />
-    <!-- no translation found for message_archive_private_space (4873651645762576624) -->
-    <skip />
-    <!-- no translation found for message_restore (8402726798623569969) -->
-    <skip />
-    <!-- no translation found for message_restore_error_user_action_needed (2206904734076205208) -->
-    <skip />
-    <!-- no translation found for message_restore_error_less_storage (4945507738776981462) -->
-    <skip />
-    <!-- no translation found for message_restore_error_offline (4212551781323276126) -->
-    <skip />
-    <!-- no translation found for message_restore_error_installer_disabled (1089791898782445342) -->
-    <skip />
-    <!-- no translation found for message_restore_error_installer_absent (8492838251989389724) -->
-    <skip />
-    <!-- no translation found for message_restore_error_generic (5903850636679929406) -->
-    <skip />
-    <!-- no translation found for message_uninstall_activity (3263352475743590167) -->
-    <skip />
-    <!-- no translation found for button_install (7434013176505680162) -->
-    <skip />
-    <!-- no translation found for button_update (3046719350226327526) -->
-    <skip />
-    <!-- no translation found for button_update_anyway (6674207037708730779) -->
-    <skip />
-    <!-- no translation found for button_done (3408025390982260629) -->
-    <skip />
-    <!-- no translation found for button_open (6892684987374117955) -->
-    <skip />
-    <!-- no translation found for button_cancel (6690491435205617214) -->
-    <skip />
+    <string name="title_unknown_source_blocked" msgid="50770689337399043">"권한 필요"</string>
+    <string name="title_install_blocked" msgid="8292546042865448054">"설치가 차단됨"</string>
+    <string name="title_install_staging" msgid="6207460764383813714">"앱 준비 중…"</string>
+    <string name="title_install" msgid="6806728682404990326">"앱을 설치하시겠습니까?"</string>
+    <string name="title_installing" msgid="3738380766257176010">"설치 중…"</string>
+    <string name="title_installed" msgid="6551855346109302601">"앱이 설치됨"</string>
+    <string name="title_reinstall" msgid="1750856338036455388">"이 앱을 다시 설치하시겠습니까?"</string>
+    <string name="title_reinstalling" msgid="8194821341725321638">"재설치 중…"</string>
+    <string name="title_reinstalled" msgid="4805694558041089418">"앱 재설치됨"</string>
+    <string name="title_update" msgid="1747328630716712391">"이 앱을 업데이트하시겠습니까?"</string>
+    <string name="title_update_ownership_change" msgid="6628818356381453406">"<xliff:g id="NEW_UPDATE_OWNER">%1$s</xliff:g>을(를) 사용하여 이 앱을 업데이트하시겠습니까?"</string>
+    <string name="title_updating" msgid="5449073288264173554">"업데이트 중…"</string>
+    <string name="title_updated" msgid="3286125118804971449">"앱 업데이트됨"</string>
+    <string name="title_cant_install_app" msgid="8683361719005005686">"앱을 설치할 수 없음"</string>
+    <string name="title_install_failed_blocked" msgid="4864724257000850526">"설치가 차단됨"</string>
+    <string name="title_install_failed_incompatible" msgid="9153043742028690470">"앱이 호환되지 않음"</string>
+    <string name="title_install_failed_invalid_package" msgid="3390527559613519562">"잘못된 패키지"</string>
+    <string name="title_install_failed_less_storage" msgid="4854855960405469248">"저장용량 부족"</string>
+    <string name="title_install_failed_not_installed" msgid="8014023519071426269">"앱이 설치되지 않음"</string>
+    <string name="title_uninstall" msgid="428653424812685605">"이 앱을 제거하시겠습니까?"</string>
+    <string name="title_uninstall_clone" msgid="7974889929002929136">"이 앱 클론을 삭제하시겠습니까?"</string>
+    <string name="title_uninstall_updates_system_app" msgid="4827243291196043359">"앱 업데이트를 제거하시겠습니까?"</string>
+    <string name="title_uninstall_updates_system_app_all_users" msgid="5720572619103268328">"모든 사용자를 대상으로 앱 업데이트를 제거하시겠습니까?"</string>
+    <string name="title_uninstall_all_users" msgid="2008934480150627653">"모든 사용자를 대상으로 이 앱을 제거하시겠습니까?"</string>
+    <string name="title_uninstall_other_user" msgid="7739452181899248303">"\'<xliff:g id="USER_NAME">%1$s</xliff:g>\' 사용자를 대상으로 이 앱을 제거하시겠습니까?"</string>
+    <string name="title_uninstall_app_not_found" msgid="501803094061097579">"앱을 찾을 수 없음"</string>
+    <string name="title_uninstall_user_not_allowed" msgid="1555448944495159635">"이 앱을 제거할 수 없음"</string>
+    <string name="title_uninstall_failed" msgid="4522950368147075143">"앱이 제거되지 않음"</string>
+    <string name="title_archive" msgid="2876455228073419830">"이 앱을 보관처리하시겠습니까?"</string>
+    <string name="title_archive_all_users" msgid="5904736601499520543">"모든 사용자를 대상으로 이 앱을 보관처리하시겠습니까?"</string>
+    <string name="title_archive_other_user" msgid="5996047192919423497">"\'<xliff:g id="USER_NAME">%1$s</xliff:g>\' 사용자를 대상으로 이 앱을 보관처리하시겠습니까?"</string>
+    <string name="title_restore" msgid="8934911753892124574">"이 앱을 복원하시겠습니까?"</string>
+    <string name="title_restore_error_user_action_needed" msgid="5696944142011800104">"조치 필요"</string>
+    <string name="title_restore_error_less_storage" msgid="1702198163928260711">"저장용량 부족"</string>
+    <string name="title_restore_error_offline" msgid="4611160277876184886">"오프라인 상태"</string>
+    <string name="title_restore_error_installer_disabled" msgid="6955341343521073762">"<xliff:g id="INSTALLER_NAME">%1$s</xliff:g> 사용 중지됨"</string>
+    <string name="title_restore_error_installer_absent" msgid="4650702260526161948">"<xliff:g id="INSTALLER_NAME">%1$s</xliff:g> 설치되지 않음"</string>
+    <string name="title_restore_error_generic" msgid="3675732737839176301">"문제 발생"</string>
+    <string name="message_update_owner_change" product="tablet" msgid="721928859405955082">"이 앱은 보통 &lt;b&gt;<xliff:g id="EXISTING_UPDATE_OWNER">%1$s</xliff:g>&lt;/b&gt;에서 업데이트를 받습니다. 다른 출처를 사용해 업데이트를 받으면 향후 태블릿에 있는 어떤 출처에서든지 업데이트를 받을 수 있습니다. 앱 기능은 변경될 수도 있습니다."</string>
+    <string name="message_update_owner_change" product="tv" msgid="7398850682198100493">"이 앱은 보통 &lt;b&gt;<xliff:g id="EXISTING_UPDATE_OWNER">%1$s</xliff:g>&lt;/b&gt;에서 업데이트를 받습니다. 다른 출처를 사용해 앱을 업데이트하면 향후 TV에 있는 어떤 출처에서든지 업데이트를 받을 수 있습니다. 앱 기능은 변경될 수도 있습니다."</string>
+    <string name="message_update_owner_change" product="default" msgid="8415571223941666411">"이 앱은 보통 &lt;b&gt;<xliff:g id="EXISTING_UPDATE_OWNER">%1$s</xliff:g>&lt;/b&gt;에서 업데이트를 받습니다. 다른 출처를 사용해 업데이트를 받으면 향후 휴대전화에 있는 어떤 출처든지 업데이트를 받을 수 있습니다. 앱 기능은 변경될 수도 있습니다."</string>
+    <string name="message_external_source_blocked" product="tablet" msgid="1404860482919177902">"보안상의 이유로 이 출처의 알 수 없는 앱을 태블릿에 설치할 수 없습니다. 설정에서 변경할 수 있습니다."</string>
+    <string name="message_external_source_blocked" product="tv" msgid="1394622045008552842">"보안상의 이유로 현재 이 출처의 알 수 없는 앱을 TV에 설치할 수 없습니다. 설정에서 변경할 수 있습니다."</string>
+    <string name="message_external_source_blocked" product="watch" msgid="1532513823566863443">"보안상의 이유로 현재 이 출처의 알 수 없는 앱을 시계에 설치할 수 없습니다. 설정에서 변경할 수 있습니다."</string>
+    <string name="message_external_source_blocked" product="default" msgid="2781541659935183726">"보안상의 이유로 현재 이 출처의 알 수 없는 앱을 휴대전화에 설치할 수 없습니다. 설정에서 변경할 수 있습니다."</string>
+    <string name="message_anonymous_source_warning" product="default" msgid="4012873091955414109">"휴대전화와 개인 정보는 알 수 없는 앱의 공격에 더욱 취약합니다. 이 앱을 설치하면 앱 사용으로 인해 발생할 수 있는 모든 휴대전화 손상이나 데이터 손실에 사용자가 책임을 진다는 것에 동의하게 됩니다."</string>
+    <string name="message_anonymous_source_warning" product="tablet" msgid="5167072167473447125">"태블릿과 개인 정보는 알 수 없는 앱의 공격에 더욱 취약합니다. 이 앱을 설치하면 앱 사용으로 인해 발생할 수 있는 모든 태블릿 손상이나 데이터 손실에 사용자가 책임을 진다는 것에 동의하게 됩니다."</string>
+    <string name="message_anonymous_source_warning" product="tv" msgid="6827454085562760175">"TV와 개인 정보는 알 수 없는 앱의 공격에 더욱 취약합니다. 이 앱을 설치하면 앱 사용으로 인해 발생할 수 있는 모든 TV 손상이나 데이터 손실에 사용자가 책임을 진다는 것에 동의하게 됩니다."</string>
+    <string name="message_install_failed_blocked" msgid="8289588872577100349">"이 앱은 설치가 차단되었습니다."</string>
+    <string name="message_install_failed_conflict" msgid="1707670432024473123">"이 앱은 기기에 이미 있는 앱과 충돌합니다."</string>
+    <string name="message_install_failed_incompatible" msgid="184079710727317076">"기기와 호환되지 않는 앱입니다."</string>
+    <string name="message_install_failed_invalid" msgid="6607567121196588310">"이 앱의 설치 파일에 문제가 있습니다."</string>
+    <string name="message_install_failed_less_storage" msgid="5263281541675717769">"이 앱을 설치하려면 저장공간을 확보한 후 다시 시도하세요."</string>
+    <string name="message_parse_failed" msgid="205300138438352785">"앱 파일에 문제가 있습니다."</string>
+    <string name="message_no_install_apps_restriction" msgid="6772323689748831650">"앱 설치가 제한된 상태입니다."</string>
+    <string name="message_no_install_unknown_apps_restriction" msgid="6111967131011920924">"알 수 없는 앱 설치가 제한된 상태입니다."</string>
+    <string name="message_uninstall_with_clone_instance" msgid="12594156305221478">"이 앱의 클론도 있으며 삭제될 예정입니다."</string>
+    <string name="message_delete_clone_app" msgid="6632017049227330363">"이 앱은 <xliff:g id="APP_LABEL">%1$s</xliff:g>의 클론입니다."</string>
+    <string name="message_uninstall_updates_system_app" msgid="1246198093614610171">"이 앱이 초기 버전으로 대체됩니다. 모든 앱 데이터가 삭제됩니다."</string>
+    <string name="message_uninstall_updates_system_app_all_users" msgid="1659615085602508659">"이 앱은 기기의 모든 사용자를 대상으로 초기 버전으로 대체됩니다. 모든 앱 데이터가 삭제됩니다."</string>
+    <string name="message_uninstall_work_profile" msgid="224587253086750763">"직장 프로필에서 이 앱이 제거됩니다."</string>
+    <string name="message_uninstall_private_space" msgid="2815872500665141251">"비공개 스페이스에서 이 앱이 제거됩니다."</string>
+    <string name="message_uninstall_app_not_found" msgid="1228396155188846293">"이 앱이 설치된 앱 목록에 없거나 이미 제거되었습니다."</string>
+    <string name="message_uninstall_user_not_allowed" msgid="4812707444447008148">"현재 사용자는 이 제거를 실행할 수 없습니다."</string>
+    <string name="message_uninstall_failed" msgid="4678598986902459187">"이 앱을 제거할 수 없습니다."</string>
+    <string name="message_uninstall_keep_data" msgid="3955153594868206983">"앱 데이터 유지"</string>
+    <string name="message_archive" msgid="943853731737315850">"앱 데이터가 저장됩니다."</string>
+    <string name="message_archive_all_users" msgid="4664139369764501351">"모든 앱 데이터가 저장됩니다."</string>
+    <string name="message_archive_other_user" msgid="6465828676043191175">"앱 데이터가 저장됩니다."</string>
+    <string name="message_archive_work_profile" msgid="7601504268820630858">"직장 프로필에서 이 앱이 보관처리됩니다. 앱 데이터가 저장됩니다."</string>
+    <string name="message_archive_private_space" msgid="4873651645762576624">"비공개 스페이스에서 이 앱이 보관처리됩니다. 앱 데이터가 저장됩니다."</string>
+    <string name="message_restore" msgid="8402726798623569969">"이 앱은 백그라운드에서 설치 프로그램(<xliff:g id="INSTALLER_NAME">%1$s</xliff:g>)을 통해 다운로드됩니다."</string>
+    <string name="message_restore_error_user_action_needed" msgid="2206904734076205208">"이 앱을 복원하려면 <xliff:g id="INSTALLER_NAME">%1$s</xliff:g>에 추가 정보가 필요합니다."</string>
+    <string name="message_restore_error_less_storage" msgid="4945507738776981462">"이 앱을 복원하려면 &lt;b&gt;<xliff:g id="BYTES">%1$s</xliff:g>&lt;/b&gt;의 공간을 확보한 후 다시 시도하세요."</string>
+    <string name="message_restore_error_offline" msgid="4212551781323276126">"이 앱을 복원하려면 인터넷 연결을 확인하고 다시 시도해 보세요."</string>
+    <string name="message_restore_error_installer_disabled" msgid="1089791898782445342">"이 앱을 복원하려면 설정에서 설치 프로그램(<xliff:g id="INSTALLERNAME">%1$s</xliff:g>)을 사용 설정해야 합니다."</string>
+    <string name="message_restore_error_installer_absent" msgid="8492838251989389724">"이 앱을 복원하려면 설치 프로그램(<xliff:g id="INSTALLER_NAME">%1$s</xliff:g>)을 설치해야 합니다."</string>
+    <string name="message_restore_error_generic" msgid="5903850636679929406">"이 앱을 복원하려고 시도하던 중 문제가 발생했습니다."</string>
+    <string name="message_uninstall_activity" msgid="3263352475743590167">"<xliff:g id="ACTIVITY_NAME">%1$s</xliff:g> 활동은 <xliff:g id="APP_NAME">%2$s</xliff:g> 앱의 일부입니다."</string>
+    <!-- no translation found for cannot_install_app_blocked_summary (8433096420067308800) -->
+    <skip />
+    <!-- no translation found for cannot_install_verification_no_internet_summary (8948259713332887857) -->
+    <skip />
+    <!-- no translation found for cannot_install_verification_unavailable_summary (343815915687716571) -->
+    <skip />
+    <!-- no translation found for install_without_verifying_summary (9056694084349761546) -->
+    <skip />
+    <!-- no translation found for cannot_install_app_blocked_title (6372444121824751694) -->
+    <skip />
+    <!-- no translation found for cannot_install_verification_no_internet_title (2862046642298119581) -->
+    <skip />
+    <!-- no translation found for cannot_install_verification_unavailable_title (2038093442302309120) -->
+    <skip />
+    <string name="button_install" msgid="7434013176505680162">"설치"</string>
+    <string name="button_update" msgid="3046719350226327526">"업데이트"</string>
+    <string name="button_update_anyway" msgid="6674207037708730779">"무시하고 업데이트"</string>
+    <string name="button_done" msgid="3408025390982260629">"완료"</string>
+    <string name="button_open" msgid="6892684987374117955">"열기"</string>
+    <string name="button_cancel" msgid="6690491435205617214">"취소"</string>
     <string name="button_continue" msgid="107501685249826244">"계속"</string>
-    <!-- no translation found for button_close (7187308556466275899) -->
-    <skip />
-    <!-- no translation found for button_uninstall (6317309210023038915) -->
-    <skip />
-    <!-- no translation found for button_delete (1050833585936159792) -->
-    <skip />
-    <!-- no translation found for button_reinstall (476377927808336418) -->
-    <skip />
-    <!-- no translation found for button_manage_apps (957735904821659812) -->
-    <skip />
-    <!-- no translation found for button_archive (2719647830439699121) -->
-    <skip />
-    <!-- no translation found for button_restore (4388317532933866637) -->
-    <skip />
-    <!-- no translation found for button_uninstall_updates_system_app (5510230756003755497) -->
-    <skip />
-    <!-- no translation found for button_settings (3837571366246132287) -->
-    <skip />
-    <!-- no translation found for string_cloned_app_label (3596634458716024562) -->
-    <skip />
+    <string name="button_close" msgid="7187308556466275899">"닫기"</string>
+    <string name="button_uninstall" msgid="6317309210023038915">"제거"</string>
+    <string name="button_delete" msgid="1050833585936159792">"삭제"</string>
+    <string name="button_reinstall" msgid="476377927808336418">"재설치"</string>
+    <string name="button_manage_apps" msgid="957735904821659812">"앱 관리"</string>
+    <string name="button_archive" msgid="2719647830439699121">"보관처리"</string>
+    <string name="button_restore" msgid="4388317532933866637">"복원"</string>
+    <string name="button_uninstall_updates_system_app" msgid="5510230756003755497">"업데이트 제거"</string>
+    <string name="button_settings" msgid="3837571366246132287">"설정"</string>
+    <string name="string_cloned_app_label" msgid="3596634458716024562">"<xliff:g id="PACKAGE_LABEL">%1$s</xliff:g> 클론"</string>
 </resources>

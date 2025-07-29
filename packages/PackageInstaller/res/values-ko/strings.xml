@@ -21,7 +21,10 @@
     <string name="update" msgid="3932142540719227615">"업데이트"</string>
     <string name="done" msgid="6632441120016885253">"완료"</string>
     <string name="cancel" msgid="1018267193425558088">"취소"</string>
-    <string name="install_anyway" msgid="8794642873773384969">"무시하고 설치"</string>
+    <!-- no translation found for install_without_verifying (7606774834125762618) -->
+    <skip />
+    <!-- no translation found for more_details (3643407086654820243) -->
+    <skip />
     <string name="dont_install" msgid="414055123295505225">"설치 안함"</string>
     <string name="installing" msgid="4921993079741206516">"설치 중..."</string>
     <string name="installing_app" msgid="1165095864863849422">"<xliff:g id="PACKAGE_LABEL">%1$s</xliff:g> 설치 중…"</string>
@@ -45,10 +48,6 @@
     <string name="unknown_apps_admin_dlg_text" msgid="4456572224020176095">"관리자가 알 수 없는 소스의 앱 설치를 허용하지 않습니다."</string>
     <string name="unknown_apps_user_restriction_dlg_text" msgid="151020786933988344">"이 사용자는 알 수 없는 앱을 설치할 수 없습니다."</string>
     <string name="install_apps_user_restriction_dlg_text" msgid="2154119597001074022">"이 사용자는 앱을 설치할 권한이 없습니다."</string>
-    <string name="verification_incomplete_summary" msgid="40478808885845735">"인증을 진행할 수 없어 앱이 아직 설치되지 않았습니다. 다시 시도해 주세요."</string>
-    <string name="cannot_install_verification_unavailable_summary" msgid="2469994565312971465"><p>"경고: 앱 인증을 진행할 수 없습니다. "</p><p>"패키지 인증에 대해 "<a href="">"자세히 알아보기"</a></p></string>
-    <string name="cannot_install_package_summary" msgid="3358675485628657234"><p>"이 앱은 차단되었으므로 설치할 수 없습니다. "</p><p>"패키지 인증에 대해 "<a href="">"자세히 알아보기"</a></p></string>
-    <string name="lite_verification_summary" msgid="3211866126230002977"><p>"이 앱은 ADI Lite 개발자가 소유하며, 표준 인증 절차를 우회합니다. 설치를 계속하시겠습니까?"</p></string>
     <string name="ok" msgid="7871959885003339302">"확인"</string>
     <string name="archive" msgid="4447791830199354721">"보관처리"</string>
     <string name="update_anyway" msgid="8792432341346261969">"업데이트"</string>

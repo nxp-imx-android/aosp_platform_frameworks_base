@@ -21,7 +21,10 @@
     <string name="update" msgid="3932142540719227615">"અપડેટ કરો"</string>
     <string name="done" msgid="6632441120016885253">"થઈ ગયું"</string>
     <string name="cancel" msgid="1018267193425558088">"રદ કરો"</string>
-    <string name="install_anyway" msgid="8794642873773384969">"છતાં ઇન્સ્ટૉલ કરો"</string>
+    <!-- no translation found for install_without_verifying (7606774834125762618) -->
+    <skip />
+    <!-- no translation found for more_details (3643407086654820243) -->
+    <skip />
     <string name="dont_install" msgid="414055123295505225">"ઇન્સ્ટૉલ કરશો નહીં"</string>
     <string name="installing" msgid="4921993079741206516">"ઇન્સ્ટૉલ કરી રહ્યાં છીએ…"</string>
     <string name="installing_app" msgid="1165095864863849422">"<xliff:g id="PACKAGE_LABEL">%1$s</xliff:g>ને ઇન્સ્ટૉલ કરી રહ્યાં છીએ…"</string>
@@ -45,10 +48,6 @@
     <string name="unknown_apps_admin_dlg_text" msgid="4456572224020176095">"તમારા વ્યવસ્થાપક અજાણ્યા સ્રોતોથી મેળવેલી ઍપ્લિકેશનોના ઇન્સ્ટૉલેશનની મંજૂરી આપતા નથી"</string>
     <string name="unknown_apps_user_restriction_dlg_text" msgid="151020786933988344">"આ વપરાશકર્તા અજાણી ઍપ્લિકેશનોને ઇન્સ્ટૉલ કરી શકતા નથી"</string>
     <string name="install_apps_user_restriction_dlg_text" msgid="2154119597001074022">"આ વપરાશકર્તાને ઍપ્લિકેશનો ઇન્સ્ટૉલ કરવાની મંજૂરી નથી"</string>
-    <string name="verification_incomplete_summary" msgid="40478808885845735">"ઍપ હજી ઇન્સ્ટૉલ થઈ નથી કારણ કે ચકાસણી થઈ શકી નથી. કૃપા કરીને ફરી પ્રયાસ કરો."</string>
-    <string name="cannot_install_verification_unavailable_summary" msgid="2469994565312971465"><p>"ચેતવણી: ઍપની ચકાસણી કરી શકાઈ નથી. "</p><p>"પૅકેજની ચકાસણી વિશે "<a href="">"વધુ જાણો"</a></p></string>
-    <string name="cannot_install_package_summary" msgid="3358675485628657234"><p>"આ ઍપ ઇન્સ્ટૉલ કરી શકાતી નથી કારણ કે તે બ્લૉક કરવામાં આવી છે. "</p><p>"પૅકેજની ચકાસણી વિશે "<a href="">"વધુ જાણો"</a></p></string>
-    <string name="lite_verification_summary" msgid="3211866126230002977"><p>"આ ઍપ ADI લાઇટ ડેવલપરની માલિકીની છે અને સ્ટૅન્ડર્ડ ચકાસણીની પ્રક્રિયાને બાયપાસ કરે છે. શું તમે ઇન્સ્ટૉલેશન સાથે આગળ વધવા માગો છો?"</p></string>
     <string name="ok" msgid="7871959885003339302">"ઓકે"</string>
     <string name="archive" msgid="4447791830199354721">"આર્કાઇવ કરો"</string>
     <string name="update_anyway" msgid="8792432341346261969">"તો પણ અપડેટ કરો"</string>

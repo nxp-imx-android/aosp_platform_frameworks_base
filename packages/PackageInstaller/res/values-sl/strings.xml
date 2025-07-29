@@ -21,7 +21,10 @@
     <string name="update" msgid="3932142540719227615">"Posodobi"</string>
     <string name="done" msgid="6632441120016885253">"Končano"</string>
     <string name="cancel" msgid="1018267193425558088">"Prekliči"</string>
-    <string name="install_anyway" msgid="8794642873773384969">"Kljub temu namesti"</string>
+    <!-- no translation found for install_without_verifying (7606774834125762618) -->
+    <skip />
+    <!-- no translation found for more_details (3643407086654820243) -->
+    <skip />
     <string name="dont_install" msgid="414055123295505225">"Ne namesti"</string>
     <string name="installing" msgid="4921993079741206516">"Nameščanje …"</string>
     <string name="installing_app" msgid="1165095864863849422">"Nameščanje aplikacije <xliff:g id="PACKAGE_LABEL">%1$s</xliff:g> …"</string>
@@ -45,10 +48,6 @@
     <string name="unknown_apps_admin_dlg_text" msgid="4456572224020176095">"Skrbnik ne dovoli nameščanja aplikacij iz neznanih virov."</string>
     <string name="unknown_apps_user_restriction_dlg_text" msgid="151020786933988344">"Ta uporabnik nima dovoljenja za nameščanje neznanih aplikacij"</string>
     <string name="install_apps_user_restriction_dlg_text" msgid="2154119597001074022">"Ta uporabnik nima dovoljenja za nameščanje aplikacij"</string>
-    <string name="verification_incomplete_summary" msgid="40478808885845735">"Aplikacija še ni nameščena, ker preverjanja ni bilo mogoče izvesti. Poskusite znova."</string>
-    <string name="cannot_install_verification_unavailable_summary" msgid="2469994565312971465"><p>"Opozorilo: Preverjanja aplikacije ni bilo mogoče izvesti. "</p><p><a href="">"Preberite več"</a>" o preverjanju paketov"</p>"."</string>
-    <string name="cannot_install_package_summary" msgid="3358675485628657234"><p>"Te aplikacije ni mogoče namestiti, ker je blokirana. "</p><p><a href="">"Preberite več"</a>" o preverjanju paketov"</p>"."</string>
-    <string name="lite_verification_summary" msgid="3211866126230002977"><p>"Ta aplikacija pripada lastniku ADI Lite Developer in zaobide standardni postopek preverjanja. Ali želite nadaljevati namestitev?"</p></string>
     <string name="ok" msgid="7871959885003339302">"V redu"</string>
     <string name="archive" msgid="4447791830199354721">"Arhiviranje"</string>
     <string name="update_anyway" msgid="8792432341346261969">"Vseeno posodobi"</string>

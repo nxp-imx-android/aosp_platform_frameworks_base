@@ -21,7 +21,10 @@
     <string name="update" msgid="3932142540719227615">"Uppfæra"</string>
     <string name="done" msgid="6632441120016885253">"Lokið"</string>
     <string name="cancel" msgid="1018267193425558088">"Hætta við"</string>
-    <string name="install_anyway" msgid="8794642873773384969">"Setja samt upp"</string>
+    <!-- no translation found for install_without_verifying (7606774834125762618) -->
+    <skip />
+    <!-- no translation found for more_details (3643407086654820243) -->
+    <skip />
     <string name="dont_install" msgid="414055123295505225">"Ekki setja upp"</string>
     <string name="installing" msgid="4921993079741206516">"Setur upp…"</string>
     <string name="installing_app" msgid="1165095864863849422">"Setur <xliff:g id="PACKAGE_LABEL">%1$s</xliff:g> upp…"</string>
@@ -45,10 +48,6 @@
     <string name="unknown_apps_admin_dlg_text" msgid="4456572224020176095">"Kerfisstjórinn leyfir ekki uppsetningu forrita af óþekktum uppruna"</string>
     <string name="unknown_apps_user_restriction_dlg_text" msgid="151020786933988344">"Þessi notandi getur ekki sett upp óþekkt forrit"</string>
     <string name="install_apps_user_restriction_dlg_text" msgid="2154119597001074022">"Þessi notandi hefur ekki leyfi til að setja upp forrit"</string>
-    <string name="verification_incomplete_summary" msgid="40478808885845735">"Ekki er búið að setja upp forritið vegna þess að sannprófun gat ekki átt sér stað. Reyndu aftur."</string>
-    <string name="cannot_install_verification_unavailable_summary" msgid="2469994565312971465"><p>"Viðvörun: sannprófun forrita gat ekki farið fram. "</p><p><a href="">"Nánar"</a>" um staðfestingu pakka"</p></string>
-    <string name="cannot_install_package_summary" msgid="3358675485628657234"><p>"Ekki er hægt að setja þetta forrit upp vegna þess að því hefur verið lokað. "</p><p><a href="">"Nánar"</a>" um staðfestingu pakka"</p></string>
-    <string name="lite_verification_summary" msgid="3211866126230002977"><p>"Þetta forrit er í eigu forritara ADI Lite og er undanskilið stöðluðu staðfestingarferli. Viltu halda uppsetningu áfram?"</p></string>
     <string name="ok" msgid="7871959885003339302">"Í lagi"</string>
     <string name="archive" msgid="4447791830199354721">"Setja í geymslu"</string>
     <string name="update_anyway" msgid="8792432341346261969">"Uppfæra samt"</string>

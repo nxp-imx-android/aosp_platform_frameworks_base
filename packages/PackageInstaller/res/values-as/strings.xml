@@ -21,7 +21,10 @@
     <string name="update" msgid="3932142540719227615">"আপডে’ট কৰক"</string>
     <string name="done" msgid="6632441120016885253">"সম্পন্ন হ’ল"</string>
     <string name="cancel" msgid="1018267193425558088">"বাতিল কৰক"</string>
-    <string name="install_anyway" msgid="8794642873773384969">"যিহ’লেও ইনষ্টল কৰক"</string>
+    <!-- no translation found for install_without_verifying (7606774834125762618) -->
+    <skip />
+    <!-- no translation found for more_details (3643407086654820243) -->
+    <skip />
     <string name="dont_install" msgid="414055123295505225">"ইনষ্টল নকৰিব"</string>
     <string name="installing" msgid="4921993079741206516">"ইনষ্টল কৰি থকা হৈছে…"</string>
     <string name="installing_app" msgid="1165095864863849422">"<xliff:g id="PACKAGE_LABEL">%1$s</xliff:g> ইনষ্টল কৰি থকা হৈছে…"</string>
@@ -45,10 +48,6 @@
     <string name="unknown_apps_admin_dlg_text" msgid="4456572224020176095">"আপোনাৰ প্ৰশাসকে অজ্ঞাত উৎসৰ পৰা পোৱা এপ্ ইনষ্টল কৰাৰ অনুমতি দিয়া নাই"</string>
     <string name="unknown_apps_user_restriction_dlg_text" msgid="151020786933988344">"এই ব্যৱহাৰকাৰীয়ে অজ্ঞাত উৎসৰপৰা পোৱা এপ্‌সমূহ ইনষ্টল কৰিব নোৱাৰে"</string>
     <string name="install_apps_user_restriction_dlg_text" msgid="2154119597001074022">"এই ব্যৱহাৰকাৰীজনৰ এপ্ ইনষ্টল কৰাৰ অনুমতি নাই"</string>
-    <string name="verification_incomplete_summary" msgid="40478808885845735">"এপ্‌টো এতিয়াও ইনষ্টল হোৱা নাই কাৰণ ইয়াৰ সত্যাপন সম্পন্ন নহ’ল। অনুগ্ৰহ কৰি পুনৰ চেষ্টা কৰক।"</string>
-    <string name="cannot_install_verification_unavailable_summary" msgid="2469994565312971465"><p>"সকীয়নি: এপৰ সত্যাপন সম্পন্ন নহ’ল। "</p><p>"পেকেজ সত্যাপনৰ বিষয়ে"<a href="">" অধিক জানক"</a></p></string>
-    <string name="cannot_install_package_summary" msgid="3358675485628657234"><p>"এই এপ্‌টো ইনষ্টল কৰিব নোৱাৰি কাৰণ ইয়াক অৱৰোধ কৰা হৈছে। "</p><p>"পেকেজ সত্যাপনৰ বিষয়ে"<a href="">" অধিক জানক"</a></p></string>
-    <string name="lite_verification_summary" msgid="3211866126230002977"><p>"এই এপ্‌টোৰ গৰাকী ADI Lite Developer আৰু ই মানক সত্যাপন প্ৰক্ৰিয়া বাইপাছ কৰে। আপুনি ইনষ্টলেশ্বন কৰিবলৈ আগবাঢ়িব বিচাৰেনে?"</p></string>
     <string name="ok" msgid="7871959885003339302">"ঠিক আছে"</string>
     <string name="archive" msgid="4447791830199354721">"আৰ্কাইভ কৰক"</string>
     <string name="update_anyway" msgid="8792432341346261969">"যিকোনো প্ৰকাৰে আপডে’ট কৰক"</string>

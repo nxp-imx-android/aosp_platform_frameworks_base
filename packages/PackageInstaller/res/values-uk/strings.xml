@@ -21,7 +21,10 @@
     <string name="update" msgid="3932142540719227615">"Оновити"</string>
     <string name="done" msgid="6632441120016885253">"Готово"</string>
     <string name="cancel" msgid="1018267193425558088">"Скасувати"</string>
-    <string name="install_anyway" msgid="8794642873773384969">"Усе одно встановити"</string>
+    <!-- no translation found for install_without_verifying (7606774834125762618) -->
+    <skip />
+    <!-- no translation found for more_details (3643407086654820243) -->
+    <skip />
     <string name="dont_install" msgid="414055123295505225">"Не встановлювати"</string>
     <string name="installing" msgid="4921993079741206516">"Встановлення…"</string>
     <string name="installing_app" msgid="1165095864863849422">"Установлюється <xliff:g id="PACKAGE_LABEL">%1$s</xliff:g>…"</string>
@@ -45,10 +48,6 @@
     <string name="unknown_apps_admin_dlg_text" msgid="4456572224020176095">"Ваш адміністратор заборонив установлювати додатки з невідомих джерел"</string>
     <string name="unknown_apps_user_restriction_dlg_text" msgid="151020786933988344">"Цей користувач не може встановлювати невідомі додатки"</string>
     <string name="install_apps_user_restriction_dlg_text" msgid="2154119597001074022">"Цей користувач не може встановлювати додатки"</string>
-    <string name="verification_incomplete_summary" msgid="40478808885845735">"Додаток ще не встановлено, оскільки не вдалося виконати перевірку. Повторіть спробу."</string>
-    <string name="cannot_install_verification_unavailable_summary" msgid="2469994565312971465"><p>"Попередження. Не вдалося перевірити додаток. "</p><p><a href="">"Докладніше про перевірку пакетів."</a></p></string>
-    <string name="cannot_install_package_summary" msgid="3358675485628657234"><p>"Цей додаток не можна встановити, оскільки його заблоковано. "</p><p><a href="">"Докладніше про перевірку пакетів."</a></p></string>
-    <string name="lite_verification_summary" msgid="3211866126230002977"><p>"Цей додаток належить розробнику ADI Lite Developer і обходить стандартну процедуру перевірки. Продовжити встановлення?"</p></string>
     <string name="ok" msgid="7871959885003339302">"OK"</string>
     <string name="archive" msgid="4447791830199354721">"Архівувати"</string>
     <string name="update_anyway" msgid="8792432341346261969">"Усе одно оновити"</string>
@@ -131,7 +130,7 @@
     <string name="unarchive_error_installer_uninstalled_title" msgid="3748354109176326489">"<xliff:g id="INSTALLERNAME">%1$s</xliff:g> видалено"</string>
     <string name="unarchive_error_installer_uninstalled_body" msgid="944733542444183204">"Щоб відновити цей додаток, установіть <xliff:g id="INSTALLERNAME">%1$s</xliff:g>"</string>
     <string name="unarchive_action_required_continue" msgid="5711202111224184257">"Продовжити"</string>
-    <string name="unarchive_clear_storage_button" msgid="1549537154535608744">"Очистити пам’ять"</string>
+    <string name="unarchive_clear_storage_button" msgid="1549537154535608744">"Очистити сховище"</string>
     <string name="unarchive_settings_button" msgid="3504171760009177425">"Налаштування"</string>
     <string name="close" msgid="5214897374055647996">"Закрити"</string>
 </resources>

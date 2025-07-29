@@ -21,7 +21,10 @@
     <string name="update" msgid="3932142540719227615">"Aktualizovat"</string>
     <string name="done" msgid="6632441120016885253">"Hotovo"</string>
     <string name="cancel" msgid="1018267193425558088">"Zrušit"</string>
-    <string name="install_anyway" msgid="8794642873773384969">"Přesto nainstalovat"</string>
+    <!-- no translation found for install_without_verifying (7606774834125762618) -->
+    <skip />
+    <!-- no translation found for more_details (3643407086654820243) -->
+    <skip />
     <string name="dont_install" msgid="414055123295505225">"Neinstalovat"</string>
     <string name="installing" msgid="4921993079741206516">"Probíhá instalace…"</string>
     <string name="installing_app" msgid="1165095864863849422">"Instalace balíčku <xliff:g id="PACKAGE_LABEL">%1$s</xliff:g>…"</string>
@@ -45,10 +48,6 @@
     <string name="unknown_apps_admin_dlg_text" msgid="4456572224020176095">"Váš administrátor nedovoluje instalaci aplikací z neznámých zdrojů"</string>
     <string name="unknown_apps_user_restriction_dlg_text" msgid="151020786933988344">"Tento uživatel nemůže instalovat neznámé aplikace"</string>
     <string name="install_apps_user_restriction_dlg_text" msgid="2154119597001074022">"Tento uživatel nesmí instalovat aplikace"</string>
-    <string name="verification_incomplete_summary" msgid="40478808885845735">"Aplikace ještě není nainstalována, protože se nepodařilo provést ověření. Zkuste to znovu."</string>
-    <string name="cannot_install_verification_unavailable_summary" msgid="2469994565312971465"><p>"Varování: Nepodařilo se provést ověření aplikace. "</p><p><a href="">"Další informace o ověřování balíčků"</a></p></string>
-    <string name="cannot_install_package_summary" msgid="3358675485628657234"><p>"Tuto aplikaci nelze nainstalovat, protože byla zablokována. "</p><p><a href="">"Další informace o ověřování balíčků"</a></p></string>
-    <string name="lite_verification_summary" msgid="3211866126230002977"><p>"Tato aplikace je vlastněna vývojářem ADI Lite a obchází standardní ověřovací proces. Chcete v instalaci pokračovat?"</p></string>
     <string name="ok" msgid="7871959885003339302">"OK"</string>
     <string name="archive" msgid="4447791830199354721">"Archivovat"</string>
     <string name="update_anyway" msgid="8792432341346261969">"Přesto aktualizovat"</string>
