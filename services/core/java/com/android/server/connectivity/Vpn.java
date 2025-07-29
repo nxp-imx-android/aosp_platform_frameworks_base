@@ -711,10 +711,6 @@ public class Vpn {
         return mEnableTeardown;
     }
 
-    private boolean isVpnMetricsLoggable() {
-        return mVpnConnectivityMetrics != null && mVpnConnectivityMetrics.isPlatformVpn();
-    }
-
     /**
      * Update current state, dispatching event to listeners.
      */
@@ -735,7 +731,7 @@ public class Vpn {
             case CONNECTED:
                 if (null != mNetworkAgent) {
                     mNetworkAgent.markConnected();
-                    if (isVpnMetricsLoggable()) {
+                    if (mVpnConnectivityMetrics != null) {
                         mVpnConnectivityMetrics.notifyVpnConnected();
                     }
                 }
@@ -745,7 +741,7 @@ public class Vpn {
                 if (null != mNetworkAgent) {
                     mNetworkAgent.unregister();
                     mNetworkAgent = null;
-                    if (isVpnMetricsLoggable()) {
+                    if (mVpnConnectivityMetrics != null) {
                         mVpnConnectivityMetrics.notifyVpnDisconnected();
                         // Clear the metrics since the NetworkAgent is disconnected.
                         mVpnConnectivityMetrics.resetMetrics();
@@ -1818,6 +1814,10 @@ public class Vpn {
             config.interfaze = mInterface;
             config.startTime = SystemClock.elapsedRealtime();
             mConfig = config;
+            // Log VPN service events for connection establishment
+            if (mVpnConnectivityMetrics != null) {
+                mVpnConnectivityMetrics.setVpnType(VpnManager.TYPE_VPN_SERVICE);
+            }
 
             // Set up forwarding and DNS rules.
             // First attempt to do a seamless handover that only changes the interface name and
