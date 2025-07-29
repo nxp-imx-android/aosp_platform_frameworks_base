@@ -40,7 +40,7 @@ import java.util.Objects;
 /**
  * Controls the application of {@link ViewConfigurationParams} for a virtual device.
  */
-class ViewConfigurationController {
+public class ViewConfigurationController {
 
     private static final String TAG = "ViewConfigurationController";
     private static final String FRAMEWORK_PACKAGE_NAME = "android";
