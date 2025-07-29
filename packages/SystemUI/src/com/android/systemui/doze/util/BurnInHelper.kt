@@ -20,8 +20,8 @@ import android.util.MathUtils
 import com.android.systemui.shared.Flags
 
 private const val MILLIS_PER_MINUTES = 1000 * 60f
-private const val BURN_IN_PREVENTION_PERIOD_Y = 521f
-private const val BURN_IN_PREVENTION_PERIOD_X = 83f
+private const val BURN_IN_PREVENTION_PERIOD_Y = 271f
+private const val BURN_IN_PREVENTION_PERIOD_X = 43f
 private const val BURN_IN_PREVENTION_PERIOD_SCALE = 181f
 private const val BURN_IN_PREVENTION_PERIOD_PROGRESS = 89f
 
