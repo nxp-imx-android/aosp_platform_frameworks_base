@@ -1661,84 +1661,51 @@ class RootWindowContainer extends WindowContainer<DisplayContent>
     }
 
     /**
-     * @return a list of {@link ActivityAssistInfo} of the visible activities in the given display.
-     * Visible activities in the focused root Task are at the front of the list.
+     * @return a list of pairs, containing activities and their task id which are the top ones in
+     * each visible root task. The first entry will be the focused activity.
      *
-     * <p>NOTE: This includes all visible activities, even if one is paused, which means it is
-     * behind a translucent container.
+     * <p>NOTE: If the top activity is in the split screen, the other activities in the same split
+     * screen will also be returned.
      */
     List<ActivityAssistInfo> getTopVisibleActivities(int displayId) {
         final ArrayList<ActivityAssistInfo> topVisibleActivities = new ArrayList<>();
+        final ArrayList<ActivityAssistInfo> activityAssistInfos = new ArrayList<>();
         final DisplayContent dc =
                 displayId != INVALID_DISPLAY ? getDisplayContent(displayId) : null;
         final Task topFocusedRootTask =
                 dc != null ? dc.getFocusedRootTask() : getTopDisplayFocusedRootTask();
 
-        if (Flags.returnAllVisibleActivitiesForVis()) {
-            final ArrayList<ActivityAssistInfo> visibleActivitiesInFocusedRoot = new ArrayList<>();
-            final Consumer<ActivityRecord> collectFromFocusedRoot = activity -> {
-                if (activity.isVisibleRequested()) {
-                    visibleActivitiesInFocusedRoot.add(new ActivityAssistInfo(activity));
-                }
-            };
-            final Consumer<ActivityRecord> collectFromNonFocusedRoot = activity -> {
-                if (activity.isVisibleRequested()) {
-                    topVisibleActivities.add(new ActivityAssistInfo(activity));
-                }
-            };
-            final Consumer<Task> collectFromDisplay = leafTaskFragment -> {
-                if (!leafTaskFragment.isVisibleRequested()) {
-                    return;
-                }
-                if (leafTaskFragment.getRootTask() == topFocusedRootTask) {
-                    leafTaskFragment.forAllActivities(collectFromFocusedRoot);
-                } else {
-                    leafTaskFragment.forAllActivities(collectFromNonFocusedRoot);
-                }
-            };
-
-            if (dc != null) {
-                dc.forAllRootTasks(collectFromDisplay);
-            } else {
-                // Traverse all displays.
-                forAllRootTasks(collectFromDisplay);
-            }
-            topVisibleActivities.addAll(0, visibleActivitiesInFocusedRoot);
-        } else {
-            final ArrayList<ActivityAssistInfo> activityAssistInfos = new ArrayList<>();
-            final Consumer<Task> collectVisibleActivities = rootTask -> {
-                // Get top activity from a visible root task and add it to the list.
-                if (rootTask.shouldBeVisible(null /* starting */)) {
-                    final ActivityRecord top = rootTask.getTopNonFinishingActivity();
-                    if (top != null) {
-                        activityAssistInfos.clear();
-                        activityAssistInfos.add(new ActivityAssistInfo(top));
-                        // Check if the activity on the split screen.
-                        top.getTask().forOtherAdjacentTasks(task -> {
-                            final ActivityRecord adjacentActivityRecord =
-                                    task.getTopNonFinishingActivity();
-                            if (adjacentActivityRecord != null) {
-                                activityAssistInfos.add(
-                                        new ActivityAssistInfo(adjacentActivityRecord));
-                            }
-                        });
-                        if (rootTask == topFocusedRootTask) {
-                            topVisibleActivities.addAll(0, activityAssistInfos);
-                        } else {
-                            topVisibleActivities.addAll(activityAssistInfos);
+        final Consumer<Task> collectVisibleActivities = rootTask -> {
+            // Get top activity from a visible root task and add it to the list.
+            if (rootTask.shouldBeVisible(null /* starting */)) {
+                final ActivityRecord top = rootTask.getTopNonFinishingActivity();
+                if (top != null) {
+                    activityAssistInfos.clear();
+                    activityAssistInfos.add(new ActivityAssistInfo(top));
+                    // Check if the activity on the split screen.
+                    top.getTask().forOtherAdjacentTasks(task -> {
+                        final ActivityRecord adjacentActivityRecord =
+                                task.getTopNonFinishingActivity();
+                        if (adjacentActivityRecord != null) {
+                            activityAssistInfos.add(
+                                    new ActivityAssistInfo(adjacentActivityRecord));
                         }
+                    });
+                    if (rootTask == topFocusedRootTask) {
+                        topVisibleActivities.addAll(0, activityAssistInfos);
+                    } else {
+                        topVisibleActivities.addAll(activityAssistInfos);
                     }
                 }
-            };
-
-            if (dc != null) {
-                dc.forAllRootTasks(collectVisibleActivities);
-            } else {
-                // Traverse all displays.
-                forAllRootTasks(collectVisibleActivities);
             }
-        }
+        };
 
+        if (dc != null) {
+            dc.forAllRootTasks(collectVisibleActivities);
+        } else {
+            // Traverse all displays.
+            forAllRootTasks(collectVisibleActivities);
+        }
         return topVisibleActivities;
     }
 
