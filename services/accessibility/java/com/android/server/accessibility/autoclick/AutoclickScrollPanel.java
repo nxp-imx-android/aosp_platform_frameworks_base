@@ -77,7 +77,7 @@ public class AutoclickScrollPanel {
     @Retention(RetentionPolicy.SOURCE)
     public @interface ScrollDirection {}
 
-    private final Context mContext;
+    private Context mContext;
     private AutoclickLinearLayout mContentView;
     private final WindowManager mWindowManager;
     private final WindowManager.LayoutParams mParams;
@@ -325,6 +325,9 @@ public class AutoclickScrollPanel {
             if (mInScrollMode) {
                 mWindowManager.removeView(mContentView);
             }
+
+            // Update mContext with the new configuration.
+            mContext = mContext.createConfigurationContext(newConfig);
 
             // Always re-inflate the views and resources to adopt the new configuration.
             // This is important even if the panel is hidden.
