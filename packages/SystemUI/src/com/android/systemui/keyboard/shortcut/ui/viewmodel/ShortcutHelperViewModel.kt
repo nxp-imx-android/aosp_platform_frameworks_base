@@ -31,8 +31,6 @@ import com.android.compose.ui.graphics.painter.DrawablePainter
 import com.android.systemui.Flags.extendedAppsShortcutCategory
 import com.android.systemui.Flags.keyboardShortcutHelperShortcutCustomizer
 import com.android.systemui.dagger.qualifiers.Background
-import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent.DisplayAware
-import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent.PerDisplaySingleton
 import com.android.systemui.keyboard.shortcut.domain.interactor.ShortcutHelperCategoriesInteractor
 import com.android.systemui.keyboard.shortcut.domain.interactor.ShortcutHelperCustomizationModeInteractor
 import com.android.systemui.keyboard.shortcut.domain.interactor.ShortcutHelperStateInteractor
@@ -45,7 +43,6 @@ import com.android.systemui.keyboard.shortcut.shared.model.ShortcutCategoryType.
 import com.android.systemui.keyboard.shortcut.shared.model.ShortcutCategoryType.InputMethodEditor
 import com.android.systemui.keyboard.shortcut.shared.model.ShortcutCategoryType.MultiTasking
 import com.android.systemui.keyboard.shortcut.shared.model.ShortcutCategoryType.System
-import com.android.systemui.keyboard.shortcut.shared.model.ShortcutHelperState
 import com.android.systemui.keyboard.shortcut.shared.model.ShortcutSubCategory
 import com.android.systemui.keyboard.shortcut.ui.model.IconSource
 import com.android.systemui.keyboard.shortcut.ui.model.ShortcutCategoryUi
@@ -60,10 +57,10 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.withContext
 
-@PerDisplaySingleton
 class ShortcutHelperViewModel
 @Inject
 constructor(
@@ -75,19 +72,14 @@ constructor(
     private val stateInteractor: ShortcutHelperStateInteractor,
     categoriesInteractor: ShortcutHelperCategoriesInteractor,
     private val customizationModeInteractor: ShortcutHelperCustomizationModeInteractor,
-    @DisplayAware private val displayId: Int,
 ) {
 
     private val searchQuery = MutableStateFlow("")
     private val userContext = userTracker.createCurrentUserContext(userTracker.userContext)
 
-    // TODO: b/429374961 - this flow should be converted to Hydrated States per SysUI best practices
     val shouldShow =
-        combine(categoriesInteractor.shortcutCategories, stateInteractor.state) { categories, state
-                ->
-                categories.isNotEmpty() &&
-                    (state as? ShortcutHelperState.Active)?.displayId == displayId
-            }
+        categoriesInteractor.shortcutCategories
+            .map { it.isNotEmpty() }
             .distinctUntilChanged()
             .flowOn(backgroundDispatcher)
 

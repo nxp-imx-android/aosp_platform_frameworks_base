@@ -38,6 +38,7 @@ import com.android.systemui.keyboard.shortcut.qualifiers.DefaultShortcutCategori
 import com.android.systemui.keyboard.shortcut.qualifiers.InputShortcuts
 import com.android.systemui.keyboard.shortcut.qualifiers.MultitaskingShortcuts
 import com.android.systemui.keyboard.shortcut.qualifiers.SystemShortcuts
+import com.android.systemui.keyboard.shortcut.ui.ShortcutHelperDialogStarter
 import dagger.Binds
 import dagger.Lazy
 import dagger.Module
@@ -95,6 +96,18 @@ interface ShortcutHelperModule {
     ): ShortcutCategoriesRepository
 
     companion object {
+        @Provides
+        @IntoMap
+        @ClassKey(ShortcutHelperDialogStarter::class)
+        fun starter(implLazy: Lazy<ShortcutHelperDialogStarter>): CoreStartable {
+            return if (keyboardShortcutHelperRewrite()) {
+                implLazy.get()
+            } else {
+                // No-op implementation when the flag is disabled.
+                NoOpStartable
+            }
+        }
+
         @Provides
         @IntoMap
         @ClassKey(ShortcutHelperCoreStartable::class)
