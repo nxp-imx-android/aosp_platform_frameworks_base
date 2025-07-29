@@ -363,6 +363,10 @@ java_library {
         ":__subpackages__",
         "//frameworks/opt:__subpackages__",
     ],
+
+    lint: {
+        baseline_filename: "lint-baseline.xml",
+    },
 }
 
 // merge all required services into one final installable jar
