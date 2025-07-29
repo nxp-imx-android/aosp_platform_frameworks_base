@@ -1442,9 +1442,8 @@ class WindowOrganizerController extends IWindowOrganizerController.Stub
                             + " as there is no valid task provided");
                     break;
                 }
-                ActivityRecord pipActivity = pipTaskFragment.getActivity(
-                        (activity) -> activity.pictureInPictureArgs != null);
-                if (pipActivity == null) {
+                ActivityRecord pipActivity = pipTaskFragment.getTopNonFinishingActivity();
+                if (pipActivity == null || pipActivity.pictureInPictureArgs == null) {
                     Slog.w(TAG, "Skip applying hierarchy operation " + hop
                             + " as the provided task has no PiP-able activity");
                     break;
