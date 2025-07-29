@@ -714,13 +714,10 @@
     <string name="monitoring_description_pin_protection" msgid="1983580207046670355">"Kunlik limit va tanaffuslar kabi qurilmangizdagi ayrim boshqaruv elementlarini faqat PIN kod yordamida oʻzgartirish mumkin."</string>
     <string name="legacy_vpn_name" msgid="4174223520162559145">"VPN"</string>
     <string name="keyguard_indication_trust_unlocked" msgid="7395154975733744547">"TrustAgent tomonidan ochilgan"</string>
-    <!-- no translation found for kg_prompt_after_adaptive_auth_lock (6065186971000690782) -->
-    <skip />
-    <!-- no translation found for keyguard_indication_after_adaptive_auth_lock (5240600662061340872) -->
-    <skip />
+    <string name="kg_prompt_after_adaptive_auth_lock" msgid="6065186971000690782">"Ekran qulflangan. Juda koʻp marta autentifikatsiya qilishga urinildi."</string>
+    <string name="keyguard_indication_after_adaptive_auth_lock" msgid="5240600662061340872">"Ekran qulflangan\nAutentifikatsiya amalga oshmadi"</string>
     <string name="keyguard_indication_after_watch_disconnected" msgid="8133476870585660478">"Soatingizda qulflangan"</string>
-    <!-- no translation found for keyguard_indication_after_secure_lock_device (4358906300665255820) -->
-    <skip />
+    <string name="keyguard_indication_after_secure_lock_device" msgid="4358906300665255820">"2 bosqichli tekshiruv bilan qulflangan"</string>
     <string name="zen_mode_and_condition" msgid="5043165189511223718">"<xliff:g id="ZEN_MODE">%1$s</xliff:g>. <xliff:g id="EXIT_CONDITION">%2$s</xliff:g>"</string>
     <string name="accessibility_volume_settings" msgid="1458961116951564784">"Tovush sozlamalari"</string>
     <string name="volume_odi_captions_tip" msgid="8825655463280990941">"Avtomatik taglavha yaratish"</string>
@@ -1062,10 +1059,8 @@
     <string name="qs_edit" msgid="5583565172803472437">"Tahrirlash"</string>
     <string name="qs_edit_tiles" msgid="2105215324060865035">"Kataklarni tahrirlash"</string>
     <string name="qs_edit_mode_tooltip" msgid="4164112885539479781">"Tezkor sozlamalar katakchasi oʻlchamini oʻzgartirish"</string>
-    <!-- no translation found for qs_edit_settings (3243175290660574156) -->
-    <skip />
-    <!-- no translation found for qs_edit_menu_content_description (4420651071119623791) -->
-    <skip />
+    <string name="qs_edit_settings" msgid="3243175290660574156">"Sozlamalar"</string>
+    <string name="qs_edit_menu_content_description" msgid="4420651071119623791">"Variantlar"</string>
     <string name="tuner_time" msgid="2450785840990529997">"Vaqt"</string>
   <string-array name="clock_options">
     <item msgid="3986445361435142273">"Soat, daqiqa va soniyalar ko‘rsatilsin"</item>

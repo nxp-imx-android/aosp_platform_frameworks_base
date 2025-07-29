@@ -714,13 +714,10 @@
     <string name="monitoring_description_pin_protection" msgid="1983580207046670355">"আপোনাৰ ডিভাইচত দৈনিক সীমা আৰু ডাউনটাইমৰ দৰে কিছুমান নিয়ন্ত্ৰণ কেৱল এটা পিনৰ জৰিয়তে সলনি কৰিব পাৰি।"</string>
     <string name="legacy_vpn_name" msgid="4174223520162559145">"ভিপিএন"</string>
     <string name="keyguard_indication_trust_unlocked" msgid="7395154975733744547">"TrustAgentএ আনলক কৰি ৰাখিছে"</string>
-    <!-- no translation found for kg_prompt_after_adaptive_auth_lock (6065186971000690782) -->
-    <skip />
-    <!-- no translation found for keyguard_indication_after_adaptive_auth_lock (5240600662061340872) -->
-    <skip />
+    <string name="kg_prompt_after_adaptive_auth_lock" msgid="6065186971000690782">"স্ক্ৰীন লক কৰা হ’ল। অত্যধিক প্ৰমাণীকৰণৰ প্ৰয়াস।"</string>
+    <string name="keyguard_indication_after_adaptive_auth_lock" msgid="5240600662061340872">"স্ক্ৰীন লক হৈ আছে\nবিশ্বাসযোগ্যতা প্ৰমাণীকৰণ কৰিব পৰা নগ’ল"</string>
     <string name="keyguard_indication_after_watch_disconnected" msgid="8133476870585660478">"আপোনাৰ ঘড়ীটোৱে লক কৰিছে"</string>
-    <!-- no translation found for keyguard_indication_after_secure_lock_device (4358906300665255820) -->
-    <skip />
+    <string name="keyguard_indication_after_secure_lock_device" msgid="4358906300665255820">"দ্বি-স্তৰীয় সত্যাপনৰ জৰিয়তে লক কৰা হৈছে"</string>
     <string name="zen_mode_and_condition" msgid="5043165189511223718">"<xliff:g id="ZEN_MODE">%1$s</xliff:g>. <xliff:g id="EXIT_CONDITION">%2$s</xliff:g>"</string>
     <string name="accessibility_volume_settings" msgid="1458961116951564784">"ধ্বনিৰ ছেটিং"</string>
     <string name="volume_odi_captions_tip" msgid="8825655463280990941">"স্বয়ংক্ৰিয় কেপশ্বন মিডিয়া"</string>
@@ -1062,10 +1059,8 @@
     <string name="qs_edit" msgid="5583565172803472437">"সম্পাদনা কৰক"</string>
     <string name="qs_edit_tiles" msgid="2105215324060865035">"টাইল সম্পাদনা কৰক"</string>
     <string name="qs_edit_mode_tooltip" msgid="4164112885539479781">"ক্ষিপ্ৰ ছেটিঙৰ টাইলৰ আকাৰ সলনি কৰক"</string>
-    <!-- no translation found for qs_edit_settings (3243175290660574156) -->
-    <skip />
-    <!-- no translation found for qs_edit_menu_content_description (4420651071119623791) -->
-    <skip />
+    <string name="qs_edit_settings" msgid="3243175290660574156">"ছেটিং"</string>
+    <string name="qs_edit_menu_content_description" msgid="4420651071119623791">"বিকল্পসমূহ"</string>
     <string name="tuner_time" msgid="2450785840990529997">"সময়"</string>
   <string-array name="clock_options">
     <item msgid="3986445361435142273">"ঘন্টা, মিনিট আৰু ছেকেণ্ড দেখুৱাওক"</item>

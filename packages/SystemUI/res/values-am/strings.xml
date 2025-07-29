@@ -140,7 +140,7 @@
     <string name="screenrecord_stop_dialog_button" msgid="2883812564938194350">"መቅረጽ አቁም"</string>
     <string name="screen_record_record_device_audio_label" msgid="5363057443124085198">"የመሣሪያ ኦዲዮ ይቅዱ"</string>
     <string name="screen_record_record_microphone_label" msgid="4685753707185662381">"ማይክሮፎን ይቅዱ"</string>
-    <string name="screen_record_should_show_touches_label" msgid="2203962566795833783">"ንኪዎችን አሳይ"</string>
+    <string name="screen_record_should_show_touches_label" msgid="2203962566795833783">"ንክኪዎችን አሳይ"</string>
     <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"ለመቅዳት መተግበሪያ ይምረጡ"</string>
     <string name="screen_capture_fullscreen_screenshot_button" msgid="4255912593013592954">"መላውን ማያ ገፅ ፎቶ ያንሱ"</string>
     <string name="screen_capture_region_selection_button" msgid="4437546351856914639">"የተመረጠ አካባቢን አግኝ"</string>

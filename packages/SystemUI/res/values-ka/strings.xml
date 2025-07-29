@@ -714,10 +714,8 @@
     <string name="monitoring_description_pin_protection" msgid="1983580207046670355">"თქვენი მოწყობილობის გარკვეული მართვის საშუალებები, როგორიცაა დღიური ლიმიტები და სისტემის შეფერხების პერიოდი, შესაძლოა, მხოლოდ PIN-კოდის საშუალებით შეიცვალოს."</string>
     <string name="legacy_vpn_name" msgid="4174223520162559145">"VPN"</string>
     <string name="keyguard_indication_trust_unlocked" msgid="7395154975733744547">"განბლოკილია TrustAgent-ის მიერ"</string>
-    <!-- no translation found for kg_prompt_after_adaptive_auth_lock (6065186971000690782) -->
-    <skip />
-    <!-- no translation found for keyguard_indication_after_adaptive_auth_lock (5240600662061340872) -->
-    <skip />
+    <string name="kg_prompt_after_adaptive_auth_lock" msgid="6065186971000690782">"ეკრანი დაიბლოკა. დაფიქსირდა ავტორიზაციის ზედმეტად ბევრი მცდელობა."</string>
+    <string name="keyguard_indication_after_adaptive_auth_lock" msgid="5240600662061340872">"ეკრანი დაიბლოკა\nავტორიზაცია ვერ მოხერხდა"</string>
     <string name="keyguard_indication_after_watch_disconnected" msgid="8133476870585660478">"თქვენი საათით ჩაკეტილი"</string>
     <string name="keyguard_indication_after_secure_lock_device" msgid="4358906300665255820">"დაბლოკილია 2-ფაზიანი დადასტურებით"</string>
     <string name="zen_mode_and_condition" msgid="5043165189511223718">"<xliff:g id="ZEN_MODE">%1$s</xliff:g>. <xliff:g id="EXIT_CONDITION">%2$s</xliff:g>"</string>
@@ -1061,10 +1059,8 @@
     <string name="qs_edit" msgid="5583565172803472437">"რედაქტირება"</string>
     <string name="qs_edit_tiles" msgid="2105215324060865035">"ფილების რედაქტირება"</string>
     <string name="qs_edit_mode_tooltip" msgid="4164112885539479781">"სწრაფი პარამეტრების ფილების ზომის შეცვლა"</string>
-    <!-- no translation found for qs_edit_settings (3243175290660574156) -->
-    <skip />
-    <!-- no translation found for qs_edit_menu_content_description (4420651071119623791) -->
-    <skip />
+    <string name="qs_edit_settings" msgid="3243175290660574156">"პარამეტრები"</string>
+    <string name="qs_edit_menu_content_description" msgid="4420651071119623791">"ვარიანტები"</string>
     <string name="tuner_time" msgid="2450785840990529997">"დრო"</string>
   <string-array name="clock_options">
     <item msgid="3986445361435142273">"საათების, წუთებისა და წამების ჩვენება"</item>
