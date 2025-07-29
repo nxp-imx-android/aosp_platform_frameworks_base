@@ -79,6 +79,7 @@ import static com.android.server.pm.PackageManagerShellCommandDataLoader.Metadat
 
 import android.Manifest;
 import android.annotation.AnyThread;
+import android.annotation.FlaggedApi;
 import android.annotation.IntDef;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
@@ -216,6 +217,7 @@ import com.android.server.IoThread;
 import com.android.server.LocalServices;
 import com.android.server.Watchdog;
 import com.android.server.art.ArtManagedInstallFileHelper;
+import com.android.server.art.model.ValidationResult;
 import com.android.server.pm.Installer.InstallerException;
 import com.android.server.pm.dex.DexManager;
 import com.android.server.pm.pkg.AndroidPackage;
@@ -237,6 +239,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
 import java.security.cert.Certificate;
@@ -926,6 +929,8 @@ public class PackageInstallerSession extends IPackageInstallerSession.Stub {
 
     @UnarchivalStatus
     private int mUnarchivalStatus = UNARCHIVAL_STATUS_UNSET;
+
+    @GuardedBy("mLock") private final List<String> mWarnings = new ArrayList<>();
 
     private static final FileFilter sAddedApkFilter = new FileFilter() {
         @Override
@@ -3999,7 +4004,8 @@ public class PackageInstallerSession extends IPackageInstallerSession.Stub {
             return new InstallingSession(sessionId, stageDir, localObserver, params, mInstallSource,
                     user, mSigningDetails, mInstallerUid, mPackageLite, mPreVerifiedDomains, mPm,
                     mHasAppMetadataFile, mDependencyInstallerEnabled.get(),
-                    mMissingSharedLibraryCount.get(), mDeveloperVerificationStatusInternal);
+                    mMissingSharedLibraryCount.get(), mDeveloperVerificationStatusInternal,
+                    mWarnings);
         }
     }
 
@@ -4199,6 +4205,7 @@ public class PackageInstallerSession extends IPackageInstallerSession.Stub {
         mResolvedBaseFile = null;
         mResolvedStagedFiles.clear();
         mResolvedInheritedFiles.clear();
+        mWarnings.clear();
 
         final PackageInfo pkgInfo = mPm.snapshotComputer().getPackageInfo(
                 params.appPackageName, PackageManager.GET_SIGNATURES
@@ -4309,7 +4316,11 @@ public class PackageInstallerSession extends IPackageInstallerSession.Stub {
             CollectionUtils.addAll(stagedSplitTypes, apk.getSplitTypes());
         }
 
-        verifySdmSignatures(artManagedFilePaths, mSigningDetails);
+        if (com.android.art.flags.Flags.artManagedInstallFilesValidationApi()) {
+            validateArtManagedInstallFiles(artManagedFilePaths);
+        } else {
+            verifySdmSignatures(artManagedFilePaths, mSigningDetails);
+        }
 
         if (removeSplitList.size() > 0) {
             if (pkgInfo == null) {
@@ -4905,6 +4916,44 @@ public class PackageInstallerSession extends IPackageInstallerSession.Stub {
             return false;
         }
         return true;
+    }
+
+    @FlaggedApi(com.android.art.flags.Flags.FLAG_ART_MANAGED_INSTALL_FILES_VALIDATION_API)
+    private void validateArtManagedInstallFiles(List<String> artManagedFilePaths)
+            throws PackageManagerException {
+        for (ValidationResult result :
+                ArtManagedInstallFileHelper.validateFiles(artManagedFilePaths)) {
+            switch (result.getCode()) {
+                case ValidationResult.RESULT_ACCEPTED -> {
+                }
+                case ValidationResult.RESULT_UNRECOGNIZED -> {
+                    Slog.wtf(TAG,
+                            "Unrecognized ART-managed install file path '" + result.getPath()
+                                    + "'");
+                }
+                case ValidationResult.RESULT_SHOULD_DELETE_AND_CONTINUE -> {
+                    try {
+                        Files.delete(Paths.get(result.getPath()));
+                    } catch (IOException e) {
+                        throw new PackageManagerException(INSTALL_FAILED_INTERNAL_ERROR,
+                                "Failed to delete '" + result.getPath() + "': " + e.getMessage());
+                    }
+                    mWarnings.add(result.getMessage());
+                    mResolvedStagedFiles.removeIf(
+                            f -> f.getAbsolutePath().equals(result.getPath()));
+                    artManagedFilePaths.remove(result.getPath());
+                }
+                case ValidationResult.RESULT_SHOULD_FAIL -> {
+                    throw new PackageManagerException(
+                            INSTALL_FAILED_INVALID_APK, result.getMessage());
+                }
+                default -> {
+                    Slog.wtf(TAG,
+                            "ArtManagedInstallFileHelper.validateFiles returned unknown code "
+                                    + result.getCode());
+                }
+            }
+        }
     }
 
     /**
