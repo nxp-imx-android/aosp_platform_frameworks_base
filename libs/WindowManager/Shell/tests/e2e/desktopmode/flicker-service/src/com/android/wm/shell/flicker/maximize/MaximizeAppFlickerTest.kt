@@ -16,7 +16,7 @@
 
 package com.android.wm.shell.flicker.maximize
 
-import androidx.test.filters.RequiresDevice
+import android.platform.test.annotations.RequiresDesktopDevice
 import android.tools.NavBar
 import android.tools.flicker.assertions.FlickerChecker
 import android.tools.flicker.junit.FlickerParametersRunnerFactory
@@ -41,7 +41,7 @@ import org.junit.runners.Parameterized
  * stable display bounds.
  */
 
-@RequiresDevice
+@RequiresDesktopDevice
 @RunWith(Parameterized::class)
 @Parameterized.UseParametersRunnerFactory(FlickerParametersRunnerFactory::class)
 class MaximizeAppFlickerTest(flicker: FlickerTest) : DesktopModeBaseTest(flicker) {

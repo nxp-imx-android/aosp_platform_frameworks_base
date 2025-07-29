@@ -17,6 +17,7 @@
 package com.android.wm.shell.functional.keyboardshortcuts
 
 import android.platform.test.annotations.Presubmit
+import android.platform.test.annotations.RequiresDesktopDevice
 import android.platform.test.rule.ScreenRecordRule
 import com.android.wm.shell.scenarios.OpenBrowserWithKeyboardShortcut
 import org.junit.runner.RunWith
@@ -28,6 +29,7 @@ import org.junit.runners.BlockJUnit4ClassRunner
  * To run this test: atest OpenBrowserWithKeyboardShortcutTest
  */
 @RunWith(BlockJUnit4ClassRunner::class)
+@RequiresDesktopDevice
 @Presubmit
 @ScreenRecordRule.ScreenRecord
 class OpenBrowserWithKeyboardShortcutTest : OpenBrowserWithKeyboardShortcut()

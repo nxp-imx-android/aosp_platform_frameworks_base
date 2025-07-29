@@ -17,11 +17,13 @@
 package com.android.wm.shell.functional
 
 import android.platform.test.annotations.Presubmit
+import android.platform.test.annotations.RequiresDesktopDevice
 import com.android.wm.shell.scenarios.EnableDisplayMirroringSwitch
 import org.junit.runner.RunWith
 import org.junit.runners.BlockJUnit4ClassRunner
 
 /* Functional test for [EnableDisplayMirroringSwitch]. */
 @RunWith(BlockJUnit4ClassRunner::class)
+@RequiresDesktopDevice
 @Presubmit
 class EnableDisplayMirroringSwitchTest : EnableDisplayMirroringSwitch()

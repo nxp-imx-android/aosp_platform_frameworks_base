@@ -17,6 +17,7 @@
 package com.android.wm.shell.functional.fundamentals
 
 import android.platform.test.annotations.Presubmit
+import android.platform.test.annotations.RequiresDesktopDevice
 import android.platform.test.rule.ScreenRecordRule
 import com.android.wm.shell.scenarios.DragAppWindowSingleWindow
 import org.junit.runner.RunWith
@@ -24,6 +25,7 @@ import org.junit.runners.BlockJUnit4ClassRunner
 
 /* Functional test for [DragAppWindowSingleWindow]. */
 @RunWith(BlockJUnit4ClassRunner::class)
+@RequiresDesktopDevice
 @Presubmit
 @ScreenRecordRule.ScreenRecord
 class DragAppWindowSingleWindowTest : DragAppWindowSingleWindow()

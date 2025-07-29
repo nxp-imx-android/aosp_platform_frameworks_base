@@ -16,7 +16,7 @@
 
 package com.android.wm.shell.flicker.tiling
 
-import androidx.test.filters.RequiresDevice
+import android.platform.test.annotations.RequiresDesktopDevice
 import android.tools.NavBar
 import android.tools.flicker.assertions.FlickerChecker
 import android.tools.flicker.junit.FlickerParametersRunnerFactory
@@ -36,7 +36,7 @@ import org.junit.runners.Parameterized
 /**
  * Ensures tiling divider is shown after showing Overview and back to desktop mode.
  */
-@RequiresDevice
+@RequiresDesktopDevice
 @RunWith(Parameterized::class)
 @Parameterized.UseParametersRunnerFactory(FlickerParametersRunnerFactory::class)
 class TilingDividerShownAfterOverviewFlickerTest(flicker: FlickerTest) :

@@ -16,7 +16,7 @@
 
 package com.android.wm.shell.flicker.fundamentals
 
-import androidx.test.filters.RequiresDevice
+import android.platform.test.annotations.RequiresDesktopDevice
 import android.tools.NavBar
 import android.tools.flicker.assertions.FlickerChecker
 import android.tools.flicker.junit.FlickerParametersRunnerFactory
@@ -35,7 +35,7 @@ import com.android.wm.shell.flicker.utils.layerBecomesVisible
 import com.android.wm.shell.flicker.utils.cascadingEffectAppliedAtEnd
 import com.android.wm.shell.scenarios.OpenAppFromAllApps
 
-@RequiresDevice
+@RequiresDesktopDevice
 @RunWith(Parameterized::class)
 @Parameterized.UseParametersRunnerFactory(FlickerParametersRunnerFactory::class)
 class OpenAppFromAllAppsFlickerTest(flicker: FlickerTest) : DesktopModeBaseTest(flicker) {

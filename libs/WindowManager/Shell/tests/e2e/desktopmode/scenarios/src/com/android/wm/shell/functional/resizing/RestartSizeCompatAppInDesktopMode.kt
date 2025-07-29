@@ -17,6 +17,7 @@
 package com.android.wm.shell.functional.resizing
 
 import android.platform.test.annotations.Presubmit
+import android.platform.test.annotations.RequiresDesktopDevice
 import android.platform.test.rule.ScreenRecordRule
 import com.android.wm.shell.scenarios.RestartAppInDesktopMode
 import org.junit.runner.RunWith
@@ -24,6 +25,7 @@ import org.junit.runners.BlockJUnit4ClassRunner
 
 /** Functional test of [RestartAppInDesktopMode] for a size-compat app. */
 @RunWith(BlockJUnit4ClassRunner::class)
+@RequiresDesktopDevice
 @ScreenRecordRule.ScreenRecord
 @Presubmit
 class RestartSizeCompatAppInDesktopMode :
