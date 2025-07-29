@@ -1196,6 +1196,8 @@ private class FrameLayoutTouchPassthrough(
     private val isInBottomReservedArea: (Float, Float) -> Boolean,
 ) : FrameLayout(context) {
 
+    private val lastConfig = Configuration(context.resources.configuration)
+
     init {
         repeatWhenAttached {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
@@ -1334,6 +1336,12 @@ private class FrameLayoutTouchPassthrough(
             }
         }
         return super.onTouchEvent(event)
+    }
+
+    override fun dispatchConfigurationChanged(newConfig: Configuration) {
+        if (lastConfig.updateFrom(newConfig) != 0) {
+            super.dispatchConfigurationChanged(newConfig)
+        }
     }
 
     override fun onInterceptTouchEvent(ev: MotionEvent): Boolean {
