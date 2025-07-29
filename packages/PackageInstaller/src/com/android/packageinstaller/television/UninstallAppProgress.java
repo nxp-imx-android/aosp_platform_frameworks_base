@@ -37,11 +37,14 @@ import android.util.Log;
 import android.util.TypedValue;
 import android.view.KeyEvent;
 import android.widget.Toast;
+
 import androidx.annotation.Nullable;
+
 import com.android.packageinstaller.PackageUtil;
 import com.android.packageinstaller.R;
 import com.android.packageinstaller.common.EventResultPersister;
 import com.android.packageinstaller.common.UninstallEventReceiver;
+
 import java.lang.ref.WeakReference;
 import java.util.List;
 
@@ -295,7 +298,7 @@ public class UninstallAppProgress extends Activity implements
         } catch (EventResultPersister.OutOfIdsException e) {
             Log.e(TAG, "Fails to start uninstall", e);
             onResult(PackageInstaller.STATUS_FAILURE, PackageManager.DELETE_FAILED_INTERNAL_ERROR,
-                    null, 0);
+                    null, 0, false);
         }
 
         mHandler.sendMessageDelayed(mHandler.obtainMessage(UNINSTALL_IS_SLOW),
@@ -307,7 +310,8 @@ public class UninstallAppProgress extends Activity implements
     }
 
     @Override
-    public void onResult(int status, int legacyStatus, @Nullable String message, int serviceId) {
+    public void onResult(int status, int legacyStatus, @Nullable String message, int serviceId,
+            boolean hasDeveloperVerificationFailure) {
         Message msg = mHandler.obtainMessage(UNINSTALL_COMPLETE);
         msg.arg1 = legacyStatus;
         msg.obj = mAppInfo.packageName;

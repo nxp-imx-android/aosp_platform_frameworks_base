@@ -63,6 +63,6 @@
 
     <dimen name="install_without_verifying_text_padding">16dp</dimen>
     <dimen name="more_details_clickable_layout_vertical_margin">16dp</dimen>
-    <dimen name="keyboard_arrow_down_icon_width">20dp</dimen>
+    <dimen name="keyboard_arrow_down_height">20dp</dimen>
 
 </resources>

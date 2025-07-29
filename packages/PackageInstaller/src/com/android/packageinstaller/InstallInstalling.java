@@ -35,9 +35,12 @@ import android.os.Looper;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+
 import androidx.annotation.Nullable;
+
 import com.android.packageinstaller.common.EventResultPersister;
 import com.android.packageinstaller.common.InstallEventReceiver;
+
 import java.io.File;
 import java.io.IOException;
 
@@ -267,7 +270,7 @@ public class InstallInstalling extends Activity {
      *                      during an uninstall.
      */
     private void launchFinishBasedOnResult(int statusCode, int legacyStatus, String statusMessage,
-            int serviceId /* ignore */) {
+            int serviceId /* ignore */, boolean hasDeveloperVerificationFailure) {
         if (statusCode == PackageInstaller.STATUS_SUCCESS) {
             launchSuccess();
         } else {
@@ -277,7 +280,7 @@ public class InstallInstalling extends Activity {
 
     /**
      * Send the package to the package installer and then register a event result observer that
-     * will call {@link #launchFinishBasedOnResult(int, int, String, int)}
+     * will call {@link #launchFinishBasedOnResult(int, int, String, int, boolean)}
      */
     private final class InstallingAsyncTask extends AsyncTask<Void, Void,
             PackageInstaller.Session> {
