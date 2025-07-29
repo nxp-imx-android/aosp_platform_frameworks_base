@@ -17,6 +17,7 @@
 package com.android.systemui.statusbar.phone;
 
 import static com.android.systemui.keyguard.shared.model.KeyguardState.ALTERNATE_BOUNCER;
+import static com.android.systemui.keyguard.shared.model.KeyguardState.DREAMING;
 import static com.android.systemui.keyguard.shared.model.KeyguardState.GLANCEABLE_HUB;
 import static com.android.systemui.keyguard.shared.model.KeyguardState.GONE;
 import static com.android.systemui.keyguard.shared.model.KeyguardState.LOCKSCREEN;
@@ -339,8 +340,30 @@ public class ScrimController implements ViewTreeObserver.OnPreDrawListener, Dump
     };
 
     /**
-     * Consumer used to fade the behind scrim when entering the dream from a lockscreen state. This
-     * is done because the behind scrim is on top of the dream.
+     * Consumer that dispatches the scrim state at the end of the primary bouncer to dream
+     * transition. This triggers both when entering dream from lock screen with the bouncer open or
+     * when closing the bouncer on top of the dream.
+     *
+     * This extra dispatch is needed as scrim transitions are not directly tied to keyguard
+     * transitions and the scrim transition may end before the keyguard transition does. The last
+     * dispatch of the scrim visibility happens when the scrim transition ends, meaning that if the
+     * keyguard transition hasn't ended by then, the scrims aren't transparent yet as the bouncer to
+     * dream keyguard transition directly controls the scrim alpha. This issue does not occur in
+     * every shade configuration, but can cause the shade window to stay visible and steal touches
+     * on top of the dream. See b/434038809.
+     */
+    Consumer<TransitionStep> mBouncerToDreamTransition = (TransitionStep step) -> {
+        TransitionState state = step.getTransitionState();
+        if (state == TransitionState.FINISHED || state == TransitionState.CANCELED) {
+            dispatchScrimsVisible();
+            dispatchBackScrimState(mScrimBehind.getViewAlpha());
+        }
+    };
+
+    /**
+     * Consumer used to fade the behind scrim when entering the dream from a lockscreen state or
+     * when closing the primary bouncer from the dream. This is done because the behind scrim is on
+     * top of the dream.
      */
     private final Consumer<ScrimAlpha> mDreamBehindScrimAlphaConsumer =
             (ScrimAlpha alphas) -> {
@@ -492,7 +515,11 @@ public class ScrimController implements ViewTreeObserver.OnPreDrawListener, Dump
                 };
 
         // PRIMARY_BOUNCER->DREAMING
-        if (Flags.dreamTransitionFixes()) {
+        if (Flags.dreamBouncerTransitionFix()) {
+            collectFlow(behindScrim, mKeyguardTransitionInteractor.transition(
+                            Edge.Companion.create(PRIMARY_BOUNCER, Scenes.Dream),
+                            Edge.Companion.create(PRIMARY_BOUNCER, DREAMING)),
+                    mBouncerToDreamTransition, mMainDispatcher);
             collectFlow(behindScrim, mPrimaryBouncerToDreamingTransitionViewModel.getScrimAlpha(),
                     mDreamBehindScrimAlphaConsumer, mMainDispatcher);
         }
