@@ -28,7 +28,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.android.internal.policy.ScreenDecorationsUtils
 
@@ -70,14 +69,14 @@ fun ScreenDecorProvider(windowInsets: () -> WindowInsets?, content: @Composable 
 private fun WindowInsets?.toCutout(context: Context): DisplayCutout {
     val boundingRect = this?.displayCutout?.boundingRectTop
     val width = boundingRect?.let { boundingRect.right - boundingRect.left } ?: 0
-    val left = boundingRect?.left?.toDp(context) ?: 0.dp
-    val top = boundingRect?.top?.toDp(context) ?: 0.dp
-    val right = boundingRect?.right?.toDp(context) ?: 0.dp
-    val bottom = boundingRect?.bottom?.toDp(context) ?: 0.dp
+    val left = boundingRect?.left ?: 0
+    val top = boundingRect?.top ?: 0
+    val right = boundingRect?.right ?: 0
+    val bottom = boundingRect?.bottom ?: 0
     val location =
         when {
-            width <= 0f -> CutoutLocation.NONE
-            left <= 0.dp -> CutoutLocation.LEFT
+            width <= 0 -> CutoutLocation.NONE
+            left <= 0 -> CutoutLocation.LEFT
             right >= getDisplayWidth(context) -> CutoutLocation.RIGHT
             else -> CutoutLocation.CENTER
         }
@@ -86,13 +85,8 @@ private fun WindowInsets?.toCutout(context: Context): DisplayCutout {
 }
 
 // TODO(b/298525212): remove once Compose exposes window inset bounds.
-private fun Int.toDp(context: Context): Dp {
-    return (this.toFloat() / context.resources.displayMetrics.density).dp
-}
-
-// TODO(b/298525212): remove once Compose exposes window inset bounds.
-private fun getDisplayWidth(context: Context): Dp {
+private fun getDisplayWidth(context: Context): Int {
     val point = Point()
     checkNotNull(context.display).getRealSize(point)
-    return point.x.toDp(context)
+    return point.x
 }

@@ -109,6 +109,7 @@ import com.android.systemui.statusbar.pipeline.mobile.ui.viewmodel.ShadeCarrierG
 import com.android.systemui.statusbar.pipeline.mobile.ui.viewmodel.composeWrapper
 import com.android.systemui.statusbar.policy.Clock
 import com.android.systemui.util.composable.kairos.ActivatedKairosSpec
+import kotlin.math.max
 import kotlin.math.roundToInt
 import kotlinx.coroutines.delay
 
@@ -481,7 +482,7 @@ private fun CutoutAwareShadeHeader(
 
         val screenWidth = constraints.maxWidth
         val cutoutWidthPx = cutoutWidth.roundToPx()
-        val height = max(cutoutHeight + (cutoutTop * 2), statusBarHeight).roundToPx()
+        val height = max(cutoutHeight.roundToPx() + (cutoutTop * 2), statusBarHeight.roundToPx())
         val childConstraints = Constraints.fixed((screenWidth - cutoutWidthPx) / 2, height)
 
         val startMeasurable = measurables[0][0]
