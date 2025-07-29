@@ -138,12 +138,9 @@
     <string name="screenrecord_stop_dialog_message" msgid="6262768207331626817">"В момента записвате целия си екран"</string>
     <string name="screenrecord_stop_dialog_message_specific_app" msgid="5995770227684523244">"В момента записвате <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
     <string name="screenrecord_stop_dialog_button" msgid="2883812564938194350">"Спиране на записа"</string>
-    <!-- no translation found for screen_record_record_device_audio_label (5363057443124085198) -->
-    <skip />
-    <!-- no translation found for screen_record_record_microphone_label (4685753707185662381) -->
-    <skip />
-    <!-- no translation found for screen_record_should_show_touches_label (2203962566795833783) -->
-    <skip />
+    <string name="screen_record_record_device_audio_label" msgid="5363057443124085198">"Записване на звука от устройството"</string>
+    <string name="screen_record_record_microphone_label" msgid="4685753707185662381">"Записване от микрофона"</string>
+    <string name="screen_record_should_show_touches_label" msgid="2203962566795833783">"Показване на докосванията"</string>
     <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"Избор на приложение за записване"</string>
     <string name="screen_capture_fullscreen_screenshot_button" msgid="4255912593013592954">"Заснемане на целия екран"</string>
     <string name="screen_capture_region_selection_button" msgid="4437546351856914639">"Заснемане на избраната област"</string>
@@ -717,9 +714,13 @@
     <string name="monitoring_description_pin_protection" msgid="1983580207046670355">"Някои контроли на устройството ви, като например дневните лимити и времето на неактивност, могат да се променят само с ПИН код."</string>
     <string name="legacy_vpn_name" msgid="4174223520162559145">"VPN"</string>
     <string name="keyguard_indication_trust_unlocked" msgid="7395154975733744547">"Поддържа се отключено от надежден агент"</string>
-    <string name="kg_prompt_after_adaptive_auth_lock" msgid="2587481497846342760">"Устройството бе заключено. Твърде много опити за удостоверяване"</string>
-    <string name="keyguard_indication_after_adaptive_auth_lock" msgid="2323400645470712787">"Устройството е заключено\nНеуспешно удостоверяване"</string>
+    <!-- no translation found for kg_prompt_after_adaptive_auth_lock (6065186971000690782) -->
+    <skip />
+    <!-- no translation found for keyguard_indication_after_adaptive_auth_lock (5240600662061340872) -->
+    <skip />
     <string name="keyguard_indication_after_watch_disconnected" msgid="8133476870585660478">"Заключено от часовника ви"</string>
+    <!-- no translation found for keyguard_indication_after_secure_lock_device (4358906300665255820) -->
+    <skip />
     <string name="zen_mode_and_condition" msgid="5043165189511223718">"<xliff:g id="ZEN_MODE">%1$s</xliff:g>. <xliff:g id="EXIT_CONDITION">%2$s</xliff:g>"</string>
     <string name="accessibility_volume_settings" msgid="1458961116951564784">"Настройки за звука"</string>
     <string name="volume_odi_captions_tip" msgid="8825655463280990941">"Медия с автоматични надписи"</string>
@@ -1061,6 +1062,10 @@
     <string name="qs_edit" msgid="5583565172803472437">"Редактиране"</string>
     <string name="qs_edit_tiles" msgid="2105215324060865035">"Редактиране на панелите"</string>
     <string name="qs_edit_mode_tooltip" msgid="4164112885539479781">"Преоразмеряване на панелите с бързи настройки"</string>
+    <!-- no translation found for qs_edit_settings (3243175290660574156) -->
+    <skip />
+    <!-- no translation found for qs_edit_menu_content_description (4420651071119623791) -->
+    <skip />
     <string name="tuner_time" msgid="2450785840990529997">"Час"</string>
   <string-array name="clock_options">
     <item msgid="3986445361435142273">"Показване на часовете, минутите и секундите"</item>
@@ -1103,7 +1108,7 @@
     <string name="accessibility_quick_settings_power_menu" msgid="6820426108301758412">"Меню за включване/изключване"</string>
     <string name="accessibility_quick_settings_page" msgid="7506322631645550961">"Страница <xliff:g id="ID_1">%1$d</xliff:g> от <xliff:g id="ID_2">%2$d</xliff:g>"</string>
     <string name="accessibility_key_gesture_dialog_title" msgid="7614965716626605518">"Да се включи ли <xliff:g id="ID_1">%1$s</xliff:g>?"</string>
-    <string name="accessibility_key_gesture_dialog_content" msgid="4519838108423437794"><annotation id="action_key_icon">"Иконата"</annotation>" за действие + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> е клавишната комбинация за използване на <xliff:g id="ID_3">^3</xliff:g>. <xliff:g id="ID_4">^4</xliff:g>"</string>
+    <string name="accessibility_key_gesture_dialog_content" msgid="4519838108423437794"><annotation id="action_key_icon">"Иконата за действие"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> е клавишната комбинация за използване на <xliff:g id="ID_3">^3</xliff:g>. <xliff:g id="ID_4">^4</xliff:g>"</string>
     <string name="accessibility_key_gesture_dialog_magnifier_intro" msgid="627023269951856071">"Това ви дава възможност бързо да приближавате екрана, за да уголемите съдържанието."</string>
     <string name="accessibility_key_gesture_dialog_talkback_intro" msgid="1617808784388544741">"<xliff:g id="ID_1">%1$s</xliff:g> е екранен четец, който ви дава възможност да чувате елементите, изговаряни на глас. Той може да е полезен за хора, които трудно виждат екрана."</string>
     <string name="accessibility_key_gesture_dialog_va_intro" msgid="4709198503441288289">"Приложението <xliff:g id="ID_1">%1$s</xliff:g> ви дава възможност да контролирате устройството си в режим „свободни ръце“."</string>
@@ -1513,17 +1518,12 @@
     <string name="connected_display_dialog_dual_display_stop_warning" msgid="4174707498892447947">"Съдържанието на вътрешния ви дисплей ще бъде дублирано. Предният ви дисплей ще бъде изключен."</string>
     <string name="mirror_display" msgid="2515262008898122928">"Дублиране на дисплея"</string>
     <string name="dismiss_dialog" msgid="2195508495854675882">"Отхвърляне"</string>
-    <!-- no translation found for connected_display_dialog_title (307028192512988669) -->
-    <skip />
-    <!-- no translation found for remember_choice (2063510191006325221) -->
-    <skip />
-    <!-- no translation found for start_desktop_mode (5459815912537830841) -->
-    <skip />
-    <!-- no translation found for start_mirroring (3611044878130481882) -->
-    <skip />
+    <string name="connected_display_dialog_title" msgid="307028192512988669">"Свързване с външен екран"</string>
+    <string name="remember_choice" msgid="2063510191006325221">"Не ме питайте отново"</string>
+    <string name="start_desktop_mode" msgid="5459815912537830841">"Работен плот"</string>
+    <string name="start_mirroring" msgid="3611044878130481882">"Дублиране"</string>
     <string name="connected_display_icon_desc" msgid="6373560639989971997">"Свързан е екран"</string>
-    <!-- no translation found for connected_display_extended_mode_text (2457269692913653696) -->
-    <skip />
+    <string name="connected_display_extended_mode_text" msgid="2457269692913653696">"Свързано с външен екран"</string>
     <string name="privacy_dialog_title" msgid="5201413527644766025">"Микрофон, камера и местополож."</string>
     <string name="privacy_dialog_summary" msgid="2458769652125995409">"Скорошно използване от приложенията"</string>
     <string name="privacy_dialog_more_button" msgid="7610604080293562345">"Вижте скорошния достъп"</string>
