@@ -72,6 +72,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertThrows
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -144,6 +145,8 @@ class KeyGestureControllerTests {
         const val RANDOM_PID2 = 12
         const val RANDOM_DISPLAY_ID = 123
         const val SCREENSHOT_CHORD_DELAY: Long = 1000
+        // Current default multi-key press timeout used in KeyCombinationManager
+        const val COMBINE_KEY_DELAY_MILLIS: Long = 150
         const val LONG_PRESS_DELAY_FOR_ESCAPE_MILLIS: Long = 1000
         // App delegate that consumes all keys that it receives
         val BLOCKING_APP = AppDelegate { _ -> true }
@@ -974,6 +977,76 @@ class KeyGestureControllerTests {
 
         sendKeys(intArrayOf(KeyEvent.KEYCODE_BACK, KeyEvent.KEYCODE_DPAD_DOWN), timeDelayMs = 0)
         Mockito.verify(accessibilityShortcutController, never()).performAccessibilityShortcut()
+    }
+
+    @Keep
+    private fun keyCodesUsedForKeyCombinations(): Array<Int> {
+        return arrayOf(
+            KeyEvent.KEYCODE_VOLUME_DOWN,
+            KeyEvent.KEYCODE_VOLUME_UP,
+            KeyEvent.KEYCODE_POWER,
+            KeyEvent.KEYCODE_STEM_PRIMARY,
+        )
+    }
+
+    @Test
+    @Parameters(method = "keyCodesUsedForKeyCombinations")
+    fun testInterceptKeyCombinationForAccessibility_blocksKey_whenOngoingKeyCombination(
+        keyCode: Int
+    ) {
+        setupKeyGestureController()
+
+        val now = SystemClock.uptimeMillis()
+        val downEvent =
+            KeyEvent.obtain(
+                now,
+                now,
+                KeyEvent.ACTION_DOWN,
+                keyCode,
+                /* repeat= */ 0,
+                /* metaState */ 0,
+                DEVICE_ID,
+                /* scanCode= */ 0,
+                /* flags= */ 0,
+                InputDevice.SOURCE_KEYBOARD,
+                /* displayId = */ 0,
+                /* characters= */ "",
+            )
+        keyGestureController.interceptKeyBeforeQueueing(downEvent, FLAG_INTERACTIVE)
+        testLooper.dispatchAll()
+
+        // Assert that interceptKeyCombinationBeforeAccessibility returns the delay to wait
+        // until key can be forwarded to A11y services (should be > 0 if there is ongoing gesture)
+        assertTrue(keyGestureController.interceptKeyCombinationBeforeAccessibility(downEvent) > 0)
+    }
+
+    @Test
+    @Parameters(method = "keyCodesUsedForKeyCombinations")
+    fun testInterceptKeyCombinationForAccessibility_letsKeyPass_whenKeyCombinationTimedOut(
+        keyCode: Int
+    ) {
+        setupKeyGestureController()
+
+        val now = SystemClock.uptimeMillis()
+        val downEvent =
+            KeyEvent.obtain(
+                now - COMBINE_KEY_DELAY_MILLIS,
+                now - COMBINE_KEY_DELAY_MILLIS,
+                KeyEvent.ACTION_DOWN,
+                keyCode,
+                /* repeat= */ 0,
+                /* metaState */ 0,
+                DEVICE_ID,
+                /* scanCode= */ 0,
+                /* flags= */ 0,
+                InputDevice.SOURCE_KEYBOARD,
+                /* displayId = */ 0,
+                /* characters= */ "",
+            )
+        keyGestureController.interceptKeyBeforeQueueing(downEvent, FLAG_INTERACTIVE)
+        testLooper.dispatchAll()
+
+        assertEquals(0, keyGestureController.interceptKeyCombinationBeforeAccessibility(downEvent))
     }
 
     @Keep
