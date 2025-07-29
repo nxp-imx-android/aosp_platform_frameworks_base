@@ -634,7 +634,7 @@ public class InputMethodService extends AbstractInputMethodService {
 
     private @NonNull OptionalInt mHandwritingRequestId = OptionalInt.empty();
     private InputEventReceiver mHandwritingEventReceiver;
-    private Handler mHandler;
+    private final Handler mHandler = new Handler(Looper.getMainLooper());
     private ImsConfigurationTracker mConfigTracker = new ImsConfigurationTracker();
     private boolean mDestroyed;
     private boolean mOnPreparedStylusHwCalled;
@@ -1245,9 +1245,6 @@ public class InputMethodService extends AbstractInputMethodService {
                 || mImeSurfaceRemoverRunnable != null) {
             return;
         }
-        if (mHandler == null) {
-            mHandler = new Handler(getMainLooper());
-        }
 
         if (mLastWasInFullscreenMode) {
             // Caching surface / delaying surface removal can cause mServedView to detach in certain
@@ -1272,7 +1269,7 @@ public class InputMethodService extends AbstractInputMethodService {
     }
 
     private void cancelImeSurfaceRemoval() {
-        if (mHandler != null && mImeSurfaceRemoverRunnable != null) {
+        if (mImeSurfaceRemoverRunnable != null) {
             mHandler.removeCallbacks(mImeSurfaceRemoverRunnable);
         }
         mImeSurfaceRemoverRunnable = null;
@@ -2770,7 +2767,7 @@ public class InputMethodService extends AbstractInputMethodService {
         if (!mHandwritingRequestId.isPresent()) {
             return;
         }
-        if (mHandler != null && mFinishHwRunnable != null) {
+        if (mFinishHwRunnable != null) {
             mHandler.removeCallbacks(mFinishHwRunnable);
         }
         mFinishHwRunnable = null;
@@ -2868,15 +2865,12 @@ public class InputMethodService extends AbstractInputMethodService {
     }
 
     private void cancelStylusWindowIdleTimeout() {
-        if (mStylusWindowIdleTimeoutRunnable != null && mHandler != null) {
+        if (mStylusWindowIdleTimeoutRunnable != null) {
             mHandler.removeCallbacks(mStylusWindowIdleTimeoutRunnable);
         }
     }
 
     private void scheduleStylusWindowIdleTimeout() {
-        if (mHandler == null) {
-            return;
-        }
         cancelStylusWindowIdleTimeout();
         long timeout = (mStylusWindowIdleTimeoutForTest > 0)
                 ? mStylusWindowIdleTimeoutForTest : STYLUS_WINDOW_IDLE_TIMEOUT_MILLIS;
@@ -2952,9 +2946,7 @@ public class InputMethodService extends AbstractInputMethodService {
             return mFinishHwRunnable;
         }
         return mFinishHwRunnable = () -> {
-            if (mHandler != null) {
-                mHandler.removeCallbacks(mFinishHwRunnable);
-            }
+            mHandler.removeCallbacks(mFinishHwRunnable);
             Log.d(TAG, "Stylus handwriting idle timed-out. calling finishStylusHandwriting()");
             mFinishHwRunnable = null;
             finishStylusHandwriting();
@@ -2962,9 +2954,6 @@ public class InputMethodService extends AbstractInputMethodService {
     }
 
     private void scheduleHandwritingSessionTimeout() {
-        if (mHandler == null) {
-            mHandler = new Handler(getMainLooper());
-        }
         if (mFinishHwRunnable != null) {
             mHandler.removeCallbacks(mFinishHwRunnable);
         }
