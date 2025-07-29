@@ -138,12 +138,9 @@
     <string name="screenrecord_stop_dialog_message" msgid="6262768207331626817">"သင်သည် လက်ရှိတွင် ဖန်သားပြင်တစ်ခုလုံးကို ရိုက်ကူးနေသည်"</string>
     <string name="screenrecord_stop_dialog_message_specific_app" msgid="5995770227684523244">"သင်သည် လက်ရှိတွင် <xliff:g id="APP_NAME">%1$s</xliff:g> ကို ရိုက်ကူးနေသည်"</string>
     <string name="screenrecord_stop_dialog_button" msgid="2883812564938194350">"ရိုက်ကူးမှု ရပ်ရန်"</string>
-    <!-- no translation found for screen_record_record_device_audio_label (5363057443124085198) -->
-    <skip />
-    <!-- no translation found for screen_record_record_microphone_label (4685753707185662381) -->
-    <skip />
-    <!-- no translation found for screen_record_should_show_touches_label (2203962566795833783) -->
-    <skip />
+    <string name="screen_record_record_device_audio_label" msgid="5363057443124085198">"စက်အသံဖမ်းရန်"</string>
+    <string name="screen_record_record_microphone_label" msgid="4685753707185662381">"မိုက်ခရိုဖုန်း အသံဖမ်းရန်"</string>
+    <string name="screen_record_should_show_touches_label" msgid="2203962566795833783">"ထိတွေ့ခြင်းများကို ပြပါ"</string>
     <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"ရိုက်ကူးရန် အက်ပ်ရွေးခြင်း"</string>
     <string name="screen_capture_fullscreen_screenshot_button" msgid="4255912593013592954">"ဖန်သားပြင်တစ်ခုလုံးကို ပုံဖမ်းရန်"</string>
     <string name="screen_capture_region_selection_button" msgid="4437546351856914639">"ရွေးထားသောနေရာကို ရိုက်ကူးရန်"</string>
@@ -717,9 +714,13 @@
     <string name="monitoring_description_pin_protection" msgid="1983580207046670355">"နေ့စဉ်ကန့်သတ်ချက်နှင့် နားချိန် ကဲ့သို့သော သင့်စက်ပေါ်ရှိ သတ်မှတ်ချက်အချို့ကို ပင်နံပါတ်ဖြင့်သာ ပြောင်းနိုင်သည်။"</string>
     <string name="legacy_vpn_name" msgid="4174223520162559145">"VPN"</string>
     <string name="keyguard_indication_trust_unlocked" msgid="7395154975733744547">"TrustAgent ဖြင့် ဆက်ဖွင့်ထားရန်"</string>
-    <string name="kg_prompt_after_adaptive_auth_lock" msgid="2587481497846342760">"လော့ခ်ကျနေသည်၊ အထောက်အထားစိစစ်ရန် ကြိုးပမ်းကြိမ် များလွန်းသည်"</string>
-    <string name="keyguard_indication_after_adaptive_auth_lock" msgid="2323400645470712787">"စက်လော့ခ်ကျနေသည်\nအထောက်အထားစိစစ်၍ မရပါ"</string>
+    <!-- no translation found for kg_prompt_after_adaptive_auth_lock (6065186971000690782) -->
+    <skip />
+    <!-- no translation found for keyguard_indication_after_adaptive_auth_lock (5240600662061340872) -->
+    <skip />
     <string name="keyguard_indication_after_watch_disconnected" msgid="8133476870585660478">"သင့်နာရီဖြင့် လော့ခ်ချထားသည်"</string>
+    <!-- no translation found for keyguard_indication_after_secure_lock_device (4358906300665255820) -->
+    <skip />
     <string name="zen_mode_and_condition" msgid="5043165189511223718">"<xliff:g id="ZEN_MODE">%1$s</xliff:g>။ <xliff:g id="EXIT_CONDITION">%2$s</xliff:g>"</string>
     <string name="accessibility_volume_settings" msgid="1458961116951564784">"အသံဆက်တင်များ"</string>
     <string name="volume_odi_captions_tip" msgid="8825655463280990941">"အလိုအလျောက် စာတန်းထိုးရန်"</string>
@@ -1061,6 +1062,10 @@
     <string name="qs_edit" msgid="5583565172803472437">"တည်းဖြတ်ရန်"</string>
     <string name="qs_edit_tiles" msgid="2105215324060865035">"အကွက်ငယ်များ တည်းဖြတ်ခြင်း"</string>
     <string name="qs_edit_mode_tooltip" msgid="4164112885539479781">"‘အမြန်ဆက်တင်များ အကွက်ငယ်’ ကို အရွယ်ပြင်ရန်"</string>
+    <!-- no translation found for qs_edit_settings (3243175290660574156) -->
+    <skip />
+    <!-- no translation found for qs_edit_menu_content_description (4420651071119623791) -->
+    <skip />
     <string name="tuner_time" msgid="2450785840990529997">"အချိန်"</string>
   <string-array name="clock_options">
     <item msgid="3986445361435142273">"နာရီ၊ မိနစ်နှင့် စက္ကန့်ကိုပြပါ"</item>
@@ -1513,17 +1518,12 @@
     <string name="connected_display_dialog_dual_display_stop_warning" msgid="4174707498892447947">"အတွင်းပြကွက်ကို စကရင်ပွားပါမည်။ ရှေ့မျက်နှာပြင်ပြကွက်ကို ပိတ်မည်။"</string>
     <string name="mirror_display" msgid="2515262008898122928">"ဖန်သားပြင်ကို စကရင်ပွားရန်"</string>
     <string name="dismiss_dialog" msgid="2195508495854675882">"ပယ်ရန်"</string>
-    <!-- no translation found for connected_display_dialog_title (307028192512988669) -->
-    <skip />
-    <!-- no translation found for remember_choice (2063510191006325221) -->
-    <skip />
-    <!-- no translation found for start_desktop_mode (5459815912537830841) -->
-    <skip />
-    <!-- no translation found for start_mirroring (3611044878130481882) -->
-    <skip />
+    <string name="connected_display_dialog_title" msgid="307028192512988669">"ပြင်ပဖန်သားပြင်နှင့် ချိတ်ဆက်ခြင်း"</string>
+    <string name="remember_choice" msgid="2063510191006325221">"ထပ်မမေးပါနှင့်"</string>
+    <string name="start_desktop_mode" msgid="5459815912537830841">"ဒက်စ်တော့"</string>
+    <string name="start_mirroring" msgid="3611044878130481882">"စင့်ခ်လုပ်ရန်"</string>
     <string name="connected_display_icon_desc" msgid="6373560639989971997">"ဖန်သားပြင်ကို ချိတ်ဆက်လိုက်ပါပြီ"</string>
-    <!-- no translation found for connected_display_extended_mode_text (2457269692913653696) -->
-    <skip />
+    <string name="connected_display_extended_mode_text" msgid="2457269692913653696">"ပြင်ပဖန်သားပြင်နှင့် ချိတ်ဆက်လိုက်ပါပြီ"</string>
     <string name="privacy_dialog_title" msgid="5201413527644766025">"မိုက်ခရိုဖုန်း၊ ကင်မရာ၊ တည်နေရာ"</string>
     <string name="privacy_dialog_summary" msgid="2458769652125995409">"လတ်တလော အက်ပ်အသုံးပြုမှု"</string>
     <string name="privacy_dialog_more_button" msgid="7610604080293562345">"လတ်တလောအသုံးပြုမှုကို ကြည့်ရန်"</string>

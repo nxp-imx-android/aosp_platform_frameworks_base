@@ -1284,6 +1284,24 @@ public class MediaControlPanelTest : SysuiTestCase() {
         assertThat(deviceSuggestionButton.visibility).isEqualTo(View.GONE)
     }
 
+    @Test
+    @RequiresFlagsEnabled(Flags.FLAG_ENABLE_SUGGESTED_DEVICE_UI)
+    fun bindDeviceResumptionPlayerWithSuggestedDeviceData() {
+        player.attachPlayer(viewHolder)
+
+        player.bindPlayer(
+            mediaData.copy(
+                suggestionData =
+                    createSuggestionData(DEVICE_NAME, MediaDeviceState.STATE_DISCONNECTED),
+                resumption = true,
+            ),
+            PACKAGE,
+        )
+
+        assertThat(seamlessText.visibility).isEqualTo(View.VISIBLE)
+        assertThat(deviceSuggestionButton.visibility).isEqualTo(View.GONE)
+    }
+
     /* ***** Guts tests for the player ***** */
 
     @Test

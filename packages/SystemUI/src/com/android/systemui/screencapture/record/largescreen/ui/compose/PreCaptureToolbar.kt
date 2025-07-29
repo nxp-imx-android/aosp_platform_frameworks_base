@@ -70,9 +70,11 @@ fun PreCaptureToolbar(
 
             RadioButtonGroup(items = captureRegionButtonItems)
 
-            Spacer(Modifier.size(16.dp))
+            if (viewModel.screenRecordingSupported) {
+                Spacer(Modifier.size(16.dp))
 
-            RadioButtonGroup(items = captureTypeButtonItems)
+                RadioButtonGroup(items = captureTypeButtonItems)
+            }
         }
     }
 }

@@ -23,6 +23,9 @@ import static android.media.MediaRoute2ProviderService.REASON_REJECTED;
 import static android.media.MediaRoute2ProviderService.REASON_ROUTE_NOT_AVAILABLE;
 import static android.media.MediaRoute2ProviderService.REASON_UNIMPLEMENTED;
 import static android.media.MediaRoute2ProviderService.REASON_UNKNOWN_ERROR;
+import static android.media.RoutingSessionInfo.TRANSFER_REASON_APP;
+import static android.media.RoutingSessionInfo.TRANSFER_REASON_FALLBACK;
+import static android.media.RoutingSessionInfo.TRANSFER_REASON_SYSTEM_REQUEST;
 
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.verify;
 import static com.android.server.media.MediaRouterStatsLog.MEDIA_ROUTER_EVENT_REPORTED;
@@ -36,8 +39,31 @@ import static com.android.server.media.MediaRouterStatsLog.MEDIA_ROUTER_EVENT_RE
 import static com.android.server.media.MediaRouterStatsLog.MEDIA_ROUTER_EVENT_REPORTED__RESULT__RESULT_UNIMPLEMENTED;
 import static com.android.server.media.MediaRouterStatsLog.MEDIA_ROUTER_EVENT_REPORTED__RESULT__RESULT_UNKNOWN_ERROR;
 import static com.android.server.media.MediaRouterStatsLog.MEDIA_ROUTER_EVENT_REPORTED__RESULT__RESULT_UNSPECIFIED;
+import static com.android.server.media.MediaRouterStatsLog.ROUTING_CHANGE_REPORTED;
+import static com.android.server.media.MediaRouterStatsLog.ROUTING_CHANGE_REPORTED__ENTRY_POINT__ENTRY_POINT_LOCAL_ROUTER;
+import static com.android.server.media.MediaRouterStatsLog.ROUTING_CHANGE_REPORTED__ENTRY_POINT__ENTRY_POINT_PROXY_ROUTER;
+import static com.android.server.media.MediaRouterStatsLog.ROUTING_CHANGE_REPORTED__ENTRY_POINT__ENTRY_POINT_SYSTEM_MEDIA_CONTROLS;
+import static com.android.server.media.MediaRouterStatsLog.ROUTING_CHANGE_REPORTED__ENTRY_POINT__ENTRY_POINT_SYSTEM_OUTPUT_SWITCHER;
+import static com.android.server.media.MediaRouterStatsLog.ROUTING_CHANGE_REPORTED__ENTRY_POINT__ENTRY_POINT_TV_OUTPUT_SWITCHER;
+import static com.android.server.media.MediaRouterStatsLog.ROUTING_CHANGE_REPORTED__TRANSFER_REASON__TRANSFER_REASON_APP;
+import static com.android.server.media.MediaRouterStatsLog.ROUTING_CHANGE_REPORTED__TRANSFER_REASON__TRANSFER_REASON_FALLBACK;
+import static com.android.server.media.MediaRouterStatsLog.ROUTING_CHANGE_REPORTED__TRANSFER_REASON__TRANSFER_REASON_SYSTEM_REQUEST;
+import static com.android.server.media.MediaRouterStatsLog.ROUTING_CHANGE_REPORTED__TRANSFER_REASON__TRANSFER_REASON_UNSPECIFIED;
 
 import static com.google.common.truth.Truth.assertThat;
+
+import static org.junit.Assert.assertThrows;
+import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.spy;
+
+import android.media.RoutingChangeInfo;
+import android.media.RoutingSessionInfo;
+import android.os.SystemClock;
 
 import androidx.test.runner.AndroidJUnit4;
 
@@ -47,6 +73,7 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.MockitoAnnotations;
 
 @RunWith(AndroidJUnit4.class)
@@ -167,5 +194,231 @@ public class MediaRouterMetricLoggerTest {
                                 MEDIA_ROUTER_EVENT_REPORTED,
                                 MEDIA_ROUTER_EVENT_REPORTED__EVENT_TYPE__EVENT_TYPE_CREATE_SESSION,
                                 MEDIA_ROUTER_EVENT_REPORTED__RESULT__RESULT_UNSPECIFIED));
+    }
+
+    // Routing change tests.
+    @Test
+    public void convertEntryPointForLogging_returnsExpectedResults() {
+        assertThat(
+                        MediaRouterMetricLogger.convertEntryPointForLogging(
+                                RoutingChangeInfo.ENTRY_POINT_SYSTEM_OUTPUT_SWITCHER))
+                .isEqualTo(
+                        ROUTING_CHANGE_REPORTED__ENTRY_POINT__ENTRY_POINT_SYSTEM_OUTPUT_SWITCHER);
+        assertThat(
+                        MediaRouterMetricLogger.convertEntryPointForLogging(
+                                RoutingChangeInfo.ENTRY_POINT_SYSTEM_MEDIA_CONTROLS))
+                .isEqualTo(ROUTING_CHANGE_REPORTED__ENTRY_POINT__ENTRY_POINT_SYSTEM_MEDIA_CONTROLS);
+        assertThat(
+                        MediaRouterMetricLogger.convertEntryPointForLogging(
+                                RoutingChangeInfo.ENTRY_POINT_LOCAL_ROUTER_UNSPECIFIED))
+                .isEqualTo(ROUTING_CHANGE_REPORTED__ENTRY_POINT__ENTRY_POINT_LOCAL_ROUTER);
+        assertThat(
+                        MediaRouterMetricLogger.convertEntryPointForLogging(
+                                RoutingChangeInfo.ENTRY_POINT_PROXY_ROUTER_UNSPECIFIED))
+                .isEqualTo(ROUTING_CHANGE_REPORTED__ENTRY_POINT__ENTRY_POINT_PROXY_ROUTER);
+        assertThat(
+                        MediaRouterMetricLogger.convertEntryPointForLogging(
+                                RoutingChangeInfo.ENTRY_POINT_TV_OUTPUT_SWITCHER))
+                .isEqualTo(ROUTING_CHANGE_REPORTED__ENTRY_POINT__ENTRY_POINT_TV_OUTPUT_SWITCHER);
+    }
+
+    @Test
+    public void convertEntryPointForLogging_invalidEntryPoint_throwsException() {
+        // Testing below the lower limit of accepted values.
+        assertThrows(
+                IllegalArgumentException.class,
+                () ->
+                        MediaRouterMetricLogger.convertEntryPointForLogging(
+                                RoutingChangeInfo.ENTRY_POINT_SYSTEM_OUTPUT_SWITCHER - 1));
+        // Testing above the upper limit of accepted values.
+        assertThrows(
+                IllegalArgumentException.class,
+                () ->
+                        MediaRouterMetricLogger.convertEntryPointForLogging(
+                                RoutingChangeInfo.ENTRY_POINT_TV_OUTPUT_SWITCHER + 1));
+    }
+
+    @Test
+    public void convertTransferReasonForLogging_returnsExpectedResults() {
+        assertThat(
+                        MediaRouterMetricLogger.convertTransferReasonForLogging(
+                                TRANSFER_REASON_FALLBACK))
+                .isEqualTo(ROUTING_CHANGE_REPORTED__TRANSFER_REASON__TRANSFER_REASON_FALLBACK);
+        assertThat(
+                        MediaRouterMetricLogger.convertTransferReasonForLogging(
+                                TRANSFER_REASON_SYSTEM_REQUEST))
+                .isEqualTo(
+                        ROUTING_CHANGE_REPORTED__TRANSFER_REASON__TRANSFER_REASON_SYSTEM_REQUEST);
+        assertThat(MediaRouterMetricLogger.convertTransferReasonForLogging(TRANSFER_REASON_APP))
+                .isEqualTo(ROUTING_CHANGE_REPORTED__TRANSFER_REASON__TRANSFER_REASON_APP);
+        // Testing below the lower limit of accepted values.
+        assertThat(
+                        MediaRouterMetricLogger.convertTransferReasonForLogging(
+                                TRANSFER_REASON_FALLBACK - 1))
+                .isEqualTo(ROUTING_CHANGE_REPORTED__TRANSFER_REASON__TRANSFER_REASON_UNSPECIFIED);
+        // Testing above the upper limit of accepted values.
+        assertThat(MediaRouterMetricLogger.convertTransferReasonForLogging(TRANSFER_REASON_APP + 1))
+                .isEqualTo(ROUTING_CHANGE_REPORTED__TRANSFER_REASON__TRANSFER_REASON_UNSPECIFIED);
+    }
+
+    @Test
+    public void convertTransferReasonForLogging_invalidEntryPoint_throwsException() {
+        // Testing below the lower limit of accepted values.
+        assertThrows(
+                IllegalArgumentException.class,
+                () ->
+                        MediaRouterMetricLogger.convertEntryPointForLogging(
+                                RoutingChangeInfo.ENTRY_POINT_SYSTEM_OUTPUT_SWITCHER - 1));
+        // Testing above the upper limit of accepted values.
+        assertThrows(
+                IllegalArgumentException.class,
+                () ->
+                        MediaRouterMetricLogger.convertEntryPointForLogging(
+                                RoutingChangeInfo.ENTRY_POINT_TV_OUTPUT_SWITCHER + 1));
+    }
+
+    @Test
+    public void notifyRoutingChangeRequested_addsRoutingChangeInfoToCache() {
+        assertThat(mLogger.getRoutingChangeInfoCacheSize()).isEqualTo(0);
+        RoutingChangeInfo routingChangeInfo =
+                new RoutingChangeInfo(
+                        RoutingChangeInfo.ENTRY_POINT_SYSTEM_OUTPUT_SWITCHER,
+                        /* isSuggested= */ false);
+
+        mLogger.notifyRoutingChangeRequested(/* uniqueRequestId= */ 0, routingChangeInfo);
+
+        assertThat(mLogger.getRoutingChangeInfoCacheSize()).isEqualTo(1);
+    }
+
+    @Test
+    public void notifyRoutingChange_addsOngoingRoutingChangeToCache() {
+        assertThat(mLogger.getRoutingChangeInfoCacheSize()).isEqualTo(0);
+        String originalSessionId = "originalSessionId";
+        String clientPackageName = "clientPackageName";
+        int clientPackageUid = 123;
+        long uniqueRequestId = 0;
+        RoutingChangeInfo routingChangeInfo =
+                new RoutingChangeInfo(
+                        RoutingChangeInfo.ENTRY_POINT_SYSTEM_OUTPUT_SWITCHER,
+                        /* isSuggested= */ false);
+        RoutingSessionInfo routingSessionInfo =
+                new RoutingSessionInfo.Builder(originalSessionId, clientPackageName)
+                        .addSelectedRoute(/* routeId= */ "_")
+                        .setTransferReason(TRANSFER_REASON_SYSTEM_REQUEST)
+                        .build();
+
+        mLogger.notifyRoutingChangeRequested(uniqueRequestId, routingChangeInfo);
+        mLogger.notifyRoutingChange(uniqueRequestId, routingSessionInfo, clientPackageUid);
+
+        assertThat(mLogger.getOngoingRoutingChangeCacheSize()).isEqualTo(1);
+        assertThat(mLogger.getRoutingChangeInfoCacheSize()).isEqualTo(0);
+    }
+
+    @Test
+    public void notifyRoutingChange_withIncorrectRequestId_isNoOp() {
+        assertThat(mLogger.getRoutingChangeInfoCacheSize()).isEqualTo(0);
+        String originalSessionId = "originalSessionId";
+        String clientPackageName = "clientPackageName";
+        int clientPackageUid = 123;
+        long uniqueRequestId = 0;
+        RoutingSessionInfo routingSessionInfo =
+                new RoutingSessionInfo.Builder(originalSessionId, clientPackageName)
+                        .addSelectedRoute(/* routeId= */ "_")
+                        .setTransferReason(TRANSFER_REASON_SYSTEM_REQUEST)
+                        .build();
+        RoutingChangeInfo routingChangeInfo =
+                new RoutingChangeInfo(
+                        RoutingChangeInfo.ENTRY_POINT_SYSTEM_OUTPUT_SWITCHER,
+                        /* isSuggested= */ false);
+
+        mLogger.notifyRoutingChangeRequested(uniqueRequestId, routingChangeInfo);
+        mLogger.notifyRoutingChange(uniqueRequestId + 1, routingSessionInfo, clientPackageUid);
+
+        // No entry should be added to the ongoingRoutingChange cache.
+        assertThat(mLogger.getOngoingRoutingChangeCacheSize()).isEqualTo(0);
+        // Existing entry should not be removed from routingChangeInfo cache.
+        assertThat(mLogger.getRoutingChangeInfoCacheSize()).isEqualTo(1);
+    }
+
+    @Test
+    public void notifySessionEnd_withIncorrectSessionId_isNoOp() {
+        assertThat(mLogger.getRoutingChangeInfoCacheSize()).isEqualTo(0);
+        String originalSessionId = "originalSessionId";
+        String clientPackageName = "clientPackageName";
+        int clientPackageUid = 123;
+        long uniqueRequestId = 0;
+        RoutingSessionInfo routingSessionInfo =
+                new RoutingSessionInfo.Builder(originalSessionId, clientPackageName)
+                        .addSelectedRoute(/* routeId= */ "_")
+                        .setTransferReason(TRANSFER_REASON_SYSTEM_REQUEST)
+                        .build();
+        RoutingChangeInfo routingChangeInfo =
+                new RoutingChangeInfo(
+                        RoutingChangeInfo.ENTRY_POINT_SYSTEM_OUTPUT_SWITCHER,
+                        /* isSuggested= */ false);
+
+        mLogger.notifyRoutingChangeRequested(uniqueRequestId, routingChangeInfo);
+        mLogger.notifyRoutingChange(uniqueRequestId, routingSessionInfo, clientPackageUid);
+        mLogger.notifySessionEnd("someOtherSessionId");
+
+        assertThat(mLogger.getOngoingRoutingChangeCacheSize()).isEqualTo(1);
+        verify(
+                () ->
+                        MediaRouterStatsLog.write(
+                                anyInt(),
+                                anyInt(),
+                                anyInt(),
+                                anyBoolean(),
+                                anyInt(),
+                                anyBoolean(),
+                                anyLong()),
+                never());
+    }
+
+    @Test
+    public void notifySessionEnd_logsRoutingChangeMetric() {
+        MediaRouterMetricLogger spyLogger = spy(mLogger);
+        assertThat(spyLogger.getOngoingRoutingChangeCacheSize()).isEqualTo(0);
+        String originalSessionId = "originalSessionId";
+        String clientPackageName = "clientPackageName";
+        int clientPackageUid = 123;
+        int sessionTimeInMillis = 3_000;
+        long uniqueRequestId = 0;
+        long sessionStartTimeInMillis = SystemClock.elapsedRealtime();
+        RoutingChangeInfo routingChangeInfo =
+                new RoutingChangeInfo(
+                        RoutingChangeInfo.ENTRY_POINT_SYSTEM_OUTPUT_SWITCHER,
+                        /* isSuggested= */ false);
+        RoutingSessionInfo routingSessionInfo =
+                new RoutingSessionInfo.Builder(originalSessionId, clientPackageName)
+                        .addSelectedRoute(/* routeId= */ "_")
+                        .setTransferReason(TRANSFER_REASON_SYSTEM_REQUEST)
+                        .build();
+        // Returns the start time of the session when called the first time and the session end time
+        // the second time.
+        doReturn(sessionStartTimeInMillis)
+                .doReturn(sessionStartTimeInMillis + sessionTimeInMillis)
+                .when(spyLogger)
+                .getElapsedRealTime();
+
+        spyLogger.notifyRoutingChangeRequested(uniqueRequestId, routingChangeInfo);
+        spyLogger.notifyRoutingChange(uniqueRequestId, routingSessionInfo, clientPackageUid);
+        spyLogger.notifySessionEnd(originalSessionId);
+
+        assertThat(spyLogger.getOngoingRoutingChangeCacheSize()).isEqualTo(0);
+        ArgumentCaptor<Long> sessionLengthCaptor = ArgumentCaptor.forClass(Long.class);
+        verify(
+                () ->
+                        MediaRouterStatsLog.write(
+                                eq(ROUTING_CHANGE_REPORTED),
+                                eq(
+                                        ROUTING_CHANGE_REPORTED__ENTRY_POINT__ENTRY_POINT_SYSTEM_OUTPUT_SWITCHER),
+                                eq(clientPackageUid),
+                                eq(/* isSystemRoute= */ false),
+                                eq(
+                                        ROUTING_CHANGE_REPORTED__TRANSFER_REASON__TRANSFER_REASON_SYSTEM_REQUEST),
+                                eq(/* isSuggested= */ false),
+                                sessionLengthCaptor.capture()));
+        assertThat(sessionLengthCaptor.getValue()).isEqualTo(sessionTimeInMillis);
     }
 }

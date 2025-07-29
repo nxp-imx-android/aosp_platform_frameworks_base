@@ -21,7 +21,6 @@
     <string name="update" msgid="3932142540719227615">"अपडेट गर्नुहोस्"</string>
     <string name="done" msgid="6632441120016885253">"सम्पन्न भयो"</string>
     <string name="cancel" msgid="1018267193425558088">"रद्द गर्नुहोस्"</string>
-    <string name="try_again" msgid="3754399538069264237">"फेरि प्रयास गर्नुहोस्"</string>
     <string name="install_anyway" msgid="8794642873773384969">"जे भए पनि इन्स्टल गर्नुहोस्"</string>
     <string name="dont_install" msgid="414055123295505225">"इन्स्टल नगर्नुहोस्"</string>
     <string name="installing" msgid="4921993079741206516">"इन्स्टल गरिँदै छ"</string>
@@ -51,7 +50,7 @@
     <string name="cannot_install_package_summary" msgid="3358675485628657234"><p>"यो एप ब्लक गरिएकाले यो एप इन्स्टल गर्न मिल्दैन। "</p><p>"प्याकेज पुष्टि गर्ने तरिकाका बारेमा "<a href="">"थप जान्नुहोस्"</a></p></string>
     <string name="lite_verification_summary" msgid="3211866126230002977"><p>"यो एप ADI Lite Developer को स्वामित्वमा छ र यसले पुष्टि गर्ने डिफल्ट प्रक्रिया बाइपास गर्छ। तपाईं इन्स्टल गर्ने प्रक्रिया अघि बढाउन चाहनुहुन्छ?"</p></string>
     <string name="ok" msgid="7871959885003339302">"ठिक छ"</string>
-    <string name="archive" msgid="4447791830199354721">"अभिलेखमा राख्नुहोस्"</string>
+    <string name="archive" msgid="4447791830199354721">"अर्काइभमा राख्नुहोस्"</string>
     <string name="update_anyway" msgid="8792432341346261969">"जे भए पनि अपडेट गर्नुहोस्"</string>
     <string name="manage_applications" msgid="5400164782453975580">"एपको प्रबन्ध गर्नु…"</string>
     <string name="out_of_space_dlg_title" msgid="4156690013884649502">"खाली ठाउँ छैन"</string>

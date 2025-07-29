@@ -291,6 +291,16 @@ class TransitionController {
             mCollectingTransition.abort();
         }
         mRemotePlayer.clear();
+        for (int i = 0; i < mQueuedTransitions.size(); ++i) {
+            final QueuedTransition queued = mQueuedTransitions.get(i);
+            if (queued.mTransition != null) {
+                queued.mTransition.abort();
+            } else {
+                // legacy sync
+                mSyncEngine.abort(queued.mLegacySync.mSyncId);
+            }
+        }
+        mQueuedTransitions.clear();
         mRunningLock.doNotifyLocked();
         // Restore the rest of the player stack
         mTransitionPlayers.addAll(temp);

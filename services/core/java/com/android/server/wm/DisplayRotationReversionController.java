@@ -35,7 +35,7 @@ import com.android.internal.protolog.ProtoLog;
  * <ol>
  *  <li>The top application has {@link SCREEN_ORIENTATION_NOSENSOR} set and is rotated to
  *  {@link ROTATION_0}.
- *  <li>Camera compat treatment has rotated the app {@link DisplayRotationCompatPolicy}.
+ *  <li>Camera compat treatment has rotated the app {@link AppCompatCameraDisplayRotationPolicy}.
  *  <li>The device is half-folded and has auto-rotate is temporarily enabled.
  * </ol>
  *
@@ -61,7 +61,7 @@ final class DisplayRotationReversionController {
     }
 
     boolean isRotationReversionEnabled() {
-        return mDisplayContent.mAppCompatCameraPolicy.hasDisplayRotationCompatPolicy()
+        return mDisplayContent.mAppCompatCameraPolicy.hasDisplayRotationPolicy()
                 || mDisplayContent.getDisplayRotation().mFoldController != null
                 || mDisplayContent.getIgnoreOrientationRequest();
     }

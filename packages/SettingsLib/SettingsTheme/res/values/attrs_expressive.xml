@@ -25,6 +25,10 @@
 
     <attr name="expressiveSwitchStyle" format="reference" />
 
+    <!-- State value for {@link android.graphics.drawable.StateListDrawable StateListDrawable}, set
+         when a preference has an icon or has its icon space reserved. -->
+    <attr name="state_has_icon_space" format="boolean" />
+
     <!-- Theme attributes to override Expressive Design Preference styles -->
     <attr name="expressivePreferenceTheme" format="reference" />
     <attr name="expressivePreferenceRootLayoutStyle" format="reference" />

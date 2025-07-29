@@ -21,7 +21,6 @@ import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -213,6 +212,7 @@ private fun ContentScope.BundleHeaderContent(
     ) {
         BundleIcon(
             viewModel.bundleIcon,
+            collapsed,
             modifier =
                 Modifier.padding(horizontal = 16.dp)
                     // Has to be a shared element because we may have a semi-transparent background

@@ -138,12 +138,9 @@
     <string name="screenrecord_stop_dialog_message" msgid="6262768207331626817">"നിങ്ങൾ ഇപ്പോൾ മുഴുവൻ സ്ക്രീനും റെക്കോർഡ് ചെയ്യുകയാണ്"</string>
     <string name="screenrecord_stop_dialog_message_specific_app" msgid="5995770227684523244">"നിങ്ങൾ ഇപ്പോൾ <xliff:g id="APP_NAME">%1$s</xliff:g> റെക്കോർഡ് ചെയ്യുകയാണ്"</string>
     <string name="screenrecord_stop_dialog_button" msgid="2883812564938194350">"റെക്കോർഡിംഗ് നിർത്തുക"</string>
-    <!-- no translation found for screen_record_record_device_audio_label (5363057443124085198) -->
-    <skip />
-    <!-- no translation found for screen_record_record_microphone_label (4685753707185662381) -->
-    <skip />
-    <!-- no translation found for screen_record_should_show_touches_label (2203962566795833783) -->
-    <skip />
+    <string name="screen_record_record_device_audio_label" msgid="5363057443124085198">"ഉപകരണ ഓഡിയോ റെക്കോർഡ് ചെയ്യുക"</string>
+    <string name="screen_record_record_microphone_label" msgid="4685753707185662381">"മൈക്രോഫോൺ റെക്കോർഡ് ചെയ്യുക"</string>
+    <string name="screen_record_should_show_touches_label" msgid="2203962566795833783">"ടച്ചുകൾ കാണിക്കുക"</string>
     <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"റെക്കോർഡ് ചെയ്യാൻ ഒരു ആപ്പ് തിരഞ്ഞെടുക്കുക"</string>
     <string name="screen_capture_fullscreen_screenshot_button" msgid="4255912593013592954">"മൊത്തം സ്ക്രീനും ക്യാപ്‌ചർ ചെയ്യുക"</string>
     <string name="screen_capture_region_selection_button" msgid="4437546351856914639">"തിരഞ്ഞെടുത്ത ഏരിയ ക്യാപ്‌ചർ ചെയ്യുക"</string>
@@ -717,9 +714,12 @@
     <string name="monitoring_description_pin_protection" msgid="1983580207046670355">"പ്രതിദിന പരിധി, പ്രവർത്തനരഹിതമായ സമയം പോലുള്ള, നിങ്ങളുടെ ഉപകരണത്തിലുള്ള ചില നിയന്ത്രണങ്ങൾ പിൻ ഉപയോഗിച്ച് മാത്രമേ മാറ്റാനാകൂ."</string>
     <string name="legacy_vpn_name" msgid="4174223520162559145">"VPN"</string>
     <string name="keyguard_indication_trust_unlocked" msgid="7395154975733744547">"TrustAgent ഉപയോഗിച്ച് അൺലോക്ക് ചെയ്‌തത്"</string>
-    <string name="kg_prompt_after_adaptive_auth_lock" msgid="2587481497846342760">"ഉപകരണം ലോക്ക് ചെയ്തു, നിരവധി തവണ പരിശോധിച്ചുറപ്പിക്കാൻ ശ്രമിച്ചു"</string>
-    <string name="keyguard_indication_after_adaptive_auth_lock" msgid="2323400645470712787">"ഉപകരണം ലോക്ക് ചെയ്തു\nപരിശോധിച്ചുറപ്പിക്കൽ പരാജയപ്പെട്ടു"</string>
+    <!-- no translation found for kg_prompt_after_adaptive_auth_lock (6065186971000690782) -->
+    <skip />
+    <!-- no translation found for keyguard_indication_after_adaptive_auth_lock (5240600662061340872) -->
+    <skip />
     <string name="keyguard_indication_after_watch_disconnected" msgid="8133476870585660478">"നിങ്ങളുടെ വാച്ച് ഉപയോഗിച്ച് ലോക്ക് ചെയ്‌തിരിക്കുന്നു"</string>
+    <string name="keyguard_indication_after_secure_lock_device" msgid="4358906300665255820">"2-ഘട്ട പരിശോധിച്ചുറപ്പിക്കൽ വഴി ലോക്ക് ചെയ്തു"</string>
     <string name="zen_mode_and_condition" msgid="5043165189511223718">"<xliff:g id="ZEN_MODE">%1$s</xliff:g>. <xliff:g id="EXIT_CONDITION">%2$s</xliff:g>"</string>
     <string name="accessibility_volume_settings" msgid="1458961116951564784">"ശബ്‌ദ ക്രമീകരണം"</string>
     <string name="volume_odi_captions_tip" msgid="8825655463280990941">"മീഡിയയ്ക്ക് സ്വയമേവ ക്യാപ്ഷൻ"</string>
@@ -1061,6 +1061,10 @@
     <string name="qs_edit" msgid="5583565172803472437">"എഡിറ്റ് ചെയ്യുക"</string>
     <string name="qs_edit_tiles" msgid="2105215324060865035">"ടൈലുകൾ എഡിറ്റ് ചെയ്യുക"</string>
     <string name="qs_edit_mode_tooltip" msgid="4164112885539479781">"ദ്രുത ക്രമീകരണ ടൈലുകളുടെ വലുപ്പം മാറ്റുക"</string>
+    <!-- no translation found for qs_edit_settings (3243175290660574156) -->
+    <skip />
+    <!-- no translation found for qs_edit_menu_content_description (4420651071119623791) -->
+    <skip />
     <string name="tuner_time" msgid="2450785840990529997">"സമയം"</string>
   <string-array name="clock_options">
     <item msgid="3986445361435142273">"മണിക്കൂറും മിനിറ്റും സെക്കൻഡും കാണിക്കുക"</item>
@@ -1103,7 +1107,7 @@
     <string name="accessibility_quick_settings_power_menu" msgid="6820426108301758412">"പവർ മെനു"</string>
     <string name="accessibility_quick_settings_page" msgid="7506322631645550961">"പേജ് <xliff:g id="ID_1">%1$d</xliff:g> / <xliff:g id="ID_2">%2$d</xliff:g>"</string>
     <string name="accessibility_key_gesture_dialog_title" msgid="7614965716626605518">"<xliff:g id="ID_1">%1$s</xliff:g> ഓണാക്കണോ?"</string>
-    <string name="accessibility_key_gesture_dialog_content" msgid="4519838108423437794">"പ്രവർത്തന "<annotation id="action_key_icon">"ഐക്കൺ"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> ആണ് <xliff:g id="ID_3">^3</xliff:g> ഉപയോഗിക്കുന്നതിനുള്ള കീബോഡ് കുറുക്കുവഴി. <xliff:g id="ID_4">^4</xliff:g>"</string>
+    <string name="accessibility_key_gesture_dialog_content" msgid="4519838108423437794">"Action "<annotation id="action_key_icon">"icon"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> ആണ് <xliff:g id="ID_3">^3</xliff:g> ഉപയോഗിക്കുന്നതിനുള്ള കീബോഡ് കുറുക്കുവഴി. <xliff:g id="ID_4">^4</xliff:g>"</string>
     <string name="accessibility_key_gesture_dialog_magnifier_intro" msgid="627023269951856071">"ഉള്ളടക്കം വലുതാക്കുന്നതിനായി വേഗത്തിൽ സ്ക്രീനിൽ സൂം ഇൻ ചെയ്യാൻ ഇത് നിങ്ങളെ അനുവദിക്കുന്നു."</string>
     <string name="accessibility_key_gesture_dialog_talkback_intro" msgid="1617808784388544741">"സ്ക്രീനിലുള്ള കാര്യങ്ങൾ ഉറക്കെ വായിച്ചുകേൾക്കാൻ അനുവദിക്കുന്ന സ്ക്രീൻ റീഡറാണ് <xliff:g id="ID_1">%1$s</xliff:g>. സ്‌ക്രീൻ കാണാൻ ബുദ്ധിമുട്ടുള്ള ആളുകൾക്ക് ഇത് സഹായകരമായേക്കാം."</string>
     <string name="accessibility_key_gesture_dialog_va_intro" msgid="4709198503441288289">"നിങ്ങളുടെ ഉപകരണം ഹാൻഡ്‌സ്-ഫ്രീ ആയി നിയന്ത്രിക്കാൻ <xliff:g id="ID_1">%1$s</xliff:g> നിങ്ങളെ അനുവദിക്കുന്നു."</string>
@@ -1513,17 +1517,12 @@
     <string name="connected_display_dialog_dual_display_stop_warning" msgid="4174707498892447947">"നിങ്ങളുടെ ഇന്നർ ഡിസ്പ്ലേ മിറർ ചെയ്യും. നിങ്ങളുടെ ഫ്രണ്ട് ഡിസ്പ്ലേ ഓഫാകും."</string>
     <string name="mirror_display" msgid="2515262008898122928">"മിറർ ഡിസ്‌പ്ലേ"</string>
     <string name="dismiss_dialog" msgid="2195508495854675882">"ഡിസ്‌മിസ് ചെയ്യുക"</string>
-    <!-- no translation found for connected_display_dialog_title (307028192512988669) -->
-    <skip />
-    <!-- no translation found for remember_choice (2063510191006325221) -->
-    <skip />
-    <!-- no translation found for start_desktop_mode (5459815912537830841) -->
-    <skip />
-    <!-- no translation found for start_mirroring (3611044878130481882) -->
-    <skip />
+    <string name="connected_display_dialog_title" msgid="307028192512988669">"ബാഹ്യ ഡിസ്‌പ്ലേയിലേക്ക് കണക്റ്റ് ചെയ്യുക"</string>
+    <string name="remember_choice" msgid="2063510191006325221">"എന്നോട് വീണ്ടും ചോദിക്കരുത്"</string>
+    <string name="start_desktop_mode" msgid="5459815912537830841">"ഡെസ്ക്ടോപ്പ്"</string>
+    <string name="start_mirroring" msgid="3611044878130481882">"മിറർ ചെയ്യുക"</string>
     <string name="connected_display_icon_desc" msgid="6373560639989971997">"ഡിസ്പ്ലേ കണക്റ്റ് ചെയ്തിരിക്കുന്നു"</string>
-    <!-- no translation found for connected_display_extended_mode_text (2457269692913653696) -->
-    <skip />
+    <string name="connected_display_extended_mode_text" msgid="2457269692913653696">"ബാഹ്യ ഡിസ്‌പ്ലേയിലേക്ക് കണക്റ്റ് ചെയ്തു"</string>
     <string name="privacy_dialog_title" msgid="5201413527644766025">"മൈക്രോഫോൺ, ക്യാമറ, ലൊക്കേഷൻ"</string>
     <string name="privacy_dialog_summary" msgid="2458769652125995409">"അടുത്തിടെയുള്ള ആപ്പ് ഉപയോഗം"</string>
     <string name="privacy_dialog_more_button" msgid="7610604080293562345">"അടുത്തിടെയുള്ള ആക്‌സസ് കാണുക"</string>

@@ -328,6 +328,40 @@ public class ExpandableNotificationRowTest extends SysuiTestCase {
 
     @Test
     @EnableFlags(NotificationBundleUi.FLAG_NAME)
+    public void testGroupWithinGroupIntrinsicHeightCalculationWhenGroupCollapsed() {
+        // GIVEN a group within a group
+        final ExpandableNotificationRow bundle = mKosmos.createRowBundle(
+                BundleSpec.Companion.getNEWS());
+        final PipelineEntry bundleEntry =
+                ((BundleEntryAdapter) bundle.getEntryAdapter()).getEntry();
+
+        Notification groupNotif = new Notification.Builder(mContext, "channel")
+                .setSmallIcon(R.drawable.ic_menu)
+                .setGroupSummary(true)
+                .setGroup("group2")
+                .build();
+        NotificationEntry groupEntry = new NotificationEntryBuilder()
+                .setNotification(groupNotif)
+                .setParent(bundleEntry)
+                .build();
+
+        ExpandableNotificationRow group = mKosmos.createRow(groupEntry);
+        ExpandableNotificationRow child = mKosmos.createRow();
+        bundle.addChildNotification(group, 0);
+        group.addChildNotification(child, 0);
+
+        // WHEN group is collapsed
+        group.expandNotification();
+        mKosmos.getGroupExpansionManager().setGroupExpanded(group.getEntryAdapter(), false);
+
+        // THEN group is collapsed and has correct intrinsic height
+        assertThat(group.isGroupExpanded()).isEqualTo(false);
+        assertThat(group.getIntrinsicHeight())
+                .isEqualTo(group.getChildrenContainer().getIntrinsicHeight());
+    }
+
+    @Test
+    @EnableFlags(NotificationBundleUi.FLAG_NAME)
     public void testGroupsInsideBundles_clickableWhenExpanded() throws Exception {
         // GIVEN a group within a group
         final ExpandableNotificationRow bundle = mKosmos.createRowBundle(

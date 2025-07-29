@@ -71,18 +71,12 @@
     <string name="CLIRDefaultOnNextCallOff" msgid="5036749051007098105">"‏کالر ID کی ڈیفالٹ ترتیب محدود کردہ ہے۔ اگلی کال: غیر محدود کردہ"</string>
     <string name="CLIRDefaultOffNextCallOn" msgid="1022781126694885017">"‏کالر ID کی ڈیفالٹ ترتیب غیر محدود کردہ ہے۔ اگلی کال: محدود کردہ"</string>
     <string name="CLIRDefaultOffNextCallOff" msgid="2491576172356463443">"‏کالر ID کی ڈیفالٹ ترتیب غیر محدود کردہ ہے۔ اگلی کال: غیر محدود کردہ"</string>
-    <!-- no translation found for page_size_compat_apk_warning (2297836366674721648) -->
-    <skip />
-    <!-- no translation found for page_size_compat_elf_warning (8613720928493005883) -->
-    <skip />
-    <!-- no translation found for page_size_compat_apk_and_elf_warning (9034695801295605229) -->
-    <skip />
-    <!-- no translation found for page_size_compat_apk_warning_4kb (5676451039424864495) -->
-    <skip />
-    <!-- no translation found for page_size_compat_elf_warning_4kb (5005239480522831311) -->
-    <skip />
-    <!-- no translation found for page_size_compat_apk_and_elf_warning_4kb (997926487776340721) -->
-    <skip />
+    <string name="page_size_compat_apk_warning" msgid="2297836366674721648">"‏یہ ایپ ‎16 KB کے موافق نہیں ہے۔ ‫APK الائنمنٹ چیک ناکام ہو گیا۔ یہ ایپ صفحہ کے سائز کے ساتھ موافقت رکھنے والے موڈ کے ساتھ چلے گی۔ بہترین موافقت کے لیے، براہ کرم ‎16 KB کے سپورٹ کے ساتھ ایپلیکیشن کو دوبارہ مرتب کریں۔ مزید معلومات کے لیے، &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; دیکھیں &lt;br&gt;&lt;br&gt; مندرجہ ذیل لائبریریز 16‎ KB کے مطابق نہیں ہیں: &lt;br&gt;&lt;br&gt;"</string>
+    <string name="page_size_compat_elf_warning" msgid="8613720928493005883">"‏یہ ایپ ‎16 KB کے موافق نہیں ہے۔ ‫ELF الائنمنٹ چیک ناکام ہو گیا۔ یہ ایپ صفحہ کے سائز کے ساتھ موافقت رکھنے والے موڈ کے ساتھ چلے گی۔ بہترین موافقت کے لیے، براہ کرم ‎16 KB کے سپورٹ کے ساتھ ایپلیکیشن کو دوبارہ مرتب کریں۔ مزید معلومات کے لیے، &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; دیکھیں &lt;br&gt;&lt;br&gt; مندرجہ ذیل لائبریریز 16‎ KB کے مطابق نہیں ہیں: &lt;br&gt;&lt;br&gt;"</string>
+    <string name="page_size_compat_apk_and_elf_warning" msgid="9034695801295605229">"‏یہ ایپ ‎16 KB کے موافق نہیں ہے۔ ‫APK اور ELF الائنمنٹ چیکس ناکام ہو گئے۔ یہ ایپ صفحہ کے سائز کے ساتھ موافقت رکھنے والے موڈ کے ساتھ چلے گی۔ بہترین موافقت کے لیے، براہ کرم ‎16 KB کے سپورٹ کے ساتھ ایپلیکیشن کو دوبارہ مرتب کریں۔ مزید معلومات کے لیے، &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; دیکھیں &lt;br&gt;&lt;br&gt; مندرجہ ذیل لائبریریز 16‎ KB کے مطابق نہیں ہیں: &lt;br&gt;&lt;br&gt;"</string>
+    <string name="page_size_compat_apk_warning_4kb" msgid="5676451039424864495">"‏یہ وارننگ اس لیے دکھائی دے رہی ہے کیونکہ یہ ایک قابل ڈیبگ ایپ ہے جس کا فی الحال ٹیسٹ کیا جا رہا ہے۔ اگر آپ ڈویلپر نہیں ہیں تو براہ کرم ڈویلپر کو اس کی رپورٹ دیں اور ناقابل ڈیبگ ایپ کے لیے پوچھیں۔ &lt;br&gt;&lt;br&gt; یہ ایپ ‎16 KB کے ساتھ مطابقت نہیں رکھتی۔ ‫APK الائنمنٹ چیک ناکام ہو گیا۔ براہ کرم &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; پر درج ذیل مراحل پر عمل کریں &lt;br&gt;&lt;br&gt; مندرجہ ذیل لائبریریز 16‎ KB کے مطابق نہیں ہیں: &lt;br&gt;&lt;br&gt;"</string>
+    <string name="page_size_compat_elf_warning_4kb" msgid="5005239480522831311">"‏یہ وارننگ اس لیے دکھائی دے رہی ہے کیونکہ یہ ایک قابل ڈیبگ ایپ ہے جس کا فی الحال ٹیسٹ کیا جا رہا ہے۔ اگر آپ ڈویلپر نہیں ہیں تو براہ کرم ڈویلپر کو اس کی رپورٹ دیں اور ناقابل ڈیبگ ایپ کے لیے پوچھیں۔ &lt;br&gt;&lt;br&gt; یہ ایپ ‎16 KB کے ساتھ مطابقت نہیں رکھتی۔ ‫ELF الائنمنٹ چیک ناکام ہو گیا۔ براہ کرم &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; پر درج ذیل مراحل پر عمل کریں &lt;br&gt;&lt;br&gt; مندرجہ ذیل لائبریریز 16‎ KB کے مطابق نہیں ہیں: &lt;br&gt;&lt;br&gt;"</string>
+    <string name="page_size_compat_apk_and_elf_warning_4kb" msgid="997926487776340721">"‏یہ وارننگ اس لیے دکھائی دے رہی ہے کیونکہ یہ ایک قابل ڈیبگ ایپ ہے جس کا فی الحال ٹیسٹ کیا جا رہا ہے۔ اگر آپ ڈویلپر نہیں ہیں تو براہ کرم ڈویلپر کو اس کی رپورٹ دیں اور ناقابل ڈیبگ ایپ کے لیے پوچھیں۔ &lt;br&gt;&lt;br&gt; یہ ایپ ‎16 KB کے ساتھ مطابقت نہیں رکھتی۔ ‫APK اور ELF الائنمنٹ چیکس ناکام ہو گئے۔ براہ کرم &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; پر موجود مراحل کی پیروی کریں۔ &lt;br&gt;&lt;br&gt; مندرجہ ذیل لائبریریز 16‎ KB کے مطابق نہیں ہیں: &lt;br&gt;&lt;br&gt;"</string>
     <string name="page_size_compat_never_show" msgid="3391282612422783097">"دوبارہ نہ دکھائیں"</string>
     <string name="page_size_compat_title" msgid="6497719153872572204">"‏‫Android ایپ موافقت"</string>
     <!-- String.format failed for translation -->
@@ -924,8 +918,7 @@
     <string name="policydesc_disableCamera" msgid="3204405908799676104">"سبھی آلے کے کیمروں کا استعمال روکیں۔"</string>
     <string name="policylab_disableKeyguardFeatures" msgid="5071855750149949741">"کچھ اسکرین لاک خصوصیات غیرفعال کریں"</string>
     <string name="policydesc_disableKeyguardFeatures" msgid="6641673177041195957">"اسکرین لاک کی کچھ خصوصیات کے استعمال کو روکیں۔"</string>
-    <!-- no translation found for exit_toast_on_long_press_escape (2983932499112557277) -->
-    <skip />
+    <string name="exit_toast_on_long_press_escape" msgid="2983932499112557277">"‏اس ایپ کو بند کرنے کے لیے Esc کلید کو دیر تک دبائیں"</string>
   <string-array name="phoneTypes">
     <item msgid="8996339953292723951">"گھر"</item>
     <item msgid="7740243458912727194">"موبائل"</item>
@@ -1852,8 +1845,7 @@
     <string name="owner_name" msgid="8713560351570795743">"مالک"</string>
     <string name="guest_name" msgid="8502103277839834324">"مہمان"</string>
     <string name="headless_system_user_name" msgid="1849150903255530049">"سسٹم صارف"</string>
-    <!-- no translation found for unnamed_user_name (6096699110534542980) -->
-    <skip />
+    <string name="unnamed_user_name" msgid="6096699110534542980">"صارف"</string>
     <string name="error_message_title" msgid="4082495589294631966">"خرابی"</string>
     <string name="error_message_change_not_allowed" msgid="843159705042381454">"آپ کے منتظم کی جانب سے اس تبدیلی کی اجازت نہیں ہے"</string>
     <string name="app_not_found" msgid="3429506115332341800">"اس عمل کو ہینڈل کرنے کیلئے کوئی ایپلیکیشن نہیں ملا"</string>

@@ -71,18 +71,12 @@
     <string name="CLIRDefaultOnNextCallOff" msgid="5036749051007098105">"Soittajan tunnukseksi muutetaan rajoitettu. Seuraava puhelu: ei rajoitettu"</string>
     <string name="CLIRDefaultOffNextCallOn" msgid="1022781126694885017">"Soittajan tunnukseksi muutetaan rajoittamaton. Seuraava puhelu: rajoitettu"</string>
     <string name="CLIRDefaultOffNextCallOff" msgid="2491576172356463443">"Soittajan tunnukseksi muutetaan rajoittamaton. Seuraava puhelu: ei rajoitettu"</string>
-    <!-- no translation found for page_size_compat_apk_warning (2297836366674721648) -->
-    <skip />
-    <!-- no translation found for page_size_compat_elf_warning (8613720928493005883) -->
-    <skip />
-    <!-- no translation found for page_size_compat_apk_and_elf_warning (9034695801295605229) -->
-    <skip />
-    <!-- no translation found for page_size_compat_apk_warning_4kb (5676451039424864495) -->
-    <skip />
-    <!-- no translation found for page_size_compat_elf_warning_4kb (5005239480522831311) -->
-    <skip />
-    <!-- no translation found for page_size_compat_apk_and_elf_warning_4kb (997926487776340721) -->
-    <skip />
+    <string name="page_size_compat_apk_warning" msgid="2297836366674721648">"Tämä sovellus ei tue 16 kt:tä. APK-sovelluksen yhteensopivuustarkistus epäonnistui. Sovellus käynnistetään sivukoon kanssa yhteensopivan tilan avulla. Parhaan yhteensopivuuden varmistamiseksi kokoa sovellus uudelleen niin, että se tukee 16 kt:tä. Katso lisätietoa osoitteesta &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; &lt;br&gt;&lt;br&gt; Seuraavia kirjastoja ei ole kohdistettu 16 kilotavuun: &lt;br&gt;&lt;br&gt;"</string>
+    <string name="page_size_compat_elf_warning" msgid="8613720928493005883">"Tämä sovellus ei tue 16 kt:tä. ELF:n yhteensopivuustarkastus epäonnistui. Sovellus käynnistetään sivukoon kanssa yhteensopivan tilan avulla. Parhaan yhteensopivuuden varmistamiseksi kokoa sovellus uudelleen niin, että se tukee 16 kt:tä. Katso lisätietoa osoitteesta &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; &lt;br&gt;&lt;br&gt; Seuraavia kirjastoja ei ole kohdistettu 16 kilotavuun: &lt;br&gt;&lt;br&gt;"</string>
+    <string name="page_size_compat_apk_and_elf_warning" msgid="9034695801295605229">"Tämä sovellus ei tue 16 kt:tä. APK:n ja ELF:n yhteensopivuustarkastukset epäonnistuivat. Sovellus käynnistetään sivukoon kanssa yhteensopivan tilan avulla. Parhaan yhteensopivuuden varmistamiseksi kokoa sovellus uudelleen niin, että se tukee 16 kt:tä. Katso lisätietoa osoitteesta &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; &lt;br&gt;&lt;br&gt; Seuraavia kirjastoja ei ole kohdistettu 16 kilotavuun: &lt;br&gt;&lt;br&gt;"</string>
+    <string name="page_size_compat_apk_warning_4kb" msgid="5676451039424864495">"Varoitus näkyy, koska tämä on virheenkorjausta tukeva sovellus, jota testataan parhaillaan. Jos et ole sovelluksen kehittäjä, ilmoita hänelle asiasta ja pyydä sovellus, joka ei tue virheenkorjausta. &lt;br&gt;&lt;br&gt; Sovellus ei tue 16 kt:tä. APK-sovelluksen yhteensopivuustarkistus epäonnistui. Seuraa näitä ohjeita: &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; &lt;br&gt;&lt;br&gt; Seuraavia kirjastoja ei ole kohdistettu 16 kilotavuun: &lt;br&gt;&lt;br&gt;"</string>
+    <string name="page_size_compat_elf_warning_4kb" msgid="5005239480522831311">"Varoitus näkyy, koska tämä on virheenkorjausta tukeva sovellus, jota testataan parhaillaan. Jos et ole sovelluksen kehittäjä, ilmoita hänelle asiasta ja pyydä sovellus, joka ei tue virheenkorjausta. &lt;br&gt;&lt;br&gt; Sovellus ei tue 16 kt:tä. ELF:n yhteensopivuustarkastus epäonnistui. Seuraa näitä ohjeita: &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; &lt;br&gt;&lt;br&gt; Seuraavia kirjastoja ei ole kohdistettu 16 kilotavuun: &lt;br&gt;&lt;br&gt;"</string>
+    <string name="page_size_compat_apk_and_elf_warning_4kb" msgid="997926487776340721">"Varoitus näkyy, koska tämä on virheenkorjausta tukeva sovellus, jota testataan parhaillaan. Jos et ole sovelluksen kehittäjä, ilmoita hänelle asiasta ja pyydä sovellus, joka ei tue virheenkorjausta. &lt;br&gt;&lt;br&gt; Sovellus ei tue 16 kt:tä. APK:n ja ELF:n yhteensopivuustarkastukset epäonnistuivat. Seuraa näitä ohjeita: &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;. &lt;br&gt;&lt;br&gt; Seuraavia kirjastoja ei ole kohdistettu 16 kilotavuun: &lt;br&gt;&lt;br&gt;"</string>
     <string name="page_size_compat_never_show" msgid="3391282612422783097">"Älä näytä uudelleen"</string>
     <string name="page_size_compat_title" msgid="6497719153872572204">"Android-sovellusten yhteensopivuus"</string>
     <string name="page_size_compat_elf_not_aligned" msgid="7940806102874132630">"&amp;#8226; %1$s : LOAD-segmentti ei ole yhteensopiva"</string>
@@ -920,8 +914,7 @@
     <string name="policydesc_disableCamera" msgid="3204405908799676104">"Estää laitteen kaikkien kameroiden käytön."</string>
     <string name="policylab_disableKeyguardFeatures" msgid="5071855750149949741">"Estää lukitun näytön toimintoja"</string>
     <string name="policydesc_disableKeyguardFeatures" msgid="6641673177041195957">"Estää joidenkin lukitun näytön toimintojen käytön."</string>
-    <!-- no translation found for exit_toast_on_long_press_escape (2983932499112557277) -->
-    <skip />
+    <string name="exit_toast_on_long_press_escape" msgid="2983932499112557277">"Sulje sovellus painamalla Esc-näppäintä pitkään"</string>
   <string-array name="phoneTypes">
     <item msgid="8996339953292723951">"Koti"</item>
     <item msgid="7740243458912727194">"Mobiili"</item>
@@ -1848,8 +1841,7 @@
     <string name="owner_name" msgid="8713560351570795743">"Omistaja"</string>
     <string name="guest_name" msgid="8502103277839834324">"Vieras"</string>
     <string name="headless_system_user_name" msgid="1849150903255530049">"Järjestelmäkäyttäjä"</string>
-    <!-- no translation found for unnamed_user_name (6096699110534542980) -->
-    <skip />
+    <string name="unnamed_user_name" msgid="6096699110534542980">"Käyttäjä"</string>
     <string name="error_message_title" msgid="4082495589294631966">"Virhe"</string>
     <string name="error_message_change_not_allowed" msgid="843159705042381454">"Järjestelmänvalvoja ei salli tätä muutosta."</string>
     <string name="app_not_found" msgid="3429506115332341800">"Tätä toimintoa käsittelevää sovellusta ei löydy"</string>

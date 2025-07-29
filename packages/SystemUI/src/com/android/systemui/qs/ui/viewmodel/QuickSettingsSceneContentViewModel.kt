@@ -88,7 +88,12 @@ constructor(
 
             qsContainerViewModel.editModeViewModel.isEditing
                 .filter { it }
-                .onEach { sceneInteractor.changeScene(Scenes.QSEditMode, loggingReason = "") }
+                .onEach {
+                    sceneInteractor.changeScene(
+                        Scenes.QSEditMode,
+                        loggingReason = "Entering edit mode",
+                    )
+                }
                 .launchIn(this)
 
             launch(context = mainDispatcher) {

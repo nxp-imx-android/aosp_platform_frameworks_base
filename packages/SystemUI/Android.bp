@@ -797,24 +797,6 @@ android_library {
     ],
 }
 
-android_app {
-    name: "SystemUI-tests-res",
-    // SystemUiRavenTests references the .aapt.srcjar
-    use_resource_processor: false,
-    manifest: "tests/AndroidManifest-base.xml",
-    resource_dirs: [
-        "tests/res",
-    ],
-    asset_dirs: [
-        "tests/goldens",
-        "schemas",
-    ],
-    static_libs: [
-        "SystemUI-res",
-    ],
-    platform_apis: true,
-}
-
 android_library {
     name: "SystemUI-tests",
     use_resource_processor: true,
@@ -1032,12 +1014,11 @@ filegroup {
 
 android_ravenwood_test {
     name: "SystemUiRavenTests",
+    manifest: "tests/AndroidManifest-base.xml",
+    build_resources: true,
     srcs: [
         ":SystemUI-tests-utils",
         ":SystemUI-tests-multivalent",
-        // TODO(b/294256649): pivot to using {.aapt.jar} and re-enable
-        // use_resource_processor: true when better supported by soong
-        ":SystemUI-tests-res{.aapt.srcjar}",
     ],
     exclude_srcs: [
         // TODO(b/429013941): kapt is way too slow, so disable them for now.
@@ -1060,7 +1041,10 @@ android_ravenwood_test {
         "android.test.base.impl",
         "android.test.mock.impl",
     ],
-    resource_apk: "SystemUI-tests-res",
+    aaptflags: [
+        "--extra-packages",
+        "com.android.systemui",
+    ],
     auto_gen_config: true,
     team: "trendy_team_ravenwood",
 }

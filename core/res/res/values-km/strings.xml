@@ -71,18 +71,12 @@
     <string name="CLIRDefaultOnNextCallOff" msgid="5036749051007098105">"មិន​បាន​ដាក់កម្រិត​លំនាំដើម​លេខ​សម្គាល់​អ្នក​ហៅ។ ការ​ហៅ​បន្ទាប់៖ មិន​បាន​ដាក់​កម្រិត។"</string>
     <string name="CLIRDefaultOffNextCallOn" msgid="1022781126694885017">"មិន​បាន​ដាក់​កម្រិត​លេខ​សម្គាល់​អ្នក​ហៅ​លំនាំ​ដើម។ ការ​ហៅ​បន្ទាប់៖​ បាន​ដាក់កម្រិត"</string>
     <string name="CLIRDefaultOffNextCallOff" msgid="2491576172356463443">"មិន​បាន​ដាក់កម្រិត​លំនាំដើម​លេខ​សម្គាល់​អ្នក​ហៅ។ ការ​ហៅ​បន្ទាប់៖ មិន​បាន​ដាក់​កម្រិត។"</string>
-    <!-- no translation found for page_size_compat_apk_warning (2297836366674721648) -->
-    <skip />
-    <!-- no translation found for page_size_compat_elf_warning (8613720928493005883) -->
-    <skip />
-    <!-- no translation found for page_size_compat_apk_and_elf_warning (9034695801295605229) -->
-    <skip />
-    <!-- no translation found for page_size_compat_apk_warning_4kb (5676451039424864495) -->
-    <skip />
-    <!-- no translation found for page_size_compat_elf_warning_4kb (5005239480522831311) -->
-    <skip />
-    <!-- no translation found for page_size_compat_apk_and_elf_warning_4kb (997926487776340721) -->
-    <skip />
+    <string name="page_size_compat_apk_warning" msgid="2297836366674721648">"កម្មវិធីនេះមិនត្រូវគ្នានឹង 16 KB ទេ។ ការត្រួតពិនិត្យភាពត្រូវគ្នានៃ APK មិនបានសម្រេចទេ។ កម្មវិធីនេះនឹងត្រូវបានដំណើរការដោយប្រើមុខងារដែលត្រូវគ្នានឹងទំហំទំព័រ។ ដើម្បីទទួលបានភាពត្រូវគ្នាល្អបំផុត សូមចងក្រងកម្មវិធីឡើងវិញដោយប្រើជំនួយ 16 KB។ ដើម្បីទទួលបានព័ត៌មានបន្ថែម សូមមើល &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; &lt;br&gt;&lt;br&gt; បណ្ណាល័យខាងក្រោមមិនត្រូវគ្នានឹងទំហំទំព័រ 16 KB ទេ៖ &lt;br&gt;&lt;br&gt;"</string>
+    <string name="page_size_compat_elf_warning" msgid="8613720928493005883">"កម្មវិធីនេះមិនត្រូវគ្នានឹង 16 KB ទេ។ ការត្រួតពិនិត្យភាពត្រូវគ្នានៃ ELF មិនបានសម្រេចទេ។ កម្មវិធីនេះនឹងត្រូវបានដំណើរការដោយប្រើមុខងារដែលត្រូវគ្នានឹងទំហំទំព័រ។ ដើម្បីទទួលបានភាពត្រូវគ្នាល្អបំផុត សូមចងក្រងកម្មវិធីឡើងវិញដោយប្រើជំនួយ 16 KB។ ដើម្បីទទួលបានព័ត៌មានបន្ថែម សូមមើល &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; &lt;br&gt;&lt;br&gt; បណ្ណាល័យខាងក្រោមមិនត្រូវគ្នានឹងទំហំទំព័រ 16 KB ទេ៖ &lt;br&gt;&lt;br&gt;"</string>
+    <string name="page_size_compat_apk_and_elf_warning" msgid="9034695801295605229">"កម្មវិធីនេះមិនត្រូវគ្នានឹង 16 KB ទេ។ ការត្រួតពិនិត្យភាពត្រូវគ្នានៃ APK និង ELF មិនបានសម្រេចទេ។ កម្មវិធីនេះនឹងត្រូវបានដំណើរការដោយប្រើមុខងារដែលត្រូវគ្នានឹងទំហំទំព័រ។ ដើម្បីទទួលបានភាពត្រូវគ្នាល្អបំផុត សូមចងក្រងកម្មវិធីឡើងវិញដោយប្រើជំនួយ 16 KB។ ដើម្បីទទួលបានព័ត៌មានបន្ថែម សូមមើល &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; &lt;br&gt;&lt;br&gt; បណ្ណាល័យខាងក្រោមមិនត្រូវគ្នានឹងទំហំទំព័រ 16 KB ទេ៖ &lt;br&gt;&lt;br&gt;"</string>
+    <string name="page_size_compat_apk_warning_4kb" msgid="5676451039424864495">"ការព្រមាននេះកំពុងបង្ហាញ ដោយសារនេះជាកម្មវិធីដែលអាចជួសជុលបាន ដែលកំពុងត្រូវបានធ្វើតេស្តនាពេលបច្ចុប្បន្ន។ ប្រសិនបើអ្នកមិនមែនជាអ្នកអភិវឌ្ឍន៍ទេ សូមរាយការណ៍អំពីបញ្ហានេះទៅអ្នក​អភិវឌ្ឍន៍ និងស្នើសុំកម្មវិធីដែលមិនអាចជួសជុលបាន។ &lt;br&gt;&lt;br&gt; កម្មវិធីនេះមិនត្រូវគ្នានឹងទំហំទំព័រ 16 KB ទេ។ ការត្រួតពិនិត្យភាពត្រូវគ្នានៃ APK មិនបានសម្រេចទេ។ សូមធ្វើតាមជំហាននៅលើ &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; &lt;br&gt;&lt;br&gt; បណ្ណាល័យខាងក្រោមមិនត្រូវគ្នានឹងទំហំទំព័រ 16 KB ទេ៖ &lt;br&gt;&lt;br&gt;"</string>
+    <string name="page_size_compat_elf_warning_4kb" msgid="5005239480522831311">"ការព្រមាននេះកំពុងបង្ហាញ ដោយសារនេះជាកម្មវិធីដែលអាចជួសជុលបាន ដែលកំពុងត្រូវបានធ្វើតេស្តនាពេលបច្ចុប្បន្ន។ ប្រសិនបើអ្នកមិនមែនជាអ្នកអភិវឌ្ឍន៍ទេ សូមរាយការណ៍អំពីបញ្ហានេះទៅអ្នក​អភិវឌ្ឍន៍ និងស្នើសុំកម្មវិធីដែលមិនអាចជួសជុលបាន។ &lt;br&gt;&lt;br&gt; កម្មវិធីនេះមិនត្រូវគ្នានឹងទំហំទំព័រ 16 KB ទេ។ ការត្រួតពិនិត្យភាពត្រូវគ្នានៃ ELF មិនបានសម្រេចទេ។ សូមធ្វើតាមជំហាននៅលើ &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; &lt;br&gt;&lt;br&gt; បណ្ណាល័យខាងក្រោមមិនត្រូវគ្នានឹងទំហំទំព័រ 16 KB ទេ៖ &lt;br&gt;&lt;br&gt;"</string>
+    <string name="page_size_compat_apk_and_elf_warning_4kb" msgid="997926487776340721">"ការព្រមាននេះកំពុងបង្ហាញ ដោយសារនេះជាកម្មវិធីដែលអាចជួសជុលបាន ដែលកំពុងត្រូវបានធ្វើតេស្តនាពេលបច្ចុប្បន្ន។ ប្រសិនបើអ្នកមិនមែនជាអ្នកអភិវឌ្ឍន៍ទេ សូមរាយការណ៍អំពីបញ្ហានេះទៅអ្នក​អភិវឌ្ឍន៍ និងស្នើសុំកម្មវិធីដែលមិនអាចជួសជុលបាន។ &lt;br&gt;&lt;br&gt; កម្មវិធីនេះមិនត្រូវគ្នានឹងទំហំទំព័រ 16 KB ទេ។ ការត្រួតពិនិត្យភាពត្រូវគ្នានៃ APK និង ELF មិនបានសម្រេចទេ។ សូមធ្វើតាមជំហាននៅលើ &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;. &lt;br&gt;&lt;br&gt; បណ្ណាល័យខាងក្រោមមិនត្រូវគ្នានឹងទំហំទំព័រ 16 KB ទេ៖ &lt;br&gt;&lt;br&gt;"</string>
     <string name="page_size_compat_never_show" msgid="3391282612422783097">"កុំបង្ហាញម្ដងទៀត"</string>
     <string name="page_size_compat_title" msgid="6497719153872572204">"ភាពត្រូវគ្នានៃកម្មវិធី Android"</string>
     <string name="page_size_compat_elf_not_aligned" msgid="7940806102874132630">"&amp;#8226; %1$s៖ ផ្នែក LOAD មិនត្រូវគ្នាទេ"</string>
@@ -920,8 +914,7 @@
     <string name="policydesc_disableCamera" msgid="3204405908799676104">"ការពារ​ការ​ប្រើ​ម៉ាស៊ីន​ថត​ឧបករណ៍​ទាំងអស់។"</string>
     <string name="policylab_disableKeyguardFeatures" msgid="5071855750149949741">"បិទមុខងារចាក់សោអេក្រង់មួយចំនួន"</string>
     <string name="policydesc_disableKeyguardFeatures" msgid="6641673177041195957">"ទប់ស្កាត់ការប្រើមុខងារចាក់សោអេក្រង់មួយចំនួន។"</string>
-    <!-- no translation found for exit_toast_on_long_press_escape (2983932499112557277) -->
-    <skip />
+    <string name="exit_toast_on_long_press_escape" msgid="2983932499112557277">"ចុចគ្រាប់ចុច Esc ឱ្យយូរ ដើម្បីបិទកម្មវិធីនេះ"</string>
   <string-array name="phoneTypes">
     <item msgid="8996339953292723951">"ផ្ទះ"</item>
     <item msgid="7740243458912727194">"​ចល័ត"</item>
@@ -1848,8 +1841,7 @@
     <string name="owner_name" msgid="8713560351570795743">"ម្ចាស់"</string>
     <string name="guest_name" msgid="8502103277839834324">"ភ្ញៀវ"</string>
     <string name="headless_system_user_name" msgid="1849150903255530049">"អ្នកប្រើប្រាស់ប្រព័ន្ធ"</string>
-    <!-- no translation found for unnamed_user_name (6096699110534542980) -->
-    <skip />
+    <string name="unnamed_user_name" msgid="6096699110534542980">"អ្នក​ប្រើប្រាស់"</string>
     <string name="error_message_title" msgid="4082495589294631966">"កំហុស"</string>
     <string name="error_message_change_not_allowed" msgid="843159705042381454">"ការ​ផ្លាស់ប្ដូរ​នេះ​មិន​ត្រូវ​បាន​អនុញ្ញាត​ដោយ​អ្នក​គ្រប់គ្រង​របស់​អ្នកទេ"</string>
     <string name="app_not_found" msgid="3429506115332341800">"រក​មិន​ឃើញ​កម្មវិធី​ ដើម្បី​គ្រប់គ្រង​សកម្មភាព​នេះ"</string>

@@ -45,6 +45,7 @@ import com.android.systemui.statusbar.policy.DevicePostureController.DEVICE_POST
 import com.android.systemui.testKosmos
 import com.android.systemui.user.domain.interactor.SelectedUserInteractor
 import com.android.systemui.util.mockito.whenever
+import com.android.systemui.util.wrapper.LockPatternCheckerWrapper
 import com.google.common.truth.Truth.assertThat
 import org.junit.After
 import org.junit.Before
@@ -107,6 +108,7 @@ class KeyguardPinViewControllerTest : SysuiTestCase() {
     @Mock lateinit var uiEventLogger: UiEventLogger
     @Mock lateinit var mUserActivityNotifier: UserActivityNotifier
     @Mock lateinit var inputManager: InputManager
+    @Mock private lateinit var lockPatternChecker: LockPatternCheckerWrapper
 
     @Captor lateinit var postureCallbackCaptor: ArgumentCaptor<DevicePostureController.Callback>
 
@@ -167,6 +169,7 @@ class KeyguardPinViewControllerTest : SysuiTestCase() {
                 kosmos.bouncerHapticPlayer,
                 mUserActivityNotifier,
                 inputManager,
+                lockPatternChecker,
             )
     }
 

@@ -71,18 +71,12 @@
     <string name="CLIRDefaultOnNextCallOff" msgid="5036749051007098105">"Arayan kimliği varsayılanları kısıtlanmıştır. Sonraki çağrı: Kısıtlanmamış"</string>
     <string name="CLIRDefaultOffNextCallOn" msgid="1022781126694885017">"Arayan kimliği varsayılanları kısıtlanmamıştır. Sonraki çağrı: Kısıtlanmış"</string>
     <string name="CLIRDefaultOffNextCallOff" msgid="2491576172356463443">"Arayan kimliği varsayılanları kısıtlanmamıştır. Sonraki çağrı: Kısıtlanmamış"</string>
-    <!-- no translation found for page_size_compat_apk_warning (2297836366674721648) -->
-    <skip />
-    <!-- no translation found for page_size_compat_elf_warning (8613720928493005883) -->
-    <skip />
-    <!-- no translation found for page_size_compat_apk_and_elf_warning (9034695801295605229) -->
-    <skip />
-    <!-- no translation found for page_size_compat_apk_warning_4kb (5676451039424864495) -->
-    <skip />
-    <!-- no translation found for page_size_compat_elf_warning_4kb (5005239480522831311) -->
-    <skip />
-    <!-- no translation found for page_size_compat_apk_and_elf_warning_4kb (997926487776340721) -->
-    <skip />
+    <string name="page_size_compat_apk_warning" msgid="2297836366674721648">"Bu uygulama 16 KB ile uyumlu değil. APK uyumluluk kontrolü başarısız oldu. Bu uygulama, sayfa boyutuna uyumlu mod kullanılarak çalıştırılacak. En iyi uyumluluk için lütfen uygulamayı 16 KB desteğiyle yeniden derleyin. Daha fazla bilgi için &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; adresini ziyaret edin.&lt;br&gt;&lt;br&gt; Aşağıdaki kitaplıklar 16 KB ile uyumlu değil: &lt;br&gt;&lt;br&gt;"</string>
+    <string name="page_size_compat_elf_warning" msgid="8613720928493005883">"Bu uygulama 16 KB ile uyumlu değil. ELF uyumluluk kontrolü başarısız oldu. Bu uygulama, sayfa boyutuna uyumlu mod kullanılarak çalıştırılacak. En iyi uyumluluk için lütfen uygulamayı 16 KB desteğiyle yeniden derleyin. Daha fazla bilgi için &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; adresini ziyaret edin.&lt;br&gt;&lt;br&gt; Aşağıdaki kitaplıklar 16 KB ile uyumlu değil: &lt;br&gt;&lt;br&gt;"</string>
+    <string name="page_size_compat_apk_and_elf_warning" msgid="9034695801295605229">"Bu uygulama 16 KB ile uyumlu değil. APK ve ELF uyumluluk kontrolleri başarısız oldu. Bu uygulama, sayfa boyutuna uyumlu mod kullanılarak çalıştırılacak. En iyi uyumluluk için lütfen uygulamayı 16 KB desteğiyle yeniden derleyin. Daha fazla bilgi için &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; adresini ziyaret edin.&lt;br&gt;&lt;br&gt; Aşağıdaki kitaplıklar 16 KB ile uyumlu değil: &lt;br&gt;&lt;br&gt;"</string>
+    <string name="page_size_compat_apk_warning_4kb" msgid="5676451039424864495">"Bu uyarı, kullanılan uygulamanın şu anda test edilmekte olan hata ayıklanabilir bir uygulama olması nedeniyle gösteriliyor. Geliştirici değilseniz lütfen bunu geliştiriciye bildirin ve hata ayıklama yapılmayan bir uygulama isteyin. &lt;br&gt;&lt;br&gt; Bu uygulama 16 KB ile uyumlu değil. APK uyumluluk kontrolü başarısız oldu. Lütfen &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; adresindeki adımları uygulayın. &lt;br&gt;&lt;br&gt; Aşağıdaki kitaplıklar 16 KB ile uyumlu değil: &lt;br&gt;&lt;br&gt;"</string>
+    <string name="page_size_compat_elf_warning_4kb" msgid="5005239480522831311">"Bu uyarı, kullanılan uygulamanın şu anda test edilmekte olan hata ayıklanabilir bir uygulama olması nedeniyle gösteriliyor. Geliştirici değilseniz lütfen bunu geliştiriciye bildirin ve hata ayıklama yapılmayan bir uygulama isteyin. &lt;br&gt;&lt;br&gt; Bu uygulama 16 KB ile uyumlu değil. ELF uyumluluk kontrolü başarısız oldu. Lütfen &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; adresindeki adımları uygulayın. &lt;br&gt;&lt;br&gt; Aşağıdaki kitaplıklar 16 KB ile uyumlu değil: &lt;br&gt;&lt;br&gt;"</string>
+    <string name="page_size_compat_apk_and_elf_warning_4kb" msgid="997926487776340721">"Bu uyarı, kullanılan uygulamanın şu anda test edilmekte olan hata ayıklanabilir bir uygulama olması nedeniyle gösteriliyor. Geliştirici değilseniz lütfen bunu geliştiriciye bildirin ve hata ayıklama yapılmayan bir uygulama isteyin. &lt;br&gt;&lt;br&gt; Bu uygulama 16 KB ile uyumlu değil. APK ve ELF uyumluluk kontrolleri başarısız oldu. Lütfen &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; adresindeki adımları uygulayın. &lt;br&gt;&lt;br&gt; Aşağıdaki kitaplıklar 16 KB ile uyumlu değil: &lt;br&gt;&lt;br&gt;"</string>
     <string name="page_size_compat_never_show" msgid="3391282612422783097">"Bir Daha Gösterme"</string>
     <string name="page_size_compat_title" msgid="6497719153872572204">"Android Uygulaması Uyumluluğu"</string>
     <string name="page_size_compat_elf_not_aligned" msgid="7940806102874132630">"&amp;#8226; %1$s : LOAD segmenti uygun değil"</string>
@@ -920,8 +914,7 @@
     <string name="policydesc_disableCamera" msgid="3204405908799676104">"Tüm cihaz kameralarının kullanımını engeller."</string>
     <string name="policylab_disableKeyguardFeatures" msgid="5071855750149949741">"Ekran kilidinin bazı özelliklerini devre dışı bırakma"</string>
     <string name="policydesc_disableKeyguardFeatures" msgid="6641673177041195957">"Bazı ekran kilidi özelliklerinin kullanılmasını engeller."</string>
-    <!-- no translation found for exit_toast_on_long_press_escape (2983932499112557277) -->
-    <skip />
+    <string name="exit_toast_on_long_press_escape" msgid="2983932499112557277">"Bu uygulamayı kapatmak için Esc tuşuna uzun basın"</string>
   <string-array name="phoneTypes">
     <item msgid="8996339953292723951">"Ev"</item>
     <item msgid="7740243458912727194">"Mobil"</item>
@@ -1848,8 +1841,7 @@
     <string name="owner_name" msgid="8713560351570795743">"Sahip"</string>
     <string name="guest_name" msgid="8502103277839834324">"Misafir"</string>
     <string name="headless_system_user_name" msgid="1849150903255530049">"Sistem Kullanıcısı"</string>
-    <!-- no translation found for unnamed_user_name (6096699110534542980) -->
-    <skip />
+    <string name="unnamed_user_name" msgid="6096699110534542980">"Kullanıcı"</string>
     <string name="error_message_title" msgid="4082495589294631966">"Hata"</string>
     <string name="error_message_change_not_allowed" msgid="843159705042381454">"Yöneticiniz bu değişikliğe izin vermiyor"</string>
     <string name="app_not_found" msgid="3429506115332341800">"Bu eylemi gerçekleştirecek bir uygulama bulunamadı"</string>

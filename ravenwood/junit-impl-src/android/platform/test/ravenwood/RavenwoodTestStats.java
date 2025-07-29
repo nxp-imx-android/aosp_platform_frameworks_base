@@ -139,7 +139,7 @@ public class RavenwoodTestStats {
 
     /** Ctor */
     public RavenwoodTestStats() {
-        String testModuleName = RavenwoodDriver.getTestModuleName();
+        String testModuleName = RavenwoodEnvironment.getInstance().getTestModuleName();
 
         var basename = "Ravenwood-stats_" + testModuleName + "_";
 

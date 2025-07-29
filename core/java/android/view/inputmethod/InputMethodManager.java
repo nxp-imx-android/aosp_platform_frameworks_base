@@ -1449,16 +1449,9 @@ public final class InputMethodManager {
                     final ImeTracker.Token statsToken = (ImeTracker.Token) args.arg2;
                     synchronized (mH) {
                         if (mCurRootView != null) {
-                            final var insetsController = mCurRootView.getInsetsController();
-                            if (insetsController != null) {
-                                ImeTracker.forLogging().onProgress(statsToken,
-                                        ImeTracker.PHASE_CLIENT_HANDLE_SET_IME_VISIBILITY);
-                                if (visible) {
-                                    insetsController.show(WindowInsets.Type.ime(), statsToken);
-                                } else {
-                                    insetsController.hide(WindowInsets.Type.ime(), statsToken);
-                                }
-                            }
+                            ImeTracker.forLogging().onProgress(statsToken,
+                                    ImeTracker.PHASE_CLIENT_HANDLE_SET_IME_VISIBILITY);
+                            setImeVisibilityOnInsetsController(mCurRootView, visible, statsToken);
                         } else {
                             ImeTracker.forLogging().onFailed(statsToken,
                                     ImeTracker.PHASE_CLIENT_HANDLE_SET_IME_VISIBILITY);
@@ -2486,7 +2479,6 @@ public final class InputMethodManager {
                             & WindowInsets.Type.ime()) == 0
                     || viewRootImpl.getInsetsController()
                             .isPredictiveBackImeHideAnimInProgress())) {
-                Handler vh = view.getHandler();
                 ImeTracker.forLogging().onProgress(statsToken,
                         ImeTracker.PHASE_CLIENT_NO_ONGOING_USER_ANIMATION);
                 if (resultReceiver != null) {
@@ -2496,21 +2488,7 @@ public final class InputMethodManager {
                             imeReqVisible ? InputMethodManager.RESULT_UNCHANGED_SHOWN
                                     : InputMethodManager.RESULT_SHOWN, null);
                 }
-                if (vh.getLooper() != Looper.myLooper()) {
-                    // The view is running on a different thread than our own, so
-                    // we need to reschedule our work for over there.
-                    if (android.tracing.Flags.imetrackerProtolog()) {
-                        ProtoLog.v(INPUT_METHOD_MANAGER_DEBUG,
-                                "Show soft input: reschedule to view thread");
-                    } else if (DEBUG) {
-                        Log.v(TAG, "Show soft input: reschedule to view thread");
-                    }
-                    final var finalStatsToken = statsToken;
-                    vh.post(() -> viewRootImpl.getInsetsController().show(WindowInsets.Type.ime(),
-                            finalStatsToken));
-                } else {
-                    viewRootImpl.getInsetsController().show(WindowInsets.Type.ime(), statsToken);
-                }
+                setImeVisibilityOnInsetsController(viewRootImpl, true /* visible */, statsToken);
                 return true;
             }
             ImeTracker.forLogging().onCancelled(statsToken,
@@ -2685,8 +2663,7 @@ public final class InputMethodManager {
 
             final var viewRootImpl = servedView.getViewRootImpl();
             if (viewRootImpl != null) {
-                Handler vh = servedView.getHandler();
-                if (vh == null) {
+                if (servedView.getHandler() == null) {
                     // If the view doesn't have a handler, something has changed out from
                     // under us. The current input has been closed before (from checkFocus).
                     ImeTracker.forLogging().onFailed(statsToken,
@@ -2696,8 +2673,6 @@ public final class InputMethodManager {
                     return CompatChanges.isChangeEnabled(
                             ALWAYS_RETURN_TRUE_HIDE_SOFT_INPUT_FROM_WINDOW);
                 }
-                ImeTracker.forLogging().onProgress(statsToken,
-                        ImeTracker.PHASE_CLIENT_VIEW_HANDLER_AVAILABLE);
 
                 final boolean imeReqVisible = hasViewImeRequestedVisible(
                         viewRootImpl.getView());
@@ -2706,21 +2681,7 @@ public final class InputMethodManager {
                             !imeReqVisible ? InputMethodManager.RESULT_UNCHANGED_HIDDEN
                                     : InputMethodManager.RESULT_HIDDEN, null);
                 }
-                if (vh.getLooper() != Looper.myLooper()) {
-                    // The view is running on a different thread than our own, so
-                    // we need to reschedule our work for over there.
-                    if (android.tracing.Flags.imetrackerProtolog()) {
-                        ProtoLog.v(INPUT_METHOD_MANAGER_DEBUG,
-                                "Hiding soft input: reschedule to view thread");
-                    } else if (DEBUG) {
-                        Log.v(TAG, "Hiding soft input: reschedule to view thread");
-                    }
-                    final var finalStatsToken = statsToken;
-                    vh.post(() -> viewRootImpl.getInsetsController().hide(WindowInsets.Type.ime(),
-                            finalStatsToken));
-                } else {
-                    viewRootImpl.getInsetsController().hide(WindowInsets.Type.ime(), statsToken);
-                }
+                setImeVisibilityOnInsetsController(viewRootImpl, false /* visible */, statsToken);
                 if (!CompatChanges.isChangeEnabled(
                         ALWAYS_RETURN_TRUE_HIDE_SOFT_INPUT_FROM_WINDOW)) {
                     // if the IME was not visible before, the additional hide won't change
@@ -2816,6 +2777,69 @@ public final class InputMethodManager {
     public void startStylusHandwriting(@NonNull View view) {
         startStylusHandwritingInternal(
                 view, /* delegatorPackageName= */ null, /* handwritingDelegateFlags= */ 0);
+    }
+
+    private static void setImeVisibilityOnInsetsController(@NonNull ViewRootImpl viewRootImpl,
+            boolean visible, @NonNull ImeTracker.Token statsToken) {
+        final View view = viewRootImpl.getView();
+        if (view == null) {
+            if (android.tracing.Flags.imetrackerProtolog()) {
+                ProtoLog.w(INPUT_METHOD_MANAGER_WITH_LOGCAT,
+                        "Cannot set IME visibility: no view available for %s",
+                        (visible ? "show" : "hide"));
+            } else {
+                Log.w(TAG, "Cannot set IME visibility: no view available for " + (visible ? "show"
+                        : "hide"));
+            }
+            ImeTracker.forLogging().onFailed(statsToken,
+                    ImeTracker.PHASE_CLIENT_VIEW_HANDLER_AVAILABLE);
+            return;
+        }
+
+        final Handler vh = view.getHandler();
+        if (vh == null) {
+            // If the view doesn't have a handler, something has changed out from under us.
+            ImeTracker.forLogging().onFailed(statsToken,
+                    ImeTracker.PHASE_CLIENT_VIEW_HANDLER_AVAILABLE);
+            return;
+        }
+        ImeTracker.forLogging().onProgress(statsToken,
+                ImeTracker.PHASE_CLIENT_VIEW_HANDLER_AVAILABLE);
+
+        final var insetsController = viewRootImpl.getInsetsController();
+        if (insetsController == null) {
+            ImeTracker.forLogging().onFailed(statsToken,
+                    ImeTracker.PHASE_CLIENT_INSETS_CONTROLLER_DISPATCH);
+            return;
+        }
+        ImeTracker.forLogging().onProgress(statsToken,
+                ImeTracker.PHASE_CLIENT_INSETS_CONTROLLER_DISPATCH);
+
+        if (vh.getLooper() != Looper.myLooper()) {
+            // The view is running on a different thread than our own, so we need to reschedule
+            // our work for over there.
+            if (android.tracing.Flags.imetrackerProtolog()) {
+                ProtoLog.v(INPUT_METHOD_MANAGER_DEBUG,
+                        "Rescheduling %s IME visibility to view thread",
+                        (visible ? "show" : "hide"));
+            } else if (DEBUG) {
+                Log.v(TAG, "Rescheduling " + (visible ? "show" : "hide")
+                        + " IME visibility to view thread");
+            }
+            vh.post(() -> {
+                if (visible) {
+                    insetsController.show(WindowInsets.Type.ime(), statsToken);
+                } else {
+                    insetsController.hide(WindowInsets.Type.ime(), statsToken);
+                }
+            });
+        } else {
+            if (visible) {
+                insetsController.show(WindowInsets.Type.ime(), statsToken);
+            } else {
+                insetsController.hide(WindowInsets.Type.ime(), statsToken);
+            }
+        }
     }
 
     private void sendFailureCallback(@NonNull @CallbackExecutor Executor executor,
@@ -3862,8 +3886,7 @@ public final class InputMethodManager {
                 ActivityThread::currentApplication);
 
         synchronized (mH) {
-            final View rootView = mCurRootView != null ? mCurRootView.getView() : null;
-            if (rootView == null) {
+            if (mCurRootView == null) {
                 ImeTracker.forLogging().onFailed(statsToken, ImeTracker.PHASE_CLIENT_VIEW_SERVED);
                 ImeTracker.forLatency().onHideFailed(statsToken,
                         ImeTracker.PHASE_CLIENT_VIEW_SERVED, ActivityThread::currentApplication);
@@ -3875,37 +3898,8 @@ public final class InputMethodManager {
                 }
                 return;
             }
-
             ImeTracker.forLogging().onProgress(statsToken, ImeTracker.PHASE_CLIENT_VIEW_SERVED);
-
-            synchronized (mH) {
-                Handler vh = rootView.getHandler();
-                if (vh == null) {
-                    // If the view doesn't have a handler, something has changed out from
-                    // under us.
-                    ImeTracker.forLogging().onFailed(statsToken,
-                            ImeTracker.PHASE_CLIENT_VIEW_HANDLER_AVAILABLE);
-                    return;
-                }
-                ImeTracker.forLogging().onProgress(statsToken,
-                        ImeTracker.PHASE_CLIENT_VIEW_HANDLER_AVAILABLE);
-
-                if (vh.getLooper() != Looper.myLooper()) {
-                    // The view is running on a different thread than our own, so
-                    // we need to reschedule our work for over there.
-                    if (android.tracing.Flags.imetrackerProtolog()) {
-                        ProtoLog.v(INPUT_METHOD_MANAGER_DEBUG,
-                                "Close current input: reschedule hide to view thread");
-                    } else if (DEBUG) {
-                        Log.v(TAG, "Close current input: reschedule hide to view thread");
-                    }
-                    final var viewRootImpl = mCurRootView;
-                    vh.post(() -> viewRootImpl.getInsetsController().hide(WindowInsets.Type.ime(),
-                            statsToken));
-                } else {
-                    mCurRootView.getInsetsController().hide(WindowInsets.Type.ime(), statsToken);
-                }
-            }
+            setImeVisibilityOnInsetsController(mCurRootView, false, statsToken);
         }
     }
 

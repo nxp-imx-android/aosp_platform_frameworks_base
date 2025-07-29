@@ -132,17 +132,6 @@ flag {
 
 flag {
     namespace: "windowing_sdk"
-    name: "fix_layout_restored_task"
-    description: "Layout the restored-from-recent task to ensure the bounds are updated."
-    bug: "416441150"
-    is_fixed_read_only: true
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
-    namespace: "windowing_sdk"
     name: "update_task_min_dimensions_with_root_activity"
     description: "Update minWidth/Height when the root activity is changed."
     bug: "416987720"
@@ -187,6 +176,17 @@ flag {
     description: "Launch Gemini on a multi-display environment"
     bug: "400351723"
     is_fixed_read_only: true
+}
+
+flag {
+    namespace: "windowing_sdk"
+    name: "return_all_visible_activities_for_vis"
+    description: "Return all visible activities in multi-tasking feature to VIS"
+    bug: "434114340"
+    is_fixed_read_only: true
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
 }
 
 flag {

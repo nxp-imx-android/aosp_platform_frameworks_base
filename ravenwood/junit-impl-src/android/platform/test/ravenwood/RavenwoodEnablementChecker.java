@@ -260,7 +260,7 @@ public class RavenwoodEnablementChecker {
             result = false;
         } else {
             result = sEnablementPolicy.shouldEnableClass(
-                    RavenwoodDriver.getTestModuleName(), testClass.getName());
+                    RavenwoodEnvironment.getInstance().getTestModuleName(), testClass.getName());
         }
         if (checkRunDisabledTestsFlag && RUN_DISABLED_TESTS) {
             // Invert the result + check the really disable pattern

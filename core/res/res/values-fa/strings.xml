@@ -71,18 +71,12 @@
     <string name="CLIRDefaultOnNextCallOff" msgid="5036749051007098105">"پیش‌فرض شناسه تماس‌گیرنده روی محدود است. تماس بعدی: بدون محدودیت"</string>
     <string name="CLIRDefaultOffNextCallOn" msgid="1022781126694885017">"پیش‌فرض شناسه تماس‌گیرنده روی غیرمحدود است. تماس بعدی: محدود"</string>
     <string name="CLIRDefaultOffNextCallOff" msgid="2491576172356463443">"پیش‌فرض شناسه تماس‌گیرنده روی غیرمحدود است. تماس بعدی: بدون محدودیت"</string>
-    <!-- no translation found for page_size_compat_apk_warning (2297836366674721648) -->
-    <skip />
-    <!-- no translation found for page_size_compat_elf_warning (8613720928493005883) -->
-    <skip />
-    <!-- no translation found for page_size_compat_apk_and_elf_warning (9034695801295605229) -->
-    <skip />
-    <!-- no translation found for page_size_compat_apk_warning_4kb (5676451039424864495) -->
-    <skip />
-    <!-- no translation found for page_size_compat_elf_warning_4kb (5005239480522831311) -->
-    <skip />
-    <!-- no translation found for page_size_compat_apk_and_elf_warning_4kb (997926487776340721) -->
-    <skip />
+    <string name="page_size_compat_apk_warning" msgid="2297836366674721648">"‏این برنامه با اندازه صفحه ۱۶ کیلوبایتی سازگار نیست. بررسی تراز APK ناموفق بود. این برنامه بااستفاده از حالت سازگار اندازه صفحه اجرا خواهد شد. برای بهترین سازگاری، لطفاً برنامه را با پشتیبانی از اندازه صفحه ۱۶ کیلوبایتی دوباره ترجمه کنید. برای اطلاعات بیشتر، به &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; مراجعه کنید &lt;br&gt;&lt;br&gt; کتابخانه‌های زیر با اندازه صفحه ۱۶ کیلوبایتی تراز نیستند: &lt;br&gt;&lt;br&gt;"</string>
+    <string name="page_size_compat_elf_warning" msgid="8613720928493005883">"‏این برنامه با اندازه صفحه ۱۶ کیلوبایتی سازگار نیست. بررسی تراز ELF ناموفق بود. این برنامه بااستفاده از حالت سازگار اندازه صفحه اجرا خواهد شد. برای بهترین سازگاری، لطفاً برنامه را با پشتیبانی از اندازه صفحه ۱۶ کیلوبایتی دوباره ترجمه کنید. برای اطلاعات بیشتر، به &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; مراجعه کنید &lt;br&gt;&lt;br&gt; کتابخانه‌های زیر با اندازه صفحه ۱۶ کیلوبایتی تراز نیستند: &lt;br&gt;&lt;br&gt;"</string>
+    <string name="page_size_compat_apk_and_elf_warning" msgid="9034695801295605229">"‏این برنامه با اندازه صفحه ۱۶ کیلوبایتی سازگار نیست. بررسی‌های تراز APK و ELF ناموفق بود. این برنامه بااستفاده از حالت سازگار اندازه صفحه اجرا خواهد شد. برای بهترین سازگاری، لطفاً برنامه را با پشتیبانی از اندازه صفحه ۱۶ کیلوبایتی دوباره ترجمه کنید. برای اطلاعات بیشتر، به &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; مراجعه کنید &lt;br&gt;&lt;br&gt; کتابخانه‌های زیر با اندازه صفحه ۱۶ کیلوبایتی تراز نیستند: &lt;br&gt;&lt;br&gt;"</string>
+    <string name="page_size_compat_apk_warning_4kb" msgid="5676451039424864495">"‏این هشدار به‌دلیل قابل‌اشکال‌زدایی بودن برنامه‌ای که درحال آزمایش شدن است نشان داده می‌شود. اگر شما توسعه‌دهنده نیستید، لطفاً این موضوع را به توسعه‌دهنده گزارش کنید و یک برنامه غیرقابل‌اشکال‌زدایی درخواست کنید. &lt;br&gt;&lt;br&gt; این برنامه با اندازه صفحه ۱۶ کیلوبایتی سازگار نیست. بررسی تراز APK ناموفق بود. لطفاً مراحل ارائه‌شده در &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&amp;gt را دنبال کنید &lt;br&gt;&lt;br&gt; کتابخانه‌های زیر با اندازه صفحه ۱۶ کیلوبایتی تراز نیستند: &lt;br&gt;&lt;br&gt;"</string>
+    <string name="page_size_compat_elf_warning_4kb" msgid="5005239480522831311">"‏این هشدار به‌دلیل قابل‌اشکال‌زدایی بودن برنامه‌ای که درحال آزمایش شدن است نشان داده می‌شود. اگر شما توسعه‌دهنده نیستید، لطفاً این موضوع را به توسعه‌دهنده گزارش کنید و یک برنامه غیرقابل‌اشکال‌زدایی درخواست کنید. &lt;br&gt;&lt;br&gt; این برنامه با اندازه صفحه ۱۶ کیلوبایتی سازگار نیست. بررسی تراز ELF ناموفق بود. لطفاً مراحل ارائه‌شده در &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&amp;gt را دنبال کنید &lt;br&gt;&lt;br&gt; کتابخانه‌های زیر با اندازه صفحه ۱۶ کیلوبایتی تراز نیستند: &lt;br&gt;&lt;br&gt;"</string>
+    <string name="page_size_compat_apk_and_elf_warning_4kb" msgid="997926487776340721">"‏این هشدار به‌دلیل قابل‌اشکال‌زدایی بودن برنامه‌ای که درحال آزمایش شدن است نشان داده می‌شود. اگر شما توسعه‌دهنده نیستید، لطفاً این موضوع را به توسعه‌دهنده گزارش کنید و یک برنامه غیرقابل‌اشکال‌زدایی درخواست کنید. &lt;br&gt;&lt;br&gt; این برنامه با اندازه صفحه ۱۶ کیلوبایتی سازگار نیست. بررسی‌های تراز APK و ELF ناموفق بود. لطفاً مراحل ارائه‌شده در &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; را دنبال کنید. &lt;br&gt;&lt;br&gt; کتابخانه‌های زیر با اندازه صفحه ۱۶ کیلوبایتی تراز نیستند: &lt;br&gt;&lt;br&gt;"</string>
     <string name="page_size_compat_never_show" msgid="3391282612422783097">"دوباره نشان داده نشود"</string>
     <string name="page_size_compat_title" msgid="6497719153872572204">"‏سازگاری برنامه Android"</string>
     <string name="page_size_compat_elf_not_aligned" msgid="7940806102874132630">"‏&amp;#8226;‫ %1$s : بخش «بار کردن» تراز نیست"</string>
@@ -920,8 +914,7 @@
     <string name="policydesc_disableCamera" msgid="3204405908799676104">"جلوگیری از استفاده از همه دوربین‌های دستگاه."</string>
     <string name="policylab_disableKeyguardFeatures" msgid="5071855750149949741">"غیرفعال کردن ویژگی‌های قفل صفحه"</string>
     <string name="policydesc_disableKeyguardFeatures" msgid="6641673177041195957">"مانع استفاده از برخی ویژگی‌های قفل صفحه می‌شود."</string>
-    <!-- no translation found for exit_toast_on_long_press_escape (2983932499112557277) -->
-    <skip />
+    <string name="exit_toast_on_long_press_escape" msgid="2983932499112557277">"برای بستن این برنامه، «کلید گریز» را طولانی فشار دهید"</string>
   <string-array name="phoneTypes">
     <item msgid="8996339953292723951">"خانه"</item>
     <item msgid="7740243458912727194">"تلفن همراه"</item>
@@ -1848,8 +1841,7 @@
     <string name="owner_name" msgid="8713560351570795743">"مالک"</string>
     <string name="guest_name" msgid="8502103277839834324">"مهمان"</string>
     <string name="headless_system_user_name" msgid="1849150903255530049">"کاربر سیستم"</string>
-    <!-- no translation found for unnamed_user_name (6096699110534542980) -->
-    <skip />
+    <string name="unnamed_user_name" msgid="6096699110534542980">"کاربر"</string>
     <string name="error_message_title" msgid="4082495589294631966">"خطا"</string>
     <string name="error_message_change_not_allowed" msgid="843159705042381454">"سرپرست سیستم شما این تغییر را مجاز نمی‌داند"</string>
     <string name="app_not_found" msgid="3429506115332341800">"برنامه‌ای برای انجام این عملکرد موجود نیست"</string>

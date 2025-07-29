@@ -73,18 +73,12 @@
     <string name="CLIRDefaultOnNextCallOff" msgid="5036749051007098105">"ID klicatelja je ponastavljen na omejeno. Naslednji klic: ni omejeno"</string>
     <string name="CLIRDefaultOffNextCallOn" msgid="1022781126694885017">"ID klicatelja je ponastavljen na neomejeno. Naslednji klic: omejeno"</string>
     <string name="CLIRDefaultOffNextCallOff" msgid="2491576172356463443">"ID klicatelja je ponastavljen na neomejeno. Naslednji klic: ni omejeno"</string>
-    <!-- no translation found for page_size_compat_apk_warning (2297836366674721648) -->
-    <skip />
-    <!-- no translation found for page_size_compat_elf_warning (8613720928493005883) -->
-    <skip />
-    <!-- no translation found for page_size_compat_apk_and_elf_warning (9034695801295605229) -->
-    <skip />
-    <!-- no translation found for page_size_compat_apk_warning_4kb (5676451039424864495) -->
-    <skip />
-    <!-- no translation found for page_size_compat_elf_warning_4kb (5005239480522831311) -->
-    <skip />
-    <!-- no translation found for page_size_compat_apk_and_elf_warning_4kb (997926487776340721) -->
-    <skip />
+    <string name="page_size_compat_apk_warning" msgid="2297836366674721648">"Ta aplikacija ni združljiva s pomnilniško stranjo velikosti 16 KB. Preverjanje usklajenosti oblike zapisa APK ni uspelo. Ta aplikacija bo delovala v načinu, združljivem z velikostjo pomnilniške strani. Za najboljšo združljivost znova prevedite aplikacijo s podporo za pomnilniško stran velikosti 16 KB. Za več informacij si oglejte &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; &lt;br&gt;&lt;br&gt; Te knjižnice niso usklajene na 16 KB: &lt;br&gt;&lt;br&gt;"</string>
+    <string name="page_size_compat_elf_warning" msgid="8613720928493005883">"Ta aplikacija ni združljiva s pomnilniško stranjo velikosti 16 KB. Preverjanje usklajenosti oblike zapisa ELF ni uspelo. Ta aplikacija bo delovala v načinu, združljivem z velikostjo pomnilniške strani. Za najboljšo združljivost znova prevedite aplikacijo s podporo za pomnilniško stran velikosti 16 KB. Za več informacij si oglejte &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; &lt;br&gt;&lt;br&gt; Te knjižnice niso usklajene na 16 KB: &lt;br&gt;&lt;br&gt;"</string>
+    <string name="page_size_compat_apk_and_elf_warning" msgid="9034695801295605229">"Ta aplikacija ni združljiva s pomnilniško stranjo velikosti 16 KB. Preverjanja usklajenosti oblik zapisov APK in ELF niso uspela. Ta aplikacija bo delovala v načinu, združljivem z velikostjo pomnilniške strani. Za najboljšo združljivost znova prevedite aplikacijo s podporo za pomnilniško stran velikosti 16 KB. Za več informacij si oglejte &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; &lt;br&gt;&lt;br&gt; Te knjižnice niso usklajene na 16 KB: &lt;br&gt;&lt;br&gt;"</string>
+    <string name="page_size_compat_apk_warning_4kb" msgid="5676451039424864495">"To opozorilo je prikazano, ker je to aplikacija z možnostjo odpravljanja napak, ki je trenutno v fazi preizkušanja. Če niste njen razvijalec, to sporočite razvijalcu in ga prosite za aplikacijo, ki ne omogoča odpravljanja napak. &lt;br&gt;&lt;br&gt; Ta aplikacija ni združljiva s pomnilniško stranjo velikosti 16 KB. Preverjanje usklajenosti oblike zapisa APK ni uspelo. Upoštevajte navodila na naslovu &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; &lt;br&gt;&lt;br&gt; Te knjižnice niso usklajene na 16 KB: &lt;br&gt;&lt;br&gt;"</string>
+    <string name="page_size_compat_elf_warning_4kb" msgid="5005239480522831311">"To opozorilo je prikazano, ker je to aplikacija z možnostjo odpravljanja napak, ki je trenutno v fazi preizkušanja. Če niste njen razvijalec, to sporočite razvijalcu in ga prosite za aplikacijo, ki ne omogoča odpravljanja napak. &lt;br&gt;&lt;br&gt; Ta aplikacija ni združljiva s pomnilniško stranjo velikosti 16 KB. Preverjanje usklajenosti oblike zapisa ELF ni uspelo. Upoštevajte navodila na naslovu &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; &lt;br&gt;&lt;br&gt; Te knjižnice niso usklajene na 16 KB: &lt;br&gt;&lt;br&gt;"</string>
+    <string name="page_size_compat_apk_and_elf_warning_4kb" msgid="997926487776340721">"To opozorilo je prikazano, ker je to aplikacija z možnostjo odpravljanja napak, ki je trenutno v fazi preizkušanja. Če niste njen razvijalec, to sporočite razvijalcu in ga prosite za aplikacijo, ki ne omogoča odpravljanja napak. &lt;br&gt;&lt;br&gt; Ta aplikacija ni združljiva s pomnilniško stranjo velikosti 16 KB. Preverjanja usklajenosti oblik zapisov APK in ELF niso uspela. Upoštevajte navodila na naslovu &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;. &lt;br&gt;&lt;br&gt; Te knjižnice niso usklajene na 16 KB: &lt;br&gt;&lt;br&gt;"</string>
     <string name="page_size_compat_never_show" msgid="3391282612422783097">"Tega ne prikaži več"</string>
     <string name="page_size_compat_title" msgid="6497719153872572204">"Združljivost aplikacij za Android"</string>
     <string name="page_size_compat_elf_not_aligned" msgid="7940806102874132630">"&amp;#8226; %1$s : Segment LOAD ni usklajen"</string>
@@ -922,8 +916,7 @@
     <string name="policydesc_disableCamera" msgid="3204405908799676104">"Prepreči uporabo vseh fotoaparatov v napravi."</string>
     <string name="policylab_disableKeyguardFeatures" msgid="5071855750149949741">"Onemogočanje nekaterih funkcij zaklepanja zaslona"</string>
     <string name="policydesc_disableKeyguardFeatures" msgid="6641673177041195957">"Prepreči uporabo nekaterih funkcij zaklepanja zaslona."</string>
-    <!-- no translation found for exit_toast_on_long_press_escape (2983932499112557277) -->
-    <skip />
+    <string name="exit_toast_on_long_press_escape" msgid="2983932499112557277">"Pridržite tipko Esc, če želite zapreti to aplikacijo"</string>
   <string-array name="phoneTypes">
     <item msgid="8996339953292723951">"Dom"</item>
     <item msgid="7740243458912727194">"Mobilni telefon"</item>
@@ -1850,8 +1843,7 @@
     <string name="owner_name" msgid="8713560351570795743">"Lastnik"</string>
     <string name="guest_name" msgid="8502103277839834324">"Gost"</string>
     <string name="headless_system_user_name" msgid="1849150903255530049">"Sistemski uporabnik"</string>
-    <!-- no translation found for unnamed_user_name (6096699110534542980) -->
-    <skip />
+    <string name="unnamed_user_name" msgid="6096699110534542980">"Uporabnik"</string>
     <string name="error_message_title" msgid="4082495589294631966">"Napaka"</string>
     <string name="error_message_change_not_allowed" msgid="843159705042381454">"Skrbnik ne dovoli te spremembe"</string>
     <string name="app_not_found" msgid="3429506115332341800">"Najdena ni bila nobena aplikacija za izvedbo tega dejanja"</string>

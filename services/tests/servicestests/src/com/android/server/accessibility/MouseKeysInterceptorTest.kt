@@ -67,6 +67,7 @@ class MouseKeysInterceptorTest {
     companion object {
         const val DISPLAY_ID = 1
         const val DEVICE_ID = 123
+        const val VIRTUAL_DEVICE_ID = 456
         // This delay is required for key events to be sent and handled correctly.
         // The handler only performs a move/scroll event if it receives the key event
         // at INTERVAL_MILLIS (which happens in practice). Hence, we need this delay in the tests.
@@ -92,6 +93,7 @@ class MouseKeysInterceptorTest {
 
     private lateinit var mouseKeysInterceptor: MouseKeysInterceptor
     private lateinit var inputDevice: InputDevice
+    private lateinit var virtualInputDevice: InputDevice
 
     private val clock = OffsettableClock()
     private val testLooper = TestLooper { clock.now() }
@@ -135,9 +137,12 @@ class MouseKeysInterceptorTest {
         testSession = InputManagerGlobal.createTestSession(iInputManager)
         mockInputManager = InputManager(testableContext)
 
-        inputDevice = createInputDevice(DEVICE_ID)
+        inputDevice = createInputDevice(DEVICE_ID, /* isVirtual= */ false)
+        virtualInputDevice = createInputDevice(VIRTUAL_DEVICE_ID, /* isVirtual */ true)
         Mockito.`when`(iInputManager.getInputDevice(DEVICE_ID))
                 .thenReturn(inputDevice)
+        Mockito.`when`(iInputManager.getInputDevice(VIRTUAL_DEVICE_ID))
+            .thenReturn(virtualInputDevice)
 
         Mockito.`when`(mockVirtualDeviceManagerInternal.getDeviceIdsForUid(Mockito.anyInt()))
             .thenReturn(ArraySet(setOf(DEVICE_ID)))
@@ -153,7 +158,8 @@ class MouseKeysInterceptorTest {
             Mockito.any(VirtualMouseConfig::class.java)
         )).thenReturn(mockVirtualMouse)
 
-        Mockito.`when`(iInputManager.inputDeviceIds).thenReturn(intArrayOf(DEVICE_ID))
+        Mockito.`when`(iInputManager.inputDeviceIds)
+            .thenReturn(intArrayOf(DEVICE_ID, VIRTUAL_DEVICE_ID))
         Mockito.`when`(mockAms.traceManager).thenReturn(mockTraceManager)
     }
 
@@ -605,6 +611,23 @@ class MouseKeysInterceptorTest {
         verifyKeyEventsEqual(primaryKeyDownEvent, nextInterceptor.events.poll()!!)
     }
 
+    @Test
+    fun whenMouseKeyEventArrives_fromVirtualKeyboard_eventIsPassedToNextInterceptor() {
+        setupMouseKeysInterceptor(usePrimaryKeys = true)
+        for (ev in MouseKeysInterceptor.MouseKeyEvent.entries) {
+            val downTime = clock.now()
+            val keyCode = ev.getKeyCodeValue(USE_PRIMARY_KEYS)
+            val downEvent = KeyEvent(downTime, downTime, KeyEvent.ACTION_DOWN,
+                keyCode, 0, 0, VIRTUAL_DEVICE_ID, 0
+            )
+            mouseKeysInterceptor.onKeyEvent(downEvent, 0)
+            testLooper.dispatchAll()
+
+            assertThat(nextInterceptor.events).hasSize(1)
+            verifyKeyEventsEqual(downEvent, nextInterceptor.events.poll()!!)
+        }
+    }
+
     private fun verifyRelativeEvents(expectedX: FloatArray, expectedY: FloatArray) {
         assertThat(expectedX.size).isEqualTo(expectedY.size)
         val expectedSize = expectedX.size
@@ -667,15 +690,19 @@ class MouseKeysInterceptorTest {
     }
 
     private fun createInputDevice(
-            deviceId: Int,
-            generation: Int = -1
+        deviceId: Int,
+        isVirtual: Boolean,
+        generation: Int = -1
     ): InputDevice =
-            InputDevice.Builder()
-                    .setId(deviceId)
-                    .setName("Device $deviceId")
-                    .setDescriptor("descriptor $deviceId")
-                    .setGeneration(generation)
-                    .build()
+        InputDevice.Builder()
+            .setId(deviceId)
+            .setName("Device $deviceId")
+            .setDescriptor("descriptor $deviceId")
+            .setGeneration(generation)
+            .setIsVirtualDevice(isVirtual)
+            .setSources(InputDevice.SOURCE_KEYBOARD)
+            .setKeyboardType(InputDevice.KEYBOARD_TYPE_ALPHABETIC)
+            .build()
 
     private class TrackingInterceptor : BaseEventStreamTransformation() {
         val events: Queue<KeyEvent> = LinkedList()

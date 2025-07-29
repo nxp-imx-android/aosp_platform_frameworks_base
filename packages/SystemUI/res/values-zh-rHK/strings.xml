@@ -138,12 +138,9 @@
     <string name="screenrecord_stop_dialog_message" msgid="6262768207331626817">"你正在錄影整個螢幕畫面"</string>
     <string name="screenrecord_stop_dialog_message_specific_app" msgid="5995770227684523244">"你正在錄影「<xliff:g id="APP_NAME">%1$s</xliff:g>」"</string>
     <string name="screenrecord_stop_dialog_button" msgid="2883812564938194350">"停止錄製"</string>
-    <!-- no translation found for screen_record_record_device_audio_label (5363057443124085198) -->
-    <skip />
-    <!-- no translation found for screen_record_record_microphone_label (4685753707185662381) -->
-    <skip />
-    <!-- no translation found for screen_record_should_show_touches_label (2203962566795833783) -->
-    <skip />
+    <string name="screen_record_record_device_audio_label" msgid="5363057443124085198">"裝置音訊錄音"</string>
+    <string name="screen_record_record_microphone_label" msgid="4685753707185662381">"麥克風錄音"</string>
+    <string name="screen_record_should_show_touches_label" msgid="2203962566795833783">"顯示觸控回應"</string>
     <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"選擇要錄影的應用程式"</string>
     <string name="screen_capture_fullscreen_screenshot_button" msgid="4255912593013592954">"擷取完整螢幕畫面"</string>
     <string name="screen_capture_region_selection_button" msgid="4437546351856914639">"擷取所選區域"</string>
@@ -717,9 +714,13 @@
     <string name="monitoring_description_pin_protection" msgid="1983580207046670355">"部分裝置控制項 (例如每日時限和休息時間) 只可透過 PIN 變更。"</string>
     <string name="legacy_vpn_name" msgid="4174223520162559145">"VPN"</string>
     <string name="keyguard_indication_trust_unlocked" msgid="7395154975733744547">"由信任的代理保持解鎖狀態"</string>
-    <string name="kg_prompt_after_adaptive_auth_lock" msgid="2587481497846342760">"嘗試驗證次數過多，裝置已鎖定"</string>
-    <string name="keyguard_indication_after_adaptive_auth_lock" msgid="2323400645470712787">"裝置已鎖定\n驗證失敗"</string>
+    <!-- no translation found for kg_prompt_after_adaptive_auth_lock (6065186971000690782) -->
+    <skip />
+    <!-- no translation found for keyguard_indication_after_adaptive_auth_lock (5240600662061340872) -->
+    <skip />
     <string name="keyguard_indication_after_watch_disconnected" msgid="8133476870585660478">"已由手錶鎖定"</string>
+    <!-- no translation found for keyguard_indication_after_secure_lock_device (4358906300665255820) -->
+    <skip />
     <string name="zen_mode_and_condition" msgid="5043165189511223718">"<xliff:g id="ZEN_MODE">%1$s</xliff:g>。<xliff:g id="EXIT_CONDITION">%2$s</xliff:g>"</string>
     <string name="accessibility_volume_settings" msgid="1458961116951564784">"音效設定"</string>
     <string name="volume_odi_captions_tip" msgid="8825655463280990941">"自動為媒體加入字幕"</string>
@@ -1061,6 +1062,10 @@
     <string name="qs_edit" msgid="5583565172803472437">"編輯"</string>
     <string name="qs_edit_tiles" msgid="2105215324060865035">"編輯圖塊"</string>
     <string name="qs_edit_mode_tooltip" msgid="4164112885539479781">"調整「快速設定」圖塊大小"</string>
+    <!-- no translation found for qs_edit_settings (3243175290660574156) -->
+    <skip />
+    <!-- no translation found for qs_edit_menu_content_description (4420651071119623791) -->
+    <skip />
     <string name="tuner_time" msgid="2450785840990529997">"時間"</string>
   <string-array name="clock_options">
     <item msgid="3986445361435142273">"顯示小時、分鐘和秒"</item>
@@ -1102,12 +1107,12 @@
     <string name="accessibility_quick_settings_edit" msgid="6544873823850165">"編輯「快速設定」嘅次序"</string>
     <string name="accessibility_quick_settings_power_menu" msgid="6820426108301758412">"電源選單"</string>
     <string name="accessibility_quick_settings_page" msgid="7506322631645550961">"第 <xliff:g id="ID_1">%1$d</xliff:g> 頁 (共 <xliff:g id="ID_2">%2$d</xliff:g> 頁)"</string>
-    <string name="accessibility_key_gesture_dialog_title" msgid="7614965716626605518">"要啟用 <xliff:g id="ID_1">%1$s</xliff:g> 嗎？"</string>
-    <string name="accessibility_key_gesture_dialog_content" msgid="4519838108423437794">"「快捷操作鍵」圖示"<annotation id="action_key_icon"></annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> 是使用<xliff:g id="ID_3">^3</xliff:g>的鍵盤快速鍵。<xliff:g id="ID_4">^4</xliff:g>"</string>
-    <string name="accessibility_key_gesture_dialog_magnifier_intro" msgid="627023269951856071">"此操作讓你可快速放大畫面內容。"</string>
-    <string name="accessibility_key_gesture_dialog_talkback_intro" msgid="1617808784388544741">"<xliff:g id="ID_1">%1$s</xliff:g> 是一款螢幕閱讀器，讓你聆聽系統朗讀項目，並讓無法看清楚螢幕的使用者瞭解螢幕內容。"</string>
+    <string name="accessibility_key_gesture_dialog_title" msgid="7614965716626605518">"要啟用「<xliff:g id="ID_1">%1$s</xliff:g>」嗎？"</string>
+    <string name="accessibility_key_gesture_dialog_content" msgid="4519838108423437794">"快捷操作鍵 "<annotation id="action_key_icon">"圖示"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> 是使用「<xliff:g id="ID_3">^3</xliff:g>」的鍵盤快速鍵。<xliff:g id="ID_4">^4</xliff:g>"</string>
+    <string name="accessibility_key_gesture_dialog_magnifier_intro" msgid="627023269951856071">"此功能可讓你快速放大畫面內容。"</string>
+    <string name="accessibility_key_gesture_dialog_talkback_intro" msgid="1617808784388544741">"<xliff:g id="ID_1">%1$s</xliff:g> 是一款螢幕閱讀器，會朗讀畫面項目給你聽，讓無法看清楚螢幕的使用者瞭解螢幕內容。"</string>
     <string name="accessibility_key_gesture_dialog_va_intro" msgid="4709198503441288289">"「<xliff:g id="ID_1">%1$s</xliff:g>」讓你開句聲就能控制裝置。"</string>
-    <string name="accessibility_key_gesture_dialog_positive_button_text" msgid="3670746017523589293">"開啟"</string>
+    <string name="accessibility_key_gesture_dialog_positive_button_text" msgid="3670746017523589293">"啟用"</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"螢幕鎖定"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"正在關機…"</string>
     <string name="thermal_shutdown_dialog_help_text" msgid="6413474593462902901">"查看保養步驟"</string>
@@ -1513,17 +1518,12 @@
     <string name="connected_display_dialog_dual_display_stop_warning" msgid="4174707498892447947">"鏡像畫面將顯示在內部螢幕，前方螢幕則會關閉。"</string>
     <string name="mirror_display" msgid="2515262008898122928">"鏡像顯示"</string>
     <string name="dismiss_dialog" msgid="2195508495854675882">"關閉"</string>
-    <!-- no translation found for connected_display_dialog_title (307028192512988669) -->
-    <skip />
-    <!-- no translation found for remember_choice (2063510191006325221) -->
-    <skip />
-    <!-- no translation found for start_desktop_mode (5459815912537830841) -->
-    <skip />
-    <!-- no translation found for start_mirroring (3611044878130481882) -->
-    <skip />
+    <string name="connected_display_dialog_title" msgid="307028192512988669">"連接外部顯示屏"</string>
+    <string name="remember_choice" msgid="2063510191006325221">"不要再問我"</string>
+    <string name="start_desktop_mode" msgid="5459815912537830841">"桌面電腦"</string>
+    <string name="start_mirroring" msgid="3611044878130481882">"鏡像"</string>
     <string name="connected_display_icon_desc" msgid="6373560639989971997">"已連接顯示屏"</string>
-    <!-- no translation found for connected_display_extended_mode_text (2457269692913653696) -->
-    <skip />
+    <string name="connected_display_extended_mode_text" msgid="2457269692913653696">"已連接外部顯示屏"</string>
     <string name="privacy_dialog_title" msgid="5201413527644766025">"麥克風、相機和位置"</string>
     <string name="privacy_dialog_summary" msgid="2458769652125995409">"近期應用程式使用情況"</string>
     <string name="privacy_dialog_more_button" msgid="7610604080293562345">"查看近期存取記錄"</string>

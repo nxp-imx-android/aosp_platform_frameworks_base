@@ -71,18 +71,12 @@
     <string name="CLIRDefaultOnNextCallOff" msgid="5036749051007098105">"የደዋይ  ID  ወደ ተከልክሏል ነባሪዎች።ቀጥሎ ጥሪ፡ አልተከለከለም"</string>
     <string name="CLIRDefaultOffNextCallOn" msgid="1022781126694885017">"የደዋይ  ID  ወደ አልተከለከለም ነባሪዎች።ቀጥሎ ጥሪ፡ ተከልክሏል"</string>
     <string name="CLIRDefaultOffNextCallOff" msgid="2491576172356463443">"የደዋይ ID ነባሪዎች ወደአልተከለከለም። ቀጥሎ ጥሪ፡አልተከለከለም"</string>
-    <!-- no translation found for page_size_compat_apk_warning (2297836366674721648) -->
-    <skip />
-    <!-- no translation found for page_size_compat_elf_warning (8613720928493005883) -->
-    <skip />
-    <!-- no translation found for page_size_compat_apk_and_elf_warning (9034695801295605229) -->
-    <skip />
-    <!-- no translation found for page_size_compat_apk_warning_4kb (5676451039424864495) -->
-    <skip />
-    <!-- no translation found for page_size_compat_elf_warning_4kb (5005239480522831311) -->
-    <skip />
-    <!-- no translation found for page_size_compat_apk_and_elf_warning_4kb (997926487776340721) -->
-    <skip />
+    <string name="page_size_compat_apk_warning" msgid="2297836366674721648">"ይህ መተግበሪያ ለ16 ኪባ ተኳዃኝ አይደለም። የኤፒኬ አሰላለፍ ፍተሻ አልተሳካም። ይህ መተግበሪያ የገፅ መጠን ተኳዃኝ ሁነታን በመጠቀም ይሄዳል። ለምርጥ ተኳዃኝነት እባክዎ መተግበሪያውን በ16 ኪባ ድጋፍ እንደገና ያጠናቅሩ። ለተጨማሪ መረጃ &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; &lt;br&gt;&lt;br&gt; የሚለውን ይመልከቱ፣ የሚከተሉት ቤተ መጽሐፍት 16 ኪባ አልተሰለፉም፦ &lt;br&gt;&lt;br&gt;"</string>
+    <string name="page_size_compat_elf_warning" msgid="8613720928493005883">"ይህ መተግበሪያ ለ16 ኪባ ተኳዃኝ አይደለም። የELF አሰላለፍ ፍተሻ አልተሳካም። ይህ መተግበሪያ የገፅ መጠን ተኳዃኝ ሁነታን በመጠቀም ይሄዳል። ለምርጥ ተኳዃኝነት እባክዎ መተግበሪያውን በ16 ኪባ ድጋፍ እንደገና ያጠናቅሩ። ለተጨማሪ መረጃ &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; &lt;br&gt;&lt;br&gt; የሚለውን ይመልከቱ፣ የሚከተሉት ቤተ መጽሐፍት 16 ኪባ አልተሰለፉም፦ &lt;br&gt;&lt;br&gt;"</string>
+    <string name="page_size_compat_apk_and_elf_warning" msgid="9034695801295605229">"ይህ መተግበሪያ ለ16 ኪባ ተኳዃኝ አይደለም። ኤፒኬ እና ELF አሰላለፍ ፍተሻዎች አልተሳኩም። ይህ መተግበሪያ የገፅ መጠን ተኳዃኝ ሁነታን በመጠቀም ይሄዳል። ለምርጥ ተኳዃኝነት እባክዎ መተግበሪያውን በ16 ኪባ ድጋፍ እንደገና ያጠናቅሩ። ለተጨማሪ መረጃ &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; &lt;br&gt;&lt;br&gt; የሚለውን ይመልከቱ፣ የሚከተሉት ቤተ መጽሐፍት 16 ኪባ አልተሰለፉም፦ &lt;br&gt;&lt;br&gt;"</string>
+    <string name="page_size_compat_apk_warning_4kb" msgid="5676451039424864495">"በአሁኑ ጊዜ እየተሞከረ ያለው ሊታረም የሚችል መተግበሪያ ስለሆነ ይህ ማስጠንቀቂያ እየታየ ነው። እርስዎ ገንቢው ካልሆኑ፣ እባክዎ ይህን ለገንቢው ሪፖርት ያድርጉ እና ሊታረም የማይችል መተግበሪያ ይጠይቁ። &lt;br&gt;&lt;br&gt; ይህ መተግበሪያ 16 ኪባ ተኳዃኝ አይደለም። የኤፒኬ አሰላለፍ ፍተሻ አልተሳካም። እባክዎ &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; &lt;br&gt;&lt;br&gt; ላይ ያሉትን እርምጃዎች ይከተሉ የሚከተሉት ቤተ መጽሐፍቶች 16 ኪባ አልተሰለፉም፦ &lt;br&gt;&lt;br&gt;"</string>
+    <string name="page_size_compat_elf_warning_4kb" msgid="5005239480522831311">"በአሁኑ ጊዜ እየተሞከረ ያለው ሊታረም የሚችል መተግበሪያ ስለሆነ ይህ ማስጠንቀቂያ እየታየ ነው። እርስዎ ገንቢው ካልሆኑ፣ እባክዎ ይህን ለገንቢው ሪፖርት ያድርጉ እና ሊታረም የማይችል መተግበሪያ ይጠይቁ። &lt;br&gt;&lt;br&gt; ይህ መተግበሪያ 16 ኪባ ተኳዃኝ አይደለም። የELF አሰላለፍ ፍተሻ አልተሳካም። እባክዎ &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; &lt;br&gt;&lt;br&gt; ላይ ያሉትን እርምጃዎች ይከተሉ የሚከተሉት ቤተ መጽሐፍቶች 16 ኪባ አልተሰለፉም፦ &lt;br&gt;&lt;br&gt;"</string>
+    <string name="page_size_compat_apk_and_elf_warning_4kb" msgid="997926487776340721">"በአሁኑ ጊዜ እየተሞከረ ያለው ሊታረም የሚችል መተግበሪያ ስለሆነ ይህ ማስጠንቀቂያ እየታየ ነው። እርስዎ ገንቢው ካልሆኑ፣ እባክዎ ይህን ለገንቢው ሪፖርት ያድርጉ እና ሊታረም የማይችል መተግበሪያ ይጠይቁ። &lt;br&gt;&lt;br&gt; ይህ መተግበሪያ 16 ኪባ ተኳዃኝ አይደለም። ኤፒኬ እና ELF አሰላለፍ ፍተሻዎች አልተሳኩም። እባክዎ &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; ላይ ያሉትን እርምጃዎች ይከተሉ። &lt;br&gt;&lt;br&gt; የሚከተሉት ቤተ መጽሐፍቶች 16 ኪባ አልተሰለፉም፦ &lt;br&gt;&lt;br&gt;"</string>
     <string name="page_size_compat_never_show" msgid="3391282612422783097">"በድጋሚ አታሳይ"</string>
     <string name="page_size_compat_title" msgid="6497719153872572204">"የAndroid መተግበሪያ ተኳዃኝነት"</string>
     <string name="page_size_compat_elf_not_aligned" msgid="7940806102874132630">"&amp;#8226; %1$s ፦ LOAD ክፍል አልተሰለፈም"</string>
@@ -920,8 +914,7 @@
     <string name="policydesc_disableCamera" msgid="3204405908799676104">"የሁሉንም መሣሪያ ካሜራዎች መጠቀም ከልክል።"</string>
     <string name="policylab_disableKeyguardFeatures" msgid="5071855750149949741">"የጥቂት ማያ ገፅ ቁልፍ ባህሪዎችን አቦዝን"</string>
     <string name="policydesc_disableKeyguardFeatures" msgid="6641673177041195957">"የጥቂት ማያ ገፅ ቁልፍ ባህሪዎችን ተከላከል።"</string>
-    <!-- no translation found for exit_toast_on_long_press_escape (2983932499112557277) -->
-    <skip />
+    <string name="exit_toast_on_long_press_escape" msgid="2983932499112557277">"ይህን መተግበሪያ ለመዝጋት የEsc ቁልፍን በረጅሙ ይጫኑ"</string>
   <string-array name="phoneTypes">
     <item msgid="8996339953292723951">"መነሻ"</item>
     <item msgid="7740243458912727194">"ተንቀሳቃሽ"</item>
@@ -1848,8 +1841,7 @@
     <string name="owner_name" msgid="8713560351570795743">"ባለቤት"</string>
     <string name="guest_name" msgid="8502103277839834324">"እንግዳ"</string>
     <string name="headless_system_user_name" msgid="1849150903255530049">"የሥርዓት ተጠቃሚ"</string>
-    <!-- no translation found for unnamed_user_name (6096699110534542980) -->
-    <skip />
+    <string name="unnamed_user_name" msgid="6096699110534542980">"ተጠቃሚ"</string>
     <string name="error_message_title" msgid="4082495589294631966">"ስህተት"</string>
     <string name="error_message_change_not_allowed" msgid="843159705042381454">"ይህ ለውጥ በአስተዳዳሪዎ አይፈቀድም"</string>
     <string name="app_not_found" msgid="3429506115332341800">"ይህን እርምጃ የሚያከናውን ምንም መተግበሪያ አልተገኘም"</string>

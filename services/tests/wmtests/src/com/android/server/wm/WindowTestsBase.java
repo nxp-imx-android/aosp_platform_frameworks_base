@@ -1491,6 +1491,9 @@ public class WindowTestsBase extends SystemServiceTestsBase {
             while (mCreateActivityCount > 0) {
                 final ActivityRecord activity = new ActivityBuilder(mAtm).build();
                 taskFragment.addChild(activity);
+                if (mParentTask != null) {
+                    postCreateActivitySetup(activity, mParentTask.getDisplayContent());
+                }
                 mCreateActivityCount--;
             }
             if (mOrganizer != null) {

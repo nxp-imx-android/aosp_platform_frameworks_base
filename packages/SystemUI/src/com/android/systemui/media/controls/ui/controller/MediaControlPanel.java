@@ -629,7 +629,9 @@ public class MediaControlPanel {
             @Nullable
             SuggestedMediaDeviceData suggestionDeviceData =
                     suggestionData.getSuggestedMediaDeviceData();
-            if (suggestionDeviceData != null && isValidSuggestion(suggestionDeviceData)) {
+            if (suggestionDeviceData != null
+                    && isValidSuggestion(suggestionDeviceData)
+                    && !data.getResumption()) {
                 // Don't show the OSw device text if we have a suggestion: just show the icon
                 deviceText.setVisibility(View.GONE);
                 setSuggestionClickListener(suggestionDeviceData);

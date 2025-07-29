@@ -569,6 +569,12 @@ final class KeyGestureController {
         return false;
     }
 
+    // Need to handle multi-key combinations before providing keys to A11y services like
+    // talkback, etc.
+    public long interceptKeyCombinationBeforeAccessibility(@NonNull KeyEvent event) {
+        return interceptMultiKeyCombination(event);
+    }
+
     // Shortcut handling stages:
     // 1. Before key capture
     //     - All Meta key shortcuts with "allowCaptureByFocusedWindow" set to false
@@ -599,17 +605,9 @@ final class KeyGestureController {
         }
 
         // Multi-key shortcuts should never be blocked by any focused window configuration
-        if (mKeyCombinationManager.isKeyConsumed(event)) {
-            return KEY_INTERCEPT_RESULT_CONSUMED;
-        }
-
-        if ((event.getFlags() & KeyEvent.FLAG_FALLBACK) == 0) {
-            final long now = SystemClock.uptimeMillis();
-            final long interceptTimeout = mKeyCombinationManager.getKeyInterceptTimeout(
-                    event.getKeyCode());
-            if (now < interceptTimeout) {
-                return interceptTimeout - now;
-            }
+        long result = interceptMultiKeyCombination(event);
+        if (result != KEY_INTERCEPT_RESULT_NOT_CONSUMED) {
+            return result;
         }
 
         // TODO(b/358569822) Remove below once we have nicer API for listening to shortcuts
@@ -646,6 +644,22 @@ final class KeyGestureController {
                 }
             }
             return KEY_INTERCEPT_RESULT_CONSUMED;
+        }
+        return KEY_INTERCEPT_RESULT_NOT_CONSUMED;
+    }
+
+    private long interceptMultiKeyCombination(@NonNull KeyEvent event) {
+        if (mKeyCombinationManager.isKeyConsumed(event)) {
+            return KEY_INTERCEPT_RESULT_CONSUMED;
+        }
+
+        if ((event.getFlags() & KeyEvent.FLAG_FALLBACK) == 0) {
+            final long now = SystemClock.uptimeMillis();
+            final long interceptTimeout = mKeyCombinationManager.getKeyInterceptTimeout(
+                    event.getKeyCode());
+            if (now < interceptTimeout) {
+                return interceptTimeout - now;
+            }
         }
         return KEY_INTERCEPT_RESULT_NOT_CONSUMED;
     }

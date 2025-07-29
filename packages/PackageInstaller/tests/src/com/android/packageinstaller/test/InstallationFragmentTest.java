@@ -26,18 +26,18 @@ import static com.google.common.truth.Truth.assertThat;
 
 import android.content.pm.PackageInstaller.DeveloperVerificationUserConfirmationInfo;
 
-import com.android.packageinstaller.v2.ui.fragments.DeveloperVerificationConfirmationFragment;
+import com.android.packageinstaller.v2.ui.fragments.InstallationFragment;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
 @RunWith(JUnit4.class)
-public class DeveloperVerificationConfirmationFragmentTest {
+public class InstallationFragmentTest {
 
     @Test
     public void policyOpen_packageBlocked_onlyAck() {
-        boolean isBypassAllowed = DeveloperVerificationConfirmationFragment.isBypassAllowed(
+        boolean isBypassAllowed = InstallationFragment.isVerificationBypassAllowed(
                 new DeveloperVerificationUserConfirmationInfo(
                         DEVELOPER_VERIFICATION_POLICY_BLOCK_FAIL_OPEN,
                         DEVELOPER_VERIFICATION_FAILED_REASON_DEVELOPER_BLOCKED));
@@ -47,7 +47,7 @@ public class DeveloperVerificationConfirmationFragmentTest {
 
     @Test
     public void policyOpen_noNetwork_mayBypass() {
-        boolean isBypassAllowed = DeveloperVerificationConfirmationFragment.isBypassAllowed(
+        boolean isBypassAllowed = InstallationFragment.isVerificationBypassAllowed(
                 new DeveloperVerificationUserConfirmationInfo(
                         DEVELOPER_VERIFICATION_POLICY_BLOCK_FAIL_OPEN,
                         DEVELOPER_VERIFICATION_FAILED_REASON_NETWORK_UNAVAILABLE));
@@ -57,7 +57,7 @@ public class DeveloperVerificationConfirmationFragmentTest {
 
     @Test
     public void policyOpen_unknown_mayBypass() {
-        boolean isBypassAllowed = DeveloperVerificationConfirmationFragment.isBypassAllowed(
+        boolean isBypassAllowed = InstallationFragment.isVerificationBypassAllowed(
                 new DeveloperVerificationUserConfirmationInfo(
                         DEVELOPER_VERIFICATION_POLICY_BLOCK_FAIL_OPEN,
                         DEVELOPER_VERIFICATION_FAILED_REASON_UNKNOWN));
@@ -67,7 +67,7 @@ public class DeveloperVerificationConfirmationFragmentTest {
 
     @Test
     public void policyClosed_packageBlocked_onlyAck() {
-        boolean isBypassAllowed = DeveloperVerificationConfirmationFragment.isBypassAllowed(
+        boolean isBypassAllowed = InstallationFragment.isVerificationBypassAllowed(
                 new DeveloperVerificationUserConfirmationInfo(
                         DEVELOPER_VERIFICATION_POLICY_BLOCK_FAIL_CLOSED,
                         DEVELOPER_VERIFICATION_FAILED_REASON_DEVELOPER_BLOCKED));
@@ -77,7 +77,7 @@ public class DeveloperVerificationConfirmationFragmentTest {
 
     @Test
     public void policyClosed_noNetwork_onlyAck() {
-        boolean isBypassAllowed = DeveloperVerificationConfirmationFragment.isBypassAllowed(
+        boolean isBypassAllowed = InstallationFragment.isVerificationBypassAllowed(
                 new DeveloperVerificationUserConfirmationInfo(
                         DEVELOPER_VERIFICATION_POLICY_BLOCK_FAIL_CLOSED,
                         DEVELOPER_VERIFICATION_FAILED_REASON_NETWORK_UNAVAILABLE));
@@ -87,7 +87,7 @@ public class DeveloperVerificationConfirmationFragmentTest {
 
     @Test
     public void policyClosed_unknown_onlyAck() {
-        boolean isBypassAllowed = DeveloperVerificationConfirmationFragment.isBypassAllowed(
+        boolean isBypassAllowed = InstallationFragment.isVerificationBypassAllowed(
                 new DeveloperVerificationUserConfirmationInfo(
                         DEVELOPER_VERIFICATION_POLICY_BLOCK_FAIL_CLOSED,
                         DEVELOPER_VERIFICATION_FAILED_REASON_UNKNOWN));

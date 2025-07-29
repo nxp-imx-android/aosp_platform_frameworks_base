@@ -564,9 +564,6 @@ public class AnrTimerTest {
             TimeoutRecord tr2a = TimeoutRecord.forApp("testing purposes");
             timer.accept(t2, tr2a);
             assertThat(tr2a.getExpiredTimer()).isNotNull();
-            assertThat(tr2a.getExpiredTimer()).isNotNull();
-            tr2a.closeExpiredTimer();
-            assertThat(tr2a.getExpiredTimer()).isNull();
             assertThat(timer.discard(t2)).isFalse();
             TimeoutRecord tr2b = TimeoutRecord.forApp("testing purposes");
             timer.accept(t2, tr2b);

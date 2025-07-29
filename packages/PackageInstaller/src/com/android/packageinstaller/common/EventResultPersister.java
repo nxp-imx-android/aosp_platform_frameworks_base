@@ -20,6 +20,7 @@ import static android.content.Intent.FLAG_ACTIVITY_NEW_TASK;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.Flags;
 import android.content.pm.PackageInstaller;
 import android.os.AsyncTask;
 import android.util.AtomicFile;
@@ -94,7 +95,11 @@ public class EventResultPersister {
 
     /** Call back when a result is received. Observer is removed when onResult it called. */
     public interface EventResultObserver {
-        void onResult(int status, int legacyStatus, @Nullable String message, int serviceId);
+        /**
+         * Called when a result is received.
+         */
+        void onResult(int status, int legacyStatus, @Nullable String message, int serviceId,
+                boolean hasDeveloperVerificationFailure);
     }
 
     /**
@@ -135,6 +140,19 @@ public class EventResultPersister {
     }
 
     /**
+     * Read a boolean attribute from the current element
+     *
+     * @param parser The parser to read from
+     * @param name The attribute name to read
+     *
+     * @return The value of the attribute
+     */
+    private static boolean readBooleanAttribute(@NonNull XmlPullParser parser,
+            @NonNull String name) {
+        return Boolean.parseBoolean(parser.getAttributeValue(null, name));
+    }
+
+    /**
      * Read persisted state.
      *
      * @param resultFile The file the results are persisted in
@@ -158,13 +176,15 @@ public class EventResultPersister {
                     int legacyStatus = readIntAttribute(parser, "legacyStatus");
                     String statusMessage = readStringAttribute(parser, "statusMessage");
                     int serviceId = readIntAttribute(parser, "serviceId");
+                    boolean hasDeveloperVerificationFailure = Flags.verificationService()
+                            && readBooleanAttribute(parser, "hasDeveloperVerificationFailure");
 
                     if (mResults.get(id) != null) {
                         throw new Exception("id " + id + " has two results");
                     }
 
                     mResults.put(id, new EventResult(status, legacyStatus, statusMessage,
-                            serviceId));
+                            serviceId, hasDeveloperVerificationFailure));
                 } else {
                     throw new Exception("unexpected tag");
                 }
@@ -199,6 +219,8 @@ public class EventResultPersister {
         String statusMessage = intent.getStringExtra(PackageInstaller.EXTRA_STATUS_MESSAGE);
         int legacyStatus = intent.getIntExtra(PackageInstaller.EXTRA_LEGACY_STATUS, 0);
         int serviceId = intent.getIntExtra(EXTRA_SERVICE_ID, 0);
+        boolean hasDeveloperVerificationFailure = Flags.verificationService()
+                && intent.hasExtra(PackageInstaller.EXTRA_DEVELOPER_VERIFICATION_FAILURE_REASON);
 
         EventResultObserver observerToCall = null;
         synchronized (mLock) {
@@ -213,9 +235,11 @@ public class EventResultPersister {
             }
 
             if (observerToCall != null) {
-                observerToCall.onResult(status, legacyStatus, statusMessage, serviceId);
+                observerToCall.onResult(status, legacyStatus, statusMessage, serviceId,
+                        hasDeveloperVerificationFailure);
             } else {
-                mResults.put(id, new EventResult(status, legacyStatus, statusMessage, serviceId));
+                mResults.put(id, new EventResult(status, legacyStatus, statusMessage, serviceId,
+                        hasDeveloperVerificationFailure));
                 writeState();
             }
         }
@@ -266,6 +290,10 @@ public class EventResultPersister {
                                 if (results.valueAt(i).message != null) {
                                     serializer.attribute(null, "statusMessage",
                                             results.valueAt(i).message);
+                                }
+                                if (results.valueAt(i).hasDeveloperVerificationFailure) {
+                                    serializer.attribute(null, "hasDeveloperVerificationFailure",
+                                            "true");
                                 }
                                 serializer.attribute(null, "serviceId",
                                         Integer.toString(results.valueAt(i).serviceId));
@@ -323,7 +351,7 @@ public class EventResultPersister {
                 EventResult result = mResults.valueAt(resultIndex);
 
                 observer.onResult(result.status, result.legacyStatus, result.message,
-                        result.serviceId);
+                        result.serviceId, result.hasDeveloperVerificationFailure);
                 mResults.removeAt(resultIndex);
                 writeState();
             } else {
@@ -354,12 +382,15 @@ public class EventResultPersister {
         public final int legacyStatus;
         @Nullable public final String message;
         public final int serviceId;
+        public final boolean hasDeveloperVerificationFailure;
 
-        private EventResult(int status, int legacyStatus, @Nullable String message, int serviceId) {
+        private EventResult(int status, int legacyStatus, @Nullable String message, int serviceId,
+                boolean hasDeveloperVerificationFailure) {
             this.status = status;
             this.legacyStatus = legacyStatus;
             this.message = message;
             this.serviceId = serviceId;
+            this.hasDeveloperVerificationFailure = hasDeveloperVerificationFailure;
         }
     }
 

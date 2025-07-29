@@ -229,8 +229,12 @@ private fun CardCarouselContent(
     modifier: Modifier = Modifier,
 ) {
     val pagerState = rememberPagerState { viewModel.cards.size }
+    LaunchedEffect(viewModel.currentIndex) {
+        if (viewModel.currentIndex != pagerState.currentPage) {
+            pagerState.scrollToPage(viewModel.currentIndex)
+        }
+    }
     LaunchedEffect(pagerState.currentPage) { viewModel.onCardSelected(pagerState.currentPage) }
-
     var isFalseTouchDetected: Boolean by
         remember(behavior.isCarouselScrollFalseTouch) { mutableStateOf(false) }
     val isSwipingEnabled = behavior.isCarouselScrollingEnabled && !isFalseTouchDetected
@@ -306,6 +310,13 @@ private fun CardCarouselContent(
                 },
                 isSwipingEnabled = isSwipingEnabled,
             )
+        }
+    }
+
+    LaunchedEffect(viewModel.scrollToFirst) {
+        if (viewModel.scrollToFirst && viewModel.cards.isNotEmpty()) {
+            pagerState.animateScrollToPage(0)
+            viewModel.onScrollToFirstCard()
         }
     }
 }
@@ -1260,7 +1271,7 @@ private fun ContentScope.PlayPauseAction(
             enabled = viewModel.onClick != null,
             colors = ButtonDefaults.buttonColors(containerColor = buttonColor),
             shape = RoundedCornerShape(cornerRadius),
-            modifier = Modifier.size(buttonSize).sysuiResTag(MediaRes.PLAY_PAUSE_BTN),
+            modifier = Modifier.size(buttonSize),
         ) {
             when (viewModel.state) {
                 is MediaSessionState.Playing,
@@ -1285,7 +1296,7 @@ private fun ContentScope.PlayPauseAction(
                             painter = painter,
                             contentDescription = viewModel.icon?.contentDescription?.load(),
                             tint = iconColor,
-                            modifier = Modifier.size(24.dp),
+                            modifier = Modifier.size(24.dp).sysuiResTag(MediaRes.PLAY_PAUSE_BTN),
                         )
                     }
                 }

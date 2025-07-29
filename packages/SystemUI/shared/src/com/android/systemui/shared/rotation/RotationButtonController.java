@@ -27,8 +27,10 @@ import static com.android.systemui.shared.system.QuickStepContract.isGesturalMod
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.ObjectAnimator;
+import android.annotation.AnyThread;
 import android.annotation.ColorInt;
 import android.annotation.DrawableRes;
+import android.annotation.NonNull;
 import android.annotation.SuppressLint;
 import android.app.StatusBarManager;
 import android.content.BroadcastReceiver;
@@ -150,18 +152,50 @@ public class RotationButtonController {
         }
     };
 
-    private final IRotationWatcher.Stub mRotationWatcher = new IRotationWatcher.Stub() {
+
+    /**
+     * {@link IRotationWatcher.Stub} that wraps {@link RotationButtonController} as host obj and
+     * allow clearing it so that:
+     * 1. Client process (like Launcher) doesn't accumulate expensive {@link #mContext} objects
+     * (in a series of frequent screen rotations) which cannot be GCed until remote process runs GC
+     * to clear the binder objects. This will reduce the high water mark memory usage for client
+     * process.
+     * 2. Leak canary in client process (like Launcher) doesn't raise false positive alarms.
+     */
+    private static class RotationWatcher extends IRotationWatcher.Stub {
+        private @Nullable RotationButtonController mHost;
+
+        private RotationWatcher(@NonNull RotationButtonController host) {
+            mHost = host;
+        }
+
         @WorkerThread
         @Override
         public void onRotationChanged(final int rotation) {
-            @Nullable Boolean rotationLocked = RotationPolicyUtil.isRotationLocked(mContext);
+            RotationButtonController host = mHost;
+            if (host == null) {
+                return;
+            }
+            Boolean rotationLocked = RotationPolicyUtil.isRotationLocked(host.mContext);
             // We need this to be scheduled as early as possible to beat the redrawing of
             // window in response to the orientation change.
-            mMainThreadHandler.postAtFrontOfQueue(() -> {
-                onRotationWatcherChanged(rotation, rotationLocked);
+            host.mMainThreadHandler.postAtFrontOfQueue(() -> {
+                host.onRotationWatcherChanged(rotation, rotationLocked);
             });
         }
-    };
+
+        /**
+         * Since the lifecycle of this binder obj depends on remote process's GC, calling this
+         * method will allow local process GC {@link mHost} earlier, and also avoid false positive
+         * leak signal from leak canary.
+         */
+        @AnyThread
+        private void clearHost() {
+            mHost = null;
+        }
+    }
+
+    private final RotationWatcher mRotationWatcher = new RotationWatcher(this);
 
     /**
      * Determines if rotation suggestions disabled2 flag exists in flag
@@ -292,6 +326,7 @@ public class RotationButtonController {
                 try {
                     WindowManagerGlobal.getWindowManagerService().removeRotationWatcher(
                             mRotationWatcher);
+                    mRotationWatcher.clearHost();
                 } catch (RemoteException e) {
                     Log.e(TAG, "UnregisterListeners caught a RemoteException", e);
                 }

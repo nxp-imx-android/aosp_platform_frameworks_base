@@ -55,7 +55,6 @@ abstract class TaskbarInDesktopMode(
     private val appHelpers = listOf(
         simpleAppHelper,
         cameraAppHelper,
-        youtubeAppHelper,
         browserAppHelper,
         clockAppHelper,
         calculatorAppHelper
@@ -65,8 +64,14 @@ abstract class TaskbarInDesktopMode(
     // taskbar visual indicator using content description labels.
     private val appHelpersToTestTaskbarIndicator = listOf(
         simpleAppHelper,
-        youtubeAppHelper,
         browserAppHelper,
+    )
+
+    // This is a subset of the list above, having only apps that are reliable for minimizing action
+    private val appHelpersToTestMinimizedTaskbarIndicator = listOf(
+        simpleAppHelper,
+        clockAppHelper,
+        calculatorAppHelper
     )
 
     private val appsMap: Map<DesktopModeAppHelper, StandardAppHelper> =
@@ -74,6 +79,9 @@ abstract class TaskbarInDesktopMode(
 
     private val appsToTestTaskbarIndicatorMap: Map<DesktopModeAppHelper, StandardAppHelper> =
         appHelpersToTestTaskbarIndicator.associateBy { DesktopModeAppHelper(it) }
+
+    private val appsToTestMinimizedTaskbarIndicatorMap: Map<DesktopModeAppHelper, StandardAppHelper> =
+        appHelpersToTestMinimizedTaskbarIndicator.associateBy { DesktopModeAppHelper(it) }
 
     @Test
     open fun taskbarHasOpenedAppsIcons() {
@@ -110,7 +118,7 @@ abstract class TaskbarInDesktopMode(
 
     @Test
     open fun taskbarHasMinimizedAppsVisualIndicators() {
-        appsMap.entries.forEachIndexed { index, entry ->
+        appsToTestMinimizedTaskbarIndicatorMap.entries.forEachIndexed { index, entry ->
             val desktopApp = entry.key
             val appHelper = entry.value
 

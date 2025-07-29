@@ -746,6 +746,9 @@ interface IAudioService {
     @EnforcePermission("MODIFY_AUDIO_ROUTING")
     List<AudioFocusInfo> getFocusStack();
 
+    @EnforcePermission("QUERY_AUDIO_STATE")
+    boolean hasAudioFocus(String packageName);
+
     @EnforcePermission("MODIFY_AUDIO_ROUTING")
     oneway void sendFocusLossAndUpdate(in AudioFocusInfo focusLoser, in IAudioPolicyCallback apcb);
 

@@ -531,7 +531,8 @@ class UninstallRepository(private val context: Context) {
         status: Int,
         legacyStatus: Int,
         message: String?,
-        serviceId: Int
+        serviceId: Int,
+        hasDeveloperVerificationFailure: Boolean = false
     ) {
         if (callback != null) {
             // The caller will be informed about the result via a callback

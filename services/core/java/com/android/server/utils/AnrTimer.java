@@ -28,7 +28,6 @@ import android.os.SystemClock;
 import android.os.Trace;
 import android.text.format.TimeMigrationUtils;
 import android.util.ArrayMap;
-import android.util.CloseGuard;
 import android.util.IndentingPrintWriter;
 import android.util.Log;
 import android.util.LongSparseArray;
@@ -299,48 +298,14 @@ public class AnrTimer<V> implements AutoCloseable {
     }
 
     /**
-     * A target process may be modified when its timer expires.  The modification (if any) will be
-     * undone if the expiration is discarded, but is persisted if the expiration is accepted.  If
-     * the expiration is accepted, then a ExpiredTimer is returned to the client.  The client must
-     * close the ExpiredTimer to complete the state machine.
+     * Information about a timer that has expired.
      */
-    public static class ExpiredTimer implements AutoCloseable {
-        // Detect failures to close.
-        private final CloseGuard mGuard = new CloseGuard();
-
-        // A lock to ensure closing is thread-safe.
-        private final Object mLock = new Object();
-
-        // Allow multiple calls to close().
-        private boolean mClosed = false;
-
+    public static class ExpiredTimer {
         // The timer ID.
         final int mTimerId;
 
         ExpiredTimer(int id) {
             mTimerId = id;
-            mGuard.open("AnrTimer.release");
-        }
-
-        @Override
-        public void close() {
-            synchronized (mLock) {
-                if (!mClosed) {
-                    mGuard.close();
-                    mClosed = true;
-                }
-            }
-        }
-
-        @Override
-        protected void finalize() throws Throwable {
-            try {
-                // Note that guard could be null if the constructor threw.
-                if (mGuard != null) mGuard.warnIfOpen();
-                close();
-            } finally {
-                super.finalize();
-            }
         }
     }
 
@@ -713,7 +678,6 @@ public class AnrTimer<V> implements AutoCloseable {
                 // timer.  Wrap the timer ID in a ExpiredTimer and return it to the caller.  If
                 // "accepted" is false then the native later does not have any pending operations.
                 if (!accepted) {
-                    timer.close();
                     timer = null;
                 }
                 return timer;
@@ -798,15 +762,14 @@ public class AnrTimer<V> implements AutoCloseable {
 
         /**
          * Delete the entries associated with arg from the maps and return the ID of the timer, if
-         * any.  If there is a ExpiredTimer present, it is closed.
+         * any.
          */
         @GuardedBy("mLock")
         private Integer removeLocked(V arg) {
             final Integer r = mTimerIdMap.remove(arg);
             if (r != null) {
                 mTimerArgMap.remove(r);
-                ExpiredTimer l = mExpiredTimers.removeReturnOld(r);
-                if (l != null) l.close();
+                mExpiredTimers.removeReturnOld(r);
             }
             return r;
         }
@@ -999,7 +962,7 @@ public class AnrTimer<V> implements AutoCloseable {
      */
     @Nullable
     public static ExpiredTimer expiredTimer(TimeoutRecord tr) {
-        AutoCloseable expiredTimer = tr.getExpiredTimer();
+        Object expiredTimer = tr.getExpiredTimer();
         if (expiredTimer instanceof ExpiredTimer lock) {
             return lock;
         } else {

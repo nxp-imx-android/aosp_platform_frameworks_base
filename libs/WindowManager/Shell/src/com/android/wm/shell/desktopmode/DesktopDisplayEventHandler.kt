@@ -32,6 +32,7 @@ import com.android.wm.shell.RootTaskDisplayAreaOrganizer
 import com.android.wm.shell.RootTaskDisplayAreaOrganizer.RootTaskDisplayAreaListener
 import com.android.wm.shell.common.DisplayController
 import com.android.wm.shell.common.DisplayController.OnDisplaysChangedListener
+import com.android.wm.shell.desktopmode.DesktopModeEventLogger.Companion.EnterReason
 import com.android.wm.shell.desktopmode.data.DesktopRepository
 import com.android.wm.shell.desktopmode.data.DesktopRepositoryInitializer
 import com.android.wm.shell.desktopmode.desktopfirst.DesktopDisplayModeController
@@ -185,16 +186,20 @@ class DesktopDisplayEventHandler(
     }
 
     private fun handlePotentialReconnect(displayId: Int): Boolean {
-        val uniqueDisplayId = displayController.getDisplay(displayId)?.uniqueId
-        uniqueDisplayId?.let {
-            uniqueIdByDisplayId[displayId] = it
-            if (
-                DesktopExperienceFlags.ENABLE_DISPLAY_RECONNECT_INTERACTION.isTrue &&
-                    desktopUserRepositories.current.hasPreservedDisplayForUniqueDisplayId(it)
-            ) {
-                desktopTasksController.restoreDisplay(displayId, it)
-                return true
-            }
+        val uniqueDisplayId = displayController.getDisplay(displayId)?.uniqueId ?: return false
+        uniqueIdByDisplayId[displayId] = uniqueDisplayId
+        if (
+            DesktopExperienceFlags.ENABLE_DISPLAY_RECONNECT_INTERACTION.isTrue &&
+                desktopUserRepositories.current.hasPreservedDisplayForUniqueDisplayId(
+                    uniqueDisplayId
+                )
+        ) {
+            desktopTasksController.restoreDisplay(
+                displayId = displayId,
+                uniqueDisplayId = uniqueDisplayId,
+                userId = desktopUserRepositories.current.userId,
+            )
+            return true
         }
         return false
     }
@@ -235,7 +240,9 @@ class DesktopDisplayEventHandler(
                             //  last desk from Overview. Let overview activate it once it is
                             //  selected or when the user goes home.
                             activateDesk =
-                                ENABLE_MULTIPLE_DESKTOPS_ACTIVATION_IN_DESKTOP_FIRST_DISPLAYS.isTrue,
+                                ENABLE_MULTIPLE_DESKTOPS_ACTIVATION_IN_DESKTOP_FIRST_DISPLAYS
+                                    .isTrue,
+                            enterReason = EnterReason.DISPLAY_CONNECT,
                         )
                     } else {
                         logV("Display %d is touch-first and needs to warm up a desk", displayId)

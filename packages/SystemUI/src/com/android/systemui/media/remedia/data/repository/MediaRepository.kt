@@ -24,7 +24,11 @@ import android.media.MediaMetadata
 import android.media.session.MediaController
 import android.media.session.PlaybackState
 import android.util.Log
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.graphics.Color
 import com.android.internal.logging.InstanceId
@@ -59,11 +63,22 @@ interface MediaRepository {
     /** Current sorted media sessions. */
     val currentMedia: List<MediaDataModel>
 
+    /** Index of the current visible media session */
+    val currentCarouselIndex: Int
+
+    /** Whether media carousel should show first media session. */
+    val shouldScrollToFirst: Boolean
+
     /** Seek to [to], in milliseconds on the media session with the given [sessionKey]. */
     fun seek(sessionKey: InstanceId, to: Long)
 
     /** Reorders media list when media is not visible to user */
     fun reorderMedia()
+
+    fun storeCarouselIndex(index: Int)
+
+    /** Resets [shouldScrollToFirst] flag. */
+    fun resetScrollToFirst()
 }
 
 @SysUISingleton
@@ -77,6 +92,10 @@ constructor(
 ) : MediaRepository, MediaPipelineRepository(applicationContext) {
 
     override val currentMedia: SnapshotStateList<MediaDataModel> = mutableStateListOf()
+
+    override var currentCarouselIndex by mutableIntStateOf(0)
+
+    override var shouldScrollToFirst by mutableStateOf(false)
 
     private var sortedMedia = TreeMap<MediaSortKeyModel, MediaDataModel>(comparator)
 
@@ -124,6 +143,15 @@ constructor(
     override fun reorderMedia() {
         currentMedia.clear()
         currentMedia.addAll(sortedMedia.values.toList())
+        currentCarouselIndex = 0
+    }
+
+    override fun storeCarouselIndex(index: Int) {
+        currentCarouselIndex = index
+    }
+
+    override fun resetScrollToFirst() {
+        shouldScrollToFirst = false
     }
 
     private fun addToSortedMedia(data: MediaData, updateModel: UpdateArtInfoModel?) {
@@ -175,6 +203,9 @@ constructor(
                     }
                     currentMedia.clear()
                     if (isNewToCurrentMedia && active) {
+                        // New media added is at the top of the current media given its priority.
+                        // Media carousel should show the first card in the current media list.
+                        shouldScrollToFirst = true
                         currentMedia.addAll(sortedMap.values.toList())
                     } else {
                         currentMedia.addAll(currentList)

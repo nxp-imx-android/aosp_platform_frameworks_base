@@ -71,18 +71,12 @@
     <string name="CLIRDefaultOnNextCallOff" msgid="5036749051007098105">"Chaguomsingi za kitambulisho cha mpigaji simu huwa kuzuiwa. Simu ifuatayo: Haijazuiliwa"</string>
     <string name="CLIRDefaultOffNextCallOn" msgid="1022781126694885017">"Chaguomsingi za ID ya mpigaji simu za kutozuia. Simu ifuatayo:Imezuiliwa"</string>
     <string name="CLIRDefaultOffNextCallOff" msgid="2491576172356463443">"Chaguomsingi za ID ya mpigaji simu za kutozuia. Simu ifuatayo: Haijazuiliwa"</string>
-    <!-- no translation found for page_size_compat_apk_warning (2297836366674721648) -->
-    <skip />
-    <!-- no translation found for page_size_compat_elf_warning (8613720928493005883) -->
-    <skip />
-    <!-- no translation found for page_size_compat_apk_and_elf_warning (9034695801295605229) -->
-    <skip />
-    <!-- no translation found for page_size_compat_apk_warning_4kb (5676451039424864495) -->
-    <skip />
-    <!-- no translation found for page_size_compat_elf_warning_4kb (5005239480522831311) -->
-    <skip />
-    <!-- no translation found for page_size_compat_apk_and_elf_warning_4kb (997926487776340721) -->
-    <skip />
+    <string name="page_size_compat_apk_warning" msgid="2297836366674721648">"Programu hii haioani na ukubwa wa ukurasa wa KB 16. Imeshindwa kukagua mpangilio wa APK. Programu hii itaendeshwa katika hali inayooana na ukubwa wa ukurasa. Tafadhali rekebisha mipangilio ya programu ijumuishe KB 16 ili ioane vizuri. Tembelea &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; ili upate maelezo zaidi &lt;br&gt;&lt;br&gt; Maktaba zifuatazo hazioani na ukubwa wa ukurasa wa KB 16: &lt;br&gt;&lt;br&gt;"</string>
+    <string name="page_size_compat_elf_warning" msgid="8613720928493005883">"Programu hii haioani na ukubwa wa ukurasa wa KB 16. Imeshindwa kukagua mpangilio wa ELF. Programu hii itaendeshwa katika hali inayooana na ukubwa wa ukurasa. Tafadhali rekebisha mipangilio ya programu ijumuishe KB 16 ili ioane vizuri. Tembelea &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; ili upate maelezo zaidi &lt;br&gt;&lt;br&gt; Maktaba zifuatazo hazioani na ukubwa wa ukurasa wa KB 16: &lt;br&gt;&lt;br&gt;"</string>
+    <string name="page_size_compat_apk_and_elf_warning" msgid="9034695801295605229">"Programu hii haioani na ukubwa wa ukurasa wa KB 16. Imeshindwa kukagua mpangilio wa APK na ELF. Programu hii itaendeshwa katika hali inayooana na ukubwa wa ukurasa. Tafadhali rekebisha mipangilio ya programu ijumuishe KB 16 ili ioane vizuri. Tembelea &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; ili upate maelezo zaidi &lt;br&gt;&lt;br&gt; Maktaba zifuatazo hazioani na ukubwa wa ukurasa wa KB 16: &lt;br&gt;&lt;br&gt;"</string>
+    <string name="page_size_compat_apk_warning_4kb" msgid="5676451039424864495">"Onyo hili linaonyeshwa kwa sababu hii ni programu ambayo hitilafu za msimbo wake zinaweza kutatuliwa. Kwa sasa inafanyiwa majaribio. Tafadhali ripoti hali hii kwa msanidi programu na uombe toleo la programu ambalo hitilafu za msimbo wake haziwezi kutatuliwa iwapo wewe si msanidi programu. &lt;br&gt;&lt;br&gt; Programu hii haioani na ukubwa wa KB 16. Imeshindwa kukagua mpangilio wa APK. Tafadhali fuata hatua kwenye &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; &lt;br&gt;&lt;br&gt; Maktaba zifuatazo hazilingani na ukubwa wa KB 16: &lt;br&gt;&lt;br&gt;"</string>
+    <string name="page_size_compat_elf_warning_4kb" msgid="5005239480522831311">"Onyo hili linaonyeshwa kwa sababu hii ni programu ambayo hitilafu za msimbo wake zinaweza kutatuliwa. Kwa sasa inafanyiwa majaribio. Tafadhali ripoti hali hii kwa msanidi programu na uombe toleo la programu ambalo hitilafu za msimbo wake haziwezi kutatuliwa iwapo wewe si msanidi programu. &lt;br&gt;&lt;br&gt; Programu hii haioani na ukubwa wa KB 16. Imeshindwa kukagua mpangilio wa ELF. Tafadhali fuata hatua kwenye &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; &lt;br&gt;&lt;br&gt; Maktaba zifuatazo hazilingani na ukubwa wa KB 16: &lt;br&gt;&lt;br&gt;"</string>
+    <string name="page_size_compat_apk_and_elf_warning_4kb" msgid="997926487776340721">"Onyo hili linaonyeshwa kwa sababu hii ni programu ambayo hitilafu za msimbo wake zinaweza kutatuliwa. Kwa sasa inafanyiwa majaribio. Tafadhali ripoti hali hii kwa msanidi programu na uombe toleo la programu ambalo hitilafu za msimbo wake haziwezi kutatuliwa iwapo wewe si msanidi programu. &lt;br&gt;&lt;br&gt; Programu hii haioani na ukubwa wa KB 16. Imeshindwa kukagua mpangilio wa APK na ELF. Tafadhali fuata hatua kwenye &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;. &lt;br&gt;&lt;br&gt; Maktaba zifuatazo hazilingani na ukubwa wa KB 16: &lt;br&gt;&lt;br&gt;"</string>
     <string name="page_size_compat_never_show" msgid="3391282612422783097">"Usionyeshe Tena"</string>
     <string name="page_size_compat_title" msgid="6497719153872572204">"Uoanifu wa Programu ya Android"</string>
     <string name="page_size_compat_elf_not_aligned" msgid="7940806102874132630">"&amp;#8226; %1$s : Sehemu ya KUPAKIA hailingani"</string>
@@ -920,8 +914,7 @@
     <string name="policydesc_disableCamera" msgid="3204405908799676104">"Kuzuia matumizi yote ya kamera za kifaa."</string>
     <string name="policylab_disableKeyguardFeatures" msgid="5071855750149949741">"Kuzima baadhi ya vipengele vya kufunga skrini"</string>
     <string name="policydesc_disableKeyguardFeatures" msgid="6641673177041195957">"Zuia matumizi ya baadhi ya vipengele vya kufunga skrini."</string>
-    <!-- no translation found for exit_toast_on_long_press_escape (2983932499112557277) -->
-    <skip />
+    <string name="exit_toast_on_long_press_escape" msgid="2983932499112557277">"Bonyeza kitufe cha Esc kwa muda mrefu ili ufunge programu hii"</string>
   <string-array name="phoneTypes">
     <item msgid="8996339953292723951">"Ya nyumbani"</item>
     <item msgid="7740243458912727194">"Simu ya mkononi"</item>
@@ -1848,8 +1841,7 @@
     <string name="owner_name" msgid="8713560351570795743">"Mmiliki"</string>
     <string name="guest_name" msgid="8502103277839834324">"Mgeni"</string>
     <string name="headless_system_user_name" msgid="1849150903255530049">"Mtumiaji wa Mfumo"</string>
-    <!-- no translation found for unnamed_user_name (6096699110534542980) -->
-    <skip />
+    <string name="unnamed_user_name" msgid="6096699110534542980">"Mtumiaji"</string>
     <string name="error_message_title" msgid="4082495589294631966">"Hitilafu"</string>
     <string name="error_message_change_not_allowed" msgid="843159705042381454">"Mabadiliko haya hayaruhusiwi na msimamizi wako"</string>
     <string name="app_not_found" msgid="3429506115332341800">"Hakuna programu iliyopatikana ili kushughulikia kitendo hiki"</string>

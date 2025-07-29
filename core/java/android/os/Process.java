@@ -44,6 +44,7 @@ import android.webkit.WebViewZygote;
 
 import com.android.sdksandbox.flags.Flags;
 
+import dalvik.annotation.optimization.CriticalNative;
 import dalvik.system.VMDebug;
 import dalvik.system.VMRuntime;
 
@@ -790,6 +791,7 @@ public class Process {
      * Returns elapsed milliseconds of the time this process has run.
      * @return  Returns the number of milliseconds this process has return.
      */
+    @CriticalNative
     public static final native long getElapsedCpuTime();
 
     /**

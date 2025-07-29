@@ -252,6 +252,17 @@ public final class MessageStack {
     }
 
     /**
+     * Create all missing backlinks in the stack.
+     */
+    private void createBackLinks() {
+        Message current = (Message) sTop.getAcquire(this);
+        while (current != null && current.next != null && current.next.prev == null) {
+            current.next.prev = current;
+            current = current.next;
+        }
+    }
+
+    /**
      * Remove a message from the stack.
      *
      * removeFromHeap indicates if the message should be removed from the heap (if this message is
@@ -275,8 +286,10 @@ public final class MessageStack {
                 mLooperProcessed = mLooperProcessed.next;
             } while (mLooperProcessed != null && mLooperProcessed.isRemoved());
         }
-        // If this is the top, attempt to CAS the top to the next item.
-        if (m == mTopValue) {
+
+        // If prev is null, m was the top at the time the previous heapSweep was called.
+        if (m.prev == null) {
+            // Check whether m is still the top. If so, we can just unlink it.
             // Since only the looper thread can pop or drain the freelist, if this CAS fails, it
             // can only be due to a push or quit.
             if (sTop.compareAndSet(this, m, m.next)) {
@@ -284,9 +297,10 @@ public final class MessageStack {
                 m.prev = null;
                 return;
             }
-            // If the CAS failed, this is no longer the top, and we must find m's predecessor and
-            // create backlinks before continuing to remove the message the normal way.
-            heapSweep();
+            // New messages are pushed to the stack between the previous heapSweep and now.
+            // We must find m's predecessor and create backlinks before continuing to
+            // remove the message the normal way.
+            createBackLinks();
         }
         unlinkFromNext(m);
         unlinkFromPrev(m);

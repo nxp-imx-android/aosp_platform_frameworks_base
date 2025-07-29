@@ -139,6 +139,8 @@ public class UnarchiveFragment extends DialogFragment {
                 updateUserActionRequiredUI(mDialog, (UnarchiveUserActionRequired) unarchiveStage);
             }
         }
+
+        UiUtil.updateButtonBarLayoutIfNeeded(requireContext(), mDialog);
     }
 
     private void updateUnarchiveErrorUI(Dialog dialog, UnarchiveError unarchiveStage) {

@@ -138,12 +138,9 @@
     <string name="screenrecord_stop_dialog_message" msgid="6262768207331626817">"បច្ចុប្បន្ន អ្នកកំពុងថតអេក្រង់ទាំងមូលរបស់អ្នក"</string>
     <string name="screenrecord_stop_dialog_message_specific_app" msgid="5995770227684523244">"បច្ចុប្បន្ន អ្នកកំពុងថត <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
     <string name="screenrecord_stop_dialog_button" msgid="2883812564938194350">"ឈប់ថត"</string>
-    <!-- no translation found for screen_record_record_device_audio_label (5363057443124085198) -->
-    <skip />
-    <!-- no translation found for screen_record_record_microphone_label (4685753707185662381) -->
-    <skip />
-    <!-- no translation found for screen_record_should_show_touches_label (2203962566795833783) -->
-    <skip />
+    <string name="screen_record_record_device_audio_label" msgid="5363057443124085198">"ថតសំឡេងឧបករណ៍"</string>
+    <string name="screen_record_record_microphone_label" msgid="4685753707185662381">"ថតសំឡេង​ដោយ​ប្រើ​មីក្រូហ្វូន"</string>
+    <string name="screen_record_should_show_touches_label" msgid="2203962566795833783">"បង្ហាញ​ការ​ចុច"</string>
     <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"ជ្រើសរើសកម្មវិធីដើម្បីថត"</string>
     <string name="screen_capture_fullscreen_screenshot_button" msgid="4255912593013592954">"ថតអេក្រង់ទាំងមូល"</string>
     <string name="screen_capture_region_selection_button" msgid="4437546351856914639">"ថតផ្នែកដែលបានជ្រើសរើស"</string>
@@ -717,9 +714,13 @@
     <string name="monitoring_description_pin_protection" msgid="1983580207046670355">"ការគ្រប់គ្រងមួយចំនួនលើឧបករណ៍របស់អ្នក ដូចជារយៈពេល​កំណត់​ប្រចាំ​ថ្ងៃ និងពេលបិទដំណើរការ អាចប្ដូរបានតាមរយៈកូដ PIN តែប៉ុណ្ណោះ។"</string>
     <string name="legacy_vpn_name" msgid="4174223520162559145">"VPN"</string>
     <string name="keyguard_indication_trust_unlocked" msgid="7395154975733744547">"បាន​ដោះសោ​ដោយភ្នាក់ងារ​​ទុកចិត្ត"</string>
-    <string name="kg_prompt_after_adaptive_auth_lock" msgid="2587481497846342760">"ឧបករណ៍ត្រូវបានចាក់សោ ដោយសារមានការព្យាយាមផ្ទៀងផ្ទាត់ច្រើនដងពេក"</string>
-    <string name="keyguard_indication_after_adaptive_auth_lock" msgid="2323400645470712787">"បានចាក់សោឧបករណ៍\nការផ្ទៀងផ្ទាត់មិនបានសម្រេច"</string>
+    <!-- no translation found for kg_prompt_after_adaptive_auth_lock (6065186971000690782) -->
+    <skip />
+    <!-- no translation found for keyguard_indication_after_adaptive_auth_lock (5240600662061340872) -->
+    <skip />
     <string name="keyguard_indication_after_watch_disconnected" msgid="8133476870585660478">"បានចាក់សោដោយនាឡិការបស់អ្នក"</string>
+    <!-- no translation found for keyguard_indication_after_secure_lock_device (4358906300665255820) -->
+    <skip />
     <string name="zen_mode_and_condition" msgid="5043165189511223718">"<xliff:g id="ZEN_MODE">%1$s</xliff:g>. <xliff:g id="EXIT_CONDITION">%2$s</xliff:g>"</string>
     <string name="accessibility_volume_settings" msgid="1458961116951564784">"ការកំណត់សំឡេង"</string>
     <string name="volume_odi_captions_tip" msgid="8825655463280990941">"ដាក់អក្សររត់លើមេឌៀដោយស្វ័យប្រវត្តិ"</string>
@@ -1061,6 +1062,10 @@
     <string name="qs_edit" msgid="5583565172803472437">"កែ"</string>
     <string name="qs_edit_tiles" msgid="2105215324060865035">"កែប្រអប់"</string>
     <string name="qs_edit_mode_tooltip" msgid="4164112885539479781">"ប្ដូរទំហំប្រអប់​ការកំណត់រហ័ស"</string>
+    <!-- no translation found for qs_edit_settings (3243175290660574156) -->
+    <skip />
+    <!-- no translation found for qs_edit_menu_content_description (4420651071119623791) -->
+    <skip />
     <string name="tuner_time" msgid="2450785840990529997">"ម៉ោង"</string>
   <string-array name="clock_options">
     <item msgid="3986445361435142273">"បង្ហាញម៉ោង នាទី និងវិនាទី"</item>
@@ -1103,8 +1108,8 @@
     <string name="accessibility_quick_settings_power_menu" msgid="6820426108301758412">"ម៉ឺនុយ​ថាមពល"</string>
     <string name="accessibility_quick_settings_page" msgid="7506322631645550961">"ទំព័រ <xliff:g id="ID_1">%1$d</xliff:g> នៃ <xliff:g id="ID_2">%2$d</xliff:g>"</string>
     <string name="accessibility_key_gesture_dialog_title" msgid="7614965716626605518">"បើក <xliff:g id="ID_1">%1$s</xliff:g> ឬ?"</string>
-    <string name="accessibility_key_gesture_dialog_content" msgid="4519838108423437794">"រូប \"សកម្មភាព\" "<annotation id="action_key_icon"></annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> គឺជាផ្លូវកាត់​ក្ដារ​ចុចដែលត្រូវប្រើ <xliff:g id="ID_3">^3</xliff:g>។ <xliff:g id="ID_4">^4</xliff:g>"</string>
-    <string name="accessibility_key_gesture_dialog_magnifier_intro" msgid="627023269951856071">"នេះអនុញ្ញាតឱ្យអ្នកពង្រីកនៅលើអេក្រង់យ៉ាងរហ័ស ដើម្បីបង្ហាញខ្លឹមសារធំជាងមុន។"</string>
+    <string name="accessibility_key_gesture_dialog_content" msgid="4519838108423437794">"សកម្មភាព "<annotation id="action_key_icon">"icon"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> គឺជាផ្លូវកាត់​ក្ដារ​ចុចដើម្បីប្រើ <xliff:g id="ID_3">^3</xliff:g>។ <xliff:g id="ID_4">^4</xliff:g>"</string>
+    <string name="accessibility_key_gesture_dialog_magnifier_intro" msgid="627023269951856071">"វាអនុញ្ញាតឱ្យអ្នកពង្រីកនៅលើអេក្រង់យ៉ាងរហ័ស ដើម្បីធ្វើឱ្យខ្លឹមសារកាន់តែធំ។"</string>
     <string name="accessibility_key_gesture_dialog_talkback_intro" msgid="1617808784388544741">"<xliff:g id="ID_1">%1$s</xliff:g> គឺជាកម្មវិធី​អាន​អេក្រង់ដែលអនុញ្ញាតឱ្យអ្នកស្ដាប់ឮធាតុដែលត្រូវបានអានឮៗ។ វាអាច​មានប្រយោជន៍​ចំពោះអ្នក​ដែល​មាន​ភាពលំបាក​ក្នុងការ​មើល​អេក្រង់។"</string>
     <string name="accessibility_key_gesture_dialog_va_intro" msgid="4709198503441288289">"<xliff:g id="ID_1">%1$s</xliff:g> អនុញ្ញាតឱ្យអ្នកគ្រប់គ្រងឧបករណ៍របស់អ្នកដោយមិនប្រើដៃ។"</string>
     <string name="accessibility_key_gesture_dialog_positive_button_text" msgid="3670746017523589293">"បើក"</string>
@@ -1513,17 +1518,12 @@
     <string name="connected_display_dialog_dual_display_stop_warning" msgid="4174707498892447947">"អេក្រង់ខាងក្នុងរបស់អ្នកនឹងត្រូវបានធ្វើ​សមកាលកម្មទៅវិញទៅមក។ អេក្រង់មុខរបស់អ្នកនឹងត្រូវបានបិទ។"</string>
     <string name="mirror_display" msgid="2515262008898122928">"បញ្ចាំងទៅផ្ទាំងអេក្រង់"</string>
     <string name="dismiss_dialog" msgid="2195508495854675882">"ច្រានចោល"</string>
-    <!-- no translation found for connected_display_dialog_title (307028192512988669) -->
-    <skip />
-    <!-- no translation found for remember_choice (2063510191006325221) -->
-    <skip />
-    <!-- no translation found for start_desktop_mode (5459815912537830841) -->
-    <skip />
-    <!-- no translation found for start_mirroring (3611044878130481882) -->
-    <skip />
+    <string name="connected_display_dialog_title" msgid="307028192512988669">"ភ្ជាប់ទៅផ្ទាំង​អេក្រង់​ខាង​ក្រៅ"</string>
+    <string name="remember_choice" msgid="2063510191006325221">"កុំ​សួរ​ខ្ញុំ​​​ម្ដងទៀត"</string>
+    <string name="start_desktop_mode" msgid="5459815912537830841">"កុំព្យូទ័រ"</string>
+    <string name="start_mirroring" msgid="3611044878130481882">"បញ្ចាំង"</string>
     <string name="connected_display_icon_desc" msgid="6373560639989971997">"ផ្ទាំងអេក្រង់ត្រូវបានភ្ជាប់"</string>
-    <!-- no translation found for connected_display_extended_mode_text (2457269692913653696) -->
-    <skip />
+    <string name="connected_display_extended_mode_text" msgid="2457269692913653696">"បានភ្ជាប់ទៅផ្ទាំង​អេក្រង់​ខាង​ក្រៅ"</string>
     <string name="privacy_dialog_title" msgid="5201413527644766025">"មីក្រូហ្វូន កាមេរ៉ា និងទីតាំង"</string>
     <string name="privacy_dialog_summary" msgid="2458769652125995409">"ការប្រើប្រាស់កម្មវិធីថ្មីៗនេះ"</string>
     <string name="privacy_dialog_more_button" msgid="7610604080293562345">"មើលការចូលប្រើនាពេលថ្មីៗនេះ"</string>

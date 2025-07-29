@@ -25,6 +25,7 @@ import android.view.Choreographer
 import android.view.Surface
 import android.view.SurfaceControl
 import android.view.WindowManager
+import android.window.DesktopExperienceFlags
 import android.window.TransitionInfo
 import android.window.TransitionRequestInfo
 import android.window.WindowContainerTransaction
@@ -281,6 +282,13 @@ class MultiDisplayVeiledResizeTaskPositioner(
                         currentDisplayLayout,
                     )
                 )
+
+                if (
+                    DesktopExperienceFlags.ENABLE_DRAG_END_STABLE_BOUNDS_RESET.isTrue &&
+                        displayId != startDisplayId
+                ) {
+                    currentDisplayLayout.getStableBounds(stableBounds)
+                }
             }
 
             // Call the MultiDisplayDragMoveIndicatorController to clear any active indicator

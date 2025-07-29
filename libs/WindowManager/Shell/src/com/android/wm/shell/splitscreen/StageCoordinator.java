@@ -1124,8 +1124,7 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
      */
     private void prepareTasksForSplitScreen(int[] taskIds, WindowContainerTransaction wct,
             Bundle[] bundles) {
-        if (com.android.window.flags.Flags.fixLayoutRestoredTask()
-                && taskIds.length != bundles.length) {
+        if (taskIds.length != bundles.length) {
             Slog.w(TAG, "The length of taskIds and bundles are not the same.");
             return;
         }
@@ -1136,7 +1135,7 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
             if (task != null) {
                 wct.setWindowingMode(task.getToken(), WINDOWING_MODE_UNDEFINED)
                         .setBounds(task.getToken(), null /* bounds */);
-            } else if (com.android.window.flags.Flags.fixLayoutRestoredTask()) {
+            } else {
                 // Clear the task bounds via Bundle once the Task is restored.
                 ActivityOptions options = ActivityOptions.fromBundle(bundles[i]);
                 if (options == null) {
@@ -2541,7 +2540,7 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
             // TODO: consider support 3 splits
 
             // Make the stages adjacent to each other so they occlude what's behind them.
-            wct.setAdjacentRootSet(mMainStage.mRootTaskInfo.token, mSideStage.mRootTaskInfo.token);
+            wct.setAdjacentRoots(mMainStage.mRootTaskInfo.token, mSideStage.mRootTaskInfo.token);
             mSplitLayout.getInvisibleBounds(mTempRect1);
             wct.setBounds(mSideStage.mRootTaskInfo.token, mTempRect1);
         }
@@ -3215,7 +3214,8 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
                     mSplitTransitions.setEnterTransition(transition, request.getRemoteTransition(),
                             TRANSIT_SPLIT_SCREEN_PAIR_OPEN, !mIsDropEnteringSplitInvisible,
                             SNAP_TO_2_50_50);
-                } else if (enableFlexibleTwoAppSplit() && isSplitScreenVisible() && isOpening) {
+                } else if (enableFlexibleTwoAppSplit() && isSplitScreenVisible() && isOpening
+                        && requestHasLaunchAdjacentFlag(request)) {
                     // launching into an existing split stage; possibly launchAdjacent
                     // If we're replacing a pip-able app, we need to let mixed handler take care of
                     // it. Otherwise we'll just treat it as an enter+resize

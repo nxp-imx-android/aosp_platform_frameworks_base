@@ -1436,16 +1436,6 @@ flag {
 }
 
 flag {
-   name: "keyguard_show_cancels_all_pending_exits"
-   namespace: "systemui"
-   description: "When keyguard becomes visible, prevent any preexisting exit calls from proceeding"
-   bug: "395640609"
-   metadata {
-       purpose: PURPOSE_BUGFIX
-   }
-}
-
-flag {
     name: "qs_tile_detailed_view"
     namespace: "systemui"
     description: "Enables the tile detailed view UI."
@@ -1943,16 +1933,6 @@ flag {
 }
 
 flag {
-    name: "fix_dialog_launch_animation_jank_logging"
-    namespace: "systemui"
-    description: "Adjust timing of jank logging for dialog launch animations, and attach it to the dialog window instead of the origin view window."
-    bug: "409008342"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "animation_library_delay_leash_cleanup"
     namespace: "systemui"
     description: "Clean up the transition leash with a delay to ensure that the finish callback happens first, avoiding flickers"
@@ -2011,16 +1991,6 @@ flag {
     namespace: "systemui"
     description: "Enables ongoing activity chips in dream status bar"
     bug: "418243972"
-}
-
-flag {
-    name: "instant_hide_shade"
-    namespace: "systemui"
-    description: "Enables the Shade to hide instantaneously at the end of a launch animation, preventing flickers."
-    bug: "419304171"
-    metadata {
-      purpose: PURPOSE_BUGFIX
-    }
 }
 
 flag {
@@ -2154,5 +2124,15 @@ flag {
     bug: "423772889"
     metadata {
       purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
+    name: "shortcut_helper_multi_display_support"
+    namespace: "systemui"
+    description: "Shortcut helper is triggered on the current display"
+    bug: "406740115"
+    metadata {
+        purpose: PURPOSE_BUGFIX
     }
 }

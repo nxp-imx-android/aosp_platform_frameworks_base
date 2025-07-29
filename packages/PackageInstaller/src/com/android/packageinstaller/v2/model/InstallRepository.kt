@@ -980,8 +980,11 @@ class InstallRepository(private val context: Context) {
             _installResult.value = InstallInstalling(appSnippet, isAppUpdating)
             installId = InstallEventReceiver.addObserver(
                 context, EventResultPersister.GENERATE_NEW_ID
-            ) { statusCode: Int, legacyStatus: Int, message: String?, serviceId: Int ->
-                setStageBasedOnResult(statusCode, legacyStatus, message)
+            ) { statusCode: Int, legacyStatus: Int, message: String?, serviceId: Int,
+                hasDeveloperVerificationFailure: Boolean ->
+                setStageBasedOnResult(statusCode, legacyStatus, message,
+                    hasDeveloperVerificationFailure
+                )
             }
         } catch (e: OutOfIdsException) {
             setStageBasedOnResult(
@@ -1004,8 +1007,7 @@ class InstallRepository(private val context: Context) {
             Log.e(LOG_TAG, "Session $stagedSessionId could not be opened.", e)
             packageInstaller.abandonSession(stagedSessionId)
             setStageBasedOnResult(
-                PackageInstaller.STATUS_FAILURE, PackageManager.INSTALL_FAILED_INTERNAL_ERROR, null
-            )
+                PackageInstaller.STATUS_FAILURE, PackageManager.INSTALL_FAILED_INTERNAL_ERROR, null)
         }
     }
 
@@ -1013,6 +1015,7 @@ class InstallRepository(private val context: Context) {
         statusCode: Int,
         legacyStatus: Int,
         message: String?,
+        hasDeveloperVerificationFailure: Boolean = false
     ) {
         if (localLogv) {
             Log.i(
@@ -1047,10 +1050,16 @@ class InstallRepository(private val context: Context) {
             // InstallFailed dialog must not be shown only when the user denies ownership update. We
             // must show this dialog for all other install failures.
 
-            val userDenied =
-                    statusCode == PackageInstaller.STATUS_FAILURE_ABORTED &&
-                    legacyStatus != PackageManager.INSTALL_FAILED_VERIFICATION_TIMEOUT &&
-                    legacyStatus != PackageManager.INSTALL_FAILED_VERIFICATION_FAILURE
+            // Since API 36.1, InstallFailed dialog must not be shown if the installation failed
+            // because of the developer verification failure.
+            val developerVerificationFailed = Flags.verificationService()
+                    && statusCode == PackageInstaller.STATUS_FAILURE_ABORTED
+                    && hasDeveloperVerificationFailure
+
+            val userDenied = developerVerificationFailed ||
+                    (statusCode == PackageInstaller.STATUS_FAILURE_ABORTED &&
+                            legacyStatus != PackageManager.INSTALL_FAILED_VERIFICATION_TIMEOUT &&
+                            legacyStatus != PackageManager.INSTALL_FAILED_VERIFICATION_FAILURE)
 
             if (shouldReturnResult) {
                 val resultIntent = Intent().putExtra(Intent.EXTRA_INSTALL_RESULT, legacyStatus)

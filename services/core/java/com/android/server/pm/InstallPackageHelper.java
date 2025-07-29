@@ -1541,7 +1541,9 @@ final class InstallPackageHelper {
             if (request.getPackageLite() == null || !request.isArchived()) {
                 // TODO: pass packageLite from install request instead of reparsing the package
                 parsedPackage = pp.parsePackage(tmpPackageFile, parseFlags, false);
-                AndroidPackageUtils.validatePackageDexMetadata(parsedPackage);
+                if (!com.android.art.flags.Flags.artManagedInstallFilesValidationApi()) {
+                    AndroidPackageUtils.validatePackageDexMetadata(parsedPackage);
+                }
                 archivedPackage = null;
             } else {
                 // Archived install mode, no APK.

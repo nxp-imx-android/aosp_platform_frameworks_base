@@ -17,16 +17,22 @@
 package com.android.systemui.common.ui.compose.windowinsets
 
 import android.view.DisplayCutout as ViewDisplayCutout
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import kotlin.math.abs
 
-/** Represents the global position of the bounds for the display cutout for this display */
+/**
+ * Represents the global position of the bounds for the display cutout for this display.
+ *
+ * Important: The bounds are expressed in raw pixels (and not dips) because these bounds should be
+ * used either during layout or drawing but *not* during composition. This is because insets are
+ * computed after composition but before layout. Moreover, these insets can be animated and we don't
+ * want to recompose every frame.
+ */
 data class DisplayCutout(
-    val left: Dp = 0.dp,
-    val top: Dp = 0.dp,
-    val right: Dp = 0.dp,
-    val bottom: Dp = 0.dp,
+    val left: Int = 0,
+    val top: Int = 0,
+    val right: Int = 0,
+    val bottom: Int = 0,
     val location: CutoutLocation = CutoutLocation.NONE,
     /**
      * The original `DisplayCutout` for the `View` world; only use this when feeding it back to a
@@ -34,8 +40,9 @@ data class DisplayCutout(
      */
     val viewDisplayCutoutKeyguardStatusBarView: ViewDisplayCutout? = null,
 ) {
-    fun width() = abs(right.value - left.value).dp
-    fun height() = abs(bottom.value - top.value).dp
+    fun width() = abs(right - left).dp
+
+    fun height() = abs(bottom - top).dp
 }
 
 enum class CutoutLocation {

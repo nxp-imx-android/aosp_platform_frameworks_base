@@ -119,6 +119,14 @@ public class SupervisionManager {
     public static final String ACTION_DISABLE_SUPERVISION =
             "android.app.supervision.action.DISABLE_SUPERVISION";
 
+    /**
+     * SupervisionService's identifier for setting policies or restrictions in
+     * {@link DevicePolicyManager}.
+     *
+     * @hide
+     */
+    public static final String SUPERVISION_SYSTEM_ENTITY = SupervisionManager.class.getName();
+
     /** @hide */
     @UnsupportedAppUsage
     public SupervisionManager(Context context, @Nullable ISupervisionManager service) {

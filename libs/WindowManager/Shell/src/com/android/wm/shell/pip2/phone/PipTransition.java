@@ -542,7 +542,10 @@ public class PipTransition extends PipTransitionController implements
         TransitionInfo.Change pipActivityChange = PipTransitionUtils.getDeferConfigActivityChange(
                 info, pipChange.getTaskInfo().getToken());
         if (pipActivityChange == null) {
-            return false;
+            Log.wtf(TAG, String.format("""
+                        PipTransition.handleSwipePipToHomeTransition() didn't detect
+                        a config-at-end PiP activity, so activity leash manipulations are skipped.
+                        transitionInfo=%s, callers=%s""", info, Debug.getCallers(4)));
         }
         mFinishCallback = finishCallback;
 
@@ -574,10 +577,12 @@ public class PipTransition extends PipTransitionController implements
         params.copyOnlySet(
                 new PictureInPictureParams.Builder().setSourceRectHint(sourceRectHint).build());
 
-        // Config-at-end transitions need to have their activities transformed before starting
-        // the animation; this makes the buffer seem like it's been updated to final size.
-        prepareConfigAtEndActivity(startTransaction, finishTransaction, pipChange,
-                pipActivityChange);
+        if (pipActivityChange != null) {
+            // Config-at-end transitions need to have their activities transformed before starting
+            // the animation; this makes the buffer seem like it's been updated to final size.
+            prepareConfigAtEndActivity(startTransaction, finishTransaction, pipChange,
+                    pipActivityChange);
+        }
 
         startTransaction.merge(finishTransaction);
         PipEnterAnimator animator = new PipEnterAnimator(mContext, mPipSurfaceTransactionHelper,
@@ -671,10 +676,17 @@ public class PipTransition extends PipTransitionController implements
 
     private void updatePipChangesForFixedRotation(TransitionInfo info,
             TransitionInfo.Change outPipTaskChange,
-            TransitionInfo.Change outPipActivityChange) {
+            @Nullable TransitionInfo.Change outPipActivityChange) {
         final TransitionInfo.Change fixedRotationChange = findFixedRotationChange(info);
-        final Rect endBounds = outPipTaskChange.getEndAbsBounds();
-        final Rect endActivityBounds = outPipActivityChange.getEndAbsBounds();
+        final Rect outEndBounds = outPipTaskChange.getEndAbsBounds();
+
+        final Rect outEndActivityBounds = outPipActivityChange != null
+                ? outPipActivityChange.getEndAbsBounds() : null;
+        // Cache the task to activity offset to potentially restore later.
+        final Point activityEndOffset = outEndActivityBounds != null ? new Point(
+                outEndActivityBounds.left - outEndBounds.left,
+                outEndActivityBounds.top - outEndBounds.top) : null;
+
         int startRotation = outPipTaskChange.getStartRotation();
         int endRotation = fixedRotationChange != null
                 ? fixedRotationChange.getEndFixedRotation() : mPipDisplayLayoutState.getRotation();
@@ -686,18 +698,14 @@ public class PipTransition extends PipTransitionController implements
         // This is used by display change listeners to respond properly to fixed rotation.
         mPipTransitionState.setInFixedRotation(true);
 
-        // Cache the task to activity offset to potentially restore later.
-        Point activityEndOffset = new Point(endActivityBounds.left - endBounds.left,
-                endActivityBounds.top - endBounds.top);
-
         // If we are running a fixed rotation bounds enter PiP animation,
         // then update the display layout rotation, and recalculate the end rotation bounds.
         // Update the endBounds in place, so that the PiP change is up-to-date.
         mPipDisplayLayoutState.rotateTo(endRotation);
         float snapFraction = mPipBoundsAlgorithm.getSnapFraction(
                 mPipBoundsAlgorithm.getEntryDestinationBounds());
-        mPipBoundsAlgorithm.applySnapFraction(endBounds, snapFraction);
-        mPipBoundsState.setBounds(endBounds);
+        mPipBoundsAlgorithm.applySnapFraction(outEndBounds, snapFraction);
+        mPipBoundsState.setBounds(outEndBounds);
 
         // Display bounds were already updated to represent the final orientation,
         // so we just need to readjust the origin, and perform rotation about (0, 0).
@@ -705,12 +713,14 @@ public class PipTransition extends PipTransitionController implements
         Rect displayBounds = mPipDisplayLayoutState.getDisplayBounds();
         int originTranslateX = isClockwise ? 0 : -displayBounds.width();
         int originTranslateY = isClockwise ? -displayBounds.height() : 0;
-        endBounds.offset(originTranslateX, originTranslateY);
+        outEndBounds.offset(originTranslateX, originTranslateY);
 
-        // Update the activity end bounds in place as well, as this is used for transform
-        // calculation later.
-        endActivityBounds.offsetTo(endBounds.left + activityEndOffset.x,
-                endBounds.top + activityEndOffset.y);
+        if (activityEndOffset != null) {
+            // Update the activity end bounds in place as well, as this is used for transform
+            // calculation later.
+            outEndActivityBounds.offsetTo(outEndBounds.left + activityEndOffset.x,
+                    outEndBounds.top + activityEndOffset.y);
+        }
     }
 
     private boolean startAlphaTypeEnterAnimation(@NonNull TransitionInfo info,
@@ -814,7 +824,7 @@ public class PipTransition extends PipTransitionController implements
     @NonNull
     private Rect getAdjustedSourceRectHint(@NonNull TransitionInfo info,
             @NonNull TransitionInfo.Change pipTaskChange,
-            @NonNull TransitionInfo.Change pipActivityChange) {
+            @Nullable TransitionInfo.Change pipActivityChange) {
         final Rect startBounds = pipTaskChange.getStartAbsBounds();
         final Rect endBounds = pipTaskChange.getEndAbsBounds();
         final PictureInPictureParams params = pipTaskChange.getTaskInfo().pictureInPictureParams;
@@ -824,7 +834,7 @@ public class PipTransition extends PipTransitionController implements
                 endBounds);
 
         final Rect adjustedSourceRectHint = new Rect();
-        if (sourceRectHint != null) {
+        if (sourceRectHint != null && pipActivityChange != null) {
             adjustedSourceRectHint.set(sourceRectHint);
             // If multi-activity PiP, use the parent task before PiP to retrieve display cutouts;
             // then, offset the valid app provided source rect hint by the cutout insets.

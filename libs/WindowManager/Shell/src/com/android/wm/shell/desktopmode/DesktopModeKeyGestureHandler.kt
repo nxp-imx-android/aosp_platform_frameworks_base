@@ -90,7 +90,10 @@ class DesktopModeKeyGestureHandler(
                 mainExecutor.execute {
                     desktopTasksController
                         .get()
-                        .activatePreviousDesk(focusTransitionObserver.globallyFocusedDisplayId)
+                        .activatePreviousDesk(
+                            focusTransitionObserver.globallyFocusedDisplayId,
+                            EnterReason.KEYBOARD_SHORTCUT_ENTER,
+                        )
                 }
             }
             KeyGestureEvent.KEY_GESTURE_TYPE_SWITCH_TO_NEXT_DESK -> {
@@ -98,7 +101,10 @@ class DesktopModeKeyGestureHandler(
                 mainExecutor.execute {
                     desktopTasksController
                         .get()
-                        .activateNextDesk(focusTransitionObserver.globallyFocusedDisplayId)
+                        .activateNextDesk(
+                            focusTransitionObserver.globallyFocusedDisplayId,
+                            EnterReason.KEYBOARD_SHORTCUT_ENTER,
+                        )
                 }
             }
             KeyGestureEvent.KEY_GESTURE_TYPE_SNAP_LEFT_FREEFORM_WINDOW -> {

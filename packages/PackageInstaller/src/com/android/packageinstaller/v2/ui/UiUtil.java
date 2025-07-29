@@ -23,6 +23,7 @@ import android.content.DialogInterface;
 import android.content.res.ColorStateList;
 import android.content.res.Resources;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
 
 import androidx.annotation.NonNull;
@@ -34,6 +35,9 @@ import com.android.packageinstaller.v2.model.PackageUtil;
 
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * The utility of UI components.
@@ -207,6 +211,8 @@ public class UiUtil {
                     context.getColor(R.color.onPrimaryColor)));
             materialButton.setStrokeColor(
                     ColorStateList.valueOf(context.getColor(android.R.color.transparent)));
+            materialButton.setRippleColor(ColorStateList.valueOf(
+                    context.getColor(R.color.m3_button_ripple_color_selector)));
         }
     }
 
@@ -227,6 +233,8 @@ public class UiUtil {
                     ColorStateList.valueOf(context.getColor(R.color.primaryColor)));
             materialButton.setStrokeColor(
                     ColorStateList.valueOf(context.getColor(R.color.outlineVariantColor)));
+            materialButton.setRippleColor(ColorStateList.valueOf(
+                    context.getColor(R.color.m3_button_ripple_color_selector)));
         }
     }
 
@@ -247,6 +255,64 @@ public class UiUtil {
                     ColorStateList.valueOf(context.getColor(R.color.primaryColor)));
             materialButton.setStrokeColor(
                     ColorStateList.valueOf(context.getColor(android.R.color.transparent)));
+            materialButton.setRippleColor(ColorStateList.valueOf(
+                    context.getColor(R.color.m3_text_button_ripple_color_selector)));
+        }
+    }
+
+    /**
+     * Update the button bar layout if needed
+     */
+    public static void updateButtonBarLayoutIfNeeded(@NonNull Context context,
+            @NonNull Dialog dialog) {
+        // Don't need to handle the material alertdialog case. It has already been handled.
+        if (PackageUtil.isMaterialDesignEnabled(context)) {
+            return;
+        }
+        final Button positiveButton = getAlertDialogPositiveButton(dialog);
+        if (positiveButton == null) {
+            return;
+        }
+
+        final ViewGroup parent = (ViewGroup) positiveButton.getParent();
+        final List<Integer> visibleButtonIndexList = new ArrayList<>();
+        final List<Integer> nonButtonChildIndexList = new ArrayList<>();
+
+        // Get the count of the visible buttons and the non-button children.
+        for (int i = 0, count = parent.getChildCount(); i < count; i++) {
+            View child = parent.getChildAt(i);
+            if (child instanceof Button) {
+                if (child.getVisibility() == View.VISIBLE) {
+                    visibleButtonIndexList.add(i);
+                }
+            } else {
+                // The width of the layoutParams of the space children is 0 and the weight is 1,
+                // don't change the visibility of them
+                if (child.getLayoutParams().width != 0) {
+                    nonButtonChildIndexList.add(i);
+                }
+            }
+        }
+
+        final int firstVisibleButtonIndex = visibleButtonIndexList.isEmpty()
+                ? -1 : visibleButtonIndexList.getFirst();
+        final int lastVisibleButtonIndex = visibleButtonIndexList.isEmpty()
+                ? -1 : visibleButtonIndexList.getLast();
+        // Set the visibility of the non-button children except the space children
+        for (int i = 0, count = nonButtonChildIndexList.size(); i < count; i++) {
+            final int currentChildIndex = nonButtonChildIndexList.get(i);
+            if (visibleButtonIndexList.size() <= 1) {
+                parent.getChildAt(currentChildIndex).setVisibility(View.GONE);
+            } else {
+                if (currentChildIndex < firstVisibleButtonIndex) {
+                    parent.getChildAt(currentChildIndex).setVisibility(View.GONE);
+                } else if (currentChildIndex > firstVisibleButtonIndex
+                        && currentChildIndex < lastVisibleButtonIndex) {
+                    parent.getChildAt(currentChildIndex).setVisibility(View.VISIBLE);
+                } else {
+                    parent.getChildAt(currentChildIndex).setVisibility(View.GONE);
+                }
+            }
         }
     }
 }

@@ -459,6 +459,20 @@ public class CarrierConfigManager {
             "allow_emergency_numbers_in_call_log_bool";
 
     /**
+     * Flag indicating whether to log calls which were answered on another device.
+     * <p>
+     * If {@code true}, calls which are disconnected with
+     * {@link android.telecom.DisconnectCause#ANSWERED_ELSEWHERE} will be added to the call
+     * log.
+     * <p>
+     * If {@code false}, these calls will not be added to the call log.
+     * The default value is {@code true}.
+     */
+    @FlaggedApi(Flags.FLAG_LOG_CALLS_ANSWERED_ELSEWHERE)
+    public static final String KEY_LOG_CALLS_ANSWERED_ELSEWHERE_BOOL =
+            "log_calls_answered_elsewhere_bool";
+
+    /**
      * A string array containing numbers that shouldn't be included in the call log.
      */
     public static final String KEY_UNLOGGABLE_NUMBERS_STRING_ARRAY =
@@ -10934,6 +10948,7 @@ public class CarrierConfigManager {
         sDefaults.putBoolean(KEY_AUTO_RETRY_FAILED_WIFI_EMERGENCY_CALL, false);
         sDefaults.putBoolean(KEY_ADDITIONAL_CALL_SETTING_BOOL, true);
         sDefaults.putBoolean(KEY_ALLOW_EMERGENCY_NUMBERS_IN_CALL_LOG_BOOL, false);
+        sDefaults.putBoolean(KEY_LOG_CALLS_ANSWERED_ELSEWHERE_BOOL, true);
         sDefaults.putStringArray(KEY_UNLOGGABLE_NUMBERS_STRING_ARRAY, null);
         sDefaults.putBoolean(KEY_ALLOW_LOCAL_DTMF_TONES_BOOL, true);
         sDefaults.putBoolean(KEY_PLAY_CALL_RECORDING_TONE_BOOL, false);

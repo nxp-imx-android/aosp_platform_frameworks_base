@@ -859,7 +859,7 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
 
         // Do not bother checking the dismiss button's target visibility if the notification cannot
         // be dismissed.
-        if (!canEntryBeDismissed()) {
+        if (!canExpandableViewBeDismissed()) {
             return false;
         }
 
@@ -3310,19 +3310,32 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
     public int getIntrinsicHeight() {
         if (isUserLocked()) {
             return getActualHeight();
-        } else if (mGuts != null && mGuts.isExposed()) {
+        }
+        if (mGuts != null && mGuts.isExposed()) {
             return mGuts.getIntrinsicHeight();
-        } else if (isBundle() && !isGroupExpanded()) {
-            return getCollapsedHeight();
-        } else if (isBundle() && isGroupExpanded()) {
-            return mChildrenContainer.getIntrinsicHeight();
-        } else if ((isChildInGroup() && !isGroupExpanded())) {
-            return mPrivateLayout.getMinHeight();
-        } else if (mSensitive && mHideSensitiveForIntrinsicHeight) {
-            return getMinHeight();
-        } else if (mIsSummaryWithChildren) {
-            return mChildrenContainer.getIntrinsicHeight();
-        } else if (canShowHeadsUp() && isHeadsUpState()) {
+        }
+        if (NotificationBundleUi.isEnabled()) {
+            if (mSensitive && mHideSensitiveForIntrinsicHeight) {
+                return getMinHeight();
+            }
+            if (mIsSummaryWithChildren) {
+                return mChildrenContainer.getIntrinsicHeight();
+            }
+            if (isChildInGroup() && !isGroupExpanded()) {
+                return mPrivateLayout.getMinHeight();
+            }
+        } else {
+            if (isChildInGroup() && !isGroupExpanded()) {
+                return mPrivateLayout.getMinHeight();
+            }
+            if (mSensitive && mHideSensitiveForIntrinsicHeight) {
+                return getMinHeight();
+            }
+            if (mIsSummaryWithChildren) {
+                return mChildrenContainer.getIntrinsicHeight();
+            }
+        }
+        if (canShowHeadsUp() && isHeadsUpState()) {
             if (isPinned() || mHeadsupDisappearRunning) {
                 return getPinnedHeadsUpHeight(true /* atLeastMinHeight */);
             } else if (isExpanded()) {
@@ -3330,11 +3343,11 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
             } else {
                 return Math.max(getCollapsedHeight(), getHeadsUpHeight());
             }
-        } else if (isExpanded()) {
-            return getMaxExpandHeight();
-        } else {
-            return getCollapsedHeight();
         }
+        if (isExpanded()) {
+            return getMaxExpandHeight();
+        }
+        return getCollapsedHeight();
     }
 
     /**

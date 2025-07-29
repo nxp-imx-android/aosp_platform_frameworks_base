@@ -99,8 +99,6 @@ public class ContentRecorderTests extends WindowTestsBase {
     @Mock private MediaProjectionManagerWrapper mMediaProjectionManagerWrapper;
     private SurfaceControl mRecordedSurface;
 
-    private boolean mHandleAnisotropicDisplayMirroring = false;
-
     @Before public void setUp() {
         mDisplayInfo.type = Display.TYPE_VIRTUAL;
         MockitoAnnotations.initMocks(this);
@@ -138,7 +136,7 @@ public class ContentRecorderTests extends WindowTestsBase {
         mVirtualDisplayContent = createNewDisplay(displayInfo);
         final int displayId = mVirtualDisplayContent.getDisplayId();
         mContentRecorder = new ContentRecorder(mVirtualDisplayContent,
-                mMediaProjectionManagerWrapper, mHandleAnisotropicDisplayMirroring);
+                mMediaProjectionManagerWrapper);
         spyOn(mVirtualDisplayContent);
 
         // GIVEN MediaProjection has already initialized the WindowToken of the DisplayArea to
@@ -750,7 +748,6 @@ public class ContentRecorderTests extends WindowTestsBase {
 
     @Test
     public void testUpdateMirroredSurface_isotropicPixel() {
-        mHandleAnisotropicDisplayMirroring = false;
         DisplayInfo displayInfo = createDefaultDisplayInfo();
         createContentRecorder(displayInfo);
         mContentRecorder.setContentRecordingSession(mDisplaySession);
@@ -758,117 +755,6 @@ public class ContentRecorderTests extends WindowTestsBase {
         assertThat(mContentRecorder.isCurrentlyRecording()).isTrue();
 
         verify(mTransaction, atLeastOnce()).setMatrix(mRecordedSurface, 1, 0, 0, 1);
-    }
-
-    @Test
-    public void testUpdateMirroredSurface_anisotropicPixel_compressY() {
-        mHandleAnisotropicDisplayMirroring = true;
-        DisplayInfo displayInfo = createDefaultDisplayInfo();
-        DisplayInfo inputDisplayInfo =
-                mWm.mRoot.getDisplayContent(DEFAULT_DISPLAY).getDisplayInfo();
-        displayInfo.physicalXDpi = 2.0f * inputDisplayInfo.physicalXDpi;
-        displayInfo.physicalYDpi = inputDisplayInfo.physicalYDpi;
-        createContentRecorder(displayInfo);
-        mContentRecorder.setContentRecordingSession(mDisplaySession);
-        mContentRecorder.updateRecording();
-        assertThat(mContentRecorder.isCurrentlyRecording()).isTrue();
-
-        float xScale = 1f;
-        float yScale = 0.5f;
-        verify(mTransaction, atLeastOnce()).setMatrix(mRecordedSurface, xScale, 0, 0,
-                yScale);
-        verify(mTransaction, atLeastOnce()).setPosition(mRecordedSurface, 0,
-                Math.round(0.25 * mSurfaceSize.y));
-    }
-
-    @Test
-    public void testUpdateMirroredSurface_anisotropicPixel_compressX() {
-        mHandleAnisotropicDisplayMirroring = true;
-        DisplayInfo displayInfo = createDefaultDisplayInfo();
-        DisplayInfo inputDisplayInfo =
-                mWm.mRoot.getDisplayContent(DEFAULT_DISPLAY).getDisplayInfo();
-        displayInfo.physicalXDpi = inputDisplayInfo.physicalXDpi;
-        displayInfo.physicalYDpi = 2.0f * inputDisplayInfo.physicalYDpi;
-        createContentRecorder(displayInfo);
-        mContentRecorder.setContentRecordingSession(mDisplaySession);
-        mContentRecorder.updateRecording();
-        assertThat(mContentRecorder.isCurrentlyRecording()).isTrue();
-
-        float xScale = 0.5f;
-        float yScale = 1f;
-        verify(mTransaction, atLeastOnce()).setMatrix(mRecordedSurface, xScale, 0, 0,
-                yScale);
-        verify(mTransaction, atLeastOnce()).setPosition(mRecordedSurface,
-                Math.round(0.25 * mSurfaceSize.x), 0);
-    }
-
-    @Test
-    public void testUpdateMirroredSurface_anisotropicPixel_scaleOnX() {
-        mHandleAnisotropicDisplayMirroring = true;
-        int width = 2 * mDefaultDisplay.getDefaultTaskDisplayArea().getBounds().width();
-        int height = 6 * mDefaultDisplay.getDefaultTaskDisplayArea().getBounds().height();
-        DisplayInfo displayInfo = createDisplayInfo(width, height);
-        DisplayInfo inputDisplayInfo =
-                mWm.mRoot.getDisplayContent(DEFAULT_DISPLAY).getDisplayInfo();
-        displayInfo.physicalXDpi = inputDisplayInfo.physicalXDpi;
-        displayInfo.physicalYDpi = 2.0f * inputDisplayInfo.physicalYDpi;
-        createContentRecorder(displayInfo);
-        mContentRecorder.setContentRecordingSession(mDisplaySession);
-        mContentRecorder.updateRecording();
-        assertThat(mContentRecorder.isCurrentlyRecording()).isTrue();
-
-        float xScale = 2f;
-        float yScale = 4f;
-        verify(mTransaction, atLeastOnce()).setMatrix(mRecordedSurface, xScale, 0, 0,
-                yScale);
-        verify(mTransaction, atLeastOnce()).setPosition(mRecordedSurface, 0,
-                inputDisplayInfo.logicalHeight);
-    }
-
-    @Test
-    public void testUpdateMirroredSurface_anisotropicPixel_scaleOnY() {
-        mHandleAnisotropicDisplayMirroring = true;
-        int width = 6 * mDefaultDisplay.getDefaultTaskDisplayArea().getBounds().width();
-        int height = 2 * mDefaultDisplay.getDefaultTaskDisplayArea().getBounds().height();
-        DisplayInfo displayInfo = createDisplayInfo(width, height);
-        DisplayInfo inputDisplayInfo =
-                mWm.mRoot.getDisplayContent(DEFAULT_DISPLAY).getDisplayInfo();
-        displayInfo.physicalXDpi = 2.0f * inputDisplayInfo.physicalXDpi;
-        displayInfo.physicalYDpi = inputDisplayInfo.physicalYDpi;
-        createContentRecorder(displayInfo);
-        mContentRecorder.setContentRecordingSession(mDisplaySession);
-        mContentRecorder.updateRecording();
-        assertThat(mContentRecorder.isCurrentlyRecording()).isTrue();
-
-        float xScale = 4f;
-        float yScale = 2f;
-        verify(mTransaction, atLeastOnce()).setMatrix(mRecordedSurface, xScale, 0, 0,
-                yScale);
-        verify(mTransaction, atLeastOnce()).setPosition(mRecordedSurface,
-                inputDisplayInfo.logicalWidth, 0);
-    }
-
-    @Test
-    public void testUpdateMirroredSurface_anisotropicPixel_shrinkCanvas() {
-        mHandleAnisotropicDisplayMirroring = true;
-        int width = mDefaultDisplay.getDefaultTaskDisplayArea().getBounds().width() / 2;
-        int height = mDefaultDisplay.getDefaultTaskDisplayArea().getBounds().height() / 2;
-        DisplayInfo displayInfo = createDisplayInfo(width, height);
-        DisplayInfo inputDisplayInfo =
-                mWm.mRoot.getDisplayContent(DEFAULT_DISPLAY).getDisplayInfo();
-        displayInfo.physicalXDpi = 2f * inputDisplayInfo.physicalXDpi;
-        displayInfo.physicalYDpi = inputDisplayInfo.physicalYDpi;
-        createContentRecorder(displayInfo);
-        mContentRecorder.setContentRecordingSession(mDisplaySession);
-        mContentRecorder.updateRecording();
-        assertThat(mContentRecorder.isCurrentlyRecording()).isTrue();
-
-        float xScale = 0.5f;
-        float yScale = 0.25f;
-        verify(mTransaction, atLeastOnce()).setMatrix(mRecordedSurface, xScale, 0, 0,
-                yScale);
-        verify(mTransaction, atLeastOnce()).setPosition(mRecordedSurface, 0,
-                (mSurfaceSize.y - height / 2) / 2);
     }
 
     @Test

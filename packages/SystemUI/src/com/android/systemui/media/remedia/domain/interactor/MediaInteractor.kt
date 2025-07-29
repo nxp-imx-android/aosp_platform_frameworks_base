@@ -64,6 +64,12 @@ interface MediaInteractor {
     /** The list of sessions. Needs to be backed by a compose snapshot state. */
     val sessions: List<MediaSessionModel>
 
+    /** Index of the current visible media session */
+    val currentCarouselIndex: Int
+
+    /** Whether media carousel should show first media session. */
+    val shouldScrollToFirst: Boolean
+
     /** Seek to [to], in milliseconds on the media session with the given [sessionKey]. */
     fun seek(sessionKey: Any, to: Long)
 
@@ -74,6 +80,10 @@ interface MediaInteractor {
     fun openMediaSettings()
 
     fun reorderMedia()
+
+    fun storeCurrentCarouselIndex(index: Int)
+
+    fun resetScrollToFirst()
 }
 
 @SysUISingleton
@@ -93,6 +103,12 @@ constructor(
     override val sessions: List<MediaSessionModel>
         get() = repository.currentMedia.map { toMediaSessionModel(it) }
 
+    override val currentCarouselIndex: Int
+        get() = repository.currentCarouselIndex
+
+    override val shouldScrollToFirst: Boolean
+        get() = repository.shouldScrollToFirst
+
     override fun seek(sessionKey: Any, to: Long) {
         repository.seek(sessionKey as InstanceId, to)
     }
@@ -107,6 +123,14 @@ constructor(
 
     override fun reorderMedia() {
         repository.reorderMedia()
+    }
+
+    override fun storeCurrentCarouselIndex(index: Int) {
+        repository.storeCarouselIndex(index)
+    }
+
+    override fun resetScrollToFirst() {
+        repository.resetScrollToFirst()
     }
 
     private fun toMediaSessionModel(dataModel: MediaDataModel): MediaSessionModel {

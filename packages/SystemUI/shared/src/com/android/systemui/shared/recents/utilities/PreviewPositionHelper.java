@@ -11,10 +11,12 @@ import static com.android.wm.shell.shared.split.SplitScreenConstants.SPLIT_POSIT
 import static com.android.wm.shell.shared.split.SplitScreenConstants.SPLIT_POSITION_TOP_OR_LEFT;
 import static com.android.wm.shell.shared.split.SplitScreenConstants.SPLIT_POSITION_UNDEFINED;
 
+import android.graphics.Bitmap;
 import android.graphics.Matrix;
 import android.graphics.Rect;
 import android.graphics.RectF;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.android.systemui.shared.recents.model.ThumbnailData;
@@ -58,9 +60,9 @@ public class PreviewPositionHelper {
     /**
      * Updates the matrix based on the provided parameters
      */
-    public void updateThumbnailMatrix(Rect thumbnailBounds, ThumbnailData thumbnailData,
+    public void updateThumbnailMatrix(Rect thumbnailBounds, @NonNull ThumbnailData thumbnailData,
             int canvasWidth, int canvasHeight, boolean isLargeScreen, int currentRotation,
-            boolean isRtl) {
+            boolean isRtl, int deviceDensityDpi) {
         boolean isRotated = false;
         boolean isOrientationDifferent;
 
@@ -168,7 +170,16 @@ public class PreviewPositionHelper {
                 thumbnailClipHint.bottom = 0;
             }
 
-            thumbnailScale = targetW / (croppedWidth * scale);
+            final float densityScale;
+            if (thumbnailData.getThumbnail() != null
+                    && thumbnailData.getThumbnail().getDensity() != Bitmap.DENSITY_NONE
+                    && deviceDensityDpi > 0) {
+                densityScale = (float) deviceDensityDpi / thumbnailData.getThumbnail().getDensity();
+            } else {
+                densityScale = 1f;
+            }
+
+            thumbnailScale = targetW / (croppedWidth * scale * densityScale);
             if (mSplitBounds != null
                     && mSplitBounds.snapPosition == SNAP_TO_2_10_90
                     && mSplitPosition == SPLIT_POSITION_TOP_OR_LEFT) {

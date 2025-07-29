@@ -82,21 +82,15 @@ abstract class DisplayDevice {
     // Do not use for any other purpose.
     DisplayDeviceInfo mDebugLastLoggedDeviceInfo;
 
-    private final boolean mIsAnisotropyCorrectionEnabled;
+    private boolean mIsAnisotropyCorrectionEnabled;
 
     DisplayDevice(DisplayAdapter displayAdapter, IBinder displayToken, String uniqueId,
             Context context) {
-        this(displayAdapter, displayToken, uniqueId, context, false);
-    }
-
-    DisplayDevice(DisplayAdapter displayAdapter, IBinder displayToken, String uniqueId,
-            Context context, boolean isAnisotropyCorrectionEnabled) {
         mDisplayAdapter = displayAdapter;
         mDisplayToken = displayToken;
         mUniqueId = uniqueId;
         mDisplayDeviceConfig = null;
         mContext = context;
-        mIsAnisotropyCorrectionEnabled = isAnisotropyCorrectionEnabled;
     }
 
     /**
@@ -463,6 +457,11 @@ abstract class DisplayDevice {
         pw.println("mCurrentLayerStackRect=" + mCurrentLayerStackRect);
         pw.println("mCurrentDisplayRect=" + mCurrentDisplayRect);
         pw.println("mCurrentSurface=" + mCurrentSurface);
+        pw.println("mIsAnisotropyCorrectionEnabled=" + mIsAnisotropyCorrectionEnabled);
+    }
+
+    void setAnisotropyCorrectionEnabled(boolean enabled) {
+        mIsAnisotropyCorrectionEnabled = enabled;
     }
 
     /**

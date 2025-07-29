@@ -26,6 +26,7 @@ import android.hardware.biometrics.BiometricRequestConstants.REASON_ENROLL_ENROL
 import android.hardware.biometrics.BiometricRequestConstants.REASON_ENROLL_FIND_SENSOR
 import android.hardware.biometrics.BiometricRequestConstants.RequestReason
 import android.hardware.fingerprint.IUdfpsOverlayControllerCallback
+import android.os.Build
 import android.os.RemoteException
 import android.os.Trace
 import android.util.Log
@@ -34,6 +35,7 @@ import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.Surface
 import android.view.View
+import android.view.View.OnAttachStateChangeListener
 import android.view.WindowManager
 import android.view.accessibility.AccessibilityManager
 import android.view.accessibility.AccessibilityManager.TouchExplorationStateChangeListener
@@ -109,6 +111,7 @@ constructor(
     private var sensorBounds: Rect = Rect()
 
     private var overlayTouchListener: TouchExplorationStateChangeListener? = null
+    private var overlayAttachStateListener: OnAttachStateChangeListener? = null
 
     private val coreLayoutParams =
         WindowManager.LayoutParams(
@@ -141,11 +144,16 @@ constructor(
 
     private var touchExplorationEnabled = false
 
+    fun show(params: UdfpsOverlayParams): Boolean {
+        return show(params, null)
+    }
+
     /** Show the overlay or return false and do nothing if it is already showing. */
     @SuppressLint("ClickableViewAccessibility")
-    fun show(params: UdfpsOverlayParams): Boolean {
+    fun show(params: UdfpsOverlayParams, attachListener: OnAttachStateChangeListener?): Boolean {
         if (getTouchOverlay() == null) {
             overlayParams = params
+            overlayAttachStateListener = attachListener
             sensorBounds = Rect(params.sensorBounds)
             try {
                 overlayTouchView =
@@ -158,6 +166,7 @@ constructor(
                                 importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_NO
                             }
 
+                            overlayAttachStateListener?.let { addOnAttachStateChangeListener(it) }
                             addViewNowOrLater(this, null)
                             when (requestReason) {
                                 REASON_AUTH_KEYGUARD ->
@@ -213,6 +222,9 @@ constructor(
         addViewRunnable =
             kotlinx.coroutines.Runnable {
                 Trace.setCounter("UdfpsAddView", 1)
+                if (Build.IS_DEBUGGABLE) {
+                    Log.d(TAG, "adding view=$view")
+                }
                 windowManager.addView(view, coreLayoutParams.updateDimensions(animation))
             }
         if (powerInteractor.detailedWakefulness.value.isAwake()) {
@@ -250,15 +262,20 @@ constructor(
     /** Hide the overlay or return false and do nothing if it is already hidden. */
     fun hide(): Boolean {
         val wasShowing = isShowing
+        Log.d(TAG, "hideUdfpsControllerOverlay wasShowing=$wasShowing")
 
         udfpsDisplayModeProvider.disable(null)
         getTouchOverlay()?.apply {
             if (this.parent != null) {
+                if (Build.IS_DEBUGGABLE) {
+                    Log.d(TAG, "removing view=$this")
+                }
                 windowManager.removeView(this)
             }
             Trace.setCounter("UdfpsAddView", 0)
             setOnTouchListener(null)
             setOnHoverListener(null)
+            overlayAttachStateListener?.let { removeOnAttachStateChangeListener(it) }
             overlayTouchListener?.let {
                 accessibilityManager.removeTouchExplorationStateChangeListener(it)
             }

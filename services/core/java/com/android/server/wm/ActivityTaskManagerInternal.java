@@ -143,20 +143,23 @@ public abstract class ActivityTaskManagerInternal implements ActiveUids.Observer
             IVoiceInteractor mInteractor);
 
     /**
-     * Returns the top activity from each of the currently visible root tasks, and the related task
-     * id. The first entry will be the focused activity.
+     * @return a list of {@link ActivityAssistInfo} of the visible activities in the all displays.
+     * Visible activities in the focused root Task are at the front of the list.
      *
-     * <p>NOTE: If the top activity is in the split screen, the other activities in the same split
-     * screen will also be returned.
+     * <p>NOTE: This includes all visible activities, even if one is paused, which means it is
+     * behind a translucent container.
      */
     public abstract List<ActivityAssistInfo> getTopVisibleActivities();
 
     /**
-     * Returns the top activity from each of the currently visible root tasks of the given
-     * display, and the related task id. The first entry will be the focused activity.
+     * @return a list of {@link ActivityAssistInfo} of the visible activities in the given display.
+     * Visible activities in the focused root Task are at the front of the list.
      *
-     * <p>NOTE: If the top activity is in the split screen, the other activities in the same split
-     * screen will also be returned.
+     * <p>NOTE: This includes all visible activities, even if one is paused, which means it is
+     * behind a translucent container.
+     *
+     * @param displayId if the displayId is not found, this will return visible activities in all
+     *                  displays.
      */
     public abstract List<ActivityAssistInfo> getTopVisibleActivities(int displayId);
 

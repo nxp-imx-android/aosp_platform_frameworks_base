@@ -138,12 +138,9 @@
     <string name="screenrecord_stop_dialog_message" msgid="6262768207331626817">"您正在录制整个屏幕"</string>
     <string name="screenrecord_stop_dialog_message_specific_app" msgid="5995770227684523244">"您正在录制“<xliff:g id="APP_NAME">%1$s</xliff:g>”"</string>
     <string name="screenrecord_stop_dialog_button" msgid="2883812564938194350">"停止录制"</string>
-    <!-- no translation found for screen_record_record_device_audio_label (5363057443124085198) -->
-    <skip />
-    <!-- no translation found for screen_record_record_microphone_label (4685753707185662381) -->
-    <skip />
-    <!-- no translation found for screen_record_should_show_touches_label (2203962566795833783) -->
-    <skip />
+    <string name="screen_record_record_device_audio_label" msgid="5363057443124085198">"录制设备音频"</string>
+    <string name="screen_record_record_microphone_label" msgid="4685753707185662381">"录制麦克风音频"</string>
+    <string name="screen_record_should_show_touches_label" msgid="2203962566795833783">"显示触摸操作"</string>
     <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"选择要录制的应用"</string>
     <string name="screen_capture_fullscreen_screenshot_button" msgid="4255912593013592954">"截取整个屏幕"</string>
     <string name="screen_capture_region_selection_button" msgid="4437546351856914639">"截取所选区域"</string>
@@ -717,9 +714,13 @@
     <string name="monitoring_description_pin_protection" msgid="1983580207046670355">"设备上的一些控制设置（例如每日上限和休息时间）只能通过输入 PIN 码进行更改。"</string>
     <string name="legacy_vpn_name" msgid="4174223520162559145">"VPN"</string>
     <string name="keyguard_indication_trust_unlocked" msgid="7395154975733744547">"由 TrustAgent 保持解锁状态"</string>
-    <string name="kg_prompt_after_adaptive_auth_lock" msgid="2587481497846342760">"尝试验证身份的次数过多，设备已锁定"</string>
-    <string name="keyguard_indication_after_adaptive_auth_lock" msgid="2323400645470712787">"设备已锁定\n未能验证身份"</string>
+    <!-- no translation found for kg_prompt_after_adaptive_auth_lock (6065186971000690782) -->
+    <skip />
+    <!-- no translation found for keyguard_indication_after_adaptive_auth_lock (5240600662061340872) -->
+    <skip />
     <string name="keyguard_indication_after_watch_disconnected" msgid="8133476870585660478">"已通过手表锁定"</string>
+    <!-- no translation found for keyguard_indication_after_secure_lock_device (4358906300665255820) -->
+    <skip />
     <string name="zen_mode_and_condition" msgid="5043165189511223718">"<xliff:g id="ZEN_MODE">%1$s</xliff:g>（<xliff:g id="EXIT_CONDITION">%2$s</xliff:g>）"</string>
     <string name="accessibility_volume_settings" msgid="1458961116951564784">"声音设置"</string>
     <string name="volume_odi_captions_tip" msgid="8825655463280990941">"自动生成媒体字幕"</string>
@@ -1061,6 +1062,10 @@
     <string name="qs_edit" msgid="5583565172803472437">"编辑"</string>
     <string name="qs_edit_tiles" msgid="2105215324060865035">"编辑功能块"</string>
     <string name="qs_edit_mode_tooltip" msgid="4164112885539479781">"调整“快捷设置”功能块的大小"</string>
+    <!-- no translation found for qs_edit_settings (3243175290660574156) -->
+    <skip />
+    <!-- no translation found for qs_edit_menu_content_description (4420651071119623791) -->
+    <skip />
     <string name="tuner_time" msgid="2450785840990529997">"时间"</string>
   <string-array name="clock_options">
     <item msgid="3986445361435142273">"显示小时、分钟和秒"</item>
@@ -1103,7 +1108,7 @@
     <string name="accessibility_quick_settings_power_menu" msgid="6820426108301758412">"电源菜单"</string>
     <string name="accessibility_quick_settings_page" msgid="7506322631645550961">"第 <xliff:g id="ID_1">%1$d</xliff:g> 页，共 <xliff:g id="ID_2">%2$d</xliff:g> 页"</string>
     <string name="accessibility_key_gesture_dialog_title" msgid="7614965716626605518">"要开启<xliff:g id="ID_1">%1$s</xliff:g>吗？"</string>
-    <string name="accessibility_key_gesture_dialog_content" msgid="4519838108423437794">"操作"<annotation id="action_key_icon">"图标"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> 是使用<xliff:g id="ID_3">^3</xliff:g>的键盘快捷键。<xliff:g id="ID_4">^4</xliff:g>"</string>
+    <string name="accessibility_key_gesture_dialog_content" msgid="4519838108423437794">"操作 "<annotation id="action_key_icon">"图标"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> 是使用<xliff:g id="ID_3">^3</xliff:g>的键盘快捷键。<xliff:g id="ID_4">^4</xliff:g>"</string>
     <string name="accessibility_key_gesture_dialog_magnifier_intro" msgid="627023269951856071">"这可让您快速放大界面上的内容。"</string>
     <string name="accessibility_key_gesture_dialog_talkback_intro" msgid="1617808784388544741">"<xliff:g id="ID_1">%1$s</xliff:g> 是一款屏幕阅读器，可让您听到大声朗读的内容。对于查看界面有困难的用户，这项功能非常实用。"</string>
     <string name="accessibility_key_gesture_dialog_va_intro" msgid="4709198503441288289">"借助<xliff:g id="ID_1">%1$s</xliff:g>，您无需动手就能控制设备。"</string>
@@ -1513,17 +1518,12 @@
     <string name="connected_display_dialog_dual_display_stop_warning" msgid="4174707498892447947">"系统将镜像您的内屏，而关闭外屏。"</string>
     <string name="mirror_display" msgid="2515262008898122928">"镜像到显示屏"</string>
     <string name="dismiss_dialog" msgid="2195508495854675882">"关闭"</string>
-    <!-- no translation found for connected_display_dialog_title (307028192512988669) -->
-    <skip />
-    <!-- no translation found for remember_choice (2063510191006325221) -->
-    <skip />
-    <!-- no translation found for start_desktop_mode (5459815912537830841) -->
-    <skip />
-    <!-- no translation found for start_mirroring (3611044878130481882) -->
-    <skip />
+    <string name="connected_display_dialog_title" msgid="307028192512988669">"连接到外接显示器"</string>
+    <string name="remember_choice" msgid="2063510191006325221">"不再询问"</string>
+    <string name="start_desktop_mode" msgid="5459815912537830841">"桌面设备"</string>
+    <string name="start_mirroring" msgid="3611044878130481882">"镜像"</string>
     <string name="connected_display_icon_desc" msgid="6373560639989971997">"显示屏已连接"</string>
-    <!-- no translation found for connected_display_extended_mode_text (2457269692913653696) -->
-    <skip />
+    <string name="connected_display_extended_mode_text" msgid="2457269692913653696">"已连接到外接显示器"</string>
     <string name="privacy_dialog_title" msgid="5201413527644766025">"麦克风、摄像头和位置信息"</string>
     <string name="privacy_dialog_summary" msgid="2458769652125995409">"近期被应用使用的情况"</string>
     <string name="privacy_dialog_more_button" msgid="7610604080293562345">"查看近期使用情况"</string>

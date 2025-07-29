@@ -648,11 +648,17 @@ public class MouseKeysInterceptor extends BaseEventStreamTransformation
 
     @RequiresPermission(android.Manifest.permission.CREATE_VIRTUAL_DEVICE)
     private void onKeyEventInternal(KeyEvent event, int policyFlags) {
-        boolean isDown = event.getAction() == KeyEvent.ACTION_DOWN;
-        int keyCode = event.getKeyCode();
-        mActiveInputDeviceId = event.getDeviceId();
-        InputDevice inputDevice = mInputManager.getInputDevice(mActiveInputDeviceId);
+        final boolean isDown = event.getAction() == KeyEvent.ACTION_DOWN;
+        final int keyCode = event.getKeyCode();
+        final int deviceId = event.getDeviceId();
 
+        InputDevice inputDevice = mInputManager.getInputDevice(deviceId);
+        if (!isDeviceEligible(inputDevice)) {
+            // Pass non-mouse key events to the next handler
+            super.onKeyEvent(event, policyFlags);
+            return;
+        }
+        mActiveInputDeviceId = deviceId;
         boolean usePrimaryKeys = shouldUsePrimaryKeysForDevice(inputDevice);
 
         if (!mDeviceKeyCodeMap.contains(mActiveInputDeviceId)) {
@@ -874,10 +880,11 @@ public class MouseKeysInterceptor extends BaseEventStreamTransformation
      */
     @Override
     public void onInputDeviceAdded(int deviceId) {
-        final InputDevice device = mInputManager.getInputDevice(deviceId);
-        if (device != null && device.isFullKeyboard()) {
-            deviceHasNumpad(device);
+        final InputDevice inputDevice = mInputManager.getInputDevice(deviceId);
+        if (isDeviceEligible(inputDevice)) {
+            deviceHasNumpad(inputDevice);
         }
+        onInputDeviceChangedInternal(inputDevice);
     }
 
     @Override
@@ -896,11 +903,19 @@ public class MouseKeysInterceptor extends BaseEventStreamTransformation
     @Override
     public void onInputDeviceChanged(int deviceId) {
         InputDevice inputDevice = mInputManager.getInputDevice(deviceId);
+        onInputDeviceChangedInternal(inputDevice);
+    }
+
+    private void onInputDeviceChangedInternal(@NonNull InputDevice inputDevice) {
         // Update the enum mapping only if input device that changed is a keyboard
-        if (inputDevice.isFullKeyboard()) {
+        if (isDeviceEligible(inputDevice)) {
             initializeDeviceToEnumMap(inputDevice, shouldUsePrimaryKeysForDevice(inputDevice));
-            Slog.i(LOG_TAG, "Updating key code enum map for device ID: " + deviceId);
+            Slog.i(LOG_TAG, "Updating key code enum map for device ID: " + inputDevice.getId());
         }
+    }
+
+    private boolean isDeviceEligible(@Nullable InputDevice device) {
+        return device != null && device.isFullKeyboard() && device.isPhysicalDevice();
     }
 
     /**

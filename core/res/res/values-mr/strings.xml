@@ -71,18 +71,12 @@
     <string name="CLIRDefaultOnNextCallOff" msgid="5036749051007098105">"कॉलर आयडी डीफॉल्‍ट रूपात प्रतिबंधित वर सेट असतो. पुढील कॉल: प्रतिबंधित नाही"</string>
     <string name="CLIRDefaultOffNextCallOn" msgid="1022781126694885017">"कॉलर आयडी डीफॉल्‍ट रूपात प्रतिबंधित नाही वर सेट असतो. पुढील कॉल: प्रतिबंधित"</string>
     <string name="CLIRDefaultOffNextCallOff" msgid="2491576172356463443">"कॉलर आयडी डीफॉल्‍ट रूपात प्रतिबंधित नाही वर सेट असतो. पुढील कॉल: प्रतिबंधित नाही"</string>
-    <!-- no translation found for page_size_compat_apk_warning (2297836366674721648) -->
-    <skip />
-    <!-- no translation found for page_size_compat_elf_warning (8613720928493005883) -->
-    <skip />
-    <!-- no translation found for page_size_compat_apk_and_elf_warning (9034695801295605229) -->
-    <skip />
-    <!-- no translation found for page_size_compat_apk_warning_4kb (5676451039424864495) -->
-    <skip />
-    <!-- no translation found for page_size_compat_elf_warning_4kb (5005239480522831311) -->
-    <skip />
-    <!-- no translation found for page_size_compat_apk_and_elf_warning_4kb (997926487776340721) -->
-    <skip />
+    <string name="page_size_compat_apk_warning" msgid="2297836366674721648">"हे अ‍ॅप १६ KB सह कंपॅटिबल नाही. APK अलाइनमेंटची तपासणी करता आली नाही. हे ॲप पेजच्या आकाराशी कंपॅटिबल असलेला मोड वापरून रन केले जाईल. सर्वोत्तम कंपॅटिबिलिटीसाठी, कृपया १६ KB च्या सपोर्टसह अ‍ॅप्लिकेशन पुन्हा कंपाइल करा. अधिक माहितीसाठी, &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; पहा &lt;br&gt;&lt;br&gt; पुढील लायब्ररी १६ KB सह अलाइन केलेल्या नाहीत: &lt;br&gt;&lt;br&gt;"</string>
+    <string name="page_size_compat_elf_warning" msgid="8613720928493005883">"हे अ‍ॅप १६ KB सह कंपॅटिबल नाही. ELF अलाइनमेंटची तपासणी करता आली नाही. हे ॲप पेजच्या आकाराशी कंपॅटिबल असलेला मोड वापरून रन केले जाईल. सर्वोत्तम कंपॅटिबिलिटीसाठी, कृपया १६ KB च्या सपोर्टसह अ‍ॅप्लिकेशन पुन्हा कंपाइल करा. अधिक माहितीसाठी, &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; पहा &lt;br&gt;&lt;br&gt; पुढील लायब्ररी १६ KB सह अलाइन केलेल्या नाहीत: &lt;br&gt;&lt;br&gt;"</string>
+    <string name="page_size_compat_apk_and_elf_warning" msgid="9034695801295605229">"हे अ‍ॅप १६ KB सह कंपॅटिबल नाही. APK आणि ELF अलाइनमेंटच्या तपासण्या करता आल्या नाहीत. हे ॲप पेजच्या आकाराशी कंपॅटिबल असलेला मोड वापरून रन केले जाईल. सर्वोत्तम कंपॅटिबिलिटीसाठी, कृपया १६ KB च्या सपोर्टसह अ‍ॅप्लिकेशन पुन्हा कंपाइल करा. अधिक माहितीसाठी, &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; पहा &lt;br&gt;&lt;br&gt; पुढील लायब्ररी १६ KB सह अलाइन केलेल्या नाहीत: &lt;br&gt;&lt;br&gt;"</string>
+    <string name="page_size_compat_apk_warning_4kb" msgid="5676451039424864495">"ही चेतावणी दिसत आहे, कारण हे असे डीबग करता येणारे अ‍ॅप आहे, ज्याची सध्या चाचणी केली जात आहे. तुम्ही डेव्हलपर नसल्यास, कृपया डेव्हलपरकडे याची तक्रार करा आणि डीबग न करता येणारे अ‍ॅप उपलब्ध करून देण्याची विनंती करा. &lt;br&gt;&lt;br&gt; हे अ‍ॅप १६ KB सह कंपॅटिबल नाही. APK अलाइनमेंटची तपासणी करता आली नाही. कृपया &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; वरील पायऱ्या फॉलो करा. &lt;br&gt;&lt;br&gt; पुढील लायब्ररी १६ KB सह अलाइन केलेल्या नाहीत: &lt;br&gt;&lt;br&gt;"</string>
+    <string name="page_size_compat_elf_warning_4kb" msgid="5005239480522831311">"ही चेतावणी दिसत आहे, कारण हे असे डीबग करता येणारे अ‍ॅप आहे, ज्याची सध्या चाचणी केली जात आहे. तुम्ही डेव्हलपर नसल्यास, कृपया डेव्हलपरकडे याची तक्रार करा आणि डीबग न करता येणारे अ‍ॅप उपलब्ध करून देण्याची विनंती करा. &lt;br&gt;&lt;br&gt; हे अ‍ॅप १६ KB सह कंपॅटिबल नाही. ELF अलाइनमेंटची तपासणी करता आली नाही. कृपया &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; वरील पायऱ्या फॉलो करा. &lt;br&gt;&lt;br&gt; पुढील लायब्ररी १६ KB सह अलाइन केलेल्या नाहीत: &lt;br&gt;&lt;br&gt;"</string>
+    <string name="page_size_compat_apk_and_elf_warning_4kb" msgid="997926487776340721">"ही चेतावणी दिसत आहे, कारण हे असे डीबग करता येणारे अ‍ॅप आहे, ज्याची सध्या चाचणी केली जात आहे. तुम्ही डेव्हलपर नसल्यास, कृपया डेव्हलपरकडे याची तक्रार करा आणि डीबग न करता येणारे अ‍ॅप उपलब्ध करून देण्याची विनंती करा. &lt;br&gt;&lt;br&gt; हे अ‍ॅप १६ KB सह कंपॅटिबल नाही. APK आणि ELF अलाइनमेंटच्या तपासण्या करता आल्या नाहीत. कृपया &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; वरील पायऱ्या फॉलो करा. &lt;br&gt;&lt;br&gt; पुढील लायब्ररी १६ KB सह अलाइन केलेल्या नाहीत: &lt;br&gt;&lt;br&gt;"</string>
     <string name="page_size_compat_never_show" msgid="3391282612422783097">"पुन्हा दाखवू नका"</string>
     <string name="page_size_compat_title" msgid="6497719153872572204">"Android अ‍ॅप कंपॅटिबिलिटी"</string>
     <string name="page_size_compat_elf_not_aligned" msgid="7940806102874132630">"&amp;#8226; %1$s : लोड केलेले सेगमेंट अलाइन केलेले नाही"</string>
@@ -920,8 +914,7 @@
     <string name="policydesc_disableCamera" msgid="3204405908799676104">"सर्व डिव्हाइस कॅमेर्‍यांचा वापर प्रतिबंधित करा."</string>
     <string name="policylab_disableKeyguardFeatures" msgid="5071855750149949741">"काही स्क्रीन लॉक वैशिष्‍ट्ये बंद करा"</string>
     <string name="policydesc_disableKeyguardFeatures" msgid="6641673177041195957">"काही स्क्रीन लॉक वैशिष्‍ट्यांचा वापर प्रतिबंधित करा."</string>
-    <!-- no translation found for exit_toast_on_long_press_escape (2983932499112557277) -->
-    <skip />
+    <string name="exit_toast_on_long_press_escape" msgid="2983932499112557277">"हे अ‍ॅप बंद करण्यासाठी एस्केप की प्रेस करून ठेवा"</string>
   <string-array name="phoneTypes">
     <item msgid="8996339953292723951">"घर"</item>
     <item msgid="7740243458912727194">"मोबाइल"</item>
@@ -1848,8 +1841,7 @@
     <string name="owner_name" msgid="8713560351570795743">"मालक"</string>
     <string name="guest_name" msgid="8502103277839834324">"अतिथी"</string>
     <string name="headless_system_user_name" msgid="1849150903255530049">"सिस्टीम वापरकर्ता"</string>
-    <!-- no translation found for unnamed_user_name (6096699110534542980) -->
-    <skip />
+    <string name="unnamed_user_name" msgid="6096699110534542980">"वापरकर्ता"</string>
     <string name="error_message_title" msgid="4082495589294631966">"एरर"</string>
     <string name="error_message_change_not_allowed" msgid="843159705042381454">"या बदलासाठी तुमच्या अ‍ॅडमिनची अनुमती नाही"</string>
     <string name="app_not_found" msgid="3429506115332341800">"ही क्रिया हाताळण्यासाठी कोणताही ॲप्लिकेशन आढळला नाही"</string>

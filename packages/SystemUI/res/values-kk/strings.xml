@@ -138,12 +138,9 @@
     <string name="screenrecord_stop_dialog_message" msgid="6262768207331626817">"Қазір бүкіл экранды жазып жатырсыз."</string>
     <string name="screenrecord_stop_dialog_message_specific_app" msgid="5995770227684523244">"Қазір қолданбадағы (<xliff:g id="APP_NAME">%1$s</xliff:g>) контентті жазып жатырсыз."</string>
     <string name="screenrecord_stop_dialog_button" msgid="2883812564938194350">"Жазуды тоқтату"</string>
-    <!-- no translation found for screen_record_record_device_audio_label (5363057443124085198) -->
-    <skip />
-    <!-- no translation found for screen_record_record_microphone_label (4685753707185662381) -->
-    <skip />
-    <!-- no translation found for screen_record_should_show_touches_label (2203962566795833783) -->
-    <skip />
+    <string name="screen_record_record_device_audio_label" msgid="5363057443124085198">"Құрылғы аудиосын жазу"</string>
+    <string name="screen_record_record_microphone_label" msgid="4685753707185662381">"Микрофон параметрін жазу"</string>
+    <string name="screen_record_should_show_touches_label" msgid="2203962566795833783">"Түрту параметрін көрсету"</string>
     <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"Жазу үшін қолданба таңдаңыз"</string>
     <string name="screen_capture_fullscreen_screenshot_button" msgid="4255912593013592954">"Экранды толықтай түсіру"</string>
     <string name="screen_capture_region_selection_button" msgid="4437546351856914639">"Таңдалған аймақты түсіру"</string>
@@ -573,7 +570,7 @@
     <string name="hub_mode_add_widget_button_text" msgid="4831464661209971729">"Виджет қосу"</string>
     <string name="hub_mode_editing_exit_button_text" msgid="3704686734192264771">"Дайын"</string>
     <string name="label_for_button_in_empty_state_cta" msgid="7314975555382055823">"Виджеттер қосу"</string>
-    <string name="title_for_empty_state_cta" msgid="3515697043504449320">"Таңдаулы қолданба виджеттеріне құрылғы құлпын ашпай-ақ жылдам кіріңіз."</string>
+    <string name="title_for_empty_state_cta" msgid="3515697043504449320">"Таңдаулы қолданба виджет­теріне құрылғы құлпын ашпай-ақ жылдам кіріңіз."</string>
     <string name="dialog_title_to_allow_any_widget" msgid="1004820948962675644">"Құлыптаулы экранда кез келген виджетке рұқсат беру керек пе?"</string>
     <string name="button_text_to_open_settings" msgid="1987729256950941628">"Параметрлерді ашу"</string>
     <string name="work_mode_off_title" msgid="5794818421357835873">"Жұмыс қолданбаларын қайта қосасыз ба?"</string>
@@ -717,9 +714,13 @@
     <string name="monitoring_description_pin_protection" msgid="1983580207046670355">"Құрылғыдағы күнделікті шектер және тыныштық уақыты сияқты кейбір басқару элементтерін тек PIN кодымен өзгертуге болады."</string>
     <string name="legacy_vpn_name" msgid="4174223520162559145">"VPN"</string>
     <string name="keyguard_indication_trust_unlocked" msgid="7395154975733744547">"TrustAgent арқылы құлпы ашылды."</string>
-    <string name="kg_prompt_after_adaptive_auth_lock" msgid="2587481497846342760">"Құрылғы құлыпталды, тым көп аутентификациялау талпынысы жасалды."</string>
-    <string name="keyguard_indication_after_adaptive_auth_lock" msgid="2323400645470712787">"Құрылғы құлыпталды\nАутентификация орындалмады"</string>
+    <!-- no translation found for kg_prompt_after_adaptive_auth_lock (6065186971000690782) -->
+    <skip />
+    <!-- no translation found for keyguard_indication_after_adaptive_auth_lock (5240600662061340872) -->
+    <skip />
     <string name="keyguard_indication_after_watch_disconnected" msgid="8133476870585660478">"Сағат арқылы құлыпталды"</string>
+    <!-- no translation found for keyguard_indication_after_secure_lock_device (4358906300665255820) -->
+    <skip />
     <string name="zen_mode_and_condition" msgid="5043165189511223718">"<xliff:g id="ZEN_MODE">%1$s</xliff:g>. <xliff:g id="EXIT_CONDITION">%2$s</xliff:g>"</string>
     <string name="accessibility_volume_settings" msgid="1458961116951564784">"Дыбыс параметрлері"</string>
     <string name="volume_odi_captions_tip" msgid="8825655463280990941">"Автоматты субтитр қосу"</string>
@@ -1061,6 +1062,10 @@
     <string name="qs_edit" msgid="5583565172803472437">"Өзгерту"</string>
     <string name="qs_edit_tiles" msgid="2105215324060865035">"Бөлшектерді өзгерту"</string>
     <string name="qs_edit_mode_tooltip" msgid="4164112885539479781">"\"Жылдам параметрлер\" бөлшектерінің өлшемін өзгерту"</string>
+    <!-- no translation found for qs_edit_settings (3243175290660574156) -->
+    <skip />
+    <!-- no translation found for qs_edit_menu_content_description (4420651071119623791) -->
+    <skip />
     <string name="tuner_time" msgid="2450785840990529997">"Уақыт"</string>
   <string-array name="clock_options">
     <item msgid="3986445361435142273">"Сағаттарды, минуттарды және секундтарды көрсету"</item>
@@ -1103,7 +1108,7 @@
     <string name="accessibility_quick_settings_power_menu" msgid="6820426108301758412">"Қуат мәзірі"</string>
     <string name="accessibility_quick_settings_page" msgid="7506322631645550961">"<xliff:g id="ID_2">%2$d</xliff:g> ішінен <xliff:g id="ID_1">%1$d</xliff:g>"</string>
     <string name="accessibility_key_gesture_dialog_title" msgid="7614965716626605518">"<xliff:g id="ID_1">%1$s</xliff:g> қосылсын ба?"</string>
-    <string name="accessibility_key_gesture_dialog_content" msgid="4519838108423437794">"Әрекет "<annotation id="action_key_icon">"белгішесі"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> – <xliff:g id="ID_3">^3</xliff:g> функциясын пайдалануға арналған пернелер тіркесімі. <xliff:g id="ID_4">^4</xliff:g>"</string>
+    <string name="accessibility_key_gesture_dialog_content" msgid="4519838108423437794">"Әрекет "<annotation id="action_key_icon">"белгішесі"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> – \"<xliff:g id="ID_3">^3</xliff:g>\" функциясын пайдалануға арналған пернелер тіркесімі. <xliff:g id="ID_4">^4</xliff:g>"</string>
     <string name="accessibility_key_gesture_dialog_magnifier_intro" msgid="627023269951856071">"Бұл функция экрандағы контентті жылдам ұлғайтуға мүмкіндік береді."</string>
     <string name="accessibility_key_gesture_dialog_talkback_intro" msgid="1617808784388544741">"<xliff:g id="ID_1">%1$s</xliff:g> – элементтердің дауыстап оқылғанын тыңдауға мүмкіндік беретін экран оқу құралы. Ол экранды нашар көретін адамдар үшін пайдалы."</string>
     <string name="accessibility_key_gesture_dialog_va_intro" msgid="4709198503441288289">"<xliff:g id="ID_1">%1$s</xliff:g> құрылғыны дауыспен басқаруға мүмкіндік береді."</string>
@@ -1513,17 +1518,12 @@
     <string name="connected_display_dialog_dual_display_stop_warning" msgid="4174707498892447947">"Ішкі экран көшірмесі көрсетіледі. Алдыңғы экран өшіріледі."</string>
     <string name="mirror_display" msgid="2515262008898122928">"Көрсету"</string>
     <string name="dismiss_dialog" msgid="2195508495854675882">"Жабу"</string>
-    <!-- no translation found for connected_display_dialog_title (307028192512988669) -->
-    <skip />
-    <!-- no translation found for remember_choice (2063510191006325221) -->
-    <skip />
-    <!-- no translation found for start_desktop_mode (5459815912537830841) -->
-    <skip />
-    <!-- no translation found for start_mirroring (3611044878130481882) -->
-    <skip />
+    <string name="connected_display_dialog_title" msgid="307028192512988669">"Сыртқы дисплейге қосылу"</string>
+    <string name="remember_choice" msgid="2063510191006325221">"Қайтадан сұрамау"</string>
+    <string name="start_desktop_mode" msgid="5459815912537830841">"Компьютер"</string>
+    <string name="start_mirroring" msgid="3611044878130481882">"Көшірмесін көрсету"</string>
     <string name="connected_display_icon_desc" msgid="6373560639989971997">"Дисплей қосылды"</string>
-    <!-- no translation found for connected_display_extended_mode_text (2457269692913653696) -->
-    <skip />
+    <string name="connected_display_extended_mode_text" msgid="2457269692913653696">"Сыртқы дисплейге қосылды"</string>
     <string name="privacy_dialog_title" msgid="5201413527644766025">"Микрофон, камера және локация"</string>
     <string name="privacy_dialog_summary" msgid="2458769652125995409">"Қолданбалардың соңғы рет пайдалануы"</string>
     <string name="privacy_dialog_more_button" msgid="7610604080293562345">"Соңғы рет пайдаланғандар"</string>

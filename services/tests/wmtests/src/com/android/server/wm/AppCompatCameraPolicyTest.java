@@ -297,8 +297,8 @@ public class AppCompatCameraPolicyTest extends WindowTestsBase {
             super.onPostDisplayContentCreation(displayContent);
 
             spyOn(displayContent.mAppCompatCameraPolicy);
-            if (displayContent.mAppCompatCameraPolicy.mDisplayRotationCompatPolicy != null) {
-                spyOn(displayContent.mAppCompatCameraPolicy.mDisplayRotationCompatPolicy);
+            if (displayContent.mAppCompatCameraPolicy.mDisplayRotationPolicy != null) {
+                spyOn(displayContent.mAppCompatCameraPolicy.mDisplayRotationPolicy);
             }
             if (displayContent.mAppCompatCameraPolicy.mSimReqOrientationPolicy != null) {
                 spyOn(displayContent.mAppCompatCameraPolicy.mSimReqOrientationPolicy);
@@ -307,7 +307,7 @@ public class AppCompatCameraPolicyTest extends WindowTestsBase {
 
         void checkTopActivityHasDisplayRotationCompatPolicy(boolean exists) {
             assertEquals(exists, activity().top().mDisplayContent.mAppCompatCameraPolicy
-                    .hasDisplayRotationCompatPolicy());
+                    .hasDisplayRotationPolicy());
         }
 
         void checkTopActivityHasSimReqOrientationPolicy(boolean exists) {
@@ -322,7 +322,7 @@ public class AppCompatCameraPolicyTest extends WindowTestsBase {
 
         void checkTopActivityDisplayRotationCompatPolicyIsRunning() {
             assertTrue(activity().top().mDisplayContent.mAppCompatCameraPolicy
-                    .mDisplayRotationCompatPolicy.isRunning());
+                    .mDisplayRotationPolicy.isRunning());
         }
 
         void checkTopActivitySimReqOrientationPolicyIsRunning() {

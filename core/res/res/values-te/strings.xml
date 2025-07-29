@@ -71,18 +71,12 @@
     <string name="CLIRDefaultOnNextCallOff" msgid="5036749051007098105">"కాలర్ ID ఆటోమేటిక్‌లపై పరిమితి ఉంటుంది. తర్వాత కాల్: పరిమితి లేదు"</string>
     <string name="CLIRDefaultOffNextCallOn" msgid="1022781126694885017">"కాలర్ ID ఆటోమేటిక్‌లపై పరిమితి లేదు. తర్వాత కాల్: పరిమితి ఉంటుంది"</string>
     <string name="CLIRDefaultOffNextCallOff" msgid="2491576172356463443">"కాలర్ ID ఆటోమేటిక్‌లపై పరిమితి లేదు. తర్వాత కాల్: పరిమితి లేదు"</string>
-    <!-- no translation found for page_size_compat_apk_warning (2297836366674721648) -->
-    <skip />
-    <!-- no translation found for page_size_compat_elf_warning (8613720928493005883) -->
-    <skip />
-    <!-- no translation found for page_size_compat_apk_and_elf_warning (9034695801295605229) -->
-    <skip />
-    <!-- no translation found for page_size_compat_apk_warning_4kb (5676451039424864495) -->
-    <skip />
-    <!-- no translation found for page_size_compat_elf_warning_4kb (5005239480522831311) -->
-    <skip />
-    <!-- no translation found for page_size_compat_apk_and_elf_warning_4kb (997926487776340721) -->
-    <skip />
+    <string name="page_size_compat_apk_warning" msgid="2297836366674721648">"ఈ యాప్ 16 KBకి అనుకూలమైనది కాదు. APK అమరిక చెకింగ్ విఫలమైంది. ఈ యాప్ పేజీ సైజ్ అనుకూల మోడ్‌ను ఉపయోగించి రన్ అవుతుంది. సరైన అనుకూలత కోసం, దయచేసి 16 KB సపోర్ట్‌తో అప్లికేషన్‌ను మళ్లీ కంపైల్ చేయండి. మరింత సమాచారం కోసం, &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; &lt;br&gt;&lt;br&gt; లింక్‌ను చూడండి, కింది లైబ్రరీలు 16 KBకి అనుగుణంగా లేవు: &lt;br&gt;&lt;br&gt;"</string>
+    <string name="page_size_compat_elf_warning" msgid="8613720928493005883">"ఈ యాప్ 16 KBకి అనుకూలమైనది కాదు. ELF అమరిక చెకింగ్ విఫలమైంది. ఈ యాప్ పేజీ సైజ్ అనుకూల మోడ్‌ను ఉపయోగించి రన్ అవుతుంది. సరైన అనుకూలత కోసం, దయచేసి 16 KB సపోర్ట్‌తో అప్లికేషన్‌ను మళ్లీ కంపైల్ చేయండి. మరింత సమాచారం కోసం, &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; &lt;br&gt;&lt;br&gt; లింక్‌ను చూడండి, కింది లైబ్రరీలు 16 KBకి అనుగుణంగా లేవు: &lt;br&gt;&lt;br&gt;"</string>
+    <string name="page_size_compat_apk_and_elf_warning" msgid="9034695801295605229">"ఈ యాప్ 16 KBకి అనుకూలమైనది కాదు. APK, ELF అమరిక చెకప్ దశలు విఫలమయ్యాయి. ఈ యాప్ పేజీ సైజ్ అనుకూల మోడ్‌ను ఉపయోగించి రన్ అవుతుంది. సరైన అనుకూలత కోసం, దయచేసి 16 KB సపోర్ట్‌తో అప్లికేషన్‌ను మళ్లీ కంపైల్ చేయండి. మరింత సమాచారం కోసం, &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; &lt;br&gt;&lt;br&gt; లింక్‌ను చూడండి, కింది లైబ్రరీలు 16 KBకి అనుగుణంగా లేవు: &lt;br&gt;&lt;br&gt;"</string>
+    <string name="page_size_compat_apk_warning_4kb" msgid="5676451039424864495">"ఇది డీబగ్ చేయగల యాప్ కాబట్టి ఈ హెచ్చరిక చూపబడుతోంది, ఇది ప్రస్తుతం టెస్ట్ చేయబడుతోంది. మీరు డెవలపర్ కాకపోతే, దయచేసి దీని గురించి డెవలపర్‌కు రిపోర్ట్ చేసి, డీబగ్ చేయడం వీలుకాని యాప్‌ను అందించమని అడగండి. &lt;br&gt;&lt;br&gt; ఈ యాప్ 16 KBకి అనుగుణంగా లేదు. APK అమరిక చెకింగ్ విఫలమైంది. దయచేసి &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; &lt;br&gt;&lt;br&gt; లింక్‌లో ఉన్న దశలను ఫాలో అవ్వండి, కింది లైబ్రరీలు 16 KBకి అనుగుణంగా లేవు: &lt;br&gt;&lt;br&gt;"</string>
+    <string name="page_size_compat_elf_warning_4kb" msgid="5005239480522831311">"ఇది డీబగ్ చేయగల యాప్ కాబట్టి ఈ హెచ్చరిక చూపబడుతోంది, ఇది ప్రస్తుతం టెస్ట్ చేయబడుతోంది. మీరు డెవలపర్ కాకపోతే, దయచేసి దీని గురించి డెవలపర్‌కు రిపోర్ట్ చేసి, డీబగ్ చేయడం వీలుకాని యాప్‌ను అందించమని అడగండి. &lt;br&gt;&lt;br&gt; ఈ యాప్ 16 KBకి అనుగుణంగా లేదు. ELF అమరిక చెకింగ్ విఫలమైంది. దయచేసి &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; &lt;br&gt;&lt;br&gt; లింక్‌లో ఉన్న దశలను ఫాలో అవ్వండి, కింది లైబ్రరీలు 16 KBకి అనుగుణంగా లేవు: &lt;br&gt;&lt;br&gt;"</string>
+    <string name="page_size_compat_apk_and_elf_warning_4kb" msgid="997926487776340721">"ఇది డీబగ్ చేయగల యాప్ కాబట్టి ఈ హెచ్చరిక చూపబడుతోంది, ఇది ప్రస్తుతం టెస్ట్ చేయబడుతోంది. మీరు డెవలపర్ కాకపోతే, దయచేసి దీని గురించి డెవలపర్‌కు రిపోర్ట్ చేసి, డీబగ్ చేయడం వీలుకాని యాప్‌ను అందించమని అడగండి. &lt;br&gt;&lt;br&gt; ఈ యాప్ 16 KBకి అనుగుణంగా లేదు. APK, ELF అమరిక చెకప్ దశలు విఫలమయ్యాయి. దయచేసి &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; లింక్‌లో దశలను ఫాలో అవ్వండి. &lt;br&gt;&lt;br&gt; కింది లైబ్రరీలు 16 KBకి అనుగుణంగా లేవు: &lt;br&gt;&lt;br&gt;"</string>
     <string name="page_size_compat_never_show" msgid="3391282612422783097">"మళ్లీ చూపవద్దు"</string>
     <string name="page_size_compat_title" msgid="6497719153872572204">"Android యాప్ అనుకూలత"</string>
     <string name="page_size_compat_elf_not_aligned" msgid="7940806102874132630">"&amp;#8226; %1$s : LOAD విభాగం అలైన్ కాలేదు"</string>
@@ -920,8 +914,7 @@
     <string name="policydesc_disableCamera" msgid="3204405908799676104">"అన్ని పరికర కెమెరాల వినియోగాన్ని నిరోధించండి."</string>
     <string name="policylab_disableKeyguardFeatures" msgid="5071855750149949741">"కొన్ని స్క్రీన్ లాక్ ఫీచర్‌లు నిలిపివేయండి"</string>
     <string name="policydesc_disableKeyguardFeatures" msgid="6641673177041195957">"స్క్రీన్ లాక్‌కు చెందిన కొన్ని ఫీచర్‌ల వినియోగాన్ని నిరోధిస్తుంది."</string>
-    <!-- no translation found for exit_toast_on_long_press_escape (2983932499112557277) -->
-    <skip />
+    <string name="exit_toast_on_long_press_escape" msgid="2983932499112557277">"ఈ యాప్‌ను మూసివేయడానికి Esc కీని ఎక్కువసేపు నొక్కి, ఉంచండి"</string>
   <string-array name="phoneTypes">
     <item msgid="8996339953292723951">"ఇల్లు"</item>
     <item msgid="7740243458912727194">"మొబైల్"</item>
@@ -1848,8 +1841,7 @@
     <string name="owner_name" msgid="8713560351570795743">"ఓనర్"</string>
     <string name="guest_name" msgid="8502103277839834324">"గెస్ట్"</string>
     <string name="headless_system_user_name" msgid="1849150903255530049">"సిస్టమ్ యూజర్"</string>
-    <!-- no translation found for unnamed_user_name (6096699110534542980) -->
-    <skip />
+    <string name="unnamed_user_name" msgid="6096699110534542980">"యూజర్"</string>
     <string name="error_message_title" msgid="4082495589294631966">"ఎర్రర్"</string>
     <string name="error_message_change_not_allowed" msgid="843159705042381454">"ఈ మార్పును మీ నిర్వాహకులు అనుమతించలేదు"</string>
     <string name="app_not_found" msgid="3429506115332341800">"ఈ చర్యను మేనేజ్ చేయడానికి యాప్ ఏదీ కనుగొనబడలేదు"</string>

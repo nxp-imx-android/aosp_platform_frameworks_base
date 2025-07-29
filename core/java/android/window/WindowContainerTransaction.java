@@ -863,22 +863,6 @@ public final class WindowContainerTransaction implements Parcelable {
      */
 
     /**
-     * Sets two containers adjacent to each other. Containers below two visible adjacent roots will
-     * be made invisible. This currently only applies to TaskFragment containers created by
-     * organizer.
-     * @param root1 the first root.
-     * @param root2 the second root.
-     * @deprecated replace with {@link #setAdjacentRootSet}
-     */
-    @SuppressWarnings("UnflaggedApi") // @TestApi without associated feature.
-    @Deprecated
-    @NonNull
-    public WindowContainerTransaction setAdjacentRoots(
-            @NonNull WindowContainerToken root1, @NonNull WindowContainerToken root2) {
-        return setAdjacentRootSet(root1, root2);
-    }
-
-    /**
      * Sets multiple containers adjacent to each other. Containers below the visible adjacent roots
      * will be made invisible. This currently only applies to Task containers created by organizer.
      *
@@ -891,12 +875,12 @@ public final class WindowContainerTransaction implements Parcelable {
      *
      * @param roots the Tasks that should be adjacent to each other.
      * @throws IllegalArgumentException if roots have size < 2.
-     * @hide // TODO(b/373709676) Rename to setAdjacentRoots and update CTS in 25Q4.
      */
+    @SuppressWarnings("UnflaggedApi") // @TestApi without associated feature.
     @NonNull
-    public WindowContainerTransaction setAdjacentRootSet(@NonNull WindowContainerToken... roots) {
+    public WindowContainerTransaction setAdjacentRoots(@NonNull WindowContainerToken... roots) {
         if (roots.length < 2) {
-            throw new IllegalArgumentException("setAdjacentRootSet must have size >= 2");
+            throw new IllegalArgumentException("setAdjacentRoots must have size >= 2");
         }
         final IBinder[] rootTokens = new IBinder[roots.length];
         for (int i = 0; i < roots.length; i++) {
@@ -911,7 +895,7 @@ public final class WindowContainerTransaction implements Parcelable {
 
     /**
      * Clears container adjacent.
-     * If {@link #setAdjacentRootSet} is called with more than 2 roots, calling this will only
+     * If {@link #setAdjacentRoots} is called with more than 2 roots, calling this will only
      * remove the given root from the adjacent set. The rest of roots will stay adjacent to each
      * other.
      *
@@ -1253,7 +1237,7 @@ public final class WindowContainerTransaction implements Parcelable {
     /**
      * Sets to TaskFragments adjacent to each other. Containers below two visible adjacent
      * TaskFragments will be made invisible. This is similar to
-     * {@link #setAdjacentRootSet(WindowContainerToken...)}, but can be used with
+     * {@link #setAdjacentRoots(WindowContainerToken...)}, but can be used with
      * fragmentTokens when that TaskFragments haven't been created (but will be created in the same
      * {@link WindowContainerTransaction}).
      * @param fragmentToken1    client assigned unique token to create TaskFragment with specified

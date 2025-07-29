@@ -46,6 +46,7 @@ import kotlin.time.Duration.Companion.days
 import kotlin.time.Duration.Companion.milliseconds
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.DisposableHandle
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.delay
@@ -54,6 +55,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
@@ -180,49 +182,53 @@ constructor(
                     }
                 },
         )
+
+    @OptIn(FlowPreview::class)
     val actions: List<ActionViewModel> by
         hydrator.hydratedStateOf(
             traceName = "actions",
             initialValue = listOf(),
             source =
-                ambientCueInteractor.actions.map { actions ->
-                    actions.map { action ->
-                        ActionViewModel(
-                            icon =
-                                IconViewModel(
-                                    large = action.icon.large,
-                                    small = action.icon.small,
-                                    iconId = action.icon.iconId,
-                                    repeatCount = 0,
-                                ),
-                            label = action.label,
-                            attribution = action.attribution,
-                            onClick = {
-                                action.onPerformAction()
-                                collapse()
-                            },
-                            onLongClick = {
-                                action.onPerformLongClick()
-                                // Long press onboarding only triggers 7 days after the initial
-                                // onboarding. That said, we'd like to suppress it in case the user
-                                // discovers the gesture on their own. For this reason, we don't
-                                // check if the tooltip is visible before updating the shared
-                                // preference.
-                                sharedPreferences.value?.edit {
-                                    putBoolean(KEY_SHOW_LONG_PRESS_ONBOARDING, false)
-                                }
-                            },
-                            actionType =
-                                when (action.actionType) {
-                                    "ma" -> ActionType.MA
-                                    "mr" -> ActionType.MR
-                                    else -> ActionType.Unknown
+                ambientCueInteractor.actions
+                    .debounce { actions -> if (actions.isEmpty()) ACTIONS_DEBOUNCE_MS else 0L }
+                    .map { actions ->
+                        actions.map { action ->
+                            ActionViewModel(
+                                icon =
+                                    IconViewModel(
+                                        large = action.icon.large,
+                                        small = action.icon.small,
+                                        iconId = action.icon.iconId,
+                                        repeatCount = 0,
+                                    ),
+                                label = action.label,
+                                attribution = action.attribution,
+                                onClick = {
+                                    action.onPerformAction()
+                                    collapse()
                                 },
-                            oneTapEnabled = action.oneTapEnabled,
-                            oneTapDelayMs = action.oneTapDelayMs,
-                        )
-                    }
-                },
+                                onLongClick = {
+                                    action.onPerformLongClick()
+                                    // Long press onboarding only triggers 7 days after the initial
+                                    // onboarding. That said, we'd like to suppress it in case the
+                                    // user discovers the gesture on their own. For this reason, we
+                                    // don't check if the tooltip is visible before updating the
+                                    // shared preference.
+                                    sharedPreferences.value?.edit {
+                                        putBoolean(KEY_SHOW_LONG_PRESS_ONBOARDING, false)
+                                    }
+                                },
+                                actionType =
+                                    when (action.actionType) {
+                                        "ma" -> ActionType.MA
+                                        "mr" -> ActionType.MR
+                                        else -> ActionType.Unknown
+                                    },
+                                oneTapEnabled = action.oneTapEnabled,
+                                oneTapDelayMs = action.oneTapDelayMs,
+                            )
+                        }
+                    },
         )
 
     fun expand() {
@@ -325,5 +331,6 @@ constructor(
         private const val SHARED_PREFERENCES_FILE_NAME = "ambientcue_pref"
         private const val KEY_FIRST_TIME_ONBOARDING_SHOWN_AT = "show_first_time_onboarding"
         private const val KEY_SHOW_LONG_PRESS_ONBOARDING = "show_long_press_onboarding"
+        private const val ACTIONS_DEBOUNCE_MS = 300L
     }
 }

@@ -5333,7 +5333,7 @@ class Task extends TaskFragment {
             return false;
         }
 
-        if (!mTaskSupervisor.readyToResume()) {
+        if (!mTaskSupervisor.readyToResume() || mRemoving) {
             return false;
         }
 
