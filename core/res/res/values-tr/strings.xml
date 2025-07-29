@@ -300,6 +300,8 @@
     <string name="global_action_assist" msgid="2517047220311505805">"Asist"</string>
     <string name="global_action_voice_assist" msgid="6655788068555086695">"Sesli Yardım"</string>
     <string name="global_action_lockdown" msgid="2475471405907902963">"Tam kilitleme"</string>
+    <!-- no translation found for global_action_unrestricted_lock (7933224393323064116) -->
+    <skip />
     <string name="status_bar_notification_info_overflow" msgid="3330152558746563475">"999+"</string>
     <string name="notification_compact_heads_up_reply" msgid="2425293958371284340">"Yanıtla"</string>
     <string name="notification_hidden_text" msgid="2835519769868187223">"Yeni bildirim"</string>
@@ -2003,7 +2005,7 @@
     <string name="zen_mode_rule_name_combination" msgid="7174598364351313725">"<xliff:g id="FIRST">%1$s</xliff:g> / <xliff:g id="REST">%2$s</xliff:g>"</string>
     <string name="toolbar_collapse_description" msgid="8009920446193610996">"Daralt"</string>
     <string name="zen_mode_feature_name" msgid="3785547207263754500">"Rahatsız etmeyin"</string>
-    <string name="zen_mode_downtime_feature_name" msgid="5886005761431427128">"Bildirim istenmeyen zaman"</string>
+    <string name="zen_mode_downtime_feature_name" msgid="5886005761431427128">"Dinlenme zamanı"</string>
     <string name="zen_mode_default_weeknights_name" msgid="7902108149994062847">"Hafta içi gece"</string>
     <string name="zen_mode_default_weekends_name" msgid="4707200272709377930">"Hafta sonu"</string>
     <string name="zen_mode_default_events_name" msgid="2280682960128512257">"Etkinlik"</string>

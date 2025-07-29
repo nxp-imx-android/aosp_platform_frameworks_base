@@ -301,6 +301,8 @@
     <string name="global_action_assist" msgid="2517047220311505805">"Asistencia"</string>
     <string name="global_action_voice_assist" msgid="6655788068555086695">"Asistente voz"</string>
     <string name="global_action_lockdown" msgid="2475471405907902963">"Bloqueo"</string>
+    <!-- no translation found for global_action_unrestricted_lock (7933224393323064116) -->
+    <skip />
     <string name="status_bar_notification_info_overflow" msgid="3330152558746563475">"999+"</string>
     <string name="notification_compact_heads_up_reply" msgid="2425293958371284340">"Responder"</string>
     <string name="notification_hidden_text" msgid="2835519769868187223">"Notificación nueva"</string>
@@ -1985,7 +1987,7 @@
     <string name="confirm_battery_saver" msgid="5247976246208245754">"Aceptar"</string>
     <string name="battery_saver_description_with_learn_more" msgid="5444908404021316250">"El Ahorro de batería activa el Tema oscuro y desactiva o restringe la actividad en segundo plano, algunos efectos visuales, algunas conexiones de red y otras funciones determinadas."</string>
     <string name="battery_saver_description" msgid="8518809702138617167">"El Ahorro de batería activa el Tema oscuro y desactiva o restringe la actividad en segundo plano, algunos efectos visuales, algunas conexiones de red y otras funciones determinadas."</string>
-    <string name="data_saver_description" msgid="4995164271550590517">"Para reducir el uso de datos, el modo Ahorro de datos evita que algunas apps envíen y reciban datos en segundo plano. La app que estés usando podrá acceder a los datos, pero con menor frecuencia. De esta forma, por ejemplo, las imágenes no se mostrarán hasta que las presiones."</string>
+    <string name="data_saver_description" msgid="4995164271550590517">"Para reducir el uso de datos, el modo Ahorro de datos evita que algunas apps envíen o reciban datos en segundo plano. La app que estés usando podrá acceder a los datos, pero con menor frecuencia. De esta forma, por ejemplo, las imágenes no se mostrarán hasta que las presiones."</string>
     <string name="data_saver_enable_title" msgid="7080620065745260137">"¿Deseas activar Ahorro de datos?"</string>
     <string name="data_saver_enable_button" msgid="4399405762586419726">"Activar"</string>
     <string name="zen_mode_duration_minutes_summary" msgid="4555514757230849789">"{count,plural, =1{Por un minuto (hasta la(s) {formattedTime})}many{Por # de minutos (hasta la(s) {formattedTime})}other{Por # minutos (hasta la(s) {formattedTime})}}"</string>

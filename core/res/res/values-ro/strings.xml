@@ -301,6 +301,8 @@
     <string name="global_action_assist" msgid="2517047220311505805">"Asistență"</string>
     <string name="global_action_voice_assist" msgid="6655788068555086695">"Asistent vocal"</string>
     <string name="global_action_lockdown" msgid="2475471405907902963">"Blocare strictă"</string>
+    <!-- no translation found for global_action_unrestricted_lock (7933224393323064116) -->
+    <skip />
     <string name="status_bar_notification_info_overflow" msgid="3330152558746563475">"˃999"</string>
     <string name="notification_compact_heads_up_reply" msgid="2425293958371284340">"Răspunde"</string>
     <string name="notification_hidden_text" msgid="2835519769868187223">"Notificare nouă"</string>
@@ -890,9 +892,9 @@
     <string name="policydesc_watchLogin_secondaryUser" product="tv" msgid="8965224107449407052">"Monitorizează numărul de parole incorecte introduse la deblocarea ecranului și blochează dispozitivul Android TV sau șterge toate datele acestui utilizator dacă se introduc prea multe parole incorecte."</string>
     <string name="policydesc_watchLogin_secondaryUser" product="automotive" msgid="7180857406058327941">"Monitorizează numărul de parole incorecte introduse la deblocarea ecranului și blochează sistemul de infotainment sau șterge toate datele acestui profil dacă sunt introduse prea multe parole incorecte."</string>
     <string name="policydesc_watchLogin_secondaryUser" product="default" msgid="9177645136475155924">"Monitorizează numărul de parole incorecte introduse la deblocarea ecranului și blochează telefonul sau șterge toate datele acestui utilizator dacă se introduc prea multe parole incorecte."</string>
-    <string name="policylab_resetPassword" msgid="214556238645096520">"Să schimbe blocarea ecranului"</string>
+    <string name="policylab_resetPassword" msgid="214556238645096520">"să schimbe blocarea ecranului"</string>
     <string name="policydesc_resetPassword" msgid="4626419138439341851">"Modifică blocarea ecranului."</string>
-    <string name="policylab_forceLock" msgid="7360335502968476434">"Să blocheze ecranul"</string>
+    <string name="policylab_forceLock" msgid="7360335502968476434">"să blocheze ecranul"</string>
     <string name="policydesc_forceLock" msgid="1008844760853899693">"Stabilește cum și când se blochează ecranul."</string>
     <string name="policylab_wipeData" msgid="1359485247727537311">"să șteargă toate datele"</string>
     <string name="policydesc_wipeData" product="tablet" msgid="7245372676261947507">"Șterge datele de pe tabletă fără avertisment, efectuând resetarea configurării din fabrică."</string>
@@ -913,7 +915,7 @@
     <string name="policydesc_encryptedStorage" msgid="1102516950740375617">"Necesită ca datele aplicației stocate să fie criptate."</string>
     <string name="policylab_disableCamera" msgid="5749486347810162018">"Să dezactiveze camerele foto"</string>
     <string name="policydesc_disableCamera" msgid="3204405908799676104">"Împiedică folosirea camerelor foto de pe dispozitiv."</string>
-    <string name="policylab_disableKeyguardFeatures" msgid="5071855750149949741">"Să oprească funcții de blocare ecran"</string>
+    <string name="policylab_disableKeyguardFeatures" msgid="5071855750149949741">"să oprească funcții de blocare ecran"</string>
     <string name="policydesc_disableKeyguardFeatures" msgid="6641673177041195957">"Împiedică folosirea unor funcții de blocare a ecranului."</string>
     <string name="exit_toast_on_long_press_escape" msgid="2983932499112557277">"Apasă lung tasta Esc pentru a închide aplicația"</string>
   <string-array name="phoneTypes">
