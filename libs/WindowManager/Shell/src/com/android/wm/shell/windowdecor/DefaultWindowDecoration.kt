@@ -401,7 +401,7 @@ constructor(
         inSyncWithTransition: Boolean,
     ): RelayoutParams {
         val captionType =
-            if (desktopUserRepositories.current.isActiveTask(taskInfo.taskId)) {
+            if (taskInfo.isFreeform) {
                 CaptionController.CaptionType.APP_HEADER
             } else {
                 CaptionController.CaptionType.APP_HANDLE
