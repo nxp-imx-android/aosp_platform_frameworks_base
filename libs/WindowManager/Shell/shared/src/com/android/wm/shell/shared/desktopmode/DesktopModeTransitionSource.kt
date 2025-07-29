@@ -33,6 +33,8 @@ enum class DesktopModeTransitionSource : Parcelable {
     KEYBOARD_SHORTCUT,
     /** Transitions that originated from Recents. */
     RECENTS,
+    /** Transitions that originated from Taskbar. */
+    TASKBAR,
     /** Transitions with source unknown. */
     UNKNOWN;
 

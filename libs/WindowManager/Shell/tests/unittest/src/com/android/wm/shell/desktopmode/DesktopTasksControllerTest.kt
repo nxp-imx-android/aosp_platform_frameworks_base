@@ -650,6 +650,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         controller.showDesktopApps(
             displayId = DEFAULT_DISPLAY,
             remoteTransition = RemoteTransition(TestRemoteTransition()),
+            transitionSource = UNKNOWN,
         )
 
         val wct =
@@ -674,6 +675,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         controller.showDesktopApps(
             displayId = DEFAULT_DISPLAY,
             remoteTransition = RemoteTransition(TestRemoteTransition()),
+            transitionSource = UNKNOWN,
         )
 
         val wct =
@@ -700,6 +702,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
             displayId = DEFAULT_DISPLAY,
             remoteTransition = RemoteTransition(TestRemoteTransition()),
             taskIdToReorderToFront = task1.taskId,
+            transitionSource = UNKNOWN,
         )
 
         val wct =
@@ -732,6 +735,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
             displayId = DEFAULT_DISPLAY,
             remoteTransition = RemoteTransition(TestRemoteTransition()),
             taskIdToReorderToFront = task1.taskId,
+            transitionSource = UNKNOWN,
         )
 
         val wct =
@@ -762,7 +766,11 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         taskRepository.addDesk(DEFAULT_DISPLAY, deskId = 1)
         taskRepository.setActiveDesk(DEFAULT_DISPLAY, deskId = 1)
 
-        controller.activateDesk(deskId, RemoteTransition(TestRemoteTransition()))
+        controller.activateDesk(
+            deskId,
+            RemoteTransition(TestRemoteTransition()),
+            enterReason = EnterReason.UNKNOWN_ENTER,
+        )
 
         val wct =
             getLatestWct(type = TRANSIT_TO_FRONT, handlerClass = OneShotRemoteHandler::class.java)
@@ -826,6 +834,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         controller.showDesktopApps(
             displayId = SECOND_DISPLAY,
             remoteTransition = RemoteTransition(TestRemoteTransition()),
+            transitionSource = UNKNOWN,
         )
 
         val wct =
@@ -849,6 +858,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         controller.showDesktopApps(
             displayId = SECOND_DISPLAY,
             remoteTransition = RemoteTransition(TestRemoteTransition()),
+            transitionSource = UNKNOWN,
         )
 
         val wct =
@@ -870,6 +880,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         controller.showDesktopApps(
             displayId = SECOND_DISPLAY,
             remoteTransition = RemoteTransition(TestRemoteTransition()),
+            transitionSource = UNKNOWN,
         )
 
         val wct =
@@ -889,6 +900,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         controller.showDesktopApps(
             displayId = SECOND_DISPLAY,
             remoteTransition = RemoteTransition(TestRemoteTransition()),
+            transitionSource = UNKNOWN,
         )
 
         val wct =
@@ -911,6 +923,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         controller.showDesktopApps(
             displayId = DEFAULT_DISPLAY,
             remoteTransition = RemoteTransition(TestRemoteTransition()),
+            transitionSource = UNKNOWN,
         )
 
         val wct =
@@ -938,6 +951,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         controller.showDesktopApps(
             displayId = SECOND_DISPLAY,
             remoteTransition = RemoteTransition(TestRemoteTransition()),
+            transitionSource = UNKNOWN,
         )
 
         val wct =
@@ -962,6 +976,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         controller.showDesktopApps(
             displayId = DEFAULT_DISPLAY,
             remoteTransition = RemoteTransition(TestRemoteTransition()),
+            transitionSource = UNKNOWN,
         )
 
         val wct =
@@ -988,6 +1003,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         controller.showDesktopApps(
             displayId = DEFAULT_DISPLAY,
             remoteTransition = RemoteTransition(TestRemoteTransition()),
+            transitionSource = UNKNOWN,
         )
 
         val wct =
@@ -1012,6 +1028,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         controller.showDesktopApps(
             displayId = DEFAULT_DISPLAY,
             remoteTransition = RemoteTransition(TestRemoteTransition()),
+            transitionSource = UNKNOWN,
         )
 
         val wct =
@@ -1033,6 +1050,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         controller.showDesktopApps(
             displayId = DEFAULT_DISPLAY,
             remoteTransition = RemoteTransition(TestRemoteTransition()),
+            transitionSource = UNKNOWN,
         )
 
         val wct =
@@ -1055,6 +1073,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         controller.showDesktopApps(
             displayId = DEFAULT_DISPLAY,
             remoteTransition = RemoteTransition(TestRemoteTransition()),
+            transitionSource = UNKNOWN,
         )
 
         val wct =
@@ -1071,6 +1090,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         controller.showDesktopApps(
             displayId = DEFAULT_DISPLAY,
             remoteTransition = RemoteTransition(TestRemoteTransition()),
+            transitionSource = UNKNOWN,
         )
         val wct =
             getLatestWct(type = TRANSIT_TO_FRONT, handlerClass = OneShotRemoteHandler::class.java)
@@ -1084,6 +1104,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         controller.showDesktopApps(
             displayId = DEFAULT_DISPLAY,
             remoteTransition = RemoteTransition(TestRemoteTransition()),
+            transitionSource = UNKNOWN,
         )
 
         val wct =
@@ -1108,6 +1129,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         controller.showDesktopApps(
             displayId = DEFAULT_DISPLAY,
             remoteTransition = RemoteTransition(TestRemoteTransition()),
+            transitionSource = UNKNOWN,
         )
 
         val wct =
@@ -1135,6 +1157,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         controller.showDesktopApps(
             displayId = DEFAULT_DISPLAY,
             remoteTransition = RemoteTransition(TestRemoteTransition()),
+            transitionSource = UNKNOWN,
         )
 
         val wct =
@@ -1162,6 +1185,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         controller.showDesktopApps(
             displayId = DEFAULT_DISPLAY,
             remoteTransition = RemoteTransition(TestRemoteTransition()),
+            transitionSource = UNKNOWN,
         )
 
         val wct =
@@ -1189,6 +1213,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         controller.showDesktopApps(
             displayId = DEFAULT_DISPLAY,
             remoteTransition = RemoteTransition(TestRemoteTransition()),
+            transitionSource = UNKNOWN,
         )
 
         val wct =
@@ -1213,6 +1238,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         controller.showDesktopApps(
             displayId = DEFAULT_DISPLAY,
             remoteTransition = RemoteTransition(TestRemoteTransition()),
+            transitionSource = UNKNOWN,
         )
 
         val wct =
@@ -1239,6 +1265,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         controller.showDesktopApps(
             displayId = DEFAULT_DISPLAY,
             remoteTransition = RemoteTransition(TestRemoteTransition()),
+            transitionSource = UNKNOWN,
         )
 
         val wct =
@@ -7618,7 +7645,10 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         val task3 = setUpFreeformTask()
         taskRepository.minimizeTask(DEFAULT_DISPLAY, task2.taskId)
 
-        controller.removeDefaultDeskInDisplay(displayId = DEFAULT_DISPLAY)
+        controller.removeDefaultDeskInDisplay(
+            displayId = DEFAULT_DISPLAY,
+            exitReason = ExitReason.UNKNOWN_EXIT,
+        )
 
         val wct = getLatestWct(TRANSIT_CLOSE)
         assertThat(wct.hierarchyOps).hasSize(3)
@@ -7637,7 +7667,10 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         taskRepository.minimizeTask(DEFAULT_DISPLAY, task2.taskId)
         whenever(shellTaskOrganizer.getRunningTaskInfo(task3.taskId)).thenReturn(null)
 
-        controller.removeDefaultDeskInDisplay(displayId = DEFAULT_DISPLAY)
+        controller.removeDefaultDeskInDisplay(
+            displayId = DEFAULT_DISPLAY,
+            exitReason = ExitReason.UNKNOWN_EXIT,
+        )
 
         val wct = getLatestWct(TRANSIT_CLOSE)
         assertThat(wct.hierarchyOps).hasSize(2)
@@ -7729,7 +7762,11 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         taskRepository.addDesk(DEFAULT_DISPLAY, deskId = 1)
         taskRepository.setActiveDesk(DEFAULT_DISPLAY, deskId = 1)
 
-        controller.activateDesk(deskId, RemoteTransition(TestRemoteTransition()))
+        controller.activateDesk(
+            deskId,
+            RemoteTransition(TestRemoteTransition()),
+            enterReason = EnterReason.UNKNOWN_ENTER,
+        )
 
         verify(desksTransitionsObserver)
             .addPendingTransition(
@@ -7760,7 +7797,11 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         taskRepository.addDesk(DEFAULT_DISPLAY, deskId = 1)
         taskRepository.setActiveDesk(DEFAULT_DISPLAY, deskId = 1)
 
-        controller.activateDesk(deskId, RemoteTransition(TestRemoteTransition()))
+        controller.activateDesk(
+            deskId,
+            RemoteTransition(TestRemoteTransition()),
+            enterReason = EnterReason.UNKNOWN_ENTER,
+        )
 
         val wct = getLatestWct(TRANSIT_TO_FRONT, OneShotRemoteHandler::class.java)
         assertNotNull(wct)
@@ -7785,7 +7826,11 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         taskRepository.addDesk(DEFAULT_DISPLAY, deskId = 1)
         taskRepository.setActiveDesk(DEFAULT_DISPLAY, deskId = 1)
 
-        controller.activateDesk(deskId, RemoteTransition(TestRemoteTransition()))
+        controller.activateDesk(
+            deskId,
+            RemoteTransition(TestRemoteTransition()),
+            enterReason = EnterReason.UNKNOWN_ENTER,
+        )
 
         verify(desksOrganizer).reorderTaskToFront(any(), eq(deskId), eq(runningTask))
     }
@@ -7804,7 +7849,11 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         taskRepository.addDesk(DEFAULT_DISPLAY, deskId = previouslyActiveDeskId)
         taskRepository.setActiveDesk(DEFAULT_DISPLAY, deskId = previouslyActiveDeskId)
 
-        controller.activateDesk(activatingDeskId, RemoteTransition(TestRemoteTransition()))
+        controller.activateDesk(
+            activatingDeskId,
+            RemoteTransition(TestRemoteTransition()),
+            enterReason = EnterReason.UNKNOWN_ENTER,
+        )
 
         verify(desksOrganizer)
             .deactivateDesk(any(), eq(previouslyActiveDeskId), skipReorder = eq(false))
@@ -7828,7 +7877,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         taskRepository.addDesk(displayId = DEFAULT_DISPLAY, deskId = 2)
         taskRepository.setActiveDesk(displayId = DEFAULT_DISPLAY, deskId = 2)
 
-        controller.activatePreviousDesk(DEFAULT_DISPLAY)
+        controller.activatePreviousDesk(DEFAULT_DISPLAY, enterReason = EnterReason.UNKNOWN_ENTER)
 
         verify(desksOrganizer).activateDesk(any(), eq(1), skipReorder = eq(false))
     }
@@ -7843,7 +7892,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         taskRepository.addDesk(displayId = DEFAULT_DISPLAY, deskId = 2)
         taskRepository.setActiveDesk(displayId = DEFAULT_DISPLAY, deskId = 1)
 
-        controller.activateNextDesk(DEFAULT_DISPLAY)
+        controller.activateNextDesk(DEFAULT_DISPLAY, enterReason = EnterReason.UNKNOWN_ENTER)
 
         verify(desksOrganizer).activateDesk(any(), eq(2), skipReorder = eq(false))
     }
@@ -7856,7 +7905,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     fun activatePreviousDesk_deskDoesNotExist_doesNotActivate() {
         taskRepository.setActiveDesk(displayId = DEFAULT_DISPLAY, deskId = 0)
 
-        controller.activatePreviousDesk(DEFAULT_DISPLAY)
+        controller.activatePreviousDesk(DEFAULT_DISPLAY, enterReason = EnterReason.UNKNOWN_ENTER)
 
         verify(desksOrganizer, never()).activateDesk(any(), any(), skipReorder = any())
     }
@@ -7870,7 +7919,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         taskRepository.addDesk(displayId = DEFAULT_DISPLAY, deskId = 1)
         taskRepository.setActiveDesk(displayId = DEFAULT_DISPLAY, deskId = 1)
 
-        controller.activateNextDesk(DEFAULT_DISPLAY)
+        controller.activateNextDesk(DEFAULT_DISPLAY, enterReason = EnterReason.UNKNOWN_ENTER)
 
         verify(desksOrganizer, never()).activateDesk(any(), any(), skipReorder = any())
     }
@@ -7883,7 +7932,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     fun activatePreviousDesk_noDeskActive_doesNotActivate() {
         taskRepository.setDeskInactive(deskId = 0)
 
-        controller.activatePreviousDesk(DEFAULT_DISPLAY)
+        controller.activatePreviousDesk(DEFAULT_DISPLAY, enterReason = EnterReason.UNKNOWN_ENTER)
 
         verify(desksOrganizer, never()).activateDesk(any(), any(), any())
     }
@@ -7896,7 +7945,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     fun activateNextDesk_noDeskActive_doesNotActivate() {
         taskRepository.setDeskInactive(deskId = 0)
 
-        controller.activateNextDesk(DEFAULT_DISPLAY)
+        controller.activateNextDesk(DEFAULT_DISPLAY, enterReason = EnterReason.UNKNOWN_ENTER)
 
         verify(desksOrganizer, never()).activateDesk(any(), any(), any())
     }
@@ -7916,7 +7965,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         taskRepository.addDesk(displayId = 6, deskId = 4)
         taskRepository.setActiveDesk(displayId = 6, deskId = 4)
 
-        controller.activatePreviousDesk(INVALID_DISPLAY)
+        controller.activatePreviousDesk(INVALID_DISPLAY, enterReason = EnterReason.UNKNOWN_ENTER)
 
         verify(desksOrganizer).activateDesk(any(), eq(1), skipReorder = eq(false))
     }
@@ -7936,7 +7985,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         taskRepository.addDesk(displayId = 6, deskId = 4)
         taskRepository.setActiveDesk(displayId = 6, deskId = 3)
 
-        controller.activateNextDesk(INVALID_DISPLAY)
+        controller.activateNextDesk(INVALID_DISPLAY, enterReason = EnterReason.UNKNOWN_ENTER)
 
         verify(desksOrganizer).activateDesk(any(), eq(4), skipReorder = eq(false))
     }
@@ -10992,7 +11041,11 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         val homeTask = setUpHomeTask()
         val task1 = setUpFreeformTask()
 
-        controller.activateDesk(DEFAULT_DISPLAY, RemoteTransition(TestRemoteTransition()))
+        controller.activateDesk(
+            DEFAULT_DISPLAY,
+            RemoteTransition(TestRemoteTransition()),
+            enterReason = EnterReason.UNKNOWN_ENTER,
+        )
 
         val wct =
             getLatestWct(type = TRANSIT_TO_FRONT, handlerClass = OneShotRemoteHandler::class.java)

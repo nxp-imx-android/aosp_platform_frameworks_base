@@ -361,7 +361,8 @@ class DesktopModeKeyGestureHandlerTest : ShellTestCase() {
         keyGestureEventHandler.handleKeyGestureEvent(event, null)
         testExecutor.flushAll()
 
-        verify(desktopTasksController).activatePreviousDesk(displayId)
+        verify(desktopTasksController)
+            .activatePreviousDesk(displayId, EnterReason.KEYBOARD_SHORTCUT_ENTER)
     }
 
     @Test
@@ -376,7 +377,8 @@ class DesktopModeKeyGestureHandlerTest : ShellTestCase() {
         keyGestureEventHandler.handleKeyGestureEvent(event, null)
         testExecutor.flushAll()
 
-        verify(desktopTasksController).activateNextDesk(displayId)
+        verify(desktopTasksController)
+            .activateNextDesk(displayId, EnterReason.KEYBOARD_SHORTCUT_ENTER)
     }
 
     private fun setUpDesktopTask(
