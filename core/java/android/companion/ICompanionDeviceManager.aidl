@@ -22,10 +22,15 @@ import android.companion.IOnAssociationsChangedListener;
 import android.companion.IOnMessageReceivedListener;
 import android.companion.IOnTransportEventListener;
 import android.companion.IOnTransportsChangedListener;
+import android.companion.IOnDevicePresenceEventListener;
+import android.companion.IOnActionResultListener;
 import android.companion.ISystemDataTransferCallback;
+import android.companion.ActionRequest;
+import android.companion.ActionResult;
 import android.companion.AssociationInfo;
 import android.companion.AssociationRequest;
 import android.companion.ObservingDevicePresenceRequest;
+import android.companion.DevicePresenceEvent;
 import android.companion.datatransfer.PermissionSyncRequest;
 import android.content.ComponentName;
 import android.os.ParcelUuid;
@@ -156,4 +161,27 @@ interface ICompanionDeviceManager {
     DeviceId setDeviceId(int associationId, in DeviceId deviceId);
 
     void setLocalMetadata(int userId, String key, in PersistableBundle value);
+
+    @EnforcePermission("USE_COMPANION_TRANSPORTS")
+    void setOnDevicePresenceEventListener(in int[] associationIds, in String serviceName,
+            IOnDevicePresenceEventListener listener, in int userId);
+
+    @EnforcePermission("USE_COMPANION_TRANSPORTS")
+    void removeOnDevicePresenceEventListener(in String serviceName, in int userId);
+
+    @EnforcePermission("REQUEST_COMPANION_SELF_MANAGED")
+    void notifyDevicePresence(in int associationId, in DevicePresenceEvent event);
+
+    @EnforcePermission("USE_COMPANION_TRANSPORTS")
+    void requestAction(in ActionRequest request, in String serviceName, in int[] associationIds);
+
+    @EnforcePermission("REQUEST_COMPANION_SELF_MANAGED")
+    void notifyActionResult(in int associationId, in ActionResult result);
+
+    @EnforcePermission("USE_COMPANION_TRANSPORTS")
+    void setOnActionResultListener(in int[] associationIds, in String serviceName,
+            in IOnActionResultListener listener, in int userId);
+
+    @EnforcePermission("USE_COMPANION_TRANSPORTS")
+    void removeOnActionResultListener(in String serviceName, in int userId);
 }
