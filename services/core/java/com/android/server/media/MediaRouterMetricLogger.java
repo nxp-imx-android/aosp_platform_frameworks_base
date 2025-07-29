@@ -232,7 +232,7 @@ final class MediaRouterMetricLogger {
                         routingSessionInfo.isSystemSession(),
                         routingSessionInfo.getTransferReason(),
                         routingChangeInfo.isSuggested(),
-                        SystemClock.elapsedRealtime());
+                        getElapsedRealTime());
         mOngoingRoutingChangeCache.put(routingSessionInfo.getOriginalId(), ongoingRoutingChange);
         mRoutingChangeInfoCache.remove(uniqueRequestId);
     }
@@ -248,8 +248,7 @@ final class MediaRouterMetricLogger {
             Slog.e(TAG, "Unable to get routing change logging info for the specified sessionId.");
             return;
         }
-        long sessionLengthInMillis =
-                SystemClock.elapsedRealtime() - ongoingRoutingChange.startTimeInMillis;
+        long sessionLengthInMillis = getElapsedRealTime() - ongoingRoutingChange.startTimeInMillis;
 
         if (DEBUG) {
             Slog.d(
@@ -337,6 +336,21 @@ final class MediaRouterMetricLogger {
     @VisibleForTesting
     /* package */ int getRequestCacheSize() {
         return mRequestInfoCache.size();
+    }
+
+    @VisibleForTesting
+    /* package */ int getRoutingChangeInfoCacheSize() {
+        return mRoutingChangeInfoCache.size();
+    }
+
+    @VisibleForTesting
+    /* package */ int getOngoingRoutingChangeCacheSize() {
+        return mOngoingRoutingChangeCache.size();
+    }
+
+    @VisibleForTesting
+    /* package */ long getElapsedRealTime() {
+        return SystemClock.elapsedRealtime();
     }
 
     private void logMediaRouterEvent(int eventType, int result) {
