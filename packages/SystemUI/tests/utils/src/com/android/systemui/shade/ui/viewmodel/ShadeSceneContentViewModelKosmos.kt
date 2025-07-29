@@ -23,6 +23,7 @@ import com.android.systemui.kosmos.testDispatcher
 import com.android.systemui.media.controls.domain.pipeline.interactor.mediaCarouselInteractor
 import com.android.systemui.qs.footerActionsController
 import com.android.systemui.qs.footerActionsViewModelFactory
+import com.android.systemui.qs.panels.domain.interactor.tileSquishinessInteractor
 import com.android.systemui.qs.panels.ui.viewmodel.quickQuickSettingsViewModelFactory
 import com.android.systemui.qs.ui.adapter.qsSceneAdapter
 import com.android.systemui.scene.domain.interactor.sceneInteractor
@@ -46,6 +47,7 @@ val Kosmos.shadeSceneContentViewModel: ShadeSceneContentViewModel by Fixture {
         unfoldTransitionInteractor = unfoldTransitionInteractor,
         deviceEntryInteractor = deviceEntryInteractor,
         sceneInteractor = sceneInteractor,
+        tileSquishinessInteractor = tileSquishinessInteractor,
     )
 }
 
