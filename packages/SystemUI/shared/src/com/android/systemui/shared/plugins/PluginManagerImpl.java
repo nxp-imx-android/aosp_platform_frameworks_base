@@ -249,29 +249,6 @@ public class PluginManagerImpl extends BroadcastReceiver implements PluginManage
         return false;
     }
 
-    // This allows plugins to include any libraries or copied code they want by only including
-    // classes from the plugin library.
-    static class ClassLoaderFilter extends ClassLoader {
-        private final String[] mPackages;
-        private final ClassLoader mBase;
-
-        ClassLoaderFilter(ClassLoader base, String... pkgs) {
-            super(ClassLoader.getSystemClassLoader());
-            mBase = base;
-            mPackages = pkgs;
-        }
-
-        @Override
-        protected Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {
-            for (String pkg : mPackages) {
-                if (name.startsWith(pkg)) {
-                    return mBase.loadClass(name);
-                }
-            }
-            return super.loadClass(name, resolve);
-        }
-    }
-
     private class PluginExceptionHandler implements UncaughtExceptionHandler {
 
         private PluginExceptionHandler() {}

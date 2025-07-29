@@ -23,19 +23,23 @@ import com.android.systemui.plugins.annotations.ProtectedReturn
 @ProtectedInterface
 @GeneratedImport("java.util.ArrayList")
 @GeneratedImport("android.view.View")
-interface ClockFaceLayout {
+interface ClockFaceLayout : LockscreenElementProvider {
+    @Deprecated("Unsupported with flexiglass. Move to composables.")
     @get:ProtectedReturn("return new ArrayList<View>();")
     /** All clock views to add to the root constraint layout before applying constraints. */
     val views: List<View>
 
+    @Deprecated("Unsupported with flexiglass. Move to composables.")
     @ProtectedReturn("return constraints;")
     /** Custom constraints to apply to Lockscreen ConstraintLayout. */
     fun applyConstraints(constraints: ConstraintSet): ConstraintSet
 
+    @Deprecated("Unsupported with flexiglass. Move to composables.")
     @ProtectedReturn("return constraints;")
     /** Custom constraints to apply to the external display presentation ConstraintLayout. */
     fun applyExternalDisplayPresentationConstraints(constraints: ConstraintSet): ConstraintSet
 
+    @Deprecated("Unsupported with flexiglass. Move to composables.")
     @ProtectedReturn("return constraints;")
     /** Custom constraints to apply to preview ConstraintLayout. */
     fun applyPreviewConstraints(

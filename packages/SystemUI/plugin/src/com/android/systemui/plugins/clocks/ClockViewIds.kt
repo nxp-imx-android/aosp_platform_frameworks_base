@@ -25,6 +25,7 @@ import android.view.View
  * compile-time constants, but is preferable as it eliminates our need to look them up them by name.
  */
 object ClockViewIds {
+    // View Ids for top level large/small composables
     val LOCKSCREEN_CLOCK_VIEW_LARGE = View.generateViewId()
     val LOCKSCREEN_CLOCK_VIEW_SMALL = View.generateViewId()
 
@@ -39,7 +40,6 @@ object ClockViewIds {
     val DATE_FORMAT = View.generateViewId()
 
     // View ids for elements in large weather clock
-    // TODO(b/364680879): Move these to the weather clock apk w/ WeatherClockSection
     val WEATHER_CLOCK_TIME = View.generateViewId()
     val WEATHER_CLOCK_DATE = View.generateViewId()
     val WEATHER_CLOCK_ICON = View.generateViewId()

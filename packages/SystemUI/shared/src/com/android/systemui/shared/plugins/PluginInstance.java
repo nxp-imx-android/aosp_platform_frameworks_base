@@ -45,7 +45,6 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiConsumer;
-import java.util.function.Supplier;
 
 /**
  * Contains a single instantiation of a Plugin.
@@ -59,7 +58,7 @@ public class PluginInstance<T extends Plugin>
         implements PluginLifecycleManager, ProtectedPluginListener {
     private static final String TAG = "PluginInstance";
 
-    private final Context mAppContext;
+    private final Context mHostContext;
     private final PluginListener<T> mListener;
     private final ComponentName mComponentName;
     private final PluginFactory<T> mPluginFactory;
@@ -73,12 +72,12 @@ public class PluginInstance<T extends Plugin>
 
     /** Constructor */
     public PluginInstance(
-            Context appContext,
+            Context hostContext,
             PluginListener<T> listener,
             ComponentName componentName,
             PluginFactory<T> pluginFactory,
             @Nullable T plugin) {
-        mAppContext = appContext;
+        mHostContext = hostContext;
         mListener = listener;
         mComponentName = componentName;
         mPluginFactory = pluginFactory;
@@ -144,7 +143,7 @@ public class PluginInstance<T extends Plugin>
         if (!(mPlugin instanceof PluginFragment)) {
             // Only call onCreate for plugins that aren't fragments, as fragments
             // will get the onCreate as part of the fragment lifecycle.
-            mPlugin.onCreate(mAppContext, mPluginContext);
+            mPlugin.onCreate(mHostContext, mPluginContext);
         }
         mListener.onPluginLoaded(mPlugin, mPluginContext, this);
     }
@@ -197,7 +196,7 @@ public class PluginInstance<T extends Plugin>
         if (!(mPlugin instanceof PluginFragment)) {
             // Only call onCreate for plugins that aren't fragments, as fragments
             // will get the onCreate as part of the fragment lifecycle.
-            mPlugin.onCreate(mAppContext, mPluginContext);
+            mPlugin.onCreate(mHostContext, mPluginContext);
         }
         mListener.onPluginLoaded(mPlugin, mPluginContext, this);
     }
@@ -281,9 +280,7 @@ public class PluginInstance<T extends Plugin>
 
         /** Factory used to construct {@link PluginInstance}s. */
         public Factory(ClassLoader classLoader, InstanceFactory<?> instanceFactory,
-                VersionChecker versionChecker,
-                List<String> privilegedPlugins,
-                boolean isDebug) {
+                VersionChecker versionChecker, List<String> privilegedPlugins, boolean isDebug) {
             mPrivilegedPlugins = privilegedPlugins;
             mBaseClassLoader = classLoader;
             mInstanceFactory = instanceFactory;
@@ -293,25 +290,30 @@ public class PluginInstance<T extends Plugin>
 
         /** Construct a new PluginInstance. */
         public <T extends Plugin> PluginInstance<T> create(
-                Context context,
-                ApplicationInfo appInfo,
+                Context hostContext,
+                ApplicationInfo pluginAppInfo,
                 ComponentName componentName,
                 Class<T> pluginClass,
                 PluginListener<T> listener)
                 throws PackageManager.NameNotFoundException, ClassNotFoundException,
                 InstantiationException, IllegalAccessException {
 
+            if (!mIsDebug && !isPluginPackagePrivileged(pluginAppInfo.packageName)) {
+                Log.w(TAG, "Cannot get class loader for non-privileged plugin. Src:"
+                        + pluginAppInfo.sourceDir + ", pkg: " + pluginAppInfo.packageName);
+                return null;
+            }
+
             PluginFactory<T> pluginFactory = new PluginFactory<T>(
-                    context, mInstanceFactory, appInfo, componentName, mVersionChecker, pluginClass,
-                    () -> getClassLoader(appInfo, mBaseClassLoader));
-            return new PluginInstance<T>(
-                    context, listener, componentName, pluginFactory, null);
+                    hostContext, mInstanceFactory, pluginAppInfo, componentName,
+                    mVersionChecker, pluginClass, mBaseClassLoader);
+            return new PluginInstance<T>(hostContext, listener, componentName, pluginFactory, null);
         }
 
         private boolean isPluginPackagePrivileged(String packageName) {
             for (String componentNameOrPackage : mPrivilegedPlugins) {
-                ComponentName componentName = ComponentName.unflattenFromString(
-                        componentNameOrPackage);
+                ComponentName componentName = ComponentName
+                        .unflattenFromString(componentNameOrPackage);
                 if (componentName != null) {
                     if (componentName.getPackageName().equals(packageName)) {
                         return true;
@@ -321,34 +323,6 @@ public class PluginInstance<T extends Plugin>
                 }
             }
             return false;
-        }
-
-        private ClassLoader getParentClassLoader(ClassLoader baseClassLoader) {
-            return new PluginManagerImpl.ClassLoaderFilter(
-                    baseClassLoader,
-                    "androidx.constraintlayout.widget",
-                    "com.android.systemui.common",
-                    "com.android.systemui.log",
-                    "com.android.systemui.plugin");
-        }
-
-        /** Returns class loader specific for the given plugin. */
-        private ClassLoader getClassLoader(ApplicationInfo appInfo,
-                ClassLoader baseClassLoader) {
-            if (!mIsDebug && !isPluginPackagePrivileged(appInfo.packageName)) {
-                Log.w(TAG, "Cannot get class loader for non-privileged plugin. Src:"
-                        + appInfo.sourceDir + ", pkg: " + appInfo.packageName);
-                return null;
-            }
-
-            List<String> zipPaths = new ArrayList<>();
-            List<String> libPaths = new ArrayList<>();
-            LoadedApk.makePaths(null, true, appInfo, zipPaths, libPaths);
-            ClassLoader classLoader = new PathClassLoader(
-                    TextUtils.join(File.pathSeparator, zipPaths),
-                    TextUtils.join(File.pathSeparator, libPaths),
-                    getParentClassLoader(baseClassLoader));
-            return classLoader;
         }
     }
 
@@ -400,41 +374,62 @@ public class PluginInstance<T extends Plugin>
         }
     }
 
+    private static class ClassLoaderFilter extends ClassLoader {
+        private final String[] mPackages;
+        private final ClassLoader mTarget;
+
+        ClassLoaderFilter(ClassLoader target, String[] pkgs, ClassLoader parent) {
+            super(parent);
+            mTarget = target;
+            mPackages = pkgs;
+        }
+
+        @Override
+        protected Class<?> findClass(String name) throws ClassNotFoundException {
+            for (String pkg : mPackages) {
+                if (name.startsWith(pkg)) {
+                    return mTarget.loadClass(name);
+                }
+            }
+            return super.findClass(name);
+        }
+    }
+
     /**
      * Instanced wrapper of InstanceFactory
      *
      * @param <T> is the type of the plugin object to be built
      **/
     public static class PluginFactory<T extends Plugin> {
-        private final Context mContext;
+        private final Context mHostContext;
         private final InstanceFactory<?> mInstanceFactory;
-        private final ApplicationInfo mAppInfo;
+        private final ApplicationInfo mPluginAppInfo;
         private final ComponentName mComponentName;
         private final VersionChecker mVersionChecker;
         private final Class<T> mPluginClass;
-        private final Supplier<ClassLoader> mClassLoaderFactory;
+        private final ClassLoader mBaseClassLoader;
 
         public PluginFactory(
-                Context context,
+                Context hostContext,
                 InstanceFactory<?> instanceFactory,
-                ApplicationInfo appInfo,
+                ApplicationInfo pluginAppInfo,
                 ComponentName componentName,
                 VersionChecker versionChecker,
                 Class<T> pluginClass,
-                Supplier<ClassLoader> classLoaderFactory) {
-            mContext = context;
+                ClassLoader baseClassLoader) {
+            mHostContext = hostContext;
             mInstanceFactory = instanceFactory;
-            mAppInfo = appInfo;
+            mPluginAppInfo = pluginAppInfo;
             mComponentName = componentName;
             mVersionChecker = versionChecker;
             mPluginClass = pluginClass;
-            mClassLoaderFactory = classLoaderFactory;
+            mBaseClassLoader = baseClassLoader;
         }
 
         /** Creates the related plugin object from the factory */
         public T createPlugin(ProtectedPluginListener listener) {
             try {
-                ClassLoader loader = mClassLoaderFactory.get();
+                ClassLoader loader = createClassLoader();
                 Class<T> instanceClass = (Class<T>) Class.forName(
                         mComponentName.getClassName(), true, loader);
                 T result = (T) mInstanceFactory.create(instanceClass);
@@ -449,13 +444,46 @@ public class PluginInstance<T extends Plugin>
         /** Creates a context wrapper for the plugin */
         public Context createPluginContext() {
             try {
-                ClassLoader loader = mClassLoaderFactory.get();
+                ClassLoader loader = createClassLoader();
                 return new PluginActionManager.PluginContextWrapper(
-                    mContext.createApplicationContext(mAppInfo, 0), loader);
+                    mHostContext.createApplicationContext(mPluginAppInfo, 0), loader);
             } catch (NameNotFoundException ex) {
                 Log.e(TAG, "Failed to create plugin context", ex);
             }
             return null;
+        }
+
+        /** Returns class loader specific for the given plugin. */
+        private ClassLoader createClassLoader() {
+            List<String> zipPaths = new ArrayList<>();
+            List<String> libPaths = new ArrayList<>();
+            LoadedApk.makePaths(null, true, mPluginAppInfo, zipPaths, libPaths);
+
+            ClassLoader filteredLoader = new ClassLoaderFilter(
+                    mBaseClassLoader,
+                    new String[] {
+                        "androidx.compose",
+                        "androidx.constraintlayout.widget",
+                        "com.android.systemui.common",
+                        "com.android.systemui.log",
+                        "com.android.systemui.plugin",
+                        "com.android.compose.animation.scene",
+                        "kotlin.jvm.functions",
+                    },
+                    ClassLoader.getSystemClassLoader());
+
+            return new PathClassLoader(
+                    TextUtils.join(File.pathSeparator, zipPaths),
+                    TextUtils.join(File.pathSeparator, libPaths),
+                    filteredLoader);
+
+            // TODO(b/430179208): Is it safe to remove ClassLoaderFilter
+            /*
+            return new PathClassLoader(
+                    TextUtils.join(File.pathSeparator, zipPaths),
+                    TextUtils.join(File.pathSeparator, libPaths),
+                    mBaseClassLoader);
+             */
         }
 
         /** Check Version for the instance */
