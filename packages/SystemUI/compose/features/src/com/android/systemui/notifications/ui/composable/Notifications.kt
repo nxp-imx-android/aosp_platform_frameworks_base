@@ -262,8 +262,7 @@ fun ContentScope.ConstrainedNotificationStack(
                 .onSizeChanged { viewModel.onConstrainedAvailableSpaceChanged(it.height) }
                 .onGloballyPositioned {
                     if (shouldUseLockscreenStackBounds(layoutState.transitionState)) {
-                        // TODO(417965077) correct drawBounds for the horizontal padding of the NSSL
-                        stackScrollView.setDrawBounds(it.boundsInWindow().toAndroidRectF())
+                        stackScrollView.updateDrawBounds(it.boundsInWindow().toAndroidRectF())
                     }
                 }
     ) {
@@ -634,8 +633,7 @@ fun ContentScope.NotificationScrollingStack(
                     )
                     .onGloballyPositioned {
                         if (!shouldUseLockscreenStackBounds(layoutState.transitionState)) {
-                            // TODO(417965077) correct for the horizontal padding of the NSSL
-                            stackScrollView.setDrawBounds(it.boundsInWindow().toAndroidRectF())
+                            stackScrollView.updateDrawBounds(it.boundsInWindow().toAndroidRectF())
                         }
                     }
                     .debugBackground(viewModel, DEBUG_BOX_COLOR)

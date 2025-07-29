@@ -73,7 +73,7 @@ interface NotificationScrollView {
     fun setStackTop(stackTop: Float)
 
     /** set the area where this can place its content */
-    fun setDrawBounds(bounds: RectF)
+    fun updateDrawBounds(boundsInWindow: RectF)
 
     /** set the y position in px of the top of the HUN in this view's coordinates */
     fun setHeadsUpTop(headsUpTop: Float)
