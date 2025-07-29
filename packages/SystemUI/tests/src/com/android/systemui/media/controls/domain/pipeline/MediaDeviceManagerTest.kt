@@ -365,6 +365,22 @@ public class MediaDeviceManagerTest(flags: FlagsParameterization) : SysuiTestCas
 
     @Test
     @EnableFlags(FLAG_ENABLE_SUGGESTED_DEVICE_UI)
+    fun onMediaDataLoaded_resumption_doesNotLoadSuggestionData() {
+        val resumptionMediaData = mediaData.copy(resumption = true)
+
+        manager.onMediaDataLoaded(KEY, null, resumptionMediaData)
+        fakeBgExecutor.runAllReady()
+        fakeFgExecutor.runAllReady()
+
+        verify(listener, never())
+            .onMediaDeviceAndSuggestionDataChanged(eq(KEY), any(), any(), any())
+        val data = captureDeviceData(KEY)
+        assertThat(data.enabled).isTrue()
+        assertThat(data.name).isEqualTo(DEVICE_NAME)
+    }
+
+    @Test
+    @EnableFlags(FLAG_ENABLE_SUGGESTED_DEVICE_UI)
     fun suggestedDeviceUpdate() {
         // Need to load media data to load LocalMediaManager the first time
         manager.onMediaDataLoaded(KEY, null, mediaData)
@@ -401,6 +417,23 @@ public class MediaDeviceManagerTest(flags: FlagsParameterization) : SysuiTestCas
         deviceCallback.onSuggestedDeviceUpdated(suggestedDeviceState2)
         assertThat(fakeBgExecutor.runAllReady()).isEqualTo(1)
         assertThat(fakeFgExecutor.runAllReady()).isEqualTo(0)
+    }
+
+    @Test
+    @EnableFlags(FLAG_ENABLE_SUGGESTED_DEVICE_UI)
+    fun suggestedDeviceUpdate_resumption_doesNotNotifyListener() {
+        val resumptionMediaData = mediaData.copy(resumption = true)
+        manager.onMediaDataLoaded(KEY, null, resumptionMediaData)
+        fakeBgExecutor.runAllReady()
+        fakeFgExecutor.runAllReady()
+        clearInvocations(listener)
+        val deviceCallback = captureCallback()
+
+        deviceCallback.onSuggestedDeviceUpdated(suggestedDeviceState2)
+        fakeBgExecutor.runAllReady()
+        fakeFgExecutor.runAllReady()
+
+        verifyNoMoreInteractions(listener)
     }
 
     @Test
