@@ -15,6 +15,7 @@
  */
 package com.android.settingslib.bluetooth;
 
+import static com.android.settingslib.flags.Flags.FLAG_ENABLE_BLUETOOTH_DIAGNOSIS;
 import static com.android.settingslib.flags.Flags.FLAG_ENABLE_LE_AUDIO_SHARING;
 import static com.android.settingslib.flags.Flags.FLAG_REFACTOR_BATTERY_LEVEL_DISPLAY;
 
@@ -2889,6 +2890,31 @@ public class CachedBluetoothDeviceTest {
 
         // Assert
         assertThat(summary).isNull();
+    }
+
+    @Test
+    @EnableFlags(FLAG_ENABLE_BLUETOOTH_DIAGNOSIS)
+    public void onBondingStateChanged_bondFailure_setFailureTime() {
+        mCachedDevice.onBondingStateChanged(
+                BluetoothDevice.BOND_NONE, BluetoothDevice.BOND_BONDING);
+
+        assertThat(mCachedDevice.getBondFailureTimeMillis()).isNotEqualTo(-1);
+    }
+
+    @Test
+    @EnableFlags(FLAG_ENABLE_BLUETOOTH_DIAGNOSIS)
+    public void onBondingStateChanged_bondSuccess_resetFailureTime() {
+        mCachedDevice.onBondingStateChanged(
+                BluetoothDevice.BOND_NONE, BluetoothDevice.BOND_BONDING);
+
+        assertThat(mCachedDevice.getBondFailureTimeMillis()).isNotEqualTo(-1);
+
+        mCachedDevice.onBondingStateChanged(
+                BluetoothDevice.BOND_BONDING, BluetoothDevice.BOND_NONE);
+        mCachedDevice.onBondingStateChanged(
+                BluetoothDevice.BOND_BONDED, BluetoothDevice.BOND_BONDING);
+
+        assertThat(mCachedDevice.getBondFailureTimeMillis()).isEqualTo(-1);
     }
 
     private void updateProfileStatus(LocalBluetoothProfile profile, int status) {
