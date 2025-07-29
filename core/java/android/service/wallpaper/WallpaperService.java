@@ -31,9 +31,7 @@ import static android.view.View.SYSTEM_UI_FLAG_VISIBLE;
 import static android.view.WindowManager.LayoutParams.TYPE_WALLPAPER;
 import static android.view.flags.Flags.disableDrawWakeLock;
 
-import static com.android.window.flags.Flags.FLAG_OFFLOAD_COLOR_EXTRACTION;
 import static com.android.window.flags.Flags.alwaysSeqIdLayout;
-import static com.android.window.flags.Flags.offloadColorExtraction;
 
 import android.animation.AnimationHandler;
 import android.animation.Animator;
@@ -886,7 +884,6 @@ public abstract class WallpaperService extends Service {
          * wallpaper colors based on the new dim, and call {@link #notifyColorsChanged()}.
          * @hide
          */
-        @FlaggedApi(FLAG_OFFLOAD_COLOR_EXTRACTION)
         public void onDimAmountChanged(float dimAmount) {
         }
 
@@ -1126,7 +1123,7 @@ public abstract class WallpaperService extends Service {
 
             // after the dim changes, allow colors to be immediately recomputed
             mLastColorInvalidation = 0;
-            if (offloadColorExtraction()) onDimAmountChanged(mWallpaperDimAmount);
+            onDimAmountChanged(mWallpaperDimAmount);
         }
 
         /**
