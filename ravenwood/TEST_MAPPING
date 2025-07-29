@@ -133,6 +133,10 @@
       "host": true
     },
     {
+      "name": "CtsSurfaceControlTestsRavenwood",
+      "host": true
+    },
+    {
       "name": "CtsTextTestCasesRavenwood",
       "host": true
     },
@@ -154,6 +158,10 @@
     },
     {
       "name": "FrameworksServicesTestsRavenwood_Compat",
+      "host": true
+    },
+    {
+      "name": "FrameworksServicesTestsRavenwood_ProcessStateController",
       "host": true
     },
     {
