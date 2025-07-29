@@ -17,11 +17,14 @@
 
 package com.android.systemui.statusbar.notification.stack.ui.viewmodel
 
+import android.annotation.SuppressLint
 import android.content.Context
+import android.view.WindowInsets.Type.defaultVisible
 import androidx.annotation.VisibleForTesting
 import com.android.app.tracing.coroutines.flow.flowName
 import com.android.systemui.Flags
 import com.android.systemui.Flags.glanceableHubV2
+import com.android.systemui.biometrics.Utils.getInsetsOf
 import com.android.systemui.bouncer.domain.interactor.BouncerInteractor
 import com.android.systemui.common.shared.model.NotificationContainerBounds
 import com.android.systemui.common.ui.domain.interactor.ConfigurationInteractor
@@ -125,7 +128,8 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.transformWhile
 import kotlinx.coroutines.isActive
 
-/** View-model for the shared notification container, used by both the shade and keyguard spaces */
+/** View-model for the shared notification container, used by both the shade and keyguard spaces. */
+@SuppressLint("FlowExposedFromViewModel") // because all flows from this class are bound to Views
 @OptIn(ExperimentalCoroutinesApi::class)
 @SysUISingleton
 class SharedNotificationContainerViewModel
@@ -268,7 +272,23 @@ constructor(
                                 }
                             )
 
+                        val (marginStart, marginEnd) =
+                            @Suppress("DEPRECATION") // to handle split shade
+                            when (shadeMode) {
+                                Single -> marginHorizontal to marginHorizontal
+                                Split -> 0 to marginHorizontal
+                                Dual ->
+                                    if (isShadeLayoutWide) {
+                                        // all insets types combined, except the IME
+                                        val insets = getInsetsOf(context, defaultVisible()).toRect()
+                                        marginHorizontal.coerceAtLeast(insets.left) to 0
+                                    } else {
+                                        0 to 0
+                                    }
+                            }
+
                         val horizontalPosition =
+                            @Suppress("DEPRECATION") // to handle split shade
                             when (shadeMode) {
                                 Single -> HorizontalPosition.EdgeToEdge
                                 Split -> HorizontalPosition.MiddleToEdge(ratio = 0.5f)
@@ -286,13 +306,13 @@ constructor(
 
                         ConfigurationBasedDimensions(
                             horizontalPosition = horizontalPosition,
-                            marginStart = if (shadeMode is Split) 0 else marginHorizontal,
-                            marginEnd = if (shadeMode is Dual) 0 else marginHorizontal,
-                            marginBottom =
-                                getDimensionPixelSize(R.dimen.notification_panel_margin_bottom),
+                            marginStart = marginStart,
                             // y position of the NSSL in the window needs to be 0 under scene
                             // container
                             marginTop = 0,
+                            marginEnd = marginEnd,
+                            marginBottom =
+                                getDimensionPixelSize(R.dimen.notification_panel_margin_bottom),
                         )
                     }
                 }
@@ -531,6 +551,7 @@ constructor(
     private val alphaForShadeAndQsExpansion: Flow<Float> =
         if (SceneContainerFlag.isEnabled) {
                 shadeModeInteractor.shadeMode.flatMapLatest { shadeMode ->
+                    @Suppress("DEPRECATION") // to handle split shade
                     when (shadeMode) {
                         Single ->
                             combineTransform(
