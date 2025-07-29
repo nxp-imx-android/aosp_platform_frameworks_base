@@ -47,6 +47,12 @@ fun getWidth(): Dp {
         }
 }
 
+@Composable
+fun hasExpandedWindowHeight() =
+    LocalWindowSizeClass.current.isHeightAtLeastBreakpoint(
+        WindowSizeClass.HEIGHT_DP_EXPANDED_LOWER_BOUND
+    )
+
 object ShortcutHelperBottomSheet {
     val DefaultWidth = 412.dp
     val LargeScreenWidthPortrait = 704.dp
