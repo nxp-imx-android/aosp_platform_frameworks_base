@@ -31,7 +31,7 @@ shopt -s nullglob # if a glob matches no file, expands to an empty string.
 cd "${0%/*}"
 
 # Find the enablement files. This may be an empty list if there's no match.
-default_enablement_policy=(../texts/*-enablement-policy.txt)
+default_enablement_policy=(../texts/enablement-policy-*.txt)
 
 # ROLLING_TF_SUBPROCESS_OUTPUT is often quite behind for large tests.
 # let's disable it by default.
