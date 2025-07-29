@@ -26,6 +26,7 @@ import static android.hardware.biometrics.BiometricRequestConstants.REASON_ENROL
 import static android.hardware.biometrics.BiometricRequestConstants.REASON_ENROLL_FIND_SENSOR;
 
 import static com.android.internal.util.LatencyTracker.ACTION_UDFPS_ILLUMINATE;
+import static com.android.internal.util.LatencyTracker.ACTION_UDFPS_OVERLAY_ATTACHED_AFTER_GOING_TO_SLEEP;
 import static com.android.internal.util.Preconditions.checkNotNull;
 import static com.android.systemui.classifier.Classifier.UDFPS_AUTHENTICATION;
 
@@ -93,6 +94,7 @@ import com.android.systemui.deviceentry.domain.interactor.DeviceEntryFaceAuthInt
 import com.android.systemui.doze.DozeReceiver;
 import com.android.systemui.dump.DumpManager;
 import com.android.systemui.keyguard.ScreenLifecycle;
+import com.android.systemui.keyguard.WakefulnessLifecycle;
 import com.android.systemui.keyguard.domain.interactor.KeyguardTransitionInteractor;
 import com.android.systemui.log.SessionTracker;
 import com.android.systemui.plugins.FalsingManager;
@@ -259,6 +261,29 @@ public class UdfpsController implements DozeReceiver, Dumpable {
             mScreenOn = false;
         }
     };
+
+    private final WakefulnessLifecycle mWakefulnessLifecycle;
+    private final WakefulnessLifecycle.Observer mWakefulnessLifecycleObserver =
+            new WakefulnessLifecycle.Observer() {
+                @Override
+                public void onStartedGoingToSleep() {
+                    mLatencyTracker.onActionCancel(
+                            ACTION_UDFPS_OVERLAY_ATTACHED_AFTER_GOING_TO_SLEEP);
+                    mLatencyTracker.onActionStart(
+                            ACTION_UDFPS_OVERLAY_ATTACHED_AFTER_GOING_TO_SLEEP);
+                }
+            };
+
+    private final View.OnAttachStateChangeListener mOverlayAttachStateListener =
+            new View.OnAttachStateChangeListener() {
+                @Override
+                public void onViewAttachedToWindow(@NonNull View v) {
+                    mLatencyTracker.onActionEnd(ACTION_UDFPS_OVERLAY_ATTACHED_AFTER_GOING_TO_SLEEP);
+                }
+
+                @Override
+                public void onViewDetachedFromWindow(@NonNull View v) {}
+            };
 
     @Override
     public void dump(@NonNull PrintWriter pw, @NonNull String[] args) {
@@ -693,7 +718,8 @@ public class UdfpsController implements DozeReceiver, Dumpable {
             @NonNull UdfpsOverlayInteractor udfpsOverlayInteractor,
             @NonNull PowerInteractor powerInteractor,
             @Application CoroutineScope scope,
-            UserActivityNotifier userActivityNotifier) {
+            UserActivityNotifier userActivityNotifier,
+            Lazy<WakefulnessLifecycle> wakefulnessLifecycle) {
         mContext = context;
         mExecution = execution;
         mVibrator = vibrator;
@@ -772,6 +798,11 @@ public class UdfpsController implements DozeReceiver, Dumpable {
 
         udfpsHapticsSimulator.setUdfpsController(this);
         udfpsShell.setUdfpsOverlayController(mUdfpsOverlayController);
+
+        mWakefulnessLifecycle = wakefulnessLifecycle.get();
+        if (mWakefulnessLifecycle != null) {
+            mWakefulnessLifecycle.addObserver(mWakefulnessLifecycleObserver);
+        }
     }
 
     /**
@@ -821,7 +852,9 @@ public class UdfpsController implements DozeReceiver, Dumpable {
                     + " isn't running on keyguard. Skip show.");
             return;
         }
-        if (overlay.show(mOverlayParams)) {
+        final View.OnAttachStateChangeListener listener =
+                mWakefulnessLifecycle == null ? null : mOverlayAttachStateListener;
+        if (overlay.show(mOverlayParams, listener)) {
             Log.d(TAG, "showUdfpsOverlay | adding window reason=" + requestReason);
             mOnFingerDown = false;
             mAttemptedToDismissKeyguard = false;
