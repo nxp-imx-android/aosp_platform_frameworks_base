@@ -19,6 +19,7 @@ package com.android.systemui.statusbar.notification.stack.ui.viewmodel
 import android.content.applicationContext
 import com.android.systemui.bouncer.domain.interactor.bouncerInteractor
 import com.android.systemui.common.ui.domain.interactor.configurationInteractor
+import com.android.systemui.communal.domain.interactor.communalInteractor
 import com.android.systemui.communal.domain.interactor.communalSceneInteractor
 import com.android.systemui.dump.dumpManager
 import com.android.systemui.keyguard.domain.interactor.keyguardInteractor
@@ -75,6 +76,7 @@ val Kosmos.sharedNotificationContainerViewModel by Fixture {
         applicationScope = applicationCoroutineScope,
         context = applicationContext,
         configurationInteractor = configurationInteractor,
+        communalInteractor = communalInteractor,
         keyguardInteractor = keyguardInteractor,
         keyguardTransitionInteractor = keyguardTransitionInteractor,
         shadeInteractor = shadeInteractor,

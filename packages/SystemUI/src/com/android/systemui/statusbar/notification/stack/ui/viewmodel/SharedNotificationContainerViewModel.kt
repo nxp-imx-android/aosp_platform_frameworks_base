@@ -25,6 +25,7 @@ import com.android.systemui.Flags.glanceableHubV2
 import com.android.systemui.bouncer.domain.interactor.BouncerInteractor
 import com.android.systemui.common.shared.model.NotificationContainerBounds
 import com.android.systemui.common.ui.domain.interactor.ConfigurationInteractor
+import com.android.systemui.communal.domain.interactor.CommunalInteractor
 import com.android.systemui.communal.domain.interactor.CommunalSceneInteractor
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
@@ -100,8 +101,10 @@ import com.android.systemui.util.kotlin.FlowDumperImpl
 import com.android.systemui.util.kotlin.Utils.Companion.sample as sampleCombine
 import com.android.systemui.util.kotlin.sample
 import com.android.systemui.utils.coroutines.flow.conflatedCallbackFlow
+import com.android.systemui.utils.coroutines.flow.flatMapLatestConflated
 import dagger.Lazy
 import javax.inject.Inject
+import kotlin.math.round
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.awaitClose
@@ -136,6 +139,7 @@ constructor(
     @Application applicationScope: CoroutineScope,
     @ShadeDisplayAware private val context: Context,
     @ShadeDisplayAware configurationInteractor: ConfigurationInteractor,
+    communalInteractor: CommunalInteractor,
     private val keyguardInteractor: KeyguardInteractor,
     private val keyguardTransitionInteractor: KeyguardTransitionInteractor,
     private val shadeInteractor: ShadeInteractor,
@@ -738,6 +742,32 @@ constructor(
             .dumpWhileCollecting("blurRadius")
 
     /**
+     * Flow of view scale values for the zoom animation between the lockscreen and glanceable hub.
+     * 1.0f means no visual change to the view.
+     */
+    val viewScale: Flow<Float> =
+        // Use flatMapLatestConflated so the animation flows aren't collected at all when communal
+        // is not visible.
+        communalInteractor.isCommunalVisible
+            .flatMapLatestConflated { isCommunalVisible ->
+                if (!isCommunalVisible) {
+                    flowOf(1f)
+                } else {
+                    merge(
+                            lockscreenToGlanceableHubTransitionViewModel.zoomOut,
+                            glanceableHubToLockscreenTransitionViewModel.zoomOut,
+                        )
+                        .map {
+                            // Rate limit the zoom out by 5% step to avoid jank.
+                            val limited = (round(it * 20) / 20f).coerceIn(0f, 1f)
+                            1 - limited * PUSHBACK_SCALE
+                        }
+                }
+            }
+            .distinctUntilChanged()
+            .dumpWhileCollecting("viewScale")
+
+    /**
      * Returns a flow of the expected alpha while running a LOCKSCREEN<->GLANCEABLE_HUB or
      * DREAMING<->GLANCEABLE_HUB transition or idle on the hub.
      *
@@ -980,5 +1010,9 @@ constructor(
 
         /** The container is laid out from the given [ratio] of the screen width to the end edge. */
         data class MiddleToEdge(val ratio: Float = 0.5f) : HorizontalPosition
+    }
+
+    companion object {
+        @VisibleForTesting const val PUSHBACK_SCALE = 0.05f
     }
 }

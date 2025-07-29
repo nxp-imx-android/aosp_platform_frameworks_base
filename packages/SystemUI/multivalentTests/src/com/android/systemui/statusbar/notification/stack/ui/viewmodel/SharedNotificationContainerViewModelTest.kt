@@ -20,12 +20,15 @@ package com.android.systemui.statusbar.notification.stack.ui.viewmodel
 import android.platform.test.annotations.EnableFlags
 import android.platform.test.flag.junit.FlagsParameterization
 import androidx.test.filters.SmallTest
+import com.android.compose.animation.scene.ObservableTransitionState
+import com.android.systemui.Flags.FLAG_GESTURE_BETWEEN_HUB_AND_LOCKSCREEN_MOTION
 import com.android.systemui.Flags.FLAG_GLANCEABLE_HUB_V2
 import com.android.systemui.Flags.FLAG_LOCKSCREEN_SHADE_TO_DREAM_TRANSITION_FIX
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.bouncer.data.repository.keyguardBouncerRepository
 import com.android.systemui.common.shared.model.NotificationContainerBounds
 import com.android.systemui.common.ui.data.repository.fakeConfigurationRepository
+import com.android.systemui.communal.data.repository.communalSceneRepository
 import com.android.systemui.communal.domain.interactor.communalSceneInteractor
 import com.android.systemui.communal.shared.model.CommunalScenes
 import com.android.systemui.flags.BrokenWithSceneContainer
@@ -77,6 +80,7 @@ import com.android.systemui.shade.shadeTestUtil
 import com.android.systemui.statusbar.notification.data.repository.activeNotificationListRepository
 import com.android.systemui.statusbar.notification.data.repository.setActiveNotifs
 import com.android.systemui.statusbar.notification.stack.domain.interactor.sharedNotificationContainerInteractor
+import com.android.systemui.statusbar.notification.stack.ui.viewmodel.SharedNotificationContainerViewModel.Companion.PUSHBACK_SCALE
 import com.android.systemui.statusbar.notification.stack.ui.viewmodel.SharedNotificationContainerViewModel.HorizontalPosition
 import com.android.systemui.testKosmos
 import com.android.systemui.window.ui.viewmodel.fakeBouncerTransitions
@@ -1567,6 +1571,79 @@ class SharedNotificationContainerViewModelTest(flags: FlagsParameterization) : S
 
             kosmos.fakeBouncerTransitions.last().notificationBlurRadius.value = 40.0f
             assertThat(blurRadius).isEqualTo(40.0f)
+        }
+
+    @Test
+    @DisableSceneContainer
+    @EnableFlags(FLAG_GESTURE_BETWEEN_HUB_AND_LOCKSCREEN_MOTION)
+    fun glanceableHubViewScale_transitionFromLockscreenToHubAndBack() =
+        kosmos.runTest {
+            val scale by collectLastValue(underTest.viewScale)
+            showLockscreen()
+            assertThat(scale).isEqualTo(1.0f)
+
+            val transitionState: MutableStateFlow<ObservableTransitionState> =
+                MutableStateFlow(
+                    ObservableTransitionState.Transition(
+                        fromScene = CommunalScenes.Blank,
+                        toScene = CommunalScenes.Communal,
+                        currentScene = flowOf(CommunalScenes.Blank),
+                        progress = flowOf(0f),
+                        isInitiatedByUserInput = true,
+                        isUserInputOngoing = flowOf(false),
+                    )
+                )
+
+            // Start transition to communal.
+            communalSceneRepository.setTransitionState(transitionState)
+
+            // Transition to the glanceable hub and back.
+            keyguardTransitionRepository.sendTransitionSteps(
+                from = LOCKSCREEN,
+                to = GLANCEABLE_HUB,
+                testScope,
+            )
+            transitionState.value = ObservableTransitionState.Idle(CommunalScenes.Communal)
+
+            assertThat(scale).isEqualTo(1 - PUSHBACK_SCALE)
+
+            // Start transitioning back.
+            keyguardTransitionRepository.sendTransitionSteps(
+                from = GLANCEABLE_HUB,
+                to = LOCKSCREEN,
+                testScope,
+            )
+            transitionState.value = ObservableTransitionState.Idle(CommunalScenes.Blank)
+
+            assertThat(scale).isEqualTo(1f)
+        }
+
+    @Test
+    @DisableSceneContainer
+    @EnableFlags(FLAG_GESTURE_BETWEEN_HUB_AND_LOCKSCREEN_MOTION)
+    fun glanceableHubViewScale_reset_transitionedAwayFromHub() =
+        kosmos.runTest {
+            val scale by collectLastValue(underTest.viewScale)
+
+            val transitionState: MutableStateFlow<ObservableTransitionState> =
+                MutableStateFlow(ObservableTransitionState.Idle(CommunalScenes.Blank))
+
+            // Transition to the glanceable hub and then to bouncer.
+            keyguardTransitionRepository.sendTransitionSteps(
+                from = LOCKSCREEN,
+                to = GLANCEABLE_HUB,
+                testScope,
+            )
+            transitionState.value = ObservableTransitionState.Idle(CommunalScenes.Communal)
+
+            keyguardTransitionRepository.sendTransitionSteps(
+                from = GLANCEABLE_HUB,
+                to = PRIMARY_BOUNCER,
+                testScope,
+            )
+            transitionState.value = ObservableTransitionState.Idle(CommunalScenes.Blank)
+
+            assertThat(scale).isEqualTo(1f)
         }
 
     private suspend fun Kosmos.showLockscreen() {

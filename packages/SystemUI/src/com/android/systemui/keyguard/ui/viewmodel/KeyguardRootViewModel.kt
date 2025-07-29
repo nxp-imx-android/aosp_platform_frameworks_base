@@ -59,9 +59,11 @@ import com.android.systemui.util.ui.AnimatableEvent
 import com.android.systemui.util.ui.AnimatedValue
 import com.android.systemui.util.ui.toAnimatedValueFlow
 import com.android.systemui.util.ui.zip
+import com.android.systemui.utils.coroutines.flow.flatMapLatestConflated
 import java.util.Optional
 import javax.inject.Inject
 import kotlin.math.max
+import kotlin.math.round
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
@@ -233,28 +235,30 @@ constructor(
 
     private val zoomOutFromGlanceableHub: Flow<Float> =
         if (!Flags.gestureBetweenHubAndLockscreenMotion()) {
-            emptyFlow()
-        } else {
-            combine(
-                    communalInteractor.isCommunalVisible,
-                    merge(
-                        lockscreenToGlanceableHubTransitionViewModel.zoomOut,
-                        glanceableHubToLockscreenTransitionViewModel.zoomOut,
-                        aodToGlanceableHubTransitionViewModel.zoomOut,
-                        glanceableHubToAodTransitionViewModel.zoomOut,
-                    ),
-                ) { isCommunalVisible, zoomOut ->
+                emptyFlow()
+            } else {
+                // Use flatMapLatestConflated so the animation flows aren't collected at all when
+                // communal is not visible.
+                communalInteractor.isCommunalVisible.flatMapLatestConflated { isCommunalVisible ->
                     if (!isCommunalVisible) {
                         // reset zoom out once we've exited the communal scene
-                        0f
+                        flowOf(0f)
                     } else {
-                        // rate limit the zoom out by 5% step to avoid jank
-                        ((zoomOut * 20).toInt() / 20f).coerceIn(0f, 1f)
+                        merge(
+                                lockscreenToGlanceableHubTransitionViewModel.zoomOut,
+                                glanceableHubToLockscreenTransitionViewModel.zoomOut,
+                                aodToGlanceableHubTransitionViewModel.zoomOut,
+                                glanceableHubToAodTransitionViewModel.zoomOut,
+                            )
+                            .map {
+                                // rate limit the zoom out by 5% step to avoid jank
+                                (round(it * 20) / 20f).coerceIn(0f, 1f)
+                            }
                     }
                 }
-                .distinctUntilChanged()
-                .dumpWhileCollecting("zoomOutFromGlanceableHub")
-        }
+            }
+            .distinctUntilChanged()
+            .dumpWhileCollecting("zoomOutFromGlanceableHub")
 
     /** Last point that the root view was tapped */
     val lastRootViewTapPosition: Flow<Point?> =
