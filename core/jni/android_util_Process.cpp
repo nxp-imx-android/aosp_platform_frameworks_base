@@ -1200,7 +1200,7 @@ void android_os_Process_sendTgSignalThrows(JNIEnv* env, jobject clazz, jint tgid
     }
 }
 
-static jlong android_os_Process_getElapsedCpuTime(JNIEnv* env, jobject clazz)
+static jlong android_os_Process_getElapsedCpuTime(CRITICAL_JNI_PARAMS)
 {
     struct timespec ts;
 
