@@ -854,3 +854,18 @@ test_module_config {
     test_suites: ["device-tests"],
     include_filters: ["android.tracing"],
 }
+
+test_module_config {
+    name: "FrameworksCoreTests_messagequeue",
+    base: "FrameworksCoreTests",
+    test_suites: [
+        "automotive-tests",
+        "device-platinum-tests",
+        "device-tests",
+    ],
+    include_filters: [
+        "android.os.MessageHeapTest",
+        "android.os.MessageStackTest",
+        "android.os.WaitStateTest",
+    ],
+}
