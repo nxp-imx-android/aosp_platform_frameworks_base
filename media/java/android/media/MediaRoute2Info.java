@@ -648,6 +648,7 @@ public final class MediaRoute2Info implements Parcelable {
     private final boolean mAlsoAllowPrivilegedPackages;
     private final List<Set<String>> mRequiredPermissions;
     @SuitabilityStatus private final int mSuitabilityStatus;
+    private Set<String> mTemporaryVisibilityPackages;
 
     MediaRoute2Info(@NonNull Builder builder) {
         mId = builder.mId;
@@ -673,6 +674,7 @@ public final class MediaRoute2Info implements Parcelable {
         mAlsoAllowPrivilegedPackages = builder.mAlsoAllowPrivilegedPackages;
         mSuitabilityStatus = builder.mSuitabilityStatus;
         mRequiredPermissions = List.copyOf(builder.mRequiredPermissions);
+        mTemporaryVisibilityPackages = builder.mTemporaryVisibilityPackages;
     }
 
     MediaRoute2Info(@NonNull Parcel in) {
@@ -705,6 +707,7 @@ public final class MediaRoute2Info implements Parcelable {
         }
         mRequiredPermissions = List.copyOf(requiredPermissions); // Use copyOf to make it immutable.
         mSuitabilityStatus = in.readInt();
+        mTemporaryVisibilityPackages = Set.of();
     }
 
     /**
@@ -963,6 +966,15 @@ public final class MediaRoute2Info implements Parcelable {
     }
 
     /**
+     * Returns whether this route can be seen by any router (i.e. has no visibility or permissions
+     * restrictions).
+     * @hide
+     */
+    public boolean isPublic() {
+        return !mIsVisibilityRestricted && mRequiredPermissions.isEmpty();
+    }
+
+    /**
      * Returns whether this route is visible to the package with the given name.
      *
      * @hide
@@ -970,7 +982,8 @@ public final class MediaRoute2Info implements Parcelable {
     public boolean isVisibleTo(@NonNull String packageName) {
         return !mIsVisibilityRestricted
                 || TextUtils.equals(getProviderPackageName(), packageName)
-                || mAllowedPackages.contains(packageName);
+                || mAllowedPackages.contains(packageName)
+                || mTemporaryVisibilityPackages.contains(packageName);
     }
 
     /**
@@ -980,7 +993,8 @@ public final class MediaRoute2Info implements Parcelable {
         // TODO(b/426044649) - see the comment above on the mAlsoAllowPrivilegedPackages member
         //  variable when removing the enableRouteVisibilityControlApi flag.
         return isVisibleTo(packageName) || (Flags.enableRouteVisibilityControlApi()
-                && callerIsPrivileged && mAlsoAllowPrivilegedPackages);
+                && callerIsPrivileged && mAlsoAllowPrivilegedPackages)
+                || mTemporaryVisibilityPackages.contains(packageName);
     }
 
     /**
@@ -991,6 +1005,16 @@ public final class MediaRoute2Info implements Parcelable {
     @FlaggedApi(FLAG_ENABLE_ROUTE_VISIBILITY_CONTROL_API)
     public List<Set<String>> getRequiredPermissions() {
         return mRequiredPermissions;
+    }
+
+    /**
+     * Returns a set of packages that should be allowed to see this route regardless of other
+     * visibility or permissions-based restrictions.
+     *
+     * @hide
+     */
+    public Set<String> getTemporaryVisibilityPackages() {
+        return mTemporaryVisibilityPackages;
     }
 
     /**
@@ -1104,7 +1128,8 @@ public final class MediaRoute2Info implements Parcelable {
                 && Objects.equals(mAllowedPackages, other.mAllowedPackages)
                 && mAlsoAllowPrivilegedPackages == other.mAlsoAllowPrivilegedPackages
                 && Objects.equals(mRequiredPermissions, other.mRequiredPermissions)
-                && mSuitabilityStatus == other.mSuitabilityStatus;
+                && mSuitabilityStatus == other.mSuitabilityStatus
+                && Objects.equals(mTemporaryVisibilityPackages, other.mTemporaryVisibilityPackages);
     }
 
     @Override
@@ -1370,6 +1395,7 @@ public final class MediaRoute2Info implements Parcelable {
         //    VISIBILITY_RESTRICTED_TO_ALLOWLIST_AND_PRIVILEGED
         private boolean mAlsoAllowPrivilegedPackages;
         private List<Set<String>> mRequiredPermissions;
+        private Set<String> mTemporaryVisibilityPackages;
         @SuitabilityStatus private int mSuitabilityStatus;
 
         /**
@@ -1396,6 +1422,7 @@ public final class MediaRoute2Info implements Parcelable {
             mAllowedPackages = Set.of();
             mSuitabilityStatus = SUITABILITY_STATUS_SUITABLE_FOR_DEFAULT_TRANSFER;
             mRequiredPermissions = List.of();
+            mTemporaryVisibilityPackages = Set.of();
         }
 
         /**
@@ -1447,6 +1474,7 @@ public final class MediaRoute2Info implements Parcelable {
             mAlsoAllowPrivilegedPackages = routeInfo.mAlsoAllowPrivilegedPackages;
             mSuitabilityStatus = routeInfo.mSuitabilityStatus;
             mRequiredPermissions = routeInfo.mRequiredPermissions;
+            mTemporaryVisibilityPackages = routeInfo.mTemporaryVisibilityPackages;
         }
 
         /**
@@ -1756,6 +1784,17 @@ public final class MediaRoute2Info implements Parcelable {
         @FlaggedApi(FLAG_ENABLE_ROUTE_VISIBILITY_CONTROL_API)
         public Builder setRequiredPermissions(@NonNull List<Set<String>> requiresOneOf) {
             mRequiredPermissions = List.copyOf(requiresOneOf);
+            return this;
+        }
+
+        /**
+         * Sets a list of package names that will be temporarily given access to this route, even
+         * if those apps otherwise would not have access due to visibility or permissions.
+         *
+         * @hide
+         */
+        public Builder setTemporaryAllowedPackages(@NonNull Set<String> packageNames) {
+            mTemporaryVisibilityPackages = Set.copyOf(packageNames);
             return this;
         }
 
