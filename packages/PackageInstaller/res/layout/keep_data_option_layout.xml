@@ -28,7 +28,8 @@
 
     <FrameLayout
         android:layout_width="40dp"
-        android:layout_height="40dp">
+        android:layout_height="40dp"
+        android:layout_gravity="center_vertical">
 
         <CheckBox
             android:id="@+id/keep_data_checkbox"
