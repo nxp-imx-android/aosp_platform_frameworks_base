@@ -68,8 +68,6 @@ import android.window.RemoteTransition;
 import android.window.SplashScreen;
 import android.window.WindowContainerToken;
 
-import com.android.window.flags.Flags;
-
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
@@ -131,7 +129,6 @@ public class ActivityOptions extends ComponentOptions {
      * Restrictions on starting activities from the background</a>).
      */
     @Deprecated
-    @FlaggedApi(Flags.FLAG_BAL_ADDITIONAL_START_MODES)
     public static final int MODE_BACKGROUND_ACTIVITY_START_ALLOWED = 1;
     /**
      * Denies the {@link PendingIntent} any background activity start privileges.
@@ -152,7 +149,6 @@ public class ActivityOptions extends ComponentOptions {
      * <a href="https://developer.android.com/guide/components/activities/background-starts">
      * Restrictions on starting activities from the background</a>
      */
-    @FlaggedApi(Flags.FLAG_BAL_ADDITIONAL_START_MODES)
     public static final int MODE_BACKGROUND_ACTIVITY_START_ALLOW_ALWAYS = 3;
     /**
      * Grants the {@link PendingIntent} background activity start privileges only when the app
@@ -163,7 +159,6 @@ public class ActivityOptions extends ComponentOptions {
      * <a href="https://developer.android.com/guide/components/activities/background-starts">
      * Restrictions on starting activities from the background</a>
      */
-    @FlaggedApi(Flags.FLAG_BAL_ADDITIONAL_START_MODES)
     public static final int MODE_BACKGROUND_ACTIVITY_START_ALLOW_IF_VISIBLE = 4;
     /**
      * Provides compatibility with previous Android versions regarding background activity starts.
