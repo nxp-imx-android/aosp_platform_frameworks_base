@@ -24,6 +24,7 @@ import android.hardware.SensorPrivacyManager;
 
 import com.android.keyguard.KeyguardViewController;
 import com.android.systemui.CoreStartable;
+import com.android.systemui.Flags;
 import com.android.systemui.ScreenDecorationsModule;
 import com.android.systemui.accessibility.AccessibilityModule;
 import com.android.systemui.accessibility.SystemActionsModule;
@@ -39,10 +40,8 @@ import com.android.systemui.display.ui.viewmodel.ConnectingDisplayViewModel;
 import com.android.systemui.dock.DockManager;
 import com.android.systemui.dock.DockManagerImpl;
 import com.android.systemui.doze.DozeHost;
+import com.android.systemui.dreams.suppression.dagger.NoOpActivityRecognitionModule;
 import com.android.systemui.education.dagger.ContextualEducationModule;
-import com.android.systemui.Flags;
-import com.android.systemui.minmode.MinModeManager;
-import com.android.systemui.minmode.MinModeManagerImpl;
 import com.android.systemui.emergency.EmergencyGestureModule;
 import com.android.systemui.inputdevice.tutorial.KeyboardTouchpadTutorialModule;
 import com.android.systemui.keyboard.shortcut.ShortcutHelperModule;
@@ -53,6 +52,8 @@ import com.android.systemui.keyguard.ui.view.layout.sections.KeyguardSectionsMod
 import com.android.systemui.media.dagger.MediaModule;
 import com.android.systemui.media.muteawait.MediaMuteAwaitConnectionCli;
 import com.android.systemui.media.nearby.NearbyMediaDevicesManager;
+import com.android.systemui.minmode.MinModeManager;
+import com.android.systemui.minmode.MinModeManagerImpl;
 import com.android.systemui.navigationbar.NavigationBarControllerModule;
 import com.android.systemui.navigationbar.gestural.GestureModule;
 import com.android.systemui.plugins.qs.QSFactory;
@@ -159,6 +160,7 @@ import javax.inject.Provider;
         MultiUserUtilsModule.class,
         NavigationBarControllerModule.class,
         NearbyMediaDevicesManager.StartableModule.class,
+        NoOpActivityRecognitionModule.class,
         PowerModule.class,
         QSFragmentStartableModule.class,
         QSModule.class,
