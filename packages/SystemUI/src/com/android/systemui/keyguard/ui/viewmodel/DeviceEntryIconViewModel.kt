@@ -191,7 +191,7 @@ constructor(
         if (SceneContainerFlag.isEnabled) {
                 deviceEntryInteractor.isUnlocked
             } else {
-                keyguardInteractor.isKeyguardDismissible
+                keyguardInteractor.hasTrust
             }
             .flatMapLatest { isUnlocked ->
                 if (!isUnlocked) {

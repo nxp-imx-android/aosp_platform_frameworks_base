@@ -108,15 +108,7 @@ constructor(
     override val deviceEntryParentViewAlpha: Flow<Float> =
         deviceEntryUdfpsInteractor.isUdfpsEnrolledAndEnabled.flatMapLatest { udfpsEnrolled ->
             if (udfpsEnrolled) {
-                // fade in at the end of the transition to give time for FP to start running
-                // and avoid a flicker of the unlocked icon
-                transitionAnimation.sharedFlow(
-                    startTime = 1100.milliseconds,
-                    duration = 200.milliseconds,
-                    onStep = { it },
-                    onCancel = { 1f },
-                    onFinish = { 1f },
-                )
+                transitionAnimation.immediatelyTransitionTo(1f)
             } else {
                 emptyFlow()
             }

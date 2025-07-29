@@ -227,20 +227,17 @@ class GoneToAodTransitionViewModelTest : SysuiTestCase() {
             val deviceEntryParentViewAlpha by collectLastValue(underTest.deviceEntryParentViewAlpha)
             runCurrent()
 
-            // animation doesn't start until the end
+            // immediately 1f
             repository.sendTransitionStep(step(0f, TransitionState.STARTED))
-            assertThat(deviceEntryParentViewAlpha).isEqualTo(0f)
+            assertThat(deviceEntryParentViewAlpha).isEqualTo(1f)
 
-            repository.sendTransitionStep(step(0.5f))
-            assertThat(deviceEntryParentViewAlpha).isEqualTo(0f)
+            repository.sendTransitionStep(step(0.4f))
+            assertThat(deviceEntryParentViewAlpha).isEqualTo(1f)
 
-            repository.sendTransitionStep(step(.95f))
-            assertThat(deviceEntryParentViewAlpha).isIn(Range.closed(.01f, 1f))
+            repository.sendTransitionStep(step(.85f))
+            assertThat(deviceEntryParentViewAlpha).isEqualTo(1f)
 
             repository.sendTransitionStep(step(1f))
-            assertThat(deviceEntryParentViewAlpha).isIn(Range.closed(.99f, 1f))
-
-            repository.sendTransitionStep(step(1f, TransitionState.FINISHED))
             assertThat(deviceEntryParentViewAlpha).isEqualTo(1f)
         }
 
