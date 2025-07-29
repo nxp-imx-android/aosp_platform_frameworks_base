@@ -1256,7 +1256,8 @@ public class DisplayManagerServiceTest {
                         mMockAppToken2 /* callback */,
                         virtualDevice /* virtualDeviceToken */,
                         mock(DisplayWindowPolicyController.class),
-                        PACKAGE_NAME);
+                        PACKAGE_NAME,
+                        Process.myUid());
         verify(mMockProjectionService, never()).setContentRecordingSession(any(),
                 nullable(IMediaProjection.class));
         int displayGroupId1 = localService.getDisplayInfo(displayId1).displayGroupId;
@@ -1275,7 +1276,8 @@ public class DisplayManagerServiceTest {
                         mMockAppToken /* callback */,
                         virtualDevice /* virtualDeviceToken */,
                         mock(DisplayWindowPolicyController.class),
-                        PACKAGE_NAME);
+                        PACKAGE_NAME,
+                        Process.myUid());
         verify(mMockProjectionService, never()).setContentRecordingSession(any(),
                 nullable(IMediaProjection.class));
         int displayGroupId2 = localService.getDisplayInfo(displayId2).displayGroupId;
@@ -1309,7 +1311,8 @@ public class DisplayManagerServiceTest {
                         mMockAppToken /* callback */,
                         virtualDevice /* virtualDeviceToken */,
                         mock(DisplayWindowPolicyController.class),
-                        PACKAGE_NAME);
+                        PACKAGE_NAME,
+                        Process.myUid());
         verify(mMockProjectionService, never()).setContentRecordingSession(any(),
                 nullable(IMediaProjection.class));
         int displayGroupId = localService.getDisplayInfo(displayId).displayGroupId;
@@ -1349,7 +1352,8 @@ public class DisplayManagerServiceTest {
                         mMockAppToken /* callback */,
                         virtualDevice /* virtualDeviceToken */,
                         mock(DisplayWindowPolicyController.class),
-                        PACKAGE_NAME);
+                        PACKAGE_NAME,
+                        Process.myUid());
         verify(mMockProjectionService, never()).setContentRecordingSession(any(),
                 nullable(IMediaProjection.class));
         int displayGroupId1 = localService.getDisplayInfo(displayId1).displayGroupId;
@@ -1371,7 +1375,8 @@ public class DisplayManagerServiceTest {
                         mMockAppToken2 /* callback */,
                         virtualDevice /* virtualDeviceToken */,
                         mock(DisplayWindowPolicyController.class),
-                        PACKAGE_NAME);
+                        PACKAGE_NAME,
+                        Process.myUid());
         verify(mMockProjectionService, never()).setContentRecordingSession(any(),
                 nullable(IMediaProjection.class));
         int displayGroupId2 = localService.getDisplayInfo(displayId2).displayGroupId;
@@ -1420,7 +1425,8 @@ public class DisplayManagerServiceTest {
                         mMockAppToken /* callback */,
                         virtualDevice /* virtualDeviceToken */,
                         mock(DisplayWindowPolicyController.class),
-                        PACKAGE_NAME);
+                        PACKAGE_NAME,
+                        Process.myUid());
         verify(mMockProjectionService, never()).setContentRecordingSession(any(),
                 nullable(IMediaProjection.class));
 
@@ -1448,7 +1454,8 @@ public class DisplayManagerServiceTest {
                         mMockAppToken2 /* callback */,
                         virtualDevice /* virtualDeviceToken */,
                         mock(DisplayWindowPolicyController.class),
-                        PACKAGE_NAME);
+                        PACKAGE_NAME,
+                        Process.myUid());
         verify(mMockProjectionService, never()).setContentRecordingSession(any(),
                 nullable(IMediaProjection.class));
 
@@ -1473,7 +1480,8 @@ public class DisplayManagerServiceTest {
                         mMockAppToken3 /* callback */,
                         null /* virtualDeviceToken */,
                         mock(DisplayWindowPolicyController.class),
-                        PACKAGE_NAME);
+                        PACKAGE_NAME,
+                        Process.myUid());
         verify(mMockProjectionService, never()).setContentRecordingSession(any(),
                 nullable(IMediaProjection.class));
 
@@ -1509,7 +1517,8 @@ public class DisplayManagerServiceTest {
                     mMockAppToken /* callback */,
                     null /* virtualDeviceToken */,
                     mock(DisplayWindowPolicyController.class),
-                    PACKAGE_NAME);
+                    PACKAGE_NAME,
+                    Process.myUid());
         });
     }
 
@@ -1540,7 +1549,8 @@ public class DisplayManagerServiceTest {
                     mMockAppToken /* callback */,
                     virtualDevice /* virtualDeviceToken */,
                     mock(DisplayWindowPolicyController.class),
-                    PACKAGE_NAME);
+                    PACKAGE_NAME,
+                    Process.myUid());
         });
     }
 
@@ -1570,7 +1580,8 @@ public class DisplayManagerServiceTest {
                         mMockAppToken /* callback */,
                         virtualDevice /* virtualDeviceToken */,
                         mock(DisplayWindowPolicyController.class),
-                        PACKAGE_NAME);
+                        PACKAGE_NAME,
+                        Process.myUid());
 
         // The virtual display should be in the default display group.
         assertEquals(Display.DEFAULT_DISPLAY_GROUP,
@@ -1603,7 +1614,8 @@ public class DisplayManagerServiceTest {
                         mMockAppToken /* callback */,
                         virtualDevice /* virtualDeviceToken */,
                         mock(DisplayWindowPolicyController.class),
-                        PACKAGE_NAME);
+                        PACKAGE_NAME,
+                        Process.myUid());
 
         // The virtual display should mirror the default display.
         assertEquals(Display.DEFAULT_DISPLAY, localService.getDisplayIdToMirror(displayId));
@@ -1634,7 +1646,8 @@ public class DisplayManagerServiceTest {
                         mMockAppToken /* callback */,
                         virtualDevice /* virtualDeviceToken */,
                         mock(DisplayWindowPolicyController.class),
-                        PACKAGE_NAME);
+                        PACKAGE_NAME,
+                        Process.myUid());
 
         // The virtual display should not mirror any display.
         assertEquals(Display.INVALID_DISPLAY, localService.getDisplayIdToMirror(displayId));
@@ -1673,7 +1686,8 @@ public class DisplayManagerServiceTest {
                         mMockAppToken /* callback */,
                         virtualDevice /* virtualDeviceToken */,
                         mock(DisplayWindowPolicyController.class),
-                        PACKAGE_NAME);
+                        PACKAGE_NAME,
+                        Process.myUid());
 
         // The virtual display should not have FLAG_ALWAYS_UNLOCKED set.
         assertEquals(0, (displayManager.getDisplayDeviceInfoInternal(displayId).flags
@@ -1707,7 +1721,8 @@ public class DisplayManagerServiceTest {
                         mMockAppToken /* callback */,
                         virtualDevice /* virtualDeviceToken */,
                         mock(DisplayWindowPolicyController.class),
-                        PACKAGE_NAME);
+                        PACKAGE_NAME,
+                        Process.myUid());
 
         // The virtual display should not have FLAG_PRESENTATION set.
         assertEquals(0, (displayManager.getDisplayDeviceInfoInternal(displayId).flags
@@ -2211,7 +2226,7 @@ public class DisplayManagerServiceTest {
         try {
             localService.createVirtualDisplay(builder.build(),
                     mMockAppToken /* callback */, virtualDevice /* virtualDeviceToken */,
-                    mock(DisplayWindowPolicyController.class), PACKAGE_NAME);
+                    mock(DisplayWindowPolicyController.class), PACKAGE_NAME, Process.myUid());
             fail("Creating virtual display with VIRTUAL_DISPLAY_FLAG_OWN_DISPLAY_GROUP without "
                     + "ADD_TRUSTED_DISPLAY permission should throw SecurityException even if "
                     + "called with a virtual device.");
