@@ -2303,15 +2303,17 @@ public final class ViewRootImpl implements ViewParent,
         if (alwaysSeqIdLayout()) {
             reportDraw = seqId > mSeqId;
         }
+        if (Trace.isTagEnabled(Trace.TRACE_TAG_VIEW)) {
+            Trace.instant(Trace.TRACE_TAG_VIEW, TextUtils.formatSimple("%s handleResized "
+                            + "frameChanged=%b configChanged=%b seqId=%d mSeqId=%d buf=%b "
+                            + "displayChanged=%b compatScaleChanged=%b attachedFrameChanged=%b",
+                    mTag, frameChanged, configChanged, seqId, mSeqId, syncWithBuffers,
+                    displayChanged, compatScaleChanged, attachedFrameChanged));
+        }
         if (!reportDraw && !frameChanged && !configChanged && !attachedFrameChanged
                 && !displayChanged && !forceLayout
                 && !compatScaleChanged && !dragResizingChanged) {
             return;
-        }
-        if (Trace.isTagEnabled(Trace.TRACE_TAG_VIEW)) {
-            Trace.instant(Trace.TRACE_TAG_VIEW, TextUtils.formatSimple("%s handleResized "
-                            + "frameChanged=%b configChanged=%b seqId=%d mSeqId=%d buf=%b",
-                    mTag, frameChanged, configChanged, seqId, mSeqId, syncWithBuffers));
         }
 
         mPendingDragResizing = dragResizing;
@@ -4604,6 +4606,11 @@ public final class ViewRootImpl implements ViewParent,
         }
 
         final int seqId = alwaysSeqIdLayout() ? mSeqId : mSyncSeqId;
+        if (alwaysSeqIdLayout()) {
+            // If WM asks for a redraw or sync without actually changing config, we won't have run
+            // relayout but still need to track that we have drawn the associated frame.
+            mLastSeqId = Math.max(mSeqId, mLastSeqId);
+        }
         mWmsRequestSyncGroupState = WMS_SYNC_PENDING;
         mWmsRequestSyncGroup = new SurfaceSyncGroup("wmsSync-" + mTag, t -> {
             mWmsRequestSyncGroupState = WMS_SYNC_MERGED;

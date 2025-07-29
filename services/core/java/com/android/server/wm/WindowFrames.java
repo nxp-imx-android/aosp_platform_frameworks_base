@@ -119,7 +119,7 @@ public class WindowFrames {
     /**
      * @return true if the width or height has changed since last reported to the client.
      */
-    boolean isFrameSizeChangeReported() {
+    boolean isFrameSizeChanged() {
         return mFrameSizeChanged || didFrameSizeChange();
     }
 
