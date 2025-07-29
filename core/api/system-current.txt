@@ -5341,7 +5341,7 @@ package android.hardware.camera2.extension {
   public abstract class SessionProcessor {
     ctor public SessionProcessor();
     method public abstract void deInitSession(@NonNull android.os.IBinder);
-    method @FlaggedApi("com.android.internal.camera.flags.efv_capture_latency") @Nullable public android.util.Pair<java.lang.Long,java.lang.Long> getRealtimeStillCaptureLatency();
+    method @FlaggedApi("com.android.internal.camera.flags.efv_capture_latency") @Nullable public android.hardware.camera2.extension.SessionProcessor.CaptureLatencyInfo getRealtimeStillCaptureLatency();
     method @NonNull public abstract android.hardware.camera2.extension.ExtensionConfiguration initSession(@NonNull android.os.IBinder, @NonNull String, @NonNull android.hardware.camera2.extension.CharacteristicsMap, @NonNull android.hardware.camera2.extension.CameraOutputSurface, @NonNull android.hardware.camera2.extension.CameraOutputSurface);
     method @FlaggedApi("com.android.internal.camera.flags.efv_capture_latency") @NonNull public android.hardware.camera2.extension.ExtensionConfiguration initSession(@NonNull android.os.IBinder, @NonNull String, @NonNull android.hardware.camera2.extension.CharacteristicsMap, @NonNull android.hardware.camera2.extension.CameraConfiguration);
     method public abstract void onCaptureSessionEnd();
@@ -5362,6 +5362,12 @@ package android.hardware.camera2.extension {
     method public void onCaptureSequenceAborted(int);
     method public void onCaptureSequenceCompleted(int);
     method public void onCaptureStarted(int, long);
+  }
+
+  @FlaggedApi("com.android.internal.camera.flags.efv_capture_latency") public static final class SessionProcessor.CaptureLatencyInfo {
+    ctor public SessionProcessor.CaptureLatencyInfo(long, long);
+    field public final long captureLatency;
+    field public final long processingLatency;
   }
 
 }
