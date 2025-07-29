@@ -6636,7 +6636,7 @@ public class ActivityManagerService extends IActivityManager.Stub
         if (psr != null && psr.hasForegroundServices()) {
             for (int s = psr.numberOfRunningServices() - 1; s >= 0; --s) {
                 final ServiceRecord sr = psr.getRunningServiceAt(s);
-                if (sr.isForeground && sr.mAllowUiJobScheduling) {
+                if (sr.isForeground() && sr.mAllowUiJobScheduling) {
                     return true;
                 }
             }

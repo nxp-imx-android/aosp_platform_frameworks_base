@@ -39,6 +39,7 @@ import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.server.ServiceThread;
 import com.android.server.am.psc.ProcessRecordInternal;
+import com.android.server.am.psc.ServiceRecordInternal;
 import com.android.server.wm.WindowProcessController;
 
 import java.lang.ref.WeakReference;
@@ -691,17 +692,17 @@ public class ProcessStateController {
      * Note whether a service is a Foreground Service or not
      */
     @GuardedBy("mLock")
-    public void setIsForegroundService(@NonNull ServiceRecord sr, boolean isFgs) {
-        sr.isForeground = isFgs;
+    public void setIsForegroundService(@NonNull ServiceRecordInternal sr, boolean isFgs) {
+        sr.setIsForeground(isFgs);
     }
 
     /**
      * Note the Foreground Service type of a service.
      */
     @GuardedBy("mLock")
-    public void setForegroundServiceType(@NonNull ServiceRecord sr,
+    public void setForegroundServiceType(@NonNull ServiceRecordInternal sr,
             @ServiceInfo.ForegroundServiceType int fgsType) {
-        sr.foregroundServiceType = fgsType;
+        sr.setForegroundServiceType(fgsType);
     }
 
     /**
@@ -724,16 +725,17 @@ public class ProcessStateController {
      * Note the last time a service was active.
      */
     @GuardedBy("mLock")
-    public void setServiceLastActivityTime(@NonNull ServiceRecord sr, long lastActivityUpdateMs) {
-        sr.lastActivity = lastActivityUpdateMs;
+    public void setServiceLastActivityTime(@NonNull ServiceRecordInternal sr,
+            long lastActivityUpdateMs) {
+        sr.setLastActivity(lastActivityUpdateMs);
     }
 
     /**
      * Note that a service start was requested.
      */
     @GuardedBy("mLock")
-    public void setStartRequested(@NonNull ServiceRecord sr, boolean startRequested) {
-        sr.startRequested = startRequested;
+    public void setStartRequested(@NonNull ServiceRecordInternal sr, boolean startRequested) {
+        sr.setStartRequested(startRequested);
     }
 
     /**
