@@ -20,6 +20,7 @@ import static com.android.server.am.ActivityManagerDebugConfig.DEBUG_PROVIDER;
 import static com.android.server.am.ActivityManagerDebugConfig.TAG_AM;
 
 import android.annotation.UserIdInt;
+import android.content.ComponentName;
 import android.os.Binder;
 import android.os.SystemClock;
 import android.util.Slog;
@@ -28,13 +29,13 @@ import android.util.TimeUtils;
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.app.procstats.AssociationState;
 import com.android.internal.app.procstats.ProcessStats;
-import com.android.server.am.psc.ProcessRecordInternal;
+import com.android.server.am.psc.ContentProviderConnectionInternal;
 
 /**
  * Represents a link between a content provider and client.
  */
 public final class ContentProviderConnection extends Binder implements
-        OomAdjusterImpl.Connection {
+        ContentProviderConnectionInternal {
     public final ContentProviderRecord provider;
     public final ProcessRecord client;
     public final String clientPackage;
@@ -74,19 +75,6 @@ public final class ContentProviderConnection extends Binder implements
         createTime = SystemClock.elapsedRealtime();
     }
 
-    @Override
-    public void computeHostOomAdjLSP(OomAdjuster oomAdjuster, ProcessRecordInternal host,
-            ProcessRecordInternal client, long now, ProcessRecordInternal topApp, boolean doingAll,
-            int oomAdjReason, int cachedAdj) {
-        oomAdjuster.computeProviderHostOomAdjLSP(this, host, client, false);
-    }
-
-    @Override
-    public boolean canAffectCapabilities() {
-        return false;
-    }
-
-
     public void startAssociationIfNeeded() {
         // If we don't already have an active association, create one...  but only if this
         // is an association between two different processes.
@@ -116,6 +104,7 @@ public final class ContentProviderConnection extends Binder implements
     /**
      * Track the given proc state change.
      */
+    @Override
     public void trackProcState(int procState, int seq) {
         if (association == null) {
             return; // early exit to optimize on oomadj cycles
@@ -125,6 +114,11 @@ public final class ContentProviderConnection extends Binder implements
                 association.trackProcState(procState, seq, SystemClock.uptimeMillis());
             }
         }
+    }
+
+    @Override
+    public ComponentName getProviderName() {
+        return provider.name;
     }
 
     public void stopAssociation() {
