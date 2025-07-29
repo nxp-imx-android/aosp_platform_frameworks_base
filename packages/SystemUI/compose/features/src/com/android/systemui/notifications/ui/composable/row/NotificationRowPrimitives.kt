@@ -56,6 +56,7 @@ object NotificationRowPrimitives {
         val PillBackground = ElementKey("PillBackground", contentPicker = LowestZIndexContentPicker)
         val NotificationIconBackground = ElementKey("NotificationIconBackground")
         val Chevron = ElementKey("Chevron")
+        val ExpandedNumber = ElementKey("ExpandedNumber")
     }
 
     object Values {
@@ -65,14 +66,19 @@ object NotificationRowPrimitives {
 
 /** The Icon displayed at the start of any notification row. */
 @Composable
-fun BundleIcon(@DrawableRes drawable: Int?, modifier: Modifier = Modifier) {
+fun BundleIcon(@DrawableRes drawable: Int?, collapsed: Boolean, modifier: Modifier = Modifier) {
     val iconBackground = notificationProtectionColor()
-    Box(modifier = modifier.size(40.dp).background(color = iconBackground, shape = CircleShape)) {
+    Box(
+        modifier =
+            modifier
+                .size(if (collapsed) 40.dp else 24.dp)
+                .background(color = iconBackground, shape = CircleShape)
+    ) {
         if (drawable == null) return@Box
         Image(
             painter = painterResource(drawable),
             contentDescription = null,
-            modifier = Modifier.padding(10.dp).fillMaxSize(),
+            modifier = Modifier.fillMaxSize(.5f).align(Alignment.Center),
             contentScale = ContentScale.Fit,
             colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.primary),
         )
@@ -110,6 +116,7 @@ fun ContentScope.ExpansionControl(
                     text = numberToShow.toString(),
                     style = MaterialTheme.typography.labelSmallEmphasized,
                     color = textColor,
+                    modifier = Modifier.element(NotificationRowPrimitives.Elements.ExpandedNumber),
                 )
             }
             Chevron(collapsed = collapsed, modifier = Modifier.size(iconSizeDp), color = textColor)

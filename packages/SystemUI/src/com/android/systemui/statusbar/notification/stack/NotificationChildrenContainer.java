@@ -109,10 +109,6 @@ public class NotificationChildrenContainer extends ViewGroup
     private int mHeaderHeight;
     /** Margin needed at the top in the collapsed group, to allow space for the header text. */
     private int mCollapsedHeaderMargin;
-    /**
-     * Spacing needed in addition to {@link this#mCollapsedHeaderMargin} when the group is expanded,
-     * to accommodate the full header. It doesn't include the spacing needed for the first divider.
-     */
     private int mAdditionalExpandedHeaderMargin;
 
     private float mCollapsedBottomPadding;
@@ -205,7 +201,7 @@ public class NotificationChildrenContainer extends ViewGroup
                     R.dimen.notification_children_container_margin_top);
             mAdditionalExpandedHeaderMargin = res.getDimensionPixelOffset(
                     R.dimen.notification_children_container_top_padding);
-            mHeaderHeight = mCollapsedHeaderMargin + mAdditionalExpandedHeaderMargin;
+            mHeaderHeight = mCollapsedHeaderMargin + getAdditionalExpandedHeaderMargin();
         }
 
         mCollapsedBottomPadding = res.getDimensionPixelOffset(
@@ -289,7 +285,7 @@ public class NotificationChildrenContainer extends ViewGroup
                     newHeightSpec);
         }
         int dividerHeightSpec = MeasureSpec.makeMeasureSpec(mDividerHeight, MeasureSpec.EXACTLY);
-        int height = mCollapsedHeaderMargin + mAdditionalExpandedHeaderMargin;
+        int height = mCollapsedHeaderMargin + getAdditionalExpandedHeaderMargin();
         int childCount =
                 Math.min(mAttachedChildren.size(), getNumberOfChildrenWhenExpanded());
         int collapsedChildren = getMaxAllowedVisibleChildren(true /* likeCollapsed */);
@@ -322,7 +318,8 @@ public class NotificationChildrenContainer extends ViewGroup
             mMinimizedGroupHeader.measure(widthMeasureSpec, headerHeightSpec);
         }
         if (mBundleHeaderView != null) {
-            mBundleHeaderView.measure(widthMeasureSpec, headerHeightSpec);
+            mBundleHeaderView.measure(widthMeasureSpec,
+                    MeasureSpec.makeMeasureSpec(mHeaderHeight, MeasureSpec.UNSPECIFIED));
         }
 
         setMeasuredDimension(width, height);
@@ -806,11 +803,11 @@ public class NotificationChildrenContainer extends ViewGroup
                 if (mUserLocked) {
                     intrinsicHeight += NotificationUtils.interpolate(
                             0,
-                            mAdditionalExpandedHeaderMargin + mDividerHeight,
+                            getAdditionalExpandedHeaderMargin() + mDividerHeight,
                             expandFactor);
                 } else {
                     intrinsicHeight += childrenExpanded
-                            ? mAdditionalExpandedHeaderMargin + mDividerHeight
+                            ? getAdditionalExpandedHeaderMargin() + mDividerHeight
                             : 0;
                 }
                 firstChild = false;
@@ -868,15 +865,15 @@ public class NotificationChildrenContainer extends ViewGroup
                 } else {
                     yPosition += mChildrenExpanded ? mDividerHeight : mChildPadding;
                 }
-            } else {
+            } else { // first child
                 if (expandingToExpandedGroup) {
                     yPosition += NotificationUtils.interpolate(
                             0,
-                            mAdditionalExpandedHeaderMargin + mDividerHeight,
+                            getAdditionalExpandedHeaderMargin() + mDividerHeight,
                             expandFactor);
                 } else {
                     yPosition += mChildrenExpanded
-                            ? mAdditionalExpandedHeaderMargin + mDividerHeight
+                            ? getAdditionalExpandedHeaderMargin() + mDividerHeight
                             : 0;
                 }
                 firstChild = false;
@@ -1462,7 +1459,7 @@ public class NotificationChildrenContainer extends ViewGroup
                     /* likeHighPriority */);
         }
         int maxContentHeight = mCollapsedHeaderMargin + mCurrentHeaderTranslation
-                + mAdditionalExpandedHeaderMargin;
+                + getAdditionalExpandedHeaderMargin();
         int visibleChildren = 0;
         int childCount = mAttachedChildren.size();
         for (int i = 0; i < childCount; i++) {
@@ -1526,7 +1523,7 @@ public class NotificationChildrenContainer extends ViewGroup
 
     private int getVisibleChildrenExpandHeight() {
         int intrinsicHeight = mCollapsedHeaderMargin + mCurrentHeaderTranslation
-                + mAdditionalExpandedHeaderMargin + mDividerHeight;
+                + getAdditionalExpandedHeaderMargin() + mDividerHeight;
         int visibleChildren = 0;
         int childCount = mAttachedChildren.size();
         int maxAllowedVisibleChildren = getMaxAllowedVisibleChildren(true /* forceCollapsed */);
@@ -1696,7 +1693,7 @@ public class NotificationChildrenContainer extends ViewGroup
 
     public int getPositionInLinearLayout(View childInGroup) {
         int position = mCollapsedHeaderMargin + mCurrentHeaderTranslation
-                + mAdditionalExpandedHeaderMargin;
+                + getAdditionalExpandedHeaderMargin();
 
         for (int i = 0; i < mAttachedChildren.size(); i++) {
             ExpandableNotificationRow child = mAttachedChildren.get(i);
@@ -1885,6 +1882,22 @@ public class NotificationChildrenContainer extends ViewGroup
         if (SceneContainerFlag.isUnexpectedlyInLegacyMode()) return;
         for (ExpandableNotificationRow child : mAttachedChildren) {
             child.setOnKeyguard(onKeyguard);
+        }
+    }
+
+    /**
+     * Spacing needed in addition to {@link #mCollapsedHeaderMargin} when the group is expanded, to
+     * accommodate the full header. It doesn't include the spacing needed for the first divider.
+     */
+    private int getAdditionalExpandedHeaderMargin() {
+        if (isBundle()) {
+            if (mBundleHeaderView != null) {
+                return mBundleHeaderView.getMeasuredHeight() - mHeaderHeight;
+            } else {
+                return 0;
+            }
+        } else {
+            return mAdditionalExpandedHeaderMargin;
         }
     }
 }
