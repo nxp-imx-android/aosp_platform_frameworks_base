@@ -20,16 +20,15 @@ import android.hardware.input.InputManager
 import android.view.KeyCharacterMap.VIRTUAL_KEYBOARD
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Background
-import com.android.systemui.display.data.repository.FocusedDisplayRepository
 import com.android.systemui.keyboard.shortcut.shared.model.ShortcutHelperState
 import com.android.systemui.keyboard.shortcut.shared.model.ShortcutHelperState.Active
 import com.android.systemui.keyboard.shortcut.shared.model.ShortcutHelperState.Inactive
 import com.android.systemui.shared.hardware.findInputDevice
-import javax.inject.Inject
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.withContext
+import javax.inject.Inject
 
 @SysUISingleton
 class ShortcutHelperStateRepository
@@ -37,7 +36,6 @@ class ShortcutHelperStateRepository
 constructor(
     private val inputManager: InputManager,
     @Background private val backgroundDispatcher: CoroutineDispatcher,
-    private val focusedDisplayRepository: FocusedDisplayRepository,
 ) {
     private val _state = MutableStateFlow<ShortcutHelperState>(Inactive)
     val state = _state.asStateFlow()
@@ -51,7 +49,7 @@ constructor(
     }
 
     suspend fun show(deviceId: Int? = null) {
-        _state.value = Active(deviceId ?: findPhysicalKeyboardId(), findFocusedDisplayId())
+        _state.value = Active(deviceId ?: findPhysicalKeyboardId())
     }
 
     fun hide() {
@@ -65,5 +63,4 @@ constructor(
             return@withContext firstEnabledPhysicalKeyboard?.id ?: VIRTUAL_KEYBOARD
         }
 
-    private fun findFocusedDisplayId() = focusedDisplayRepository.focusedDisplayId.value
 }
