@@ -104,6 +104,8 @@ enum class Type : uint8_t {
 };
 #undef X
 
+static constexpr uint32_t BARCODE_QUIET_ZONE_PX = 5;
+
 struct Op {
     uint32_t type : 8;
     uint32_t skip : 24;
@@ -491,13 +493,23 @@ struct DrawImageRect final : Op {
         if (ATRACE_ENABLED()) {
             traceBitmapScaling(c, image, src, dst);
         }
+        SkRect destination = dst;
+        if (CC_UNLIKELY(palette == BitmapPalette::Barcode)) {
+            // Draw an extra quiet zone around the bitmap in order to guarantee that there
+            // is a white border between the likely-black background and the black portion of
+            // the barcode.
+            SkPaint whitePaint;
+            whitePaint.setColor(SkColors::kWhite);
+            c->drawRect(destination, whitePaint);
+            destination.inset(BARCODE_QUIET_ZONE_PX, BARCODE_QUIET_ZONE_PX);
+        }
         if (gainmap) {
-            DrawGainmapBitmap(c, image, src, dst, sampling, &paint, constraint, gainmap,
+            DrawGainmapBitmap(c, image, src, destination, sampling, &paint, constraint, gainmap,
                               gainmapInfo);
         } else {
             SkPaint newPaint = paint;
             tonemapPaint(image->imageInfo(), c->imageInfo(), -1, newPaint);
-            c->drawImageRect(image.get(), src, dst, sampling, &newPaint, constraint);
+            c->drawImageRect(image.get(), src, destination, sampling, &newPaint, constraint);
         }
     }
 
