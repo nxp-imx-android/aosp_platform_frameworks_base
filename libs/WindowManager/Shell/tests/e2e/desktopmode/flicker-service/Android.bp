@@ -44,6 +44,7 @@ test_module_config {
     base: "WMShellFlickerTestsDesktopMode",
     test_suites: ["device-tests"],
     exclude_filters: [
+        "com.android.wm.shell.flicker.externaldisplay.OpenAppWithExternalDisplayConnectedFlickerTest",
         "com.android.wm.shell.flicker.fundamentals.CloseAllAppsViaAppHeaderExitTest",
         "com.android.wm.shell.flicker.fundamentals.CloseAllAppsWithBackNavigationTest",
         "com.android.wm.shell.flicker.fundamentals.EnterDesktopFromSplitScreenWithAppHandleMenuFlickerTest",
@@ -89,6 +90,13 @@ test_module_config {
         "com.android.wm.shell.flicker.tiling.TilingDividerShownHiddenFlickerTest",
         "com.android.wm.shell.flicker.tiling.TilingPairBrokenWhenEnteringPipFlickerTest",
     ],
+}
+
+test_module_config {
+    name: "WMShellFlickerTestsDesktopMode-externaldisplay-OpenAppWithExternalDisplayConnectedFlickerTest",
+    base: "WMShellFlickerTestsDesktopMode",
+    test_suites: ["device-tests"],
+    include_filters: ["com.android.wm.shell.flicker.externaldisplay.OpenAppWithExternalDisplayConnectedFlickerTest"],
 }
 
 test_module_config {

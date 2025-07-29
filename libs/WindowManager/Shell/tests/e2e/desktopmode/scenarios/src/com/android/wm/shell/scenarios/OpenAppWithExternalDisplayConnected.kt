@@ -17,6 +17,7 @@
 package com.android.wm.shell.scenarios
 
 import android.app.Instrumentation
+import android.platform.test.flag.junit.DeviceFlagsValueProvider
 import android.tools.Rotation
 import android.tools.traces.parsers.WindowManagerStateHelper
 import android.window.DesktopExperienceFlags
@@ -41,14 +42,16 @@ import platform.test.desktop.SimulatedConnectedDisplayTestRule
 abstract class OpenAppWithExternalDisplayConnected
 constructor(private val rotation: Rotation = Rotation.ROTATION_0) : TestScenarioBase(rotation) {
     private val instrumentation: Instrumentation = InstrumentationRegistry.getInstrumentation()
-    private val tapl = LauncherInstrumentation()
     private val wmHelper = WindowManagerStateHelper(instrumentation)
-    private val testApp = DesktopModeAppHelper(SimpleAppHelper(instrumentation))
+    val testApp = DesktopModeAppHelper(SimpleAppHelper(instrumentation))
 
     private val extendedDisplaySettingsSession =
         ExtendedDisplaySettingsSession(instrumentation.context.contentResolver)
 
     @get:Rule(order = 0)
+    val checkFlagsRule = DeviceFlagsValueProvider.createCheckFlagsRule()
+
+    @get:Rule(order = 1)
     val connectedDisplayRule = SimulatedConnectedDisplayTestRule()
 
     @Before
@@ -60,12 +63,12 @@ constructor(private val rotation: Rotation = Rotation.ROTATION_0) : TestScenario
 
     @Test
     open fun openAppWithExternalDisplayConnected() {
-        testApp.open()
+        testApp.launchViaIntent(wmHelper)
     }
 
     @After
     fun teardown() {
         testApp.exit(wmHelper)
-        extendedDisplaySettingsSession.close()
+        connectedDisplayRule.cleanupTestDisplays()
     }
 }

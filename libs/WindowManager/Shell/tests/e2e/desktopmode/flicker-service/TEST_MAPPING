@@ -1,6 +1,9 @@
 {
   "wm": [
     {
+      "name": "WMShellFlickerTestsDesktopMode-externaldisplay-OpenAppWithExternalDisplayConnectedFlickerTest"
+    },
+    {
       "name": "WMShellFlickerTestsDesktopMode-fundamentals-CloseAllAppsViaAppHeaderExitTest"
     },
     {

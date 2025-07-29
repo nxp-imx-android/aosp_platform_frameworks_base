@@ -189,6 +189,15 @@ fun FlickerTest.appWindowBecomesPinned(component: IComponentMatcher) {
     }
 }
 
+/**
+ * Assert that the app window launches on the default display.
+ */
+fun FlickerTest.appWindowOnDefaultDisplayAtEnd(component: IComponentMatcher) {
+    assertWmEnd {
+        this.containsAppWindow(component)
+    }
+}
+
 fun FlickerTest.tilingDividerBecomesVisibleThenInvisible() {
     assertLayers {
         this.isInvisible(TILING_SPLIT_DIVIDER)
