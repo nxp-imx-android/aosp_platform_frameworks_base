@@ -5900,7 +5900,7 @@ class DesktopTasksController(
     }
 
     companion object {
-        // TODO(b/434658423): Consolidate below constant among DesktopModeUtils and this file.
+        // TODO: b/434658423 - Consolidate below constant among DesktopModeUtils and this file.
         @JvmField
         val DESKTOP_MODE_INITIAL_BOUNDS_SCALE =
             SystemProperties.getInt("persist.wm.debug.desktop_mode_initial_bounds_scale", 72) / 100f
