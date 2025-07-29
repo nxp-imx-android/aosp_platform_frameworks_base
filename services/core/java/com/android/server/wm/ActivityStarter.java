@@ -2047,11 +2047,9 @@ class ActivityStarter {
                     ? mSourceRecord.getTask() : null;
             setNewTask(taskToAffiliate);
         } else if (mAddingToTask) {
-            if (com.android.window.flags.Flags.fixLayoutRestoredTask()) {
-                // Layout the task to ensure the Task is in correct bounds.
-                mSupervisor.getLaunchParamsController().layoutTask(targetTask,
-                        mStartActivity.info.windowLayout, mStartActivity, mSourceRecord, options);
-            }
+            // Layout the task to ensure the Task is in correct bounds.
+            mSupervisor.getLaunchParamsController().layoutTask(targetTask,
+                    mStartActivity.info.windowLayout, mStartActivity, mSourceRecord, options);
             addOrReparentStartingActivity(targetTask, "adding to task");
         }
 
