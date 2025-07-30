@@ -156,13 +156,12 @@ class BackNavigationController {
         public void onBackInvoked() {
             synchronized (mWindowManagerService.mGlobalLock) {
                 final ActivityRecord r = mActivityRecordRef.get();
-                if (r != null && mWindowManagerService.mAtmService.mTaskOrganizerController
-                        .handleInterceptBackPressedOnTaskRoot(r)) {
-                    // Handled by the controller, exit early.
-                    return;
+                boolean handled = false;
+                if (r != null) {
+                    handled = mWindowManagerService.mAtmService.mTaskOrganizerController
+                            .handleInterceptBackPressedOnTaskRoot(r);
                 }
-
-                if (mFallbackCallbackRef == null) {
+                if (handled || mFallbackCallbackRef == null) {
                     return;
                 }
 
@@ -305,8 +304,21 @@ class BackNavigationController {
                 return null;
             }
 
-            final OnBackInvokedCallbackInfo callbackInfo = getOnBackInvokedCallbackInfo(
-                    window, currentTask, currentActivity);
+            final boolean interceptBack = currentTask != null
+                    && currentTask.mAtmService.mTaskOrganizerController
+                            .shouldInterceptBackPressedOnRootTask(currentTask.getRootTask());
+            final OnBackInvokedCallbackInfo callbackInfo;
+            if (interceptBack) {
+                final OnBackInvokedCallbackInfo info = window.getOnBackInvokedCallbackInfo();
+                final IOnBackInvokedCallback callback =
+                        new OnInterceptBackInvokedCallback(currentActivity,
+                                info != null ? info.getCallback() : null);
+                callbackInfo = new OnBackInvokedCallbackInfo(callback, PRIORITY_DEFAULT, false,
+                        OVERRIDE_UNDEFINED);
+            } else {
+                // Now let's find if this window has a callback from the client side.
+                callbackInfo = window.getOnBackInvokedCallbackInfo();
+            }
             if (callbackInfo == null) {
                 Slog.e(TAG, "No callback registered, returning null.");
                 return null;
@@ -527,27 +539,6 @@ class BackNavigationController {
             mLastBackType = backType;
             return infoBuilder.build();
         }
-    }
-
-    @VisibleForTesting(visibility = VisibleForTesting.Visibility.PRIVATE)
-    @Nullable OnBackInvokedCallbackInfo getOnBackInvokedCallbackInfo(@NonNull WindowState window,
-            @Nullable Task task, @Nullable ActivityRecord activity) {
-        final OnBackInvokedCallbackInfo info = window.getOnBackInvokedCallbackInfo();
-        if (activity == null || task == null) {
-            return info;
-        }
-
-        final ActivityRecord root = task.getRootActivity(
-                false /*ignoreRelinquishIdentity*/, true /*setToBottomIfNone*/);
-        if (activity != root || !task.mAtmService.mTaskOrganizerController
-                        .shouldInterceptBackPressedOnRootTask(task.getRootTask())) {
-            return info;
-        }
-
-        final IOnBackInvokedCallback callback = new OnInterceptBackInvokedCallback(activity,
-                info != null ? info.getCallback() : null);
-        return new OnBackInvokedCallbackInfo(callback, PRIORITY_DEFAULT, false,
-                    OVERRIDE_UNDEFINED);
     }
 
     /**
