@@ -16,6 +16,8 @@
 
 package com.android.systemui.flashlight.data.repository
 
+import android.content.packageManager
+import android.content.pm.PackageManager
 import android.hardware.camera2.CameraCharacteristics
 import android.hardware.camera2.CameraManager.TorchCallback
 import android.platform.test.annotations.EnableFlags
@@ -525,6 +527,30 @@ class FlashlightRepositoryTest : SysuiTestCase() {
             underTest.setLevel(BASE_TORCH_LEVEL)
 
             assertThat(state).isEqualTo(FlashlightModel.Unavailable.Temporarily.NotFound)
+        }
+
+    @Test
+    fun deviceSupportsFlashlight_whenFalse_matchesPackageManager() =
+        kosmos.runTest {
+            startFlashlightRepository(false)
+
+            runCurrent()
+
+            assertThat(packageManager.hasSystemFeature(PackageManager.FEATURE_CAMERA_FLASH))
+                .isFalse()
+            assertThat(underTest.deviceSupportsFlashlight).isFalse()
+        }
+
+    @Test
+    fun deviceSupportsFlashlight_whenTrue_matchesPackageManager() =
+        kosmos.runTest {
+            startFlashlightRepository(true)
+
+            runCurrent()
+
+            assertThat(packageManager.hasSystemFeature(PackageManager.FEATURE_CAMERA_FLASH))
+                .isTrue()
+            assertThat(underTest.deviceSupportsFlashlight).isTrue()
         }
 
     companion object {

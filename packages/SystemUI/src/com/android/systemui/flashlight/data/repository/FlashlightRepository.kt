@@ -107,14 +107,17 @@ constructor(
 
     private var canAttemptReconnect = AtomicBoolean(true)
 
+    private var _deviceSupportsFlashlight = false
+
     override fun start() {
         if (FlashlightStrength.isUnexpectedlyInLegacyMode()) {
             return
         }
         dumpManager.registerNormalDumpable(javaClass.simpleName, this)
         bgScope.launch {
-            val isSupported = packageManager.hasSystemFeature(PackageManager.FEATURE_CAMERA_FLASH)
-            if (!isSupported) {
+            _deviceSupportsFlashlight =
+                packageManager.hasSystemFeature(PackageManager.FEATURE_CAMERA_FLASH)
+            if (!_deviceSupportsFlashlight) {
                 logger.d(
                     "start: device does not have camera flash system feature. " +
                         "Will not attempt to read flashlight info."
@@ -320,7 +323,7 @@ constructor(
     }
 
     override val deviceSupportsFlashlight: Boolean
-        get() = state.value != FlashlightModel.Unavailable.Permanently.NotSupported
+        get() = _deviceSupportsFlashlight
 
     override fun setEnabled(enabled: Boolean) {
         bgScope.launch {
