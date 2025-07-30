@@ -28,12 +28,12 @@ import com.android.systemui.plugins.annotations.GeneratedImport
 import com.android.systemui.plugins.annotations.ProtectedInterface
 import com.android.systemui.plugins.annotations.ProtectedReturn
 import com.android.systemui.plugins.annotations.SimpleProperty
+import com.android.systemui.plugins.annotations.ThrowsOnFailure
 import kotlin.sequences.associateBy
 
 /** Element Composable together with some metadata about the function. */
 @Stable
-// TODO(b/432451019): Protect interface elements
-// @ProtectedInterface
+@ProtectedInterface
 interface LockscreenElement {
     @get:SimpleProperty
     /** Key of identifying this lockscreen element */
@@ -44,6 +44,7 @@ interface LockscreenElement {
     val context: Context
 
     @Composable
+    @ThrowsOnFailure
     /** Compose function which renders this element */
     fun ContentScope.LockscreenElement(
         factory: LockscreenElementFactory,
