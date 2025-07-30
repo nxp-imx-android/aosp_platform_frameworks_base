@@ -28,6 +28,7 @@ import androidx.test.filters.SmallTest
 import com.android.server.am.Flags.FLAG_PERCEPTIBLE_TASKS
 import com.android.window.flags.Flags.FLAG_ENABLE_DESKTOP_WINDOWING_BACK_NAVIGATION
 import com.android.window.flags.Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND
+import com.android.window.flags.Flags.FLAG_MOVE_TO_NEXT_DISPLAY_SHORTCUT_WITH_PROJECTED_MODE
 import com.android.wm.shell.MockToken
 import com.android.wm.shell.ShellTestCase
 import com.android.wm.shell.TestRunningTaskInfoBuilder
@@ -267,6 +268,22 @@ class DesktopTaskChangeListenerTest : ShellTestCase() {
                 isVisible = any(),
                 taskBounds = any(),
             )
+    }
+
+    @Test
+    @EnableFlags(
+        FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
+        FLAG_MOVE_TO_NEXT_DISPLAY_SHORTCUT_WITH_PROJECTED_MODE,
+    )
+    fun onTaskChanging_taskMovedToUnsupportedDisplay_removesTaskFromRepo() {
+        val task = createFullscreenTask()
+        whenever(desktopUserRepositories.current.isActiveTask(task.taskId)).thenReturn(true)
+        // Task is no longer freeform as it moved to a display that does not support it.
+        task.displayId = UNSUPPORTED_DISPLAY_ID
+
+        desktopTaskChangeListener.onTaskChanging(task)
+
+        verify(desktopUserRepositories.current).removeTask(task.taskId)
     }
 
     @Test
