@@ -655,8 +655,9 @@ class ProcessRecord extends ProcessRecordInternal implements WindowProcessListen
         mErrorState.setCrashing(false);
     }
 
+    @Override
     @GuardedBy(anyOf = {"mService", "mProcLock"})
-    UidRecord getUidRecord() {
+    public UidRecord getUidRecord() {
         return mUidRecord;
     }
 

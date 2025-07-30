@@ -223,6 +223,9 @@ public abstract class ProcessRecordInternal {
      */
     public abstract int getApplicationUid();
 
+    /** Returns the {@link UidRecordInternal} associated with this process. */
+    public abstract UidRecordInternal getUidRecord();
+
     // Enable this to trace all OomAdjuster state transitions
     private static final boolean TRACE_OOM_ADJ = false;
 
