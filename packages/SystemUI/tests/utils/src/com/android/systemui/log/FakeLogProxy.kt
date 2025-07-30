@@ -14,54 +14,43 @@
  * limitations under the License.
  */
 
-package com.android.systemui.log.table
+package com.android.systemui.log
 
-import android.util.Log
-import javax.inject.Inject
+/**
+ * Fake [LogProxy] that collects all lines sent to it. Mimics the ADB logcat format without the
+ * timestamp. [FakeLogProxy.d] will write a log like so:
+ * ```
+ * logger.d("TAG", "message here")
+ * // writes this to the [logs] field
+ * "D TAG: message here"
+ * ```
+ *
+ * Logs sent to this class are collected as a list of strings for simple test assertions.
+ */
+class FakeLogProxy : LogProxy {
+    val logs: MutableList<String> = mutableListOf()
 
-/** Dagger-friendly interface so we can inject a fake [android.util.Log] in tests */
-interface LogProxy {
-    /** verbose log */
-    fun v(tag: String, message: String)
-
-    /** debug log */
-    fun d(tag: String, message: String)
-
-    /** info log */
-    fun i(tag: String, message: String)
-
-    /** warning log */
-    fun w(tag: String, message: String)
-
-    /** error log */
-    fun e(tag: String, message: String)
-
-    /** wtf log */
-    fun wtf(tag: String, message: String)
-}
-
-class LogProxyDefault @Inject constructor() : LogProxy {
     override fun v(tag: String, message: String) {
-        Log.v(tag, message)
+        logs.add("V $tag: $message")
     }
 
     override fun d(tag: String, message: String) {
-        Log.d(tag, message)
+        logs.add("D $tag: $message")
     }
 
     override fun i(tag: String, message: String) {
-        Log.i(tag, message)
+        logs.add("I $tag: $message")
     }
 
     override fun w(tag: String, message: String) {
-        Log.w(tag, message)
+        logs.add("W $tag: $message")
     }
 
     override fun e(tag: String, message: String) {
-        Log.e(tag, message)
+        logs.add("E $tag: $message")
     }
 
     override fun wtf(tag: String, message: String) {
-        Log.wtf(tag, message)
+        logs.add("WTF $tag: $message")
     }
 }

@@ -20,6 +20,7 @@ import android.annotation.SuppressLint
 import android.icu.text.SimpleDateFormat
 import android.os.Trace
 import com.android.systemui.common.buffer.RingBuffer
+import com.android.systemui.log.LogProxy
 import com.android.systemui.log.LogcatEchoTracker
 import com.android.systemui.log.core.LogLevel
 import com.android.systemui.util.time.SystemClock
@@ -32,7 +33,7 @@ class TableLogBufferImpl(
     private val name: String,
     private val systemClock: SystemClock,
     private val logcatEchoTracker: LogcatEchoTracker,
-    private val localLogcat: LogProxy = LogProxyDefault(),
+    private val localLogcat: LogProxy,
 ) : TableLogBuffer {
     init {
         if (maxSize <= 0) {

@@ -14,43 +14,36 @@
  * limitations under the License.
  */
 
-package com.android.systemui.log.table
+package com.android.systemui.log.impl
 
-/**
- * Fake [LogProxy] that collects all lines sent to it. Mimics the ADB logcat format without the
- * timestamp. [FakeLogProxy.d] will write a log like so:
- * ```
- * logger.d("TAG", "message here")
- * // writes this to the [logs] field
- * "D TAG: message here"
- * ```
- *
- * Logs sent to this class are collected as a list of strings for simple test assertions.
- */
-class FakeLogProxy : LogProxy {
-    val logs: MutableList<String> = mutableListOf()
+import android.util.Log
+import com.android.systemui.dagger.SysUISingleton
+import com.android.systemui.log.LogProxy
+import javax.inject.Inject
 
+@SysUISingleton
+class LogProxyDefault @Inject constructor() : LogProxy {
     override fun v(tag: String, message: String) {
-        logs.add("V $tag: $message")
+        Log.v(tag, message)
     }
 
     override fun d(tag: String, message: String) {
-        logs.add("D $tag: $message")
+        Log.d(tag, message)
     }
 
     override fun i(tag: String, message: String) {
-        logs.add("I $tag: $message")
+        Log.i(tag, message)
     }
 
     override fun w(tag: String, message: String) {
-        logs.add("W $tag: $message")
+        Log.w(tag, message)
     }
 
     override fun e(tag: String, message: String) {
-        logs.add("E $tag: $message")
+        Log.e(tag, message)
     }
 
     override fun wtf(tag: String, message: String) {
-        logs.add("WTF $tag: $message")
+        Log.wtf(tag, message)
     }
 }

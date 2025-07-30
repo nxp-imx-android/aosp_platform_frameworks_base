@@ -19,6 +19,7 @@ package com.android.systemui.log.table.impl
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dump.DumpManager
 import com.android.systemui.log.LogBufferHelper.Companion.adjustMaxSize
+import com.android.systemui.log.LogProxy
 import com.android.systemui.log.LogcatEchoTracker
 import com.android.systemui.log.table.TableLogBuffer
 import com.android.systemui.log.table.TableLogBufferFactory
@@ -34,12 +35,19 @@ constructor(
     private val dumpManager: DumpManager,
     private val systemClock: SystemClock,
     private val logcatEchoTracker: LogcatEchoTracker,
+    private val logProxy: LogProxy,
 ) : TableLogBufferFactory {
     private val existingBuffers = ConcurrentHashMap<String, TableLogBuffer>()
 
     override fun create(name: String, maxSize: Int): TableLogBuffer {
         val tableBuffer =
-            TableLogBufferImpl(adjustMaxSize(maxSize), name, systemClock, logcatEchoTracker)
+            TableLogBufferImpl(
+                adjustMaxSize(maxSize),
+                name,
+                systemClock,
+                logcatEchoTracker,
+                logProxy,
+            )
         dumpManager.registerTableLogBuffer(name, tableBuffer)
         return tableBuffer
     }

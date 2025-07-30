@@ -17,6 +17,7 @@
 package com.android.systemui.log.table
 
 import com.android.systemui.kosmos.Kosmos
+import com.android.systemui.log.FakeLogProxy
 import com.android.systemui.log.LogcatEchoTrackerAlways
 import com.android.systemui.util.time.SystemClock
 import com.android.systemui.util.time.fakeSystemClock
@@ -38,4 +39,5 @@ fun logcatTableLogBuffer(systemClock: SystemClock, name: String = "EchoToLogcatT
         name,
         systemClock,
         logcatEchoTracker = LogcatEchoTrackerAlways(),
+        localLogcat = FakeLogProxy(),
     )

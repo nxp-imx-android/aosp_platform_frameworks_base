@@ -18,6 +18,7 @@ package com.android.systemui.log.table
 
 import com.android.systemui.dump.dumpManager
 import com.android.systemui.kosmos.Kosmos
+import com.android.systemui.log.FakeLogProxy
 import com.android.systemui.log.LogcatEchoTrackerAlways
 import com.android.systemui.log.table.impl.TableLogBufferFactoryImpl
 import com.android.systemui.util.time.fakeSystemClock
@@ -28,5 +29,6 @@ val Kosmos.tableLogBufferFactory: TableLogBufferFactory by
             dumpManager = dumpManager,
             systemClock = fakeSystemClock,
             logcatEchoTracker = LogcatEchoTrackerAlways(),
+            logProxy = FakeLogProxy(),
         )
     }
