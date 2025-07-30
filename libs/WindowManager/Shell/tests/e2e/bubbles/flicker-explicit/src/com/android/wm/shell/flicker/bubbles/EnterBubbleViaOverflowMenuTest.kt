@@ -74,7 +74,7 @@ class EnterBubbleViaOverflowMenuTest(navBar: NavBar) : BubbleFlickerTestBase(),
             setUpBeforeTransition = {
                 // Launch and dismiss a bubble app to make it show in overflow.
                 launchBubbleViaBubbleMenu(testApp, tapl, wmHelper)
-                dismissBubbleAppViaBubbleView(wmHelper)
+                dismissBubbleAppViaBubbleView(testApp, wmHelper)
                 // Launch message app to bubble to make overflow show.
                 launchBubbleViaBubbleMenu(messageApp, tapl, wmHelper)
             },

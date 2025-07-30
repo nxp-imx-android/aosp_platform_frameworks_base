@@ -17,15 +17,19 @@
 package com.android.wm.shell.flicker.bubbles.testcase
 
 import android.tools.traces.component.ComponentNameMatcher.Companion.LAUNCHER
+import android.tools.traces.component.IComponentNameMatcher
 import com.android.wm.shell.flicker.bubbles.DismissExpandedBubbleViaBubbleViewTest.Companion.testApp
 import com.android.wm.shell.flicker.bubbles.utils.BubbleFlickerSubjects
 import org.junit.Test
 
 /**
- * The test cases to verify [testApp] becomes invisible and [LAUNCHER] replaces [testApp] to be top
- * focused because the bubble app goes to collapsed or dismissed state.
+ * The test cases to verify [testApp] becomes invisible and [previousApp] replaces [testApp] to be
+ * top focused because the bubble app goes to collapsed or dismissed state.
  */
 interface BubbleAppBecomesNotExpandedTestCases : BubbleFlickerSubjects {
+
+    val previousApp: IComponentNameMatcher
+        get() = LAUNCHER
 
     /**
      * Verifies bubble app window becomes invisible.
@@ -77,42 +81,42 @@ interface BubbleAppBecomesNotExpandedTestCases : BubbleFlickerSubjects {
     }
 
     /**
-     * Verifies the focus changed from launcher to bubble app.
+     * Verifies the focus changed from bubble app to [previousApp].
      */
     @Test
     fun focusChanges() {
-        eventLogSubject.focusChanges(testApp.toWindowName(), LAUNCHER.toWindowName())
+        eventLogSubject.focusChanges(testApp.toWindowName(), previousApp.toWindowName())
     }
 
     /**
-     * Verifies the bubble app replaces launcher to be the top window.
+     * Verifies the bubble app replaces [previousApp] to be the top window.
      */
     @Test
-    fun launcherWindowReplacesTestAppAsTopWindow() {
+    fun previousAppWindowReplacesTestAppAsTopWindow() {
         wmTraceSubject
             .isAppWindowOnTop(testApp)
             .then()
-            .isAppWindowOnTop(LAUNCHER)
+            .isAppWindowOnTop(previousApp)
             .forAllEntries()
     }
 
     /**
-     * Verifies [LAUNCHER] is the top window at the end of transition.
+     * Verifies [previousApp] is the top window at the end of transition.
      */
     @Test
-    fun launcherWindowAsTopWindowAtEnd() {
-        wmStateSubjectAtEnd.isAppWindowOnTop(LAUNCHER)
+    fun previousWindowAsTopWindowAtEnd() {
+        wmStateSubjectAtEnd.isAppWindowOnTop(previousApp)
     }
 
     /**
-     * Verifies the [LAUNCHER] becomes the top window.
+     * Verifies the [previousApp] becomes the top window.
      */
     @Test
-    fun launcherWindowBecomesTopWindow() {
+    fun previousAppWindowBecomesTopWindow() {
         wmTraceSubject
-            .isAppWindowNotOnTop(LAUNCHER)
+            .isAppWindowNotOnTop(previousApp)
             .then()
-            .isAppWindowOnTop(LAUNCHER)
+            .isAppWindowOnTop(previousApp)
             .forAllEntries()
     }
 }
