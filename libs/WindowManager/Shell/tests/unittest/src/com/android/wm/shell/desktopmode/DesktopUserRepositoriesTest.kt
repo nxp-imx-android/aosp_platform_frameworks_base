@@ -23,7 +23,6 @@ import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
 import android.testing.AndroidTestingRunner
 import androidx.test.filters.SmallTest
-import com.android.dx.mockito.inline.extended.ExtendedMockito.doReturn
 import com.android.dx.mockito.inline.extended.ExtendedMockito.mockitoSession
 import com.android.dx.mockito.inline.extended.StaticMockitoSession
 import com.android.window.flags.Flags.FLAG_ENABLE_DESKTOP_WINDOWING_HSUM
@@ -80,7 +79,7 @@ class DesktopUserRepositoriesTest : ShellTestCase() {
                 .strictness(Strictness.LENIENT)
                 .spyStatic(ActivityManager::class.java)
                 .startMocking()
-        doReturn(USER_ID_1).`when` { ActivityManager.getCurrentUser() }
+        whenever(shellController.currentUserId).thenReturn(USER_ID_1)
 
         desktopState = FakeDesktopState()
         desktopConfig = FakeDesktopConfig()

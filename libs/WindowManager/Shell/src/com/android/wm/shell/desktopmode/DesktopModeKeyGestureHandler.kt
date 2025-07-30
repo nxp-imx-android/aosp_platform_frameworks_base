@@ -79,8 +79,9 @@ class DesktopModeKeyGestureHandler(
                         desktopTasksController
                             .get()
                             .moveToNextDesktopDisplay(
-                                it.taskId,
-                                EnterReason.KEYBOARD_SHORTCUT_ENTER,
+                                taskId = it.taskId,
+                                userId = desktopUserRepositories.current.userId,
+                                enterReason = EnterReason.KEYBOARD_SHORTCUT_ENTER,
                             )
                     }
                 }
@@ -91,8 +92,9 @@ class DesktopModeKeyGestureHandler(
                     desktopTasksController
                         .get()
                         .activatePreviousDesk(
-                            focusTransitionObserver.globallyFocusedDisplayId,
-                            EnterReason.KEYBOARD_SHORTCUT_ENTER,
+                            displayId = focusTransitionObserver.globallyFocusedDisplayId,
+                            userId = desktopUserRepositories.current.userId,
+                            enterReason = EnterReason.KEYBOARD_SHORTCUT_ENTER,
                         )
                 }
             }
@@ -102,8 +104,9 @@ class DesktopModeKeyGestureHandler(
                     desktopTasksController
                         .get()
                         .activateNextDesk(
-                            focusTransitionObserver.globallyFocusedDisplayId,
-                            EnterReason.KEYBOARD_SHORTCUT_ENTER,
+                            displayId = focusTransitionObserver.globallyFocusedDisplayId,
+                            userId = desktopUserRepositories.current.userId,
+                            enterReason = EnterReason.KEYBOARD_SHORTCUT_ENTER,
                         )
                 }
             }
@@ -221,7 +224,10 @@ class DesktopModeKeyGestureHandler(
 
         desktopTasksController
             .get()
-            .getFocusedNonDesktopTasks(focusTransitionObserver.globallyFocusedDisplayId)
+            .getFocusedNonDesktopTasks(
+                displayId = focusTransitionObserver.globallyFocusedDisplayId,
+                userId = desktopUserRepositories.current.userId,
+            )
             .find { it.windowingMode == WINDOWING_MODE_FULLSCREEN }
             ?.let { fullscreenTask ->
                 logV(

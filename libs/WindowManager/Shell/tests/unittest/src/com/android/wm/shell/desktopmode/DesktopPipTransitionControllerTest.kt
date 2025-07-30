@@ -247,6 +247,7 @@ class DesktopPipTransitionControllerTest(flags: FlagsParameterization) : ShellTe
                 deskId = DESK_ID,
                 wct = wct,
                 newTask = taskInfo,
+                userId = mockDesktopRepository.userId,
                 displayId = taskInfo.displayId,
                 enterReason = EnterReason.EXIT_PIP,
             )

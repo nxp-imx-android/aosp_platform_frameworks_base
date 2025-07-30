@@ -152,7 +152,7 @@ class DesktopModeShellCommandHandler(
                 pw.println("Error: desk id should be an integer")
                 return false
             }
-        controller.activateDesk(deskId, enterReason = EnterReason.ADB_COMMAND)
+        controller.activateDesk(deskId = deskId, enterReason = EnterReason.ADB_COMMAND)
         return true
     }
 
