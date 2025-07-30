@@ -25,6 +25,7 @@ import com.android.compose.animation.scene.UserActionDistance
 import com.android.compose.animation.scene.content.state.TransitionState
 import com.android.compose.animation.scene.mechanics.MotionValueInput
 import com.android.compose.animation.scene.mechanics.TransitionScopedMechanicsAdapter
+import com.android.compose.animation.scene.mechanics.VerticalContainerRevealFlag
 import com.android.compose.animation.scene.transformation.CustomPropertyTransformation
 import com.android.compose.animation.scene.transformation.PropertyTransformation
 import com.android.compose.animation.scene.transformation.PropertyTransformationScope
@@ -72,6 +73,11 @@ fun TransitionBuilder.verticalContainerReveal(
         }
 
         (targetSizeInToContent?.height ?: targetSizeInFromContent?.height)?.toFloat() ?: 0f
+    }
+
+    if (!VerticalContainerRevealFlag.isEnabled) {
+        scaleSize(container, height = 0f)
+        return
     }
 
     // TODO(b/392534646) Add haptics back
