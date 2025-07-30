@@ -20,8 +20,6 @@ import androidx.core.graphics.createBitmap
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
-import com.android.systemui.kosmos.backgroundScope
-import com.android.systemui.kosmos.currentValue
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.testDispatcher
 import com.android.systemui.shared.recents.model.ThumbnailData
@@ -50,7 +48,6 @@ class ScreenCaptureThumbnailRepositoryImplTest : SysuiTestCase() {
             // Arrange
             val thumbnailRepository =
                 ScreenCaptureThumbnailRepositoryImpl(
-                    scope = backgroundScope,
                     bgContext = testDispatcher,
                     activityManager =
                         activityManagerWrapper.stub {
@@ -64,7 +61,8 @@ class ScreenCaptureThumbnailRepositoryImplTest : SysuiTestCase() {
 
             // Assert
             verify(activityManagerWrapper).takeTaskThumbnail(eq(123))
-            assertThat(result?.sameAs(fakeThumbnail)).isTrue()
+            assertThat(result.isSuccess).isTrue()
+            assertThat(result.getOrNull()?.sameAs(fakeThumbnail)).isTrue()
         }
 
     @Test
@@ -73,7 +71,6 @@ class ScreenCaptureThumbnailRepositoryImplTest : SysuiTestCase() {
             // Arrange
             val thumbnailRepository =
                 ScreenCaptureThumbnailRepositoryImpl(
-                    scope = backgroundScope,
                     bgContext = testDispatcher,
                     activityManager =
                         activityManagerWrapper.stub {
@@ -86,54 +83,6 @@ class ScreenCaptureThumbnailRepositoryImplTest : SysuiTestCase() {
 
             // Assert
             verify(activityManagerWrapper).takeTaskThumbnail(eq(123))
-            assertThat(result).isNull()
-        }
-
-    @Test
-    fun thumbnailFor_flowEmitsNewThumbnail() =
-        kosmos.runTest {
-            // Arrange
-            val thumbnailRepository =
-                ScreenCaptureThumbnailRepositoryImpl(
-                    scope = backgroundScope,
-                    bgContext = testDispatcher,
-                    activityManager =
-                        activityManagerWrapper.stub {
-                            on { takeTaskThumbnail(any()) } doReturn
-                                ThumbnailData(thumbnail = fakeThumbnail)
-                        },
-                )
-
-            // Act
-            val flow = thumbnailRepository.thumbnailFor(123)
-            val result = currentValue(flow)
-
-            // Assert
-            verify(activityManagerWrapper).takeTaskThumbnail(eq(123))
-            assertThat(result?.isSuccess).isTrue()
-            assertThat(result?.getOrNull()?.sameAs(fakeThumbnail)).isTrue()
-        }
-
-    @Test
-    fun thumbnailFor_failsToTakeThumbnail_flowEmitsFailure() =
-        kosmos.runTest {
-            // Arrange
-            val thumbnailRepository =
-                ScreenCaptureThumbnailRepositoryImpl(
-                    scope = backgroundScope,
-                    bgContext = testDispatcher,
-                    activityManager =
-                        activityManagerWrapper.stub {
-                            on { takeTaskThumbnail(any()) } doReturn ThumbnailData(thumbnail = null)
-                        },
-                )
-
-            // Act
-            val flow = thumbnailRepository.thumbnailFor(123)
-            val result = currentValue(flow)
-
-            // Assert
-            verify(activityManagerWrapper).takeTaskThumbnail(eq(123))
-            assertThat(result?.isFailure).isTrue()
+            assertThat(result.isFailure).isTrue()
         }
 }
