@@ -4008,13 +4008,17 @@ public class UserManagerService extends IUserManager.Stub {
     }
 
     /**
+     * Do not use; this method is obsolete.
      * Check if we've hit the limit of how many users can be created.
      * Not for official purposes. Just for logging. Non-canonical. There are exceptional cases.
      */
-    private boolean isUserLimitReachedForLogging() {
+    private boolean isUserLimitReachedForLoggingLegacy() {
+        if (android.multiuser.Flags.consistentMaxUsers()) {
+            throw new UnsupportedOperationException("This method no longer exists.");
+        }
         int count;
         synchronized (mUsersLock) {
-            count = getAliveUsersForQuotaCountLU();
+            count = getSwitchableUsersForQuotaCountLU();
         }
         return count >= UserManager.getMaxSupportedUsers()
                 && !isCreationOverrideEnabled();
@@ -4036,24 +4040,17 @@ public class UserManagerService extends IUserManager.Stub {
         }
     }
 
-    /**
-     * Returns the maximum number of users of the given type that can be created on this device.
-     *
-     * This takes into account static device properties, including whether the user type is
-     * supported and how many users are allowed on the device. It does not take into account what
-     * users (of any type) already exist on the device.
-     */
-    private int getMaxSupportedUsersOfType(@Nullable UserTypeDetails userTypeDetails) {
+    /** Do not use this anymore. Just use UserTypeDetails.getMaxAllowed() directly. */
+    private int getMaxUsersOfType(@Nullable UserTypeDetails userTypeDetails) {
+        if (android.multiuser.Flags.decoupleMaxUsersFromProfiles()) {
+            // TODO: Once flag is rolled out, remove this method entirely by just doing this inline.
+            return userTypeDetails.getMaxAllowed();
+        }
         if (!android.multiuser.Flags.consistentMaxUsers()) {
             throw new UnsupportedOperationException("This method requires flag consistentMaxUsers");
         }
-        if (userTypeDetails == null || !isUserTypeEnabled(userTypeDetails)) {
-            return 0;
-        }
-        if (!doSystemFeaturesSupportUserType(userTypeDetails.getName())) {
-            return 0;
-        }
-        if (userTypeDetails.getMaxAllowed() == UserTypeDetails.UNLIMITED_NUMBER_OF_USERS) {
+        if (userTypeDetails.getMaxAllowed()
+                == UserTypeDetails.getLegacyUnlimitedNumberOfUsersValue()) {
             return UserManager.getMaxSupportedUsers();
         }
         return Math.min(UserManager.getMaxSupportedUsers(), userTypeDetails.getMaxAllowed());
@@ -4076,8 +4073,29 @@ public class UserManagerService extends IUserManager.Stub {
         return true;
     }
 
+    /**
+     * Whether the given user type is considered a switchable user that counts
+     * towards config_multiuserMaximumUsers.
+     */
+    private boolean isUserTypeSubjectToSwitchableUserMaximum(UserTypeDetails userTypeDetails) {
+        if (!android.multiuser.Flags.decoupleMaxUsersFromProfiles()) {
+            return !shouldUserTypeIgnoreOverallDeviceUserMaximum(userTypeDetails.getName());
+        }
+        return userTypeDetails.supportsSwitchTo()
+                && !userTypeDetails.isGuest() && !userTypeDetails.isDemo();
+    }
+
+    /** @see #isUserTypeSubjectToSwitchableUserMaximum(UserTypeDetails) */
+    private boolean isUserTypeSubjectToSwitchableUserMaximum(UserInfo userInfo) {
+        final UserTypeDetails userTypeDetails = getUserTypeDetails(userInfo);
+        return userTypeDetails != null && isUserTypeSubjectToSwitchableUserMaximum(userTypeDetails);
+    }
+
     /** Returns true if creating this userType should ignore overall device max users. */
     private boolean shouldUserTypeIgnoreOverallDeviceUserMaximum(String userType) {
+        if (android.multiuser.Flags.decoupleMaxUsersFromProfiles()) {
+            throw new UnsupportedOperationException("This method is no longer necessary");
+        }
         if (UserManager.isUserTypeManagedProfile(userType)) {
             // Return true in the scenario that the device doesn't support multi-user, but still
             // needs to support Managed Profiles (via FEATURE_MANAGED_USERS CDD requirements).
@@ -4086,10 +4104,8 @@ public class UserManagerService extends IUserManager.Stub {
             return UserManager.getMaxSupportedUsers() == 1
                     && mPm.hasSystemFeature(PackageManager.FEATURE_MANAGED_USERS, 0);
         }
-        if (UserManager.isUserTypeGuest(userType)
-                && !android.multiuser.Flags.consistentMaxUsersIncludingGuests()) {
+        if (UserManager.isUserTypeGuest(userType)) {
             // If the device supports multiuser, guests don't count towards the device user max.
-            // TODO(b/394178333): This is here for ease-of-rollout. Delete the Guest exception.
             return UserManager.getMaxSupportedUsers() >  1;
         }
         if (UserManager.isUserTypeSupervisingProfile(userType)) {
@@ -4103,8 +4119,8 @@ public class UserManagerService extends IUserManager.Stub {
     /**
      * Returns whether more users of the given type can be added.
      *
-     * This takes into account whether the user type is supported, the total number of users on the
-     * device, and how many exist of that type.
+     * This takes into account whether the user type is supported, how many exist of that type, and
+     * any applicable user count limits (e.g. the maximum number of switchable users, if relevant).
      *
      * <p>For checking whether more profiles can be added to a particular parent use
      * {@link #canAddMoreProfilesToUser}.
@@ -4116,7 +4132,8 @@ public class UserManagerService extends IUserManager.Stub {
                 return false;
             }
             final int max = userTypeDetails.getMaxAllowed();
-            if (max == UserTypeDetails.UNLIMITED_NUMBER_OF_USERS) {
+            if (!android.multiuser.Flags.decoupleMaxUsersFromProfiles()
+                    && max == UserTypeDetails.getLegacyUnlimitedNumberOfUsersValue()) {
                 return true; // Indicates that there is no max.
             }
             return getNumberOfUsersOfType(userTypeDetails.getName()) < max
@@ -4141,8 +4158,8 @@ public class UserManagerService extends IUserManager.Stub {
     /**
      * Returns the remaining number of users of the given type that can be created.
      *
-     * This takes into account whether the user type is supported, the total number of users on the
-     * device, and how many exist of that type.
+     * This takes into account whether the user type is supported, how many exist of that type, and
+     * any applicable user count limits (e.g. the maximum number of switchable users, if relevant).
      *
      * @param removedUserCount number of users of this same type that should be assumed removed
      *                         before performing this calculation (typically 0 or 1)
@@ -4152,24 +4169,30 @@ public class UserManagerService extends IUserManager.Stub {
         if (!android.multiuser.Flags.consistentMaxUsers()) {
             throw new UnsupportedOperationException("This method requires flag consistentMaxUsers");
         }
+        if (!isUserTypeEnabled(userTypeDetails)) {
+            return 0;
+        }
+        if (!doSystemFeaturesSupportUserType(userTypeDetails.getName())) {
+            return 0;
+        }
         if (userTypeDetails.isSystem()) {
+            // You can never create another system user.
             return 0;
         }
         synchronized (mUsersLock) {
             final int currentOfType = getNumberOfUsersOfType(userTypeDetails.getName());
             removedUserCount = Math.min(removedUserCount, currentOfType);
 
-            final int typeAllowance = getMaxSupportedUsersOfType(userTypeDetails)
-                    - currentOfType + removedUserCount;
+            final int typeAllowance =
+                    getMaxUsersOfType(userTypeDetails) - currentOfType + removedUserCount;
 
-            if (shouldUserTypeIgnoreOverallDeviceUserMaximum(userTypeDetails.getName())) {
-                return Math.max(0, typeAllowance);
+            if (isUserTypeSubjectToSwitchableUserMaximum(userTypeDetails)) {
+                final int switchableAllowance = UserManager.getMaxSwitchableUsers()
+                        - getSwitchableUsersForQuotaCountLU() + removedUserCount;
+                return Math.max(0, Math.min(switchableAllowance, typeAllowance));
             }
 
-            final int overallAllowance = UserManager.getMaxSupportedUsers()
-                    - getAliveUsersForQuotaCountLU() + removedUserCount;
-
-            return Math.max(0, Math.min(overallAllowance, typeAllowance));
+            return Math.max(0, typeAllowance);
         }
     }
 
@@ -4185,7 +4208,7 @@ public class UserManagerService extends IUserManager.Stub {
             return 0;
         }
         synchronized (mUsersLock) {
-            final int userCount = getAliveUsersForQuotaCountLU();
+            final int userCount = getSwitchableUsersForQuotaCountLU();
 
             // Limit total number of users that can be created (except for guest and demo)
             int result =
@@ -4210,7 +4233,8 @@ public class UserManagerService extends IUserManager.Stub {
 
             // Limit against max allowed for type
             result = Math.min(result,
-                    type.getMaxAllowed() == UserTypeDetails.UNLIMITED_NUMBER_OF_USERS
+                    !android.multiuser.Flags.decoupleMaxUsersFromProfiles() && type.getMaxAllowed()
+                            == UserTypeDetails.getLegacyUnlimitedNumberOfUsersValue()
                         ? Integer.MAX_VALUE
                         : (type.getMaxAllowed() - getNumberOfUsersOfType(userType)));
 
@@ -4326,8 +4350,8 @@ public class UserManagerService extends IUserManager.Stub {
      * Returns the remaining number of profiles of the given type that can be added to the given
      * parent.
      *
-     * This takes into account whether the user type is supported, the total number of users on the
-     * device, and how many exist already, both in general and for the given parent.
+     * This takes into account whether the user type is supported, how many exist already (both
+     * in general and for the given parent), and any applicable user count limits.
      *
      * @param allowedToRemoveOne in the case that the given user already has a profile of this type,
      *                           whether we could add a new one to this user after removing its
@@ -4393,7 +4417,7 @@ public class UserManagerService extends IUserManager.Stub {
             final int userTypeCount = getProfileIds(userId, userType, false, /* excludeHidden */
                     false).length;
             final int profilesRemovedCount = userTypeCount > 0 && allowedToRemoveOne ? 1 : 0;
-            final int usersCountAfterRemoving = getAliveUsersForQuotaCountLU()
+            final int usersCountAfterRemoving = getSwitchableUsersForQuotaCountLU()
                     - profilesRemovedCount;
 
             // Limit total number of users that can be created
@@ -4406,7 +4430,8 @@ public class UserManagerService extends IUserManager.Stub {
 
             // Limit the number of profiles of this type that can be created.
             final int maxUsersOfType = getMaxUsersOfTypePerParent(type);
-            if (maxUsersOfType != UserTypeDetails.UNLIMITED_NUMBER_OF_USERS) {
+            if (android.multiuser.Flags.decoupleMaxUsersFromProfiles() || maxUsersOfType !=
+                    UserTypeDetails.getLegacyUnlimitedNumberOfUsersValue()) {
                 result = Math.min(result, maxUsersOfType - (userTypeCount - profilesRemovedCount));
             }
             if (result <= 0) {
@@ -4414,7 +4439,8 @@ public class UserManagerService extends IUserManager.Stub {
             }
 
             // Limit against max allowed for type (beyond max allowed per parent)
-            if (type.getMaxAllowed() != UserTypeDetails.UNLIMITED_NUMBER_OF_USERS) {
+            if (android.multiuser.Flags.decoupleMaxUsersFromProfiles() || type.getMaxAllowed() !=
+                    UserTypeDetails.getLegacyUnlimitedNumberOfUsersValue()) {
                 result = Math.min(result, type.getMaxAllowed()
                         - (getNumberOfUsersOfType(userType) - profilesRemovedCount));
             }
@@ -4424,25 +4450,24 @@ public class UserManagerService extends IUserManager.Stub {
     }
 
     /**
-     * Returns the number of users that exist on the device which count towards the max user limit.
-     * Includes Guest users if {@link android.multiuser.Flags#consistentMaxUsersIncludingGuests()}
-     * is true, but otherwise exclude them.
+     * Returns the number of users that exist on the device that count towards the
+     * {@link UserManager#getMaxSwitchableUsers() switchable max user limit}.
      */
     @GuardedBy("mUsersLock")
-    private int getAliveUsersForQuotaCountLU() {
-        int aliveUserCount = 0;
+    private int getSwitchableUsersForQuotaCountLU() {
+        int aliveSwitchableUserCount = 0;
         final int totalUserCount = mUsers.size();
         // Skip over users being removed
         for (int i = 0; i < totalUserCount; i++) {
             UserInfo user = mUsers.valueAt(i).info;
             if (!mRemovingUserIds.get(user.id)
-                    && (android.multiuser.Flags.consistentMaxUsersIncludingGuests()
-                        || !user.isGuest())
+                    && (android.multiuser.Flags.decoupleMaxUsersFromProfiles() ?
+                            isUserTypeSubjectToSwitchableUserMaximum(user) : !user.isGuest())
                     && !user.preCreated) {
-                aliveUserCount++;
+                aliveSwitchableUserCount++;
             }
         }
-        return aliveUserCount;
+        return aliveSwitchableUserCount;
     }
 
     /**
@@ -6216,21 +6241,15 @@ public class UserManagerService extends IUserManager.Stub {
                     }
                 }
                 if (!canAddMoreUsersOfType(userTypeDetails)) {
-                    if (isUserLimitReachedForLogging()) {
-                        throwCheckedUserOperationException(
-                                "Cannot add user. Maximum user limit is reached.",
-                                UserManager.USER_OPERATION_ERROR_MAX_USERS);
-                    } else {
-                        throwCheckedUserOperationException(
-                                "Cannot add more users of type " + userType
-                                        + ". Maximum number of that type already exists.",
-                                UserManager.USER_OPERATION_ERROR_MAX_USERS);
-                    }
+                    throwCheckedUserOperationException(
+                            "Cannot add more users of type " + userType
+                                    + ". Maximum number of that type already exists.",
+                            UserManager.USER_OPERATION_ERROR_MAX_USERS);
                 }
                 if (!android.multiuser.Flags.consistentMaxUsers()
                         && !isGuest && !UserManager.isUserTypeManagedProfile(userType)
                         && !UserManager.isUserTypeDemo(userType)
-                        && isUserLimitReachedForLogging()) {
+                        && isUserLimitReachedForLoggingLegacy()) {
                     // Keep logic in sync with getRemainingCreatableUserCountLegacy().
                     // If the user limit has been reached, we cannot add a user (except guest/demo).
                     // Note that managed profiles can bypass it in certain circumstances (taken
@@ -6686,9 +6705,9 @@ public class UserManagerService extends IUserManager.Stub {
                 }
             }
         } else if (atomTag == FrameworkStatsLog.MULTI_USER_INFO) {
-            if (UserManager.getMaxSupportedUsers() > 1) {
+            if (UserManager.getMaxSwitchableUsers() > 1) {
                 data.add(FrameworkStatsLog.buildStatsEvent(FrameworkStatsLog.MULTI_USER_INFO,
-                        UserManager.getMaxSupportedUsers(),
+                        UserManager.getMaxSwitchableUsers(),
                         // TODO(b/390455855): is USER_ALL really allowed here?
                         isUserSwitcherEnabled(UserHandle.USER_ALL),
                         UserManager.supportsMultipleUsers()
@@ -8011,18 +8030,23 @@ public class UserManagerService extends IUserManager.Stub {
 
         // Dump some capabilities
         pw.println();
-        int effectiveMaxSupportedUsers = UserManager.getMaxSupportedUsers();
-        pw.print("  Max users: " + effectiveMaxSupportedUsers);
-        int defaultMaxSupportedUsers = getContextResources()
-                .getInteger(R.integer.config_multiuserMaximumUsers);
-        if (effectiveMaxSupportedUsers != defaultMaxSupportedUsers) {
-            pw.print(" (built-in value: " + defaultMaxSupportedUsers + ")");
-        }
-        pw.println(" (limit reached: " + isUserLimitReachedForLogging() + ")");
         if (isCreationOverrideEnabled()) {
-            pw.println(" (creation override mode is enabled)");
+            pw.println(" Creation override mode is enabled");
         }
         pw.println("  Supports switchable users: " + UserManager.supportsMultipleUsers());
+        int effectiveMaxSwitchableUsers = UserManager.getMaxSwitchableUsers();
+        pw.print("  Max switchable users: " + effectiveMaxSwitchableUsers);
+        int defaultMaxSupportedUsers = getContextResources()
+                .getInteger(R.integer.config_multiuserMaximumUsers);
+        if (effectiveMaxSwitchableUsers != defaultMaxSupportedUsers) {
+            pw.print(" (built-in value: " + defaultMaxSupportedUsers + ")");
+        }
+        synchronized (mUsersLock) {
+            if (getSwitchableUsersForQuotaCountLU() >= effectiveMaxSwitchableUsers) {
+                pw.print(" (limit reached)");
+            }
+        }
+        pw.println();
         pw.println("  All guests ephemeral: " + getContextResources().getBoolean(
                 com.android.internal.R.bool.config_guestUserEphemeral));
         pw.println("  Force ephemeral users: " + mForceEphemeralUsers);
@@ -8792,31 +8816,21 @@ public class UserManagerService extends IUserManager.Stub {
                 + (DBG_WITH_STACKTRACE ? " called at\n" + Debug.getCallers(10, "  ") : ""));
     }
 
-    /** @see #getMaxUsersOfTypePerParent(UserTypeDetails) */
     @VisibleForTesting
     int getMaxUsersOfTypePerParent(String userType) {
         final UserTypeDetails type = mUserTypes.get(userType);
-        if (type == null) {
-            return 0;
-        }
-        return getMaxUsersOfTypePerParent(type);
+        return type != null ? getMaxUsersOfTypePerParent(type) : 0;
     }
 
-    /**
-     * Returns the maximum number of users allowed for the given userTypeDetails per parent user.
-     * This is applicable for user types that are {@link UserTypeDetails#isProfile() profiles}.
-     *
-     * This is not necessarily the max in practice, since it does not take into account device
-     * properties beyond just {@link UserTypeDetails#getMaxAllowedPerParent()}.
-     *
-     * Under certain circumstances (such as after a change-user-type) the max value can actually
-     * be exceeded: this is allowed in order to keep the device in a usable state. In such case, an
-     * error is logged in {@link UserManagerService#upgradeProfileToTypeLU}.
-     */
+    /** Do not use this anymore. Just use UserTypeDetails.getMaxAllowedPerParent() directly. */
     private static int getMaxUsersOfTypePerParent(@NonNull UserTypeDetails userTypeDetails) {
+        if (android.multiuser.Flags.decoupleMaxUsersFromProfiles()) {
+            // TODO: Once flag is rolled out, remove this method entirely by just doing this inline.
+            return userTypeDetails.getMaxAllowedPerParent();
+        }
         int defaultMax = userTypeDetails.getMaxAllowedPerParent();
         if (android.multiuser.Flags.consistentMaxUsers() &&
-                defaultMax == UserTypeDetails.UNLIMITED_NUMBER_OF_USERS) {
+                defaultMax == UserTypeDetails.getLegacyUnlimitedNumberOfUsersValue()) {
             // UNLIMITED_NUMBER_OF_USERS serves as a shorthand for getMaxSupportedUsers().
             defaultMax = UserManager.getMaxSupportedUsers();
         }
@@ -8845,7 +8859,8 @@ public class UserManagerService extends IUserManager.Stub {
             }
         }
         int maxUsersOfType = getMaxUsersOfTypePerParent(userType);
-        if (maxUsersOfType == UserTypeDetails.UNLIMITED_NUMBER_OF_USERS) {
+        if (!android.multiuser.Flags.decoupleMaxUsersFromProfiles() &&
+                maxUsersOfType == UserTypeDetails.getLegacyUnlimitedNumberOfUsersValue()) {
             maxUsersOfType = Integer.MAX_VALUE;
         }
         for (int i = 0; i < maxUsersOfType; i++) {

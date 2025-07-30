@@ -45,9 +45,6 @@ import java.util.List;
  */
 public final class UserTypeDetails {
 
-    /** Indicates that there is no limit to the number of users allowed. */
-    public static final int UNLIMITED_NUMBER_OF_USERS = -1;
-
     /** Name of the user type, such as {@link UserManager#USER_TYPE_PROFILE_MANAGED}. */
     private final @NonNull String mName;
 
@@ -64,18 +61,12 @@ public final class UserTypeDetails {
      */
     private final @Nullable int[] mLabels;
 
-    /**
-     * Maximum number of this user type allowed on the device.
-     * Use {@link #UNLIMITED_NUMBER_OF_USERS} to indicate that there is no hard limit.
-     * Note that all user types are also implicitly bound
-     * by {@link UserManager#getMaxSupportedUsers()}.
-     */
+    /** Maximum number of this user type allowed on the device. */
     private final int mMaxAllowed;
 
     /**
      * Maximum number of this user type allowed per parent (for user types, like profiles, that
      * have parents).
-     * Use {@link #UNLIMITED_NUMBER_OF_USERS} to indicate that there is no hard limit.
      */
     // TODO(b/142482943): Should this also apply to restricted profiles?
     private final int mMaxAllowedPerParent;
@@ -228,12 +219,7 @@ public final class UserTypeDetails {
         return mEnabled;
     }
 
-    /**
-     * Returns the maximum number of this user type allowed on the device.
-     * <p>Returns {@link #UNLIMITED_NUMBER_OF_USERS} to indicate that there is no hard limit.
-     * Note that all user types are also implicitly bound
-     * by {@link UserManager#getMaxSupportedUsers()}.
-     */
+    /** Returns the maximum number of this user type allowed on the device. */
     public int getMaxAllowed() {
         return mMaxAllowed;
     }
@@ -244,7 +230,6 @@ public final class UserTypeDetails {
      * Under certain circumstances (such as after a change-user-type) the max value can actually
      * be exceeded: this is allowed in order to keep the device in a usable state.
      * An error is logged in {@link UserManagerService#upgradeProfileToTypeLU}
-     * <p>Returns {@link #UNLIMITED_NUMBER_OF_USERS} to indicate that there is no hard limit.
      */
     public int getMaxAllowedPerParent() {
         return mMaxAllowedPerParent;
@@ -363,6 +348,12 @@ public final class UserTypeDetails {
         return (mBaseType & UserInfo.FLAG_SYSTEM) != 0;
     }
 
+    /** Returns whether this user can be switched to. */
+    public boolean supportsSwitchTo() {
+        // For historical reasons this is not a Detail per se, but can be evaluated based on flags.
+        return UserInfo.supportsSwitchTo(mName, mBaseType);
+    }
+
     /** Returns a {@link Bundle} representing the default user restrictions. */
     @NonNull Bundle getDefaultRestrictions() {
         return BundleUtils.clone(mDefaultRestrictions);
@@ -388,6 +379,15 @@ public final class UserTypeDetails {
         return mDefaultCrossProfileIntentFilters != null
                 ? new ArrayList<>(mDefaultCrossProfileIntentFilters)
                 : Collections.emptyList();
+    }
+
+    /** Value that indicates that there is no limit to the number of users allowed. */
+    public static int getLegacyUnlimitedNumberOfUsersValue() {
+        if (android.multiuser.Flags.decoupleMaxUsersFromProfiles()) {
+            throw new UnsupportedOperationException("No such thing as unlimited users anymore.");
+        }
+        // Making this a function rather than constant just to make it easier to flag-and-remove.
+        return -1;
     }
 
     /** Dumps details of the UserTypeDetails. Do not parse this. */
@@ -442,7 +442,8 @@ public final class UserTypeDetails {
         // UserTypeDetails properties and their default values.
         private String mName; // This MUST be explicitly set.
         private int mBaseType; // This MUST be explicitly set.
-        private int mMaxAllowed = UNLIMITED_NUMBER_OF_USERS;
+        private int mMaxAllowed = android.multiuser.Flags.decoupleMaxUsersFromProfiles() ?
+                0 : getLegacyUnlimitedNumberOfUsersValue();
         private int mMaxAllowedPerParent = 0;
         private int mDefaultUserInfoPropertyFlags = 0;
         private @Nullable Bundle mDefaultRestrictions = null;
@@ -597,7 +598,15 @@ public final class UserTypeDetails {
             Preconditions.checkArgument(hasValidPropertyFlags(),
                     "UserTypeDetails %s has invalid flags: %s", mName,
                             Integer.toHexString(mDefaultUserInfoPropertyFlags));
+            Preconditions.checkArgument(!android.multiuser.Flags.decoupleMaxUsersFromProfiles()
+                            || mMaxAllowed >= 0,
+                    "UserTypeDetails %s has negative maxAllowed: %d", mName, mMaxAllowed);
             checkSystemAndMainUserPreconditions();
+            if (android.multiuser.Flags.decoupleMaxUsersFromProfiles() && isProfile()) {
+                Preconditions.checkArgument(mMaxAllowedPerParent >= 0,
+                        "UserTypeDetails %s has negative mMaxAllowedPerParent: %d",
+                        mName, mMaxAllowedPerParent);
+            }
             if (hasBadge()) {
                 Preconditions.checkArgument(mBadgeLabels != null && mBadgeLabels.length != 0,
                         "UserTypeDetails %s has badge but no badgeLabels.", mName);
@@ -677,26 +686,20 @@ public final class UserTypeDetails {
     }
 
     /**
-     * Returns whether the user type is a managed profile
-     * (i.e. {@link UserManager#USER_TYPE_PROFILE_MANAGED}).
+     * Returns whether the user type is a
+     * {@link UserManager#USER_TYPE_PROFILE_MANAGED Managed profile}.
      */
     public boolean isManagedProfile() {
         return UserManager.isUserTypeManagedProfile(mName);
     }
 
-    /**
-     * Returns whether the user type is a communal profile
-     * (i.e. {@link UserManager#USER_TYPE_PROFILE_COMMUNAL}).
-     */
-    public boolean isCommunalProfile() {
-        return UserManager.isUserTypeCommunalProfile(mName);
+    /** Returns whether the user type is a {@link UserManager#USER_TYPE_FULL_GUEST Guest user}. */
+    public boolean isGuest() {
+        return UserManager.isUserTypeGuest(mName);
     }
 
-    /**
-     * Returns whether the user type is a private profile
-     * (i.e. {@link UserManager#USER_TYPE_PROFILE_PRIVATE}).
-     */
-    public boolean isPrivateProfile() {
-        return UserManager.isUserTypePrivateProfile(mName);
+    /** Returns whether the user type is a {@link UserManager#USER_TYPE_FULL_DEMO Demo user}. */
+    public boolean isDemo() {
+        return UserManager.isUserTypeDemo(mName);
     }
 }
