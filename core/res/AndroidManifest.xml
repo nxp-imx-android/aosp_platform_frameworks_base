@@ -8738,7 +8738,17 @@
              @hide
         -->
     <permission android:name="android.permission.MANAGE_SAFETY_CENTER"
-                android:protectionLevel="internal|installer|role" />
+                android:protectionLevel="internal|installer|role"
+                android:featureFlag="!android.permission.flags.open_safety_center_apis" />
+
+    <!-- @SystemApi Required to access the safety center internal APIs using the
+             {@link android.safetycenter.SafetyCenterManager}.
+             <p>Protection level: signature|privileged
+             @hide
+        -->
+    <permission android:name="android.permission.MANAGE_SAFETY_CENTER"
+                android:protectionLevel="signature|privileged"
+                android:featureFlag="android.permission.flags.open_safety_center_apis" />
 
     <!-- @SystemApi Allows an application to access the AmbientContextEvent service.
          @hide
