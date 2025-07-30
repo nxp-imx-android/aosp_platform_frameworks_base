@@ -57,7 +57,6 @@ import com.android.internal.logging.UiEventLogger;
 import com.android.internal.policy.PhoneWindow;
 import com.android.keyguard.KeyguardUpdateMonitor;
 import com.android.keyguard.KeyguardUpdateMonitorCallback;
-import com.android.systemui.Flags;
 import com.android.systemui.ambient.touch.TouchHandler;
 import com.android.systemui.ambient.touch.TouchMonitor;
 import com.android.systemui.ambient.touch.dagger.AmbientTouchComponent;
@@ -540,7 +539,7 @@ public class DreamOverlayService extends android.service.dreams.DreamOverlayServ
             // to hub swipe gesture.
             touchHandlers.add(dreamOverlayComponent.getCommunalTouchHandler());
         }
-        if (isDreamInPreviewMode() && Flags.dreamPreviewTapDismiss()) {
+        if (isDreamInPreviewMode()) {
             touchHandlers.add(new DismissTouchHandler(new DismissTouchHandler.DismissCallback() {
                 @Override
                 public void onDismissed() {
