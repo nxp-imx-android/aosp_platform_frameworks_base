@@ -51,6 +51,7 @@ import static org.mockito.Mockito.clearInvocations;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -124,6 +125,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
@@ -669,6 +671,108 @@ public class StageCoordinatorTests extends ShellTestCase {
         HierarchyOp op = disableChildBoundsOps.getFirst();
         assertThat(op.getContainer()).isEqualTo(rootTaskInfo.token.asBinder());
         assertThat(op.getDisallowOverrideBoundsForChildren()).isTrue();
+    }
+
+    @Test
+    @EnableFlags(com.android.window.flags.Flags.FLAG_ENABLE_MULTI_DISPLAY_SPLIT)
+    public void moveSplitScreenRoot_whenFlagEnabled_doesNothing() {
+        SplitMultiDisplayHelper mockHelper = mock(SplitMultiDisplayHelper.class);
+        mStageCoordinator.mSplitMultiDisplayHelper = mockHelper;
+
+        mStageCoordinator.prepareMovingSplitScreenRoot(mWct, DEFAULT_DISPLAY + 1);
+
+        verify(mockHelper, never()).getCachedOrSystemDisplayIds();
+        verify(mRootTDAOrganizer, never()).getDisplayAreaInfo(anyInt());
+        verify(mWct, never()).reparent(any(), any(), anyBoolean());
+    }
+
+    @Test(expected = IllegalStateException.class)
+    @DisableFlags(com.android.window.flags.Flags.FLAG_ENABLE_MULTI_DISPLAY_SPLIT)
+    public void moveSplitScreenRoot_whenRootNotFound_throwsException() {
+        SplitMultiDisplayHelper mockHelper = mock(SplitMultiDisplayHelper.class);
+        mStageCoordinator.mSplitMultiDisplayHelper = mockHelper;
+        when(mockHelper.getCachedOrSystemDisplayIds()).thenReturn(
+                new ArrayList<>(List.of(DEFAULT_DISPLAY)));
+        when(mockHelper.getDisplayRootTaskInfo(anyInt())).thenReturn(null);
+
+        mStageCoordinator.prepareMovingSplitScreenRoot(mWct, DEFAULT_DISPLAY + 1);
+    }
+
+    @Test
+    @DisableFlags(com.android.window.flags.Flags.FLAG_ENABLE_MULTI_DISPLAY_SPLIT)
+    public void moveSplitScreenRoot_whenTargetIsSameDisplay_doesNothing() {
+        SplitMultiDisplayHelper mockHelper = mock(SplitMultiDisplayHelper.class);
+        mStageCoordinator.mSplitMultiDisplayHelper = mockHelper;
+        final int targetDisplayId = DEFAULT_DISPLAY;
+        ActivityManager.RunningTaskInfo currentRootTaskInfo = new TestRunningTaskInfoBuilder()
+                .setDisplayId(targetDisplayId)
+                .build();
+        when(mockHelper.getCachedOrSystemDisplayIds()).thenReturn(
+                new ArrayList<>(List.of(targetDisplayId)));
+        when(mockHelper.getDisplayRootTaskInfo(targetDisplayId))
+                .thenReturn(currentRootTaskInfo);
+
+        mStageCoordinator.prepareMovingSplitScreenRoot(mWct, targetDisplayId);
+
+        verify(mWct, never()).reparent(any(), any(), anyBoolean());
+    }
+
+    @Test
+    @DisableFlags(com.android.window.flags.Flags.FLAG_ENABLE_MULTI_DISPLAY_SPLIT)
+    public void moveSplitScreenRoot_whenTargetIsDifferentDisplay_reparentsRoot() {
+        SplitMultiDisplayHelper mockHelper = mock(SplitMultiDisplayHelper.class);
+        mStageCoordinator.mSplitMultiDisplayHelper = mockHelper;
+        final int currentDisplayId = DEFAULT_DISPLAY;
+        final int targetDisplayId = DEFAULT_DISPLAY + 1;
+
+        WindowContainerToken currentRootToken = mock(WindowContainerToken.class);
+        when(mRootDisplayAreaOrganizer.getDisplayTokenForDisplay(anyInt()))
+                .thenReturn(mock(WindowContainerToken.class));
+        ActivityManager.RunningTaskInfo currentRootTaskInfo = new TestRunningTaskInfoBuilder()
+                .setDisplayId(currentDisplayId)
+                .setToken(currentRootToken)
+                .build();
+        when(mockHelper.getCachedOrSystemDisplayIds())
+                .thenReturn(new ArrayList<>(List.of(currentDisplayId, targetDisplayId)));
+        when(mockHelper.getDisplayRootTaskInfo(currentDisplayId))
+                .thenReturn(currentRootTaskInfo);
+
+        WindowContainerToken targetDisplayAreaToken = new MockToken().token();
+        DisplayAreaInfo targetDisplayAreaInfo = new DisplayAreaInfo(targetDisplayAreaToken,
+                targetDisplayId, 0);
+        when(mRootTDAOrganizer.getDisplayAreaInfo(targetDisplayId))
+                .thenReturn(targetDisplayAreaInfo);
+
+        mStageCoordinator.prepareMovingSplitScreenRoot(mWct, targetDisplayId);
+
+        verify(mWct).reparent(eq(currentRootToken), eq(targetDisplayAreaToken), eq(true));
+    }
+
+    @Test
+    @DisableFlags(com.android.window.flags.Flags.FLAG_ENABLE_MULTI_DISPLAY_SPLIT)
+    public void moveSplitScreenRoot_whenTargetDisplayAreaNotFound_doesNothing() {
+        SplitMultiDisplayHelper mockHelper = mock(SplitMultiDisplayHelper.class);
+        mStageCoordinator.mSplitMultiDisplayHelper = mockHelper;
+
+        final int currentDisplayId = DEFAULT_DISPLAY;
+        final int targetDisplayId = DEFAULT_DISPLAY + 1;
+
+        // Setup current root, but no target display area
+        WindowContainerToken currentRootToken = mock(WindowContainerToken.class);
+        ActivityManager.RunningTaskInfo currentRootTaskInfo = new TestRunningTaskInfoBuilder()
+                .setDisplayId(currentDisplayId)
+                .setToken(currentRootToken)
+                .build();
+        when(mockHelper.getCachedOrSystemDisplayIds())
+                .thenReturn(new ArrayList<>(List.of(currentDisplayId, targetDisplayId)));
+        when(mockHelper.getDisplayRootTaskInfo(currentDisplayId))
+                .thenReturn(currentRootTaskInfo);
+
+        when(mRootTDAOrganizer.getDisplayAreaInfo(targetDisplayId)).thenReturn(null);
+
+        mStageCoordinator.prepareMovingSplitScreenRoot(mWct, targetDisplayId);
+
+        verify(mWct, never()).reparent(any(), any(), anyBoolean());
     }
 
     private Transitions createTestTransitions() {
