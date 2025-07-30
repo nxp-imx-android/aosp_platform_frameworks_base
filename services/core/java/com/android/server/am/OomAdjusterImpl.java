@@ -95,9 +95,7 @@ import android.app.ActivityManager;
 import android.app.ActivityManagerInternal.OomAdjReason;
 import android.content.Context;
 import android.content.pm.ServiceInfo;
-import android.os.IBinder;
 import android.os.Trace;
-import android.util.ArrayMap;
 import android.util.ArraySet;
 import android.util.Slog;
 
@@ -1090,13 +1088,13 @@ public class OomAdjusterImpl extends OomAdjuster {
         final ProcessServiceRecord psr = app.mServices;
 
         for (int i = psr.numberOfRunningServices() - 1; i >= 0; i--) {
-            final ServiceRecord s = psr.getRunningServiceAt(i);
-            final ArrayMap<IBinder, ArrayList<ConnectionRecord>> serviceConnections =
-                    s.getConnections();
-            for (int j = serviceConnections.size() - 1; j >= 0; j--) {
-                final ArrayList<ConnectionRecord> clist = serviceConnections.valueAt(j);
+            final ServiceRecordInternal s = psr.getRunningServiceAt(i);
+            for (int j = s.getConnectionsSize() - 1; j >= 0; j--) {
+                final ArrayList<? extends ConnectionRecordInternal> clist =
+                        s.getConnectionAt(j);
                 for (int k = clist.size() - 1; k >= 0; k--) {
-                    final ConnectionRecord cr = clist.get(k);
+                    // TODO(b/425766486): Switch to use ConnectionRecordInternal.
+                    final ConnectionRecord cr = (ConnectionRecord) clist.get(k);
                     final ProcessRecord client;
                     if (app.isSdkSandbox && cr.binding.attributedClient != null) {
                         client = cr.binding.attributedClient;
