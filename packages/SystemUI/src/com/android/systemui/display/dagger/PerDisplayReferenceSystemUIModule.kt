@@ -16,6 +16,7 @@
 
 package com.android.systemui.display.dagger
 
+import com.android.systemui.keyboard.shortcut.ShortcutHelperDisplayModule
 import com.android.systemui.statusbar.phone.dagger.PerDisplayStatusBarReferenceModule
 import dagger.Module
 
@@ -25,5 +26,5 @@ import dagger.Module
  * If the classes are common to all SysUI flavors, they should be added to
  * [PerDisplaySystemUIModule] instead.
  */
-@Module(includes = [PerDisplayStatusBarReferenceModule::class])
+@Module(includes = [PerDisplayStatusBarReferenceModule::class, ShortcutHelperDisplayModule::class])
 interface PerDisplayReferenceSystemUIModule
