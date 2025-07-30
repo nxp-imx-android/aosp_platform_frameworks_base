@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 The Android Open Source Project
+ * Copyright (C) 2025 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,52 +14,37 @@
  * limitations under the License.
  */
 
-package com.android.systemui.log.table
+package com.android.systemui.log.table.impl
 
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dump.DumpManager
 import com.android.systemui.log.LogBufferHelper.Companion.adjustMaxSize
 import com.android.systemui.log.LogcatEchoTracker
+import com.android.systemui.log.table.TableLogBuffer
+import com.android.systemui.log.table.TableLogBufferFactory
+import com.android.systemui.log.table.TableLogBufferImpl
 import com.android.systemui.util.time.SystemClock
 import java.util.concurrent.ConcurrentHashMap
 import javax.inject.Inject
 
 @SysUISingleton
-class TableLogBufferFactory
+class TableLogBufferFactoryImpl
 @Inject
 constructor(
     private val dumpManager: DumpManager,
     private val systemClock: SystemClock,
     private val logcatEchoTracker: LogcatEchoTracker,
-) {
+) : TableLogBufferFactory {
     private val existingBuffers = ConcurrentHashMap<String, TableLogBuffer>()
 
-    /**
-     * Creates a new [TableLogBuffer]. This method should only be called from static contexts, where
-     * it is guaranteed only to be created one time. See [getOrCreate] for a cache-aware method of
-     * obtaining a buffer.
-     *
-     * @param name a unique table name
-     * @param maxSize the buffer max size. See [adjustMaxSize]
-     * @return a new [TableLogBuffer] registered with [DumpManager]
-     */
-    fun create(name: String, maxSize: Int): TableLogBuffer {
+    override fun create(name: String, maxSize: Int): TableLogBuffer {
         val tableBuffer =
             TableLogBufferImpl(adjustMaxSize(maxSize), name, systemClock, logcatEchoTracker)
         dumpManager.registerTableLogBuffer(name, tableBuffer)
         return tableBuffer
     }
 
-    /**
-     * Log buffers are retained indefinitely by [DumpManager], so that they can be represented in
-     * bugreports. Because of this, many of them are created statically in the Dagger graph.
-     *
-     * In the case where you have to create a logbuffer with a name only known at runtime, this
-     * method can be used to lazily create a table log buffer which is then cached for reuse.
-     *
-     * @return a [TableLogBuffer] suitable for reuse
-     */
-    fun getOrCreate(name: String, maxSize: Int): TableLogBuffer =
+    override fun getOrCreate(name: String, maxSize: Int): TableLogBuffer =
         synchronized(existingBuffers) {
             existingBuffers.getOrElse(name) {
                 val buffer = create(name, maxSize)
