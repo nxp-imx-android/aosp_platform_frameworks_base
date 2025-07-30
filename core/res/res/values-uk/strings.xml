@@ -302,6 +302,8 @@
     <string name="global_action_assist" msgid="2517047220311505805">"Підказки"</string>
     <string name="global_action_voice_assist" msgid="6655788068555086695">"Голос. підказки"</string>
     <string name="global_action_lockdown" msgid="2475471405907902963">"Блокування"</string>
+    <!-- no translation found for global_action_unrestricted_lock (7933224393323064116) -->
+    <skip />
     <string name="status_bar_notification_info_overflow" msgid="3330152558746563475">"999+"</string>
     <string name="notification_compact_heads_up_reply" msgid="2425293958371284340">"Відповісти"</string>
     <string name="notification_hidden_text" msgid="2835519769868187223">"Нове сповіщення"</string>
@@ -891,8 +893,8 @@
     <string name="policydesc_watchLogin_secondaryUser" product="tv" msgid="8965224107449407052">"Відстежуйте кількість неправильних паролів, введених під час розблокування екрана. Блокуйте пристрій Android TV або стирайте всі дані користувача, якщо пароль введено неправильно забагато разів."</string>
     <string name="policydesc_watchLogin_secondaryUser" product="automotive" msgid="7180857406058327941">"Відстежуйте кількість неправильних паролів, введених під час розблокування екрана, і блокуйте інформаційно-розважальну систему або видаляйте всі дані цього профілю, якщо пароль введено неправильно забагато разів."</string>
     <string name="policydesc_watchLogin_secondaryUser" product="default" msgid="9177645136475155924">"Відстежуйте кількість неправильних паролів, введених під час розблокування екрана. Блокуйте телефон або стирайте всі його дані, якщо пароль введено неправильно забагато разів."</string>
-    <string name="policylab_resetPassword" msgid="214556238645096520">"Змінити спосіб розблокування екрана"</string>
-    <string name="policydesc_resetPassword" msgid="4626419138439341851">"Змінити спосіб розблокування екрана."</string>
+    <string name="policylab_resetPassword" msgid="214556238645096520">"Змінювати спосіб розблокування екрана"</string>
+    <string name="policydesc_resetPassword" msgid="4626419138439341851">"Змінювати спосіб розблокування екрана."</string>
     <string name="policylab_forceLock" msgid="7360335502968476434">"Блокувати екран"</string>
     <string name="policydesc_forceLock" msgid="1008844760853899693">"Контролювати, як і коли блокується екран."</string>
     <string name="policylab_wipeData" msgid="1359485247727537311">"Видаляти всі дані"</string>
@@ -914,7 +916,7 @@
     <string name="policydesc_encryptedStorage" msgid="1102516950740375617">"Вимагати шифрування даних збереженої програми."</string>
     <string name="policylab_disableCamera" msgid="5749486347810162018">"Вимкнути камери"</string>
     <string name="policydesc_disableCamera" msgid="3204405908799676104">"Запобігати використанню всіх камер пристрою."</string>
-    <string name="policylab_disableKeyguardFeatures" msgid="5071855750149949741">"Вимкнути деякі функції блокування"</string>
+    <string name="policylab_disableKeyguardFeatures" msgid="5071855750149949741">"Вимикати деякі функції блокування"</string>
     <string name="policydesc_disableKeyguardFeatures" msgid="6641673177041195957">"Не використовувати деякі функції блокування екрана."</string>
     <string name="exit_toast_on_long_press_escape" msgid="2983932499112557277">"Щоб закрити цей додаток, утримуйте клавішу Esc"</string>
   <string-array name="phoneTypes">
