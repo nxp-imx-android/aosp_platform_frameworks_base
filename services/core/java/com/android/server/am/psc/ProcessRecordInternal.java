@@ -22,6 +22,7 @@ import static android.app.ActivityManager.PROCESS_STATE_NONEXISTENT;
 
 import static com.android.server.am.OomAdjuster.CPU_TIME_REASON_NONE;
 import static com.android.server.am.OomAdjuster.IMPLICIT_CPU_TIME_REASON_NONE;
+import static com.android.server.am.OomAdjusterImpl.ProcessRecordNode.NUM_NODE_TYPE;
 import static com.android.server.am.ProcessList.CACHED_APP_MIN_ADJ;
 import static com.android.server.am.ProcessList.INVALID_ADJ;
 import static com.android.server.am.ProcessList.SCHED_GROUP_BACKGROUND;
@@ -41,6 +42,7 @@ import com.android.internal.annotations.CompositeRWLock;
 import com.android.internal.annotations.GuardedBy;
 import com.android.server.am.Flags;
 import com.android.server.am.OomAdjuster;
+import com.android.server.am.OomAdjusterImpl;
 import com.android.server.am.ProcessCachedOptimizerRecord.ShouldNotFreezeReason;
 import com.android.server.am.psc.PlatformCompatCache.CachedCompatChangeId;
 
@@ -664,6 +666,11 @@ public abstract class ProcessRecordInternal {
 
     @GuardedBy("mServiceLock")
     private long mFollowupUpdateUptimeMs = Long.MAX_VALUE;
+
+    // TODO(b/425766486): Change to package-private after the OomAdjusterImpl class is moved to
+    //                    the psc package.
+    public final OomAdjusterImpl.ProcessRecordNode[] mLinkedNodes =
+            new OomAdjusterImpl.ProcessRecordNode[NUM_NODE_TYPE];
 
     public ProcessRecordInternal(String processName, int uid, Object serviceLock, Object procLock) {
         mProcessName = processName;

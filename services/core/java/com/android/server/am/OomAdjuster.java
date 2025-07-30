@@ -2875,19 +2875,19 @@ public abstract class OomAdjuster {
     }
 
     @GuardedBy("mService")
-    abstract void onProcessEndLocked(@NonNull ProcessRecord app);
+    abstract void onProcessEndLocked(@NonNull ProcessRecordInternal app);
 
     /**
      * Called when the process state is changed outside of the OomAdjuster.
      */
     @GuardedBy("mService")
-    abstract void onProcessStateChanged(@NonNull ProcessRecord app, int prevProcState);
+    abstract void onProcessStateChanged(@NonNull ProcessRecordInternal app, int prevProcState);
 
     /**
      * Called when the oom adj is changed outside of the OomAdjuster.
      */
     @GuardedBy("mService")
-    abstract void onProcessOomAdjChanged(@NonNull ProcessRecord app, int prevAdj);
+    abstract void onProcessOomAdjChanged(@NonNull ProcessRecordInternal app, int prevAdj);
 
     @VisibleForTesting
     abstract void resetInternal();

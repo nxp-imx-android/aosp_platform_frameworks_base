@@ -23,7 +23,6 @@ import static com.android.internal.util.Preconditions.checkArgument;
 import static com.android.server.am.ActivityManagerDebugConfig.TAG_AM;
 import static com.android.server.am.ActivityManagerDebugConfig.TAG_WITH_CLASS_NAME;
 import static com.android.server.am.ActivityManagerService.MY_PID;
-import static com.android.server.am.OomAdjusterImpl.ProcessRecordNode.NUM_NODE_TYPE;
 
 import static java.util.Objects.requireNonNull;
 
@@ -435,8 +434,6 @@ class ProcessRecord extends ProcessRecordInternal implements WindowProcessListen
      * Whether or not we should skip the process group creation.
      */
     volatile boolean mSkipProcessGroupCreation;
-
-    final ProcessRecordNode[] mLinkedNodes = new ProcessRecordNode[NUM_NODE_TYPE];
 
     /** Whether the app was launched from a stopped state and is being unstopped. */
     @GuardedBy("mService")

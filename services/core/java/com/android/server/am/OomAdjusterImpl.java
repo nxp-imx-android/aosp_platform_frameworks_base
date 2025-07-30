@@ -244,8 +244,9 @@ public class OomAdjusterImpl extends OomAdjuster {
     /**
      * A container node in the {@link LinkedProcessRecordList},
      * holding the references to {@link ProcessRecord}.
+     * TODO(b/425766486): Change to package-private after moving the class to the psc package.
      */
-    static class ProcessRecordNode {
+    public static class ProcessRecordNode {
         static final int NODE_TYPE_PROC_STATE = 0;
         static final int NODE_TYPE_ADJ = 1;
 
@@ -256,7 +257,7 @@ public class OomAdjusterImpl extends OomAdjuster {
         @Retention(RetentionPolicy.SOURCE)
         @interface NodeType {}
 
-        static final int NUM_NODE_TYPE = NODE_TYPE_ADJ + 1;
+        public static final int NUM_NODE_TYPE = NODE_TYPE_ADJ + 1;
 
         @Nullable ProcessRecordNode mPrev;
         @Nullable ProcessRecordNode mNext;
@@ -305,13 +306,13 @@ public class OomAdjusterImpl extends OomAdjuster {
 
         private final LinkedProcessRecordList[] mProcessRecordNodes;
 
-        private final ToIntFunction<ProcessRecord> mSlotFunction;
+        private final ToIntFunction<ProcessRecordInternal> mSlotFunction;
         // Cache of the most important slot with a node in it.
         private int mFirstPopulatedSlot = 0;
 
         ProcessRecordNodes(@ProcessRecordNode.NodeType int type, int size) {
             mType = type;
-            final ToIntFunction<ProcessRecord> valueFunction;
+            final ToIntFunction<ProcessRecordInternal> valueFunction;
             switch (mType) {
                 case ProcessRecordNode.NODE_TYPE_PROC_STATE:
                     valueFunction = (proc) -> proc.getCurProcState();
@@ -356,7 +357,7 @@ public class OomAdjusterImpl extends OomAdjuster {
             return node.mApp;
         }
 
-        void offer(ProcessRecord proc) {
+        void offer(ProcessRecordInternal proc) {
             ProcessRecordNode node = proc.mLinkedNodes[mType];
             // Find which slot to add the node to.
             final int newSlot = mSlotFunction.applyAsInt(proc);
@@ -368,16 +369,16 @@ public class OomAdjusterImpl extends OomAdjuster {
             mProcessRecordNodes[newSlot].offer(node);
         }
 
-        void unlink(@NonNull ProcessRecord app) {
+        void unlink(@NonNull ProcessRecordInternal app) {
             final ProcessRecordNode node = app.mLinkedNodes[mType];
             node.unlink();
         }
 
-        void append(@NonNull ProcessRecord app) {
+        void append(@NonNull ProcessRecordInternal app) {
             append(app, getCurrentSlot(app));
         }
 
-        void append(@NonNull ProcessRecord app, int targetSlot) {
+        void append(@NonNull ProcessRecordInternal app, int targetSlot) {
             append(app.mLinkedNodes[mType], targetSlot);
         }
 
@@ -386,7 +387,7 @@ public class OomAdjusterImpl extends OomAdjuster {
             mProcessRecordNodes[targetSlot].append(node);
         }
 
-        private int getCurrentSlot(@NonNull ProcessRecord app) {
+        private int getCurrentSlot(@NonNull ProcessRecordInternal app) {
             switch (mType) {
                 case ProcessRecordNode.NODE_TYPE_PROC_STATE:
                     return processStateToSlot(app.getCurProcState());
@@ -404,9 +405,9 @@ public class OomAdjusterImpl extends OomAdjuster {
             // Sentinel head/tail, to make bookkeeping work easier.
             final ProcessRecordNode HEAD = new ProcessRecordNode(null);
             final ProcessRecordNode TAIL = new ProcessRecordNode(null);
-            final ToIntFunction<ProcessRecord> mValueFunction;
+            final ToIntFunction<ProcessRecordInternal> mValueFunction;
 
-            LinkedProcessRecordList(ToIntFunction<ProcessRecord> valueFunction) {
+            LinkedProcessRecordList(ToIntFunction<ProcessRecordInternal> valueFunction) {
                 HEAD.mNext = TAIL;
                 TAIL.mPrev = HEAD;
                 mValueFunction = valueFunction;
@@ -576,8 +577,8 @@ public class OomAdjusterImpl extends OomAdjuster {
 
         @Override
         public void accept(Connection conn, ProcessRecord client) {
-            final ProcessRecord host = mArgs.mApp;
-            final ProcessRecord topApp = mArgs.mTopApp;
+            final ProcessRecordInternal host = mArgs.mApp;
+            final ProcessRecordInternal topApp = mArgs.mTopApp;
             final long now = mArgs.mNow;
             final @OomAdjReason int oomAdjReason = mArgs.mOomAdjReason;
 
@@ -607,7 +608,7 @@ public class OomAdjusterImpl extends OomAdjuster {
 
         @Override
         public void accept(Connection conn, ProcessRecord host) {
-            final ProcessRecord client = args.mApp;
+            final ProcessRecordInternal client = args.mApp;
             final int cachedAdj = args.mCachedAdj;
             final ProcessRecord topApp = args.mTopApp;
             final long now = args.mNow;
@@ -667,12 +668,12 @@ public class OomAdjusterImpl extends OomAdjuster {
             ProcessRecordNode.NODE_TYPE_ADJ, ADJ_SLOT_VALUES.length);
     private final OomAdjusterArgs mTmpOomAdjusterArgs = new OomAdjusterArgs();
 
-    void linkProcessRecordToList(@NonNull ProcessRecord app) {
+    void linkProcessRecordToList(@NonNull ProcessRecordInternal app) {
         mProcessRecordProcStateNodes.append(app);
         mProcessRecordAdjNodes.append(app);
     }
 
-    void unlinkProcessRecordFromList(@NonNull ProcessRecord app) {
+    void unlinkProcessRecordFromList(@NonNull ProcessRecordInternal app) {
         mProcessRecordProcStateNodes.unlink(app);
         mProcessRecordAdjNodes.unlink(app);
     }
@@ -686,7 +687,7 @@ public class OomAdjusterImpl extends OomAdjuster {
 
     @GuardedBy("mService")
     @Override
-    void onProcessEndLocked(@NonNull ProcessRecord app) {
+    void onProcessEndLocked(@NonNull ProcessRecordInternal app) {
         if (app.mLinkedNodes[ProcessRecordNode.NODE_TYPE_PROC_STATE] != null
                 && app.mLinkedNodes[ProcessRecordNode.NODE_TYPE_PROC_STATE].isLinked()) {
             unlinkProcessRecordFromList(app);
@@ -695,32 +696,32 @@ public class OomAdjusterImpl extends OomAdjuster {
 
     @GuardedBy("mService")
     @Override
-    void onProcessStateChanged(@NonNull ProcessRecord app, int prevProcState) {
+    void onProcessStateChanged(@NonNull ProcessRecordInternal app, int prevProcState) {
         updateProcStateSlotIfNecessary(app, prevProcState);
     }
 
     @GuardedBy("mService")
-    void onProcessOomAdjChanged(@NonNull ProcessRecord app, int prevAdj) {
+    void onProcessOomAdjChanged(@NonNull ProcessRecordInternal app, int prevAdj) {
         updateAdjSlotIfNecessary(app, prevAdj);
     }
 
-    private void updateAdjSlotIfNecessary(ProcessRecord app, int prevRawAdj) {
+    private void updateAdjSlotIfNecessary(ProcessRecordInternal app, int prevRawAdj) {
         if (app.getCurRawAdj() != prevRawAdj) {
             mProcessRecordAdjNodes.offer(app);
         }
     }
 
-    private void updateAdjSlot(ProcessRecord app) {
+    private void updateAdjSlot(ProcessRecordInternal app) {
         mProcessRecordAdjNodes.offer(app);
     }
 
-    private void updateProcStateSlotIfNecessary(ProcessRecord app, int prevProcState) {
+    private void updateProcStateSlotIfNecessary(ProcessRecordInternal app, int prevProcState) {
         if (app.getCurProcState() != prevProcState) {
             mProcessRecordProcStateNodes.offer(app);
         }
     }
 
-    private void updateProcStateSlot(ProcessRecord app) {
+    private void updateProcStateSlot(ProcessRecordInternal app) {
         mProcessRecordProcStateNodes.offer(app);
     }
 
@@ -1056,7 +1057,7 @@ public class OomAdjusterImpl extends OomAdjuster {
      * {@link ProcessRecordInternal#mScheduleLikeTopApp}.
      */
     private static boolean allowSkipForBindScheduleLikeTopApp(ConnectionRecord cr,
-            ProcessRecord host) {
+            ProcessRecordInternal host) {
         // If feature flag for optionally blocking skipping is disabled. Always allow skipping.
         if (!Flags.notSkipConnectionRecomputeForBindScheduleLikeTopApp()) {
             return true;
@@ -1067,7 +1068,8 @@ public class OomAdjusterImpl extends OomAdjuster {
         return !(cr.hasFlag(Context.BIND_SCHEDULE_LIKE_TOP_APP) && !host.getScheduleLikeTopApp());
     }
 
-    private static boolean isSandboxAttributedConnection(ConnectionRecord cr, ProcessRecord host) {
+    private static boolean isSandboxAttributedConnection(ConnectionRecord cr,
+            ProcessRecordInternal host) {
         return host.isSdkSandbox && cr.binding.attributedClient != null;
     }
 
@@ -1125,7 +1127,7 @@ public class OomAdjusterImpl extends OomAdjuster {
      * Returns true if at least one the provided values is more important than those in {@code app}.
      */
     @GuardedBy({"mService", "mProcLock"})
-    private static boolean selfImportanceLoweredLSP(ProcessRecord app, int prevProcState,
+    private static boolean selfImportanceLoweredLSP(ProcessRecordInternal app, int prevProcState,
             int prevAdj, int prevCapability, boolean prevShouldNotFreeze) {
         if (app.getCurProcState() > prevProcState) {
             return true;
@@ -1136,7 +1138,7 @@ public class OomAdjusterImpl extends OomAdjuster {
         if ((app.getCurCapability() & prevCapability) != prevCapability)  {
             return true;
         }
-        if (!app.mOptRecord.shouldNotFreeze() && prevShouldNotFreeze) {
+        if (!app.shouldNotFreeze() && prevShouldNotFreeze) {
             // No long marked as should not freeze.
             return true;
         }
@@ -1150,7 +1152,7 @@ public class OomAdjusterImpl extends OomAdjuster {
      */
     @GuardedBy({"mService", "mProcLock"})
     private static boolean unimportantConnectionLSP(Connection conn,
-            ProcessRecord host, ProcessRecord client) {
+            ProcessRecordInternal host, ProcessRecordInternal client) {
         if (!Flags.skipUnimportantConnections()) {
             // Feature not enabled, just return false so the connection is evaluated.
             return false;
@@ -1176,7 +1178,7 @@ public class OomAdjusterImpl extends OomAdjuster {
             }
         }
 
-        if (!host.mOptRecord.shouldNotFreeze() && client.mOptRecord.shouldNotFreeze()) {
+        if (!host.shouldNotFreeze() && client.shouldNotFreeze()) {
             // If the client is marked as should not freeze, so should the host.
             return false;
         }
