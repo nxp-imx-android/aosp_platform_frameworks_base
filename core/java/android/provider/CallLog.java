@@ -452,6 +452,16 @@ public class CallLog {
          */
         public static final String ALLOW_VOICEMAILS_PARAM_KEY = "allow_voicemails";
         /**
+         * An optional URI parameter which instructs the provider to allow the operation to be
+         * applied to VOIP call records as well.
+         * <p>
+         * TYPE: Boolean
+         *
+         */
+        @FlaggedApi(Flags.FLAG_FILTER_VOIP_CALL_LOGS)
+        @NonNull
+        public static final String INCLUDE_VOIP_CALLS_PARAM_KEY = "include_voip_calls";
+        /**
          * An optional extra used with {@link #CONTENT_TYPE Calls.CONTENT_TYPE} and
          * {@link Intent#ACTION_VIEW} to specify that the presented list of calls should be filtered
          * for a particular call type.
@@ -479,6 +489,15 @@ public class CallLog {
          */
         public static final Uri CONTENT_URI_WITH_VOICEMAIL = CONTENT_URI.buildUpon()
                 .appendQueryParameter(ALLOW_VOICEMAILS_PARAM_KEY, "true")
+                .build();
+        /**
+         * Content uri used to access call log entries, including VOIP call records. You must have
+         * the READ_CALL_LOG and WRITE_CALL_LOG permissions to read and write to the call log.
+         */
+        @FlaggedApi(Flags.FLAG_FILTER_VOIP_CALL_LOGS)
+        @NonNull
+        public static final Uri CONTENT_URI_WITH_VOIP_CALLS = CONTENT_URI.buildUpon()
+                .appendQueryParameter(INCLUDE_VOIP_CALLS_PARAM_KEY, "true")
                 .build();
         /**
          * The default sort order for this table
