@@ -70,7 +70,7 @@ public abstract class DisplayManagerInternal {
      */
     public abstract int createVirtualDisplay(VirtualDisplayConfig config,
             IVirtualDisplayCallback callback, IVirtualDevice virtualDevice,
-            DisplayWindowPolicyController dwpc, String packageName);
+            DisplayWindowPolicyController dwpc, String packageName, int ownerUid);
 
     /**
      * Called by the power manager to request a new power state.

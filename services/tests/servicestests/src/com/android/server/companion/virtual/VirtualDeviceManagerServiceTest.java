@@ -279,7 +279,7 @@ public class VirtualDeviceManagerServiceTest {
     private Intent createRestrictedActivityBlockedIntent(Set<String> displayCategories,
             String targetDisplayCategory) {
         when(mDisplayManagerInternalMock.createVirtualDisplay(any(), any(), any(), any(),
-                eq(VIRTUAL_DEVICE_OWNER_PACKAGE)))
+                eq(VIRTUAL_DEVICE_OWNER_PACKAGE), eq(DEVICE_OWNER_UID_1)))
                 .thenAnswer(inv -> {
                     mLocalService.onVirtualDisplayCreated(
                             mDeviceImpl, DISPLAY_ID_1, inv.getArgument(1), inv.getArgument(3));
@@ -1561,7 +1561,7 @@ public class VirtualDeviceManagerServiceTest {
         }).when(mDisplayManagerInternalMock).getDisplayInfo(eq(displayId));
 
         when(mDisplayManagerInternalMock.createVirtualDisplay(any(), eq(mVirtualDisplayCallback),
-                eq(virtualDevice), any(), any())).thenAnswer(inv -> {
+                eq(virtualDevice), any(), any(), anyInt())).thenAnswer(inv -> {
                     mLocalService.onVirtualDisplayCreated(
                             virtualDevice, displayId, mVirtualDisplayCallback, inv.getArgument(3));
                     return displayId;

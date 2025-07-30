@@ -39,6 +39,8 @@ import android.companion.virtual.audio.VirtualAudioDevice;
 import android.companion.virtual.audio.VirtualAudioDevice.AudioConfigurationChangeCallback;
 import android.companion.virtual.camera.VirtualCamera;
 import android.companion.virtual.camera.VirtualCameraConfig;
+import android.companion.virtual.computercontrol.ComputerControlSessionParams;
+import android.companion.virtual.computercontrol.IComputerControlSession;
 import android.companion.virtual.sensor.VirtualSensor;
 import android.companion.virtualdevice.flags.Flags;
 import android.content.ComponentName;
@@ -209,10 +211,12 @@ public final class VirtualDeviceManager {
      */
     @RequiresPermission(android.Manifest.permission.ACCESS_COMPUTER_CONTROL)
     @NonNull
-    public VirtualDevice createVirtualDevice(@NonNull VirtualDeviceParams params) {
+    public IComputerControlSession createComputerControlSession(
+            @NonNull ComputerControlSessionParams params) {
         Objects.requireNonNull(params, "params must not be null");
         try {
-            return new VirtualDevice(mService, mContext, params);
+            return mService.createComputerControlSession(
+                    new Binder(), mContext.getAttributionSource(), params);
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }
@@ -570,15 +574,6 @@ public final class VirtualDeviceManager {
                 VirtualDeviceParams params) throws RemoteException {
             mVirtualDeviceInternal =
                     new VirtualDeviceInternal(service, context, associationId, params);
-        }
-
-        @RequiresPermission(Manifest.permission.ACCESS_COMPUTER_CONTROL)
-        private VirtualDevice(
-                IVirtualDeviceManager service,
-                Context context,
-                VirtualDeviceParams params) throws RemoteException {
-            mVirtualDeviceInternal =
-                    new VirtualDeviceInternal(service, context, params);
         }
 
         /** @hide */

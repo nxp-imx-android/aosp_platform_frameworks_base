@@ -16,7 +16,6 @@
 
 package com.android.server.display;
 
-import static android.Manifest.permission.ACCESS_COMPUTER_CONTROL;
 import static android.Manifest.permission.ADD_ALWAYS_UNLOCKED_DISPLAY;
 import static android.Manifest.permission.ADD_TRUSTED_DISPLAY;
 import static android.Manifest.permission.CAPTURE_SECURE_VIDEO_OUTPUT;
@@ -1844,10 +1843,11 @@ public final class DisplayManagerService extends SystemService {
 
     private int createVirtualDisplayInternal(VirtualDisplayConfig virtualDisplayConfig,
             IVirtualDisplayCallback callback, IMediaProjection projection,
-            IVirtualDevice virtualDevice, DisplayWindowPolicyController dwpc, String packageName) {
+            IVirtualDevice virtualDevice, DisplayWindowPolicyController dwpc, String packageName,
+            int ownerUid) {
         final int callingUid = Binder.getCallingUid();
-        if (!validatePackageName(callingUid, packageName)) {
-            throw new SecurityException("packageName must match the calling uid");
+        if (!validatePackageName(ownerUid, packageName)) {
+            throw new SecurityException("packageName must match the owner uid");
         }
         if (callback == null) {
             throw new IllegalArgumentException("appToken must not be null");
@@ -1967,8 +1967,7 @@ public final class DisplayManagerService extends SystemService {
         }
 
         if (callingUid != Process.SYSTEM_UID && (flags & VIRTUAL_DISPLAY_FLAG_TRUSTED) != 0) {
-            if (!checkCallingPermission(ADD_TRUSTED_DISPLAY, "createVirtualDisplay()")
-                    && !checkCallingPermission(ACCESS_COMPUTER_CONTROL, "createVirtualDisplay()")) {
+            if (!checkCallingPermission(ADD_TRUSTED_DISPLAY, "createVirtualDisplay()")) {
                 EventLog.writeEvent(0x534e4554, "162627132", callingUid,
                         "Attempt to create a trusted display without holding permission!");
                 throw new SecurityException("Requires ADD_TRUSTED_DISPLAY permission to "
@@ -1987,8 +1986,7 @@ public final class DisplayManagerService extends SystemService {
 
         if (callingUid != Process.SYSTEM_UID
                 && (flags & VIRTUAL_DISPLAY_FLAG_OWN_DISPLAY_GROUP) != 0) {
-            if (!(checkCallingPermission(ADD_TRUSTED_DISPLAY, "createVirtualDisplay()")
-                    || checkCallingPermission(ACCESS_COMPUTER_CONTROL, "createVirtualDisplay()"))) {
+            if (!checkCallingPermission(ADD_TRUSTED_DISPLAY, "createVirtualDisplay()")) {
                 throw new SecurityException("Requires ADD_TRUSTED_DISPLAY permission to "
                         + "create a virtual display which is not in the default DisplayGroup.");
             }
@@ -2004,9 +2002,7 @@ public final class DisplayManagerService extends SystemService {
 
         if (callingUid != Process.SYSTEM_UID
                 && (flags & VIRTUAL_DISPLAY_FLAG_ALWAYS_UNLOCKED) != 0) {
-            if (!(checkCallingPermission(ADD_ALWAYS_UNLOCKED_DISPLAY, "createVirtualDisplay()")
-                     || checkCallingPermission(ACCESS_COMPUTER_CONTROL,
-                    "createVirtualDisplay()"))) {
+            if (!checkCallingPermission(ADD_ALWAYS_UNLOCKED_DISPLAY, "createVirtualDisplay()")) {
                 throw new SecurityException(
                         "Requires ADD_ALWAYS_UNLOCKED_DISPLAY permission to "
                                 + "create an always unlocked virtual display.");
@@ -2052,7 +2048,7 @@ public final class DisplayManagerService extends SystemService {
         try {
             final int displayId;
             final String displayUniqueId = VirtualDisplayAdapter.generateDisplayUniqueId(
-                    packageName, callingUid, virtualDisplayConfig);
+                    packageName, ownerUid, virtualDisplayConfig);
 
             boolean shouldClearDisplayWindowSettings = false;
             if (virtualDisplayConfig.isHomeSupported()) {
@@ -2086,7 +2082,7 @@ public final class DisplayManagerService extends SystemService {
                         createVirtualDisplayLocked(
                                 callback,
                                 projection,
-                                callingUid,
+                                ownerUid,
                                 packageName,
                                 displayUniqueId,
                                 virtualDevice,
@@ -2119,7 +2115,7 @@ public final class DisplayManagerService extends SystemService {
                         if (projection.isRecordingOverlay()) {
                             // Record an overlay session.
                             session = ContentRecordingSession.createOverlaySession(
-                                    virtualDisplayConfig.getDisplayIdToMirror(), callingUid);
+                                    virtualDisplayConfig.getDisplayIdToMirror(), ownerUid);
                         } else {
                             // Record a particular display.
                             session = ContentRecordingSession.createDisplaySession(
@@ -5051,7 +5047,7 @@ public final class DisplayManagerService extends SystemService {
                 IVirtualDisplayCallback callback, IMediaProjection projection,
                 String packageName) {
             return createVirtualDisplayInternal(virtualDisplayConfig, callback, projection,
-                    null, null, packageName);
+                    null, null, packageName, Binder.getCallingUid());
         }
 
         @Override // Binder call
@@ -5771,9 +5767,9 @@ public final class DisplayManagerService extends SystemService {
         @Override
         public int createVirtualDisplay(VirtualDisplayConfig config,
                 IVirtualDisplayCallback callback, IVirtualDevice virtualDevice,
-                DisplayWindowPolicyController dwpc, String packageName) {
+                DisplayWindowPolicyController dwpc, String packageName, int ownerUid) {
             return createVirtualDisplayInternal(config, callback, null, virtualDevice, dwpc,
-                    packageName);
+                    packageName, ownerUid);
         }
 
         @Override
