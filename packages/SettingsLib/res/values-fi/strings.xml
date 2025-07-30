@@ -203,7 +203,7 @@
     <string name="data_usage_ota" msgid="7984667793701597001">"Järjestelmäpäivitykset"</string>
     <string name="tether_settings_title_usb" msgid="3728686573430917722">"Jaettu yhteys USB:n kautta"</string>
     <string name="tether_settings_title_wifi" msgid="4803402057533895526">"Kannettava yhteyspiste"</string>
-    <string name="tether_settings_title_bluetooth" msgid="916519902721399656">"Bluetoothin jakaminen"</string>
+    <string name="tether_settings_title_bluetooth" msgid="916519902721399656">"Jakaminen Bluetoothilla"</string>
     <string name="tether_settings_title_usb_bluetooth" msgid="1727111807207577322">"Jaettu yhteys"</string>
     <string name="tether_settings_title_all" msgid="8910259483383010470">"Jaettu yhteys ja kannettava yhteyspiste"</string>
     <string name="managed_user_title" msgid="449081789742645723">"Kaikki työsovellukset"</string>
@@ -212,7 +212,7 @@
     <string name="launch_defaults_some" msgid="3631650616557252926">"Joitakin oletuksia on asetettu"</string>
     <string name="launch_defaults_none" msgid="8049374306261262709">"Ei oletuksia valittuina"</string>
     <string name="tts_settings" msgid="8130616705989351312">"Tekstistä puheeksi -asetukset"</string>
-    <string name="tts_settings_title" msgid="7602210956640483039">"Tekstistä puheeksi -toisto"</string>
+    <string name="tts_settings_title" msgid="7602210956640483039">"Tekstistä puheeksi -tuotos"</string>
     <string name="tts_default_rate_title" msgid="3964187817364304022">"Puheen nopeus"</string>
     <string name="tts_default_rate_summary" msgid="3781937042151716987">"Tekstin puhumisnopeus"</string>
     <string name="tts_default_pitch_title" msgid="6988592215554485479">"Äänenkorkeus"</string>
