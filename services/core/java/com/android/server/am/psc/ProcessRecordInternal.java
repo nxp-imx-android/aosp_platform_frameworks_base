@@ -227,9 +227,13 @@ public abstract class ProcessRecordInternal {
     private static final boolean TRACE_OOM_ADJ = false;
 
     private final String mProcessName;
-    private final int mUid;
     private String mTrackName;
 
+    /**
+     * The process's actual UID.
+     * This may differ from {@link #getApplicationUid()} if it's an isolated process.
+     */
+    public final int uid;
     public final boolean isolated;     // true if this is a special isolated process
     public final boolean isSdkSandbox; // true if this is an SDK sandbox process
 
@@ -667,9 +671,9 @@ public abstract class ProcessRecordInternal {
 
     public ProcessRecordInternal(String processName, int uid, Object serviceLock, Object procLock) {
         mProcessName = processName;
-        mUid = uid;
-        isSdkSandbox = Process.isSdkSandboxUid(mUid);
-        isolated = Process.isIsolatedUid(mUid);
+        this.uid = uid;
+        isSdkSandbox = Process.isSdkSandboxUid(this.uid);
+        isolated = Process.isIsolatedUid(this.uid);
         mServiceLock = serviceLock;
         mProcLock = procLock;
     }
@@ -1648,7 +1652,7 @@ public abstract class ProcessRecordInternal {
      */
     private String getTrackName() {
         if (mTrackName == null) {
-            mTrackName = "oom:" + mProcessName + "/u" + mUid;
+            mTrackName = "oom:" + mProcessName + "/u" + uid;
         }
         return mTrackName;
     }
