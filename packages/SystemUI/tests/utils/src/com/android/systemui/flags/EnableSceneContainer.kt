@@ -17,13 +17,14 @@
 package com.android.systemui.flags
 
 import android.platform.test.annotations.EnableFlags
+import com.android.systemui.Flags.FLAG_MEDIA_CONTROLS_IN_COMPOSE
 import com.android.systemui.Flags.FLAG_SCENE_CONTAINER
 
 /**
  * This includes @[EnableFlags] to work with [SetFlagsRule] to enable all aconfig flags required by
  * that feature. It is also picked up by [SceneContainerRule] to set non-aconfig prerequisites.
  */
-@EnableFlags(FLAG_SCENE_CONTAINER)
+@EnableFlags(FLAG_SCENE_CONTAINER, FLAG_MEDIA_CONTROLS_IN_COMPOSE)
 @Retention(AnnotationRetention.RUNTIME)
 @Target(AnnotationTarget.FUNCTION, AnnotationTarget.CLASS)
 annotation class EnableSceneContainer

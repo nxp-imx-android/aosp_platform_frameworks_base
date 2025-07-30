@@ -28,9 +28,9 @@ import com.android.systemui.kosmos.testDispatcher
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
 import com.android.systemui.lifecycle.activateIn
-import com.android.systemui.media.controls.data.repository.mediaFilterRepository
 import com.android.systemui.media.controls.domain.pipeline.interactor.mediaCarouselInteractor
 import com.android.systemui.media.controls.shared.model.MediaData
+import com.android.systemui.media.remedia.data.repository.mediaPipelineRepository
 import com.android.systemui.qs.FooterActionsController
 import com.android.systemui.qs.footer.ui.viewmodel.FooterActionsViewModel
 import com.android.systemui.scene.domain.interactor.sceneInteractor
@@ -106,11 +106,11 @@ class QuickSettingsSceneContentViewModelTest : SysuiTestCase() {
 
             assertThat(underTest.isMediaVisible).isFalse()
 
-            mediaFilterRepository.addCurrentUserMediaEntry(userMedia)
+            mediaPipelineRepository.addCurrentUserMediaEntry(userMedia)
 
             assertThat(underTest.isMediaVisible).isTrue()
 
-            mediaFilterRepository.removeCurrentUserMediaEntry(userMedia.instanceId)
+            mediaPipelineRepository.removeCurrentUserMediaEntry(userMedia.instanceId)
 
             assertThat(underTest.isMediaVisible).isFalse()
         }
@@ -122,7 +122,7 @@ class QuickSettingsSceneContentViewModelTest : SysuiTestCase() {
 
             assertThat(underTest.isMediaVisible).isFalse()
 
-            mediaFilterRepository.addCurrentUserMediaEntry(userMedia)
+            mediaPipelineRepository.addCurrentUserMediaEntry(userMedia)
 
             assertThat(underTest.isMediaVisible).isTrue()
         }

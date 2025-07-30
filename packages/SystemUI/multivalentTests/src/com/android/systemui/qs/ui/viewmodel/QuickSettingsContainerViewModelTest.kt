@@ -29,8 +29,8 @@ import com.android.systemui.flags.EnableSceneContainer
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
 import com.android.systemui.lifecycle.activateIn
-import com.android.systemui.media.controls.data.repository.mediaFilterRepository
 import com.android.systemui.media.controls.shared.model.MediaData
+import com.android.systemui.media.remedia.data.repository.mediaPipelineRepository
 import com.android.systemui.qs.composefragment.dagger.usingMediaInComposeFragment
 import com.android.systemui.scene.domain.startable.sceneContainerStartable
 import com.android.systemui.shade.data.repository.fakeShadeDisplaysRepository
@@ -69,7 +69,7 @@ class QuickSettingsContainerViewModelTest : SysuiTestCase() {
     @Test
     fun showMedia_activeMedia_true() =
         testScope.runTest {
-            kosmos.mediaFilterRepository.addCurrentUserMediaEntry(MediaData(active = true))
+            kosmos.mediaPipelineRepository.addCurrentUserMediaEntry(MediaData(active = true))
 
             assertThat(underTest.showMedia).isTrue()
         }
@@ -77,7 +77,7 @@ class QuickSettingsContainerViewModelTest : SysuiTestCase() {
     @Test
     fun showMedia_InactiveMedia_true() =
         testScope.runTest {
-            kosmos.mediaFilterRepository.addCurrentUserMediaEntry(MediaData(active = false))
+            kosmos.mediaPipelineRepository.addCurrentUserMediaEntry(MediaData(active = false))
 
             assertThat(underTest.showMedia).isTrue()
         }
@@ -85,8 +85,8 @@ class QuickSettingsContainerViewModelTest : SysuiTestCase() {
     @Test
     fun showMedia_noMedia_false() =
         testScope.runTest {
-            kosmos.mediaFilterRepository.addCurrentUserMediaEntry(MediaData(active = true))
-            kosmos.mediaFilterRepository.clearCurrentUserMedia()
+            kosmos.mediaPipelineRepository.addCurrentUserMediaEntry(MediaData(active = true))
+            kosmos.mediaPipelineRepository.clearCurrentUserMedia()
 
             assertThat(underTest.showMedia).isFalse()
         }

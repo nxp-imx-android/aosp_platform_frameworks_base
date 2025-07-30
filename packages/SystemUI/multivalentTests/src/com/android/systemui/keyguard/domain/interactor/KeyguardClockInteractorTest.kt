@@ -36,8 +36,8 @@ import com.android.systemui.keyguard.shared.model.DozeTransitionModel
 import com.android.systemui.keyguard.shared.model.KeyguardState
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.testScope
-import com.android.systemui.media.controls.data.repository.mediaFilterRepository
 import com.android.systemui.media.controls.shared.model.MediaData
+import com.android.systemui.media.remedia.data.repository.mediaPipelineRepository
 import com.android.systemui.shade.data.repository.shadeRepository
 import com.android.systemui.statusbar.notification.data.repository.activeNotificationListRepository
 import com.android.systemui.statusbar.notification.data.repository.setActiveNotifs
@@ -120,7 +120,7 @@ class KeyguardClockInteractorTest : SysuiTestCase() {
             val value by collectLastValue(underTest.clockSize)
             kosmos.shadeRepository.setShadeLayoutWide(false)
             val userMedia = MediaData().copy(active = true)
-            kosmos.mediaFilterRepository.addCurrentUserMediaEntry(userMedia)
+            kosmos.mediaPipelineRepository.addCurrentUserMediaEntry(userMedia)
 
             assertThat(value).isEqualTo(ClockSize.SMALL)
         }
@@ -132,7 +132,7 @@ class KeyguardClockInteractorTest : SysuiTestCase() {
             val value by collectLastValue(underTest.clockSize)
             val userMedia = MediaData().copy(active = true)
             kosmos.shadeRepository.setShadeLayoutWide(true)
-            kosmos.mediaFilterRepository.addCurrentUserMediaEntry(userMedia)
+            kosmos.mediaPipelineRepository.addCurrentUserMediaEntry(userMedia)
             kosmos.keyguardRepository.setIsDozing(false)
 
             assertThat(value).isEqualTo(ClockSize.SMALL)
@@ -156,7 +156,7 @@ class KeyguardClockInteractorTest : SysuiTestCase() {
             val value by collectLastValue(underTest.clockSize)
             val userMedia = MediaData().copy(active = true)
             kosmos.shadeRepository.setShadeLayoutWide(true)
-            kosmos.mediaFilterRepository.addCurrentUserMediaEntry(userMedia)
+            kosmos.mediaPipelineRepository.addCurrentUserMediaEntry(userMedia)
             kosmos.keyguardRepository.setIsDozing(true)
 
             assertThat(value).isEqualTo(ClockSize.LARGE)
@@ -170,7 +170,7 @@ class KeyguardClockInteractorTest : SysuiTestCase() {
             val userMedia = MediaData().copy(active = true)
             kosmos.fakeKeyguardClockRepository.setSelectedClockSize(ClockSizeSetting.SMALL)
             kosmos.shadeRepository.setShadeLayoutWide(true)
-            kosmos.mediaFilterRepository.addCurrentUserMediaEntry(userMedia)
+            kosmos.mediaPipelineRepository.addCurrentUserMediaEntry(userMedia)
             kosmos.keyguardRepository.setIsDozing(true)
 
             assertThat(value).isEqualTo(ClockSize.SMALL)

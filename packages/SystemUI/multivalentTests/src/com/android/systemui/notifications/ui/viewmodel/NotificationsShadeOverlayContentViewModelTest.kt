@@ -35,8 +35,8 @@ import com.android.systemui.kosmos.runCurrent
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
 import com.android.systemui.lifecycle.activateIn
-import com.android.systemui.media.controls.data.repository.mediaFilterRepository
 import com.android.systemui.media.controls.shared.model.MediaData
+import com.android.systemui.media.remedia.data.repository.mediaPipelineRepository
 import com.android.systemui.power.domain.interactor.PowerInteractor.Companion.setAsleepForTest
 import com.android.systemui.power.domain.interactor.PowerInteractor.Companion.setAwakeForTest
 import com.android.systemui.power.domain.interactor.powerInteractor
@@ -150,7 +150,7 @@ class NotificationsShadeOverlayContentViewModelTest : SysuiTestCase() {
     @Test
     fun showMedia_activeMedia_true() =
         testScope.runTest {
-            kosmos.mediaFilterRepository.addCurrentUserMediaEntry(MediaData(active = true))
+            kosmos.mediaPipelineRepository.addCurrentUserMediaEntry(MediaData(active = true))
             runCurrent()
 
             assertThat(underTest.showMedia).isTrue()
@@ -159,7 +159,7 @@ class NotificationsShadeOverlayContentViewModelTest : SysuiTestCase() {
     @Test
     fun showMedia_InactiveMedia_false() =
         testScope.runTest {
-            kosmos.mediaFilterRepository.addCurrentUserMediaEntry(MediaData(active = false))
+            kosmos.mediaPipelineRepository.addCurrentUserMediaEntry(MediaData(active = false))
             runCurrent()
 
             assertThat(underTest.showMedia).isFalse()
@@ -168,8 +168,8 @@ class NotificationsShadeOverlayContentViewModelTest : SysuiTestCase() {
     @Test
     fun showMedia_noMedia_false() =
         testScope.runTest {
-            kosmos.mediaFilterRepository.addCurrentUserMediaEntry(MediaData(active = true))
-            kosmos.mediaFilterRepository.clearCurrentUserMedia()
+            kosmos.mediaPipelineRepository.addCurrentUserMediaEntry(MediaData(active = true))
+            kosmos.mediaPipelineRepository.clearCurrentUserMedia()
             runCurrent()
 
             assertThat(underTest.showMedia).isFalse()
@@ -178,7 +178,7 @@ class NotificationsShadeOverlayContentViewModelTest : SysuiTestCase() {
     @Test
     fun showMedia_qsDisabled_false() =
         testScope.runTest {
-            kosmos.mediaFilterRepository.addCurrentUserMediaEntry(MediaData(active = true))
+            kosmos.mediaPipelineRepository.addCurrentUserMediaEntry(MediaData(active = true))
             kosmos.fakeDisableFlagsRepository.disableFlags.update {
                 it.copy(disable2 = DISABLE2_QUICK_SETTINGS)
             }
