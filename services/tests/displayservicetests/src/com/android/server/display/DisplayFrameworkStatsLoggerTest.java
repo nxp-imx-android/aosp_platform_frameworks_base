@@ -16,10 +16,14 @@
 
 package com.android.server.display;
 
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
 import android.hardware.display.DisplayManagerGlobal;
 import android.util.SparseIntArray;
+import android.view.DisplayInfo;
+import android.view.DisplayInfo.DisplayInfoGroup;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.SmallTest;
@@ -115,4 +119,60 @@ public class DisplayFrameworkStatsLoggerTest {
                         expectedProtoType,
                         uidMap.copyKeys(), 1);
     }
+
+    @Test
+    public void logDisplayInfoChanged_singleChange() {
+        int changedGroups = DisplayInfoGroup.COLOR_AND_BRIGHTNESS.getMask();
+
+        mLogger.logDisplayInfoChanged(changedGroups,
+                DisplayInfo.DisplayInfoChangeSource.DISPLAY_SWAP);
+
+        int expectedSource =
+                FrameworkStatsLog.DISPLAY_INFO_CHANGED__EVENT_SOURCE__EVENT_SOURCE_DISPLAY_SWAP;
+        verify(mFrameworkStatsLogMock)
+                .write(FrameworkStatsLog.DISPLAY_INFO_CHANGED,
+                    1, 0, 0, 0, 0, 1, 0, expectedSource);
+    }
+
+    @Test
+    public void logDisplayInfoChanged_multipleChanges() {
+        int changedGroups = DisplayInfoGroup.BASIC_PROPERTIES.getMask()
+                | DisplayInfoGroup.STATE.getMask()
+                | DisplayInfoGroup.ORIENTATION_AND_ROTATION.getMask();
+
+        mLogger.logDisplayInfoChanged(changedGroups,
+                DisplayInfo.DisplayInfoChangeSource.DISPLAY_MANAGER);
+
+        int expectedSource =
+                FrameworkStatsLog.DISPLAY_INFO_CHANGED__EVENT_SOURCE__EVENT_SOURCE_DISPLAY_MANAGER;
+        verify(mFrameworkStatsLogMock)
+                .write(FrameworkStatsLog.DISPLAY_INFO_CHANGED,
+                        3, 1, 0, 1, 0, 0, 1, expectedSource);
+    }
+
+    @Test
+    public void logDisplayInfoChanged_allChanges() {
+        int changedGroupsMask = 0;
+        for (DisplayInfoGroup group : DisplayInfoGroup.values()) {
+            changedGroupsMask |= group.getMask();
+        }
+
+        mLogger.logDisplayInfoChanged(changedGroupsMask, DisplayInfo.DisplayInfoChangeSource.OTHER);
+
+        int expectedSource =
+                FrameworkStatsLog.DISPLAY_INFO_CHANGED__EVENT_SOURCE__EVENT_SOURCE_OTHER;
+        verify(mFrameworkStatsLogMock)
+                .write(FrameworkStatsLog.DISPLAY_INFO_CHANGED,
+                        6, 1, 1, 1, 1, 1, 1, expectedSource);
+    }
+
+    @Test
+    public void testDisplayInfoChanged_zeroInput_doesNotLog() {
+        mLogger.logDisplayInfoChanged(0, DisplayInfo.DisplayInfoChangeSource.WINDOW_MANAGER);
+
+        verify(mFrameworkStatsLogMock, never())
+                .write(anyInt(), anyInt(), anyInt(), anyInt(),
+                        anyInt(), anyInt(), anyInt(), anyInt(), anyInt());
+    }
+
 }
