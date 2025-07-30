@@ -657,8 +657,11 @@ public class SystemServicesTestRule implements TestRule {
             doReturn(true).when(intentFirewall).checkStartActivity(
                     any(), anyInt(), anyInt(), nullable(String.class), any());
             final ProcessStateController psc = mock(ProcessStateController.class);
-            doReturn(mock(ProcessStateController.ActivityStateAsyncUpdater.class)).when(
-                    psc).createActivityStateAsyncUpdater(any());
+            final ProcessStateController.ActivityStateAsyncUpdater asau = mock(
+                    ProcessStateController.ActivityStateAsyncUpdater.class);
+            doReturn(mock(ProcessStateController.AsyncBatchSession.class)).when(
+                    asau).startBatchSession();
+            doReturn(asau).when(psc).createActivityStateAsyncUpdater(any());
             initialize(intentFirewall, null /* intentController */, psc,
                     DisplayThread.getHandler().getLooper());
             spyOn(getLifecycleManager());
