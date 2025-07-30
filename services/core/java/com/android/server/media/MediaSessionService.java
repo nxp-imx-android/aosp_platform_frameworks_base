@@ -2259,8 +2259,7 @@ public class MediaSessionService extends SystemService implements Monitor {
                                 keyEvent, AudioManager.USE_DEFAULT_STREAM_TYPE, false);
                         return;
                     }
-                    if (Flags.fallbackToDefaultHandlingWhenMediaSessionHasFixedVolumeHandling()
-                            && !record.canHandleVolumeKey()) {
+                    if (!record.canHandleVolumeKey()) {
                         Log.d(TAG, "Session with packageName=" + record.getPackageName()
                                 + " doesn't support volume adjustment."
                                 + " Fallbacks to the default handling.");
@@ -2558,17 +2557,12 @@ public class MediaSessionService extends SystemService implements Monitor {
 
             if (session != null && session.getUid() != uid
                     && mAudioPlayerStateMonitor.hasUidPlayedAudioLast(uid)) {
-                if (Flags.adjustVolumeForForegroundAppPlayingAudioWithoutMediaSession()) {
-                    // The app in the foreground has been the last app to play media locally.
-                    // Therefore, We ignore the chosen session so that volume events affect the
-                    // local music stream instead. See b/275185436 for details.
-                    Log.d(TAG, "Ignoring session=" + session + " and adjusting suggestedStream="
-                            + suggestedStream + " instead");
-                    session = null;
-                } else {
-                    Log.d(TAG, "Session=" + session + " will not be not ignored and will receive"
-                            + " the volume adjustment event");
-                }
+                // The app in the foreground has been the last app to play media locally.
+                // Therefore, we ignore the chosen session so that volume events affect the local
+                // music stream instead. See b/275185436 for details.
+                Log.d(TAG, "Ignoring session=" + session + " and adjusting suggestedStream="
+                        + suggestedStream + " instead");
+                session = null;
             }
 
             if (session == null || preferSuggestedStream) {
