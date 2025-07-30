@@ -131,7 +131,7 @@ public class DesktopModeLaunchParamsModifierTests extends
         Context spyContext = spy(mContext);
         mTarget = spy(new DesktopModeLaunchParamsModifier(spyContext, mSupervisor,
                 new DesktopModeCompatPolicy(spyContext)));
-        doReturn(true).when(mTarget).isEnteringDesktopMode(any(), any(), any());
+        doReturn(true).when(mTarget).isEnteringDesktopMode(any(), any(), any(), any(), any());
         doReturn(HOME_ACTIVITIES).when(mPackageManager).getHomeActivities(any());
         doReturn(mPackageManager).when(spyContext).getPackageManager();
     }
@@ -176,7 +176,7 @@ public class DesktopModeLaunchParamsModifierTests extends
             Flags.FLAG_DISABLE_DESKTOP_LAUNCH_PARAMS_OUTSIDE_DESKTOP_BUG_FIX})
     public void testReturnsSkipIfIsEnteringDesktopModeFalse() {
         setupDesktopModeLaunchParamsModifier();
-        when(mTarget.isEnteringDesktopMode(any(), any(), any())).thenReturn(false);
+        when(mTarget.isEnteringDesktopMode(any(), any(), any(), any(), any())).thenReturn(false);
 
         final Task task = new TaskBuilder(mSupervisor).build();
 
@@ -188,7 +188,7 @@ public class DesktopModeLaunchParamsModifierTests extends
             Flags.FLAG_RESPECT_FULLSCREEN_ACTIVITY_OPTION_IN_DESKTOP_LAUNCH_PARAMS})
     public void testAppliesFullscreenAndReturnDoneIfRequestViaActivityOptions() {
         setupDesktopModeLaunchParamsModifier();
-        when(mTarget.isEnteringDesktopMode(any(), any(), any())).thenReturn(true);
+        when(mTarget.isEnteringDesktopMode(any(), any(), any(), any(), any())).thenReturn(true);
 
         final Task task = new TaskBuilder(mSupervisor).build();
         final ActivityOptions options = ActivityOptions.makeBasic();
@@ -365,7 +365,7 @@ public class DesktopModeLaunchParamsModifierTests extends
             Flags.FLAG_DISABLE_DESKTOP_LAUNCH_PARAMS_OUTSIDE_DESKTOP_BUG_FIX})
     public void testReturnsContinueIfFreeformTaskExists() {
         setupDesktopModeLaunchParamsModifier();
-        when(mTarget.isEnteringDesktopMode(any(), any(), any())).thenCallRealMethod();
+        when(mTarget.isEnteringDesktopMode(any(), any(), any(), any(), any())).thenCallRealMethod();
 
         final DisplayContent dc = spy(createNewDisplay());
         final Task existingFreeformTask = new TaskBuilder(mSupervisor).setCreateActivity(true)
@@ -383,7 +383,7 @@ public class DesktopModeLaunchParamsModifierTests extends
             Flags.FLAG_DISABLE_DESKTOP_LAUNCH_PARAMS_OUTSIDE_DESKTOP_BUG_FIX})
     public void testReturnsContinueIfTaskInFreeform() {
         setupDesktopModeLaunchParamsModifier();
-        when(mTarget.isEnteringDesktopMode(any(), any(), any())).thenCallRealMethod();
+        when(mTarget.isEnteringDesktopMode(any(), any(), any(), any(), any())).thenCallRealMethod();
 
         final Task task = new TaskBuilder(mSupervisor).setWindowingMode(WINDOWING_MODE_FREEFORM)
                 .build();
@@ -397,7 +397,7 @@ public class DesktopModeLaunchParamsModifierTests extends
             Flags.FLAG_DISABLE_DESKTOP_LAUNCH_PARAMS_OUTSIDE_DESKTOP_BUG_FIX})
     public void testReturnsContinueIfFreeformRequestViaActivityOptions() {
         setupDesktopModeLaunchParamsModifier();
-        when(mTarget.isEnteringDesktopMode(any(), any(), any())).thenCallRealMethod();
+        when(mTarget.isEnteringDesktopMode(any(), any(), any(), any(), any())).thenCallRealMethod();
 
         final Task task = new TaskBuilder(mSupervisor).build();
         final ActivityOptions options = ActivityOptions.makeBasic();
@@ -412,7 +412,7 @@ public class DesktopModeLaunchParamsModifierTests extends
             Flags.FLAG_DISABLE_DESKTOP_LAUNCH_PARAMS_OUTSIDE_DESKTOP_BUG_FIX})
     public void testReturnsContinueIfFreeformRequestViaPreviousModifier() {
         setupDesktopModeLaunchParamsModifier();
-        when(mTarget.isEnteringDesktopMode(any(), any(), any())).thenCallRealMethod();
+        when(mTarget.isEnteringDesktopMode(any(), any(), any(), any(), any())).thenCallRealMethod();
 
         final Task task = new TaskBuilder(mSupervisor).build();
         final ActivityOptions options = ActivityOptions.makeBasic();
@@ -1920,7 +1920,7 @@ public class DesktopModeLaunchParamsModifierTests extends
             Flags.FLAG_IGNORE_CURRENT_PARAMS_IN_DESKTOP_LAUNCH_PARAMS})
     public void testDoesntInheritWindowingModeFromCurrentParams() {
         setupDesktopModeLaunchParamsModifier();
-        doCallRealMethod().when(mTarget).isEnteringDesktopMode(any(), any(), any());
+        doCallRealMethod().when(mTarget).isEnteringDesktopMode(any(), any(), any(), any(), any());
 
         final Task task = new TaskBuilder(mSupervisor).setActivityType(
                 ACTIVITY_TYPE_STANDARD).build();
@@ -1980,6 +1980,111 @@ public class DesktopModeLaunchParamsModifierTests extends
         final Rect emptyRect = new Rect();
         assertEquals(emptyRect, mResult.mBounds);
         assertEquals(emptyRect, mResult.mAppBounds);
+    }
+
+    @Test
+    @EnableFlags({Flags.FLAG_ENABLE_DESKTOP_FIRST_POLICY_IN_LPM,
+            Flags.FLAG_ENABLE_FREEFORM_DISPLAY_LAUNCH_PARAMS})
+    public void testCalculate_desktopFirstPolicy_forcesFreeform() {
+        setupDesktopModeLaunchParamsModifier();
+        when(mTarget.isEnteringDesktopMode(any(), any(), any(), any(), any())).thenCallRealMethod();
+
+        final DisplayContent dc = createDisplayContent(ORIENTATION_LANDSCAPE,
+                LANDSCAPE_DISPLAY_BOUNDS, WINDOWING_MODE_FREEFORM);
+        final Task launchingTask = new TaskBuilder(mSupervisor)
+                .setWindowingMode(WINDOWING_MODE_FULLSCREEN)
+                .setDisplay(dc)
+                .build();
+
+        assertEquals(RESULT_DONE,
+                new CalculateRequestBuilder().setTask(launchingTask).calculate());
+        assertEquals(WINDOWING_MODE_FREEFORM, mResult.mWindowingMode);
+    }
+
+    @Test
+    @EnableFlags({Flags.FLAG_ENABLE_DESKTOP_FIRST_POLICY_IN_LPM,
+            Flags.FLAG_ENABLE_FREEFORM_DISPLAY_LAUNCH_PARAMS})
+    public void testCalculate_desktopFirstPolicy_taskNull_forcesFreeform() {
+        setupDesktopModeLaunchParamsModifier();
+
+        final DisplayContent dc = createDisplayContent(ORIENTATION_LANDSCAPE,
+                LANDSCAPE_DISPLAY_BOUNDS, WINDOWING_MODE_FREEFORM);
+        final ActivityOptions options = ActivityOptions.makeBasic();
+        options.setLaunchDisplayId(dc.getDisplayId());
+
+        // When task is null, getPreferredLaunchTaskDisplayArea will use the display from options.
+        // Then forceFreeformByDesktopFirstPolicy will be true.
+        // Because task is null, it should return RESULT_DONE.
+        assertEquals(RESULT_DONE,
+                new CalculateRequestBuilder().setTask(null).setOptions(options).calculate());
+        assertEquals(WINDOWING_MODE_FREEFORM, mResult.mWindowingMode);
+    }
+
+    @Test
+    @EnableFlags({Flags.FLAG_ENABLE_DESKTOP_FIRST_POLICY_IN_LPM,
+            Flags.FLAG_ENABLE_FREEFORM_DISPLAY_LAUNCH_PARAMS})
+    public void testCalculate_desktopFirstPolicy_fullscreenRelaunch_bypassesPolicy() {
+        setupDesktopModeLaunchParamsModifier();
+        when(mTarget.isEnteringDesktopMode(any(), any(), any(), any(), any())).thenCallRealMethod();
+
+        final DisplayContent dc = createDisplayContent(ORIENTATION_LANDSCAPE,
+                LANDSCAPE_DISPLAY_BOUNDS, WINDOWING_MODE_FREEFORM);
+        final Task launchingTask = new TaskBuilder(mSupervisor)
+                .setWindowingMode(WINDOWING_MODE_FULLSCREEN)
+                .setDisplay(dc)
+                .build();
+        final ActivityRecord source = new ActivityBuilder(mAtm).setTask(launchingTask).build();
+
+        // The task is launched by a different task on a desktop-first display.
+        assertEquals(RESULT_SKIP,
+                new CalculateRequestBuilder().setTask(launchingTask).setSource(source).calculate());
+    }
+
+    @Test
+    @EnableFlags({Flags.FLAG_ENABLE_DESKTOP_FIRST_POLICY_IN_LPM,
+            Flags.FLAG_ENABLE_FREEFORM_DISPLAY_LAUNCH_PARAMS})
+    public void testCalculate_desktopFirstPolicy_fullscreenSourceTask_forcesFreeform() {
+        setupDesktopModeLaunchParamsModifier();
+        when(mTarget.isEnteringDesktopMode(any(), any(), any(), any(), any())).thenCallRealMethod();
+
+        final DisplayContent dc = createDisplayContent(ORIENTATION_LANDSCAPE,
+                LANDSCAPE_DISPLAY_BOUNDS, WINDOWING_MODE_FREEFORM);
+        final Task launchingTask = new TaskBuilder(mSupervisor)
+                .setWindowingMode(WINDOWING_MODE_FULLSCREEN)
+                .setDisplay(dc)
+                .build();
+        final Task sourceTask = new TaskBuilder(mSupervisor)
+                .setWindowingMode(WINDOWING_MODE_FREEFORM)
+                .setDisplay(dc)
+                .build();
+        final ActivityRecord source = new ActivityBuilder(mAtm).setTask(sourceTask).build();
+
+        // The task is launched by a different task on a desktop-first display.
+        assertEquals(RESULT_DONE,
+                new CalculateRequestBuilder().setTask(launchingTask).setSource(source).calculate());
+        assertEquals(WINDOWING_MODE_FREEFORM, mResult.mWindowingMode);
+    }
+
+    @Test
+    @EnableFlags({Flags.FLAG_ENABLE_DESKTOP_FIRST_POLICY_IN_LPM,
+            Flags.FLAG_ENABLE_FREEFORM_DISPLAY_LAUNCH_PARAMS})
+    public void testCalculate_desktopFirstPolicy_requestFullscreen_bypassesPolicy() {
+        setupDesktopModeLaunchParamsModifier();
+        when(mTarget.isEnteringDesktopMode(any(), any(), any(), any(), any())).thenCallRealMethod();
+
+        final DisplayContent dc = createDisplayContent(ORIENTATION_LANDSCAPE,
+                LANDSCAPE_DISPLAY_BOUNDS, WINDOWING_MODE_FREEFORM);
+        final Task launchingTask = new TaskBuilder(mSupervisor)
+                .setWindowingMode(WINDOWING_MODE_FULLSCREEN)
+                .setDisplay(dc)
+                .build();
+        final ActivityOptions options = ActivityOptions.makeBasic();
+        options.setLaunchWindowingMode(WINDOWING_MODE_FULLSCREEN);
+
+        // The policy should be bypassed if fullscreen is requested.
+        assertEquals(RESULT_SKIP,
+                new CalculateRequestBuilder().setTask(launchingTask).setOptions(
+                        options).calculate());
     }
 
     private Task createTask(DisplayContent display, boolean isResizeable) {
