@@ -227,7 +227,7 @@ test_module_config {
         "com.android.server.wm.BackgroundActivityStartControllerLogTests",
         "com.android.server.wm.BackgroundActivityStartControllerTests",
         "com.android.server.wm.BackgroundLaunchProcessControllerTests",
-        "com.android.server.wm.CameraCompatFreeformPolicyTests",
+
         "com.android.server.wm.CameraIdAppPairsSetTests",
         "com.android.server.wm.CameraIdPackageNameBiMappingTests",
         "com.android.server.wm.CameraStateMonitorTests",
@@ -256,7 +256,6 @@ test_module_config {
         "com.android.server.wm.DisplayPolicyInsetsTests",
         "com.android.server.wm.DisplayPolicyLayoutTests",
         "com.android.server.wm.DisplayPolicyTests",
-        "com.android.server.wm.DisplayRotationCompatPolicyTests",
         "com.android.server.wm.DisplayRotationCoordinatorTests",
         "com.android.server.wm.DisplayRotationImmersiveAppCompatPolicyTests",
         "com.android.server.wm.DisplayRotationReversionControllerTests",
@@ -711,13 +710,6 @@ test_module_config {
 }
 
 test_module_config {
-    name: "WmTests-wm-CameraCompatFreeformPolicyTests",
-    base: "WmTests",
-    test_suites: ["device-tests"],
-    include_filters: ["com.android.server.wm.CameraCompatFreeformPolicyTests"],
-}
-
-test_module_config {
     name: "WmTests-wm-CameraIdAppPairsSetTests",
     base: "WmTests",
     test_suites: ["device-tests"],
@@ -911,13 +903,6 @@ test_module_config {
     base: "WmTests",
     test_suites: ["device-tests"],
     include_filters: ["com.android.server.wm.DisplayPolicyTests"],
-}
-
-test_module_config {
-    name: "WmTests-wm-DisplayRotationCompatPolicyTests",
-    base: "WmTests",
-    test_suites: ["device-tests"],
-    include_filters: ["com.android.server.wm.DisplayRotationCompatPolicyTests"],
 }
 
 test_module_config {
