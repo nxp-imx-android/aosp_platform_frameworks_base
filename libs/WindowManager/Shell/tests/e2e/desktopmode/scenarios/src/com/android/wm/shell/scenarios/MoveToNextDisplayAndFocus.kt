@@ -17,6 +17,7 @@
 package com.android.wm.shell.scenarios
 
 import android.platform.test.annotations.EnableFlags
+import android.platform.test.annotations.RequiresFlagsEnabled
 import android.tools.traces.parsers.WindowManagerStateHelper
 import android.view.KeyEvent.KEYCODE_MINUS
 import android.view.KeyEvent.META_META_ON
@@ -39,6 +40,10 @@ import platform.test.desktop.SimulatedConnectedDisplayTestRule
  * Base scenario test to test if the window moved to next display via keyboard keeps the focus.
  */
 @Ignore("Test Base Class")
+@RequiresFlagsEnabled(
+    Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE,
+    Flags.FLAG_ENABLE_MOVE_TO_NEXT_DISPLAY_SHORTCUT
+)
 @EnableFlags(
     Flags.FLAG_ENABLE_DISPLAY_FOCUS_IN_SHELL_TRANSITIONS,
 )
@@ -57,11 +62,12 @@ abstract class MoveToNextDisplayAndFocus() : TestScenarioBase() {
     fun setup() {
         connectedDisplayRule.setupTestDisplay()
         testAppInMainDisplay.launchViaIntent(wmHelper)
-        testAppInExternalDisplay.launchViaIntent(wmHelper)
     }
 
     @Test
     open fun moveToNextDisplayAndFocus() {
+        // TODO(b/434576513): Move launchViaIntent to setup()
+        testAppInExternalDisplay.launchViaIntent(wmHelper)
         testAppInExternalDisplay.moveToNextDisplayViaKeyboard(
             wmHelper,
             connectedDisplayRule.addedDisplays.first()
