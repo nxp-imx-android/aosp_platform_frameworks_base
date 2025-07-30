@@ -209,33 +209,6 @@ public final class InputRouteManager {
         return null;
     }
 
-    @Nullable
-    private MediaDevice findDeviceByType(@AudioDeviceType int type) {
-        for (MediaDevice device : mInputMediaDevices) {
-            if (((InputMediaDevice) device).getAudioDeviceInfoType() == type) {
-                return device;
-            }
-        }
-        return null;
-    }
-
-    @Nullable
-    public MediaDevice getSelectedInputDevice() {
-        MediaDevice exactDevice =
-                findDeviceByTypeAndAddress(mSelectedInputDeviceType, mSelectedInputDeviceAddr);
-
-        // This can happen because the address can sometimes contain surprising strings
-        // such as "bottom" for the default internal mic. In those situations,
-        // ignore the address and search by the type only. In any case, this also
-        // serves as a sane fallback.
-        if (exactDevice == null) {
-            MediaDevice device = findDeviceByType(mSelectedInputDeviceType);
-            return device;
-        }
-
-        return exactDevice;
-    }
-
     private void applyDefaultSelectedTypeToAllPresets() {
         AudioDeviceAttributes deviceAttributes = retrieveDefaultSelectedInputDeviceAttrs();
 
@@ -278,6 +251,7 @@ public final class InputRouteManager {
                 mAudioManager.getDevices(AudioManager.GET_DEVICES_INPUTS);
         mInputMediaDevices.clear();
         for (AudioDeviceInfo info : audioDeviceInfos) {
+            boolean isSelected = isSelectedDevice(info.getType(), info.getAddress());
             MediaDevice mediaDevice =
                     InputMediaDevice.create(
                             mContext,
@@ -287,11 +261,10 @@ public final class InputRouteManager {
                             getMaxInputGain(),
                             getCurrentInputGain(),
                             isInputGainFixed(),
+                            isSelected,
                             getProductNameFromAudioDeviceInfo(info));
             if (mediaDevice != null) {
-                if (info.getType() == mSelectedInputDeviceType
-                        && (TextUtils.isEmpty(mSelectedInputDeviceAddr)
-                                || info.getAddress() == mSelectedInputDeviceAddr)) {
+                if (isSelected) {
                     mInfoMediaManager.setDeviceState(mediaDevice, STATE_SELECTED);
                 }
                 mInputMediaDevices.add(mediaDevice);
@@ -304,6 +277,11 @@ public final class InputRouteManager {
                 callback.onInputDeviceListUpdated(inputMediaDevices);
             }
         }
+    }
+
+    private boolean isSelectedDevice(@AudioDeviceType int type, @NonNull String address) {
+        return type == mSelectedInputDeviceType && (TextUtils.isEmpty(mSelectedInputDeviceAddr)
+                || address.equals(mSelectedInputDeviceAddr));
     }
 
     /**
@@ -331,9 +309,8 @@ public final class InputRouteManager {
             return;
         }
 
-        if (inputMediaDevice.getAudioDeviceInfoType() == mSelectedInputDeviceType
-                && (TextUtils.isEmpty(mSelectedInputDeviceAddr)
-                        || inputMediaDevice.getAddress().equals(mSelectedInputDeviceAddr))) {
+        if (isSelectedDevice(inputMediaDevice.getAudioDeviceInfoType(),
+                inputMediaDevice.getAddress())) {
             Slog.w(TAG, "This device is already selected: " + device.getName());
             return;
         }

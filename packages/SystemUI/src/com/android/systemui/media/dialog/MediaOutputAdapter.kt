@@ -36,7 +36,6 @@ import androidx.annotation.VisibleForTesting
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.recyclerview.widget.RecyclerView
 import com.android.media.flags.Flags
-import com.android.settingslib.media.InputMediaDevice
 import com.android.settingslib.media.MediaDevice
 import com.android.systemui.FontStyles.GSF_TITLE_MEDIUM_EMPHASIZED
 import com.android.systemui.FontStyles.GSF_TITLE_SMALL
@@ -295,7 +294,7 @@ class MediaOutputAdapter(controller: MediaSwitchingController) :
                     },
                     settleCallback = { mController.logInteractionAdjustVolume(device) },
                     deviceDrawable = mController.getDeviceIconDrawable(device),
-                    isInputDevice = device is InputMediaDevice,
+                    isInputDevice = device.isInputDevice,
                     isVolumeControlAllowed = mController.isVolumeControlEnabled(device),
                     currentVolume = device.currentVolume,
                     maxVolume = device.maxVolume,

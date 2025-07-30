@@ -36,6 +36,8 @@ import android.media.AudioDeviceInfo;
 import android.media.AudioManager;
 import android.media.MediaRecorder;
 
+import androidx.annotation.Nullable;
+
 import com.android.settingslib.testutils.shadow.ShadowRouter2Manager;
 
 import org.junit.Before;
@@ -256,9 +258,7 @@ public class InputRouteManagerTest {
         onPreferredDevicesForCapturePresetChanged();
 
         // The selected input device has the same type as the one returned from AudioManager.
-        InputMediaDevice selectedInputDevice =
-                (InputMediaDevice) mInputRouteManager.getSelectedInputDevice();
-        assertThat(selectedInputDevice.getAudioDeviceInfoType())
+        assertThat(getSelectedInputDevice().getAudioDeviceInfoType())
                 .isEqualTo(AudioDeviceInfo.TYPE_WIRED_HEADSET);
     }
 
@@ -278,9 +278,7 @@ public class InputRouteManagerTest {
         onPreferredDevicesForCapturePresetChanged();
 
         // The selected input device has the same type as the first one returned from AudioManager.
-        InputMediaDevice selectedInputDevice =
-                (InputMediaDevice) mInputRouteManager.getSelectedInputDevice();
-        assertThat(selectedInputDevice.getAudioDeviceInfoType())
+        assertThat(getSelectedInputDevice().getAudioDeviceInfoType())
                 .isEqualTo(AudioDeviceInfo.TYPE_WIRED_HEADSET);
     }
 
@@ -297,9 +295,7 @@ public class InputRouteManagerTest {
         onPreferredDevicesForCapturePresetChanged();
 
         // The selected input device has default type AudioDeviceInfo.TYPE_BUILTIN_MIC.
-        InputMediaDevice selectedInputDevice =
-                (InputMediaDevice) mInputRouteManager.getSelectedInputDevice();
-        assertThat(selectedInputDevice.getAudioDeviceInfoType())
+        assertThat(getSelectedInputDevice().getAudioDeviceInfoType())
                 .isEqualTo(AudioDeviceInfo.TYPE_BUILTIN_MIC);
     }
 
@@ -314,6 +310,7 @@ public class InputRouteManagerTest {
                         MAX_VOLUME,
                         CURRENT_VOLUME,
                         VOLUME_FIXED_TRUE,
+                        /* isSelected= */ false,
                         PRODUCT_NAME_BUILTIN_MIC);
         mInputRouteManager.selectDevice(builtinMicDevice);
 
@@ -429,6 +426,7 @@ public class InputRouteManagerTest {
                         MAX_VOLUME,
                         CURRENT_VOLUME,
                         VOLUME_FIXED_TRUE,
+                        /* isSelected= */ false,
                         PRODUCT_NAME_USB_ACCESSORY);
         AudioDeviceInfo[] devices = {mockUsbHeadsetInfo()};
 
@@ -519,6 +517,13 @@ public class InputRouteManagerTest {
                 MAX_VOLUME,
                 CURRENT_VOLUME,
                 VOLUME_FIXED_TRUE,
+                /* isSelected= */ false,
                 info.getProductName() == null ? null : info.getProductName().toString());
+    }
+
+    @Nullable
+    private InputMediaDevice getSelectedInputDevice() {
+        return (InputMediaDevice) mInputRouteManager.mInputMediaDevices.stream().filter(
+                MediaDevice::isSelected).findFirst().orElse(null);
     }
 }
