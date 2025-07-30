@@ -15,6 +15,7 @@
  */
 package com.android.settingslib.media;
 
+import static android.media.MediaRoute2Info.CONNECTION_STATE_CONNECTING;
 import static android.media.MediaRoute2Info.TYPE_AUX_LINE;
 import static android.media.MediaRoute2Info.TYPE_BLE_HEADSET;
 import static android.media.MediaRoute2Info.TYPE_BLUETOOTH_A2DP;
@@ -947,6 +948,8 @@ public abstract class InfoMediaManager {
         if (mediaDevice != null) {
             if (mediaDevice.isSelected()) {
                 mediaDevice.setState(STATE_SELECTED);
+            } else if (route.getConnectionState() == CONNECTION_STATE_CONNECTING) {
+                mediaDevice.setState(STATE_CONNECTING);
             }
             mMediaDevices.add(mediaDevice);
         }
