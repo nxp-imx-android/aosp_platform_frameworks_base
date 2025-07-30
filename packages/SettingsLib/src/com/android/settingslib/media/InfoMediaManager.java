@@ -1087,9 +1087,6 @@ public abstract class InfoMediaManager {
             return context.getDrawable(
                     new DeviceIconUtil(context).getIconResIdFromMediaRouteType(deviceType));
         }
-        if (isBluetoothMediaDevice(deviceType)) {
-            return ComplexMediaDevice.getIcon(context);
-        }
         return context.getDrawable(R.drawable.ic_media_speaker_device);
     }
 
