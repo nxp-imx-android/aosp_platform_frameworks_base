@@ -166,3 +166,13 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    namespace: "haptics"
+    name: "haptic_pcm_generation"
+    description: "Enables the feature to generate Haptic PCM from vibration effects"
+    bug: "417649629"
+    metadata {
+      purpose: PURPOSE_FEATURE
+    }
+}
