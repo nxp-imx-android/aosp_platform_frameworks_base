@@ -225,6 +225,8 @@ public final class UserManagerServiceMockedTest {
     private @Mock StorageManagerInternal mStorageManagerInternal;
     private @Mock LockSettingsInternal mLockSettingsInternal;
     private @Mock PackageManagerInternal mPackageManagerInternal;
+    // NOTE: do not call mockGetLocalService() to set DevicePolicyManagerInternal on
+    // setFixtures() as some tests exercise the scenario where it's null
     private @Mock DevicePolicyManagerInternal mDevicePolicyManagerInternal;
     private @Mock KeyguardManager mKeyguardManager;
     private @Mock PowerManager mPowerManager;
@@ -1861,6 +1863,41 @@ public final class UserManagerServiceMockedTest {
     }
 
     @Test
+    @EnableFlags(FLAG_DISALLOW_REMOVING_LAST_ADMIN_USER)
+    public void testIsLastFullAdminNonRemovable_deviceUnmanaged_returnsTrue() {
+        setSystemUserHeadless(true);
+        mockDisallowRemovingLastAdminUser(true);
+        mockGetLocalService(DevicePolicyManagerInternal.class, mDevicePolicyManagerInternal);
+        addAdminUser(USER_ID); // USER_ID is full, admin (target)
+        mockIsDeviceOrganizationManaged(false);
+
+        assertThat(mUms.isNonRemovableLastAdminUserLU(mUsers.get(USER_ID).info)).isTrue();
+    }
+
+    @Test
+    @EnableFlags(FLAG_DISALLOW_REMOVING_LAST_ADMIN_USER)
+    public void testIsLastFullAdminNonRemovable_deviceManaged_returnsFalse() {
+        setSystemUserHeadless(true);
+        mockDisallowRemovingLastAdminUser(true);
+        mockGetLocalService(DevicePolicyManagerInternal.class, mDevicePolicyManagerInternal);
+        addAdminUser(USER_ID); // USER_ID is full, admin (target)
+        mockIsDeviceOrganizationManaged(true);
+
+        assertThat(mUms.isNonRemovableLastAdminUserLU(mUsers.get(USER_ID).info)).isFalse();
+    }
+
+    @Test
+    @EnableFlags(FLAG_DISALLOW_REMOVING_LAST_ADMIN_USER)
+    public void testIsLastFullAdminNonRemovable_dpmiNull_returnsTrue() {
+        setSystemUserHeadless(true);
+        mockDisallowRemovingLastAdminUser(true);
+        mockGetLocalService(DevicePolicyManagerInternal.class, null);
+        addAdminUser(USER_ID); // USER_ID is full, admin (target)
+
+        assertThat(mUms.isNonRemovableLastAdminUserLU(mUsers.get(USER_ID).info)).isTrue();
+    }
+
+    @Test
     public void testSetUserAdmin() {
         addSecondaryUser(USER_ID);
 
@@ -2375,6 +2412,10 @@ public final class UserManagerServiceMockedTest {
 
         when(mActivityManagerInternal.getCurrentAndTargetUserIds())
                 .thenReturn(new Pair<>(currentUserId, targetUserId));
+    }
+
+    private void mockIsDeviceOrganizationManaged(boolean value) {
+        when(mDevicePolicyManagerInternal.isDeviceOrganizationManaged()).thenReturn(value);
     }
 
     private <T> void mockGetLocalService(Class<T> serviceClass, T service) {

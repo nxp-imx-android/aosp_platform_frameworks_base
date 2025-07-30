@@ -9349,7 +9349,14 @@ public class UserManagerService extends IUserManager.Stub {
      * last admin user on a device that requires there to always be at least one admin.
      */
     @GuardedBy("mUsersLock")
-    private boolean isNonRemovableLastAdminUserLU(UserInfo userInfo) {
+    @VisibleForTesting
+    boolean isNonRemovableLastAdminUserLU(UserInfo userInfo) {
+        var dpmi = getDevicePolicyManagerInternal();
+        if (dpmi != null && dpmi.isDeviceOrganizationManaged()) {
+            // If device is organization managed, then the user is not a non-removable last admin,
+            // because the device can still be managed remotely without the last admin.
+            return false;
+        }
         return android.multiuser.Flags.disallowRemovingLastAdminUser()
                 && getContextResources().getBoolean(R.bool.config_disallowRemovingLastAdminUser)
                 // For HSUM, the headless system user is currently flagged as an admin user now.
