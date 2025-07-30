@@ -252,3 +252,13 @@ flag {
     description: "Update CachedAppOptimizer to use memcg reclaim for compaction"
     bug: "377479218"
 }
+
+flag {
+    name: "auto_trigger_oomadj_updates"
+    namespace: "backstage_power"
+    description: "Automatically trigger OomAdjuster updates from ProcessStateController on state change."
+    bug: "399666866"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
