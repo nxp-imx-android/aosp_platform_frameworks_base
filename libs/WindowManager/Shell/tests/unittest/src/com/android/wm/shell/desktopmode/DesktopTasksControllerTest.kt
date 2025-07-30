@@ -287,7 +287,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     @Mock private lateinit var desksTransitionsObserver: DesksTransitionObserver
     @Mock private lateinit var packageManager: PackageManager
     @Mock private lateinit var mockDisplayContext: Context
-    @Mock private lateinit var dragToDisplayTransitionHandler: DragToDisplayTransitionHandler
+    @Mock private lateinit var windowDragTransitionHandler: WindowDragTransitionHandler
     @Mock
     private lateinit var moveToDisplayTransitionHandler: DesktopModeMoveToDisplayTransitionHandler
     @Mock private lateinit var mockAppOpsManager: AppOpsManager
@@ -499,7 +499,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
             desksTransitionsObserver,
             userProfileContexts,
             desktopModeCompatPolicy,
-            dragToDisplayTransitionHandler,
+            windowDragTransitionHandler,
             moveToDisplayTransitionHandler,
             homeIntentProvider,
             desktopState,
@@ -8415,16 +8415,17 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         whenever(spyController.getVisualIndicator()).thenReturn(desktopModeVisualIndicator)
         whenever(desktopModeVisualIndicator.updateIndicatorType(any(), anyOrNull()))
             .thenReturn(DesktopModeVisualIndicator.IndicatorType.NO_INDICATOR)
-        spyController.onDragPositioningEnd(
-            task,
-            mockSurface,
-            DEFAULT_DISPLAY,
-            inputCoordinate = PointF(200f, -200f),
-            currentDragBounds = Rect(100, -100, 500, 1000),
-            validDragArea = Rect(0, 50, 2000, 2000),
-            dragStartBounds = Rect(),
-            motionEvent,
-        )
+        val needDragIndicatorCleanup =
+            spyController.onDragPositioningEnd(
+                task,
+                mockSurface,
+                DEFAULT_DISPLAY,
+                inputCoordinate = PointF(200f, -200f),
+                currentDragBounds = Rect(100, -100, 500, 1000),
+                validDragArea = Rect(0, 50, 2000, 2000),
+                dragStartBounds = Rect(),
+                motionEvent,
+            )
         val rectAfterEnd = Rect(100, 50, 500, 1150)
         verify(transitions)
             .startTransition(
@@ -8434,11 +8435,13 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
                         change.configuration.windowConfiguration.bounds == rectAfterEnd
                     }
                 },
-                eq(null),
+                eq(windowDragTransitionHandler),
             )
+        assertFalse(needDragIndicatorCleanup)
     }
 
     @Test
+    @EnableFlags(Flags.FLAG_ENABLE_WINDOW_DROP_SMOOTH_TRANSITION)
     fun onDesktopDragEnd_noIndicator_updatesTaskBounds() {
         val task = setUpFreeformTask()
         val spyController = spy(controller)
@@ -8460,16 +8463,17 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         whenever(desktopModeVisualIndicator.updateIndicatorType(any(), anyOrNull()))
             .thenReturn(DesktopModeVisualIndicator.IndicatorType.NO_INDICATOR)
 
-        spyController.onDragPositioningEnd(
-            task,
-            mockSurface,
-            DEFAULT_DISPLAY,
-            inputCoordinate = PointF(200f, 300f),
-            currentDragBounds = currentDragBounds,
-            validDragArea = Rect(0, 50, 2000, 2000),
-            dragStartBounds = Rect(),
-            motionEvent,
-        )
+        val needDragIndicatorCleanup =
+            spyController.onDragPositioningEnd(
+                task,
+                mockSurface,
+                DEFAULT_DISPLAY,
+                inputCoordinate = PointF(200f, 300f),
+                currentDragBounds = currentDragBounds,
+                validDragArea = Rect(0, 50, 2000, 2000),
+                dragStartBounds = Rect(),
+                motionEvent,
+            )
 
         verify(transitions)
             .startTransition(
@@ -8479,12 +8483,16 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
                         change.configuration.windowConfiguration.bounds == currentDragBounds
                     }
                 },
-                eq(null),
+                eq(windowDragTransitionHandler),
             )
+        assertFalse(needDragIndicatorCleanup)
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_CONNECTED_DISPLAYS_WINDOW_DRAG)
+    @EnableFlags(
+        Flags.FLAG_ENABLE_CONNECTED_DISPLAYS_WINDOW_DRAG,
+        Flags.FLAG_ENABLE_WINDOW_DROP_SMOOTH_TRANSITION,
+    )
     @DisableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun onDesktopDragEnd_noIndicatorAndMoveToNewDisplay_reparent() {
         val task = setUpFreeformTask()
@@ -8508,16 +8516,17 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
             .thenReturn(DesktopModeVisualIndicator.IndicatorType.NO_INDICATOR)
         whenever(motionEvent.displayId).thenReturn(SECONDARY_DISPLAY_ID)
 
-        spyController.onDragPositioningEnd(
-            task,
-            mockSurface,
-            DEFAULT_DISPLAY,
-            inputCoordinate = PointF(200f, 300f),
-            currentDragBounds,
-            validDragArea = Rect(0, 50, 2000, 2000),
-            dragStartBounds = Rect(),
-            motionEvent,
-        )
+        val needDragIndicatorCleanup =
+            spyController.onDragPositioningEnd(
+                task,
+                mockSurface,
+                DEFAULT_DISPLAY,
+                inputCoordinate = PointF(200f, 300f),
+                currentDragBounds,
+                validDragArea = Rect(0, 50, 2000, 2000),
+                dragStartBounds = Rect(),
+                motionEvent,
+            )
 
         verify(transitions)
             .startTransition(
@@ -8525,11 +8534,13 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
                 Mockito.argThat { wct ->
                     return@argThat wct.hierarchyOps[0].isReparent
                 },
-                eq(dragToDisplayTransitionHandler),
+                eq(windowDragTransitionHandler),
             )
+        assertFalse(needDragIndicatorCleanup)
     }
 
     @Test
+    @EnableFlags(Flags.FLAG_ENABLE_WINDOW_DROP_SMOOTH_TRANSITION)
     fun onDesktopDragEnd_fullscreenIndicator_dragToExitDesktop() {
         val task = setUpFreeformTask(bounds = Rect(0, 0, 100, 100))
         val spyController = spy(controller)
@@ -8556,21 +8567,24 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
             10f,
             Rect(100, 200, 500, 1000),
         )
-        spyController.onDragPositioningEnd(
-            task,
-            mockSurface,
-            DEFAULT_DISPLAY,
-            inputCoordinate = PointF(200f, 300f),
-            currentDragBounds = Rect(100, 50, 500, 1000),
-            validDragArea = Rect(0, 50, 2000, 2000),
-            dragStartBounds = Rect(),
-            motionEvent,
-        )
+
+        val needDragIndicatorCleanup =
+            spyController.onDragPositioningEnd(
+                task,
+                mockSurface,
+                DEFAULT_DISPLAY,
+                inputCoordinate = PointF(200f, 300f),
+                currentDragBounds = Rect(100, 50, 500, 1000),
+                validDragArea = Rect(0, 50, 2000, 2000),
+                dragStartBounds = Rect(),
+                motionEvent,
+            )
 
         // Assert the task exits desktop mode
         val wct = getLatestExitDesktopWct()
         assertThat(wct.changes[task.token.asBinder()]?.windowingMode)
             .isEqualTo(WINDOWING_MODE_UNDEFINED)
+        assertTrue(needDragIndicatorCleanup)
     }
 
     @Test

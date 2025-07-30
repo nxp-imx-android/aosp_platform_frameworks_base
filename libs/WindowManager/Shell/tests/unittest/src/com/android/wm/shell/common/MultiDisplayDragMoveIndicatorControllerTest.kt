@@ -25,7 +25,6 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.wm.shell.RootTaskDisplayAreaOrganizer
 import com.android.wm.shell.ShellTestCase
-import com.android.wm.shell.TestShellExecutor
 import com.android.wm.shell.common.MultiDisplayTestUtil.TestDisplay
 import com.android.wm.shell.shared.desktopmode.FakeDesktopState
 import java.util.function.Supplier
@@ -52,7 +51,6 @@ class MultiDisplayDragMoveIndicatorControllerTest : ShellTestCase() {
     private val rootTaskDisplayAreaOrganizer = mock<RootTaskDisplayAreaOrganizer>()
     private val indicatorSurfaceFactory = mock<MultiDisplayDragMoveIndicatorSurface.Factory>()
     private val desktopState = FakeDesktopState()
-
     private val indicatorSurface = mock<MultiDisplayDragMoveIndicatorSurface>()
     private val transaction = mock<SurfaceControl.Transaction>()
     private val transactionSupplier = mock<Supplier<SurfaceControl.Transaction>>()
@@ -62,7 +60,6 @@ class MultiDisplayDragMoveIndicatorControllerTest : ShellTestCase() {
     private lateinit var spyDisplayLayout1: DisplayLayout
 
     private lateinit var resources: TestableResources
-    private val executor = TestShellExecutor()
 
     private lateinit var controller: MultiDisplayDragMoveIndicatorController
 
@@ -78,7 +75,6 @@ class MultiDisplayDragMoveIndicatorControllerTest : ShellTestCase() {
                 displayController,
                 rootTaskDisplayAreaOrganizer,
                 indicatorSurfaceFactory,
-                executor,
                 desktopState,
             )
 
@@ -108,7 +104,6 @@ class MultiDisplayDragMoveIndicatorControllerTest : ShellTestCase() {
         ) {
             transaction
         }
-        executor.flushAll()
 
         verify(indicatorSurfaceFactory, never()).create(any(), any())
     }
@@ -125,7 +120,6 @@ class MultiDisplayDragMoveIndicatorControllerTest : ShellTestCase() {
         ) {
             transaction
         }
-        executor.flushAll()
 
         verify(indicatorSurfaceFactory, never()).create(any(), any())
     }
@@ -144,7 +138,6 @@ class MultiDisplayDragMoveIndicatorControllerTest : ShellTestCase() {
         ) {
             transaction
         }
-        executor.flushAll()
 
         verify(indicatorSurfaceFactory, never()).create(any(), any())
     }
@@ -161,7 +154,6 @@ class MultiDisplayDragMoveIndicatorControllerTest : ShellTestCase() {
         ) {
             transaction
         }
-        executor.flushAll()
 
         verify(indicatorSurfaceFactory, times(1)).create(eq(mContext), eq(taskLeash))
         verify(indicatorSurface, times(1))
@@ -185,9 +177,6 @@ class MultiDisplayDragMoveIndicatorControllerTest : ShellTestCase() {
         ) {
             transaction
         }
-        while (executor.callbacks.isNotEmpty()) {
-            executor.flushAll()
-        }
 
         verify(indicatorSurface, times(1))
             .relayout(
@@ -196,10 +185,7 @@ class MultiDisplayDragMoveIndicatorControllerTest : ShellTestCase() {
                 eq(MultiDisplayDragMoveIndicatorSurface.Visibility.INVISIBLE),
             )
 
-        controller.onDragEnd(TASK_ID, { transaction })
-        while (executor.callbacks.isNotEmpty()) {
-            executor.flushAll()
-        }
+        controller.onDragEnd(TASK_ID, transaction)
 
         verify(indicatorSurface, times(1)).dispose(transaction)
     }

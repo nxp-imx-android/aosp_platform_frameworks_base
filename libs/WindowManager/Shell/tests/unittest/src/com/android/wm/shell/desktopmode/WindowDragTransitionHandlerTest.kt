@@ -18,35 +18,48 @@ package com.android.wm.shell.desktopmode
 import android.graphics.Point
 import android.graphics.Rect
 import android.os.IBinder
+import android.platform.test.annotations.EnableFlags
+import android.testing.AndroidTestingRunner
 import android.view.SurfaceControl
 import android.window.TransitionInfo
 import android.window.TransitionRequestInfo
+import androidx.test.filters.SmallTest
+import com.android.window.flags.Flags
+import com.android.wm.shell.ShellTestCase
+import com.android.wm.shell.TestRunningTaskInfoBuilder
+import com.android.wm.shell.common.MultiDisplayDragMoveIndicatorController
 import com.android.wm.shell.transition.Transitions
 import org.junit.Before
 import org.junit.Test
+import org.junit.runner.RunWith
 import org.mockito.Mockito.verify
 import org.mockito.kotlin.any
 import org.mockito.kotlin.doReturn
+import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
 
 /**
- * Test class for {@link DragToDisplayTransitionHandler}
+ * Test class for {@link WindowDragTransitionHandler}
  *
- * Usage: atest WMShellUnitTests:DragToDisplayTransitionHandlerTest
+ * Usage: atest WMShellUnitTests:WindowDragTransitionHandlerTest
  */
-class DragToDisplayTransitionHandlerTest {
-    private lateinit var handler: DragToDisplayTransitionHandler
+@SmallTest
+@RunWith(AndroidTestingRunner::class)
+class WindowDragTransitionHandlerTest : ShellTestCase() {
+    private lateinit var handler: WindowDragTransitionHandler
     private val mockTransition: IBinder = mock()
     private val mockRequestInfo: TransitionRequestInfo = mock()
     private val mockTransitionInfo: TransitionInfo = mock()
     private val mockStartTransaction: SurfaceControl.Transaction = mock()
     private val mockFinishTransaction: SurfaceControl.Transaction = mock()
     private val mockFinishCallback: Transitions.TransitionFinishCallback = mock()
+    private val mockMultiDisplayDragMoveIndicatorController =
+        mock<MultiDisplayDragMoveIndicatorController>()
 
     @Before
     fun setUp() {
-        handler = DragToDisplayTransitionHandler()
+        handler = WindowDragTransitionHandler(mockMultiDisplayDragMoveIndicatorController)
         whenever(mockStartTransaction.setWindowCrop(any(), any(), any()))
             .thenReturn(mockStartTransaction)
         whenever(mockFinishTransaction.setWindowCrop(any(), any(), any()))
@@ -60,15 +73,18 @@ class DragToDisplayTransitionHandlerTest {
     }
 
     @Test
+    @EnableFlags(Flags.FLAG_ENABLE_WINDOW_DROP_SMOOTH_TRANSITION)
     fun startAnimation_verifyTransformationsApplied() {
         val mockChange1 = mock<TransitionInfo.Change>()
         val leash1 = mock<SurfaceControl>()
         val endBounds1 = Rect(0, 0, 50, 50)
         val endPosition1 = Point(5, 5)
+        val taskInfo = TestRunningTaskInfoBuilder().setTaskId(10).build()
 
         whenever(mockChange1.leash).doReturn(leash1)
         whenever(mockChange1.endAbsBounds).doReturn(endBounds1)
         whenever(mockChange1.endRelOffset).doReturn(endPosition1)
+        whenever(mockChange1.taskInfo).doReturn(taskInfo)
 
         val mockChange2 = mock<TransitionInfo.Change>()
         val leash2 = mock<SurfaceControl>()
@@ -97,5 +113,8 @@ class DragToDisplayTransitionHandlerTest {
             .setPosition(leash2, endPosition2.x.toFloat(), endPosition2.y.toFloat())
         verify(mockStartTransaction).apply()
         verify(mockFinishCallback).onTransitionFinished(null)
+
+        verify(mockMultiDisplayDragMoveIndicatorController)
+            .onDragEnd(eq(10), eq(mockFinishTransaction))
     }
 }
