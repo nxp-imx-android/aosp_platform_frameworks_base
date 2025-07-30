@@ -4444,10 +4444,11 @@ public class AudioService extends IAudioService.Stub
 
     private boolean handleAbsoluteVolume(int streamType, int streamTypeAlias,
             @NonNull AudioDeviceAttributes ada, int newIndex, boolean muted, int flags) {
-            // Check if volume update should be handled by an external volume controller
+        // Check if volume update should be handled by an external volume controller
         boolean registeredAsAbsoluteVolume = false;
         boolean volumeHandled = false;
         int deviceType = ada.getInternalType();
+
         boolean isAbsoluteVolume = unifyAbsoluteVolumeManagement() ? isAbsoluteVolumeDevice(ada)
                 : isAbsoluteVolumeDevice(deviceType);
         if (isAbsoluteVolume && (flags & AudioManager.FLAG_ABSOLUTE_VOLUME) == 0) {
@@ -4458,7 +4459,9 @@ public class AudioService extends IAudioService.Stub
                 info = getAbsoluteVolumeDeviceInfo(deviceType);
             }
             if (info != null) {
-                dispatchAbsoluteVolumeChanged(streamType, info, newIndex, muted);
+                if (streamType == getBluetoothContextualVolumeStream()) {
+                    dispatchAbsoluteVolumeChanged(streamType, info, newIndex, muted);
+                }
                 registeredAsAbsoluteVolume = true;
                 volumeHandled = true;
             }
@@ -5295,10 +5298,15 @@ public class AudioService extends IAudioService.Stub
                 break;
         }
 
-        if (voiceActivityCanOverride && mVoicePlaybackActive.get()) {
+        if (voiceActivityCanOverride && (mVoicePlaybackActive.get()
+                || mAssistantPlaybackActive.get())) {
             // TODO(b/382704431): remove to allow STREAM_VOICE_CALL to drive abs volume over A2DP
             if (getDeviceForStream(AudioSystem.STREAM_VOICE_CALL)
                     == AudioSystem.DEVICE_OUT_BLUETOOTH_A2DP) {
+                return AudioSystem.STREAM_MUSIC;
+            }
+            if (mAssistantPlaybackActive.get() && !AudioSystem.DEVICE_OUT_ALL_SCO_SET.contains(
+                    getDeviceForStream(AudioSystem.STREAM_ASSISTANT))) {
                 return AudioSystem.STREAM_MUSIC;
             }
             return AudioSystem.STREAM_VOICE_CALL;
@@ -5308,6 +5316,7 @@ public class AudioService extends IAudioService.Stub
 
     private final AtomicBoolean mVoicePlaybackActive = new AtomicBoolean(false);
     private final AtomicBoolean mMediaPlaybackActive = new AtomicBoolean(false);
+    private final AtomicBoolean mAssistantPlaybackActive = new AtomicBoolean(false);
 
     private final IPlaybackConfigDispatcher mPlaybackActivityMonitor =
             new IPlaybackConfigDispatcher.Stub() {
@@ -5323,6 +5332,7 @@ public class AudioService extends IAudioService.Stub
     private void onPlaybackConfigChange(List<AudioPlaybackConfiguration> configs) {
         boolean voiceActive = false;
         boolean mediaActive = false;
+        boolean assistantActive = false;
         for (AudioPlaybackConfiguration config : configs) {
             final int usage = config.getAudioAttributes().getUsage();
             if (!config.isActive()) {
@@ -5336,8 +5346,18 @@ public class AudioService extends IAudioService.Stub
                     || usage == AudioAttributes.USAGE_UNKNOWN) {
                 mediaActive = true;
             }
+            if (usage == AudioAttributes.USAGE_ASSISTANT) {
+                assistantActive = true;
+            }
         }
+        boolean updateContextualVolumes = false;
         if (mVoicePlaybackActive.getAndSet(voiceActive) != voiceActive) {
+            updateContextualVolumes = true;
+        }
+        if (mAssistantPlaybackActive.getAndSet(assistantActive) != assistantActive) {
+            updateContextualVolumes = true;
+        }
+        if (updateContextualVolumes) {
             postUpdateContextualVolumes();
         }
         if (mMediaPlaybackActive.getAndSet(mediaActive) != mediaActive && mediaActive) {
@@ -5625,7 +5645,8 @@ public class AudioService extends IAudioService.Stub
         }
 
         sVolumeLogger.enqueue(new VolumeEvent(VolumeEvent.VOL_VOICE_ACTIVITY_CONTEXTUAL_VOLUME,
-                mVoicePlaybackActive.get(), streamType, index, device.getInternalType()));
+                mVoicePlaybackActive.get() | mAssistantPlaybackActive.get(), streamType, index,
+                device.getInternalType()));
     }
 
     private void setStreamVolume(int streamType, int index, int flags,
