@@ -1909,9 +1909,9 @@ flag {
 }
 
 flag {
-    name: "desktop_screen_capture"
+    name: "large_screen_screencapture"
     namespace: "systemui"
-    description: "Enables the pre and post capture UI and the Quick Settings button for the desktop screen capture feature."
+    description: "Enables the pre and post capture UI and the Quick Settings button for the Large Screen screen capture feature."
     bug: "412421893"
 }
 

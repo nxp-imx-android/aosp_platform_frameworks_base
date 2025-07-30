@@ -43,16 +43,15 @@ constructor(
     val isLargeScreen: Flow<Boolean?> =
         configurationController.onConfigChanged
             .onStart { emit(resources.configuration) }
-            .map { resources.getBoolean(R.bool.config_enableDesktopScreenCapture) }
+            .map { resources.getBoolean(R.bool.config_enableLargeScreenScreencapture) }
             .stateIn(scope, SharingStarted.WhileSubscribed(), null)
 
     companion object {
-
         val isNewScreenRecordToolbarEnabled: Boolean = Flags.newScreenRecordToolbar()
 
-        val isDesktopToolbarEnabled: Boolean = Flags.desktopScreenCapture()
+        val isLargeScreenScreencaptureEnabled: Boolean = Flags.largeScreenScreencapture()
 
         val shouldShowNewToolbar: Boolean =
-            isNewScreenRecordToolbarEnabled || isDesktopToolbarEnabled
+            isNewScreenRecordToolbarEnabled || isLargeScreenScreencaptureEnabled
     }
 }
