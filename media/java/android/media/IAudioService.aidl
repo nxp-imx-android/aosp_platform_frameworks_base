@@ -106,6 +106,8 @@ interface IAudioService {
 
     void permissionUpdateBarrier();
 
+    void waitForAudioHandlerBarrier();
+
     // Java-only methods below.
     void adjustStreamVolume(int streamType, int direction, int flags, String callingPackage);
 
