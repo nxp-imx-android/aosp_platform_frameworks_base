@@ -124,6 +124,13 @@ public class WindowFrames {
     }
 
     /**
+     * @return true if a resize report is currently required.
+     */
+    boolean isForceReportingResized() {
+        return mLastForceReportingResized;
+    }
+
+    /**
      * Resets the size changed flags so they're all set to false again. This should be called
      * after the frames are reported to client.
      */
