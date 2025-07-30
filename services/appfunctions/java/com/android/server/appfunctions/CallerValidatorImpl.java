@@ -29,6 +29,7 @@ import android.content.pm.PackageManager;
 import android.os.Binder;
 import android.os.Process;
 import android.os.UserHandle;
+import android.os.UserManager;
 import android.permission.flags.Flags;
 
 import com.android.internal.infra.AndroidFuture;
@@ -42,12 +43,16 @@ class CallerValidatorImpl implements CallerValidator {
 
     private final DeviceSettingHelper mDeviceSettingHelper;
 
+    private final UserManager mUserManager;
+
     CallerValidatorImpl(
             @NonNull Context context,
-            @NonNull AppFunctionAccessServiceInterface appFunctionAccessService) {
+            @NonNull AppFunctionAccessServiceInterface appFunctionAccessService,
+            @NonNull UserManager userManager) {
         mContext = Objects.requireNonNull(context);
         mAppFunctionAccessService = Objects.requireNonNull(appFunctionAccessService);
         mDeviceSettingHelper = new DeviceSettingHelperImpl(context);
+        mUserManager = Objects.requireNonNull(userManager);
     }
 
     @Override
@@ -65,18 +70,17 @@ class CallerValidatorImpl implements CallerValidator {
     }
 
     @Override
-    @NonNull
     @BinderThread
-    public UserHandle verifyTargetUserHandle(
+    public void verifyTargetUserHandle(
             @NonNull UserHandle targetUserHandle, @NonNull String claimedCallingPackage) {
         int callingPid = Binder.getCallingPid();
         int callingUid = Binder.getCallingUid();
         final long callingIdentityToken = Binder.clearCallingIdentity();
         try {
             if (Flags.appFunctionAccessServiceEnabled()) {
-                return handleIncomingUserCrossUserNotAllowed(targetUserHandle, callingUid);
+                enforceNoCrossUserOrSecondaryProfileInteraction(targetUserHandle, callingUid);
             } else {
-                return handleIncomingUser(
+                enforceConditionalCrossUserInteraction(
                         claimedCallingPackage, targetUserHandle, callingPid, callingUid);
             }
         } finally {
@@ -174,29 +178,25 @@ class CallerValidatorImpl implements CallerValidator {
     }
 
     /**
-     * Helper for dealing with incoming user arguments to system service calls.
-     *
-     * <p>Takes care of checking permissions and if the target is special user, this method will
-     * simply throw.
+     * Enforces that cross user interaction is only allowed when the caller has
+     * INTERACT_ACROSS_USERS_FULL permission.
      *
      * @param callingPackageName The package name of the caller.
      * @param targetUserHandle The user which the caller is requesting to execute as.
      * @param callingPid The actual pid of the caller as determined by Binder.
      * @param callingUid The actual uid of the caller as determined by Binder.
-     * @return the user handle that the call should run as. Will always be a concrete user.
      * @throws IllegalArgumentException if the target user is a special user.
      * @throws SecurityException if caller trying to interact across user without {@link
      *     Manifest.permission#INTERACT_ACROSS_USERS_FULL}
      */
-    @NonNull
-    private UserHandle handleIncomingUser(
+    private void enforceConditionalCrossUserInteraction(
             @NonNull String callingPackageName,
             @NonNull UserHandle targetUserHandle,
             int callingPid,
             int callingUid) {
         UserHandle callingUserHandle = UserHandle.getUserHandleForUid(callingUid);
         if (callingUserHandle.equals(targetUserHandle)) {
-            return targetUserHandle;
+            return;
         }
 
         // Duplicates UserController#ensureNotSpecialUser
@@ -218,7 +218,7 @@ class CallerValidatorImpl implements CallerValidator {
                                 + " haven't installed for user "
                                 + targetUserHandle.getIdentifier());
             }
-            return targetUserHandle;
+            return;
         }
         throw new SecurityException(
                 "Permission denied while calling from uid "
@@ -230,29 +230,28 @@ class CallerValidatorImpl implements CallerValidator {
     }
 
     /**
-     * Helper for dealing with incoming user arguments to system service calls.
-     *
-     * <p>Takes care of if interaction is cross user, this method will simply throw.
+     * Enforce that any cross profile interaction or calling from secondary profile are not allowed.
      *
      * @param targetUserHandle The user which the caller is requesting to execute as.
      * @param callingUid The actual uid of the caller as determined by Binder.
-     * @return the user handle that the call should run as. Will always be a concrete user.
-     * @throws SecurityException if caller trying to interact across user.
+     * @throws SecurityException if caller trying to interact across user or within secondary
+     *     profile.
      */
-    @NonNull
-    private UserHandle handleIncomingUserCrossUserNotAllowed(
+    private void enforceNoCrossUserOrSecondaryProfileInteraction(
             @NonNull UserHandle targetUserHandle, int callingUid) {
         UserHandle callingUserHandle = UserHandle.getUserHandleForUid(callingUid);
-        if (callingUserHandle.equals(targetUserHandle)) {
-            return targetUserHandle;
+        if (!callingUserHandle.equals(targetUserHandle)) {
+            throw new SecurityException(
+                    "Permission denied while calling from uid "
+                            + callingUid
+                            + " with "
+                            + targetUserHandle
+                            + "; Cross user interaction is not allowed");
         }
 
-        throw new SecurityException(
-                "Permission denied while calling from uid "
-                        + callingUid
-                        + " with "
-                        + targetUserHandle
-                        + "; Cross user interaction is not allowed");
+        if (mUserManager.isProfile(targetUserHandle.getIdentifier())) {
+            throw new SecurityException("Permission denied while calling from secondary profile");
+        }
     }
 
     /**

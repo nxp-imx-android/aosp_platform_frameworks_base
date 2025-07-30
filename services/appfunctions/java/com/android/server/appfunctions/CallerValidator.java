@@ -52,12 +52,11 @@ public interface CallerValidator {
      *
      * @param targetUserHandle The user which the caller is requesting to execute as.
      * @param claimedCallingPackage The package name of the caller.
-     * @return The user handle that the call should run as. Will always be a concrete user.
      * @throws IllegalArgumentException if the target user is a special user.
      * @throws SecurityException if caller trying to interact across users without {@link
      *     Manifest.permission#INTERACT_ACROSS_USERS_FULL}
      */
-    UserHandle verifyTargetUserHandle(
+    void verifyTargetUserHandle(
             @NonNull UserHandle targetUserHandle, @NonNull String claimedCallingPackage);
 
     /**
@@ -86,9 +85,9 @@ public interface CallerValidator {
     @IntDef(
             prefix = {"CAN_EXECUTE_APP_FUNCTIONS_"},
             value = {
-                    CAN_EXECUTE_APP_FUNCTIONS_DENIED,
-                    CAN_EXECUTE_APP_FUNCTIONS_ALLOWED_SAME_PACKAGE,
-                    CAN_EXECUTE_APP_FUNCTIONS_ALLOWED_HAS_PERMISSION,
+                CAN_EXECUTE_APP_FUNCTIONS_DENIED,
+                CAN_EXECUTE_APP_FUNCTIONS_ALLOWED_SAME_PACKAGE,
+                CAN_EXECUTE_APP_FUNCTIONS_ALLOWED_HAS_PERMISSION,
             })
     @Retention(RetentionPolicy.SOURCE)
     @interface CanExecuteAppFunctionResult {}
@@ -103,8 +102,8 @@ public interface CallerValidator {
     int CAN_EXECUTE_APP_FUNCTIONS_ALLOWED_SAME_PACKAGE = 1;
 
     /**
-     * Callers can execute app functions because they have the necessary permission.
-     * This case also applies when a caller with the permission invokes their own app functions.
+     * Callers can execute app functions because they have the necessary permission. This case also
+     * applies when a caller with the permission invokes their own app functions.
      */
     int CAN_EXECUTE_APP_FUNCTIONS_ALLOWED_HAS_PERMISSION = 2;
 
