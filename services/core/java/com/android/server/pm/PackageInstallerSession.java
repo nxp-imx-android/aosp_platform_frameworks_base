@@ -5867,13 +5867,15 @@ public class PackageInstallerSession extends IPackageInstallerSession.Stub {
         sendUpdateToRemoteStatusReceiver(returnCode, msg, extras,
                 /* forPreapproval= */ isPreapprovalRequested() && !isCommitted());
 
+        final String packageName;
         synchronized (mLock) {
             mFinalStatus = returnCode;
             mFinalMessage = msg;
+            packageName = getPackageName();
         }
         synchronized (mMetrics) {
             mMetrics.onInternalInstallationFinished();
-            mMetrics.onSessionFinished(returnCode);
+            mMetrics.onSessionFinished(returnCode, packageName);
         }
 
         final boolean success = (returnCode == INSTALL_SUCCEEDED);
