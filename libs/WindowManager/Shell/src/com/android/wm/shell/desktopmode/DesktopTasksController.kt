@@ -5914,11 +5914,6 @@ class DesktopTasksController(
     }
 
     companion object {
-        // TODO: b/434658423 - Consolidate below constant among DesktopModeUtils and this file.
-        @JvmField
-        val DESKTOP_MODE_INITIAL_BOUNDS_SCALE =
-            SystemProperties.getInt("persist.wm.debug.desktop_mode_initial_bounds_scale", 72) / 100f
-
         // Timeout used for CUJ_DESKTOP_MODE_ENTER_APP_HANDLE_DRAG_HOLD, this is longer than the
         // default timeout to avoid timing out in the middle of a drag action.
         private val APP_HANDLE_DRAG_HOLD_CUJ_TIMEOUT_MS: Long = TimeUnit.SECONDS.toMillis(10L)

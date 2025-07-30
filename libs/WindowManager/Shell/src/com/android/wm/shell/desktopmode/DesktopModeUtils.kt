@@ -47,6 +47,7 @@ import kotlin.math.ceil
 import kotlin.math.max
 import kotlin.math.min
 
+@JvmField
 val DESKTOP_MODE_INITIAL_BOUNDS_SCALE: Float =
     SystemProperties.getInt("persist.wm.debug.desktop_mode_initial_bounds_scale", 72) / 100f
 
