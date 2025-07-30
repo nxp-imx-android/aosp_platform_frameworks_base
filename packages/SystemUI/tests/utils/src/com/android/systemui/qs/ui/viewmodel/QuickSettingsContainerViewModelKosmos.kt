@@ -16,49 +16,27 @@
 
 package com.android.systemui.qs.ui.viewmodel
 
-import android.content.applicationContext
 import com.android.systemui.brightness.ui.viewmodel.brightnessSliderViewModelFactory
 import com.android.systemui.kosmos.Kosmos
-import com.android.systemui.media.controls.domain.pipeline.interactor.mediaCarouselInteractor
-import com.android.systemui.media.controls.ui.controller.mediaCarouselController
-import com.android.systemui.media.controls.ui.view.MediaHost
 import com.android.systemui.qs.panels.ui.viewmodel.detailsViewModel
 import com.android.systemui.qs.panels.ui.viewmodel.editModeViewModel
 import com.android.systemui.qs.panels.ui.viewmodel.tileGridViewModelFactory
-import com.android.systemui.qs.panels.ui.viewmodel.toolbar.toolbarViewModelFactory
-import com.android.systemui.qs.tiles.dialog.audioDetailsViewModelFactory
 import com.android.systemui.shade.domain.interactor.shadeDisplaysInteractor
 import com.android.systemui.shade.ui.viewmodel.shadeHeaderViewModelFactory
-import com.android.systemui.volume.panel.component.volume.slider.ui.viewmodel.audioStreamSliderViewModelFactory
-import com.android.systemui.window.domain.interactor.windowRootViewBlurInteractor
-import kotlinx.coroutines.CoroutineScope
-import org.mockito.kotlin.mock
 
 val Kosmos.quickSettingsContainerViewModelFactory by
     Kosmos.Fixture {
         object : QuickSettingsContainerViewModel.Factory {
             override fun create(
-                supportsBrightnessMirroring: Boolean,
-                expansion: Float?,
-                volumeSliderCoroutineScope: CoroutineScope?,
+                supportsBrightnessMirroring: Boolean
             ): QuickSettingsContainerViewModel {
                 return QuickSettingsContainerViewModel(
-                    shadeContext = applicationContext,
                     brightnessSliderViewModelFactory = brightnessSliderViewModelFactory,
-                    audioStreamSliderViewModelFactory = audioStreamSliderViewModelFactory,
-                    audioDetailsViewModelFactory = audioDetailsViewModelFactory,
                     shadeHeaderViewModelFactory = shadeHeaderViewModelFactory,
                     tileGridViewModelFactory = tileGridViewModelFactory,
                     supportsBrightnessMirroring = supportsBrightnessMirroring,
-                    expansion = expansion,
-                    volumeSliderCoroutineScope = volumeSliderCoroutineScope,
                     editModeViewModel = editModeViewModel,
                     detailsViewModel = detailsViewModel,
-                    toolbarViewModelFactory = toolbarViewModelFactory,
-                    mediaCarouselInteractor = mediaCarouselInteractor,
-                    mediaCarouselController = mediaCarouselController,
-                    mediaHost = mock<MediaHost>(),
-                    windowRootViewBlurInteractor = windowRootViewBlurInteractor,
                     shadeDisplaysInteractor = { shadeDisplaysInteractor },
                 )
             }

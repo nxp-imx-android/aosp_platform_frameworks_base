@@ -66,7 +66,8 @@ import com.android.systemui.compose.modifiers.sysuiResTag
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.lifecycle.rememberViewModel
 import com.android.systemui.media.controls.ui.composable.MediaCarousel
-import com.android.systemui.media.controls.ui.view.MediaHostState.Companion.COLLAPSED
+import com.android.systemui.media.controls.ui.controller.MediaCarouselController
+import com.android.systemui.media.controls.ui.view.MediaHost
 import com.android.systemui.notifications.ui.composable.SnoozeableHeadsUpNotificationSpace
 import com.android.systemui.qs.composefragment.ui.GridAnchor
 import com.android.systemui.qs.flags.QsDetailedView
@@ -74,6 +75,8 @@ import com.android.systemui.qs.panels.ui.compose.EditMode
 import com.android.systemui.qs.panels.ui.compose.TileDetails
 import com.android.systemui.qs.panels.ui.compose.TileGrid
 import com.android.systemui.qs.panels.ui.compose.toolbar.Toolbar
+import com.android.systemui.qs.panels.ui.viewmodel.toolbar.ToolbarViewModel
+import com.android.systemui.qs.tiles.dialog.AudioDetailsViewModel
 import com.android.systemui.qs.ui.composable.QuickSettingsShade.systemGestureExclusionInShade
 import com.android.systemui.qs.ui.viewmodel.QuickSettingsContainerViewModel
 import com.android.systemui.qs.ui.viewmodel.QuickSettingsShadeOverlayActionsViewModel
@@ -90,6 +93,7 @@ import com.android.systemui.statusbar.notification.stack.shared.model.ShadeScrim
 import com.android.systemui.statusbar.notification.stack.shared.model.ShadeScrimShape
 import com.android.systemui.statusbar.notification.stack.ui.view.NotificationScrollView
 import com.android.systemui.statusbar.notification.stack.ui.viewmodel.NotificationsPlaceholderViewModel
+import com.android.systemui.volume.panel.component.volume.slider.ui.viewmodel.AudioStreamSliderViewModel
 import com.android.systemui.volume.panel.component.volume.ui.composable.VolumeSlider
 import dagger.Lazy
 import javax.inject.Inject
@@ -125,16 +129,12 @@ constructor(
     override fun ContentScope.Content(modifier: Modifier) {
         val coroutineScope = rememberCoroutineScope()
         val contentViewModel =
-            rememberViewModel("QuickSettingsShadeOverlayContent") {
-                contentViewModelFactory.create()
+            rememberViewModel("QuickSettingsShadeOverlayContent", key = coroutineScope) {
+                contentViewModelFactory.create(coroutineScope)
             }
         val quickSettingsContainerViewModel =
             rememberViewModel("QuickSettingsShadeOverlayContainer") {
-                quickSettingsContainerViewModelFactory.create(
-                    supportsBrightnessMirroring = true,
-                    expansion = COLLAPSED,
-                    volumeSliderCoroutineScope = coroutineScope,
-                )
+                quickSettingsContainerViewModelFactory.create(supportsBrightnessMirroring = true)
             }
         val hunPlaceholderViewModel =
             rememberViewModel("QuickSettingsShadeOverlayPlaceholder") {
@@ -153,7 +153,7 @@ constructor(
             OverlayShade(
                 panelElement = QuickSettingsShade.Elements.Panel,
                 alignmentOnWideScreens = Alignment.TopEnd,
-                enableTransparency = quickSettingsContainerViewModel.isTransparencyEnabled,
+                enableTransparency = contentViewModel.isTransparencyEnabled,
                 onScrimClicked = contentViewModel::onScrimClicked,
                 onBackgroundPlaced = { bounds, topCornerRadius, bottomCornerRadius ->
                     contentViewModel.onPanelShapeInWindowChanged(
@@ -176,7 +176,10 @@ constructor(
                     }
                 },
             ) {
-                QuickSettingsContainer(viewModel = quickSettingsContainerViewModel)
+                QuickSettingsContainer(
+                    contentViewModel = contentViewModel,
+                    containerViewModel = quickSettingsContainerViewModel,
+                )
             }
             SnoozeableHeadsUpNotificationSpace(
                 stackScrollView = notificationStackScrollView.get(),
@@ -196,13 +199,15 @@ private sealed interface ShadeBodyState {
 }
 
 @Composable
-fun ContentScope.QuickSettingsContainer(
-    viewModel: QuickSettingsContainerViewModel,
+private fun ContentScope.QuickSettingsContainer(
+    contentViewModel: QuickSettingsShadeOverlayContentViewModel,
+    containerViewModel: QuickSettingsContainerViewModel,
     modifier: Modifier = Modifier,
 ) {
-    val isEditing by viewModel.editModeViewModel.isEditing.collectAsStateWithLifecycle()
+    val isEditing by containerViewModel.editModeViewModel.isEditing.collectAsStateWithLifecycle()
     val tileDetails =
-        if (QsDetailedView.isEnabled) viewModel.detailsViewModel.activeTileDetails else null
+        if (QsDetailedView.isEnabled) containerViewModel.detailsViewModel.activeTileDetails
+        else null
 
     AnimatedContent(
         modifier = Modifier.sysuiResTag("quick_settings_container"),
@@ -217,19 +222,26 @@ fun ContentScope.QuickSettingsContainer(
         when (state) {
             ShadeBodyState.Editing -> {
                 EditMode(
-                    viewModel = viewModel.editModeViewModel,
+                    viewModel = containerViewModel.editModeViewModel,
                     modifier =
                         modifier.fillMaxWidth().padding(QuickSettingsShade.Dimensions.Padding),
                 )
             }
 
             ShadeBodyState.TileDetails -> {
-                TileDetails(modifier = modifier, viewModel.detailsViewModel)
+                TileDetails(modifier = modifier, containerViewModel.detailsViewModel)
             }
 
             ShadeBodyState.Default -> {
                 QuickSettingsLayout(
-                    viewModel = viewModel,
+                    qsContainerViewModel = containerViewModel,
+                    toolbarViewModelFactory = contentViewModel.toolbarViewModelFactory,
+                    showMedia = contentViewModel.showMedia,
+                    mediaHost = contentViewModel.mediaHost,
+                    mediaCarouselController = contentViewModel.mediaCarouselController,
+                    isTransparencyEnabled = contentViewModel.isTransparencyEnabled,
+                    volumeSliderViewModel = contentViewModel.volumeSliderViewModel,
+                    audioDetailsViewModelFactory = contentViewModel.audioDetailsViewModelFactory,
                     modifier = modifier.sysuiResTag("quick_settings_panel"),
                 )
             }
@@ -239,8 +251,15 @@ fun ContentScope.QuickSettingsContainer(
 
 /** Column containing Brightness and QS tiles. */
 @Composable
-fun ContentScope.QuickSettingsLayout(
-    viewModel: QuickSettingsContainerViewModel,
+private fun ContentScope.QuickSettingsLayout(
+    qsContainerViewModel: QuickSettingsContainerViewModel,
+    toolbarViewModelFactory: ToolbarViewModel.Factory,
+    showMedia: Boolean,
+    mediaHost: MediaHost,
+    mediaCarouselController: MediaCarouselController,
+    isTransparencyEnabled: Boolean,
+    volumeSliderViewModel: AudioStreamSliderViewModel?,
+    audioDetailsViewModelFactory: AudioDetailsViewModel.Factory,
     modifier: Modifier = Modifier,
 ) {
     Column(
@@ -254,17 +273,20 @@ fun ContentScope.QuickSettingsLayout(
         if (isFullWidthShade()) {
             VerticalSeparator()
             QuickSettingsOverlayHeader(
-                viewModel = viewModel.shadeHeaderViewModel,
+                viewModel = qsContainerViewModel.shadeHeaderViewModel,
                 modifier = Modifier.element(QuickSettingsShade.Elements.Header),
             )
 
             VerticalSeparator()
         }
 
+        val toolbarViewModel =
+            rememberViewModel("QuickSettingsLayout") { toolbarViewModelFactory.create() }
+
         Toolbar(
             modifier =
                 Modifier.fillMaxWidth().requiredHeight(QuickSettingsShade.Dimensions.ToolbarHeight),
-            viewModel = viewModel.toolbarViewModel,
+            viewModel = toolbarViewModel,
         )
 
         // TODO(b/428805936): Double check this padding.
@@ -272,14 +294,14 @@ fun ContentScope.QuickSettingsLayout(
 
         Column(modifier = Modifier.fillMaxWidth().verticalScroll(rememberScrollState())) {
             MediaCarousel(
-                isVisible = viewModel.showMedia,
-                mediaHost = viewModel.mediaHost,
-                carouselController = viewModel.mediaCarouselController,
+                isVisible = showMedia,
+                mediaHost = mediaHost,
+                carouselController = mediaCarouselController,
                 usingCollapsedLandscapeMedia = true,
                 modifier = Modifier.padding(horizontal = QuickSettingsShade.Dimensions.Padding),
             )
 
-            if (viewModel.showMedia) {
+            if (showMedia) {
                 VerticalSeparator()
             }
 
@@ -289,12 +311,11 @@ fun ContentScope.QuickSettingsLayout(
                 )
             ) {
                 BrightnessSliderContainer(
-                    viewModel = viewModel.brightnessSliderViewModel,
+                    viewModel = qsContainerViewModel.brightnessSliderViewModel,
                     containerColors =
                         ContainerColors(
                             idleColor = Color.Transparent,
-                            mirrorColor =
-                                OverlayShade.Colors.panelBackground(viewModel.isTransparencyEnabled),
+                            mirrorColor = OverlayShade.Colors.panelBackground(isTransparencyEnabled),
                         ),
                     modifier = Modifier.fillMaxWidth(),
                 )
@@ -302,7 +323,6 @@ fun ContentScope.QuickSettingsLayout(
 
             VerticalSeparator()
 
-            val volumeSliderViewModel = viewModel.volumeSliderViewModel
             if (volumeSliderViewModel != null) {
                 val volumeSliderState by volumeSliderViewModel.slider.collectAsStateWithLifecycle()
 
@@ -337,8 +357,8 @@ fun ContentScope.QuickSettingsLayout(
                                     contentColor = MaterialTheme.colorScheme.onPrimary,
                                 ),
                             onClick = {
-                                viewModel.detailsViewModel.onVolumeSettingsButtonClicked(
-                                    viewModel.audioDetailsViewModelFactory.create()
+                                qsContainerViewModel.detailsViewModel.onVolumeSettingsButtonClicked(
+                                    audioDetailsViewModelFactory.create()
                                 )
                             },
                         ) {
@@ -359,7 +379,10 @@ fun ContentScope.QuickSettingsLayout(
             // TODO(b/428805936): Double check this padding.
             VerticalSeparator(QuickSettingsShade.Dimensions.Padding)
 
-            TileGrid(viewModel = viewModel.tileGridViewModel, modifier = Modifier.fillMaxWidth())
+            TileGrid(
+                viewModel = qsContainerViewModel.tileGridViewModel,
+                modifier = Modifier.fillMaxWidth(),
+            )
 
             // TODO(b/428805936): Double check this padding.
             VerticalSeparator(QuickSettingsShade.Dimensions.Padding * 2)
