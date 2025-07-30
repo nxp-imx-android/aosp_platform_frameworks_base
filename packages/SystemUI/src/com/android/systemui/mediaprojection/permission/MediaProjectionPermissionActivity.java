@@ -197,7 +197,7 @@ public class MediaProjectionPermissionActivity extends Activity {
 
         // Using application context for the dialog, instead of the activity context, so we get
         // the correct screen width when in split screen.
-        Context dialogContext = getApplicationContext();
+        Context dialogContext = createDisplayContext(getDisplay());
         BaseMediaProjectionPermissionDialogDelegate<AlertDialog> delegate =
                 createPermissionDialogDelegate(appName, hasCastingCapabilities, dialogContext);
         mDialog =
