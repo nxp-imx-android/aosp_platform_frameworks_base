@@ -72,7 +72,6 @@ import static android.os.Process.THREAD_PRIORITY_TOP_APP_BOOST;
 import static com.android.server.am.ActivityManagerDebugConfig.DEBUG_ALL;
 import static com.android.server.am.ActivityManagerDebugConfig.DEBUG_LRU;
 import static com.android.server.am.ActivityManagerDebugConfig.DEBUG_OOM_ADJ;
-import static com.android.server.am.ActivityManagerDebugConfig.DEBUG_OOM_ADJ_REASON;
 import static com.android.server.am.ActivityManagerDebugConfig.DEBUG_PROCESS_OBSERVERS;
 import static com.android.server.am.ActivityManagerDebugConfig.DEBUG_PSS;
 import static com.android.server.am.ActivityManagerDebugConfig.DEBUG_UID_OBSERVERS;
@@ -1604,10 +1603,9 @@ public abstract class OomAdjuster {
         private boolean mHasVisibleActivities;
         private int mProcState;
         private int mSchedGroup;
-        private int mAppUid;
-        private int mLogUid;
         private int mProcessStateCurTop;
         private String mAdjType;
+        private boolean mReportDebugMsgs;
 
         @GuardedBy("this.OomAdjuster.mService")
         int getAdj() {
@@ -1617,12 +1615,12 @@ public abstract class OomAdjuster {
         @GuardedBy("this.OomAdjuster.mService")
         void computeOomAdjFromActivitiesIfNecessary(ProcessRecord app, int adj,
                 boolean foregroundActivities, boolean hasVisibleActivities, int procState,
-                int schedGroup, int appUid, int logUid, int processCurTop) {
+                int schedGroup, int processCurTop, boolean reportDebugMsgs) {
             if (app.getCachedAdj() != ProcessList.INVALID_ADJ) {
                 return;
             }
             initialize(app, adj, foregroundActivities, hasVisibleActivities, procState,
-                    schedGroup, appUid, logUid, processCurTop);
+                    schedGroup, processCurTop, reportDebugMsgs);
 
             final int flags;
             if (Flags.pushActivityStateToOomadjuster()) {
@@ -1672,18 +1670,17 @@ public abstract class OomAdjuster {
         }
 
         void initialize(ProcessRecord app, int adj, boolean foregroundActivities,
-                boolean hasVisibleActivities, int procState, int schedGroup, int appUid,
-                int logUid, int processStateCurTop) {
+                boolean hasVisibleActivities, int procState, int schedGroup,
+                int processStateCurTop, boolean reportDebugMsgs) {
             this.mApp = app;
             this.mAdj = adj;
             this.mForegroundActivities = foregroundActivities;
             this.mHasVisibleActivities = hasVisibleActivities;
             this.mProcState = procState;
             this.mSchedGroup = schedGroup;
-            this.mAppUid = appUid;
-            this.mLogUid = logUid;
             this.mProcessStateCurTop = processStateCurTop;
             this.mAdjType = app.getAdjType();
+            this.mReportDebugMsgs = reportDebugMsgs;
         }
 
         void onVisibleActivity(int flags) {
@@ -1691,14 +1688,14 @@ public abstract class OomAdjuster {
             if (mAdj > VISIBLE_APP_ADJ) {
                 mAdj = VISIBLE_APP_ADJ;
                 mAdjType = "vis-activity";
-                if (DEBUG_OOM_ADJ_REASON || mLogUid == mAppUid) {
+                if (mReportDebugMsgs) {
                     reportOomAdjMessageLocked(TAG_OOM_ADJ, "Raise adj to vis-activity: " + mApp);
                 }
             }
             if (mProcState > mProcessStateCurTop) {
                 mProcState = mProcessStateCurTop;
                 mAdjType = "vis-activity";
-                if (DEBUG_OOM_ADJ_REASON || mLogUid == mAppUid) {
+                if (mReportDebugMsgs) {
                     reportOomAdjMessageLocked(TAG_OOM_ADJ,
                             "Raise procstate to vis-activity (top): " + mApp);
                 }
@@ -1734,14 +1731,14 @@ public abstract class OomAdjuster {
             if (mAdj > PERCEPTIBLE_APP_ADJ) {
                 mAdj = PERCEPTIBLE_APP_ADJ;
                 mAdjType = "pause-activity";
-                if (DEBUG_OOM_ADJ_REASON || mLogUid == mAppUid) {
+                if (mReportDebugMsgs) {
                     reportOomAdjMessageLocked(TAG_OOM_ADJ, "Raise adj to pause-activity: "  + mApp);
                 }
             }
             if (mProcState > mProcessStateCurTop) {
                 mProcState = mProcessStateCurTop;
                 mAdjType = "pause-activity";
-                if (DEBUG_OOM_ADJ_REASON || mLogUid == mAppUid) {
+                if (mReportDebugMsgs) {
                     reportOomAdjMessageLocked(TAG_OOM_ADJ,
                             "Raise procstate to pause-activity (top): "  + mApp);
                 }
@@ -1757,7 +1754,7 @@ public abstract class OomAdjuster {
             if (mAdj > PERCEPTIBLE_APP_ADJ) {
                 mAdj = PERCEPTIBLE_APP_ADJ;
                 mAdjType = "stop-activity";
-                if (DEBUG_OOM_ADJ_REASON || mLogUid == mAppUid) {
+                if (mReportDebugMsgs) {
                     reportOomAdjMessageLocked(TAG_OOM_ADJ,
                             "Raise adj to stop-activity: "  + mApp);
                 }
@@ -1773,7 +1770,7 @@ public abstract class OomAdjuster {
                 if (mProcState > PROCESS_STATE_LAST_ACTIVITY) {
                     mProcState = PROCESS_STATE_LAST_ACTIVITY;
                     mAdjType = "stop-activity";
-                    if (DEBUG_OOM_ADJ_REASON || mLogUid == mAppUid) {
+                    if (mReportDebugMsgs) {
                         reportOomAdjMessageLocked(TAG_OOM_ADJ,
                                 "Raise procstate to stop-activity: " + mApp);
                     }
@@ -1787,7 +1784,7 @@ public abstract class OomAdjuster {
             if (mProcState > PROCESS_STATE_CACHED_ACTIVITY) {
                 mProcState = PROCESS_STATE_CACHED_ACTIVITY;
                 mAdjType = "cch-act";
-                if (DEBUG_OOM_ADJ_REASON || mLogUid == mAppUid) {
+                if (mReportDebugMsgs) {
                     reportOomAdjMessageLocked(TAG_OOM_ADJ,
                             "Raise procstate to cached activity: " + mApp);
                 }
