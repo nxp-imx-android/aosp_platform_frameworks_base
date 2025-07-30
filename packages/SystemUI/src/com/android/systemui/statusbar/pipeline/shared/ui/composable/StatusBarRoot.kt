@@ -26,6 +26,7 @@ import androidx.annotation.VisibleForTesting
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.layout.wrapContentWidth
@@ -33,6 +34,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.boundsInWindow
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
@@ -43,7 +46,11 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import com.android.compose.theme.PlatformTheme
+import com.android.compose.theme.colorAttr
 import com.android.keyguard.AlphaOptimizedLinearLayout
+import com.android.systemui.Flags
+import com.android.systemui.clock.ui.viewmodel.AmPmStyle
+import com.android.systemui.clock.ui.viewmodel.ClockViewModel
 import com.android.systemui.compose.modifiers.sysUiResTagContainer
 import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent.DisplayAware
 import com.android.systemui.lifecycle.WindowLifecycleState
@@ -56,6 +63,7 @@ import com.android.systemui.media.controls.ui.view.MediaHostState
 import com.android.systemui.media.dagger.MediaModule.POPUP
 import com.android.systemui.plugins.DarkIconDispatcher
 import com.android.systemui.res.R
+import com.android.systemui.shade.ui.composable.VariableDayDate
 import com.android.systemui.statusbar.StatusBarAlwaysUseRegionSampling
 import com.android.systemui.statusbar.chips.ui.compose.OngoingActivityChips
 import com.android.systemui.statusbar.core.NewStatusBarIcons
@@ -101,6 +109,7 @@ class StatusBarRootFactory
 constructor(
     private val notificationIconsBinder: NotificationIconContainerStatusBarViewBinder,
     private val iconViewStoreFactory: ConnectedDisplaysStatusBarNotificationIconViewStore.Factory,
+    private val clockViewModelFactory: ClockViewModel.Factory,
     private val darkIconManagerFactory: DarkIconManager.Factory,
     private val iconController: StatusBarIconController,
     private val ongoingCallController: OngoingCallController,
@@ -123,6 +132,7 @@ constructor(
                         statusBarViewBinder = homeStatusBarViewBinder,
                         notificationIconsBinder = notificationIconsBinder,
                         iconViewStoreFactory = iconViewStoreFactory,
+                        clockViewModelFactory = clockViewModelFactory,
                         darkIconManagerFactory = darkIconManagerFactory,
                         iconController = iconController,
                         ongoingCallController = ongoingCallController,
@@ -160,6 +170,7 @@ fun StatusBarRoot(
     statusBarViewBinder: HomeStatusBarViewBinder,
     notificationIconsBinder: NotificationIconContainerStatusBarViewBinder,
     iconViewStoreFactory: ConnectedDisplaysStatusBarNotificationIconViewStore.Factory,
+    clockViewModelFactory: ClockViewModel.Factory,
     darkIconManagerFactory: DarkIconManager.Factory,
     iconController: StatusBarIconController,
     ongoingCallController: OngoingCallController,
@@ -200,8 +211,9 @@ fun StatusBarRoot(
                 inflater.inflate(R.layout.status_bar, parent, false) as PhoneStatusBarView
 
             if (StatusBarChipsModernization.isEnabled) {
-                addStartSideChipsComposable(
+                addStartSideComposable(
                     phoneStatusBarView = phoneStatusBarView,
+                    clockViewModelFactory = clockViewModelFactory,
                     statusBarViewModel = statusBarViewModel,
                     iconViewStore = iconViewStore,
                     appHandlesViewModel = appHandlesViewModel,
@@ -336,8 +348,9 @@ fun StatusBarRoot(
 }
 
 /** Adds the composable chips shown on the start side of the status bar. */
-private fun addStartSideChipsComposable(
+private fun addStartSideComposable(
     phoneStatusBarView: PhoneStatusBarView,
+    clockViewModelFactory: ClockViewModel.Factory,
     statusBarViewModel: HomeStatusBarViewModel,
     iconViewStore: NotificationIconContainerViewBinder.IconViewStore?,
     appHandlesViewModel: AppHandlesViewModel,
@@ -351,11 +364,18 @@ private fun addStartSideChipsComposable(
 
     val composeView =
         ComposeView(context).apply {
+            val showDate = Flags.statusBarDate() && statusBarViewModel.isDesktopStatusBarEnabled
+
             layoutParams =
                 LinearLayout.LayoutParams(
-                    LinearLayout.LayoutParams.WRAP_CONTENT,
-                    LinearLayout.LayoutParams.WRAP_CONTENT,
-                )
+                        LinearLayout.LayoutParams.WRAP_CONTENT,
+                        LinearLayout.LayoutParams.WRAP_CONTENT,
+                    )
+                    .apply {
+                        if (showDate) {
+                            gravity = android.view.Gravity.CENTER_VERTICAL
+                        }
+                    }
 
             setContent {
                 val statusBarBoundsViewModel =
@@ -365,6 +385,33 @@ private fun addStartSideChipsComposable(
                             clockView = clockView,
                         )
                     }
+
+                if (showDate) {
+                    val clockViewModel =
+                        rememberViewModel("HomeStatusBar.Clock") {
+                            clockViewModelFactory.create(AmPmStyle.Gone)
+                        }
+                    VariableDayDate(
+                        longerDateText = clockViewModel.longerDateText,
+                        shorterDateText = clockViewModel.shorterDateText,
+                        textColor = colorAttr(R.attr.wallpaperTextColor),
+                        modifier =
+                            Modifier.padding(horizontal = 4.dp)
+                                .wrapContentSize()
+                                .onGloballyPositioned { coordinates ->
+                                    val boundsInWindow = coordinates.boundsInWindow()
+                                    val bounds =
+                                        Rect(
+                                            boundsInWindow.left.toInt(),
+                                            boundsInWindow.top.toInt(),
+                                            boundsInWindow.right.toInt(),
+                                            boundsInWindow.bottom.toInt(),
+                                        )
+                                    statusBarBoundsViewModel.updateDateBounds(bounds)
+                                },
+                    )
+                }
+
                 val isRtl = LocalLayoutDirection.current == LayoutDirection.Rtl
                 val density = context.resources.displayMetrics.density
 
@@ -372,6 +419,7 @@ private fun addStartSideChipsComposable(
                     remember(
                         appHandlesViewModel.appHandleBounds,
                         statusBarBoundsViewModel.startSideContainerBounds,
+                        statusBarBoundsViewModel.dateBounds,
                         statusBarBoundsViewModel.clockBounds,
                         isRtl,
                         density,
@@ -380,6 +428,7 @@ private fun addStartSideChipsComposable(
                             appHandles = appHandlesViewModel.appHandleBounds,
                             startSideContainerBounds =
                                 statusBarBoundsViewModel.startSideContainerBounds,
+                            dateBounds = statusBarBoundsViewModel.dateBounds,
                             clockBounds = statusBarBoundsViewModel.clockBounds,
                             isRtl = isRtl,
                             density = density,
@@ -415,6 +464,7 @@ private fun addStartSideChipsComposable(
 fun chipsMaxWidth(
     appHandles: List<Rect>,
     startSideContainerBounds: Rect,
+    dateBounds: Rect,
     clockBounds: Rect,
     isRtl: Boolean,
     density: Float,
@@ -424,19 +474,24 @@ fun chipsMaxWidth(
             .filterNot { it.isEmpty }
             // Only care about app handles in the same possible region as the chips
             .filter { Rect.intersects(it, startSideContainerBounds) }
+
+    // The chips should be next to the date if it is showing, otherwise they should be next to the
+    // clock.
+    val clockOrDateBounds = if (dateBounds.isEmpty) clockBounds else dateBounds
+
     val widthInPx =
         if (isRtl) {
                 val chipsLeftBasedOnAppHandles =
                     relevantAppHandles.maxOfOrNull { it.right } ?: Int.MIN_VALUE
                 val chipsLeftBasedOnContainer = startSideContainerBounds.left
                 val chipsLeft = maxOf(chipsLeftBasedOnAppHandles, chipsLeftBasedOnContainer)
-                /* width= */ clockBounds.left - chipsLeft
+                /* width= */ clockOrDateBounds.left - chipsLeft
             } else { // LTR
                 val chipsRightBasedOnAppHandles =
                     relevantAppHandles.minOfOrNull { it.left } ?: Int.MAX_VALUE
                 val chipsRightBasedOnContainer = startSideContainerBounds.right
                 val chipsRight = minOf(chipsRightBasedOnAppHandles, chipsRightBasedOnContainer)
-                /* width= */ chipsRight - clockBounds.right
+                /* width= */ chipsRight - clockOrDateBounds.right
             }
             .coerceAtLeast(0)
 

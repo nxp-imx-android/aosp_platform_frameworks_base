@@ -31,6 +31,7 @@ import dagger.assisted.AssistedInject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.stateIn
 
@@ -70,6 +71,17 @@ constructor(
             source = _startSideContainerBounds,
         )
 
+    private val _dateBounds = MutableStateFlow(Rect())
+
+    /** The on-screen bounds of the status bar date. This is a hydrated value. */
+    // TODO(b/390204943): Re-implement this in Compose once the Clock is a Composable.
+    val dateBounds: Rect by
+        hydrator.hydratedStateOf(
+            traceName = "StatusBar.dateBounds",
+            initialValue = Rect(),
+            source = _dateBounds,
+        )
+
     private val _clockBounds: Flow<Rect> =
         conflatedCallbackFlow {
                 val layoutListener =
@@ -92,6 +104,10 @@ constructor(
 
     override suspend fun onActivated(): Nothing {
         hydrator.activate()
+    }
+
+    fun updateDateBounds(bounds: Rect) {
+        _dateBounds.value = bounds
     }
 
     @AssistedFactory

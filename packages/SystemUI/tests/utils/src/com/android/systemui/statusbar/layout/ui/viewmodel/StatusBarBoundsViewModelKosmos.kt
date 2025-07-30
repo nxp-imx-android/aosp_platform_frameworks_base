@@ -17,6 +17,7 @@
 package com.android.systemui.statusbar.layout.ui.viewmodel
 
 import android.view.View
+import androidx.compose.ui.platform.ComposeView
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.backgroundScope
 import com.android.systemui.statusbar.policy.Clock
@@ -24,6 +25,7 @@ import org.mockito.kotlin.mock
 
 var Kosmos.mockStatusBarStartSideContainerView by Kosmos.Fixture { mock<View>() }
 var Kosmos.mockStatusBarClockView by Kosmos.Fixture { mock<Clock>() }
+var Kosmos.mockStatusBarDateView by Kosmos.Fixture { mock<ComposeView>() }
 
 val Kosmos.statusBarBoundsViewModel by
     Kosmos.Fixture {

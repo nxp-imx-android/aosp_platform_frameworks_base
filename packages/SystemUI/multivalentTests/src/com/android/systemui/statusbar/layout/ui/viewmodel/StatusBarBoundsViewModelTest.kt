@@ -125,7 +125,7 @@ class StatusBarBoundsViewModelTest : SysuiTestCase() {
         }
 
     @Test
-    fun clockBounds_getsUpdatedBounds() =
+    fun clockBounds_getsUpdatedWhenClockBoundsChanged() =
         kosmos.runTest {
             val firstRect = Rect(1, 2, 3, 4)
             clockBounds = firstRect
@@ -138,5 +138,19 @@ class StatusBarBoundsViewModelTest : SysuiTestCase() {
             clockLayoutChangeListener.onLayoutChange(mockStatusBarClockView, 0, 0, 0, 0, 0, 0, 0, 0)
 
             assertThat(underTest.clockBounds).isEqualTo(newRect)
+        }
+
+    @Test
+    fun dateBounds_getsUpdatedWhenUpdateDateBoundsCalled() =
+        kosmos.runTest {
+            val firstRect = Rect(1, 2, 3, 4)
+            underTest.updateDateBounds(firstRect)
+
+            assertThat(underTest.dateBounds).isEqualTo(firstRect)
+
+            val newRect = Rect(5, 6, 7, 8)
+            underTest.updateDateBounds(newRect)
+
+            assertThat(underTest.dateBounds).isEqualTo(newRect)
         }
 }
