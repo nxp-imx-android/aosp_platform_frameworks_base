@@ -18,7 +18,7 @@ package com.android.systemui.desktop.domain.interactor
 
 import android.content.res.Resources
 import com.android.systemui.dagger.SysUISingleton
-import com.android.systemui.dagger.qualifiers.Application
+import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.dagger.qualifiers.Main
 import com.android.systemui.res.R
 import com.android.systemui.statusbar.policy.ConfigurationController
@@ -36,7 +36,7 @@ class DesktopInteractor
 @Inject
 constructor(
     @Main private val resources: Resources,
-    @Application private val scope: CoroutineScope,
+    @Background private val scope: CoroutineScope,
     configurationController: ConfigurationController,
 ) {
 
