@@ -27,7 +27,10 @@ import android.view.KeyEvent.KEYCODE_BACK
 import android.view.KeyEvent.KEYCODE_HOME
 import android.view.KeyEvent.KEYCODE_RECENT_APPS
 import android.view.KeyEvent.KEYCODE_TAB
+import android.view.KeyEvent.KEYCODE_W
 import android.view.KeyEvent.META_ALT_ON
+import android.view.KeyEvent.META_CTRL_ON
+import android.view.KeyEvent.META_META_ON
 import android.view.KeyEvent.META_SHIFT_ON
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
@@ -158,6 +161,26 @@ class SystemShortcutsSourceTest : SysuiTestCase() {
                 )
 
             assertThat(shortcuts).containsAtLeastElementsIn(cycleThroughRecentAppsShortcuts)
+        }
+    }
+
+    @Test
+    @EnableFlags(com.android.window.flags.Flags.FLAG_CLOSE_TASK_KEYBOARD_SHORTCUT)
+    fun shortcutGroups_containsCloseWindowShortcut() {
+        testScope.runTest {
+            val groups = source.shortcutGroups(TEST_DEVICE_ID)
+
+            val shortcuts =
+                groups.flatMap { it.items }.map { c -> Triple(c.label, c.modifiers, c.keycode) }
+
+            val closeWindowShortcut =
+                Triple(
+                    context.getString(R.string.group_system_close_window),
+                    META_META_ON or META_CTRL_ON,
+                    KEYCODE_W,
+                )
+
+            assertThat(shortcuts).contains(closeWindowShortcut)
         }
     }
 

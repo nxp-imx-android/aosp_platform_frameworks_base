@@ -33,11 +33,14 @@ import android.view.KeyEvent.KEYCODE_RECENT_APPS
 import android.view.KeyEvent.KEYCODE_S
 import android.view.KeyEvent.KEYCODE_SLASH
 import android.view.KeyEvent.KEYCODE_TAB
+import android.view.KeyEvent.KEYCODE_W
 import android.view.KeyEvent.META_ALT_ON
+import android.view.KeyEvent.META_CTRL_ON
 import android.view.KeyEvent.META_META_ON
 import android.view.KeyEvent.META_SHIFT_ON
 import android.view.KeyboardShortcutGroup
 import android.view.KeyboardShortcutInfo
+import android.window.DesktopExperienceFlags
 import com.android.hardware.input.Flags.enableQuickSettingsPanelShortcut
 import com.android.systemui.Flags.shortcutHelperKeyGlyph
 import com.android.systemui.dagger.qualifiers.Main
@@ -207,6 +210,15 @@ constructor(@Main private val resources: Resources, private val inputManager: In
                 command(META_META_ON, KEYCODE_L)
             }
         )
+        if (DesktopExperienceFlags.CLOSE_TASK_KEYBOARD_SHORTCUT.isTrue()) {
+            // Close focused task:
+            //  - Meta + Ctrl + W
+            add(
+                shortcutInfo(resources.getString(R.string.group_system_close_window)) {
+                    command(META_META_ON or META_CTRL_ON, KEYCODE_W)
+                }
+            )
+        }
     }
 
     private fun systemAppsShortcuts() =
