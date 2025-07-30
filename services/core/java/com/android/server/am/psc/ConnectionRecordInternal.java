@@ -16,7 +16,6 @@
 
 package com.android.server.am.psc;
 
-import android.content.ComponentName;
 import android.content.Context;
 import android.ravenwood.annotation.RavenwoodKeepWholeClass;
 
@@ -38,18 +37,8 @@ public abstract class ConnectionRecordInternal implements OomAdjusterImpl.Connec
     /** Returns the {@link ActivityServiceConnectionsHolder} associated with this connection. */
     public abstract ActivityServiceConnectionsHolder getActivity();
 
-    /**
-     * Returns the last activity time of the service associated with this connection,
-     * in milliseconds.
-     * TODO(b/425766486): Remove it once ConnectionRecordInternal could access ServiceRecord.
-     */
-    public abstract long getServiceLastActivityTimeMillis();
-
-    /**
-     * Returns the {@link ComponentName} of the service instance that this connection is bound to.
-     * TODO(b/425766486): Remove it once ConnectionRecordInternal could access ServiceRecord.
-     */
-    public abstract ComponentName getServiceInstanceName();
+    /** Returns the service associated with this connection. */
+    public abstract ServiceRecordInternal getService();
 
     /** Tracks the current process state and sequence number for association management. */
     public abstract void trackProcState(int procState, int seq);
