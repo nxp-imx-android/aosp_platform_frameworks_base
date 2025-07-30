@@ -29,30 +29,6 @@ flag {
 }
 
 flag {
-    name: "enable_display_resolution_range_voting"
-    namespace: "display_manager"
-    description: "Feature flag to enable voting for ranges of resolutions"
-    bug: "299297058"
-    is_fixed_read_only: true
-}
-
-flag {
-    name: "enable_user_preferred_mode_vote"
-    namespace: "display_manager"
-    description: "Feature flag to use voting for UserPreferredMode for display"
-    bug: "297018612"
-    is_fixed_read_only: true
-}
-
-flag {
-    name: "enable_mode_limit_for_external_display"
-    namespace: "display_manager"
-    description: "Feature limiting external display resolution and refresh rate"
-    bug: "242093547"
-    is_fixed_read_only: true
-}
-
-flag {
     name: "display_topology"
     namespace: "display_manager"
     description: "Display topology for moving cursors and windows between extended displays"
@@ -67,13 +43,6 @@ flag {
     bug: "404269099"
     is_fixed_read_only: true
     is_exported: true
-}
-
-flag {
-    name: "enable_displays_refresh_rates_synchronization"
-    namespace: "display_manager"
-    description: "Enables synchronization of refresh rates across displays"
-    bug: "294015845"
 }
 
 flag {
