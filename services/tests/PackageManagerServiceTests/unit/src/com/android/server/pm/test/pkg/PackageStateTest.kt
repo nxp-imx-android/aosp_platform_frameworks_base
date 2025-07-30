@@ -23,8 +23,6 @@ import android.content.pm.SharedLibraryInfo
 import android.content.pm.VersionedPackage
 import android.content.pm.overlay.OverlayPaths
 import android.os.PatternMatcher
-import android.platform.test.annotations.EnableFlags
-import android.platform.test.flag.junit.SetFlagsRule
 import android.util.ArraySet
 import com.android.internal.pm.parsing.pkg.PackageImpl
 import com.android.internal.pm.pkg.component.ParsedActivity
@@ -60,12 +58,7 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
 
-@EnableFlags(android.permission.flags.Flags.FLAG_PURPOSE_DECLARATION_ENABLED)
 class PackageStateTest {
-
-    @get:Rule
-    val setFlagsRule: SetFlagsRule = SetFlagsRule()
-
     companion object {
         private val IGNORED_TYPES = listOf(
                 "java.io.File",
@@ -209,7 +202,8 @@ class PackageStateTest {
         (pkg.permissions.first() as ParsedPermissionImpl).knownCerts = setOf("TESTEMBEDDINGCERT")
         (pkg.permissions.first() as ParsedPermissionImpl).validPurposes = listOf(
             ParsedValidPurposeImpl("validPurpose", 20))
-        (pkg.usesPermissions.first() as ParsedUsesPermissionImpl).purposes = setOf("validPurpose")
+        (pkg.usesPermissionMapping.values.first() as ParsedUsesPermissionImpl)
+                .purposes = setOf("validPurpose")
 
         (pkg.providers.first() as ParsedProviderImpl).apply {
             addPathPermission(PathPermission("pattern", PatternMatcher.PATTERN_LITERAL,

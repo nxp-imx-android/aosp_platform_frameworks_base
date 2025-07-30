@@ -86,6 +86,7 @@ import com.android.server.pm.pkg.SELinuxUtil;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -192,31 +193,33 @@ public class PackageInfoUtils {
                     info.permissions[i] = permissionInfo;
                 }
             }
-            final List<ParsedUsesPermission> usesPermissions = pkg.getUsesPermissions();
+            final Collection<ParsedUsesPermission> usesPermissions =
+                    pkg.getUsesPermissionMapping().values();
             size = usesPermissions.size();
             if (size > 0) {
                 info.requestedPermissions = new String[size];
                 info.requestedPermissionsFlags = new int[size];
-                for (int i = 0; i < size; i++) {
-                    final ParsedUsesPermission usesPermission = usesPermissions.get(i);
-                    info.requestedPermissions[i] = usesPermission.getName();
+                int index = 0;
+                for (ParsedUsesPermission usesPermission : usesPermissions) {
+                    info.requestedPermissions[index] = usesPermission.getName();
                     // The notion of required permissions is deprecated but for compatibility.
-                    info.requestedPermissionsFlags[i] |=
+                    info.requestedPermissionsFlags[index] |=
                             PackageInfo.REQUESTED_PERMISSION_REQUIRED;
                     if (grantedPermissions != null
                             && grantedPermissions.contains(usesPermission.getName())) {
-                        info.requestedPermissionsFlags[i] |=
+                        info.requestedPermissionsFlags[index] |=
                                 PackageInfo.REQUESTED_PERMISSION_GRANTED;
                     }
                     if ((usesPermission.getUsesPermissionFlags()
                             & ParsedUsesPermission.FLAG_NEVER_FOR_LOCATION) != 0) {
-                        info.requestedPermissionsFlags[i] |=
+                        info.requestedPermissionsFlags[index] |=
                                 PackageInfo.REQUESTED_PERMISSION_NEVER_FOR_LOCATION;
                     }
-                    if (pkg.getImplicitPermissions().contains(info.requestedPermissions[i])) {
-                        info.requestedPermissionsFlags[i] |=
+                    if (pkg.getImplicitPermissions().contains(info.requestedPermissions[index])) {
+                        info.requestedPermissionsFlags[index] |=
                                 PackageInfo.REQUESTED_PERMISSION_IMPLICIT;
                     }
+                    index++;
                 }
             }
         }

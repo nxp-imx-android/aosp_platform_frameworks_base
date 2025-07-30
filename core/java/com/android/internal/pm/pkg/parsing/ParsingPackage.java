@@ -489,6 +489,9 @@ public interface ParsingPackage {
     @NonNull
     Set<String> getRequestedPermissions();
 
+    @NonNull
+    Map<String, ParsedUsesPermission> getUsesPermissionMapping();
+
     @Nullable
     Boolean getResizeableActivity();
 
@@ -522,9 +525,6 @@ public interface ParsingPackage {
 
     @NonNull
     List<String> getUsesNativeLibraries();
-
-    @NonNull
-    List<ParsedUsesPermission> getUsesPermissions();
 
     @NonNull
     List<String> getUsesSdkLibraries();
