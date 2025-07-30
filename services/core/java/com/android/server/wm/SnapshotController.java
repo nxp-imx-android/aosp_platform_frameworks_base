@@ -119,7 +119,11 @@ class SnapshotController {
             if (info.mWindowingMode == WINDOWING_MODE_PINNED) continue;
             if (info.mContainer.isActivityTypeHome()) continue;
             final Task task = info.mContainer.asTask();
-            if (task != null && !task.mCreatedByOrganizer && !task.isVisibleRequested()) {
+            // Note that if this task is being transiently hidden, the snapshot will be captured at
+            // the end of the transient transition (see Transition#finishTransition()), because IME
+            // won't move be moved during the transition and the tasks are still live.
+            if (task != null && !task.mCreatedByOrganizer && !task.isVisibleRequested()
+                    && !task.mTransitionController.isTransientHide(task)) {
                 mTaskSnapshotController.recordSnapshot(task, info);
             }
             // Won't need to capture activity snapshot in close transition.
