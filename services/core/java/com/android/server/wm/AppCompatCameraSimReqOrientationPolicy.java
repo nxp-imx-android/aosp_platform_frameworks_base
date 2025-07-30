@@ -341,16 +341,22 @@ final class AppCompatCameraSimReqOrientationPolicy implements AppCompatCameraSta
     boolean isCameraRunningAndWindowingModeEligible(@NonNull ActivityRecord activity) {
         return  activity.mAppCompatController.getCameraOverrides()
                 .shouldApplyCameraCompatSimReqOrientationTreatment()
-                && activity.inFreeformWindowingMode()
+                && isWindowingModeEligible(activity)
                 && mCameraStateMonitor.isCameraRunningForActivity(activity);
+    }
+
+    private boolean isWindowingModeEligible(@NonNull ActivityRecord activity) {
+        return activity.inFreeformWindowingMode()
+                || (Flags.cameraCompatUnifyCameraPolicies() && activity.inMultiWindowMode());
     }
 
     boolean shouldCameraCompatControlAspectRatio(@NonNull ActivityRecord activity) {
         // Camera compat should direct aspect ratio when in camera compat mode, unless an app has a
         // different camera compat aspect ratio set: this allows per-app camera compat override
         // aspect ratio to be smaller than the default.
-        return isInCameraCompatMode(activity) && !activity.mAppCompatController
-                .getCameraOverrides().isOverrideMinAspectRatioForCameraEnabled();
+        return isInCameraCompatMode(activity)
+                && !activity.mAppCompatController.getCameraOverrides()
+                        .isOverrideMinAspectRatioForCameraEnabled();
     }
 
     boolean isInCameraCompatMode(@NonNull ActivityRecord activity) {
