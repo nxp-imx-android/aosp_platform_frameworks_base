@@ -21,7 +21,10 @@
     <string name="update" msgid="3932142540719227615">"അപ്ഡേറ്റ് ചെയ്യൂ"</string>
     <string name="done" msgid="6632441120016885253">"പൂർത്തിയായി"</string>
     <string name="cancel" msgid="1018267193425558088">"റദ്ദാക്കുക"</string>
-    <string name="install_anyway" msgid="8794642873773384969">"ഇൻസ്റ്റാൾചെയ്യൂ"</string>
+    <!-- no translation found for install_without_verifying (7606774834125762618) -->
+    <skip />
+    <!-- no translation found for more_details (3643407086654820243) -->
+    <skip />
     <string name="dont_install" msgid="414055123295505225">"ഇൻസ്റ്റാൾചെയ്യേണ്ട"</string>
     <string name="installing" msgid="4921993079741206516">"ഇൻസ്‌റ്റാൾ ചെയ്യുന്നു…"</string>
     <string name="installing_app" msgid="1165095864863849422">"<xliff:g id="PACKAGE_LABEL">%1$s</xliff:g> ഇൻസ്‌റ്റാൾ ചെയ്യുന്നു…"</string>
@@ -45,10 +48,6 @@
     <string name="unknown_apps_admin_dlg_text" msgid="4456572224020176095">"അറിയാത്ത ഉറവിടങ്ങളിൽ നിന്നുള്ള ആപ്പുകൾ ഇൻസ്‌റ്റാൾ ചെയ്യാൻ അഡ്‌മിനിസ്‌ട്രേറ്റർ അനുവദിക്കുന്നില്ല"</string>
     <string name="unknown_apps_user_restriction_dlg_text" msgid="151020786933988344">"ഈ ഉപയോക്താവിന്, അജ്ഞാത ആപ്പുകൾ ഇൻസ്‌റ്റാൾ ചെയ്യാനാവില്ല"</string>
     <string name="install_apps_user_restriction_dlg_text" msgid="2154119597001074022">"ആപ്പുകൾ ഇൻ‌സ്‌റ്റാൾ ചെയ്യാൻ ഈ ഉപയോക്താവിന് അനുവാദമില്ല"</string>
-    <string name="verification_incomplete_summary" msgid="40478808885845735">"പരിശോധിച്ചുറപ്പിക്കൽ നടക്കാത്തതിനാൽ ആപ്പ് ഇൻസ്റ്റാൾ ചെയ്തില്ല. വീണ്ടും ശ്രമിക്കുക."</string>
-    <string name="cannot_install_verification_unavailable_summary" msgid="2469994565312971465"><p>"മുന്നറിയിപ്പ്: ആപ്പ് പരിശോധിച്ചുറപ്പിക്കാനായില്ല. "</p><p>"പാക്കേജ് പരിശോധിച്ചുറപ്പിക്കലിനെ കുറിച്ച്"</p>" "<a href="">"കൂടുതലറിയുക"</a></string>
-    <string name="cannot_install_package_summary" msgid="3358675485628657234"><p>"ബ്ലോക്ക് ചെയ്തിരിക്കുന്നതിനാൽ ഈ ആപ്പ് ഇൻസ്റ്റാൾ ചെയ്യാനാകില്ല. "</p><p>"പാക്കേജ് പരിശോധിച്ചുറപ്പിക്കലിനെ കുറിച്ച്"</p>" "<a href="">"കൂടുതലറിയുക"</a></string>
-    <string name="lite_verification_summary" msgid="3211866126230002977"><p>"ഈ ആപ്പിന്റെ ഉടമസ്ഥത ADI Lite Developer-നാണ്, ഇതിന് സ്റ്റാൻഡേർഡ് പരിശോധിച്ചുറപ്പിക്കൽ പ്രക്രിയയെ മറികടക്കുന്നു. ഇൻസ്റ്റാൾ ചെയ്യാനായി തുടരണോ?"</p></string>
     <string name="ok" msgid="7871959885003339302">"ശരി"</string>
     <string name="archive" msgid="4447791830199354721">"ആർക്കൈവ് ചെയ്യുക"</string>
     <string name="update_anyway" msgid="8792432341346261969">"എന്തായാലും അപ്‌ഡേറ്റ് ചെയ്യുക"</string>

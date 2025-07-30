@@ -444,6 +444,16 @@ flag {
 }
 
 flag {
+    name: "status_bar_share_dialog_with_app_name"
+    namespace: "systemui"
+    description: "Update the status bar share-to-app chip dialog to include the app name more often"
+    bug: "432665824"
+    metadata {
+      purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "status_bar_window_no_custom_touch"
     namespace: "systemui"
     description: "Don't have any custom touch handling in StatusBarWindowView"
@@ -1933,16 +1943,6 @@ flag {
 }
 
 flag {
-    name: "animation_library_delay_leash_cleanup"
-    namespace: "systemui"
-    description: "Clean up the transition leash with a delay to ensure that the finish callback happens first, avoiding flickers"
-    bug: "356065603"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
    name: "new_dozing_keyguard_states"
    namespace: "systemui"
    description: "Adds new dozing keyguard states for more robust animations to/from dozing."
@@ -2124,15 +2124,5 @@ flag {
     bug: "423772889"
     metadata {
       purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
-    name: "shortcut_helper_multi_display_support"
-    namespace: "systemui"
-    description: "Shortcut helper is triggered on the current display"
-    bug: "406740115"
-    metadata {
-        purpose: PURPOSE_BUGFIX
     }
 }

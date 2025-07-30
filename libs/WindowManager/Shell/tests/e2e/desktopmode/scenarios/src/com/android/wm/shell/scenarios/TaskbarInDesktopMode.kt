@@ -23,7 +23,6 @@ import android.tools.device.apphelpers.CalculatorAppHelper
 import android.tools.device.apphelpers.CameraAppHelper
 import android.tools.device.apphelpers.ClockAppHelper
 import android.tools.device.apphelpers.StandardAppHelper
-import android.tools.device.apphelpers.YouTubeAppHelper
 import android.tools.traces.parsers.WindowManagerStateHelper
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.uiautomator.UiDevice
@@ -47,7 +46,6 @@ abstract class TaskbarInDesktopMode(
 
     private val simpleAppHelper = SimpleAppHelper(instrumentation)
     private val cameraAppHelper = CameraAppHelper(instrumentation)
-    private val youtubeAppHelper = YouTubeAppHelper(instrumentation)
     private val browserAppHelper = BrowserAppHelper(instrumentation)
     private val clockAppHelper = ClockAppHelper(instrumentation)
     private val calculatorAppHelper = CalculatorAppHelper(instrumentation)

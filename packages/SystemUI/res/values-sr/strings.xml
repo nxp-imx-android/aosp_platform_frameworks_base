@@ -719,8 +719,7 @@
     <!-- no translation found for keyguard_indication_after_adaptive_auth_lock (5240600662061340872) -->
     <skip />
     <string name="keyguard_indication_after_watch_disconnected" msgid="8133476870585660478">"Закључао је сат"</string>
-    <!-- no translation found for keyguard_indication_after_secure_lock_device (4358906300665255820) -->
-    <skip />
+    <string name="keyguard_indication_after_secure_lock_device" msgid="4358906300665255820">"Закључано помоћу верификације у 2 корака"</string>
     <string name="zen_mode_and_condition" msgid="5043165189511223718">"<xliff:g id="ZEN_MODE">%1$s</xliff:g>. <xliff:g id="EXIT_CONDITION">%2$s</xliff:g>"</string>
     <string name="accessibility_volume_settings" msgid="1458961116951564784">"Подешавања звука"</string>
     <string name="volume_odi_captions_tip" msgid="8825655463280990941">"Аутоматски титл за медије"</string>

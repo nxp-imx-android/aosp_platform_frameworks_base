@@ -714,10 +714,8 @@
     <string name="monitoring_description_pin_protection" msgid="1983580207046670355">"പ്രതിദിന പരിധി, പ്രവർത്തനരഹിതമായ സമയം പോലുള്ള, നിങ്ങളുടെ ഉപകരണത്തിലുള്ള ചില നിയന്ത്രണങ്ങൾ പിൻ ഉപയോഗിച്ച് മാത്രമേ മാറ്റാനാകൂ."</string>
     <string name="legacy_vpn_name" msgid="4174223520162559145">"VPN"</string>
     <string name="keyguard_indication_trust_unlocked" msgid="7395154975733744547">"TrustAgent ഉപയോഗിച്ച് അൺലോക്ക് ചെയ്‌തത്"</string>
-    <!-- no translation found for kg_prompt_after_adaptive_auth_lock (6065186971000690782) -->
-    <skip />
-    <!-- no translation found for keyguard_indication_after_adaptive_auth_lock (5240600662061340872) -->
-    <skip />
+    <string name="kg_prompt_after_adaptive_auth_lock" msgid="6065186971000690782">"സ്‌ക്രീൻ ലോക്ക് ചെയ്‌തു. പരിശോധിച്ചുറപ്പിക്കാനുള്ള നിരവധി ശ്രമങ്ങൾ."</string>
+    <string name="keyguard_indication_after_adaptive_auth_lock" msgid="5240600662061340872">"സ്‌ക്രീൻ ലോക്ക് ചെയ്‌തു\nപരിശോധിച്ചുറപ്പിക്കൽ പരാജയപ്പെട്ടു"</string>
     <string name="keyguard_indication_after_watch_disconnected" msgid="8133476870585660478">"നിങ്ങളുടെ വാച്ച് ഉപയോഗിച്ച് ലോക്ക് ചെയ്‌തിരിക്കുന്നു"</string>
     <string name="keyguard_indication_after_secure_lock_device" msgid="4358906300665255820">"2-ഘട്ട പരിശോധിച്ചുറപ്പിക്കൽ വഴി ലോക്ക് ചെയ്തു"</string>
     <string name="zen_mode_and_condition" msgid="5043165189511223718">"<xliff:g id="ZEN_MODE">%1$s</xliff:g>. <xliff:g id="EXIT_CONDITION">%2$s</xliff:g>"</string>
@@ -1061,10 +1059,8 @@
     <string name="qs_edit" msgid="5583565172803472437">"എഡിറ്റ് ചെയ്യുക"</string>
     <string name="qs_edit_tiles" msgid="2105215324060865035">"ടൈലുകൾ എഡിറ്റ് ചെയ്യുക"</string>
     <string name="qs_edit_mode_tooltip" msgid="4164112885539479781">"ദ്രുത ക്രമീകരണ ടൈലുകളുടെ വലുപ്പം മാറ്റുക"</string>
-    <!-- no translation found for qs_edit_settings (3243175290660574156) -->
-    <skip />
-    <!-- no translation found for qs_edit_menu_content_description (4420651071119623791) -->
-    <skip />
+    <string name="qs_edit_settings" msgid="3243175290660574156">"ക്രമീകരണം"</string>
+    <string name="qs_edit_menu_content_description" msgid="4420651071119623791">"ഓപ്‌ഷനുകൾ"</string>
     <string name="tuner_time" msgid="2450785840990529997">"സമയം"</string>
   <string-array name="clock_options">
     <item msgid="3986445361435142273">"മണിക്കൂറും മിനിറ്റും സെക്കൻഡും കാണിക്കുക"</item>

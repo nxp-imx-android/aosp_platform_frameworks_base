@@ -45,6 +45,4 @@ interface InstallActionListener {
      * Launch the intent to open Storage Manager in Settings app.
      */
     fun sendManageAppsIntent()
-
-    fun setVerificationUserResponse(responseCode: Int)
 }

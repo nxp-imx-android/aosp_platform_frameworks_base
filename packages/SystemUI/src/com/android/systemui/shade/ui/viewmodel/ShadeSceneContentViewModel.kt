@@ -119,7 +119,7 @@ constructor(
                     .filter { it is ShadeMode.Dual }
                     .collect {
                         withContext(mainDispatcher) {
-                            val loggingReason = "Unfold or rotate while on notifications shade"
+                            val loggingReason = "Unfold while on notifications shade"
                             sceneInteractor.snapToScene(SceneFamilies.Home, loggingReason)
                             sceneInteractor.instantlyShowOverlay(
                                 Overlays.NotificationsShade,

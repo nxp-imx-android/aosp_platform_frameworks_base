@@ -180,7 +180,8 @@ public abstract class MediaOutputAdapterBase extends RecyclerView.Adapter<Recycl
                 } else if (device.getState() == MediaDeviceState.STATE_GROUPING) {
                     connectionState = ConnectionState.CONNECTING;
                 } else if (!enableOutputSwitcherRedesign() && mShouldGroupSelectedMediaItems
-                        && mController.hasGroupPlayback() && device.isSelected()) {
+                        && mController.hasGroupPlayback() && device.isSelected()
+                        && !device.isInputDevice()) {
                     if (mediaItem.isFirstDeviceInGroup()) {
                         isDeviceGroup = true;
                     } else {
@@ -241,6 +242,9 @@ public abstract class MediaOutputAdapterBase extends RecyclerView.Adapter<Recycl
         }
 
         private GroupStatus getGroupStatus(@NonNull MediaDevice device) {
+            if (device.isInputDevice()) {
+                return null;
+            }
             // A device should either be selectable or, when the device selected, the list should
             // have other selectable or selected devices.
             boolean selectedWithOtherGroupDevices =

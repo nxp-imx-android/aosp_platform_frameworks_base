@@ -21,7 +21,10 @@
     <string name="update" msgid="3932142540719227615">"Cập nhật"</string>
     <string name="done" msgid="6632441120016885253">"Xong"</string>
     <string name="cancel" msgid="1018267193425558088">"Hủy"</string>
-    <string name="install_anyway" msgid="8794642873773384969">"Vẫn cài đặt"</string>
+    <!-- no translation found for install_without_verifying (7606774834125762618) -->
+    <skip />
+    <!-- no translation found for more_details (3643407086654820243) -->
+    <skip />
     <string name="dont_install" msgid="414055123295505225">"Không cài đặt"</string>
     <string name="installing" msgid="4921993079741206516">"Đang cài đặt…"</string>
     <string name="installing_app" msgid="1165095864863849422">"Đang cài đặt <xliff:g id="PACKAGE_LABEL">%1$s</xliff:g>…"</string>
@@ -45,10 +48,6 @@
     <string name="unknown_apps_admin_dlg_text" msgid="4456572224020176095">"Quản trị viên của bạn không cho phép cài đặt ứng dụng từ nguồn không xác định"</string>
     <string name="unknown_apps_user_restriction_dlg_text" msgid="151020786933988344">"Người dùng này không thể cài đặt ứng dụng không xác định"</string>
     <string name="install_apps_user_restriction_dlg_text" msgid="2154119597001074022">"Người dùng này không được phép cài đặt ứng dụng"</string>
-    <string name="verification_incomplete_summary" msgid="40478808885845735">"Chưa cài đặt được ứng dụng do không thể xác minh. Vui lòng thử lại."</string>
-    <string name="cannot_install_verification_unavailable_summary" msgid="2469994565312971465"><p>"Cảnh báo: Không xác minh được ứng dụng. "</p><p><a href="">"Tìm hiểu thêm"</a>" về quy trình xác minh gói"</p></string>
-    <string name="cannot_install_package_summary" msgid="3358675485628657234"><p>"Không thể cài đặt ứng dụng này vì ứng dụng đã bị chặn. "</p><p><a href="">"Tìm hiểu thêm"</a>" về quy trình xác minh gói"</p></string>
-    <string name="lite_verification_summary" msgid="3211866126230002977"><p>"Ứng dụng này thuộc sở hữu của Nhà phát triển ADI Lite và chưa trải qua quy trình xác minh thông thường. Bạn có muốn tiếp tục cài đặt không?"</p></string>
     <string name="ok" msgid="7871959885003339302">"OK"</string>
     <string name="archive" msgid="4447791830199354721">"Lưu trữ"</string>
     <string name="update_anyway" msgid="8792432341346261969">"Vẫn cập nhật"</string>

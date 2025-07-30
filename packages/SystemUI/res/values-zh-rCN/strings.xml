@@ -714,13 +714,10 @@
     <string name="monitoring_description_pin_protection" msgid="1983580207046670355">"设备上的一些控制设置（例如每日上限和休息时间）只能通过输入 PIN 码进行更改。"</string>
     <string name="legacy_vpn_name" msgid="4174223520162559145">"VPN"</string>
     <string name="keyguard_indication_trust_unlocked" msgid="7395154975733744547">"由 TrustAgent 保持解锁状态"</string>
-    <!-- no translation found for kg_prompt_after_adaptive_auth_lock (6065186971000690782) -->
-    <skip />
-    <!-- no translation found for keyguard_indication_after_adaptive_auth_lock (5240600662061340872) -->
-    <skip />
+    <string name="kg_prompt_after_adaptive_auth_lock" msgid="6065186971000690782">"屏幕已锁定。尝试验证身份的次数过多。"</string>
+    <string name="keyguard_indication_after_adaptive_auth_lock" msgid="5240600662061340872">"屏幕已锁定\n身份验证失败"</string>
     <string name="keyguard_indication_after_watch_disconnected" msgid="8133476870585660478">"已通过手表锁定"</string>
-    <!-- no translation found for keyguard_indication_after_secure_lock_device (4358906300665255820) -->
-    <skip />
+    <string name="keyguard_indication_after_secure_lock_device" msgid="4358906300665255820">"已通过两步验证锁定"</string>
     <string name="zen_mode_and_condition" msgid="5043165189511223718">"<xliff:g id="ZEN_MODE">%1$s</xliff:g>（<xliff:g id="EXIT_CONDITION">%2$s</xliff:g>）"</string>
     <string name="accessibility_volume_settings" msgid="1458961116951564784">"声音设置"</string>
     <string name="volume_odi_captions_tip" msgid="8825655463280990941">"自动生成媒体字幕"</string>
@@ -1062,10 +1059,8 @@
     <string name="qs_edit" msgid="5583565172803472437">"编辑"</string>
     <string name="qs_edit_tiles" msgid="2105215324060865035">"编辑功能块"</string>
     <string name="qs_edit_mode_tooltip" msgid="4164112885539479781">"调整“快捷设置”功能块的大小"</string>
-    <!-- no translation found for qs_edit_settings (3243175290660574156) -->
-    <skip />
-    <!-- no translation found for qs_edit_menu_content_description (4420651071119623791) -->
-    <skip />
+    <string name="qs_edit_settings" msgid="3243175290660574156">"设置"</string>
+    <string name="qs_edit_menu_content_description" msgid="4420651071119623791">"选项"</string>
     <string name="tuner_time" msgid="2450785840990529997">"时间"</string>
   <string-array name="clock_options">
     <item msgid="3986445361435142273">"显示小时、分钟和秒"</item>

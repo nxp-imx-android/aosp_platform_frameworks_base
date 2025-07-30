@@ -610,6 +610,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
     boolean mSilenceRingerOnSleepKey;
     long mWakeUpToLastStateTimeout;
     long mTurnOffTvToastSuppressionDelay;
+    long mTurnOffTvToastPostDelay;
     long mLastShortPressTurnOffTvHintToastTime = 0;
     ComponentName mSearchKeyTargetActivity;
 
@@ -1310,16 +1311,21 @@ public class PhoneWindowManager implements WindowManagerPolicy {
         dreamManagerInternal.requestDream();
         if (mHasFeatureLeanback
                 && getResolvedLongPressOnPowerBehavior() == LONG_PRESS_POWER_GO_TO_SLEEP) {
-            final long now = SystemClock.uptimeMillis();
-            if (now - mLastShortPressTurnOffTvHintToastTime >= mTurnOffTvToastSuppressionDelay) {
-                mLastShortPressTurnOffTvHintToastTime = now;
-                Toast.makeText(
-                        mContext,
-                        UiThread.get().getLooper(),
-                        mContext.getString(R.string.long_press_power_to_turn_off_tv_toast),
-                        Toast.LENGTH_LONG)
-                        .show();
-            }
+            Runnable toastRunnable = () -> {
+                final long now = SystemClock.uptimeMillis();
+                if (mLastShortPressTurnOffTvHintToastTime == 0L
+                        || now - mLastShortPressTurnOffTvHintToastTime
+                                >= mTurnOffTvToastSuppressionDelay) {
+                    mLastShortPressTurnOffTvHintToastTime = now;
+                    Toast.makeText(
+                            mContext,
+                            UiThread.get().getLooper(),
+                            mContext.getString(R.string.long_press_power_to_turn_off_tv_toast),
+                            Toast.LENGTH_LONG)
+                            .show();
+                }
+            };
+            mHandler.postDelayed(toastRunnable, mTurnOffTvToastPostDelay);
         }
     }
 
@@ -2396,6 +2402,8 @@ public class PhoneWindowManager implements WindowManagerPolicy {
 
         mTurnOffTvToastSuppressionDelay = mContext.getResources().getInteger(
                 com.android.internal.R.integer.config_turnOffTvToastSuppressionDelayMs);
+        mTurnOffTvToastPostDelay = mContext.getResources().getInteger(
+                    com.android.internal.R.integer.config_turnOffTvToastPostDelayMs);
 
         mDisplayFoldController = DisplayFoldController.create(mContext, DEFAULT_DISPLAY);
 

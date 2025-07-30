@@ -21,6 +21,7 @@ import com.android.hoststubgen.asm.toHumanReadableClassName
 import com.android.hoststubgen.asm.toHumanReadableMethodName
 import com.android.hoststubgen.asm.toJvmClassName
 import com.android.hoststubgen.log
+import com.android.hoststubgen.utils.Trie
 
 // TODO: Validate all input names.
 
@@ -34,6 +35,27 @@ class InMemoryOutputFilter(
     private val mClassLoadHooks = mutableMapOf<String, String>()
     private val mMethodCallReplaceSpecs = mutableListOf<MethodCallReplaceSpec>()
     private val mTypeRenameSpecs = mutableListOf<TypeRenameSpec>()
+    private val mPackagePolicies = PackagePolicyTrie()
+
+    // We want to pick the most specific filter for a package name.
+    // Since any package with a matching prefix is a valid match, we can use a prefix tree
+    // to help us find the nearest matching filter.
+    private class PackagePolicyTrie : Trie<String, String, FilterPolicyWithReason>() {
+        // Split package name into individual component
+        override fun splitToComponents(key: String): Iterator<String> {
+            return key.split('.').iterator()
+        }
+    }
+
+    private fun getPackageKey(packageName: String): String {
+        return packageName.toHumanReadableClassName()
+    }
+
+    private fun getPackageKeyFromClass(className: String): String {
+        val clazz = className.toHumanReadableClassName()
+        val idx = clazz.lastIndexOf('.')
+        return if (idx >= 0) clazz.substring(0, idx) else ""
+    }
 
     private fun getClassKey(className: String): String {
         return className.toHumanReadableClassName()
@@ -72,8 +94,35 @@ class InMemoryOutputFilter(
         }
     }
 
+    // Add a "post-processing" step that applies to all policies
+    private inline fun processPolicy(
+        currentPolicy: FilterPolicyWithReason?,
+        fallback: () -> FilterPolicyWithReason
+    ): FilterPolicyWithReason {
+        // If there's no policy set in our current filter, just use fallback.
+        val policy = currentPolicy ?: return fallback()
+
+        // It's possible that getting policy from inner filters may throw.
+        // If that's the case, then we don't apply additional post-processing.
+        val innerPolicy = runCatching(fallback).getOrNull() ?: return policy
+
+        // Note, because policies in this filter are defined in the policy file, it takes precedence
+        // over annotations. However, if an item has both a text policy and inner (lower-priority)
+        // policies such as an annotation-based policy and if they're the same, we use the inner
+        // policy's "reason" instead. This allows us to differentiate "APIs that are enabled with an
+        // annotation" from "APIs that are enabled by a text policy (which are usually only used
+        // during development)".
+        if (policy.policy == innerPolicy.policy) {
+            return innerPolicy
+        }
+
+        return policy
+    }
+
     override fun getPolicyForClass(className: String): FilterPolicyWithReason {
-        return mPolicies[getClassKey(className)] ?: super.getPolicyForClass(className)
+        val policy = mPolicies[getClassKey(className)]
+            ?: mPackagePolicies[getPackageKeyFromClass(className)]
+        return processPolicy(policy) { super.getPolicyForClass(className) }
     }
 
     fun setPolicyForClass(className: String, policy: FilterPolicyWithReason) {
@@ -81,9 +130,14 @@ class InMemoryOutputFilter(
         mPolicies[getClassKey(className)] = policy
     }
 
+    fun setPolicyForPackage(packageName: String, policy: FilterPolicyWithReason) {
+        mPackagePolicies[getPackageKey(packageName)] = policy
+    }
+
     override fun getPolicyForField(className: String, fieldName: String): FilterPolicyWithReason {
-        return mPolicies[getFieldKey(className, fieldName)]
-            ?: super.getPolicyForField(className, fieldName)
+        return processPolicy(mPolicies[getFieldKey(className, fieldName)]) {
+            super.getPolicyForField(className, fieldName)
+        }
     }
 
     fun setPolicyForField(className: String, fieldName: String, policy: FilterPolicyWithReason) {
@@ -96,9 +150,12 @@ class InMemoryOutputFilter(
         methodName: String,
         descriptor: String,
     ): FilterPolicyWithReason {
-        return mPolicies[getMethodKey(className, methodName, descriptor)]
+        val policy = mPolicies[getMethodKey(className, methodName, descriptor)]
             ?: mPolicies[getMethodKey(className, methodName, "*")]
-            ?: super.getPolicyForMethod(className, methodName, descriptor)
+
+        return processPolicy(policy) {
+            super.getPolicyForMethod(className, methodName, descriptor)
+        }
     }
 
     fun setPolicyForMethod(

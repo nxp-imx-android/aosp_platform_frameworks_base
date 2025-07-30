@@ -14,16 +14,13 @@
  * limitations under the License.
  */
 
-package com.android.wm.shell.functional
+package com.android.internal.telecom;
 
-import android.platform.test.annotations.Presubmit
-import android.platform.test.rule.ScreenRecordRule
-import com.android.wm.shell.scenarios.OpenAppWithExternalDisplayConnected
-import org.junit.runner.RunWith
-import org.junit.runners.BlockJUnit4ClassRunner
-
-/* Functional test for [OpenAppWithExternalDisplayConnected]. */
-@RunWith(BlockJUnit4ClassRunner::class)
-@Presubmit
-@ScreenRecordRule.ScreenRecord
-class OpenAppWithExternalDisplayConnectedTest : OpenAppWithExternalDisplayConnected()
+/**
+ * Internal return interface for a local voicemail service.
+ * @see android.telecom.LocalVoicemailService
+ * @hide
+ */
+oneway interface ILocalVoicemailServiceAdapter {
+    void disconnectCall(in String callId);
+}

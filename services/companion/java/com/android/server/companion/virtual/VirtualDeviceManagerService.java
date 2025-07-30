@@ -41,6 +41,8 @@ import android.companion.virtual.IVirtualDeviceSoundEffectListener;
 import android.companion.virtual.VirtualDevice;
 import android.companion.virtual.VirtualDeviceManager;
 import android.companion.virtual.VirtualDeviceParams;
+import android.companion.virtual.computercontrol.ComputerControlSessionParams;
+import android.companion.virtual.computercontrol.IComputerControlSession;
 import android.companion.virtual.sensor.VirtualSensor;
 import android.companion.virtualdevice.flags.Flags;
 import android.companion.virtualnative.IVirtualDeviceManagerNative;
@@ -80,6 +82,7 @@ import com.android.modules.expresslog.Counter;
 import com.android.server.LocalServices;
 import com.android.server.SystemService;
 import com.android.server.companion.virtual.VirtualDeviceImpl.PendingTrampoline;
+import com.android.server.companion.virtual.computercontrol.ComputerControlSessionProcessor;
 import com.android.server.wm.ActivityInterceptorCallback;
 import com.android.server.wm.ActivityTaskManagerInternal;
 
@@ -137,6 +140,7 @@ public class VirtualDeviceManagerService extends SystemService {
     private final VirtualDeviceLog mVirtualDeviceLog = new VirtualDeviceLog(getContext());
     private final Handler mHandler = new Handler(Looper.getMainLooper());
     private final PendingTrampolineMap mPendingTrampolines = new PendingTrampolineMap(mHandler);
+    private final ComputerControlSessionProcessor mComputerControlSessionProcessor;
 
     private static AtomicInteger sNextUniqueIndex = new AtomicInteger(
             Context.DEVICE_ID_DEFAULT + 1);
@@ -184,6 +188,8 @@ public class VirtualDeviceManagerService extends SystemService {
         mImpl = new VirtualDeviceManagerImpl();
         mNativeImpl = new VirtualDeviceManagerNativeImpl();
         mLocalService = new LocalService();
+        mComputerControlSessionProcessor =
+                new ComputerControlSessionProcessor(context, mImpl::createLocalVirtualDevice);
     }
 
     private final ActivityInterceptorCallback mActivityInterceptorCallback =
@@ -408,6 +414,26 @@ public class VirtualDeviceManagerService extends SystemService {
                     }
                 };
 
+        @EnforcePermission(android.Manifest.permission.ACCESS_COMPUTER_CONTROL)
+        @Override // Binder call
+        public IComputerControlSession createComputerControlSession(
+                @NonNull IBinder token,
+                @NonNull AttributionSource attributionSource,
+                @NonNull ComputerControlSessionParams params) {
+            // TODO(b/432678187): Replace the permission check with an alternative
+            createComputerControlSession_enforcePermission();
+            if (!android.companion.virtualdevice.flags.Flags.computerControlAccess()) {
+                throw new IllegalStateException(
+                        "Cannot create ComputerControlSession - flag disabled");
+            }
+            Objects.requireNonNull(token);
+            Objects.requireNonNull(attributionSource);
+            Objects.requireNonNull(params);
+
+            return mComputerControlSessionProcessor.processNewSession(
+                    token, attributionSource, params);
+        }
+
         @EnforcePermission(android.Manifest.permission.CREATE_VIRTUAL_DEVICE)
         @Override // Binder call
         public IVirtualDevice createVirtualDevice(
@@ -433,23 +459,13 @@ public class VirtualDeviceManagerService extends SystemService {
                     activityListener, soundEffectListener);
         }
 
-        @EnforcePermission(android.Manifest.permission.ACCESS_COMPUTER_CONTROL)
-        @Override // Binder call
-        public IVirtualDevice createLocalVirtualDevice(
+        private IVirtualDevice createLocalVirtualDevice(
                 IBinder token,
                 AttributionSource attributionSource,
                 @NonNull VirtualDeviceParams params,
-                @NonNull IVirtualDeviceActivityListener activityListener,
-                @NonNull IVirtualDeviceSoundEffectListener soundEffectListener) {
-            createLocalVirtualDevice_enforcePermission();
-            if (!android.companion.virtualdevice.flags.Flags.computerControlAccess()) {
-                throw new IllegalStateException("Cannot create VirtualDevice - flag disabled");
-            }
-            Objects.requireNonNull(activityListener);
-            Objects.requireNonNull(soundEffectListener);
-
-            return createVirtualDevice(token, attributionSource, null, params, activityListener,
-                    soundEffectListener);
+                @NonNull IVirtualDeviceActivityListener activityListener) {
+            return createVirtualDevice(token, attributionSource, /* associationInfo= */ null,
+                    params, activityListener, /* soundEffectListener= */ null);
         }
 
         private IVirtualDevice createVirtualDevice(

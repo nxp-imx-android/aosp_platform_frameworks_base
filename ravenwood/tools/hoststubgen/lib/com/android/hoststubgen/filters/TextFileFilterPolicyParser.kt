@@ -136,8 +136,7 @@ class TextFileFilterPolicyBuilder(
     private val parser = TextFileFilterPolicyParser()
 
     private val subclassFilter = SubclassFilter(classes, fallback)
-    private val packageFilter = PackageFilter(subclassFilter)
-    private val imf = InMemoryOutputFilter(classes, packageFilter)
+    private val imf = InMemoryOutputFilter(classes, subclassFilter)
     private var aidlPolicy: FilterPolicyWithReason? = null
     private var featureFlagsPolicy: FilterPolicyWithReason? = null
     private var syspropsPolicy: FilterPolicyWithReason? = null
@@ -184,9 +183,8 @@ class TextFileFilterPolicyBuilder(
             if (policy.policy == FilterPolicy.AnnotationAllowed) {
                 throw ParseException("${FilterPolicy.AnnotationAllowed.policyStringOrPrefix}" +
                         " on `package` isn't supported yet.")
-                return
             }
-            packageFilter.addPolicy(name, policy)
+            imf.setPolicyForPackage(name, policy)
         }
 
         override fun onRename(pattern: Pattern, prefix: String) {

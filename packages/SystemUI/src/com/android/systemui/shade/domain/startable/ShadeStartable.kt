@@ -76,6 +76,7 @@ constructor(
     override fun start() {
         hydrateShadeLayoutWidth()
         hydrateFullWidth()
+        hydrateLargeScreen()
         hydrateShadeExpansionStateManager()
         logTouchesTo(touchLog)
         scrimShadeTransitionController.init()
@@ -112,7 +113,6 @@ constructor(
 
     private fun hydrateShadeLayoutWidth() {
         applicationScope.launch {
-            // TODO(b/354926927): `isShadeLayoutWide` should be deprecated in SceneContainer.
             if (SceneContainerFlag.isEnabled) {
                     shadeDisplayStateInteractor.isWideScreen
                 } else {
@@ -129,6 +129,12 @@ constructor(
                         .distinctUntilChanged()
                 }
                 .collect(shadeRepository::setShadeLayoutWide)
+        }
+    }
+
+    private fun hydrateLargeScreen() {
+        applicationScope.launch {
+            shadeDisplayStateInteractor.isLargeScreen.collect(shadeRepository::setLargeScreen)
         }
     }
 

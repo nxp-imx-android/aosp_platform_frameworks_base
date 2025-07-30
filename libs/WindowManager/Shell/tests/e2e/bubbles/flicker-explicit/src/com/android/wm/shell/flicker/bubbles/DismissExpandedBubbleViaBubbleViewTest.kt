@@ -65,7 +65,7 @@ class DismissExpandedBubbleViaBubbleViewTest(navBar: NavBar) : BubbleFlickerTest
     companion object : FlickerPropertyInitializer() {
         private val recordTraceWithTransitionRule = RecordTraceWithTransitionRule(
             setUpBeforeTransition = { launchBubbleViaBubbleMenu(testApp, tapl, wmHelper) },
-            transition = { dismissBubbleAppViaBubbleView(uiDevice, wmHelper) },
+            transition = { dismissBubbleAppViaBubbleView(wmHelper) },
             tearDownAfterTransition = { testApp.exit() }
         )
     }

@@ -14,17 +14,17 @@
  * limitations under the License.
  */
 
-package com.android.wm.shell.functional.maximize
+package com.android.internal.telecom;
 
-import android.platform.test.annotations.Presubmit
-import android.platform.test.rule.ScreenRecordRule
-import com.android.wm.shell.scenarios.MaximizeAppWindowWithDragToTopDragZoneInDesktopFirst
-import org.junit.runner.RunWith
-import org.junit.runners.BlockJUnit4ClassRunner
+import android.telecom.ParcelableCall;
+import com.android.internal.telecom.ILocalVoicemailServiceAdapter;
 
-/* Functional test for [MaximizeAppWindowWithDragToTopDragZoneInDesktopFirst]. */
-@RunWith(BlockJUnit4ClassRunner::class)
-@Presubmit
-@ScreenRecordRule.ScreenRecord
-class MaximizeAppWindowWithDragToTopDragZoneInDesktopFirstTest :
-    MaximizeAppWindowWithDragToTopDragZoneInDesktopFirst()
+/**
+ * Internal remote interface for a call diagnostic service.
+ * @see android.telecom.LocalVoicemailService
+ * @hide
+ */
+oneway interface ILocalVoicemailService {
+    void setAdapter(in ILocalVoicemailServiceAdapter adapter);
+    void startLocalVoicemail(in ParcelableCall call);
+}

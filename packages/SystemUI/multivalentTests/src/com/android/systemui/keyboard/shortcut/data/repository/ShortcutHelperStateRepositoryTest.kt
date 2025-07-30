@@ -22,13 +22,10 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.coroutines.collectLastValue
-import com.android.systemui.keyboard.shortcut.shared.model.ShortcutHelperState.Active
+import com.android.systemui.keyboard.shortcut.shared.model.ShortcutHelperState
 import com.android.systemui.keyboard.shortcut.shortcutHelperStateRepository
 import com.android.systemui.keyboard.shortcut.shortcutHelperTestHelper
-import com.android.systemui.kosmos.collectLastValue
-import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.testScope
-import com.android.systemui.shade.data.repository.fakeFocusedDisplayRepository
 import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.test.runTest
@@ -54,7 +51,7 @@ class ShortcutHelperStateRepositoryTest : SysuiTestCase() {
 
             helper.toggle(deviceId)
 
-            assertThat(state).isEqualTo(Active(deviceId))
+            assertThat(state).isEqualTo(ShortcutHelperState.Active(deviceId))
         }
 
     @Test
@@ -64,7 +61,7 @@ class ShortcutHelperStateRepositoryTest : SysuiTestCase() {
 
             helper.showFromActivity()
 
-            assertThat(state).isEqualTo(Active(VIRTUAL_KEYBOARD))
+            assertThat(state).isEqualTo(ShortcutHelperState.Active(VIRTUAL_KEYBOARD))
         }
 
     @Test
@@ -76,7 +73,7 @@ class ShortcutHelperStateRepositoryTest : SysuiTestCase() {
             fakeInputManager.addPhysicalKeyboard(deviceId)
             helper.showFromActivity()
 
-            assertThat(state).isEqualTo(Active(deviceId))
+            assertThat(state).isEqualTo(ShortcutHelperState.Active(deviceId))
         }
 
     @Test
@@ -89,21 +86,6 @@ class ShortcutHelperStateRepositoryTest : SysuiTestCase() {
             fakeInputManager.inputManager.disableInputDevice(deviceId)
             helper.showFromActivity()
 
-            assertThat(state).isEqualTo(Active(VIRTUAL_KEYBOARD))
+            assertThat(state).isEqualTo(ShortcutHelperState.Active(VIRTUAL_KEYBOARD))
         }
-
-    @Test
-    fun activeStateDisplayId_isFocusedDisplay() =
-        kosmos.runTest {
-            val state by collectLastValue(repo.state)
-
-            fakeFocusedDisplayRepository.setDisplayId(DISPLAY_ID)
-            helper.showFromActivity()
-
-            assertThat((state as Active).displayId).isEqualTo(DISPLAY_ID)
-        }
-
-    private companion object {
-        const val DISPLAY_ID = 5
-    }
 }

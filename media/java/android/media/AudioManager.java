@@ -4984,6 +4984,20 @@ public class AudioManager {
 
     /**
      * @hide
+     * Returns whether a client is currently holding audio focus.
+     * @param pckgName the name of the package of the client
+     */
+    @RequiresPermission("android.permission.QUERY_AUDIO_STATE")
+    public boolean hasAudioFocus(@NonNull String pckgName) {
+        try {
+            return getService().hasAudioFocus(pckgName);
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    /**
+     * @hide
      * Return the duration of the fade out applied when a player of the given AudioAttributes
      * is losing audio focus
      * @param aa the AudioAttributes of the player losing focus with {@link #AUDIOFOCUS_LOSS}
@@ -10414,6 +10428,22 @@ public class AudioManager {
         final IAudioService service = getService();
         try {
             service.permissionUpdateBarrier();
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    /**
+     * @hide
+     * Blocks until all messages on the AudioService handler have been processed.
+     * Only useful in tests.
+     */
+    @TestApi
+    @SuppressWarnings("UnflaggedApi") // @TestApi without associated feature.
+    public void waitForAudioHandlerBarrier() {
+        final IAudioService service = getService();
+        try {
+            service.waitForAudioHandlerBarrier();
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }

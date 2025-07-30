@@ -18,6 +18,7 @@ package android.os;
 
 import static android.app.PropertyInvalidatedCache.MODULE_SYSTEM;
 
+import static com.android.server.power.feature.flags.Flags.FLAG_PARTIAL_SLEEP_WAKELOCKS;
 import static com.android.server.power.feature.flags.Flags.FLAG_SHUTDOWN_SYSTEM_API;
 
 import android.Manifest.permission;
@@ -38,7 +39,6 @@ import android.annotation.TestApi;
 import android.app.PropertyInvalidatedCache;
 import android.compat.annotation.UnsupportedAppUsage;
 import android.content.Context;
-import android.os.IScreenTimeoutPolicyListener;
 import android.service.dreams.Sandman;
 import android.util.ArrayMap;
 import android.util.ArraySet;
@@ -46,6 +46,7 @@ import android.util.Log;
 import android.util.proto.ProtoOutputStream;
 import android.view.Display;
 
+import com.android.internal.R;
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.util.Preconditions;
 
@@ -1654,6 +1655,9 @@ public final class PowerManager {
      *
      * @hide Requires signature permission.
      */
+    @TestApi
+    @RequiresPermission(android.Manifest.permission.DEVICE_POWER)
+    @FlaggedApi(FLAG_PARTIAL_SLEEP_WAKELOCKS)
     @UnsupportedAppUsage
     public void goToSleep(long time, int reason, int flags) {
         try {
@@ -2071,6 +2075,144 @@ public final class PowerManager {
             throw e.rethrowFromSystemServer();
         }
     }
+
+    /**
+     * Creates a new sleep lock, which is a wake lock that holds a {@link #PARTIAL_SLEEP_WAKE_LOCK}.
+     * <p>
+     * A sleep lock is a specialized, non-reference-counted wake lock that keeps the CPU running
+     * and keeps the display(s) off. When a sleep lock is held, it supersedes all other
+     * wake locks, meaning they will be ignored.
+     * </p><p>
+     * Since this is a non-reference-counted lock, a single call to {@link SleepLock#release()}
+     * is sufficient to release it, regardless of how many times {@link SleepLock#acquire(long)}
+     * was called.
+     * </p><p>
+     * Call {@link SleepLock#acquire(long)} with a timeout on the returned object to acquire the
+     * sleep lock, and {@link SleepLock#release()} to release it when you are done. It is important
+     * to release the lock as soon as the work is complete.
+     * </p>
+     *
+     * @param displayId The ID of the display with which this sleep lock is associated. The lock
+     *                  will apply to the display group of this display. Use
+     *                  {@link android.view.Display#DEFAULT_DISPLAY} for the default display.
+     * @param tag A tag for debugging purposes. Follow the naming conventions described in
+     *            {@link #newWakeLock(int, String)}.
+     * @return A new {@link SleepLock} object.
+     * @throws RuntimeException if partial sleep wake locks are not enabled on the device.
+     *
+     * @see SleepLock
+     * @see #PARTIAL_SLEEP_WAKE_LOCK
+     * @hide
+     */
+    @FlaggedApi(FLAG_PARTIAL_SLEEP_WAKELOCKS)
+    @SystemApi
+    @NonNull
+    @RequiresPermission(permission.ACQUIRE_SLEEP_LOCK)
+    public SleepLock newSleepLock(int displayId, @NonNull String tag) throws RuntimeException {
+        if (!mContext.getResources().getBoolean(R.bool.config_allowPartialSleepWakeLocks)) {
+            throw new RuntimeException("Partial Sleep WakeLocks are not allowed on this device "
+                    + "due to the configuration");
+        }
+
+        return new SleepLock(displayId, tag);
+    }
+
+    /**
+     * A specialized, non-reference-counted wake lock that keeps the CPU running
+     * and keeps the display(s) off.
+     * <p>
+     * An instance of this class can be obtained by calling
+     * {@link PowerManager#newSleepLock(int, String)}.
+     * </p><p>
+     * When a sleep lock is held, it supersedes all other wake locks, meaning they will be ignored.
+     * Since this is a non-reference-counted lock, a single call to {@link #release()}
+     * is sufficient to release it.
+     * </p><p>
+     * Use {@link #acquire(long)} to acquire the lock and {@link #release()} to release it.
+     * Use {@link #release()} to check whether the wakelock is currently held.
+     * </p>
+     *
+     * @see #newSleepLock(int, String)
+     * @hide
+     */
+    @FlaggedApi(FLAG_PARTIAL_SLEEP_WAKELOCKS)
+    @SystemApi
+    @SuppressLint("NotCloseable")
+    public final class SleepLock {
+        private static final int SLEEP_LOCK = PowerManager.PARTIAL_SLEEP_WAKE_LOCK;
+        @NonNull
+        private final String mTag;
+        private final int mDisplayId;
+        private final int mDefaultTimeoutMillis;
+        @NonNull
+        private final WakeLock mWakelock;
+
+        /**
+         *
+         * @param displayId The ID of the display with which this sleep lock is associated. The lock
+         *                  will apply to the display group of this display. Use
+         *                  {@link android.view.Display#DEFAULT_DISPLAY} for the default display.
+         * @param tag A tag for debugging purposes. Follow the naming conventions described in
+         *            {@link #newWakeLock(int, String)}.
+         *
+         * @hide
+         */
+        public SleepLock(int displayId, @NonNull String tag) {
+            mDisplayId = displayId;
+            mTag = tag;
+            mDefaultTimeoutMillis = mContext.getResources().getInteger(
+                    R.integer.config_maximumPartialSleepWakeLockDuration);
+            mWakelock = new WakeLock(SLEEP_LOCK, mTag, mContext.getOpPackageName(), mDisplayId);
+        }
+
+        /**
+         * Acquires the sleep lock for a given timeout.
+         * <p>
+         * The lock is automatically released after the specified timeout expires.
+         * </p><p>
+         * The requested timeout may be capped at a system-defined maximum value to
+         * prevent the lock from being held indefinitely.
+         * </p>
+         *
+         * @param timeoutMillis The amount of time to hold the lock for, in milliseconds.
+         */
+        @RequiresPermission(permission.ACQUIRE_SLEEP_LOCK)
+        public void acquire(long timeoutMillis) {
+            mWakelock.acquire(Math.min(timeoutMillis, mDefaultTimeoutMillis));
+        }
+
+
+        /**
+         * Releases the sleep lock.
+         */
+        @RequiresPermission(permission.ACQUIRE_SLEEP_LOCK)
+        public void release() {
+            try {
+                mWakelock.release();
+            } catch (RuntimeException ignore) {
+                // wakelock already released by system due to timeout
+            }
+        }
+
+        /**
+         * Returns whether the sleep lock has been acquired but not yet released.
+         *
+         * @return {@code true} if the lock is held, {@code false} otherwise.
+         */
+        public boolean isHeld() {
+            return mWakelock.isHeld();
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public String toString() {
+            return "mTag: " + mTag + ", mDisplayId: " + mDisplayId + ", mDefaultTimeoutMillis: "
+                    + mDefaultTimeoutMillis + ", mWakelock: " + mWakelock;
+        }
+    }
+
 
     /**
      * Reboot the device. Will not return if the reboot is successful.

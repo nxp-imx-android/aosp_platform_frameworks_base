@@ -271,10 +271,9 @@ public class ShellController {
         return mUserId;
     }
 
-    /** Returns the current user id. */
-    @VisibleForTesting
+    /** Returns the current user profiles. */
     @NonNull
-    List<UserInfo> getCurrentUserProfiles() {
+    public List<UserInfo> getCurrentUserProfiles() {
         return mProfiles;
     }
 

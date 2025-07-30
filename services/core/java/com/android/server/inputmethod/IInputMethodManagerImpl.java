@@ -44,7 +44,6 @@ import com.android.internal.inputmethod.IImeTracker;
 import com.android.internal.inputmethod.IInputMethodClient;
 import com.android.internal.inputmethod.IRemoteAccessibilityInputConnection;
 import com.android.internal.inputmethod.IRemoteInputConnection;
-import com.android.internal.inputmethod.InputBindResult;
 import com.android.internal.inputmethod.InputMethodInfoSafeList;
 import com.android.internal.inputmethod.StartInputFlags;
 import com.android.internal.inputmethod.StartInputReason;
@@ -113,26 +112,16 @@ final class IInputMethodManagerImpl extends IInputMethodManager.Stub {
         @PermissionVerified(Manifest.permission.TEST_INPUT_METHOD)
         void hideSoftInputFromServerForTest();
 
-        void startInputOrWindowGainedFocusAsync(
-                @StartInputReason int startInputReason, IInputMethodClient client,
-                IBinder windowToken, @StartInputFlags int startInputFlags,
+        void startInputOrWindowGainedFocus(
+                @StartInputReason int startInputReason, @NonNull IInputMethodClient client,
+                @Nullable IBinder windowToken, @StartInputFlags int startInputFlags,
                 @WindowManager.LayoutParams.SoftInputModeFlags int softInputMode,
                 @WindowManager.LayoutParams.Flags int windowFlags, @Nullable EditorInfo editorInfo,
-                IRemoteInputConnection inputConnection,
-                IRemoteAccessibilityInputConnection remoteAccessibilityInputConnection,
+                @Nullable IRemoteInputConnection inputConnection,
+                @Nullable IRemoteAccessibilityInputConnection remoteAccessibilityInputConnection,
                 int unverifiedTargetSdkVersion, @UserIdInt int userId,
                 @NonNull ImeOnBackInvokedDispatcher imeDispatcher, boolean imeRequestedVisible,
                 int startInputSeq);
-
-        InputBindResult startInputOrWindowGainedFocus(
-                @StartInputReason int startInputReason, IInputMethodClient client,
-                IBinder windowToken, @StartInputFlags int startInputFlags,
-                @WindowManager.LayoutParams.SoftInputModeFlags int softInputMode,
-                @WindowManager.LayoutParams.Flags int windowFlags, @Nullable EditorInfo editorInfo,
-                IRemoteInputConnection inputConnection,
-                IRemoteAccessibilityInputConnection remoteAccessibilityInputConnection,
-                int unverifiedTargetSdkVersion, @UserIdInt int userId,
-                @NonNull ImeOnBackInvokedDispatcher imeDispatcher, boolean imeRequestedVisible);
 
         void showInputMethodPickerFromClient(IInputMethodClient client, int auxiliarySubtypeMode);
 
@@ -282,23 +271,7 @@ final class IInputMethodManagerImpl extends IInputMethodManager.Stub {
     }
 
     @Override
-    public InputBindResult startInputOrWindowGainedFocus(
-            @StartInputReason int startInputReason, IInputMethodClient client, IBinder windowToken,
-            @StartInputFlags int startInputFlags,
-            @WindowManager.LayoutParams.SoftInputModeFlags int softInputMode,
-            @WindowManager.LayoutParams.Flags int windowFlags, @Nullable EditorInfo editorInfo,
-            IRemoteInputConnection inputConnection,
-            IRemoteAccessibilityInputConnection remoteAccessibilityInputConnection,
-            int unverifiedTargetSdkVersion, @UserIdInt int userId,
-            @NonNull ImeOnBackInvokedDispatcher imeDispatcher, boolean imeRequestedVisible) {
-        return mCallback.startInputOrWindowGainedFocus(
-                startInputReason, client, windowToken, startInputFlags, softInputMode,
-                windowFlags, editorInfo, inputConnection, remoteAccessibilityInputConnection,
-                unverifiedTargetSdkVersion, userId, imeDispatcher, imeRequestedVisible);
-    }
-
-    @Override
-    public void startInputOrWindowGainedFocusAsync(@StartInputReason int startInputReason,
+    public void startInputOrWindowGainedFocus(@StartInputReason int startInputReason,
             IInputMethodClient client, IBinder windowToken,
             @StartInputFlags int startInputFlags,
             @WindowManager.LayoutParams.SoftInputModeFlags int softInputMode,
@@ -308,7 +281,7 @@ final class IInputMethodManagerImpl extends IInputMethodManager.Stub {
             int unverifiedTargetSdkVersion, @UserIdInt int userId,
             @NonNull ImeOnBackInvokedDispatcher imeDispatcher, boolean imeRequestedVisible,
             int startInputSeq) {
-        mCallback.startInputOrWindowGainedFocusAsync(
+        mCallback.startInputOrWindowGainedFocus(
                 startInputReason, client, windowToken, startInputFlags, softInputMode,
                 windowFlags, editorInfo, inputConnection, remoteAccessibilityInputConnection,
                 unverifiedTargetSdkVersion, userId, imeDispatcher, imeRequestedVisible,

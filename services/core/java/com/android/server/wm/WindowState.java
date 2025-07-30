@@ -1320,7 +1320,7 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
             final Rect lastFrame = windowFrames.mLastFrame;
             final Rect frame = windowFrames.mFrame;
             if (lastFrame.width() != frame.width() || lastFrame.height() != frame.height()) {
-                mDisplayContent.mWallpaperController.updateWallpaperOffset(this, false /* sync */);
+                mDisplayContent.mWallpaperController.updateWallpaperOffset(this);
             }
         }
 
@@ -3726,13 +3726,6 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
             ProtoLog.i(WM_DEBUG_ORIENTATION, "Resizing %s WITH DRAW PENDING", this);
         }
 
-        // Always reset these states first, so if {@link IWindow#resized} fails, this
-        // window won't be added to {@link WindowManagerService#mResizingWindows} and set
-        // {@link #mOrientationChanging} to true again by {@link #updateResizingWindowIfNeeded}
-        // that may cause WINDOW_FREEZE_TIMEOUT because resizing the client keeps failing.
-        mDragResizingChangeReported = true;
-        mWindowFrames.clearReportResizeHints();
-
         final int prevRotation = mLastReportedConfiguration
                 .getMergedConfiguration().windowConfiguration.getRotation();
         fillClientWindowFramesAndConfiguration(mLastReportedFrames, mLastReportedConfiguration,
@@ -3749,6 +3742,11 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
             seqIdToSend = syncWithBuffers ? mSyncSeqId : -1;
         } else {
             reportDraw = false;
+            // If a sync is open (not-ready), or was open when this resize was queued, then we need
+            // now wait for this new resize to report back.
+            if (mSyncState == SYNC_STATE_READY && (mPendingSyncResize || !getSyncGroup().mReady)) {
+                mSyncState = SYNC_STATE_WAITING_FOR_DRAW;
+            }
             syncWithBuffers = mBufferSeqId > mSyncSeqId;
             if (syncWithBuffers) {
                 if (mSyncState != SYNC_STATE_NONE) {
@@ -3760,13 +3758,10 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
                     dropBufferFrom(mSyncTransaction);
                 }
                 mSyncSeqId = mBufferSeqId;
-            } else {
+            } else if (!mLastConfigReportedToClient
+                    || mWindowFrames.isFrameSizeChanged()
+                    || mSyncState == SYNC_STATE_WAITING_FOR_DRAW) {
                 ++mSyncSeqId;
-            }
-            // If a sync is open (not-ready), or was open when this resize was queued, then we need
-            // now wait for this new resize to report back.
-            if (mSyncState == SYNC_STATE_READY && (mPendingSyncResize || !getSyncGroup().mReady)) {
-                mSyncState = SYNC_STATE_WAITING_FOR_DRAW;
             }
             mPendingSyncResize = false;
             seqIdToSend = mSyncSeqId;
@@ -3785,6 +3780,8 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
         }
         final boolean isDragResizing = isDragResizing();
 
+        mDragResizingChangeReported = true;
+        mWindowFrames.clearReportResizeHints();
         if (!Flags.alwaysSeqIdLayout()) {
             markRedrawForSyncReported();
         }
@@ -5280,7 +5277,7 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
         }
 
         if (!mSurfaceAnimator.hasLeash() && !mLastSurfacePosition.equals(mSurfacePosition)) {
-            final boolean frameSizeChanged = mWindowFrames.isFrameSizeChangeReported();
+            final boolean frameSizeChanged = mWindowFrames.isFrameSizeChanged();
             final boolean surfaceInsetsChanged = surfaceInsetsChanging();
             final boolean surfaceSizeChanged = frameSizeChanged || surfaceInsetsChanged;
             mLastSurfacePosition.set(mSurfacePosition.x, mSurfacePosition.y);

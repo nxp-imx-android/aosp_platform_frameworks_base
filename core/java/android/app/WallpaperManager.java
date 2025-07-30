@@ -3354,7 +3354,7 @@ public class WallpaperManager {
         try {
             //Log.v(TAG, "Sending new wallpaper offsets from app...");
             WindowManagerGlobal.getWindowSession().sendWallpaperCommand(
-                    windowToken, action, x, y, z, extras, false);
+                    windowToken, action, x, y, z, extras);
             //Log.v(TAG, "...app returning after sending offsets!");
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();

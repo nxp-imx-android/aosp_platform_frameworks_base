@@ -94,7 +94,7 @@ constructor(
                 notificationStackScrolLView.get().apply {
                     // use -headsUpInset to allow HUN translation outside bounds for snoozing
                     setStackTop(-headsUpInset)
-                    setDrawBounds(RectF())
+                    updateDrawBounds(RectF())
                 }
             }
         }

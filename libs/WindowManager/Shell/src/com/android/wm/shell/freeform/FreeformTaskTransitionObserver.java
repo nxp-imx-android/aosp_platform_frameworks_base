@@ -30,7 +30,6 @@ import android.window.WindowContainerToken;
 import androidx.annotation.NonNull;
 import androidx.annotation.VisibleForTesting;
 
-import com.android.window.flags.Flags;
 import com.android.wm.shell.desktopmode.DesktopBackNavTransitionObserver;
 import com.android.wm.shell.desktopmode.DesktopImeHandler;
 import com.android.wm.shell.desktopmode.DesktopImmersiveController;
@@ -339,6 +338,7 @@ public class FreeformTaskTransitionObserver implements Transitions.TransitionObs
                 mDesktopImmersiveController.ifPresent(
                         h -> h.onTransitionFinished(transition, aborted));
             }
+            mDesktopModeLoggerTransitionObserver.onTransitionFinished(transition, aborted);
         }
 
         final List<ActivityManager.RunningTaskInfo> taskInfo =

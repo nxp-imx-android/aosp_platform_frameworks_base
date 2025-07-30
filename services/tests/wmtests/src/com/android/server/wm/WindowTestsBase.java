@@ -774,7 +774,7 @@ public class WindowTestsBase extends SystemServiceTestsBase {
         return activity;
     }
 
-    private static void postCreateActivitySetup(ActivityRecord activity, DisplayContent dc) {
+    static void postCreateActivitySetup(ActivityRecord activity, DisplayContent dc) {
         activity.onDisplayChanged(dc);
         activity.setOccludesParent(true);
         activity.setVisible(true);
@@ -1491,9 +1491,6 @@ public class WindowTestsBase extends SystemServiceTestsBase {
             while (mCreateActivityCount > 0) {
                 final ActivityRecord activity = new ActivityBuilder(mAtm).build();
                 taskFragment.addChild(activity);
-                if (mParentTask != null) {
-                    postCreateActivitySetup(activity, mParentTask.getDisplayContent());
-                }
                 mCreateActivityCount--;
             }
             if (mOrganizer != null) {

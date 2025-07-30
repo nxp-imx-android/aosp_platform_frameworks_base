@@ -54,6 +54,8 @@ import android.ravenwood.annotation.RavenwoodIgnore;
 import android.ravenwood.annotation.RavenwoodKeep;
 import android.ravenwood.annotation.RavenwoodKeepPartialClass;
 import android.ravenwood.annotation.RavenwoodKeepWholeClass;
+import android.ravenwood.annotation.RavenwoodRedirect;
+import android.ravenwood.annotation.RavenwoodRedirectionClass;
 import android.ravenwood.annotation.RavenwoodReplace;
 import android.util.AndroidRuntimeException;
 import android.util.Log;
@@ -87,6 +89,7 @@ import java.util.concurrent.TimeoutException;
  * &lt;instrumentation&gt; tag.
  */
 @RavenwoodKeepPartialClass
+@RavenwoodRedirectionClass("Instrumentation_ravenwood")
 public class Instrumentation {
 
     /**
@@ -150,6 +153,10 @@ public class Instrumentation {
 
     @RavenwoodKeep
     public Instrumentation() {
+    }
+
+    @RavenwoodRedirect
+    private static void checkPendingExceptionOnRavenwood() {
     }
 
     /**
@@ -467,6 +474,7 @@ public class Instrumentation {
         mMessageQueue.addIdleHandler(idler);
         mMainHandler.post(new EmptyRunnable());
         idler.waitForIdle();
+        checkPendingExceptionOnRavenwood();
     }
 
     /**
@@ -482,6 +490,7 @@ public class Instrumentation {
         SyncRunnable sr = new SyncRunnable(runner);
         mMainHandler.post(sr);
         sr.waitForComplete();
+        checkPendingExceptionOnRavenwood();
     }
 
     boolean isSdkSandboxAllowedToStartActivities() {

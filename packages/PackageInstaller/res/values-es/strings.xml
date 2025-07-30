@@ -21,7 +21,10 @@
     <string name="update" msgid="3932142540719227615">"Actualizar"</string>
     <string name="done" msgid="6632441120016885253">"Hecho"</string>
     <string name="cancel" msgid="1018267193425558088">"Cancelar"</string>
-    <string name="install_anyway" msgid="8794642873773384969">"Instalar de todas formas"</string>
+    <!-- no translation found for install_without_verifying (7606774834125762618) -->
+    <skip />
+    <!-- no translation found for more_details (3643407086654820243) -->
+    <skip />
     <string name="dont_install" msgid="414055123295505225">"No instalar"</string>
     <string name="installing" msgid="4921993079741206516">"Instalando…"</string>
     <string name="installing_app" msgid="1165095864863849422">"Instalando <xliff:g id="PACKAGE_LABEL">%1$s</xliff:g>…"</string>
@@ -45,10 +48,6 @@
     <string name="unknown_apps_admin_dlg_text" msgid="4456572224020176095">"El administrador no permite instalar aplicaciones de fuentes desconocidas"</string>
     <string name="unknown_apps_user_restriction_dlg_text" msgid="151020786933988344">"Este usuario no puede instalar aplicaciones desconocidas"</string>
     <string name="install_apps_user_restriction_dlg_text" msgid="2154119597001074022">"Este usuario no tiene permiso para instalar aplicaciones"</string>
-    <string name="verification_incomplete_summary" msgid="40478808885845735">"La aplicación aún no se ha instalado porque no se ha podido verificar. Inténtalo de nuevo."</string>
-    <string name="cannot_install_verification_unavailable_summary" msgid="2469994565312971465"><p>"Advertencia: No se ha podido verificar la aplicación. "</p><p><a href="">"Consulta más información"</a>" sobre la verificación de paquetes"</p>"."</string>
-    <string name="cannot_install_package_summary" msgid="3358675485628657234"><p>"No se puede instalar esta aplicación porque se ha bloqueado. "</p><p><a href="">"Consulta más información"</a>" sobre la verificación de paquetes"</p>"."</string>
-    <string name="lite_verification_summary" msgid="3211866126230002977"><p>"Esta aplicación es propiedad de ADI Lite Developer y omite el proceso de verificación estándar. ¿Quieres continuar con la instalación?"</p></string>
     <string name="ok" msgid="7871959885003339302">"Aceptar"</string>
     <string name="archive" msgid="4447791830199354721">"Archivar"</string>
     <string name="update_anyway" msgid="8792432341346261969">"Actualizar igualmente"</string>

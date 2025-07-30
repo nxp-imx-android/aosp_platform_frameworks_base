@@ -208,6 +208,7 @@ class MultiDisplayVeiledResizeTaskPositionerTest : ShellTestCase() {
     }
 
     @Test
+    @EnableFlags(Flags.FLAG_ENABLE_WINDOW_DROP_SMOOTH_TRANSITION)
     fun testDragResize_movesTask_doesNotShowResizeVeil() = runOnUiThread {
         taskPositioner.onDragPositioningStart(
             CTRL_TYPE_UNDEFINED,
@@ -237,11 +238,12 @@ class MultiDisplayVeiledResizeTaskPositionerTest : ShellTestCase() {
 
         verify(mockWindowDecoration, never()).showResizeVeil(any())
         verify(mockWindowDecoration, never()).hideResizeVeil()
-        verify(mockMultiDisplayDragMoveIndicatorController).onDragEnd(eq(TASK_ID), any())
+        verify(mockMultiDisplayDragMoveIndicatorController, never()).onDragEnd(any(), any())
         Assert.assertEquals(rectAfterEnd, endBounds)
     }
 
     @Test
+    @EnableFlags(Flags.FLAG_ENABLE_WINDOW_DROP_SMOOTH_TRANSITION)
     fun testDragResize_movesTaskOnSameDisplay_noPxDpConversion() = runOnUiThread {
         taskPositioner.onDragPositioningStart(
             CTRL_TYPE_UNDEFINED,
@@ -258,10 +260,11 @@ class MultiDisplayVeiledResizeTaskPositionerTest : ShellTestCase() {
 
         verify(spyDisplayLayout0, never()).localPxToGlobalDp(any(), any())
         verify(spyDisplayLayout0, never()).globalDpToLocalPx(any(), any())
-        verify(mockMultiDisplayDragMoveIndicatorController).onDragEnd(eq(TASK_ID), any())
+        verify(mockMultiDisplayDragMoveIndicatorController, never()).onDragEnd(any(), any())
     }
 
     @Test
+    @EnableFlags(Flags.FLAG_ENABLE_WINDOW_DROP_SMOOTH_TRANSITION)
     fun testDragResize_movesTaskToNewDisplay() = runOnUiThread {
         taskPositioner.onDragPositioningStart(
             CTRL_TYPE_UNDEFINED,
@@ -283,11 +286,12 @@ class MultiDisplayVeiledResizeTaskPositionerTest : ShellTestCase() {
 
         verify(mockWindowDecoration, never()).showResizeVeil(any())
         verify(mockWindowDecoration, never()).hideResizeVeil()
-        verify(mockMultiDisplayDragMoveIndicatorController).onDragEnd(eq(TASK_ID), any())
+        verify(mockMultiDisplayDragMoveIndicatorController, never()).onDragEnd(any(), any())
         Assert.assertEquals(rectAfterEnd, endBounds)
     }
 
     @Test
+    @EnableFlags(Flags.FLAG_ENABLE_WINDOW_DROP_SMOOTH_TRANSITION)
     fun testDragResize_movesTaskToNewDisplayThenBackToOriginalDisplay() = runOnUiThread {
         taskPositioner.onDragPositioningStart(
             CTRL_TYPE_UNDEFINED,
@@ -324,7 +328,7 @@ class MultiDisplayVeiledResizeTaskPositionerTest : ShellTestCase() {
 
         verify(mockWindowDecoration, never()).showResizeVeil(any())
         verify(mockWindowDecoration, never()).hideResizeVeil()
-        verify(mockMultiDisplayDragMoveIndicatorController).onDragEnd(eq(TASK_ID), any())
+        verify(mockMultiDisplayDragMoveIndicatorController, never()).onDragEnd(any(), any())
         Assert.assertEquals(rectAfterMove, endBounds)
     }
 

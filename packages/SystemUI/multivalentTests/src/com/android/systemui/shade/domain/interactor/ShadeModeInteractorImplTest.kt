@@ -21,11 +21,13 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.common.ui.data.repository.fakeConfigurationRepository
+import com.android.systemui.display.data.repository.displayStateRepository
 import com.android.systemui.flags.EnableSceneContainer
 import com.android.systemui.kosmos.collectLastValue
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
 import com.android.systemui.res.R
+import com.android.systemui.shade.data.repository.fakeShadeRepository
 import com.android.systemui.shade.shared.model.ShadeMode
 import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
@@ -45,7 +47,28 @@ class ShadeModeInteractorImplTest : SysuiTestCase() {
     fun legacyShadeMode_narrowScreen_singleShade() =
         kosmos.runTest {
             val shadeMode by collectLastValue(underTest.shadeMode)
-            enableSingleShade()
+            enableSingleShade(wideLayout = false)
+
+            assertThat(shadeMode).isEqualTo(ShadeMode.Single)
+        }
+
+    @Test
+    fun legacyShadeMode_narrowLargeScreen_singleShade() =
+        kosmos.runTest {
+            val shadeMode by collectLastValue(underTest.shadeMode)
+            // This simulates the case of a tablet or certain unfolded foldables in portrait mode.
+            enableSingleShade(wideLayout = false)
+            fakeShadeRepository.setLargeScreen(true)
+            displayStateRepository.setIsLargeScreen(true)
+
+            assertThat(shadeMode).isEqualTo(ShadeMode.Single)
+        }
+
+    @Test
+    fun legacyShadeMode_wideScreen_singleShade() =
+        kosmos.runTest {
+            val shadeMode by collectLastValue(underTest.shadeMode)
+            enableSingleShade(wideLayout = true)
 
             assertThat(shadeMode).isEqualTo(ShadeMode.Single)
         }

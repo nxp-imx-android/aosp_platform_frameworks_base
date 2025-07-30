@@ -1,0 +1,10 @@
+{
+  "imports": [
+    {
+      "path": "frameworks/base/libs/WindowManager/Shell/tests/e2e/desktopmode/flicker-service"
+    },
+    {
+      "path": "frameworks/base/libs/WindowManager/Shell/tests/e2e/desktopmode/scenarios"
+    }
+  ]
+}

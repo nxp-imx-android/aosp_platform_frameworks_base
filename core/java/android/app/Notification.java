@@ -11621,6 +11621,9 @@ public class Notification implements Parcelable
      *           Metric.TimeDifference.forStopwatch(startTime, FORMAT_CHRONOMETER_AUTOMATIC),
      *           "Time elapsed", MEANING_CHRONOMETER_STOPWATCH)))
      * </pre>
+     *
+     * <p>A MetricStyle must contain at least one {@link Metric} object to be valid; an invalid
+     * style will be rejected when {@link Builder#build()} is called.
      */
     @FlaggedApi(Flags.FLAG_API_METRIC_STYLE)
     public static final class MetricStyle extends Style {
@@ -11669,10 +11672,13 @@ public class Notification implements Parcelable
             return this;
         }
 
-        /** Returns the list of {@link Metric} instances in this {@link MetricStyle}. */
+        /**
+         * Returns an immutable view of the list of {@link Metric} instances in this
+         * {@link MetricStyle}.
+         */
         @NonNull
         public List<Metric> getMetrics() {
-            return mMetrics;
+            return Collections.unmodifiableList(mMetrics);
         }
 
         /** @hide */
@@ -11728,6 +11734,15 @@ public class Notification implements Parcelable
                         }
                     }
                 }
+            }
+        }
+
+        /** @hide */
+        @Override
+        public void validate(@NonNull Context context) {
+            super.validate(context);
+            if (mMetrics.isEmpty()) {
+                throw new IllegalArgumentException("A MetricStyle must have at least one Metric");
             }
         }
 

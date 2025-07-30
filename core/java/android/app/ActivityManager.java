@@ -3441,6 +3441,15 @@ public class ActivityManager {
         public long availMem;
 
         /**
+         * The free memory on the system.  This is the unused RAM size of the
+         * device. Unlike {@link #availMem}, it's a basic snapshot of free RAM,
+         * not accounting for reclaimable memory.
+         */
+        @FlaggedApi(Flags.FLAG_GET_FREE_MEMORY)
+        @SuppressLint("MutableBareField")
+        public long freeMem;
+
+        /**
          * The total memory accessible by the kernel.  This is basically the
          * RAM size of the device, not including below-kernel fixed allocations
          * like DMA buffers, RAM for the baseband CPU, etc.
@@ -3483,6 +3492,7 @@ public class ActivityManager {
         public void writeToParcel(Parcel dest, int flags) {
             dest.writeLong(advertisedMem);
             dest.writeLong(availMem);
+            dest.writeLong(freeMem);
             dest.writeLong(totalMem);
             dest.writeLong(threshold);
             dest.writeInt(lowMemory ? 1 : 0);
@@ -3495,6 +3505,7 @@ public class ActivityManager {
         public void readFromParcel(Parcel source) {
             advertisedMem = source.readLong();
             availMem = source.readLong();
+            freeMem = source.readLong();
             totalMem = source.readLong();
             threshold = source.readLong();
             lowMemory = source.readInt() != 0;
@@ -3508,6 +3519,7 @@ public class ActivityManager {
         public void copyTo(MemoryInfo other) {
             other.advertisedMem = advertisedMem;
             other.availMem = availMem;
+            other.freeMem = freeMem;
             other.totalMem = totalMem;
             other.threshold = threshold;
             other.lowMemory = lowMemory;

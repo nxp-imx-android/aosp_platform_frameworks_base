@@ -28,6 +28,7 @@ import android.util.TimeUtils;
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.app.procstats.AssociationState;
 import com.android.internal.app.procstats.ProcessStats;
+import com.android.server.am.psc.ProcessRecordInternal;
 
 /**
  * Represents a link between a content provider and client.
@@ -74,8 +75,8 @@ public final class ContentProviderConnection extends Binder implements
     }
 
     @Override
-    public void computeHostOomAdjLSP(OomAdjuster oomAdjuster, ProcessRecord host,
-            ProcessRecord client, long now, ProcessRecord topApp, boolean doingAll,
+    public void computeHostOomAdjLSP(OomAdjuster oomAdjuster, ProcessRecordInternal host,
+            ProcessRecordInternal client, long now, ProcessRecordInternal topApp, boolean doingAll,
             int oomAdjReason, int cachedAdj) {
         oomAdjuster.computeProviderHostOomAdjLSP(this, host, client, false);
     }

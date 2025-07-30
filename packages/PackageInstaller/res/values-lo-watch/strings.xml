@@ -16,6 +16,6 @@
 
 <resources xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
-    <string name="generic_yes" msgid="8377681923604772256">"ແມ່ນແລ້ວ"</string>
+    <string name="generic_yes" msgid="8377681923604772256">"ແມ່ນ"</string>
     <string name="generic_cancel" msgid="5912951009097751716">"ຍົກເລີກ"</string>
 </resources>

@@ -175,7 +175,7 @@ private fun TaskBarAnd3ButtonAmbientCue(
                 }
             },
         portrait = portrait,
-        pillCenter = pillCenter,
+        pillOffset = pillCenter.y - pillSize.width,
         rotation = rotation,
     )
     ShortPill(

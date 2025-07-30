@@ -1992,15 +1992,15 @@ public abstract class OomAdjuster {
      * Computes the impact on {@code app} the service connections from {@code client} has.
      */
     @GuardedBy({"mService", "mProcLock"})
-    public abstract boolean computeServiceHostOomAdjLSP(ConnectionRecord cr, ProcessRecord app,
-            ProcessRecordInternal client, long now, boolean dryRun);
+    public abstract boolean computeServiceHostOomAdjLSP(ConnectionRecord cr,
+            ProcessRecordInternal app, ProcessRecordInternal client, long now, boolean dryRun);
 
     /**
      * Computes the impact on {@code app} the provider connections from {@code client} has.
      */
     @GuardedBy({"mService", "mProcLock"})
     public abstract boolean computeProviderHostOomAdjLSP(ContentProviderConnection conn,
-            ProcessRecord app, ProcessRecord client, boolean dryRun);
+            ProcessRecordInternal app, ProcessRecordInternal client, boolean dryRun);
 
     protected int getDefaultCapability(ProcessRecordInternal app, int procState) {
         final int networkCapabilities =

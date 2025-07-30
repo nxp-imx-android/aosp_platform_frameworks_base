@@ -21,7 +21,6 @@ import android.content.applicationContext
 import android.content.res.mainResources
 import android.hardware.input.fakeInputManager
 import android.os.fakeExecutorHandler
-import android.view.Display
 import android.view.windowManager
 import com.android.systemui.broadcast.broadcastDispatcher
 import com.android.systemui.concurrency.fakeExecutor
@@ -67,7 +66,6 @@ import com.android.systemui.model.sysUiState
 import com.android.systemui.plugins.activityStarter
 import com.android.systemui.settings.displayTracker
 import com.android.systemui.settings.userTracker
-import com.android.systemui.shade.data.repository.fakeFocusedDisplayRepository
 import com.android.systemui.statusbar.phone.systemUIDialogFactory
 import com.android.wm.shell.shared.desktopmode.FakeDesktopState
 
@@ -81,13 +79,7 @@ var Kosmos.shortcutHelperMultiTaskingShortcutsSource: KeyboardShortcutGroupsSour
     Kosmos.Fixture { MultitaskingShortcutsSource(mainResources, applicationContext, desktopState) }
 
 val Kosmos.shortcutHelperStateRepository by
-    Kosmos.Fixture {
-        ShortcutHelperStateRepository(
-            fakeInputManager.inputManager,
-            testDispatcher,
-            fakeFocusedDisplayRepository,
-        )
-    }
+    Kosmos.Fixture { ShortcutHelperStateRepository(fakeInputManager.inputManager, testDispatcher) }
 
 var Kosmos.shortcutHelperInputShortcutsSource: KeyboardShortcutGroupsSource by
     Kosmos.Fixture {
@@ -245,7 +237,6 @@ val Kosmos.shortcutHelperViewModel by
             shortcutHelperStateInteractor,
             shortcutHelperCategoriesInteractor,
             shortcutHelperCustomizationModeInteractor,
-            displayId = Display.DEFAULT_DISPLAY,
         )
     }
 

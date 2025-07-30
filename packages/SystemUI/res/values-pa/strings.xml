@@ -1521,7 +1521,7 @@
     <string name="connected_display_dialog_title" msgid="307028192512988669">"ਬਾਹਰੀ ਡਿਸਪਲੇ ਨਾਲ ਕਨੈਕਟ ਕਰੋ"</string>
     <string name="remember_choice" msgid="2063510191006325221">"ਮੈਨੂੰ ਦੁਬਾਰਾ ਨਾ ਪੁੱਛੋ"</string>
     <string name="start_desktop_mode" msgid="5459815912537830841">"ਡੈਸਕਟਾਪ"</string>
-    <string name="start_mirroring" msgid="3611044878130481882">"ਸ਼ੀਸ਼ਾ"</string>
+    <string name="start_mirroring" msgid="3611044878130481882">"ਪ੍ਰਤਿਬਿੰਬ"</string>
     <string name="connected_display_icon_desc" msgid="6373560639989971997">"ਡਿਸਪਲੇ ਨੂੰ ਕਨੈਕਟ ਕੀਤਾ ਗਿਆ"</string>
     <string name="connected_display_extended_mode_text" msgid="2457269692913653696">"ਬਾਹਰੀ ਡਿਸਪਲੇ ਨਾਲ ਕਨੈਕਟ ਕੀਤਾ ਗਿਆ"</string>
     <string name="privacy_dialog_title" msgid="5201413527644766025">"ਮਾਈਕ੍ਰੋਫ਼ੋਨ, ਕੈਮਰਾ ਅਤੇ ਟਿਕਾਣਾ"</string>

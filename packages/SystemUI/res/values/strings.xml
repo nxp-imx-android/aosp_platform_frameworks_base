@@ -384,6 +384,8 @@
     <string name="share_to_app_stop_dialog_message_single_app_generic">You\'re currently sharing an app</string>
     <!-- Text telling a user that they're currently sharing something to an app [CHAR LIMIT=100] -->
     <string name="share_to_app_stop_dialog_message_generic">You\'re currently sharing with an app</string>
+    <!-- Text telling a user that they're currently sharing something to an app [CHAR LIMIT=100] -->
+    <string name="share_to_app_stop_dialog_message_with_host_app">You\'re currently sharing with <xliff:g id="host_app_name" example="Screen Recorder App">%1$s</xliff:g></string>
     <!-- Button to stop screen sharing [CHAR LIMIT=35] -->
     <string name="share_to_app_stop_dialog_button">Stop sharing</string>
 
@@ -2510,6 +2512,8 @@
     <string name="group_system_lock_screen">Lock screen</string>
     <!-- User visible title for the keyboard shortcut that pulls up Notes app for quick memo. [CHAR LIMIT=70] -->
     <string name="group_system_quick_memo">Take a note</string>
+    <!-- User visible title for the keyboard shortcut that closes a focused task [CHAR LIMIT=70] -->
+    <string name="group_system_close_window">Close current window</string>
 
     <!-- User visible title for the multitasking keyboard shortcuts list. [CHAR LIMIT=70] -->
     <string name="keyboard_shortcut_group_system_multitasking">Multitasking</string>

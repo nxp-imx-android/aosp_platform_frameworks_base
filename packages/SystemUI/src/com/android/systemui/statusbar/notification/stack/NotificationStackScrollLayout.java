@@ -1296,8 +1296,11 @@ public class NotificationStackScrollLayout
     }
 
     @Override
-    public void setDrawBounds(@NotNull RectF drawBounds) {
+    public void updateDrawBounds(@NotNull RectF drawBounds) {
         if (SceneContainerFlag.isUnexpectedlyInLegacyMode()) return;
+        // The received drawBounds are relative to the Window, but NSSL  expects a rect relative to
+        // its own position, so we need to offset it in case the NSSL has some horizontal margins.
+        drawBounds.offset(-getX(), 0f);
         if (mAmbientState.getDrawBounds() != drawBounds) {
             mAmbientState.setDrawBounds(drawBounds);
             updateStackEndHeightAndStackHeight(mAmbientState.getExpansionFraction());

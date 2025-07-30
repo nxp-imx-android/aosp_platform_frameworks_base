@@ -89,10 +89,11 @@
             android:visibility="gone">
 
             <TextView
+                android:id="@+id/more_details_expanded_text"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:gravity="start"
-                android:text="@string/install_without_verifying_summary"
+                android:text="@string/more_details_expanded_install_summary"
                 style="?attr/textAppearanceInstallerCustomMessage"/>
 
             <TextView

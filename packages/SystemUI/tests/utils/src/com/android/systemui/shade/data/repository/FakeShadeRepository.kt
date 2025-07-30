@@ -77,6 +77,9 @@ class FakeShadeRepository @Inject constructor() : ShadeRepository {
     private var _isShadeLayoutWide = MutableStateFlow(false)
     override val isShadeLayoutWide: StateFlow<Boolean> = _isShadeLayoutWide.asStateFlow()
 
+    private var _isLargeScreen = MutableStateFlow(false)
+    override val isLargeScreen: StateFlow<Boolean> = _isLargeScreen.asStateFlow()
+
     @Deprecated("Use ShadeInteractor instead")
     override fun setLegacyIsQsExpanded(legacyIsQsExpanded: Boolean) {
         _legacyIsQsExpanded.value = legacyIsQsExpanded
@@ -155,6 +158,10 @@ class FakeShadeRepository @Inject constructor() : ShadeRepository {
 
     override fun setShadeLayoutWide(isShadeLayoutWide: Boolean) {
         _isShadeLayoutWide.value = isShadeLayoutWide
+    }
+
+    override fun setLargeScreen(isLargeScreen: Boolean) {
+        _isLargeScreen.value = isLargeScreen
     }
 }
 

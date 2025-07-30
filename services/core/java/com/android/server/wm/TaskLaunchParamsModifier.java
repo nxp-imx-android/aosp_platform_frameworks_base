@@ -295,9 +295,7 @@ class TaskLaunchParamsModifier implements LaunchParamsModifier {
         } else {
             appendLog("non-freeform-task-display-area");
         }
-        boolean isNonRootLeafTask =
-                com.android.window.flags.Flags.fixFullscreenInMultiWindow() ? task != null
-                        && !task.isRootTask() : false;
+        final boolean isNonRootLeafTask = task != null && !task.isRootTask();
         if (launchMode == WINDOWING_MODE_FULLSCREEN && isNonRootLeafTask
                 && task.getRootTask().inMultiWindowMode()) {
             // Seems not making sense to have a fullscreen task in a multi-window Task, let it

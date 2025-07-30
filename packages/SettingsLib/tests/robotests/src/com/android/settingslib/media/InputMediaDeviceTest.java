@@ -42,6 +42,7 @@ public class InputMediaDeviceTest {
     private final int MAX_VOLUME = 1;
     private final int CURRENT_VOLUME = 0;
     private final boolean IS_VOLUME_FIXED = true;
+    private static final boolean IS_SELECTED = true;
     private static final String PRODUCT_NAME_BUILTIN_MIC = "Built-in Mic";
     private static final String PRODUCT_NAME_WIRED_HEADSET = "My Wired Headset";
     private static final String PRODUCT_NAME_USB_HEADSET = "My USB Headset";
@@ -73,6 +74,7 @@ public class InputMediaDeviceTest {
                         MAX_VOLUME,
                         CURRENT_VOLUME,
                         IS_VOLUME_FIXED,
+                        IS_SELECTED,
                         PRODUCT_NAME_BUILTIN_MIC);
         assertThat(builtinMediaDevice).isNotNull();
         assertThat(builtinMediaDevice.getDrawableResId()).isEqualTo(R.drawable.ic_media_microphone);
@@ -89,6 +91,7 @@ public class InputMediaDeviceTest {
                         MAX_VOLUME,
                         CURRENT_VOLUME,
                         IS_VOLUME_FIXED,
+                        IS_SELECTED,
                         PRODUCT_NAME_BUILTIN_MIC);
         assertThat(builtinMediaDevice).isNotNull();
         assertThat(builtinMediaDevice.getName())
@@ -106,6 +109,7 @@ public class InputMediaDeviceTest {
                         MAX_VOLUME,
                         CURRENT_VOLUME,
                         IS_VOLUME_FIXED,
+                        IS_SELECTED,
                         PRODUCT_NAME_WIRED_HEADSET);
         assertThat(wiredMediaDevice).isNotNull();
         assertThat(wiredMediaDevice.getName())
@@ -123,6 +127,7 @@ public class InputMediaDeviceTest {
                         MAX_VOLUME,
                         CURRENT_VOLUME,
                         IS_VOLUME_FIXED,
+                        IS_SELECTED,
                         PRODUCT_NAME_USB_HEADSET);
         assertThat(usbMediaDevice).isNotNull();
         assertThat(usbMediaDevice.getName()).isEqualTo(PRODUCT_NAME_USB_HEADSET);
@@ -139,6 +144,7 @@ public class InputMediaDeviceTest {
                         MAX_VOLUME,
                         CURRENT_VOLUME,
                         IS_VOLUME_FIXED,
+                        IS_SELECTED,
                         null);
         assertThat(usbMediaDevice).isNotNull();
         assertThat(usbMediaDevice.getName())
@@ -156,6 +162,7 @@ public class InputMediaDeviceTest {
                         MAX_VOLUME,
                         CURRENT_VOLUME,
                         IS_VOLUME_FIXED,
+                        IS_SELECTED,
                         PRODUCT_NAME_BT_HEADSET);
         assertThat(btMediaDevice).isNotNull();
         assertThat(btMediaDevice.getName()).isEqualTo(PRODUCT_NAME_BT_HEADSET);
@@ -172,6 +179,7 @@ public class InputMediaDeviceTest {
                         MAX_VOLUME,
                         CURRENT_VOLUME,
                         IS_VOLUME_FIXED,
+                        IS_SELECTED,
                         null);
         assertThat(btMediaDevice).isNotNull();
         assertThat(btMediaDevice.getName())
@@ -189,6 +197,7 @@ public class InputMediaDeviceTest {
                         MAX_VOLUME,
                         CURRENT_VOLUME,
                         IS_VOLUME_FIXED,
+                        IS_SELECTED,
                         PRODUCT_NAME_BLE_HEADSET);
         assertThat(bleMediaDevice).isNotNull();
         assertThat(bleMediaDevice.getName()).isEqualTo(PRODUCT_NAME_BLE_HEADSET);
@@ -205,6 +214,7 @@ public class InputMediaDeviceTest {
                         MAX_VOLUME,
                         CURRENT_VOLUME,
                         IS_VOLUME_FIXED,
+                        IS_SELECTED,
                         null);
         assertThat(bleMediaDevice).isNotNull();
         assertThat(bleMediaDevice.getName())

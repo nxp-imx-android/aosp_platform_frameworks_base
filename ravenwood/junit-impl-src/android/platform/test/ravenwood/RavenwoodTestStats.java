@@ -217,7 +217,7 @@ public class RavenwoodTestStats {
         });
         mOutputWriter.flush();
         mStats.clear();
-        Log.i(TAG, "Added result to stats file: " + mOutputSymlinkFile);
+        Log.i(TAG, "Added result to stats file: file://" + mOutputSymlinkFile);
     }
 
     private static void createCalledMethodPolicyFile() {

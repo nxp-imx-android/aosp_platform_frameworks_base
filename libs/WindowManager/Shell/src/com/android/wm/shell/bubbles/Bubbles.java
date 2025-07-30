@@ -354,14 +354,6 @@ public interface Bubbles {
          */
         void animateBubbleBarLocation(BubbleBarLocation location);
 
-        /**
-         * Show the bubble bar pillow view at the provided location.
-         * If the location is null, the pillow view is should be hidden.
-         *
-         * @param location The location to show the pillow view, or null to hide it.
-         */
-        void showBubbleBarPillowAt(@Nullable BubbleBarLocation location);
-
         /** Show bubble bar drop target at provided location or hide if location is null. */
         void showBubbleBarDropTargetAt(@Nullable BubbleBarLocation location);
     }

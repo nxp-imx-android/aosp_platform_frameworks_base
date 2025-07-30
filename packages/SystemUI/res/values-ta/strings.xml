@@ -723,7 +723,7 @@
     <skip />
     <string name="zen_mode_and_condition" msgid="5043165189511223718">"<xliff:g id="ZEN_MODE">%1$s</xliff:g>. <xliff:g id="EXIT_CONDITION">%2$s</xliff:g>"</string>
     <string name="accessibility_volume_settings" msgid="1458961116951564784">"ஒலி அமைப்புகள்"</string>
-    <string name="volume_odi_captions_tip" msgid="8825655463280990941">"வசன உரைகளைத் தானாக எழுதும்"</string>
+    <string name="volume_odi_captions_tip" msgid="8825655463280990941">"சப்டைட்டிலைத் தானாகக் காட்டும்"</string>
     <string name="accessibility_volume_close_odi_captions_tip" msgid="8924753283621160480">"விரிவான வசனங்களுக்கான உதவிக்குறிப்பு"</string>
     <string name="volume_odi_captions_content_description" msgid="4172765742046013630">"மேலடுக்கப்பட்ட வசனங்கள்"</string>
     <string name="volume_odi_captions_hint_enable" msgid="2073091194012843195">"இயக்கும்"</string>

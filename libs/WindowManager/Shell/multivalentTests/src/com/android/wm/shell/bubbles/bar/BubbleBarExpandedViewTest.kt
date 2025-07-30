@@ -291,6 +291,26 @@ class BubbleBarExpandedViewTest {
         assertThat(endRunnableRun).isTrue()
     }
 
+    @Test
+    fun initialize_forOverflow_hidesCaptionAndHandle() {
+        val overflowExpandedView = LayoutInflater.from(context).inflate(
+                R.layout.bubble_bar_expanded_view, null, false /* attachToRoot */
+        ) as BubbleBarExpandedView
+        overflowExpandedView.bubbleLogger = BubbleLogger(uiEventLoggerFake)
+
+        overflowExpandedView.initialize(
+                expandedViewManager,
+                positioner,
+                true /* isOverflow */,
+                null, /* bubble */
+                null /* bubbleTaskView */
+        )
+
+        val captionView = overflowExpandedView.findViewById<View>(R.id.bubble_bar_caption_view)
+        assertThat(captionView.visibility).isEqualTo(View.GONE)
+        assertThat(overflowExpandedView.handleView.visibility).isEqualTo(View.GONE)
+    }
+
     private fun BubbleBarExpandedView.menuView(): BubbleBarMenuView {
         return findViewByPredicate { it is BubbleBarMenuView }
     }

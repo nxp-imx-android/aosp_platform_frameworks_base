@@ -272,3 +272,10 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "enable_bluetooth_diagnosis"
+    namespace: "cross_device_experiences"
+    description: "Enable Bluetooth problem detection and diagnosis"
+    bug: "411309851"
+}

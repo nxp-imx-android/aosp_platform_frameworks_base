@@ -17,195 +17,114 @@
 
 <resources xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
-    <!-- no translation found for title_unknown_source_blocked (50770689337399043) -->
-    <skip />
-    <!-- no translation found for title_install_blocked (8292546042865448054) -->
-    <skip />
-    <!-- no translation found for title_install_staging (6207460764383813714) -->
-    <skip />
-    <!-- no translation found for title_install (6806728682404990326) -->
-    <skip />
-    <!-- no translation found for title_installing (3738380766257176010) -->
-    <skip />
-    <!-- no translation found for title_installed (6551855346109302601) -->
-    <skip />
-    <!-- no translation found for title_reinstall (1750856338036455388) -->
-    <skip />
-    <!-- no translation found for title_reinstalling (8194821341725321638) -->
-    <skip />
-    <!-- no translation found for title_reinstalled (4805694558041089418) -->
-    <skip />
-    <!-- no translation found for title_update (1747328630716712391) -->
-    <skip />
-    <!-- no translation found for title_update_ownership_change (6628818356381453406) -->
-    <skip />
-    <!-- no translation found for title_updating (5449073288264173554) -->
-    <skip />
-    <!-- no translation found for title_updated (3286125118804971449) -->
-    <skip />
-    <!-- no translation found for title_cant_install_app (8683361719005005686) -->
-    <skip />
-    <!-- no translation found for title_install_failed_blocked (4864724257000850526) -->
-    <skip />
-    <!-- no translation found for title_install_failed_incompatible (9153043742028690470) -->
-    <skip />
-    <!-- no translation found for title_install_failed_invalid_package (3390527559613519562) -->
-    <skip />
-    <!-- no translation found for title_install_failed_less_storage (4854855960405469248) -->
-    <skip />
-    <!-- no translation found for title_install_failed_not_installed (8014023519071426269) -->
-    <skip />
-    <!-- no translation found for title_uninstall (428653424812685605) -->
-    <skip />
-    <!-- no translation found for title_uninstall_clone (7974889929002929136) -->
-    <skip />
-    <!-- no translation found for title_uninstall_updates_system_app (4827243291196043359) -->
-    <skip />
-    <!-- no translation found for title_uninstall_updates_system_app_all_users (5720572619103268328) -->
-    <skip />
-    <!-- no translation found for title_uninstall_all_users (2008934480150627653) -->
-    <skip />
-    <!-- no translation found for title_uninstall_other_user (7739452181899248303) -->
-    <skip />
-    <!-- no translation found for title_uninstall_app_not_found (501803094061097579) -->
-    <skip />
-    <!-- no translation found for title_uninstall_user_not_allowed (1555448944495159635) -->
-    <skip />
-    <!-- no translation found for title_uninstall_failed (4522950368147075143) -->
-    <skip />
-    <!-- no translation found for title_archive (2876455228073419830) -->
-    <skip />
-    <!-- no translation found for title_archive_all_users (5904736601499520543) -->
-    <skip />
-    <!-- no translation found for title_archive_other_user (5996047192919423497) -->
-    <skip />
-    <!-- no translation found for title_restore (8934911753892124574) -->
-    <skip />
-    <!-- no translation found for title_restore_error_user_action_needed (5696944142011800104) -->
-    <skip />
-    <!-- no translation found for title_restore_error_less_storage (1702198163928260711) -->
-    <skip />
-    <!-- no translation found for title_restore_error_offline (4611160277876184886) -->
-    <skip />
-    <!-- no translation found for title_restore_error_installer_disabled (6955341343521073762) -->
-    <skip />
-    <!-- no translation found for title_restore_error_installer_absent (4650702260526161948) -->
-    <skip />
-    <!-- no translation found for title_restore_error_generic (3675732737839176301) -->
-    <skip />
-    <!-- no translation found for message_update_owner_change (721928859405955082) -->
-    <skip />
-    <!-- no translation found for message_update_owner_change (7398850682198100493) -->
-    <skip />
-    <!-- no translation found for message_update_owner_change (8415571223941666411) -->
-    <skip />
-    <!-- no translation found for message_external_source_blocked (1404860482919177902) -->
-    <skip />
-    <!-- no translation found for message_external_source_blocked (1394622045008552842) -->
-    <skip />
-    <!-- no translation found for message_external_source_blocked (1532513823566863443) -->
-    <skip />
-    <!-- no translation found for message_external_source_blocked (2781541659935183726) -->
-    <skip />
-    <!-- no translation found for message_anonymous_source_warning (4012873091955414109) -->
-    <skip />
-    <!-- no translation found for message_anonymous_source_warning (5167072167473447125) -->
-    <skip />
-    <!-- no translation found for message_anonymous_source_warning (6827454085562760175) -->
-    <skip />
-    <!-- no translation found for message_install_failed_blocked (8289588872577100349) -->
-    <skip />
-    <!-- no translation found for message_install_failed_conflict (1707670432024473123) -->
-    <skip />
-    <!-- no translation found for message_install_failed_incompatible (184079710727317076) -->
-    <skip />
-    <!-- no translation found for message_install_failed_invalid (6607567121196588310) -->
-    <skip />
-    <!-- no translation found for message_install_failed_less_storage (5263281541675717769) -->
-    <skip />
-    <!-- no translation found for message_parse_failed (205300138438352785) -->
-    <skip />
-    <!-- no translation found for message_no_install_apps_restriction (6772323689748831650) -->
-    <skip />
-    <!-- no translation found for message_no_install_unknown_apps_restriction (6111967131011920924) -->
-    <skip />
-    <!-- no translation found for message_uninstall_with_clone_instance (12594156305221478) -->
-    <skip />
-    <!-- no translation found for message_delete_clone_app (6632017049227330363) -->
-    <skip />
-    <!-- no translation found for message_uninstall_updates_system_app (1246198093614610171) -->
-    <skip />
-    <!-- no translation found for message_uninstall_updates_system_app_all_users (1659615085602508659) -->
-    <skip />
-    <!-- no translation found for message_uninstall_work_profile (224587253086750763) -->
-    <skip />
-    <!-- no translation found for message_uninstall_private_space (2815872500665141251) -->
-    <skip />
-    <!-- no translation found for message_uninstall_app_not_found (1228396155188846293) -->
-    <skip />
-    <!-- no translation found for message_uninstall_user_not_allowed (4812707444447008148) -->
-    <skip />
-    <!-- no translation found for message_uninstall_failed (4678598986902459187) -->
-    <skip />
-    <!-- no translation found for message_uninstall_keep_data (3955153594868206983) -->
-    <skip />
-    <!-- no translation found for message_archive (943853731737315850) -->
-    <skip />
-    <!-- no translation found for message_archive_all_users (4664139369764501351) -->
-    <skip />
-    <!-- no translation found for message_archive_other_user (6465828676043191175) -->
-    <skip />
-    <!-- no translation found for message_archive_work_profile (7601504268820630858) -->
-    <skip />
-    <!-- no translation found for message_archive_private_space (4873651645762576624) -->
-    <skip />
-    <!-- no translation found for message_restore (8402726798623569969) -->
-    <skip />
-    <!-- no translation found for message_restore_error_user_action_needed (2206904734076205208) -->
-    <skip />
-    <!-- no translation found for message_restore_error_less_storage (4945507738776981462) -->
-    <skip />
-    <!-- no translation found for message_restore_error_offline (4212551781323276126) -->
-    <skip />
-    <!-- no translation found for message_restore_error_installer_disabled (1089791898782445342) -->
-    <skip />
-    <!-- no translation found for message_restore_error_installer_absent (8492838251989389724) -->
-    <skip />
-    <!-- no translation found for message_restore_error_generic (5903850636679929406) -->
-    <skip />
-    <!-- no translation found for message_uninstall_activity (3263352475743590167) -->
-    <skip />
-    <!-- no translation found for button_install (7434013176505680162) -->
-    <skip />
-    <!-- no translation found for button_update (3046719350226327526) -->
-    <skip />
-    <!-- no translation found for button_update_anyway (6674207037708730779) -->
-    <skip />
-    <!-- no translation found for button_done (3408025390982260629) -->
-    <skip />
-    <!-- no translation found for button_open (6892684987374117955) -->
-    <skip />
-    <!-- no translation found for button_cancel (6690491435205617214) -->
-    <skip />
+    <string name="title_unknown_source_blocked" msgid="50770689337399043">"इसके लिए अनुमति चाहिए"</string>
+    <string name="title_install_blocked" msgid="8292546042865448054">"इंस्टॉलेशन पर रोक लगाई गई"</string>
+    <string name="title_install_staging" msgid="6207460764383813714">"ऐप्लिकेशन इंस्टॉल किया जा रहा है…"</string>
+    <string name="title_install" msgid="6806728682404990326">"क्या आपको यह ऐप्लिकेशन इंस्टॉल करना है?"</string>
+    <string name="title_installing" msgid="3738380766257176010">"इंस्टॉल हो रहा है…"</string>
+    <string name="title_installed" msgid="6551855346109302601">"ऐप्लिकेशन इंस्टॉल किया गया"</string>
+    <string name="title_reinstall" msgid="1750856338036455388">"क्या आपको यह ऐप्लिकेशन फिर से इंस्टॉल करना है?"</string>
+    <string name="title_reinstalling" msgid="8194821341725321638">"फिर से इंस्टॉल किया जा रहा है…"</string>
+    <string name="title_reinstalled" msgid="4805694558041089418">"ऐप्लिकेशन को फिर से इंस्टॉल किया गया"</string>
+    <string name="title_update" msgid="1747328630716712391">"क्या आपको यह ऐप्लिकेशन अपडेट करना है?"</string>
+    <string name="title_update_ownership_change" msgid="6628818356381453406">"क्या आपको <xliff:g id="NEW_UPDATE_OWNER">%1$s</xliff:g> की मदद से यह ऐप्लिकेशन अपडेट करना है?"</string>
+    <string name="title_updating" msgid="5449073288264173554">"अपडेट हो रहा है…"</string>
+    <string name="title_updated" msgid="3286125118804971449">"ऐप्लिकेशन अपडेट किया गया"</string>
+    <string name="title_cant_install_app" msgid="8683361719005005686">"ऐप्लिकेशन इंस्टॉल नहीं किया जा सकता"</string>
+    <string name="title_install_failed_blocked" msgid="4864724257000850526">"इंस्टॉलेशन पर रोक लगाई गई"</string>
+    <string name="title_install_failed_incompatible" msgid="9153043742028690470">"ऐप्लिकेशन इस डिवाइस के साथ काम नहीं करता"</string>
+    <string name="title_install_failed_invalid_package" msgid="3390527559613519562">"पैकेज अमान्य है"</string>
+    <string name="title_install_failed_less_storage" msgid="4854855960405469248">"डिवाइस में स्टोरेज कम है"</string>
+    <string name="title_install_failed_not_installed" msgid="8014023519071426269">"ऐप्लिकेशन इंस्टॉल नहीं हुआ"</string>
+    <string name="title_uninstall" msgid="428653424812685605">"क्या यह ऐप्लिकेशन अनइंस्टॉल करना है?"</string>
+    <string name="title_uninstall_clone" msgid="7974889929002929136">"क्या आपको इस ऐप्लिकेशन का क्लोन मिटाना है?"</string>
+    <string name="title_uninstall_updates_system_app" msgid="4827243291196043359">"क्या आपको ऐप्लिकेशन के अपडेट अनइंस्टॉल करने हैं?"</string>
+    <string name="title_uninstall_updates_system_app_all_users" msgid="5720572619103268328">"क्या आपको ऐप्लिकेशन के अपडेट, सभी उपयोगकर्ताओं के लिए अनइंस्टॉल करने हैं?"</string>
+    <string name="title_uninstall_all_users" msgid="2008934480150627653">"क्या आपको यह ऐप्लिकेशन सभी उपयोगकर्ताओं के लिए अनइंस्टॉल करना है?"</string>
+    <string name="title_uninstall_other_user" msgid="7739452181899248303">"क्या आपको ‘<xliff:g id="USER_NAME">%1$s</xliff:g>\' के लिए इस ऐप्लिकेशन को अनइंस्टॉल करना है?"</string>
+    <string name="title_uninstall_app_not_found" msgid="501803094061097579">"ऐप्लिकेशन नहीं मिला"</string>
+    <string name="title_uninstall_user_not_allowed" msgid="1555448944495159635">"इस ऐप्लिकेशन को अनइंस्टॉल नहीं किया जा सकता"</string>
+    <string name="title_uninstall_failed" msgid="4522950368147075143">"ऐप्लिकेशन अनइंस्टॉल नहीं हुआ"</string>
+    <string name="title_archive" msgid="2876455228073419830">"क्या आपको यह ऐप्लिकेशन संग्रहित करना है?"</string>
+    <string name="title_archive_all_users" msgid="5904736601499520543">"क्या आपको यह ऐप्लिकेशन सभी उपयोगकर्ताओं के लिए संग्रहित करना है?"</string>
+    <string name="title_archive_other_user" msgid="5996047192919423497">"क्या आपको ‘<xliff:g id="USER_NAME">%1$s</xliff:g>\' के लिए इस ऐप्लिकेशन को संग्रहित करना है?"</string>
+    <string name="title_restore" msgid="8934911753892124574">"क्या आपको यह ऐप्लिकेशन वापस लाना है?"</string>
+    <string name="title_restore_error_user_action_needed" msgid="5696944142011800104">"कार्रवाई ज़रूरी है"</string>
+    <string name="title_restore_error_less_storage" msgid="1702198163928260711">"डिवाइस में स्टोरेज कम है"</string>
+    <string name="title_restore_error_offline" msgid="4611160277876184886">"आप ऑफ़लाइन हैं"</string>
+    <string name="title_restore_error_installer_disabled" msgid="6955341343521073762">"<xliff:g id="INSTALLER_NAME">%1$s</xliff:g> बंद है"</string>
+    <string name="title_restore_error_installer_absent" msgid="4650702260526161948">"<xliff:g id="INSTALLER_NAME">%1$s</xliff:g> इंस्टॉल नहीं किया गया है"</string>
+    <string name="title_restore_error_generic" msgid="3675732737839176301">"कोई गड़बड़ी हुई"</string>
+    <string name="message_update_owner_change" product="tablet" msgid="721928859405955082">"आम तौर पर, इस ऐप्लिकेशन को &lt;b&gt;<xliff:g id="EXISTING_UPDATE_OWNER">%1$s</xliff:g>&lt;/b&gt; से अपडेट मिलते हैं. इसे किसी दूसरे सोर्स से अपडेट करने पर, आपको आने वाले समय में टैबलेट पर किसी भी सोर्स से अपडेट मिल सकते हैं. साथ ही, ऐप्लिकेशन की मुख्य सुविधाएं और उनके काम करने का तरीका बदल सकता है."</string>
+    <string name="message_update_owner_change" product="tv" msgid="7398850682198100493">"आम तौर पर, इस ऐप्लिकेशन को &lt;b&gt;<xliff:g id="EXISTING_UPDATE_OWNER">%1$s</xliff:g>&lt;/b&gt; से अपडेट मिलते हैं. इसे किसी दूसरे सोर्स से अपडेट करने पर, आपको आने वाले समय में टीवी पर किसी भी सोर्स से अपडेट मिल सकते हैं. साथ ही, ऐप्लिकेशन की मुख्य सुविधाएं और उनके काम करने का तरीका बदल सकता है."</string>
+    <string name="message_update_owner_change" product="default" msgid="8415571223941666411">"आम तौर पर, इस ऐप्लिकेशन को &lt;b&gt;<xliff:g id="EXISTING_UPDATE_OWNER">%1$s</xliff:g>&lt;/b&gt; से अपडेट मिलते हैं. इसे किसी दूसरे सोर्स से अपडेट करने पर, आपको आने वाले समय में फ़ोन पर किसी भी सोर्स से अपडेट मिल सकते हैं. साथ ही, ऐप्लिकेशन की मुख्य सुविधाएं और उनके काम करने का तरीका बदल सकता है."</string>
+    <string name="message_external_source_blocked" product="tablet" msgid="1404860482919177902">"आपकी सुरक्षा के लिए, फ़िलहाल आपके टैबलेट के पास इस सोर्स से अनजान ऐप्लिकेशन इंस्टॉल करने की अनुमति नहीं है. इसे सेटिंग में जाकर बदला जा सकता है."</string>
+    <string name="message_external_source_blocked" product="tv" msgid="1394622045008552842">"आपकी सुरक्षा के लिए, फ़िलहाल आपके टीवी के पास इस सोर्स से अनजान ऐप्लिकेशन इंस्टॉल करने की अनुमति नहीं है. इसे सेटिंग में जाकर बदला जा सकता है."</string>
+    <string name="message_external_source_blocked" product="watch" msgid="1532513823566863443">"आपकी सुरक्षा के लिए, फ़िलहाल आपकी स्मार्टवॉच के पास इस सोर्स से अनजान ऐप्लिकेशन इंस्टॉल करने की अनुमति नहीं है. इसे सेटिंग में जाकर बदला जा सकता है."</string>
+    <string name="message_external_source_blocked" product="default" msgid="2781541659935183726">"आपकी सुरक्षा के लिए, फ़िलहाल आपके फ़ोन के पास इस सोर्स से अनजान ऐप्लिकेशन इंस्टॉल करने की अनुमति नहीं है. इसे सेटिंग में जाकर बदला जा सकता है."</string>
+    <string name="message_anonymous_source_warning" product="default" msgid="4012873091955414109">"इस बात की ज़्यादा संभावना है कि अनजान ऐप्लिकेशन आपके फ़ोन और निजी डेटा के लिए खतरा पैदा करें. इस ऐप्लिकेशन को इंस्टॉल करने का मतलब है कि अगर इससे फ़ोन को कोई नुकसान होता है या आपका डेटा चोरी होता है, तो इसकी पूरी ज़िम्मेदारी आपकी होगी."</string>
+    <string name="message_anonymous_source_warning" product="tablet" msgid="5167072167473447125">"इस बात की ज़्यादा संभावना है कि अनजान ऐप्लिकेशन आपके टैबलेट और निजी डेटा के लिए खतरा पैदा करें. इस ऐप्लिकेशन को इंस्टॉल करने का मतलब है कि अगर इससे टैबलेट को कोई नुकसान होता है या आपका डेटा चोरी होता है, तो इसकी पूरी ज़िम्मेदारी आपकी होगी."</string>
+    <string name="message_anonymous_source_warning" product="tv" msgid="6827454085562760175">"इस बात की ज़्यादा संभावना है कि अनजान ऐप्लिकेशन आपके टीवी और निजी डेटा के लिए खतरा पैदा करें. इस ऐप्लिकेशन को इंस्टॉल करने का मतलब है कि अगर इससे टीवी को कोई नुकसान होता है या आपका डेटा चोरी होता है, तो इसकी पूरी ज़िम्मेदारी आपकी होगी."</string>
+    <string name="message_install_failed_blocked" msgid="8289588872577100349">"इस ऐप्लिकेशन को इंस्टॉल होने से रोका गया था"</string>
+    <string name="message_install_failed_conflict" msgid="1707670432024473123">"इस ऐप्लिकेशन के पैकेज का नाम, आपके डिवाइस पर पहले से मौजूद किसी ऐप्लिकेशन से पैकेज के नाम से मेल खाता है"</string>
+    <string name="message_install_failed_incompatible" msgid="184079710727317076">"यह ऐप्लिकेशन, आपके डिवाइस पर काम नहीं करता"</string>
+    <string name="message_install_failed_invalid" msgid="6607567121196588310">"इस ऐप्लिकेशन की इंस्टॉलेशन फ़ाइल में कोई समस्या है"</string>
+    <string name="message_install_failed_less_storage" msgid="5263281541675717769">"इस ऐप्लिकेशन को इंस्टॉल करने के लिए, कुछ स्टोरेज खाली करें और फिर से कोशिश करें"</string>
+    <string name="message_parse_failed" msgid="205300138438352785">"ऐप्लिकेशन फ़ाइल में कोई समस्या है"</string>
+    <string name="message_no_install_apps_restriction" msgid="6772323689748831650">"ऐप्लिकेशन इंस्टॉल करने पर पाबंदी लगा दी गई है"</string>
+    <string name="message_no_install_unknown_apps_restriction" msgid="6111967131011920924">"अनजान ऐप्लिकेशन इंस्टॉल करने पर पाबंदी लगा दी गई है"</string>
+    <string name="message_uninstall_with_clone_instance" msgid="12594156305221478">"आपके डिवाइस में इस ऐप्लिकेशन का क्लोन भी मौजूद है और इसे मिटा दिया जाएगा"</string>
+    <string name="message_delete_clone_app" msgid="6632017049227330363">"यह ऐप्लिकेशन, <xliff:g id="APP_LABEL">%1$s</xliff:g> का क्लोन है"</string>
+    <string name="message_uninstall_updates_system_app" msgid="1246198093614610171">"ऐप्लिकेशन के इस वर्शन को फ़ैक्ट्री वर्शन से बदल दिया जाएगा. साथ ही, ऐप्लिकेशन का पूरा डेटा हटा दिया जाएगा."</string>
+    <string name="message_uninstall_updates_system_app_all_users" msgid="1659615085602508659">"ऐप्लिकेशन के इस वर्शन को फ़ैक्ट्री वर्शन से बदल दिया जाएगा. यह बदलाव, इस डिवाइस को इस्तेमाल करने वाले सभी उपयोगकर्ताओं के लिए होगा. साथ ही, ऐप्लिकेशन का पूरा डेटा हटा दिया जाएगा."</string>
+    <string name="message_uninstall_work_profile" msgid="224587253086750763">"इस ऐप्लिकेशन को आपकी वर्क प्रोफ़ाइल से अनइंस्टॉल कर दिया जाएगा"</string>
+    <string name="message_uninstall_private_space" msgid="2815872500665141251">"इस ऐप्लिकेशन को आपके प्राइवेट स्पेस से अनइंस्टॉल कर दिया जाएगा"</string>
+    <string name="message_uninstall_app_not_found" msgid="1228396155188846293">"यह ऐप्लिकेशन, इंस्टॉल किए गए ऐप्लिकेशन की सूची में नहीं मिला या इसे पहले ही अनइंस्टॉल कर दिया गया है"</string>
+    <string name="message_uninstall_user_not_allowed" msgid="4812707444447008148">"मौजूदा उपयोगकर्ता, इस ऐप्लिकेशन को अनइंस्टॉल नहीं कर सकता"</string>
+    <string name="message_uninstall_failed" msgid="4678598986902459187">"इस ऐप्लिकेशन को अनइंस्टॉल नहीं किया जा सका"</string>
+    <string name="message_uninstall_keep_data" msgid="3955153594868206983">"ऐप्लिकेशन का डेटा सेव रखें"</string>
+    <string name="message_archive" msgid="943853731737315850">"ऐप्लिकेशन का डेटा सेव किया जाएगा"</string>
+    <string name="message_archive_all_users" msgid="4664139369764501351">"ऐप्लिकेशन का पूरा डेटा सेव किया जाएगा"</string>
+    <string name="message_archive_other_user" msgid="6465828676043191175">"ऐप्लिकेशन का डेटा सेव किया जाएगा"</string>
+    <string name="message_archive_work_profile" msgid="7601504268820630858">"इस ऐप्लिकेशन को आपकी वर्क प्रोफ़ाइल से संग्रहित किया जाएगा. साथ ही, ऐप्लिकेशन का आपका डेटा सेव किया जाएगा."</string>
+    <string name="message_archive_private_space" msgid="4873651645762576624">"इस ऐप्लिकेशन को आपके प्राइवेट स्पेस से संग्रहित किया जाएगा. साथ ही, ऐप्लिकेशन का आपका डेटा सेव किया जाएगा."</string>
+    <string name="message_restore" msgid="8402726798623569969">"यह ऐप्लिकेशन, बैकग्राउंड में <xliff:g id="INSTALLER_NAME">%1$s</xliff:g> से डाउनलोड होगा"</string>
+    <string name="message_restore_error_user_action_needed" msgid="2206904734076205208">"इस ऐप्लिकेशन को वापस लाने से पहले, <xliff:g id="INSTALLER_NAME">%1$s</xliff:g> को ज़्यादा जानकारी चाहिए"</string>
+    <string name="message_restore_error_less_storage" msgid="4945507738776981462">"इस ऐप्लिकेशन को वापस लाने के लिए, &lt;b&gt;<xliff:g id="BYTES">%1$s</xliff:g>&lt;/b&gt; स्टोरेज खाली करें और फिर से कोशिश करें"</string>
+    <string name="message_restore_error_offline" msgid="4212551781323276126">"इस ऐप्लिकेशन को वापस लाने के लिए, अपने इंटरनेट कनेक्शन की जांच करें और फिर से कोशिश करें"</string>
+    <string name="message_restore_error_installer_disabled" msgid="1089791898782445342">"इस ऐप्लिकेशन को वापस लाने के लिए, सेटिंग में जाकर <xliff:g id="INSTALLERNAME">%1$s</xliff:g> को चालू करें"</string>
+    <string name="message_restore_error_installer_absent" msgid="8492838251989389724">"इस ऐप्लिकेशन को वापस लाने के लिए, आपको <xliff:g id="INSTALLER_NAME">%1$s</xliff:g> इंस्टॉल करना होगा"</string>
+    <string name="message_restore_error_generic" msgid="5903850636679929406">"इस ऐप्लिकेशन को वापस लाते समय कोई समस्या हुई"</string>
+    <string name="message_uninstall_activity" msgid="3263352475743590167">"<xliff:g id="ACTIVITY_NAME">%1$s</xliff:g>, इस ऐप्लिकेशन का एक हिस्सा है: <xliff:g id="APP_NAME">%2$s</xliff:g>"</string>
+    <!-- no translation found for cannot_install_app_blocked_summary (8433096420067308800) -->
+    <skip />
+    <!-- no translation found for cannot_install_verification_no_internet_summary (8948259713332887857) -->
+    <skip />
+    <!-- no translation found for cannot_install_verification_unavailable_summary (343815915687716571) -->
+    <skip />
+    <!-- no translation found for install_without_verifying_summary (9056694084349761546) -->
+    <skip />
+    <!-- no translation found for cannot_install_app_blocked_title (6372444121824751694) -->
+    <skip />
+    <!-- no translation found for cannot_install_verification_no_internet_title (2862046642298119581) -->
+    <skip />
+    <!-- no translation found for cannot_install_verification_unavailable_title (2038093442302309120) -->
+    <skip />
+    <string name="button_install" msgid="7434013176505680162">"इंस्टॉल करें"</string>
+    <string name="button_update" msgid="3046719350226327526">"अपडेट करें"</string>
+    <string name="button_update_anyway" msgid="6674207037708730779">"फिर भी अपडेट करें"</string>
+    <string name="button_done" msgid="3408025390982260629">"हो गया"</string>
+    <string name="button_open" msgid="6892684987374117955">"खोलें"</string>
+    <string name="button_cancel" msgid="6690491435205617214">"रद्द करें"</string>
     <string name="button_continue" msgid="107501685249826244">"जारी रखें"</string>
-    <!-- no translation found for button_close (7187308556466275899) -->
-    <skip />
-    <!-- no translation found for button_uninstall (6317309210023038915) -->
-    <skip />
-    <!-- no translation found for button_delete (1050833585936159792) -->
-    <skip />
-    <!-- no translation found for button_reinstall (476377927808336418) -->
-    <skip />
-    <!-- no translation found for button_manage_apps (957735904821659812) -->
-    <skip />
-    <!-- no translation found for button_archive (2719647830439699121) -->
-    <skip />
-    <!-- no translation found for button_restore (4388317532933866637) -->
-    <skip />
-    <!-- no translation found for button_uninstall_updates_system_app (5510230756003755497) -->
-    <skip />
-    <!-- no translation found for button_settings (3837571366246132287) -->
-    <skip />
-    <!-- no translation found for string_cloned_app_label (3596634458716024562) -->
-    <skip />
+    <string name="button_close" msgid="7187308556466275899">"बंद करें"</string>
+    <string name="button_uninstall" msgid="6317309210023038915">"अनइंस्टॉल करें"</string>
+    <string name="button_delete" msgid="1050833585936159792">"मिटाएं"</string>
+    <string name="button_reinstall" msgid="476377927808336418">"फिर से इंस्टॉल करें"</string>
+    <string name="button_manage_apps" msgid="957735904821659812">"ऐप्लिकेशन मैनेज करें"</string>
+    <string name="button_archive" msgid="2719647830439699121">"संग्रहित करें"</string>
+    <string name="button_restore" msgid="4388317532933866637">"वापस लाएं"</string>
+    <string name="button_uninstall_updates_system_app" msgid="5510230756003755497">"अपडेट अनइंस्टॉल करें"</string>
+    <string name="button_settings" msgid="3837571366246132287">"सेटिंग"</string>
+    <string name="string_cloned_app_label" msgid="3596634458716024562">"<xliff:g id="PACKAGE_LABEL">%1$s</xliff:g> का क्लोन"</string>
 </resources>

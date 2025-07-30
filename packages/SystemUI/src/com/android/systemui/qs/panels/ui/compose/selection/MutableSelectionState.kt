@@ -16,6 +16,10 @@
 
 package com.android.systemui.qs.panels.ui.compose.selection
 
+import androidx.compose.foundation.LocalIndication
+import androidx.compose.foundation.hoverable
+import androidx.compose.foundation.indication
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
@@ -168,21 +172,26 @@ sealed interface PlacementEvent {
 /**
  * Listens for click events on selectable tiles.
  *
- * Use this on current tiles as they can be selected.
+ * Use this on current tiles as they can be selected. This applies the [LocalIndication] on taps and
+ * hover.
  *
  * @param tileSpec the [TileSpec] of the tile this modifier is applied to
  * @param selectionState the [MutableSelectionState] representing the grid's selection
  */
 @Composable
 fun Modifier.selectableTile(tileSpec: TileSpec, selectionState: MutableSelectionState): Modifier {
-    return pointerInput(Unit) {
-        detectEagerTapGestures(
-            doubleTapEnabled = {
-                // Double tap enabled if where not in placement mode already
-                !selectionState.placementEnabled
-            },
-            onDoubleTap = { selectionState.enterPlacementMode(tileSpec) },
-            onTap = { selectionState.onTap(tileSpec) },
-        )
-    }
+    val interactionSource = remember { MutableInteractionSource() }
+    return hoverable(interactionSource)
+        .indication(interactionSource, LocalIndication.current)
+        .pointerInput(Unit) {
+            detectEagerTapGestures(
+                interactionSource = interactionSource,
+                doubleTapEnabled = {
+                    // Double tap enabled if where not in placement mode already
+                    !selectionState.placementEnabled
+                },
+                onDoubleTap = { selectionState.enterPlacementMode(tileSpec) },
+                onTap = { selectionState.onTap(tileSpec) },
+            )
+        }
 }

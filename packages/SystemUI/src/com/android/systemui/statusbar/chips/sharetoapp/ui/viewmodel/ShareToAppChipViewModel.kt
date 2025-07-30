@@ -105,7 +105,7 @@ constructor(
                                     ProjectionChipModel.ContentType.Screen ->
                                         createShareScreenToAppStopDialog(currentProjection)
                                     ProjectionChipModel.ContentType.Audio ->
-                                        createGenericShareScreenToAppStopDialog()
+                                        createGenericShareScreenToAppStopDialog(currentProjection)
                                 }
                             }
                             ProjectionChipModel.Receiver.CastToOtherDevice ->
@@ -140,7 +140,7 @@ constructor(
                                     ProjectionChipModel.ContentType.Screen ->
                                         createShareScreenToAppChip(projectionModel)
                                     ProjectionChipModel.ContentType.Audio ->
-                                        createIconOnlyShareToAppChip()
+                                        createIconOnlyShareToAppChip(projectionModel)
                                 }
                             }
                             ProjectionChipModel.Receiver.CastToOtherDevice ->
@@ -212,8 +212,10 @@ constructor(
         )
     }
 
-    private fun createGenericShareScreenToAppStopDialog(): MediaProjectionStopDialogModel {
-        val dialogDelegate = createGenericShareToAppDialogDelegate(context)
+    private fun createGenericShareScreenToAppStopDialog(
+        projectionModel: ProjectionChipModel.Projecting
+    ): MediaProjectionStopDialogModel {
+        val dialogDelegate = createGenericShareToAppDialogDelegate(context, projectionModel)
         return MediaProjectionStopDialogModel.Shown(
             dialogDelegate,
             onDismissAction = ::onStopDialogDismissed,
@@ -269,7 +271,9 @@ constructor(
         )
     }
 
-    private fun createIconOnlyShareToAppChip(): OngoingActivityChipModel.Active {
+    private fun createIconOnlyShareToAppChip(
+        state: ProjectionChipModel.Projecting
+    ): OngoingActivityChipModel.Active {
         return OngoingActivityChipModel.Active(
             key = KEY,
             isImportantForPrivacy = true,
@@ -286,7 +290,7 @@ constructor(
             colors = ColorsModel.Red,
             onClickListenerLegacy =
                 createDialogLaunchOnClickListener(
-                    { context -> createGenericShareToAppDialogDelegate(context) },
+                    { context -> createGenericShareToAppDialogDelegate(context, state) },
                     dialogTransitionAnimator,
                     DIALOG_CUJ_AUDIO_ONLY,
                     key = KEY,
@@ -298,7 +302,7 @@ constructor(
             clickBehavior =
                 OngoingActivityChipModel.ClickBehavior.ExpandAction(
                     createDialogLaunchOnClickCallback(
-                        { context -> createGenericShareToAppDialogDelegate(context) },
+                        { context -> createGenericShareToAppDialogDelegate(context, state) },
                         dialogTransitionAnimator,
                         DIALOG_CUJ_AUDIO_ONLY,
                         key = KEY,
@@ -323,11 +327,15 @@ constructor(
             state,
         )
 
-    private fun createGenericShareToAppDialogDelegate(context: Context) =
+    private fun createGenericShareToAppDialogDelegate(
+        context: Context,
+        state: ProjectionChipModel.Projecting,
+    ) =
         EndGenericShareToAppDialogDelegate(
             endMediaProjectionDialogHelper,
             context,
             stopAction = this::stopProjectingFromDialog,
+            state,
         )
 
     companion object {

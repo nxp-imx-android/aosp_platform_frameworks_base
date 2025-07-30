@@ -1479,6 +1479,8 @@ public class RootWindowContainerTests extends WindowTestsBase {
         tf0.setAdjacentTaskFragments(new TaskFragment.AdjacentSet(tf0, tf1));
         final ActivityRecord activity0 = tf0.getTopMostActivity();
         final ActivityRecord activity1 = tf1.getTopMostActivity();
+        postCreateActivitySetup(activity0, display);
+        postCreateActivitySetup(activity1, display);
 
         final List<ActivityAssistInfo> result = mRootWindowContainer.getTopVisibleActivities(
                 display.mDisplayId);

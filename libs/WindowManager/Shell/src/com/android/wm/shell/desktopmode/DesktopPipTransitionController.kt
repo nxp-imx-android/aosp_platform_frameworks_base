@@ -207,6 +207,7 @@ class DesktopPipTransitionController(
                 wct = wct,
                 newTask = if (shouldAddParentToDesk) parentTask!! else runningTaskInfo,
                 displayId = displayId,
+                userId = desktopRepository.userId,
                 enterReason = EnterReason.EXIT_PIP,
             )
         }

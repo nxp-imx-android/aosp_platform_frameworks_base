@@ -5716,9 +5716,8 @@ public class AudioService extends IAudioService.Stub
                     // full volume device shouldn't update the mute state
                     /* canChangeMute= */ canChangeMuteAndUpdateController
                             && !isFullVolumeDevice(deviceType));
-            index = streamState.getIndex(deviceType);
-
         }
+        index = streamState.getIndex(deviceType);
 
         handleAbsoluteVolume(streamType, streamTypeAlias, deviceAttr, index, streamState.mIsMuted,
                 flags);
@@ -16034,6 +16033,12 @@ public class AudioService extends IAudioService.Stub
                 Log.wtf(TAG, "Exception which should never occur", e);
             }
         }
+    }
+
+    @Override
+    /** @see AudioManager#waitForAudioHandlerBarrier() */
+    public void waitForAudioHandlerBarrier() {
+        mAudioHandler.runWithScissors(() -> {}, 0);
     }
 
     List<String> getDeviceIdentityAddresses(AudioDeviceAttributes device) {

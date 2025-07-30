@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.wm.shell.flicker.maximize
+package com.android.wm.shell.flicker.externaldisplay
 
 import androidx.test.filters.RequiresDevice
 import android.tools.NavBar
@@ -23,41 +23,41 @@ import android.tools.flicker.junit.FlickerParametersRunnerFactory
 import android.tools.flicker.FlickerBuilder
 import android.tools.flicker.FlickerTest
 import android.tools.flicker.FlickerTestFactory
+import android.tools.traces.component.ComponentNameMatcher
+import android.tools.traces.component.IComponentNameMatcher
 import com.android.wm.shell.flicker.DesktopModeBaseTest
-import com.android.wm.shell.scenarios.MaximizeAppWindowWithDragToTopDragZoneInDesktopFirst
+import com.android.wm.shell.scenarios.OpenAppWithExternalDisplayConnected
 import com.android.wm.shell.Utils
-import com.android.wm.shell.flicker.utils.appLayerHasMaxDisplayHeightAtEnd
-import com.android.wm.shell.flicker.utils.appLayerHasMaxDisplayWidthAtEnd
-import com.android.wm.shell.flicker.utils.resizeVeilKeepsIncreasingInSize
+import com.android.wm.shell.flicker.utils.appWindowBecomesVisible
+import com.android.wm.shell.flicker.utils.appWindowInsideDisplayBoundsAtEnd
+import com.android.wm.shell.flicker.utils.appWindowOnDefaultDisplayAtEnd
+import com.android.wm.shell.flicker.utils.appWindowOnTopAtEnd
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.Parameterized
 
 /**
- * Maximize app window by dragging it to the top drag zone in desktop-first display.
+ * Open an app on the default display when an external display is connected.
  *
- * Test with 3 button navigation because the expected bottom inset of the stable bounds is higher
- * than actual.
- *
- * Assert that the app window keeps the same increases in size, filling the vertical and horizontal
- * stable display bounds.
+ * Assert that the app launches in desktop mode.
  */
 
 @RequiresDevice
 @RunWith(Parameterized::class)
 @Parameterized.UseParametersRunnerFactory(FlickerParametersRunnerFactory::class)
-class MaximizeAppWindowWithDragToTopDragZoneInDesktopFirstFlickerTest(flicker: FlickerTest) :
+class OpenAppWithExternalDisplayConnectedFlickerTest(flicker: FlickerTest) :
     DesktopModeBaseTest(flicker) {
-    inner class MaximizeAppWindowWithDragToTopDragZoneInDesktopFirstScenario :
-        MaximizeAppWindowWithDragToTopDragZoneInDesktopFirst(flicker.scenario.startRotation)
+    inner class OpenAppWithExternalDisplayConnectedScenario :
+        OpenAppWithExternalDisplayConnected(flicker.scenario.startRotation)
 
     @Rule
     @JvmField
     val testSetupRule =
-        Utils.testSetupRule(NavBar.MODE_3BUTTON, flicker.scenario.startRotation)
-    val scenario = MaximizeAppWindowWithDragToTopDragZoneInDesktopFirstScenario()
+        Utils.testSetupRule(NavBar.MODE_GESTURAL, flicker.scenario.startRotation)
+    val scenario = OpenAppWithExternalDisplayConnectedScenario()
     private val testApp = scenario.testApp
+    private val desktopWallpaperMatcher: IComponentNameMatcher = ComponentNameMatcher.DESKTOP_WALLPAPER_ACTIVITY
 
     override val transition: FlickerBuilder.() -> Unit
         get() = {
@@ -65,7 +65,7 @@ class MaximizeAppWindowWithDragToTopDragZoneInDesktopFirstFlickerTest(flicker: F
                 scenario.setup()
             }
             transitions {
-                scenario.maximizeAppWithDragToTopDragZone()
+                scenario.openAppWithExternalDisplayConnected()
             }
             teardown {
                 scenario.teardown()
@@ -73,20 +73,26 @@ class MaximizeAppWindowWithDragToTopDragZoneInDesktopFirstFlickerTest(flicker: F
         }
 
     @Test
-    fun appLayerHasMaxDisplayHeightAtEnd() = flicker.appLayerHasMaxDisplayHeightAtEnd(testApp)
+    fun appWindowBecomesVisible() = flicker.appWindowBecomesVisible(testApp)
 
     @Test
-    fun appLayerHasMaxDisplayWidthAtEnd() = flicker.appLayerHasMaxDisplayWidthAtEnd(testApp)
+    fun appWindowInsideDisplayBoundsAtEnd() = flicker.appWindowInsideDisplayBoundsAtEnd(testApp)
 
     @Test
-    fun resizeVeilKeepsIncreasingInSize() = flicker.resizeVeilKeepsIncreasingInSize(testApp)
+    fun appWindowOnTopAtEnd() = flicker.appWindowOnTopAtEnd(testApp)
+
+    @Test
+    fun appWindowOnDefaultDisplayAtEnd() = flicker.appWindowOnDefaultDisplayAtEnd(testApp)
+
+    @Test
+    fun wallpaperActivityBecomesVisible() = flicker.appWindowBecomesVisible(desktopWallpaperMatcher)
 
     companion object {
         @Parameterized.Parameters(name = "{0}")
         @JvmStatic
         fun getParams(): Collection<FlickerChecker> {
             return FlickerTestFactory.nonRotationTests(
-                supportedNavigationModes = listOf(NavBar.MODE_3BUTTON)
+                supportedNavigationModes = listOf(NavBar.MODE_GESTURAL)
             )
         }
     }

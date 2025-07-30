@@ -399,7 +399,10 @@ public class NotificationTest {
     public void testGetNotificationStyle_metricStyle_withApiFlagEnabled() {
         // FIRST -- check that this works if you use the constructor
         Notification n = new Notification.Builder(mContext, "test")
-                .setStyle(new Notification.MetricStyle())
+                .setStyle(new Notification.MetricStyle()
+                        .addMetric(new Notification.Metric(
+                                new Notification.Metric.FixedInt(1), "Int",
+                                Notification.Metric.MEANING_UNKNOWN)))
                 .setSmallIcon(android.R.drawable.sym_def_app_icon)
                 .build();
         assertThat(n.extras.getString(Notification.EXTRA_TEMPLATE))

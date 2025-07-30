@@ -21,7 +21,10 @@
     <string name="update" msgid="3932142540719227615">"Uppdatera"</string>
     <string name="done" msgid="6632441120016885253">"Klar"</string>
     <string name="cancel" msgid="1018267193425558088">"Avbryt"</string>
-    <string name="install_anyway" msgid="8794642873773384969">"Installera ändå"</string>
+    <!-- no translation found for install_without_verifying (7606774834125762618) -->
+    <skip />
+    <!-- no translation found for more_details (3643407086654820243) -->
+    <skip />
     <string name="dont_install" msgid="414055123295505225">"Installera inte"</string>
     <string name="installing" msgid="4921993079741206516">"Installerar …"</string>
     <string name="installing_app" msgid="1165095864863849422">"<xliff:g id="PACKAGE_LABEL">%1$s</xliff:g> installeras …"</string>
@@ -45,10 +48,6 @@
     <string name="unknown_apps_admin_dlg_text" msgid="4456572224020176095">"Administratören tillåter inte installation av appar från okända källor"</string>
     <string name="unknown_apps_user_restriction_dlg_text" msgid="151020786933988344">"Denna användare får inte installera okända appar"</string>
     <string name="install_apps_user_restriction_dlg_text" msgid="2154119597001074022">"Användaren har inte behörighet att installera appar"</string>
-    <string name="verification_incomplete_summary" msgid="40478808885845735">"Appen har inte installerats ännu eftersom verifiering inte kunde utföras. Försök igen."</string>
-    <string name="cannot_install_verification_unavailable_summary" msgid="2469994565312971465"><p>"Varning: Det gick inte att verifiera appen. "</p><p><a href="">"Läs mer"</a>" om verifiering av paket"</p></string>
-    <string name="cannot_install_package_summary" msgid="3358675485628657234"><p>"Det går inte att installera den här appen eftersom den har blockerats. "</p><p><a href="">"Läs mer"</a>" om verifiering av paket"</p></string>
-    <string name="lite_verification_summary" msgid="3211866126230002977"><p>"Den här appen ägs av ADI Lite Developer och kringgår standardverifieringsprocessen. Vill du fortsätta med installationen?"</p></string>
     <string name="ok" msgid="7871959885003339302">"OK"</string>
     <string name="archive" msgid="4447791830199354721">"Arkivera"</string>
     <string name="update_anyway" msgid="8792432341346261969">"Uppdatera ändå"</string>

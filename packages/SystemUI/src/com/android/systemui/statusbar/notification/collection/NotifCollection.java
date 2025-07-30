@@ -548,7 +548,7 @@ public class NotifCollection implements Dumpable, PipelineDumpable {
     }
 
     private void onNotificationsInitialized() {
-        mInitializedTimestamp = UseElapsedRealtimeForCreationTime.getCurrentTime(mClock);
+        mInitializedTimestamp = mClock.elapsedRealtime();
     }
 
     private void postNotification(
@@ -558,8 +558,7 @@ public class NotifCollection implements Dumpable, PipelineDumpable {
 
         if (entry == null) {
             // A new notification!
-            entry = new NotificationEntry(sbn, ranking,
-                    UseElapsedRealtimeForCreationTime.getCurrentTime(mClock));
+            entry = new NotificationEntry(sbn, ranking, mClock.elapsedRealtime());
             mEventQueue.add(new InitEntryEvent(entry));
             mEventQueue.add(new BindEntryEvent(entry, sbn));
             mNotificationSet.put(sbn.getKey(), entry);
@@ -888,8 +887,8 @@ public class NotifCollection implements Dumpable, PipelineDumpable {
     // messages from system server.
     private void crashIfNotInitializing(RuntimeException exception) {
         final boolean isRecentlyInitialized = mInitializedTimestamp == 0
-                || UseElapsedRealtimeForCreationTime.getCurrentTime(mClock) - mInitializedTimestamp
-                        < INITIALIZATION_FORGIVENESS_WINDOW;
+                || mClock.elapsedRealtime() - mInitializedTimestamp
+                < INITIALIZATION_FORGIVENESS_WINDOW;
 
         if (isRecentlyInitialized) {
             mLogger.logIgnoredError(exception.getMessage());

@@ -1622,6 +1622,23 @@ public class AutoclickControllerTest {
 
     @Test
     @EnableFlags(com.android.server.accessibility.Flags.FLAG_ENABLE_AUTOCLICK_INDICATOR)
+    public void onConfigurationChanged_notifiesScrollPanelToUpdateTheme() throws Exception {
+        injectFakeMouseActionHoverMoveEvent();
+
+        // Create a spy on the real object to verify method calls.
+        AutoclickScrollPanel spyScrollPanel = spy(mController.mAutoclickScrollPanel);
+        mController.mAutoclickScrollPanel = spyScrollPanel;
+
+        // Simulate a theme change.
+        Configuration newConfig = new Configuration();
+        mController.onConfigurationChanged(newConfig);
+
+        // Verify onConfigurationChanged was called.
+        verify(spyScrollPanel).onConfigurationChanged(newConfig);
+    }
+
+    @Test
+    @EnableFlags(com.android.server.accessibility.Flags.FLAG_ENABLE_AUTOCLICK_INDICATOR)
     public void onInputDeviceChanged_disconnectAndReconnect_hidesAndShowsTypePanel() {
         // Setup: one mouse connected initially.
         mController.mInputManagerWrapper = mMockInputManagerWrapper;

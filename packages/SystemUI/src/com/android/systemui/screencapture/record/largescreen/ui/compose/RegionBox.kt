@@ -223,12 +223,14 @@ private class RegionBoxState(private val minSizePx: Float, private val touchArea
  *   user finishes a drag gesture. This rectangle is used for taking a screenshot. The rectangle is
  *   of type [android.graphics.Rect] because the screenshot API requires int values.
  * @param drawableLoaderViewModel The view model that is used to load drawables.
+ * @param onCaptureClick A callback function that is invoked when the capture button is clicked.
  * @param modifier The modifier to be applied to the composable.
  */
 @Composable
 fun RegionBox(
-    onRegionSelected: (rect: IntRect) -> Unit,
     drawableLoaderViewModel: DrawableLoaderViewModel,
+    onRegionSelected: (rect: IntRect) -> Unit,
+    onCaptureClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val density = LocalDensity.current
@@ -298,12 +300,14 @@ fun RegionBox(
                 contentAlignment = Alignment.Center,
             ) {}
 
-            // The screenshot button that is positioned inside or outside the region box.
-            RegionScreenshotButton(
+            // The button which initiates capturing the specified region of the screen. It is
+            // positioned inside or outside the region box depending on the size of the region box.
+            RegionBoxButton(
                 boxWidthDp,
                 boxHeightDp,
                 currentRect,
                 drawableLoaderViewModel = drawableLoaderViewModel,
+                onClick = onCaptureClick,
             )
         }
     }

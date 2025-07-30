@@ -300,6 +300,8 @@
     <string name="global_action_assist" msgid="2517047220311505805">"Lagundu"</string>
     <string name="global_action_voice_assist" msgid="6655788068555086695">"Ahots-laguntza"</string>
     <string name="global_action_lockdown" msgid="2475471405907902963">"Blokeatu"</string>
+    <!-- no translation found for global_action_unrestricted_lock (7933224393323064116) -->
+    <skip />
     <string name="status_bar_notification_info_overflow" msgid="3330152558746563475">"999+"</string>
     <string name="notification_compact_heads_up_reply" msgid="2425293958371284340">"Erantzun"</string>
     <string name="notification_hidden_text" msgid="2835519769868187223">"Jakinarazpen berria"</string>

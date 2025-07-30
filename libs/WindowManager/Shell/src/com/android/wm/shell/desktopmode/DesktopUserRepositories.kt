@@ -16,7 +16,6 @@
 
 package com.android.wm.shell.desktopmode
 
-import android.app.ActivityManager
 import android.content.Context
 import android.content.pm.UserInfo
 import android.os.UserManager
@@ -74,7 +73,7 @@ class DesktopUserRepositories(
         }
 
     init {
-        userId = ActivityManager.getCurrentUser()
+        userId = shellController.currentUserId
         if (ENABLE_DESKTOP_WINDOWING_HSUM.isTrue) {
             userIdToProfileIdsMap[userId] = userManager.getProfiles(userId).map { it.id }
         }
@@ -90,8 +89,8 @@ class DesktopUserRepositories(
             ENABLE_DESKTOP_WINDOWING_HSUM.isTrue() &&
                 DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue
         ) {
-            userId = ActivityManager.getCurrentUser()
-            userIdToProfileIdsMap[userId] = userManager.getProfiles(userId).map { it.id }
+            userId = shellController.currentUserId
+            userIdToProfileIdsMap[userId] = shellController.currentUserProfiles.map { it.id }
         }
     }
 

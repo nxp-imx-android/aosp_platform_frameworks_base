@@ -49,8 +49,8 @@ import java.util.regex.Pattern;
  * Enable this method call logging by adding the following lines to the options file.
  * (frameworks/base/ravenwood/texts/ravenwood-standard-options.txt)
 
-   --default-method-call-hook
-     android.platform.test.ravenwood.RavenwoodMethodCallLogger.logMethodCall
+ --default-method-call-hook
+ android.platform.test.ravenwood.RavenwoodMethodCallLogger.logMethodCall
 
  *
  * We don't log methods that are trivial, uninteresting, or would be too noisy.
@@ -64,8 +64,18 @@ import java.util.regex.Pattern;
 public class RavenwoodMethodCallLogger {
     private static final String TAG = "RavenwoodMethodCallLogger";
 
-    private static final boolean LOG_ALL_METHODS = "1".equals(
-            System.getenv("RAVENWOOD_METHOD_LOG_NO_FILTER"));
+    public enum LogMode {
+        Default,
+        None,
+        All,
+    }
+
+    private static final LogMode LOG_MODE =
+            switch ("" + System.getenv("RAVENWOOD_METHOD_LOG_MODE")) {
+        case "all" -> LogMode.All;
+        case "0" -> LogMode.None;
+        default -> LogMode.Default;
+    };
 
     /** The policy file is created with this filename. */
     private static final String CALLED_METHOD_POLICY_FILE = "/tmp/ravenwood-called-methods.txt";
@@ -79,13 +89,13 @@ public class RavenwoodMethodCallLogger {
 
     /** It's a singleton, except we create different instances for unit tests. */
     @VisibleForTesting
-    public RavenwoodMethodCallLogger(boolean logAllMethods) {
-        mLogAllMethods = logAllMethods;
+    public RavenwoodMethodCallLogger(LogMode logMode) {
+        mLogMode = logMode;
     }
 
     /** Singleton instance */
     private static final RavenwoodMethodCallLogger sInstance =
-            new RavenwoodMethodCallLogger(LOG_ALL_METHODS);
+            new RavenwoodMethodCallLogger(LOG_MODE);
 
     /**
      * @return the singleton instance.
@@ -109,7 +119,7 @@ public class RavenwoodMethodCallLogger {
 
     private volatile PrintStream mOut = System.out;
 
-    private final boolean mLogAllMethods;
+    private final LogMode mLogMode;
 
     private static class MethodDesc {
         public final String name;
@@ -165,6 +175,10 @@ public class RavenwoodMethodCallLogger {
         sIgnoreClasses.add(android.util.Slog.class);
         sIgnoreClasses.add(android.util.EventLog.class);
         sIgnoreClasses.add(android.util.TimingsTraceLog.class);
+        sIgnoreClasses.add(android.util.MathUtils.class);
+
+        sIgnoreClasses.add(android.app.PropertyInvalidatedCache.class);
+        sIgnoreClasses.add(android.os.IpcDataCache.class);
 
         sIgnoreClasses.add(android.text.FontConfig.class);
 
@@ -208,8 +222,13 @@ public class RavenwoodMethodCallLogger {
      * Using class objects allow us to easily check inheritance too.
      */
     private boolean shouldIgnoreClass(Class<?> clazz) {
-        if (mLogAllMethods) {
-            return false;
+        switch (mLogMode) {
+            case All:
+                return false;
+            case None:
+                return true;
+            default:
+                break;
         }
         if (sIgnoreClasses.contains(clazz)) {
             return true;
@@ -476,7 +495,8 @@ public class RavenwoodMethodCallLogger {
                     }
                     wr.println();
                 }
-                Log.i(TAG, String.format("Wrote called methods to %s (%d classes, %d methods)",
+                Log.i(TAG, String.format(
+                        "Wrote called methods to file://%s (%d classes, %d methods)",
                         outputFileNameForLogging, classCount, methodCount));
             } catch (Exception e) {
                 Log.w(TAG, "Exception while dumping called methods", e);

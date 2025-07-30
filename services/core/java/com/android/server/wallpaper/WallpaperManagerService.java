@@ -1075,8 +1075,12 @@ public class WallpaperManagerService extends IWallpaperManager.Stub
         void forEachDisplayConnector(Consumer<DisplayConnector> action) {
             synchronized (mLock) {
                 for (int i = mDisplayConnector.size() - 1; i >= 0; i--) {
-                    final DisplayConnector connector = mDisplayConnector.valueAt(i);
-                    action.accept(connector);
+                    // Double check the index. Some actions, such as connectLocked, may revert the
+                    // wallpaper and clear the list of display connectors in case of failure.
+                    if (i < mDisplayConnector.size()) {
+                        final DisplayConnector connector = mDisplayConnector.valueAt(i);
+                        action.accept(connector);
+                    }
                 }
             }
         }
@@ -3480,7 +3484,7 @@ public class WallpaperManagerService extends IWallpaperManager.Stub
     // ToDo: Remove this version of the function
     @Override
     public void setWallpaperComponent(ComponentName name) {
-        setWallpaperComponent(name, "", UserHandle.getCallingUserId(), FLAG_SYSTEM);
+        setWallpaperComponent(name, "", FLAG_SYSTEM, UserHandle.getCallingUserId());
     }
 
     @VisibleForTesting

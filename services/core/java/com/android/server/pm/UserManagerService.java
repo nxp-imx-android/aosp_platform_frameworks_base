@@ -2491,11 +2491,9 @@ public class UserManagerService extends IUserManager.Stub {
     }
 
     /**
-     * Returns a UserInfo object with the name filled in, for Owner and Guest, or the original
-     * if the name is already set.
-     *
-     * <p><b>Note:</b> Currently, the resulting name can be {@code null} if a user was truly created
-     * with a {@code null} name.
+     * Returns a {@link UserInfo} object with the name filled in. The name will be the original name
+     * if it is already set, or else a proper localized name (like "Owner" or "Guest") if the
+     * original name is {@code null}.
      */
     @VisibleForTesting
     @Nullable UserInfo userWithName(@Nullable UserInfo orig) {
@@ -2510,11 +2508,11 @@ public class UserManagerService extends IUserManager.Stub {
         return orig;
     }
 
-    @Nullable String getName(UserInfo user) {
+    @NonNull String getName(UserInfo user) {
         return getName(user, /* logUser0Allocations= */ false);
     }
 
-    private @Nullable String getName(UserInfo user, boolean logUser0Allocations) {
+    private @NonNull String getName(UserInfo user, boolean logUser0Allocations) {
         if (user.name != null) {
             return user.name;
         }

@@ -21,7 +21,10 @@
     <string name="update" msgid="3932142540719227615">"Թարմացնել"</string>
     <string name="done" msgid="6632441120016885253">"Պատրաստ է"</string>
     <string name="cancel" msgid="1018267193425558088">"Չեղարկել"</string>
-    <string name="install_anyway" msgid="8794642873773384969">"Տեղադրել"</string>
+    <!-- no translation found for install_without_verifying (7606774834125762618) -->
+    <skip />
+    <!-- no translation found for more_details (3643407086654820243) -->
+    <skip />
     <string name="dont_install" msgid="414055123295505225">"Չտեղադրել"</string>
     <string name="installing" msgid="4921993079741206516">"Տեղադրում…"</string>
     <string name="installing_app" msgid="1165095864863849422">"<xliff:g id="PACKAGE_LABEL">%1$s</xliff:g> հավելվածը տեղադրվում է…"</string>
@@ -45,10 +48,6 @@
     <string name="unknown_apps_admin_dlg_text" msgid="4456572224020176095">"Ձեր ադմինիստրատորը թույլ չի տալիս տեղադրել հավելվածներ անհայտ աղբյուրներից"</string>
     <string name="unknown_apps_user_restriction_dlg_text" msgid="151020786933988344">"Այս օգտատերը չի կարող անհայտ հավելվածներ տեղադրել"</string>
     <string name="install_apps_user_restriction_dlg_text" msgid="2154119597001074022">"Այս օգտատիրոջը չի թույլատրվում տեղադրել հավելվածներ"</string>
-    <string name="verification_incomplete_summary" msgid="40478808885845735">"Հավելվածը դեռ չի տեղադրվել, քանի որ ստուգում հնարավոր չէ կատարել։ Նորից փորձեք։"</string>
-    <string name="cannot_install_verification_unavailable_summary" msgid="2469994565312971465"><p>"Զգուշացում, հավելվածի ստուգում հնարավոր չէ կատարել։ "</p><p><a href="">"Իմանալ ավելին"</a>" փաթեթների ստուգման մասին"</p></string>
-    <string name="cannot_install_package_summary" msgid="3358675485628657234"><p>"Հավելվածը հնարավոր չէ տեղադրել, քանի որ այն արգելափակված է։ "</p><p><a href="">"Իմանալ ավելին"</a>" փաթեթների ստուգման մասին"</p></string>
-    <string name="lite_verification_summary" msgid="3211866126230002977"><p>"Այս հավելվածը պատկանում է ADI Lite Developer-ին և շրջանցում է ստանդարտ հաստատման գործընթացները։ Ուզո՞ւմ եք շարունակել տեղադրումը"</p></string>
     <string name="ok" msgid="7871959885003339302">"Եղավ"</string>
     <string name="archive" msgid="4447791830199354721">"Արխիվացնել"</string>
     <string name="update_anyway" msgid="8792432341346261969">"Թարմացնել"</string>

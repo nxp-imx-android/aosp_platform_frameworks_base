@@ -2806,15 +2806,15 @@ public class WindowManagerService extends IWindowManager.Stub
             Trace.traceEnd(TRACE_TAG_WINDOW_MANAGER);
 
             if (toBeDisplayed && win.mIsWallpaper) {
-                displayContent.mWallpaperController.updateWallpaperOffset(win, false /* sync */);
+                displayContent.mWallpaperController.updateWallpaperOffset(win);
             }
             if (win.mActivityRecord != null) {
                 win.mActivityRecord.updateReportedVisibilityLocked();
             }
 
-            if (outFrames != null && outMergedConfiguration != null) {
-                final boolean shouldReportActivityWindowInfo = outRelayoutResult != null
-                            && win.mLastReportedActivityWindowInfo != null;
+            if (outRelayoutResult != null) {
+                final boolean shouldReportActivityWindowInfo =
+                        win.mLastReportedActivityWindowInfo != null;
                 final ActivityWindowInfo outActivityWindowInfo = shouldReportActivityWindowInfo
                         ? new ActivityWindowInfo()
                         : null;

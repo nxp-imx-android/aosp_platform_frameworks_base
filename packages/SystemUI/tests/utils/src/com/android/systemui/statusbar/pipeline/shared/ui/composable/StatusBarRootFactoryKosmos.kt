@@ -16,6 +16,7 @@
 
 package com.android.systemui.statusbar.pipeline.shared.ui.composable
 
+import com.android.systemui.clock.ui.viewmodel.clockViewModelFactory
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.media.controls.ui.controller.mediaHierarchyManager
 import com.android.systemui.media.controls.ui.view.qsMediaHost
@@ -33,6 +34,7 @@ val Kosmos.statusBarRootFactory by
         StatusBarRootFactory(
             notificationIconsBinder = mock(),
             iconViewStoreFactory = connectedDisplaysStatusBarNotificationIconViewStoreFactory,
+            clockViewModelFactory = clockViewModelFactory,
             darkIconManagerFactory = mock(),
             iconController = statusBarIconController,
             ongoingCallController = mock(),

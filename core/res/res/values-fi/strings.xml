@@ -300,6 +300,8 @@
     <string name="global_action_assist" msgid="2517047220311505805">"Auta"</string>
     <string name="global_action_voice_assist" msgid="6655788068555086695">"Ääniapuri"</string>
     <string name="global_action_lockdown" msgid="2475471405907902963">"Lukitse"</string>
+    <!-- no translation found for global_action_unrestricted_lock (7933224393323064116) -->
+    <skip />
     <string name="status_bar_notification_info_overflow" msgid="3330152558746563475">"999+"</string>
     <string name="notification_compact_heads_up_reply" msgid="2425293958371284340">"Vastaa"</string>
     <string name="notification_hidden_text" msgid="2835519769868187223">"Uusi ilmoitus"</string>
@@ -2067,7 +2069,7 @@
     <string name="country_selection_title" msgid="5221495687299014379">"Alueasetus"</string>
     <string name="search_language_hint" msgid="7004225294308793583">"Anna kielen nimi"</string>
     <string name="language_picker_section_suggested" msgid="6556199184638990447">"Ehdotukset"</string>
-    <string name="language_picker_regions_section_suggested" msgid="6080131515268225316">"Ehdotettu"</string>
+    <string name="language_picker_regions_section_suggested" msgid="6080131515268225316">"Ehdotukset"</string>
     <string name="language_picker_section_suggested_bilingual" msgid="5932198319583556613">"Kieliehdotukset"</string>
     <string name="region_picker_section_suggested_bilingual" msgid="704607569328224133">"Alue-ehdotukset"</string>
     <string name="language_picker_section_all" msgid="1985809075777564284">"Kaikki kielet"</string>
@@ -2556,7 +2558,7 @@
     <string name="face_dangling_notification_msg" msgid="746235263598985384">"Kasvomallia ei enää tunnisteta. Ota kasvojentunnistusavaus uudelleen käyttöön."</string>
     <string name="biometric_dangling_notification_action_set_up" msgid="8246885009807817961">"Ota käyttöön"</string>
     <string name="biometric_dangling_notification_action_not_now" msgid="8095249216864443491">"Ei nyt"</string>
-    <string name="bg_user_sound_notification_title_alarm" msgid="5251678483393143527">"Hälytys: <xliff:g id="USER_NAME">%s</xliff:g>"</string>
+    <string name="bg_user_sound_notification_title_alarm" msgid="5251678483393143527">"Herätys: <xliff:g id="USER_NAME">%s</xliff:g>"</string>
     <string name="bg_user_sound_notification_button_switch_user" msgid="3091969648572788946">"Vaihda käyttäjää"</string>
     <string name="bg_user_sound_notification_button_mute" msgid="4942158515665615243">"Mykistä"</string>
     <string name="bg_user_sound_notification_message" msgid="8613881975316976673">"Mykistä äänet napauttamalla"</string>

@@ -369,7 +369,7 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
 
         // WHEN stackBottom changes
         final float newStackBottom = 800;
-        mStackScroller.setDrawBounds(new RectF(0, stackTop, 400, newStackBottom));
+        mStackScroller.updateDrawBounds(new RectF(0, stackTop, 400, newStackBottom));
 
         // THEN stackEndHeight is updated
         final float newStackHeight = newStackBottom - stackTop;
@@ -467,7 +467,7 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
         float stackHeight = stackBottom - stackTop;
         float stackWidth = 400;
         mStackScroller.setStackTop(stackTop);
-        mStackScroller.setDrawBounds(new RectF(0, stackTop, stackWidth, stackBottom));
+        mStackScroller.updateDrawBounds(new RectF(0, stackTop, stackWidth, stackBottom));
 
         // When: panel is expanding
         mStackScroller.setExpandFraction(expandFraction);
@@ -496,7 +496,7 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
         float stackHeight = stackBottom - stackTop;
         float stackWidth = 400;
         mStackScroller.setStackTop(stackTop);
-        mStackScroller.setDrawBounds(new RectF(0, stackTop, stackWidth, stackBottom));
+        mStackScroller.updateDrawBounds(new RectF(0, stackTop, stackWidth, stackBottom));
 
         // When: panel is fully expanded
         mStackScroller.setExpandFraction(expandFraction);
@@ -1059,7 +1059,7 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
         float stackWidth = 400;
         float stackViewPortHeight = stackBottom - stackTop;
         mStackScroller.setStackTop(stackTop);
-        mStackScroller.setDrawBounds(new RectF(0, stackTop, stackWidth, stackBottom));
+        mStackScroller.updateDrawBounds(new RectF(0, stackTop, stackWidth, stackBottom));
         when(mStackSizeCalculator.computeHeight(
                 eq(mStackScroller),
                 eq(-1),
@@ -1097,7 +1097,7 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
         float stackBottom = 1100;
         float stackWidth = 400;
         mStackScroller.setStackTop(stackTop);
-        mStackScroller.setDrawBounds(new RectF(0, stackTop, stackWidth, stackBottom));
+        mStackScroller.updateDrawBounds(new RectF(0, stackTop, stackWidth, stackBottom));
 
         // Given we have a limit on max displayed notifications
         int stackHeightBeforeUpdate = 100;

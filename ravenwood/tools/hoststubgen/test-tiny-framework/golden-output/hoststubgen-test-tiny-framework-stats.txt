@@ -666,7 +666,7 @@ com.android.hoststubgen.test.tinyframework
   <init>()V
   1
   Keep
-  class-wide in com/android/hoststubgen/test/tinyframework/TinyFrameworkMethodCallReplace [inner-reason: file-override]
+  class-wide in com/android/hoststubgen/test/tinyframework/TinyFrameworkMethodCallReplace [inner-reason: class-annotation]
   1
   1
 com.android.hoststubgen.test.tinyframework
@@ -677,7 +677,7 @@ com.android.hoststubgen.test.tinyframework
   constructorReplaceTester(I)Lcom/android/hoststubgen/test/tinyframework/TinyFrameworkMethodCallReplace$ConstructorTester;
   1
   Keep
-  class-wide in com/android/hoststubgen/test/tinyframework/TinyFrameworkMethodCallReplace [inner-reason: file-override]
+  class-wide in com/android/hoststubgen/test/tinyframework/TinyFrameworkMethodCallReplace [inner-reason: class-annotation]
   0
   2
 com.android.hoststubgen.test.tinyframework
@@ -688,7 +688,7 @@ com.android.hoststubgen.test.tinyframework
   nonStaticMethodCallReplaceTester()Z
   1
   Keep
-  class-wide in com/android/hoststubgen/test/tinyframework/TinyFrameworkMethodCallReplace [inner-reason: file-override]
+  class-wide in com/android/hoststubgen/test/tinyframework/TinyFrameworkMethodCallReplace [inner-reason: class-annotation]
   0
   2
 com.android.hoststubgen.test.tinyframework
@@ -699,7 +699,7 @@ com.android.hoststubgen.test.tinyframework
   originalAdd(II)I
   1
   Keep
-  file-override
+  class-wide in com/android/hoststubgen/test/tinyframework/TinyFrameworkMethodCallReplace [inner-reason: class-annotation]
   1
   1
 com.android.hoststubgen.test.tinyframework
@@ -710,7 +710,7 @@ com.android.hoststubgen.test.tinyframework
   staticMethodCallReplaceTester()I
   1
   Keep
-  class-wide in com/android/hoststubgen/test/tinyframework/TinyFrameworkMethodCallReplace [inner-reason: file-override]
+  class-wide in com/android/hoststubgen/test/tinyframework/TinyFrameworkMethodCallReplace [inner-reason: class-annotation]
   0
   2
 com.android.hoststubgen.test.tinyframework
@@ -721,7 +721,7 @@ com.android.hoststubgen.test.tinyframework
   <init>(I)V
   1
   Keep
-  file-override
+  class-wide in com/android/hoststubgen/test/tinyframework/TinyFrameworkMethodCallReplace$ConstructorTester [inner-reason: class-wide in com/android/hoststubgen/test/tinyframework/TinyFrameworkMethodCallReplace [inner-reason: class-annotation]]
   1
   1
 com.android.hoststubgen.test.tinyframework
@@ -732,7 +732,7 @@ com.android.hoststubgen.test.tinyframework
   <init>()V
   1
   Keep
-  class-wide in com/android/hoststubgen/test/tinyframework/TinyFrameworkMethodCallReplace$ReplaceTo [inner-reason: class-wide in com/android/hoststubgen/test/tinyframework/TinyFrameworkMethodCallReplace [inner-reason: file-override]]
+  class-wide in com/android/hoststubgen/test/tinyframework/TinyFrameworkMethodCallReplace$ReplaceTo [inner-reason: class-wide in com/android/hoststubgen/test/tinyframework/TinyFrameworkMethodCallReplace [inner-reason: class-annotation]]
   1
   1
 com.android.hoststubgen.test.tinyframework
@@ -743,7 +743,7 @@ com.android.hoststubgen.test.tinyframework
   add(II)I
   1
   Keep
-  class-wide in com/android/hoststubgen/test/tinyframework/TinyFrameworkMethodCallReplace$ReplaceTo [inner-reason: class-wide in com/android/hoststubgen/test/tinyframework/TinyFrameworkMethodCallReplace [inner-reason: file-override]]
+  class-wide in com/android/hoststubgen/test/tinyframework/TinyFrameworkMethodCallReplace$ReplaceTo [inner-reason: class-wide in com/android/hoststubgen/test/tinyframework/TinyFrameworkMethodCallReplace [inner-reason: class-annotation]]
   0
   2
 com.android.hoststubgen.test.tinyframework
@@ -754,7 +754,7 @@ com.android.hoststubgen.test.tinyframework
   newConstructorTester(I)Lcom/android/hoststubgen/test/tinyframework/TinyFrameworkMethodCallReplace$ConstructorTester;
   1
   Keep
-  class-wide in com/android/hoststubgen/test/tinyframework/TinyFrameworkMethodCallReplace$ReplaceTo [inner-reason: class-wide in com/android/hoststubgen/test/tinyframework/TinyFrameworkMethodCallReplace [inner-reason: file-override]]
+  class-wide in com/android/hoststubgen/test/tinyframework/TinyFrameworkMethodCallReplace$ReplaceTo [inner-reason: class-wide in com/android/hoststubgen/test/tinyframework/TinyFrameworkMethodCallReplace [inner-reason: class-annotation]]
   0
   2
 com.android.hoststubgen.test.tinyframework
@@ -765,7 +765,7 @@ com.android.hoststubgen.test.tinyframework
   startThread(Ljava/lang/Thread;)V
   1
   Keep
-  class-wide in com/android/hoststubgen/test/tinyframework/TinyFrameworkMethodCallReplace$ReplaceTo [inner-reason: class-wide in com/android/hoststubgen/test/tinyframework/TinyFrameworkMethodCallReplace [inner-reason: file-override]]
+  class-wide in com/android/hoststubgen/test/tinyframework/TinyFrameworkMethodCallReplace$ReplaceTo [inner-reason: class-wide in com/android/hoststubgen/test/tinyframework/TinyFrameworkMethodCallReplace [inner-reason: class-annotation]]
   0
   2
 com.android.hoststubgen.test.tinyframework

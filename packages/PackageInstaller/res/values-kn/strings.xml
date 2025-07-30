@@ -21,7 +21,10 @@
     <string name="update" msgid="3932142540719227615">"ಅಪ್‌ಡೇಟ್ ಮಾಡಿ"</string>
     <string name="done" msgid="6632441120016885253">"ಮುಗಿದಿದೆ"</string>
     <string name="cancel" msgid="1018267193425558088">"ರದ್ದುಮಾಡಿ"</string>
-    <string name="install_anyway" msgid="8794642873773384969">"ಇನ್‌ಸ್ಟಾಲ್ ಮಾಡಿ"</string>
+    <!-- no translation found for install_without_verifying (7606774834125762618) -->
+    <skip />
+    <!-- no translation found for more_details (3643407086654820243) -->
+    <skip />
     <string name="dont_install" msgid="414055123295505225">"ಇನ್‌ಸ್ಟಾಲ್ ಬೇಡ"</string>
     <string name="installing" msgid="4921993079741206516">"ಇನ್‌ಸ್ಟಾಲ್‌ ಮಾಡಲಾಗುತ್ತಿದೆ..."</string>
     <string name="installing_app" msgid="1165095864863849422">"<xliff:g id="PACKAGE_LABEL">%1$s</xliff:g> ಅನ್ನು ಇನ್‌ಸ್ಟಾಲ್‌ ಮಾಡಲಾಗುತ್ತಿದೆ..."</string>
@@ -45,10 +48,6 @@
     <string name="unknown_apps_admin_dlg_text" msgid="4456572224020176095">"ನಿಮ್ಮ ನಿರ್ವಾಹಕರು ಅಪರಿಚಿತ ಮೂಲಗಳ ಆ್ಯಪ್‌ಗಳ ಇನ್‌ಸ್ಟಾಲ್‌ ಮಾಡುವಿಕೆಯನ್ನು ಅನುಮತಿಸುವುದಿಲ್ಲ"</string>
     <string name="unknown_apps_user_restriction_dlg_text" msgid="151020786933988344">"ಈ ಬಳಕೆದಾರರು ಅಪರಿಚಿತ ಆ್ಯಪ್‌ಗಳನ್ನು ಅನ್‌ಇನ್‌ಸ್ಟಾಲ್‌ ಮಾಡಲು ಸಾಧ್ಯವಿಲ್ಲ"</string>
     <string name="install_apps_user_restriction_dlg_text" msgid="2154119597001074022">"ಆ್ಯಪ್‌ಗಳನ್ನು ಇನ್‌ಸ್ಟಾಲ್‌ ಮಾಡಲು ಈ ಬಳಕೆದಾರರನ್ನು ಅನುಮತಿಸಲಾಗುವುದಿಲ್ಲ"</string>
-    <string name="verification_incomplete_summary" msgid="40478808885845735">"ಪರಿಶೀಲನೆ ಸಾಧ್ಯವಾಗದ ಕಾರಣ ಆ್ಯಪ್ ಅನ್ನು ಇನ್ನೂ ಇನ್‌ಸ್ಟಾಲ್ ಮಾಡಿಲ್ಲ. ಪುನಃ ಪ್ರಯತ್ನಿಸಿ."</string>
-    <string name="cannot_install_verification_unavailable_summary" msgid="2469994565312971465"><p>"ಎಚ್ಚರಿಕೆ: ಆ್ಯಪ್ ದೃಢೀಕರಣ ಪ್ರಕ್ರಿಯೆ ನಡೆಯಲು ಸಾಧ್ಯವಾಗಲಿಲ್ಲ. "</p><p><a href="">"ಪ್ಯಾಕೇಜ್ ಪರಿಶೀಲನೆಯ ಕುರಿತು"</a>" ಇನ್ನಷ್ಟು ತಿಳಿಯಿರಿ"</p></string>
-    <string name="cannot_install_package_summary" msgid="3358675485628657234"><p>"ಈ ಆ್ಯಪ್ ಅನ್ನು ನಿರ್ಬಂಧಿಸಲಾಗಿರುವುದರಿಂದ ಇದನ್ನು ಇನ್‌ಸ್ಟಾಲ್ ಮಾಡಲು ಸಾಧ್ಯವಿಲ್ಲ. "</p><p><a href="">"ಪ್ಯಾಕೇಜ್ ಪರಿಶೀಲನೆಯ ಕುರಿತು"</a>" ಇನ್ನಷ್ಟು ತಿಳಿಯಿರಿ"</p></string>
-    <string name="lite_verification_summary" msgid="3211866126230002977"><p>"ಈ ಆ್ಯಪ್ ADI Lite ಡೆವಲಪರ್ ಒಡೆತನದಲ್ಲಿದೆ ಮತ್ತು ಪ್ರಮಾಣಿತ ದೃಢೀಕರಣ ಪ್ರಕ್ರಿಯೆಯನ್ನು ಬೈಪಾಸ್ ಮಾಡುತ್ತದೆ. ನೀವು ಇನ್‌ಸ್ಟಾಲೇಶನ್‌ಗಾಗಿ ಮುಂದುವರಿಯಲು ಬಯಸುತ್ತೀರಾ?"</p></string>
     <string name="ok" msgid="7871959885003339302">"ಸರಿ"</string>
     <string name="archive" msgid="4447791830199354721">"ಆರ್ಕೈವ್ ಮಾಡಿ"</string>
     <string name="update_anyway" msgid="8792432341346261969">"ಪರವಾಗಿಲ್ಲ, ಅಪ್‌ಡೇಟ್ ಮಾಡಿ"</string>

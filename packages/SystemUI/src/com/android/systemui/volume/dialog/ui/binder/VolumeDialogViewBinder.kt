@@ -32,11 +32,13 @@ import androidx.dynamicanimation.animation.SpringAnimation
 import androidx.dynamicanimation.animation.SpringForce
 import com.android.app.tracing.coroutines.launchInTraced
 import com.android.app.tracing.coroutines.launchTraced
+import com.android.systemui.Flags
 import com.android.systemui.common.ui.view.onApplyWindowInsets
 import com.android.systemui.common.ui.view.updateMargin
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.res.R
 import com.android.systemui.util.kotlin.awaitCancellationThenDispose
+import com.android.systemui.volume.dialog.captions.ui.viewmodel.VolumeDialogCaptionsButtonViewModel
 import com.android.systemui.volume.dialog.dagger.scope.VolumeDialog
 import com.android.systemui.volume.dialog.dagger.scope.VolumeDialogScope
 import com.android.systemui.volume.dialog.shared.model.VolumeDialogVisibilityModel
@@ -70,6 +72,7 @@ class VolumeDialogViewBinder
 constructor(
     @Application context: Context,
     private val viewModel: VolumeDialogViewModel,
+    private val captionsButtonViewModel: VolumeDialogCaptionsButtonViewModel,
     private val jankListenerFactory: JankListenerFactory,
     private val tracer: VolumeTracer,
     @VolumeDialog private val viewBinders: List<@JvmSuppressWildcards ViewBinder>,
@@ -79,6 +82,12 @@ constructor(
         context.resources.getDimensionPixelSize(R.dimen.volume_dialog_half_opened_offset).toFloat()
     private val mainSliderVerticalMargin: Int by lazy {
         context.resources.getDimensionPixelSize(R.dimen.volume_dialog_slider_vertical_margin)
+    }
+
+    private val mainSliderWithCaptionsToggleVerticalMargin: Int by lazy {
+        context.resources.getDimensionPixelSize(
+            R.dimen.volume_dialog_slider_vertical_margin_with_captions_toggle
+        )
     }
 
     fun CoroutineScope.bind(dialog: Dialog, isVolumeDialogVertical: Boolean = true) {
@@ -131,13 +140,13 @@ constructor(
                     )
                     if (isVolumeDialogVertical) {
                         mainSliderContainer?.updateMargin(
-                            top = mainSliderVerticalMargin - view.paddingTop,
-                            bottom = mainSliderVerticalMargin - view.paddingBottom,
+                            top = getSliderVerticalMargin() - view.paddingTop,
+                            bottom = getSliderVerticalMargin() - view.paddingBottom,
                         )
                     } else {
                         mainSliderContainer?.updateMargin(
-                            left = mainSliderVerticalMargin - view.paddingLeft,
-                            right = mainSliderVerticalMargin - view.paddingRight,
+                            left = getSliderVerticalMargin() - view.paddingLeft,
+                            right = getSliderVerticalMargin() - view.paddingRight,
                         )
                     }
                     WindowInsets.CONSUMED
@@ -222,6 +231,13 @@ constructor(
         }
         animate().setDuration(150).translationY(offsetPx).suspendAnimate()
     }
+
+    private fun getSliderVerticalMargin(): Int =
+        if (Flags.captionsToggleInVolumeDialogV1() && captionsButtonViewModel.isVisible.value) {
+            mainSliderWithCaptionsToggleVerticalMargin
+        } else {
+            mainSliderVerticalMargin
+        }
 
     private class Accessibility(private val viewModel: VolumeDialogViewModel) :
         View.AccessibilityDelegate() {

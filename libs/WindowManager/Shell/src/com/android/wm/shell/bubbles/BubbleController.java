@@ -994,16 +994,6 @@ public class BubbleController implements ConfigurationChangeListener,
         }
     }
 
-    // TODO(b/411505605) remove all related code
-    /**
-     * Show bubble bar pin view given location.
-     */
-    public void showBubbleBarPinAtLocation(@Nullable BubbleBarLocation bubbleBarLocation) {
-        if (isShowingAsBubbleBar() && mBubbleStateListener != null) {
-            mBubbleStateListener.showBubbleBarPillowAt(bubbleBarLocation);
-        }
-    }
-
     /** Show bubble bar drop target at provided location or hide it if null. */
     public void showBubbleBarDropTargetAt(@Nullable BubbleBarLocation bubbleBarLocation) {
         if (isShowingAsBubbleBar() && mBubbleStateListener != null) {
@@ -1011,6 +1001,7 @@ public class BubbleController implements ConfigurationChangeListener,
         }
     }
 
+    // TODO(b/416297506) remove this code too
     private void showBubbleBarExpandedViewDropTarget(BubbleBarLocation bubbleBarLocation) {
         ensureBubbleViewsAndWindowCreated();
         if (mLayerView != null) {
@@ -3141,11 +3132,6 @@ public class BubbleController implements ConfigurationChangeListener,
                     @Override
                     public void animateBubbleBarLocation(BubbleBarLocation location) {
                         mListener.call(l -> l.animateBubbleBarLocation(location));
-                    }
-
-                    @Override
-                    public void showBubbleBarPillowAt(@Nullable BubbleBarLocation location) {
-                        mListener.call(l -> l.showBubbleBarPillowAt(location));
                     }
 
                     @Override

@@ -121,6 +121,12 @@ interface ShadeRepository {
      */
     val isShadeLayoutWide: StateFlow<Boolean>
 
+    /**
+     * Provides whether the current display is a large screen (i.e. all edges are >= 600dp). Unlike
+     * [isShadeLayoutWide], this is agnostic of display rotation.
+     */
+    val isLargeScreen: StateFlow<Boolean>
+
     /** True when QS is taking up the entire screen, i.e. fully expanded on a non-unfolded phone. */
     @Deprecated("Use ShadeInteractor instead") val legacyQsFullscreen: StateFlow<Boolean>
 
@@ -129,6 +135,9 @@ interface ShadeRepository {
 
     /** Sets whether the shade layout should be wide (true) or narrow (false). */
     fun setShadeLayoutWide(isShadeLayoutWide: Boolean)
+
+    /** Sets whether the current display is a large screen. */
+    fun setLargeScreen(isLargeScreen: Boolean)
 
     /** Sets whether a closing animation is happening. */
     @Deprecated("Use ShadeAnimationInteractor instead") fun setLegacyIsClosing(isClosing: Boolean)
@@ -249,8 +258,15 @@ class ShadeRepositoryImpl @Inject constructor(@Background val backgroundScope: C
     private val _isShadeLayoutWide = MutableStateFlow(false)
     override val isShadeLayoutWide: StateFlow<Boolean> = _isShadeLayoutWide.asStateFlow()
 
+    private val _isLargeScreen = MutableStateFlow(false)
+    override val isLargeScreen: StateFlow<Boolean> = _isLargeScreen.asStateFlow()
+
     override fun setShadeLayoutWide(isShadeLayoutWide: Boolean) {
         _isShadeLayoutWide.value = isShadeLayoutWide
+    }
+
+    override fun setLargeScreen(isLargeScreen: Boolean) {
+        _isLargeScreen.value = isLargeScreen
     }
 
     @Deprecated("Use ShadeInteractor instead")
@@ -318,9 +334,5 @@ class ShadeRepositoryImpl @Inject constructor(@Background val backgroundScope: C
     @Deprecated("Should only be called by NPVC and tests")
     override fun setLegacyShadeExpansion(expandedFraction: Float) {
         _legacyShadeExpansion.value = expandedFraction
-    }
-
-    companion object {
-        private const val TAG = "ShadeRepository"
     }
 }

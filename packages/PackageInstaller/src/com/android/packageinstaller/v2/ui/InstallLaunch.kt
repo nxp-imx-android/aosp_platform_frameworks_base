@@ -300,9 +300,10 @@ class InstallLaunch : FragmentActivity(), InstallActionListener {
         when (reasonCode) {
             InstallUserActionRequired.USER_ACTION_REASON_ANONYMOUS_SOURCE ->
                 installViewModel!!.forcedSkipSourceCheck()
-
             InstallUserActionRequired.USER_ACTION_REASON_INSTALL_CONFIRMATION ->
                 installViewModel!!.initiateInstall()
+            InstallUserActionRequired.USER_ACTION_REASON_VERIFICATION_CONFIRMATION ->
+                installViewModel!!.onPositiveVerificationUserResponse()
         }
     }
 
@@ -313,6 +314,8 @@ class InstallLaunch : FragmentActivity(), InstallActionListener {
         when (stageCode) {
             InstallStage.STAGE_USER_ACTION_REQUIRED -> installViewModel!!.cleanupInstall()
             InstallStage.STAGE_STAGING -> installViewModel!!.abortStaging()
+            InstallStage.STAGE_VERIFICATION_CONFIRMATION_REQUIRED ->
+                installViewModel!!.onNegativeVerificationUserResponse()
         }
         setResult(RESULT_CANCELED, null, true)
     }
@@ -360,13 +363,6 @@ class InstallLaunch : FragmentActivity(), InstallActionListener {
         val intent = Intent("android.intent.action.MANAGE_PACKAGE_STORAGE")
         startActivity(intent)
         setResult(RESULT_FIRST_USER, null, true)
-    }
-
-    override fun setVerificationUserResponse(responseCode: Int) {
-        if (localLogv) {
-            Log.d(LOG_TAG, "Setting verification user response: $responseCode")
-        }
-        installViewModel!!.setVerificationUserResponse(responseCode)
     }
 
     private fun registerAppOpChangeListener(listener: UnknownSourcesListener, packageName: String) {

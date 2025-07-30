@@ -92,6 +92,7 @@ import android.os.IBinder;
 import android.os.LocaleList;
 import android.os.Looper;
 import android.os.PowerManager;
+import android.os.Process;
 import android.os.RemoteException;
 import android.os.ResultReceiver;
 import android.os.SystemClock;
@@ -1321,8 +1322,10 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub
         // Create the display outside of the lock to avoid deadlock. DisplayManagerService will
         // acquire the global WM lock while creating the display. At the same time, WM may query
         // VDM and this virtual device to get policies, display ownership, etc.
+        // We have already verified that the caller is the owner or the system, so pass the display
+        // owner uid explicitly to allow creation of displays with clean identity.
         int displayId = mDisplayManagerInternal.createVirtualDisplay(virtualDisplayConfig,
-                    callback, this, gwpc, mOwnerPackageName);
+                    callback, this, gwpc, mOwnerPackageName, mOwnerUid);
         if (displayId == Display.INVALID_DISPLAY) {
             return displayId;
         }
@@ -1506,7 +1509,8 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub
     }
 
     private void checkCallerIsDeviceOwner() {
-        if (Binder.getCallingUid() != mOwnerUid) {
+        final int callingUid = Binder.getCallingUid();
+        if (callingUid != mOwnerUid && callingUid != Process.SYSTEM_UID) {
             throw new SecurityException(
                 "Caller is not the owner of this virtual device");
         }
