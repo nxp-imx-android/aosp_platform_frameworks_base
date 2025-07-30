@@ -436,6 +436,7 @@ public class DevicePolicyManagerTest extends DpmTestBase {
     }
 
     @Test
+    @RequiresFlagsDisabled(Flags.FLAG_REMOVE_DEVICE_ADMIN_FEATURE_CHECKS)
     public void testHasNoFeature() throws Exception {
         doReturn(false)
                 .when(getServices().packageManager)
