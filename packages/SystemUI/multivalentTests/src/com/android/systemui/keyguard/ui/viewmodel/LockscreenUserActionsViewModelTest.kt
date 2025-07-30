@@ -167,7 +167,7 @@ class LockscreenUserActionsViewModelTest : SysuiTestCase() {
 
     @Test
     @EnableFlags(Flags.FLAG_COMMUNAL_HUB)
-    fun userActions_fullscreenShade() =
+    fun userActions_combinedShade() =
         kosmos.runTest {
             disableDualShade()
             fakeDeviceEntryRepository.setLockscreenEnabled(true)
@@ -180,13 +180,9 @@ class LockscreenUserActionsViewModelTest : SysuiTestCase() {
             )
             sceneInteractor.changeScene(Scenes.Lockscreen, "reason")
             shadeRepository.setShadeLayoutWide(!isNarrowScreen)
+            shadeRepository.setLargeScreen(!isNarrowScreen)
             fakePowerRepository.updateWakefulness(
-                rawState =
-                    if (isShadeTouchable) {
-                        WakefulnessState.AWAKE
-                    } else {
-                        WakefulnessState.ASLEEP
-                    }
+                rawState = if (isShadeTouchable) WakefulnessState.AWAKE else WakefulnessState.ASLEEP
             )
             keyguardOcclusionRepository.setShowWhenLockedActivityInfo(onTop = isOccluded)
 
@@ -256,12 +252,7 @@ class LockscreenUserActionsViewModelTest : SysuiTestCase() {
             )
             sceneInteractor.changeScene(Scenes.Lockscreen, "reason")
             fakePowerRepository.updateWakefulness(
-                rawState =
-                    if (isShadeTouchable) {
-                        WakefulnessState.AWAKE
-                    } else {
-                        WakefulnessState.ASLEEP
-                    }
+                rawState = if (isShadeTouchable) WakefulnessState.AWAKE else WakefulnessState.ASLEEP
             )
             keyguardOcclusionRepository.setShowWhenLockedActivityInfo(onTop = isOccluded)
 

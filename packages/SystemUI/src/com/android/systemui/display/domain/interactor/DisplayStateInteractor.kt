@@ -104,12 +104,7 @@ constructor(
                     )
                 }
 
-                val callback =
-                    object : FoldProvider.FoldCallback {
-                        override fun onFoldUpdated(isFolded: Boolean) {
-                            sendFoldStateUpdate(isFolded)
-                        }
-                    }
+                val callback = FoldProvider.FoldCallback(sendFoldStateUpdate)
 
                 sendFoldStateUpdate(false)
                 screenSizeFoldProvider.registerCallback(callback, mainExecutor)

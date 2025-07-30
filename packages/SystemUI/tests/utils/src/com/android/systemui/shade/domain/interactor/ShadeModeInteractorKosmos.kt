@@ -72,18 +72,22 @@ fun Kosmos.disableDualShade() {
     fakeConfigurationRepository.onAnyConfigurationChange()
 }
 
-fun Kosmos.enableSingleShade() {
+fun Kosmos.enableSingleShade(wideLayout: Boolean = false) {
     disableDualShade()
-    overrideLargeScreenResources(isLargeScreen = false)
-    fakeShadeRepository.setShadeLayoutWide(false)
-    displayStateRepository.setIsWideScreen(false)
+    overrideLargeScreenResources(isLargeScreen = wideLayout)
+    fakeShadeRepository.setShadeLayoutWide(wideLayout)
+    fakeShadeRepository.setLargeScreen(false)
+    displayStateRepository.setIsWideScreen(wideLayout)
+    displayStateRepository.setIsLargeScreen(false)
 }
 
 fun Kosmos.enableSplitShade() {
     disableDualShade()
     overrideLargeScreenResources(isLargeScreen = true)
     fakeShadeRepository.setShadeLayoutWide(true)
+    fakeShadeRepository.setLargeScreen(true)
     displayStateRepository.setIsWideScreen(true)
+    displayStateRepository.setIsLargeScreen(true)
 }
 
 private fun Kosmos.overrideLargeScreenResources(isLargeScreen: Boolean) {

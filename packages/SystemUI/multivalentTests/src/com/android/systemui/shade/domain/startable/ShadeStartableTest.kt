@@ -18,12 +18,18 @@ package com.android.systemui.shade.domain.startable
 
 import android.platform.test.flag.junit.FlagsParameterization
 import android.testing.TestableLooper.RunWithLooper
+import android.view.Display
 import androidx.test.filters.SmallTest
 import com.android.compose.animation.scene.ObservableTransitionState
 import com.android.compose.animation.scene.SceneKey
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.authentication.data.repository.fakeAuthenticationRepository
 import com.android.systemui.authentication.shared.model.AuthenticationMethodModel
+import com.android.systemui.display.data.repository.createFakeDisplaySubcomponent
+import com.android.systemui.display.data.repository.displayStateRepository
+import com.android.systemui.display.data.repository.displaySubcomponentPerDisplayRepository
+import com.android.systemui.display.domain.interactor.createDisplayStateInteractor
+import com.android.systemui.flags.DisableSceneContainer
 import com.android.systemui.flags.EnableSceneContainer
 import com.android.systemui.flags.parameterizeSceneContainerFlag
 import com.android.systemui.keyguard.data.repository.fakeDeviceEntryFingerprintAuthRepository
@@ -37,6 +43,8 @@ import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.scene.shared.model.fakeSceneDataSource
 import com.android.systemui.shade.ShadeExpansionChangeEvent
 import com.android.systemui.shade.ShadeExpansionListener
+import com.android.systemui.shade.data.repository.fakeShadeDisplaysRepository
+import com.android.systemui.shade.data.repository.shadeRepository
 import com.android.systemui.shade.domain.interactor.enableDualShade
 import com.android.systemui.shade.domain.interactor.enableSingleShade
 import com.android.systemui.shade.domain.interactor.enableSplitShade
@@ -86,9 +94,22 @@ class ShadeStartableTest(flags: FlagsParameterization) : SysuiTestCase() {
 
     @Before
     fun setUp() {
-        kosmos.shadeExpansionStateManager.addExpansionListener(
-            kosmos.notificationShadeDepthController
-        )
+        with(kosmos) {
+            shadeExpansionStateManager.addExpansionListener(notificationShadeDepthController)
+
+            displaySubcomponentPerDisplayRepository.apply {
+                add(
+                    Display.DEFAULT_DISPLAY,
+                    createFakeDisplaySubcomponent(
+                        displayStateRepository = displayStateRepository,
+                        displayStateInteractor =
+                            createDisplayStateInteractor(displayStateRepository),
+                    ),
+                )
+            }
+
+            fakeShadeDisplaysRepository.setDisplayId(Display.DEFAULT_DISPLAY)
+        }
     }
 
     @Test
@@ -204,44 +225,80 @@ class ShadeStartableTest(flags: FlagsParameterization) : SysuiTestCase() {
     @EnableSceneContainer
     fun hydrateFullWidth_singleShade() =
         kosmos.runTest {
+            val isShadeLayoutWide by collectLastValue(shadeRepository.isShadeLayoutWide)
             enableSingleShade()
             underTest.start()
 
             verify(notificationStackScrollLayoutController).setIsFullWidth(true)
             assertThat(scrimController.clipQsScrim).isFalse()
+            assertThat(isShadeLayoutWide).isFalse()
         }
 
     @Test
     @EnableSceneContainer
     fun hydrateFullWidth_splitShade() =
         kosmos.runTest {
+            val isShadeLayoutWide by collectLastValue(shadeRepository.isShadeLayoutWide)
             enableSplitShade()
             underTest.start()
 
             verify(notificationStackScrollLayoutController).setIsFullWidth(false)
             assertThat(scrimController.clipQsScrim).isFalse()
+            assertThat(isShadeLayoutWide).isTrue()
         }
 
     @Test
     @EnableSceneContainer
     fun hydrateFullWidth_dualShade_narrowScreen() =
         kosmos.runTest {
+            val isShadeLayoutWide by collectLastValue(shadeRepository.isShadeLayoutWide)
             enableDualShade(wideLayout = false)
             underTest.start()
 
             verify(notificationStackScrollLayoutController).setIsFullWidth(true)
             assertThat(scrimController.clipQsScrim).isFalse()
+            assertThat(isShadeLayoutWide).isFalse()
         }
 
     @Test
     @EnableSceneContainer
     fun hydrateFullWidth_dualShade_wideScreen() =
         kosmos.runTest {
+            val isShadeLayoutWide by collectLastValue(shadeRepository.isShadeLayoutWide)
             enableDualShade(wideLayout = true)
             underTest.start()
 
             verify(notificationStackScrollLayoutController).setIsFullWidth(false)
             assertThat(scrimController.clipQsScrim).isFalse()
+            assertThat(isShadeLayoutWide).isTrue()
+        }
+
+    @Test
+    @EnableSceneContainer
+    fun hydrateLargeScreen_sceneContainer() =
+        kosmos.runTest {
+            val isLargeScreen by collectLastValue(shadeRepository.isLargeScreen)
+            underTest.start()
+
+            displayStateRepository.setIsLargeScreen(false)
+            assertThat(isLargeScreen).isFalse()
+
+            displayStateRepository.setIsLargeScreen(true)
+            assertThat(isLargeScreen).isTrue()
+        }
+
+    @Test
+    @DisableSceneContainer
+    fun hydrateLargeScreen_nonSceneContainer() =
+        kosmos.runTest {
+            val isLargeScreen by collectLastValue(shadeRepository.isLargeScreen)
+            underTest.start()
+
+            displayStateRepository.setIsLargeScreen(false)
+            assertThat(isLargeScreen).isFalse()
+
+            displayStateRepository.setIsLargeScreen(true)
+            assertThat(isLargeScreen).isTrue()
         }
 
     private fun Kosmos.changeScene(

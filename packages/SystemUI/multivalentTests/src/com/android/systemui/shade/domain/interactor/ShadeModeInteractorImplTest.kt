@@ -45,7 +45,16 @@ class ShadeModeInteractorImplTest : SysuiTestCase() {
     fun legacyShadeMode_narrowScreen_singleShade() =
         kosmos.runTest {
             val shadeMode by collectLastValue(underTest.shadeMode)
-            enableSingleShade()
+            enableSingleShade(wideLayout = false)
+
+            assertThat(shadeMode).isEqualTo(ShadeMode.Single)
+        }
+
+    @Test
+    fun legacyShadeMode_wideScreen_singleShade() =
+        kosmos.runTest {
+            val shadeMode by collectLastValue(underTest.shadeMode)
+            enableSingleShade(wideLayout = true)
 
             assertThat(shadeMode).isEqualTo(ShadeMode.Single)
         }
