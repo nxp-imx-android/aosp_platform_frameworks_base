@@ -237,10 +237,11 @@ public class PipExpandHandler implements Transitions.TransitionHandler {
 
         final TransitionInfo.Change finalPipChange = pipChange;
         animator.setAnimationEndCallback(() -> {
-            if (parentBeforePip != null) {
-                // TODO b/377362511: Animate local leash instead to also handle letterbox case.
+            if (finalPipChange.getTaskInfo() == null) {
                 // For multi-activity, set the crop to be null
                 finishTransaction.setCrop(pipLeash, null);
+            }
+            if (parentBeforePip != null) {
                 setupMultiActivityAnimationFinalState(finishTransaction, finalPipChange, pipLeash,
                         parentBeforePip);
             }
