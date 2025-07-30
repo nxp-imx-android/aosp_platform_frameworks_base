@@ -18,10 +18,11 @@ package com.android.systemui.lifecycle
 
 import android.view.View
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
+import androidx.lifecycle.Lifecycle
 import com.android.app.tracing.coroutines.launchTraced as launch
 import com.android.app.tracing.coroutines.traceCoroutine
+import com.android.compose.lifecycle.LaunchedEffectWithLifecycle
 import kotlinx.coroutines.CoroutineScope
 
 /**
@@ -34,12 +35,23 @@ import kotlinx.coroutines.CoroutineScope
  * that's unique enough and easy enough to find in code search; this should help correlate
  * performance findings with actual code. One recommendation: prefer whole string literals instead
  * of some complex concatenation or templating scheme.
+ *
+ * The remembered view-model is activated every time the [minActiveState] is reached and deactivated
+ * each time the lifecycle state falls "below" the [minActiveState]. This can be used to have more
+ * granular control over when exactly a view-model becomes active.
  */
 @Composable
-fun <T> rememberViewModel(traceName: String, key: Any = Unit, factory: () -> T): T {
+fun <T> rememberViewModel(
+    traceName: String,
+    minActiveState: Lifecycle.State = Lifecycle.State.STARTED,
+    key: Any = Unit,
+    factory: () -> T,
+): T {
     val instance = remember(key) { factory() }
     if (instance is Activatable) {
-        LaunchedEffect(instance) { traceCoroutine(traceName) { instance.activate() } }
+        LaunchedEffectWithLifecycle(key1 = instance, minActiveState = minActiveState) {
+            traceCoroutine(traceName) { instance.activate() }
+        }
     }
     return instance
 }
