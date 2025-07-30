@@ -31,6 +31,7 @@ import android.view.View
 import android.widget.Button
 import android.widget.LinearLayout
 import androidx.test.ext.junit.rules.ActivityScenarioRule
+import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.uiautomator.By
 import androidx.test.uiautomator.Configurator
@@ -44,10 +45,9 @@ import org.junit.BeforeClass
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.junit.runners.JUnit4
 import platform.test.desktop.DesktopMouseTestRule
 
-@RunWith(JUnit4::class)
+@RunWith(AndroidJUnit4::class)
 @RequiresFlagsEnabled(Flags.FLAG_ENABLE_AUTOCLICK_INDICATOR)
 class AutoclickClickTypeTests {
     @Rule(order = 0)
@@ -56,6 +56,11 @@ class AutoclickClickTypeTests {
 
     @Rule(order = 1)
     @JvmField
+    val activityScenarioRule: ActivityScenarioRule<TestClickActivity> =
+        ActivityScenarioRule(TestClickActivity::class.java)
+
+    @Rule(order = 2)
+    @JvmField
     val autoclickEnabledSettingRule: SettingsStateChangerRule =
         SettingsStateChangerRule(
             InstrumentationRegistry.getInstrumentation().context,
@@ -63,15 +68,9 @@ class AutoclickClickTypeTests {
             "1"
         )
 
-    @Rule(order = 2)
+    @Rule(order = 3)
     @JvmField
     val desktopMouseTestRule = DesktopMouseTestRule()
-
-    @Rule
-    @JvmField
-    val activityScenarioRule: ActivityScenarioRule<TestClickActivity> =
-        ActivityScenarioRule(TestClickActivity::class.java)
-
     private val instrumentation: Instrumentation = InstrumentationRegistry.getInstrumentation()
 
     private lateinit var uiDevice: UiDevice
@@ -85,6 +84,10 @@ class AutoclickClickTypeTests {
         activityScenarioRule.scenario.onActivity { activity ->
             testClickButton = activity.findViewById(TEST_BUTTON_ID)
         }
+
+        initiateAutoclickPanel(
+            InstrumentationRegistry.getInstrumentation().context, uiDevice, desktopMouseTestRule
+        )
     }
 
     private fun getViewCenter(view: View): Pair<Int, Int> {
