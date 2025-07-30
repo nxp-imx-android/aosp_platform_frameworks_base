@@ -14,16 +14,17 @@
  * limitations under the License.
  */
 
-package com.android.wm.shell.functional
+package com.android.wm.shell.functional.externaldisplay
 
 import android.platform.test.annotations.Presubmit
 import android.platform.test.rule.ScreenRecordRule
-import com.android.wm.shell.scenarios.OpenAppWithExternalDisplayConnected
+import com.android.wm.shell.scenarios.MaximizeAppWindowWithDragToTopDragZoneInDesktopFirst
 import org.junit.runner.RunWith
 import org.junit.runners.BlockJUnit4ClassRunner
 
-/* Functional test for [OpenAppWithExternalDisplayConnected]. */
+/* Functional test for [MaximizeAppWindowWithDragToTopDragZoneInDesktopFirst]. */
 @RunWith(BlockJUnit4ClassRunner::class)
 @Presubmit
 @ScreenRecordRule.ScreenRecord
-class OpenAppWithExternalDisplayConnectedTest : OpenAppWithExternalDisplayConnected()
+class MaximizeAppWindowWithDragToTopDragZoneInDesktopFirstTest :
+    MaximizeAppWindowWithDragToTopDragZoneInDesktopFirst()

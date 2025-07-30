@@ -1,6 +1,12 @@
 {
   "wm": [
     {
+      "name": "WMShellFlickerTestsDesktopMode-externaldisplay-MaximizeAppWindowWithDragToTopDragZoneInDesktopFirstFlickerTest"
+    },
+    {
+      "name": "WMShellFlickerTestsDesktopMode-externaldisplay-OpenAppWithExternalDisplayConnectedFlickerTest"
+    },
+    {
       "name": "WMShellFlickerTestsDesktopMode-fundamentals-CloseAllAppsViaAppHeaderExitTest"
     },
     {
@@ -77,9 +83,6 @@
     },
     {
       "name": "WMShellFlickerTestsDesktopMode-maximize-MaximizeAppViaHeaderMenuFlickerTest"
-    },
-    {
-      "name": "WMShellFlickerTestsDesktopMode-maximize-MaximizeAppWindowWithDragToTopDragZoneInDesktopFirstFlickerTest"
     },
     {
       "name": "WMShellFlickerTestsDesktopMode-minimize-MinimizeAppsFlickerTest"
