@@ -714,10 +714,8 @@
     <string name="monitoring_description_pin_protection" msgid="1983580207046670355">"Mõnesid teie seadme juhtelemente, nagu päevased piirangud ja puhkeaeg, saab muuta ainult PIN-koodiga."</string>
     <string name="legacy_vpn_name" msgid="4174223520162559145">"VPN"</string>
     <string name="keyguard_indication_trust_unlocked" msgid="7395154975733744547">"Avatuna hoiab TrustAgent"</string>
-    <!-- no translation found for kg_prompt_after_adaptive_auth_lock (6065186971000690782) -->
-    <skip />
-    <!-- no translation found for keyguard_indication_after_adaptive_auth_lock (5240600662061340872) -->
-    <skip />
+    <string name="kg_prompt_after_adaptive_auth_lock" msgid="6065186971000690782">"Ekraan on lukus. Liiga palju autentimise katseid."</string>
+    <string name="keyguard_indication_after_adaptive_auth_lock" msgid="5240600662061340872">"Ekraan on lukus.\nAutentimine ebaõnnestus."</string>
     <string name="keyguard_indication_after_watch_disconnected" msgid="8133476870585660478">"Lukustas kell"</string>
     <!-- no translation found for keyguard_indication_after_secure_lock_device (4358906300665255820) -->
     <skip />
@@ -1062,10 +1060,8 @@
     <string name="qs_edit" msgid="5583565172803472437">"Muutmine"</string>
     <string name="qs_edit_tiles" msgid="2105215324060865035">"Paanide muutmine"</string>
     <string name="qs_edit_mode_tooltip" msgid="4164112885539479781">"Kiirseadete paanide suuruse muutmine"</string>
-    <!-- no translation found for qs_edit_settings (3243175290660574156) -->
-    <skip />
-    <!-- no translation found for qs_edit_menu_content_description (4420651071119623791) -->
-    <skip />
+    <string name="qs_edit_settings" msgid="3243175290660574156">"Seaded"</string>
+    <string name="qs_edit_menu_content_description" msgid="4420651071119623791">"Valikud"</string>
     <string name="tuner_time" msgid="2450785840990529997">"Kellaaeg"</string>
   <string-array name="clock_options">
     <item msgid="3986445361435142273">"Kuva tunnid, minutid ja sekundid"</item>

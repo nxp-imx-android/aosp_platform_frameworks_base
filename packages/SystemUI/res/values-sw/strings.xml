@@ -714,13 +714,10 @@
     <string name="monitoring_description_pin_protection" msgid="1983580207046670355">"Baadhi ya vidhibiti kwenye kifaa chako, kama vile wakati wa kupumzika na vikomo vya kila siku, vinaweza tu kubadilishwa kwa kutumia PIN."</string>
     <string name="legacy_vpn_name" msgid="4174223520162559145">"VPN"</string>
     <string name="keyguard_indication_trust_unlocked" msgid="7395154975733744547">"Imefunguliwa na kipengele cha kutathmini hali ya kuaminika"</string>
-    <!-- no translation found for kg_prompt_after_adaptive_auth_lock (6065186971000690782) -->
-    <skip />
-    <!-- no translation found for keyguard_indication_after_adaptive_auth_lock (5240600662061340872) -->
-    <skip />
+    <string name="kg_prompt_after_adaptive_auth_lock" msgid="6065186971000690782">"Skrini imefungwa. Majaribio mengi mno ya uthibitishaji."</string>
+    <string name="keyguard_indication_after_adaptive_auth_lock" msgid="5240600662061340872">"Skrini imefungwa\nImeshindwa kuthibitisha"</string>
     <string name="keyguard_indication_after_watch_disconnected" msgid="8133476870585660478">"Kimefungwa na saa yako"</string>
-    <!-- no translation found for keyguard_indication_after_secure_lock_device (4358906300665255820) -->
-    <skip />
+    <string name="keyguard_indication_after_secure_lock_device" msgid="4358906300665255820">"Imefungwa kupitia uthibitishaji wa hatua mbili"</string>
     <string name="zen_mode_and_condition" msgid="5043165189511223718">"<xliff:g id="ZEN_MODE">%1$s</xliff:g>. <xliff:g id="EXIT_CONDITION">%2$s</xliff:g>"</string>
     <string name="accessibility_volume_settings" msgid="1458961116951564784">"Mipangilio ya sauti"</string>
     <string name="volume_odi_captions_tip" msgid="8825655463280990941">"Wekea maudhui manukuu kiotomatiki"</string>
@@ -1062,10 +1059,8 @@
     <string name="qs_edit" msgid="5583565172803472437">"Badilisha"</string>
     <string name="qs_edit_tiles" msgid="2105215324060865035">"Badilisha vigae"</string>
     <string name="qs_edit_mode_tooltip" msgid="4164112885539479781">"Badilisha ukubwa wa vigae vya Mipangilio ya Haraka"</string>
-    <!-- no translation found for qs_edit_settings (3243175290660574156) -->
-    <skip />
-    <!-- no translation found for qs_edit_menu_content_description (4420651071119623791) -->
-    <skip />
+    <string name="qs_edit_settings" msgid="3243175290660574156">"Mipangilio"</string>
+    <string name="qs_edit_menu_content_description" msgid="4420651071119623791">"Chaguo"</string>
     <string name="tuner_time" msgid="2450785840990529997">"Wakati"</string>
   <string-array name="clock_options">
     <item msgid="3986445361435142273">"Onyesha saa, dakika na sekunde"</item>
@@ -1648,7 +1643,7 @@
     <string name="accessibility_deprecate_extra_dim_dialog_title" msgid="910988771011857460">"Sasa kipunguza mwangaza zaidi ni sehemu ya kitelezi cha mwangaza"</string>
     <string name="accessibility_deprecate_extra_dim_dialog_description" msgid="4453123359258743230">"Sasa unaweza kupunguza kiwango cha mwangaza wa skrini hata zaidi.\n\nKwa kuwa kipengele hiki sasa ni sehemu ya kitelezi cha mwangaza, njia za mkato za kipunguza mwangaza zaidi zinaondolewa."</string>
     <string name="accessibility_deprecate_extra_dim_dialog_button" msgid="3947537827396916005">"Ondoa njia za mkato za kipunguza mwangaza zaidi"</string>
-    <string name="accessibility_deprecate_extra_dim_dialog_toast" msgid="165474092660941104">"Njia za mkato za kipunguza mwangaza zaidi zimeondolewa"</string>
+    <string name="accessibility_deprecate_extra_dim_dialog_toast" msgid="165474092660941104">"Njia za mkato za kupunguza mwanga zaidi zimeondolewa"</string>
     <string name="qs_edit_mode_category_connectivity" msgid="4559726936546032672">"Muunganisho"</string>
     <string name="qs_edit_mode_category_accessibility" msgid="7969091385071475922">"Ufikivu"</string>
     <string name="qs_edit_mode_category_utilities" msgid="8123080090108420095">"Vipengee"</string>
