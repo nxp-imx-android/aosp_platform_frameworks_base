@@ -4805,7 +4805,8 @@
     <string name="config_defaultDndDeniedPackages" translatable="false"></string>
 
     <!-- User restrictions set on the SYSTEM user when it is first created.
-         Note: Also update appropriate overlay files. -->
+         @deprecated Set the System's default-restrictions in config_user_types.xml, which
+         overwrites this value anyway, instead.  -->
     <string-array translatable="false" name="config_defaultFirstUserRestrictions">
     </string-array>
 

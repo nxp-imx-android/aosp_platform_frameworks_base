@@ -594,7 +594,7 @@ public class UserManagerService extends IUserManager.Stub {
 
     private IAppOpsService mAppOpsService;
 
-    private final LocalService mLocalService;
+    private final LocalService mLocalService = new LocalService();
 
     @GuardedBy("mUserRestrictionsListeners")
     private final ArrayList<UserRestrictionsListener> mUserRestrictionsListeners =
@@ -1133,7 +1133,6 @@ public class UserManagerService extends IUserManager.Stub {
             sInstance = this;
         }
         mSystemPackageInstaller = new UserSystemPackageInstaller(this, mUserTypes);
-        mLocalService = new LocalService();
         LocalServices.addService(UserManagerInternal.class, mLocalService);
         mLockPatternUtils = new LockPatternUtils(mContext);
         mUserStates.put(UserHandle.USER_SYSTEM, UserState.STATE_BOOTING);
@@ -5117,6 +5116,7 @@ public class UserManagerService extends IUserManager.Stub {
                 }
             }
             // DISALLOW_CONFIG_WIFI was made a default guest restriction some time during version 6.
+            // This will later be removed (replaced) after version 11.
             final List<UserInfo> guestUsers = getGuestUsers();
             for (int i = 0; i < guestUsers.size(); i++) {
                 final UserInfo guestUser = guestUsers.get(i);
@@ -5232,6 +5232,74 @@ public class UserManagerService extends IUserManager.Stub {
             userVersion = 11;
         }
 
+        // 2025Q4 userVersion pathway.
+        // TODO(b/419105275): Because trunk stable flags need to be reversible, and because the
+        //  upgrades here actually are reversible, we temporarily "cheat" by triggering the upgrade
+        //  path on every reboot.
+        //  Once the flags have fully progressed, we can do this properly:
+        //  check for userVersion < 11, set userVersion = 12, and set USER_VERSION = 12.
+        // if (userVersion < 12) {
+        Slog.i(LOG_TAG, "Forcing an upgrade due to flagged changes");
+        final boolean forceWrite = true; // treat as an upgrade no matter what to handle flagging
+        if (android.multiuser.Flags.userRestrictionConfigWifiSharedPrivate()) {
+            // DISALLOW_CONFIG_WIFI_SHARED replaced DISALLOW_CONFIG_WIFI as the guest restriction.
+            if (mGuestRestrictions.getBoolean(UserManager.DISALLOW_CONFIG_WIFI) &&
+                    !mGuestRestrictions.getBoolean(UserManager.DISALLOW_CONFIG_WIFI_SHARED)) {
+                mGuestRestrictions.remove(UserManager.DISALLOW_CONFIG_WIFI);
+                mGuestRestrictions.putBoolean(UserManager.DISALLOW_CONFIG_WIFI_SHARED, true);
+            }
+            final List<UserInfo> guestUsers = getGuestUsers();
+            for (int i = 0; i < guestUsers.size(); i++) {
+                final UserInfo guest = guestUsers.get(i);
+                if (guest != null
+                        && hasUserRestriction(UserManager.DISALLOW_CONFIG_WIFI, guest.id)
+                        && !hasUserRestriction(UserManager.DISALLOW_CONFIG_WIFI_SHARED, guest.id)) {
+                    setUserRestriction(UserManager.DISALLOW_CONFIG_WIFI, false, guest.id);
+                    setUserRestriction(UserManager.DISALLOW_CONFIG_WIFI_SHARED, true, guest.id);
+                }
+            }
+        } else {
+            // Flag turned off. Undo Wifi restriction change.
+            if (!mGuestRestrictions.getBoolean(UserManager.DISALLOW_CONFIG_WIFI) &&
+                    mGuestRestrictions.getBoolean(UserManager.DISALLOW_CONFIG_WIFI_SHARED)) {
+                mGuestRestrictions.putBoolean(UserManager.DISALLOW_CONFIG_WIFI, true);
+                mGuestRestrictions.remove(UserManager.DISALLOW_CONFIG_WIFI_SHARED);
+            }
+            final List<UserInfo> guestUsers = getGuestUsers();
+            for (int i = 0; i < guestUsers.size(); i++) {
+                final UserInfo guest = guestUsers.get(i);
+                if (guest != null
+                        && !hasUserRestriction(UserManager.DISALLOW_CONFIG_WIFI, guest.id)
+                        && hasUserRestriction(UserManager.DISALLOW_CONFIG_WIFI_SHARED, guest.id)) {
+                    setUserRestriction(UserManager.DISALLOW_CONFIG_WIFI, true, guest.id);
+                    setUserRestriction(UserManager.DISALLOW_CONFIG_WIFI_SHARED, false, guest.id);
+                }
+            }
+        }
+        if (android.multiuser.Flags.hsuNotAdmin()) {
+            // The HSU should never have been an Admin.
+            synchronized (mUsersLock) {
+                final UserData sysData = mUsers.get(UserHandle.USER_SYSTEM);
+                if ((sysData.info.flags & UserInfo.FLAG_FULL) == 0
+                        && (sysData.info.flags & UserInfo.FLAG_ADMIN) != 0) {
+                    sysData.info.flags &= ~UserInfo.FLAG_ADMIN;
+                    userIdsToWrite.add(sysData.info.id);
+                }
+            }
+        } else {
+            // Flag turned off. Undo HSU Admin change.
+            synchronized (mUsersLock) {
+                final UserData sysData = mUsers.get(UserHandle.USER_SYSTEM);
+                if ((sysData.info.flags & UserInfo.FLAG_FULL) == 0
+                        && (sysData.info.flags & UserInfo.FLAG_ADMIN) == 0) {
+                    sysData.info.flags ^= UserInfo.FLAG_ADMIN;
+                    userIdsToWrite.add(sysData.info.id);
+                }
+            }
+        }
+        //     userVersion = 12;  // Also set USER_VERSION = 12!
+        // }
+
         // Reminder: If you add another upgrade, make sure to increment USER_VERSION too.
 
         // Done with userVersion changes, moving on to deal with userTypeVersion upgrades
@@ -5256,7 +5324,8 @@ public class UserManagerService extends IUserManager.Stub {
             mUserVersion = userVersion;
             mUserTypeVersion = newUserTypeVersion;
 
-            if (originalVersion < mUserVersion || originalUserTypeVersion < mUserTypeVersion) {
+            if (originalVersion < mUserVersion || originalUserTypeVersion < mUserTypeVersion
+                    || forceWrite) {
                 for (int userId : userIdsToWrite) {
                     UserData userData = getUserDataNoChecks(userId);
                     if (userData != null) {
@@ -5381,37 +5450,25 @@ public class UserManagerService extends IUserManager.Stub {
     @GuardedBy({"mPackagesLock"})
     private void fallbackToSingleUserLP() {
         // Create the system user
-        final String systemUserType = isDefaultHeadlessSystemUserMode()
+        final String sysUserTypeString = isDefaultHeadlessSystemUserMode()
                 ? UserManager.USER_TYPE_SYSTEM_HEADLESS
                 : UserManager.USER_TYPE_FULL_SYSTEM;
-        final int flags = mUserTypes.get(systemUserType).getDefaultUserInfoFlags()
-                | UserInfo.FLAG_INITIALIZED;
+        final UserTypeDetails sysUserTypeDetails = mUserTypes.get(sysUserTypeString);
+        final int flags = sysUserTypeDetails.getDefaultUserInfoFlags() | UserInfo.FLAG_INITIALIZED;
         final UserInfo system = new UserInfo(UserHandle.USER_SYSTEM,
-                /* name= */ null, /* iconPath= */ null, flags, systemUserType);
+                /* name= */ null, /* iconPath= */ null, flags, sysUserTypeString);
         final UserData userData = putUserInfo(system);
         userData.userProperties = new UserProperties(
-                mUserTypes.get(userData.info.userType).getDefaultUserPropertiesReference());
+                sysUserTypeDetails.getDefaultUserPropertiesReference());
         mNextSerialNumber = MIN_USER_ID;
         mUserVersion = USER_VERSION;
         mUserTypeVersion = UserTypeFactory.getUserTypeVersion();
 
-        final Bundle restrictions = new Bundle();
-        try {
-            final String[] defaultFirstUserRestrictions = getContextResources().getStringArray(
-                    com.android.internal.R.array.config_defaultFirstUserRestrictions);
-            for (String userRestriction : defaultFirstUserRestrictions) {
-                if (UserRestrictionsUtils.isValidRestriction(userRestriction)) {
-                    restrictions.putBoolean(userRestriction, true);
-                }
-            }
-        } catch (Resources.NotFoundException e) {
-            Slog.e(LOG_TAG, "Couldn't find resource: config_defaultFirstUserRestrictions", e);
-        }
-
+        Bundle restrictions = new Bundle();
+        sysUserTypeDetails.addDefaultRestrictionsTo(restrictions);
         if (!restrictions.isEmpty()) {
             synchronized (mRestrictionsLock) {
-                mBaseUserRestrictions.updateRestrictions(UserHandle.USER_SYSTEM,
-                        restrictions);
+                mBaseUserRestrictions.updateRestrictions(UserHandle.USER_SYSTEM, restrictions);
             }
         }
 

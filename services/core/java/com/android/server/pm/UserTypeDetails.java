@@ -81,8 +81,6 @@ public final class UserTypeDetails {
 
     /**
      * List of User Restrictions to apply by default to newly created users of this type.
-     * <p>Does not apply to SYSTEM users (since they are not formally created); for them use
-     * {@link com.android.internal.R.array#config_defaultFirstUserRestrictions} instead.
      * The Bundle is of the form used by {@link UserRestrictionsUtils}.
      */
     private final @Nullable Bundle mDefaultRestrictions;
@@ -402,25 +400,8 @@ public final class UserTypeDetails {
         mDefaultUserProperties.println(pw, prefix);
 
         final String restrictionsPrefix = prefix + "    ";
-        if (isSystem()) {
-            pw.print(prefix); pw.println("config_defaultFirstUserRestrictions: ");
-            try {
-                final Bundle restrictions = new Bundle();
-                final String[] defaultFirstUserRestrictions = Resources.getSystem().getStringArray(
-                        com.android.internal.R.array.config_defaultFirstUserRestrictions);
-                for (String userRestriction : defaultFirstUserRestrictions) {
-                    if (UserRestrictionsUtils.isValidRestriction(userRestriction)) {
-                        restrictions.putBoolean(userRestriction, true);
-                    }
-                }
-                UserRestrictionsUtils.dumpRestrictions(pw, restrictionsPrefix, restrictions);
-            } catch (Resources.NotFoundException e) {
-                pw.print(restrictionsPrefix); pw.println("none - resource not found");
-            }
-        } else {
-            pw.print(prefix); pw.println("mDefaultRestrictions: ");
-            UserRestrictionsUtils.dumpRestrictions(pw, restrictionsPrefix, mDefaultRestrictions);
-        }
+        pw.print(prefix); pw.println("mDefaultRestrictions: ");
+        UserRestrictionsUtils.dumpRestrictions(pw, restrictionsPrefix, mDefaultRestrictions);
 
         pw.print(prefix); pw.print("mProfileParentRequired: "); pw.println(mProfileParentRequired);
         pw.print(prefix); pw.print("mIconBadge: "); pw.println(mIconBadge);
