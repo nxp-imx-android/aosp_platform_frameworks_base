@@ -64,6 +64,8 @@ public class ProcessStateController {
 
     private final Consumer<ProcessRecord> mTopChangeCallback;
 
+    private final ProcessLruUpdater mProcessLruUpdater;
+
     private final GlobalState mGlobalState = new GlobalState();
 
     /**
@@ -74,13 +76,15 @@ public class ProcessStateController {
     private ProcessStateController(ActivityManagerService ams, ProcessList processList,
             ActiveUids activeUids, ServiceThread handlerThread,
             CachedAppOptimizer cachedAppOptimizer, Object lock, Object procLock,
-            Consumer<ProcessRecord> topChangeCallback, OomAdjuster.Injector oomAdjInjector) {
+            Consumer<ProcessRecord> topChangeCallback, ProcessLruUpdater lruUpdater,
+            OomAdjuster.Injector oomAdjInjector) {
         mOomAdjuster = new OomAdjusterImpl(ams, processList, activeUids, handlerThread,
                 mGlobalState, cachedAppOptimizer, oomAdjInjector);
 
         mLock = lock;
         mProcLock = procLock;
         mTopChangeCallback = topChangeCallback;
+        mProcessLruUpdater = lruUpdater;
         final Handler serviceHandler = new Handler(handlerThread.getLooper());
         mServiceBinderCallUpdater = (cr, hasOngoingCalls) -> serviceHandler.post(() -> {
             synchronized (ams) {
@@ -382,6 +386,23 @@ public class ProcessStateController {
                 mOomAdjuster.onProcessStateChanged(proc, prevProcState);
             }
         }
+    }
+
+    /**
+     * Bump a process to the end of the LRU list.
+     */
+    @GuardedBy("mLock")
+    public void updateLruProcess(@NonNull ProcessRecord proc, boolean activityChange,
+            @Nullable ProcessRecord client) {
+        mProcessLruUpdater.updateLruProcessLocked(proc, activityChange, client);
+    }
+
+    /**
+     * Remove a process from the LRU list.
+     */
+    @GuardedBy("mLock")
+    public void removeLruProcess(@NonNull ProcessRecord proc) {
+        mProcessLruUpdater.removeLruProcessLocked(proc);
     }
 
     /********************* Process Visibility State Events *********************/
@@ -1109,6 +1130,19 @@ public class ProcessStateController {
     }
 
     /**
+     * Interface for injecting LRU management into ProcessStateController
+     * TODO(b/430385382): This should be remove when LRU is managed entirely within
+     * ProcessStateController.
+     */
+    public interface ProcessLruUpdater {
+        /** Bump a process to the end of the LRU list */
+        void updateLruProcessLocked(ProcessRecord app, boolean activityChange,
+                ProcessRecord client);
+        /** Remove a process from the LRU list */
+        void removeLruProcessLocked(ProcessRecord app);
+    }
+
+    /**
      * Builder for ProcessStateController.
      */
     public static class Builder {
@@ -1120,6 +1154,7 @@ public class ProcessStateController {
         private CachedAppOptimizer mCachedAppOptimizer = null;
         private Object mLock = null;
         private Consumer<ProcessRecord> mTopChangeCallback = null;
+        private ProcessLruUpdater mProcessLruUpdater = null;
         private OomAdjuster.Injector mOomAdjInjector = null;
 
         public Builder(ActivityManagerService ams, ProcessList processList, ActiveUids activeUids) {
@@ -1144,12 +1179,20 @@ public class ProcessStateController {
             if (mTopChangeCallback == null) {
                 mTopChangeCallback = proc -> {};
             }
+            if (mProcessLruUpdater == null) {
+                // Just attach a no-op updater. For Testing that does not care about the LRU.
+                mProcessLruUpdater = new ProcessLruUpdater() {
+                    public void updateLruProcessLocked(ProcessRecord app, boolean activityChange,
+                            ProcessRecord client) {}
+                    public void removeLruProcessLocked(ProcessRecord app) {}
+                };
+            }
             if (mOomAdjInjector == null) {
                 mOomAdjInjector = new OomAdjuster.Injector();
             }
             return new ProcessStateController(mAms, mProcessList, mActiveUids, mHandlerThread,
                     mCachedAppOptimizer, mLock, mAms.mProcLock, mTopChangeCallback,
-                    mOomAdjInjector);
+                    mProcessLruUpdater, mOomAdjInjector);
         }
 
         /**
@@ -1193,6 +1236,15 @@ public class ProcessStateController {
          */
         public Builder setTopProcessChangeCallback(Consumer<ProcessRecord> callback) {
             mTopChangeCallback = callback;
+            return this;
+        }
+
+        /**
+         * Set a callback for when ProcessStateController is informed about the Top process
+         * changing.
+         */
+        public Builder setProcessLruUpdater(ProcessLruUpdater updater) {
+            mProcessLruUpdater = updater;
             return this;
         }
     }

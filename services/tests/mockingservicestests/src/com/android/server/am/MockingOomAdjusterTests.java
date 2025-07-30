@@ -135,6 +135,7 @@ import android.util.SparseBooleanArray;
 import android.util.SparseIntArray;
 
 import com.android.server.LocalServices;
+import com.android.server.am.ProcessStateController.ProcessLruUpdater;
 import com.android.server.am.psc.ProcessRecordInternal;
 import com.android.server.wm.ActivityServiceConnectionsHolder;
 import com.android.server.wm.ActivityTaskManagerService;
@@ -152,7 +153,6 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -283,9 +283,25 @@ public class MockingOomAdjusterTests {
         mActivityStateHandlerThread = new HandlerThread("ActivityStateThread");
         mActivityStateHandlerThread.start();
         mActivityStateHandler = new Handler(mActivityStateHandlerThread.getLooper());
+        ProcessLruUpdater lruUpdater = new ProcessLruUpdater() {
+            @Override
+            public void updateLruProcessLocked(ProcessRecord app, boolean activityChange,
+                    ProcessRecord client) {
+                ArrayList<ProcessRecord> lru = mService.mProcessList.getLruProcessesLOSP();
+                lru.remove(app);
+                lru.add(app);
+            }
+
+            @Override
+            public void removeLruProcessLocked(ProcessRecord app) {
+                ArrayList<ProcessRecord> lru = mService.mProcessList.getLruProcessesLOSP();
+                lru.remove(app);
+            }
+        };
         mProcessStateController = new ProcessStateController.Builder(mService,
                 mService.mProcessList, mActiveUids)
                 .setCachedAppOptimizer(mTestCachedAppOptimizer)
+                .setProcessLruUpdater(lruUpdater)
                 .setOomAdjusterInjector(mInjector)
                 .build();
         mActivityStateAsyncUpdater = mProcessStateController.createActivityStateAsyncUpdater(
@@ -372,14 +388,15 @@ public class MockingOomAdjusterTests {
         assertCapability(false, app, PROCESS_CAPABILITY_BFSL);
     }
 
-    /**
-     * Replace the process LRU with the given processes.
-     */
     @SuppressWarnings("GuardedBy")
     private void setProcessesToLru(ProcessRecord... apps) {
-        ArrayList<ProcessRecord> lru = mService.mProcessList.getLruProcessesLOSP();
-        lru.clear();
-        Collections.addAll(lru, apps);
+        for (ProcessRecord app : apps) {
+            updateProcessLru(app);
+        }
+    }
+
+    private void updateProcessLru(ProcessRecord app) {
+        mProcessStateController.updateLruProcess(app, false, null);
     }
 
     /**
@@ -397,10 +414,8 @@ public class MockingOomAdjusterTests {
             updateProcessRecordNodes(Arrays.asList(apps));
             if (apps.length == 1) {
                 final ProcessRecord app = apps[0];
-                if (!mService.mProcessList.getLruProcessesLOSP().contains(app)) {
-                    mService.mProcessList.getLruProcessesLOSP().add(app);
-                }
-                mProcessStateController.runUpdate(apps[0], OOM_ADJ_REASON_NONE);
+                updateProcessLru(app);
+                mProcessStateController.runUpdate(app, OOM_ADJ_REASON_NONE);
             } else {
                 setProcessesToLru(apps);
                 mProcessStateController.runFullUpdate(OOM_ADJ_REASON_NONE);

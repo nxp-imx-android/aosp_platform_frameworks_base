@@ -2491,6 +2491,7 @@ public class ActivityManagerService extends IActivityManager.Stub
         mProcessStateController = new ProcessStateController.Builder(this, mProcessList, activeUids)
                 .setLockObject(this)
                 .setTopProcessChangeCallback(this::updateTopAppListeners)
+                .setProcessLruUpdater(mProcessList)
                 .build();
         mOomAdjuster = mProcessStateController.getOomAdjuster();
 
@@ -2892,12 +2893,12 @@ public class ActivityManagerService extends IActivityManager.Stub
     @GuardedBy("this")
     final void updateLruProcessLocked(ProcessRecord app, boolean activityChange,
             ProcessRecord client) {
-        mProcessList.updateLruProcessLocked(app, activityChange, client);
+        mProcessStateController.updateLruProcess(app, activityChange, client);
     }
 
     @GuardedBy("this")
     final void removeLruProcessLocked(ProcessRecord app) {
-        mProcessList.removeLruProcessLocked(app);
+        mProcessStateController.removeLruProcess(app);
     }
 
     @GuardedBy("this")

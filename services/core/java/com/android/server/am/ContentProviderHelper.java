@@ -1484,7 +1484,7 @@ public class ContentProviderHelper {
             // the "getContentProviderImpl" tag here, because it's part
             // of the checktime log in getContentProviderImpl().
             checkTime(startTime, "getContentProviderImpl: before updateLruProcess");
-            processList.updateLruProcessLocked(cpr.proc, false, null);
+            mService.mProcessStateController.updateLruProcess(cpr.proc, false, null);
             checkTime(startTime, "getContentProviderImpl: after updateLruProcess");
         }
         return conn;
