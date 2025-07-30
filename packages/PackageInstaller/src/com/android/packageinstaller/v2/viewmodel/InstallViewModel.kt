@@ -89,8 +89,15 @@ class InstallViewModel(application: Application, val repository: InstallReposito
         _currentInstallStage.value = stage
     }
 
-    fun setVerificationUserResponse(responseCode: Int) {
-        repository.setUserVerificationResponse(responseCode)
+    fun onNegativeVerificationUserResponse() {
+        val stage = repository.setNegativeVerificationUserResponse()
+        _currentInstallStage.value = stage
+    }
+
+    fun onPositiveVerificationUserResponse() {
+        val stage =
+            repository.setPositiveVerificationUserResponse()
+        _currentInstallStage.value = stage
     }
 
     fun forcedSkipSourceCheck() {

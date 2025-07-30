@@ -27,8 +27,6 @@
     <!-- [CHAR LIMIT=15] -->
     <string name="cancel">Cancel</string>
     <!-- [CHAR LIMIT=15] -->
-    <string name="install_without_verifying">Install without verifying</string>
-    <!-- [CHAR LIMIT=15] -->
     <string name="more_details">More details</string>
     <!-- [CHAR LIMIT=15] -->
     <string name="dont_install">Don\'t install</string>
