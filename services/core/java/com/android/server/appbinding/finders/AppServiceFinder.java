@@ -194,6 +194,10 @@ public abstract class AppServiceFinder<TServiceType, TServiceInterfaceType exten
             AppBindingConstants constants, String targetPackage) {
         synchronized (mLock) {
             HashMap<String, TargetServiceInfo> currServiceInfo = mServiceInfos.get(userId);
+            if (currServiceInfo == null) {
+                currServiceInfo = new HashMap<>();
+                mServiceInfos.put(userId, currServiceInfo);
+            }
             if (DEBUG) {
                 Slog.d(TAG, getAppDescription() + " package=" + targetPackage);
             }
@@ -245,7 +249,7 @@ public abstract class AppServiceFinder<TServiceType, TServiceInterfaceType exten
             AppBindingConstants constants) {
         final Set<String> targetPackages = getTargetPackages(userId);
         synchronized (mLock) {
-            mServiceInfos.put(userId, new HashMap<String, TargetServiceInfo>());
+            mServiceInfos.put(userId, new HashMap<>());
 
             if (DEBUG) {
                 Slog.d(TAG, getAppDescription() + " packages=" + targetPackages);
