@@ -298,7 +298,6 @@ public class BubbleBarAnimationHelper {
         final float endTx = toBbev.getTranslationX();
         final float startTx = getSwitchAnimationInitialTx(endTx);
         toBbev.getHandleView().setAlpha(0f);
-        toBbev.getHandleView().setHandleInitialColor(fromBbev.getHandleView().getHandleColor());
 
         AnimatorSet switchAnim = new AnimatorSet();
         switchAnim.playTogether(

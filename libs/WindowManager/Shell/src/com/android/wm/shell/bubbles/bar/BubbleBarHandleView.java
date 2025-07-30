@@ -132,16 +132,6 @@ public class BubbleBarHandleView extends View {
     }
 
     /**
-     * Set initial color for the handle. Takes effect if the
-     * {@link #updateHandleColor(boolean, boolean)} has not been called.
-     */
-    public void setHandleInitialColor(@ColorInt int color) {
-        if (color != mHandleColor) {
-            setHandleColor(color);
-        }
-    }
-
-    /**
      * Updates the handle color.
      *
      * @param isRegionDark Whether the background behind the handle is dark, and thus the handle
