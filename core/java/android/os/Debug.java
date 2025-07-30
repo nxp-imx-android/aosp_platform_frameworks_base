@@ -29,6 +29,7 @@ import com.android.internal.util.FastPrintWriter;
 import com.android.internal.util.Preconditions;
 import com.android.internal.util.TypedProperties;
 
+import dalvik.annotation.optimization.CriticalNative;
 import dalvik.system.VMDebug;
 
 import org.apache.harmony.dalvik.ddmc.Chunk;
@@ -1936,18 +1937,21 @@ public final class Debug
      * Returns the size of the native heap.
      * @return The size of the native heap in bytes.
      */
+    @CriticalNative
     public static native long getNativeHeapSize();
 
     /**
      * Returns the amount of allocated memory in the native heap.
      * @return The allocated size in bytes.
      */
+    @CriticalNative
     public static native long getNativeHeapAllocatedSize();
 
     /**
      * Returns the amount of free memory in the native heap.
      * @return The freed size in bytes.
      */
+    @CriticalNative
     public static native long getNativeHeapFreeSize();
 
     /**
