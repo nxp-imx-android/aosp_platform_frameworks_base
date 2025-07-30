@@ -1188,7 +1188,6 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
     final Handler mHandler;
     final Handler mBackgroundHandler;
 
-    /** Listens only if mHasFeature == true. */
     final BroadcastReceiver mReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -2229,7 +2228,7 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
 
         // Policy version upgrade must not depend on either mOwners or mUserData, so they are
         // initialized only after performing the upgrade.
-        if (mHasFeature) {
+        if (!isDeviceAdminFeatureDisabled()) {
             performPolicyVersionUpgrade();
         }
 
@@ -2239,7 +2238,7 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
         mDevicePolicyEngine = new DevicePolicyEngine(
                 mContext, mDeviceAdminServiceController, getLockObject(), mPathProvider);
 
-        if (!mHasFeature) {
+        if (isDeviceAdminFeatureDisabled()) {
             // Skip the rest of the initialization
             mSetupContentObserver = null;
             mContactSystemRoleHolders = Collections.emptySet();
@@ -3439,7 +3438,7 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
 
     @VisibleForTesting
     void systemReady(int phase) {
-        if (!mHasFeature) {
+        if(isDeviceAdminFeatureDisabled()) {
             return;
         }
         switch (phase) {
@@ -4313,7 +4312,7 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
 
     @Override
     public boolean isAdminActive(ComponentName adminReceiver, int userHandle) {
-        if (!mHasFeature) {
+        if (isDeviceAdminFeatureDisabled()) {
             return false;
         }
         Preconditions.checkArgumentNonnegative(userHandle, "Invalid userId");
@@ -4328,7 +4327,7 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
 
     @Override
     public boolean isRemovingAdmin(ComponentName adminReceiver, int userHandle) {
-        if (!mHasFeature) {
+        if (isDeviceAdminFeatureDisabled()) {
             return false;
         }
         Preconditions.checkArgumentNonnegative(userHandle, "Invalid userId");
@@ -4367,7 +4366,7 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
     @Override
     @SuppressWarnings("unchecked")
     public List<ComponentName> getActiveAdmins(int userHandle) {
-        if (!mHasFeature) {
+        if (isDeviceAdminFeatureDisabled()) {
             return Collections.EMPTY_LIST;
         }
         Preconditions.checkArgumentNonnegative(userHandle, "Invalid userId");
@@ -4604,7 +4603,8 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
 
     @Override
     public void setPasswordQuality(ComponentName who, int quality, boolean parent) {
-        if (!mHasFeature || notSupportedOnAutomotive("setPasswordQuality")) {
+        if (isDeviceAdminFeatureDisabled() ||
+                notSupportedOnAutomotive("setPasswordQuality")) {
             return;
         }
         Objects.requireNonNull(who, "ComponentName is null");
@@ -6328,7 +6328,7 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
     @Override
     public void setMaximumTimeToLock(ComponentName who, String callerPackageName,
             long timeMs, boolean parent) {
-        if (!mHasFeature) {
+        if (isDeviceAdminFeatureDisabled()) {
             return;
         }
 
@@ -6403,7 +6403,7 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
 
     @Override
     public long getMaximumTimeToLock(ComponentName who, int userHandle, boolean parent) {
-        if (!mHasFeature) {
+        if (isDeviceAdminFeatureDisabled()) {
             return 0;
         }
         Preconditions.checkArgumentNonnegative(userHandle, "Invalid userId");
@@ -8019,7 +8019,7 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
     public void wipeDataWithReason(String callerPackageName, int flags,
             @NonNull String wipeReasonForUser, boolean calledOnParentInstance,
             boolean factoryReset) {
-        if (!mHasFeature && !hasCallingOrSelfPermission(MASTER_CLEAR)) {
+        if (isDeviceAdminFeatureDisabled() && !hasCallingOrSelfPermission(MASTER_CLEAR)) {
             return;
         }
         CallerIdentity caller = getCallerIdentity(callerPackageName);
@@ -8411,7 +8411,7 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
     @Override
     public FactoryResetProtectionPolicy getFactoryResetProtectionPolicy(
             @Nullable ComponentName who) {
-        if (!mHasFeature) {
+        if (isDeviceAdminFeatureDisabled()) {
             return null;
         }
 
@@ -9288,7 +9288,7 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
     @Override
     public void setAutoTimeEnabled(@Nullable ComponentName who, String callerPackageName,
             boolean enabled) {
-        if (!mHasFeature) {
+        if (isDeviceAdminFeatureDisabled()) {
             return;
         }
         CallerIdentity caller = getCallerIdentity(who);
@@ -9310,7 +9310,7 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
      */
     @Override
     public boolean getAutoTimeEnabled(@Nullable ComponentName who, String callerPackageName) {
-        if (!mHasFeature && !Flags.removeDeviceAdminFeatureChecks()) {
+        if (isDeviceAdminFeatureDisabled()) {
             return false;
         }
         CallerIdentity caller = getCallerIdentity(who);
@@ -9331,7 +9331,7 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
      */
     @Override
     public void setAutoTimePolicy(String callerPackageName, int policy) {
-        if (!mHasFeature && !Flags.removeDeviceAdminFeatureChecks()) {
+        if (isDeviceAdminFeatureDisabled()) {
             return;
         }
 
@@ -9367,7 +9367,7 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
      */
     @Override
     public int getAutoTimePolicy(String callerPackageName) {
-        if (!mHasFeature && !Flags.removeDeviceAdminFeatureChecks()) {
+        if (isDeviceAdminFeatureDisabled()) {
             return DevicePolicyManager.AUTO_TIME_NOT_CONTROLLED_BY_POLICY;
         }
         CallerIdentity caller = getCallerIdentity(callerPackageName);
@@ -9385,7 +9385,7 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
     @Override
     public void setAutoTimeZoneEnabled(@Nullable ComponentName who, String callerPackageName,
             boolean enabled) {
-        if (!mHasFeature) {
+        if (isDeviceAdminFeatureDisabled()) {
             return;
         }
 
@@ -9409,7 +9409,7 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
      */
     @Override
     public boolean getAutoTimeZoneEnabled(@Nullable ComponentName who, String callerPackageName) {
-        if (!mHasFeature && !Flags.removeDeviceAdminFeatureChecks()) {
+        if (isDeviceAdminFeatureDisabled()) {
             return false;
         }
 
@@ -9430,7 +9430,7 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
      * Set auto time zone state.
      */
     public void setAutoTimeZonePolicy(String callerPackageName, int policy) {
-        if (!mHasFeature && !Flags.removeDeviceAdminFeatureChecks()) {
+        if (isDeviceAdminFeatureDisabled()) {
             return;
         }
 
@@ -9462,7 +9462,7 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
      */
     @Override
     public int getAutoTimeZonePolicy(String callerPackageName) {
-        if (!mHasFeature && !Flags.removeDeviceAdminFeatureChecks()) {
+        if (isDeviceAdminFeatureDisabled()) {
             return DevicePolicyManager.AUTO_TIME_ZONE_NOT_CONTROLLED_BY_POLICY;
         }
         CallerIdentity caller = getCallerIdentity(callerPackageName);
@@ -9490,7 +9490,7 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
 
     @Override
     public boolean requestBugreport(ComponentName who) {
-        if (!mHasFeature) {
+        if (isDeviceAdminFeatureDisabled()) {
             return false;
         }
         Objects.requireNonNull(who, "ComponentName is null");
@@ -10250,7 +10250,7 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
 
     @Override
     public ComponentName getDeviceOwnerComponent(boolean callingUserOnly) {
-        if (!mHasFeature) {
+        if (isDeviceAdminFeatureDisabled()) {
             return null;
         }
         if (!callingUserOnly) {
@@ -10271,7 +10271,7 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
 
     @Override
     public ComponentName getDeviceOwnerComponentOnUser(int userId) {
-        if (!mHasFeature) {
+        if (isDeviceAdminFeatureDisabled()) {
             return null;
         }
         if (mInjector.userHandleGetCallingUserId() != userId) {
@@ -10295,7 +10295,7 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
 
     @Override
     public int getDeviceOwnerUserId() {
-        if (!mHasFeature) {
+        if (isDeviceAdminFeatureDisabled()) {
             return UserHandle.USER_NULL;
         }
         Preconditions.checkCallAuthorization(canManageUsers(getCallerIdentity()));
@@ -10734,7 +10734,7 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
     // completing Setup Wizard, and pairing involves transferring user data, calling
     // logic may want to check mIsWatch or mPaired in addition to hasUserSetupCompleted().
     private boolean hasUserSetupCompleted(int userHandle) {
-        if (!mHasFeature) {
+        if (isDeviceAdminFeatureDisabled()) {
             return true;
         }
         return mInjector.hasUserSetupCompleted(getUserData(userHandle));
@@ -10742,7 +10742,7 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
 
     @Override
     public int getUserProvisioningState(int userHandle) {
-        if (!mHasFeature) {
+        if (isDeviceAdminFeatureDisabled()) {
             return STATE_USER_UNMANAGED;
         }
         final CallerIdentity caller = getCallerIdentity();
@@ -10759,7 +10759,7 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
 
     @Override
     public void setUserProvisioningState(int newState, int userId) {
-        if (!mHasFeature) {
+        if (isDeviceAdminFeatureDisabled()) {
             logMissingFeatureAction("Cannot set provisioning state " + newState + " for user "
                     + userId);
             return;
@@ -10930,7 +10930,7 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
 
     @Override
     public ComponentName getProfileOwnerAsUser(int userId) {
-        if (!mHasFeature) {
+        if (isDeviceAdminFeatureDisabled()) {
             return null;
         }
         Preconditions.checkArgumentNonnegative(userId, "Invalid userId");
@@ -12148,6 +12148,14 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
                 return -1;
             }
         });
+    }
+
+    /**
+     * This method should be used only for approved APIs that are in transition of removing the
+     * Device Admin feature checks.
+     */
+    private boolean isDeviceAdminFeatureDisabled() {
+        return !mHasFeature && !Flags.removeDeviceAdminFeatureChecks();
     }
 
     @Override
@@ -18066,7 +18074,7 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
     @Override
     public void setShortSupportMessage(@Nullable ComponentName who, String callerPackageName,
             CharSequence message) {
-        if (!mHasFeature) {
+        if(isDeviceAdminFeatureDisabled()) {
             return;
         }
 
@@ -18095,7 +18103,7 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
     @Override
     public CharSequence getShortSupportMessage(@Nullable ComponentName who,
             String callerPackageName) {
-        if (!mHasFeature) {
+        if(isDeviceAdminFeatureDisabled()) {
             return null;
         }
 
@@ -18147,7 +18155,7 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
 
     @Override
     public CharSequence getShortSupportMessageForUser(@NonNull ComponentName who, int userHandle) {
-        if (!mHasFeature) {
+        if(isDeviceAdminFeatureDisabled()) {
             return null;
         }
         Objects.requireNonNull(who, "ComponentName is null");
@@ -18570,7 +18578,7 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
 
     @Override
     public void setAffiliationIds(ComponentName admin, List<String> ids) {
-        if (!mHasFeature) {
+        if (isDeviceAdminFeatureDisabled()) {
             return;
         }
         if (ids == null) {
@@ -18624,7 +18632,7 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
 
     @Override
     public List<String> getAffiliationIds(ComponentName admin) {
-        if (!mHasFeature) {
+        if (isDeviceAdminFeatureDisabled()) {
             return Collections.emptyList();
         }
 
@@ -18651,7 +18659,7 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
 
     @Override
     public boolean isAffiliatedUser(@UserIdInt int userId) {
-        if (!mHasFeature) {
+        if (isDeviceAdminFeatureDisabled()) {
             return false;
         }
         final CallerIdentity caller = getCallerIdentity();
@@ -19188,7 +19196,7 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
             @NonNull ComponentName admin, @NonNull IApplicationThread caller,
             @Nullable IBinder activtiyToken, @NonNull Intent serviceIntent,
             @NonNull IServiceConnection connection, long flags, @UserIdInt int targetUserId) {
-        if (!mHasFeature) {
+        if (isDeviceAdminFeatureDisabled()) {
             return false;
         }
         Objects.requireNonNull(admin);
@@ -19239,7 +19247,7 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
 
     @Override
     public @NonNull List<UserHandle> getBindDeviceAdminTargetUsers(@NonNull ComponentName admin) {
-        if (!mHasFeature) {
+        if (isDeviceAdminFeatureDisabled()) {
             return Collections.emptyList();
         }
         Objects.requireNonNull(admin);
