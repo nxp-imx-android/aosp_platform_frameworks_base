@@ -7647,6 +7647,12 @@
     <!-- Whether the system package installer supports the material design. -->
     <bool name="config_enableMaterialDesignInPackageInstaller">true</bool>
 
+    <!-- Whether to enable partial sleep wake locks. -->
+    <bool name="config_allowPartialSleepWakeLocks">false</bool>
+
+    <!-- Maximum partial sleep wake lock duration in milliseconds. -->
+    <integer name="config_maximumPartialSleepWakeLockDuration">1000</integer>
+
     <!-- Package and class info to bind to ProximityProviderService -->
     <string name="proximity_provider_service_package_name" translatable="false">android</string>
     <string name="proximity_provider_service_class_name" translatable="false">android.proximity.DefaultProximityProviderService</string>

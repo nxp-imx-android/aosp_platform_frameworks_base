@@ -35,6 +35,7 @@ package android {
     field public static final String ACCESS_TV_TUNER = "android.permission.ACCESS_TV_TUNER";
     field public static final String ACCESS_ULTRASOUND = "android.permission.ACCESS_ULTRASOUND";
     field public static final String ACCESS_VIBRATOR_STATE = "android.permission.ACCESS_VIBRATOR_STATE";
+    field @FlaggedApi("com.android.server.power.feature.flags.partial_sleep_wakelocks") public static final String ACQUIRE_SLEEP_LOCK = "android.permission.ACQUIRE_SLEEP_LOCK";
     field public static final String ACTIVITY_EMBEDDING = "android.permission.ACTIVITY_EMBEDDING";
     field public static final String ADD_ALWAYS_UNLOCKED_DISPLAY = "android.permission.ADD_ALWAYS_UNLOCKED_DISPLAY";
     field @FlaggedApi("android.companion.virtualdevice.flags.vdm_mirror_display_permission") public static final String ADD_MIRROR_DISPLAY = "android.permission.ADD_MIRROR_DISPLAY";
@@ -11813,6 +11814,7 @@ package android.os {
     method @RequiresPermission(android.Manifest.permission.READ_DREAM_STATE) public boolean isAmbientDisplaySuppressedForToken(@NonNull String);
     method @RequiresPermission(anyOf={android.Manifest.permission.MANAGE_LOW_POWER_STANDBY, android.Manifest.permission.DEVICE_POWER}) public boolean isLowPowerStandbySupported();
     method @NonNull @RequiresPermission(android.Manifest.permission.SET_LOW_POWER_STANDBY_PORTS) public android.os.PowerManager.LowPowerStandbyPortsLock newLowPowerStandbyPortsLock(@NonNull java.util.List<android.os.PowerManager.LowPowerStandbyPortDescription>);
+    method @FlaggedApi("com.android.server.power.feature.flags.partial_sleep_wakelocks") @NonNull @RequiresPermission(android.Manifest.permission.ACQUIRE_SLEEP_LOCK) public android.os.PowerManager.SleepLock newSleepLock(int, @NonNull String) throws java.lang.RuntimeException;
     method @RequiresPermission(anyOf={android.Manifest.permission.DEVICE_POWER, android.Manifest.permission.POWER_SAVER}) public boolean setAdaptivePowerSaveEnabled(boolean);
     method @RequiresPermission(anyOf={android.Manifest.permission.DEVICE_POWER, android.Manifest.permission.POWER_SAVER}) public boolean setAdaptivePowerSavePolicy(@NonNull android.os.BatterySaverPolicyConfig);
     method @RequiresPermission(anyOf={android.Manifest.permission.BATTERY_PREDICTION, android.Manifest.permission.DEVICE_POWER}) public void setBatteryDischargePrediction(@NonNull java.time.Duration, boolean);
@@ -11865,6 +11867,12 @@ package android.os {
     method @RequiresPermission(android.Manifest.permission.SET_LOW_POWER_STANDBY_PORTS) public void acquire();
     method protected void finalize();
     method @RequiresPermission(android.Manifest.permission.SET_LOW_POWER_STANDBY_PORTS) public void release();
+  }
+
+  @FlaggedApi("com.android.server.power.feature.flags.partial_sleep_wakelocks") public final class PowerManager.SleepLock {
+    method @RequiresPermission(android.Manifest.permission.ACQUIRE_SLEEP_LOCK) public void acquire(long);
+    method public boolean isHeld();
+    method @RequiresPermission(android.Manifest.permission.ACQUIRE_SLEEP_LOCK) public void release();
   }
 
   @FlaggedApi("com.android.server.power.optimization.power_monitor_api") public final class PowerMonitorReadings {

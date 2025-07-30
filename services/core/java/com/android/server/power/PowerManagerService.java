@@ -2274,9 +2274,12 @@ public final class PowerManagerService extends SystemService
     // whether a wake lock summary means device is being kept asleep.
     // will prevent power groups from leaving state of being asleep
     private boolean hasWakeLockKeepingGroupAsleep(int wakeLockSummary) {
-        Slog.i(TAG, "Preventing waking device, due to wakelocks: 0x"
-                + Integer.toHexString(wakeLockSummary));
-        return (wakeLockSummary & (WAKE_LOCK_PARTIAL_SLEEP)) != 0;
+        if ((wakeLockSummary & (WAKE_LOCK_PARTIAL_SLEEP)) != 0) {
+            Slog.i(TAG, "Preventing waking device, due to wakelocks: 0x"
+                    + Integer.toHexString(wakeLockSummary));
+            return true;
+        }
+        return false;
     }
 
     @GuardedBy("mLock")
@@ -6128,6 +6131,21 @@ public final class PowerManagerService extends SystemService
                         android.Manifest.permission.SCREEN_TIMEOUT_OVERRIDE, null);
             }
 
+            if ((flags & PowerManager.PARTIAL_SLEEP_WAKE_LOCK) != 0) {
+                if (!mFeatureFlags.isPartialSleepWakelocksFeatureEnabled()) {
+                    throw new IllegalArgumentException("Acquiring an unsupported wake lock:"
+                            + " flags=" + flags + ", tag=" + tag);
+                }
+                mContext.enforceCallingOrSelfPermission(
+                        android.Manifest.permission.ACQUIRE_SLEEP_LOCK, null);
+
+                if (flags != PowerManager.PARTIAL_SLEEP_WAKE_LOCK) {
+                    throw new IllegalArgumentException("Cannot acquire PARTIAL_SLEEP_WAKE_LOCK "
+                            + "with conflicting wake lock flags:"
+                            + " flags=" + flags + ", tag=" + tag);
+                }
+            }
+
             if (ws != null && !ws.isEmpty()) {
                 mContext.enforceCallingOrSelfPermission(
                         android.Manifest.permission.UPDATE_DEVICE_STATS, null);
@@ -6174,6 +6192,15 @@ public final class PowerManagerService extends SystemService
             }
 
             mContext.enforceCallingOrSelfPermission(android.Manifest.permission.WAKE_LOCK, null);
+
+            if ((flags & PowerManager.PARTIAL_SLEEP_WAKE_LOCK) != 0) {
+                if (!mFeatureFlags.isPartialSleepWakelocksFeatureEnabled()) {
+                    throw new IllegalArgumentException("Releasing an unsupported wake lock:"
+                            + " flags=" + flags);
+                }
+                mContext.enforceCallingOrSelfPermission(
+                        android.Manifest.permission.ACQUIRE_SLEEP_LOCK, null);
+            }
 
             final long ident = Binder.clearCallingIdentity();
             try {
