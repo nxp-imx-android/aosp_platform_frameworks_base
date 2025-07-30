@@ -263,3 +263,10 @@ flag {
   bug: "434885800"
 
 }
+
+flag {
+  name: "fix_shift_drawing_amount_test_api"
+  namespace: "text"
+  description: "Fixing shift_drawing_offset_for_start_overhang that had an issue."
+  bug: "434885800"
+}
