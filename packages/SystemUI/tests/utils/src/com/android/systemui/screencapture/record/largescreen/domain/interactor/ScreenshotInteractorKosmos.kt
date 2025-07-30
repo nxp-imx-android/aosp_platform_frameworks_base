@@ -21,6 +21,7 @@ import com.android.internal.util.mockScreenshotHelper
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.backgroundCoroutineContext
 import com.android.systemui.screenshot.mockImageCapture
+import com.android.systemui.user.data.repository.userRepository
 
 val Kosmos.screenshotInteractor by
     Kosmos.Fixture {
@@ -29,5 +30,6 @@ val Kosmos.screenshotInteractor by
             screenshotHelper = mockScreenshotHelper,
             backgroundContext = backgroundCoroutineContext,
             backgroundHandler = fakeHandler,
+            userRepository = userRepository,
         )
     }
