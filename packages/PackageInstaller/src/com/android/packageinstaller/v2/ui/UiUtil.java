@@ -104,6 +104,18 @@ public class UiUtil {
     }
 
     /**
+     * Get the id of the button panel of the alert dialog.
+     */
+    public static int getAlertDialogButtonPanelId(@NonNull Context context) {
+        if (PackageUtil.isMaterialDesignEnabled(context)) {
+            return R.id.buttonPanel;
+        } else {
+            return context.getResources().getIdentifier("buttonPanel",
+                    /* defType= */ "id", /* defPackage= */ "android");
+        }
+    }
+
+    /**
      * If material design is enabled, return the MaterialAlertDialog. Otherwise, return the
      * system AlertDialog.
      */

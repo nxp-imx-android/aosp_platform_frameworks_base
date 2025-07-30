@@ -78,6 +78,7 @@ public class InstallationFragment extends DialogFragment {
     private View mMoreDetailsClickableLayout = null;
     private View mMoreDetailsExpandedLayout = null;
     private boolean mIsMoreDetailsExpanded = false;
+    private View mButtonPanel = null;
 
     @Override
     public void onAttach(@NonNull Context context) {
@@ -167,6 +168,15 @@ public class InstallationFragment extends DialogFragment {
         // Get the current install stage
         final InstallStage installStage = getCurrentInstallStage();
         this.setCancelable(true);
+
+        // When A11y is enabled, if there are no buttons in some cases E.g. installing,
+        // the button panel should not be focused without any descriptions. Set the button
+        // panel is not focusable to avoid it being focused.
+        if (mButtonPanel == null) {
+            mButtonPanel =
+                    mDialog.requireViewById(UiUtil.getAlertDialogButtonPanelId(requireContext()));
+            mButtonPanel.setFocusable(false);
+        }
 
         // show the title and reset the paddings of the custom message textview
         if (mTitleTemplate != null) {
@@ -506,7 +516,7 @@ public class InstallationFragment extends DialogFragment {
 
         // Hide the title and set the message
         mCustomMessageTextView.setText(R.string.message_anonymous_source_warning);
-        dialog.setTitle(null);
+        dialog.setTitle("");
         mTitleTemplate =
                 dialog.findViewById(UiUtil.getAlertDialogTitleTemplateId(requireContext()));
         if (mTitleTemplate != null) {
