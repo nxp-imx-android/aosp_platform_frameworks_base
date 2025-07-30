@@ -22,43 +22,39 @@ import static android.hardware.usb.UsbOperationInternal.USB_OPERATION_SUCCESS;
 import static com.android.server.usb.UsbPortManager.logAndPrint;
 import static com.android.server.usb.UsbPortManager.logAndPrintException;
 
-import android.annotation.Nullable;
+import android.hardware.usb.AltModeData;
+import android.hardware.usb.AltModeData.DisplayPortAltModeData;
 import android.hardware.usb.ContaminantProtectionStatus;
+import android.hardware.usb.DisplayPortAltModeInfo;
+import android.hardware.usb.DisplayPortAltModePinAssignment;
 import android.hardware.usb.IUsb;
+import android.hardware.usb.IUsbCallback;
 import android.hardware.usb.IUsbOperationInternal;
+import android.hardware.usb.PortMode;
+import android.hardware.usb.PortRole;
+import android.hardware.usb.PortStatus;
+import android.hardware.usb.Status;
 import android.hardware.usb.UsbManager.UsbHalVersion;
 import android.hardware.usb.UsbPort;
 import android.hardware.usb.UsbPortStatus;
-import android.hardware.usb.PortMode;
-import android.hardware.usb.Status;
-import android.hardware.usb.IUsbCallback;
-import android.hardware.usb.PortRole;
-import android.hardware.usb.PortStatus;
-import android.hardware.usb.ComplianceWarning;
-import android.hardware.usb.DisplayPortAltModeInfo;
-import android.hardware.usb.AltModeData;
-import android.hardware.usb.AltModeData.DisplayPortAltModeData;
-import android.hardware.usb.DisplayPortAltModePinAssignment;
 import android.hardware.usb.flags.Flags;
-import android.os.Build;
-import android.os.ServiceManager;
 import android.os.IBinder;
 import android.os.RemoteException;
+import android.os.ServiceManager;
 import android.util.IntArray;
 import android.util.Log;
 import android.util.LongSparseArray;
-import android.util.Slog;
 
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.util.IndentingPrintWriter;
 import com.android.server.usb.UsbPortManager;
 import com.android.server.usb.hal.port.RawPortInfo;
 
-import java.util.Arrays;
 import java.util.ArrayList;
-import java.util.concurrent.ThreadLocalRandom;
+import java.util.Arrays;
 import java.util.NoSuchElementException;
 import java.util.Objects;
+import java.util.concurrent.ThreadLocalRandom;
 
 /**
  * Implements the methods to interact with AIDL USB HAL.
@@ -675,29 +671,35 @@ public final class UsbPortAidl implements UsbPortHal {
             int numStatus = currentPortStatus.length;
             for (int i = 0; i < numStatus; i++) {
                 PortStatus current = currentPortStatus[i];
-                RawPortInfo temp = new RawPortInfo(current.portName,
-                        toSupportedModes(current.supportedModes),
-                        toSupportedContaminantProtectionModes(current
-                                .supportedContaminantProtectionModes),
-                        toPortMode(current.currentMode),
-                        current.canChangeMode,
-                        current.currentPowerRole,
-                        current.canChangePowerRole,
-                        current.currentDataRole,
-                        current.canChangeDataRole,
-                        current.supportsEnableContaminantPresenceProtection,
-                        toContaminantProtectionStatus(current.contaminantProtectionStatus),
-                        current.supportsEnableContaminantPresenceDetection,
-                        current.contaminantDetectionStatus,
-                        toUsbDataStatusInt(current.usbDataStatus),
-                        current.powerTransferLimited,
-                        current.powerBrickStatus,
-                        current.supportsComplianceWarnings,
-                        formatComplianceWarnings(current.complianceWarnings),
-                        current.plugOrientation,
-                        toSupportedAltModesInt(current.supportedAltModes),
-                        formatDisplayPortAltModeInfo(current.supportedAltModes));
-                newPortInfo.add(temp);
+                RawPortInfo.Builder builder = new RawPortInfo.Builder(current.portName);
+                builder.setSupportedModes(toSupportedModes(current.supportedModes))
+                        .setSupportedContaminantProtectionModes(
+                            toSupportedContaminantProtectionModes(
+                            current.supportedContaminantProtectionModes))
+                        .setCurrentMode(toPortMode(current.currentMode))
+                        .setCanChangeMode(current.canChangeMode)
+                        .setCurrentPowerRole(current.currentPowerRole)
+                        .setCanChangePowerRole(current.canChangePowerRole)
+                        .setCurrentDataRole(current.currentDataRole)
+                        .setCanChangeDataRole(current.canChangeDataRole)
+                        .setSupportsEnableContaminantPresenceProtection(
+                            current.supportsEnableContaminantPresenceProtection)
+                        .setContaminantProtectionStatus(toContaminantProtectionStatus(
+                            current.contaminantProtectionStatus))
+                        .setSupportsEnableContaminantPresenceDetection(
+                            current.supportsEnableContaminantPresenceDetection)
+                        .setContaminantDetectionStatus(current.contaminantDetectionStatus)
+                        .setUsbDataStatus(toUsbDataStatusInt(current.usbDataStatus))
+                        .setPowerTransferLimited(current.powerTransferLimited)
+                        .setPowerBrickConnectionStatus(current.powerBrickStatus)
+                        .setSupportsComplianceWarnings(current.supportsComplianceWarnings)
+                        .setComplianceWarnings(formatComplianceWarnings(current.complianceWarnings))
+                        .setPlugState(current.plugOrientation)
+                        .setSupportedAltModes(toSupportedAltModesInt(current.supportedAltModes))
+                        .setDisplayPortAltModeInfo(formatDisplayPortAltModeInfo(
+                            current.supportedAltModes));
+
+                newPortInfo.add(builder.build());
                 UsbPortManager.logAndPrint(Log.INFO, mPw, "ClientCallback AIDL V1: "
                         + current.portName);
             }
