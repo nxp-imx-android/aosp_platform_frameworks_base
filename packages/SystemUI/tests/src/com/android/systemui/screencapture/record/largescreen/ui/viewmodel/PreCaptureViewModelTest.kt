@@ -211,8 +211,11 @@ class PreCaptureViewModelTest : SysuiTestCase() {
         }
 
     @Test
-    fun takePartialScreenshot_callsScreenshotInteractor() =
+    fun takePartialScreenshot_callsScreenshotInteractor_withCorrectRequest() =
         testScope.runTest {
+            val displayId = 3
+            whenever(kosmos.mockScreenCaptureActivity.displayId).thenReturn(displayId)
+
             viewModel.updateCaptureType(ScreenCaptureType.SCREENSHOT)
             viewModel.updateCaptureRegion(ScreenCaptureRegion.PARTIAL)
 
@@ -227,10 +230,14 @@ class PreCaptureViewModelTest : SysuiTestCase() {
             val screenshotRequestCaptor = argumentCaptor<ScreenshotRequest>()
             verify(kosmos.mockScreenshotHelper, times(1))
                 .takeScreenshot(screenshotRequestCaptor.capture(), any(), isNull())
+
             val capturedRequest = screenshotRequestCaptor.lastValue
             assertThat(capturedRequest.type).isEqualTo(WindowManager.TAKE_SCREENSHOT_PROVIDED_IMAGE)
+            assertThat(capturedRequest.source)
+                .isEqualTo(WindowManager.ScreenshotSource.SCREENSHOT_SCREEN_CAPTURE_UI)
             assertThat(capturedRequest.bitmap).isEqualTo(mockBitmap)
             assertThat(capturedRequest.boundsInScreen).isEqualTo(regionBox)
+            assertThat(capturedRequest.displayId).isEqualTo(displayId)
         }
 
     @Test

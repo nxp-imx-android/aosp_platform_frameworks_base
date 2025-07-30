@@ -19,7 +19,6 @@ package com.android.systemui.screencapture.record.largescreen.domain.interactor
 import android.graphics.Rect
 import android.os.Handler
 import android.os.UserHandle
-import android.view.Display.DEFAULT_DISPLAY
 import android.view.WindowManager
 import com.android.internal.util.ScreenshotHelper
 import com.android.internal.util.ScreenshotRequest
@@ -52,7 +51,7 @@ constructor(
         takeScreenshot(request)
     }
 
-    suspend fun takePartialScreenshot(regionBounds: Rect, displayId: Int = DEFAULT_DISPLAY) {
+    suspend fun takePartialScreenshot(regionBounds: Rect, displayId: Int) {
         val bitmap =
             withContext(backgroundContext) {
                 requireNotNull(imageCapture.captureDisplay(displayId, regionBounds))
