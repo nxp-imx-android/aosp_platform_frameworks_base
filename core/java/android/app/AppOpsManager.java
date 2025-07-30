@@ -7925,6 +7925,17 @@ public class AppOpsManager {
          * @hide
          */
         default void onOpChanged(@NonNull String op, @NonNull String packageName,  int userId) {
+            // Backwards compat handling for the original {@link onOpChanged(String, String)}
+            // interface, which wasn't documented non-null. In 25Q2, we changed the
+            // service side implementation to pass empty strings to fix issues with
+            // dropped updates for native callers due to the AIDL interface being
+            // non-null. However, Java callers could still rely on the original,
+            // Java-specific nullity behavior, where a change with a null package name
+            // would be dispatched in the case of a global op state update (such as a
+            // restriction).
+            if ("".equals(packageName)) {
+                packageName = null;
+            }
             onOpChanged(op, packageName);
         }
 
@@ -7940,7 +7951,9 @@ public class AppOpsManager {
          * automatically.
          *
          * @param op The Op that changed.
-         * @param packageName Package of the app whose Op changed.
+         * @param packageName Package of the app whose Op changed. Can be empty in the case of a
+         * change which is not package specific (such as global restrictions) which may imply
+         * a change to the op or package being listened to.
          * @param userId User id of the app whose Op changed.
          * @param persistentDeviceId persistent device id whose Op changed.
          */
