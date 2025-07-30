@@ -774,7 +774,7 @@ public class WindowTestsBase extends SystemServiceTestsBase {
         return activity;
     }
 
-    private static void postCreateActivitySetup(ActivityRecord activity, DisplayContent dc) {
+    static void postCreateActivitySetup(ActivityRecord activity, DisplayContent dc) {
         activity.onDisplayChanged(dc);
         activity.setOccludesParent(true);
         activity.setVisible(true);
