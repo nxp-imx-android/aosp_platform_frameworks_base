@@ -33,6 +33,7 @@ import com.android.systemui.kosmos.testDispatcher
 import com.android.systemui.log.FaceAuthenticationLogger
 import com.android.systemui.power.domain.interactor.powerInteractor
 import com.android.systemui.scene.domain.interactor.sceneInteractor
+import com.android.systemui.statusbar.pipeline.mobile.data.repository.mobileConnectionsRepository
 import com.android.systemui.user.data.repository.userRepository
 import com.android.systemui.util.mockito.mock
 
@@ -59,5 +60,6 @@ val Kosmos.deviceEntryFaceAuthInteractor by
             sceneInteractor = { sceneInteractor },
             deviceEntryFaceAuthStatusInteractor = deviceEntryFaceAuthStatusInteractor,
             cameraSensorPrivacyInteractor = cameraSensorPrivacyInteractor,
+            mobileConnectionsRepository = mobileConnectionsRepository,
         )
     }
