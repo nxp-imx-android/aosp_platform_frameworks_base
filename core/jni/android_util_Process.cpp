@@ -678,24 +678,28 @@ static int pid_compare(const void* v1, const void* v2)
     return *((const jint*)v1) - *((const jint*)v2);
 }
 
-static jlong android_os_Process_getFreeMemory(JNIEnv* env, jobject clazz)
-{
-    std::array<std::string_view, 1> memFreeTags = {
-            ::android::meminfo::SysMemInfo::kMemAvailable,
-    };
-    std::vector<uint64_t> mem(memFreeTags.size());
+static jlong android_os_Process_getMemory(JNIEnv* env, jobject clazz, std::string_view tag) {
+    std::array<std::string_view, 1> memTags = {tag};
+    std::vector<uint64_t> mem(memTags.size());
     ::android::meminfo::SysMemInfo smi;
 
-    if (!smi.ReadMemInfo(memFreeTags.size(),
-                         memFreeTags.data(),
-                         mem.data())) {
-        jniThrowRuntimeException(env, "SysMemInfo read failed to get Free Memory");
+    if (!smi.ReadMemInfo(memTags.size(), memTags.data(), mem.data())) {
+        jniThrowRuntimeException(env,
+                                 ("SysMemInfo read failed to get " + std::string(tag)).c_str());
         return -1L;
     }
 
     jlong sum = 0;
     std::for_each(mem.begin(), mem.end(), [&](uint64_t val) { sum += val; });
     return sum * 1024;
+}
+
+static jlong android_os_Process_getAvailableMemory(JNIEnv* env, jobject clazz) {
+    return android_os_Process_getMemory(env, clazz, ::android::meminfo::SysMemInfo::kMemAvailable);
+}
+
+static jlong android_os_Process_getFreeMemory(JNIEnv* env, jobject clazz) {
+    return android_os_Process_getMemory(env, clazz, ::android::meminfo::SysMemInfo::kMemFree);
 }
 
 static jlong android_os_Process_getTotalMemory(JNIEnv* env, jobject clazz)
@@ -1424,7 +1428,9 @@ static const JNINativeMethod methods[] = {
         {"sendTgSignalThrows", "(III)V", (void*)android_os_Process_sendTgSignalThrows},
         {"setProcessFrozen", "(IIZ)V", (void*)android_os_Process_setProcessFrozen},
         {"isProcessFrozen", "(II)Z", (void*)android_os_Process_isProcessFrozen},
-        {"getFreeMemory", "()J", (void*)android_os_Process_getFreeMemory},
+        {"getFreeMemory", "()J", (void*)android_os_Process_getAvailableMemory},
+        {"getMemAvailable", "()J", (void*)android_os_Process_getAvailableMemory},
+        {"getMemFree", "()J", (void*)android_os_Process_getFreeMemory},
         {"getTotalMemory", "()J", (void*)android_os_Process_getTotalMemory},
         {"readProcLines", "(Ljava/lang/String;[Ljava/lang/String;[J)V",
          (void*)android_os_Process_readProcLines},

@@ -171,3 +171,11 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+     namespace: "desktop_serviceability"
+     name: "get_free_memory"
+     is_exported: true
+     description: "Add API to get free memory."
+     bug: "417906997"
+}
