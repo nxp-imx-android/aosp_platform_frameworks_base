@@ -45,6 +45,7 @@ import com.android.systemui.testKosmos
 import com.android.systemui.util.mockito.any
 import com.android.systemui.util.mockito.mock
 import com.android.systemui.util.mockito.whenever
+import com.android.systemui.window.domain.interactor.windowRootViewBlurInteractor
 import com.google.common.truth.Truth.assertThat
 import org.junit.Before
 import org.junit.Test
@@ -81,6 +82,7 @@ class QuickSettingsSceneContentViewModelTest : SysuiTestCase() {
                     shadeModeInteractor = shadeModeInteractor,
                     sceneInteractor = sceneInteractor,
                     mainDispatcher = testDispatcher,
+                    windowRootViewBlurInteractor = windowRootViewBlurInteractor,
                 )
             underTest.activateIn(testScope)
             disableDualShade()

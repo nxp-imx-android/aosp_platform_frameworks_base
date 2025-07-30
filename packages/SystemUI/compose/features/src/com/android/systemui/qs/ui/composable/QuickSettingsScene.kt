@@ -17,7 +17,6 @@
 package com.android.systemui.qs.ui.composable
 
 import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clipScrollableContainer
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.layout.Box
@@ -50,7 +49,6 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLifecycleOwner
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
@@ -88,7 +86,7 @@ import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.scene.ui.composable.Scene
 import com.android.systemui.shade.ui.composable.CollapsedShadeHeader
 import com.android.systemui.shade.ui.composable.ExpandedShadeHeader
-import com.android.systemui.shade.ui.composable.Shade
+import com.android.systemui.shade.ui.composable.ShadePanelScrim
 import com.android.systemui.shade.ui.viewmodel.ShadeHeaderViewModel
 import com.android.systemui.statusbar.notification.stack.ui.view.NotificationScrollView
 import com.android.systemui.statusbar.notification.stack.ui.viewmodel.NotificationsPlaceholderViewModel
@@ -217,14 +215,7 @@ private fun ContentScope.QuickSettingsScene(
         val isMediaVisible = viewModel.qsContainerViewModel.showMedia
         val mediaInRow = isMediaVisible && isLandscape()
 
-        // This is the background for the whole scene, as the elements don't necessarily provide
-        // a background that extends to the edges.
-        Spacer(
-            modifier =
-                Modifier.element(Shade.Elements.BackgroundScrim)
-                    .fillMaxSize()
-                    .background(colorResource(R.color.shade_scrim_background_dark))
-        )
+        ShadePanelScrim(viewModel.isTransparencyEnabled)
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier =
