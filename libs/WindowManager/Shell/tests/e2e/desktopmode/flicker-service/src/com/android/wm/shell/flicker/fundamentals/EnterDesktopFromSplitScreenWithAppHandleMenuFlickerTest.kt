@@ -16,7 +16,7 @@
 
 package com.android.wm.shell.flicker.fundamentals
 
-import androidx.test.filters.RequiresDevice
+import android.platform.test.annotations.RequiresDesktopDevice
 import android.tools.NavBar
 import android.tools.flicker.junit.FlickerParametersRunnerFactory
 import android.tools.flicker.FlickerBuilder
@@ -39,7 +39,7 @@ import org.junit.runners.Parameterized
 /**
  * Enter the app to desktop mode from split screen via app handle menu.
  */
-@RequiresDevice
+@RequiresDesktopDevice
 @RunWith(Parameterized::class)
 @Parameterized.UseParametersRunnerFactory(FlickerParametersRunnerFactory::class)
 class EnterDesktopFromSplitScreenWithAppHandleMenuFlickerTest(flicker: FlickerTest) : DesktopModeBaseTest(flicker) {

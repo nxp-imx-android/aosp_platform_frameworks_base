@@ -17,6 +17,7 @@
 package com.android.wm.shell.functional.mediaprojection
 
 import android.platform.test.annotations.Presubmit
+import android.platform.test.annotations.RequiresDesktopDevice
 import android.platform.test.rule.ScreenRecordRule
 import com.android.wm.shell.scenarios.StartAppMediaProjectionResizeAndDrag
 import org.junit.runner.RunWith
@@ -24,6 +25,7 @@ import org.junit.runners.BlockJUnit4ClassRunner
 
 /* Functional test for [StartAppMediaProjectionResizeAndDrag]. */
 @RunWith(BlockJUnit4ClassRunner::class)
+@RequiresDesktopDevice
 @Presubmit
 @ScreenRecordRule.ScreenRecord
 class StartAppMediaProjectionResizeAndDragTest : StartAppMediaProjectionResizeAndDrag()

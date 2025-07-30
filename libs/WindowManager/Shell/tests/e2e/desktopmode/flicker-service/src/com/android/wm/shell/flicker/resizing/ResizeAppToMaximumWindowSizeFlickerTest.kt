@@ -16,7 +16,7 @@
 
 package com.android.wm.shell.flicker.resizing
 
-import androidx.test.filters.RequiresDevice
+import android.platform.test.annotations.RequiresDesktopDevice
 import android.tools.NavBar
 import android.tools.flicker.assertions.FlickerChecker
 import android.tools.flicker.junit.FlickerParametersRunnerFactory
@@ -39,7 +39,7 @@ import com.android.wm.shell.flicker.utils.resizeVeilKeepsIncreasingInSize
  *
  * Assert that the maximum window size constraint is maintained.
  */
-@RequiresDevice
+@RequiresDesktopDevice
 @RunWith(Parameterized::class)
 @Parameterized.UseParametersRunnerFactory(FlickerParametersRunnerFactory::class)
 class ResizeAppToMaximumWindowSizeFlickerTest(flicker: FlickerTest) : DesktopModeBaseTest(

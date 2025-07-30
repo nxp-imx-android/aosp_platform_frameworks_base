@@ -17,11 +17,13 @@
 package com.android.wm.shell.functional.fundamentals.focus
 
 import android.platform.test.annotations.Presubmit
+import android.platform.test.annotations.RequiresDesktopDevice
 import com.android.wm.shell.scenarios.DragAndKeepFocus
 import org.junit.runner.RunWith
 import org.junit.runners.BlockJUnit4ClassRunner
 
 /* Functional test for [DragAndKeppFocus]. */
 @RunWith(BlockJUnit4ClassRunner::class)
+@RequiresDesktopDevice
 @Presubmit
 class DragAndKeepFocusTest : DragAndKeepFocus()
