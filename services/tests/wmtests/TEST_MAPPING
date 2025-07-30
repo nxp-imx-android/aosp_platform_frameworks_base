@@ -157,9 +157,6 @@
       "name": "WmTests-wm-BackgroundLaunchProcessControllerTests"
     },
     {
-      "name": "WmTests-wm-CameraCompatFreeformPolicyTests"
-    },
-    {
       "name": "WmTests-wm-CameraIdAppPairsSetTests"
     },
     {
@@ -242,9 +239,6 @@
     },
     {
       "name": "WmTests-wm-DisplayPolicyTests"
-    },
-    {
-      "name": "WmTests-wm-DisplayRotationCompatPolicyTests"
     },
     {
       "name": "WmTests-wm-DisplayRotationCoordinatorTests"
