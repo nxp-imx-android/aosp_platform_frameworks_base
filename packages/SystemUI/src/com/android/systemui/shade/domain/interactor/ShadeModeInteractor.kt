@@ -118,14 +118,25 @@ constructor(
         isShadeLayoutWide: Boolean,
         isLargeScreen: Boolean,
     ): ShadeMode {
-        if (!SceneContainerFlag.isEnabled) {
-            return if (isShadeLayoutWide) ShadeMode.Split else ShadeMode.Single
-        }
-
         return when {
+            // Case 1: Legacy shade (pre-scene container).
+            !SceneContainerFlag.isEnabled ->
+                if (isShadeLayoutWide) ShadeMode.Split else ShadeMode.Single
+
+            // Case 2: The Dual Shade setting has been enabled by the user.
             isDualShadeEnabled -> ShadeMode.Dual
-            isLargeScreen -> if (isSplitShadeEnabled) ShadeMode.Split else ShadeMode.Dual
-            else -> ShadeMode.Single
+
+            // Case 3: Phone in portrait orientation, with Dual Shade setting disabled.
+            !isShadeLayoutWide -> ShadeMode.Single
+
+            // Case 4: Phone in landscape orientation, with Dual Shade setting disabled.
+            !isLargeScreen -> ShadeMode.Single
+
+            // Case 5: Large screen with Split Shade enabled, Dual Shade setting disabled.
+            isSplitShadeEnabled -> ShadeMode.Split
+
+            // Case 6: Large screen with Split Shade disabled, Dual Shade setting disabled.
+            else -> ShadeMode.Dual
         }
     }
 
