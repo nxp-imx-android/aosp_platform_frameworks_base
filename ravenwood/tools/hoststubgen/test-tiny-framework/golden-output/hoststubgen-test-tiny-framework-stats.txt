@@ -186,39 +186,6 @@ com.android.hoststubgen.test.tinyframework
   0
   0
 com.android.hoststubgen.test.tinyframework
-  TinyFrameworkClassLoadHook
-  0
-  com.android.hoststubgen.test.tinyframework.TinyFrameworkClassLoadHook
-  <clinit>
-  <clinit>()V
-  1
-  Keep
-  class-wide in com/android/hoststubgen/test/tinyframework/TinyFrameworkClassLoadHook [inner-reason: class-annotation]
-  1
-  1
-com.android.hoststubgen.test.tinyframework
-  TinyFrameworkClassLoadHook
-  0
-  com.android.hoststubgen.test.tinyframework.TinyFrameworkClassLoadHook
-  <init>
-  <init>()V
-  1
-  Keep
-  class-wide in com/android/hoststubgen/test/tinyframework/TinyFrameworkClassLoadHook [inner-reason: class-annotation]
-  1
-  1
-com.android.hoststubgen.test.tinyframework
-  TinyFrameworkClassLoadHook
-  0
-  com.android.hoststubgen.test.tinyframework.TinyFrameworkClassLoadHook
-  onClassLoaded
-  onClassLoaded(Ljava/lang/Class;)V
-  1
-  Keep
-  class-wide in com/android/hoststubgen/test/tinyframework/TinyFrameworkClassLoadHook [inner-reason: class-annotation]
-  0
-  2
-com.android.hoststubgen.test.tinyframework
   TinyFrameworkClassWideAnnotations
   0
   com.android.hoststubgen.test.tinyframework.TinyFrameworkClassWideAnnotations

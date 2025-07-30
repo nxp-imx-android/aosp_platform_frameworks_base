@@ -64,7 +64,7 @@ apply "tiny-framework/src/com/android/hoststubgen/test/tinyframework/TinyFramewo
 
 # add class annotation to com.android.hoststubgen.test.tinyframework.TinyFrameworkForTextPolicy
 21i\
-@android.ravenwood.annotation.RavenwoodClassLoadHook("com.android.hoststubgen.test.tinyframework.TinyFrameworkClassLoadHook.onClassLoaded")
+@android.ravenwood.annotation.RavenwoodClassLoadHook("com.android.hoststubgen.test.tinyframework.TinyFrameworkHooks.onClassLoaded")
 
 # add annotation to method com.android.hoststubgen.test.tinyframework.TinyFrameworkForTextPolicy.<init>()V
 22i\

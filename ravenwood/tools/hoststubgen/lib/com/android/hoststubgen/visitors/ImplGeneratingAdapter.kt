@@ -36,13 +36,12 @@ import com.android.hoststubgen.filters.FilterPolicyWithReason
 import com.android.hoststubgen.filters.OutputFilter
 import com.android.hoststubgen.hosthelper.HostStubGenProcessedAsIgnore
 import com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
-import com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep.CLASS_DESCRIPTOR
 import com.android.hoststubgen.hosthelper.HostStubGenProcessedAsSubstitute
 import com.android.hoststubgen.hosthelper.HostStubGenProcessedAsThrow
 import com.android.hoststubgen.hosthelper.HostStubGenProcessedAsThrowButSupported
-import com.android.hoststubgen.hosthelper.HostTestUtils
 import com.android.hoststubgen.log
 import com.android.hoststubgen.utils.ClassDescriptorSet
+import java.lang.annotation.RetentionPolicy
 import org.objectweb.asm.AnnotationVisitor
 import org.objectweb.asm.ClassVisitor
 import org.objectweb.asm.FieldVisitor
@@ -53,7 +52,6 @@ import org.objectweb.asm.Opcodes.INVOKESPECIAL
 import org.objectweb.asm.Opcodes.INVOKESTATIC
 import org.objectweb.asm.Opcodes.INVOKEVIRTUAL
 import org.objectweb.asm.Type
-import java.lang.annotation.RetentionPolicy
 
 const val OPCODE_VERSION = Opcodes.ASM9
 
@@ -138,7 +136,8 @@ class ImplGeneratingAdapter(
         log.v("Emitting class: %s", name)
         log.indent()
         // Inject annotations to generated classes.
-        UnifiedVisitor.on(this).visitAnnotation(CLASS_DESCRIPTOR, true, reasonParam(classPolicy.reason))
+        UnifiedVisitor.on(this).visitAnnotation(
+            HostStubGenProcessedAsKeep.CLASS_DESCRIPTOR, true, reasonParam(classPolicy.reason))
 
         classLoadHooks = filter.getClassLoadHooks(currentClassName)
 
@@ -201,6 +200,19 @@ class ImplGeneratingAdapter(
         }
     }
 
+    /**
+     * Split a class + method string into internal class name + method name
+     * e.g.: "com.example.MyClass.myMethod" -> ("com/example/MyClass", "myMethod")
+     */
+    private fun String.parseClassMethod(): Pair<String, String> {
+        val split = lastIndexOf('.')
+        if (split < 0) {
+            options.errors.onErrorFound(
+                "Unable to find class and method name: malformed string \"%s\"".format(this))
+        }
+        return substring(0, split).replace('.', '/') to substring(split + 1)
+    }
+
     private fun injectClassLoadHook() {
         writeRawMembers {
             // Create a class initializer to call onClassLoaded().
@@ -231,17 +243,9 @@ class ImplGeneratingAdapter(
             // First argument: the class type.
             mv.visitLdcInsn(Type.getType("L$currentClassName;"))
 
-            // Second argument: method name
-            mv.visitLdcInsn(classLoadHook)
-
-            // Call HostTestUtils.onClassLoaded().
-            mv.visitMethodInsn(
-                INVOKESTATIC,
-                HostTestUtils.CLASS_INTERNAL_NAME,
-                "onClassLoaded",
-                "(Ljava/lang/Class;Ljava/lang/String;)V",
-                false
-            )
+            // Call classLoadHook
+            val (clazz, method) = classLoadHook.parseClassMethod()
+            mv.visitMethodInsn(INVOKESTATIC, clazz, method, "(Ljava/lang/Class;)V", false)
         }
     }
 
@@ -357,11 +361,6 @@ class ImplGeneratingAdapter(
                 super.visitMethod(newAccess, newName, descriptor, signature, exceptions)
             )
 
-            ret?.let {
-                UnifiedVisitor.on(ret)
-                    .visitAnnotation(HostStubGenProcessedAsKeep.CLASS_DESCRIPTOR, true, reasonParam(p.reason))
-            }
-
             return ForceMethodAnnotationVisibilityVisitor(ret)
         }
     }
@@ -431,19 +430,20 @@ class ImplGeneratingAdapter(
                     return RedirectMethodAdapter(
                         access, name, descriptor,
                         forceCreateBody, innerVisitor
-                    )
-                        .withAnnotation(HostStubGenProcessedAsSubstitute.CLASS_DESCRIPTOR, policy.reason)
+                    ).withAnnotation(HostStubGenProcessedAsSubstitute.CLASS_DESCRIPTOR, policy.reason)
                 }
-                else -> {}
+                else -> {
+                    if (substituted) {
+                        innerVisitor?.withAnnotation(HostStubGenProcessedAsSubstitute.CLASS_DESCRIPTOR, policy.reason)
+                    } else {
+                        innerVisitor?.withAnnotation(HostStubGenProcessedAsKeep.CLASS_DESCRIPTOR, policy.reason)
+                    }
+                }
             }
         }
 
         if (filter.hasAnyMethodCallReplace()) {
             innerVisitor = MethodCallReplacingAdapter(name, innerVisitor)
-        }
-        if (substituted) {
-            // We don't have a reason in this case.
-            innerVisitor?.withAnnotation(HostStubGenProcessedAsSubstitute.CLASS_DESCRIPTOR, "")
         }
 
         return innerVisitor
@@ -574,13 +574,10 @@ class ImplGeneratingAdapter(
                 mv.visitLdcInsn(Type.getType("L$currentClassName;"))
                 visitLdcInsn(name)
                 visitLdcInsn(descriptor)
-                visitLdcInsn(hook)
 
-                visitMethodInsn(
-                    INVOKESTATIC,
-                    HostTestUtils.CLASS_INTERNAL_NAME,
-                    "callMethodCallHook",
-                    "(Ljava/lang/Class;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V",
+                val (clazz, method) = hook.parseClassMethod()
+                visitMethodInsn(INVOKESTATIC, clazz, method,
+                    "(Ljava/lang/Class;Ljava/lang/String;Ljava/lang/String;)V",
                     false
                 )
             }
