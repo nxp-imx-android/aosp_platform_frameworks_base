@@ -552,6 +552,8 @@ message ConnectionRecordProto {
     }
     repeated Flag flags = 3;
     optional string service_name = 4;
+
+    optional int32 client_pid = 5;
 }
 
 message AppBindRecordProto {
