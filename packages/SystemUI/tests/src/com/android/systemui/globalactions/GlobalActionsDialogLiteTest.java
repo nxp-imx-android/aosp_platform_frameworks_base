@@ -1006,6 +1006,7 @@ public class GlobalActionsDialogLiteTest extends SysuiTestCase {
         doReturn(4).when(mGlobalActionsDialogLite).getMaxShownPowerItems();
         doReturn(true).when(mGlobalActionsDialogLite).shouldDisplayEmergency();
         doReturn(true).when(mKeyguardStateController).isMethodSecure();
+        doReturn(true).when(mKeyguardStateController).isUnlocked();
         doCallRealMethod()
                 .when(mGlobalActionsDialogLite)
                 .shouldShowAction(any(GlobalActionsDialogLite.LockAction.class));
@@ -1036,6 +1037,7 @@ public class GlobalActionsDialogLiteTest extends SysuiTestCase {
         doReturn(4).when(mGlobalActionsDialogLite).getMaxShownPowerItems();
         doReturn(true).when(mGlobalActionsDialogLite).shouldDisplayEmergency();
         doReturn(true).when(mKeyguardStateController).isMethodSecure();
+        doReturn(true).when(mKeyguardStateController).isUnlocked();
         doCallRealMethod()
                 .when(mGlobalActionsDialogLite)
                 .shouldShowAction(any(GlobalActionsDialogLite.LockAction.class));
@@ -1063,6 +1065,7 @@ public class GlobalActionsDialogLiteTest extends SysuiTestCase {
         doReturn(4).when(mGlobalActionsDialogLite).getMaxShownPowerItems();
         doReturn(true).when(mGlobalActionsDialogLite).shouldDisplayEmergency();
         doReturn(true).when(mKeyguardStateController).isMethodSecure();
+        doReturn(true).when(mKeyguardStateController).isUnlocked();
         doCallRealMethod()
                 .when(mGlobalActionsDialogLite)
                 .shouldShowAction(any(GlobalActionsDialogLite.LockAction.class));
@@ -1090,6 +1093,7 @@ public class GlobalActionsDialogLiteTest extends SysuiTestCase {
         doReturn(4).when(mGlobalActionsDialogLite).getMaxShownPowerItems();
         doReturn(true).when(mGlobalActionsDialogLite).shouldDisplayEmergency();
         doReturn(false).when(mKeyguardStateController).isMethodSecure();
+        doReturn(true).when(mKeyguardStateController).isUnlocked();
         doCallRealMethod()
                 .when(mGlobalActionsDialogLite)
                 .shouldShowAction(any(GlobalActionsDialogLite.LockAction.class));
@@ -1111,8 +1115,35 @@ public class GlobalActionsDialogLiteTest extends SysuiTestCase {
                 GlobalActionsDialogLite.LockAction.class);
     }
 
+    @Test
+    public void testCreateActionItems_deviceLocked_doesNotShowLock() {
+        mGlobalActionsDialogLite = spy(mGlobalActionsDialogLite);
+        doReturn(4).when(mGlobalActionsDialogLite).getMaxShownPowerItems();
+        doReturn(true).when(mGlobalActionsDialogLite).shouldDisplayEmergency();
+        doReturn(true).when(mKeyguardStateController).isMethodSecure();
+        doReturn(false).when(mKeyguardStateController).isUnlocked();
+        doCallRealMethod()
+                .when(mGlobalActionsDialogLite)
+                .shouldShowAction(any(GlobalActionsDialogLite.LockAction.class));
+        String[] actions = {
+                GlobalActionsDialogLite.GLOBAL_ACTION_KEY_EMERGENCY,
+                GlobalActionsDialogLite.GLOBAL_ACTION_KEY_LOCK,
+                GlobalActionsDialogLite.GLOBAL_ACTION_KEY_POWER,
+                GlobalActionsDialogLite.GLOBAL_ACTION_KEY_RESTART,
+        };
+        doReturn(actions).when(mGlobalActionsDialogLite).getDefaultActions();
+
+        mGlobalActionsDialogLite.showOrHideDialog(
+                /* keyguardShowing= */ false,
+                /* isDeviceProvisioned= */ true,
+                /* expandable= */ null,
+                /* displayId= */ Display.DEFAULT_DISPLAY);
+
+        assertNoItemsOfType(mGlobalActionsDialogLite.mItems,
+                GlobalActionsDialogLite.LockAction.class);
+    }
+
     private UserInfo mockCurrentUser(int flags) {
         return new UserInfo(10, "A User", flags);
-
     }
 }
