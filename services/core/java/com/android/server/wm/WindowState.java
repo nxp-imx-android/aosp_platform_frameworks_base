@@ -1320,7 +1320,7 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
             final Rect lastFrame = windowFrames.mLastFrame;
             final Rect frame = windowFrames.mFrame;
             if (lastFrame.width() != frame.width() || lastFrame.height() != frame.height()) {
-                mDisplayContent.mWallpaperController.updateWallpaperOffset(this, false /* sync */);
+                mDisplayContent.mWallpaperController.updateWallpaperOffset(this);
             }
         }
 

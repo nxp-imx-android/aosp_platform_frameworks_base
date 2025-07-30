@@ -372,11 +372,11 @@ public class SystemWindows {
 
         @Override
         public void dispatchWallpaperOffsets(float x, float y, float xStep, float yStep,
-                float zoom, boolean sync) {}
+                float zoom) {}
 
         @Override
         public void dispatchWallpaperCommand(String action, int x, int y,
-                int z, Bundle extras, boolean sync) {}
+                int z, Bundle extras) {}
 
         /* Drag/drop */
         @Override

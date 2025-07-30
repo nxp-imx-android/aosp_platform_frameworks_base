@@ -1659,8 +1659,7 @@ public class DisplayContentTests extends WindowTestsBase {
 
         // Force the negative offset to verify it can be updated.
         mWallpaperWindow.mXOffset = mWallpaperWindow.mYOffset = -1;
-        assertTrue(mDisplayContent.mWallpaperController.updateWallpaperOffset(mWallpaperWindow,
-                false /* sync */));
+        assertTrue(mDisplayContent.mWallpaperController.updateWallpaperOffset(mWallpaperWindow));
         assertThat(mWallpaperWindow.mXOffset).isNotEqualTo(-1);
         assertThat(mWallpaperWindow.mYOffset).isNotEqualTo(-1);
 

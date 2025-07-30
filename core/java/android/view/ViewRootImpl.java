@@ -11964,24 +11964,11 @@ public final class ViewRootImpl implements ViewParent,
 
         @Override
         public void dispatchWallpaperOffsets(float x, float y, float xStep, float yStep,
-                float zoom, boolean sync) {
-            if (sync) {
-                try {
-                    mWindowSession.wallpaperOffsetsComplete(asBinder());
-                } catch (RemoteException e) {
-                }
-            }
+                float zoom) {
         }
 
         @Override
-        public void dispatchWallpaperCommand(String action, int x, int y,
-                int z, Bundle extras, boolean sync) {
-            if (sync) {
-                try {
-                    mWindowSession.wallpaperCommandComplete(asBinder(), null);
-                } catch (RemoteException e) {
-                }
-            }
+        public void dispatchWallpaperCommand(String action, int x, int y, int z, Bundle extras) {
         }
 
         /* Drag/drop */

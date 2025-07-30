@@ -112,14 +112,7 @@ public class BaseIWindow extends IWindow.Stub {
     }
 
     @Override
-    public void dispatchWallpaperOffsets(float x, float y, float xStep, float yStep, float zoom,
-            boolean sync) {
-        if (sync) {
-            try {
-                mSession.wallpaperOffsetsComplete(asBinder());
-            } catch (RemoteException e) {
-            }
-        }
+    public void dispatchWallpaperOffsets(float x, float y, float xStep, float yStep, float zoom) {
     }
 
     @Override
@@ -133,14 +126,7 @@ public class BaseIWindow extends IWindow.Stub {
     }
 
     @Override
-    public void dispatchWallpaperCommand(String action, int x, int y,
-            int z, Bundle extras, boolean sync) {
-        if (sync) {
-            try {
-                mSession.wallpaperCommandComplete(asBinder(), null);
-            } catch (RemoteException e) {
-            }
-        }
+    public void dispatchWallpaperCommand(String action, int x, int y, int z, Bundle extras) {
     }
 
     @Override
