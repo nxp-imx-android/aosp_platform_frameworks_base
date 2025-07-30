@@ -127,6 +127,12 @@
       "name": "WMShellFlickerTestsDesktopMode-resizing-SnapResizeAppWindowRightWithKeyboardFlickerTest"
     },
     {
+      "name": "WMShellFlickerTestsDesktopMode-resizing-SnapResizeNonResizableAppWindowLeftWithDragFlickerTest"
+    },
+    {
+      "name": "WMShellFlickerTestsDesktopMode-resizing-SnapResizeNonResizableAppWindowRightWithDragFlickerTest"
+    },
+    {
       "name": "WMShellFlickerTestsDesktopMode-tiling-TilingDividerResizingAppsFlickerTest"
     },
     {
