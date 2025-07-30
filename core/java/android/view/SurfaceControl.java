@@ -2830,7 +2830,7 @@ public final class SurfaceControl implements Parcelable {
      *
      * @hide
      */
-    public static SurfaceControl mirrorSurface(SurfaceControl mirrorOf) {
+    public static SurfaceControl mirrorSurface(@NonNull SurfaceControl mirrorOf) {
         return mirrorSurface(mirrorOf, null);
     }
 
@@ -2861,7 +2861,8 @@ public final class SurfaceControl implements Parcelable {
      *
      * @hide
      */
-    public static SurfaceControl mirrorSurface(SurfaceControl mirrorOf, SurfaceControl stopAt) {
+    public static SurfaceControl mirrorSurface(@NonNull SurfaceControl mirrorOf,
+            SurfaceControl stopAt) {
         long stopAtObj = stopAt != null ? stopAt.mNativeObject : 0;
         long nativeObj = nativeMirrorSurface(mirrorOf.mNativeObject, stopAtObj);
         SurfaceControl sc = new SurfaceControl();
