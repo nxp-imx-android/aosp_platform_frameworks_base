@@ -444,6 +444,16 @@ flag {
 }
 
 flag {
+    name: "status_bar_share_dialog_with_app_name"
+    namespace: "systemui"
+    description: "Update the status bar share-to-app chip dialog to include the app name more often"
+    bug: "432665824"
+    metadata {
+      purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "status_bar_window_no_custom_touch"
     namespace: "systemui"
     description: "Don't have any custom touch handling in StatusBarWindowView"
