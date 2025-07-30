@@ -195,6 +195,12 @@ public abstract class ProcessRecordInternal {
      */
     public abstract boolean hasAboveClient();
 
+    /**
+     * Sets whether this process should be treated as if it has an activity.
+     * TODO(b/425766486): Remove it once ProcessRecordInternal could access ProcessServiceRecord.
+     */
+    public abstract void setTreatLikeActivity(boolean treatLikeActivity);
+
     /** Returns true if there is an active instrumentation running in this process. */
     public abstract boolean hasActiveInstrumentation();
 
@@ -207,6 +213,15 @@ public abstract class ProcessRecordInternal {
 
     /** Returns the aggregated reasons why this process is currently exempt from freezing. */
     public abstract @ShouldNotFreezeReason int shouldNotFreezeReason();
+
+    /** Sets whether we would like to clean-up UI resources for this process. */
+    public abstract void setPendingUiClean(boolean pendingUiClean);
+
+    /**
+     * Returns the UID of the application associated with this process.
+     * This may differ from the process's actual UID if it's an isolated process.
+     */
+    public abstract int getApplicationUid();
 
     // Enable this to trace all OomAdjuster state transitions
     private static final boolean TRACE_OOM_ADJ = false;
