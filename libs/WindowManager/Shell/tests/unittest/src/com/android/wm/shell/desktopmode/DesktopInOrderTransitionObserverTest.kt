@@ -172,4 +172,20 @@ class DesktopInOrderTransitionObserverTest : ShellTestCase() {
             .verify(desktopModeLoggerTransitionObserver)
             .onTransitionReady(transition, info, startT, finishT)
     }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_INORDER_TRANSITION_CALLBACKS_FOR_DESKTOP)
+    fun onTransitionFinished_forwardsToDesktopModeLoggerTransitionObserver() {
+        val transition = Mockito.mock(IBinder::class.java)
+        val aborted = false
+
+        val inorder = inOrder(desktopModeLoggerTransitionObserver, desksTransitionObserver)
+
+        transitionObserver.onTransitionFinished(transition, aborted)
+
+        inorder.verify(desksTransitionObserver).onTransitionFinished(transition)
+        inorder
+            .verify(desktopModeLoggerTransitionObserver)
+            .onTransitionFinished(transition, aborted)
+    }
 }

@@ -511,6 +511,17 @@ public class FreeformTaskTransitionObserverTest extends ShellTestCase {
     }
 
     @Test
+    @DisableFlags(Flags.FLAG_ENABLE_INORDER_TRANSITION_CALLBACKS_FOR_DESKTOP)
+    public void onTransitionFinished_forwardsToDesktopModeLoggerTransitionObserver() {
+        final IBinder transition = mock(IBinder.class);
+        final boolean aborted = false;
+
+        mTransitionObserver.onTransitionFinished(transition, aborted);
+
+        verify(mDesktopModeLoggerTransitionObserver).onTransitionFinished(transition, aborted);
+    }
+
+    @Test
     @EnableFlags(Flags.FLAG_ENABLE_INORDER_TRANSITION_CALLBACKS_FOR_DESKTOP)
     public void onTransitionReady_forwardsToDesktopInOrderTransitionObserver() {
         final IBinder transition = mock(IBinder.class);

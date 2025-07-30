@@ -89,6 +89,7 @@ class DesktopInOrderTransitionObserver(
                 h.onTransitionFinished(transition, aborted)
             }
         }
+        desktopModeLoggerTransitionObserver.onTransitionFinished(transition, aborted)
     }
 
     private fun logD(msg: String, vararg arguments: Any?) {
