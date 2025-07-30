@@ -21,7 +21,10 @@
     <string name="update" msgid="3932142540719227615">"अपडेट करा"</string>
     <string name="done" msgid="6632441120016885253">"पूर्ण झाले"</string>
     <string name="cancel" msgid="1018267193425558088">"रद्द करा"</string>
-    <string name="install_anyway" msgid="8794642873773384969">"तरीही इंस्टॉल करा"</string>
+    <!-- no translation found for install_without_verifying (7606774834125762618) -->
+    <skip />
+    <!-- no translation found for more_details (3643407086654820243) -->
+    <skip />
     <string name="dont_install" msgid="414055123295505225">"इंस्टॉल करू नका"</string>
     <string name="installing" msgid="4921993079741206516">"इंस्‍टॉल होत आहे…"</string>
     <string name="installing_app" msgid="1165095864863849422">"<xliff:g id="PACKAGE_LABEL">%1$s</xliff:g> इंस्टॉल होत आहे…"</string>
@@ -45,10 +48,6 @@
     <string name="unknown_apps_admin_dlg_text" msgid="4456572224020176095">"अज्ञात स्रोतांकडून मिळवलेल्या अ‍ॅप्स इंस्टॉलेशनला तुमचा प्रशासक अनुमती देत नाही"</string>
     <string name="unknown_apps_user_restriction_dlg_text" msgid="151020786933988344">"या वापरकर्त्याद्वारे अज्ञात अ‍ॅप्स इंस्टॉल केली जाऊ शकत नाहीत"</string>
     <string name="install_apps_user_restriction_dlg_text" msgid="2154119597001074022">"या वापरकर्त्याला अ‍ॅप्स इंस्टॉल करण्याची अनुमती नाही"</string>
-    <string name="verification_incomplete_summary" msgid="40478808885845735">"पडताळणी होऊ न शकल्यामुळे अ‍ॅप अद्याप इंस्टॉल केलेले नाही. कृपया पुन्हा प्रयत्न करा."</string>
-    <string name="cannot_install_verification_unavailable_summary" msgid="2469994565312971465"><p>"चेतावणी: अ‍ॅप पडताळणी होऊ शकली नाही. "</p><p><a href=""></a>" पॅकेज पडताळणीबद्दल"</p>" अधिक जाणून घ्या"</string>
-    <string name="cannot_install_package_summary" msgid="3358675485628657234"><p>"हे अ‍ॅप ब्लॉक केले असल्यामुळे इंस्टॉल केले जाऊ शकत नाही. "</p><p><a href=""></a>" पॅकेज पडताळणीबद्दल"</p>" अधिक जाणून घ्या"</string>
-    <string name="lite_verification_summary" msgid="3211866126230002977"><p>"हे अ‍ॅप ADI Lite Developer च्या मालकीचे आहे आणि साधारण पडताळणी प्रक्रिया बायपास करते. तुम्हाला इंस्टॉलेशन पुढे सुरू ठेवायचे आहे का?"</p></string>
     <string name="ok" msgid="7871959885003339302">"ओके"</string>
     <string name="archive" msgid="4447791830199354721">"संग्रहित करा"</string>
     <string name="update_anyway" msgid="8792432341346261969">"तरीही अपडेट करा"</string>

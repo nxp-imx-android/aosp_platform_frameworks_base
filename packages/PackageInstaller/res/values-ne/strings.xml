@@ -21,7 +21,10 @@
     <string name="update" msgid="3932142540719227615">"अपडेट गर्नुहोस्"</string>
     <string name="done" msgid="6632441120016885253">"सम्पन्न भयो"</string>
     <string name="cancel" msgid="1018267193425558088">"रद्द गर्नुहोस्"</string>
-    <string name="install_anyway" msgid="8794642873773384969">"जे भए पनि इन्स्टल गर्नुहोस्"</string>
+    <!-- no translation found for install_without_verifying (7606774834125762618) -->
+    <skip />
+    <!-- no translation found for more_details (3643407086654820243) -->
+    <skip />
     <string name="dont_install" msgid="414055123295505225">"इन्स्टल नगर्नुहोस्"</string>
     <string name="installing" msgid="4921993079741206516">"इन्स्टल गरिँदै छ"</string>
     <string name="installing_app" msgid="1165095864863849422">"<xliff:g id="PACKAGE_LABEL">%1$s</xliff:g> इन्स्टल गरिँदै छ"</string>
@@ -45,10 +48,6 @@
     <string name="unknown_apps_admin_dlg_text" msgid="4456572224020176095">"तपाईंका प्रशासकले अज्ञात स्रोतहरूबाट प्राप्त एपहरूलाई स्थापना गर्ने अनुमति दिनुहुन्न"</string>
     <string name="unknown_apps_user_restriction_dlg_text" msgid="151020786933988344">"यी प्रयोगकर्ता अज्ञात एपहरू इन्स्टल गर्न सक्नुहुन्न"</string>
     <string name="install_apps_user_restriction_dlg_text" msgid="2154119597001074022">"यो प्रयोगकर्तालाई एपहरू इन्स्टल गर्ने अनुमति छैन"</string>
-    <string name="verification_incomplete_summary" msgid="40478808885845735">"पुष्टि गर्न नसकिएकाले यो एप अझै इन्स्टल भएको छैन। कृपया फेरि प्रयास गर्नुहोस्।"</string>
-    <string name="cannot_install_verification_unavailable_summary" msgid="2469994565312971465"><p>"चेतावनी: एप पुष्टि गर्न सकिएन। "</p><p>"प्याकेज पुष्टि गर्ने तरिकाका बारेमा "<a href="">"थप जान्नुहोस्"</a></p></string>
-    <string name="cannot_install_package_summary" msgid="3358675485628657234"><p>"यो एप ब्लक गरिएकाले यो एप इन्स्टल गर्न मिल्दैन। "</p><p>"प्याकेज पुष्टि गर्ने तरिकाका बारेमा "<a href="">"थप जान्नुहोस्"</a></p></string>
-    <string name="lite_verification_summary" msgid="3211866126230002977"><p>"यो एप ADI Lite Developer को स्वामित्वमा छ र यसले पुष्टि गर्ने डिफल्ट प्रक्रिया बाइपास गर्छ। तपाईं इन्स्टल गर्ने प्रक्रिया अघि बढाउन चाहनुहुन्छ?"</p></string>
     <string name="ok" msgid="7871959885003339302">"ठिक छ"</string>
     <string name="archive" msgid="4447791830199354721">"अर्काइभमा राख्नुहोस्"</string>
     <string name="update_anyway" msgid="8792432341346261969">"जे भए पनि अपडेट गर्नुहोस्"</string>

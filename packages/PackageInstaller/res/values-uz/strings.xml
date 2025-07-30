@@ -21,7 +21,10 @@
     <string name="update" msgid="3932142540719227615">"Yangilash"</string>
     <string name="done" msgid="6632441120016885253">"OK"</string>
     <string name="cancel" msgid="1018267193425558088">"Bekor qilish"</string>
-    <string name="install_anyway" msgid="8794642873773384969">"Baribir oʻrnatilsin"</string>
+    <!-- no translation found for install_without_verifying (7606774834125762618) -->
+    <skip />
+    <!-- no translation found for more_details (3643407086654820243) -->
+    <skip />
     <string name="dont_install" msgid="414055123295505225">"Oʻrnatilmasin"</string>
     <string name="installing" msgid="4921993079741206516">"O‘rnatilmoqda…"</string>
     <string name="installing_app" msgid="1165095864863849422">"<xliff:g id="PACKAGE_LABEL">%1$s</xliff:g> o‘rnatilmoqda…"</string>
@@ -45,10 +48,6 @@
     <string name="unknown_apps_admin_dlg_text" msgid="4456572224020176095">"Administratoringiz begona manbalardan olingan ilovalarni o‘rnatishga ruxsat bermagan"</string>
     <string name="unknown_apps_user_restriction_dlg_text" msgid="151020786933988344">"Notanish ilovalarni bu foydalanuvchi tomonidan o‘rnatib bo‘lmaydi"</string>
     <string name="install_apps_user_restriction_dlg_text" msgid="2154119597001074022">"Bu foydalanuvchiga ilovalarni o‘rnatish uchun ruxsat berilmagan"</string>
-    <string name="verification_incomplete_summary" msgid="40478808885845735">"Ilova hali oʻrnatilmagan, biroq tekshiruv bajarilmadi. Qayta urining."</string>
-    <string name="cannot_install_verification_unavailable_summary" msgid="2469994565312971465"><p>"Ogohlantirish: Ilova tekshiruvi bajarilmadi. "</p>"Paketni tekshirish haqida "<p><a href="">"batafsil"</a></p></string>
-    <string name="cannot_install_package_summary" msgid="3358675485628657234"><p>"Bu ilovani oʻrnatish imkonsiz, chunki u bloklangan. "</p>"Paketni tekshirish haqida "<p><a href="">"batafsil"</a></p></string>
-    <string name="lite_verification_summary" msgid="3211866126230002977"><p>"Bu ilovaga ADI Lite Developer egalik qiladi va standart tekshiruv jarayonini istisno qiladi. Oʻrnatishda davom etasizmi?"</p></string>
     <string name="ok" msgid="7871959885003339302">"OK"</string>
     <string name="archive" msgid="4447791830199354721">"Arxivlash"</string>
     <string name="update_anyway" msgid="8792432341346261969">"Baribir yangilansin"</string>

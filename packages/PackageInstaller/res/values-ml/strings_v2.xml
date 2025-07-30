@@ -96,6 +96,20 @@
     <string name="message_restore_error_installer_absent" msgid="8492838251989389724">"ഈ ആപ്പ് പുനഃസ്ഥാപിക്കുന്നതിന്, നിങ്ങൾ <xliff:g id="INSTALLER_NAME">%1$s</xliff:g> ഇൻസ്റ്റാൾ ചെയ്യേണ്ടതുണ്ട്"</string>
     <string name="message_restore_error_generic" msgid="5903850636679929406">"ഈ ആപ്പ് പുനഃസ്ഥാപിക്കുന്നതിൽ ഒരു പ്രശ്നമുണ്ടായി"</string>
     <string name="message_uninstall_activity" msgid="3263352475743590167">"<xliff:g id="ACTIVITY_NAME">%1$s</xliff:g> ഇനിപ്പറയുന്ന ആപ്പിന്റെ ഭാഗമാണ്: <xliff:g id="APP_NAME">%2$s</xliff:g>"</string>
+    <!-- no translation found for cannot_install_app_blocked_summary (8433096420067308800) -->
+    <skip />
+    <!-- no translation found for cannot_install_verification_no_internet_summary (8948259713332887857) -->
+    <skip />
+    <!-- no translation found for cannot_install_verification_unavailable_summary (343815915687716571) -->
+    <skip />
+    <!-- no translation found for install_without_verifying_summary (9056694084349761546) -->
+    <skip />
+    <!-- no translation found for cannot_install_app_blocked_title (6372444121824751694) -->
+    <skip />
+    <!-- no translation found for cannot_install_verification_no_internet_title (2862046642298119581) -->
+    <skip />
+    <!-- no translation found for cannot_install_verification_unavailable_title (2038093442302309120) -->
+    <skip />
     <string name="button_install" msgid="7434013176505680162">"ഇൻസ്റ്റാൾ ചെയ്യുക"</string>
     <string name="button_update" msgid="3046719350226327526">"അപ്ഡേറ്റ് ചെയ്യുക"</string>
     <string name="button_update_anyway" msgid="6674207037708730779">"എന്തായാലും അപ്‌ഡേറ്റ് ചെയ്യുക"</string>

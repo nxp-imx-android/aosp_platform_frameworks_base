@@ -21,7 +21,10 @@
     <string name="update" msgid="3932142540719227615">"تحديث"</string>
     <string name="done" msgid="6632441120016885253">"تم"</string>
     <string name="cancel" msgid="1018267193425558088">"إلغاء"</string>
-    <string name="install_anyway" msgid="8794642873773384969">"التثبيت على أي حال"</string>
+    <!-- no translation found for install_without_verifying (7606774834125762618) -->
+    <skip />
+    <!-- no translation found for more_details (3643407086654820243) -->
+    <skip />
     <string name="dont_install" msgid="414055123295505225">"عدم التثبيت"</string>
     <string name="installing" msgid="4921993079741206516">"جارٍ التثبيت…"</string>
     <string name="installing_app" msgid="1165095864863849422">"جارٍ تثبيت <xliff:g id="PACKAGE_LABEL">%1$s</xliff:g>…"</string>
@@ -45,10 +48,6 @@
     <string name="unknown_apps_admin_dlg_text" msgid="4456572224020176095">"لا يسمح المشرف بتثبيت التطبيقات التي يتم الحصول عليها من مصادر غير معروفة"</string>
     <string name="unknown_apps_user_restriction_dlg_text" msgid="151020786933988344">"يتعذر على هذا المستخدم تثبيت التطبيقات غير المعروفة"</string>
     <string name="install_apps_user_restriction_dlg_text" msgid="2154119597001074022">"غير مسموح لهذا المستخدم بتثبيت التطبيقات"</string>
-    <string name="verification_incomplete_summary" msgid="40478808885845735">"لم يتم تثبيت التطبيق حتى الآن لعدم اكتمال عملية التحقّق. يُرجى إعادة المحاولة."</string>
-    <string name="cannot_install_verification_unavailable_summary" msgid="2469994565312971465"><p>"تحذير: تعذَّر التحقّق من التطبيق. "</p><p><a href="">"مزيد من المعلومات"</a>" حول إثبات صحة الحزمة"</p></string>
-    <string name="cannot_install_package_summary" msgid="3358675485628657234"><p>"لا يمكن تثبيت هذا التطبيق لأنه محظور. "</p><p><a href="">"مزيد من المعلومات"</a>" حول إثبات صحة الحزمة"</p></string>
-    <string name="lite_verification_summary" msgid="3211866126230002977">"‏"<p>"هذا التطبيق ملك ADI Lite Developer ويتجاوز عملية التحقّق العادية. هل مطلوب المتابعة لتثبيت التطبيق؟"</p></string>
     <string name="ok" msgid="7871959885003339302">"حسنًا"</string>
     <string name="archive" msgid="4447791830199354721">"أرشفة"</string>
     <string name="update_anyway" msgid="8792432341346261969">"التحديث على أي حال"</string>

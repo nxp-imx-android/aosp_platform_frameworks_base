@@ -21,7 +21,10 @@
     <string name="update" msgid="3932142540719227615">"புதுப்பி"</string>
     <string name="done" msgid="6632441120016885253">"முடிந்தது"</string>
     <string name="cancel" msgid="1018267193425558088">"ரத்துசெய்"</string>
-    <string name="install_anyway" msgid="8794642873773384969">"நிறுவு"</string>
+    <!-- no translation found for install_without_verifying (7606774834125762618) -->
+    <skip />
+    <!-- no translation found for more_details (3643407086654820243) -->
+    <skip />
     <string name="dont_install" msgid="414055123295505225">"நிறுவ வேண்டாம்"</string>
     <string name="installing" msgid="4921993079741206516">"நிறுவுகிறது…"</string>
     <string name="installing_app" msgid="1165095864863849422">"<xliff:g id="PACKAGE_LABEL">%1$s</xliff:g>ஐ நிறுவுகிறது…"</string>
@@ -45,10 +48,6 @@
     <string name="unknown_apps_admin_dlg_text" msgid="4456572224020176095">"அறியப்படாத மூலங்களிலிருந்து பெற்ற ஆப்ஸை நிறுவ உங்கள் நிர்வாகி அனுமதிக்கவில்லை"</string>
     <string name="unknown_apps_user_restriction_dlg_text" msgid="151020786933988344">"அறியப்படாத ஆப்ஸை இந்தப் பயனரால் நிறுவ இயலாது"</string>
     <string name="install_apps_user_restriction_dlg_text" msgid="2154119597001074022">"ஆப்ஸை நிறுவ இந்தப் பயனருக்கு அனுமதியில்லை"</string>
-    <string name="verification_incomplete_summary" msgid="40478808885845735">"சரிபார்ப்புச் செயல்முறை நடைபெறாத காரணத்தால், ஆப்ஸ் இன்னும் நிறுவப்படவில்லை. மீண்டும் முயலவும்."</string>
-    <string name="cannot_install_verification_unavailable_summary" msgid="2469994565312971465"><p>"எச்சரிக்கை: ஆப்ஸ் சரிபார்ப்பை மேற்கொள்ள முடியவில்லை. "</p><p>"தொகுப்புச் சரிபார்ப்பு பற்றி "<a href="">"மேலும் அறிக"</a></p></string>
-    <string name="cannot_install_package_summary" msgid="3358675485628657234"><p>"இந்த ஆப்ஸ் தடுக்கப்பட்டுள்ளதால், இதை நிறுவ முடியாது. "</p><p>"தொகுப்புச் சரிபார்ப்பு பற்றி "<a href="">"மேலும் அறிக"</a></p></string>
-    <string name="lite_verification_summary" msgid="3211866126230002977"><p>"இந்த ஆப்ஸ் ADI Lite டெவெலப்பருக்குச் சொந்தமானது, மேலும் நிலையான சரிபார்ப்புச் செயல்முறையை மீறிச் செயல்படுகிறது. நிறுவலைத் தொடர விரும்புகிறீர்களா?"</p></string>
     <string name="ok" msgid="7871959885003339302">"சரி"</string>
     <string name="archive" msgid="4447791830199354721">"காப்பிடு"</string>
     <string name="update_anyway" msgid="8792432341346261969">"பரவாயில்லை, புதுப்பிக்கவும்"</string>

@@ -21,7 +21,10 @@
     <string name="update" msgid="3932142540719227615">"Жаңыртуу"</string>
     <string name="done" msgid="6632441120016885253">"Бүттү"</string>
     <string name="cancel" msgid="1018267193425558088">"Жокко чыгаруу"</string>
-    <string name="install_anyway" msgid="8794642873773384969">"Баары бир орнотулсун"</string>
+    <!-- no translation found for install_without_verifying (7606774834125762618) -->
+    <skip />
+    <!-- no translation found for more_details (3643407086654820243) -->
+    <skip />
     <string name="dont_install" msgid="414055123295505225">"Орнотулбасын"</string>
     <string name="installing" msgid="4921993079741206516">"Орнотулууда…"</string>
     <string name="installing_app" msgid="1165095864863849422">"<xliff:g id="PACKAGE_LABEL">%1$s</xliff:g> орнотулууда…"</string>
@@ -45,10 +48,6 @@
     <string name="unknown_apps_admin_dlg_text" msgid="4456572224020176095">"Администраторуңуз белгисиз булактардан алынган колдонмолордун орнотулушуна жол бербейт"</string>
     <string name="unknown_apps_user_restriction_dlg_text" msgid="151020786933988344">"Бул колдонуучу белгисиз колдонмолорду орното албайт"</string>
     <string name="install_apps_user_restriction_dlg_text" msgid="2154119597001074022">"Бул колдонуучу колдонмолорду орното албайт"</string>
-    <string name="verification_incomplete_summary" msgid="40478808885845735">"Колдонмо орнотула элек, анткени текшерүүдөн өткөн жок. Кайра аракет кылыңыз."</string>
-    <string name="cannot_install_verification_unavailable_summary" msgid="2469994565312971465"><p>"Эскертүү: Колдонмо текшерилген жок. "</p><p>" Топтомду ырастоо тууралуу "<a href="">"кеңири маалымат"</a></p></string>
-    <string name="cannot_install_package_summary" msgid="3358675485628657234"><p>"Бул колдонмо бөгөттөлгөндүктөн, аны орнотууга болбойт. "</p><p>" Топтомду ырастоо тууралуу "<a href="">"кеңири маалымат"</a></p></string>
-    <string name="lite_verification_summary" msgid="3211866126230002977"><p>"Бул колдонмо ADI Lite Developer компаниясына таандык жана стандарттык текшерүү процессин кыйгап өтөт. Орнотууну уланткыңыз келеби?"</p></string>
     <string name="ok" msgid="7871959885003339302">"ЖАРАЙТ"</string>
     <string name="archive" msgid="4447791830199354721">"Архивдөө"</string>
     <string name="update_anyway" msgid="8792432341346261969">"Баары бир жаңыртылсын"</string>

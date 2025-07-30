@@ -21,7 +21,10 @@
     <string name="update" msgid="3932142540719227615">"আপডেট করুন"</string>
     <string name="done" msgid="6632441120016885253">"হয়ে গেছে"</string>
     <string name="cancel" msgid="1018267193425558088">"বাতিল করুন"</string>
-    <string name="install_anyway" msgid="8794642873773384969">"যাই হোক, ইনস্টল করুন"</string>
+    <!-- no translation found for install_without_verifying (7606774834125762618) -->
+    <skip />
+    <!-- no translation found for more_details (3643407086654820243) -->
+    <skip />
     <string name="dont_install" msgid="414055123295505225">"ইনস্টল করবেন না"</string>
     <string name="installing" msgid="4921993079741206516">"ইনস্টল করা হচ্ছে…"</string>
     <string name="installing_app" msgid="1165095864863849422">"<xliff:g id="PACKAGE_LABEL">%1$s</xliff:g> ইনস্টল করা হচ্ছে…"</string>
@@ -45,10 +48,6 @@
     <string name="unknown_apps_admin_dlg_text" msgid="4456572224020176095">"আপনার অ্যাডমিন অজানা উৎস থেকে অ্যাপ ইনস্টল করার অনুমতি দেন না"</string>
     <string name="unknown_apps_user_restriction_dlg_text" msgid="151020786933988344">"এই ব্যবহারকারী অজানা অ্যাপ ইনস্টল করতে পারেন না"</string>
     <string name="install_apps_user_restriction_dlg_text" msgid="2154119597001074022">"এই ব্যবহারকারীর অ্যাপ ইনস্টল করার অনুমতি নেই"</string>
-    <string name="verification_incomplete_summary" msgid="40478808885845735">"যাচাইকরণ করা যায়নি তাই অ্যাপ এখনও ইনস্টল হয়নি। আবার চেষ্টা করুন।"</string>
-    <string name="cannot_install_verification_unavailable_summary" msgid="2469994565312971465"><p>"সতর্কতা: অ্যাপ যাচাইকরণ করা যায়নি। "</p>"প্যাকেজ যাচাইকরণ সম্পর্কে"<p><a href="">"আরও জানুন"</a></p></string>
-    <string name="cannot_install_package_summary" msgid="3358675485628657234"><p>"এই অ্যাপ ব্লক করা হয়েছে তাই ইনস্টল করা যাচ্ছে না। "</p>"প্যাকেজ যাচাইকরণ সম্পর্কে"<p><a href="">"আরও জানুন"</a></p></string>
-    <string name="lite_verification_summary" msgid="3211866126230002977"><p>"এই অ্যাপের মালিক ADI Lite Developer স্ট্যান্ডার্ড যাচাইকরণ পদ্ধতি বাইপাস করে। আপনি কি ইনস্টলেশন করা চালিয়ে যেতে চান?"</p></string>
     <string name="ok" msgid="7871959885003339302">"ঠিক আছে"</string>
     <string name="archive" msgid="4447791830199354721">"আর্কাইভ করুন"</string>
     <string name="update_anyway" msgid="8792432341346261969">"তবুও আপডেট করতে চাই"</string>

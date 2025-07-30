@@ -21,7 +21,10 @@
     <string name="update" msgid="3932142540719227615">"ដំឡើងកំណែ"</string>
     <string name="done" msgid="6632441120016885253">"រួចរាល់"</string>
     <string name="cancel" msgid="1018267193425558088">"បោះបង់"</string>
-    <string name="install_anyway" msgid="8794642873773384969">"មិនអីទេ ដំឡើងចុះ"</string>
+    <!-- no translation found for install_without_verifying (7606774834125762618) -->
+    <skip />
+    <!-- no translation found for more_details (3643407086654820243) -->
+    <skip />
     <string name="dont_install" msgid="414055123295505225">"កុំដំឡើង"</string>
     <string name="installing" msgid="4921993079741206516">"កំពុងដំឡើង…"</string>
     <string name="installing_app" msgid="1165095864863849422">"កំពុង​ដំឡើង <xliff:g id="PACKAGE_LABEL">%1$s</xliff:g>…"</string>
@@ -45,10 +48,6 @@
     <string name="unknown_apps_admin_dlg_text" msgid="4456572224020176095">"អ្នក​គ្រប់គ្រង​របស់​អ្នក​មិន​អនុញ្ញាត​ឱ្យដំឡើង​កម្មវិធី​ ដែល​បាន​មក​ពី​ប្រភព​មិន​ស្គាល់ទេ"</string>
     <string name="unknown_apps_user_restriction_dlg_text" msgid="151020786933988344">"អ្នកប្រើប្រាស់​នេះ​មិនអាច​ដំឡើងកម្មវិធីមិនស្គាល់​​បាន​ទេ"</string>
     <string name="install_apps_user_restriction_dlg_text" msgid="2154119597001074022">"មិន​អនុញ្ញាត​ឱ្យអ្នក​ប្រើ​ប្រាស់នេះ​ដំឡើងកម្មវិធីទេ"</string>
-    <string name="verification_incomplete_summary" msgid="40478808885845735">"មិនទាន់បានដំឡើងកម្មវិធីនៅឡើយទេ ដោយសារតែមិនអាចធ្វើការផ្ទៀងផ្ទាត់បាន។ សូមព្យាយាមម្ដងទៀត។"</string>
-    <string name="cannot_install_verification_unavailable_summary" msgid="2469994565312971465"><p>"ការព្រមាន៖ មិនអាចធ្វើការផ្ទៀងផ្ទាត់កម្មវិធីឡើងបានទេ។ "</p><p><a href="">"ស្វែងយល់បន្ថែម"</a>"អំពីការផ្ទៀងផ្ទាត់កញ្ចប់"</p></string>
-    <string name="cannot_install_package_summary" msgid="3358675485628657234"><p>"មិនអាចដំឡើងកម្មវិធីនេះបានទេ ដោយសារតែវាត្រូវបានទប់ស្កាត់។ "</p><p><a href="">"ស្វែងយល់បន្ថែម"</a>"អំពីការផ្ទៀងផ្ទាត់កញ្ចប់"</p></string>
-    <string name="lite_verification_summary" msgid="3211866126230002977"><p>"កម្មវិធីនេះជាកម្មសិទ្ធិរបស់ ADI Lite Developer ហើយរំលងដំណើរការ​ផ្ទៀងផ្ទាត់ស្តង់ដា។ តើអ្នកចង់បន្តការដំឡើងដែរឬទេ?"</p></string>
     <string name="ok" msgid="7871959885003339302">"យល់ព្រម"</string>
     <string name="archive" msgid="4447791830199354721">"ទុក​ក្នុង​បណ្ណសារ"</string>
     <string name="update_anyway" msgid="8792432341346261969">"មិនអីទេ ដំឡើង​កំណែ​ចុះ"</string>
