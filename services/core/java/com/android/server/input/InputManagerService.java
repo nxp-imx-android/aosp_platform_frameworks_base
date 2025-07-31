@@ -1401,7 +1401,8 @@ public class InputManagerService extends IInputManager.Stub
     public void requestPointerCapture(@NonNull IBinder inputChannelToken, int mode) {
         Objects.requireNonNull(inputChannelToken, "inputChannelToken must not be null");
         if (mode != View.POINTER_CAPTURE_MODE_UNCAPTURED
-                && mode != View.POINTER_CAPTURE_MODE_ABSOLUTE) {
+                && mode != View.POINTER_CAPTURE_MODE_ABSOLUTE
+                && mode != View.POINTER_CAPTURE_MODE_RELATIVE) {
             throw new IllegalArgumentException("Invalid pointer capture mode " + mode);
         }
 

@@ -1759,7 +1759,8 @@ public final class InputManagerGlobal {
         // check in InputManagerService#requestPointerCapture would not result in the exception
         // being propagated to the caller.
         if (mode != View.POINTER_CAPTURE_MODE_UNCAPTURED
-                && mode != View.POINTER_CAPTURE_MODE_ABSOLUTE) {
+                && mode != View.POINTER_CAPTURE_MODE_ABSOLUTE
+                && mode != View.POINTER_CAPTURE_MODE_RELATIVE) {
             throw new IllegalArgumentException("Invalid pointer capture mode " + mode);
         }
 
