@@ -18,13 +18,13 @@ package com.android.systemui.screencapture.record.largescreen.domain.interactor
 
 import android.graphics.Rect
 import android.os.Handler
-import android.os.UserHandle
 import android.view.WindowManager
 import com.android.internal.util.ScreenshotHelper
 import com.android.internal.util.ScreenshotRequest
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.screenshot.ImageCapture
+import com.android.systemui.user.data.repository.UserRepository
 import javax.inject.Inject
 import kotlin.coroutines.CoroutineContext
 import kotlinx.coroutines.withContext
@@ -38,6 +38,7 @@ constructor(
     private val screenshotHelper: ScreenshotHelper,
     @Background private val backgroundContext: CoroutineContext,
     @Background private val backgroundHandler: Handler,
+    private val userRepository: UserRepository,
 ) {
     suspend fun takeFullscreenScreenshot(displayId: Int) {
         val request =
@@ -64,7 +65,7 @@ constructor(
                 .setBitmap(bitmap)
                 .setBoundsOnScreen(regionBounds)
                 .setDisplayId(displayId)
-                .setUserId(UserHandle.USER_CURRENT)
+                .setUserId(userRepository.getSelectedUserInfo().id)
                 .build()
 
         takeScreenshot(request)
