@@ -45,10 +45,12 @@ import android.util.Slog;
 
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.util.ArrayUtils;
+import com.android.server.LocalServices;
 import com.android.server.backup.BackupManagerService;
 import com.android.server.backup.SetUtils;
 import com.android.server.backup.transport.BackupTransportClient;
 import com.android.server.backup.transport.TransportConnection;
+import com.android.server.pm.UserManagerInternal;
 
 import com.google.android.collect.Sets;
 
@@ -86,7 +88,7 @@ public class BackupEligibilityRules {
 
     private final PackageManager mPackageManager;
     private final PackageManagerInternal mPackageManagerInternal;
-    private final UserManager mUserManager;
+    private final UserManagerInternal mUserManagerInternal;
     private final int mUserId;
     @BackupDestination  private final int mBackupDestination;
     private final boolean mSkipRestoreForLaunchedApps;
@@ -136,7 +138,7 @@ public class BackupEligibilityRules {
         mPackageManagerInternal = packageManagerInternal;
         mUserId = userId;
         mBackupDestination = backupDestination;
-        mUserManager = context.getSystemService(UserManager.class);
+        mUserManagerInternal = LocalServices.getService(UserManagerInternal.class);
         mSkipRestoreForLaunchedApps = skipRestoreForLaunchedApps;
     }
 
@@ -204,14 +206,14 @@ public class BackupEligibilityRules {
             return true;
         }
 
-        if (mUserManager.isProfile()) {
+        if (mUserManagerInternal.getUserInfo(mUserId).isProfile()) {
             return systemPackagesAllowedForProfileUser.contains(packageName);
         }
 
         // In Headless System User Mode, certain packages are only backed up for the main user.
         if (UserManager.isHeadlessSystemUserMode()) {
-            UserHandle mainUser = mUserManager.getMainUser();
-            if (mainUser != null && mainUser.getIdentifier() == mUserId) {
+            int mainUserId = mUserManagerInternal.getMainUserId();
+            if (mainUserId != UserHandle.USER_NULL && mainUserId == mUserId) {
                 return systemPackagesAllowedForHsumMainUser.contains(packageName);
             }
         }
