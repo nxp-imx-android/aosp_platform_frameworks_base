@@ -119,7 +119,7 @@ apply "tiny-framework/src/com/android/hoststubgen/test/tinyframework/TinyFramewo
     @android.ravenwood.annotation.RavenwoodIgnore
 
 # add annotation to method com.android.hoststubgen.test.tinyframework.TinyFrameworkForTextPolicy.unsupportedMethod()Ljava/lang/String;
-89i\
+93i\
     @android.ravenwood.annotation.RavenwoodThrow
 __END_OF_SCRIPT__
 
@@ -356,7 +356,7 @@ apply "policy-override-tiny-framework.txt" <<'__END_OF_SCRIPT__'
 5s/^/#[PTA]: /
 
 # remove method policy com.android.hoststubgen.test.tinyframework.TinyFrameworkForTextPolicy.toBeRemoved(Ljava/lang/String;)V
-7s/^/#[PTA]: /
+6s/^/#[PTA]: /
 
 # remove method policy com.android.hoststubgen.test.tinyframework.TinyFrameworkForTextPolicy.unsupportedMethod()Ljava/lang/String;
 12s/^/#[PTA]: /
@@ -389,67 +389,67 @@ apply "policy-override-tiny-framework.txt" <<'__END_OF_SCRIPT__'
 23s/^/#[PTA]: /
 
 # remove class load hook policy on com.android.hoststubgen.test.tinyframework.TinyFrameworkForTextPolicy
-26s/^/#[PTA]: /
+34s/^/#[PTA]: /
 
 # remove class policy on com.android.hoststubgen.test.tinyframework.subclasstest.C1
-35s/^/#[PTA]: /
-
-# remove class policy on com.android.hoststubgen.test.tinyframework.subclasstest.C2
-36s/^/#[PTA]: /
-
-# remove class policy on com.android.hoststubgen.test.tinyframework.subclasstest.C3
-37s/^/#[PTA]: /
-
-# remove class policy on com.android.hoststubgen.test.tinyframework.subclasstest.CA
-38s/^/#[PTA]: /
-
-# remove class policy on com.android.hoststubgen.test.tinyframework.subclasstest.CB
-39s/^/#[PTA]: /
-
-# remove class policy on com.android.hoststubgen.test.tinyframework.subclasstest.I1
-40s/^/#[PTA]: /
-
-# remove class policy on com.android.hoststubgen.test.tinyframework.subclasstest.I2
-41s/^/#[PTA]: /
-
-# remove class policy on com.android.hoststubgen.test.tinyframework.subclasstest.I3
-42s/^/#[PTA]: /
-
-# remove class policy on com.android.hoststubgen.test.tinyframework.subclasstest.IA
 43s/^/#[PTA]: /
 
-# remove class policy on com.android.hoststubgen.test.tinyframework.subclasstest.IB
+# remove class policy on com.android.hoststubgen.test.tinyframework.subclasstest.C2
 44s/^/#[PTA]: /
 
+# remove class policy on com.android.hoststubgen.test.tinyframework.subclasstest.C3
+45s/^/#[PTA]: /
+
+# remove class policy on com.android.hoststubgen.test.tinyframework.subclasstest.CA
+46s/^/#[PTA]: /
+
+# remove class policy on com.android.hoststubgen.test.tinyframework.subclasstest.CB
+47s/^/#[PTA]: /
+
+# remove class policy on com.android.hoststubgen.test.tinyframework.subclasstest.I1
+48s/^/#[PTA]: /
+
+# remove class policy on com.android.hoststubgen.test.tinyframework.subclasstest.I2
+49s/^/#[PTA]: /
+
+# remove class policy on com.android.hoststubgen.test.tinyframework.subclasstest.I3
+50s/^/#[PTA]: /
+
+# remove class policy on com.android.hoststubgen.test.tinyframework.subclasstest.IA
+51s/^/#[PTA]: /
+
+# remove class policy on com.android.hoststubgen.test.tinyframework.subclasstest.IB
+52s/^/#[PTA]: /
+
 # remove class policy on com.android.hoststubgen.test.tinyframework.packagetest.B
-55s/^/#[PTA]: /
+63s/^/#[PTA]: /
 
 # remove class policy on com.android.hoststubgen.test.tinyframework.packagetest.sub.B
-56s/^/#[PTA]: /
+64s/^/#[PTA]: /
 
 # remove class policy on com.android.hoststubgen.test.tinyframework.TinyFrameworkPartiallyAllowlisted$PartialWithWholeClass_bad
-86s/^/#[PTA]: /
+93s/^/#[PTA]: /
 
 # remove class policy on com.android.hoststubgen.test.tinyframework.TinyFrameworkPartiallyAllowlisted$PartiallyAllowlistedWithoutAnnot_bad
-87s/^/#[PTA]: /
-
-# remove method policy com.android.hoststubgen.test.tinyframework.TinyFrameworkForPta.<clinit>*
-92s/^/#[PTA]: /
-
-# remove method policy com.android.hoststubgen.test.tinyframework.TinyFrameworkForPta.foo(Ljava/lang/String;Ljava/lang/Object;)V
 94s/^/#[PTA]: /
 
-# remove class policy on com.android.hoststubgen.test.tinyframework.TinyFrameworkForPta$Nest1
-96s/^/#[PTA]: /
-
-# remove method policy com.android.hoststubgen.test.tinyframework.TinyFrameworkForPta$Nest1.bar*
-97s/^/#[PTA]: /
-
-# remove class policy on com.android.hoststubgen.test.tinyframework.TinyFrameworkForPta$Nest1$Nest2
+# remove method policy com.android.hoststubgen.test.tinyframework.TinyFrameworkForPta.<clinit>*
 99s/^/#[PTA]: /
 
+# remove method policy com.android.hoststubgen.test.tinyframework.TinyFrameworkForPta.foo(Ljava/lang/String;Ljava/lang/Object;)V
+101s/^/#[PTA]: /
+
+# remove class policy on com.android.hoststubgen.test.tinyframework.TinyFrameworkForPta$Nest1
+103s/^/#[PTA]: /
+
+# remove method policy com.android.hoststubgen.test.tinyframework.TinyFrameworkForPta$Nest1.bar*
+104s/^/#[PTA]: /
+
+# remove class policy on com.android.hoststubgen.test.tinyframework.TinyFrameworkForPta$Nest1$Nest2
+106s/^/#[PTA]: /
+
 # remove method policy com.android.hoststubgen.test.tinyframework.TinyFrameworkForPta$Nest1$Nest2.baz*
-100s/^/#[PTA]: /
+107s/^/#[PTA]: /
 __END_OF_SCRIPT__
 
 echo "All files updated successfully!"

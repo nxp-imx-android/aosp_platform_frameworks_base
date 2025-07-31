@@ -105,6 +105,7 @@ java_library_host {
 
     libs: [
         "hoststubgen-test-tiny-framework",
+        "hoststubgen-helper-runtime",
     ],
     static_libs: [
         "junit",

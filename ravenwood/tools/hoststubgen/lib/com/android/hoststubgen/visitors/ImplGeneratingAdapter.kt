@@ -34,6 +34,7 @@ import com.android.hoststubgen.asm.writeByteCodeToReturn
 import com.android.hoststubgen.filters.FilterPolicy
 import com.android.hoststubgen.filters.FilterPolicyWithReason
 import com.android.hoststubgen.filters.OutputFilter
+import com.android.hoststubgen.hosthelper.HostStubGenProcessedAsExperimental
 import com.android.hoststubgen.hosthelper.HostStubGenProcessedAsIgnore
 import com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
 import com.android.hoststubgen.hosthelper.HostStubGenProcessedAsSubstitute
@@ -83,6 +84,8 @@ class ImplGeneratingAdapter(
 
         // We make all annotations in this set "runtime-visible".
         val annotationsToMakeVisible: ClassDescriptorSet,
+
+        val experimentalMethodCallHook: String?,
     )
 
     private lateinit var currentPackageName: String
@@ -406,6 +409,7 @@ class ImplGeneratingAdapter(
             // When we encounter native methods, we want to forcefully
             // inject a method body. Also see [updateAccessFlags].
             val forceCreateBody = (access and Opcodes.ACC_NATIVE) != 0
+
             when (policy.policy) {
                 FilterPolicy.Throw -> {
                     log.v("Making method throw...")
@@ -431,6 +435,22 @@ class ImplGeneratingAdapter(
                         access, name, descriptor,
                         forceCreateBody, innerVisitor
                     ).withAnnotation(HostStubGenProcessedAsSubstitute.CLASS_DESCRIPTOR, policy.reason)
+                }
+                FilterPolicy.Experimental -> {
+                    if (options.experimentalMethodCallHook == null) {
+                        options.errors.onErrorFound(
+                            "Experimental policy used in $currentClassName#$name, but " +
+                                    "--experimental-method-call-hook is not set.")
+                    }
+                    log.v("Making method experimental...")
+                    innerVisitor = innerVisitor?.let {
+                        MethodCallHookInjectingAdapter(
+                            name,
+                            descriptor,
+                            listOf(options.experimentalMethodCallHook!!),
+                            it,
+                        ).withAnnotation(HostStubGenProcessedAsExperimental.CLASS_DESCRIPTOR, policy.reason)
+                    }
                 }
                 else -> {
                     if (substituted) {
@@ -559,7 +579,7 @@ class ImplGeneratingAdapter(
      * Inject calls to the method call hooks.
      *
      * Note, when the target method is a constructor, it may contain calls to `super(...)` or
-     * `this(...)`. The logging code will be injected *before* such calls.
+     * `this(...)`. The hook method call will be injected *before* such calls.
      */
     private inner class MethodCallHookInjectingAdapter(
         val name: String,

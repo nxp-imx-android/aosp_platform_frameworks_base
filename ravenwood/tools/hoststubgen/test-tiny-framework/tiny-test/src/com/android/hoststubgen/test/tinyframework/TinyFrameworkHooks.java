@@ -15,6 +15,7 @@
  */
 package com.android.hoststubgen.test.tinyframework;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -52,5 +53,14 @@ public class TinyFrameworkHooks {
         if (list != null) {
             list.add(new MethodInfo(clazz, method, desc));
         }
+    }
+
+    public static final List<MethodInfo> sExperimentalMethodCalls = new ArrayList<>();
+
+    /**
+     * The method call hook when experimental APIs are called
+     */
+    public static void onExperimentalMethodCalled(Class<?> clazz, String method, String desc) {
+        sExperimentalMethodCalls.add(new MethodInfo(clazz, method, desc));
     }
 }

@@ -71,8 +71,19 @@ public class TinyFrameworkClassTest {
 
     @Test
     public void testSubstituteNative() {
+        assertThat(TinyFrameworkForTextPolicy.nativeAddThree(1)).isEqualTo(4);
+    }
+
+    @Test
+    public void testExperimental() {
+        TinyFrameworkHooks.sExperimentalMethodCalls.clear();
+
         TinyFrameworkForTextPolicy tfc = new TinyFrameworkForTextPolicy();
-        assertThat(tfc.nativeAddThree(1)).isEqualTo(4);
+
+        assertThat(tfc.addFour(1)).isEqualTo(5);
+        assertThat(TinyFrameworkHooks.sExperimentalMethodCalls).containsExactly(
+                new MethodInfo(TinyFrameworkForTextPolicy.class, "addFour", "(I)I")
+        );
     }
 
     @Test
@@ -207,12 +218,11 @@ public class TinyFrameworkClassTest {
             tfc.addTwo(2);
             TinyFrameworkForTextPolicy.nativeAddThree(3);
 
-            var clazz = TinyFrameworkForTextPolicy.class;
             assertThat(TinyFrameworkHooks.sCalledMethods).containsExactly(
-                    new MethodInfo(clazz, "<init>", "()V"),
-                    new MethodInfo(clazz, "addOne", "(I)I"),
-                    new MethodInfo(clazz, "addTwo", "(I)I"),
-                    new MethodInfo(clazz, "nativeAddThree", "(I)I")
+                    new MethodInfo(TinyFrameworkForTextPolicy.class, "<init>", "()V"),
+                    new MethodInfo(TinyFrameworkForTextPolicy.class, "addOne", "(I)I"),
+                    new MethodInfo(TinyFrameworkForTextPolicy.class, "addTwo", "(I)I"),
+                    new MethodInfo(TinyFrameworkForTextPolicy.class, "nativeAddThree", "(I)I")
             ).inOrder();
         } finally {
             TinyFrameworkHooks.sCalledMethods = null;

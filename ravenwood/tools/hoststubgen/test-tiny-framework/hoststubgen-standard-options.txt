@@ -10,6 +10,9 @@
 --default-class-load-hook
     com.android.hoststubgen.test.tinyframework.TinyFrameworkHooks.defaultClassLoadHook
 
+--experimental-method-call-hook
+    com.android.hoststubgen.test.tinyframework.TinyFrameworkHooks.onExperimentalMethodCalled
+
 # Standard annotations.
 # Note, each line is a single argument, so we need newlines after each `--xxx-annotation`.
 

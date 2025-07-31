@@ -669,7 +669,7 @@ public class com.android.hoststubgen.test.tinyframework.TinyFrameworkClassWideAn
   flags: (0x0021) ACC_PUBLIC, ACC_SUPER
   this_class: #x                          // com/android/hoststubgen/test/tinyframework/TinyFrameworkClassWideAnnotations
   super_class: #x                         // java/lang/Object
-  interfaces: 0, fields: 2, methods: 6, attributes: 2
+  interfaces: 0, fields: 2, methods: 7, attributes: 2
 Constant pool:
 {
   public int keep;
@@ -782,6 +782,17 @@ Constant pool:
     RuntimeInvisibleAnnotations:
       x: #x()
         android.hosttest.annotation.HostSideTestThrow
+
+  public void experimental();
+    descriptor: ()V
+    flags: (0x0001) ACC_PUBLIC
+    Code:
+      stack=0, locals=1, args_size=1
+         x: return
+      LineNumberTable:
+      LocalVariableTable:
+        Start  Length  Slot  Name   Signature
+            0       1     0  this   Lcom/android/hoststubgen/test/tinyframework/TinyFrameworkClassWideAnnotations;
 }
 SourceFile: "TinyFrameworkClassWideAnnotations.java"
 RuntimeInvisibleAnnotations:
@@ -1289,6 +1300,100 @@ SourceFile: "TinyFrameworkExceptionTester.java"
 RuntimeInvisibleAnnotations:
   x: #x()
     android.hosttest.annotation.HostSideTestWholeClassKeep
+## Class: com/android/hoststubgen/test/tinyframework/TinyFrameworkExperimental.class
+  Compiled from "TinyFrameworkExperimental.java"
+public class com.android.hoststubgen.test.tinyframework.TinyFrameworkExperimental
+  minor version: 0
+  major version: 65
+  flags: (0x0021) ACC_PUBLIC, ACC_SUPER
+  this_class: #x                         // com/android/hoststubgen/test/tinyframework/TinyFrameworkExperimental
+  super_class: #x                         // java/lang/Object
+  interfaces: 0, fields: 0, methods: 6, attributes: 1
+Constant pool:
+{
+  public com.android.hoststubgen.test.tinyframework.TinyFrameworkExperimental();
+    descriptor: ()V
+    flags: (0x0001) ACC_PUBLIC
+    Code:
+      stack=1, locals=1, args_size=1
+         x: aload_0
+         x: invokespecial #x                  // Method java/lang/Object."<init>":()V
+         x: return
+      LineNumberTable:
+      LocalVariableTable:
+        Start  Length  Slot  Name   Signature
+            0       5     0  this   Lcom/android/hoststubgen/test/tinyframework/TinyFrameworkExperimental;
+
+  public void simple();
+    descriptor: ()V
+    flags: (0x0001) ACC_PUBLIC
+    Code:
+      stack=0, locals=1, args_size=1
+         x: return
+      LineNumberTable:
+      LocalVariableTable:
+        Start  Length  Slot  Name   Signature
+            0       1     0  this   Lcom/android/hoststubgen/test/tinyframework/TinyFrameworkExperimental;
+
+  public void keep();
+    descriptor: ()V
+    flags: (0x0001) ACC_PUBLIC
+    Code:
+      stack=0, locals=1, args_size=1
+         x: return
+      LineNumberTable:
+      LocalVariableTable:
+        Start  Length  Slot  Name   Signature
+            0       1     0  this   Lcom/android/hoststubgen/test/tinyframework/TinyFrameworkExperimental;
+    RuntimeInvisibleAnnotations:
+      x: #x()
+        android.hosttest.annotation.HostSideTestKeep
+
+  public void replace();
+    descriptor: ()V
+    flags: (0x0001) ACC_PUBLIC
+    Code:
+      stack=2, locals=1, args_size=1
+         x: new           #x                  // class java/lang/RuntimeException
+         x: dup
+         x: invokespecial #x                  // Method java/lang/RuntimeException."<init>":()V
+         x: athrow
+      LineNumberTable:
+      LocalVariableTable:
+        Start  Length  Slot  Name   Signature
+            0       8     0  this   Lcom/android/hoststubgen/test/tinyframework/TinyFrameworkExperimental;
+    RuntimeInvisibleAnnotations:
+      x: #x(#x=s#x)
+        android.hosttest.annotation.HostSideTestSubstitute(
+          suffix="_host"
+        )
+
+  private void replace_host();
+    descriptor: ()V
+    flags: (0x0002) ACC_PRIVATE
+    Code:
+      stack=0, locals=1, args_size=1
+         x: return
+      LineNumberTable:
+      LocalVariableTable:
+        Start  Length  Slot  Name   Signature
+            0       1     0  this   Lcom/android/hoststubgen/test/tinyframework/TinyFrameworkExperimental;
+
+  public void unsupported();
+    descriptor: ()V
+    flags: (0x0001) ACC_PUBLIC
+    Code:
+      stack=0, locals=1, args_size=1
+         x: return
+      LineNumberTable:
+      LocalVariableTable:
+        Start  Length  Slot  Name   Signature
+            0       1     0  this   Lcom/android/hoststubgen/test/tinyframework/TinyFrameworkExperimental;
+    RuntimeInvisibleAnnotations:
+      x: #x()
+        android.hosttest.annotation.HostSideTestThrow
+}
+SourceFile: "TinyFrameworkExperimental.java"
 ## Class: com/android/hoststubgen/test/tinyframework/TinyFrameworkForPta$Nest1$Nest2.class
   Compiled from "TinyFrameworkForPta.java"
 public class com.android.hoststubgen.test.tinyframework.TinyFrameworkForPta$Nest1$Nest2
@@ -1437,7 +1542,7 @@ public class com.android.hoststubgen.test.tinyframework.TinyFrameworkForTextPoli
   flags: (0x0021) ACC_PUBLIC, ACC_SUPER
   this_class: #x                          // com/android/hoststubgen/test/tinyframework/TinyFrameworkForTextPolicy
   super_class: #x                         // java/lang/Object
-  interfaces: 0, fields: 2, methods: 17, attributes: 1
+  interfaces: 0, fields: 2, methods: 18, attributes: 1
 Constant pool:
 {
   public int stub;
@@ -1668,6 +1773,21 @@ Constant pool:
       LocalVariableTable:
         Start  Length  Slot  Name   Signature
             0       4     0 value   I
+
+  public int addFour(int);
+    descriptor: (I)I
+    flags: (0x0001) ACC_PUBLIC
+    Code:
+      stack=2, locals=2, args_size=2
+         x: iload_1
+         x: iconst_4
+         x: iadd
+         x: ireturn
+      LineNumberTable:
+      LocalVariableTable:
+        Start  Length  Slot  Name   Signature
+            0       4     0  this   Lcom/android/hoststubgen/test/tinyframework/TinyFrameworkForTextPolicy;
+            0       4     1 value   I
 
   public java.lang.String unsupportedMethod();
     descriptor: ()Ljava/lang/String;
@@ -3531,6 +3651,117 @@ SourceFile: "TinyFrameworkUnsupportedApiException.java"
 RuntimeInvisibleAnnotations:
   x: #x()
     android.hosttest.annotation.HostSideTestWholeClassKeep
+## Class: com/android/hoststubgen/test/tinyframework/exp/A.class
+  Compiled from "A.java"
+public class com.android.hoststubgen.test.tinyframework.exp.A
+  minor version: 0
+  major version: 65
+  flags: (0x0021) ACC_PUBLIC, ACC_SUPER
+  this_class: #x                          // com/android/hoststubgen/test/tinyframework/exp/A
+  super_class: #x                         // java/lang/Object
+  interfaces: 0, fields: 0, methods: 2, attributes: 1
+Constant pool:
+{
+  public com.android.hoststubgen.test.tinyframework.exp.A();
+    descriptor: ()V
+    flags: (0x0001) ACC_PUBLIC
+    Code:
+      stack=1, locals=1, args_size=1
+         x: aload_0
+         x: invokespecial #x                  // Method java/lang/Object."<init>":()V
+         x: return
+      LineNumberTable:
+      LocalVariableTable:
+        Start  Length  Slot  Name   Signature
+            0       5     0  this   Lcom/android/hoststubgen/test/tinyframework/exp/A;
+
+  public void foo();
+    descriptor: ()V
+    flags: (0x0001) ACC_PUBLIC
+    Code:
+      stack=0, locals=1, args_size=1
+         x: return
+      LineNumberTable:
+      LocalVariableTable:
+        Start  Length  Slot  Name   Signature
+            0       1     0  this   Lcom/android/hoststubgen/test/tinyframework/exp/A;
+}
+SourceFile: "A.java"
+## Class: com/android/hoststubgen/test/tinyframework/exp/B.class
+  Compiled from "B.java"
+public class com.android.hoststubgen.test.tinyframework.exp.B
+  minor version: 0
+  major version: 65
+  flags: (0x0021) ACC_PUBLIC, ACC_SUPER
+  this_class: #x                          // com/android/hoststubgen/test/tinyframework/exp/B
+  super_class: #x                         // java/lang/Object
+  interfaces: 0, fields: 0, methods: 2, attributes: 2
+Constant pool:
+{
+  public com.android.hoststubgen.test.tinyframework.exp.B();
+    descriptor: ()V
+    flags: (0x0001) ACC_PUBLIC
+    Code:
+      stack=1, locals=1, args_size=1
+         x: aload_0
+         x: invokespecial #x                  // Method java/lang/Object."<init>":()V
+         x: return
+      LineNumberTable:
+      LocalVariableTable:
+        Start  Length  Slot  Name   Signature
+            0       5     0  this   Lcom/android/hoststubgen/test/tinyframework/exp/B;
+
+  public void foo();
+    descriptor: ()V
+    flags: (0x0001) ACC_PUBLIC
+    Code:
+      stack=0, locals=1, args_size=1
+         x: return
+      LineNumberTable:
+      LocalVariableTable:
+        Start  Length  Slot  Name   Signature
+            0       1     0  this   Lcom/android/hoststubgen/test/tinyframework/exp/B;
+}
+SourceFile: "B.java"
+RuntimeInvisibleAnnotations:
+  x: #x()
+    android.hosttest.annotation.HostSideTestWholeClassKeep
+## Class: com/android/hoststubgen/test/tinyframework/exp/sub/A.class
+  Compiled from "A.java"
+public class com.android.hoststubgen.test.tinyframework.exp.sub.A
+  minor version: 0
+  major version: 65
+  flags: (0x0021) ACC_PUBLIC, ACC_SUPER
+  this_class: #x                          // com/android/hoststubgen/test/tinyframework/exp/sub/A
+  super_class: #x                         // java/lang/Object
+  interfaces: 0, fields: 0, methods: 2, attributes: 1
+Constant pool:
+{
+  public com.android.hoststubgen.test.tinyframework.exp.sub.A();
+    descriptor: ()V
+    flags: (0x0001) ACC_PUBLIC
+    Code:
+      stack=1, locals=1, args_size=1
+         x: aload_0
+         x: invokespecial #x                  // Method java/lang/Object."<init>":()V
+         x: return
+      LineNumberTable:
+      LocalVariableTable:
+        Start  Length  Slot  Name   Signature
+            0       5     0  this   Lcom/android/hoststubgen/test/tinyframework/exp/sub/A;
+
+  public void foo();
+    descriptor: ()V
+    flags: (0x0001) ACC_PUBLIC
+    Code:
+      stack=0, locals=1, args_size=1
+         x: return
+      LineNumberTable:
+      LocalVariableTable:
+        Start  Length  Slot  Name   Signature
+            0       1     0  this   Lcom/android/hoststubgen/test/tinyframework/exp/sub/A;
+}
+SourceFile: "A.java"
 ## Class: com/android/hoststubgen/test/tinyframework/packagetest/A.class
   Compiled from "A.java"
 public class com.android.hoststubgen.test.tinyframework.packagetest.A
