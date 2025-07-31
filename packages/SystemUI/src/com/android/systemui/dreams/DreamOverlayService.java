@@ -209,7 +209,7 @@ public class DreamOverlayService extends android.service.dreams.DreamOverlayServ
             new KeyguardUpdateMonitorCallback() {
                 @Override
                 public void onShadeExpandedChanged(boolean expanded) {
-                    mExecutor.execute(() -> {
+                    dreamScopedExecute(() -> {
                         if (mShadeExpanded == expanded) {
                             return;
                         }
@@ -217,7 +217,7 @@ public class DreamOverlayService extends android.service.dreams.DreamOverlayServ
 
                         updateLifecycleStateLocked();
                         updateGestureBlockingLocked();
-                    });
+                    }, "shade expanded changed");
                 }
             };
 
@@ -236,20 +236,14 @@ public class DreamOverlayService extends android.service.dreams.DreamOverlayServ
         }
     };
 
-    private final Consumer<Boolean> mBouncerShowingConsumer = new Consumer<>() {
-        @Override
-        public void accept(Boolean bouncerShowing) {
-            mExecutor.execute(() -> updateBouncerShowingLocked(bouncerShowing));
-        }
-    };
+    private final Consumer<Boolean> mBouncerShowingConsumer = bouncerShowing ->
+            dreamScopedExecute(() -> updateBouncerShowingLocked(bouncerShowing),
+            "bouncer showing changed");
 
-    private final Consumer<Set<OverlayKey>> mCurrentOverlaysConsumer = new Consumer<>() {
-        @Override
-        public void accept(Set<OverlayKey> currentOverlays) {
-            mExecutor.execute(() ->
-                    updateBouncerShowingLocked(currentOverlays.contains(Overlays.Bouncer)));
-        }
-    };
+    private final Consumer<Set<OverlayKey>> mCurrentOverlaysConsumer =
+            currentOverlays -> dreamScopedExecute(() ->
+                    updateBouncerShowingLocked(currentOverlays.contains(Overlays.Bouncer)),
+                    "overlays changed");
 
     private final Consumer<Unit> mPickupConsumer = new Consumer<>() {
         @Override
@@ -260,12 +254,9 @@ public class DreamOverlayService extends android.service.dreams.DreamOverlayServ
         }
     };
 
-    private final Consumer<Boolean> mBiometricPromptShowingConsumer = new Consumer<>() {
-        @Override
-        public void accept(Boolean showing) {
-            mExecutor.execute(() -> updateBiometricPromptShowingLocked(showing));
-        }
-    };
+    private final Consumer<Boolean> mBiometricPromptShowingConsumer =
+            showing -> dreamScopedExecute(() -> updateBiometricPromptShowingLocked(showing),
+            "update biometric prompt showing");
 
     /**
      * {@link ResetHandler} protects resetting {@link DreamOverlayService} by making sure reset
@@ -360,6 +351,8 @@ public class DreamOverlayService extends android.service.dreams.DreamOverlayServ
             mGestureInteractor.removeGestureBlockedMatcher(DREAM_TYPE_MATCHER,
                     GestureInteractor.Scope.Global);
 
+            mKeyguardUpdateMonitor.removeCallback(mKeyguardCallback);
+
             mStarted = false;
         }
 
@@ -447,7 +440,6 @@ public class DreamOverlayService extends android.service.dreams.DreamOverlayServ
         mBouncerScrimController = bouncerScrimController;
         mLowLightDreamComponent = lowLightDreamComponent;
         mHomeControlPanelDreamComponent = homeControlPanelDreamComponent;
-        mKeyguardUpdateMonitor.registerCallback(mKeyguardCallback);
         mStateController = stateController;
         mUiEventLogger = uiEventLogger;
         mComplicationComponentFactory = complicationComponentFactory;
@@ -512,8 +504,6 @@ public class DreamOverlayService extends android.service.dreams.DreamOverlayServ
 
     @Override
     public void onDestroy() {
-        mKeyguardUpdateMonitor.removeCallback(mKeyguardCallback);
-
         for (Job job : mFlows) {
             job.cancel(new CancellationException());
         }
@@ -613,6 +603,8 @@ public class DreamOverlayService extends android.service.dreams.DreamOverlayServ
 
         mDreamOverlayCallbackController.onStartDream();
         mStarted = true;
+
+        mKeyguardUpdateMonitor.registerCallback(mKeyguardCallback);
 
         updateRedirectWakeup();
         updateGestureBlockingLocked();
@@ -814,5 +806,16 @@ public class DreamOverlayService extends android.service.dreams.DreamOverlayServ
 
         updateLifecycleStateLocked();
         updateGestureBlockingLocked();
+    }
+
+    private void dreamScopedExecute(Runnable runnable, String description) {
+        mExecutor.execute(() -> {
+            if (!mStarted) {
+                Log.d(TAG, "could not execute when not dreaming:" + description);
+                return;
+            }
+
+            runnable.run();
+        });
     }
 }
