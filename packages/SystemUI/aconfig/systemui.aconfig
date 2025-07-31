@@ -1735,15 +1735,6 @@ flag {
     }
 }
 
-flag {
-    name: "skip_hide_sensitive_notif_animation"
-    namespace: "systemui"
-    description: "Skip hide sensitive notification animation when the showing layout is not changed."
-    bug: "390624334"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-   }
-}
 
 flag {
     name: "lockscreen_font"
