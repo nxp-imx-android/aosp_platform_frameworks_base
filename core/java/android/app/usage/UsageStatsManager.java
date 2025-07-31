@@ -1293,6 +1293,11 @@ public final class UsageStatsManager {
     }
 
     /** @hide */
+    public static int getMainReason(int standbyReason) {
+        return (standbyReason & REASON_MAIN_MASK);
+    }
+
+    /** @hide */
     public static String reasonToString(int standbyReason) {
         final int subReason = standbyReason & REASON_SUB_MASK;
         StringBuilder sb = new StringBuilder();

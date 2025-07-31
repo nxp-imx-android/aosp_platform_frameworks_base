@@ -16,6 +16,12 @@
 
 package com.android.server.job.controllers;
 
+import static android.app.usage.UsageStatsManager.REASON_MAIN_DEFAULT;
+import static android.app.usage.UsageStatsManager.REASON_MAIN_FORCED_BY_SYSTEM;
+import static android.app.usage.UsageStatsManager.REASON_MAIN_PREDICTED;
+import static android.app.usage.UsageStatsManager.REASON_MAIN_TIMEOUT;
+import static android.app.usage.UsageStatsManager.REASON_MAIN_USAGE;
+import static android.app.usage.UsageStatsManager.STANDBY_BUCKET_FREQUENT;
 import static android.text.format.DateUtils.HOUR_IN_MILLIS;
 
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.doReturn;
@@ -30,6 +36,7 @@ import static com.android.server.job.JobSchedulerService.RARE_INDEX;
 import static com.android.server.job.JobSchedulerService.RESTRICTED_INDEX;
 import static com.android.server.job.JobSchedulerService.WORKING_INDEX;
 import static com.android.server.job.JobSchedulerService.sElapsedRealtimeClock;
+import static com.android.server.job.JobSchedulerService.standbyBucketToBucketIndex;
 import static com.android.server.job.controllers.JobStatus.CONSTRAINT_BACKGROUND_NOT_RESTRICTED;
 import static com.android.server.job.controllers.JobStatus.CONSTRAINT_BATTERY_NOT_LOW;
 import static com.android.server.job.controllers.JobStatus.CONSTRAINT_CHARGING;
@@ -50,6 +57,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.when;
@@ -60,14 +68,17 @@ import android.content.ComponentName;
 import android.content.pm.PackageManagerInternal;
 import android.net.Uri;
 import android.os.SystemClock;
+import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.EnableFlags;
 import android.platform.test.flag.junit.SetFlagsRule;
 import android.provider.MediaStore;
-import android.util.SparseIntArray;
+import android.util.ArrayMap;
+import android.util.Pair;
 
 import androidx.test.runner.AndroidJUnit4;
 
 import com.android.server.LocalServices;
+import com.android.server.job.Flags;
 import com.android.server.job.JobSchedulerInternal;
 import com.android.server.job.JobSchedulerService;
 
@@ -100,6 +111,8 @@ public class JobStatusTest {
 
     @Mock
     private JobSchedulerInternal mJobSchedulerInternal;
+    @Mock
+    private UsageStatsManagerInternal mUsageStatsManagerInternal;
     private MockitoSession mMockingSession;
 
     @Before
@@ -113,8 +126,9 @@ public class JobStatusTest {
                 .when(() -> LocalServices.getService(JobSchedulerInternal.class));
         doReturn(mock(PackageManagerInternal.class))
                 .when(() -> LocalServices.getService(PackageManagerInternal.class));
-        doReturn(mock(UsageStatsManagerInternal.class))
+        doReturn(mUsageStatsManagerInternal)
                 .when(() -> LocalServices.getService(UsageStatsManagerInternal.class));
+        JobSchedulerService.sUsageStatsManagerInternal = mUsageStatsManagerInternal;
 
         // Freeze the clocks at this moment in time
         JobSchedulerService.sSystemClock =
@@ -134,16 +148,30 @@ public class JobStatusTest {
 
     private static void assertEffectiveBucketForMediaExemption(JobStatus jobStatus,
             boolean exemptionGranted) {
-        final SparseIntArray effectiveBucket = new SparseIntArray();
-        effectiveBucket.put(ACTIVE_INDEX, ACTIVE_INDEX);
-        effectiveBucket.put(WORKING_INDEX, WORKING_INDEX);
-        effectiveBucket.put(FREQUENT_INDEX, exemptionGranted ? WORKING_INDEX : FREQUENT_INDEX);
-        effectiveBucket.put(RARE_INDEX, exemptionGranted ? WORKING_INDEX : RARE_INDEX);
-        effectiveBucket.put(NEVER_INDEX, NEVER_INDEX);
-        effectiveBucket.put(RESTRICTED_INDEX, RESTRICTED_INDEX);
+        assertEffectiveBucketForMediaExemption(jobStatus, exemptionGranted,
+                /* allowRestrictedWithResonTimeout= */ true);
+    }
+
+    private static void assertEffectiveBucketForMediaExemption(JobStatus jobStatus,
+            boolean exemptionGranted, boolean allowRestrictedWithResonTimeout) {
+        final ArrayMap<Pair<Integer, Integer>, Integer> effectiveBucket = new ArrayMap<>();
+        effectiveBucket.put(new Pair<>(ACTIVE_INDEX, REASON_MAIN_DEFAULT), ACTIVE_INDEX);
+        effectiveBucket.put(new Pair<>(WORKING_INDEX, REASON_MAIN_USAGE), WORKING_INDEX);
+        effectiveBucket.put(new Pair<>(FREQUENT_INDEX, REASON_MAIN_USAGE),
+                exemptionGranted ? WORKING_INDEX : FREQUENT_INDEX);
+        effectiveBucket.put(new Pair<>(RARE_INDEX, REASON_MAIN_TIMEOUT),
+                exemptionGranted ? WORKING_INDEX : RARE_INDEX);
+        effectiveBucket.put(new Pair<>(NEVER_INDEX, REASON_MAIN_DEFAULT), NEVER_INDEX);
+        effectiveBucket.put(new Pair<>(RESTRICTED_INDEX, REASON_MAIN_TIMEOUT),
+                (exemptionGranted && allowRestrictedWithResonTimeout)
+                        ? WORKING_INDEX : RESTRICTED_INDEX);
+        effectiveBucket.put(new Pair<>(RESTRICTED_INDEX, REASON_MAIN_FORCED_BY_SYSTEM),
+                RESTRICTED_INDEX);
         for (int i = 0; i < effectiveBucket.size(); i++) {
-            jobStatus.setStandbyBucket(effectiveBucket.keyAt(i));
-            assertEquals(effectiveBucket.valueAt(i), jobStatus.getEffectiveStandbyBucket());
+            jobStatus.setStandbyBucket(effectiveBucket.keyAt(i).first,
+                    effectiveBucket.keyAt(i).second);
+            assertEquals(effectiveBucket.valueAt(i).intValue(),
+                    jobStatus.getEffectiveStandbyBucket());
         }
     }
 
@@ -412,6 +440,31 @@ public class JobStatusTest {
                 createJobStatus(jobBuilder.setPriority(JobInfo.PRIORITY_MIN).build()), false);
     }
 
+    @DisableFlags(Flags.FLAG_ALLOW_CMP_EXEMPTION_FOR_RESTRICTED_BUCKET)
+    @Test
+    public void testMediaBackupExemptionGranted_flagDisabled() {
+        when(mJobSchedulerInternal.getCloudMediaProviderPackage(eq(0))).thenReturn(TEST_PACKAGE);
+        final JobInfo imageUriJob = new JobInfo.Builder(42, TEST_JOB_COMPONENT)
+                .addTriggerContentUri(new JobInfo.TriggerContentUri(IMAGES_MEDIA_URI, 0))
+                .setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY)
+                .build();
+        assertEffectiveBucketForMediaExemption(createJobStatus(imageUriJob), true, false);
+
+        final JobInfo videoUriJob = new JobInfo.Builder(42, TEST_JOB_COMPONENT)
+                .addTriggerContentUri(new JobInfo.TriggerContentUri(VIDEO_MEDIA_URI, 0))
+                .setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY)
+                .build();
+        assertEffectiveBucketForMediaExemption(createJobStatus(videoUriJob), true, false);
+
+        final JobInfo bothUriJob = new JobInfo.Builder(42, TEST_JOB_COMPONENT)
+                .addTriggerContentUri(new JobInfo.TriggerContentUri(IMAGES_MEDIA_URI, 0))
+                .addTriggerContentUri(new JobInfo.TriggerContentUri(VIDEO_MEDIA_URI, 0))
+                .setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY)
+                .build();
+        assertEffectiveBucketForMediaExemption(createJobStatus(bothUriJob), true, false);
+    }
+
+    @EnableFlags(Flags.FLAG_ALLOW_CMP_EXEMPTION_FOR_RESTRICTED_BUCKET)
     @Test
     public void testMediaBackupExemptionGranted() {
         when(mJobSchedulerInternal.getCloudMediaProviderPackage(eq(0))).thenReturn(TEST_PACKAGE);
@@ -684,27 +737,31 @@ public class JobStatusTest {
         JobStatus job = createJobStatus(jobInfo);
 
         // Exempt apps be exempting.
-        job.setStandbyBucket(EXEMPTED_INDEX);
+        job.setStandbyBucket(EXEMPTED_INDEX, REASON_MAIN_DEFAULT);
         assertEquals(EXEMPTED_INDEX, job.getEffectiveStandbyBucket());
 
         // Actual bucket is higher than the buggy cap, so the cap comes into effect.
-        job.setStandbyBucket(ACTIVE_INDEX);
+        job.setStandbyBucket(ACTIVE_INDEX, REASON_MAIN_USAGE);
         assertEquals(WORKING_INDEX, job.getEffectiveStandbyBucket());
 
         // Buckets at the cap or below shouldn't be affected.
-        job.setStandbyBucket(WORKING_INDEX);
+        job.setStandbyBucket(WORKING_INDEX, REASON_MAIN_USAGE);
         assertEquals(WORKING_INDEX, job.getEffectiveStandbyBucket());
 
-        job.setStandbyBucket(FREQUENT_INDEX);
+        job.setStandbyBucket(FREQUENT_INDEX, REASON_MAIN_PREDICTED);
         assertEquals(FREQUENT_INDEX, job.getEffectiveStandbyBucket());
 
-        job.setStandbyBucket(RARE_INDEX);
+        job.setStandbyBucket(RARE_INDEX, REASON_MAIN_TIMEOUT);
         assertEquals(RARE_INDEX, job.getEffectiveStandbyBucket());
 
-        job.setStandbyBucket(RESTRICTED_INDEX);
+        job.setStandbyBucket(RESTRICTED_INDEX, REASON_MAIN_TIMEOUT);
         assertEquals(RESTRICTED_INDEX, job.getEffectiveStandbyBucket());
 
-        job.setStandbyBucket(NEVER_INDEX);
+        // Any other reason should not trigger the bucket elevation
+        job.setStandbyBucket(RESTRICTED_INDEX, REASON_MAIN_FORCED_BY_SYSTEM);
+        assertEquals(RESTRICTED_INDEX, job.getEffectiveStandbyBucket());
+
+        job.setStandbyBucket(NEVER_INDEX, REASON_MAIN_DEFAULT);
         assertEquals(NEVER_INDEX, job.getEffectiveStandbyBucket());
     }
 
@@ -1459,6 +1516,22 @@ public class JobStatusTest {
         assertEquals("#TestTraceTag#@TestNamespace@TestTag:foo", jobStatus.getBatteryName());
     }
 
+    @Test
+    public void testCreateJobStatus_validateStandbyBucketAndReason() {
+        doReturn(STANDBY_BUCKET_FREQUENT).when(mUsageStatsManagerInternal)
+                .getAppStandbyBucket(eq(TEST_PACKAGE), anyInt(), anyLong());
+        doReturn(REASON_MAIN_PREDICTED).when(mUsageStatsManagerInternal)
+                .getAppStandbyBucketReason(eq(TEST_PACKAGE), anyInt(), anyLong());
+
+        final JobInfo jobInfo = new JobInfo.Builder(42, TEST_JOB_COMPONENT)
+                .build();
+        final JobStatus jobStatus = createJobStatus(jobInfo);
+
+        assertEquals(standbyBucketToBucketIndex(STANDBY_BUCKET_FREQUENT),
+                jobStatus.getStandbyBucket());
+        assertEquals(REASON_MAIN_PREDICTED, jobStatus.getStandbyBucketReason());
+    }
+
     private void markExpeditedQuotaApproved(JobStatus job, boolean isApproved) {
         if (job.isRequestedExpeditedJob()) {
             job.setExpeditedJobQuotaApproved(sElapsedRealtimeClock.millis(), isApproved);
@@ -1475,10 +1548,34 @@ public class JobStatusTest {
 
     private static JobStatus createJobStatus(long earliestRunTimeElapsedMillis,
             long latestRunTimeElapsedMillis) {
+        return createJobStatus(
+                /* standbyBucketIndex= */ 0,
+                /* standbyBucketReason= */ 0,
+                earliestRunTimeElapsedMillis,
+                latestRunTimeElapsedMillis);
+    }
+
+    private static JobStatus createJobStatus(int standbyBucketIndex, int standbyBucketReason,
+            long earliestRunTimeElapsedMillis, long latestRunTimeElapsedMillis) {
         final JobInfo job = new JobInfo.Builder(101, new ComponentName("foo", "bar"))
                 .setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY).build();
-        return new JobStatus(job, 0, null, -1, 0, null, null, earliestRunTimeElapsedMillis,
-                latestRunTimeElapsedMillis, 0, 0, 0, null, 0, 0);
+        return new JobStatus(
+                /* job= */ job,
+                /* callingUid= */ 0,
+                /* sourcePkgName= */ null,
+                /* sourceUserId= */ -1,
+                standbyBucketIndex,
+                standbyBucketReason,
+                /* namespace= */ null,
+                /* sourceTag= */ null,
+                /* earliestRunTimeElapsedMillis= */ earliestRunTimeElapsedMillis,
+                /* latestRunTimeElapsedMillis= */ latestRunTimeElapsedMillis,
+                /* lastSuccessfulRunTime= */ 0,
+                /* lastFailedRunTime= */ 0,
+                /* cumulativeExecutionTimeMs= */ 0,
+                /* persistedExecutionTimesUTC= */ null,
+                /* innerFlags= */ 0,
+                /* dynamicConstraints= */ 0);
     }
 
     private static JobStatus createJobStatus(JobInfo job) {

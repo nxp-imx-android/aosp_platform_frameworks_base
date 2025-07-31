@@ -16,6 +16,8 @@
 
 package com.android.server.job.controllers;
 
+import static android.app.usage.UsageStatsManager.REASON_MAIN_DEFAULT;
+
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.doAnswer;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.doNothing;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.doReturn;
@@ -371,13 +373,14 @@ public class QuotaControllerTest {
     private void setStandbyBucket(int bucketIndex) {
         when(mUsageStatsManager.getAppStandbyBucket(eq(SOURCE_PACKAGE), eq(SOURCE_USER_ID),
                 anyLong())).thenReturn(bucketIndexToUsageStatsBucket(bucketIndex));
-        mQuotaController.updateStandbyBucket(SOURCE_USER_ID, SOURCE_PACKAGE, bucketIndex);
+        mQuotaController.updateStandbyBucket(SOURCE_USER_ID, SOURCE_PACKAGE, bucketIndex,
+                REASON_MAIN_DEFAULT);
     }
 
     private void setStandbyBucket(int bucketIndex, JobStatus... jobs) {
         setStandbyBucket(bucketIndex);
         for (JobStatus job : jobs) {
-            job.setStandbyBucket(bucketIndex);
+            job.setStandbyBucket(bucketIndex, REASON_MAIN_DEFAULT);
             when(mUsageStatsManager.getAppStandbyBucket(
                     eq(job.getSourcePackageName()), eq(job.getSourceUserId()), anyLong()))
                     .thenReturn(bucketIndexToUsageStatsBucket(bucketIndex));
@@ -419,7 +422,7 @@ public class QuotaControllerTest {
                 jobInfo, callingUid, packageName, SOURCE_USER_ID, "QCTest", testTag);
         js.serviceProcessName = "testProcess";
         // Make sure tests aren't passing just because the default bucket is likely ACTIVE.
-        js.setStandbyBucket(FREQUENT_INDEX);
+        js.setStandbyBucket(FREQUENT_INDEX, UsageStatsManager.REASON_MAIN_PREDICTED);
         // Make sure Doze and background-not-restricted don't affect tests.
         js.setDeviceNotDozingConstraintSatisfied(/* nowElapsed */ sElapsedRealtimeClock.millis(),
                 /* state */ true, /* allowlisted */false);

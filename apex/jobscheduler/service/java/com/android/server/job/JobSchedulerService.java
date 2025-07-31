@@ -4725,6 +4725,20 @@ public class JobSchedulerService extends com.android.server.SystemService
         return bucket;
     }
 
+    public static int standbyBucketReasonForPackage(String packageName, int userId,
+            long elapsedNow) {
+        int reason = sUsageStatsManagerInternal != null
+                ? sUsageStatsManagerInternal.getAppStandbyBucketReason(packageName, userId,
+                        elapsedNow)
+                : UsageStatsManager.REASON_MAIN_DEFAULT;
+
+        if (DEBUG_STANDBY) {
+            Slog.v(TAG, packageName + "/" + userId + " standby bucket reason: "
+                    + UsageStatsManager.reasonToString(reason));
+        }
+        return reason;
+    }
+
     static int safelyScaleBytesToKBForHistogram(long bytes) {
         long kilobytes = bytes / 1000;
         // Anything over Integer.MAX_VALUE or under Integer.MIN_VALUE isn't expected and will

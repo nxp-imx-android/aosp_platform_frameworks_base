@@ -119,3 +119,13 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "allow_cmp_exemption_for_restricted_bucket"
+    namespace: "backstage_power"
+    description: "Allow CMP exemption for apps in Restricted bucket due to timeout reason"
+    bug: "409606405"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}

@@ -2534,14 +2534,15 @@ public final class QuotaController extends StateController {
             // Update job bookkeeping out of band.
             AppSchedulingModuleThread.getHandler().post(() -> {
                 final int bucketIndex = JobSchedulerService.standbyBucketToBucketIndex(bucket);
-                updateStandbyBucket(userId, packageName, bucketIndex);
+                updateStandbyBucket(userId, packageName, bucketIndex, reason);
             });
         }
     }
 
     @VisibleForTesting
     void updateStandbyBucket(
-            final int userId, final @NonNull String packageName, final int bucketIndex) {
+            final int userId, final @NonNull String packageName, final int bucketIndex,
+            final int reason) {
         if (DEBUG) {
             Slog.i(TAG, "Moving pkg " + packageToString(userId, packageName)
                     + " to bucketIndex " + bucketIndex);
@@ -2566,7 +2567,7 @@ public final class QuotaController extends StateController {
                         && bucketIndex != js.getStandbyBucket()) {
                     restrictedChanges.add(js);
                 }
-                js.setStandbyBucket(bucketIndex);
+                js.setStandbyBucket(bucketIndex, reason);
             }
             Timer timer = mPkgTimers.get(userId, packageName);
             if (timer != null && timer.isActive()) {

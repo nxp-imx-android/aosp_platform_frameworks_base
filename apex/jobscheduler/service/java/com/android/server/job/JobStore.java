@@ -1517,9 +1517,11 @@ public final class JobStore {
             // And now we're done
             final int appBucket = JobSchedulerService.standbyBucketForPackage(sourcePackageName,
                     sourceUserId, nowElapsed);
+            final int appBucketReason = JobSchedulerService.standbyBucketReasonForPackage(
+                    sourcePackageName, sourceUserId, nowElapsed);
             JobStatus js = new JobStatus(
                     builtJob, uid, intern(sourcePackageName), sourceUserId,
-                    appBucket, namespace, sourceTag,
+                    appBucket, appBucketReason, namespace, sourceTag,
                     elapsedRuntimes.first, elapsedRuntimes.second,
                     lastSuccessfulRunTime, lastFailedRunTime, cumulativeExecutionTime,
                     (rtcIsGood) ? null : rtcRuntimes, internalFlags, /* dynamicConstraints */ 0);
