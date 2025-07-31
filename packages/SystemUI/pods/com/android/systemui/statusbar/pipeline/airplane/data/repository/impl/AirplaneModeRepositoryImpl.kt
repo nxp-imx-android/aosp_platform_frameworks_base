@@ -40,7 +40,7 @@ import kotlinx.coroutines.withContext
 
 @SysUISingleton
 @Suppress("EXPERIMENTAL_IS_NOT_ENABLED")
-class AirplaneModeRepositoryImpl
+public class AirplaneModeRepositoryImpl
 @Inject
 constructor(
     private val connectivityManager: ConnectivityManager,
@@ -51,7 +51,7 @@ constructor(
     @Background scope: CoroutineScope,
 ) : AirplaneModeRepository {
     // TODO(b/254848912): Replace this with a generic SettingObserver coroutine once we have it.
-    override val isAirplaneMode: StateFlow<Boolean> =
+    public override val isAirplaneMode: StateFlow<Boolean> =
         conflatedCallbackFlow {
                 val observer =
                     object : SettingObserver(globalSettings, bgHandler, Global.AIRPLANE_MODE_ON) {
@@ -74,6 +74,7 @@ constructor(
                 initialValue = false,
             )
 
-    override suspend fun setIsAirplaneMode(isEnabled: Boolean) =
+    public override suspend fun setIsAirplaneMode(isEnabled: Boolean) {
         withContext(backgroundContext) { connectivityManager.setAirplaneMode(isEnabled) }
+    }
 }
