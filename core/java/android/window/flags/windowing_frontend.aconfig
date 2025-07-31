@@ -405,6 +405,16 @@ flag {
 }
 
 flag {
+    name: "predictive_back_intercept_transition"
+    namespace: "windowing_frontend"
+    description: "Allows back gesture to intercept a running transition."
+    bug: "426448018"
+    metadata {
+      purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "current_animator_scale_uses_shared_memory"
     namespace: "wear_system_health"
     description: "WindowManagerService.getCurrentAnimatorScale() reads the animator scale from shared memory"
