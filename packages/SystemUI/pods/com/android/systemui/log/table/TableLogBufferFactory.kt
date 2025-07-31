@@ -23,11 +23,11 @@ public interface TableLogBufferFactory {
      * it is guaranteed only to be created one time. See [getOrCreate] for a cache-aware method of
      * obtaining a buffer.
      *
-     * TODO(b/307607958): Remove this method and always use [getOrCreate] instead.
-     *
      * @param name a unique table name
      * @param maxSize the buffer max size. See [com.android.systemui.log.adjustMaxSize]
      * @return a new [TableLogBuffer] registered with [com.android.systemui.dump.DumpManager]
+     *
+     * TODO(b/307607958): Remove this method and always use [getOrCreate] instead.
      */
     public fun create(name: String, maxSize: Int): TableLogBuffer
 

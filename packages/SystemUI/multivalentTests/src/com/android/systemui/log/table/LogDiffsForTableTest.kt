@@ -19,6 +19,7 @@ package com.android.systemui.log.table
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
+import com.android.systemui.log.FakeLogProxy
 import com.android.systemui.log.LogcatEchoTrackerAlways
 import com.android.systemui.log.table.TableChange.Companion.IS_INITIAL_PREFIX
 import com.android.systemui.util.time.FakeSystemClock
@@ -51,7 +52,13 @@ class LogDiffsForTableTest : SysuiTestCase() {
     fun setUp() {
         systemClock = FakeSystemClock()
         tableLogBuffer =
-            TableLogBufferImpl(MAX_SIZE, BUFFER_NAME, systemClock, LogcatEchoTrackerAlways())
+            TableLogBufferImpl(
+                MAX_SIZE,
+                BUFFER_NAME,
+                systemClock,
+                LogcatEchoTrackerAlways(),
+                localLogcat = FakeLogProxy(),
+            )
     }
 
     // ---- Flow<Boolean> tests ----

@@ -153,6 +153,7 @@ import com.android.systemui.statusbar.notification.row.dagger.NotificationRowCom
 import com.android.systemui.statusbar.phone.CentralSurfaces;
 import com.android.systemui.statusbar.phone.ConfigurationControllerModule;
 import com.android.systemui.statusbar.phone.LetterboxModule;
+import com.android.systemui.statusbar.pipeline.airplane.shared.impl.AirplaneModeSharedModule;
 import com.android.systemui.statusbar.pipeline.dagger.StatusBarPipelineModule;
 import com.android.systemui.statusbar.policy.DeviceStateRotationLockSettingController;
 import com.android.systemui.statusbar.policy.KeyguardStateController;
@@ -218,6 +219,7 @@ import javax.inject.Named;
         AmbientModule.class,
         AvControlsChipModule.class,
         AppOpsModule.class,
+        AirplaneModeSharedModule.class,
         AssistModule.class,
         AuthenticationModule.class,
         BiometricsModule.class,

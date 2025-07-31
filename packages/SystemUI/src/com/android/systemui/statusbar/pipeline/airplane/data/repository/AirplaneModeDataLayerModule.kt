@@ -16,25 +16,11 @@
 
 package com.android.systemui.statusbar.pipeline.airplane.data.repository
 
-import com.android.systemui.dagger.SysUISingleton
-import com.android.systemui.log.table.TableLogBuffer
-import com.android.systemui.log.table.TableLogBufferFactory
 import com.android.systemui.statusbar.pipeline.airplane.data.repository.impl.AirplaneModeRepositoryImpl
-import com.android.systemui.statusbar.pipeline.airplane.shared.AirplaneTableLog
 import dagger.Binds
 import dagger.Module
-import dagger.Provides
 
 @Module
 interface AirplaneModeDataLayerModule {
     @Binds fun airplaneModeRepository(impl: AirplaneModeRepositoryImpl): AirplaneModeRepository
-
-    companion object {
-        @Provides
-        @SysUISingleton
-        @AirplaneTableLog
-        fun provideAirplaneTableLogBuffer(factory: TableLogBufferFactory): TableLogBuffer {
-            return factory.create("AirplaneTableLog", 30)
-        }
-    }
 }
