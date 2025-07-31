@@ -8053,7 +8053,11 @@ public class UserManagerService extends IUserManager.Stub {
                     mUserVisibilityMediator.dump(pw, args);
                     return;
                 case "--deprecated-calls":
-                    mDeprecationReporter.dump(pw);
+                    if (args.length > 1 && args[1].equals("reset")) {
+                        mDeprecationReporter.reset(pw);
+                    } else {
+                        mDeprecationReporter.dump(pw);
+                    }
                     return;
             }
         }

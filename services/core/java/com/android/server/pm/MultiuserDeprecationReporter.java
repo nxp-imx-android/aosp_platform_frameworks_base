@@ -58,7 +58,6 @@ final class MultiuserDeprecationReporter {
         } else {
             mGetMainUserCalls = null;
             mIsMainUserCalls = null;
-
         }
     }
 
@@ -124,6 +123,21 @@ final class MultiuserDeprecationReporter {
             // uid is the canonical UID, but including "canonical" would add extra churn / bytes
             pw.printf("  %s (uid %d): %d calls\n", pkgName, canonicalUid, count);
         }
+    }
+
+    // TODO(b/414326600): add unit tests
+    void reset(PrintWriter pw) {
+        // TODO(b/414326600): should reset in the mHandler thread (as its state is written in that
+        // thread), but it would require blocking the caller until it's done
+
+        if (mGetMainUserCalls != null) {
+            mGetMainUserCalls.clear();
+        }
+        if (mIsMainUserCalls != null) {
+            mIsMainUserCalls.clear();
+        }
+
+        pw.println("Reset");
     }
 
     /** Retrieves the internal package manager interface. */
