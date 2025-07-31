@@ -50,7 +50,6 @@ import android.view.View;
 import android.view.ViewConfiguration;
 import android.view.accessibility.AccessibilityEvent;
 import android.view.accessibility.AccessibilityNodeInfo;
-import android.view.inputmethod.Flags;
 import android.widget.ImageView;
 
 import com.android.internal.annotations.VisibleForTesting;
@@ -248,7 +247,7 @@ public class KeyButtonView extends ImageView implements ButtonInterface {
      */
     @Nullable
     private CharSequence getAccessibilityLongClickActionLabel() {
-        if (Flags.imeSwitcherRevamp() && getId() == R.id.ime_switcher) {
+        if (getId() == R.id.ime_switcher) {
             return getContext().getText(
                     com.android.internal.R.string.input_method_ime_switch_long_click_action_desc);
         }

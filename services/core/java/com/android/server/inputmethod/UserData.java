@@ -66,10 +66,6 @@ final class UserData {
             new InputMethodSubtypeSwitchingController();
 
     @NonNull
-    final HardwareKeyboardShortcutController mHardwareKeyboardShortcutController =
-            new HardwareKeyboardShortcutController();
-
-    @NonNull
     final ImeVisibilityStateComputer mVisibilityStateComputer;
 
     /**
