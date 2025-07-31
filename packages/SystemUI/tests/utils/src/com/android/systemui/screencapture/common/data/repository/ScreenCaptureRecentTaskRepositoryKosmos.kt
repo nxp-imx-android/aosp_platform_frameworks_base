@@ -18,4 +18,5 @@ package com.android.systemui.screencapture.common.data.repository
 
 import com.android.systemui.kosmos.Kosmos
 
-val Kosmos.fakeRecentTaskRepository by Kosmos.Fixture { FakeScreenCaptureRecentTaskRepository() }
+val Kosmos.fakeScreenCaptureRecentTaskRepository by
+    Kosmos.Fixture { FakeScreenCaptureRecentTaskRepository() }
