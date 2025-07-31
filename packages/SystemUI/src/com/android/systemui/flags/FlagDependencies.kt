@@ -26,7 +26,6 @@ import com.android.systemui.Flags.FLAG_COMMUNAL_HUB
 import com.android.systemui.Flags.communalHub
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.statusbar.notification.interruption.VisualInterruptionRefactor
-import com.android.systemui.statusbar.notification.shared.NotificationAvalancheSuppression
 import com.android.systemui.statusbar.notification.shared.NotificationMinimalism
 import com.android.systemui.statusbar.notification.shared.NotificationThrottleHun
 import javax.inject.Inject
@@ -41,7 +40,6 @@ class FlagDependencies @Inject constructor(featureFlags: FeatureFlagsClassic, ha
         vibrateWhileUnlockedToken dependsOn politeNotifications
 
         // Internal notification frontend dependencies
-        NotificationAvalancheSuppression.token dependsOn VisualInterruptionRefactor.token
         NotificationMinimalism.token dependsOn NotificationThrottleHun.token
     }
 

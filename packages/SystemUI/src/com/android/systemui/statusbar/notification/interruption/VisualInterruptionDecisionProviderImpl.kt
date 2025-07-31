@@ -39,7 +39,6 @@ import com.android.systemui.statusbar.notification.interruption.VisualInterrupti
 import com.android.systemui.statusbar.notification.interruption.VisualInterruptionType.BUBBLE
 import com.android.systemui.statusbar.notification.interruption.VisualInterruptionType.PEEK
 import com.android.systemui.statusbar.notification.interruption.VisualInterruptionType.PULSE
-import com.android.systemui.statusbar.notification.shared.NotificationAvalancheSuppression
 import com.android.systemui.statusbar.policy.BatteryController
 import com.android.systemui.statusbar.policy.DeviceProvisionedController
 import com.android.systemui.statusbar.policy.KeyguardStateController
@@ -185,22 +184,19 @@ constructor(
         addFilter(HunJustLaunchedFsiSuppressor())
         addFilter(AlertAppSuspendedSuppressor())
         addFilter(AlertKeyguardVisibilitySuppressor(keyguardNotificationVisibilityProvider))
-
-        if (NotificationAvalancheSuppression.isEnabled) {
-            addFilter(
-                AvalancheSuppressor(
-                    avalancheProvider,
-                    systemClock,
-                    settingsInteractor,
-                    packageManager,
-                    uiEventLogger,
-                    context,
-                    notificationManager,
-                    systemSettings,
-                )
+        addFilter(
+            AvalancheSuppressor(
+                avalancheProvider,
+                systemClock,
+                settingsInteractor,
+                packageManager,
+                uiEventLogger,
+                context,
+                notificationManager,
+                systemSettings,
             )
-            avalancheProvider.register()
-        }
+        )
+        avalancheProvider.register()
         started = true
     }
 
