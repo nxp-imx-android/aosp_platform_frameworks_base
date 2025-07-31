@@ -16,6 +16,7 @@
 
 package com.android.wm.shell.flicker.minimize
 
+import android.platform.test.annotations.Postsubmit
 import android.platform.test.annotations.RequiresDesktopDevice
 import android.tools.NavBar
 import android.tools.flicker.assertions.FlickerChecker
@@ -45,6 +46,7 @@ import org.junit.runners.Parameterized
 @RequiresDesktopDevice
 @RunWith(Parameterized::class)
 @Parameterized.UseParametersRunnerFactory(FlickerParametersRunnerFactory::class)
+@Postsubmit
 class MinimizeAppsFlickerTest(flicker: FlickerTest) : DesktopModeBaseTest(flicker) {
     inner class MinimizeAppsScenario : MinimizeAppWindows(
         rotation = flicker.scenario.startRotation

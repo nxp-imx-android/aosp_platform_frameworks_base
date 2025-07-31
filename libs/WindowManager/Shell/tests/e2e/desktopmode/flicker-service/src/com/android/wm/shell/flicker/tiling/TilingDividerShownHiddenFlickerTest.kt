@@ -16,6 +16,7 @@
 
 package com.android.wm.shell.flicker.tiling
 
+import android.platform.test.annotations.Postsubmit
 import android.platform.test.annotations.RequiresDesktopDevice
 import android.tools.NavBar
 import android.tools.flicker.assertions.FlickerChecker
@@ -39,6 +40,7 @@ import org.junit.runners.Parameterized
 @RequiresDesktopDevice
 @RunWith(Parameterized::class)
 @Parameterized.UseParametersRunnerFactory(FlickerParametersRunnerFactory::class)
+@Postsubmit
 class TilingDividerShownHiddenFlickerTest(flicker: FlickerTest) :
     DesktopModeBaseTest(flicker) {
     inner class TileResizingWithDragScenario : TilingTestBase(flicker.scenario.startRotation)

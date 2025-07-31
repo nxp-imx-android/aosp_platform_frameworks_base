@@ -16,6 +16,7 @@
 
 package com.android.wm.shell.flicker
 
+import android.platform.test.annotations.Postsubmit
 import android.platform.test.annotations.RequiresDesktopDevice
 import android.tools.flicker.FlickerConfig
 import android.tools.flicker.annotation.ExpectedScenarios
@@ -35,6 +36,7 @@ import org.junit.runner.RunWith
  */
 @RequiresDesktopDevice
 @RunWith(FlickerServiceJUnit4ClassRunner::class)
+@Postsubmit
 class OpenUnlimitedApps : OpenUnlimitedApps() {
     @ExpectedScenarios(["OPEN_UNLIMITED_APPS"])
     @Test
