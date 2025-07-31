@@ -19,6 +19,8 @@ package com.android.wm.shell.pip2.phone.transition;
 import static android.app.WindowConfiguration.WINDOWING_MODE_FREEFORM;
 import static android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN;
 import static android.view.Surface.ROTATION_0;
+import static android.view.Surface.ROTATION_270;
+import static android.view.Surface.ROTATION_90;
 import static android.window.TransitionInfo.FLAG_IN_TASK_WITH_EMBEDDED_ACTIVITY;
 
 import static com.android.wm.shell.pip2.phone.transition.PipTransitionUtils.getChangeByToken;
@@ -31,7 +33,6 @@ import static com.android.wm.shell.transition.Transitions.TRANSIT_EXIT_PIP_TO_SP
 import android.animation.ValueAnimator;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
-import android.app.AppCompatTaskInfo;
 import android.app.PictureInPictureParams;
 import android.content.Context;
 import android.graphics.Rect;
@@ -182,18 +183,14 @@ public class PipExpandHandler implements Transitions.TransitionHandler {
 
         final Rect startBounds = pipChange.getStartAbsBounds();
         final Rect endBounds = pipChange.getEndAbsBounds();
-        // Resolve the AppCompat info for multi-activity case
-        if (parentBeforePip != null
-                && parentBeforePip.getTaskInfo() != null) {
-            final AppCompatTaskInfo appCompatTaskInfo =
-                    parentBeforePip.getTaskInfo().appCompatTaskInfo;
-            if (appCompatTaskInfo.topActivityLetterboxBounds != null) {
-                ProtoLog.d(ShellProtoLogGroup.WM_SHELL_PICTURE_IN_PICTURE,
-                        "Offset endBounds from %s to %s due to letterbox on expand",
-                        endBounds, appCompatTaskInfo.topActivityLetterboxBounds);
-                endBounds.set(appCompatTaskInfo.topActivityLetterboxBounds);
-            }
+        // We define delta = startRotation - endRotation, so we need to flip the sign.
+        final int delta = -getFixedRotationDelta(info, pipChange, mPipDisplayLayoutState);
+
+        if (parentBeforePip != null) {
+            // Resolve the AppCompat info for multi-activity case
+            adjustBoundsForAppCompat(endBounds, parentBeforePip, delta);
         }
+
         // Resolve the ActivityEmbedding case: the startBounds and endBounds are in absolute screen
         // coordinates, and we are animating the coordinates relative to its parent TaskFragment.
         if (pipChange.hasFlags(FLAG_IN_TASK_WITH_EMBEDDED_ACTIVITY)) {
@@ -215,13 +212,10 @@ public class PipExpandHandler implements Transitions.TransitionHandler {
         final Rect sourceRectHint = PipBoundsAlgorithm.getValidSourceHintRect(params, endBounds,
                 startBounds);
 
-        // We define delta = startRotation - endRotation, so we need to flip the sign.
-        final int delta = -getFixedRotationDelta(info, pipChange, mPipDisplayLayoutState);
         if (delta != ROTATION_0) {
             // Update PiP target change in place to prepare for fixed rotation;
             handleExpandFixedRotation(pipChange, delta);
         }
-
         PipExpandAnimator animator = mPipExpandAnimatorSupplier.get(mContext,
                 mSurfaceTransactionHelper, pipLeash,
                 startTransaction, finishTransaction, endBounds, startBounds, endBounds,
@@ -408,6 +402,39 @@ public class PipExpandHandler implements Transitions.TransitionHandler {
         float snapFraction = mPipBoundsAlgorithm.getSnapFraction(
                 mPipBoundsState.getBounds());
         mPipBoundsState.saveReentryState(snapFraction);
+    }
+
+    private void adjustBoundsForAppCompat(@NonNull Rect outBounds,
+            @NonNull TransitionInfo.Change parent, int delta) {
+        // We must be provided a parent change that is a task.
+        if (parent.getTaskInfo() == null) return;
+
+        final Rect letterboxBounds = parent.getTaskInfo().appCompatTaskInfo != null
+                ? parent.getTaskInfo().appCompatTaskInfo.topActivityLetterboxBounds : null;
+        if (letterboxBounds == null || letterboxBounds.isEmpty()) return;
+
+        ProtoLog.d(ShellProtoLogGroup.WM_SHELL_PICTURE_IN_PICTURE,
+                "Offset endBounds from %s to %s due to letterbox on expand",
+                outBounds, letterboxBounds);
+        if (delta == ROTATION_0) {
+            outBounds.set(letterboxBounds);
+            return;
+        }
+
+        final int width = letterboxBounds.width();
+        final int height = letterboxBounds.height();
+        final int left = letterboxBounds.left;
+        final int top = letterboxBounds.top;
+
+        int newLeft = left, newTop = top;
+        if (delta == ROTATION_90) {
+            newLeft = mPipDisplayLayoutState.getDisplayBounds().width() - top - height;
+            newTop = left;
+        } else if (delta == ROTATION_270) {
+            newLeft = top;
+            newTop = mPipDisplayLayoutState.getDisplayBounds().height() - left - width;
+        }
+        outBounds.set(newLeft, newTop, newLeft + height, newTop + width);
     }
 
     private void cacheAndStartTransitionAnimator(@NonNull ValueAnimator animator) {
