@@ -121,6 +121,12 @@ public final class MessageQueue {
     private static boolean sUseConcurrent;
 
     /**
+     * Determine if the native looper will skip epoll_wait syscalls if nativePollOnce is called with
+     * a timeout of 0, which indicates that there are already pending messages.
+     */
+    private static boolean sSkipEpollWaitForZeroTimeoutInitialized = false;
+
+    /**
      * Caches process-level checks that determine `sUseConcurrent`.
      * This is to avoid redoing checks that shouldn't change during the process's lifetime.
      */
@@ -141,6 +147,8 @@ public final class MessageQueue {
     @RavenwoodRedirect
     private native static void nativeSetFileDescriptorEvents(long ptr, int fd, int events);
 
+    private native static void nativeSetSkipEpollWaitForZeroTimeout(long ptr);
+
     MessageQueue(boolean quitAllowed) {
         getUseConcurrent();
         mQuitAllowed = quitAllowed;
@@ -148,6 +156,7 @@ public final class MessageQueue {
         mLooperThread = Thread.currentThread();
         mThreadName = mLooperThread.getName();
         mTid = Process.myTid();
+        setSkipEpollWaitForZeroTimeout(mPtr);
     }
 
     static boolean getUseConcurrent() {
@@ -208,6 +217,16 @@ public final class MessageQueue {
         // We can lift these restrictions in the future after we've made it possible for test
         // authors to test Looper and MessageQueue without resorting to reflection.
         return false;
+    }
+
+    static void setSkipEpollWaitForZeroTimeout(long ptr) {
+        if (sSkipEpollWaitForZeroTimeoutInitialized) {
+            return;
+        }
+        if (Flags.nativeLooperSkipEpollWaitForZeroTimeout()) {
+            nativeSetSkipEpollWaitForZeroTimeout(ptr);
+        }
+        sSkipEpollWaitForZeroTimeoutInitialized = true;
     }
 
     @Override
