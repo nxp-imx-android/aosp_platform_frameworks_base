@@ -553,58 +553,6 @@ public class BackNavigationControllerTests extends WindowTestsBase {
     }
 
     @Test
-    public void testGetOnBackInvokedCallbackInfo_interceptBackDisabled_returnsCallbackInfo() {
-        final Task topTask = createTopTaskWithActivity();
-        final WindowState window = topTask.getTopVisibleAppMainWindow();
-        final ActivityRecord r = window.getActivityRecord();
-        final OnBackInvokedCallbackInfo callbackInfo = mock(OnBackInvokedCallbackInfo.class);
-        window.setOnBackInvokedCallbackInfo(callbackInfo);
-        spyOn(mAtm.mTaskOrganizerController);
-        Mockito.doReturn(false).when(mAtm.mTaskOrganizerController)
-                .shouldInterceptBackPressedOnRootTask(eq(topTask));
-
-        final OnBackInvokedCallbackInfo info =
-                mBackNavigationController.getOnBackInvokedCallbackInfo(window, topTask, r);
-
-        assertThat(info).isEqualTo(callbackInfo);
-    }
-
-    @Test
-    public void testGetOnBackInvokedCallbackInfo_interceptBackRootActivity_returnsNewCallback() {
-        final Task topTask = createTopTaskWithActivity();
-        final WindowState window = topTask.getTopVisibleAppMainWindow();
-        final ActivityRecord root = window.getActivityRecord();
-        final OnBackInvokedCallbackInfo callbackInfo = mock(OnBackInvokedCallbackInfo.class);
-        window.setOnBackInvokedCallbackInfo(callbackInfo);
-        spyOn(mAtm.mTaskOrganizerController);
-        Mockito.doReturn(true).when(mAtm.mTaskOrganizerController)
-                .shouldInterceptBackPressedOnRootTask(eq(topTask));
-
-        final OnBackInvokedCallbackInfo info =
-                mBackNavigationController.getOnBackInvokedCallbackInfo(window, topTask, root);
-
-        assertThat(info).isNotNull();
-        assertThat(info).isNotEqualTo(callbackInfo);
-    }
-
-    @Test
-    public void testGetOnBackInvokedCallbackInfo_interceptBackChildActivity_returnsCallbackInfo() {
-        final Task topTask = createTopTaskWithActivity();
-        final WindowState window = topTask.getTopVisibleAppMainWindow();
-        final ActivityRecord child = createActivityRecord(topTask);
-        final OnBackInvokedCallbackInfo callbackInfo = mock(OnBackInvokedCallbackInfo.class);
-        window.setOnBackInvokedCallbackInfo(callbackInfo);
-        spyOn(mAtm.mTaskOrganizerController);
-        Mockito.doReturn(true).when(mAtm.mTaskOrganizerController)
-                .shouldInterceptBackPressedOnRootTask(eq(topTask));
-
-        final OnBackInvokedCallbackInfo info =
-                mBackNavigationController.getOnBackInvokedCallbackInfo(window, topTask, child);
-
-        assertThat(info).isEqualTo(callbackInfo);
-    }
-
-    @Test
     public void preparesForBackToHome() {
         final Task topTask = createTopTaskWithActivity();
         withSystemCallback(topTask);
@@ -633,21 +581,6 @@ public class BackNavigationControllerTests extends WindowTestsBase {
         assertThat(typeToString(backNavigationInfo.getType()))
                 .isEqualTo(typeToString(BackNavigationInfo.TYPE_CALLBACK));
         assertThat(backNavigationInfo.getOnBackInvokedCallback()).isEqualTo(appCallback);
-    }
-
-    @Test
-    public void backTypeCallbackWhenInterceptBackPressedOnRootTask() {
-        Task task = createTopTaskWithActivity();
-        IOnBackInvokedCallback appCallback = withAppCallback(task);
-
-        spyOn(mAtm.mTaskOrganizerController);
-        Mockito.doReturn(true).when(
-                mAtm.mTaskOrganizerController).shouldInterceptBackPressedOnRootTask(eq(task));
-        BackNavigationInfo backNavigationInfo = startBackNavigation();
-        assertThat(typeToString(backNavigationInfo.getType()))
-                .isEqualTo(typeToString(BackNavigationInfo.TYPE_CALLBACK));
-        // The callback should be replaced.
-        assertThat(backNavigationInfo.getOnBackInvokedCallback()).isNotEqualTo(appCallback);
     }
 
     // TODO (b/259427810) Remove this test when we figure out new API
