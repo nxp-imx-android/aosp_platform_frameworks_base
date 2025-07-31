@@ -16,12 +16,10 @@
 
 package android.companion.virtual.computercontrol;
 
-import android.hardware.display.IVirtualDisplayCallback;
-import android.hardware.display.VirtualDisplayConfig;
-import android.hardware.input.IVirtualInputDevice;
+import android.companion.virtual.computercontrol.IInteractiveMirrorDisplay;
 import android.hardware.input.VirtualKeyEvent;
 import android.hardware.input.VirtualTouchEvent;
-import android.hardware.input.VirtualTouchscreenConfig;
+import android.view.Surface;
 
 /**
  * Interface for computer control session management.
@@ -39,11 +37,9 @@ interface IComputerControlSession {
     /** Injects a touch event into the trusted virtual display. */
     void sendTouchEvent(in VirtualTouchEvent event);
 
-    /** Creates a virtual display mirroring the trusted one and returns the display ID. */
-    int createMirrorDisplay(in VirtualDisplayConfig config, in IVirtualDisplayCallback callback);
-
-    /** Creates a touchscreen associated with a mirror display. */
-    IVirtualInputDevice createMirrorDisplayTouchscreen(in VirtualTouchscreenConfig config);
+    /** Creates an interactive virtual display, mirroring the trusted one. */
+    IInteractiveMirrorDisplay createInteractiveMirrorDisplay(
+            int width, int height, in Surface surface);
 
     /** Closes this session. */
     void close();
