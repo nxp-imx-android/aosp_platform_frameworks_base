@@ -56,11 +56,13 @@ import com.android.settingslib.bluetooth.LocalBluetoothProfileManager;
 import com.android.settingslib.testutils.shadow.ShadowBluetoothAdapter;
 
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.MockitoJUnit;
+import org.mockito.junit.MockitoRule;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
@@ -74,6 +76,8 @@ import java.util.List;
 @RunWith(RobolectricTestRunner.class)
 @Config(shadows = {ShadowBluetoothAdapter.class})
 public class LocalMediaManagerTest {
+    @Rule
+    public final MockitoRule mockito = MockitoJUnit.rule();
 
     private static final String TEST_DEVICE_NAME_1 = "device_name_1";
     private static final String TEST_DEVICE_NAME_2 = "device_name_2";
@@ -102,7 +106,6 @@ public class LocalMediaManagerTest {
     @Mock
     private AudioManager mAudioManager;
     @Mock private Handler mConnectSuggestedDeviceHandler;
-    @Mock private InfoMediaManager.SuggestedDeviceState mSuggestedDeviceState;
     @Mock private SuggestedDeviceInfo mSuggestedDeviceInfo;
 
     private Context mContext;
@@ -111,10 +114,10 @@ public class LocalMediaManagerTest {
     private ShadowBluetoothAdapter mShadowBluetoothAdapter;
     private InfoMediaDevice mInfoMediaDevice1;
     private InfoMediaDevice mInfoMediaDevice2;
+    private SuggestedDeviceState mSuggestedDeviceState;
 
     @Before
     public void setUp() {
-        MockitoAnnotations.initMocks(this);
         mContext = RuntimeEnvironment.application;
         final List<BluetoothDevice> bluetoothDevices = new ArrayList<>();
         mShadowBluetoothAdapter = Shadow.extract(BluetoothAdapter.getDefaultAdapter());
@@ -126,7 +129,7 @@ public class LocalMediaManagerTest {
         when(mLocalBluetoothManager.getProfileManager()).thenReturn(mLocalProfileManager);
         when(mLocalProfileManager.getA2dpProfile()).thenReturn(mA2dpProfile);
         when(mLocalProfileManager.getHearingAidProfile()).thenReturn(mHapProfile);
-        when(mSuggestedDeviceState.getSuggestedDeviceInfo()).thenReturn(mSuggestedDeviceInfo);
+        mSuggestedDeviceState = new SuggestedDeviceState(mSuggestedDeviceInfo);
 
         // Need to call constructor to initialize final fields.
         mInfoMediaManager =
