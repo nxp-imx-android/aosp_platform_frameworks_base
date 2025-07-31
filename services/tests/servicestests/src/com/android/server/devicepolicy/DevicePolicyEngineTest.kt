@@ -34,6 +34,7 @@ import com.android.server.LocalManagerRegistry
 import com.android.server.LocalServices
 import com.android.server.pm.UserManagerInternal
 import com.google.common.truth.Truth.assertThat
+import java.util.List
 import org.junit.After
 import org.junit.Assert.assertThrows
 import org.junit.Before
@@ -160,6 +161,38 @@ class DevicePolicyEngineTest {
             devicePolicyEngine.getResolvedPolicy(PASSWORD_COMPLEXITY_POLICY, SYSTEM_USER_ID)
 
         assertThat(resolvedPolicy).isNull()
+    }
+
+    @Test
+    fun removeLocalPoliciesForSystemEntities_removesOnlySpecifiedSystemEntitiesPolicies() {
+        ensurePolicyIsSetLocally(
+            USER_CONTROLLED_DISABLED_PACKAGES_POLICY,
+            PACKAGE_SET_POLICY_VALUE_1,
+            SYSTEM_USER_ID,
+            DEVICE_OWNER_ADMIN,
+        )
+        ensurePolicyIsSetLocally(
+            USER_CONTROLLED_DISABLED_PACKAGES_POLICY,
+            PACKAGE_SET_POLICY_VALUE_2,
+            SYSTEM_USER_ID,
+            SYSTEM_ADMIN,
+        )
+
+        devicePolicyEngine.removeLocalPoliciesForSystemEntities(
+            SYSTEM_USER_ID,
+            // Specifically passing in a list type that will throw NPE if its #contains() method is
+            // called with a null argument.
+            List.of(SYSTEM_ADMIN.systemEntity!!),
+        )
+
+        val resolvedPolicy =
+            devicePolicyEngine.getResolvedPolicy(
+                USER_CONTROLLED_DISABLED_PACKAGES_POLICY,
+                SYSTEM_USER_ID,
+            )
+
+        // Only the policy set by the device owner admin remains.
+        assertThat(resolvedPolicy).isEqualTo(PACKAGE_SET_POLICY_VALUE_1.value)
     }
 
     @Test
