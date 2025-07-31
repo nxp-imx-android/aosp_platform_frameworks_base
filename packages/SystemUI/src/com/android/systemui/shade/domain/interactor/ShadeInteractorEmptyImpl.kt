@@ -31,6 +31,7 @@ class ShadeInteractorEmptyImpl @Inject constructor() : ShadeInteractor {
     override val isShadeEnabled: StateFlow<Boolean> = inactiveFlowBoolean
     override val isQsEnabled: StateFlow<Boolean> = inactiveFlowBoolean
     override val shadeExpansion: StateFlow<Float> = inactiveFlowFloat
+    override val isNotificationsExpanded: StateFlow<Boolean> = inactiveFlowBoolean
     override val isShadeAnyExpanded: StateFlow<Boolean> = inactiveFlowBoolean
     override val qsExpansion: StateFlow<Float> = inactiveFlowFloat
     override val isQsExpanded: StateFlow<Boolean> = inactiveFlowBoolean
@@ -58,6 +59,10 @@ class ShadeInteractorEmptyImpl @Inject constructor() : ShadeInteractor {
         transitionKey: TransitionKey?,
         bypassNotificationsShade: Boolean,
     ) {}
+
+    override fun toggleNotificationsShade(loggingReason: String, transitionKey: TransitionKey?) {}
+
+    override fun toggleQuickSettingsShade(loggingReason: String, transitionKey: TransitionKey?) {}
 
     override fun collapseEitherShade(loggingReason: String, transitionKey: TransitionKey?) {}
 }

@@ -51,7 +51,7 @@ import kotlinx.coroutines.flow.stateIn
 class ShadeInteractorSceneContainerImpl
 @Inject
 constructor(
-    @Application scope: CoroutineScope,
+    @Application private val scope: CoroutineScope,
     private val sceneInteractor: SceneInteractor,
     private val shadeModeInteractor: ShadeModeInteractor,
 ) : BaseShadeInteractor {
@@ -66,6 +66,9 @@ constructor(
             }
             .traceAsCounter("panel_expansion") { (it * 100f).toInt() }
             .stateIn(scope, SharingStarted.Eagerly, 0f)
+
+    override val isNotificationsExpanded: StateFlow<Boolean> =
+        shadeExpansion.map { it > 0 }.stateIn(scope, SharingStarted.Eagerly, false)
 
     override val qsExpansion: StateFlow<Float> =
         shadeModeInteractor.shadeMode
@@ -258,6 +261,34 @@ constructor(
                 loggingReason = "$loggingReason (collapseQuickSettingsShade)",
                 transitionKey = transitionKey ?: ToSplitShade.takeIf { isSplitShade },
             )
+        }
+    }
+
+    override fun toggleNotificationsShade(loggingReason: String, transitionKey: TransitionKey?) {
+        check(shadeModeInteractor.isDualShade) {
+            "toggleNotificationsShade should only be called when dualShade is enabled."
+        }
+        if (isNotificationsExpanded.value) {
+            android.util.Log.e("amehfooz", "Collapse notification shade")
+            collapseNotificationsShade(loggingReason, transitionKey)
+        } else {
+            android.util.Log.e("amehfooz", "Expand Notifications Shade")
+            expandNotificationsShade(loggingReason, transitionKey)
+        }
+    }
+
+    override fun toggleQuickSettingsShade(loggingReason: String, transitionKey: TransitionKey?) {
+        check(shadeModeInteractor.isDualShade) {
+            "toggleQuickSettingsShade should only be called when dualShade is enabled."
+        }
+        if (isQsExpanded.value) {
+            collapseQuickSettingsShade(
+                loggingReason = loggingReason,
+                transitionKey = transitionKey,
+                bypassNotificationsShade = true,
+            )
+        } else {
+            expandQuickSettingsShade(loggingReason, transitionKey)
         }
     }
 

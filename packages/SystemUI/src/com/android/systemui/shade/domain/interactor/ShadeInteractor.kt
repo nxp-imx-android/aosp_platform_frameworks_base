@@ -77,6 +77,9 @@ interface BaseShadeInteractor {
     /** The amount [0-1] that the Notifications Shade has been opened. */
     val shadeExpansion: StateFlow<Float>
 
+    /** Whether the Notifications Shade is expanded a non-zero amount. */
+    val isNotificationsExpanded: StateFlow<Boolean>
+
     /**
      * The amount [0-1] QS has been opened. Normal shade with notifications (QQS) visible will
      * report 0f. If split shade is enabled, value matches shadeExpansion.
@@ -140,6 +143,12 @@ interface BaseShadeInteractor {
         transitionKey: TransitionKey? = null,
         bypassNotificationsShade: Boolean = false,
     )
+
+    /** Toggles the Notifications shade. Will replace the QuickSettings shade if it's open. */
+    fun toggleNotificationsShade(loggingReason: String, transitionKey: TransitionKey? = null)
+
+    /** Toggles the Quick Settings shade. Will replace the Notifications shade if it's open. */
+    fun toggleQuickSettingsShade(loggingReason: String, transitionKey: TransitionKey? = null)
 
     /**
      * Triggers the collapse (closing) of the notifications shade or quick settings shade, whichever
