@@ -37,6 +37,7 @@ import android.hardware.input.VirtualTouchscreenConfig;
 import android.os.Binder;
 import android.os.IBinder;
 import android.view.Surface;
+import android.view.WindowManager;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 
@@ -128,6 +129,9 @@ public class ComputerControlSessionTest {
                 | DisplayManager.VIRTUAL_DISPLAY_FLAG_STEAL_TOP_FOCUS_DISABLED
                 | DisplayManager.VIRTUAL_DISPLAY_FLAG_ALWAYS_UNLOCKED;
         assertThat(virtualDisplayConfig.getFlags()).isEqualTo(expectedDisplayFlags);
+
+        verify(mVirtualDevice).setDisplayImePolicy(
+                VIRTUAL_DISPLAY_ID, WindowManager.DISPLAY_IME_POLICY_HIDE);
 
         verify(mVirtualDevice).createVirtualDpad(
                 mVirtualDpadConfigArgumentCaptor.capture(), any());

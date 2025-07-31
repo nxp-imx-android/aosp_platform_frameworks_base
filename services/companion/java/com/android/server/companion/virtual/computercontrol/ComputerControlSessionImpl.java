@@ -47,6 +47,7 @@ import android.os.UserHandle;
 import android.view.Display;
 import android.view.DisplayInfo;
 import android.view.Surface;
+import android.view.WindowManager;
 
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -113,6 +114,9 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub {
             mVirtualDisplayId = Binder.withCleanCallingIdentity(() ->
                     mVirtualDevice.createVirtualDisplay(
                             virtualDisplayConfig, virtualDisplayCallback));
+
+            mVirtualDevice.setDisplayImePolicy(
+                    mVirtualDisplayId, WindowManager.DISPLAY_IME_POLICY_HIDE);
 
             String dpadName = mParams.name + "-dpad";
             VirtualDpadConfig virtualDpadConfig =
