@@ -141,7 +141,8 @@ constructor(
             override val isSmartSpaceVisible: Boolean
                 get() = keyguardSmartspaceViewModel.isSmartspaceEnabled
 
-            override val isMediaVisible: Boolean = keyguardMediaViewModel.isMediaVisible
+            override val isMediaVisible: Boolean
+                get() = keyguardMediaViewModel.isMediaVisible
 
             override val isNotificationsVisible: Boolean by
                 hydrator.hydratedStateOf(
