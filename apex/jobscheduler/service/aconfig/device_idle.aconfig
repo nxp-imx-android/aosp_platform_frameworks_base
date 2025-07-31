@@ -37,3 +37,13 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "stop_power_save_temp_whitelist_broadcast"
+    namespace: "backstage_power"
+    description: "Stop sending the power_save_temp_whitelist broadcast"
+    bug: "427275343"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
