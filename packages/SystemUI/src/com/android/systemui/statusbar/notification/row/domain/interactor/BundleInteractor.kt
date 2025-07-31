@@ -28,7 +28,6 @@ import com.android.compose.animation.scene.SceneKey
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.notifications.ui.composable.row.BundleHeader
 import com.android.systemui.res.R
-import com.android.systemui.shade.domain.interactor.ShadeInteractor
 import com.android.systemui.statusbar.notification.row.dagger.BundleRowScope
 import com.android.systemui.statusbar.notification.row.data.model.AppData
 import com.android.systemui.statusbar.notification.row.data.repository.BundleRepository
@@ -39,11 +38,8 @@ import com.android.systemui.utils.coroutines.flow.mapLatestConflated
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.filter
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 /** Provides functionality for UI to interact with a Notification Bundle. */
@@ -56,8 +52,6 @@ constructor(
     private val context: Context,
     @Background private val backgroundDispatcher: CoroutineDispatcher,
     private val systemClock: SystemClock,
-    private val shadeInteractor: ShadeInteractor,
-    @BundleRowScope private val scope: CoroutineScope,
 ) {
     @get:StringRes
     val titleText: Int
@@ -85,27 +79,6 @@ constructor(
                 context.resources.getString(titleText),
                 numberOfChildrenContentDescription,
             )
-
-    private var sceneTargetJob: Job? = null
-
-    init {
-        observeShadeState()
-    }
-
-    private fun observeShadeState() {
-        scope.launch {
-            shadeInteractor.isShadeFullyCollapsed
-                .filter { isCollapsed -> isCollapsed } // Only act when it becomes true
-                .collect {
-                    if (repository.state?.currentScene == BundleHeader.Scenes.Expanded) {
-                        repository.lastCollapseTime = systemClock.uptimeMillis()
-
-                        // Use snapTo() since the UI is already gone and no animation is needed.
-                        repository.state?.snapTo(BundleHeader.Scenes.Collapsed)
-                    }
-                }
-        }
-    }
 
     /** Filters the list of AppData based on time of last collapse by user. */
     private fun filterByCollapseTime(
@@ -149,21 +122,18 @@ constructor(
             if (isExpanded) BundleHeader.Scenes.Expanded else BundleHeader.Scenes.Collapsed,
             composeScope!!,
         )
+        if (!isExpanded) {
+            repository.lastCollapseTime = systemClock.uptimeMillis()
+        }
     }
 
     fun setTargetScene(scene: SceneKey) {
-        sceneTargetJob?.cancel()
+        state?.setTargetScene(scene, composeScope!!)
 
-        sceneTargetJob =
-            scope.launch {
-                state?.setTargetScene(scene, composeScope!!)
-
-                // [setTargetScene] does not immediately update [currentScene] so we must check
-                // [scene]
-                if (scene == BundleHeader.Scenes.Collapsed) {
-                    repository.lastCollapseTime = systemClock.uptimeMillis()
-                }
-            }
+        // [setTargetScene] does not immediately update [currentScene] so we must check [scene]
+        if (scene == BundleHeader.Scenes.Collapsed) {
+            repository.lastCollapseTime = systemClock.uptimeMillis()
+        }
     }
 
     private fun fetchAppIcon(appData: AppData): Drawable? {
