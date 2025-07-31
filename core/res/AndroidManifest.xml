@@ -9905,15 +9905,6 @@
             </intent-filter>
         </service>
 
-        <service android:name="android.service.selectiontoolbar.DefaultSelectionToolbarRenderService"
-                 android:permission="android.permission.BIND_SELECTION_TOOLBAR_RENDER_SERVICE"
-                 android:process=":ui"
-                 android:exported="false">
-            <intent-filter>
-                <action android:name="android.service.selectiontoolbar.SelectionToolbarRenderService"/>
-            </intent-filter>
-        </service>
-
         <service android:name="com.android.server.art.BackgroundDexoptJobService"
                  android:permission="android.permission.BIND_JOB_SERVICE" >
         </service>
