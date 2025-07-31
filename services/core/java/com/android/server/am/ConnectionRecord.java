@@ -32,7 +32,7 @@ import android.util.proto.ProtoUtils;
 
 import com.android.internal.app.procstats.AssociationState;
 import com.android.internal.app.procstats.ProcessStats;
-import com.android.server.am.psc.ProcessRecordInternal;
+import com.android.server.am.psc.ConnectionRecordInternal;
 import com.android.server.wm.ActivityServiceConnectionsHolder;
 
 import java.io.PrintWriter;
@@ -41,15 +41,13 @@ import java.io.PrintWriter;
  * Description of a single binding to a service.
  */
 @RavenwoodKeepWholeClass
-final class ConnectionRecord implements OomAdjusterImpl.Connection{
+final class ConnectionRecord extends ConnectionRecordInternal {
     BoundServiceSession mBoundServiceSession;  // The associated bound service session if created.
     final AppBindRecord binding;    // The application/service binding.
     final ActivityServiceConnectionsHolder<ConnectionRecord> activity;  // If non-null, the owning activity.
     final IServiceConnection conn;  // The client connection.
-    private final long flags;                // Binding options.
     final int clientLabel;          // String resource labeling this client.
     final PendingIntent clientIntent; // How to launch the client.
-    private boolean mOngoingCalls;  // Any ongoing transactions over this connection?
     final int clientUid;            // The identity of this connection's client
     final String clientProcessName; // The source process of this connection's client
     final String clientPackageName; // The source package of this connection's client
@@ -112,11 +110,11 @@ final class ConnectionRecord implements OomAdjusterImpl.Connection{
             activity.dump(pw, prefix);
         }
         pw.println(prefix + "conn=" + conn.asBinder()
-                + " flags=0x" + Long.toHexString(flags));
+                + " flags=0x" + Long.toHexString(getFlags()));
 
         pw.print(prefix);
         pw.print("ongoingCalls=");
-        pw.println(mOngoingCalls);
+        pw.println(getOngoingCalls());
         if (mBoundServiceSession != null) {
             mBoundServiceSession.dump(new IndentingPrintWriter(pw, "  ", prefix));
         }
@@ -128,10 +126,11 @@ final class ConnectionRecord implements OomAdjusterImpl.Connection{
             int _clientLabel, PendingIntent _clientIntent,
             int _clientUid, String _clientProcessName, String _clientPackageName,
             ComponentName _aliasComponent) {
+        super(_flags);
+
         binding = _binding;
         activity = _activity;
         conn = _conn;
-        flags = _flags;
         clientLabel = _clientLabel;
         clientIntent = _clientIntent;
         clientUid = _clientUid;
@@ -140,57 +139,19 @@ final class ConnectionRecord implements OomAdjusterImpl.Connection{
         aliasComponent = _aliasComponent;
     }
 
-    boolean setOngoingCalls(boolean ongoingCalls) {
-        if (mOngoingCalls != ongoingCalls) {
-            mOngoingCalls = ongoingCalls;
-            return true;
-        }
-        return false;
+    @Override
+    public ActivityServiceConnectionsHolder<ConnectionRecord> getActivity() {
+        return activity;
     }
 
     @Override
-    public void computeHostOomAdjLSP(OomAdjuster oomAdjuster, ProcessRecordInternal host,
-            ProcessRecordInternal client, long now, ProcessRecordInternal topApp, boolean doingAll,
-            int oomAdjReason, int cachedAdj) {
-        oomAdjuster.computeServiceHostOomAdjLSP(this, host, client, now, false);
+    public long getServiceLastActivityTimeMillis() {
+        return binding.service.lastActivity;
     }
 
     @Override
-    public boolean canAffectCapabilities() {
-        return hasFlag(Context.BIND_INCLUDE_CAPABILITIES
-                | Context.BIND_BYPASS_USER_NETWORK_RESTRICTIONS);
-    }
-
-    @Override
-    public int cpuTimeTransmissionType() {
-        if (mOngoingCalls) {
-            return CPU_TIME_TRANSMISSION_NORMAL;
-        }
-        if (hasFlag(Context.BIND_ALLOW_FREEZE)) {
-            return CPU_TIME_TRANSMISSION_NONE;
-        }
-        return hasFlag(Context.BIND_SIMULATE_ALLOW_FREEZE) ? CPU_TIME_TRANSMISSION_LEGACY
-                : CPU_TIME_TRANSMISSION_NORMAL;
-    }
-
-    public long getFlags() {
-        return flags;
-    }
-
-    public boolean hasFlag(final int flag) {
-        return (flags & Integer.toUnsignedLong(flag)) != 0;
-    }
-
-    public boolean hasFlag(final long flag) {
-        return (flags & flag) != 0;
-    }
-
-    public boolean notHasFlag(final int flag) {
-        return !hasFlag(flag);
-    }
-
-    public boolean notHasFlag(final long flag) {
-        return !hasFlag(flag);
+    public ComponentName getServiceInstanceName() {
+        return binding.service.instanceName;
     }
 
     public void startAssociationIfNeeded() {
@@ -219,6 +180,7 @@ final class ConnectionRecord implements OomAdjusterImpl.Connection{
         }
     }
 
+    @Override
     public void trackProcState(int procState, int seq) {
         if (association != null) {
             synchronized (mProcStatsLock) {
@@ -244,7 +206,7 @@ final class ConnectionRecord implements OomAdjusterImpl.Connection{
         sb.append(binding.client.mPid);
         sb.append("->");
         sb.append(binding.service.shortInstanceName);
-        sb.append(" flags=0x" + Long.toHexString(flags));
+        sb.append(" flags=0x" + Long.toHexString(getFlags()));
         sb.append('}');
         return sb.toString();
     }
@@ -328,7 +290,7 @@ final class ConnectionRecord implements OomAdjusterImpl.Connection{
         sb.append(binding.service.shortInstanceName);
         sb.append(":@");
         sb.append(Integer.toHexString(System.identityHashCode(conn.asBinder())));
-        sb.append(" flags=0x" + Long.toHexString(flags));
+        sb.append(" flags=0x" + Long.toHexString(getFlags()));
         sb.append('}');
         return stringName = sb.toString();
     }
@@ -343,7 +305,7 @@ final class ConnectionRecord implements OomAdjusterImpl.Connection{
             proto.write(ConnectionRecordProto.CLIENT_PID, binding.client.mPid);
         }
         ProtoUtils.writeBitWiseFlagsToProtoEnum(proto, ConnectionRecordProto.FLAGS,
-                flags, BIND_ORIG_ENUMS, BIND_PROTO_ENUMS);
+                getFlags(), BIND_ORIG_ENUMS, BIND_PROTO_ENUMS);
         if (serviceDead) {
             proto.write(ConnectionRecordProto.FLAGS, ConnectionRecordProto.DEAD);
         }

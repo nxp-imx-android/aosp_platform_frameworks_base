@@ -148,6 +148,7 @@ import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.server.ServiceThread;
 import com.android.server.am.psc.ActiveUidsInternal;
+import com.android.server.am.psc.ConnectionRecordInternal;
 import com.android.server.am.psc.PlatformCompatCache;
 import com.android.server.am.psc.PlatformCompatCache.CachedCompatChangeId;
 import com.android.server.am.psc.ProcessRecordInternal;
@@ -1989,7 +1990,7 @@ public abstract class OomAdjuster {
      * Computes the impact on {@code app} the service connections from {@code client} has.
      */
     @GuardedBy({"mService", "mProcLock"})
-    public abstract boolean computeServiceHostOomAdjLSP(ConnectionRecord cr,
+    public abstract boolean computeServiceHostOomAdjLSP(ConnectionRecordInternal cr,
             ProcessRecordInternal app, ProcessRecordInternal client, long now, boolean dryRun);
 
     /**
