@@ -64,7 +64,7 @@
     <string name="permission_calendar" msgid="6805668388691290395">"క్యాలెండర్"</string>
     <string name="permission_microphone" msgid="2152206421428732949">"మైక్రోఫోన్"</string>
     <string name="permission_call_logs" msgid="5546761417694586041">"కాల్ లాగ్‌లు"</string>
-    <string name="permission_nearby_devices" msgid="7530973297737123481">"సమీపంలోని పరికరాలు"</string>
+    <string name="permission_nearby_devices" msgid="7530973297737123481">"సమీపంలోని డివైజ్‌‌‌‌లు"</string>
     <string name="permission_media_routing_control" msgid="5498639511586715253">"మీడియా అవుట్‌పుట్‌ను మార్చండి"</string>
     <string name="permission_storage" msgid="6831099350839392343">"ఫోటోలు, మీడియా"</string>
     <string name="permission_notifications" msgid="4099418516590632909">"నోటిఫికేషన్‌లు"</string>
