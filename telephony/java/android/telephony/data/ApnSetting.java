@@ -15,7 +15,6 @@
  */
 package android.telephony.data;
 
-import android.annotation.FlaggedApi;
 import android.annotation.IntDef;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
@@ -37,7 +36,6 @@ import android.text.TextUtils;
 import android.util.ArrayMap;
 import android.util.Log;
 
-import com.android.internal.telephony.flags.Flags;
 import com.android.internal.telephony.util.TelephonyUtils;
 import com.android.telephony.Rlog;
 
@@ -128,10 +126,8 @@ public class ApnSetting implements Parcelable {
     /** APN type for RCS (Rich Communication Services). */
     public static final int TYPE_RCS = ApnTypes.RCS;
     /** APN type for OEM_PAID networks (Automotive PANS) */
-    @FlaggedApi(Flags.FLAG_OEM_PAID_PRIVATE)
     public static final int TYPE_OEM_PAID = ApnTypes.OEM_PAID;
     /** APN type for OEM_PRIVATE networks (Automotive PANS) */
-    @FlaggedApi(Flags.FLAG_OEM_PAID_PRIVATE)
     public static final int TYPE_OEM_PRIVATE = ApnTypes.OEM_PRIVATE;
 
     /** @hide */
@@ -388,7 +384,6 @@ public class ApnSetting implements Parcelable {
      * modem components or carriers. Non-system apps should use the integer variants instead.
      * @hide
      */
-    @FlaggedApi(Flags.FLAG_OEM_PAID_PRIVATE)
     @SystemApi
     public static final String TYPE_OEM_PAID_STRING = "oem_paid";
 
@@ -399,7 +394,6 @@ public class ApnSetting implements Parcelable {
      * modem components or carriers. Non-system apps should use the integer variants instead.
      * @hide
      */
-    @FlaggedApi(Flags.FLAG_OEM_PAID_PRIVATE)
     @SystemApi
     public static final String TYPE_OEM_PRIVATE_STRING = "oem_private";
 
