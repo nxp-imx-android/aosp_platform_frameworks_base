@@ -17,7 +17,6 @@
 package com.android.wm.shell.scenarios
 
 import android.platform.test.annotations.RequiresFlagsEnabled
-import android.platform.test.flag.junit.DeviceFlagsValueProvider
 import com.android.window.flags.Flags
 import org.junit.After
 import org.junit.Assume.assumeTrue
@@ -38,8 +37,7 @@ abstract class RestartAppInDesktopMode(
     isLandscapeApp: Boolean = true,
 ) : DesktopScenarioCustomAppTestBase(isResizable, isLandscapeApp) {
 
-    @get:Rule(order = 0) val checkFlagsRule = DeviceFlagsValueProvider.createCheckFlagsRule()
-    @get:Rule(order = 1) val connectedDisplayRule = SimulatedConnectedDisplayTestRule()
+    @get:Rule val connectedDisplayRule = SimulatedConnectedDisplayTestRule()
 
     @Before
     fun setup() {

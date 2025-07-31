@@ -18,7 +18,6 @@ package com.android.wm.shell.scenarios
 
 import android.app.Instrumentation
 import android.platform.test.annotations.RequiresFlagsEnabled
-import android.platform.test.flag.junit.DeviceFlagsValueProvider
 import android.tools.Rotation
 import android.tools.traces.parsers.WindowManagerStateHelper
 import androidx.test.platform.app.InstrumentationRegistry
@@ -51,11 +50,7 @@ abstract class MaximizeAppWindowWithDragToTopDragZoneInDesktopFirst(
     private val device = UiDevice.getInstance(instrumentation)
     val testApp = DesktopModeAppHelper(SimpleAppHelper(instrumentation))
 
-    @get:Rule(order = 0)
-    val checkFlagsRule = DeviceFlagsValueProvider.createCheckFlagsRule()
-
-    @get:Rule(order = 1)
-    val connectedDisplayRule = SimulatedConnectedDisplayTestRule()
+    @get:Rule val connectedDisplayRule = SimulatedConnectedDisplayTestRule()
 
     @Before
     fun setup() {

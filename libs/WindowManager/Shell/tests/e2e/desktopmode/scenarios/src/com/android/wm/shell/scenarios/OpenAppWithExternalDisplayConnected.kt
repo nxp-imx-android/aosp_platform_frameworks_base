@@ -17,12 +17,10 @@
 package com.android.wm.shell.scenarios
 
 import android.app.Instrumentation
-import android.platform.test.flag.junit.DeviceFlagsValueProvider
 import android.tools.Rotation
 import android.tools.traces.parsers.WindowManagerStateHelper
 import android.window.DesktopExperienceFlags
 import androidx.test.platform.app.InstrumentationRegistry
-import com.android.launcher3.tapl.LauncherInstrumentation
 import com.android.server.wm.flicker.helpers.DesktopModeAppHelper
 import com.android.server.wm.flicker.helpers.SimpleAppHelper
 import com.android.wm.shell.ExtendedDisplaySettingsSession
@@ -48,11 +46,7 @@ constructor(private val rotation: Rotation = Rotation.ROTATION_0) : TestScenario
     private val extendedDisplaySettingsSession =
         ExtendedDisplaySettingsSession(instrumentation.context.contentResolver)
 
-    @get:Rule(order = 0)
-    val checkFlagsRule = DeviceFlagsValueProvider.createCheckFlagsRule()
-
-    @get:Rule(order = 1)
-    val connectedDisplayRule = SimulatedConnectedDisplayTestRule()
+    @get:Rule val connectedDisplayRule = SimulatedConnectedDisplayTestRule()
 
     @Before
     fun setup() {
