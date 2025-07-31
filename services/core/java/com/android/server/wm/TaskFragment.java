@@ -2236,6 +2236,10 @@ class TaskFragment extends WindowContainer<WindowContainer> {
         if (hostProcess != null) {
             hostProcess.addEmbeddedActivity(addingActivity);
         }
+
+        // Make sure the list of display UID allowlists is updated
+        // now that this record is in a new task fragment.
+        mRootWindowContainer.updateUIDsPresentOnDisplay();
     }
 
     @Override
