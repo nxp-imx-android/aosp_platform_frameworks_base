@@ -57,6 +57,10 @@ cc_defaults {
         },
         darwin: {
             cflags: ["-D_DARWIN_UNLIMITED_STREAMS"],
+            host_ldlibs: [
+                // Required by protobuf
+                "-framework CoreFoundation",
+            ],
         },
     },
     header_libs: [
