@@ -156,7 +156,10 @@ public class UninstallationFragment extends DialogFragment {
         Button negativeButton = UiUtil.getAlertDialogNegativeButton(dialog);
         if (negativeButton != null) {
             negativeButton.setText(R.string.button_close);
+            negativeButton.setEnabled(true);
             negativeButton.setOnClickListener(view -> {
+                // Disable the button to avoid the user clicks it more than once quickly
+                view.setEnabled(false);
                 mUninstallActionListener.onNegativeResponse();
             });
         }
@@ -196,8 +199,11 @@ public class UninstallationFragment extends DialogFragment {
         Button positiveButton = UiUtil.getAlertDialogPositiveButton(dialog);
         if (positiveButton != null) {
             positiveButton.setVisibility(View.VISIBLE);
+            positiveButton.setEnabled(true);
             positiveButton.setText(uninstallStage.getButtonText());
             positiveButton.setOnClickListener(view -> {
+                // Disable the button to avoid the user clicks it more than once quickly
+                view.setEnabled(false);
                 mUninstallActionListener.onPositiveResponse(mKeepDataCheckbox.isChecked());
             });
         }
@@ -205,8 +211,11 @@ public class UninstallationFragment extends DialogFragment {
         // Set the negative button and the listener
         Button negativeButton = UiUtil.getAlertDialogNegativeButton(dialog);
         if (negativeButton != null) {
+            negativeButton.setEnabled(true);
             negativeButton.setText(R.string.button_cancel);
             negativeButton.setOnClickListener(view -> {
+                // Disable the button to avoid the user clicks it more than once quickly
+                view.setEnabled(false);
                 mUninstallActionListener.onNegativeResponse();
             });
         }
