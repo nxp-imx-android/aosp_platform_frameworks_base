@@ -17,7 +17,6 @@
 package com.android.server.wm;
 
 import static android.app.WindowConfiguration.WINDOWING_MODE_FREEFORM;
-import static android.view.Display.TYPE_INTERNAL;
 import static android.view.InsetsFrameProvider.SOURCE_ARBITRARY_RECTANGLE;
 import static android.view.InsetsFrameProvider.SOURCE_CONTAINER_BOUNDS;
 import static android.view.InsetsFrameProvider.SOURCE_DISPLAY;
@@ -134,7 +133,6 @@ import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.os.BackgroundThread;
 import com.android.internal.policy.ForceShowNavBarSettingsObserver;
 import com.android.internal.policy.GestureNavigationSettingsObserver;
-import com.android.internal.policy.ScreenDecorationsUtils;
 import com.android.internal.protolog.ProtoLog;
 import com.android.internal.statusbar.LetterboxDetails;
 import com.android.internal.util.function.TriFunction;
@@ -2016,17 +2014,6 @@ public class DisplayPolicy {
                         notificationManager.onDisplayRemoveSystemDecorations(displayId);
                     }
                 });
-    }
-
-    /**
-     * Return corner radius in pixels that should be used on windows in order to cover the display.
-     *
-     * <p>The radius is only valid for internal displays, since the corner radius of external
-     * displays is not known at build time when window corners are configured.
-     */
-    float getWindowCornerRadius() {
-        return mDisplayContent.getDisplay().getType() == TYPE_INTERNAL
-                ? ScreenDecorationsUtils.getWindowCornerRadius(mContext) : 0f;
     }
 
     boolean isShowingDreamLw() {
