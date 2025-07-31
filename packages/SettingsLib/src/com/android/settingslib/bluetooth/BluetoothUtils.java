@@ -1390,4 +1390,25 @@ public class BluetoothUtils {
                 + " updatedMetadata = " + updated);
         assistant.modifySource(sink, sourceId, updated);
     }
+
+    /**
+     * Checks if the Bluetooth LE Audio Broadcast Assistant profile is available and at least one
+     * device is currently connected to it.
+     *
+     * @param bluetoothManager The {@link LocalBluetoothManager} instance to query.
+     * @return {@code true} if at least one device is connected to the LE Audio Broadcast Assistant
+     *     profile, {@code false} otherwise.
+     */
+    public static boolean hasConnectedBroadcastAssistantDevice(
+            @NonNull LocalBluetoothManager bluetoothManager) {
+        LocalBluetoothLeBroadcastAssistant assistantProfile =
+                bluetoothManager.getProfileManager().getLeAudioBroadcastAssistantProfile();
+
+        // assistantProfile can be null if the profile is not supported or available.
+        if (assistantProfile == null) {
+            return false;
+        }
+
+        return !assistantProfile.getAllConnectedDevices().isEmpty();
+    }
 }

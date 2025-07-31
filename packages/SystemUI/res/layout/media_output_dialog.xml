@@ -82,6 +82,17 @@
         android:visibility="gone">
 
         <com.google.android.material.button.MaterialButton
+            android:id="@+id/audio_sharing"
+            style="@style/MediaOutput.Dialog.QuickAccessButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:layout_marginEnd="8dp"
+            android:text="@string/media_output_dialog_button_share_audio"
+            android:visibility="gone"
+            app:icon="@drawable/ic_bt_le_audio_sharing" />
+
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/connect_device"
             app:icon="@drawable/ic_add"
             style="@style/MediaOutput.Dialog.QuickAccessButton"

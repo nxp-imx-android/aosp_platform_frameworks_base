@@ -20,6 +20,7 @@ import static android.view.WindowInsets.Type.navigationBars;
 import static android.view.WindowInsets.Type.statusBars;
 
 import static com.android.media.flags.Flags.enableOutputSwitcherRedesign;
+import static com.android.systemui.Flags.enableOutputSwitcherAudioSharingButton;
 import static com.android.systemui.FontStyles.GSF_LABEL_LARGE;
 import static com.android.systemui.FontStyles.GSF_TITLE_MEDIUM_EMPHASIZED;
 import static com.android.systemui.FontStyles.GSF_TITLE_SMALL;
@@ -96,6 +97,7 @@ public abstract class MediaOutputBaseDialog extends SystemUIDialog
     private ViewGroup mDeviceListLayout;
     private ViewGroup mQuickAccessShelf;
     private MaterialButton mConnectDeviceButton;
+    private MaterialButton mAudioSharingButton;
     private LinearLayout mMediaMetadataSectionLayout;
     private Button mDoneButton;
     private ViewGroup mDialogFooter;
@@ -158,6 +160,7 @@ public abstract class MediaOutputBaseDialog extends SystemUIDialog
         mHeaderIcon = mDialogView.requireViewById(R.id.header_icon);
         mQuickAccessShelf = mDialogView.requireViewById(R.id.quick_access_shelf);
         mConnectDeviceButton = mDialogView.requireViewById(R.id.connect_device);
+        mAudioSharingButton = mDialogView.requireViewById(R.id.audio_sharing);
         mDevicesRecyclerView = mDialogView.requireViewById(R.id.list_result);
         mDialogFooter = mDialogView.requireViewById(R.id.dialog_footer);
         mFooterSpacer = mDialogView.requireViewById(R.id.footer_spacer);
@@ -332,17 +335,7 @@ public abstract class MediaOutputBaseDialog extends SystemUIDialog
             }
         }
 
-        if (enableOutputSwitcherRedesign()) {
-            if (mMediaSwitchingController.getConnectNewDeviceItem() != null) {
-                mQuickAccessShelf.setVisibility(View.VISIBLE);
-                mConnectDeviceButton.setVisibility(View.VISIBLE);
-                mConnectDeviceButton.setOnClickListener(
-                        mMediaSwitchingController::launchBluetoothPairing);
-            } else {
-                mQuickAccessShelf.setVisibility(View.GONE);
-                mConnectDeviceButton.setVisibility(View.GONE);
-            }
-        }
+        refreshQuickAccessShelf();
 
         // Show when remote media session is available or
         //      when the device supports BT LE audio + media is playing
@@ -388,6 +381,32 @@ public abstract class MediaOutputBaseDialog extends SystemUIDialog
             mDoneButton.setTextColor(
                     mMediaSwitchingController.getColorSchemeLegacy().getColorPositiveButtonText());
         }
+
+        if (enableOutputSwitcherAudioSharingButton()) {
+            MediaOutputColorScheme colorScheme = mMediaSwitchingController.getColorScheme();
+            mAudioSharingButton.setTextColor(
+                    getButtonColorStateList(
+                            /* defaultColor= */ colorScheme.getOnSurfaceVariant(),
+                            /* activatedColor= */ colorScheme.getOnPrimary()));
+            mAudioSharingButton.setStrokeColor(
+                    getButtonColorStateList(
+                            /* defaultColor= */ colorScheme.getOutlineVariant(),
+                            /* activatedColor= */ colorScheme.getPrimary()));
+            mAudioSharingButton.setBackgroundTintList(
+                    getButtonColorStateList(
+                            /* defaultColor= */ colorScheme.getSurfaceContainer(),
+                            /* activatedColor= */ colorScheme.getPrimary()));
+            mAudioSharingButton.setIconTint(
+                    getButtonColorStateList(
+                            /* defaultColor= */ colorScheme.getPrimary(),
+                            /* activatedColor= */ colorScheme.getOnPrimary()));
+        }
+    }
+
+    private ColorStateList getButtonColorStateList(int defaultColor, int activatedColor) {
+        return new ColorStateList(
+                new int[][] {new int[] {android.R.attr.state_activated}, new int[] {}},
+                new int[] {activatedColor, defaultColor});
     }
 
     private void updateDialogBackgroundColor() {
@@ -408,6 +427,41 @@ public abstract class MediaOutputBaseDialog extends SystemUIDialog
                 hasBottomScroll
                         ? mMediaSwitchingController.getColorScheme().getSurfaceContainerHigh()
                         : mMediaSwitchingController.getColorScheme().getSurfaceContainer());
+    }
+
+    private void refreshQuickAccessShelf() {
+        boolean showQuickAccessShelf = false;
+        if (enableOutputSwitcherAudioSharingButton()) {
+            AudioSharingButtonState buttonState =
+                    mMediaSwitchingController.getAudioSharingButtonState();
+            if (buttonState == null) {
+                mAudioSharingButton.setVisibility(View.GONE);
+            } else {
+                showQuickAccessShelf = true;
+                mAudioSharingButton.setVisibility(View.VISIBLE);
+                mAudioSharingButton.setText(buttonState.getResId());
+                mAudioSharingButton.setActivated(buttonState.isActive());
+                mAudioSharingButton.setOnClickListener(
+                        mMediaSwitchingController::launchAudioSharing);
+            }
+        } else {
+            mAudioSharingButton.setVisibility(View.GONE);
+        }
+
+        if (enableOutputSwitcherRedesign()) {
+            if (mMediaSwitchingController.getConnectNewDeviceItem() != null) {
+                showQuickAccessShelf = true;
+                mConnectDeviceButton.setVisibility(View.VISIBLE);
+                mConnectDeviceButton.setOnClickListener(
+                        mMediaSwitchingController::launchBluetoothPairing);
+            } else {
+                mConnectDeviceButton.setVisibility(View.GONE);
+            }
+        } else {
+            mConnectDeviceButton.setVisibility(View.GONE);
+        }
+
+        mQuickAccessShelf.setVisibility(showQuickAccessShelf ? View.VISIBLE : View.GONE);
     }
 
     abstract IconCompat getAppSourceIcon();
@@ -456,6 +510,11 @@ public abstract class MediaOutputBaseDialog extends SystemUIDialog
     @Override
     public void dismissDialog() {
         mBroadcastSender.closeSystemDialogs();
+    }
+
+    @Override
+    public void onQuickAccessButtonsChanged() {
+        mMainThreadHandler.post(this::refreshQuickAccessShelf);
     }
 
     View getDialogView() {

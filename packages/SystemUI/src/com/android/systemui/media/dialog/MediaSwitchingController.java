@@ -23,6 +23,7 @@ import static android.provider.Settings.ACTION_BLUETOOTH_SETTINGS;
 
 import static com.android.media.flags.Flags.allowOutputSwitcherListRearrangementWithinTimeout;
 import static com.android.media.flags.Flags.enableOutputSwitcherRedesign;
+import static com.android.systemui.Flags.enableOutputSwitcherAudioSharingButton;
 import static com.android.systemui.media.dialog.MediaItem.MediaItemType.TYPE_GROUP_DIVIDER;
 
 import android.app.KeyguardManager;
@@ -47,6 +48,7 @@ import android.media.session.MediaController;
 import android.media.session.MediaSession;
 import android.media.session.MediaSessionManager;
 import android.media.session.PlaybackState;
+import android.os.Bundle;
 import android.os.IBinder;
 import android.os.PowerExemptionManager;
 import android.os.RemoteException;
@@ -66,6 +68,7 @@ import com.android.media.flags.Flags;
 import com.android.settingslib.RestrictedLockUtilsInternal;
 import com.android.settingslib.Utils;
 import com.android.settingslib.bluetooth.BluetoothUtils;
+import com.android.settingslib.bluetooth.LocalBluetoothLeBroadcast;
 import com.android.settingslib.bluetooth.LocalBluetoothManager;
 import com.android.settingslib.media.InfoMediaManager;
 import com.android.settingslib.media.InputMediaDevice;
@@ -73,6 +76,7 @@ import com.android.settingslib.media.InputRouteManager;
 import com.android.settingslib.media.LocalMediaManager;
 import com.android.settingslib.media.MediaDevice;
 import com.android.settingslib.utils.ThreadUtils;
+import com.android.settingslib.volume.data.repository.AudioSharingRepository;
 import com.android.systemui.animation.ActivityTransitionAnimator;
 import com.android.systemui.animation.DialogTransitionAnimator;
 import com.android.systemui.dagger.qualifiers.Background;
@@ -84,6 +88,7 @@ import com.android.systemui.res.R;
 import com.android.systemui.settings.UserTracker;
 import com.android.systemui.statusbar.notification.collection.NotificationEntry;
 import com.android.systemui.statusbar.notification.collection.notifcollection.CommonNotifCollection;
+import com.android.systemui.util.kotlin.JavaAdapter;
 import com.android.systemui.util.time.SystemClock;
 import com.android.systemui.volume.panel.domain.interactor.VolumePanelGlobalStateInteractor;
 
@@ -91,10 +96,13 @@ import dagger.assisted.Assisted;
 import dagger.assisted.AssistedFactory;
 import dagger.assisted.AssistedInject;
 
+import kotlinx.coroutines.Job;
+
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Executor;
@@ -115,6 +123,9 @@ public class MediaSwitchingController
     private static final long ALLOWLIST_DURATION_MS = 20000;
     private static final long LIST_CHANGE_ALLOWED_TIMEOUT_MS = 2000;
     private static final String ALLOWLIST_REASON = "mediaoutput:remote_transfer";
+    private static final String ACTION_AUDIO_SHARING =
+            "com.android.settings.BLUETOOTH_AUDIO_SHARING_SETTINGS";
+    private static final String EXTRA_SHOW_FRAGMENT_ARGUMENTS = ":settings:show_fragment_args";
 
     private final String mPackageName;
     private final UserHandle mUserHandle;
@@ -161,6 +172,10 @@ public class MediaSwitchingController
     private boolean mHasAdjustVolumeUserRestriction = false;
     private long mStartTime;
     @Nullable private Boolean mGroupSelectedItems = null; // Unset until the first render.
+    private final JavaAdapter mJavaAdapter;
+    private final AudioSharingRepository mAudioSharingRepository;
+    private boolean mInAudioSharing = false;
+    @Nullable private Job mAudioShareJob = null;
 
     @VisibleForTesting
     final InputRouteManager.InputDeviceCallback mInputDeviceCallback =
@@ -191,7 +206,9 @@ public class MediaSwitchingController
             KeyguardManager keyGuardManager,
             SystemClock clock,
             VolumePanelGlobalStateInteractor volumePanelGlobalStateInteractor,
-            UserTracker userTracker) {
+            UserTracker userTracker,
+            JavaAdapter javaAdapter,
+            AudioSharingRepository audioSharingRepository) {
         mContext = context;
         mPackageName = packageName;
         mUserHandle = userHandle;
@@ -219,6 +236,9 @@ public class MediaSwitchingController
         if (enableInputRouting()) {
             mInputRouteManager = new InputRouteManager(mContext, audioManager, mInfoMediaManager);
         }
+
+        mJavaAdapter = javaAdapter;
+        mAudioSharingRepository = audioSharingRepository;
     }
 
     @AssistedFactory
@@ -261,6 +281,16 @@ public class MediaSwitchingController
             mInputRouteManager.registerCallback(mInputDeviceCallback);
         }
         mHasAdjustVolumeUserRestriction = checkIfAdjustVolumeRestrictionEnforced();
+
+        if (enableOutputSwitcherAudioSharingButton()) {
+            mAudioShareJob =
+                    mJavaAdapter.alwaysCollectFlow(
+                            mAudioSharingRepository.getInAudioSharing(),
+                            inAudioSharing -> {
+                                mInAudioSharing = inAudioSharing;
+                                mCallback.onQuickAccessButtonsChanged();
+                            });
+        }
     }
 
     public boolean isRefreshing() {
@@ -291,6 +321,10 @@ public class MediaSwitchingController
             synchronized (mInputMediaDevicesLock) {
                 mInputMediaItemList.clear();
             }
+        }
+
+        if (mAudioShareJob != null) {
+            mAudioShareJob.cancel(new CancellationException("MediaSwitchingController stopped"));
         }
     }
 
@@ -923,6 +957,23 @@ public class MediaSwitchingController
         startActivity(launchIntent, controller);
     }
 
+    void launchAudioSharing(View view) {
+        ActivityTransitionAnimator.Controller controller =
+                mDialogTransitionAnimator.createActivityTransitionController(view);
+
+        if (controller == null
+                || (mKeyGuardManager != null && mKeyGuardManager.isKeyguardLocked())) {
+            mCallback.dismissDialog();
+        }
+
+        Intent launchIntent = new Intent(ACTION_AUDIO_SHARING);
+        launchIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        Bundle bundle = new Bundle();
+        bundle.putBoolean(LocalBluetoothLeBroadcast.EXTRA_START_LE_AUDIO_SHARING, true);
+        launchIntent.putExtra(EXTRA_SHOW_FRAGMENT_ARGUMENTS, bundle);
+        startActivity(launchIntent, controller);
+    }
+
     protected void setTemporaryAllowListExceptionIfNeeded(MediaDevice targetDevice) {
         if (mPowerExemptionManager == null || mPackageName == null) {
             Log.w(TAG, "powerExemptionManager or package name is null");
@@ -961,6 +1012,31 @@ public class MediaSwitchingController
 
     boolean isVolumeControlEnabledForSession() {
         return mLocalMediaManager.isMediaSessionAvailableForVolumeControl();
+    }
+
+    /**
+     * Determines and gets the audio sharing button state.
+     *
+     * <p>This function indicates visible status only when the device is audio sharing
+     * (broadcasting) or has a remote Bluetooth device connected on Bluetooth LE Audio Assistant
+     * profile.
+     *
+     * @return non-null {@link AudioSharingButtonState} if the device is in audio sharing or ready
+     *     for audio sharing, else null.
+     */
+    @Nullable
+    protected AudioSharingButtonState getAudioSharingButtonState() {
+        if (mInAudioSharing) {
+            return new AudioSharingButtonState(
+                    /* resId= */ R.string.media_output_dialog_button_sharing_audio,
+                    /* isActive= */ true);
+        } else if (BluetoothUtils.hasConnectedBroadcastAssistantDevice(mLocalBluetoothManager)) {
+            return new AudioSharingButtonState(
+                    /* resId= */ R.string.media_output_dialog_button_share_audio,
+                    /* isActive= */ false);
+        }
+
+        return null;
     }
 
     private void startActivity(Intent intent, ActivityTransitionAnimator.Controller controller) {
@@ -1031,5 +1107,8 @@ public class MediaSwitchingController
          * Override to dismiss dialog.
          */
         void dismissDialog();
+
+        /** Override to handle quick access button changes. */
+        void onQuickAccessButtonsChanged();
     }
 }
