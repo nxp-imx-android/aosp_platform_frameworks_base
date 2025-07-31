@@ -68,6 +68,8 @@ import java.util.WeakHashMap;
 /**
  * Stores the TaskOrganizers associated with a given windowing mode and
  * their associated state.
+ *
+ * Current tests can be found in WindowOrganizerTests.
  */
 class TaskOrganizerController extends ITaskOrganizerController.Stub {
     private static final String TAG = "TaskOrganizerController";
@@ -121,6 +123,11 @@ class TaskOrganizerController extends ITaskOrganizerController.Stub {
                 mTaskOrganizer.onTaskAppeared(taskInfo, leash);
             } catch (RemoteException e) {
                 Slog.e(TAG, "Exception sending onTaskAppeared callback", e);
+
+                // In the rare case that onTaskAppeared() fails to notify, then we should prevent
+                // subsequent lifecycle calls to shell to prevent it from getting an inconsistent
+                // set of calls
+                task.mTaskAppearedSent = false;
             } finally {
                 leash.release();
             }

@@ -42,6 +42,7 @@ import static android.window.DisplayAreaOrganizer.FEATURE_VENDOR_FIRST;
 
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.doNothing;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.doReturn;
+import static com.android.dx.mockito.inline.extended.ExtendedMockito.doThrow;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.mock;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.mockitoSession;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.never;
@@ -1363,7 +1364,8 @@ public class WindowOrganizerTests extends WindowTestsBase {
         @Override
         public void copySplashScreenView(int taskId) { }
         @Override
-        public void onTaskAppeared(RunningTaskInfo info, SurfaceControl leash) {
+        public void onTaskAppeared(RunningTaskInfo info, SurfaceControl leash)
+                throws RemoteException {
             mInfo = info;
         }
         @Override
@@ -1782,6 +1784,35 @@ public class WindowOrganizerTests extends WindowTestsBase {
         assertEquals(PendingTaskEvent.EVENT_APPEARED, pendingEvents.get(0).mEventType);
         assertEquals("TestDescription",
                 pendingEvents.get(0).mTask.getTaskInfo().taskDescription.getLabel());
+    }
+
+    @Test
+    public void testAppearFailed_ignoreOtherLifecycleCalls() throws RemoteException {
+        // Set up a task organizer that throws from onTaskAppeared
+        final ITaskOrganizer organizer = createMockOrganizer();
+        doThrow(new RemoteException()).when(organizer).onTaskAppeared(any(), any());
+        mWm.mAtmService.mTaskOrganizerController.registerTaskOrganizer(organizer);
+
+        // Create a task and notify the organizer
+        final Task rootTask = createRootTask();
+        final Task task = createTask(rootTask);
+        task.setTaskOrganizer(organizer);
+        final ActivityRecord activity = createActivityRecord(rootTask.mDisplayContent, task);
+        mAtm.mTaskOrganizerController.dispatchPendingEvents();
+
+        // Ensure that the exception resulted in the task appeared state to be reset and future
+        // updates are not sent to it
+        assertThat(task.mTaskAppearedSent).isFalse();
+
+        // Ignore subsequent task info changes
+        activity.setTaskDescription(new ActivityManager.TaskDescription("TestDescription"));
+        mAtm.mTaskOrganizerController.dispatchPendingEvents();
+        verify(organizer, never()).onTaskInfoChanged(any());
+
+        // Ignore subsequent vanished calls
+        rootTask.removeImmediately();
+        mAtm.mTaskOrganizerController.dispatchPendingEvents();
+        verify(organizer, never()).onTaskVanished(any());
     }
 
     @Test
