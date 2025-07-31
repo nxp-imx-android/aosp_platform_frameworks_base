@@ -82,10 +82,9 @@
               android:focusable="true"
               android:forceHasOverlappingRendering="false"
               android:paddingHorizontal="16dp"
-              android:paddingTop="10dp"
-              android:paddingBottom="4dp"
               android:gravity="center"
               android:text="@string/notification_onboarding_summaries_turn_on"
+              style="@androidprv:style/NotificationAction"
               android:textColor="@androidprv:color/materialColorOnTertiaryFixedVariant" />
           <TextView
               android:id="@+id/btn_dismiss"
@@ -97,10 +96,9 @@
               android:focusable="true"
               android:forceHasOverlappingRendering="false"
               android:paddingHorizontal="16dp"
-              android:paddingTop="10dp"
-              android:paddingBottom="4dp"
               android:gravity="center"
               android:text="@string/got_it"
+              style="@androidprv:style/NotificationAction"
               android:textColor="@androidprv:color/materialColorOnTertiaryFixedVariant" />
     </LinearLayout>
 
