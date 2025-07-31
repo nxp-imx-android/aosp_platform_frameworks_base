@@ -35,6 +35,7 @@ import com.android.wm.shell.ShellTaskOrganizer
 import com.android.wm.shell.common.DisplayController
 import com.android.wm.shell.common.MultiDisplayDragMoveBoundsCalculator
 import com.android.wm.shell.common.MultiDisplayDragMoveIndicatorController
+import com.android.wm.shell.desktopmode.DesktopTasksController
 import com.android.wm.shell.shared.annotations.ShellMainThread
 import com.android.wm.shell.shared.desktopmode.DesktopState
 import com.android.wm.shell.transition.Transitions
@@ -57,6 +58,7 @@ class MultiDisplayVeiledResizeTaskPositioner(
     @ShellMainThread private val handler: Handler,
     private val multiDisplayDragMoveIndicatorController: MultiDisplayDragMoveIndicatorController,
     private val desktopState: DesktopState,
+    private val desktopTasksController: DesktopTasksController,
 ) : TaskPositioner, Transitions.TransitionHandler, DisplayController.OnDisplaysChangedListener {
 
     private val dragEventListeners =
@@ -76,6 +78,7 @@ class MultiDisplayVeiledResizeTaskPositioner(
     private var isResizingOrAnimatingResize = false
     @Surface.Rotation private var rotation = 0
     private var startDisplayId = 0
+    private var hasMoved = false
     private val displayIds = mutableSetOf<Int>()
 
     constructor(
@@ -87,6 +90,7 @@ class MultiDisplayVeiledResizeTaskPositioner(
         @ShellMainThread handler: Handler,
         multiDisplayDragMoveIndicatorController: MultiDisplayDragMoveIndicatorController,
         desktopState: DesktopState,
+        desktopTasksController: DesktopTasksController,
     ) : this(
         taskOrganizer,
         windowDecoration,
@@ -97,6 +101,7 @@ class MultiDisplayVeiledResizeTaskPositioner(
         handler,
         multiDisplayDragMoveIndicatorController,
         desktopState,
+        desktopTasksController,
     )
 
     init {
@@ -110,6 +115,7 @@ class MultiDisplayVeiledResizeTaskPositioner(
             windowDecoration.taskInfo.configuration.windowConfiguration.bounds
         )
         repositionStartPoint[x] = y
+        hasMoved = false
         if (isResizing) {
             // Capture CUJ for re-sizing window in DW mode.
             interactionJankMonitor.begin(
@@ -218,6 +224,17 @@ class MultiDisplayVeiledResizeTaskPositioner(
             }
             t.setFrameTimeline(Choreographer.getInstance().vsyncId)
             t.apply()
+        }
+        if (!hasMoved) {
+            // Update taskbar rounding once the drag/resize has registered a move event - in case
+            // the moved task is no longer maximized. Only call this once per resize/drag so we
+            // don't call into Launcher with each drag/resize frame to try to update the taskbar.
+            desktopTasksController.updateTaskbarRoundingOnTaskResize(
+                displayId,
+                windowDecoration.taskInfo.taskId,
+                Rect(repositionTaskBounds),
+            )
+            hasMoved = true
         }
         return Rect(repositionTaskBounds)
     }

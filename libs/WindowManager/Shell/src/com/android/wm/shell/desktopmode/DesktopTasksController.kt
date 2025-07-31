@@ -2558,7 +2558,7 @@ class DesktopTasksController(
         }
 
         val shouldRestoreToSnap =
-            isMaximized && isTaskSnappedToHalfScreen(taskInfo, destinationBounds)
+            isMaximized && isTaskSnappedToHalfScreen(taskInfo.displayId, destinationBounds)
 
         logD("willMaximize = %s", willMaximize)
         logD("shouldRestoreToSnap = %s", shouldRestoreToSnap)
@@ -2622,21 +2622,42 @@ class DesktopTasksController(
         )
     }
 
-    private fun isMaximizedToStableBoundsEdges(
-        taskInfo: RunningTaskInfo,
-        stableBounds: Rect,
-    ): Boolean {
-        val currentTaskBounds = taskInfo.configuration.windowConfiguration.bounds
-        return isTaskBoundsEqual(currentTaskBounds, stableBounds)
+    private fun isMaximizedToStableBoundsEdges(displayId: Int, taskBounds: Rect): Boolean {
+        val displayLayout = displayController.getDisplayLayout(displayId) ?: return false
+        val stableBounds = Rect().also { displayLayout.getStableBounds(it) }
+        return isTaskBoundsEqual(taskBounds, stableBounds)
     }
 
     /** Returns if current task bound is snapped to half screen */
-    private fun isTaskSnappedToHalfScreen(
-        taskInfo: RunningTaskInfo,
-        taskBounds: Rect = taskInfo.configuration.windowConfiguration.bounds,
-    ): Boolean =
-        getSnapBounds(taskInfo.displayId, SnapPosition.LEFT) == taskBounds ||
-            getSnapBounds(taskInfo.displayId, SnapPosition.RIGHT) == taskBounds
+    private fun isTaskSnappedToHalfScreen(displayId: Int, taskBounds: Rect): Boolean =
+        getSnapBounds(displayId, SnapPosition.LEFT) == taskBounds ||
+            getSnapBounds(displayId, SnapPosition.RIGHT) == taskBounds
+
+    /**
+     * Update the rounding state of the taskbar on the given display, based on the task with ID
+     * [taskId] having bounds [newBounds].
+     */
+    fun updateTaskbarRoundingOnTaskResize(displayId: Int, taskId: Int, newBounds: Rect) {
+        val otherTasksRequireTaskbarRounding =
+            doesAnyTaskRequireTaskbarRounding(
+                displayId,
+                shellController.currentUserId,
+                excludeTaskId = taskId,
+            )
+        val resizedTaskRequiresTaskbarRounding =
+            doesTaskRequireTaskbarRounding(displayId, newBounds)
+        taskbarDesktopTaskListener?.onTaskbarCornerRoundingUpdate(
+            otherTasksRequireTaskbarRounding || resizedTaskRequiresTaskbarRounding
+        )
+    }
+
+    private fun doesTaskRequireTaskbarRounding(displayId: Int, taskBounds: Rect): Boolean {
+        val isSnappedToHalfScreen = isTaskSnappedToHalfScreen(displayId, taskBounds)
+        val isMaximizedToBothEdges = isMaximizedToStableBoundsEdges(displayId, taskBounds)
+        logD("isTaskSnappedToHalfScreen(taskInfo) = %s", isSnappedToHalfScreen)
+        logD("isMaximizedToStableBoundsEdges(taskInfo, stableBounds) = %s", isMaximizedToBothEdges)
+        return isSnappedToHalfScreen || isMaximizedToBothEdges
+    }
 
     @VisibleForTesting
     fun doesAnyTaskRequireTaskbarRounding(
@@ -2652,21 +2673,10 @@ class DesktopTasksController(
                 .filterNot { taskId -> taskId == excludeTaskId }
                 .any { taskId ->
                     val taskInfo = shellTaskOrganizer.getRunningTaskInfo(taskId) ?: return false
-                    val displayLayout = displayController.getDisplayLayout(taskInfo.displayId)
-                    val stableBounds = Rect().also { displayLayout?.getStableBounds(it) }
                     logD("taskInfo = %s", taskInfo)
-                    logD(
-                        "isTaskSnappedToHalfScreen(taskInfo) = %s",
-                        isTaskSnappedToHalfScreen(taskInfo),
-                    )
-                    logD(
-                        "isMaximizedToStableBoundsEdges(taskInfo, stableBounds) = %s",
-                        isMaximizedToStableBoundsEdges(taskInfo, stableBounds),
-                    )
-                    isTaskSnappedToHalfScreen(taskInfo) ||
-                        isMaximizedToStableBoundsEdges(taskInfo, stableBounds)
+                    val taskBounds = taskInfo.configuration.windowConfiguration.bounds
+                    doesTaskRequireTaskbarRounding(displayId, taskBounds)
                 }
-
         logD("doesAnyTaskRequireTaskbarRounding = %s", doesAnyTaskRequireTaskbarRounding)
         return doesAnyTaskRequireTaskbarRounding
     }
