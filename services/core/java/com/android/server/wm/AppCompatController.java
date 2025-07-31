@@ -168,11 +168,6 @@ class AppCompatController {
         return mDisplayCompatModePolicy;
     }
 
-    @NonNull
-    AppCompatDisplayOverrides getDisplayOverrides() {
-        return mAppCompatOverrides.getDisplayOverrides();
-    }
-
     void dump(@NonNull PrintWriter pw, @NonNull String prefix) {
         getTransparentPolicy().dump(pw, prefix);
         getLetterboxPolicy().dump(pw, prefix);

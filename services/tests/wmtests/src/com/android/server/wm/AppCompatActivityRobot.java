@@ -506,10 +506,6 @@ class AppCompatActivityRobot {
                 anyInt());
     }
 
-    void checkTopActivityProcessRestarted(boolean restarted) {
-        verify(mActivityStack.top(), times(restarted ? 1 : 0)).restartProcessIfVisible();
-    }
-
     void checkTopActivityRecomputedConfiguration() {
         verify(mActivityStack.top()).recomputeConfiguration();
     }

@@ -1715,22 +1715,6 @@ public class ActivityInfo extends ComponentInfo implements Parcelable {
     public static final long OVERRIDE_MOUSE_TO_TOUCH = 413207127L;
 
     /**
-     * This change id automatically restarts apps when they move between displays.
-     *
-     * <p>Some apps don't work well with density change. The override enabled by this change id
-     * allows them to automatically restart their process to ensure that UI is rendered based on the
-     * correct density. This is disabled by default, and can be enabled by device manufacturers on a
-     * per-application basis, controlled via
-     * <a href="https://developer.android.com/guide/practices/device-compatibility-mode#device_manufacturer_per-app_overrides">Device manufacturer per-app overrides</a>.
-     *
-     * @hide
-     */
-    @ChangeId
-    @Overridable
-    @Disabled
-    public static final long OVERRIDE_AUTO_RESTART_ON_DISPLAY_MOVE = 427878712L;
-
-    /**
      * Optional set of a certificates identifying apps that are allowed to embed this activity. From
      * the "knownActivityEmbeddingCerts" attribute.
      */
