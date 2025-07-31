@@ -24,6 +24,7 @@ import android.tools.PlatformConsts
 import android.tools.flicker.FlickerTest
 import android.tools.helpers.WindowUtils
 import android.tools.traces.component.IComponentMatcher
+import android.tools.traces.wm.WindowManagerState
 
 // Common assertions for Desktop mode features.
 
@@ -116,9 +117,11 @@ fun FlickerTest.resizeVeilKeepsDecreasingInSize(component: IComponentMatcher) {
 
 fun FlickerTest.appLayerHasSizeAtEnd(
     component: IComponentMatcher,
-    width: Int,
-    height: Int
+    widthDp: Int,
+    heightDp: Int
 ) {
+    val width = WindowManagerState.dpToPx(widthDp.toFloat(), WindowUtils.defaultDisplayDpi)
+    val height = WindowManagerState.dpToPx(heightDp.toFloat(), WindowUtils.defaultDisplayDpi)
     assertLayersEnd {
         visibleRegion(component).hasSameSize(width, height, diffThreshold = 50)
     }
