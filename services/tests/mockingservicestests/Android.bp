@@ -67,6 +67,7 @@ android_test {
         "services.net",
         "services.usage",
         "services.wallpapereffectsgeneration",
+        "servicestests-assert-utils",
         "servicestests-core-utils",
         "servicestests-utils-mockito-extended",
         "testables",
