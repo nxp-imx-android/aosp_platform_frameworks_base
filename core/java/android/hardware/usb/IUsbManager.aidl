@@ -47,6 +47,19 @@ interface IUsbManager
      */
     ParcelFileDescriptor openAccessory(in UsbAccessory accessory);
 
+    /* Returns a file descriptor for reading from the USB accessory.
+     * This file descriptor can be used with standard Java file operations.
+     */
+    ParcelFileDescriptor openAccessoryForInputStream(in UsbAccessory accessory);
+
+    /* Returns a file descriptor for writing to the USB accessory.
+     * This file descriptor can be used with standard Java file operations.
+     */
+    ParcelFileDescriptor openAccessoryForOutputStream(in UsbAccessory accessory);
+
+    /* Returns the max packet size of the USB accessory.*/
+    int getMaxPacketSize(in UsbAccessory accessory);
+
     /* Sets the default package for a USB device
      * (or clears it if the package name is null)
      */
