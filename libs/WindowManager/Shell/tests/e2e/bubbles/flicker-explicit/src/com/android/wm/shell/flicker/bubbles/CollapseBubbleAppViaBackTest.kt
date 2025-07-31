@@ -22,8 +22,7 @@ import android.tools.NavBar
 import androidx.test.filters.RequiresDevice
 import com.android.wm.shell.Flags
 import com.android.wm.shell.Utils
-import com.android.wm.shell.flicker.bubbles.testcase.BubbleAlwaysVisibleTestCases
-import com.android.wm.shell.flicker.bubbles.testcase.BubbleAppBecomesNotExpandedTestCases
+import com.android.wm.shell.flicker.bubbles.testcase.CollapseBubbleAppTestCases
 import com.android.wm.shell.flicker.bubbles.utils.ApplyPerParameterRule
 import com.android.wm.shell.flicker.bubbles.utils.BubbleFlickerTestHelper.collapseBubbleAppViaBackKey
 import com.android.wm.shell.flicker.bubbles.utils.BubbleFlickerTestHelper.launchBubbleViaBubbleMenu
@@ -31,7 +30,6 @@ import com.android.wm.shell.flicker.bubbles.utils.FlickerPropertyInitializer
 import com.android.wm.shell.flicker.bubbles.utils.RecordTraceWithTransitionRule
 import org.junit.FixMethodOrder
 import org.junit.Rule
-import org.junit.Test
 import org.junit.runners.MethodSorters
 
 /**
@@ -51,17 +49,14 @@ import org.junit.runners.MethodSorters
  *
  * Verified tests:
  * - [BubbleFlickerTestBase]
- * - [BubbleAlwaysVisibleTestCases]
- * - [BubbleAppBecomesNotExpandedTestCases]
+ * - [CollapseBubbleAppTestCases]
  */
 @RequiresFlagsEnabled(Flags.FLAG_ENABLE_CREATE_ANY_BUBBLE)
 @RequiresDevice
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 @Presubmit
-class CollapseBubbleAppViaBackTest(navBar: NavBar) :
-    BubbleFlickerTestBase(),
-    BubbleAlwaysVisibleTestCases,
-    BubbleAppBecomesNotExpandedTestCases
+class CollapseBubbleAppViaBackTest(navBar: NavBar) : BubbleFlickerTestBase(),
+    CollapseBubbleAppTestCases
 {
     companion object : FlickerPropertyInitializer() {
         private val recordTraceWithTransitionRule = RecordTraceWithTransitionRule(
@@ -79,12 +74,4 @@ class CollapseBubbleAppViaBackTest(navBar: NavBar) :
 
     override val traceDataReader
         get() = recordTraceWithTransitionRule.reader
-
-    /**
-     * Verifies bubble app window is invisible at the end of the transition.
-     */
-    @Test
-    override fun appWindowIsInvisibleAtEnd() {
-        wmStateSubjectAtEnd.isAppWindowInvisible(testApp, mustExist = true)
-    }
 }
