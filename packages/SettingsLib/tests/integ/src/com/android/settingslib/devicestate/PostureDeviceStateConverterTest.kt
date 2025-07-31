@@ -28,6 +28,8 @@ import android.hardware.devicestate.DeviceState.PROPERTY_FOLDABLE_HARDWARE_CONFI
 import android.hardware.devicestate.DeviceStateManager
 import android.platform.test.annotations.RequiresFlagsDisabled
 import android.platform.test.annotations.RequiresFlagsEnabled
+import android.platform.test.flag.junit.CheckFlagsRule
+import android.platform.test.flag.junit.DeviceFlagsValueProvider
 import android.provider.Settings.Secure.DEVICE_STATE_ROTATION_KEY_FOLDED
 import android.provider.Settings.Secure.DEVICE_STATE_ROTATION_KEY_HALF_FOLDED
 import android.provider.Settings.Secure.DEVICE_STATE_ROTATION_KEY_REAR_DISPLAY
@@ -80,6 +82,9 @@ private val DEVICE_STATE_REAR_DISPLAY = DeviceState(
 @SmallTest
 @RunWith(AndroidJUnit4::class)
 class PostureDeviceStateConverterTest {
+
+    @get:Rule
+    val checkFlagsRule: CheckFlagsRule = DeviceFlagsValueProvider.createCheckFlagsRule()
 
     @get:Rule val expect: Expect = Expect.create()
 
