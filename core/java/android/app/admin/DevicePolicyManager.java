@@ -61,6 +61,7 @@ import static android.app.admin.flags.Flags.FLAG_REMOVE_MANAGED_PROFILE_ENABLED;
 import static android.app.admin.flags.Flags.FLAG_CROSS_PROFILE_WIDGET_PROVIDER_BULK_APIS;
 import static android.app.admin.flags.Flags.FLAG_SECONDARY_LOCKSCREEN_API_ENABLED;
 import static android.app.admin.flags.Flags.FLAG_SPLIT_CREATE_MANAGED_PROFILE_ENABLED;
+import static android.app.admin.flags.Flags.FLAG_POLICY_STREAMLINING;
 import static android.app.admin.flags.Flags.onboardingBugreportV2Enabled;
 import static android.app.admin.flags.Flags.onboardingConsentlessBugreports;
 import static android.content.Intent.LOCAL_FLAG_FROM_SYSTEM;
@@ -18514,5 +18515,83 @@ public class DevicePolicyManager {
             }
         }
         return HEADLESS_DEVICE_OWNER_MODE_UNSUPPORTED;
+    }
+
+    /**
+     * Flag used by {@link #setPolicy} to apply the policy to the same user as the context user.
+     */
+    @FlaggedApi(FLAG_POLICY_STREAMLINING)
+    public static final int POLICY_SCOPE_USER = 0x0001;
+
+    /**
+     * Flag used by {@link #setPolicy} to apply the policy to the entire device.
+     */
+    @FlaggedApi(FLAG_POLICY_STREAMLINING)
+    public static final int POLICY_SCOPE_DEVICE = 0x0002;
+
+    /**
+     * Flag used by {@link #setPolicy} to apply the policy to the parent user of the context user.
+     */
+    @FlaggedApi(FLAG_POLICY_STREAMLINING)
+    public static final int POLICY_SCOPE_PARENT = 0x0003;
+
+    /**
+     * Possible policy scopes
+     *
+     * @hide
+     */
+    @IntDef(prefix = { "POLICY_SCOPE_" }, value = {
+            POLICY_SCOPE_USER,
+            POLICY_SCOPE_DEVICE,
+            POLICY_SCOPE_PARENT,
+    })
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface PolicyScope {}
+
+    /**
+     * Sets the given policy.
+     *
+     * @param id The policy identifier to update. It must be one of the values inside
+     * {@link DevicePolicyIdentifier}.
+     * @param scope The scope the policy will apply to.
+     * @param value The value of the policy.
+     * @throws SecurityException If the caller does not have sufficient permissions to set the
+     * specified id. Check the documentation of individual identifiers for more details.
+     * @throws IllegalArgumentException The passed value failed validation. Check the
+     * documentation of individual identifiers for more details.
+     */
+    @FlaggedApi(FLAG_POLICY_STREAMLINING)
+    @UserHandleAware
+    public <T> void setPolicy(
+            @NonNull PolicyIdentifier<T> id,
+            @PolicyScope int scope,
+            @Nullable T value) {
+        throwIfParentInstance("setPolicy");
+        if (mService != null) {
+            // TODO(b/434655549): Implement as a generic handler.
+            if (id.equals(PolicyIdentifier.SCREEN_CAPTURE_DISABLED)) {
+                if (value == null) return; // No way to clear the policy.
+
+                // TODO(b/434615264): Actually use the scope here.
+                setScreenCaptureDisabled(null, (Boolean) value);
+            } else {
+                throw new IllegalArgumentException("Unhandled policy " + id);
+            }
+        }
+    }
+
+    /**
+     * Template free version of setPolicy for booleans.
+     *
+     * @hide
+    */
+    @TestApi
+    @SuppressWarnings("UnflaggedApi") // @TestApi without associated feature.
+    public void setBooleanPolicy(
+            @NonNull String key,
+            @PolicyScope int scope,
+            boolean value) {
+        // TODO(b/434920631): Remove this method and use {@link #setPolicy} in tests directly.
+        setPolicy(new PolicyIdentifier<Boolean>(key), scope, Boolean.valueOf(value));
     }
 }

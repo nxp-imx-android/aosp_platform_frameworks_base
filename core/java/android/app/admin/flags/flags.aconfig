@@ -476,3 +476,11 @@ flag {
   description: "Add bulk APIs for cross profile widget providers"
   bug: "421053737"
 }
+
+flag {
+  name: "policy_streamlining"
+  is_exported: true
+  namespace: "enterprise"
+  description: "Enable the policy streamlining APIs."
+  bug: "434919316"
+}
