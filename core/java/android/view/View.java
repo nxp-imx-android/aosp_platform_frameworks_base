@@ -54,7 +54,6 @@ import static android.view.flags.Flags.sensitiveContentAppProtection;
 import static android.view.flags.Flags.toolkitFrameRateBySizeReadOnly;
 import static android.view.flags.Flags.toolkitMetricsForFrameRateDecision;
 import static android.view.flags.Flags.toolkitSetFrameRateReadOnly;
-import static android.view.flags.Flags.toolkitVelocityMapSysprop;
 import static android.view.flags.Flags.toolkitViewgroupSetRequestedFrameRateApi;
 import static android.view.flags.Flags.viewVelocityApi;
 import static android.view.inputmethod.Flags.FLAG_HOME_SCREEN_HANDWRITING_DELEGATOR;
@@ -2482,13 +2481,12 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
     // initialization at Zygote.
     /** @hide */
     @VisibleForTesting
-    static final class NoPreloadHolder {
-        private static boolean sToolkitVelocityMapSyspropFlagValue = toolkitVelocityMapSysprop();
+    public static final class NoPreloadHolder {
         private static String sFrameRateSysProp =
                 ViewProperties.vrr_velocity_threshold().orElse("");
 
         static {
-            if (sToolkitVelocityMapSyspropFlagValue && !sFrameRateSysProp.isEmpty()) {
+            if (!sFrameRateSysProp.isEmpty()) {
                 sFrameRateMappings = parseFrameRateMapping(sFrameRateSysProp);
             }
         }
@@ -2499,7 +2497,7 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
          * @hide
          */
         @VisibleForTesting
-        static int[][] parseFrameRateMapping(String mappings) {
+        public static int[][] parseFrameRateMapping(String mappings) {
             if (mappings.isEmpty()) {
                 return null;
             }
@@ -34685,8 +34683,7 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
     }
 
     private float convertVelocityToFrameRate(float velocityPps) {
-        if (NoPreloadHolder.sToolkitVelocityMapSyspropFlagValue && sFrameRateMappings != null
-                && sFrameRateMappings.length > 0) {
+        if (sFrameRateMappings != null && sFrameRateMappings.length > 0) {
             return getFrameRateByVelocity(sFrameRateMappings, (int) velocityPps);
         }
         // Internal testing has shown that this gives a premium experience:
