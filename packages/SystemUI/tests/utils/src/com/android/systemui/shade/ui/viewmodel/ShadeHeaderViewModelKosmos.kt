@@ -36,6 +36,7 @@ import com.android.systemui.statusbar.pipeline.battery.ui.viewmodel.batteryViewM
 import com.android.systemui.statusbar.pipeline.mobile.domain.interactor.mobileIconsInteractor
 import com.android.systemui.statusbar.pipeline.mobile.ui.viewmodel.mobileIconsViewModel
 import com.android.systemui.statusbar.pipeline.mobile.ui.viewmodel.mobileIconsViewModelKairos
+import com.android.systemui.statusbar.systemstatusicons.ui.viewmodel.systemStatusIconsViewModelFactory
 import org.mockito.kotlin.mock
 
 val Kosmos.shadeHeaderViewModel: ShadeHeaderViewModel by
@@ -57,6 +58,7 @@ val Kosmos.shadeHeaderViewModel: ShadeHeaderViewModel by
             mobileIconsViewModelKairos = { mobileIconsViewModelKairos },
             dualShadeEducationInteractor = dualShadeEducationInteractor,
             desktopInteractor = desktopInteractor,
+            systemStatusIconsViewModelFactory = systemStatusIconsViewModelFactory,
         )
     }
 

@@ -101,6 +101,8 @@ import com.android.systemui.statusbar.pipeline.mobile.ui.viewmodel.ShadeCarrierG
 import com.android.systemui.statusbar.pipeline.mobile.ui.viewmodel.ShadeCarrierGroupMobileIconViewModelKairos
 import com.android.systemui.statusbar.pipeline.mobile.ui.viewmodel.composeWrapper
 import com.android.systemui.statusbar.policy.Clock
+import com.android.systemui.statusbar.systemstatusicons.SystemStatusIconsInCompose
+import com.android.systemui.statusbar.systemstatusicons.ui.compose.SystemStatusIcons
 import com.android.systemui.util.composable.kairos.ActivatedKairosSpec
 import kotlin.math.max
 import kotlin.math.roundToInt
@@ -730,7 +732,20 @@ private fun ContentScope.StatusIcons(
     val iconContainer = statusIconContext.iconContainer(contentKey)
     val iconManager = statusIconContext.iconManager(contentKey)
 
-    // TODO(408001821): Use composable system status icons here instead.
+    // TODO(408001821): Add support for background color like [TintedIconManager.setTint].
+    if (SystemStatusIconsInCompose.isEnabled) {
+        SystemStatusIcons(
+            viewModelFactory = viewModel.systemStatusIconsViewModelFactory,
+            tint =
+                if (isHighlighted) {
+                    Color(inverseColor)
+                } else {
+                    Color(primaryColor)
+                },
+        )
+        return
+    }
+
     AndroidView(
         factory = {
             iconManager.setTint(primaryColor, inverseColor)

@@ -52,6 +52,7 @@ import com.android.systemui.statusbar.pipeline.battery.ui.viewmodel.BatteryViewM
 import com.android.systemui.statusbar.pipeline.mobile.domain.interactor.MobileIconsInteractor
 import com.android.systemui.statusbar.pipeline.mobile.ui.viewmodel.MobileIconsViewModel
 import com.android.systemui.statusbar.pipeline.mobile.ui.viewmodel.MobileIconsViewModelKairos
+import com.android.systemui.statusbar.systemstatusicons.ui.viewmodel.SystemStatusIconsViewModel
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -77,6 +78,7 @@ constructor(
     private val batteryMeterViewControllerFactory: BatteryMeterViewController.Factory,
     val statusBarIconController: StatusBarIconController,
     val batteryViewModelFactory: BatteryViewModel.AlwaysShowPercent.Factory,
+    val systemStatusIconsViewModelFactory: SystemStatusIconsViewModel.Factory,
     val kairosNetwork: KairosNetwork,
     val mobileIconsViewModelKairos: dagger.Lazy<MobileIconsViewModelKairos>,
     private val dualShadeEducationInteractor: DualShadeEducationInteractor,
