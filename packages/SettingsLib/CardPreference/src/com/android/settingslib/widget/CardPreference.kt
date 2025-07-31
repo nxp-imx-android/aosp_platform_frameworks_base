@@ -80,6 +80,7 @@ constructor(
             setImageDrawable(actionIcon)
             contentDescription = actionIconContentDescription
             setOnClickListener { action?.invoke(this@CardPreference) }
+            setClickable(action != null)
         }
     }
 }
