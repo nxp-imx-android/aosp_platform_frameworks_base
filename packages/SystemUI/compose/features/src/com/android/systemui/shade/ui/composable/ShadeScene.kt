@@ -47,6 +47,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
@@ -258,6 +259,17 @@ private fun ContentScope.SingleShade(
     mediaHost.expansion = if (usingCollapsedLandscapeMedia && isLandscape()) COLLAPSED else EXPANDED
 
     var maxNotifScrimTop by remember { mutableIntStateOf(0) }
+    val tileSquishiness by
+        animateContentFloatAsState(
+            value = 1f,
+            key = QuickSettings.SharedValues.TilesSquishiness,
+            canOverflow = false,
+        )
+
+    LaunchedEffect(Unit) {
+        snapshotFlow { tileSquishiness }.collect { viewModel.setTileSquishiness(it) }
+    }
+
     val shouldPunchHoleBehindScrim =
         layoutState.isTransitioningBetween(Scenes.Gone, Scenes.Shade) ||
             layoutState.isTransitioning(from = Scenes.Lockscreen, to = Scenes.Shade)

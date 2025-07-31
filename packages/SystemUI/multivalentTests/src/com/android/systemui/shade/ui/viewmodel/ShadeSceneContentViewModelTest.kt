@@ -41,6 +41,7 @@ import com.android.systemui.kosmos.useUnconfinedTestDispatcher
 import com.android.systemui.lifecycle.activateIn
 import com.android.systemui.media.controls.data.repository.mediaFilterRepository
 import com.android.systemui.media.controls.shared.model.MediaData
+import com.android.systemui.qs.panels.domain.interactor.tileSquishinessInteractor
 import com.android.systemui.res.R
 import com.android.systemui.scene.domain.interactor.sceneInteractor
 import com.android.systemui.scene.shared.model.Overlays
@@ -219,6 +220,18 @@ class ShadeSceneContentViewModelTest : SysuiTestCase() {
             }
 
             assertThat(underTest.isQsEnabled).isFalse()
+        }
+
+    @Test
+    fun squishiness() =
+        kosmos.runTest {
+            val squishiness by collectLastValue(tileSquishinessInteractor.squishiness)
+
+            underTest.setTileSquishiness(0f)
+            assertThat(squishiness).isWithin(0.0001f).of(0.1f)
+
+            underTest.setTileSquishiness(1f)
+            assertThat(squishiness).isEqualTo(1f)
         }
 
     private fun Kosmos.prepareConfiguration(): Int {
