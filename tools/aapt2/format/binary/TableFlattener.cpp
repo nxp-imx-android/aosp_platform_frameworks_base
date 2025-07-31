@@ -645,6 +645,18 @@ bool TableFlattener::Consume(IAaptContext* context, ResourceTable* table) {
   android::StringPool::FlattenUtf8(table_writer.buffer(), table->string_pool,
                                    context->GetDiagnostics());
 
+  if (!flag_map.empty()) {
+    android::BigBuffer flag_buffer(1024);
+    ChunkWriter flag_writer(&flag_buffer);
+    ResTable_flag_list* flag_list = flag_writer.StartChunk<ResTable_flag_list>(RES_TABLE_FLAG_LIST);
+    uint32_t* indices = flag_writer.NextBlock<uint32_t>(flag_map.size());
+    for (const auto& [_, ref] : flag_map) {
+      *indices++ = android::util::HostToDevice32(ref.index());
+    }
+    flag_writer.Finish();
+    table_writer.buffer()->AppendBuffer(std::move(flag_buffer));
+  }
+
   android::BigBuffer package_buffer(1024);
 
   // Flatten each package.
