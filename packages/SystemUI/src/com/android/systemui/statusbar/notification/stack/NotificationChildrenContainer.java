@@ -612,7 +612,13 @@ public class NotificationChildrenContainer extends ViewGroup
     }
 
     public float getChildRenderingStartPosition() {
-        return mHeaderHeight + mDividerHeight;
+        // NOTE: if the non-bundle header is ever changed to have different expanded/collapsed
+        // heights, we may want to remove this isBundle() check.
+        if (isBundle() && mChildrenExpanded) {
+            return mHeaderHeight + getAdditionalExpandedHeaderMargin() + mDividerHeight;
+        } else {
+            return mHeaderHeight + mDividerHeight;
+        }
     }
 
     /**
