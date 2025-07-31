@@ -17,8 +17,6 @@
 
 package com.android.systemui.wallpapers;
 
-import static com.android.window.flags.Flags.offloadColorExtraction;
-
 import android.app.WallpaperColors;
 import android.graphics.Bitmap;
 import android.graphics.Rect;
@@ -180,7 +178,7 @@ public class WallpaperLocalColorExtractor {
             mBitmapHeight = bitmap.getHeight();
             mMiniBitmap = createMiniBitmap(bitmap);
             mWallpaperLocalColorExtractorCallback.onMiniBitmapUpdated();
-            if (offloadColorExtraction() && mRecomputeColors) recomputeColorsInternal();
+            if (mRecomputeColors) recomputeColorsInternal();
             recomputeLocalColors();
         }
     }

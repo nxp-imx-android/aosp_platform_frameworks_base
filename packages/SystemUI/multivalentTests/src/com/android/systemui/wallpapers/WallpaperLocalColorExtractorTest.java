@@ -16,8 +16,6 @@
 
 package com.android.systemui.wallpapers;
 
-import static com.android.window.flags.Flags.FLAG_OFFLOAD_COLOR_EXTRACTION;
-
 import static com.google.common.truth.Truth.assertThat;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -35,7 +33,6 @@ import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.Rect;
 import android.graphics.RectF;
-import android.platform.test.annotations.EnableFlags;
 import android.testing.TestableLooper;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
@@ -351,7 +348,6 @@ public class WallpaperLocalColorExtractorTest extends SysuiTestCase {
      * Test that after the bitmap changes, the colors are computed only if asked via onComputeColors
      */
     @Test
-    @EnableFlags(FLAG_OFFLOAD_COLOR_EXTRACTION)
     public void testRecomputeColors() {
         resetCounters();
         Bitmap bitmap = getMockBitmap(HIGH_BMP_WIDTH, HIGH_BMP_HEIGHT);
@@ -366,7 +362,6 @@ public class WallpaperLocalColorExtractorTest extends SysuiTestCase {
      * Test that after onComputeColors is called, the colors are computed once the bitmap is loaded
      */
     @Test
-    @EnableFlags(FLAG_OFFLOAD_COLOR_EXTRACTION)
     public void testRecomputeColorsBeforeBitmapLoaded() {
         resetCounters();
         Bitmap bitmap = getMockBitmap(HIGH_BMP_WIDTH, HIGH_BMP_HEIGHT);
@@ -380,7 +375,6 @@ public class WallpaperLocalColorExtractorTest extends SysuiTestCase {
      * Test that after the dim changes, the colors are computed if the bitmap is already loaded
      */
     @Test
-    @EnableFlags(FLAG_OFFLOAD_COLOR_EXTRACTION)
     public void testRecomputeColorsOnDimChanged() {
         resetCounters();
         Bitmap bitmap = getMockBitmap(HIGH_BMP_WIDTH, HIGH_BMP_HEIGHT);
@@ -394,7 +388,6 @@ public class WallpaperLocalColorExtractorTest extends SysuiTestCase {
      * Test that after the dim changes, the colors will be recomputed once the bitmap is loaded
      */
     @Test
-    @EnableFlags(FLAG_OFFLOAD_COLOR_EXTRACTION)
     public void testRecomputeColorsOnDimChangedBeforeBitmapLoaded() {
         resetCounters();
         Bitmap bitmap = getMockBitmap(HIGH_BMP_WIDTH, HIGH_BMP_HEIGHT);
