@@ -55,6 +55,7 @@ import android.view.ViewConfiguration;
 import android.view.accessibility.MagnificationAnimationCallback;
 
 import com.android.internal.accessibility.util.AccessibilityStatsLogUtils;
+import com.android.internal.accessibility.util.AccessibilityUtils;
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.util.function.pooled.PooledLambda;
@@ -125,6 +126,7 @@ public class MagnificationController implements MagnificationConnectionManager.C
     // in multiple directions at once (for example, up + left), tracking last
     // panned time ensures that panning doesn't occur too frequently.
     private long mLastPannedTime = 0;
+    private long mLastMouseMoveTriggeredUiChangeTime = 0;
     private boolean mRepeatKeysEnabled = true;
 
     private @ZoomDirection int mActiveZoomDirection = ZOOM_DIRECTION_IN;
@@ -386,16 +388,24 @@ public class MagnificationController implements MagnificationConnectionManager.C
 
     @Override
     public void onTouchInteractionStart(int displayId, int mode) {
+        // TODO(435498747): Add throttling for touch similarly to mouse events.
         handleUserInteractionChanged(displayId, mode);
     }
 
     @Override
     public void onTouchInteractionEnd(int displayId, int mode) {
+        // TODO(435498747): Add throttling for touch similarly to mouse events.
         handleUserInteractionChanged(displayId, mode);
     }
 
     @Override
     public void onMouseMove(int displayId, int mode) {
+        final long currentTime = mSystemClock.uptimeMillis();
+        if (currentTime - mLastMouseMoveTriggeredUiChangeTime
+                < AccessibilityUtils.MAGNIFICATION_HANDLE_UI_CHANGE_INTERVAL_MS) {
+            return;
+        }
+        mLastMouseMoveTriggeredUiChangeTime = currentTime;
         handleUserInteractionChanged(displayId, mode);
     }
 
