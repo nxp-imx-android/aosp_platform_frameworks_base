@@ -16,6 +16,8 @@
 
 package com.android.systemui.biometrics.ui.view
 
+import android.content.Context
+import android.content.Intent
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -35,8 +37,10 @@ import androidx.compose.material.icons.outlined.Password
 import androidx.compose.material.icons.outlined.QrCode2
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material.icons.outlined.ViewStream
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -54,7 +58,12 @@ import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.testTagsAsResourceId
+import androidx.compose.ui.text.LinkAnnotation
+import androidx.compose.ui.text.LinkInteractionListener
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.withLink
 import androidx.compose.ui.unit.dp
+import androidx.core.net.toUri
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.android.compose.theme.PlatformTheme
 import com.android.systemui.biometrics.shared.model.IconType
@@ -62,6 +71,7 @@ import com.android.systemui.biometrics.ui.binder.Spaghetti
 import com.android.systemui.biometrics.ui.viewmodel.PromptViewModel
 import com.android.systemui.res.R
 
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun BiometricPromptFallbackView(promptViewModel: PromptViewModel, callback: Spaghetti.Callback) {
     val fallbackViewModel = promptViewModel.promptFallbackViewModel
@@ -81,30 +91,32 @@ fun BiometricPromptFallbackView(promptViewModel: PromptViewModel, callback: Spag
 
     val context = LocalContext.current
 
-    val optionTotal = fallbackViewModel.optionCount.collectAsStateWithLifecycle(0)
-
     PlatformTheme {
         Column(modifier = Modifier.padding(horizontal = 24.dp, vertical = 12.dp)) {
             Row(
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 4.dp),
+                modifier = Modifier.padding(vertical = 8.dp).fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                IconButton(
+                FilledIconButton(
                     onClick = {
                         promptViewModel.onSwitchToAuth()
                         callback.onResumeAuthentication()
-                    }
+                    },
+                    colors =
+                        IconButtonDefaults.filledIconButtonColors(
+                            containerColor = MaterialTheme.colorScheme.surfaceContainerHighest,
+                            contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                        ),
                 ) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
                         contentDescription = stringResource(R.string.accessibility_back),
                     )
                 }
                 Text(
                     text = stringResource(R.string.biometric_dialog_fallback_title),
                     color = MaterialTheme.colorScheme.onSurface,
-                    style = MaterialTheme.typography.titleLarge,
+                    style = MaterialTheme.typography.titleLargeEmphasized,
                     modifier =
                         Modifier.padding(start = 16.dp).semantics {
                             heading()
@@ -113,74 +125,113 @@ fun BiometricPromptFallbackView(promptViewModel: PromptViewModel, callback: Spag
                         },
                 )
             }
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(16.dp))
             Column(
                 modifier = Modifier.fillMaxWidth(),
                 verticalArrangement = Arrangement.spacedBy(2.dp),
             ) {
-                var optionCount = 0
-                // When credential is allowed and IC is disabled, credential should always be first
+                val options = mutableListOf<@Composable (Int, Int) -> Unit>()
+
                 if (showCredential) {
-                    OptionItem(
-                        icon = credentialIcon,
-                        text = stringResource(credentialText),
-                        index = optionCount++,
-                        total = optionTotal.value,
-                        modifier = Modifier.testTag("fallback_credential_button"),
-                        onClick = {
-                            promptViewModel.onSwitchToCredential()
-                            callback.onUseDeviceCredential()
-                        },
-                    )
-                }
-                // If credential is allowed and IC is enabled, IC manage is presented first
-                if (showManageIdentityCheck) {
-                    OptionItem(
-                        icon = Icons.Outlined.Settings,
-                        text = stringResource(R.string.biometric_dialog_manage_identity_check),
-                        index = optionCount++,
-                        total = optionTotal.value,
-                        onClick = {
-                            fallbackViewModel.manageIdentityCheck(context)
-                            callback.onUserCanceled()
-                        },
-                    )
-                }
-                for ((index, option) in promptContent.withIndex()) {
-                    OptionItem(
-                        icon = getIcon(option.iconType),
-                        text = option.text.toString(),
-                        index = optionCount++,
-                        total = optionTotal.value,
-                        onClick = { callback.onFallbackOptionPressed(index) },
-                    )
-                }
-                // Credential when IC is enabled should always be at the bottom and disabled
-                if (showManageIdentityCheck) {
-                    OptionItem(
-                        icon = credentialIcon,
-                        text = stringResource(credentialText),
-                        index = optionCount++,
-                        total = optionTotal.value,
-                        subtitle = icCredentialSubtitle,
-                        enabled = icCredentialButtonEnabled,
-                        onClick = {
-                            promptViewModel.onSwitchToCredential()
-                            callback.onUseDeviceCredential()
-                        },
-                    )
-                    if (icShowFooter) {
-                        Text(
-                            stringResource(R.string.biometric_dialog_identity_check_pin_footer),
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.padding(top = 16.dp),
-                            style = MaterialTheme.typography.bodySmall,
+                    options.add { index, total ->
+                        OptionItem(
+                            icon = credentialIcon,
+                            text = stringResource(credentialText),
+                            index = index,
+                            total = total,
+                            modifier = Modifier.testTag("fallback_credential_button"),
+                            onClick = {
+                                promptViewModel.onSwitchToCredential()
+                                callback.onUseDeviceCredential()
+                            },
                         )
                     }
+                }
+                if (showManageIdentityCheck) {
+                    options.add { index, total ->
+                        OptionItem(
+                            icon = Icons.Outlined.Settings,
+                            text = stringResource(R.string.biometric_dialog_manage_identity_check),
+                            index = index,
+                            total = total,
+                            onClick = {
+                                fallbackViewModel.manageIdentityCheck(context)
+                                callback.onUserCanceled()
+                            },
+                        )
+                    }
+                }
+                for ((optionIndex, option) in promptContent.withIndex()) {
+                    options.add { index, total ->
+                        OptionItem(
+                            icon = getIcon(option.iconType),
+                            text = option.text.toString(),
+                            index = index,
+                            total = total,
+                            onClick = { callback.onFallbackOptionPressed(optionIndex) },
+                        )
+                    }
+                }
+                if (showManageIdentityCheck) {
+                    options.add { index, total ->
+                        OptionItem(
+                            icon = credentialIcon,
+                            text = stringResource(credentialText),
+                            index = index,
+                            total = total,
+                            subtitle = icCredentialSubtitle,
+                            enabled = icCredentialButtonEnabled,
+                            onClick = {
+                                promptViewModel.onSwitchToCredential()
+                                callback.onUseDeviceCredential()
+                            },
+                        )
+                    }
+                }
+
+                val total = options.size
+                options.forEachIndexed { index, optionComposable -> optionComposable(index, total) }
+
+                if (showManageIdentityCheck && icShowFooter) {
+                    IdentityCheckFooter(callback, context)
                 }
             }
         }
     }
+}
+
+@Composable
+private fun IdentityCheckFooter(callback: Spaghetti.Callback, context: Context) {
+    val linkListener = LinkInteractionListener { linkAnnotation ->
+        if (linkAnnotation is LinkAnnotation.Url) {
+            callback.onUserCanceled()
+            val intent =
+                Intent(Intent.ACTION_VIEW, linkAnnotation.url.toUri()).apply {
+                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                }
+            context.startActivity(intent)
+        }
+    }
+
+    val url = stringResource(R.string.biometric_dialog_identity_check_learn_more_link)
+    val linkText = stringResource(R.string.biometric_dialog_identity_check_footer_link_text)
+    val formatString = stringResource(R.string.biometric_dialog_identity_check_footer)
+
+    val annotatedString = buildAnnotatedString {
+        // TODO: Has to be a better way to handle this
+        val placeholderIndex = formatString.indexOf("%1\$s")
+        append(formatString.substring(0, placeholderIndex))
+
+        val link = LinkAnnotation.Url(url, linkInteractionListener = linkListener)
+        withLink(link) { append(linkText) }
+    }
+
+    Text(
+        annotatedString,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+        modifier = Modifier.padding(top = 16.dp),
+        style = MaterialTheme.typography.bodySmall,
+    )
 }
 
 @Composable
@@ -196,8 +247,8 @@ private fun OptionItem(
 ) {
     val shape =
         when (index) {
-            0 -> RoundedCornerShape(16.dp, 16.dp, 4.dp, 4.dp)
-            total - 1 -> RoundedCornerShape(4.dp, 4.dp, 16.dp, 16.dp)
+            0 -> RoundedCornerShape(28.dp, 28.dp, 4.dp, 4.dp)
+            total - 1 -> RoundedCornerShape(4.dp, 4.dp, 28.dp, 28.dp)
             else -> RoundedCornerShape(4.dp)
         }
 
@@ -215,10 +266,15 @@ private fun OptionItem(
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 16.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Icon(imageVector = icon, contentDescription = null, modifier = Modifier.size(24.dp))
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                modifier = Modifier.size(24.dp),
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
             Spacer(modifier = Modifier.width(16.dp))
             Column {
-                Text(text = text, style = MaterialTheme.typography.bodyLarge)
+                Text(text = text, style = MaterialTheme.typography.titleMedium)
                 if (subtitle != null) {
                     Text(
                         text = stringResource(subtitle),
