@@ -47,7 +47,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -63,7 +62,6 @@ public final class RouterInfoMediaManager extends InfoMediaManager {
     @VisibleForTesting
     MediaRouter2Manager mRouterManager;
 
-    private final Executor mExecutor = Executors.newSingleThreadExecutor();
     @VisibleForTesting
     final RouteCallback mRouteCallback = new RouteCallback();
     @VisibleForTesting
@@ -163,20 +161,20 @@ public final class RouterInfoMediaManager extends InfoMediaManager {
     }
 
     @Override
-    protected void registerRouter() {
-        mRouter.registerRouteCallback(mExecutor, mRouteCallback, RouteDiscoveryPreference.EMPTY);
+    protected void registerRouter(Executor executor) {
+        mRouter.registerRouteCallback(executor, mRouteCallback, RouteDiscoveryPreference.EMPTY);
         mRouter.registerRouteListingPreferenceUpdatedCallback(
-                mExecutor, mRouteListingPreferenceCallback);
+                executor, mRouteListingPreferenceCallback);
         mRouter.registerDeviceSuggestionsUpdatesCallback(
-                mExecutor, mDeviceSuggestionsUpdatesCallback);
+                executor, mDeviceSuggestionsUpdatesCallback);
         if (Flags.enableSuggestedDeviceApi()) {
             for (Map.Entry<String, List<SuggestedDeviceInfo>> entry :
                     mRouter.getDeviceSuggestions().entrySet()) {
                 notifyDeviceSuggestionUpdated(entry.getKey(), entry.getValue());
             }
         }
-        mRouter.registerTransferCallback(mExecutor, mTransferCallback);
-        mRouter.registerControllerCallback(mExecutor, mControllerCallback);
+        mRouter.registerTransferCallback(executor, mTransferCallback);
+        mRouter.registerControllerCallback(executor, mControllerCallback);
     }
 
     @Override
