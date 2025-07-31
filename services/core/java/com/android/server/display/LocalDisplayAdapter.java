@@ -1549,7 +1549,7 @@ final class LocalDisplayAdapter extends DisplayAdapter {
         }
     }
 
-    private boolean hdrTypesEqual(int[] modeHdrTypes, int[] recordHdrTypes) {
+    private static boolean hdrTypesEqual(int[] modeHdrTypes, int[] recordHdrTypes) {
         int[] modeHdrTypesCopy = Arrays.copyOf(modeHdrTypes, modeHdrTypes.length);
         Arrays.sort(modeHdrTypesCopy);
         // Record HDR types are already sorted when we create the DisplayModeRecord
@@ -1587,9 +1587,10 @@ final class LocalDisplayAdapter extends DisplayAdapter {
             return mMode.getPhysicalWidth() == mode.width
                     && mMode.getPhysicalHeight() == mode.height
                     && Float.floatToIntBits(mMode.getRefreshRate())
-                            == Float.floatToIntBits(mode.peakRefreshRate)
+                    == Float.floatToIntBits(mode.peakRefreshRate)
                     && Float.floatToIntBits(mMode.getVsyncRate())
-                            == Float.floatToIntBits(mode.vsyncRate);
+                    == Float.floatToIntBits(mode.vsyncRate)
+                    && hdrTypesEqual(mode.supportedHdrTypes, mMode.getSupportedHdrTypes());
         }
 
         public String toString() {
