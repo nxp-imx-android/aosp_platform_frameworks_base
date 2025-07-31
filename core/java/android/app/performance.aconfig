@@ -37,3 +37,10 @@ flag {
     description: "Include the ANR subreason in the description retrieved from ApplicationExitInfo"
     bug: "295599954"
 }
+
+flag {
+     name: "sharedpreferences_skip_fsync"
+     namespace: "system_performance"
+     description: "What if SharedPreferences just didn't fsync()? Let's find out."
+     bug: "435433868"
+}
