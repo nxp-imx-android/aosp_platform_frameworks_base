@@ -17,21 +17,6 @@
 package android.app;
 
 import static android.app.Notification.EXTRA_METRICS;
-import static android.app.Notification.Metric.MEANING_CELESTIAL;
-import static android.app.Notification.Metric.MEANING_CELESTIAL_TIDE;
-import static android.app.Notification.Metric.MEANING_CHRONOMETER;
-import static android.app.Notification.Metric.MEANING_CHRONOMETER_STOPWATCH;
-import static android.app.Notification.Metric.MEANING_CHRONOMETER_TIMER;
-import static android.app.Notification.Metric.MEANING_EVENT_DATE;
-import static android.app.Notification.Metric.MEANING_EVENT_TIME;
-import static android.app.Notification.Metric.MEANING_HEALTH;
-import static android.app.Notification.Metric.MEANING_HEALTH_ACTIVE_TIME;
-import static android.app.Notification.Metric.MEANING_HEALTH_CALORIES;
-import static android.app.Notification.Metric.MEANING_HEALTH_READINESS;
-import static android.app.Notification.Metric.MEANING_TRAVEL;
-import static android.app.Notification.Metric.MEANING_TRAVEL_TERMINAL;
-import static android.app.Notification.Metric.MEANING_UNKNOWN;
-import static android.app.Notification.Metric.MEANING_WEATHER_TEMPERATURE_OUTDOOR;
 
 import static com.google.common.truth.Truth.assertThat;
 
@@ -144,11 +129,11 @@ public class NotificationMetricStyleTest {
     @Test
     public void addExtras_writesExtras() {
         MetricStyle style = new MetricStyle()
-                .addMetric(new Metric(new FixedInt(4, "birds"), "4", MEANING_UNKNOWN))
-                .addMetric(new Metric(new FixedInt(5, "rings"), "5", MEANING_UNKNOWN))
-                .addMetric(new Metric(new FixedInt(6, "geese"), "6", MEANING_UNKNOWN))
-                .addMetric(new Metric(new FixedInt(7, "swans"), "7", MEANING_UNKNOWN))
-                .addMetric(new Metric(new FixedInt(8, "maids"), "8", MEANING_UNKNOWN));
+                .addMetric(new Metric(new FixedInt(4, "birds"), "4"))
+                .addMetric(new Metric(new FixedInt(5, "rings"), "5"))
+                .addMetric(new Metric(new FixedInt(6, "geese"), "6"))
+                .addMetric(new Metric(new FixedInt(7, "swans"), "7"))
+                .addMetric(new Metric(new FixedInt(8, "maids"), "8"));
 
         Bundle bundle = new Bundle();
         style.addExtras(bundle);
@@ -167,31 +152,31 @@ public class NotificationMetricStyleTest {
                 .addMetric(new Metric(
                         TimeDifference.forTimer(Instant.ofEpochMilli(1),
                                 TimeDifference.FORMAT_ADAPTIVE),
-                        "Time:", MEANING_CHRONOMETER_TIMER))
+                        "Time:"))
                 .addMetric(new Metric(
                         TimeDifference.forPausedStopwatch(Duration.ofHours(4),
                                 TimeDifference.FORMAT_CHRONOMETER),
-                        "Stopwatch:", MEANING_CHRONOMETER_STOPWATCH))
+                        "Stopwatch:"))
                 .addMetric(new Metric(
                         new FixedDate(LocalDate.of(2025, 6, 2), FixedDate.FORMAT_SHORT_DATE),
-                        "Event date:", MEANING_EVENT_DATE))
+                        "Event date:"))
                 .addMetric(new Metric(
                         new FixedTime(LocalTime.of(10, 30)),
-                        "Event time:", MEANING_EVENT_TIME))
+                        "Event time:"))
                 .addMetric(new Metric(
-                        new FixedInt(12, "drummers"), "Label", MEANING_UNKNOWN))
+                        new FixedInt(12, "drummers"), "Label"))
                 .addMetric(new Metric(
-                        new FixedInt(42), "Answer", MEANING_CELESTIAL))
+                        new FixedInt(42), "Answer"))
                 .addMetric(new Metric(
-                        new FixedFloat(0.75f), "Readiness", MEANING_HEALTH_READINESS))
+                        new FixedFloat(0.75f), "Readiness"))
                 .addMetric(new Metric(
                         new FixedFloat(273f, "°K"),
-                        "Temp", MEANING_WEATHER_TEMPERATURE_OUTDOOR))
+                        "Temp"))
                 .addMetric(new Metric(
                         new FixedFloat(12.345f, null, 0, 3),
-                        "Active time", MEANING_HEALTH_ACTIVE_TIME))
+                        "Active time"))
                 .addMetric(new Metric(
-                        new FixedString("This is the last"), "Last", MEANING_UNKNOWN));
+                        new FixedString("This is the last"), "Last"));
 
         original.addExtras(bundle);
         MetricStyle recovered = new MetricStyle();
@@ -203,12 +188,12 @@ public class NotificationMetricStyleTest {
     @Test
     public void areNotificationsVisiblyDifferent_sameMetrics_false() {
         MetricStyle style1 = new MetricStyle()
-                .addMetric(new Metric(new FixedInt(1), "Cal", MEANING_HEALTH_CALORIES))
-                .addMetric(new Metric(new FixedInt(2), "Cal", MEANING_HEALTH_CALORIES));
+                .addMetric(new Metric(new FixedInt(1), "Cal"))
+                .addMetric(new Metric(new FixedInt(2), "Cal"));
 
         MetricStyle style2 = new MetricStyle()
-                .addMetric(new Metric(new FixedInt(1), "Cal", MEANING_HEALTH_CALORIES))
-                .addMetric(new Metric(new FixedInt(2), "Cal", MEANING_HEALTH_CALORIES));
+                .addMetric(new Metric(new FixedInt(1), "Cal"))
+                .addMetric(new Metric(new FixedInt(2), "Cal"));
 
         assertThat(style1.areNotificationsVisiblyDifferent(style2)).isFalse();
         assertThat(style2.areNotificationsVisiblyDifferent(style1)).isFalse();
@@ -217,12 +202,12 @@ public class NotificationMetricStyleTest {
     @Test
     public void areNotificationsVisiblyDifferent_differentMetrics_true() {
         MetricStyle style1 = new MetricStyle()
-                .addMetric(new Metric(new FixedInt(1, "thingies"), "a", MEANING_UNKNOWN))
-                .addMetric(new Metric(new FixedInt(2, "widgets"), "b", MEANING_UNKNOWN));
+                .addMetric(new Metric(new FixedInt(1, "thingies"), "a"))
+                .addMetric(new Metric(new FixedInt(2, "widgets"), "b"));
 
         MetricStyle style2 = new MetricStyle()
-                .addMetric(new Metric(new FixedInt(1, "gizmos"), "c", MEANING_UNKNOWN))
-                .addMetric(new Metric(new FixedInt(2, "doodads"), "d", MEANING_UNKNOWN));
+                .addMetric(new Metric(new FixedInt(1, "gizmos"), "c"))
+                .addMetric(new Metric(new FixedInt(2, "doodads"), "d"));
 
         assertThat(style1.areNotificationsVisiblyDifferent(style2)).isTrue();
         assertThat(style2.areNotificationsVisiblyDifferent(style1)).isTrue();
@@ -231,13 +216,13 @@ public class NotificationMetricStyleTest {
     @Test
     public void areNotificationsVisiblyDifferent_differentMetricCounts_true() {
         MetricStyle style1 = new MetricStyle()
-                .addMetric(new Metric(new FixedInt(1, "gizmos"), "a", MEANING_UNKNOWN))
-                .addMetric(new Metric(new FixedInt(2, "doodads"), "b", MEANING_UNKNOWN));
+                .addMetric(new Metric(new FixedInt(1, "gizmos"), "a"))
+                .addMetric(new Metric(new FixedInt(2, "doodads"), "b"));
 
         MetricStyle style2 = new MetricStyle()
-                .addMetric(new Metric(new FixedInt(1, "gizmos"), "a", MEANING_UNKNOWN))
-                .addMetric(new Metric(new FixedInt(2, "doodads"), "b", MEANING_UNKNOWN))
-                .addMetric(new Metric(new FixedInt(3, "whatsits"), "c", MEANING_UNKNOWN));
+                .addMetric(new Metric(new FixedInt(1, "gizmos"), "a"))
+                .addMetric(new Metric(new FixedInt(2, "doodads"), "b"))
+                .addMetric(new Metric(new FixedInt(3, "whatsits"), "c"));
 
         assertThat(style1.areNotificationsVisiblyDifferent(style2)).isTrue();
         assertThat(style2.areNotificationsVisiblyDifferent(style1)).isTrue();
@@ -246,43 +231,20 @@ public class NotificationMetricStyleTest {
     @Test
     public void areNotificationsVisiblyDifferent_firstThreeEqual_false() {
         MetricStyle style1 = new MetricStyle()
-                .addMetric(new Metric(new FixedInt(1), "a", MEANING_UNKNOWN))
-                .addMetric(new Metric(new FixedInt(2), "b", MEANING_UNKNOWN))
-                .addMetric(new Metric(new FixedInt(3), "c", MEANING_UNKNOWN))
-                .addMetric(new Metric(new FixedString("Ignored thing"), "d", MEANING_UNKNOWN));
+                .addMetric(new Metric(new FixedInt(1), "a"))
+                .addMetric(new Metric(new FixedInt(2), "b"))
+                .addMetric(new Metric(new FixedInt(3), "c"))
+                .addMetric(new Metric(new FixedString("Ignored thing"), "d"));
 
         MetricStyle style2 = new MetricStyle()
-                .addMetric(new Metric(new FixedInt(1), "a", MEANING_UNKNOWN))
-                .addMetric(new Metric(new FixedInt(2), "b", MEANING_UNKNOWN))
-                .addMetric(new Metric(new FixedInt(3), "c", MEANING_UNKNOWN))
-                .addMetric(new Metric(new FixedString("Also ignored"), "d", MEANING_UNKNOWN))
-                .addMetric(new Metric(new FixedString("And this too"), "e", MEANING_UNKNOWN));
+                .addMetric(new Metric(new FixedInt(1), "a"))
+                .addMetric(new Metric(new FixedInt(2), "b"))
+                .addMetric(new Metric(new FixedInt(3), "c"))
+                .addMetric(new Metric(new FixedString("Also ignored"), "d"))
+                .addMetric(new Metric(new FixedString("And this too"), "e"));
 
         assertThat(style1.areNotificationsVisiblyDifferent(style2)).isFalse();
         assertThat(style2.areNotificationsVisiblyDifferent(style1)).isFalse();
-    }
-
-    @Test
-    public void getMeaningCategory_concreteMeaning_returnsCategory() {
-        assertThat(Metric.getMeaningCategory(MEANING_CHRONOMETER_TIMER)).isEqualTo(
-                MEANING_CHRONOMETER);
-        assertThat(Metric.getMeaningCategory(MEANING_CELESTIAL_TIDE)).isEqualTo(MEANING_CELESTIAL);
-        assertThat(Metric.getMeaningCategory(MEANING_HEALTH_ACTIVE_TIME)).isEqualTo(MEANING_HEALTH);
-        assertThat(Metric.getMeaningCategory(MEANING_TRAVEL_TERMINAL)).isEqualTo(MEANING_TRAVEL);
-    }
-
-    @Test
-    public void getMeaningCategory_categoryMeaning_returnsCategory() {
-        assertThat(Metric.getMeaningCategory(MEANING_UNKNOWN)).isEqualTo(MEANING_UNKNOWN);
-        assertThat(Metric.getMeaningCategory(MEANING_CHRONOMETER)).isEqualTo(MEANING_CHRONOMETER);
-        assertThat(Metric.getMeaningCategory(MEANING_CELESTIAL)).isEqualTo(MEANING_CELESTIAL);
-        assertThat(Metric.getMeaningCategory(MEANING_HEALTH)).isEqualTo(MEANING_HEALTH);
-        assertThat(Metric.getMeaningCategory(MEANING_TRAVEL)).isEqualTo(MEANING_TRAVEL);
-    }
-
-    @Test
-    public void getMeaningCategory_invalidCategory_returnsUnknown() {
-        assertThat(Metric.getMeaningCategory(0xaaaa0001)).isEqualTo(MEANING_UNKNOWN);
     }
 
     @Test
