@@ -450,10 +450,14 @@ public class PackageInstaller {
      * installation result returned via the {@link IntentSender} in
      * {@link Session#commit(IntentSender)}. However, along with this reason code, installers can
      * receive different status codes from {@link #EXTRA_STATUS} depending on their target SDK and
-     * privileged status:
-     * <p>
-     *      Non-privileged installers targeting
-     *      {@link android.os.Build.VERSION_CODES#VANILLA_ICE_CREAM API 35}
+     * permission status:
+     * <ul>
+     * <li>
+     *      Installers without the
+     *      {@link android.Manifest.permission#INSTALL_PACKAGES INSTALL_PACKAGES} permission
+     *      but with the
+     *      {@link android.Manifest.permission#REQUEST_INSTALL_PACKAGES REQUEST_INSTALL_PACKAGES}
+     *      permission and targeting {@link android.os.Build.VERSION_CODES#VANILLA_ICE_CREAM API 35}
      *      or less will first receive the
      *      {@link #STATUS_PENDING_USER_ACTION} status code without this reason code. They will be
      *      forced through the user action flow to allow the OS to inform the user of such
@@ -461,24 +465,41 @@ public class PackageInstaller {
      *      to bypass the verification result and chooses to do so, the installation will proceed.
      *      Otherwise, the installer will receive the {@link #STATUS_FAILURE_ABORTED} status code
      *      along with this reason code that explains why the verification had failed.
-     * </p>
-     * <p>
-     *     Privileged installer targeting
-     *     {@link android.os.Build.VERSION_CODES#VANILLA_ICE_CREAM API 35}
+     * </li>
+     * <li>
+     *     Installers with the
+     *     {@link android.Manifest.permission#INSTALL_PACKAGES INSTALL_PACKAGES} permission and
+     *     targeting {@link android.os.Build.VERSION_CODES#VANILLA_ICE_CREAM API 35}
      *     or less will directly receive the
      *     {@link #STATUS_FAILURE_ABORTED} status code. This is because they are not expected to
      *     have the capability of handling the {@link #STATUS_PENDING_USER_ACTION} flow, so the
      *     installation will directly fail. This reason code will be supplied to them for
      *     providing additional information.
-     * </p>
-     * <p>
-     *     All installers targeting {@link android.os.Build.VERSION_CODES#BAKLAVA API 36}
-     *     or higher will receive a {@link #STATUS_FAILURE_ABORTED}
+     * </li>
+     * <li>
+     *     For all installers targeting {@link android.os.Build.VERSION_CODES#BAKLAVA API 36}
+     *     or higher:
+     *     <ul>
+     *     <li>For situations that require user input, such as when the developer verification
+     *     policy allows the user to bypass a verification failure caused by network issues,
+     *     the installer will receive a {@link #STATUS_PENDING_USER_ACTION} status code without
+     *     this reason code. The installer will be forced through the user action flow to allow the
+     *     OS to inform the user of such verification context before continuing to fail the
+     *     installation. If the user has the option to bypass the verification result and chooses
+     *     to do so, the installation will proceed. Otherwise, the install will receive the
+     *     {@link #STATUS_FAILURE_ABORTED} status code along with this reason code that explains why
+     *     the verification had failed.
+     *     </li>
+     *     <li>For all other situations, the installer will receive a
+     *     {@link #STATUS_FAILURE_ABORTED}
      *     status code along with this reason code, so the installers can explain the failure to the
      *     user accordingly. An {@link Intent#EXTRA_INTENT} will also be populated with an intent
      *     that can provide additional context where appropriate, should the installer prefer to
      *     defer to the OS to explain the failure to the user.
-     * </p>
+     *     </li>
+     *     </ul>
+     * </li>
+     * </ul>
      */
     @FlaggedApi(Flags.FLAG_VERIFICATION_SERVICE)
     public static final String EXTRA_DEVELOPER_VERIFICATION_FAILURE_REASON =
