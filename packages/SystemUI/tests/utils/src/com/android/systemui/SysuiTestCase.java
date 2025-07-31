@@ -24,6 +24,8 @@ import android.os.Handler;
 import android.os.Looper;
 import android.os.MessageQueue;
 import android.os.ParcelFileDescriptor;
+import android.platform.test.flag.junit.CheckFlagsRule;
+import android.platform.test.flag.junit.DeviceFlagsValueProvider;
 import android.platform.test.flag.junit.SetFlagsRule;
 import android.platform.test.ravenwood.RavenwoodRule;
 import android.testing.DexmakerShareClassLoaderRule;
@@ -82,6 +84,9 @@ public abstract class SysuiTestCase {
     @Rule(order = Integer.MIN_VALUE)
     public AndroidXAnimatorIsolationRule mAndroidXAnimatorIsolationRule =
             new AndroidXAnimatorIsolationRule();
+
+    @Rule
+    public final CheckFlagsRule mCheckFlagsRule = DeviceFlagsValueProvider.createCheckFlagsRule();
 
     @ClassRule
     public static final SetFlagsRule.ClassRule mSetFlagsClassRule =
