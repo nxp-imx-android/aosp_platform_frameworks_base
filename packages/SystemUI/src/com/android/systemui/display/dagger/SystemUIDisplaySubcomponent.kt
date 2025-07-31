@@ -43,7 +43,7 @@ import kotlinx.coroutines.CoroutineScope
  * thread is not feasible as it would cause jank.
  */
 @PerDisplaySingleton
-@Subcomponent(modules = [PerDisplayCommonModule::class])
+@Subcomponent(modules = [PerDisplaySystemUIModule::class])
 interface SystemUIDisplaySubcomponent {
 
     @get:DisplayAware val displayCoroutineScope: CoroutineScope

@@ -22,7 +22,7 @@ import com.android.app.displaylib.PerDisplayRepository
 import com.android.systemui.CoreStartable
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Default
-import com.android.systemui.display.dagger.SystemUIPhoneDisplaySubcomponent
+import com.android.systemui.display.dagger.ReferenceSysUIDisplaySubcomponent
 import com.android.systemui.statusbar.CommandQueue
 import com.android.systemui.statusbar.core.CommandQueueInitializer
 import com.android.systemui.statusbar.core.MultiDisplayStatusBarInitializerStore
@@ -113,7 +113,7 @@ interface StatusBarPhoneModule {
             statusBarWindowControllerStore: StatusBarWindowControllerStore,
             statusBarModeRepositoryStore: StatusBarModeRepositoryStore,
             statusBarConfigurationControllerStore: StatusBarConfigurationControllerStore,
-            displayComponentRepo: PerDisplayRepository<SystemUIPhoneDisplaySubcomponent>,
+            displayComponentRepo: PerDisplayRepository<ReferenceSysUIDisplaySubcomponent>,
         ): StatusBarInitializerImpl {
             val systemUIDisplaySubcomponent = displayComponentRepo[Display.DEFAULT_DISPLAY]!!
             return implFactory.create(

@@ -25,8 +25,8 @@ import com.android.app.displaylib.fakes.FakePerDisplayRepository
 import com.android.systemui.SysUICutoutProvider
 import com.android.systemui.common.ui.ConfigurationState
 import com.android.systemui.common.ui.configurationState
+import com.android.systemui.display.dagger.ReferenceSysUIDisplaySubcomponent
 import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent
-import com.android.systemui.display.dagger.SystemUIPhoneDisplaySubcomponent
 import com.android.systemui.display.domain.interactor.DisplayStateInteractor
 import com.android.systemui.display.domain.interactor.displayStateInteractor
 import com.android.systemui.kosmos.Kosmos
@@ -79,8 +79,8 @@ fun Kosmos.createFakeDisplaySubcomponent(
     sysUiDarkIconDispatcher: SysuiDarkIconDispatcher = this.fakeDarkIconDispatcher,
     systemBarUtilsState: SystemBarUtilsState = this.systemBarUtilsState,
     configurationState: ConfigurationState = this.configurationState,
-): SystemUIPhoneDisplaySubcomponent {
-    return object : SystemUIPhoneDisplaySubcomponent {
+): ReferenceSysUIDisplaySubcomponent {
+    return object : ReferenceSysUIDisplaySubcomponent {
         override val displayCoroutineScope: CoroutineScope
             get() = coroutineScope
 
@@ -158,7 +158,7 @@ val Kosmos.displaySubcomponentPerDisplayRepository by Fixture {
 }
 
 val Kosmos.displayPhoneSubcomponentPerDisplayRepository by Fixture {
-    FakePerDisplayRepository<SystemUIPhoneDisplaySubcomponent>().apply {
+    FakePerDisplayRepository<ReferenceSysUIDisplaySubcomponent>().apply {
         add(Display.DEFAULT_DISPLAY, sysuiDefaultDisplaySubcomponent)
     }
 }
