@@ -17,6 +17,7 @@ package com.android.wm.shell.desktopmode.multidesks
 
 import android.annotation.SuppressLint
 import android.app.ActivityManager.RunningTaskInfo
+import android.app.ActivityOptions
 import android.app.ActivityTaskManager.INVALID_TASK_ID
 import android.app.WindowConfiguration.ACTIVITY_TYPE_STANDARD
 import android.app.WindowConfiguration.ACTIVITY_TYPE_UNDEFINED
@@ -234,6 +235,11 @@ class RootTaskDesksOrganizer(
         if (!skipReorder) wct.reorder(root.taskInfo.token, /* onTop= */ false)
         updateLaunchRoot(wct, deskId, enabled = false)
         updateTaskMoveAllowed(wct, deskId, allowed = false)
+    }
+
+    override fun addLaunchDeskToActivityOptions(activityOptions: ActivityOptions, deskId: Int) {
+        val root = checkNotNull(deskRootsByDeskId[deskId]) { "Root not found for desk: $deskId" }
+        activityOptions.launchRootTask = root.token
     }
 
     private fun updateLaunchRoot(wct: WindowContainerTransaction, deskId: Int, enabled: Boolean) {

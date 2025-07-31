@@ -1624,7 +1624,7 @@ class DesktopRepository(
     companion object {
         private const val TAG = "DesktopRepository"
 
-        @VisibleForTesting const val INVALID_DESK_ID = -1
+        const val INVALID_DESK_ID = -1
     }
 }
 
