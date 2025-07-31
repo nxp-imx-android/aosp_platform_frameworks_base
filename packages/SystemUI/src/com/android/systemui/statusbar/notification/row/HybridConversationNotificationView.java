@@ -40,7 +40,6 @@ import com.android.internal.widget.ConversationLayout;
 import com.android.systemui.res.R;
 import com.android.systemui.statusbar.notification.NotificationFadeAware;
 import com.android.systemui.statusbar.notification.row.shared.AsyncHybridViewInflation;
-import com.android.systemui.statusbar.notification.row.shared.ConversationStyleSetAvatarAsync;
 import com.android.systemui.statusbar.notification.row.ui.viewmodel.ConversationAvatar;
 import com.android.systemui.statusbar.notification.row.ui.viewmodel.FacePile;
 import com.android.systemui.statusbar.notification.row.ui.viewmodel.SingleIcon;
@@ -151,46 +150,9 @@ public class HybridConversationNotificationView extends HybridNotificationView {
 
     private void loadConversationAvatar(ConversationLayout conversationLayout) {
         AsyncHybridViewInflation.assertInLegacyMode();
-        if (ConversationStyleSetAvatarAsync.isEnabled()) {
-            loadConversationAvatarWithDrawable(conversationLayout);
-        } else {
-            loadConversationAvatarWithIcon(conversationLayout);
-        }
+        loadConversationAvatarWithDrawable(conversationLayout);
     }
 
-    @Deprecated
-    private void loadConversationAvatarWithIcon(ConversationLayout conversationLayout) {
-        ConversationStyleSetAvatarAsync.assertInLegacyMode();
-        AsyncHybridViewInflation.assertInLegacyMode();
-        final Icon conversationIcon = conversationLayout.getConversationIcon();
-        if (conversationIcon != null) {
-            mConversationFacePile.setVisibility(GONE);
-            mConversationIconView.setVisibility(VISIBLE);
-            mConversationIconView.setImageIcon(conversationIcon);
-            setSize(mConversationIconView, mSingleAvatarSize);
-        } else {
-            // If there isn't an icon, generate a "face pile" based on the sender avatars
-            mConversationIconView.setVisibility(GONE);
-            mConversationFacePile.setVisibility(VISIBLE);
-
-            mConversationFacePile =
-                    requireViewById(com.android.internal.R.id.conversation_face_pile);
-            final ImageView facePileBottomBg = mConversationFacePile.requireViewById(
-                    com.android.internal.R.id.conversation_face_pile_bottom_background);
-            final ImageView facePileBottom = mConversationFacePile.requireViewById(
-                    com.android.internal.R.id.conversation_face_pile_bottom);
-            final ImageView facePileTop = mConversationFacePile.requireViewById(
-                    com.android.internal.R.id.conversation_face_pile_top);
-            conversationLayout.bindFacePile(facePileBottomBg, facePileBottom, facePileTop);
-            setSize(mConversationFacePile, mFacePileSize);
-            setSize(facePileBottom, mFacePileAvatarSize);
-            setSize(facePileTop, mFacePileAvatarSize);
-            setSize(facePileBottomBg, mFacePileAvatarSize + 2 * mFacePileProtectionWidth);
-            mTransformationHelper.addViewTransformingToSimilar(facePileTop);
-            mTransformationHelper.addViewTransformingToSimilar(facePileBottom);
-            mTransformationHelper.addViewTransformingToSimilar(facePileBottomBg);
-        }
-    }
 
     private void loadConversationAvatarWithDrawable(ConversationLayout conversationLayout) {
         AsyncHybridViewInflation.assertInLegacyMode();
