@@ -28,7 +28,6 @@ import android.text.TextUtils;
 import android.util.ArraySet;
 import android.util.Printer;
 import android.util.Slog;
-import android.view.inputmethod.Flags;
 import android.view.inputmethod.InputMethodInfo;
 import android.view.inputmethod.InputMethodSubtype;
 
@@ -143,9 +142,6 @@ final class InputMethodSubtypeSwitchingController {
          * be compared in the following order.
          * <ol>
          *   <li>{@link #mImeName}</li>
-         *   <li>{@link #mIsSystemLocale}</li>
-         *   <li>{@link #mIsSystemLanguage}</li>
-         *   <li>{@link #mSubtypeName}</li>
          *   <li>{@link #mImi} with {@link InputMethodInfo#getId()}</li>
          * </ol>
          * Note: this class has a natural ordering that is inconsistent with
@@ -158,27 +154,11 @@ final class InputMethodSubtypeSwitchingController {
          */
         @Override
         public int compareTo(ImeSubtypeListItem other) {
-            int result = compareNullableCharSequences(mImeName, other.mImeName);
+            final int result = compareNullableCharSequences(mImeName, other.mImeName);
             if (result != 0) {
                 return result;
             }
-            if (!Flags.imeSwitcherRevamp()) {
-                // Subtype that has the same locale of the system's has higher priority.
-                result = (mIsSystemLocale ? -1 : 0) - (other.mIsSystemLocale ? -1 : 0);
-                if (result != 0) {
-                    return result;
-                }
-                // Subtype that has the same language of the system's has higher priority.
-                result = (mIsSystemLanguage ? -1 : 0) - (other.mIsSystemLanguage ? -1 : 0);
-                if (result != 0) {
-                    return result;
-                }
-                result = compareNullableCharSequences(mSubtypeName, other.mSubtypeName);
-                if (result != 0) {
-                    return result;
-                }
-            }
-            // This will no longer compare by subtype name, however as {@link Collections.sort} is
+            // This will not compare by subtype name, however as {@link Collections.sort} is
             // guaranteed to be a stable sorting, this allows sorting by the IME name (and ID),
             // while maintaining the order of subtypes (given by each IME) at the IME level.
             return mImi.getId().compareTo(other.mImi.getId());
@@ -200,10 +180,8 @@ final class InputMethodSubtypeSwitchingController {
             if (o == this) {
                 return true;
             }
-            if (o instanceof ImeSubtypeListItem) {
-                final ImeSubtypeListItem that = (ImeSubtypeListItem) o;
-                return Objects.equals(this.mImi, that.mImi)
-                        && this.mSubtypeIndex == that.mSubtypeIndex;
+            if (o instanceof ImeSubtypeListItem that) {
+                return Objects.equals(mImi, that.mImi) && mSubtypeIndex == that.mSubtypeIndex;
             }
             return false;
         }
@@ -283,9 +261,6 @@ final class InputMethodSubtypeSwitchingController {
     @NonNull
     private static List<ImeSubtypeListItem> getInputMethodAndSubtypeListForHardwareKeyboard(
             @NonNull Context context, @NonNull InputMethodSettings settings) {
-        if (!Flags.imeSwitcherRevamp()) {
-            return new ArrayList<>();
-        }
         final int userId = settings.getUserId();
         final Context userAwareContext = context.getUserId() == userId
                 ? context
@@ -340,159 +315,6 @@ final class InputMethodSubtypeSwitchingController {
             @Nullable InputMethodSubtype subtype) {
         return subtype != null ? SubtypeUtils.getSubtypeIndexFromHashCode(imi, subtype.hashCode())
                 : NOT_A_SUBTYPE_INDEX;
-    }
-
-    private static class StaticRotationList {
-
-        @NonNull
-        private final List<ImeSubtypeListItem> mImeSubtypeList;
-
-        StaticRotationList(@NonNull List<ImeSubtypeListItem> imeSubtypeList) {
-            mImeSubtypeList = imeSubtypeList;
-        }
-
-        /**
-         * Returns the index of the specified input method and subtype in the given list.
-         *
-         * @param imi     The {@link InputMethodInfo} to be searched.
-         * @param subtype The {@link InputMethodSubtype} to be searched. null if the input method
-         *                does not have a subtype.
-         * @return The index in the given list. -1 if not found.
-         */
-        private int getIndex(@NonNull InputMethodInfo imi, @Nullable InputMethodSubtype subtype) {
-            final int currentSubtypeIndex = calculateSubtypeIndex(imi, subtype);
-            final int numSubtypes = mImeSubtypeList.size();
-            for (int i = 0; i < numSubtypes; ++i) {
-                final ImeSubtypeListItem item = mImeSubtypeList.get(i);
-                // Skip until the current IME/subtype is found.
-                if (imi.equals(item.mImi) && item.mSubtypeIndex == currentSubtypeIndex) {
-                    return i;
-                }
-            }
-            return -1;
-        }
-
-        @Nullable
-        public ImeSubtypeListItem getNextInputMethodLocked(boolean onlyCurrentIme,
-                @NonNull InputMethodInfo imi, @Nullable InputMethodSubtype subtype) {
-            if (mImeSubtypeList.size() <= 1) {
-                return null;
-            }
-            final int currentIndex = getIndex(imi, subtype);
-            if (currentIndex < 0) {
-                return null;
-            }
-            final int numSubtypes = mImeSubtypeList.size();
-            for (int offset = 1; offset < numSubtypes; ++offset) {
-                // Start searching the next IME/subtype from the next of the current index.
-                final int candidateIndex = (currentIndex + offset) % numSubtypes;
-                final ImeSubtypeListItem candidate = mImeSubtypeList.get(candidateIndex);
-                // Skip if searching inside the current IME only, but the candidate is not
-                // the current IME.
-                if (onlyCurrentIme && !imi.equals(candidate.mImi)) {
-                    continue;
-                }
-                return candidate;
-            }
-            return null;
-        }
-
-        protected void dump(@NonNull Printer pw, @NonNull String prefix) {
-            final int numSubtypes = mImeSubtypeList.size();
-            for (int rank = 0; rank < numSubtypes; ++rank) {
-                final ImeSubtypeListItem item = mImeSubtypeList.get(rank);
-                pw.println(prefix + "rank=" + rank + " item=" + item);
-            }
-        }
-    }
-
-    private static class DynamicRotationList {
-
-        private static final String TAG = DynamicRotationList.class.getSimpleName();
-        @NonNull
-        private final List<ImeSubtypeListItem> mImeSubtypeList;
-        @NonNull
-        private final int[] mUsageHistoryOfSubtypeListItemIndex;
-
-        private DynamicRotationList(@NonNull List<ImeSubtypeListItem> imeSubtypeListItems) {
-            mImeSubtypeList = imeSubtypeListItems;
-            mUsageHistoryOfSubtypeListItemIndex = new int[mImeSubtypeList.size()];
-            final int numSubtypes = mImeSubtypeList.size();
-            for (int i = 0; i < numSubtypes; i++) {
-                mUsageHistoryOfSubtypeListItemIndex[i] = i;
-            }
-        }
-
-        /**
-         * Returns the index of the specified object in
-         * {@link #mUsageHistoryOfSubtypeListItemIndex}.
-         * <p>We call the index of {@link #mUsageHistoryOfSubtypeListItemIndex} as "Usage Rank"
-         * so as not to be confused with the index in {@link #mImeSubtypeList}.
-         *
-         * @return -1 when the specified item doesn't belong to {@link #mImeSubtypeList} actually.
-         */
-        private int getUsageRank(@NonNull InputMethodInfo imi,
-                @Nullable InputMethodSubtype subtype) {
-            final int currentSubtypeIndex = calculateSubtypeIndex(imi, subtype);
-            final int numItems = mUsageHistoryOfSubtypeListItemIndex.length;
-            for (int usageRank = 0; usageRank < numItems; usageRank++) {
-                final int subtypeListItemIndex = mUsageHistoryOfSubtypeListItemIndex[usageRank];
-                final ImeSubtypeListItem subtypeListItem =
-                        mImeSubtypeList.get(subtypeListItemIndex);
-                if (subtypeListItem.mImi.equals(imi)
-                        && subtypeListItem.mSubtypeIndex == currentSubtypeIndex) {
-                    return usageRank;
-                }
-            }
-            // Not found in the known IME/Subtype list.
-            return -1;
-        }
-
-        public void onUserAction(@NonNull InputMethodInfo imi,
-                @Nullable InputMethodSubtype subtype) {
-            final int currentUsageRank = getUsageRank(imi, subtype);
-            // Do nothing if currentUsageRank == -1 (not found), or currentUsageRank == 0
-            if (currentUsageRank <= 0) {
-                return;
-            }
-            final int currentItemIndex = mUsageHistoryOfSubtypeListItemIndex[currentUsageRank];
-            System.arraycopy(mUsageHistoryOfSubtypeListItemIndex, 0,
-                    mUsageHistoryOfSubtypeListItemIndex, 1, currentUsageRank);
-            mUsageHistoryOfSubtypeListItemIndex[0] = currentItemIndex;
-        }
-
-        @Nullable
-        public ImeSubtypeListItem getNextInputMethodLocked(boolean onlyCurrentIme,
-                @NonNull InputMethodInfo imi, @Nullable InputMethodSubtype subtype) {
-            int currentUsageRank = getUsageRank(imi, subtype);
-            if (currentUsageRank < 0) {
-                if (DEBUG) {
-                    Slog.d(TAG, "IME/subtype is not found: " + imi.getId() + ", " + subtype);
-                }
-                return null;
-            }
-            final int numItems = mUsageHistoryOfSubtypeListItemIndex.length;
-            for (int i = 1; i < numItems; i++) {
-                final int subtypeListItemRank = (currentUsageRank + i) % numItems;
-                final int subtypeListItemIndex =
-                        mUsageHistoryOfSubtypeListItemIndex[subtypeListItemRank];
-                final ImeSubtypeListItem subtypeListItem =
-                        mImeSubtypeList.get(subtypeListItemIndex);
-                if (onlyCurrentIme && !imi.equals(subtypeListItem.mImi)) {
-                    continue;
-                }
-                return subtypeListItem;
-            }
-            return null;
-        }
-
-        protected void dump(@NonNull Printer pw, @NonNull String prefix) {
-            for (int rank = 0; rank < mUsageHistoryOfSubtypeListItemIndex.length; ++rank) {
-                final int index = mUsageHistoryOfSubtypeListItemIndex[rank];
-                final ImeSubtypeListItem item = mImeSubtypeList.get(index);
-                pw.println(prefix + "rank=" + rank + " item=" + item);
-            }
-        }
     }
 
     /**
@@ -627,12 +449,6 @@ final class InputMethodSubtypeSwitchingController {
         }
     }
 
-    @NonNull
-    private DynamicRotationList mSwitchingAwareRotationList =
-            new DynamicRotationList(Collections.emptyList());
-    @NonNull
-    private StaticRotationList mSwitchingUnawareRotationList =
-            new StaticRotationList(Collections.emptyList());
     /** List of input methods and subtypes. */
     @NonNull
     private RotationList mRotationList = new RotationList(Collections.emptyList());
@@ -658,28 +474,11 @@ final class InputMethodSubtypeSwitchingController {
     @VisibleForTesting
     void update(@NonNull List<ImeSubtypeListItem> sortedEnabledItems,
             @NonNull List<ImeSubtypeListItem> hardwareKeyboardItems) {
-        final var switchingAwareImeSubtypes = filterImeSubtypeList(sortedEnabledItems,
-                true /* supportsSwitchingToNextInputMethod */);
-        final var switchingUnawareImeSubtypes = filterImeSubtypeList(sortedEnabledItems,
-                false /* supportsSwitchingToNextInputMethod */);
-
-        if (!Objects.equals(mSwitchingAwareRotationList.mImeSubtypeList,
-                switchingAwareImeSubtypes)) {
-            mSwitchingAwareRotationList = new DynamicRotationList(switchingAwareImeSubtypes);
-        }
-
-        if (!Objects.equals(mSwitchingUnawareRotationList.mImeSubtypeList,
-                switchingUnawareImeSubtypes)) {
-            mSwitchingUnawareRotationList = new StaticRotationList(switchingUnawareImeSubtypes);
-        }
-
-        if (Flags.imeSwitcherRevamp()
-                && !Objects.equals(mRotationList.mItems, sortedEnabledItems)) {
+        if (!Objects.equals(mRotationList.mItems, sortedEnabledItems)) {
             mRotationList = new RotationList(sortedEnabledItems);
         }
 
-        if (Flags.imeSwitcherRevamp()
-                && !Objects.equals(mHardwareRotationList.mItems, hardwareKeyboardItems)) {
+        if (!Objects.equals(mHardwareRotationList.mItems, hardwareKeyboardItems)) {
             mHardwareRotationList = new RotationList(hardwareKeyboardItems);
         }
     }
@@ -701,16 +500,7 @@ final class InputMethodSubtypeSwitchingController {
     public ImeSubtypeListItem getNextInputMethodLocked(boolean onlyCurrentIme,
             @NonNull InputMethodInfo imi, @Nullable InputMethodSubtype subtype,
             @SwitchMode int mode, boolean forward) {
-        if (Flags.imeSwitcherRevamp()) {
-            return mRotationList.next(imi, subtype, onlyCurrentIme,
-                    isRecency(mode, forward), forward);
-        } else if (imi.supportsSwitchingToNextInputMethod()) {
-            return mSwitchingAwareRotationList.getNextInputMethodLocked(onlyCurrentIme, imi,
-                    subtype);
-        } else {
-            return mSwitchingUnawareRotationList.getNextInputMethodLocked(onlyCurrentIme, imi,
-                    subtype);
-        }
+        return mRotationList.next(imi, subtype, onlyCurrentIme, isRecency(mode, forward), forward);
     }
 
     /**
@@ -731,11 +521,8 @@ final class InputMethodSubtypeSwitchingController {
     public ImeSubtypeListItem getNextInputMethodForHardware(boolean onlyCurrentIme,
             @NonNull InputMethodInfo imi, @Nullable InputMethodSubtype subtype,
             @SwitchMode int mode, boolean forward) {
-        if (Flags.imeSwitcherRevamp()) {
-            return mHardwareRotationList.next(imi, subtype, onlyCurrentIme,
-                    isRecency(mode, forward), forward);
-        }
-        return null;
+        return mHardwareRotationList.next(imi, subtype, onlyCurrentIme, isRecency(mode, forward),
+                forward);
     }
 
     /**
@@ -750,14 +537,10 @@ final class InputMethodSubtypeSwitchingController {
     public boolean onUserActionLocked(@NonNull InputMethodInfo imi,
             @Nullable InputMethodSubtype subtype) {
         boolean recencyUpdated = false;
-        if (Flags.imeSwitcherRevamp()) {
-            recencyUpdated |= mRotationList.setMostRecent(imi, subtype);
-            recencyUpdated |= mHardwareRotationList.setMostRecent(imi, subtype);
-            if (recencyUpdated) {
-                mUserActionSinceSwitch = true;
-            }
-        } else if (imi.supportsSwitchingToNextInputMethod()) {
-            mSwitchingAwareRotationList.onUserAction(imi, subtype);
+        recencyUpdated |= mRotationList.setMostRecent(imi, subtype);
+        recencyUpdated |= mHardwareRotationList.setMostRecent(imi, subtype);
+        if (recencyUpdated) {
+            mUserActionSinceSwitch = true;
         }
         return recencyUpdated;
     }
@@ -785,44 +568,27 @@ final class InputMethodSubtypeSwitchingController {
         }
     }
 
-    @NonNull
-    private static List<ImeSubtypeListItem> filterImeSubtypeList(
-            @NonNull List<ImeSubtypeListItem> items,
-            boolean supportsSwitchingToNextInputMethod) {
-        final ArrayList<ImeSubtypeListItem> result = new ArrayList<>();
-        final int numItems = items.size();
-        for (int i = 0; i < numItems; i++) {
-            final ImeSubtypeListItem item = items.get(i);
-            if (item.mImi.supportsSwitchingToNextInputMethod()
-                    == supportsSwitchingToNextInputMethod) {
-                result.add(item);
-            }
-        }
-        return result;
-    }
-
     void dump(@NonNull Printer pw, @NonNull String prefix) {
-        pw.println(prefix + "mSwitchingAwareRotationList:");
-        mSwitchingAwareRotationList.dump(pw, prefix + "  ");
-        pw.println(prefix + "mSwitchingUnawareRotationList:");
-        mSwitchingUnawareRotationList.dump(pw, prefix + "  ");
-        if (Flags.imeSwitcherRevamp()) {
-            pw.println(prefix + "mRotationList:");
-            mRotationList.dump(pw, prefix + "  ");
-            pw.println(prefix + "mHardwareRotationList:");
-            mHardwareRotationList.dump(pw, prefix + "  ");
-            pw.println(prefix + "User action since last switch: " + mUserActionSinceSwitch);
-        }
+        pw.println(prefix + "mRotationList:");
+        mRotationList.dump(pw, prefix + "  ");
+        pw.println(prefix + "mHardwareRotationList:");
+        mHardwareRotationList.dump(pw, prefix + "  ");
+        pw.println(prefix + "User action since last switch: " + mUserActionSinceSwitch);
     }
 
     InputMethodSubtypeSwitchingController() {
     }
 
-    public void resetCircularListLocked(@NonNull Context context,
-            @NonNull InputMethodSettings settings) {
-        update(getSortedInputMethodAndSubtypeList(
-                        false /* includeAuxiliarySubtypes */, false /* isScreenLocked */,
-                        false /* forImeMenu */, context, settings),
+    /**
+     * Updates the list of input methods and subtypes used for switching, from the given context
+     * and user specific settings.
+     *
+     * @param context  the context to update the list from.
+     * @param settings the user specific settings to update the list from.
+     */
+    public void update(@NonNull Context context, @NonNull InputMethodSettings settings) {
+        update(getSortedInputMethodAndSubtypeList(false /* includeAuxiliarySubtypes */,
+                        false /* isScreenLocked */, false /* forImeMenu */, context, settings),
                 getInputMethodAndSubtypeListForHardwareKeyboard(context, settings));
     }
 }

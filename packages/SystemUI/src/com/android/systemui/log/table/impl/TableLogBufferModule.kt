@@ -16,6 +16,9 @@
 
 package com.android.systemui.log.table.impl
 
+import com.android.systemui.dagger.SysUISingleton
+import com.android.systemui.log.LogProxy
+import com.android.systemui.log.impl.LogProxyDefault
 import com.android.systemui.log.table.TableLogBufferFactory
 import dagger.Binds
 import dagger.Module
@@ -24,4 +27,6 @@ import dagger.Module
 abstract class TableLogBufferModule {
     @Binds
     abstract fun tableLogBufferFactory(impl: TableLogBufferFactoryImpl): TableLogBufferFactory
+
+    @SysUISingleton @Binds abstract fun logProxy(impl: LogProxyDefault): LogProxy
 }

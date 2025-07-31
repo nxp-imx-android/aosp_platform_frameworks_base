@@ -84,6 +84,7 @@ constructor(
                 viewModel.showBackgroundForEditModeTransition.collectAsStateWithLifecycle(
                     initialValue = false
                 )
+            val empty by viewModel.isEmptyState.collectAsStateWithLifecycle(initialValue = false)
 
             // The animated background here matches the color scheme of the edit mode activity and
             // facilitates the transition to and from edit mode.
@@ -97,7 +98,9 @@ constructor(
 
             Layout(
                 modifier =
-                    Modifier.fillMaxSize().thenIf(communalSettingsInteractor.isV2FlagEnabled()) {
+                    Modifier.fillMaxSize().thenIf(
+                        communalSettingsInteractor.isV2FlagEnabled() && !empty
+                    ) {
                         Modifier.consumeHorizontalDragGestures(gridRegion)
                     },
                 content = {

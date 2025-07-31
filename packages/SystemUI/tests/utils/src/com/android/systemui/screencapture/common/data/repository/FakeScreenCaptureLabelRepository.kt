@@ -17,32 +17,34 @@
 package com.android.systemui.screencapture.common.data.repository
 
 import android.content.ComponentName
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.CompletableDeferred
 
 class FakeScreenCaptureLabelRepository : ScreenCaptureLabelRepository {
 
-    var fakeLabelFlow = MutableStateFlow<Result<CharSequence>?>(null)
-    val labelForCalls = mutableListOf<Triple<ComponentName, Int, Boolean>>()
-
-    override fun labelFor(
-        component: ComponentName,
-        userId: Int,
-        badged: Boolean,
-    ): StateFlow<Result<CharSequence>?> {
-        labelForCalls.add(Triple(component, userId, badged))
-        return fakeLabelFlow
-    }
-
-    var fakeLabel: CharSequence? = "FakeLabel"
+    var fakeLabel: Result<CharSequence> = Result.success("FakeLabel")
     val loadLabelCalls = mutableListOf<Triple<ComponentName, Int, Boolean>>()
+    private var loadLabelDeferred = CompletableDeferred(Unit)
 
     override suspend fun loadLabel(
         component: ComponentName,
         userId: Int,
         badged: Boolean,
-    ): CharSequence? {
+    ): Result<CharSequence> {
         loadLabelCalls.add(Triple(component, userId, badged))
+        loadLabelDeferred.await()
         return fakeLabel
+    }
+
+    fun setLoadLabelSuspends(suspends: Boolean) {
+        loadLabelDeferred =
+            if (suspends) {
+                CompletableDeferred()
+            } else {
+                CompletableDeferred(Unit)
+            }
+    }
+
+    fun completeLoadLabel() {
+        loadLabelDeferred.complete(Unit)
     }
 }

@@ -24,7 +24,6 @@ import android.platform.test.annotations.EnableFlags
 import android.provider.Settings
 import android.testing.TestableLooper
 import android.testing.TestableLooper.RunWithLooper
-import android.testing.ViewUtils
 import android.view.LayoutInflater
 import android.view.View
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -90,7 +89,6 @@ import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert
 import org.junit.Before
-import org.junit.Ignore
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.ArgumentCaptor
@@ -508,7 +506,6 @@ class KeyguardStatusBarViewControllerTest : SysuiTestCase() {
         assertThat(keyguardStatusBarView.visibility).isEqualTo(View.VISIBLE)
     }
 
-    @Ignore("b/419321603")
     @Test
     @DisableSceneContainer
     fun updateViewState_panelExpandedHeightZero_viewHidden() {
@@ -846,59 +843,45 @@ class KeyguardStatusBarViewControllerTest : SysuiTestCase() {
         assertThat(keyguardStatusBarView.visibility).isEqualTo(View.INVISIBLE)
     }
 
-    @Ignore("b/425280318")
     @DisableSceneContainer
     @DisableFlags(Flags.FLAG_GLANCEABLE_HUB_V2)
     fun animateToGlanceableHub_v2Disabled_affectsAlpha() =
         testScope.runTest {
-            try {
-                controller.init()
-                val transitionAlphaAmount = .5f
-                ViewUtils.attachView(keyguardStatusBarView)
+            controller.init()
+            val transitionAlphaAmount = .5f
 
-                looper.processAllMessages()
-                updateStateToKeyguard()
-                kosmos.fakeCommunalSceneRepository.instantlyTransitionTo(CommunalScenes.Communal)
-                runCurrent()
-                controller.updateCommunalAlphaTransition(transitionAlphaAmount)
-                assertThat(keyguardStatusBarView.visibility).isEqualTo(View.VISIBLE)
-                assertThat(keyguardStatusBarView.alpha).isEqualTo(transitionAlphaAmount)
-            } finally {
-                ViewUtils.detachView(keyguardStatusBarView)
-            }
+            updateStateToKeyguard()
+            kosmos.fakeCommunalSceneRepository.instantlyTransitionTo(CommunalScenes.Communal)
+            runCurrent()
+            controller.updateCommunalAlphaTransition(transitionAlphaAmount)
+            assertThat(keyguardStatusBarView.visibility).isEqualTo(View.VISIBLE)
+            assertThat(keyguardStatusBarView.alpha).isEqualTo(transitionAlphaAmount)
         }
 
-    @Ignore("b/425280318")
     @DisableSceneContainer
     @DisableFlags(Flags.FLAG_GLANCEABLE_HUB_V2)
     fun animateToGlanceableHub_v2Disabled_alphaResetOnCommunalNotShowing() =
         testScope.runTest {
-            try {
-                controller.init()
-                ViewUtils.attachView(keyguardStatusBarView)
+            controller.init()
 
-                looper.processAllMessages()
-                updateStateToKeyguard()
+            updateStateToKeyguard()
 
-                // Verify status bar is fully visible on lockscreen
-                assertThat(keyguardStatusBarView.visibility).isEqualTo(View.VISIBLE)
-                assertThat(keyguardStatusBarView.alpha).isEqualTo(1f)
+            // Verify status bar is fully visible on lockscreen
+            assertThat(keyguardStatusBarView.visibility).isEqualTo(View.VISIBLE)
+            assertThat(keyguardStatusBarView.alpha).isEqualTo(1f)
 
-                // Start transitioning to communal, and verify status bar is half visible
-                kosmos.fakeCommunalSceneRepository.instantlyTransitionTo(CommunalScenes.Communal)
-                runCurrent()
-                controller.updateCommunalAlphaTransition(.5f)
-                assertThat(keyguardStatusBarView.visibility).isEqualTo(View.VISIBLE)
-                assertThat(keyguardStatusBarView.alpha).isEqualTo(.5f)
+            // Start transitioning to communal, and verify status bar is half visible
+            kosmos.fakeCommunalSceneRepository.instantlyTransitionTo(CommunalScenes.Communal)
+            runCurrent()
+            controller.updateCommunalAlphaTransition(.5f)
+            assertThat(keyguardStatusBarView.visibility).isEqualTo(View.VISIBLE)
+            assertThat(keyguardStatusBarView.alpha).isEqualTo(.5f)
 
-                // Transition back to lockscreen, and verify status bar is set back to fully visible
-                kosmos.fakeCommunalSceneRepository.instantlyTransitionTo(CommunalScenes.Blank)
-                runCurrent()
-                assertThat(keyguardStatusBarView.visibility).isEqualTo(View.VISIBLE)
-                assertThat(keyguardStatusBarView.alpha).isNotEqualTo(.5f)
-            } finally {
-                ViewUtils.detachView(keyguardStatusBarView)
-            }
+            // Transition back to lockscreen, and verify status bar is set back to fully visible
+            kosmos.fakeCommunalSceneRepository.instantlyTransitionTo(CommunalScenes.Blank)
+            runCurrent()
+            assertThat(keyguardStatusBarView.visibility).isEqualTo(View.VISIBLE)
+            assertThat(keyguardStatusBarView.alpha).isNotEqualTo(.5f)
         }
 
     @Test
@@ -906,43 +889,34 @@ class KeyguardStatusBarViewControllerTest : SysuiTestCase() {
     @DisableFlags(Flags.FLAG_GLANCEABLE_HUB_V2)
     fun statusBar_isHidden_goneToGlanceableHubV2Disabled() =
         testScope.runTest {
-            try {
-                controller.init()
-                ViewUtils.attachView(keyguardStatusBarView)
-                looper.processAllMessages()
+            controller.init()
 
-                // Keyguard is showing and start transitioning to communal
-                updateStateToKeyguard()
-                kosmos.fakeCommunalSceneRepository.instantlyTransitionTo(CommunalScenes.Communal)
-                runCurrent()
+            // Keyguard is showing and start transitioning to communal
+            updateStateToKeyguard()
+            kosmos.fakeCommunalSceneRepository.instantlyTransitionTo(CommunalScenes.Communal)
+            runCurrent()
 
-                val transitionSteps =
-                    listOf(
-                        goneToGlanceableHubTransitionStep(0.0f, STARTED),
-                        goneToGlanceableHubTransitionStep(.1f),
-                    )
-                kosmos.fakeKeyguardTransitionRepository.sendTransitionSteps(
-                    transitionSteps,
-                    testScope,
+            val transitionSteps =
+                listOf(
+                    goneToGlanceableHubTransitionStep(0.0f, STARTED),
+                    goneToGlanceableHubTransitionStep(.1f),
                 )
+            kosmos.fakeKeyguardTransitionRepository.sendTransitionSteps(transitionSteps, testScope)
 
-                // Verify status bar is not visible
-                assertThat(keyguardStatusBarView.alpha).isEqualTo(0f)
-                assertThat(keyguardStatusBarView.visibility).isEqualTo(View.INVISIBLE)
+            // Verify status bar is not visible
+            assertThat(keyguardStatusBarView.alpha).isEqualTo(0f)
+            assertThat(keyguardStatusBarView.visibility).isEqualTo(View.INVISIBLE)
 
-                kosmos.fakeKeyguardTransitionRepository.sendTransitionSteps(
-                    listOf(
-                        goneToGlanceableHubTransitionStep(1f),
-                        goneToGlanceableHubTransitionStep(1f, FINISHED),
-                    ),
-                    testScope,
-                )
+            kosmos.fakeKeyguardTransitionRepository.sendTransitionSteps(
+                listOf(
+                    goneToGlanceableHubTransitionStep(1f),
+                    goneToGlanceableHubTransitionStep(1f, FINISHED),
+                ),
+                testScope,
+            )
 
-                assertThat(keyguardStatusBarView.alpha).isEqualTo(0f)
-                assertThat(keyguardStatusBarView.visibility).isEqualTo(View.INVISIBLE)
-            } finally {
-                ViewUtils.detachView(keyguardStatusBarView)
-            }
+            assertThat(keyguardStatusBarView.alpha).isEqualTo(0f)
+            assertThat(keyguardStatusBarView.visibility).isEqualTo(View.INVISIBLE)
         }
 
     @Test
@@ -950,45 +924,39 @@ class KeyguardStatusBarViewControllerTest : SysuiTestCase() {
     @EnableFlags(Flags.FLAG_GLANCEABLE_HUB_V2)
     fun statusBar_fullyVisible_goneToGlanceableHubV2Enabled() =
         testScope.runTest {
-            try {
-                controller.init()
-                ViewUtils.attachView(keyguardStatusBarView)
-                looper.processAllMessages()
+            controller.init()
 
-                // Keyguard is showing and start transitioning to communal
-                updateStateToKeyguard()
-                kosmos.fakeCommunalSceneRepository.instantlyTransitionTo(CommunalScenes.Communal)
-                runCurrent()
+            // Keyguard is showing and start transitioning to communal
+            updateStateToKeyguard()
+            kosmos.fakeCommunalSceneRepository.instantlyTransitionTo(CommunalScenes.Communal)
+            runCurrent()
 
-                // Verify status bar is fully visible
-                assertThat(keyguardStatusBarView.alpha).isEqualTo(1f)
-                assertThat(keyguardStatusBarView.visibility).isEqualTo(View.VISIBLE)
+            // Verify status bar is fully visible
+            assertThat(keyguardStatusBarView.alpha).isEqualTo(1f)
+            assertThat(keyguardStatusBarView.visibility).isEqualTo(View.VISIBLE)
 
-                kosmos.fakeKeyguardTransitionRepository.sendTransitionSteps(
-                    listOf(
-                        goneToGlanceableHubTransitionStep(0.0f, STARTED),
-                        goneToGlanceableHubTransitionStep(.1f),
-                    ),
-                    testScope,
-                )
+            kosmos.fakeKeyguardTransitionRepository.sendTransitionSteps(
+                listOf(
+                    goneToGlanceableHubTransitionStep(0.0f, STARTED),
+                    goneToGlanceableHubTransitionStep(.1f),
+                ),
+                testScope,
+            )
 
-                // The transition will not affect alpha and visibility
-                assertThat(keyguardStatusBarView.alpha).isEqualTo(1f)
-                assertThat(keyguardStatusBarView.visibility).isEqualTo(View.VISIBLE)
+            // The transition will not affect alpha and visibility
+            assertThat(keyguardStatusBarView.alpha).isEqualTo(1f)
+            assertThat(keyguardStatusBarView.visibility).isEqualTo(View.VISIBLE)
 
-                kosmos.fakeKeyguardTransitionRepository.sendTransitionSteps(
-                    listOf(
-                        goneToGlanceableHubTransitionStep(1f),
-                        goneToGlanceableHubTransitionStep(1f, FINISHED),
-                    ),
-                    testScope,
-                )
+            kosmos.fakeKeyguardTransitionRepository.sendTransitionSteps(
+                listOf(
+                    goneToGlanceableHubTransitionStep(1f),
+                    goneToGlanceableHubTransitionStep(1f, FINISHED),
+                ),
+                testScope,
+            )
 
-                assertThat(keyguardStatusBarView.alpha).isEqualTo(1f)
-                assertThat(keyguardStatusBarView.visibility).isEqualTo(View.VISIBLE)
-            } finally {
-                ViewUtils.detachView(keyguardStatusBarView)
-            }
+            assertThat(keyguardStatusBarView.alpha).isEqualTo(1f)
+            assertThat(keyguardStatusBarView.visibility).isEqualTo(View.VISIBLE)
         }
 
     @Test
@@ -996,227 +964,166 @@ class KeyguardStatusBarViewControllerTest : SysuiTestCase() {
     @DisableFlags(Flags.FLAG_GLANCEABLE_HUB_V2)
     fun dragDownShadeOverGlanceableHub_v2Disabled_alphaRemainsZero() =
         testScope.runTest {
-            try {
-                controller.init()
-                ViewUtils.attachView(keyguardStatusBarView)
+            controller.init()
 
-                looper.processAllMessages()
-                updateStateToKeyguard()
+            updateStateToKeyguard()
 
-                // Verify status bar is fully visible on lockscreen
-                assertThat(keyguardStatusBarView.visibility).isEqualTo(View.VISIBLE)
-                assertThat(keyguardStatusBarView.alpha).isEqualTo(1f)
+            // Verify status bar is fully visible on lockscreen
+            assertThat(keyguardStatusBarView.visibility).isEqualTo(View.VISIBLE)
+            assertThat(keyguardStatusBarView.alpha).isEqualTo(1f)
 
-                // Fully transition to communal, and verify status bar is invisible
-                kosmos.fakeCommunalSceneRepository.instantlyTransitionTo(CommunalScenes.Communal)
-                runCurrent()
-                controller.updateCommunalAlphaTransition(0f)
-                assertThat(keyguardStatusBarView.visibility).isEqualTo(View.INVISIBLE)
-                assertThat(keyguardStatusBarView.alpha).isEqualTo(0f)
+            // Fully transition to communal, and verify status bar is invisible
+            kosmos.fakeCommunalSceneRepository.instantlyTransitionTo(CommunalScenes.Communal)
+            runCurrent()
+            controller.updateCommunalAlphaTransition(0f)
+            assertThat(keyguardStatusBarView.visibility).isEqualTo(View.INVISIBLE)
+            assertThat(keyguardStatusBarView.alpha).isEqualTo(0f)
 
-                // Start dragging down shade, and verify status bar remains invisible
-                shadeViewStateProvider.lockscreenShadeDragProgress = .1f
-                controller.updateViewState()
-                assertThat(keyguardStatusBarView.visibility).isEqualTo(View.INVISIBLE)
-                assertThat(keyguardStatusBarView.alpha).isEqualTo(0f)
-            } finally {
-                ViewUtils.detachView(keyguardStatusBarView)
-            }
+            // Start dragging down shade, and verify status bar remains invisible
+            shadeViewStateProvider.lockscreenShadeDragProgress = .1f
+            controller.updateViewState()
+            assertThat(keyguardStatusBarView.visibility).isEqualTo(View.INVISIBLE)
+            assertThat(keyguardStatusBarView.alpha).isEqualTo(0f)
         }
 
-    @Ignore("b/425280318")
     @DisableSceneContainer
     @EnableFlags(Flags.FLAG_GLANCEABLE_HUB_V2)
     fun animateToGlanceableHub_v2Enabled_alphaDoesNotChange() =
         testScope.runTest {
-            try {
-                controller.init()
-                ViewUtils.attachView(keyguardStatusBarView)
+            controller.init()
 
-                looper.processAllMessages()
-                updateStateToKeyguard()
+            updateStateToKeyguard()
 
-                // Verify status bar is fully visible on lockscreen
-                assertThat(keyguardStatusBarView.visibility).isEqualTo(View.VISIBLE)
-                assertThat(keyguardStatusBarView.alpha).isEqualTo(1f)
+            // Verify status bar is fully visible on lockscreen
+            assertThat(keyguardStatusBarView.visibility).isEqualTo(View.VISIBLE)
+            assertThat(keyguardStatusBarView.alpha).isEqualTo(1f)
 
-                // Transition to communal halfway, and verify status bar remains fully visible
-                kosmos.fakeCommunalSceneRepository.instantlyTransitionTo(CommunalScenes.Communal)
-                runCurrent()
-                assertThat(keyguardStatusBarView.visibility).isEqualTo(View.VISIBLE)
-                assertThat(keyguardStatusBarView.alpha).isEqualTo(1f)
-            } finally {
-                ViewUtils.detachView(keyguardStatusBarView)
-            }
+            // Transition to communal halfway, and verify status bar remains fully visible
+            kosmos.fakeCommunalSceneRepository.instantlyTransitionTo(CommunalScenes.Communal)
+            runCurrent()
+            assertThat(keyguardStatusBarView.visibility).isEqualTo(View.VISIBLE)
+            assertThat(keyguardStatusBarView.alpha).isEqualTo(1f)
         }
 
     @Test
     @DisableSceneContainer
     fun lockscreenToDreaming_affectsAlpha() =
         testScope.runTest {
-            try {
-                controller.init()
-                ViewUtils.attachView(keyguardStatusBarView)
-                looper.processAllMessages()
-                updateStateToKeyguard()
+            controller.init()
+            updateStateToKeyguard()
 
-                val transitionSteps =
-                    listOf(
-                        lockscreenToDreamTransitionStep(0.0f, STARTED),
-                        lockscreenToDreamTransitionStep(.1f),
-                    )
-                kosmos.fakeKeyguardTransitionRepository.sendTransitionSteps(
-                    transitionSteps,
-                    testScope,
+            val transitionSteps =
+                listOf(
+                    lockscreenToDreamTransitionStep(0.0f, STARTED),
+                    lockscreenToDreamTransitionStep(.1f),
                 )
+            kosmos.fakeKeyguardTransitionRepository.sendTransitionSteps(transitionSteps, testScope)
 
-                assertThat(keyguardStatusBarView.alpha).isIn(Range.open(0f, 1f))
-                assertThat(keyguardStatusBarView.visibility).isEqualTo(View.VISIBLE)
+            assertThat(keyguardStatusBarView.alpha).isIn(Range.open(0f, 1f))
+            assertThat(keyguardStatusBarView.visibility).isEqualTo(View.VISIBLE)
 
-                kosmos.fakeKeyguardTransitionRepository.sendTransitionSteps(
-                    listOf(
-                        lockscreenToDreamTransitionStep(1f),
-                        lockscreenToDreamTransitionStep(1f, FINISHED),
-                    ),
-                    testScope,
-                )
+            kosmos.fakeKeyguardTransitionRepository.sendTransitionSteps(
+                listOf(
+                    lockscreenToDreamTransitionStep(1f),
+                    lockscreenToDreamTransitionStep(1f, FINISHED),
+                ),
+                testScope,
+            )
 
-                assertThat(keyguardStatusBarView.alpha).isEqualTo(0f)
-                assertThat(keyguardStatusBarView.visibility).isEqualTo(View.INVISIBLE)
-            } finally {
-                ViewUtils.detachView(keyguardStatusBarView)
-            }
+            assertThat(keyguardStatusBarView.alpha).isEqualTo(0f)
+            assertThat(keyguardStatusBarView.visibility).isEqualTo(View.INVISIBLE)
         }
 
     @Test
     @DisableSceneContainer
     fun dreamingToLockscreen_affectsAlpha() =
         testScope.runTest {
-            try {
-                controller.init()
-                ViewUtils.attachView(keyguardStatusBarView)
-                looper.processAllMessages()
-                updateStateToKeyguard()
+            controller.init()
+            updateStateToKeyguard()
 
-                val transitionSteps =
-                    listOf(
-                        dreamToLockscreenTransitionStep(0.0f, STARTED),
-                        dreamToLockscreenTransitionStep(.3f),
-                    )
-                kosmos.fakeKeyguardTransitionRepository.sendTransitionSteps(
-                    transitionSteps,
-                    testScope,
+            val transitionSteps =
+                listOf(
+                    dreamToLockscreenTransitionStep(0.0f, STARTED),
+                    dreamToLockscreenTransitionStep(.3f),
                 )
+            kosmos.fakeKeyguardTransitionRepository.sendTransitionSteps(transitionSteps, testScope)
 
-                assertThat(keyguardStatusBarView.alpha).isIn(Range.open(0f, 1f))
-                assertThat(keyguardStatusBarView.visibility).isEqualTo(View.VISIBLE)
-            } finally {
-                ViewUtils.detachView(keyguardStatusBarView)
-            }
+            assertThat(keyguardStatusBarView.alpha).isIn(Range.open(0f, 1f))
+            assertThat(keyguardStatusBarView.visibility).isEqualTo(View.VISIBLE)
         }
 
     @Test
     @DisableSceneContainer
     fun dreamingToLockscreen_resetAlphaOnFinished() =
         testScope.runTest {
-            try {
-                controller.init()
-                ViewUtils.attachView(keyguardStatusBarView)
-                looper.processAllMessages()
-                updateStateToKeyguard()
+            controller.init()
+            updateStateToKeyguard()
 
-                val transitionSteps =
-                    listOf(
-                        dreamToLockscreenTransitionStep(0.0f, STARTED),
-                        dreamToLockscreenTransitionStep(.3f),
-                    )
-                kosmos.fakeKeyguardTransitionRepository.sendTransitionSteps(
-                    transitionSteps,
-                    testScope,
+            val transitionSteps =
+                listOf(
+                    dreamToLockscreenTransitionStep(0.0f, STARTED),
+                    dreamToLockscreenTransitionStep(.3f),
                 )
+            kosmos.fakeKeyguardTransitionRepository.sendTransitionSteps(transitionSteps, testScope)
 
-                val explicitAlpha = keyguardStatusBarView.alpha
-                assertThat(explicitAlpha).isIn(Range.open(0f, 1f))
+            val explicitAlpha = keyguardStatusBarView.alpha
+            assertThat(explicitAlpha).isIn(Range.open(0f, 1f))
 
-                kosmos.fakeKeyguardTransitionRepository.sendTransitionSteps(
-                    listOf(dreamToLockscreenTransitionStep(1f, FINISHED)),
-                    testScope,
-                )
+            kosmos.fakeKeyguardTransitionRepository.sendTransitionSteps(
+                listOf(dreamToLockscreenTransitionStep(1f, FINISHED)),
+                testScope,
+            )
 
-                assertThat(keyguardStatusBarView.alpha).isNotEqualTo(explicitAlpha)
-                assertThat(keyguardStatusBarView.visibility).isEqualTo(View.VISIBLE)
-            } finally {
-                ViewUtils.detachView(keyguardStatusBarView)
-            }
+            assertThat(keyguardStatusBarView.alpha).isNotEqualTo(explicitAlpha)
+            assertThat(keyguardStatusBarView.visibility).isEqualTo(View.VISIBLE)
         }
 
     @Test
     @DisableSceneContainer
     fun goneToDreaming_affectsAlpha() =
         testScope.runTest {
-            try {
-                controller.init()
-                ViewUtils.attachView(keyguardStatusBarView)
-                looper.processAllMessages()
-                updateStateToKeyguard()
+            controller.init()
+            updateStateToKeyguard()
 
-                val transitionSteps =
-                    listOf(goneToDreamTransitionStep(0.0f, STARTED), goneToDreamTransitionStep(.1f))
-                kosmos.fakeKeyguardTransitionRepository.sendTransitionSteps(
-                    transitionSteps,
-                    testScope,
-                )
+            val transitionSteps =
+                listOf(goneToDreamTransitionStep(0.0f, STARTED), goneToDreamTransitionStep(.1f))
+            kosmos.fakeKeyguardTransitionRepository.sendTransitionSteps(transitionSteps, testScope)
 
-                assertThat(keyguardStatusBarView.alpha).isEqualTo(0f)
-                assertThat(keyguardStatusBarView.visibility).isEqualTo(View.INVISIBLE)
-            } finally {
-                ViewUtils.detachView(keyguardStatusBarView)
-            }
+            assertThat(keyguardStatusBarView.alpha).isEqualTo(0f)
+            assertThat(keyguardStatusBarView.visibility).isEqualTo(View.INVISIBLE)
         }
 
     @Test
     @DisableSceneContainer
     fun resetAlpha_onTransitionToDreamingInterrupted() =
         testScope.runTest {
-            try {
-                controller.init()
-                ViewUtils.attachView(keyguardStatusBarView)
-                looper.processAllMessages()
-                updateStateToKeyguard()
+            controller.init()
+            updateStateToKeyguard()
 
-                // Transition to dreaming
-                var transitionSteps =
-                    listOf(
-                        lockscreenToDreamTransitionStep(0.0f, STARTED),
-                        lockscreenToDreamTransitionStep(.1f),
-                    )
-                kosmos.fakeKeyguardTransitionRepository.sendTransitionSteps(
-                    transitionSteps,
-                    testScope,
+            // Transition to dreaming
+            var transitionSteps =
+                listOf(
+                    lockscreenToDreamTransitionStep(0.0f, STARTED),
+                    lockscreenToDreamTransitionStep(.1f),
                 )
+            kosmos.fakeKeyguardTransitionRepository.sendTransitionSteps(transitionSteps, testScope)
 
-                val explicitAlphaByDream = keyguardStatusBarView.alpha
-                assertThat(keyguardStatusBarView.visibility).isEqualTo(View.VISIBLE)
+            val explicitAlphaByDream = keyguardStatusBarView.alpha
+            assertThat(keyguardStatusBarView.visibility).isEqualTo(View.VISIBLE)
 
-                // Transition is interrupted and goes to AOD
-                controller.setDozing(true)
-                transitionSteps =
-                    listOf(
-                        lockscreenToDreamTransitionStep(.1f, CANCELED),
-                        dreamToAodTransitionStep(0.1f, STARTED),
-                        dreamToAodTransitionStep(.5f),
-                        dreamToAodTransitionStep(1f, FINISHED),
-                    )
-                kosmos.fakeKeyguardTransitionRepository.sendTransitionSteps(
-                    transitionSteps,
-                    testScope,
+            // Transition is interrupted and goes to AOD
+            controller.setDozing(true)
+            transitionSteps =
+                listOf(
+                    lockscreenToDreamTransitionStep(.1f, CANCELED),
+                    dreamToAodTransitionStep(0.1f, STARTED),
+                    dreamToAodTransitionStep(.5f),
+                    dreamToAodTransitionStep(1f, FINISHED),
                 )
+            kosmos.fakeKeyguardTransitionRepository.sendTransitionSteps(transitionSteps, testScope)
 
-                assertThat(keyguardStatusBarView.alpha).isNotEqualTo(explicitAlphaByDream)
-                assertThat(keyguardStatusBarView.visibility).isEqualTo(View.INVISIBLE)
-            } finally {
-                ViewUtils.detachView(keyguardStatusBarView)
-            }
+            assertThat(keyguardStatusBarView.alpha).isNotEqualTo(explicitAlphaByDream)
+            assertThat(keyguardStatusBarView.visibility).isEqualTo(View.INVISIBLE)
         }
 
     /**

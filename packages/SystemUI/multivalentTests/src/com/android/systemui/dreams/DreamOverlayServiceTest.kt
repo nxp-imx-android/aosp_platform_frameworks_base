@@ -75,6 +75,7 @@ import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.testDispatcher
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
 import com.android.systemui.navigationbar.gestural.data.gestureRepository
+import com.android.systemui.navigationbar.gestural.domain.GestureInteractor
 import com.android.systemui.navigationbar.gestural.domain.TaskInfo
 import com.android.systemui.power.domain.interactor.powerInteractor
 import com.android.systemui.scene.data.repository.sceneContainerRepository
@@ -155,6 +156,8 @@ class DreamOverlayServiceTest(flags: FlagsParameterization?) : SysuiTestCase() {
     private lateinit var environmentComponents: EnvironmentComponents
 
     private lateinit var mService: DreamOverlayService
+
+    private lateinit var mGestureInteractor: GestureInteractor
 
     private class EnvironmentComponents(
         val dreamsComplicationComponent: DreamComplicationComponent,
@@ -245,6 +248,7 @@ class DreamOverlayServiceTest(flags: FlagsParameterization?) : SysuiTestCase() {
         Dispatchers.setMain(kosmos.testDispatcher)
         onTeardown { Dispatchers.resetMain() }
         with(kosmos) {
+            mGestureInteractor = spy(gestureInteractor)
             mService =
                 DreamOverlayService(
                     mContext,
@@ -269,7 +273,7 @@ class DreamOverlayServiceTest(flags: FlagsParameterization?) : SysuiTestCase() {
                     HOME_CONTROL_PANEL_DREAM_COMPONENT,
                     mDreamOverlayCallbackController,
                     keyguardInteractor,
-                    gestureInteractor,
+                    mGestureInteractor,
                     wakeGestureMonitor,
                     powerInteractor,
                     WINDOW_NAME,
@@ -1343,6 +1347,32 @@ class DreamOverlayServiceTest(flags: FlagsParameterization?) : SysuiTestCase() {
             mMainExecutor.runAllReady()
 
             assertThat(gestureRepository.gestureBlockedMatchers.value).isEmpty()
+        }
+
+    @Test
+    fun testShadeExpansionNoEffectAfterEndDream() =
+        kosmos.runTest {
+            val client = client
+
+            // Inform the overlay service of dream starting.
+            client.startDream(
+                mWindowParams,
+                mDreamOverlayCallback,
+                DREAM_COMPONENT,
+                false /*isPreview*/,
+                false, /*shouldShowComplication*/
+            )
+            mMainExecutor.runAllReady()
+
+            val callbackCaptor = argumentCaptor<KeyguardUpdateMonitorCallback>()
+            verify(mKeyguardUpdateMonitor).registerCallback(callbackCaptor.capture())
+            callbackCaptor.lastValue.onShadeExpandedChanged(true)
+            client.endDream()
+            mMainExecutor.runAllReady()
+            clearInvocations(mGestureInteractor)
+            callbackCaptor.lastValue.onShadeExpandedChanged(false)
+            mMainExecutor.runAllReady()
+            verifyNoMoreInteractions(mGestureInteractor)
         }
 
     @Test

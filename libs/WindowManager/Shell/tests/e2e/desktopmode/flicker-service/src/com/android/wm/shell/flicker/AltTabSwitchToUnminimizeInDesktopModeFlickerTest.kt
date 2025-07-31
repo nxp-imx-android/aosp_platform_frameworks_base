@@ -16,13 +16,14 @@
 
 package com.android.wm.shell.flicker
 
+import android.platform.test.annotations.Postsubmit
+import android.platform.test.annotations.RequiresDesktopDevice
 import android.tools.NavBar
 import android.tools.flicker.FlickerBuilder
 import android.tools.flicker.FlickerTest
 import android.tools.flicker.FlickerTestFactory
 import android.tools.flicker.assertions.FlickerChecker
 import android.tools.flicker.junit.FlickerParametersRunnerFactory
-import androidx.test.filters.RequiresDevice
 import com.android.wm.shell.Utils
 import com.android.wm.shell.flicker.utils.appWindowInsideDisplayBoundsAtEnd
 import com.android.wm.shell.flicker.utils.appWindowOnTopAtEnd
@@ -45,9 +46,10 @@ import org.junit.runners.Parameterized
  *
  *  The tests assert that the Clock application is the top-most window before the Alt-Tab switch.
  */
-@RequiresDevice
+@RequiresDesktopDevice
 @RunWith(Parameterized::class)
 @Parameterized.UseParametersRunnerFactory(FlickerParametersRunnerFactory::class)
+@Postsubmit
 class AltTabSwitchToUnminimizeInDesktopModeFlickerTest(flicker: FlickerTest) :
         DesktopModeBaseTest(flicker) {
     inner class AltTabSwitchToUnminimizeInDesktopModeScenario : AltTabSwitchToUnminimizeInDesktopMode(

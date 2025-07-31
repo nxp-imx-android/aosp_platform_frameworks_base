@@ -55,6 +55,9 @@
       "name": "FunctionalTestsDesktopMode-FocusAppFromTaskbarTest"
     },
     {
+      "name": "FunctionalTestsDesktopMode-FocusAppFromTaskbarOverflowTest"
+    },
+    {
       "name": "FunctionalTestsDesktopMode-MoveToNextDisplayTest"
     },
     {

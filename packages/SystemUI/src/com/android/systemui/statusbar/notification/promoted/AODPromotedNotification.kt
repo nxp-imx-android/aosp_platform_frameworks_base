@@ -25,7 +25,6 @@ import android.graphics.Typeface
 import android.graphics.drawable.Drawable
 import android.util.Log
 import android.util.Size
-import android.view.LayoutInflater
 import android.view.NotificationHeaderView
 import android.view.NotificationTopLineView
 import android.view.View
@@ -99,38 +98,18 @@ fun AODPromotedNotification(
     val content = viewModel.content ?: return
     val audiblyAlertedIconVisible = viewModel.audiblyAlertedIconVisible
 
-    if (com.android.systemui.Flags.uiRichOngoingAodSkeletonBgInflation()) {
-        val notificationView = content.notificationView
-        if (notificationView == null) {
-            Log.w(TAG, "not displaying promoted notif with ineligible style on AOD")
-            return
-        }
-        key(content.identity, notificationView.getTag(viewInflationIdentity)) {
-            AODPromotedNotificationView(
-                notificationViewFactory = { notificationView },
-                content = content,
-                audiblyAlertedIconVisible = audiblyAlertedIconVisible,
-                modifier = modifier,
-            )
-        }
-    } else {
-        val layoutResource = content.layoutResource
-        if (layoutResource == null) {
-            Log.w(TAG, "not displaying promoted notif with ineligible style on AOD")
-            return
-        }
-        key(content.identity) {
-            AODPromotedNotificationView(
-                notificationViewFactory = { context ->
-                    traceSection("$TAG.inflate") {
-                        LayoutInflater.from(context).inflate(layoutResource, /* root= */ null)
-                    }
-                },
-                content = content,
-                audiblyAlertedIconVisible = audiblyAlertedIconVisible,
-                modifier = modifier,
-            )
-        }
+    val notificationView = content.notificationView
+    if (notificationView == null) {
+        Log.w(TAG, "not displaying promoted notif with ineligible style on AOD")
+        return
+    }
+    key(content.identity, notificationView.getTag(viewInflationIdentity)) {
+        AODPromotedNotificationView(
+            notificationViewFactory = { notificationView },
+            content = content,
+            audiblyAlertedIconVisible = audiblyAlertedIconVisible,
+            modifier = modifier,
+        )
     }
 }
 

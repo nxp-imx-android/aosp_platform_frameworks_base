@@ -16,7 +16,8 @@
 
 package com.android.wm.shell.flicker.keyboardshortcuts
 
-import androidx.test.filters.RequiresDevice
+import android.platform.test.annotations.Postsubmit
+import android.platform.test.annotations.RequiresDesktopDevice
 import android.tools.NavBar
 import android.tools.flicker.junit.FlickerParametersRunnerFactory
 import android.tools.flicker.FlickerBuilder
@@ -36,9 +37,10 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.Parameterized
 
-@RequiresDevice
+@RequiresDesktopDevice
 @RunWith(Parameterized::class)
 @Parameterized.UseParametersRunnerFactory(FlickerParametersRunnerFactory::class)
+@Postsubmit
 class EnterDesktopFromKeyboardShortcutFlickerTest(flicker: FlickerTest) :
     DesktopModeBaseTest(flicker) {
     inner class EnterDesktopFromKeyboardShortcutScenario : EnterDesktopFromKeyboardShortcut(flicker.scenario.startRotation)

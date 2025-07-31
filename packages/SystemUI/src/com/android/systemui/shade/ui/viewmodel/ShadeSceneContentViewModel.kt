@@ -16,6 +16,7 @@
 
 package com.android.systemui.shade.ui.viewmodel
 
+import androidx.annotation.FloatRange
 import androidx.compose.runtime.getValue
 import androidx.lifecycle.LifecycleOwner
 import com.android.app.tracing.coroutines.launchTraced as launch
@@ -26,6 +27,7 @@ import com.android.systemui.lifecycle.Hydrator
 import com.android.systemui.media.controls.domain.pipeline.interactor.MediaCarouselInteractor
 import com.android.systemui.qs.FooterActionsController
 import com.android.systemui.qs.footer.ui.viewmodel.FooterActionsViewModel
+import com.android.systemui.qs.panels.domain.interactor.TileSquishinessInteractor
 import com.android.systemui.qs.panels.ui.viewmodel.QuickQuickSettingsViewModel
 import com.android.systemui.qs.ui.adapter.QSSceneAdapter
 import com.android.systemui.scene.domain.interactor.SceneInteractor
@@ -69,6 +71,7 @@ constructor(
     unfoldTransitionInteractor: UnfoldTransitionInteractor,
     deviceEntryInteractor: DeviceEntryInteractor,
     private val sceneInteractor: SceneInteractor,
+    private val tileSquishinessInteractor: TileSquishinessInteractor,
 ) : ExclusiveActivatable() {
 
     private val hydrator = Hydrator("ShadeSceneContentViewModel.hydrator")
@@ -149,8 +152,18 @@ constructor(
         sceneInteractor.changeScene(Scenes.Lockscreen, "Shade empty space clicked.")
     }
 
+    /**
+     * Sets the squishiness for the tiles. The squishiness will be mapped between `[0.1, 1.0]` to
+     * prevent visual artifacts caused by squishiness being too close to 0.
+     */
+    fun setTileSquishiness(@FloatRange(0.0, 1.0) squishiness: Float) {
+        tileSquishinessInteractor.setSquishinessValue(squishiness.constrainSquishiness())
+    }
+
     @AssistedFactory
     interface Factory {
         fun create(): ShadeSceneContentViewModel
     }
 }
+
+private fun Float.constrainSquishiness(): Float = (0.1f + this * 0.9f).coerceIn(0f, 1f)

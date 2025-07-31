@@ -16,7 +16,8 @@
 
 package com.android.wm.shell.flicker.fundamentals
 
-import androidx.test.filters.RequiresDevice
+import android.platform.test.annotations.Postsubmit
+import android.platform.test.annotations.RequiresDesktopDevice
 import android.tools.NavBar
 import android.tools.flicker.junit.FlickerParametersRunnerFactory
 import android.tools.flicker.FlickerBuilder
@@ -40,8 +41,9 @@ import org.junit.runners.Parameterized
  *
  * To run this test: atest CloseAllAppsWithBackNavigationTest
  */
-@RequiresDevice
+@RequiresDesktopDevice
 @RunWith(Parameterized::class)
+@Postsubmit
 @Parameterized.UseParametersRunnerFactory(FlickerParametersRunnerFactory::class)
 class CloseAllAppsWithBackNavigationTest(flicker: FlickerTest) : DesktopModeBaseTest(flicker) {
     inner class CloseAllAppsWithBackNavigationScenario :

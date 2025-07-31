@@ -16,7 +16,8 @@
 
 package com.android.wm.shell.flicker.resizing
 
-import androidx.test.filters.RequiresDevice
+import android.platform.test.annotations.Postsubmit
+import android.platform.test.annotations.RequiresDesktopDevice
 import android.tools.NavBar
 import android.tools.flicker.assertions.FlickerChecker
 import android.tools.flicker.junit.FlickerParametersRunnerFactory
@@ -43,9 +44,10 @@ import com.android.wm.shell.scenarios.SnapResizeAppWindowWithDrag
  *
  * Assert that the app window keeps the same size and returns to its original pre-drag position.
  */
-@RequiresDevice
+@RequiresDesktopDevice
 @RunWith(value = Parameterized::class)
 @Parameterized.UseParametersRunnerFactory(FlickerParametersRunnerFactory::class)
+@Postsubmit
 class SnapResizeNonResizableAppWindowRightWithDragFlickerTest(flicker: FlickerTest) : DesktopModeBaseTest(
     flicker
 ) {

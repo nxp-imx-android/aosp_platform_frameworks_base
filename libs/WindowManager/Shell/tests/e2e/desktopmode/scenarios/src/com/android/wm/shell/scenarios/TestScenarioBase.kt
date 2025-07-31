@@ -17,6 +17,7 @@
 package com.android.wm.shell.scenarios
 
 import android.app.Instrumentation
+import android.platform.test.flag.junit.DeviceFlagsValueProvider
 import android.platform.test.rule.ScreenRecordRule
 import android.tools.NavBar
 import android.tools.PlatformConsts.DEFAULT_DISPLAY
@@ -36,6 +37,8 @@ import org.junit.Rule
 abstract class TestScenarioBase(private val rotation: Rotation = Rotation.ROTATION_0) {
     private val instrumentation: Instrumentation = InstrumentationRegistry.getInstrumentation()
     private val device = UiDevice.getInstance(instrumentation)
+
+    @get:Rule val checkFlagsRule = DeviceFlagsValueProvider.createCheckFlagsRule()
 
     @get:Rule val screenRecordRule = ScreenRecordRule(/* keepTestLevelRecordingOnSuccess= */ false)
     private val tapl = LauncherInstrumentation()

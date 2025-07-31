@@ -16,7 +16,8 @@
 
 package com.android.wm.shell.flicker.keyboardshortcuts
 
-import androidx.test.filters.RequiresDevice
+import android.platform.test.annotations.Postsubmit
+import android.platform.test.annotations.RequiresDesktopDevice
 import android.tools.NavBar
 import android.tools.flicker.assertions.FlickerChecker
 import android.tools.flicker.junit.FlickerParametersRunnerFactory
@@ -41,9 +42,10 @@ import org.junit.runners.Parameterized
  * Assert that the app windows gets hidden.
  */
 
-@RequiresDevice
+@RequiresDesktopDevice
 @RunWith(Parameterized::class)
 @Parameterized.UseParametersRunnerFactory(FlickerParametersRunnerFactory::class)
+@Postsubmit
 class MinimizeAppsWithKeyboardFlickerTest(flicker: FlickerTest) : DesktopModeBaseTest(flicker) {
     inner class MinimizeAppsWithKeyboardScenario : MinimizeAppWindows(
         rotation = flicker.scenario.startRotation,

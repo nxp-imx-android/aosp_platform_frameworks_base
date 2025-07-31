@@ -16,7 +16,8 @@
 
 package com.android.wm.shell.flicker.fundamentals
 
-import androidx.test.filters.RequiresDevice
+import android.platform.test.annotations.Postsubmit
+import android.platform.test.annotations.RequiresDesktopDevice
 import android.tools.NavBar
 import android.tools.flicker.assertions.FlickerChecker
 import android.tools.flicker.junit.FlickerParametersRunnerFactory
@@ -35,9 +36,10 @@ import com.android.wm.shell.flicker.utils.appWindowOnTopAtEnd
 import com.android.wm.shell.flicker.utils.layerBecomesVisible
 import com.android.wm.shell.flicker.utils.cascadingEffectAppliedAtEnd
 
-@RequiresDevice
+@RequiresDesktopDevice
 @RunWith(Parameterized::class)
 @Parameterized.UseParametersRunnerFactory(FlickerParametersRunnerFactory::class)
+@Postsubmit
 class OpenAppFromTaskbarFlickerTest(flicker: FlickerTest) : DesktopModeBaseTest(flicker) {
     inner class OpenAppFromTaskbarScenario : OpenAppFromTaskbar(flicker.scenario.startRotation)
 

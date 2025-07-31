@@ -30,6 +30,8 @@ import static org.mockito.Mockito.when;
 import android.os.Handler;
 import android.platform.test.annotations.RequiresFlagsDisabled;
 import android.platform.test.annotations.RequiresFlagsEnabled;
+import android.platform.test.flag.junit.CheckFlagsRule;
+import android.platform.test.flag.junit.DeviceFlagsValueProvider;
 import android.platform.test.flag.junit.FlagsParameterization;
 import android.service.quicksettings.Tile;
 import android.testing.TestableLooper;
@@ -57,6 +59,7 @@ import com.android.systemui.settings.UserTracker;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -76,6 +79,9 @@ public class ReduceBrightColorsTileTest extends SysuiTestCase {
     public static List<FlagsParameterization> getParams() {
         return allCombinationsOf(QSComposeFragment.FLAG_NAME);
     }
+
+    @Rule
+    public final CheckFlagsRule mCheckFlagsRule = DeviceFlagsValueProvider.createCheckFlagsRule();
 
     @Mock
     private QSHost mHost;

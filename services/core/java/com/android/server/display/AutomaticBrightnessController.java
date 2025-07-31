@@ -18,7 +18,6 @@ package com.android.server.display;
 
 import static android.hardware.display.DisplayManagerInternal.DisplayPowerRequest.POLICY_DOZE;
 
-import static com.android.internal.display.BrightnessUtils.convertLinearToGamma;
 import static com.android.server.display.BrightnessMappingStrategy.INVALID_LUX;
 import static com.android.server.display.config.DisplayBrightnessMappingConfig.autoBrightnessModeToString;
 
@@ -58,7 +57,6 @@ import com.android.internal.display.BrightnessSynchronizer;
 import com.android.internal.os.BackgroundThread;
 import com.android.server.EventLogTags;
 import com.android.server.display.brightness.BrightnessEvent;
-import com.android.server.display.brightness.BrightnessUtils;
 import com.android.server.display.brightness.clamper.BrightnessClamperController;
 import com.android.server.display.config.HysteresisLevels;
 import com.android.server.display.feature.DisplayManagerFlags;
@@ -113,11 +111,6 @@ public class AutomaticBrightnessController {
     private static final int MSG_UPDATE_FOREGROUND_APP_SYNC = 5;
     private static final int MSG_RUN_UPDATE = 6;
     private static final int MSG_INVALIDATE_PAUSED_SHORT_TERM_MODEL = 7;
-
-    // If our traditional math determines that the brightness is too small to actually change,
-    // then also check if brightness percent would change at least the amount of this value,
-    // and if so, move forward with the change. In 0-100 percent scale.
-    private static final float MINIMUM_BRIGHTNESS_PERCENT_CHANGE = .4f;
 
     // Callbacks for requesting updates to the display's power state
     private final Callbacks mCallbacks;
@@ -1017,24 +1010,6 @@ public class AutomaticBrightnessController {
             return;
         }
 
-        // Return early if the brightness didn't actually change.
-        if (BrightnessSynchronizer.floatEquals(mScreenAutoBrightness, newScreenAutoBrightness)) {
-            // Because brightness itself is in a logarithmic scale, the values at the low end
-            // are so low that the difference between 0% and 2% might be within the float comparison
-            // EPSILON value. To combat this, we do a secondary check on the percent change in
-            // brightness.
-            final float oldPercent = getBrightnessAsPercent(mScreenAutoBrightness);
-            final float newPercent = getBrightnessAsPercent(newScreenAutoBrightness);
-            final boolean isBrightnessPercentDifferent =
-                    !Float.isNaN(oldPercent) && !Float.isNaN(newPercent)
-                    && (Math.abs(oldPercent - newPercent) > MINIMUM_BRIGHTNESS_PERCENT_CHANGE);
-
-            if (!isBrightnessPercentDifferent) {
-                // Brightness percent didn't change either, so lets return early here.
-                return;
-            }
-        }
-
         if (mLoggingEnabled) {
             Slog.d(TAG, "updateAutoBrightness: "
                     + "mScreenAutoBrightness=" + mScreenAutoBrightness + ", "
@@ -1063,22 +1038,6 @@ public class AutomaticBrightnessController {
         if (sendUpdate) {
             mCallbacks.updateBrightness();
         }
-    }
-
-    /**
-     * @return specified brightness value as a [0-100] percent taking current
-     *         min/max constraints into account.
-     */
-    private float getBrightnessAsPercent(float brightness) {
-        if (!BrightnessUtils.isValidBrightnessValue(brightness)) {
-            return PowerManager.BRIGHTNESS_INVALID_FLOAT;
-        }
-        return 100.0f * convertLinearToGamma(MathUtils.constrainedMap(
-                mScreenBrightnessRangeMinimum,
-                mScreenBrightnessRangeMaximum,
-                getMinBrightness(),
-                getMaxBrightness(),
-                brightness));
     }
 
     // Clamps values with float range [0.0-1.0]

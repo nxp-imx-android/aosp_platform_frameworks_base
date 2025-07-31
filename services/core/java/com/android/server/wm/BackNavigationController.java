@@ -31,7 +31,6 @@ import static android.view.WindowManager.LayoutParams.TYPE_BASE_APPLICATION;
 import static android.view.WindowManager.TRANSIT_CHANGE;
 import static android.view.WindowManager.TRANSIT_PREPARE_BACK_NAVIGATION;
 import static android.window.DesktopExperienceFlags.ENABLE_INDEPENDENT_BACK_IN_PROJECTED;
-import static android.window.OnBackInvokedDispatcher.PRIORITY_DEFAULT;
 import static android.window.SystemOverrideOnBackInvokedCallback.OVERRIDE_FINISH_AND_REMOVE_TASK;
 import static android.window.SystemOverrideOnBackInvokedCallback.OVERRIDE_UNDEFINED;
 
@@ -61,11 +60,8 @@ import android.view.RemoteAnimationTarget;
 import android.view.SurfaceControl;
 import android.view.WindowInsets;
 import android.window.BackAnimationAdapter;
-import android.window.BackMotionEvent;
 import android.window.BackNavigationInfo;
 import android.window.IBackAnimationFinishedCallback;
-import android.window.IBackAnimationHandoffHandler;
-import android.window.IOnBackInvokedCallback;
 import android.window.IWindowlessStartingSurfaceCallback;
 import android.window.OnBackInvokedCallbackInfo;
 import android.window.SystemOverrideOnBackInvokedCallback;
@@ -78,7 +74,6 @@ import com.android.internal.protolog.ProtoLog;
 import com.android.window.flags.Flags;
 
 import java.io.PrintWriter;
-import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Objects;
@@ -103,9 +98,13 @@ class BackNavigationController {
     // back animation.
     private AnimationHandler.ScheduleAnimationBuilder mCurrentAnimationBuilder;
 
-    // This will be set if the back navigation is in progress and the current transition is still
-    // running. The pending animation builder will do the animation stuff includes creating leashes,
-    // re-parenting leashes and set launch behind, etc. Will be handled when transition finished.
+    /**
+     * This will be set if the back navigation is in progress and the current transition is still
+     * running. The pending animation builder will do the animation stuff includes creating leashes,
+     * re-parenting leashes and set launch behind, etc. Will be handled when transition finished.
+     *
+     * @deprecated Remove after Flags#predictive_back_intercept_transition
+     */
     private AnimationHandler.ScheduleAnimationBuilder mPendingAnimationBuilder;
 
     private static int sDefaultAnimationResId;
@@ -140,63 +139,6 @@ class BackNavigationController {
         }
     }
 
-    class OnInterceptBackInvokedCallback extends IOnBackInvokedCallback.Stub {
-        @NonNull
-        final WeakReference<ActivityRecord> mActivityRecordRef;
-        @Nullable
-        final WeakReference<IOnBackInvokedCallback> mFallbackCallbackRef;
-
-        OnInterceptBackInvokedCallback(@NonNull ActivityRecord r,
-                @Nullable IOnBackInvokedCallback fallback) {
-            mActivityRecordRef = new WeakReference<>(r);
-            mFallbackCallbackRef = fallback != null ? new WeakReference<>(fallback) : null;
-        }
-
-        @Override
-        public void onBackInvoked() {
-            synchronized (mWindowManagerService.mGlobalLock) {
-                final ActivityRecord r = mActivityRecordRef.get();
-                if (r != null && mWindowManagerService.mAtmService.mTaskOrganizerController
-                        .handleInterceptBackPressedOnTaskRoot(r)) {
-                    // Handled by the controller, exit early.
-                    return;
-                }
-
-                if (mFallbackCallbackRef == null) {
-                    return;
-                }
-
-                // Try the fallback callback if the back event was not handled.
-                final IOnBackInvokedCallback fallbackCallback = mFallbackCallbackRef.get();
-                if (fallbackCallback != null) {
-                    try {
-                        fallbackCallback.onBackInvoked();
-                    } catch (RemoteException ex) {
-                        Slog.w(TAG, "Failed invoking fallback callback for back");
-                    }
-                }
-            }
-        }
-
-        @Override
-        public void onBackCancelled() {}
-
-        @Override
-        public void onBackProgressed(BackMotionEvent backMotionEvent) {
-        }
-
-        @Override
-        public void onBackStarted(BackMotionEvent backEvent) {
-        }
-
-        @Override
-        public void setTriggerBack(boolean triggerBack) {
-        }
-
-        @Override
-        public void setHandoffHandler(IBackAnimationHandoffHandler unused) {
-        }
-    }
     /**
      * Set up the necessary leashes and build a {@link BackNavigationInfo} instance for an upcoming
      * back gesture animation.
@@ -290,6 +232,13 @@ class BackNavigationController {
                 return null;
             }
 
+            if (Flags.predictiveBackInterceptTransition()
+                    && window.mTransitionController.inTransition()) {
+                infoBuilder.setType(BackNavigationInfo.TYPE_IN_TRANSITION);
+                ProtoLog.d(WM_DEBUG_BACK_PREVIEW, "A transition is happening.");
+                return infoBuilder.build();
+            }
+
             final ArrayList<EmbeddedWindowController.EmbeddedWindow> embeddedWindows = wmService
                     .mEmbeddedWindowController.getByHostWindow(window);
 
@@ -304,9 +253,8 @@ class BackNavigationController {
                 ProtoLog.d(WM_DEBUG_BACK_PREVIEW, "Focus window is closing.");
                 return null;
             }
-
-            final OnBackInvokedCallbackInfo callbackInfo = getOnBackInvokedCallbackInfo(
-                    window, currentTask, currentActivity);
+            // Now let's find if this window has a callback from the client side.
+            final OnBackInvokedCallbackInfo callbackInfo = window.getOnBackInvokedCallbackInfo();
             if (callbackInfo == null) {
                 Slog.e(TAG, "No callback registered, returning null.");
                 return null;
@@ -529,27 +477,6 @@ class BackNavigationController {
         }
     }
 
-    @VisibleForTesting(visibility = VisibleForTesting.Visibility.PRIVATE)
-    @Nullable OnBackInvokedCallbackInfo getOnBackInvokedCallbackInfo(@NonNull WindowState window,
-            @Nullable Task task, @Nullable ActivityRecord activity) {
-        final OnBackInvokedCallbackInfo info = window.getOnBackInvokedCallbackInfo();
-        if (activity == null || task == null) {
-            return info;
-        }
-
-        final ActivityRecord root = task.getRootActivity(
-                false /*ignoreRelinquishIdentity*/, true /*setToBottomIfNone*/);
-        if (activity != root || !task.mAtmService.mTaskOrganizerController
-                        .shouldInterceptBackPressedOnRootTask(task.getRootTask())) {
-            return info;
-        }
-
-        final IOnBackInvokedCallback callback = new OnInterceptBackInvokedCallback(activity,
-                info != null ? info.getCallback() : null);
-        return new OnBackInvokedCallbackInfo(callback, PRIORITY_DEFAULT, false,
-                    OVERRIDE_UNDEFINED);
-    }
-
     /**
      * Gets previous activities from currentActivity.
      *
@@ -559,6 +486,12 @@ class BackNavigationController {
     static boolean getAnimatablePrevActivities(@NonNull Task currentTask,
             @NonNull ActivityRecord currentActivity,
             @NonNull ArrayList<ActivityRecord> outPrevActivities) {
+        if (currentActivity.mAtmService
+                .mTaskOrganizerController.shouldInterceptBackPressedOnRootTask(
+                        currentTask.getRootTask())) {
+            // The task organizer will handle back pressed, don't play animation.
+            return false;
+        }
         final ActivityRecord root = currentTask.getRootActivity(false /*ignoreRelinquishIdentity*/,
                 true /*setToBottomIfNone*/);
         if (root != null && ActivityClientController.shouldMoveTaskToBack(currentActivity, root)) {
@@ -2301,7 +2234,8 @@ class BackNavigationController {
     }
 
     private void scheduleAnimationInner(AnimationHandler.ScheduleAnimationBuilder builder) {
-        if (mWindowManagerService.mAtmService.getTransitionController().inTransition()) {
+        if (!Flags.predictiveBackInterceptTransition()
+                && mWindowManagerService.mAtmService.getTransitionController().inTransition()) {
             ProtoLog.w(WM_DEBUG_BACK_PREVIEW,
                     "Pending back animation due to another animation is running");
             mPendingAnimationBuilder = builder;

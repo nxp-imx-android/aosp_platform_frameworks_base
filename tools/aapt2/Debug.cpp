@@ -661,6 +661,9 @@ class ChunkPrinter {
       case RES_TABLE_FLAGGED:
         printer_->Print("[RES_TABLE_FLAGGED]");
         break;
+      case RES_TABLE_FLAG_LIST:
+        printer_->Print("[RES_TABLE_FLAG_LIST]");
+        break;
       default:
         break;
     }
@@ -941,6 +944,21 @@ class ChunkPrinter {
     return success;
   }
 
+  bool PrintFlagList(const ResTable_flag_list* chunk) {
+    auto index = reinterpret_cast<const uint32_t*>(reinterpret_cast<const char*>(chunk) +
+                                                   chunk->header.headerSize);
+    size_t count = (chunk->header.size - chunk->header.headerSize) / sizeof(uint32_t);
+    printer_->Println(StringPrintf(" count: %zu", count));
+    printer_->Indent();
+    for (int i = 0; i < count; i++) {
+      auto id = android::util::DeviceToHost32(index[i]);
+      const auto flag_name = android::util::GetString(value_pool_, id);
+      printer_->Println(StringPrintf("[%d] flag name: %u '%s'", i, id, flag_name.c_str()));
+    }
+    printer_->Undent();
+    return true;
+  }
+
   bool PrintChunk(ResChunkPullParser&& parser) {
     while (ResChunkPullParser::IsGoodEvent(parser.Next())) {
       auto chunk = parser.chunk();
@@ -971,6 +989,10 @@ class ChunkPrinter {
 
         case RES_TABLE_FLAGGED:
           PrintFlagged(reinterpret_cast<const ResTable_flagged*>(chunk));
+          break;
+
+        case RES_TABLE_FLAG_LIST:
+          PrintFlagList(reinterpret_cast<const ResTable_flag_list*>(chunk));
           break;
 
         default:

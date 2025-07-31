@@ -16,9 +16,9 @@
 
 package com.android.systemui.screencapture.record.largescreen.domain.interactor
 
+import android.content.pm.UserInfo
 import android.graphics.Bitmap
 import android.graphics.Rect
-import android.os.UserHandle
 import android.view.WindowManager
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
@@ -29,6 +29,7 @@ import com.android.systemui.kosmos.testScope
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
 import com.android.systemui.screenshot.mockImageCapture
 import com.android.systemui.testKosmos
+import com.android.systemui.user.data.repository.fakeUserRepository
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
@@ -85,6 +86,11 @@ class ScreenshotInteractorTest : SysuiTestCase() {
             whenever(kosmos.mockImageCapture.captureDisplay(eq(displayId), eq(bounds)))
                 .thenReturn(mockBitmap)
 
+            val mainUser = UserInfo(0, "primary user", UserInfo.FLAG_MAIN)
+            val secondaryUser = UserInfo(1, "secondary user", 0)
+            kosmos.fakeUserRepository.setUserInfos(listOf(mainUser, secondaryUser))
+            kosmos.fakeUserRepository.setSelectedUserInfo(secondaryUser)
+
             interactor.takePartialScreenshot(bounds, displayId)
 
             val screenshotRequestCaptor = argumentCaptor<ScreenshotRequest>()
@@ -99,7 +105,7 @@ class ScreenshotInteractorTest : SysuiTestCase() {
             assertThat(capturedRequest.bitmap).isEqualTo(mockBitmap)
             assertThat(capturedRequest.boundsInScreen).isEqualTo(bounds)
             assertThat(capturedRequest.displayId).isEqualTo(displayId)
-            assertThat(capturedRequest.userId).isEqualTo(UserHandle.USER_CURRENT)
+            assertThat(capturedRequest.userId).isEqualTo(secondaryUser.id)
         }
     }
 }

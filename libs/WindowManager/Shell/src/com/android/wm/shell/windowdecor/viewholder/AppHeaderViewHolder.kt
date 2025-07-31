@@ -710,6 +710,7 @@ class AppHeaderViewHolder(
     }
 
     fun onMaximizeWindowHoverEnter() {
+        if (!currentTaskInfo.isFocused) return
         maximizeButtonView.startHoverAnimation()
     }
 

@@ -1453,6 +1453,13 @@ public class NotificationChildrenContainer extends ViewGroup
         }
     }
 
+    public String getBundleHeaderDescription() {
+        if (mBundleHeaderViewModel != null) {
+            return mBundleHeaderViewModel.getHeaderContentDescription();
+        }
+        return null;
+    }
+
     public int getMaxContentHeight() {
         if (showingAsLowPriority()) {
             return getMinHeight(NUMBER_OF_CHILDREN_WHEN_SYSTEM_EXPANDED, true

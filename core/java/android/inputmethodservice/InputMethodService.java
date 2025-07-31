@@ -55,7 +55,6 @@ import static android.view.inputmethod.ConnectionlessHandwritingCallback.CONNECT
 import static android.view.inputmethod.ConnectionlessHandwritingCallback.CONNECTIONLESS_HANDWRITING_ERROR_OTHER;
 import static android.view.inputmethod.ConnectionlessHandwritingCallback.CONNECTIONLESS_HANDWRITING_ERROR_UNSUPPORTED;
 import static android.view.inputmethod.Flags.FLAG_CONNECTIONLESS_HANDWRITING;
-import static android.view.inputmethod.Flags.FLAG_IME_SWITCHER_REVAMP_API;
 import static android.view.inputmethod.Flags.FLAG_VERIFY_KEY_EVENT;
 import static android.view.inputmethod.Flags.ctrlShiftShortcut;
 
@@ -4371,7 +4370,6 @@ public class InputMethodService extends AbstractInputMethodService {
      *
      * @param visible whether the button is requested visible or not.
      */
-    @FlaggedApi(FLAG_IME_SWITCHER_REVAMP_API)
     public void onCustomImeSwitcherButtonRequestedVisible(boolean visible) {
         // Intentionally empty
     }

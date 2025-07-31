@@ -16,7 +16,8 @@
 
 package com.android.wm.shell.flicker.keyboardshortcuts
 
-import androidx.test.filters.RequiresDevice
+import android.platform.test.annotations.Postsubmit
+import android.platform.test.annotations.RequiresDesktopDevice
 import android.tools.NavBar
 import android.tools.flicker.assertions.FlickerChecker
 import android.tools.flicker.junit.FlickerParametersRunnerFactory
@@ -39,9 +40,10 @@ import org.junit.runners.Parameterized
 /**
  * Exit the app to full screen with keyboard shortcut.
  */
-@RequiresDevice
+@RequiresDesktopDevice
 @RunWith(Parameterized::class)
 @Parameterized.UseParametersRunnerFactory(FlickerParametersRunnerFactory::class)
+@Postsubmit
 class ExitDesktopToFullScreenWithKeyboardShortcutFlickerTest(flicker: FlickerTest) :
     DesktopModeBaseTest(flicker) {
     inner class ExitDesktopToFullScreenWithKeyboardShortcutScenario : ExitDesktopFromKeyboardShortcut(flicker.scenario.startRotation)

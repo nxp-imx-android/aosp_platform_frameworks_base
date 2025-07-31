@@ -21,8 +21,11 @@ import com.android.systemui.log.core.LogLevel
 import com.android.systemui.qs.pipeline.dagger.QSAutoAddLog
 import com.android.systemui.qs.pipeline.dagger.QSRestoreLog
 import com.android.systemui.qs.pipeline.dagger.QSTileListLog
+import com.android.systemui.qs.pipeline.dagger.QSUpgraderLog
 import com.android.systemui.qs.pipeline.data.model.RestoreData
 import com.android.systemui.qs.pipeline.data.repository.UserTileSpecRepository
+import com.android.systemui.qs.pipeline.domain.upgrade.CustomTileAddedUpgrade
+import com.android.systemui.qs.pipeline.domain.upgrade.describe
 import com.android.systemui.qs.pipeline.shared.TileSpec
 import javax.inject.Inject
 
@@ -37,6 +40,7 @@ constructor(
     @QSTileListLog private val tileListLogBuffer: LogBuffer,
     @QSAutoAddLog private val tileAutoAddLogBuffer: LogBuffer,
     @QSRestoreLog private val restoreLogBuffer: LogBuffer,
+    @QSUpgraderLog private val upgraderLogBuffer: LogBuffer,
 ) {
 
     companion object {
@@ -44,6 +48,8 @@ constructor(
         const val AUTO_ADD_TAG = "QSAutoAddableLog"
         const val RESTORE_TAG = "QSRestoreLog"
         const val REPOSITORY_TAG = "TileSpecRepositoryLog"
+        const val UPGRADER_TAG = "QSUpgraderLog"
+        const val CUSTOM_TILE_REPOSITORY_UPGRADE_TAG = "CustomTileAddedRepositoryUpgrader"
     }
 
     /**
@@ -278,6 +284,51 @@ constructor(
             LogLevel.DEBUG,
             { int1 = userId },
             { "UserTileSpecRepository created for user $int1" },
+        )
+    }
+
+    fun logCustomTileAddedRepositoryUpgradeError(upgrader: CustomTileAddedUpgrade, userId: Int) {
+        upgraderLogBuffer.log(
+            CUSTOM_TILE_REPOSITORY_UPGRADE_TAG,
+            LogLevel.ERROR,
+            {
+                int1 = userId
+                str1 = upgrader.describe()
+            },
+            { "Error performing upgrade $str1 for user $int1" },
+        )
+    }
+
+    fun logCustomTileAddedRepositoryUpgradeStarted(version: Int, userId: Int) {
+        upgraderLogBuffer.log(
+            CUSTOM_TILE_REPOSITORY_UPGRADE_TAG,
+            LogLevel.INFO,
+            {
+                int1 = userId
+                int2 = version
+            },
+            { "Starting upgrade $int2 for user $int1" },
+        )
+    }
+
+    fun logCustomTileAddedRepositoryUpgradeFinished(version: Int, userId: Int) {
+        upgraderLogBuffer.log(
+            CUSTOM_TILE_REPOSITORY_UPGRADE_TAG,
+            LogLevel.INFO,
+            {
+                int1 = userId
+                int2 = version
+            },
+            { "Finished upgrade $int2 for user $int1" },
+        )
+    }
+
+    fun logCustomTileAddedRepositoryUpgradeList(list: List<CustomTileAddedUpgrade>) {
+        upgraderLogBuffer.log(
+            CUSTOM_TILE_REPOSITORY_UPGRADE_TAG,
+            LogLevel.DEBUG,
+            { str1 = list.joinToString(",") { it.describe() } },
+            { "Injected upgrades: $str1" },
         )
     }
 

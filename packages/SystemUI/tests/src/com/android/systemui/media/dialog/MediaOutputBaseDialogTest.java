@@ -53,6 +53,7 @@ import com.android.settingslib.bluetooth.LocalBluetoothLeBroadcast;
 import com.android.settingslib.bluetooth.LocalBluetoothManager;
 import com.android.settingslib.bluetooth.LocalBluetoothProfileManager;
 import com.android.settingslib.media.LocalMediaManager;
+import com.android.settingslib.volume.data.repository.AudioSharingRepository;
 import com.android.systemui.SysuiTestCase;
 import com.android.systemui.SysuiTestCaseExtKt;
 import com.android.systemui.animation.DialogTransitionAnimator;
@@ -63,6 +64,7 @@ import com.android.systemui.plugins.ActivityStarter;
 import com.android.systemui.res.R;
 import com.android.systemui.settings.UserTracker;
 import com.android.systemui.statusbar.notification.collection.notifcollection.CommonNotifCollection;
+import com.android.systemui.util.kotlin.JavaAdapter;
 import com.android.systemui.util.time.FakeSystemClock;
 import com.android.systemui.volume.panel.domain.interactor.VolumePanelGlobalStateInteractor;
 import com.android.systemui.volume.panel.domain.interactor.VolumePanelGlobalStateInteractorKosmosKt;
@@ -104,6 +106,8 @@ public class MediaOutputBaseDialogTest extends SysuiTestCase {
     private PowerExemptionManager mPowerExemptionManager = mock(PowerExemptionManager.class);
     private KeyguardManager mKeyguardManager = mock(KeyguardManager.class);
     private UserTracker mUserTracker = mock(UserTracker.class);
+    private JavaAdapter mJavaAdapter = mock(JavaAdapter.class);
+    private AudioSharingRepository mAudioSharingRepository = mock(AudioSharingRepository.class);
 
     private List<MediaController> mMediaControllers = new ArrayList<>();
     private MediaOutputBaseDialogImpl mMediaOutputBaseDialogImpl;
@@ -164,7 +168,9 @@ public class MediaOutputBaseDialogTest extends SysuiTestCase {
                         mKeyguardManager,
                         new FakeSystemClock(),
                         volumePanelGlobalStateInteractor,
-                        mUserTracker);
+                        mUserTracker,
+                        mJavaAdapter,
+                        mAudioSharingRepository);
     }
 
     @Test

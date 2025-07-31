@@ -616,6 +616,7 @@ package android.app.admin {
     method @RequiresPermission(android.Manifest.permission.MANAGE_ROLE_HOLDERS) public void resetShouldAllowBypassingDevicePolicyManagementRoleQualificationState();
     method @RequiresPermission(allOf={android.Manifest.permission.MANAGE_DEVICE_ADMINS, android.Manifest.permission.INTERACT_ACROSS_USERS_FULL}) public void setActiveAdmin(@NonNull android.content.ComponentName, boolean, int);
     method @FlaggedApi("android.app.admin.flags.provisioning_context_parameter") @RequiresPermission(allOf={android.Manifest.permission.MANAGE_DEVICE_ADMINS, android.Manifest.permission.INTERACT_ACROSS_USERS_FULL}) public void setActiveAdmin(@NonNull android.content.ComponentName, boolean, int, @Nullable String);
+    method public void setBooleanPolicy(@NonNull String, int, boolean);
     method @RequiresPermission(android.Manifest.permission.MANAGE_PROFILE_AND_DEVICE_OWNERS) public boolean setDeviceOwner(@NonNull android.content.ComponentName, int);
     method @RequiresPermission(android.Manifest.permission.MANAGE_PROFILE_AND_DEVICE_OWNERS) public boolean setDeviceOwnerOnly(@NonNull android.content.ComponentName, int);
     method public void setDeviceOwnerType(@NonNull android.content.ComponentName, int);
@@ -712,6 +713,11 @@ package android.app.admin {
 
   public final class PackagePolicyKey extends android.app.admin.PolicyKey {
     ctor public PackagePolicyKey(@NonNull String, @NonNull String);
+  }
+
+  @FlaggedApi("android.app.admin.flags.policy_streamlining") public final class PolicyIdentifier<T> {
+    ctor public PolicyIdentifier(@NonNull String);
+    method @NonNull public String getId();
   }
 
   public final class PolicyState<V> implements android.os.Parcelable {

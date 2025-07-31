@@ -7907,6 +7907,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
 
         val wct = getLatestWct(TRANSIT_TO_FRONT, OneShotRemoteHandler::class.java)
         assertNotNull(wct)
+        verify(desksOrganizer).addLaunchDeskToActivityOptions(any(), eq(deskId))
         wct.assertLaunchTask(nonRunningTask.taskId, WINDOWING_MODE_FREEFORM)
     }
 

@@ -16,7 +16,8 @@
 
 package com.android.wm.shell.flicker.tiling
 
-import androidx.test.filters.RequiresDevice
+import android.platform.test.annotations.Postsubmit
+import android.platform.test.annotations.RequiresDesktopDevice
 import android.tools.NavBar
 import android.tools.flicker.assertions.FlickerChecker
 import android.tools.flicker.junit.FlickerParametersRunnerFactory
@@ -37,9 +38,10 @@ import org.junit.runners.Parameterized
 /**
  * Ensures tiling divider is shown after swiping to home and getting back to desktop mdoe.
  */
-@RequiresDevice
+@RequiresDesktopDevice
 @RunWith(Parameterized::class)
 @Parameterized.UseParametersRunnerFactory(FlickerParametersRunnerFactory::class)
+@Postsubmit
 class TilingDividerShownAfterHomeSwipeFlickerTest(flicker: FlickerTest) :
     DesktopModeBaseTest(flicker) {
     inner class TileResizingWithDragScenario : TilingTestBase(flicker.scenario.startRotation)

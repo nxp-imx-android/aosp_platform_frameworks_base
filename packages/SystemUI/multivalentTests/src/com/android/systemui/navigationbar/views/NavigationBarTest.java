@@ -76,7 +76,6 @@ import android.view.WindowInsets;
 import android.view.WindowManager;
 import android.view.WindowMetrics;
 import android.view.accessibility.AccessibilityManager;
-import android.view.inputmethod.Flags;
 import android.view.inputmethod.InputMethodManager;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
@@ -451,17 +450,9 @@ public class NavigationBarTest extends SysuiTestCase {
 
         verify(mUiEventLogger).log(NAVBAR_IME_SWITCHER_BUTTON_TAP);
         verify(mUiEventLogger, never()).log(NAVBAR_IME_SWITCHER_BUTTON_LONGPRESS);
-        if (Flags.imeSwitcherRevamp()) {
-            verify(mInputMethodManager)
-                    .onImeSwitchButtonClickFromSystem(mNavigationBar.mDisplayId);
-            verify(mInputMethodManager, never()).showInputMethodPickerFromSystem(
-                    anyBoolean() /* showAuxiliarySubtypes */, anyInt() /* displayId */);
-        } else {
-            verify(mInputMethodManager, never())
-                    .onImeSwitchButtonClickFromSystem(anyInt() /* displayId */);
-            verify(mInputMethodManager).showInputMethodPickerFromSystem(
-                    true /* showAuxiliarySubtypes */, mNavigationBar.mDisplayId);
-        }
+        verify(mInputMethodManager).onImeSwitchButtonClickFromSystem(mNavigationBar.mDisplayId);
+        verify(mInputMethodManager, never()).showInputMethodPickerFromSystem(
+                anyBoolean() /* showAuxiliarySubtypes */, anyInt() /* displayId */);
     }
 
     @Test
@@ -471,15 +462,9 @@ public class NavigationBarTest extends SysuiTestCase {
         mNavigationBar.onImeSwitcherLongClick(mImeSwitchButtonView);
 
         verify(mUiEventLogger, never()).log(NAVBAR_IME_SWITCHER_BUTTON_TAP);
-        if (Flags.imeSwitcherRevamp()) {
-            verify(mUiEventLogger).log(NAVBAR_IME_SWITCHER_BUTTON_LONGPRESS);
-            verify(mInputMethodManager).showInputMethodPickerFromSystem(
-                    true /* showAuxiliarySubtypes */, mNavigationBar.mDisplayId);
-        } else {
-            verify(mUiEventLogger, never()).log(NAVBAR_IME_SWITCHER_BUTTON_LONGPRESS);
-            verify(mInputMethodManager, never()).showInputMethodPickerFromSystem(
-                    anyBoolean() /* showAuxiliarySubtypes */, anyInt() /* displayId */);
-        }
+        verify(mUiEventLogger).log(NAVBAR_IME_SWITCHER_BUTTON_LONGPRESS);
+        verify(mInputMethodManager).showInputMethodPickerFromSystem(
+                true /* showAuxiliarySubtypes */, mNavigationBar.mDisplayId);
     }
 
     @Test

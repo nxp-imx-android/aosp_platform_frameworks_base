@@ -19,6 +19,8 @@ package android.view;
 import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.truth.Truth.assertWithMessage;
 
+import static org.mockito.ArgumentMatchers.eq;
+
 import android.accessibilityservice.AccessibilityServiceInfo;
 import android.app.Activity;
 import android.app.Instrumentation;
@@ -52,6 +54,7 @@ import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
 import java.util.List;
@@ -145,6 +148,7 @@ public class AccessibilityInteractionControllerTest {
     }
 
     @Test
+    @DisableFlags(android.view.accessibility.Flags.FLAG_COPY_SURFACE_CONTROL_FOR_WINDOW_SCREENSHOTS)
     public void getWindowSurfaceInfo_shouldCallCallbackWithWindowSurfaceDataFromVri()
             throws Exception {
         final ViewRootImpl vri = mButton.getRootView().getViewRootImpl();
@@ -156,6 +160,25 @@ public class AccessibilityInteractionControllerTest {
 
         Mockito.verify(callback).provideWindowSurfaceInfo(
                 vri.getWindowFlags(), Process.myUid(), vri.getSurfaceControl());
+    }
+
+    @Test
+    @EnableFlags(android.view.accessibility.Flags.FLAG_COPY_SURFACE_CONTROL_FOR_WINDOW_SCREENSHOTS)
+    public void getWindowSurfaceInfo_shouldCallCallbackWithWindowSurfaceData_CopiedFromVri()
+            throws Exception {
+        final ViewRootImpl vri = mButton.getRootView().getViewRootImpl();
+        IWindowSurfaceInfoCallback callback = Mockito.mock(IWindowSurfaceInfoCallback.class);
+
+        sInstrumentation.runOnMainSync(() ->
+                mAccessibilityInteractionController.getWindowSurfaceInfoClientThread(callback));
+        sInstrumentation.waitForIdleSync();
+
+        ArgumentCaptor<SurfaceControl> scCaptor = ArgumentCaptor.forClass(SurfaceControl.class);
+        Mockito.verify(callback).provideWindowSurfaceInfo(
+                eq(vri.getWindowFlags()), eq(Process.myUid()), scCaptor.capture());
+        SurfaceControl providedSc = scCaptor.getValue();
+        assertThat(providedSc).isNotSameInstanceAs(vri.getSurfaceControl());
+        assertThat(providedSc.isSameSurface(vri.getSurfaceControl())).isTrue();
     }
 
     @Test

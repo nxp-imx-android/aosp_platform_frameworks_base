@@ -685,6 +685,7 @@ com.android.server.SystemServiceManager
 
 com.android.server.am.BoundServiceSession
 com.android.server.am.ConnectionRecord
+com.android.server.am.psc.ConnectionRecordInternal
 com.android.server.utils.TimingsTraceAndSlog
 
 com.google.android.collect.Lists

@@ -80,7 +80,7 @@ interface TileSpecRepository {
     suspend fun prependDefault(@UserIdInt userId: Int)
 
     /** Reset the current set of tiles to the default list of tiles */
-    suspend fun resetToDefault(userId: Int)
+    suspend fun resetToDefault(userId: Int): List<TileSpec>
 
     val tilesUpgradePath: ReceiveChannel<Pair<TilesUpgradePath, Int>>
 
@@ -176,8 +176,8 @@ constructor(
         maybeGetTileRepositoryForUser(userId)?.prependDefault()
     }
 
-    override suspend fun resetToDefault(userId: Int) {
-        maybeGetTileRepositoryForUser(userId)?.resetToDefault()
+    override suspend fun resetToDefault(userId: Int): List<TileSpec> {
+        return maybeGetTileRepositoryForUser(userId)?.resetToDefault() ?: emptyList()
     }
 
     private suspend fun getTileRepositoryForUser(userId: Int): UserTileSpecRepository {

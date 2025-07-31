@@ -23,6 +23,7 @@ import android.widget.Button
 import android.widget.RadioButton
 import android.widget.TextView
 import androidx.constraintlayout.widget.ConstraintLayout
+import com.android.window.flags.Flags
 import com.android.wm.shell.R
 import com.android.wm.shell.compatui.DialogContainerSupplier
 
@@ -74,7 +75,9 @@ class OpenByDefaultDialogView @JvmOverloads constructor(
         backgroundDim = background.mutate()
         backgroundDim.alpha = 128
 
-        setupA11yTraversal()
+        if (!Flags.useInputReportedFocusForAccessibility()) {
+            setupA11yTraversal()
+        }
     }
 
     // Set up a11y focus so that focus loops through elements within the dialog, instead of going to

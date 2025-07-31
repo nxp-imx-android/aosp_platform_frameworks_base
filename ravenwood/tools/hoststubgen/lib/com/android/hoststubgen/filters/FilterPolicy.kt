@@ -59,7 +59,13 @@ enum class FilterPolicy(val policyStringOrPrefix: String) {
      * used in the "main" filter chain. (which would be detected by [SanitizationFilter].)
      * It's used in a separate filter chain used by [AnnotationBasedFilter].
      */
-    AnnotationAllowed("allow-annotation");
+    AnnotationAllowed("allow-annotation"),
+
+    /**
+     * Mark APIs as experimental. A new method call hook will be injected into methods so
+     * these APIs can be toggled at runtime using environment variables.
+     */
+    Experimental("experimental");
 
     val needsInOutput: Boolean
         get() {
@@ -73,7 +79,7 @@ enum class FilterPolicy(val policyStringOrPrefix: String) {
     val isUsableWithClasses: Boolean
         get() {
             return when (this) {
-                Keep, KeepClass, Remove, AnnotationAllowed -> true
+                Keep, KeepClass, Remove, AnnotationAllowed, Experimental -> true
                 else -> false
             }
         }
@@ -126,7 +132,7 @@ enum class FilterPolicy(val policyStringOrPrefix: String) {
     val isClassWide: Boolean
         get() {
             return when (this) {
-                Remove, KeepClass -> true
+                Remove, KeepClass, Experimental -> true
                 else -> false
             }
         }

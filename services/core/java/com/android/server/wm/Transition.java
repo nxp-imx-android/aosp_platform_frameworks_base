@@ -2120,10 +2120,7 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
 
         // Take snapshots for closing tasks/activities before the animation finished but after
         // dispatching onTransitionReady, so IME (if there is) can be captured together and the
-        // time spent on snapshot won't delay the start of animation. Note that if this transition
-        // is transient (mTransientLaunches != null), the snapshot will be captured at the end of
-        // the transition, because IME won't move be moved during the transition and the tasks are
-        // still live.
+        // time spent on snapshot won't delay the start of animation.
         if (mTransientLaunches == null) {
             mController.mSnapshotController.onTransactionReady(mType, mTargets);
         }

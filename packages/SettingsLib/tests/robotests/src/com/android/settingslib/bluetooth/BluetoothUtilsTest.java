@@ -1737,6 +1737,36 @@ public class BluetoothUtilsTest {
         assertTrue(updatedChannels.get(2).isSelected());
     }
 
+    @Test
+    public void hasConnectedBroadcastAssistantDevice_assistantProfileNull_returnFalse() {
+        when(mProfileManager.getLeAudioBroadcastAssistantProfile()).thenReturn(null);
+
+        boolean isAssistantConnected =
+                BluetoothUtils.hasConnectedBroadcastAssistantDevice(mLocalBluetoothManager);
+
+        assertThat(isAssistantConnected).isFalse();
+    }
+
+    @Test
+    public void hasConnectedBroadcastAssistantDevice_noConnectedDevice_returnFalse() {
+        when(mAssistant.getAllConnectedDevices()).thenReturn(List.of());
+
+        boolean isAssistantConnected =
+                BluetoothUtils.hasConnectedBroadcastAssistantDevice(mLocalBluetoothManager);
+
+        assertThat(isAssistantConnected).isFalse();
+    }
+
+    @Test
+    public void hasConnectedBroadcastAssistantDevice_hasConnectedDevice_returnFalse() {
+        when(mAssistant.getAllConnectedDevices()).thenReturn(ImmutableList.of(mBluetoothDevice));
+
+        boolean isAssistantConnected =
+                BluetoothUtils.hasConnectedBroadcastAssistantDevice(mLocalBluetoothManager);
+
+        assertThat(isAssistantConnected).isTrue();
+    }
+
     private BluetoothLeBroadcastMetadata createMetadataWithChannels(
             BluetoothLeBroadcastChannel... channels) {
         BluetoothLeBroadcastMetadata mockMetadata = mock(BluetoothLeBroadcastMetadata.class);

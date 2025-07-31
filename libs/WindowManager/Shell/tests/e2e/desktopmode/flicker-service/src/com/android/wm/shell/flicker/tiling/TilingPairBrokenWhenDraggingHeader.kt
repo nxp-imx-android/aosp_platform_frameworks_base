@@ -16,13 +16,14 @@
 
 package com.android.wm.shell.flicker.tiling
 
+import android.platform.test.annotations.Postsubmit
+import android.platform.test.annotations.RequiresDesktopDevice
 import android.tools.NavBar
 import android.tools.flicker.FlickerBuilder
 import android.tools.flicker.FlickerTest
 import android.tools.flicker.FlickerTestFactory
 import android.tools.flicker.assertions.FlickerChecker
 import android.tools.flicker.junit.FlickerParametersRunnerFactory
-import androidx.test.filters.RequiresDevice
 import com.android.wm.shell.Utils
 import com.android.wm.shell.flicker.DesktopModeBaseTest
 import com.android.wm.shell.flicker.utils.tilingDividerIsInvisibleAtEnd
@@ -34,9 +35,10 @@ import org.junit.runner.RunWith
 import org.junit.runners.Parameterized
 
 /** Ensures tiling is broken when a tiled header is dragged. */
-@RequiresDevice
+@RequiresDesktopDevice
 @RunWith(Parameterized::class)
 @Parameterized.UseParametersRunnerFactory(FlickerParametersRunnerFactory::class)
+@Postsubmit
 class TilingPairBrokenWhenDraggingHeader(flicker: FlickerTest) : DesktopModeBaseTest(flicker) {
     inner class TileResizingWithDragScenario : TilingTestBase(flicker.scenario.startRotation)
 

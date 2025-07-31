@@ -76,8 +76,9 @@ class FakeTileSpecRepository(
         with(getFlow(userId)) { value = defaultTilesRepository.defaultTiles + value }
     }
 
-    override suspend fun resetToDefault(userId: Int) {
+    override suspend fun resetToDefault(userId: Int): List<TileSpec> {
         with(getFlow(userId)) { value = defaultTilesRepository.defaultTiles }
+        return defaultTilesRepository.defaultTiles
     }
 
     override val tilesUpgradePath: Channel<Pair<TilesUpgradePath, Int>> = Channel(capacity = 10)

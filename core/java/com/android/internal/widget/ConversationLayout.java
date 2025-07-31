@@ -510,7 +510,7 @@ public class ConversationLayout extends FrameLayout
 
         // load conversation header data, avatar and title.
         final ConversationHeaderData conversationHeaderData;
-        if (includeConversationIcon && Flags.conversationStyleSetAvatarAsync()) {
+        if (includeConversationIcon) {
             conversationHeaderData = loadConversationHeaderData(mIsOneToOne,
                     mConversationTitle,
                     mShortcutIcon,
@@ -638,19 +638,15 @@ public class ConversationLayout extends FrameLayout
      * Update the layout according to the data provided (i.e mIsOneToOne, expanded etc);
      */
     private void updateConversationLayout(MessagingData messagingData) {
-        if (!Flags.conversationStyleSetAvatarAsync()) {
-            computeAndSetConversationAvatarAndName();
-        } else {
-            ConversationHeaderData conversationHeaderData =
-                    messagingData.getConversationHeaderData();
-            if (conversationHeaderData == null) {
-                conversationHeaderData = loadConversationHeaderData(mIsOneToOne,
-                        mConversationTitle, mShortcutIcon, mLargeIcon, mMessages, mUser,
-                        messagingData.getGroups(),
-                        mLayoutColor);
-            }
-            setConversationAvatarAndNameFromData(conversationHeaderData);
+        ConversationHeaderData conversationHeaderData =
+                messagingData.getConversationHeaderData();
+        if (conversationHeaderData == null) {
+            conversationHeaderData = loadConversationHeaderData(mIsOneToOne,
+                    mConversationTitle, mShortcutIcon, mLargeIcon, mMessages, mUser,
+                    messagingData.getGroups(),
+                    mLayoutColor);
         }
+        setConversationAvatarAndNameFromData(conversationHeaderData);
 
         updateAppName();
         updateIconPositionAndSize();
@@ -658,60 +654,6 @@ public class ConversationLayout extends FrameLayout
         updatePaddingsBasedOnContentAvailability();
         updateActionListPadding();
         updateAppNameDividerVisibility();
-    }
-
-    @Deprecated
-    private void computeAndSetConversationAvatarAndName() {
-        // Set avatar and name
-        CharSequence conversationText = mConversationTitle;
-        mConversationIcon = mShortcutIcon;
-        if (mIsOneToOne) {
-            // Let's resolve the icon / text from the last sender
-            CharSequence userKey = getKey(mUser);
-            for (int i = mGroups.size() - 1; i >= 0; i--) {
-                MessagingGroup messagingGroup = mGroups.get(i);
-                Person messageSender = messagingGroup.getSender();
-                if ((messageSender != null && !TextUtils.equals(userKey, getKey(messageSender)))
-                        || i == 0) {
-                    if (TextUtils.isEmpty(conversationText)) {
-                        // We use the sendername as header text if no conversation title is provided
-                        // (This usually happens for most 1:1 conversations)
-                        conversationText = messagingGroup.getSenderName();
-                    }
-                    if (mConversationIcon == null) {
-                        Icon avatarIcon = messagingGroup.getAvatarIcon();
-                        if (avatarIcon == null) {
-                            avatarIcon = mPeopleHelper.createAvatarSymbol(conversationText, "",
-                                    mLayoutColor);
-                        }
-                        mConversationIcon = avatarIcon;
-                    }
-                    break;
-                }
-            }
-        }
-        if (mConversationIcon == null) {
-            mConversationIcon = mLargeIcon;
-        }
-        if (mIsOneToOne || mConversationIcon != null) {
-            mConversationIconView.setVisibility(VISIBLE);
-            mConversationFacePile.setVisibility(GONE);
-            mConversationIconView.setImageIcon(mConversationIcon);
-        } else {
-            mConversationIconView.setVisibility(GONE);
-            // This will also inflate it!
-            mConversationFacePile.setVisibility(VISIBLE);
-            // rebind the value to the inflated view instead of the stub
-            mConversationFacePile = findViewById(R.id.conversation_face_pile);
-            bindFacePile();
-        }
-        if (TextUtils.isEmpty(conversationText)) {
-            conversationText = mIsOneToOne ? mFallbackChatName : mFallbackGroupChatName;
-        }
-        mConversationText.setText(conversationText);
-        // Update if the groups can hide the sender if they are first (applies to 1:1 conversations)
-        // This needs to happen after all of the above o update all of the groups
-        mPeopleHelper.maybeHideFirstSenderName(mGroups, mIsOneToOne, conversationText);
     }
 
     private void setConversationAvatarAndNameFromData(
@@ -1033,10 +975,6 @@ public class ConversationLayout extends FrameLayout
      */
     @RemotableViewMethod
     public Runnable setLargeIconAsync(Icon largeIcon) {
-        if (!Flags.conversationStyleSetAvatarAsync()) {
-            return () -> setLargeIcon(largeIcon);
-        }
-
         mLargeIcon = largeIcon;
         return NotificationRunnables.NOOP;
     }
@@ -1051,10 +989,6 @@ public class ConversationLayout extends FrameLayout
      */
     @RemotableViewMethod
     public Runnable setShortcutIconAsync(Icon shortcutIcon) {
-        if (!Flags.conversationStyleSetAvatarAsync()) {
-            return () -> setShortcutIcon(shortcutIcon);
-        }
-
         mShortcutIcon = shortcutIcon;
         return NotificationRunnables.NOOP;
     }
@@ -1069,10 +1003,6 @@ public class ConversationLayout extends FrameLayout
      */
     @RemotableViewMethod
     public Runnable setConversationTitleAsync(CharSequence conversationTitle) {
-        if (!Flags.conversationStyleSetAvatarAsync()) {
-            return () -> setConversationTitle(conversationTitle);
-        }
-
         // Remove formatting from the title.
         mConversationTitle = conversationTitle != null ? conversationTitle.toString() : null;
         return NotificationRunnables.NOOP;
@@ -1176,10 +1106,6 @@ public class ConversationLayout extends FrameLayout
      */
     @RemotableViewMethod
     public Runnable setLayoutColorAsync(int color) {
-        if (!Flags.conversationStyleSetAvatarAsync()) {
-            return () -> setLayoutColor(color);
-        }
-
         mLayoutColor = color;
         return NotificationRunnables.NOOP;
     }
@@ -1194,9 +1120,6 @@ public class ConversationLayout extends FrameLayout
      */
     @RemotableViewMethod
     public Runnable setIsOneToOneAsync(boolean oneToOne) {
-        if (!Flags.conversationStyleSetAvatarAsync()) {
-            return () -> setIsOneToOne(oneToOne);
-        }
         mIsOneToOne = oneToOne;
         return NotificationRunnables.NOOP;
     }

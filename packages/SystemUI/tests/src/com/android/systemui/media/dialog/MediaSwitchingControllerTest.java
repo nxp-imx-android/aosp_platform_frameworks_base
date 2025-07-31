@@ -24,12 +24,15 @@ import static com.android.systemui.media.dialog.MediaItem.MediaItemType.TYPE_GRO
 
 import static com.google.common.truth.Truth.assertThat;
 
+import static kotlinx.coroutines.flow.StateFlowKt.MutableStateFlow;
+
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.same;
 import static org.mockito.Mockito.after;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.doAnswer;
@@ -45,6 +48,7 @@ import static org.mockito.Mockito.when;
 
 import android.app.KeyguardManager;
 import android.app.Notification;
+import android.bluetooth.BluetoothDevice;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -81,12 +85,15 @@ import androidx.test.filters.SmallTest;
 
 import com.android.media.flags.Flags;
 import com.android.settingslib.bluetooth.CachedBluetoothDeviceManager;
+import com.android.settingslib.bluetooth.LocalBluetoothLeBroadcastAssistant;
 import com.android.settingslib.bluetooth.LocalBluetoothManager;
+import com.android.settingslib.bluetooth.LocalBluetoothProfileManager;
 import com.android.settingslib.media.InfoMediaManager;
 import com.android.settingslib.media.InputMediaDevice;
 import com.android.settingslib.media.InputRouteManager;
 import com.android.settingslib.media.LocalMediaManager;
 import com.android.settingslib.media.MediaDevice;
+import com.android.settingslib.volume.data.repository.AudioSharingRepository;
 import com.android.systemui.SysuiTestCase;
 import com.android.systemui.SysuiTestCaseExtKt;
 import com.android.systemui.animation.ActivityTransitionAnimator;
@@ -98,22 +105,27 @@ import com.android.systemui.res.R;
 import com.android.systemui.settings.UserTracker;
 import com.android.systemui.statusbar.notification.collection.NotificationEntry;
 import com.android.systemui.statusbar.notification.collection.notifcollection.CommonNotifCollection;
+import com.android.systemui.util.kotlin.JavaAdapter;
 import com.android.systemui.util.time.FakeSystemClock;
 import com.android.systemui.volume.panel.domain.interactor.VolumePanelGlobalStateInteractor;
 import com.android.systemui.volume.panel.domain.interactor.VolumePanelGlobalStateInteractorKosmosKt;
 
 import com.google.common.collect.ImmutableList;
 
+import kotlinx.coroutines.flow.MutableStateFlow;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 @SmallTest
@@ -188,8 +200,11 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
 
     @Mock
     private UserTracker mUserTracker;
+    @Mock private AudioSharingRepository mAudioSharingRepository;
 
     private final Kosmos mKosmos = SysuiTestCaseExtKt.testKosmos(this);
+    @Mock private JavaAdapter mJavaAdapter;
+    @Captor private ArgumentCaptor<Consumer<Boolean>> mInAudioSharingCaptor;
 
     private final FakeSystemClock mClock = new FakeSystemClock();
 
@@ -249,7 +264,9 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
                         mKeyguardManager,
                         mClock,
                         mVolumePanelGlobalStateInteractor,
-                        mUserTracker);
+                        mUserTracker,
+                        mJavaAdapter,
+                        mAudioSharingRepository);
         mLocalMediaManager = spy(mMediaSwitchingController.mLocalMediaManager);
         when(mLocalMediaManager.isPreferenceRouteListingExist()).thenReturn(false);
         mMediaSwitchingController.mLocalMediaManager = mLocalMediaManager;
@@ -351,7 +368,9 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
                         mKeyguardManager,
                         mClock,
                         mVolumePanelGlobalStateInteractor,
-                        mUserTracker);
+                        mUserTracker,
+                        mJavaAdapter,
+                        mAudioSharingRepository);
 
         mMediaSwitchingController.start(mCb);
 
@@ -394,7 +413,9 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
                         mKeyguardManager,
                         mClock,
                         mVolumePanelGlobalStateInteractor,
-                        mUserTracker);
+                        mUserTracker,
+                        mJavaAdapter,
+                        mAudioSharingRepository);
 
         mMediaSwitchingController.start(mCb);
 
@@ -953,7 +974,9 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
                         mKeyguardManager,
                         mClock,
                         mVolumePanelGlobalStateInteractor,
-                        mUserTracker);
+                        mUserTracker,
+                        mJavaAdapter,
+                        mAudioSharingRepository);
         testMediaSwitchingController.start(mCb);
         reset(mCb);
 
@@ -981,7 +1004,9 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
                         mKeyguardManager,
                         mClock,
                         mVolumePanelGlobalStateInteractor,
-                        mUserTracker);
+                        mUserTracker,
+                        mJavaAdapter,
+                        mAudioSharingRepository);
         testMediaSwitchingController.start(mCb);
         reset(mCb);
 
@@ -1029,7 +1054,9 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
                         mKeyguardManager,
                         mClock,
                         mVolumePanelGlobalStateInteractor,
-                        mUserTracker);
+                        mUserTracker,
+                        mJavaAdapter,
+                        mAudioSharingRepository);
 
         LocalMediaManager mockLocalMediaManager = mock(LocalMediaManager.class);
         testMediaSwitchingController.mLocalMediaManager = mockLocalMediaManager;
@@ -1057,7 +1084,9 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
                         mKeyguardManager,
                         mClock,
                         mVolumePanelGlobalStateInteractor,
-                        mUserTracker);
+                        mUserTracker,
+                        mJavaAdapter,
+                        mAudioSharingRepository);
 
         LocalMediaManager mockLocalMediaManager = mock(LocalMediaManager.class);
         testMediaSwitchingController.mLocalMediaManager = mockLocalMediaManager;
@@ -1260,7 +1289,9 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
                         mKeyguardManager,
                         mClock,
                         mVolumePanelGlobalStateInteractor,
-                        mUserTracker);
+                        mUserTracker,
+                        mJavaAdapter,
+                        mAudioSharingRepository);
 
         assertThat(mMediaSwitchingController.getNotificationIcon()).isNull();
     }
@@ -1432,7 +1463,9 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
                         mKeyguardManager,
                         mClock,
                         mVolumePanelGlobalStateInteractor,
-                        mUserTracker);
+                        mUserTracker,
+                        mJavaAdapter,
+                        mAudioSharingRepository);
 
         testMediaSwitchingController.setTemporaryAllowListExceptionIfNeeded(mMediaDevice2);
 
@@ -1717,6 +1750,64 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
 
         List<MediaItem> items = mMediaSwitchingController.getMediaItemList();
         assertThat(items.get(0).isFirstDeviceInGroup()).isTrue();
+    }
+
+    @Test
+    public void getAudioSharingButtonState_noConnectedBroadcastAssistantDevice_returnsNull() {
+        LocalBluetoothProfileManager profileManager = mock(LocalBluetoothProfileManager.class);
+        LocalBluetoothLeBroadcastAssistant assistantProfile =
+                mock(LocalBluetoothLeBroadcastAssistant.class);
+        when(mLocalBluetoothManager.getProfileManager()).thenReturn(profileManager);
+        when(profileManager.getLeAudioBroadcastAssistantProfile()).thenReturn(assistantProfile);
+        when(assistantProfile.getConnectedDevices()).thenReturn(List.of());
+        mMediaSwitchingController.start(mCb);
+
+        AudioSharingButtonState buttonState =
+                mMediaSwitchingController.getAudioSharingButtonState();
+
+        assertThat(buttonState).isNull();
+    }
+
+    @Test
+    @EnableFlags(com.android.systemui.Flags.FLAG_ENABLE_OUTPUT_SWITCHER_AUDIO_SHARING_BUTTON)
+    public void getAudioSharingButtonState_inAudioSharing_returnsVisible() {
+        MutableStateFlow<Boolean> inAudioSharingFlow = MutableStateFlow(false);
+        when(mAudioSharingRepository.getInAudioSharing()).thenReturn(inAudioSharingFlow);
+        mMediaSwitchingController.start(mCb);
+        verify(mJavaAdapter)
+                .alwaysCollectFlow(same(inAudioSharingFlow), mInAudioSharingCaptor.capture());
+        Consumer<Boolean> capturedConsumer = mInAudioSharingCaptor.getValue();
+        capturedConsumer.accept(true);
+
+        AudioSharingButtonState buttonState =
+                mMediaSwitchingController.getAudioSharingButtonState();
+
+        assertThat(buttonState).isNotNull();
+        assertThat(buttonState.isActive()).isTrue();
+        assertThat(buttonState.getResId())
+                .isEqualTo(R.string.media_output_dialog_button_sharing_audio);
+    }
+
+    @Test
+    public void getAudioSharingButtonState_hasConnectedBroadcastAssistantDevice_returnsVisible() {
+        LocalBluetoothProfileManager profileManager = mock(LocalBluetoothProfileManager.class);
+        LocalBluetoothLeBroadcastAssistant assistantProfile =
+                mock(LocalBluetoothLeBroadcastAssistant.class);
+        BluetoothDevice bluetoothDevice = mock(BluetoothDevice.class);
+        MutableStateFlow<Boolean> inAudioSharingFlow = MutableStateFlow(false);
+        when(mLocalBluetoothManager.getProfileManager()).thenReturn(profileManager);
+        when(profileManager.getLeAudioBroadcastAssistantProfile()).thenReturn(assistantProfile);
+        when(assistantProfile.getAllConnectedDevices()).thenReturn(List.of(bluetoothDevice));
+        when(mAudioSharingRepository.getInAudioSharing()).thenReturn(inAudioSharingFlow);
+        mMediaSwitchingController.start(mCb);
+
+        AudioSharingButtonState buttonState =
+                mMediaSwitchingController.getAudioSharingButtonState();
+
+        assertThat(buttonState).isNotNull();
+        assertThat(buttonState.isActive()).isFalse();
+        assertThat(buttonState.getResId())
+                .isEqualTo(R.string.media_output_dialog_button_share_audio);
     }
 
     private List<MediaDevice> getMediaDevices(List<MediaItem> mediaItemList) {

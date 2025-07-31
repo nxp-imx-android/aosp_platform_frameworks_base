@@ -4498,9 +4498,11 @@ public class DeviceIdleController extends SystemService
     private void reportTempWhitelistChangedLocked(final int uid, final boolean added) {
         mHandler.obtainMessage(MSG_REPORT_TEMP_APP_WHITELIST_CHANGED, uid, added ? 1 : 0)
                 .sendToTarget();
-        getContext().sendBroadcastAsUser(mPowerSaveTempWhitelistChangedIntent, UserHandle.SYSTEM,
-                null /* receiverPermission */,
-                mPowerSaveTempWhilelistChangedOptions);
+        if (!Flags.stopPowerSaveTempWhitelistBroadcast()) {
+            getContext().sendBroadcastAsUser(mPowerSaveTempWhitelistChangedIntent,
+                    UserHandle.SYSTEM, null /* receiverPermission */,
+                    mPowerSaveTempWhilelistChangedOptions);
+        }
     }
 
     private void passWhiteListsToForceAppStandbyTrackerLocked() {
@@ -5264,6 +5266,10 @@ public class DeviceIdleController extends SystemService
         pw.print(Flags.FLAG_REMOVE_IDLE_LOCATION);
         pw.print("=");
         pw.println(Flags.removeIdleLocation());
+        pw.print("    ");
+        pw.print(Flags.FLAG_STOP_POWER_SAVE_TEMP_WHITELIST_BROADCAST);
+        pw.print("=");
+        pw.println(Flags.stopPowerSaveTempWhitelistBroadcast());
         pw.println();
 
         synchronized (this) {

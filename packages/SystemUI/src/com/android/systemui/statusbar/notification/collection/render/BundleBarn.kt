@@ -205,14 +205,16 @@ private fun HeaderComposeViewContent(
             )
         DisposableEffect(viewModel) {
             row.setBundleHeaderViewModel(viewModel)
-            onDispose { row.setBundleHeaderViewModel(null) }
+            row.setOnClickListener {
+                viewModel.onHeaderClicked()
+                row.expandNotification()
+            }
+            onDispose {
+                row.setOnClickListener(null)
+                row.setBundleHeaderViewModel(null)
+            }
         }
-        BundleHeader(
-            viewModel,
-            onHeaderClicked = { row.expandNotification() },
-            // to be used only for dismissal coming from an accessibility action.
-            onA11yDismissAction = { row.performDismiss(true) },
-        )
+        BundleHeader(viewModel)
     }
 }
 

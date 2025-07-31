@@ -12,16 +12,6 @@ flag {
 }
 
 flag {
-  name: "conversation_style_set_avatar_async"
-  namespace: "systemui"
-  description: "Offloads conversation avatar drawable loading to the background thread"
-  bug: "305540309"
-  metadata {
-    purpose: PURPOSE_BUGFIX
-  }
-}
-
-flag {
   name: "drop_non_existing_messages"
   namespace: "systemui"
   description: "Drops all group and message entries that no longer exist."

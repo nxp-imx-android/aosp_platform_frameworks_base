@@ -98,7 +98,6 @@ import android.view.WindowInsetsController.Behavior;
 import android.view.WindowManager;
 import android.view.accessibility.AccessibilityEvent;
 import android.view.accessibility.AccessibilityManager;
-import android.view.inputmethod.Flags;
 import android.view.inputmethod.InputMethodManager;
 
 import androidx.annotation.Nullable;
@@ -1380,9 +1379,7 @@ public class NavigationBar extends ViewController<NavigationBarView> implements 
 
         ButtonDispatcher imeSwitcherButton = mView.getImeSwitchButton();
         imeSwitcherButton.setOnClickListener(this::onImeSwitcherClick);
-        if (Flags.imeSwitcherRevamp()) {
-            imeSwitcherButton.setOnLongClickListener(this::onImeSwitcherLongClick);
-        }
+        imeSwitcherButton.setOnLongClickListener(this::onImeSwitcherLongClick);
 
         updateScreenPinningGestures();
     }
@@ -1543,23 +1540,15 @@ public class NavigationBar extends ViewController<NavigationBarView> implements 
     @VisibleForTesting
     void onImeSwitcherClick(View v) {
         mNavBarButtonClickLogger.logImeSwitcherClick();
-        if (Flags.imeSwitcherRevamp()) {
-            mInputMethodManager.onImeSwitchButtonClickFromSystem(mDisplayId);
-        } else {
-            mInputMethodManager.showInputMethodPickerFromSystem(
-                    true /* showAuxiliarySubtypes */, mDisplayId);
-        }
+        mInputMethodManager.onImeSwitchButtonClickFromSystem(mDisplayId);
         mUiEventLogger.log(KeyButtonView.NavBarButtonEvent.NAVBAR_IME_SWITCHER_BUTTON_TAP);
     }
 
     @VisibleForTesting
     boolean onImeSwitcherLongClick(View v) {
-        if (!Flags.imeSwitcherRevamp()) {
-            return false;
-        }
         mNavBarButtonClickLogger.logImeSwitcherClick();
-        mInputMethodManager.showInputMethodPickerFromSystem(
-                true /* showAuxiliarySubtypes */, mDisplayId);
+        mInputMethodManager.showInputMethodPickerFromSystem(true /* showAuxiliarySubtypes */,
+                mDisplayId);
         mUiEventLogger.log(KeyButtonView.NavBarButtonEvent.NAVBAR_IME_SWITCHER_BUTTON_LONGPRESS);
         return true;
     }

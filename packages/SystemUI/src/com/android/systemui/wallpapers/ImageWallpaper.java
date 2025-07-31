@@ -21,7 +21,6 @@ import static android.app.WallpaperManager.FLAG_SYSTEM;
 import static android.app.WallpaperManager.SetWallpaperFlags;
 
 import static com.android.window.flags.Flags.multiCrop;
-import static com.android.window.flags.Flags.offloadColorExtraction;
 
 import android.annotation.Nullable;
 import android.app.WallpaperColors;
@@ -456,7 +455,6 @@ public class ImageWallpaper extends WallpaperService {
 
         @Override
         public @Nullable WallpaperColors onComputeColors() {
-            if (!offloadColorExtraction()) return null;
             return mWallpaperLocalColorExtractor.onComputeColors();
         }
 
@@ -498,7 +496,6 @@ public class ImageWallpaper extends WallpaperService {
 
         @Override
         public void onDimAmountChanged(float dimAmount) {
-            if (!offloadColorExtraction()) return;
             mWallpaperLocalColorExtractor.onDimAmountChanged(dimAmount);
         }
 

@@ -469,6 +469,14 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
             }
         }
 
+        // If we get a relayout call while hovering over maximize button in the app header but the
+        // task has lost focus, explicitly cancel the hover (since we don't get a HOVER_EXIT signal
+        // in this case).
+        if (!taskInfo.isFocused && mIsAppHeaderMaximizeButtonHovered) {
+            setAppHeaderMaximizeButtonHovered(false);
+            onMaximizeButtonHoverExit();
+        }
+
         if (isHandleMenuActive()) {
             mHandleMenu.relayout(
                     startT,
@@ -2010,6 +2018,7 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
      */
     @Override
     public void onMaximizeButtonHoverEnter() {
+        if (!mTaskInfo.isFocused) return;
         asAppHeader(mWindowDecorViewHolder).onMaximizeWindowHoverEnter();
     }
 

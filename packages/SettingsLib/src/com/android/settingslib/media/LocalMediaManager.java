@@ -49,7 +49,6 @@ import com.android.settingslib.bluetooth.HearingAidProfile;
 import com.android.settingslib.bluetooth.LeAudioProfile;
 import com.android.settingslib.bluetooth.LocalBluetoothManager;
 import com.android.settingslib.bluetooth.LocalBluetoothProfile;
-import com.android.settingslib.media.InfoMediaManager.SuggestedDeviceState;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;

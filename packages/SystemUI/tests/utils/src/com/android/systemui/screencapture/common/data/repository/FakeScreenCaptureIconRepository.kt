@@ -19,28 +19,35 @@ package com.android.systemui.screencapture.common.data.repository
 import android.content.ComponentName
 import android.graphics.Bitmap
 import androidx.core.graphics.createBitmap
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.CompletableDeferred
 
 class FakeScreenCaptureIconRepository : ScreenCaptureIconRepository {
 
-    var fakeIconFlow = MutableStateFlow<Result<Bitmap>?>(null)
-    val iconForCalls = mutableListOf<Triple<ComponentName, Int, Boolean>>()
+    private var loadIconDeferred = CompletableDeferred(Unit)
 
-    override fun iconFor(
+    var fakeIcon: Result<Bitmap> = Result.success(createBitmap(100, 100))
+    val loadAppIconCalls = mutableListOf<Triple<ComponentName, Int, Boolean>>()
+
+    override suspend fun loadIcon(
         component: ComponentName,
         userId: Int,
         badged: Boolean,
-    ): StateFlow<Result<Bitmap>?> {
-        iconForCalls.add(Triple(component, userId, badged))
-        return fakeIconFlow
+    ): Result<Bitmap> {
+        loadAppIconCalls.add(Triple(component, userId, badged))
+        loadIconDeferred.await()
+        return fakeIcon
     }
 
-    var fakeIcon: Bitmap? = createBitmap(100, 100)
-    val loadIconCalls = mutableListOf<Triple<ComponentName, Int, Boolean>>()
+    fun setLoadIconSuspends(suspends: Boolean) {
+        loadIconDeferred =
+            if (suspends) {
+                CompletableDeferred()
+            } else {
+                CompletableDeferred(Unit)
+            }
+    }
 
-    override suspend fun loadIcon(component: ComponentName, userId: Int, badged: Boolean): Bitmap? {
-        loadIconCalls.add(Triple(component, userId, badged))
-        return fakeIcon
+    fun completeLoadIcon() {
+        loadIconDeferred.complete(Unit)
     }
 }

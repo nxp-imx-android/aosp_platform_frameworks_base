@@ -621,42 +621,11 @@ public final class PackageMetrics {
                 uid, componentOldState, componentNewState, isLauncher, isForWholeApp, callingUid);
     }
 
-    public static void reportPackageChangedBroadcast(int callingUid, int targetUid,
-            boolean isForWholeApp, String reason) {
-        FrameworkStatsLog.write(FrameworkStatsLog.PACKAGE_CHANGED_BROADCAST_REPORTED,
-                callingUid, targetUid,
-                convertPackageChangedReasonStringToInteger(reason, isForWholeApp));
-    }
-
     /**
      * Metrics for reporting what kind of reason to call the invalidation.
      */
     public static void reportCacheInvalidationEvent(int cacheType, int invalidationReason) {
         storeInvalidationMetrics(cacheType, invalidationReason);
-    }
-
-    private static int convertPackageChangedReasonStringToInteger(String reason,
-            boolean isForWholeApp) {
-        return switch (reason) {
-            case STRING_COMPONENT_STATE_CHANGED -> isForWholeApp
-                    ?
-                    FrameworkStatsLog.PACKAGE_CHANGED_BROADCAST_REPORTED__REASON__PACKAGE_CHANGED_REASON_PACKAGE_STATE_CHANGED
-                    : FrameworkStatsLog.PACKAGE_CHANGED_BROADCAST_REPORTED__REASON__PACKAGE_CHANGED_REASON_COMPONENT_STATE_CHANGED;
-            case STRING_COMPONENT_LABEL_ICON_CHANGED ->
-                    FrameworkStatsLog.PACKAGE_CHANGED_BROADCAST_REPORTED__REASON__PACKAGE_CHANGED_REASON_COMPONENT_LABEL_ICON_CHANGED;
-            case STRING_RESET_COMPONENT_STATE_CHANGED ->
-                    FrameworkStatsLog.PACKAGE_CHANGED_BROADCAST_REPORTED__REASON__PACKAGE_CHANGED_REASON_COMPONENT_STATE_RESET;
-            case STRING_MIME_GROUP_CHANGED ->
-                    FrameworkStatsLog.PACKAGE_CHANGED_BROADCAST_REPORTED__REASON__PACKAGE_CHANGED_REASON_MIME_GROUP_CHANGED;
-            case STRING_OVERLAY_CHANGED ->
-                    FrameworkStatsLog.PACKAGE_CHANGED_BROADCAST_REPORTED__REASON__PACKAGE_CHANGED_REASON_OVERLAY_CHANGED;
-            case STRING_STATIC_SHARED_LIBRARY_CHANGED ->
-                    FrameworkStatsLog.PACKAGE_CHANGED_BROADCAST_REPORTED__REASON__PACKAGE_CHANGED_REASON_STATIC_SHARED_LIBRARY_CHANGED;
-            case STRING_TEST ->
-                    FrameworkStatsLog.PACKAGE_CHANGED_BROADCAST_REPORTED__REASON__PACKAGE_CHANGED_REASON_TEST;
-            default ->
-                    FrameworkStatsLog.PACKAGE_CHANGED_BROADCAST_REPORTED__REASON__PACKAGE_CHANGED_REASON_UNSPECIFIED;
-        };
     }
 
     private static void storeInvalidationMetrics(int cacheType, int invalidationReason) {

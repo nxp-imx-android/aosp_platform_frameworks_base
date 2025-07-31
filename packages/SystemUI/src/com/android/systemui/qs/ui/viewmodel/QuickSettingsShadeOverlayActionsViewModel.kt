@@ -25,7 +25,9 @@ import com.android.compose.animation.scene.UserActionResult.ShowOverlay
 import com.android.compose.animation.scene.UserActionResult.ShowOverlay.HideCurrentOverlays
 import com.android.systemui.qs.panels.ui.viewmodel.EditModeViewModel
 import com.android.systemui.scene.shared.model.Overlays
-import com.android.systemui.scene.ui.viewmodel.SceneContainerArea
+import com.android.systemui.scene.ui.viewmodel.SceneContainerArea.BottomEdge
+import com.android.systemui.scene.ui.viewmodel.SceneContainerArea.StartHalf
+import com.android.systemui.scene.ui.viewmodel.SceneContainerArea.TopEdgeStartHalf
 import com.android.systemui.scene.ui.viewmodel.UserActionsViewModel
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
@@ -40,23 +42,22 @@ constructor(private val editModeViewModel: EditModeViewModel) : UserActionsViewM
         editModeViewModel.isEditing
             .map { isEditing ->
                 val hideQuickSettings = HideOverlay(Overlays.QuickSettingsShade)
+                val openNotificationsShade =
+                    ShowOverlay(
+                        Overlays.NotificationsShade,
+                        hideCurrentOverlays = HideCurrentOverlays.Some(Overlays.QuickSettingsShade),
+                    )
                 buildMap {
                     if (isEditing) {
                         // When editing, the back gesture is handled outside of this view-model.
                         // TODO(b/418003378): Back should go back to the QS grid layout.
-                        put(Swipe.Up(fromSource = SceneContainerArea.BottomEdge), hideQuickSettings)
+                        put(Swipe.Up(fromSource = BottomEdge), hideQuickSettings)
                     } else {
                         put(Back, hideQuickSettings)
                         put(Swipe.Up, hideQuickSettings)
                     }
-                    put(
-                        Swipe.Down(fromSource = SceneContainerArea.StartHalf),
-                        ShowOverlay(
-                            Overlays.NotificationsShade,
-                            hideCurrentOverlays =
-                                HideCurrentOverlays.Some(Overlays.QuickSettingsShade),
-                        ),
-                    )
+                    put(Swipe.Down(fromSource = TopEdgeStartHalf), openNotificationsShade)
+                    put(Swipe.Down(fromSource = StartHalf), openNotificationsShade)
                 }
             }
             .collect { actions -> setActions(actions) }

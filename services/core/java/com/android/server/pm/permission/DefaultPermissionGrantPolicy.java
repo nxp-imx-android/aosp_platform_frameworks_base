@@ -1059,6 +1059,7 @@ final class DefaultPermissionGrantPolicy {
         }
     }
 
+    @Deprecated
     public void grantDefaultPermissionsToEnabledCarrierApps(String[] packageNames, int userId) {
         Log.i(TAG, "Granting permissions to enabled carrier apps for user:" + userId);
         if (packageNames == null) {

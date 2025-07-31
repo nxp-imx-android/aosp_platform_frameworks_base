@@ -19,6 +19,7 @@ package com.android.systemui.qs.ui.composable
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
@@ -36,6 +37,7 @@ import com.android.systemui.res.R
 import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.scene.ui.composable.Scene
 import com.android.systemui.shade.ui.composable.Shade
+import com.android.systemui.shade.ui.composable.ShadeHeader
 import javax.inject.Inject
 import kotlinx.coroutines.flow.Flow
 
@@ -65,13 +67,21 @@ constructor(
         val viewModel =
             rememberViewModel("edit_mode_scene_view_model") { contentViewModelFactory.create() }
 
-        Box(
-            modifier =
-                Modifier.fillMaxSize()
-                    .element(Shade.Elements.BackgroundScrim)
-                    .background(colorResource(R.color.shade_scrim_background_dark))
-        )
+        Box(modifier = modifier.fillMaxSize()) {
+            Box(
+                modifier =
+                    Modifier.fillMaxSize()
+                        .element(Shade.Elements.BackgroundScrim)
+                        .background(colorResource(R.color.shade_scrim_background_dark))
+            )
 
-        EditMode(viewModel.editModeViewModel, modifier.testTag("edit_mode_scene"))
+            EditMode(
+                viewModel.editModeViewModel,
+                Modifier.fillMaxSize()
+                    .testTag("edit_mode_scene")
+                    .padding(horizontal = QuickSettingsShade.Dimensions.Padding)
+                    .padding(top = ShadeHeader.Dimensions.StatusBarHeight),
+            )
+        }
     }
 }

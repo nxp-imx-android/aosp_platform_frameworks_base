@@ -70,6 +70,9 @@ interface ShadeModeInteractor {
     /** Convenience shortcut for querying whether the current [shadeMode] is [ShadeMode.Split]. */
     val isSplitShade: Boolean
         get() = shadeMode.value is ShadeMode.Split
+
+    /** Whether the user has enabled the Dual Shade setting. */
+    val isDualShadeSettingEnabled: Flow<Boolean>
 }
 
 class ShadeModeInteractorImpl
@@ -83,7 +86,7 @@ constructor(
     @SceneFrameworkTableLog private val tableLogBuffer: TableLogBuffer,
 ) : ShadeModeInteractor {
 
-    private val isDualShadeEnabled: Flow<Boolean> =
+    override val isDualShadeSettingEnabled: Flow<Boolean> =
         if (SceneContainerFlag.isEnabled) {
             secureSettingsRepository
                 .boolSetting(Settings.Secure.DUAL_SHADE, defaultValue = DUAL_SHADE_ENABLED_DEFAULT)
@@ -109,7 +112,7 @@ constructor(
             )
 
     override val shadeMode: StateFlow<ShadeMode> =
-        combine(isDualShadeEnabled, isShadeLayoutWide, isLargeScreen, ::determineShadeMode)
+        combine(isDualShadeSettingEnabled, isShadeLayoutWide, isLargeScreen, ::determineShadeMode)
             .logDiffsForTable(tableLogBuffer = tableLogBuffer, initialValue = shadeModeInitialValue)
             .stateIn(applicationScope, SharingStarted.Eagerly, initialValue = shadeModeInitialValue)
 
@@ -126,17 +129,13 @@ constructor(
             // Case 2: The Dual Shade setting has been enabled by the user.
             isDualShadeEnabled -> ShadeMode.Dual
 
-            // Case 3: Phone in portrait orientation, with Dual Shade setting disabled.
-            !isShadeLayoutWide -> ShadeMode.Single
+            // Case 3: Large screen in landscape orientation, with Dual Shade setting disabled.
+            isLargeScreen && isShadeLayoutWide ->
+                if (isSplitShadeEnabled) ShadeMode.Split else ShadeMode.Dual
 
-            // Case 4: Phone in landscape orientation, with Dual Shade setting disabled.
-            !isLargeScreen -> ShadeMode.Single
-
-            // Case 5: Large screen with Split Shade enabled, Dual Shade setting disabled.
-            isSplitShadeEnabled -> ShadeMode.Split
-
-            // Case 6: Large screen with Split Shade disabled, Dual Shade setting disabled.
-            else -> ShadeMode.Dual
+            // Case 4: Phone (in any orientation) or large screen in portrait, with Dual Shade
+            // setting disabled.
+            else -> ShadeMode.Single
         }
     }
 
@@ -151,4 +150,6 @@ class ShadeModeInteractorEmptyImpl @Inject constructor() : ShadeModeInteractor {
     override val shadeMode: StateFlow<ShadeMode> = MutableStateFlow(ShadeMode.Single)
 
     override val isShadeLayoutWide: StateFlow<Boolean> = MutableStateFlow(false)
+
+    override val isDualShadeSettingEnabled: Flow<Boolean> = flowOf(false)
 }

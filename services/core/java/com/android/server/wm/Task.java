@@ -1548,10 +1548,6 @@ class Task extends TaskFragment {
             getDisplayArea().addRootTaskReferenceIfNeeded((Task) child);
         }
 
-        // Make sure the list of display UID allowlists is updated
-        // now that this record is in a new task.
-        mRootWindowContainer.updateUIDsPresentOnDisplay();
-
         // Only pass minimum dimensions for pure TaskFragment. Task's minimum dimensions must be
         // passed from Task constructor.
         final TaskFragment childTaskFrag = child.asTaskFragment();
@@ -2430,14 +2426,19 @@ class Task extends TaskFragment {
     }
 
     void updateSurfaceSize(SurfaceControl.Transaction transaction) {
-        if (mSurfaceControl == null || isOrganized()) {
+        final boolean inSync = mSyncState != SYNC_STATE_NONE;
+        if (mSurfaceControl == null
+                // Organized tasks are controlled by shell, so only manipulate those surfaces
+                // during syncs
+                || (isOrganized() && (!Flags.updateTaskCropInSync() || !inSync))) {
             return;
         }
 
         // Apply crop to root tasks only and clear the crops of the descendant tasks.
         int width = 0;
         int height = 0;
-        if (isRootTask() && !mTransitionController.mIsWaitingForDisplayEnabled) {
+        if ((isRootTask() || (Flags.updateTaskCropInSync() && !fillsParentBounds()))
+                && !mTransitionController.mIsWaitingForDisplayEnabled) {
             final Rect taskBounds = getBounds();
             width = taskBounds.width();
             height = taskBounds.height();

@@ -3297,6 +3297,7 @@ public class SettingsProvider extends ContentProvider {
 
         SettingsRegistry(Looper looper) {
             mHandler = new MyHandler(looper);
+            // TODO(b/394178333): getMaxSupportedUsers() no longer really exists. Revisit this.
             mGenerationRegistry = new GenerationRegistry(UserManager.getMaxSupportedUsers());
             mBackupManager = new BackupManager(getContext());
         }

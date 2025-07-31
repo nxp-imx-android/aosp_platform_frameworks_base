@@ -39,9 +39,9 @@ flag {
 }
 
 flag {
-    name: "consistent_max_users_including_guests"
+    name: "decouple_max_users_from_profiles"
     namespace: "multiuser"
-    description: "Builds on consistent_max_users, making Guest users included in the max."
+    description: "Builds on consistent_max_users, but now config_multiuserMaximumUsers only applies to non-Guest non-Demo switchable users, not profiles."
     bug: "394178333"
 }
 
@@ -439,6 +439,13 @@ flag {
     metadata {
       purpose: PURPOSE_BUGFIX
     }
+}
+
+flag {
+     name: "hsu_not_admin"
+     namespace: "multiuser"
+     description: "The Headless System User is not an Admin user"
+     bug: "419105275"
 }
 
 flag {

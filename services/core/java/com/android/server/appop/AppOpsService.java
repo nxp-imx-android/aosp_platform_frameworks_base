@@ -3146,14 +3146,15 @@ public class AppOpsService extends IAppOpsService.Stub {
     }
 
     @Override
-    public void setAudioRestriction(int code, int usage, int uid, int mode,
-            String[] exceptionPackages) {
-        enforceManageAppOpsModes(Binder.getCallingPid(), Binder.getCallingUid(), uid);
-        verifyIncomingUid(uid);
+    public void setAudioRestriction(int code, int[] usages, int mode, String[] exceptionPackages) {
+        // Audio restrictions apply to all UIDs
+        enforceManageAppOpsModes(Binder.getCallingPid(), Binder.getCallingUid(), -1);
         verifyIncomingOp(code);
 
-        mAudioRestrictionManager.setZenModeAudioRestriction(
-                code, usage, mode, exceptionPackages);
+        for (int usage : usages) {
+            mAudioRestrictionManager.setZenModeAudioRestriction(
+                    code, usage, mode, exceptionPackages);
+        }
 
         // Only notify default device as other devices are unaffected by restriction changes.
         mHandler.sendMessage(PooledLambda.obtainMessage(

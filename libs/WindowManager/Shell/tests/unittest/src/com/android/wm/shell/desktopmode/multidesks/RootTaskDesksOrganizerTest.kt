@@ -16,6 +16,7 @@
 package com.android.wm.shell.desktopmode.multidesks
 
 import android.app.ActivityManager
+import android.app.ActivityOptions
 import android.app.WindowConfiguration.WINDOWING_MODE_UNDEFINED
 import android.testing.AndroidTestingRunner
 import android.view.Display.DEFAULT_DISPLAY
@@ -1031,6 +1032,16 @@ class RootTaskDesksOrganizerTest : ShellTestCase() {
         organizer.moveDeskToDisplay(wct, desk2.deskRoot.deskId, DEFAULT_DISPLAY, onTop = true)
 
         assertThat(wct.hasDeskReparentHops(desk2, tda.token, toTop = true)).isTrue()
+    }
+
+    @Test
+    fun addLaunchDeskToActivityOptions_launchRootTaskAdded() = runTest {
+        val deskRoot = createDeskSuspending().deskRoot
+        val activityOpts = ActivityOptions.makeBasic()
+
+        organizer.addLaunchDeskToActivityOptions(activityOpts, deskRoot.deskId)
+
+        assertThat(activityOpts.launchRootTask).isEqualTo(deskRoot.token)
     }
 
     private data class DeskRoots(

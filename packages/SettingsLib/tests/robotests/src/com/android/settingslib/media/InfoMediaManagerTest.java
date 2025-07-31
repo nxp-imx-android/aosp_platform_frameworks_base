@@ -16,6 +16,7 @@
 
 package com.android.settingslib.media;
 
+import static android.media.MediaRoute2Info.CONNECTION_STATE_CONNECTING;
 import static android.media.MediaRoute2Info.TYPE_BLE_HEADSET;
 import static android.media.MediaRoute2Info.TYPE_BLUETOOTH_A2DP;
 import static android.media.MediaRoute2Info.TYPE_BUILTIN_SPEAKER;
@@ -27,6 +28,7 @@ import static android.media.MediaRoute2Info.TYPE_WIRED_HEADSET;
 import static android.media.MediaRoute2ProviderService.REASON_NETWORK_ERROR;
 import static android.media.MediaRoute2ProviderService.REASON_UNKNOWN_ERROR;
 
+import static com.android.settingslib.media.LocalMediaManager.MediaDeviceState.STATE_CONNECTING;
 import static com.android.settingslib.media.LocalMediaManager.MediaDeviceState.STATE_SELECTED;
 
 import static com.google.common.truth.Truth.assertThat;
@@ -63,7 +65,6 @@ import com.android.settingslib.bluetooth.CachedBluetoothDevice;
 import com.android.settingslib.bluetooth.CachedBluetoothDeviceManager;
 import com.android.settingslib.bluetooth.LocalBluetoothManager;
 import com.android.settingslib.media.InfoMediaManager.Api34Impl;
-import com.android.settingslib.media.InfoMediaManager.SuggestedDeviceState;
 
 import com.google.common.collect.ImmutableList;
 
@@ -156,7 +157,7 @@ public class InfoMediaManagerTest {
     private ArgumentCaptor<DeviceSuggestionsUpdatesCallback> mDeviceSuggestionsUpdatesCallback;
 
     @Captor
-    private ArgumentCaptor<InfoMediaManager.SuggestedDeviceState> mSuggestedDeviceStateCaptor;
+    private ArgumentCaptor<SuggestedDeviceState> mSuggestedDeviceStateCaptor;
 
     private RouterInfoMediaManager mInfoMediaManager;
     private Context mContext;
@@ -894,6 +895,17 @@ public class InfoMediaManagerTest {
         mInfoMediaManager.mMediaDevices.clear();
         mInfoMediaManager.addMediaDeviceLocked(route2Info, TEST_SYSTEM_ROUTING_SESSION);
         assertThat(mInfoMediaManager.mMediaDevices.get(0) instanceof PhoneMediaDevice).isTrue();
+    }
+
+    @Test
+    public void addMediaDevice_routeInConnectingState_setsConnectingToDevice() {
+        final MediaRoute2Info route2Info = mock(MediaRoute2Info.class);
+        when(route2Info.getConnectionState()).thenReturn(CONNECTION_STATE_CONNECTING);
+        when(route2Info.getType()).thenReturn(TYPE_REMOTE_SPEAKER);
+        when(route2Info.getId()).thenReturn(TEST_ID);
+        mInfoMediaManager.addMediaDeviceLocked(route2Info, TEST_SYSTEM_ROUTING_SESSION);
+
+        assertThat(mInfoMediaManager.mMediaDevices.get(0).getState()).isEqualTo(STATE_CONNECTING);
     }
 
     @Test

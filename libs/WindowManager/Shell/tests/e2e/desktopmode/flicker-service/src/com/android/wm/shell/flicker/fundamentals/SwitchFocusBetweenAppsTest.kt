@@ -16,7 +16,8 @@
 
 package com.android.wm.shell.flicker.fundamentals
 
-import androidx.test.filters.RequiresDevice
+import android.platform.test.annotations.Postsubmit
+import android.platform.test.annotations.RequiresDesktopDevice
 import android.tools.NavBar
 import android.tools.flicker.assertions.FlickerChecker
 import android.tools.flicker.junit.FlickerParametersRunnerFactory
@@ -38,9 +39,10 @@ import org.junit.runners.Parameterized
  *
  * To run this test: atest SwitchFocusBetweenAppsTest
  */
-@RequiresDevice
+@RequiresDesktopDevice
 @RunWith(Parameterized::class)
 @Parameterized.UseParametersRunnerFactory(FlickerParametersRunnerFactory::class)
+@Postsubmit
 class SwitchFocusBetweenAppsTest(flicker: FlickerTest) : DesktopModeBaseTest(flicker) {
     inner class SwitchFocusBetweenAppsScenario : SwitchFocusBetweenApps(
         flicker.scenario.startRotation

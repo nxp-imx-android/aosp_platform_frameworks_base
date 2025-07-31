@@ -3508,9 +3508,12 @@ public class PackageInstallerSession extends IPackageInstallerSession.Stub {
         /**
          * User will be notified about a failed or incomplete developer verification in the
          * following scenarios:
-         * 1. The installer is the system package installer.
-         * 2. If it's a non-blocking failure and the installer targets Baklava or above.
-         * 3. If the installer targets less than Baklava and the installer is not a privileged app.
+         * <ul>
+         * <li>The installer is the system package installer.</li>
+         * <li>If it's a non-blocking failure and the installer targets Baklava or above.</li>
+         * <li>If the installer targets less than Baklava and the installer does not have </li>
+         * {@link android.Manifest.permission#INSTALL_PACKAGES INSTALL_PACKAGES} permission.
+         * </ul>
          * For other cases, the installer will receive a failure status code in its IntentSender
          */
         private boolean shouldSendUserActionForVerification(boolean blockingFailure) {
@@ -3536,11 +3539,16 @@ public class PackageInstallerSession extends IPackageInstallerSession.Stub {
                 return true;
             }
 
-            if (CompatChanges.isChangeEnabled(NOTIFY_USER_VERIFICATION_INCOMPLETE,
-                    getInstallerUid())) {
+            final int installerUid = getInstallerUid();
+            if (CompatChanges.isChangeEnabled(NOTIFY_USER_VERIFICATION_INCOMPLETE, installerUid)) {
+                // Target SDK of the installer >= 36, non blocking failures can be bypassed upon
+                // user confirmation.
                 return !blockingFailure;
             } else {
-                return !installerInfo.isPrivilegedApp();
+                // Target SDK of the installer <= 35. Installers that do not have the
+                // privileged installation permission will need to request for user action.
+                return PackageManager.PERMISSION_GRANTED != snapshot.checkUidPermission(
+                        Manifest.permission.INSTALL_PACKAGES, installerUid);
             }
         }
 

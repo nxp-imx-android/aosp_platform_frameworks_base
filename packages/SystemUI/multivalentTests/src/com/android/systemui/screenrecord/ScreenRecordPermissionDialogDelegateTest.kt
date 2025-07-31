@@ -23,6 +23,8 @@ import android.hardware.display.VirtualDisplayConfig
 import android.os.UserHandle
 import android.platform.test.annotations.EnableFlags
 import android.platform.test.annotations.RequiresFlagsEnabled
+import android.platform.test.flag.junit.CheckFlagsRule
+import android.platform.test.flag.junit.DeviceFlagsValueProvider
 import android.testing.TestableLooper
 import android.view.View
 import android.view.WindowManager.LayoutParams.TYPE_STATUS_BAR
@@ -54,6 +56,7 @@ import com.google.common.truth.Truth.assertWithMessage
 import junit.framework.Assert.assertEquals
 import org.junit.After
 import org.junit.Before
+import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.Mock
@@ -66,6 +69,7 @@ import org.mockito.MockitoAnnotations
 @RunWith(AndroidJUnit4::class)
 @TestableLooper.RunWithLooper(setAsMainLooper = true)
 class ScreenRecordPermissionDialogDelegateTest : SysuiTestCase() {
+    @get:Rule val checkFlagsRule: CheckFlagsRule = DeviceFlagsValueProvider.createCheckFlagsRule()
 
     @Mock private lateinit var starter: ActivityStarter
     @Mock private lateinit var controller: ScreenRecordUxController

@@ -152,10 +152,8 @@ import static com.android.server.wm.WindowManagerService.H.WINDOW_HIDE_TIMEOUT;
 import static com.android.server.wm.WindowManagerService.UPDATE_FOCUS_PLACING_SURFACES;
 import static com.android.server.wm.WindowManagerService.UPDATE_FOCUS_WILL_ASSIGN_LAYERS;
 import static com.android.server.wm.WindowManagerService.UPDATE_FOCUS_WILL_PLACE_SURFACES;
-import static com.android.server.wm.WindowManagerService.dipToPixel;
 import static com.android.server.wm.WindowState.EXCLUSION_LEFT;
 import static com.android.server.wm.WindowState.EXCLUSION_RIGHT;
-import static com.android.server.wm.WindowState.RESIZE_HANDLE_WIDTH_IN_DP;
 import static com.android.server.wm.WindowStateAnimator.READY_TO_SHOW;
 import static com.android.server.wm.utils.DisplayInfoOverrides.WM_OVERRIDE_FIELDS;
 import static com.android.server.wm.utils.DisplayInfoOverrides.copyDisplayInfoFields;
@@ -277,7 +275,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.Consumer;
@@ -579,8 +576,6 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
 
     private final LinkedList<ActivityRecord> mTmpUpdateAllDrawn = new LinkedList();
 
-    private final TaskForResizePointSearchResult mTmpTaskForResizePointSearchResult =
-            new TaskForResizePointSearchResult();
     private final ApplySurfaceChangesTransactionState mTmpApplySurfaceChangesTransactionState =
             new ApplySurfaceChangesTransactionState();
 
@@ -722,9 +717,6 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
 
     private final InsetsStateController mInsetsStateController;
     private final InsetsPolicy mInsetsPolicy;
-
-    /** Corner radius that windows should have in order to match the display. */
-    private final float mWindowCornerRadius;
 
     final SparseArray<ShellRoot> mShellRoots = new SparseArray<>();
     RemoteInsetsControlTarget mRemoteInsetsControlTarget = null;
@@ -1224,7 +1216,6 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
         if (mWmService.mSystemReady) {
             mDisplayPolicy.systemReady();
         }
-        mWindowCornerRadius = mDisplayPolicy.getWindowCornerRadius();
         mPinnedTaskController = new PinnedTaskController(mWmService, this);
 
         // Set up the policy and build the display area hierarchy.
@@ -1411,10 +1402,6 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
 
     int getDisplayId() {
         return mDisplayId;
-    }
-
-    float getWindowCornerRadius() {
-        return mWindowCornerRadius;
     }
 
     WindowToken getWindowToken(IBinder binder) {
@@ -3437,17 +3424,6 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
         });
     }
 
-    /**
-     * Find the task whose outside touch area (for resizing) (x, y) falls within.
-     * Returns null if the touch doesn't fall into a resizing area.
-     */
-    @Nullable
-    Task findTaskForResizePoint(int x, int y) {
-        final int delta = dipToPixel(RESIZE_HANDLE_WIDTH_IN_DP, mDisplayMetrics);
-        return getItemFromTaskDisplayAreas(taskDisplayArea ->
-                mTmpTaskForResizePointSearchResult.process(taskDisplayArea, x, y, delta));
-    }
-
     @Override
     void switchUser(int userId) {
         super.switchUser(userId);
@@ -5145,11 +5121,6 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
         return imeLayeringTarget.mSession.mUid == uid && imeLayeringTarget.mSession.mPid == pid;
     }
 
-    boolean hasSecureWindowOnScreen() {
-        final WindowState win = getWindow(w -> w.isOnScreen() && w.isSecureLocked());
-        return win != null;
-    }
-
     // TODO: Super unexpected long method that should be broken down...
     void applySurfaceChangesTransaction() {
         final WindowSurfacePlacer surfacePlacer = mWmService.mWindowPlacerLocked;
@@ -5369,61 +5340,6 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
         return okToDisplay(ignoreFrozen, ignoreScreenOn)
                 && (mDisplayId != DEFAULT_DISPLAY || mWmService.mPolicy.okToAnimate(ignoreScreenOn))
                 && (ignoreFrozen || mDisplayPolicy.isScreenOnFully());
-    }
-
-    static final class TaskForResizePointSearchResult implements Predicate<Task> {
-        private Task taskForResize;
-        private int x;
-        private int y;
-        private int delta;
-        private Rect mTmpRect = new Rect();
-
-        Task process(WindowContainer root, int x, int y, int delta) {
-            taskForResize = null;
-            this.x = x;
-            this.y = y;
-            this.delta = delta;
-            mTmpRect.setEmpty();
-            root.forAllTasks(this);
-
-            return taskForResize;
-        }
-
-        @Override
-        public boolean test(Task task) {
-            if (!task.getRootTask().getWindowConfiguration().canResizeTask()) {
-                return true;
-            }
-
-            if (task.getWindowingMode() == WINDOWING_MODE_FULLSCREEN) {
-                return true;
-            }
-
-            if (task.isOrganized()) {
-                return true;
-            }
-
-            // We need to use the task's dim bounds (which is derived from the visible bounds of
-            // its apps windows) for any touch-related tests. Can't use the task's original
-            // bounds because it might be adjusted to fit the content frame. One example is when
-            // the task is put to top-left quadrant, the actual visible area would not start at
-            // (0,0) after it's adjusted for the status bar.
-            task.getDimBounds(mTmpRect);
-            mTmpRect.inset(-delta, -delta);
-            if (mTmpRect.contains(x, y)) {
-                mTmpRect.inset(delta, delta);
-
-                if (!mTmpRect.contains(x, y)) {
-                    taskForResize = task;
-                    return true;
-                }
-                // User touched inside the task. No need to look further,
-                // focus transfer will be handled in ACTION_UP.
-                return true;
-            }
-
-            return false;
-        }
     }
 
     private static final class ApplySurfaceChangesTransactionState {
@@ -5917,16 +5833,6 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
 
     SurfaceControl getA11yOverlayLayer() {
         return mA11yOverlayLayer;
-    }
-
-    SurfaceControl[] findRoundedCornerOverlays() {
-        List<SurfaceControl> roundedCornerOverlays = new ArrayList<>();
-        for (WindowToken token : mTokenMap.values()) {
-            if (token.mRoundedCornerOverlay && token.isVisible()) {
-                roundedCornerOverlays.add(token.mSurfaceControl);
-            }
-        }
-        return roundedCornerOverlays.toArray(new SurfaceControl[0]);
     }
 
     /**

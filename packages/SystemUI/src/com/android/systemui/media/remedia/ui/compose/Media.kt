@@ -76,6 +76,7 @@ import androidx.compose.material3.SliderState
 import androidx.compose.material3.Text
 import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
@@ -110,12 +111,14 @@ import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.node.Ref
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.DpSize
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastCoerceIn
 import androidx.compose.ui.util.fastForEachIndexed
@@ -631,25 +634,29 @@ private fun ContentScope.CardForegroundContent(
             }
 
             // Third row.
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.padding(start = 16.dp, top = 24.dp, end = 16.dp, bottom = 16.dp),
-            ) {
-                Navigation(
-                    viewModel = viewModel.navigation,
-                    isSeekBarVisible = true,
-                    areActionsVisible =
-                        viewModel.actionButtonLayout == MediaCardActionButtonLayout.WithPlayPause,
-                    modifier = Modifier.weight(1f),
-                )
-
-                viewModel.additionalActions.fastForEachIndexed { index, action ->
-                    SecondaryAction(
-                        viewModel = action,
-                        resId = "action$index",
-                        element = Media.Elements.additionalActionButton(index),
+            CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier =
+                        Modifier.padding(start = 16.dp, top = 24.dp, end = 16.dp, bottom = 16.dp),
+                ) {
+                    Navigation(
+                        viewModel = viewModel.navigation,
+                        isSeekBarVisible = true,
+                        areActionsVisible =
+                            viewModel.actionButtonLayout ==
+                                MediaCardActionButtonLayout.WithPlayPause,
+                        modifier = Modifier.weight(1f),
                     )
+
+                    viewModel.additionalActions.fastForEachIndexed { index, action ->
+                        SecondaryAction(
+                            viewModel = action,
+                            resId = "action$index",
+                            element = Media.Elements.additionalActionButton(index),
+                        )
+                    }
                 }
             }
         } else {
@@ -667,24 +674,28 @@ private fun ContentScope.CardForegroundContent(
                     modifier = Modifier.weight(1f).padding(end = 8.dp),
                 )
 
-                Navigation(
-                    viewModel = viewModel.navigation,
-                    isSeekBarVisible = false,
-                    areActionsVisible =
-                        viewModel.actionButtonLayout == MediaCardActionButtonLayout.WithPlayPause,
-                    modifier = Modifier.padding(end = 8.dp),
-                )
+                CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
+                    Navigation(
+                        viewModel = viewModel.navigation,
+                        isSeekBarVisible = false,
+                        areActionsVisible =
+                            viewModel.actionButtonLayout ==
+                                MediaCardActionButtonLayout.WithPlayPause,
+                        modifier = Modifier.padding(end = 8.dp),
+                    )
 
-                if (
-                    viewModel.actionButtonLayout == MediaCardActionButtonLayout.SecondaryActionsOnly
-                ) {
-                    viewModel.additionalActions.fastForEachIndexed { index, action ->
-                        SecondaryAction(
-                            viewModel = action,
-                            resId = "action$index",
-                            element = Media.Elements.additionalActionButton(index),
-                            modifier = Modifier.padding(end = 8.dp),
-                        )
+                    if (
+                        viewModel.actionButtonLayout ==
+                            MediaCardActionButtonLayout.SecondaryActionsOnly
+                    ) {
+                        viewModel.additionalActions.fastForEachIndexed { index, action ->
+                            SecondaryAction(
+                                viewModel = action,
+                                resId = "action$index",
+                                element = Media.Elements.additionalActionButton(index),
+                                modifier = Modifier.padding(end = 8.dp),
+                            )
+                        }
                     }
                 }
 

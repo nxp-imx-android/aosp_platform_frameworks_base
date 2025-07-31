@@ -45,11 +45,14 @@ import com.android.compose.animation.scene.SceneKey
 import com.android.compose.animation.scene.SceneTransitionLayoutForTesting
 import com.android.compose.animation.scene.Swipe
 import com.android.compose.animation.scene.featureOfElement
+import com.android.compose.animation.scene.mechanics.VerticalContainerRevealFlag
 import com.android.compose.animation.scene.transitions
 import com.android.mechanics.behavior.VerticalExpandContainerSpec
 import com.android.mechanics.behavior.verticalExpandContainerBackground
 import kotlin.math.sin
 import kotlinx.coroutines.CoroutineScope
+import org.junit.Assume
+import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -89,6 +92,11 @@ class ContentRevealTest(private val isFloating: Boolean) {
     private val fakeHaptics = FakeHaptics()
 
     private val motionSpec = VerticalExpandContainerSpec(isFloating)
+
+    @Before
+    fun setUp() {
+        Assume.assumeTrue(VerticalContainerRevealFlag.isEnabled)
+    }
 
     @Test
     fun verticalReveal_triggeredRevealOpenTransition() {

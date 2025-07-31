@@ -4066,11 +4066,6 @@
     <!-- Content description of the button to access the language settings of the current input method
          from the Input Method Switcher menu, for accessibility (not shown on the screen). [CHAR LIMIT=NONE]-->
     <string name="input_method_language_settings">Language Settings</string>
-    <!-- Summary text of a toggle switch to enable/disable use of the IME while a physical
-         keyboard is connected -->
-    <string name="show_ime">Keep it on screen while physical keyboard is active</string>
-    <!-- Title of the physical keyboard category in the input method selector [CHAR LIMIT=30] -->
-    <string name="hardware">Use on-screen keyboard</string>
 
     <!-- Title of the notification to prompt the user to configure physical keyboard settings. [CHAR LIMIT=NOTIF_TITLE] -->
     <string name="select_keyboard_layout_notification_title">Configure <xliff:g id="device_name" example="Foobar USB Keyboard">%s</xliff:g></string>

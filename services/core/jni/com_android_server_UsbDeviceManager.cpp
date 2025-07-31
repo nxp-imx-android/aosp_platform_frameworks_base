@@ -42,6 +42,8 @@
 #define FFS_VENDOR_CTRL_REQUEST_EP0 "/dev/usb-ffs/ctrl/ep0"
 
 #define FFS_ACCESSORY_EP0 "/dev/usb-ffs/aoa/ep0"
+#define FFS_ACCESSORY_EP1 "/dev/usb-ffs/aoa/ep1"
+#define FFS_ACCESSORY_EP2 "/dev/usb-ffs/aoa/ep2"
 
 namespace {
 struct func_desc {
@@ -669,6 +671,11 @@ public:
         return mAccessoryFields.maxPacketSize;
     }
 
+    void setMaxPacketSize(int maxPacketSize) {
+        std::lock_guard<std::mutex> lock(mAccessoryFieldsMutex);
+        mAccessoryFields.maxPacketSize = maxPacketSize;
+    }
+
     ~NativeVendorControlRequestMonitorThread() {
         stop();
         close(mShutdownPipefd[0]);
@@ -702,6 +709,16 @@ static void set_accessory_string_from_ffs(JNIEnv *env, jobjectArray strArray, in
         jstring obj = env->NewStringUTF(str.data());
         env->SetObjectArrayElement(strArray, index, obj);
         env->DeleteLocalRef(obj);
+    }
+}
+
+static int get_max_packet_size(int ffs_fd) {
+    struct usb_endpoint_descriptor desc{};
+    if (ioctl(ffs_fd, FUNCTIONFS_ENDPOINT_DESC, reinterpret_cast<unsigned long>(&desc))) {
+        ALOGE("Could not get FFS bulk-in descriptor");
+        return 512;
+    } else {
+        return desc.wMaxPacketSize;
     }
 }
 
@@ -743,6 +760,11 @@ static jobjectArray android_server_UsbDeviceManager_getAccessoryStringsFromFfs(J
     return strArray;
 }
 
+static jint android_server_UsbDeviceManager_getMaxPacketSize(JNIEnv * /* env */,
+                                                             jobject /* thiz */) {
+    return static_cast<jint>(sVendorControlRequestMonitorThread->getMaxPacketSize());
+}
+
 static jobject android_server_UsbDeviceManager_openAccessory(JNIEnv *env, jobject /* thiz */)
 {
     int fd = open(DRIVER_NAME, O_RDWR);
@@ -757,6 +779,40 @@ static jobject android_server_UsbDeviceManager_openAccessory(JNIEnv *env, jobjec
     }
     return env->NewObject(gParcelFileDescriptorOffsets.mClass,
         gParcelFileDescriptorOffsets.mConstructor, fileDescriptor);
+}
+
+static jobject android_server_UsbDeviceManager_openAccessoryForInputStream(JNIEnv *env,
+                                                                           jobject /* thiz */) {
+    int readFd = open(FFS_ACCESSORY_EP1, O_RDONLY);
+    if (readFd < 0) {
+        ALOGE("could not open %s", FFS_ACCESSORY_EP1);
+        return nullptr;
+    }
+    jobject readFileDescriptor = jniCreateFileDescriptor(env, readFd);
+    if (readFileDescriptor == nullptr) {
+        close(readFd);
+        return nullptr;
+    }
+    return env->NewObject(gParcelFileDescriptorOffsets.mClass,
+                          gParcelFileDescriptorOffsets.mConstructor, readFileDescriptor);
+}
+
+static jobject android_server_UsbDeviceManager_openAccessoryForOutputStream(JNIEnv *env,
+                                                                            jobject /* thiz */) {
+    int writeFd = open(FFS_ACCESSORY_EP2, O_WRONLY);
+
+    if (writeFd < 0) {
+        ALOGE("could not open %s", FFS_ACCESSORY_EP2);
+        return nullptr;
+    }
+    sVendorControlRequestMonitorThread->setMaxPacketSize(get_max_packet_size(writeFd));
+    jobject writeFileDescriptor = jniCreateFileDescriptor(env, writeFd);
+    if (writeFileDescriptor == nullptr) {
+        close(writeFd);
+        return nullptr;
+    }
+    return env->NewObject(gParcelFileDescriptorOffsets.mClass,
+                          gParcelFileDescriptorOffsets.mConstructor, writeFileDescriptor);
 }
 
 static jboolean android_server_UsbDeviceManager_isStartRequested(JNIEnv* /* env */,
@@ -896,8 +952,13 @@ static const JNINativeMethod method_table[] = {
          (void *)android_server_UsbDeviceManager_getAccessoryStrings},
         {"nativeGetAccessoryStringsFromFfs", "()[Ljava/lang/String;",
          (void *)android_server_UsbDeviceManager_getAccessoryStringsFromFfs},
+        {"nativeGetMaxPacketSize", "()I", (void *)android_server_UsbDeviceManager_getMaxPacketSize},
         {"nativeOpenAccessory", "()Landroid/os/ParcelFileDescriptor;",
          (void *)android_server_UsbDeviceManager_openAccessory},
+        {"nativeOpenAccessoryForInputStream", "()Landroid/os/ParcelFileDescriptor;",
+         (void *)android_server_UsbDeviceManager_openAccessoryForInputStream},
+        {"nativeOpenAccessoryForOutputStream", "()Landroid/os/ParcelFileDescriptor;",
+         (void *)android_server_UsbDeviceManager_openAccessoryForOutputStream},
         {"nativeIsStartRequested", "()Z", (void *)android_server_UsbDeviceManager_isStartRequested},
         {"nativeOpenControl", "(Ljava/lang/String;)Ljava/io/FileDescriptor;",
          (void *)android_server_UsbDeviceManager_openControl},

@@ -366,6 +366,9 @@
     <!-- Button text in the toolbar for choosing the screen recording type. [CHAR LIMIT=35] -->
     <string name="screen_capture_toolbar_record_button">Record</string>
 
+    <!-- Text shown beneath partial screenshot region displaying the dimensions (width and height) of the area to be captured. [CHAR LIMIT=NONE] [SCREENSHOT=screen/7ytguTQdu3cEn4f] -->
+    <string name="screen_capture_region_dimensions"><xliff:g example="210" id="width">%1$d</xliff:g> x <xliff:g example="129" id="height">%2$d</xliff:g></string>
+
     <!-- Content description for the status bar chip shown to the user when they're sharing their screen to another app on the device [CHAR LIMIT=NONE] -->
     <string name="share_to_app_chip_accessibility_label">Sharing screen</string>
     <!-- Content description for the status bar chip shown to the user when they're sharing their screen or audio to another app on the device [CHAR LIMIT=NONE] -->
@@ -2206,6 +2209,9 @@
         other {# notifications}
     }</string>
 
+    <!-- Template for making a content description of a notification bundle header, combining the bundle name (e.g. "News") with the number of notifications in it. -->
+    <string name="notification_bundle_header_joined_description"><xliff:g id="name" example="Promotions">%1$s</xliff:g>, <xliff:g id="num_notifications" example="2 notifications">%2$s</xliff:g></string>
+
     <!-- Notification Inline controls: button to dismiss the blocking helper [CHAR_LIMIT=20] -->
     <string name="inline_done_button">Done</string>
 
@@ -3519,6 +3525,10 @@
     <string name="media_output_end_session_dialog_stop">Stop</string>
     <!-- Button text for stopping sharing [CHAR LIMIT=60] -->
     <string name="media_output_dialog_button_stop_sharing">Stop sharing</string>
+    <!-- Button text when doing audio sharing. [CHAR LIMIT=60] -->
+    <string name="media_output_dialog_button_sharing_audio">Sharing audio</string>
+    <!-- Button text for triggering audio sharing. [CHAR LIMIT=60] -->
+    <string name="media_output_dialog_button_share_audio">Share audio</string>
 
     <!-- Label for clip data when copying the build number off QS [CHAR LIMIT=NONE]-->
     <string name="build_number_clip_data_label">Build number</string>

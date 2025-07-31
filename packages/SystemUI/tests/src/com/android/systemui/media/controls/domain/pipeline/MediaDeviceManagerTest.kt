@@ -22,6 +22,7 @@ import android.content.pm.PackageManager
 import android.graphics.drawable.Drawable
 import android.graphics.drawable.TestStubDrawable
 import android.media.MediaRoute2Info
+import android.media.MediaRoute2Info.TYPE_REMOTE_SPEAKER
 import android.media.MediaRouter2Manager
 import android.media.RoutingSessionInfo
 import android.media.SuggestedDeviceInfo
@@ -36,9 +37,11 @@ import androidx.test.filters.SmallTest
 import com.android.settingslib.bluetooth.LocalBluetoothLeBroadcast
 import com.android.settingslib.bluetooth.LocalBluetoothManager
 import com.android.settingslib.bluetooth.LocalBluetoothProfileManager
-import com.android.settingslib.media.InfoMediaManager.SuggestedDeviceState
 import com.android.settingslib.media.LocalMediaManager
+import com.android.settingslib.media.LocalMediaManager.MediaDeviceState.STATE_CONNECTING
+import com.android.settingslib.media.LocalMediaManager.MediaDeviceState.STATE_DISCONNECTED
 import com.android.settingslib.media.MediaDevice
+import com.android.settingslib.media.SuggestedDeviceState
 import com.android.systemui.Flags.FLAG_ENABLE_SUGGESTED_DEVICE_UI
 import com.android.systemui.Flags.enableSuggestedDeviceUi
 import com.android.systemui.SysuiTestCase
@@ -86,8 +89,8 @@ private const val DEVICE_ID = "DEVICE_ID"
 private const val DEVICE_NAME = "DEVICE_NAME"
 private const val REMOTE_DEVICE_NAME = "REMOTE_DEVICE_NAME"
 private const val SUGGESTED_DEVICE_NAME = "SUGGESTED_DEVICE_NAME"
-private const val SUGGESTED_DEVICE_CONNECTION_STATE_1 = 123
-private const val SUGGESTED_DEVICE_CONNECTION_STATE_2 = 456
+private const val SUGGESTED_DEVICE_CONNECTION_STATE_1 = STATE_DISCONNECTED
+private const val SUGGESTED_DEVICE_CONNECTION_STATE_2 = STATE_CONNECTING
 
 @SmallTest
 @RunWith(ParameterizedAndroidJunit4::class)
@@ -132,9 +135,9 @@ public class MediaDeviceManagerTest(flags: FlagsParameterization) : SysuiTestCas
     @Mock private lateinit var localBluetoothLeBroadcast: LocalBluetoothLeBroadcast
     @Mock private lateinit var packageManager: PackageManager
     @Mock private lateinit var applicationInfo: ApplicationInfo
-    @Mock private lateinit var suggestedDeviceState1: SuggestedDeviceState
-    @Mock private lateinit var suggestedDeviceState2: SuggestedDeviceState
-    @Mock private lateinit var suggestedDeviceInfo: SuggestedDeviceInfo
+    private lateinit var suggestedDeviceState1: SuggestedDeviceState
+    private lateinit var suggestedDeviceState2: SuggestedDeviceState
+    private lateinit var suggestedDeviceInfo: SuggestedDeviceInfo
     private lateinit var localBluetoothManager: LocalBluetoothManager
     private lateinit var session: MediaSession
     private lateinit var mediaData: MediaData
@@ -170,16 +173,25 @@ public class MediaDeviceManagerTest(flags: FlagsParameterization) : SysuiTestCas
         whenever(lmm.getCurrentConnectedDevice()).thenReturn(device)
         whenever(mr2.getRoutingSessionForMediaController(any())).thenReturn(routingSession)
 
+        suggestedDeviceInfo =
+            SuggestedDeviceInfo.Builder(SUGGESTED_DEVICE_NAME, DEVICE_ID, TYPE_REMOTE_SPEAKER)
+                .build()
+        suggestedDeviceState1 =
+            SuggestedDeviceState(
+                suggestedDeviceInfo = suggestedDeviceInfo,
+                connectionState = SUGGESTED_DEVICE_CONNECTION_STATE_1,
+            )
+        suggestedDeviceState2 =
+            SuggestedDeviceState(
+                suggestedDeviceInfo = suggestedDeviceInfo,
+                connectionState = SUGGESTED_DEVICE_CONNECTION_STATE_2,
+            )
+        // A drawable for TYPE_REMOTE_SPEAKER, mocks return from SuggestedDeviceState#getIcon
+        context.orCreateTestableResources.addOverride(
+            com.android.settingslib.R.drawable.ic_media_speaker_device,
+            icon,
+        )
         whenever(lmm.getSuggestedDevice()).thenReturn(suggestedDeviceState1)
-        whenever(suggestedDeviceInfo.getDeviceDisplayName()).thenReturn(SUGGESTED_DEVICE_NAME)
-        whenever(suggestedDeviceState1.getSuggestedDeviceInfo()).thenReturn(suggestedDeviceInfo)
-        whenever(suggestedDeviceState1.getIcon(any())).thenReturn(icon)
-        whenever(suggestedDeviceState1.getConnectionState())
-            .thenReturn(SUGGESTED_DEVICE_CONNECTION_STATE_1)
-        whenever(suggestedDeviceState2.getSuggestedDeviceInfo()).thenReturn(suggestedDeviceInfo)
-        whenever(suggestedDeviceState2.getIcon(any())).thenReturn(icon)
-        whenever(suggestedDeviceState2.getConnectionState())
-            .thenReturn(SUGGESTED_DEVICE_CONNECTION_STATE_2)
 
         whenever(playbackInfo.playbackType).thenReturn(PlaybackInfo.PLAYBACK_TYPE_LOCAL)
         whenever(controller.playbackInfo).thenReturn(playbackInfo)

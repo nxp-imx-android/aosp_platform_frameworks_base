@@ -186,39 +186,6 @@ com.android.hoststubgen.test.tinyframework
   0
   0
 com.android.hoststubgen.test.tinyframework
-  TinyFrameworkClassLoadHook
-  0
-  com.android.hoststubgen.test.tinyframework.TinyFrameworkClassLoadHook
-  <clinit>
-  <clinit>()V
-  1
-  Keep
-  class-wide in com/android/hoststubgen/test/tinyframework/TinyFrameworkClassLoadHook [inner-reason: class-annotation]
-  1
-  1
-com.android.hoststubgen.test.tinyframework
-  TinyFrameworkClassLoadHook
-  0
-  com.android.hoststubgen.test.tinyframework.TinyFrameworkClassLoadHook
-  <init>
-  <init>()V
-  1
-  Keep
-  class-wide in com/android/hoststubgen/test/tinyframework/TinyFrameworkClassLoadHook [inner-reason: class-annotation]
-  1
-  1
-com.android.hoststubgen.test.tinyframework
-  TinyFrameworkClassLoadHook
-  0
-  com.android.hoststubgen.test.tinyframework.TinyFrameworkClassLoadHook
-  onClassLoaded
-  onClassLoaded(Ljava/lang/Class;)V
-  1
-  Keep
-  class-wide in com/android/hoststubgen/test/tinyframework/TinyFrameworkClassLoadHook [inner-reason: class-annotation]
-  0
-  2
-com.android.hoststubgen.test.tinyframework
   TinyFrameworkClassWideAnnotations
   0
   com.android.hoststubgen.test.tinyframework.TinyFrameworkClassWideAnnotations
@@ -260,6 +227,17 @@ com.android.hoststubgen.test.tinyframework
   1
   Keep
   annotation
+  0
+  2
+com.android.hoststubgen.test.tinyframework
+  TinyFrameworkClassWideAnnotations
+  0
+  com.android.hoststubgen.test.tinyframework.TinyFrameworkClassWideAnnotations
+  experimental
+  experimental()V
+  1
+  Keep
+  class-wide in com/android/hoststubgen/test/tinyframework/TinyFrameworkClassWideAnnotations [inner-reason: class-annotation]
   0
   2
 com.android.hoststubgen.test.tinyframework
@@ -340,6 +318,72 @@ com.android.hoststubgen.test.tinyframework
   0
   2
 com.android.hoststubgen.test.tinyframework
+  TinyFrameworkExperimental
+  0
+  com.android.hoststubgen.test.tinyframework.TinyFrameworkExperimental
+  <init>
+  <init>()V
+  0
+  Experimental
+  class-wide in com/android/hoststubgen/test/tinyframework/TinyFrameworkExperimental [inner-reason: file-override]
+  0
+  0
+com.android.hoststubgen.test.tinyframework
+  TinyFrameworkExperimental
+  0
+  com.android.hoststubgen.test.tinyframework.TinyFrameworkExperimental
+  keep
+  keep()V
+  0
+  Keep
+  annotation
+  0
+  0
+com.android.hoststubgen.test.tinyframework
+  TinyFrameworkExperimental
+  0
+  com.android.hoststubgen.test.tinyframework.TinyFrameworkExperimental
+  replace
+  replace()V
+  0
+  Substitute
+  annotation
+  0
+  0
+com.android.hoststubgen.test.tinyframework
+  TinyFrameworkExperimental
+  0
+  com.android.hoststubgen.test.tinyframework.TinyFrameworkExperimental
+  replace
+  replace()V
+  0
+  Keep
+  annotation
+  0
+  0
+com.android.hoststubgen.test.tinyframework
+  TinyFrameworkExperimental
+  0
+  com.android.hoststubgen.test.tinyframework.TinyFrameworkExperimental
+  simple
+  simple()V
+  0
+  Experimental
+  class-wide in com/android/hoststubgen/test/tinyframework/TinyFrameworkExperimental [inner-reason: file-override]
+  0
+  0
+com.android.hoststubgen.test.tinyframework
+  TinyFrameworkExperimental
+  0
+  com.android.hoststubgen.test.tinyframework.TinyFrameworkExperimental
+  unsupported
+  unsupported()V
+  0
+  Experimental
+  file-override
+  0
+  0
+com.android.hoststubgen.test.tinyframework
   TinyFrameworkForPta
   0
   com.android.hoststubgen.test.tinyframework.TinyFrameworkForPta
@@ -405,6 +449,17 @@ com.android.hoststubgen.test.tinyframework
   file-override (test keep policy on ctor)
   1
   1
+com.android.hoststubgen.test.tinyframework
+  TinyFrameworkForTextPolicy
+  0
+  com.android.hoststubgen.test.tinyframework.TinyFrameworkForTextPolicy
+  addFour
+  addFour(I)I
+  0
+  Experimental
+  file-override
+  0
+  0
 com.android.hoststubgen.test.tinyframework
   TinyFrameworkForTextPolicy
   0
@@ -1219,6 +1274,72 @@ com.android.hoststubgen.test.tinyframework
   class-wide in com/android/hoststubgen/test/tinyframework/TinyFrameworkUnsupportedApiException [inner-reason: class-annotation]
   1
   1
+com.android.hoststubgen.test.tinyframework.exp
+  A
+  0
+  com.android.hoststubgen.test.tinyframework.exp.A
+  <init>
+  <init>()V
+  0
+  Experimental
+  class-wide in com/android/hoststubgen/test/tinyframework/exp/A [inner-reason: file-override (test-package-policy)]
+  0
+  0
+com.android.hoststubgen.test.tinyframework.exp
+  A
+  0
+  com.android.hoststubgen.test.tinyframework.exp.A
+  foo
+  foo()V
+  0
+  Experimental
+  class-wide in com/android/hoststubgen/test/tinyframework/exp/A [inner-reason: file-override (test-package-policy)]
+  0
+  0
+com.android.hoststubgen.test.tinyframework.exp
+  B
+  0
+  com.android.hoststubgen.test.tinyframework.exp.B
+  <init>
+  <init>()V
+  1
+  Keep
+  class-wide in com/android/hoststubgen/test/tinyframework/exp/B [inner-reason: class-annotation]
+  1
+  1
+com.android.hoststubgen.test.tinyframework.exp
+  B
+  0
+  com.android.hoststubgen.test.tinyframework.exp.B
+  foo
+  foo()V
+  1
+  Keep
+  class-wide in com/android/hoststubgen/test/tinyframework/exp/B [inner-reason: class-annotation]
+  0
+  2
+com.android.hoststubgen.test.tinyframework.exp.sub
+  A
+  0
+  com.android.hoststubgen.test.tinyframework.exp.sub.A
+  <init>
+  <init>()V
+  0
+  Experimental
+  class-wide in com/android/hoststubgen/test/tinyframework/exp/sub/A [inner-reason: file-override (test-package-policy)]
+  0
+  0
+com.android.hoststubgen.test.tinyframework.exp.sub
+  A
+  0
+  com.android.hoststubgen.test.tinyframework.exp.sub.A
+  foo
+  foo()V
+  0
+  Experimental
+  class-wide in com/android/hoststubgen/test/tinyframework/exp/sub/A [inner-reason: file-override (test-package-policy)]
+  0
+  0
 com.android.hoststubgen.test.tinyframework.packagetest
   A
   0

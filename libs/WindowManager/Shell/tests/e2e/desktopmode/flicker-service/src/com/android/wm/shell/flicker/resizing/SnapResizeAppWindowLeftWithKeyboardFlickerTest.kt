@@ -16,7 +16,8 @@
 
 package com.android.wm.shell.flicker.resizing
 
-import androidx.test.filters.RequiresDevice
+import android.platform.test.annotations.Postsubmit
+import android.platform.test.annotations.RequiresDesktopDevice
 import android.tools.NavBar
 import android.tools.flicker.assertions.FlickerChecker
 import android.tools.flicker.junit.FlickerParametersRunnerFactory
@@ -38,9 +39,10 @@ import com.android.wm.shell.scenarios.SnapResizeAppWindowWithKeyboardShortcuts
  *
  * Assert that the app window fills the left half the display after being snap resized.
  */
-@RequiresDevice
+@RequiresDesktopDevice
 @RunWith(Parameterized::class)
 @Parameterized.UseParametersRunnerFactory(FlickerParametersRunnerFactory::class)
+@Postsubmit
 class SnapResizeAppWindowLeftWithKeyboardFlickerTest(flicker: FlickerTest) : DesktopModeBaseTest(
     flicker
 ) {

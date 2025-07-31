@@ -307,6 +307,8 @@ public final class DisplayManagerService extends SystemService {
     private ActivityManagerInternal mActivityManagerInternal;
     private final UidImportanceListener mUidImportanceListener = new UidImportanceListener();
 
+    private final DisplayFrameworkStatsLogger mStatsLogger = new DisplayFrameworkStatsLogger();
+
     @Nullable
     private IMediaProjectionManager mProjectionService;
     private DeviceStateManagerInternal mDeviceStateManager;
@@ -3715,11 +3717,23 @@ public final class DisplayManagerService extends SystemService {
             }
         }
 
+        // Map that maps a uid to the number of times it was notified
+        SparseIntArray notifiedUids = new SparseIntArray();
+
         // After releasing the lock, send the notifications out.
         for (int i = 0; i < mTempCallbacks.size(); i++) {
             CallbackRecord callbackRecord = mTempCallbacks.get(i);
-            callbackRecord.notifyDisplayEventAsync(displayId, event);
+            boolean notified = callbackRecord.notifyDisplayEventAsync(displayId, event);
+            if (notified) {
+                int uid = callbackRecord.mUid;
+                notifiedUids.put(uid, notifiedUids.get(uid, 0) + 1);
+            }
         }
+
+        if (mFlags.isDisplayEventsLoggingEnabled()) {
+            mStatsLogger.logDisplayEvent(event, notifiedUids);
+        }
+
         mTempCallbacks.clear();
     }
 
@@ -4497,9 +4511,9 @@ public final class DisplayManagerService extends SystemService {
         }
 
         /**
-         * @return {@code false} if RemoteException happens; otherwise {@code true} for
-         * success.  This returns true even if the event was deferred because the remote client is
-         * cached or frozen.
+         * @return {@code true} if the notification was processed (sent, queued).
+         * Returns {@code false} if the notification was not sent e.g. because client is
+         * not registered for this event.
          */
         public boolean notifyDisplayEventAsync(int displayId, @DisplayEvent int event) {
             if (!shouldSendDisplayEvent(event)) {
@@ -4515,7 +4529,7 @@ public final class DisplayManagerService extends SystemService {
                                     + ",uid" + mUid);
                 }
                 // The client is not interested in this event, so do nothing.
-                return true;
+                return false;
             }
 
             synchronized (mCallback) {
@@ -4535,7 +4549,7 @@ public final class DisplayManagerService extends SystemService {
 
             if (!shouldReceiveRefreshRateWithChangeUpdate(event)) {
                 // The client is not visible to the user and is not a system service, so do nothing.
-                return true;
+                return false;
             }
 
             try {

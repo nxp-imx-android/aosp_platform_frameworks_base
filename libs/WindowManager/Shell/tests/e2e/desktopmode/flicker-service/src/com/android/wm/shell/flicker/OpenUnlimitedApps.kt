@@ -16,13 +16,14 @@
 
 package com.android.wm.shell.flicker
 
+import android.platform.test.annotations.Postsubmit
+import android.platform.test.annotations.RequiresDesktopDevice
 import android.tools.flicker.FlickerConfig
 import android.tools.flicker.annotation.ExpectedScenarios
 import android.tools.flicker.annotation.FlickerConfigProvider
 import android.tools.flicker.config.FlickerConfig
 import android.tools.flicker.config.FlickerServiceConfig
 import android.tools.flicker.junit.FlickerServiceJUnit4ClassRunner
-import androidx.test.filters.RequiresDevice
 import com.android.wm.shell.flicker.DesktopModeFlickerScenarios.Companion.OPEN_UNLIMITED_APPS
 import com.android.wm.shell.scenarios.OpenUnlimitedApps
 import org.junit.Test
@@ -33,8 +34,9 @@ import org.junit.runner.RunWith
  *
  * Assert that the desktop task limit is not triggered.
  */
-@RequiresDevice
+@RequiresDesktopDevice
 @RunWith(FlickerServiceJUnit4ClassRunner::class)
+@Postsubmit
 class OpenUnlimitedApps : OpenUnlimitedApps() {
     @ExpectedScenarios(["OPEN_UNLIMITED_APPS"])
     @Test

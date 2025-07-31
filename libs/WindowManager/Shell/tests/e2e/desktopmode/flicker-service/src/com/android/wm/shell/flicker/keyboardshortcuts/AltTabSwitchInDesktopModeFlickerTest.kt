@@ -16,7 +16,8 @@
 
 package com.android.wm.shell.flicker.keyboardshortcuts
 
-import android.platform.test.annotations.RequiresDevice
+import android.platform.test.annotations.Postsubmit
+import android.platform.test.annotations.RequiresDesktopDevice
 import android.tools.NavBar
 import android.tools.flicker.assertions.FlickerChecker
 import android.tools.flicker.junit.FlickerParametersRunnerFactory
@@ -40,9 +41,10 @@ import org.junit.runners.Parameterized
  *
  * To run this test: atest AltTabSwitchInDesktopModeFlickerTest
  */
-@RequiresDevice
+@RequiresDesktopDevice
 @RunWith(Parameterized::class)
 @Parameterized.UseParametersRunnerFactory(FlickerParametersRunnerFactory::class)
+@Postsubmit
 class AltTabSwitchInDesktopModeFlickerTest(flicker: FlickerTest) : DesktopModeBaseTest(flicker) {
     inner class AltTabSwitchInDesktopModeScenario : AltTabSwitchInDesktopMode(rotation = flicker.scenario.startRotation)
 

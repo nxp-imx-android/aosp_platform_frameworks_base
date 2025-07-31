@@ -16,6 +16,13 @@
 
 package com.android.server.pm;
 
+import static android.os.UserManager.USER_TYPE_FULL_DEMO;
+import static android.os.UserManager.USER_TYPE_FULL_GUEST;
+import static android.os.UserManager.USER_TYPE_FULL_RESTRICTED;
+import static android.os.UserManager.USER_TYPE_FULL_SECONDARY;
+import static android.os.UserManager.USER_TYPE_PROFILE_MANAGED;
+import static android.os.UserManager.USER_TYPE_PROFILE_PRIVATE;
+
 import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.truth.Truth.assertWithMessage;
 
@@ -296,7 +303,7 @@ public final class UserManagerTest {
         int mainUserId = mUserManager.getMainUser().getIdentifier();
         final UserInfo otherUser = createUser("TestUser", /* flags= */ 0);
         final UserInfo profile = createProfileForUser("Profile",
-                UserManager.USER_TYPE_PROFILE_MANAGED, mainUserId);
+                USER_TYPE_PROFILE_MANAGED, mainUserId);
 
         final UserHandle communalProfile = mUserManager.getCommunalProfile();
 
@@ -324,8 +331,8 @@ public final class UserManagerTest {
         assumeTrue("Main user is null", mainUser != null);
         // Get the default properties for private profile user type.
         final UserTypeDetails userTypeDetails =
-                UserTypeFactory.getUserTypes().get(UserManager.USER_TYPE_PROFILE_PRIVATE);
-        assertWithMessage("No %s type on device", UserManager.USER_TYPE_PROFILE_PRIVATE)
+                UserTypeFactory.getUserTypes().get(USER_TYPE_PROFILE_PRIVATE);
+        assertWithMessage("No %s type on device", USER_TYPE_PROFILE_PRIVATE)
                 .that(userTypeDetails).isNotNull();
         final UserProperties typeProps = userTypeDetails.getDefaultUserPropertiesReference();
 
@@ -336,11 +343,11 @@ public final class UserManagerTest {
         // Test that only one private profile  can be created
         final int mainUserId = mainUser.getIdentifier();
         UserInfo privateProfileUser = createProfileForUser("Private profile1",
-                UserManager.USER_TYPE_PROFILE_PRIVATE,
+                USER_TYPE_PROFILE_PRIVATE,
                 mainUserId);
         assertThat(privateProfileUser).isNotNull();
         UserInfo privateProfileUser2 = createProfileForUser("Private profile2",
-                UserManager.USER_TYPE_PROFILE_PRIVATE,
+                USER_TYPE_PROFILE_PRIVATE,
                 mainUserId);
         assertThat(privateProfileUser2).isNull();
         final UserManager profileUM = UserManager.get(
@@ -453,13 +460,13 @@ public final class UserManagerTest {
     @MediumTest
     @Test
     public void testAddTooManyUsers_Secondary() {
-        testAddTooManyUsers(UserManager.USER_TYPE_FULL_SECONDARY);
+        testAddTooManyUsers(USER_TYPE_FULL_SECONDARY);
     }
 
     @MediumTest
     @Test
     public void testAddTooManyUsers_Guest() {
-        testAddTooManyUsers(UserManager.USER_TYPE_FULL_GUEST);
+        testAddTooManyUsers(USER_TYPE_FULL_GUEST);
     }
 
     @MediumTest
@@ -469,7 +476,34 @@ public final class UserManagerTest {
         // RequiresFlagsEnabled doesn't seem to work, so we need this assumption.
         assumeTrue("ConsistentMaxUsers flag not set", android.multiuser.Flags.consistentMaxUsers());
 
-        testAddTooManyUsers(UserManager.USER_TYPE_FULL_DEMO);
+        testAddTooManyUsers(USER_TYPE_FULL_DEMO);
+    }
+
+    @MediumTest
+    @Test
+    public void testAddTooManyUsers_Restricted() {
+        assumeTrue("ConsistentMaxUsers flag off", android.multiuser.Flags.consistentMaxUsers());
+        assumeTrue("Decoupling flag off", android.multiuser.Flags.decoupleMaxUsersFromProfiles());
+
+        testAddTooManyUsers(USER_TYPE_FULL_RESTRICTED);
+    }
+
+    @MediumTest
+    @Test
+    public void testAddTooManyUsers_ManagedProfile() {
+        assumeTrue("ConsistentMaxUsers flag off", android.multiuser.Flags.consistentMaxUsers());
+        assumeTrue("Decoupling flag off", android.multiuser.Flags.decoupleMaxUsersFromProfiles());
+
+        testAddTooManyUsers(USER_TYPE_PROFILE_MANAGED);
+    }
+
+    @MediumTest
+    @Test
+    public void testAddTooManyUsers_PrivateProfile() {
+        assumeTrue("ConsistentMaxUsers flag off", android.multiuser.Flags.consistentMaxUsers());
+        assumeTrue("Decoupling flag off", android.multiuser.Flags.decoupleMaxUsersFromProfiles());
+
+        testAddTooManyUsers(USER_TYPE_PROFILE_PRIVATE);
     }
 
     /**
@@ -481,33 +515,47 @@ public final class UserManagerTest {
      *   <li>{@link UserManager#getRemainingCreatableUserCount(String)}
      *   <li>{@link UserManager#getCurrentAllowedNumberOfUsers(String)}
      * </ul>
+     * It also ensures that the given userType obeys the limits as expected, and interacts with
+     * other user type limits as expected.
      */
     private void testAddTooManyUsers(String userType) {
         final UserTypeDetails userTypeDetails = UserTypeFactory.getUserTypes().get(userType);
 
-        final int maxUsersForType = userTypeDetails.getMaxAllowed();
-        final int maxUsersOverall = UserManager.getMaxSupportedUsers();
+        final int maxUsersForType =
+                !android.multiuser.Flags.decoupleMaxUsersFromProfiles()
+                        && userTypeDetails.getMaxAllowed()
+                        == UserTypeDetails.getLegacyUnlimitedNumberOfUsersValue()
+                        ? Integer.MAX_VALUE : userTypeDetails.getMaxAllowed();
+        final int maxSwitchableUsers = UserManager.getMaxSwitchableUsers();
 
         int currentUsersOfType = 0;
-        int currentUsersOverall = 0;
+        int currentSwitchable = 0;
         final List<UserInfo> userList = mUserManager.getAliveUsers();
         for (UserInfo user : userList) {
-            currentUsersOverall++;
+            if (!android.multiuser.Flags.decoupleMaxUsersFromProfiles() ||
+                    user.supportsSwitchTo() && !user.isGuest() && !user.isDemo()) {
+                currentSwitchable++;
+            }
             if (userType.equals(user.userType)) {
                 currentUsersOfType++;
             }
         }
 
-        final int remainingUserType = maxUsersForType == UserTypeDetails.UNLIMITED_NUMBER_OF_USERS ?
-                Integer.MAX_VALUE : maxUsersForType - currentUsersOfType;
-        final int remainingOverall = maxUsersOverall - currentUsersOverall;
-        final int remaining = Math.min(remainingUserType, remainingOverall);
+        final int remainingUserType = maxUsersForType - currentUsersOfType;
+        final int remainingSwitchable = maxSwitchableUsers - currentSwitchable;
+        final boolean isSwitchable = !android.multiuser.Flags.decoupleMaxUsersFromProfiles() ||
+                userTypeDetails.supportsSwitchTo()
+                && !userTypeDetails.isGuest()
+                && !userTypeDetails.isDemo();
+        final int remaining = isSwitchable ?
+                Math.min(remainingUserType, remainingSwitchable) : remainingUserType;
         final int maxAllowedInPractice = currentUsersOfType + remaining;
 
         Slog.v(TAG, "maxUsersForType=" + maxUsersForType
-                + ", maxUsersOverall=" + maxUsersOverall
                 + ", currentUsersOfType=" + currentUsersOfType
-                + ", currentUsersOverall=" + currentUsersOverall
+                + ", isSwitchable=" + isSwitchable
+                + ", maxSwitchableUsers=" + maxSwitchableUsers
+                + ", currentSwitchable=" + currentSwitchable
                 + ", remaining=" + remaining);
 
         if (android.multiuser.Flags.consistentMaxUsers()) {
@@ -527,45 +575,87 @@ public final class UserManagerTest {
             assertThat(mUserManager.getRemainingCreatableUserCount(userType))
                     .isEqualTo(remaining - usersAdded);
 
-            final UserInfo user = createUser("User " + usersAdded, userType, 0);
-            assertThat(user).isNotNull();
+            final UserInfo user = testCreatingUser(userType, true);
             assertThat(hasUser(user.id)).isTrue();
         }
         Slog.v(TAG, "Added " + usersAdded + " users.");
 
-        assertWithMessage("Still thinks more users of that type can be added")
-                .that(mUserManager.canAddMoreUsers(userType)).isFalse();
-        assertThat(mUserManager.getRemainingCreatableUserCount(userType)).isEqualTo(0);
+        // Make sure no more users of that type can be added.
+        testCreatingUser(userType, false);
 
         if (android.multiuser.Flags.consistentMaxUsers()) {
             assertThat(mUserManager.getCurrentAllowedNumberOfUsers(userType))
                     .isEqualTo(maxAllowedInPractice);
         }
 
-        assertThat(createUser("User beyond", userType, 0)).isNull();
-
-        if (!android.multiuser.Flags.consistentMaxUsersIncludingGuests()
-                && !UserManager.isUserTypeGuest(userType)) {
-            assertThat(mUserManager.canAddMoreUsers(UserManager.USER_TYPE_FULL_GUEST)).isTrue();
-        }
-
-        // We've maxed out this usertype. Can we add a user of a different type now?
-        final String otherType = !userType.equals(UserManager.USER_TYPE_FULL_GUEST) ?
-                UserManager.USER_TYPE_FULL_GUEST : UserManager.USER_TYPE_FULL_SECONDARY;
-        if (remainingOverall > usersAdded) {
-            Slog.v(TAG, "Expecting to be able to add a user of a different type.");
-            assertThat(mUserManager.canAddMoreUsers(otherType)).isTrue();
-            assertThat(mUserManager.getRemainingCreatableUserCount(otherType)).isGreaterThan(0);
-            assertThat(createUser("Other beyond", otherType, 0)).isNotNull();
-        } else {
-            if (android.multiuser.Flags.consistentMaxUsersIncludingGuests()
-                    || !UserManager.isUserTypeGuest(otherType)) {
-                Slog.v(TAG, "Expecting not to be able to add a user of a different type.");
-                assertThat(mUserManager.canAddMoreUsers(otherType)).isFalse();
-                assertThat(mUserManager.getRemainingCreatableUserCount(otherType)).isEqualTo(0);
-                assertThat(createUser("Other beyond", otherType, 0)).isNull();
+        if (!android.multiuser.Flags.decoupleMaxUsersFromProfiles()) {
+            // We've maxed out this usertype. Can we add a user of a different type now?
+            final String otherType = !userType.equals(USER_TYPE_FULL_GUEST) ?
+                    USER_TYPE_FULL_GUEST : USER_TYPE_FULL_SECONDARY;
+            if (remainingSwitchable > usersAdded) {
+                Slog.v(TAG, "Expecting to be able to add a user of a different type.");
+                assertThat(mUserManager.canAddMoreUsers(otherType)).isTrue();
+                assertThat(mUserManager.getRemainingCreatableUserCount(otherType)).isGreaterThan(0);
+                assertThat(createUser("Other beyond", otherType, 0)).isNotNull();
+            } else {
+                if (!UserManager.isUserTypeGuest(otherType)) {
+                    Slog.v(TAG, "Expecting not to be able to add a user of a different type.");
+                    assertThat(mUserManager.canAddMoreUsers(otherType)).isFalse();
+                    assertThat(mUserManager.getRemainingCreatableUserCount(otherType)).isEqualTo(0);
+                    assertThat(createUser("Other beyond", otherType, 0)).isNull();
+                }
             }
+            return; // The remaining tests require that decoupleMaxUsersFromProfiles be false.
         }
+
+        // We've maxed out this usertype. Can we still add a users of various other types now?
+        final boolean canAddMoreSwitchables = remainingSwitchable > (isSwitchable ? usersAdded : 0);
+
+        testCreatingUser(USER_TYPE_FULL_GUEST, !USER_TYPE_FULL_GUEST.equals(userType));
+
+        testCreatingUser(USER_TYPE_FULL_SECONDARY,
+                !USER_TYPE_FULL_SECONDARY.equals(userType) && canAddMoreSwitchables);
+
+        testCreatingUser(USER_TYPE_FULL_RESTRICTED,
+                !USER_TYPE_FULL_RESTRICTED.equals(userType) && canAddMoreSwitchables);
+
+        testCreatingUser(USER_TYPE_FULL_DEMO, !USER_TYPE_FULL_DEMO.equals(userType));
+
+        testCreatingUser(USER_TYPE_PROFILE_MANAGED, !USER_TYPE_PROFILE_MANAGED.equals(userType));
+
+        testCreatingUser(USER_TYPE_PROFILE_PRIVATE, !USER_TYPE_PROFILE_PRIVATE.equals(userType));
+    }
+
+    /** Verifies that the given user type can (or cannot) be added, and attempts to create it. */
+    private UserInfo testCreatingUser(String userType, boolean expectedToBeAddable) {
+        // First, check that we are (or are not) allowed to create the user.
+        if (expectedToBeAddable) {
+            Slog.v(TAG, "Expecting to be able to add a " + userType);
+            assertThat(mUserManager.canAddMoreUsers(userType)).isTrue();
+            assertThat(mUserManager.getRemainingCreatableUserCount(userType)).isGreaterThan(0);
+        } else {
+            Slog.v(TAG, "Expecting NOT to be able to add a " + userType);
+            assertThat(mUserManager.canAddMoreUsers(userType)).isFalse();
+            assertThat(mUserManager.getRemainingCreatableUserCount(userType)).isEqualTo(0);
+        }
+
+        // Now, try to create the user and confirm that it does (or does not) work.
+        boolean needsParent = UserTypeFactory.getUserTypes().get(userType).isProfileParentRequired()
+                || UserManager.isUserTypeRestricted(userType);
+        // Since this is just a test, we can be a little hacky. createProfileForUser does work
+        // for a Restricted Profile, even though it isn't actually a profile. Not for real life.
+        final UserInfo user = needsParent ?
+                createProfileForUser("User " + userType, userType,
+                        mUserManager.getMainUser().getIdentifier()) :
+                createUser("User " + userType, userType, 0);
+
+        if (expectedToBeAddable) {
+            assertThat(user).isNotNull();
+        } else {
+            assertThat(user).isNull();
+        }
+
+        return user;
     }
 
     @MediumTest
@@ -638,7 +728,7 @@ public final class UserManagerTest {
         UserInfo privateProfileUser =
                 createProfileForUser(
                         "Private profile",
-                        UserManager.USER_TYPE_PROFILE_PRIVATE,
+                        USER_TYPE_PROFILE_PRIVATE,
                         mUserManager.getMainUser().getIdentifier());
         assertThat(privateProfileUser).isNotNull();
         assertThat(hasUser(privateProfileUser.id)).isTrue();
@@ -658,7 +748,7 @@ public final class UserManagerTest {
             UserInfo privateProfileUser =
                     createProfileForUser(
                             "Private profile",
-                            UserManager.USER_TYPE_PROFILE_PRIVATE,
+                            USER_TYPE_PROFILE_PRIVATE,
                             mainUser.getIdentifier());
             assertThat(privateProfileUser).isNotNull();
             assertThat(hasUser(privateProfileUser.id)).isTrue();
@@ -677,7 +767,7 @@ public final class UserManagerTest {
         UserInfo privateProfileUser =
                 createProfileForUser(
                         "Private profile",
-                        UserManager.USER_TYPE_PROFILE_PRIVATE,
+                        USER_TYPE_PROFILE_PRIVATE,
                         mUserManager.getMainUser().getIdentifier());
         assertThat(privateProfileUser).isNotNull();
         assertThat(hasUser(privateProfileUser.id)).isTrue();
@@ -895,7 +985,7 @@ public final class UserManagerTest {
         assumeCloneEnabled();
         final List<String> profileTypesToCreate = Arrays.asList(
                 UserManager.USER_TYPE_PROFILE_CLONE,
-                UserManager.USER_TYPE_PROFILE_MANAGED
+                USER_TYPE_PROFILE_MANAGED
         );
 
         final UserInfo parentUser = createUser("Human User", /* flags= */ 0);
@@ -935,13 +1025,13 @@ public final class UserManagerTest {
     @MediumTest
     @Test
     public void testCreateUserViaTypes() throws Exception {
-        createUserWithTypeAndCheckFlags(UserManager.USER_TYPE_FULL_GUEST,
+        createUserWithTypeAndCheckFlags(USER_TYPE_FULL_GUEST,
                 UserInfo.FLAG_GUEST | UserInfo.FLAG_FULL);
 
-        createUserWithTypeAndCheckFlags(UserManager.USER_TYPE_FULL_DEMO,
+        createUserWithTypeAndCheckFlags(USER_TYPE_FULL_DEMO,
                 UserInfo.FLAG_DEMO | UserInfo.FLAG_FULL);
 
-        createUserWithTypeAndCheckFlags(UserManager.USER_TYPE_FULL_SECONDARY,
+        createUserWithTypeAndCheckFlags(USER_TYPE_FULL_SECONDARY,
                 UserInfo.FLAG_FULL);
     }
 
@@ -949,16 +1039,16 @@ public final class UserManagerTest {
     @MediumTest
     @Test
     public void testCreateUserViaFlags() throws Exception {
-        createUserWithFlagsAndCheckType(UserInfo.FLAG_GUEST, UserManager.USER_TYPE_FULL_GUEST,
+        createUserWithFlagsAndCheckType(UserInfo.FLAG_GUEST, USER_TYPE_FULL_GUEST,
                 UserInfo.FLAG_FULL);
 
-        createUserWithFlagsAndCheckType(0, UserManager.USER_TYPE_FULL_SECONDARY,
+        createUserWithFlagsAndCheckType(0, USER_TYPE_FULL_SECONDARY,
                 UserInfo.FLAG_FULL);
 
-        createUserWithFlagsAndCheckType(UserInfo.FLAG_FULL, UserManager.USER_TYPE_FULL_SECONDARY,
+        createUserWithFlagsAndCheckType(UserInfo.FLAG_FULL, USER_TYPE_FULL_SECONDARY,
                 0);
 
-        createUserWithFlagsAndCheckType(UserInfo.FLAG_DEMO, UserManager.USER_TYPE_FULL_DEMO,
+        createUserWithFlagsAndCheckType(UserInfo.FLAG_DEMO, USER_TYPE_FULL_DEMO,
                 UserInfo.FLAG_FULL);
     }
 
@@ -989,13 +1079,13 @@ public final class UserManagerTest {
 
     private void requireSingleGuest() throws Exception {
         assumeTrue("device supports single guest",
-                UserTypeFactory.getUserTypes().get(UserManager.USER_TYPE_FULL_GUEST)
+                UserTypeFactory.getUserTypes().get(USER_TYPE_FULL_GUEST)
                 .getMaxAllowed() == 1);
     }
 
     private void requireMultipleGuests() throws Exception {
         assumeTrue("device supports multiple guests",
-                UserTypeFactory.getUserTypes().get(UserManager.USER_TYPE_FULL_GUEST)
+                UserTypeFactory.getUserTypes().get(USER_TYPE_FULL_GUEST)
                 .getMaxAllowed() > 1);
     }
 
@@ -1003,24 +1093,16 @@ public final class UserManagerTest {
     @Test
     public void testThereCanBeOnlyOneGuest_singleGuest() throws Exception {
         requireSingleGuest();
-        assertThat(mUserManager.canAddMoreUsers(mUserManager.USER_TYPE_FULL_GUEST)).isTrue();
-        UserInfo userInfo1 = createUser("Guest 1", UserInfo.FLAG_GUEST);
-        assertThat(userInfo1).isNotNull();
-        assertThat(mUserManager.canAddMoreUsers(mUserManager.USER_TYPE_FULL_GUEST)).isFalse();
-        UserInfo userInfo2 = createUser("Guest 2", UserInfo.FLAG_GUEST);
-        assertThat(userInfo2).isNull();
+        testCreatingUser(USER_TYPE_FULL_GUEST, true);
+        testCreatingUser(USER_TYPE_FULL_GUEST, false);
     }
 
     @MediumTest
     @Test
     public void testThereCanBeMultipleGuests_multipleGuests() throws Exception {
         requireMultipleGuests();
-        assertThat(mUserManager.canAddMoreUsers(mUserManager.USER_TYPE_FULL_GUEST)).isTrue();
-        UserInfo userInfo1 = createUser("Guest 1", UserInfo.FLAG_GUEST);
-        assertThat(userInfo1).isNotNull();
-        assertThat(mUserManager.canAddMoreUsers(mUserManager.USER_TYPE_FULL_GUEST)).isTrue();
-        UserInfo userInfo2 = createUser("Guest 2", UserInfo.FLAG_GUEST);
-        assertThat(userInfo2).isNotNull();
+        testCreatingUser(USER_TYPE_FULL_GUEST, true);
+        testCreatingUser(USER_TYPE_FULL_GUEST, true);
     }
 
     @MediumTest
@@ -1100,7 +1182,7 @@ public final class UserManagerTest {
         assumeManagedUsersSupported();
         int mainUserId = mUserManager.getMainUser().getIdentifier();
         UserInfo userInfo = createProfileForUser("Profile",
-                UserManager.USER_TYPE_PROFILE_MANAGED, mainUserId);
+                USER_TYPE_PROFILE_MANAGED, mainUserId);
         assertThat(userInfo).isNotNull();
         assertThat(mUserManager.getProfileParent(mainUserId)).isNull();
         UserInfo parentProfileInfo = mUserManager.getProfileParent(userInfo.id);
@@ -1116,14 +1198,14 @@ public final class UserManagerTest {
     public void testProfileTypeInformation() throws Exception {
         assumeManagedUsersSupported();
         final UserTypeDetails userTypeDetails =
-                UserTypeFactory.getUserTypes().get(UserManager.USER_TYPE_PROFILE_MANAGED);
-        assertWithMessage("No %s type on device", UserManager.USER_TYPE_PROFILE_MANAGED)
+                UserTypeFactory.getUserTypes().get(USER_TYPE_PROFILE_MANAGED);
+        assertWithMessage("No %s type on device", USER_TYPE_PROFILE_MANAGED)
                 .that(userTypeDetails).isNotNull();
-        assertThat(userTypeDetails.getName()).isEqualTo(UserManager.USER_TYPE_PROFILE_MANAGED);
+        assertThat(userTypeDetails.getName()).isEqualTo(USER_TYPE_PROFILE_MANAGED);
 
         int mainUserId = mUserManager.getMainUser().getIdentifier();
         UserInfo managedProfileUser = createProfileForUser("Managed",
-                UserManager.USER_TYPE_PROFILE_MANAGED, mainUserId);
+                USER_TYPE_PROFILE_MANAGED, mainUserId);
         assertThat(managedProfileUser).isNotNull();
         final int userId = managedProfileUser.id;
         final UserManager profileUM = UserManager.get(
@@ -1169,15 +1251,15 @@ public final class UserManagerTest {
 
         // Get the default properties for a user type.
         final UserTypeDetails userTypeDetails =
-                UserTypeFactory.getUserTypes().get(UserManager.USER_TYPE_PROFILE_MANAGED);
-        assertWithMessage("No %s type on device", UserManager.USER_TYPE_PROFILE_MANAGED)
+                UserTypeFactory.getUserTypes().get(USER_TYPE_PROFILE_MANAGED);
+        assertWithMessage("No %s type on device", USER_TYPE_PROFILE_MANAGED)
                 .that(userTypeDetails).isNotNull();
         final UserProperties typeProps = userTypeDetails.getDefaultUserPropertiesReference();
 
         // Create an actual user (of this user type) and get its properties.
         int mainUserId = mUserManager.getMainUser().getIdentifier();
         final UserInfo managedProfileUser = createProfileForUser("Managed",
-                UserManager.USER_TYPE_PROFILE_MANAGED, mainUserId);
+                USER_TYPE_PROFILE_MANAGED, mainUserId);
         assertThat(managedProfileUser).isNotNull();
         final int userId = managedProfileUser.id;
         final UserProperties userProps = mUserManager.getUserProperties(UserHandle.of(userId));
@@ -1221,14 +1303,14 @@ public final class UserManagerTest {
         assumeManagedUsersSupported();
         int mainUserId = mUserManager.getMainUser().getIdentifier();
         UserInfo userInfo1 = createProfileForUser("Managed 1",
-                UserManager.USER_TYPE_PROFILE_MANAGED, mainUserId);
+                USER_TYPE_PROFILE_MANAGED, mainUserId);
         UserInfo userInfo2 = createProfileForUser("Managed 2",
-                UserManager.USER_TYPE_PROFILE_MANAGED, mainUserId);
+                USER_TYPE_PROFILE_MANAGED, mainUserId);
 
         assertThat(userInfo1).isNotNull();
         assertThat(userInfo2).isNull();
 
-        assertThat(userInfo1.userType).isEqualTo(UserManager.USER_TYPE_PROFILE_MANAGED);
+        assertThat(userInfo1.userType).isEqualTo(USER_TYPE_PROFILE_MANAGED);
         int requiredFlags = UserInfo.FLAG_MANAGED_PROFILE | UserInfo.FLAG_PROFILE;
         assertWithMessage("Wrong flags %s", userInfo1.flags).that(userInfo1.flags & requiredFlags)
                 .isEqualTo(requiredFlags);
@@ -1244,7 +1326,7 @@ public final class UserManagerTest {
         assumeManagedUsersSupported();
         int mainUserId = mUserManager.getMainUser().getIdentifier();
         UserInfo userInfo1 = createProfileForUser("Managed1",
-                UserManager.USER_TYPE_PROFILE_MANAGED, mainUserId);
+                USER_TYPE_PROFILE_MANAGED, mainUserId);
         // Verify that the packagesToVerify are installed by default.
         for (String pkg : PACKAGES) {
             if (!mPackageManager.isPackageAvailable(pkg)) {
@@ -1258,7 +1340,7 @@ public final class UserManagerTest {
         removeUser(userInfo1.id);
 
         UserInfo userInfo2 = createProfileForUser("Managed2",
-                UserManager.USER_TYPE_PROFILE_MANAGED, mainUserId, PACKAGES);
+                USER_TYPE_PROFILE_MANAGED, mainUserId, PACKAGES);
         // Verify that the packagesToVerify are not installed by default.
         for (String pkg : PACKAGES) {
             if (!mPackageManager.isPackageAvailable(pkg)) {
@@ -1280,7 +1362,7 @@ public final class UserManagerTest {
         assumeManagedUsersSupported();
         final int mainUserId = mUserManager.getMainUser().getIdentifier();
         UserInfo userInfo = createProfileForUser("Managed",
-                UserManager.USER_TYPE_PROFILE_MANAGED, mainUserId, PACKAGES);
+                USER_TYPE_PROFILE_MANAGED, mainUserId, PACKAGES);
         // Verify that the packagesToVerify are not installed by default.
         for (String pkg : PACKAGES) {
             if (!mPackageManager.isPackageAvailable(pkg)) {
@@ -1367,7 +1449,7 @@ public final class UserManagerTest {
                 currentUserHandle);
         try {
             UserInfo userInfo = createProfileForUser("Managed",
-                    UserManager.USER_TYPE_PROFILE_MANAGED, mainUserId);
+                    USER_TYPE_PROFILE_MANAGED, mainUserId);
             assertThat(userInfo).isNull();
         } finally {
             mUserManager.setUserRestriction(UserManager.DISALLOW_ADD_MANAGED_PROFILE, false,
@@ -1386,7 +1468,7 @@ public final class UserManagerTest {
                 mainUserHandle);
         try {
             UserInfo userInfo = createProfileEvenWhenDisallowedForUser("Managed",
-                    UserManager.USER_TYPE_PROFILE_MANAGED, mainUserId);
+                    USER_TYPE_PROFILE_MANAGED, mainUserId);
             assertThat(userInfo).isNotNull();
         } finally {
             mUserManager.setUserRestriction(UserManager.DISALLOW_ADD_MANAGED_PROFILE, false,
@@ -1404,7 +1486,7 @@ public final class UserManagerTest {
         mUserManager.setUserRestriction(UserManager.DISALLOW_ADD_USER, true, mainUserHandle);
         try {
             UserInfo userInfo = createProfileForUser("Managed",
-                    UserManager.USER_TYPE_PROFILE_MANAGED, mainUserId);
+                    USER_TYPE_PROFILE_MANAGED, mainUserId);
             assertThat(userInfo).isNotNull();
         } finally {
             mUserManager.setUserRestriction(UserManager.DISALLOW_ADD_USER, false,
@@ -1423,7 +1505,7 @@ public final class UserManagerTest {
         try {
             assertThat(mUserManager.canAddPrivateProfile()).isFalse();
             UserInfo privateProfileInfo = createProfileForUser("Private",
-                    UserManager.USER_TYPE_PROFILE_PRIVATE, mainUserId);
+                    USER_TYPE_PROFILE_PRIVATE, mainUserId);
             assertThat(privateProfileInfo).isNull();
         } finally {
             mUserManager.setUserRestriction(UserManager.DISALLOW_ADD_PRIVATE_PROFILE, false,
@@ -1438,7 +1520,7 @@ public final class UserManagerTest {
         final int mainUserId = ActivityManager.getCurrentUser();
         try {
             UserInfo privateProfileInfo = createProfileForUser("Private",
-                            UserManager.USER_TYPE_PROFILE_PRIVATE, mainUserId);
+                            USER_TYPE_PROFILE_PRIVATE, mainUserId);
             assertThat(privateProfileInfo).isNotNull();
         } catch (Exception e) {
             fail("Creation of private profile failed due to " + e.getMessage());
@@ -1453,7 +1535,7 @@ public final class UserManagerTest {
         UserInfo privateProfileInfo = null;
         try {
             privateProfileInfo = createProfileForUser("Private",
-                    UserManager.USER_TYPE_PROFILE_PRIVATE, currentUserId);
+                    USER_TYPE_PROFILE_PRIVATE, currentUserId);
             assertThat(privateProfileInfo).isNotNull();
         } catch (Exception e) {
             fail("Creation of private profile failed due to " + e.getMessage());
@@ -1508,7 +1590,7 @@ public final class UserManagerTest {
         final int mainUserId = mUserManager.getMainUser().getIdentifier();
         final long startTime = System.currentTimeMillis();
         UserInfo profile = createProfileForUser("Managed 1",
-                UserManager.USER_TYPE_PROFILE_MANAGED, mainUserId);
+                USER_TYPE_PROFILE_MANAGED, mainUserId);
         final long endTime = System.currentTimeMillis();
         assertThat(profile).isNotNull();
         if (System.currentTimeMillis() > EPOCH_PLUS_30_YEARS) {
@@ -1657,9 +1739,9 @@ public final class UserManagerTest {
     @MediumTest
     @Test
     public void testDefaultRestrictionsApplied() throws Exception {
-        final UserInfo userInfo = createUser("Useroid", UserManager.USER_TYPE_FULL_SECONDARY, 0);
+        final UserInfo userInfo = createUser("Useroid", USER_TYPE_FULL_SECONDARY, 0);
         final UserTypeDetails userTypeDetails =
-                UserTypeFactory.getUserTypes().get(UserManager.USER_TYPE_FULL_SECONDARY);
+                UserTypeFactory.getUserTypes().get(USER_TYPE_FULL_SECONDARY);
         final Bundle expectedRestrictions = userTypeDetails.getDefaultRestrictions();
         // Note this can fail if DO unset those restrictions.
         for (String restriction : expectedRestrictions.keySet()) {
@@ -1746,7 +1828,7 @@ public final class UserManagerTest {
     @Test
     public void testConcurrentUserCreate() throws Exception {
         final int canBeCreatedCount = mUserManager.getRemainingCreatableUserCount(
-                UserManager.USER_TYPE_FULL_SECONDARY);
+                USER_TYPE_FULL_SECONDARY);
 
         // Test exceeding the limit while running in parallel
         int createUsersCount = canBeCreatedCount + 5;
@@ -1768,14 +1850,14 @@ public final class UserManagerTest {
                 "Could not create " + createUsersCount + " users in " + timeout + " seconds")
                 .that(es.awaitTermination(timeout, TimeUnit.SECONDS))
                 .isTrue();
-        assertThat(mUserManager.canAddMoreUsers(UserManager.USER_TYPE_FULL_SECONDARY)).isFalse();
+        assertThat(mUserManager.canAddMoreUsers(USER_TYPE_FULL_SECONDARY)).isFalse();
         assertThat(created.get()).isEqualTo(canBeCreatedCount);
     }
 
     @MediumTest
     @Test
     public void testGetUserHandles_createNewUser_shouldFindNewUser() {
-        UserInfo user = createUser("Guest 1", UserManager.USER_TYPE_FULL_GUEST, /*flags*/ 0);
+        UserInfo user = createUser("Guest 1", USER_TYPE_FULL_GUEST, /*flags*/ 0);
 
         boolean found = false;
         List<UserHandle> userHandles = mUserManager.getUserHandles(/* excludeDying= */ true);
@@ -1794,7 +1876,7 @@ public final class UserManagerTest {
         final int mainUserId = mUserManager.getMainUser().getIdentifier();
 
         UserInfo userProfile = createProfileForUser("Managed 1",
-                UserManager.USER_TYPE_PROFILE_MANAGED, mainUserId);
+                USER_TYPE_PROFILE_MANAGED, mainUserId);
         assertThat(userProfile).isNotNull();
 
         UserManager um = (UserManager) mContext.createPackageContextAsUser(
@@ -1813,7 +1895,7 @@ public final class UserManagerTest {
         final int mainUserId = mUserManager.getMainUser().getIdentifier();
 
         UserInfo userInfo1 = createProfileForUser("Managed 1",
-                UserManager.USER_TYPE_PROFILE_MANAGED, mainUserId);
+                USER_TYPE_PROFILE_MANAGED, mainUserId);
         assertThat(userInfo1).isNotNull();
 
         UserManager um = (UserManager) mContext.createPackageContextAsUser(
@@ -1845,7 +1927,7 @@ public final class UserManagerTest {
 
     @Test
     public void testGetUserName_shouldReturnTranslatedTextForNullNamedGuestUser() throws Exception {
-        UserInfo guestWithNullName = createUser(null, UserManager.USER_TYPE_FULL_GUEST, 0);
+        UserInfo guestWithNullName = createUser(null, USER_TYPE_FULL_GUEST, 0);
         assertThat(guestWithNullName).isNotNull();
 
         UserManager um = (UserManager) mContext.createPackageContextAsUser(
@@ -1862,7 +1944,7 @@ public final class UserManagerTest {
         final int mainUserId = mUserManager.getMainUser().getIdentifier();
 
         UserInfo userInfo1 = createProfileForUser("Managed 1",
-                UserManager.USER_TYPE_PROFILE_MANAGED, mainUserId);
+                USER_TYPE_PROFILE_MANAGED, mainUserId);
         assertThat(userInfo1).isNotNull();
 
         UserManager um = (UserManager) mContext.createPackageContextAsUser(
@@ -1911,7 +1993,7 @@ public final class UserManagerTest {
         String value3 = "Value 3";
 
         UserInfo userInfo = mUserManager.createUser(userName,
-                UserManager.USER_TYPE_FULL_SECONDARY, 0);
+                USER_TYPE_FULL_SECONDARY, 0);
 
         PersistableBundle accountOptions = new PersistableBundle();
         String[] stringArray = {value1, value2};
@@ -1956,7 +2038,7 @@ public final class UserManagerTest {
         String value2 = "Value 2";
 
         UserInfo userInfo = mUserManager.createUser(userName,
-                UserManager.USER_TYPE_FULL_SECONDARY, 0);
+                USER_TYPE_FULL_SECONDARY, 0);
 
         PersistableBundle accountOptions = new PersistableBundle();
         String[] stringArray = {value1, value2};
@@ -1989,7 +2071,7 @@ public final class UserManagerTest {
     public void testGetProfileIdsExcludingHidden() throws Exception {
         int mainUserId = mUserManager.getMainUser().getIdentifier();
         final UserInfo profile = createProfileForUser("Profile",
-                UserManager.USER_TYPE_PROFILE_PRIVATE, mainUserId);
+                USER_TYPE_PROFILE_PRIVATE, mainUserId);
 
         final int[] allProfiles = mUserManager.getProfileIds(mainUserId, /* enabledOnly */ false);
         final int[] profilesExcludingHidden = mUserManager.getProfileIdsExcludingHidden(
@@ -2009,7 +2091,7 @@ public final class UserManagerTest {
         assumeManagedUsersSupported();
         final int mainUserId = mUserManager.getMainUser().getIdentifier();
         UserInfo userInfo = createProfileForUser("Profile",
-                UserManager.USER_TYPE_PROFILE_MANAGED, mainUserId);
+                USER_TYPE_PROFILE_MANAGED, mainUserId);
         mUserManager.requestQuietModeEnabled(true, userInfo.getUserHandle());
         assertThat(mUserManager.isQuietModeEnabled(userInfo.getUserHandle())).isTrue();
         assertThat(mUserManager.isQuietModeEnabled(UserHandle.of(UserHandle.USER_NULL))).isFalse();

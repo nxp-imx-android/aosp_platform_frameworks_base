@@ -33,12 +33,9 @@ import com.android.launcher3.icons.FastBitmapDrawable
 import com.android.launcher3.icons.IconFactory
 import com.android.launcher3.util.UserIconInfo
 import com.android.systemui.SysuiTestCase
-import com.android.systemui.kosmos.backgroundScope
-import com.android.systemui.kosmos.currentValue
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.testDispatcher
 import com.android.systemui.testKosmosNew
-import com.android.systemui.unfold.util.fakeDeviceStateManager
 import com.google.common.truth.Truth.assertThat
 import javax.inject.Provider
 import org.junit.Test
@@ -96,7 +93,6 @@ class ScreenCaptureIconRepositoryImplTest : SysuiTestCase() {
             // Arrange
             val iconRepository =
                 ScreenCaptureIconRepositoryImpl(
-                    scope = backgroundScope,
                     bgContext = testDispatcher,
                     context = testableContext,
                     userManager = userManager,
@@ -117,7 +113,8 @@ class ScreenCaptureIconRepositoryImplTest : SysuiTestCase() {
                 .getActivityInfo(eq(ComponentName("TestPackage", "TestClass")), eq(123))
             verify(mockIconFactory).createBadgedIconBitmap(same(fakeDrawable), any())
             verify(mockIconFactory).close()
-            assertThat(result?.sameAs(fakeBadgedBitmap)).isTrue()
+            assertThat(result.isSuccess).isTrue()
+            assertThat(result.getOrNull()?.sameAs(fakeBadgedBitmap)).isTrue()
         }
 
     @Test
@@ -126,7 +123,6 @@ class ScreenCaptureIconRepositoryImplTest : SysuiTestCase() {
             // Arrange
             val iconRepository =
                 ScreenCaptureIconRepositoryImpl(
-                    scope = backgroundScope,
                     bgContext = testDispatcher,
                     context = testableContext,
                     userManager = userManager,
@@ -147,7 +143,8 @@ class ScreenCaptureIconRepositoryImplTest : SysuiTestCase() {
             verify(packageManagerWrapper)
                 .getActivityInfo(eq(ComponentName("TestPackage", "TestClass")), eq(123))
             verifyNoInteractions(mockIconFactory)
-            assertThat(result?.sameAs(fakeUnbadgedBitmap)).isTrue()
+            assertThat(result.isSuccess).isTrue()
+            assertThat(result.getOrNull()?.sameAs(fakeUnbadgedBitmap)).isTrue()
         }
 
     @Test
@@ -157,7 +154,6 @@ class ScreenCaptureIconRepositoryImplTest : SysuiTestCase() {
             packageManagerWrapper.stub { on { getActivityInfo(any(), any()) } doReturn null }
             val iconRepository =
                 ScreenCaptureIconRepositoryImpl(
-                    scope = backgroundScope,
                     bgContext = testDispatcher,
                     context = testableContext,
                     userManager = userManager,
@@ -177,104 +173,7 @@ class ScreenCaptureIconRepositoryImplTest : SysuiTestCase() {
             verify(packageManagerWrapper)
                 .getActivityInfo(eq(ComponentName("TestPackage", "TestClass")), eq(123))
             verifyNoInteractions(mockIconFactory)
-            assertThat(result).isNull()
-        }
-
-    @Test
-    fun iconFor_flowEmitsBadgedIcon() =
-        kosmos.runTest {
-            // Arrange
-            val iconRepository =
-                ScreenCaptureIconRepositoryImpl(
-                    scope = backgroundScope,
-                    bgContext = testDispatcher,
-                    context = testableContext,
-                    userManager = userManager,
-                    packageManagerWrapper = packageManagerWrapper,
-                    packageManager = packageManager,
-                    iconFactoryProvider = testIconFactoryProvider,
-                )
-
-            // Act
-            val flow =
-                iconRepository.iconFor(
-                    component = ComponentName("TestPackage", "TestClass"),
-                    userId = 123,
-                )
-            val result = currentValue(flow)
-
-            // Assert
-            verify(packageManagerWrapper)
-                .getActivityInfo(eq(ComponentName("TestPackage", "TestClass")), eq(123))
-            verify(mockIconFactory).createBadgedIconBitmap(same(fakeDrawable), any())
-            verify(mockIconFactory).close()
-            assertThat(result?.isSuccess).isTrue()
-            assertThat(result?.getOrNull()?.sameAs(fakeBadgedBitmap)).isTrue()
-        }
-
-    @Test
-    fun iconFor_unbadged_flowEmitsUnbadgedIcon() =
-        kosmos.runTest {
-            // Arrange
-            val iconRepository =
-                ScreenCaptureIconRepositoryImpl(
-                    scope = backgroundScope,
-                    bgContext = testDispatcher,
-                    context = testableContext,
-                    userManager = userManager,
-                    packageManagerWrapper = packageManagerWrapper,
-                    packageManager = packageManager,
-                    iconFactoryProvider = testIconFactoryProvider,
-                )
-
-            // Act
-            val flow =
-                iconRepository.iconFor(
-                    component = ComponentName("TestPackage", "TestClass"),
-                    userId = 123,
-                    badged = false,
-                )
-            val result = currentValue(flow)
-
-            // Assert
-            verify(packageManagerWrapper)
-                .getActivityInfo(eq(ComponentName("TestPackage", "TestClass")), eq(123))
-            verifyNoInteractions(mockIconFactory)
-            assertThat(result?.isSuccess).isTrue()
-            assertThat(result?.getOrNull()?.sameAs(fakeUnbadgedBitmap)).isTrue()
-        }
-
-    @Test
-    fun iconFor_couldNotFindActivity_flowEmitsFailure() =
-        kosmos.runTest {
-            // Arrange
-            packageManagerWrapper.stub { on { getActivityInfo(any(), any()) } doReturn null }
-            val iconRepository =
-                ScreenCaptureIconRepositoryImpl(
-                    scope = backgroundScope,
-                    bgContext = testDispatcher,
-                    context = testableContext,
-                    userManager = userManager,
-                    packageManagerWrapper = packageManagerWrapper,
-                    packageManager = packageManager,
-                    iconFactoryProvider = testIconFactoryProvider,
-                )
-
-            this.fakeDeviceStateManager
-
-            // Act
-            val flow =
-                iconRepository.iconFor(
-                    component = ComponentName("TestPackage", "TestClass"),
-                    userId = 123,
-                )
-            val result = currentValue(flow)
-
-            // Assert
-            verify(packageManagerWrapper)
-                .getActivityInfo(eq(ComponentName("TestPackage", "TestClass")), eq(123))
-            verifyNoInteractions(mockIconFactory)
-            assertThat(result?.isFailure).isTrue()
+            assertThat(result.isFailure).isTrue()
         }
 
     @Test
@@ -293,7 +192,6 @@ class ScreenCaptureIconRepositoryImplTest : SysuiTestCase() {
             }
             val iconRepository =
                 ScreenCaptureIconRepositoryImpl(
-                    scope = backgroundScope,
                     bgContext = testDispatcher,
                     context = testableContext,
                     userManager = userManager,
@@ -325,7 +223,6 @@ class ScreenCaptureIconRepositoryImplTest : SysuiTestCase() {
             }
             val iconRepository =
                 ScreenCaptureIconRepositoryImpl(
-                    scope = backgroundScope,
                     bgContext = testDispatcher,
                     context = testableContext,
                     userManager = userManager,
@@ -357,7 +254,6 @@ class ScreenCaptureIconRepositoryImplTest : SysuiTestCase() {
             }
             val iconRepository =
                 ScreenCaptureIconRepositoryImpl(
-                    scope = backgroundScope,
                     bgContext = testDispatcher,
                     context = testableContext,
                     userManager = userManager,
@@ -389,7 +285,6 @@ class ScreenCaptureIconRepositoryImplTest : SysuiTestCase() {
             }
             val iconRepository =
                 ScreenCaptureIconRepositoryImpl(
-                    scope = backgroundScope,
                     bgContext = testDispatcher,
                     context = testableContext,
                     userManager = userManager,

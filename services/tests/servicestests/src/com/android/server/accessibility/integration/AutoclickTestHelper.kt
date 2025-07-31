@@ -15,7 +15,9 @@
  */
 package com.android.server.accessibility.integration
 
+import android.content.Context
 import android.view.Display.DEFAULT_DISPLAY
+import android.view.WindowManager
 import androidx.test.uiautomator.By
 import androidx.test.uiautomator.BySelector
 import androidx.test.uiautomator.UiDevice
@@ -47,7 +49,7 @@ val SCROLL_RIGHT_BUTTON_LAYOUT_ID = "android:id/scroll_right"
 val CLICK_TYPE_BUTTON_GROUP_ID =
     "android:id/accessibility_autoclick_click_type_button_group_container"
 val PAUSE_BUTTON_LAYOUT_ID = "android:id/accessibility_autoclick_pause_button"
-val POSITION_BUTTON_LAYOUT_ID = "android:id/accessibility_autoclick_position_layout"
+val POSITION_BUTTON_LAYOUT_ID = "android:id/accessibility_autoclick_position_button"
 val AUTOCLICK_PANEL_ID = "android:id/accessibility_autoclick_type_panel"
 
 fun findObject(uiDevice: UiDevice, selector: BySelector): UiObject2 {
@@ -56,6 +58,26 @@ fun findObject(uiDevice: UiDevice, selector: BySelector): UiObject2 {
 
 fun waitAndAssert(condition: PollingCheck.PollingCheckCondition) {
     waitFor(FIND_OBJECT_TIMEOUT.inWholeMilliseconds, condition)
+}
+
+fun initiateAutoclickPanel(
+    context: Context,
+    uiDevice: UiDevice,
+    desktopMouseTestRule: DesktopMouseTestRule
+) {
+    // Move the mouse across the display to create the panel.
+    desktopMouseTestRule.move(DEFAULT_DISPLAY, 0, 0)
+    val wm = context.getSystemService(WindowManager::class.java)
+    desktopMouseTestRule.move(
+        DEFAULT_DISPLAY,
+        wm.currentWindowMetrics.bounds.width() / 2,
+        wm.currentWindowMetrics.bounds.height() / 2
+    )
+
+    // Wait for the panel to close before beginning the tests.
+    waitAndAssert {
+        !isAutoclickPanelOpen(uiDevice)
+    }
 }
 
 // The panel is considered open when more than one click type button is visible.
@@ -71,28 +93,26 @@ fun changeClickType(
     desktopMouseTestRule: DesktopMouseTestRule,
     clickTypeResourceId: String
 ) {
-    // First move the cursor to the edge of the screen so the next move will trigger an
-    // autoclick.
-    desktopMouseTestRule.move(DEFAULT_DISPLAY, targetXPx = 0, targetYPx = 0)
-
-    if (!isAutoclickPanelOpen(uiDevice)) {
-        // The click type button group starts closed so click it to open the panel.
-        val clickTypeButtonGroup = findObject(
-            uiDevice, By.res(CLICK_TYPE_BUTTON_GROUP_ID)
-        )
-        desktopMouseTestRule.move(
-            DEFAULT_DISPLAY,
-            clickTypeButtonGroup.visibleCenter.x,
-            clickTypeButtonGroup.visibleCenter.y
-        )
-
-        // Wait for the panel to fully open before attempting to select a click type.
-        waitAndAssert {
-            isAutoclickPanelOpen(uiDevice)
-        }
+    // Requested click type is already selected.
+    if (uiDevice.findObject(By.res(clickTypeResourceId)) != null) {
+        return
     }
 
-    desktopMouseTestRule.move(DEFAULT_DISPLAY, targetXPx = 0, targetYPx = 0)
+    // The click type button group starts closed so click it to open the panel.
+    val clickTypeButtonGroup = findObject(
+        uiDevice, By.res(CLICK_TYPE_BUTTON_GROUP_ID)
+    )
+    desktopMouseTestRule.move(
+        DEFAULT_DISPLAY,
+        clickTypeButtonGroup.visibleCenter.x,
+        clickTypeButtonGroup.visibleCenter.y
+    )
+
+    // Wait for the panel to fully open before attempting to select a click type.
+    waitAndAssert {
+        isAutoclickPanelOpen(uiDevice)
+    }
+
     val targetClickTypeButton = findObject(uiDevice, By.res(clickTypeResourceId))
     desktopMouseTestRule.move(
         DEFAULT_DISPLAY,
