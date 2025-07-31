@@ -594,12 +594,6 @@ final class InstallRequest {
         return mScanResult.mRequest.mRealPkgName;
     }
 
-    @Nullable
-    public List<String> getChangedAbiCodePath() {
-        assertScanResultExists();
-        return mScanResult.mChangedAbiCodePath;
-    }
-
     public boolean isApplicationEnabledSettingPersistent() {
         return mInstallArgs == null ? false : mInstallArgs.mApplicationEnabledSettingPersistent;
     }

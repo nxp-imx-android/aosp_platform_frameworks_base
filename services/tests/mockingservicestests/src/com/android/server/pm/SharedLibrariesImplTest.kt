@@ -229,7 +229,7 @@ class SharedLibrariesImplTest {
         val parsedPackage = pair.second as ParsedPackage
         val scanRequest = ScanRequest(parsedPackage, null, null, null, null,
             null, null, null, 0, 0, false, null, null)
-        val scanResult = ScanResult(scanRequest, null, null, false, 0, null, null, null)
+        val scanResult = ScanResult(scanRequest, null, false, 0, null, null, null)
         var installRequest = InstallRequest(parsedPackage, 0, 0, UserHandle(0), scanResult, null)
 
         val latestInfoSetting =
@@ -313,8 +313,7 @@ class SharedLibrariesImplTest {
     @Test
     fun getAllowedSharedLibInfos_withStaticSharedLibInfo() {
         val testInfo = libOfStatic(TEST_LIB_PACKAGE_NAME, TEST_LIB_NAME, 1L)
-        val scanResult = ScanResult(mock(), null, null,
-            false, 0, null, testInfo, null)
+        val scanResult = ScanResult(mock(), null, false, 0, null, testInfo, null)
         var installRequest = InstallRequest(mock(), 0, 0, UserHandle(0), scanResult, null)
 
         val allowedInfos = mSharedLibrariesImpl.getAllowedSharedLibInfos(installRequest)
@@ -336,8 +335,8 @@ class SharedLibrariesImplTest {
             .setPkgFlags(ApplicationInfo.FLAG_SYSTEM).build()
         val scanRequest = ScanRequest(parsedPackage, null, null, null, null,
             null, null, null, 0, 0, false, null, null)
-        val scanResult = ScanResult(scanRequest, packageSetting, null,
-            false, 0, null, null, listOf(testInfo))
+        val scanResult = ScanResult(scanRequest, packageSetting, false, 0, null, null,
+            listOf(testInfo))
         var installRequest = InstallRequest(parsedPackage, 0, 0, UserHandle(0), scanResult, null)
 
         val allowedInfos = mSharedLibrariesImpl.getAllowedSharedLibInfos(installRequest)
