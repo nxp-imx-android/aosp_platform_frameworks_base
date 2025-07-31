@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 The Android Open Source Project
+ * Copyright (C) 2025 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,21 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.android.hoststubgen.test.tinyframework;
+package com.android.hoststubgen.test.tinyframework.exp;
 
-import android.hosttest.annotation.HostSideTestWholeClassKeep;
-
-import java.util.HashSet;
-import java.util.Set;
-
-@HostSideTestWholeClassKeep
-public class TinyFrameworkClassLoadHook {
-    private TinyFrameworkClassLoadHook() {
-    }
-
-    public static final Set<Class<?>> sLoadedClasses = new HashSet<>();
-
-    public static void onClassLoaded(Class<?> clazz) {
-        sLoadedClasses.add(clazz);
+public class A {
+    public void foo() {
     }
 }

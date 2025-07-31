@@ -28,7 +28,7 @@ import android.hosttest.annotation.HostSideTestThrowButSupported;
  */
 @HostSideTestKeep
 @HostSideTestClassLoadHook(
-        "com.android.hoststubgen.test.tinyframework.TinyFrameworkClassLoadHook.onClassLoaded")
+        "com.android.hoststubgen.test.tinyframework.TinyFrameworkHooks.onClassLoaded")
 public final class TinyFrameworkAnnotations {
     @HostSideTestKeep
     public TinyFrameworkAnnotations() {

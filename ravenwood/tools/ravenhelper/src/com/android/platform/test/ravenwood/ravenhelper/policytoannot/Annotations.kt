@@ -49,7 +49,8 @@ class Annotations {
                 "@android.ravenwood.annotation.RavenwoodIgnore"
             FilterPolicy.Remove ->
                 "@android.ravenwood.annotation.RavenwoodRemove"
-            FilterPolicy.AnnotationAllowed -> null // Can't convert to an annotation.
+            // Can't convert to an annotation.
+            FilterPolicy.AnnotationAllowed, FilterPolicy.Experimental -> null
         }
     }
 
@@ -75,4 +76,3 @@ class Annotations {
         return withArg("android.ravenwood.annotation.RavenwoodRedirectionClass", arg)
     }
 }
-

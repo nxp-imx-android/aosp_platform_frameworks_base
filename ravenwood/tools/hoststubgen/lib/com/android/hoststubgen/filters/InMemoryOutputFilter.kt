@@ -116,6 +116,12 @@ class InMemoryOutputFilter(
             return innerPolicy
         }
 
+        // If the current policy is experimental, but inner policy is considered "supported",
+        // then we should not override the inner policy.
+        if (policy.policy == FilterPolicy.Experimental && innerPolicy.policy.isSupported) {
+            return innerPolicy
+        }
+
         return policy
     }
 

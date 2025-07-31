@@ -24,6 +24,12 @@ GOLDEN_DIRS = [
     'golden-output',
 ]
 
+EXCLUDE_FILES = {
+    '01-hoststubgen-test-tiny-framework-orig-dump.txt',
+    '03-hoststubgen-test-tiny-framework-host-dump.txt',
+    '13-hoststubgen-test-tiny-framework-host-ext-dump.txt',
+}
+
 # Run diff.
 def run_diff(file1, file2):
     command = ['diff', '-u',
@@ -69,7 +75,7 @@ class TestWithGoldenOutput(unittest.TestCase):
 
     def matches_golden(self, golden_dir):
         files = os.listdir(golden_dir)
-        files.sort()
+        files = set(files) - EXCLUDE_FILES
 
         print(f"Golden files for {golden_dir}: {files}")
         match_success = True

@@ -55,6 +55,7 @@ open class HostStubGenClassProcessorOptions(
 
     val defaultClassLoadHook: SetOnce<String?> = SetOnce(null),
     val defaultMethodCallHook: SetOnce<String?> = SetOnce(null),
+    val experimentalMethodCallHook: SetOnce<String?> = SetOnce(null),
 
     val policyOverrideFiles: MutableList<FileOrResource> = mutableListOf(),
 
@@ -146,6 +147,9 @@ open class HostStubGenClassProcessorOptions(
             "--default-method-call-hook" ->
                 defaultMethodCallHook.set(nextArg())
 
+            "--experimental-method-call-hook" ->
+                experimentalMethodCallHook.set(nextArg())
+
             "--delete-finals" -> deleteFinals.set(true)
 
             "--throw-exception" -> throwExceptionType.set(nextArg())
@@ -185,6 +189,7 @@ open class HostStubGenClassProcessorOptions(
             annotationAllowedClassesFile=$annotationAllowedClassesFile,
             defaultClassLoadHook=$defaultClassLoadHook,
             defaultMethodCallHook=$defaultMethodCallHook,
+            experimentalMethodCallHook=$experimentalMethodCallHook,
             policyOverrideFiles=${policyOverrideFiles.toTypedArray().contentToString()},
             defaultPolicy=$defaultPolicy,
             deleteFinals=$deleteFinals,
