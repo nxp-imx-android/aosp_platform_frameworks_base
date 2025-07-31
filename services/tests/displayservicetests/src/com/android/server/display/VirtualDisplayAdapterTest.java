@@ -371,6 +371,31 @@ public class VirtualDisplayAdapterTest {
         }
     }
 
+    @Test
+    public void ownDisplayGroup_notNeverBlank() {
+        DisplayDevice device = mAdapter.createVirtualDisplayLocked(mMockCallback,
+                /* projection= */ null, /* ownerUid= */ 10, /* packageName= */ "testpackage",
+                "uniqueId", /* surface= */ mSurfaceMock,
+                DisplayManager.VIRTUAL_DISPLAY_FLAG_OWN_DISPLAY_GROUP, mVirtualDisplayConfigMock);
+
+        DisplayDeviceInfo info = device.getDisplayDeviceInfoLocked();
+        assertThat(info.state).isEqualTo(Display.STATE_UNKNOWN);
+        assertThat(info.flags & DisplayDeviceInfo.FLAG_NEVER_BLANK).isEqualTo(0);
+    }
+
+    @Test
+    public void deviceDisplayGroup_notNeverBlank() {
+        DisplayDevice device = mAdapter.createVirtualDisplayLocked(mMockCallback,
+                /* projection= */ null, /* ownerUid= */ 10, /* packageName= */ "testpackage",
+                "uniqueId", /* surface= */ mSurfaceMock,
+                DisplayManager.VIRTUAL_DISPLAY_FLAG_DEVICE_DISPLAY_GROUP,
+                mVirtualDisplayConfigMock);
+
+        DisplayDeviceInfo info = device.getDisplayDeviceInfoLocked();
+        assertThat(info.state).isEqualTo(Display.STATE_UNKNOWN);
+        assertThat(info.flags & DisplayDeviceInfo.FLAG_NEVER_BLANK).isEqualTo(0);
+    }
+
     @EnableFlags(
             android.companion.virtualdevice.flags.Flags.FLAG_CORRECT_VIRTUAL_DISPLAY_POWER_STATE)
     @Test
