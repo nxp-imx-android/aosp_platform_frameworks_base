@@ -363,10 +363,6 @@ public final class BroadcastHelper {
         final boolean isForWholeApp = componentNames.contains(packageName);
         final String callingPackageNameForTrace = mContext.getPackageManager().getNameForUid(
                 callingUidForTrace);
-
-        PackageMetrics.reportPackageChangedBroadcast(callingUidForTrace, packageUid, isForWholeApp,
-                reasonForTrace);
-
         if (isForWholeApp) {
             tracePackageChangedBroadcastEvent(true /* applyFlag */, reasonForTrace, packageName,
                     "<implicit>" /* targetPackageName */, "whole" /* targetComponent */,
