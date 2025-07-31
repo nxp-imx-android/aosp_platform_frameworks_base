@@ -33,6 +33,7 @@ cc_library_shared {
         "aconfig_lib_cc_static_link.defaults",
         "libcodec2-internal-defaults",
         "media_jni_lib_defaults",
+        "android.hardware.drm-media_drm-ndk-shared",
     ],
     min_sdk_version: "",
 
@@ -66,7 +67,6 @@ cc_library_shared {
         "android.companion.virtual.virtualdevice_aidl-cpp",
         "android.hardware.cas.native@1.0",
         "android.hardware.cas@1.0",
-        "android.hardware.drm-V1-ndk",
         "android.hardware.drm@1.3",
         "android.hardware.drm@1.4",
         "android.hardware.tv.tuner-V3-ndk",
