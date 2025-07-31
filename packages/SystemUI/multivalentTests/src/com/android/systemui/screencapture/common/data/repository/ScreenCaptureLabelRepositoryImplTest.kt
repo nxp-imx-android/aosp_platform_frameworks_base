@@ -24,8 +24,6 @@ import android.os.UserHandle
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
-import com.android.systemui.kosmos.backgroundScope
-import com.android.systemui.kosmos.currentValue
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.testDispatcher
 import com.android.systemui.testKosmosNew
@@ -66,7 +64,6 @@ class ScreenCaptureLabelRepositoryImplTest : SysuiTestCase() {
             // Arrange
             val labelRepository =
                 ScreenCaptureLabelRepositoryImpl(
-                    scope = backgroundScope,
                     bgContext = testDispatcher,
                     packageManager = packageManager,
                 )
@@ -86,7 +83,8 @@ class ScreenCaptureLabelRepositoryImplTest : SysuiTestCase() {
                     eq(123),
                 )
             verify(packageManager).getUserBadgedLabel(any(), eq(UserHandle(123)))
-            assertThat(result).isEqualTo("TestBadgedLabel")
+            assertThat(result.isSuccess).isTrue()
+            assertThat(result.getOrNull()).isEqualTo("TestBadgedLabel")
         }
 
     @Test
@@ -95,7 +93,6 @@ class ScreenCaptureLabelRepositoryImplTest : SysuiTestCase() {
             // Arrange
             val labelRepository =
                 ScreenCaptureLabelRepositoryImpl(
-                    scope = backgroundScope,
                     bgContext = testDispatcher,
                     packageManager = packageManager,
                 )
@@ -116,7 +113,8 @@ class ScreenCaptureLabelRepositoryImplTest : SysuiTestCase() {
                     eq(123),
                 )
             verify(packageManager, never()).getUserBadgedLabel(any(), any())
-            assertThat(result).isEqualTo("TestUnbadgedLabel")
+            assertThat(result.isSuccess).isTrue()
+            assertThat(result.getOrNull()).isEqualTo("TestUnbadgedLabel")
         }
 
     @Test
@@ -125,7 +123,6 @@ class ScreenCaptureLabelRepositoryImplTest : SysuiTestCase() {
             // Arrange
             val labelRepository =
                 ScreenCaptureLabelRepositoryImpl(
-                    scope = backgroundScope,
                     bgContext = testDispatcher,
                     packageManager =
                         packageManager.stub {
@@ -147,101 +144,6 @@ class ScreenCaptureLabelRepositoryImplTest : SysuiTestCase() {
                 )
 
             // Assert
-            assertThat(result).isNull()
-        }
-
-    @Test
-    fun LabelFor_flowEmitsBadgedLabel() =
-        kosmos.runTest {
-            // Arrange
-            val labelRepository =
-                ScreenCaptureLabelRepositoryImpl(
-                    scope = backgroundScope,
-                    bgContext = testDispatcher,
-                    packageManager = packageManager,
-                )
-
-            // Act
-            val flow =
-                labelRepository.labelFor(
-                    component = ComponentName("TestPackage", "TestClass"),
-                    userId = 123,
-                )
-            val result = currentValue(flow)
-
-            // Assert
-            verify(packageManager)
-                .getApplicationInfoAsUser(
-                    eq("TestPackage"),
-                    argThat<PackageManager.ApplicationInfoFlags> { value == 0L },
-                    eq(123),
-                )
-            verify(packageManager).getUserBadgedLabel(any(), eq(UserHandle(123)))
-            assertThat(result?.isSuccess).isTrue()
-            assertThat(result?.getOrNull()).isEqualTo("TestBadgedLabel")
-        }
-
-    @Test
-    fun LabelFor_unbadged_flowEmitsUnbadgedLabel() =
-        kosmos.runTest {
-            // Arrange
-            val labelRepository =
-                ScreenCaptureLabelRepositoryImpl(
-                    scope = backgroundScope,
-                    bgContext = testDispatcher,
-                    packageManager = packageManager,
-                )
-
-            // Act
-            val flow =
-                labelRepository.labelFor(
-                    component = ComponentName("TestPackage", "TestClass"),
-                    userId = 123,
-                    badged = false,
-                )
-            val result = currentValue(flow)
-
-            // Assert
-            verify(packageManager)
-                .getApplicationInfoAsUser(
-                    eq("TestPackage"),
-                    argThat<PackageManager.ApplicationInfoFlags> { value == 0L },
-                    eq(123),
-                )
-            verify(packageManager, never()).getUserBadgedLabel(any(), any())
-            assertThat(result?.isSuccess).isTrue()
-            assertThat(result?.getOrNull()).isEqualTo("TestUnbadgedLabel")
-        }
-
-    @Test
-    fun LabelFor_appNotFound_flowEmitsFailure() =
-        kosmos.runTest {
-            // Arrange
-            val labelRepository =
-                ScreenCaptureLabelRepositoryImpl(
-                    scope = backgroundScope,
-                    bgContext = testDispatcher,
-                    packageManager =
-                        packageManager.stub {
-                            on {
-                                getApplicationInfoAsUser(
-                                    any<String>(),
-                                    any<PackageManager.ApplicationInfoFlags>(),
-                                    any<Int>(),
-                                )
-                            } doThrow PackageManager.NameNotFoundException()
-                        },
-                )
-
-            // Act
-            val flow =
-                labelRepository.labelFor(
-                    component = ComponentName("TestPackage", "TestClass"),
-                    userId = 123,
-                )
-            val result = currentValue(flow)
-
-            // Assert
-            assertThat(result?.isFailure).isTrue()
+            assertThat(result.isFailure).isTrue()
         }
 }

@@ -32,41 +32,29 @@ import com.android.launcher3.icons.IconFactory
 import com.android.launcher3.util.UserIconInfo
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.screencapture.common.ScreenCapture
+import com.android.systemui.screencapture.common.ScreenCaptureScope
 import com.android.systemui.shared.system.PackageManagerWrapper
 import javax.inject.Inject
 import javax.inject.Provider
 import kotlin.coroutines.CoroutineContext
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.async
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.withContext
 
 /** Repository for app icons. */
 interface ScreenCaptureIconRepository {
-
-    /** Returns a flow that fetches an app icon. */
-    fun iconFor(
-        component: ComponentName,
-        @UserIdInt userId: Int,
-        badged: Boolean = true,
-    ): StateFlow<Result<Bitmap>?>
-
     /** Fetch app icon on background dispatcher. */
     suspend fun loadIcon(
         component: ComponentName,
         @UserIdInt userId: Int,
         badged: Boolean = true,
-    ): Bitmap?
+    ): Result<Bitmap>
 }
 
 /** Default implementation of [ScreenCaptureIconRepository]. */
+@ScreenCaptureScope
 class ScreenCaptureIconRepositoryImpl
 @Inject
 constructor(
-    @ScreenCapture private val scope: CoroutineScope,
     @Background private val bgContext: CoroutineContext,
     private val context: Context,
     private val userManager: UserManager,
@@ -75,44 +63,30 @@ constructor(
     @ScreenCapture private val iconFactoryProvider: Provider<IconFactory>,
 ) : ScreenCaptureIconRepository {
 
-    override fun iconFor(
-        component: ComponentName,
-        userId: Int,
-        badged: Boolean,
-    ): StateFlow<Result<Bitmap>?> =
-        flow {
-                val icon = loadIcon(component, userId, badged)
-                if (icon == null) {
-                    emit(
-                        Result.failure(
-                            Exception(
-                                "Could not find icon for ${component.flattenToString()}, user $userId"
-                            )
-                        )
-                    )
-                } else {
-                    emit(Result.success(icon))
-                }
-            }
-            .stateIn(scope, SharingStarted.Eagerly, null)
-
     override suspend fun loadIcon(
         component: ComponentName,
         @UserIdInt userId: Int,
         badged: Boolean,
-    ): Bitmap? =
+    ): Result<Bitmap> =
         withContext(bgContext) {
             packageManagerWrapper
                 .getActivityInfo(component, userId)
                 ?.loadIcon(packageManager)
                 ?.let {
-                    if (badged) {
-                            badgeIcon(it, userId)
-                        } else {
-                            it
-                        }
-                        .toBitmap()
+                    Result.success(
+                        if (badged) {
+                                badgeIcon(it, userId)
+                            } else {
+                                it
+                            }
+                            .toBitmap()
+                    )
                 }
+                ?: Result.failure(
+                    IllegalStateException(
+                        "Could not find icon for ${component.flattenToString()}, user $userId"
+                    )
+                )
         }
 
     private suspend fun badgeIcon(icon: Drawable, @UserIdInt userId: Int): Drawable {

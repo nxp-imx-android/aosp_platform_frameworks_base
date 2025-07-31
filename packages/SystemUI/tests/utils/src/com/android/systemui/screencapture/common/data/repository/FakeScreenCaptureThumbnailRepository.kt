@@ -18,24 +18,30 @@ package com.android.systemui.screencapture.common.data.repository
 
 import android.graphics.Bitmap
 import androidx.core.graphics.createBitmap
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.CompletableDeferred
 
 class FakeScreenCaptureThumbnailRepository : ScreenCaptureThumbnailRepository {
 
-    var fakeThumbnailFlow = MutableStateFlow<Result<Bitmap>?>(null)
-    val thumbnailForCalls = mutableListOf<Int>()
+    var fakeThumbnail: Result<Bitmap> = Result.success(createBitmap(100, 100))
+    val loadThumbnailCalls = mutableListOf<Int>()
+    private var loadThumbnailDeferred = CompletableDeferred(Unit)
 
-    override fun thumbnailFor(taskId: Int): StateFlow<Result<Bitmap>?> {
-        thumbnailForCalls.add(taskId)
-        return fakeThumbnailFlow
+    override suspend fun loadThumbnail(taskId: Int): Result<Bitmap> {
+        loadThumbnailCalls.add(taskId)
+        loadThumbnailDeferred.await()
+        return fakeThumbnail
     }
 
-    var fakeThumbnail: Bitmap? = createBitmap(100, 100)
-    val loadThumbnailCalls = mutableListOf<Int>()
+    fun setLoadThumbnailSuspends(suspends: Boolean) {
+        loadThumbnailDeferred =
+            if (suspends) {
+                CompletableDeferred()
+            } else {
+                CompletableDeferred(Unit)
+            }
+    }
 
-    override suspend fun loadThumbnail(taskId: Int): Bitmap? {
-        loadThumbnailCalls.add(taskId)
-        return fakeThumbnail
+    fun completeLoadThumbnail() {
+        loadThumbnailDeferred.complete(Unit)
     }
 }
