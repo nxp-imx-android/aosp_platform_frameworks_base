@@ -311,13 +311,18 @@ class InstallLaunch : FragmentActivity(), InstallActionListener {
         if (localLogv) {
             Log.d(LOG_TAG, "Negative button clicked. StageCode: $stageCode")
         }
+        var resultCode = RESULT_CANCELED
         when (stageCode) {
             InstallStage.STAGE_USER_ACTION_REQUIRED -> installViewModel!!.cleanupInstall()
             InstallStage.STAGE_STAGING -> installViewModel!!.abortStaging()
-            InstallStage.STAGE_VERIFICATION_CONFIRMATION_REQUIRED ->
+            InstallStage.STAGE_VERIFICATION_CONFIRMATION_REQUIRED -> {
+                // Developer verification requested user action and user has declined to continue
+                // the installation. Don't abandon the session. Let the installation fail through.
+                resultCode = RESULT_OK
                 installViewModel!!.onNegativeVerificationUserResponse()
+            }
         }
-        setResult(RESULT_CANCELED, null, true)
+        setResult(resultCode, null, true)
     }
 
     override fun onNegativeResponse(resultCode: Int, data: Intent?) {

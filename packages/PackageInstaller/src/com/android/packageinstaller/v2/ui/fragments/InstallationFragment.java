@@ -640,6 +640,8 @@ public class InstallationFragment extends DialogFragment {
         mCustomMessageTextView.setVisibility(View.VISIBLE);
         mIndeterminateProgressBar.setVisibility(View.GONE);
         mProgressBar.setVisibility(View.GONE);
+        // Disable clicking outside of the dialog
+        this.setCancelable(false);
 
         mAppIcon.setImageDrawable(installStage.getAppIcon());
         mAppLabelTextView.setText(installStage.getAppLabel());
@@ -665,7 +667,10 @@ public class InstallationFragment extends DialogFragment {
             negativeButton.setFilterTouchesWhenObscured(true);
             UiUtil.applyOutlinedButtonStyle(requireContext(), negativeButton);
             negativeButton.setOnClickListener(view -> {
-                mInstallActionListener.onNegativeResponse(installStage.getStageCode());
+                // Don't use installStage.getStageCode() here because it can be
+                // STAGE_USER_ACTION_REQUIRED if the installation is triggered by Pia itself.
+                mInstallActionListener.onNegativeResponse(
+                        InstallStage.STAGE_VERIFICATION_CONFIRMATION_REQUIRED);
             });
         }
         // Hide positive button
