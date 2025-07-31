@@ -18,6 +18,8 @@ package com.android.test.input
 import android.Manifest
 import android.hardware.input.InputManager
 import android.platform.test.annotations.RequiresFlagsEnabled
+import android.platform.test.flag.junit.CheckFlagsRule
+import android.platform.test.flag.junit.DeviceFlagsValueProvider
 import androidx.test.ext.junit.rules.ActivityScenarioRule
 import androidx.test.platform.app.InstrumentationRegistry
 import com.android.compatibility.common.util.AdoptShellPermissionsRule
@@ -43,6 +45,9 @@ class KeyEventActivityListenerTest {
     private lateinit var inputManager: InputManager
     private lateinit var listener: InputManager.KeyEventActivityListener
     private val instrumentation = InstrumentationRegistry.getInstrumentation()
+
+    @get:Rule val checkFlagsRule: CheckFlagsRule = DeviceFlagsValueProvider.createCheckFlagsRule()
+
     @get:Rule
     val rule = ActivityScenarioRule<CaptureEventActivity>(CaptureEventActivity::class.java)
 
