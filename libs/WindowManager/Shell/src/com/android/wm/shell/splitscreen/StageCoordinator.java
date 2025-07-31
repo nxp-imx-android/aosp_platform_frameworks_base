@@ -937,6 +937,12 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
             return;
         }
 
+        if (enableFlexibleTwoAppSplit()
+                && (!mMainStage.isActive() || !mSideStage.isActive()
+                || !isSplitScreenVisible())) {
+            setDividerVisibility(false, null);
+        }
+
         setSideStagePosition(splitPosition, wct);
         options1 = options1 != null ? options1 : new Bundle();
         StageTaskListener stageForTask1;
