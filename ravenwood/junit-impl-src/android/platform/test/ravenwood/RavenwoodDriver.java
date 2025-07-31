@@ -46,6 +46,7 @@ import android.util.Log_ravenwood;
 
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.os.RuntimeInit;
+import com.android.ravenwood.OpenJdkWorkaround;
 import com.android.ravenwood.RavenwoodRuntimeNative;
 import com.android.ravenwood.common.RavenwoodInternalUtils;
 import com.android.ravenwood.common.SneakyThrow;
@@ -208,6 +209,12 @@ public class RavenwoodDriver {
             Thread.setDefaultUncaughtExceptionHandler(
                     new RavenwoodErrorHandler.UncaughtExceptionHandler());
         }
+
+        // `pkill -USR1 -f tradefed-isolation.jar` will trigger a full thread dumps
+        OpenJdkWorkaround.registerSignalHandler("USR1", () -> {
+            sRawStdErr.println("-----SIGUSR1 HANDLER-----");
+            doBugreport(null, null, false);
+        });
 
         // Some process-wide initialization:
         // - maybe redirect stdout/stderr
@@ -425,6 +432,13 @@ public class RavenwoodDriver {
         synchronized (sDumpStackLock) {
             final PrintStream out = sRawStdErr;
             out.println("-----BEGIN ALL THREAD STACKS-----");
+
+            var desc = RavenwoodErrorHandler.sCurrentDescription;
+            if (desc != null) {
+                out.format("Running test: %s:%s#%s\n",
+                        RavenwoodEnvironment.getInstance().getTestModuleName(),
+                        desc.getClassName(), desc.getMethodName());
+            }
 
             var stacks = Thread.getAllStackTraces();
             var threads = stacks.keySet().stream().sorted(

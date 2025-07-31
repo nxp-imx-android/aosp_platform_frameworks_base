@@ -23,6 +23,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.Map;
 import java.util.WeakHashMap;
 
+import sun.misc.Signal;
+
 public class OpenJdkWorkaround {
 
     // @GuardedBy("sAddressMap")
@@ -88,5 +90,9 @@ public class OpenJdkWorkaround {
             }
         }
         return null;
+    }
+
+    public static void registerSignalHandler(String signal, Runnable handler) {
+        Signal.handle(new Signal(signal), sig -> handler.run());
     }
 }
