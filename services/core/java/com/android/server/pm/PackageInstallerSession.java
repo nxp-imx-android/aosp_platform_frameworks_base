@@ -219,7 +219,6 @@ import com.android.server.Watchdog;
 import com.android.server.art.ArtManagedInstallFileHelper;
 import com.android.server.art.model.ValidationResult;
 import com.android.server.pm.Installer.InstallerException;
-import com.android.server.pm.dex.DexManager;
 import com.android.server.pm.pkg.AndroidPackage;
 import com.android.server.pm.pkg.PackageStateInternal;
 import com.android.server.pm.verify.developer.DeveloperVerificationStatusInternal;
@@ -4592,7 +4591,7 @@ public class PackageInstallerSession extends IPackageInstallerSession.Stub {
         if (packageLite.isUseEmbeddedDex()) {
             for (File file : mResolvedStagedFiles) {
                 if (file.getName().endsWith(".apk")
-                        && !DexManager.auditUncompressedDexInApk(file.getPath())) {
+                        && !DexOptHelper.checkUncompressedDexInApk(file.getPath())) {
                     throw new PackageManagerException(INSTALL_FAILED_INVALID_APK,
                             "Some dex are not uncompressed and aligned correctly for "
                             + mPackageName);

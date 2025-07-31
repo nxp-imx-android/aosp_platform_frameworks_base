@@ -62,6 +62,7 @@ import android.text.TextUtils;
 import android.util.ArraySet;
 import android.util.Log;
 import android.util.Slog;
+import android.util.jar.StrictJarFile;
 
 import com.android.internal.logging.MetricsLogger;
 import com.android.internal.util.FrameworkStatsLog;
@@ -75,7 +76,7 @@ import com.android.server.art.model.ArtFlags;
 import com.android.server.art.model.DexoptParams;
 import com.android.server.art.model.DexoptResult;
 import com.android.server.pinner.PinnerService;
-import com.android.server.pm.dex.DexManager;
+import com.android.server.pm.dex.InstallScenarioHelper;
 import com.android.server.pm.dex.DexoptOptions;
 import com.android.server.pm.local.PackageManagerLocalImpl;
 import com.android.server.pm.pkg.AndroidPackage;
@@ -83,6 +84,7 @@ import com.android.server.pm.pkg.PackageState;
 import com.android.server.pm.pkg.PackageStateInternal;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -91,6 +93,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
@@ -98,6 +101,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
+import java.util.zip.ZipEntry;
 
 /**
  * Helper class for dex optimization operations in PackageManagerService.
@@ -113,6 +117,7 @@ public final class DexOptHelper {
     private static boolean sArtManagerLocalIsInitialized = false;
 
     private final PackageManagerService mPm;
+    private final InstallScenarioHelper mInstallScenarioHelper;
 
     // Start time for the boot dexopt in performPackageDexOptUpgradeIfNeeded when ART Service is
     // used, to make it available to the onDexoptDone callback.
@@ -125,6 +130,7 @@ public final class DexOptHelper {
 
     DexOptHelper(PackageManagerService pm) {
         mPm = pm;
+        mInstallScenarioHelper = new InstallScenarioHelper(mPm.mContext);
     }
 
     /**
@@ -396,8 +402,7 @@ public final class DexOptHelper {
     }
 
     /** Returns DexoptOptions by the given InstallRequest. */
-    private static DexoptOptions getDexoptOptionsByInstallRequest(
-            InstallRequest installRequest, DexManager dexManager) {
+    private DexoptOptions getDexoptOptionsByInstallRequest(InstallRequest installRequest) {
         final PackageSetting ps = installRequest.getScannedPackageSetting();
         final String packageName = ps.getPackageName();
         final boolean isBackupOrRestore =
@@ -409,7 +414,7 @@ public final class DexOptHelper {
                 | (isBackupOrRestore ? DexoptOptions.DEXOPT_FOR_RESTORE : 0);
         // Compute the compilation reason from the installation scenario.
         final int compilationReason =
-                dexManager.getCompilationReasonForInstallScenario(
+                mInstallScenarioHelper.getCompilationReasonForInstallScenario(
                         installRequest.getInstallScenario());
         final AndroidPackage pkg = ps.getPkg();
         var options = new DexoptOptions(packageName, compilationReason, dexoptFlags);
@@ -421,39 +426,8 @@ public final class DexOptHelper {
         return options;
     }
 
-    /** Perform dexopt if needed for the installation */
-    static void performDexoptIfNeeded(
-            InstallRequest installRequest,
-            DexManager dexManager,
-            PackageManagerTracedLock.RawLock installLock) {
-        if (!shouldCallArtService(installRequest)) {
-            return;
-        }
-
-        // dexopt can take long, and ArtService doesn't require installd, so we release the lock
-        // here and re-acquire the lock after dexopt is finished.
-        if (installLock != null) {
-            installLock.unlock();
-        }
-        try {
-            Trace.traceBegin(TRACE_TAG_PACKAGE_MANAGER, "dexopt");
-            DexoptOptions dexoptOptions =
-                    getDexoptOptionsByInstallRequest(installRequest, dexManager);
-            // Don't fail application installs if the dexopt step fails.
-            DexoptResult dexOptResult =
-                    DexOptHelper.dexoptPackageUsingArtService(installRequest, dexoptOptions);
-            installRequest.onDexoptFinished(dexOptResult);
-        } finally {
-            Trace.traceEnd(TRACE_TAG_PACKAGE_MANAGER);
-            if (installLock != null) {
-                installLock.lock();
-            }
-        }
-    }
-
-    /** Same as above, but runs asynchronously. */
-    static CompletableFuture<Void> performDexoptIfNeededAsync(
-            InstallRequest installRequest, DexManager dexManager) {
+    /** Perform dexopt asynchronously if needed for the installation. */
+    CompletableFuture<Void> performDexoptIfNeededAsync(InstallRequest installRequest) {
         if (!shouldCallArtService(installRequest)) {
             return CompletableFuture.completedFuture(null);
         }
@@ -463,8 +437,7 @@ public final class DexOptHelper {
                             try {
                                 Trace.traceBegin(TRACE_TAG_PACKAGE_MANAGER, "dexopt");
                                 DexoptOptions dexoptOptions =
-                                        getDexoptOptionsByInstallRequest(
-                                                installRequest, dexManager);
+                                        getDexoptOptionsByInstallRequest(installRequest);
                                 // Don't fail application installs if the dexopt step fails.
                                 // TODO(b/393076925): Make this async in ART Service.
                                 DexoptResult dexOptResult =
@@ -541,6 +514,44 @@ public final class DexOptHelper {
         // `shouldSkipDexopt` instead. In that way, ART Service will be called with the "skip"
         // compiler filter and it will have the chance to decide whether to skip dexopt.
         return !instantApp && pkg != null && !isApex && performDexOptForRollback;
+    }
+
+    /**
+     * Returns true if the archive located at {@code fileName} has uncompressed dex file that can be
+     * directly mapped.
+     */
+    public static boolean checkUncompressedDexInApk(String fileName) {
+        StrictJarFile jarFile = null;
+        try {
+            jarFile = new StrictJarFile(fileName,
+                    false /*verify*/, false /*signatureSchemeRollbackProtectionsEnforced*/);
+            Iterator<ZipEntry> it = jarFile.iterator();
+            boolean allCorrect = true;
+            while (it.hasNext()) {
+                ZipEntry entry = it.next();
+                if (entry.getName().endsWith(".dex")) {
+                    if (entry.getMethod() != ZipEntry.STORED) {
+                        allCorrect = false;
+                        Slog.w(TAG, "APK " + fileName + " has compressed dex code " +
+                                entry.getName());
+                    } else if ((entry.getDataOffset() & 0x3) != 0) {
+                        allCorrect = false;
+                        Slog.w(TAG, "APK " + fileName + " has unaligned dex code " +
+                                entry.getName());
+                    }
+                }
+            }
+            return allCorrect;
+        } catch (IOException ignore) {
+            Slog.wtf(TAG, "Error when parsing APK " + fileName);
+            return false;
+        } finally {
+            try {
+                if (jarFile != null) {
+                    jarFile.close();
+                }
+            } catch (IOException ignore) {}
+        }
     }
 
     private static class StagedApexObserver extends IStagedApexObserver.Stub {

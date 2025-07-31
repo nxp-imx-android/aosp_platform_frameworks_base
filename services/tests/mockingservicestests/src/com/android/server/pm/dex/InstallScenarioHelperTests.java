@@ -40,7 +40,7 @@ import org.mockito.quality.Strictness;
 
 @RunWith(AndroidJUnit4.class)
 @SmallTest
-public class DexManagerTests {
+public class InstallScenarioHelperTests {
     private static final int TEST_BATTERY_LEVEL_CRITICAL = 10;
     private static final int TEST_BATTERY_LEVEL_DEFAULT = 80;
 
@@ -48,7 +48,7 @@ public class DexManagerTests {
     @Mock BatteryManager mMockBatteryManager;
     @Mock PowerManager mMockPowerManager;
 
-    private DexManager mDexManager;
+    private InstallScenarioHelper mInstallScenarioHelper;
 
     @Before
     public void setup() {
@@ -82,7 +82,7 @@ public class DexManagerTests {
             .when(mockContext)
                 .getSystemService(PowerManager.class);
 
-        mDexManager = new DexManager(mockContext);
+        mInstallScenarioHelper = new InstallScenarioHelper(mockContext);
     }
 
     @After
@@ -108,22 +108,22 @@ public class DexManagerTests {
     public void testInstallScenarioToReasonDefault() {
         assertEquals(
                 PackageManagerService.REASON_INSTALL,
-                mDexManager.getCompilationReasonForInstallScenario(
+                mInstallScenarioHelper.getCompilationReasonForInstallScenario(
                         PackageManager.INSTALL_SCENARIO_DEFAULT));
 
         assertEquals(
                 PackageManagerService.REASON_INSTALL_FAST,
-                mDexManager.getCompilationReasonForInstallScenario(
+                mInstallScenarioHelper.getCompilationReasonForInstallScenario(
                         PackageManager.INSTALL_SCENARIO_FAST));
 
         assertEquals(
                 PackageManagerService.REASON_INSTALL_BULK,
-                mDexManager.getCompilationReasonForInstallScenario(
+                mInstallScenarioHelper.getCompilationReasonForInstallScenario(
                         PackageManager.INSTALL_SCENARIO_BULK));
 
         assertEquals(
                 PackageManagerService.REASON_INSTALL_BULK_SECONDARY,
-                mDexManager.getCompilationReasonForInstallScenario(
+                mInstallScenarioHelper.getCompilationReasonForInstallScenario(
                         PackageManager.INSTALL_SCENARIO_BULK_SECONDARY));
     }
 
@@ -135,22 +135,22 @@ public class DexManagerTests {
 
         assertEquals(
                 PackageManagerService.REASON_INSTALL,
-                mDexManager.getCompilationReasonForInstallScenario(
+                mInstallScenarioHelper.getCompilationReasonForInstallScenario(
                         PackageManager.INSTALL_SCENARIO_DEFAULT));
 
         assertEquals(
                 PackageManagerService.REASON_INSTALL_FAST,
-                mDexManager.getCompilationReasonForInstallScenario(
+                mInstallScenarioHelper.getCompilationReasonForInstallScenario(
                         PackageManager.INSTALL_SCENARIO_FAST));
 
         assertEquals(
                 PackageManagerService.REASON_INSTALL_BULK_DOWNGRADED,
-                mDexManager.getCompilationReasonForInstallScenario(
+                mInstallScenarioHelper.getCompilationReasonForInstallScenario(
                         PackageManager.INSTALL_SCENARIO_BULK));
 
         assertEquals(
                 PackageManagerService.REASON_INSTALL_BULK_SECONDARY_DOWNGRADED,
-                mDexManager.getCompilationReasonForInstallScenario(
+                mInstallScenarioHelper.getCompilationReasonForInstallScenario(
                         PackageManager.INSTALL_SCENARIO_BULK_SECONDARY));
     }
 
@@ -162,22 +162,22 @@ public class DexManagerTests {
 
         assertEquals(
                 PackageManagerService.REASON_INSTALL,
-                mDexManager.getCompilationReasonForInstallScenario(
+                mInstallScenarioHelper.getCompilationReasonForInstallScenario(
                         PackageManager.INSTALL_SCENARIO_DEFAULT));
 
         assertEquals(
                 PackageManagerService.REASON_INSTALL_FAST,
-                mDexManager.getCompilationReasonForInstallScenario(
+                mInstallScenarioHelper.getCompilationReasonForInstallScenario(
                         PackageManager.INSTALL_SCENARIO_FAST));
 
         assertEquals(
                 PackageManagerService.REASON_INSTALL_BULK_DOWNGRADED,
-                mDexManager.getCompilationReasonForInstallScenario(
+                mInstallScenarioHelper.getCompilationReasonForInstallScenario(
                         PackageManager.INSTALL_SCENARIO_BULK));
 
         assertEquals(
                 PackageManagerService.REASON_INSTALL_BULK_SECONDARY_DOWNGRADED,
-                mDexManager.getCompilationReasonForInstallScenario(
+                mInstallScenarioHelper.getCompilationReasonForInstallScenario(
                         PackageManager.INSTALL_SCENARIO_BULK_SECONDARY));
     }
 
@@ -193,22 +193,22 @@ public class DexManagerTests {
 
         assertEquals(
                 PackageManagerService.REASON_INSTALL,
-                mDexManager.getCompilationReasonForInstallScenario(
+                mInstallScenarioHelper.getCompilationReasonForInstallScenario(
                         PackageManager.INSTALL_SCENARIO_DEFAULT));
 
         assertEquals(
                 PackageManagerService.REASON_INSTALL_FAST,
-                mDexManager.getCompilationReasonForInstallScenario(
+                mInstallScenarioHelper.getCompilationReasonForInstallScenario(
                         PackageManager.INSTALL_SCENARIO_FAST));
 
         assertEquals(
                 PackageManagerService.REASON_INSTALL_BULK,
-                mDexManager.getCompilationReasonForInstallScenario(
+                mInstallScenarioHelper.getCompilationReasonForInstallScenario(
                         PackageManager.INSTALL_SCENARIO_BULK));
 
         assertEquals(
                 PackageManagerService.REASON_INSTALL_BULK_SECONDARY,
-                mDexManager.getCompilationReasonForInstallScenario(
+                mInstallScenarioHelper.getCompilationReasonForInstallScenario(
                         PackageManager.INSTALL_SCENARIO_BULK_SECONDARY));
     }
 }

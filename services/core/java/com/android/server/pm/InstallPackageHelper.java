@@ -175,7 +175,6 @@ import com.android.internal.util.ArrayUtils;
 import com.android.internal.util.CollectionUtils;
 import com.android.server.EventLogTags;
 import com.android.server.criticalevents.CriticalEventLog;
-import com.android.server.pm.dex.DexManager;
 import com.android.server.pm.parsing.PackageCacher;
 import com.android.server.pm.parsing.pkg.AndroidPackageUtils;
 import com.android.server.pm.permission.Permission;
@@ -222,7 +221,6 @@ final class InstallPackageHelper {
     private final DeletePackageHelper mDeletePackageHelper;
     private final IncrementalManager mIncrementalManager;
     private final ApexManager mApexManager;
-    private final DexManager mDexManager;
     private final Context mContext;
     private final PackageAbiHelper mPackageAbiHelper;
     private final SharedLibrariesImpl mSharedLibraries;
@@ -251,7 +249,6 @@ final class InstallPackageHelper {
         mDeletePackageHelper = deletePackageHelper;
         mIncrementalManager = pm.mInjector.getIncrementalManager();
         mApexManager = pm.mInjector.getApexManager();
-        mDexManager = pm.mInjector.getDexManager();
         mContext = pm.mInjector.getContext();
         mPackageAbiHelper = pm.mInjector.getAbiHelper();
         mSharedLibraries = pm.mInjector.getSharedLibrariesImpl();
@@ -1223,7 +1220,7 @@ final class InstallPackageHelper {
             request.setKeepArtProfile(true);
 
             CompletableFuture<Void> future =
-                    DexOptHelper.performDexoptIfNeededAsync(request, mDexManager);
+                    mPm.getDexOptHelper().performDexoptIfNeededAsync(request);
             completableFutures.add(future);
             request.onWaitDexoptStarted();
         }
