@@ -489,3 +489,13 @@ flag {
     description: "Use a fallback transition-player while sysui is starting or crashed."
     bug: "365884835"
 }
+
+flag {
+    name: "update_task_crop_in_sync"
+    namespace: "windowing_frontend"
+    description: "Fixes a bug where we fail to update task crops during transitions"
+    bug: "410684072"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
