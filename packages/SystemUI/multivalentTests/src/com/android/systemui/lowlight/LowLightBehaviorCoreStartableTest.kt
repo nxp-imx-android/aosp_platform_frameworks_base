@@ -160,7 +160,7 @@ class LowLightBehaviorCoreStartableTest : SysuiTestCase() {
         }
         kosmos.lowLightRepository.addAction(LowLightDisplayBehavior.LOW_LIGHT_DREAM, action)
 
-        kosmos.batteryRepositoryDeprecated.fake.setDevicePluggedIn(true)
+        kosmos.setBatteryPluggedIn(true)
     }
 
     @Test
