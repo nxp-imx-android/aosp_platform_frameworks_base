@@ -31,7 +31,6 @@ import android.app.ResourcesManager;
 import android.content.res.Resources;
 import android.os.Build;
 import android.os.HandlerThread;
-import android.os.Looper;
 import android.util.Log;
 import android.view.DisplayAdjustments;
 
@@ -80,7 +79,7 @@ public final class RavenwoodEnvironment {
             new File(RavenwoodInternalUtils.getRavenwoodRuntimePath(),
                     "/ravenwood-data/ravenwood-empty-res.apk");
 
-    private static final String MAIN_THREAD_NAME = "Ravenwood:Main";
+    public static final String MAIN_THREAD_NAME = "Ravenwood:Main";
     private static final String TEST_THREAD_NAME = "Ravenwood:Test";
 
     private static final String RESOURCE_APK_DIR = "ravenwood-res-apks";
@@ -161,9 +160,6 @@ public final class RavenwoodEnvironment {
         mRootDir = Files.createTempDirectory("ravenwood-root-dir-").toFile();
         mRootDir.mkdirs();
 
-        mainThread.start();
-        Looper.setMainLooperForTest(mainThread.getLooper());
-
         Log.i(TAG, "TargetPackageName=" + mTargetPackageName);
         Log.i(TAG, "TestPackageName=" + mInstPackageName);
         Log.i(TAG, "TargetSdkLevel=" + mTargetSdkLevel);
@@ -172,7 +168,7 @@ public final class RavenwoodEnvironment {
     /**
      * Create and initialize the singleton instance. Also initializes {@link RavenwoodVmState}.
      */
-    public static void init(int pid) throws IOException {
+    public static void init(int pid, HandlerThread mainThread) throws IOException {
         final var props = RavenwoodSystemProperties.readProperties("ravenwood.properties");
 
         // TODO(b/377765941) Read them from the manifest too?
@@ -198,7 +194,7 @@ public final class RavenwoodEnvironment {
                 resourceApk,
                 targetResourceApk,
                 Thread.currentThread(), // Test thread,
-                new HandlerThread(MAIN_THREAD_NAME));
+                mainThread);
         if (!sInstance.compareAndSet(null, instance)) {
             throw new RuntimeException("RavenwoodEnvironment already initialized!");
         }
@@ -354,5 +350,22 @@ public final class RavenwoodEnvironment {
             throw makeUnknownPackageException(packageName);
         }
         return RAVENWOOD_EMPTY_RESOURCES_APK;
+    }
+
+    /** Reads a per-module environmental variable. */
+    public String getEnvVar(String keyName, String defValue) {
+        var value = System.getenv(keyName + "_" + getTestModuleName());
+        if (value == null) {
+            value = System.getenv(keyName);
+        }
+        if (value == null) {
+            value = defValue;
+        }
+        return value;
+    }
+
+    /** Reads a per-module environmental boolean variable. */
+    public boolean getBoolEnvVar(String keyName) {
+        return "1".equals(getEnvVar(keyName, ""));
     }
 }

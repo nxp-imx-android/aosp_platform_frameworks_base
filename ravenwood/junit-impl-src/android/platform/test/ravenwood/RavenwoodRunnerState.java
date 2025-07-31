@@ -47,8 +47,7 @@ public final class RavenwoodRunnerState {
     private static final String RAVENWOOD_RULE_ERROR =
             "RavenwoodRule(s) are not executed in the correct order";
 
-    private static final boolean ALLOW_ALL_SYSPROP_READS = "1".equals(
-            System.getenv("RAVENWOOD_ALLOW_ALL_SYSPROP_READS"));
+    private static final String ALLOW_ALL_SYSPROP_READ_ENV = "RAVENWOOD_ALLOW_ANY_SYSPROP_READ";
 
     private static final List<Pair<RavenwoodRule, RavenwoodPropertyState>> sActiveProperties =
             new ArrayList<>();
@@ -158,7 +157,8 @@ public final class RavenwoodRunnerState {
                 || sActiveProperties.stream().anyMatch(p -> p.second.isKeyAccessible(key, write));
 
         if (!result) {
-            if (ALLOW_ALL_SYSPROP_READS && !write) {
+            if (RavenwoodEnvironment.getInstance().getBoolEnvVar(ALLOW_ALL_SYSPROP_READ_ENV)
+                    && !write) {
                 Log.w(TAG, "Unallow-listed property read detected: key=" + key);
                 return;
             }
