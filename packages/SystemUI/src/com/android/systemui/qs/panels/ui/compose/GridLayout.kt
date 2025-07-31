@@ -42,7 +42,7 @@ interface GridLayout {
         tiles: List<TileViewModel>,
         modifier: Modifier,
         listening: () -> Boolean,
-        revealEffectContainer: ElementKey? = null,
+        revealEffectContainer: ElementKey?,
     )
 
     @Composable
