@@ -210,7 +210,7 @@ class TaskFragment extends WindowContainer<WindowContainer> {
      */
     int mMinHeight;
 
-    Dimmer mDimmer = new Dimmer(this);
+    final Dimmer mDimmer = new Dimmer(this);
 
     /** Apply the dim layer on the embedded TaskFragment. */
     static final int EMBEDDED_DIM_AREA_TASK_FRAGMENT = 0;
@@ -3261,6 +3261,7 @@ class TaskFragment extends WindowContainer<WindowContainer> {
         return forAllWindows(getDimBehindWindow, true);
     }
 
+    // It is replaced by WindowState#getDimController().
     @Deprecated
     @Override
     Dimmer getDimmer() {
@@ -3274,6 +3275,20 @@ class TaskFragment extends WindowContainer<WindowContainer> {
 
     /** Bounds to be used for dimming, as well as touch related tests. */
     void getDimBounds(@NonNull Rect out) {
+        if (com.android.window.flags.Flags.removeGetDimmer()) {
+            if (mIsEmbedded && isDimmingOnParentTask()) {
+                // Return the task bounds if the dimmer is showing and should cover on the Task
+                // (not just on this embedded TaskFragment).
+                final Task task = getTask();
+                if (task != null && task.mDimmer.hasDimState()) {
+                    out.set(task.getBounds());
+                    return;
+                }
+            }
+            out.set(getBounds());
+            return;
+        }
+
         if (mDimmer.hasDimState()) {
             out.set(mDimmer.getDimBounds());
         } else {

@@ -811,12 +811,14 @@ public class DisplayArea<T extends WindowContainer> extends WindowContainer<T> {
      * DisplayArea that can be dimmed.
      */
     static class Dimmable extends DisplayArea<DisplayArea> {
-        private final Dimmer mDimmer = new Dimmer(this);
+        final Dimmer mDimmer = new Dimmer(this);
 
         Dimmable(WindowManagerService wms, Type type, String name, int featureId) {
             super(wms, type, name, featureId);
         }
 
+        // It is replaced by WindowState#getDimController().
+        @Deprecated
         @Override
         Dimmer getDimmer() {
             return mDimmer;

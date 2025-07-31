@@ -12,6 +12,16 @@ flag {
 }
 
 flag {
+  name: "remove_get_dimmer"
+  namespace: "windowing_frontend"
+  description: "Clean up old usages of dimmer"
+  bug: "435301249"
+  metadata {
+    purpose: PURPOSE_BUGFIX
+  }
+}
+
+flag {
   name: "release_all_transition_surfaces"
   namespace: "windowing_frontend"
   description: "Reduce offscreen layers which rely on GC to release"
