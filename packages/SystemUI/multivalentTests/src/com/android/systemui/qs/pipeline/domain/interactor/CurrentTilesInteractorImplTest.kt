@@ -20,10 +20,12 @@ import android.content.ComponentName
 import android.content.Intent
 import android.content.pm.UserInfo
 import android.os.UserHandle
+import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
 import android.service.quicksettings.Tile
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
+import com.android.systemui.Flags
 import com.android.systemui.Flags.FLAG_QS_NEW_TILES
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.coroutines.collectLastValue
@@ -41,7 +43,9 @@ import com.android.systemui.qs.external.TileLifecycleManager
 import com.android.systemui.qs.external.TileServiceKey
 import com.android.systemui.qs.external.customTileStatePersister
 import com.android.systemui.qs.external.tileLifecycleManagerFactory
+import com.android.systemui.qs.pipeline.data.repository.FakeDefaultTilesRepository
 import com.android.systemui.qs.pipeline.data.repository.customTileAddedRepository
+import com.android.systemui.qs.pipeline.data.repository.defaultTilesRepository
 import com.android.systemui.qs.pipeline.data.repository.fakeInstalledTilesRepository
 import com.android.systemui.qs.pipeline.data.repository.tileSpecRepository
 import com.android.systemui.qs.pipeline.domain.model.TileModel
@@ -90,7 +94,7 @@ class CurrentTilesInteractorImplTest : SysuiTestCase() {
 
     private val unavailableTiles = mutableSetOf("e")
 
-    private val underTest = kosmos.currentTilesInteractor
+    private val Kosmos.underTest by Kosmos.Fixture { kosmos.currentTilesInteractor }
 
     @Test
     fun initialState() =
@@ -154,6 +158,8 @@ class CurrentTilesInteractorImplTest : SysuiTestCase() {
     fun logTileCreated() =
         with(kosmos) {
             testScope.runTest(USER_INFO_0) {
+                underTest // Instantiation
+
                 val specs = listOf(TileSpec.create("a"), CUSTOM_TILE_SPEC)
                 tileSpecRepository.setTiles(USER_INFO_0.id, specs)
                 runCurrent()
@@ -166,6 +172,8 @@ class CurrentTilesInteractorImplTest : SysuiTestCase() {
     fun logTileNotFoundInFactory() =
         with(kosmos) {
             testScope.runTest(USER_INFO_0) {
+                underTest // Instantiation
+
                 val specs = listOf(TileSpec.create("non_existing"))
                 tileSpecRepository.setTiles(USER_INFO_0.id, specs)
                 runCurrent()
@@ -179,6 +187,8 @@ class CurrentTilesInteractorImplTest : SysuiTestCase() {
     fun tileNotAvailableDestroyed_logged() =
         with(kosmos) {
             testScope.runTest(USER_INFO_0) {
+                underTest // Instantiation
+
                 val specs = listOf(TileSpec.create("e"))
                 tileSpecRepository.setTiles(USER_INFO_0.id, specs)
                 runCurrent()
@@ -196,6 +206,8 @@ class CurrentTilesInteractorImplTest : SysuiTestCase() {
     fun someTilesNotValid_repositorySetToDefinitiveList() =
         with(kosmos) {
             testScope.runTest(USER_INFO_0) {
+                underTest // Instantiation
+
                 val tiles by collectLastValue(tileSpecRepository.tilesSpecs(USER_INFO_0.id))
 
                 val specs = listOf(TileSpec.create("a"), TileSpec.create("e"))
@@ -423,6 +435,8 @@ class CurrentTilesInteractorImplTest : SysuiTestCase() {
     fun removeTile_platform() =
         with(kosmos) {
             testScope.runTest(USER_INFO_0) {
+                underTest // Instantiation
+
                 val tiles by collectLastValue(tileSpecRepository.tilesSpecs(USER_INFO_0.id))
 
                 val specs = listOf(TileSpec.create("a"), TileSpec.create("b"))
@@ -439,6 +453,8 @@ class CurrentTilesInteractorImplTest : SysuiTestCase() {
     fun removeTile_customTile_lifecycleEnded() =
         with(kosmos) {
             testScope.runTest(USER_INFO_0) {
+                underTest // Instantiation
+
                 val tiles by collectLastValue(tileSpecRepository.tilesSpecs(USER_INFO_0.id))
 
                 val specs = listOf(TileSpec.create("a"), CUSTOM_TILE_SPEC)
@@ -476,6 +492,8 @@ class CurrentTilesInteractorImplTest : SysuiTestCase() {
     fun removeTiles_currentUser() =
         with(kosmos) {
             testScope.runTest {
+                underTest // Instantiation
+
                 val tiles0 by collectLastValue(tileSpecRepository.tilesSpecs(USER_INFO_0.id))
                 val tiles1 by collectLastValue(tileSpecRepository.tilesSpecs(USER_INFO_1.id))
                 val currentSpecs =
@@ -516,6 +534,8 @@ class CurrentTilesInteractorImplTest : SysuiTestCase() {
     fun setTiles_customTiles_lifecycleEndedIfGone() =
         with(kosmos) {
             testScope.runTest(USER_INFO_0) {
+                underTest // Instantiation
+
                 val otherCustomTileSpec = TileSpec.create("custom(b/c)")
 
                 val currentSpecs =
@@ -655,6 +675,8 @@ class CurrentTilesInteractorImplTest : SysuiTestCase() {
     fun changeInPackagesTiles_doesntTriggerUserChange_logged() =
         with(kosmos) {
             testScope.runTest(USER_INFO_0) {
+                underTest // Instantiation
+
                 val specs = listOf(TileSpec.create("a"))
                 tileSpecRepository.setTiles(USER_INFO_0.id, specs)
                 runCurrent()
@@ -723,6 +745,69 @@ class CurrentTilesInteractorImplTest : SysuiTestCase() {
 
                 val tileAAfter = tiles!!.first { it.spec == specs[0] }.tile
                 assertThat(tileAAfter).isNotSameInstanceAs(tileABefore)
+            }
+        }
+
+    @Test
+    fun resetTiles_default() =
+        with(kosmos) {
+            testScope.runTest(USER_INFO_0) {
+                val default = listOf(TileSpec.create("a"), TileSpec.create("b"))
+                defaultTilesRepository = FakeDefaultTilesRepository(default)
+
+                val tiles by collectLastValue(underTest.currentTiles)
+
+                underTest.setTiles(listOf(TileSpec.create("c"), TileSpec.create("d")))
+                runCurrent()
+
+                underTest.resetTiles()
+                runCurrent()
+
+                assertThat(tiles!!.map { it.spec }).isEqualTo(default)
+            }
+        }
+
+    @Test
+    @DisableFlags(Flags.FLAG_RESET_TILES_REMOVES_CUSTOM_TILES)
+    fun resetTiles_flagDisabled_customTileNotMarkedAsRemoved() =
+        with(kosmos) {
+            testScope.runTest(USER_INFO_0) {
+                val currentSpecs = listOf(CUSTOM_TILE_SPEC, TileSpec.create("a"))
+                underTest.setTiles(currentSpecs)
+                runCurrent()
+
+                underTest.resetTiles()
+                runCurrent()
+
+                assertThat(customTileAddedRepository.isTileAdded(TEST_COMPONENT, USER_INFO_0.id))
+                    .isTrue()
+            }
+        }
+
+    @Test
+    @EnableFlags(Flags.FLAG_RESET_TILES_REMOVES_CUSTOM_TILES)
+    fun resetTiles_flagEnabled_customTileNotMarkedAsRemoved() =
+        with(kosmos) {
+            testScope.runTest(USER_INFO_0) {
+                val currentSpecs = listOf(CUSTOM_TILE_SPEC, TileSpec.create("a"))
+                underTest.setTiles(currentSpecs)
+                runCurrent()
+
+                underTest.resetTiles()
+                runCurrent()
+
+                assertThat(customTileAddedRepository.isTileAdded(TEST_COMPONENT, USER_INFO_0.id))
+                    .isFalse()
+
+                val tileLifecycleManager =
+                    (tileLifecycleManagerFactory as TLMFactory)
+                        .created[USER_INFO_0.id to TEST_COMPONENT]!!
+
+                with(inOrder(tileLifecycleManager)) {
+                    verify(tileLifecycleManager).onStopListening()
+                    verify(tileLifecycleManager).onTileRemoved()
+                    verify(tileLifecycleManager).flushMessagesAndUnbind()
+                }
             }
         }
 

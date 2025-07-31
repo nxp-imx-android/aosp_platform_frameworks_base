@@ -22,6 +22,7 @@ import android.content.Intent
 import android.os.UserHandle
 import com.android.app.tracing.coroutines.launchTraced as launch
 import com.android.systemui.Dumpable
+import com.android.systemui.Flags.resetTilesRemovesCustomTiles
 import com.android.systemui.ProtoDumpable
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
@@ -322,7 +323,16 @@ constructor(
     }
 
     override fun resetTiles() {
-        scope.launch { tileSpecRepository.resetToDefault(currentUser.value) }
+        scope.launch {
+            val currentSpecCopy = currentTilesSpecs
+            val user = currentUser.value
+            val default = tileSpecRepository.resetToDefault(user)
+            if (resetTilesRemovesCustomTiles()) {
+                val toFree =
+                    currentSpecCopy.minus(default).filterIsInstance<TileSpec.CustomTileSpec>()
+                toFree.forEach { onCustomTileRemoved(it.componentName, user) }
+            }
+        }
     }
 
     override fun dump(pw: PrintWriter, args: Array<out String>) {

@@ -186,8 +186,9 @@ constructor(
         changeEvents.emit(PrependDefault(defaultTiles))
     }
 
-    suspend fun resetToDefault() {
+    suspend fun resetToDefault(): List<TileSpec> {
         changeEvents.emit(ResetToDefault(defaultTiles))
+        return defaultTiles
     }
 
     sealed interface ChangeAction {
