@@ -16,6 +16,7 @@
 
 package com.android.wm.shell.flicker.keyboardshortcuts
 
+import android.platform.test.annotations.Postsubmit
 import android.platform.test.annotations.RequiresDesktopDevice
 import android.tools.NavBar
 import android.tools.Rotation
@@ -46,6 +47,7 @@ import org.junit.runners.Parameterized
 @RequiresDesktopDevice
 @RunWith(Parameterized::class)
 @Parameterized.UseParametersRunnerFactory(FlickerParametersRunnerFactory::class)
+@Postsubmit
 class MaximizeAppWithKeyboardFlickerTest(flicker: FlickerTest) : DesktopModeBaseTest(flicker) {
     inner class MaximizeAppWithKeyboardScenario : MaximizeAppWindow(
         rotation = Rotation.ROTATION_90,

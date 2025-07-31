@@ -16,6 +16,7 @@
 
 package com.android.wm.shell.flicker.resizing
 
+import android.platform.test.annotations.Postsubmit
 import android.platform.test.annotations.RequiresDesktopDevice
 import android.tools.NavBar
 import android.tools.PlatformConsts.DESKTOP_MODE_MINIMUM_WINDOW_HEIGHT
@@ -43,6 +44,7 @@ import com.android.wm.shell.flicker.utils.resizeVeilKeepsDecreasingInSize
 @RequiresDesktopDevice
 @RunWith(Parameterized::class)
 @Parameterized.UseParametersRunnerFactory(FlickerParametersRunnerFactory::class)
+@Postsubmit
 class ResizeAppToMinimumWindowSizeFlickerTest(flicker: FlickerTest) : DesktopModeBaseTest(
     flicker
 ) {

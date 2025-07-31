@@ -16,6 +16,7 @@
 
 package com.android.wm.shell.flicker.fundamentals
 
+import android.platform.test.annotations.Postsubmit
 import android.platform.test.annotations.RequiresDesktopDevice
 import android.tools.NavBar
 import android.tools.flicker.assertions.FlickerChecker
@@ -38,6 +39,7 @@ import com.android.wm.shell.scenarios.OpenAppFromAllApps
 @RequiresDesktopDevice
 @RunWith(Parameterized::class)
 @Parameterized.UseParametersRunnerFactory(FlickerParametersRunnerFactory::class)
+@Postsubmit
 class OpenAppFromAllAppsFlickerTest(flicker: FlickerTest) : DesktopModeBaseTest(flicker) {
     inner class OpenAppFromAllAppsScenario : OpenAppFromAllApps(flicker.scenario.startRotation)
 

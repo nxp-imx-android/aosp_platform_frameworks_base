@@ -16,6 +16,7 @@
 
 package com.android.wm.shell.flicker.resizing
 
+import android.platform.test.annotations.Postsubmit
 import android.platform.test.annotations.RequiresDesktopDevice
 import android.tools.NavBar
 import android.tools.flicker.assertions.FlickerChecker
@@ -41,6 +42,7 @@ import com.android.wm.shell.scenarios.SnapResizeAppWindowWithDrag
 @RequiresDesktopDevice
 @RunWith(Parameterized::class)
 @Parameterized.UseParametersRunnerFactory(FlickerParametersRunnerFactory::class)
+@Postsubmit
 class SnapResizeAppWindowLeftWithDragFlickerTest(flicker: FlickerTest) : DesktopModeBaseTest(
     flicker
 ) {

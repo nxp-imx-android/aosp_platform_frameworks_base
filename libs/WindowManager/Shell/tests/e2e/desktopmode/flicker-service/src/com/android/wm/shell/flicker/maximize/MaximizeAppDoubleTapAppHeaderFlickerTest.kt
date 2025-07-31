@@ -16,6 +16,7 @@
 
 package com.android.wm.shell.flicker.maximize
 
+import android.platform.test.annotations.Postsubmit
 import android.platform.test.annotations.RequiresDesktopDevice
 import android.tools.NavBar
 import android.tools.flicker.assertions.FlickerChecker
@@ -44,6 +45,7 @@ import org.junit.runners.Parameterized
 @RequiresDesktopDevice
 @RunWith(Parameterized::class)
 @Parameterized.UseParametersRunnerFactory(FlickerParametersRunnerFactory::class)
+@Postsubmit
 class MaximizeAppDoubleTapAppHeaderFlickerTest(flicker: FlickerTest) :
         DesktopModeBaseTest(flicker) {
     inner class MaximizeAppDoubleTapAppHeaderZoneScenario : MaximizeAppWindow(
