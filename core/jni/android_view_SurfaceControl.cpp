@@ -2182,7 +2182,9 @@ static jlong nativeMirrorSurface(JNIEnv* env, jclass clazz, jlong mirrorOfObj, j
     SurfaceControl *mirrorOf = reinterpret_cast<SurfaceControl*>(mirrorOfObj);
     SurfaceControl* stopAt = reinterpret_cast<SurfaceControl*>(stopAtObj);
     sp<SurfaceControl> surface = client->mirrorSurface(mirrorOf, stopAt);
-
+    if (surface == nullptr) {
+        return 0;
+    }
     surface->incStrong((void *)nativeCreate);
     return reinterpret_cast<jlong>(surface.get());
 }
