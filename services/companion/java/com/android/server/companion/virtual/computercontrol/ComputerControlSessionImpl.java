@@ -24,6 +24,7 @@ import android.companion.virtual.IVirtualDeviceActivityListener;
 import android.companion.virtual.VirtualDeviceParams;
 import android.companion.virtual.computercontrol.ComputerControlSessionParams;
 import android.companion.virtual.computercontrol.IComputerControlSession;
+import android.companion.virtual.computercontrol.IInteractiveMirrorDisplay;
 import android.content.AttributionSource;
 import android.content.ComponentName;
 import android.content.IntentSender;
@@ -43,8 +44,12 @@ import android.os.Binder;
 import android.os.IBinder;
 import android.os.RemoteException;
 import android.os.UserHandle;
+import android.view.Display;
+import android.view.DisplayInfo;
+import android.view.Surface;
 
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * A computer control session that encapsulates a {@link IVirtualDevice}. The device is created and
@@ -53,18 +58,21 @@ import java.util.Objects;
 final class ComputerControlSessionImpl extends IComputerControlSession.Stub {
 
     private final IBinder mAppToken;
+    private final ComputerControlSessionParams mParams;
     private final IVirtualDevice mVirtualDevice;
     private final int mVirtualDisplayId;
     private final IVirtualInputDevice mVirtualTouchscreen;
     private final IVirtualInputDevice mVirtualDpad;
     private final IVirtualInputDevice mVirtualKeyboard;
+    private final AtomicInteger mMirrorDisplayCounter = new AtomicInteger(0);
 
     ComputerControlSessionImpl(IBinder appToken, ComputerControlSessionParams params,
             AttributionSource attributionSource, PackageManager packageManager,
             ComputerControlSessionProcessor.VirtualDeviceFactory virtualDeviceFactory) {
         mAppToken = appToken;
+        mParams = params;
         VirtualDeviceParams virtualDeviceParams = new VirtualDeviceParams.Builder()
-                .setName(params.name)
+                .setName(mParams.name)
                 .setDevicePolicy(VirtualDeviceParams.POLICY_TYPE_RECENTS,
                         VirtualDeviceParams.DEVICE_POLICY_CUSTOM)
                 .build();
@@ -76,7 +84,7 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub {
 
         int displayFlags = DisplayManager.VIRTUAL_DISPLAY_FLAG_TRUSTED
                 | DisplayManager.VIRTUAL_DISPLAY_FLAG_STEAL_TOP_FOCUS_DISABLED;
-        if (params.isDisplayAlwaysUnlocked) {
+        if (mParams.isDisplayAlwaysUnlocked) {
             displayFlags |= DisplayManager.VIRTUAL_DISPLAY_FLAG_ALWAYS_UNLOCKED;
         }
 
@@ -90,9 +98,9 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub {
                 new DisplayManagerGlobal.VirtualDisplayCallback(null, null);
 
         VirtualDisplayConfig virtualDisplayConfig = new VirtualDisplayConfig.Builder(
-                params.name + "-display", params.displayWidthPx, params.displayHeightPx,
-                params.displayDpi)
-                .setSurface(params.displaySurface)
+                mParams.name + "-display", mParams.displayWidthPx, mParams.displayHeightPx,
+                mParams.displayDpi)
+                .setSurface(mParams.displaySurface)
                 .setFlags(displayFlags)
                 .build();
 
@@ -106,7 +114,7 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub {
                     mVirtualDevice.createVirtualDisplay(
                             virtualDisplayConfig, virtualDisplayCallback));
 
-            String dpadName = params.name + "-dpad";
+            String dpadName = mParams.name + "-dpad";
             VirtualDpadConfig virtualDpadConfig =
                     new VirtualDpadConfig.Builder()
                             .setAssociatedDisplayId(mVirtualDisplayId)
@@ -115,7 +123,7 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub {
             mVirtualDpad = mVirtualDevice.createVirtualDpad(
                     virtualDpadConfig, new Binder(dpadName));
 
-            String keyboardName = params.name  + "-keyboard";
+            String keyboardName = mParams.name  + "-keyboard";
             VirtualKeyboardConfig virtualKeyboardConfig =
                     new VirtualKeyboardConfig.Builder()
                             .setAssociatedDisplayId(mVirtualDisplayId)
@@ -124,10 +132,10 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub {
             mVirtualKeyboard = mVirtualDevice.createVirtualKeyboard(
                     virtualKeyboardConfig, new Binder(keyboardName));
 
-            String touchscreenName = params.name + "-touchscreen";
+            String touchscreenName = mParams.name + "-touchscreen";
             VirtualTouchscreenConfig virtualTouchscreenConfig =
                     new VirtualTouchscreenConfig.Builder(
-                            params.displayWidthPx, params.displayHeightPx)
+                            mParams.displayWidthPx, mParams.displayHeightPx)
                             .setAssociatedDisplayId(mVirtualDisplayId)
                             .setInputDeviceName(touchscreenName)
                             .build();
@@ -159,31 +167,21 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub {
     }
 
     @Override
-    public int createMirrorDisplay(
-            @NonNull VirtualDisplayConfig config, @NonNull IVirtualDisplayCallback callback)
-            throws RemoteException {
-        Objects.requireNonNull(config);
-        Objects.requireNonNull(callback);
-        // The config in the app process is only used for the name and the surface, so we can
-        // replace it here to ensure it only has the allowed properties and we don't leak
-        // capabilities by creating the display with a clean identity (which we need for the mirror
-        // display creation permission).
-        VirtualDisplayConfig internalConfig = new VirtualDisplayConfig.Builder(
-                config.getName(), config.getWidth(), config.getHeight(), config.getDensityDpi())
-                .setSurface(config.getSurface())
-                .setDisplayIdToMirror(mVirtualDisplayId)
-                .setFlags(DisplayManager.VIRTUAL_DISPLAY_FLAG_AUTO_MIRROR)
-                .build();
-        return Binder.withCleanCallingIdentity(() ->
-                mVirtualDevice.createVirtualDisplay(internalConfig, callback));
-
-    }
-
-    @Override
-    public IVirtualInputDevice createMirrorDisplayTouchscreen(
-            @NonNull VirtualTouchscreenConfig config) throws RemoteException {
-        return mVirtualDevice.createVirtualTouchscreen(
-                config, new Binder(config.getInputDeviceName()));
+    @NonNull
+    public IInteractiveMirrorDisplay createInteractiveMirrorDisplay(
+            int width, int height, @NonNull Surface surface) throws RemoteException {
+        Objects.requireNonNull(surface);
+        Display display = DisplayManagerGlobal.getInstance().getRealDisplay(mVirtualDisplayId);
+        DisplayInfo displayInfo = new DisplayInfo();
+        display.getDisplayInfo(displayInfo);
+        String name = mParams.name + "-display-mirror-" + mMirrorDisplayCounter.getAndIncrement();
+        VirtualDisplayConfig virtualDisplayConfig =
+                new VirtualDisplayConfig.Builder(name, width, height, displayInfo.logicalDensityDpi)
+                        .setSurface(surface)
+                        .setDisplayIdToMirror(mVirtualDisplayId)
+                        .setFlags(DisplayManager.VIRTUAL_DISPLAY_FLAG_AUTO_MIRROR)
+                        .build();
+        return new InteractiveMirrorDisplayImpl(virtualDisplayConfig, mVirtualDevice);
     }
 
     @Override
