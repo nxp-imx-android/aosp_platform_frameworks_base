@@ -109,6 +109,7 @@ import com.android.systemui.qs.tiles.impl.qr.ui.model.QRCodeScannerModule;
 import com.android.systemui.recents.Recents;
 import com.android.systemui.recordissue.RecordIssueModule;
 import com.android.systemui.retail.RetailModeModule;
+import com.android.systemui.rotation.impl.RotationModule;
 import com.android.systemui.rotationlock.DeviceStateAutoRotateModule.BoundsDeviceStateAutoRotateModule;
 import com.android.systemui.scene.shared.model.SceneContainerConfig;
 import com.android.systemui.scene.shared.model.SceneDataSource;
@@ -276,6 +277,7 @@ import javax.inject.Named;
         RecordIssueModule.class,
         ReferenceModule.class,
         RetailModeModule.class,
+        RotationModule.class,
         ScreenBrightnessModule.class,
         ScreenshotModule.class,
         SecureLockDeviceModule.class,

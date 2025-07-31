@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2021 The Android Open Source Project
+ * Copyright (C) 2025 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,16 +14,19 @@
  * limitations under the License.
  */
 
-package com.android.systemui.util.wrapper
+package com.android.systemui.rotation.impl
 
 import com.android.systemui.dagger.SysUISingleton
+import com.android.systemui.rotation.RotationPolicyWrapper
 import dagger.Binds
 import dagger.Module
 
 @Module
-abstract class UtilWrapperModule {
+public abstract class RotationModule {
 
     @Binds
     @SysUISingleton
-    abstract fun bindRotationPolicyWrapper(impl: RotationPolicyWrapperImpl): RotationPolicyWrapper
+    public abstract fun bindRotationPolicyWrapper(
+        impl: RotationPolicyWrapperImpl
+    ): RotationPolicyWrapper
 }

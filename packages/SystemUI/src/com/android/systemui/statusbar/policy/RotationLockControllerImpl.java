@@ -30,7 +30,7 @@ import com.android.internal.view.RotationPolicy.RotationPolicyListener;
 import com.android.systemui.dagger.SysUISingleton;
 import com.android.systemui.dagger.qualifiers.Background;
 import com.android.systemui.dagger.qualifiers.Main;
-import com.android.systemui.util.wrapper.RotationPolicyWrapper;
+import com.android.systemui.rotation.RotationPolicyWrapper;
 
 import java.util.Optional;
 import java.util.concurrent.CopyOnWriteArrayList;
