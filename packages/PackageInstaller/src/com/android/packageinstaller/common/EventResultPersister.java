@@ -20,7 +20,6 @@ import static android.content.Intent.FLAG_ACTIVITY_NEW_TASK;
 
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.Flags;
 import android.content.pm.PackageInstaller;
 import android.os.AsyncTask;
 import android.util.AtomicFile;
@@ -30,6 +29,8 @@ import android.util.Xml;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+
+import com.android.packageinstaller.PackageUtil;
 
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
@@ -98,8 +99,15 @@ public class EventResultPersister {
         /**
          * Called when a result is received.
          */
-        void onResult(int status, int legacyStatus, @Nullable String message, int serviceId,
-                boolean hasDeveloperVerificationFailure);
+        void onResult(int status, int legacyStatus, @Nullable String message, int serviceId);
+
+        /**
+         * Return true if the intent is handled by the observer. When the intent is handled,
+         * do not trigger #onResult() and not remove the observer.
+         */
+        default boolean onHandleIntent(Intent intent) {
+            return false;
+        }
     }
 
     /**
@@ -140,19 +148,6 @@ public class EventResultPersister {
     }
 
     /**
-     * Read a boolean attribute from the current element
-     *
-     * @param parser The parser to read from
-     * @param name The attribute name to read
-     *
-     * @return The value of the attribute
-     */
-    private static boolean readBooleanAttribute(@NonNull XmlPullParser parser,
-            @NonNull String name) {
-        return Boolean.parseBoolean(parser.getAttributeValue(null, name));
-    }
-
-    /**
      * Read persisted state.
      *
      * @param resultFile The file the results are persisted in
@@ -176,15 +171,13 @@ public class EventResultPersister {
                     int legacyStatus = readIntAttribute(parser, "legacyStatus");
                     String statusMessage = readStringAttribute(parser, "statusMessage");
                     int serviceId = readIntAttribute(parser, "serviceId");
-                    boolean hasDeveloperVerificationFailure = Flags.verificationService()
-                            && readBooleanAttribute(parser, "hasDeveloperVerificationFailure");
 
                     if (mResults.get(id) != null) {
                         throw new Exception("id " + id + " has two results");
                     }
 
                     mResults.put(id, new EventResult(status, legacyStatus, statusMessage,
-                            serviceId, hasDeveloperVerificationFailure));
+                            serviceId));
                 } else {
                     throw new Exception("unexpected tag");
                 }
@@ -198,17 +191,22 @@ public class EventResultPersister {
     }
 
     /**
-     * Add a result. If the result is an pending user action, execute the pending user action
-     * directly and do not queue a result.
+     * Add a result. If the result is a pending user action, execute the pending user action
+     * directly and do not queue a result in version one. In version two, call back the
+     * EventResultObserver#onHandleIntent to make sure if the intent is handled first.
      *
      * @param context The context the event was received in
      * @param intent The intent the activity received
      */
     void onEventReceived(@NonNull Context context, @NonNull Intent intent) {
         int status = intent.getIntExtra(PackageInstaller.EXTRA_STATUS, 0);
+        Log.d(LOG_TAG, "Received event with status " + status
+                + ", action = " + intent.getAction());
 
-        if (status == PackageInstaller.STATUS_PENDING_USER_ACTION) {
-            Intent intentToStart = intent.getParcelableExtra(Intent.EXTRA_INTENT);
+        // If it is PIA version one, starts the activity directly.
+        if (!PackageUtil.isVersionTwoEnabled(context)
+                && status == PackageInstaller.STATUS_PENDING_USER_ACTION) {
+            Intent intentToStart = intent.getParcelableExtra(Intent.EXTRA_INTENT, Intent.class);
             intentToStart.addFlags(FLAG_ACTIVITY_NEW_TASK);
             context.startActivity(intentToStart);
 
@@ -219,27 +217,32 @@ public class EventResultPersister {
         String statusMessage = intent.getStringExtra(PackageInstaller.EXTRA_STATUS_MESSAGE);
         int legacyStatus = intent.getIntExtra(PackageInstaller.EXTRA_LEGACY_STATUS, 0);
         int serviceId = intent.getIntExtra(EXTRA_SERVICE_ID, 0);
-        boolean hasDeveloperVerificationFailure = Flags.verificationService()
-                && intent.hasExtra(PackageInstaller.EXTRA_DEVELOPER_VERIFICATION_FAILURE_REASON);
 
         EventResultObserver observerToCall = null;
+        boolean isIntentHandled = false;
         synchronized (mLock) {
             int numObservers = mObservers.size();
             for (int i = 0; i < numObservers; i++) {
                 if (mObservers.keyAt(i) == id) {
                     observerToCall = mObservers.valueAt(i);
-                    mObservers.removeAt(i);
+                    // If the intent is handled, don't remove the observer, still needs to
+                    // receive the later events.
+                    isIntentHandled = observerToCall.onHandleIntent(intent);
+                    if (!isIntentHandled) {
+                        mObservers.removeAt(i);
+                    }
 
                     break;
                 }
             }
 
             if (observerToCall != null) {
-                observerToCall.onResult(status, legacyStatus, statusMessage, serviceId,
-                        hasDeveloperVerificationFailure);
+                // If the intent is handled, don't call back the observer#onResult().
+                if (!isIntentHandled) {
+                    observerToCall.onResult(status, legacyStatus, statusMessage, serviceId);
+                }
             } else {
-                mResults.put(id, new EventResult(status, legacyStatus, statusMessage, serviceId,
-                        hasDeveloperVerificationFailure));
+                mResults.put(id, new EventResult(status, legacyStatus, statusMessage, serviceId));
                 writeState();
             }
         }
@@ -290,10 +293,6 @@ public class EventResultPersister {
                                 if (results.valueAt(i).message != null) {
                                     serializer.attribute(null, "statusMessage",
                                             results.valueAt(i).message);
-                                }
-                                if (results.valueAt(i).hasDeveloperVerificationFailure) {
-                                    serializer.attribute(null, "hasDeveloperVerificationFailure",
-                                            "true");
                                 }
                                 serializer.attribute(null, "serviceId",
                                         Integer.toString(results.valueAt(i).serviceId));
@@ -351,7 +350,7 @@ public class EventResultPersister {
                 EventResult result = mResults.valueAt(resultIndex);
 
                 observer.onResult(result.status, result.legacyStatus, result.message,
-                        result.serviceId, result.hasDeveloperVerificationFailure);
+                        result.serviceId);
                 mResults.removeAt(resultIndex);
                 writeState();
             } else {
@@ -382,15 +381,12 @@ public class EventResultPersister {
         public final int legacyStatus;
         @Nullable public final String message;
         public final int serviceId;
-        public final boolean hasDeveloperVerificationFailure;
 
-        private EventResult(int status, int legacyStatus, @Nullable String message, int serviceId,
-                boolean hasDeveloperVerificationFailure) {
+        private EventResult(int status, int legacyStatus, @Nullable String message, int serviceId) {
             this.status = status;
             this.legacyStatus = legacyStatus;
             this.message = message;
             this.serviceId = serviceId;
-            this.hasDeveloperVerificationFailure = hasDeveloperVerificationFailure;
         }
     }
 
