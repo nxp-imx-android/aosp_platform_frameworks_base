@@ -36,6 +36,8 @@ import android.media.cts.MediaProjectionRule;
 import android.os.UserHandle;
 import android.platform.test.annotations.RequiresFlagsDisabled;
 import android.platform.test.annotations.RequiresFlagsEnabled;
+import android.platform.test.flag.junit.CheckFlagsRule;
+import android.platform.test.flag.junit.DeviceFlagsValueProvider;
 import android.telecom.TelecomManager;
 import android.telephony.TelephonyCallback;
 import android.telephony.TelephonyManager;
@@ -74,6 +76,9 @@ public class MediaProjectionStoppingTest {
     private static final String CALL_HELPER_STOP_CALL = "stop_call";
     private static final String STOP_DIALOG_TITLE_RES_ID = "android:id/alertTitle";
     private static final String STOP_DIALOG_CLOSE_BUTTON_RES_ID = "android:id/button2";
+
+    @Rule
+    public final CheckFlagsRule mCheckFlagsRule = DeviceFlagsValueProvider.createCheckFlagsRule();
 
     @Rule public MediaProjectionRule mMediaProjectionRule = new MediaProjectionRule();
 
