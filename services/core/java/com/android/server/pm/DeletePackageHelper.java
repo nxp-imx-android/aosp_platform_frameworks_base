@@ -26,7 +26,6 @@ import static android.content.pm.PackageManager.MATCH_KNOWN_PACKAGES;
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 import static android.os.UserHandle.USER_ALL;
 
-import static com.android.server.pm.InstructionSets.getAppDexInstructionSets;
 import static com.android.server.pm.PackageManagerService.DEBUG_COMPRESSION;
 import static com.android.server.pm.PackageManagerService.DEBUG_REMOVE;
 import static com.android.server.pm.PackageManagerService.EMPTY_INT_ARRAY;
@@ -285,8 +284,8 @@ final class DeletePackageHelper {
         // other processes clean up before deleting resources.
         try (PackageManagerTracedLock installLock = mPm.mInstallLock.acquireLock()) {
             if (info.mArgs != null) {
-                mRemovePackageHelper.cleanUpResources(info.mArgs.getPackageName(),
-                        info.mArgs.getCodeFile(), info.mArgs.getInstructionSets());
+                mRemovePackageHelper.cleanUpResources(
+                        info.mArgs.getPackageName(), info.mArgs.getCodeFile());
             }
 
             boolean reEnableStub = false;
@@ -580,9 +579,7 @@ final class DeletePackageHelper {
 
         // Delete application code and resources only for parent packages
         if (deleteCodeAndResources) {
-            outInfo.mArgs = new CleanUpArgs(ps.getName(),
-                    ps.getPathString(), getAppDexInstructionSets(
-                            ps.getPrimaryCpuAbiLegacy(), ps.getSecondaryCpuAbiLegacy()));
+            outInfo.mArgs = new CleanUpArgs(ps.getName(), ps.getPathString());
             if (DEBUG_SD_INSTALL) Slog.i(TAG, "args=" + outInfo.mArgs);
         }
     }

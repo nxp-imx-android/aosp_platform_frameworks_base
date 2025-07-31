@@ -8307,9 +8307,8 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
         mRemovePackageHelper.removeCodePath(codePath);
     }
 
-    void cleanUpResources(@NonNull String packageName, @NonNull File codeFile,
-                          @NonNull String[] instructionSets) {
-        mRemovePackageHelper.cleanUpResources(packageName, codeFile, instructionSets);
+    void cleanUpResources(@NonNull String packageName, @NonNull File codeFile) {
+        mRemovePackageHelper.cleanUpResources(packageName, codeFile);
     }
 
     void cleanUpForMoveInstall(String volumeUuid, String packageName, String fromCodePath) {

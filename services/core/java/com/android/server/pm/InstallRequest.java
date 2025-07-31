@@ -336,12 +336,6 @@ final class InstallRequest {
                 ? mRemovedInfo.mArgs.getCodeFile() : null;
     }
 
-    @Nullable
-    public String[] getOldInstructionSet() {
-        return (mRemovedInfo != null && mRemovedInfo.mArgs != null)
-                ? mRemovedInfo.mArgs.getInstructionSets() : null;
-    }
-
     public UserHandle getUser() {
         return new UserHandle(mUserId);
     }

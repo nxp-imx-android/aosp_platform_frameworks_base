@@ -48,7 +48,6 @@ import static android.os.storage.StorageManager.FLAG_STORAGE_DE;
 import static android.os.storage.StorageManager.FLAG_STORAGE_EXTERNAL;
 
 import static com.android.server.pm.InitAppsHelper.ScanParams;
-import static com.android.server.pm.InstructionSets.getAppDexInstructionSets;
 import static com.android.server.pm.PackageManagerException.INTERNAL_ERROR_ARCHIVE_NO_INSTALLER_TITLE;
 import static com.android.server.pm.PackageManagerService.APP_METADATA_FILE_NAME;
 import static com.android.server.pm.PackageManagerService.DEBUG_COMPRESSION;
@@ -2468,12 +2467,8 @@ final class InstallPackageHelper {
                         // We didn't need to disable the .apk as a current system package,
                         // which means we are replacing another update that is already
                         // installed.  We need to make sure to delete the older one's .apk.
-                        installRequest.getRemovedInfo().mArgs = new CleanUpArgs(
-                                packageName,
-                                oldPackage.getPath(),
-                                getAppDexInstructionSets(
-                                        deletedPkgSetting.getPrimaryCpuAbi(),
-                                        deletedPkgSetting.getSecondaryCpuAbi()));
+                        installRequest.getRemovedInfo().mArgs =
+                                new CleanUpArgs(packageName, oldPackage.getPath());
                     } else {
                         installRequest.getRemovedInfo().mArgs = null;
                     }
@@ -3088,8 +3083,7 @@ final class InstallPackageHelper {
             request.setReturnMessage("Package was removed before install could complete.");
 
             // Remove the update failed package's older resources safely now
-            mRemovePackageHelper.cleanUpResources(packageName, request.getOldCodeFile(),
-                    request.getOldInstructionSet());
+            mRemovePackageHelper.cleanUpResources(packageName, request.getOldCodeFile());
             mPm.notifyInstallObserver(request);
             return;
         }
@@ -3178,8 +3172,7 @@ final class InstallPackageHelper {
                                 packageName, pkgSetting.getPath(), pkgSetting.getOldPaths());
                     }
                 } else {
-                    mRemovePackageHelper.cleanUpResources(packageName, args.getCodeFile(),
-                            args.getInstructionSets());
+                    mRemovePackageHelper.cleanUpResources(packageName, args.getCodeFile());
                 }
             } else {
                 // Force a gc to clear up things. Ask for a background one, it's fine to go on
@@ -4422,10 +4415,8 @@ final class InstallPackageHelper {
                             + "; " + pkgSetting.getPathString()
                             + " --> " + parsedPackage.getPath());
 
-            mRemovePackageHelper.cleanUpResources(pkgSetting.getPackageName(),
-                    new File(pkgSetting.getPathString()),
-                    getAppDexInstructionSets(pkgSetting.getPrimaryCpuAbiLegacy(),
-                            pkgSetting.getSecondaryCpuAbiLegacy()));
+            mRemovePackageHelper.cleanUpResources(
+                    pkgSetting.getPackageName(), new File(pkgSetting.getPathString()));
             synchronized (mPm.mLock) {
                 mPm.mSettings.enableSystemPackageLPw(pkgSetting.getPackageName());
             }
@@ -4528,10 +4519,8 @@ final class InstallPackageHelper {
                                 + parsedPackage.getLongVersionCode()
                                 + "; " + pkgSetting.getPathString() + " --> "
                                 + parsedPackage.getPath());
-                mRemovePackageHelper.cleanUpResources(pkgSetting.getPackageName(),
-                        new File(pkgSetting.getPathString()),
-                        getAppDexInstructionSets(
-                                pkgSetting.getPrimaryCpuAbiLegacy(), pkgSetting.getSecondaryCpuAbiLegacy()));
+                mRemovePackageHelper.cleanUpResources(
+                        pkgSetting.getPackageName(), new File(pkgSetting.getPathString()));
             } else {
                 // The application on /system is older than the application on /data. Hide
                 // the application on /system and the version on /data will be scanned later
