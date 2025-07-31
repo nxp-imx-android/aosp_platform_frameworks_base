@@ -1353,8 +1353,16 @@ public final class Debug
      *            in ".trace", it will be appended for you.
      * @param bufferSize The maximum amount of trace data we gather. If not
      *            given, it defaults to 8MB.
-     * @param flags Flags to control method tracing. The only one that is
-     *            currently defined is {@link #TRACE_COUNT_ALLOCS}.
+     * @param flags Flags to control method tracing. The following flags are supported:
+     *            0x0001 {@link #TRACE_COUNT_ALLOCS}
+     *
+     *            Flags to control time source: These are available with API #34 and higher.
+     *            0x0010 Report the elapsed time since the start of the trace.
+     *            0x0100 Report the time the thread has spent on the CPU since the start of the
+     *                   trace. Please note that the thread cpu incurs a significant (typically
+     *                   2-3x) performance penalty. Use this flag only when necessary.
+     *            If neither of these flags are set, both the elapsed time and the thread cpu time
+     *            are reported.
      */
     public static void startMethodTracing(String tracePath, int bufferSize, int flags) {
         VMDebug.startMethodTracing(fixTracePath(tracePath), bufferSize, flags, false, 0);
