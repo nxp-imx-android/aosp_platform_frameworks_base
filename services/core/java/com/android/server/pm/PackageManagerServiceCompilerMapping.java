@@ -87,65 +87,7 @@ public class PackageManagerServiceCompilerMapping {
         return reason != REASON_SHARED_INDEX || !DexFile.isProfileGuidedCompilerFilter(filter);
     }
 
-    // Check that the properties are set and valid.
-    // Note: this is done in a separate method so this class can be statically initialized.
-    static void checkProperties() {
-        // We're gonna check all properties and collect the exceptions, so we can give a general
-        // overview. Store the exceptions here.
-        RuntimeException toThrow = null;
-
-        for (int reason = 0; reason <= PackageManagerService.REASON_LAST; reason++) {
-            try {
-                // Check that the system property name is legal.
-                String sysPropName = getSystemPropertyName(reason);
-                if (sysPropName == null || sysPropName.isEmpty()) {
-                    throw new IllegalStateException("Reason system property name \"" +
-                            sysPropName +"\" for reason " + REASON_STRINGS[reason]);
-                }
-
-                // Check validity, ignore result.
-                getAndCheckValidity(reason);
-            } catch (Exception exc) {
-                if (toThrow == null) {
-                    toThrow = new IllegalStateException("PMS compiler filter settings are bad.");
-                }
-                toThrow.addSuppressed(exc);
-            }
-        }
-
-        if (toThrow != null) {
-            throw toThrow;
-        }
-    }
-
     public static String getCompilerFilterForReason(int reason) {
         return getAndCheckValidity(reason);
-    }
-
-    /**
-     * Return the default compiler filter for compilation.
-     *
-     * We derive that from the traditional "dalvik.vm.dex2oat-filter" property and just make
-     * sure this isn't profile-guided. Returns "speed" in case of invalid (or missing) values.
-     */
-    public static String getDefaultCompilerFilter() {
-        String value = SystemProperties.get("dalvik.vm.dex2oat-filter");
-        if (value == null || value.isEmpty()) {
-            return "speed";
-        }
-
-        if (!DexFile.isValidCompilerFilter(value) ||
-                DexFile.isProfileGuidedCompilerFilter(value)) {
-            return "speed";
-        }
-
-        return value;
-    }
-
-    public static String getReasonName(int reason) {
-        if (reason < 0 || reason >= REASON_STRINGS.length) {
-            throw new IllegalArgumentException("reason " + reason + " invalid");
-        }
-        return REASON_STRINGS[reason];
     }
 }

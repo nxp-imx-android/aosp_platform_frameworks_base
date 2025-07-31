@@ -598,25 +598,6 @@ interface IPackageManager {
      oneway void registerDexModule(in String packageName, in String dexModulePath,
              in boolean isSharedModule, IDexModuleRegisterCallback callback);
 
-    /**
-     * Ask the package manager to perform a dex-opt with the given compiler filter.
-     *
-     * Note: exposed only for the shell command to allow moving packages explicitly to a
-     *       definite state.
-     */
-    boolean performDexOptMode(String packageName, boolean checkProfiles,
-            String targetCompilerFilter, boolean force, boolean bootComplete, String splitName);
-
-    /**
-     * Ask the package manager to perform a dex-opt with the given compiler filter on the
-     * secondary dex files belonging to the given package.
-     *
-     * Note: exposed only for the shell command to allow moving packages explicitly to a
-     *       definite state.
-     */
-    boolean performDexOptSecondary(String packageName,
-            String targetCompilerFilter, boolean force);
-
     @EnforcePermission("MOUNT_UNMOUNT_FILESYSTEMS")
     int getMoveStatus(int moveId);
 

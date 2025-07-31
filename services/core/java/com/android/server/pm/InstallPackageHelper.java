@@ -2827,11 +2827,6 @@ final class InstallPackageHelper {
                 }
                 incrementalStorages.add(storage);
             }
-
-            if (installRequest.isInstallReplace() && pkg != null) {
-                mDexManager.notifyPackageUpdated(packageName,
-                        pkg.getBaseApkPath(), pkg.getSplitCodePaths());
-            }
         }
         PackageManagerServiceUtils.waitForNativeBinariesExtractionForIncremental(
                 incrementalStorages);
@@ -3192,21 +3187,7 @@ final class InstallPackageHelper {
                 VMRuntime.getRuntime().requestConcurrentGC();
             }
 
-            if (!archived) {
-                // Notify DexManager that the package was installed for new users.
-                // The updated users should already be indexed and the package code paths
-                // should not change.
-                // Don't notify the manager for ephemeral apps as they are not expected to
-                // survive long enough to benefit of background optimizations.
-                for (int userId : firstUserIds) {
-                    PackageInfo info = snapshot.getPackageInfo(packageName, /*flags*/ 0, userId);
-                    // There's a race currently where some install events may interleave with an
-                    // uninstall. This can lead to package info being null (b/36642664).
-                    if (info != null) {
-                        mDexManager.notifyPackageInstalled(info, userId);
-                    }
-                }
-            } else {
+            if (archived) {
                 // Now send PACKAGE_REMOVED + EXTRA_REPLACING broadcast.
                 final PackageRemovedInfo info = new PackageRemovedInfo();
                 info.mRemovedPackage = packageName;
@@ -3386,8 +3367,6 @@ final class InstallPackageHelper {
             mAppDataHelper.clearAppDataLIF(pkg, UserHandle.USER_ALL,
                     FLAG_STORAGE_DE | FLAG_STORAGE_CE | FLAG_STORAGE_EXTERNAL
                             | Installer.FLAG_CLEAR_CODE_CACHE_ONLY);
-            mDexManager.notifyPackageUpdated(pkg.getPackageName(),
-                    pkg.getBaseApkPath(), pkg.getSplitCodePaths());
         }
         return true;
     }

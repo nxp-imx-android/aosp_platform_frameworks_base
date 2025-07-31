@@ -99,7 +99,6 @@ import com.android.internal.util.HexDump;
 import com.android.server.EventLogTags;
 import com.android.server.LocalManagerRegistry;
 import com.android.server.Watchdog;
-import com.android.server.pm.dex.PackageDexUsage;
 import com.android.server.pm.pkg.AndroidPackage;
 import com.android.server.pm.pkg.AndroidPackageSplit;
 import com.android.server.pm.pkg.PackageStateInternal;
@@ -199,41 +198,6 @@ public class PackageManagerServiceUtils {
         } catch (ManagerNotFoundException e) {
             throw new RuntimeException(e);
         }
-    }
-
-    /**
-     * Checks if the package was inactive during since <code>thresholdTimeinMillis</code>.
-     * Package is considered active, if:
-     * 1) It was active in foreground.
-     * 2) It was active in background and also used by other apps.
-     *
-     * If it doesn't have sufficient information about the package, it return <code>false</code>.
-     */
-    public static boolean isUnusedSinceTimeInMillis(long firstInstallTime, long currentTimeInMillis,
-            long thresholdTimeinMillis, PackageDexUsage.PackageUseInfo packageUseInfo,
-            long latestPackageUseTimeInMillis, long latestForegroundPackageUseTimeInMillis) {
-
-        if (currentTimeInMillis - firstInstallTime < thresholdTimeinMillis) {
-            return false;
-        }
-
-        // If the app was active in foreground during the threshold period.
-        boolean isActiveInForeground = (currentTimeInMillis
-                - latestForegroundPackageUseTimeInMillis)
-                < thresholdTimeinMillis;
-
-        if (isActiveInForeground) {
-            return false;
-        }
-
-        // If the app was active in background during the threshold period and was used
-        // by other packages.
-        boolean isActiveInBackgroundAndUsedByOtherPackages = ((currentTimeInMillis
-                - latestPackageUseTimeInMillis)
-                < thresholdTimeinMillis)
-                && packageUseInfo.isAnyCodePathUsedByOtherApps();
-
-        return !isActiveInBackgroundAndUsedByOtherPackages;
     }
 
     /**

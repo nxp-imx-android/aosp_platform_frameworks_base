@@ -637,9 +637,6 @@ public interface Computer extends PackageDataSnapshot {
     @NonNull
     String[] getSharedUserPackagesForPackage(@NonNull String packageName, @UserIdInt int userId);
 
-    @NonNull
-    Set<String> getUnusedPackages(long downgradeTimeThresholdMillis);
-
     @Nullable
     CharSequence getHarmfulAppWarning(@NonNull String packageName, @UserIdInt int userId);
 

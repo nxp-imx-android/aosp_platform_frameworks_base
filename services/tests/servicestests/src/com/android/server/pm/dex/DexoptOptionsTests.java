@@ -39,8 +39,7 @@ import org.junit.runner.RunWith;
 @SmallTest
 public class DexoptOptionsTests {
     private final static String mPackageName = "test.android.com";
-    private final static String mCompilerFilter =
-            PackageManagerServiceCompilerMapping.getDefaultCompilerFilter();
+    private final static String mCompilerFilter = "speed";
     private final static String mSplitName = "split-A.apk";
 
     @Test
