@@ -1200,7 +1200,7 @@
             />
 
         <service
-            android:name="com.google.android.systemui.lowlightclock.LowLightClockDreamService"
+            android:name=".lowlightclock.LowLightClockDreamService"
             android:enabled="false"
             android:exported="false"
             android:directBootAware="true"
