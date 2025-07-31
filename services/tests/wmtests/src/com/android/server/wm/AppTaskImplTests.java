@@ -26,6 +26,7 @@ import static android.app.TaskInfo.SELF_MOVABLE_DENIED;
 import static android.app.TaskMoveRequestHandler.REMOTE_CALLBACK_RESULT_KEY;
 import static android.app.TaskMoveRequestHandler.RESULT_APPROVED;
 import static android.app.TaskMoveRequestHandler.RESULT_FAILED_BAD_BOUNDS;
+import static android.app.TaskMoveRequestHandler.RESULT_FAILED_BAL_POLICY_VIOLATION;
 import static android.app.TaskMoveRequestHandler.RESULT_FAILED_IMMOVABLE_TASK;
 import static android.app.TaskMoveRequestHandler.RESULT_FAILED_NONEXISTENT_DISPLAY;
 import static android.app.TaskMoveRequestHandler.RESULT_FAILED_NO_PERMISSIONS;
@@ -33,18 +34,24 @@ import static android.app.TaskMoveRequestHandler.RESULT_FAILED_UNABLE_TO_PLACE_T
 import static android.content.pm.PackageManager.PERMISSION_DENIED;
 import static android.view.WindowManager.TRANSIT_OPEN;
 
+import static com.android.dx.mockito.inline.extended.ExtendedMockito.doNothing;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.doReturn;
+import static com.android.dx.mockito.inline.extended.ExtendedMockito.doThrow;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.mock;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.mockitoSession;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.spy;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.verify;
 import static com.android.server.wm.AppTaskImpl.WINDOWING_LAYER_CALLBACK_INVOKE_TIMEOUT_MS;
 import static com.android.window.flags.Flags.FLAG_ENABLE_INTERACTIVE_PICTURE_IN_PICTURE;
+import static com.android.server.wm.BackgroundActivityStartController.BalVerdict;
 import static com.android.window.flags.Flags.FLAG_ENABLE_WINDOW_REPOSITIONING_API;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.testng.AssertJUnit.assertNotNull;
@@ -84,13 +91,16 @@ import org.mockito.quality.Strictness;
 public class AppTaskImplTests extends WindowTestsBase {
 
 
-
+    private static final String PACKAGE_NAME = "my.package.name";
     private final IRemoteCallback mMockCallback = mock(IRemoteCallback.class);
     private TransitionController mTransitionController;
     private TestTransitionPlayer mTestTransitionPlayer;
     private AppOpsManager mAppOpsManager;
     private OffsettableClock mClock;
     private TestHandler mHandler;
+    private final WindowProcessController mMockWPC = mock(WindowProcessController.class);
+    private final BackgroundActivityStartController mMockBalController =
+                mock(BackgroundActivityStartController.class);
 
     @Before
     public void setUp() {
@@ -103,6 +113,14 @@ public class AppTaskImplTests extends WindowTestsBase {
         mockPipAppOppToReturn(MODE_ALLOWED);
         mClock = new OffsettableClock.Stopped();
         mHandler = new TestHandler(null, mClock);
+
+        doReturn(mMockWPC).when(mAtm).getProcessController(anyInt(), anyInt());
+        doReturn(mMockBalController).when(mSupervisor).getBackgroundActivityLaunchController();
+        doReturn(BalVerdict.ALLOW_BY_DEFAULT).when(mMockBalController).checkBackgroundActivityStart(
+                anyInt(), anyInt(), anyString(), anyInt(), anyInt(), any(), any(), anyBoolean(),
+                any(), any(), any());
+        doReturn(false).when(mAtm).isBackgroundActivityStartsEnabled();
+        doNothing().when(mAtm).assertPackageMatchesCallingUid(PACKAGE_NAME);
     }
 
     /**
@@ -118,7 +136,7 @@ public class AppTaskImplTests extends WindowTestsBase {
         final DisplayContent dc = createNewDisplay();
         final Rect bounds = getValidBoundsForDisplay(dc);
 
-        appTask.moveTaskTo(dc.mDisplayId, bounds, mMockCallback);
+        appTask.moveTaskTo(dc.mDisplayId, bounds, mMockCallback, PACKAGE_NAME);
 
         mTestTransitionPlayer.mLastTransit.invokePresentedListenersForTest();
         verifyCallbackReceivedTaskMoveErrorCode(mMockCallback, RESULT_APPROVED);
@@ -144,7 +162,7 @@ public class AppTaskImplTests extends WindowTestsBase {
                                     ActivityTaskManagerService.checkPermission(
                                             eq(REPOSITION_SELF_WINDOWS), anyInt(), anyInt()));
 
-            appTask.moveTaskTo(dc.mDisplayId, bounds, mMockCallback);
+            appTask.moveTaskTo(dc.mDisplayId, bounds, mMockCallback, PACKAGE_NAME);
 
             verifyCallbackReceivedTaskMoveErrorCode(mMockCallback, RESULT_FAILED_NO_PERMISSIONS);
         } finally {
@@ -159,7 +177,7 @@ public class AppTaskImplTests extends WindowTestsBase {
         final AppTaskImpl appTask = getAppTask(task.getRootTaskId());
         final int badDisplayId = -93;
 
-        appTask.moveTaskTo(badDisplayId, new Rect(0, 0, 700, 700), mMockCallback);
+        appTask.moveTaskTo(badDisplayId, new Rect(0, 0, 700, 700), mMockCallback, PACKAGE_NAME);
 
         verifyCallbackReceivedTaskMoveErrorCode(mMockCallback, RESULT_FAILED_NONEXISTENT_DISPLAY);
     }
@@ -175,7 +193,7 @@ public class AppTaskImplTests extends WindowTestsBase {
                 .when(mSupervisor)
                 .canPlaceEntityOnDisplay(eq(dc.mDisplayId), anyInt(), anyInt(), any(Task.class));
 
-        appTask.moveTaskTo(dc.mDisplayId, bounds, mMockCallback);
+        appTask.moveTaskTo(dc.mDisplayId, bounds, mMockCallback, PACKAGE_NAME);
 
         verifyCallbackReceivedTaskMoveErrorCode(mMockCallback, RESULT_FAILED_UNABLE_TO_PLACE_TASK);
     }
@@ -188,7 +206,7 @@ public class AppTaskImplTests extends WindowTestsBase {
         final DisplayContent dc = createNewDisplay();
         final Rect tooSmallBounds = new Rect(0, 0, 1, 1);
 
-        appTask.moveTaskTo(dc.mDisplayId, tooSmallBounds, mMockCallback);
+        appTask.moveTaskTo(dc.mDisplayId, tooSmallBounds, mMockCallback, PACKAGE_NAME);
 
         verifyCallbackReceivedTaskMoveErrorCode(mMockCallback, RESULT_FAILED_BAD_BOUNDS);
     }
@@ -204,7 +222,7 @@ public class AppTaskImplTests extends WindowTestsBase {
         final int tooSmallSizePx = (int) Math.ceil(density * minimalSizeDp) - 1;
         final Rect tooSmallBounds = new Rect(0, 0, tooSmallSizePx, tooSmallSizePx);
 
-        appTask.moveTaskTo(dc.mDisplayId, tooSmallBounds, mMockCallback);
+        appTask.moveTaskTo(dc.mDisplayId, tooSmallBounds, mMockCallback, PACKAGE_NAME);
 
         verifyCallbackReceivedTaskMoveErrorCode(mMockCallback, RESULT_FAILED_BAD_BOUNDS);
     }
@@ -220,7 +238,7 @@ public class AppTaskImplTests extends WindowTestsBase {
         final int bigEnoughSizePx = (int) Math.floor(density * minimalSizeDp) + 1;
         final Rect bigEnoughBounds = new Rect(0, 0, bigEnoughSizePx, bigEnoughSizePx);
 
-        appTask.moveTaskTo(dc.mDisplayId, bigEnoughBounds, mMockCallback);
+        appTask.moveTaskTo(dc.mDisplayId, bigEnoughBounds, mMockCallback, PACKAGE_NAME);
 
         mTestTransitionPlayer.mLastTransit.invokePresentedListenersForTest();
         verifyCallbackReceivedTaskMoveErrorCode(mMockCallback, RESULT_APPROVED);
@@ -235,7 +253,7 @@ public class AppTaskImplTests extends WindowTestsBase {
         final Rect bounds = getValidBoundsForDisplay(dc);
         task.setSelfMovable(SELF_MOVABLE_DENIED);
 
-        appTask.moveTaskTo(dc.mDisplayId, bounds, mMockCallback);
+        appTask.moveTaskTo(dc.mDisplayId, bounds, mMockCallback, PACKAGE_NAME);
 
         verifyCallbackReceivedTaskMoveErrorCode(mMockCallback, RESULT_FAILED_IMMOVABLE_TASK);
     }
@@ -339,6 +357,36 @@ public class AppTaskImplTests extends WindowTestsBase {
         completeRequestedTransition();
         advanceTimeBy(WINDOWING_LAYER_CALLBACK_INVOKE_TIMEOUT_MS + 1);
         verify(mMockCallback).sendResult(eq(sampleBundle)); // only once, with sampleBundle
+    }
+
+    @EnableFlags(FLAG_ENABLE_WINDOW_REPOSITIONING_API)
+    @Test
+    public void testMoveTaskTo_failsWhenBalBlocks() throws Exception {
+        final Task task = getSelfMovableTask();
+        final AppTaskImpl appTask = getAppTask(task.getRootTaskId());
+        final DisplayContent dc = createNewDisplay();
+        final Rect bounds = getValidBoundsForDisplay(dc);
+        doReturn(BalVerdict.BLOCK).when(mMockBalController).checkBackgroundActivityStart(
+                anyInt(), anyInt(), anyString(), anyInt(), anyInt(), any(), any(), anyBoolean(),
+                any(), any(), any());
+
+        appTask.moveTaskTo(dc.mDisplayId, bounds, mMockCallback, PACKAGE_NAME);
+
+        verifyCallbackReceivedTaskMoveErrorCode(mMockCallback, RESULT_FAILED_BAL_POLICY_VIOLATION);
+    }
+
+    @EnableFlags(FLAG_ENABLE_WINDOW_REPOSITIONING_API)
+    @Test
+    public void testMoveTaskTo_throwsWhenCallingPackageDoesNotMatchCallingUid() throws Exception {
+        final Task task = getSelfMovableTask();
+        final AppTaskImpl appTask = getAppTask(task.getRootTaskId());
+        final DisplayContent dc = createNewDisplay();
+        final Rect bounds = getValidBoundsForDisplay(dc);
+        doThrow(SecurityException.class).when(mAtm).assertPackageMatchesCallingUid(PACKAGE_NAME);
+
+        assertThrows(
+                SecurityException.class,
+                () -> appTask.moveTaskTo(dc.mDisplayId, bounds, mMockCallback, PACKAGE_NAME));
     }
 
     private AppTaskImpl getAppTask(int taskId) {

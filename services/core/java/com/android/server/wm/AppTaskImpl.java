@@ -29,6 +29,7 @@ import static android.app.TaskMoveRequestHandler.REMOTE_CALLBACK_RESULT_KEY;
 import static android.app.TaskMoveRequestHandler.RESULT_APPROVED;
 import static android.app.TaskMoveRequestHandler.RESULT_FAILED_BAD_BOUNDS;
 import static android.app.TaskMoveRequestHandler.RESULT_FAILED_BAD_STATE;
+import static android.app.TaskMoveRequestHandler.RESULT_FAILED_BAL_POLICY_VIOLATION;
 import static android.app.TaskMoveRequestHandler.RESULT_FAILED_IMMOVABLE_TASK;
 import static android.app.TaskMoveRequestHandler.RESULT_FAILED_NONEXISTENT_DISPLAY;
 import static android.app.TaskMoveRequestHandler.RESULT_FAILED_NO_PERMISSIONS;
@@ -208,8 +209,13 @@ class AppTaskImpl extends IAppTask.Stub {
      * are presented by the WM Shell.
      */
     @Override
-    public void moveTaskTo(int displayId, Rect bounds, IRemoteCallback callback) {
+    public void moveTaskTo(
+            int displayId,
+            Rect bounds,
+            IRemoteCallback callback,
+            String callingPackage) {
         checkCallerOrSystemOrRoot();
+        mService.assertPackageMatchesCallingUid(callingPackage);
         final int origCallingPid = Binder.getCallingPid();
         final int origCallingUid = Binder.getCallingUid();
         final long origId = Binder.clearCallingIdentity();
@@ -233,7 +239,7 @@ class AppTaskImpl extends IAppTask.Stub {
                 }
 
                 final int result = validateTaskMoveRequest(displayId, bounds, task,
-                        origCallingPid, origCallingUid);
+                        origCallingPid, origCallingUid, callingPackage);
                 if (result != RESULT_APPROVED) {
                     reportTaskMoveRequestResult(
                             result, INVALID_DISPLAY, null /* bounds */, callback);
@@ -255,7 +261,8 @@ class AppTaskImpl extends IAppTask.Stub {
                                         transition.getRequestedLocation().getBounds(),
                                         task,
                                         origCallingPid,
-                                        origCallingUid);
+                                        origCallingUid,
+                                        callingPackage);
                                 if (lateResult != RESULT_APPROVED) {
                                     reportTaskMoveRequestResult(
                                             lateResult,
@@ -308,7 +315,8 @@ class AppTaskImpl extends IAppTask.Stub {
             Rect bounds,
             @NonNull Task task,
             int origCallingPid,
-            int origCallingUid) {
+            int origCallingUid,
+            String callingPackage) {
         final DisplayContent targetDisplay =
                 mService.mRootWindowContainer.getDisplayContent(displayId);
         if (targetDisplay == null) {
@@ -342,6 +350,27 @@ class AppTaskImpl extends IAppTask.Stub {
 
         if (!mService.getTransitionController().isShellTransitionsEnabled()) {
             return RESULT_FAILED_BAD_STATE;
+        }
+
+        final WindowProcessController callerApp =
+                mService.getProcessController(origCallingPid, origCallingUid);
+        final BackgroundActivityStartController balController =
+                mService.mTaskSupervisor.getBackgroundActivityLaunchController();
+        final BalVerdict balVerdict = balController.checkBackgroundActivityStart(
+                origCallingUid,
+                origCallingPid,
+                callingPackage,
+                -1,
+                -1,
+                callerApp,
+                null,
+                false,
+                null,
+                null,
+                null);
+
+        if (balVerdict.blocks() && !mService.isBackgroundActivityStartsEnabled()) {
+            return RESULT_FAILED_BAL_POLICY_VIOLATION;
         }
 
         return RESULT_APPROVED;
