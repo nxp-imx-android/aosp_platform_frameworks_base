@@ -16,6 +16,7 @@
 
 package com.android.wm.shell.desktopmode
 
+import android.app.ActivityManager.RunningTaskInfo
 import android.platform.test.annotations.EnableFlags
 import android.testing.AndroidTestingRunner
 import android.view.Display
@@ -448,8 +449,35 @@ class DesktopDisplayEventHandlerTest : ShellTestCase() {
         desktopState.overrideDesktopModeSupportPerDisplay[externalDisplayId] = true
         whenever(mockDesktopRepository.hasPreservedDisplayForUniqueDisplayId(UNIQUE_DISPLAY_ID))
             .thenReturn(true)
+        val preservedFocusedTaskIds = listOf(1)
+        whenever(mockDesktopRepository.getPreservedTasks(UNIQUE_DISPLAY_ID))
+            .thenReturn(preservedFocusedTaskIds)
+        whenever(mockDesktopTasksController.getFocusedNonDesktopTasks(any(), any()))
+            .thenReturn(emptyList())
+
         onDisplaysChangedListenerCaptor.lastValue.onDesktopModeEligibleChanged(externalDisplayId)
+
         verify(mockDesktopTasksController)
+            .restoreDisplay(eq(externalDisplayId), eq(UNIQUE_DISPLAY_ID), eq(PRIMARY_USER_ID))
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_DISPLAY_RECONNECT_INTERACTION)
+    fun testDisplayReconnected_tasksFocusedOnDefaultDisplay_skipsReconnect() {
+        desktopState.overrideDesktopModeSupportPerDisplay[DEFAULT_DISPLAY] = false
+        desktopState.overrideDesktopModeSupportPerDisplay[externalDisplayId] = true
+        whenever(mockDesktopRepository.hasPreservedDisplayForUniqueDisplayId(UNIQUE_DISPLAY_ID))
+            .thenReturn(true)
+        val preservedFocusedTaskIds = listOf(1)
+        whenever(mockDesktopRepository.getPreservedTasks(UNIQUE_DISPLAY_ID))
+            .thenReturn(preservedFocusedTaskIds)
+        val task = RunningTaskInfo().apply { this.taskId = 1 }
+        whenever(mockDesktopTasksController.getFocusedNonDesktopTasks(any(), any()))
+            .thenReturn(listOf(task))
+
+        addDisplay(2)
+
+        verify(mockDesktopTasksController, never())
             .restoreDisplay(eq(externalDisplayId), eq(UNIQUE_DISPLAY_ID), eq(PRIMARY_USER_ID))
     }
 
