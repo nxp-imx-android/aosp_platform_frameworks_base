@@ -140,8 +140,6 @@ import com.android.internal.util.Preconditions;
 import com.android.modules.utils.TypedXmlSerializer;
 import com.android.server.LocalManagerRegistry;
 import com.android.server.ondeviceintelligence.OnDeviceIntelligenceManagerLocal;
-import com.android.server.pm.dex.DexManager;
-import com.android.server.pm.dex.PackageDexUsage;
 import com.android.server.pm.parsing.PackageInfoUtils;
 import com.android.server.pm.parsing.pkg.AndroidPackageUtils;
 import com.android.server.pm.permission.PermissionManagerServiceInternal;
@@ -419,8 +417,6 @@ public class ComputerEngine implements Computer {
     private final InstantAppResolverConnection mInstantAppResolverConnection;
     private final DefaultAppProvider mDefaultAppProvider;
     private final DomainVerificationManagerInternal mDomainVerificationManager;
-    private final PackageDexOptimizer mPackageDexOptimizer;
-    private final DexManager mDexManager;
     private final CompilerStats mCompilerStats;
     private final PackageManagerInternal.ExternalSourcesPolicy mExternalSourcesPolicy;
     private final CrossProfileIntentResolverEngine mCrossProfileIntentResolverEngine;
@@ -471,8 +467,6 @@ public class ComputerEngine implements Computer {
         mInstantAppResolverConnection = args.service.mInstantAppResolverConnection;
         mDefaultAppProvider = args.service.getDefaultAppProvider();
         mDomainVerificationManager = args.service.mDomainVerificationManager;
-        mPackageDexOptimizer = args.service.mPackageDexOptimizer;
-        mDexManager = args.service.getDexManager();
         mCompilerStats = args.service.mCompilerStats;
         mExternalSourcesPolicy = args.service.mExternalSourcesPolicy;
         mCrossProfileIntentResolverEngine = new CrossProfileIntentResolverEngine(
@@ -5687,32 +5681,6 @@ public class ComputerEngine implements Computer {
         }
         res = ArrayUtils.trimToSize(res, i);
         return res != null ? res : EmptyArray.STRING;
-    }
-
-
-    @NonNull
-    @Override
-    public Set<String> getUnusedPackages(long downgradeTimeThresholdMillis) {
-        Set<String> unusedPackages = new ArraySet<>();
-        long currentTimeInMillis = System.currentTimeMillis();
-        final ArrayMap<String, ? extends PackageStateInternal> packageStates =
-                mSettings.getPackages();
-        for (int index = 0; index < packageStates.size(); index++) {
-            final PackageStateInternal packageState = packageStates.valueAt(index);
-            if (packageState.getPkg() == null) {
-                continue;
-            }
-            PackageDexUsage.PackageUseInfo packageUseInfo =
-                    mDexManager.getPackageUseInfoOrDefault(packageState.getPackageName());
-            if (PackageManagerServiceUtils.isUnusedSinceTimeInMillis(
-                    PackageStateUtils.getEarliestFirstInstallTime(packageState.getUserStates()),
-                    currentTimeInMillis, downgradeTimeThresholdMillis, packageUseInfo,
-                    packageState.getTransientState().getLatestPackageUseTimeInMills(),
-                    packageState.getTransientState().getLatestForegroundPackageUseTimeInMills())) {
-                unusedPackages.add(packageState.getPackageName());
-            }
-        }
-        return unusedPackages;
     }
 
     @Nullable

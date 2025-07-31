@@ -75,7 +75,6 @@ import com.android.server.art.model.ArtFlags;
 import com.android.server.art.model.DexoptParams;
 import com.android.server.art.model.DexoptResult;
 import com.android.server.pinner.PinnerService;
-import com.android.server.pm.PackageDexOptimizer.DexOptResult;
 import com.android.server.pm.dex.DexManager;
 import com.android.server.pm.dex.DexoptOptions;
 import com.android.server.pm.local.PackageManagerLocalImpl;
@@ -128,13 +127,6 @@ public final class DexOptHelper {
         mPm = pm;
     }
 
-    /*
-     * Return the prebuilt profile path given a package base code path.
-     */
-    private static String getPrebuildProfilePath(AndroidPackage pkg) {
-        return pkg.getBaseApkPath() + ".prof";
-    }
-
     /**
      * Called during startup to do any boot time dexopting. This can occasionally be time consuming
      * (30+ seconds) and the function will block until it is complete.
@@ -174,305 +166,9 @@ public final class DexOptHelper {
         MetricsLogger.histogram(mPm.mContext, "opt_dialog_num_dexopted", numDexopted);
         MetricsLogger.histogram(mPm.mContext, "opt_dialog_num_skipped", numSkipped);
         MetricsLogger.histogram(mPm.mContext, "opt_dialog_num_failed", numFailed);
-        // TODO(b/251903639): getOptimizablePackages calls PackageDexOptimizer.canOptimizePackage
-        // which duplicates logic in ART Service (com.android.server.art.Utils.canDexoptPackage).
         MetricsLogger.histogram(mPm.mContext, "opt_dialog_num_total",
-                getOptimizablePackages(newSnapshot).size());
+                numDexopted + numSkipped + numFailed);
         MetricsLogger.histogram(mPm.mContext, "opt_dialog_time_s", elapsedTimeSeconds);
-    }
-
-    public List<String> getOptimizablePackages(@NonNull Computer snapshot) {
-        ArrayList<String> pkgs = new ArrayList<>();
-        mPm.forEachPackageState(snapshot, packageState -> {
-            final AndroidPackage pkg = packageState.getPkg();
-            if (pkg != null && mPm.mPackageDexOptimizer.canOptimizePackage(pkg)) {
-                pkgs.add(packageState.getPackageName());
-            }
-        });
-        return pkgs;
-    }
-
-    /*package*/ boolean performDexOpt(DexoptOptions options) {
-        final Computer snapshot = mPm.snapshotComputer();
-        if (snapshot.getInstantAppPackageName(Binder.getCallingUid()) != null) {
-            return false;
-        } else if (snapshot.isInstantApp(options.getPackageName(), UserHandle.getCallingUserId())) {
-            return false;
-        }
-        var pkg = snapshot.getPackage(options.getPackageName());
-        if (pkg != null && pkg.isApex()) {
-            // skip APEX
-            return true;
-        }
-
-        @DexOptResult int dexoptStatus;
-        if (options.isDexoptOnlySecondaryDex()) {
-            dexoptStatus = performDexOptWithArtService(options, 0 /* extraFlags */);
-        } else {
-            dexoptStatus = performDexOptWithStatus(options);
-        }
-        return dexoptStatus != PackageDexOptimizer.DEX_OPT_FAILED;
-    }
-
-    /**
-     * Perform dexopt on the given package and return one of following result:
-     * {@link PackageDexOptimizer#DEX_OPT_SKIPPED}
-     * {@link PackageDexOptimizer#DEX_OPT_PERFORMED}
-     * {@link PackageDexOptimizer#DEX_OPT_CANCELLED}
-     * {@link PackageDexOptimizer#DEX_OPT_FAILED}
-     */
-    @DexOptResult
-    /* package */ int performDexOptWithStatus(DexoptOptions options) {
-        return performDexOptTraced(options);
-    }
-
-    @DexOptResult
-    private int performDexOptTraced(DexoptOptions options) {
-        Trace.traceBegin(TRACE_TAG_DALVIK, "dexopt");
-        try {
-            return performDexOptInternal(options);
-        } finally {
-            Trace.traceEnd(TRACE_TAG_DALVIK);
-        }
-    }
-
-    // Run dexopt on a given package. Returns true if dexopt did not fail, i.e.
-    // if the package can now be considered up to date for the given filter.
-    @DexOptResult
-    private int performDexOptInternal(DexoptOptions options) {
-        return performDexOptWithArtService(options, ArtFlags.FLAG_SHOULD_INCLUDE_DEPENDENCIES);
-    }
-
-    /**
-     * Performs dexopt on the given package using ART Service.
-     */
-    @DexOptResult
-    private int performDexOptWithArtService(DexoptOptions options,
-            /*@DexoptFlags*/ int extraFlags) {
-        try (PackageManagerLocal.FilteredSnapshot snapshot =
-                        getPackageManagerLocal().withFilteredSnapshot()) {
-            PackageState ops = snapshot.getPackageState(options.getPackageName());
-            if (ops == null) {
-                return PackageDexOptimizer.DEX_OPT_FAILED;
-            }
-            AndroidPackage oap = ops.getAndroidPackage();
-            if (oap == null) {
-                return PackageDexOptimizer.DEX_OPT_FAILED;
-            }
-            DexoptParams params = options.convertToDexoptParams(extraFlags);
-            DexoptResult result =
-                    getArtManagerLocal().dexoptPackage(snapshot, options.getPackageName(), params);
-            return convertToDexOptResult(result);
-        }
-    }
-
-    public boolean performDexOptMode(@NonNull Computer snapshot, String packageName,
-            String targetCompilerFilter, boolean force, boolean bootComplete, String splitName) {
-        if (!PackageManagerServiceUtils.isSystemOrRootOrShell()
-                && !isCallerInstallerForPackage(snapshot, packageName)) {
-            throw new SecurityException("performDexOptMode");
-        }
-
-        int flags = (force ? DexoptOptions.DEXOPT_FORCE : 0)
-                | (bootComplete ? DexoptOptions.DEXOPT_BOOT_COMPLETE : 0);
-
-        if (isProfileGuidedCompilerFilter(targetCompilerFilter)) {
-            // Set this flag whenever the filter is profile guided, to align with ART Service
-            // behavior.
-            flags |= DexoptOptions.DEXOPT_CHECK_FOR_PROFILES_UPDATES;
-        }
-
-        return performDexOpt(new DexoptOptions(packageName, REASON_CMDLINE,
-                targetCompilerFilter, splitName, flags));
-    }
-
-    private boolean isCallerInstallerForPackage(@NonNull Computer snapshot, String packageName) {
-        final PackageStateInternal packageState = snapshot.getPackageStateInternal(packageName);
-        if (packageState == null) {
-            return false;
-        }
-        final InstallSource installSource = packageState.getInstallSource();
-
-        final PackageStateInternal installerPackageState =
-                snapshot.getPackageStateInternal(installSource.mInstallerPackageName);
-        if (installerPackageState == null) {
-            return false;
-        }
-        final AndroidPackage installerPkg = installerPackageState.getPkg();
-        return installerPkg.getUid() == Binder.getCallingUid();
-    }
-
-    public boolean performDexOptSecondary(
-            String packageName, String compilerFilter, boolean force) {
-        int flags = DexoptOptions.DEXOPT_ONLY_SECONDARY_DEX
-                | DexoptOptions.DEXOPT_CHECK_FOR_PROFILES_UPDATES
-                | DexoptOptions.DEXOPT_BOOT_COMPLETE
-                | (force ? DexoptOptions.DEXOPT_FORCE : 0);
-        return performDexOpt(new DexoptOptions(packageName, REASON_CMDLINE,
-                compilerFilter, null /* splitName */, flags));
-    }
-
-    // Sort apps by importance for dexopt ordering. Important apps are given
-    // more priority in case the device runs out of space.
-    public static List<PackageStateInternal> getPackagesForDexopt(
-            Collection<? extends PackageStateInternal> packages,
-            PackageManagerService packageManagerService) {
-        return getPackagesForDexopt(packages, packageManagerService, DEBUG_DEXOPT);
-    }
-
-    public static List<PackageStateInternal> getPackagesForDexopt(
-            Collection<? extends PackageStateInternal> pkgSettings,
-            PackageManagerService packageManagerService,
-            boolean debug) {
-        List<PackageStateInternal> result = new ArrayList<>();
-        ArrayList<PackageStateInternal> remainingPkgSettings = new ArrayList<>(pkgSettings);
-
-        // First, remove all settings without available packages
-        remainingPkgSettings.removeIf(REMOVE_IF_NULL_PKG);
-        remainingPkgSettings.removeIf(REMOVE_IF_APEX_PKG);
-
-        ArrayList<PackageStateInternal> sortTemp = new ArrayList<>(remainingPkgSettings.size());
-
-        final Computer snapshot = packageManagerService.snapshotComputer();
-
-        // Give priority to core apps.
-        applyPackageFilter(snapshot, pkgSetting -> pkgSetting.getPkg().isCoreApp(), result,
-                remainingPkgSettings, sortTemp, packageManagerService);
-
-        // Give priority to system apps that listen for pre boot complete.
-        Intent intent = new Intent(Intent.ACTION_PRE_BOOT_COMPLETED);
-        final ArraySet<String> pkgNames = getPackageNamesForIntent(intent, UserHandle.USER_SYSTEM);
-        applyPackageFilter(snapshot, pkgSetting -> pkgNames.contains(pkgSetting.getPackageName()), result,
-                remainingPkgSettings, sortTemp, packageManagerService);
-
-        // Give priority to apps used by other apps.
-        DexManager dexManager = packageManagerService.getDexManager();
-        applyPackageFilter(snapshot, pkgSetting ->
-                        dexManager.getPackageUseInfoOrDefault(pkgSetting.getPackageName())
-                                .isAnyCodePathUsedByOtherApps(),
-                result, remainingPkgSettings, sortTemp, packageManagerService);
-
-        // Filter out packages that aren't recently used, add all remaining apps.
-        // TODO: add a property to control this?
-        Predicate<PackageStateInternal> remainingPredicate;
-        if (!remainingPkgSettings.isEmpty()
-                && packageManagerService.isHistoricalPackageUsageAvailable()) {
-            if (debug) {
-                Log.i(TAG, "Looking at historical package use");
-            }
-            // Get the package that was used last.
-            PackageStateInternal lastUsed = Collections.max(remainingPkgSettings,
-                    Comparator.comparingLong(
-                            pkgSetting -> pkgSetting.getTransientState()
-                                    .getLatestForegroundPackageUseTimeInMills()));
-            if (debug) {
-                Log.i(TAG, "Taking package " + lastUsed.getPackageName()
-                        + " as reference in time use");
-            }
-            long estimatedPreviousSystemUseTime = lastUsed.getTransientState()
-                    .getLatestForegroundPackageUseTimeInMills();
-            // Be defensive if for some reason package usage has bogus data.
-            if (estimatedPreviousSystemUseTime != 0) {
-                final long cutoffTime = estimatedPreviousSystemUseTime - SEVEN_DAYS_IN_MILLISECONDS;
-                remainingPredicate = pkgSetting -> pkgSetting.getTransientState()
-                        .getLatestForegroundPackageUseTimeInMills() >= cutoffTime;
-            } else {
-                // No meaningful historical info. Take all.
-                remainingPredicate = pkgSetting -> true;
-            }
-            sortPackagesByUsageDate(remainingPkgSettings, packageManagerService);
-        } else {
-            // No historical info. Take all.
-            remainingPredicate = pkgSetting -> true;
-        }
-        applyPackageFilter(snapshot, remainingPredicate, result, remainingPkgSettings, sortTemp,
-                packageManagerService);
-
-        // Make sure the system server isn't in the result, because it can never be dexopted here.
-        result.removeIf(pkgSetting -> PLATFORM_PACKAGE_NAME.equals(pkgSetting.getPackageName()));
-
-        if (debug) {
-            Log.i(TAG, "Packages to be dexopted: " + packagesToString(result));
-            Log.i(TAG, "Packages skipped from dexopt: " + packagesToString(remainingPkgSettings));
-        }
-
-        return result;
-    }
-
-    // Apply the given {@code filter} to all packages in {@code packages}. If tested positive, the
-    // package will be removed from {@code packages} and added to {@code result} with its
-    // dependencies. If usage data is available, the positive packages will be sorted by usage
-    // data (with {@code sortTemp} as temporary storage).
-    private static void applyPackageFilter(@NonNull Computer snapshot,
-            Predicate<PackageStateInternal> filter,
-            Collection<PackageStateInternal> result,
-            Collection<PackageStateInternal> packages,
-            @NonNull List<PackageStateInternal> sortTemp,
-            PackageManagerService packageManagerService) {
-        for (PackageStateInternal pkgSetting : packages) {
-            if (filter.test(pkgSetting)) {
-                sortTemp.add(pkgSetting);
-            }
-        }
-
-        sortPackagesByUsageDate(sortTemp, packageManagerService);
-        packages.removeAll(sortTemp);
-
-        for (PackageStateInternal pkgSetting : sortTemp) {
-            result.add(pkgSetting);
-
-            List<PackageStateInternal> deps = snapshot.findSharedNonSystemLibraries(pkgSetting);
-            if (!deps.isEmpty()) {
-                deps.removeAll(result);
-                result.addAll(deps);
-                packages.removeAll(deps);
-            }
-        }
-
-        sortTemp.clear();
-    }
-
-    // Sort a list of apps by their last usage, most recently used apps first. The order of
-    // packages without usage data is undefined (but they will be sorted after the packages
-    // that do have usage data).
-    private static void sortPackagesByUsageDate(List<PackageStateInternal> pkgSettings,
-            PackageManagerService packageManagerService) {
-        if (!packageManagerService.isHistoricalPackageUsageAvailable()) {
-            return;
-        }
-
-        Collections.sort(pkgSettings, (pkgSetting1, pkgSetting2) ->
-                Long.compare(
-                        pkgSetting2.getTransientState().getLatestForegroundPackageUseTimeInMills(),
-                        pkgSetting1.getTransientState().getLatestForegroundPackageUseTimeInMills())
-        );
-    }
-
-    private static ArraySet<String> getPackageNamesForIntent(Intent intent, int userId) {
-        List<ResolveInfo> ris = null;
-        try {
-            ris = AppGlobals.getPackageManager().queryIntentReceivers(intent, null, 0, userId)
-                    .getList();
-        } catch (RemoteException e) {
-        }
-        ArraySet<String> pkgNames = new ArraySet<String>();
-        if (ris != null) {
-            for (ResolveInfo ri : ris) {
-                pkgNames.add(ri.activityInfo.packageName);
-            }
-        }
-        return pkgNames;
-    }
-
-    public static String packagesToString(List<PackageStateInternal> pkgSettings) {
-        StringBuilder sb = new StringBuilder();
-        for (int index = 0; index < pkgSettings.size(); index++) {
-            if (sb.length() > 0) {
-                sb.append(", ");
-            }
-            sb.append(pkgSettings.get(index).getPackageName());
-        }
-        return sb.toString();
     }
 
      /**
@@ -621,7 +317,6 @@ public final class DexOptHelper {
             }
 
             synchronized (mPm.mLock) {
-                mPm.getPackageUsage().maybeWriteAsync(mPm.mSettings.getPackagesLocked());
                 mPm.mCompilerStats.maybeWriteAsync();
             }
 
@@ -697,30 +392,6 @@ public final class DexOptHelper {
             return LocalManagerRegistry.getManagerOrThrow(ArtManagerLocal.class);
         } catch (ManagerNotFoundException e) {
             throw new RuntimeException(e);
-        }
-    }
-
-    /**
-     * Converts an ART Service {@link DexoptResult} to {@link DexOptResult}.
-     *
-     * For interfacing {@link ArtManagerLocal} with legacy dex optimization code in PackageManager.
-     */
-    @DexOptResult
-    private static int convertToDexOptResult(DexoptResult result) {
-        /*@DexoptResultStatus*/ int status = result.getFinalStatus();
-        switch (status) {
-            case DexoptResult.DEXOPT_SKIPPED:
-                return PackageDexOptimizer.DEX_OPT_SKIPPED;
-            case DexoptResult.DEXOPT_FAILED:
-                return PackageDexOptimizer.DEX_OPT_FAILED;
-            case DexoptResult.DEXOPT_PERFORMED:
-                return PackageDexOptimizer.DEX_OPT_PERFORMED;
-            case DexoptResult.DEXOPT_CANCELLED:
-                return PackageDexOptimizer.DEX_OPT_CANCELLED;
-            default:
-                throw new IllegalArgumentException("DexoptResult for "
-                        + result.getPackageDexoptResults().get(0).getPackageName()
-                        + " has unsupported status " + status);
         }
     }
 

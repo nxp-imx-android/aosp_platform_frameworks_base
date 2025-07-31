@@ -74,7 +74,6 @@ public final class PackageManagerServiceTestParams {
     public MovePackageHelper.MoveCallbacks moveCallbacks;
     public boolean onlyCore;
     public OverlayConfig overlayConfig;
-    public PackageDexOptimizer packageDexOptimizer;
     public PackageParser2.Callback packageParserCallback;
     public PendingPackageBroadcasts pendingPackageBroadcasts;
     public PackageManagerInternal pmInternal;

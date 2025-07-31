@@ -607,7 +607,6 @@ public class AppDataHelper {
             } catch (Installer.InstallerException e) {
                 Slog.w(TAG, String.valueOf(e));
             }
-            mPm.getDexManager().notifyPackageDataDestroyed(packageName, userId);
             mPm.getDynamicCodeLogger().notifyPackageDataDestroyed(packageName, userId);
         }
     }
