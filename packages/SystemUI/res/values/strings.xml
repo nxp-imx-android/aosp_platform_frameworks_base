@@ -979,6 +979,7 @@
     <string name="quick_settings_connected">Connected</string>
     <!-- QuickSettings: Control panel: Label for connecting device. [CHAR LIMIT=NONE] -->
     <string name="quick_settings_connecting">Connecting...</string>
+    <string name="quick_settings_scanning_for_wifi">Scanning for Wi\u2011Fi...</string>
     <!-- QuickSettings: Tethering. [CHAR LIMIT=NONE] -->
     <!-- QuickSettings: Hotspot. [CHAR LIMIT=NONE] -->
     <string name="quick_settings_hotspot_label">Hotspot</string>

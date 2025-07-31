@@ -34,6 +34,7 @@ import com.android.systemui.qs.tiles.InternetTile
 import com.android.systemui.qs.tiles.InternetTileNewImpl
 import com.android.systemui.qs.tiles.MobileDataTile
 import com.android.systemui.qs.tiles.NfcTile
+import com.android.systemui.qs.tiles.WifiTile
 import com.android.systemui.qs.tiles.base.domain.interactor.QSTileAvailabilityInteractor
 import com.android.systemui.qs.tiles.base.shared.model.QSTileConfig
 import com.android.systemui.qs.tiles.base.shared.model.QSTilePolicy
@@ -57,6 +58,10 @@ import com.android.systemui.qs.tiles.impl.saver.domain.interactor.DataSaverTileD
 import com.android.systemui.qs.tiles.impl.saver.domain.interactor.DataSaverTileUserActionInteractor
 import com.android.systemui.qs.tiles.impl.saver.domain.model.DataSaverTileModel
 import com.android.systemui.qs.tiles.impl.saver.ui.mapper.DataSaverTileMapper
+import com.android.systemui.qs.tiles.impl.wifi.domain.interactor.WifiTileDataInteractor
+import com.android.systemui.qs.tiles.impl.wifi.domain.interactor.WifiTileUserActionInteractor
+import com.android.systemui.qs.tiles.impl.wifi.domain.model.WifiTileModel
+import com.android.systemui.qs.tiles.impl.wifi.ui.mapper.WifiTileMapper
 import com.android.systemui.res.R
 import dagger.Binds
 import dagger.Module
@@ -78,6 +83,9 @@ interface ConnectivityModule {
     @IntoMap
     @StringKey(CastTile.TILE_SPEC)
     fun bindCastTile(castTile: CastTile): QSTileImpl<*>
+
+    /** Inject WifiTile into tileMap in QSModule */
+    @Binds @IntoMap @StringKey(WifiTile.TILE_SPEC) fun bindWifiTile(tile: WifiTile): QSTileImpl<*>
 
     /** Inject MobileDataTile into tileMap in QSModule */
     @Binds
@@ -129,6 +137,13 @@ interface ConnectivityModule {
 
     @Binds
     @IntoMap
+    @StringKey(WIFI_TILE_SPEC)
+    fun provideWifiAvailabilityInteractor(
+        impl: WifiTileDataInteractor
+    ): QSTileAvailabilityInteractor
+
+    @Binds
+    @IntoMap
     @StringKey(MOBILE_DATA_TILE_SPEC)
     fun provideMobileDataAvailabilityInteractor(
         impl: MobileDataTileDataInteractor
@@ -139,6 +154,7 @@ interface ConnectivityModule {
         const val AIRPLANE_MODE_TILE_SPEC = "airplane"
         const val DATA_SAVER_TILE_SPEC = "saver"
         const val INTERNET_TILE_SPEC = "internet"
+        const val WIFI_TILE_SPEC = "wifi"
         const val MOBILE_DATA_TILE_SPEC = "cell"
         const val HOTSPOT_TILE_SPEC = "hotspot"
         const val CAST_TILE_SPEC = "cast"
@@ -261,6 +277,39 @@ interface ConnectivityModule {
                 stateInteractor,
                 mapper,
                 internetDetailsViewModelFactory.create(),
+            )
+
+        @Provides
+        @IntoMap
+        @StringKey(WIFI_TILE_SPEC)
+        fun provideWifiTileConfig(uiEventLogger: QsEventLogger): QSTileConfig =
+            QSTileConfig(
+                tileSpec = TileSpec.create(WIFI_TILE_SPEC),
+                uiConfig =
+                    QSTileUIConfig.Resource(
+                        iconRes = WifiIcons.WIFI_FULL_ICONS[4],
+                        // Wifi tile will still show internet for now until we migrate to a
+                        // Wifi-only tile.
+                        labelRes = R.string.quick_settings_internet_label,
+                    ),
+                instanceId = uiEventLogger.getNewInstanceId(),
+                category = TileCategory.CONNECTIVITY,
+            )
+
+        @Provides
+        @IntoMap
+        @StringKey(WIFI_TILE_SPEC)
+        fun provideWifiTileViewModel(
+            factory: QSTileViewModelFactory.Static<WifiTileModel>,
+            mapper: WifiTileMapper,
+            dataInteractor: WifiTileDataInteractor,
+            userActionInteractor: WifiTileUserActionInteractor,
+        ): QSTileViewModel =
+            factory.create(
+                TileSpec.create(WIFI_TILE_SPEC),
+                userActionInteractor,
+                dataInteractor,
+                mapper,
             )
 
         @Provides

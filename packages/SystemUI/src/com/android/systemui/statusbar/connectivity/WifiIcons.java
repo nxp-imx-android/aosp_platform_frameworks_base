@@ -26,6 +26,7 @@ import com.android.settingslib.SignalIcon.IconGroup;
 public class WifiIcons {
 
     public static final int[] WIFI_FULL_ICONS = getIconsBasedOnFlag();
+    public static final int WIFI_NO_SIGNAL = WIFI_FULL_ICONS[0];
 
     /**
      * Check the aconfig flag to decide on which icons to use. Can be removed once the flag is gone
