@@ -19,6 +19,7 @@ package com.android.systemui.biometrics.ui.viewmodel
 
 import android.annotation.RawRes
 import android.content.res.Configuration
+import android.hardware.biometrics.Flags
 import com.android.systemui.biometrics.domain.interactor.PromptSelectorInteractor
 import com.android.systemui.biometrics.shared.model.FingerprintSensorType
 import com.android.systemui.biometrics.ui.PromptIconState
@@ -204,6 +205,8 @@ class PromptIconViewModel(
             }
         } else if (showingError) {
             R.raw.fingerprint_dialogue_fingerprint_to_error_lottie
+        } else if (Flags.bpFallbackOptions()) {
+            R.raw.fingerprint_dialogue_fingerprint_to_error_lottie
         } else {
             -1
         }
@@ -231,6 +234,8 @@ class PromptIconViewModel(
             }
         } else if (showingError) {
             getSfpsAsset_fingerprintToError(rotation, isInRearDisplayMode)
+        } else if (Flags.bpFallbackOptions()) {
+            getSfpsAsset_fingerprintAuthenticating(isInRearDisplayMode)
         } else {
             -1
         }
@@ -287,6 +292,8 @@ class PromptIconViewModel(
             }
         } else if (showingError) {
             R.raw.fingerprint_dialogue_fingerprint_to_error_lottie
+        } else if (Flags.bpFallbackOptions()) {
+            R.raw.fingerprint_dialogue_fingerprint_to_error_lottie
         } else {
             -1
         }
@@ -323,6 +330,8 @@ class PromptIconViewModel(
             }
         } else if (showingError) {
             getSfpsAsset_fingerprintToError(rotation, isInRearDisplayMode)
+        } else if (Flags.bpFallbackOptions()) {
+            getSfpsAsset_fingerprintAuthenticating(isInRearDisplayMode)
         } else {
             -1
         }
