@@ -109,6 +109,17 @@ flag {
 }
 
 flag {
+    name: "copy_surface_control_for_window_screenshots"
+    namespace: "accessibility"
+    description: "Copies and sends the copied SurfaceControl when an A11yService requests a single-window app screenshot"
+    bug: "431752508"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+
+flag {
     name: "deprecate_accessibility_announcement_apis"
     namespace: "accessibility"
     description: "Controls the deprecation of platform APIs related to disruptive accessibility announcements"
