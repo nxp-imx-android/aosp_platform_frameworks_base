@@ -215,19 +215,6 @@ class DesktopTilingDecorViewModel(
     }
 
     fun getRightSnapBoundsIfTiled(displayId: Int): Rect {
-        val deskId = getCurrentActiveDeskForDisplay(displayId)
-        if (deskId == null) {
-            logW(
-                "Attempted to get right tiling snap bounds with no active desktop for displayId=%d.",
-                displayId,
-            )
-            return Rect()
-        }
-        val tilingBounds =
-            tilingHandlerByUserAndDeskId[currentUserId]?.get(deskId)?.getRightSnapBoundsIfTiled()
-        if (tilingBounds != null) {
-            return tilingBounds
-        }
         val displayLayout = displayController.getDisplayLayout(displayId)
         val stableBounds = Rect()
         displayLayout?.getStableBounds(stableBounds)
@@ -240,23 +227,13 @@ class DesktopTilingDecorViewModel(
                 stableBounds.right,
                 stableBounds.bottom,
             )
-        return snapBounds
+
+        val deskId = getCurrentActiveDeskForDisplay(displayId) ?: return snapBounds
+        val tilingHandler = tilingHandlerByUserAndDeskId[currentUserId]?.get(deskId)
+        return tilingHandler?.getRightSnapBoundsIfTiled() ?: snapBounds
     }
 
     fun getLeftSnapBoundsIfTiled(displayId: Int): Rect {
-        val deskId = getCurrentActiveDeskForDisplay(displayId)
-        if (deskId == null) {
-            logW(
-                "Attempted to get left tiling snap bounds with no active desktop for displayId=%d.",
-                displayId,
-            )
-            return Rect()
-        }
-        val tilingBounds =
-            tilingHandlerByUserAndDeskId[currentUserId]?.get(deskId)?.getLeftSnapBoundsIfTiled()
-        if (tilingBounds != null) {
-            return tilingBounds
-        }
         val displayLayout = displayController.getDisplayLayout(displayId)
         val stableBounds = Rect()
         displayLayout?.getStableBounds(stableBounds)
@@ -268,7 +245,10 @@ class DesktopTilingDecorViewModel(
                     context.resources.getDimensionPixelSize(R.dimen.split_divider_bar_width) / 2,
                 stableBounds.bottom,
             )
-        return snapBounds
+
+        val deskId = getCurrentActiveDeskForDisplay(displayId) ?: return snapBounds
+        val tilingHandler = tilingHandlerByUserAndDeskId[currentUserId]?.get(deskId)
+        return tilingHandler?.getLeftSnapBoundsIfTiled() ?: snapBounds
     }
 
     /** Notifies tiling of a desk being deactivated. */

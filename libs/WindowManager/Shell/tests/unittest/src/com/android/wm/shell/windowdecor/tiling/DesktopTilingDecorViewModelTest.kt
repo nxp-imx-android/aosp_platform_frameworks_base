@@ -400,6 +400,15 @@ class DesktopTilingDecorViewModelTest : ShellTestCase() {
             .isEqualTo(Rect(12, 7, 8, 9))
     }
 
+    @Test
+    fun getTiledAppBounds_NoActiveDesk() {
+        whenever(desktopRepository.getActiveDeskId(any())).thenReturn(null)
+        assertThat(desktopTilingDecorViewModel.getLeftSnapBoundsIfTiled(2))
+            .isEqualTo(Rect(6, 7, 2, 9))
+        assertThat(desktopTilingDecorViewModel.getRightSnapBoundsIfTiled(2))
+            .isEqualTo(Rect(12, 7, 8, 9))
+    }
+
     companion object {
         private val BOUNDS = Rect(1, 2, 3, 4)
         private val STABLE_BOUNDS = Rect(6, 7, 8, 9)
