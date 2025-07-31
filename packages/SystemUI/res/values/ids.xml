@@ -304,4 +304,5 @@
     <!-- Used for animation guard tag to throttle number of reported logs. -->
     <item type="id" name="screen_off_animation_guard_set" />
     <item type="id" name="screen_off_animation_guard_reported_wtf" />
+    <item type="id" name="screen_off_animation_guard_screen_off_updates" />
 </resources>
