@@ -1044,6 +1044,46 @@ public class GroupHelperTest extends UiServiceTestCase {
     }
 
     @Test
+    @EnableFlags({FLAG_NOTIFICATION_FORCE_GROUPING, FLAG_NOTIFICATION_CLASSIFICATION})
+    public void testAppStartsGroupingBundledNotification_doesNotUnAutogroup() {
+        final String pkg = "package";
+        final NotificationChannel socialChannel = new NotificationChannel(
+                NotificationChannel.SOCIAL_MEDIA_ID, NotificationChannel.SOCIAL_MEDIA_ID,
+                IMPORTANCE_LOW);
+        final String expectedGroupKey_social = GroupHelper.getFullAggregateGroupKey(pkg,
+                AGGREGATE_GROUP_KEY + "SocialSection", UserHandle.SYSTEM.getIdentifier());
+        ArrayList<NotificationRecord> posted = new ArrayList<>();
+        // Post ungrouped bundled notifications to trigger autogrouping
+        for (int i = 0; i < AUTOGROUP_BUNDLES_AT_COUNT; i++) {
+            NotificationRecord r = getNotificationRecord(pkg, i, String.valueOf(i),
+                    UserHandle.SYSTEM);
+            r.updateNotificationChannel(socialChannel);
+            posted.add(r);
+            mGroupHelper.onNotificationPosted(r, false);
+        }
+        verify(mCallback, times(1)).addAutoGroupSummary(anyInt(), eq(pkg), anyString(),
+                eq(expectedGroupKey_social), anyInt(), any());
+        verify(mCallback, times(AUTOGROUP_BUNDLES_AT_COUNT - 1)).addAutoGroup(anyString(),
+                eq(expectedGroupKey_social), anyBoolean());
+        verify(mCallback, never()).removeAutoGroup(anyString());
+        verify(mCallback, never()).removeAutoGroupSummary(anyInt(), anyString(), anyString());
+        Mockito.reset(mCallback);
+
+        // Set a group name for the notifications (app grouped) and post update
+        for (int i = 0; i < AUTOGROUP_BUNDLES_AT_COUNT; i++) {
+            final NotificationRecord r = getNotificationRecord(pkg, i, String.valueOf(i),
+                    UserHandle.SYSTEM, "app group", false);
+            r.getSbn().setOverrideGroupKey(expectedGroupKey_social);
+            r.updateNotificationChannel(socialChannel);
+            mGroupHelper.onNotificationPosted(r, true);
+        }
+        verify(mCallback, never()).removeAutoGroup(anyString());
+        verify(mCallback, never()).removeAutoGroupSummary(anyInt(), anyString(), anyString());
+        verify(mCallback, never()).updateAutogroupSummary(anyInt(), anyString(), anyString(),
+                any());
+    }
+
+    @Test
     @EnableFlags({FLAG_NOTIFICATION_FORCE_GROUPING})
     public void testNewNotificationsAddedToAutogroup_ifOriginalNotificationsCanceled() {
         final String pkg = "package";

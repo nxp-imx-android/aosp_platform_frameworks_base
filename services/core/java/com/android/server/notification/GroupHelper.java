@@ -744,7 +744,7 @@ public class GroupHelper {
      *
      * And updates the internal state of un-app-grouped notifications and their flags.
      *
-     * @return true if the notification was previously auto-grouped
+     * @return true if the notification was previously auto-grouped and was ungrouped by this method
      */
     private boolean maybeUngroupWithSections(NotificationRecord record,
             @Nullable FullyQualifiedGroupKey fullAggregateGroupKey) {
@@ -773,6 +773,19 @@ public class GroupHelper {
                 mAggregatedNotifications.getOrDefault(fullAggregateGroupKey, new ArrayMap<>());
             // check if the removed notification was part of the aggregate group
             if (aggregatedNotificationsAttrs.containsKey(record.getKey())) {
+                // If bundled and the section did not change, do not un-autogroup
+                final NotificationSectioner sectioner = getSection(record);
+                if (sectioner != null
+                        && NOTIFICATION_BUNDLE_SECTIONS.contains(sectioner)
+                        && fullAggregateGroupKey.equals(
+                            FullyQualifiedGroupKey.forRecord(record, sectioner))) {
+                    if (DEBUG) {
+                        Slog.i(TAG, "Skip removeAutoGroup because bundled: " + record);
+                    }
+                    maybeUpdateSummaryAttributes(record, fullAggregateGroupKey, sectioner);
+                    return false;
+                }
+
                 aggregatedNotificationsAttrs.remove(sbn.getKey());
                 mAggregatedNotifications.put(fullAggregateGroupKey, aggregatedNotificationsAttrs);
                 wasUnAggregated = true;
