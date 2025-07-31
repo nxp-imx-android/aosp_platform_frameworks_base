@@ -492,3 +492,11 @@ flag {
   bug: "414733570"
   is_exported: true
 }
+
+flag {
+  name: "enforcing_admin_extra_enabled"
+  namespace: "enterprise"
+  description: "Adds a new API for extra that contains EnforcingAdmin"
+  bug: "414733570"
+  is_exported: true
+}

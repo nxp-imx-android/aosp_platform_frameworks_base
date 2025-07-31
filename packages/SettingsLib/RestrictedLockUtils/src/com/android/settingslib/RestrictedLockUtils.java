@@ -126,6 +126,9 @@ public class RestrictedLockUtils {
     public static Intent getShowAdminSupportDetailsIntent(@Nullable EnforcingAdmin admin) {
         final Intent intent = new Intent(Settings.ACTION_SHOW_ADMIN_SUPPORT_DETAILS);
         if (admin != null) {
+            // Although EXTRA_ENFORCING_ADMIN contains all info from other extras, we keep them
+            // to provide backward compatibility.
+            intent.putExtra(DevicePolicyManager.EXTRA_ENFORCING_ADMIN, admin);
             if (admin.getComponentName() != null) {
                 intent.putExtra(DevicePolicyManager.EXTRA_DEVICE_ADMIN, admin.getComponentName());
             }

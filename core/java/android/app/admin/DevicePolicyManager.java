@@ -2296,6 +2296,17 @@ public class DevicePolicyManager {
     public static final String EXTRA_RESTRICTION = "android.app.extra.RESTRICTION";
 
     /**
+     * A parcelable extra that contains {@link EnforcingAdmin} information that enforces a user
+     * restriction or policy.
+     * @hide
+     */
+    @SystemApi
+    @FlaggedApi(Flags.FLAG_ENFORCING_ADMIN_EXTRA_ENABLED)
+    // Suppress API linter warning to have consistent value with other extras in this file.
+    @SuppressLint("ActionValue")
+    public static final String EXTRA_ENFORCING_ADMIN = "android.app.extra.ENFORCING_ADMIN";
+
+    /**
      * Activity action: have the user enter a new password.
      *
      * <p>For admin apps, this activity should be launched after using {@link
