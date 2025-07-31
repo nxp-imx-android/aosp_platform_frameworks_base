@@ -62,8 +62,6 @@ public final class RavenwoodRunnerState {
         mRunner = runner;
     }
 
-    private Description mMethodDescription;
-
     public void enterTestRunner() {
         if (RAVENWOOD_VERBOSE_LOGGING) {
             Log.v(TAG, "enterTestRunner: " + mRunner);
@@ -82,19 +80,18 @@ public final class RavenwoodRunnerState {
             Log.v(TAG, "exitTestClass: " + mRunner.mTestJavaClass.getName());
         }
         assertTrue(RAVENWOOD_RULE_ERROR, sActiveProperties.isEmpty());
-        RavenwoodDriver.exitTestClass();
+        RavenwoodErrorHandler.exitTestClass();
     }
 
     /** Called when a test method is about to start */
     public void enterTestMethod(Description description) {
-        mMethodDescription = description;
         RavenwoodDriver.enterTestMethod(description);
+        RavenwoodErrorHandler.enterTestMethod(description);
     }
 
     /** Called when a test method finishes */
     public void exitTestMethod(Description description) {
-        RavenwoodDriver.exitTestMethod(description);
-        mMethodDescription = null;
+        RavenwoodErrorHandler.exitTestMethod(description);
     }
 
     public void enterRavenwoodRule(RavenwoodRule rule) {
