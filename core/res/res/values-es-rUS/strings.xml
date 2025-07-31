@@ -301,8 +301,7 @@
     <string name="global_action_assist" msgid="2517047220311505805">"Asistencia"</string>
     <string name="global_action_voice_assist" msgid="6655788068555086695">"Asistente voz"</string>
     <string name="global_action_lockdown" msgid="2475471405907902963">"Bloqueo"</string>
-    <!-- no translation found for global_action_unrestricted_lock (7933224393323064116) -->
-    <skip />
+    <string name="global_action_unrestricted_lock" msgid="7933224393323064116">"Bloquear"</string>
     <string name="status_bar_notification_info_overflow" msgid="3330152558746563475">"999+"</string>
     <string name="notification_compact_heads_up_reply" msgid="2425293958371284340">"Responder"</string>
     <string name="notification_hidden_text" msgid="2835519769868187223">"Notificación nueva"</string>
@@ -915,7 +914,7 @@
     <string name="policydesc_encryptedStorage" msgid="1102516950740375617">"Exige que se encripten los datos de la aplicación almacenados."</string>
     <string name="policylab_disableCamera" msgid="5749486347810162018">"Desactivar cámaras"</string>
     <string name="policydesc_disableCamera" msgid="3204405908799676104">"Evita el uso de todas las cámaras del dispositivo."</string>
-    <string name="policylab_disableKeyguardFeatures" msgid="5071855750149949741">"Inhabilitar func. del bloqueo"</string>
+    <string name="policylab_disableKeyguardFeatures" msgid="5071855750149949741">"Inhabilitar funciones de bloqueo de pantalla"</string>
     <string name="policydesc_disableKeyguardFeatures" msgid="6641673177041195957">"Evita el uso de algunas funciones de bloqueo de pantalla."</string>
     <string name="exit_toast_on_long_press_escape" msgid="2983932499112557277">"Mantén presionada la tecla Esc para cerrar esta app"</string>
   <string-array name="phoneTypes">
@@ -1485,8 +1484,6 @@
     <string name="decline_remote_bugreport_action" msgid="4040894777519784346">"RECHAZAR"</string>
     <string name="select_input_method" msgid="3971267998568587025">"Selecciona el método de entrada"</string>
     <string name="input_method_language_settings" msgid="8069089418056819437">"Configuración del idioma"</string>
-    <string name="show_ime" msgid="6406112007347443383">"Mientras el teclado físico está activo"</string>
-    <string name="hardware" msgid="3611039921284836033">"Usar teclado en pantalla"</string>
     <string name="select_keyboard_layout_notification_title" msgid="5823199895322205589">"Configura <xliff:g id="DEVICE_NAME">%s</xliff:g>"</string>
     <string name="select_multiple_keyboards_layout_notification_title" msgid="6999491025126641938">"Configura teclados físicos"</string>
     <string name="select_keyboard_layout_notification_message" msgid="8835158247369158154">"Presiona para seleccionar el idioma y el diseño"</string>

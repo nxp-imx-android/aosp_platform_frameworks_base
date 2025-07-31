@@ -894,7 +894,7 @@
     <string name="policylab_resetPassword" msgid="214556238645096520">"Mengubah kunci layar"</string>
     <string name="policydesc_resetPassword" msgid="4626419138439341851">"Mengubah kunci layar."</string>
     <string name="policylab_forceLock" msgid="7360335502968476434">"Mengunci layar"</string>
-    <string name="policydesc_forceLock" msgid="1008844760853899693">"Mengontrol cara dan kapan layar mengunci."</string>
+    <string name="policydesc_forceLock" msgid="1008844760853899693">"Mengontrol cara dan waktu penguncian layar."</string>
     <string name="policylab_wipeData" msgid="1359485247727537311">"Menghapus semua data"</string>
     <string name="policydesc_wipeData" product="tablet" msgid="7245372676261947507">"Menghapus data tablet tanpa peringatan dengan mereset ke setelan pabrik."</string>
     <string name="policydesc_wipeData" product="tv" msgid="513862488950801261">"Menghapus data perangkat Android TV tanpa peringatan dengan melakukan reset ke setelan pabrik."</string>
@@ -914,7 +914,7 @@
     <string name="policydesc_encryptedStorage" msgid="1102516950740375617">"Mengharuskan data apl yang disimpan untuk dienkripsi."</string>
     <string name="policylab_disableCamera" msgid="5749486347810162018">"Nonaktifkan kamera"</string>
     <string name="policydesc_disableCamera" msgid="3204405908799676104">"Mencegah penggunaan semua kamera perangkat."</string>
-    <string name="policylab_disableKeyguardFeatures" msgid="5071855750149949741">"Mematikan beberapa fitur kunci layar"</string>
+    <string name="policylab_disableKeyguardFeatures" msgid="5071855750149949741">"Menonaktifkan fitur kunci layar"</string>
     <string name="policydesc_disableKeyguardFeatures" msgid="6641673177041195957">"Mencegah penggunaan beberapa fitur kunci layar."</string>
     <string name="exit_toast_on_long_press_escape" msgid="2983932499112557277">"Tekan lama tombol Esc untuk menutup aplikasi ini"</string>
   <string-array name="phoneTypes">
@@ -1484,8 +1484,6 @@
     <string name="decline_remote_bugreport_action" msgid="4040894777519784346">"TOLAK"</string>
     <string name="select_input_method" msgid="3971267998568587025">"Pilih metode masukan"</string>
     <string name="input_method_language_settings" msgid="8069089418056819437">"Setelan Bahasa"</string>
-    <string name="show_ime" msgid="6406112007347443383">"Biarkan di layar meski keyboard fisik aktif"</string>
-    <string name="hardware" msgid="3611039921284836033">"Gunakan keyboard virtual"</string>
     <string name="select_keyboard_layout_notification_title" msgid="5823199895322205589">"Konfigurasi <xliff:g id="DEVICE_NAME">%s</xliff:g>"</string>
     <string name="select_multiple_keyboards_layout_notification_title" msgid="6999491025126641938">"Konfigurasi keyboard fisik"</string>
     <string name="select_keyboard_layout_notification_message" msgid="8835158247369158154">"Ketuk untuk memilih bahasa dan tata letak"</string>

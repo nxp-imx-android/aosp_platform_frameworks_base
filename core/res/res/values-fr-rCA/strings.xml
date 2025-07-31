@@ -301,8 +301,7 @@
     <string name="global_action_assist" msgid="2517047220311505805">"Assistance"</string>
     <string name="global_action_voice_assist" msgid="6655788068555086695">"Assist. vocale"</string>
     <string name="global_action_lockdown" msgid="2475471405907902963">"Verrouillage"</string>
-    <!-- no translation found for global_action_unrestricted_lock (7933224393323064116) -->
-    <skip />
+    <string name="global_action_unrestricted_lock" msgid="7933224393323064116">"Verrouiller"</string>
     <string name="status_bar_notification_info_overflow" msgid="3330152558746563475">"&gt;999"</string>
     <string name="notification_compact_heads_up_reply" msgid="2425293958371284340">"Répondre"</string>
     <string name="notification_hidden_text" msgid="2835519769868187223">"Nouvelle notification"</string>
@@ -900,7 +899,7 @@
     <string name="policydesc_wipeData" product="tablet" msgid="7245372676261947507">"Effacer les données de la tablette sans avertissement, en rétablissant les paramètres par défaut"</string>
     <string name="policydesc_wipeData" product="tv" msgid="513862488950801261">"Effacez les données de votre appareil Android TV sans avertissement en effectuant une réinitialisation des paramètres d\'usine."</string>
     <string name="policydesc_wipeData" product="automotive" msgid="660804547737323300">"Effacez les données du système d\'infodivertissement sans avertissement en rétablissant les paramètres par défaut."</string>
-    <string name="policydesc_wipeData" product="default" msgid="8036084184768379022">"Les données du téléphone sont effacées sans avertissement en rétablissant les paramètres par défaut."</string>
+    <string name="policydesc_wipeData" product="default" msgid="8036084184768379022">"Effacer les données du téléphone sans avertissement en rétablissant les paramètres par défaut."</string>
     <string name="policylab_wipeData_secondaryUser" product="automotive" msgid="115034358520328373">"Effacer les données de profil"</string>
     <string name="policylab_wipeData_secondaryUser" product="default" msgid="413813645323433166">"Effacer les données de l\'utilisateur"</string>
     <string name="policydesc_wipeData_secondaryUser" product="tablet" msgid="2336676480090926470">"Effacer les données de l\'utilisateur sur cette tablette sans avertissement."</string>
@@ -1485,8 +1484,6 @@
     <string name="decline_remote_bugreport_action" msgid="4040894777519784346">"REFUSER"</string>
     <string name="select_input_method" msgid="3971267998568587025">"Sélectionnez le mode de saisie"</string>
     <string name="input_method_language_settings" msgid="8069089418056819437">"Paramètres de langue"</string>
-    <string name="show_ime" msgid="6406112007347443383">"Afficher lorsque le clavier physique est activé"</string>
-    <string name="hardware" msgid="3611039921284836033">"Utiliser le clavier à l\'écran"</string>
     <string name="select_keyboard_layout_notification_title" msgid="5823199895322205589">"Configurer <xliff:g id="DEVICE_NAME">%s</xliff:g>"</string>
     <string name="select_multiple_keyboards_layout_notification_title" msgid="6999491025126641938">"Configurer les claviers physiques"</string>
     <string name="select_keyboard_layout_notification_message" msgid="8835158247369158154">"Touchez pour sélectionner la langue et la configuration du clavier"</string>

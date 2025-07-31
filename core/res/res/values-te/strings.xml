@@ -300,8 +300,7 @@
     <string name="global_action_assist" msgid="2517047220311505805">"సహాయం"</string>
     <string name="global_action_voice_assist" msgid="6655788068555086695">"వాయిస్ అసిస్టెంట్"</string>
     <string name="global_action_lockdown" msgid="2475471405907902963">"లాక్ చేయండి"</string>
-    <!-- no translation found for global_action_unrestricted_lock (7933224393323064116) -->
-    <skip />
+    <string name="global_action_unrestricted_lock" msgid="7933224393323064116">"లాక్ చేయండి"</string>
     <string name="status_bar_notification_info_overflow" msgid="3330152558746563475">"999+"</string>
     <string name="notification_compact_heads_up_reply" msgid="2425293958371284340">"రిప్లయి ఇవ్వండి"</string>
     <string name="notification_hidden_text" msgid="2835519769868187223">"కొత్త నోటిఫికేషన్"</string>
@@ -891,11 +890,11 @@
     <string name="policydesc_watchLogin_secondaryUser" product="tv" msgid="8965224107449407052">"స్క్రీన్‌ను అన్‌లాక్ చేస్తున్నప్పుడు పాస్‌వర్డ్‌ను ఎన్నిసార్లు తప్పుగా టైప్ చేశారో పర్యవేక్షిస్తుంది, చాలా ఎక్కువసార్లు పాస్‌వర్డ్‌ను తప్పుగా టైప్ చేసి ఉంటే మీ Android TV పరికరాన్ని లాక్ చేస్తుంది లేదా ఈ వినియోగదారు యొక్క మొత్తం డేటాను తీసివేస్తుంది."</string>
     <string name="policydesc_watchLogin_secondaryUser" product="automotive" msgid="7180857406058327941">"స్క్రీన్‌ను అన్‌లాక్ చేస్తున్నప్పుడు పాస్‌వర్డ్‌ను ఎన్నిసార్లు తప్పుగా టైప్ చేశారో పర్యవేక్షిస్తుంది. ఒకవేళ చాలా ఎక్కువ సార్లు పాస్‌వర్డ్‌ను తప్పుగా టైప్ చేసి ఉంటే, సమాచారంతో కూడిన వినోదం సిస్టమ్‌ను లాక్ చేస్తుంది లేదా ఈ ప్రొఫైల్‌కు సంబంధించిన డేటాను తొలగించి ఫ్యాక్టరీ రీసెట్ చేస్తుంది."</string>
     <string name="policydesc_watchLogin_secondaryUser" product="default" msgid="9177645136475155924">"స్క్రీన్‌ను అన్‌లాక్ చేస్తున్నప్పుడు పాస్‌వర్డ్‌ను ఎన్నిసార్లు తప్పుగా టైప్ చేశారో పర్యవేక్షిస్తుంది మరియు చాలా ఎక్కువసార్లు పాస్‌వర్డ్‌ను తప్పుగా టైప్ చేసి ఉంటే ఫోన్‌ను లాక్ చేస్తుంది లేదా ఈ వినియోగదారు యొక్క మొత్తం డేటాను తీసివేస్తుంది."</string>
-    <string name="policylab_resetPassword" msgid="214556238645096520">"స్క్రీన్ లాక్ మార్చడానికి"</string>
-    <string name="policydesc_resetPassword" msgid="4626419138439341851">"స్క్రీన్ లాక్‌ని మారుస్తుంది."</string>
-    <string name="policylab_forceLock" msgid="7360335502968476434">"స్క్రీన్‌ను లాక్ చేయడానికి"</string>
-    <string name="policydesc_forceLock" msgid="1008844760853899693">"స్క్రీన్‌ను ఎలా మరియు ఎప్పుడు లాక్ చేయాలనే దాన్ని నియంత్రిస్తుంది."</string>
-    <string name="policylab_wipeData" msgid="1359485247727537311">"మొత్తం డేటాను ఎరేజ్ చేయడానికి"</string>
+    <string name="policylab_resetPassword" msgid="214556238645096520">"స్క్రీన్ లాక్‌ను మార్చడం"</string>
+    <string name="policydesc_resetPassword" msgid="4626419138439341851">"స్క్రీన్ లాక్‌ను మారుస్తుంది."</string>
+    <string name="policylab_forceLock" msgid="7360335502968476434">"స్క్రీన్‌ను లాక్ చేయడం"</string>
+    <string name="policydesc_forceLock" msgid="1008844760853899693">"స్క్రీన్ ఎలా లాక్ అవుతుందో, ఎప్పుడు లాక్ అవుతుందో కంట్రోల్ చేస్తుంది."</string>
+    <string name="policylab_wipeData" msgid="1359485247727537311">"మొత్తం డేటాను ఎరేజ్ చేయడం"</string>
     <string name="policydesc_wipeData" product="tablet" msgid="7245372676261947507">"\'ఫ్యాక్టరీ డేటా రీసెట్‌\'ను అమలు చేయడం ద్వారా వార్నింగ్‌తో పని లేకుండా టాబ్లెట్ డేటాను ఎరేజ్ చేయండి."</string>
     <string name="policydesc_wipeData" product="tv" msgid="513862488950801261">"హెచ్చరించకుండానే మీ Android TV పరికరం డేటాను ఫ్యాక్టరీ డేటా రీసెట్ ద్వారా తొలగిస్తుంది."</string>
     <string name="policydesc_wipeData" product="automotive" msgid="660804547737323300">"ఫ్యాక్టరీ డేటా రీసెట్‌ను అమలు చేయడం ద్వారా, హెచ్చరిక లేకుండానే సమాచారంతో కూడిన వినోదం సిస్టమ్ డేటాను తొలగించి ఫ్యాక్టరీ రీసెట్ చేయబడుతుంది."</string>
@@ -1484,8 +1483,6 @@
     <string name="decline_remote_bugreport_action" msgid="4040894777519784346">"తిరస్కరిస్తున్నాను"</string>
     <string name="select_input_method" msgid="3971267998568587025">"ఇన్‌పుట్ పద్ధతిని ఎంచుకోండి"</string>
     <string name="input_method_language_settings" msgid="8069089418056819437">"భాషా సెట్టింగ్‌లు"</string>
-    <string name="show_ime" msgid="6406112007347443383">"దీన్ని భౌతిక కీబోర్డ్ యాక్టివ్‌గా ఉన్నప్పుడు స్క్రీన్‌పై ఉంచుతుంది"</string>
-    <string name="hardware" msgid="3611039921284836033">"స్క్రీన్‌పై కీబోర్డ్ ఉపయోగించు"</string>
     <string name="select_keyboard_layout_notification_title" msgid="5823199895322205589">"<xliff:g id="DEVICE_NAME">%s</xliff:g>‌ను కాన్ఫిగర్ చేయండి"</string>
     <string name="select_multiple_keyboards_layout_notification_title" msgid="6999491025126641938">"ఫిజికల్ కీబోర్డ్‌లను కాన్ఫిగ‌ర్ చేయండి"</string>
     <string name="select_keyboard_layout_notification_message" msgid="8835158247369158154">"భాషను, లేఅవుట్‌ను ఎంచుకోవడానికి ట్యాప్ చేయండి"</string>
@@ -2265,7 +2262,7 @@
     <string name="accessibility_system_action_back_label" msgid="4205361367345537608">"వెనుకకు"</string>
     <string name="accessibility_system_action_recents_label" msgid="4782875610281649728">"ఇటీవలి యాప్‌లు"</string>
     <string name="accessibility_system_action_notifications_label" msgid="6083767351772162010">"నోటిఫికేషన్‌లు"</string>
-    <string name="accessibility_system_action_quick_settings_label" msgid="4583900123506773783">"క్విక్ సెట్టింగ్‌లు"</string>
+    <string name="accessibility_system_action_quick_settings_label" msgid="4583900123506773783">"క్విక్ సెట్టింగ్స్"</string>
     <string name="accessibility_system_action_power_dialog_label" msgid="8095341821683910781">"పవర్ డైలాగ్‌ను తెరువు"</string>
     <string name="accessibility_system_action_lock_screen_label" msgid="5484190691945563838">"స్క్రీన్‌ను లాక్ చేయి"</string>
     <string name="accessibility_system_action_screenshot_label" msgid="3581566515062741676">"స్క్రీన్‌షాట్"</string>
