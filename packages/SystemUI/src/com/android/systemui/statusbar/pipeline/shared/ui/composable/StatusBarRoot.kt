@@ -108,6 +108,7 @@ import com.android.systemui.statusbar.systemstatusicons.ui.viewmodel.SystemStatu
 import com.android.systemui.statusbar.ui.viewmodel.StatusBarRegionSamplingViewModel
 import javax.inject.Inject
 import javax.inject.Named
+import kotlinx.coroutines.DisposableHandle
 import kotlinx.coroutines.awaitCancellation
 
 /** Factory to simplify the dependency management for [StatusBarRoot] */
@@ -204,6 +205,7 @@ fun StatusBarRoot(
         rememberViewModel("AppHandleBounds") {
             statusBarViewModel.appHandlesViewModelFactory.create(displayId)
         }
+    lateinit var touchableExclusionRegionDisposableHandle: DisposableHandle
 
     // Let the DesktopStatusBar compose all the UI if [isDesktopStatusBarEnabled] is true.
     if (StatusBarForDesktop.isEnabled && statusBarViewModel.isDesktopStatusBarEnabled) {
@@ -228,10 +230,11 @@ fun StatusBarRoot(
                 )
             }
 
-            HomeStatusBarTouchExclusionRegionBinder.bind(
-                phoneStatusBarView,
-                appHandlesViewModel.touchableExclusionRegion,
-            )
+            touchableExclusionRegionDisposableHandle =
+                HomeStatusBarTouchExclusionRegionBinder.bind(
+                    phoneStatusBarView,
+                    appHandlesViewModel,
+                )
 
             if (StatusBarChipsModernization.isEnabled) {
                 // Make sure the primary chip is hidden when StatusBarChipsModernization is
@@ -351,6 +354,7 @@ fun StatusBarRoot(
             phoneStatusBarView
         },
         modifier = modifier,
+        onRelease = { touchableExclusionRegionDisposableHandle.dispose() },
     )
 }
 
