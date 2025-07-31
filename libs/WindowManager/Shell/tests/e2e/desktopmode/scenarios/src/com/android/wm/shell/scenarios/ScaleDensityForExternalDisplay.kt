@@ -21,7 +21,6 @@ import android.app.Instrumentation
 import android.content.Intent
 import android.os.UserHandle
 import android.platform.test.annotations.RequiresFlagsEnabled
-import android.platform.test.flag.junit.DeviceFlagsValueProvider
 import android.provider.Settings
 import android.view.IWindowManager
 import android.view.WindowManagerGlobal
@@ -55,8 +54,7 @@ abstract class ScaleDensityForExternalDisplay : TestScenarioBase() {
     private val increaseDensityDescription = getSettingsString(INCREASE_DENSITY_DESCRIPTION_RES)
     private val decreaseDensityDescription = getSettingsString(DECREASE_DENSITY_DESCRIPTION_RES)
 
-    @get:Rule(order = 0) val checkFlagsRule = DeviceFlagsValueProvider.createCheckFlagsRule()
-    @get:Rule(order = 1) val connectedDisplayRule = SimulatedConnectedDisplayTestRule()
+    @get:Rule val connectedDisplayRule = SimulatedConnectedDisplayTestRule()
 
     @Test
     fun increaseDensity() {
