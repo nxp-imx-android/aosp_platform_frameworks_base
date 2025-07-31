@@ -1977,16 +1977,6 @@ flag {
 }
 
 flag {
-   name: "ui_rich_ongoing_aod_skeleton_bg_inflation"
-   namespace: "systemui"
-   description: "Offload AOD Skeleton inflation to the background thread"
-   bug: "416714129"
-   metadata {
-     purpose: PURPOSE_BUGFIX
-   }
-}
-
-flag {
     name: "ongoing_activity_chips_on_dream"
     namespace: "systemui"
     description: "Enables ongoing activity chips in dream status bar"

@@ -266,8 +266,6 @@ constructor(
         contentBuilder: PromotedNotificationContentModel.Builder,
         systemUiContext: Context,
     ) {
-        if (!Flags.uiRichOngoingAodSkeletonBgInflation()) return
-
         val style = contentBuilder.style ?: return
 
         val res = getLayoutSource(style) ?: return
