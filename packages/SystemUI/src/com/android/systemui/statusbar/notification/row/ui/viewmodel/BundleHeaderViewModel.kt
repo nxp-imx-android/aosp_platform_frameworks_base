@@ -57,6 +57,9 @@ class BundleHeaderViewModel @AssistedInject constructor(private val interactor: 
     val numberOfChildrenContentDescription: String
         get() = interactor.numberOfChildrenContentDescription
 
+    val headerContentDescription: String
+        get() = interactor.headerContentDescription
+
     fun onHeaderClicked() {
         val targetScene =
             when (state?.currentScene) {
