@@ -243,6 +243,8 @@ import android.text.format.DateUtils;
 import android.tracing.TracingUtils;
 import android.util.ArrayMap;
 import android.util.ArraySet;
+import android.util.AtomicFile;
+import android.util.AtomicFileOutputStream;
 import android.util.DisplayMetrics;
 import android.util.EventLog;
 import android.util.IntArray;
@@ -377,6 +379,7 @@ import java.io.FileDescriptor;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
@@ -1251,7 +1254,7 @@ public class WindowManagerService extends IWindowManager.Stub
                 ActivityThread.currentActivityThread().getSystemUiContext());
 
         final WindowManagerService wms = main(context, im, showBootMsgs, policy, atm,
-                new DisplayWindowSettingsProvider(), SurfaceControl.Transaction::new,
+                new DisplayWindowSettingsProvider(context), SurfaceControl.Transaction::new,
                 SurfaceControl.Builder::new, appCompat);
         WindowManagerGlobal.setWindowManagerServiceForSystemProcess(wms);
         return wms;
@@ -8441,6 +8444,40 @@ public class WindowManagerService extends IWindowManager.Stub
                     }
                 }
                 return false;
+            }
+        }
+
+
+        @Override
+        public byte[] backupDisplayWindowSettings(int userId) {
+            final AtomicFile file =
+                    DisplayWindowSettingsProvider.getOverrideSettingsFileForUser(userId);
+            final byte[] payload;
+            try (InputStream inputStream = file.openRead()) {
+                payload = DisplayWindowSettingsXmlHelper.readAndFilterSettings(inputStream);
+            } catch (FileNotFoundException e) {
+                Slog.w(TAG, "No display settings file found; skipping backup.");
+                return null; // Nothing to back up
+            } catch (IOException e) {
+                if (DEBUG) Slog.d(TAG, "Skip display window settings backup", e);
+                return null;
+            }
+            return payload;
+        }
+
+        @Override
+        public void restoreDisplayWindowSettings(int userId, byte[] payload) {
+            final AtomicFile file =
+                    DisplayWindowSettingsProvider.getOverrideSettingsFileForUser(userId);
+            try (var oStream = new AtomicFileOutputStream(file)) {
+                oStream.write(payload);
+                oStream.markSuccess();
+            } catch (IOException e) {
+                Slog.e(TAG, "restoreDisplayWindowSettings failed", e);
+                throw new RuntimeException(e);
+            }
+            synchronized (mGlobalLock) {
+                mDisplayWindowSettingsProvider.setOverrideSettingsForUser(userId);
             }
         }
 

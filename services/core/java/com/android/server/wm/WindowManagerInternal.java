@@ -1183,4 +1183,29 @@ public abstract class WindowManagerInternal {
      */
     public abstract void requestAssistScreenshot(IAssistDataReceiver receiver,
             IBinder activityToken);
+
+    /**
+     * Creates a backup payload of overridden display window settings for a specific user.
+     * <p>
+     * This method reads the user-specific display settings file, filters out any device-specific
+     * values, and returns the result as a byte array suitable for backup.
+     *
+     * @param userId The user for whom to back up the settings.
+     * @return A byte array representing the filtered settings data, or {@code null} if no settings
+     *         file exists for the user or an error occurs during reading.
+     */
+    public abstract byte[] backupDisplayWindowSettings(int userId);
+
+    /**
+     * Restores overridden display window settings from a backup payload for a specific user.
+     * <p>
+     * This method writes the provided payload to the user's display settings file and then
+     * triggers a reload of these settings to apply the changes immediately.
+     *
+     * @param userId The user for whom to restore the settings.
+     * @param payload The settings data to restore, typically obtained from
+     *                {@link #backupDisplayWindowSettings(int)}.
+     * @throws RuntimeException if the payload cannot be written to the settings file.
+     */
+    public abstract void restoreDisplayWindowSettings(int userId, byte[] payload);
 }

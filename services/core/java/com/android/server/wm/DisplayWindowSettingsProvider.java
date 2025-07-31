@@ -19,14 +19,16 @@ package com.android.server.wm;
 import static android.os.UserHandle.USER_SYSTEM;
 import static android.view.Display.TYPE_VIRTUAL;
 
+import static com.android.server.wm.DisplayWindowSettingsXmlHelper.DisplayIdentifierType;
+import static com.android.server.wm.DisplayWindowSettingsXmlHelper.IDENTIFIER_PORT;
 import static com.android.server.wm.WindowManagerDebugConfig.TAG_WITH_CLASS_NAME;
 import static com.android.server.wm.WindowManagerDebugConfig.TAG_WM;
-import static com.android.server.wm.DisplayWindowSettingsXmlHelper.IDENTIFIER_PORT;
-import static com.android.server.wm.DisplayWindowSettingsXmlHelper.DisplayIdentifierType;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.UserIdInt;
+import android.app.backup.BackupManager;
+import android.content.Context;
 import android.os.Environment;
 import android.util.ArraySet;
 import android.util.AtomicFile;
@@ -84,17 +86,22 @@ class DisplayWindowSettingsProvider implements SettingsProvider {
     private ReadableSettings mBaseSettings;
     @NonNull
     private WritableSettings mOverrideSettings;
+    @NonNull
+    private BackupManager mBackupManager;
 
-    DisplayWindowSettingsProvider() {
+    DisplayWindowSettingsProvider(@NonNull Context context) {
         this(new AtomicFileStorage(getVendorSettingsFile()),
-                new AtomicFileStorage(getOverrideSettingsFileForUser(USER_SYSTEM)));
+                new AtomicFileStorage(getOverrideSettingsFileForUser(USER_SYSTEM)),
+                new BackupManager(context));
     }
 
     @VisibleForTesting
     DisplayWindowSettingsProvider(@NonNull ReadableSettingsStorage baseSettingsStorage,
-            @NonNull WritableSettingsStorage overrideSettingsStorage) {
+            @NonNull WritableSettingsStorage overrideSettingsStorage,
+            @NonNull BackupManager backupManager) {
         mBaseSettings = new ReadableSettings(baseSettingsStorage);
         mOverrideSettings = new WritableSettings(overrideSettingsStorage);
+        mBackupManager = backupManager;
     }
 
     /**
@@ -169,6 +176,7 @@ class DisplayWindowSettingsProvider implements SettingsProvider {
     public void updateOverrideSettings(@NonNull DisplayInfo info,
             @NonNull SettingsEntry overrides) {
         mOverrideSettings.updateSettingsEntry(info, overrides);
+        mBackupManager.dataChanged();
     }
 
     @Override
@@ -179,6 +187,7 @@ class DisplayWindowSettingsProvider implements SettingsProvider {
     @Override
     public void clearDisplaySettings(@NonNull DisplayInfo info) {
         mOverrideSettings.clearDisplaySettings(info);
+        mBackupManager.dataChanged();
     }
 
     @VisibleForTesting
@@ -366,7 +375,7 @@ class DisplayWindowSettingsProvider implements SettingsProvider {
     }
 
     @NonNull
-    public static AtomicFile getOverrideSettingsFileForUser(@UserIdInt int userId) {
+    static AtomicFile getOverrideSettingsFileForUser(@UserIdInt int userId) {
         final File directory = (userId == USER_SYSTEM)
                 ? Environment.getDataDirectory()
                 : Environment.getDataSystemCeDirectory(userId);

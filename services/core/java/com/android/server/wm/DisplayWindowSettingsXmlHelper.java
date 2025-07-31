@@ -36,6 +36,7 @@ import com.android.server.wm.DisplayWindowSettings.SettingsProvider.SettingsEntr
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -160,6 +161,25 @@ class DisplayWindowSettingsXmlHelper {
             Slog.w(TAG, "Failed to write display window settings.", e);
         }
         return success;
+    }
+
+    /**
+     * Reads display window settings from an {@link InputStream}, filters out device-specific
+     * attributes that should not be backed up, and returns the result as a byte array.
+     * <p>
+     * This method is specifically designed for backup operations. It parses the full settings
+     * file and then re-serializes it, omitting attributes like forced width, height, and
+     * density, which are not suitable for restoration on a different device.
+     *
+     * @param stream The input stream to read the settings from. This stream is closed by the
+     *               method upon completion.
+     * @return A byte array containing the filtered XML data, ready for backup.
+     */
+    public static byte[] readAndFilterSettings(InputStream stream) {
+        FileData data = FileData.readSettings(stream);
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        writeSettings(byteArrayOutputStream, data, /* forBackup= */ true);
+        return byteArrayOutputStream.toByteArray();
     }
 
     static final class FileData {
