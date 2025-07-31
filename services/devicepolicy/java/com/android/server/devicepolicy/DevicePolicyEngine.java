@@ -2107,7 +2107,10 @@ final class DevicePolicyEngine {
     void removeLocalPoliciesForSystemEntities(@UserIdInt int userId, List<String> systemEntities) {
         synchronized (mLock) {
             removeLocalPoliciesForAdminsLocked(
-                    userId, admin -> systemEntities.contains(admin.getSystemEntity()));
+                    userId,
+                    admin ->
+                            admin.isSystemAuthority()
+                                    && systemEntities.contains(admin.getSystemEntity()));
         }
     }
 
