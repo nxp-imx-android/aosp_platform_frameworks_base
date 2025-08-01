@@ -66,11 +66,6 @@ final class ProcessServiceRecord {
     private long mLastTopStartedAlmostPerceptibleBindRequestUptimeMs;
 
     /**
-     * Service that applied current connectionGroup/Importance.
-     */
-    private ServiceRecord mConnectionService;
-
-    /**
      * Last group set by a connection.
      */
     private int mConnectionGroup;
@@ -93,11 +88,6 @@ final class ProcessServiceRecord {
      * @see #mFgServiceTypes
      */
     private boolean mHasTypeNoneFgs;
-
-    /**
-     * Last reported foreground service types.
-     */
-    private int mRepFgServiceTypes;
 
     /**
      * Bound using BIND_ABOVE_CLIENT, so want to be lower.
@@ -271,15 +261,6 @@ final class ProcessServiceRecord {
         return false;
     }
 
-
-    int getReportedForegroundServiceTypes() {
-        return mRepFgServiceTypes;
-    }
-
-    void setReportedForegroundServiceTypes(int foregroundServiceTypes) {
-        mRepFgServiceTypes = foregroundServiceTypes;
-    }
-
     int getNumForegroundServices() {
         int count = 0;
         for (int i = 0, serviceCount = mServices.size(); i < serviceCount; i++) {
@@ -328,14 +309,6 @@ final class ProcessServiceRecord {
                 || (mLastTopStartedAlmostPerceptibleBindRequestUptimeMs > 0
                 && SystemClock.uptimeMillis() - mLastTopStartedAlmostPerceptibleBindRequestUptimeMs
                 < mService.mConstants.mServiceBindAlmostPerceptibleTimeoutMs);
-    }
-
-    ServiceRecord getConnectionService() {
-        return mConnectionService;
-    }
-
-    void setConnectionService(ServiceRecord connectionService) {
-        mConnectionService = connectionService;
     }
 
     int getConnectionGroup() {
@@ -695,10 +668,9 @@ final class ProcessServiceRecord {
             pw.print(" hasAboveClient="); pw.print(mHasAboveClient);
             pw.print(" treatLikeActivity="); pw.println(mTreatLikeActivity);
         }
-        if (mConnectionService != null || mConnectionGroup != 0) {
+        if (mConnectionGroup != 0) {
             pw.print(prefix); pw.print("connectionGroup="); pw.print(mConnectionGroup);
             pw.print(" Importance="); pw.print(mConnectionImportance);
-            pw.print(" Service="); pw.println(mConnectionService);
         }
         if (mAllowlistManager) {
             pw.print(prefix); pw.print("allowlistManager="); pw.println(mAllowlistManager);

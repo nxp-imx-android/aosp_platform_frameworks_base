@@ -1247,7 +1247,6 @@ final class ServiceRecord extends ServiceRecordInternal implements ComponentName
         updateProcessStateOnRequest();
         if (pendingConnectionGroup > 0 && proc != null) {
             final ProcessServiceRecord psr = proc.mServices;
-            psr.setConnectionService(this);
             psr.setConnectionGroup(pendingConnectionGroup);
             psr.setConnectionImportance(pendingConnectionImportance);
             pendingConnectionGroup = pendingConnectionImportance = 0;
