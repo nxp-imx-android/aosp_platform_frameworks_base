@@ -1725,8 +1725,7 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
                 (i, pm) -> (PlatformCompat) ServiceManager.getService("platform_compat"),
                 (i, pm) -> SystemConfig.getInstance(),
                 (i, pm) -> new DynamicCodeLogger(i.getInstaller()),
-                (i, pm) -> new ArtManagerService(i.getContext(), i.getInstaller(),
-                        i.getInstallLock()),
+                (i, pm) -> new ArtManagerService(i.getContext()),
                 (i, pm) -> ApexManager.getInstance(),
                 (i, pm) -> (IncrementalManager)
                         i.getContext().getSystemService(Context.INCREMENTAL_SERVICE),
