@@ -33,7 +33,6 @@
 #include "androidfw/AssetManager.h"
 #include "androidfw/ResourceTypes.h"
 #include "androidfw/Util.h"
-#include "ftl/small_vector.h"
 
 namespace android {
 
@@ -158,10 +157,9 @@ class AssetManager2 {
 
   // Sets/resets the configuration for this AssetManager. This will cause all
   // caches that are related to the configuration change to be invalidated.
-  void SetConfigurations(std::span<const ResTable_config> configurations,
-                         bool force_refresh = false);
+  void SetConfigurations(std::vector<ResTable_config> configurations, bool force_refresh = false);
 
-  std::span<const ResTable_config> GetConfigurations() const {
+  inline const std::vector<ResTable_config>& GetConfigurations() const {
     return configurations_;
   }
 
@@ -486,7 +484,7 @@ class AssetManager2 {
 
   // The current configurations set for this AssetManager. When this changes, cached resources
   // may need to be purged.
-  ftl::SmallVector<ResTable_config, 1> configurations_;
+  std::vector<ResTable_config> configurations_;
 
   int32_t display_id_;
   int32_t device_id_;
