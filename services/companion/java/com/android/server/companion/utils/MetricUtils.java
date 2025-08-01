@@ -21,6 +21,7 @@ import static android.companion.AssociationRequest.DEVICE_PROFILE_AUTOMOTIVE_PRO
 import static android.companion.AssociationRequest.DEVICE_PROFILE_COMPUTER;
 import static android.companion.AssociationRequest.DEVICE_PROFILE_FITNESS_TRACKER;
 import static android.companion.AssociationRequest.DEVICE_PROFILE_GLASSES;
+import static android.companion.AssociationRequest.DEVICE_PROFILE_MEDICAL;
 import static android.companion.AssociationRequest.DEVICE_PROFILE_NEARBY_DEVICE_STREAMING;
 import static android.companion.AssociationRequest.DEVICE_PROFILE_VIRTUAL_DEVICE;
 import static android.companion.AssociationRequest.DEVICE_PROFILE_WATCH;
@@ -74,6 +75,7 @@ import android.companion.AssociationInfo;
 import android.content.Context;
 
 import java.util.Map;
+import java.util.Objects;
 
 public final class MetricUtils {
     /**
@@ -163,6 +165,11 @@ public final class MetricUtils {
      * Log association creation
      */
     public static void logCreateAssociation(AssociationInfo ai, Context context) {
+        // Do not log medical activity
+        if (Objects.equals(ai.getDeviceProfile(), DEVICE_PROFILE_MEDICAL)) {
+            return;
+        }
+
         int uid = getUidFromPackageName(ai.getUserId(), context, ai.getPackageName());
 
         write(CDM_ASSOCIATION_ACTION,
@@ -176,6 +183,11 @@ public final class MetricUtils {
      * Log association removal
      */
     public static void logRemoveAssociation(AssociationInfo ai, Context context) {
+        // Do not log medical activity
+        if (Objects.equals(ai.getDeviceProfile(), DEVICE_PROFILE_MEDICAL)) {
+            return;
+        }
+
         int uid = getUidFromPackageName(ai.getUserId(), context, ai.getPackageName());
 
         write(CDM_ASSOCIATION_ACTION,
@@ -190,6 +202,11 @@ public final class MetricUtils {
      */
     public static void logDevicePresenceEvent(int userId, Context context,
             String deviceProfileOrUuid, String packageName, int event) {
+        // Do not log medical activity
+        if (Objects.equals(deviceProfileOrUuid, DEVICE_PROFILE_MEDICAL)) {
+            return;
+        }
+
         int uid = getUidFromPackageName(userId, context, packageName);
         if (uid != PACKAGE_NOT_FOUND) {
             write(

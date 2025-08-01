@@ -63,6 +63,7 @@ import static android.companion.AssociationRequest.DEVICE_PROFILE_AUTOMOTIVE_PRO
 import static android.companion.AssociationRequest.DEVICE_PROFILE_COMPUTER;
 import static android.companion.AssociationRequest.DEVICE_PROFILE_FITNESS_TRACKER;
 import static android.companion.AssociationRequest.DEVICE_PROFILE_GLASSES;
+import static android.companion.AssociationRequest.DEVICE_PROFILE_MEDICAL;
 import static android.companion.AssociationRequest.DEVICE_PROFILE_NEARBY_DEVICE_STREAMING;
 import static android.companion.AssociationRequest.DEVICE_PROFILE_VIRTUAL_DEVICE;
 import static android.companion.AssociationRequest.DEVICE_PROFILE_WATCH;
@@ -156,6 +157,7 @@ public final class PermissionsUtils {
                 Manifest.permission.REQUEST_COMPANION_PROFILE_AUTOMOTIVE_PROJECTION);
         map.put(DEVICE_PROFILE_COMPUTER, Manifest.permission.REQUEST_COMPANION_PROFILE_COMPUTER);
         map.put(DEVICE_PROFILE_GLASSES, Manifest.permission.REQUEST_COMPANION_PROFILE_GLASSES);
+        map.put(DEVICE_PROFILE_MEDICAL, Manifest.permission.REQUEST_COMPANION_PROFILE_MEDICAL);
         map.put(DEVICE_PROFILE_NEARBY_DEVICE_STREAMING,
                 Manifest.permission.REQUEST_COMPANION_PROFILE_NEARBY_DEVICE_STREAMING);
         map.put(DEVICE_PROFILE_VIRTUAL_DEVICE,

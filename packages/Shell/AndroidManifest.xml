@@ -357,6 +357,7 @@
     <uses-permission android:name="android.permission.REQUEST_COMPANION_PROFILE_VIRTUAL_DEVICE" />
     <uses-permission android:name="android.permission.REQUEST_COMPANION_PROFILE_WATCH" />
     <uses-permission android:name="android.permission.REQUEST_COMPANION_PROFILE_GLASSES" />
+    <uses-permission android:name="android.permission.REQUEST_COMPANION_PROFILE_MEDICAL" />
     <uses-permission android:name="android.permission.REQUEST_COMPANION_SELF_MANAGED" />
     <uses-permission android:name="android.permission.USE_COMPANION_TRANSPORTS" />
     <uses-permission android:name="android.permission.REQUEST_OBSERVE_DEVICE_UUID_PRESENCE" />
