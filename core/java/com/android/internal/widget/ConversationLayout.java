@@ -1214,11 +1214,8 @@ public class ConversationLayout extends FrameLayout
             newGroup.setMessages(group, isShowingSummarization());
         }
 
-        if (Flags.dropNonExistingMessages()) {
-            // remove groups from mAddedGroups when they are no longer in mGroups.
-            mAddedGroups.removeIf(
-                    messagingGroup -> !mGroups.contains(messagingGroup));
-        }
+        // remove groups from mAddedGroups when they are no longer in mGroups.
+        mAddedGroups.removeIf(messagingGroup -> !mGroups.contains(messagingGroup));
     }
 
     /**
