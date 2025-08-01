@@ -270,7 +270,7 @@ public class InstallInstalling extends Activity {
      *                      during an uninstall.
      */
     private void launchFinishBasedOnResult(int statusCode, int legacyStatus, String statusMessage,
-            int serviceId /* ignore */, boolean hasDeveloperVerificationFailure) {
+            int serviceId /* ignore */) {
         if (statusCode == PackageInstaller.STATUS_SUCCESS) {
             launchSuccess();
         } else {
@@ -280,7 +280,7 @@ public class InstallInstalling extends Activity {
 
     /**
      * Send the package to the package installer and then register a event result observer that
-     * will call {@link #launchFinishBasedOnResult(int, int, String, int, boolean)}
+     * will call {@link #launchFinishBasedOnResult(int, int, String, int)}
      */
     private final class InstallingAsyncTask extends AsyncTask<Void, Void,
             PackageInstaller.Session> {
