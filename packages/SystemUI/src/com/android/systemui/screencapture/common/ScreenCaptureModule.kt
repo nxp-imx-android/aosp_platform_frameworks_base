@@ -20,6 +20,7 @@ import android.app.Activity
 import com.android.systemui.screencapture.cast.ScreenCaptureCastComponent
 import com.android.systemui.screencapture.common.shared.model.ScreenCaptureType
 import com.android.systemui.screencapture.record.ScreenCaptureRecordComponent
+import com.android.systemui.screencapture.record.smallscreen.ui.SmallScreenPostRecordingActivity
 import com.android.systemui.screencapture.sharescreen.ScreenCaptureShareScreenComponent
 import com.android.systemui.screencapture.ui.ScreenCaptureActivity
 import dagger.Binds
@@ -67,5 +68,12 @@ interface ScreenCaptureModule {
     @Binds
     @IntoMap
     @ClassKey(ScreenCaptureActivity::class)
-    abstract fun provideScreenCaptureActivity(activity: ScreenCaptureActivity): Activity
+    fun provideScreenCaptureActivity(activity: ScreenCaptureActivity): Activity
+
+    @Binds
+    @IntoMap
+    @ClassKey(SmallScreenPostRecordingActivity::class)
+    fun provideSmallScreenPostRecordingActivity(
+        activity: SmallScreenPostRecordingActivity
+    ): Activity
 }

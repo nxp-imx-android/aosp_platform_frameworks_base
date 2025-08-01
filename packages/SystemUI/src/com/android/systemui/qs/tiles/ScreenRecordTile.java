@@ -131,7 +131,7 @@ public class ScreenRecordTile extends QSTileImpl<QSTile.BooleanState>
 
     @Override
     protected void handleClick(@Nullable Expandable expandable) {
-        if (mScreenCaptureRecordFeaturesInteractor.getShouldShowNewToolbar()) {
+        if (ScreenCaptureRecordFeaturesInteractor.Companion.getShouldShowNewToolbar()) {
             UserHandle userHandle = UserHandle.of(getCurrentTileUser());
 
             final Intent intent = new Intent(mContext, ScreenCaptureActivity.class);

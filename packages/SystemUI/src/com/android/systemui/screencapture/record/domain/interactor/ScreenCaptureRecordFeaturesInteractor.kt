@@ -40,16 +40,19 @@ constructor(
     @Application private val scope: CoroutineScope,
     configurationController: ConfigurationController,
 ) {
-
-    val isNewScreenRecordToolbarEnabled: Boolean = Flags.newScreenRecordToolbar()
-
-    val isDesktopToolbarEnabled: Boolean = Flags.desktopScreenCapture()
-
-    val shouldShowNewToolbar: Boolean = isNewScreenRecordToolbarEnabled || isDesktopToolbarEnabled
-
     val isLargeScreen: Flow<Boolean?> =
         configurationController.onConfigChanged
             .onStart { emit(resources.configuration) }
             .map { resources.getBoolean(R.bool.config_enableDesktopScreenCapture) }
             .stateIn(scope, SharingStarted.WhileSubscribed(), null)
+
+    companion object {
+
+        val isNewScreenRecordToolbarEnabled: Boolean = Flags.newScreenRecordToolbar()
+
+        val isDesktopToolbarEnabled: Boolean = Flags.desktopScreenCapture()
+
+        val shouldShowNewToolbar: Boolean =
+            isNewScreenRecordToolbarEnabled || isDesktopToolbarEnabled
+    }
 }
