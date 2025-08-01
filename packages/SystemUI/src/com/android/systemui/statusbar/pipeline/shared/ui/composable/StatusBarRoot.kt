@@ -207,7 +207,10 @@ fun StatusBarRoot(
 
     // Let the DesktopStatusBar compose all the UI if [isDesktopStatusBarEnabled] is true.
     if (StatusBarForDesktop.isEnabled && statusBarViewModel.isDesktopStatusBarEnabled) {
-        DesktopStatusBar(viewModel = statusBarViewModel)
+        DesktopStatusBar(
+            viewModel = statusBarViewModel,
+            clockViewModelFactory = clockViewModelFactory,
+        )
         return
     }
 
