@@ -768,6 +768,7 @@ class DesktopTasksController(
         removeWallpaperTask(wct, disconnectedDisplayId)
         removeHomeTask(wct, disconnectedDisplayId)
         userRepositories.forAllRepositories { desktopRepository ->
+            val userId = desktopRepository.userId
             val deskIds = desktopRepository.getDeskIds(disconnectedDisplayId).toList()
             if (desktopModeSupportedOnDisplay) {
                 // Desktop supported on display; reparent desks, focused desk on top.
@@ -775,12 +776,17 @@ class DesktopTasksController(
                     val deskTasks = desktopRepository.getActiveTaskIdsInDesk(deskId)
                     // Remove desk if it's empty.
                     if (deskTasks.isEmpty()) {
-                        logD("onDisplayDisconnect: removing empty desk=$deskId")
-                        desksOrganizer.removeDesk(wct, deskId, desktopRepository.userId)
+                        logD(
+                            "onDisplayDisconnect: removing empty desk=%d of user=%d",
+                            deskId,
+                            userId,
+                        )
+                        desksOrganizer.removeDesk(wct, deskId, userId)
                         runOnTransitStartSet.add { transition ->
                             desksTransitionObserver.addPendingTransition(
                                 DeskTransition.RemoveDesk(
                                     token = transition,
+                                    userId = userId,
                                     displayId = disconnectedDisplayId,
                                     deskId = deskId,
                                     tasks = emptySet(),
@@ -792,8 +798,10 @@ class DesktopTasksController(
                         }
                     } else {
                         logD(
-                            "onDisplayDisconnect: reparenting desk=$deskId to " +
-                                "display=$destinationDisplayId"
+                            "onDisplayDisconnect: reparenting desk=%d to display=%d for user=%d",
+                            deskId,
+                            destinationDisplayId,
+                            userId,
                         )
                         // Otherwise, reparent it to the destination display.
                         val toTop =
@@ -810,16 +818,17 @@ class DesktopTasksController(
                         runOnTransitStartSet.add { transition ->
                             desksTransitionObserver.addPendingTransition(
                                 DeskTransition.ChangeDeskDisplay(
-                                    transition,
-                                    deskId,
-                                    destinationDisplayId,
+                                    token = transition,
+                                    userId = userId,
+                                    deskId = deskId,
+                                    displayId = destinationDisplayId,
                                 )
                             )
                         }
                         updateDesksActivationOnDisconnection(
                                 disconnectedDisplayActiveDesk = deskId,
                                 destinationDisplayId = destinationDisplayId,
-                                userId = desktopRepository.userId,
+                                userId = userId,
                                 wct = wct,
                                 toTop = toTop,
                             )
@@ -846,11 +855,12 @@ class DesktopTasksController(
                         )
                         destDisplayLayout?.densityDpi()?.let { wct.setDensityDpi(task.token, it) }
                     }
-                    desksOrganizer.removeDesk(wct, deskId, desktopRepository.userId)
+                    desksOrganizer.removeDesk(wct, deskId, userId)
                     runOnTransitStartSet.add { transition ->
                         desksTransitionObserver.addPendingTransition(
                             DeskTransition.RemoveDesk(
                                 token = transition,
+                                userId = userId,
                                 displayId = disconnectedDisplayId,
                                 deskId = deskId,
                                 tasks = emptySet(),
@@ -860,7 +870,11 @@ class DesktopTasksController(
                             )
                         )
                         desksTransitionObserver.addPendingTransition(
-                            DeskTransition.RemoveDisplay(transition, disconnectedDisplayId)
+                            DeskTransition.RemoveDisplay(
+                                token = transition,
+                                userId = userId,
+                                displayId = disconnectedDisplayId,
+                            )
                         )
                     }
                 }
@@ -981,6 +995,46 @@ class DesktopTasksController(
         }
     }
 
+    private fun handleUserChangeTransitionRequest(
+        transition: IBinder,
+        request: TransitionRequestInfo,
+    ): WindowContainerTransaction? {
+        val userChange = request.userChange ?: return null
+        val previousRepo = userRepositories.getProfile(userChange.previousUserId)
+        val newRepo = userRepositories.getProfile(userChange.newUserId)
+        val wct = WindowContainerTransaction()
+        // Deactivate desks of old user.
+        rootTaskDisplayAreaOrganizer.displayIds
+            .toList()
+            .mapNotNull { displayId -> previousRepo.getActiveDeskId(displayId) }
+            .mapNotNull { deskId ->
+                addDeskDeactivationChanges(
+                    wct = wct,
+                    deskId = deskId,
+                    userId = userChange.previousUserId,
+                    switchingUser = true,
+                    exitReason = ExitReason.UNKNOWN_EXIT,
+                )
+            }
+            .forEach { runOnTransitStart -> runOnTransitStart(transition) }
+        // Activate desks of new user.
+        rootTaskDisplayAreaOrganizer.displayIds
+            .toList()
+            .mapNotNull { displayId -> newRepo.getActiveDeskId(displayId) }
+            .map { deskId ->
+                addDeskActivationChanges(
+                    deskId = deskId,
+                    wct = wct,
+                    userId = userChange.newUserId,
+                    switchingUser = true,
+                    enterReason = EnterReason.UNKNOWN_ENTER,
+                )
+            }
+            .forEach { runOnTransitStart -> runOnTransitStart(transition) }
+
+        return wct
+    }
+
     /**
      * Handle desk operations when disconnecting a display and all desks on that display are moving
      * to a display that supports desks. The previously focused display will determine which desk
@@ -1012,9 +1066,10 @@ class DesktopTasksController(
                 // The disconnected display's active desk was reparented to the back, ensure it is
                 // no longer an active launch root.
                 addDeskDeactivationChanges(
-                    wct,
-                    disconnectedDisplayActiveDesk,
-                    ExitReason.DISPLAY_DISCONNECTED,
+                    wct = wct,
+                    deskId = disconnectedDisplayActiveDesk,
+                    userId = userId,
+                    exitReason = ExitReason.DISPLAY_DISCONNECTED,
                 )
             }
         return runOnTransitStart
@@ -3052,7 +3107,12 @@ class DesktopTasksController(
                 exitReason = exitReason,
             )
         } else {
-            addDeskDeactivationChanges(wct, deskId, exitReason)
+            addDeskDeactivationChanges(
+                wct = wct,
+                deskId = deskId,
+                userId = userId,
+                exitReason = exitReason,
+            )
         }
     }
 
@@ -3102,8 +3162,7 @@ class DesktopTasksController(
             DesktopExperienceFlags.ENABLE_APPLY_DESK_ACTIVATION_ON_USER_SWITCH.isTrue &&
                 userChange != null
         ) {
-            // TODO: b/420858253 - deactivate the outgoing user's active desks and reactivate the
-            //  active desks of the incoming user.
+            return handleUserChangeTransitionRequest(transition, request)
         }
         // Check if we should skip handling this transition
         var reason = ""
@@ -4545,6 +4604,7 @@ class DesktopTasksController(
         //  without having to specify the value?
         addPendingLaunchTransition: Boolean = false,
         userId: Int,
+        switchingUser: Boolean = false,
         displayId: Int = userRepositories.getProfile(userId).getDisplayForDesk(deskId),
         enterReason: EnterReason,
     ): RunOnTransitStart {
@@ -4621,12 +4681,19 @@ class DesktopTasksController(
         }
         val deactivatingDesk = repository.getActiveDeskId(displayId)?.takeIf { it != deskId }
         val deactivationRunnable =
-            addDeskDeactivationChanges(wct, deactivatingDesk, ExitReason.RETURN_HOME_OR_OVERVIEW)
+            addDeskDeactivationChanges(
+                wct = wct,
+                deskId = deactivatingDesk,
+                userId = userId,
+                switchingUser = switchingUser,
+                ExitReason.RETURN_HOME_OR_OVERVIEW,
+            )
         return { transition ->
             val activateDeskTransition =
                 if (newTaskIdInFront != null) {
                     DeskTransition.ActivateDeskWithTask(
                         token = transition,
+                        userId = userId,
                         displayId = displayId,
                         deskId = deskId,
                         enterTaskId = newTaskIdInFront,
@@ -4636,6 +4703,7 @@ class DesktopTasksController(
                 } else {
                     DeskTransition.ActivateDesk(
                         token = transition,
+                        userId = userId,
                         displayId = displayId,
                         deskId = deskId,
                         enterReason = enterReason,
@@ -4872,6 +4940,7 @@ class DesktopTasksController(
                 desksTransitionObserver.addPendingTransition(
                     DeskTransition.RemoveDesk(
                         token = transition,
+                        userId = userId,
                         displayId = displayId,
                         deskId = deskId,
                         tasks = tasksToRemove,
@@ -4891,6 +4960,8 @@ class DesktopTasksController(
     private fun addDeskDeactivationChanges(
         wct: WindowContainerTransaction,
         deskId: Int?,
+        userId: Int,
+        switchingUser: Boolean = false,
         exitReason: ExitReason,
     ): RunOnTransitStart? {
         if (!DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) return null
@@ -4900,7 +4971,9 @@ class DesktopTasksController(
             desksTransitionObserver.addPendingTransition(
                 DeskTransition.DeactivateDesk(
                     token = transition,
+                    userId = userId,
                     deskId = deskId,
+                    switchingUser = switchingUser,
                     exitReason = exitReason,
                     runOnTransitEnd = { snapEventHandler.onDeskDeactivated(deskId) },
                 )
