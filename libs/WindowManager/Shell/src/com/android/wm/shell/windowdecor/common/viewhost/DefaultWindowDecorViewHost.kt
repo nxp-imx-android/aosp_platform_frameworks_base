@@ -82,6 +82,10 @@ class DefaultWindowDecorViewHost(
         Trace.endSection()
     }
 
+    override fun reset() {
+        // No-op.
+    }
+
     override fun release(t: SurfaceControl.Transaction) {
         clearCurrentUpdateJob()
         viewHostAdapter.release(t)

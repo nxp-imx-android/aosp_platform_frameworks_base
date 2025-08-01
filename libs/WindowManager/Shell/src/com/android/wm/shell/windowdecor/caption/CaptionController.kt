@@ -42,6 +42,7 @@ import com.android.wm.shell.windowdecor.WindowDecoration2.SurfaceControlViewHost
 import com.android.wm.shell.windowdecor.WindowDecorationInsets
 import com.android.wm.shell.windowdecor.common.viewhost.WindowDecorViewHost
 import com.android.wm.shell.windowdecor.common.viewhost.WindowDecorViewHostSupplier
+import com.android.wm.shell.windowdecor.extension.identityHashCode
 import com.android.wm.shell.windowdecor.extension.isRtl
 import com.android.wm.shell.windowdecor.extension.isTransparentCaptionBarAppearance
 import com.android.wm.shell.windowdecor.viewholder.WindowDecorationViewHolder
@@ -213,6 +214,7 @@ abstract class CaptionController<T>(
     protected open fun getCaptionTopPadding(): Int = 0
 
     /** Updates the caption's view hierarchy. */
+    @OptIn(ExperimentalStdlibApi::class)
     private fun updateViewHierarchy(
         params: RelayoutParams,
         viewHost: WindowDecorViewHost,
@@ -228,11 +230,15 @@ abstract class CaptionController<T>(
         ) {
             val taskId = taskInfo.taskId
             logD(
-                "updateViewHierarchy of taskId=%d size=%dx%d touchableRegion=%s",
+                "updateViewHierarchy of taskId=%d size=%dx%d touchableRegion=%s " +
+                    "view=%s viewParent=%s viewHost=%s",
                 taskId,
                 captionWidth,
                 captionHeight,
                 touchableRegion,
+                view.identityHashCode.toHexString(),
+                view.parent.identityHashCode.toHexString(),
+                viewHost,
             )
             val lp =
                 WindowManager.LayoutParams(
@@ -480,7 +486,12 @@ abstract class CaptionController<T>(
      * view holder.
      */
     private fun getOrCreateViewHolder(): WindowDecorationViewHolder<*> {
-        val viewHolder = windowDecorationViewHolder ?: createCaptionView()
+        val currentViewHolder = windowDecorationViewHolder
+        if (currentViewHolder != null) {
+            return currentViewHolder
+        }
+        val viewHolder = createCaptionView()
+        logD("getOrCreateViewHolder() created new caption view: %s", viewHolder)
         windowDecorationViewHolder = viewHolder
         return viewHolder
     }
@@ -501,7 +512,12 @@ abstract class CaptionController<T>(
             traceTag = Trace.TRACE_TAG_WINDOW_MANAGER,
             name = "CaptionController#getOrCreateViewHost",
         ) {
-            val viewHost = captionViewHost ?: windowDecorViewHostSupplier.acquire(context, display)
+            val currentViewHost = captionViewHost
+            if (currentViewHost != null) {
+                return currentViewHost
+            }
+            val viewHost = windowDecorViewHostSupplier.acquire(context, display)
+            logD("getOrCreateViewHost() acquired viewHost: %s", viewHost)
             captionViewHost = viewHost
             return viewHost
         }
