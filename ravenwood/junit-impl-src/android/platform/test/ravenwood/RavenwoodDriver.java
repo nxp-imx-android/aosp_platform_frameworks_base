@@ -58,16 +58,11 @@ import org.junit.runner.Description;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Random;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -105,40 +100,9 @@ public class RavenwoodDriver {
     private static final String ANDROID_LOG_TAGS = "ANDROID_LOG_TAGS";
     private static final String RAVENWOOD_ANDROID_LOG_TAGS = "RAVENWOOD_" + ANDROID_LOG_TAGS;
 
-    /**
-     * When enabled, attempt to dump all thread stacks just before we hit the
-     * overall Tradefed timeout, to aid in debugging deadlocks.
-     *
-     * Note, this timeout will _not_ stop the test, as there isn't really a clean way to do it.
-     * It'll merely print stacktraces.
-     */
-    private static final boolean ENABLE_TIMEOUT_STACKS =
-            !"0".equals(System.getenv("RAVENWOOD_ENABLE_TIMEOUT_STACKS"));
-
-    static final int DEFAULT_TIMEOUT_SECONDS = 10;
-    private static final int TIMEOUT_MILLIS = getTimeoutSeconds() * 1000;
-
     /** Do not dump environments matching this pattern. */
     private static final Pattern sSecretEnvPattern = Pattern.compile(
             "(KEY|AUTH|API)", Pattern.CASE_INSENSITIVE);
-
-    private static int getTimeoutSeconds() {
-        var e = System.getenv("RAVENWOOD_TIMEOUT_SECONDS");
-        if (e == null || e.isEmpty()) {
-            return DEFAULT_TIMEOUT_SECONDS;
-        }
-        return Integer.parseInt(e);
-    }
-
-    private static final ScheduledExecutorService sTimeoutExecutor =
-            Executors.newScheduledThreadPool(1, (Runnable r) -> {
-                Thread t = Executors.defaultThreadFactory().newThread(r);
-                t.setName("Ravenwood:TimeoutMonitor");
-                t.setDaemon(true);
-                return t;
-            });
-
-    private static volatile ScheduledFuture<?> sPendingTimeout;
 
     // TODO: expose packCallingIdentity function in libbinder and use it directly
     // See: packCallingIdentity in frameworks/native/libs/binder/IPCThreadState.cpp
@@ -204,10 +168,8 @@ public class RavenwoodDriver {
         // We haven't initialized liblog yet, so directly write to System.out here.
         RavenwoodInternalUtils.log(TAG, "globalInitInner()");
 
-        if (RavenwoodErrorHandler.ENABLE_UNCAUGHT_EXCEPTION_DETECTION) {
-            Thread.setDefaultUncaughtExceptionHandler(
-                    new RavenwoodErrorHandler.UncaughtExceptionHandler());
-        }
+        // Set up global error handling infrastructure
+        RavenwoodErrorHandler.init();
 
         // Some process-wide initialization:
         // - maybe redirect stdout/stderr
@@ -328,48 +290,9 @@ public class RavenwoodDriver {
      * Called when a test method is about to be started.
      */
     public static void enterTestMethod(Description description) {
-
-        RavenwoodErrorHandler.sCurrentDescription = description;
-
-        // If an uncaught exception has been detected, don't run subsequent test methods
-        // in the same test.
-        RavenwoodErrorHandler.maybeThrowUnrecoverableUncaughtException();
-
         // TODO(b/375272444): this is a hacky workaround to ensure binder identity
         Binder.restoreCallingIdentity(
                 RavenwoodEnvironment.getInstance().getDefaultCallingIdentity());
-
-        scheduleTimeout();
-    }
-
-    /**
-     * Called when a test method finished.
-     */
-    public static void exitTestMethod(Description description) {
-        cancelTimeout();
-        RavenwoodErrorHandler.maybeThrowPendingRecoverableUncaughtExceptionAndClear();
-        RavenwoodErrorHandler.maybeThrowUnrecoverableUncaughtException();
-    }
-
-    private static void scheduleTimeout() {
-        if (!ENABLE_TIMEOUT_STACKS) {
-            return;
-        }
-        cancelTimeout();
-
-        sPendingTimeout = sTimeoutExecutor.schedule(
-                RavenwoodDriver::onTestTimedOut,
-                TIMEOUT_MILLIS, TimeUnit.MILLISECONDS);
-    }
-
-    private static void cancelTimeout() {
-        if (!ENABLE_TIMEOUT_STACKS) {
-            return;
-        }
-        var pt = sPendingTimeout;
-        if (pt != null) {
-            pt.cancel(false);
-        }
     }
 
     private static void initializeCompatIds() {
@@ -397,74 +320,6 @@ public class RavenwoodDriver {
         var loggableChanges = platformCompat.getLoggableChanges(appInfo);
 
         AppCompatCallbacks.install(disabledChanges, loggableChanges, false);
-    }
-
-    /**
-     * A callback when a test class finishes its execution.
-     */
-    public static void exitTestClass() {
-        RavenwoodErrorHandler.maybeThrowPendingRecoverableUncaughtExceptionAndClear();
-    }
-
-    /**
-     * Prints the stack trace from all threads.
-     */
-    private static void onTestTimedOut() {
-        sRawStdErr.println("********* SLOW TEST DETECTED ********");
-        dumpStacks(null, null);
-    }
-
-    private static final Object sDumpStackLock = new Object();
-
-    /**
-     * Prints the stack trace from all threads.
-     */
-    private static void dumpStacks(
-            @Nullable Thread exceptionThread, @Nullable Throwable throwable) {
-        cancelTimeout();
-        synchronized (sDumpStackLock) {
-            final PrintStream out = sRawStdErr;
-            out.println("-----BEGIN ALL THREAD STACKS-----");
-
-            var stacks = Thread.getAllStackTraces();
-            var threads = stacks.keySet().stream().sorted(
-                    Comparator.comparingLong(Thread::getId)).collect(Collectors.toList());
-
-            // Put the test and the main thread at the top.
-            var env = RavenwoodEnvironment.getInstance();
-            var testThread = env.getTestThread();
-            var mainThread = env.getMainThread();
-            if (mainThread != null) {
-                threads.remove(mainThread);
-                threads.add(0, mainThread);
-            }
-            if (testThread != null) {
-                threads.remove(testThread);
-                threads.add(0, testThread);
-            }
-            // Put the exception thread at the top.
-            // Also inject the stacktrace from the exception.
-            if (exceptionThread != null) {
-                threads.remove(exceptionThread);
-                threads.add(0, exceptionThread);
-                stacks.put(exceptionThread, throwable.getStackTrace());
-            }
-            for (var th : threads) {
-                out.println();
-
-                out.print("Thread");
-                if (th == exceptionThread) {
-                    out.print(" [** EXCEPTION THREAD **]");
-                }
-                out.print(": " + th.getName() + " / " + th);
-                out.println();
-
-                for (StackTraceElement e :  stacks.get(th)) {
-                    out.println("\tat " + e);
-                }
-            }
-            out.println("-----END ALL THREAD STACKS-----");
-        }
     }
 
     private static final String MOCKITO_ERROR = "FATAL: Unsupported Mockito detected!"
@@ -503,16 +358,6 @@ public class RavenwoodDriver {
         }
     }
 
-    static void doBugreport(
-            @Nullable Thread exceptionThread, @Nullable Throwable throwable,
-            boolean killSelf) {
-        // TODO: Print more information
-        dumpStacks(exceptionThread, throwable);
-        if (killSelf) {
-            System.exit(13);
-        }
-    }
-
     private static void dumpJavaProperties() {
         Log.i(TAG, "JVM properties:");
         dumpMap(System.getProperties());
@@ -540,6 +385,7 @@ public class RavenwoodDriver {
             Log.i(TAG, "  " + key + "=" + map.get(key));
         }
     }
+
     private static void dumpOtherInfo() {
         Log.i(TAG, "Other key information:");
         var jloc = Locale.getDefault();
