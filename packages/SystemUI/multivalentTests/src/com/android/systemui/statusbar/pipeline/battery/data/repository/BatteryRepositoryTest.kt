@@ -83,6 +83,18 @@ class BatteryRepositoryTest : SysuiTestCase() {
         }
 
     @Test
+    fun extremePowerSave() =
+        kosmos.runTest {
+            val latest by collectLastValue(underTest.isExtremePowerSaveEnabled)
+
+            assertThat(latest).isFalse()
+
+            batteryController.fake._isExtremePowerSave = true
+
+            assertThat(latest).isTrue()
+        }
+
+    @Test
     fun defend() =
         kosmos.runTest {
             val latest by collectLastValue(underTest.isBatteryDefenderEnabled)
