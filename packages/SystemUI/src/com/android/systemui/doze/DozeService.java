@@ -151,20 +151,11 @@ public class DozeService extends DreamService
     }
 
     @Override
-    public void setDozeScreenBrightness(int brightness) {
+    public void setDozeScreenBrightness(float brightness) {
         mBgExecutor.execute(() -> {
             mDozeLog.traceDozeScreenBrightness(brightness, /* afterRequest */ false);
             super.setDozeScreenBrightness(brightness);
             mDozeLog.traceDozeScreenBrightness(brightness, /* afterRequest */ true);
-        });
-    }
-
-    @Override
-    public void setDozeScreenBrightnessFloat(float brightness) {
-        mBgExecutor.execute(() -> {
-            mDozeLog.traceDozeScreenBrightnessFloat(brightness, /* afterRequest */ false);
-            super.setDozeScreenBrightnessFloat(brightness);
-            mDozeLog.traceDozeScreenBrightnessFloat(brightness, /* afterRequest */ true);
         });
     }
 }

@@ -56,6 +56,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.SmallTest;
 
 import com.android.internal.R;
+import com.android.internal.display.BrightnessUtils;
 import com.android.server.display.config.HdrBrightnessData;
 import com.android.server.display.config.HighBrightnessModeData;
 import com.android.server.display.config.HysteresisLevels;
@@ -1069,7 +1070,6 @@ public final class DisplayDeviceConfigTest {
 
     @Test
     public void testDozeBrightness_Ddc() throws IOException {
-        when(mFlags.isDozeBrightnessFloatEnabled()).thenReturn(true);
         setupDisplayDeviceConfigFromDisplayConfigFile();
 
         assertArrayEquals(new float[]{ -1, 0.1f, 0.2f, 0.3f, 0.4f },
@@ -1080,7 +1080,6 @@ public final class DisplayDeviceConfigTest {
     @Test
     public void testDefaultDozeBrightness_FallBackToConfigXmlFloat() throws IOException {
         setupDisplayDeviceConfigFromConfigResourceFile();
-        when(mFlags.isDozeBrightnessFloatEnabled()).thenReturn(true);
         when(mResources.getFloat(com.android.internal.R.dimen.config_screenBrightnessDozeFloat))
                 .thenReturn(0.31f);
         when(mResources.getInteger(com.android.internal.R.integer.config_screenBrightnessDoze))
@@ -1097,9 +1096,8 @@ public final class DisplayDeviceConfigTest {
     @Test
     public void testDefaultDozeBrightness_FallBackToConfigXmlInt() throws IOException {
         setupDisplayDeviceConfigFromConfigResourceFile();
-        when(mFlags.isDozeBrightnessFloatEnabled()).thenReturn(true);
         when(mResources.getFloat(com.android.internal.R.dimen.config_screenBrightnessDozeFloat))
-                .thenReturn(DisplayDeviceConfig.INVALID_BRIGHTNESS_IN_CONFIG);
+                .thenReturn(BrightnessUtils.INVALID_BRIGHTNESS_IN_CONFIG);
         when(mResources.getInteger(com.android.internal.R.integer.config_screenBrightnessDoze))
                 .thenReturn(90);
 

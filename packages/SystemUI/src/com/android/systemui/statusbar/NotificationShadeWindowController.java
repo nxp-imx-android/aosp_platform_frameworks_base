@@ -139,16 +139,10 @@ public interface NotificationShadeWindowController extends RemoteInputController
 
     /**
      * Sets the screen brightness level for when the device is dozing.
-     * @param value The brightness value between 1 and 255
-     */
-    default void setDozeScreenBrightness(int value) {}
-
-    /**
-     * Sets the screen brightness level for when the device is dozing.
      * @param value The brightness value between {@link PowerManager#BRIGHTNESS_MIN} and
      * {@link PowerManager#BRIGHTNESS_MAX}
      */
-    default void setDozeScreenBrightnessFloat(float value) {}
+    default void setDozeScreenBrightness(float value) {}
 
     /**
      * Sets whether the screen brightness is forced to the value we use for doze mode by the status

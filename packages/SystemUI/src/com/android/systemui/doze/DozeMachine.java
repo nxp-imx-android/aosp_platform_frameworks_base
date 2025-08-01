@@ -519,12 +519,9 @@ public class DozeMachine {
         /** Request waking up. */
         void requestWakeUp(@DozeLog.Reason int reason);
 
-        /** Set screen brightness between 1 and 255 */
-        void setDozeScreenBrightness(int brightness);
-
         /** Set screen brightness between {@link PowerManager#BRIGHTNESS_MIN} and
          * {@link PowerManager#BRIGHTNESS_MAX} */
-        void setDozeScreenBrightnessFloat(float brightness);
+        void setDozeScreenBrightness(float brightness);
 
         class Delegate implements Service {
             private final Service mDelegate;
@@ -549,13 +546,8 @@ public class DozeMachine {
             }
 
             @Override
-            public void setDozeScreenBrightness(int brightness) {
+            public void setDozeScreenBrightness(float brightness) {
                 mDelegate.setDozeScreenBrightness(brightness);
-            }
-
-            @Override
-            public void setDozeScreenBrightnessFloat(float brightness) {
-                mDelegate.setDozeScreenBrightnessFloat(brightness);
             }
         }
     }
