@@ -90,6 +90,13 @@ flag {
 }
 
 flag {
+    name: "enable_data_sync"
+    namespace: "companion"
+    description: "Enable data sync APIs"
+    bug: "422195296"
+}
+
+flag {
     name: "enable_medical_profile"
     is_exported: true
     namespace: "companion"
