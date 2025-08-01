@@ -213,6 +213,16 @@ flag {
 }
 
 flag {
+    name: "launcher_app_display_progress_update_on_visibility_change"
+    namespace: "accessibility"
+    description: "Forces update to navbar button positioning upon changes to visibility"
+    bug: "417894369"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "light_bar_update_button_tint_on_nav_mode_change"
     namespace: "accessibility"
     description: "adds logic to update navbar button tint when navigation mode changes"
