@@ -363,12 +363,6 @@ public class LocalMediaManager implements BluetoothCallback {
         }
     }
 
-    void dispatchConnectionAttemptedForSuggestion(SuggestedDeviceState state) {
-        for (DeviceCallback callback : getCallbacks()) {
-            callback.onConnectionAttemptedForSuggestion(state);
-        }
-    }
-
     /**
      * Dispatch a change in the about-to-connect device. See
      * {@link DeviceCallback#onAboutToConnectDeviceAdded} for more information.
@@ -878,11 +872,6 @@ public class LocalMediaManager implements BluetoothCallback {
         default void onConnectSuggestedDeviceFinished(
                 @NonNull SuggestedDeviceState suggestedDeviceState, boolean success) {
         }
-
-        /** Callback for notifying that connection to suggested device is started. */
-        default void onConnectionAttemptedForSuggestion(
-                @NonNull SuggestedDeviceState suggestedDeviceState) {
-        }
     }
 
     /**
@@ -999,7 +988,6 @@ public class LocalMediaManager implements BluetoothCallback {
             startScan();
             mConnectSuggestedDeviceHandler.postDelayed(
                     mConnectionAttemptFinishedRunnable, SCAN_DURATION_MS);
-            dispatchConnectionAttemptedForSuggestion(mSuggestedDeviceState);
         }
     }
 }

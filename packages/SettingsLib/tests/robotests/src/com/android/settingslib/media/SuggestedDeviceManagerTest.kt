@@ -16,20 +16,25 @@
 
 package com.android.settingslib.media
 
+import android.media.MediaRoute2Info
 import android.media.MediaRoute2Info.TYPE_REMOTE_SPEAKER
 import android.media.RoutingChangeInfo
 import android.media.RoutingChangeInfo.ENTRY_POINT_SYSTEM_MEDIA_CONTROLS
 import android.media.SuggestedDeviceInfo
+import android.os.Handler
+import android.os.Looper
 import com.android.settingslib.media.LocalMediaManager.MediaDeviceState.STATE_CONNECTED
 import com.android.settingslib.media.LocalMediaManager.MediaDeviceState.STATE_CONNECTING
 import com.android.settingslib.media.LocalMediaManager.MediaDeviceState.STATE_CONNECTING_FAILED
 import com.android.settingslib.media.LocalMediaManager.MediaDeviceState.STATE_DISCONNECTED
 import com.google.common.truth.Truth.assertThat
+import java.util.concurrent.TimeUnit
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.kotlin.any
 import org.mockito.kotlin.argumentCaptor
+import org.mockito.kotlin.clearInvocations
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
@@ -37,6 +42,7 @@ import org.mockito.kotlin.stub
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.verifyNoMoreInteractions
 import org.robolectric.RobolectricTestRunner
+import org.robolectric.shadows.ShadowLooper
 
 private const val ROUTE_ID_1 = "ROUTE_ID_1"
 private const val ROUTE_ID_2 = "ROUTE_ID_2"
@@ -51,16 +57,18 @@ class SuggestedDeviceManagerTest {
   private var listener2 = mock<SuggestedDeviceManager.Listener>()
   private lateinit var mSuggestedDeviceManager: SuggestedDeviceManager
 
+  private val routeInfo1 = mock<MediaRoute2Info> { on { id } doReturn ROUTE_ID_1 }
   private val mediaDevice1 =
     mock<MediaDevice> {
-      on { id } doReturn ROUTE_ID_1
+      on { routeInfo } doReturn routeInfo1
       on { state } doReturn STATE_DISCONNECTED
       on { isSelected } doReturn false
     }
 
+  private val routeInfo2 = mock<MediaRoute2Info> { on { id } doReturn ROUTE_ID_2 }
   private val mediaDevice2 =
     mock<MediaDevice> {
-      on { id } doReturn ROUTE_ID_2
+      on { routeInfo } doReturn routeInfo2
       on { state } doReturn STATE_DISCONNECTED
       on { isSelected } doReturn false
     }
@@ -76,7 +84,8 @@ class SuggestedDeviceManagerTest {
 
   @Before
   fun setUp() {
-    mSuggestedDeviceManager = SuggestedDeviceManager(localMediaManager)
+    val handler = Handler(Looper.getMainLooper())
+    mSuggestedDeviceManager = SuggestedDeviceManager(localMediaManager, handler)
   }
 
   @Test
@@ -257,16 +266,147 @@ class SuggestedDeviceManagerTest {
   }
 
   @Test
-  fun onConnectSuggestedDeviceFinished_success_dispatchesConnectedState() {
+  fun onDeviceListUpdate_fromConnectingOverrideToDisconnected_noDispatch() {
     val deviceCallback = addListenerAndCaptureCallback(listener)
 
+    deviceCallback.onDeviceListUpdate(listOf(mediaDevice1))
     deviceCallback.onDeviceSuggestionsUpdated(listOf(suggestedDeviceInfo1))
-    val initialSuggestedDeviceState = SuggestedDeviceState(suggestedDeviceInfo1, STATE_DISCONNECTED)
-    verify(listener).onSuggestedDeviceStateUpdated(initialSuggestedDeviceState)
 
-    deviceCallback.onConnectSuggestedDeviceFinished(initialSuggestedDeviceState, true)
-    val connectedState = initialSuggestedDeviceState.copy(connectionState = STATE_CONNECTED)
-    verify(listener).onSuggestedDeviceStateUpdated(connectedState)
+    verify(listener)
+      .onSuggestedDeviceStateUpdated(SuggestedDeviceState(suggestedDeviceInfo1, STATE_DISCONNECTED))
+
+    val initialSuggestedDeviceState = SuggestedDeviceState(suggestedDeviceInfo1, STATE_DISCONNECTED)
+    mSuggestedDeviceManager.connectSuggestedDevice(initialSuggestedDeviceState, routingChangeInfo)
+
+    verify(listener)
+      .onSuggestedDeviceStateUpdated(SuggestedDeviceState(suggestedDeviceInfo1, STATE_CONNECTING))
+
+    mediaDevice1.stub { on { state } doReturn STATE_DISCONNECTED }
+    deviceCallback.onDeviceListUpdate(listOf(mediaDevice1))
+
+    // STATE_DISCONNECTED is ignored.
+    verifyNoMoreInteractions(listener)
+  }
+
+  @Test
+  fun onDeviceListUpdate_fromConnectingOverrideToConnected_dispatchesConnectedState() {
+    val deviceCallback = addListenerAndCaptureCallback(listener)
+
+    deviceCallback.onDeviceListUpdate(listOf(mediaDevice1))
+    deviceCallback.onDeviceSuggestionsUpdated(listOf(suggestedDeviceInfo1))
+
+    verify(listener)
+      .onSuggestedDeviceStateUpdated(SuggestedDeviceState(suggestedDeviceInfo1, STATE_DISCONNECTED))
+
+    val initialSuggestedDeviceState = SuggestedDeviceState(suggestedDeviceInfo1, STATE_DISCONNECTED)
+    // This call sets the state to STATE_CONNECTING
+    mSuggestedDeviceManager.connectSuggestedDevice(initialSuggestedDeviceState, routingChangeInfo)
+
+    verify(listener)
+      .onSuggestedDeviceStateUpdated(SuggestedDeviceState(suggestedDeviceInfo1, STATE_CONNECTING))
+
+    mediaDevice1.stub { on { state } doReturn STATE_CONNECTED }
+    deviceCallback.onDeviceListUpdate(listOf(mediaDevice1))
+
+    // STATE_CONNECTED turns state to null
+    verify(listener).onSuggestedDeviceStateUpdated(null)
+  }
+
+  @Test
+  fun onTimeout_fromConnectingOverride_dispatchesDisconnectedState() {
+    val expectedConnectingTimeoutMs = 20_000L
+    val deviceCallback = addListenerAndCaptureCallback(listener)
+
+    deviceCallback.onDeviceListUpdate(listOf(mediaDevice1))
+    deviceCallback.onDeviceSuggestionsUpdated(listOf(suggestedDeviceInfo1))
+
+    verify(listener)
+      .onSuggestedDeviceStateUpdated(SuggestedDeviceState(suggestedDeviceInfo1, STATE_DISCONNECTED))
+
+    val initialSuggestedDeviceState = SuggestedDeviceState(suggestedDeviceInfo1, STATE_DISCONNECTED)
+    mSuggestedDeviceManager.connectSuggestedDevice(initialSuggestedDeviceState, routingChangeInfo)
+
+    // dispatches STATE_CONNECTING on connection attempt.
+    verify(listener)
+      .onSuggestedDeviceStateUpdated(SuggestedDeviceState(suggestedDeviceInfo1, STATE_CONNECTING))
+
+    clearInvocations(listener)
+    // Check the state one second before the timeout is reached.
+    ShadowLooper.idleMainLooper(expectedConnectingTimeoutMs - 1_000, TimeUnit.MILLISECONDS)
+    verify(listener, never()).onSuggestedDeviceStateUpdated(any())
+
+    clearInvocations(listener)
+    // Check the state one second after the timeout is reached.
+    ShadowLooper.idleMainLooper(2_000, TimeUnit.MILLISECONDS)
+    verify(listener)
+      .onSuggestedDeviceStateUpdated(SuggestedDeviceState(suggestedDeviceInfo1, STATE_DISCONNECTED))
+  }
+
+  @Test
+  fun onDeviceListUpdate_fromConnectingFailedOverrideToDisconnected_noDispatch() {
+    val deviceCallback = addListenerAndCaptureCallback(listener)
+
+    deviceCallback.onDeviceListUpdate(listOf(mediaDevice1))
+    deviceCallback.onDeviceSuggestionsUpdated(listOf(suggestedDeviceInfo1))
+
+    verify(listener)
+      .onSuggestedDeviceStateUpdated(SuggestedDeviceState(suggestedDeviceInfo1, STATE_DISCONNECTED))
+
+    val initialSuggestedDeviceState = SuggestedDeviceState(suggestedDeviceInfo1, STATE_DISCONNECTED)
+    deviceCallback.onConnectSuggestedDeviceFinished(initialSuggestedDeviceState, false)
+
+    verify(listener)
+      .onSuggestedDeviceStateUpdated(
+        SuggestedDeviceState(suggestedDeviceInfo1, STATE_CONNECTING_FAILED)
+      )
+
+    mediaDevice1.stub { on { state } doReturn STATE_DISCONNECTED }
+    deviceCallback.onDeviceListUpdate(listOf(mediaDevice1))
+
+    // STATE_DISCONNECTED is ignored.
+    verifyNoMoreInteractions(listener)
+  }
+
+  @Test
+  fun onTimeout_fromConnectingFailedOverride_dispatchesNullState() {
+    val expectedConnectingFailedTimeoutMs = 10_000L
+    val deviceCallback = addListenerAndCaptureCallback(listener)
+
+    deviceCallback.onDeviceListUpdate(listOf(mediaDevice1))
+    deviceCallback.onDeviceSuggestionsUpdated(listOf(suggestedDeviceInfo1))
+
+    verify(listener)
+      .onSuggestedDeviceStateUpdated(SuggestedDeviceState(suggestedDeviceInfo1, STATE_DISCONNECTED))
+
+    val initialSuggestedDeviceState = SuggestedDeviceState(suggestedDeviceInfo1, STATE_DISCONNECTED)
+    deviceCallback.onConnectSuggestedDeviceFinished(initialSuggestedDeviceState, false)
+
+    // dispatches STATE_CONNECTING_FAILED on failed attempt.
+    verify(listener)
+      .onSuggestedDeviceStateUpdated(
+        SuggestedDeviceState(suggestedDeviceInfo1, STATE_CONNECTING_FAILED)
+      )
+
+    clearInvocations(listener)
+    // One second before the timeout is reached - no events are dispatched.
+    ShadowLooper.idleMainLooper(expectedConnectingFailedTimeoutMs - 1_000, TimeUnit.MILLISECONDS)
+    verify(listener, never()).onSuggestedDeviceStateUpdated(any())
+
+    clearInvocations(listener)
+    // One second after the timeout is reached - clears the suggestedDeviceState.
+    ShadowLooper.idleMainLooper(2_000, TimeUnit.MILLISECONDS)
+    verify(listener).onSuggestedDeviceStateUpdated(null)
+
+    clearInvocations(listener)
+    // MediaDevice list updates don't cause the suggestedDeviceState to be restored.
+    deviceCallback.onDeviceListUpdate(listOf(mediaDevice1))
+    verify(listener, never()).onSuggestedDeviceStateUpdated(any())
+
+    // A new suggestion list makes the suggestedDeviceState restore.
+    clearInvocations(listener)
+    deviceCallback.onDeviceSuggestionsUpdated(listOf(suggestedDeviceInfo1))
+    verify(listener)
+      .onSuggestedDeviceStateUpdated(SuggestedDeviceState(suggestedDeviceInfo1, STATE_DISCONNECTED))
   }
 
   @Test
@@ -277,21 +417,34 @@ class SuggestedDeviceManagerTest {
     val initialSuggestedDeviceState = SuggestedDeviceState(suggestedDeviceInfo1, STATE_DISCONNECTED)
     verify(listener).onSuggestedDeviceStateUpdated(initialSuggestedDeviceState)
 
+    mSuggestedDeviceManager.connectSuggestedDevice(initialSuggestedDeviceState, routingChangeInfo)
+    val connectingState = initialSuggestedDeviceState.copy(connectionState = STATE_CONNECTING)
+    verify(listener).onSuggestedDeviceStateUpdated(connectingState)
+
     deviceCallback.onConnectSuggestedDeviceFinished(initialSuggestedDeviceState, false)
     val failedState = initialSuggestedDeviceState.copy(connectionState = STATE_CONNECTING_FAILED)
     verify(listener).onSuggestedDeviceStateUpdated(failedState)
   }
 
   @Test
-  fun onConnectionAttemptedForSuggestion_fromDisconnected_changesStateToConnecting() {
+  fun onConnectionStarted_fromConnectingFailed_changesStateToConnecting() {
     val deviceCallback = addListenerAndCaptureCallback(listener)
 
     // Simulate a failed connection first
     deviceCallback.onDeviceSuggestionsUpdated(listOf(suggestedDeviceInfo1))
     val initialSuggestedDeviceState = SuggestedDeviceState(suggestedDeviceInfo1, STATE_DISCONNECTED)
-    deviceCallback.onConnectionAttemptedForSuggestion(initialSuggestedDeviceState)
-    val failedState = initialSuggestedDeviceState.copy(connectionState = STATE_CONNECTING)
+    deviceCallback.onConnectSuggestedDeviceFinished(
+      initialSuggestedDeviceState,
+      false,
+    ) // Simulate failure
+    val failedState = initialSuggestedDeviceState.copy(connectionState = STATE_CONNECTING_FAILED)
     verify(listener).onSuggestedDeviceStateUpdated(failedState)
+
+    mSuggestedDeviceManager.connectSuggestedDevice(initialSuggestedDeviceState, routingChangeInfo)
+
+    val expectedState = failedState.copy(connectionState = STATE_CONNECTING)
+    verify(listener)
+      .onSuggestedDeviceStateUpdated(expectedState) // Should be called again with connecting state
   }
 
   @Test
@@ -303,6 +456,10 @@ class SuggestedDeviceManagerTest {
     mSuggestedDeviceManager.connectSuggestedDevice(currentSuggestedState, routingChangeInfo)
 
     verify(localMediaManager).connectSuggestedDevice(currentSuggestedState, routingChangeInfo)
+    verify(listener)
+      .onSuggestedDeviceStateUpdated(
+        currentSuggestedState.copy(connectionState = STATE_CONNECTING)
+      )
   }
 
   @Test
