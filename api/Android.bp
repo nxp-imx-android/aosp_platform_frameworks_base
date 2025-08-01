@@ -504,7 +504,6 @@ java_defaults {
         "//packages/modules/NeuralNetworks:__subpackages__",
         // TODO(b/429127828): Clean this up along with RELEASE_TELEPHONY_MODULE
         "//packages/modules/Telephony/framework:__subpackages__",
-        "//packages/modules/Virtualization:__subpackages__",
     ],
     plugins: ["error_prone_android_framework"],
     errorprone: {
