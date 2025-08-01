@@ -435,7 +435,6 @@ java_library {
     name: "framework-non-updatable-unbundled-impl-libs",
     static_libs: [
         "framework-location.impl",
-        "framework-virtualization.impl",
     ] + select(soong_config_variable("ANDROID", "release_crashrecovery_module"), {
         "true": [],
         default: [
@@ -457,6 +456,7 @@ java_defaults {
     name: "framework-minus-apex-with-libs-defaults",
     defaults: ["framework-minus-apex-defaults"],
     libs: [
+        "framework-virtualization.stubs.module_lib",
         "framework-non-updatable-unbundled-impl-libs",
     ],
 }
@@ -492,7 +492,6 @@ java_library {
         "//packages/modules/NeuralNetworks:__subpackages__",
         // TODO(b/429127828): Clean this up along with RELEASE_TELEPHONY_MODULE
         "//packages/modules/Telephony/framework:__subpackages__",
-        "//packages/modules/Virtualization:__subpackages__",
     ],
     compile_dex: false,
     headers_only: true,
