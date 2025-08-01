@@ -50,6 +50,7 @@ import static android.os.Process.SYSTEM_UID;
 import static android.os.Trace.TRACE_TAG_WINDOW_MANAGER;
 import static android.view.Display.DEFAULT_DISPLAY;
 import static android.view.Display.INVALID_DISPLAY;
+import static android.view.WindowManager.TRANSIT_START_LOCK_TASK_MODE;
 import static android.view.WindowManager.TRANSIT_TO_BACK;
 import static android.view.WindowManager.TRANSIT_TO_FRONT;
 
@@ -902,8 +903,32 @@ public class ActivityTaskSupervisor implements RecentTasks.Callbacks {
                     || task.mLockTaskAuth == LOCK_TASK_AUTH_LAUNCHABLE_PRIV
                     || (task.mLockTaskAuth == LOCK_TASK_AUTH_ALLOWLISTED
                             && lockTaskController.getLockTaskModeState()
-                                    == LOCK_TASK_MODE_LOCKED)) {
-                lockTaskController.startLockTaskMode(task, false, 0 /* blank UID */);
+                    == LOCK_TASK_MODE_LOCKED)) {
+
+                if (DesktopExperienceFlags.ENABLE_DESKTOP_WINDOWING_ENTERPRISE_BUGFIX.isTrue()
+                        && task.mTransitionController.isShellTransitionsEnabled()) {
+                    final Transition transition = new Transition(TRANSIT_START_LOCK_TASK_MODE,
+                            0 /* flags */,
+                            task.mTransitionController, mWindowManager.mSyncEngine);
+                    task.mTransitionController.startCollectOrQueue(transition,
+                            (deferred) -> {
+                                final ActionChain chain = mService.mChainTracker.start(
+                                        "realStartActivity",
+                                        transition);
+                                task.mTransitionController.requestStartTransition(transition, task,
+                                        null /* remoteTransition */, null /* displayChange */);
+                                chain.collect(task);
+                                // When starting lock task mode the root task must be in front and
+                                // focused
+                                lockTaskController.startLockTaskMode(task, false,
+                                        0 /* blank UID */);
+                                transition.setReady(task, true);
+                                mService.mChainTracker.end();
+                            });
+                } else {
+                    lockTaskController.startLockTaskMode(task, false,
+                            0 /* blank UID */);
+                }
             }
 
             final RemoteException e = tryRealStartActivityInner(

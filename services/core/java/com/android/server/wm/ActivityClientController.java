@@ -41,6 +41,7 @@ import static android.service.voice.VoiceInteractionSession.SHOW_SOURCE_APPLICAT
 import static android.view.Display.DEFAULT_DISPLAY;
 import static android.view.Display.INVALID_DISPLAY;
 import static android.view.WindowManager.TRANSIT_CHANGE;
+import static android.view.WindowManager.TRANSIT_START_LOCK_TASK_MODE;
 import static android.view.WindowManager.TRANSIT_TO_BACK;
 import static android.view.WindowManager.TRANSIT_TO_FRONT;
 
@@ -1426,7 +1427,29 @@ class ActivityClientController extends IActivityClientController.Stub {
         synchronized (mGlobalLock) {
             final ActivityRecord r = ActivityRecord.forTokenLocked(token);
             if (r == null) return;
-            mService.startLockTaskMode(r.getTask(), false /* isSystemCaller */);
+
+            if (DesktopExperienceFlags.ENABLE_DESKTOP_WINDOWING_ENTERPRISE_BUGFIX.isTrue()
+                    && mService.getTransitionController().isShellTransitionsEnabled()) {
+                final Task task = r.getTask();
+                final Transition transition = new Transition(TRANSIT_START_LOCK_TASK_MODE,
+                        0 /* flags */,
+                        mService.getTransitionController(), mService.mWindowManager.mSyncEngine);
+                mService.getTransitionController().startCollectOrQueue(transition,
+                        (deferred) -> {
+                            final ActionChain chain = mService.mChainTracker.start(
+                                    "startLockTaskModeByToken",
+                                    transition);
+                            mService.getTransitionController().requestStartTransition(transition,
+                                    task,
+                                    null /* remoteTransition */, null /* displayChange */);
+                            chain.collect(task);
+                            mService.startLockTaskMode(task, false /* isSystemCaller */);
+                            transition.setReady(task, true);
+                            mService.mChainTracker.end();
+                        });
+            } else {
+                mService.startLockTaskMode(r.getTask(), false /* isSystemCaller */);
+            }
         }
     }
 
