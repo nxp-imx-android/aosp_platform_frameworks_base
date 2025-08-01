@@ -373,6 +373,8 @@
     <string name="screen_capture_toolbar_capture_button">Capture</string>
     <!-- Button text in the toolbar for choosing the screen recording type. [CHAR LIMIT=35] -->
     <string name="screen_capture_toolbar_record_button">Record</string>
+    <!-- Button text for screen sharing [CHAR LIMIT=35] -->
+    <string name="screen_share_toolbar_share_button">Share</string>
 
     <!-- Text shown beneath partial screenshot region displaying the dimensions (width and height) of the area to be captured. [CHAR LIMIT=NONE] [SCREENSHOT=screen/7ytguTQdu3cEn4f] -->
     <string name="screen_capture_region_dimensions"><xliff:g example="210" id="width">%1$d</xliff:g> x <xliff:g example="129" id="height">%2$d</xliff:g></string>
