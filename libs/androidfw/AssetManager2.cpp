@@ -444,8 +444,8 @@ bool AssetManager2::ContainsAllocatedTable() const {
   return false;
 }
 
-void AssetManager2::SetConfigurations(std::span<const ResTable_config> configurations,
-                                      bool force_refresh) {
+void AssetManager2::SetConfigurations(std::vector<ResTable_config> configurations,
+    bool force_refresh) {
   int diff = 0;
   if (force_refresh) {
     diff = -1;
@@ -459,10 +459,7 @@ void AssetManager2::SetConfigurations(std::span<const ResTable_config> configura
     }
   }
 
-  configurations_.clear();
-  for (auto&& config : configurations) {
-    configurations_.emplace_back(config);
-  }
+  configurations_ = std::move(configurations);
   if (diff) {
     RebuildFilterList();
     InvalidateCaches(static_cast<uint32_t>(diff));
