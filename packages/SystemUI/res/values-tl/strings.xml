@@ -146,6 +146,8 @@
     <string name="screen_capture_region_selection_button" msgid="4437546351856914639">"I-capture ang piniling bahagi"</string>
     <string name="screen_capture_toolbar_capture_button" msgid="8512731007891496030">"I-capture"</string>
     <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"I-record"</string>
+    <!-- no translation found for screen_capture_region_dimensions (2317064050253056256) -->
+    <skip />
     <string name="share_to_app_chip_accessibility_label" msgid="4210256229976947065">"Ibinabahagi ang screen"</string>
     <string name="share_to_app_chip_accessibility_label_generic" msgid="5517431657924536133">"Pagbabahagi ng content"</string>
     <string name="share_to_app_stop_dialog_title" msgid="9212915050910250438">"Ihinto ang pagshe-share ng screen?"</string>
@@ -155,6 +157,8 @@
     <string name="share_to_app_stop_dialog_message_single_app_specific" msgid="5923772039347985172">"Kasalukuyan kang nagbabahagi ng <xliff:g id="APP_BEING_SHARED_NAME">%1$s</xliff:g>"</string>
     <string name="share_to_app_stop_dialog_message_single_app_generic" msgid="6681016774654578261">"Kasalukuyan kang nagbabahagi ng app"</string>
     <string name="share_to_app_stop_dialog_message_generic" msgid="7622174291691249392">"Kasalukuyan kang nagbabahagi sa isang app"</string>
+    <!-- no translation found for share_to_app_stop_dialog_message_with_host_app (7445852089654702142) -->
+    <skip />
     <string name="share_to_app_stop_dialog_button" msgid="6334056916284230217">"Ihinto ang pagbabahagi"</string>
     <string name="cast_screen_to_other_device_chip_accessibility_label" msgid="4687917476203009885">"Kina-cast ang screen"</string>
     <string name="cast_to_other_device_stop_dialog_title" msgid="7836517190930357326">"Ihinto ang pag-cast?"</string>
@@ -714,10 +718,8 @@
     <string name="monitoring_description_pin_protection" msgid="1983580207046670355">"Puwede lang baguhin gamit ang PIN ang ilang kontrol sa iyong device, tulad ng pang-araw-araw na limitasyon at downtime."</string>
     <string name="legacy_vpn_name" msgid="4174223520162559145">"VPN"</string>
     <string name="keyguard_indication_trust_unlocked" msgid="7395154975733744547">"Pinanatiling naka-unlock ng TrustAgent"</string>
-    <!-- no translation found for kg_prompt_after_adaptive_auth_lock (6065186971000690782) -->
-    <skip />
-    <!-- no translation found for keyguard_indication_after_adaptive_auth_lock (5240600662061340872) -->
-    <skip />
+    <string name="kg_prompt_after_adaptive_auth_lock" msgid="6065186971000690782">"Naka-lock ang screen. Masyadong maraming pagsubok na mag-authenticate."</string>
+    <string name="keyguard_indication_after_adaptive_auth_lock" msgid="5240600662061340872">"Naka-lock ang screen\nHindi nakapag-authenticate"</string>
     <string name="keyguard_indication_after_watch_disconnected" msgid="8133476870585660478">"Na-lock ng iyong relo"</string>
     <string name="keyguard_indication_after_secure_lock_device" msgid="4358906300665255820">"Naka-lock sa pamamagitan ng 2-step na pag-verify"</string>
     <string name="zen_mode_and_condition" msgid="5043165189511223718">"<xliff:g id="ZEN_MODE">%1$s</xliff:g>. <xliff:g id="EXIT_CONDITION">%2$s</xliff:g>"</string>
@@ -861,6 +863,8 @@
     <string name="notification_onboarding_summaries_message" msgid="6061524903176459064">"Puwede na ngayong ibuod ang iyong mas mahahabang pag-uusap para mabigyan ka ng maiikling recap"</string>
     <string name="notification_onboarding_bundles_message" msgid="4612908213178622912">"Bina-bundle at minu-mute ng organizer ng notification ang mga notification na may mas mababang priyoridad. Magdagdag ng higit pang kategorya sa Mga Setting."</string>
     <string name="notification_bundle_header_counter" msgid="5515532701569242265">"{count,plural, =1{# notification}one{# notification}other{# na notification}}"</string>
+    <!-- no translation found for notification_bundle_header_joined_description (4517556837418088139) -->
+    <skip />
     <string name="inline_done_button" msgid="6043094985588909584">"Tapos na"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"Ilapat"</string>
     <string name="inline_turn_off_notifications" msgid="2653064779176881329">"I-off"</string>
@@ -973,6 +977,8 @@
     <string name="group_system_access_google_assistant" msgid="3769929488906534254">"Buksan ang digital na assistant"</string>
     <string name="group_system_lock_screen" msgid="7391191300363416543">"I-lock ang screen"</string>
     <string name="group_system_quick_memo" msgid="3764560265935722903">"Magtala"</string>
+    <!-- no translation found for group_system_close_window (1506354809787837043) -->
+    <skip />
     <string name="keyboard_shortcut_group_system_multitasking" msgid="6967816258924795558">"Pag-multitask"</string>
     <string name="system_multitasking_rhs" msgid="8779289852395243004">"Gumamit ng split screen nang nasa kanan ang app"</string>
     <string name="system_multitasking_lhs" msgid="7348595296208696452">"Gumamit ng split screen nang nasa kaliwa ang app"</string>
@@ -1061,10 +1067,8 @@
     <string name="qs_edit" msgid="5583565172803472437">"I-edit"</string>
     <string name="qs_edit_tiles" msgid="2105215324060865035">"I-edit ang mga tile"</string>
     <string name="qs_edit_mode_tooltip" msgid="4164112885539479781">"I-resize ang mga tile ng Mga Mabilisang Setting"</string>
-    <!-- no translation found for qs_edit_settings (3243175290660574156) -->
-    <skip />
-    <!-- no translation found for qs_edit_menu_content_description (4420651071119623791) -->
-    <skip />
+    <string name="qs_edit_settings" msgid="3243175290660574156">"Mga Setting"</string>
+    <string name="qs_edit_menu_content_description" msgid="4420651071119623791">"Mga Opsyon"</string>
     <string name="tuner_time" msgid="2450785840990529997">"Oras"</string>
   <string-array name="clock_options">
     <item msgid="3986445361435142273">"Ipakita ang oras, minuto at segundo"</item>
@@ -1351,6 +1355,10 @@
     <string name="media_output_end_session_dialog_summary" msgid="5954520685989877347">"Ihinto ang iyong nakabahaging session para maglipat ng media sa ibang device"</string>
     <string name="media_output_end_session_dialog_stop" msgid="208189434474624412">"Ihinto"</string>
     <string name="media_output_dialog_button_stop_sharing" msgid="5043482739689716185">"Ihinto ang pag-share"</string>
+    <!-- no translation found for media_output_dialog_button_sharing_audio (8312910741492835648) -->
+    <skip />
+    <!-- no translation found for media_output_dialog_button_share_audio (827604934548421520) -->
+    <skip />
     <string name="build_number_clip_data_label" msgid="3623176728412560914">"Numero ng build"</string>
     <string name="build_number_copy_toast" msgid="877720921605503046">"Nakopya sa clipboard ang numero ng build."</string>
     <string name="copy_to_clipboard_a11y_action" msgid="4312789069718446749">"kopyahin sa clipboard."</string>

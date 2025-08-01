@@ -146,6 +146,8 @@
     <string name="screen_capture_region_selection_button" msgid="4437546351856914639">"തിരഞ്ഞെടുത്ത ഏരിയ ക്യാപ്‌ചർ ചെയ്യുക"</string>
     <string name="screen_capture_toolbar_capture_button" msgid="8512731007891496030">"ചിത്രമെടുക്കുക"</string>
     <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"റെക്കോർഡ് ചെയ്യുക"</string>
+    <!-- no translation found for screen_capture_region_dimensions (2317064050253056256) -->
+    <skip />
     <string name="share_to_app_chip_accessibility_label" msgid="4210256229976947065">"സ്‌ക്രീൻ പങ്കിടുന്നു"</string>
     <string name="share_to_app_chip_accessibility_label_generic" msgid="5517431657924536133">"ഉള്ളടക്കം പങ്കിടൽ"</string>
     <string name="share_to_app_stop_dialog_title" msgid="9212915050910250438">"സ്‌ക്രീൻ പങ്കിടുന്നത് നിർത്തണോ?"</string>
@@ -155,6 +157,8 @@
     <string name="share_to_app_stop_dialog_message_single_app_specific" msgid="5923772039347985172">"നിങ്ങൾ ഇപ്പോൾ <xliff:g id="APP_BEING_SHARED_NAME">%1$s</xliff:g> പങ്കിടുകയാണ്"</string>
     <string name="share_to_app_stop_dialog_message_single_app_generic" msgid="6681016774654578261">"നിങ്ങൾ നിലവിൽ ഒരു ആപ്പ് പങ്കിടുകയാണ്"</string>
     <string name="share_to_app_stop_dialog_message_generic" msgid="7622174291691249392">"നിങ്ങൾ നിലവിൽ ഒരു ആപ്പുമായി പങ്കിടുകയാണ്"</string>
+    <!-- no translation found for share_to_app_stop_dialog_message_with_host_app (7445852089654702142) -->
+    <skip />
     <string name="share_to_app_stop_dialog_button" msgid="6334056916284230217">"പങ്കിടൽ നിർത്തുക"</string>
     <string name="cast_screen_to_other_device_chip_accessibility_label" msgid="4687917476203009885">"സ്‌ക്രീൻ കാസ്‌റ്റ് ചെയ്യുന്നു"</string>
     <string name="cast_to_other_device_stop_dialog_title" msgid="7836517190930357326">"കാസ്റ്റ് ചെയ്യുന്നത് അവസാനിപ്പിക്കണോ?"</string>
@@ -859,6 +863,8 @@
     <string name="notification_onboarding_summaries_message" msgid="6061524903176459064">"ഇപ്പോൾ നിങ്ങളുടെ ദൈർഘ്യമേറിയ സംഭാഷണങ്ങൾ സംഗ്രഹിച്ച് നിങ്ങൾക്ക് വേഗത്തിലുള്ള റീക്യാപ്പുകൾ നൽകാനാകും"</string>
     <string name="notification_onboarding_bundles_message" msgid="4612908213178622912">"അറിയിപ്പ് ഓർഗനൈസർ, മുൻഗണന കുറഞ്ഞ അറിയിപ്പുകൾ ബണ്ടിൽ ചെയ്യുകയും അവ നിശബ്ദമാക്കുകയും ചെയ്യുന്നു. ക്രമീകരണത്തിൽ കൂടുതൽ വിഭാഗങ്ങൾ ചേർക്കുക."</string>
     <string name="notification_bundle_header_counter" msgid="5515532701569242265">"{count,plural, =1{# അറിയിപ്പ്}other{# അറിയിപ്പുകൾ}}"</string>
+    <!-- no translation found for notification_bundle_header_joined_description (4517556837418088139) -->
+    <skip />
     <string name="inline_done_button" msgid="6043094985588909584">"പൂർത്തിയായി"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"ബാധകമാക്കുക"</string>
     <string name="inline_turn_off_notifications" msgid="2653064779176881329">"ഓഫാക്കുക"</string>
@@ -971,6 +977,8 @@
     <string name="group_system_access_google_assistant" msgid="3769929488906534254">"ഡിജിറ്റൽ അസിസ്‌റ്റന്റ് തുറക്കുക"</string>
     <string name="group_system_lock_screen" msgid="7391191300363416543">"ലോക്ക് സ്‌ക്രീൻ"</string>
     <string name="group_system_quick_memo" msgid="3764560265935722903">"ഒരു കുറിപ്പെടുക്കുക"</string>
+    <!-- no translation found for group_system_close_window (1506354809787837043) -->
+    <skip />
     <string name="keyboard_shortcut_group_system_multitasking" msgid="6967816258924795558">"മൾട്ടിടാസ്‌കിംഗ്"</string>
     <string name="system_multitasking_rhs" msgid="8779289852395243004">"വലതുവശത്തുള്ള ആപ്പിനൊപ്പം സ്‌ക്രീൻ വിഭജന മോഡ് ഉപയോഗിക്കുക"</string>
     <string name="system_multitasking_lhs" msgid="7348595296208696452">"ഇടതുവശത്തുള്ള ആപ്പിനൊപ്പം സ്‌ക്രീൻ വിഭജന മോഡ് ഉപയോഗിക്കുക"</string>
@@ -1347,6 +1355,10 @@
     <string name="media_output_end_session_dialog_summary" msgid="5954520685989877347">"മീഡിയയെ മറ്റൊരു ഉപകരണത്തിലേക്ക് നീക്കുന്നതിന് നിങ്ങളുടെ പങ്കിട്ട സെഷൻ നിർത്തുക"</string>
     <string name="media_output_end_session_dialog_stop" msgid="208189434474624412">"നിർത്തുക"</string>
     <string name="media_output_dialog_button_stop_sharing" msgid="5043482739689716185">"പങ്കിടൽ നിർത്തുക"</string>
+    <!-- no translation found for media_output_dialog_button_sharing_audio (8312910741492835648) -->
+    <skip />
+    <!-- no translation found for media_output_dialog_button_share_audio (827604934548421520) -->
+    <skip />
     <string name="build_number_clip_data_label" msgid="3623176728412560914">"ബിൽഡ് നമ്പർ"</string>
     <string name="build_number_copy_toast" msgid="877720921605503046">"ക്ലിപ്പ്ബോർഡിലേക്ക് ബിൽഡ് നമ്പർ പകർത്തി."</string>
     <string name="copy_to_clipboard_a11y_action" msgid="4312789069718446749">"ക്ലിപ്പ്ബോർഡിലേക്ക് പകർത്തുക."</string>

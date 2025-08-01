@@ -146,6 +146,8 @@
     <string name="screen_capture_region_selection_button" msgid="4437546351856914639">"Snimi odabrano područje"</string>
     <string name="screen_capture_toolbar_capture_button" msgid="8512731007891496030">"Snimak ekrana"</string>
     <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"Snimak"</string>
+    <!-- no translation found for screen_capture_region_dimensions (2317064050253056256) -->
+    <skip />
     <string name="share_to_app_chip_accessibility_label" msgid="4210256229976947065">"Dijeljenje ekrana"</string>
     <string name="share_to_app_chip_accessibility_label_generic" msgid="5517431657924536133">"Dijeljenje sadržaja"</string>
     <string name="share_to_app_stop_dialog_title" msgid="9212915050910250438">"Zaustaviti dijeljenje ekrana?"</string>
@@ -155,6 +157,8 @@
     <string name="share_to_app_stop_dialog_message_single_app_specific" msgid="5923772039347985172">"Trenutno dijelite aplikaciju <xliff:g id="APP_BEING_SHARED_NAME">%1$s</xliff:g>"</string>
     <string name="share_to_app_stop_dialog_message_single_app_generic" msgid="6681016774654578261">"Trenutno dijelite aplikaciju"</string>
     <string name="share_to_app_stop_dialog_message_generic" msgid="7622174291691249392">"Trenutno dijelite s aplikacijom"</string>
+    <!-- no translation found for share_to_app_stop_dialog_message_with_host_app (7445852089654702142) -->
+    <skip />
     <string name="share_to_app_stop_dialog_button" msgid="6334056916284230217">"Zaustavi dijeljenje"</string>
     <string name="cast_screen_to_other_device_chip_accessibility_label" msgid="4687917476203009885">"Emitiranje ekrana"</string>
     <string name="cast_to_other_device_stop_dialog_title" msgid="7836517190930357326">"Zaustaviti emitiranje?"</string>
@@ -714,10 +718,8 @@
     <string name="monitoring_description_pin_protection" msgid="1983580207046670355">"Određene kontrole na uređaju, poput dnevnih ograničenja i prestanka rada, mogu se promijeniti samo uz PIN."</string>
     <string name="legacy_vpn_name" msgid="4174223520162559145">"VPN"</string>
     <string name="keyguard_indication_trust_unlocked" msgid="7395154975733744547">"Pouzdani agent sprečava zaključavanje"</string>
-    <!-- no translation found for kg_prompt_after_adaptive_auth_lock (6065186971000690782) -->
-    <skip />
-    <!-- no translation found for keyguard_indication_after_adaptive_auth_lock (5240600662061340872) -->
-    <skip />
+    <string name="kg_prompt_after_adaptive_auth_lock" msgid="6065186971000690782">"Ekran je zaključan. Previše pokušaja autentifikacije."</string>
+    <string name="keyguard_indication_after_adaptive_auth_lock" msgid="5240600662061340872">"Ekran je zaključan\nAutentifikacija nije uspjela"</string>
     <string name="keyguard_indication_after_watch_disconnected" msgid="8133476870585660478">"Zaključano je putem sata"</string>
     <string name="keyguard_indication_after_secure_lock_device" msgid="4358906300665255820">"Zaključano je putem potvrde u dva koraka"</string>
     <string name="zen_mode_and_condition" msgid="5043165189511223718">"<xliff:g id="ZEN_MODE">%1$s</xliff:g>. <xliff:g id="EXIT_CONDITION">%2$s</xliff:g>"</string>
@@ -861,6 +863,8 @@
     <string name="notification_onboarding_summaries_message" msgid="6061524903176459064">"Duži razgovori se sada mogu sažimati da dobijate brze sažetke"</string>
     <string name="notification_onboarding_bundles_message" msgid="4612908213178622912">"Organizator obavještenja grupiše i utišava obavještenja nižeg prioriteta. Dodajte više kategorija u Postavkama."</string>
     <string name="notification_bundle_header_counter" msgid="5515532701569242265">"{count,plural, =1{# obavještenje}one{# obavještenje}few{# obavještenja}other{# obavještenja}}"</string>
+    <!-- no translation found for notification_bundle_header_joined_description (4517556837418088139) -->
+    <skip />
     <string name="inline_done_button" msgid="6043094985588909584">"Gotovo"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"Primijeni"</string>
     <string name="inline_turn_off_notifications" msgid="2653064779176881329">"Isključi"</string>
@@ -973,6 +977,8 @@
     <string name="group_system_access_google_assistant" msgid="3769929488906534254">"Otvaranje digitalnog asistenta"</string>
     <string name="group_system_lock_screen" msgid="7391191300363416543">"Zaključavanje ekrana"</string>
     <string name="group_system_quick_memo" msgid="3764560265935722903">"Pisanje bilješke"</string>
+    <!-- no translation found for group_system_close_window (1506354809787837043) -->
+    <skip />
     <string name="keyboard_shortcut_group_system_multitasking" msgid="6967816258924795558">"Multitasking"</string>
     <string name="system_multitasking_rhs" msgid="8779289852395243004">"Korištenje podijeljenog ekrana s aplikacijom na desnoj strani"</string>
     <string name="system_multitasking_lhs" msgid="7348595296208696452">"Korištenje podijeljenog ekrana s aplikacijom na lijevoj strani"</string>
@@ -1061,10 +1067,8 @@
     <string name="qs_edit" msgid="5583565172803472437">"Uredite"</string>
     <string name="qs_edit_tiles" msgid="2105215324060865035">"Uredite kartice"</string>
     <string name="qs_edit_mode_tooltip" msgid="4164112885539479781">"Promjena veličine kartica Brze postavke"</string>
-    <!-- no translation found for qs_edit_settings (3243175290660574156) -->
-    <skip />
-    <!-- no translation found for qs_edit_menu_content_description (4420651071119623791) -->
-    <skip />
+    <string name="qs_edit_settings" msgid="3243175290660574156">"Postavke"</string>
+    <string name="qs_edit_menu_content_description" msgid="4420651071119623791">"Opcije"</string>
     <string name="tuner_time" msgid="2450785840990529997">"Vrijeme"</string>
   <string-array name="clock_options">
     <item msgid="3986445361435142273">"Prikaži sate, minute i sekunde"</item>
@@ -1351,6 +1355,10 @@
     <string name="media_output_end_session_dialog_summary" msgid="5954520685989877347">"Zaustavite dijeljenu sesiju da premjestite medij na drugi uređaj"</string>
     <string name="media_output_end_session_dialog_stop" msgid="208189434474624412">"Zaustavi"</string>
     <string name="media_output_dialog_button_stop_sharing" msgid="5043482739689716185">"Zaustavi dijeljenje"</string>
+    <!-- no translation found for media_output_dialog_button_sharing_audio (8312910741492835648) -->
+    <skip />
+    <!-- no translation found for media_output_dialog_button_share_audio (827604934548421520) -->
+    <skip />
     <string name="build_number_clip_data_label" msgid="3623176728412560914">"Broj verzije"</string>
     <string name="build_number_copy_toast" msgid="877720921605503046">"Broj verzije je kopiran u međumemoriju."</string>
     <string name="copy_to_clipboard_a11y_action" msgid="4312789069718446749">"kopiranje u međumemoriju."</string>
