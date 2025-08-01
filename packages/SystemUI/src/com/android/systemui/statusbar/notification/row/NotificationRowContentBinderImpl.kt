@@ -87,7 +87,6 @@ import com.android.systemui.statusbar.policy.InflatedSmartReplyViewHolder
 import com.android.systemui.statusbar.policy.SmartReplyStateInflater
 import com.android.systemui.util.Assert
 import java.util.concurrent.Executor
-import java.util.function.Consumer
 import javax.inject.Inject
 
 /**
@@ -975,7 +974,7 @@ constructor(
             Trace.beginAsyncSection(APPLY_TRACE_METHOD, System.identityHashCode(row))
             val privateLayout = row.privateLayout
             val publicLayout = row.publicLayout
-            val runningInflations = HashMap<Int, CancellationSignal>()
+            val runningInflations = InflationTaskTracker()
             var flag = FLAG_CONTENT_VIEW_CONTRACTED
             if (reInflateFlags and flag != 0 && result.remoteViews.contracted != null) {
                 val isNewView =
@@ -1244,9 +1243,7 @@ constructor(
             cancellationSignal.setOnCancelListener {
                 logger.logAsyncTaskProgress(entry.logKey, "apply cancelled")
                 Trace.endAsyncSection(APPLY_TRACE_METHOD, System.identityHashCode(row))
-                runningInflations.values.forEach(
-                    Consumer { obj: CancellationSignal -> obj.cancel() }
-                )
+                runningInflations.cancelAll()
             }
             return cancellationSignal
         }
@@ -1268,7 +1265,7 @@ constructor(
             parentLayout: ViewGroup?,
             existingView: View?,
             existingWrapper: NotificationViewWrapper?,
-            runningInflations: HashMap<Int, CancellationSignal>,
+            runningInflations: InflationTaskTracker,
             applyCallback: ApplyCallback,
             logger: NotificationRowContentBinderLogger,
         ) {
@@ -1307,7 +1304,7 @@ constructor(
                     )
                     // Add a running inflation to make sure we don't trigger callbacks.
                     // Safe to do because only happens in tests.
-                    runningInflations[inflationId] = CancellationSignal()
+                    runningInflations.registerRemoteViews(inflationId, CancellationSignal())
                 }
                 return
             }
@@ -1339,7 +1336,7 @@ constructor(
                                 logger,
                                 "applied invalid view",
                             )
-                            runningInflations.remove(inflationId)
+                            runningInflations.unregisterRemoteViews(inflationId)
                             return
                         }
                         if (isNewView) {
@@ -1347,7 +1344,7 @@ constructor(
                         } else {
                             existingWrapper?.onReinflated()
                         }
-                        runningInflations.remove(inflationId)
+                        runningInflations.unregisterRemoteViews(inflationId)
                         finishIfDone(
                             result,
                             isMinimized,
@@ -1370,7 +1367,7 @@ constructor(
                                 existingWrapper?.onReinflated()
                             }
                         } catch (e: InflationException) {
-                            runningInflations.remove(inflationId)
+                            runningInflations.unregisterRemoteViews(inflationId)
                             handleInflationError(
                                 runningInflations,
                                 e,
@@ -1383,7 +1380,7 @@ constructor(
                             return
                         }
 
-                        runningInflations.remove(inflationId)
+                        runningInflations.unregisterRemoteViews(inflationId)
                         finishIfDone(
                             result,
                             isMinimized,
@@ -1424,7 +1421,7 @@ constructor(
                             )
                             onViewApplied(newView)
                         } catch (anotherException: Exception) {
-                            runningInflations.remove(inflationId)
+                            runningInflations.unregisterRemoteViews(inflationId)
                             handleInflationError(
                                 runningInflations,
                                 e,
@@ -1455,7 +1452,7 @@ constructor(
                         remoteViewClickHandler,
                     )
                 }
-            runningInflations[inflationId] = cancellationSignal
+            runningInflations.registerRemoteViews(inflationId, cancellationSignal)
         }
 
         /**
@@ -1530,7 +1527,7 @@ constructor(
         }
 
         private fun handleInflationError(
-            runningInflations: HashMap<Int, CancellationSignal>,
+            runningInflations: InflationTaskTracker,
             e: Exception,
             notification: ExpandableNotificationRow?,
             entry: NotificationEntry,
@@ -1540,7 +1537,7 @@ constructor(
         ) {
             Assert.isMainThread()
             logger.logAsyncTaskException(notification?.loggingKey, logContext, e)
-            runningInflations.values.forEach(Consumer { obj: CancellationSignal -> obj.cancel() })
+            runningInflations.cancelAll()
             callback?.handleInflationException(entry, e)
         }
 
@@ -1554,14 +1551,14 @@ constructor(
             isMinimized: Boolean,
             @InflationFlag reInflateFlags: Int,
             remoteViewCache: NotifRemoteViewCache,
-            runningInflations: HashMap<Int, CancellationSignal>,
+            runningInflations: InflationTaskTracker,
             endListener: InflationCallback?,
             entry: NotificationEntry,
             row: ExpandableNotificationRow,
             logger: NotificationRowContentBinderLogger,
         ): Boolean {
             Assert.isMainThread()
-            if (runningInflations.isNotEmpty()) {
+            if (runningInflations.isAnyActive()) {
                 return false
             }
             logger.logAsyncTaskProgress(row.loggingKey, "finishing")
@@ -1776,5 +1773,23 @@ constructor(
         private const val ASYNC_TASK_TRACE_METHOD =
             "NotificationRowContentBinderImpl.AsyncInflationTask"
         private const val APPLY_TRACE_METHOD = "NotificationRowContentBinderImpl#apply"
+    }
+
+    class InflationTaskTracker {
+        private val remoteViews = HashMap<Int, CancellationSignal>()
+
+        fun registerRemoteViews(inflationId: Int, signal: CancellationSignal) {
+            remoteViews[inflationId] = signal
+        }
+
+        fun unregisterRemoteViews(inflationId: Int) {
+            remoteViews.remove(inflationId)
+        }
+
+        fun cancelAll() {
+            remoteViews.values.forEach(CancellationSignal::cancel)
+        }
+
+        fun isAnyActive(): Boolean = remoteViews.isNotEmpty()
     }
 }
