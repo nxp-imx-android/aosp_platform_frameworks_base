@@ -306,6 +306,9 @@ public enum DesktopExperienceFlags {
     RESPECT_FULLSCREEN_ACTIVITY_OPTION_IN_DESKTOP_LAUNCH_PARAMS(
             Flags::respectFullscreenActivityOptionInDesktopLaunchParams, true,
             Flags.FLAG_RESPECT_FULLSCREEN_ACTIVITY_OPTION_IN_DESKTOP_LAUNCH_PARAMS),
+    SHOW_BIOMETRIC_PROMPT_SECONDARY_DISPLAY_TOAST(
+            Flags::showBiometricPromptSecondaryDisplayToast, true,
+            Flags.FLAG_SHOW_BIOMETRIC_PROMPT_SECONDARY_DISPLAY_TOAST),
     SKIP_DEACTIVATION_OF_DESK_WITH_NOTHING_IN_FRONT(
             Flags::skipDeactivationOfDeskWithNothingInFront, true,
             Flags.FLAG_SKIP_DEACTIVATION_OF_DESK_WITH_NOTHING_IN_FRONT),

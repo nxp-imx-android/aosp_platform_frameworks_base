@@ -2015,6 +2015,11 @@
     <!-- Subtitle shown on the system-provided biometric dialog, asking the user to authenticate with a biometric (e.g. fingerprint or face) or their screen lock credential (i.e. PIN, pattern, or password). [CHAR LIMIT=90] -->
     <string name="biometric_or_screen_lock_dialog_default_subtitle">Use your biometric or screen lock to continue</string>
 
+    <!-- Message shown on secondary screens to direct users to use their phone to finish biometric authorization [CHAR LIMIT=NONE] -->
+    <string name="biometric_dialog_secondary_display_toast" product="default">Verify it\'s you on your phone to continue</string>
+    <!-- Message shown on secondary screens to direct users to use their tablet to finish biometric authorization [CHAR LIMIT=NONE] -->
+    <string name="biometric_dialog_secondary_display_toast" product="tablet">Verify it\'s you on your tablet to continue</string>
+
     <!-- Message shown when biometric hardware is not available [CHAR LIMIT=50] -->
     <string name="biometric_error_hw_unavailable">Biometric hardware unavailable</string>
     <!-- Message shown when biometric authentication was canceled by the user [CHAR LIMIT=50] -->
