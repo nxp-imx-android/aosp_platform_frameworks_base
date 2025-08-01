@@ -58,7 +58,6 @@ import android.os.UserHandle;
 import android.transition.TransitionManager;
 import android.util.Pair;
 import android.util.Slog;
-import android.view.AppTransitionAnimationSpec;
 import android.view.IAppTransitionAnimationSpecsFuture;
 import android.view.RemoteAnimationAdapter;
 import android.view.View;
@@ -282,11 +281,6 @@ public class ActivityOptions extends ComponentOptions {
      */
     private static final String KEY_ANIMATION_FINISHED_LISTENER =
             "android:activity.animationFinishedListener";
-
-    /**
-     * Descriptions of app transition animations to be played during the activity launch.
-     */
-    private static final String KEY_ANIM_SPECS = "android:activity.animSpecs";
 
     /**
      * Whether the activity should be launched into LockTask mode.
@@ -583,7 +577,6 @@ public class ActivityOptions extends ComponentOptions {
     private boolean mTaskOverlayCanResume;
     private boolean mAvoidMoveToFront;
     private boolean mFreezeRecentTasksReordering;
-    private AppTransitionAnimationSpec mAnimSpecs[];
     private SourceInfo mSourceInfo;
     private int mRotationAnimationHint = -1;
     private Bundle mAppVerificationBundle;
@@ -1057,21 +1050,6 @@ public class ActivityOptions extends ComponentOptions {
         return opts;
     }
 
-    /** @hide */
-    @android.ravenwood.annotation.RavenwoodThrow(blockedBy = View.class)
-    public static ActivityOptions makeThumbnailAspectScaleDownAnimation(View source,
-            AppTransitionAnimationSpec[] specs, Handler handler,
-            OnAnimationStartedListener onAnimationStartedListener,
-            OnAnimationFinishedListener onAnimationFinishedListener) {
-        ActivityOptions opts = new ActivityOptions();
-        opts.mPackageName = source.getContext().getPackageName();
-        opts.mAnimationType = ANIM_THUMBNAIL_ASPECT_SCALE_DOWN;
-        opts.mAnimSpecs = specs;
-        opts.setOnAnimationStartedListener(handler, onAnimationStartedListener);
-        opts.setOnAnimationFinishedListener(handler, onAnimationFinishedListener);
-        return opts;
-    }
-
     /**
      * Create an ActivityOptions to transition between Activities using cross-Activity scene
      * animations. This method carries the position of one shared element to the started Activity.
@@ -1438,13 +1416,6 @@ public class ActivityOptions extends ComponentOptions {
                 KEY_APPLY_MULTIPLE_TASK_FLAG_FOR_SHORTCUT, false);
         mApplyNoUserActionFlagForShortcut = opts.getBoolean(
                 KEY_APPLY_NO_USER_ACTION_FLAG_FOR_SHORTCUT, false);
-        if (opts.containsKey(KEY_ANIM_SPECS)) {
-            Parcelable[] specs = opts.getParcelableArray(KEY_ANIM_SPECS);
-            mAnimSpecs = new AppTransitionAnimationSpec[specs.length];
-            for (int i = specs.length - 1; i >= 0; i--) {
-                mAnimSpecs[i] = (AppTransitionAnimationSpec) specs[i];
-            }
-        }
         if (opts.containsKey(KEY_ANIMATION_FINISHED_LISTENER)) {
             mAnimationFinishedListener = IRemoteCallback.Stub.asInterface(
                     opts.getBinder(KEY_ANIMATION_FINISHED_LISTENER));
@@ -1605,9 +1576,6 @@ public class ActivityOptions extends ComponentOptions {
     public PendingIntent getUsageTimeReport() {
         return mUsageTimeReport;
     }
-
-    /** @hide */
-    public AppTransitionAnimationSpec[] getAnimSpecs() { return mAnimSpecs; }
 
     /** @hide */
     public IAppTransitionAnimationSpecsFuture getSpecsFuture() {
@@ -2474,7 +2442,6 @@ public class ActivityOptions extends ComponentOptions {
         }
         mLockTaskMode = otherOptions.mLockTaskMode;
         mShareIdentity = otherOptions.mShareIdentity;
-        mAnimSpecs = otherOptions.mAnimSpecs;
         mAnimationFinishedListener = otherOptions.mAnimationFinishedListener;
         mSpecsFuture = otherOptions.mSpecsFuture;
         mRemoteAnimationAdapter = otherOptions.mRemoteAnimationAdapter;
@@ -2620,9 +2587,6 @@ public class ActivityOptions extends ComponentOptions {
         }
         if (mApplyNoUserActionFlagForShortcut) {
             b.putBoolean(KEY_APPLY_NO_USER_ACTION_FLAG_FOR_SHORTCUT, true);
-        }
-        if (mAnimSpecs != null) {
-            b.putParcelableArray(KEY_ANIM_SPECS, mAnimSpecs);
         }
         if (mAnimationFinishedListener != null) {
             b.putBinder(KEY_ANIMATION_FINISHED_LISTENER, mAnimationFinishedListener.asBinder());
