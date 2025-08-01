@@ -1989,7 +1989,7 @@ public class OomAdjusterImpl extends OomAdjuster {
                     clientAdj = adj;
                     clientProcState = procState;
                 } else {
-                    if (now >= (cr.getServiceLastActivityTimeMillis()
+                    if (now >= (cr.getService().getLastActivity()
                             + mConstants.MAX_SERVICE_INACTIVITY)) {
                         // This service has not seen activity within
                         // recent memory, so allow it to drop to the
@@ -2183,7 +2183,7 @@ public class OomAdjusterImpl extends OomAdjuster {
                 app.setAdjTypeCode(ActivityManager.RunningAppProcessInfo.REASON_SERVICE_IN_USE);
                 app.setAdjSource(client);
                 app.setAdjSourceProcState(clientProcState);
-                app.setAdjTarget(cr.getServiceInstanceName());
+                app.setAdjTarget(cr.getService().instanceName);
                 if (reportDebugMsgs) {
                     reportOomAdjMessageLocked(TAG_OOM_ADJ, "Raise to " + adjType
                             + ": " + app + ", due to " + client
@@ -2248,7 +2248,7 @@ public class OomAdjusterImpl extends OomAdjuster {
                     app.setAdjTypeCode(ActivityManager.RunningAppProcessInfo.REASON_SERVICE_IN_USE);
                     app.setAdjSource(a);
                     app.setAdjSourceProcState(procState);
-                    app.setAdjTarget(cr.getServiceInstanceName());
+                    app.setAdjTarget(cr.getService().instanceName);
                     if (reportDebugMsgs) {
                         reportOomAdjMessageLocked(TAG_OOM_ADJ,
                                 "Raise to service w/activity: " + app);

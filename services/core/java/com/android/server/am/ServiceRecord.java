@@ -118,7 +118,6 @@ final class ServiceRecord extends ServiceRecordInternal implements ComponentName
 
     final ActivityManagerService ams;
     final ComponentName name; // service component.
-    final ComponentName instanceName; // service component's per-instance name.
     final String shortInstanceName; // instanceName.flattenToShortString().
     final String definingPackageName;
                             // Can be different from appInfo.packageName for external services
@@ -1100,11 +1099,10 @@ final class ServiceRecord extends ServiceRecordInternal implements ComponentName
 
     /** Used only for tests */
     private ServiceRecord(ActivityManagerService ams) {
-        super(0);
+        super(null, 0);
 
         this.ams = ams;
         name = null;
-        instanceName = null;
         shortInstanceName = null;
         definingPackageName = null;
         definingUid = 0;
@@ -1140,11 +1138,10 @@ final class ServiceRecord extends ServiceRecordInternal implements ComponentName
             Intent.FilterComparison intent, ServiceInfo sInfo, boolean callerIsFg,
             Runnable restarter, String processName, int sdkSandboxClientAppUid,
             String sdkSandboxClientAppPackage, boolean inSharedIsolatedProcess) {
-        super(SystemClock.uptimeMillis());
+        super(instanceName, SystemClock.uptimeMillis());
 
         this.ams = ams;
         this.name = name;
-        this.instanceName = instanceName;
         shortInstanceName = instanceName.flattenToShortString();
         this.definingPackageName = definingPackageName;
         this.definingUid = definingUid;

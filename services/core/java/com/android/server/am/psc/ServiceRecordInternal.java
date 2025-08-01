@@ -16,6 +16,7 @@
 
 package com.android.server.am.psc;
 
+import android.content.ComponentName;
 import android.os.Binder;
 
 /**
@@ -25,6 +26,9 @@ import android.os.Binder;
  * TODO(b/425766486): Make setter methods package-private once OomAdjuster is migrated to psc.
  */
 public abstract class ServiceRecordInternal extends Binder {
+    /** The service component's per-instance name. */
+    public final ComponentName instanceName;
+
     /** Whether the service has been explicitly requested to start by an application. */
     private boolean mStartRequested;
     /** Whether the service is currently running in foreground mode. */
@@ -39,7 +43,8 @@ public abstract class ServiceRecordInternal extends Binder {
     /** The bitmask of foreground service types declared for this service. */
     private int mForegroundServiceType;
 
-    public ServiceRecordInternal(long lastActivity) {
+    public ServiceRecordInternal(ComponentName instanceName, long lastActivity) {
+        this.instanceName = instanceName;
         mLastActivity = lastActivity;
     }
 
