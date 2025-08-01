@@ -263,10 +263,10 @@
     <string name="page_size_compat_never_show"> Don\'t Show Again</string>
     <string name="page_size_compat_title">Android App Compatibility</string>
 
-    <string name="page_size_compat_elf_not_aligned">&amp;#8226; %1$s : LOAD segment not aligned</string>
-    <string name="page_size_compat_apk_not_aligned">&amp;#8226; %1$s : Uncompressed library not aligned</string>
-    <string name="page_size_compat_apk_and_elf_not_aligned">&amp;#8226; %1$s : LOAD segment and uncompressed library are not aligned</string>
-    <string name="page_size_compat_unknown">&amp;#8226; %1$s : Unknown error</string>
+    <string name="page_size_compat_elf_not_aligned">&amp;#8226; %1$s : LOAD segment not aligned&lt;br&gt;</string>
+    <string name="page_size_compat_apk_not_aligned">&amp;#8226; %1$s : Uncompressed library not aligned&lt;br&gt;</string>
+    <string name="page_size_compat_apk_and_elf_not_aligned">&amp;#8226; %1$s : LOAD segment and uncompressed library are not aligned&lt;br&gt;</string>
+    <string name="page_size_compat_unknown">&amp;#8226; %1$s : Unknown error&lt;br&gt;</string>
 
     <!-- Displayed to tell the user that caller ID is not provisioned for their SIM. -->
     <string name="serviceNotProvisioned">Service not provisioned.</string>
