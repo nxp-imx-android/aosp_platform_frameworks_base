@@ -18,6 +18,7 @@ package com.android.wm.shell.windowdecor.common
 
 import android.app.ActivityManager
 import android.app.WindowConfiguration
+import android.app.WindowConfiguration.WINDOWING_MODE_FREEFORM
 import android.view.Display
 import android.view.WindowManager
 import android.window.DesktopExperienceFlags.ENABLE_PROJECTED_DISPLAY_DESKTOP_MODE
@@ -48,15 +49,9 @@ class AppHandleAndHeaderVisibilityHelper(
      */
     fun shouldShowAppHandleOrHeader(taskInfo: ActivityManager.RunningTaskInfo): Boolean {
 
+        // If DisplayController doesn't have it tracked, it could be a private/managed display, so
+        // return false if display is null
         val display = displayController.getDisplay(taskInfo.displayId) ?: return false
-        if (display == null) {
-            // If DisplayController doesn't have it tracked, it could be a private/managed display.
-            return false
-        }
-        // All freeform windows should show the app header.
-        if (taskInfo.windowingMode == WindowConfiguration.WINDOWING_MODE_FREEFORM) {
-            return true
-        }
 
         if (!ENABLE_PROJECTED_DISPLAY_DESKTOP_MODE.isTrue) {
             return allowedForTask(taskInfo, display)
@@ -68,6 +63,10 @@ class AppHandleAndHeaderVisibilityHelper(
         taskInfo: ActivityManager.RunningTaskInfo,
         display: Display,
     ): Boolean {
+        if (taskInfo.windowingMode == WINDOWING_MODE_FREEFORM) {
+            return true
+        }
+
         if (splitScreenController?.isTaskRootOrStageRoot(taskInfo.taskId) == true) {
             return false
         }
