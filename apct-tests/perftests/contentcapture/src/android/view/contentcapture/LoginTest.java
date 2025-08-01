@@ -15,6 +15,8 @@
  */
 package android.view.contentcapture;
 
+import static android.view.contentcapture.CustomTestActivity.VIEW_TYPE_CUSTOM_VIEW;
+import static android.view.contentcapture.CustomTestActivity.VIEW_TYPE_TEXT_VIEW;
 import static com.android.compatibility.common.util.ActivitiesWatcher.ActivityLifecycle.DESTROYED;
 
 import android.content.Intent;
@@ -233,17 +235,48 @@ public class LoginTest extends AbstractContentCapturePerfTestCase {
     }
 
     @Test
-    public void testNotifyVirtualChildrenAppearedWithCustomView() throws Throwable {
+    public void testNotifyVirtualChildrenAppearedWithCustomView_1() throws Throwable {
+        testNumberOfTypeViewAppearedEvents(
+                R.layout.test_export_virtual_assist_node_activity,
+                /* numberOfViews= */ 1,
+                /* expectedViewAppearedCounts= */ 6,
+                VIEW_TYPE_CUSTOM_VIEW);
+    }
+
+    @Test
+    public void testNotifyVirtualChildrenAppearedWithCustomView_10() throws Throwable {
+        testNumberOfTypeViewAppearedEvents(
+                R.layout.test_export_virtual_assist_node_activity,
+                /* numberOfViews= */ 10,
+                /* expectedViewAppearedCounts= */ 51,
+                VIEW_TYPE_CUSTOM_VIEW);
+    }
+
+    @Test
+    public void testNotifyVirtualChildrenAppearedWithCustomView_100() throws Throwable {
+        testNumberOfTypeViewAppearedEvents(
+                R.layout.test_export_virtual_assist_node_activity,
+                /* numberOfViews= */ 100,
+                /* expectedViewAppearedCounts= */ 501,
+                VIEW_TYPE_CUSTOM_VIEW);
+    }
+
+    @Test
+    public void testWithTextView_500() throws Throwable {
+        testNumberOfTypeViewAppearedEvents(
+                R.layout.test_export_virtual_assist_node_activity,
+                /* numberOfViews= */ 500,
+                /* expectedViewAppearedCounts= */ 501,
+                VIEW_TYPE_TEXT_VIEW);
+    }
+
+    private void testNumberOfTypeViewAppearedEvents(
+            int layoutId, int numberOfViews,
+            int expectedViewAppearedCounts, int viewType) throws Throwable {
         // Arrange
         MyContentCaptureService service = enableService();
-        CustomTestActivity activity = launchActivity(
-                R.layout.test_export_virtual_assist_node_activity, 0);
-        // TODO: Add multiple views with virtual children and check the performance.
-        View hostView = activity.findViewById(R.id.custom_view_with_a11y_provider);
-        hostView.setImportantForContentCapture(View.IMPORTANT_FOR_CONTENT_CAPTURE_YES);
-        // Expected: 1 for a11y host node (-1), 3 for virtual children (1, 2, 3)
-        // 1 for host view
-        int expectedViewAppeared = 5;
+        CustomTestActivity activity = launchActivity(layoutId, numberOfViews, viewType);
+        View rootView = activity.findViewById(R.id.group_root_view);
         long eventTimeoutMs = 20000;
         BenchmarkState state = mPerfStatusReporter.getBenchmarkState();
 
@@ -252,17 +285,17 @@ public class LoginTest extends AbstractContentCapturePerfTestCase {
             state.pauseTiming();
             service.clearEvents();
             // Trigger content capture structure provision.
-            sInstrumentation.runOnMainSync(() -> hostView.setVisibility(View.GONE));
+            sInstrumentation.runOnMainSync(() -> rootView.setVisibility(View.GONE));
             sInstrumentation.waitForIdleSync();
             state.resumeTiming();
-            sInstrumentation.runOnMainSync(() -> hostView.setVisibility(View.VISIBLE));
+            sInstrumentation.runOnMainSync(() -> rootView.setVisibility(View.VISIBLE));
             sInstrumentation.waitForIdleSync();
             state.pauseTiming();
-            service.waitForAppearedEvents(expectedViewAppeared, eventTimeoutMs);
+            service.waitForAppearedEvents(expectedViewAppearedCounts, eventTimeoutMs);
 
             // Assert
-            Assert.assertEquals("Expected " + expectedViewAppeared
-                            + " TYPE_VIEW_APPEARED events", expectedViewAppeared,
+            Assert.assertEquals("Expected " + expectedViewAppearedCounts
+                            + " TYPE_VIEW_APPEARED events", expectedViewAppearedCounts,
                     service.getAppearedCount());
             state.resumeTiming();
         }
