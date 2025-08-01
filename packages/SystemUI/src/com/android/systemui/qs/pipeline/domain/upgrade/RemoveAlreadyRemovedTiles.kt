@@ -30,7 +30,7 @@ class RemoveAlreadyRemovedTiles
 constructor(private val currentTilesInteractor: CurrentTilesInteractor) : CustomTileAddedUpgrade {
 
     init {
-        assert(resetTilesRemovesCustomTiles())
+        check(resetTilesRemovesCustomTiles())
     }
 
     override val version: Int
