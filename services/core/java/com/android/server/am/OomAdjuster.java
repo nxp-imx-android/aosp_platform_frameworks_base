@@ -132,13 +132,11 @@ import android.content.pm.ApplicationInfo;
 import android.content.pm.ServiceInfo;
 import android.net.NetworkPolicyManager;
 import android.os.Handler;
-import android.os.IBinder;
 import android.os.PowerManagerInternal;
 import android.os.Process;
 import android.os.RemoteException;
 import android.os.SystemClock;
 import android.os.Trace;
-import android.util.ArrayMap;
 import android.util.ArraySet;
 import android.util.Slog;
 import android.util.proto.ProtoOutputStream;
@@ -153,6 +151,7 @@ import com.android.server.am.psc.ContentProviderConnectionInternal;
 import com.android.server.am.psc.PlatformCompatCache;
 import com.android.server.am.psc.PlatformCompatCache.CachedCompatChangeId;
 import com.android.server.am.psc.ProcessRecordInternal;
+import com.android.server.am.psc.ServiceRecordInternal;
 import com.android.server.am.psc.UidRecordInternal;
 import com.android.server.wm.WindowProcessController;
 
@@ -829,13 +828,13 @@ public abstract class OomAdjuster {
             // If this process is a sandbox itself, also scan the app on whose behalf its running
             if (pr.isSdkSandbox) {
                 for (int is = psr.numberOfRunningServices() - 1; is >= 0; is--) {
-                    ServiceRecord s = psr.getRunningServiceAt(is);
-                    ArrayMap<IBinder, ArrayList<ConnectionRecord>> serviceConnections =
-                            s.getConnections();
-                    for (int conni = serviceConnections.size() - 1; conni >= 0; conni--) {
-                        ArrayList<ConnectionRecord> clist = serviceConnections.valueAt(conni);
+                    ServiceRecordInternal s = psr.getRunningServiceAt(is);
+                    for (int conni = s.getConnectionsSize() - 1; conni >= 0; conni--) {
+                        ArrayList<? extends ConnectionRecordInternal> clist =
+                                s.getConnectionAt(conni);
                         for (int i = clist.size() - 1; i >= 0; i--) {
-                            ConnectionRecord cr = clist.get(i);
+                            // TODO(b/425766486): Switch to use ConnectionRecordInternal.
+                            ConnectionRecord cr = (ConnectionRecord) clist.get(i);
                             ProcessRecord attributedApp = cr.binding.attributedClient;
                             if (attributedApp == null || attributedApp == pr
                                     || ((attributedApp.getMaxAdj() >= ProcessList.SYSTEM_ADJ)

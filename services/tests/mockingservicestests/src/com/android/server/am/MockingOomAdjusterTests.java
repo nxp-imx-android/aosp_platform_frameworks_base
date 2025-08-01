@@ -1666,7 +1666,6 @@ public class MockingOomAdjusterTests {
         ProcessRecord app = makeDefaultProcessRecord(MOCKAPP_PID, MOCKAPP_UID, MOCKAPP_PROCESSNAME,
                 MOCKAPP_PACKAGENAME, false);
         ServiceRecord s = makeServiceRecord();
-        doReturn(new ArrayMap<IBinder, ArrayList<ConnectionRecord>>()).when(s).getConnections();
         mProcessStateController.setStartRequested(s, true);
         mProcessStateController.setServiceLastActivityTime(s, SystemClock.uptimeMillis());
         mProcessStateController.startService(app.mServices, s);
@@ -4486,15 +4485,18 @@ public class MockingOomAdjusterTests {
         doCallRealMethod().when(record).setLastActivity(any(long.class));
         doCallRealMethod().when(record).getForegroundServiceType();
         doCallRealMethod().when(record).setForegroundServiceType(any(int.class));
+
+        setFieldValue(ServiceRecord.class, record, "connections",
+                new ArrayMap<IBinder, ArrayList<ConnectionRecord>>());
+        doCallRealMethod().when(record).getConnectionsSize();
+        doCallRealMethod().when(record).getConnectionAt(any(int.class));
+        doCallRealMethod().when(record).getConnections();
         return record;
     }
 
     private ServiceRecord makeServiceRecord(ProcessRecord app) {
         final ServiceRecord record = makeServiceRecord();
         mProcessStateController.setHostProcess(record, app);
-        setFieldValue(ServiceRecord.class, record, "connections",
-                new ArrayMap<IBinder, ArrayList<ConnectionRecord>>());
-        doCallRealMethod().when(record).getConnections();
         setFieldValue(ServiceRecord.class, record, "packageName", app.info.packageName);
         mProcessStateController.startService(app.mServices, record);
         record.appInfo = app.info;

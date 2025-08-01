@@ -19,6 +19,8 @@ package com.android.server.am.psc;
 import android.content.ComponentName;
 import android.os.Binder;
 
+import java.util.ArrayList;
+
 /**
  * Abstract base class for service records in the Activity Manager.
  * This class centralizes common service state fields that are essential for
@@ -92,4 +94,10 @@ public abstract class ServiceRecordInternal extends Binder {
      * (e.g., location, camera, microphone) for capability determination.
      */
     public abstract boolean isFgsAllowedWiu_forCapabilities();
+
+    /** Returns the number of connections to this service. */
+    public abstract int getConnectionsSize();
+
+    /** Returns the list of connections for a given index. */
+    public abstract ArrayList<? extends ConnectionRecordInternal> getConnectionAt(int index);
 }

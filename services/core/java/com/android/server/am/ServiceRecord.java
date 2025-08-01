@@ -66,6 +66,7 @@ import android.util.proto.ProtoUtils;
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.app.procstats.ServiceState;
 import com.android.server.LocalServices;
+import com.android.server.am.psc.ConnectionRecordInternal;
 import com.android.server.am.psc.ServiceRecordInternal;
 import com.android.server.notification.NotificationManagerInternal;
 import com.android.server.uri.NeededUriGrants;
@@ -1278,6 +1279,16 @@ final class ServiceRecord extends ServiceRecordInternal implements ComponentName
     @NonNull
     ArrayMap<IBinder, ArrayList<ConnectionRecord>> getConnections() {
         return connections;
+    }
+
+    @Override
+    public int getConnectionsSize() {
+        return connections.size();
+    }
+
+    @Override
+    public ArrayList<? extends ConnectionRecordInternal> getConnectionAt(int index) {
+        return connections.valueAt(index);
     }
 
     void addConnection(IBinder binder, ConnectionRecord c) {
