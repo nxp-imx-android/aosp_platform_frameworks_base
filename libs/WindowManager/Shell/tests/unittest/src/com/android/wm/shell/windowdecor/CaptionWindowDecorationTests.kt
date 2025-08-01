@@ -60,6 +60,7 @@ class CaptionWindowDecorationTests : ShellTestCase() {
             exclusionRegion,
             false /* shouldSetBackground */,
             /* inSyncWithTransition= */ true,
+            /* forceReinflation= */ false,
         )
 
         Truth.assertThat(relayoutParams.hasInputFeatureSpy()).isTrue()
@@ -86,6 +87,7 @@ class CaptionWindowDecorationTests : ShellTestCase() {
             exclusionRegion,
             false /* shouldSetBackground */,
             /* inSyncWithTransition= */ true,
+            /* forceReinflation= */ false,
         )
 
         Truth.assertThat(relayoutParams.hasInputFeatureSpy()).isFalse()
@@ -108,6 +110,7 @@ class CaptionWindowDecorationTests : ShellTestCase() {
             exclusionRegion,
             false /* shouldSetBackground */,
             /* inSyncWithTransition= */ true,
+            /* forceReinflation= */ false,
         )
 
         val elements = relayoutParams.mOccludingElementsCalculator.get()

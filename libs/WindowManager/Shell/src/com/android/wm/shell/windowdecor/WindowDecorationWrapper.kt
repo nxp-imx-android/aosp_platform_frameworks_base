@@ -205,6 +205,25 @@ private constructor(
             else -> error("Expected Non-null window decoration")
         }
 
+    /**
+     * To be called when theme is changed to allow the window decor to be updated accordingly.
+     *
+     * TODO(b/437224867): Remove this workaround for "Wallpaper & Style" bug in Settings
+     */
+    fun onThemeChanged() =
+        when {
+            defaultWindowDecor != null -> {
+                requireDefaultWindowDecor().onThemeChanged()
+            }
+            desktopWindowDecor != null -> {
+                requireDesktopWindowDecor().onThemeChanged()
+            }
+            captionWindowDecoration != null -> {
+                requireCaptionWindowDecor().onThemeChanged()
+            }
+            else -> error("Expected Non-null window decoration")
+        }
+
     /** Updates all window decorations, including any existing caption. */
     fun relayout(
         taskInfo: RunningTaskInfo,
@@ -244,6 +263,7 @@ private constructor(
                         hasGlobalFocus,
                         displayExclusionRegion,
                         inSyncWithTransition,
+                        /* forceReinflation= */ false,
                     )
             }
 
@@ -258,6 +278,7 @@ private constructor(
                         hasGlobalFocus,
                         displayExclusionRegion,
                         inSyncWithTransition,
+                        /* forceReinflation= */ false,
                     )
             }
 

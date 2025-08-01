@@ -16,6 +16,8 @@
 
 package com.android.wm.shell.windowdecor;
 
+import static android.content.pm.ActivityInfo.CONFIG_ASSETS_PATHS;
+import static android.content.pm.ActivityInfo.CONFIG_UI_MODE;
 import static android.content.res.Configuration.DENSITY_DPI_UNDEFINED;
 import static android.view.WindowInsets.Type.statusBars;
 import static android.view.WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE;
@@ -402,6 +404,14 @@ public abstract class WindowDecoration<T extends View & TaskFocusStateConsumer>
         final int oldNightMode =  mWindowDecorConfig != null
                 ? (mWindowDecorConfig.uiMode & Configuration.UI_MODE_NIGHT_MASK)
                 : Configuration.UI_MODE_NIGHT_UNDEFINED;
+        // TODO(b/437224867): Remove themeChanged workaround for "Wallpaper & Style" bug in Settings
+        final Configuration oldConfig = mWindowDecorConfig != null
+                ? mWindowDecorConfig : mTaskInfo.configuration;
+        final Configuration newConfig = params.mWindowDecorConfig != null
+                ? params.mWindowDecorConfig : mTaskInfo.configuration;
+        final int diff = newConfig.diff(oldConfig);
+        final boolean themeChanged = (diff & CONFIG_ASSETS_PATHS) != 0
+                || (diff & CONFIG_UI_MODE) != 0;
         mWindowDecorConfig = params.mWindowDecorConfig != null ? params.mWindowDecorConfig
                 : mTaskInfo.getConfiguration();
         final int newDensityDpi = mWindowDecorConfig.densityDpi;
@@ -413,7 +423,9 @@ public abstract class WindowDecoration<T extends View & TaskFocusStateConsumer>
                 || oldNightMode != newNightMode
                 || mDecorWindowContext == null
                 || fontScaleChanged
-                || localeListChanged) {
+                || localeListChanged
+                || themeChanged
+                || params.mForceReinflation) {
             releaseViews(wct);
 
             if (!obtainDisplayOrRegisterListener()) {
@@ -916,6 +928,8 @@ public abstract class WindowDecoration<T extends View & TaskFocusStateConsumer>
         boolean mShouldSetBackground;
 
         boolean mInSyncWithTransition;
+        /** TODO(b/437224867): Remove mForceReinflation */
+        boolean mForceReinflation;
 
         void reset() {
             mLayoutResId = Resources.ID_NULL;
@@ -949,6 +963,7 @@ public abstract class WindowDecoration<T extends View & TaskFocusStateConsumer>
             mShouldSetAppBounds = false;
             mShouldSetBackground = false;
             mInSyncWithTransition = false;
+            mForceReinflation = false;
         }
 
         boolean hasInputFeatureSpy() {
