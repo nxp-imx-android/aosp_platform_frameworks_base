@@ -147,7 +147,7 @@ constructor(
             animateFloatAsState(if (showBrightnessMirror) 0f else 1f)
 
         // Set the bounds to null when the QuickSettings overlay disappears.
-        DisposableEffect(Unit) { onDispose { contentViewModel.onPanelShapeChanged(null) } }
+        DisposableEffect(Unit) { onDispose { contentViewModel.onPanelShapeInWindowChanged(null) } }
 
         Box(modifier = modifier.graphicsLayer { alpha = contentAlphaFromBrightnessMirror }) {
             OverlayShade(
@@ -156,7 +156,7 @@ constructor(
                 enableTransparency = quickSettingsContainerViewModel.isTransparencyEnabled,
                 onScrimClicked = contentViewModel::onScrimClicked,
                 onBackgroundPlaced = { bounds, topCornerRadius, bottomCornerRadius ->
-                    contentViewModel.onPanelShapeChanged(
+                    contentViewModel.onPanelShapeInWindowChanged(
                         ShadeScrimShape(
                             bounds = ShadeScrimBounds(bounds),
                             topRadius = topCornerRadius.roundToInt(),

@@ -49,6 +49,8 @@ import com.android.systemui.statusbar.notification.stack.ui.viewmodel.Notificati
 import com.android.systemui.statusbar.notification.stack.ui.viewmodel.NotificationTransitionThresholds.EXPANSION_FOR_MAX_SCRIM_ALPHA
 import com.android.systemui.util.kotlin.ActivatableFlowDumper
 import com.android.systemui.util.kotlin.ActivatableFlowDumperImpl
+import com.android.systemui.util.state.ObservableState
+import com.android.systemui.util.state.combine
 import dagger.Lazy
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
@@ -62,8 +64,6 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapNotNull
-
-private typealias ShadeScrimShapeConsumer = (ShadeScrimShape?) -> Unit
 
 /** ViewModel which represents the state of the NSSL/Controller in the world of flexiglass */
 class NotificationScrollViewModel
@@ -314,11 +314,13 @@ constructor(
             .dumpWhileCollecting("shadeScrimShape")
 
     /**
-     * Sets a consumer to be notified when the QuickSettings Overlay panel changes size or position.
+     * Gets an observable state for the qs scrim shape within the view coordinates, given the
+     * [viewLeft] state.
      */
-    fun setQsScrimShapeConsumer(consumer: ShadeScrimShapeConsumer?) {
-        stackAppearanceInteractor.setQsPanelShapeConsumer(consumer)
-    }
+    fun getQsScrimShape(viewLeft: ObservableState<Int>): ObservableState<ShadeScrimShape?> =
+        combine(stackAppearanceInteractor.qsPanelShapeInWindow, viewLeft) { shapeInWindow, left ->
+            shapeInWindow?.copy(bounds = shapeInWindow.bounds.minus(leftOffset = left))
+        }
 
     /**
      * Max alpha to apply directly to the view based on the compose placeholder.

@@ -28,6 +28,7 @@ import com.android.systemui.statusbar.notification.stack.shared.model.ShadeScrim
 import com.android.systemui.statusbar.notification.stack.shared.model.ShadeScrimRounding
 import com.android.systemui.statusbar.notification.stack.shared.model.ShadeScrimShape
 import com.android.systemui.statusbar.notification.stack.shared.model.ShadeScrollState
+import com.android.systemui.util.state.ObservableState
 import java.util.function.Consumer
 import javax.inject.Inject
 import kotlinx.coroutines.flow.Flow
@@ -126,22 +127,19 @@ constructor(
     }
 
     /**
-     * Sends the bounds of the QuickSettings panel to the consumer set by [setQsPanelShapeConsumer].
+     * Sets the bounds of the QuickSettings panel in window coordinates.
      *
-     * Used to clip Notification content when the QuickSettings Overlay panel covers it. Sending
+     * Used to clip Notification content when the QuickSettings Overlay panel covers it. Setting
      * `null` resets the negative shape clipping of the Notification Stack.
      */
-    fun sendQsPanelShape(shape: ShadeScrimShape?) {
+    fun setQsPanelShapeInWindow(shape: ShadeScrimShape?) {
         checkValidBounds(shape?.bounds)
-        placeholderRepository.qsPanelShapeConsumer?.invoke(shape)
+        placeholderRepository.qsPanelShapeInWindow.value = shape
     }
 
-    /**
-     * Sets a consumer to be notified when the QuickSettings Overlay panel changes size or position.
-     */
-    fun setQsPanelShapeConsumer(consumer: ((ShadeScrimShape?) -> Unit)?) {
-        placeholderRepository.qsPanelShapeConsumer = consumer
-    }
+    /** An observable state of the shape of the QuickSettings Overlay panel. */
+    val qsPanelShapeInWindow: ObservableState<ShadeScrimShape?>
+        get() = placeholderRepository.qsPanelShapeInWindow
 
     /** Updates the current scroll state of the notification shade. */
     fun setScrollState(shadeScrollState: ShadeScrollState) {
