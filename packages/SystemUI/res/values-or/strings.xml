@@ -146,6 +146,8 @@
     <string name="screen_capture_region_selection_button" msgid="4437546351856914639">"ଚୟନିତ ଏରିଆକୁ କେପଚର କରନ୍ତୁ"</string>
     <string name="screen_capture_toolbar_capture_button" msgid="8512731007891496030">"କେପଚର କରନ୍ତୁ"</string>
     <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"ରେକର୍ଡ କରନ୍ତୁ"</string>
+    <!-- no translation found for screen_capture_region_dimensions (2317064050253056256) -->
+    <skip />
     <string name="share_to_app_chip_accessibility_label" msgid="4210256229976947065">"ସ୍କ୍ରିନ ସେୟାର କରାଯାଉଛି"</string>
     <string name="share_to_app_chip_accessibility_label_generic" msgid="5517431657924536133">"ବିଷୟବସ୍ତୁ ସେୟାର କରାଯାଉଛି"</string>
     <string name="share_to_app_stop_dialog_title" msgid="9212915050910250438">"ସ୍କ୍ରିନ ସେୟାର କରିବା ବନ୍ଦ କରିବେ?"</string>
@@ -155,6 +157,8 @@
     <string name="share_to_app_stop_dialog_message_single_app_specific" msgid="5923772039347985172">"ଆପଣ ବର୍ତ୍ତମାନ <xliff:g id="APP_BEING_SHARED_NAME">%1$s</xliff:g>କୁ ସେୟାର କରୁଛନ୍ତି"</string>
     <string name="share_to_app_stop_dialog_message_single_app_generic" msgid="6681016774654578261">"ଆପଣ ବର୍ତ୍ତମାନ ଏକ ଆପକୁ ସେୟାର କରୁଛନ୍ତି"</string>
     <string name="share_to_app_stop_dialog_message_generic" msgid="7622174291691249392">"ଆପଣ ବର୍ତ୍ତମାନ ଏକ ଆପ ସହ ସେୟାର କରୁଛନ୍ତି"</string>
+    <!-- no translation found for share_to_app_stop_dialog_message_with_host_app (7445852089654702142) -->
+    <skip />
     <string name="share_to_app_stop_dialog_button" msgid="6334056916284230217">"ସେୟାର କରିବା ବନ୍ଦ କରନ୍ତୁ"</string>
     <string name="cast_screen_to_other_device_chip_accessibility_label" msgid="4687917476203009885">"ସ୍କ୍ରିନ କାଷ୍ଟ କରାଯାଉଛି"</string>
     <string name="cast_to_other_device_stop_dialog_title" msgid="7836517190930357326">"କାଷ୍ଟ କରିବା ବନ୍ଦ କରିବେ?"</string>
@@ -714,10 +718,8 @@
     <string name="monitoring_description_pin_protection" msgid="1983580207046670355">"ଆପଣଙ୍କ ଡିଭାଇସରେ ଦୈନିକ ସୀମା ଏବଂ ଡାଉନଟାଇମ ପରି କିଛି ନିୟନ୍ତ୍ରଣକୁ କେବଳ ଏକ PIN ମାଧ୍ୟମରେ ପରିବର୍ତ୍ତନ କରାଯାଇପାରିବ।"</string>
     <string name="legacy_vpn_name" msgid="4174223520162559145">"VPN"</string>
     <string name="keyguard_indication_trust_unlocked" msgid="7395154975733744547">"TrustAgent ଦ୍ୱାରା ଅନ୍‌ଲକ୍ ରହିଛି"</string>
-    <!-- no translation found for kg_prompt_after_adaptive_auth_lock (6065186971000690782) -->
-    <skip />
-    <!-- no translation found for keyguard_indication_after_adaptive_auth_lock (5240600662061340872) -->
-    <skip />
+    <string name="kg_prompt_after_adaptive_auth_lock" msgid="6065186971000690782">"ସ୍କ୍ରିନ ଲକ ହୋଇଯାଇଛି। ପ୍ରମାଣୀକରଣର ଅନେକଗୁଡ଼ିଏ ପ୍ରଚେଷ୍ଟା।"</string>
+    <string name="keyguard_indication_after_adaptive_auth_lock" msgid="5240600662061340872">"ସ୍କ୍ରିନ ଲକ ହୋଇଯାଇଛି\nପ୍ରମାଣୀକରଣ ବିଫଳ ହୋଇଛି"</string>
     <string name="keyguard_indication_after_watch_disconnected" msgid="8133476870585660478">"ଆପଣଙ୍କ ୱାଚ ଦ୍ୱାରା ଲକ କରାଯାଇଛି"</string>
     <string name="keyguard_indication_after_secure_lock_device" msgid="4358906300665255820">"2-ଷ୍ଟେପ ଯାଞ୍ଚକରଣ ମାଧ୍ୟମରେ ଲକ କରାଯାଇଛି"</string>
     <string name="zen_mode_and_condition" msgid="5043165189511223718">"<xliff:g id="ZEN_MODE">%1$s</xliff:g>. <xliff:g id="EXIT_CONDITION">%2$s</xliff:g>"</string>
@@ -861,6 +863,8 @@
     <string name="notification_onboarding_summaries_message" msgid="6061524903176459064">"ଆପଣଙ୍କୁ କ୍ୱିକ ରିକେପ ଦେବା ପାଇଁ ଆପଣଙ୍କ ଅଧିକ ଅବଧିର ବାର୍ତ୍ତାଳାପର ସାରାଂଶ ବର୍ତ୍ତମାନ ପ୍ରସ୍ତୁତ କରାଯାଇପାରିବ।"</string>
     <string name="notification_onboarding_bundles_message" msgid="4612908213178622912">"ବିଜ୍ଞପ୍ତି ଅର୍ଗାନାଇଜର କମ ପ୍ରାଥମିକତା ଥିବା ବିଜ୍ଞପ୍ତିଗୁଡ଼ିକୁ ବଣ୍ଡଲ ଏବଂ ସାଇଲେନ୍ସ କରେ। ସେଟିଂସରେ ଅଧିକ ବର୍ଗ ଯୋଗ କରନ୍ତୁ।"</string>
     <string name="notification_bundle_header_counter" msgid="5515532701569242265">"{count,plural, =1{# ବିଜ୍ଞପ୍ତି}other{# ବିଜ୍ଞପ୍ତି}}"</string>
+    <!-- no translation found for notification_bundle_header_joined_description (4517556837418088139) -->
+    <skip />
     <string name="inline_done_button" msgid="6043094985588909584">"ହୋଇଗଲା"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"ଲାଗୁ କରନ୍ତୁ"</string>
     <string name="inline_turn_off_notifications" msgid="2653064779176881329">"ବନ୍ଦ କରନ୍ତୁ"</string>
@@ -973,6 +977,8 @@
     <string name="group_system_access_google_assistant" msgid="3769929488906534254">"ଡିଜିଟାଲ ଆସିଷ୍ଟାଣ୍ଟ ଖୋଲନ୍ତୁ"</string>
     <string name="group_system_lock_screen" msgid="7391191300363416543">"ଲକ ସ୍କ୍ରିନ"</string>
     <string name="group_system_quick_memo" msgid="3764560265935722903">"ଏକ ନୋଟ ଲେଖନ୍ତୁ"</string>
+    <!-- no translation found for group_system_close_window (1506354809787837043) -->
+    <skip />
     <string name="keyboard_shortcut_group_system_multitasking" msgid="6967816258924795558">"ମଲ୍ଟିଟାସ୍କିଂ"</string>
     <string name="system_multitasking_rhs" msgid="8779289852395243004">"ଡାହାଣରେ ଆପ ସହିତ ସ୍ପ୍ଲିଟ ସ୍କ୍ରିନକୁ ବ୍ୟବହାର କରନ୍ତୁ"</string>
     <string name="system_multitasking_lhs" msgid="7348595296208696452">"ବାମରେ ଆପ ସହିତ ସ୍ପ୍ଲିଟ ସ୍କ୍ରିନକୁ ବ୍ୟବହାର କରନ୍ତୁ"</string>
@@ -1061,10 +1067,8 @@
     <string name="qs_edit" msgid="5583565172803472437">"ଏଡିଟ କରନ୍ତୁ"</string>
     <string name="qs_edit_tiles" msgid="2105215324060865035">"ଟାଇଲଗୁଡ଼ିକୁ ଏଡିଟ କରନ୍ତୁ"</string>
     <string name="qs_edit_mode_tooltip" msgid="4164112885539479781">"କ୍ୱିକ ସେଟିଂସ ଟାଇଲଗୁଡ଼ିକୁ ରିସାଇଜ କରନ୍ତୁ"</string>
-    <!-- no translation found for qs_edit_settings (3243175290660574156) -->
-    <skip />
-    <!-- no translation found for qs_edit_menu_content_description (4420651071119623791) -->
-    <skip />
+    <string name="qs_edit_settings" msgid="3243175290660574156">"ସେଟିଂସ"</string>
+    <string name="qs_edit_menu_content_description" msgid="4420651071119623791">"ବିକଳ୍ପ"</string>
     <string name="tuner_time" msgid="2450785840990529997">"ସମୟ"</string>
   <string-array name="clock_options">
     <item msgid="3986445361435142273">"ଘଣ୍ଟା, ମିନିଟ୍‍ ଏବଂ ସେକେଣ୍ଡ ଦେଖାନ୍ତୁ"</item>
@@ -1351,6 +1355,10 @@
     <string name="media_output_end_session_dialog_summary" msgid="5954520685989877347">"ଅନ୍ୟ ଏକ ଡିଭାଇସକୁ ମିଡିଆ ମୁଭ କରିବା ପାଇଁ ଆପଣଙ୍କ ସେୟାର କରାଯାଇଥିବା ସେସନକୁ ବନ୍ଦ କରନ୍ତୁ"</string>
     <string name="media_output_end_session_dialog_stop" msgid="208189434474624412">"ବନ୍ଦ କରନ୍ତୁ"</string>
     <string name="media_output_dialog_button_stop_sharing" msgid="5043482739689716185">"ସେୟାର କରିବା ବନ୍ଦ କରନ୍ତୁ"</string>
+    <!-- no translation found for media_output_dialog_button_sharing_audio (8312910741492835648) -->
+    <skip />
+    <!-- no translation found for media_output_dialog_button_share_audio (827604934548421520) -->
+    <skip />
     <string name="build_number_clip_data_label" msgid="3623176728412560914">"ବିଲ୍ଡ ନମ୍ୱର"</string>
     <string name="build_number_copy_toast" msgid="877720921605503046">"କ୍ଲିପବୋର୍ଡକୁ କପି କରାଯାଇଥିବା ବିଲ୍ଡ ନମ୍ୱର।"</string>
     <string name="copy_to_clipboard_a11y_action" msgid="4312789069718446749">"କ୍ଲିପବୋର୍ଡକୁ କପି କରନ୍ତୁ।"</string>

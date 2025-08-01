@@ -146,6 +146,8 @@
     <string name="screen_capture_region_selection_button" msgid="4437546351856914639">"ಆಯ್ದ ಪ್ರದೇಶವನ್ನು ಕ್ಯಾಪ್ಚರ್ ಮಾಡಿ"</string>
     <string name="screen_capture_toolbar_capture_button" msgid="8512731007891496030">"ಕ್ಯಾಪ್ಚರ್ ಮಾಡಿ"</string>
     <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"ರೆಕಾರ್ಡ್ ಮಾಡಿ"</string>
+    <!-- no translation found for screen_capture_region_dimensions (2317064050253056256) -->
+    <skip />
     <string name="share_to_app_chip_accessibility_label" msgid="4210256229976947065">"ಪರದೆಯನ್ನು ಹಂಚಿಕೊಳ್ಳಲಾಗುತ್ತಿದೆ"</string>
     <string name="share_to_app_chip_accessibility_label_generic" msgid="5517431657924536133">"ಕಂಟೆಂಟ್‌ ಅನ್ನು ಹಂಚಿಕೊಳ್ಳಲಾಗುತ್ತಿದೆ"</string>
     <string name="share_to_app_stop_dialog_title" msgid="9212915050910250438">"ಸ್ಕ್ರೀನ್ ಹಂಚಿಕೊಳ್ಳುವಿಕೆಯನ್ನು ನಿಲ್ಲಿಸಬೇಕೆ?"</string>
@@ -155,6 +157,8 @@
     <string name="share_to_app_stop_dialog_message_single_app_specific" msgid="5923772039347985172">"ನೀವು ಪ್ರಸ್ತುತ <xliff:g id="APP_BEING_SHARED_NAME">%1$s</xliff:g> ಅನ್ನು ಹಂಚಿಕೊಳ್ಳುತ್ತಿದ್ದೀರಿ"</string>
     <string name="share_to_app_stop_dialog_message_single_app_generic" msgid="6681016774654578261">"ನೀವು ಪ್ರಸ್ತುತ ಆ್ಯಪ್ ಅನ್ನು ಹಂಚಿಕೊಳ್ಳುತ್ತಿದ್ದೀರಿ"</string>
     <string name="share_to_app_stop_dialog_message_generic" msgid="7622174291691249392">"ನೀವು ಪ್ರಸ್ತುತ ಆ್ಯಪ್ ಜೊತೆಗೆ ಹಂಚಿಕೊಳ್ಳುತ್ತಿದ್ದೀರಿ"</string>
+    <!-- no translation found for share_to_app_stop_dialog_message_with_host_app (7445852089654702142) -->
+    <skip />
     <string name="share_to_app_stop_dialog_button" msgid="6334056916284230217">"ಹಂಚಿಕೊಳ್ಳುವಿಕೆಯನ್ನು ನಿಲ್ಲಿಸಿ"</string>
     <string name="cast_screen_to_other_device_chip_accessibility_label" msgid="4687917476203009885">"ಸ್ಕ್ರೀನ್ ಅನ್ನು ಬಿತ್ತರಿಸಲಾಗುತ್ತಿದೆ"</string>
     <string name="cast_to_other_device_stop_dialog_title" msgid="7836517190930357326">"ಬಿತ್ತರಿಸುವುದನ್ನು ನಿಲ್ಲಿಸಬೇಕೆ?"</string>
@@ -717,8 +721,7 @@
     <string name="kg_prompt_after_adaptive_auth_lock" msgid="6065186971000690782">"ಸ್ಕ್ರೀನ್ ಲಾಕ್ ಆಗಿದೆ. ಹಲವಾರು ಪ್ರಮಾಣೀಕರಣ ಪ್ರಯತ್ನಗಳು."</string>
     <string name="keyguard_indication_after_adaptive_auth_lock" msgid="5240600662061340872">"ಸ್ಕ್ರೀನ್ ಲಾಕ್ ಆಗಿದೆ\nಪ್ರಮಾಣೀಕರಣ ವಿಫಲವಾಗಿದೆ"</string>
     <string name="keyguard_indication_after_watch_disconnected" msgid="8133476870585660478">"ನಿಮ್ಮ ವಾಚ್‌ನಿಂದ ಲಾಕ್ ಮಾಡಲಾಗಿದೆ"</string>
-    <!-- no translation found for keyguard_indication_after_secure_lock_device (4358906300665255820) -->
-    <skip />
+    <string name="keyguard_indication_after_secure_lock_device" msgid="4358906300665255820">"2-ಹಂತದ ದೃಢೀಕರಣ ಮೂಲಕ ಲಾಕ್ ಮಾಡಲಾಗಿದೆ"</string>
     <string name="zen_mode_and_condition" msgid="5043165189511223718">"<xliff:g id="ZEN_MODE">%1$s</xliff:g>. <xliff:g id="EXIT_CONDITION">%2$s</xliff:g>"</string>
     <string name="accessibility_volume_settings" msgid="1458961116951564784">"ಸೌಂಡ್ ಸೆಟ್ಟಿಂಗ್‌ಗಳು"</string>
     <string name="volume_odi_captions_tip" msgid="8825655463280990941">"ಸ್ವಯಂಚಾಲಿತ ಶೀರ್ಷಿಕೆ ಮಾಧ್ಯಮ"</string>
@@ -860,6 +863,8 @@
     <string name="notification_onboarding_summaries_message" msgid="6061524903176459064">"ನಿಮ್ಮ ದೀರ್ಘ ಸಂಭಾಷಣೆಗಳನ್ನು ಈಗ ಸಂಕ್ಷಿಪ್ತಗೊಳಿಸಬಹುದು ಇದರಿಂದ ನಿಮಗೆ ತ್ವರಿತ ರೀಕ್ಯಾಪ್‌ಗಳು ದೊರೆಯುತ್ತವೆ"</string>
     <string name="notification_onboarding_bundles_message" msgid="4612908213178622912">"ನೋಟಿಫಿಕೇಶನ್ ಆರ್ಗನೈಜರ್ ಕಡಿಮೆ ಆದ್ಯತೆಯ ನೋಟಿಫಿಕೇಶನ್‌ಗಳನ್ನು ಬಂಡಲ್ ಮಾಡುತ್ತದೆ ಮತ್ತು ನಿಶ್ಯಬ್ದಗೊಳಿಸುತ್ತದೆ. ಸೆಟ್ಟಿಂಗ್‌ಗಳಲ್ಲಿ ಹೆಚ್ಚಿನ ವರ್ಗಗಳನ್ನು ಸೇರಿಸಿ."</string>
     <string name="notification_bundle_header_counter" msgid="5515532701569242265">"{count,plural, =1{# ನೋಟಿಫಿಕೇಶನ್}one{# ನೋಟಿಫಿಕೇಶನ್‌ಗಳು}other{# ನೋಟಿಫಿಕೇಶನ್‌ಗಳು}}"</string>
+    <!-- no translation found for notification_bundle_header_joined_description (4517556837418088139) -->
+    <skip />
     <string name="inline_done_button" msgid="6043094985588909584">"ಪೂರ್ಣಗೊಂಡಿದೆ"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"ಅನ್ವಯಿಸಿ"</string>
     <string name="inline_turn_off_notifications" msgid="2653064779176881329">"ಆಫ್ ಮಾಡಿ"</string>
@@ -972,6 +977,8 @@
     <string name="group_system_access_google_assistant" msgid="3769929488906534254">"ಡಿಜಿಟಲ್ ಅಸಿಸ್ಟೆಂಟ್ ಅನ್ನು ತೆರೆಯಿರಿ"</string>
     <string name="group_system_lock_screen" msgid="7391191300363416543">"ಸ್ಕ್ರೀನ್ ಲಾಕ್ ಮಾಡಿ"</string>
     <string name="group_system_quick_memo" msgid="3764560265935722903">"ಟಿಪ್ಪಣಿಯನ್ನು ತೆಗೆದುಕೊಳ್ಳಿ"</string>
+    <!-- no translation found for group_system_close_window (1506354809787837043) -->
+    <skip />
     <string name="keyboard_shortcut_group_system_multitasking" msgid="6967816258924795558">"ಮಲ್ಟಿಟಾಸ್ಕಿಂಗ್"</string>
     <string name="system_multitasking_rhs" msgid="8779289852395243004">"ಬಲಭಾಗದಲ್ಲಿ ಆ್ಯಪ್ ಮೂಲಕ ಸ್ಪ್ಲಿಟ್ ಸ್ಕ್ರೀನ್ ಬಳಸಿ"</string>
     <string name="system_multitasking_lhs" msgid="7348595296208696452">"ಎಡಭಾಗದಲ್ಲಿ ಆ್ಯಪ್ ಮೂಲಕ ಸ್ಪ್ಲಿಟ್ ಸ್ಕ್ರೀನ್ ಬಳಸಿ"</string>
@@ -1348,6 +1355,10 @@
     <string name="media_output_end_session_dialog_summary" msgid="5954520685989877347">"ಮೀಡಿಯಾವನ್ನು ಮತ್ತೊಂದು ಸಾಧನಕ್ಕೆ ಸರಿಸಲು ನಿಮ್ಮ ಹಂಚಿಕೊಂಡ ಸೆಶನ್ ಅನ್ನು ನಿಲ್ಲಿಸಿ"</string>
     <string name="media_output_end_session_dialog_stop" msgid="208189434474624412">"ನಿಲ್ಲಿಸಿ"</string>
     <string name="media_output_dialog_button_stop_sharing" msgid="5043482739689716185">"ಹಂಚಿಕೊಳ್ಳುವಿಕೆಯನ್ನು ನಿಲ್ಲಿಸಿ"</string>
+    <!-- no translation found for media_output_dialog_button_sharing_audio (8312910741492835648) -->
+    <skip />
+    <!-- no translation found for media_output_dialog_button_share_audio (827604934548421520) -->
+    <skip />
     <string name="build_number_clip_data_label" msgid="3623176728412560914">"ಬಿಲ್ಡ್ ಸಂಖ್ಯೆ"</string>
     <string name="build_number_copy_toast" msgid="877720921605503046">"ಬಿಲ್ಡ್ ಸಂಖ್ಯೆಯನ್ನು ಕ್ಲಿಪ್‌ಬೋರ್ಡ್‌ನಲ್ಲಿ ಕಾಪಿ ಮಾಡಲಾಗಿದೆ."</string>
     <string name="copy_to_clipboard_a11y_action" msgid="4312789069718446749">"ಕ್ಲಿಪ್‌ಬೋರ್ಡ್‌ಗೆ ಕಾಪಿ ಮಾಡಿ."</string>
