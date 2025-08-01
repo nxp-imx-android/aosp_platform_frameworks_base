@@ -52,12 +52,17 @@ class SysUiViewModelTest : SysuiTestCase() {
         composeRule.setContent {
             val keepAlive by keepAliveMutable
             if (keepAlive) {
-                rememberViewModel("test") {
-                    FakeSysUiViewModel(
-                        onActivation = { isActive = true },
-                        onDeactivation = { isActive = false },
-                    )
-                }
+                // Need to explicitly state the type to avoid a weird issue where the factory seems
+                // to
+                // return Unit instead of FakeSysUiViewModel. It might be an issue with the compose
+                // compiler.
+                val unused: FakeSysUiViewModel =
+                    rememberViewModel("test") {
+                        FakeSysUiViewModel(
+                            onActivation = { isActive = true },
+                            onDeactivation = { isActive = false },
+                        )
+                    }
             }
         }
         assertThat(isActive).isTrue()
