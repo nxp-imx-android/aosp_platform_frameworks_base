@@ -81,7 +81,7 @@ test_module_config {
     name: "FunctionalTestsDesktopMode-AltTabSwitchToUnminimizeInDesktopModeTest",
     base: "FunctionalTestsDesktopMode",
     test_suites: ["device-tests"],
-    include_filters: ["com.android.wm.shell.functional.AltTabSwitchToUnminimizeInDesktopModeTest"],
+    include_filters: ["com.android.wm.shell.functional.keyboardshortcuts.AltTabSwitchToUnminimizeInDesktopModeTest"],
 }
 
 test_module_config {
@@ -91,7 +91,7 @@ test_module_config {
     exclude_filters: [
         "com.android.wm.shell.functional.AltTabSwitchInDesktopModeTest",
         "com.android.wm.shell.functional.AltTabSwitchOutDesktopModeTest",
-        "com.android.wm.shell.functional.AltTabSwitchToUnminimizeInDesktopModeTest",
+        "com.android.wm.shell.functional.keyboardshortcuts.AltTabSwitchToUnminimizeInDesktopModeTest",
         "com.android.wm.shell.functional.ChromeNewTabAtWindowLimitTest",
         "com.android.wm.shell.functional.CloseAllAppsWithAppHeaderExitTest",
         "com.android.wm.shell.functional.DisableDisplayMirroringSwitchTest",
