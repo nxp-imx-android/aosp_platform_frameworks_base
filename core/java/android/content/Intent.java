@@ -2750,6 +2750,13 @@ public class Intent implements Parcelable, Cloneable {
      * To receive this broadcast, your receiver component must be marked as
      * being {@link ComponentInfo#directBootAware}.
      * <p class="note">
+     *
+     * <p>
+     * Starting from Android {@link Build.VERSION_CODES#VANILLA_ICE_CREAM}, this broadcast is
+     * not only sent after the device boots but also delivered to an app when it is
+     * removed from the {@link ApplicationInfo#FLAG_STOPPED Stopped} state, such as the first
+     * launch after force-stopping the app.
+     *
      * This is a protected intent that can only be sent by the system.
      *
      * @see Context#createDeviceProtectedStorageContext()
@@ -2773,6 +2780,13 @@ public class Intent implements Parcelable, Cloneable {
      * their lock pattern or PIN for the first time), you can listen for the
      * {@link #ACTION_LOCKED_BOOT_COMPLETED} broadcast.
      * <p class="note">
+     *
+     * <p>
+     * Starting from Android {@link Build.VERSION_CODES#VANILLA_ICE_CREAM}, this broadcast is
+     * not only sent after the device boots but also delivered to an app when it is
+     * removed from the {@link ApplicationInfo#FLAG_STOPPED Stopped} state and the user is
+     * unlocked, such as the first launch after force-stopping the app.
+     *
      * This is a protected intent that can only be sent by the system.
      */
     @SdkConstant(SdkConstantType.BROADCAST_INTENT_ACTION)
