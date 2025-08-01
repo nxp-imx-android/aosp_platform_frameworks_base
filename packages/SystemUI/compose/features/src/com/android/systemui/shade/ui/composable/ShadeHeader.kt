@@ -56,7 +56,6 @@ import androidx.compose.ui.layout.positionInWindow
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
@@ -101,6 +100,9 @@ import com.android.systemui.statusbar.pipeline.mobile.ui.viewmodel.ShadeCarrierG
 import com.android.systemui.statusbar.pipeline.mobile.ui.viewmodel.ShadeCarrierGroupMobileIconViewModelKairos
 import com.android.systemui.statusbar.pipeline.mobile.ui.viewmodel.composeWrapper
 import com.android.systemui.statusbar.policy.Clock
+import com.android.systemui.statusbar.systemstatusicons.SystemStatusIconsInCompose
+import com.android.systemui.statusbar.systemstatusicons.ui.compose.SystemStatusIcons
+import com.android.systemui.statusbar.systemstatusicons.ui.compose.SystemStatusIconsLegacy
 import com.android.systemui.util.composable.kairos.ActivatedKairosSpec
 import kotlin.math.max
 import kotlin.math.roundToInt
@@ -717,66 +719,41 @@ private fun ContentScope.StatusIcons(
     val inverseColor =
         Utils.getColorAttrDefaultColor(themedContext, android.R.attr.textColorPrimaryInverse)
 
-    val carrierIconSlots =
-        listOf(
-            stringResource(id = com.android.internal.R.string.status_bar_mobile),
-            stringResource(id = com.android.internal.R.string.status_bar_stacked_mobile),
-        )
-    val cameraSlot = stringResource(id = com.android.internal.R.string.status_bar_camera)
-    val micSlot = stringResource(id = com.android.internal.R.string.status_bar_microphone)
-    val locationSlot = stringResource(id = com.android.internal.R.string.status_bar_location)
-
     val statusIconContext = LocalStatusIconContext.current
     val iconContainer = statusIconContext.iconContainer(contentKey)
     val iconManager = statusIconContext.iconManager(contentKey)
 
-    // TODO(408001821): Use composable system status icons here instead.
-    AndroidView(
-        factory = {
-            iconManager.setTint(primaryColor, inverseColor)
-            viewModel.statusBarIconController.addIconGroup(iconManager)
-
-            iconContainer
-        },
-        onRelease = { viewModel.statusBarIconController.removeIconGroup(iconManager) },
-        update = { iconContainer ->
-            iconContainer.setQsExpansionTransitioning(
-                layoutState.isTransitioningBetween(Scenes.Shade, Scenes.QuickSettings)
-            )
-            if (viewModel.isSingleCarrier || !useExpandedFormat) {
-                iconContainer.removeIgnoredSlots(carrierIconSlots)
-            } else {
-                iconContainer.addIgnoredSlots(carrierIconSlots)
-            }
-
-            if (viewModel.isPrivacyChipEnabled) {
-                if (viewModel.isMicCameraIndicationEnabled) {
-                    iconContainer.addIgnoredSlot(cameraSlot)
-                    iconContainer.addIgnoredSlot(micSlot)
+    // TODO(408001821): Add support for background color like [TintedIconManager.setTint].
+    if (SystemStatusIconsInCompose.isEnabled) {
+        SystemStatusIcons(
+            viewModelFactory = viewModel.systemStatusIconsViewModelFactory,
+            tint =
+                if (isHighlighted) {
+                    Color(inverseColor)
                 } else {
-                    iconContainer.removeIgnoredSlot(cameraSlot)
-                    iconContainer.removeIgnoredSlot(micSlot)
-                }
-                if (viewModel.isLocationIndicationEnabled) {
-                    iconContainer.addIgnoredSlot(locationSlot)
-                } else {
-                    iconContainer.removeIgnoredSlot(locationSlot)
-                }
-            } else {
-                iconContainer.removeIgnoredSlot(cameraSlot)
-                iconContainer.removeIgnoredSlot(micSlot)
-                iconContainer.removeIgnoredSlot(locationSlot)
-            }
+                    Color(primaryColor)
+                },
+        )
+    } else {
+        val foregroundColor = if (isHighlighted) inverseColor else primaryColor
+        val backgroundColor = if (isHighlighted) primaryColor else inverseColor
+        val isTransitioning = layoutState.isTransitioningBetween(Scenes.Shade, Scenes.QuickSettings)
 
-            // TODO(b/397223606): Get the actual spec for this.
-            if (isHighlighted) {
-                iconManager.setTint(inverseColor, primaryColor)
-            } else {
-                iconManager.setTint(primaryColor, inverseColor)
-            }
-        },
-        modifier = modifier,
-    )
+        SystemStatusIconsLegacy(
+            iconContainer = iconContainer,
+            iconManager = iconManager,
+            statusBarIconController = viewModel.statusBarIconController,
+            useExpandedFormat = useExpandedFormat,
+            isTransitioning = isTransitioning,
+            foregroundColor = foregroundColor,
+            backgroundColor = backgroundColor,
+            isSingleCarrier = viewModel.isSingleCarrier,
+            isMicCameraIndicationEnabled = viewModel.isMicCameraIndicationEnabled,
+            isPrivacyChipEnabled = viewModel.isPrivacyChipVisible,
+            isLocationIndicationEnabled = viewModel.isLocationIndicationEnabled,
+            modifier = modifier,
+        )
+    }
 }
 
 @Composable

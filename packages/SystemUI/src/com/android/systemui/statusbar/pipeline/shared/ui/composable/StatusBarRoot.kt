@@ -31,11 +31,16 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.boundsInWindow
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.onLayoutRectChanged
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
@@ -81,6 +86,7 @@ import com.android.systemui.statusbar.phone.NotificationIconContainer
 import com.android.systemui.statusbar.phone.PhoneStatusBarView
 import com.android.systemui.statusbar.phone.StatusBarLocation
 import com.android.systemui.statusbar.phone.StatusIconContainer
+import com.android.systemui.statusbar.phone.domain.interactor.IsAreaDark
 import com.android.systemui.statusbar.phone.ongoingcall.OngoingCallController
 import com.android.systemui.statusbar.phone.ongoingcall.StatusBarChipsModernization
 import com.android.systemui.statusbar.phone.ui.DarkIconManager
@@ -98,6 +104,7 @@ import com.android.systemui.statusbar.pipeline.shared.ui.viewmodel.HomeStatusBar
 import com.android.systemui.statusbar.policy.Clock
 import com.android.systemui.statusbar.systemstatusicons.SystemStatusIconsInCompose
 import com.android.systemui.statusbar.systemstatusicons.ui.compose.SystemStatusIcons
+import com.android.systemui.statusbar.systemstatusicons.ui.viewmodel.SystemStatusIconsViewModel
 import com.android.systemui.statusbar.ui.viewmodel.StatusBarRegionSamplingViewModel
 import javax.inject.Inject
 import javax.inject.Named
@@ -551,7 +558,7 @@ private fun addSystemStatusIconsComposable(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(6.dp),
                 ) {
-                    SystemStatusIcons(
+                    SystemStatusIconsContainer(
                         viewModelFactory = statusBarViewModel.systemStatusIconsViewModelFactory,
                         isDark = statusBarViewModel.areaDark,
                     )
@@ -587,6 +594,25 @@ private fun addSystemStatusIconsComposable(
     phoneStatusBarView.findViewById<ViewGroup>(R.id.status_bar_end_side_content).apply {
         addView(systemStatusIconsComposeView)
     }
+}
+
+@Composable
+private fun SystemStatusIconsContainer(
+    viewModelFactory: SystemStatusIconsViewModel.Factory,
+    isDark: IsAreaDark,
+    modifier: Modifier = Modifier,
+) {
+    var bounds by remember { mutableStateOf(Rect()) }
+    val tint = if (isDark.isDarkTheme(bounds)) Color.White else Color.Black
+    SystemStatusIcons(
+        viewModelFactory = viewModelFactory,
+        tint = tint,
+        modifier =
+            modifier.onLayoutRectChanged { relativeLayoutBounds ->
+                bounds =
+                    with(relativeLayoutBounds.boundsInScreen) { Rect(left, top, right, bottom) }
+            },
+    )
 }
 
 private fun bindRegionSamplingViewModel(
