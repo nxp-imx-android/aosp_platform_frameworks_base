@@ -16,11 +16,13 @@
 
 package com.android.systemui.statusbar.pipeline.airplane.data.repository
 
-import com.android.systemui.statusbar.pipeline.airplane.data.repository.impl.AirplaneModeRepositoryImpl
-import dagger.Binds
-import dagger.Module
+import kotlinx.coroutines.flow.StateFlow
 
-@Module
-interface AirplaneModeDataLayerModule {
-    @Binds fun airplaneModeRepository(impl: AirplaneModeRepositoryImpl): AirplaneModeRepository
+/** Provides data related to airplane mode. */
+public interface AirplaneModeRepository {
+    /** Observable for whether the device is currently in airplane mode. */
+    public val isAirplaneMode: StateFlow<Boolean>
+
+    /** Sets airplane mode state. */
+    public suspend fun setIsAirplaneMode(isEnabled: Boolean)
 }

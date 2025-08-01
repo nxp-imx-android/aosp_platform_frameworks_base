@@ -29,7 +29,6 @@ import com.android.systemui.log.table.TableLogBuffer
 import com.android.systemui.log.table.TableLogBufferFactory
 import com.android.systemui.statusbar.events.data.repository.SystemStatusEventAnimationRepository
 import com.android.systemui.statusbar.events.data.repository.SystemStatusEventAnimationRepositoryImpl
-import com.android.systemui.statusbar.pipeline.airplane.data.repository.AirplaneModeDataLayerModule
 import com.android.systemui.statusbar.pipeline.airplane.ui.viewmodel.AirplaneModeViewModel
 import com.android.systemui.statusbar.pipeline.airplane.ui.viewmodel.AirplaneModeViewModelImpl
 import com.android.systemui.statusbar.pipeline.battery.data.repository.BatteryRepository
@@ -93,7 +92,6 @@ import kotlinx.coroutines.flow.Flow
 @Module(
     includes =
         [
-            AirplaneModeDataLayerModule::class,
             DemoModeMobileConnectionDataSourceKairosImpl.Module::class,
             DemoModeWifiDataSourceKairos.Module::class,
             MobileRepositorySwitcherKairos.Module::class,
