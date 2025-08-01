@@ -16,6 +16,7 @@
 
 package com.android.systemui.biometrics.data.repository
 
+import android.hardware.biometrics.BiometricPrompt
 import android.hardware.biometrics.PromptInfo
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
@@ -82,11 +83,11 @@ class PromptRepositoryImplTest : SysuiTestCase() {
             withArgCaptor<AuthController.Callback> {
                 verify(authController).addCallback(capture())
 
-                value.onBiometricPromptShown()
+                value.onBiometricPromptShown(PromptInfo())
                 runCurrent()
                 assertThat(values).containsExactly(true, true)
 
-                value.onBiometricPromptDismissed()
+                value.onBiometricPromptDismissed(BiometricPrompt.DISMISSED_REASON_USER_CANCEL)
                 runCurrent()
                 assertThat(values).containsExactly(true, true, false).inOrder()
 
