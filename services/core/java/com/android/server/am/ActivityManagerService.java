@@ -4822,7 +4822,7 @@ public class ActivityManagerService extends IActivityManager.Stub
                         preBindInfo.configuration,
                         app.getCompat(),
                         getCommonServicesLocked(app.isolated),
-                        mCoreSettingsObserver.getCoreSettingsLocked(),
+                        mCoreSettingsObserver.getCoreSettings(),
                         buildSerial,
                         autofillOptions,
                         contentCaptureOptions,
