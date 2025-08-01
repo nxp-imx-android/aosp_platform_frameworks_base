@@ -46,6 +46,8 @@ import static com.android.server.wm.ActivityTaskManagerDebugConfig.TAG_ATM;
 import static com.android.server.wm.ActivityTaskManagerDebugConfig.TAG_WITH_CLASS_NAME;
 import static com.android.server.wm.ActivityTaskManagerService.INSTRUMENTATION_KEY_DISPATCHING_TIMEOUT_MILLIS;
 import static com.android.server.wm.ActivityTaskManagerService.RELAUNCH_REASON_NONE;
+import static com.android.server.wm.ActivityTaskManagerService.relaunchReasonToString;
+import static com.android.server.wm.DesktopModeHelper.canEnterDesktopMode;
 import static com.android.server.wm.WindowManagerService.MY_PID;
 
 import static java.util.Objects.requireNonNull;
@@ -82,6 +84,7 @@ import android.util.ArrayMap;
 import android.util.Log;
 import android.util.Slog;
 import android.util.proto.ProtoOutputStream;
+import android.view.Display;
 
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
@@ -1364,15 +1367,64 @@ public class WindowProcessController extends ConfigurationContainer<Configuratio
 
     public int computeRelaunchReason() {
         synchronized (mAtm.mGlobalLock) {
-            final int activitiesSize = mActivities.size();
-            for (int i = activitiesSize - 1; i >= 0; i--) {
-                final ActivityRecord r = mActivities.get(i);
-                if (r.mRelaunchReason != RELAUNCH_REASON_NONE) {
-                    return r.mRelaunchReason;
-                }
+            return computeRelaunchReasonInner();
+        }
+    }
+
+    private int computeRelaunchReasonInner() {
+        final int activitiesSize = mActivities.size();
+        for (int i = activitiesSize - 1; i >= 0; i--) {
+            final ActivityRecord r = mActivities.get(i);
+            if (r.mRelaunchReason != RELAUNCH_REASON_NONE) {
+                return r.mRelaunchReason;
             }
         }
         return RELAUNCH_REASON_NONE;
+    }
+
+    /** Populate the crash tag related to activities and tasks in a process. */
+    public String getCrashTag() {
+        int freeformTasks = 0;
+        boolean anyTaskOnExternalDisplay = false;
+        int relaunchReason;
+        final boolean logCrashDesktopInfo =
+                com.android.window.flags.Flags.enableCrashLoggingForDesktop()
+                        && canEnterDesktopMode(mAtm.mContext);
+
+        synchronized (mAtm.mGlobalLock) {
+            relaunchReason = computeRelaunchReasonInner();
+
+            if (logCrashDesktopInfo) {
+                for (int i = mRecentTasks.size() - 1; i >= 0; i--) {
+                    final Task t = mRecentTasks.get(i);
+                    if (t.inFreeformWindowingMode()) {
+                        freeformTasks += 1;
+                    }
+                    if (!anyTaskOnExternalDisplay && t.getDisplayContent() != null
+                            && t.getDisplayContent().getDisplayInfo().type
+                            == Display.TYPE_EXTERNAL) {
+                        anyTaskOnExternalDisplay = true;
+                    }
+                }
+            }
+        }
+        final StringBuilder sb = new StringBuilder();
+        if (freeformTasks > 0) {
+            sb.append("Freeform-Tasks=").append(freeformTasks);
+        }
+        if (anyTaskOnExternalDisplay) {
+            if (!sb.isEmpty()) {
+                sb.append(" ");
+            }
+            sb.append("On-External-Display=Yes");
+        }
+        if (relaunchReason != RELAUNCH_REASON_NONE) {
+            if (!sb.isEmpty()) {
+                sb.append(" ");
+            }
+            sb.append("Relaunch-Reason=").append(relaunchReasonToString(relaunchReason));
+        }
+        return sb.isEmpty() ? null : sb.toString();
     }
 
     /**
