@@ -1907,7 +1907,7 @@ class HomeStatusBarViewModelImplTest(flags: FlagsParameterization) : SysuiTestCa
     @Test
     @EnableSceneContainer
     @EnableFlags(StatusBarForDesktop.FLAG_NAME)
-    fun onSystemIconChipClicked_qsShadeIsOpen_collapsesShade() =
+    fun onQuickSettingsChipClicked_qsShadeIsOpen_collapsesShade() =
         kosmos.runTest {
             enableDualShade()
             val currentOverlays by collectLastValue(sceneInteractor.currentOverlays)
@@ -1921,21 +1921,21 @@ class HomeStatusBarViewModelImplTest(flags: FlagsParameterization) : SysuiTestCa
             )
             assertThat(currentOverlays).containsExactly(Overlays.QuickSettingsShade)
 
-            underTest.onSystemIconChipClicked()
+            underTest.onQuickSettingsChipClicked()
             assertThat(currentOverlays).doesNotContain(Overlays.QuickSettingsShade)
         }
 
     @Test
     @EnableSceneContainer
     @EnableFlags(StatusBarForDesktop.FLAG_NAME)
-    fun onSystemIconChipClicked_qsShadeIsClosed_expandsShade() =
+    fun onQuickSettingsChipClicked_qsShadeIsClosed_expandsShade() =
         kosmos.runTest {
             enableDualShade()
             val currentOverlays by collectLastValue(sceneInteractor.currentOverlays)
 
             assertThat(currentOverlays).doesNotContain(Overlays.QuickSettingsShade)
 
-            underTest.onSystemIconChipClicked()
+            underTest.onQuickSettingsChipClicked()
 
             assertThat(currentOverlays).contains(Overlays.QuickSettingsShade)
         }

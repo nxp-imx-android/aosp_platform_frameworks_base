@@ -162,7 +162,7 @@ interface HomeStatusBarViewModel : Activatable {
     fun onChipBoundsChanged(key: String, bounds: RectF)
 
     /** Notifies that the system icons container was clicked. */
-    fun onSystemIconChipClicked()
+    fun onQuickSettingsChipClicked()
 
     /** Notifies that the notification icons container was clicked. */
     fun onNotificationIconChipClicked()
@@ -601,12 +601,12 @@ constructor(
         ongoingActivityChipsViewModel.onChipBoundsChanged(key, bounds)
     }
 
-    override fun onSystemIconChipClicked() {
+    override fun onQuickSettingsChipClicked() {
         if (SceneContainerFlag.isUnexpectedlyInLegacyMode()) {
             return
         }
         shadeInteractor.toggleQuickSettingsShade(
-            loggingReason = "HomeStatusBarViewModel.onSystemIconChipClicked"
+            loggingReason = "HomeStatusBarViewModel.onQuickSettingsChipClicked"
         )
     }
 
