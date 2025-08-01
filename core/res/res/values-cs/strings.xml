@@ -1486,8 +1486,6 @@
     <string name="decline_remote_bugreport_action" msgid="4040894777519784346">"ODMÍTNOUT"</string>
     <string name="select_input_method" msgid="3971267998568587025">"Vybrat metodu zadávání"</string>
     <string name="input_method_language_settings" msgid="8069089418056819437">"Nastavení jazyka"</string>
-    <string name="show_ime" msgid="6406112007347443383">"Ponechat na obrazovce, když je aktivní fyzická klávesnice"</string>
-    <string name="hardware" msgid="3611039921284836033">"Použít softwarovou klávesnici"</string>
     <string name="select_keyboard_layout_notification_title" msgid="5823199895322205589">"Nakonfigurujte zařízení <xliff:g id="DEVICE_NAME">%s</xliff:g>"</string>
     <string name="select_multiple_keyboards_layout_notification_title" msgid="6999491025126641938">"Nakonfigurujte fyzické klávesnice"</string>
     <string name="select_keyboard_layout_notification_message" msgid="8835158247369158154">"Klepnutím vyberte jazyk a rozvržení"</string>

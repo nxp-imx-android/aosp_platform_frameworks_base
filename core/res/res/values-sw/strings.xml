@@ -300,8 +300,7 @@
     <string name="global_action_assist" msgid="2517047220311505805">"Mapendekezo"</string>
     <string name="global_action_voice_assist" msgid="6655788068555086695">"Usaidizi wa Sauti"</string>
     <string name="global_action_lockdown" msgid="2475471405907902963">"Funga"</string>
-    <!-- no translation found for global_action_unrestricted_lock (7933224393323064116) -->
-    <skip />
+    <string name="global_action_unrestricted_lock" msgid="7933224393323064116">"Funga"</string>
     <string name="status_bar_notification_info_overflow" msgid="3330152558746563475">"999+"</string>
     <string name="notification_compact_heads_up_reply" msgid="2425293958371284340">"Jibu"</string>
     <string name="notification_hidden_text" msgid="2835519769868187223">"Arifa mpya"</string>
@@ -915,7 +914,7 @@
     <string name="policylab_disableCamera" msgid="5749486347810162018">"Kuzima kamera"</string>
     <string name="policydesc_disableCamera" msgid="3204405908799676104">"Kuzuia matumizi yote ya kamera za kifaa."</string>
     <string name="policylab_disableKeyguardFeatures" msgid="5071855750149949741">"Kuzima baadhi ya vipengele vya kufunga skrini"</string>
-    <string name="policydesc_disableKeyguardFeatures" msgid="6641673177041195957">"Zuia matumizi ya baadhi ya vipengele vya kufunga skrini."</string>
+    <string name="policydesc_disableKeyguardFeatures" msgid="6641673177041195957">"Kuzuia matumizi ya baadhi ya vipengele vya kufunga skrini."</string>
     <string name="exit_toast_on_long_press_escape" msgid="2983932499112557277">"Bonyeza kitufe cha Esc kwa muda mrefu ili ufunge programu hii"</string>
   <string-array name="phoneTypes">
     <item msgid="8996339953292723951">"Ya nyumbani"</item>
@@ -1484,8 +1483,6 @@
     <string name="decline_remote_bugreport_action" msgid="4040894777519784346">"KATAA"</string>
     <string name="select_input_method" msgid="3971267998568587025">"Chagua njia ya ingizo"</string>
     <string name="input_method_language_settings" msgid="8069089418056819437">"Mipangilio ya Lugha"</string>
-    <string name="show_ime" msgid="6406112007347443383">"Ionyeshe kwenye skrini wakati kibodi halisi inatumika"</string>
-    <string name="hardware" msgid="3611039921284836033">"Tumia kibodi ya skrini"</string>
     <string name="select_keyboard_layout_notification_title" msgid="5823199895322205589">"Wekea mipangilio <xliff:g id="DEVICE_NAME">%s</xliff:g>"</string>
     <string name="select_multiple_keyboards_layout_notification_title" msgid="6999491025126641938">"Wekea kibodi halisi mipangilio"</string>
     <string name="select_keyboard_layout_notification_message" msgid="8835158247369158154">"Gusa ili uchague lugha na muundo"</string>
@@ -1814,7 +1811,7 @@
     <string name="color_inversion_feature_name" msgid="2672824491933264951">"Ugeuzaji rangi"</string>
     <string name="color_correction_feature_name" msgid="7975133554160979214">"Usahihishaji wa rangi"</string>
     <string name="one_handed_mode_feature_name" msgid="2334330034828094891">"Kutumia kwa mkono mmoja"</string>
-    <string name="reduce_bright_colors_feature_name" msgid="3222994553174604132">"Kipunguza mwangaza zaidi"</string>
+    <string name="reduce_bright_colors_feature_name" msgid="3222994553174604132">"Kupunguza mwanga zaidi"</string>
     <string name="hearing_aids_feature_name" msgid="1125892105105852542">"Vifaa vya kusaidia kusikia"</string>
     <string name="autoclick_feature_name" msgid="4056260617171267864">"Kubofya kiotomatiki (muda kabla ya kubofya kiotomatiki)"</string>
     <string name="mouse_keys_feature_name" msgid="3362643216513384542">"Vitufe vya kipanya"</string>
