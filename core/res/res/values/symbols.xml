@@ -219,6 +219,21 @@
   <java-symbol type="id" name="inbox_text4" />
   <java-symbol type="id" name="inbox_text5" />
   <java-symbol type="id" name="inbox_text6" />
+  <java-symbol type="id" name="metric_view_0" />
+  <java-symbol type="id" name="metric_view_1" />
+  <java-symbol type="id" name="metric_view_2" />
+  <java-symbol type="id" name="metric_label_0" />
+  <java-symbol type="id" name="metric_label_1" />
+  <java-symbol type="id" name="metric_label_2" />
+  <java-symbol type="id" name="metric_value_0" />
+  <java-symbol type="id" name="metric_value_1" />
+  <java-symbol type="id" name="metric_value_2" />
+  <java-symbol type="id" name="metric_chronometer_0" />
+  <java-symbol type="id" name="metric_chronometer_1" />
+  <java-symbol type="id" name="metric_chronometer_2" />
+  <java-symbol type="id" name="metric_unit_0" />
+  <java-symbol type="id" name="metric_unit_1" />
+  <java-symbol type="id" name="metric_unit_2" />
   <java-symbol type="id" name="status_bar_latest_event_content" />
   <java-symbol type="id" name="notification_main_column" />
   <java-symbol type="id" name="notification_headerless_view_column" />
@@ -2457,6 +2472,8 @@
   <java-symbol type="layout" name="notification_material_action_list" />
   <java-symbol type="layout" name="notification_material_action_tombstone" />
   <java-symbol type="layout" name="notification_2025_template_collapsed_base" />
+  <java-symbol type="layout" name="notification_2025_template_collapsed_metric" />
+  <java-symbol type="layout" name="notification_2025_template_expanded_metric" />
   <java-symbol type="layout" name="notification_2025_template_expanded_base" />
   <java-symbol type="layout" name="notification_2025_template_heads_up_base" />
   <java-symbol type="layout" name="notification_2025_template_compact_heads_up_base" />
@@ -3558,6 +3575,9 @@
 
   <!-- Notifications: MessagingStyle -->
   <java-symbol type="string" name="notification_messaging_title_template" />
+
+  <!-- Notifications: MetricStyle -->
+  <java-symbol type="string" name="notification_metric_label_template" />
 
   <!-- Notifications: CallStyle -->
   <java-symbol type="layout" name="notification_template_material_call" />
