@@ -51,8 +51,6 @@ import com.android.systemui.shade.domain.interactor.enableSingleShade
 import com.android.systemui.shade.domain.interactor.enableSplitShade
 import com.android.systemui.shade.domain.interactor.shadeModeInteractor
 import com.android.systemui.testKosmos
-import com.android.systemui.util.mockito.mock
-import com.android.systemui.util.mockito.mock
 import com.android.systemui.wallpapers.data.repository.wallpaperFocalAreaRepository
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -65,6 +63,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.Mockito.spy
 import org.mockito.MockitoAnnotations
+import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 
@@ -77,7 +76,7 @@ class WallpaperFocalAreaInteractorTest : SysuiTestCase() {
     lateinit var shadeRepository: ShadeRepository
     private lateinit var mockedResources: Resources
     private lateinit var underTest: WallpaperFocalAreaInteractor
-    private var wallpaperInteractor: WallpaperInteractor = spy(kosmos.wallpaperInteractor)
+    private var wallpaperInteractor: WallpaperInteractor = spy(kosmos.wallpaperInteractorFaked)
 
     @Before
     fun setup() {
@@ -113,7 +112,8 @@ class WallpaperFocalAreaInteractorTest : SysuiTestCase() {
                 backgroundScope = kosmos.backgroundScope,
                 wallpaperInteractor = wallpaperInteractor,
             )
-        kosmos.wallpaperFocalAreaRepository.hasFocalArea.value = true
+
+        kosmos.fakeWallpaperRepository.setShouldSendFocalArea(true)
     }
 
     @Test
@@ -270,7 +270,7 @@ class WallpaperFocalAreaInteractorTest : SysuiTestCase() {
         testScope.runTest {
             val shouldCollectFocalArea by collectLastValue(underTest.shouldCollectFocalArea)
             assertThat(shouldCollectFocalArea).isTrue()
-            kosmos.wallpaperFocalAreaRepository.hasFocalArea.value = false
+            kosmos.fakeWallpaperRepository.setShouldSendFocalArea(false)
             assertThat(shouldCollectFocalArea).isFalse()
         }
 
@@ -443,6 +443,22 @@ class WallpaperFocalAreaInteractorTest : SysuiTestCase() {
                 )
             )
             assertThat(shouldCollectFocalArea).isFalse()
+        }
+
+    @Test
+    fun lockscreenWallpaperNotHasFocalAreaTarget_hasFocalAreaIsTrue() =
+        testScope.runTest {
+            val hasFocalArea by collectLastValue(underTest.hasFocalArea)
+            kosmos.fakeWallpaperRepository.setShouldSendFocalArea(true)
+            assertThat(hasFocalArea).isTrue()
+        }
+
+    @Test
+    fun lockscreenWallpaperHasFocalAreaTarget_hasFocalAreaIsFalse() =
+        testScope.runTest {
+            val hasFocalArea by collectLastValue(underTest.hasFocalArea)
+            kosmos.fakeWallpaperRepository.setShouldSendFocalArea(false)
+            assertThat(hasFocalArea).isFalse()
         }
 
     data class OverrideResources(

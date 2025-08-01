@@ -46,7 +46,6 @@ import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.emptyFlow
@@ -70,7 +69,7 @@ constructor(
     @Background private val backgroundScope: CoroutineScope,
     private val wallpaperInteractor: WallpaperInteractor,
 ) : CoreStartable {
-    val hasFocalArea: StateFlow<Boolean> = wallpaperFocalAreaRepository.hasFocalArea
+    val hasFocalArea = wallpaperInteractor.hasFocalArea
 
     @OptIn(ExperimentalCoroutinesApi::class)
     val shouldCollectFocalArea =
