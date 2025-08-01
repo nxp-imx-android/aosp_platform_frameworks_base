@@ -1109,15 +1109,6 @@ public class TelecomManager {
     /** @hide */
     public static final int AUDIO_OUTPUT_DEFAULT = AUDIO_OUTPUT_ENABLE_SPEAKER;
 
-    /** @hide */
-    @Retention(RetentionPolicy.SOURCE)
-    @IntDef(
-            prefix = { "PRESENTATION_" },
-            value = {PRESENTATION_ALLOWED, PRESENTATION_RESTRICTED, PRESENTATION_UNKNOWN,
-            PRESENTATION_PAYPHONE, PRESENTATION_UNAVAILABLE})
-    public @interface Presentation {}
-
-
     /**
      * Enable READ_PHONE_STATE protection on APIs querying and notifying call state, such as
      * {@code TelecomManager#getCallState}, {@link TelephonyManager#getCallStateForSubscription()},

@@ -1245,7 +1245,7 @@ public abstract class Conference extends Conferenceable {
     @SystemApi
     @RequiresPermission(MODIFY_PHONE_STATE)
     public final void setAddress(@NonNull Uri address,
-            @TelecomManager.Presentation int presentation) {
+            @Annotation.Presentation int presentation) {
         Log.d(this, "setAddress %s", address);
         mAddress = address;
         mAddressPresentation = presentation;
@@ -1286,7 +1286,7 @@ public abstract class Conference extends Conferenceable {
      * @return The address presentation of the conference.
      * @hide
      */
-    public final @TelecomManager.Presentation int getAddressPresentation() {
+    public final @Annotation.Presentation int getAddressPresentation() {
         return mAddressPresentation;
     }
 
@@ -1331,7 +1331,7 @@ public abstract class Conference extends Conferenceable {
      */
     @SystemApi
     public final void setCallerDisplayName(@NonNull String callerDisplayName,
-            @TelecomManager.Presentation int presentation) {
+            @Annotation.Presentation int presentation) {
         Log.d(this, "setCallerDisplayName %s", callerDisplayName);
         mCallerDisplayName = callerDisplayName;
         mCallerDisplayNamePresentation = presentation;

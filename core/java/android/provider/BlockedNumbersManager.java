@@ -40,8 +40,8 @@ import android.annotation.RequiresPermission;
 import android.annotation.SystemApi;
 import android.content.Context;
 import android.os.Bundle;
+import android.telecom.Annotation;
 import android.telecom.Log;
-import android.telecom.TelecomManager;
 
 import com.android.server.telecom.flags.Flags;
 
@@ -201,7 +201,7 @@ public final class BlockedNumbersManager {
     })
     @FlaggedApi(Flags.FLAG_TELECOM_MAINLINE_BLOCKED_NUMBERS_MANAGER)
     public int shouldSystemBlockNumber(@NonNull String phoneNumber,
-            @TelecomManager.Presentation int numberPresentation, boolean isNumberInContacts) {
+            @Annotation.Presentation int numberPresentation, boolean isNumberInContacts) {
         verifyBlockedNumbersPermission();
         try {
             String caller = mContext.getOpPackageName();
