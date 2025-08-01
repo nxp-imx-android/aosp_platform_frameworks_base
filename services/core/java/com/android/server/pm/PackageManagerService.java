@@ -357,11 +357,6 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
     public static final boolean TRACE_SNAPSHOTS = false;
     private static final boolean DEBUG_PER_UID_READ_TIMEOUTS = false;
 
-    // Debug output for dexopting. This is shared between PackageManagerService, OtaDexoptService
-    // and PackageDexOptimizer. All these classes have their own flag to allow switching a single
-    // user, but by default initialize to this.
-    public static final boolean DEBUG_DEXOPT = false;
-
     static final boolean DEBUG_ABI_SELECTION = false;
     public static final boolean DEBUG_INSTANT = Build.IS_DEBUGGABLE;
 
