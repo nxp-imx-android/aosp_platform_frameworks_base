@@ -596,7 +596,7 @@ public class MockingOomAdjusterTests {
     public void testUpdateOomAdj_DoOne_ExecutingService() {
         ProcessRecord app = makeDefaultProcessRecord(MOCKAPP_PID, MOCKAPP_UID, MOCKAPP_PROCESSNAME,
                 MOCKAPP_PACKAGENAME, true);
-        mProcessStateController.startExecutingService(app.mServices, mock(ServiceRecord.class));
+        mProcessStateController.startExecutingService(app.mServices, makeServiceRecord());
         setWakefulness(PowerManagerInternal.WAKEFULNESS_AWAKE);
         updateOomAdj(app);
 
@@ -786,8 +786,8 @@ public class MockingOomAdjusterTests {
         ServiceRecord s = ServiceRecord.newEmptyInstanceForTest(mService);
         s.appInfo = new ApplicationInfo();
         mProcessStateController.setStartRequested(s, true);
-        s.isForeground = true;
-        s.foregroundServiceType = FOREGROUND_SERVICE_TYPE_SHORT_SERVICE;
+        s.setIsForeground(true);
+        s.setForegroundServiceType(FOREGROUND_SERVICE_TYPE_SHORT_SERVICE);
         mProcessStateController.setShortFgsInfo(s, SystemClock.uptimeMillis());
 
         // SHORT_SERVICE FGS will get IMP_FG and a slightly different recent-adjustment.
@@ -832,8 +832,8 @@ public class MockingOomAdjusterTests {
         s.appInfo = new ApplicationInfo();
 
         mProcessStateController.setStartRequested(s, true);
-        s.isForeground = true;
-        s.foregroundServiceType = FOREGROUND_SERVICE_TYPE_SHORT_SERVICE;
+        s.setIsForeground(true);
+        s.setForegroundServiceType(FOREGROUND_SERVICE_TYPE_SHORT_SERVICE);
         mProcessStateController.setShortFgsInfo(s, SystemClock.uptimeMillis()
                 - mService.mConstants.mShortFgsTimeoutDuration
                 - mService.mConstants.mShortFgsProcStateExtraWaitDuration);
@@ -1154,7 +1154,7 @@ public class MockingOomAdjusterTests {
         updateOomAdj(app);
         assertThatProcess(app).notHasCpuTimeCapability();
 
-        mProcessStateController.startExecutingService(app.mServices, mock(ServiceRecord.class));
+        mProcessStateController.startExecutingService(app.mServices, makeServiceRecord());
         updateOomAdj(app);
         assertThatProcess(app).hasCpuTimeCapability();
 
@@ -1600,7 +1600,7 @@ public class MockingOomAdjusterTests {
         ProcessRecord app = makeDefaultProcessRecord(MOCKAPP_PID, MOCKAPP_UID, MOCKAPP_PROCESSNAME,
                 MOCKAPP_PACKAGENAME, false);
         app.setServiceB(true);
-        ServiceRecord s = mock(ServiceRecord.class);
+        ServiceRecord s = makeServiceRecord();
         doReturn(new ArrayMap<IBinder, ArrayList<ConnectionRecord>>()).when(s).getConnections();
         mProcessStateController.setStartRequested(s, true);
         mProcessStateController.setServiceLastActivityTime(s, SystemClock.uptimeMillis());
@@ -1650,7 +1650,7 @@ public class MockingOomAdjusterTests {
     public void testUpdateOomAdj_DoOne_Service_Started() {
         ProcessRecord app = makeDefaultProcessRecord(MOCKAPP_PID, MOCKAPP_UID, MOCKAPP_PROCESSNAME,
                 MOCKAPP_PACKAGENAME, false);
-        ServiceRecord s = mock(ServiceRecord.class);
+        ServiceRecord s = makeServiceRecord();
         doReturn(new ArrayMap<IBinder, ArrayList<ConnectionRecord>>()).when(s).getConnections();
         mProcessStateController.setStartRequested(s, true);
         mProcessStateController.setServiceLastActivityTime(s, SystemClock.uptimeMillis());
@@ -1805,7 +1805,7 @@ public class MockingOomAdjusterTests {
         ProcessRecord client = makeDefaultProcessRecord(MOCKAPP2_PID, MOCKAPP2_UID,
                 MOCKAPP2_PROCESSNAME, MOCKAPP2_PACKAGENAME, false);
         bindService(app, client, null, null, Context.BIND_IMPORTANT, mock(IBinder.class));
-        mProcessStateController.startExecutingService(client.mServices, mock(ServiceRecord.class));
+        mProcessStateController.startExecutingService(client.mServices, makeServiceRecord());
         setWakefulness(PowerManagerInternal.WAKEFULNESS_AWAKE);
         updateOomAdj(client, app);
 
@@ -2277,8 +2277,8 @@ public class MockingOomAdjusterTests {
         ServiceRecord s = ServiceRecord.newEmptyInstanceForTest(mService);
         s.appInfo = new ApplicationInfo();
         mProcessStateController.setStartRequested(s, true);
-        s.isForeground = true;
-        s.foregroundServiceType = FOREGROUND_SERVICE_TYPE_SHORT_SERVICE;
+        s.setIsForeground(true);
+        s.setForegroundServiceType(FOREGROUND_SERVICE_TYPE_SHORT_SERVICE);
         mProcessStateController.setShortFgsInfo(s, SystemClock.uptimeMillis());
         mProcessStateController.startService(client.mServices, s);
         client.setLastTopTime(SystemClock.uptimeMillis());
@@ -3543,7 +3543,7 @@ public class MockingOomAdjusterTests {
         mProcessStateController.setServiceLastActivityTime(s, now);
         ProcessRecord app3 = makeDefaultProcessRecord(MOCKAPP3_PID, MOCKAPP3_UID,
                 MOCKAPP3_PROCESSNAME, MOCKAPP3_PACKAGENAME, false);
-        s = mock(ServiceRecord.class);
+        s = makeServiceRecord();
         mProcessStateController.setHostProcess(s, app3);
         setFieldValue(ServiceRecord.class, s, "connections",
                 new ArrayMap<IBinder, ArrayList<ConnectionRecord>>());
@@ -4458,8 +4458,24 @@ public class MockingOomAdjusterTests {
         return proc;
     }
 
-    private ServiceRecord makeServiceRecord(ProcessRecord app) {
+    private ServiceRecord makeServiceRecord() {
         final ServiceRecord record = mock(ServiceRecord.class);
+        // Don't mock getter/setter methods at ServiceRecordInternal.
+        doCallRealMethod().when(record).isStartRequested();
+        doCallRealMethod().when(record).setStartRequested(any(boolean.class));
+        doCallRealMethod().when(record).isForeground();
+        doCallRealMethod().when(record).setIsForeground(any(boolean.class));
+        doCallRealMethod().when(record).isKeepWarming();
+        doCallRealMethod().when(record).updateKeepWarmLocked();
+        doCallRealMethod().when(record).getLastActivity();
+        doCallRealMethod().when(record).setLastActivity(any(long.class));
+        doCallRealMethod().when(record).getForegroundServiceType();
+        doCallRealMethod().when(record).setForegroundServiceType(any(int.class));
+        return record;
+    }
+
+    private ServiceRecord makeServiceRecord(ProcessRecord app) {
+        final ServiceRecord record = makeServiceRecord();
         mProcessStateController.setHostProcess(record, app);
         setFieldValue(ServiceRecord.class, record, "connections",
                 new ArrayMap<IBinder, ArrayList<ConnectionRecord>>());
@@ -4864,7 +4880,7 @@ public class MockingOomAdjusterTests {
             services.setTreatLikeActivity(mTreatLikeActivity);
             services.setExecServicesFg(mExecServicesFg);
             for (int i = 0; i < mNumOfExecutingServices; i++) {
-                services.startExecutingService(mock(ServiceRecord.class));
+                services.startExecutingService(makeServiceRecord());
             }
             providers.setLastProviderTime(mLastProviderTime);
 

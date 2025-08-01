@@ -108,6 +108,7 @@ import com.android.server.am.psc.ActiveUidsInternal;
 import com.android.server.am.psc.ConnectionRecordInternal;
 import com.android.server.am.psc.ContentProviderConnectionInternal;
 import com.android.server.am.psc.ProcessRecordInternal;
+import com.android.server.am.psc.ServiceRecordInternal;
 import com.android.server.am.psc.UidRecordInternal;
 import com.android.server.wm.ActivityServiceConnectionsHolder;
 
@@ -1621,8 +1622,8 @@ public class OomAdjusterImpl extends OomAdjuster {
                         || schedGroup == SCHED_GROUP_BACKGROUND
                         || procState > PROCESS_STATE_TOP);
                 is--) {
-            ServiceRecord s = psr.getRunningServiceAt(is);
-            if (s.startRequested) {
+            ServiceRecordInternal s = psr.getRunningServiceAt(is);
+            if (s.isStartRequested()) {
                 state.setHasStartedServices(true);
                 if (procState > PROCESS_STATE_SERVICE) {
                     procState = PROCESS_STATE_SERVICE;
@@ -1632,7 +1633,7 @@ public class OomAdjusterImpl extends OomAdjuster {
                                 "Raise procstate to started service: " + app);
                     }
                 }
-                if (!s.mKeepWarming && state.getHasShownUi() && !isHomeProcess(app)) {
+                if (!s.isKeepWarming() && state.getHasShownUi() && !isHomeProcess(app)) {
                     // If this process has shown some UI, let it immediately
                     // go to the LRU list because it may be pretty heavy with
                     // UI stuff.  We'll tag it with a label just to help
@@ -1641,8 +1642,8 @@ public class OomAdjusterImpl extends OomAdjuster {
                         state.setAdjType("cch-started-ui-services");
                     }
                 } else {
-                    if (s.mKeepWarming
-                            || now < (s.lastActivity + mConstants.MAX_SERVICE_INACTIVITY)) {
+                    if (s.isKeepWarming()
+                            || now < (s.getLastActivity() + mConstants.MAX_SERVICE_INACTIVITY)) {
                         // This service has seen some activity within
                         // recent memory, so we will keep its process ahead
                         // of the background processes. This does not apply
@@ -1656,7 +1657,7 @@ public class OomAdjusterImpl extends OomAdjuster {
                                         "Raise adj to started service: " + app);
                             }
                             maybeSetProcessFollowUpUpdateLocked(app,
-                                    s.lastActivity + mConstants.MAX_SERVICE_INACTIVITY, now);
+                                    s.getLastActivity() + mConstants.MAX_SERVICE_INACTIVITY, now);
                         }
                     }
                     // If we have let the service slide into the background
@@ -1668,8 +1669,8 @@ public class OomAdjusterImpl extends OomAdjuster {
                 }
             }
 
-            if (s.isForeground) {
-                final int fgsType = s.foregroundServiceType;
+            if (s.isForeground()) {
+                final int fgsType = s.getForegroundServiceType();
                 if (s.isFgsAllowedWiu_forCapabilities()) {
                     capabilityFromFGS |=
                             (fgsType & FOREGROUND_SERVICE_TYPE_LOCATION)

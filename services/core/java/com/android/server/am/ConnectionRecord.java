@@ -146,7 +146,7 @@ final class ConnectionRecord extends ConnectionRecordInternal {
 
     @Override
     public long getServiceLastActivityTimeMillis() {
-        return binding.service.lastActivity;
+        return binding.service.getLastActivity();
     }
 
     @Override
