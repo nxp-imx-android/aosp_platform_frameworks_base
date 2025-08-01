@@ -45,6 +45,8 @@ import android.hardware.display.DisplayManagerInternal;
 import android.os.PowerManager;
 import android.os.Temperature;
 import android.platform.test.annotations.RequiresFlagsEnabled;
+import android.platform.test.flag.junit.CheckFlagsRule;
+import android.platform.test.flag.junit.DeviceFlagsValueProvider;
 import android.provider.Settings;
 import android.util.SparseArray;
 import android.util.Spline;
@@ -65,6 +67,7 @@ import com.android.server.display.feature.DisplayManagerFlags;
 import com.android.server.display.feature.flags.Flags;
 
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -100,6 +103,10 @@ public final class DisplayDeviceConfigTest {
     private DisplayDeviceConfig mDisplayDeviceConfig;
     private static final float ZERO_DELTA = 0.0f;
     private static final float SMALL_DELTA = 0.0001f;
+
+    @Rule
+    public final CheckFlagsRule mCheckFlagsRule = DeviceFlagsValueProvider.createCheckFlagsRule();
+
     @Mock
     private Context mContext;
 
