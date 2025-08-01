@@ -55,7 +55,6 @@ import android.util.SparseArray;
 
 import com.android.internal.pm.pkg.component.ParsedMainComponent;
 import com.android.internal.util.ArrayUtils;
-import com.android.server.pm.dex.DexManager;
 import com.android.server.pm.permission.PermissionManagerServiceInternal;
 import com.android.server.pm.pkg.AndroidPackage;
 import com.android.server.pm.pkg.PackageStateInternal;
@@ -93,7 +92,6 @@ abstract class PackageManagerInternalBase extends PackageManagerInternal {
     @NonNull protected abstract UserNeedsBadgingCache getUserNeedsBadging();
     @NonNull protected abstract InstantAppRegistry getInstantAppRegistry();
     @NonNull protected abstract ApexManager getApexManager();
-    @NonNull protected abstract DexManager getDexManager();
 
     @Override
     public final Computer snapshot() {

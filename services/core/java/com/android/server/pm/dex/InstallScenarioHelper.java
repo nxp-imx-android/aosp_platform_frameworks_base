@@ -21,19 +21,14 @@ import android.content.pm.PackageManager;
 import android.os.BatteryManager;
 import android.os.PowerManager;
 import android.util.Slog;
-import android.util.jar.StrictJarFile;
 
 import com.android.server.pm.PackageManagerService;
 
-import java.io.IOException;
-import java.util.Iterator;
-import java.util.zip.ZipEntry;
-
 /**
- * TODO(jiakaiz): Move this to DexOptHelper.
+ * Helper class for install scenarios.
  */
-public class DexManager {
-    private static final String TAG = "DexManager";
+public class InstallScenarioHelper {
+    private static final String TAG = "InstallScenarioHelper";
 
     private final Context mContext;
 
@@ -44,63 +39,17 @@ public class DexManager {
     // power for compilation purposes.
     private final int mCriticalBatteryLevel;
 
-    public DexManager(Context context) {
+    public InstallScenarioHelper(Context context) {
         mContext = context;
 
-        // This is currently checked to handle tests that pass in a null context.
-        // TODO(b/174783329): Modify the tests to pass in a mocked Context, PowerManager,
-        //      and BatteryManager.
-        if (mContext != null) {
-            mPowerManager = mContext.getSystemService(PowerManager.class);
+        mPowerManager = mContext.getSystemService(PowerManager.class);
 
-            if (mPowerManager == null) {
-                Slog.wtf(TAG, "Power Manager is unavailable at time of Dex Manager start");
-            }
-
-            mCriticalBatteryLevel = mContext.getResources().getInteger(
-                com.android.internal.R.integer.config_criticalBatteryWarningLevel);
-        } else {
-            // This value will never be used as the Battery Manager null check will fail first.
-            mCriticalBatteryLevel = 0;
+        if (mPowerManager == null) {
+            Slog.wtf(TAG, "Power Manager is unavailable at time of Dex Manager start");
         }
-    }
 
-    /**
-     * Generates log if the archive located at {@code fileName} has uncompressed dex file that can
-     * be direclty mapped.
-     */
-    public static boolean auditUncompressedDexInApk(String fileName) {
-        StrictJarFile jarFile = null;
-        try {
-            jarFile = new StrictJarFile(fileName,
-                    false /*verify*/, false /*signatureSchemeRollbackProtectionsEnforced*/);
-            Iterator<ZipEntry> it = jarFile.iterator();
-            boolean allCorrect = true;
-            while (it.hasNext()) {
-                ZipEntry entry = it.next();
-                if (entry.getName().endsWith(".dex")) {
-                    if (entry.getMethod() != ZipEntry.STORED) {
-                        allCorrect = false;
-                        Slog.w(TAG, "APK " + fileName + " has compressed dex code " +
-                                entry.getName());
-                    } else if ((entry.getDataOffset() & 0x3) != 0) {
-                        allCorrect = false;
-                        Slog.w(TAG, "APK " + fileName + " has unaligned dex code " +
-                                entry.getName());
-                    }
-                }
-            }
-            return allCorrect;
-        } catch (IOException ignore) {
-            Slog.wtf(TAG, "Error when parsing APK " + fileName);
-            return false;
-        } finally {
-            try {
-                if (jarFile != null) {
-                    jarFile.close();
-                }
-            } catch (IOException ignore) {}
-        }
+        mCriticalBatteryLevel = mContext.getResources().getInteger(
+            com.android.internal.R.integer.config_criticalBatteryWarningLevel);
     }
 
     /**
@@ -142,7 +91,7 @@ public class DexManager {
      * Fetches the battery manager object and caches it if it hasn't been fetched already.
      */
     private BatteryManager getBatteryManager() {
-        if (mBatteryManager == null && mContext != null) {
+        if (mBatteryManager == null) {
             mBatteryManager = mContext.getSystemService(BatteryManager.class);
         }
 
@@ -165,19 +114,5 @@ public class DexManager {
                         >= PowerManager.THERMAL_STATUS_SEVERE);
 
         return isBtmCritical;
-    }
-
-    public static class RegisterDexModuleResult {
-        public RegisterDexModuleResult() {
-            this(false, null);
-        }
-
-        public RegisterDexModuleResult(boolean success, String message) {
-            this.success = success;
-            this.message = message;
-        }
-
-        public final boolean success;
-        public final String message;
     }
 }

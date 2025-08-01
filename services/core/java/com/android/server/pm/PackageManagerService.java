@@ -223,7 +223,6 @@ import com.android.server.crashrecovery.CrashRecoveryAdaptor;
 import com.android.server.pm.Installer.InstallerException;
 import com.android.server.pm.Settings.VersionInfo;
 import com.android.server.pm.dex.ArtManagerService;
-import com.android.server.pm.dex.DexManager;
 import com.android.server.pm.dex.DynamicCodeLogger;
 import com.android.server.pm.local.PackageManagerLocalImpl;
 import com.android.server.pm.parsing.PackageCacher;
@@ -824,9 +823,6 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
     final PackageInstallerService mInstallerService;
     final ArtManagerService mArtManagerService;
 
-    // DexManager handles the usage of dex files (e.g. secondary files, whether or not a package
-    // is used by other apps).
-    private final DexManager mDexManager;
     private final DynamicCodeLogger mDynamicCodeLogger;
 
     private final AtomicInteger mNextMoveId = new AtomicInteger();
@@ -1728,7 +1724,6 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
                         i.getLocalService(PackageManagerInternal.class)),
                 (i, pm) -> (PlatformCompat) ServiceManager.getService("platform_compat"),
                 (i, pm) -> SystemConfig.getInstance(),
-                (i, pm) -> new DexManager(i.getContext()),
                 (i, pm) -> new DynamicCodeLogger(i.getInstaller()),
                 (i, pm) -> new ArtManagerService(i.getContext(), i.getInstaller(),
                         i.getInstallLock()),
@@ -1910,7 +1905,6 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
         mDefParseFlags = testParams.defParseFlags;
         mDefaultAppProvider = testParams.defaultAppProvider;
         mLegacyPermissionManager = testParams.legacyPermissionManagerInternal;
-        mDexManager = testParams.dexManager;
         mDynamicCodeLogger = testParams.dynamicCodeLogger;
         mFactoryTest = testParams.factoryTest;
         mIncrementalManager = testParams.incrementalManager;
@@ -2127,7 +2121,6 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
             mSeparateProcesses = null;
         }
 
-        mDexManager = injector.getDexManager();
         mDynamicCodeLogger = injector.getDynamicCodeLogger();
         mArtManagerService = injector.getArtManagerService();
         mMoveCallbacks = new MovePackageHelper.MoveCallbacks(FgThread.get().getLooper());
@@ -3090,10 +3083,6 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
             }
             pkgSetting.getPkgState().setLastPackageUsageTimeInMills(reason, time);
         }
-    }
-
-    /*package*/ DexManager getDexManager() {
-        return mDexManager;
     }
 
     /*package*/ DexOptHelper getDexOptHelper() {
@@ -5856,14 +5845,12 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
             Slog.i(TAG,
                     "Ignored unsupported registerDexModule call for " + dexModulePath + " in "
                             + packageName);
-            DexManager.RegisterDexModuleResult result = new DexManager.RegisterDexModuleResult(
-                    false, "registerDexModule call not supported since Android U");
 
             if (callback != null) {
                 mHandler.post(() -> {
                     try {
-                        callback.onDexModuleRegistered(dexModulePath, result.success,
-                                result.message);
+                        callback.onDexModuleRegistered(dexModulePath, false,
+                                "registerDexModule call not supported since Android U");
                     } catch (RemoteException e) {
                         Slog.w(PackageManagerService.TAG,
                                 "Failed to callback after module registration " + dexModulePath, e);
@@ -6913,12 +6900,6 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
         @Override
         protected ApexManager getApexManager() {
             return mApexManager;
-        }
-
-        @NonNull
-        @Override
-        protected DexManager getDexManager() {
-            return mDexManager;
         }
 
         @NonNull
@@ -8307,9 +8288,8 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
         mRemovePackageHelper.removeCodePath(codePath);
     }
 
-    void cleanUpResources(@NonNull String packageName, @NonNull File codeFile,
-                          @NonNull String[] instructionSets) {
-        mRemovePackageHelper.cleanUpResources(packageName, codeFile, instructionSets);
+    void cleanUpResources(@NonNull String packageName, @NonNull File codeFile) {
+        mRemovePackageHelper.cleanUpResources(packageName, codeFile);
     }
 
     void cleanUpForMoveInstall(String volumeUuid, String packageName, String fromCodePath) {

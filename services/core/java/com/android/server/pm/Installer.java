@@ -82,22 +82,13 @@ public class Installer extends SystemService {
     private static final long CONNECT_RETRY_DELAY_MS = DateUtils.SECOND_IN_MILLIS;
     private static final long CONNECT_WAIT_MS = 10 * DateUtils.SECOND_IN_MILLIS;
 
-    private final boolean mIsolated;
     private volatile boolean mDeferSetFirstBoot;
     private volatile IInstalld mInstalld = null;
     private volatile CountDownLatch mInstalldLatch = new CountDownLatch(1);
     private volatile Object mWarnIfHeld;
 
     public Installer(Context context) {
-        this(context, false);
-    }
-
-    /**
-     * @param isolated Make the installer isolated. See {@link isIsolated}.
-     */
-    public Installer(Context context, boolean isolated) {
         super(context);
-        mIsolated = isolated;
     }
 
     /**
@@ -108,23 +99,9 @@ public class Installer extends SystemService {
         mWarnIfHeld = warnIfHeld;
     }
 
-    /**
-     * Returns true if the installer is isolated, i.e. if this object should <em>not</em> connect to
-     * the real {@code installd}. All remote calls will be ignored unless you extend this class and
-     * intercept them.
-     */
-    public boolean isIsolated() {
-        return mIsolated;
-    }
-
     @Override
     public void onStart() {
-        if (mIsolated) {
-            mInstalld = null;
-            mInstalldLatch.countDown();
-        } else {
-            connect();
-        }
+        connect();
     }
 
     private void connect() {
@@ -174,10 +151,6 @@ public class Installer extends SystemService {
         if (mWarnIfHeld != null && Thread.holdsLock(mWarnIfHeld)) {
             Slog.wtf(TAG, "Calling thread " + Thread.currentThread().getName() + " is holding 0x"
                     + Integer.toHexString(System.identityHashCode(mWarnIfHeld)), new Throwable());
-        }
-        if (mIsolated) {
-            Slog.i(TAG, "Ignoring request because this installer is isolated");
-            return false;
         }
 
         try {

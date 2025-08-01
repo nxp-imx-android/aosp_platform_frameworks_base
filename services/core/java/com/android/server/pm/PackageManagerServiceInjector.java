@@ -31,7 +31,6 @@ import com.android.internal.pm.parsing.PackageParser2;
 import com.android.server.SystemConfig;
 import com.android.server.compat.PlatformCompat;
 import com.android.server.pm.dex.ArtManagerService;
-import com.android.server.pm.dex.DexManager;
 import com.android.server.pm.dex.DynamicCodeLogger;
 import com.android.server.pm.permission.LegacyPermissionManagerInternal;
 import com.android.server.pm.permission.PermissionManagerServiceInternal;
@@ -122,7 +121,6 @@ public class PackageManagerServiceInjector {
     private final Singleton<PlatformCompat>
             mPlatformCompatProducer;
     private final Singleton<SystemConfig> mSystemConfigProducer;
-    private final Singleton<DexManager> mDexManagerProducer;
     private final Singleton<DynamicCodeLogger> mDynamicCodeLoggerProducer;
     private final Singleton<ArtManagerService>
             mArtManagerServiceProducer;
@@ -172,7 +170,6 @@ public class PackageManagerServiceInjector {
             Producer<AppsFilterImpl> appsFilterProducer,
             Producer<PlatformCompat> platformCompatProducer,
             Producer<SystemConfig> systemConfigProducer,
-            Producer<DexManager> dexManagerProducer,
             Producer<DynamicCodeLogger> dynamicCodeLoggerProducer,
             Producer<ArtManagerService> artManagerServiceProducer,
             Producer<ApexManager> apexManagerProducer,
@@ -219,7 +216,6 @@ public class PackageManagerServiceInjector {
         mPlatformCompatProducer = new Singleton<>(
                 platformCompatProducer);
         mSystemConfigProducer = new Singleton<>(systemConfigProducer);
-        mDexManagerProducer = new Singleton<>(dexManagerProducer);
         mDynamicCodeLoggerProducer = new Singleton<>(dynamicCodeLoggerProducer);
         mArtManagerServiceProducer = new Singleton<>(
                 artManagerServiceProducer);
@@ -329,10 +325,6 @@ public class PackageManagerServiceInjector {
 
     public SystemConfig getSystemConfig() {
         return mSystemConfigProducer.get(this, mPackageManager);
-    }
-
-    public DexManager getDexManager() {
-        return mDexManagerProducer.get(this, mPackageManager);
     }
 
     public DynamicCodeLogger getDynamicCodeLogger() {

@@ -141,8 +141,6 @@ final class ScanPackageUtils {
         final UserHandle user = request.mUser;
         final boolean isPlatformPackage = request.mIsPlatformPackage;
 
-        List<String> changedAbiCodePath = null;
-
         if (DEBUG_PACKAGE_SCANNING) {
             if ((parseFlags & ParsingPackageUtils.PARSE_CHATTY) != 0) {
                 Log.d(TAG, "Scanning package " + parsedPackage.getPackageName());
@@ -471,18 +469,6 @@ final class ScanPackageUtils {
             }
         }
 
-        if ((scanFlags & SCAN_BOOTING) == 0 && oldSharedUserSetting != null) {
-            // We don't do this here during boot because we can do it all
-            // at once after scanning all existing packages.
-            //
-            // We also do this *before* we perform dexopt on this package, so that
-            // we can avoid redundant dexopts, and also to make sure we've got the
-            // code and package path correct.
-            changedAbiCodePath = applyAdjustedAbiToSharedUser(oldSharedUserSetting,
-                    parsedPackage, packageAbiHelper.getAdjustedAbiForSharedUser(
-                            oldSharedUserSetting.getPackageStates(), parsedPackage));
-        }
-
         parsedPackage.setFactoryTest(isUnderFactoryTest && parsedPackage.getRequestedPermissions()
                 .contains(android.Manifest.permission.FACTORY_TEST));
 
@@ -554,10 +540,9 @@ final class ScanPackageUtils {
             }
         }
 
-        return new ScanResult(request, pkgSetting, changedAbiCodePath,
-                !createNewPackage /* existingSettingCopied */,
-                Process.INVALID_UID /* previousAppId */ , sdkLibraryInfo,
-                staticSharedLibraryInfo, dynamicSharedLibraryInfos);
+        return new ScanResult(request, pkgSetting, !createNewPackage /* existingSettingCopied */,
+                Process.INVALID_UID /* previousAppId */ , sdkLibraryInfo, staticSharedLibraryInfo,
+                dynamicSharedLibraryInfos);
     }
 
     /**
