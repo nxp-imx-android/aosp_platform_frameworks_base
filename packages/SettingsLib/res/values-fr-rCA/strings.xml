@@ -37,7 +37,7 @@
     <string name="wifi_security_wep" msgid="1413627788581122366">"WEP"</string>
     <string name="wifi_security_wpa" msgid="1072450904799930636">"WPA-Personal"</string>
     <string name="wifi_security_wpa2" msgid="4038267581230425543">"WPA2-Personal"</string>
-    <string name="wifi_security_wpa_wpa2" msgid="946853615482465986">"WPA/WPA2-Personnel"</string>
+    <string name="wifi_security_wpa_wpa2" msgid="946853615482465986">"WPA/WPA2-Personal"</string>
     <string name="wifi_security_eap" msgid="6179633834446852269">"WPA/WPA2/WPA3-Enterprise"</string>
     <string name="wifi_security_eap_wpa" msgid="6189023812330549957">"WPA-Enterprise"</string>
     <string name="wifi_security_eap_wpa_wpa2" msgid="1089879674896108216">"WPA/WPA2-Enterprise"</string>
@@ -546,7 +546,7 @@
     <string name="disabled" msgid="8017887509554714950">"Désactivée"</string>
     <string name="enabled" msgid="3997122818554810678">"Activé"</string>
     <string name="external_source_trusted" msgid="1146522036773132905">"Autorisée"</string>
-    <string name="external_source_untrusted" msgid="5037891688911672227">"Non autorisée"</string>
+    <string name="external_source_untrusted" msgid="5037891688911672227">"Élément non autorisé"</string>
     <string name="install_other_apps" msgid="3232595082023199454">"Installer les applis inconnues"</string>
     <string name="home" msgid="973834627243661438">"Accueil des paramètres"</string>
   <string-array name="battery_labels">
@@ -640,7 +640,7 @@
     <string name="bluetooth_key_missing_subtext" msgid="1003639333895028298">"Connexion impossible"</string>
     <string name="media_transfer_wired_device_name" msgid="4447880899964056007">"Appareil audio à câble"</string>
     <string name="help_label" msgid="3528360748637781274">"Aide et commentaires"</string>
-    <string name="storage_category" msgid="2287342585424631813">"Stockage"</string>
+    <string name="storage_category" msgid="2287342585424631813">"Espace de stockage"</string>
     <string name="shared_data_title" msgid="1017034836800864953">"Données partagées"</string>
     <string name="shared_data_summary" msgid="5516326713822885652">"Affichez et modifiez les données partagées"</string>
     <string name="shared_data_no_blobs_text" msgid="3108114670341737434">"Il n\'y a aucune donnée partagée pour cet utilisateur."</string>
