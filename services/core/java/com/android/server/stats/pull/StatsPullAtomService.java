@@ -472,8 +472,8 @@ public class StatsPullAtomService extends SystemService {
      */
     public static final boolean ENABLE_MOBILE_DATA_STATS_AGGREGATED_PULLER =
                 addMobileBytesTransferByProcStatePuller();
-    private static int mPreviousThermalThrottlingStatus = Temperature.THROTTLING_NONE;
-
+    private static final ArrayMap<String, Integer> mPreviousThermalThrottlingStatus =
+            new ArrayMap<>();
     // Puller locks
     private final Object mDataBytesTransferLock = new Object();
     private final Object mBluetoothBytesTransferLock = new Object();
@@ -5451,10 +5451,14 @@ public class StatsPullAtomService extends SystemService {
     private static final class ThermalEventListener extends IThermalEventListener.Stub {
         @Override
         public void notifyThrottling(Temperature temp) {
+            final String name = temp.getName();
+            final int status = temp.getStatus();
+            final int previousStatus = mPreviousThermalThrottlingStatus.getOrDefault(name,
+                    Temperature.THROTTLING_NONE);
             FrameworkStatsLog.write(FrameworkStatsLog.THERMAL_THROTTLING_SEVERITY_STATE_CHANGED,
                     temp.getType(), temp.getName(), (int) (temp.getValue() * 10),
-                    temp.getStatus(), mPreviousThermalThrottlingStatus);
-            mPreviousThermalThrottlingStatus = temp.getStatus();
+                    temp.getStatus(), previousStatus);
+            mPreviousThermalThrottlingStatus.put(name, status);
         }
     }
 
