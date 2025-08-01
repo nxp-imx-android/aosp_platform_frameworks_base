@@ -1477,8 +1477,10 @@ public class GlobalActionsDialogLite implements DialogInterface.OnDismissListene
 
         @Override
         public boolean shouldShow() {
-            // Only show the lock button when the device can show a lock screen.
-            return mKeyguardStateController.isMethodSecure();
+            // Only show the lock button when the device can show a lock screen and the device is
+            // unlocked.
+            return mKeyguardStateController.isMethodSecure()
+                && mKeyguardStateController.isUnlocked();
         }
     }
 
