@@ -541,6 +541,10 @@ MissingNullability: android.widget.ImageView#isDefaultFocusHighlightNeeded(andro
     Missing nullability on parameter `foreground` in method `isDefaultFocusHighlightNeeded`
 
 
+NoSettingsProvider: android.provider.Settings.Secure#CAMERA_EXTENSIONS_FALLBACK:
+    New setting keys are not allowed (Field: CAMERA_EXTENSIONS_FALLBACK); use getters/setters in relevant manager class
+
+
 OptionalBuilderConstructorArgument: android.service.notification.ZenPolicy.Builder#Builder(android.service.notification.ZenPolicy) parameter #0:
     Builder constructor arguments must be mandatory (i.e. not @Nullable): parameter policy in android.service.notification.ZenPolicy.Builder(android.service.notification.ZenPolicy policy)
 
@@ -2215,6 +2219,8 @@ UnflaggedApi: android.os.vibrator.persistence.VibrationXmlSerializer#serialize(a
     New API must be flagged with @FlaggedApi: method android.os.vibrator.persistence.VibrationXmlSerializer.serialize(android.os.VibrationEffect,java.io.Writer)
 UnflaggedApi: android.os.vibrator.persistence.VibrationXmlSerializer.SerializationFailedException:
     New API must be flagged with @FlaggedApi: class android.os.vibrator.persistence.VibrationXmlSerializer.SerializationFailedException
+UnflaggedApi: android.provider.Settings.Secure#CAMERA_EXTENSIONS_FALLBACK:
+    New API must be flagged with @FlaggedApi: field android.provider.Settings.Secure.CAMERA_EXTENSIONS_FALLBACK
 UnflaggedApi: android.service.notification.NotificationRankingUpdate:
     New API must be flagged with @FlaggedApi: class android.service.notification.NotificationRankingUpdate
 UnflaggedApi: android.service.notification.NotificationRankingUpdate#CONTENTS_FILE_DESCRIPTOR:
