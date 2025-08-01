@@ -49,7 +49,6 @@ import com.android.server.LocalServices;
 import com.android.server.art.ArtManagerLocal;
 import com.android.server.pm.DexOptHelper;
 import com.android.server.pm.PackageManagerLocal;
-import com.android.server.pm.PackageManagerServiceCompilerMapping;
 import com.android.server.pm.PackageManagerServiceUtils;
 
 import dalvik.system.DexFile;
@@ -80,10 +79,6 @@ public class ArtManagerService extends android.content.pm.dex.IArtManager.Stub {
     private IPackageManager mPackageManager;
 
     private final Handler mHandler;
-
-    static {
-        verifyTronLoggingConstants();
-    }
 
     public ArtManagerService(Context context) {
         mContext = context;
@@ -473,18 +468,6 @@ public class ArtManagerService extends android.content.pm.dex.IArtManager.Stub {
             case "run-from-vdex-fallback" :
                 return TRON_COMPILATION_FILTER_FAKE_RUN_FROM_VDEX_FALLBACK;
             default: return TRON_COMPILATION_FILTER_UNKNOWN;
-        }
-    }
-
-    private static void verifyTronLoggingConstants() {
-        for (int i = 0; i < PackageManagerServiceCompilerMapping.REASON_STRINGS.length; i++) {
-            String reason = PackageManagerServiceCompilerMapping.REASON_STRINGS[i];
-            int value = getCompilationReasonTronValue(reason);
-            if (value == TRON_COMPILATION_REASON_ERROR
-                    || value == TRON_COMPILATION_REASON_UNKNOWN) {
-                throw new IllegalArgumentException("Compilation reason not configured for TRON "
-                        + "logging: " + reason);
-            }
         }
     }
 

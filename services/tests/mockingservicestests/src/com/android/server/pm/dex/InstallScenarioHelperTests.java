@@ -29,7 +29,7 @@ import androidx.test.runner.AndroidJUnit4;
 
 import com.android.dx.mockito.inline.extended.ExtendedMockito;
 import com.android.dx.mockito.inline.extended.StaticMockitoSession;
-import com.android.server.pm.PackageManagerService;
+import com.android.server.art.ReasonMapping;
 
 import org.junit.After;
 import org.junit.Before;
@@ -107,22 +107,22 @@ public class InstallScenarioHelperTests {
     @Test
     public void testInstallScenarioToReasonDefault() {
         assertEquals(
-                PackageManagerService.REASON_INSTALL,
+                ReasonMapping.REASON_INSTALL,
                 mInstallScenarioHelper.getCompilationReasonForInstallScenario(
                         PackageManager.INSTALL_SCENARIO_DEFAULT));
 
         assertEquals(
-                PackageManagerService.REASON_INSTALL_FAST,
+                ReasonMapping.REASON_INSTALL_FAST,
                 mInstallScenarioHelper.getCompilationReasonForInstallScenario(
                         PackageManager.INSTALL_SCENARIO_FAST));
 
         assertEquals(
-                PackageManagerService.REASON_INSTALL_BULK,
+                ReasonMapping.REASON_INSTALL_BULK,
                 mInstallScenarioHelper.getCompilationReasonForInstallScenario(
                         PackageManager.INSTALL_SCENARIO_BULK));
 
         assertEquals(
-                PackageManagerService.REASON_INSTALL_BULK_SECONDARY,
+                ReasonMapping.REASON_INSTALL_BULK_SECONDARY,
                 mInstallScenarioHelper.getCompilationReasonForInstallScenario(
                         PackageManager.INSTALL_SCENARIO_BULK_SECONDARY));
     }
@@ -134,22 +134,22 @@ public class InstallScenarioHelperTests {
                 .getCurrentThermalStatus();
 
         assertEquals(
-                PackageManagerService.REASON_INSTALL,
+                ReasonMapping.REASON_INSTALL,
                 mInstallScenarioHelper.getCompilationReasonForInstallScenario(
                         PackageManager.INSTALL_SCENARIO_DEFAULT));
 
         assertEquals(
-                PackageManagerService.REASON_INSTALL_FAST,
+                ReasonMapping.REASON_INSTALL_FAST,
                 mInstallScenarioHelper.getCompilationReasonForInstallScenario(
                         PackageManager.INSTALL_SCENARIO_FAST));
 
         assertEquals(
-                PackageManagerService.REASON_INSTALL_BULK_DOWNGRADED,
+                ReasonMapping.REASON_INSTALL_BULK_DOWNGRADED,
                 mInstallScenarioHelper.getCompilationReasonForInstallScenario(
                         PackageManager.INSTALL_SCENARIO_BULK));
 
         assertEquals(
-                PackageManagerService.REASON_INSTALL_BULK_SECONDARY_DOWNGRADED,
+                ReasonMapping.REASON_INSTALL_BULK_SECONDARY_DOWNGRADED,
                 mInstallScenarioHelper.getCompilationReasonForInstallScenario(
                         PackageManager.INSTALL_SCENARIO_BULK_SECONDARY));
     }
@@ -161,22 +161,22 @@ public class InstallScenarioHelperTests {
                 .getIntProperty(BatteryManager.BATTERY_PROPERTY_CAPACITY);
 
         assertEquals(
-                PackageManagerService.REASON_INSTALL,
+                ReasonMapping.REASON_INSTALL,
                 mInstallScenarioHelper.getCompilationReasonForInstallScenario(
                         PackageManager.INSTALL_SCENARIO_DEFAULT));
 
         assertEquals(
-                PackageManagerService.REASON_INSTALL_FAST,
+                ReasonMapping.REASON_INSTALL_FAST,
                 mInstallScenarioHelper.getCompilationReasonForInstallScenario(
                         PackageManager.INSTALL_SCENARIO_FAST));
 
         assertEquals(
-                PackageManagerService.REASON_INSTALL_BULK_DOWNGRADED,
+                ReasonMapping.REASON_INSTALL_BULK_DOWNGRADED,
                 mInstallScenarioHelper.getCompilationReasonForInstallScenario(
                         PackageManager.INSTALL_SCENARIO_BULK));
 
         assertEquals(
-                PackageManagerService.REASON_INSTALL_BULK_SECONDARY_DOWNGRADED,
+                ReasonMapping.REASON_INSTALL_BULK_SECONDARY_DOWNGRADED,
                 mInstallScenarioHelper.getCompilationReasonForInstallScenario(
                         PackageManager.INSTALL_SCENARIO_BULK_SECONDARY));
     }
@@ -192,22 +192,22 @@ public class InstallScenarioHelperTests {
                 .getIntProperty(BatteryManager.BATTERY_PROPERTY_STATUS);
 
         assertEquals(
-                PackageManagerService.REASON_INSTALL,
+                ReasonMapping.REASON_INSTALL,
                 mInstallScenarioHelper.getCompilationReasonForInstallScenario(
                         PackageManager.INSTALL_SCENARIO_DEFAULT));
 
         assertEquals(
-                PackageManagerService.REASON_INSTALL_FAST,
+                ReasonMapping.REASON_INSTALL_FAST,
                 mInstallScenarioHelper.getCompilationReasonForInstallScenario(
                         PackageManager.INSTALL_SCENARIO_FAST));
 
         assertEquals(
-                PackageManagerService.REASON_INSTALL_BULK,
+                ReasonMapping.REASON_INSTALL_BULK,
                 mInstallScenarioHelper.getCompilationReasonForInstallScenario(
                         PackageManager.INSTALL_SCENARIO_BULK));
 
         assertEquals(
-                PackageManagerService.REASON_INSTALL_BULK_SECONDARY,
+                ReasonMapping.REASON_INSTALL_BULK_SECONDARY,
                 mInstallScenarioHelper.getCompilationReasonForInstallScenario(
                         PackageManager.INSTALL_SCENARIO_BULK_SECONDARY));
     }

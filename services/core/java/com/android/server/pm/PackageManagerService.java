@@ -573,26 +573,6 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
     public static final int MIN_INSTALLABLE_TARGET_SDK =
             Flags.minTargetSdk24() ? Build.VERSION_CODES.N : Build.VERSION_CODES.M;
 
-    // Compilation reasons.
-    // TODO(b/260124949): Clean this up with the legacy dexopt code.
-    public static final int REASON_FIRST_BOOT = 0;
-    public static final int REASON_BOOT_AFTER_OTA = 1;
-    public static final int REASON_POST_BOOT = 2;
-    public static final int REASON_INSTALL = 3;
-    public static final int REASON_INSTALL_FAST = 4;
-    public static final int REASON_INSTALL_BULK = 5;
-    public static final int REASON_INSTALL_BULK_SECONDARY = 6;
-    public static final int REASON_INSTALL_BULK_DOWNGRADED = 7;
-    public static final int REASON_INSTALL_BULK_SECONDARY_DOWNGRADED = 8;
-    public static final int REASON_BACKGROUND_DEXOPT = 9;
-    public static final int REASON_AB_OTA = 10;
-    public static final int REASON_INACTIVE_PACKAGE_DOWNGRADE = 11;
-    public static final int REASON_CMDLINE = 12;
-    public static final int REASON_BOOT_AFTER_MAINLINE_UPDATE = 13;
-    public static final int REASON_SHARED = 14;
-
-    public static final int REASON_LAST = REASON_SHARED;
-
     static final String RANDOM_DIR_PREFIX = "~~";
     static final char RANDOM_CODEPATH_PREFIX = '-';
 

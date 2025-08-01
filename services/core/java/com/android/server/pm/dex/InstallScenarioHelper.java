@@ -22,7 +22,7 @@ import android.os.BatteryManager;
 import android.os.PowerManager;
 import android.util.Slog;
 
-import com.android.server.pm.PackageManagerService;
+import com.android.server.art.ReasonMapping;
 
 /**
  * Helper class for install scenarios.
@@ -53,32 +53,30 @@ public class InstallScenarioHelper {
     }
 
     /**
-     * Translates install scenarios into compilation reasons.  This process can be influenced
-     * by the state of the device.
+     * Translates install scenarios into compilation reasons. This process can be influenced by the
+     * state of the device.
      */
-    public int getCompilationReasonForInstallScenario(int installScenario) {
-        // Compute the compilation reason from the installation scenario.
-
+    public String getCompilationReasonForInstallScenario(int installScenario) {
         boolean resourcesAreCritical = areBatteryThermalOrMemoryCritical();
         switch (installScenario) {
             case PackageManager.INSTALL_SCENARIO_DEFAULT: {
-                return PackageManagerService.REASON_INSTALL;
+                return ReasonMapping.REASON_INSTALL;
             }
             case PackageManager.INSTALL_SCENARIO_FAST: {
-                return PackageManagerService.REASON_INSTALL_FAST;
+                return ReasonMapping.REASON_INSTALL_FAST;
             }
             case PackageManager.INSTALL_SCENARIO_BULK: {
                 if (resourcesAreCritical) {
-                    return PackageManagerService.REASON_INSTALL_BULK_DOWNGRADED;
+                    return ReasonMapping.REASON_INSTALL_BULK_DOWNGRADED;
                 } else {
-                    return PackageManagerService.REASON_INSTALL_BULK;
+                    return ReasonMapping.REASON_INSTALL_BULK;
                 }
             }
             case PackageManager.INSTALL_SCENARIO_BULK_SECONDARY: {
                 if (resourcesAreCritical) {
-                    return PackageManagerService.REASON_INSTALL_BULK_SECONDARY_DOWNGRADED;
+                    return ReasonMapping.REASON_INSTALL_BULK_SECONDARY_DOWNGRADED;
                 } else {
-                    return PackageManagerService.REASON_INSTALL_BULK_SECONDARY;
+                    return ReasonMapping.REASON_INSTALL_BULK_SECONDARY;
                 }
             }
             default: {
