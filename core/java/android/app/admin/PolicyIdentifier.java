@@ -21,6 +21,8 @@ import static android.app.admin.flags.Flags.FLAG_POLICY_STREAMLINING;
 import android.annotation.FlaggedApi;
 import android.annotation.NonNull;
 import android.annotation.TestApi;
+import android.processor.devicepolicy.BooleanPolicyDefinition;
+import android.processor.devicepolicy.PolicyDefinition;
 
 /**
  * Represents a type safe identifier for a policy. Use it as a key for
@@ -32,7 +34,8 @@ import android.annotation.TestApi;
 public final class PolicyIdentifier<T> {
     private final String mId;
 
-    /** Create an instance of PolicyIdentifier. Should only be used to create the static
+    /**
+     * Create an instance of PolicyIdentifier. Should only be used to create the static
      * definitions below.
      *
      * @hide
@@ -46,7 +49,6 @@ public final class PolicyIdentifier<T> {
      * Get the string representation of this identifier.
      *
      * @return The string representation of this identifier
-     *
      * @hide
      */
     @NonNull
@@ -83,10 +85,15 @@ public final class PolicyIdentifier<T> {
      * screen capture also prevents the content from being shown on display devices that do not have
      * a secure video output. See {@link android.view.Display#FLAG_SECURE} for more details about
      * secure surfaces and secure displays.
+     * Throws SecurityException if the caller is not permitted to control screen capture policy.
+     * If the scope is set to {@link DevicePolicyManager.POLICY_SCOPE_PARENT_USER} and the caller
+     * is not a profile owner of an organization-owned managed profile, a security exception will
+     * be thrown.
      */
-    // TODO(b/433951378): Document or annotate who can call this and what errors can be thrown.
-    @NonNull
     @FlaggedApi(FLAG_POLICY_STREAMLINING)
-    public static final PolicyIdentifier<Boolean> SCREEN_CAPTURE_DISABLED =
-                new PolicyIdentifier<>(SCREEN_CAPTURE_DISABLED_KEY);
+    @NonNull
+    @PolicyDefinition
+    @BooleanPolicyDefinition
+    public static final PolicyIdentifier<Boolean> SCREEN_CAPTURE_DISABLED = new PolicyIdentifier<>(
+            SCREEN_CAPTURE_DISABLED_KEY);
 }
