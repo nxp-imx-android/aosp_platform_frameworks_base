@@ -27,7 +27,7 @@
     <string name="title_reinstalling" msgid="8194821341725321638">"Се инсталира повторно…"</string>
     <string name="title_reinstalled" msgid="4805694558041089418">"Апликацијата е инсталирана повторно"</string>
     <string name="title_update" msgid="1747328630716712391">"Да се ажурира апликацијава?"</string>
-    <string name="title_update_ownership_change" msgid="6628818356381453406">"Да се ажурира апликацијата со <xliff:g id="NEW_UPDATE_OWNER">%1$s</xliff:g>?"</string>
+    <string name="title_update_ownership_change" msgid="6628818356381453406">"Да се ажурира апликацијава со <xliff:g id="NEW_UPDATE_OWNER">%1$s</xliff:g>?"</string>
     <string name="title_updating" msgid="5449073288264173554">"Се ажурира…"</string>
     <string name="title_updated" msgid="3286125118804971449">"Апликацијата е ажурирана"</string>
     <string name="title_cant_install_app" msgid="8683361719005005686">"Апликацијата не може да се инсталира"</string>
@@ -36,7 +36,7 @@
     <string name="title_install_failed_invalid_package" msgid="3390527559613519562">"Неважечки пакет"</string>
     <string name="title_install_failed_less_storage" msgid="4854855960405469248">"Нема доволно простор"</string>
     <string name="title_install_failed_not_installed" msgid="8014023519071426269">"Апликацијата не е инсталирана"</string>
-    <string name="title_uninstall" msgid="428653424812685605">"Дали да се деинсталира апликацијата?"</string>
+    <string name="title_uninstall" msgid="428653424812685605">"Да се деинсталира апликацијава?"</string>
     <string name="title_uninstall_clone" msgid="7974889929002929136">"Да се избрише клонот на апликацијава?"</string>
     <string name="title_uninstall_updates_system_app" msgid="4827243291196043359">"Да се деинсталираат ажурирањата на апликацијата?"</string>
     <string name="title_uninstall_updates_system_app_all_users" msgid="5720572619103268328">"Да се деинсталираат ажурирањата на апликацијата за сите корисници?"</string>
@@ -62,9 +62,9 @@
     <string name="message_external_source_blocked" product="tv" msgid="1394622045008552842">"За ваша безбедност, телевизорот нема дозвола за инсталирање непознати апликации од изворов во моментов. Ова може да го промените во „Поставки“."</string>
     <string name="message_external_source_blocked" product="watch" msgid="1532513823566863443">"За ваша безбедност, часовникот нема дозвола за инсталирање непознати апликации од изворов во моментов. Ова може да го промените во „Поставки“."</string>
     <string name="message_external_source_blocked" product="default" msgid="2781541659935183726">"За ваша безбедност, телефонот нема дозвола за инсталирање непознати апликации од изворов во моментов. Ова може да го промените во „Поставки“."</string>
-    <string name="message_anonymous_source_warning" product="default" msgid="4012873091955414109">"Телефонот и личните податоци се поподложни на напади од непознати апликации. Ако ја инсталирате апликацијава, се согласувате да сносите одговорност за каква било штета на телефонот или загуба на податоци поради нејзиното користење."</string>
-    <string name="message_anonymous_source_warning" product="tablet" msgid="5167072167473447125">"Таблетот и личните податоци се поподложни на напади од непознати апликации. Ако ја инсталирате апликацијава, се согласувате да сносите одговорност за каква било штета на таблетот или загуба на податоци поради нејзиното користење."</string>
-    <string name="message_anonymous_source_warning" product="tv" msgid="6827454085562760175">"Телевизорот и личните податоци се поподложни на напади од непознати апликации. Ако ја инсталирате апликацијава, се согласувате да сносите одговорност за каква било штета на телевизорот или загуба на податоци поради нејзиното користење."</string>
+    <string name="message_anonymous_source_warning" product="default" msgid="4012873091955414109">"Телефонот и личните податоци се поподложни на напади од непознати апликации. Ако ја инсталирате апликацијава, се согласувате дека вие сте одговорни за каква било штета на телефонот или загуба на податоци поради нејзиното користење."</string>
+    <string name="message_anonymous_source_warning" product="tablet" msgid="5167072167473447125">"Таблетот и личните податоци се поподложни на напади од непознати апликации. Ако ја инсталирате апликацијава, се согласувате дека вие сте одговорни за каква било штета на таблетот или загуба на податоци поради нејзиното користење."</string>
+    <string name="message_anonymous_source_warning" product="tv" msgid="6827454085562760175">"Телевизорот и личните податоци се поподложни на напади од непознати апликации. Ако ја инсталирате апликацијава, се согласувате дека вие сте одговорни за каква било штета на телевизорот или загуба на податоци поради нејзиното користење."</string>
     <string name="message_install_failed_blocked" msgid="8289588872577100349">"Инсталирањето на апликацијава е блокирано"</string>
     <string name="message_install_failed_conflict" msgid="1707670432024473123">"Аликацијава е во конфликт со апликација што веќе е на вашиот уред"</string>
     <string name="message_install_failed_incompatible" msgid="184079710727317076">"Апликацијава не е компатибилна со уредот"</string>
@@ -98,17 +98,33 @@
     <string name="message_uninstall_activity" msgid="3263352475743590167">"<xliff:g id="ACTIVITY_NAME">%1$s</xliff:g> е дел од следнава апликација: <xliff:g id="APP_NAME">%2$s</xliff:g>"</string>
     <!-- no translation found for cannot_install_app_blocked_summary (8433096420067308800) -->
     <skip />
+    <!-- no translation found for cannot_update_app_blocked_summary (5003390308880649930) -->
+    <skip />
     <!-- no translation found for cannot_install_verification_no_internet_summary (8948259713332887857) -->
+    <skip />
+    <!-- no translation found for cannot_update_verification_no_internet_summary (2970654650180690063) -->
     <skip />
     <!-- no translation found for cannot_install_verification_unavailable_summary (343815915687716571) -->
     <skip />
-    <!-- no translation found for install_without_verifying_summary (9056694084349761546) -->
+    <!-- no translation found for cannot_update_verification_unavailable_summary (7697174533040472480) -->
+    <skip />
+    <!-- no translation found for cannot_install_verification_unavailable_fail_closed_summary (3178396108551754329) -->
+    <skip />
+    <!-- no translation found for cannot_update_verification_unavailable_fail_closed_summary (2057697870682373917) -->
+    <skip />
+    <!-- no translation found for more_details_expanded_install_summary (3545896392881608712) -->
+    <skip />
+    <!-- no translation found for more_details_expanded_update_summary (2239162864839036480) -->
     <skip />
     <!-- no translation found for cannot_install_app_blocked_title (6372444121824751694) -->
     <skip />
     <!-- no translation found for cannot_install_verification_no_internet_title (2862046642298119581) -->
     <skip />
     <!-- no translation found for cannot_install_verification_unavailable_title (2038093442302309120) -->
+    <skip />
+    <!-- no translation found for install_without_verifying (5359680595440741626) -->
+    <skip />
+    <!-- no translation found for update_without_verifying (2841466981431484179) -->
     <skip />
     <string name="button_install" msgid="7434013176505680162">"Инсталирај"</string>
     <string name="button_update" msgid="3046719350226327526">"Ажурирај"</string>

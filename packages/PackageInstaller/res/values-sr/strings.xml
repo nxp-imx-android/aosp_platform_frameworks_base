@@ -21,10 +21,7 @@
     <string name="update" msgid="3932142540719227615">"Ажурирај"</string>
     <string name="done" msgid="6632441120016885253">"Готово"</string>
     <string name="cancel" msgid="1018267193425558088">"Откажи"</string>
-    <!-- no translation found for install_without_verifying (7606774834125762618) -->
-    <skip />
-    <!-- no translation found for more_details (3643407086654820243) -->
-    <skip />
+    <string name="more_details" msgid="3643407086654820243">"Још детаља"</string>
     <string name="dont_install" msgid="414055123295505225">"Не инсталирај"</string>
     <string name="installing" msgid="4921993079741206516">"Инсталира се..."</string>
     <string name="installing_app" msgid="1165095864863849422">"Инсталира се <xliff:g id="PACKAGE_LABEL">%1$s</xliff:g>…"</string>
