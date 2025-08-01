@@ -1044,6 +1044,7 @@ class TransitionController {
 
     /** @see Transition#deferTransitionReady */
     void deferTransitionReady() {
+        if (Flags.migrateBasicLegacyReady()) return;
         if (!isShellTransitionsEnabled()) return;
         if (mCollectingTransition == null) {
             throw new IllegalStateException("No collecting transition to defer readiness for.");
@@ -1053,6 +1054,7 @@ class TransitionController {
 
     /** @see Transition#continueTransitionReady */
     void continueTransitionReady() {
+        if (Flags.migrateBasicLegacyReady()) return;
         if (!isShellTransitionsEnabled()) return;
         if (mCollectingTransition == null) {
             throw new IllegalStateException("No collecting transition to defer readiness for.");

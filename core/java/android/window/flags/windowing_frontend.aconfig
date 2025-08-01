@@ -499,3 +499,11 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "migrate_basic_legacy_ready"
+    namespace: "windowing_frontend"
+    description: "Migrate basic legacy ready-conditions to new ready tracking"
+    bug: "294925498"
+}
+

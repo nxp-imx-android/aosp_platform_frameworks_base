@@ -650,7 +650,8 @@ class KeyguardController {
         if (waiting && isAodShowing(DEFAULT_DISPLAY)) {
             mWaitingForWakeTransition = true;
             mWindowManager.mAtmService.getTransitionController().deferTransitionReady();
-            mWaitAodHide = new Transition.ReadyCondition("AOD hidden", true /* newTrackerOnly */);
+            mWaitAodHide = new Transition.ReadyCondition("AOD hidden",
+                    !Flags.migrateBasicLegacyReady());
             mWindowManager.mAtmService.getTransitionController().waitFor(mWaitAodHide);
             mWindowManager.mH.postDelayed(mResetWaitTransition, DEFER_WAKE_TRANSITION_TIMEOUT_MS);
         } else if (!waiting) {
