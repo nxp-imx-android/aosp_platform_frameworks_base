@@ -641,8 +641,7 @@ public class OomAdjusterImpl extends OomAdjuster {
             // This process was updated in some way, mark that it was last calculated this sequence.
             app.setCompletedAdjSeq(mAdjSeq);
             if (uids != null) {
-                final UidRecord uidRec = app.getUidRecord();
-
+                final UidRecordInternal uidRec = app.getUidRecord();
                 if (uidRec != null) {
                     uids.put(uidRec.getUid(), uidRec);
                 }

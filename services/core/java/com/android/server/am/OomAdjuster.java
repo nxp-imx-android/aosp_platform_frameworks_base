@@ -770,7 +770,7 @@ public abstract class OomAdjuster {
         // Scan downstreams of the process record
         for (ProcessRecord pr = queue.poll(); pr != null; pr = queue.poll()) {
             processes.add(pr);
-            final UidRecord uidRec = pr.getUidRecord();
+            final UidRecordInternal uidRec = pr.getUidRecord();
             if (uidRec != null) {
                 uids.put(uidRec.getUid(), uidRec);
             }

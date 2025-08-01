@@ -5623,7 +5623,7 @@ public final class ProcessList implements ProcessStateController.ProcessLruUpdat
      */
     @GuardedBy("mService")
     long killAppIfBgRestrictedAndCachedIdleLocked(ProcessRecord app, long nowElapsed) {
-        final UidRecord uidRec = app.getUidRecord();
+        final UidRecordInternal uidRec = app.getUidRecord();
         final long lastCachedTime = app.getLastCachedTime();
         if (!mService.mConstants.mKillBgRestrictedAndCachedIdle
                 || app.isKilled() || app.getThread() == null || uidRec == null || !uidRec.isIdle()
