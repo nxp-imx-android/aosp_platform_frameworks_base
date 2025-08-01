@@ -62,7 +62,8 @@ public class ChooserActivityLoggerImpl implements ChooserActivityLogger {
                 /* package_name = 2 */ packageName,
                 /* instance_id = 3 */ getInstanceId().getId(),
                 /* position_picked = 4 */ positionPicked,
-                /* is_pinned = 5 */ isPinned);
+                /* is_pinned = 5 */ isPinned,
+                /* included_extra_text_when_sharing_file = 6 */ false);
     }
 
     @Override
