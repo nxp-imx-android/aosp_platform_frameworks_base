@@ -134,10 +134,10 @@ class DesktopModeLaunchParamsModifier implements LaunchParamsModifier {
             }
         }
 
-        boolean forcedFreeformByDesktopFirstPolicy = shouldApplyDesktopFirstWindowingModePolicy(
-                task, source, options, suggestedDisplayArea, currentParams);
-        if (forcedFreeformByDesktopFirstPolicy) {
-            outParams.mWindowingMode = WINDOWING_MODE_FREEFORM;
+        final int desktopFirstOverrideWindowingMode = getWindowingModeForDesktopFirstPolicy(task,
+                source, options, suggestedDisplayArea, currentParams);
+        if (desktopFirstOverrideWindowingMode != WINDOWING_MODE_UNDEFINED) {
+            outParams.mWindowingMode = desktopFirstOverrideWindowingMode;
             if (task == null) {
                 // Windowing mode is resolved by desktop-first policy but not ready to resolve
                 // bounds since task is null, return RESULT_DONE to prevent other modifiers from
@@ -213,8 +213,8 @@ class DesktopModeLaunchParamsModifier implements LaunchParamsModifier {
             // Copy over any values.
             outParams.set(currentParams);
             outParams.mPreferredTaskDisplayArea = suggestedDisplayArea;
-            if (forcedFreeformByDesktopFirstPolicy) {
-                outParams.mWindowingMode = WINDOWING_MODE_FREEFORM;
+            if (desktopFirstOverrideWindowingMode != WINDOWING_MODE_UNDEFINED) {
+                outParams.mWindowingMode = desktopFirstOverrideWindowingMode;
             }
         }
 
@@ -336,8 +336,8 @@ class DesktopModeLaunchParamsModifier implements LaunchParamsModifier {
             return false;
         }
 
-        if (shouldApplyDesktopFirstWindowingModePolicy(task, source, options, taskDisplayArea,
-                currentParams)) {
+        if (getWindowingModeForDesktopFirstPolicy(task, source, options, taskDisplayArea,
+                currentParams) == WINDOWING_MODE_FREEFORM) {
             // It's a target of desktop-first policy.
             return true;
         }
@@ -369,28 +369,28 @@ class DesktopModeLaunchParamsModifier implements LaunchParamsModifier {
     }
 
     /**
-     * Modify windowing mode of LaunchParams according to the desktop-first policy. Returns true if
-     * the policy is applied.
+     * Returns the override windowing mode according to the desktop-first policy. Returns
+     * WINDOWING_MODE_UNDEFINED if the policy is not applied.
      */
-    private boolean shouldApplyDesktopFirstWindowingModePolicy(
+    private int getWindowingModeForDesktopFirstPolicy(
             @Nullable Task task,
             @Nullable ActivityRecord source,
             @Nullable ActivityOptions options,
             @NonNull TaskDisplayArea taskDisplayArea,
             @NonNull LaunchParamsController.LaunchParams currentParams) {
         if (!DesktopExperienceFlags.ENABLE_DESKTOP_FIRST_POLICY_IN_LPM.isTrue()) {
-            return false;
+            return WINDOWING_MODE_UNDEFINED;
         }
 
         if (!taskDisplayArea.inFreeformWindowingMode()) {
             // The display is in touch-first mode.
-            return false;
+            return WINDOWING_MODE_UNDEFINED;
         }
 
         if (!checkSourceWindowModesCompatible(task, options, currentParams)) {
             // The task is launching in incompatible mode (e.g., PIP).
             appendLog("desktop-first-but-incompatible-mode");
-            return false;
+            return WINDOWING_MODE_UNDEFINED;
         }
 
         final boolean hasLaunchWindowingModeOption = options != null
@@ -398,7 +398,7 @@ class DesktopModeLaunchParamsModifier implements LaunchParamsModifier {
         if (hasLaunchWindowingModeOption) {
             // ActivityOptions comes first.
             appendLog("desktop-first-but-has-launch-windowing-mode-options");
-            return false;
+            return options.getLaunchWindowingMode();
         }
 
         final boolean isFullscreenRelaunch = source != null && source.getTask() != null
@@ -407,11 +407,11 @@ class DesktopModeLaunchParamsModifier implements LaunchParamsModifier {
         if (isFullscreenRelaunch) {
             // Fullscreen relaunch is not a target of desktop-first policy.
             appendLog("desktop-first-but-fullscreen-relaunch");
-            return false;
+            return WINDOWING_MODE_FULLSCREEN;
         }
 
         appendLog("forced-freeform-in-desktop-first");
-        return true;
+        return WINDOWING_MODE_FREEFORM;
     }
 
     /**
