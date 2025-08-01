@@ -18,8 +18,8 @@ package com.android.systemui.screencapture.record.ui.viewmodel
 
 import androidx.compose.runtime.getValue
 import com.android.systemui.lifecycle.HydratedActivatable
+import com.android.systemui.screencapture.common.shared.model.ScreenCaptureTarget
 import com.android.systemui.screencapture.record.domain.interactor.ScreenCaptureRecordParametersInteractor
-import com.android.systemui.screencapture.record.shared.model.RecordTargetModel
 import com.android.systemui.screenrecord.ScreenRecordingAudioSource
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
@@ -35,7 +35,7 @@ constructor(private val interactor: ScreenCaptureRecordParametersInteractor) :
             .map { it.audioSource }
             .hydratedStateOf("ScreenCaptureAudioSourceViewModel#audioSource", null)
 
-    val target: RecordTargetModel? by
+    val target: ScreenCaptureTarget? by
         interactor.parameters
             .map { it.target }
             .hydratedStateOf("ScreenCaptureAudioSourceViewModel#target", null)
@@ -89,7 +89,7 @@ constructor(private val interactor: ScreenCaptureRecordParametersInteractor) :
         interactor.setAudioSource(audioSource)
     }
 
-    fun setRecordTarget(target: RecordTargetModel) {
+    fun setRecordTarget(target: ScreenCaptureTarget) {
         interactor.setRecordTarget(target)
     }
 

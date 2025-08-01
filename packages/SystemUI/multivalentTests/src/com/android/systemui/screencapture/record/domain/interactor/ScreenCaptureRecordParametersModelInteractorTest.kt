@@ -16,14 +16,12 @@
 
 package com.android.systemui.screencapture.record.domain.interactor
 
-import android.app.ActivityOptions
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.kosmos.collectLastValue
 import com.android.systemui.kosmos.runTest
-import com.android.systemui.mediaprojection.MediaProjectionCaptureTarget
-import com.android.systemui.screencapture.record.shared.model.RecordTargetModel
+import com.android.systemui.screencapture.common.shared.model.ScreenCaptureTarget
 import com.android.systemui.screenrecord.ScreenRecordingAudioSource
 import com.android.systemui.testKosmosNew
 import com.google.common.truth.Truth.assertThat
@@ -54,10 +52,7 @@ class ScreenCaptureRecordParametersModelInteractorTest : SysuiTestCase() {
     @Test
     fun testChangingTarget() =
         kosmos.runTest {
-            val newTarget =
-                RecordTargetModel.App(
-                    MediaProjectionCaptureTarget(ActivityOptions.LaunchCookie(), 1)
-                )
+            val newTarget = ScreenCaptureTarget.App(taskId = 1)
             val target by collectLastValue(underTest.parameters.map { it.target })
             assertThat(target).isNotEqualTo(newTarget)
 

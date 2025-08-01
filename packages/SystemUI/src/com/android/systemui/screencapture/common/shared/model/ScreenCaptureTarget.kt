@@ -14,20 +14,21 @@
  * limitations under the License.
  */
 
-package com.android.systemui.screencapture.record.shared.model
+package com.android.systemui.screencapture.common.shared.model
 
 import android.graphics.Rect
-import com.android.systemui.mediaprojection.MediaProjectionCaptureTarget
 
-/** Models the target to be recorded. */
-sealed interface RecordTargetModel {
+/** The target to be captured. */
+sealed interface ScreenCaptureTarget {
+    /** A full display. */
+    data class Fullscreen(val displayId: Int) : ScreenCaptureTarget
 
-    /** A single app should be recorded. */
-    data class App(val target: MediaProjectionCaptureTarget) : RecordTargetModel
+    /** A region on a display. */
+    data class Region(val displayId: Int, val rect: Rect) : ScreenCaptureTarget
 
-    /** The whole screen should be recorded. */
-    data object WholeScreen : RecordTargetModel
+    /** A full app. */
+    data class App(val taskId: Int) : ScreenCaptureTarget
 
-    /** The region of the screen should be recorded. */
-    data class Region(val rect: Rect) : RecordTargetModel
+    /** Content within an app. */
+    data class AppContent(val contentId: Int) : ScreenCaptureTarget
 }
