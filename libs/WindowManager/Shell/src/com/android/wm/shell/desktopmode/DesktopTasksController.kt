@@ -3705,7 +3705,7 @@ class DesktopTasksController(
                     DesktopExperienceFlags.ENABLE_DESKTOP_FIRST_POLICY_IN_LPM.isTrue ->
                     // Here we have no desk activated, but check if we really want to force a task
                     // into desktop.
-                    if (rootTaskDisplayAreaOrganizer.isDisplayDesktopFirst(task.displayId)) {
+                    if (rootTaskDisplayAreaOrganizer.isDisplayDesktopFirst(targetDisplayId)) {
                         if (DesktopExperienceFlags.ENABLE_DESKTOP_FIRST_POLICY_IN_LPM.isTrue) {
                             // Fully trust the LPM's decision under desktop-first mode.
                             true
