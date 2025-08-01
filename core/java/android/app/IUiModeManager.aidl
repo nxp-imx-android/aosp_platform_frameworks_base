@@ -231,4 +231,11 @@ interface IUiModeManager {
      * @hide
      */
     int getForceInvertState(int userId);
+
+    /**
+     * Returns the force invert override state for the given package.
+     *
+     * @hide
+     */
+    int getForceInvertOverrideState(int userId, String packageName);
 }

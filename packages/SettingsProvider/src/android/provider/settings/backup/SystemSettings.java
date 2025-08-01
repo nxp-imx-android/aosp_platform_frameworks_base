@@ -28,7 +28,8 @@ import java.util.List;
 public class SystemSettings {
 
     /**
-     * Settings to back up.
+     * Settings to back up. You must either add your setting here to be backed up, or add it to
+     * SettingsBackupTest#getBackUpDenyListSystemSettings().
      *
      * NOTE: Settings are backed up and restored in the order they appear
      *       in this array. If you have one setting depending on another,

@@ -17,6 +17,9 @@
 package com.android.server;
 
 import static android.Manifest.permission.MODIFY_DAY_NIGHT_MODE;
+import static android.app.UiModeManager.FORCE_INVERT_PACKAGE_ALWAYS_DISABLE;
+import static android.app.UiModeManager.FORCE_INVERT_PACKAGE_ALWAYS_ENABLE;
+import static android.app.UiModeManager.FORCE_INVERT_PACKAGE_ALLOWED;
 import static android.app.UiModeManager.FORCE_INVERT_TYPE_DARK;
 import static android.app.UiModeManager.FORCE_INVERT_TYPE_OFF;
 import static android.app.UiModeManager.MODE_ATTENTION_THEME_OVERLAY_DAY;
@@ -101,12 +104,14 @@ import android.testing.AndroidTestingRunner;
 import android.testing.TestableLooper;
 import android.view.Display;
 
+import com.android.internal.R;
 import com.android.internal.util.test.FakeSettingsProvider;
 import com.android.server.twilight.TwilightListener;
 import com.android.server.twilight.TwilightManager;
 import com.android.server.twilight.TwilightState;
 import com.android.server.wm.WindowManagerInternal;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Rule;
@@ -258,6 +263,11 @@ public class UiModeManagerServiceTest extends UiServiceTestCase {
             mUiManagerService.onBootPhase(SystemService.PHASE_SYSTEM_SERVICES_READY);
         } catch (SecurityException e) {/* ignore for permission denial */}
         mService = mUiManagerService.getService();
+    }
+
+    @After
+    public void tearDown() {
+        Settings.System.resetToDefaults(mContentResolver, /* TAG= */ null);
     }
 
     private <T> void addLocalService(Class<T> clazz, T service) {
@@ -1669,6 +1679,98 @@ public class UiModeManagerServiceTest extends UiServiceTestCase {
 
         assertThat(mUiManagerService.getForceInvertStateInternal(testUserId))
                 .isEqualTo(FORCE_INVERT_TYPE_DARK);
+    }
+
+    @Test
+    @EnableFlags(android.view.accessibility.Flags.FLAG_FORCE_INVERT_COLOR)
+    public void getForceInvertOverrideState_bogusPackageName_throwsException() throws Exception {
+        when(mPackageManager.getPackageUidAsUser(eq(PACKAGE_NAME), anyInt()))
+                .thenReturn(TestInjector.DEFAULT_CALLING_UID + 1);
+
+        assertThrows(SecurityException.class,
+                () -> mService.getForceInvertOverrideState(0, PACKAGE_NAME));
+    }
+
+    @Test
+    @EnableFlags(android.view.accessibility.Flags.FLAG_FORCE_INVERT_COLOR)
+    public void getForceInvertOverrideState_noOverrides_returnsAllowed() throws Exception {
+        when(mPackageManager.getPackageUidAsUser(eq(PACKAGE_NAME), anyInt()))
+                .thenReturn(TestInjector.DEFAULT_CALLING_UID);
+        int testUserId = 9;
+        switchUser(testUserId);
+
+        assertThat(mService.getForceInvertOverrideState(testUserId, PACKAGE_NAME))
+                .isEqualTo(FORCE_INVERT_PACKAGE_ALLOWED);
+    }
+
+    @Test
+    @EnableFlags(android.view.accessibility.Flags.FLAG_FORCE_INVERT_COLOR)
+    public void getForceInvertOverrideState_packageInDisableList_returnsDisable() throws Exception {
+        when(mPackageManager.getPackageUidAsUser(eq(PACKAGE_NAME), anyInt()))
+                .thenReturn(TestInjector.DEFAULT_CALLING_UID);
+        int testUserId = 9;
+        switchUser(testUserId);
+        Settings.System.putStringForUser(
+                mContentResolver,
+                Settings.System.ACCESSIBILITY_FORCE_INVERT_COLOR_OVERRIDE_PACKAGES_TO_DISABLE,
+                PACKAGE_NAME,
+                testUserId);
+
+        assertThat(mService.getForceInvertOverrideState(testUserId, PACKAGE_NAME))
+                .isEqualTo(FORCE_INVERT_PACKAGE_ALWAYS_DISABLE);
+    }
+
+    @Test
+    @EnableFlags(android.view.accessibility.Flags.FLAG_FORCE_INVERT_COLOR)
+    public void getForceInvertOverrideState_packageInEnableList_returnsEnable() throws Exception {
+        when(mPackageManager.getPackageUidAsUser(eq(PACKAGE_NAME), anyInt()))
+                .thenReturn(TestInjector.DEFAULT_CALLING_UID);
+        int testUserId = 9;
+        switchUser(testUserId);
+        Settings.System.putStringForUser(
+                mContentResolver,
+                Settings.System.ACCESSIBILITY_FORCE_INVERT_COLOR_OVERRIDE_PACKAGES_TO_ENABLE,
+                PACKAGE_NAME,
+                testUserId);
+
+        assertThat(mService.getForceInvertOverrideState(testUserId, PACKAGE_NAME))
+                .isEqualTo(FORCE_INVERT_PACKAGE_ALWAYS_ENABLE);
+    }
+
+    @Test
+    @EnableFlags(android.view.accessibility.Flags.FLAG_FORCE_INVERT_COLOR)
+    public void getForceInvertOverrideState_packageInBlockList_returnsDisable() throws Exception {
+        when(mPackageManager.getPackageUidAsUser(eq(PACKAGE_NAME), anyInt()))
+                .thenReturn(TestInjector.DEFAULT_CALLING_UID);
+        when(mResources.getStringArray(R.array.config_forceInvertPackageBlocklist))
+                .thenReturn(new String[]{PACKAGE_NAME});
+        int testUserId = 9;
+        switchUser(testUserId);
+
+        assertThat(mService.getForceInvertOverrideState(testUserId, PACKAGE_NAME))
+                .isEqualTo(FORCE_INVERT_PACKAGE_ALWAYS_DISABLE);
+    }
+
+    @Test
+    @EnableFlags(android.view.accessibility.Flags.FLAG_FORCE_INVERT_COLOR)
+    public void getForceInvertOverrideState_packageInBlockList_overrideEnabled_returnsEnable()
+            throws Exception {
+        when(mPackageManager.getPackageUidAsUser(eq(PACKAGE_NAME), anyInt()))
+                .thenReturn(TestInjector.DEFAULT_CALLING_UID);
+        when(mResources.getStringArray(R.array.config_forceInvertPackageBlocklist))
+                .thenReturn(new String[]{PACKAGE_NAME});
+        int testUserId = 9;
+        switchUser(testUserId);
+        Settings.System.putStringForUser(
+                mContentResolver,
+                Settings.System.ACCESSIBILITY_FORCE_INVERT_COLOR_OVERRIDE_PACKAGES_TO_ENABLE,
+                PACKAGE_NAME,
+                testUserId);
+
+        assertThat(mService.getForceInvertOverrideState(testUserId, PACKAGE_NAME))
+                .isEqualTo(FORCE_INVERT_PACKAGE_ALWAYS_ENABLE);
+        assertThat(mService.getForceInvertOverrideState(testUserId + 1, PACKAGE_NAME))
+                .isEqualTo(FORCE_INVERT_PACKAGE_ALWAYS_DISABLE);
     }
 
     private void switchUser(int userId) {

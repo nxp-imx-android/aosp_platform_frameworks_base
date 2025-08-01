@@ -914,6 +914,10 @@ public class SettingsBackupTest {
                         Settings.System.APPEND_FOR_LAST_AUDIBLE, // suffix deprecated since API 2
                         Settings.System.EGG_MODE, // I am the lolrus
                         Settings.System.END_BUTTON_BEHAVIOR, // bug?
+                        Settings.System
+                                .ACCESSIBILITY_FORCE_INVERT_COLOR_OVERRIDE_PACKAGES_TO_ENABLE,
+                        Settings.System
+                                .ACCESSIBILITY_FORCE_INVERT_COLOR_OVERRIDE_PACKAGES_TO_DISABLE,
                         Settings.System.DEFAULT_DEVICE_FONT_SCALE, // Non configurable
                         Settings.System.HIDE_ROTATION_LOCK_TOGGLE_FOR_ACCESSIBILITY,
                         Settings.System.INPUT_GAIN_INDEX_SETTINGS,
