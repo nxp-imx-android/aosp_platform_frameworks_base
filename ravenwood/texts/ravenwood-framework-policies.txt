@@ -51,3 +51,9 @@ class android.text.ClipboardManager keep  # no-pta
 # Just enough to allow ResourcesManager to run
 class android.hardware.display.DisplayManagerGlobal allow-annotation
     method getInstance ()Landroid/hardware/display/DisplayManagerGlobal; allow-annotation
+
+# Experimental APIs:
+
+# For testing experimental API
+class com.android.internal.ravenwood.RavenwoodHelperBridge
+    method forExperimentalApiTest exp

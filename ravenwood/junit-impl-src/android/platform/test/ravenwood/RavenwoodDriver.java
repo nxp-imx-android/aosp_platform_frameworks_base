@@ -34,6 +34,8 @@ import android.graphics.Typeface;
 import android.icu.util.ULocale;
 import android.os.Binder;
 import android.os.Build;
+import android.os.HandlerThread;
+import android.os.Looper;
 import android.os.Process_ravenwood;
 import android.os.ServiceManager;
 import android.os.ServiceManager.ServiceNotFoundException;
@@ -200,6 +202,11 @@ public class RavenwoodDriver {
         // Do the basic set up for the android sysprops.
         RavenwoodSystemProperties.initialize();
 
+        var mainThread = new HandlerThread(RavenwoodEnvironment.MAIN_THREAD_NAME);
+
+        // Initialize the "environment".
+        RavenwoodEnvironment.init(pid, mainThread);
+
         // Set ICU data file
         String icuData = getRavenwoodRuntimePath()
                 + "ravenwood-data/"
@@ -247,8 +254,9 @@ public class RavenwoodDriver {
         LocalServices.removeAllServicesForTest();
         ActivityManager.init$ravenwood(SYSTEM.getIdentifier());
 
-        // Initialize the "environment".
-        RavenwoodEnvironment.init(pid);
+        // Start the main thread.
+        mainThread.start();
+        Looper.setMainLooperForTest(mainThread.getLooper());
 
         // Start app lifecycle.
         RavenwoodAppDriver.init();
