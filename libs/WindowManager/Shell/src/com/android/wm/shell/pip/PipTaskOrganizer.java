@@ -25,7 +25,7 @@ import static android.util.RotationUtils.rotateBounds;
 import static com.android.wm.shell.ShellTaskOrganizer.TASK_LISTENER_TYPE_PIP;
 import static com.android.wm.shell.ShellTaskOrganizer.taskListenerTypeToString;
 import static com.android.wm.shell.desktopmode.DesktopModeUtils.calculateInitialBounds;
-import static com.android.wm.shell.desktopmode.DesktopTasksController.DESKTOP_MODE_INITIAL_BOUNDS_SCALE;
+import static com.android.wm.shell.desktopmode.DesktopModeUtils.DESKTOP_MODE_INITIAL_BOUNDS_SCALE;
 import static com.android.wm.shell.pip.PipAnimationController.TRANSITION_DIRECTION_EXPAND_OR_UNEXPAND;
 import static com.android.wm.shell.pip.PipAnimationController.TRANSITION_DIRECTION_LEAVE_PIP;
 import static com.android.wm.shell.pip.PipAnimationController.TRANSITION_DIRECTION_LEAVE_PIP_TO_SPLIT_SCREEN;
