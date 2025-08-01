@@ -2036,22 +2036,15 @@ public final class ViewRootImpl implements ViewParent,
                 }
             }
 
-            if (forceInvertColor()) {
-                // Force invert ignores all developer opt-outs.
-                // We also ignore dark theme, since the app developer can override the user's
-                // preference for dark mode in configuration.uiMode. Instead, we assume that both
-                // force invert and the system's dark theme are enabled.
-                if (shouldApplyForceInvertDark()) {
-                    // We will use HWUI color area detection to determine if it should actually be
-                    // inverted. Checking light theme simply gives the developer a way to "opt-out"
-                    // of force invert.
-                    final boolean isLightTheme =
-                            a.getBoolean(R.styleable.Theme_isLightTheme, false);
-                    if (isLightTheme) {
-                        return ForceDarkType.FORCE_INVERT_COLOR_DARK;
-                    } else {
-                        return ForceDarkType.NONE;
-                    }
+            if (shouldApplyForceInvertDark()) {
+                // Do not apply force invert dark theme to an app that already declares itself as
+                // supporting dark theme (isLightTheme=false). This gives the developer a way to
+                // opt out of allowing this behavior, while also guaranteeing that apps with a
+                // properly configured dark theme are unaffected by force invert dark theme. For
+                // self-declared light theme apps HWUI then performs its own "color area"
+                // calculation to determine if the app actually renders with light colors.
+                if (a.getBoolean(R.styleable.Theme_isLightTheme, false)) {
+                    return ForceDarkType.FORCE_INVERT_COLOR_DARK;
                 }
             }
 
@@ -2062,11 +2055,15 @@ public final class ViewRootImpl implements ViewParent,
     }
 
     private boolean shouldApplyForceInvertDark() {
+        if (!forceInvertColor()) {
+            return false;
+        }
         final UiModeManager uiModeManager = mContext.getSystemService(UiModeManager.class);
         if (uiModeManager == null) {
             return false;
         }
-        return uiModeManager.getForceInvertState() == UiModeManager.FORCE_INVERT_TYPE_DARK;
+        return uiModeManager.getForceInvertState() == UiModeManager.FORCE_INVERT_TYPE_DARK
+                && UiModeManager.isForceInvertAllowed(mContext);
     }
 
     private void updateForceDarkMode() {
