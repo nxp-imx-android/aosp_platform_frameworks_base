@@ -34,7 +34,6 @@ import android.os.UserHandle
 import android.provider.Settings
 import android.testing.TestableLooper.RunWithLooper
 import android.view.View
-import android.widget.FrameLayout
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.keyguard.KeyguardUpdateMonitor
@@ -170,7 +169,7 @@ class LockscreenSmartspaceControllerTest : SysuiTestCase() {
     private val clock = FakeSystemClock()
     private val executor = FakeExecutor(clock)
     private val execution = FakeExecution()
-    private val fakeParent = FrameLayout(context)
+
     private val fakePrivateLockscreenSettingUri = Uri.Builder().appendPath("test").build()
     private val fakeNotifOnLockscreenSettingUri = Uri.Builder().appendPath("notif").build()
 
@@ -259,7 +258,7 @@ class LockscreenSmartspaceControllerTest : SysuiTestCase() {
         `when`(deviceProvisionedController.isCurrentUserSetup).thenReturn(false)
 
         // WHEN a connection attempt is made and view is attached
-        val view = controller.buildAndConnectView(fakeParent)!!
+        val view = controller.buildAndConnectView(context)!!
         controller.stateChangeListener.onViewAttachedToWindow(view)
 
         // THEN no session is created
@@ -757,8 +756,7 @@ class LockscreenSmartspaceControllerTest : SysuiTestCase() {
 
         // WHEN we're asked to connect a second time and add to a parent. If the same view
         // was created the ViewGroup will throw an exception
-        val view = controller.buildAndConnectView(fakeParent)
-        fakeParent.addView(view)
+        val view = controller.buildAndConnectView(context)
         val smartspaceView2 = view as SmartspaceView
 
         // THEN the existing session is reused and views are registered
@@ -776,7 +774,7 @@ class LockscreenSmartspaceControllerTest : SysuiTestCase() {
         `when`(keyguardBypassController.bypassEnabled).thenReturn(true)
 
         // WHEN the view is being built
-        val view = controller.buildAndConnectView(fakeParent)
+        val view = controller.buildAndConnectView(context)
         smartspaceView = view as SmartspaceView
 
         // THEN the view is initialized with the keyguard bypass enabled state.
@@ -799,9 +797,8 @@ class LockscreenSmartspaceControllerTest : SysuiTestCase() {
     }
 
     private fun connectSession() {
-        val dateView = controller.buildAndConnectDateView(fakeParent, false)
+        val dateView = controller.buildAndConnectDateView(context, false)
         dateSmartspaceView = dateView as SmartspaceView
-        fakeParent.addView(dateView)
         controller.stateChangeListener.onViewAttachedToWindow(dateView)
 
         verify(dateSmartspaceView).setUiSurface(BcSmartspaceDataPlugin.UI_SURFACE_LOCK_SCREEN_AOD)
@@ -812,9 +809,8 @@ class LockscreenSmartspaceControllerTest : SysuiTestCase() {
         verify(dateSmartspaceView).setPrimaryTextColor(anyInt())
         verify(dateSmartspaceView).setDozeAmount(0.5f)
 
-        val weatherView = controller.buildAndConnectWeatherView(fakeParent, false)
+        val weatherView = controller.buildAndConnectWeatherView(context, false)
         weatherSmartspaceView = weatherView as SmartspaceView
-        fakeParent.addView(weatherView)
         controller.stateChangeListener.onViewAttachedToWindow(weatherView)
 
         verify(weatherSmartspaceView)
@@ -826,9 +822,8 @@ class LockscreenSmartspaceControllerTest : SysuiTestCase() {
         verify(weatherSmartspaceView).setPrimaryTextColor(anyInt())
         verify(weatherSmartspaceView).setDozeAmount(0.5f)
 
-        val view = controller.buildAndConnectView(fakeParent)
+        val view = controller.buildAndConnectView(context)
         smartspaceView = view as SmartspaceView
-        fakeParent.addView(view)
         controller.stateChangeListener.onViewAttachedToWindow(view)
 
         verify(smartspaceView).setUiSurface(BcSmartspaceDataPlugin.UI_SURFACE_LOCK_SCREEN_AOD)

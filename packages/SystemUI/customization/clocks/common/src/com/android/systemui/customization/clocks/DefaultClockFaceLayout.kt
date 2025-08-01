@@ -26,7 +26,6 @@ import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
@@ -80,20 +79,12 @@ open class DefaultClockFaceLayout(val view: View) : ClockFaceLayout {
                 // }
                 val topMargin = 0.dp
 
-                // TODO(b/432451019): Placement/positional modifiers need an implementation
                 clockView(
                     view = view,
                     modifier =
                         Modifier.height(dimensionResource(clocksR.dimen.small_clock_height))
-                            .padding(
-                                horizontal = dimensionResource(clocksR.dimen.clock_padding_start)
-                            )
                             .padding(top = topMargin)
-                            // .onTopPlacementChanged(onTopChanged)
-                            .then(context.burnInModifier)
-                            .onGloballyPositioned { coordinates ->
-                                // onBottomChanged?.invoke(coordinates.boundsInWindow().bottom)
-                            },
+                            .then(context.burnInModifier),
                 )
             }
         }

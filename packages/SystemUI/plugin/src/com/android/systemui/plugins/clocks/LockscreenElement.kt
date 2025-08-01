@@ -19,16 +19,22 @@ import android.content.Context
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.boundsInWindow
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
 import com.android.compose.animation.scene.ContentScope
 import com.android.compose.animation.scene.ElementKey
+import com.android.systemui.log.core.Logger
+import com.android.systemui.log.core.MessageBuffer
 import com.android.systemui.plugins.annotations.GeneratedImport
 import com.android.systemui.plugins.annotations.ProtectedInterface
 import com.android.systemui.plugins.annotations.ProtectedReturn
 import com.android.systemui.plugins.annotations.SimpleProperty
 import com.android.systemui.plugins.annotations.ThrowsOnFailure
+import kotlin.collections.mutableSetOf
 import kotlin.sequences.associateBy
 
 /** Element Composable together with some metadata about the function. */
@@ -67,14 +73,32 @@ interface LockscreenElementProvider {
     val elements: List<LockscreenElement>
 }
 
-/** Combined Element Composable argument class */
-data class LockscreenElementContext(val scope: ContentScope, val burnInModifier: Modifier)
+/** Combined Element Composable arguments. Contains relevant rendering parameters. */
+data class LockscreenElementContext(
+    /** ContentScope to use when rendering lockscreen elements */
+    val scope: ContentScope,
 
-/** Factory to build composable lockscreen elements based on keys */
-data class LockscreenElementFactory(
-    // TODO(b/432451019): This may be better as an explicitly immutable map
-    val elements: Map<ElementKey, LockscreenElement>
+    /** Modifier to apply to elements that should handle burn-in when dozing */
+    val burnInModifier: Modifier,
+
+    /** Callback executed when an element is positioned by compose. */
+    val onElementPositioned: (ElementKey, VRectF) -> Unit,
 ) {
+    /**
+     * A list of all the elements that have been rendered so far. This allows us to prevent crashes
+     * that occur when the same element is rendered twice at different locations.
+     */
+    val history = mutableSetOf<ElementKey>()
+}
+
+@Immutable
+/** Factory to build composable lockscreen elements based on keys */
+class LockscreenElementFactory(
+    private val elements: Map<ElementKey, LockscreenElement>,
+    messageBuffer: MessageBuffer,
+) {
+    private val logger = Logger(messageBuffer, LockscreenElementFactory::class.simpleName!!)
+
     /**
      * Finds and renders the composable element at the specified key.
      *
@@ -86,28 +110,44 @@ data class LockscreenElementFactory(
         context: LockscreenElementContext,
         modifier: Modifier = Modifier,
     ): Boolean {
+        if (!context.history.add(key)) {
+            // TODO(b/432451019): Remove when more stable or upgrade to wtf log
+            // Prevent crashes when the same element is rendered in two locations
+            logger.e({ "Lockscreen Element has already been rendered: $str1" }) { str1 = "$key" }
+            return false
+        }
+
         val element = elements[key]
         if (element == null) {
+            logger.e({ "No lockscreen element available at key: $str1" }) { str1 = "$key" }
             return false
         }
 
         CompositionLocalProvider(LocalContext provides element.context) {
             with(context.scope) {
-                Element(key = element.key, modifier = modifier) {
+                Element(
+                    key = key,
+                    modifier =
+                        modifier.onGloballyPositioned { coordinates ->
+                            context.onElementPositioned(key, VRectF(coordinates.boundsInWindow()))
+                        },
+                ) {
                     with(element) { LockscreenElement(this@LockscreenElementFactory, context) }
                 }
             }
         }
-
         return true
     }
 
     companion object {
         /** Convenience method for building an element factory */
-        fun build(builder: ((List<LockscreenElement>) -> Unit) -> Unit): LockscreenElementFactory {
+        fun build(
+            messageBuffer: MessageBuffer,
+            builder: ((List<LockscreenElement>) -> Unit) -> Unit,
+        ): LockscreenElementFactory {
             val map = mutableMapOf<ElementKey, LockscreenElement>()
             builder { map.putAll(it.associateBy { e -> e.key }) }
-            return LockscreenElementFactory(map)
+            return LockscreenElementFactory(map, messageBuffer)
         }
     }
 }

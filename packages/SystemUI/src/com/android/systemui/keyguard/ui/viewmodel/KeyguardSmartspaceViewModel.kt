@@ -26,6 +26,7 @@ import com.android.systemui.shade.domain.interactor.ShadeModeInteractor
 import com.android.systemui.statusbar.lockscreen.LockscreenSmartspaceController
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
@@ -43,12 +44,17 @@ constructor(
 ) {
     /** Whether the smartspace section is available in the build. */
     val isSmartspaceEnabled: Boolean = smartspaceController.isEnabled
-    /** Whether the weather area is available in the build. */
-    private val isWeatherEnabled: StateFlow<Boolean> = smartspaceInteractor.isWeatherEnabled
+
+    /** Whether the date area is available and enabled. */
+    val isDateEnabled: Boolean = true
+
+    /** Whether the weather area is available and enabled. */
+    val isWeatherEnabled: Flow<Boolean> = smartspaceInteractor.isWeatherEnabled
 
     /** Whether the data and weather areas are decoupled in the build. */
     val isDateWeatherDecoupled: Boolean = smartspaceController.isDateWeatherDecoupled
 
+    @Deprecated("Remove after flexiglass ships")
     /** Whether the date area should be visible. */
     val isDateVisible: StateFlow<Boolean> =
         combine(
@@ -65,6 +71,7 @@ constructor(
                         !keyguardClockViewModel.isLargeClockVisible.value,
             )
 
+    @Deprecated("Remove after flexiglass ships")
     /** Whether the weather area should be visible. */
     val isWeatherVisible: StateFlow<Boolean> =
         combine(
@@ -85,11 +92,12 @@ constructor(
                     isWeatherVisible(
                         clockIncludesCustomWeatherDisplay =
                             keyguardClockViewModel.hasCustomWeatherDataDisplay.value,
-                        isWeatherEnabled = isWeatherEnabled.value,
+                        isWeatherEnabled = smartspaceInteractor.isWeatherEnabled.value,
                         isLargeClockVisible = keyguardClockViewModel.isLargeClockVisible.value,
                     ),
             )
 
+    @Deprecated("Remove after flexiglass ships")
     private fun isWeatherVisible(
         clockIncludesCustomWeatherDisplay: Boolean,
         isWeatherEnabled: Boolean,

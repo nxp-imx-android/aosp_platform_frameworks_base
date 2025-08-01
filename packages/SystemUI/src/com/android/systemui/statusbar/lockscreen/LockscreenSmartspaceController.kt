@@ -37,7 +37,6 @@ import android.provider.Settings.Secure.LOCK_SCREEN_WEATHER_ENABLED
 import android.util.Log
 import android.view.ContextThemeWrapper
 import android.view.View
-import android.view.ViewGroup
 import androidx.annotation.VisibleForTesting
 import com.android.keyguard.KeyguardUpdateMonitor
 import com.android.keyguard.KeyguardUpdateMonitorCallback
@@ -318,7 +317,7 @@ constructor(
     }
 
     /** Constructs the date view and connects it to the smartspace service. */
-    fun buildAndConnectDateView(parent: ViewGroup, isLargeClock: Boolean): View? {
+    fun buildAndConnectDateView(context: Context?, isLargeClock: Boolean): View? {
         execution.assertIsMainThread()
 
         if (!isEnabled) {
@@ -331,7 +330,7 @@ constructor(
         val view =
             buildView(
                 surfaceName = SmartspaceViewModel.SURFACE_DATE_VIEW,
-                parent = parent,
+                context = context,
                 plugin = datePlugin,
                 isLargeClock = isLargeClock,
             )
@@ -341,7 +340,7 @@ constructor(
     }
 
     /** Constructs the weather view and connects it to the smartspace service. */
-    fun buildAndConnectWeatherView(parent: ViewGroup, isLargeClock: Boolean): View? {
+    fun buildAndConnectWeatherView(context: Context?, isLargeClock: Boolean): View? {
         execution.assertIsMainThread()
 
         if (!isEnabled) {
@@ -354,7 +353,7 @@ constructor(
         val view =
             buildView(
                 surfaceName = SmartspaceViewModel.SURFACE_WEATHER_VIEW,
-                parent = parent,
+                context = context,
                 plugin = weatherPlugin,
                 isLargeClock = isLargeClock,
             )
@@ -364,7 +363,7 @@ constructor(
     }
 
     /** Constructs the smartspace view and connects it to the smartspace service. */
-    fun buildAndConnectView(parent: ViewGroup): View? {
+    fun buildAndConnectView(context: Context?): View? {
         execution.assertIsMainThread()
 
         if (!isEnabled) {
@@ -376,7 +375,7 @@ constructor(
         val view =
             buildView(
                 surfaceName = SmartspaceViewModel.SURFACE_GENERAL_VIEW,
-                parent = parent,
+                context = context,
                 plugin = plugin,
                 configPlugin = configPlugin,
                 isLargeClock = false,
@@ -388,7 +387,7 @@ constructor(
 
     private fun buildView(
         surfaceName: String,
-        parent: ViewGroup,
+        context: Context?,
         plugin: BcSmartspaceDataPlugin?,
         configPlugin: BcSmartspaceConfigPlugin? = null,
         isLargeClock: Boolean,
@@ -397,7 +396,8 @@ constructor(
             return null
         }
 
-        val ssView = if (isLargeClock) plugin.getLargeClockView(parent) else plugin.getView(parent)
+        val ctx = context ?: this.context
+        val ssView = if (isLargeClock) plugin.getLargeClockView(ctx) else plugin.getView(ctx)
         configPlugin?.let { ssView.registerConfigProvider(it) }
         ssView.setBgHandler(bgHandler)
         ssView.setUiSurface(BcSmartspaceDataPlugin.UI_SURFACE_LOCK_SCREEN_AOD)

@@ -76,16 +76,15 @@ constructor(
 
     override fun addViews(constraintLayout: ConstraintLayout) {
         if (!keyguardSmartspaceViewModel.isSmartspaceEnabled) return
-        smartspaceView = smartspaceController.buildAndConnectView(constraintLayout)
-        dateView =
-            smartspaceController.buildAndConnectDateView(constraintLayout, false) as? LinearLayout
+        smartspaceView = smartspaceController.buildAndConnectView(context)
+        dateView = smartspaceController.buildAndConnectDateView(context, false) as? LinearLayout
         pastVisibility = smartspaceView?.visibility ?: View.GONE
         constraintLayout.addView(smartspaceView)
         if (clockReactiveSmartspaceLayout()) {
             val weatherViewLargeClock =
-                smartspaceController.buildAndConnectWeatherView(constraintLayout, true)
+                smartspaceController.buildAndConnectWeatherView(context, true)
             dateViewLargeClock =
-                smartspaceController.buildAndConnectDateView(constraintLayout, true) as? ViewGroup
+                smartspaceController.buildAndConnectDateView(context, true) as? ViewGroup
             dateView?.visibility = View.GONE
             dateViewLargeClock?.visibility = View.GONE
             constraintLayout.addView(dateViewLargeClock)
@@ -97,8 +96,7 @@ constructor(
         }
 
         if (keyguardSmartspaceViewModel.isDateWeatherDecoupled) {
-            val weatherView =
-                smartspaceController.buildAndConnectWeatherView(constraintLayout, false)
+            val weatherView = smartspaceController.buildAndConnectWeatherView(context, false)
             constraintLayout.addView(dateView)
             // Place weather right after the date, before the extras (alarm and dnd)
             val index = if (dateView?.childCount == 0) 0 else 1

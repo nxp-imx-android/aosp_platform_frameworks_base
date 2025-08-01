@@ -27,6 +27,7 @@ import com.android.compose.animation.scene.ContentScope
 import com.android.systemui.keyguard.ui.composable.LockscreenTouchHandling
 import com.android.systemui.keyguard.ui.composable.element.AmbientIndicationElement
 import com.android.systemui.keyguard.ui.composable.element.AodPromotedNotificationAreaElement
+import com.android.systemui.keyguard.ui.composable.element.ClockRegionElementProvider
 import com.android.systemui.keyguard.ui.composable.element.IndicationAreaElement
 import com.android.systemui.keyguard.ui.composable.element.LockElement
 import com.android.systemui.keyguard.ui.composable.element.MediaCarouselElement
@@ -40,8 +41,12 @@ import com.android.systemui.keyguard.ui.composable.modifier.burnInAware
 import com.android.systemui.keyguard.ui.viewmodel.AodBurnInViewModel
 import com.android.systemui.keyguard.ui.viewmodel.KeyguardClockViewModel
 import com.android.systemui.keyguard.ui.viewmodel.LockscreenContentViewModel
+import com.android.systemui.log.LogBuffer
+import com.android.systemui.log.dagger.KeyguardBlueprintLog
 import com.android.systemui.plugins.clocks.LockscreenElementContext
 import com.android.systemui.plugins.clocks.LockscreenElementFactory
+import com.android.systemui.plugins.clocks.LockscreenElementKeys.ClockSmall
+import com.android.systemui.plugins.clocks.LockscreenElementKeys.SmartspaceCards
 import java.util.Optional
 import javax.inject.Inject
 
@@ -63,7 +68,9 @@ constructor(
     private val notificationsElement: NotificationElement,
     private val aodPromotedNotificationAreaElement: AodPromotedNotificationAreaElement,
     private val smartspaceElementProvider: SmartspaceElementProvider,
+    private val clockRegionElementProvider: ClockRegionElementProvider,
     private val mediaCarouselElement: MediaCarouselElement,
+    @KeyguardBlueprintLog private val blueprintLog: LogBuffer,
 ) : ComposableLockscreenSceneBlueprint {
 
     override val id: String = "default"
@@ -72,12 +79,17 @@ constructor(
     override fun ContentScope.Content(viewModel: LockscreenContentViewModel, modifier: Modifier) {
         val currentClock = keyguardClockViewModel.currentClock.collectAsStateWithLifecycle()
         val elementFactory =
-            remember(currentClock, smartspaceElementProvider.elements) {
-                LockscreenElementFactory.build { putAll ->
+            remember(
+                currentClock,
+                smartspaceElementProvider.elements,
+                clockRegionElementProvider.elements,
+            ) {
+                LockscreenElementFactory.build(blueprintLog) { putAll ->
                     putAll(smartspaceElementProvider.elements)
+                    putAll(clockRegionElementProvider.elements)
                     currentClock.value?.apply {
-                        putAll(largeClock.layout.elements)
                         putAll(smallClock.layout.elements)
+                        putAll(largeClock.layout.elements)
                     }
                 }
             }
@@ -87,7 +99,22 @@ constructor(
             LockscreenElementContext(
                 scope = this,
                 burnInModifier =
-                    Modifier.burnInAware(viewModel = aodBurnInViewModel, params = burnIn.parameters),
+                    Modifier.burnInAware(
+                        viewModel = aodBurnInViewModel,
+                        params = burnIn.parameters,
+                    ),
+                onElementPositioned = { key, rect ->
+                    when (key) {
+                        ClockSmall -> {
+                            burnIn.onSmallClockTopChanged(rect.top)
+                            viewModel.setSmallClockBottom(rect.bottom)
+                        }
+                        SmartspaceCards -> {
+                            burnIn.onSmartspaceTopChanged(rect.top)
+                            viewModel.setSmartspaceCardBottom(rect.bottom)
+                        }
+                    }
+                },
             )
 
         LockscreenTouchHandling(

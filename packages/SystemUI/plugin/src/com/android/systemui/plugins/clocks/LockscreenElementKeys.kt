@@ -35,9 +35,9 @@ object LockscreenElementKeys {
     val ClockRegionSmall = ElementKey("SmallClockRegion")
 
     // Lockscreen Defined Elements - Smartspace
-    val SmartspaceDate = ElementKey("SmartspaceDate")
-    val SmartspaceWeather = ElementKey("SmartspaceWeather")
-    val SmartspaceDateWeatherVertical = ElementKey("SmartspaceDateWeatherVertical")
-    val SmartspaceDateWeatherHorizontal = ElementKey("SmartspaceDateWeatherHorizontal")
     val SmartspaceCards = ElementKey("SmartspaceCards")
+    val SmartspaceDateLargeClock = ElementKey("SmartspaceDate-LargeClock")
+    val SmartspaceDateSmallClock = ElementKey("SmartspaceDate-SmallClock")
+    val SmartspaceWeatherLargeClock = ElementKey("SmartspaceWeather-LargeClock")
+    val SmartspaceWeatherSmallClock = ElementKey("SmartspaceWeather-SmallClock")
 }
