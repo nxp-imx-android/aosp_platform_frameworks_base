@@ -204,10 +204,15 @@ constructor(
         }
 
         controller.setOnHeightChangedRunnable { viewModel.notificationStackChanged() }
+        disposables += DisposableHandle { controller.setOnHeightChangedRunnable(null) }
+
         controller.setOnKeyguardTopLevelNotificationRemovedRunnable {
             viewModel.notificationStackChangedInstant()
         }
-        disposables += DisposableHandle { controller.setOnHeightChangedRunnable(null) }
+        disposables += DisposableHandle {
+            controller.setOnKeyguardTopLevelNotificationRemovedRunnable(null)
+        }
+
         disposables += view.onLayoutChanged { viewModel.notificationStackChanged() }
 
         return disposables
