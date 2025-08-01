@@ -16,6 +16,7 @@
 
 package com.android.systemui.qs.ui.viewmodel
 
+import com.android.systemui.desktop.domain.interactor.desktopInteractor
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.testDispatcher
 import com.android.systemui.scene.domain.interactor.sceneInteractor
@@ -30,6 +31,7 @@ val Kosmos.quickSettingsShadeOverlayContentViewModel: QuickSettingsShadeOverlayC
             shadeInteractor = shadeInteractor,
             shadeModeInteractor = shadeModeInteractor,
             sceneInteractor = sceneInteractor,
+            desktopInteractor = desktopInteractor,
             notificationStackAppearanceInteractor = notificationStackAppearanceInteractor,
         )
     }

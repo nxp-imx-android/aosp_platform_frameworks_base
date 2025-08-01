@@ -17,6 +17,8 @@
 package com.android.systemui.notifications.ui.viewmodel
 
 import android.app.StatusBarManager.DISABLE2_QUICK_SETTINGS
+import android.content.res.Configuration
+import android.content.testableContext
 import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
 import android.testing.TestableLooper
@@ -31,12 +33,14 @@ import com.android.systemui.coroutines.collectLastValue
 import com.android.systemui.flags.EnableSceneContainer
 import com.android.systemui.kosmos.runCurrent
 import com.android.systemui.kosmos.testScope
+import com.android.systemui.kosmos.useUnconfinedTestDispatcher
 import com.android.systemui.lifecycle.activateIn
 import com.android.systemui.media.controls.data.repository.mediaFilterRepository
 import com.android.systemui.media.controls.shared.model.MediaData
 import com.android.systemui.power.domain.interactor.PowerInteractor.Companion.setAsleepForTest
 import com.android.systemui.power.domain.interactor.PowerInteractor.Companion.setAwakeForTest
 import com.android.systemui.power.domain.interactor.powerInteractor
+import com.android.systemui.res.R
 import com.android.systemui.scene.domain.interactor.sceneInteractor
 import com.android.systemui.scene.domain.startable.sceneContainerStartable
 import com.android.systemui.scene.shared.model.Overlays
@@ -46,7 +50,9 @@ import com.android.systemui.shade.domain.interactor.enableSingleShade
 import com.android.systemui.shade.domain.interactor.enableSplitShade
 import com.android.systemui.shade.domain.interactor.shadeInteractor
 import com.android.systemui.shade.ui.viewmodel.notificationsShadeOverlayContentViewModel
+import com.android.systemui.statusbar.core.StatusBarForDesktop
 import com.android.systemui.statusbar.disableflags.data.repository.fakeDisableFlagsRepository
+import com.android.systemui.statusbar.policy.configurationController
 import com.android.systemui.testKosmos
 import com.android.systemui.window.data.repository.fakeWindowRootViewBlurRepository
 import com.google.common.truth.Truth.assertThat
@@ -66,7 +72,7 @@ import org.junit.runner.RunWith
 @EnableSceneContainer
 class NotificationsShadeOverlayContentViewModelTest : SysuiTestCase() {
 
-    private val kosmos = testKosmos()
+    private val kosmos = testKosmos().useUnconfinedTestDispatcher()
     private val testScope = kosmos.testScope
     private val sceneInteractor by lazy { kosmos.sceneInteractor }
     private val underTest by lazy { kosmos.notificationsShadeOverlayContentViewModel }
@@ -78,6 +84,29 @@ class NotificationsShadeOverlayContentViewModelTest : SysuiTestCase() {
         kosmos.runCurrent()
         underTest.activateIn(testScope)
     }
+
+    @Test
+    fun showHeader_desktopFeatureSetDisabled_true() =
+        testScope.runTest {
+            setEnableDesktopFeatureSet(false)
+            assertThat(underTest.showHeader).isTrue()
+        }
+
+    @Test
+    @EnableFlags(StatusBarForDesktop.FLAG_NAME)
+    fun showHeader_desktopFeatureSetEnabled_statusBarForDesktopEnabled_false() =
+        testScope.runTest {
+            setEnableDesktopFeatureSet(true)
+            assertThat(underTest.showHeader).isFalse()
+        }
+
+    @Test
+    @DisableFlags(StatusBarForDesktop.FLAG_NAME)
+    fun showHeader_desktopFeatureSetEnabled_statusBarForDesktopDisabled_true() =
+        testScope.runTest {
+            setEnableDesktopFeatureSet(true)
+            assertThat(underTest.showHeader).isTrue()
+        }
 
     @Test
     fun onScrimClicked_hidesShade() =
@@ -226,6 +255,14 @@ class NotificationsShadeOverlayContentViewModelTest : SysuiTestCase() {
         runCurrent()
 
         assertThat(currentScene).isEqualTo(Scenes.Lockscreen)
+    }
+
+    private fun setEnableDesktopFeatureSet(enable: Boolean) {
+        kosmos.testableContext.orCreateTestableResources.addOverride(
+            R.bool.config_enableDesktopFeatureSet,
+            enable,
+        )
+        kosmos.configurationController.onConfigurationChanged(Configuration())
     }
 
     private suspend fun TestScope.unlockDevice() {

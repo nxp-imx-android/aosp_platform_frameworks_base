@@ -16,13 +16,18 @@
 
 package com.android.systemui.qs.ui.viewmodel
 
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import com.android.systemui.dagger.qualifiers.Main
+import com.android.systemui.desktop.domain.interactor.DesktopInteractor
 import com.android.systemui.lifecycle.ExclusiveActivatable
+import com.android.systemui.lifecycle.Hydrator
 import com.android.systemui.scene.domain.interactor.SceneInteractor
 import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.shade.domain.interactor.ShadeInteractor
 import com.android.systemui.shade.domain.interactor.ShadeModeInteractor
 import com.android.systemui.shade.shared.model.ShadeMode
+import com.android.systemui.statusbar.core.StatusBarForDesktop
 import com.android.systemui.statusbar.notification.stack.domain.interactor.NotificationStackAppearanceInteractor
 import com.android.systemui.statusbar.notification.stack.shared.model.ShadeScrimShape
 import dagger.assisted.AssistedFactory
@@ -32,6 +37,7 @@ import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -45,11 +51,29 @@ class QuickSettingsShadeOverlayContentViewModel
 @AssistedInject
 constructor(
     @Main private val mainDispatcher: CoroutineDispatcher,
+    val desktopInteractor: DesktopInteractor,
     val shadeInteractor: ShadeInteractor,
     val shadeModeInteractor: ShadeModeInteractor,
     val sceneInteractor: SceneInteractor,
     val notificationStackAppearanceInteractor: NotificationStackAppearanceInteractor,
 ) : ExclusiveActivatable() {
+
+    private val hydrator = Hydrator("QuickSettingsShadeOverlayContentViewModel.hydrator")
+
+    /**
+     * The Shade header can only be shown if desktop features are disabled. This is because the
+     * status bar is always visible when desktop features are enabled.
+     */
+    val showHeader: Boolean by
+        if (StatusBarForDesktop.isEnabled) {
+            hydrator.hydratedStateOf(
+                traceName = "showHeader",
+                initialValue = !desktopInteractor.isDesktopFeatureSetEnabled.value,
+                source = desktopInteractor.isDesktopFeatureSetEnabled.map { !it },
+            )
+        } else {
+            mutableStateOf(true)
+        }
 
     override suspend fun onActivated(): Nothing {
         coroutineScope {
@@ -82,6 +106,8 @@ constructor(
                     }
                 }
             }
+
+            launch { hydrator.activate() }
         }
 
         awaitCancellation()
