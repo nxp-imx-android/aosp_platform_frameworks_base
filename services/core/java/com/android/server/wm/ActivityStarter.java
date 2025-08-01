@@ -1245,6 +1245,9 @@ class ActivityStarter {
                 callingPid, resolvedType, aInfo.applicationInfo);
         abort |= !mService.getPermissionPolicyInternal().checkStartActivity(intent, callingUid,
                 callingPackage);
+        abort |= sourceRecord != null && sourceRecord.getTaskFragment() != null
+                && sourceRecord.getTaskFragment().shouldAbortActivityLaunchOnFinishingTf(
+                        sourceRecord);
 
         if (intentCreatorUid != Request.DEFAULT_INTENT_CREATOR_UID) {
             try {
