@@ -755,7 +755,7 @@ public class AlarmManagerService extends SystemService {
         private static final long DEFAULT_ALLOW_WHILE_IDLE_WINDOW = 60 * 60 * 1000; // 1 hour.
         private static final long DEFAULT_ALLOW_WHILE_IDLE_COMPAT_WINDOW = 60 * 60 * 1000;
 
-        private static final long DEFAULT_PRIORITY_ALARM_DELAY = 9 * 60_000;
+        private static final long DEFAULT_PRIORITY_ALARM_DELAY = 1 * 60_000;
 
         private static final long DEFAULT_MIN_DEVICE_IDLE_FUZZ = 2 * 60_000;
         private static final long DEFAULT_MAX_DEVICE_IDLE_FUZZ = 15 * 60_000;
