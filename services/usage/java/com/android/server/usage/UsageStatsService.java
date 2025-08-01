@@ -263,6 +263,9 @@ public class UsageStatsService extends SystemService implements
 
     private BroadcastResponseStatsTracker mResponseStatsTracker;
 
+    // Array to store the cumulative counts of each usage event type.
+    private final long[] mUsageEventCounts = new long[UsageEvents.Event.MAX_EVENT_TYPE + 1];
+
     private static class ActivityData {
         private final String mTaskRootPackage;
         private final String mTaskRootClass;
@@ -1284,10 +1287,18 @@ public class UsageStatsService extends SystemService implements
         mIoHandler.obtainMessage(MSG_NOTIFY_USAGE_EVENT_LISTENER, userId, 0, event).sendToTarget();
     }
 
+    // TODO: add UT for logAppUsageEventReportedAtomLocked
     @GuardedBy("mLock")
     private void logAppUsageEventReportedAtomLocked(int eventType, int uid, String packageName) {
         FrameworkStatsLog.write(FrameworkStatsLog.APP_USAGE_EVENT_OCCURRED, uid, packageName,
                 "", getAppUsageEventOccurredAtomEventType(eventType));
+        if (Flags.addReportEventMetrics()) {
+            if (eventType >= 0 && eventType < mUsageEventCounts.length) {
+                mUsageEventCounts[eventType]++;
+            }
+            FrameworkStatsLog.write(FrameworkStatsLog.USAGE_EVENT_REPORTED_STATS,
+                    getAppUsageEventReportedAtomEventType(eventType), mUsageEventCounts[eventType]);
+        }
     }
 
     /** Make sure align with the EventType defined in the AppUsageEventOccurred atom. */
@@ -1321,6 +1332,53 @@ public class UsageStatsService extends SystemService implements
                 Slog.w(TAG, "Unsupported usage event logging: " + eventType);
                 return -1;
         }
+    }
+
+    /**
+     * These events are kept in sync with the EventTypes defined in the AppUsageEventReported atom.
+     *
+     * New event types defined separately to avoid modification APP_USAGE_EVENT_OCCURRED atom.
+     */
+    private int getAppUsageEventReportedAtomEventType(int eventType) {
+        return switch (eventType) {
+            case Event.ACTIVITY_RESUMED -> FrameworkStatsLog
+                    .USAGE_EVENT_REPORTED_STATS__EVENT_TYPE__MOVE_TO_FOREGROUND;
+            case Event.ACTIVITY_PAUSED -> FrameworkStatsLog
+                    .USAGE_EVENT_REPORTED_STATS__EVENT_TYPE__MOVE_TO_BACKGROUND;
+            case Event.CONFIGURATION_CHANGE -> FrameworkStatsLog
+                    .USAGE_EVENT_REPORTED_STATS__EVENT_TYPE__CONFIGURATION_CHANGE;
+            case Event.USER_INTERACTION -> FrameworkStatsLog
+                    .USAGE_EVENT_REPORTED_STATS__EVENT_TYPE__USER_INTERACTION;
+            case Event.SHORTCUT_INVOCATION -> FrameworkStatsLog
+                    .USAGE_EVENT_REPORTED_STATS__EVENT_TYPE__SHORTCUT_INVOCATION;
+            case Event.CHOOSER_ACTION -> FrameworkStatsLog
+                    .USAGE_EVENT_REPORTED_STATS__EVENT_TYPE__CHOOSER_ACTION;
+            case Event.NOTIFICATION_SEEN -> FrameworkStatsLog
+                    .USAGE_EVENT_REPORTED_STATS__EVENT_TYPE__NOTIFICATION_SEEN;
+            case Event.STANDBY_BUCKET_CHANGED -> FrameworkStatsLog
+                    .USAGE_EVENT_REPORTED_STATS__EVENT_TYPE__STANDBY_BUCKET_CHANGED;
+            case Event.SLICE_PINNED -> FrameworkStatsLog
+                    .USAGE_EVENT_REPORTED_STATS__EVENT_TYPE__SLICE_PINNED;
+            case Event.SCREEN_INTERACTIVE -> FrameworkStatsLog
+                    .USAGE_EVENT_REPORTED_STATS__EVENT_TYPE__SCREEN_INTERACTIVE;
+            case Event.SCREEN_NON_INTERACTIVE -> FrameworkStatsLog
+                    .USAGE_EVENT_REPORTED_STATS__EVENT_TYPE__SCREEN_NON_INTERACTIVE;
+            case Event.KEYGUARD_SHOWN -> FrameworkStatsLog
+                    .USAGE_EVENT_REPORTED_STATS__EVENT_TYPE__KEYGUARD_SHOWN;
+            case Event.KEYGUARD_HIDDEN -> FrameworkStatsLog
+                    .USAGE_EVENT_REPORTED_STATS__EVENT_TYPE__KEYGUARD_HIDDEN;
+            case Event.FOREGROUND_SERVICE_START -> FrameworkStatsLog
+                    .USAGE_EVENT_REPORTED_STATS__EVENT_TYPE__FOREGROUND_SERVICE_START;
+            case Event.FOREGROUND_SERVICE_STOP -> FrameworkStatsLog
+                    .USAGE_EVENT_REPORTED_STATS__EVENT_TYPE__FOREGROUND_SERVICE_STOP;
+            case Event.LOCUS_ID_SET -> FrameworkStatsLog
+                    .USAGE_EVENT_REPORTED_STATS__EVENT_TYPE__LOCUS_ID_SET;
+            default -> {
+                Slog.w(TAG, "Unsupported usage event logging: " + eventType);
+                yield FrameworkStatsLog
+                        .USAGE_EVENT_REPORTED_STATS__EVENT_TYPE__NONE;
+            }
+        };
     }
 
     private String getUsageSourcePackage(Event event) {
