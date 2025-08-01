@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.wm.shell.flicker
+package com.android.wm.shell.flicker.keyboardshortcuts
 
 import android.platform.test.annotations.Postsubmit
 import android.platform.test.annotations.RequiresDesktopDevice
@@ -25,6 +25,7 @@ import android.tools.flicker.FlickerTestFactory
 import android.tools.flicker.assertions.FlickerChecker
 import android.tools.flicker.junit.FlickerParametersRunnerFactory
 import com.android.wm.shell.Utils
+import com.android.wm.shell.flicker.DesktopModeBaseTest
 import com.android.wm.shell.flicker.utils.appWindowInsideDisplayBoundsAtEnd
 import com.android.wm.shell.flicker.utils.appWindowOnTopAtEnd
 import com.android.wm.shell.flicker.utils.appWindowOnTopAtStart
@@ -61,7 +62,7 @@ class AltTabSwitchToUnminimizeInDesktopModeFlickerTest(flicker: FlickerTest) :
     val testSetupRule = Utils.testSetupRule(NavBar.MODE_GESTURAL, flicker.scenario.startRotation)
     val scenario = AltTabSwitchToUnminimizeInDesktopModeScenario()
     private val clockApp = scenario.clockApp
-    private val youtubeApp = scenario.youtubeApp
+    private val messagesApp = scenario.messagesApp
 
     override val transition: FlickerBuilder.() -> Unit
         get() = {
@@ -77,16 +78,16 @@ class AltTabSwitchToUnminimizeInDesktopModeFlickerTest(flicker: FlickerTest) :
         }
 
     @Test
-    fun appWindowInsideDisplayBoundsAtEnd() = flicker.appWindowInsideDisplayBoundsAtEnd(youtubeApp)
+    fun appWindowInsideDisplayBoundsAtEnd() = flicker.appWindowInsideDisplayBoundsAtEnd(messagesApp)
 
     @Test
     fun appWindowOnTopAtStart() = flicker.appWindowOnTopAtStart(clockApp)
 
     @Test
-    fun appWindowOnTopAtEnd() = flicker.appWindowOnTopAtEnd(youtubeApp)
+    fun appWindowOnTopAtEnd() = flicker.appWindowOnTopAtEnd(messagesApp)
 
     @Test
-    fun layerBecomesVisible() = flicker.layerBecomesVisible(youtubeApp)
+    fun layerBecomesVisible() = flicker.layerBecomesVisible(messagesApp)
 
     companion object {
         @Parameterized.Parameters(name = "{0}")
