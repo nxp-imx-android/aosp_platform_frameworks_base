@@ -5306,8 +5306,7 @@ public final class ActiveServices {
             if (r.app != null) {
                 psr = r.app.mServices;
                 mAm.mProcessStateController.startExecutingService(psr, r);
-                mAm.mProcessStateController.setExecServicesFg(psr,
-                        psr.shouldExecServicesFg() || fg);
+                mAm.mProcessStateController.setExecServicesFg(psr, psr.isExecServicesFg() || fg);
                 if (timeoutNeeded && psr.numberOfExecutingServices() == 1) {
                     if (!shouldSkipTimeout) {
                         scheduleServiceTimeoutLocked(r.app);
@@ -5318,7 +5317,7 @@ public final class ActiveServices {
             }
         } else if (r.app != null && fg) {
             psr = r.app.mServices;
-            if (!psr.shouldExecServicesFg()) {
+            if (!psr.isExecServicesFg()) {
                 mAm.mProcessStateController.setExecServicesFg(psr, true);
                 if (timeoutNeeded) {
                     if (!shouldSkipTimeout) {
@@ -7714,7 +7713,7 @@ public final class ActiveServices {
                 }
                 final long now = SystemClock.uptimeMillis();
                 final long maxTime =  now
-                        - (psr.shouldExecServicesFg()
+                        - (psr.isExecServicesFg()
                         ? mAm.mConstants.SERVICE_TIMEOUT
                         : mAm.mConstants.SERVICE_BACKGROUND_TIMEOUT);
                 ServiceRecord timeout = null;
@@ -7746,7 +7745,7 @@ public final class ActiveServices {
                     mActiveServiceAnrTimer.accept(proc, timeoutRecord);
                 } else {
                     mActiveServiceAnrTimer.discard(proc);
-                    final long delay = psr.shouldExecServicesFg()
+                    final long delay = psr.isExecServicesFg()
                                        ? (nextTime + mAm.mConstants.SERVICE_TIMEOUT) :
                                        (nextTime + mAm.mConstants.SERVICE_BACKGROUND_TIMEOUT)
                                        - SystemClock.uptimeMillis();
@@ -7890,7 +7889,7 @@ public final class ActiveServices {
         if (proc.mServices.numberOfExecutingServices() == 0 || proc.getThread() == null) {
             return;
         }
-        final long delay = proc.mServices.shouldExecServicesFg()
+        final long delay = proc.mServices.isExecServicesFg()
                 ? mAm.mConstants.SERVICE_TIMEOUT : mAm.mConstants.SERVICE_BACKGROUND_TIMEOUT;
         mActiveServiceAnrTimer.start(proc, delay);
         proc.mServices.noteScheduleServiceTimeoutPending(false);

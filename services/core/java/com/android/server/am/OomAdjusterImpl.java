@@ -106,6 +106,7 @@ import com.android.server.am.psc.ActiveUidsInternal;
 import com.android.server.am.psc.ConnectionRecordInternal;
 import com.android.server.am.psc.ContentProviderConnectionInternal;
 import com.android.server.am.psc.ProcessRecordInternal;
+import com.android.server.am.psc.ProcessServiceRecordInternal;
 import com.android.server.am.psc.ServiceRecordInternal;
 import com.android.server.am.psc.UidRecordInternal;
 import com.android.server.wm.ActivityServiceConnectionsHolder;
@@ -1085,7 +1086,7 @@ public class OomAdjusterImpl extends OomAdjuster {
     @GuardedBy({"mService", "mProcLock"})
     private static void forEachClientConnectionLSP(ProcessRecord app,
             BiConsumer<Connection, ProcessRecord> connectionConsumer) {
-        final ProcessServiceRecord psr = app.mServices;
+        final ProcessServiceRecordInternal psr = app.mServices;
 
         for (int i = psr.numberOfRunningServices() - 1; i >= 0; i--) {
             final ServiceRecordInternal s = psr.getRunningServiceAt(i);
@@ -1330,12 +1331,11 @@ public class OomAdjusterImpl extends OomAdjuster {
             if (reportDebugMsgs) {
                 reportOomAdjMessageLocked(TAG_OOM_ADJ, "Making broadcast: " + app);
             }
-        } else if (psr.numberOfExecutingServices() > 0) {
+        } else if (psr.hasExecutingServices()) {
             // An app that is currently executing a service callback also
             // counts as being in the foreground.
             adj = FOREGROUND_APP_ADJ;
-            schedGroup = psr.shouldExecServicesFg()
-                    ? SCHED_GROUP_DEFAULT : SCHED_GROUP_BACKGROUND;
+            schedGroup = psr.isExecServicesFg() ? SCHED_GROUP_DEFAULT : SCHED_GROUP_BACKGROUND;
             state.setAdjType("exec-service");
             procState = PROCESS_STATE_SERVICE;
             if (reportDebugMsgs) {
@@ -1758,7 +1758,7 @@ public class OomAdjusterImpl extends OomAdjuster {
                 // This is a cached process, but with client activities.  Mark it so.
                 procState = PROCESS_STATE_CACHED_ACTIVITY_CLIENT;
                 state.setAdjType("cch-client-act");
-            } else if (psr.isTreatedLikeActivity()) {
+            } else if (psr.isTreatLikeActivity()) {
                 // This is a cached process, but somebody wants us to treat it like it has
                 // an activity, okay!
                 procState = PROCESS_STATE_CACHED_ACTIVITY;

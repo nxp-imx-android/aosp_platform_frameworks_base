@@ -1171,7 +1171,7 @@ class ProcessRecord extends ProcessRecordInternal implements WindowProcessListen
 
     @Override
     public boolean hasAboveClient() {
-        return mServices.hasAboveClient();
+        return mServices.isHasAboveClient();
     }
 
     @Override

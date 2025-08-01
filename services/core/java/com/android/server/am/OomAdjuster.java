@@ -152,6 +152,7 @@ import com.android.server.am.psc.ContentProviderConnectionInternal;
 import com.android.server.am.psc.PlatformCompatCache;
 import com.android.server.am.psc.PlatformCompatCache.CachedCompatChangeId;
 import com.android.server.am.psc.ProcessRecordInternal;
+import com.android.server.am.psc.ProcessServiceRecordInternal;
 import com.android.server.am.psc.ServiceRecordInternal;
 import com.android.server.am.psc.UidRecordInternal;
 import com.android.server.wm.WindowProcessController;
@@ -652,7 +653,7 @@ public abstract class OomAdjuster {
         if (!includeWarmPkg) {
             return;
         }
-        final ProcessServiceRecord psr = app.mServices;
+        final ProcessServiceRecordInternal psr = app.mServices;
         for (int j = psr.numberOfRunningServices() - 1; j >= 0; j--) {
             psr.getRunningServiceAt(j).updateKeepWarmLocked();
         }
@@ -1064,7 +1065,7 @@ public abstract class OomAdjuster {
                         targetAdj += 10 + mConstants.TIERED_CACHED_ADJ_UI_TIER_SIZE;
                     }
                     state.setCurRawAdj(targetAdj);
-                    state.setCurAdj(applyBindAboveClientToAdj(psr.hasAboveClient(), targetAdj));
+                    state.setCurAdj(applyBindAboveClientToAdj(psr.isHasAboveClient(), targetAdj));
                 }
             }
         } else {
@@ -1121,7 +1122,7 @@ public abstract class OomAdjuster {
                 } else if (!app.isKilledByAm() && app.getThread() != null
                                && curAdj >= UNKNOWN_ADJ) {
                     // If we haven't yet assigned the final cached adj to the process, do that now.
-                    final ProcessServiceRecord psr = app.mServices;
+                    final ProcessServiceRecordInternal psr = app.mServices;
                     switch (state.getCurProcState()) {
                         case PROCESS_STATE_LAST_ACTIVITY:
                         case PROCESS_STATE_CACHED_ACTIVITY:
@@ -1168,7 +1169,7 @@ public abstract class OomAdjuster {
                             final int rawAdj = curCachedAdj + curCachedImpAdj;
                             state.setCurRawAdj(rawAdj);
                             state.setCurAdj(
-                                    applyBindAboveClientToAdj(psr.hasAboveClient(), rawAdj));
+                                    applyBindAboveClientToAdj(psr.isHasAboveClient(), rawAdj));
                             if (DEBUG_LRU) {
                                 Slog.d(TAG_LRU, "Assigning activity LRU #" + i
                                         + " adj: " + state.getCurAdj()
@@ -1195,8 +1196,8 @@ public abstract class OomAdjuster {
                             // cached level will be treated as empty (since their process
                             // state is still as a service), which is what we want.
                             state.setCurRawAdj(curEmptyAdj);
-                            state.setCurAdj(
-                                    applyBindAboveClientToAdj(psr.hasAboveClient(), curEmptyAdj));
+                            state.setCurAdj(applyBindAboveClientToAdj(psr.isHasAboveClient(),
+                                    curEmptyAdj));
                             if (DEBUG_LRU) {
                                 Slog.d(TAG_LRU, "Assigning empty LRU #" + i
                                         + " adj: " + state.getCurAdj()
@@ -2056,7 +2057,7 @@ public abstract class OomAdjuster {
             // Process has user perceptible activities.
             return CPU_TIME_REASON_OTHER;
         }
-        if (app.mServices.numberOfExecutingServices() > 0) {
+        if (app.mServices.hasExecutingServices()) {
             // Ensure that services get cpu time during start-up and tear-down.
             return CPU_TIME_REASON_OTHER;
         }

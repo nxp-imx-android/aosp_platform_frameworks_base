@@ -3750,7 +3750,7 @@ public class MockingOomAdjusterTests {
         // verify that its OOM adjustment level is unaffected.
         bindService(service, app, null, null, Context.BIND_ABOVE_CLIENT, mock(IBinder.class));
         mProcessStateController.updateHasAboveClientLocked(app.mServices);
-        assertTrue(app.mServices.hasAboveClient());
+        assertTrue(app.mServices.isHasAboveClient());
 
         updateOomAdj(app);
         assertEquals(VISIBLE_APP_ADJ, app.getSetAdj());
@@ -3772,7 +3772,7 @@ public class MockingOomAdjusterTests {
         // verify that its OOM adjustment level is unaffected.
         bindService(app, app, null, null, Context.BIND_ABOVE_CLIENT, mock(IBinder.class));
         mProcessStateController.updateHasAboveClientLocked(app.mServices);
-        assertFalse(app.mServices.hasAboveClient());
+        assertFalse(app.mServices.isHasAboveClient());
 
         updateOomAdj(app);
         assertEquals(FOREGROUND_APP_ADJ, app.getSetAdj());
@@ -3828,7 +3828,7 @@ public class MockingOomAdjusterTests {
         // client so we expect the BIND_ABOVE_CLIENT adjustment to take effect.
         mProcessStateController.updateHasAboveClientLocked(app.mServices);
         updateOomAdj(app);
-        assertTrue(app.mServices.hasAboveClient());
+        assertTrue(app.mServices.isHasAboveClient());
         assertNotEquals(FOREGROUND_APP_ADJ, app.getSetAdj());
     }
 

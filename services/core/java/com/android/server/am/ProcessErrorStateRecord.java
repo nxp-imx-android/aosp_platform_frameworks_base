@@ -418,7 +418,7 @@ class ProcessErrorStateRecord {
                             if (r.isPersistent()) {
                                 firstPids.add(myPid);
                                 if (DEBUG_ANR) Slog.i(TAG, "Adding persistent proc: " + r);
-                            } else if (r.mServices.isTreatedLikeActivity()) {
+                            } else if (r.mServices.isTreatLikeActivity()) {
                                 firstPids.add(myPid);
                                 if (DEBUG_ANR) Slog.i(TAG, "Adding likely IME: " + r);
                             } else {
