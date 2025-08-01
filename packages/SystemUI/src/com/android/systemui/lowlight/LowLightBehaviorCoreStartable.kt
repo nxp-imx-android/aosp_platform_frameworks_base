@@ -164,12 +164,11 @@ constructor(
 
     private fun shouldTrackLowLight(behavior: LowLightDisplayBehavior): Flow<Boolean> {
         return allOf(
-                anyOf(isScreenOn, flowOf(behavior.allowedInScreenState(ScreenState.OFF))),
                 dreamSettingsInteractor.dreamingEnabled,
                 isPluggedIn,
                 anyOf(
-                    isDeviceIdleAndNotDozing,
-                    flowOf(behavior.allowedInScreenState(ScreenState.DOZE)),
+                    allOf(isScreenOn, isDeviceIdleAndNotDozing),
+                    allOf(not(isScreenOn), flowOf(behavior.allowedInScreenState(ScreenState.OFF))),
                 ),
             )
             .flatMapLatestConflated {
