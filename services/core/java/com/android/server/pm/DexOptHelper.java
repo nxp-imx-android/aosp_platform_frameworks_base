@@ -18,30 +18,18 @@ package com.android.server.pm;
 
 import static android.content.pm.PackageManager.INSTALL_REASON_DEVICE_RESTORE;
 import static android.content.pm.PackageManager.INSTALL_REASON_DEVICE_SETUP;
-import static android.os.Trace.TRACE_TAG_DALVIK;
 import static android.os.Trace.TRACE_TAG_PACKAGE_MANAGER;
 import static android.os.incremental.IncrementalManager.isIncrementalPath;
 
 import static com.android.server.LocalManagerRegistry.ManagerNotFoundException;
 import static com.android.server.pm.ApexManager.ActiveApexInfo;
-import static com.android.server.pm.PackageManagerService.DEBUG_DEXOPT;
-import static com.android.server.pm.PackageManagerService.PLATFORM_PACKAGE_NAME;
-import static com.android.server.pm.PackageManagerService.REASON_BOOT_AFTER_MAINLINE_UPDATE;
-import static com.android.server.pm.PackageManagerService.REASON_BOOT_AFTER_OTA;
-import static com.android.server.pm.PackageManagerService.REASON_CMDLINE;
-import static com.android.server.pm.PackageManagerService.REASON_FIRST_BOOT;
 import static com.android.server.pm.PackageManagerService.SCAN_AS_APEX;
 import static com.android.server.pm.PackageManagerService.SCAN_AS_INSTANT_APP;
 import static com.android.server.pm.PackageManagerService.TAG;
-import static com.android.server.pm.PackageManagerServiceUtils.REMOVE_IF_APEX_PKG;
-import static com.android.server.pm.PackageManagerServiceUtils.REMOVE_IF_NULL_PKG;
 import static com.android.server.pm.PackageManagerServiceUtils.getPackageManagerLocal;
-
-import static dalvik.system.DexFile.isProfileGuidedCompilerFilter;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
-import android.app.AppGlobals;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -50,14 +38,11 @@ import android.content.pm.ApexStagedEvent;
 import android.content.pm.IPackageManagerNative;
 import android.content.pm.IStagedApexObserver;
 import android.content.pm.PackageManager;
-import android.content.pm.ResolveInfo;
-import android.os.Binder;
 import android.os.RemoteException;
 import android.os.ServiceManager;
 import android.os.SystemClock;
 import android.os.SystemProperties;
 import android.os.Trace;
-import android.os.UserHandle;
 import android.text.TextUtils;
 import android.util.ArraySet;
 import android.util.Log;
@@ -77,11 +62,8 @@ import com.android.server.art.model.DexoptParams;
 import com.android.server.art.model.DexoptResult;
 import com.android.server.pinner.PinnerService;
 import com.android.server.pm.dex.InstallScenarioHelper;
-import com.android.server.pm.dex.DexoptOptions;
 import com.android.server.pm.local.PackageManagerLocalImpl;
 import com.android.server.pm.pkg.AndroidPackage;
-import com.android.server.pm.pkg.PackageState;
-import com.android.server.pm.pkg.PackageStateInternal;
 
 import java.io.File;
 import java.io.IOException;
@@ -89,9 +71,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -100,15 +79,10 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Predicate;
 import java.util.zip.ZipEntry;
 
-/**
- * Helper class for dex optimization operations in PackageManagerService.
- */
+/** Helper class for dex optimization operations in PackageManagerService. */
 public final class DexOptHelper {
-    private static final long SEVEN_DAYS_IN_MILLISECONDS = 7 * 24 * 60 * 60 * 1000;
-
     @NonNull
     private static final ThreadPoolExecutor sDexoptExecutor =
             new ThreadPoolExecutor(1 /* corePoolSize */, 1 /* maximumPoolSize */,
@@ -141,26 +115,24 @@ public final class DexOptHelper {
         PackageManagerServiceUtils.enforceSystemOrRoot(
                 "Only the system can request package update");
 
-        int reason;
+        String reason;
         if (mPm.isFirstBoot()) {
-            reason = REASON_FIRST_BOOT; // First boot or factory reset.
+            reason = ReasonMapping.REASON_FIRST_BOOT; // First boot or factory reset.
         } else if (mPm.isDeviceUpgrading()) {
-            reason = REASON_BOOT_AFTER_OTA;
+            reason = ReasonMapping.REASON_BOOT_AFTER_OTA;
         } else if (hasBcpApexesChanged()) {
-            reason = REASON_BOOT_AFTER_MAINLINE_UPDATE;
+            reason = ReasonMapping.REASON_BOOT_AFTER_MAINLINE_UPDATE;
         } else {
             return;
         }
 
-        Log.i(TAG,
-                "Starting boot dexopt for reason "
-                        + DexoptOptions.convertToArtServiceDexoptReason(reason));
+        Log.i(TAG, "Starting boot dexopt for reason " + reason);
 
         final long startTime = System.nanoTime();
 
         mBootDexoptStartTime = startTime;
-        getArtManagerLocal().onBoot(DexoptOptions.convertToArtServiceDexoptReason(reason),
-                null /* progressCallbackExecutor */, null /* progressCallback */);
+        getArtManagerLocal()
+                .onBoot(reason, null /* progressCallbackExecutor */, null /* progressCallback */);
     }
 
     private void reportBootDexopt(long startTime, int numDexopted, int numSkipped, int numFailed) {
@@ -401,29 +373,25 @@ public final class DexOptHelper {
         }
     }
 
-    /** Returns DexoptOptions by the given InstallRequest. */
-    private DexoptOptions getDexoptOptionsByInstallRequest(InstallRequest installRequest) {
-        final PackageSetting ps = installRequest.getScannedPackageSetting();
-        final String packageName = ps.getPackageName();
-        final boolean isBackupOrRestore =
-                installRequest.getInstallReason() == INSTALL_REASON_DEVICE_RESTORE
-                        || installRequest.getInstallReason() == INSTALL_REASON_DEVICE_SETUP;
-        final int dexoptFlags = DexoptOptions.DEXOPT_BOOT_COMPLETE
-                | DexoptOptions.DEXOPT_CHECK_FOR_PROFILES_UPDATES
-                | DexoptOptions.DEXOPT_INSTALL_WITH_DEX_METADATA_FILE
-                | (isBackupOrRestore ? DexoptOptions.DEXOPT_FOR_RESTORE : 0);
-        // Compute the compilation reason from the installation scenario.
-        final int compilationReason =
+    private DexoptParams getDexoptParamsByInstallRequest(InstallRequest installRequest) {
+        String compilationReason =
                 mInstallScenarioHelper.getCompilationReasonForInstallScenario(
                         installRequest.getInstallScenario());
-        final AndroidPackage pkg = ps.getPkg();
-        var options = new DexoptOptions(packageName, compilationReason, dexoptFlags);
-        if (installRequest.getDexoptCompilerFilter() != null) {
-            options = options.overrideCompilerFilter(installRequest.getDexoptCompilerFilter());
-        } else if (shouldSkipDexopt(installRequest)) {
-            options = options.overrideCompilerFilter(DexoptParams.COMPILER_FILTER_NOOP);
+        var builder = new DexoptParams.Builder(compilationReason);
+        if (installRequest.getInstallReason() == INSTALL_REASON_DEVICE_RESTORE
+                || installRequest.getInstallReason() == INSTALL_REASON_DEVICE_SETUP) {
+            builder.setPriorityClass(ArtFlags.PRIORITY_INTERACTIVE_FAST);
         }
-        return options;
+        if (installRequest.getDexoptCompilerFilter() != null) {
+            builder.setCompilerFilter(installRequest.getDexoptCompilerFilter());
+        } else if (shouldSkipDexopt(installRequest)) {
+            builder.setCompilerFilter(DexoptParams.COMPILER_FILTER_NOOP);
+        }
+        if ((installRequest.getInstallFlags() & PackageManager.INSTALL_IGNORE_DEXOPT_PROFILE)
+                != 0) {
+            builder.setFlags(ArtFlags.FLAG_IGNORE_PROFILE, ArtFlags.FLAG_IGNORE_PROFILE);
+        }
+        return builder.build();
     }
 
     /** Perform dexopt asynchronously if needed for the installation. */
@@ -436,13 +404,10 @@ public final class DexOptHelper {
                         () -> {
                             try {
                                 Trace.traceBegin(TRACE_TAG_PACKAGE_MANAGER, "dexopt");
-                                DexoptOptions dexoptOptions =
-                                        getDexoptOptionsByInstallRequest(installRequest);
                                 // Don't fail application installs if the dexopt step fails.
                                 // TODO(b/393076925): Make this async in ART Service.
                                 DexoptResult dexOptResult =
-                                        DexOptHelper.dexoptPackageUsingArtService(
-                                                installRequest, dexoptOptions);
+                                        dexoptPackageUsingArtService(installRequest);
                                 installRequest.onDexoptFinished(dexOptResult);
                             } finally {
                                 Trace.traceEnd(TRACE_TAG_PACKAGE_MANAGER);
@@ -458,29 +423,16 @@ public final class DexOptHelper {
                         });
     }
 
-    /**
-     * Use ArtService to perform dexopt by the given InstallRequest.
-     */
-    static DexoptResult dexoptPackageUsingArtService(InstallRequest installRequest,
-            DexoptOptions dexoptOptions) {
+    /** Use ArtService to perform dexopt by the given InstallRequest. */
+    private DexoptResult dexoptPackageUsingArtService(InstallRequest installRequest) {
         final PackageSetting ps = installRequest.getScannedPackageSetting();
-        final String packageName = ps.getPackageName();
 
         PackageManagerLocal packageManagerLocal =
                 LocalManagerRegistry.getManager(PackageManagerLocal.class);
         try (PackageManagerLocal.FilteredSnapshot snapshot =
                      PackageManagerLocalImpl.withFilteredSnapshot(packageManagerLocal, ps)) {
-            boolean ignoreDexoptProfile =
-                    (installRequest.getInstallFlags()
-                            & PackageManager.INSTALL_IGNORE_DEXOPT_PROFILE)
-                            != 0;
-            /*@DexoptFlags*/ int extraFlags =
-                    ignoreDexoptProfile ? ArtFlags.FLAG_IGNORE_PROFILE : 0;
-            DexoptParams params = dexoptOptions.convertToDexoptParams(extraFlags);
-            DexoptResult dexOptResult = getArtManagerLocal().dexoptPackage(
-                    snapshot, packageName, params);
-
-            return dexOptResult;
+            DexoptParams params = getDexoptParamsByInstallRequest(installRequest);
+            return getArtManagerLocal().dexoptPackage(snapshot, ps.getPackageName(), params);
         }
     }
 
