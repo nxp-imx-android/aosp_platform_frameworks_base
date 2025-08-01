@@ -49,7 +49,6 @@ import com.android.systemui.keyguard.domain.interactor.DeviceEntrySideFpsOverlay
 import com.android.systemui.keyguard.ui.viewmodel.SideFpsProgressBarViewModel
 import com.android.systemui.lifecycle.repeatWhenAttached
 import com.android.systemui.res.R
-import com.android.systemui.util.kotlin.sample
 import dagger.Lazy
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
@@ -132,21 +131,19 @@ constructor(
                             biometricStatusInteractor.get().sfpsAuthenticationReason,
                             deviceEntrySideFpsOverlayInteractor.get().showIndicatorForDeviceEntry,
                             sideFpsProgressBarViewModel.get().isVisible,
-                            ::Triple,
-                        )
-                        .sample(displayStateInteractor.get().isInRearDisplayMode, ::Pair)
-                        .collect { (combinedFlows, isInRearDisplayMode: Boolean) ->
-                            val (
-                                systemServerAuthReason,
-                                showIndicatorForDeviceEntry,
-                                progressBarIsVisible) =
-                                combinedFlows
+                            displayStateInteractor.get().isInRearDisplayMode,
+                        ) {
+                            systemServerAuthReason,
+                            showIndicatorForDeviceEntry,
+                            progressBarIsVisible,
+                            isInRearDisplayMode ->
                             Log.d(
                                 TAG,
                                 "systemServerAuthReason = $systemServerAuthReason, " +
                                     "showIndicatorForDeviceEntry = " +
                                     "$showIndicatorForDeviceEntry, " +
-                                    "progressBarIsVisible = $progressBarIsVisible",
+                                    "progressBarIsVisible = $progressBarIsVisible, " +
+                                    "isInRearDisplayMode = $isInRearDisplayMode",
                             )
                             if (!isInRearDisplayMode) {
                                 if (progressBarIsVisible) {
@@ -158,8 +155,11 @@ constructor(
                                 } else {
                                     hide()
                                 }
+                            } else {
+                                hide()
                             }
                         }
+                        .collect {}
                 }
             }
         }

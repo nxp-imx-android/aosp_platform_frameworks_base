@@ -24,6 +24,7 @@ import com.android.systemui.common.ui.data.repository.ConfigurationRepository
 import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent.DisplayAware
 import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent.PerDisplaySingleton
 import com.android.systemui.display.data.repository.DeviceStateRepository.DeviceState.REAR_DISPLAY
+import com.android.systemui.display.data.repository.DeviceStateRepository.DeviceState.REAR_DISPLAY_OUTER_DEFAULT
 import com.android.systemui.display.shared.model.DisplayRotation
 import com.android.systemui.display.shared.model.toDisplayRotation
 import com.android.systemui.shade.shared.flag.ShadeWindowGoesAround
@@ -86,7 +87,7 @@ constructor(
 
     override val isInRearDisplayMode: StateFlow<Boolean> =
         deviceStateRepository.state
-            .map { it == REAR_DISPLAY }
+            .map { it == REAR_DISPLAY || it == REAR_DISPLAY_OUTER_DEFAULT }
             .stateIn(bgDisplayScope, started = SharingStarted.Eagerly, initialValue = false)
 
     private val currentDisplayInfo: StateFlow<DisplayInfo> =

@@ -24,7 +24,7 @@ import android.view.windowManager
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
-import com.android.systemui.bouncer.domain.interactor.givenCanShowAlternateBouncer
+import com.android.systemui.bouncer.domain.interactor.givenAlternateBouncerSupported
 import com.android.systemui.flags.DisableSceneContainer
 import com.android.systemui.keyguard.data.repository.fakeKeyguardTransitionRepository
 import com.android.systemui.keyguard.shared.model.KeyguardState
@@ -73,7 +73,7 @@ class AlternateBouncerViewBinderTest : SysuiTestCase() {
     @Test
     fun addViewToWindowManager() {
         testScope.runTest {
-            kosmos.givenCanShowAlternateBouncer()
+            kosmos.givenAlternateBouncerSupported()
             kosmos.fakeKeyguardTransitionRepository.sendTransitionSteps(
                 from = KeyguardState.LOCKSCREEN,
                 to = KeyguardState.ALTERNATE_BOUNCER,
@@ -86,7 +86,7 @@ class AlternateBouncerViewBinderTest : SysuiTestCase() {
     @Test
     fun viewRemovedImmediatelyIfAlreadyAttachedToWindow() {
         testScope.runTest {
-            kosmos.givenCanShowAlternateBouncer()
+            kosmos.givenAlternateBouncerSupported()
             kosmos.fakeKeyguardTransitionRepository.sendTransitionSteps(
                 from = KeyguardState.LOCKSCREEN,
                 to = KeyguardState.ALTERNATE_BOUNCER,
@@ -107,7 +107,7 @@ class AlternateBouncerViewBinderTest : SysuiTestCase() {
     @Test
     fun viewNotRemovedUntilAttachedToWindow() {
         testScope.runTest {
-            kosmos.givenCanShowAlternateBouncer()
+            kosmos.givenAlternateBouncerSupported()
             kosmos.fakeKeyguardTransitionRepository.sendTransitionSteps(
                 from = KeyguardState.LOCKSCREEN,
                 to = KeyguardState.ALTERNATE_BOUNCER,
