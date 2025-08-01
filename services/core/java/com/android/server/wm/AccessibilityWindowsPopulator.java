@@ -704,7 +704,8 @@ public final class AccessibilityWindowsPopulator extends WindowInfosListener {
             instance.mWindowInfo = windowState != null
                     ? windowState.getWindowInfo() : getWindowInfoForWindowlessWindows(instance);
             if (Flags.useInputReportedFocusForAccessibility()) {
-                instance.mWindowInfo.focused = window.equals(topFocusedWindowToken);
+                instance.mWindowInfo.focused = window != null
+                        && window.equals(topFocusedWindowToken);
             }
 
             // Compute the transform matrix that will transform bounds from the window
