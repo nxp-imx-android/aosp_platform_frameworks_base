@@ -231,8 +231,11 @@ public class UnarchiveFragment extends DialogFragment {
                 positiveButton.setVisibility(View.GONE);
             } else {
                 positiveButton.setVisibility(View.VISIBLE);
+                positiveButton.setEnabled(true);
                 positiveButton.setText(positiveBtnTextResId);
                 positiveButton.setOnClickListener(view -> {
+                    // Disable the button to avoid the user clicks it more than once quickly
+                    view.setEnabled(false);
                     mUnarchiveActionListener.handleUnarchiveErrorAction(
                             unarchiveStage.getUnarchivalStatus(),
                             unarchiveStage.getInstallerPackageName(),
@@ -270,8 +273,11 @@ public class UnarchiveFragment extends DialogFragment {
         Button positiveButton = UiUtil.getAlertDialogPositiveButton(dialog);
         if (positiveButton != null) {
             positiveButton.setVisibility(View.VISIBLE);
+            positiveButton.setEnabled(true);
             positiveButton.setText(R.string.button_restore);
             positiveButton.setOnClickListener(view -> {
+                // Disable the button to avoid the user clicks it more than once quickly
+                view.setEnabled(false);
                 mUnarchiveActionListener.beginUnarchive();
             });
         }
