@@ -11049,6 +11049,11 @@ public class TextView extends View implements ViewTreeObserver.OnPreDrawListener
                         .setUseBoundsForWidth(mUseBoundsForWidth)
                         .setMinimumFontMetrics(getResolvedMinimumFontMetrics());
 
+                if (com.android.text.flags.Flags.fixShiftDrawingAmount()) {
+                    builder.setShiftDrawingOffsetForStartOverhang(
+                            mShiftDrawingOffsetForStartOverhang);
+                }
+
                 if (shouldEllipsize) {
                     builder.setEllipsize(mEllipsize)
                             .setEllipsizedWidth(ellipsisWidth);
@@ -11114,6 +11119,10 @@ public class TextView extends View implements ViewTreeObserver.OnPreDrawListener
                     .setEllipsize(getKeyListener() == null ? effectiveEllipsize : null)
                     .setEllipsizedWidth(ellipsisWidth)
                     .setMinimumFontMetrics(getResolvedMinimumFontMetrics());
+            if (com.android.text.flags.Flags.fixShiftDrawingAmount()) {
+                builder.setShiftDrawingOffsetForStartOverhang(
+                        mShiftDrawingOffsetForStartOverhang);
+            }
             result = builder.build();
         } else {
             if (boring == UNKNOWN_BORING) {
@@ -11198,6 +11207,10 @@ public class TextView extends View implements ViewTreeObserver.OnPreDrawListener
                             mLineBreakStyle, mLineBreakWordStyle))
                     .setUseBoundsForWidth(mUseBoundsForWidth)
                     .setMinimumFontMetrics(getResolvedMinimumFontMetrics());
+
+            if (com.android.text.flags.Flags.fixShiftDrawingAmount()) {
+                builder.setShiftDrawingOffsetForStartOverhang(mShiftDrawingOffsetForStartOverhang);
+            }
             if (shouldEllipsize) {
                 builder.setEllipsize(effectiveEllipsize)
                         .setEllipsizedWidth(ellipsisWidth);
@@ -11231,6 +11244,9 @@ public class TextView extends View implements ViewTreeObserver.OnPreDrawListener
     }
 
     private static int desired(Layout layout, boolean useBoundsForWidth) {
+        if (com.android.text.flags.Flags.fixShiftDrawingAmount() && useBoundsForWidth) {
+            return -1;
+        }
         int n = layout.getLineCount();
         CharSequence text = layout.getText();
         float max = 0;
@@ -11248,7 +11264,7 @@ public class TextView extends View implements ViewTreeObserver.OnPreDrawListener
             max = Math.max(max, layout.getLineMax(i));
         }
 
-        if (useBoundsForWidth) {
+        if (!com.android.text.flags.Flags.fixShiftDrawingAmount() && useBoundsForWidth) {
             max = Math.max(max, layout.computeDrawingBoundingBox().width());
         }
 
@@ -11583,6 +11599,11 @@ public class TextView extends View implements ViewTreeObserver.OnPreDrawListener
                         mLineBreakStyle, mLineBreakWordStyle))
                 .setUseBoundsForWidth(mUseBoundsForWidth)
                 .setMinimumFontMetrics(getResolvedMinimumFontMetrics());
+
+        if (com.android.text.flags.Flags.fixShiftDrawingAmount()) {
+            layoutBuilder.setShiftDrawingOffsetForStartOverhang(
+                    mShiftDrawingOffsetForStartOverhang);
+        }
 
         final StaticLayout layout = layoutBuilder.build();
 
