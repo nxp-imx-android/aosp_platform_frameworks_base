@@ -5274,6 +5274,7 @@ public class AudioService extends IAudioService.Stub
         switch (mode) {
             case AudioSystem.MODE_IN_COMMUNICATION:
             case AudioSystem.MODE_IN_CALL:
+            case AudioSystem.MODE_RINGTONE:
                 // TODO(b/382704431): remove to allow STREAM_VOICE_CALL to drive abs volume
                 //  over A2DP
                 if (getDeviceForStream(AudioSystem.STREAM_VOICE_CALL)
@@ -5588,10 +5589,12 @@ public class AudioService extends IAudioService.Stub
                 AudioSystem.DEVICE_OUT_ALL_A2DP_SET);
         absVolumeDeviceTypes.addAll(mAbsVolumeMultiModeCaseDevices);
         absVolumeDeviceTypes.add(AudioSystem.DEVICE_OUT_BLE_BROADCAST);
+        absVolumeDeviceTypes.addAll(AudioSystem.DEVICE_OUT_ALL_SCO_SET);
 
         final Set<AudioDeviceAttributes> absVolumeDevices =
                 AudioSystem.intersectionAudioDeviceTypes(absVolumeDeviceTypes, devices);
         if (absVolumeDevices.isEmpty()) {
+            Slog.v(TAG, "No absolute volume devices");
             return;
         }
         if (absVolumeDevices.size() > 1) {
@@ -5745,8 +5748,13 @@ public class AudioService extends IAudioService.Stub
                 if (unifyAbsoluteVolumeManagement()) {
                     volInfoBuilder.setMuted(muted);
                 }
+                final VolumeInfo dispatchVolumeInfo = volInfoBuilder.build();
+                sVolumeLogger.enqueue(new VolumeEvent(VolumeEvent.VOL_SET_ABS_VOL,
+                        dispatchVolumeInfo.getStreamType(), dispatchVolumeInfo.getVolumeIndex(),
+                        deviceInfo.mDevice.getInternalType(), muted));
+
                 deviceInfo.mCallback.dispatchDeviceVolumeChanged(deviceInfo.mDevice,
-                        volInfoBuilder.build());
+                        dispatchVolumeInfo);
             } catch (RemoteException e) {
                 Log.w(TAG, "Couldn't dispatch absolute volume behavior volume change");
             }
