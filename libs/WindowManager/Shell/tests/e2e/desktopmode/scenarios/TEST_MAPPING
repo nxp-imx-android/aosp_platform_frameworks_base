@@ -163,6 +163,9 @@
       "name": "FunctionalTestsDesktopMode-fundamentals-focus-OpenAndFocusTest"
     },
     {
+      "name": "FunctionalTestsDesktopMode-immersive-EnterImmersiveViaHeaderMenuTest"
+    },
+    {
       "name": "FunctionalTestsDesktopMode-keyboardshortcuts-EnterDesktopFromKeyboardShortcutTest"
     },
     {

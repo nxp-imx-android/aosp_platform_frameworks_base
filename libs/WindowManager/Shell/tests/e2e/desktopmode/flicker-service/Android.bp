@@ -61,6 +61,7 @@ test_module_config {
         "com.android.wm.shell.flicker.fundamentals.SwitchFocusBetweenAppsTest",
         "com.android.wm.shell.flicker.fundamentals.SwitchToHomeFromDesktopTest",
         "com.android.wm.shell.flicker.fundamentals.SwitchToOverviewFromDesktopFlickerTest",
+        "com.android.wm.shell.flicker.immersive.EnterImmersiveViaHeaderMenuFlickerTest",
         "com.android.wm.shell.flicker.keyboardshortcuts.EnterDesktopFromKeyboardShortcutFlickerTest",
         "com.android.wm.shell.flicker.keyboardshortcuts.ExitDesktopToFullScreenWithKeyboardShortcutFlickerTest",
         "com.android.wm.shell.flicker.keyboardshortcuts.MaximizeAppWithKeyboardFlickerTest",
@@ -211,6 +212,13 @@ test_module_config {
     base: "WMShellFlickerTestsDesktopMode",
     test_suites: ["device-tests"],
     include_filters: ["com.android.wm.shell.flicker.fundamentals.SwitchToOverviewFromDesktopFlickerTest"],
+}
+
+test_module_config {
+    name: "WMShellFlickerTestsDesktopMode-immersive-EnterImmersiveViaHeaderMenuFlickerTest",
+    base: "WMShellFlickerTestsDesktopMode",
+    test_suites: ["device-tests"],
+    include_filters: ["com.android.wm.shell.flicker.immersive.EnterImmersiveViaHeaderMenuFlickerTest"],
 }
 
 test_module_config {
