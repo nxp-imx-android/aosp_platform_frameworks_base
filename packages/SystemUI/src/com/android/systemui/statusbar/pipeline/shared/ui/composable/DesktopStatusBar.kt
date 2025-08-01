@@ -36,6 +36,8 @@ import com.android.settingslib.Utils
 import com.android.systemui.clock.ui.composable.ClockLegacy
 import com.android.systemui.clock.ui.viewmodel.AmPmStyle
 import com.android.systemui.clock.ui.viewmodel.ClockViewModel
+import com.android.systemui.common.shared.model.Icon
+import com.android.systemui.common.ui.compose.Icon
 import com.android.systemui.lifecycle.rememberViewModel
 import com.android.systemui.res.R
 import com.android.systemui.shade.ui.composable.ShadeHighlightChip
@@ -51,6 +53,13 @@ import com.android.systemui.statusbar.systemstatusicons.SystemStatusIconsInCompo
 import com.android.systemui.statusbar.systemstatusicons.ui.compose.SystemStatusIcons
 import com.android.systemui.statusbar.systemstatusicons.ui.compose.SystemStatusIconsLegacy
 
+object DesktopStatusBar {
+    object Dimensions {
+        val ElementSpacing = 8.dp
+        val ChipInternalSpacing = 6.dp
+    }
+}
+
 // TODO(433589833): Add support for color themes in this composable.
 /** Top level composable responsible for all UI shown for the Status Bar for DesktopMode. */
 @Composable
@@ -61,12 +70,11 @@ fun DesktopStatusBar(
     iconManagerFactory: TintedIconManager.Factory,
     modifier: Modifier = Modifier,
 ) {
-    val elementSpacing = 8.dp
-
     // TODO(433589833): Update padding values to match UX specs.
     Row(modifier = modifier.fillMaxWidth().padding(top = 8.dp, start = 12.dp, end = 12.dp)) {
         Row(
-            horizontalArrangement = Arrangement.spacedBy(elementSpacing, Alignment.Start),
+            horizontalArrangement =
+                Arrangement.spacedBy(DesktopStatusBar.Dimensions.ElementSpacing, Alignment.Start),
             modifier = Modifier.padding(vertical = 4.dp),
         ) {
             ClockLegacy(textColor = Color.White, onClick = null)
@@ -84,13 +92,35 @@ fun DesktopStatusBar(
 
         Spacer(modifier = Modifier.weight(1f))
 
-        Row(horizontalArrangement = Arrangement.spacedBy(elementSpacing, Alignment.End)) {
+        Row(
+            horizontalArrangement =
+                Arrangement.spacedBy(DesktopStatusBar.Dimensions.ElementSpacing, Alignment.End)
+        ) {
+            NotificationsChip(viewModel = viewModel)
+
             QuickSettingsChip(
                 viewModel = viewModel,
                 statusBarIconController = statusBarIconController,
                 iconManagerFactory = iconManagerFactory,
             )
         }
+    }
+}
+
+@Composable
+private fun NotificationsChip(viewModel: HomeStatusBarViewModel) {
+    ShadeHighlightChip(
+        onClick = { viewModel.onNotificationIconChipClicked() },
+        // TODO(433589833): Add support for ChipHighlight when Notifications Panel is visible.
+        backgroundColor = Color.Transparent,
+        horizontalArrangement =
+            Arrangement.spacedBy(DesktopStatusBar.Dimensions.ChipInternalSpacing, Alignment.Start),
+    ) {
+        // TODO(433589833): Add new icon resources for the notification chip icon.
+        Icon(
+            icon = Icon.Resource(res = R.drawable.ic_volume_ringer, contentDescription = null),
+            tint = Color.White,
+        )
     }
 }
 
@@ -106,7 +136,8 @@ private fun QuickSettingsChip(
         onClick = { viewModel.onQuickSettingsChipClicked() },
         // TODO(433589833): Add support for ChipHighlight when QS Panel is visible.
         backgroundColor = Color.Transparent,
-        horizontalArrangement = Arrangement.spacedBy(6.dp, Alignment.Start),
+        horizontalArrangement =
+            Arrangement.spacedBy(DesktopStatusBar.Dimensions.ChipInternalSpacing, Alignment.Start),
     ) {
         if (SystemStatusIconsInCompose.isEnabled) {
             SystemStatusIcons(
