@@ -227,7 +227,22 @@ constructor(
         } else {
             QSExpansionState(
                 if (Flags.noExpansionOnOverscroll() && isStackScrollerOverscrolling) 0f
-                else qsExpansion.coerceIn(if (isQsExpanded) EARLY_EXPANSION else 0f, 1f)
+                else
+                    qsExpansion.coerceIn(
+                        // Only apply early expansion if we are not collapsing QQS, measured by
+                        // panelExpansionFraction and squishinessFraction
+                        minimumValue =
+                            if (
+                                isQsExpanded &&
+                                    panelExpansionFraction >= 1f &&
+                                    squishinessFraction >= 1f
+                            ) {
+                                EARLY_EXPANSION
+                            } else {
+                                0f
+                            },
+                        maximumValue = 1f,
+                    )
             )
         }
     }
