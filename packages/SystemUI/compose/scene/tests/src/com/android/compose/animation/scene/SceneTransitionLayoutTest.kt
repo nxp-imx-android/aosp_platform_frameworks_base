@@ -22,7 +22,6 @@ import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -54,7 +53,6 @@ import androidx.compose.ui.test.onChild
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.onRoot
-import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.swipeDown
 import androidx.compose.ui.unit.Dp
@@ -653,34 +651,5 @@ class SceneTransitionLayoutTest {
         scope.launch { state.snapTo(state.currentScene, overlays = emptySet()) }
         rule.onNode(isElement(TestElements.Foo)).assertIsDisplayed().assertSizeIsEqualTo(40.dp)
         rule.onNode(isElement(TestElements.Bar)).assertExists().assertIsNotDisplayed()
-    }
-
-    @Test
-    fun alwaysComposeModalOverlay_notInterceptingTouchesWhenNotVisible() {
-        val state = rule.runOnUiThread { MutableSceneTransitionLayoutStateForTests(SceneA) }
-        var fooClicked = false
-        val scope =
-            rule.setContentAndCreateMainScope {
-                SceneTransitionLayoutForTesting(state) {
-                    scene(SceneA) {
-                        Box(
-                            Modifier.element(TestElements.Foo).size(40.dp).clickable {
-                                fooClicked = true
-                            }
-                        )
-                    }
-                    overlay(OverlayA, isModal = true, alwaysCompose = true) {
-                        Box(Modifier.element(TestElements.Bar).size(20.dp))
-                    }
-                }
-            }
-
-        // Overlay hidden: Foo is displayed and Bar exists.
-        scope.launch { state.snapTo(state.currentScene, overlays = emptySet()) }
-        rule.onNode(isElement(TestElements.Foo)).assertIsDisplayed().assertSizeIsEqualTo(40.dp)
-        rule.onNode(isElement(TestElements.Bar)).assertExists().assertIsNotDisplayed()
-
-        rule.onNode(isElement(TestElements.Foo)).performClick()
-        assertThat(fooClicked).isTrue()
     }
 }

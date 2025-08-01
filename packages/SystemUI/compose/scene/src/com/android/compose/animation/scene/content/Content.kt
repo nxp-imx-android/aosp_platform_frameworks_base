@@ -178,7 +178,7 @@ internal sealed class Content(
         val content =
             @Composable {
                 Box(
-                    modifier.then(ContentElement(this, isElevationPossible)).thenIf(
+                    modifier.then(ContentElement(this, isElevationPossible, isInvisible)).thenIf(
                         layoutImpl.implicitTestTags
                     ) {
                         Modifier.testTag(key.testTag)
@@ -226,16 +226,20 @@ internal sealed class Content(
 private data class ContentElement(
     private val content: Content,
     private val isElevationPossible: Boolean,
+    private val isInvisible: Boolean,
 ) : ModifierNodeElement<ContentNode>() {
-    override fun create(): ContentNode = ContentNode(content, isElevationPossible)
+    override fun create(): ContentNode = ContentNode(content, isElevationPossible, isInvisible)
 
     override fun update(node: ContentNode) {
-        node.update(content, isElevationPossible)
+        node.update(content, isElevationPossible, isInvisible)
     }
 }
 
-private class ContentNode(private var content: Content, private var isElevationPossible: Boolean) :
-    DelegatingNode(), ApproachLayoutModifierNode {
+private class ContentNode(
+    private var content: Content,
+    private var isElevationPossible: Boolean,
+    private var isInvisible: Boolean,
+) : DelegatingNode(), ApproachLayoutModifierNode {
     private var containerDelegate = containerDelegate(isElevationPossible)
 
     private fun containerDelegate(isElevationPossible: Boolean): ContainerNode? {
@@ -246,7 +250,7 @@ private class ContentNode(private var content: Content, private var isElevationP
         this.content.targetSize = Element.SizeUnspecified
     }
 
-    fun update(content: Content, isElevationPossible: Boolean) {
+    fun update(content: Content, isElevationPossible: Boolean, isInvisible: Boolean) {
         if (content != this.content) {
             this.content.targetSize = Element.SizeUnspecified
             this.content = content
@@ -258,6 +262,8 @@ private class ContentNode(private var content: Content, private var isElevationP
             containerDelegate?.let { undelegate(it) }
             containerDelegate = containerDelegate(isElevationPossible)
         }
+
+        this.isInvisible = isInvisible
     }
 
     override fun isMeasurementApproachInProgress(lookaheadSize: IntSize): Boolean = false
@@ -269,7 +275,11 @@ private class ContentNode(private var content: Content, private var isElevationP
         check(isLookingAhead)
         return measurable.measure(constraints).run {
             content.targetSize = IntSize(width, height)
-            layout(width, height) { place(0, 0) }
+            layout(width, height) {
+                if (!isInvisible) {
+                    place(0, 0, zIndex = content.zIndex)
+                }
+            }
         }
     }
 
@@ -277,7 +287,13 @@ private class ContentNode(private var content: Content, private var isElevationP
         measurable: Measurable,
         constraints: Constraints,
     ): MeasureResult {
-        return measurable.measure(constraints).run { layout(width, height) { place(0, 0) } }
+        return measurable.measure(constraints).run {
+            layout(width, height) {
+                if (!isInvisible) {
+                    place(0, 0, zIndex = content.zIndex)
+                }
+            }
+        }
     }
 }
 
