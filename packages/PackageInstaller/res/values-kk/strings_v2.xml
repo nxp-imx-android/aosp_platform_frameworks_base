@@ -96,19 +96,29 @@
     <string name="message_restore_error_installer_absent" msgid="8492838251989389724">"Бұл қолданбаны қалпына келтіру үшін <xliff:g id="INSTALLER_NAME">%1$s</xliff:g> орнату құралын орнатуыңыз керек"</string>
     <string name="message_restore_error_generic" msgid="5903850636679929406">"Бұл қолданбаны қалпына келтіру кезінде мәселе орын алды"</string>
     <string name="message_uninstall_activity" msgid="3263352475743590167">"<xliff:g id="ACTIVITY_NAME">%1$s</xliff:g> – келесі қолданбаның бір бөлігі: <xliff:g id="APP_NAME">%2$s</xliff:g>"</string>
-    <!-- no translation found for cannot_install_app_blocked_summary (8433096420067308800) -->
+    <string name="cannot_install_app_blocked_summary" msgid="8433096420067308800">"&lt;p&gt;Бұл қолданба блокталған. Құрылғыңыз бен деректеріңізді қорғау үшін тек расталған әзірлеушілердің қолданбаларын орнатуға болады.&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;Әзірлеушіні растау туралы толық ақпарат&lt;/a&gt;&lt;/p&gt;"</string>
+    <!-- no translation found for cannot_update_app_blocked_summary (5003390308880649930) -->
     <skip />
-    <!-- no translation found for cannot_install_verification_no_internet_summary (8948259713332887857) -->
+    <string name="cannot_install_verification_no_internet_summary" msgid="8948259713332887857">"&lt;p&gt;Бұл қолданба орнатылмады. Расталмаған әзірлеушілердің қолданбалары қауіпті болуы мүмкін.&lt;/p&gt; &lt;p&gt;Қолданба әзірлеушісін растау үшін интернет байланысы қажет. Құрылғының интернетке қосылғанын тексеріп, қолданбаны қайта орнатып көріңіз. &lt;/p&gt; &lt;p&gt;&lt;a href=&gt;Әзірлеушіні растау туралы толық ақпарат&lt;/a&gt;&lt;p&gt;"</string>
+    <!-- no translation found for cannot_update_verification_no_internet_summary (2970654650180690063) -->
     <skip />
-    <!-- no translation found for cannot_install_verification_unavailable_summary (343815915687716571) -->
+    <string name="cannot_install_verification_unavailable_summary" msgid="343815915687716571">"&lt;p&gt;Бұл қолданба әзірлеушісін растауға қатысты бір мәселе орын алды. Расталмаған әзірлеушілердің қолданбалары қауіпті болуы мүмкін, сол себепті қолданба орнатылмады.&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;Әзірлеушіні растау туралы толық ақпарат&lt;/a&gt;&lt;/p&gt;"</string>
+    <!-- no translation found for cannot_update_verification_unavailable_summary (7697174533040472480) -->
     <skip />
-    <!-- no translation found for install_without_verifying_summary (9056694084349761546) -->
+    <!-- no translation found for cannot_install_verification_unavailable_fail_closed_summary (3178396108551754329) -->
     <skip />
-    <!-- no translation found for cannot_install_app_blocked_title (6372444121824751694) -->
+    <!-- no translation found for cannot_update_verification_unavailable_fail_closed_summary (2057697870682373917) -->
     <skip />
-    <!-- no translation found for cannot_install_verification_no_internet_title (2862046642298119581) -->
+    <!-- no translation found for more_details_expanded_install_summary (3545896392881608712) -->
     <skip />
-    <!-- no translation found for cannot_install_verification_unavailable_title (2038093442302309120) -->
+    <!-- no translation found for more_details_expanded_update_summary (2239162864839036480) -->
+    <skip />
+    <string name="cannot_install_app_blocked_title" msgid="6372444121824751694">"Қолданба әзірлеушісі расталмаған"</string>
+    <string name="cannot_install_verification_no_internet_title" msgid="2862046642298119581">"Интернет жоқ. Қолданба әзірлеушісін растау мүмкін емес"</string>
+    <string name="cannot_install_verification_unavailable_title" msgid="2038093442302309120">"Қолданба әзірлеушісін растау мүмкін емес"</string>
+    <!-- no translation found for install_without_verifying (5359680595440741626) -->
+    <skip />
+    <!-- no translation found for update_without_verifying (2841466981431484179) -->
     <skip />
     <string name="button_install" msgid="7434013176505680162">"Орнату"</string>
     <string name="button_update" msgid="3046719350226327526">"Жаңарту"</string>
