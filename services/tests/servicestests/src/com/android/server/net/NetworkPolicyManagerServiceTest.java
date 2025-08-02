@@ -3027,6 +3027,7 @@ public class NetworkPolicyManagerServiceTest {
      * Creates a mock and registers it to {@link LocalServices}.
      */
     private static <T> T addLocalServiceMock(Class<T> clazz) {
+        LocalServices.removeServiceForTest(clazz);
         final T mock = mock(clazz);
         LocalServices.addService(clazz, mock);
         return mock;
