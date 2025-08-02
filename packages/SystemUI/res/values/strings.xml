@@ -479,6 +479,10 @@
     <string name="accessibility_unlock_button">Unlocked</string>
     <!-- Content description of the lock icon for accessibility (not shown on the screen). [CHAR LIMIT=NONE] -->
     <string name="accessibility_lock_icon">Device locked</string>
+    <!-- Content description of the confirm button shown when a passive biometric is authenticated on lock screen and user confirmation is required to unlock the device. [CHAR LIMIT=30] -->
+    <string name="accessibility_confirm_biometric_auth_to_unlock">Confirm and unlock the device</string>
+    <!-- Content description of the try again button shown when a face auth error occurs on lock screen and user interaction is required to retry auth. [CHAR LIMIT=30] -->
+    <string name="accessibility_retry_face_auth">Try Face Unlock again</string>
     <!-- Content description hint of the unlock button when fingerprint is on (not shown on the screen). [CHAR LIMIT=NONE] -->
     <!-- Accessibility action of the unlock button when fingerpint is on (not shown on the screen). [CHAR LIMIT=NONE] -->
     <!-- Content description of the Trusted Face icon for accessibility. [CHAR LIMIT=NONE] -->
@@ -1331,6 +1335,8 @@
 
     <!-- Message shown when non-bypass face authentication succeeds. Provides extra instructions for how the user can enter their device [CHAR LIMIT=60] -->
     <string name="keyguard_face_successful_unlock_swipe">Unlocked by face. Swipe up to open.</string>
+    <!-- Message shown when non-bypass face authentication succeeds and UDFPS is supported. Provides extra instructions for how the user can enter their device [CHAR LIMIT=60] -->
+    <string name="keyguard_face_successful_unlock_confirm_button">Unlocked by face. Press confirm to continue.</string>
     <!-- Message shown when non-bypass face authentication succeeds and UDFPS is supported. Provides extra instructions for how the user can enter their device [CHAR LIMIT=60] -->
     <string name="keyguard_face_successful_unlock_press">Unlocked by face. Press the unlock icon to open.</string>
     <!-- Message shown when non-bypass face authentication succeeds and UDFPS is supported. Provides extra instructions for how the user can enter their device [CHAR LIMIT=60] -->
