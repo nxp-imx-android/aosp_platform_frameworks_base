@@ -40,6 +40,7 @@ import android.provider.Settings;
 import android.testing.TestableLooper;
 import android.view.View;
 
+import androidx.compose.ui.platform.ComposeView;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.SmallTest;
 
@@ -124,6 +125,8 @@ public class AmbientStatusBarViewControllerTest extends SysuiTestCase {
     AmbientStatusBarViewModel.Factory mAmbientStatusBarViewModelFactory;
     @Mock
     ConnectedDisplaysStatusBarNotificationIconViewStore.Factory mIconViewStoreFactory;
+    @Mock
+    ComposeView mOngoingActivityChipsView;
 
     LogBuffer mLogBuffer = FakeLogBuffer.Factory.Companion.create();
 
@@ -153,6 +156,8 @@ public class AmbientStatusBarViewControllerTest extends SysuiTestCase {
         when(mPerDisplaySubcomponentRepository.getOrDefault(anyInt()))
                 .thenReturn(mSystemUIDisplaySubcomponent);
         when(mView.getContext()).thenReturn(getContext());
+        when(mView.findViewById(R.id.dream_overlay_ongoing_activity_chips))
+                .thenReturn(mOngoingActivityChipsView);
         mController = new AmbientStatusBarViewController(
                 mView,
                 mResources,
