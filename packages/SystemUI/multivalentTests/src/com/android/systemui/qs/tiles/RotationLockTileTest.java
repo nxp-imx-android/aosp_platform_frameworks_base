@@ -54,7 +54,7 @@ import com.android.systemui.statusbar.policy.RotationLockControllerImpl;
 import com.android.systemui.util.concurrency.FakeExecutor;
 import com.android.systemui.util.settings.FakeSettings;
 import com.android.systemui.util.time.FakeSystemClock;
-import com.android.systemui.util.wrapper.RotationPolicyWrapper;
+import com.android.systemui.rotation.RotationPolicyWrapper;
 
 import org.junit.After;
 import org.junit.Before;

@@ -50,7 +50,7 @@ import com.android.systemui.SysuiTestCase;
 import com.android.systemui.dump.DumpManager;
 import com.android.systemui.util.concurrency.FakeExecutor;
 import com.android.systemui.util.time.FakeSystemClock;
-import com.android.systemui.util.wrapper.RotationPolicyWrapper;
+import com.android.systemui.rotation.RotationPolicyWrapper;
 
 import org.junit.After;
 import org.junit.Before;
