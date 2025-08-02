@@ -207,7 +207,6 @@ import com.android.systemui.communal.util.WindowSizeUtils
 import com.android.systemui.communal.widgets.SmartspaceAppWidgetHostView
 import com.android.systemui.communal.widgets.WidgetConfigurator
 import com.android.systemui.lifecycle.rememberViewModel
-import com.android.systemui.media.controls.ui.composable.MediaCarousel
 import com.android.systemui.media.remedia.ui.compose.Media
 import com.android.systemui.media.remedia.ui.compose.MediaPresentationStyle
 import com.android.systemui.res.R
@@ -1840,14 +1839,7 @@ private fun Umo(
                 }
             }
     ) {
-        if (SceneContainerFlag.isEnabled && contentScope != null) {
-            contentScope.MediaCarousel(
-                modifier = modifier.fillMaxSize(),
-                isVisible = true,
-                mediaHost = viewModel.mediaHost,
-                carouselController = viewModel.mediaCarouselController,
-            )
-        } else if (Flags.mediaControlsInCompose()) {
+        if (SceneContainerFlag.isEnabled || Flags.mediaControlsInCompose()) {
             Media(
                 viewModelFactory = viewModel.mediaViewModelFactory,
                 presentationStyle = MediaPresentationStyle.Large,
