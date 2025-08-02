@@ -180,6 +180,16 @@ flag {
 
 flag {
     namespace: "windowing_sdk"
+    name: "activity_embedding_abort_cross_uid_launch_in_finishing_task_fragment"
+    description: "Aborts cross-uid activity launch from a finishing TaskFragment to avoid race conditions"
+    bug: "427881773"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
+    namespace: "windowing_sdk"
     name: "dispose_task_fragment_synchronously"
     description: "Handle TaskFragment disposal synchronously when handling app died."
     bug: "429336735"

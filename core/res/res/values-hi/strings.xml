@@ -300,8 +300,7 @@
     <string name="global_action_assist" msgid="2517047220311505805">"सहायता"</string>
     <string name="global_action_voice_assist" msgid="6655788068555086695">"आवाज़ से डिवाइस का इस्तेमाल"</string>
     <string name="global_action_lockdown" msgid="2475471405907902963">"लॉकडाउन"</string>
-    <!-- no translation found for global_action_unrestricted_lock (7933224393323064116) -->
-    <skip />
+    <string name="global_action_unrestricted_lock" msgid="7933224393323064116">"लॉक करें"</string>
     <string name="status_bar_notification_info_overflow" msgid="3330152558746563475">"999+"</string>
     <string name="notification_compact_heads_up_reply" msgid="2425293958371284340">"जवाब दें"</string>
     <string name="notification_hidden_text" msgid="2835519769868187223">"नई सूचना"</string>
@@ -892,14 +891,14 @@
     <string name="policydesc_watchLogin_secondaryUser" product="automotive" msgid="7180857406058327941">"स्क्रीन को अनलॉक करते समय ध्यान रखें कि कितनी बार गलत पासवर्ड डाला गया है. अगर बहुत ज़्यादा बार गलत पासवर्ड डाला गया है, तो सूचना और मनोरंजन की सुविधा देने वाले डिवाइस को लॉक करें या इस प्रोफ़ाइल का सारा डेटा मिटाएं."</string>
     <string name="policydesc_watchLogin_secondaryUser" product="default" msgid="9177645136475155924">"स्‍क्रीनका लॉक खोलते समय गलत तरीके से लिखे गए पासवर्ड पर नज़र रखें, और अगर बार-बार गलत पासवर्ड लिखा जाता है तो फ़ोन को लॉक करें या इस उपयोगकर्ता का सभी डेटा मिटा दें."</string>
     <string name="policylab_resetPassword" msgid="214556238645096520">"स्‍क्रीन लॉक बदलना"</string>
-    <string name="policydesc_resetPassword" msgid="4626419138439341851">"इससे स्‍क्रीन लॉक बदला जाता है."</string>
+    <string name="policydesc_resetPassword" msgid="4626419138439341851">"स्‍क्रीन लॉक बदल सकता है."</string>
     <string name="policylab_forceLock" msgid="7360335502968476434">"स्‍क्रीन लॉक करना"</string>
-    <string name="policydesc_forceLock" msgid="1008844760853899693">"इससे यह कंट्रोल होता है कि स्क्रीन कैसे और कब लॉक हो."</string>
+    <string name="policydesc_forceLock" msgid="1008844760853899693">"यह कंट्रोल कर सकता है कि स्क्रीन कैसे और कब लॉक हो."</string>
     <string name="policylab_wipeData" msgid="1359485247727537311">"सारा डेटा मिटाना"</string>
     <string name="policydesc_wipeData" product="tablet" msgid="7245372676261947507">"इससे फ़ैक्ट्री डेटा रीसेट करके, चेतावनी दिए बिना फ़ोन का डेटा मिटा दिया जाता है."</string>
     <string name="policydesc_wipeData" product="tv" msgid="513862488950801261">"फ़ैक्ट्री डेटा रीसेट करके अपने Android TV डिवाइस का डेटा बिना चेतावनी दिए मिटाएं."</string>
     <string name="policydesc_wipeData" product="automotive" msgid="660804547737323300">"फ़ैक्ट्री डेटा रीसेट करके, बिना किसी चेतावनी के सूचना और मनोरंजन की सुविधा देने वाले डिवाइस में सेव डेटा को हमेशा के लिए मिटाएं."</string>
-    <string name="policydesc_wipeData" product="default" msgid="8036084184768379022">"फ़ैक्‍टरी डेटा रीसेट करके, चेतावनी दिए बिना फ़ोन का डेटा मिटा देगा."</string>
+    <string name="policydesc_wipeData" product="default" msgid="8036084184768379022">"फ़ैक्‍टरी डेटा रीसेट करके, चेतावनी दिए बिना फ़ोन का डेटा मिटा सकता है."</string>
     <string name="policylab_wipeData_secondaryUser" product="automotive" msgid="115034358520328373">"प्रोफ़ाइल का डेटा मिटाना"</string>
     <string name="policylab_wipeData_secondaryUser" product="default" msgid="413813645323433166">"उपयोगकर्ता डेटा मिटाएं"</string>
     <string name="policydesc_wipeData_secondaryUser" product="tablet" msgid="2336676480090926470">"इस टैबलेट पर मौजूद इस उपयोगकर्ता का डेटा बिना चेतावनी के मिटा दें."</string>
@@ -915,7 +914,7 @@
     <string name="policylab_disableCamera" msgid="5749486347810162018">"कैमरों को अक्षम करें"</string>
     <string name="policydesc_disableCamera" msgid="3204405908799676104">"सभी डिवाइस कैमरों का उपयोग रोकें."</string>
     <string name="policylab_disableKeyguardFeatures" msgid="5071855750149949741">"स्‍क्रीन लॉक की कुछ सुविधाएं बंद करना"</string>
-    <string name="policydesc_disableKeyguardFeatures" msgid="6641673177041195957">"इससे कुछ स्‍क्रीन लॉक सुविधाओं का इस्तेमाल रोका जाता है."</string>
+    <string name="policydesc_disableKeyguardFeatures" msgid="6641673177041195957">"स्‍क्रीन लॉक की कुछ सुविधाओं का इस्तेमाल रोक सकता है."</string>
     <string name="exit_toast_on_long_press_escape" msgid="2983932499112557277">"इस ऐप्लिकेशन को बंद करने के लिए, Esc बटन को दबाकर रखें"</string>
   <string-array name="phoneTypes">
     <item msgid="8996339953292723951">"घर"</item>
@@ -1484,8 +1483,6 @@
     <string name="decline_remote_bugreport_action" msgid="4040894777519784346">"अस्वीकार करें"</string>
     <string name="select_input_method" msgid="3971267998568587025">"इनपुट का तरीका चुनें"</string>
     <string name="input_method_language_settings" msgid="8069089418056819437">"भाषा की सेटिंग"</string>
-    <string name="show_ime" msgid="6406112007347443383">"सामान्य कीबोर्ड के सक्रिय होने के दौरान इसे स्‍क्रीन पर बनाए रखें"</string>
-    <string name="hardware" msgid="3611039921284836033">"ऑन-स्क्रीन कीबोर्ड इस्तेमाल करें"</string>
     <string name="select_keyboard_layout_notification_title" msgid="5823199895322205589">"<xliff:g id="DEVICE_NAME">%s</xliff:g> को कॉन्फ़िगर करें"</string>
     <string name="select_multiple_keyboards_layout_notification_title" msgid="6999491025126641938">"फ़िज़िकल कीबोर्ड को कॉन्फ़िगर करें"</string>
     <string name="select_keyboard_layout_notification_message" msgid="8835158247369158154">"भाषा और लेआउट चुनने के लिए टैप करें"</string>

@@ -73,23 +73,6 @@ class PackageManagerServiceHibernationTests {
             .thenReturn(appHibernationManager)
         whenever(rule.mocks().injector.handler)
             .thenReturn(Handler(TestableLooper.get(this).looper))
-        val injector = object : PackageDexOptimizer.Injector {
-            override fun getAppHibernationManagerInternal(): AppHibernationManagerInternal {
-                return appHibernationManager
-            }
-
-            override fun getPowerManager(context: Context?): PowerManager {
-                return powerManager
-            }
-        }
-        val packageDexOptimizer = PackageDexOptimizer(
-            injector,
-            rule.mocks().installer,
-            rule.mocks().installLock,
-            rule.mocks().context,
-            "*dexopt*")
-        whenever(rule.mocks().injector.packageDexOptimizer)
-            .thenReturn(packageDexOptimizer)
         whenever(appHibernationManager.isOatArtifactDeletionEnabled).thenReturn(true)
     }
 
@@ -139,28 +122,6 @@ class PackageManagerServiceHibernationTests {
         } catch (e: Exception) {
             Assert.fail("Method throws exception when AppHibernationManager is not ready.\n$e")
         }
-    }
-
-    @Test
-    fun testGetOptimizablePackages_ExcludesGloballyHibernatingPackages() {
-        rule.system().stageScanExistingPackage(
-            TEST_PACKAGE_NAME,
-            1L,
-            rule.system().dataAppDirectory,
-            withPackage = { it.apply { isDeclaredHavingCode = true } })
-        rule.system().stageScanExistingPackage(
-            TEST_PACKAGE_2_NAME,
-            1L,
-            rule.system().dataAppDirectory,
-            withPackage = { it.apply { isDeclaredHavingCode = true } })
-        val pm = createPackageManagerService()
-        rule.system().validateFinalState()
-        whenever(appHibernationManager.isHibernatingGlobally(TEST_PACKAGE_2_NAME)).thenReturn(true)
-
-        val optimizablePkgs = DexOptHelper(pm).getOptimizablePackages(pm.snapshotComputer())
-
-        assertTrue(optimizablePkgs.contains(TEST_PACKAGE_NAME))
-        assertFalse(optimizablePkgs.contains(TEST_PACKAGE_2_NAME))
     }
 
     private fun createPackageManagerService(): PackageManagerService {

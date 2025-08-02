@@ -88,7 +88,7 @@
     <string name="message_archive_other_user" msgid="6465828676043191175">"Dane z aplikacji zostaną zapisane"</string>
     <string name="message_archive_work_profile" msgid="7601504268820630858">"Ta aplikacja zostanie zarchiwizowana z profilu służbowego. Twoje dane z aplikacji zostaną zapisane."</string>
     <string name="message_archive_private_space" msgid="4873651645762576624">"Ta aplikacja zostanie zarchiwizowana z przestrzeni prywatnej. Twoje dane z aplikacji zostaną zapisane."</string>
-    <string name="message_restore" msgid="8402726798623569969">"Ta aplikacja z <xliff:g id="INSTALLER_NAME">%1$s</xliff:g> będzie pobierana w tle"</string>
+    <string name="message_restore" msgid="8402726798623569969">"Ta aplikacja ze sklepu <xliff:g id="INSTALLER_NAME">%1$s</xliff:g> będzie pobierana w tle"</string>
     <string name="message_restore_error_user_action_needed" msgid="2206904734076205208">"<xliff:g id="INSTALLER_NAME">%1$s</xliff:g> potrzebuje więcej informacji, zanim będzie można przywrócić tę aplikację"</string>
     <string name="message_restore_error_less_storage" msgid="4945507738776981462">"Aby przywrócić tę aplikację, zwolnij &lt;b&gt;<xliff:g id="BYTES">%1$s</xliff:g>&lt;/b&gt; i spróbuj ponownie"</string>
     <string name="message_restore_error_offline" msgid="4212551781323276126">"Aby przywrócić tę aplikację, sprawdź połączenie internetowe i spróbuj ponownie"</string>
@@ -98,17 +98,33 @@
     <string name="message_uninstall_activity" msgid="3263352475743590167">"<xliff:g id="ACTIVITY_NAME">%1$s</xliff:g> jest częścią tej aplikacji: <xliff:g id="APP_NAME">%2$s</xliff:g>"</string>
     <!-- no translation found for cannot_install_app_blocked_summary (8433096420067308800) -->
     <skip />
+    <!-- no translation found for cannot_update_app_blocked_summary (5003390308880649930) -->
+    <skip />
     <!-- no translation found for cannot_install_verification_no_internet_summary (8948259713332887857) -->
+    <skip />
+    <!-- no translation found for cannot_update_verification_no_internet_summary (2970654650180690063) -->
     <skip />
     <!-- no translation found for cannot_install_verification_unavailable_summary (343815915687716571) -->
     <skip />
-    <!-- no translation found for install_without_verifying_summary (9056694084349761546) -->
+    <!-- no translation found for cannot_update_verification_unavailable_summary (7697174533040472480) -->
+    <skip />
+    <!-- no translation found for cannot_install_verification_unavailable_fail_closed_summary (3178396108551754329) -->
+    <skip />
+    <!-- no translation found for cannot_update_verification_unavailable_fail_closed_summary (2057697870682373917) -->
+    <skip />
+    <!-- no translation found for more_details_expanded_install_summary (3545896392881608712) -->
+    <skip />
+    <!-- no translation found for more_details_expanded_update_summary (2239162864839036480) -->
     <skip />
     <!-- no translation found for cannot_install_app_blocked_title (6372444121824751694) -->
     <skip />
     <!-- no translation found for cannot_install_verification_no_internet_title (2862046642298119581) -->
     <skip />
     <!-- no translation found for cannot_install_verification_unavailable_title (2038093442302309120) -->
+    <skip />
+    <!-- no translation found for install_without_verifying (5359680595440741626) -->
+    <skip />
+    <!-- no translation found for update_without_verifying (2841466981431484179) -->
     <skip />
     <string name="button_install" msgid="7434013176505680162">"Zainstaluj"</string>
     <string name="button_update" msgid="3046719350226327526">"Zaktualizuj"</string>

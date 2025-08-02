@@ -39,6 +39,7 @@ import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.floatThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.nullable;
+import static org.mockito.Mockito.clearInvocations;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.never;
@@ -81,6 +82,7 @@ import androidx.annotation.NonNull;
 import androidx.test.InstrumentationRegistry;
 import androidx.test.runner.AndroidJUnit4;
 
+import com.android.internal.accessibility.util.AccessibilityUtils;
 import com.android.internal.util.ConcurrentUtils;
 import com.android.internal.util.test.FakeSettingsProvider;
 import com.android.server.LocalServices;
@@ -2190,6 +2192,46 @@ public class MagnificationControllerTest {
         // in current capability and mode, and the magnification is activated.
         verify(mMagnificationConnectionManager, never()).removeMagnificationSettingsPanel(
                 eq(TEST_DISPLAY));
+    }
+
+    @Test
+    public void onMouseMove_withThrottle_shouldRateLimit() throws RemoteException {
+        mMagnificationController.setMagnificationCapabilities(
+                Settings.Secure.ACCESSIBILITY_MAGNIFICATION_MODE_ALL);
+        setMagnificationEnabled(MODE_FULLSCREEN);
+        clearInvocations(mMagnificationConnectionManager);
+
+        // The first call should go through and trigger a UI update.
+        mMagnificationController.onMouseMove(TEST_DISPLAY, MODE_FULLSCREEN);
+        verify(mMagnificationConnectionManager).showMagnificationButton(
+                TEST_DISPLAY, MODE_FULLSCREEN);
+        clearInvocations(mMagnificationConnectionManager);
+
+        // Subsequent calls within the throttle period should be ignored.
+        mMagnificationController.onMouseMove(TEST_DISPLAY, MODE_FULLSCREEN);
+        mMagnificationController.onMouseMove(TEST_DISPLAY, MODE_FULLSCREEN);
+        verify(mMagnificationConnectionManager, never()).showMagnificationButton(
+                TEST_DISPLAY, MODE_FULLSCREEN);
+    }
+
+    @Test
+    public void onMouseMove_withThrottle_shouldNotRateLimitAfterDelay() throws RemoteException {
+        mMagnificationController.setMagnificationCapabilities(
+                Settings.Secure.ACCESSIBILITY_MAGNIFICATION_MODE_ALL);
+        setMagnificationEnabled(MODE_FULLSCREEN);
+        clearInvocations(mMagnificationConnectionManager);
+
+        // The first call should go through and trigger a UI update.
+        mMagnificationController.onMouseMove(TEST_DISPLAY, MODE_FULLSCREEN);
+        verify(mMagnificationConnectionManager).showMagnificationButton(
+                TEST_DISPLAY, MODE_FULLSCREEN);
+        clearInvocations(mMagnificationConnectionManager);
+
+        // Advance time past the throttle period. The next call should now go through.
+        mSystemClock.advanceTime(AccessibilityUtils.MAGNIFICATION_HANDLE_UI_CHANGE_INTERVAL_MS + 1);
+        mMagnificationController.onMouseMove(TEST_DISPLAY, MODE_FULLSCREEN);
+        verify(mMagnificationConnectionManager).showMagnificationButton(
+                TEST_DISPLAY, MODE_FULLSCREEN);
     }
 
     @Test

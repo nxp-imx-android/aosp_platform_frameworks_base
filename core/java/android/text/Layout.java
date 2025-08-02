@@ -264,6 +264,7 @@ public abstract class Layout {
             TextDirectionHeuristic textDir) {
         return getDesiredWidthWithLimit(source, start, end, paint, textDir, Float.MAX_VALUE, false);
     }
+
     /**
      * Return how wide a layout must be in order to display the
      * specified text slice with one line per paragraph.
@@ -275,7 +276,9 @@ public abstract class Layout {
             TextPaint paint, TextDirectionHeuristic textDir, float upperLimit,
             boolean useBoundsForWidth) {
         float need = 0;
-
+        RectF bounds = useBoundsForWidth ? new RectF() : null;
+        float left = 0;
+        float right = 0;
         int next;
         for (int i = start; i <= end; i = next) {
             next = TextUtils.indexOf(source, '\n', i, end);
@@ -284,7 +287,12 @@ public abstract class Layout {
                 next = end;
 
             // note, omits trailing paragraph char
-            float w = measurePara(paint, source, i, next, textDir, useBoundsForWidth);
+            float w = measurePara(paint, source, i, next, textDir, bounds);
+            if (com.android.text.flags.Flags.fixShiftDrawingAmount() && useBoundsForWidth) {
+                left = Math.min(bounds.left, left);
+                right = Math.max(bounds.right, right);
+                w = Math.max(right - left, w);
+            }
             if (w > upperLimit) {
                 return upperLimit;
             }
@@ -500,13 +508,15 @@ public abstract class Layout {
             @Nullable Paint selectionPaint,
             int cursorOffsetVertical) {
         float leftShift = 0;
-        if (mUseBoundsForWidth && mShiftDrawingOffsetForStartOverhang) {
+        if (!com.android.text.flags.Flags.fixShiftDrawingAmount()
+                && mUseBoundsForWidth && mShiftDrawingOffsetForStartOverhang) {
             RectF drawingRect = computeDrawingBoundingBox();
             if (drawingRect.left < 0) {
                 leftShift = -drawingRect.left;
                 canvas.translate(leftShift, 0);
             }
         }
+
         final long lineRange = getLineRangeForDraw(canvas);
         int firstLine = TextUtils.unpackRangeStartFromLong(lineRange);
         int lastLine = TextUtils.unpackRangeEndFromLong(lineRange);
@@ -529,7 +539,7 @@ public abstract class Layout {
                     cursorOffsetVertical, firstLine, lastLine);
         }
 
-        if (leftShift != 0) {
+        if (!com.android.text.flags.Flags.fixShiftDrawingAmount() && leftShift != 0) {
             // Manually translate back to the original position because of b/324498002, using
             // save/restore disappears the toggle switch drawables.
             canvas.translate(-leftShift, 0);
@@ -786,6 +796,15 @@ public abstract class Layout {
 
         TextLine tl = TextLine.obtain();
 
+        int leftOverhang = 0;
+        int rightOverhang = 0;
+        if (com.android.text.flags.Flags.fixShiftDrawingAmount()
+                && mUseBoundsForWidth && mShiftDrawingOffsetForStartOverhang) {
+            RectF drawingRect = computeDrawingBoundingBox();
+            leftOverhang = (int) Math.ceil(Math.max(-drawingRect.left, 0));
+            rightOverhang = (int) Math.ceil(Math.max(drawingRect.right - mWidth, 0));
+        }
+
         // Draw the lines, one at a time.
         // The baseline is the top of the following line minus the current line's descent.
         for (int lineNum = firstLine; lineNum <= lastLine; lineNum++) {
@@ -897,25 +916,25 @@ public abstract class Layout {
             if (align == Alignment.ALIGN_NORMAL) {
                 if (dir == DIR_LEFT_TO_RIGHT) {
                     indentWidth = getIndentAdjust(lineNum, Alignment.ALIGN_LEFT);
-                    x = left + indentWidth;
+                    x = left + indentWidth + leftOverhang;
                 } else {
                     indentWidth = -getIndentAdjust(lineNum, Alignment.ALIGN_RIGHT);
-                    x = right - indentWidth;
+                    x = right - indentWidth - rightOverhang;
                 }
             } else {
                 int max = (int)getLineExtent(lineNum, tabStops, false);
                 if (align == Alignment.ALIGN_OPPOSITE) {
                     if (dir == DIR_LEFT_TO_RIGHT) {
                         indentWidth = -getIndentAdjust(lineNum, Alignment.ALIGN_RIGHT);
-                        x = right - max - indentWidth;
+                        x = right - max - indentWidth - rightOverhang;
                     } else {
                         indentWidth = getIndentAdjust(lineNum, Alignment.ALIGN_LEFT);
-                        x = left - max + indentWidth;
+                        x = left - max + indentWidth + leftOverhang;
                     }
                 } else { // Alignment.ALIGN_CENTER
                     indentWidth = getIndentAdjust(lineNum, Alignment.ALIGN_CENTER);
                     max = max & ~1;
-                    x = ((right + left - max) >> 1) + indentWidth;
+                    x = ((right + left - max) >> 1) + indentWidth + leftOverhang;
                 }
             }
 
@@ -1311,6 +1330,7 @@ public abstract class Layout {
         TextLine tl = TextLine.obtain();
         RectF rectF = new RectF();
         for (int line = 0; line < getLineCount(); ++line) {
+            rectF.setEmpty();
             final int start = getLineStart(line);
             final int end = getLineVisibleEnd(line);
 
@@ -3274,9 +3294,12 @@ public abstract class Layout {
     }
 
     private static float measurePara(TextPaint paint, CharSequence text, int start, int end,
-            TextDirectionHeuristic textDir, boolean useBoundsForWidth) {
+            TextDirectionHeuristic textDir, RectF bounds) {
         MeasuredParagraph mt = null;
         TextLine tl = TextLine.obtain();
+        if (bounds != null) {
+            bounds.setEmpty();
+        }
         try {
             mt = MeasuredParagraph.buildForBidi(text, start, end, textDir, mt);
             final char[] chars = mt.getChars();
@@ -3314,7 +3337,13 @@ public abstract class Layout {
             tl.set(paint, text, start, end, dir, directions, hasTabs, tabStops,
                     0 /* ellipsisStart */, 0 /* ellipsisEnd */,
                     false /* use fallback line spacing. unused */);
-            return margin + Math.abs(tl.metrics(null, null, useBoundsForWidth, null));
+            float w = tl.metrics(null, bounds, bounds != null, null);
+            if (bounds != null) {
+                if (w < 0) { // RTL
+                    bounds.offset(-w, 0f);
+                }
+            }
+            return margin + Math.abs(w);
         } finally {
             TextLine.recycle(tl);
             if (mt != null) {

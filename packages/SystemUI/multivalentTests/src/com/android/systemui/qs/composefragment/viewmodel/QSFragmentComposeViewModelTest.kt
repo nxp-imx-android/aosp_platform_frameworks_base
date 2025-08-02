@@ -530,8 +530,37 @@ class QSFragmentComposeViewModelTest : AbstractQSFragmentComposeViewModelTest() 
             testScope.testWithinLifecycle {
                 underTest.isQsExpanded = true
                 underTest.setQsExpansionValue(0f)
+                // The shade is not being collapsed
+                underTest.panelExpansionFraction = 1f
+                underTest.squishinessFraction = 1f
 
                 assertThat(underTest.expansionState.progress).isGreaterThan(0f)
+            }
+        }
+
+    @Test
+    @EnableFlags(FLAG_QS_COMPOSE_FRAGMENT_EARLY_EXPANSION)
+    fun minExpansion_expanded_collapsingShade_panelExpansion_noEarlyExpansion() =
+        with(kosmos) {
+            testScope.testWithinLifecycle {
+                underTest.isQsExpanded = true
+                underTest.setQsExpansionValue(0f)
+                underTest.panelExpansionFraction = 0.9f
+
+                assertThat(underTest.expansionState.progress).isEqualTo(0f)
+            }
+        }
+
+    @Test
+    @EnableFlags(FLAG_QS_COMPOSE_FRAGMENT_EARLY_EXPANSION)
+    fun minExpansion_expanded_collapsingShade_squishiness_noEarlyExpansion() =
+        with(kosmos) {
+            testScope.testWithinLifecycle {
+                underTest.isQsExpanded = true
+                underTest.setQsExpansionValue(0f)
+                underTest.squishinessFraction = 0.9f
+
+                assertThat(underTest.expansionState.progress).isEqualTo(0f)
             }
         }
 

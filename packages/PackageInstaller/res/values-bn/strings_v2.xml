@@ -96,19 +96,29 @@
     <string name="message_restore_error_installer_absent" msgid="8492838251989389724">"এই অ্যাপ ফিরিয়ে আনতে, আপনাকে <xliff:g id="INSTALLER_NAME">%1$s</xliff:g> ইনস্টল করতে হবে"</string>
     <string name="message_restore_error_generic" msgid="5903850636679929406">"এই অ্যাপ ফিরিয়ে আনার সময় সমস্যা কোনও হয়েছে"</string>
     <string name="message_uninstall_activity" msgid="3263352475743590167">"<xliff:g id="ACTIVITY_NAME">%1$s</xliff:g> হল নিচে উল্লেখ করা অ্যাপের অংশ: <xliff:g id="APP_NAME">%2$s</xliff:g>"</string>
-    <!-- no translation found for cannot_install_app_blocked_summary (8433096420067308800) -->
+    <string name="cannot_install_app_blocked_summary" msgid="8433096420067308800">"&lt;p&gt;এই অ্যাপ ব্লক করা হয়েছে। আপনার ডিভাইস ও ডেটা সুরক্ষিত রাখতে, শুধুমাত্র যাচাই করা ডেভেলপারদের অ্যাপ ইনস্টল করা যাবে।&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;যাচাইকরণ সম্পর্কে আরও জানুন&lt;/a&gt;&lt;/p&gt;"</string>
+    <!-- no translation found for cannot_update_app_blocked_summary (5003390308880649930) -->
     <skip />
-    <!-- no translation found for cannot_install_verification_no_internet_summary (8948259713332887857) -->
+    <string name="cannot_install_verification_no_internet_summary" msgid="8948259713332887857">"&lt;p&gt;এই অ্যাপ ইনস্টল করা হয়নি। যাচাই করা হয়নি এমন ডেভেলপারদের অ্যাপ সুরক্ষিত নাও হতে পারে।&lt;/p&gt; &lt;p&gt;অ্যাপ ডেভেলপারকে যাচাই করার জন্য ইন্টারনেট কানেকশন থাকতে হবে। আপনার ডিভাইস ইন্টারনেটের সাথে কানেক্ট করা আছে কিনা ভালো করে দেখে নিন, তারপরে অ্যাপটি আবার ইনস্টল করার চেষ্টা করুন। &lt;/p&gt; &lt;p&gt;&lt;a href=&gt;ডেভেলপার যাচাইকরণ সম্পর্কে আরও জানুন&lt;/a&gt;&lt;p&gt;"</string>
+    <!-- no translation found for cannot_update_verification_no_internet_summary (2970654650180690063) -->
     <skip />
-    <!-- no translation found for cannot_install_verification_unavailable_summary (343815915687716571) -->
+    <string name="cannot_install_verification_unavailable_summary" msgid="343815915687716571">"&lt;p&gt;এই অ্যাপের ডেভেলপারকে যাচাই করার সময় কোনও সমস্যা হয়েছে। যাচাই না করা ডেভেলপারদের অ্যাপ সুরক্ষিত নাও হতে পারে, তাই অ্যাপটি ইনস্টল করা হয়নি।&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;ডেভেলপার যাচাইকরণ সম্পর্কে আরও জানুন&lt;/a&gt;&lt;/p&gt;"</string>
+    <!-- no translation found for cannot_update_verification_unavailable_summary (7697174533040472480) -->
     <skip />
-    <!-- no translation found for install_without_verifying_summary (9056694084349761546) -->
+    <!-- no translation found for cannot_install_verification_unavailable_fail_closed_summary (3178396108551754329) -->
     <skip />
-    <!-- no translation found for cannot_install_app_blocked_title (6372444121824751694) -->
+    <!-- no translation found for cannot_update_verification_unavailable_fail_closed_summary (2057697870682373917) -->
     <skip />
-    <!-- no translation found for cannot_install_verification_no_internet_title (2862046642298119581) -->
+    <!-- no translation found for more_details_expanded_install_summary (3545896392881608712) -->
     <skip />
-    <!-- no translation found for cannot_install_verification_unavailable_title (2038093442302309120) -->
+    <!-- no translation found for more_details_expanded_update_summary (2239162864839036480) -->
+    <skip />
+    <string name="cannot_install_app_blocked_title" msgid="6372444121824751694">"অ্যাপ ডেভেলপারকে যাচাই করা হয়নি"</string>
+    <string name="cannot_install_verification_no_internet_title" msgid="2862046642298119581">"ইন্টারনেট নেই, অ্যাপ ডেভেলপার যাচাই করা যাচ্ছে না"</string>
+    <string name="cannot_install_verification_unavailable_title" msgid="2038093442302309120">"অ্যাপ ডেভেলপারকে যাচাই করা যাচ্ছে না"</string>
+    <!-- no translation found for install_without_verifying (5359680595440741626) -->
+    <skip />
+    <!-- no translation found for update_without_verifying (2841466981431484179) -->
     <skip />
     <string name="button_install" msgid="7434013176505680162">"ইনস্টল করুন"</string>
     <string name="button_update" msgid="3046719350226327526">"আপডেট করুন"</string>

@@ -16,6 +16,7 @@
 
 package com.android.systemui.shade.ui.viewmodel
 
+import com.android.systemui.desktop.domain.interactor.desktopInteractor
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.Kosmos.Fixture
 import com.android.systemui.kosmos.testDispatcher
@@ -40,5 +41,6 @@ val Kosmos.notificationsShadeOverlayContentViewModel:
         disableFlagsInteractor = disableFlagsInteractor,
         mediaCarouselInteractor = mediaCarouselInteractor,
         windowRootViewBlurInteractor = windowRootViewBlurInteractor,
+        desktopInteractor = desktopInteractor,
     )
 }

@@ -336,14 +336,14 @@
     <string name="select_private_dns_configuration_dialog_title" msgid="3731422918335951912">"Pilih Mode DNS Pribadi"</string>
     <string name="private_dns_mode_off" msgid="7065962499349997041">"Nonaktif"</string>
     <string name="private_dns_mode_opportunistic" msgid="1947864819060442354">"Otomatis"</string>
-    <string name="private_dns_mode_provider" msgid="3619040641762557028">"Hostname penyedia DNS pribadi"</string>
+    <string name="private_dns_mode_provider" msgid="3619040641762557028">"Nama host penyedia DNS pribadi"</string>
     <string name="private_dns_mode_provider_hostname_hint" msgid="6564868953748514595">"Masukkan hostname penyedia DNS"</string>
     <string name="private_dns_mode_provider_failure" msgid="8356259467861515108">"Tidak dapat terhubung"</string>
     <string name="wifi_display_certification_summary" msgid="8111151348106907513">"Tampilkan opsi untuk sertifikasi layar nirkabel"</string>
     <string name="wifi_verbose_logging_summary" msgid="4993823188807767892">"Tingkatkan level pencatatan log Wi-Fi, tampilkan per SSID RSSI di Pemilih Wi‑Fi"</string>
     <string name="wifi_scan_throttling_summary" msgid="2577105472017362814">"Memperlambat konsumsi daya baterai &amp; meningkatkan performa jaringan"</string>
     <string name="wifi_non_persistent_mac_randomization_summary" msgid="2159794543105053930">"Jika mode ini diaktifkan, alamat MAC perangkat ini mungkin berubah setiap kali terhubung ke jaringan yang mengaktifkan pengacakan MAC"</string>
-    <string name="wifi_metered_label" msgid="8737187690304098638">"Berbayar"</string>
+    <string name="wifi_metered_label" msgid="8737187690304098638">"Berkuota"</string>
     <string name="wifi_unmetered_label" msgid="6174142840934095093">"Tidak berbayar"</string>
     <string name="select_logd_size_title" msgid="1604578195914595173">"Ukuran buffer pencatat log"</string>
     <string name="select_logd_size_dialog_title" msgid="2105401994681013578">"Ukuran Pencatat Log per buffer log"</string>

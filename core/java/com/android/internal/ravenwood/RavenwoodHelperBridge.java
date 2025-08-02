@@ -25,6 +25,7 @@ import android.ravenwood.annotation.RavenwoodKeepWholeClass;
 import android.ravenwood.annotation.RavenwoodRedirect;
 import android.ravenwood.annotation.RavenwoodRedirectionClass;
 import android.ravenwood.annotation.RavenwoodReplace;
+import android.ravenwood.annotation.RavenwoodThrow;
 
 /**
  * Class to interact with the Ravenwood environment.
@@ -121,5 +122,16 @@ public final class RavenwoodHelperBridge {
         /** Used for testing */
         @ChangeId
         public static final long TEST_COMPAT_ID_5 = 387558811L;
+    }
+
+    /**
+     * We use it for testing the experimental API mechanism.
+     *
+     * This method has an "exp" in the policy file. For that to take effect, the method must be
+     * originally unsupported, so we explicitly set "@RavenwoodThrow".
+     */
+    @RavenwoodThrow
+    public static int forExperimentalApiTest() {
+        return 1;
     }
 }

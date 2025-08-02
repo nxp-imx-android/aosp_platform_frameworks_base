@@ -17,7 +17,6 @@
 package com.android.systemui.statusbar.notification.collection.render
 
 import android.content.Context
-import android.view.View
 import android.view.ViewGroup
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -26,7 +25,6 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.repeatOnLifecycle
 import com.android.compose.theme.PlatformTheme
 import com.android.systemui.dagger.SysUISingleton
-import com.android.systemui.dagger.qualifiers.Main
 import com.android.systemui.initOnBackPressedDispatcherOwner
 import com.android.systemui.lifecycle.rememberViewModel
 import com.android.systemui.lifecycle.repeatWhenAttached
@@ -51,10 +49,6 @@ import com.android.systemui.util.time.SystemClock
 import dagger.Lazy
 import javax.inject.Inject
 import javax.inject.Provider
-import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.cancel
 
 /** Class that handles inflating BundleEntry view and controller, for use by NodeSpecBuilder. */
 @SysUISingleton
@@ -62,14 +56,13 @@ class BundleBarn
 @Inject
 constructor(
     private val rowComponent: ExpandableNotificationRowComponent.Builder,
-    private val bundleRowComponentBuilder: BundleRowComponent.Builder,
+    private val bundleRowComponentFactory: BundleRowComponent.Factory,
     private val rowInflaterTaskProvider: Provider<RowInflaterTask>,
     private val listContainer: NotificationListContainer,
     @ShadeDisplayAware val context: Context,
     val systemClock: SystemClock,
     val logger: RowInflaterTaskLogger,
     val userTracker: UserTracker,
-    @Main private val mainDispatcher: CoroutineDispatcher,
     private val presenterLazy: Lazy<NotificationPresenter?>? = null,
     private val iconManager: IconManager,
 ) : PipelineDumpable {
@@ -121,34 +114,18 @@ constructor(
     }
 
     private fun initBundleHeaderView(bundleEntry: BundleEntry, row: ExpandableNotificationRow) {
-        val scope = CoroutineScope(SupervisorJob() + mainDispatcher)
-        row.addOnAttachStateChangeListener(
-            object : View.OnAttachStateChangeListener {
-                override fun onViewAttachedToWindow(v: View) {}
-
-                override fun onViewDetachedFromWindow(v: View) {
-                    scope.cancel()
-                    row.removeOnAttachStateChangeListener(this)
-                }
-            }
-        )
-
         val bundleRowComponent =
-            bundleRowComponentBuilder
-                .bindBundleRepository(bundleEntry.bundleRepository)
-                .bindScope(scope)
-                .build()
-
+            bundleRowComponentFactory.create(repository = bundleEntry.bundleRepository)
         val headerComposeView = ComposeView(context)
         row.setBundleHeaderView(headerComposeView)
+        val viewModelFactory = bundleRowComponent.bundleViewModelFactory()
         headerComposeView.repeatWhenAttached {
             repeatOnLifecycle(Lifecycle.State.CREATED) {
                 headerComposeView.initOnBackPressedDispatcherOwner(lifecycle)
                 headerComposeView.setContent {
                     HeaderComposeViewContent(
                         row = row,
-                        bundleHeaderViewModelFactory =
-                            bundleRowComponent.bundleViewModelFactory()::create,
+                        bundleHeaderViewModelFactory = viewModelFactory::create,
                     )
                 }
             }

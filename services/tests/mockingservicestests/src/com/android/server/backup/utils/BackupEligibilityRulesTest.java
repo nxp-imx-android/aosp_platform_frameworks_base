@@ -36,6 +36,7 @@ import android.content.pm.PackageManagerInternal;
 import android.content.pm.Signature;
 import android.content.pm.SigningDetails;
 import android.content.pm.SigningInfo;
+import android.content.pm.UserInfo;
 import android.os.Process;
 import android.os.UserHandle;
 import android.os.UserManager;
@@ -45,7 +46,9 @@ import androidx.test.filters.SmallTest;
 import androidx.test.runner.AndroidJUnit4;
 
 import com.android.modules.utils.testing.ExtendedMockitoRule;
+import com.android.server.LocalServices;
 import com.android.server.backup.UserBackupManagerService;
+import com.android.server.pm.UserManagerInternal;
 
 import libcore.junit.util.compat.CoreCompatChangeRule.DisableCompatChanges;
 import libcore.junit.util.compat.CoreCompatChangeRule.EnableCompatChanges;
@@ -82,7 +85,8 @@ public class BackupEligibilityRulesTest {
     @Mock private PackageManagerInternal mMockPackageManagerInternal;
     @Mock private PackageManager mPackageManager;
     @Mock private Context mContext;
-    @Mock private UserManager mUserManager;
+    @Mock private UserManagerInternal mUserManagerInternal;
+    @Mock private UserInfo mUserInfo;
 
     private BackupEligibilityRules mBackupEligibilityRules;
     private int mUserId;
@@ -91,6 +95,9 @@ public class BackupEligibilityRulesTest {
     public void setUp() throws Exception {
         mUserId = UserHandle.USER_SYSTEM;
         mockHeadlessSystemUserMode(false);
+        LocalServices.removeServiceForTest(UserManagerInternal.class);
+        LocalServices.addService(UserManagerInternal.class, mUserManagerInternal);
+        when(mUserManagerInternal.getUserInfo(mUserId)).thenReturn(mUserInfo);
         mockContextForFullUser();
         mBackupEligibilityRules = getBackupEligibilityRules(BackupDestination.CLOUD);
     }
@@ -140,8 +147,9 @@ public class BackupEligibilityRulesTest {
         mockHeadlessSystemUserMode(true);
 
         // Current user is the main user.
-        when(mUserManager.getMainUser()).thenReturn(NON_SYSTEM_USER);
+        when(mUserManagerInternal.getMainUserId()).thenReturn(NON_SYSTEM_USER_ID);
         mUserId = NON_SYSTEM_USER_ID;
+        when(mUserManagerInternal.getUserInfo(mUserId)).thenReturn(mUserInfo);
 
         mockContextForFullUser();
         mBackupEligibilityRules = getBackupEligibilityRules(BackupDestination.CLOUD);
@@ -162,8 +170,9 @@ public class BackupEligibilityRulesTest {
         mockHeadlessSystemUserMode(true);
 
         // Current user is a non-main user.
-        when(mUserManager.getMainUser()).thenReturn(NON_SYSTEM_USER);
+        when(mUserManagerInternal.getMainUserId()).thenReturn(NON_SYSTEM_USER_ID);
         mUserId = NON_SYSTEM_USER_ID + 1;
+        when(mUserManagerInternal.getUserInfo(mUserId)).thenReturn(mUserInfo);
 
         mockContextForFullUser();
         mBackupEligibilityRules = getBackupEligibilityRules(BackupDestination.CLOUD);
@@ -950,23 +959,23 @@ public class BackupEligibilityRulesTest {
 
     private void setUpForNonSystemUser() {
         mUserId = NON_SYSTEM_USER_ID;
+        when(mUserManagerInternal.getUserInfo(mUserId)).thenReturn(mUserInfo);
         mockContextForFullUser();
         mBackupEligibilityRules = getBackupEligibilityRules(BackupDestination.CLOUD);
     }
 
     private void setUpForProfileUser() {
         mUserId = NON_SYSTEM_USER_ID;
+        when(mUserManagerInternal.getUserInfo(mUserId)).thenReturn(mUserInfo);
         mockContextForProfile();
         mBackupEligibilityRules = getBackupEligibilityRules(BackupDestination.CLOUD);
     }
 
     private void mockContextForProfile() {
-        when(mUserManager.isProfile()).thenReturn(true);
-        when(mContext.getSystemService(UserManager.class)).thenReturn(mUserManager);
+        when(mUserInfo.isProfile()).thenReturn(true);
     }
 
     private void mockContextForFullUser() {
-        when(mUserManager.isProfile()).thenReturn(false);
-        when(mContext.getSystemService(UserManager.class)).thenReturn(mUserManager);
+        when(mUserInfo.isProfile()).thenReturn(false);
     }
 }

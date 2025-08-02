@@ -55,6 +55,9 @@ interface BatteryRepository {
     /** Is power saver enabled */
     val isPowerSaveEnabled: Flow<Boolean>
 
+    /** Is extreme power saver enabled */
+    val isExtremePowerSaveEnabled: Flow<Boolean>
+
     /** Battery defender means the device is plugged in but not charging to protect the battery */
     val isBatteryDefenderEnabled: Flow<Boolean>
 
@@ -112,6 +115,10 @@ constructor(
                             trySend { prev -> prev.copy(isPowerSaveEnabled = isPowerSave) }
                         }
 
+                        override fun onExtremeBatterySaverChanged(isExtreme: Boolean) {
+                            trySend { prev -> prev.copy(isExtremePowerSaveEnabled = isExtreme) }
+                        }
+
                         override fun onIsBatteryDefenderChanged(isBatteryDefender: Boolean) {
                             trySend { prev ->
                                 prev.copy(isBatteryDefenderEnabled = isBatteryDefender)
@@ -167,6 +174,21 @@ constructor(
                 initialValue = batteryState.value.isPowerSaveEnabled,
             )
             .stateIn(scope, SharingStarted.WhileSubscribed(), batteryState.value.isPowerSaveEnabled)
+
+    override val isExtremePowerSaveEnabled =
+        batteryState
+            .map { it.isExtremePowerSaveEnabled }
+            .distinctUntilChanged()
+            .logDiffsForTable(
+                tableLogBuffer = tableLog,
+                columnName = COL_EXTREME_POWER_SAVE,
+                initialValue = batteryState.value.isExtremePowerSaveEnabled,
+            )
+            .stateIn(
+                scope,
+                SharingStarted.WhileSubscribed(),
+                batteryState.value.isExtremePowerSaveEnabled,
+            )
 
     override val isBatteryDefenderEnabled =
         batteryState
@@ -267,6 +289,7 @@ constructor(
     companion object {
         private const val COL_PLUGGED_IN = "pluggedIn"
         private const val COL_POWER_SAVE = "powerSave"
+        private const val COL_EXTREME_POWER_SAVE = "extremePowerSave"
         private const val COL_DEFEND = "defend"
         private const val COL_INCOMPATIBLE_CHARGING = "incompatibleCharging"
         private const val COL_LEVEL = "level"
@@ -281,6 +304,7 @@ private data class BatteryCallbackState(
     val level: Int? = null,
     val isPluggedIn: Boolean = false,
     val isPowerSaveEnabled: Boolean = false,
+    val isExtremePowerSaveEnabled: Boolean = false,
     val isBatteryDefenderEnabled: Boolean = false,
     val isStateUnknown: Boolean = false,
     val isIncompatibleCharging: Boolean = false,

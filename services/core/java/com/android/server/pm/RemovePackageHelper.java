@@ -511,10 +511,9 @@ final class RemovePackageHelper {
         return true;
     }
 
-    void cleanUpResources(@Nullable String packageName, @Nullable File codeFile,
-                          @Nullable String[] instructionSets) {
+    void cleanUpResources(@Nullable String packageName, @Nullable File codeFile) {
         try (PackageManagerTracedLock installLock = mPm.mInstallLock.acquireLock()) {
-            cleanUpResourcesLI(codeFile, instructionSets);
+            cleanUpResourcesLI(codeFile);
         }
         if (packageName == null) {
             return;
@@ -529,7 +528,7 @@ final class RemovePackageHelper {
 
     // Need installer lock especially for dex file removal.
     @GuardedBy("mPm.mInstallLock")
-    private void cleanUpResourcesLI(@Nullable File codeFile, @Nullable String[] instructionSets) {
+    private void cleanUpResourcesLI(@Nullable File codeFile) {
         // Try enumerating all code paths before deleting
         List<String> allCodePaths = Collections.EMPTY_LIST;
         if (codeFile != null && codeFile.exists()) {

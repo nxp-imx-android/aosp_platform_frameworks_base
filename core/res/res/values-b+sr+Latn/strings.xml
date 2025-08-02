@@ -301,8 +301,7 @@
     <string name="global_action_assist" msgid="2517047220311505805">"Pomoć"</string>
     <string name="global_action_voice_assist" msgid="6655788068555086695">"Glasovna pomoć"</string>
     <string name="global_action_lockdown" msgid="2475471405907902963">"Zaključavanje"</string>
-    <!-- no translation found for global_action_unrestricted_lock (7933224393323064116) -->
-    <skip />
+    <string name="global_action_unrestricted_lock" msgid="7933224393323064116">"Zaključaj"</string>
     <string name="status_bar_notification_info_overflow" msgid="3330152558746563475">"999+"</string>
     <string name="notification_compact_heads_up_reply" msgid="2425293958371284340">"Odgovori"</string>
     <string name="notification_hidden_text" msgid="2835519769868187223">"Novo obaveštenje"</string>
@@ -892,7 +891,7 @@
     <string name="policydesc_watchLogin_secondaryUser" product="tv" msgid="8965224107449407052">"Nadgleda broj netačnih lozinki unetih pri otključavanju ekrana i zaključava Android TV uređaj ili briše sve podatke ovog korisnika ako se unese previše netačnih lozinki."</string>
     <string name="policydesc_watchLogin_secondaryUser" product="automotive" msgid="7180857406058327941">"Nadgleda broj netačnih lozinki unetih pri otključavanju ekrana i zaključava sistem za informacije i zabavu ili briše sve podatke ovog profila ako se unese previše netačnih lozinki."</string>
     <string name="policydesc_watchLogin_secondaryUser" product="default" msgid="9177645136475155924">"Nadgleda broj netačnih lozinki unetih pri otključavanju ekrana i zaključava telefon ili briše sve podatke ovog korisnika ako se unese previše netačnih lozinki."</string>
-    <string name="policylab_resetPassword" msgid="214556238645096520">"Promena zaključavanja ekrana"</string>
+    <string name="policylab_resetPassword" msgid="214556238645096520">"Promena otključavanja ekrana"</string>
     <string name="policydesc_resetPassword" msgid="4626419138439341851">"Menja otključavanje ekrana."</string>
     <string name="policylab_forceLock" msgid="7360335502968476434">"Zaključavanje ekrana"</string>
     <string name="policydesc_forceLock" msgid="1008844760853899693">"Kontrola načina i vremena zaključavanja ekrana."</string>
@@ -1485,8 +1484,6 @@
     <string name="decline_remote_bugreport_action" msgid="4040894777519784346">"ODBIJ"</string>
     <string name="select_input_method" msgid="3971267998568587025">"Izbor metoda unosa"</string>
     <string name="input_method_language_settings" msgid="8069089418056819437">"Podešavanja jezika"</string>
-    <string name="show_ime" msgid="6406112007347443383">"Zadržava se na ekranu dok je fizička tastatura aktivna"</string>
-    <string name="hardware" msgid="3611039921284836033">"Koristi tastaturu na ekranu"</string>
     <string name="select_keyboard_layout_notification_title" msgid="5823199895322205589">"Konfigurišite uređaj <xliff:g id="DEVICE_NAME">%s</xliff:g>"</string>
     <string name="select_multiple_keyboards_layout_notification_title" msgid="6999491025126641938">"Konfigurišite fizičke tastature"</string>
     <string name="select_keyboard_layout_notification_message" msgid="8835158247369158154">"Dodirnite da biste izabrali jezik i raspored"</string>

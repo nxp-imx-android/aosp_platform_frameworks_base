@@ -242,9 +242,12 @@ public class InstallationFragment extends DialogFragment {
         Button negativeButton = UiUtil.getAlertDialogNegativeButton(dialog);
         if (negativeButton != null) {
             negativeButton.setVisibility(View.VISIBLE);
+            negativeButton.setEnabled(true);
             UiUtil.applyOutlinedButtonStyle(requireContext(), negativeButton);
             negativeButton.setText(R.string.button_close);
             negativeButton.setOnClickListener(view -> {
+                // Disable the button to avoid the user clicks it more than once quickly
+                view.setEnabled(false);
                 mInstallActionListener.onNegativeResponse(
                         installStage.getActivityResultCode(), installStage.getResultIntent());
             });
@@ -289,7 +292,11 @@ public class InstallationFragment extends DialogFragment {
                 mCustomMessageTextView.setText(R.string.message_install_failed_less_storage);
                 titleResId = R.string.title_install_failed_less_storage;
                 positiveButtonText = getString(R.string.button_manage_apps);
-                positiveButtonListener = (view) -> mInstallActionListener.sendManageAppsIntent();
+                positiveButtonListener = (view) -> {
+                    // Disable the button to avoid the user clicks it more than once quickly
+                    view.setEnabled(false);
+                    mInstallActionListener.sendManageAppsIntent();
+                };
             }
             default -> {
                 mCustomMessageTextView.setVisibility(View.GONE);
@@ -306,6 +313,7 @@ public class InstallationFragment extends DialogFragment {
                 positiveButton.setVisibility(View.GONE);
             } else {
                 positiveButton.setVisibility(View.VISIBLE);
+                positiveButton.setEnabled(true);
                 UiUtil.applyFilledButtonStyle(requireContext(), positiveButton);
                 positiveButton.setText(positiveButtonText);
                 positiveButton.setFilterTouchesWhenObscured(true);
@@ -317,9 +325,12 @@ public class InstallationFragment extends DialogFragment {
         Button negativeButton = UiUtil.getAlertDialogNegativeButton(dialog);
         if (negativeButton != null) {
             negativeButton.setVisibility(View.VISIBLE);
+            negativeButton.setEnabled(true);
             UiUtil.applyOutlinedButtonStyle(requireContext(), negativeButton);
             negativeButton.setText(R.string.button_close);
             negativeButton.setOnClickListener(view -> {
+                // Disable the button to avoid the user clicks it more than once quickly
+                view.setEnabled(false);
                 mInstallActionListener.onNegativeResponse(installStage.getStageCode());
             });
         }
@@ -385,9 +396,12 @@ public class InstallationFragment extends DialogFragment {
         Button negativeButton = UiUtil.getAlertDialogNegativeButton(dialog);
         if (negativeButton != null) {
             negativeButton.setVisibility(View.VISIBLE);
+            negativeButton.setEnabled(true);
             UiUtil.applyOutlinedButtonStyle(requireContext(), negativeButton);
             negativeButton.setText(R.string.button_cancel);
             negativeButton.setOnClickListener(view -> {
+                // Disable the button to avoid the user clicks it more than once quickly
+                view.setEnabled(false);
                 mInstallActionListener.onNegativeResponse(InstallStage.STAGE_STAGING);
             });
         }
@@ -426,11 +440,14 @@ public class InstallationFragment extends DialogFragment {
         if (positiveButton != null) {
             if (hasEntry) {
                 positiveButton.setVisibility(View.VISIBLE);
+                positiveButton.setEnabled(true);
                 UiUtil.applyFilledButtonStyle(requireContext(), positiveButton);
                 positiveButton.setText(R.string.button_open);
                 positiveButton.setOnClickListener(view -> {
                     Log.i(LOG_TAG, "Finished installing and launching "
                             + installStage.getAppLabel());
+                    // Disable the button to avoid the user clicks it more than once quickly
+                    view.setEnabled(false);
                     mInstallActionListener.openInstalledApp(resultIntent);
                 });
             } else {
@@ -442,9 +459,12 @@ public class InstallationFragment extends DialogFragment {
         Button negativeButton = UiUtil.getAlertDialogNegativeButton(dialog);
         if (negativeButton != null) {
             negativeButton.setVisibility(View.VISIBLE);
+            negativeButton.setEnabled(true);
             UiUtil.applyOutlinedButtonStyle(requireContext(), negativeButton);
             negativeButton.setText(R.string.button_done);
             negativeButton.setOnClickListener(view -> {
+                // Disable the button to avoid the user clicks it more than once quickly
+                view.setEnabled(false);
                 mInstallActionListener.onNegativeResponse(installStage.getStageCode());
             });
         }
@@ -486,10 +506,13 @@ public class InstallationFragment extends DialogFragment {
         Button positiveButton = UiUtil.getAlertDialogPositiveButton(dialog);
         if (positiveButton != null) {
             positiveButton.setVisibility(View.VISIBLE);
+            positiveButton.setEnabled(true);
             UiUtil.applyTextButtonStyle(requireContext(), positiveButton);
             positiveButton.setText(R.string.external_sources_settings);
             positiveButton.setFilterTouchesWhenObscured(true);
             positiveButton.setOnClickListener(view -> {
+                // Disable the button to avoid the user clicks it more than once quickly
+                view.setEnabled(false);
                 mInstallActionListener.sendUnknownAppsIntent(
                         installStage.getUnknownSourcePackageName());
             });
@@ -499,9 +522,12 @@ public class InstallationFragment extends DialogFragment {
         Button negativeButton = UiUtil.getAlertDialogNegativeButton(dialog);
         if (negativeButton != null) {
             negativeButton.setVisibility(View.VISIBLE);
+            negativeButton.setEnabled(true);
             UiUtil.applyTextButtonStyle(requireContext(), negativeButton);
             negativeButton.setText(R.string.button_cancel);
             negativeButton.setOnClickListener(view -> {
+                // Disable the button to avoid the user clicks it more than once quickly
+                view.setEnabled(false);
                 mInstallActionListener.onNegativeResponse(installStage.getStageCode());
             });
         }
@@ -532,10 +558,13 @@ public class InstallationFragment extends DialogFragment {
         Button positiveButton = UiUtil.getAlertDialogPositiveButton(dialog);
         if (positiveButton != null) {
             positiveButton.setVisibility(View.VISIBLE);
+            positiveButton.setEnabled(true);
             UiUtil.applyTextButtonStyle(requireContext(), positiveButton);
             positiveButton.setText(R.string.button_continue);
             positiveButton.setFilterTouchesWhenObscured(true);
             positiveButton.setOnClickListener(view -> {
+                // Disable the button to avoid the user clicks it more than once quickly
+                view.setEnabled(false);
                 mInstallActionListener.onPositiveResponse(
                         InstallUserActionRequired.USER_ACTION_REASON_ANONYMOUS_SOURCE);
             });
@@ -545,9 +574,12 @@ public class InstallationFragment extends DialogFragment {
         Button negativeButton = UiUtil.getAlertDialogNegativeButton(dialog);
         if (negativeButton != null) {
             negativeButton.setVisibility(View.VISIBLE);
+            negativeButton.setEnabled(true);
             UiUtil.applyTextButtonStyle(requireContext(), negativeButton);
             negativeButton.setText(R.string.button_cancel);
             negativeButton.setOnClickListener(view -> {
+                // Disable the button to avoid the user clicks it more than once quickly
+                view.setEnabled(false);
                 mInstallActionListener.onNegativeResponse(installStage.getStageCode());
             });
         }
@@ -596,6 +628,7 @@ public class InstallationFragment extends DialogFragment {
         Button positiveButton = UiUtil.getAlertDialogPositiveButton(dialog);
         if (positiveButton != null) {
             positiveButton.setVisibility(View.VISIBLE);
+            positiveButton.setEnabled(true);
             if (isUpdateOwnerShip) {
                 UiUtil.applyTextButtonStyle(requireContext(), positiveButton);
             } else {
@@ -604,6 +637,8 @@ public class InstallationFragment extends DialogFragment {
             positiveButton.setText(positiveBtnTextRes);
             positiveButton.setFilterTouchesWhenObscured(true);
             positiveButton.setOnClickListener(view -> {
+                // Disable the button to avoid the user clicks it more than once quickly
+                view.setEnabled(false);
                 mInstallActionListener.onPositiveResponse(
                         InstallUserActionRequired.USER_ACTION_REASON_INSTALL_CONFIRMATION);
             });
@@ -613,6 +648,7 @@ public class InstallationFragment extends DialogFragment {
         Button negativeButton = UiUtil.getAlertDialogNegativeButton(dialog);
         if (negativeButton != null) {
             negativeButton.setVisibility(View.VISIBLE);
+            negativeButton.setEnabled(true);
             if (isUpdateOwnerShip) {
                 UiUtil.applyTextButtonStyle(requireContext(), negativeButton);
             } else {
@@ -620,6 +656,8 @@ public class InstallationFragment extends DialogFragment {
             }
             negativeButton.setText(R.string.button_cancel);
             negativeButton.setOnClickListener(view -> {
+                // Disable the button to avoid the user clicks it more than once quickly
+                view.setEnabled(false);
                 mInstallActionListener.onNegativeResponse(installStage.getStageCode());
             });
         }
@@ -640,6 +678,8 @@ public class InstallationFragment extends DialogFragment {
         mCustomMessageTextView.setVisibility(View.VISIBLE);
         mIndeterminateProgressBar.setVisibility(View.GONE);
         mProgressBar.setVisibility(View.GONE);
+        // Disable clicking outside of the dialog
+        this.setCancelable(false);
 
         mAppIcon.setImageDrawable(installStage.getAppIcon());
         mAppLabelTextView.setText(installStage.getAppLabel());
@@ -661,11 +701,17 @@ public class InstallationFragment extends DialogFragment {
         Button negativeButton = UiUtil.getAlertDialogNegativeButton(dialog);
         if (negativeButton != null) {
             negativeButton.setVisibility(View.VISIBLE);
+            negativeButton.setEnabled(true);
             negativeButton.setText(R.string.ok);
             negativeButton.setFilterTouchesWhenObscured(true);
             UiUtil.applyOutlinedButtonStyle(requireContext(), negativeButton);
             negativeButton.setOnClickListener(view -> {
-                mInstallActionListener.onNegativeResponse(installStage.getStageCode());
+                // Disable the button to avoid the user clicks it more than once quickly
+                view.setEnabled(false);
+                // Don't use installStage.getStageCode() here because it can be
+                // STAGE_USER_ACTION_REQUIRED if the installation is triggered by Pia itself.
+                mInstallActionListener.onNegativeResponse(
+                        InstallStage.STAGE_VERIFICATION_CONFIRMATION_REQUIRED);
             });
         }
         // Hide positive button
@@ -677,6 +723,7 @@ public class InstallationFragment extends DialogFragment {
         if (isVerificationBypassAllowed(verificationInfo)) {
             if (!mIsMoreDetailsExpanded) {
                 mMoreDetailsClickableLayout.setVisibility(View.VISIBLE);
+                mMoreDetailsClickableLayout.setEnabled(true);
                 mMoreDetailsExpandedLayout.setVisibility(View.GONE);
                 // The color of the arrow is the same as the text color
                 TextView textView = dialog.requireViewById(R.id.more_details_text);
@@ -685,7 +732,9 @@ public class InstallationFragment extends DialogFragment {
                 imageView.setColorFilter(textColor);
             }
 
-            mMoreDetailsClickableLayout.setOnClickListener(v -> {
+            mMoreDetailsClickableLayout.setOnClickListener(view -> {
+                // Disable the text to avoid the user clicks it more than once quickly
+                view.setEnabled(false);
                 mIsMoreDetailsExpanded = true;
                 mMoreDetailsClickableLayout.setVisibility(View.GONE);
                 mMoreDetailsExpandedLayout.setVisibility(View.VISIBLE);
@@ -700,7 +749,10 @@ public class InstallationFragment extends DialogFragment {
                 }
                 installWithoutVerifyingTextView.setTypeface(
                         installWithoutVerifyingTextView.getTypeface(), Typeface.BOLD);
-                installWithoutVerifyingTextView.setOnClickListener(v1 -> {
+                installWithoutVerifyingTextView.setEnabled(true);
+                installWithoutVerifyingTextView.setOnClickListener(view1 -> {
+                    // Disable the text to avoid the user clicks it more than once quickly
+                    view1.setEnabled(false);
                     mInstallActionListener.onPositiveResponse(
                             InstallUserActionRequired.USER_ACTION_REASON_VERIFICATION_CONFIRMATION);
                 });

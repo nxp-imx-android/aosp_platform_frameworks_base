@@ -139,9 +139,10 @@
             android:background="@drawable/notification_2025_guts_feature_toggle_bg"
             android:orientation="horizontal">
                 <LinearLayout
-                    android:layout_width="wrap_content"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
+                    android:layout_toStartOf="@+id/feature_toggle"
                     android:layout_alignParentStart="true"
                     android:gravity="start|center_vertical">
                     <TextView
@@ -155,6 +156,7 @@
                         android:textSize="16sp"
                         android:textColor="@androidprv:color/materialColorOnSecondaryContainer"
                         android:lineSpacingExtra="4sp"
+                        android:ellipsize="end"
                         android:text="@string/notification_guts_single_bundle_notif_title"/>
                     <TextView
                         android:id="@+id/feature_summary"
@@ -166,6 +168,7 @@
                         android:fontFamily="@*android:string/config_headlineFontFamilyMedium"
                         android:textSize="14sp"
                         android:textColor="@androidprv:color/materialColorOnSecondaryContainer"
+                        android:ellipsize="end"
                         android:lineSpacingExtra="4sp" />
                 </LinearLayout>
             <com.google.android.material.materialswitch.MaterialSwitch

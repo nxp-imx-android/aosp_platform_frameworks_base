@@ -148,7 +148,7 @@ public final class ServiceTimeoutTest {
         final long now = SystemClock.uptimeMillis();
         final ServiceRecord sr = spy(ServiceRecord.newEmptyInstanceForTest(mAms));
         doNothing().when(sr).dump(any(), anyString());
-        sr.startRequested = true;
+        sr.setStartRequested(true);
         sr.executingStart = now;
 
         app.mServices.startExecutingService(sr);

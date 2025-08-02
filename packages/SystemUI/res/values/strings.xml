@@ -356,6 +356,14 @@
     <string name="screen_record_should_show_touches_label">Show touches</string>
     <!-- Header for the carousel to choose an app for screen recording. [CHAR LIMIT=50] -->
     <string name="screen_record_capture_target_choose_app">Choose an app to record</string>
+    <!-- Snackbar shows after the screen recording is saved [CHAR LIMIT=20] -->
+    <string name="screen_record_video_saved">Video saved</string>
+    <!-- Button to retake a screen recording [CHAR LIMIT=20] -->
+    <string name="screen_record_retake">Retake</string>
+    <!-- Button to edit a screen recording [CHAR LIMIT=20] -->
+    <string name="screen_record_edit">Edit</string>
+    <!-- Button to delete a screen recording [CHAR LIMIT=20] -->
+    <string name="screen_record_delete">Delete</string>
 
     <!-- Button text for taking a fullscreen screenshot [CHAR LIMIT=35] -->
     <string name="screen_capture_fullscreen_screenshot_button">Capture entire screen</string>
@@ -365,6 +373,8 @@
     <string name="screen_capture_toolbar_capture_button">Capture</string>
     <!-- Button text in the toolbar for choosing the screen recording type. [CHAR LIMIT=35] -->
     <string name="screen_capture_toolbar_record_button">Record</string>
+    <!-- Button text for screen sharing [CHAR LIMIT=35] -->
+    <string name="screen_share_toolbar_share_button">Share</string>
 
     <!-- Text shown beneath partial screenshot region displaying the dimensions (width and height) of the area to be captured. [CHAR LIMIT=NONE] [SCREENSHOT=screen/7ytguTQdu3cEn4f] -->
     <string name="screen_capture_region_dimensions"><xliff:g example="210" id="width">%1$d</xliff:g> x <xliff:g example="129" id="height">%2$d</xliff:g></string>

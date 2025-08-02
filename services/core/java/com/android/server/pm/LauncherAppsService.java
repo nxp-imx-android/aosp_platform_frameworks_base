@@ -1897,9 +1897,6 @@ public class LauncherAppsService extends SystemService {
         @Override
         public ParceledListSlice<AppLaunchInfo> getActivityLaunchIntentForAllApps(
                 String callingPackage, UserHandle user) {
-            if (!android.app.Flags.optimizeGetAppsAndShortcuts()) {
-                return new ParceledListSlice<>(new ArrayList<>());
-            }
             List<AppLaunchInfo> availableApps = new ArrayList<>();
             final int userId = user.getIdentifier();
 
@@ -1949,9 +1946,6 @@ public class LauncherAppsService extends SystemService {
         public ParceledListSlice<ShortcutInfo> getAvailableShortcuts(String callingPackage,
                 UserHandle user) {
             List<ShortcutInfo> availableShortcuts = new ArrayList<>();
-            if (!android.app.Flags.optimizeGetAppsAndShortcuts()) {
-                return new ParceledListSlice<>(availableShortcuts);
-            }
             int userId = user.getIdentifier();
 
             if (!mUserManagerInternal.isUserUnlocked(userId)) {

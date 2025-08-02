@@ -1983,15 +1983,6 @@ flag {
     bug: "418243972"
 }
 
-flag {
-    name: "dream_preview_tap_dismiss"
-    namespace: "systemui"
-    description: "Dismisses dream in preview on tap"
-    bug: "416412668"
-    metadata {
-      purpose: PURPOSE_BUGFIX
-    }
-}
 
 flag {
     name: "hub_blurred_by_shade_fix"

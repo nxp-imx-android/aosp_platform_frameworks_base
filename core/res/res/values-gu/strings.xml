@@ -300,8 +300,7 @@
     <string name="global_action_assist" msgid="2517047220311505805">"સહાય"</string>
     <string name="global_action_voice_assist" msgid="6655788068555086695">"વૉઇસ સહાય"</string>
     <string name="global_action_lockdown" msgid="2475471405907902963">"લૉકડાઉન"</string>
-    <!-- no translation found for global_action_unrestricted_lock (7933224393323064116) -->
-    <skip />
+    <string name="global_action_unrestricted_lock" msgid="7933224393323064116">"લૉક"</string>
     <string name="status_bar_notification_info_overflow" msgid="3330152558746563475">"999+"</string>
     <string name="notification_compact_heads_up_reply" msgid="2425293958371284340">"જવાબ આપો"</string>
     <string name="notification_hidden_text" msgid="2835519769868187223">"નવું નોટિફિકેશન"</string>
@@ -899,7 +898,7 @@
     <string name="policydesc_wipeData" product="tablet" msgid="7245372676261947507">"ફેક્ટરી ડેટા ફરીથી સેટ કરોને કરીને ચેતવણી વિના ટેબ્લેટનો ડેટા કાઢી નાખો."</string>
     <string name="policydesc_wipeData" product="tv" msgid="513862488950801261">"ફેક્ટરી ડેટા રીસેટ કરીને ચેતવણી વિના તમારા Android TV ડિવાઇસનો ડેટા કાઢી નાખો."</string>
     <string name="policydesc_wipeData" product="automotive" msgid="660804547737323300">"ફેક્ટરી ડેટા રીસેટ કરીને કોઈ ચેતવણી વિના જ ઇન્ફોટેનમેન્ટ સિસ્ટમનો ડેટા કાઢી નાખો."</string>
-    <string name="policydesc_wipeData" product="default" msgid="8036084184768379022">"ફેક્ટરી ડેટા ફરીથી સેટ કરીને ચેતવણી વિના ફોનનો ડેટા કાઢી નાખો."</string>
+    <string name="policydesc_wipeData" product="default" msgid="8036084184768379022">"ફેક્ટરી ડેટા રીસેટ કરીને ચેતવણી વિના ફોનનો ડેટા કાઢી નાખો."</string>
     <string name="policylab_wipeData_secondaryUser" product="automotive" msgid="115034358520328373">"પ્રોફાઇલનો ડેટા કાઢી નાખો"</string>
     <string name="policylab_wipeData_secondaryUser" product="default" msgid="413813645323433166">"વપરાશકર્તા ડેટા કાઢી નાખો"</string>
     <string name="policydesc_wipeData_secondaryUser" product="tablet" msgid="2336676480090926470">"ચેતવણી વિના આ ટેબ્લેટ પરનો આ વપરાશકર્તાનો ડેટા કાઢી નાખો."</string>
@@ -1484,8 +1483,6 @@
     <string name="decline_remote_bugreport_action" msgid="4040894777519784346">"નકારો"</string>
     <string name="select_input_method" msgid="3971267998568587025">"ઇનપુટ પદ્ધતિ પસંદ કરો"</string>
     <string name="input_method_language_settings" msgid="8069089418056819437">"ભાષા સંબંધિત સેટિંગ"</string>
-    <string name="show_ime" msgid="6406112007347443383">"જ્યારે ભૌતિક કીબોર્ડ સક્રિય હોય ત્યારે તેને સ્ક્રીન પર રાખો"</string>
-    <string name="hardware" msgid="3611039921284836033">"ઑન-સ્ક્રીન કીબોર્ડનો ઉપયોગ કરો"</string>
     <string name="select_keyboard_layout_notification_title" msgid="5823199895322205589">"<xliff:g id="DEVICE_NAME">%s</xliff:g>ની ગોઠવણી કરો"</string>
     <string name="select_multiple_keyboards_layout_notification_title" msgid="6999491025126641938">"ભૌતિક કીબોર્ડની ગોઠવણી કરો"</string>
     <string name="select_keyboard_layout_notification_message" msgid="8835158247369158154">"ભાષા અને લેઆઉટ પસંદ કરવા માટે ટૅપ કરો"</string>
@@ -1986,7 +1983,7 @@
     <string name="confirm_battery_saver" msgid="5247976246208245754">"ઓકે"</string>
     <string name="battery_saver_description_with_learn_more" msgid="5444908404021316250">"બૅટરી સેવર ઘેરી થીમની સુવિધા ચાલુ કરે છે અને બૅકગ્રાઉન્ડ પ્રવૃત્તિ, અમુક વિઝ્યુઅલ ઇફેક્ટ, અમુક સુવિધાઓ અને કેટલાક નેટવર્ક કનેક્શન મર્યાદિત કે બંધ કરે છે."</string>
     <string name="battery_saver_description" msgid="8518809702138617167">"બૅટરી સેવર ઘેરી થીમની સુવિધા ચાલુ કરે છે અને બૅકગ્રાઉન્ડ પ્રવૃત્તિ, અમુક વિઝ્યુઅલ ઇફેક્ટ, અમુક સુવિધાઓ અને કેટલાક નેટવર્ક કનેક્શન મર્યાદિત કે બંધ કરે છે."</string>
-    <string name="data_saver_description" msgid="4995164271550590517">"ડેટા વપરાશને ઘટાડવામાં સહાય માટે, ડેટા સેવર કેટલીક ઍપને બૅકગ્રાઉન્ડમાં ડેટા મોકલવા અથવા પ્રાપ્ત કરવાથી અટકાવે છે. તમે હાલમાં ઉપયોગ કરી રહ્યાં છો તે ઍપ ડેટાને ઍક્સેસ કરી શકે છે, પરંતુ તે આ ક્યારેક જ કરી શકે છે. આનો અર્થ એ હોઈ શકે છે, ઉદાહરણ તરીકે, છબીઓ ત્યાં સુધી ડિસ્પ્લે થશે નહીં જ્યાં સુધી તમે તેમને ટૅપ નહીં કરો."</string>
+    <string name="data_saver_description" msgid="4995164271550590517">"ડેટા વપરાશને ઘટાડવામાં મદદ માટે, ડેટા સેવર કેટલીક ઍપને બૅકગ્રાઉન્ડમાં ડેટા મોકલવા અથવા પ્રાપ્ત કરવાથી અટકાવે છે. તમે હાલમાં ઉપયોગ કરી રહ્યાં છો તે ઍપ ડેટાને ઍક્સેસ કરી શકે છે, પરંતુ તે આ ક્યારેક જ કરી શકે છે. આનો અર્થ એ હોઈ શકે છે, ઉદાહરણ તરીકે, છબીઓ ત્યાં સુધી ડિસ્પ્લે થશે નહીં જ્યાં સુધી તમે તેમને ટૅપ નહીં કરો."</string>
     <string name="data_saver_enable_title" msgid="7080620065745260137">"ડેટા સેવર ચાલુ કરીએ?"</string>
     <string name="data_saver_enable_button" msgid="4399405762586419726">"ચાલુ કરો"</string>
     <string name="zen_mode_duration_minutes_summary" msgid="4555514757230849789">"{count,plural, =1{એક મિનિટ માટે ({formattedTime} સુધી)}one{# મિનિટ માટે ({formattedTime} સુધી)}other{# મિનિટ માટે ({formattedTime} સુધી)}}"</string>

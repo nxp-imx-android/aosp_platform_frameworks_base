@@ -25,11 +25,13 @@ import android.hardware.biometrics.PromptInfo
 import android.hardware.biometrics.PromptVerticalListContentView
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
+import com.android.internal.logging.InstanceId
 import com.android.internal.widget.LockPatternUtils
 import com.android.internal.widget.LockPatternUtils.CREDENTIAL_TYPE_PASSWORD
 import com.android.internal.widget.LockPatternUtils.CREDENTIAL_TYPE_PATTERN
 import com.android.internal.widget.LockPatternUtils.CREDENTIAL_TYPE_PIN
 import com.android.systemui.SysuiTestCase
+import com.android.systemui.biometrics.BiometricPromptLogger
 import com.android.systemui.biometrics.data.repository.FakeDisplayStateRepository
 import com.android.systemui.biometrics.data.repository.FakeFingerprintPropertyRepository
 import com.android.systemui.biometrics.data.repository.FakePromptRepository
@@ -42,6 +44,8 @@ import com.android.systemui.display.data.repository.FakeDisplayRepository
 import com.android.systemui.display.domain.interactor.DisplayStateInteractor
 import com.android.systemui.display.domain.interactor.DisplayStateInteractorImpl
 import com.android.systemui.display.shared.model.DisplayRotation
+import com.android.systemui.log.SessionTracker
+import com.android.systemui.shared.system.SysUiStatsLog
 import com.android.systemui.util.concurrency.FakeExecutor
 import com.android.systemui.util.mockito.any
 import com.android.systemui.util.mockito.whenever
@@ -55,6 +59,8 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.Mock
 import org.mockito.junit.MockitoJUnit
+import org.mockito.kotlin.eq
+import org.mockito.kotlin.verify
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
@@ -77,6 +83,9 @@ class PromptSelectorInteractorImplTest : SysuiTestCase() {
 
     @Mock private lateinit var lockPatternUtils: LockPatternUtils
     @Mock private lateinit var biometricManager: BiometricManager
+    @Mock private lateinit var sessionTracker: SessionTracker
+    @Mock private lateinit var biometricPromptLogger: BiometricPromptLogger
+    @Mock private lateinit var instanceId: InstanceId
 
     private val testScope = TestScope()
     private val fingerprintRepository = FakeFingerprintPropertyRepository()
@@ -110,7 +119,11 @@ class PromptSelectorInteractorImplTest : SysuiTestCase() {
                 lockPatternUtils,
                 biometricManager,
                 testScope.backgroundScope,
+                sessionTracker,
+                biometricPromptLogger,
             )
+
+        whenever(sessionTracker.getSessionId(any())).thenReturn(instanceId)
     }
 
     private fun basicPromptInfo() =
@@ -298,6 +311,81 @@ class PromptSelectorInteractorImplTest : SysuiTestCase() {
 
             assertThat(promptKind).isEqualTo(PromptKind.Password)
             assertThat(currentView).isEqualTo(BiometricPromptView.CREDENTIAL)
+
+            interactor.resetPrompt(REQUEST_ID)
+            verifyUnset()
+        }
+
+    @Test
+    fun switchToCredential() =
+        testScope.runTest {
+            setUserCredentialType(isPassword = true)
+
+            val promptKind by collectLastValue(interactor.promptKind)
+            val currentView by collectLastValue(interactor.currentView)
+            assertThat(promptKind).isEqualTo(PromptKind.None)
+
+            setPrompt(onSwitchToCredential = false)
+            interactor.onSwitchToCredential()
+
+            assertThat(promptKind).isEqualTo(PromptKind.Password)
+            assertThat(currentView).isEqualTo(BiometricPromptView.CREDENTIAL)
+            verify(biometricPromptLogger)
+                .logPromptEvent(
+                    eq(instanceId),
+                    eq(
+                        SysUiStatsLog
+                            .BIOMETRIC_PROMPT_EVENT__EVENT__EVENT_TYPE_CREDENTIAL_VIEW_SHOWN
+                    ),
+                )
+
+            interactor.resetPrompt(REQUEST_ID)
+            verifyUnset()
+        }
+
+    @Test
+    fun switchToFallback() =
+        testScope.runTest {
+            setUserCredentialType(isPassword = true)
+
+            val promptKind by collectLastValue(interactor.promptKind)
+            val currentView by collectLastValue(interactor.currentView)
+            assertThat(promptKind).isEqualTo(PromptKind.None)
+
+            setPrompt(onSwitchToCredential = false)
+            interactor.onSwitchToFallback()
+
+            assertThat(promptKind!!.isBiometric()).isTrue()
+            assertThat(currentView).isEqualTo(BiometricPromptView.FALLBACK)
+            verify(biometricPromptLogger)
+                .logPromptEvent(
+                    eq(instanceId),
+                    eq(SysUiStatsLog.BIOMETRIC_PROMPT_EVENT__EVENT__EVENT_TYPE_FALLBACK_VIEW_SHOWN),
+                )
+
+            interactor.resetPrompt(REQUEST_ID)
+            verifyUnset()
+        }
+
+    @Test
+    fun switchToAuth() =
+        testScope.runTest {
+            setUserCredentialType(isPassword = true)
+
+            val promptKind by collectLastValue(interactor.promptKind)
+            val currentView by collectLastValue(interactor.currentView)
+            assertThat(promptKind).isEqualTo(PromptKind.None)
+
+            setPrompt(onSwitchToCredential = true)
+            interactor.onSwitchToAuth()
+
+            assertThat(promptKind!!.isBiometric()).isTrue()
+            assertThat(currentView).isEqualTo(BiometricPromptView.BIOMETRIC)
+            verify(biometricPromptLogger)
+                .logPromptEvent(
+                    eq(instanceId),
+                    eq(SysUiStatsLog.BIOMETRIC_PROMPT_EVENT__EVENT__EVENT_TYPE_BIOMETRIC_VIEW_SHOWN),
+                )
 
             interactor.resetPrompt(REQUEST_ID)
             verifyUnset()

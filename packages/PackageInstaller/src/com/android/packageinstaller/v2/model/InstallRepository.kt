@@ -76,7 +76,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 
 @SuppressLint("MissingPermission")
-class InstallRepository(private val context: Context) {
+class InstallRepository(private val context: Context) : EventResultPersister.EventResultObserver {
 
     private val packageManager: PackageManager = context.packageManager
     private val packageInstaller: PackageInstaller = packageManager.packageInstaller
@@ -137,6 +137,7 @@ class InstallRepository(private val context: Context) {
      * PackageInfo of the app being installed on device.
      */
     private var newPackageInfo: PackageInfo? = null
+    private var wasUserConfirmationTriggeredByPia = false
 
     /**
      * Extracts information from the incoming install intent, checks caller's permission to install
@@ -887,8 +888,16 @@ class InstallRepository(private val context: Context) {
         packageInstaller.setDeveloperVerificationUserResponse(
             sessionId, DEVELOPER_VERIFICATION_USER_RESPONSE_INSTALL_ANYWAY
         )
-        return InstallAborted(
-            ABORT_REASON_DONE, activityResultCode = Activity.RESULT_OK)
+        // If it is triggered by PIA itself, show the installing dialog and wait for the
+        // result from the receiver. Don't need to set the aborted.
+        if (wasUserConfirmationTriggeredByPia) {
+            wasUserConfirmationTriggeredByPia = false
+            return InstallInstalling(appSnippet, isAppUpdating)
+        } else {
+            return InstallAborted(
+                ABORT_REASON_DONE, activityResultCode = Activity.RESULT_OK
+            )
+        }
     }
 
     /**
@@ -985,9 +994,16 @@ class InstallRepository(private val context: Context) {
             if (localLogv) {
                 Log.i(LOG_TAG, "Install permission granted for session $sessionId")
             }
-            _installResult.value = InstallAborted(
-                ABORT_REASON_DONE, activityResultCode = Activity.RESULT_OK
-            )
+            // If it is triggered by PIA itself, show the installing dialog and wait for the
+            // result from the receiver. Don't need to set the aborted.
+            if (wasUserConfirmationTriggeredByPia) {
+                wasUserConfirmationTriggeredByPia = false
+                _installResult.value = InstallInstalling(appSnippet, isAppUpdating)
+            } else {
+                _installResult.value = InstallAborted(
+                    ABORT_REASON_DONE, activityResultCode = Activity.RESULT_OK
+                )
+            }
             return
         }
         val uri = intent.data
@@ -1016,13 +1032,10 @@ class InstallRepository(private val context: Context) {
         try {
             _installResult.value = InstallInstalling(appSnippet, isAppUpdating)
             installId = InstallEventReceiver.addObserver(
-                context, EventResultPersister.GENERATE_NEW_ID
-            ) { statusCode: Int, legacyStatus: Int, message: String?, serviceId: Int,
-                hasDeveloperVerificationFailure: Boolean ->
-                setStageBasedOnResult(statusCode, legacyStatus, message,
-                    hasDeveloperVerificationFailure
-                )
-            }
+                context,
+                EventResultPersister.GENERATE_NEW_ID,
+                this
+            )
         } catch (e: OutOfIdsException) {
             setStageBasedOnResult(
                 PackageInstaller.STATUS_FAILURE, PackageManager.INSTALL_FAILED_INTERNAL_ERROR, null
@@ -1052,7 +1065,6 @@ class InstallRepository(private val context: Context) {
         statusCode: Int,
         legacyStatus: Int,
         message: String?,
-        hasDeveloperVerificationFailure: Boolean = false
     ) {
         if (localLogv) {
             Log.i(
@@ -1071,13 +1083,11 @@ class InstallRepository(private val context: Context) {
                 val intent = packageManager.getLaunchIntentForPackage(newPackageInfo!!.packageName)
                 if (isLauncherActivityEnabled(intent)) intent else null
             }
-            _installResult.setValue(
-                InstallSuccess(
-                    appSnippet,
-                    shouldReturnResult,
-                    isAppUpdating,
-                    resultIntent
-                )
+            _installResult.value = InstallSuccess(
+                appSnippet,
+                shouldReturnResult,
+                isAppUpdating,
+                resultIntent
             )
         } else {
             // TODO (b/346655018): Use INSTALL_FAILED_ABORTED legacyCode in the condition
@@ -1087,33 +1097,22 @@ class InstallRepository(private val context: Context) {
             // InstallFailed dialog must not be shown only when the user denies ownership update. We
             // must show this dialog for all other install failures.
 
-            // Since API 36.1, InstallFailed dialog must not be shown if the installation failed
-            // because of the developer verification failure.
-            val developerVerificationFailed = Flags.verificationService()
-                    && statusCode == PackageInstaller.STATUS_FAILURE_ABORTED
-                    && hasDeveloperVerificationFailure
-
-            val userDenied = developerVerificationFailed ||
-                    (statusCode == PackageInstaller.STATUS_FAILURE_ABORTED &&
+            val userDenied = statusCode == PackageInstaller.STATUS_FAILURE_ABORTED &&
                             legacyStatus != PackageManager.INSTALL_FAILED_VERIFICATION_TIMEOUT &&
-                            legacyStatus != PackageManager.INSTALL_FAILED_VERIFICATION_FAILURE)
+                            legacyStatus != PackageManager.INSTALL_FAILED_VERIFICATION_FAILURE
 
             if (shouldReturnResult) {
                 val resultIntent = Intent().putExtra(Intent.EXTRA_INSTALL_RESULT, legacyStatus)
-                _installResult.setValue(
-                    InstallFailed(
-                        legacyCode = legacyStatus,
-                        statusCode = statusCode,
-                        shouldReturnResult = true,
-                        resultIntent = resultIntent
-                    )
+                _installResult.value = InstallFailed(
+                    legacyCode = legacyStatus,
+                    statusCode = statusCode,
+                    shouldReturnResult = true,
+                    resultIntent = resultIntent
                 )
             } else if (userDenied) {
-                _installResult.setValue(InstallAborted(ABORT_REASON_INTERNAL_ERROR))
+                _installResult.value = InstallAborted(ABORT_REASON_INTERNAL_ERROR)
             } else {
-                _installResult.setValue(
-                    InstallFailed(appSnippet, legacyStatus, statusCode, message)
-                )
+                _installResult.value = InstallFailed(appSnippet, legacyStatus, statusCode, message)
             }
         }
     }
@@ -1146,6 +1145,43 @@ class InstallRepository(private val context: Context) {
 
     val stagingProgress: LiveData<Int>
         get() = sessionStager?.progress ?: MutableLiveData(0)
+
+    /** Override the callback method of the EventResultPersister.EventResultObserver */
+    override fun onResult(
+        status: Int,
+        legacyStatus: Int,
+        message: String?,
+        serviceId: Int,
+    ) {
+        setStageBasedOnResult(status, legacyStatus, message)
+    }
+
+    /** Override the callback method of the EventResultPersister.EventResultObserver */
+    override fun onHandleIntent(intent: Intent): Boolean {
+        val status = intent.getIntExtra(PackageInstaller.EXTRA_STATUS, 0)
+
+        // If the status is pending user action, trigger the user confirmation from PIA.
+        if (status == PackageInstaller.STATUS_PENDING_USER_ACTION) {
+            val intentToStart = intent.getParcelableExtra(Intent.EXTRA_INTENT, Intent::class.java)
+            // Get the value of should return result from the original intent and add it into
+            // the intentToStart
+            val shouldReturnResult = this.intent.getBooleanExtra(Intent.EXTRA_RETURN_RESULT, false)
+            intentToStart!!.putExtra(Intent.EXTRA_RETURN_RESULT, shouldReturnResult)
+
+            // In this case, the caller is PIA itself
+            val stage = performPreInstallChecks(
+                intentToStart!!,
+                CallerInfo(context.packageName, context.applicationInfo.uid))
+            if (stage.stageCode == InstallStage.STAGE_ABORTED) {
+                _installResult.value = stage
+                return false
+            }
+            wasUserConfirmationTriggeredByPia = true
+            stageForInstall()
+            return true
+        }
+        return false
+    }
 
     companion object {
         const val EXTRA_STAGED_SESSION_ID = "com.android.packageinstaller.extra.STAGED_SESSION_ID"

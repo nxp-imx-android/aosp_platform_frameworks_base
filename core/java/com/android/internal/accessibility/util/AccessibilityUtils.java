@@ -92,6 +92,21 @@ public final class AccessibilityUtils {
     public static final String MENU_SERVICE_RELATIVE_CLASS_NAME = ".AccessibilityMenuService";
 
     /**
+     * The delay time in milliseconds for showing the magnification button.
+     * @hide
+     */
+    public static final long MAGNIFICATION_SHOW_BUTTON_DELAY_MS = 300;
+
+    /**
+     * The interval in milliseconds for throttling UI changes and reduce IPC to show/hide the
+     * magnification mode switch button. It's set to be the same as
+     * {@link #MAGNIFICATION_SHOW_BUTTON_DELAY_MS} so that users won't notice a delay.
+     * @hide
+     */
+    public static final long MAGNIFICATION_HANDLE_UI_CHANGE_INTERVAL_MS =
+            MAGNIFICATION_SHOW_BUTTON_DELAY_MS;
+
+    /**
      * {@link ComponentName} for the Accessibility Menu {@link AccessibilityService} as provided
      * inside the system build, used for automatic migration to this version of the service.
      * @hide

@@ -96,19 +96,29 @@
     <string name="message_restore_error_installer_absent" msgid="8492838251989389724">"ఈ యాప్‌ను రీస్టోర్ చేయడానికి, మీరు <xliff:g id="INSTALLER_NAME">%1$s</xliff:g>‌ను ఇన్‌స్టాల్ చేయాలి"</string>
     <string name="message_restore_error_generic" msgid="5903850636679929406">"ఈ యాప్‌ను రీస్టోర్ చేయడానికి ట్రై చేస్తున్నపుడు సమస్య ఎదురైంది"</string>
     <string name="message_uninstall_activity" msgid="3263352475743590167">"<xliff:g id="ACTIVITY_NAME">%1$s</xliff:g> ఈ కింది యాప్‌లో భాగం: <xliff:g id="APP_NAME">%2$s</xliff:g>"</string>
-    <!-- no translation found for cannot_install_app_blocked_summary (8433096420067308800) -->
+    <string name="cannot_install_app_blocked_summary" msgid="8433096420067308800">"&lt;p&gt;ఈ యాప్ బ్లాక్ చేయబడింది. మీ డివైజ్, డేటాను సురక్షితంగా ఉంచడంలో సహాయపడటానికి, వెరిఫై చేసిన డెవలపర్‌ల నుండి మాత్రమే యాప్‌లను ఇన్‌స్టాల్ చేయవచ్చు.&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;డెవలపర్ వెరిఫికేషన్ గురించి మరింత తెలుసుకోండి&lt;/a&gt;&lt;/p&gt;"</string>
+    <!-- no translation found for cannot_update_app_blocked_summary (5003390308880649930) -->
     <skip />
-    <!-- no translation found for cannot_install_verification_no_internet_summary (8948259713332887857) -->
+    <string name="cannot_install_verification_no_internet_summary" msgid="8948259713332887857">"&lt;p&gt;ఈ యాప్ ఇన్‌స్టాల్ చేయబడలేదు. వెరిఫై చేయని డెవలపర్‌ల డెవలప్ చేసే యాప్‌లు సురక్షితం కాకపోవచ్చు.&lt;/p&gt; &lt;p&gt;యాప్ డెవలపర్‌ను వెరిఫై చేయడానికి ఇంటర్నెట్ కనెక్షన్ అవసరం. మీ డివైజ్‌ ఇంటర్నెట్‌కు కనెక్ట్ చేయబడిందని నిర్ధారించుకోండి, ఆపై యాప్‌ను మళ్లీ ఇన్‌స్టాల్ చేయడానికి ట్రై చేయండి. &lt;/p&gt; &lt;p&gt;&lt;a href=&gt;డెవలపర్ వెరిఫికేషన్ గురించి మరింత తెలుసుకోండి&lt;/a&gt;&lt;p&gt;"</string>
+    <!-- no translation found for cannot_update_verification_no_internet_summary (2970654650180690063) -->
     <skip />
-    <!-- no translation found for cannot_install_verification_unavailable_summary (343815915687716571) -->
+    <string name="cannot_install_verification_unavailable_summary" msgid="343815915687716571">"&lt;p&gt;ఈ యాప్ డెవలపర్‌ను వెరిఫై చేయడంలో సమస్య ఉంది. వెరిఫై చేయని డెవలపర్‌ల డెవలప్ చేసే యాప్‌లు సురక్షితం కాకపోవచ్చు, కాబట్టి యాప్ ఇన్‌స్టాల్ చేయడం జరగలేదు.&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;డెవలపర్ వెరిఫికేషన్ గురించి మరింత తెలుసుకోండి&lt;/a&gt;&lt;/p&gt;"</string>
+    <!-- no translation found for cannot_update_verification_unavailable_summary (7697174533040472480) -->
     <skip />
-    <!-- no translation found for install_without_verifying_summary (9056694084349761546) -->
+    <!-- no translation found for cannot_install_verification_unavailable_fail_closed_summary (3178396108551754329) -->
     <skip />
-    <!-- no translation found for cannot_install_app_blocked_title (6372444121824751694) -->
+    <!-- no translation found for cannot_update_verification_unavailable_fail_closed_summary (2057697870682373917) -->
     <skip />
-    <!-- no translation found for cannot_install_verification_no_internet_title (2862046642298119581) -->
+    <!-- no translation found for more_details_expanded_install_summary (3545896392881608712) -->
     <skip />
-    <!-- no translation found for cannot_install_verification_unavailable_title (2038093442302309120) -->
+    <!-- no translation found for more_details_expanded_update_summary (2239162864839036480) -->
+    <skip />
+    <string name="cannot_install_app_blocked_title" msgid="6372444121824751694">"యాప్ డెవలపర్ వెరిఫై చేయలేదు"</string>
+    <string name="cannot_install_verification_no_internet_title" msgid="2862046642298119581">"ఇంటర్నెట్ లేదు, యాప్ డెవలపర్‌ను వెరిఫై చేయడం సాధ్యం కాలేదు"</string>
+    <string name="cannot_install_verification_unavailable_title" msgid="2038093442302309120">"యాప్ డెవలపర్‌ను వెరిఫై చేయడం సాధ్యం కాలేదు"</string>
+    <!-- no translation found for install_without_verifying (5359680595440741626) -->
+    <skip />
+    <!-- no translation found for update_without_verifying (2841466981431484179) -->
     <skip />
     <string name="button_install" msgid="7434013176505680162">"ఇన్‌స్టాల్ చేయండి"</string>
     <string name="button_update" msgid="3046719350226327526">"అప్‌డేట్ చేయండి"</string>

@@ -123,11 +123,7 @@ class DesksTransitionObserver(
 
     private fun handleDeskTransition(info: TransitionInfo, deskTransition: DeskTransition) {
         logD("Desk transition ready: %s", deskTransition)
-        // TODO: b/415381304 - don't use |current|. It can point to the old user during user-switch
-        //   transitions while transition info changes can be for the new user. Transitions can
-        //   even contain changes for tasks of different users. Instead, add a |userId| argument
-        //   in |DeskTransition|, since |TaskInfo#mUserId| is also unreliable on non leaf tasks.
-        val desktopRepository = desktopUserRepositories.current
+        val repository = desktopUserRepositories.getProfile(deskTransition.userId)
         when (deskTransition) {
             is DeskTransition.RemoveDesk -> {
                 // TODO: b/362720497 - consider verifying the desk was actually removed through the
@@ -136,7 +132,7 @@ class DesksTransitionObserver(
                 val deskId = deskTransition.deskId
                 val displayId = deskTransition.displayId
                 deskTransition.runOnTransitEnd?.invoke()
-                desktopRepository.removeDesk(deskTransition.deskId)
+                repository.removeDesk(deskTransition.deskId)
                 deskTransition.onDeskRemovedListener?.onDeskRemoved(displayId, deskId)
             }
             is DeskTransition.ActivateDesk -> {
@@ -151,7 +147,7 @@ class DesksTransitionObserver(
                     // reported in the transition change list.
                     logD("Activating desk without transition change")
                 }
-                desktopRepository.setActiveDesk(
+                repository.setActiveDesk(
                     displayId = deskTransition.displayId,
                     deskId = deskTransition.deskId,
                 )
@@ -170,7 +166,7 @@ class DesksTransitionObserver(
                             deskChangeDisplayId,
                         )
                     }
-                    desktopRepository.setActiveDesk(
+                    repository.setActiveDesk(
                         displayId = deskTransition.displayId,
                         deskId = deskTransition.deskId,
                     )
@@ -184,7 +180,7 @@ class DesksTransitionObserver(
                             desksOrganizer.getDeskAtEnd(change) == deskTransition.deskId
                     }
                 if (taskChange != null) {
-                    desktopRepository.addTaskToDesk(
+                    repository.addTaskToDesk(
                         displayId = deskTransition.displayId,
                         deskId = deskTransition.deskId,
                         taskId = deskTransition.enterTaskId,
@@ -211,7 +207,7 @@ class DesksTransitionObserver(
         deskTransition: DeskTransition.DeactivateDesk,
     ) {
         logD("handleDeactivateDeskTransition: %s", deskTransition)
-        val desktopRepository = desktopUserRepositories.current
+        val desktopRepository = desktopUserRepositories.getProfile(deskTransition.userId)
         var deskChangeFound = false
 
         deskTransition.runOnTransitEnd?.invoke()
@@ -229,6 +225,10 @@ class DesksTransitionObserver(
         // as transitioning from an empty desk to home may not.
         if (!deskChangeFound) {
             logD("Deactivating desk without transition change")
+        }
+        if (deskTransition.switchingUser) {
+            logD("Skipping repository deactivation because this is a user-switch")
+            return
         }
         desktopRepository.setDeskInactive(deskId = deskTransition.deskId)
     }
@@ -271,8 +271,10 @@ class DesksTransitionObserver(
         }
         val wct = WindowContainerTransaction()
         var hasSeenDesk = false
-        var hasSeenOpeningTask = false
+        // TODO: b/420858253 - remove when [ENABLE_APPLY_DESK_ACTIVATION_ON_USER_SWITCH] is
+        //  cleaned up.
         val openingUserIds = mutableListOf<Int>()
+        var hasSeenOpeningTask = false
         val desksToActivate = mutableListOf<Int>()
         // Visit all task changes, not just desk/wallpaper changes because we're interested in
         // capturing user ids of showing tasks (such as Home) to detect user switches.
@@ -280,7 +282,10 @@ class DesksTransitionObserver(
             val taskInfo = checkNotNull(change.taskInfo) { "Expected non-null task info" }
             val taskId = taskInfo.taskId
             logD("Handle change for taskId=%d:", taskId)
-            if (change.isOpeningOrToTop()) {
+            if (
+                change.isOpeningOrToTop() &&
+                    !DesktopExperienceFlags.ENABLE_APPLY_DESK_ACTIVATION_ON_USER_SWITCH.isTrue
+            ) {
                 logD("Opening/to-top change for userId=%d", taskInfo.userId)
                 openingUserIds += taskInfo.userId
             }
@@ -295,13 +300,14 @@ class DesksTransitionObserver(
             }
             val changeUserId = taskInfo.userId
             val userSwitch = getUserSwitch(change, openingUserIds)
-            logD(
-                "Independent change userSwitch=%s changeUserId=%d openingUserIds=%s",
-                userSwitch,
-                changeUserId,
-                openingUserIds,
-            )
-
+            if (!DesktopExperienceFlags.ENABLE_APPLY_DESK_ACTIVATION_ON_USER_SWITCH.isTrue) {
+                logD(
+                    "Independent change userSwitch=%s changeUserId=%d openingUserIds=%s",
+                    userSwitch,
+                    changeUserId,
+                    openingUserIds,
+                )
+            }
             if (change in desktopWallpaperChanges) {
                 logD("Desktop wallpaper change")
                 if (hasSeenDesk) {
@@ -311,16 +317,31 @@ class DesksTransitionObserver(
                 when {
                     change.isToBack() -> {
                         // The desktop wallpaper is moving to back without seeing a desk first.
-                        // This might mean an empty desk is moving to back, such as when having an
-                        // empty desk active and switching users. Make sure the desk is deactivated.
-                        // If this is a user switch, the userId of the desk change will have
-                        // updated to the new user already, so use the old user id for reporting the
-                        // deactivation to the going-away user's repository.
-                        val userId = userSwitch?.oldUserId ?: changeUserId
+                        // This might mean an empty desk is moving to back, such as when Home is
+                        // brought to front by CTS. Make sure the desk is deactivated accordingly.
+                        val userId =
+                            when {
+                                DesktopExperienceFlags.ENABLE_APPLY_DESK_ACTIVATION_ON_USER_SWITCH
+                                    .isTrue -> {
+                                    changeUserId
+                                }
+                                // It is also possible to see the wallpaper going to back when
+                                // switching users from one with an active desk to one without a
+                                // desk.
+                                // Make sure the desk is also deactivated there.
+                                // When there is a user switch, the userId of the desk change will
+                                // have
+                                // updated to the new user already, so use the old user id for
+                                // reporting the deactivation to the going-away user's repository.
+                                else -> userSwitch?.oldUserId ?: changeUserId
+                            }
                         val repository = desktopUserRepositories.getProfile(userId)
                         // When moving to back due to a user switch, keep the repository state as
                         // active for when the user session is restored.
-                        val keepActiveInRepository = userSwitch != null
+                        val keepActiveInRepository =
+                            userSwitch != null &&
+                                !DesktopExperienceFlags.ENABLE_APPLY_DESK_ACTIVATION_ON_USER_SWITCH
+                                    .isTrue
                         val activeDeskId = repository.getActiveDeskId(change.endDisplayId)
                         if (activeDeskId != null) {
                             logD(
@@ -333,9 +354,6 @@ class DesksTransitionObserver(
                             // Always let the organizer deactivate to clear the launch root.
                             desksOrganizer.deactivateDesk(wct, activeDeskId, skipReorder = true)
                             if (!keepActiveInRepository) {
-                                // The desk was independently deactivated (such as when Home is
-                                // brought to front during CTS), make sure the repository state
-                                // reflects that too.
                                 repository.setDeskInactive(activeDeskId)
                             }
                         } else {
@@ -348,12 +366,10 @@ class DesksTransitionObserver(
                     }
                     change.isToTop() -> {
                         // It is possible that the desktop wallpaper ends up on top of the desk.
-                        // For example: when in an empty desktop, then switching users and back.
-                        // WM restoration on user switches is only for visible root tasks, and an
-                        // empty desk root task is technically invisible (even if top / "active"),
-                        // so only the wallpaper is restored (in front of the desk).
-                        // This isn't valid desktop state, so if a desk was supposed to be active
-                        // activate it, otherwise dismiss the wallpaper.
+                        // For example: Minimizing the last task to end in an empty desk.
+                        // This is valid state, but since we don't expect desks to activate
+                        // without user action, check that the desk was supposed to be active, and
+                        // if not, deactivate it.
                         val repository = desktopUserRepositories.getProfile(changeUserId)
                         val activeDeskId = repository.getActiveDeskId(change.endDisplayId)
                         logD(
@@ -425,14 +441,23 @@ class DesksTransitionObserver(
                         logD("desk=%d moved to back but is scheduled to activate, skipping", deskId)
                         continue
                     }
-                    // If this is a user switch, the userId of the desk change will have updated to
-                    // the new user already, so it can't be used for reporting the deactivation
-                    // to the going-away user's repository.
-                    val userId = userSwitch?.oldUserId ?: changeUserId
+                    val userId =
+                        when {
+                            DesktopExperienceFlags.ENABLE_APPLY_DESK_ACTIVATION_ON_USER_SWITCH
+                                .isTrue -> changeUserId
+                            // If this is a user switch, the userId of the desk change will have
+                            // updated to the new user already, so it can't be used for reporting
+                            // the
+                            // deactivation to the going-away user's repository.
+                            else -> userSwitch?.oldUserId ?: changeUserId
+                        }
                     val repository = desktopUserRepositories.getProfile(userId)
                     // When moving to back due to a user switch, keep the repository state as
                     // active for when the user session is restored.
-                    val keepActiveInRepository = userSwitch != null
+                    val keepActiveInRepository =
+                        userSwitch != null &&
+                            !DesktopExperienceFlags.ENABLE_APPLY_DESK_ACTIVATION_ON_USER_SWITCH
+                                .isTrue
                     logD(
                         "desk=%d of user=%d moved to back, will let the organizer deactivate and " +
                             "the repository will %s",
@@ -490,8 +515,6 @@ class DesksTransitionObserver(
         //  (post-switch) user.
         //  2) The transition is handled by Shell before Shell knows about the user switch
         //  so |ShellController.userId| still reports user A.
-        // TODO: b/418821815 - make desk ids unique even across users, or include user
-        //  change info in the transition.
         val isUserSwitch =
             currentUserId != changeUserId ||
                 // In some cases, like when switching users from one with an empty desk:

@@ -97,7 +97,9 @@ import com.android.systemui.biometrics.domain.interactor.PromptSelectorInteracto
 import com.android.systemui.biometrics.ui.viewmodel.CredentialViewModel;
 import com.android.systemui.biometrics.ui.viewmodel.PromptFallbackViewModel;
 import com.android.systemui.biometrics.ui.viewmodel.PromptViewModel;
+import com.android.systemui.display.data.repository.FocusedDisplayRepository;
 import com.android.systemui.keyguard.WakefulnessLifecycle;
+import com.android.systemui.kosmos.KosmosJavaAdapter;
 import com.android.systemui.statusbar.CommandQueue;
 import com.android.systemui.statusbar.VibratorHelper;
 import com.android.systemui.util.concurrency.DelayableExecutor;
@@ -137,6 +139,11 @@ public class AuthControllerTest extends SysuiTestCase {
     @Rule
     public final CheckFlagsRule mCheckFlagsRule =
             DeviceFlagsValueProvider.createCheckFlagsRule();
+
+    private final KosmosJavaAdapter mKosmos = new KosmosJavaAdapter(this);
+
+    private final FocusedDisplayRepository mFocusedDisplayRepository =
+            mKosmos.getFakeFocusedDisplayRepository();
 
     @Mock
     private PackageManager mPackageManager;
@@ -824,7 +831,7 @@ public class AuthControllerTest extends SysuiTestCase {
         showDialog(new int[]{1} /* sensorIds */, false /* credentialAllowed */);
 
         // THEN callback should be received
-        verify(callback).onBiometricPromptShown();
+        verify(callback).onBiometricPromptShown(any());
     }
 
     @Test
@@ -840,7 +847,7 @@ public class AuthControllerTest extends SysuiTestCase {
                 mAuthController.mCurrentDialog.getRequestId());
 
         // THEN callback should be received
-        verify(callback).onBiometricPromptDismissed();
+        verify(callback).onBiometricPromptDismissed(BiometricPrompt.DISMISSED_REASON_USER_CANCEL);
     }
 
     @Test
@@ -854,7 +861,8 @@ public class AuthControllerTest extends SysuiTestCase {
         mAuthController.hideAuthenticationDialog(mAuthController.mCurrentDialog.getRequestId());
 
         // THEN callback should be received
-        verify(callback).onBiometricPromptDismissed();
+        verify(callback).onBiometricPromptDismissed(
+                BiometricPrompt.DISMISSED_REASON_SERVER_REQUESTED);
     }
 
     @Test
@@ -1268,7 +1276,8 @@ public class AuthControllerTest extends SysuiTestCase {
                     () -> mLogContextInteractor, () -> mPromptSelectionInteractor,
                     () -> mCredentialViewModel, () -> mPromptViewModel, mInteractionJankMonitor,
                     mHandler, mBackgroundExecutor, mUdfpsUtils, mVibratorHelper, mKeyguardManager,
-                    mMSDLPlayer, mWindowManagerProvider, mFallbackViewModelFactory);
+                    mMSDLPlayer, mWindowManagerProvider, mFallbackViewModelFactory,
+                    mFocusedDisplayRepository);
         }
 
         @Override

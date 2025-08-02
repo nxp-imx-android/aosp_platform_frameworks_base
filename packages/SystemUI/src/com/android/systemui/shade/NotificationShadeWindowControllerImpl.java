@@ -386,12 +386,7 @@ public class NotificationShadeWindowControllerImpl implements NotificationShadeW
     }
 
     @Override
-    public void setDozeScreenBrightness(int value) {
-        mScreenBrightnessDoze = value / 255f;
-    }
-
-    @Override
-    public void setDozeScreenBrightnessFloat(float value) {
+    public void setDozeScreenBrightness(float value) {
         mScreenBrightnessDoze = value;
     }
 

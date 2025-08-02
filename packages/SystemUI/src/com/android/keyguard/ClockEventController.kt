@@ -361,7 +361,10 @@ constructor(
     private val localeBroadcastReceiver =
         object : BroadcastReceiver() {
             override fun onReceive(context: Context, intent: Intent) {
-                clock?.run { events.onLocaleChanged(Locale.getDefault()) }
+                clock?.run {
+                    events.onLocaleChanged(Locale.getDefault())
+                    events.onTimeFormatChanged(getTimeFormatKind())
+                }
             }
         }
 

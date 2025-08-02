@@ -283,7 +283,7 @@ final class ProcessServiceRecord {
     int getNumForegroundServices() {
         int count = 0;
         for (int i = 0, serviceCount = mServices.size(); i < serviceCount; i++) {
-            if (mServices.valueAt(i).isForeground) {
+            if (mServices.valueAt(i).isForeground()) {
                 count++;
             }
         }
@@ -630,7 +630,7 @@ final class ProcessServiceRecord {
             // Allow restarting for started or bound foreground services that are crashing.
             // This includes wallpapers.
             if (sr.crashCount < mService.mConstants.BOUND_SERVICE_MAX_CRASH_RETRY
-                    && (sr.isForeground || procIsBoundForeground)) {
+                    && (sr.isForeground() || procIsBoundForeground)) {
                 tryAgain = true;
             }
         }

@@ -336,12 +336,6 @@ final class InstallRequest {
                 ? mRemovedInfo.mArgs.getCodeFile() : null;
     }
 
-    @Nullable
-    public String[] getOldInstructionSet() {
-        return (mRemovedInfo != null && mRemovedInfo.mArgs != null)
-                ? mRemovedInfo.mArgs.getInstructionSets() : null;
-    }
-
     public UserHandle getUser() {
         return new UserHandle(mUserId);
     }
@@ -598,12 +592,6 @@ final class InstallRequest {
     public String getRealPackageName() {
         assertScanResultExists();
         return mScanResult.mRequest.mRealPkgName;
-    }
-
-    @Nullable
-    public List<String> getChangedAbiCodePath() {
-        assertScanResultExists();
-        return mScanResult.mChangedAbiCodePath;
     }
 
     public boolean isApplicationEnabledSettingPersistent() {

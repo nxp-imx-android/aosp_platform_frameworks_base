@@ -146,6 +146,8 @@
     <string name="screen_capture_region_selection_button" msgid="4437546351856914639">"截取所选区域"</string>
     <string name="screen_capture_toolbar_capture_button" msgid="8512731007891496030">"拍摄"</string>
     <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"录制"</string>
+    <!-- no translation found for screen_capture_region_dimensions (2317064050253056256) -->
+    <skip />
     <string name="share_to_app_chip_accessibility_label" msgid="4210256229976947065">"正在共享屏幕"</string>
     <string name="share_to_app_chip_accessibility_label_generic" msgid="5517431657924536133">"分享内容"</string>
     <string name="share_to_app_stop_dialog_title" msgid="9212915050910250438">"要停止共享屏幕吗？"</string>
@@ -155,6 +157,8 @@
     <string name="share_to_app_stop_dialog_message_single_app_specific" msgid="5923772039347985172">"您正在共享“<xliff:g id="APP_BEING_SHARED_NAME">%1$s</xliff:g>”的画面"</string>
     <string name="share_to_app_stop_dialog_message_single_app_generic" msgid="6681016774654578261">"您正在分享一个应用的画面"</string>
     <string name="share_to_app_stop_dialog_message_generic" msgid="7622174291691249392">"您目前正在与应用进行分享"</string>
+    <!-- no translation found for share_to_app_stop_dialog_message_with_host_app (7445852089654702142) -->
+    <skip />
     <string name="share_to_app_stop_dialog_button" msgid="6334056916284230217">"停止共享"</string>
     <string name="cast_screen_to_other_device_chip_accessibility_label" msgid="4687917476203009885">"正在投屏"</string>
     <string name="cast_to_other_device_stop_dialog_title" msgid="7836517190930357326">"要停止投屏吗？"</string>
@@ -398,7 +402,7 @@
     <string name="quick_settings_connecting" msgid="2381969772953268809">"正在连接…"</string>
     <string name="quick_settings_hotspot_label" msgid="1199196300038363424">"热点"</string>
     <string name="quick_settings_hotspot_secondary_label_transient" msgid="7585604088079160564">"正在开启…"</string>
-    <string name="quick_settings_hotspot_secondary_label_data_saver_enabled" msgid="1280433136266439372">"省流模式已开启"</string>
+    <string name="quick_settings_hotspot_secondary_label_data_saver_enabled" msgid="1280433136266439372">"已开启流量节省模式"</string>
     <string name="quick_settings_hotspot_secondary_label_num_devices" msgid="7536823087501239457">"{count,plural, =1{# 部设备}other{# 部设备}}"</string>
     <string name="quick_settings_flashlight_label" msgid="4904634272006284185">"手电筒"</string>
     <string name="quick_settings_flashlight_camera_in_use" msgid="4820591564526512571">"相机正在使用中"</string>
@@ -553,7 +557,7 @@
     <string name="keyguard_indication_charging_time_fast" msgid="8390311020603859480">"<xliff:g id="PERCENTAGE">%2$s</xliff:g> • 正在快速充电 • 将于 <xliff:g id="CHARGING_TIME_LEFT">%1$s</xliff:g>后充满"</string>
     <string name="keyguard_indication_charging_time_slowly" msgid="301936949731705417">"<xliff:g id="PERCENTAGE">%2$s</xliff:g> • 正在慢速充电 • 将于 <xliff:g id="CHARGING_TIME_LEFT">%1$s</xliff:g>后充满"</string>
     <string name="keyguard_indication_charging_time_dock" msgid="3149328898931741271">"<xliff:g id="PERCENTAGE">%2$s</xliff:g> • 正在充电 • 将于 <xliff:g id="CHARGING_TIME_LEFT">%1$s</xliff:g>后充满"</string>
-    <string name="accessibility_action_open_communal_hub" msgid="3081702792413787849">"锁定屏幕上的微件"</string>
+    <string name="accessibility_action_open_communal_hub" msgid="3081702792413787849">"锁屏微件"</string>
     <string name="accessibility_announcement_communal_widget_added" msgid="6911593106099328271">"“<xliff:g id="WIDGET_NAME">%1$s</xliff:g>”微件已添加至锁定屏幕"</string>
     <string name="communal_tutorial_indicator_text" msgid="4503010353591430123">"向左滑动即可启动公共教程"</string>
     <string name="cta_tile_button_to_open_widget_editor" msgid="3871562362382963878">"自定义"</string>
@@ -577,7 +581,7 @@
     <string name="work_mode_turn_on" msgid="907813741770247267">"解除暂停"</string>
     <string name="accessibility_action_label_close_communal_hub" msgid="6790396569621032333">"关闭锁定屏幕上的微件"</string>
     <string name="accessibility_action_label_edit_widgets" msgid="3821868581348322346">"自定义微件"</string>
-    <string name="accessibility_content_description_for_communal_hub" msgid="1670220840599380118">"锁定屏幕上的微件"</string>
+    <string name="accessibility_content_description_for_communal_hub" msgid="1670220840599380118">"锁屏微件"</string>
     <string name="accessibility_action_label_select_widget" msgid="8897281501387398191">"选择微件"</string>
     <string name="accessibility_action_label_remove_widget" msgid="3373779447448758070">"移除微件"</string>
     <string name="accessibility_action_label_place_widget" msgid="1914197458644168978">"放置所选微件"</string>
@@ -859,6 +863,8 @@
     <string name="notification_onboarding_summaries_message" msgid="6061524903176459064">"现在，系统可以为您总结较长的对话，以便您快速了解重点"</string>
     <string name="notification_onboarding_bundles_message" msgid="4612908213178622912">"通知整理工具会将优先级较低的通知归为一组并静音。您可以在“设置”中添加更多类别。"</string>
     <string name="notification_bundle_header_counter" msgid="5515532701569242265">"{count,plural, =1{# 条通知}other{# 条通知}}"</string>
+    <!-- no translation found for notification_bundle_header_joined_description (4517556837418088139) -->
+    <skip />
     <string name="inline_done_button" msgid="6043094985588909584">"完成"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"应用"</string>
     <string name="inline_turn_off_notifications" msgid="2653064779176881329">"关闭"</string>
@@ -971,6 +977,8 @@
     <string name="group_system_access_google_assistant" msgid="3769929488906534254">"打开数字助理"</string>
     <string name="group_system_lock_screen" msgid="7391191300363416543">"锁定屏幕"</string>
     <string name="group_system_quick_memo" msgid="3764560265935722903">"添加记事"</string>
+    <!-- no translation found for group_system_close_window (1506354809787837043) -->
+    <skip />
     <string name="keyboard_shortcut_group_system_multitasking" msgid="6967816258924795558">"多任务处理"</string>
     <string name="system_multitasking_rhs" msgid="8779289852395243004">"使用分屏模式，并将应用置于右侧"</string>
     <string name="system_multitasking_lhs" msgid="7348595296208696452">"使用分屏模式，并将应用置于左侧"</string>
@@ -1016,8 +1024,8 @@
     <string name="accessibility_long_click_tile_details" msgid="3408103115710601894">"打开更多详情"</string>
     <string name="accessibility_status_bar_headphones" msgid="1304082414912647414">"已连接到耳机"</string>
     <string name="accessibility_status_bar_headset" msgid="2699275863720926104">"已连接到耳机"</string>
-    <string name="data_saver" msgid="3484013368530820763">"省流模式"</string>
-    <string name="accessibility_data_saver_on" msgid="5394743820189757731">"省流模式已开启"</string>
+    <string name="data_saver" msgid="3484013368530820763">"流量节省模式"</string>
+    <string name="accessibility_data_saver_on" msgid="5394743820189757731">"已开启流量节省模式"</string>
     <string name="switch_bar_on" msgid="1770868129120096114">"开启"</string>
     <string name="switch_bar_off" msgid="5669805115416379556">"关闭"</string>
     <string name="tile_unavailable" msgid="3095879009136616920">"不可用"</string>
@@ -1347,6 +1355,10 @@
     <string name="media_output_end_session_dialog_summary" msgid="5954520685989877347">"停止共享的会话，即可将媒体移到其他设备"</string>
     <string name="media_output_end_session_dialog_stop" msgid="208189434474624412">"停止"</string>
     <string name="media_output_dialog_button_stop_sharing" msgid="5043482739689716185">"停止分享"</string>
+    <!-- no translation found for media_output_dialog_button_sharing_audio (8312910741492835648) -->
+    <skip />
+    <!-- no translation found for media_output_dialog_button_share_audio (827604934548421520) -->
+    <skip />
     <string name="build_number_clip_data_label" msgid="3623176728412560914">"Build 号"</string>
     <string name="build_number_copy_toast" msgid="877720921605503046">"已将 Build 号复制到剪贴板。"</string>
     <string name="copy_to_clipboard_a11y_action" msgid="4312789069718446749">"复制到剪贴板。"</string>

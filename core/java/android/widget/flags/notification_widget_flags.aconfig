@@ -1,22 +1,3 @@
 package: "android.widget.flags"
 container: "system"
 
-flag {
-  name: "call_style_set_data_async"
-  namespace: "systemui"
-  description: "Offloads caller icon drawable loading to the background thread"
-  bug: "293961072"
-  metadata {
-    purpose: PURPOSE_BUGFIX
-  }
-}
-
-flag {
-  name: "drop_non_existing_messages"
-  namespace: "systemui"
-  description: "Drops all group and message entries that no longer exist."
-  bug: "378101061"
-  metadata {
-    purpose: PURPOSE_BUGFIX
-  }
-}

@@ -2202,8 +2202,11 @@ int ResTable_config::compare(const ResTable_config& o) const {
     if (screenSize != o.screenSize) {
         return (screenSize > o.screenSize) ? 1 : -1;
     }
-    if (version != o.version) {
-        return (version > o.version) ? 1 : -1;
+    if (sdkVersion != o.sdkVersion) {
+        return (sdkVersion > o.sdkVersion) ? 1 : -1;
+    }
+    if (minorVersion != o.minorVersion) {
+        return (minorVersion > o.minorVersion) ? 1 : -1;
     }
     if (screenLayout != o.screenLayout) {
         return (screenLayout > o.screenLayout) ? 1 : -1;
@@ -2286,8 +2289,11 @@ int ResTable_config::compareLogical(const ResTable_config& o) const {
     if (uiMode != o.uiMode) {
         return uiMode < o.uiMode ? -1 : 1;
     }
-    if (version != o.version) {
-        return version < o.version ? -1 : 1;
+    if (sdkVersion != o.sdkVersion) {
+        return sdkVersion < o.sdkVersion ? -1 : 1;
+    }
+    if (minorVersion != o.minorVersion) {
+        return minorVersion < o.minorVersion ? -1 : 1;
     }
     return 0;
 }

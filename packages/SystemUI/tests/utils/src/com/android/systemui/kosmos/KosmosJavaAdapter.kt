@@ -73,6 +73,7 @@ import com.android.systemui.securelockdevice.data.repository.fakeSecureLockDevic
 import com.android.systemui.securelockdevice.domain.interactor.secureLockDeviceInteractor
 import com.android.systemui.settings.brightness.data.repository.brightnessMirrorShowingRepository
 import com.android.systemui.settings.displayTracker
+import com.android.systemui.shade.data.repository.fakeFocusedDisplayRepository
 import com.android.systemui.shade.data.repository.fakeShadeDisplaysRepository
 import com.android.systemui.shade.data.repository.shadeRepository
 import com.android.systemui.shade.domain.interactor.shadeInteractor
@@ -233,6 +234,7 @@ class KosmosJavaAdapter() {
     val fakeSysUIStatePerDisplayRepository by lazy { kosmos.fakeSysUIStatePerDisplayRepository }
     val displayTracker by lazy { kosmos.displayTracker }
     val fakeShadeDisplaysRepository by lazy { kosmos.fakeShadeDisplaysRepository }
+    val fakeFocusedDisplayRepository by lazy { kosmos.fakeFocusedDisplayRepository }
     val sysUIStateInteractor by lazy { kosmos.sysuiStateInteractor }
     val entryAdapterFactory by lazy { kosmos.entryAdapterFactory }
     val bundleHeaderViewModel by lazy { kosmos.bundleHeaderViewModelFactory.create() }

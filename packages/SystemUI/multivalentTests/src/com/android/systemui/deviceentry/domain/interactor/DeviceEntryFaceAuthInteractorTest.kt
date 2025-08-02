@@ -67,6 +67,8 @@ import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.shade.domain.interactor.enableDualShade
 import com.android.systemui.shade.domain.interactor.enableSingleShade
+import com.android.systemui.statusbar.pipeline.mobile.data.repository.fakeMobileConnectionsRepository
+import com.android.systemui.statusbar.pipeline.mobile.data.repository.mobileConnectionsRepository
 import com.android.systemui.testKosmos
 import com.android.systemui.user.data.model.SelectionStatus
 import com.android.systemui.user.data.repository.fakeUserRepository
@@ -115,6 +117,7 @@ class DeviceEntryFaceAuthInteractorTest : SysuiTestCase() {
                     { sceneInteractor },
                     deviceEntryFaceAuthStatusInteractor,
                     cameraSensorPrivacyInteractor,
+                    mobileConnectionsRepository,
                 )
             }
     }
@@ -862,6 +865,25 @@ class DeviceEntryFaceAuthInteractorTest : SysuiTestCase() {
         kosmos.runTest {
             assertThat(underTest.isAuthenticated)
                 .isSameInstanceAs(faceAuthRepository.isAuthenticated)
+        }
+
+    @Test
+    fun faceAuthIsRequestedOnSimPinSuccess() =
+        kosmos.runTest {
+            underTest.start()
+            runCurrent()
+
+            // no auth request when the SIM is secure (requires pin)
+            fakeMobileConnectionsRepository.isAnySimSecure.value = true
+            runCurrent()
+            assertThat(faceAuthRepository.runningAuthRequest.value).isNull()
+
+            // auth request when the SIM is no longer secure (successful pin!)
+            fakeMobileConnectionsRepository.isAnySimSecure.value = false
+            runCurrent()
+
+            assertThat(faceAuthRepository.runningAuthRequest.value)
+                .isEqualTo(Pair(FaceAuthUiEvent.FACE_AUTH_SIM_PIN_SUCCESS, true))
         }
 
     companion object {

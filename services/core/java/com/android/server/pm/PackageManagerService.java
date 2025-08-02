@@ -223,7 +223,6 @@ import com.android.server.crashrecovery.CrashRecoveryAdaptor;
 import com.android.server.pm.Installer.InstallerException;
 import com.android.server.pm.Settings.VersionInfo;
 import com.android.server.pm.dex.ArtManagerService;
-import com.android.server.pm.dex.DexManager;
 import com.android.server.pm.dex.DynamicCodeLogger;
 import com.android.server.pm.local.PackageManagerLocalImpl;
 import com.android.server.pm.parsing.PackageCacher;
@@ -357,11 +356,6 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
     public static final boolean DEBUG_COMPRESSION = Build.IS_DEBUGGABLE;
     public static final boolean TRACE_SNAPSHOTS = false;
     private static final boolean DEBUG_PER_UID_READ_TIMEOUTS = false;
-
-    // Debug output for dexopting. This is shared between PackageManagerService, OtaDexoptService
-    // and PackageDexOptimizer. All these classes have their own flag to allow switching a single
-    // user, but by default initialize to this.
-    public static final boolean DEBUG_DEXOPT = false;
 
     static final boolean DEBUG_ABI_SELECTION = false;
     public static final boolean DEBUG_INSTANT = Build.IS_DEBUGGABLE;
@@ -573,26 +567,6 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
      */
     public static final int MIN_INSTALLABLE_TARGET_SDK =
             Flags.minTargetSdk24() ? Build.VERSION_CODES.N : Build.VERSION_CODES.M;
-
-    // Compilation reasons.
-    // TODO(b/260124949): Clean this up with the legacy dexopt code.
-    public static final int REASON_FIRST_BOOT = 0;
-    public static final int REASON_BOOT_AFTER_OTA = 1;
-    public static final int REASON_POST_BOOT = 2;
-    public static final int REASON_INSTALL = 3;
-    public static final int REASON_INSTALL_FAST = 4;
-    public static final int REASON_INSTALL_BULK = 5;
-    public static final int REASON_INSTALL_BULK_SECONDARY = 6;
-    public static final int REASON_INSTALL_BULK_DOWNGRADED = 7;
-    public static final int REASON_INSTALL_BULK_SECONDARY_DOWNGRADED = 8;
-    public static final int REASON_BACKGROUND_DEXOPT = 9;
-    public static final int REASON_AB_OTA = 10;
-    public static final int REASON_INACTIVE_PACKAGE_DOWNGRADE = 11;
-    public static final int REASON_CMDLINE = 12;
-    public static final int REASON_BOOT_AFTER_MAINLINE_UPDATE = 13;
-    public static final int REASON_SHARED = 14;
-
-    public static final int REASON_LAST = REASON_SHARED;
 
     static final String RANDOM_DIR_PREFIX = "~~";
     static final char RANDOM_CODEPATH_PREFIX = '-';
@@ -824,11 +798,6 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
     final PackageInstallerService mInstallerService;
     final ArtManagerService mArtManagerService;
 
-    // TODO(b/260124949): Remove these.
-    final PackageDexOptimizer mPackageDexOptimizer;
-    // DexManager handles the usage of dex files (e.g. secondary files, whether or not a package
-    // is used by other apps).
-    private final DexManager mDexManager;
     private final DynamicCodeLogger mDynamicCodeLogger;
 
     private final AtomicInteger mNextMoveId = new AtomicInteger();
@@ -1000,8 +969,6 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
     private final @NonNull String mRequiredSdkSandboxPackage;
     private final @Nullable ComponentName mDeveloperVerificationServiceProvider;
     private final @Nullable String mDeveloperVerificationPolicyDelegatePackage;
-    @GuardedBy("mLock")
-    private final PackageUsage mPackageUsage = new PackageUsage();
     final CompilerStats mCompilerStats = new CompilerStats();
 
     private final DomainVerificationConnection mDomainVerificationConnection;
@@ -1701,8 +1668,6 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
     public static PackageManagerService main(Context context,
             Installer installer, @NonNull DomainVerificationService domainVerificationService,
             boolean factoryTest) {
-        // Self-check for initial settings.
-        PackageManagerServiceCompilerMapping.checkProperties();
         final TimingsTraceAndSlog t = new TimingsTraceAndSlog(TAG + "Timing",
                 Trace.TRACE_TAG_PACKAGE_MANAGER);
         t.traceBegin("create package manager");
@@ -1734,13 +1699,8 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
                         i.getLocalService(PackageManagerInternal.class)),
                 (i, pm) -> (PlatformCompat) ServiceManager.getService("platform_compat"),
                 (i, pm) -> SystemConfig.getInstance(),
-                (i, pm) -> new PackageDexOptimizer(i.getInstaller(), i.getInstallLock(),
-                        i.getContext(), "*dexopt*"),
-                (i, pm) -> new DexManager(i.getContext(), i.getPackageDexOptimizer(),
-                        i.getDynamicCodeLogger()),
                 (i, pm) -> new DynamicCodeLogger(i.getInstaller()),
-                (i, pm) -> new ArtManagerService(i.getContext(), i.getInstaller(),
-                        i.getInstallLock()),
+                (i, pm) -> new ArtManagerService(i.getContext()),
                 (i, pm) -> ApexManager.getInstance(),
                 (i, pm) -> (IncrementalManager)
                         i.getContext().getSystemService(Context.INCREMENTAL_SERVICE),
@@ -1919,7 +1879,6 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
         mDefParseFlags = testParams.defParseFlags;
         mDefaultAppProvider = testParams.defaultAppProvider;
         mLegacyPermissionManager = testParams.legacyPermissionManagerInternal;
-        mDexManager = testParams.dexManager;
         mDynamicCodeLogger = testParams.dynamicCodeLogger;
         mFactoryTest = testParams.factoryTest;
         mIncrementalManager = testParams.incrementalManager;
@@ -1937,7 +1896,6 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
         mModuleInfoProvider = testParams.moduleInfoProvider;
         mMoveCallbacks = testParams.moveCallbacks;
         mOverlayConfig = testParams.overlayConfig;
-        mPackageDexOptimizer = testParams.packageDexOptimizer;
         mPackageParserCallback = testParams.packageParserCallback;
         mPendingBroadcasts = testParams.pendingPackageBroadcasts;
         mTestUtilityService = testParams.testUtilityService;
@@ -2137,8 +2095,6 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
             mSeparateProcesses = null;
         }
 
-        mPackageDexOptimizer = injector.getPackageDexOptimizer();
-        mDexManager = injector.getDexManager();
         mDynamicCodeLogger = injector.getDynamicCodeLogger();
         mArtManagerService = injector.getArtManagerService();
         mMoveCallbacks = new MovePackageHelper.MoveCallbacks(FgThread.get().getLooper());
@@ -2395,9 +2351,6 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
                 setting.updateProcesses();
             }
 
-            // Now that we know all the packages we are keeping,
-            // read and update their last usage times.
-            mPackageUsage.read(packageSettings);
             mCompilerStats.read();
 
             EventLog.writeEvent(EventLogTags.BOOT_PROGRESS_PMS_SCAN_END,
@@ -2567,7 +2520,6 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
                 userPackages.put(userId, computer.getInstalledPackages(/*flags*/ 0, userId)
                         .getList());
             }
-            mDexManager.load(userPackages);
             mDynamicCodeLogger.load(userPackages);
             if (mIsUpgrade) {
                 FrameworkStatsLog.write(
@@ -3107,10 +3059,6 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
         }
     }
 
-    /*package*/ DexManager getDexManager() {
-        return mDexManager;
-    }
-
     /*package*/ DexOptHelper getDexOptHelper() {
         return mDexOptHelper;
     }
@@ -3121,15 +3069,12 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
 
     public void shutdown() {
         mCompilerStats.writeNow();
-        mDexManager.writePackageDexUsageNow();
         mDynamicCodeLogger.writeNow();
         if (!refactorCrashrecovery()) {
             CrashRecoveryAdaptor.packageWatchdogWriteNow(mContext);
         }
 
         synchronized (mLock) {
-            mPackageUsage.writeNow(mSettings.getPackagesLocked());
-
             if (mHandler.hasMessages(WRITE_SETTINGS)
                     || mBackgroundHandler.hasMessages(WRITE_DIRTY_PACKAGE_RESTRICTIONS)
                     || mHandler.hasMessages(WRITE_PACKAGE_LIST)) {
@@ -4412,7 +4357,6 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
         storage.registerListener(mStorageEventHelper);
 
         mInstallerService.systemReady();
-        mPackageDexOptimizer.systemReady();
 
         // Now that we're mostly running, clean up stale users and apps
         mUserManager.reconcileUsers(StorageManager.UUID_PRIVATE_INTERNAL);
@@ -5774,56 +5718,44 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
             // loaded for the first time.
 
             DexUseManagerLocal dexUseManager = DexOptHelper.getDexUseManagerLocal();
-            if (dexUseManager != null) {
-                // TODO(chiuwinson): Retrieve filtered snapshot from Computer instance instead.
-                try (PackageManagerLocal.FilteredSnapshot filteredSnapshot =
-                                LocalManagerRegistry.getManager(PackageManagerLocal.class)
-                                        .withFilteredSnapshot(callingUid, user)) {
-                    if (loaderIsa != null) {
-                        // Check that loaderIsa agrees with the ISA that dexUseManager will
-                        // determine.
-                        PackageState loadingPkgState =
-                                filteredSnapshot.getPackageState(loadingPackageName);
-                        // If we don't find the loading package just pass it through and let
-                        // dexUseManager throw on it.
-                        if (loadingPkgState != null) {
-                            String loadingPkgAbi = loadingPkgState.getPrimaryCpuAbi();
-                            if (loadingPkgAbi == null) {
-                                loadingPkgAbi = Build.SUPPORTED_ABIS[0];
-                            }
-                            String loadingPkgDexCodeIsa = InstructionSets.getDexCodeInstructionSet(
-                                    VMRuntime.getInstructionSet(loadingPkgAbi));
-                            if (!loaderIsa.equals(loadingPkgDexCodeIsa)) {
-                                // TODO(b/251903639): We make this a wtf to surface any situations
-                                // where this argument doesn't correspond to our expectations. Later
-                                // it should be turned into an IllegalArgumentException, when we can
-                                // assume it's the caller that's wrong rather than us.
-                                Log.wtf(TAG,
-                                        "Invalid loaderIsa in notifyDexLoad call from "
-                                                + loadingPackageName + ", uid " + callingUid
-                                                + ": expected " + loadingPkgDexCodeIsa + ", got "
-                                                + loaderIsa);
-                                return;
-                            }
+            // TODO(chiuwinson): Retrieve filtered snapshot from Computer instance instead.
+            try (PackageManagerLocal.FilteredSnapshot filteredSnapshot =
+                    LocalManagerRegistry.getManager(PackageManagerLocal.class)
+                            .withFilteredSnapshot(callingUid, user)) {
+                if (loaderIsa != null) {
+                    // Check that loaderIsa agrees with the ISA that dexUseManager will
+                    // determine.
+                    PackageState loadingPkgState =
+                            filteredSnapshot.getPackageState(loadingPackageName);
+                    // If we don't find the loading package just pass it through and let
+                    // dexUseManager throw on it.
+                    if (loadingPkgState != null) {
+                        String loadingPkgAbi = loadingPkgState.getPrimaryCpuAbi();
+                        if (loadingPkgAbi == null) {
+                            loadingPkgAbi = Build.SUPPORTED_ABIS[0];
+                        }
+                        String loadingPkgDexCodeIsa =
+                                InstructionSets.getDexCodeInstructionSet(
+                                        VMRuntime.getInstructionSet(loadingPkgAbi));
+                        if (!loaderIsa.equals(loadingPkgDexCodeIsa)) {
+                            // TODO(b/251903639): We make this a wtf to surface any situations
+                            // where this argument doesn't correspond to our expectations. Later
+                            // it should be turned into an IllegalArgumentException, when we can
+                            // assume it's the caller that's wrong rather than us.
+                            Log.wtf(TAG,
+                                    "Invalid loaderIsa in notifyDexLoad call from "
+                                            + loadingPackageName + ", uid " + callingUid
+                                            + ": expected " + loadingPkgDexCodeIsa + ", got "
+                                            + loaderIsa);
+                            return;
                         }
                     }
+                }
 
-                    // This is called from binder, so exceptions thrown here are caught and handled
-                    // by it.
-                    dexUseManager.notifyDexContainersLoaded(
-                            filteredSnapshot, loadingPackageName, classLoaderContextMap);
-                }
-            } else {
-                ApplicationInfo ai =
-                        snapshot.getApplicationInfo(loadingPackageName, /*flags*/ 0, userId);
-                if (ai == null) {
-                    Slog.w(PackageManagerService.TAG,
-                            "Loading a package that does not exist for the calling user. package="
-                                    + loadingPackageName + ", user=" + userId);
-                    return;
-                }
-                mDexManager.notifyDexLoad(ai, classLoaderContextMap, loaderIsa, userId,
-                        Process.isIsolated(callingUid));
+                // This is called from binder, so exceptions thrown here are caught and handled
+                // by it.
+                dexUseManager.notifyDexContainersLoaded(
+                        filteredSnapshot, loadingPackageName, classLoaderContextMap);
             }
         }
 
@@ -5887,14 +5819,12 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
             Slog.i(TAG,
                     "Ignored unsupported registerDexModule call for " + dexModulePath + " in "
                             + packageName);
-            DexManager.RegisterDexModuleResult result = new DexManager.RegisterDexModuleResult(
-                    false, "registerDexModule call not supported since Android U");
 
             if (callback != null) {
                 mHandler.post(() -> {
                     try {
-                        callback.onDexModuleRegistered(dexModulePath, result.success,
-                                result.message);
+                        callback.onDexModuleRegistered(dexModulePath, false,
+                                "registerDexModule call not supported since Android U");
                     } catch (RemoteException e) {
                         Slog.w(PackageManagerService.TAG,
                                 "Failed to callback after module registration " + dexModulePath, e);
@@ -6948,12 +6878,6 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
 
         @NonNull
         @Override
-        protected DexManager getDexManager() {
-            return mDexManager;
-        }
-
-        @NonNull
-        @Override
         public DynamicCodeLogger getDynamicCodeLogger() {
             return mDynamicCodeLogger;
         }
@@ -7742,10 +7666,6 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
         forEachPackageState(snapshot.getPackageStates(), actionWrapped);
     }
 
-    boolean isHistoricalPackageUsageAvailable() {
-        return mPackageUsage.isHistoricalPackageUsageAvailable();
-    }
-
     public CompilerStats.PackageStats getOrCreateCompilerPackageStats(AndroidPackage pkg) {
         return getOrCreateCompilerPackageStats(pkg.getPackageName());
     }
@@ -8093,10 +8013,6 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
         mDefaultAppProvider.setDefaultBrowser(packageName, userId);
     }
 
-    PackageUsage getPackageUsage() {
-        return mPackageUsage;
-    }
-
     String getModuleMetadataPackageName() {
         return mModuleInfoProvider.getPackageName();
     }
@@ -8346,9 +8262,8 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
         mRemovePackageHelper.removeCodePath(codePath);
     }
 
-    void cleanUpResources(@NonNull String packageName, @NonNull File codeFile,
-                          @NonNull String[] instructionSets) {
-        mRemovePackageHelper.cleanUpResources(packageName, codeFile, instructionSets);
+    void cleanUpResources(@NonNull String packageName, @NonNull File codeFile) {
+        mRemovePackageHelper.cleanUpResources(packageName, codeFile);
     }
 
     void cleanUpForMoveInstall(String volumeUuid, String packageName, String fromCodePath) {

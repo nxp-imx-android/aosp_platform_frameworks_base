@@ -1654,7 +1654,14 @@ public final class UiAutomation {
             mUiAutomationConnection.grantRuntimePermission(packageName,
                     permission, userHandle.getIdentifier());
         } catch (Exception e) {
-            throw new SecurityException("Error granting runtime permission", e);
+            throw new SecurityException(
+                    "Error granting runtime permission "
+                            + permission
+                            + " to package "
+                            + packageName
+                            + " for user "
+                            + userHandle,
+                    e);
         }
     }
 

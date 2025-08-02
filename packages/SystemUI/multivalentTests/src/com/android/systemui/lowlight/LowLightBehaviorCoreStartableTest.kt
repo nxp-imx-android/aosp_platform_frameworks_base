@@ -286,7 +286,7 @@ class LowLightBehaviorCoreStartableTest : SysuiTestCase() {
             )
 
             setBatteryPluggedIn(true)
-            setDisplayOn(true)
+            setDisplayOn(false)
 
             fakeKeyguardRepository.setDozeTransitionModel(
                 DozeTransitionModel(from = DozeStateModel.UNINITIALIZED, to = DozeStateModel.DOZE)
@@ -329,6 +329,25 @@ class LowLightBehaviorCoreStartableTest : SysuiTestCase() {
             fakeKeyguardRepository.setDozeTransitionModel(
                 DozeTransitionModel(from = DozeStateModel.UNINITIALIZED, to = DozeStateModel.DOZE)
             )
+
+            underTest.start()
+            assertThat(ambientLightModeMonitor.fake.started).isFalse()
+        }
+
+    @Test
+    fun testDoNotSubscribeIfScreenOnNonIdleForScreenOffBehaviorPluggedIn() =
+        kosmos.runTest {
+            lowLightRepository.addAction(LowLightDisplayBehavior.SCREEN_OFF, action)
+            lowLightSettingsRepository.setLowLightDisplayBehavior(
+                LowLightDisplayBehavior.SCREEN_OFF
+            )
+
+            fakeKeyguardRepository.setDozeTransitionModel(
+                DozeTransitionModel(from = DozeStateModel.UNINITIALIZED, to = DozeStateModel.DOZE)
+            )
+
+            setBatteryPluggedIn(true)
+            setDisplayOn(true)
 
             underTest.start()
             assertThat(ambientLightModeMonitor.fake.started).isFalse()

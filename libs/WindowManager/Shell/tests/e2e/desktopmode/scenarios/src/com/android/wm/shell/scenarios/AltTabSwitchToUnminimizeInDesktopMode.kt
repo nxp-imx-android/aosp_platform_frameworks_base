@@ -20,7 +20,7 @@ import android.app.Instrumentation
 import android.tools.Rotation
 import android.tools.device.apphelpers.CalculatorAppHelper
 import android.tools.device.apphelpers.ClockAppHelper
-import android.tools.device.apphelpers.YouTubeAppHelper
+import android.tools.device.apphelpers.MessagingAppHelper
 import android.tools.traces.parsers.WindowManagerStateHelper
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.uiautomator.UiDevice
@@ -49,9 +49,9 @@ abstract class AltTabSwitchToUnminimizeInDesktopMode(
 
     val calculatorApp = DesktopModeAppHelper(CalculatorAppHelper(instrumentation))
     val clockApp = DesktopModeAppHelper(ClockAppHelper(instrumentation))
-    val youtubeApp = DesktopModeAppHelper(YouTubeAppHelper(instrumentation))
+    val messagesApp = DesktopModeAppHelper(MessagingAppHelper(instrumentation))
 
-    private val appsInDesktop = listOf(calculatorApp, clockApp, youtubeApp)
+    private val appsInDesktop = listOf(calculatorApp, clockApp, messagesApp)
 
     @Before
     fun setup() {

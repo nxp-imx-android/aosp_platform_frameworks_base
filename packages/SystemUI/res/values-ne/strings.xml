@@ -146,6 +146,8 @@
     <string name="screen_capture_region_selection_button" msgid="4437546351856914639">"चयन गरिएको क्षेत्रको स्क्रिनसट लिनुहोस्"</string>
     <string name="screen_capture_toolbar_capture_button" msgid="8512731007891496030">"स्क्रिनसट लिनुहोस्"</string>
     <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"रेकर्ड गर्नुहोस्"</string>
+    <!-- no translation found for screen_capture_region_dimensions (2317064050253056256) -->
+    <skip />
     <string name="share_to_app_chip_accessibility_label" msgid="4210256229976947065">"स्क्रिन सेयर गरिँदै छ"</string>
     <string name="share_to_app_chip_accessibility_label_generic" msgid="5517431657924536133">"सामग्री सेयर गरिँदै छ"</string>
     <string name="share_to_app_stop_dialog_title" msgid="9212915050910250438">"स्क्रिन सेयर गर्न छाड्ने हो?"</string>
@@ -155,6 +157,8 @@
     <string name="share_to_app_stop_dialog_message_single_app_specific" msgid="5923772039347985172">"तपाईं अहिले <xliff:g id="APP_BEING_SHARED_NAME">%1$s</xliff:g> सेयर गरिरहनुभएको छ"</string>
     <string name="share_to_app_stop_dialog_message_single_app_generic" msgid="6681016774654578261">"तपाईं अहिले कुनै एप सेयर गरिरहनुभएको छ"</string>
     <string name="share_to_app_stop_dialog_message_generic" msgid="7622174291691249392">"तपाईं अहिले एपसँग सेयर गरिरहनुभएको छ"</string>
+    <!-- no translation found for share_to_app_stop_dialog_message_with_host_app (7445852089654702142) -->
+    <skip />
     <string name="share_to_app_stop_dialog_button" msgid="6334056916284230217">"सेयर गर्न छाड्नुहोस्"</string>
     <string name="cast_screen_to_other_device_chip_accessibility_label" msgid="4687917476203009885">"स्क्रिन कास्ट गरिँदै छ"</string>
     <string name="cast_to_other_device_stop_dialog_title" msgid="7836517190930357326">"कास्ट गर्न छाड्ने हो?"</string>
@@ -714,10 +718,8 @@
     <string name="monitoring_description_pin_protection" msgid="1983580207046670355">"तपाईंको डिभाइसमा सेट गरिएका दैनिक सीमा र डाउनटाइम जस्ता केही कन्ट्रोलहरू PIN प्रयोग गरेर मात्र परिवर्तन गर्न सकिन्छ।"</string>
     <string name="legacy_vpn_name" msgid="4174223520162559145">"VPN"</string>
     <string name="keyguard_indication_trust_unlocked" msgid="7395154975733744547">"TrustAgent ले खुला राखेको"</string>
-    <!-- no translation found for kg_prompt_after_adaptive_auth_lock (6065186971000690782) -->
-    <skip />
-    <!-- no translation found for keyguard_indication_after_adaptive_auth_lock (5240600662061340872) -->
-    <skip />
+    <string name="kg_prompt_after_adaptive_auth_lock" msgid="6065186971000690782">"स्क्रिन लक गरिएको छ। धेरै पटक प्रमाणीकरण गर्ने प्रयास गरिएको छ।"</string>
+    <string name="keyguard_indication_after_adaptive_auth_lock" msgid="5240600662061340872">"स्क्रिन लक गरिएको छ\nप्रमाणीकरण गर्न सकिएन"</string>
     <string name="keyguard_indication_after_watch_disconnected" msgid="8133476870585660478">"तपाईंको स्मार्टवाचले लक गरेको"</string>
     <string name="keyguard_indication_after_secure_lock_device" msgid="4358906300665255820">"२ चरण प्रमाणीकरण प्रयोग गरी लक गरिएको छ"</string>
     <string name="zen_mode_and_condition" msgid="5043165189511223718">"<xliff:g id="ZEN_MODE">%1$s</xliff:g>. <xliff:g id="EXIT_CONDITION">%2$s</xliff:g>"</string>
@@ -861,6 +863,8 @@
     <string name="notification_onboarding_summaries_message" msgid="6061524903176459064">"तपाईंलाई छोटा रिक्यापहरू उपलब्ध गराउन अब तपाईंका लामा वार्तालापहरूको सारांश बनाउन सकिने छ"</string>
     <string name="notification_onboarding_bundles_message" msgid="4612908213178622912">"नोटिफिकेसन व्यवस्थित गर्ने सुविधाले खासै महत्त्वपूर्ण नभएका नोटिफिकेसनहरू एकै ठाउँमा राख्छ र साइलेन्ट पार्छ। सेटिङमा गई थप कोटीहरू हाल्नुहोस्।"</string>
     <string name="notification_bundle_header_counter" msgid="5515532701569242265">"{count,plural, =1{# नोटिफिकेसन}other{# वटा नोटिफिकेसन}}"</string>
+    <!-- no translation found for notification_bundle_header_joined_description (4517556837418088139) -->
+    <skip />
     <string name="inline_done_button" msgid="6043094985588909584">"सम्पन्न भयो"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"लागू गर्नुहोस्"</string>
     <string name="inline_turn_off_notifications" msgid="2653064779176881329">"अफ गर्नुहोस्"</string>
@@ -973,6 +977,8 @@
     <string name="group_system_access_google_assistant" msgid="3769929488906534254">"डिजिटल एसिस्टेन्ट खोल्नुहोस्"</string>
     <string name="group_system_lock_screen" msgid="7391191300363416543">"स्क्रिन लक गर्नुहोस्"</string>
     <string name="group_system_quick_memo" msgid="3764560265935722903">"नोट लेख्नुहोस्"</string>
+    <!-- no translation found for group_system_close_window (1506354809787837043) -->
+    <skip />
     <string name="keyboard_shortcut_group_system_multitasking" msgid="6967816258924795558">"मल्टिटास्किङ"</string>
     <string name="system_multitasking_rhs" msgid="8779289852395243004">"हालको एप दायाँ भागमा पारेर स्प्लिट स्क्रिन प्रयोग गर्नुहोस्"</string>
     <string name="system_multitasking_lhs" msgid="7348595296208696452">"हालको एप बायाँ भागमा पारेर स्प्लिट स्क्रिन प्रयोग गर्नुहोस्"</string>
@@ -1061,10 +1067,8 @@
     <string name="qs_edit" msgid="5583565172803472437">"सम्पादन गर्नुहोस्"</string>
     <string name="qs_edit_tiles" msgid="2105215324060865035">"टाइलहरू सम्पादन गर्नुहोस्"</string>
     <string name="qs_edit_mode_tooltip" msgid="4164112885539479781">"द्रुत सेटिङका टाइलहरूको आकार बदल्नुहोस्"</string>
-    <!-- no translation found for qs_edit_settings (3243175290660574156) -->
-    <skip />
-    <!-- no translation found for qs_edit_menu_content_description (4420651071119623791) -->
-    <skip />
+    <string name="qs_edit_settings" msgid="3243175290660574156">"सेटिङ"</string>
+    <string name="qs_edit_menu_content_description" msgid="4420651071119623791">"विकल्पहरू"</string>
     <string name="tuner_time" msgid="2450785840990529997">"समय"</string>
   <string-array name="clock_options">
     <item msgid="3986445361435142273">"घन्टा, मिनेट, र सेकेन्ड देखाउनुहोस्"</item>
@@ -1351,6 +1355,10 @@
     <string name="media_output_end_session_dialog_summary" msgid="5954520685989877347">"मिडिया अर्को डिभाइसमा सार्नका लागि तपाईंले सेयर गरेको सत्र अन्त्य गर्नुहोस्"</string>
     <string name="media_output_end_session_dialog_stop" msgid="208189434474624412">"रोक्नुहोस्"</string>
     <string name="media_output_dialog_button_stop_sharing" msgid="5043482739689716185">"सेयर गर्न छाड्नुहोस्"</string>
+    <!-- no translation found for media_output_dialog_button_sharing_audio (8312910741492835648) -->
+    <skip />
+    <!-- no translation found for media_output_dialog_button_share_audio (827604934548421520) -->
+    <skip />
     <string name="build_number_clip_data_label" msgid="3623176728412560914">"बिल्ड नम्बर"</string>
     <string name="build_number_copy_toast" msgid="877720921605503046">"बिल्ड नम्बर कपी गरी क्लिपबोर्डमा सारियो।"</string>
     <string name="copy_to_clipboard_a11y_action" msgid="4312789069718446749">"कपी गरेर क्लिपबोर्डमा पेस्ट गर्नुहोस्।"</string>

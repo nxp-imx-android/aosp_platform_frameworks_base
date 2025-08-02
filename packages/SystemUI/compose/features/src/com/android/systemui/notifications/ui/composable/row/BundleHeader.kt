@@ -90,7 +90,7 @@ fun BundleHeader(viewModel: BundleHeaderViewModel, modifier: Modifier = Modifier
             transitions =
                 transitions {
                     from(BundleHeader.Scenes.Collapsed, to = BundleHeader.Scenes.Expanded) {
-                        spec = tween(350, easing = LinearEasing)
+                        spec = tween(350, easing = FastOutSlowInEasing)
                         val scale = 0.6f
                         timestampRange(endMillis = 250, easing = FastOutSlowInEasing) {
                             scaleDraw(BundleHeader.Elements.PreviewIcon1, scale, scale)

@@ -202,7 +202,7 @@ AChoreographer* ASurfaceControl_getChoreographer(ASurfaceControl* aSurfaceContro
         return nullptr;
     }
     SurfaceControl_acquire(surfaceControl);
-    return reinterpret_cast<AChoreographer*>(surfaceControl->getChoreographer().get());
+    return reinterpret_cast<AChoreographer*>(surfaceControl->getChoreographer());
 }
 
 int64_t ASurfaceControlStats_getAcquireTime(ASurfaceControlStats* stats) {

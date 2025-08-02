@@ -110,6 +110,8 @@ import android.window.WindowContainerTransaction;
 
 import androidx.test.filters.SmallTest;
 
+import com.android.internal.hidden_from_bootclasspath.com.android.window.flags.Flags;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -119,6 +121,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.stubbing.Answer;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -1638,17 +1641,21 @@ public class TaskFragmentOrganizerControllerTest extends WindowTestsBase {
     @Test
     public void testDispatchTransaction_deferTransitionReady() {
         setupMockParent(mTaskFragment, mTask);
+        registerTestTransitionPlayer();
+        final Transition transit = mTransitionController.createTransition(TRANSIT_CHANGE);
         final ArgumentCaptor<IBinder> tokenCaptor = ArgumentCaptor.forClass(IBinder.class);
         final ArgumentCaptor<WindowContainerTransaction> wctCaptor =
                 ArgumentCaptor.forClass(WindowContainerTransaction.class);
-        doReturn(true).when(mTransitionController).isCollecting();
-        doReturn(10).when(mTransitionController).getCollectingTransitionId();
 
         mController.onTaskFragmentAppeared(mTaskFragment.getTaskFragmentOrganizer(), mTaskFragment);
         mController.dispatchPendingEvents();
 
         // Defer transition when send TaskFragment transaction during transition collection.
-        verify(mTransitionController).deferTransitionReady();
+        if (Flags.migrateBasicLegacyReady()) {
+            assertTrue(hasReadyCondition(transit, "task-fragment transaction", false /* met */));
+        } else {
+            assertEquals(transit.mReadyTrackerOld.getDeferReadyDepth(), 1);
+        }
         verify(mOrganizer).onTransactionHandled(tokenCaptor.capture(), wctCaptor.capture(),
                 anyInt(), anyBoolean());
 
@@ -1658,7 +1665,11 @@ public class TaskFragmentOrganizerControllerTest extends WindowTestsBase {
         mController.onTransactionHandled(transactionToken, wct, TASK_FRAGMENT_TRANSIT_CHANGE,
                 false /* shouldApplyIndependently */);
 
-        verify(mTransitionController).continueTransitionReady();
+        if (Flags.migrateBasicLegacyReady()) {
+            assertTrue(hasReadyCondition(transit, "task-fragment transaction", true /* met */));
+        } else {
+            assertEquals(transit.mReadyTrackerOld.getDeferReadyDepth(), 0);
+        }
     }
 
     @Test
@@ -2299,5 +2310,14 @@ public class TaskFragmentOrganizerControllerTest extends WindowTestsBase {
         assertNull(intent.getData());
         assertNull(intent.getExtras());
         assertEquals(0, intent.getFlags());
+    }
+
+    private static boolean hasReadyCondition(Transition transition, String name, boolean met) {
+        ArrayList<Transition.ReadyCondition> list = met
+                ? transition.mReadyTracker.mMet : transition.mReadyTracker.mConditions;
+        for (int i = 0; i < list.size(); ++i) {
+            if (list.get(i).mName.equals(name)) return true;
+        }
+        return false;
     }
 }

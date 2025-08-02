@@ -62,6 +62,7 @@ import android.window.WindowContainerTransaction;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.protolog.ProtoLog;
 import com.android.internal.protolog.WmProtoLogGroups;
+import com.android.window.flags.Flags;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -534,7 +535,7 @@ public class TaskFragmentOrganizerController extends ITaskFragmentOrganizerContr
             mDeferredTransitions.put(transaction.getTransactionToken(), transitionId);
             mWindowOrganizerController.getTransitionController().deferTransitionReady();
             final Transition.ReadyCondition transactionApplied = new Transition.ReadyCondition(
-                    "task-fragment transaction", transaction, true /* newTrackerOnly */);
+                    "task-fragment transaction", transaction, !Flags.migrateBasicLegacyReady());
             mWindowOrganizerController.getTransitionController().waitFor(transactionApplied);
             mInFlightTransactions.put(transaction.getTransactionToken(), transactionApplied);
         }

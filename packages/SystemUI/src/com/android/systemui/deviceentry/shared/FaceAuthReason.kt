@@ -57,6 +57,7 @@ import com.android.systemui.deviceentry.shared.InternalFaceAuthReasons.POSTURE_C
 import com.android.systemui.deviceentry.shared.InternalFaceAuthReasons.PRIMARY_BOUNCER_SHOWN
 import com.android.systemui.deviceentry.shared.InternalFaceAuthReasons.PRIMARY_BOUNCER_SHOWN_OR_WILL_BE_SHOWN
 import com.android.systemui.deviceentry.shared.InternalFaceAuthReasons.RETRY_AFTER_HW_UNAVAILABLE
+import com.android.systemui.deviceentry.shared.InternalFaceAuthReasons.SIM_PIN_SUCCESS
 import com.android.systemui.deviceentry.shared.InternalFaceAuthReasons.STARTED_WAKING_UP
 import com.android.systemui.deviceentry.shared.InternalFaceAuthReasons.STRONG_AUTH_ALLOWED_CHANGED
 import com.android.systemui.deviceentry.shared.InternalFaceAuthReasons.TRUST_DISABLED
@@ -133,6 +134,7 @@ private object InternalFaceAuthReasons {
     const val POSTURE_CHANGED = "Face auth started/stopped due to device posture changed."
     const val DISPLAY_OFF = "Face auth stopped due to display state OFF."
     const val CAMERA_AVAILABLE_CHANGED = "Face auth started due to the available camera changed"
+    const val SIM_PIN_SUCCESS = "Face auth started due to SIM pin success"
 }
 
 /**
@@ -226,7 +228,8 @@ constructor(private val id: Int, val reason: String, var extraInfo: Int = 0) :
     @UiEvent(doc = ACCESSIBILITY_ACTION) FACE_AUTH_ACCESSIBILITY_ACTION(1454, ACCESSIBILITY_ACTION),
     @UiEvent(doc = DISPLAY_OFF) FACE_AUTH_DISPLAY_OFF(1461, DISPLAY_OFF),
     @UiEvent(doc = CAMERA_AVAILABLE_CHANGED)
-    FACE_AUTH_CAMERA_AVAILABLE_CHANGED(1623, CAMERA_AVAILABLE_CHANGED);
+    FACE_AUTH_CAMERA_AVAILABLE_CHANGED(1623, CAMERA_AVAILABLE_CHANGED),
+    @UiEvent(doc = SIM_PIN_SUCCESS) FACE_AUTH_SIM_PIN_SUCCESS(2403, SIM_PIN_SUCCESS);
 
     override fun getId(): Int = this.id
 

@@ -142,7 +142,14 @@ constructor(
             ) {
                 val page = pages[it]
 
-                with(delegateGridLayout) { TileGrid(tiles = page, modifier = Modifier, listening) }
+                with(delegateGridLayout) {
+                    TileGrid(
+                        tiles = page,
+                        modifier = Modifier,
+                        listening = listening,
+                        revealEffectContainer = null,
+                    )
+                }
             }
             FooterBar(
                 buildNumberViewModelFactory = viewModel.buildNumberViewModelFactory,

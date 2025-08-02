@@ -47,8 +47,7 @@ public final class RavenwoodRunnerState {
     private static final String RAVENWOOD_RULE_ERROR =
             "RavenwoodRule(s) are not executed in the correct order";
 
-    private static final boolean ALLOW_ALL_SYSPROP_READS = "1".equals(
-            System.getenv("RAVENWOOD_ALLOW_ALL_SYSPROP_READS"));
+    private static final String ALLOW_ALL_SYSPROP_READ_ENV = "RAVENWOOD_ALLOW_ANY_SYSPROP_READ";
 
     private static final List<Pair<RavenwoodRule, RavenwoodPropertyState>> sActiveProperties =
             new ArrayList<>();
@@ -61,8 +60,6 @@ public final class RavenwoodRunnerState {
     public RavenwoodRunnerState(RavenwoodAwareTestRunner runner) {
         mRunner = runner;
     }
-
-    private Description mMethodDescription;
 
     public void enterTestRunner() {
         if (RAVENWOOD_VERBOSE_LOGGING) {
@@ -82,19 +79,18 @@ public final class RavenwoodRunnerState {
             Log.v(TAG, "exitTestClass: " + mRunner.mTestJavaClass.getName());
         }
         assertTrue(RAVENWOOD_RULE_ERROR, sActiveProperties.isEmpty());
-        RavenwoodDriver.exitTestClass();
+        RavenwoodErrorHandler.exitTestClass();
     }
 
     /** Called when a test method is about to start */
     public void enterTestMethod(Description description) {
-        mMethodDescription = description;
         RavenwoodDriver.enterTestMethod(description);
+        RavenwoodErrorHandler.enterTestMethod(description);
     }
 
     /** Called when a test method finishes */
     public void exitTestMethod(Description description) {
-        RavenwoodDriver.exitTestMethod(description);
-        mMethodDescription = null;
+        RavenwoodErrorHandler.exitTestMethod(description);
     }
 
     public void enterRavenwoodRule(RavenwoodRule rule) {
@@ -158,7 +154,8 @@ public final class RavenwoodRunnerState {
                 || sActiveProperties.stream().anyMatch(p -> p.second.isKeyAccessible(key, write));
 
         if (!result) {
-            if (ALLOW_ALL_SYSPROP_READS && !write) {
+            if (RavenwoodEnvironment.getInstance().getBoolEnvVar(ALLOW_ALL_SYSPROP_READ_ENV)
+                    && !write) {
                 Log.w(TAG, "Unallow-listed property read detected: key=" + key);
                 return;
             }

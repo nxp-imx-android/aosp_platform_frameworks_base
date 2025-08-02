@@ -21,8 +21,6 @@
     <string name="update" msgid="3932142540719227615">"अपडेट करें"</string>
     <string name="done" msgid="6632441120016885253">"हो गया"</string>
     <string name="cancel" msgid="1018267193425558088">"रद्द करें"</string>
-    <!-- no translation found for install_without_verifying (7606774834125762618) -->
-    <skip />
     <!-- no translation found for more_details (3643407086654820243) -->
     <skip />
     <string name="dont_install" msgid="414055123295505225">"इंस्टॉल न करें"</string>

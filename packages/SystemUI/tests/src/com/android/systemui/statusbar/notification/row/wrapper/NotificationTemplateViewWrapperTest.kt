@@ -38,6 +38,7 @@ import com.android.systemui.statusbar.notification.row.wrapper.NotificationTempl
 import com.android.systemui.testKosmos
 import com.android.systemui.util.leak.ReferenceTestUtils.waitForCondition
 import com.google.common.truth.Truth.assertThat
+import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -80,6 +81,11 @@ class NotificationTemplateViewWrapperTest : SysuiTestCase() {
                 .inflate(R.layout.notification_template_material_big_text, root2) as ViewGroup)
         actions = view.findViewById(R.id.actions)!!
         ViewUtils.attachView(root)
+    }
+
+    @After
+    fun tearDown() {
+        ViewUtils.detachView(root)
     }
 
     @Test

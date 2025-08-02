@@ -758,6 +758,12 @@ constructor(
                                 modifier = Modifier.requiredHeightIn(max = Dp.Infinity),
                                 mediaHost = viewModel.qqsMediaHost,
                                 mediaLogger = mediaLogger,
+                                mediaPresentationStyle =
+                                    if (viewModel.qqsMediaInRow) {
+                                        MediaPresentationStyle.Compressed
+                                    } else {
+                                        MediaPresentationStyle.Default
+                                    },
                                 mediaCarouselInteractor = viewModel.mediaCarouselInteractor,
                                 mediaViewModelFactory = viewModel.mediaViewModelFactory,
                                 behavior = viewModel.qqsMediaUiBehavior,
@@ -918,6 +924,7 @@ constructor(
                                         mediaHost = viewModel.qsMediaHost,
                                         mediaLogger = mediaLogger,
                                         mediaViewModelFactory = viewModel.mediaViewModelFactory,
+                                        mediaPresentationStyle = MediaPresentationStyle.Default,
                                         mediaCarouselInteractor = viewModel.mediaCarouselInteractor,
                                         behavior = viewModel.qsMediaUiBehavior,
                                         update = { translationY = viewModel.qsMediaTranslationY },
@@ -1409,6 +1416,7 @@ private fun ContentScope.MediaObject(
     modifier: Modifier = Modifier,
     mediaLogger: MediaViewLogger,
     mediaViewModelFactory: MediaViewModel.Factory,
+    mediaPresentationStyle: MediaPresentationStyle,
     mediaCarouselInteractor: MediaCarouselInteractor,
     behavior: MediaUiBehavior,
     update: UniqueObjectHostView.() -> Unit = {},
@@ -1417,7 +1425,7 @@ private fun ContentScope.MediaObject(
         Element(key = Media.Elements.mediaCarousel, modifier = modifier) {
             Media(
                 viewModelFactory = mediaViewModelFactory,
-                presentationStyle = MediaPresentationStyle.Default,
+                presentationStyle = mediaPresentationStyle,
                 behavior = behavior,
                 onDismissed = { mediaCarouselInteractor.onSwipeToDismiss() },
                 modifier = Modifier,

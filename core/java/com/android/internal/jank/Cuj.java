@@ -459,7 +459,7 @@ public class Cuj {
     public static final int CUJ_LAUNCHER_WIDGET_PICKER_APP_EXPAND = 142;
 
     /**
-     * Track exiting from Desktop Windowing mode and moving into Split screen mode.
+     * Tracks exiting from Desktop Windowing mode and moving into Split screen mode.
      *
      * <p>Tracking starts when user initiates exiting from Desktop Windowing (by tapping the
      * split-screen button in the app header menu) and finishes when transition to Split screen is
@@ -467,8 +467,17 @@ public class Cuj {
      */
     public static final int CUJ_DESKTOP_MODE_MOVE_TO_SPLIT_SCREEN = 143;
 
+    /**
+     * Tracks exiting from Split screen mode and entering into Desktop Windowing mode.
+     *
+     * <p>Tracking begins when a user exits Split screen mode (by tapping the Desktop Windowing
+     * button or using the drop event of drag-and-drop) and ends when the transition to Desktop
+     * Windowing mode is complete (the animation has finished, and the mode is ready for user input)
+     */
+    public static final int CUJ_DESKTOP_MODE_MOVE_FROM_SPLIT_SCREEN = 144;
+
     // When adding a CUJ, update this and make sure to also update CUJ_TO_STATSD_INTERACTION_TYPE.
-    @VisibleForTesting static final int LAST_CUJ = CUJ_DESKTOP_MODE_MOVE_TO_SPLIT_SCREEN;
+    @VisibleForTesting static final int LAST_CUJ = CUJ_DESKTOP_MODE_MOVE_FROM_SPLIT_SCREEN;
 
     /** @hide */
     @IntDef({
@@ -604,6 +613,7 @@ public class Cuj {
             CUJ_LAUNCHER_WIDGET_PICKER_OPEN,
             CUJ_LAUNCHER_WIDGET_PICKER_APP_EXPAND,
             CUJ_DESKTOP_MODE_MOVE_TO_SPLIT_SCREEN,
+            CUJ_DESKTOP_MODE_MOVE_FROM_SPLIT_SCREEN,
     })
     @Retention(RetentionPolicy.SOURCE)
     public @interface CujType {}
@@ -749,6 +759,7 @@ public class Cuj {
         CUJ_TO_STATSD_INTERACTION_TYPE[CUJ_LAUNCHER_WIDGET_PICKER_OPEN] = FrameworkStatsLog.UIINTERACTION_FRAME_INFO_REPORTED__INTERACTION_TYPE__LAUNCHER_WIDGET_PICKER_OPEN;
         CUJ_TO_STATSD_INTERACTION_TYPE[CUJ_LAUNCHER_WIDGET_PICKER_APP_EXPAND] = FrameworkStatsLog.UIINTERACTION_FRAME_INFO_REPORTED__INTERACTION_TYPE__LAUNCHER_WIDGET_PICKER_APP_EXPAND;
         CUJ_TO_STATSD_INTERACTION_TYPE[CUJ_DESKTOP_MODE_MOVE_TO_SPLIT_SCREEN] = FrameworkStatsLog.UIINTERACTION_FRAME_INFO_REPORTED__INTERACTION_TYPE__DESKTOP_MODE_MOVE_TO_SPLIT_SCREEN;
+        CUJ_TO_STATSD_INTERACTION_TYPE[CUJ_DESKTOP_MODE_MOVE_FROM_SPLIT_SCREEN] = FrameworkStatsLog.UIINTERACTION_FRAME_INFO_REPORTED__INTERACTION_TYPE__DESKTOP_MODE_MOVE_FROM_SPLIT_SCREEN;
     }
 
     private Cuj() {
@@ -1031,6 +1042,8 @@ public class Cuj {
                 return "LAUNCHER_WIDGET_PICKER_APP_EXPAND";
             case CUJ_DESKTOP_MODE_MOVE_TO_SPLIT_SCREEN:
                 return "DESKTOP_MODE_MOVE_TO_SPLIT_SCREEN";
+            case CUJ_DESKTOP_MODE_MOVE_FROM_SPLIT_SCREEN:
+                return "DESKTOP_MODE_MOVE_FROM_SPLIT_SCREEN";
         }
         return "UNKNOWN";
     }

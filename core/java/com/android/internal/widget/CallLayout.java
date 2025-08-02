@@ -30,7 +30,6 @@ import android.util.AttributeSet;
 import android.view.RemotableViewMethod;
 import android.widget.FrameLayout;
 import android.widget.RemoteViews;
-import android.widget.flags.Flags;
 
 import com.android.internal.R;
 
@@ -114,10 +113,6 @@ public class CallLayout extends FrameLayout {
      * async version of {@link CallLayout#setLayoutColor}
      */
     public Runnable setLayoutColorAsync(int color) {
-        if (!Flags.callStyleSetDataAsync()) {
-            return () -> setLayoutColor(color);
-        }
-
         mLayoutColor = color;
         return () -> {};
     }
@@ -139,10 +134,6 @@ public class CallLayout extends FrameLayout {
      * async version of {@link CallLayout#setLargeIcon}
      */
     public Runnable setLargeIconAsync(Icon largeIcon) {
-        if (!Flags.callStyleSetDataAsync()) {
-            return () -> setLargeIcon(largeIcon);
-        }
-
         mLargeIcon = largeIcon;
         return () -> {};
     }
@@ -168,10 +159,6 @@ public class CallLayout extends FrameLayout {
      * Async implementation for setData
      */
     public Runnable setDataAsync(Bundle extras) {
-        if (!Flags.callStyleSetDataAsync()) {
-            return () -> setData(extras);
-        }
-
         final Person person = getPerson(extras);
         setUser(person);
 

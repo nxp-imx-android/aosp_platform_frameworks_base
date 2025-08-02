@@ -1269,7 +1269,7 @@
     <string name="whichApplication" msgid="5432266899591255759">"작업을 수행할 때 사용하는 애플리케이션"</string>
     <string name="whichApplicationNamed" msgid="6969946041713975681">"%1$s을(를) 사용하여 작업 완료"</string>
     <string name="whichApplicationLabel" msgid="7852182961472531728">"작업 완료"</string>
-    <string name="whichViewApplication" msgid="5733194231473132945">"연결 프로그램"</string>
+    <string name="whichViewApplication" msgid="5733194231473132945">"연결 앱"</string>
     <string name="whichViewApplicationNamed" msgid="415164730629690105">"%1$s(으)로 열기"</string>
     <string name="whichViewApplicationLabel" msgid="7367556735684742409">"열기"</string>
     <string name="whichOpenHostLinksWith" msgid="7645631470199397485">"<xliff:g id="HOST">%1$s</xliff:g> 링크를 열 때 사용할 앱"</string>
@@ -1484,8 +1484,6 @@
     <string name="decline_remote_bugreport_action" msgid="4040894777519784346">"거부"</string>
     <string name="select_input_method" msgid="3971267998568587025">"입력 방법 선택"</string>
     <string name="input_method_language_settings" msgid="8069089418056819437">"언어 설정"</string>
-    <string name="show_ime" msgid="6406112007347443383">"물리적 키보드가 활성 상태인 경우 화면에 켜 둠"</string>
-    <string name="hardware" msgid="3611039921284836033">"터치 키보드 사용"</string>
     <string name="select_keyboard_layout_notification_title" msgid="5823199895322205589">"<xliff:g id="DEVICE_NAME">%s</xliff:g> 설정"</string>
     <string name="select_multiple_keyboards_layout_notification_title" msgid="6999491025126641938">"실제 키보드 설정"</string>
     <string name="select_keyboard_layout_notification_message" msgid="8835158247369158154">"탭하여 언어와 레이아웃을 선택하세요."</string>
@@ -2125,7 +2123,7 @@
     <string name="unpin_specific_target" msgid="3859828252160908146">"<xliff:g id="LABEL">%1$s</xliff:g> 고정 해제"</string>
     <string name="app_info" msgid="6113278084877079851">"앱 정보"</string>
     <string name="shortcut_group_a11y_title" msgid="2992150163811583865">"직접 공유 타겟"</string>
-    <string name="suggested_apps_group_a11y_title" msgid="2804876567839501831">"앱 제안"</string>
+    <string name="suggested_apps_group_a11y_title" msgid="2804876567839501831">"앱 추천"</string>
     <string name="all_apps_group_a11y_title" msgid="7020352520224108745">"앱 목록"</string>
     <string name="negative_duration" msgid="1938335096972945232">"−<xliff:g id="TIME">%1$s</xliff:g>"</string>
     <string name="demo_starting_message" msgid="6577581216125805905">"데모 시작 중..."</string>

@@ -21,6 +21,7 @@ import static android.content.pm.ActivityInfo.OVERRIDE_MIN_ASPECT_RATIO_ONLY_FOR
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.spyOn;
 import static com.android.server.wm.AppCompatCameraPolicy.isTreatmentEnabledForActivity;
 import static com.android.server.wm.AppCompatCameraPolicy.shouldOverrideMinAspectRatioForCamera;
+import static com.android.window.flags.Flags.FLAG_CAMERA_COMPAT_UNIFY_CAMERA_POLICIES;
 import static com.android.window.flags.Flags.FLAG_ENABLE_CAMERA_COMPAT_FOR_DESKTOP_WINDOWING;
 
 import static org.junit.Assert.assertEquals;
@@ -121,6 +122,19 @@ public class AppCompatCameraPolicyTest extends WindowTestsBase {
             robot.dw().allowEnterDesktopMode(/* isAllowed= */ false);
             robot.activity().createActivityWithComponentInNewTaskAndDisplay();
             robot.checkTopActivityHasSimReqOrientationPolicy(/* exists= */ false);
+        });
+    }
+
+    @Test
+    @EnableFlags({FLAG_ENABLE_CAMERA_COMPAT_FOR_DESKTOP_WINDOWING,
+            FLAG_CAMERA_COMPAT_UNIFY_CAMERA_POLICIES})
+    public void testSimReqOrientationPolicy_unifyCameraPoliciesAndAllowedViaConfig_present() {
+        runTestScenario((robot) -> {
+            robot.dw().allowEnterDesktopMode(/* isAllowed= */ false);
+            robot.conf().enableCameraCompatSimulateRequestedOrientationTreatment(
+                    /* enabled= */ true);
+            robot.activity().createActivityWithComponentInNewTaskAndDisplay();
+            robot.checkTopActivityHasSimReqOrientationPolicy(/* exists= */ true);
         });
     }
 

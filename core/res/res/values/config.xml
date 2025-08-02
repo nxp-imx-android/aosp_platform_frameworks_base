@@ -3290,7 +3290,7 @@
          @deprecated  Use config_multiuserMaximumUsers instead.
          This config will likely be removed in the future; config_multiuserMaximumUsers, which now
          only applies to full users, not profiles, should be updated accordingly as needed.
-         TODO(b/): Remove this since it is now made redundant by config_multiuserMaximumUsers.
+         TODO(b/435521983): Remove this since it's now made redundant by config_multiuserMaximumUsers
          -->
     <bool name="config_enableMultiUserUI">false</bool>
 
@@ -4906,6 +4906,13 @@
         <!--
         <item>com.example.package.first/com.example.class.FirstService</item>
         <item>com.example.package.second/com.example.class.SecondService</item>
+        -->
+    </string-array>
+
+    <string-array translatable="false" name="config_forceInvertPackageBlocklist">
+        <!--
+        <item>com.example.package.first</item>
+        <item>com.example.package.second</item>
         -->
     </string-array>
 

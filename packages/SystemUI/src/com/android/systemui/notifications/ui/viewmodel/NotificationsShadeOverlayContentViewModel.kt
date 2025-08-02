@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -17,9 +17,11 @@
 package com.android.systemui.notifications.ui.viewmodel
 
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import com.android.app.tracing.coroutines.launchTraced as launch
 import com.android.systemui.Flags
 import com.android.systemui.dagger.qualifiers.Main
+import com.android.systemui.desktop.domain.interactor.DesktopInteractor
 import com.android.systemui.lifecycle.ExclusiveActivatable
 import com.android.systemui.lifecycle.Hydrator
 import com.android.systemui.media.controls.domain.pipeline.interactor.MediaCarouselInteractor
@@ -29,6 +31,7 @@ import com.android.systemui.shade.domain.interactor.ShadeInteractor
 import com.android.systemui.shade.domain.interactor.ShadeModeInteractor
 import com.android.systemui.shade.shared.model.ShadeMode
 import com.android.systemui.shade.ui.viewmodel.ShadeHeaderViewModel
+import com.android.systemui.statusbar.core.StatusBarForDesktop
 import com.android.systemui.statusbar.disableflags.domain.interactor.DisableFlagsInteractor
 import com.android.systemui.statusbar.notification.stack.ui.viewmodel.NotificationsPlaceholderViewModel
 import com.android.systemui.utils.coroutines.flow.flatMapLatestConflated
@@ -41,6 +44,7 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 
 /**
@@ -55,6 +59,7 @@ constructor(
     @Main private val mainDispatcher: CoroutineDispatcher,
     val shadeHeaderViewModelFactory: ShadeHeaderViewModel.Factory,
     val notificationsPlaceholderViewModelFactory: NotificationsPlaceholderViewModel.Factory,
+    private val desktopInteractor: DesktopInteractor,
     val sceneInteractor: SceneInteractor,
     private val shadeInteractor: ShadeInteractor,
     private val shadeModeInteractor: ShadeModeInteractor,
@@ -64,6 +69,21 @@ constructor(
 ) : ExclusiveActivatable() {
 
     private val hydrator = Hydrator("NotificationsShadeOverlayContentViewModel.hydrator")
+
+    /**
+     * The Shade header can only be shown if desktop features are disabled. This is because the
+     * status bar is always visible when desktop features are enabled.
+     */
+    val showHeader: Boolean by
+        if (StatusBarForDesktop.isEnabled) {
+            hydrator.hydratedStateOf(
+                traceName = "showHeader",
+                initialValue = !desktopInteractor.isDesktopFeatureSetEnabled.value,
+                source = desktopInteractor.isDesktopFeatureSetEnabled.map { !it },
+            )
+        } else {
+            mutableStateOf(true)
+        }
 
     val showMedia: Boolean by
         hydrator.hydratedStateOf(

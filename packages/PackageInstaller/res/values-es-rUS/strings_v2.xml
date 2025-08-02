@@ -55,9 +55,9 @@
     <string name="title_restore_error_installer_disabled" msgid="6955341343521073762">"Se inhabilitó <xliff:g id="INSTALLER_NAME">%1$s</xliff:g>"</string>
     <string name="title_restore_error_installer_absent" msgid="4650702260526161948">"No se instaló <xliff:g id="INSTALLER_NAME">%1$s</xliff:g>"</string>
     <string name="title_restore_error_generic" msgid="3675732737839176301">"Se produjo un error"</string>
-    <string name="message_update_owner_change" product="tablet" msgid="721928859405955082">"Esta app normalmente recibe actualizaciones de &lt;b&gt;<xliff:g id="EXISTING_UPDATE_OWNER">%1$s</xliff:g>&lt;/b&gt;. Si actualizas a través de otra fuente, es posible que recibas las próximas actualizaciones de cualquier fuente en la tablet. Por ende, podría verse afectada la funcionalidad de la app."</string>
-    <string name="message_update_owner_change" product="tv" msgid="7398850682198100493">"Esta app normalmente recibe actualizaciones de &lt;b&gt;<xliff:g id="EXISTING_UPDATE_OWNER">%1$s</xliff:g>&lt;/b&gt;. Si actualizas a través de otra fuente, es posible que recibas las próximas actualizaciones de cualquier fuente en la TV. Por ende, podría verse afectada la funcionalidad de la app."</string>
-    <string name="message_update_owner_change" product="default" msgid="8415571223941666411">"Esta app normalmente recibe actualizaciones de &lt;b&gt;<xliff:g id="EXISTING_UPDATE_OWNER">%1$s</xliff:g>&lt;/b&gt;. Si actualizas a través de otra fuente, es posible que recibas las próximas actualizaciones de cualquier fuente en el teléfono. Por ende, podría verse afectada la funcionalidad de la app."</string>
+    <string name="message_update_owner_change" product="tablet" msgid="721928859405955082">"Esta app normalmente recibe actualizaciones de &lt;b&gt;<xliff:g id="EXISTING_UPDATE_OWNER">%1$s</xliff:g>&lt;/b&gt;. Si actualizas a través de otra fuente, es posible que recibas las próximas actualizaciones de cualquier fuente en la tablet. Por ello, podría verse afectada la funcionalidad de la app."</string>
+    <string name="message_update_owner_change" product="tv" msgid="7398850682198100493">"Esta app normalmente recibe actualizaciones de &lt;b&gt;<xliff:g id="EXISTING_UPDATE_OWNER">%1$s</xliff:g>&lt;/b&gt;. Si actualizas a través de otra fuente, es posible que recibas las próximas actualizaciones de cualquier fuente en la TV. Por ello, podría verse afectada la funcionalidad de la app."</string>
+    <string name="message_update_owner_change" product="default" msgid="8415571223941666411">"Esta app normalmente recibe actualizaciones de &lt;b&gt;<xliff:g id="EXISTING_UPDATE_OWNER">%1$s</xliff:g>&lt;/b&gt;. Si actualizas a través de otra fuente, es posible que recibas las próximas actualizaciones de cualquier fuente en el teléfono. Por ello, podría verse afectada la funcionalidad de la app."</string>
     <string name="message_external_source_blocked" product="tablet" msgid="1404860482919177902">"Por tu seguridad, la tablet no tiene permitido actualmente instalar apps desconocidas de esta fuente. Puedes modificar esta opción en Configuración."</string>
     <string name="message_external_source_blocked" product="tv" msgid="1394622045008552842">"Por tu seguridad, la TV no tiene permitido actualmente instalar apps desconocidas de esta fuente. Puedes modificar esta opción en Configuración."</string>
     <string name="message_external_source_blocked" product="watch" msgid="1532513823566863443">"Por tu seguridad, el reloj no tiene permitido actualmente instalar apps desconocidas de esta fuente. Puedes modificar esta opción en Configuración."</string>
@@ -86,8 +86,8 @@
     <string name="message_archive" msgid="943853731737315850">"Se guardarán los datos de la app"</string>
     <string name="message_archive_all_users" msgid="4664139369764501351">"Se guardarán todos los datos de la app"</string>
     <string name="message_archive_other_user" msgid="6465828676043191175">"Se guardarán los datos de la app"</string>
-    <string name="message_archive_work_profile" msgid="7601504268820630858">"Se archivará esta app desde tu perfil de trabajo. Se guardarán los datos de tu app."</string>
-    <string name="message_archive_private_space" msgid="4873651645762576624">"Esta app se archivará desde tu espacio privado. Se guardarán los datos de tu app."</string>
+    <string name="message_archive_work_profile" msgid="7601504268820630858">"Esta app de tu perfil de trabajo se archivará. Se guardarán los datos de tu app."</string>
+    <string name="message_archive_private_space" msgid="4873651645762576624">"Esta app de tu espacio privado se archivará. Se guardarán los datos de tu app."</string>
     <string name="message_restore" msgid="8402726798623569969">"Esta app se descargará de <xliff:g id="INSTALLER_NAME">%1$s</xliff:g> en segundo plano"</string>
     <string name="message_restore_error_user_action_needed" msgid="2206904734076205208">"<xliff:g id="INSTALLER_NAME">%1$s</xliff:g> necesita más información para que puedas restablecer esta app"</string>
     <string name="message_restore_error_less_storage" msgid="4945507738776981462">"Para restablecer esta app, libera &lt;b&gt;<xliff:g id="BYTES">%1$s</xliff:g>&lt;/b&gt; y vuelve a intentarlo"</string>
@@ -96,19 +96,29 @@
     <string name="message_restore_error_installer_absent" msgid="8492838251989389724">"Para restablecer esta app, deberás instalar <xliff:g id="INSTALLER_NAME">%1$s</xliff:g>"</string>
     <string name="message_restore_error_generic" msgid="5903850636679929406">"Hubo un problema al intentar restablecer esta app"</string>
     <string name="message_uninstall_activity" msgid="3263352475743590167">"<xliff:g id="ACTIVITY_NAME">%1$s</xliff:g> es parte de la siguiente app: <xliff:g id="APP_NAME">%2$s</xliff:g>"</string>
-    <!-- no translation found for cannot_install_app_blocked_summary (8433096420067308800) -->
+    <string name="cannot_install_app_blocked_summary" msgid="8433096420067308800">"&lt;p&gt;Se bloqueó esta app. Para ayudar a proteger tu dispositivo y tus datos, solo se pueden instalar apps de desarrolladores verificados.&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;Más información sobre la verificación de desarrolladores&lt;/a&gt;&lt;/p&gt;"</string>
+    <!-- no translation found for cannot_update_app_blocked_summary (5003390308880649930) -->
     <skip />
-    <!-- no translation found for cannot_install_verification_no_internet_summary (8948259713332887857) -->
+    <string name="cannot_install_verification_no_internet_summary" msgid="8948259713332887857">"&lt;p&gt;No se instaló esta app. Las apps de desarrolladores no verificados podrían no ser seguras.&lt;/p&gt; &lt;p&gt;Se requiere una conexión a Internet para verificar al desarrollador de la app. Asegúrate de que el dispositivo esté conectado a Internet y vuelve a intentar instalar la app. &lt;/p&gt; &lt;p&gt;&lt;a href=&gt;Más información sobre la verificación de desarrolladores&lt;/a&gt;&lt;p&gt;"</string>
+    <!-- no translation found for cannot_update_verification_no_internet_summary (2970654650180690063) -->
     <skip />
-    <!-- no translation found for cannot_install_verification_unavailable_summary (343815915687716571) -->
+    <string name="cannot_install_verification_unavailable_summary" msgid="343815915687716571">"&lt;p&gt;Se produjo un error cuando se verificaba el desarrollador de esta app. Las apps de desarrolladores no verificados pueden ser peligrosas, por lo que no se instaló la app.&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;Más información sobre la verificación de desarrolladores&lt;/a&gt;&lt;/p&gt;"</string>
+    <!-- no translation found for cannot_update_verification_unavailable_summary (7697174533040472480) -->
     <skip />
-    <!-- no translation found for install_without_verifying_summary (9056694084349761546) -->
+    <!-- no translation found for cannot_install_verification_unavailable_fail_closed_summary (3178396108551754329) -->
     <skip />
-    <!-- no translation found for cannot_install_app_blocked_title (6372444121824751694) -->
+    <!-- no translation found for cannot_update_verification_unavailable_fail_closed_summary (2057697870682373917) -->
     <skip />
-    <!-- no translation found for cannot_install_verification_no_internet_title (2862046642298119581) -->
+    <!-- no translation found for more_details_expanded_install_summary (3545896392881608712) -->
     <skip />
-    <!-- no translation found for cannot_install_verification_unavailable_title (2038093442302309120) -->
+    <!-- no translation found for more_details_expanded_update_summary (2239162864839036480) -->
+    <skip />
+    <string name="cannot_install_app_blocked_title" msgid="6372444121824751694">"Desarrollador de la app sin verificar"</string>
+    <string name="cannot_install_verification_no_internet_title" msgid="2862046642298119581">"No se puede verificar el desarrollador de la app porque no hay conexión a Internet"</string>
+    <string name="cannot_install_verification_unavailable_title" msgid="2038093442302309120">"No se puede verificar el desarrollador de la app"</string>
+    <!-- no translation found for install_without_verifying (5359680595440741626) -->
+    <skip />
+    <!-- no translation found for update_without_verifying (2841466981431484179) -->
     <skip />
     <string name="button_install" msgid="7434013176505680162">"Instalar"</string>
     <string name="button_update" msgid="3046719350226327526">"Actualizar"</string>

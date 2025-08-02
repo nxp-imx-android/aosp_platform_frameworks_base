@@ -28,6 +28,8 @@ import android.media.projection.StopReason
 import android.os.Bundle
 import androidx.media3.common.MimeTypes
 import com.android.systemui.res.R
+import com.android.systemui.screencapture.record.domain.interactor.ScreenCaptureRecordFeaturesInteractor
+import com.android.systemui.screencapture.record.smallscreen.ui.SmallScreenPostRecordingActivity
 import com.android.systemui.screenrecord.RecordingServiceStrings
 import com.android.systemui.screenrecord.ScreenMediaRecorder.SavedRecording
 import com.android.systemui.screenrecord.ScreenRecordingAudioSource
@@ -144,9 +146,19 @@ class ScreenRecordingServiceNotificationInteractor(
         )
 
         val viewIntent =
-            Intent(Intent.ACTION_VIEW)
-                .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                .setDataAndType(savedRecording.uri, MimeTypes.VIDEO_MP4)
+            if (ScreenCaptureRecordFeaturesInteractor.isNewScreenRecordToolbarEnabled) {
+                Intent(context, SmallScreenPostRecordingActivity::class.java)
+                    .setFlags(
+                        Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_GRANT_READ_URI_PERMISSION
+                    )
+                    .setDataAndType(savedRecording.uri, MimeTypes.VIDEO_MP4)
+            } else {
+                Intent(Intent.ACTION_VIEW)
+                    .setFlags(
+                        Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_GRANT_READ_URI_PERMISSION
+                    )
+                    .setDataAndType(savedRecording.uri, MimeTypes.VIDEO_MP4)
+            }
 
         val shareAction: Notification.Action =
             Notification.Action.Builder(

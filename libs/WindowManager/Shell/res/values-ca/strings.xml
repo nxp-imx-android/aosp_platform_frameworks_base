@@ -169,7 +169,7 @@
     <string name="app_header_talkback_action_minimize_button_text" msgid="7491054416186901764">"Minimitza la finestra de l\'aplicació"</string>
     <string name="app_header_talkback_action_close_button_text" msgid="5159612596378268926">"Tanca la finestra de l\'aplicació"</string>
     <string name="open_by_default_settings_text" msgid="2526548548598185500">"Configuració d\'obertura predeterminada"</string>
-    <string name="open_by_default_dialog_subheader_text" msgid="1729599730664063881">"Tria com vols obrir els enllaços web per a aquesta aplicació"</string>
+    <string name="open_by_default_dialog_subheader_text" msgid="1729599730664063881">"Tria com vols obrir els enllaços web d\'aquesta aplicació"</string>
     <string name="open_by_default_dialog_in_app_text" msgid="6978022419634199806">"A l\'aplicació"</string>
     <string name="open_by_default_dialog_in_browser_text" msgid="8042769465958497081">"Al navegador"</string>
     <string name="open_by_default_dialog_dismiss_button_text" msgid="3487238795534582291">"D\'acord"</string>

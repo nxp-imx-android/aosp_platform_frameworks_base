@@ -146,6 +146,8 @@
     <string name="screen_capture_region_selection_button" msgid="4437546351856914639">"ថតផ្នែកដែលបានជ្រើសរើស"</string>
     <string name="screen_capture_toolbar_capture_button" msgid="8512731007891496030">"ថត"</string>
     <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"ថត"</string>
+    <!-- no translation found for screen_capture_region_dimensions (2317064050253056256) -->
+    <skip />
     <string name="share_to_app_chip_accessibility_label" msgid="4210256229976947065">"កំពុងបង្ហាញអេក្រង់"</string>
     <string name="share_to_app_chip_accessibility_label_generic" msgid="5517431657924536133">"កំពុងចែករំលែកខ្លឹមសារ"</string>
     <string name="share_to_app_stop_dialog_title" msgid="9212915050910250438">"ឈប់បង្ហាញអេក្រង់ឬ?"</string>
@@ -155,6 +157,8 @@
     <string name="share_to_app_stop_dialog_message_single_app_specific" msgid="5923772039347985172">"បច្ចុប្បន្ន អ្នកកំពុងបង្ហាញ <xliff:g id="APP_BEING_SHARED_NAME">%1$s</xliff:g>"</string>
     <string name="share_to_app_stop_dialog_message_single_app_generic" msgid="6681016774654578261">"បច្ចុប្បន្ន អ្នកកំពុងបង្ហាញកម្មវិធីមួយ"</string>
     <string name="share_to_app_stop_dialog_message_generic" msgid="7622174291691249392">"បច្ចុប្បន្ន អ្នកកំពុងចែករំលែក​ជាមួយកម្មវិធីមួយ"</string>
+    <!-- no translation found for share_to_app_stop_dialog_message_with_host_app (7445852089654702142) -->
+    <skip />
     <string name="share_to_app_stop_dialog_button" msgid="6334056916284230217">"ឈប់​បង្ហាញ"</string>
     <string name="cast_screen_to_other_device_chip_accessibility_label" msgid="4687917476203009885">"កំពុង​បញ្ជូន​អេក្រង់"</string>
     <string name="cast_to_other_device_stop_dialog_title" msgid="7836517190930357326">"ឈប់បញ្ជូនឬ?"</string>
@@ -714,10 +718,8 @@
     <string name="monitoring_description_pin_protection" msgid="1983580207046670355">"ការគ្រប់គ្រងមួយចំនួនលើឧបករណ៍របស់អ្នក ដូចជារយៈពេល​កំណត់​ប្រចាំ​ថ្ងៃ និងពេលបិទដំណើរការ អាចប្ដូរបានតាមរយៈកូដ PIN តែប៉ុណ្ណោះ។"</string>
     <string name="legacy_vpn_name" msgid="4174223520162559145">"VPN"</string>
     <string name="keyguard_indication_trust_unlocked" msgid="7395154975733744547">"បាន​ដោះសោ​ដោយភ្នាក់ងារ​​ទុកចិត្ត"</string>
-    <!-- no translation found for kg_prompt_after_adaptive_auth_lock (6065186971000690782) -->
-    <skip />
-    <!-- no translation found for keyguard_indication_after_adaptive_auth_lock (5240600662061340872) -->
-    <skip />
+    <string name="kg_prompt_after_adaptive_auth_lock" msgid="6065186971000690782">"បានចាក់សោ​អេក្រង់។ បានព្យាយាមផ្ទៀងផ្ទាត់ច្រើនដងពេក។"</string>
+    <string name="keyguard_indication_after_adaptive_auth_lock" msgid="5240600662061340872">"បានចាក់សោអេក្រង់\nការផ្ទៀងផ្ទាត់មិនបានសម្រេច"</string>
     <string name="keyguard_indication_after_watch_disconnected" msgid="8133476870585660478">"បានចាក់សោដោយនាឡិការបស់អ្នក"</string>
     <string name="keyguard_indication_after_secure_lock_device" msgid="4358906300665255820">"បានចាក់សោដោយប្រើការ​ផ្ទៀងផ្ទាត់ 2 ជំហាន"</string>
     <string name="zen_mode_and_condition" msgid="5043165189511223718">"<xliff:g id="ZEN_MODE">%1$s</xliff:g>. <xliff:g id="EXIT_CONDITION">%2$s</xliff:g>"</string>
@@ -861,6 +863,8 @@
     <string name="notification_onboarding_summaries_message" msgid="6061524903176459064">"ឥឡូវនេះ ការសន្ទនាវែងៗរបស់អ្នកអាចត្រូវបានសង្ខេប ដើម្បីផ្ដល់ការសង្ខេបខ្លីៗឱ្យអ្នក"</string>
     <string name="notification_onboarding_bundles_message" msgid="4612908213178622912">"សំឡេងស្ងាត់ និងកញ្ចប់កម្មវិធីរៀបចំការជូនដំណឹងបន្ថយការជូនដំណឹងអាទិភាព។ បញ្ចូលប្រភេទច្រើនទៀតនៅក្នុងការកំណត់។"</string>
     <string name="notification_bundle_header_counter" msgid="5515532701569242265">"{count,plural, =1{ការ​ជូន​ដំណឹង #}other{ការ​ជូនដំណឹង #}}"</string>
+    <!-- no translation found for notification_bundle_header_joined_description (4517556837418088139) -->
+    <skip />
     <string name="inline_done_button" msgid="6043094985588909584">"រួចរាល់"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"ប្រើ"</string>
     <string name="inline_turn_off_notifications" msgid="2653064779176881329">"បិទ"</string>
@@ -973,6 +977,8 @@
     <string name="group_system_access_google_assistant" msgid="3769929488906534254">"បើកជំនួយការឌីជីថល"</string>
     <string name="group_system_lock_screen" msgid="7391191300363416543">"ចាក់​សោ​អេក្រង់"</string>
     <string name="group_system_quick_memo" msgid="3764560265935722903">"កត់​ចំណាំ"</string>
+    <!-- no translation found for group_system_close_window (1506354809787837043) -->
+    <skip />
     <string name="keyboard_shortcut_group_system_multitasking" msgid="6967816258924795558">"ការដំណើរការបានច្រើន"</string>
     <string name="system_multitasking_rhs" msgid="8779289852395243004">"ប្រើមុខងារបំបែកអេក្រង់ជាមួយកម្មវិធីនៅខាងស្ដាំ"</string>
     <string name="system_multitasking_lhs" msgid="7348595296208696452">"ប្រើមុខងារបំបែកអេក្រង់ជាមួយកម្មវិធីនៅខាងឆ្វេង"</string>
@@ -1061,10 +1067,8 @@
     <string name="qs_edit" msgid="5583565172803472437">"កែ"</string>
     <string name="qs_edit_tiles" msgid="2105215324060865035">"កែប្រអប់"</string>
     <string name="qs_edit_mode_tooltip" msgid="4164112885539479781">"ប្ដូរទំហំប្រអប់​ការកំណត់រហ័ស"</string>
-    <!-- no translation found for qs_edit_settings (3243175290660574156) -->
-    <skip />
-    <!-- no translation found for qs_edit_menu_content_description (4420651071119623791) -->
-    <skip />
+    <string name="qs_edit_settings" msgid="3243175290660574156">"ការកំណត់"</string>
+    <string name="qs_edit_menu_content_description" msgid="4420651071119623791">"ជម្រើស"</string>
     <string name="tuner_time" msgid="2450785840990529997">"ម៉ោង"</string>
   <string-array name="clock_options">
     <item msgid="3986445361435142273">"បង្ហាញម៉ោង នាទី និងវិនាទី"</item>
@@ -1351,6 +1355,10 @@
     <string name="media_output_end_session_dialog_summary" msgid="5954520685989877347">"បញ្ឈប់វគ្គដែលអ្នក​បានចែករំលែក ដើម្បីផ្លាស់ទីមេឌៀ​ទៅឧបករណ៍​ផ្សេងទៀត"</string>
     <string name="media_output_end_session_dialog_stop" msgid="208189434474624412">"បញ្ឈប់"</string>
     <string name="media_output_dialog_button_stop_sharing" msgid="5043482739689716185">"ឈប់​ចែក​រំលែក"</string>
+    <!-- no translation found for media_output_dialog_button_sharing_audio (8312910741492835648) -->
+    <skip />
+    <!-- no translation found for media_output_dialog_button_share_audio (827604934548421520) -->
+    <skip />
     <string name="build_number_clip_data_label" msgid="3623176728412560914">"លេខ​កំណែបង្កើត"</string>
     <string name="build_number_copy_toast" msgid="877720921605503046">"បានចម្លងលេខ​កំណែបង្កើតទៅឃ្លីបបត។"</string>
     <string name="copy_to_clipboard_a11y_action" msgid="4312789069718446749">"ចម្លង​ទៅ​ឃ្លីបបត។"</string>
