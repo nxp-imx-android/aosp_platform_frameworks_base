@@ -1575,14 +1575,28 @@ public class MockingOomAdjusterTests {
     public void testUpdateOomAdj_DoOne_Backup() {
         ProcessRecord app = makeDefaultProcessRecord(MOCKAPP_PID, MOCKAPP_UID, MOCKAPP_PROCESSNAME,
                 MOCKAPP_PACKAGENAME, true);
-        setBackupTarget(app);
         setWakefulness(PowerManagerInternal.WAKEFULNESS_AWAKE);
-        updateOomAdj(app);
-        doReturn(null).when(mService.mBackupTargets).get(anyInt());
-
+        setBackupTarget(app);
+        if (Flags.pushGlobalStateToOomadjuster() && Flags.autoTriggerOomadjUpdates()) {
+            // Do not manually run the update.
+        } else {
+            updateOomAdj(app);
+        }
         assertProcStates(app, PROCESS_STATE_TRANSIENT_BACKGROUND, BACKUP_APP_ADJ,
                 SCHED_GROUP_BACKGROUND);
         assertThatProcess(app).hasImplicitCpuTimeCapability();
+
+        stopBackupTarget(app.userId);
+        if (Flags.pushGlobalStateToOomadjuster() && Flags.autoTriggerOomadjUpdates()) {
+            // Do not manually run the update.
+        } else {
+            updateOomAdj(app);
+        }
+        final int expectedAdj = mService.mConstants.USE_TIERED_CACHED_ADJ
+                ? sFirstUiCachedAdj : sFirstCachedAdj;
+        assertProcStates(app, PROCESS_STATE_CACHED_EMPTY, expectedAdj,
+                SCHED_GROUP_BACKGROUND);
+        assertThatProcess(app).notHasImplicitCpuTimeCapability();
     }
 
     @SuppressWarnings("GuardedBy")
@@ -4458,17 +4472,20 @@ public class MockingOomAdjusterTests {
 
     private ProcessRecord makeDefaultProcessRecord(int pid, int uid, String processName,
             String packageName, boolean hasShownUi) {
-        return new ProcessRecordBuilder(pid, uid, processName, packageName).setHasShownUi(
-                hasShownUi).build();
+        final ProcessRecord proc = new ProcessRecordBuilder(pid, uid, processName,
+                packageName).setHasShownUi(hasShownUi).build();
+        updateProcessLru(proc);
+        return proc;
     }
 
     private ProcessRecord makeSpiedProcessRecord(int pid, int uid, String processName,
             String packageName, boolean hasShownUi) {
-        final ProcessRecord proc = spy(
-                makeDefaultProcessRecord(pid, uid, processName, packageName, hasShownUi));
+        final ProcessRecord proc = spy(new ProcessRecordBuilder(pid, uid, processName,
+                packageName).setHasShownUi(hasShownUi).build());
         final WindowProcessController wpc = proc.getWindowProcessController();
         // Need to overwrite the WindowProcessController.mOwner with the new spy object
         setFieldValue(WindowProcessController.class, wpc, "mOwner", proc);
+        updateProcessLru(proc);
         return proc;
     }
 
@@ -4625,6 +4642,15 @@ public class MockingOomAdjusterTests {
             BackupRecord backupTarget = new BackupRecord(null, 0, 0, 0, true);
             backupTarget.app = app;
             doReturn(backupTarget).when(mService.mBackupTargets).get(anyInt());
+        }
+    }
+
+    @SuppressWarnings("GuardedBy")
+    private void stopBackupTarget(int userId) {
+        if (Flags.pushGlobalStateToOomadjuster()) {
+            mProcessStateController.stopBackupTarget(userId);
+        } else {
+            doReturn(null).when(mService.mBackupTargets).get(anyInt());
         }
     }
 
