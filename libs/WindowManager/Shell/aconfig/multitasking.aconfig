@@ -272,3 +272,13 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "fix_bubbles_expanded_sysui_flag"
+    namespace: "multitasking"
+    description: "Fixes a bug when we shell fails to notify launcher of collapsed expanded bubble."
+    bug: "435098356"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
