@@ -55,6 +55,7 @@ interface IUserManager {
     void evictCredentialEncryptionKey(int userId);
     boolean removeUser(int userId);
     boolean removeUserEvenWhenDisallowed(int userId);
+    int getUserRemovability(int userId);
     void setUserName(int userId, String name);
     void setUserIcon(int userId, in Bitmap icon);
     ParcelFileDescriptor getUserIcon(int userId);
