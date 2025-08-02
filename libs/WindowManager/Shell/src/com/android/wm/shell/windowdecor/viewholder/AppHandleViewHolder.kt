@@ -49,6 +49,7 @@ import com.android.wm.shell.windowdecor.AppHandleAnimator
 import com.android.wm.shell.windowdecor.WindowDecorLinearLayout
 import com.android.wm.shell.windowdecor.WindowManagerWrapper
 import com.android.wm.shell.windowdecor.additionalviewcontainer.AdditionalSystemViewContainer
+import com.android.wm.shell.windowdecor.extension.identityHashCode
 
 /**
  * A desktop mode window decoration used when the window is in full "focus" (i.e. fullscreen/split).
@@ -345,6 +346,11 @@ class AppHandleViewHolder(
 
     override fun close() {
         animator.cancel()
+    }
+
+    @OptIn(ExperimentalStdlibApi::class)
+    override fun toString(): String {
+        return "AppHandleViewHolder(" + "rootView=${rootView.identityHashCode.toHexString()}" + ")"
     }
 
     /** Factory class for creating [AppHandleViewHolder] objects. */

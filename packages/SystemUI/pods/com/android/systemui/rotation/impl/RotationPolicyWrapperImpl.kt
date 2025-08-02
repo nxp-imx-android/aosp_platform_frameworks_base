@@ -14,32 +14,18 @@
  * limitations under the License.
  */
 
-package com.android.systemui.util.wrapper
+package com.android.systemui.rotation.impl
 
 import android.content.Context
 import android.provider.Settings.Secure.CAMERA_AUTOROTATE
+import com.android.app.tracing.traceSection
 import com.android.internal.view.RotationPolicy
 import com.android.internal.view.RotationPolicy.RotationPolicyListener
+import com.android.systemui.rotation.RotationPolicyWrapper
 import com.android.systemui.util.settings.SecureSettings
-import com.android.app.tracing.traceSection
 import javax.inject.Inject
 
-/**
- * Testable wrapper interface around RotationPolicy {link com.android.internal.view.RotationPolicy}
- */
-interface RotationPolicyWrapper {
-    fun setRotationLock(enabled: Boolean, caller: String)
-    fun setRotationLockAtAngle(enabled: Boolean, rotation: Int, caller: String)
-    fun setRotationAtAngleIfAllowed(rotation: Int, caller: String)
-    fun getRotationLockOrientation(): Int
-    fun isRotationLockToggleVisible(): Boolean
-    fun isRotationLocked(): Boolean
-    fun isCameraRotationEnabled(): Boolean
-    fun registerRotationPolicyListener(listener: RotationPolicyListener, userHandle: Int)
-    fun unregisterRotationPolicyListener(listener: RotationPolicyListener)
-}
-
-class RotationPolicyWrapperImpl @Inject constructor(
+public class RotationPolicyWrapperImpl @Inject constructor(
     private val context: Context,
     private val secureSettings: SecureSettings
 ) :

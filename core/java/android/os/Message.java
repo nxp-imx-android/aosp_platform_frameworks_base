@@ -419,7 +419,6 @@ public final class Message implements Parcelable {
     // Sentinel values used to clear reference fields with a valid 'null' value, to avoid grabbing a
     // removed message when matching for 'null' in these fields.
     private static final Object NULL_OBJECT = new Object();
-    private static final Handler NULL_HANDLER = Handler.createSentinelHandler();
     private static final Runnable NULL_RUNNABLE = () -> {};
 
     /**
@@ -433,7 +432,6 @@ public final class Message implements Parcelable {
         replyTo = null;
         sendingThreadName = null;
         data = null;
-        target = NULL_HANDLER;
         callback = NULL_RUNNABLE;
     }
 
@@ -479,9 +477,7 @@ public final class Message implements Parcelable {
      * worry about yours conflicting with other handlers.
      */
     public Handler getTarget() {
-        // We assign this first to avoid a data race that could potentially expose NULL_HANDLER.
-        final Handler ret = target;
-        return ret == NULL_HANDLER ? null : ret;
+        return target;
     }
 
     /**

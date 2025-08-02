@@ -346,6 +346,7 @@ class LauncherProxyServiceTest : SysuiTestCase() {
     @EnableFlags(
         Flags.FLAG_SHADE_WINDOW_GOES_AROUND,
         Flags.FLAG_SCENE_CONTAINER,
+        Flags.FLAG_MEDIA_CONTROLS_IN_COMPOSE,
         Flags.FLAG_KEYGUARD_WM_STATE_REFACTOR,
     )
     fun onStatusBarTrackpadEvent_callsOnStatusBarOrLauncherTouched() =
@@ -379,6 +380,7 @@ class LauncherProxyServiceTest : SysuiTestCase() {
     @EnableFlags(
         Flags.FLAG_SHADE_WINDOW_GOES_AROUND,
         Flags.FLAG_SCENE_CONTAINER,
+        Flags.FLAG_MEDIA_CONTROLS_IN_COMPOSE,
         Flags.FLAG_KEYGUARD_WM_STATE_REFACTOR,
     )
     fun onStatusBarTouchEvent_withSceneFlag_callsOnStatusBarOrLauncherTouched() =

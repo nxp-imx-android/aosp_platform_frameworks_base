@@ -13,6 +13,16 @@ flag {
 }
 
 flag {
+    name: "clear_reusable_scvh_on_release"
+    namespace: "lse_desktop_experience"
+    description: "Resets the views of reusable SCVHs when released"
+    bug: "432324168"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "close_task_keyboard_shortcut"
     namespace: "lse_desktop_experience"
     description: "Enable keyboard shortcut to close a task"

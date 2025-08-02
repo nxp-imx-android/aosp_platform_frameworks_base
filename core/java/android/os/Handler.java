@@ -330,23 +330,6 @@ public class Handler {
         return new Handler(looper, callback, true);
     }
 
-    /**
-     * Create a new Handler with all reference fields explicitly provided. This is intended to be
-     * used for creating a Handler sentinel object.
-     */
-    private Handler(Looper looper, MessageQueue queue, Callback callback) {
-        mLooper = looper;
-        mQueue = queue;
-        mCallback = callback;
-        mAsynchronous = false;
-        mIsShared = false;
-    }
-
-    /** @hide */
-    static Handler createSentinelHandler() {
-        return new Handler(null, null, null);
-    }
-
     /** @hide */
     @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.R, trackingBug = 170729553)
     @NonNull

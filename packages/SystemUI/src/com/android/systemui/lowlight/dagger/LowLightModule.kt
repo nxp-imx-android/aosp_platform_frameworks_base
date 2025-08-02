@@ -16,23 +16,27 @@
 
 package com.android.systemui.lowlight.dagger
 
-import android.hardware.Sensor
 import com.android.systemui.CoreStartable
 import com.android.systemui.lowlight.AmbientLightModeMonitor
-import com.android.systemui.lowlight.AmbientLightModeMonitor.DebounceAlgorithm
-import com.android.systemui.lowlight.AmbientLightModeMonitorImpl
 import com.android.systemui.lowlight.LowLightBehaviorCoreStartable
 import com.android.systemui.lowlight.data.repository.dagger.LowLightRepositoryModule
 import com.android.systemui.lowlight.data.repository.dagger.LowLightSettingsRepositoryModule
+import com.android.systemui.lowlight.shared.model.LightSensor
 import com.android.systemui.lowlightclock.LowLightDisplayController
 import dagger.Binds
 import dagger.BindsOptionalOf
 import dagger.Module
+import dagger.Provides
 import dagger.multibindings.ClassKey
 import dagger.multibindings.IntoMap
+import java.util.Optional
 import javax.inject.Named
+import javax.inject.Provider
 
-@Module(includes = [LowLightSettingsRepositoryModule::class, LowLightRepositoryModule::class])
+@Module(
+    includes = [LowLightSettingsRepositoryModule::class, LowLightRepositoryModule::class],
+    subcomponents = [AmbientLightModeComponent::class],
+)
 abstract class LowLightModule {
     @Binds
     @IntoMap
@@ -43,16 +47,20 @@ abstract class LowLightModule {
 
     @BindsOptionalOf abstract fun bindsLowLightDisplayController(): LowLightDisplayController
 
-    @BindsOptionalOf abstract fun bindsDebounceAlgorithm(): DebounceAlgorithm
-
-    @Binds
-    abstract fun bindAmbientLightModeMonitor(
-        impl: AmbientLightModeMonitorImpl
-    ): AmbientLightModeMonitor
-
-    @BindsOptionalOf @Named(LIGHT_SENSOR) abstract fun bindsLightSensor(): Sensor
+    @BindsOptionalOf @Named(LIGHT_SENSOR) abstract fun bindsLightSensor(): LightSensor
 
     companion object {
         const val LIGHT_SENSOR: String = "low_light_monitor_light_sensor"
+        const val LOW_LIGHT_MONITOR: String = "low_light_monitor"
+
+        @Provides
+        @Named(LOW_LIGHT_MONITOR)
+        fun providesLowLightMonitor(
+            factory: AmbientLightModeComponent.Factory,
+            @Named(LIGHT_SENSOR) sensor: Optional<Provider<LightSensor>>,
+        ): AmbientLightModeMonitor? {
+            return if (sensor.isEmpty) null
+            else factory.create(sensor.get().get()).getAmbientLightModeMonitor()
+        }
     }
 }

@@ -32,6 +32,7 @@ import static android.Manifest.permission.QUERY_AUDIO_STATE;
 import static android.Manifest.permission.WRITE_SETTINGS;
 import static android.app.BroadcastOptions.DELIVERY_GROUP_POLICY_MOST_RECENT;
 import static android.content.Intent.ACTION_PACKAGE_ADDED;
+import static android.content.Intent.ACTION_PACKAGE_REPLACED;
 import static android.content.Intent.EXTRA_ARCHIVAL;
 import static android.content.Intent.EXTRA_REPLACING;
 import static android.media.AudioDeviceInfo.TYPE_BLUETOOTH_A2DP;
@@ -123,6 +124,7 @@ import android.content.IntentFilter;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.content.pm.PackageManagerInternal;
 import android.content.pm.UserInfo;
 import android.content.res.Configuration;
 import android.content.res.Resources;
@@ -266,6 +268,7 @@ import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.os.SomeArgs;
 import com.android.internal.util.DumpUtils;
 import com.android.internal.util.Preconditions;
+import com.android.media.permission.UidPackageState;
 import com.android.modules.expresslog.Counter;
 import com.android.server.EventLogTags;
 import com.android.server.LocalManagerRegistry;
@@ -314,6 +317,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BooleanSupplier;
+import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 /**
@@ -4444,10 +4448,11 @@ public class AudioService extends IAudioService.Stub
 
     private boolean handleAbsoluteVolume(int streamType, int streamTypeAlias,
             @NonNull AudioDeviceAttributes ada, int newIndex, boolean muted, int flags) {
-            // Check if volume update should be handled by an external volume controller
+        // Check if volume update should be handled by an external volume controller
         boolean registeredAsAbsoluteVolume = false;
         boolean volumeHandled = false;
         int deviceType = ada.getInternalType();
+
         boolean isAbsoluteVolume = unifyAbsoluteVolumeManagement() ? isAbsoluteVolumeDevice(ada)
                 : isAbsoluteVolumeDevice(deviceType);
         if (isAbsoluteVolume && (flags & AudioManager.FLAG_ABSOLUTE_VOLUME) == 0) {
@@ -4458,7 +4463,9 @@ public class AudioService extends IAudioService.Stub
                 info = getAbsoluteVolumeDeviceInfo(deviceType);
             }
             if (info != null) {
-                dispatchAbsoluteVolumeChanged(streamType, info, newIndex, muted);
+                if (streamType == getBluetoothContextualVolumeStream()) {
+                    dispatchAbsoluteVolumeChanged(streamType, info, newIndex, muted);
+                }
                 registeredAsAbsoluteVolume = true;
                 volumeHandled = true;
             }
@@ -5274,6 +5281,7 @@ public class AudioService extends IAudioService.Stub
         switch (mode) {
             case AudioSystem.MODE_IN_COMMUNICATION:
             case AudioSystem.MODE_IN_CALL:
+            case AudioSystem.MODE_RINGTONE:
                 // TODO(b/382704431): remove to allow STREAM_VOICE_CALL to drive abs volume
                 //  over A2DP
                 if (getDeviceForStream(AudioSystem.STREAM_VOICE_CALL)
@@ -5294,10 +5302,15 @@ public class AudioService extends IAudioService.Stub
                 break;
         }
 
-        if (voiceActivityCanOverride && mVoicePlaybackActive.get()) {
+        if (voiceActivityCanOverride && (mVoicePlaybackActive.get()
+                || mAssistantPlaybackActive.get())) {
             // TODO(b/382704431): remove to allow STREAM_VOICE_CALL to drive abs volume over A2DP
             if (getDeviceForStream(AudioSystem.STREAM_VOICE_CALL)
                     == AudioSystem.DEVICE_OUT_BLUETOOTH_A2DP) {
+                return AudioSystem.STREAM_MUSIC;
+            }
+            if (mAssistantPlaybackActive.get() && !AudioSystem.DEVICE_OUT_ALL_SCO_SET.contains(
+                    getDeviceForStream(AudioSystem.STREAM_ASSISTANT))) {
                 return AudioSystem.STREAM_MUSIC;
             }
             return AudioSystem.STREAM_VOICE_CALL;
@@ -5307,6 +5320,7 @@ public class AudioService extends IAudioService.Stub
 
     private final AtomicBoolean mVoicePlaybackActive = new AtomicBoolean(false);
     private final AtomicBoolean mMediaPlaybackActive = new AtomicBoolean(false);
+    private final AtomicBoolean mAssistantPlaybackActive = new AtomicBoolean(false);
 
     private final IPlaybackConfigDispatcher mPlaybackActivityMonitor =
             new IPlaybackConfigDispatcher.Stub() {
@@ -5322,6 +5336,7 @@ public class AudioService extends IAudioService.Stub
     private void onPlaybackConfigChange(List<AudioPlaybackConfiguration> configs) {
         boolean voiceActive = false;
         boolean mediaActive = false;
+        boolean assistantActive = false;
         for (AudioPlaybackConfiguration config : configs) {
             final int usage = config.getAudioAttributes().getUsage();
             if (!config.isActive()) {
@@ -5335,8 +5350,18 @@ public class AudioService extends IAudioService.Stub
                     || usage == AudioAttributes.USAGE_UNKNOWN) {
                 mediaActive = true;
             }
+            if (usage == AudioAttributes.USAGE_ASSISTANT) {
+                assistantActive = true;
+            }
         }
+        boolean updateContextualVolumes = false;
         if (mVoicePlaybackActive.getAndSet(voiceActive) != voiceActive) {
+            updateContextualVolumes = true;
+        }
+        if (mAssistantPlaybackActive.getAndSet(assistantActive) != assistantActive) {
+            updateContextualVolumes = true;
+        }
+        if (updateContextualVolumes) {
             postUpdateContextualVolumes();
         }
         if (mMediaPlaybackActive.getAndSet(mediaActive) != mediaActive && mediaActive) {
@@ -5588,10 +5613,12 @@ public class AudioService extends IAudioService.Stub
                 AudioSystem.DEVICE_OUT_ALL_A2DP_SET);
         absVolumeDeviceTypes.addAll(mAbsVolumeMultiModeCaseDevices);
         absVolumeDeviceTypes.add(AudioSystem.DEVICE_OUT_BLE_BROADCAST);
+        absVolumeDeviceTypes.addAll(AudioSystem.DEVICE_OUT_ALL_SCO_SET);
 
         final Set<AudioDeviceAttributes> absVolumeDevices =
                 AudioSystem.intersectionAudioDeviceTypes(absVolumeDeviceTypes, devices);
         if (absVolumeDevices.isEmpty()) {
+            Slog.v(TAG, "No absolute volume devices");
             return;
         }
         if (absVolumeDevices.size() > 1) {
@@ -5622,7 +5649,8 @@ public class AudioService extends IAudioService.Stub
         }
 
         sVolumeLogger.enqueue(new VolumeEvent(VolumeEvent.VOL_VOICE_ACTIVITY_CONTEXTUAL_VOLUME,
-                mVoicePlaybackActive.get(), streamType, index, device.getInternalType()));
+                mVoicePlaybackActive.get() | mAssistantPlaybackActive.get(), streamType, index,
+                device.getInternalType()));
     }
 
     private void setStreamVolume(int streamType, int index, int flags,
@@ -5745,8 +5773,13 @@ public class AudioService extends IAudioService.Stub
                 if (unifyAbsoluteVolumeManagement()) {
                     volInfoBuilder.setMuted(muted);
                 }
+                final VolumeInfo dispatchVolumeInfo = volInfoBuilder.build();
+                sVolumeLogger.enqueue(new VolumeEvent(VolumeEvent.VOL_SET_ABS_VOL,
+                        dispatchVolumeInfo.getStreamType(), dispatchVolumeInfo.getVolumeIndex(),
+                        deviceInfo.mDevice.getInternalType(), muted));
+
                 deviceInfo.mCallback.dispatchDeviceVolumeChanged(deviceInfo.mDevice,
-                        volInfoBuilder.build());
+                        dispatchVolumeInfo);
             } catch (RemoteException e) {
                 Log.w(TAG, "Couldn't dispatch absolute volume behavior volume change");
             }
@@ -13618,16 +13651,51 @@ public class AudioService extends IAudioService.Stub
     private static final String mMetricsId = MediaMetrics.Name.AUDIO_SERVICE
             + MediaMetrics.SEPARATOR;
 
+    /*
+     * Create AIDL defined package state for audioserver
+     */
+    @VisibleForTesting
+    static UidPackageState.PackageState makePackageState(PackageState p) {
+        final var ret = new UidPackageState.PackageState();
+        ret.packageName = p.getPackageName();
+        ret.targetSdk = p.getTargetSdkVersion();
+        ret.isPlaybackCaptureAllowed = p.isAudioPlaybackCaptureAllowed();
+        return ret;
+    }
+
+    /**
+     * Aggregation operation on all package states list: groups by states by app-id and merges the
+     * packages per app-id into a Map keyed by the packageName.
+     */
+    @VisibleForTesting
+    static Map<Integer, Map<String, UidPackageState.PackageState>> generatePackageMap(
+            Collection<PackageState> appInfos) {
+        Collector<PackageState, Object, Map<String, UidPackageState.PackageState>> reducer =
+                Collectors.toMap(p -> p.getPackageName(), /* key */
+                                 AudioService::makePackageState, /* val */
+                                 (x, y) -> x, /* mergeFunc, x,y should be identical */
+                                 () -> new ArrayMap(1) /* factory */);
+
+        return appInfos.stream()
+                .collect(
+                        Collectors.groupingBy(
+                                /* predicate */ (PackageState p) -> p.getAppId(),
+                                /* factory */ HashMap::new,
+                                /* downstream collector */ reducer));
+    }
+
     private static AudioServerPermissionProvider initializeAudioServerPermissionProvider(
             Context context, AudioPolicyFacade audioPolicy, Executor audioserverExecutor) {
-        Collection<PackageState> packageStates = null;
-        try (PackageManagerLocal.UnfilteredSnapshot snapshot =
+        Map<Integer, Map<String, UidPackageState.PackageState>> packageStates = null;
+        try (var snapshot =
                     LocalManagerRegistry.getManager(PackageManagerLocal.class)
                         .withUnfilteredSnapshot()) {
-            packageStates = snapshot.getPackageStates().values();
+            packageStates = generatePackageMap(snapshot.getPackageStates().values());
         }
         var umi = LocalServices.getService(UserManagerInternal.class);
         var pmsi = LocalServices.getService(PermissionManagerServiceInternal.class);
+        var pmi = LocalServices.getService(PackageManagerInternal.class);
+
         var provider = new AudioServerPermissionProvider(packageStates,
                 (Integer uid, String perm) -> ActivityManager.checkComponentPermission(perm, uid,
                         /* owningUid = */ -1, /* exported */true)
@@ -13642,6 +13710,7 @@ public class AudioService extends IAudioService.Stub
 
         IntentFilter packageUpdateFilter = new IntentFilter();
         packageUpdateFilter.addAction(ACTION_PACKAGE_ADDED);
+        packageUpdateFilter.addAction(ACTION_PACKAGE_REPLACED);
         packageUpdateFilter.addDataScheme("package");
 
         context.registerReceiverForAllUsers(new BroadcastReceiver() {
@@ -13654,9 +13723,13 @@ public class AudioService extends IAudioService.Stub
                     intent.getBooleanExtra(EXTRA_REPLACING, false) + " archival: " +
                     intent.getBooleanExtra(EXTRA_ARCHIVAL, false) + " for package " +
                     pkgName + " with uid " + uid);
-                if (ACTION_PACKAGE_ADDED.equals(action)) {
+                if (ACTION_PACKAGE_ADDED.equals(action)
+                        || ACTION_PACKAGE_REPLACED.equals(action)) {
                     audioserverExecutor.execute(() ->
-                            provider.onModifyPackageState(uid, pkgName, false /* isRemoved */));
+                            provider.onModifyPackageState(
+                                uid,
+                                makePackageState(pmi.getPackageStateInternal(pkgName)),
+                                false /* isRemoved */));
                 }
             }
         }, packageUpdateFilter, null, null); // main thread is fine, since dispatch on executor

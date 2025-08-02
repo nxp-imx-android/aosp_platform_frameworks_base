@@ -20,21 +20,29 @@ import static android.content.pm.ActivityInfo.CONFIG_COLOR_MODE;
 import static android.content.pm.ActivityInfo.CONFIG_DENSITY;
 import static android.content.pm.ActivityInfo.CONFIG_RESOURCES_UNUSED;
 import static android.content.pm.ActivityInfo.CONFIG_TOUCHSCREEN;
+import static android.content.pm.ActivityInfo.OVERRIDE_AUTO_RESTART_ON_DISPLAY_MOVE;
 
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.doReturn;
+import static com.android.window.flags.Flags.FLAG_ENABLE_AUTO_RESTART_ON_DISPLAY_MOVE;
 import static com.android.window.flags.Flags.FLAG_ENABLE_DISPLAY_COMPAT_MODE;
 import static com.android.window.flags.Flags.FLAG_ENABLE_RESTART_MENU_FOR_CONNECTED_DISPLAYS;
 
 import static org.junit.Assert.assertEquals;
 
+import android.compat.testing.PlatformCompatChangeRule;
 import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
 
 import androidx.annotation.NonNull;
 import androidx.test.filters.MediumTest;
 
+import libcore.junit.util.compat.CoreCompatChangeRule.DisableCompatChanges;
+import libcore.junit.util.compat.CoreCompatChangeRule.EnableCompatChanges;
+
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 
 import java.util.function.Consumer;
@@ -52,6 +60,9 @@ public class AppCompatDisplayCompatTests extends WindowTestsBase {
 
     private static final int CONFIG_MASK_FOR_DISPLAY_MOVE =
             ~(CONFIG_DENSITY | CONFIG_TOUCHSCREEN | CONFIG_COLOR_MODE | CONFIG_RESOURCES_UNUSED);
+
+    @Rule
+    public TestRule compatChangeRule = new PlatformCompatChangeRule();
 
     @Before
     public void setUp() {
@@ -114,6 +125,38 @@ public class AppCompatDisplayCompatTests extends WindowTestsBase {
 
             robot.activity().applyToTopActivity(ActivityRecord::restartProcessIfVisible);
             robot.checkRestartMenuVisibility(false);
+        });
+    }
+
+    @EnableFlags(FLAG_ENABLE_AUTO_RESTART_ON_DISPLAY_MOVE)
+    @EnableCompatChanges(OVERRIDE_AUTO_RESTART_ON_DISPLAY_MOVE)
+    @Test
+    public void testAutoRestartOnDisplayMove_enabled_restartsApp() {
+        runTestScenario((robot) -> {
+            robot.activity().createSecondaryDisplay();
+            robot.activity().createActivityWithComponent();
+            robot.activity().setTopActivityResumed();
+            robot.activity().clearInvocationsForActivity();
+
+            robot.activity().moveTaskToSecondaryDisplay();
+
+            robot.activity().checkTopActivityProcessRestarted(true);
+        });
+    }
+
+    @EnableFlags(FLAG_ENABLE_AUTO_RESTART_ON_DISPLAY_MOVE)
+    @DisableCompatChanges(OVERRIDE_AUTO_RESTART_ON_DISPLAY_MOVE)
+    @Test
+    public void testAutoRestartOnDisplayMove_compatChangeDisabled_doesNotRestartApp() {
+        runTestScenario((robot) -> {
+            robot.activity().createSecondaryDisplay();
+            robot.activity().createActivityWithComponent();
+            robot.activity().setTopActivityResumed();
+            robot.activity().clearInvocationsForActivity();
+
+            robot.activity().moveTaskToSecondaryDisplay();
+
+            robot.activity().checkTopActivityProcessRestarted(false);
         });
     }
 

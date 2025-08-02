@@ -23,9 +23,11 @@ import com.android.server.notification.Flags.crossAppPoliteNotifications
 import com.android.server.notification.Flags.politeNotifications
 import com.android.server.notification.Flags.vibrateWhileUnlocked
 import com.android.systemui.Flags.FLAG_COMMUNAL_HUB
+import com.android.systemui.Flags.FLAG_MEDIA_CONTROLS_IN_COMPOSE
 import com.android.systemui.Flags.communalHub
+import com.android.systemui.Flags.mediaControlsInCompose
 import com.android.systemui.dagger.SysUISingleton
-import com.android.systemui.statusbar.notification.interruption.VisualInterruptionRefactor
+import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.statusbar.notification.shared.NotificationMinimalism
 import com.android.systemui.statusbar.notification.shared.NotificationThrottleHun
 import javax.inject.Inject
@@ -41,6 +43,9 @@ class FlagDependencies @Inject constructor(featureFlags: FeatureFlagsClassic, ha
 
         // Internal notification frontend dependencies
         NotificationMinimalism.token dependsOn NotificationThrottleHun.token
+
+        // Scene container dependencies.
+        SceneContainerFlag.token dependsOn mediaInCompose
     }
 
     private inline val politeNotifications
@@ -54,4 +59,7 @@ class FlagDependencies @Inject constructor(featureFlags: FeatureFlagsClassic, ha
 
     private inline val communalHub
         get() = FlagToken(FLAG_COMMUNAL_HUB, communalHub())
+
+    private inline val mediaInCompose
+        get() = FlagToken(FLAG_MEDIA_CONTROLS_IN_COMPOSE, mediaControlsInCompose())
 }

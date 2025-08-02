@@ -97,6 +97,7 @@ public class SecureLockDeviceService extends SecureLockDeviceServiceInternal {
     @Nullable private final FaceManager mFaceManager;
     @Nullable private final FingerprintManager mFingerprintManager;
     private final PowerManager mPowerManager;
+    @NonNull private final Object mSecureLockDeviceStatusListenerLock = new Object();
     @NonNull private final SecureLockDeviceStore mStore;
     private final RemoteCallbackList<ISecureLockDeviceStatusListener>
             mSecureLockDeviceStatusListeners = new RemoteCallbackList<>();
@@ -553,42 +554,45 @@ public class SecureLockDeviceService extends SecureLockDeviceServiceInternal {
      *               update. Only listeners registered to this userId will be notified.s
      */
     private void notifySecureLockDeviceAvailabilityForUser(int userId) {
-        final int count = mSecureLockDeviceStatusListeners.beginBroadcast();
-        try {
-            for (int i = 0; i < count; i++) {
-                ISecureLockDeviceStatusListener listener =
-                        mSecureLockDeviceStatusListeners.getBroadcastItem(i);
-                UserHandle registeringUserHandle =
-                        (UserHandle) mSecureLockDeviceStatusListeners.getBroadcastCookie(i);
+        synchronized (mSecureLockDeviceStatusListenerLock) {
+            final int count = mSecureLockDeviceStatusListeners.beginBroadcast();
+            try {
+                for (int i = 0; i < count; i++) {
+                    ISecureLockDeviceStatusListener listener =
+                            mSecureLockDeviceStatusListeners.getBroadcastItem(i);
+                    UserHandle registeringUserHandle =
+                            (UserHandle) mSecureLockDeviceStatusListeners.getBroadcastCookie(i);
 
-                // Skip listeners that are not affiliated with the target userId
-                if (registeringUserHandle == null
-                        || registeringUserHandle.getIdentifier() != userId) {
-                    continue;
-                }
+                    // Skip listeners that are not affiliated with the target userId
+                    if (registeringUserHandle == null
+                            || registeringUserHandle.getIdentifier() != userId) {
+                        continue;
+                    }
 
-                @GetSecureLockDeviceAvailabilityRequestStatus
-                int secureLockDeviceAvailability = getSecureLockDeviceAvailability(
-                        registeringUserHandle);
+                    @GetSecureLockDeviceAvailabilityRequestStatus
+                    int secureLockDeviceAvailability = getSecureLockDeviceAvailability(
+                            registeringUserHandle);
 
-                if (DEBUG) {
-                    Slog.d(TAG, "Notifying listener " + listener.asBinder() + " for user "
-                            + userId + " of secure lock device availability update: "
-                            + secureLockDeviceAvailability);
+                    if (DEBUG) {
+                        Slog.d(TAG, "Notifying listener " + listener.asBinder() + " for user "
+                                + userId + " of secure lock device availability update: "
+                                + secureLockDeviceAvailability);
+                    }
+                    try {
+                        listener.onSecureLockDeviceAvailableStatusChanged(
+                                secureLockDeviceAvailability);
+                    } catch (RemoteException e) {
+                        Slog.e(TAG, "Failed to notify listener " + listener.asBinder()
+                                + " for user " + userId + ", RemoteException thrown: ", e);
+                    } catch (Exception e) {
+                        Slog.e(TAG, "Exception thrown by listener " + listener.asBinder()
+                                + " for user " + userId + " during callback: ", e);
+                        mSecureLockDeviceStatusListeners.unregister(listener);
+                    }
                 }
-                try {
-                    listener.onSecureLockDeviceAvailableStatusChanged(secureLockDeviceAvailability);
-                } catch (RemoteException e) {
-                    Slog.e(TAG, "Failed to notify listener " + listener.asBinder() + " for "
-                            + "user " + userId + ", RemoteException thrown: ", e);
-                } catch (Exception e) {
-                    Slog.e(TAG, "Exception thrown by listener " + listener.asBinder() + " for "
-                            + "user " + userId + " during callback: ", e);
-                    mSecureLockDeviceStatusListeners.unregister(listener);
-                }
+            } finally {
+                mSecureLockDeviceStatusListeners.finishBroadcast();
             }
-        } finally {
-            mSecureLockDeviceStatusListeners.finishBroadcast();
         }
     }
 

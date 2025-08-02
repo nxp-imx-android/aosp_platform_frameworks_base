@@ -18,7 +18,9 @@ package com.android.systemui.media.remedia.data.repository
 
 import com.android.systemui.Flags
 import com.android.systemui.kosmos.Kosmos
+import com.android.systemui.kosmos.runCurrent
 import com.android.systemui.media.controls.data.repository.mediaFilterRepository
+import com.android.systemui.media.controls.shared.model.MediaData
 
 val Kosmos.mediaPipelineRepository by
     Kosmos.Fixture {
@@ -28,3 +30,12 @@ val Kosmos.mediaPipelineRepository by
             mediaFilterRepository
         }
     }
+
+fun Kosmos.setHasActiveMedia(visible: Boolean) {
+    if (visible) {
+        mediaPipelineRepository.addCurrentUserMediaEntry(MediaData(active = true))
+    } else {
+        mediaPipelineRepository.clearCurrentUserMedia()
+    }
+    runCurrent()
+}

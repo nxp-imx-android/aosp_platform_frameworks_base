@@ -57,6 +57,7 @@ import android.window.WindowContainerTransactionCallback;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.protolog.ProtoLog;
 import com.android.internal.util.FrameworkStatsLog;
+import com.android.launcher3.Flags;
 import com.android.wm.shell.common.ShellExecutor;
 import com.android.wm.shell.compatui.CompatUIController;
 import com.android.wm.shell.compatui.api.CompatUIHandler;
@@ -250,7 +251,13 @@ public class ShellTaskOrganizer extends TaskOrganizer {
             .build();
 
     /**
-     * In charge of showing compat UI. Can be {@code null} if the device doesn't support size
+     * Overlay surface for overview. Attached to the display area per display and will be used
+     * to put overview overlays above the home task.
+     */
+    private final SparseArray<SurfaceControl> mOverviewOverlayLeashes = new SparseArray<>();
+
+    /**
+     * In charge of showing compat UI. Can be {@code null} if the device doesn't support sizef
      * compat or if this isn't the main {@link ShellTaskOrganizer}.
      *
      * <p>NOTE: only the main {@link ShellTaskOrganizer} should have a {@link CompatUIHandler},
@@ -261,6 +268,9 @@ public class ShellTaskOrganizer extends TaskOrganizer {
 
     @NonNull
     private final ShellCommandHandler mShellCommandHandler;
+
+    @NonNull
+    private final RootTaskDisplayAreaOrganizer mRootTaskDisplayAreaOrganizer;
 
     @Nullable
     private final Optional<RecentTasksController> mRecentTasks;
@@ -281,17 +291,20 @@ public class ShellTaskOrganizer extends TaskOrganizer {
 
     public ShellTaskOrganizer(ShellInit shellInit,
             ShellCommandHandler shellCommandHandler,
+            RootTaskDisplayAreaOrganizer rootTaskDisplayAreaOrganizer,
             @Nullable CompatUIHandler compatUI,
             Optional<UnfoldAnimationController> unfoldAnimationController,
             Optional<RecentTasksController> recentTasks,
             ShellExecutor mainExecutor) {
-        this(shellInit, shellCommandHandler, null /* taskOrganizerController */, compatUI,
+        this(shellInit, shellCommandHandler, rootTaskDisplayAreaOrganizer,
+                null /* taskOrganizerController */, compatUI,
                 unfoldAnimationController, recentTasks, mainExecutor);
     }
 
     @VisibleForTesting
     protected ShellTaskOrganizer(ShellInit shellInit,
             ShellCommandHandler shellCommandHandler,
+            RootTaskDisplayAreaOrganizer rootDisplayAreaOrganizer,
             ITaskOrganizerController taskOrganizerController,
             @Nullable CompatUIHandler compatUI,
             Optional<UnfoldAnimationController> unfoldAnimationController,
@@ -299,6 +312,7 @@ public class ShellTaskOrganizer extends TaskOrganizer {
             ShellExecutor mainExecutor) {
         super(taskOrganizerController, mainExecutor);
         mShellCommandHandler = shellCommandHandler;
+        mRootTaskDisplayAreaOrganizer = rootDisplayAreaOrganizer;
         mCompatUI = compatUI;
         mRecentTasks = recentTasks;
         mUnfoldAnimationController = unfoldAnimationController.orElse(null);
@@ -657,6 +671,35 @@ public class ShellTaskOrganizer extends TaskOrganizer {
     }
 
     /**
+     * Returns a surface which can be used to attach overview overlays above home root task
+     */
+    @Nullable
+    public SurfaceControl getOverviewOverlayContainer(int displayId) {
+        return mOverviewOverlayLeashes.get(displayId);
+    }
+
+    /**
+     * Returns or creates a surface which can be used to attach overlays to the home root task
+     */
+    private SurfaceControl getOrCreateOverviewOverlayContainer(int displayId) {
+        if (!isOverviewOverlayEnabled(displayId)) {
+            return null;
+        }
+        if (!mOverviewOverlayLeashes.contains(displayId)
+                && Flags.enableOverviewOnConnectedDisplays()) {
+            SurfaceControl.Builder builder = new SurfaceControl.Builder()
+                    .setName("overview_overlay_container")
+                    .setContainerLayer()
+                    .setHidden(false)
+                    .setCallsite("ShellTaskOrganizer.mOverviewOverlayLeashes");
+
+            mRootTaskDisplayAreaOrganizer.attachToDisplayArea(displayId, builder);
+            mOverviewOverlayLeashes.put(displayId, builder.build());
+        }
+        return mOverviewOverlayLeashes.get(displayId);
+    }
+
+    /**
      * Returns a surface which can be used to attach overlays to the home root task
      */
     @NonNull
@@ -735,6 +778,17 @@ public class ShellTaskOrganizer extends TaskOrganizer {
         }
         if (mUnfoldAnimationController != null) {
             mUnfoldAnimationController.onTaskAppeared(info.getTaskInfo(), info.getLeash());
+        }
+
+        int displayId = info.getTaskInfo().displayId;
+        if (isOverviewOverlayEnabled(displayId)
+                && info.getTaskInfo().getActivityType() == ACTIVITY_TYPE_HOME) {
+            ProtoLog.v(WM_SHELL_TASK_ORG,
+                    "Adding overview overlay to home task on displayId=%d", displayId);
+            SurfaceControl overviewOverlay = getOrCreateOverviewOverlayContainer(displayId);
+            final SurfaceControl.Transaction t = new SurfaceControl.Transaction();
+            t.setRelativeLayer(overviewOverlay, info.getLeash(), 1);
+            t.apply();
         }
 
         if (isHomeTaskOnDefaultDisplay(info.getTaskInfo())) {
@@ -846,6 +900,19 @@ public class ShellTaskOrganizer extends TaskOrganizer {
             notifyCompatUI(taskInfo, null /* taskListener */);
             // Notify the recent tasks that a task has been removed
             mRecentTasks.ifPresent(recentTasks -> recentTasks.onTaskRemoved(taskInfo));
+
+            int displayId = taskInfo.displayId;
+            if (isOverviewOverlayEnabled(displayId)
+                    && taskInfo.getActivityType() == ACTIVITY_TYPE_HOME
+                    && mOverviewOverlayLeashes.contains(displayId)) {
+                ProtoLog.v(WM_SHELL_TASK_ORG,
+                        "Removing overview overlay on displayId=%d", displayId);
+                SurfaceControl surfaceControl = mOverviewOverlayLeashes.removeReturnOld(displayId);
+                SurfaceControl.Transaction t = new SurfaceControl.Transaction();
+                t.remove(surfaceControl);
+                t.apply();
+            }
+
             if (isHomeTaskOnDefaultDisplay(taskInfo)) {
                 SurfaceControl.Transaction t = new SurfaceControl.Transaction();
                 t.reparent(mHomeTaskOverlayContainer, null);
@@ -1158,6 +1225,12 @@ public class ShellTaskOrganizer extends TaskOrganizer {
     static boolean isHomeTaskOnDefaultDisplay(RunningTaskInfo taskInfo) {
         return taskInfo.getActivityType() == ACTIVITY_TYPE_HOME
                 && taskInfo.displayId == DEFAULT_DISPLAY;
+    }
+
+    private boolean isOverviewOverlayEnabled(int displayId) {
+        return (Flags.enableLauncherOverviewInWindow()
+                || Flags.enableFallbackOverviewInWindow()
+                || (Flags.enableOverviewOnConnectedDisplays() && displayId != DEFAULT_DISPLAY));
     }
 
     public void dump(@NonNull PrintWriter pw, String prefix) {

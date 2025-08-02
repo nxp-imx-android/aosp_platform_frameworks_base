@@ -188,20 +188,34 @@ class DesktopDisplayEventHandler(
     private fun handlePotentialReconnect(displayId: Int): Boolean {
         val uniqueDisplayId = displayController.getDisplay(displayId)?.uniqueId ?: return false
         uniqueIdByDisplayId[displayId] = uniqueDisplayId
+        val currentUserRepository = desktopUserRepositories.current
         if (
-            DesktopExperienceFlags.ENABLE_DISPLAY_RECONNECT_INTERACTION.isTrue &&
-                desktopUserRepositories.current.hasPreservedDisplayForUniqueDisplayId(
-                    uniqueDisplayId
-                )
+            !DesktopExperienceFlags.ENABLE_DISPLAY_RECONNECT_INTERACTION.isTrue ||
+                !currentUserRepository.hasPreservedDisplayForUniqueDisplayId(uniqueDisplayId)
         ) {
-            desktopTasksController.restoreDisplay(
-                displayId = displayId,
-                uniqueDisplayId = uniqueDisplayId,
-                userId = desktopUserRepositories.current.userId,
-            )
-            return true
+            return false
         }
-        return false
+        val preservedTasks = currentUserRepository.getPreservedTasks(uniqueDisplayId)
+        // Projected mode: Do not move anything focused on the internal display.
+        if (!desktopState.isDesktopModeSupportedOnDisplay(DEFAULT_DISPLAY)) {
+            val focusedDefaultDisplayTaskIds =
+                desktopTasksController
+                    .getFocusedNonDesktopTasks(DEFAULT_DISPLAY, currentUserRepository.userId)
+                    .map { task -> task.taskId }
+            preservedTasks.filterNot { taskId -> focusedDefaultDisplayTaskIds.contains(taskId) }
+        }
+        if (preservedTasks.isEmpty()) {
+            // The preserved display is normally removed at the end of restoreDisplay.
+            // If we don't restore anything, remove it here instead.
+            currentUserRepository.removePreservedDisplay(uniqueDisplayId)
+            return false
+        }
+        desktopTasksController.restoreDisplay(
+            displayId = displayId,
+            uniqueDisplayId = uniqueDisplayId,
+            userId = desktopUserRepositories.current.userId,
+        )
+        return true
     }
 
     override fun onDeskRemoved(lastDisplayId: Int, deskId: Int) {

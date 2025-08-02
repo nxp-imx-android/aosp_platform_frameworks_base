@@ -20,6 +20,7 @@ import android.os.Trace
 import android.util.Pools
 import android.view.Display
 import android.view.SurfaceControl
+import android.window.DesktopExperienceFlags
 import com.android.wm.shell.shared.annotations.ShellMainThread
 import com.android.wm.shell.sysui.ShellInit
 import kotlinx.coroutines.CoroutineScope
@@ -84,6 +85,9 @@ class PooledWindowDecorViewHostSupplier(
     }
 
     override fun release(viewHost: WindowDecorViewHost, t: SurfaceControl.Transaction) {
+        if (DesktopExperienceFlags.ENABLE_CLEAR_REUSABLE_SCVH_ON_RELEASE.isTrue) {
+            viewHost.reset()
+        }
         val pooled = pool.release(viewHost)
         if (!pooled) {
             viewHost.release(t)

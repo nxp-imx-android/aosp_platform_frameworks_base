@@ -69,6 +69,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.SmallTest;
 
 import com.android.window.flags.Flags;
+import com.android.wm.shell.RootTaskDisplayAreaOrganizer;
 import com.android.wm.shell.ShellTaskOrganizer;
 import com.android.wm.shell.ShellTestCase;
 import com.android.wm.shell.TestShellExecutor;
@@ -115,6 +116,8 @@ public class RecentTasksControllerTest extends ShellTestCase {
     @Mock
     private ShellCommandHandler mShellCommandHandler;
     @Mock
+    private RootTaskDisplayAreaOrganizer mRootTaskDisplayAreaOrganizer;
+    @Mock
     private ActivityTaskManager mActivityTaskManager;
     @Mock
     private DisplayInsetsController mDisplayInsetsController;
@@ -160,8 +163,8 @@ public class RecentTasksControllerTest extends ShellTestCase {
                 mMainExecutor, mDesktopState);
         mRecentTasksController = spy(mRecentTasksControllerReal);
         mShellTaskOrganizer = new ShellTaskOrganizer(mShellInit, mShellCommandHandler,
-                null /* sizeCompatUI */, Optional.empty(), Optional.of(mRecentTasksController),
-                mMainExecutor);
+                mRootTaskDisplayAreaOrganizer, null /* sizeCompatUI */, Optional.empty(),
+                Optional.of(mRecentTasksController), mMainExecutor);
         mShellInit.init();
     }
 

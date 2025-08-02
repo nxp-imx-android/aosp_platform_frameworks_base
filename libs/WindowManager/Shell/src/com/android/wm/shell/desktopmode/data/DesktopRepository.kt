@@ -154,6 +154,19 @@ class DesktopRepository(
         return tasksByDeskId
     }
 
+    /**
+     * Returns all preserved tasks for the preserved display regardless of what desk they appear in.
+     */
+    fun getPreservedTasks(uniqueDisplayId: String): List<Int> {
+        val preservedDesks =
+            preservedDisplaysByUniqueId[uniqueDisplayId]?.orderedDesks ?: emptySet()
+        val preservedTasks = mutableListOf<Int>()
+        for (desk in preservedDesks) {
+            desk.freeformTasksInZOrder.forEach { taskId -> preservedTasks.add(taskId) }
+        }
+        return preservedTasks
+    }
+
     /** Returns the active desk on the preserved display for the specified unique display id. */
     fun getPreservedActiveDesk(uniqueDisplayId: String): Int? =
         preservedDisplaysByUniqueId[uniqueDisplayId]?.activeDeskId
