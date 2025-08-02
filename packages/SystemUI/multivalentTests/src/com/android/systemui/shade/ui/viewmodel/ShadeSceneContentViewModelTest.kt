@@ -39,8 +39,8 @@ import com.android.systemui.kosmos.testScope
 import com.android.systemui.kosmos.useStandardTestDispatcher
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
 import com.android.systemui.lifecycle.activateIn
-import com.android.systemui.media.controls.data.repository.mediaFilterRepository
 import com.android.systemui.media.controls.shared.model.MediaData
+import com.android.systemui.media.remedia.data.repository.mediaPipelineRepository
 import com.android.systemui.qs.panels.domain.interactor.tileSquishinessInteractor
 import com.android.systemui.res.R
 import com.android.systemui.scene.domain.interactor.sceneInteractor
@@ -117,11 +117,11 @@ class ShadeSceneContentViewModelTest : SysuiTestCase() {
 
             assertThat(underTest.isMediaVisible).isFalse()
 
-            mediaFilterRepository.addCurrentUserMediaEntry(userMedia)
+            mediaPipelineRepository.addCurrentUserMediaEntry(userMedia)
 
             assertThat(underTest.isMediaVisible).isTrue()
 
-            mediaFilterRepository.removeCurrentUserMediaEntry(userMedia.instanceId)
+            mediaPipelineRepository.removeCurrentUserMediaEntry(userMedia.instanceId)
 
             assertThat(underTest.isMediaVisible).isFalse()
         }

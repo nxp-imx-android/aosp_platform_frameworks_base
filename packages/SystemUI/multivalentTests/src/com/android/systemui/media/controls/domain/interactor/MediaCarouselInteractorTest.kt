@@ -21,11 +21,10 @@ import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.coroutines.collectLastValue
 import com.android.systemui.kosmos.testScope
-import com.android.systemui.media.controls.data.repository.MediaFilterRepository
-import com.android.systemui.media.controls.data.repository.mediaFilterRepository
 import com.android.systemui.media.controls.domain.pipeline.interactor.MediaCarouselInteractor
 import com.android.systemui.media.controls.domain.pipeline.interactor.mediaCarouselInteractor
 import com.android.systemui.media.controls.shared.model.MediaData
+import com.android.systemui.media.remedia.data.repository.mediaPipelineRepository
 import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.test.runTest
@@ -39,9 +38,7 @@ class MediaCarouselInteractorTest : SysuiTestCase() {
 
     private val kosmos = testKosmos()
     private val testScope = kosmos.testScope
-
-    private val mediaFilterRepository: MediaFilterRepository =
-        with(kosmos) { mediaFilterRepository }
+    private val mediaPipelineRepository = kosmos.mediaPipelineRepository
 
     private val underTest: MediaCarouselInteractor = kosmos.mediaCarouselInteractor
 
@@ -57,13 +54,13 @@ class MediaCarouselInteractorTest : SysuiTestCase() {
 
             val userMedia = MediaData(active = true)
 
-            mediaFilterRepository.addCurrentUserMediaEntry(userMedia)
+            mediaPipelineRepository.addCurrentUserMediaEntry(userMedia)
 
             assertThat(hasActiveMedia).isTrue()
             assertThat(underTest.hasActiveMedia()).isTrue()
             assertThat(underTest.hasAnyMedia()).isTrue()
 
-            mediaFilterRepository.addCurrentUserMediaEntry(userMedia.copy(active = false))
+            mediaPipelineRepository.addCurrentUserMediaEntry(userMedia.copy(active = false))
 
             assertThat(hasActiveMedia).isFalse()
             assertThat(underTest.hasActiveMedia()).isFalse()
@@ -78,13 +75,13 @@ class MediaCarouselInteractorTest : SysuiTestCase() {
             val userMedia = MediaData(active = false)
             val instanceId = userMedia.instanceId
 
-            mediaFilterRepository.addCurrentUserMediaEntry(userMedia)
+            mediaPipelineRepository.addCurrentUserMediaEntry(userMedia)
 
             assertThat(hasActiveMedia).isFalse()
             assertThat(underTest.hasActiveMedia()).isFalse()
             assertThat(underTest.hasAnyMedia()).isTrue()
 
-            assertThat(mediaFilterRepository.removeCurrentUserMediaEntry(instanceId, userMedia))
+            assertThat(mediaPipelineRepository.removeCurrentUserMediaEntry(instanceId, userMedia))
                 .isTrue()
 
             assertThat(hasActiveMedia).isFalse()

@@ -24,8 +24,8 @@ import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
 import com.android.systemui.lifecycle.activateIn
-import com.android.systemui.media.controls.data.repository.mediaFilterRepository
 import com.android.systemui.media.controls.shared.model.MediaData
+import com.android.systemui.media.remedia.data.repository.mediaPipelineRepository
 import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
 import org.junit.Before
@@ -57,7 +57,7 @@ class KeyguardMediaViewModelTest : SysuiTestCase() {
         kosmos.runTest {
             val userMedia = MediaData(active = true)
 
-            mediaFilterRepository.addCurrentUserMediaEntry(userMedia)
+            mediaPipelineRepository.addCurrentUserMediaEntry(userMedia)
             keyguardRepository.setIsDozing(true)
 
             assertThat(underTest.isMediaVisible).isFalse()
@@ -68,7 +68,7 @@ class KeyguardMediaViewModelTest : SysuiTestCase() {
         kosmos.runTest {
             val userMedia = MediaData(active = true)
 
-            mediaFilterRepository.addCurrentUserMediaEntry(userMedia)
+            mediaPipelineRepository.addCurrentUserMediaEntry(userMedia)
             keyguardRepository.setIsDozing(false)
 
             assertThat(underTest.isMediaVisible).isTrue()
