@@ -144,23 +144,22 @@ class HubInfoRegistry implements ContextHubHalEndpointCallback.IEndpointLifecycl
     /** Wakelock held while endpoint callbacks are being invoked */
     private final WakeLock mWakeLock;
 
+    /**
+     * Constructs and initializes this class.
+     *
+     * @throws InstantiationException on unexpected failure
+     */
     HubInfoRegistry(Context context, IContextHubWrapper contextHubWrapper)
             throws InstantiationException {
         mContextHubWrapper = contextHubWrapper;
-        try {
-            refreshCachedHubs();
-            refreshCachedEndpoints();
-        } catch (UnsupportedOperationException e) {
-            String error = "Failed to update hub and endpoint cache";
-            Log.e(TAG, error, e);
-            throw new InstantiationException(error);
-        }
+        refreshCachedHubs();
+        refreshCachedEndpoints();
 
         PowerManager powerManager = context.getSystemService(PowerManager.class);
         if (powerManager == null) {
             String error = "PowerManager was null";
             Log.e(TAG, error);
-            throw new InstantiationError(error);
+            throw new InstantiationException(error);
         }
         mWakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, TAG);
         mWakeLock.setWorkSource(new WorkSource(Process.myUid(), context.getPackageName()));
