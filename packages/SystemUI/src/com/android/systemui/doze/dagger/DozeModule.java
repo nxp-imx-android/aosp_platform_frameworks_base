@@ -16,9 +16,7 @@
 
 package com.android.systemui.doze.dagger;
 
-import android.content.Context;
-import android.hardware.Sensor;
-
+import com.android.systemui.Flags;
 import com.android.systemui.doze.DozeAuthRemover;
 import com.android.systemui.doze.DozeBrightnessHostForwarder;
 import com.android.systemui.doze.DozeDockHandler;
@@ -30,30 +28,21 @@ import com.android.systemui.doze.DozePauser;
 import com.android.systemui.doze.DozeScreenBrightness;
 import com.android.systemui.doze.DozeScreenState;
 import com.android.systemui.doze.DozeScreenStatePreventingAdapter;
-import com.android.systemui.doze.DozeSensors;
 import com.android.systemui.doze.DozeSuppressor;
 import com.android.systemui.doze.DozeSuspendScreenStatePreventingAdapter;
 import com.android.systemui.doze.DozeTransitionListener;
 import com.android.systemui.doze.DozeTriggers;
 import com.android.systemui.doze.DozeUi;
 import com.android.systemui.doze.DozeWallpaperState;
-import com.android.systemui.res.R;
 import com.android.systemui.statusbar.phone.DozeParameters;
-import com.android.systemui.statusbar.policy.DevicePostureController;
-import com.android.systemui.util.sensors.AsyncSensorManager;
 import com.android.systemui.util.wakelock.DelayedWakeLock;
 import com.android.systemui.util.wakelock.WakeLock;
-import java.util.List;
-import java.util.ArrayList;
-import com.android.systemui.Flags;
 
 import dagger.Module;
 import dagger.Provides;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.ArrayList;
+import java.util.List;
 
 /** Dagger module for use with {@link com.android.systemui.doze.dagger.DozeComponent}. */
 @Module
@@ -105,47 +94,5 @@ public abstract class DozeModule {
         }
 
         return parts.toArray(new DozeMachine.Part[0]);
-    }
-
-    @Provides
-    @BrightnessSensor
-    static Optional<Sensor>[] providesBrightnessSensors(
-            AsyncSensorManager sensorManager,
-            Context context,
-            DozeParameters dozeParameters) {
-        String[] sensorNames = dozeParameters.brightnessNames();
-        if (sensorNames.length == 0 || sensorNames == null) {
-            // if no brightness names are specified, just use the brightness sensor type
-            return new Optional[]{
-                    Optional.ofNullable(DozeSensors.findSensor(
-                            sensorManager,
-                            context.getString(R.string.doze_brightness_sensor_type),
-                            null
-                    ))
-            };
-        }
-
-        // length and index of brightnessMap correspond to DevicePostureController.DevicePostureInt:
-        final Optional<Sensor>[] brightnessSensorMap =
-                new Optional[DevicePostureController.SUPPORTED_POSTURES_SIZE];
-        Arrays.fill(brightnessSensorMap, Optional.empty());
-
-        // Map of sensorName => Sensor, so we reuse the same sensor if it's the same between
-        // postures
-        Map<String, Optional<Sensor>> nameToSensorMap = new HashMap<>();
-        for (int i = 0; i < sensorNames.length; i++) {
-            final String sensorName = sensorNames[i];
-            if (!nameToSensorMap.containsKey(sensorName)) {
-                nameToSensorMap.put(sensorName,
-                        Optional.ofNullable(
-                                DozeSensors.findSensor(
-                                        sensorManager,
-                                        context.getString(R.string.doze_brightness_sensor_type),
-                                        sensorNames[i]
-                                )));
-            }
-            brightnessSensorMap[i] = nameToSensorMap.get(sensorName);
-        }
-        return brightnessSensorMap;
     }
 }
