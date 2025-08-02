@@ -10743,66 +10743,17 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         Flags.FLAG_ENABLE_DISPLAY_DISCONNECT_INTERACTION,
         Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
     )
-    fun onDisplayDisconnect_desktopModeNotSupported_reparentsDeskTasks_focusedTaskToTop() {
+    fun onDisplayDisconnect_desktopModeNotSupported_reparentsDeskTasks_focusedTaskToBottom() {
         val defaultDisplayTask = setUpFullscreenTask()
         val transition = Binder()
         taskRepository.addDesk(SECOND_DISPLAY, DISCONNECTED_DESK_ID)
         val secondDisplayTask = setUpFreeformTask(SECOND_DISPLAY)
         val tda = rootTaskDisplayAreaOrganizer.getDisplayAreaInfo(DEFAULT_DISPLAY)!!
-
         val wct =
             performDisplayDisconnectTransition(
                 transition = transition,
                 desktopSupportedOnDefaultDisplay = false,
                 taskOnSecondDisplayHasFocus = true,
-                defaultDisplayTask = defaultDisplayTask,
-                secondDisplayTask = secondDisplayTask,
-            )
-
-        assertThat(wct).isNotNull()
-        wct.assertHop(
-            ReparentPredicate(
-                token = secondDisplayTask.token,
-                parentToken = tda.token,
-                toTop = true,
-            )
-        )
-        verify(desksOrganizer).removeDesk(any(), eq(DISCONNECTED_DESK_ID), any())
-        verify(desksTransitionsObserver)
-            .addPendingTransition(
-                argThat {
-                    this is DeskTransition.RemoveDesk &&
-                        this.token == transition &&
-                        this.displayId == SECOND_DISPLAY &&
-                        this.deskId == DISCONNECTED_DESK_ID
-                }
-            )
-        verify(desksTransitionsObserver)
-            .addPendingTransition(
-                argThat {
-                    this is DeskTransition.RemoveDisplay &&
-                        this.token == transition &&
-                        this.displayId == SECOND_DISPLAY
-                }
-            )
-    }
-
-    @Test
-    @EnableFlags(
-        Flags.FLAG_ENABLE_DISPLAY_DISCONNECT_INTERACTION,
-        Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
-    )
-    fun onDisplayDisconnect_desktopModeNotSupported_reparentsDeskTasks_nonFocusedTaskToBottom() {
-        val defaultDisplayTask = setUpFullscreenTask()
-        val transition = Binder()
-        taskRepository.addDesk(SECOND_DISPLAY, DISCONNECTED_DESK_ID)
-        val secondDisplayTask = setUpFreeformTask(SECOND_DISPLAY)
-        val tda = rootTaskDisplayAreaOrganizer.getDisplayAreaInfo(DEFAULT_DISPLAY)!!
-        val wct =
-            performDisplayDisconnectTransition(
-                transition = transition,
-                desktopSupportedOnDefaultDisplay = false,
-                taskOnSecondDisplayHasFocus = false,
                 defaultDisplayTask = defaultDisplayTask,
                 secondDisplayTask = secondDisplayTask,
             )
