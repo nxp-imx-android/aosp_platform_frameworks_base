@@ -376,6 +376,13 @@ public final class AudioAttributes implements Parcelable {
     }
 
     /**
+     * @hide
+     */
+    public static int getSuppressibleUsage(@AttributeSdkUsage int usage) {
+        return SUPPRESSIBLE_USAGES.get(usage);
+    }
+
+    /**
      * Flag defining a behavior where the audibility of the sound will be ensured by the system.
      * To ensure sound audibility, the system only uses built-in speakers or wired headphones
      * and specifically excludes wireless audio devices.

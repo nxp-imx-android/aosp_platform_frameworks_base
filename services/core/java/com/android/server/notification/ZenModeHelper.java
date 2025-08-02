@@ -107,6 +107,7 @@ import android.service.notification.ZenPolicy;
 import android.text.TextUtils;
 import android.util.AndroidRuntimeException;
 import android.util.ArrayMap;
+import android.util.IntArray;
 import android.util.Log;
 import android.util.Slog;
 import android.util.SparseArray;
@@ -131,6 +132,7 @@ import java.io.PrintWriter;
 import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.function.IntPredicate;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -2283,74 +2285,74 @@ public class ZenModeHelper {
         final boolean zenAlarmsOnly = mZenMode == Global.ZEN_MODE_ALARMS;
         final boolean allowCalls = mConsolidatedPolicy.allowCalls()
                 && mConsolidatedPolicy.allowCallsFrom() == PRIORITY_SENDERS_ANY;
-        final boolean allowRepeatCallers = mConsolidatedPolicy.allowRepeatCallers();
-        final boolean allowSystem = mConsolidatedPolicy.allowSystem();
-        final boolean allowMedia = mConsolidatedPolicy.allowMedia();
-        final boolean allowAlarms = mConsolidatedPolicy.allowAlarms();
 
         // notification restrictions
-        final boolean muteNotifications = zenOn
-                || (mSuppressedEffects & SUPPRESSED_EFFECT_NOTIFICATIONS) != 0;
+        final boolean muteNotifications =
+                zenOn || (mSuppressedEffects & SUPPRESSED_EFFECT_NOTIFICATIONS) != 0;
         // call restrictions
         final boolean muteCalls = zenAlarmsOnly
-                || (zenPriorityOnly && (!allowCalls || !allowRepeatCallers))
+                || (zenPriorityOnly && (!allowCalls || !mConsolidatedPolicy.allowRepeatCallers()))
                 || (mSuppressedEffects & SUPPRESSED_EFFECT_CALLS) != 0;
         // alarm restrictions
-        final boolean muteAlarms = zenPriorityOnly && !allowAlarms;
+        final boolean muteAlarms = zenPriorityOnly && !mConsolidatedPolicy.allowAlarms();
         // media restrictions
-        final boolean muteMedia = zenPriorityOnly && !allowMedia;
+        final boolean muteMedia = zenPriorityOnly && !mConsolidatedPolicy.allowMedia();
         // system restrictions
-        final boolean muteSystem = zenAlarmsOnly || (zenPriorityOnly && !allowSystem);
+        final boolean muteSystem =
+                zenAlarmsOnly || (zenPriorityOnly && !mConsolidatedPolicy.allowSystem());
         // total silence restrictions
-        final boolean muteEverything = zenSilence || (zenPriorityOnly
-                && ZenModeConfig.areAllZenBehaviorSoundsMuted(mConsolidatedPolicy));
+        final boolean muteEverything = zenSilence
+                || (zenPriorityOnly
+                        && ZenModeConfig.areAllZenBehaviorSoundsMuted(mConsolidatedPolicy));
 
-        for (int usage : AudioAttributes.SDK_USAGES.toArray()) {
-            final int suppressionBehavior = AudioAttributes.SUPPRESSIBLE_USAGES.get(usage);
-            if (suppressionBehavior == AudioAttributes.SUPPRESSIBLE_NEVER) {
-                applyRestrictions(zenPriorityOnly, false /*mute*/, usage);
-            } else if (suppressionBehavior == AudioAttributes.SUPPRESSIBLE_NOTIFICATION) {
-                applyRestrictions(zenPriorityOnly, muteNotifications || muteEverything, usage);
-            } else if (suppressionBehavior == AudioAttributes.SUPPRESSIBLE_CALL) {
-                applyRestrictions(zenPriorityOnly, muteCalls || muteEverything, usage);
-            } else if (suppressionBehavior == AudioAttributes.SUPPRESSIBLE_ALARM) {
-                applyRestrictions(zenPriorityOnly, muteAlarms || muteEverything, usage);
-            } else if (suppressionBehavior == AudioAttributes.SUPPRESSIBLE_MEDIA) {
-                applyRestrictions(zenPriorityOnly, muteMedia || muteEverything, usage);
-            } else if (suppressionBehavior == AudioAttributes.SUPPRESSIBLE_SYSTEM) {
-                if (usage == AudioAttributes.USAGE_ASSISTANCE_SONIFICATION) {
-                    // normally DND will only restrict touch sounds, not haptic feedback/vibrations
-                    applyRestrictions(zenPriorityOnly, muteSystem || muteEverything, usage,
-                            AppOpsManager.OP_PLAY_AUDIO);
-                    applyRestrictions(zenPriorityOnly, false, usage, AppOpsManager.OP_VIBRATE);
-                } else {
-                    applyRestrictions(zenPriorityOnly, muteSystem || muteEverything, usage);
-                }
-            } else {
-                applyRestrictions(zenPriorityOnly, muteEverything, usage);
-            }
-        }
+        final IntPredicate shouldMute = (usage) ->
+        switch (AudioAttributes.getSuppressibleUsage(usage)) {
+            case AudioAttributes.SUPPRESSIBLE_NEVER -> false;
+            case AudioAttributes.SUPPRESSIBLE_NOTIFICATION -> muteNotifications || muteEverything;
+            case AudioAttributes.SUPPRESSIBLE_CALL -> muteCalls || muteEverything;
+            case AudioAttributes.SUPPRESSIBLE_ALARM -> muteAlarms || muteEverything;
+            case AudioAttributes.SUPPRESSIBLE_MEDIA -> muteMedia || muteEverything;
+            case AudioAttributes.SUPPRESSIBLE_SYSTEM -> muteSystem || muteEverything;
+            default -> muteEverything; // TODO BUG!
+        };
+
+        // special case: touch sounds should still vibrate during DND
+        final IntPredicate shouldMuteForVibrate = (usage)
+                -> usage != AudioAttributes.USAGE_ASSISTANCE_SONIFICATION && shouldMute.test(usage);
+
+        applyRestrictions(zenPriorityOnly, shouldMute, AppOpsManager.OP_PLAY_AUDIO);
+        applyRestrictions(zenPriorityOnly, shouldMuteForVibrate, AppOpsManager.OP_VIBRATE);
     }
 
-
     @VisibleForTesting
-    protected void applyRestrictions(boolean zenPriorityOnly, boolean mute, int usage, int code) {
+    protected void applyRestrictions(
+            boolean zenPriorityOnly, IntPredicate shouldMuteForUsage, int code) {
         final long ident = Binder.clearCallingIdentity();
         try {
-            mAppOps.setRestriction(code, usage,
-                    mute ? AppOpsManager.MODE_IGNORED : AppOpsManager.MODE_ALLOWED,
+            final var unmutedUsages = new IntArray();
+            final var mutedUsages = new IntArray();
+
+            for (int usage : AudioAttributes.getSdkUsages()) {
+                if (shouldMuteForUsage.test(usage)) {
+                    mutedUsages.add(usage);
+                } else {
+                    unmutedUsages.add(usage);
+                }
+            }
+            // MODE_IGNORED for muted usages
+            mAppOps.setAudioRestriction(code, mutedUsages.toArray(),
+                    AppOpsManager.MODE_IGNORED,
                     zenPriorityOnly ? mPriorityOnlyDndExemptPackages : null);
+
+            // MODE_ALLOWED for unmuted usages
+            mAppOps.setAudioRestriction(code, unmutedUsages.toArray(),
+                    AppOpsManager.MODE_ALLOWED,
+                    zenPriorityOnly ? mPriorityOnlyDndExemptPackages : null);
+
         } finally {
             Binder.restoreCallingIdentity(ident);
         }
     }
-
-    @VisibleForTesting
-    protected void applyRestrictions(boolean zenPriorityOnly, boolean mute, int usage) {
-        applyRestrictions(zenPriorityOnly, mute, usage, AppOpsManager.OP_VIBRATE);
-        applyRestrictions(zenPriorityOnly, mute, usage, AppOpsManager.OP_PLAY_AUDIO);
-    }
-
 
     @VisibleForTesting
     protected void applyZenToRingerMode() {
