@@ -231,6 +231,8 @@ public enum DesktopExperienceFlags {
             Flags.FLAG_ENABLE_PRESENTATION_FOR_CONNECTED_DISPLAYS),
     ENABLE_PROJECTED_DISPLAY_DESKTOP_MODE(Flags::enableProjectedDisplayDesktopMode, true,
             Flags.FLAG_ENABLE_PROJECTED_DISPLAY_DESKTOP_MODE),
+    ENABLE_REENABLE_APP_HANDLE_ANIMATIONS(Flags::reenableAppHandleAnimations,
+            false, Flags.FLAG_REENABLE_APP_HANDLE_ANIMATIONS),
     ENABLE_REJECT_HOME_TRANSITION(
             Flags::enableRejectHomeTransition, true,
             Flags.FLAG_ENABLE_REJECT_HOME_TRANSITION),

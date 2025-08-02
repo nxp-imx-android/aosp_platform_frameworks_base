@@ -1708,6 +1708,16 @@ flag {
 }
 
 flag {
+    name: "reenable_app_handle_animations"
+    namespace: "lse_desktop_experience"
+    description: "Re-enables the app handle animations"
+    bug: "412647178"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "remove_desk_on_last_task_removal"
     namespace: "lse_desktop_experience"
     description: "Removes the desk when its last task is removed in touch-first displays"
