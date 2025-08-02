@@ -145,4 +145,20 @@ class SecureLockDeviceInteractorTest : SysuiTestCase() {
             assertThat(modalities).isEqualTo(BiometricModalities(fpSensorInfo, faceSensorInfo))
         }
     }
+
+    @Test
+    fun updatesSuppressBouncerMessageUpdatesFromRepository() {
+        testScope.runTest {
+            val suppressBouncerMessageUpdates by
+                collectLastValue(underTest.suppressBouncerMessageUpdates)
+
+            kosmos.fakeSecureLockDeviceRepository.suppressBouncerMessageUpdates.value = true
+            runCurrent()
+            assertThat(suppressBouncerMessageUpdates).isTrue()
+
+            kosmos.fakeSecureLockDeviceRepository.suppressBouncerMessageUpdates.value = false
+            runCurrent()
+            assertThat(suppressBouncerMessageUpdates).isFalse()
+        }
+    }
 }

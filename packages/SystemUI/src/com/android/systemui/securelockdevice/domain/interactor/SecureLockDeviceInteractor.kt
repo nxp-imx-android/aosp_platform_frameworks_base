@@ -39,6 +39,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 
 /**
@@ -56,7 +57,7 @@ class SecureLockDeviceInteractor
 constructor(
     @Application applicationScope: CoroutineScope,
     @SecureLockDeviceLog private val logBuffer: LogBuffer,
-    secureLockDeviceRepository: SecureLockDeviceRepository,
+    private val secureLockDeviceRepository: SecureLockDeviceRepository,
     biometricSettingsInteractor: DeviceEntryBiometricSettingsInteractor,
     private val deviceEntryFaceAuthInteractor: SystemUIDeviceEntryFaceAuthInteractor,
     fingerprintPropertyInteractor: FingerprintPropertyInteractor,
@@ -81,6 +82,14 @@ constructor(
     /** @see SecureLockDeviceRepository.requiresStrongBiometricAuthForSecureLockDevice */
     val requiresStrongBiometricAuthForSecureLockDevice: StateFlow<Boolean> =
         secureLockDeviceRepository.requiresStrongBiometricAuthForSecureLockDevice.stateIn(
+            applicationScope,
+            SharingStarted.Eagerly,
+            false,
+        )
+
+    /** @see SecureLockDeviceRepository.suppressBouncerMessageUpdates */
+    val suppressBouncerMessageUpdates: StateFlow<Boolean> =
+        secureLockDeviceRepository.suppressBouncerMessageUpdates.stateIn(
             applicationScope,
             SharingStarted.Eagerly,
             false,
@@ -157,6 +166,12 @@ constructor(
         _isFullyUnlockedAndReadyToDismiss.value = true
     }
 
+    /** @see SecureLockDeviceRepository.suppressBouncerMessageUpdates */
+    fun suppressBouncerMessages() {
+        logBuffer.log(TAG, LogLevel.DEBUG, "suppressBouncerMessages")
+        secureLockDeviceRepository.suppressBouncerMessageUpdates.value = true
+    }
+
     /**
      * Whether the device should listen for biometric auth while secure lock device is enabled. The
      * device should stop listening when pending authentication, when authenticated, or when the
@@ -191,6 +206,18 @@ constructor(
                 }
             }
             .distinctUntilChanged()
+
+    /** Whether the device has a strong fingerprint enrollment on the device. */
+    val hasFingerprint: StateFlow<Boolean> =
+        enrolledStrongBiometricModalities
+            .map { it.hasFingerprint }
+            .stateIn(applicationScope, SharingStarted.Eagerly, false)
+
+    /** Whether the device has a strong face enrollment on the device. */
+    val hasFace: StateFlow<Boolean> =
+        enrolledStrongBiometricModalities
+            .map { it.hasFace }
+            .stateIn(applicationScope, SharingStarted.Eagerly, false)
 
     /** Called when biometric authentication is requested for secure lock device. */
     // TODO: call when secure lock device biometric auth is shown
