@@ -17,11 +17,13 @@
 package com.android.systemui.screencapture.record.largescreen.ui.compose
 
 import android.graphics.Rect
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -54,10 +56,10 @@ fun PreCaptureUI(viewModel: PreCaptureViewModel) {
 
         when (viewModel.captureRegion) {
             ScreenCaptureRegion.FULLSCREEN -> {
-                Box(
-                    modifier = Modifier.fillMaxSize().wrapContentSize(Alignment.Center).zIndex(0f)
-                ) {
+                val scrimColor = MaterialTheme.colorScheme.surface.copy(alpha = .54f)
+                Box(modifier = Modifier.zIndex(0f).fillMaxSize().background(color = scrimColor)) {
                     PrimaryButton(
+                        modifier = Modifier.align(Alignment.Center),
                         icon =
                             loadIcon(
                                 viewModel = viewModel,
