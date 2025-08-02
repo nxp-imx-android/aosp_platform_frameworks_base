@@ -65,4 +65,10 @@ interface IShellTransitions {
      * Set listener that will receive callbacks about transitions involving focus switch.
      */
     oneway void setFocusTransitionListener(in IFocusTransitionListener listener) = 7;
+
+    /**
+     * Returns a container surface for the overview overlay.
+     */
+    @nullable
+    SurfaceControl getOverviewOverlayContainer(int displayId) = 8;
 }

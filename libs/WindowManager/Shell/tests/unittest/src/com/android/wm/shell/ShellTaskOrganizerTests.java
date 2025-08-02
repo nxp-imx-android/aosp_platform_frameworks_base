@@ -95,6 +95,8 @@ public class ShellTaskOrganizerTests extends ShellTestCase {
     @Mock
     private ITaskOrganizerController mTaskOrganizerController;
     @Mock
+    private RootTaskDisplayAreaOrganizer mRootTaskDisplayAreaOrganizer;
+    @Mock
     private CompatUIController mCompatUI;
     @Mock
     private ShellExecutor mTestExecutor;
@@ -151,8 +153,8 @@ public class ShellTaskOrganizerTests extends ShellTestCase {
         }
         mShellInit = spy(new ShellInit(mTestExecutor));
         mOrganizer = spy(new ShellTaskOrganizer(mShellInit, mShellCommandHandler,
-                mTaskOrganizerController, mCompatUI, Optional.empty(),
-                Optional.of(mRecentTasksController), mTestExecutor));
+                mRootTaskDisplayAreaOrganizer, mTaskOrganizerController, mCompatUI,
+                Optional.empty(), Optional.of(mRecentTasksController), mTestExecutor));
         mShellInit.init();
     }
 

@@ -55,6 +55,7 @@ import com.android.wm.shell.Flags.FLAG_ENABLE_BUBBLE_BAR
 import com.android.wm.shell.Flags.FLAG_ENABLE_BUBBLE_BAR_TO_FLOATING_TRANSITION
 import com.android.wm.shell.Flags.FLAG_ENABLE_CREATE_ANY_BUBBLE
 import com.android.wm.shell.R
+import com.android.wm.shell.RootTaskDisplayAreaOrganizer
 import com.android.wm.shell.ShellTaskOrganizer
 import com.android.wm.shell.bubbles.Bubbles.BubbleExpandListener
 import com.android.wm.shell.bubbles.Bubbles.DISMISS_USER_GESTURE
@@ -199,6 +200,7 @@ class BubbleControllerTest(flags: FlagsParameterization) {
             ShellTaskOrganizer(
                 mock<ShellInit>(),
                 ShellCommandHandler(),
+                mock<RootTaskDisplayAreaOrganizer>(),
                 null,
                 Optional.empty(),
                 Optional.empty(),

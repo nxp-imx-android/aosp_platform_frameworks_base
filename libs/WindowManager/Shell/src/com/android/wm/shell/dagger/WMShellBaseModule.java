@@ -265,6 +265,7 @@ public abstract class WMShellBaseModule {
             Context context,
             ShellInit shellInit,
             ShellCommandHandler shellCommandHandler,
+            RootTaskDisplayAreaOrganizer rootTaskDisplayAreaOrganizer,
             Optional<CompatUIHandler> compatUI,
             Optional<UnfoldAnimationController> unfoldAnimationController,
             Optional<RecentTasksController> recentTasksOptional,
@@ -276,6 +277,7 @@ public abstract class WMShellBaseModule {
         return new ShellTaskOrganizer(
                 shellInit,
                 shellCommandHandler,
+                rootTaskDisplayAreaOrganizer,
                 compatUI.orElse(null),
                 unfoldAnimationController,
                 recentTasksOptional,
