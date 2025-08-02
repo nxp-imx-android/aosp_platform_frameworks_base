@@ -137,7 +137,6 @@ cc_defaults {
         "libPlatformProperties",
         "libinput",
         "libinputflinger",
-        "libinputflinger_base",
         "libinputservice",
         "libservices.core-gnss",
         "libstatshidl",
