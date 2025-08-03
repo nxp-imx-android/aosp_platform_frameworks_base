@@ -96,16 +96,13 @@
     <string name="message_restore_error_installer_absent" msgid="8492838251989389724">"हे अ‍ॅप रिस्टोअर करण्यासाठी, तुम्हाला <xliff:g id="INSTALLER_NAME">%1$s</xliff:g> इंस्टॉल करावे लागेल"</string>
     <string name="message_restore_error_generic" msgid="5903850636679929406">"हे अ‍ॅप रिस्टोअर करण्याचा प्रयत्न करताना समस्या आली होती"</string>
     <string name="message_uninstall_activity" msgid="3263352475743590167">"<xliff:g id="ACTIVITY_NAME">%1$s</xliff:g> पुढील अ‍ॅपचा भाग आहे: <xliff:g id="APP_NAME">%2$s</xliff:g>"</string>
-    <!-- no translation found for cannot_install_app_blocked_summary (8433096420067308800) -->
-    <skip />
+    <string name="cannot_install_app_blocked_summary" msgid="8433096420067308800">"&lt;p&gt;हे अ‍ॅप ब्लॉक केले आहे. तुमचे डिव्हाइस आणि डेटा सुरक्षित ठेवण्यात मदत करण्यासाठी, फक्त पडताळणी केलेल्या डेव्हलपरची अ‍ॅप्स इंस्टॉल केली जाऊ शकतात.&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;डेव्हलपर पडताळणीबद्दल अधिक जाणून घ्या&lt;/a&gt;&lt;/p&gt;"</string>
     <!-- no translation found for cannot_update_app_blocked_summary (5003390308880649930) -->
     <skip />
-    <!-- no translation found for cannot_install_verification_no_internet_summary (8948259713332887857) -->
-    <skip />
+    <string name="cannot_install_verification_no_internet_summary" msgid="8948259713332887857">"&lt;p&gt;हे अ‍ॅप केलेले नाही. पडताळणी न केलेल्या डेव्हलपरची अ‍ॅप्स असुरक्षित असू शकतात.&lt;/p&gt; &lt;p&gt;अ‍ॅप डेव्हलपरची पडताळणी करण्यासाठी इंटरनेट कनेक्शन आवश्यक आहे. तुमचे डिव्हाइस इंटरनेटशी कनेक्ट केलेले असल्याची खात्री करा, त्यानंतर अ‍ॅप पुन्हा इंस्टॉल करण्याचा प्रयत्न करा. &lt;/p&gt; &lt;p&gt;&lt;a href=&gt;डेव्हलपर पडताळणीबद्दल अधिक जाणून घ्या&lt;/a&gt;&lt;p&gt;"</string>
     <!-- no translation found for cannot_update_verification_no_internet_summary (2970654650180690063) -->
     <skip />
-    <!-- no translation found for cannot_install_verification_unavailable_summary (343815915687716571) -->
-    <skip />
+    <string name="cannot_install_verification_unavailable_summary" msgid="343815915687716571">"&lt;p&gt;या अ‍ॅपच्या डेव्हलपरची पडताळणी करताना समस्या आली. पडताळणी न केलेल्या डेव्हलपरची अ‍ॅप्स असुरक्षित असू शकतात, त्यामुळे अ‍ॅप इंस्टॉल केलेले नाही.&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;डेव्हलपर पडताळणीबद्दल अधिक जाणून घ्या&lt;/a&gt;&lt;/p&gt;"</string>
     <!-- no translation found for cannot_update_verification_unavailable_summary (7697174533040472480) -->
     <skip />
     <!-- no translation found for cannot_install_verification_unavailable_fail_closed_summary (3178396108551754329) -->
@@ -116,12 +113,9 @@
     <skip />
     <!-- no translation found for more_details_expanded_update_summary (2239162864839036480) -->
     <skip />
-    <!-- no translation found for cannot_install_app_blocked_title (6372444121824751694) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_no_internet_title (2862046642298119581) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_unavailable_title (2038093442302309120) -->
-    <skip />
+    <string name="cannot_install_app_blocked_title" msgid="6372444121824751694">"अ‍ॅप डेव्हलपरची पडताळणी केलेली नाही"</string>
+    <string name="cannot_install_verification_no_internet_title" msgid="2862046642298119581">"इंटरनेट नाही, अ‍ॅप डेव्हलपरची पडताळणी करू शकत नाही"</string>
+    <string name="cannot_install_verification_unavailable_title" msgid="2038093442302309120">"अ‍ॅप डेव्हलपरची पडताळणी करू शकत नाही"</string>
     <!-- no translation found for install_without_verifying (5359680595440741626) -->
     <skip />
     <!-- no translation found for update_without_verifying (2841466981431484179) -->

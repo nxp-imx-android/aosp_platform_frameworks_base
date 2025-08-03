@@ -96,16 +96,13 @@
     <string name="message_restore_error_installer_absent" msgid="8492838251989389724">"لاستعادة هذا التطبيق، يجب تثبيت <xliff:g id="INSTALLER_NAME">%1$s</xliff:g>"</string>
     <string name="message_restore_error_generic" msgid="5903850636679929406">"حدثت مشكلة أثناء محاولة استعادة هذا التطبيق"</string>
     <string name="message_uninstall_activity" msgid="3263352475743590167">"‫\"<xliff:g id="ACTIVITY_NAME">%1$s</xliff:g>\" هو جزء من التطبيق التالي: <xliff:g id="APP_NAME">%2$s</xliff:g>"</string>
-    <!-- no translation found for cannot_install_app_blocked_summary (8433096420067308800) -->
-    <skip />
+    <string name="cannot_install_app_blocked_summary" msgid="8433096420067308800">"‏&lt;p&gt;تم حظر هذا التطبيق. للمساعدة في الحفاظ على أمان جهازك وبياناتك، لا يمكن تثبيت سوى تطبيقات المطوّرين المعتمَدين.&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;مزيد من المعلومات حول التحقّق من هوية المطوّرين&lt;/a&gt;&lt;/p&gt;"</string>
     <!-- no translation found for cannot_update_app_blocked_summary (5003390308880649930) -->
     <skip />
-    <!-- no translation found for cannot_install_verification_no_internet_summary (8948259713332887857) -->
-    <skip />
+    <string name="cannot_install_verification_no_internet_summary" msgid="8948259713332887857">"‏&lt;p&gt;لم يتم تثبيت هذا التطبيق، لأنّ التطبيقات التي أنشأها مطوّرون غير معتمَدين قد تكون غير آمنة.&lt;/p&gt; &lt;p&gt;يجب الاتصال بالإنترنت للتحقّق من هوية مطوّر التطبيق. يُرجى التأكّد من أنّ جهازك متصل بالإنترنت، ثم إعادة محاولة تثبيت التطبيق. &lt;/p&gt; &lt;p&gt;&lt;a href=&gt;مزيد من المعلومات حول التحقّق من هوية المطوّرين&lt;/a&gt;&lt;p&gt;"</string>
     <!-- no translation found for cannot_update_verification_no_internet_summary (2970654650180690063) -->
     <skip />
-    <!-- no translation found for cannot_install_verification_unavailable_summary (343815915687716571) -->
-    <skip />
+    <string name="cannot_install_verification_unavailable_summary" msgid="343815915687716571">"‏&lt;p&gt;حدثت مشكلة أثناء التحقّق من هوية مطوّر هذا التطبيق. لم يتم تثبيت التطبيق، لأنّ التطبيقات التي أنشأها مطوّرون غير معتمَدين آمنة.&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;مزيد من المعلومات حول التحقّق من هوية المطوّرين&lt;/a&gt;&lt;/p&gt;"</string>
     <!-- no translation found for cannot_update_verification_unavailable_summary (7697174533040472480) -->
     <skip />
     <!-- no translation found for cannot_install_verification_unavailable_fail_closed_summary (3178396108551754329) -->
@@ -116,12 +113,9 @@
     <skip />
     <!-- no translation found for more_details_expanded_update_summary (2239162864839036480) -->
     <skip />
-    <!-- no translation found for cannot_install_app_blocked_title (6372444121824751694) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_no_internet_title (2862046642298119581) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_unavailable_title (2038093442302309120) -->
-    <skip />
+    <string name="cannot_install_app_blocked_title" msgid="6372444121824751694">"لم يتم التحقّق من هوية مطوّر التطبيق"</string>
+    <string name="cannot_install_verification_no_internet_title" msgid="2862046642298119581">"يتعذّر التحقّق من هوية مطوّر التطبيق بسبب عدم الاتصال بالإنترنت"</string>
+    <string name="cannot_install_verification_unavailable_title" msgid="2038093442302309120">"يتعذّر التحقّق من هوية مطوّر التطبيق"</string>
     <!-- no translation found for install_without_verifying (5359680595440741626) -->
     <skip />
     <!-- no translation found for update_without_verifying (2841466981431484179) -->
