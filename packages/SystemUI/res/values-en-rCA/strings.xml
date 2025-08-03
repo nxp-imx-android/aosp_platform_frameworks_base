@@ -142,10 +142,16 @@
     <string name="screen_record_record_microphone_label" msgid="4685753707185662381">"Record microphone"</string>
     <string name="screen_record_should_show_touches_label" msgid="2203962566795833783">"Show touches"</string>
     <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"Choose an app to record"</string>
+    <string name="screen_record_video_saved" msgid="1345283626390232282">"Video saved"</string>
+    <string name="screen_record_retake" msgid="3846643688365398450">"Retake"</string>
+    <string name="screen_record_edit" msgid="8733014191240769309">"Edit"</string>
+    <string name="screen_record_delete" msgid="1023421937978254537">"Delete"</string>
     <string name="screen_capture_fullscreen_screenshot_button" msgid="4255912593013592954">"Capture entire screen"</string>
     <string name="screen_capture_region_selection_button" msgid="4437546351856914639">"Capture selected area"</string>
     <string name="screen_capture_toolbar_capture_button" msgid="8512731007891496030">"Capture"</string>
     <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"Record"</string>
+    <!-- no translation found for screen_share_toolbar_share_button (9182050596136815833) -->
+    <skip />
     <string name="screen_capture_region_dimensions" msgid="2317064050253056256">"<xliff:g id="WIDTH">%1$d</xliff:g> x <xliff:g id="HEIGHT">%2$d</xliff:g>"</string>
     <string name="share_to_app_chip_accessibility_label" msgid="4210256229976947065">"Sharing screen"</string>
     <string name="share_to_app_chip_accessibility_label_generic" msgid="5517431657924536133">"Sharing content"</string>
@@ -1351,10 +1357,8 @@
     <string name="media_output_end_session_dialog_summary" msgid="5954520685989877347">"Stop your shared session to move media to another device"</string>
     <string name="media_output_end_session_dialog_stop" msgid="208189434474624412">"Stop"</string>
     <string name="media_output_dialog_button_stop_sharing" msgid="5043482739689716185">"Stop sharing"</string>
-    <!-- no translation found for media_output_dialog_button_sharing_audio (8312910741492835648) -->
-    <skip />
-    <!-- no translation found for media_output_dialog_button_share_audio (827604934548421520) -->
-    <skip />
+    <string name="media_output_dialog_button_sharing_audio" msgid="8312910741492835648">"Sharing audio"</string>
+    <string name="media_output_dialog_button_share_audio" msgid="827604934548421520">"Share audio"</string>
     <string name="build_number_clip_data_label" msgid="3623176728412560914">"Build number"</string>
     <string name="build_number_copy_toast" msgid="877720921605503046">"Build number copied to clipboard."</string>
     <string name="copy_to_clipboard_a11y_action" msgid="4312789069718446749">"copy to clipboard."</string>

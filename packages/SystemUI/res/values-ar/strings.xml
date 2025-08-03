@@ -142,10 +142,20 @@
     <string name="screen_record_record_microphone_label" msgid="4685753707185662381">"التسجيل من الميكروفون"</string>
     <string name="screen_record_should_show_touches_label" msgid="2203962566795833783">"عرض أماكن اللمس"</string>
     <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"يُرجى اختيار تطبيق لتسجيل محتوى شاشته"</string>
+    <!-- no translation found for screen_record_video_saved (1345283626390232282) -->
+    <skip />
+    <!-- no translation found for screen_record_retake (3846643688365398450) -->
+    <skip />
+    <!-- no translation found for screen_record_edit (8733014191240769309) -->
+    <skip />
+    <!-- no translation found for screen_record_delete (1023421937978254537) -->
+    <skip />
     <string name="screen_capture_fullscreen_screenshot_button" msgid="4255912593013592954">"أخذ لقطة للشاشة بأكملها"</string>
     <string name="screen_capture_region_selection_button" msgid="4437546351856914639">"أخذ لقطة شاشة للمنطقة المحدّدة"</string>
     <string name="screen_capture_toolbar_capture_button" msgid="8512731007891496030">"التقاط"</string>
     <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"تسجيل"</string>
+    <!-- no translation found for screen_share_toolbar_share_button (9182050596136815833) -->
+    <skip />
     <!-- no translation found for screen_capture_region_dimensions (2317064050253056256) -->
     <skip />
     <string name="share_to_app_chip_accessibility_label" msgid="4210256229976947065">"جارِ مشاركة محتوى الشاشة"</string>
@@ -1590,7 +1600,7 @@
     <string name="shortcut_helper_plus_symbol" msgid="4534843157353732011">"+"</string>
     <string name="shortcut_helper_add_shortcut_button_label" msgid="7655779534665954910">"إضافة اختصار"</string>
     <string name="shortcut_helper_delete_shortcut_button_label" msgid="3148773472696137052">"حذف الاختصار"</string>
-    <string name="shortcut_helper_app_custom_shortcut_limit_exceeded" msgid="7766416877791564255">"تم الوصول إلى الحدّ الأقصى المسموح به لعدد الاختصارات المخصّصة للتطبيقات، وهو 10 اختصارات"</string>
+    <string name="shortcut_helper_app_custom_shortcut_limit_exceeded" msgid="7766416877791564255">"لقد أضفت 10 اختصارات مخصّصة للتطبيقات، وهو الحد الأقصى"</string>
     <string name="shortcut_helper_app_custom_shortcut_limit_exceeded_instruction" msgid="6146855266321804624">"يجب حذف أحد الاختصارات لإضافة اختصار جديد"</string>
     <string name="launch_keyboard_tutorial_notification_title" msgid="8849933155160522519">"التنقّل باستخدام لوحة المفاتيح"</string>
     <string name="launch_keyboard_tutorial_notification_content" msgid="2131074100205028210">"لنتعرّف على اختصارات لوحة المفاتيح"</string>

@@ -33,7 +33,7 @@
     <string name="battery_saver_dismiss_action" msgid="7199342621040014738">"Nei takk"</string>
     <string name="standard_battery_saver_text" msgid="6855876746552374119">"Standard"</string>
     <string name="extreme_battery_saver_text" msgid="8455810156739865335">"Ekstrem"</string>
-    <string name="status_bar_settings_auto_rotation" msgid="8329080442278431708">"Rotér skjermen automatisk"</string>
+    <string name="status_bar_settings_auto_rotation" msgid="8329080442278431708">"Roter skjermen automatisk"</string>
     <string name="usb_device_permission_prompt" msgid="4414719028369181772">"Vil du gi <xliff:g id="APPLICATION">%1$s</xliff:g> tilgang til <xliff:g id="USB_DEVICE">%2$s</xliff:g>?"</string>
     <string name="usb_device_permission_prompt_warn" msgid="2309129784984063656">"Vil du gi <xliff:g id="APPLICATION">%1$s</xliff:g> tilgang til <xliff:g id="USB_DEVICE">%2$s</xliff:g>?\nDenne appen har ikke fått tillatelse til å spille inn, men kan ta opp lyd med denne USB-enheten."</string>
     <string name="usb_audio_device_permission_prompt_title" msgid="4221351137250093451">"Vil du gi <xliff:g id="APPLICATION">%1$s</xliff:g> tilgang til <xliff:g id="USB_DEVICE">%2$s</xliff:g>?"</string>
@@ -142,10 +142,20 @@
     <string name="screen_record_record_microphone_label" msgid="4685753707185662381">"Ta opp med mikrofonen"</string>
     <string name="screen_record_should_show_touches_label" msgid="2203962566795833783">"Vis berøringer"</string>
     <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"Velg en app å ta opp"</string>
+    <!-- no translation found for screen_record_video_saved (1345283626390232282) -->
+    <skip />
+    <!-- no translation found for screen_record_retake (3846643688365398450) -->
+    <skip />
+    <!-- no translation found for screen_record_edit (8733014191240769309) -->
+    <skip />
+    <!-- no translation found for screen_record_delete (1023421937978254537) -->
+    <skip />
     <string name="screen_capture_fullscreen_screenshot_button" msgid="4255912593013592954">"Ta opp hele skjermen"</string>
     <string name="screen_capture_region_selection_button" msgid="4437546351856914639">"Ta bilde av det valgte området"</string>
     <string name="screen_capture_toolbar_capture_button" msgid="8512731007891496030">"Ta bilde"</string>
     <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"Ta opp"</string>
+    <!-- no translation found for screen_share_toolbar_share_button (9182050596136815833) -->
+    <skip />
     <!-- no translation found for screen_capture_region_dimensions (2317064050253056256) -->
     <skip />
     <string name="share_to_app_chip_accessibility_label" msgid="4210256229976947065">"Deler skjermen"</string>
@@ -371,7 +381,7 @@
     <string name="quick_settings_bluetooth_secondary_label_transient" msgid="3882884317600669650">"Slår på …"</string>
     <string name="quick_settings_brightness_unable_adjust_msg" msgid="4124028416057617517">"Kan ikke justere lysstyrken, fordi den kontrolleres av den øvre appen"</string>
     <string name="quick_settings_rotation_unlocked_label" msgid="2359922767950346112">"Rotér automatisk"</string>
-    <string name="accessibility_quick_settings_rotation" msgid="4800050198392260738">"Rotér skjermen automatisk"</string>
+    <string name="accessibility_quick_settings_rotation" msgid="4800050198392260738">"Roter skjermen automatisk"</string>
     <string name="quick_settings_location_label" msgid="2621868789013389163">"Sted"</string>
     <string name="quick_settings_screensaver_label" msgid="1495003469366524120">"Skjermsparer"</string>
     <string name="quick_settings_camera_label" msgid="5612076679385269339">"Kameratilgang"</string>
