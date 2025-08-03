@@ -21,6 +21,7 @@ import static android.app.Flags.FLAG_NM_SUMMARIZATION;
 import static android.app.Flags.FLAG_NM_SUMMARIZATION_ALL;
 import static android.app.Flags.FLAG_NOTIFICATION_IS_ANIMATED_ACTION_API;
 import static android.app.Flags.FLAG_HIDE_STATUS_BAR_NOTIFICATION;
+import static android.app.Flags.apiMetricStyle;
 import static android.app.Flags.notificationsRedesignTemplates;
 import static android.app.admin.DevicePolicyResources.Drawables.Source.NOTIFICATION;
 import static android.app.admin.DevicePolicyResources.Drawables.Style.SOLID_COLORED;
@@ -810,12 +811,12 @@ public class Notification implements Parcelable
             return true;
         }
 
-        if (Flags.apiRichOngoing()) {
-            return style.getClass() == ProgressStyle.class;
+        if (Flags.apiRichOngoing() && style.getClass() == ProgressStyle.class) {
+            return true;
         }
 
-        if (Flags.apiMetricStyle()) {
-            return style.getClass() == MetricStyle.class;
+        if (Flags.apiMetricStyle() && style.getClass() == MetricStyle.class) {
+            return true;
         }
 
         return false;
@@ -841,6 +842,10 @@ public class Notification implements Parcelable
                      R.layout.notification_2025_template_expanded_inbox -> true;
                 case R.layout.notification_2025_template_expanded_progress
                         -> Flags.apiRichOngoing();
+                case R.layout.notification_2025_template_collapsed_metric
+                        -> Flags.apiMetricStyle();
+                case R.layout.notification_2025_template_expanded_metric
+                        -> Flags.apiMetricStyle();
                 default -> false;
             };
         }
@@ -6181,6 +6186,8 @@ public class Notification implements Parcelable
                     || resId == getCollapsedMessagingLayoutResource()
                     || resId == getCollapsedMediaLayoutResource()
                     || resId == getCollapsedConversationLayoutResource()
+                    || (apiMetricStyle()
+                    && resId == getCollapsedMetricLayoutResource())
                     || (notificationsRedesignTemplates()
                     && resId == getCollapsedCallLayoutResource()));
             RemoteViews contentView = new BuilderRemoteViews(mContext.getApplicationInfo(), resId);
@@ -6193,6 +6200,11 @@ public class Notification implements Parcelable
             bindLargeIconAndApplyMargin(contentView, p, result);
             boolean showProgress = handleProgressBar(contentView, ex, p);
             boolean hasSecondLine = showProgress;
+            // Metrics are considered as second line for MetricStyle.
+            final boolean showMetrics = apiMetricStyle()
+                    && (resId == getCollapsedMetricLayoutResource()
+                    || resId == getExpandedMetricLayoutResource());
+            hasSecondLine |= showMetrics;
             if (p.hasTitle()) {
                 contentView.setViewVisibility(p.mTitleViewId, View.VISIBLE);
                 contentView.setTextViewText(p.mTitleViewId,
@@ -8028,6 +8040,14 @@ public class Notification implements Parcelable
             } else {
                 return R.layout.notification_template_material_big_messaging;
             }
+        }
+
+        private int getCollapsedMetricLayoutResource() {
+            return R.layout.notification_2025_template_collapsed_metric;
+        }
+
+        private int getExpandedMetricLayoutResource() {
+            return R.layout.notification_2025_template_expanded_metric;
         }
 
         private int getCollapsedMediaLayoutResource() {
@@ -11758,71 +11778,127 @@ public class Notification implements Parcelable
         /** @hide */
         @Override
         public RemoteViews makeContentView() {
-            return null;
-            // TODO(b/415828647): Implement for MetricStyle
-            // Remember: Add new layout resources to isStandardLayout()
+            final StandardTemplateParams p = mBuilder.mParams.reset()
+                    .viewType(StandardTemplateParams.VIEW_TYPE_NORMAL)
+                    .fillTextsFrom(mBuilder).text(null)
+                    .hideRightIcon(true);
+            final TemplateBindResult result = new TemplateBindResult();
+            final RemoteViews contentView = getStandardView(
+                    mBuilder.getCollapsedMetricLayoutResource(), p, result);
+            return bindMetricStyleMetrics(contentView, /* isExpandedView = */false);
         }
 
         /** @hide */
         @Override
         public RemoteViews makeHeadsUpContentView() {
-            return null;
-            // TODO(b/415828647): Implement for MetricStyle
-            // Remember: Add new layout resources to isStandardLayout()
+            final StandardTemplateParams p = mBuilder.mParams.reset()
+                    .viewType(StandardTemplateParams.VIEW_TYPE_HEADS_UP)
+                    .fillTextsFrom(mBuilder).text(null)
+                    .hideRightIcon(true);
+            final TemplateBindResult result = new TemplateBindResult();
+            final RemoteViews contentView = getStandardView(
+                    mBuilder.getCollapsedMetricLayoutResource(), p, result);
+            return bindMetricStyleMetrics(contentView, /* isExpandedView = */false);
         }
 
         /** @hide */
         @Override
         public RemoteViews makeExpandedContentView() {
-            // TODO: b/415828647 - Implement properly; this is a temporary version using
-            //  InboxStyle, for prototyping.
-            // And remember: Add new layout resources to isStandardLayout()
-            StandardTemplateParams p = mBuilder.mParams.reset()
+            final StandardTemplateParams p = mBuilder.mParams.reset()
                     .viewType(StandardTemplateParams.VIEW_TYPE_EXPANDED)
-                    .fillTextsFrom(mBuilder).text(null);
-            TemplateBindResult result = new TemplateBindResult();
-            RemoteViews contentView = getStandardView(mBuilder.getInboxLayoutResource(), p, result);
+                    .fillTextsFrom(mBuilder).text(null)
+                    .hideRightIcon(true);
+            final TemplateBindResult result = new TemplateBindResult();
+            final RemoteViews contentView = getStandardView(
+                    mBuilder.getExpandedMetricLayoutResource(), p, result);
+            return bindMetricStyleMetrics(contentView, /* isExpandedView = */true);
+        }
 
-            int[] rowIds = {R.id.inbox_text0, R.id.inbox_text1, R.id.inbox_text2, R.id.inbox_text3,
-                    R.id.inbox_text4, R.id.inbox_text5, R.id.inbox_text6};
+        private RemoteViews bindMetricStyleMetrics(
+                RemoteViews contentView, boolean isExpandedView) {
+            for (int i = 0; i < MAX_METRICS; i++) {
+                final MetricView metricView = MetricView.VIEWS.get(i);
+                if (i < mMetrics.size()) {
+                    contentView.setViewVisibility(metricView.containerId(), View.VISIBLE);
+                    final Metric metric = mMetrics.get(i);
+                    final Metric.MetricValue metricValue = metric.getValue();
+                    final Metric.MetricValue.ValueString valueString = metricValue.toValueString(
+                            mBuilder.mContext);
+                    final String metricLabel;
+                    if (isExpandedView) {
+                        metricLabel = metric.getLabel();
+                    } else {
+                        metricLabel = mBuilder.mContext.getString(
+                                com.android.internal.R.string.notification_metric_label_template,
+                                metric.getLabel());
+                    }
+                    contentView.setTextViewText(metricView.labelId(), metricLabel);
+                    contentView.setViewVisibility(metricView.unitId(),
+                            TextUtils.isEmpty(valueString.subtext()) ? View.GONE : View.VISIBLE);
+                    contentView.setTextViewText(metricView.unitId(), valueString.subtext());
 
-            // Make sure all rows are gone in case we reuse a view.
-            for (int rowId : rowIds) {
-                contentView.setViewVisibility(rowId, View.GONE);
-            }
-
-            int i = 0;
-            int topPadding = mBuilder.mContext.getResources().getDimensionPixelSize(
-                    R.dimen.notification_inbox_item_top_padding);
-            boolean first = true;
-            int onlyViewId = 0;
-            while (i < mMetrics.size() && i < MAX_METRICS) {
-                Metric metric = mMetrics.get(i);
-                contentView.setViewVisibility(rowIds[i], View.VISIBLE);
-                Metric.MetricValue.ValueString valueString = metric.getValue().toValueString(
-                        mBuilder.mContext);
-                contentView.setTextViewText(rowIds[i],
-                        metric.getLabel() + ": " + valueString.text
-                                + (valueString.subtext != null ? " " + valueString.subtext : ""));
-                mBuilder.setTextViewColorSecondary(contentView, rowIds[i], p);
-                contentView.setViewPadding(rowIds[i], 0, topPadding, 0, 0);
-                if (first) {
-                    onlyViewId = rowIds[i];
+                    if (metricValue instanceof  Metric.TimeDifference timeDifference
+                            && timeDifference.getPausedDuration() == null) {
+                        contentView.setViewVisibility(metricView.textValueId(), View.GONE);
+                        contentView.setViewVisibility(metricView.chronometerId(), View.VISIBLE);
+                        contentView.setBoolean(
+                                metricView.chronometerId(), "setStarted", true);
+                        contentView.setChronometerCountDown(
+                                metricView.chronometerId(), timeDifference.mCountDown);
+                        contentView.setLong(
+                                metricView.chronometerId(),
+                                "setBase", calculateBase(timeDifference));
+                        // TODO(b/434910979): implement format support for Chronometer.
+                    } else {
+                        contentView.setViewVisibility(metricView.chronometerId(), View.GONE);
+                        contentView.setViewVisibility(metricView.textValueId(), View.VISIBLE);
+                        contentView.setTextViewText(metricView.textValueId(), valueString.text());
+                    }
                 } else {
-                    onlyViewId = 0;
+                    contentView.setViewVisibility(metricView.containerId(), View.GONE);
                 }
-                first = false;
-                i++;
             }
-            if (onlyViewId != 0) {
-                // We only have 1 entry, lets make it look like the normal Text of a Bigtext
-                topPadding = mBuilder.mContext.getResources().getDimensionPixelSize(
-                        R.dimen.notification_text_margin_top);
-                contentView.setViewPadding(onlyViewId, 0, topPadding, 0, 0);
-            }
-
             return contentView;
         }
+        // TODO(b/435150348): Add Instant support to Chronometer..
+        private long calculateBase(@NonNull Metric.TimeDifference timeDifference) {
+            if (timeDifference.mZeroTime != null) {
+                return getElapsedRealtimeClock().getAsLong()
+                        + (timeDifference.mZeroTime.toEpochMilli() - getSystemClock().millis());
+            } else if (timeDifference.mZeroElapsedRealtime != null) {
+                return timeDifference.mZeroElapsedRealtime;
+            } else {
+                throw new IllegalStateException("None of mZeroTime, mZeroElapsedRealtime set!");
+            }
+        }
+
+        private record MetricView(int containerId,
+                           int labelId,
+                           int textValueId,
+                           int chronometerId,
+                           int unitId) {
+            private static final List<MetricView> VIEWS = List.of(
+                    new MetricView(
+                            /* containerId = */R.id.metric_view_0,
+                            /* labelId = */R.id.metric_label_0,
+                            /* textValueId = */R.id.metric_value_0,
+                            /* chronometerId = */R.id.metric_chronometer_0,
+                            /* unitId = */R.id.metric_unit_0),
+                    new MetricView(
+                            /* containerId = */R.id.metric_view_1,
+                            /* labelId = */R.id.metric_label_1,
+                            /* textValueId = */R.id.metric_value_1,
+                            /* chronometerId = */R.id.metric_chronometer_1,
+                            /* unitId = */R.id.metric_unit_1),
+                    new MetricView(
+                            /* containerId = */R.id.metric_view_2,
+                            /* labelId = */R.id.metric_label_2,
+                            /* textValueId = */R.id.metric_value_2,
+                            /* chronometerId = */R.id.metric_chronometer_2,
+                            /* unitId = */R.id.metric_unit_2)
+            );
+        }
+
     }
 
     /**

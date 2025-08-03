@@ -698,6 +698,18 @@
     <!-- Size of the alerted icon for notifications -->
     <dimen name="notification_alerted_size">@dimen/notification_badge_size</dimen>
 
+    <!-- Spacing for collapsed metric items -->
+    <dimen name="notification_collapsed_metric_margin">16dp</dimen>
+
+    <!-- Spacing for collapsed metric items -->
+    <dimen name="notification_expanded_metric_margin">4dp</dimen>
+
+    <!-- Spacing between metric label and value for collapsed MetricStyle-->
+    <dimen name="notification_collapsed_metric_label_margin">2dp</dimen>
+
+    <!-- Spacing between metric value and unit for expanded MetricStyle-->
+    <dimen name="notification_expanded_metric_unit_margin">2dp</dimen>
+
     <!-- Keyguard dimensions -->
     <!-- TEMP -->
     <dimen name="kg_security_panel_height">600dp</dimen>

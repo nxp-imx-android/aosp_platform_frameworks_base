@@ -1660,6 +1660,31 @@ please see styles_device_defaults.xml.
         <item name="textColor">#555555</item>
     </style>
 
+    <!-- @hide -->
+    <style name="NotificationMetricLabel" parent="Widget.DeviceDefault.Notification.Text">
+        <item name="ellipsize">end</item>
+        <item name="maxLines">1</item>
+    </style>
+
+    <!-- @hide -->
+    <style name="NotificationMetricValue" parent="Widget.DeviceDefault.Notification.Text">
+        <item name="ellipsize">end</item>
+        <item name="maxLines">1</item>
+    </style>
+
+    <!-- @hide -->
+    <style name="NotificationMetricUnit" parent="Widget.DeviceDefault.Notification.Text">
+        <item name="ellipsize">end</item>
+        <item name="maxLines">1</item>
+        <item name="fontFamily" android:featureFlag="android.app.notifications_redesign_fonts">variant-title-small-emphasized</item>
+    </style>
+
+    <!-- @hide -->
+    <style name="NotificationExpandedMetricValue" parent="NotificationMetricValue">
+        <item name="textSize">24dp</item>
+        <item name="fontFamily" android:featureFlag="android.app.notifications_redesign_fonts">variant-title-small-emphasized</item>
+    </style>
+
     <style name="AccessibilityDialog">
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">wrap_content</item>
