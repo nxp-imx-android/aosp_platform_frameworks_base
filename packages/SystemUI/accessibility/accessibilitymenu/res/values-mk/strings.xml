@@ -21,7 +21,8 @@
     <string name="previous_button_content_description" msgid="840869171117765966">"Оди на претходниот екран"</string>
     <string name="next_button_content_description" msgid="6810058269847364406">"Оди на следниот екран"</string>
     <string name="accessibility_menu_description" msgid="4458354794093858297">"„Менито за пристапност“ ви овозможува да го контролирате уредот преку големо мени на екранот. Може да го заклучите уредот, да ги контролирате јачината на звукот и осветленоста, да правите слики од екранот и друго."</string>
-    <string name="accessibility_menu_summary" msgid="340071398148208130">"Контролирајте го уредот преку големо мени"</string>
+    <!-- no translation found for accessibility_menu_summary (4051992323622465342) -->
+    <skip />
     <string name="accessibility_menu_settings_name" msgid="1716888058785672611">"Поставки за менито за пристапност"</string>
     <string name="accessibility_menu_large_buttons_title" msgid="8978499601044961736">"Големи копчиња"</string>
     <string name="accessibility_menu_large_buttons_summary" msgid="236873938502785311">"Зголеми ги копчињата на менито за пристапност"</string>

@@ -21,7 +21,8 @@
     <string name="previous_button_content_description" msgid="840869171117765966">"转到上一个屏幕"</string>
     <string name="next_button_content_description" msgid="6810058269847364406">"转到下一个屏幕"</string>
     <string name="accessibility_menu_description" msgid="4458354794093858297">"无障碍菜单是一个放大的菜单，方便您通过屏幕控制设备，完成锁屏、控制音量和亮度、截图等操作。"</string>
-    <string name="accessibility_menu_summary" msgid="340071398148208130">"使用大菜单控制设备"</string>
+    <!-- no translation found for accessibility_menu_summary (4051992323622465342) -->
+    <skip />
     <string name="accessibility_menu_settings_name" msgid="1716888058785672611">"无障碍菜单设置"</string>
     <string name="accessibility_menu_large_buttons_title" msgid="8978499601044961736">"大按钮"</string>
     <string name="accessibility_menu_large_buttons_summary" msgid="236873938502785311">"放大无障碍菜单按钮"</string>

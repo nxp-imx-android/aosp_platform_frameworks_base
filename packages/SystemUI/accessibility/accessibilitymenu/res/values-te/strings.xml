@@ -21,7 +21,8 @@
     <string name="previous_button_content_description" msgid="840869171117765966">"మునుపటి స్క్రీన్‌కు వెళ్లండి"</string>
     <string name="next_button_content_description" msgid="6810058269847364406">"తదుపరి స్క్రీన్‌కు వెళ్లండి"</string>
     <string name="accessibility_menu_description" msgid="4458354794093858297">"మీ పరికరాన్ని కంట్రోల్ చేయడానికి యాక్సెసిబిలిటీ మెనూ, స్క్రీన్‌పై పెద్ద మెనూను అందిస్తుంది. మీరు మీ పరికరాన్ని లాక్ చేయవచ్చు, వాల్యూమ్‌ను, బ్రైట్‌నెస్‌ను కంట్రోల్ చేయవచ్చు, స్క్రీన్‌షాట్‌లు తీసుకోవచ్చు, మరిన్ని చేయవచ్చు."</string>
-    <string name="accessibility_menu_summary" msgid="340071398148208130">"పెద్ద మెనూ ద్వారా డివైజ్‌ను కంట్రోల్ చేయండి"</string>
+    <!-- no translation found for accessibility_menu_summary (4051992323622465342) -->
+    <skip />
     <string name="accessibility_menu_settings_name" msgid="1716888058785672611">"యాక్సెసిబిలిటీ మెనూ సెట్టింగ్‌లు"</string>
     <string name="accessibility_menu_large_buttons_title" msgid="8978499601044961736">"పెద్ద బటన్‌లు"</string>
     <string name="accessibility_menu_large_buttons_summary" msgid="236873938502785311">"యాక్సెసిబిలిటీ మెనూ బటన్‌ల సైజ్‌ పెంచుతుంది"</string>

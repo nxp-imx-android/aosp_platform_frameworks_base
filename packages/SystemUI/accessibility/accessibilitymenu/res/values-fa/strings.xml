@@ -20,8 +20,9 @@
     <string name="brightness_down_label" msgid="7115662941913272072">"کاهش روشنایی"</string>
     <string name="previous_button_content_description" msgid="840869171117765966">"رفتن به صفحه قبل"</string>
     <string name="next_button_content_description" msgid="6810058269847364406">"رفتن به صفحه بعد"</string>
-    <string name="accessibility_menu_description" msgid="4458354794093858297">"«منوی دسترس‌پذیری» منوی بزرگی را روی صفحه برای کنترل دستگاه ارائه می‌دهد. می‌توانید دستگاه را قفل کنید، میزان صدا و روشنایی را کنترل کنید، از صفحه نمایش عکس بگیرید، و کارهای بیشتری انجام دهید."</string>
-    <string name="accessibility_menu_summary" msgid="340071398148208130">"کنترل دستگاه ازطریق منوی بزرگ"</string>
+    <string name="accessibility_menu_description" msgid="4458354794093858297">"«منو دسترس‌پذیری» منو بزرگی را روی صفحه برای کنترل دستگاه ارائه می‌دهد. می‌توانید دستگاه را قفل کنید، میزان صدا و روشنایی را کنترل کنید، از صفحه نمایش عکس بگیرید، و کارهای بیشتری انجام دهید."</string>
+    <!-- no translation found for accessibility_menu_summary (4051992323622465342) -->
+    <skip />
     <string name="accessibility_menu_settings_name" msgid="1716888058785672611">"تنظیمات منوی دسترس‌پذیری"</string>
     <string name="accessibility_menu_large_buttons_title" msgid="8978499601044961736">"دکمه‌های بزرگ"</string>
     <string name="accessibility_menu_large_buttons_summary" msgid="236873938502785311">"افزایش اندازه «دکمه‌های منوی دسترس‌پذیری»"</string>
