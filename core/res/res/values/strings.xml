@@ -5659,6 +5659,9 @@
     <!-- Tempalate for Notification.MessagingStyle to join a conversation name with the name of the sender of a message, to make a notification title [CHAR LIMIT=NONE] -->
     <string name="notification_messaging_title_template"><xliff:g id="conversation_title" example="Tasty Treat Team">%1$s</xliff:g>: <xliff:g id="sender_name" example="Adrian Baker">%2$s</xliff:g></string>
 
+    <!-- Template for Notification.MetricStyle to join Metric label with a separator e.g.: `:` -->
+    <string name="notification_metric_label_template"><xliff:g id="metric_label" example="Steps">%1$s</xliff:g>:</string>
+
     <!-- Action text to be displayed for the "answer" action of an incoming call [CHAR LIMIT=13] -->
     <string name="call_notification_answer_action">Answer</string>
     <!-- Action text to be displayed for the "answer" action of an incoming VIDEO call [CHAR LIMIT=13] -->
