@@ -79,10 +79,14 @@
     <string name="page_size_compat_apk_and_elf_warning_4kb" msgid="997926487776340721">"ଏହା ବର୍ତ୍ତମାନ ପରୀକ୍ଷା କରାଯାଉଥିବା ଏକ ଡିବଗେବୁଲ ଆପ ହୋଇଥିବା ଯୋଗୁଁ ଏହି ଚେତାବନୀ ଦେଖାଯାଉଛି। ଯଦି ଆପଣ ଡେଭେଲପର ନୁହଁନ୍ତି, ତେବେ ଦୟାକରି ଡେଭେଲପରଙ୍କୁ ଏହାର ରିପୋର୍ଟ କରନ୍ତୁ ଏବଂ ଏକ ଅଣ-ଡିବଗେବୁଲ ଆପ ପାଇଁ ଅନୁରୋଧ କରନ୍ତୁ। &lt;br&gt;&lt;br&gt; ଏହି ଆପ 16 KB କମ୍ପାଟିବଲ ନୁହେଁ। APK ଏବଂ ELF ଆଲାଇନମେଣ୍ଟ ଯାଞ୍ଚଗୁଡ଼ିକ ବିଫଳ ହୋଇଛି। ଦୟାକରି &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;ରେ ଥିବା ଷ୍ଟେପଗୁଡ଼ିକୁ ଫଲୋ କରନ୍ତୁ। &lt;br&gt;&lt;br&gt; ନିମ୍ନୋକ୍ତ ଲାଇବ୍ରେରୀଗୁଡ଼ିକ 16 KB ଆଲାଇନ ହୋଇନାହିଁ: &lt;br&gt;&lt;br&gt;"</string>
     <string name="page_size_compat_never_show" msgid="3391282612422783097">"ପୁଣି ଦେଖାନ୍ତୁ ନାହିଁ"</string>
     <string name="page_size_compat_title" msgid="6497719153872572204">"Android ଆପ କମ୍ପାଟିବିଲିଟୀ"</string>
-    <string name="page_size_compat_elf_not_aligned" msgid="7940806102874132630">"&amp;#8226; %1$s : LOAD ସେଗମେଣ୍ଟ ଆଲାଇନ ହୋଇନାହିଁ"</string>
-    <string name="page_size_compat_apk_not_aligned" msgid="8927901100655245528">"&amp;#8226; %1$s : କମ୍ପ୍ରେସ କରାଯାଇନଥିବା ଲାଇବ୍ରେରୀ ଆଲାଇନ ହୋଇନାହିଁ"</string>
-    <string name="page_size_compat_apk_and_elf_not_aligned" msgid="1010371834741548905">"&amp;#8226; %1$s : LOAD ସେଗମେଣ୍ଟ ଏବଂ କମ୍ପ୍ରେସ କରାଯାଇନଥିବା ଲାଇବ୍ରେରୀ ଆଲାଇନ ହୋଇନାହିଁ"</string>
-    <string name="page_size_compat_unknown" msgid="3254222165646410528">"&amp;#8226; %1$s : ଅଜଣା ତ୍ରୁଟି"</string>
+    <!-- no translation found for page_size_compat_elf_not_aligned (4404128993555194313) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_not_aligned (1434875607880657092) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_and_elf_not_aligned (7140216083697701972) -->
+    <skip />
+    <!-- no translation found for page_size_compat_unknown (5183026525148169891) -->
+    <skip />
     <string name="serviceNotProvisioned" msgid="8289333510236766193">"ସେବାର ସୁବିଧା ନାହିଁ।"</string>
     <string name="CLIRPermanent" msgid="166443681876381118">"ଆପଣ କଲର୍‍ ID ସେଟିଙ୍ଗ ବଦଳାଇପାରିବେ ନାହିଁ।"</string>
     <string name="auto_data_switch_title" msgid="3286350716870518297">"<xliff:g id="CARRIERDISPLAY">%s</xliff:g>କୁ ଡାଟା ସ୍ୱିଚ କରାଯାଇଛି"</string>
@@ -692,6 +696,10 @@
     <string name="biometric_dialog_default_title" msgid="55026799173208210">"ଏହା ଆପଣ ବୋଲି ଯାଞ୍ଚ କରନ୍ତୁ"</string>
     <string name="biometric_dialog_default_subtitle" msgid="8457232339298571992">"ଜାରି ରଖିବାକୁ ଆପଣଙ୍କ ବାୟୋମେଟ୍ରିକ୍ସ ବ୍ୟବହାର କରନ୍ତୁ"</string>
     <string name="biometric_or_screen_lock_dialog_default_subtitle" msgid="159539678371552009">"ଜାରି ରଖିବାକୁ ଆପଣଙ୍କ ବାୟୋମେଟ୍ରିକ୍ କିମ୍ବା ସ୍କ୍ରିନ୍ ଲକ୍ ବ୍ୟବହାର କରନ୍ତୁ"</string>
+    <!-- no translation found for biometric_dialog_secondary_display_toast (256544327174107086) -->
+    <skip />
+    <!-- no translation found for biometric_dialog_secondary_display_toast (2855203015454795660) -->
+    <skip />
     <string name="biometric_error_hw_unavailable" msgid="2494077380540615216">"ବାୟୋମେଟ୍ରିକ୍‌ ହାର୍ଡୱେର୍‌ ଉପଲବ୍ଧ ନାହିଁ"</string>
     <string name="biometric_error_user_canceled" msgid="6732303949695293730">"ପ୍ରାମାଣିକତାକୁ ବାତିଲ୍ କରାଯାଇଛି"</string>
     <string name="biometric_not_recognized" msgid="5106687642694635888">"ଚିହ୍ନଟ ହେଲାନାହିଁ"</string>

@@ -79,10 +79,14 @@
     <string name="page_size_compat_apk_and_elf_warning_4kb" msgid="997926487776340721">"இது தற்போது பரிசோதனையில் உள்ள பிழைதிருத்தக்கூடிய ஆப்ஸ் என்பதால் இந்த எச்சரிக்கை காட்டப்படுகிறது. நீங்கள் டெவெலப்பர் இல்லையென்றால் இதை டெவெலப்பரிடம் புகாரளித்து, பிழைதிருத்தம் செய்ய முடியாத ஆப்ஸைக் கேளுங்கள். &lt;br&gt;&lt;br&gt; இந்த ஆப்ஸ் 16 KB இணக்கமானது அல்ல. APK மற்றும் ELF சீரமைவுகளைச் சரிபார்க்க முடியவில்லை. &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; பக்கத்தில் உள்ள வழிமுறைகளைப் பின்பற்றவும். &lt;br&gt;&lt;br&gt; பின்வரும் லைப்ரரிகள் 16 KB உடன் சீரமைக்கப்படவில்லை: &lt;br&gt;&lt;br&gt;"</string>
     <string name="page_size_compat_never_show" msgid="3391282612422783097">"மீண்டும் காட்டாதே"</string>
     <string name="page_size_compat_title" msgid="6497719153872572204">"Android ஆப்ஸ் இணக்கத்தன்மை"</string>
-    <string name="page_size_compat_elf_not_aligned" msgid="7940806102874132630">"&amp;#8226; %1$s : ஏற்றுவதற்கான பகுதி சீரமைக்கப்படவில்லை"</string>
-    <string name="page_size_compat_apk_not_aligned" msgid="8927901100655245528">"&amp;#8226; %1$s : சுருக்கப்படாத லைப்ரரி சீரமைக்கப்படவில்லை"</string>
-    <string name="page_size_compat_apk_and_elf_not_aligned" msgid="1010371834741548905">"&amp;#8226; %1$s : ஏற்றுவதற்கான பகுதியும் சுருக்கப்படாத லைப்ரரியும் சீரமைக்கப்படவில்லை"</string>
-    <string name="page_size_compat_unknown" msgid="3254222165646410528">"&amp;#8226; %1$s : அறியப்படாத பிழை"</string>
+    <!-- no translation found for page_size_compat_elf_not_aligned (4404128993555194313) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_not_aligned (1434875607880657092) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_and_elf_not_aligned (7140216083697701972) -->
+    <skip />
+    <!-- no translation found for page_size_compat_unknown (5183026525148169891) -->
+    <skip />
     <string name="serviceNotProvisioned" msgid="8289333510236766193">"சேவை ஒதுக்கப்படவில்லை."</string>
     <string name="CLIRPermanent" msgid="166443681876381118">"அழைப்பாளர் ஐடி அமைப்பை மாற்ற முடியாது."</string>
     <string name="auto_data_switch_title" msgid="3286350716870518297">"டேட்டா <xliff:g id="CARRIERDISPLAY">%s</xliff:g>க்கு மாற்றப்பட்டது"</string>
@@ -300,8 +304,7 @@
     <string name="global_action_assist" msgid="2517047220311505805">"உதவி"</string>
     <string name="global_action_voice_assist" msgid="6655788068555086695">"குரல் உதவி"</string>
     <string name="global_action_lockdown" msgid="2475471405907902963">"பூட்டு"</string>
-    <!-- no translation found for global_action_unrestricted_lock (7933224393323064116) -->
-    <skip />
+    <string name="global_action_unrestricted_lock" msgid="7933224393323064116">"பூட்டு"</string>
     <string name="status_bar_notification_info_overflow" msgid="3330152558746563475">"999+"</string>
     <string name="notification_compact_heads_up_reply" msgid="2425293958371284340">"பதிலளி"</string>
     <string name="notification_hidden_text" msgid="2835519769868187223">"புதிய அறிவிப்பு"</string>
@@ -693,6 +696,10 @@
     <string name="biometric_dialog_default_title" msgid="55026799173208210">"நீங்கள்தான் என உறுதிசெய்க"</string>
     <string name="biometric_dialog_default_subtitle" msgid="8457232339298571992">"தொடர உங்கள் பயோமெட்ரிக்கைப் பயன்படுத்துங்கள்"</string>
     <string name="biometric_or_screen_lock_dialog_default_subtitle" msgid="159539678371552009">"தொடர, உங்கள் பயோமெட்ரிக்கையோ திரைப் பூட்டையோ பயன்படுத்துங்கள்"</string>
+    <!-- no translation found for biometric_dialog_secondary_display_toast (256544327174107086) -->
+    <skip />
+    <!-- no translation found for biometric_dialog_secondary_display_toast (2855203015454795660) -->
+    <skip />
     <string name="biometric_error_hw_unavailable" msgid="2494077380540615216">"பயோமெட்ரிக் வன்பொருள் இல்லை"</string>
     <string name="biometric_error_user_canceled" msgid="6732303949695293730">"அங்கீகரிப்பு ரத்தானது"</string>
     <string name="biometric_not_recognized" msgid="5106687642694635888">"பொருந்தவில்லை"</string>

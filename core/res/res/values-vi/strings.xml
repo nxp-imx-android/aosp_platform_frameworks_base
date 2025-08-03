@@ -79,10 +79,14 @@
     <string name="page_size_compat_apk_and_elf_warning_4kb" msgid="997926487776340721">"Cảnh báo này xuất hiện vì ứng dụng có thể gỡ lỗi này đang trong giai đoạn thử nghiệm. Nếu bạn không phải là nhà phát triển, hãy báo cáo vấn đề này cho nhà phát triển và yêu cầu cung cấp một ứng dụng không thể gỡ lỗi. &lt;br&gt;&lt;br&gt; Ứng dụng này không tương thích với kích thước trang 16 KB. Không kiểm tra được cách căn chỉnh của tệp APK và tệp ELF. Vui lòng làm theo các bước trên &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;. &lt;br&gt;&lt;br&gt; Các thư viện sau đây không được căn chỉnh theo kích thước trang 16 KB: &lt;br&gt;&lt;br&gt;"</string>
     <string name="page_size_compat_never_show" msgid="3391282612422783097">"Không hiện lại"</string>
     <string name="page_size_compat_title" msgid="6497719153872572204">"Khả năng tương thích của ứng dụng Android"</string>
-    <string name="page_size_compat_elf_not_aligned" msgid="7940806102874132630">"&amp;#8226; %1$s: Phân đoạn TẢI không tương thích"</string>
-    <string name="page_size_compat_apk_not_aligned" msgid="8927901100655245528">"&amp;#8226; %1$s : Thư viện không nén không được căn chỉnh"</string>
-    <string name="page_size_compat_apk_and_elf_not_aligned" msgid="1010371834741548905">"&amp;#8226; %1$s : Phân đoạn TẢI và thư viện không nén không được căn chỉnh"</string>
-    <string name="page_size_compat_unknown" msgid="3254222165646410528">"&amp;#8226; %1$s : Lỗi không xác định"</string>
+    <!-- no translation found for page_size_compat_elf_not_aligned (4404128993555194313) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_not_aligned (1434875607880657092) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_and_elf_not_aligned (7140216083697701972) -->
+    <skip />
+    <!-- no translation found for page_size_compat_unknown (5183026525148169891) -->
+    <skip />
     <string name="serviceNotProvisioned" msgid="8289333510236766193">"Dịch vụ không được cấp phép."</string>
     <string name="CLIRPermanent" msgid="166443681876381118">"Bạn không thể thay đổi cài đặt ID người gọi."</string>
     <string name="auto_data_switch_title" msgid="3286350716870518297">"Đã chuyển dữ liệu sang <xliff:g id="CARRIERDISPLAY">%s</xliff:g>"</string>
@@ -300,8 +304,7 @@
     <string name="global_action_assist" msgid="2517047220311505805">"Hỗ trợ"</string>
     <string name="global_action_voice_assist" msgid="6655788068555086695">"Trợ lý thoại"</string>
     <string name="global_action_lockdown" msgid="2475471405907902963">"Khóa"</string>
-    <!-- no translation found for global_action_unrestricted_lock (7933224393323064116) -->
-    <skip />
+    <string name="global_action_unrestricted_lock" msgid="7933224393323064116">"Khoá"</string>
     <string name="status_bar_notification_info_overflow" msgid="3330152558746563475">"999+"</string>
     <string name="notification_compact_heads_up_reply" msgid="2425293958371284340">"Trả lời"</string>
     <string name="notification_hidden_text" msgid="2835519769868187223">"Thông báo mới"</string>
@@ -693,6 +696,10 @@
     <string name="biometric_dialog_default_title" msgid="55026799173208210">"Xác minh danh tính của bạn"</string>
     <string name="biometric_dialog_default_subtitle" msgid="8457232339298571992">"Dùng dữ liệu sinh trắc học của bạn để tiếp tục"</string>
     <string name="biometric_or_screen_lock_dialog_default_subtitle" msgid="159539678371552009">"Dùng dữ liệu sinh trắc học của bạn hoặc phương thức khóa màn hình để tiếp tục"</string>
+    <!-- no translation found for biometric_dialog_secondary_display_toast (256544327174107086) -->
+    <skip />
+    <!-- no translation found for biometric_dialog_secondary_display_toast (2855203015454795660) -->
+    <skip />
     <string name="biometric_error_hw_unavailable" msgid="2494077380540615216">"Không có phần cứng sinh trắc học"</string>
     <string name="biometric_error_user_canceled" msgid="6732303949695293730">"Đã hủy xác thực"</string>
     <string name="biometric_not_recognized" msgid="5106687642694635888">"Không nhận dạng được"</string>

@@ -79,10 +79,14 @@
     <string name="page_size_compat_apk_and_elf_warning_4kb" msgid="997926487776340721">"നിലവിൽ ടെസ്റ്റ് ചെയ്തുകൊണ്ടിരിക്കുന്ന, ഡീബഗ് ചെയ്യാവുന്ന ഒരു ആപ്പ് ആയതിനാലാണ് ഈ മുന്നറിയിപ്പ് കാണിക്കുന്നത്. ഡെവലപ്പർ നിങ്ങളല്ലെങ്കിൽ, ഇത് ഡെവലപ്പർക്ക് റിപ്പോർട്ട് ചെയ്ത് ഡീബഗ് ചെയ്യാനാവാത്ത ഒരു ആപ്പ് ആവശ്യപ്പെടുക. &lt;br&gt;&lt;br&gt; ഈ ആപ്പ് 16 KB-ക്ക് അനുയോജ്യമല്ല. APK, ELF അലൈൻമെന്റ് പരിശോധനകൾ നടത്താനായില്ല. &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; എന്നതിലെ ഘട്ടങ്ങൾ പിന്തുടരുക. &lt;br&gt;&lt;br&gt; ഇനിപ്പറയുന്ന ലൈബ്രറികൾ 16 KB അലൈൻ ചെയ്തിട്ടില്ല: &lt;br&gt;&lt;br&gt;"</string>
     <string name="page_size_compat_never_show" msgid="3391282612422783097">"വീണ്ടും കാണിക്കരുത്"</string>
     <string name="page_size_compat_title" msgid="6497719153872572204">"Android ആപ്പിന്റെ അനുയോജ്യത"</string>
-    <string name="page_size_compat_elf_not_aligned" msgid="7940806102874132630">"&amp;#8226; %1$s : LOAD സെഗ്മെന്റ് അലൈൻ ചെയ്തിട്ടില്ല"</string>
-    <string name="page_size_compat_apk_not_aligned" msgid="8927901100655245528">"&amp;#8226; %1$s : കംപ്രസ് ചെയ്യാത്ത ലൈബ്രറി അലൈൻ ചെയ്തിട്ടില്ല"</string>
-    <string name="page_size_compat_apk_and_elf_not_aligned" msgid="1010371834741548905">"&amp;#8226; %1$s : LOAD സെഗ്മെന്റും കംപ്രസ് ചെയ്യാത്ത ലൈബ്രറിയും അലൈൻ ചെയ്തിട്ടില്ല"</string>
-    <string name="page_size_compat_unknown" msgid="3254222165646410528">"&amp;#8226; %1$s : അജ്ഞാത പിശക്"</string>
+    <!-- no translation found for page_size_compat_elf_not_aligned (4404128993555194313) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_not_aligned (1434875607880657092) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_and_elf_not_aligned (7140216083697701972) -->
+    <skip />
+    <!-- no translation found for page_size_compat_unknown (5183026525148169891) -->
+    <skip />
     <string name="serviceNotProvisioned" msgid="8289333510236766193">"സേവനം വ്യവസ്ഥ ചെയ്‌തിട്ടില്ല."</string>
     <string name="CLIRPermanent" msgid="166443681876381118">"വിളിച്ച നമ്പർ ക്രമീകരണം നിങ്ങൾക്ക് മാറ്റാനാവില്ല."</string>
     <string name="auto_data_switch_title" msgid="3286350716870518297">"<xliff:g id="CARRIERDISPLAY">%s</xliff:g> എന്നതിലേക്ക് ഡാറ്റ മാറ്റി"</string>
@@ -692,6 +696,10 @@
     <string name="biometric_dialog_default_title" msgid="55026799173208210">"ഇത് നിങ്ങളാണെന്ന് പരിശോധിച്ചുറപ്പിക്കുക"</string>
     <string name="biometric_dialog_default_subtitle" msgid="8457232339298571992">"തുടരാൻ ബയോമെട്രിക് ഉപയോഗിക്കുക"</string>
     <string name="biometric_or_screen_lock_dialog_default_subtitle" msgid="159539678371552009">"തുടരാൻ നിങ്ങളുടെ ബയോമെട്രിക്‌ അല്ലെങ്കിൽ സ്‌ക്രീൻ ലോക്ക് ഉപയോഗിക്കുക"</string>
+    <!-- no translation found for biometric_dialog_secondary_display_toast (256544327174107086) -->
+    <skip />
+    <!-- no translation found for biometric_dialog_secondary_display_toast (2855203015454795660) -->
+    <skip />
     <string name="biometric_error_hw_unavailable" msgid="2494077380540615216">"ബയോമെട്രിക് ഹാർ‌ഡ്‌വെയർ ലഭ്യമല്ല"</string>
     <string name="biometric_error_user_canceled" msgid="6732303949695293730">"പരിശോധിച്ചുറപ്പിക്കൽ റദ്ദാക്കി"</string>
     <string name="biometric_not_recognized" msgid="5106687642694635888">"തിരിച്ചറിഞ്ഞില്ല"</string>

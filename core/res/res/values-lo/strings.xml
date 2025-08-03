@@ -79,10 +79,14 @@
     <string name="page_size_compat_apk_and_elf_warning_4kb" msgid="997926487776340721">"ສະແດງຄຳເຕືອນນີ້ເນື່ອງຈາກນີ້ແມ່ນແອັບທີ່ສາມາດດີບັກໄດ້ເຊິ່ງກຳລັງທົດສອບຢູ່ໃນຕອນນີ້. ຫາກທ່ານບໍ່ແມ່ນນັກພັດທະນາແອັບ, ກະລຸນາລາຍງານບັນຫານີ້ໃຫ້ນັກພັດທະນາແອັບຮູ້ ແລະ ຂໍແອັບທີ່ບໍ່ສາມາດດີບັກໄດ້. &lt;br&gt;&lt;br&gt; ແອັບນີ້ບໍ່ຮອງຮັບຂະໜາດໜ້າ 16 KB. ຜົນການກວດສອບການຈັດຕຳແໜ່ງ APK ແລະ ELF ແມ່ນບໍ່ຜ່ານ. ກະລຸນາປະຕິບັດຕາມຂັ້ນຕອນໃນ &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;. &lt;br&gt;&lt;br&gt; ຫ້ອງສະໝຸດຕໍ່ໄປນີ້ບໍ່ໄດ້ຈັດວາງຂະໜາດ 16 KB: &lt;br&gt;&lt;br&gt;"</string>
     <string name="page_size_compat_never_show" msgid="3391282612422783097">"ຢ່າສະແດງອີກ"</string>
     <string name="page_size_compat_title" msgid="6497719153872572204">"ຄວາມເຂົ້າກັນໄດ້ຂອງແອັບ Android"</string>
-    <string name="page_size_compat_elf_not_aligned" msgid="7940806102874132630">"&amp;#8226; %1$s : ພາກສ່ວນໂຫຼດທີ່ບໍ່ກົງກັນ"</string>
-    <string name="page_size_compat_apk_not_aligned" msgid="8927901100655245528">"&amp;#8226; %1$s : ຫ້ອງສະໝຸດທີ່ບໍ່ໄດ້ບີບອັດທີ່ບໍ່ກົງກັນ"</string>
-    <string name="page_size_compat_apk_and_elf_not_aligned" msgid="1010371834741548905">"&amp;#8226; %1$s : ພາກສ່ວນໂຫຼດ ແລະ ຫ້ອງສະໝຸດທີ່ບໍ່ໄດ້ບີບອັດບໍ່ກົງກັນ"</string>
-    <string name="page_size_compat_unknown" msgid="3254222165646410528">"&amp;#8226; %1$s : ຂໍ້ຜິດພາດທີ່ບໍ່ຮູ້ຈັກ"</string>
+    <!-- no translation found for page_size_compat_elf_not_aligned (4404128993555194313) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_not_aligned (1434875607880657092) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_and_elf_not_aligned (7140216083697701972) -->
+    <skip />
+    <!-- no translation found for page_size_compat_unknown (5183026525148169891) -->
+    <skip />
     <string name="serviceNotProvisioned" msgid="8289333510236766193">"ບໍ່ໄດ້ເປີດໃຊ້ບໍລິການ."</string>
     <string name="CLIRPermanent" msgid="166443681876381118">"ທ່ານບໍ່ສາມາດປ່ຽນແປງການຕັ້ງຄ່າ Caller ID"</string>
     <string name="auto_data_switch_title" msgid="3286350716870518297">"ປ່ຽນໄປໃຊ້ອິນເຕີເນັດມືຖືຂອງ <xliff:g id="CARRIERDISPLAY">%s</xliff:g> ແລ້ວ"</string>
@@ -692,6 +696,10 @@
     <string name="biometric_dialog_default_title" msgid="55026799173208210">"ຢັ້ງຢືນວ່າແມ່ນທ່ານ"</string>
     <string name="biometric_dialog_default_subtitle" msgid="8457232339298571992">"ໃຊ້ລະບົບຊີວະມິຕິຂອງທ່ານເພື່ອດຳເນີນການຕໍ່"</string>
     <string name="biometric_or_screen_lock_dialog_default_subtitle" msgid="159539678371552009">"ໃຊ້ລະບົບຊີວະມິຕິ ຫຼື ການລັອກໜ້າຈໍຂອງທ່ານເພື່ອດຳເນີນການຕໍ່"</string>
+    <!-- no translation found for biometric_dialog_secondary_display_toast (256544327174107086) -->
+    <skip />
+    <!-- no translation found for biometric_dialog_secondary_display_toast (2855203015454795660) -->
+    <skip />
     <string name="biometric_error_hw_unavailable" msgid="2494077380540615216">"ຮາດແວຊີວະມິຕິບໍ່ສາມາດໃຊ້ໄດ້"</string>
     <string name="biometric_error_user_canceled" msgid="6732303949695293730">"ຍົກເລີກການຮັບຮອງຄວາມຖືກຕ້ອງແລ້ວ"</string>
     <string name="biometric_not_recognized" msgid="5106687642694635888">"ບໍ່ຮັບຮູ້"</string>

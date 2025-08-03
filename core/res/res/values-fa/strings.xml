@@ -79,10 +79,14 @@
     <string name="page_size_compat_apk_and_elf_warning_4kb" msgid="997926487776340721">"‏این هشدار به‌دلیل قابل‌اشکال‌زدایی بودن برنامه‌ای که درحال آزمایش شدن است نشان داده می‌شود. اگر شما توسعه‌دهنده نیستید، لطفاً این موضوع را به توسعه‌دهنده گزارش کنید و یک برنامه غیرقابل‌اشکال‌زدایی درخواست کنید. &lt;br&gt;&lt;br&gt; این برنامه با اندازه صفحه ۱۶ کیلوبایتی سازگار نیست. بررسی‌های تراز APK و ELF ناموفق بود. لطفاً مراحل ارائه‌شده در &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; را دنبال کنید. &lt;br&gt;&lt;br&gt; کتابخانه‌های زیر با اندازه صفحه ۱۶ کیلوبایتی تراز نیستند: &lt;br&gt;&lt;br&gt;"</string>
     <string name="page_size_compat_never_show" msgid="3391282612422783097">"دوباره نشان داده نشود"</string>
     <string name="page_size_compat_title" msgid="6497719153872572204">"‏سازگاری برنامه Android"</string>
-    <string name="page_size_compat_elf_not_aligned" msgid="7940806102874132630">"‏&amp;#8226;‫ %1$s : بخش «بار کردن» تراز نیست"</string>
-    <string name="page_size_compat_apk_not_aligned" msgid="8927901100655245528">"‏&amp;#8226;‫ %1$s : کتابخانه فشرده‌نشده تراز نیست"</string>
-    <string name="page_size_compat_apk_and_elf_not_aligned" msgid="1010371834741548905">"‏&amp;#8226;‫ %1$s : بخش «بار کردن» و کتابخانه فشرده‌نشده تراز نیستند"</string>
-    <string name="page_size_compat_unknown" msgid="3254222165646410528">"‏&amp;#8226;‫ %1$s : خطای نامشخص"</string>
+    <!-- no translation found for page_size_compat_elf_not_aligned (4404128993555194313) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_not_aligned (1434875607880657092) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_and_elf_not_aligned (7140216083697701972) -->
+    <skip />
+    <!-- no translation found for page_size_compat_unknown (5183026525148169891) -->
+    <skip />
     <string name="serviceNotProvisioned" msgid="8289333510236766193">"سرویس دارای مجوز نیست."</string>
     <string name="CLIRPermanent" msgid="166443681876381118">"‏شما می‎توانید تنظیم شناسه تماس‌گیرنده را تغییر دهید."</string>
     <string name="auto_data_switch_title" msgid="3286350716870518297">"داده به <xliff:g id="CARRIERDISPLAY">%s</xliff:g> تغییر کرد"</string>
@@ -300,8 +304,7 @@
     <string name="global_action_assist" msgid="2517047220311505805">"دستیار"</string>
     <string name="global_action_voice_assist" msgid="6655788068555086695">"دستیار صوتی"</string>
     <string name="global_action_lockdown" msgid="2475471405907902963">"قفل همه"</string>
-    <!-- no translation found for global_action_unrestricted_lock (7933224393323064116) -->
-    <skip />
+    <string name="global_action_unrestricted_lock" msgid="7933224393323064116">"قفل کردن"</string>
     <string name="status_bar_notification_info_overflow" msgid="3330152558746563475">"۹۹۹+"</string>
     <string name="notification_compact_heads_up_reply" msgid="2425293958371284340">"پاسخ دادن"</string>
     <string name="notification_hidden_text" msgid="2835519769868187223">"اعلان جدید"</string>
@@ -693,6 +696,10 @@
     <string name="biometric_dialog_default_title" msgid="55026799173208210">"هویتتان را درستی‌سنجی کنید"</string>
     <string name="biometric_dialog_default_subtitle" msgid="8457232339298571992">"برای ادامه، از زیست‌سنجشی استفاده کنید"</string>
     <string name="biometric_or_screen_lock_dialog_default_subtitle" msgid="159539678371552009">"برای ادامه، از زیست‌سنجشی یا قفل صفحه استفاده کنید"</string>
+    <!-- no translation found for biometric_dialog_secondary_display_toast (256544327174107086) -->
+    <skip />
+    <!-- no translation found for biometric_dialog_secondary_display_toast (2855203015454795660) -->
+    <skip />
     <string name="biometric_error_hw_unavailable" msgid="2494077380540615216">"سخت‌افزار زیست‌سنجی دردسترس نیست"</string>
     <string name="biometric_error_user_canceled" msgid="6732303949695293730">"اصالت‌سنجی لغو شد"</string>
     <string name="biometric_not_recognized" msgid="5106687642694635888">"شناسایی نشد"</string>

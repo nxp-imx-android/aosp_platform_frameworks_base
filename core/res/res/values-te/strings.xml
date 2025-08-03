@@ -79,10 +79,14 @@
     <string name="page_size_compat_apk_and_elf_warning_4kb" msgid="997926487776340721">"ఇది డీబగ్ చేయగల యాప్ కాబట్టి ఈ హెచ్చరిక చూపబడుతోంది, ఇది ప్రస్తుతం టెస్ట్ చేయబడుతోంది. మీరు డెవలపర్ కాకపోతే, దయచేసి దీని గురించి డెవలపర్‌కు రిపోర్ట్ చేసి, డీబగ్ చేయడం వీలుకాని యాప్‌ను అందించమని అడగండి. &lt;br&gt;&lt;br&gt; ఈ యాప్ 16 KBకి అనుగుణంగా లేదు. APK, ELF అమరిక చెకప్ దశలు విఫలమయ్యాయి. దయచేసి &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; లింక్‌లో దశలను ఫాలో అవ్వండి. &lt;br&gt;&lt;br&gt; కింది లైబ్రరీలు 16 KBకి అనుగుణంగా లేవు: &lt;br&gt;&lt;br&gt;"</string>
     <string name="page_size_compat_never_show" msgid="3391282612422783097">"మళ్లీ చూపవద్దు"</string>
     <string name="page_size_compat_title" msgid="6497719153872572204">"Android యాప్ అనుకూలత"</string>
-    <string name="page_size_compat_elf_not_aligned" msgid="7940806102874132630">"&amp;#8226; %1$s : LOAD విభాగం అలైన్ కాలేదు"</string>
-    <string name="page_size_compat_apk_not_aligned" msgid="8927901100655245528">"&amp;#8226; %1$s : కంప్రెస్ చేయని లైబ్రరీ అలైన్ కాలేదు"</string>
-    <string name="page_size_compat_apk_and_elf_not_aligned" msgid="1010371834741548905">"&amp;#8226; %1$s : LOAD విభాగం, కంప్రెస్ చేయని లైబ్రరీ అలైన్ కాలేదు"</string>
-    <string name="page_size_compat_unknown" msgid="3254222165646410528">"&amp;#8226; %1$s : తెలియని ఎర్రర్"</string>
+    <!-- no translation found for page_size_compat_elf_not_aligned (4404128993555194313) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_not_aligned (1434875607880657092) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_and_elf_not_aligned (7140216083697701972) -->
+    <skip />
+    <!-- no translation found for page_size_compat_unknown (5183026525148169891) -->
+    <skip />
     <string name="serviceNotProvisioned" msgid="8289333510236766193">"సేవ కేటాయించబడలేదు."</string>
     <string name="CLIRPermanent" msgid="166443681876381118">"మీరు కాలర్ ID సెట్టింగ్‌ను మార్చలేరు."</string>
     <string name="auto_data_switch_title" msgid="3286350716870518297">"డేటాను <xliff:g id="CARRIERDISPLAY">%s</xliff:g>కు స్విచ్ చేశారు"</string>
@@ -692,6 +696,10 @@
     <string name="biometric_dialog_default_title" msgid="55026799173208210">"ఈ చర్య చేస్తోంది మీరేనని వెరిఫై చేయండి"</string>
     <string name="biometric_dialog_default_subtitle" msgid="8457232339298571992">"కొనసాగించడానికి, మీ బయోమెట్రిక్‌ను ఉపయోగించండి"</string>
     <string name="biometric_or_screen_lock_dialog_default_subtitle" msgid="159539678371552009">"కొనసాగించడానికి మీ బయోమెట్రిక్ లేదా స్క్రీన్ లాక్‌ను ఉపయోగించండి"</string>
+    <!-- no translation found for biometric_dialog_secondary_display_toast (256544327174107086) -->
+    <skip />
+    <!-- no translation found for biometric_dialog_secondary_display_toast (2855203015454795660) -->
+    <skip />
     <string name="biometric_error_hw_unavailable" msgid="2494077380540615216">"బయోమెట్రిక్ హార్డ్‌వేర్‌ అందుబాటులో లేదు"</string>
     <string name="biometric_error_user_canceled" msgid="6732303949695293730">"ప్రమాణీకరణ రద్దు చేయబడింది"</string>
     <string name="biometric_not_recognized" msgid="5106687642694635888">"గుర్తించలేదు"</string>

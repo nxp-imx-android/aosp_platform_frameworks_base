@@ -80,10 +80,14 @@
     <string name="page_size_compat_apk_and_elf_warning_4kb" msgid="997926487776340721">"Esta advertencia se muestra porque se trata de una aplicación depurable en proceso de pruebas. Si no has desarrollado la aplicación tú, informa a quien lo haya hecho de este problema y pídele que cree una aplicación que no se pueda depurar. &lt;br&gt;&lt;br&gt; Esta aplicación no es compatible con el tamaño de página de 16 kB. No se han podido comprobar las alineaciones del APK y ELF. Sigue los pasos que se indican en &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;. &lt;br&gt;&lt;br&gt; Las siguientes bibliotecas no están alineadas con el tamaño de página de 16 kB: &lt;br&gt;&lt;br&gt;"</string>
     <string name="page_size_compat_never_show" msgid="3391282612422783097">"No volver a mostrar"</string>
     <string name="page_size_compat_title" msgid="6497719153872572204">"Compatibilidad con aplicaciones Android"</string>
-    <string name="page_size_compat_elf_not_aligned" msgid="7940806102874132630">"&amp;#8226; %1$s : el segmento LOAD no está alineado"</string>
-    <string name="page_size_compat_apk_not_aligned" msgid="8927901100655245528">"&amp;#8226; %1$s : la biblioteca no comprimida no está alineada"</string>
-    <string name="page_size_compat_apk_and_elf_not_aligned" msgid="1010371834741548905">"&amp;#8226; %1$s : el segmento LOAD y la biblioteca no comprimida no están alineados"</string>
-    <string name="page_size_compat_unknown" msgid="3254222165646410528">"&amp;#8226; %1$s : error desconocido"</string>
+    <!-- no translation found for page_size_compat_elf_not_aligned (4404128993555194313) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_not_aligned (1434875607880657092) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_and_elf_not_aligned (7140216083697701972) -->
+    <skip />
+    <!-- no translation found for page_size_compat_unknown (5183026525148169891) -->
+    <skip />
     <string name="serviceNotProvisioned" msgid="8289333510236766193">"El servicio no se suministra."</string>
     <string name="CLIRPermanent" msgid="166443681876381118">"No puedes modificar la identificación de emisor."</string>
     <string name="auto_data_switch_title" msgid="3286350716870518297">"Datos cambiados a <xliff:g id="CARRIERDISPLAY">%s</xliff:g>"</string>
@@ -693,6 +697,10 @@
     <string name="biometric_dialog_default_title" msgid="55026799173208210">"Verifica que eres tú"</string>
     <string name="biometric_dialog_default_subtitle" msgid="8457232339298571992">"Usa tu biometría para continuar"</string>
     <string name="biometric_or_screen_lock_dialog_default_subtitle" msgid="159539678371552009">"Usa la biometría o tu bloqueo de pantalla para continuar"</string>
+    <!-- no translation found for biometric_dialog_secondary_display_toast (256544327174107086) -->
+    <skip />
+    <!-- no translation found for biometric_dialog_secondary_display_toast (2855203015454795660) -->
+    <skip />
     <string name="biometric_error_hw_unavailable" msgid="2494077380540615216">"Hardware biométrico no disponible"</string>
     <string name="biometric_error_user_canceled" msgid="6732303949695293730">"Autenticación cancelada"</string>
     <string name="biometric_not_recognized" msgid="5106687642694635888">"No se reconoce"</string>

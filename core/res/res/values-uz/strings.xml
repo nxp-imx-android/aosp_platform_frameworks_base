@@ -79,10 +79,10 @@
     <string name="page_size_compat_apk_and_elf_warning_4kb" msgid="997926487776340721">"Bu hozirda sinovdan oʻtkazilayotgan nosozliklari aniqlanadigan ilova boʻlgani sababli ushbu ogohlantirish chiqmoqda. Agar dastur ishlab chiquvchi boʻlmasangiz, bu haqda ishlab chiquvchiga xabar berib, nosozliklari aniqlanmaydigan ilovani talab qiling. &lt;br&gt;&lt;br&gt; Bu ilova 16 KB hajm bilan muvofiq emas. APK va ELF fayllardagi maʼlumotlarning tekislanishi tekshirilmadi. Bu yerdagi qadamlarni bajaring: &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;. &lt;br&gt;&lt;br&gt; Quyidagi kutubxonalar 16 KB qilib moslanmagan: &lt;br&gt;&lt;br&gt;"</string>
     <string name="page_size_compat_never_show" msgid="3391282612422783097">"Boshqa chiqmasin"</string>
     <string name="page_size_compat_title" msgid="6497719153872572204">"Android ilovalarining mosligi"</string>
-    <string name="page_size_compat_elf_not_aligned" msgid="7940806102874132630">"&amp;#8226; %1$s : LOAD segmenti tekislanmagan"</string>
-    <string name="page_size_compat_apk_not_aligned" msgid="8927901100655245528">"&amp;#8226; %1$s : Siqilmagan kutubxona tekislanmagan"</string>
-    <string name="page_size_compat_apk_and_elf_not_aligned" msgid="1010371834741548905">"&amp;#8226; %1$s : LOAD segmenti va siqilmagan kutubxona tekislanmagan"</string>
-    <string name="page_size_compat_unknown" msgid="3254222165646410528">"&amp;#8226; %1$s : Notanish xato"</string>
+    <string name="page_size_compat_elf_not_aligned" msgid="4404128993555194313">"&amp;#8226; %1$s : LOAD segmenti tekislanmagan&lt;br&gt;"</string>
+    <string name="page_size_compat_apk_not_aligned" msgid="1434875607880657092">"&amp;#8226; %1$s : Siqilmagan kutubxona tekislanmagan&lt;br&gt;"</string>
+    <string name="page_size_compat_apk_and_elf_not_aligned" msgid="7140216083697701972">"&amp;#8226; %1$s : LOAD segmenti va siqilmagan kutubxona tekislanmagan&lt;br&gt;"</string>
+    <string name="page_size_compat_unknown" msgid="5183026525148169891">"&amp;#8226; %1$s : Notanish xato&lt;br&gt;"</string>
     <string name="serviceNotProvisioned" msgid="8289333510236766193">"Xizmat ishalamaydi."</string>
     <string name="CLIRPermanent" msgid="166443681876381118">"Qo‘ng‘iroq qiluvchining ID raqami sozlamasini o‘zgartirib bo‘lmaydi."</string>
     <string name="auto_data_switch_title" msgid="3286350716870518297">"Internet <xliff:g id="CARRIERDISPLAY">%s</xliff:g> operatoriga almashtirildi"</string>
@@ -692,6 +692,10 @@
     <string name="biometric_dialog_default_title" msgid="55026799173208210">"Oʻzingizni taniting"</string>
     <string name="biometric_dialog_default_subtitle" msgid="8457232339298571992">"Davom etish uchun biometrik tasdiqlang"</string>
     <string name="biometric_or_screen_lock_dialog_default_subtitle" msgid="159539678371552009">"Davom etish uchun biometrika yoki ekran qulfidan foydalaning"</string>
+    <!-- no translation found for biometric_dialog_secondary_display_toast (256544327174107086) -->
+    <skip />
+    <!-- no translation found for biometric_dialog_secondary_display_toast (2855203015454795660) -->
+    <skip />
     <string name="biometric_error_hw_unavailable" msgid="2494077380540615216">"Biometrik sensor ishlamayapti"</string>
     <string name="biometric_error_user_canceled" msgid="6732303949695293730">"Autentifikatsiya bekor qilindi"</string>
     <string name="biometric_not_recognized" msgid="5106687642694635888">"Aniqlanmadi"</string>
