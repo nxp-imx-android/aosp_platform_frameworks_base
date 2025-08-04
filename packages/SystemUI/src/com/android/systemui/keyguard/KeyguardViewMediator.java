@@ -3199,8 +3199,9 @@ public class KeyguardViewMediator implements CoreStartable,
                         return;
                     }
                     if (ENABLE_NEW_KEYGUARD_SHELL_TRANSITIONS) {
-                        startKeyguardTransition(
-                                false /* keyguardShowing */, false /* aodShowing */);
+                        // New keyguard transition doesn't have going away state, set the showing
+                        // state directly to avoid state mismatch.
+                        setShowingLocked(false, "Going away with new transition");
                         return;
                     }
                     try {
