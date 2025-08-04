@@ -60,6 +60,7 @@ import org.junit.Before
 import org.junit.runner.RunWith
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
+import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 
 @SmallTest
@@ -183,6 +184,26 @@ class ActionCornerInteractorTest : SysuiTestCase() {
 
         actionCornerRepository.addState(ActiveActionCorner(BOTTOM_LEFT, DEFAULT_DISPLAY))
         verify(launcherProxyService, never()).onActionCornerActivated(OVERVIEW, DEFAULT_DISPLAY)
+    }
+
+    @Test
+    fun activeActionCorner_lockscreen_actionNotReTriggeredAfterUnlock() = unlockScreenAndRunTest {
+        settingsRepository.setInt(ACTION_CORNER_BOTTOM_LEFT_ACTION, ACTION_CORNER_ACTION_OVERVIEW)
+        actionCornerRepository.addState(ActiveActionCorner(BOTTOM_LEFT, DEFAULT_DISPLAY))
+
+        setTransition(
+            sceneTransition = Idle(Scenes.Lockscreen),
+            stateTransition =
+                TransitionStep(from = KeyguardState.GONE, to = KeyguardState.LOCKSCREEN),
+        )
+        setTransition(
+            sceneTransition = Idle(Scenes.Gone),
+            stateTransition =
+                TransitionStep(from = KeyguardState.LOCKSCREEN, to = KeyguardState.GONE),
+        )
+        actionCornerRepository.addState(ActiveActionCorner(BOTTOM_LEFT, DEFAULT_DISPLAY))
+
+        verify(launcherProxyService, times(1)).onActionCornerActivated(OVERVIEW, DEFAULT_DISPLAY)
     }
 
     private fun unlockScreenAndRunTest(testBody: suspend Kosmos.() -> Unit) =
