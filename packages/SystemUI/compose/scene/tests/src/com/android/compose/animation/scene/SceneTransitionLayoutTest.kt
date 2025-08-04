@@ -598,28 +598,29 @@ class SceneTransitionLayoutTest {
         val scope =
             rule.setContentAndCreateMainScope {
                 SceneTransitionLayoutForTesting(state) {
-                    scene(SceneA) { Box(Modifier.element(TestElements.Foo).size(20.dp)) }
-                    scene(SceneB, alwaysCompose = true) {
-                        Box(Modifier.element(TestElements.Bar).size(40.dp))
-                    }
+                    scene(SceneA) { Box(Modifier.testTag("foo").size(20.dp)) }
+                    scene(SceneB, alwaysCompose = true) { Box(Modifier.testTag("bar").size(40.dp)) }
                 }
             }
 
+        val foo = hasTestTag("foo")
+        val bar = hasTestTag("bar")
+
         // Idle(A): Foo is displayed and Bar exists given that SceneB is always composed but it is
         // not displayed.
-        rule.onNode(isElement(TestElements.Foo)).assertIsDisplayed().assertSizeIsEqualTo(20.dp)
-        rule.onNode(isElement(TestElements.Bar)).assertExists().assertIsNotDisplayed()
+        rule.onNode(foo).assertIsDisplayed().assertSizeIsEqualTo(20.dp)
+        rule.onNode(bar).assertExists().assertIsNotDisplayed()
 
         // Transition(A => B): Foo and Bar are both displayed
         val aToB = transition(SceneA, SceneB)
         scope.launch { state.startTransition(aToB) }
-        rule.onNode(isElement(TestElements.Foo)).assertIsDisplayed().assertSizeIsEqualTo(20.dp)
-        rule.onNode(isElement(TestElements.Bar)).assertIsDisplayed().assertSizeIsEqualTo(40.dp)
+        rule.onNode(foo).assertIsDisplayed().assertSizeIsEqualTo(20.dp)
+        rule.onNode(bar).assertIsDisplayed().assertSizeIsEqualTo(40.dp)
 
         // Idle(B): Foo does not exist and Bar is displayed.
         aToB.finish()
-        rule.onNode(isElement(TestElements.Foo)).assertDoesNotExist()
-        rule.onNode(isElement(TestElements.Bar)).assertIsDisplayed().assertSizeIsEqualTo(40.dp)
+        rule.onNode(foo).assertDoesNotExist()
+        rule.onNode(bar).assertIsDisplayed().assertSizeIsEqualTo(40.dp)
     }
 
     @Test
@@ -628,33 +629,36 @@ class SceneTransitionLayoutTest {
         val scope =
             rule.setContentAndCreateMainScope {
                 SceneTransitionLayoutForTesting(state) {
-                    scene(SceneA) { Box(Modifier.element(TestElements.Foo).size(40.dp)) }
+                    scene(SceneA) { Box(Modifier.testTag("foo").size(40.dp)) }
                     overlay(OverlayA, alwaysCompose = true) {
-                        Box(Modifier.element(TestElements.Bar).size(20.dp))
+                        Box(Modifier.testTag("bar").size(20.dp))
                     }
                 }
             }
 
+        val foo = hasTestTag("foo")
+        val bar = hasTestTag("bar")
+
         // Overlay hidden: Foo is displayed and Bar exists given that OverlayA is always composed
         // but it is not displayed.
-        rule.onNode(isElement(TestElements.Foo)).assertIsDisplayed().assertSizeIsEqualTo(40.dp)
-        rule.onNode(isElement(TestElements.Bar)).assertExists().assertIsNotDisplayed()
+        rule.onNode(foo).assertIsDisplayed().assertSizeIsEqualTo(40.dp)
+        rule.onNode(bar).assertExists().assertIsNotDisplayed()
 
         // Show overlay: Foo and Bar are both displayed.
         val aToB = transition(SceneA, OverlayA)
         scope.launch { state.startTransition(aToB) }
-        rule.onNode(isElement(TestElements.Foo)).assertIsDisplayed().assertSizeIsEqualTo(40.dp)
-        rule.onNode(isElement(TestElements.Bar)).assertIsDisplayed().assertSizeIsEqualTo(20.dp)
+        rule.onNode(foo).assertIsDisplayed().assertSizeIsEqualTo(40.dp)
+        rule.onNode(bar).assertIsDisplayed().assertSizeIsEqualTo(20.dp)
 
         // Overlay shown: Foo and Bar are both displayed.
         aToB.finish()
-        rule.onNode(isElement(TestElements.Foo)).assertIsDisplayed().assertSizeIsEqualTo(40.dp)
-        rule.onNode(isElement(TestElements.Bar)).assertIsDisplayed().assertSizeIsEqualTo(20.dp)
+        rule.onNode(foo).assertIsDisplayed().assertSizeIsEqualTo(40.dp)
+        rule.onNode(bar).assertIsDisplayed().assertSizeIsEqualTo(20.dp)
 
         // Overlay hidden: Foo is displayed and Bar exists.
         scope.launch { state.snapTo(state.currentScene, overlays = emptySet()) }
-        rule.onNode(isElement(TestElements.Foo)).assertIsDisplayed().assertSizeIsEqualTo(40.dp)
-        rule.onNode(isElement(TestElements.Bar)).assertExists().assertIsNotDisplayed()
+        rule.onNode(foo).assertIsDisplayed().assertSizeIsEqualTo(40.dp)
+        rule.onNode(bar).assertExists().assertIsNotDisplayed()
     }
 
     @Test
