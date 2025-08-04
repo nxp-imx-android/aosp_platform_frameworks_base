@@ -683,8 +683,8 @@ class AnrTimerService {
     // A notifier is called with a timer ID, the timer's tag, and the client's cookie.  The pid
     // and uid that were originally assigned to the timer are passed as well.  The elapsed time
     // is the time since the timer was scheduled.
-    using notifier_t = bool (*)(timer_id_t, int pid, int uid, nsecs_t elapsed, void* cookie,
-                                jweak object, bool expired, uint32_t token);
+    using notifier_t = bool (*)(timer_id_t, int pid, int uid, nsecs_t started, nsecs_t elapsed,
+                                void* cookie, jweak object, bool expired, uint32_t token);
 
     enum Status {
         Invalid,
@@ -1415,6 +1415,7 @@ void AnrTimerService::expire(timer_id_t timerId) {
     // Save the timer attributes for the notification
     int pid = 0;
     int uid = 0;
+    nsecs_t started = 0;
     nsecs_t elapsed = 0;
     SplitPoint meta;
     bool expired = false;
@@ -1435,6 +1436,7 @@ void AnrTimerService::expire(timer_id_t timerId) {
         }
         pid = t.pid;
         uid = t.uid;
+        started = t.started;
         elapsed = now() - t.started;
     }
 
@@ -1446,8 +1448,8 @@ void AnrTimerService::expire(timer_id_t timerId) {
 
     // Deliver the notification outside of the lock.
     if (meta.action == SplitAction::Expire || meta.action == SplitAction::EarlyNotify) {
-        if (!notifier_(timerId, pid, uid, elapsed, notifierCookie_, notifierObject_, expired,
-                       meta.token)) {
+        if (!notifier_(timerId, pid, uid, started, elapsed, notifierCookie_, notifierObject_,
+                       expired, meta.token)) {
             // Notification failed, which means the listener will never call accept() or
             // discard().  Do not reinsert the timer.
             discard(timerId);
@@ -1530,8 +1532,8 @@ struct AnrArgs {
 static AnrArgs gAnrArgs;
 
 // The cookie is the address of the AnrArgs object to which the notification should be sent.
-static bool anrNotify(AnrTimerService::timer_id_t timerId, int pid, int uid, nsecs_t elapsed,
-                      void* cookie, jweak jtimer, bool expired, uint32_t token) {
+static bool anrNotify(AnrTimerService::timer_id_t timerId, int pid, int uid, nsecs_t started,
+                      nsecs_t elapsed, void* cookie, jweak jtimer, bool expired, uint32_t token) {
     AutoMutex _l(gAnrLock);
     AnrArgs* target = reinterpret_cast<AnrArgs* >(cookie);
     JNIEnv *env;
@@ -1543,7 +1545,8 @@ static bool anrNotify(AnrTimerService::timer_id_t timerId, int pid, int uid, nse
     jobject timer = env->NewGlobalRef(jtimer);
     if (timer != nullptr) {
         if (expired) {
-            r = env->CallBooleanMethod(timer, target->func, timerId, pid, uid, ns2ms(elapsed));
+            r = env->CallBooleanMethod(timer, target->func, timerId, pid, uid, ns2ms(started),
+                                       ns2ms(elapsed));
         } else {
             env->CallVoidMethod(timer, target->funcEarly, timerId, pid, uid, ns2ms(elapsed), token);
             r = true;
@@ -1694,7 +1697,7 @@ int register_android_server_utils_AnrTimer(JNIEnv* env)
 
     jclass service = FindClassOrDie(env, className);
     gAnrArgs.clazz = MakeGlobalRefOrDie(env, service);
-    gAnrArgs.func = env->GetMethodID(gAnrArgs.clazz, "expire", "(IIIJ)Z");
+    gAnrArgs.func = env->GetMethodID(gAnrArgs.clazz, "expire", "(IIIJJ)Z");
     gAnrArgs.funcEarly = env->GetMethodID(gAnrArgs.clazz, "notifyEarly", "(IIIJI)V");
 
     env->GetJavaVM(&gAnrArgs.vm);

@@ -538,7 +538,7 @@ class ProcessErrorStateRecord {
                 isSilentAnr ? null : processCpuTracker, isSilentAnr ? null : lastPids,
                 nativePidsFuture, tracesFileException, firstPidEndOffset, annotation,
                 criticalEventLog, memoryHeaders, auxiliaryTaskExecutor, firstPidFilePromise,
-                latencyTracker);
+                latencyTracker, timeoutRecord);
 
         if (isMonitorCpuUsage()) {
             // Wait for the first call to finish
