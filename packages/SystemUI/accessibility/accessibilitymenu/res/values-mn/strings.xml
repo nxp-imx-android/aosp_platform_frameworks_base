@@ -21,7 +21,8 @@
     <string name="previous_button_content_description" msgid="840869171117765966">"Өмнөх дэлгэц рүү очих"</string>
     <string name="next_button_content_description" msgid="6810058269847364406">"Дараагийн дэлгэц рүү очих"</string>
     <string name="accessibility_menu_description" msgid="4458354794093858297">"Хандалтын цэс нь танд төхөөрөмжөө том дэлгэцийн цэсээр хянах боломжийг олгоно. Та төхөөрөмжөө түгжих, дууны түвшин болон гэрэлтүүлгийг хянах, дэлгэцийн агшин авах болон бусад үйлдлийг хийж болно."</string>
-    <string name="accessibility_menu_summary" msgid="340071398148208130">"Төхөөрөмжийг том цэсээр хянана уу"</string>
+    <!-- no translation found for accessibility_menu_summary (4051992323622465342) -->
+    <skip />
     <string name="accessibility_menu_settings_name" msgid="1716888058785672611">"Хандалтын цэсийн тохиргоо"</string>
     <string name="accessibility_menu_large_buttons_title" msgid="8978499601044961736">"Том товч"</string>
     <string name="accessibility_menu_large_buttons_summary" msgid="236873938502785311">"Хандалтын цэсийн товчны хэмжээг томруулах"</string>
