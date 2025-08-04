@@ -833,6 +833,9 @@
   <java-symbol type="string" name="lockscreen_emergency_call" />
   <java-symbol type="string" name="lockscreen_return_to_call" />
   <java-symbol type="string" name="long_press_power_to_turn_off_tv_toast" />
+  <java-symbol type="string" name="tv_watchdog_notification_channel_name" />
+  <java-symbol type="string" name="tv_watchdog_notification_title" />
+  <java-symbol type="string" name="tv_watchdog_notification_content" />
   <java-symbol type="integer" name="config_turnOffTvToastSuppressionDelayMs" />
   <java-symbol type="integer" name="config_turnOffTvToastPostDelayMs" />
   <java-symbol type="string" name="low_memory" />
