@@ -57,6 +57,7 @@ test_module_config {
         "com.android.wm.shell.flicker.fundamentals.OpenAppFromAllAppsFlickerTest",
         "com.android.wm.shell.flicker.fundamentals.OpenAppFromTaskbarFlickerTest",
         "com.android.wm.shell.flicker.fundamentals.OpenAppsInDesktopModeFlickerTest",
+        "com.android.wm.shell.flicker.fundamentals.OpenUnlimitedAppsFlickerTest",
         "com.android.wm.shell.flicker.fundamentals.QuickSwitchBetweenDesktopAndFullscreenTest",
         "com.android.wm.shell.flicker.fundamentals.SwitchFocusBetweenAppsTest",
         "com.android.wm.shell.flicker.fundamentals.SwitchToHomeFromDesktopTest",
@@ -183,6 +184,13 @@ test_module_config {
     base: "WMShellFlickerTestsDesktopMode",
     test_suites: ["device-tests"],
     include_filters: ["com.android.wm.shell.flicker.fundamentals.OpenAppsInDesktopModeFlickerTest"],
+}
+
+test_module_config {
+    name: "WMShellFlickerTestsDesktopMode-fundamentals-OpenUnlimitedAppsFlickerTest",
+    base: "WMShellFlickerTestsDesktopMode",
+    test_suites: ["device-tests"],
+    include_filters: ["com.android.wm.shell.flicker.fundamentals.OpenUnlimitedAppsFlickerTest"],
 }
 
 test_module_config {

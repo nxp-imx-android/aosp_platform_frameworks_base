@@ -64,9 +64,6 @@
       "name": "FunctionalTestsDesktopMode-OpenTrampolineAppInDesktopModeTaskLimitTest"
     },
     {
-      "name": "FunctionalTestsDesktopMode-OpenUnlimitedAppsTest"
-    },
-    {
       "name": "FunctionalTestsDesktopMode-TabTearingDesktopWindowingLimitTest"
     },
     {
@@ -131,6 +128,9 @@
     },
     {
       "name": "FunctionalTestsDesktopMode-fundamentals-OpenAppsInDesktopModeTest"
+    },
+    {
+      "name": "FunctionalTestsDesktopMode-fundamentals-OpenUnlimitedAppsTest"
     },
     {
       "name": "FunctionalTestsDesktopMode-fundamentals-QuickSwitchBetweenDesktopAndFullscreenTest"
