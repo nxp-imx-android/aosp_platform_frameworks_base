@@ -382,6 +382,7 @@ public class BubbleBarAnimationHelper {
             @Override
             public void onAnimationStart(Animator animation) {
                 bbev.setSurfaceZOrderedOnTop(true);
+                bbev.setVisibility(VISIBLE);
             }
 
             @Override
