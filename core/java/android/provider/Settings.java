@@ -20205,15 +20205,6 @@ public final class Settings {
                 "people_space_conversation_type";
 
         /**
-         * Whether to show new notification dismissal.
-         * Values are:
-         * 0: Disabled
-         * 1: Enabled
-         * @hide
-         */
-        public static final String SHOW_NEW_NOTIF_DISMISS = "show_new_notif_dismiss";
-
-        /**
          * The maximum allowed obscuring opacity by UID to propagate touches.
          *
          * For certain window types (eg. SAWs), the decision of honoring {@link LayoutParams

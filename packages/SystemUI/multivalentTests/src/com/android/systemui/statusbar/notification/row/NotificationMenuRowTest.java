@@ -14,7 +14,6 @@
 
 package com.android.systemui.statusbar.notification.row;
 
-import static android.provider.Settings.Global.SHOW_NEW_NOTIF_DISMISS;
 import static android.view.HapticFeedbackConstants.CLOCK_TICK;
 
 import static junit.framework.Assert.assertEquals;
@@ -33,7 +32,6 @@ import static org.mockito.Mockito.when;
 import android.app.NotificationChannel;
 import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.EnableFlags;
-import android.provider.Settings;
 import android.testing.TestableLooper;
 import android.testing.TestableLooper.RunWithLooper;
 import android.testing.ViewUtils;
@@ -120,7 +118,6 @@ public class NotificationMenuRowTest extends LeakCheckedTest {
     @Test
     public void testSlowSwipe_newDismiss() {
         when(mRow.getShowSnooze()).thenReturn(true);
-        Settings.Global.putInt(mContext.getContentResolver(), SHOW_NEW_NOTIF_DISMISS, 1);
 
         NotificationMenuRowPlugin row = new NotificationMenuRow(
                 mContext, mPeopleNotificationIdentifier, mNotificationActivityStarter);

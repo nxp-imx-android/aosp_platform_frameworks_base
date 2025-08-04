@@ -33,7 +33,6 @@ import android.graphics.Point;
 import android.graphics.drawable.Drawable;
 import android.os.Handler;
 import android.os.Looper;
-import android.os.RemoteException;
 import android.provider.Settings;
 import android.service.notification.NotificationListenerService;
 import android.service.notification.StatusBarNotification;
@@ -345,14 +344,9 @@ public class NotificationMenuRow implements NotificationMenuRowPlugin, View.OnCl
             mMenuContainer = new FrameLayout(mContext);
         }
 
-        final int showDismissSetting =  Settings.Global.getInt(mContext.getContentResolver(),
-                Settings.Global.SHOW_NEW_NOTIF_DISMISS, /* default = */ 1);
-        final boolean newFlowHideShelf = showDismissSetting == 1;
-
         // Populate menu items if we are using the new permission helper (U+) or if we are using
         // the very old dismiss setting (SC-).
-        // TODO: SHOW_NEW_NOTIF_DISMISS==0 case can likely be removed.
-        if (Flags.permissionHelperInlineUiRichOngoing() || !newFlowHideShelf) {
+        if (Flags.permissionHelperInlineUiRichOngoing()) {
             List<MenuItem> menuItems = mOnLeft ? mLeftMenuItems : mRightMenuItems;
             for (int i = 0; i < menuItems.size(); i++) {
                 addMenuView(menuItems.get(i), mMenuContainer);
