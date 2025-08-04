@@ -712,6 +712,9 @@ public final class SplitLayout implements DisplayInsetsController.OnInsetsChange
         if (!mInitialized) {
             return;
         }
+
+        mStatusBarHider.onInsetsChanged(insetsState, mRootBounds);
+
         if (mFreezeDividerWindow) {
             // DO NOT change its layout before transition actually run because it might cause
             // flicker.
