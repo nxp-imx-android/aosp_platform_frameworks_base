@@ -132,6 +132,7 @@ import com.android.systemui.navigationbar.views.buttons.NavbarOrientationTrackin
 import com.android.systemui.plugins.statusbar.StatusBarStateController;
 import com.android.systemui.recents.Recents;
 import com.android.systemui.res.R;
+import com.android.systemui.rotation.RotationPolicyWrapper;
 import com.android.systemui.settings.DisplayTracker;
 import com.android.systemui.settings.UserContextProvider;
 import com.android.systemui.settings.UserTracker;
@@ -572,6 +573,7 @@ public class NavigationBar extends ViewController<NavigationBarView> implements 
             PanelExpansionInteractor panelExpansionInteractor,
             NotificationRemoteInputManager notificationRemoteInputManager,
             NotificationShadeDepthController notificationShadeDepthController,
+            RotationPolicyWrapper rotationPolicyWrapper,
             @Main Handler mainHandler,
             @Main Executor mainExecutor,
             @Background Executor bgExecutor,
@@ -688,6 +690,7 @@ public class NavigationBar extends ViewController<NavigationBarView> implements 
         mView.setBackgroundExecutor(bgExecutor);
         mView.setEdgeBackGestureHandler(mEdgeBackGestureHandler);
         mView.setDisplayTracker(mDisplayTracker);
+        mView.setRotationPolicyWrapper(rotationPolicyWrapper);
         mNavBarMode = mNavigationModeController.addListener(mModeChangedListener);
     }
 
