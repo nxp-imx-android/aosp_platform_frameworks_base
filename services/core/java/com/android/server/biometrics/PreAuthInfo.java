@@ -284,7 +284,8 @@ class PreAuthInfo {
                     sensor.impl.getLockoutModeForUser(userId);
             if (lockoutMode == LockoutTracker.LOCKOUT_TIMED) {
                 return BIOMETRIC_LOCKOUT_TIMED;
-            } else if (lockoutMode == LockoutTracker.LOCKOUT_PERMANENT) {
+            } else if (lockoutMode == LockoutTracker.LOCKOUT_PERMANENT
+                    && !Flags.bpFallbackOptions()) {
                 return BIOMETRIC_LOCKOUT_PERMANENT;
             }
         } catch (RemoteException e) {
