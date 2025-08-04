@@ -142,10 +142,20 @@
     <string name="screen_record_record_microphone_label" msgid="4685753707185662381">"Ton über Mikrofon aufnehmen"</string>
     <string name="screen_record_should_show_touches_label" msgid="2203962566795833783">"Berührungen anzeigen"</string>
     <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"App zum Aufnehmen auswählen"</string>
+    <!-- no translation found for screen_record_video_saved (1345283626390232282) -->
+    <skip />
+    <!-- no translation found for screen_record_retake (3846643688365398450) -->
+    <skip />
+    <!-- no translation found for screen_record_edit (8733014191240769309) -->
+    <skip />
+    <!-- no translation found for screen_record_delete (1023421937978254537) -->
+    <skip />
     <string name="screen_capture_fullscreen_screenshot_button" msgid="4255912593013592954">"Screenshot im Vollbildmodus erstellen"</string>
     <string name="screen_capture_region_selection_button" msgid="4437546351856914639">"Ausgewählten Bereich aufnehmen"</string>
     <string name="screen_capture_toolbar_capture_button" msgid="8512731007891496030">"Screenshot"</string>
     <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"Bildschirmaufzeichnung"</string>
+    <!-- no translation found for screen_share_toolbar_share_button (9182050596136815833) -->
+    <skip />
     <!-- no translation found for screen_capture_region_dimensions (2317064050253056256) -->
     <skip />
     <string name="share_to_app_chip_accessibility_label" msgid="4210256229976947065">"Bildschirm wird geteilt"</string>
@@ -1108,7 +1118,7 @@
     <string name="data_connection_no_internet" msgid="691058178914184544">"Kein Internet"</string>
     <string name="accessibility_quick_settings_open_settings" msgid="536838345505030893">"Einstellungen für <xliff:g id="ID_1">%s</xliff:g> öffnen."</string>
     <string name="accessibility_quick_settings_edit" msgid="6544873823850165">"Reihenfolge der Schnelleinstellungen bearbeiten"</string>
-    <string name="accessibility_quick_settings_power_menu" msgid="6820426108301758412">"Ein-/Aus-Menü"</string>
+    <string name="accessibility_quick_settings_power_menu" msgid="6820426108301758412">"Ein/Aus-Menü"</string>
     <string name="accessibility_quick_settings_page" msgid="7506322631645550961">"Seite <xliff:g id="ID_1">%1$d</xliff:g> von <xliff:g id="ID_2">%2$d</xliff:g>"</string>
     <string name="accessibility_key_gesture_dialog_title" msgid="7614965716626605518">"<xliff:g id="ID_1">%1$s</xliff:g> aktivieren?"</string>
     <string name="accessibility_key_gesture_dialog_content" msgid="4519838108423437794">"Die Aktion "<annotation id="action_key_icon">"Symbol"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> ist die Tastenkombination zum Verwenden von <xliff:g id="ID_3">^3</xliff:g>. <xliff:g id="ID_4">^4</xliff:g>"</string>

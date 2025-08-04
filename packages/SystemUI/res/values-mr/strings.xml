@@ -142,10 +142,20 @@
     <string name="screen_record_record_microphone_label" msgid="4685753707185662381">"मायक्रोफोन वापरून रेकॉर्ड करा"</string>
     <string name="screen_record_should_show_touches_label" msgid="2203962566795833783">"स्पर्श दाखवा"</string>
     <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"रेकॉर्ड करण्यासाठी अ‍ॅप निवडा"</string>
+    <!-- no translation found for screen_record_video_saved (1345283626390232282) -->
+    <skip />
+    <!-- no translation found for screen_record_retake (3846643688365398450) -->
+    <skip />
+    <!-- no translation found for screen_record_edit (8733014191240769309) -->
+    <skip />
+    <!-- no translation found for screen_record_delete (1023421937978254537) -->
+    <skip />
     <string name="screen_capture_fullscreen_screenshot_button" msgid="4255912593013592954">"संपूर्ण स्क्रीन कॅप्चर करा"</string>
     <string name="screen_capture_region_selection_button" msgid="4437546351856914639">"निवडलेला भाग कॅप्चर करा"</string>
     <string name="screen_capture_toolbar_capture_button" msgid="8512731007891496030">"कॅप्चर करा"</string>
     <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"रेकॉर्ड करा"</string>
+    <!-- no translation found for screen_share_toolbar_share_button (9182050596136815833) -->
+    <skip />
     <!-- no translation found for screen_capture_region_dimensions (2317064050253056256) -->
     <skip />
     <string name="share_to_app_chip_accessibility_label" msgid="4210256229976947065">"स्क्रीन शेअर करत आहे"</string>
