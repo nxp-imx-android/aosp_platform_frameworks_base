@@ -47,6 +47,7 @@ class PreviewPositionHelperTest : SysuiTestCase() {
         )
 
         assertThat(systemUnderTest.matrix.values()[Matrix.MSCALE_X]).isEqualTo(0.5f)
+        assertThat(systemUnderTest.matrix.values()[Matrix.MSCALE_Y]).isEqualTo(0.5f)
     }
 
     @Test
@@ -63,6 +64,24 @@ class PreviewPositionHelperTest : SysuiTestCase() {
         )
 
         assertThat(systemUnderTest.matrix.values()[Matrix.MSCALE_X]).isEqualTo(1f)
+        assertThat(systemUnderTest.matrix.values()[Matrix.MSCALE_Y]).isEqualTo(1f)
+    }
+
+    @Test
+    fun nullBitmap_scaleIsOne() {
+        systemUnderTest.updateThumbnailMatrix(
+            Rect(0, 0, THUMBNAIL_WIDTH, THUMBNAIL_HEIGHT),
+            getThumbnailData().copy(thumbnail = null),
+            /* canvasWidth = */ CANVAS_WIDTH,
+            /* canvasHeight = */ CANVAS_HEIGHT,
+            /* isLargeScreen = */ false,
+            /* currentRotation = */ 0,
+            /* isRtl = */ false,
+            /* deviceDensityDpi = */ THUMBNAIL_DENSITY,
+        )
+
+        assertThat(systemUnderTest.matrix.values()[Matrix.MSCALE_X]).isEqualTo(1f)
+        assertThat(systemUnderTest.matrix.values()[Matrix.MSCALE_Y]).isEqualTo(1f)
     }
 
     private fun getThumbnailData(
