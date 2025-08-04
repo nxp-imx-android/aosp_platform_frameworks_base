@@ -42,5 +42,6 @@ var Kosmos.keyguardDisplayManager by
             mock<ConnectedDisplayKeyguardPresentationFactory>(),
             { shadeDisplaysRepository },
             applicationCoroutineScope,
+            /* isCentralizedWallpaperPresentationEnabled= */ true,
         )
     }
