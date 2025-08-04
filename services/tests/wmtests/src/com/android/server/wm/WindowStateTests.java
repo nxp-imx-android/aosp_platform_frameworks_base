@@ -1123,7 +1123,7 @@ public class WindowStateTests extends WindowTestsBase {
         win.updateResizingWindowIfNeeded();
         assertThat(mWm.mResizingWindows).doesNotContain(win);
 
-        if (!Flags.alwaysSeqIdLayout()) {
+        if (!mWm.mAlwaysSeqId) {
             // Non blast sync doesn't require to force resizing, because it won't use syncSeqId.
             // And if the window is already drawn, it can report sync finish immediately so that the
             // sync group won't be blocked.

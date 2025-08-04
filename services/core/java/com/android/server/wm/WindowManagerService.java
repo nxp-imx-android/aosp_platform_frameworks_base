@@ -34,6 +34,7 @@ import static android.app.WindowConfiguration.WINDOWING_MODE_FREEFORM;
 import static android.app.admin.DevicePolicyManager.ACTION_DEVICE_POLICY_MANAGER_STATE_CHANGED;
 import static android.content.pm.PackageManager.FEATURE_FREEFORM_WINDOW_MANAGEMENT;
 import static android.content.pm.PackageManager.FEATURE_PC;
+import static android.content.pm.PackageManager.FEATURE_WATCH;
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 import static android.internal.perfetto.protos.Windowmanagerservice.WindowManagerServiceDumpProto.BACK_NAVIGATION;
 import static android.internal.perfetto.protos.Windowmanagerservice.WindowManagerServiceDumpProto.FOCUSED_APP;
@@ -734,6 +735,8 @@ public class WindowManagerService extends IWindowManager.Stub
      */
     boolean mForceDesktopModeOnExternalDisplays;
 
+    public boolean mAlwaysSeqId;
+
     boolean mDisableTransitionAnimation;
 
     final RotationWatcherController mRotationWatcherController;
@@ -1312,6 +1315,8 @@ public class WindowManagerService extends IWindowManager.Stub
         mContext = context;
         mFlags = new WindowManagerFlags();
         mIsPc = mContext.getPackageManager().hasSystemFeature(FEATURE_PC);
+        mAlwaysSeqId = mContext.getPackageManager().hasSystemFeature(FEATURE_WATCH)
+                ? Flags.alwaysSeqIdLayoutWear() : Flags.alwaysSeqIdLayout();
         mAllowBootMessages = showBootMsgs;
         mLimitedAlphaCompositing = context.getResources().getBoolean(
                 com.android.internal.R.bool.config_sf_limitedAlpha);
@@ -2492,7 +2497,7 @@ public class WindowManagerService extends IWindowManager.Stub
             }
 
             if (win.cancelAndRedraw(syncSeqId)
-                    && (Flags.alwaysSeqIdLayout() || (win.mPrepareSyncSeqId <= syncSeqId))) {
+                    && (mAlwaysSeqId || (win.mPrepareSyncSeqId <= syncSeqId))) {
                 // The client has reported the sync draw, but we haven't finished it yet.
                 // Don't let the client perform a non-sync draw at this time.
                 result |= RELAYOUT_RES_CANCEL_AND_REDRAW;
@@ -2862,7 +2867,7 @@ public class WindowManagerService extends IWindowManager.Stub
             }
 
             if (outRelayoutResult != null) {
-                if (!Flags.alwaysSeqIdLayout()
+                if (!mAlwaysSeqId
                         && win.syncNextBuffer() && viewVisibility == View.VISIBLE
                         && win.mSyncSeqId > syncSeqId && !displayContent.mWaitingForConfig) {
                     outRelayoutResult.syncSeqId = win.shouldSyncWithBuffers()

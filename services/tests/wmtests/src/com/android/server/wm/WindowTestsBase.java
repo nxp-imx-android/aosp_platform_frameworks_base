@@ -123,7 +123,6 @@ import com.android.internal.policy.AttributeCache;
 import com.android.internal.util.ArrayUtils;
 import com.android.internal.util.test.FakeSettingsProvider;
 import com.android.server.wm.DisplayWindowSettings.SettingsProvider.SettingsEntry;
-import com.android.window.flags.Flags;
 
 import org.junit.After;
 import org.junit.Before;
@@ -601,7 +600,7 @@ public class WindowTestsBase extends SystemServiceTestsBase {
         w.fillClientWindowFramesAndConfiguration(new ClientWindowFrames(),
                 new MergedConfiguration(), new ActivityWindowInfo(), true /* useLatestConfig */,
                 visible);
-        if (Flags.alwaysSeqIdLayout()) {
+        if (w.mWmService.mAlwaysSeqId) {
             w.setLastConfigReportedToClientForTest(true);
         }
     }
