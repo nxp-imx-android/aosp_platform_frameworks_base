@@ -102,6 +102,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.junit.Assume.assumeTrue;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isNull;
@@ -1939,6 +1940,8 @@ public class DisplayContentTests extends WindowTestsBase {
 
     @Test
     public void testRemoteRotation() {
+        // Shell-transitions version is tested in testRemoteRotationWhenTransitionCombine
+        assumeTrue(!Flags.fallbackTransitionPlayer());
         final DisplayRotation dr = mDisplayContent.getDisplayRotation();
         spyOn(dr);
         doReturn((dr.getRotation() + 2) % 4).when(dr).rotationForOrientation(anyInt(), anyInt());
@@ -1969,6 +1972,45 @@ public class DisplayContentTests extends WindowTestsBase {
         assertTrue(called[0]);
         waitUntilHandlersIdle();
         assertTrue(continued[0]);
+    }
+
+    @Test
+    public void testRemoteRotationWhenTransitionCombine() {
+        // Create 2 visible activities to verify that they can both receive the new configuration.
+        final ActivityRecord activity1 = new ActivityBuilder(mAtm).setCreateTask(true).build();
+        doReturn(true).when(activity1).isSyncFinished(any());
+
+        final TestTransitionPlayer testPlayer = registerTestTransitionPlayer();
+        final DisplayRotation dr = mDisplayContent.getDisplayRotation();
+        spyOn(dr);
+        doReturn((dr.getRotation() + 1) % 4).when(dr).rotationForOrientation(anyInt(), anyInt());
+        final boolean[] called = new boolean[1];
+        mWm.mDisplayChangeController = new IDisplayChangeWindowController.Stub() {
+            @Override
+            public void onDisplayChange(int displayId, int fromRotation, int toRotation,
+                    DisplayAreaInfo newDisplayAreaInfo, IDisplayChangeWindowCallback callback) {
+                try {
+                    called[0] = true;
+                    callback.continueDisplayChange(null);
+                } catch (RemoteException e) {
+                    fail();
+                }
+            }
+        };
+
+        final int origRot = mDisplayContent.getConfiguration().windowConfiguration.getRotation();
+        mDisplayContent.setLastHasContent();
+
+        // Create/collect a transition that will be "interrupted" by the display rotation
+        requestTransition(activity1, WindowManager.TRANSIT_CHANGE);
+
+        mWm.updateRotation(true /* alwaysSendConfiguration */, false /* forceRelayout */);
+        waitUntilHandlersIdle();
+        // Since it got combined (and thus we can't rely on a handleRequest), it should fall-back
+        // to the display-change controller
+        assertTrue(called[0]);
+        assertNotEquals(origRot, mDisplayContent.getConfiguration().windowConfiguration
+                .getRotation());
     }
 
     @Test
