@@ -304,8 +304,17 @@ public class AnrTimer<V> implements AutoCloseable {
         // The timer ID.
         final int mTimerId;
 
-        ExpiredTimer(int id) {
+        // The start uptime of the timer in millis.
+        public final long mStartMs;
+
+        // The total duration uptime of the timer in millis.
+        // Includes any extensions.
+        public final long mDurationMs;
+
+        ExpiredTimer(int id, long startMs, long durationMs) {
             mTimerId = id;
+            mStartMs = startMs;
+            mDurationMs = durationMs;
         }
     }
 
@@ -876,7 +885,7 @@ public class AnrTimer<V> implements AutoCloseable {
      * message is delivered to the upper layers and false if it could not be delivered.
      */
     @Keep
-    private boolean expire(int timerId, int pid, int uid, long elapsedMs) {
+    private boolean expire(int timerId, int pid, int uid, long startMs, long elapsedMs) {
         trace("expired", timerId, pid, uid, mLabel, elapsedMs);
         final V arg;
         synchronized (mLock) {
@@ -887,7 +896,7 @@ public class AnrTimer<V> implements AutoCloseable {
                 mTotalErrors++;
                 return false;
             }
-            mExpiredTimers.put(timerId, new ExpiredTimer(timerId));
+            mExpiredTimers.put(timerId, new ExpiredTimer(timerId, startMs, elapsedMs));
             mTotalExpired++;
         }
         final Message msg = Message.obtain(mHandler, mWhat, arg);

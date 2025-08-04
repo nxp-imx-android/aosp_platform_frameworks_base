@@ -38,10 +38,17 @@ import com.android.systemui.statusbar.dagger.StatusBarPerDisplayModule
 import com.android.systemui.statusbar.phone.DarkIconDispatcherImpl
 import com.android.systemui.statusbar.phone.SysuiDarkIconDispatcher
 import com.android.systemui.statusbar.pipeline.shared.ui.composable.StatusBarRootFactory
+import com.android.systemui.wallpapers.WallpaperPresentationEnabled
+import com.android.systemui.wallpapers.WallpaperPresentationManager
+import com.android.systemui.wallpapers.domain.interactor.DisplayWallpaperPresentationInteractor
+import com.android.systemui.wallpapers.domain.interactor.DisplayWallpaperPresentationInteractorImpl
+import com.android.systemui.wallpapers.domain.interactor.NoOpDisplayWallpaperPresentationInteractor
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
+import dagger.multibindings.ElementsIntoSet
 import dagger.multibindings.Multibinds
+import javax.inject.Provider
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 
@@ -122,5 +129,32 @@ interface PerDisplayCommonModule {
         }
 
         @Provides @DisplayAware fun provideDisplayId(@DisplayId displayId: Int): Int = displayId
+
+        @Provides
+        @PerDisplaySingleton
+        @DisplayAware
+        fun bindsDisplayWallpaperPresentationInteractor(
+            @WallpaperPresentationEnabled isWallpaperPresentationEnabled: Boolean,
+            impl: Provider<DisplayWallpaperPresentationInteractorImpl>,
+        ): DisplayWallpaperPresentationInteractor =
+            if (isWallpaperPresentationEnabled) {
+                impl.get()
+            } else {
+                NoOpDisplayWallpaperPresentationInteractor
+            }
+
+        @Provides
+        @PerDisplaySingleton
+        @DisplayAware
+        @ElementsIntoSet
+        fun bindWallpaperPresentationManagerLifecycleListener(
+            @WallpaperPresentationEnabled isWallpaperPresentationEnabled: Boolean,
+            impl: Provider<WallpaperPresentationManager>,
+        ): Set<SystemUIDisplaySubcomponent.LifecycleListener> =
+            if (isWallpaperPresentationEnabled) {
+                setOf(impl.get())
+            } else {
+                emptySet()
+            }
     }
 }

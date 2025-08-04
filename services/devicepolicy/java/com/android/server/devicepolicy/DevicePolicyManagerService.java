@@ -7124,7 +7124,7 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
                         case KeyChain.KEY_GEN_STRONGBOX_UNAVAILABLE:
                             throw new ServiceSpecificException(
                                     DevicePolicyManager.KEY_GEN_STRONGBOX_UNAVAILABLE,
-                                    String.format("KeyChain error: %d", generationResult));
+                                    TextUtils.formatSimple("KeyChain error: %d", generationResult));
                         case KeyChain.KEY_ATTESTATION_CANNOT_ATTEST_IDS:
                             throw new UnsupportedOperationException(
                                 "Device does not support Device ID attestation.");
@@ -9970,10 +9970,10 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
             enforceCanSetDeviceOwnerLocked(caller, admin, userId, hasIncompatibleAccountsOrNonAdb);
 
             Preconditions.checkArgument(isPackageInstalledForUser(admin.getPackageName(), userId),
-                    "Invalid component " + admin + " for device owner");
+                    "Invalid component %s for device owner", admin);
             final ActiveAdmin activeAdmin = getActiveAdminUncheckedLocked(admin, userId);
             Preconditions.checkArgument(activeAdmin != null && !getUserData(
-                    userId).mRemovingAdmins.contains(admin), "Not active admin: " + admin);
+                    userId).mRemovingAdmins.contains(admin), "Not active admin: %s", admin);
 
             // Shutting down backup manager service permanently.
             toggleBackupServiceActive(UserHandle.USER_SYSTEM, /* makeActive= */ false);
@@ -10535,13 +10535,12 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
             final ActiveAdmin admin = getActiveAdminUncheckedLocked(who, userHandle);
             Preconditions.checkArgument(
                     isPackageInstalledForUser(who.getPackageName(), userHandle),
-                    "Package %s not installed in user %d"
-                            .formatted(who.getPackageName(), userHandle));
-            Preconditions.checkArgument(admin != null, "Not active admin: " + who);
+                    "Package %s not installed in user %d", who.getPackageName(),
+                    userHandle);
+            Preconditions.checkArgument(admin != null, "Not active admin: %s", who);
             Preconditions.checkArgument(
                     !getUserData(userHandle).mRemovingAdmins.contains(who),
-                    "Admin %s is being removed from user %d"
-                            .formatted(who, userHandle));
+                    "Admin %s is being removed from user %d", who, userHandle);
 
             final int parentUserId = getProfileParentId(userHandle);
             // When trying to set a profile owner on a new user, it may be that this user is
@@ -19204,8 +19203,8 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
         Objects.requireNonNull(serviceIntent);
         Preconditions.checkArgument(
                 serviceIntent.getComponent() != null || serviceIntent.getPackage() != null,
-                "Service intent must be explicit (with a package name or component): "
-                        + serviceIntent);
+                "Service intent must be explicit (with a package name or component): %s",
+                serviceIntent);
         Objects.requireNonNull(connection);
         Preconditions.checkArgument(mInjector.userHandleGetCallingUserId() != targetUserId,
                 "target user id must be different from the calling user id");

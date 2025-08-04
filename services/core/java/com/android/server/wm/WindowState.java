@@ -5351,19 +5351,19 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
         outPos.y = (int) (surfaceInsets.top * mGlobalScale + 0.5f);
     }
 
+    /**
+     * Whether the layer of this window should be relatively above IME.
+     * @see DisplayContent#assignRelativeLayerForImeLayeringTargetChild
+     */
     boolean needsRelativeLayeringToIme() {
+        if (!mDisplayContent.getImeContainer().isVisible()) {
+            return false;
+        }
         // We use the relative layering when IME isn't attached to the app. Such as part of
         // elevating the IME and windows above it's target above the docked divider in
         // split-screen, or make the popupMenu to be above the IME when the parent window is the
         // IME layering target in bubble/freeform mode.
         if (mDisplayContent.shouldImeAttachedToApp()) {
-            return false;
-        }
-
-        // We don't need to set the window to be relatively above IME if the IME is not visible.
-        // In case seeing the window is animating above the app transition layer because its
-        // relative layer is above the IME container on the display area but actually not necessary.
-        if (!getDisplayContent().getImeContainer().isVisible()) {
             return false;
         }
 

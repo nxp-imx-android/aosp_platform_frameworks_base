@@ -194,6 +194,10 @@ public class TaskStackListenerImpl extends TaskStackListener implements Handler.
 
     @Override
     public void onTaskSnapshotChanged(int taskId, TaskSnapshot snapshot) {
+        if (com.android.window.flags.Flags.reduceTaskSnapshotMemoryUsage()) {
+            // No implementation in TaskStackListenerCallback#onTaskSnapshotChanged
+            return;
+        }
         mMainHandler.obtainMessage(ON_TASK_SNAPSHOT_CHANGED, taskId, 0, snapshot)
                 .sendToTarget();
     }
@@ -293,8 +297,12 @@ public class TaskStackListenerImpl extends TaskStackListener implements Handler.
                                 msg.arg1, snapshot);
                         snapshotConsumed |= consumed;
                     }
-                    if (!snapshotConsumed && snapshot.getHardwareBuffer() != null) {
-                        snapshot.getHardwareBuffer().close();
+                    if (!snapshotConsumed) {
+                        if (com.android.window.flags.Flags.reduceTaskSnapshotMemoryUsage()) {
+                            snapshot.closeBuffer();
+                        } else if (snapshot.getHardwareBuffer() != null) {
+                            snapshot.getHardwareBuffer().close();
+                        }
                     }
                     Trace.endSection();
                     break;

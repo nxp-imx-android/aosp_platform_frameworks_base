@@ -42,12 +42,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalViewConfiguration
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.SemanticsProperties
+import androidx.compose.ui.semantics.getOrNull
 import androidx.compose.ui.test.SemanticsNodeInteraction
 import androidx.compose.ui.test.assertHeightIsEqualTo
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsNotDisplayed
 import androidx.compose.ui.test.assertPositionInRootIsEqualTo
 import androidx.compose.ui.test.assertWidthIsEqualTo
+import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onChild
 import androidx.compose.ui.test.onNodeWithTag
@@ -61,6 +64,7 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.android.compose.animation.scene.TestOverlays.OverlayA
+import com.android.compose.animation.scene.TestOverlays.OverlayB
 import com.android.compose.animation.scene.TestScenes.SceneA
 import com.android.compose.animation.scene.TestScenes.SceneB
 import com.android.compose.animation.scene.TestScenes.SceneC
@@ -594,28 +598,29 @@ class SceneTransitionLayoutTest {
         val scope =
             rule.setContentAndCreateMainScope {
                 SceneTransitionLayoutForTesting(state) {
-                    scene(SceneA) { Box(Modifier.element(TestElements.Foo).size(20.dp)) }
-                    scene(SceneB, alwaysCompose = true) {
-                        Box(Modifier.element(TestElements.Bar).size(40.dp))
-                    }
+                    scene(SceneA) { Box(Modifier.testTag("foo").size(20.dp)) }
+                    scene(SceneB, alwaysCompose = true) { Box(Modifier.testTag("bar").size(40.dp)) }
                 }
             }
 
+        val foo = hasTestTag("foo")
+        val bar = hasTestTag("bar")
+
         // Idle(A): Foo is displayed and Bar exists given that SceneB is always composed but it is
         // not displayed.
-        rule.onNode(isElement(TestElements.Foo)).assertIsDisplayed().assertSizeIsEqualTo(20.dp)
-        rule.onNode(isElement(TestElements.Bar)).assertExists().assertIsNotDisplayed()
+        rule.onNode(foo).assertIsDisplayed().assertSizeIsEqualTo(20.dp)
+        rule.onNode(bar).assertExists().assertIsNotDisplayed()
 
         // Transition(A => B): Foo and Bar are both displayed
         val aToB = transition(SceneA, SceneB)
         scope.launch { state.startTransition(aToB) }
-        rule.onNode(isElement(TestElements.Foo)).assertIsDisplayed().assertSizeIsEqualTo(20.dp)
-        rule.onNode(isElement(TestElements.Bar)).assertIsDisplayed().assertSizeIsEqualTo(40.dp)
+        rule.onNode(foo).assertIsDisplayed().assertSizeIsEqualTo(20.dp)
+        rule.onNode(bar).assertIsDisplayed().assertSizeIsEqualTo(40.dp)
 
         // Idle(B): Foo does not exist and Bar is displayed.
         aToB.finish()
-        rule.onNode(isElement(TestElements.Foo)).assertDoesNotExist()
-        rule.onNode(isElement(TestElements.Bar)).assertIsDisplayed().assertSizeIsEqualTo(40.dp)
+        rule.onNode(foo).assertDoesNotExist()
+        rule.onNode(bar).assertIsDisplayed().assertSizeIsEqualTo(40.dp)
     }
 
     @Test
@@ -624,32 +629,73 @@ class SceneTransitionLayoutTest {
         val scope =
             rule.setContentAndCreateMainScope {
                 SceneTransitionLayoutForTesting(state) {
-                    scene(SceneA) { Box(Modifier.element(TestElements.Foo).size(40.dp)) }
+                    scene(SceneA) { Box(Modifier.testTag("foo").size(40.dp)) }
                     overlay(OverlayA, alwaysCompose = true) {
-                        Box(Modifier.element(TestElements.Bar).size(20.dp))
+                        Box(Modifier.testTag("bar").size(20.dp))
                     }
                 }
             }
 
+        val foo = hasTestTag("foo")
+        val bar = hasTestTag("bar")
+
         // Overlay hidden: Foo is displayed and Bar exists given that OverlayA is always composed
         // but it is not displayed.
-        rule.onNode(isElement(TestElements.Foo)).assertIsDisplayed().assertSizeIsEqualTo(40.dp)
-        rule.onNode(isElement(TestElements.Bar)).assertExists().assertIsNotDisplayed()
+        rule.onNode(foo).assertIsDisplayed().assertSizeIsEqualTo(40.dp)
+        rule.onNode(bar).assertExists().assertIsNotDisplayed()
 
         // Show overlay: Foo and Bar are both displayed.
         val aToB = transition(SceneA, OverlayA)
         scope.launch { state.startTransition(aToB) }
-        rule.onNode(isElement(TestElements.Foo)).assertIsDisplayed().assertSizeIsEqualTo(40.dp)
-        rule.onNode(isElement(TestElements.Bar)).assertIsDisplayed().assertSizeIsEqualTo(20.dp)
+        rule.onNode(foo).assertIsDisplayed().assertSizeIsEqualTo(40.dp)
+        rule.onNode(bar).assertIsDisplayed().assertSizeIsEqualTo(20.dp)
 
         // Overlay shown: Foo and Bar are both displayed.
         aToB.finish()
-        rule.onNode(isElement(TestElements.Foo)).assertIsDisplayed().assertSizeIsEqualTo(40.dp)
-        rule.onNode(isElement(TestElements.Bar)).assertIsDisplayed().assertSizeIsEqualTo(20.dp)
+        rule.onNode(foo).assertIsDisplayed().assertSizeIsEqualTo(40.dp)
+        rule.onNode(bar).assertIsDisplayed().assertSizeIsEqualTo(20.dp)
 
         // Overlay hidden: Foo is displayed and Bar exists.
         scope.launch { state.snapTo(state.currentScene, overlays = emptySet()) }
-        rule.onNode(isElement(TestElements.Foo)).assertIsDisplayed().assertSizeIsEqualTo(40.dp)
-        rule.onNode(isElement(TestElements.Bar)).assertExists().assertIsNotDisplayed()
+        rule.onNode(foo).assertIsDisplayed().assertSizeIsEqualTo(40.dp)
+        rule.onNode(bar).assertExists().assertIsNotDisplayed()
+    }
+
+    @Test
+    fun zIndex() {
+        val state =
+            rule.runOnUiThread {
+                MutableSceneTransitionLayoutStateForTests(
+                    SceneA,
+                    initialOverlays = setOf(OverlayA, OverlayB),
+                )
+            }
+        val scope =
+            rule.setContentAndCreateMainScope {
+                SceneTransitionLayoutForTesting(state) {
+                    scene(SceneA) { Box(Modifier.fillMaxSize()) }
+                    scene(SceneB) { Box(Modifier.fillMaxSize()) }
+                    overlay(OverlayA) { Box(Modifier.fillMaxSize()) }
+                    overlay(OverlayB) { Box(Modifier.fillMaxSize()) }
+                }
+            }
+
+        // Start transition. We go from A => B because STLImpl always composes the scene we are
+        // going *to* first (B in this case), so that we can check that B's zIndex is still higher
+        // than A's even if it is composed first.
+        val aToB = transition(SceneA, SceneB)
+        scope.launch { state.startTransition(aToB) }
+        rule.waitForIdle()
+
+        val childrenByZIndex =
+            rule
+                .onNode(hasTestTag(SceneTransitionLayoutRootContentTag))
+                .fetchSemanticsNode()
+                .children
+                .mapNotNull { it.config.getOrNull(SemanticsProperties.TestTag) }
+
+        assertThat(childrenByZIndex)
+            .containsExactly("scene:SceneA", "scene:SceneB", "overlay:OverlayA", "overlay:OverlayB")
+            .inOrder()
     }
 }

@@ -41,6 +41,7 @@ import com.android.systemui.qs.pipeline.shared.logging.QSPipelineLogger
 import com.android.systemui.qs.tiles.base.domain.interactor.DisabledByPolicyInteractor
 import com.android.systemui.qs.tiles.base.domain.interactor.DisabledByPolicyInteractorImpl
 import dagger.Binds
+import dagger.Lazy
 import dagger.Module
 import dagger.Provides
 import dagger.multibindings.ClassKey
@@ -108,9 +109,9 @@ abstract class QSPipelineModule {
         @Provides
         @IntoSet
         fun bindTileDbUpgradeToV2(
-            impl: RemoveAlreadyRemovedTiles
+            impl: Lazy<RemoveAlreadyRemovedTiles>
         ): Optional<CustomTileAddedUpgrade> {
-            return if (resetTilesRemovesCustomTiles()) Optional.of(impl) else Optional.empty()
+            return if (resetTilesRemovesCustomTiles()) Optional.of(impl.get()) else Optional.empty()
         }
 
         @Provides

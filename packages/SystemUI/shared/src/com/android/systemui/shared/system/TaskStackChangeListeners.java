@@ -27,6 +27,8 @@ import android.os.Message;
 import android.os.Trace;
 import android.util.Log;
 import android.window.TaskSnapshot;
+import android.window.TaskSnapshotListener;
+import android.window.TaskSnapshotManager;
 
 import androidx.annotation.VisibleForTesting;
 
@@ -152,6 +154,21 @@ public class TaskStackChangeListeners {
 
         private final Handler mHandler;
         private boolean mRegistered;
+        private final TaskSnapshotListenerImpl mTaskSnapshotListener =
+                new TaskSnapshotListenerImpl();
+        private class TaskSnapshotListenerImpl extends TaskSnapshotListener {
+            @Override
+            protected void onTaskSnapshotChanged(int taskId, TaskSnapshot snapshot) {
+                mHandler.obtainMessage(ON_TASK_SNAPSHOT_CHANGED, taskId, 0, snapshot)
+                        .sendToTarget();
+            }
+
+            @Override
+            protected void onTaskSnapshotInvalidated(int taskId) {
+                mHandler.obtainMessage(ON_TASK_SNAPSHOT_INVALIDATED, taskId, 0 /* unused */)
+                        .sendToTarget();
+            }
+        }
 
         private Impl(Looper looper) {
             mHandler = new Handler(looper, this);
@@ -173,6 +190,10 @@ public class TaskStackChangeListeners {
                 } catch (Exception e) {
                     Log.w(TAG, "Failed to call registerTaskStackListener", e);
                 }
+                if (com.android.window.flags.Flags.reduceTaskSnapshotMemoryUsage()) {
+                    TaskSnapshotManager.getInstance()
+                            .registerTaskSnapshotListener(mTaskSnapshotListener);
+                }
             }
         }
 
@@ -189,6 +210,10 @@ public class TaskStackChangeListeners {
                     mRegistered = false;
                 } catch (Exception e) {
                     Log.w(TAG, "Failed to call unregisterTaskStackListener", e);
+                }
+                if (com.android.window.flags.Flags.reduceTaskSnapshotMemoryUsage()) {
+                    TaskSnapshotManager.getInstance()
+                            .unregisterTaskSnapshotListener(mTaskSnapshotListener);
                 }
             }
         }
@@ -366,7 +391,9 @@ public class TaskStackChangeListeners {
                         }
                         if (!snapshotConsumed) {
                             thumbnail.recycleBitmap();
-                            if (snapshot.getHardwareBuffer() != null) {
+                            if (com.android.window.flags.Flags.reduceTaskSnapshotMemoryUsage()) {
+                                snapshot.closeBuffer();
+                            } else if (snapshot.getHardwareBuffer() != null) {
                                 snapshot.getHardwareBuffer().close();
                             }
                         }

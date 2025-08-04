@@ -203,4 +203,12 @@
       </item>
       <item name="android:textSize">@dimen/bouncer_user_switcher_item_text_size</item>
     </style>
+
+    <style name="Theme.SystemUI.WallpaperPresentation">
+        <item name="android:windowActionBar">false</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowFullscreen">true</item>
+        <item name="android:windowContentOverlay">@null</item>
+        <item name="android:colorBackground">@android:color/transparent</item>
+    </style>
 </resources>

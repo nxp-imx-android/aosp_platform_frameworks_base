@@ -61,6 +61,7 @@ import android.view.WindowManager.TRANSIT_CLOSE
 import android.view.WindowManager.TRANSIT_NONE
 import android.view.WindowManager.TRANSIT_OPEN
 import android.view.WindowManager.TRANSIT_PIP
+import android.view.WindowManager.TRANSIT_START_LOCK_TASK_MODE
 import android.view.WindowManager.TRANSIT_TO_BACK
 import android.view.WindowManager.TRANSIT_TO_FRONT
 import android.view.WindowManager.transitTypeToString
@@ -3237,7 +3238,9 @@ class DesktopTasksController(
                 // Handle task moving requests
                 request.requestedLocation != null -> true
                 // Only handle open or to front transitions
-                request.type != TRANSIT_OPEN && request.type != TRANSIT_TO_FRONT -> {
+                request.type != TRANSIT_OPEN &&
+                    request.type != TRANSIT_TO_FRONT &&
+                    request.type != TRANSIT_START_LOCK_TASK_MODE -> {
                     reason = "transition type not handled (${request.type})"
                     false
                 }
@@ -3274,6 +3277,8 @@ class DesktopTasksController(
                 // Check if freeform task launch during recents should be handled
                 shouldHandleMidRecentsFreeformLaunch ->
                     handleMidRecentsFreeformTaskLaunch(triggerTask, transition)
+                request.type == TRANSIT_START_LOCK_TASK_MODE ->
+                    handleLockTask(triggerTask, transition)
                 // Check if the closing task needs to be handled
                 TransitionUtil.isClosingType(request.type) ->
                     handleTaskClosing(triggerTask, transition, request.type)
@@ -3565,6 +3570,37 @@ class DesktopTasksController(
             launchBounds = bounds
             launchDisplayId = displayId
         }
+    }
+
+    private fun handleLockTask(
+        task: RunningTaskInfo,
+        transition: IBinder,
+    ): WindowContainerTransaction? {
+        logV("handleLockTask taskId=%d", task.taskId)
+        if (
+            !DesktopExperienceFlags.ENABLE_DESKTOP_WINDOWING_ENTERPRISE_BUGFIX.isTrue() ||
+                !task.isFreeform
+        )
+            return null
+
+        val wct = WindowContainerTransaction()
+        val runOnTransitStart =
+            addMoveToFullscreenChanges(
+                wct = wct,
+                taskInfo = task,
+                willExitDesktop =
+                    willExitDesktop(
+                        triggerTaskId = task.taskId,
+                        displayId = task.displayId,
+                        userId = task.userId,
+                        forceExitDesktop = true,
+                    ),
+            )
+        moveHomeTaskToTop(DEFAULT_DISPLAY, wct)
+        wct.reorder(task.token, /* onTop= */ true)
+
+        runOnTransitStart?.invoke(transition)
+        return wct
     }
 
     private fun handleHomeTaskLaunch(

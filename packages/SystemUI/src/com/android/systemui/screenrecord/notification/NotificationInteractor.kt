@@ -22,8 +22,6 @@ import com.android.systemui.screenrecord.ScreenRecordingAudioSource
 /** Notifies user about different stages of screen recording flow. */
 interface NotificationInteractor {
 
-    fun createChannel()
-
     fun notifyRecording(notificationId: Int, audioSource: ScreenRecordingAudioSource)
 
     fun notifyProcessing(notificationId: Int, audioSource: ScreenRecordingAudioSource)

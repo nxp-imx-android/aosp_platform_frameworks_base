@@ -1961,8 +1961,8 @@ final class DevicePolicyEngine {
             return;
         }
         String roleAuthority = EnforcingAdmin.getRoleAuthorityOf(roleName);
-        Set<EnforcingAdmin> admins = getEnforcingAdminsOnUser(userId);
-        for (EnforcingAdmin admin : admins) {
+        List<EnforcingAdmin> adminslist = new ArrayList<>(getEnforcingAdminsOnUser(userId));
+        for (EnforcingAdmin admin : adminslist) {
             if (admin.hasAuthority(roleAuthority)) {
                 admin.reloadRoleAuthorities();
                 // remove admin policies if role was lost

@@ -47,7 +47,7 @@ import kotlinx.parcelize.Parceler
 import kotlinx.parcelize.Parcelize
 
 object PackageUtil {
-    private val LOG_TAG = InstallRepository::class.java.simpleName
+    private val LOG_TAG = PackageUtil::class.java.simpleName
     private const val DOWNLOADS_AUTHORITY = "downloads"
     private const val SPLIT_BASE_APK_SUFFIX = "base.apk"
     private const val SPLIT_APK_SUFFIX = ".apk"
@@ -493,10 +493,17 @@ object PackageUtil {
      */
     @JvmStatic
     fun isMaterialDesignEnabled(context: Context): Boolean {
-        return android.content.pm.Flags.usePiaV2()
-                && context.resources.getBoolean(
-            android.R.bool.config_enableMaterialDesignInPackageInstaller
-        )
+        var result: Boolean
+        try {
+            result = android.content.pm.Flags.usePiaV2()
+                    && context.resources.getBoolean(
+                android.R.bool.config_enableMaterialDesignInPackageInstaller
+            )
+        } catch (_: Resources.NotFoundException) {
+            return false
+        }
+
+        return result
     }
 
     /**

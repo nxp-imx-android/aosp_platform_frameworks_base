@@ -20455,6 +20455,141 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
+    @EnableFlags(FLAG_NOTIFICATION_CLASSIFICATION)
+    public void testUpdateBundledChild_doesNotUnAutogroup() throws Exception {
+        when(mAssistants.isClassificationTypeAllowed(anyInt(), anyInt())).thenReturn(true);
+        when(mAssistants.isAdjustmentAllowedForPackage(anyInt(), anyString(),
+                anyString())).thenReturn(true);
+        when(mAssistants.isSameUser(any(), anyInt())).thenReturn(true);
+        when(mAssistants.isServiceTokenValidLocked(any())).thenReturn(true);
+
+        // Post a grouped child notification and bundle it
+        final String originalGroupName = "originalGroup";
+        final int summaryId = 0;
+        final NotificationRecord nr0 = generateNotificationRecord(mTestNotificationChannel,
+                summaryId, originalGroupName, false);
+        mService.addEnqueuedNotification(nr0);
+        Bundle signals = new Bundle();
+        signals.putInt(KEY_TYPE, TYPE_NEWS);
+        Adjustment adjustment = new Adjustment(nr0.getSbn().getPackageName(), nr0.getKey(), signals,
+                "", nr0.getUser().getIdentifier());
+        mBinderService.applyEnqueuedAdjustmentFromAssistant(null, adjustment);
+        waitForIdle();
+        assertThat(nr0.getChannel().getId()).isEqualTo(NEWS_ID);
+        NotificationManagerService.PostNotificationRunnable runnable =
+                mService.new PostNotificationRunnable(nr0.getKey(), nr0.getSbn().getPackageName(),
+                    nr0.getUid(), mPostNotificationTrackerFactory.newTracker(null));
+        runnable.run();
+        waitForIdle();
+        moveTimeForwardAndWaitForIdle(DELAY_FORCE_REGROUP_TIME);
+        nr0.applyAdjustments();
+
+        // Check that the notification was autogrouped
+        assertThat(nr0.getSbn().getOverrideGroupKey()).isNotEmpty();
+        final String fullAggregateGroupKey = nr0.getGroupKey();
+        NotificationRecord aggregateSummary = mService.mSummaryByGroupKey.get(
+                fullAggregateGroupKey);
+        assertThat(aggregateSummary).isNotNull();
+        assertThat(aggregateSummary.getSbn().isOngoing()).isFalse();
+
+        // Update the notification
+        final NotificationRecord updatedNotification = generateNotificationRecord(
+                mTestNotificationChannel, summaryId, nr0.getSbn().getTag(),
+                originalGroupName, false);
+        updatedNotification.getNotification().flags |= Notification.FLAG_ONGOING_EVENT;
+        updatedNotification.getSbn().setOverrideGroupKey(nr0.getSbn().getOverrideGroupKey());
+        mService.addEnqueuedNotification(updatedNotification);
+        assertThat(updatedNotification.getGroupKey()).isEqualTo(fullAggregateGroupKey);
+        signals = new Bundle();
+        signals.putInt(KEY_TYPE, TYPE_NEWS);
+        adjustment = new Adjustment(nr0.getSbn().getPackageName(), nr0.getKey(), signals,
+                "", nr0.getUser().getIdentifier());
+        mBinderService.applyEnqueuedAdjustmentFromAssistant(null, adjustment);
+        waitForIdle();
+        runnable = mService.new PostNotificationRunnable(nr0.getKey(),
+                nr0.getSbn().getPackageName(), nr0.getUid(),
+                mPostNotificationTrackerFactory.newTracker(null));
+        runnable.run();
+        waitForIdle();
+        nr0.applyAdjustments();
+
+        // Check that the notification has not been un-autogrouped
+        assertThat(aggregateSummary).isNotNull();
+        assertThat(updatedNotification.getGroupKey()).isEqualTo(fullAggregateGroupKey);
+
+        moveTimeForwardAndWaitForIdle(DELAY_FORCE_REGROUP_TIME);
+        assertThat(aggregateSummary.getSbn().isOngoing()).isTrue();
+    }
+
+    @Test
+    @EnableFlags(FLAG_NOTIFICATION_CLASSIFICATION)
+    public void testUpdateNotBundledChild_doesUnAutogroup() throws Exception {
+        when(mAssistants.isClassificationTypeAllowed(anyInt(), anyInt())).thenReturn(true);
+        when(mAssistants.isAdjustmentAllowedForPackage(anyInt(), anyString(),
+                anyString())).thenReturn(true);
+        when(mAssistants.isSameUser(any(), anyInt())).thenReturn(true);
+        when(mAssistants.isServiceTokenValidLocked(any())).thenReturn(true);
+
+        // Create a group with 2 children and no summary => force group them
+        final String originalGroupName = "originalGroup";
+        final int notifId = 0;
+        final NotificationRecord nr0 = generateNotificationRecord(mTestNotificationChannel,
+                notifId, originalGroupName, false);
+        final String originalGroupKey = nr0.getGroupKey();
+        mService.addEnqueuedNotification(nr0);
+        NotificationManagerService.PostNotificationRunnable runnable =
+                mService.new PostNotificationRunnable(nr0.getKey(), nr0.getSbn().getPackageName(),
+                    nr0.getUid(), mPostNotificationTrackerFactory.newTracker(null));
+        runnable.run();
+        waitForIdle();
+        final NotificationRecord nr1 = generateNotificationRecord(mTestNotificationChannel,
+                notifId + 1, originalGroupName, false);
+        mService.addEnqueuedNotification(nr1);
+        runnable = mService.new PostNotificationRunnable(nr1.getKey(),
+                nr1.getSbn().getPackageName(), nr1.getUid(),
+                mPostNotificationTrackerFactory.newTracker(null));
+        runnable.run();
+        waitForIdle();
+        moveTimeForwardAndWaitForIdle(DELAY_FORCE_REGROUP_TIME);
+        nr0.applyAdjustments();
+        nr1.applyAdjustments();
+
+        // Check that the notifications were autogrouped
+        assertThat(nr0.getSbn().getOverrideGroupKey()).isNotEmpty();
+        assertThat(nr1.getSbn().getOverrideGroupKey()).isNotEmpty();
+        final String fullAggregateGroupKey = nr0.getGroupKey();
+        NotificationRecord aggregateSummary = mService.mSummaryByGroupKey.get(
+                fullAggregateGroupKey);
+        assertThat(aggregateSummary).isNotNull();
+        assertThat(aggregateSummary.getSbn().isOngoing()).isFalse();
+
+        // Update the first notification
+        final NotificationRecord updatedNotification = generateNotificationRecord(
+                mTestNotificationChannel, notifId, nr0.getSbn().getTag(),
+                originalGroupName, false);
+        updatedNotification.getNotification().flags |= Notification.FLAG_ONGOING_EVENT;
+        updatedNotification.getSbn().setOverrideGroupKey(nr0.getSbn().getOverrideGroupKey());
+        mService.addEnqueuedNotification(updatedNotification);
+        assertThat(updatedNotification.getGroupKey()).isEqualTo(fullAggregateGroupKey);
+        runnable = mService.new PostNotificationRunnable(nr0.getKey(),
+                nr0.getSbn().getPackageName(), nr0.getUid(),
+                mPostNotificationTrackerFactory.newTracker(null));
+        runnable.run();
+        waitForIdle();
+        nr0.applyAdjustments();
+
+        // Check that it has been un-autogrouped
+        assertThat(aggregateSummary).isNotNull();
+        assertThat(updatedNotification.getGroupKey()).isEqualTo(originalGroupKey);
+
+        // And then re-autogrouped after DELAY_FORCE_REGROUP_TIME
+        moveTimeForwardAndWaitForIdle(DELAY_FORCE_REGROUP_TIME);
+        nr0.applyAdjustments();
+        assertThat(updatedNotification.getGroupKey()).isEqualTo(fullAggregateGroupKey);
+        assertThat(aggregateSummary.getSbn().isOngoing()).isTrue();
+    }
+
+    @Test
     @EnableFlags({FLAG_NM_SUMMARIZATION})
     public void testDisableBundleAdjustment_unsummarizesNotifications() throws Exception {
         NotificationManagerService.WorkerHandler handler = mock(

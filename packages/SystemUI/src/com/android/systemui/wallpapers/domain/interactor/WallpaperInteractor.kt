@@ -26,6 +26,8 @@ class WallpaperInteractor @Inject constructor(val wallpaperRepository: Wallpaper
     val wallpaperSupportsAmbientMode: Flow<Boolean> =
         wallpaperRepository.wallpaperSupportsAmbientMode
 
+    val hasFocalArea = wallpaperRepository.shouldSendFocalArea
+
     fun sendWallpaperFocalAreaBounds(bounds: RectF) {
         wallpaperRepository.sendLockScreenLayoutChangeCommand(bounds)
     }

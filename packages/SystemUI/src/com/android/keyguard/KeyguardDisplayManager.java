@@ -46,6 +46,7 @@ import com.android.systemui.shade.ShadeDisplayAware;
 import com.android.systemui.shade.data.repository.ShadeDisplaysRepository;
 import com.android.systemui.shade.shared.flag.ShadeWindowGoesAround;
 import com.android.systemui.statusbar.policy.KeyguardStateController;
+import com.android.systemui.wallpapers.WallpaperPresentationEnabled;
 
 import dagger.Lazy;
 
@@ -71,6 +72,7 @@ public class KeyguardDisplayManager {
     private final Provider<ShadeDisplaysRepository> mShadePositionRepositoryProvider;
     private final ConnectedDisplayKeyguardPresentationFactory
             mConnectedDisplayKeyguardPresentationFactory;
+    private final Boolean mIsCentralizedWallpaperPresentationEnabled;
     private final Context mContext;
 
     private boolean mShowing;
@@ -116,7 +118,8 @@ public class KeyguardDisplayManager {
             ConnectedDisplayKeyguardPresentationFactory
                     connectedDisplayKeyguardPresentationFactory,
             Provider<ShadeDisplaysRepository> shadePositionRepositoryProvider,
-            @Application CoroutineScope appScope) {
+            @Application CoroutineScope appScope,
+            @WallpaperPresentationEnabled Boolean isCentralizedWallpaperPresentationEnabled) {
         mContext = context;
         mNavigationBarControllerLazy = navigationBarControllerLazy;
         mShadePositionRepositoryProvider = shadePositionRepositoryProvider;
@@ -127,6 +130,7 @@ public class KeyguardDisplayManager {
         mDeviceStateHelper = deviceStateHelper;
         mKeyguardStateController = keyguardStateController;
         mConnectedDisplayKeyguardPresentationFactory = connectedDisplayKeyguardPresentationFactory;
+        mIsCentralizedWallpaperPresentationEnabled = isCentralizedWallpaperPresentationEnabled;
         if (ShadeWindowGoesAround.isEnabled()) {
             collectFlow(appScope, shadePositionRepositoryProvider.get().getDisplayId(),
                     (id) -> onShadeWindowMovedToDisplayId(id));
@@ -140,7 +144,10 @@ public class KeyguardDisplayManager {
         }
     }
 
-    private boolean isKeyguardShowable(Display display) {
+    /**
+     * Returns `true` if the keyguard can be shown for a given {@code display}. Otherwise, `false`.
+     */
+    public boolean isKeyguardShowable(Display display) {
         if (display == null) {
             Log.i(TAG, "Cannot show Keyguard on null display");
             return false;
@@ -193,6 +200,10 @@ public class KeyguardDisplayManager {
      *         was already there.
      */
     private boolean showPresentation(Display display) {
+        if (mIsCentralizedWallpaperPresentationEnabled) {
+            // Handled in WallpaperPresentationManager.
+            return false;
+        }
         if (!isKeyguardShowable(display)) return false;
         Log.i(TAG, "Keyguard enabled on display: " + display);
         final int displayId = display.getDisplayId();
@@ -227,6 +238,10 @@ public class KeyguardDisplayManager {
      * @param displayId The id of the display to hide the presentation off.
      */
     private void hidePresentation(int displayId) {
+        if (mIsCentralizedWallpaperPresentationEnabled) {
+            // Handled in WallpaperPresentationManager.
+            return;
+        }
         final Presentation presentation = mPresentations.get(displayId);
         if (presentation != null) {
             presentation.dismiss();
@@ -290,13 +305,20 @@ public class KeyguardDisplayManager {
                 changed |= showPresentation(display);
             }
         } else {
-            changed = mPresentations.size() > 0;
-            for (int i = mPresentations.size() - 1; i >= 0; i--) {
-                int displayId = mPresentations.keyAt(i);
-                updateNavigationBarVisibility(displayId, true /* navBarVisible */);
-                mPresentations.valueAt(i).dismiss();
+            if (mIsCentralizedWallpaperPresentationEnabled) {
+                for (Display display : mDisplayTracker.getAllDisplays()) {
+                    int displayId = display.getDisplayId();
+                    updateNavigationBarVisibility(displayId, true /* navBarVisible */);
+                }
+            } else {
+                changed = mPresentations.size() > 0;
+                for (int i = mPresentations.size() - 1; i >= 0; i--) {
+                    int displayId = mPresentations.keyAt(i);
+                    updateNavigationBarVisibility(displayId, true /* navBarVisible */);
+                    mPresentations.valueAt(i).dismiss();
+                }
+                mPresentations.clear();
             }
-            mPresentations.clear();
         }
         return changed;
     }

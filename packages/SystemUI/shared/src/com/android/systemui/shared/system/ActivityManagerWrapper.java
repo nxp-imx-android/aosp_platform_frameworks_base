@@ -43,6 +43,7 @@ import android.provider.Settings;
 import android.util.Log;
 import android.view.Display;
 import android.window.TaskSnapshot;
+import android.window.TaskSnapshotManager;
 
 import com.android.internal.app.IVoiceInteractionManagerService;
 import com.android.systemui.shared.recents.model.Task;
@@ -135,7 +136,12 @@ public class ActivityManagerWrapper {
     public @NonNull ThumbnailData getTaskThumbnail(int taskId, boolean isLowResolution) {
         TaskSnapshot snapshot = null;
         try {
-            snapshot = getService().getTaskSnapshot(taskId, isLowResolution);
+            if (com.android.window.flags.Flags.reduceTaskSnapshotMemoryUsage()) {
+                snapshot = TaskSnapshotManager.getInstance().getTaskSnapshot(
+                        taskId, TaskSnapshotManager.convertRetrieveFlag(isLowResolution));
+            } else {
+                snapshot = getService().getTaskSnapshot(taskId, isLowResolution);
+            }
         } catch (RemoteException e) {
             Log.w(TAG, "Failed to retrieve task snapshot", e);
         }
@@ -155,7 +161,12 @@ public class ActivityManagerWrapper {
     public ThumbnailData takeTaskThumbnail(int taskId) {
         TaskSnapshot snapshot = null;
         try {
-            snapshot = getService().takeTaskSnapshot(taskId, /* updateCache= */ true);
+            if (com.android.window.flags.Flags.reduceTaskSnapshotMemoryUsage()) {
+                snapshot = TaskSnapshotManager.getInstance().takeTaskSnapshot(taskId,
+                        true /* updateCache */);
+            } else {
+                snapshot = getService().takeTaskSnapshot(taskId, /* updateCache= */ true);
+            }
         } catch (RemoteException e) {
             Log.w(TAG, "Failed to take task snapshot", e);
         }

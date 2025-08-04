@@ -74,6 +74,7 @@ import android.view.WindowManager
 import android.view.WindowManager.TRANSIT_CHANGE
 import android.view.WindowManager.TRANSIT_CLOSE
 import android.view.WindowManager.TRANSIT_OPEN
+import android.view.WindowManager.TRANSIT_START_LOCK_TASK_MODE
 import android.view.WindowManager.TRANSIT_TO_BACK
 import android.view.WindowManager.TRANSIT_TO_FRONT
 import android.widget.Toast
@@ -7452,6 +7453,27 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
                         this.deskId == 0
                 }
             )
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_ENTERPRISE_BUGFIX)
+    fun handleRequest_lockTaskMode_freeformTask_movesTaskToFullscreen() {
+        val freeformTask = setUpFreeformTask()
+        val homeTask = setUpHomeTask()
+        val transition = createTransition(task = freeformTask, type = TRANSIT_START_LOCK_TASK_MODE)
+
+        val wct = controller.handleRequest(Binder(), transition)
+
+        assertNotNull(wct) { "Should handle request" }
+
+        // Check for moving to fullscreen
+        assertThat(wct.changes[freeformTask.token.asBinder()]?.windowingMode)
+            .isEqualTo(WINDOWING_MODE_UNDEFINED)
+        assertThat(findBoundsChange(wct, freeformTask)).isEqualTo(Rect())
+        // Check for home task reorder
+        wct.assertReorder(homeTask, toTop = true)
+        // Check for task reorder
+        wct.assertReorder(freeformTask, toTop = true)
     }
 
     @Test

@@ -278,21 +278,17 @@ constructor(
     /** Whether the primary bouncer is showing or about to show soon. */
     @JvmField
     val primaryBouncerShowing: StateFlow<Boolean> =
-        if (com.android.systemui.Flags.newDozingKeyguardStates()) {
-            combine(
-                    bouncerRepository.primaryBouncerShow,
-                    bouncerRepository.primaryBouncerShowingSoon,
-                ) { showing, showingSoon ->
-                    showing || showingSoon
-                }
-                .stateIn(
-                    scope = applicationScope,
-                    started = SharingStarted.WhileSubscribed(),
-                    initialValue = false,
-                )
-        } else {
-            bouncerRepository.primaryBouncerShow
-        }
+        combine(
+                bouncerRepository.primaryBouncerShow,
+                bouncerRepository.primaryBouncerShowingSoon,
+            ) { showing, showingSoon ->
+                showing || showingSoon
+            }
+            .stateIn(
+                scope = applicationScope,
+                started = SharingStarted.WhileSubscribed(),
+                initialValue = false,
+            )
 
     /** Whether the alternate bouncer is showing or not. */
     val alternateBouncerShowing: StateFlow<Boolean> = bouncerRepository.alternateBouncerVisible

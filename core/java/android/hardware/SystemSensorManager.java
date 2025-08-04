@@ -16,6 +16,7 @@
 
 package android.hardware;
 
+import static android.companion.virtual.VirtualDeviceParams.DEVICE_POLICY_CUSTOM;
 import static android.companion.virtual.VirtualDeviceParams.DEVICE_POLICY_DEFAULT;
 import static android.companion.virtual.VirtualDeviceParams.DEVICE_POLICY_INVALID;
 import static android.companion.virtual.VirtualDeviceParams.POLICY_TYPE_SENSORS;
@@ -161,11 +162,15 @@ public class SystemSensorManager extends SensorManager {
         mIsPackageDebuggable = (0 != (appInfo.flags & ApplicationInfo.FLAG_DEBUGGABLE));
 
         // initialize the sensor list
-        for (int index = 0;; ++index) {
-            Sensor sensor = new Sensor();
-            if (!nativeGetDefaultDeviceSensorAtIndex(mNativeInstance, sensor, index)) break;
-            mFullSensorsList.add(sensor);
-            mHandleToSensor.put(sensor.getHandle(), sensor);
+        if (getSensorPolicy(mContext.getDeviceId()) == DEVICE_POLICY_CUSTOM) {
+            createRuntimeSensorListLocked(mContext.getDeviceId());
+        } else {
+            for (int index = 0; ; ++index) {
+                Sensor sensor = new Sensor();
+                if (!nativeGetDefaultDeviceSensorAtIndex(mNativeInstance, sensor, index)) break;
+                mFullSensorsList.add(sensor);
+                mHandleToSensor.put(sensor.getHandle(), sensor);
+            }
         }
     }
 

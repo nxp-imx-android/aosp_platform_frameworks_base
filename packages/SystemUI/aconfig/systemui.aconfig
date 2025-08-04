@@ -746,6 +746,16 @@ flag {
 }
 
 flag {
+    name: "screenshot_force_shutter_sound"
+    namespace: "systemui"
+    description: "Force screenshot sound when camera sound is forced and camera is open"
+    bug: "411503333"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "screenshot_action_dismiss_system_windows"
     namespace: "systemui"
     description: "Dismiss existing system windows when starting action from screenshot UI"
@@ -2108,3 +2118,13 @@ flag {
       purpose: PURPOSE_BUGFIX
     }
 }
+flag {
+    name: "dialog_anim_end_state_update"
+    namespace: "systemui"
+    description: "Continuously updating the endState of DialogTransitionAnimation to keep it in sync with tileShape if it gets changed during animation"
+    bug: "429189355"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+

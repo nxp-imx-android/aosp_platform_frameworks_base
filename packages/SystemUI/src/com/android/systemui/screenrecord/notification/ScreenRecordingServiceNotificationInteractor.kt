@@ -17,7 +17,6 @@
 package com.android.systemui.screenrecord.notification
 
 import android.app.Notification
-import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.app.Service
@@ -54,20 +53,6 @@ class ScreenRecordingServiceNotificationInteractor(
     private val tag: String,
     private val serviceClass: Class<out Service>,
 ) : NotificationInteractor {
-
-    override fun createChannel() {
-        notificationManager.createNotificationChannel(
-            NotificationChannel(
-                    channelId,
-                    context.getString(R.string.screenrecord_title),
-                    NotificationManager.IMPORTANCE_DEFAULT,
-                )
-                .apply {
-                    description = context.getString(R.string.screenrecord_channel_description)
-                    enableVibration(true)
-                }
-        )
-    }
 
     override fun notifyProcessing(notificationId: Int, audioSource: ScreenRecordingAudioSource) {
         val notificationTitle: String =

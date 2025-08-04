@@ -17,7 +17,6 @@
 package com.android.systemui.common.ui.compose.windowinsets
 
 import android.view.DisplayCutout as ViewDisplayCutout
-import androidx.compose.ui.unit.dp
 import kotlin.math.abs
 
 /**
@@ -40,9 +39,9 @@ data class DisplayCutout(
      */
     val viewDisplayCutoutKeyguardStatusBarView: ViewDisplayCutout? = null,
 ) {
-    fun width() = abs(right - left).dp
+    val width: Int = abs(right - left)
 
-    fun height() = abs(bottom - top).dp
+    val height: Int = abs(bottom - top)
 }
 
 enum class CutoutLocation {

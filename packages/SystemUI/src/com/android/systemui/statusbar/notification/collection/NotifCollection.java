@@ -70,6 +70,7 @@ import androidx.annotation.Nullable;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.statusbar.IStatusBarService;
 import com.android.systemui.Dumpable;
+import com.android.systemui.Flags;
 import com.android.systemui.dagger.SysUISingleton;
 import com.android.systemui.dagger.qualifiers.Background;
 import com.android.systemui.dagger.qualifiers.Main;
@@ -119,6 +120,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Queue;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
 
@@ -161,7 +163,8 @@ public class NotifCollection implements Dumpable, PipelineDumpable {
     private final NotificationDismissibilityProvider mDismissibilityProvider;
     private final BundleInteractionLogger mBundleLogger;
 
-    private final Map<String, NotificationEntry> mNotificationSet = new ArrayMap<>();
+    private final Map<String, NotificationEntry> mNotificationSet =
+            Flags.doNotUseRunBlocking() ? new ConcurrentHashMap<>() : new ArrayMap<>();
     private final Collection<NotificationEntry> mReadOnlyNotificationSet =
             Collections.unmodifiableCollection(mNotificationSet.values());
     private final HashMap<String, FutureDismissal> mFutureDismissals = new HashMap<>();
@@ -238,7 +241,9 @@ public class NotifCollection implements Dumpable, PipelineDumpable {
 
     /** @see NotifPipeline#getAllNotifs() */
     Collection<NotificationEntry> getAllNotifs() {
-        Assert.isMainThread();
+        if (!Flags.doNotUseRunBlocking()) {
+            Assert.isMainThread();
+        }
         return mReadOnlyNotificationSet;
     }
 

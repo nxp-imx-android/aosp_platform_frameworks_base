@@ -22,9 +22,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 
 @SysUISingleton
 class WallpaperFocalAreaRepository @Inject constructor() {
-    /** It will be true when wallpaper requires focal area info. */
-    val hasFocalArea = MutableStateFlow(true)
-
     /** The top of shortcut in screen, used by wallpaper to find remaining space in lockscreen */
     val shortcutAbsoluteTop = MutableStateFlow(-1F)
 

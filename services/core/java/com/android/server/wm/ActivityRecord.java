@@ -3625,12 +3625,19 @@ final class ActivityRecord extends WindowToken {
             if (chain.isCollecting()) {
                 chain.getTransition().collectClose(trigger);
             }
+
+            if (Flags.polishCloseWallpaperIncludesOpenChange() && endTask) {
+                final TaskDisplayArea displayArea = getDisplayArea();
+                if (displayArea != null && rootTask == displayArea.mPreferredTopFocusableRootTask) {
+                    displayArea.clearPreferredTopFocusableRootTask();
+                }
+            }
             // We are finishing the top focused activity and its task has nothing to be focused so
             // the next focusable task should be focused.
             if (mayAdjustTop && task.topRunningActivity(true /* focusableOnly */)
                     == null) {
                 task.adjustFocusToNextFocusableTask("finish-top", false /* allowFocusSelf */,
-                            shouldAdjustGlobalFocus);
+                        shouldAdjustGlobalFocus);
             }
 
             finishActivityResults(resultCode, resultData, resultGrants);

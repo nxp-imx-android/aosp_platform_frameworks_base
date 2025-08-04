@@ -3205,12 +3205,23 @@ class Task extends TaskFragment {
     }
 
     void onSnapshotChanged(TaskSnapshot snapshot) {
-        mAtmService.getTaskChangeNotificationController().notifyTaskSnapshotChanged(
-                mTaskId, snapshot);
+        if (Flags.reduceTaskSnapshotMemoryUsage()) {
+            // No local listener.
+            mWmService.mSnapshotController.notifySnapshotChanged(mTaskId, snapshot);
+        } else {
+            mAtmService.getTaskChangeNotificationController().notifyTaskSnapshotChanged(
+                    mTaskId, snapshot);
+        }
     }
 
     void onSnapshotInvalidated() {
-        mAtmService.getTaskChangeNotificationController().notifyTaskSnapshotInvalidated(mTaskId);
+        if (Flags.reduceTaskSnapshotMemoryUsage()) {
+            // No local listener.
+            mWmService.mSnapshotController.notifySnapshotInvalidate(mTaskId);
+        } else {
+            mAtmService.getTaskChangeNotificationController()
+                    .notifyTaskSnapshotInvalidated(mTaskId);
+        }
     }
 
 
@@ -4886,8 +4897,12 @@ class Task extends TaskFragment {
                     if (!isPip2ExperimentEnabled) {
                         final ActivityRecord ar = mAtmService.mLastResumedActivity;
                         if (ar != null && ar.getTask() != null) {
-                            mAtmService.takeTaskSnapshot(ar.getTask().mTaskId,
-                                    true /* updateCache */);
+                            if (com.android.window.flags.Flags.reduceTaskSnapshotMemoryUsage()) {
+                                mWmService.mTaskSnapshotController.recordSnapshot(ar.getTask());
+                            } else {
+                                mAtmService.takeTaskSnapshot(ar.getTask().mTaskId,
+                                        true /* updateCache */);
+                            }
                         }
                     }
                 }
