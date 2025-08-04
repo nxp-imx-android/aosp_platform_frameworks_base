@@ -38,14 +38,17 @@ import com.android.systemui.clock.ui.viewmodel.AmPmStyle
 import com.android.systemui.clock.ui.viewmodel.ClockViewModel
 import com.android.systemui.common.shared.model.Icon
 import com.android.systemui.common.ui.compose.Icon
+import com.android.systemui.compose.modifiers.sysUiResTagContainer
 import com.android.systemui.lifecycle.rememberViewModel
 import com.android.systemui.media.controls.ui.controller.MediaHierarchyManager
 import com.android.systemui.media.controls.ui.view.MediaHost
 import com.android.systemui.res.R
 import com.android.systemui.shade.ui.composable.ShadeHighlightChip
 import com.android.systemui.shade.ui.composable.VariableDayDate
+import com.android.systemui.statusbar.chips.ui.compose.OngoingActivityChips
 import com.android.systemui.statusbar.featurepods.popups.StatusBarPopupChips
 import com.android.systemui.statusbar.featurepods.popups.ui.compose.StatusBarPopupChipsContainer
+import com.android.systemui.statusbar.notification.icon.ui.viewbinder.NotificationIconContainerViewBinder
 import com.android.systemui.statusbar.phone.StatusBarLocation
 import com.android.systemui.statusbar.phone.StatusIconContainer
 import com.android.systemui.statusbar.phone.ui.StatusBarIconController
@@ -64,7 +67,7 @@ object DesktopStatusBar {
     }
 }
 
-// TODO(433589833): Add support for color themes in this composable.
+// TODO(b/343358983): Add support for color themes in this composable.
 /** Top level composable responsible for all UI shown for the Status Bar for DesktopMode. */
 @Composable
 fun DesktopStatusBar(
@@ -74,6 +77,7 @@ fun DesktopStatusBar(
     iconManagerFactory: TintedIconManager.Factory,
     mediaHierarchyManager: MediaHierarchyManager,
     mediaHost: MediaHost,
+    iconViewStore: NotificationIconContainerViewBinder.IconViewStore?,
     modifier: Modifier = Modifier,
 ) {
     // TODO(433589833): Update padding values to match UX specs.
@@ -102,6 +106,16 @@ fun DesktopStatusBar(
             horizontalArrangement =
                 Arrangement.spacedBy(DesktopStatusBar.Dimensions.ElementSpacing, Alignment.End)
         ) {
+            val chipsVisibilityModel = viewModel.ongoingActivityChips
+            if (chipsVisibilityModel.areChipsAllowed) {
+                OngoingActivityChips(
+                    chips = chipsVisibilityModel.chips,
+                    iconViewStore = iconViewStore,
+                    onChipBoundsChanged = viewModel::onChipBoundsChanged,
+                    modifier = Modifier.sysUiResTagContainer(),
+                )
+            }
+
             if (StatusBarPopupChips.isEnabled) {
                 StatusBarPopupChipsContainer(
                     chips = viewModel.popupChips,
