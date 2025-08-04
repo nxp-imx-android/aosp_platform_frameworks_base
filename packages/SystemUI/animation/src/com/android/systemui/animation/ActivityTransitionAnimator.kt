@@ -2420,7 +2420,7 @@ constructor(
             animation =
                 transitionAnimator.startAnimation(
                     controller,
-                    endState,
+                    { endState },
                     windowBackgroundColor,
                     shouldFadeWindowBackgroundLayer = shouldFadeWindowBackgroundLayer,
                     drawHole = !controller.isBelowAnimatingWindow,

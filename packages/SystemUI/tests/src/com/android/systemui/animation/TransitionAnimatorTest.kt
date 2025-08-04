@@ -207,7 +207,7 @@ class TransitionAnimatorTest(
             .createAnimation(
                 controller,
                 controller.createAnimatorState(),
-                endState,
+                { endState },
                 backgroundLayer,
                 { fadeWindowBackgroundLayer },
                 drawHole,
