@@ -339,6 +339,7 @@ aconfig_declarations {
 java_aconfig_library {
     name: "com.android.hardware.input-aconfig-java",
     aconfig_declarations: "com.android.hardware.input.input-aconfig",
+    host_supported: true,
     defaults: ["framework-minus-apex-aconfig-java-defaults"],
 }
 
