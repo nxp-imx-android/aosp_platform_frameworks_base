@@ -43,7 +43,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 private const val TAG = "ScreenRecordingService"
-private const val CHANNEL_ID = "screen_record"
 
 open class ScreenRecordingService
 protected constructor(
@@ -241,6 +240,8 @@ protected constructor(
     )
 
     companion object {
+
+        const val CHANNEL_ID = "screen_record"
 
         const val ACTION_STOP =
             "com.android.systemui.screenrecord.ScreenRecordingService.ACTION_STOP"
