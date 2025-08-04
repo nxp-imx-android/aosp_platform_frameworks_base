@@ -49,6 +49,9 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.testTagsAsResourceId
 import androidx.compose.ui.unit.dp
@@ -102,7 +105,12 @@ fun BiometricPromptFallbackView(promptViewModel: PromptViewModel, callback: Spag
                     text = stringResource(R.string.biometric_dialog_fallback_title),
                     color = MaterialTheme.colorScheme.onSurface,
                     style = MaterialTheme.typography.titleLarge,
-                    modifier = Modifier.padding(start = 16.dp),
+                    modifier =
+                        Modifier.padding(start = 16.dp).semantics {
+                            heading()
+                            // TODO(391644182): Use paneTitle once prompt is moved to compose
+                            liveRegion = LiveRegionMode.Polite
+                        },
                 )
             }
             Spacer(modifier = Modifier.height(8.dp))
