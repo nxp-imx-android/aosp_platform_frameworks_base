@@ -424,7 +424,9 @@ public class BluetoothEventManager {
             for (BluetoothCallback callback : mCallbacks) {
                 callback.onDeviceBondStateChanged(cachedDevice, bondState);
             }
-            cachedDevice.onBondingStateChanged(bondState);
+            int prevBondState = intent.getIntExtra(BluetoothDevice.EXTRA_PREVIOUS_BOND_STATE,
+                    BluetoothDevice.ERROR);
+            cachedDevice.onBondingStateChanged(bondState, prevBondState);
 
             if (bondState == BluetoothDevice.BOND_NONE) {
                 // Check if we need to remove other Coordinated set member devices / Hearing Aid

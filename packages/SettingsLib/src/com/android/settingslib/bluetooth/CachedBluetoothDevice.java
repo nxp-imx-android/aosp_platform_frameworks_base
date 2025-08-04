@@ -145,6 +145,7 @@ public class CachedBluetoothDevice implements Comparable<CachedBluetoothDevice> 
      * The value is reset if a disconnection happens.
      */
     private long mConnectAttempted = -1;
+    private long mBondFailureTimeMillis = -1;
     private boolean mIsAclConnectedBrEdr = false;
     private boolean mIsAclConnectedLe = false;
 
@@ -1105,7 +1106,7 @@ public class CachedBluetoothDevice implements Comparable<CachedBluetoothDevice> 
         dispatchAttributesChanged();
     }
 
-    void onBondingStateChanged(int bondState) {
+    void onBondingStateChanged(int bondState, int prevBondState) {
         if (bondState == BluetoothDevice.BOND_NONE) {
             synchronized (mProfileLock) {
                 mProfiles.clear();
@@ -1115,9 +1116,17 @@ public class CachedBluetoothDevice implements Comparable<CachedBluetoothDevice> 
             mDevice.setSimAccessPermission(BluetoothDevice.ACCESS_UNKNOWN);
 
             mBondTimestamp = null;
+
+            if (Flags.enableBluetoothDiagnosis()) {
+                if (prevBondState == BluetoothDevice.BOND_BONDING) {
+                    mBondFailureTimeMillis = SystemClock.elapsedRealtime();
+                }
+            }
         }
 
-        refresh();
+        if (!Flags.enableBluetoothDiagnosis()) {
+            refresh();
+        }
 
         if (bondState == BluetoothDevice.BOND_BONDED) {
             mBondTimestamp = new Timestamp(System.currentTimeMillis());
@@ -1129,6 +1138,14 @@ public class CachedBluetoothDevice implements Comparable<CachedBluetoothDevice> 
             // Saves this device as just bonded and checks if it's an hearing device after
             // profiles are connected. This is for judging whether to display the survey.
             HearingAidStatsLogUtils.addToJustBonded(getAddress());
+
+            if (Flags.enableBluetoothDiagnosis()) {
+                mBondFailureTimeMillis = -1;
+            }
+        }
+
+        if (Flags.enableBluetoothDiagnosis()) {
+            refresh();
         }
     }
 
@@ -1186,6 +1203,10 @@ public class CachedBluetoothDevice implements Comparable<CachedBluetoothDevice> 
 
     public Timestamp getBondTimestamp() {
         return mBondTimestamp;
+    }
+
+    public long getBondFailureTimeMillis() {
+        return mBondFailureTimeMillis;
     }
 
     public BluetoothClass getBtClass() {
