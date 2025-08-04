@@ -78,6 +78,9 @@ public class DynamicCodeLoggingService extends JobService {
      * Schedule our jobs with the {@link JobScheduler}.
      */
     public static void schedule(Context context) {
+        if (com.android.server.flags.Flags.dynamicCodeLoggingServiceRemoval()) {
+            return;
+        }
         ComponentName serviceName = new ComponentName(
                 "android", DynamicCodeLoggingService.class.getName());
 
