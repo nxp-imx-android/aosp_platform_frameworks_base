@@ -5,10 +5,6 @@
       "path": "frameworks/base/services/tests/wmtests"
     },
     {
-      // Includes WM shell cts
-      "path": "frameworks/base/libs/WindowManager/Shell/tests/unittest"
-    },
-    {
       "path": "frameworks/base/tests/FlickerTests/ActivityEmbedding"
     },
     {
