@@ -96,16 +96,13 @@
     <string name="message_restore_error_installer_absent" msgid="8492838251989389724">"ဤအက်ပ်ကို ပြန်ယူရန် <xliff:g id="INSTALLER_NAME">%1$s</xliff:g> ကို ထည့်သွင်းရမည်"</string>
     <string name="message_restore_error_generic" msgid="5903850636679929406">"ဤအက်ပ်ကို ပြန်ယူရာတွင် ပြဿနာရှိသည်"</string>
     <string name="message_uninstall_activity" msgid="3263352475743590167">"<xliff:g id="ACTIVITY_NAME">%1$s</xliff:g> သည် အောက်ပါအက်ပ်၏ တစ်စိတ်တစ်ဒေသဖြစ်သည်- <xliff:g id="APP_NAME">%2$s</xliff:g>"</string>
-    <!-- no translation found for cannot_install_app_blocked_summary (8433096420067308800) -->
-    <skip />
+    <string name="cannot_install_app_blocked_summary" msgid="8433096420067308800">"&lt;p&gt;ဤအက်ပ်ကို ပိတ်ထားသည်။ သင့်စက်နှင့် ဒေတာ ဘေးကင်းလုံခြုံနေစေရန် စိစစ်ထားသော ဆော့ဖ်ဝဲရေးသူများ၏ အက်ပ်များကိုသာ ထည့်သွင်းနိုင်သည်။&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;ဆော့ဖ်ဝဲရေးသူ စိစစ်ခြင်းအကြောင်း ပိုလေ့လာရန်&lt;/a&gt;&lt;/p&gt;"</string>
     <!-- no translation found for cannot_update_app_blocked_summary (5003390308880649930) -->
     <skip />
-    <!-- no translation found for cannot_install_verification_no_internet_summary (8948259713332887857) -->
-    <skip />
+    <string name="cannot_install_verification_no_internet_summary" msgid="8948259713332887857">"&lt;p&gt;ဤအက်ပ်ကို ထည့်သွင်းမထားပါ။ စိစစ်မထားသော ဆော့ဖ်ဝဲရေးသူ၏ အက်ပ်များသည် လုံခြုံမှုမရှိနိုင်ပါ။&lt;/p&gt; &lt;p&gt;အက်ပ်ဆော့ဖ်ဝဲရေးသူကို စိစစ်ရန် အင်တာနက်ချိတ်ဆက်မှု လိုအပ်သည်။ သင့်စက်ကို အင်တာနက်ချိတ်ဆက်ထားကြောင်း သေချာပါစေ။ ထို့နောက် အက်ပ်ကို ထပ်မံ၍ ထည့်သွင်းကြည့်ပါ။ &lt;/p&gt; &lt;p&gt;&lt;a href=&gt;ဆော့ဖ်ဝဲရေးသူ စိစစ်ခြင်းအကြောင်း ပိုလေ့လာရန်&lt;/a&gt;&lt;p&gt;"</string>
     <!-- no translation found for cannot_update_verification_no_internet_summary (2970654650180690063) -->
     <skip />
-    <!-- no translation found for cannot_install_verification_unavailable_summary (343815915687716571) -->
-    <skip />
+    <string name="cannot_install_verification_unavailable_summary" msgid="343815915687716571">"&lt;p&gt;ဤအက်ပ်၏ ဆော့ဖ်ဝဲရေးသူကို စိစစ်ရာတွင် ပြဿနာရှိသည်။ စိစစ်မထားသော ဆော့ဖ်ဝဲရေးသူ၏ အက်ပ်များသည် လုံခြုံမှုမရှိနိုင်သောကြောင့် အက်ပ်ကို ထည့်သွင်းမထားပါ။&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;ဆော့ဖ်ဝဲရေးသူ စိစစ်ခြင်းအကြောင်း ပိုလေ့လာရန်&lt;/a&gt;&lt;/p&gt;"</string>
     <!-- no translation found for cannot_update_verification_unavailable_summary (7697174533040472480) -->
     <skip />
     <!-- no translation found for cannot_install_verification_unavailable_fail_closed_summary (3178396108551754329) -->
@@ -116,12 +113,9 @@
     <skip />
     <!-- no translation found for more_details_expanded_update_summary (2239162864839036480) -->
     <skip />
-    <!-- no translation found for cannot_install_app_blocked_title (6372444121824751694) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_no_internet_title (2862046642298119581) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_unavailable_title (2038093442302309120) -->
-    <skip />
+    <string name="cannot_install_app_blocked_title" msgid="6372444121824751694">"အက်ပ်ဆော့ဖ်ဝဲရေးသူ စိစစ်မထားပါ"</string>
+    <string name="cannot_install_verification_no_internet_title" msgid="2862046642298119581">"အင်တာနက် မရှိပါ။ အက်ပ်ဆော့ဖ်ဝဲရေးသူကို စိစစ်၍မရပါ"</string>
+    <string name="cannot_install_verification_unavailable_title" msgid="2038093442302309120">"အက်ပ်ဆော့ဖ်ဝဲရေးသူကို စိစစ်၍မရပါ"</string>
     <!-- no translation found for install_without_verifying (5359680595440741626) -->
     <skip />
     <!-- no translation found for update_without_verifying (2841466981431484179) -->

@@ -98,31 +98,27 @@
     <string name="message_uninstall_activity" msgid="3263352475743590167">"<xliff:g id="ACTIVITY_NAME">%1$s</xliff:g> <xliff:g id="APP_NAME">%2$s</xliff:g> აპის ნაწილია"</string>
     <!-- syntax error in translation for cannot_install_app_blocked_summary (8433096420067308800) org.xmlpull.v1.XmlPullParserException: name expected (position:START_TAG <lt>@1:260 in     <string name="cannot_install_app_blocked_summary" msgid="8433096420067308800">"&lt;p&gt;ეს აპი დაბლოკილი იყო. თქვენი მოწყობილობისა და მონაცემების უსაფრთხოების უზრუნველსაყოფად, მხოლოდ დადასტურებული დეველოპერების აპების ინსტალაციაა შესაძლებელი.&lt;/p&gt; <lt;p&gt;&lt;a href=&gt;შეიტყვეთ მეტი დეველოპერის დადასტურების შესახებ&lt;/a&gt;&lt;/p&gt;"</string>
 )  -->
-    <!-- no translation found for cannot_update_app_blocked_summary (5003390308880649930) -->
-    <skip />
+    <!-- syntax error in translation for cannot_update_app_blocked_summary (5003390308880649930) org.xmlpull.v1.XmlPullParserException: name expected (position:START_TAG <lt>@1:262 in     <string name="cannot_update_app_blocked_summary" msgid="5003390308880649930">"&lt;p&gt;ეს აპი არ განახლდა. თქვენი მოწყობილობისა და მონაცემების უსაფრთხოების უზრუნველსაყოფად მხოლოდ დადასტურებული დეველოპერების განახლებების ინსტალაციაა შესაძლებელი.&lt;/p&gt; <lt;p&gt;&lt;a href=&gt;შეიტყვეთ მეტი დეველოპერის დადასტურების შესახებ&lt;/a&gt;&lt;/p&gt;"</string>
+)  -->
     <!-- syntax error in translation for cannot_install_verification_no_internet_summary (8948259713332887857) org.xmlpull.v1.XmlPullParserException: expected: /string read: p (position:END_TAG </p>@1:192 in     <string name="cannot_install_verification_no_internet_summary" msgid="8948259713332887857">"&lt;p&gt;ეს აპი არ დაინსტალირდა. დაუდასტურებელი დეველოპერების აპები შეიძლება, სახიფათო იყოს.</p> <p>აპის დეველოპერის დასადასტურებლად საჭიროა ინტერნეტკავშირი. დარწმუნდით, რომ თქვენი მოწყობილობა ინტერნეტთან არის დაკავშირებული, შემდეგ კი ხელახლა ცადეთ აპის ინსტალაცია. &lt;/p&gt; &lt;p&gt;&lt;a href=&gt;შეიტყვეთ მეტი დეველოპერის დადასტურების შესახებ&lt;/a&gt;&lt;p&gt;"</string>
 )  -->
-    <!-- no translation found for cannot_update_verification_no_internet_summary (2970654650180690063) -->
-    <skip />
+    <!-- syntax error in translation for cannot_update_verification_no_internet_summary (2970654650180690063) org.xmlpull.v1.XmlPullParserException: expected: /string read: p (position:END_TAG </p>@1:192 in     <string name="cannot_update_verification_no_internet_summary" msgid="2970654650180690063">"&lt;p&gt;ეს აპი არ განახლდა. დაუდასტურებელი დეველოპერების განახლებები შეიძლება სახიფათო იყოს.</p> <p>აპის დეველოპერის დასადასტურებლად საჭიროა ინტერნეტ-კავშირი. დარწმუნდით, რომ თქვენი მოწყობილობა ინტერნეტთან არის დაკავშირებული, შემდეგ კი ხელახლა ცადეთ აპის განახლება. &lt;/p&gt; &lt;p&gt;&lt;a href=&gt;შეიტყვეთ მეტი დეველოპერის დადასტურების შესახებ&lt;/a&gt;&lt;p&gt;"</string>
+)  -->
     <!-- syntax error in translation for cannot_install_verification_unavailable_summary (343815915687716571) org.xmlpull.v1.XmlPullParserException: name expected (position:START_TAG <p>@1:267 in     <string name="cannot_install_verification_unavailable_summary" msgid="343815915687716571">"&lt;p&gt;ამ აპის დეველოპერის დადასტურებისას პრობლემა წარმოიშვა. დაუდასტურებელი დეველოპერების აპები შეიძლება, სახიფათო იყოს, ამიტომ აპი არ არის დაინსტალირებული.&lt;/p&gt; <p&gt;&lt;a href=&gt;შეიტყვეთ მეტი დეველოპერის ვერიფიკაციის შესახებ&lt;/a&gt;&lt;/p&gt;"</string>
 )  -->
-    <!-- no translation found for cannot_update_verification_unavailable_summary (7697174533040472480) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_unavailable_fail_closed_summary (3178396108551754329) -->
-    <skip />
-    <!-- no translation found for cannot_update_verification_unavailable_fail_closed_summary (2057697870682373917) -->
-    <skip />
-    <!-- no translation found for more_details_expanded_install_summary (3545896392881608712) -->
-    <skip />
-    <!-- no translation found for more_details_expanded_update_summary (2239162864839036480) -->
-    <skip />
+    <!-- syntax error in translation for cannot_update_verification_unavailable_summary (7697174533040472480) org.xmlpull.v1.XmlPullParserException: name expected (position:START_TAG <p>@1:260 in     <string name="cannot_update_verification_unavailable_summary" msgid="7697174533040472480">"&lt;p&gt;ამ აპის დეველოპერის დადასტურებისას პრობლემა წარმოიშვა. დაუდასტურებელი დეველოპერების განახლებები შეიძლება სახიფათო იყოს, ამიტომ აპი არ განახლდა.&lt;/p&gt; <p&gt;&lt;a href=&gt;შეიტყვეთ მეტი დეველოპერის დადასტურების შესახებ&lt;/a&gt;&lt;/p&gt;"</string>
+)  -->
+    <!-- syntax error in translation for cannot_install_verification_unavailable_fail_closed_summary (3178396108551754329) org.xmlpull.v1.XmlPullParserException: name expected (position:START_TAG <lt>@1:333 in     <string name="cannot_install_verification_unavailable_fail_closed_summary" msgid="3178396108551754329">"&lt;p&gt;ეს აპი დაიბლოკა, რადგან დეველოპერის დადასტურებისას პრობლემა წარმოიშვა. თქვენი მოწყობილობისა და მონაცემების უსაფრთხოების უზრუნველსაყოფად მხოლოდ დადასტურებული დეველოპერების აპების ინსტალაციაა შესაძლებელი.&lt;/p&gt; <lt;p&gt;&lt;a href=&gt;შეიტყვეთ მეტი დეველოპერის დადასტურების შესახებ&lt;/a&gt;&lt;/p&gt;"</string>
+)  -->
+    <!-- syntax error in translation for cannot_update_verification_unavailable_fail_closed_summary (2057697870682373917) org.xmlpull.v1.XmlPullParserException: name expected (position:START_TAG <lt>@1:341 in     <string name="cannot_update_verification_unavailable_fail_closed_summary" msgid="2057697870682373917">"&lt;p&gt;ეს აპი არ განახლდა, რადგან დეველოპერის დადასტურებისას პრობლემა წარმოიშვა. თქვენი მოწყობილობისა და მონაცემების უსაფრთხოების უზრუნველსაყოფად მხოლოდ დადასტურებული დეველოპერების განახლებების ინსტალაციაა შესაძლებელი.&lt;/p&gt; <lt;p&gt;&lt;a href=&gt;შეიტყვეთ მეტი დეველოპერის დადასტურების შესახებ&lt;/a&gt;&lt;/p&gt;"</string>
+)  -->
+    <string name="more_details_expanded_install_summary" msgid="3545896392881608712">"თუ ინსტალაციას დადასტურების გარეშე განახორციელებთ, გაითვალისწინეთ, რომ დაუდასტურებელი დეველოპერების აპებმა შესაძლოა თქვენი მოწყობილობა და მონაცემები რისკის ქვეშ დააყენოს."</string>
+    <string name="more_details_expanded_update_summary" msgid="2239162864839036480">"თუ დადასტურების გარეშე განაახლებთ, გაითვალისწინეთ, რომ დაუდასტურებელი დეველოპერების მიერ განახლებებმა შესაძლოა თქვენი მოწყობილობა და მონაცემები რისკის ქვეშ დააყენოს."</string>
     <string name="cannot_install_app_blocked_title" msgid="6372444121824751694">"აპის დეველოპერი არ არის დადასტურებული"</string>
     <string name="cannot_install_verification_no_internet_title" msgid="2862046642298119581">"ინტერნეტი არ არის, აპის დეველოპერის დადასტურება შეუძლებელია"</string>
     <string name="cannot_install_verification_unavailable_title" msgid="2038093442302309120">"აპის დეველოპერის დადასტურება შეუძლებელია"</string>
-    <!-- no translation found for install_without_verifying (5359680595440741626) -->
-    <skip />
-    <!-- no translation found for update_without_verifying (2841466981431484179) -->
-    <skip />
+    <string name="install_without_verifying" msgid="5359680595440741626">"ინსტ. დადასტურების გარეშე"</string>
+    <string name="update_without_verifying" msgid="2841466981431484179">"განახლ. დადასტურების გარეშე"</string>
     <string name="button_install" msgid="7434013176505680162">"ინსტალაცია"</string>
     <string name="button_update" msgid="3046719350226327526">"განახლება"</string>
     <string name="button_update_anyway" msgid="6674207037708730779">"მაინც განახლდეს"</string>

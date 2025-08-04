@@ -96,16 +96,13 @@
     <string name="message_restore_error_installer_absent" msgid="8492838251989389724">"برای بازگرداندن این برنامه، باید <xliff:g id="INSTALLER_NAME">%1$s</xliff:g> را نصب کنید"</string>
     <string name="message_restore_error_generic" msgid="5903850636679929406">"هنگام بازگرداندن این برنامه مشکلی پیش آمد"</string>
     <string name="message_uninstall_activity" msgid="3263352475743590167">"‫<xliff:g id="ACTIVITY_NAME">%1$s</xliff:g> بخشی از این برنامه است: <xliff:g id="APP_NAME">%2$s</xliff:g>"</string>
-    <!-- no translation found for cannot_install_app_blocked_summary (8433096420067308800) -->
-    <skip />
+    <string name="cannot_install_app_blocked_summary" msgid="8433096420067308800">"‏&lt;p&gt;این برنامه مسدود شد. برای حفظ ایمنی دستگاه و داده‌های شما، فقط برنامه‌هایی که توسط توسعه‌دهندگان درستی‌سنجی‌شده ارائه شده‌اند قابل‌نصب هستند.lt;/p&gt; &lt;p&gt;&lt;a href=&amp;gtدرباره درستی‌سنجی توسعه‌دهنده بیشتر بدانید&lt;/a&gt;&lt;/p&gt;"</string>
     <!-- no translation found for cannot_update_app_blocked_summary (5003390308880649930) -->
     <skip />
-    <!-- no translation found for cannot_install_verification_no_internet_summary (8948259713332887857) -->
-    <skip />
+    <string name="cannot_install_verification_no_internet_summary" msgid="8948259713332887857">"‏&lt;p&gt;این برنامه نصب نشد. برنامه‌هایی که توسط توسعه‌دهندگان درستی‌سنجی‌نشده ارائه می‌شوند ممکن است ایمن نباشند.&lt;/p&gt; &lt;p&gt;برای درستی‌سنجی توسعه‌دهنده نرم‌افزار به اتصال اینترنت نیاز دارید. مطمئن شوید دستگاهتان به اینترنت متصل است، سپس دوباره اقدام به نصب برنامه کنید. &lt;/p&gt; &lt;p&gt;&lt;a href=&gt;درباره درستی‌سنجی توسعه‌دهنده بیشتر بدانید&lt;/a&gt;&lt;p&gt;"</string>
     <!-- no translation found for cannot_update_verification_no_internet_summary (2970654650180690063) -->
     <skip />
-    <!-- no translation found for cannot_install_verification_unavailable_summary (343815915687716571) -->
-    <skip />
+    <string name="cannot_install_verification_unavailable_summary" msgid="343815915687716571">"‏&lt;p&gt;مشکلی در درستی‌سنجی توسعه‌دهنده این برنامه وجود داشت. برنامه‌های توسعه‌دهندگان درستی‌سنجی‌نشده ممکن است ایمن نباشند، بنابراین برنامه نصب نشد.&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;درباره درستی‌سنجی توسعه‌دهنده بیشتر بدانید&lt;/a&gt;&lt;/p&gt;"</string>
     <!-- no translation found for cannot_update_verification_unavailable_summary (7697174533040472480) -->
     <skip />
     <!-- no translation found for cannot_install_verification_unavailable_fail_closed_summary (3178396108551754329) -->
@@ -116,12 +113,9 @@
     <skip />
     <!-- no translation found for more_details_expanded_update_summary (2239162864839036480) -->
     <skip />
-    <!-- no translation found for cannot_install_app_blocked_title (6372444121824751694) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_no_internet_title (2862046642298119581) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_unavailable_title (2038093442302309120) -->
-    <skip />
+    <string name="cannot_install_app_blocked_title" msgid="6372444121824751694">"توسعه‌دهنده نرم‌افزار درستی‌سنجی نشده است"</string>
+    <string name="cannot_install_verification_no_internet_title" msgid="2862046642298119581">"به اینترنت متصل نیستید؛ نمی‌توان توسعه‌دهنده نرم‌افزار را درستی‌سنجی کرد"</string>
+    <string name="cannot_install_verification_unavailable_title" msgid="2038093442302309120">"نمی‌توان توسعه‌دهنده نرم‌افزار را درستی‌سنجی کرد"</string>
     <!-- no translation found for install_without_verifying (5359680595440741626) -->
     <skip />
     <!-- no translation found for update_without_verifying (2841466981431484179) -->
