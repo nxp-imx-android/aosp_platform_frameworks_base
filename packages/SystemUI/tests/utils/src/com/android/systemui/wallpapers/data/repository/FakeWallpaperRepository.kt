@@ -50,4 +50,8 @@ class FakeWallpaperRepository : WallpaperRepository {
     fun setWallpaperInfo(wallpaperInfo: WallpaperInfo?) {
         _wallpaperInfo.value = wallpaperInfo
     }
+
+    fun setShouldSendFocalArea(shouldSendFocalArea: Boolean) {
+        _shouldSendFocalArea.value = shouldSendFocalArea
+    }
 }
