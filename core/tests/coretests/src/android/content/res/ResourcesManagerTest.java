@@ -17,6 +17,7 @@
 package android.content.res;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertSame;
@@ -377,9 +378,13 @@ public class ResourcesManagerTest {
     @SmallTest
     public void testUpdateResourcesForActivityUpdateWindowConfiguration() {
         final Binder activity = new Binder();
+        final Binder activity2 = new Binder();
         final Configuration overrideConfig = new Configuration();
         final Resources resources = mResourcesManager.getResources(
                 activity, APP_ONE_RES_DIR, null, null, null, null, Display.DEFAULT_DISPLAY,
+                overrideConfig, CompatibilityInfo.DEFAULT_COMPATIBILITY_INFO, null, null);
+        final Resources resources2 = mResourcesManager.getResources(
+                activity2, APP_ONE_RES_DIR, null, null, null, null, Display.DEFAULT_DISPLAY,
                 overrideConfig, CompatibilityInfo.DEFAULT_COMPATIBILITY_INFO, null, null);
         overrideConfig.windowConfiguration.getBounds().set(100, 100, 600, 1200);
         mResourcesManager.updateResourcesForActivity(activity, overrideConfig,
@@ -387,6 +392,19 @@ public class ResourcesManagerTest {
 
         assertEquals(overrideConfig.windowConfiguration,
                 resources.getConfiguration().windowConfiguration);
+        assertEquals(overrideConfig.windowConfiguration,
+                resources.getDisplayAdjustments().getConfiguration().windowConfiguration);
+        assertNotEquals(resources.getConfiguration().windowConfiguration,
+                resources2.getConfiguration().windowConfiguration);
+
+        overrideConfig.windowConfiguration.getBounds().offset(10, 10);
+        mResourcesManager.updateResourcesForActivity(activity2, overrideConfig,
+                Display.DEFAULT_DISPLAY);
+
+        assertEquals(overrideConfig.windowConfiguration,
+                resources2.getConfiguration().windowConfiguration);
+        assertNotEquals(resources.getConfiguration().windowConfiguration,
+                resources2.getConfiguration().windowConfiguration);
     }
 
     @Test
