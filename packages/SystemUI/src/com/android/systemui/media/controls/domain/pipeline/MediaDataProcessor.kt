@@ -59,6 +59,7 @@ import com.android.systemui.media.controls.ui.view.MediaViewHolder
 import com.android.systemui.media.controls.util.MediaControllerFactory
 import com.android.systemui.media.controls.util.MediaFlags
 import com.android.systemui.media.controls.util.MediaUiEventLogger
+import com.android.systemui.media.remedia.shared.flag.MediaControlsInComposeFlag
 import com.android.systemui.res.R
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.util.Assert
@@ -186,7 +187,7 @@ class MediaDataProcessor(
         }
 
     override fun start() {
-        if (!SceneContainerFlag.isEnabled && !Flags.mediaControlsInCompose()) {
+        if (!SceneContainerFlag.isEnabled && !MediaControlsInComposeFlag.isEnabled) {
             return
         }
 

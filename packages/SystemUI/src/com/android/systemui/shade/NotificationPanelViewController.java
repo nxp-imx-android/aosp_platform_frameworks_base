@@ -123,6 +123,7 @@ import com.android.systemui.keyguard.ui.viewmodel.KeyguardTouchHandlingViewModel
 import com.android.systemui.media.controls.domain.pipeline.MediaDataManager;
 import com.android.systemui.media.controls.ui.controller.KeyguardMediaController;
 import com.android.systemui.media.controls.ui.controller.MediaHierarchyManager;
+import com.android.systemui.media.remedia.shared.flag.MediaControlsInComposeFlag;
 import com.android.systemui.model.StateChange;
 import com.android.systemui.model.SysUiState;
 import com.android.systemui.navigationbar.NavigationBarController;
@@ -2262,7 +2263,7 @@ public final class NotificationPanelViewController implements
             mOpenCloseListener.onClosingFinished();
         }
         setClosingWithAlphaFadeout(false);
-        if (!Flags.mediaControlsInCompose()) {
+        if (!MediaControlsInComposeFlag.isEnabled()) {
             mMediaHierarchyManager.closeGuts();
         }
     }

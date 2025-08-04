@@ -51,6 +51,7 @@ import com.android.systemui.media.controls.ui.view.MediaHost
 import com.android.systemui.media.controls.ui.view.MediaHostState
 import com.android.systemui.media.dagger.MediaModule.QS_PANEL
 import com.android.systemui.media.dagger.MediaModule.QUICK_QS_PANEL
+import com.android.systemui.media.remedia.shared.flag.MediaControlsInComposeFlag
 import com.android.systemui.media.remedia.ui.compose.MediaUiBehavior
 import com.android.systemui.media.remedia.ui.viewmodel.MediaCarouselVisibility
 import com.android.systemui.media.remedia.ui.viewmodel.MediaViewModel
@@ -663,7 +664,7 @@ private fun mediaHostVisible(
     mediaUiBehavior: MediaUiBehavior,
     mediaCarouselInteractor: MediaCarouselInteractor,
 ): Flow<Boolean> {
-    if (Flags.mediaControlsInCompose()) {
+    if (MediaControlsInComposeFlag.isEnabled) {
         return if (
             mediaUiBehavior.carouselVisibility == MediaCarouselVisibility.WhenAnyCardIsActive
         ) {
