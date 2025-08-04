@@ -609,6 +609,8 @@ public class NotificationStackScrollLayout
     private boolean mShouldSkipTopPaddingAnimationAfterFold = false;
     @Nullable private SplitShadeStateController mSplitShadeStateController = null;
     private boolean mIsSmallLandscapeLockscreenEnabled = false;
+
+    /** Suppress the stackEndHeight updates. */
     private boolean mSuppressHeightUpdates;
     private boolean mIsOnLockscreen;
 
@@ -1740,6 +1742,7 @@ public class NotificationStackScrollLayout
      * True when
      * 1) Unlock hint is running
      * 2) Swiping up on lockscreen or flinging down after swipe up
+     * 3) When transiting between the expanded QS and the single Shade.
      */
     private boolean shouldSkipHeightUpdate() {
         if (SceneContainerFlag.isEnabled()) {
@@ -1842,8 +1845,13 @@ public class NotificationStackScrollLayout
     @VisibleForTesting
     public void updateInterpolatedStackHeight(float endHeight, float fraction) {
         mAmbientState.setInterpolatedStackHeight(
-                MathUtils.lerp(endHeight * StackScrollAlgorithm.START_FRACTION,
-                        endHeight, fraction));
+                calculateInterpolatedStackHeight(endHeight, fraction));
+    }
+
+    @VisibleForTesting
+    float calculateInterpolatedStackHeight(float endHeight, float fraction) {
+        return MathUtils.lerp(endHeight * StackScrollAlgorithm.START_FRACTION,
+                endHeight, fraction);
     }
 
     /**
