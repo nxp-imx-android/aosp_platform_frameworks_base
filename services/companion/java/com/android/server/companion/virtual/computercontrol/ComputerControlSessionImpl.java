@@ -17,6 +17,7 @@
 package com.android.server.companion.virtual.computercontrol;
 
 import android.annotation.NonNull;
+import android.annotation.Nullable;
 import android.annotation.UserIdInt;
 import android.companion.virtual.ActivityPolicyExemption;
 import android.companion.virtual.IVirtualDevice;
@@ -171,11 +172,15 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub {
     }
 
     @Override
-    @NonNull
+    @Nullable
     public IInteractiveMirrorDisplay createInteractiveMirrorDisplay(
             int width, int height, @NonNull Surface surface) throws RemoteException {
         Objects.requireNonNull(surface);
         Display display = DisplayManagerGlobal.getInstance().getRealDisplay(mVirtualDisplayId);
+        if (display == null) {
+            // The display we're trying to mirror is gone; likely the session is already closed.
+            return null;
+        }
         DisplayInfo displayInfo = new DisplayInfo();
         display.getDisplayInfo(displayInfo);
         String name = mParams.name + "-display-mirror-" + mMirrorDisplayCounter.getAndIncrement();
