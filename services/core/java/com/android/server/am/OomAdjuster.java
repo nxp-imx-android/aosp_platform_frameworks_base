@@ -804,7 +804,7 @@ public abstract class OomAdjuster {
             final ProcessProviderRecord ppr = pr.mProviders;
             for (int i = ppr.numberOfProviderConnections() - 1; i >= 0; i--) {
                 ContentProviderConnection cpc = ppr.getProviderConnectionAt(i);
-                ProcessRecord provider = cpc.provider.proc;
+                ProcessRecord provider = cpc.provider.getHostProcess();
                 if (provider == null || provider == pr
                         || ((provider.getMaxAdj() >= ProcessList.SYSTEM_ADJ)
                                 && (provider.getMaxAdj() < FOREGROUND_APP_ADJ))) {

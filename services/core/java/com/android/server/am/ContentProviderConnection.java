@@ -20,7 +20,6 @@ import static com.android.server.am.ActivityManagerDebugConfig.DEBUG_PROVIDER;
 import static com.android.server.am.ActivityManagerDebugConfig.TAG_AM;
 
 import android.annotation.UserIdInt;
-import android.content.ComponentName;
 import android.os.Binder;
 import android.os.SystemClock;
 import android.util.Slog;
@@ -117,8 +116,8 @@ public final class ContentProviderConnection extends Binder implements
     }
 
     @Override
-    public ComponentName getProviderName() {
-        return provider.name;
+    public ContentProviderRecord getProvider() {
+        return provider;
     }
 
     public void stopAssociation() {

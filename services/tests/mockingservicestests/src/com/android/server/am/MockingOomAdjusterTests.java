@@ -4770,6 +4770,9 @@ public class MockingOomAdjusterTests {
         record.proc = publisher;
         setFieldValue(ContentProviderRecord.class, record, "connections",
                 new ArrayList<ContentProviderConnection>());
+        doCallRealMethod().when(record).getHostProcess();
+        doCallRealMethod().when(record).numberOfConnections();
+        doCallRealMethod().when(record).getConnectionsAt(any(int.class));
         doReturn(hasExternalProviders).when(record).hasExternalProcessHandles();
         return record;
     }

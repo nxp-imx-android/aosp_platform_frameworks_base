@@ -105,6 +105,7 @@ import com.android.server.ServiceThread;
 import com.android.server.am.psc.ActiveUidsInternal;
 import com.android.server.am.psc.ConnectionRecordInternal;
 import com.android.server.am.psc.ContentProviderConnectionInternal;
+import com.android.server.am.psc.ContentProviderRecordInternal;
 import com.android.server.am.psc.ProcessRecordInternal;
 import com.android.server.am.psc.ProcessServiceRecordInternal;
 import com.android.server.am.psc.ServiceRecordInternal;
@@ -1038,7 +1039,7 @@ public class OomAdjusterImpl extends OomAdjuster {
         final ProcessProviderRecord ppr = app.mProviders;
         for (int i = ppr.numberOfProviderConnections() - 1; i >= 0; i--) {
             ContentProviderConnection cpc = ppr.getProviderConnectionAt(i);
-            ProcessRecord provider = cpc.provider.proc;
+            ProcessRecord provider = cpc.provider.getHostProcess();
             if (provider == null || provider == app || isHighPriorityProcess(provider)) {
                 continue;
             }
@@ -1111,8 +1112,8 @@ public class OomAdjusterImpl extends OomAdjuster {
         final ProcessProviderRecord ppr = app.mProviders;
         for (int i = ppr.numberOfProviders() - 1; i >= 0; i--) {
             final ContentProviderRecord cpr = ppr.getProviderAt(i);
-            for (int j = cpr.connections.size() - 1; j >= 0; j--) {
-                final ContentProviderConnection conn = cpr.connections.get(j);
+            for (int j = cpr.numberOfConnections() - 1; j >= 0; j--) {
+                final ContentProviderConnection conn = cpr.getConnectionsAt(j);
                 connectionConsumer.accept(conn, conn.client);
             }
         }
@@ -1702,7 +1703,7 @@ public class OomAdjusterImpl extends OomAdjuster {
                         || schedGroup == SCHED_GROUP_BACKGROUND
                         || procState > PROCESS_STATE_TOP);
                 provi--) {
-            ContentProviderRecord cpr = ppr.getProviderAt(provi);
+            ContentProviderRecordInternal cpr = ppr.getProviderAt(provi);
             // If the provider has external (non-framework) process
             // dependencies, ensure that its adjustment is at least
             // FOREGROUND_APP_ADJ.
@@ -2409,7 +2410,7 @@ public class OomAdjusterImpl extends OomAdjuster {
             app.setAdjTypeCode(ActivityManager.RunningAppProcessInfo.REASON_PROVIDER_IN_USE);
             app.setAdjSource(client);
             app.setAdjSourceProcState(clientProcState);
-            app.setAdjTarget(conn.getProviderName());
+            app.setAdjTarget(conn.getProvider().name);
             if (reportDebugMsgs) {
                 reportOomAdjMessageLocked(TAG_OOM_ADJ, "Raise to " + adjType
                         + ": " + app + ", due to " + client
