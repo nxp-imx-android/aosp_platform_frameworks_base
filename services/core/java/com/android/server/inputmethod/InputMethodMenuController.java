@@ -57,9 +57,9 @@ import java.util.List;
 /**
  * Controller for showing and hiding the Input Method Switcher Menu.
  */
-final class InputMethodMenuControllerNew {
+final class InputMethodMenuController {
 
-    private static final String TAG = InputMethodMenuControllerNew.class.getSimpleName();
+    private static final String TAG = InputMethodMenuController.class.getSimpleName();
 
     /**
      * The horizontal offset from the menu to the edge of the screen corresponding
@@ -112,7 +112,7 @@ final class InputMethodMenuControllerNew {
 
         // Create the content view.
         final View contentView = inflater
-                .inflate(com.android.internal.R.layout.input_method_switch_dialog_new, null);
+                .inflate(com.android.internal.R.layout.input_method_switch_dialog, null);
         contentView.setAccessibilityPaneTitle(
                 dialogWindowContext.getText(com.android.internal.R.string.select_input_method));
         builder.setView(contentView);
@@ -468,7 +468,7 @@ final class InputMethodMenuControllerNew {
             switch (viewType) {
                 case TYPE_SUBTYPE -> {
                     final View view = mInflater.inflate(
-                            com.android.internal.R.layout.input_method_switch_item_new, parent,
+                            com.android.internal.R.layout.input_method_switch_item, parent,
                             false);
                     return new SubtypeViewHolder(view, mListener);
                 }

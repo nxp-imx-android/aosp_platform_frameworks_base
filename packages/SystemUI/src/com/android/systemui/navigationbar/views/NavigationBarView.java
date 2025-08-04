@@ -284,7 +284,7 @@ public class NavigationBarView extends FrameLayout {
         // Set up the context group of buttons
         mContextualButtonGroup = new ContextualButtonGroup(R.id.menu_container);
         final ContextualButton imeSwitcherButton = new ContextualButton(R.id.ime_switcher,
-                mLightContext, com.android.internal.R.drawable.ic_ime_switcher_new);
+                mLightContext, com.android.internal.R.drawable.ic_ime_switcher);
         final ContextualButton accessibilityButton =
                 new ContextualButton(R.id.accessibility_button, mLightContext,
                         R.drawable.ic_sysbar_accessibility_button);
