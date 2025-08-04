@@ -2430,6 +2430,9 @@ public class BubbleStackView extends FrameLayout
             // case the IME gets hidden after we already were detached from the window.
             stopMonitoringSwipeUpGesture();
         }
+        if (Flags.fixBubblesExpandedSysuiFlag()) {
+            mSysuiProxyProvider.getSysuiProxy().onStackExpandChanged(shouldExpand);
+        }
 
         // Do the actual expansion/collapse after the IME is hidden if it's currently visible in
         // order to avoid flickers
@@ -2438,8 +2441,9 @@ public class BubbleStackView extends FrameLayout
             if (!isAttachedToWindow()) {
                 Log.w(TAG, "onImeHidden runnable running but we're not attached.");
             }
-            mSysuiProxyProvider.getSysuiProxy().onStackExpandChanged(shouldExpand);
-
+            if (!Flags.fixBubblesExpandedSysuiFlag()) {
+                mSysuiProxyProvider.getSysuiProxy().onStackExpandChanged(shouldExpand);
+            }
             if (wasExpanded) {
                 animateCollapse();
                 showManageMenu(false);
