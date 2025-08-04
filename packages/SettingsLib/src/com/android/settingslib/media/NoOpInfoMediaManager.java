@@ -31,6 +31,7 @@ import com.android.settingslib.bluetooth.LocalBluetoothManager;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.Executor;
 
 /**
  * No-op implementation of {@link InfoMediaManager}.
@@ -73,7 +74,7 @@ import java.util.List;
     }
 
     @Override
-    protected void registerRouter() {
+    protected void registerRouter(Executor executor) {
         // Do nothing.
     }
 

@@ -41,6 +41,8 @@ import android.media.SuggestedDeviceInfo;
 import android.media.session.MediaController;
 import android.media.session.MediaSession;
 import android.os.Build;
+import android.os.Handler;
+import android.os.HandlerThread;
 import android.os.UserHandle;
 import android.text.TextUtils;
 import android.util.Log;
@@ -56,7 +58,6 @@ import com.android.settingslib.bluetooth.CachedBluetoothDevice;
 import com.android.settingslib.bluetooth.LocalBluetoothManager;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -66,7 +67,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.CopyOnWriteArraySet;
+import java.util.concurrent.Executor;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -132,7 +134,7 @@ public abstract class InfoMediaManager {
     @NonNull protected final Context mContext;
     @NonNull protected final String mPackageName;
     @NonNull protected final UserHandle mUserHandle;
-    private final Collection<MediaDeviceCallback> mCallbacks = new CopyOnWriteArrayList<>();
+    private final Set<MediaDeviceCallback> mCallbacks = new CopyOnWriteArraySet<>();
     @GuardedBy("mLock")
     private MediaDevice mCurrentConnectedDevice;
     private MediaController mMediaController;
@@ -146,6 +148,9 @@ public abstract class InfoMediaManager {
     @Nullable private SuggestedDeviceState mSuggestedDeviceState;
 
     private final MediaController.Callback mMediaControllerCallback = new MediaControllerCallback();
+
+    @GuardedBy("mLock")
+    @Nullable private HandlerThread mCallbackHandlerThread;
 
     /* package */ InfoMediaManager(
             @NonNull Context context,
@@ -231,7 +236,7 @@ public abstract class InfoMediaManager {
 
     protected abstract void startScanOnRouter();
 
-    protected abstract void registerRouter();
+    protected abstract void registerRouter(Executor executor);
 
     protected abstract void unregisterRouter();
 
@@ -334,20 +339,27 @@ public abstract class InfoMediaManager {
      * updates.
      */
     public final void registerCallback(@NonNull MediaDeviceCallback callback) {
-        boolean wasEmpty = mCallbacks.isEmpty();
-        if (!mCallbacks.contains(callback)) {
+        boolean firstCallbackAdded;
+        Handler callbackHandler = null;
+
+        synchronized (mLock) {
+            firstCallbackAdded = mCallbacks.isEmpty();
             mCallbacks.add(callback);
-            if (wasEmpty) {
-                synchronized (mLock) {
-                    mMediaDevices.clear();
-                }
-                registerRouter();
-                if (mMediaController != null) {
-                    mMediaController.registerCallback(mMediaControllerCallback);
-                }
-                updateRouteListingPreference();
-                refreshDevices();
+            if (firstCallbackAdded) {
+                mMediaDevices.clear();
+                mCallbackHandlerThread = new HandlerThread("callbackHandlerThread");
+                mCallbackHandlerThread.start();
+                callbackHandler = new Handler(mCallbackHandlerThread.getLooper());
             }
+        }
+
+        if (firstCallbackAdded) {
+            registerRouter(callbackHandler::post);
+            if (mMediaController != null) {
+                mMediaController.registerCallback(mMediaControllerCallback, callbackHandler);
+            }
+            updateRouteListingPreference();
+            refreshDevices();
         }
     }
 
@@ -357,7 +369,22 @@ public abstract class InfoMediaManager {
      * @see #registerCallback(MediaDeviceCallback)
      */
     public final void unregisterCallback(@NonNull MediaDeviceCallback callback) {
-        if (mCallbacks.remove(callback) && mCallbacks.isEmpty()) {
+        boolean lastCallbackRemoved;
+        HandlerThread callbackThread = null;
+
+        synchronized (mLock) {
+            mCallbacks.remove(callback);
+            lastCallbackRemoved = mCallbacks.isEmpty();
+            if (lastCallbackRemoved && mCallbackHandlerThread != null) {
+                callbackThread = mCallbackHandlerThread;
+                mCallbackHandlerThread = null;
+            }
+        }
+
+        if (lastCallbackRemoved) {
+            if (callbackThread != null) {
+                callbackThread.quitSafely();
+            }
             if (mMediaController != null) {
                 mMediaController.unregisterCallback(mMediaControllerCallback);
             }
@@ -372,27 +399,23 @@ public abstract class InfoMediaManager {
                 Log.d(TAG, device.toString());
             }
         }
-        for (MediaDeviceCallback callback : getCallbacks()) {
+        for (MediaDeviceCallback callback : mCallbacks) {
             callback.onDeviceListAdded(new ArrayList<>(devices));
         }
     }
 
     private void dispatchConnectedDeviceChanged(String id) {
         Log.i(TAG, "dispatchConnectedDeviceChanged(), id = " + id);
-        for (MediaDeviceCallback callback : getCallbacks()) {
+        for (MediaDeviceCallback callback : mCallbacks) {
             callback.onConnectedDeviceChanged(id);
         }
     }
 
     protected void dispatchOnRequestFailed(int reason) {
         Log.i(TAG, "dispatchOnRequestFailed(), reason = " + reason);
-        for (MediaDeviceCallback callback : getCallbacks()) {
+        for (MediaDeviceCallback callback : mCallbacks) {
             callback.onRequestFailed(reason);
         }
-    }
-
-    private Collection<MediaDeviceCallback> getCallbacks() {
-        return new CopyOnWriteArrayList<>(mCallbacks);
     }
 
     /**
@@ -715,7 +738,7 @@ public abstract class InfoMediaManager {
     private void dispatchOnSuggestedDeviceUpdated() {
         SuggestedDeviceState state = getSuggestedDevice();
         Log.i(TAG, "dispatchOnSuggestedDeviceUpdated(), state: " + state);
-        for (MediaDeviceCallback callback : getCallbacks()) {
+        for (MediaDeviceCallback callback : mCallbacks) {
             callback.onSuggestedDeviceUpdated(state);
         }
     }
