@@ -21,6 +21,7 @@ import android.app.supervision.flags.Flags
 import android.os.PersistableBundle
 import android.platform.test.annotations.RequiresFlagsEnabled
 import android.platform.test.flag.junit.DeviceFlagsValueProvider
+import android.util.ArraySet
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.common.truth.Truth.assertThat
 import java.nio.file.Files
@@ -145,6 +146,24 @@ class SupervisionSettingsTest {
     }
 
     @Test
+    fun saveAndLoadSupervisionUserData_hasSupervisionRoleHolders_retrievesUserDataCorrectly() {
+        // Get and set user data
+        val userData1 = mSupervisionSettings.getUserData(1)
+        val roleHolders = ArraySet<String>(setOf("package2", "package3", "package4"))
+        userData1.changeUserData(true, "package1", true,
+            null, roleHolders)
+
+        // Save, change and load user data
+        mSupervisionSettings.saveUserData()
+        userData1.changeUserData(false, null, false, BUNDLE_2)
+        mSupervisionSettings.loadUserData()
+
+        // Check if user data was loaded correctly
+        mSupervisionSettings.getUserData(1).checkUserData(true, "package1",
+            true, null, roleHolders)
+    }
+
+    @Test
     fun saveAndLoadSupervisionUserData_manyUsers_retrievesUserDataCorrectly() {
         // Get and set user data
         val userData1 = mSupervisionSettings.getUserData(1)
@@ -218,11 +237,13 @@ class SupervisionSettingsTest {
             appPackage: String?,
             lockScreenEnabled: Boolean,
             lockScreenOptions: PersistableBundle?,
+            roleHolders: ArraySet<String> = ArraySet<String>(),
         ) {
             this.supervisionEnabled = enabled
             this.supervisionAppPackage = appPackage
             this.supervisionLockScreenEnabled = lockScreenEnabled
             this.supervisionLockScreenOptions = lockScreenOptions
+            this.supervisionRoleHolders = roleHolders
         }
 
         fun SupervisionUserData.checkUserData(
@@ -230,6 +251,7 @@ class SupervisionSettingsTest {
             appPackage: String?,
             lockScreenEnabled: Boolean,
             lockScreenOptions: PersistableBundle?,
+            roleHolders: ArraySet<String> = ArraySet<String>(),
         ) {
             assertThat(this.supervisionEnabled).isEqualTo(enabled)
             assertThat(this.supervisionAppPackage).isEqualTo(appPackage)
@@ -240,6 +262,7 @@ class SupervisionSettingsTest {
                 assertThat(this.supervisionLockScreenOptions.toString())
                     .isEqualTo(lockScreenOptions.toString())
             }
+            assertThat(this.supervisionRoleHolders).containsExactlyElementsIn(roleHolders)
         }
     }
 }
