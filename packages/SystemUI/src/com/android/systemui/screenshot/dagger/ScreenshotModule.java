@@ -18,7 +18,6 @@ package com.android.systemui.screenshot.dagger;
 
 import android.app.Service;
 import android.content.Context;
-import android.view.accessibility.AccessibilityManager;
 
 import com.android.internal.util.ScreenshotHelper;
 import com.android.systemui.dagger.SysUISingleton;
@@ -38,7 +37,6 @@ import com.android.systemui.screenshot.appclips.AppClipsService;
 import com.android.systemui.screenshot.message.MessageModule;
 import com.android.systemui.screenshot.policy.ScreenshotPolicyModule;
 import com.android.systemui.screenshot.proxy.ScreenshotProxyModule;
-import com.android.systemui.screenshot.ui.viewmodel.ScreenshotViewModel;
 
 import dagger.Binds;
 import dagger.Module;
@@ -82,13 +80,6 @@ public abstract class ScreenshotModule {
     @Binds
     abstract ScreenshotSoundController bindScreenshotSoundController(
             ScreenshotSoundControllerImpl screenshotSoundProviderImpl);
-
-    @Provides
-    @SysUISingleton
-    static ScreenshotViewModel providesScreenshotViewModel(
-            AccessibilityManager accessibilityManager) {
-        return new ScreenshotViewModel(accessibilityManager);
-    }
 
     @Provides
     static InteractiveScreenshotHandler.Factory providesScreenshotController(
