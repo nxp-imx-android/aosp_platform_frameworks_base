@@ -31,6 +31,7 @@ import android.content.ComponentName;
 import android.os.Handler;
 import android.os.Message;
 import android.os.RemoteException;
+import android.platform.test.annotations.RequiresFlagsDisabled;
 import android.testing.AndroidTestingRunner;
 import android.testing.TestableLooper;
 import android.window.TaskSnapshot;
@@ -157,6 +158,7 @@ public class TaskStackListenerImplTest extends ShellTestCase {
     }
 
     @Test
+    @RequiresFlagsDisabled(com.android.window.flags.Flags.FLAG_REDUCE_TASK_SNAPSHOT_MEMORY_USAGE)
     public void testOnTaskSnapshotChanged() {
         TaskSnapshot snapshot = mock(TaskSnapshot.class);
         mImpl.onTaskSnapshotChanged(123, snapshot);

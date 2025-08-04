@@ -83,6 +83,7 @@ import android.view.ViewRootImpl;
 import android.window.DesktopExperienceFlags;
 import android.window.DesktopModeFlags;
 import android.window.TaskSnapshot;
+import android.window.TaskSnapshotManager;
 import android.window.WindowContainerToken;
 import android.window.WindowContainerTransaction;
 
@@ -1003,11 +1004,21 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
             }
             // TODO(b/337903443): Fix this returning null for freeform tasks.
             try {
-                TaskSnapshot screenshot = activityTaskManagerService
-                        .getTaskSnapshot(info.taskId, false);
-                if (screenshot == null) {
+                TaskSnapshot screenshot;
+                if (com.android.window.flags.Flags.reduceTaskSnapshotMemoryUsage()) {
+                    screenshot = TaskSnapshotManager.getInstance().getTaskSnapshot(
+                            info.taskId, TaskSnapshotManager.RESOLUTION_HIGH);
+                    if (screenshot == null) {
+                        screenshot = TaskSnapshotManager.getInstance().takeTaskSnapshot(
+                                info.taskId, false /* updateCache */);
+                    }
+                } else {
                     screenshot = activityTaskManagerService
-                            .takeTaskSnapshot(info.taskId, false);
+                            .getTaskSnapshot(info.taskId, false);
+                    if (screenshot == null) {
+                        screenshot = activityTaskManagerService
+                                .takeTaskSnapshot(info.taskId, false);
+                    }
                 }
                 snapshotList.add(new Pair(info.taskId, screenshot));
             } catch (RemoteException e) {

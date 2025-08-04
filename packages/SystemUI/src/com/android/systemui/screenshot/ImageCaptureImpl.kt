@@ -22,6 +22,7 @@ import android.graphics.Rect
 import android.view.IWindowManager
 import android.window.ScreenCaptureInternal
 import android.window.ScreenCaptureInternal.CaptureArgs
+import android.window.TaskSnapshotManager
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Background
 import javax.inject.Inject
@@ -49,8 +50,18 @@ constructor(
 
     override suspend fun captureTask(taskId: Int): Bitmap? {
         val snapshot =
-            withContext(bgContext) { atmService.takeTaskSnapshot(taskId, false /* updateCache */) }
-                ?: return null
-        return Bitmap.wrapHardwareBuffer(snapshot.hardwareBuffer, snapshot.colorSpace)
+            withContext(bgContext) {
+                if (com.android.window.flags.Flags.reduceTaskSnapshotMemoryUsage()) {
+                    TaskSnapshotManager.getInstance()
+                        .takeTaskSnapshot(taskId, false /* updateCache */)
+                } else {
+                    atmService.takeTaskSnapshot(taskId, false /* updateCache */)
+                }
+            } ?: return null
+        if (com.android.window.flags.Flags.reduceTaskSnapshotMemoryUsage()) {
+            return snapshot.wrapToBitmap()
+        } else {
+            return Bitmap.wrapHardwareBuffer(snapshot.hardwareBuffer, snapshot.colorSpace)
+        }
     }
 }
