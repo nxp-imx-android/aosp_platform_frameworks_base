@@ -29,6 +29,7 @@ import android.media.AudioManager;
 import android.media.RoutingChangeInfo;
 import android.media.RoutingChangeInfo.EntryPoint;
 import android.media.RoutingSessionInfo;
+import android.media.SuggestedDeviceInfo;
 import android.os.Build;
 import android.os.Handler;
 import android.text.TextUtils;
@@ -55,7 +56,6 @@ import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Objects;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
@@ -255,11 +255,6 @@ public class LocalMediaManager implements BluetoothCallback {
             if (mConnectingSuggestedDeviceState != null) {
                 return;
             }
-            SuggestedDeviceState currentSuggestion = mInfoMediaManager.getSuggestedDevice();
-            if (!Objects.equals(suggestion, currentSuggestion)) {
-                Log.w(TAG, "Suggestion got changed, aborting connection.");
-                return;
-            }
             for (MediaDevice device : mMediaDevices) {
                 if (suggestion.getSuggestedDeviceInfo().getRouteId().equals(device.getId())) {
                     Log.i(TAG, "Suggestion: device is available, connecting. deviceId = "
@@ -270,7 +265,7 @@ public class LocalMediaManager implements BluetoothCallback {
             }
             mConnectingSuggestedDeviceState =
                     new ConnectingSuggestedDeviceState(
-                            currentSuggestion, routingChangeInfo.getEntryPoint());
+                            suggestion, routingChangeInfo.getEntryPoint());
             mConnectingSuggestedDeviceState.tryConnect();
         }
     }
@@ -292,9 +287,9 @@ public class LocalMediaManager implements BluetoothCallback {
         }
     }
 
-    @Nullable
-    public SuggestedDeviceState getSuggestedDevice() {
-        return mInfoMediaManager.getSuggestedDevice();
+    @NonNull
+    public List<SuggestedDeviceInfo> getSuggestions() {
+        return mInfoMediaManager.getSuggestions();
     }
 
     void dispatchSelectedDeviceStateChanged(MediaDevice device, @MediaDeviceState int state) {
@@ -356,9 +351,21 @@ public class LocalMediaManager implements BluetoothCallback {
         }
     }
 
-    void dispatchOnSuggestedDeviceUpdated(@Nullable SuggestedDeviceState device) {
+    void dispatchDeviceSuggestionsUpdated(List<SuggestedDeviceInfo> deviceSuggestions) {
         for (DeviceCallback callback : getCallbacks()) {
-            callback.onSuggestedDeviceUpdated(device);
+            callback.onDeviceSuggestionsUpdated(deviceSuggestions);
+        }
+    }
+
+    void dispatchConnectSuggestedDeviceFinished(SuggestedDeviceState state, boolean success) {
+        for (DeviceCallback callback : getCallbacks()) {
+            callback.onConnectSuggestedDeviceFinished(state, success);
+        }
+    }
+
+    void dispatchConnectionAttemptedForSuggestion(SuggestedDeviceState state) {
+        for (DeviceCallback callback : getCallbacks()) {
+            callback.onConnectionAttemptedForSuggestion(state);
         }
     }
 
@@ -408,6 +415,17 @@ public class LocalMediaManager implements BluetoothCallback {
         }
         Log.i(TAG, "getMediaDeviceById() failed to find device with id: " + id);
         return null;
+    }
+
+    /**
+     * Returns a list of MediaDevice objects.
+     *
+     * @return a list of media devices
+     */
+    public List<MediaDevice> getMediaDevices() {
+        synchronized (mMediaDevicesLock) {
+            return new ArrayList<>(mMediaDevices);
+        }
     }
 
     /**
@@ -769,8 +787,9 @@ public class LocalMediaManager implements BluetoothCallback {
         }
 
         @Override
-        public void onSuggestedDeviceUpdated(@Nullable SuggestedDeviceState device) {
-            dispatchOnSuggestedDeviceUpdated(device);
+        public void onDeviceSuggestionsUpdated(
+                @NonNull List<SuggestedDeviceInfo> deviceSuggestions) {
+            dispatchDeviceSuggestionsUpdated(deviceSuggestions);
         }
     }
 
@@ -850,8 +869,20 @@ public class LocalMediaManager implements BluetoothCallback {
          */
         default void onAboutToConnectDeviceRemoved() {}
 
-        /** Callback for notifying that the suggested device has been updated. */
-        default void onSuggestedDeviceUpdated(@Nullable SuggestedDeviceState device) {}
+        /** Callback for notifying that the suggested device list has been updated. */
+        default void onDeviceSuggestionsUpdated(
+                @NonNull List<SuggestedDeviceInfo> deviceSuggestions) {
+        }
+
+        /** Callback for notifying that connection to suggested device is finished. */
+        default void onConnectSuggestedDeviceFinished(
+                @NonNull SuggestedDeviceState suggestedDeviceState, boolean success) {
+        }
+
+        /** Callback for notifying that connection to suggested device is started. */
+        default void onConnectionAttemptedForSuggestion(
+                @NonNull SuggestedDeviceState suggestedDeviceState) {
+        }
     }
 
     /**
@@ -951,8 +982,8 @@ public class LocalMediaManager implements BluetoothCallback {
                         stopScan();
                         Log.i(TAG, "Suggestion: scan stopped. success = "
                                 + mDidAttemptCompleteSuccessfully);
-                        mInfoMediaManager.onConnectionAttemptCompletedForSuggestion(
-                                mSuggestedDeviceState, mDidAttemptCompleteSuccessfully);
+                        dispatchConnectSuggestedDeviceFinished(mSuggestedDeviceState,
+                                mDidAttemptCompleteSuccessfully);
                     };
         }
 
@@ -968,7 +999,7 @@ public class LocalMediaManager implements BluetoothCallback {
             startScan();
             mConnectSuggestedDeviceHandler.postDelayed(
                     mConnectionAttemptFinishedRunnable, SCAN_DURATION_MS);
-            mInfoMediaManager.onConnectionAttemptedForSuggestion(mSuggestedDeviceState);
+            dispatchConnectionAttemptedForSuggestion(mSuggestedDeviceState);
         }
     }
 }

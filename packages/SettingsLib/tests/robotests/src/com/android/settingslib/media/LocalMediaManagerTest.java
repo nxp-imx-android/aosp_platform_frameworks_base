@@ -643,7 +643,6 @@ public class LocalMediaManagerTest {
 
     @Test
     public void connectSuggestedDevice_deviceIsDiscovered_immediatelyConnects() {
-        when(mInfoMediaManager.getSuggestedDevice()).thenReturn(mSuggestedDeviceState);
         when(mSuggestedDeviceInfo.getRouteId()).thenReturn(TEST_DEVICE_ID_1);
         mLocalMediaManager.mMediaDevices.add(mInfoMediaDevice1);
 
@@ -657,7 +656,6 @@ public class LocalMediaManagerTest {
 
     @Test
     public void connectSuggestedDevice_deviceIsNotDiscovered_scanStarted() {
-        when(mInfoMediaManager.getSuggestedDevice()).thenReturn(mSuggestedDeviceState);
         when(mSuggestedDeviceInfo.getRouteId()).thenReturn(TEST_DEVICE_ID_2);
         mLocalMediaManager.mMediaDevices.add(mInfoMediaDevice1);
 
@@ -671,7 +669,6 @@ public class LocalMediaManagerTest {
 
     @Test
     public void connectSuggestedDevice_deviceDiscoveredAfter_connects() {
-        when(mInfoMediaManager.getSuggestedDevice()).thenReturn(mSuggestedDeviceState);
         when(mSuggestedDeviceInfo.getRouteId()).thenReturn(TEST_DEVICE_ID_1);
         mLocalMediaManager.mMediaDevices.add(mInfoMediaDevice2);
 
@@ -687,7 +684,6 @@ public class LocalMediaManagerTest {
 
     @Test
     public void connectSuggestedDevice_handlerTimesOut_completesConnectionAttempt() {
-        when(mInfoMediaManager.getSuggestedDevice()).thenReturn(mSuggestedDeviceState);
         when(mSuggestedDeviceInfo.getRouteId()).thenReturn(TEST_DEVICE_ID_1);
         mLocalMediaManager.mMediaDevices.add(mInfoMediaDevice2);
 
@@ -701,13 +697,11 @@ public class LocalMediaManagerTest {
 
         ShadowLooper.runUiThreadTasksIncludingDelayedTasks();
 
-        verify(mInfoMediaManager)
-                .onConnectionAttemptCompletedForSuggestion(mSuggestedDeviceState, false);
+        verify(mCallback).onConnectSuggestedDeviceFinished(mSuggestedDeviceState, false);
     }
 
     @Test
     public void connectSuggestedDevice_connectionSuccess_completesConnectionAttempt() {
-        when(mInfoMediaManager.getSuggestedDevice()).thenReturn(mSuggestedDeviceState);
         when(mSuggestedDeviceInfo.getRouteId()).thenReturn(TEST_DEVICE_ID_1);
         mLocalMediaManager.mMediaDevices.add(mInfoMediaDevice2);
 
@@ -721,8 +715,7 @@ public class LocalMediaManagerTest {
 
         mLocalMediaManager.dispatchSelectedDeviceStateChanged(mInfoMediaDevice1,
             LocalMediaManager.MediaDeviceState.STATE_CONNECTED);
-        verify(mInfoMediaManager)
-                .onConnectionAttemptCompletedForSuggestion(mSuggestedDeviceState, true);
+        verify(mCallback).onConnectSuggestedDeviceFinished(mSuggestedDeviceState, true);
     }
 
     @Test
