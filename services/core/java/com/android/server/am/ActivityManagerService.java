@@ -15450,7 +15450,6 @@ public class ActivityManagerService extends IActivityManager.Stub
                 }
             }
 
-            psr.setReportedForegroundServiceTypes(fgServiceTypes);
             mProcessList.enqueueProcessChangeItemLocked(proc.getPid(), proc.info.uid,
                     ProcessChangeItem.CHANGE_FOREGROUND_SERVICES, fgServiceTypes);
         }
