@@ -29,10 +29,10 @@ import com.android.systemui.scene.domain.interactor.SceneInteractor
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.util.kotlin.BooleanFlowOperators.anyOf
-import com.android.systemui.util.time.SystemClock
 import dagger.Lazy
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.SharingStarted.Companion.WhileSubscribed
@@ -46,13 +46,13 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 
 /** Encapsulates business logic for interacting with the lock-screen alternate bouncer. */
+@OptIn(ExperimentalCoroutinesApi::class)
 @SysUISingleton
 class AlternateBouncerInteractor
 @Inject
 constructor(
     private val bouncerRepository: KeyguardBouncerRepository,
     fingerprintPropertyRepository: FingerprintPropertyRepository,
-    private val systemClock: SystemClock,
     private val deviceEntryBiometricsAllowedInteractor:
         Lazy<DeviceEntryBiometricsAllowedInteractor>,
     private val keyguardInteractor: Lazy<KeyguardInteractor>,
@@ -60,9 +60,10 @@ constructor(
     sceneInteractor: Lazy<SceneInteractor>,
     @Application scope: CoroutineScope,
 ) {
-    var receivedDownTouch = false
+    private var receivedDownTouch = false
+
     val isVisible: StateFlow<Boolean> = bouncerRepository.alternateBouncerVisible
-    private val alternateBouncerUiAvailableFromSource: HashSet<String> = HashSet()
+
     val alternateBouncerSupported: StateFlow<Boolean> =
         fingerprintPropertyRepository.sensorType
             .map { sensorType -> sensorType.isUdfps() || sensorType.isPowerButton() }
@@ -158,15 +159,6 @@ constructor(
     }
 
     /**
-     * Whether the alt bouncer has shown for a minimum time before allowing touches to dismiss the
-     * alternate bouncer and show the primary bouncer.
-     */
-    fun hasAlternateBouncerShownWithMinTime(): Boolean {
-        return (systemClock.uptimeMillis() - bouncerRepository.lastAlternateBouncerVisibleTime) >
-            MIN_VISIBILITY_DURATION_UNTIL_TOUCHES_DISMISS_ALTERNATE_BOUNCER_MS
-    }
-
-    /**
      * Should only be called through StatusBarKeyguardViewManager which propagates the source of
      * truth to other concerned controllers. Will hide the alternate bouncer if it's no longer
      * allowed to show.
@@ -181,8 +173,6 @@ constructor(
     }
 
     companion object {
-        private const val MIN_VISIBILITY_DURATION_UNTIL_TOUCHES_DISMISS_ALTERNATE_BOUNCER_MS = 200L
-
         private const val TAG = "AlternateBouncerInteractor"
     }
 }

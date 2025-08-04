@@ -25,14 +25,12 @@ import com.android.systemui.keyguard.domain.interactor.keyguardTransitionInterac
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.scene.domain.interactor.sceneInteractor
-import com.android.systemui.util.time.systemClock
 
 val Kosmos.alternateBouncerInteractor: AlternateBouncerInteractor by
     Kosmos.Fixture {
         AlternateBouncerInteractor(
             bouncerRepository = keyguardBouncerRepository,
             fingerprintPropertyRepository = fingerprintPropertyRepository,
-            systemClock = systemClock,
             deviceEntryBiometricsAllowedInteractor = { deviceEntryBiometricsAllowedInteractor },
             keyguardInteractor = { keyguardInteractor },
             keyguardTransitionInteractor = { keyguardTransitionInteractor },
