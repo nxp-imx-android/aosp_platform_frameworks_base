@@ -74,8 +74,10 @@ final class AppOpHistoryTable {
         static final String CHAIN_ID = "chain_id";
         /** The actual access time of first event in a time window. */
         static final String ACCESS_TIME = "access_time";
-        /** The actual duration of first event in a time window. Subsequent events with same
-         * discretized duration are summed up in total duration. */
+        /**
+         * The actual duration of first event in a time window. Subsequent events with same
+         * discretized duration are summed up in total duration.
+         */
         static final String DURATION = "access_duration";
         /** The sum of actual duration of the app op accesses in a time window. */
         static final String TOTAL_DURATION = "total_duration";
@@ -159,6 +161,11 @@ final class AppOpHistoryTable {
 
     static final String DELETE_TABLE_DATA_BEFORE_ACCESS_TIME = "DELETE FROM " + TABLE_NAME
             + " WHERE " + Columns.ACCESS_TIME + " < ?";
+
+    // Delete at least 1024 (cache size) records, in other words the batch size for insertion.
+    static final String DELETE_TABLE_DATA_LEAST_RECENT_ENTRIES = "DELETE FROM " + TABLE_NAME
+            + " WHERE " + Columns.ACCESS_TIME + " <= (SELECT " + Columns.ACCESS_TIME + " FROM "
+            + TABLE_NAME + " ORDER BY " + Columns.ACCESS_TIME + " LIMIT 1 OFFSET 1024)";
 
     static final String DELETE_DATA_FOR_UID_PACKAGE = "DELETE FROM "
             + AppOpHistoryTable.TABLE_NAME
