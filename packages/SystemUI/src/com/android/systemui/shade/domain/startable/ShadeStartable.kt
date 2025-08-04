@@ -149,15 +149,8 @@ constructor(
         if (SceneContainerFlag.isEnabled) {
             val shadeModeInteractor = shadeModeInteractorProvider.get()
             applicationScope.launch {
-                combine(shadeModeInteractor.shadeMode, shadeDisplayStateInteractor.isWideScreen) {
-                        shadeMode,
-                        isWideScreen ->
-                        when (shadeMode) {
-                            is ShadeMode.Single -> true
-                            is ShadeMode.Split -> false
-                            is ShadeMode.Dual -> !isWideScreen
-                        }
-                    }
+                shadeModeInteractor.isShadeLayoutWide
+                    .map { !it }
                     .collect { isFullWidth ->
                         nsslc.setIsFullWidth(isFullWidth)
                         scrimController.setClipsQsScrim(isFullWidth)
