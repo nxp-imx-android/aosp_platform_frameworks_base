@@ -273,7 +273,7 @@ public class KeySyncTask implements Runnable {
         }
 
         boolean useScryptToHashCredential = shouldUseScryptToHashCredential();
-        byte[] salt = generateSalt();
+        byte[] salt = generateNewSaltIfNecessary();
         byte[] localLskfHash;
         if (useScryptToHashCredential) {
             localLskfHash = hashCredentialsByScrypt(salt, mCredential.getCredential());
@@ -477,6 +477,27 @@ public class KeySyncTask implements Runnable {
             return KeyChainProtectionParams.UI_FORMAT_PIN;
         } else {
             return KeyChainProtectionParams.UI_FORMAT_PASSWORD;
+        }
+    }
+
+    /**
+     * Reads salt from the database if LSKF is the same as in the previous snapshot.
+     *
+     * @return The salt.
+     */
+    private byte[] generateNewSaltIfNecessary() {
+        if (mCredentialUpdated) {
+            byte[] newSalt = generateSalt();
+            mRecoverableKeyStoreDb.setLskfSalt(mUserId, newSalt);
+            return newSalt;
+        }
+        byte[] storedSalt = mRecoverableKeyStoreDb.getLskfSalt(mUserId);
+        if (storedSalt != null && storedSalt.length == SALT_LENGTH_BYTES) {
+            return storedSalt;
+        } else {
+            byte[] newSalt = generateSalt();
+            mRecoverableKeyStoreDb.setLskfSalt(mUserId, newSalt);
+            return newSalt;
         }
     }
 
