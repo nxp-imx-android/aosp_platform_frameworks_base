@@ -996,7 +996,11 @@ private class AnimatedDialog(
                 }
             }
 
-        transitionAnimator.startAnimation(controller, endState, originalDialogBackgroundColor)
+        transitionAnimator.startAnimation(
+            controller,
+            { endController.createAnimatorState() },
+            originalDialogBackgroundColor,
+        )
     }
 
     private fun updateTouchInterceptorViewConstraints(state: TransitionAnimator.State) {
