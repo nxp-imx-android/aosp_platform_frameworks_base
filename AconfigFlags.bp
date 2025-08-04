@@ -129,7 +129,6 @@ aconfig_declarations_group {
         "libcore_exported_aconfig_flags_lib",
         "libcore_readonly_aconfig_flags_lib",
         "libgui_flags_java_lib",
-        "mediaprovider_exported_aconfig_flag_lib",
         "networksecurity_exported_aconfig_flags_lib",
         "power_flags_lib",
         "sdk_sandbox_exported_flags_lib",
