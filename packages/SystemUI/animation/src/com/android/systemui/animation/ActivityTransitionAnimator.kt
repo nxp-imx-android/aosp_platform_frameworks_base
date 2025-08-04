@@ -390,10 +390,6 @@ constructor(
                     controller,
                     cookie,
                     scope,
-                    callback,
-                    transitionAnimator,
-                    lifecycleListener,
-                    transitionRegister,
                     includeReturn = animateReturn,
                 )
 
@@ -437,11 +433,7 @@ constructor(
                 return
             }
 
-            val callback =
-                this.callback
-                    ?: throw IllegalStateException(
-                        "ActivityTransitionAnimator.callback must be set before using this animator"
-                    )
+            val callback = validateCallback()
             val hideKeyguardWithAnimation = callback.isOnKeyguard() && !showOverLockscreen
 
             val runner = createEphemeralRunner(controller)
@@ -586,10 +578,6 @@ constructor(
         controller: Controller,
         cookie: TransitionCookie,
         scope: CoroutineScope,
-        callback: Callback,
-        transitionAnimator: TransitionAnimator,
-        listener: Listener?,
-        transitionRegister: TransitionRegister?,
         includeReturn: Boolean,
     ): Pair<RemoteTransition, RemoteTransition?> {
         // Make sure that any previous registrations linked to the same cookie are gone.
@@ -602,10 +590,6 @@ constructor(
                 scope,
                 isLaunch = true,
                 label = "${cookie}_launchTransition",
-                callback,
-                transitionAnimator,
-                listener,
-                transitionRegister,
             )
 
         val returnTransition =
@@ -616,10 +600,6 @@ constructor(
                     scope,
                     isLaunch = false,
                     label = "${cookie}_returnTransition",
-                    callback,
-                    transitionAnimator,
-                    listener,
-                    transitionRegister,
                 )
             } else {
                 null
@@ -635,10 +615,6 @@ constructor(
         scope: CoroutineScope,
         isLaunch: Boolean,
         label: String,
-        callback: Callback,
-        transitionAnimator: TransitionAnimator,
-        listener: Listener?,
-        transitionRegister: TransitionRegister?,
     ): RemoteTransition {
         var cleanUpRunnable: Runnable? = null
 
@@ -675,12 +651,10 @@ constructor(
 
         val remoteTransition =
             RemoteTransition(
-                OriginTransition(
+                createOriginTransition(
                     createController = { controllerFactory.createController(isLaunch) },
                     scope,
-                    callback,
-                    transitionAnimator,
-                    listener,
+                    isDialogLaunch = controller.isDialogLaunch,
                     cleanUp = { cleanUpRunnable?.run() },
                 ),
                 label,
@@ -763,11 +737,67 @@ constructor(
     }
 
     /**
+     * Create a new [IRemoteTransition] controlled by [controller].
+     *
+     * [scope] must remain valid until the transition is guaranteed to never be invoked anymore.
+     */
+    fun createOriginTransition(
+        controller: Controller,
+        scope: CoroutineScope,
+        isDialogLaunch: Boolean = false,
+        transitionHelper: RemoteTransitionHelper = DefaultTransitionHelper(),
+    ): IRemoteTransition {
+        check(shellMigrationEnabled()) {
+            "Attempted to use the new APIs, but the animationLibraryShellMigration flag is disabled"
+        }
+
+        return createOriginTransition(
+            createController = { controller },
+            scope,
+            isDialogLaunch = isDialogLaunch,
+            transitionHelper = transitionHelper,
+        )
+    }
+
+    private fun createOriginTransition(
+        createController: suspend () -> Controller,
+        scope: CoroutineScope,
+        isDialogLaunch: Boolean = false,
+        cleanUp: (() -> Unit)? = null,
+        transitionHelper: RemoteTransitionHelper = DefaultTransitionHelper(),
+    ): OriginTransition {
+        // Make sure we use the modified timings when animating a dialog into an app.
+        val transitionAnimator =
+            if (isDialogLaunch) {
+                dialogToAppAnimator
+            } else {
+                transitionAnimator
+            }
+
+        return OriginTransition(
+            createController,
+            scope,
+            validateCallback(),
+            transitionAnimator,
+            lifecycleListener,
+            cleanUp,
+            transitionHelper,
+        )
+    }
+
+    private fun validateCallback(): Callback {
+        return checkNotNull(callback) {
+            "ActivityTransitionAnimator.callback must be set before using this animator"
+        }
+    }
+
+    /**
      * Create a new animation [Runner] controlled by [controller].
      *
      * This method must only be used for ephemeral (launch or return) transitions. Otherwise, use
      * [createLongLivedRunner].
      */
+    @Deprecated("Use createOriginTransition() instead.")
     @VisibleForTesting
     fun createEphemeralRunner(controller: Controller): Runner {
         // Make sure we use the modified timings when animating a dialog into an app.
@@ -1123,12 +1153,13 @@ constructor(
      * [CoroutineScope] which [createController] will use to provide the [Controller].
      */
     private inner class OriginTransition(
-        private val createController: (suspend () -> Controller),
+        private val createController: suspend () -> Controller,
         private val scope: CoroutineScope,
         private val callback: Callback,
         private val transitionAnimator: TransitionAnimator,
         private val listener: Listener?,
         private val cleanUp: (() -> Unit)? = null,
+        private val transitionHelper: RemoteTransitionHelper,
     ) : RemoteTransitionStub() {
         private val timeoutHandler =
             if (disableWmTimeout) {
@@ -1189,22 +1220,23 @@ constructor(
             startTransaction: SurfaceControl.Transaction?,
             finishCallback: IRemoteTransitionFinishedCallback?,
         ) {
-            if (info == null || startTransaction == null) {
+            if (token == null || info == null || startTransaction == null) {
                 Log.e(
                     TAG,
-                    "Skipping the animation because the required data is missing: info=$info, " +
-                        "startTransaction=$startTransaction",
+                    "Skipping the animation because the required data is missing: token=$token, " +
+                        "info=$info, startTransaction=$startTransaction",
                 )
-                finishCallback?.invoke(info)
+                finishCallback?.invoke(token, info)
                 return
             }
 
-            initAndRun(onFailure = { finishCallback?.invoke(info) }) {
+            initAndRun(onFailure = { finishCallback?.invoke(token, info) }) {
+                transitionHelper.setUpAnimation(token, info, startTransaction, finishCallback)
                 performAnimation(delegate) { delegate ->
                     delegate.onAnimationStart(
                         info,
                         startTransaction = startTransaction,
-                        onAnimationFinished = { finishCallback?.invoke(info) },
+                        onAnimationFinished = { finishCallback?.invoke(token, info) },
                     )
                 }
             }
@@ -1212,28 +1244,29 @@ constructor(
 
         @BinderThread
         override fun takeOverAnimation(
-            transition: IBinder?,
+            token: IBinder?,
             info: TransitionInfo?,
             startTransaction: SurfaceControl.Transaction?,
             finishCallback: IRemoteTransitionFinishedCallback?,
             states: Array<out WindowAnimationState>,
         ) {
-            if (info == null || startTransaction == null) {
+            if (token == null || info == null || startTransaction == null) {
                 Log.e(
                     TAG,
                     "Skipping the animation takeover because the required data is missing: " +
-                        "info=$info, startTransaction=$startTransaction",
+                        "token=$token, info=$info, startTransaction=$startTransaction",
                 )
-                finishCallback?.invoke(info)
+                finishCallback?.invoke(token, info)
                 return
             }
 
-            initAndRun(onFailure = { finishCallback?.invoke(info) }) {
+            initAndRun(onFailure = { finishCallback?.invoke(token, info) }) {
+                transitionHelper.setUpAnimation(token, info, startTransaction, finishCallback)
                 performAnimation(delegate) { delegate ->
                     delegate.takeOverAnimation(
                         info,
                         startTransaction = startTransaction,
-                        onAnimationFinished = { finishCallback?.invoke(info) },
+                        onAnimationFinished = { finishCallback?.invoke(token, info) },
                         states,
                     )
                 }
@@ -1281,7 +1314,7 @@ constructor(
         }
 
         override fun mergeAnimation(
-            transition: IBinder?,
+            token: IBinder?,
             info: TransitionInfo?,
             transaction: SurfaceControl.Transaction?,
             mergeTarget: IBinder?,
@@ -1289,12 +1322,11 @@ constructor(
         ) {
             removeTimeouts()
             transaction?.close()
-            info?.releaseAllSurfaces()
             mainExecutor.execute {
                 cancelled = true
                 delegate?.onAnimationCancelled()
             }
-            finishCallback?.invoke(info)
+            finishCallback?.invoke(token, info)
         }
 
         override fun onTransitionConsumed(transition: IBinder?, aborted: Boolean) {
@@ -1336,10 +1368,11 @@ constructor(
                 timedOut = false
             }
 
-        fun IRemoteTransitionFinishedCallback.invoke(info: TransitionInfo?) {
+        fun IRemoteTransitionFinishedCallback.invoke(token: IBinder?, info: TransitionInfo?) {
             info?.releaseAllSurfaces()
 
             val finishTransaction = SurfaceControl.Transaction()
+            token?.let { transitionHelper.cleanUpAnimation(token, finishTransaction) }
             try {
                 onTransitionFinished(null, finishTransaction)
             } catch (e: RemoteException) {
