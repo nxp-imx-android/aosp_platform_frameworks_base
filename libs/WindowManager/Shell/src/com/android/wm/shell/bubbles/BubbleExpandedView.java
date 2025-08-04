@@ -463,7 +463,8 @@ public class BubbleExpandedView extends LinearLayout {
      * Initialize {@link BubbleController} and {@link BubbleStackView} here, this method must need
      * to be called after view inflate.
      */
-    void initialize(BubbleExpandedViewManager expandedViewManager,
+    @VisibleForTesting
+    public void initialize(BubbleExpandedViewManager expandedViewManager,
             BubbleStackView stackView,
             BubblePositioner positioner,
             boolean isOverflow,

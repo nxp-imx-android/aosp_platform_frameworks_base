@@ -38,7 +38,9 @@ import androidx.dynamicanimation.animation.FloatPropertyCompat;
 import androidx.dynamicanimation.animation.SpringAnimation;
 import androidx.dynamicanimation.animation.SpringForce;
 
+import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.protolog.ProtoLog;
+import com.android.wm.shell.Flags;
 import com.android.wm.shell.animation.FlingAnimationUtils;
 import com.android.wm.shell.bubbles.BubbleExpandedView;
 import com.android.wm.shell.bubbles.BubblePositioner;
@@ -351,7 +353,8 @@ public class ExpandedViewAnimationControllerImpl implements ExpandedViewAnimatio
         return false;
     }
 
-    private AnimatorSet createCollapseAnimation(BubbleExpandedView expandedView,
+    @VisibleForTesting
+    AnimatorSet createCollapseAnimation(BubbleExpandedView expandedView,
             Runnable startStackCollapse, Runnable after) {
         List<Animator> animatorList = new ArrayList<>();
         animatorList.add(createHeightAnimation(expandedView));
@@ -370,6 +373,14 @@ public class ExpandedViewAnimationControllerImpl implements ExpandedViewAnimatio
 
         AnimatorSet animatorSet = new AnimatorSet();
         animatorSet.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationCancel(Animator animation) {
+                if (Flags.fixBubblesCancelAnimation() && !notified[0]) {
+                    notified[0] = true;
+                    startStackCollapse.run();
+                }
+            }
+
             @Override
             public void onAnimationEnd(Animator animation) {
                 after.run();
