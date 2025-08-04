@@ -129,6 +129,7 @@ import android.util.Pair;
 import android.util.Slog;
 import android.view.SurfaceControl;
 import android.view.WindowManager;
+import android.window.DesktopExperienceFlags;
 import android.window.IDisplayAreaOrganizerController;
 import android.window.IMultitaskingController;
 import android.window.ITaskFragmentOrganizer;
@@ -1322,15 +1323,17 @@ class WindowOrganizerController extends IWindowOrganizerController.Stub
                     Slog.e(TAG, "Attempt to operate on detached container: " + wc);
                     break;
                 }
-                // There is no use case to ask the reparent operation in lock-task mode now, so keep
-                // skipping this operation as usual.
-                if (isInLockTaskMode && type == HIERARCHY_OP_TYPE_REPARENT) {
-                    Slog.w(TAG, "Skip applying hierarchy operation " + hop
-                            + " while in lock task mode");
-                    break;
-                }
-                if (isLockTaskModeViolation(wc.getParent(), wc.asTask(), isInLockTaskMode)) {
-                    break;
+                if (!DesktopExperienceFlags.ENABLE_DESKTOP_WINDOWING_ENTERPRISE_BUGFIX.isTrue()) {
+                    // There is no use case to ask the reparent operation in lock-task mode now,
+                    // so keep skipping this operation as usual.
+                    if (isInLockTaskMode && type == HIERARCHY_OP_TYPE_REPARENT) {
+                        Slog.w(TAG, "Skip applying hierarchy operation " + hop
+                                + " while in lock task mode");
+                        break;
+                    }
+                    if (isLockTaskModeViolation(wc.getParent(), wc.asTask(), isInLockTaskMode)) {
+                        break;
+                    }
                 }
                 if (syncId >= 0) {
                     addToSyncSet(syncId, wc);
