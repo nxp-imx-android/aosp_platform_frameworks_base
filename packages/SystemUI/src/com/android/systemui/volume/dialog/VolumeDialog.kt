@@ -71,7 +71,7 @@ constructor(
             }
         }
         setCancelable(false)
-        setCanceledOnTouchOutside(true)
+        setCanceledOnTouchOutside(false)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
