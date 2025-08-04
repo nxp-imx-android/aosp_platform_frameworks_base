@@ -1180,6 +1180,11 @@ class ProcessRecord extends ProcessRecordInternal implements WindowProcessListen
     }
 
     @Override
+    public ProcessProviderRecord getProviders() {
+        return mProviders;
+    }
+
+    @Override
     public boolean shouldNotFreeze() {
         return mOptRecord.shouldNotFreeze();
     }

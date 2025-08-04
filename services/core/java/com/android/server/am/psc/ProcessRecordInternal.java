@@ -226,6 +226,9 @@ public abstract class ProcessRecordInternal {
     /** Returns the {@link UidRecordInternal} associated with this process. */
     public abstract UidRecordInternal getUidRecord();
 
+    /** Returns the internal content provider related record for this process. */
+    public abstract ProcessProviderRecordInternal getProviders();
+
     // Enable this to trace all OomAdjuster state transitions
     private static final boolean TRACE_OOM_ADJ = false;
 

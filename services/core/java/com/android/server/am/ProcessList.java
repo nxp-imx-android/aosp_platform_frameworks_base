@@ -4164,7 +4164,7 @@ public final class ProcessList implements ProcessStateController.ProcessLruUpdat
                 }
             }
         }
-        final ProcessProviderRecord ppr = app.mProviders;
+        final ProcessProviderRecord ppr = app.getProviders();
         for (int j = ppr.numberOfProviderConnections() - 1; j >= 0; j--) {
             ContentProviderRecord cpr = ppr.getProviderConnectionAt(j).provider;
             if (cpr.proc != null && cpr.proc.getLruSeq() != mLruSeq

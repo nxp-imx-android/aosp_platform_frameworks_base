@@ -106,6 +106,7 @@ import com.android.server.am.psc.ActiveUidsInternal;
 import com.android.server.am.psc.ConnectionRecordInternal;
 import com.android.server.am.psc.ContentProviderConnectionInternal;
 import com.android.server.am.psc.ContentProviderRecordInternal;
+import com.android.server.am.psc.ProcessProviderRecordInternal;
 import com.android.server.am.psc.ProcessRecordInternal;
 import com.android.server.am.psc.ProcessServiceRecordInternal;
 import com.android.server.am.psc.ServiceRecordInternal;
@@ -1036,7 +1037,7 @@ public class OomAdjusterImpl extends OomAdjuster {
             connectionConsumer.accept(cr, service);
         }
 
-        final ProcessProviderRecord ppr = app.mProviders;
+        final ProcessProviderRecord ppr = app.getProviders();
         for (int i = ppr.numberOfProviderConnections() - 1; i >= 0; i--) {
             ContentProviderConnection cpc = ppr.getProviderConnectionAt(i);
             ProcessRecord provider = cpc.provider.getHostProcess();
@@ -1109,7 +1110,7 @@ public class OomAdjusterImpl extends OomAdjuster {
             }
         }
 
-        final ProcessProviderRecord ppr = app.mProviders;
+        final ProcessProviderRecord ppr = app.getProviders();
         for (int i = ppr.numberOfProviders() - 1; i >= 0; i--) {
             final ContentProviderRecord cpr = ppr.getProviderAt(i);
             for (int j = cpr.numberOfConnections() - 1; j >= 0; j--) {
@@ -1697,7 +1698,7 @@ public class OomAdjusterImpl extends OomAdjuster {
             }
         }
 
-        final ProcessProviderRecord ppr = app.mProviders;
+        final ProcessProviderRecordInternal ppr = app.getProviders();
         for (int provi = ppr.numberOfProviders() - 1;
                 provi >= 0 && (adj > FOREGROUND_APP_ADJ
                         || schedGroup == SCHED_GROUP_BACKGROUND
