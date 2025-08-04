@@ -47,6 +47,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onStart
@@ -113,22 +114,27 @@ constructor(
     }
 
     private fun hydrateShadeLayoutWidth() {
+        if (SceneContainerFlag.isEnabled) {
+            applicationScope.launch {
+                shadeDisplayStateInteractor.isWideScreen.collect {
+                    shadeRepository.isWideScreen.value = it
+                }
+            }
+        }
+
         applicationScope.launch {
-            // TODO(b/354926927): Move this decision to the shadeModeInteractor. It should expose
-            //  isFullWidthShade instead of isShadeLayoutWide, and isDualShadeSettingEnabled()
-            //  should become private again.
             val shadeModeInteractor = shadeModeInteractorProvider.get()
-            shadeModeInteractor.isDualShadeSettingEnabled
-                .flatMapLatest { isDualShadeEnabled ->
-                    if (isDualShadeEnabled) {
-                        shadeDisplayStateInteractor.isWideScreen
+            shadeModeInteractor.shadeMode
+                .flatMapLatest { shadeMode ->
+                    if (shadeMode is ShadeMode.Dual) {
+                        flowOf(false)
                     } else {
                         configurationRepository.onAnyConfigurationChange
                             // Force initial collection.
                             .onStart { emit(Unit) }
                             .map {
                                 // The configuration for 'shouldUseSplitNotificationShade' dictates
-                                // the width of the shade in split-shade mode.
+                                // the width of the shade in single/split shade modes.
                                 splitShadeStateController.shouldUseSplitNotificationShade(
                                     context.resources
                                 )
@@ -136,7 +142,7 @@ constructor(
                             .distinctUntilChanged()
                     }
                 }
-                .collect(shadeRepository::setShadeLayoutWide)
+                .collect { shadeRepository.legacyUseSplitShade.value = it }
         }
     }
 
