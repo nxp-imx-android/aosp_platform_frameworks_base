@@ -17,12 +17,12 @@ package android.util;
 
 import android.annotation.Nullable;
 import android.os.Process;
+import android.platform.test.ravenwood.RavenwoodDriver;
+import android.platform.test.ravenwood.RavenwoodEnvironment;
 import android.util.Log.Level;
 
 import com.android.internal.annotations.GuardedBy;
-import com.android.internal.os.RuntimeInit;
 
-import java.io.PrintStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
@@ -42,6 +42,8 @@ public class Log_ravenwood {
             new SimpleDateFormat("MM-dd HH:mm:ss.SSS", Locale.US);
 
     private static final Object sLock = new Object();
+
+    public static volatile boolean sUseRealTid = false;
 
     @GuardedBy("sLock")
     private static int sDefaultLogLevel;
@@ -147,7 +149,7 @@ public class Log_ravenwood {
 
         String leading =  sTimestampFormat.format(new Date())
                 + " %-6d %-6d %s %-8s: ".formatted(getPid(), getTid(), prio, tag);
-        var out = getRealOut();
+        var out = RavenwoodDriver.sRawStdOut;
         for (String s : msg.split("\\n")) {
             out.print(leading);
             out.println(s);
@@ -159,40 +161,16 @@ public class Log_ravenwood {
         return 4068; // [ravenwood] This is what people use in various places.
     }
 
-    /**
-     * Return the "real" {@code System.out} if it's been swapped by {@code RavenwoodRuleImpl}, so
-     * that we don't end up in a recursive loop.
-     */
-    public static PrintStream getRealOut() {
-        if (RuntimeInit.sOut$ravenwood != null) {
-            return RuntimeInit.sOut$ravenwood;
-        } else {
-            return System.out;
-        }
-    }
-
-    /**
-     * PID. Set from RavenwoodDriver
-     */
-    private static volatile int sPid = 0;
-
     private static ThreadLocal<Integer> sTid = ThreadLocal.withInitial(Process::myTid);
 
-    /**
-     * Call it when PID is available.
-     */
-    public static void setPid(int pid) {
-        sPid = pid;
-    }
-
     private static int getPid() {
-        return sPid;
+        return RavenwoodEnvironment.getInstance().getPid();
     }
 
-    private static int getTid() {
-        if (sPid == 0) {
-            return 0; // Native methods not ready yet.
+    private static long getTid() {
+        if (sUseRealTid) {
+            return sTid.get();
         }
-        return sTid.get();
+        return 0;
     }
 }

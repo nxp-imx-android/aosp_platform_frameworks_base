@@ -64,7 +64,6 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Random;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -81,8 +80,8 @@ public class RavenwoodDriver {
      * The following 2 PrintStreams is a backup of the original stdin/stdout streams.
      * System.out/err will be modified after calling {@link RuntimeInit#redirectLogStreams()}.
      */
-    static final PrintStream sRawStdOut = System.out;
-    static final PrintStream sRawStdErr = System.err;
+    public static final PrintStream sRawStdOut = System.out;
+    public static final PrintStream sRawStdErr = System.err;
 
     /**
      * The current directory when the test started.
@@ -170,6 +169,12 @@ public class RavenwoodDriver {
         // We haven't initialized liblog yet, so directly write to System.out here.
         RavenwoodInternalUtils.log(TAG, "globalInitInner()");
 
+        // Parse ravenwood properties and initialize the "environment".
+        // This also unlocks the ability to use android.util.Log.
+        var mainThread = new HandlerThread(RavenwoodEnvironment.MAIN_THREAD_NAME);
+        RavenwoodEnvironment.init(mainThread);
+        Log_ravenwood.setLogLevels(getLogTags());
+
         // Set up global error handling infrastructure
         RavenwoodErrorHandler.init();
 
@@ -183,6 +188,7 @@ public class RavenwoodDriver {
         // Redirect stdout/stdin to the Log API.
         RuntimeInit.redirectLogStreams();
 
+        dumpRavenwoodProperties();
         dumpCommandLineArgs();
         dumpEnvironment();
         dumpJavaProperties();
@@ -194,18 +200,11 @@ public class RavenwoodDriver {
         // Make sure libravenwood_runtime is loaded.
         System.load(RavenwoodInternalUtils.getJniLibraryPath(RAVENWOOD_NATIVE_RUNTIME_NAME));
 
-        // TODO: Why do we use a random PID? We can get the real PID via JNI. Why not use that?
-        final int pid = new Random().nextInt(100, 32768);
-        Log_ravenwood.setPid(pid);
-        Log_ravenwood.setLogLevels(getLogTags());
+        // We can start to use native code
+        Log_ravenwood.sUseRealTid = true;
 
         // Do the basic set up for the android sysprops.
         RavenwoodSystemProperties.initialize();
-
-        var mainThread = new HandlerThread(RavenwoodEnvironment.MAIN_THREAD_NAME);
-
-        // Initialize the "environment".
-        RavenwoodEnvironment.init(pid, mainThread);
 
         // Set ICU data file
         String icuData = getRavenwoodRuntimePath()
@@ -364,6 +363,14 @@ public class RavenwoodDriver {
         for (var arg : args) {
             Log.i(TAG, "  " + arg);
         }
+    }
+
+    private static void dumpRavenwoodProperties() {
+        Log.i(TAG, "Ravenwood properties:");
+        var env = RavenwoodEnvironment.getInstance();
+        Log.i(TAG, "  targetPackageName=" + env.getTargetPackageName());
+        Log.i(TAG, "  testPackageName=" + env.getInstPackageName());
+        Log.i(TAG, "  targetSdkLevel=" + env.getTargetSdkLevel());
     }
 
     private static void dumpJavaProperties() {
