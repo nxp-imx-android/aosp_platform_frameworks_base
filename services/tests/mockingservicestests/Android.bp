@@ -409,3 +409,10 @@ test_module_config {
     test_suites: ["device-tests"],
     include_filters: ["com.android.server.BatteryServiceTest"],
 }
+
+test_module_config {
+    name: "FrameworksMockingServicesTests_advanced_protection_mode",
+    base: "FrameworksMockingServicesTests",
+    test_suites: ["device-tests"],
+    include_filters: ["com.android.server.security.advancedprotection.features.UsbDataAdvancedProtectionHookTest"],
+}
