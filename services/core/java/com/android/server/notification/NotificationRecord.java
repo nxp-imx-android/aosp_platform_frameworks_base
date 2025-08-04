@@ -111,8 +111,6 @@ public final class NotificationRecord {
     // These members are used by NotificationSignalExtractors
     // to communicate with the ranking module.
     private float mContactAffinity;
-    private boolean mRecentlyIntrusive;
-    private long mLastIntrusive;
 
     // is this notification currently being intercepted by Zen Mode?
     private boolean mIntercept;
@@ -462,7 +460,6 @@ public final class NotificationRecord {
     // copy any notes that the ranking system may have made before the update
     public void copyRankingInformation(NotificationRecord previous) {
         mContactAffinity = previous.mContactAffinity;
-        mRecentlyIntrusive = previous.mRecentlyIntrusive;
         mPackagePriority = previous.mPackagePriority;
         mPackageVisibility = previous.mPackageVisibility;
         mIntercept = previous.mIntercept;
@@ -542,7 +539,6 @@ public final class NotificationRecord {
         dumpNotification(pw, prefix + prefix, notification.publicVersion, redact);
         pw.println(prefix + "stats=" + stats.toString());
         pw.println(prefix + "mContactAffinity=" + mContactAffinity);
-        pw.println(prefix + "mRecentlyIntrusive=" + mRecentlyIntrusive);
         pw.println(prefix + "mPackagePriority=" + mPackagePriority);
         pw.println(prefix + "mPackageVisibility=" + mPackageVisibility);
         pw.println(prefix + "mSystemImportance="
@@ -871,21 +867,6 @@ public final class NotificationRecord {
 
     public float getContactAffinity() {
         return mContactAffinity;
-    }
-
-    public void setRecentlyIntrusive(boolean recentlyIntrusive) {
-        mRecentlyIntrusive = recentlyIntrusive;
-        if (recentlyIntrusive) {
-            mLastIntrusive = System.currentTimeMillis();
-        }
-    }
-
-    public boolean isRecentlyIntrusive() {
-        return mRecentlyIntrusive;
-    }
-
-    public long getLastIntrusive() {
-        return mLastIntrusive;
     }
 
     public void setPackagePriority(int packagePriority) {

@@ -103,7 +103,6 @@ public class RankingHelperTest extends UiServiceTestCase {
     private NotificationRecord mRecordNoGroup;
     private NotificationRecord mRecordNoGroup2;
     private NotificationRecord mRecordNoGroupSortA;
-    private NotificationRecord mRecentlyIntrusive;
     private NotificationRecord mNewest;
     private RankingHelper mHelper;
 
@@ -206,11 +205,6 @@ public class RankingHelperTest extends UiServiceTestCase {
         Notification n = new Notification.Builder(mContext, TEST_CHANNEL_ID)
                 .setContentTitle("D")
                 .build();
-        mRecentlyIntrusive = new NotificationRecord(mContext, new StatusBarNotification(
-                mPkg, mPkg, 1, null, 0, 0, n, mUser,
-                null, 100), getDefaultChannel());
-        mRecentlyIntrusive.setRecentlyIntrusive(true);
-
         mNewest = new NotificationRecord(mContext, new StatusBarNotification(
                 mPkg, mPkg, 2, null, 0, 0, n, mUser,
                 null, 10000), getDefaultChannel());
@@ -344,20 +338,6 @@ public class RankingHelperTest extends UiServiceTestCase {
         assertEquals(lowSummary, notificationList.get(0));
         assertEquals(highChild, notificationList.get(1));
         assertEquals(low, notificationList.get(2));
-    }
-
-    @Test
-    public void testSortByRecencyNotIntrusiveness() {
-        ArrayList<NotificationRecord> expected = new ArrayList<>();
-        expected.add(mNewest);
-        expected.add(mRecentlyIntrusive);
-
-        ArrayList<NotificationRecord> actual = new ArrayList<>();
-        actual.addAll(expected);
-        Collections.shuffle(actual);
-
-        mHelper.sort(actual);
-        assertThat(actual).containsExactlyElementsIn(expected).inOrder();
     }
 
     @Test
