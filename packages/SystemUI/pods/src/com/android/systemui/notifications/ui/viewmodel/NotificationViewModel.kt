@@ -33,7 +33,7 @@ public interface NotificationViewModel {
 
     // TODO: b/431222735 - Make this nullable once we implement the top line fields.
     /** The title of the notification, emphasized in the content. */
-    public val title: String
+    public val title: String?
     /** The content text of the notification, shown below the title. */
     public val text: String?
 

@@ -42,7 +42,19 @@ public fun NotificationContent(viewModel: NotificationViewModel, modifier: Modif
     if (!viewModel.isExpanded) {
         NotificationRow(
             viewModel,
-            firstLine = { Title(viewModel.title) },
+            firstLine = {
+                TopLineText(
+                    modifier = Modifier.padding(vertical = 2.dp),
+                    title = viewModel.title,
+                    // When collapsed, app name is only shown when there is no title
+                    appNameText = if (viewModel.title == null) viewModel.appName else null,
+                    headerTextSecondary = viewModel.headerTextSecondary,
+                    headerText = viewModel.headerText,
+                    // TODO: b/431222735 - Implement time/chronometer logic.
+                    timeText = "now",
+                    verificationText = viewModel.verificationText,
+                )
+            },
             secondLine = { viewModel.text?.let { CollapsedText(it) } },
             modifier,
         )
@@ -60,7 +72,9 @@ public fun NotificationContent(viewModel: NotificationViewModel, modifier: Modif
                     verificationText = viewModel.verificationText,
                 )
             },
-            secondLine = { Title(viewModel.title) },
+            // TODO: b/431222735 - Consider showing the expanded text here when there is no title.
+            //  this would require a mechanism for getting the text to wrap around the large icon.
+            secondLine = { Title(viewModel.title ?: "") },
             modifier,
         ) {
             viewModel.text?.let { ExpandedText(it, maxLines = viewModel.maxLinesWhenExpanded) }
