@@ -26,7 +26,6 @@ import android.compat.annotation.UnsupportedAppUsage;
 import android.ravenwood.annotation.RavenwoodKeepWholeClass;
 import android.ravenwood.annotation.RavenwoodRedirect;
 import android.ravenwood.annotation.RavenwoodRedirectionClass;
-import android.ravenwood.annotation.RavenwoodReplace;
 import android.ravenwood.annotation.RavenwoodThrow;
 import android.util.Log;
 import android.util.Printer;
@@ -146,7 +145,7 @@ public final class MessageQueue {
     private native static boolean nativeIsPolling(long ptr);
     @RavenwoodRedirect
     private native static void nativeSetFileDescriptorEvents(long ptr, int fd, int events);
-
+    @RavenwoodRedirect
     private native static void nativeSetSkipEpollWaitForZeroTimeout(long ptr);
 
     MessageQueue(boolean quitAllowed) {
@@ -223,9 +222,7 @@ public final class MessageQueue {
         if (sSkipEpollWaitForZeroTimeoutInitialized) {
             return;
         }
-        if (Flags.nativeLooperSkipEpollWaitForZeroTimeout()) {
-            nativeSetSkipEpollWaitForZeroTimeout(ptr);
-        }
+        nativeSetSkipEpollWaitForZeroTimeout(ptr);
         sSkipEpollWaitForZeroTimeoutInitialized = true;
     }
 

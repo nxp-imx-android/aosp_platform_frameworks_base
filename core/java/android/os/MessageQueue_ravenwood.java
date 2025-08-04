@@ -97,4 +97,8 @@ class MessageQueue_ravenwood {
     public static void nativeSetFileDescriptorEvents(long ptr, int fd, int events) {
         throw new UnsupportedOperationException();
     }
+
+    public static void nativeSetSkipEpollWaitForZeroTimeout(long ptr) {
+        // No-op; this method changes native MQ impl behavior and cannot be mocked here.
+    }
 }
