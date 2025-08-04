@@ -732,28 +732,28 @@ class ActivityTransitionAnimatorTest : SysuiTestCase() {
         kosmos.runTest {
             val controller = createController()
             var factory = controllerFactory(controller)
-            underTest.register(factory.cookie, factory, testScope)
+            underTest.registerLongLivedTransitions(factory.cookie, factory, testScope)
             assertThat(testShellTransitions.remotes.size).isEqualTo(2)
-            assertThat(testShellTransitions.remotesForTakeover).isEmpty()
+            assertThat(testShellTransitions.remotesForTakeover.size).isEqualTo(2)
 
             factory = controllerFactory(controller)
-            underTest.register(factory.cookie, factory, testScope)
+            underTest.registerLongLivedTransitions(factory.cookie, factory, testScope)
             assertThat(testShellTransitions.remotes.size).isEqualTo(4)
-            assertThat(testShellTransitions.remotesForTakeover).isEmpty()
+            assertThat(testShellTransitions.remotesForTakeover.size).isEqualTo(4)
         }
     }
 
     @Test
-    fun registersLongLivedTransitionOverridingPreviousRegistration() {
+    fun registersLongLivedTransition_overridingPreviousRegistration() {
         kosmos.runTest {
             val controller = createController()
             val cookie = ActivityTransitionAnimator.TransitionCookie("test_cookie")
             var factory = controllerFactory(controller, cookie)
-            underTest.register(cookie, factory, testScope)
+            underTest.registerLongLivedTransitions(cookie, factory, testScope)
             val transitions = testShellTransitions.remotes.values.toList()
 
             factory = controllerFactory(controller, cookie)
-            underTest.register(cookie, factory, testScope)
+            underTest.registerLongLivedTransitions(cookie, factory, testScope)
             assertThat(testShellTransitions.remotes.size).isEqualTo(2)
             for (transition in transitions) {
                 assertThat(testShellTransitions.remotes.values).doesNotContain(transition)
@@ -762,28 +762,25 @@ class ActivityTransitionAnimatorTest : SysuiTestCase() {
     }
 
     @Test
-    fun doesNotRegisterLongLivedTransitionIfMissingRequiredProperties() {
+    fun doesNotRegisterLongLivedTransition_ifMissingRequiredProperties() {
         kosmos.runTest {
             val controller = createController()
 
-            // No ComponentName
-            var factory = controllerFactory(controller, component = null)
+            // Cookies don't match
+            val cookie = ActivityTransitionAnimator.TransitionCookie("test_cookie")
+            var factory = controllerFactory(controller, cookie)
             assertThrows(IllegalStateException::class.java) {
-                underTest.register(factory.cookie, factory, testScope)
+                underTest.registerLongLivedTransitions(
+                    ActivityTransitionAnimator.TransitionCookie("wrong_cookie"),
+                    factory,
+                    testScope,
+                )
             }
 
-            // No TransitionRegister
-            val activityTransitionAnimator =
-                ActivityTransitionAnimator(
-                    mainExecutor,
-                    transitionRegister = null,
-                    testTransitionAnimator,
-                    testTransitionAnimator,
-                    disableWmTimeout = true,
-                )
-            factory = controllerFactory(controller)
+            // No ComponentName
+            factory = controllerFactory(controller, component = null)
             assertThrows(IllegalStateException::class.java) {
-                activityTransitionAnimator.register(factory.cookie, factory, testScope)
+                underTest.registerLongLivedTransitions(factory.cookie, factory, testScope)
             }
         }
     }
@@ -797,16 +794,16 @@ class ActivityTransitionAnimatorTest : SysuiTestCase() {
             for (index in 0 until 3) {
                 cookies[index] = mock(ActivityTransitionAnimator.TransitionCookie::class.java)
                 val factory = controllerFactory(controller, cookies[index]!!)
-                underTest.register(factory.cookie, factory, testScope)
+                underTest.registerLongLivedTransitions(factory.cookie, factory, testScope)
             }
 
-            underTest.unregister(cookies[0]!!)
+            underTest.unregisterLongLivedTransitions(cookies[0]!!)
             assertThat(testShellTransitions.remotes.size).isEqualTo(4)
 
-            underTest.unregister(cookies[2]!!)
+            underTest.unregisterLongLivedTransitions(cookies[2]!!)
             assertThat(testShellTransitions.remotes.size).isEqualTo(2)
 
-            underTest.unregister(cookies[1]!!)
+            underTest.unregisterLongLivedTransitions(cookies[1]!!)
             assertThat(testShellTransitions.remotes).isEmpty()
         }
     }

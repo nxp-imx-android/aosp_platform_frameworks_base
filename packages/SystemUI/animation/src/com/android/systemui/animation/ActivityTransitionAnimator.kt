@@ -80,13 +80,13 @@ private const val TAG = "ActivityTransitionAnimator"
  * nicely into the starting window.
  */
 class ActivityTransitionAnimator
-@JvmOverloads
+@VisibleForTesting
 constructor(
     /** The executor that runs on the main thread. */
     private val mainExecutor: Executor,
 
-    /** The object used to register ephemeral returns and long-lived transitions. */
-    private val transitionRegister: TransitionRegister? = null,
+    /** The object used to register transitions with the WindowManager Shell. */
+    private val transitionRegister: TransitionRegister,
 
     /** The animator used when animating a View into an app. */
     private val transitionAnimator: TransitionAnimator = defaultTransitionAnimator(mainExecutor),
@@ -608,7 +608,7 @@ constructor(
         return Pair(launchTransition, returnTransition)
     }
 
-    /** Creates and registers a [RemoteTransition] that unregisters itself once it has run once. */
+    /** Creates and registers a [RemoteTransition] that unregisters itself after running once. */
     private fun registerEphemeralTransition(
         controller: Controller,
         cookie: TransitionCookie,
@@ -616,6 +616,9 @@ constructor(
         isLaunch: Boolean,
         label: String,
     ): RemoteTransition {
+        // This runnable is used to unregister the transition once it is run. Since it needs to be
+        // accessible by the factory, we declare it first and assign its value once the transition
+        // is created using that factory.
         var cleanUpRunnable: Runnable? = null
 
         val controllerFactory =
@@ -630,40 +633,167 @@ constructor(
                     }
                 }
             }
+        val remoteTransition =
+            registerTransition(
+                controllerFactory,
+                scope,
+                isLongLived = false,
+                isLaunch = isLaunch,
+                isDialogLaunch = controller.isDialogLaunch,
+                label = label,
+                cleanUp = { cleanUpRunnable?.run() },
+            )
 
-        val typeSet =
-            if (isLaunch) {
-                intArrayOf(TRANSIT_OPEN, TRANSIT_TO_FRONT)
-            } else {
-                intArrayOf(TRANSIT_CLOSE, TRANSIT_TO_BACK)
-            }
+        cleanUpRunnable = Runnable { transitionRegister.unregister(remoteTransition) }
+
+        return remoteTransition
+    }
+
+    /**
+     * Registers [controllerFactory] as a long-lived transition handler for launch and return
+     * animations.
+     *
+     * The [Controller]s created by [controllerFactory] will only be used for transitions matching
+     * the [cookie] and the [ComponentName] defined within. These [Controller]s can only be created
+     * within [scope].
+     *
+     * Note that [cookie] must match [controllerFactory]'s internal cookie.
+     */
+    fun registerLongLivedTransitions(
+        cookie: TransitionCookie,
+        controllerFactory: ControllerFactory,
+        scope: CoroutineScope,
+    ) {
+        check(cookie == controllerFactory.cookie) {
+            "Cookie ($cookie) does not match the factory's cookie (${controllerFactory.cookie}"
+        }
+
+        check(controllerFactory.component != null) {
+            "A component must be defined in order to use long-lived animations"
+        }
+
+        // Make sure that any previous registrations linked to the same cookie are gone.
+        unregister(cookie)
+
+        val launchTransition =
+            registerTransition(
+                controllerFactory,
+                scope,
+                isLongLived = true,
+                isLaunch = true,
+                isDialogLaunch = false,
+                label = "${cookie}_launchTransition",
+            )
+        val returnTransition =
+            registerTransition(
+                controllerFactory,
+                scope,
+                isLongLived = true,
+                isLaunch = false,
+                isDialogLaunch = false,
+                label = "${cookie}_returnTransition",
+            )
+
+        longLivedTransitions[cookie] = Pair(launchTransition, returnTransition)
+    }
+
+    private fun registerTransition(
+        controllerFactory: ControllerFactory,
+        scope: CoroutineScope,
+        isLongLived: Boolean,
+        isLaunch: Boolean,
+        isDialogLaunch: Boolean,
+        label: String,
+        cleanUp: (() -> Unit)? = null,
+    ): RemoteTransition {
         val filter =
-            TransitionFilter().apply {
-                mTypeSet = typeSet
-                mRequirements =
-                    arrayOf(
-                        TransitionFilter.Requirement().apply {
-                            mLaunchCookie = controllerFactory.cookie
-                            mModes = typeSet
-                        }
-                    )
-            }
-
+            createTransitionFilter(
+                controllerFactory.cookie,
+                controllerFactory.component,
+                isLongLived = isLongLived,
+                isLaunch = isLaunch,
+            )
         val remoteTransition =
             RemoteTransition(
                 createOriginTransition(
                     createController = { controllerFactory.createController(isLaunch) },
                     scope,
-                    isDialogLaunch = controller.isDialogLaunch,
-                    cleanUp = { cleanUpRunnable?.run() },
+                    isDialogLaunch = isDialogLaunch,
+                    cleanUp = cleanUp,
                 ),
                 label,
             )
-
-        cleanUpRunnable = Runnable { transitionRegister?.unregister(remoteTransition) }
-        transitionRegister?.register(filter, remoteTransition, includeTakeover = false)
-
+        transitionRegister.register(filter, remoteTransition, includeTakeover = isLongLived)
         return remoteTransition
+    }
+
+    private fun createTransitionFilter(
+        cookie: TransitionCookie,
+        component: ComponentName?,
+        isLongLived: Boolean,
+        isLaunch: Boolean,
+    ): TransitionFilter {
+        val openingModes = intArrayOf(TRANSIT_OPEN, TRANSIT_TO_FRONT)
+        val closingModes = intArrayOf(TRANSIT_CLOSE, TRANSIT_TO_BACK)
+
+        return TransitionFilter().apply {
+            if (isLongLived) {
+                if (isLaunch) {
+                    // Simply match the cookie and component for the opening window.
+                    mRequirements =
+                        arrayOf(
+                            TransitionFilter.Requirement().apply {
+                                mActivityType = WindowConfiguration.ACTIVITY_TYPE_STANDARD
+                                mLaunchCookie = cookie
+                                mModes = openingModes
+                                mTopActivity = component
+                            }
+                        )
+                } else {
+                    // Cross-task close transitions should not use this animation, so we only
+                    // filter it for when the opening window is Launcher.
+                    mRequirements =
+                        arrayOf(
+                            TransitionFilter.Requirement().apply {
+                                mActivityType = WindowConfiguration.ACTIVITY_TYPE_STANDARD
+                                mModes = closingModes
+                                mTopActivity = component
+                            },
+                            TransitionFilter.Requirement().apply {
+                                mActivityType = WindowConfiguration.ACTIVITY_TYPE_HOME
+                                mModes = openingModes
+                            },
+                        )
+                }
+            } else {
+                // Ephemeral transitions are simpler and behave the same in both directions.
+                val modes =
+                    if (isLaunch) {
+                        openingModes
+                    } else {
+                        closingModes
+                    }
+
+                mTypeSet = modes
+                mRequirements =
+                    arrayOf(
+                        TransitionFilter.Requirement().apply {
+                            mLaunchCookie = cookie
+                            mModes = modes
+                        }
+                    )
+            }
+        }
+    }
+
+    /** Unregisters all controllers previously registered that contain [cookie]. */
+    fun unregisterLongLivedTransitions(cookie: TransitionCookie) = unregister(cookie)
+
+    private fun unregister(cookie: TransitionCookie) {
+        val transitions = longLivedTransitions[cookie] ?: return
+        transitionRegister.unregister(transitions.first)
+        transitionRegister.unregister(transitions.second)
+        longLivedTransitions.remove(cookie)
     }
 
     /**
@@ -1022,94 +1152,6 @@ constructor(
 
         /** The controller will not be used again. Clean up the relevant internal state. */
         fun onDispose() {}
-    }
-
-    /**
-     * Registers [controllerFactory] as a long-lived transition handler for launch and return
-     * animations.
-     *
-     * The [Controller]s created by [controllerFactory] will only be used for transitions matching
-     * the [cookie], or the [ComponentName] defined within it if the cookie matching fails. These
-     * [Controller]s can only be created within [scope].
-     */
-    fun register(
-        cookie: TransitionCookie,
-        controllerFactory: ControllerFactory,
-        scope: CoroutineScope,
-    ) {
-        if (transitionRegister == null) {
-            throw IllegalStateException(
-                "A RemoteTransitionRegister must be provided when creating this animator in " +
-                    "order to use long-lived animations"
-            )
-        }
-
-        val component =
-            controllerFactory.component
-                ?: throw IllegalStateException(
-                    "A component must be defined in order to use long-lived animations"
-                )
-
-        // Make sure that any previous registrations linked to the same cookie are gone.
-        unregister(cookie)
-
-        val launchFilter =
-            TransitionFilter().apply {
-                mRequirements =
-                    arrayOf(
-                        TransitionFilter.Requirement().apply {
-                            mActivityType = WindowConfiguration.ACTIVITY_TYPE_STANDARD
-                            mModes = intArrayOf(TRANSIT_OPEN, TRANSIT_TO_FRONT)
-                            mTopActivity = component
-                        }
-                    )
-            }
-        val launchRemoteTransition =
-            RemoteTransition(
-                LegacyOriginTransition(
-                    createLongLivedRunner(controllerFactory, scope, forLaunch = true)
-                ),
-                "${cookie}_launchTransition",
-            )
-        // TODO(b/403529740): re-enable takeovers once we solve the Compose jank issues.
-        transitionRegister.register(launchFilter, launchRemoteTransition, includeTakeover = false)
-
-        // Cross-task close transitions should not use this animation, so we only register it for
-        // when the opening window is Launcher.
-        val returnFilter =
-            TransitionFilter().apply {
-                mRequirements =
-                    arrayOf(
-                        TransitionFilter.Requirement().apply {
-                            mActivityType = WindowConfiguration.ACTIVITY_TYPE_STANDARD
-                            mModes = intArrayOf(TRANSIT_CLOSE, TRANSIT_TO_BACK)
-                            mTopActivity = component
-                        },
-                        TransitionFilter.Requirement().apply {
-                            mActivityType = WindowConfiguration.ACTIVITY_TYPE_HOME
-                            mModes = intArrayOf(TRANSIT_OPEN, TRANSIT_TO_FRONT)
-                        },
-                    )
-            }
-        val returnRemoteTransition =
-            RemoteTransition(
-                LegacyOriginTransition(
-                    createLongLivedRunner(controllerFactory, scope, forLaunch = false)
-                ),
-                "${cookie}_returnTransition",
-            )
-        // TODO(b/403529740): re-enable takeovers once we solve the Compose jank issues.
-        transitionRegister.register(returnFilter, returnRemoteTransition, includeTakeover = false)
-
-        longLivedTransitions[cookie] = Pair(launchRemoteTransition, returnRemoteTransition)
-    }
-
-    /** Unregisters all controllers previously registered that contain [cookie]. */
-    fun unregister(cookie: TransitionCookie) {
-        val transitions = longLivedTransitions[cookie] ?: return
-        transitionRegister?.unregister(transitions.first)
-        transitionRegister?.unregister(transitions.second)
-        longLivedTransitions.remove(cookie)
     }
 
     /**
