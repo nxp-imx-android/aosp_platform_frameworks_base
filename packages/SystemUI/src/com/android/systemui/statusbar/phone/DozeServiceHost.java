@@ -16,7 +16,6 @@
 
 package com.android.systemui.statusbar.phone;
 
-import static com.android.systemui.Flags.udfpsScreenOffUnlockFlicker;
 import static com.android.systemui.keyguard.WakefulnessLifecycle.WAKEFULNESS_AWAKE;
 import static com.android.systemui.keyguard.WakefulnessLifecycle.WAKEFULNESS_WAKING;
 
@@ -124,7 +123,6 @@ public final class DozeServiceHost implements DozeHost {
     private final DeviceEntryFingerprintAuthInteractor mDeviceEntryFingerprintAuthInteractor;
     private final CoroutineScope mScope;
     private Job mUdfpsScreenOffFingerprintPulseEventCollectingJob = null;
-    private Job mUsUdfpsScreenOffPulseEventCollectingJob = null;
     private final Context mContext;
     private final AmbientDisplayConfiguration mAmbientDisplayConfiguration;
 
@@ -573,11 +571,6 @@ public final class DozeServiceHost implements DozeHost {
         return mAlwaysOnSuppressed;
     }
 
-    @Override
-    public boolean isCollectingUsUdfpsScreenOffPulseEvents() {
-        return mUsUdfpsScreenOffPulseEventCollectingJob != null;
-    }
-
     private boolean listenForScreenOffFingerprintPulseEvents() {
         return mDeviceEntryFingerprintAuthInteractor.isSensorUnderDisplay().getValue()
                 && mAmbientDisplayConfiguration.screenOffUdfpsEnabled(mContext.getUserId())
@@ -602,24 +595,6 @@ public final class DozeServiceHost implements DozeHost {
             }
             return;
         }
-
-        // Only do this for ultrasonic udfps.
-        if (!udfpsScreenOffUnlockFlicker()
-                || !mDeviceEntryFingerprintAuthInteractor.isUltrasonic().getValue()
-                || !mAmbientDisplayConfiguration.screenOffUdfpsEnabled(mContext.getUserId())) {
-            return;
-        }
-        if (isCollectingUsUdfpsScreenOffPulseEvents()) return;
-        mUsUdfpsScreenOffPulseEventCollectingJob = JavaAdapterKt.collectFlow(
-                mScope,
-                mScope.getCoroutineContext(),
-                mDeviceEntryFingerprintAuthInteractor.getFingerprintPulseEventsForDeviceEntry(),
-                state -> {
-                    for (Callback callback : mCallbacks) {
-                        callback.onUltrasonicUdfpsPulseWhileScreenOff(state);
-                    }
-                }
-        );
     }
 
     private void stopCollectingUsUdfpsScreenOffPulseEvents() {
@@ -627,12 +602,6 @@ public final class DozeServiceHost implements DozeHost {
             mUdfpsScreenOffFingerprintPulseEventCollectingJob.cancel(
                     new CancellationException("Stop monitoring"));
             mUdfpsScreenOffFingerprintPulseEventCollectingJob = null;
-        }
-        if (!udfpsScreenOffUnlockFlicker()) return;
-        if (isCollectingUsUdfpsScreenOffPulseEvents()) {
-            mUsUdfpsScreenOffPulseEventCollectingJob.cancel(
-                    new CancellationException("Ask stopping monitoring"));
-            mUsUdfpsScreenOffPulseEventCollectingJob = null;
         }
     }
 

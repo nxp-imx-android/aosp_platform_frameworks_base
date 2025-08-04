@@ -281,24 +281,6 @@ public class DozeLog implements Dumpable {
     }
 
     /**
-     * Appends usudfps long press requestPulse event to the logs.
-     * @param immediate indicates if should request pulse immediately.
-     * @param flagEnabled indicates if the bug flag is enabled.
-     * @param fpsLockout indicates if fingerprint unlock is locked out.
-     * @param fpsAllowed indicates if fingerprint unlock is allowed.
-     * @param collectingEvents indicates if is collecting usudfps pulse events.
-     * @param featureEnabled indicates if usudfps screen-off unlock is enabled.
-     */
-    public void traceShouldRequestUdfpsLongPressPulseImmediately(boolean immediate,
-            boolean flagEnabled, boolean fpsLockout, boolean fpsAllowed, boolean collectingEvents,
-            boolean featureEnabled) {
-        mLogger.logShouldRequestUdfpsLongPressPulseImmediately(immediate, fpsLockout,
-                fpsAllowed, collectingEvents);
-        mLogger.logShouldRequestUdfpsLongPressPulseImmediatelyFeatureAndFlagState(
-                flagEnabled, featureEnabled);
-    }
-
-    /**
      * Appends usudfps screen-off pulse event to the logs.
      * @param state the state while usudfps screen-off pulse event raised.
      */
