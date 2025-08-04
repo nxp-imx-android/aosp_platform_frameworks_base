@@ -1170,13 +1170,8 @@ class ProcessRecord extends ProcessRecordInternal implements WindowProcessListen
     }
 
     @Override
-    public boolean hasAboveClient() {
-        return mServices.isHasAboveClient();
-    }
-
-    @Override
-    public void setTreatLikeActivity(boolean treatLikeActivity) {
-        mServices.setTreatLikeActivity(treatLikeActivity);
+    public ProcessServiceRecord getServices() {
+        return mServices;
     }
 
     @Override

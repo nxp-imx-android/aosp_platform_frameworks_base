@@ -188,19 +188,6 @@ public abstract class ProcessRecordInternal {
      */
     public abstract boolean hasCompatChange(@CachedCompatChangeId int cachedCompatChangeId);
 
-    /**
-     * Returns whether this process has bound to a service with
-     * {@link android.content.Context#BIND_ABOVE_CLIENT}.
-     * TODO(b/425766486): Remove it once ProcessRecordInternal could access ProcessServiceRecord.
-     */
-    public abstract boolean hasAboveClient();
-
-    /**
-     * Sets whether this process should be treated as if it has an activity.
-     * TODO(b/425766486): Remove it once ProcessRecordInternal could access ProcessServiceRecord.
-     */
-    public abstract void setTreatLikeActivity(boolean treatLikeActivity);
-
     /** Returns true if there is an active instrumentation running in this process. */
     public abstract boolean hasActiveInstrumentation();
 
@@ -225,6 +212,9 @@ public abstract class ProcessRecordInternal {
 
     /** Returns the {@link UidRecordInternal} associated with this process. */
     public abstract UidRecordInternal getUidRecord();
+
+    /** Returns the internal service-related record for this process. */
+    public abstract ProcessServiceRecordInternal getServices();
 
     /** Returns the internal content provider related record for this process. */
     public abstract ProcessProviderRecordInternal getProviders();

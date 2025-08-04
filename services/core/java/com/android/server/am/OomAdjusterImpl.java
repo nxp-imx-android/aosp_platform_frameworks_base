@@ -2216,7 +2216,7 @@ public class OomAdjusterImpl extends OomAdjuster {
         }
         if (cr.hasFlag(Context.BIND_TREAT_LIKE_ACTIVITY)) {
             if (!dryRun) {
-                app.setTreatLikeActivity(true);
+                app.getServices().setTreatLikeActivity(true);
             }
             if (clientProcState <= PROCESS_STATE_CACHED_ACTIVITY
                     && procState > PROCESS_STATE_CACHED_ACTIVITY) {

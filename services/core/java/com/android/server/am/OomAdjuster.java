@@ -1933,7 +1933,7 @@ public abstract class OomAdjuster {
     protected int setIntermediateAdjLSP(ProcessRecordInternal app, int adj, int schedGroup) {
         app.setCurRawAdj(adj);
 
-        adj = applyBindAboveClientToAdj(app.hasAboveClient(), adj);
+        adj = applyBindAboveClientToAdj(app.getServices().isHasAboveClient(), adj);
         if (adj > app.getMaxAdj()) {
             adj = app.getMaxAdj();
             if (adj <= PERCEPTIBLE_LOW_APP_ADJ) {
