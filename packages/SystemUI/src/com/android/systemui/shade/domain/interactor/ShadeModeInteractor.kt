@@ -99,8 +99,6 @@ constructor(
         !SceneContainerFlag.isEnabled ||
             !context.resources.getBoolean(R.bool.config_disableSplitShade)
 
-    private val isLargeScreen: StateFlow<Boolean> = repository.isLargeScreen
-
     override val isShadeLayoutWide: StateFlow<Boolean> =
         isDualShadeSettingEnabled
             .flatMapLatest { isDualShadeSettingEnabled ->
@@ -119,36 +117,33 @@ constructor(
     private val shadeModeInitialValue: ShadeMode
         get() =
             determineShadeMode(
-                isDualShadeEnabled = DUAL_SHADE_ENABLED_DEFAULT,
+                isDualShadeSettingEnabled = DUAL_SHADE_ENABLED_DEFAULT,
                 isShadeLayoutWide = isShadeLayoutWide.value,
-                isLargeScreen = isLargeScreen.value,
             )
 
     override val shadeMode: StateFlow<ShadeMode> =
-        combine(isDualShadeSettingEnabled, isShadeLayoutWide, isLargeScreen, ::determineShadeMode)
+        combine(isDualShadeSettingEnabled, isShadeLayoutWide, ::determineShadeMode)
             .logDiffsForTable(tableLogBuffer = tableLogBuffer, initialValue = shadeModeInitialValue)
             .stateIn(applicationScope, SharingStarted.Eagerly, initialValue = shadeModeInitialValue)
 
     private fun determineShadeMode(
-        isDualShadeEnabled: Boolean,
+        isDualShadeSettingEnabled: Boolean,
         isShadeLayoutWide: Boolean,
-        isLargeScreen: Boolean,
     ): ShadeMode {
         return when {
-            // Case 1: Legacy shade (pre-scene container).
-            !SceneContainerFlag.isEnabled ->
-                if (isShadeLayoutWide) ShadeMode.Split else ShadeMode.Single
+            // Case 1: The Dual Shade setting has been enabled by the user.
+            isDualShadeSettingEnabled -> ShadeMode.Dual
 
-            // Case 2: The Dual Shade setting has been enabled by the user.
-            isDualShadeEnabled -> ShadeMode.Dual
+            // Case 2: Phone (in any orientation) or large screen in portrait, with Dual Shade
+            // setting disabled.
+            !isShadeLayoutWide -> ShadeMode.Single
 
             // Case 3: Large screen in landscape orientation, with Dual Shade setting disabled.
-            isLargeScreen && isShadeLayoutWide ->
-                if (isSplitShadeEnabled) ShadeMode.Split else ShadeMode.Dual
+            isSplitShadeEnabled -> ShadeMode.Split
 
-            // Case 4: Phone (in any orientation) or large screen in portrait, with Dual Shade
-            // setting disabled.
-            else -> ShadeMode.Single
+            // Case 4: Large screen in landscape orientation, with both Dual Shade setting and Split
+            // Shade disabled.
+            else -> ShadeMode.Dual
         }
     }
 
