@@ -59,4 +59,10 @@ class BundleHeaderGutsViewModel(
             disableBundle.invoke()
         }
     }
+
+    // Long click action for accessibility action on BundleHeaderGuts only. Touch-based long click
+    // handling is done through NotificationStackScrollLayoutController.
+    fun onAllyLongClicked() {
+        closeGuts.invoke()
+    }
 }
