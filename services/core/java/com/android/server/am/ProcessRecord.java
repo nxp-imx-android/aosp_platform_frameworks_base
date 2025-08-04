@@ -1747,7 +1747,12 @@ class ProcessRecord extends ProcessRecordInternal implements WindowProcessListen
         synchronized (mService) {
             if (mService.mProcessStateController.setRunningRemoteAnimation(this,
                     runningRemoteAnimation)) {
-                mService.mProcessStateController.runUpdate(this, OOM_ADJ_REASON_UI_VISIBILITY);
+                if (Flags.autoTriggerOomadjUpdates()) {
+                    // Do nothing.
+                    // ProcessStateController handled the update in setRunningRemoteAnimation.
+                } else {
+                    mService.mProcessStateController.runUpdate(this, OOM_ADJ_REASON_UI_VISIBILITY);
+                }
             }
         }
     }

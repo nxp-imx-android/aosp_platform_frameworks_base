@@ -18,6 +18,7 @@ package com.android.server.am;
 import static android.app.ActivityManagerInternal.OOM_ADJ_REASON_ACTIVITY;
 import static android.app.ActivityManagerInternal.OOM_ADJ_REASON_BACKUP;
 import static android.app.ActivityManagerInternal.OOM_ADJ_REASON_SERVICE_BINDER_CALL;
+import static android.app.ActivityManagerInternal.OOM_ADJ_REASON_UI_VISIBILITY;
 import static android.app.ProcessMemoryState.HOSTING_COMPONENT_TYPE_BROADCAST_RECEIVER;
 
 import static com.android.server.am.ActivityManagerDebugConfig.DEBUG_OOM_ADJ;
@@ -464,6 +465,11 @@ public class ProcessStateController {
                     + " for pid=" + proc.getPid());
         }
         proc.setIsRunningRemoteAnimation(runningRemoteAnimation);
+
+        if (Flags.autoTriggerOomadjUpdates()) {
+            enqueueUpdateTarget(proc);
+            runPendingUpdate(OOM_ADJ_REASON_UI_VISIBILITY);
+        }
         return true;
     }
 

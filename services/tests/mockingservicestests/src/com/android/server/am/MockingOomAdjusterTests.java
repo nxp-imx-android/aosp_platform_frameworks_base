@@ -545,10 +545,14 @@ public class MockingOomAdjusterTests {
         ProcessRecord app = makeDefaultProcessRecord(MOCKAPP_PID, MOCKAPP_UID, MOCKAPP_PROCESSNAME,
                 MOCKAPP_PACKAGENAME, true);
         setTopProcessState(PROCESS_STATE_TOP_SLEEPING);
-        mProcessStateController.setRunningRemoteAnimation(app, true);
         setWakefulness(PowerManagerInternal.WAKEFULNESS_AWAKE);
-        updateOomAdj(app);
-        setTopProcessState(PROCESS_STATE_TOP);
+        mProcessStateController.setRunningRemoteAnimation(app, true);
+
+        if (Flags.autoTriggerOomadjUpdates()) {
+            // Do not manually run the update.
+        } else {
+            updateOomAdj(app);
+        }
 
         assertProcStates(app, PROCESS_STATE_TOP_SLEEPING, VISIBLE_APP_ADJ, SCHED_GROUP_TOP_APP);
         assertThatProcess(app).hasImplicitCpuTimeCapability();
