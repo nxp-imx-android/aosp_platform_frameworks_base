@@ -80,10 +80,14 @@
     <string name="page_size_compat_apk_and_elf_warning_4kb" msgid="997926487776340721">"Šis brīdinājums tiek rādīts, jo šī ir atkļūdojama lietotne, kas pašlaik tiek testēta. Ja neesat izstrādātājs, ziņojiet par to izstrādātājam un pieprasiet lietotni, kas nav atkļūdojama. &lt;br&gt;&lt;br&gt; Šī lietotne nav saderīga ar 16 KB lapām. APK un ELF saskaņošanas pārbaudes neizdevās. Veiciet vietnē &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; norādītās darbības. &lt;br&gt;&lt;br&gt; Tālāk norādītās bibliotēkas nav pielāgotas 16 KB lapām. &lt;br&gt;&lt;br&gt;"</string>
     <string name="page_size_compat_never_show" msgid="3391282612422783097">"Vairs nerādīt"</string>
     <string name="page_size_compat_title" msgid="6497719153872572204">"Android lietotņu saderība"</string>
-    <string name="page_size_compat_elf_not_aligned" msgid="7940806102874132630">"&amp;#8226; %1$s : LOAD segments nav saskaņots"</string>
-    <string name="page_size_compat_apk_not_aligned" msgid="8927901100655245528">"&amp;#8226; %1$s : nesaspiesta bibliotēka nav saskaņota"</string>
-    <string name="page_size_compat_apk_and_elf_not_aligned" msgid="1010371834741548905">"&amp;#8226; %1$s : LOAD segments un nesaspiesta bibliotēka nav saskaņoti"</string>
-    <string name="page_size_compat_unknown" msgid="3254222165646410528">"&amp;#8226; %1$s : nezināma kļūda"</string>
+    <!-- no translation found for page_size_compat_elf_not_aligned (4404128993555194313) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_not_aligned (1434875607880657092) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_and_elf_not_aligned (7140216083697701972) -->
+    <skip />
+    <!-- no translation found for page_size_compat_unknown (5183026525148169891) -->
+    <skip />
     <string name="serviceNotProvisioned" msgid="8289333510236766193">"Pakalpojums netiek nodrošināts."</string>
     <string name="CLIRPermanent" msgid="166443681876381118">"Zvanītāja ID iestatījumu nevar mainīt."</string>
     <string name="auto_data_switch_title" msgid="3286350716870518297">"Tiek izmantots operatora <xliff:g id="CARRIERDISPLAY">%s</xliff:g> datu savienojums"</string>
@@ -301,8 +305,7 @@
     <string name="global_action_assist" msgid="2517047220311505805">"Palīdzība"</string>
     <string name="global_action_voice_assist" msgid="6655788068555086695">"Balss palīgs"</string>
     <string name="global_action_lockdown" msgid="2475471405907902963">"Bloķēšana"</string>
-    <!-- no translation found for global_action_unrestricted_lock (7933224393323064116) -->
-    <skip />
+    <string name="global_action_unrestricted_lock" msgid="7933224393323064116">"Bloķēt"</string>
     <string name="status_bar_notification_info_overflow" msgid="3330152558746563475">"Pārsniedz"</string>
     <string name="notification_compact_heads_up_reply" msgid="2425293958371284340">"Atbildēt"</string>
     <string name="notification_hidden_text" msgid="2835519769868187223">"Jauns paziņojums"</string>
@@ -694,6 +697,10 @@
     <string name="biometric_dialog_default_title" msgid="55026799173208210">"Apstipriniet, ka tas esat jūs"</string>
     <string name="biometric_dialog_default_subtitle" msgid="8457232339298571992">"Lai turpinātu, izmantojiet biometriju"</string>
     <string name="biometric_or_screen_lock_dialog_default_subtitle" msgid="159539678371552009">"Izmantojiet biometrijas datus vai ekrāna bloķēšanas opciju, lai turpinātu"</string>
+    <!-- no translation found for biometric_dialog_secondary_display_toast (256544327174107086) -->
+    <skip />
+    <!-- no translation found for biometric_dialog_secondary_display_toast (2855203015454795660) -->
+    <skip />
     <string name="biometric_error_hw_unavailable" msgid="2494077380540615216">"Biometrisko datu aparatūra nav pieejama"</string>
     <string name="biometric_error_user_canceled" msgid="6732303949695293730">"Autentifikācija ir atcelta"</string>
     <string name="biometric_not_recognized" msgid="5106687642694635888">"Dati nav atpazīti"</string>

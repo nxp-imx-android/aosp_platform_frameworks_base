@@ -79,10 +79,14 @@
     <string name="page_size_compat_apk_and_elf_warning_4kb" msgid="997926487776340721">"Diese Warnung wird angezeigt, weil es sich um eine debugfähige App handelt, die derzeit getestet wird. Wenn du diese App nicht entwickelt hast, melde die Warnung dem Entwickler und bitte um eine nicht debugfähige App. &lt;br&gt;&lt;br&gt; Diese App ist nicht mit 16 KB kompatibel. APK- und ELF-Abgleichsprüfungen sind fehlgeschlagen. Bitte folge den Schritten unter &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;. &lt;br&gt;&lt;br&gt; Folgende Bibliotheken sind nicht für 16 KB optimiert: &lt;br&gt;&lt;br&gt;"</string>
     <string name="page_size_compat_never_show" msgid="3391282612422783097">"Nicht mehr anzeigen"</string>
     <string name="page_size_compat_title" msgid="6497719153872572204">"Android-App-Kompatibilität"</string>
-    <string name="page_size_compat_elf_not_aligned" msgid="7940806102874132630">"&amp;#8226; %1$s: LOAD-Segment stimmt nicht überein"</string>
-    <string name="page_size_compat_apk_not_aligned" msgid="8927901100655245528">"&amp;#8226; %1$s: Unkomprimierte Bibliothek stimmt nicht überein"</string>
-    <string name="page_size_compat_apk_and_elf_not_aligned" msgid="1010371834741548905">"&amp;#8226; %1$s: LOAD-Segment und unkomprimierte Bibliothek stimmen nicht überein"</string>
-    <string name="page_size_compat_unknown" msgid="3254222165646410528">"&amp;#8226; %1$s: Unbekannter Fehler"</string>
+    <!-- no translation found for page_size_compat_elf_not_aligned (4404128993555194313) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_not_aligned (1434875607880657092) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_and_elf_not_aligned (7140216083697701972) -->
+    <skip />
+    <!-- no translation found for page_size_compat_unknown (5183026525148169891) -->
+    <skip />
     <string name="serviceNotProvisioned" msgid="8289333510236766193">"Dienst nicht eingerichtet."</string>
     <string name="CLIRPermanent" msgid="166443681876381118">"Du kannst die Einstellung für die Anrufer-ID nicht ändern."</string>
     <string name="auto_data_switch_title" msgid="3286350716870518297">"Mobile Daten wurden auf <xliff:g id="CARRIERDISPLAY">%s</xliff:g> umgestellt"</string>
@@ -300,8 +304,7 @@
     <string name="global_action_assist" msgid="2517047220311505805">"Assistent"</string>
     <string name="global_action_voice_assist" msgid="6655788068555086695">"Sprachassistent"</string>
     <string name="global_action_lockdown" msgid="2475471405907902963">"Sperren"</string>
-    <!-- no translation found for global_action_unrestricted_lock (7933224393323064116) -->
-    <skip />
+    <string name="global_action_unrestricted_lock" msgid="7933224393323064116">"Sperren"</string>
     <string name="status_bar_notification_info_overflow" msgid="3330152558746563475">"999+"</string>
     <string name="notification_compact_heads_up_reply" msgid="2425293958371284340">"Antworten"</string>
     <string name="notification_hidden_text" msgid="2835519769868187223">"Neue Benachrichtigung"</string>
@@ -693,6 +696,10 @@
     <string name="biometric_dialog_default_title" msgid="55026799173208210">"Deine Identität bestätigen"</string>
     <string name="biometric_dialog_default_subtitle" msgid="8457232339298571992">"Mithilfe eines biometrischen Verfahrens fortfahren"</string>
     <string name="biometric_or_screen_lock_dialog_default_subtitle" msgid="159539678371552009">"Verwende deine biometrischen Daten oder deine Display-Entsperrmethode, um fortzufahren"</string>
+    <!-- no translation found for biometric_dialog_secondary_display_toast (256544327174107086) -->
+    <skip />
+    <!-- no translation found for biometric_dialog_secondary_display_toast (2855203015454795660) -->
+    <skip />
     <string name="biometric_error_hw_unavailable" msgid="2494077380540615216">"Biometrische Hardware nicht verfügbar"</string>
     <string name="biometric_error_user_canceled" msgid="6732303949695293730">"Authentifizierung abgebrochen"</string>
     <string name="biometric_not_recognized" msgid="5106687642694635888">"Nicht erkannt"</string>
@@ -1989,11 +1996,11 @@
     <string name="data_saver_enable_button" msgid="4399405762586419726">"Aktivieren"</string>
     <string name="zen_mode_duration_minutes_summary" msgid="4555514757230849789">"{count,plural, =1{Für eine Minute (bis {formattedTime})}other{Für # Minuten (bis {formattedTime})}}"</string>
     <string name="zen_mode_duration_minutes_summary_short" msgid="1187553788355486950">"{count,plural, =1{Für 1 Min. (bis {formattedTime})}other{Für # Min. (bis {formattedTime})}}"</string>
-    <string name="zen_mode_duration_hours_summary" msgid="3866333100793277211">"{count,plural, =1{Für 1 Stunde (bis {formattedTime})}other{Für # Stunden (bis {formattedTime})}}"</string>
+    <string name="zen_mode_duration_hours_summary" msgid="3866333100793277211">"{count,plural, =1{1 Stunde (bis {formattedTime})}other{# Stunden (bis {formattedTime})}}"</string>
     <string name="zen_mode_duration_hours_summary_short" msgid="687919813833347945">"{count,plural, =1{Für 1 h (bis {formattedTime})}other{Für # h (bis {formattedTime})}}"</string>
     <string name="zen_mode_duration_minutes" msgid="2340007982276569054">"{count,plural, =1{Für eine Minute}other{Für # Minuten}}"</string>
     <string name="zen_mode_duration_minutes_short" msgid="2435756450204526554">"{count,plural, =1{Für 1 Min.}other{Für # Min.}}"</string>
-    <string name="zen_mode_duration_hours" msgid="7841806065034711849">"{count,plural, =1{Für 1 Stunde}other{Für # Stunden}}"</string>
+    <string name="zen_mode_duration_hours" msgid="7841806065034711849">"{count,plural, =1{1 Stunde}other{# Stunden}}"</string>
     <string name="zen_mode_duration_hours_short" msgid="3666949653933099065">"{count,plural, =1{Für 1 h}other{Für # h}}"</string>
     <string name="zen_mode_until_next_day" msgid="1403042784161725038">"Bis <xliff:g id="FORMATTEDTIME">%1$s</xliff:g>"</string>
     <string name="zen_mode_until" msgid="2250286190237669079">"Bis <xliff:g id="FORMATTEDTIME">%1$s</xliff:g>"</string>

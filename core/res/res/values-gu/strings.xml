@@ -79,10 +79,14 @@
     <string name="page_size_compat_apk_and_elf_warning_4kb" msgid="997926487776340721">"આ ચેતવણી એટલા માટે દેખાઈ રહી છે કારણ કે આ એક ડિબગ કરી શકાય તેવી ઍપ છે જેનું હાલમાં પરીક્ષણ ચાલી રહ્યું છે. જો તમે ડેવલપર ન હો, તો કૃપા કરીને ડેવલપરને આની જાણ કરો અને ડિબગ ન કરી શકાય તેવી ઍપ માટે કહો. &lt;br&gt;&lt;br&gt; આ ઍપ 16 KB માટે સુસંગત નથી. APK અને ELF સંરેખણને ચેક કરવું નિષ્ફળ રહ્યું. કૃપા કરીને &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; પરના પગલાં અનુસરો. &lt;br&gt;&lt;br&gt; નીચેની લાઇબ્રેરી 16 KB સંરેખિત નથી: &lt;br&gt;&lt;br&gt;"</string>
     <string name="page_size_compat_never_show" msgid="3391282612422783097">"ફરી બતાવશો નહીં"</string>
     <string name="page_size_compat_title" msgid="6497719153872572204">"Android ઍપની સુસંગતતા"</string>
-    <string name="page_size_compat_elf_not_aligned" msgid="7940806102874132630">"&amp;#8226; %1$s : લોડ સેગ્મેન્ટ સંરેખિત નથી"</string>
-    <string name="page_size_compat_apk_not_aligned" msgid="8927901100655245528">"&amp;#8226; %1$s : અનકમ્પ્રેસ્ડ લાઇબ્રેરી સંરેખિત નથી"</string>
-    <string name="page_size_compat_apk_and_elf_not_aligned" msgid="1010371834741548905">"&amp;#8226; %1$s : લોડ સેગ્મેન્ટ અને અનકમ્પ્રેસ્ડ લાઇબ્રેરી સંરેખિત નથી"</string>
-    <string name="page_size_compat_unknown" msgid="3254222165646410528">"&amp;#8226; %1$s : અજાણી ભૂલ"</string>
+    <!-- no translation found for page_size_compat_elf_not_aligned (4404128993555194313) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_not_aligned (1434875607880657092) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_and_elf_not_aligned (7140216083697701972) -->
+    <skip />
+    <!-- no translation found for page_size_compat_unknown (5183026525148169891) -->
+    <skip />
     <string name="serviceNotProvisioned" msgid="8289333510236766193">"સેવાની જોગવાઈ કરી નથી."</string>
     <string name="CLIRPermanent" msgid="166443681876381118">"તમે કૉલર ID સેટિંગ બદલી શકતાં નથી."</string>
     <string name="auto_data_switch_title" msgid="3286350716870518297">"ડેટા <xliff:g id="CARRIERDISPLAY">%s</xliff:g> પર સ્વિચ કર્યો"</string>
@@ -692,6 +696,10 @@
     <string name="biometric_dialog_default_title" msgid="55026799173208210">"આ તમે જ છો તેની ચકાસણી કરો"</string>
     <string name="biometric_dialog_default_subtitle" msgid="8457232339298571992">"આગળ વધવા માટે બાયોમેટ્રિકનો ઉપયોગ કરો"</string>
     <string name="biometric_or_screen_lock_dialog_default_subtitle" msgid="159539678371552009">"ચાલુ રાખવા માટે તમારા બાયોમેટ્રિક ડેટા અથવા સ્ક્રીન લૉક સુવિધાનો ઉપયોગ કરો"</string>
+    <!-- no translation found for biometric_dialog_secondary_display_toast (256544327174107086) -->
+    <skip />
+    <!-- no translation found for biometric_dialog_secondary_display_toast (2855203015454795660) -->
+    <skip />
     <string name="biometric_error_hw_unavailable" msgid="2494077380540615216">"બાયોમેટ્રિક હાર્ડવેર ઉપલબ્ધ નથી"</string>
     <string name="biometric_error_user_canceled" msgid="6732303949695293730">"પ્રમાણીકરણ રદ કર્યું"</string>
     <string name="biometric_not_recognized" msgid="5106687642694635888">"ઓળખાયેલ નથી"</string>

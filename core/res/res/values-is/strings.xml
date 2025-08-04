@@ -79,10 +79,14 @@
     <string name="page_size_compat_apk_and_elf_warning_4kb" msgid="997926487776340721">"Þessi viðvörun sést vegna þess að þetta er forrit sem hægt er að villuleita sem er í prófun eins og er. Ef þú ert ekki þróunaraðilinn biðjum við þig að tilkynna þetta til viðkomandi og biðja um forrit sem ekki er hægt að villuleita. &lt;br&gt;&lt;br&gt; Þetta forrit er ekki 16 KB samhæft. Athuganir á samræmingu APK og ELF mistókst. Fylgdu leiðbeiningunum á &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;. &lt;br&gt;&lt;br&gt; Eftirfarandi söfn eru ekki 16 KB samhæf: &lt;br&gt;&lt;br&gt;"</string>
     <string name="page_size_compat_never_show" msgid="3391282612422783097">"Ekki sýna þetta aftur"</string>
     <string name="page_size_compat_title" msgid="6497719153872572204">"Samhæfi við Android-forrit"</string>
-    <string name="page_size_compat_elf_not_aligned" msgid="7940806102874132630">"&amp;#8226; %1$s : LOAD-hluti er ekki samstilltur"</string>
-    <string name="page_size_compat_apk_not_aligned" msgid="8927901100655245528">"&amp;#8226; %1$s : Óþjappað safn ekki samstillt"</string>
-    <string name="page_size_compat_apk_and_elf_not_aligned" msgid="1010371834741548905">"&amp;#8226; %1$s : LOAD-hluti og óþjappað safn eru ekki samstillt"</string>
-    <string name="page_size_compat_unknown" msgid="3254222165646410528">"&amp;#8226; %1$s : Óþekkt villa"</string>
+    <!-- no translation found for page_size_compat_elf_not_aligned (4404128993555194313) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_not_aligned (1434875607880657092) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_and_elf_not_aligned (7140216083697701972) -->
+    <skip />
+    <!-- no translation found for page_size_compat_unknown (5183026525148169891) -->
+    <skip />
     <string name="serviceNotProvisioned" msgid="8289333510236766193">"Þjónustu ekki útdeilt."</string>
     <string name="CLIRPermanent" msgid="166443681876381118">"Þú getur ekki breytt stillingu númerabirtingar."</string>
     <string name="auto_data_switch_title" msgid="3286350716870518297">"Skipt yfir í farsímagögn hjá <xliff:g id="CARRIERDISPLAY">%s</xliff:g>"</string>
@@ -300,8 +304,7 @@
     <string name="global_action_assist" msgid="2517047220311505805">"Aðstoð"</string>
     <string name="global_action_voice_assist" msgid="6655788068555086695">"Raddaðstoð"</string>
     <string name="global_action_lockdown" msgid="2475471405907902963">"Læsing"</string>
-    <!-- no translation found for global_action_unrestricted_lock (7933224393323064116) -->
-    <skip />
+    <string name="global_action_unrestricted_lock" msgid="7933224393323064116">"Læsa"</string>
     <string name="status_bar_notification_info_overflow" msgid="3330152558746563475">"999+"</string>
     <string name="notification_compact_heads_up_reply" msgid="2425293958371284340">"Svara"</string>
     <string name="notification_hidden_text" msgid="2835519769868187223">"Ný tilkynning"</string>
@@ -693,6 +696,10 @@
     <string name="biometric_dialog_default_title" msgid="55026799173208210">"Staðfestu hver þú ert"</string>
     <string name="biometric_dialog_default_subtitle" msgid="8457232339298571992">"Notaðu lífkenni til að halda áfram"</string>
     <string name="biometric_or_screen_lock_dialog_default_subtitle" msgid="159539678371552009">"Notaðu lífkenni eða skjálás til að halda áfram"</string>
+    <!-- no translation found for biometric_dialog_secondary_display_toast (256544327174107086) -->
+    <skip />
+    <!-- no translation found for biometric_dialog_secondary_display_toast (2855203015454795660) -->
+    <skip />
     <string name="biometric_error_hw_unavailable" msgid="2494077380540615216">"Lífkennavélbúnaður ekki tiltækur"</string>
     <string name="biometric_error_user_canceled" msgid="6732303949695293730">"Hætt við auðkenningu"</string>
     <string name="biometric_not_recognized" msgid="5106687642694635888">"Þekktist ekki"</string>

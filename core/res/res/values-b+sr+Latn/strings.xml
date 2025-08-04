@@ -80,10 +80,14 @@
     <string name="page_size_compat_apk_and_elf_warning_4kb" msgid="997926487776340721">"Ovo upozorenje se prikazuje jer je ovo aplikacija sa otklonjivim greškama koja se trenutno testira. Prijavite ovo programeru, ako to niste vi, i zatražite aplikaciju bez otklonjivih grešaka. &lt;br&gt;&lt;br&gt; Ova aplikacija nije kompatibilna sa stranicama od 16 kB. Provere usklađenosti APK-a i ELF-a nisu uspele. Pratite korake na &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;. &lt;br&gt;&lt;br&gt; Sledeće biblioteke nisu usklađene sa stranicama od 16 kB: &lt;br&gt;&lt;br&gt;"</string>
     <string name="page_size_compat_never_show" msgid="3391282612422783097">"Ne prikazuj ponovo"</string>
     <string name="page_size_compat_title" msgid="6497719153872572204">"Kompatibilnost Android aplikacija"</string>
-    <string name="page_size_compat_elf_not_aligned" msgid="7940806102874132630">"&amp;#8226; %1$s: LOAD segment nije usklađen"</string>
-    <string name="page_size_compat_apk_not_aligned" msgid="8927901100655245528">"&amp;#8226; %1$s: Nekomprimovana biblioteka nije usklađena"</string>
-    <string name="page_size_compat_apk_and_elf_not_aligned" msgid="1010371834741548905">"&amp;#8226; %1$s: LOAD segment i nekomprimovana biblioteka nisu usklađeni"</string>
-    <string name="page_size_compat_unknown" msgid="3254222165646410528">"&amp;#8226; %1$s: Nepoznata greška"</string>
+    <!-- no translation found for page_size_compat_elf_not_aligned (4404128993555194313) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_not_aligned (1434875607880657092) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_and_elf_not_aligned (7140216083697701972) -->
+    <skip />
+    <!-- no translation found for page_size_compat_unknown (5183026525148169891) -->
+    <skip />
     <string name="serviceNotProvisioned" msgid="8289333510236766193">"Usluga nije dobavljena."</string>
     <string name="CLIRPermanent" msgid="166443681876381118">"Ne možete da promenite podešavanje ID-a korisnika."</string>
     <string name="auto_data_switch_title" msgid="3286350716870518297">"Mobilni podaci su prebačeni na operatera <xliff:g id="CARRIERDISPLAY">%s</xliff:g>"</string>
@@ -693,6 +697,10 @@
     <string name="biometric_dialog_default_title" msgid="55026799173208210">"Potvrdite identitet"</string>
     <string name="biometric_dialog_default_subtitle" msgid="8457232339298571992">"Koristite biometrijski podatak da biste nastavili"</string>
     <string name="biometric_or_screen_lock_dialog_default_subtitle" msgid="159539678371552009">"Koristite biometrijski podatak ili otključavanje ekrana da biste nastavili"</string>
+    <!-- no translation found for biometric_dialog_secondary_display_toast (256544327174107086) -->
+    <skip />
+    <!-- no translation found for biometric_dialog_secondary_display_toast (2855203015454795660) -->
+    <skip />
     <string name="biometric_error_hw_unavailable" msgid="2494077380540615216">"Biometrijski hardver nije dostupan"</string>
     <string name="biometric_error_user_canceled" msgid="6732303949695293730">"Potvrda identiteta je otkazana"</string>
     <string name="biometric_not_recognized" msgid="5106687642694635888">"Nije prepoznato"</string>

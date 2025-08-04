@@ -79,10 +79,14 @@
     <string name="page_size_compat_apk_and_elf_warning_4kb" msgid="997926487776340721">"แสดงคําเตือนนี้เนื่องจากเป็นแอปที่แก้ไขข้อบกพร่องได้ซึ่งกําลังทดสอบอยู่ในขณะนี้ หากคุณไม่ใช่นักพัฒนาแอป โปรดรายงานปัญหานี้ให้นักพัฒนาแอปทราบและขอแอปที่ไม่สามารถแก้ไขข้อบกพร่องได้ &lt;br&gt;&lt;br&gt; แอปนี้ไม่รองรับขนาดหน้า 16 KB การตรวจสอบการจัดเรียงของ APK และ ELF ไม่ผ่าน โปรดทำตามขั้นตอนใน &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; &lt;br&gt;&lt;br&gt; ไลบรารีต่อไปนี้ไม่จัดเรียงตามรูปแบบความจำขนาด 16 KB &lt;br&gt;&lt;br&gt;"</string>
     <string name="page_size_compat_never_show" msgid="3391282612422783097">"ไม่ต้องแสดงอีก"</string>
     <string name="page_size_compat_title" msgid="6497719153872572204">"ความเข้ากันได้ของแอป Android"</string>
-    <string name="page_size_compat_elf_not_aligned" msgid="7940806102874132630">"&amp;#8226; %1$s : กลุ่ม \"LOAD\" มีปัญหาด้านการทำ Alignment"</string>
-    <string name="page_size_compat_apk_not_aligned" msgid="8927901100655245528">"&amp;#8226; %1$s : ไลบรารีที่ไม่ได้บีบอัดมีปัญหาด้านการทำ Alignment"</string>
-    <string name="page_size_compat_apk_and_elf_not_aligned" msgid="1010371834741548905">"&amp;#8226; %1$s : กลุ่ม \"LOAD\" และไลบรารีที่ไม่ได้บีบอัดมีปัญหาด้านการทำ Alignment"</string>
-    <string name="page_size_compat_unknown" msgid="3254222165646410528">"&amp;#8226; %1$s : ข้อผิดพลาดที่ไม่รู้จัก"</string>
+    <!-- no translation found for page_size_compat_elf_not_aligned (4404128993555194313) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_not_aligned (1434875607880657092) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_and_elf_not_aligned (7140216083697701972) -->
+    <skip />
+    <!-- no translation found for page_size_compat_unknown (5183026525148169891) -->
+    <skip />
     <string name="serviceNotProvisioned" msgid="8289333510236766193">"ไม่มีการนำเสนอบริการ"</string>
     <string name="CLIRPermanent" msgid="166443681876381118">"คุณไม่สามารถเปลี่ยนการตั้งค่าหมายเลขผู้โทร"</string>
     <string name="auto_data_switch_title" msgid="3286350716870518297">"เปลี่ยนไปใช้อินเทอร์เน็ตมือถือของ <xliff:g id="CARRIERDISPLAY">%s</xliff:g> แล้ว"</string>
@@ -692,6 +696,10 @@
     <string name="biometric_dialog_default_title" msgid="55026799173208210">"ยืนยันว่าเป็นตัวคุณ"</string>
     <string name="biometric_dialog_default_subtitle" msgid="8457232339298571992">"ใช้ข้อมูลไบโอเมตริกเพื่อดำเนินการต่อ"</string>
     <string name="biometric_or_screen_lock_dialog_default_subtitle" msgid="159539678371552009">"ใช้ข้อมูลไบโอเมตริกหรือการล็อกหน้าจอเพื่อดำเนินการต่อ"</string>
+    <!-- no translation found for biometric_dialog_secondary_display_toast (256544327174107086) -->
+    <skip />
+    <!-- no translation found for biometric_dialog_secondary_display_toast (2855203015454795660) -->
+    <skip />
     <string name="biometric_error_hw_unavailable" msgid="2494077380540615216">"ฮาร์ดแวร์ไบโอเมตริกไม่พร้อมใช้งาน"</string>
     <string name="biometric_error_user_canceled" msgid="6732303949695293730">"ยกเลิกการตรวจสอบสิทธิ์แล้ว"</string>
     <string name="biometric_not_recognized" msgid="5106687642694635888">"ไม่รู้จัก"</string>

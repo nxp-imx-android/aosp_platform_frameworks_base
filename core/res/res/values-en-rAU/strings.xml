@@ -79,10 +79,14 @@
     <string name="page_size_compat_apk_and_elf_warning_4kb" msgid="997926487776340721">"This warning is showing because this is a debuggable app which is currently being tested. If you are not the developer, please report this to the developer and ask for a non-debuggable app. &lt;br&gt;&lt;br&gt; This app isn\'t 16 KB-compatible. APK and ELF alignment checks failed. Please follow the steps on &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;. &lt;br&gt;&lt;br&gt; The following libraries are not 16 KB-aligned: &lt;br&gt;&lt;br&gt;"</string>
     <string name="page_size_compat_never_show" msgid="3391282612422783097">"Don\'t show again"</string>
     <string name="page_size_compat_title" msgid="6497719153872572204">"Android app compatibility"</string>
-    <string name="page_size_compat_elf_not_aligned" msgid="7940806102874132630">"&amp;#8226; %1$s : LOAD segment not aligned"</string>
-    <string name="page_size_compat_apk_not_aligned" msgid="8927901100655245528">"&amp;#8226; %1$s : Uncompressed library not aligned"</string>
-    <string name="page_size_compat_apk_and_elf_not_aligned" msgid="1010371834741548905">"&amp;#8226; %1$s : LOAD segment and uncompressed library are not aligned"</string>
-    <string name="page_size_compat_unknown" msgid="3254222165646410528">"&amp;#8226; %1$s : Unknown error"</string>
+    <!-- no translation found for page_size_compat_elf_not_aligned (4404128993555194313) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_not_aligned (1434875607880657092) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_and_elf_not_aligned (7140216083697701972) -->
+    <skip />
+    <!-- no translation found for page_size_compat_unknown (5183026525148169891) -->
+    <skip />
     <string name="serviceNotProvisioned" msgid="8289333510236766193">"Service not provisioned."</string>
     <string name="CLIRPermanent" msgid="166443681876381118">"You can\'t change the caller ID setting."</string>
     <string name="auto_data_switch_title" msgid="3286350716870518297">"Switched data to <xliff:g id="CARRIERDISPLAY">%s</xliff:g>"</string>
@@ -300,8 +304,7 @@
     <string name="global_action_assist" msgid="2517047220311505805">"Assist"</string>
     <string name="global_action_voice_assist" msgid="6655788068555086695">"Voice Assist"</string>
     <string name="global_action_lockdown" msgid="2475471405907902963">"Lockdown"</string>
-    <!-- no translation found for global_action_unrestricted_lock (7933224393323064116) -->
-    <skip />
+    <string name="global_action_unrestricted_lock" msgid="7933224393323064116">"Lock"</string>
     <string name="status_bar_notification_info_overflow" msgid="3330152558746563475">"999+"</string>
     <string name="notification_compact_heads_up_reply" msgid="2425293958371284340">"Reply"</string>
     <string name="notification_hidden_text" msgid="2835519769868187223">"New notification"</string>
@@ -693,6 +696,10 @@
     <string name="biometric_dialog_default_title" msgid="55026799173208210">"Verify that it’s you"</string>
     <string name="biometric_dialog_default_subtitle" msgid="8457232339298571992">"Use your biometric to continue"</string>
     <string name="biometric_or_screen_lock_dialog_default_subtitle" msgid="159539678371552009">"Use your biometric or screen lock to continue"</string>
+    <!-- no translation found for biometric_dialog_secondary_display_toast (256544327174107086) -->
+    <skip />
+    <!-- no translation found for biometric_dialog_secondary_display_toast (2855203015454795660) -->
+    <skip />
     <string name="biometric_error_hw_unavailable" msgid="2494077380540615216">"Biometric hardware unavailable"</string>
     <string name="biometric_error_user_canceled" msgid="6732303949695293730">"Authentication cancelled"</string>
     <string name="biometric_not_recognized" msgid="5106687642694635888">"Not recognised"</string>

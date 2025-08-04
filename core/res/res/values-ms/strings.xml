@@ -79,10 +79,14 @@
     <string name="page_size_compat_apk_and_elf_warning_4kb" msgid="997926487776340721">"Amaran ini dipaparkan kerana apl ini boleh dinyahpepijat dan sedang diuji pada masa ini. Jika anda bukan pembangun, sila laporkan perkara ini kepada pembangun dan minta apl yang tidak boleh dinyahpepijat. &lt;br&gt;&lt;br&gt; Apl ini tidak serasi untuk 16 KB. Semakan penjajaran APK dan ELF gagal. Sila ikut langkah pada &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;. &lt;br&gt;&lt;br&gt; Pustaka yang berikut tidak sejajar dengan 16 KB: &lt;br&gt;&lt;br&gt;"</string>
     <string name="page_size_compat_never_show" msgid="3391282612422783097">"Jangan Tunjukkan Lagi"</string>
     <string name="page_size_compat_title" msgid="6497719153872572204">"Keserasian Apl Android"</string>
-    <string name="page_size_compat_elf_not_aligned" msgid="7940806102874132630">"&amp;#8226; %1$s : Segmen PEMUATAN tidak sejajar"</string>
-    <string name="page_size_compat_apk_not_aligned" msgid="8927901100655245528">"&amp;#8226; %1$s : Pustaka yang tidak dimampatkan tidak sejajar"</string>
-    <string name="page_size_compat_apk_and_elf_not_aligned" msgid="1010371834741548905">"&amp;#8226; %1$s : Segmen PEMUATAN dan pustaka yang tidak dimampatkan tidak sejajar"</string>
-    <string name="page_size_compat_unknown" msgid="3254222165646410528">"&amp;#8226; %1$s : Ralat tidak diketahui"</string>
+    <!-- no translation found for page_size_compat_elf_not_aligned (4404128993555194313) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_not_aligned (1434875607880657092) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_and_elf_not_aligned (7140216083697701972) -->
+    <skip />
+    <!-- no translation found for page_size_compat_unknown (5183026525148169891) -->
+    <skip />
     <string name="serviceNotProvisioned" msgid="8289333510236766193">"Perkhidmatan yang tidak diuntukkan."</string>
     <string name="CLIRPermanent" msgid="166443681876381118">"Anda tidak boleh mengubah tetapan ID pemanggil."</string>
     <string name="auto_data_switch_title" msgid="3286350716870518297">"Data ditukar kepada <xliff:g id="CARRIERDISPLAY">%s</xliff:g>"</string>
@@ -692,6 +696,10 @@
     <string name="biometric_dialog_default_title" msgid="55026799173208210">"Sahkan diri anda"</string>
     <string name="biometric_dialog_default_subtitle" msgid="8457232339298571992">"Gunakan biometrik anda untuk meneruskan"</string>
     <string name="biometric_or_screen_lock_dialog_default_subtitle" msgid="159539678371552009">"Gunakan biometrik atau kunci skrin anda untuk meneruskan pengesahan"</string>
+    <!-- no translation found for biometric_dialog_secondary_display_toast (256544327174107086) -->
+    <skip />
+    <!-- no translation found for biometric_dialog_secondary_display_toast (2855203015454795660) -->
+    <skip />
     <string name="biometric_error_hw_unavailable" msgid="2494077380540615216">"Perkakasan biometrik tidak tersedia"</string>
     <string name="biometric_error_user_canceled" msgid="6732303949695293730">"Pengesahan dibatalkan"</string>
     <string name="biometric_not_recognized" msgid="5106687642694635888">"Tidak dikenali"</string>
