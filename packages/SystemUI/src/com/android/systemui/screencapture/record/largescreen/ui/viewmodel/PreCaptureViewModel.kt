@@ -170,7 +170,7 @@ constructor(
                 selectedIcon = icons?.screenshotToolbar,
                 unselectedIcon = icons?.screenshotToolbarUnselected,
                 label =
-                    applicationContext.getString(R.string.screen_capture_toolbar_capture_button),
+                    applicationContext.getString(R.string.screen_capture_toolbar_screenshot_button),
                 isSelected = selectedType == ScreenCaptureType.SCREENSHOT,
                 onClick = { updateCaptureType(ScreenCaptureType.SCREENSHOT) },
             ),

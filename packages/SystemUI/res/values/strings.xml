@@ -365,12 +365,12 @@
     <!-- Button to delete a screen recording [CHAR LIMIT=20] -->
     <string name="screen_record_delete">Delete</string>
 
-    <!-- Button text for taking a fullscreen screenshot [CHAR LIMIT=35] -->
-    <string name="screen_capture_fullscreen_screenshot_button">Capture entire screen</string>
-    <!-- Button text in the region select box for triggering a screenshot of the selected area. [CHAR LIMIT=35] -->
-    <string name="screen_capture_region_selection_button">Capture selected area</string>
+    <!-- Button text for taking a fullscreen screenshot [CHAR LIMIT=50] -->
+    <string name="screen_capture_fullscreen_screenshot_button">Take screenshot of entire screen</string>
+    <!-- Button text for taking a screenshot of the selected area using the region box. [CHAR LIMIT=50] -->
+    <string name="screen_capture_region_selection_button">Take screenshot of selected area</string>
     <!-- Button text in the toolbar for choosing the screenshot type. [CHAR LIMIT=35] -->
-    <string name="screen_capture_toolbar_capture_button">Capture</string>
+    <string name="screen_capture_toolbar_screenshot_button">Screenshot</string>
     <!-- Button text in the toolbar for choosing the screen recording type. [CHAR LIMIT=35] -->
     <string name="screen_capture_toolbar_record_button">Record</string>
     <!-- Button text for screen sharing [CHAR LIMIT=35] -->
