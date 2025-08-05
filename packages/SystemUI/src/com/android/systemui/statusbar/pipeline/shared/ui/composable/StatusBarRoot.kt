@@ -91,6 +91,8 @@ import com.android.systemui.statusbar.phone.ongoingcall.OngoingCallController
 import com.android.systemui.statusbar.phone.ongoingcall.StatusBarChipsModernization
 import com.android.systemui.statusbar.phone.ui.DarkIconManager
 import com.android.systemui.statusbar.phone.ui.StatusBarIconController
+import com.android.systemui.statusbar.phone.ui.TintedIconManager
+import com.android.systemui.statusbar.phone.ui.TintedIconManager.Factory
 import com.android.systemui.statusbar.pipeline.battery.ui.composable.BatteryWithChargeStatus
 import com.android.systemui.statusbar.pipeline.battery.ui.composable.ShowPercentMode
 import com.android.systemui.statusbar.pipeline.battery.ui.composable.UnifiedBattery
@@ -118,6 +120,7 @@ constructor(
     private val iconViewStoreFactory: ConnectedDisplaysStatusBarNotificationIconViewStore.Factory,
     private val clockViewModelFactory: ClockViewModel.Factory,
     private val darkIconManagerFactory: DarkIconManager.Factory,
+    private val tintedIconManagerFactory: TintedIconManager.Factory,
     private val iconController: StatusBarIconController,
     private val ongoingCallController: OngoingCallController,
     private val eventAnimationInteractor: SystemStatusEventAnimationInteractor,
@@ -141,6 +144,7 @@ constructor(
                         iconViewStoreFactory = iconViewStoreFactory,
                         clockViewModelFactory = clockViewModelFactory,
                         darkIconManagerFactory = darkIconManagerFactory,
+                        tintedIconManagerFactory = tintedIconManagerFactory,
                         iconController = iconController,
                         ongoingCallController = ongoingCallController,
                         darkIconDispatcher = darkIconDispatcher,
@@ -179,6 +183,7 @@ fun StatusBarRoot(
     iconViewStoreFactory: ConnectedDisplaysStatusBarNotificationIconViewStore.Factory,
     clockViewModelFactory: ClockViewModel.Factory,
     darkIconManagerFactory: DarkIconManager.Factory,
+    tintedIconManagerFactory: TintedIconManager.Factory,
     iconController: StatusBarIconController,
     ongoingCallController: OngoingCallController,
     darkIconDispatcher: DarkIconDispatcher,
@@ -207,7 +212,12 @@ fun StatusBarRoot(
 
     // Let the DesktopStatusBar compose all the UI if [isDesktopStatusBarEnabled] is true.
     if (StatusBarForDesktop.isEnabled && statusBarViewModel.isDesktopStatusBarEnabled) {
-        DesktopStatusBar(viewModel = statusBarViewModel)
+        DesktopStatusBar(
+            viewModel = statusBarViewModel,
+            clockViewModelFactory = clockViewModelFactory,
+            statusBarIconController = iconController,
+            iconManagerFactory = tintedIconManagerFactory,
+        )
         return
     }
 
