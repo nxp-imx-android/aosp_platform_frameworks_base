@@ -409,9 +409,6 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
     private void stopBroadcastIfCurrentlySelected(long requestId) {
         if (!currentOutputIsBLEBroadcast()) {
-            // Unexpected result.
-            Slog.e(TAG, "Unable to stop broadcast, requestId: " + requestId);
-            notifyRequestFailed(requestId, MediaRoute2ProviderService.REASON_INVALID_COMMAND);
             return;
         }
 
