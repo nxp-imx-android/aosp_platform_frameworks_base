@@ -40,8 +40,8 @@ class KeyguardPreviewInteractor
 @AssistedInject
 constructor(
     @Assisted private val repository: KeyguardPreviewRepository,
-    private val clockInteractor: KeyguardClockInteractor,
-    private val shadeModeInteractor: ShadeModeInteractor,
+    clockInteractor: KeyguardClockInteractor,
+    shadeModeInteractor: ShadeModeInteractor,
 ) {
     val previewContext: Context
         get() = repository.previewContext
@@ -61,13 +61,13 @@ constructor(
     val shouldHighlightSelectedAffordance: Boolean
         get() = repository.shouldHighlightSelectedAffordance
 
-    val isShadeLayoutWide: Boolean = run {
+    val isFullWidthShade: Boolean = run {
         if (repository.display == null || repository.display.displayId == 0) {
-            shadeModeInteractor.isShadeLayoutWide.value
+            shadeModeInteractor.isFullWidthShade.value
         } else {
             // For the unfolded preview in a folded screen; it's landscape by default
             // For the folded preview in an unfolded screen; it's portrait by default
-            repository.display.name == "Inner Display"
+            repository.display.name != "Inner Display"
         }
     }
     val request: Bundle

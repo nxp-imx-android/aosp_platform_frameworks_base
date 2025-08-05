@@ -174,8 +174,11 @@ constructor(
             connect(
                 sharedR.id.bc_smartspace_view,
                 ConstraintSet.END,
-                if (keyguardSmartspaceViewModel.isShadeLayoutWide.value) R.id.split_shade_guideline
-                else ConstraintSet.PARENT_ID,
+                if (keyguardSmartspaceViewModel.isFullWidthShade.value) {
+                    ConstraintSet.PARENT_ID
+                } else {
+                    R.id.split_shade_guideline
+                },
                 ConstraintSet.END,
                 smartspaceHorizontalPadding,
             )

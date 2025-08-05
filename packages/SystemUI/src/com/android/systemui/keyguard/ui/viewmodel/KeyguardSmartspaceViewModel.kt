@@ -101,7 +101,7 @@ constructor(
     /* trigger clock and smartspace constraints change when smartspace appears */
     val bcSmartspaceVisibility: StateFlow<Int> = smartspaceInteractor.bcSmartspaceVisibility
 
-    val isShadeLayoutWide: StateFlow<Boolean> = shadeModeInteractor.isShadeLayoutWide
+    val isFullWidthShade: StateFlow<Boolean> = shadeModeInteractor.isFullWidthShade
 
     companion object {
         fun getDateWeatherStartMargin(context: Context): Int {

@@ -61,15 +61,12 @@ constructor(@Assisted private val interactor: KeyguardPreviewInteractor) {
     val display: Display?
         get() = interactor.display
 
-    val isShadeLayoutWide: Boolean
-        get() = interactor.isShadeLayoutWide
-
     val wallpaperColors: WallpaperColors?
         get() = interactor.wallpaperColors
 
     fun buildPreviewConfig(): ClockPreviewConfig {
         return ClockPreviewConfig(
-            isShadeLayoutWide = isShadeLayoutWide,
+            isFullWidthShade = interactor.isFullWidthShade,
             isSceneContainerFlagEnabled = SceneContainerFlag.isEnabled,
             statusBarHeight = SystemBarUtils.getStatusBarHeight(previewContext),
             splitShadeTopMargin =

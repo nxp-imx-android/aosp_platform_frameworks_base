@@ -40,6 +40,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 
 /**
@@ -52,18 +53,16 @@ interface ShadeModeInteractor {
     val shadeMode: StateFlow<ShadeMode>
 
     /**
-     * Whether the shade layout should be wide (true) or narrow (false).
+     * Whether the shade layout should be full width (true) or floating (false).
      *
-     * In a wide layout, notifications and quick settings each take up only half the screen width
-     * (whether they are shown at the same time or not). In a narrow layout, they can each be as
-     * wide as the entire screen.
+     * In a floating (aka wide) layout, notifications and quick settings each take up only up to
+     * half the screen width (whether they are shown at the same time or not).
      *
-     * Note: When scene container is disabled, this returns `false` in some exceptional cases when
-     * the screen would otherwise be considered wide. This is defined by the
-     * `config_use_split_notification_shade` config value. In scene container such overrides are
-     * deprecated, and this flow returns the same values as [DisplayStateInteractor.isWideScreen].
+     * In a full width (aka narrow) layout, they can each be as wide as the entire screen.
+     *
+     * Note: In non-Dual-Shade modes, this value may be `true` even when the screen is wide.
      */
-    val isShadeLayoutWide: StateFlow<Boolean>
+    val isFullWidthShade: StateFlow<Boolean>
 
     /** Convenience shortcut for querying whether the current [shadeMode] is [ShadeMode.Dual]. */
     val isDualShade: Boolean
@@ -99,13 +98,13 @@ constructor(
         !SceneContainerFlag.isEnabled ||
             !context.resources.getBoolean(R.bool.config_disableSplitShade)
 
-    override val isShadeLayoutWide: StateFlow<Boolean> =
+    override val isFullWidthShade: StateFlow<Boolean> =
         isDualShadeSettingEnabled
             .flatMapLatest { isDualShadeSettingEnabled ->
                 if (isDualShadeSettingEnabled) {
-                    repository.isWideScreen
+                    repository.isWideScreen.map { !it }
                 } else {
-                    repository.legacyUseSplitShade
+                    repository.legacyUseSplitShade.map { !it }
                 }
             }
             .stateIn(
@@ -118,17 +117,17 @@ constructor(
         get() =
             determineShadeMode(
                 isDualShadeSettingEnabled = DUAL_SHADE_ENABLED_DEFAULT,
-                isShadeLayoutWide = isShadeLayoutWide.value,
+                isFullWidthShade = isFullWidthShade.value,
             )
 
     override val shadeMode: StateFlow<ShadeMode> =
-        combine(isDualShadeSettingEnabled, isShadeLayoutWide, ::determineShadeMode)
+        combine(isDualShadeSettingEnabled, isFullWidthShade, ::determineShadeMode)
             .logDiffsForTable(tableLogBuffer = tableLogBuffer, initialValue = shadeModeInitialValue)
             .stateIn(applicationScope, SharingStarted.Eagerly, initialValue = shadeModeInitialValue)
 
     private fun determineShadeMode(
         isDualShadeSettingEnabled: Boolean,
-        isShadeLayoutWide: Boolean,
+        isFullWidthShade: Boolean,
     ): ShadeMode {
         return when {
             // Case 1: The Dual Shade setting has been enabled by the user.
@@ -136,7 +135,7 @@ constructor(
 
             // Case 2: Phone (in any orientation) or large screen in portrait, with Dual Shade
             // setting disabled.
-            !isShadeLayoutWide -> ShadeMode.Single
+            isFullWidthShade -> ShadeMode.Single
 
             // Case 3: Large screen in landscape orientation, with Dual Shade setting disabled.
             isSplitShadeEnabled -> ShadeMode.Split
@@ -157,5 +156,5 @@ class ShadeModeInteractorEmptyImpl @Inject constructor() : ShadeModeInteractor {
 
     override val shadeMode: StateFlow<ShadeMode> = MutableStateFlow(ShadeMode.Single)
 
-    override val isShadeLayoutWide: StateFlow<Boolean> = MutableStateFlow(false)
+    override val isFullWidthShade: StateFlow<Boolean> = MutableStateFlow(false)
 }

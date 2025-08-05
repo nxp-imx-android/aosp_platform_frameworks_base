@@ -49,8 +49,8 @@ constructor(
     override fun start() {
         scope.launchTraced("ShadeStateTraceLogger") {
             launch {
-                val stateLogger = createTraceStateLogger("isShadeLayoutWide")
-                shadeModeInteractor.isShadeLayoutWide.collect { stateLogger.log(it.toString()) }
+                val stateLogger = createTraceStateLogger("isFullWidthShade")
+                shadeModeInteractor.isFullWidthShade.collect { stateLogger.log(it.toString()) }
             }
             launch {
                 val stateLogger = createTraceStateLogger("shadeMode")
