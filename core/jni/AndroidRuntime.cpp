@@ -658,6 +658,8 @@ int AndroidRuntime::startVm(JavaVM** pJavaVM, JNIEnv** pEnv, bool zygote, bool p
     char heapgrowthlimitOptsBuf[sizeof("-XX:HeapGrowthLimit=")-1 + PROPERTY_VALUE_MAX];
     char heapminfreeOptsBuf[sizeof("-XX:HeapMinFree=")-1 + PROPERTY_VALUE_MAX];
     char heapmaxfreeOptsBuf[sizeof("-XX:HeapMaxFree=")-1 + PROPERTY_VALUE_MAX];
+    char enableTimeBasedGcTriggerBuf[sizeof("-XX:EnableTimeBasedGcTrigger=") - 1 +
+                                     PROPERTY_VALUE_MAX];
     char heapMemoryGcCostFactorBuf[sizeof("-XX:HeapMemoryGcCostFactor=") - 1 + PROPERTY_VALUE_MAX];
     char usejitOptsBuf[sizeof("-Xusejit:")-1 + PROPERTY_VALUE_MAX];
     char jitpthreadpriorityOptsBuf[sizeof("-Xjitpthreadpriority:")-1 + PROPERTY_VALUE_MAX];
@@ -854,6 +856,9 @@ int AndroidRuntime::startVm(JavaVM** pJavaVM, JNIEnv** pEnv, bool zygote, bool p
     parseRuntimeOption("dalvik.vm.heaptargetutilization",
                        heaptargetutilizationOptsBuf,
                        "-XX:HeapTargetUtilization=");
+
+    parseRuntimeOption("dalvik.vm.enable_time_based_gc_trigger", enableTimeBasedGcTriggerBuf,
+                       "-XX:EnableTimeBasedGcTrigger=");
     parseRuntimeOption("dalvik.vm.heap-memory-gc-cost-factor", heapMemoryGcCostFactorBuf,
                        "-XX:HeapMemoryGcCostFactor=");
 
