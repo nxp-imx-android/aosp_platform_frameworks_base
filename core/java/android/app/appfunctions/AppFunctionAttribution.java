@@ -226,8 +226,8 @@ public final class AppFunctionAttribution implements Parcelable {
          * define a set of string constants for these custom interaction types and set them here
          * accordingly.
          *
-         * @throws IllegalArgumentException If the interaction type is not
-         *   {@link AppFunctionAttribution#INTERACTION_TYPE_OTHER}.
+         * @throws IllegalArgumentException If the interaction type is not {@link
+         *     AppFunctionAttribution#INTERACTION_TYPE_OTHER}.
          */
         @NonNull
         public Builder setCustomInteractionType(@NonNull String customInteractionType) {
@@ -257,12 +257,19 @@ public final class AppFunctionAttribution implements Parcelable {
             return this;
         }
 
+        // TODO(b/427996654): Update the document to use new Intent action.
         /**
          * Sets a deeplink {@link Uri} to the user request that initiated the app function
          * execution.
          *
          * <p>When set, this URI can be used by privacy settings to display a link in the audit
          * history, allowing users to navigate to the context of the original interaction.
+         *
+         * <p>For the link to be functional, the provided {@link Uri} <strong>must</strong> be
+         * resolvable by an {@link android.content.Intent} with the action {@link
+         * android.content.Intent#ACTION_VIEW}. To allow privacy settings to launch your activity,
+         * the target {@link android.app.Activity} <strong>must</strong> declare a corresponding
+         * {@code <intent-filter>} in your manifest.
          */
         @NonNull
         public Builder setInteractionUri(@Nullable Uri interactionUri) {
@@ -276,7 +283,7 @@ public final class AppFunctionAttribution implements Parcelable {
             if (mInteractionType == INTERACTION_TYPE_OTHER && mCustomInteractionType == null) {
                 throw new IllegalArgumentException(
                         "Must set customInteractionType since"
-                            + " interactionType=INTERACTION_TYPE_OTHER");
+                                + " interactionType=INTERACTION_TYPE_OTHER");
             }
             return new AppFunctionAttribution(
                     mInteractionType, mCustomInteractionType, mThreadId, mInteractionUri);
