@@ -19,8 +19,8 @@ package com.android.wm.shell.flicker.resizing
 import android.platform.test.annotations.Postsubmit
 import android.platform.test.annotations.RequiresDesktopDevice
 import android.tools.NavBar
-import android.tools.PlatformConsts.DESKTOP_MODE_MINIMUM_WINDOW_HEIGHT
-import android.tools.PlatformConsts.DESKTOP_MODE_MINIMUM_WINDOW_WIDTH
+import android.tools.PlatformConsts.DESKTOP_MODE_MINIMUM_WINDOW_HEIGHT_DP
+import android.tools.PlatformConsts.DESKTOP_MODE_MINIMUM_WINDOW_WIDTH_DP
 import android.tools.flicker.assertions.FlickerChecker
 import android.tools.flicker.junit.FlickerParametersRunnerFactory
 import android.tools.flicker.FlickerBuilder
@@ -76,8 +76,8 @@ class ResizeAppToMinimumWindowSizeFlickerTest(flicker: FlickerTest) : DesktopMod
     @Test
     fun appLayerHasSizeAtEnd() = flicker.appLayerHasSizeAtEnd(
         testApp,
-        DESKTOP_MODE_MINIMUM_WINDOW_WIDTH,
-        DESKTOP_MODE_MINIMUM_WINDOW_HEIGHT
+        DESKTOP_MODE_MINIMUM_WINDOW_WIDTH_DP,
+        DESKTOP_MODE_MINIMUM_WINDOW_HEIGHT_DP
     )
 
     @Test
