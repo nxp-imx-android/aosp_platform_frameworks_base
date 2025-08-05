@@ -1734,11 +1734,13 @@ public class BubbleController implements ConfigurationChangeListener,
             // mBubbleData should be updated with the new location to update the bubble bar location
             mBubbleData.setSelectedBubbleAndExpandStack(b, location);
         } else {
-            b.enable(Notification.BubbleMetadata.FLAG_AUTO_EXPAND_BUBBLE);
-
-            if (isShowingAsBubbleBar()) {
+            final boolean isOverflowBubble = mBubbleData.hasOverflowBubbleWithKey(b.getKey());
+            // if this is an overflow bubble we need to remove it from overflow first
+            final Bubble bubble = isOverflowBubble ? mBubbleData.getOrCreateBubble(null, b) : b;
+            bubble.enable(Notification.BubbleMetadata.FLAG_AUTO_EXPAND_BUBBLE);
+            if (isShowingAsBubbleBar() || isOverflowBubble) {
                 ensureBubbleViewsAndWindowCreated();
-                mBubbleTransitions.startLaunchIntoOrConvertToBubble(b, mExpandedViewManager,
+                mBubbleTransitions.startLaunchIntoOrConvertToBubble(bubble, mExpandedViewManager,
                         mBubbleTaskViewFactory, mBubblePositioner, mStackView, mLayerView,
                         mBubbleIconFactory, mInflateSynchronously, location);
             } else {
@@ -2403,9 +2405,9 @@ public class BubbleController implements ConfigurationChangeListener,
     private void setIsBubble(@NonNull final Bubble b, final boolean isBubble) {
         Objects.requireNonNull(b);
         b.setIsBubble(isBubble);
-        if (b.isApp() && isBubble) {
-            Bubble bubble = mBubbleData.getOrCreateBubble(null, b);
-            expandStackAndSelectAppBubble(bubble);
+        final boolean isOverflowBubble = mBubbleData.hasOverflowBubbleWithKey(b.getKey());
+        if (b.isApp() && isBubble && isOverflowBubble) {
+            expandStackAndSelectAppBubble(b);
             return;
         }
         mSysuiProxy.getPendingOrActiveEntry(b.getKey(), (entry) -> {
