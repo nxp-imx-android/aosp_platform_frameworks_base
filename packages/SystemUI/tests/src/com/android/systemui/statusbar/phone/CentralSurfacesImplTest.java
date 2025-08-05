@@ -27,7 +27,6 @@ import static android.hardware.devicestate.DeviceState.PROPERTY_POWER_CONFIGURAT
 import static android.provider.Settings.Global.HEADS_UP_NOTIFICATIONS_ENABLED;
 import static android.provider.Settings.Global.HEADS_UP_ON;
 
-import static com.android.systemui.Flags.FLAG_KEYBOARD_SHORTCUT_HELPER_REWRITE;
 import static com.android.systemui.flags.Flags.SHORTCUT_LIST_SEARCH_LAYOUT;
 import static com.android.systemui.shared.Flags.FLAG_AMBIENT_AOD;
 import static com.android.systemui.statusbar.StatusBarState.KEYGUARD;
@@ -1243,7 +1242,6 @@ public class CentralSurfacesImplTest extends SysuiTestCase {
     }
 
     @Test
-    @EnableFlags(FLAG_KEYBOARD_SHORTCUT_HELPER_REWRITE)
     public void dismissKeyboardShortcuts_largeScreen_bothFlagsEnabled_doesNotDismissAny() {
         switchToLargeScreen();
         mFeatureFlags.set(SHORTCUT_LIST_SEARCH_LAYOUT, true);
@@ -1255,32 +1253,6 @@ public class CentralSurfacesImplTest extends SysuiTestCase {
     }
 
     @Test
-    @DisableFlags(FLAG_KEYBOARD_SHORTCUT_HELPER_REWRITE)
-    public void dismissKeyboardShortcuts_largeScreen_newFlagsDisabled_dismissesTabletVersion() {
-        switchToLargeScreen();
-        mFeatureFlags.set(SHORTCUT_LIST_SEARCH_LAYOUT, true);
-        createCentralSurfaces();
-
-        dismissKeyboardShortcuts();
-
-        verify(mKeyboardShortcutListSearch).dismissKeyboardShortcuts();
-    }
-
-    @Test
-    @DisableFlags(FLAG_KEYBOARD_SHORTCUT_HELPER_REWRITE)
-    public void dismissKeyboardShortcuts_largeScreen_bothFlagsDisabled_dismissesPhoneVersion() {
-        switchToLargeScreen();
-        mFeatureFlags.set(SHORTCUT_LIST_SEARCH_LAYOUT, false);
-        createCentralSurfaces();
-
-        dismissKeyboardShortcuts();
-
-        verify(mKeyboardShortcuts).dismissKeyboardShortcuts();
-        verifyNoMoreInteractions(mKeyboardShortcutListSearch);
-    }
-
-    @Test
-    @EnableFlags(FLAG_KEYBOARD_SHORTCUT_HELPER_REWRITE)
     public void dismissKeyboardShortcuts_smallScreen_bothFlagsEnabled_doesNotDismissAny() {
         switchToSmallScreen();
         mFeatureFlags.set(SHORTCUT_LIST_SEARCH_LAYOUT, true);
@@ -1292,33 +1264,6 @@ public class CentralSurfacesImplTest extends SysuiTestCase {
     }
 
     @Test
-    @DisableFlags(FLAG_KEYBOARD_SHORTCUT_HELPER_REWRITE)
-    public void dismissKeyboardShortcuts_smallScreen_newFlagsDisabled_dismissesPhoneVersion() {
-        switchToSmallScreen();
-        mFeatureFlags.set(SHORTCUT_LIST_SEARCH_LAYOUT, true);
-        createCentralSurfaces();
-
-        dismissKeyboardShortcuts();
-
-        verify(mKeyboardShortcuts).dismissKeyboardShortcuts();
-        verifyNoMoreInteractions(mKeyboardShortcutListSearch);
-    }
-
-    @Test
-    @DisableFlags(FLAG_KEYBOARD_SHORTCUT_HELPER_REWRITE)
-    public void dismissKeyboardShortcuts_smallScreen_bothFlagsDisabled_dismissesPhoneVersion() {
-        switchToSmallScreen();
-        mFeatureFlags.set(SHORTCUT_LIST_SEARCH_LAYOUT, false);
-        createCentralSurfaces();
-
-        dismissKeyboardShortcuts();
-
-        verify(mKeyboardShortcuts).dismissKeyboardShortcuts();
-        verifyNoMoreInteractions(mKeyboardShortcutListSearch);
-    }
-
-    @Test
-    @EnableFlags(FLAG_KEYBOARD_SHORTCUT_HELPER_REWRITE)
     public void toggleKeyboardShortcuts_largeScreen_bothFlagsEnabled_doesNotTogglesAny() {
         switchToLargeScreen();
         mFeatureFlags.set(SHORTCUT_LIST_SEARCH_LAYOUT, true);
@@ -1331,35 +1276,6 @@ public class CentralSurfacesImplTest extends SysuiTestCase {
     }
 
     @Test
-    @DisableFlags(FLAG_KEYBOARD_SHORTCUT_HELPER_REWRITE)
-    public void toggleKeyboardShortcuts_largeScreen_newFlagsDisabled_togglesTabletVersion() {
-        switchToLargeScreen();
-        mFeatureFlags.set(SHORTCUT_LIST_SEARCH_LAYOUT, true);
-        createCentralSurfaces();
-
-        int deviceId = 654;
-        toggleKeyboardShortcuts(deviceId);
-
-        verify(mKeyboardShortcutListSearch).showKeyboardShortcuts(deviceId);
-        verifyNoMoreInteractions(mKeyboardShortcuts);
-    }
-
-    @Test
-    @DisableFlags(FLAG_KEYBOARD_SHORTCUT_HELPER_REWRITE)
-    public void toggleKeyboardShortcuts_largeScreen_bothFlagsDisabled_togglesPhoneVersion() {
-        switchToLargeScreen();
-        mFeatureFlags.set(SHORTCUT_LIST_SEARCH_LAYOUT, false);
-        createCentralSurfaces();
-
-        int deviceId = 987;
-        toggleKeyboardShortcuts(deviceId);
-
-        verify(mKeyboardShortcuts).showKeyboardShortcuts(deviceId);
-        verifyNoMoreInteractions(mKeyboardShortcutListSearch);
-    }
-
-    @Test
-    @EnableFlags(FLAG_KEYBOARD_SHORTCUT_HELPER_REWRITE)
     public void toggleKeyboardShortcuts_smallScreen_bothFlagsEnabled_doesNotToggleAny() {
         switchToSmallScreen();
         mFeatureFlags.set(SHORTCUT_LIST_SEARCH_LAYOUT, true);
@@ -1369,34 +1285,6 @@ public class CentralSurfacesImplTest extends SysuiTestCase {
         toggleKeyboardShortcuts(/* deviceId= */ deviceId);
 
         verifyNoMoreInteractions(mKeyboardShortcuts, mKeyboardShortcutListSearch);
-    }
-
-    @Test
-    @DisableFlags(FLAG_KEYBOARD_SHORTCUT_HELPER_REWRITE)
-    public void toggleKeyboardShortcuts_smallScreen_newFlagsDisabled_togglesPhoneVersion() {
-        switchToSmallScreen();
-        mFeatureFlags.set(SHORTCUT_LIST_SEARCH_LAYOUT, true);
-        createCentralSurfaces();
-
-        int deviceId = 456;
-        toggleKeyboardShortcuts(deviceId);
-
-        verify(mKeyboardShortcuts).showKeyboardShortcuts(deviceId);
-        verifyNoMoreInteractions(mKeyboardShortcutListSearch);
-    }
-
-    @Test
-    @DisableFlags(FLAG_KEYBOARD_SHORTCUT_HELPER_REWRITE)
-    public void toggleKeyboardShortcuts_smallScreen_bothFlagsDisabled_togglesPhoneVersion() {
-        switchToSmallScreen();
-        mFeatureFlags.set(SHORTCUT_LIST_SEARCH_LAYOUT, false);
-        createCentralSurfaces();
-
-        int deviceId = 123;
-        toggleKeyboardShortcuts(deviceId);
-
-        verify(mKeyboardShortcuts).showKeyboardShortcuts(deviceId);
-        verifyNoMoreInteractions(mKeyboardShortcutListSearch);
     }
 
     private void dismissKeyboardShortcuts() {
