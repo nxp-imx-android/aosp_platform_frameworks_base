@@ -5235,6 +5235,7 @@ package android.app {
     ctor public AppComponentFactory();
     method @NonNull public android.app.Activity instantiateActivity(@NonNull ClassLoader, @NonNull String, @Nullable android.content.Intent) throws java.lang.ClassNotFoundException, java.lang.IllegalAccessException, java.lang.InstantiationException;
     method @NonNull public android.app.Application instantiateApplication(@NonNull ClassLoader, @NonNull String) throws java.lang.ClassNotFoundException, java.lang.IllegalAccessException, java.lang.InstantiationException;
+    method @FlaggedApi("android.app.custom_backupagent_instantiation") @NonNull public android.app.backup.BackupAgent instantiateBackupAgent(@NonNull ClassLoader, @NonNull String) throws java.lang.ClassNotFoundException, java.lang.IllegalAccessException, java.lang.InstantiationException;
     method @NonNull public ClassLoader instantiateClassLoader(@NonNull ClassLoader, @NonNull android.content.pm.ApplicationInfo);
     method @NonNull public android.content.ContentProvider instantiateProvider(@NonNull ClassLoader, @NonNull String) throws java.lang.ClassNotFoundException, java.lang.IllegalAccessException, java.lang.InstantiationException;
     method @NonNull public android.content.BroadcastReceiver instantiateReceiver(@NonNull ClassLoader, @NonNull String, @Nullable android.content.Intent) throws java.lang.ClassNotFoundException, java.lang.IllegalAccessException, java.lang.InstantiationException;
