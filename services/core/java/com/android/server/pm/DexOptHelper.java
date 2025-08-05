@@ -236,20 +236,6 @@ public final class DexOptHelper {
          */
         @Override
         public void onDexoptDone(@NonNull DexoptResult result) {
-            for (DexoptResult.PackageDexoptResult pkgRes : result.getPackageDexoptResults()) {
-                CompilerStats.PackageStats stats =
-                        mPm.getOrCreateCompilerPackageStats(pkgRes.getPackageName());
-                for (DexoptResult.DexContainerFileDexoptResult dexRes :
-                        pkgRes.getDexContainerFileDexoptResults()) {
-                    stats.setCompileTime(
-                            dexRes.getDexContainerFile(), dexRes.getDex2oatWallTimeMillis());
-                }
-            }
-
-            synchronized (mPm.mLock) {
-                mPm.mCompilerStats.maybeWriteAsync();
-            }
-
             if (result.getReason().equals(ReasonMapping.REASON_INACTIVE)) {
                 for (DexoptResult.PackageDexoptResult pkgRes : result.getPackageDexoptResults()) {
                     if (pkgRes.getStatus() == DexoptResult.DEXOPT_PERFORMED) {

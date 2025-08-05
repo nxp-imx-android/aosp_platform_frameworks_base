@@ -969,7 +969,6 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
     private final @NonNull String mRequiredSdkSandboxPackage;
     private final @Nullable ComponentName mDeveloperVerificationServiceProvider;
     private final @Nullable String mDeveloperVerificationPolicyDelegatePackage;
-    final CompilerStats mCompilerStats = new CompilerStats();
 
     private final DomainVerificationConnection mDomainVerificationConnection;
 
@@ -2351,8 +2350,6 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
                 setting.updateProcesses();
             }
 
-            mCompilerStats.read();
-
             EventLog.writeEvent(EventLogTags.BOOT_PROGRESS_PMS_SCAN_END,
                     SystemClock.uptimeMillis());
             Slog.i(TAG, "Time to scan packages: "
@@ -3068,7 +3065,6 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
     }
 
     public void shutdown() {
-        mCompilerStats.writeNow();
         mDynamicCodeLogger.writeNow();
         if (!refactorCrashrecovery()) {
             CrashRecoveryAdaptor.packageWatchdogWriteNow(mContext);
@@ -7664,14 +7660,6 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
             }
         };
         forEachPackageState(snapshot.getPackageStates(), actionWrapped);
-    }
-
-    public CompilerStats.PackageStats getOrCreateCompilerPackageStats(AndroidPackage pkg) {
-        return getOrCreateCompilerPackageStats(pkg.getPackageName());
-    }
-
-    public CompilerStats.PackageStats getOrCreateCompilerPackageStats(String pkgName) {
-        return mCompilerStats.getOrCreatePackageStats(pkgName);
     }
 
     void grantImplicitAccess(@NonNull Computer snapshot, @UserIdInt int userId,
