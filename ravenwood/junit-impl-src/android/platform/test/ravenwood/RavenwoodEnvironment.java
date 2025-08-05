@@ -31,7 +31,6 @@ import android.app.ResourcesManager;
 import android.content.res.Resources;
 import android.os.Build;
 import android.os.HandlerThread;
-import android.util.Log;
 import android.view.DisplayAdjustments;
 
 import com.android.internal.annotations.GuardedBy;
@@ -44,6 +43,7 @@ import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Random;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
@@ -159,17 +159,16 @@ public final class RavenwoodEnvironment {
 
         mRootDir = Files.createTempDirectory("ravenwood-root-dir-").toFile();
         mRootDir.mkdirs();
-
-        Log.i(TAG, "TargetPackageName=" + mTargetPackageName);
-        Log.i(TAG, "TestPackageName=" + mInstPackageName);
-        Log.i(TAG, "TargetSdkLevel=" + mTargetSdkLevel);
     }
 
     /**
      * Create and initialize the singleton instance. Also initializes {@link RavenwoodVmState}.
      */
-    public static void init(int pid, HandlerThread mainThread) throws IOException {
+    public static void init(HandlerThread mainThread) throws IOException {
         final var props = RavenwoodSystemProperties.readProperties("ravenwood.properties");
+
+        // TODO: Why do we use a random PID? We can get the real PID via JNI. Why not use that?
+        final int pid = new Random().nextInt(100, 32768);
 
         // TODO(b/377765941) Read them from the manifest too?
         var targetSdkLevel = withDefault(
