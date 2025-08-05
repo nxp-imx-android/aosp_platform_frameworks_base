@@ -24,10 +24,16 @@ import android.app.IUiModeManagerCallback;
  * @hide
  */
 interface IUiModeManager {
+
     /**
      * @hide
      */
-    void addCallback(IUiModeManagerCallback callback);
+    void addCallback(IUiModeManagerCallback callback, int userId);
+
+    /**
+     * @hide
+     */
+    void removeCallback(IUiModeManagerCallback callback, int userId);
 
     /**
      * Enables the car mode. Only the system can do this.
@@ -215,15 +221,14 @@ interface IUiModeManager {
     int getActiveProjectionTypes();
 
     /**
-     * Returns the contrast for the current user.
+     * Returns the contrast for the given user.
      */
-    float getContrast();
-
+    float getContrast(int userId);
 
     /**
-     * Returns the force invert state.
+     * Returns the force invert state for the given user.
      *
      * @hide
      */
-    int getForceInvertState();
+    int getForceInvertState(int userId);
 }
