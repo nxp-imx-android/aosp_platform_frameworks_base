@@ -639,9 +639,20 @@ constructor(
      * memory) so that the next presentation of the grid (either as glanceable hub or edit mode) can
      * restore position.
      */
-    fun setScrollPosition(firstVisibleItemIndex: Int, firstVisibleItemOffset: Int) {
+    fun setScrollPosition(firstVisibleItemIndex: Int, firstVisibleItemOffset: Int, reason: String) {
+        logger.d({ "On persist scroll position ($str1) - index=$int1 offset=$int2" }) {
+            int1 = firstVisibleItemIndex
+            int2 = firstVisibleItemOffset
+            str1 = reason
+        }
         _firstVisibleItemIndex = firstVisibleItemIndex
         _firstVisibleItemOffset = firstVisibleItemOffset
+    }
+
+    fun clearScrollPosition(reason: String) {
+        logger.d({ "On clear scroll position ($str1)" }) { str1 = reason }
+        _firstVisibleItemIndex = 0
+        _firstVisibleItemOffset = 0
     }
 
     val firstVisibleItemIndex: Int

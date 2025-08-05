@@ -240,11 +240,7 @@ fun CommunalHub(
     val gridState =
         rememberLazyGridState(viewModel.savedFirstScrollIndex, viewModel.savedFirstScrollOffset)
 
-    LaunchedEffect(Unit) {
-        if (!viewModel.isEditMode) {
-            viewModel.clearPersistedScrollPosition()
-        }
-    }
+    LaunchedEffect(Unit) { viewModel.clearPersistedScrollPosition("ui rendered") }
 
     val contentListState = rememberContentListState(widgetConfigurator, communalContent, viewModel)
     val reorderingWidgets by viewModel.reorderingWidgets.collectAsStateWithLifecycle()

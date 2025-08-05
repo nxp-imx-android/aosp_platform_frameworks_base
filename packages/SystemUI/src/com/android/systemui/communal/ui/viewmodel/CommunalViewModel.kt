@@ -290,7 +290,8 @@ constructor(
     }
 
     override fun onOpenWidgetEditor(shouldOpenWidgetPickerOnStart: Boolean) {
-        persistScrollPosition()
+        // Persist scroll position in glanceable hub so we end up in the same position in edit mode.
+        persistScrollPosition("open widget editor")
         communalInteractor.showWidgetEditor(shouldOpenWidgetPickerOnStart)
     }
 
