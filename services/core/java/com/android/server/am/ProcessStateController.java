@@ -16,6 +16,7 @@
 package com.android.server.am;
 
 import static android.app.ActivityManagerInternal.OOM_ADJ_REASON_ACTIVITY;
+import static android.app.ActivityManagerInternal.OOM_ADJ_REASON_BACKUP;
 import static android.app.ActivityManagerInternal.OOM_ADJ_REASON_SERVICE_BINDER_CALL;
 import static android.app.ProcessMemoryState.HOSTING_COMPONENT_TYPE_BROADCAST_RECEIVER;
 
@@ -108,7 +109,7 @@ public class ProcessStateController {
      * Add a process to evaluated the next time an update is run.
      */
     @GuardedBy("mLock")
-    public void enqueueUpdateTarget(@NonNull ProcessRecord proc) {
+    public void enqueueUpdateTarget(@Nullable ProcessRecord proc) {
         mOomAdjuster.enqueueOomAdjTargetLocked(proc);
     }
 
@@ -313,7 +314,15 @@ public class ProcessStateController {
      */
     @GuardedBy("mLock")
     public void setBackupTarget(@NonNull ProcessRecord proc, @UserIdInt int userId) {
+        final ProcessRecord prev = mGlobalState.mBackupTargets.get(userId);
+        if (prev == proc) return;
         mGlobalState.mBackupTargets.put(userId, proc);
+
+        if (Flags.pushGlobalStateToOomadjuster() && Flags.autoTriggerOomadjUpdates()) {
+            enqueueUpdateTarget(prev);
+            enqueueUpdateTarget(proc);
+            runPendingUpdate(OOM_ADJ_REASON_BACKUP);
+        }
     }
 
     /**
@@ -321,7 +330,13 @@ public class ProcessStateController {
      */
     @GuardedBy("mLock")
     public void stopBackupTarget(@UserIdInt int userId) {
-        mGlobalState.mBackupTargets.delete(userId);
+        final ProcessRecord prev = mGlobalState.mBackupTargets.removeReturnOld(userId);
+        if (prev == null) return;
+
+        if (Flags.pushGlobalStateToOomadjuster() && Flags.autoTriggerOomadjUpdates()) {
+            enqueueUpdateTarget(prev);
+            runPendingUpdate(OOM_ADJ_REASON_BACKUP);
+        }
     }
 
     /**
