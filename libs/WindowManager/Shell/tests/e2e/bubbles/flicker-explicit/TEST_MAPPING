@@ -34,6 +34,9 @@
       "name": "WMShellExplicitFlickerTestsBubbles-EnterBubbleViaBubbleMenuTest"
     },
     {
+      "name": "WMShellExplicitFlickerTestsBubbles-EnterBubbleFromHomeScreenTest"
+    },
+    {
       "name": "WMShellExplicitFlickerTestsBubbles-EnterBubbleViaDragToBubbleBarTest"
     },
     {
