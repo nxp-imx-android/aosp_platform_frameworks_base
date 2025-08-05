@@ -16,22 +16,28 @@
 
 package com.android.systemui.statusbar.pipeline.shared.ui.composable
 
+import android.graphics.Rect
 import android.view.ContextThemeWrapper
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.onLayoutRectChanged
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
-import com.android.compose.theme.colorAttr
 import com.android.settingslib.Utils
 import com.android.systemui.clock.ui.composable.ClockLegacy
 import com.android.systemui.clock.ui.viewmodel.AmPmStyle
@@ -43,6 +49,7 @@ import com.android.systemui.lifecycle.rememberViewModel
 import com.android.systemui.media.controls.ui.controller.MediaHierarchyManager
 import com.android.systemui.media.controls.ui.view.MediaHost
 import com.android.systemui.res.R
+import com.android.systemui.shade.ui.composable.ShadeHeader
 import com.android.systemui.shade.ui.composable.ShadeHighlightChip
 import com.android.systemui.shade.ui.composable.VariableDayDate
 import com.android.systemui.statusbar.chips.ui.compose.OngoingActivityChips
@@ -81,25 +88,31 @@ fun DesktopStatusBar(
     modifier: Modifier = Modifier,
 ) {
     // TODO(433589833): Update padding values to match UX specs.
-    Row(modifier = modifier.fillMaxWidth().padding(top = 8.dp, start = 12.dp, end = 12.dp)) {
-        Row(
-            horizontalArrangement =
-                Arrangement.spacedBy(DesktopStatusBar.Dimensions.ElementSpacing, Alignment.Start),
-            modifier = Modifier.padding(vertical = 4.dp),
-        ) {
-            ClockLegacy(textColor = Color.White, onClick = null)
+    Row(modifier = modifier.fillMaxWidth().padding(top = 4.dp, start = 12.dp, end = 12.dp)) {
+        WithAdaptiveTint(
+            isDarkProvider = { bounds -> viewModel.areaDark.isDarkTheme(bounds) },
+            isHighlighted = false,
+        ) { tint ->
+            Row(
+                horizontalArrangement =
+                    Arrangement.spacedBy(
+                        DesktopStatusBar.Dimensions.ElementSpacing,
+                        Alignment.Start,
+                    )
+            ) {
+                ClockLegacy(textColor = tint, onClick = null)
 
-            val clockViewModel =
-                rememberViewModel("HomeStatusBar.Clock") {
-                    clockViewModelFactory.create(AmPmStyle.Gone)
-                }
-            VariableDayDate(
-                longerDateText = clockViewModel.longerDateText,
-                shorterDateText = clockViewModel.shorterDateText,
-                textColor = colorAttr(R.attr.wallpaperTextColor),
-            )
+                val clockViewModel =
+                    rememberViewModel("HomeStatusBar.Clock") {
+                        clockViewModelFactory.create(AmPmStyle.Gone)
+                    }
+                VariableDayDate(
+                    longerDateText = clockViewModel.longerDateText,
+                    shorterDateText = clockViewModel.shorterDateText,
+                    textColor = tint,
+                )
+            }
         }
-
         Spacer(modifier = Modifier.weight(1f))
 
         Row(
@@ -138,19 +151,31 @@ fun DesktopStatusBar(
 }
 
 @Composable
-private fun NotificationsChip(viewModel: HomeStatusBarViewModel) {
+private fun NotificationsChip(viewModel: HomeStatusBarViewModel, modifier: Modifier = Modifier) {
     ShadeHighlightChip(
+        modifier = modifier,
         onClick = { viewModel.onNotificationIconChipClicked() },
-        // TODO(433589833): Add support for ChipHighlight when Notifications Panel is visible.
-        backgroundColor = Color.Transparent,
+        backgroundColor =
+            if (viewModel.isNotificationsChipHighlighted) {
+                ShadeHeader.ChipHighlight.Strong.backgroundColor
+            } else {
+                Color.Transparent
+            },
+        onHoveredBackgroundColor = ShadeHeader.ChipHighlight.Transparent.onHoveredBackgroundColor,
         horizontalArrangement =
             Arrangement.spacedBy(DesktopStatusBar.Dimensions.ChipInternalSpacing, Alignment.Start),
     ) {
         // TODO(433589833): Add new icon resources for the notification chip icon.
-        Icon(
-            icon = Icon.Resource(res = R.drawable.ic_volume_ringer, contentDescription = null),
-            tint = Color.White,
-        )
+        WithAdaptiveTint(
+            isHighlighted = viewModel.isNotificationsChipHighlighted,
+            isDarkProvider = { bounds -> viewModel.areaDark.isDarkTheme(bounds) },
+        ) { tint ->
+            Icon(
+                icon = Icon.Resource(res = R.drawable.ic_volume_ringer, contentDescription = null),
+                tint = tint,
+                modifier = Modifier.size(20.dp).padding(1.dp),
+            )
+        }
     }
 }
 
@@ -161,20 +186,30 @@ private fun QuickSettingsChip(
     iconManagerFactory: TintedIconManager.Factory,
     modifier: Modifier = Modifier,
 ) {
-
     ShadeHighlightChip(
+        modifier = modifier,
         onClick = { viewModel.onQuickSettingsChipClicked() },
-        // TODO(433589833): Add support for ChipHighlight when QS Panel is visible.
-        backgroundColor = Color.Transparent,
+        backgroundColor =
+            if (viewModel.isQuickSettingsChipHighlighted) {
+                ShadeHeader.ChipHighlight.Strong.backgroundColor
+            } else {
+                Color.Transparent
+            },
+        onHoveredBackgroundColor = ShadeHeader.ChipHighlight.Transparent.onHoveredBackgroundColor,
         horizontalArrangement =
             Arrangement.spacedBy(DesktopStatusBar.Dimensions.ChipInternalSpacing, Alignment.Start),
     ) {
         if (SystemStatusIconsInCompose.isEnabled) {
-            SystemStatusIcons(
-                viewModelFactory = viewModel.systemStatusIconsViewModelFactory,
-                tint = Color.White,
-                modifier = modifier,
-            )
+            WithAdaptiveTint(
+                isHighlighted = viewModel.isQuickSettingsChipHighlighted,
+                isDarkProvider = { bounds -> viewModel.areaDark.isDarkTheme(bounds) },
+            ) { tint ->
+                SystemStatusIcons(
+                    viewModelFactory = viewModel.systemStatusIconsViewModelFactory,
+                    tint = tint,
+                    modifier = modifier,
+                )
+            }
         } else {
             val localContext = LocalContext.current
             val themedContext = ContextThemeWrapper(localContext, R.style.Theme_SystemUI)
@@ -225,5 +260,39 @@ private fun QuickSettingsChip(
             isDarkProvider = { viewModel.areaDark },
             modifier = Modifier.height(batteryHeight),
         )
+    }
+}
+
+/**
+ * A helper composable that calculates the correct tint for UI elements.
+ *
+ * It manages its own bounds state and provides the calculated tint and a modifier to its content,
+ * abstracting away the boilerplate of tint calculation.
+ */
+@Composable
+private fun WithAdaptiveTint(
+    isDarkProvider: (Rect) -> Boolean,
+    isHighlighted: Boolean,
+    modifier: Modifier = Modifier,
+    content: @Composable (tint: Color) -> Unit,
+) {
+    var bounds by remember { mutableStateOf(Rect()) }
+    val tint =
+        if (isHighlighted) {
+            ShadeHeader.ChipHighlight.Strong.foregroundColor
+        } else if (isDarkProvider(bounds)) {
+            Color.White
+        } else {
+            Color.Black
+        }
+
+    Box(
+        propagateMinConstraints = true,
+        modifier =
+            modifier.onLayoutRectChanged { layoutCoordinates ->
+                bounds = with(layoutCoordinates.boundsInScreen) { Rect(left, top, right, bottom) }
+            },
+    ) {
+        content(tint)
     }
 }
