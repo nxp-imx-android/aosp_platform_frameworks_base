@@ -67,6 +67,7 @@ import com.android.internal.util.ArrayUtils;
 import com.android.internal.util.CollectionUtils;
 import com.android.server.pm.pkg.AndroidPackage;
 
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -149,26 +150,28 @@ public class PackageInfoCommonUtils {
                     info.permissions[i] = permissionInfo;
                 }
             }
-            final List<ParsedUsesPermission> usesPermissions = pkg.getUsesPermissions();
+            final Collection<ParsedUsesPermission> usesPermissions =
+                    pkg.getUsesPermissionMapping().values();
             size = usesPermissions.size();
             if (size > 0) {
                 info.requestedPermissions = new String[size];
                 info.requestedPermissionsFlags = new int[size];
-                for (int i = 0; i < size; i++) {
-                    final ParsedUsesPermission usesPermission = usesPermissions.get(i);
-                    info.requestedPermissions[i] = usesPermission.getName();
+                int index = 0;
+                for (ParsedUsesPermission usesPermission : usesPermissions) {
+                    info.requestedPermissions[index] = usesPermission.getName();
                     // The notion of required permissions is deprecated but for compatibility.
-                    info.requestedPermissionsFlags[i] |=
+                    info.requestedPermissionsFlags[index] |=
                             PackageInfo.REQUESTED_PERMISSION_REQUIRED;
                     if ((usesPermission.getUsesPermissionFlags()
                             & ParsedUsesPermission.FLAG_NEVER_FOR_LOCATION) != 0) {
-                        info.requestedPermissionsFlags[i] |=
+                        info.requestedPermissionsFlags[index] |=
                                 PackageInfo.REQUESTED_PERMISSION_NEVER_FOR_LOCATION;
                     }
-                    if (pkg.getImplicitPermissions().contains(info.requestedPermissions[i])) {
-                        info.requestedPermissionsFlags[i] |=
+                    if (pkg.getImplicitPermissions().contains(info.requestedPermissions[index])) {
+                        info.requestedPermissionsFlags[index] |=
                                 PackageInfo.REQUESTED_PERMISSION_IMPLICIT;
                     }
+                    index++;
                 }
             }
         }

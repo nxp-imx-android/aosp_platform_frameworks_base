@@ -41,7 +41,6 @@ import android.os.Parcel;
 import android.os.Parcelable;
 import android.os.UserHandle;
 import android.os.storage.StorageManager;
-import android.permission.flags.Flags;
 import android.text.TextUtils;
 import android.util.ArrayMap;
 import android.util.ArraySet;
@@ -156,14 +155,6 @@ public class PackageImpl implements ParsedPackage, AndroidPackageInternal,
     @NonNull
     @DataClass.ParcelWith(Parcelling.BuiltIn.ForInternedStringList.class)
     protected List<String> adoptPermissions = emptyList();
-    /**
-     * @deprecated consider migrating to {@link #getUsesPermissions} which has
-     *             more parsed details, such as flags
-     */
-    @NonNull
-    @Deprecated
-    @DataClass.ParcelWith(Parcelling.BuiltIn.ForInternedStringSet.class)
-    protected Set<String> requestedPermissions = emptySet();
     @NonNull
     @DataClass.ParcelWith(Parcelling.BuiltIn.ForInternedStringList.class)
     protected List<String> protectedBroadcasts = emptyList();
@@ -281,8 +272,6 @@ public class PackageImpl implements ParsedPackage, AndroidPackageInternal,
     private List<FeatureGroupInfo> featureGroups = emptyList();
     @Nullable
     private byte[] restrictUpdateHash;
-    @NonNull
-    private List<ParsedUsesPermission> usesPermissions = emptyList();
     @NonNull
     private Map<String, ParsedUsesPermission> usesPermissionMapping = emptyMap();
     @NonNull
@@ -727,23 +716,12 @@ public class PackageImpl implements ParsedPackage, AndroidPackageInternal,
         return this;
     }
 
-    // TODO(419394776) - Use single source of truth for storing uses permission metadata.
     @Override
     public PackageImpl addUsesPermission(ParsedUsesPermission permission) {
-        this.usesPermissions = CollectionUtils.add(this.usesPermissions, permission);
-
-        // Continue populating legacy data structures to avoid performance
-        // issues until all that code can be migrated
-        this.requestedPermissions =
-                CollectionUtils.add(this.requestedPermissions, permission.getName());
-
-        if (Flags.purposeDeclarationEnabled()) {
-            // During manifest parsing, we ignore duplicate permission requests. Therefore, it's
-            // safe to directly add to the mapping.
-            this.usesPermissionMapping =
-                    CollectionUtils.add(
-                            this.usesPermissionMapping, permission.getName(), permission);
-        }
+        // During manifest parsing, we ignore duplicate permission requests. Therefore, it's safe
+        // to directly add to the mapping.
+        this.usesPermissionMapping =
+                CollectionUtils.add(this.usesPermissionMapping, permission.getName(), permission);
 
         return this;
     }
@@ -1284,15 +1262,10 @@ public class PackageImpl implements ParsedPackage, AndroidPackageInternal,
         return reqFeatures;
     }
 
-    /**
-     * @deprecated consider migrating to {@link #getUsesPermissions} which has
-     *             more parsed details, such as flags
-     */
     @NonNull
     @Override
-    @Deprecated
     public Set<String> getRequestedPermissions() {
-        return requestedPermissions;
+        return usesPermissionMapping.keySet();
     }
 
     @Nullable
@@ -1497,12 +1470,6 @@ public class PackageImpl implements ParsedPackage, AndroidPackageInternal,
     @Override
     public List<String> getUsesOptionalNativeLibraries() {
         return usesOptionalNativeLibraries;
-    }
-
-    @NonNull
-    @Override
-    public List<ParsedUsesPermission> getUsesPermissions() {
-        return usesPermissions;
     }
 
     @NonNull
@@ -2859,7 +2826,6 @@ public class PackageImpl implements ParsedPackage, AndroidPackageInternal,
         usesOptionalNativeLibraries = Collections.unmodifiableList(usesOptionalNativeLibraries);
         originalPackages = Collections.unmodifiableList(originalPackages);
         adoptPermissions = Collections.unmodifiableList(adoptPermissions);
-        requestedPermissions = Collections.unmodifiableSet(requestedPermissions);
         protectedBroadcasts = Collections.unmodifiableList(protectedBroadcasts);
         apexSystemServices = Collections.unmodifiableList(apexSystemServices);
 
@@ -2878,7 +2844,6 @@ public class PackageImpl implements ParsedPackage, AndroidPackageInternal,
         configPreferences = Collections.unmodifiableList(configPreferences);
         reqFeatures = Collections.unmodifiableList(reqFeatures);
         featureGroups = Collections.unmodifiableList(featureGroups);
-        usesPermissions = Collections.unmodifiableList(usesPermissions);
         usesPermissionMapping = Collections.unmodifiableMap(usesPermissionMapping);
         usesSdkLibraries = Collections.unmodifiableList(usesSdkLibraries);
         implicitPermissions = Collections.unmodifiableSet(implicitPermissions);
@@ -3258,8 +3223,6 @@ public class PackageImpl implements ParsedPackage, AndroidPackageInternal,
         dest.writeByteArray(this.restrictUpdateHash);
         dest.writeStringList(this.originalPackages);
         sForInternedStringList.parcel(this.adoptPermissions, dest, flags);
-        sForInternedStringSet.parcel(this.requestedPermissions, dest, flags);
-        ParsingUtils.writeParcelableList(dest, this.usesPermissions);
         writeUsesPermissionMapping(dest);
         sForInternedStringSet.parcel(this.implicitPermissions, dest, flags);
         sForStringSet.parcel(this.upgradeKeySets, dest, flags);
@@ -3456,9 +3419,6 @@ public class PackageImpl implements ParsedPackage, AndroidPackageInternal,
         this.restrictUpdateHash = in.createByteArray();
         this.originalPackages = in.createStringArrayList();
         this.adoptPermissions = sForInternedStringList.unparcel(in);
-        this.requestedPermissions = sForInternedStringSet.unparcel(in);
-        this.usesPermissions = ParsingUtils.createTypedInterfaceList(in,
-                ParsedUsesPermissionImpl.CREATOR);
         readUsesPermissionMapping(in);
         this.implicitPermissions = sForInternedStringSet.unparcel(in);
         this.upgradeKeySets = sForStringSet.unparcel(in);

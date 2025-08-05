@@ -1348,11 +1348,6 @@ public interface AndroidPackage {
     @NonNull
     List<String> getUsesOptionalNativeLibraries();
 
-    /** @hide */
-    @Immutable.Ignore
-    @NonNull
-    List<ParsedUsesPermission> getUsesPermissions();
-
     /**
      * A mapping of the requested permission name to its {@link ParsedUsesPermission} object.
      *

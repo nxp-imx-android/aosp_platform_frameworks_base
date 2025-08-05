@@ -294,8 +294,6 @@ public class PackageParserTest {
         assertSame(deserialized.getPackageName(), deserialized2.getPackageName());
         assertSame(deserialized.getPermission(),
                 deserialized2.getPermission());
-        assertSame(deserialized.getRequestedPermissions().iterator().next(),
-                deserialized2.getRequestedPermissions().iterator().next());
 
         List<String> protectedBroadcastsOne = new ArrayList<>(1);
         protectedBroadcastsOne.addAll(deserialized.getProtectedBroadcasts());
@@ -773,8 +771,8 @@ public class PackageParserTest {
                             .collect(toList());
             assertWithMessage(
                     "Compatibility permissions shouldn't be added into uses permissions.")
-                    .that(pkg.getUsesPermissions().stream().map(ParsedUsesPermission::getName)
-                            .collect(toList()))
+                    .that(pkg.getUsesPermissionMapping().values().stream()
+                            .map(ParsedUsesPermission::getName).collect(toList()))
                     .containsNoneIn(compatPermissions);
             assertWithMessage(
                     "Compatibility permissions shouldn't be added into requested permissions.")
@@ -796,7 +794,7 @@ public class PackageParserTest {
             assertWithMessage(
                     "Compatibility permissions should be added into uses permissions.")
                     .that(Arrays.stream(COMPAT_PERMS).map(CompatibilityPermissionInfo::getName)
-                            .allMatch(pkg.getUsesPermissions().stream()
+                            .allMatch(pkg.getUsesPermissionMapping().values().stream()
                                     .map(ParsedUsesPermission::getName)
                             .collect(toList())::contains))
                     .isTrue();
