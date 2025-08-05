@@ -49,7 +49,6 @@ import android.util.Log;
 import android.util.Slog;
 import android.util.jar.StrictJarFile;
 
-import com.android.internal.logging.MetricsLogger;
 import com.android.internal.util.FrameworkStatsLog;
 import com.android.internal.util.IndentingPrintWriter;
 import com.android.server.LocalManagerRegistry;
@@ -93,10 +92,6 @@ public final class DexOptHelper {
     private final PackageManagerService mPm;
     private final InstallScenarioHelper mInstallScenarioHelper;
 
-    // Start time for the boot dexopt in performPackageDexOptUpgradeIfNeeded when ART Service is
-    // used, to make it available to the onDexoptDone callback.
-    private volatile long mBootDexoptStartTime;
-
     static {
         // Recycle the thread if it's not used for `keepAliveTime`.
         sDexoptExecutor.allowsCoreThreadTimeOut();
@@ -128,25 +123,8 @@ public final class DexOptHelper {
 
         Log.i(TAG, "Starting boot dexopt for reason " + reason);
 
-        final long startTime = System.nanoTime();
-
-        mBootDexoptStartTime = startTime;
         getArtManagerLocal()
                 .onBoot(reason, null /* progressCallbackExecutor */, null /* progressCallback */);
-    }
-
-    private void reportBootDexopt(long startTime, int numDexopted, int numSkipped, int numFailed) {
-        final int elapsedTimeSeconds =
-                (int) TimeUnit.NANOSECONDS.toSeconds(System.nanoTime() - startTime);
-
-        final Computer newSnapshot = mPm.snapshotComputer();
-
-        MetricsLogger.histogram(mPm.mContext, "opt_dialog_num_dexopted", numDexopted);
-        MetricsLogger.histogram(mPm.mContext, "opt_dialog_num_skipped", numSkipped);
-        MetricsLogger.histogram(mPm.mContext, "opt_dialog_num_failed", numFailed);
-        MetricsLogger.histogram(mPm.mContext, "opt_dialog_num_total",
-                numDexopted + numSkipped + numFailed);
-        MetricsLogger.histogram(mPm.mContext, "opt_dialog_time_s", elapsedTimeSeconds);
     }
 
      /**
@@ -258,32 +236,6 @@ public final class DexOptHelper {
          */
         @Override
         public void onDexoptDone(@NonNull DexoptResult result) {
-            switch (result.getReason()) {
-                case ReasonMapping.REASON_FIRST_BOOT:
-                case ReasonMapping.REASON_BOOT_AFTER_OTA:
-                case ReasonMapping.REASON_BOOT_AFTER_MAINLINE_UPDATE:
-                    int numDexopted = 0;
-                    int numSkipped = 0;
-                    int numFailed = 0;
-                    for (DexoptResult.PackageDexoptResult pkgRes :
-                            result.getPackageDexoptResults()) {
-                        switch (pkgRes.getStatus()) {
-                            case DexoptResult.DEXOPT_PERFORMED:
-                                numDexopted += 1;
-                                break;
-                            case DexoptResult.DEXOPT_SKIPPED:
-                                numSkipped += 1;
-                                break;
-                            case DexoptResult.DEXOPT_FAILED:
-                                numFailed += 1;
-                                break;
-                        }
-                    }
-
-                    reportBootDexopt(mBootDexoptStartTime, numDexopted, numSkipped, numFailed);
-                    break;
-            }
-
             for (DexoptResult.PackageDexoptResult pkgRes : result.getPackageDexoptResults()) {
                 CompilerStats.PackageStats stats =
                         mPm.getOrCreateCompilerPackageStats(pkgRes.getPackageName());
