@@ -24,6 +24,7 @@ import androidx.activity.result.ActivityResultCallback
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContract
 import androidx.fragment.app.FragmentManager
+import androidx.lifecycle.LifecycleOwner
 import com.android.settingslib.datastore.KeyValueStore
 import kotlinx.coroutines.CoroutineScope
 
@@ -246,6 +247,9 @@ interface PreferenceLifecycleProvider {
  * A preference fragment is associated with a [PreferenceLifecycleContext] only.
  */
 abstract class PreferenceLifecycleContext(context: Context) : ContextWrapper(context) {
+
+    /** Returns the fragment [LifecycleOwner]. */
+    abstract val lifecycleOwner: LifecycleOwner
 
     /**
      * [CoroutineScope] tied to the lifecycle, which is cancelled when the lifecycle is destroyed.

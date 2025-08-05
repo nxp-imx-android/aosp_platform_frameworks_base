@@ -62,7 +62,7 @@
     <string name="message_external_source_blocked" product="tv" msgid="1394622045008552842">"セキュリティ上の理由から、お使いのテレビでは現在、この提供元からの不明なアプリをインストールすることはできません。これは [設定] で変更できます。"</string>
     <string name="message_external_source_blocked" product="watch" msgid="1532513823566863443">"セキュリティ上の理由から、お使いのウォッチでは現在、この提供元からの不明なアプリをインストールすることはできません。これは [設定] で変更できます。"</string>
     <string name="message_external_source_blocked" product="default" msgid="2781541659935183726">"セキュリティ上の理由から、お使いのスマートフォンでは現在、この提供元からの不明なアプリをインストールすることはできません。これは [設定] で変更できます。"</string>
-    <string name="message_anonymous_source_warning" product="default" msgid="4012873091955414109">"不明なアプリをインストールすると、スマートフォンや個人データへの攻撃を受けやすくなります。このアプリをインストールすることで、アプリの使用により生じる恐れのあるスマートフォンの損傷やデータの損失について、ご自身が単独で責任を負うことに同意することになります。"</string>
+    <string name="message_anonymous_source_warning" product="default" msgid="4012873091955414109">"不明なアプリをインストールすると、スマートフォンや個人データの保護が低下します。この提供元からアプリをインストールすることで、それに伴って生じかねないスマートフォンへの侵害やデータ損失について、各自が責任を負うことに同意します。"</string>
     <string name="message_anonymous_source_warning" product="tablet" msgid="5167072167473447125">"不明なアプリをインストールすると、タブレットや個人データへの攻撃を受けやすくなります。このアプリをインストールすることで、アプリの使用により生じる恐れのあるタブレットの損傷やデータの損失について、ご自身が単独で責任を負うことに同意することになります。"</string>
     <string name="message_anonymous_source_warning" product="tv" msgid="6827454085562760175">"不明なアプリをインストールすると、テレビや個人データへの攻撃を受けやすくなります。このアプリをインストールすることで、アプリの使用により生じる恐れあるテレビの損傷やデータの損失について、ご自身が単独で責任を負うことに同意することになります。"</string>
     <string name="message_install_failed_blocked" msgid="8289588872577100349">"このアプリのインストールはブロックされました"</string>

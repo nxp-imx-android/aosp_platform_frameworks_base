@@ -182,7 +182,7 @@ public final class Message implements Parcelable {
     public long insertSeq;
 
     /** @hide */
-    public int heapIndex;
+    public int heapIndex = -1;
 
     /*package*/ Bundle data;
 
@@ -683,6 +683,8 @@ public final class Message implements Parcelable {
             b.append(arg1);
         }
 
+        b.append(" heapIndex=");
+        b.append(heapIndex);
         b.append(" }");
         return b.toString();
     }

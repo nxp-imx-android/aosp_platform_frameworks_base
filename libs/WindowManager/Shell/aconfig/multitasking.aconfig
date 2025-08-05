@@ -282,3 +282,13 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "fix_bubbles_cancel_animation"
+    namespace: "multitasking"
+    description: "Fixes a bug where state was incorrect if the expandedView animation was canceled."
+    bug: "420487074"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}

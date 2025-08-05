@@ -96,16 +96,13 @@
     <string name="message_restore_error_installer_absent" msgid="8492838251989389724">"Kad atkurtumėte šią programą, turėsite įdiegti „<xliff:g id="INSTALLER_NAME">%1$s</xliff:g>“"</string>
     <string name="message_restore_error_generic" msgid="5903850636679929406">"Bandant atkurti šią programą iškilo problema"</string>
     <string name="message_uninstall_activity" msgid="3263352475743590167">"„<xliff:g id="ACTIVITY_NAME">%1$s</xliff:g>“ yra šios programos dalis: „<xliff:g id="APP_NAME">%2$s</xliff:g>“"</string>
-    <!-- no translation found for cannot_install_app_blocked_summary (8433096420067308800) -->
-    <skip />
+    <string name="cannot_install_app_blocked_summary" msgid="8433096420067308800">"&lt;p&gt;Ši programa buvo užblokuota. Kad įrenginys ir duomenys būtų saugūs, galima įdiegti tik patvirtintų kūrėjų programas.&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;Sužinokite daugiau apie kūrėjo patvirtinimą&lt;/a&gt;&lt;/p&gt;"</string>
     <!-- no translation found for cannot_update_app_blocked_summary (5003390308880649930) -->
     <skip />
-    <!-- no translation found for cannot_install_verification_no_internet_summary (8948259713332887857) -->
-    <skip />
+    <string name="cannot_install_verification_no_internet_summary" msgid="8948259713332887857">"&lt;p&gt;Ši programa nebuvo įdiegta. Programos iš nepatvirtintų kūrėjų gali būti nesaugios.&lt;/p&gt; &lt;p&gt;Norint patvirtinti programos kūrėją, reikalingas interneto ryšys. Įsitikinkite, kad įrenginys prijungtas prie interneto, tada bandykite dar kartą įdiegti programą. &lt;/p&gt; &lt;p&gt;&lt;a href=&gt;Sužinokite daugiau apie kūrėjo patvirtinimą&lt;/a&gt;&lt;p&gt;"</string>
     <!-- no translation found for cannot_update_verification_no_internet_summary (2970654650180690063) -->
     <skip />
-    <!-- no translation found for cannot_install_verification_unavailable_summary (343815915687716571) -->
-    <skip />
+    <string name="cannot_install_verification_unavailable_summary" msgid="343815915687716571">"&lt;p&gt;Patvirtinant šios programos kūrėją kilo problema. Programos iš nepatvirtintų kūrėjų gali būti nesaugios, todėl programa nebuvo įdiegta.&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;Sužinokite daugiau apie kūrėjo patvirtinimą&lt;/a&gt;&lt;/p&gt;"</string>
     <!-- no translation found for cannot_update_verification_unavailable_summary (7697174533040472480) -->
     <skip />
     <!-- no translation found for cannot_install_verification_unavailable_fail_closed_summary (3178396108551754329) -->
@@ -116,12 +113,9 @@
     <skip />
     <!-- no translation found for more_details_expanded_update_summary (2239162864839036480) -->
     <skip />
-    <!-- no translation found for cannot_install_app_blocked_title (6372444121824751694) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_no_internet_title (2862046642298119581) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_unavailable_title (2038093442302309120) -->
-    <skip />
+    <string name="cannot_install_app_blocked_title" msgid="6372444121824751694">"Programos kūrėjas nepatvirtintas"</string>
+    <string name="cannot_install_verification_no_internet_title" msgid="2862046642298119581">"Nėra interneto ryšio, nepavyko patvirtinti programos kūrėjo"</string>
+    <string name="cannot_install_verification_unavailable_title" msgid="2038093442302309120">"Nepavyko patvirtinti programos kūrėjo"</string>
     <!-- no translation found for install_without_verifying (5359680595440741626) -->
     <skip />
     <!-- no translation found for update_without_verifying (2841466981431484179) -->

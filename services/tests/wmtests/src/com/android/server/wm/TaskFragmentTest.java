@@ -1128,9 +1128,14 @@ public class TaskFragmentTest extends WindowTestsBase {
         // Return Task bounds if dimming on parent Task.
         final Rect dimBounds = new Rect();
         mTaskFragment.setEmbeddedDimArea(EMBEDDED_DIM_AREA_PARENT_TASK);
-        final Dimmer dimmer = mTaskFragment.getDimmer();
-        spyOn(dimmer);
-        doReturn(taskBounds).when(dimmer).getDimBounds();
+        if (com.android.window.flags.Flags.removeGetDimmer()) {
+            task.setVisibleRequested(true);
+            task.mDimmer.adjustAppearance(mock(WindowState.class), 1, 0);
+        } else {
+            final Dimmer dimmer = mTaskFragment.getDimmer();
+            spyOn(dimmer);
+            doReturn(taskBounds).when(dimmer).getDimBounds();
+        }
         mTaskFragment.getDimBounds(dimBounds);
         assertEquals(taskBounds, dimBounds);
 

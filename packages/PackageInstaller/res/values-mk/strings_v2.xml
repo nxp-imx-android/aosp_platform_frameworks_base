@@ -96,16 +96,13 @@
     <string name="message_restore_error_installer_absent" msgid="8492838251989389724">"За да ја вратите апликацијава, треба да инсталирате <xliff:g id="INSTALLER_NAME">%1$s</xliff:g>"</string>
     <string name="message_restore_error_generic" msgid="5903850636679929406">"Се јави проблем при обидот за враќање на апликацијава"</string>
     <string name="message_uninstall_activity" msgid="3263352475743590167">"<xliff:g id="ACTIVITY_NAME">%1$s</xliff:g> е дел од следнава апликација: <xliff:g id="APP_NAME">%2$s</xliff:g>"</string>
-    <!-- no translation found for cannot_install_app_blocked_summary (8433096420067308800) -->
-    <skip />
+    <string name="cannot_install_app_blocked_summary" msgid="8433096420067308800">"&lt;p&gt;Апликацијава е блокирана. За да се заштитат вашиот уред и податоци, може да се инсталираат само апликации од потврдени програмери.&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;Дознајте повеќе за потврдата на програмер&lt;/a&gt;&lt;/p&gt;"</string>
     <!-- no translation found for cannot_update_app_blocked_summary (5003390308880649930) -->
     <skip />
-    <!-- no translation found for cannot_install_verification_no_internet_summary (8948259713332887857) -->
-    <skip />
+    <string name="cannot_install_verification_no_internet_summary" msgid="8948259713332887857">"&lt;p&gt;Апликацијава не е инсталирана. Апликациите од непотврдени програмери може да се небезбедни.&lt;/p&gt; &lt;p&gt;Потребна е интернет-врска за да се потврди програмерот на апликацијата. Проверете дали вашиот уред е поврзан на интернет, па обидете се повторно да ја инсталирате апликацијата. &lt;/p&gt; &lt;p&gt;&lt;a href=&gt;Дознајте повеќе за потврдата на програмер&lt;/a&gt;&lt;p&gt;"</string>
     <!-- no translation found for cannot_update_verification_no_internet_summary (2970654650180690063) -->
     <skip />
-    <!-- no translation found for cannot_install_verification_unavailable_summary (343815915687716571) -->
-    <skip />
+    <string name="cannot_install_verification_unavailable_summary" msgid="343815915687716571">"&lt;p&gt;Се јави проблем при потврдата на програмерот на апликацијава. Апликациите од непроверени програмери може да се небезбедни, па апликацијата не е инсталирана.&lt;/p&gt; &lt;p&gt;&lt;a href=&gt;Дознајте повеќе за потврдата на програмер&lt;/a&gt;&lt;/p&gt;"</string>
     <!-- no translation found for cannot_update_verification_unavailable_summary (7697174533040472480) -->
     <skip />
     <!-- no translation found for cannot_install_verification_unavailable_fail_closed_summary (3178396108551754329) -->
@@ -116,12 +113,9 @@
     <skip />
     <!-- no translation found for more_details_expanded_update_summary (2239162864839036480) -->
     <skip />
-    <!-- no translation found for cannot_install_app_blocked_title (6372444121824751694) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_no_internet_title (2862046642298119581) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_unavailable_title (2038093442302309120) -->
-    <skip />
+    <string name="cannot_install_app_blocked_title" msgid="6372444121824751694">"Програмерот на апликацијата е непотврден"</string>
+    <string name="cannot_install_verification_no_internet_title" msgid="2862046642298119581">"Нема интернет-врска и не може да се потврди програмерот на апликацијата"</string>
+    <string name="cannot_install_verification_unavailable_title" msgid="2038093442302309120">"Не може да се потврди програмерот на апликацијата"</string>
     <!-- no translation found for install_without_verifying (5359680595440741626) -->
     <skip />
     <!-- no translation found for update_without_verifying (2841466981431484179) -->

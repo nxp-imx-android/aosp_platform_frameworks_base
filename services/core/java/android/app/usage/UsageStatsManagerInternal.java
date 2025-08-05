@@ -194,6 +194,12 @@ public abstract class UsageStatsManagerInternal {
             @UserIdInt int userId, long nowElapsed);
 
     /**
+     * Returns the app standby bucketing reason code.
+     */
+    public abstract int getAppStandbyBucketReason(String packageName, @UserIdInt int userId,
+            long nowElapsed);
+
+    /**
      * Returns all of the uids for a given user where all packages associating with that uid
      * are in the app idle state -- there are no associated apps that are not idle.  This means
      * all of the returned uids can be safely considered app idle.

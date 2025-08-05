@@ -643,7 +643,7 @@ public class NetworkPolicyManagerServiceTest {
 
     @After
     public void removeFiles() throws Exception {
-        if (mPolicyDir != null) {
+        if (mPolicyDir != null && mPolicyDir.exists()) {
             for (File file : mPolicyDir.listFiles()) {
                 file.delete();
             }

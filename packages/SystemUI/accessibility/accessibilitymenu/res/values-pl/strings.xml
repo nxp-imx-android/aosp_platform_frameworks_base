@@ -21,7 +21,8 @@
     <string name="previous_button_content_description" msgid="840869171117765966">"Przejdź do poprzedniego ekranu"</string>
     <string name="next_button_content_description" msgid="6810058269847364406">"Przejdź do następnego ekranu"</string>
     <string name="accessibility_menu_description" msgid="4458354794093858297">"Menu ułatwień dostępu to duże menu ekranowe, które umożliwia obsługę urządzenia. Możesz zablokować urządzenie, zwiększyć lub zmniejszyć głośność oraz jasność, zrobić zrzut ekranu i wykonać inne działania."</string>
-    <string name="accessibility_menu_summary" msgid="340071398148208130">"Obsługuj urządzenie za pomocą dużego menu"</string>
+    <!-- no translation found for accessibility_menu_summary (4051992323622465342) -->
+    <skip />
     <string name="accessibility_menu_settings_name" msgid="1716888058785672611">"Ustawienia menu ułatwień dostępu"</string>
     <string name="accessibility_menu_large_buttons_title" msgid="8978499601044961736">"Duże przyciski"</string>
     <string name="accessibility_menu_large_buttons_summary" msgid="236873938502785311">"Zwiększ rozmiar przycisków w menu Ułatwienia dostępu"</string>

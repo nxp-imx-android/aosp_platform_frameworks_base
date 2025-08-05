@@ -80,10 +80,14 @@
     <string name="page_size_compat_apk_and_elf_warning_4kb" msgid="997926487776340721">"Este aviso está sendo mostrado porque este é um app depurável que está sendo testado no momento. Se você não for o desenvolvedor, informe o problema a ele e peça um app que não possa ser depurado. &lt;br&gt;&lt;br&gt; Este app não é compatível com 16 KB. Falha nas verificações de alinhamento do APK e do ELF. Siga as etapas em &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;. &lt;br&gt;&lt;br&gt; As bibliotecas abaixo não estão alinhadas a 16 KB: &lt;br&gt;&lt;br&gt;"</string>
     <string name="page_size_compat_never_show" msgid="3391282612422783097">"Não mostrar de novo"</string>
     <string name="page_size_compat_title" msgid="6497719153872572204">"Compatibilidade de apps Android"</string>
-    <string name="page_size_compat_elf_not_aligned" msgid="7940806102874132630">"&amp;#8226; %1$s: o segmento LOAD não está alinhado"</string>
-    <string name="page_size_compat_apk_not_aligned" msgid="8927901100655245528">"&amp;#8226; %1$s : a biblioteca descompactada não está alinhada"</string>
-    <string name="page_size_compat_apk_and_elf_not_aligned" msgid="1010371834741548905">"&amp;#8226; %1$s : o segmento LOAD e a biblioteca não compactada não estão alinhados"</string>
-    <string name="page_size_compat_unknown" msgid="3254222165646410528">"&amp;#8226; %1$s : erro desconhecido"</string>
+    <!-- no translation found for page_size_compat_elf_not_aligned (4404128993555194313) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_not_aligned (1434875607880657092) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_and_elf_not_aligned (7140216083697701972) -->
+    <skip />
+    <!-- no translation found for page_size_compat_unknown (5183026525148169891) -->
+    <skip />
     <string name="serviceNotProvisioned" msgid="8289333510236766193">"O serviço não foi habilitado."</string>
     <string name="CLIRPermanent" msgid="166443681876381118">"Não é possível alterar a configuração do identificador de chamadas."</string>
     <string name="auto_data_switch_title" msgid="3286350716870518297">"Dados da <xliff:g id="CARRIERDISPLAY">%s</xliff:g> ativados"</string>
@@ -693,6 +697,10 @@
     <string name="biometric_dialog_default_title" msgid="55026799173208210">"Confirme que é você"</string>
     <string name="biometric_dialog_default_subtitle" msgid="8457232339298571992">"Use seus dados biométricos para continuar"</string>
     <string name="biometric_or_screen_lock_dialog_default_subtitle" msgid="159539678371552009">"Use sua autenticação biométrica ou o bloqueio de tela para continuar"</string>
+    <!-- no translation found for biometric_dialog_secondary_display_toast (256544327174107086) -->
+    <skip />
+    <!-- no translation found for biometric_dialog_secondary_display_toast (2855203015454795660) -->
+    <skip />
     <string name="biometric_error_hw_unavailable" msgid="2494077380540615216">"Hardware biométrico indisponível"</string>
     <string name="biometric_error_user_canceled" msgid="6732303949695293730">"Autenticação cancelada"</string>
     <string name="biometric_not_recognized" msgid="5106687642694635888">"Não reconhecido"</string>

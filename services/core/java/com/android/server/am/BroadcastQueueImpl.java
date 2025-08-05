@@ -1151,7 +1151,7 @@ class BroadcastQueueImpl extends BroadcastQueue {
         }
 
         if (r.mBackgroundStartPrivileges.allowsAny()
-                && (r.callingUid != app.uid || !balCheckBroadcastWhenDispatched())) {
+                && (r.realCallingUid != app.uid || !balCheckBroadcastWhenDispatched())) {
             // allow the broadcast receiver potential privileges if it is not sent to itself
             app.addOrUpdateBackgroundStartPrivileges(r, r.mBackgroundStartPrivileges);
 

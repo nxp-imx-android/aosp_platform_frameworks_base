@@ -349,3 +349,11 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "alternative_for_dexopt_cleanup"
+    namespace: "art_cloud"
+    description: "Flag guarding the alternative code path replacing the legacy dexopt code, to allow legacy dexopt cleanup."
+    bug: "258223472"
+    is_fixed_read_only: true
+}

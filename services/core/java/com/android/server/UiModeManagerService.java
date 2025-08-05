@@ -18,6 +18,7 @@ package com.android.server;
 
 import static android.app.Flags.enableCurrentModeTypeBinderCache;
 import static android.app.Flags.enableNightModeBinderCache;
+import static android.app.Flags.fixContrastAndForceInvertStateForMultiUser;
 import static android.app.UiModeManager.ContrastUtils.CONTRAST_DEFAULT_VALUE;
 import static android.app.UiModeManager.DEFAULT_PRIORITY;
 import static android.app.UiModeManager.FORCE_INVERT_TYPE_DARK;
@@ -436,6 +437,18 @@ final class UiModeManagerService extends SystemService {
         }
 
         synchronized (mLock) {
+            if (fixContrastAndForceInvertStateForMultiUser()) {
+                for (int i = 0; i < mUiModeManagerCallbacks.size(); i++) {
+                    int userId = mUiModeManagerCallbacks.keyAt(i);
+                    if (updateForceInvertStateLocked(userId)) {
+                        int forceInvertState = getForceInvertStateLocked(userId);
+                        mUiModeManagerCallbacks.valueAt(i).broadcast(ignoreRemoteException(
+                                callback -> callback.notifyForceInvertStateChanged(
+                                        forceInvertState)));
+                    }
+                }
+                return;
+            }
             if (updateForceInvertStateLocked()) {
                 int forceInvertState = getForceInvertStateLocked();
                 mUiModeManagerCallbacks.get(mCurrentUser, new RemoteCallbackList<>())
@@ -450,6 +463,17 @@ final class UiModeManagerService extends SystemService {
         @Override
         public void onChange(boolean selfChange, Uri uri) {
             synchronized (mLock) {
+                if (fixContrastAndForceInvertStateForMultiUser()) {
+                    for (int i = 0; i < mUiModeManagerCallbacks.size(); i++) {
+                        int userId = mUiModeManagerCallbacks.keyAt(i);
+                        if (updateContrastLocked(userId)) {
+                            float contrast = getContrastLocked(userId);
+                            mUiModeManagerCallbacks.valueAt(i).broadcast(ignoreRemoteException(
+                                    callback -> callback.notifyContrastChanged(contrast)));
+                        }
+                    }
+                    return;
+                }
                 if (updateContrastLocked()) {
                     float contrast = getContrastLocked();
                     mUiModeManagerCallbacks.get(mCurrentUser, new RemoteCallbackList<>())
@@ -767,13 +791,40 @@ final class UiModeManagerService extends SystemService {
         }
 
         @Override
-        public void addCallback(IUiModeManagerCallback callback) {
-            int userId = getCallingUserId();
+        public void addCallback(IUiModeManagerCallback callback, int userId) {
+            if (fixContrastAndForceInvertStateForMultiUser()) {
+                userId = ActivityManager.handleIncomingUser(Binder.getCallingPid(),
+                        Binder.getCallingUid(), userId, false, true, "addCallback", null);
+                synchronized (mLock) {
+                    if (!mUiModeManagerCallbacks.contains(userId)) {
+                        mUiModeManagerCallbacks.put(userId, new RemoteCallbackList<>());
+                    }
+                    mUiModeManagerCallbacks.get(userId).register(callback);
+                }
+                return;
+            }
+            userId = getCallingUserId();
             synchronized (mLock) {
                 if (!mUiModeManagerCallbacks.contains(userId)) {
                     mUiModeManagerCallbacks.put(userId, new RemoteCallbackList<>());
                 }
                 mUiModeManagerCallbacks.get(userId).register(callback);
+            }
+        }
+
+        @Override
+        public void removeCallback(IUiModeManagerCallback callback, int userId) {
+            userId = ActivityManager.handleIncomingUser(Binder.getCallingPid(),
+                    Binder.getCallingUid(), userId, false, true, "removeCallback", null);
+            synchronized (mLock) {
+                RemoteCallbackList<IUiModeManagerCallback> callbackList =
+                        mUiModeManagerCallbacks.get(userId);
+                if (callbackList != null) {
+                    callbackList.unregister(callback);
+                    if (callbackList.getRegisteredCallbackCount() == 0) {
+                        mUiModeManagerCallbacks.remove(userId);
+                    }
+                }
             }
         }
 
@@ -1317,7 +1368,14 @@ final class UiModeManagerService extends SystemService {
         }
 
         @Override
-        public float getContrast() {
+        public float getContrast(int userId) {
+            if (fixContrastAndForceInvertStateForMultiUser()) {
+                userId = ActivityManager.handleIncomingUser(Binder.getCallingPid(),
+                        Binder.getCallingUid(), userId, false, true, "getContrast", null);
+                synchronized (mLock) {
+                    return getContrastLocked(userId);
+                }
+            }
             synchronized (mLock) {
                 return getContrastLocked();
             }
@@ -1325,7 +1383,14 @@ final class UiModeManagerService extends SystemService {
 
         @Override
         @ForceInvertType
-        public int getForceInvertState() {
+        public int getForceInvertState(int userId) {
+            if (fixContrastAndForceInvertStateForMultiUser()) {
+                userId = ActivityManager.handleIncomingUser(Binder.getCallingPid(),
+                        Binder.getCallingUid(), userId, false, true, "getForceInvertState", null);
+                synchronized (mLock) {
+                    return getForceInvertStateLocked(userId);
+                }
+            }
             synchronized (mLock) {
                 return getForceInvertStateLocked();
             }
@@ -1412,9 +1477,7 @@ final class UiModeManagerService extends SystemService {
         }
     }
 
-    /**
-     * Return the force invert for the current user. If not cached, fetch it from the settings.
-     */
+    /** Legacy method, TODO(b/362682063) remove */
     @GuardedBy("mLock")
     @ForceInvertType
     private int getForceInvertStateLocked() {
@@ -1425,9 +1488,18 @@ final class UiModeManagerService extends SystemService {
     }
 
     /**
-     * Read the force invert setting for the current user and update {@link #mForceInvertStates}
-     * if the contrast changed. Returns true if {@link #mForceInvertStates} was updated.
+     * Return the force invert for the current user. If not cached, fetch it from the settings.
      */
+    @GuardedBy("mLock")
+    @ForceInvertType
+    private int getForceInvertStateLocked(int userId) {
+        if (mForceInvertStates.indexOfKey(userId) < 0 && mSystemReady) {
+            updateForceInvertStateLocked(userId);
+        }
+        return mForceInvertStates.get(userId, FORCE_INVERT_TYPE_OFF);
+    }
+
+    /** Legacy method, TODO(b/362682063) remove */
     @GuardedBy("mLock")
     private boolean updateForceInvertStateLocked() {
         int forceInvertState = getForceInvertStateInternal();
@@ -1439,19 +1511,20 @@ final class UiModeManagerService extends SystemService {
     }
 
     /**
-     * Returns the current state of force invert, which modifies the display colors to
-     * enhance visibility based on the system's dark theme settings and app-specific configurations.
-     *
-     * <p>This method is for informational purposes only. The application does not need to
-     * implement any special handling for force invert; the system applies it automatically.
-     * If you want to prevent force invert from affecting your app, ensure you have defined
-     * both light and dark themes. Force invert is not applied to apps that already adapt
-     * to the user's system theme preference.</p>
-     *
-     * @return The current force invert state, represented by a {@code ForceDarkType} constant.
-     *
-     * @hide
+     * Read the force invert setting for the current user and update {@link #mForceInvertStates}
+     * if the contrast changed. Returns true if {@link #mForceInvertStates} was updated.
      */
+    @GuardedBy("mLock")
+    private boolean updateForceInvertStateLocked(int userId) {
+        int forceInvertState = getForceInvertStateInternal(userId);
+        if (mForceInvertStates.get(userId, Integer.MIN_VALUE) != forceInvertState) {
+            mForceInvertStates.put(userId, forceInvertState);
+            return true;
+        }
+        return false;
+    }
+
+    /** Legacy method, TODO(b/362682063) remove */
     @VisibleForTesting
     int getForceInvertStateInternal() {
         if (!android.view.accessibility.Flags.forceInvertColor()) {
@@ -1469,6 +1542,38 @@ final class UiModeManagerService extends SystemService {
         return FORCE_INVERT_TYPE_DARK;
     }
 
+    /**
+     * Returns the current state of force invert, which modifies the display colors to
+     * enhance visibility based on the system's dark theme settings and app-specific configurations.
+     *
+     * <p>This method is for informational purposes only. The application does not need to
+     * implement any special handling for force invert; the system applies it automatically.
+     * If you want to prevent force invert from affecting your app, ensure you have defined
+     * both light and dark themes. Force invert is not applied to apps that already adapt
+     * to the user's system theme preference.</p>
+     *
+     * @return The current force invert state, represented by a {@code ForceDarkType} constant.
+     *
+     * @hide
+     */
+    @VisibleForTesting
+    int getForceInvertStateInternal(int userId) {
+        if (!android.view.accessibility.Flags.forceInvertColor()) {
+            return FORCE_INVERT_TYPE_OFF;
+        }
+
+        if (!mComputedNightMode) {
+            return FORCE_INVERT_TYPE_OFF;
+        }
+
+        if (!isForceInvert(userId)) {
+            return FORCE_INVERT_TYPE_OFF;
+        }
+
+        return FORCE_INVERT_TYPE_DARK;
+    }
+
+    /** Legacy method, TODO(b/362682063) remove */
     private boolean isForceInvert() {
         return Settings.Secure.getIntForUser(
                 getContext().getContentResolver(),
@@ -1476,9 +1581,14 @@ final class UiModeManagerService extends SystemService {
                 /* def= */ 0, mCurrentUser) == 1;
     }
 
-    /**
-     * Return the contrast for the current user. If not cached, fetch it from the settings.
-     */
+    private boolean isForceInvert(int userId) {
+        return Settings.Secure.getIntForUser(
+                getContext().getContentResolver(),
+                Settings.Secure.ACCESSIBILITY_FORCE_INVERT_COLOR_ENABLED,
+                /* def= */ 0, userId) == 1;
+    }
+
+    /** Legacy method, TODO(b/362682063) remove */
     @GuardedBy("mLock")
     private float getContrastLocked() {
         if (!mContrasts.contains(mCurrentUser)) updateContrastLocked();
@@ -1486,15 +1596,36 @@ final class UiModeManagerService extends SystemService {
     }
 
     /**
-     * Read the contrast setting for the current user and update {@link #mContrasts}
-     * if the contrast changed. Returns true if {@link #mContrasts} was updated.
+     * Return the contrast for the current user. If not cached, fetch it from the settings.
      */
+    @GuardedBy("mLock")
+    private float getContrastLocked(int userId) {
+        if (!mContrasts.contains(userId)) updateContrastLocked(userId);
+        return mContrasts.get(userId);
+    }
+
+    /** Legacy method, TODO(b/362682063) remove */
     @GuardedBy("mLock")
     private boolean updateContrastLocked() {
         float contrast = Settings.Secure.getFloatForUser(getContext().getContentResolver(),
                 CONTRAST_LEVEL, CONTRAST_DEFAULT_VALUE, mCurrentUser);
         if (Math.abs(mContrasts.get(mCurrentUser, Float.MAX_VALUE) - contrast) >= 1e-10) {
             mContrasts.put(mCurrentUser, contrast);
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Read the contrast setting for the given user and update {@link #mContrasts} if the contrast
+     * changed. Returns true if {@link #mContrasts} was updated.
+     */
+    @GuardedBy("mLock")
+    private boolean updateContrastLocked(int userId) {
+        float contrast = Settings.Secure.getFloatForUser(getContext().getContentResolver(),
+                CONTRAST_LEVEL, CONTRAST_DEFAULT_VALUE, mCurrentUser);
+        if (Math.abs(mContrasts.get(userId, Float.MAX_VALUE) - contrast) >= 1e-10) {
+            mContrasts.put(userId, contrast);
             return true;
         }
         return false;

@@ -31,6 +31,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.graphics.Color
+import com.android.internal.annotations.GuardedBy
 import com.android.internal.logging.InstanceId
 import com.android.systemui.common.shared.model.ContentDescription
 import com.android.systemui.common.shared.model.Icon
@@ -56,6 +57,8 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 
 /** A repository that holds the state of current media on the device. */
@@ -97,6 +100,7 @@ constructor(
 
     override var shouldScrollToFirst by mutableStateOf(false)
 
+    @GuardedBy("mediaMutex")
     private var sortedMedia = TreeMap<MediaSortKeyModel, MediaDataModel>(comparator)
 
     // To store active controllers and their callbacks
@@ -104,21 +108,28 @@ constructor(
     private val mediaCallbacks = mutableMapOf<InstanceId, MediaController.Callback>()
     // To store active polling jobs
     private val positionPollers = mutableMapOf<InstanceId, Job>()
+    private val mediaMutex = Mutex()
 
     override fun addCurrentUserMediaEntry(data: MediaData): UpdateArtInfoModel? {
         return super.addCurrentUserMediaEntry(data).also { updateModel ->
-            addToSortedMedia(data, updateModel)
+            applicationScope.launch {
+                mediaMutex.withLock { addToSortedMediaLocked(data, updateModel) }
+            }
         }
     }
 
     override fun removeCurrentUserMediaEntry(key: InstanceId): MediaData? {
-        return super.removeCurrentUserMediaEntry(key)?.also { removeFromSortedMedia(it) }
+        return super.removeCurrentUserMediaEntry(key)?.also {
+            applicationScope.launch { mediaMutex.withLock { removeFromSortedMediaLocked(it) } }
+        }
     }
 
     override fun removeCurrentUserMediaEntry(key: InstanceId, data: MediaData): Boolean {
         return super.removeCurrentUserMediaEntry(key, data).also {
             if (it) {
-                removeFromSortedMedia(data)
+                applicationScope.launch {
+                    mediaMutex.withLock { removeFromSortedMediaLocked(data) }
+                }
             }
         }
     }
@@ -126,23 +137,33 @@ constructor(
     override fun clearCurrentUserMedia() {
         val userEntries = LinkedHashMap<InstanceId, MediaData>(mutableUserEntries.value)
         mutableUserEntries.value = LinkedHashMap()
-        userEntries.forEach { removeFromSortedMedia(it.value) }
+        applicationScope.launch {
+            mediaMutex.withLock { userEntries.forEach { removeFromSortedMediaLocked(it.value) } }
+        }
     }
 
     override fun seek(sessionKey: InstanceId, to: Long) {
         activeControllers[sessionKey]?.let { controller ->
             controller.transportControls.seekTo(to)
-            currentMedia
-                .find { it.instanceId == sessionKey }
-                ?.let { latestModel ->
-                    updateMediaModelInState(latestModel) { it.copy(positionMs = to) }
+            applicationScope.launch {
+                mediaMutex.withLock {
+                    currentMedia
+                        .find { it.instanceId == sessionKey }
+                        ?.let { latestModel ->
+                            updateMediaModelInStateLocked(latestModel) { it.copy(positionMs = to) }
+                        }
                 }
+            }
         }
     }
 
     override fun reorderMedia() {
-        currentMedia.clear()
-        currentMedia.addAll(sortedMedia.values.toList())
+        applicationScope.launch {
+            mediaMutex.withLock {
+                currentMedia.clear()
+                currentMedia.addAll(sortedMedia.values.toList())
+            }
+        }
         currentCarouselIndex = 0
     }
 
@@ -154,7 +175,8 @@ constructor(
         shouldScrollToFirst = false
     }
 
-    private fun addToSortedMedia(data: MediaData, updateModel: UpdateArtInfoModel?) {
+    @GuardedBy("mediaMutex")
+    private suspend fun addToSortedMediaLocked(data: MediaData, updateModel: UpdateArtInfoModel?) {
         val sortedMap = TreeMap<MediaSortKeyModel, MediaDataModel>(comparator)
         val currentModel = sortedMedia.values.find { it.instanceId == data.instanceId }
 
@@ -173,51 +195,48 @@ constructor(
                         systemClock.currentTimeMillis(),
                         instanceId,
                     )
-
-                applicationScope.launch {
-                    val controller =
-                        if (currentModel != null && currentModel.token == token) {
-                            activeControllers[currentModel.instanceId]
-                        } else {
-                            // Clear controller state if changed for the same media session.
-                            currentModel?.instanceId?.let { clearControllerState(it) }
-                            token?.let { MediaController(applicationContext, it) }
-                        }
-                    val (icon, background) =
-                        getIconAndBackground(mediaData, currentModel, updateModel)
-                    val mediaModel = toDataModel(controller, icon, background)
-                    sortedMap[sortKey] = mediaModel
-                    controller?.let { setupController(mediaModel, it) }
-
-                    var isNewToCurrentMedia = true
-                    val currentList = mutableListOf<MediaDataModel>().apply { addAll(currentMedia) }
-                    currentList.forEachIndexed { index, mediaDataModel ->
-                        if (mediaDataModel.instanceId == data.instanceId) {
-                            // When loading an update for an existing media control.
-                            isNewToCurrentMedia = false
-                            if (mediaDataModel != mediaModel) {
-                                // Update media model if changed.
-                                currentList[index] = mediaModel
-                            }
-                        }
-                    }
-                    currentMedia.clear()
-                    if (isNewToCurrentMedia && active) {
-                        // New media added is at the top of the current media given its priority.
-                        // Media carousel should show the first card in the current media list.
-                        shouldScrollToFirst = true
-                        currentMedia.addAll(sortedMap.values.toList())
+                val controller =
+                    if (currentModel != null && currentModel.token == token) {
+                        activeControllers[currentModel.instanceId]
                     } else {
-                        currentMedia.addAll(currentList)
+                        // Clear controller state if changed for the same media session.
+                        currentModel?.instanceId?.let { clearControllerState(it) }
+                        token?.let { MediaController(applicationContext, it) }
                     }
+                val (icon, background) = getIconAndBackground(mediaData, currentModel, updateModel)
+                val mediaModel = toDataModel(controller, icon, background)
+                sortedMap[sortKey] = mediaModel
+                controller?.let { setupController(mediaModel, it) }
 
-                    sortedMedia = sortedMap
+                var isNewToCurrentMedia = true
+                val currentList = mutableListOf<MediaDataModel>().apply { addAll(currentMedia) }
+                currentList.forEachIndexed { index, mediaDataModel ->
+                    if (mediaDataModel.instanceId == data.instanceId) {
+                        // When loading an update for an existing media control.
+                        isNewToCurrentMedia = false
+                        if (mediaDataModel != mediaModel) {
+                            // Update media model if changed.
+                            currentList[index] = mediaModel
+                        }
+                    }
                 }
+                currentMedia.clear()
+                if (isNewToCurrentMedia && active) {
+                    // New media added is at the top of the current media given its priority.
+                    // Media carousel should show the first card in the current media list.
+                    shouldScrollToFirst = true
+                    currentMedia.addAll(sortedMap.values.toList())
+                } else {
+                    currentMedia.addAll(currentList)
+                }
+
+                sortedMedia = sortedMap
             }
         }
     }
 
-    private fun removeFromSortedMedia(data: MediaData) {
+    @GuardedBy("mediaMutex")
+    private fun removeFromSortedMediaLocked(data: MediaData) {
         currentMedia.removeIf { model -> data.instanceId == model.instanceId }
         sortedMedia =
             TreeMap<MediaSortKeyModel, MediaDataModel>(comparator).apply {
@@ -390,17 +409,25 @@ constructor(
                 }
 
                 override fun onMetadataChanged(metadata: MediaMetadata?) {
-                    val duration = metadata?.getLong(MediaMetadata.METADATA_KEY_DURATION) ?: 0L
-                    currentMedia
-                        .find { it.instanceId == dataModel.instanceId }
-                        ?.let { latestModel ->
-                            updateMediaModelInState(latestModel) { model ->
-                                val canBeScrubbed =
-                                    controller.playbackState?.state != PlaybackState.STATE_NONE &&
-                                        duration > 0L
-                                model.copy(canBeScrubbed = canBeScrubbed, durationMs = duration)
-                            }
+                    applicationScope.launch {
+                        mediaMutex.withLock {
+                            val duration =
+                                metadata?.getLong(MediaMetadata.METADATA_KEY_DURATION) ?: 0L
+                            currentMedia
+                                .find { it.instanceId == dataModel.instanceId }
+                                ?.let { latestModel ->
+                                    updateMediaModelInStateLocked(latestModel) { model ->
+                                        val canBeScrubbed =
+                                            controller.playbackState?.state !=
+                                                PlaybackState.STATE_NONE && duration > 0L
+                                        model.copy(
+                                            canBeScrubbed = canBeScrubbed,
+                                            durationMs = duration,
+                                        )
+                                    }
+                                }
                         }
+                    }
                 }
 
                 override fun onSessionDestroyed() {
@@ -465,18 +492,23 @@ constructor(
     }
 
     private fun checkPlaybackPosition(instanceId: InstanceId, playbackState: PlaybackState?) {
-        currentMedia
-            .find { it.instanceId == instanceId }
-            ?.let { latestModel ->
-                val newPosition = playbackState?.computeActualPosition(latestModel.durationMs)
-                updateMediaModelInState(latestModel) {
-                    if (newPosition != null && newPosition <= latestModel.durationMs) {
-                        it.copy(positionMs = newPosition)
-                    } else {
-                        it
+        applicationScope.launch {
+            mediaMutex.withLock {
+                currentMedia
+                    .find { it.instanceId == instanceId }
+                    ?.let { latestModel ->
+                        val newPosition =
+                            playbackState?.computeActualPosition(latestModel.durationMs)
+                        updateMediaModelInStateLocked(latestModel) {
+                            if (newPosition != null && newPosition <= latestModel.durationMs) {
+                                it.copy(positionMs = newPosition)
+                            } else {
+                                it
+                            }
+                        }
                     }
-                }
             }
+        }
     }
 
     private fun clearControllerState(instanceId: InstanceId) {
@@ -487,7 +519,8 @@ constructor(
         mediaCallbacks.remove(instanceId)
     }
 
-    private fun updateMediaModelInState(
+    @GuardedBy("mediaMutex")
+    private fun updateMediaModelInStateLocked(
         oldModel: MediaDataModel,
         updateBlock: (MediaDataModel) -> MediaDataModel,
     ) {

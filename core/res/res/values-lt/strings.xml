@@ -81,10 +81,14 @@
     <string name="page_size_compat_apk_and_elf_warning_4kb" msgid="997926487776340721">"Šis perspėjimas rodomas, nes tai yra derinama programa, kuri šiuo metu išbandoma. Jei nesate kūrėjas (-a), praneškite apie tai kūrėjui ir paprašykite nederinamos programos. &lt;br&gt;&lt;br&gt; Ši programa nesuderinama su 16 KB. APK ir ELF suderinimo patikros nepavyko. Atlikite veiksmus, nurodytus &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;. &lt;br&gt;&lt;br&gt; Toliau nurodytos bibliotekos nėra suderinamos su 16 KB. &lt;br&gt;&lt;br&gt;"</string>
     <string name="page_size_compat_never_show" msgid="3391282612422783097">"Daugiau nerodyti"</string>
     <string name="page_size_compat_title" msgid="6497719153872572204">"„Android“ programų suderinamumas"</string>
-    <string name="page_size_compat_elf_not_aligned" msgid="7940806102874132630">"&amp;#8226; %1$s: LOAD segmentas nesuderintas"</string>
-    <string name="page_size_compat_apk_not_aligned" msgid="8927901100655245528">"&amp;#8226; %1$s: nesuglaudinta biblioteka nesuderinta"</string>
-    <string name="page_size_compat_apk_and_elf_not_aligned" msgid="1010371834741548905">"&amp;#8226; %1$s: LOAD segmentas ir nesuglaudinta biblioteka nesuderinti"</string>
-    <string name="page_size_compat_unknown" msgid="3254222165646410528">"&amp;#8226; %1$s: nežinoma klaida"</string>
+    <!-- no translation found for page_size_compat_elf_not_aligned (4404128993555194313) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_not_aligned (1434875607880657092) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_and_elf_not_aligned (7140216083697701972) -->
+    <skip />
+    <!-- no translation found for page_size_compat_unknown (5183026525148169891) -->
+    <skip />
     <string name="serviceNotProvisioned" msgid="8289333510236766193">"Paslauga neteikiama."</string>
     <string name="CLIRPermanent" msgid="166443681876381118">"Negalima pakeisti skambinančiojo ID nustatymo."</string>
     <string name="auto_data_switch_title" msgid="3286350716870518297">"Duomenys perjungti į „<xliff:g id="CARRIERDISPLAY">%s</xliff:g>“"</string>
@@ -302,8 +306,7 @@
     <string name="global_action_assist" msgid="2517047220311505805">"Pagalba"</string>
     <string name="global_action_voice_assist" msgid="6655788068555086695">"Voice Assist"</string>
     <string name="global_action_lockdown" msgid="2475471405907902963">"Užrakinimas"</string>
-    <!-- no translation found for global_action_unrestricted_lock (7933224393323064116) -->
-    <skip />
+    <string name="global_action_unrestricted_lock" msgid="7933224393323064116">"Užrakinti"</string>
     <string name="status_bar_notification_info_overflow" msgid="3330152558746563475">"999+"</string>
     <string name="notification_compact_heads_up_reply" msgid="2425293958371284340">"Atsakyti"</string>
     <string name="notification_hidden_text" msgid="2835519769868187223">"Naujas pranešimas"</string>
@@ -695,6 +698,10 @@
     <string name="biometric_dialog_default_title" msgid="55026799173208210">"Patvirtinkite, kad tai jūs"</string>
     <string name="biometric_dialog_default_subtitle" msgid="8457232339298571992">"Norėdami tęsti, naudokite biometrinius duomenis"</string>
     <string name="biometric_or_screen_lock_dialog_default_subtitle" msgid="159539678371552009">"Jei norite tęsti, naudokite biometrinius duomenis arba ekrano užraktą"</string>
+    <!-- no translation found for biometric_dialog_secondary_display_toast (256544327174107086) -->
+    <skip />
+    <!-- no translation found for biometric_dialog_secondary_display_toast (2855203015454795660) -->
+    <skip />
     <string name="biometric_error_hw_unavailable" msgid="2494077380540615216">"Biometrinė aparatinė įranga nepasiekiama"</string>
     <string name="biometric_error_user_canceled" msgid="6732303949695293730">"Autentifikavimas atšauktas"</string>
     <string name="biometric_not_recognized" msgid="5106687642694635888">"Neatpažinta"</string>

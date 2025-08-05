@@ -79,10 +79,14 @@
     <string name="page_size_compat_apk_and_elf_warning_4kb" msgid="997926487776340721">"由于当前正在测试的是可调试应用，因此系统会显示此警告。如果您不是开发者，请将此问题报告给开发者，并要求提供不可调试的应用。&lt;br&gt;&lt;br&gt;此应用不符合 16 KB 对齐要求。APK 和 ELF 文件对齐检查失败。请按照 &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; 中的步骤操作。&lt;br&gt;&lt;br&gt;以下库未进行 16 KB 对齐：&lt;br&gt;&lt;br&gt;"</string>
     <string name="page_size_compat_never_show" msgid="3391282612422783097">"不再显示"</string>
     <string name="page_size_compat_title" msgid="6497719153872572204">"Android 应用兼容性"</string>
-    <string name="page_size_compat_elf_not_aligned" msgid="7940806102874132630">"&amp;#8226; %1$s：加载段未对齐"</string>
-    <string name="page_size_compat_apk_not_aligned" msgid="8927901100655245528">"&amp;#8226; %1$s：未压缩的库未对齐"</string>
-    <string name="page_size_compat_apk_and_elf_not_aligned" msgid="1010371834741548905">"&amp;#8226; %1$s：加载段和未压缩的库未对齐"</string>
-    <string name="page_size_compat_unknown" msgid="3254222165646410528">"&amp;#8226; %1$s：未知错误"</string>
+    <!-- no translation found for page_size_compat_elf_not_aligned (4404128993555194313) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_not_aligned (1434875607880657092) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_and_elf_not_aligned (7140216083697701972) -->
+    <skip />
+    <!-- no translation found for page_size_compat_unknown (5183026525148169891) -->
+    <skip />
     <string name="serviceNotProvisioned" msgid="8289333510236766193">"未提供服务。"</string>
     <string name="CLIRPermanent" msgid="166443681876381118">"您无法更改来电显示设置。"</string>
     <string name="auto_data_switch_title" msgid="3286350716870518297">"移动数据网络已切换至“<xliff:g id="CARRIERDISPLAY">%s</xliff:g>”"</string>
@@ -300,8 +304,7 @@
     <string name="global_action_assist" msgid="2517047220311505805">"助理"</string>
     <string name="global_action_voice_assist" msgid="6655788068555086695">"语音助理"</string>
     <string name="global_action_lockdown" msgid="2475471405907902963">"锁定"</string>
-    <!-- no translation found for global_action_unrestricted_lock (7933224393323064116) -->
-    <skip />
+    <string name="global_action_unrestricted_lock" msgid="7933224393323064116">"锁定"</string>
     <string name="status_bar_notification_info_overflow" msgid="3330152558746563475">"999+"</string>
     <string name="notification_compact_heads_up_reply" msgid="2425293958371284340">"回复"</string>
     <string name="notification_hidden_text" msgid="2835519769868187223">"新通知"</string>
@@ -693,6 +696,10 @@
     <string name="biometric_dialog_default_title" msgid="55026799173208210">"验证是您本人在操作"</string>
     <string name="biometric_dialog_default_subtitle" msgid="8457232339298571992">"使用生物识别验证身份才能继续"</string>
     <string name="biometric_or_screen_lock_dialog_default_subtitle" msgid="159539678371552009">"使用生物识别或屏幕锁定凭据验证身份，才能继续操作"</string>
+    <!-- no translation found for biometric_dialog_secondary_display_toast (256544327174107086) -->
+    <skip />
+    <!-- no translation found for biometric_dialog_secondary_display_toast (2855203015454795660) -->
+    <skip />
     <string name="biometric_error_hw_unavailable" msgid="2494077380540615216">"生物识别硬件无法使用"</string>
     <string name="biometric_error_user_canceled" msgid="6732303949695293730">"身份验证已取消"</string>
     <string name="biometric_not_recognized" msgid="5106687642694635888">"无法识别"</string>

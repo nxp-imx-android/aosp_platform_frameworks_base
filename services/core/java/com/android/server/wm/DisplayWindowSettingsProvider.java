@@ -18,36 +18,26 @@ package com.android.server.wm;
 
 import static android.os.UserHandle.USER_SYSTEM;
 import static android.view.Display.TYPE_VIRTUAL;
-import static android.view.WindowManager.DISPLAY_IME_POLICY_FALLBACK_DISPLAY;
-import static android.view.WindowManager.DISPLAY_IME_POLICY_LOCAL;
-import static android.view.WindowManager.REMOVE_CONTENT_MODE_UNDEFINED;
 
 import static com.android.server.wm.WindowManagerDebugConfig.TAG_WITH_CLASS_NAME;
 import static com.android.server.wm.WindowManagerDebugConfig.TAG_WM;
+import static com.android.server.wm.DisplayWindowSettingsXmlHelper.IDENTIFIER_PORT;
+import static com.android.server.wm.DisplayWindowSettingsXmlHelper.DisplayIdentifierType;
 
-import android.annotation.IntDef;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.UserIdInt;
-import android.app.WindowConfiguration;
 import android.os.Environment;
-import android.util.ArrayMap;
 import android.util.ArraySet;
 import android.util.AtomicFile;
 import android.util.LruCache;
 import android.util.Slog;
-import android.util.Xml;
 import android.view.DisplayAddress;
 import android.view.DisplayInfo;
 
 import com.android.internal.annotations.VisibleForTesting;
-import com.android.internal.util.XmlUtils;
-import com.android.modules.utils.TypedXmlPullParser;
-import com.android.modules.utils.TypedXmlSerializer;
 import com.android.server.wm.DisplayWindowSettings.SettingsProvider;
-
-import org.xmlpull.v1.XmlPullParser;
-import org.xmlpull.v1.XmlPullParserException;
+import com.android.server.wm.DisplayWindowSettingsXmlHelper.FileData;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -78,14 +68,6 @@ class DisplayWindowSettingsProvider implements SettingsProvider {
      * LRU approach using DisplayTopologyXmlStore#MAX_NUMBER_OF_TOPOLOGIES.
      */
     private static final int MAX_NUMBER_OF_DISPLAY_SETTINGS = 100;
-
-    private static final int IDENTIFIER_UNIQUE_ID = 0;
-    private static final int IDENTIFIER_PORT = 1;
-    @IntDef(prefix = { "IDENTIFIER_" }, value = {
-            IDENTIFIER_UNIQUE_ID,
-            IDENTIFIER_PORT,
-    })
-    @interface DisplayIdentifierType {}
 
     /** Interface that allows reading the display window settings. */
     interface ReadableSettingsStorage {
@@ -256,7 +238,16 @@ class DisplayWindowSettingsProvider implements SettingsProvider {
         }
 
         private void loadSettings(@NonNull ReadableSettingsStorage settingsStorage) {
-            FileData fileData = readSettings(settingsStorage);
+            InputStream stream;
+            FileData fileData;
+            try {
+                stream = settingsStorage.openRead();
+            } catch (IOException e) {
+                Slog.i(TAG, "No existing display settings, starting empty");
+                return;
+            }
+
+            fileData = FileData.readSettings(stream);
             if (fileData != null) {
                 mIdentifierType = fileData.mIdentifierType;
                 for (final Map.Entry<String, SettingsEntry> entry : fileData.mSettings.entrySet()) {
@@ -346,7 +337,18 @@ class DisplayWindowSettingsProvider implements SettingsProvider {
                 }
                 fileData.mSettings.put(identifier, entry.getValue());
             }
-            DisplayWindowSettingsProvider.writeSettings(mSettingsStorage, fileData);
+            OutputStream stream = null;
+            boolean success = false;
+            try {
+                stream = mSettingsStorage.startWrite();
+                success = DisplayWindowSettingsXmlHelper.writeSettings(stream, fileData, false);
+            } catch (IOException e) {
+                Slog.w(TAG, "Failed to write display settings: " + e);
+            } finally {
+                if (stream != null) {
+                    mSettingsStorage.finishWrite(stream, success);
+                }
+            }
         }
     }
 
@@ -364,280 +366,12 @@ class DisplayWindowSettingsProvider implements SettingsProvider {
     }
 
     @NonNull
-    private static AtomicFile getOverrideSettingsFileForUser(@UserIdInt int userId) {
+    public static AtomicFile getOverrideSettingsFileForUser(@UserIdInt int userId) {
         final File directory = (userId == USER_SYSTEM)
                 ? Environment.getDataDirectory()
                 : Environment.getDataSystemCeDirectory(userId);
         final File overrideSettingsFile = new File(directory, DATA_DISPLAY_SETTINGS_FILE_PATH);
         return new AtomicFile(overrideSettingsFile, WM_DISPLAY_COMMIT_TAG);
-    }
-
-    @Nullable
-    private static FileData readSettings(@NonNull ReadableSettingsStorage storage) {
-        InputStream stream;
-        try {
-            stream = storage.openRead();
-        } catch (IOException e) {
-            Slog.i(TAG, "No existing display settings, starting empty");
-            return null;
-        }
-        FileData fileData = new FileData();
-        boolean success = false;
-        try {
-            TypedXmlPullParser parser = Xml.resolvePullParser(stream);
-            int type;
-            while ((type = parser.next()) != XmlPullParser.START_TAG
-                    && type != XmlPullParser.END_DOCUMENT) {
-                // Do nothing.
-            }
-
-            if (type != XmlPullParser.START_TAG) {
-                throw new IllegalStateException("no start tag found");
-            }
-
-            int outerDepth = parser.getDepth();
-            while ((type = parser.next()) != XmlPullParser.END_DOCUMENT
-                    && (type != XmlPullParser.END_TAG || parser.getDepth() > outerDepth)) {
-                if (type == XmlPullParser.END_TAG || type == XmlPullParser.TEXT) {
-                    continue;
-                }
-
-                String tagName = parser.getName();
-                if (tagName.equals("display")) {
-                    readDisplay(parser, fileData);
-                } else if (tagName.equals("config")) {
-                    readConfig(parser, fileData);
-                } else {
-                    Slog.w(TAG, "Unknown element under <display-settings>: "
-                            + parser.getName());
-                    XmlUtils.skipCurrentTag(parser);
-                }
-            }
-            success = true;
-        } catch (IllegalStateException e) {
-            Slog.w(TAG, "Failed parsing " + e);
-        } catch (NullPointerException e) {
-            Slog.w(TAG, "Failed parsing " + e);
-        } catch (NumberFormatException e) {
-            Slog.w(TAG, "Failed parsing " + e);
-        } catch (XmlPullParserException e) {
-            Slog.w(TAG, "Failed parsing " + e);
-        } catch (IOException e) {
-            Slog.w(TAG, "Failed parsing " + e);
-        } catch (IndexOutOfBoundsException e) {
-            Slog.w(TAG, "Failed parsing " + e);
-        } finally {
-            try {
-                stream.close();
-            } catch (IOException ignored) {
-            }
-        }
-        if (!success) {
-            fileData.mSettings.clear();
-        }
-        return fileData;
-    }
-
-    private static int getIntAttribute(@NonNull TypedXmlPullParser parser, @NonNull String name,
-            int defaultValue) {
-        return parser.getAttributeInt(null, name, defaultValue);
-    }
-
-    @Nullable
-    private static Integer getIntegerAttribute(@NonNull TypedXmlPullParser parser,
-            @NonNull String name, @Nullable Integer defaultValue) {
-        try {
-            return parser.getAttributeInt(null, name);
-        } catch (Exception ignored) {
-            return defaultValue;
-        }
-    }
-
-    @Nullable
-    private static Boolean getBooleanAttribute(@NonNull TypedXmlPullParser parser,
-            @NonNull String name, @Nullable Boolean defaultValue) {
-        try {
-            return parser.getAttributeBoolean(null, name);
-        } catch (Exception ignored) {
-            return defaultValue;
-        }
-    }
-
-    private static void readDisplay(@NonNull TypedXmlPullParser parser, @NonNull FileData fileData)
-            throws NumberFormatException, XmlPullParserException, IOException {
-        String name = parser.getAttributeValue(null, "name");
-        if (name != null) {
-            SettingsEntry settingsEntry = new SettingsEntry();
-            settingsEntry.mWindowingMode = getIntAttribute(parser, "windowingMode",
-                    WindowConfiguration.WINDOWING_MODE_UNDEFINED /* defaultValue */);
-            settingsEntry.mUserRotationMode = getIntegerAttribute(parser, "userRotationMode",
-                    null /* defaultValue */);
-            settingsEntry.mUserRotation = getIntegerAttribute(parser, "userRotation",
-                    null /* defaultValue */);
-            settingsEntry.mForcedWidth = getIntAttribute(parser, "forcedWidth",
-                    0 /* defaultValue */);
-            settingsEntry.mForcedHeight = getIntAttribute(parser, "forcedHeight",
-                    0 /* defaultValue */);
-            settingsEntry.mForcedDensity = getIntAttribute(parser, "forcedDensity",
-                    0 /* defaultValue */);
-            settingsEntry.mForcedDensityRatio = parser.getAttributeFloat(null, "forcedDensityRatio",
-                    0.0f /* defaultValue */);
-            settingsEntry.mForcedScalingMode = getIntegerAttribute(parser, "forcedScalingMode",
-                    null /* defaultValue */);
-            settingsEntry.mRemoveContentMode = getIntAttribute(parser, "removeContentMode",
-                    REMOVE_CONTENT_MODE_UNDEFINED /* defaultValue */);
-            settingsEntry.mShouldShowWithInsecureKeyguard = getBooleanAttribute(parser,
-                    "shouldShowWithInsecureKeyguard", null /* defaultValue */);
-            settingsEntry.mShouldShowSystemDecors = getBooleanAttribute(parser,
-                    "shouldShowSystemDecors", null /* defaultValue */);
-            final Boolean shouldShowIme = getBooleanAttribute(parser, "shouldShowIme",
-                    null /* defaultValue */);
-            if (shouldShowIme != null) {
-                settingsEntry.mImePolicy = shouldShowIme ? DISPLAY_IME_POLICY_LOCAL
-                        : DISPLAY_IME_POLICY_FALLBACK_DISPLAY;
-            } else {
-                settingsEntry.mImePolicy = getIntegerAttribute(parser, "imePolicy",
-                        null /* defaultValue */);
-            }
-            settingsEntry.mFixedToUserRotation = getIntegerAttribute(parser, "fixedToUserRotation",
-                    null /* defaultValue */);
-            settingsEntry.mIgnoreOrientationRequest = getBooleanAttribute(parser,
-                    "ignoreOrientationRequest", null /* defaultValue */);
-            settingsEntry.mIgnoreDisplayCutout = getBooleanAttribute(parser,
-                    "ignoreDisplayCutout", null /* defaultValue */);
-            settingsEntry.mDontMoveToTop = getBooleanAttribute(parser,
-                    "dontMoveToTop", null /* defaultValue */);
-            settingsEntry.mIsHomeSupported = getBooleanAttribute(parser,
-                    "isHomeSupported", null /* defaultValue */);
-            fileData.mSettings.put(name, settingsEntry);
-        }
-        XmlUtils.skipCurrentTag(parser);
-    }
-
-    private static void readConfig(@NonNull TypedXmlPullParser parser, @NonNull FileData fileData)
-            throws NumberFormatException,
-            XmlPullParserException, IOException {
-        fileData.mIdentifierType = getIntAttribute(parser, "identifier",
-                IDENTIFIER_UNIQUE_ID);
-        XmlUtils.skipCurrentTag(parser);
-    }
-
-    private static void writeSettings(@NonNull WritableSettingsStorage storage,
-            @NonNull FileData data) {
-        OutputStream stream;
-        try {
-            stream = storage.startWrite();
-        } catch (IOException e) {
-            Slog.w(TAG, "Failed to write display settings: " + e);
-            return;
-        }
-
-        boolean success = false;
-        try {
-            TypedXmlSerializer out = Xml.resolveSerializer(stream);
-            out.startDocument(null, true);
-
-            out.startTag(null, "display-settings");
-
-            out.startTag(null, "config");
-            out.attributeInt(null, "identifier", data.mIdentifierType);
-            out.endTag(null, "config");
-
-            for (Map.Entry<String, SettingsEntry> entry
-                    : data.mSettings.entrySet()) {
-                String displayIdentifier = entry.getKey();
-                SettingsEntry settingsEntry = entry.getValue();
-                if (settingsEntry.isEmpty()) {
-                    continue;
-                }
-
-                out.startTag(null, "display");
-                out.attribute(null, "name", displayIdentifier);
-                if (settingsEntry.mWindowingMode != WindowConfiguration.WINDOWING_MODE_UNDEFINED) {
-                    out.attributeInt(null, "windowingMode", settingsEntry.mWindowingMode);
-                }
-                if (settingsEntry.mUserRotationMode != null) {
-                    out.attributeInt(null, "userRotationMode",
-                            settingsEntry.mUserRotationMode);
-                }
-                if (settingsEntry.mUserRotation != null) {
-                    out.attributeInt(null, "userRotation",
-                            settingsEntry.mUserRotation);
-                }
-                if (settingsEntry.mForcedWidth != 0 && settingsEntry.mForcedHeight != 0) {
-                    out.attributeInt(null, "forcedWidth", settingsEntry.mForcedWidth);
-                    out.attributeInt(null, "forcedHeight", settingsEntry.mForcedHeight);
-                }
-                if (settingsEntry.mForcedDensity != 0) {
-                    out.attributeInt(null, "forcedDensity", settingsEntry.mForcedDensity);
-                }
-                if (settingsEntry.mForcedDensityRatio != 0.0f) {
-                    out.attributeFloat(null, "forcedDensityRatio",
-                            settingsEntry.mForcedDensityRatio);
-                }
-                if (settingsEntry.mForcedScalingMode != null) {
-                    out.attributeInt(null, "forcedScalingMode",
-                            settingsEntry.mForcedScalingMode);
-                }
-                if (settingsEntry.mRemoveContentMode != REMOVE_CONTENT_MODE_UNDEFINED) {
-                    out.attributeInt(null, "removeContentMode", settingsEntry.mRemoveContentMode);
-                }
-                if (settingsEntry.mShouldShowWithInsecureKeyguard != null) {
-                    out.attributeBoolean(null, "shouldShowWithInsecureKeyguard",
-                            settingsEntry.mShouldShowWithInsecureKeyguard);
-                }
-                if (settingsEntry.mShouldShowSystemDecors != null) {
-                    out.attributeBoolean(null, "shouldShowSystemDecors",
-                            settingsEntry.mShouldShowSystemDecors);
-                }
-                if (settingsEntry.mImePolicy != null) {
-                    out.attributeInt(null, "imePolicy", settingsEntry.mImePolicy);
-                }
-                if (settingsEntry.mFixedToUserRotation != null) {
-                    out.attributeInt(null, "fixedToUserRotation",
-                            settingsEntry.mFixedToUserRotation);
-                }
-                if (settingsEntry.mIgnoreOrientationRequest != null) {
-                    out.attributeBoolean(null, "ignoreOrientationRequest",
-                            settingsEntry.mIgnoreOrientationRequest);
-                }
-                if (settingsEntry.mIgnoreDisplayCutout != null) {
-                    out.attributeBoolean(null, "ignoreDisplayCutout",
-                            settingsEntry.mIgnoreDisplayCutout);
-                }
-                if (settingsEntry.mDontMoveToTop != null) {
-                    out.attributeBoolean(null, "dontMoveToTop",
-                            settingsEntry.mDontMoveToTop);
-                }
-                if (settingsEntry.mIsHomeSupported != null) {
-                    out.attributeBoolean(null, "isHomeSupported",
-                            settingsEntry.mIsHomeSupported);
-                }
-                out.endTag(null, "display");
-            }
-
-            out.endTag(null, "display-settings");
-            out.endDocument();
-            success = true;
-        } catch (IOException e) {
-            Slog.w(TAG, "Failed to write display window settings.", e);
-        } finally {
-            storage.finishWrite(stream, success);
-        }
-    }
-
-    private static final class FileData {
-        int mIdentifierType;
-        @NonNull
-        final Map<String, SettingsEntry> mSettings = new ArrayMap<>();
-
-        @Override
-        public String toString() {
-            return "FileData{"
-                    + "mIdentifierType=" + mIdentifierType
-                    + ", mSettings=" + mSettings
-                    + '}';
-        }
     }
 
     private static final class AtomicFileStorage implements WritableSettingsStorage {

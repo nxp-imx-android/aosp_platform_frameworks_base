@@ -79,10 +79,14 @@
     <string name="page_size_compat_apk_and_elf_warning_4kb" msgid="997926487776340721">"現在テスト中のデバッグ可能なアプリであるため、この警告が表示されています。デベロッパー以外のユーザーは、デベロッパーに報告して、デバッグできないアプリをリクエストしてください。&lt;br&gt;&lt;br&gt;このアプリは 16 KB アライメントではありません。APK と ELF のアライメント チェックが失敗しました。&lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; の手順に沿って対応してください。&lt;br&gt;&lt;br&gt;以下のライブラリは 16 KB アライメントではありません。&lt;br&gt;&lt;br&gt;"</string>
     <string name="page_size_compat_never_show" msgid="3391282612422783097">"次回から表示しない"</string>
     <string name="page_size_compat_title" msgid="6497719153872572204">"Android アプリの互換性"</string>
-    <string name="page_size_compat_elf_not_aligned" msgid="7940806102874132630">"&amp;#8226; %1$s: LOAD セグメントが一致しません"</string>
-    <string name="page_size_compat_apk_not_aligned" msgid="8927901100655245528">"&amp;#8226; %1$s: 非圧縮ライブラリが一致しません"</string>
-    <string name="page_size_compat_apk_and_elf_not_aligned" msgid="1010371834741548905">"&amp;#8226; %1$s: LOAD セグメントと非圧縮ライブラリが一致していません"</string>
-    <string name="page_size_compat_unknown" msgid="3254222165646410528">"&amp;#8226; %1$s: 不明なエラー"</string>
+    <!-- no translation found for page_size_compat_elf_not_aligned (4404128993555194313) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_not_aligned (1434875607880657092) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_and_elf_not_aligned (7140216083697701972) -->
+    <skip />
+    <!-- no translation found for page_size_compat_unknown (5183026525148169891) -->
+    <skip />
     <string name="serviceNotProvisioned" msgid="8289333510236766193">"提供可能なサービスがありません。"</string>
     <string name="CLIRPermanent" msgid="166443681876381118">"発信者番号の設定は変更できません。"</string>
     <string name="auto_data_switch_title" msgid="3286350716870518297">"データが <xliff:g id="CARRIERDISPLAY">%s</xliff:g> に切り替わりました"</string>
@@ -692,6 +696,10 @@
     <string name="biometric_dialog_default_title" msgid="55026799173208210">"本人確認"</string>
     <string name="biometric_dialog_default_subtitle" msgid="8457232339298571992">"続行するには生体認証を使用してください"</string>
     <string name="biometric_or_screen_lock_dialog_default_subtitle" msgid="159539678371552009">"続行するには、生体認証または画面ロックを使用してください"</string>
+    <!-- no translation found for biometric_dialog_secondary_display_toast (256544327174107086) -->
+    <skip />
+    <!-- no translation found for biometric_dialog_secondary_display_toast (2855203015454795660) -->
+    <skip />
     <string name="biometric_error_hw_unavailable" msgid="2494077380540615216">"生体認証ハードウェアが利用できません"</string>
     <string name="biometric_error_user_canceled" msgid="6732303949695293730">"認証をキャンセルしました"</string>
     <string name="biometric_not_recognized" msgid="5106687642694635888">"認識されませんでした"</string>
@@ -890,9 +898,9 @@
     <string name="policydesc_watchLogin_secondaryUser" product="tv" msgid="8965224107449407052">"画面のロック解除に失敗した回数を監視し、多すぎる場合は Android TV デバイスをロックするかこのユーザーのデータをすべて消去します。"</string>
     <string name="policydesc_watchLogin_secondaryUser" product="automotive" msgid="7180857406058327941">"画面のロック解除に失敗した回数を監視し、多すぎる場合はインフォテインメント システムをロックするかこのプロファイルのデータをすべて消去します。"</string>
     <string name="policydesc_watchLogin_secondaryUser" product="default" msgid="9177645136475155924">"画面のロック解除に失敗した回数を監視し、多すぎる場合はスマートフォンをロックするかこのユーザーのデータをすべて消去します。"</string>
-    <string name="policylab_resetPassword" msgid="214556238645096520">"画面ロックの変更"</string>
+    <string name="policylab_resetPassword" msgid="214556238645096520">"画面ロックを変更"</string>
     <string name="policydesc_resetPassword" msgid="4626419138439341851">"画面ロックを変更します。"</string>
-    <string name="policylab_forceLock" msgid="7360335502968476434">"画面のロック"</string>
+    <string name="policylab_forceLock" msgid="7360335502968476434">"画面をロック"</string>
     <string name="policydesc_forceLock" msgid="1008844760853899693">"画面をロックする方法とタイミングを制御します。"</string>
     <string name="policylab_wipeData" msgid="1359485247727537311">"すべてのデータを消去"</string>
     <string name="policydesc_wipeData" product="tablet" msgid="7245372676261947507">"警告せずにタブレットを初期化して内部のデータを消去します。"</string>

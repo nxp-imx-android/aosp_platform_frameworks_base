@@ -79,10 +79,14 @@
     <string name="page_size_compat_apk_and_elf_warning_4kb" msgid="997926487776340721">"ಇದು ಡೀಬಗ್ ಮಾಡಬಹುದಾದ ಆ್ಯಪ್ ಆಗಿದ್ದು, ಪ್ರಸ್ತುತ ಪರೀಕ್ಷಿಸಲಾಗುತ್ತಿರುವುದರಿಂದ ಈ ಎಚ್ಚರಿಕೆಯನ್ನು ತೋರಿಸಲಾಗುತ್ತಿದೆ. ನೀವು ಡೆವಲಪರ್ ಅಲ್ಲದಿದ್ದರೆ, ಇದನ್ನು ಡೆವಲಪರ್‌ಗೆ ವರದಿ ಮಾಡಿ ಮತ್ತು ಡೀಬಗ್ ಮಾಡಲಾಗದ ಆ್ಯಪ್‌ಗಾಗಿ ಕೇಳಿ. &lt;br&gt;&lt;br&gt; ಈ ಆ್ಯಪ್ 16 KB ಗೆ ಹೊಂದಾಣಿಕೆಯಾಗುವುದಿಲ್ಲ. APK ಮತ್ತು ELF ಅಲೈನ್‌ಮೆಂಟ್ ಪರಿಶೀಲನೆಗಳು ವಿಫಲವಾಗಿವೆ. &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; ನಲ್ಲಿ ನೀಡಲಾಗಿರುವ ಹಂತಗಳನ್ನು ಅನುಸರಿಸಿ. &lt;br&gt;&lt;br&gt; ಕೆಳಗಿನ ಲೈಬ್ರರಿಗಳನ್ನು 16 KB ಗೆ ಅಲೈನ್ ಮಾಡಲಾಗಿಲ್ಲ: &lt;br&gt;&lt;br&gt;"</string>
     <string name="page_size_compat_never_show" msgid="3391282612422783097">"ಮತ್ತೊಮ್ಮೆ ತೋರಿಸಬೇಡಿ"</string>
     <string name="page_size_compat_title" msgid="6497719153872572204">"Android ಆ್ಯಪ್‌ ಹೊಂದಾಣಿಕೆ"</string>
-    <string name="page_size_compat_elf_not_aligned" msgid="7940806102874132630">"&amp;#8226; %1$s : LOAD ಸೆಗ್ಮೆಂಟ್ ಅನ್ನು ಅಲೈನ್ ಮಾಡಲಾಗಿಲ್ಲ"</string>
-    <string name="page_size_compat_apk_not_aligned" msgid="8927901100655245528">"&amp;#8226; %1$s : ಸಂಕ್ಷೇಪಿಸದ ಲೈಬ್ರರಿಯನ್ನು ಅಲೈನ್‌ ಮಾಡಲಾಗಿಲ್ಲ"</string>
-    <string name="page_size_compat_apk_and_elf_not_aligned" msgid="1010371834741548905">"&amp;#8226; %1$s : LOAD ಸೆಗ್ಮೆಂಟ್ ಮತ್ತು ಸಂಕ್ಷೇಪಿಸದ ಲೈಬ್ರರಿಯನ್ನು ಅಲೈನ್ ಮಾಡಲಾಗಿಲ್ಲ"</string>
-    <string name="page_size_compat_unknown" msgid="3254222165646410528">"&amp;#8226; %1$s : ಅಪರಿಚಿತ ದೋಷ"</string>
+    <!-- no translation found for page_size_compat_elf_not_aligned (4404128993555194313) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_not_aligned (1434875607880657092) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_and_elf_not_aligned (7140216083697701972) -->
+    <skip />
+    <!-- no translation found for page_size_compat_unknown (5183026525148169891) -->
+    <skip />
     <string name="serviceNotProvisioned" msgid="8289333510236766193">"ಸೇವೆಯನ್ನು ಪೂರೈಸಲಾಗಿಲ್ಲ."</string>
     <string name="CLIRPermanent" msgid="166443681876381118">"ನೀವು ಕಾಲರ್‌ ID ಸೆಟ್ಟಿಂಗ್‌ ಬದಲಾಯಿಸಲು ಸಾಧ್ಯವಿಲ್ಲ."</string>
     <string name="auto_data_switch_title" msgid="3286350716870518297">"<xliff:g id="CARRIERDISPLAY">%s</xliff:g> ಗೆ ಡೇಟಾವನ್ನು ಬದಲಾಯಿಸಲಾಗಿದೆ"</string>
@@ -692,6 +696,10 @@
     <string name="biometric_dialog_default_title" msgid="55026799173208210">"ಇದು ನೀವೇ ಎಂದು ಪರಿಶೀಲಿಸಿ"</string>
     <string name="biometric_dialog_default_subtitle" msgid="8457232339298571992">"ಮುಂದುವರಿಸಲು ನಿಮ್ಮ ಬಯೋಮೆಟ್ರಿಕ್ ಬಳಸಿ"</string>
     <string name="biometric_or_screen_lock_dialog_default_subtitle" msgid="159539678371552009">"ಮುಂದುವರಿಸಲು ನಿಮ್ಮ ಬಯೋಮೆಟ್ರಿಕ್ ಅಥವಾ ಸ್ಕ್ರೀನ್ ಲಾಕ್ ಅನ್ನು ಬಳಸಿ"</string>
+    <!-- no translation found for biometric_dialog_secondary_display_toast (256544327174107086) -->
+    <skip />
+    <!-- no translation found for biometric_dialog_secondary_display_toast (2855203015454795660) -->
+    <skip />
     <string name="biometric_error_hw_unavailable" msgid="2494077380540615216">"ಬಯೋಮೆಟ್ರಿಕ್ ಹಾರ್ಡ್‌ವೇರ್‌ ಲಭ್ಯವಿಲ್ಲ"</string>
     <string name="biometric_error_user_canceled" msgid="6732303949695293730">"ಪ್ರಮಾಣೀಕರಣವನ್ನು ರದ್ದುಗೊಳಿಸಲಾಗಿದೆ"</string>
     <string name="biometric_not_recognized" msgid="5106687642694635888">"ಗುರುತಿಸಲಾಗಿಲ್ಲ"</string>

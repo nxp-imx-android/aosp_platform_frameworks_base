@@ -77,7 +77,7 @@ public class DeveloperVerifierController {
             "verification_request_timeout_millis";
     // Default duration to wait for a verifier to respond to a verification request.
     private static final long DEFAULT_VERIFICATION_REQUEST_TIMEOUT_MILLIS =
-            TimeUnit.MINUTES.toMillis(1);
+            TimeUnit.SECONDS.toMillis(10);
     /**
      * Configurable maximum amount of time in milliseconds that the verifier can request to extend
      * the verification request timeout duration to. This is the maximum amount of time the system

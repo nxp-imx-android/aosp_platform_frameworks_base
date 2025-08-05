@@ -41,7 +41,9 @@ import androidx.compose.ui.layout.ApproachMeasureScope
 import androidx.compose.ui.layout.LookaheadScope
 import androidx.compose.ui.layout.Measurable
 import androidx.compose.ui.layout.MeasureResult
+import androidx.compose.ui.layout.MeasureScope
 import androidx.compose.ui.node.LayoutAwareModifierNode
+import androidx.compose.ui.node.LayoutModifierNode
 import androidx.compose.ui.node.ModifierNodeElement
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.Constraints
@@ -509,7 +511,12 @@ internal class SceneTransitionLayoutImpl(
     @Composable
     private fun Scenes() {
         scenesToCompose().fastForEach { (scene, isInvisible) ->
-            key(scene.key) { scene.Content(isInvisible = isInvisible) }
+            key(scene.key) {
+                scene.Content(
+                    isInvisible = isInvisible,
+                    modifier = Modifier.then(ContentElement(scene.zIndex, isInvisible)),
+                )
+            }
         }
     }
 
@@ -566,7 +573,7 @@ internal class SceneTransitionLayoutImpl(
                 // We put the overlays inside a Box that is matching the layout size so that they
                 // are measured after all scenes and that their max size is the size of the layout
                 // without the overlays.
-                Box(Modifier.matchParentSize().zIndex(overlay.zIndex)) {
+                Box(Modifier.then(ContentElement(overlay.zIndex, isInvisible)).matchParentSize()) {
                     if (overlay.isModal) {
                         // Add a fullscreen clickable to prevent swipes from reaching the scenes and
                         // other overlays behind this overlay. Clicking will close the overlay.
@@ -709,6 +716,32 @@ private class LayoutNode(
         }
 
         return layout(width, height) { placeable.place(0, 0) }
+    }
+}
+
+private data class ContentElement(val zIndex: Float, val isInvisible: Boolean) :
+    ModifierNodeElement<ContentNode>() {
+    override fun create(): ContentNode = ContentNode(zIndex, isInvisible)
+
+    override fun update(node: ContentNode) {
+        node.zIndex = zIndex
+        node.isInvisible = isInvisible
+    }
+}
+
+private class ContentNode(var zIndex: Float, var isInvisible: Boolean) :
+    Modifier.Node(), LayoutModifierNode {
+    override fun MeasureScope.measure(
+        measurable: Measurable,
+        constraints: Constraints,
+    ): MeasureResult {
+        return measurable.measure(constraints).run {
+            layout(width, height) {
+                if (!isInvisible) {
+                    place(0, 0, zIndex = zIndex)
+                }
+            }
+        }
     }
 }
 

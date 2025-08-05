@@ -1793,6 +1793,17 @@ package android.app.appfunctions {
     field @FlaggedApi("android.permission.flags.app_function_access_ui_enabled") public static final String ACTION_REQUEST_APP_FUNCTION_ACCESS = "android.app.appfunctions.action.REQUEST_APP_FUNCTION_ACCESS";
   }
 
+  @FlaggedApi("android.permission.flags.app_function_access_api_enabled") public static final class AppFunctionManager.AccessHistory implements android.provider.BaseColumns {
+    field public static final String COLUMN_ACCESS_TIME = "access_time";
+    field public static final String COLUMN_AGENT_PACKAGE_NAME = "agent_package_name";
+    field public static final String COLUMN_CUSTOM_INTERACTION_TYPE = "custom_interaction_type";
+    field public static final String COLUMN_DURATION = "access_duration";
+    field public static final String COLUMN_INTERACTION_TYPE = "interaction_type";
+    field public static final String COLUMN_INTERACTION_URI = "interaction_uri";
+    field public static final String COLUMN_TARGET_PACKAGE_NAME = "target_package_name";
+    field public static final String COLUMN_THREAD_ID = "thread_id";
+  }
+
 }
 
 package android.app.assist {
@@ -16318,13 +16329,6 @@ package android.telephony {
     method @RequiresPermission(android.Manifest.permission.READ_PRECISE_PHONE_STATE) public default void onCallStatesChanged(@NonNull java.util.List<android.telephony.CallState>);
   }
 
-  @FlaggedApi("com.android.internal.telephony.flags.satellite_system_apis") public static interface TelephonyCallback.CarrierRoamingNtnListener {
-    method public default void onCarrierRoamingNtnAvailableServicesChanged(@NonNull int[]);
-    method public default void onCarrierRoamingNtnEligibleStateChanged(boolean);
-    method public void onCarrierRoamingNtnModeChanged(boolean);
-    method public default void onCarrierRoamingNtnSignalStrengthChanged(@NonNull android.telephony.satellite.NtnSignalStrength);
-  }
-
   @FlaggedApi("com.android.internal.telephony.flags.cellular_identifier_disclosure_indications") public static interface TelephonyCallback.CellularIdentifierDisclosedListener {
     method public void onCellularIdentifierDisclosedChanged(@NonNull android.telephony.CellularIdentifierDisclosure);
   }
@@ -18967,19 +18971,6 @@ package android.telephony.satellite {
     method @NonNull public android.telephony.satellite.EnableRequestAttributes build();
     method @NonNull public android.telephony.satellite.EnableRequestAttributes.Builder setDemoMode(boolean);
     method @NonNull public android.telephony.satellite.EnableRequestAttributes.Builder setEmergencyMode(boolean);
-  }
-
-  public final class NtnSignalStrength implements android.os.Parcelable {
-    ctor public NtnSignalStrength(@Nullable android.telephony.satellite.NtnSignalStrength);
-    method public int describeContents();
-    method public int getLevel();
-    method public void writeToParcel(@NonNull android.os.Parcel, int);
-    field @NonNull public static final android.os.Parcelable.Creator<android.telephony.satellite.NtnSignalStrength> CREATOR;
-    field public static final int NTN_SIGNAL_STRENGTH_GOOD = 3; // 0x3
-    field public static final int NTN_SIGNAL_STRENGTH_GREAT = 4; // 0x4
-    field public static final int NTN_SIGNAL_STRENGTH_MODERATE = 2; // 0x2
-    field public static final int NTN_SIGNAL_STRENGTH_NONE = 0; // 0x0
-    field public static final int NTN_SIGNAL_STRENGTH_POOR = 1; // 0x1
   }
 
   public interface NtnSignalStrengthCallback {

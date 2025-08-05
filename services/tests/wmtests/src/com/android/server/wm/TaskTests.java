@@ -91,7 +91,6 @@ import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
 import android.util.DisplayMetrics;
 import android.util.Xml;
-import android.view.Display;
 import android.view.DisplayInfo;
 import android.view.SurfaceControl;
 import android.view.WindowInsetsController;
@@ -1698,16 +1697,6 @@ public class TaskTests extends WindowTestsBase {
     }
 
     @Test
-    public void testGetNonNullDimmerOnUntrustedDisplays() {
-        final DisplayInfo untrustedDisplayInfo = new DisplayInfo(mDisplayInfo);
-        untrustedDisplayInfo.flags &= ~Display.FLAG_TRUSTED;
-        final DisplayContent untrustedDisplay = createNewDisplay(untrustedDisplayInfo);
-        final ActivityRecord activity = createActivityRecord(untrustedDisplay);
-        activity.setOccludesParent(false);
-        assertNotNull(activity.getTask().getDimmer());
-    }
-
-    @Test
     public void testResumeTask_doNotResumeTaskFragmentBehindTranslucent() {
         final Task task = createTask(mDisplayContent);
         final TaskFragment tfBehind = createTaskFragmentWithActivity(task);
@@ -2223,7 +2212,6 @@ public class TaskTests extends WindowTestsBase {
         assertFalse(task.isForceExcludedFromRecents());
     }
 
-    @EnableFlags(Flags.FLAG_UPDATE_TASK_MIN_DIMENSIONS_WITH_ROOT_ACTIVITY)
     @Test
     public void testAllowRelingquish_updateMinDimensions() {
         // r0 allows relingquish
@@ -2248,7 +2236,6 @@ public class TaskTests extends WindowTestsBase {
         assertEquals(500, task.mMinHeight);
     }
 
-    @EnableFlags(Flags.FLAG_UPDATE_TASK_MIN_DIMENSIONS_WITH_ROOT_ACTIVITY)
     @Test
     public void testDisallowRelingquish_notUpdateMinDimensions() {
         // r0 disallows relingquish

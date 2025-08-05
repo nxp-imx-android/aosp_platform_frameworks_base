@@ -36,6 +36,7 @@ val Kosmos.statusBarRootFactory by
             iconViewStoreFactory = connectedDisplaysStatusBarNotificationIconViewStoreFactory,
             clockViewModelFactory = clockViewModelFactory,
             darkIconManagerFactory = mock(),
+            tintedIconManagerFactory = mock(),
             iconController = statusBarIconController,
             ongoingCallController = mock(),
             eventAnimationInteractor = systemStatusEventAnimationInteractor,

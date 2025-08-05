@@ -4539,11 +4539,9 @@ public final class ActiveServices {
                 if (srec.app != null) {
                     final ProcessServiceRecord psr = srec.app.mServices;
                     if (group > 0) {
-                        psr.setConnectionService(srec);
                         psr.setConnectionGroup(group);
                         psr.setConnectionImportance(importance);
                     } else {
-                        psr.setConnectionService(null);
                         psr.setConnectionGroup(0);
                         psr.setConnectionImportance(0);
                     }

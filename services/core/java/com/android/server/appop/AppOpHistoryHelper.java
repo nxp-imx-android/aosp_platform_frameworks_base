@@ -420,6 +420,9 @@ public class AppOpHistoryHelper {
     }
 
     private class SqliteWriteHandler extends Handler {
+        // Max database size 50 MB
+        private static final long MAX_DATABASE_SIZE_BYTES = 50 * 1024 * 1024;
+
         SqliteWriteHandler(Looper looper) {
             super(looper);
         }
@@ -433,6 +436,7 @@ public class AppOpHistoryHelper {
                                 SQLITE_APP_OP_EVENT_REPORTED__WRITE_TYPE__WRITE_PERIODIC);
                     } finally {
                         ensurePeriodicJobsAreScheduled();
+                        ensureDatabaseSize();
                     }
                 }
                 case WRITE_DATABASE_CACHE_FULL -> {
@@ -450,6 +454,7 @@ public class AppOpHistoryHelper {
                                 SQLITE_APP_OP_EVENT_REPORTED__WRITE_TYPE__WRITE_CACHE_FULL);
                     } finally {
                         ensurePeriodicJobsAreScheduled();
+                        ensureDatabaseSize();
                     }
                 }
                 case DELETE_EXPIRED_ENTRIES_PERIODIC -> {
@@ -462,6 +467,13 @@ public class AppOpHistoryHelper {
                         ensurePeriodicJobsAreScheduled();
                     }
                 }
+            }
+        }
+
+        private void ensureDatabaseSize() {
+            long databaseSize = mDatabaseFile.length();
+            if (databaseSize > MAX_DATABASE_SIZE_BYTES) {
+                mDbHelper.execSQL(AppOpHistoryTable.DELETE_TABLE_DATA_LEAST_RECENT_ENTRIES);
             }
         }
 

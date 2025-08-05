@@ -75,19 +75,30 @@ public:
     JavaMediaCodecListWrapper(sp<IMediaCodecList> mcl)
             : mCodecList(mcl) {
         size_t numCodecs = mcl->countCodecs();
+        // First add the codecs with its unique codec name.
         for (size_t ix = 0; ix < numCodecs; ++ix) {
             sp<MediaCodecInfo> info = mcl->getCodecInfo(ix);
-            Vector<AString> namesAndAliases;
-            info->getAliases(&namesAndAliases);
-            namesAndAliases.insertAt(0);
-            namesAndAliases.editItemAt(0) = info->getCodecName();
-            for (const AString &nameOrAlias : namesAndAliases) {
-                if (mInfoIndex.count(nameOrAlias) > 0) {
+            AString name = info->getCodecName();
+            // The codec names are guaranteed to be unique because:
+            // 1. Codecs hal names are unique.
+            // 2. MediaCodecListWriter splits MediaCodecInfos supporting
+            //    multiple media types and assigns each split a unique name.
+            // 3. codecName = supportMultipleMediaTypes ? splitName : halName
+            mInfoIndex.emplace(name, mInfoList.size());
+            mInfoList.emplace_back(Info { info, name });
+        }
+        // Then add codecs with its aliases. Skip aliases that have been used.
+        for (size_t ix = 0; ix < numCodecs; ++ix) {
+            sp<MediaCodecInfo> info = mcl->getCodecInfo(ix);
+            Vector<AString> aliases;
+            info->getAliases(&aliases);
+            for (const AString &alias : aliases) {
+                if (mInfoIndex.count(alias) > 0) {
                     // skip duplicate names or aliases
                     continue;
                 }
-                mInfoIndex.emplace(nameOrAlias, mInfoList.size());
-                mInfoList.emplace_back(Info { info, nameOrAlias });
+                mInfoIndex.emplace(alias, mInfoList.size());
+                mInfoList.emplace_back(Info { info, alias });
             }
         }
     }

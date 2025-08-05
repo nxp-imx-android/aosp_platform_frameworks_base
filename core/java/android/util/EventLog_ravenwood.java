@@ -15,9 +15,7 @@
  */
 package android.util;
 
-import com.android.internal.os.RuntimeInit;
-
-import java.io.PrintStream;
+import android.platform.test.ravenwood.RavenwoodDriver;
 
 public class EventLog_ravenwood {
     public static int writeEvent(int tag, int value) {
@@ -53,19 +51,7 @@ public class EventLog_ravenwood {
             }
         }
         sb.append(']');
-        getRealOut().println(sb.toString());
+        RavenwoodDriver.sRawStdOut.println(sb.toString());
         return sb.length();
-    }
-
-    /**
-     * Return the "real" {@code System.out} if it's been swapped by {@code RavenwoodRuleImpl}, so
-     * that we don't end up in a recursive loop.
-     */
-    private static PrintStream getRealOut() {
-        if (RuntimeInit.sOut$ravenwood != null) {
-            return RuntimeInit.sOut$ravenwood;
-        } else {
-            return System.out;
-        }
     }
 }

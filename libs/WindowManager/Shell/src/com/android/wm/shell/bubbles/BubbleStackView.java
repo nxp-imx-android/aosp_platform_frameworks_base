@@ -28,6 +28,7 @@ import static com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_BUBBLES;
 import static com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_BUBBLES_NOISY;
 import static com.android.wm.shell.shared.animation.Interpolators.ALPHA_IN;
 import static com.android.wm.shell.shared.animation.Interpolators.ALPHA_OUT;
+import static com.android.wm.shell.shared.animation.Interpolators.EMPHASIZED;
 import static com.android.wm.shell.shared.bubbles.BubbleConstants.BUBBLE_EXPANDED_SCRIM_ALPHA;
 
 import android.animation.Animator;
@@ -83,6 +84,7 @@ import com.android.internal.util.FrameworkStatsLog;
 import com.android.launcher3.icons.BitmapInfo;
 import com.android.wm.shell.Flags;
 import com.android.wm.shell.R;
+import com.android.wm.shell.animation.SizeChangeAnimation;
 import com.android.wm.shell.bubbles.BubblesNavBarMotionEventHandler.MotionEventListener;
 import com.android.wm.shell.bubbles.animation.AnimatableScaleMatrix;
 import com.android.wm.shell.bubbles.animation.ExpandedAnimationController;
@@ -144,6 +146,8 @@ public class BubbleStackView extends FrameLayout
     private static final float OPEN_OVERFLOW_ANIMATE_SCALE_AMOUNT = 0.5f;
 
     private static final int EXPANDED_VIEW_ALPHA_ANIMATION_DURATION = 150;
+
+    private static final int EXPANDED_VIEW_CONVERSION_ANIMATION_DURATION = 400;
 
     /** Minimum alpha value for scrim when alpha is being changed via drag */
     private static final float MIN_SCRIM_ALPHA_FOR_DRAG = 0.2f;
@@ -1265,19 +1269,91 @@ public class BubbleStackView extends FrameLayout
 
     @Override
     public BubbleViewProvider prepareConvertedView(BubbleViewProvider b) {
-        // TODO b/419347947 - if we support converting visible tasks to bubbles in the future
-        //  this might have to do some stuff.
-        ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "BubbleStackView.prepareConvertedView - doing nothing");
-        return b;
+        // TODO b/419347947 - support converting visible tasks to bubbles more generally.
+        // for now, only support converting visible tasks by promoting overflow bubbles
+        if (!isExpanded()
+                || mExpandedBubble == null
+                || !mExpandedBubble.getKey().equals(BubbleOverflow.KEY)) {
+            ProtoLog.d(WM_SHELL_BUBBLES_NOISY,
+                    "BubbleStackView.prepareConvertedView - doing nothing");
+            return null;
+        }
+        ProtoLog.d(WM_SHELL_BUBBLES_NOISY,
+                "BubbleStackView.prepareConvertedView - converting overflow bubble");
+        final BubbleViewProvider previouslyExpandedBubble = mExpandedBubble;
+        mExpandedBubble = b;
+
+        BubbleExpandedView bev = b.getExpandedView();
+        if (bev == null) {
+            throw new IllegalStateException("Can't animate bubble without an expanded view");
+        }
+
+        mExpandedViewAnimationController.setExpandedView(bev);
+        updateExpandedBubble();
+        updateExpandedView();
+        bev.setAnimating(true);
+        bev.setContentVisibility(true);
+        bev.setSurfaceZOrderedOnTop(true);
+        bev.setContentAlpha(0);
+        bev.setBackgroundAlpha(0);
+        bev.setVisibility(VISIBLE);
+
+        return previouslyExpandedBubble;
     }
 
     @Override
     public void animateConvert(@NonNull SurfaceControl.Transaction startT,
             @NonNull Rect startBounds, float startScale, @NonNull SurfaceControl snapshot,
             SurfaceControl taskLeash, Runnable animFinish) {
-        // TODO b/419347947 - if we support converting visible tasks to bubbles in the future
-        //  this will have to do some stuff.
-        ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "BubbleStackView.animateConvert - doing nothing");
+        // TODO b/419347947 - support converting visible tasks to bubbles more generally.
+        // we currently only convert bubbles when we're already expanded, so we only need to animate
+        // the expanded view. when we support converting bubbles from visible tasks when collapsed,
+        // we would need to animate the bubble icons as well.
+        if (mExpandedBubble == null) {
+            ProtoLog.d(WM_SHELL_BUBBLES_NOISY,
+                    "BubbleStackView.animateConvert - doing nothing because no expanded bubble");
+            return;
+        }
+        final BubbleExpandedView bev = mExpandedBubble.getExpandedView();
+        if (bev == null) {
+            ProtoLog.d(WM_SHELL_BUBBLES_NOISY,
+                    "BubbleStackView.animateConvert - doing nothing because no expanded view");
+            return;
+        }
+        ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "BubbleStackView.animateConvert - converting");
+        mIsBubbleSwitchAnimating = true;
+        bev.setSurfaceZOrderedOnTop(true);
+        bev.setContentAlpha(1);
+        bev.setBackgroundAlpha(1);
+        SurfaceControl tvsc = ((Bubble) mExpandedBubble).getTaskView().getSurfaceControl();
+
+        final Rect restBounds = new Rect();
+        mPositioner.getTaskViewRestBounds(restBounds);
+
+        Rect bounds = new Rect(startBounds.left - restBounds.left,
+                startBounds.top - restBounds.top,
+                startBounds.right - restBounds.left,
+                startBounds.bottom - restBounds.top);
+        Rect endBounds = new Rect(0, 0, restBounds.width(), restBounds.height());
+        final SizeChangeAnimation sca = new SizeChangeAnimation(bounds, endBounds,
+                startScale, /* scaleFactor= */ 1f);
+        sca.initialize(bev, taskLeash, snapshot, startT);
+
+        Animator a = sca.buildViewAnimator(bev, tvsc, snapshot, /* onFinish */ va -> {
+            ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "BubbleStackView.animateConvert(): finished");
+            mIsBubbleSwitchAnimating = false;
+            snapshot.release();
+            bev.setSurfaceZOrderedOnTop(false);
+            bev.setAnimating(false);
+            if (animFinish != null) {
+                animFinish.run();
+            }
+        });
+
+
+        a.setDuration(EXPANDED_VIEW_CONVERSION_ANIMATION_DURATION);
+        a.setInterpolator(EMPHASIZED);
+        a.start();
     }
 
     @Override
@@ -2339,6 +2415,16 @@ public class BubbleStackView extends FrameLayout
     }
 
     private void showNewlySelectedBubble(BubbleViewProvider bubbleToSelect) {
+        if (BubbleAnythingFlagHelper.enableCreateAnyBubble()) {
+            // if the bubble is already selected, then we're converting this bubble and we can
+            // return, otherwise we'll be removing the bubble we're trying to convert from the view
+            // hierarchy
+            final boolean alreadySelected = mExpandedBubble != null
+                    && bubbleToSelect.getKey().equals(mExpandedBubble.getKey());
+            if (alreadySelected) {
+                return;
+            }
+        }
         final BubbleViewProvider previouslySelected = mExpandedBubble;
         mExpandedBubble = bubbleToSelect;
         mExpandedViewAnimationController.setExpandedView(getExpandedView());

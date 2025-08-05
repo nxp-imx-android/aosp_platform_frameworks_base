@@ -3239,6 +3239,7 @@ class WindowContainer<E extends WindowContainer> extends ConfigurationContainer<
         }, true /* traverseTopToBottom */);
     }
 
+    // It is replaced by WindowState#getDimController().
     @Deprecated
     Dimmer getDimmer() {
         if (mParent == null) {

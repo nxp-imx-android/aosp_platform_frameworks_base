@@ -86,7 +86,7 @@ constructor(
 
         val context = LocalContext.current
         val textFeedbackViewModel =
-            rememberViewModel(traceName = "InfiniteGridLayout.TileGrid", context) {
+            rememberViewModel(traceName = "InfiniteGridLayout.TileGrid", key = context) {
                 textFeedbackContentViewModelFactory.create(context)
             }
 

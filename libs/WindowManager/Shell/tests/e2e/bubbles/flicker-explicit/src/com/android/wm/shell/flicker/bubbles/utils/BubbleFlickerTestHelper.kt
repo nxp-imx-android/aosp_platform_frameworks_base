@@ -59,9 +59,10 @@ internal object BubbleFlickerTestHelper {
         fromSource: Int = FROM_ALL_APPS,
     ) {
         val appName = testApp.appName
+        val workspace = tapl.goHome()
         // Go to all apps to launch app into a bubble.
         val appIcon = when (fromSource) {
-            FROM_ALL_APPS -> tapl.goHome().switchToAllApps().getAppIcon(appName)
+            FROM_ALL_APPS -> workspace.switchToAllApps().getAppIcon(appName)
             FROM_TASK_BAR -> {
                 SplitScreenUtils.createShortcutOnHotseatIfNotExist(tapl, appName)
                 val overview = tapl.goHome().switchToOverview()
@@ -69,7 +70,6 @@ internal object BubbleFlickerTestHelper {
                 taskBar.getAppIcon(testApp.appName)
             }
             FROM_HOME_SCREEN -> {
-                val workspace = tapl.workspace
                 val homeScreenIcon = workspace.tryGetWorkspaceAppIcon(testApp.appName)
                 if (homeScreenIcon != null) {
                     // If there's an icon on the homeScreen, just use it.
@@ -169,21 +169,48 @@ internal object BubbleFlickerTestHelper {
      * Expands the bubble app [testApp], which is previously collapsed via tapping on bubble stack.
      *
      * @param testApp the bubble app to expand
-     * @param uiDevice the UI automator to get the bubble view [UiObject2]
      * @param wmHelper the [WindowManagerStateHelper]
      */
     fun expandBubbleAppViaTapOnBubbleStack(
         testApp: StandardAppHelper,
-        uiDevice: UiDevice,
         wmHelper: WindowManagerStateHelper,
     ) {
         // Ensure Bubble is in collapse state.
         waitAndAssertBubbleAppInCollapseState(testApp, wmHelper)
 
         // Click bubble to expand
-        uiDevice.bubbleIcon?.click() ?: error("Can't find bubble view")
+        Root.get().selectedBubble.expand()
 
         waitAndAssertBubbleAppInExpandedState(testApp, wmHelper)
+    }
+
+    fun switchBubble(
+        appSwitchedFrom: StandardAppHelper,
+        appSwitchTo: StandardAppHelper,
+        wmHelper: WindowManagerStateHelper,
+    ) {
+        // Checks the previous app is in expanded state.
+        waitAndAssertBubbleAppInExpandedState(appSwitchedFrom, wmHelper)
+
+        val bubbles = Root.get().expandedBubbleStack.bubbles
+        val bubbleAppIcon = bubbles.find { bubble ->
+            // Bubble's content description contains app's package name.
+            bubble.contentDescription().contains(appSwitchTo.packageName)
+        } ?: error(
+            "Can't find the bubble with ${appSwitchTo.packageName}. "
+                    + "Bubbles are ${bubbles.dumpBubbles()}"
+        )
+        bubbleAppIcon.click()
+
+        waitAndAssertBubbleAppInExpandedState(appSwitchTo, wmHelper)
+    }
+
+    private fun List<Bubble>.dumpBubbles(): String {
+        val builder = StringBuilder()
+        for (bubble in this) {
+            builder.append(bubble.contentDescription()).append(", ")
+        }
+        return builder.toString()
     }
 
     /**
@@ -372,14 +399,8 @@ internal object BubbleFlickerTestHelper {
             .waitForAndVerify()
     }
 
-    private val UiDevice.bubbleIcon: UiObject2?
-        get() = wait(Until.findObject(sysUiSelector(RES_ID_BUBBLE_VIEW)), FIND_OBJECT_TIMEOUT)
-
     private val UiDevice.bubbleBar: UiObject2?
         get() = wait(Until.findObject(launcherSelector(RES_ID_BUBBLE_BAR)), FIND_OBJECT_TIMEOUT)
-
-    private fun sysUiSelector(resourcesId: String): BySelector =
-        By.pkg(SYSUI_PACKAGE).res(SYSUI_PACKAGE, resourcesId)
 
     private fun UiDevice.launcherSelector(resourcesId: String): BySelector =
         By.pkg(launcherPackageName).res(launcherPackageName, resourcesId)
@@ -395,8 +416,6 @@ internal object BubbleFlickerTestHelper {
     private const val LAST_APP_ICON_SOURCE = FROM_TASK_BAR
 
     private const val FIND_OBJECT_TIMEOUT = 4000L
-    private const val SYSUI_PACKAGE = "com.android.systemui"
-    private const val RES_ID_BUBBLE_VIEW = "bubble_view"
     private const val RES_ID_BUBBLE_BAR = "taskbar_bubbles"
 
     // TODO(b/396020056): The max number of bubbles is 5. Make the test more flexible

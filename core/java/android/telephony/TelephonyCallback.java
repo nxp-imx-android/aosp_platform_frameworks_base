@@ -1810,11 +1810,9 @@ public class TelephonyCallback {
 
     /**
      * Interface for carrier roaming non-terrestrial network listener.
-     *
-     * @hide
      */
-    @SystemApi
-    @FlaggedApi(Flags.FLAG_SATELLITE_SYSTEM_APIS)
+
+    @FlaggedApi(Flags.FLAG_TELEPHONY_SATELLITE_APIS)
     public interface CarrierRoamingNtnListener {
         /**
          * Callback invoked when carrier roaming non-terrestrial network mode changes.

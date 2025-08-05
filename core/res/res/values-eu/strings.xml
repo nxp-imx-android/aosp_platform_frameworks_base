@@ -79,10 +79,14 @@
     <string name="page_size_compat_apk_and_elf_warning_4kb" msgid="997926487776340721">"Probatzen ari garen aplikazioa araz daitekeelako agertzen da abisu hau. Garatzailea ez bazara, eman horren berri garatzaileari eta eska iezaiozu araztu ezin den aplikazio bat. &lt;br&gt;&lt;br&gt; Aplikazioak ez du onartzen 16 kB-ko orri-tamaina. Ezin izan da egiaztatu APK eta ELF arteko lerrokatzea. Jarraitu honako urrats hauei: &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;. &lt;br&gt;&lt;br&gt; Liburutegi hauek ez daude lerrokatuta 16 kB-ko orri-tamainarekin: &lt;br&gt;&lt;br&gt;"</string>
     <string name="page_size_compat_never_show" msgid="3391282612422783097">"Ez erakutsi berriro"</string>
     <string name="page_size_compat_title" msgid="6497719153872572204">"Android-erako aplikazioaren bateragarritasuna"</string>
-    <string name="page_size_compat_elf_not_aligned" msgid="7940806102874132630">"&amp;#8226; %1$s : KARGA segmentua ez dago lerrokatuta"</string>
-    <string name="page_size_compat_apk_not_aligned" msgid="8927901100655245528">"&amp;#8226; %1$s : konprimatu gabeko liburutegia ez dago lerrokatuta"</string>
-    <string name="page_size_compat_apk_and_elf_not_aligned" msgid="1010371834741548905">"&amp;#8226; %1$s : KARGA segmentua eta konprimatu gabeko liburutegia ez daude lerrokatuta"</string>
-    <string name="page_size_compat_unknown" msgid="3254222165646410528">"&amp;#8226; %1$s : errore ezezaguna"</string>
+    <!-- no translation found for page_size_compat_elf_not_aligned (4404128993555194313) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_not_aligned (1434875607880657092) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_and_elf_not_aligned (7140216083697701972) -->
+    <skip />
+    <!-- no translation found for page_size_compat_unknown (5183026525148169891) -->
+    <skip />
     <string name="serviceNotProvisioned" msgid="8289333510236766193">"Zerbitzua ez da hornitu."</string>
     <string name="CLIRPermanent" msgid="166443681876381118">"Ezin duzu aldatu deitzailearen identitatearen ezarpena."</string>
     <string name="auto_data_switch_title" msgid="3286350716870518297">"<xliff:g id="CARRIERDISPLAY">%s</xliff:g> operadorearen datu-konexiora aldatu zara"</string>
@@ -300,8 +304,7 @@
     <string name="global_action_assist" msgid="2517047220311505805">"Lagundu"</string>
     <string name="global_action_voice_assist" msgid="6655788068555086695">"Ahots-laguntza"</string>
     <string name="global_action_lockdown" msgid="2475471405907902963">"Blokeatu"</string>
-    <!-- no translation found for global_action_unrestricted_lock (7933224393323064116) -->
-    <skip />
+    <string name="global_action_unrestricted_lock" msgid="7933224393323064116">"Blokeatu"</string>
     <string name="status_bar_notification_info_overflow" msgid="3330152558746563475">"999+"</string>
     <string name="notification_compact_heads_up_reply" msgid="2425293958371284340">"Erantzun"</string>
     <string name="notification_hidden_text" msgid="2835519769868187223">"Jakinarazpen berria"</string>
@@ -693,6 +696,10 @@
     <string name="biometric_dialog_default_title" msgid="55026799173208210">"Egiaztatu zeu zarela"</string>
     <string name="biometric_dialog_default_subtitle" msgid="8457232339298571992">"Aurrera egiteko, erabili sistema biometrikoak"</string>
     <string name="biometric_or_screen_lock_dialog_default_subtitle" msgid="159539678371552009">"Aurrera egiteko, erabili sistema biometrikoak edo pantailaren blokeoa"</string>
+    <!-- no translation found for biometric_dialog_secondary_display_toast (256544327174107086) -->
+    <skip />
+    <!-- no translation found for biometric_dialog_secondary_display_toast (2855203015454795660) -->
+    <skip />
     <string name="biometric_error_hw_unavailable" msgid="2494077380540615216">"Hardware biometrikoa ez dago erabilgarri"</string>
     <string name="biometric_error_user_canceled" msgid="6732303949695293730">"Utzi da autentifikazioa"</string>
     <string name="biometric_not_recognized" msgid="5106687642694635888">"Ez da ezagutu"</string>

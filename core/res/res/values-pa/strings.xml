@@ -79,10 +79,14 @@
     <string name="page_size_compat_apk_and_elf_warning_4kb" msgid="997926487776340721">"ਇਹ ਚਿਤਾਵਨੀ ਇਸ ਲਈ ਦਿਖਾਈ ਜਾ ਰਹੀ ਹੈ ਕਿਉਂਕਿ ਇਹ ਡੀਬੱਗਯੋਗ ਐਪ ਹੈ ਜਿਸਦੀ ਫ਼ਿਲਹਾਲ ਜਾਂਚ ਕੀਤੀ ਜਾ ਰਹੀ ਹੈ। ਜੇ ਤੁਸੀਂ ਵਿਕਾਸਕਾਰ ਨਹੀਂ ਹੋ, ਤਾਂ ਕਿਰਪਾ ਕਰਕੇ ਵਿਕਾਸਕਾਰ ਨੂੰ ਇਸਦੀ ਰਿਪੋਰਟ ਕਰੋ ਅਤੇ ਗੈਰ-ਡੀਬੱਗਯੋਗ ਐਪ ਲਈ ਕਹੋ। &lt;br&gt;&lt;br&gt; ਇਹ ਐਪ 16 KB ਦੇ ਅਨੁਰੂਪ ਨਹੀਂ ਹੈ। APK ਅਤੇ ELF ਦੀ ਇਕਸਾਰਤਾ ਦੀ ਜਾਂਚ ਕਰਨਾ ਅਸਫਲ ਰਿਹਾ। ਕਿਰਪਾ ਕਰਕੇ &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; \'ਤੇ ਜਾ ਕੇ ਪੜਾਵਾਂ ਦੀ ਪਾਲਣਾ ਕਰੋ। &lt;br&gt;&lt;br&gt; ਅੱਗੇ ਦਿੱਤੀਆਂ ਲਾਇਬ੍ਰੇਰੀਆਂ 16 KB ਮੁਤਾਬਕ ਇਕਸਾਰ ਨਹੀਂ ਹਨ: &lt;br&gt;&lt;br&gt;"</string>
     <string name="page_size_compat_never_show" msgid="3391282612422783097">"ਦੁਬਾਰਾ ਨਾ ਦਿਖਾਓ"</string>
     <string name="page_size_compat_title" msgid="6497719153872572204">"Android ਐਪ ਦੀ ਅਨੁਰੂਪਤਾ"</string>
-    <string name="page_size_compat_elf_not_aligned" msgid="7940806102874132630">"&amp;#8226; %1$s : ਲੋਡ ਹਿੱਸਾ ਇਕਸਾਰ ਨਹੀਂ ਹੈ"</string>
-    <string name="page_size_compat_apk_not_aligned" msgid="8927901100655245528">"&amp;#8226; %1$s : ਅਸੰਕੁਚਿਤ ਲਾਇਬ੍ਰੇਰੀ ਇਕਸਾਰ ਨਹੀਂ ਹੈ"</string>
-    <string name="page_size_compat_apk_and_elf_not_aligned" msgid="1010371834741548905">"&amp;#8226; %1$s : ਲੋਡ ਹਿੱਸਾ ਅਤੇ ਅਸੰਕੁਚਿਤ ਲਾਇਬ੍ਰੇਰੀ ਇਕਸਾਰ ਨਹੀਂ ਹਨ"</string>
-    <string name="page_size_compat_unknown" msgid="3254222165646410528">"&amp;#8226; %1$s : ਅਗਿਆਤ ਗੜਬੜ"</string>
+    <!-- no translation found for page_size_compat_elf_not_aligned (4404128993555194313) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_not_aligned (1434875607880657092) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_and_elf_not_aligned (7140216083697701972) -->
+    <skip />
+    <!-- no translation found for page_size_compat_unknown (5183026525148169891) -->
+    <skip />
     <string name="serviceNotProvisioned" msgid="8289333510236766193">"ਸੇਵਾ ਪ੍ਰਬੰਧਿਤ ਨਹੀਂ ਹੈ।"</string>
     <string name="CLIRPermanent" msgid="166443681876381118">"ਤੁਸੀਂ ਕਾਲਰ ਆਈ.ਡੀ. ਸੈਟਿੰਗ ਨਹੀਂ ਬਦਲ ਸਕਦੇ।"</string>
     <string name="auto_data_switch_title" msgid="3286350716870518297">"ਡਾਟੇ ਨੂੰ <xliff:g id="CARRIERDISPLAY">%s</xliff:g> \'ਤੇ ਸਵਿੱਚ ਕੀਤਾ ਗਿਆ"</string>
@@ -692,6 +696,10 @@
     <string name="biometric_dialog_default_title" msgid="55026799173208210">"ਆਪਣੀ ਪਛਾਣ ਦੀ ਪੁਸ਼ਟੀ ਕਰੋ"</string>
     <string name="biometric_dialog_default_subtitle" msgid="8457232339298571992">"ਜਾਰੀ ਰੱਖਣ ਲਈ ਆਪਣੇ ਬਾਇਓਮੈਟ੍ਰਿਕ ਦੀ ਵਰਤੋਂ ਕਰੋ"</string>
     <string name="biometric_or_screen_lock_dialog_default_subtitle" msgid="159539678371552009">"ਜਾਰੀ ਰੱਖਣ ਲਈ ਆਪਣਾ ਬਾਇਓਮੈਟ੍ਰਿਕ ਜਾਂ ਸਕ੍ਰੀਨ ਲਾਕ ਵਰਤੋ"</string>
+    <!-- no translation found for biometric_dialog_secondary_display_toast (256544327174107086) -->
+    <skip />
+    <!-- no translation found for biometric_dialog_secondary_display_toast (2855203015454795660) -->
+    <skip />
     <string name="biometric_error_hw_unavailable" msgid="2494077380540615216">"ਬਾਇਓਮੈਟ੍ਰਿਕ ਹਾਰਡਵੇਅਰ ਉਪਲਬਧ ਨਹੀਂ ਹੈ"</string>
     <string name="biometric_error_user_canceled" msgid="6732303949695293730">"ਪ੍ਰਮਾਣੀਕਰਨ ਰੱਦ ਕੀਤਾ ਗਿਆ"</string>
     <string name="biometric_not_recognized" msgid="5106687642694635888">"ਪਛਾਣ ਨਹੀਂ ਹੋਈ"</string>

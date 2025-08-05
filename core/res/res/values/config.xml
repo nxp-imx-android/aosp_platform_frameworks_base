@@ -7522,6 +7522,9 @@
     <!-- Whether the home screen should be shown behind freeform tasks in desktop mode. -->
     <bool name="config_showHomeBehindDesktop">false</bool>
 
+    <!-- List of packages which should be exempt from desktop mode. -->
+    <string-array name="config_desktopExemptPackages" translatable="false"/>
+
     <!-- Frame rate compatibility value for Wallpaper
          FRAME_RATE_COMPATIBILITY_MIN (102) is used by default for lower power consumption -->
     <integer name="config_wallpaperFrameRateCompatibility">102</integer>

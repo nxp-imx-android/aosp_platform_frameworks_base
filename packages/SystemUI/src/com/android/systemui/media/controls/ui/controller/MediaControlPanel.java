@@ -552,6 +552,7 @@ public class MediaControlPanel {
         bindScrubbingTime(data);
         bindActionButtons(data);
         bindDeviceSuggestion(data);
+        bindPageButtons();
 
         boolean isSongUpdated = bindSongMetadata(data);
         bindArtworkAndColors(data, key, isSongUpdated);
@@ -1075,6 +1076,53 @@ public class MediaControlPanel {
         }
 
         updateSeekBarVisibility();
+    }
+
+    private void bindPageButtons() {
+        if (!Flags.mediaCarouselArrows()) return;
+
+        ImageButton pageLeft = mMediaViewHolder.getPageLeft();
+        pageLeft.setOnClickListener(v -> {
+            mMediaCarouselController.getMediaCarouselScrollHandler().scrollByStep(-1);
+            mMultiRippleController.play(createTouchRippleAnimation(pageLeft));
+        });
+
+        ImageButton pageRight = mMediaViewHolder.getPageRight();
+        pageRight.setOnClickListener(v -> {
+            mMediaCarouselController.getMediaCarouselScrollHandler().scrollByStep(1);
+            mMultiRippleController.play(createTouchRippleAnimation(pageRight));
+        });
+    }
+
+    void setPageArrowsVisible(boolean visible) {
+        if (!Flags.mediaCarouselArrows()) return;
+
+        ConstraintSet expandedSet = mMediaViewController.getExpandedLayout();
+        setVisibleAndAlpha(expandedSet, R.id.page_left, visible);
+        setVisibleAndAlpha(expandedSet, R.id.page_right, visible);
+
+        ConstraintSet collapsedSet = mMediaViewController.getCollapsedLayout();
+        setVisibleAndAlpha(collapsedSet, R.id.page_left, visible);
+        setVisibleAndAlpha(collapsedSet, R.id.page_right, visible);
+
+        int guidelineDimen = visible
+                ? R.dimen.qs_media_session_collapsed_guideline_with_arrows
+                : R.dimen.qs_media_session_collapsed_guideline;
+        collapsedSet.setGuidelineEnd(
+                R.id.action_button_guideline,
+                mContext.getResources().getDimensionPixelSize(guidelineDimen));
+    }
+
+    void setPageLeftEnabled(boolean enabled) {
+        if (!Flags.mediaCarouselArrows()) return;
+        ImageButton pageLeft = mMediaViewHolder.getPageLeft();
+        pageLeft.setEnabled(enabled);
+    }
+
+    void setPageRightEnabled(boolean enabled) {
+        if (!Flags.mediaCarouselArrows()) return;
+        ImageButton pageRight = mMediaViewHolder.getPageRight();
+        pageRight.setEnabled(enabled);
     }
 
     private void updateSeekBarVisibility() {

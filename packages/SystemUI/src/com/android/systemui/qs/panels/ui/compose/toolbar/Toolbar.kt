@@ -181,7 +181,7 @@ private fun ToolbarTextFeedback(
     Box(modifier = modifier) {
         val context = LocalContext.current
         val viewModel =
-            rememberViewModel("Toolbar.TextFeedbackViewModel", context) {
+            rememberViewModel("Toolbar.TextFeedbackViewModel", key = context) {
                 viewModelFactory.create(context)
             }
         val hasTextFeedback = viewModel.textFeedback !is TextFeedbackViewModel.NoFeedback

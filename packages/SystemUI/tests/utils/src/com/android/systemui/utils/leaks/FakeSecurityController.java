@@ -82,11 +82,6 @@ public class FakeSecurityController extends BaseLeakChecker<SecurityControllerCa
     }
 
     @Override
-    public int getDeviceOwnerType(ComponentName admin) {
-        return 0;
-    }
-
-    @Override
     public boolean isFinancedDevice() {
         return false;
     }

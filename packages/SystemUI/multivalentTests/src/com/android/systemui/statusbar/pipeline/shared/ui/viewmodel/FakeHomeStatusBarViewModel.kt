@@ -65,7 +65,7 @@ class FakeHomeStatusBarViewModel(
 
     override fun onChipBoundsChanged(key: String, bounds: RectF) {}
 
-    override fun onSystemIconChipClicked() {}
+    override fun onQuickSettingsChipClicked() {}
 
     override fun onNotificationIconChipClicked() {}
 

@@ -171,7 +171,11 @@ public class NotificationGuts extends FrameLayout {
 
     public void setGutsContent(GutsContent content) {
         content.setGutsParent(this);
-        content.getContentView().setAccessibilityDelegate(mGutsContentAccessibilityDelegate);
+        if (!(content instanceof BundleHeaderGutsContent)) {
+            // Skip accessibility delegate for bundle header guts, as the info there is handled
+            // on the Compose side.
+            content.getContentView().setAccessibilityDelegate(mGutsContentAccessibilityDelegate);
+        }
         mGutsContent = content;
         removeAllViews();
         addView(mGutsContent.getContentView());

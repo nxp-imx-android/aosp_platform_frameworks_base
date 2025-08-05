@@ -142,10 +142,16 @@
     <string name="screen_record_record_microphone_label" msgid="4685753707185662381">"Mikrofon bilan yozib olish"</string>
     <string name="screen_record_should_show_touches_label" msgid="2203962566795833783">"Bosilgan joylarni koʻrsatish"</string>
     <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"Yozib olish uchun ilovani tanlang"</string>
+    <string name="screen_record_video_saved" msgid="1345283626390232282">"Video saqlandi"</string>
+    <string name="screen_record_retake" msgid="3846643688365398450">"Qaytadan"</string>
+    <string name="screen_record_edit" msgid="8733014191240769309">"Tahrirlash"</string>
+    <string name="screen_record_delete" msgid="1023421937978254537">"Oʻchirish"</string>
     <string name="screen_capture_fullscreen_screenshot_button" msgid="4255912593013592954">"Butun ekranni yozib olish"</string>
     <string name="screen_capture_region_selection_button" msgid="4437546351856914639">"Tanlangan hududni tasvirga olish"</string>
     <string name="screen_capture_toolbar_capture_button" msgid="8512731007891496030">"Tasvirga olish"</string>
     <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"Yozib olish"</string>
+    <!-- no translation found for screen_share_toolbar_share_button (9182050596136815833) -->
+    <skip />
     <!-- no translation found for screen_capture_region_dimensions (2317064050253056256) -->
     <skip />
     <string name="share_to_app_chip_accessibility_label" msgid="4210256229976947065">"Ekran ulashilmoqda"</string>
@@ -157,8 +163,7 @@
     <string name="share_to_app_stop_dialog_message_single_app_specific" msgid="5923772039347985172">"Hozir <xliff:g id="APP_BEING_SHARED_NAME">%1$s</xliff:g> ilovasiga kontent ulashilmoqda"</string>
     <string name="share_to_app_stop_dialog_message_single_app_generic" msgid="6681016774654578261">"Hozir ilovaga kontent ulashilmoqda"</string>
     <string name="share_to_app_stop_dialog_message_generic" msgid="7622174291691249392">"Hozir ilova bilan ulashilmoqda"</string>
-    <!-- no translation found for share_to_app_stop_dialog_message_with_host_app (7445852089654702142) -->
-    <skip />
+    <string name="share_to_app_stop_dialog_message_with_host_app" msgid="7445852089654702142">"<xliff:g id="HOST_APP_NAME">%1$s</xliff:g> ilovasig aulashilmoqda"</string>
     <string name="share_to_app_stop_dialog_button" msgid="6334056916284230217">"Namoyishni toʻxtatish"</string>
     <string name="cast_screen_to_other_device_chip_accessibility_label" msgid="4687917476203009885">"Ekran translatsiya qilinmoqda"</string>
     <string name="cast_to_other_device_stop_dialog_title" msgid="7836517190930357326">"Toʻxtatilsinmi?"</string>
@@ -977,8 +982,7 @@
     <string name="group_system_access_google_assistant" msgid="3769929488906534254">"Raqamli assistentni ochish"</string>
     <string name="group_system_lock_screen" msgid="7391191300363416543">"Ekran qulfi"</string>
     <string name="group_system_quick_memo" msgid="3764560265935722903">"Qayd yaratish"</string>
-    <!-- no translation found for group_system_close_window (1506354809787837043) -->
-    <skip />
+    <string name="group_system_close_window" msgid="1506354809787837043">"Joriy oynani yopish"</string>
     <string name="keyboard_shortcut_group_system_multitasking" msgid="6967816258924795558">"Multi-vazifalilik"</string>
     <string name="system_multitasking_rhs" msgid="8779289852395243004">"Ekranni ajratib, joriy ilovani oʻngga joylash"</string>
     <string name="system_multitasking_lhs" msgid="7348595296208696452">"Ekranni ajratib, joriy ilovani chapga joylash"</string>
@@ -1355,10 +1359,8 @@
     <string name="media_output_end_session_dialog_summary" msgid="5954520685989877347">"Mediani boshqa qurilmaga koʻchirish uchun umumiy seansingizni toʻxtating"</string>
     <string name="media_output_end_session_dialog_stop" msgid="208189434474624412">"Toʻxtatish"</string>
     <string name="media_output_dialog_button_stop_sharing" msgid="5043482739689716185">"Namoyishni toʻxtatish"</string>
-    <!-- no translation found for media_output_dialog_button_sharing_audio (8312910741492835648) -->
-    <skip />
-    <!-- no translation found for media_output_dialog_button_share_audio (827604934548421520) -->
-    <skip />
+    <string name="media_output_dialog_button_sharing_audio" msgid="8312910741492835648">"Audio ulashuvi yoniq"</string>
+    <string name="media_output_dialog_button_share_audio" msgid="827604934548421520">"Audioni ulashish"</string>
     <string name="build_number_clip_data_label" msgid="3623176728412560914">"Nashr raqami"</string>
     <string name="build_number_copy_toast" msgid="877720921605503046">"Nashr raqami vaqtinchalik xotiraga nusxalandi."</string>
     <string name="copy_to_clipboard_a11y_action" msgid="4312789069718446749">"vaqtincha xotiraga nusxalash"</string>

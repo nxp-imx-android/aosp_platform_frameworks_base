@@ -37,9 +37,9 @@ import com.android.systemui.keyguard.TAG
 import com.android.systemui.keyguard.domain.interactor.KeyguardSurfaceBehindInteractor
 import com.android.systemui.keyguard.shared.model.KeyguardSurfaceBehindModel
 import com.android.wm.shell.shared.animation.Interpolators
+import kotlin.math.max
 import java.util.concurrent.Executor
 import javax.inject.Inject
-import kotlin.math.max
 
 /** Damping ratio to use for animations resulting from touch gesture fling animation. */
 private const val TOUCH_FLING_DAMPING_RATIO = 0.992f
@@ -77,6 +77,11 @@ constructor(
 
     private val defaultSpring = SpringForce().apply { stiffness = 675f }
 
+    /**
+     * If the spring is running, the value we're animating from. This needs to be saved in case the
+     * viewParams are updated while the spring is still running.
+     */
+    private var animatingFromTranslationY: Float = Float.NaN
     private var animatedTranslationY = FloatValueHolder()
     private val translateYSpring =
         SpringAnimation(animatedTranslationY).apply {
@@ -84,6 +89,7 @@ constructor(
             addUpdateListener { _, _, _ -> applyToSurfaceBehind() }
             addEndListener { _, _, _, _ ->
                 try {
+                    animatingFromTranslationY = Float.NaN
                     updateIsAnimatingSurface()
                 } catch (e: NullPointerException) {
                     // TODO(b/291645410): Remove when we can isolate DynamicAnimations.
@@ -177,6 +183,7 @@ constructor(
                 // If the spring isn't running yet, set the start value. Otherwise, respect the
                 // current position.
                 animatedTranslationY.value = viewParams.animateFromTranslationY
+                animatingFromTranslationY = viewParams.animateFromTranslationY
                 translateYSpring.setStartVelocity(
                     max(FASTEST_SWIPE_VELOCITY, viewParams.startVelocity)
                 )
@@ -231,10 +238,9 @@ constructor(
                             sc,
                             matrix.apply {
                                 setTranslate(/* dx= */ 0f, translationY)
-                                val percentTranslated =
-                                    1f -
-                                        (animatedTranslationY.value /
-                                            viewParams.animateFromTranslationY)
+                                var percentTranslated =
+                                    1f - (animatedTranslationY.value / animatingFromTranslationY)
+                                if (!percentTranslated.isFinite()) percentTranslated = 1f
                                 setScale(
                                     95f + (5f * percentTranslated),
                                     95f + (5f * percentTranslated),
@@ -249,7 +255,8 @@ constructor(
                         apply()
                     }
                 } else {
-                    val percentTranslated = 1f - (translationY / viewParams.animateFromTranslationY)
+                    var percentTranslated = 1f - (translationY / animatingFromTranslationY)
+                    if (!percentTranslated.isFinite()) percentTranslated = 1f
                     surfaceTransactionApplier.scheduleApply(
                         SyncRtSurfaceTransactionApplier.SurfaceParams.Builder(sc)
                             .withMatrix(

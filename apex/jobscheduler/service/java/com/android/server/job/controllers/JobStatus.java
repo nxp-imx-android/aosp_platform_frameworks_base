@@ -16,6 +16,8 @@
 
 package com.android.server.job.controllers;
 
+import static android.app.usage.UsageStatsManager.REASON_MAIN_TIMEOUT;
+
 import static com.android.server.job.JobSchedulerService.ACTIVE_INDEX;
 import static com.android.server.job.JobSchedulerService.EXEMPTED_INDEX;
 import static com.android.server.job.JobSchedulerService.NEVER_INDEX;
@@ -34,6 +36,7 @@ import android.app.job.JobScheduler;
 import android.app.job.JobWorkItem;
 import android.app.job.PendingJobReasonsInfo;
 import android.app.job.UserVisibleJobSummary;
+import android.app.usage.UsageStatsManager;
 import android.content.ClipData;
 import android.content.ComponentName;
 import android.net.Network;
@@ -61,6 +64,7 @@ import com.android.internal.util.ArrayUtils;
 import com.android.internal.util.FrameworkStatsLog;
 import com.android.modules.expresslog.Counter;
 import com.android.server.LocalServices;
+import com.android.server.job.Flags;
 import com.android.server.job.GrantedUriPermissions;
 import com.android.server.job.JobSchedulerInternal;
 import com.android.server.job.JobSchedulerService;
@@ -333,6 +337,11 @@ public final class JobStatus {
      * different bucket.
      */
     private int standbyBucket;
+
+    /**
+     * The reason why the app is in the current standby bucket.
+     */
+    private int mStandbyBucketReason;
 
     /**
      * Whether we've logged an error due to standby bucket mismatch with active uid state.
@@ -608,6 +617,8 @@ public final class JobStatus {
      * @param standbyBucket The standby bucket that the source package is currently assigned to,
      *     cached here for speed of handling during runnability evaluations (and updated when bucket
      *     assignments are changed)
+     * @param standbyBucketReason The reason why the app is in the current standby bucket denoted
+     *     by {@code standbyBucket}.
      * @param namespace The custom namespace the app put this job in.
      * @param tag A string associated with the job for debugging/logging purposes.
      * @param numFailures Count of how many times this job has requested a reschedule because
@@ -625,7 +636,8 @@ public final class JobStatus {
      * @param internalFlags Non-API property flags about this job
      */
     private JobStatus(JobInfo job, int callingUid, String sourcePackageName,
-            int sourceUserId, int standbyBucket, @Nullable String namespace, String tag,
+            int sourceUserId, int standbyBucket, int standbyBucketReason,
+            @Nullable String namespace, String tag,
             int numFailures, int mNumAbandonedFailures, int numSystemStops,
             long earliestRunTimeElapsedMillis, long latestRunTimeElapsedMillis,
             long lastSuccessfulRunTime, long lastFailedRunTime, long cumulativeExecutionTimeMs,
@@ -633,6 +645,7 @@ public final class JobStatus {
             int dynamicConstraints) {
         this.callingUid = callingUid;
         this.standbyBucket = standbyBucket;
+        this.mStandbyBucketReason = standbyBucketReason;
         mNamespace = namespace;
         mNamespaceHash = generateNamespaceHash(namespace);
         mLoggingJobId = generateLoggingId(namespace, job.getId());
@@ -771,8 +784,8 @@ public final class JobStatus {
     public JobStatus(JobStatus jobStatus) {
         this(jobStatus.getJob(), jobStatus.getUid(),
                 jobStatus.getSourcePackageName(), jobStatus.getSourceUserId(),
-                jobStatus.getStandbyBucket(), jobStatus.getNamespace(),
-                jobStatus.getSourceTag(), jobStatus.getNumFailures(),
+                jobStatus.getStandbyBucket(), jobStatus.getStandbyBucketReason(),
+                jobStatus.getNamespace(), jobStatus.getSourceTag(), jobStatus.getNumFailures(),
                 jobStatus.getNumAbandonedFailures(), jobStatus.getNumSystemStops(),
                 jobStatus.getEarliestRunTime(), jobStatus.getLatestRunTimeElapsed(),
                 jobStatus.getLastSuccessfulRunTime(), jobStatus.getLastFailedRunTime(),
@@ -801,14 +814,14 @@ public final class JobStatus {
      * standby bucket is whatever the OS thinks it should be at this moment.
      */
     public JobStatus(JobInfo job, int callingUid, String sourcePkgName, int sourceUserId,
-            int standbyBucket, @Nullable String namespace, String sourceTag,
-            long earliestRunTimeElapsedMillis, long latestRunTimeElapsedMillis,
+            int standbyBucket, int standbyBucketReason, @Nullable String namespace,
+            String sourceTag, long earliestRunTimeElapsedMillis, long latestRunTimeElapsedMillis,
             long lastSuccessfulRunTime, long lastFailedRunTime,
             long cumulativeExecutionTimeMs,
             Pair<Long, Long> persistedExecutionTimesUTC,
             int innerFlags, int dynamicConstraints) {
         this(job, callingUid, sourcePkgName, sourceUserId,
-                standbyBucket, namespace,
+                standbyBucket, standbyBucketReason, namespace,
                 sourceTag, /* numFailures */ 0, /* numSystemStops */ 0,
                 /* mNumAbandonedFailures */ 0,
                 earliestRunTimeElapsedMillis, latestRunTimeElapsedMillis,
@@ -836,8 +849,8 @@ public final class JobStatus {
             long cumulativeExecutionTimeMs) {
         this(rescheduling.job, rescheduling.getUid(),
                 rescheduling.getSourcePackageName(), rescheduling.getSourceUserId(),
-                rescheduling.getStandbyBucket(), rescheduling.getNamespace(),
-                rescheduling.getSourceTag(), numFailures,
+                rescheduling.getStandbyBucket(), rescheduling.getStandbyBucketReason(),
+                rescheduling.getNamespace(), rescheduling.getSourceTag(), numFailures,
                 mNumAbandonedFailures, numSystemStops,
                 newEarliestRuntimeElapsedMillis,
                 newLatestRuntimeElapsedMillis,
@@ -876,8 +889,15 @@ public final class JobStatus {
 
         int standbyBucket = JobSchedulerService.standbyBucketForPackage(jobPackage,
                 sourceUserId, elapsedNow);
+        // TODO: b/409606405 - It's possible for where the standby bucket changes between the
+        // time the bucket is queried and the reasoning for the bucket change is queried.
+        // Although the standby bucket change callback will correct this eventually, it'd be
+        // ideal to query the bucket and the reasoning in a single call to prevent potential
+        // temporary inconsistent state.
+        int standbyBucketReason = JobSchedulerService.standbyBucketReasonForPackage(
+                jobPackage, sourceUserId, elapsedNow);
         return new JobStatus(job, callingUid, sourcePkg, sourceUserId,
-                standbyBucket, namespace, tag, /* numFailures */ 0,
+                standbyBucket, standbyBucketReason, namespace, tag, /* numFailures */ 0,
                 /* mNumAbandonedFailures */ 0, /* numSystemStops */ 0,
                 earliestRunTimeElapsedMillis, latestRunTimeElapsedMillis,
                 0 /* lastSuccessfulRunTime */, 0 /* lastFailedRunTime */,
@@ -1299,16 +1319,7 @@ public final class JobStatus {
             return ACTIVE_INDEX;
         }
 
-        final int bucketWithBackupExemption;
-        if (actualBucket != RESTRICTED_INDEX && actualBucket != NEVER_INDEX
-                && mHasMediaBackupExemption) {
-            // Treat it as if it's at most WORKING_INDEX (lower index grants higher quota) since
-            // media backup jobs are important to the user, and the source package may not have
-            // been used directly in a while.
-            bucketWithBackupExemption = Math.min(WORKING_INDEX, actualBucket);
-        } else {
-            bucketWithBackupExemption = actualBucket;
-        }
+        final int bucketWithBackupExemption = getBucketWithBackupExemption(actualBucket);
 
         // If the app is considered buggy, but hasn't yet been put in the RESTRICTED bucket
         // (potentially because it's used frequently by the user), limit its effective bucket
@@ -1326,12 +1337,43 @@ public final class JobStatus {
         return bucketWithBackupExemption;
     }
 
+    private int getBucketWithBackupExemption(int actualBucket) {
+        final int standbyBucketMainReason = UsageStatsManager.getMainReason(
+                getStandbyBucketReason());
+        final int bucketWithBackupExemption;
+        final boolean isBucketEligibleForExemption;
+        if (actualBucket == NEVER_INDEX) {
+            isBucketEligibleForExemption = false;
+        } else if (actualBucket == RESTRICTED_INDEX
+                && (!Flags.allowCmpExemptionForRestrictedBucket()
+                        || standbyBucketMainReason != REASON_MAIN_TIMEOUT)) {
+            isBucketEligibleForExemption = false;
+        } else {
+            isBucketEligibleForExemption = true;
+        }
+        if (isBucketEligibleForExemption && mHasMediaBackupExemption) {
+            // Treat it as if it's at most WORKING_INDEX (lower index grants higher quota) since
+            // media backup jobs are important to the user, and the source package may not have
+            // been used directly in a while.
+            bucketWithBackupExemption = Math.min(WORKING_INDEX, actualBucket);
+        } else {
+            bucketWithBackupExemption = actualBucket;
+        }
+        return bucketWithBackupExemption;
+    }
+
     /** Returns the real standby bucket of the job. */
     public int getStandbyBucket() {
         return standbyBucket;
     }
 
-    public void setStandbyBucket(int newBucket) {
+    /** Returns the reason for the standby bucket of the job. */
+    @VisibleForTesting
+    int getStandbyBucketReason() {
+        return mStandbyBucketReason;
+    }
+
+    public void setStandbyBucket(int newBucket, int reason) {
         if (newBucket == RESTRICTED_INDEX) {
             // Adding to the bucket.
             addDynamicConstraints(DYNAMIC_RESTRICTED_CONSTRAINTS);
@@ -1341,6 +1383,7 @@ public final class JobStatus {
         }
 
         standbyBucket = newBucket;
+        mStandbyBucketReason = reason;
         mLoggedBucketMismatch = false;
     }
 

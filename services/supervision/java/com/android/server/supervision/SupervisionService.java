@@ -171,7 +171,7 @@ public class SupervisionService extends ISupervisionManager.Stub {
     private List<AppServiceConnection> getSupervisionAppServiceConnections(@UserIdInt int userId) {
         AppBindingService abs = mInjector.getAppBindingService();
         return abs != null
-                ? abs.getAppServiceConnections(SupervisionAppServiceFinder.class, userId)
+                ? abs.getAppServiceConnectionsBlocking(SupervisionAppServiceFinder.class, userId)
                 : new ArrayList<>();
     }
 
