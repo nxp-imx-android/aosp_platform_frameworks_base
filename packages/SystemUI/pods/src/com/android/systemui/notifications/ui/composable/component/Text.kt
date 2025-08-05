@@ -90,7 +90,7 @@ internal fun TopLineText(
 
         if (title != null) {
             isFirstElement = false
-            Title(title, Modifier.shrinkable(importance = 5, minWidth = reducedWidth))
+            Title(title, Modifier.shrinkable(importance = 3, minWidth = reducedWidth))
         }
         if (appNameText != null) {
             maybeAddSeparator()
@@ -105,7 +105,7 @@ internal fun TopLineText(
                 text = headerTextSecondary,
                 modifier =
                     Modifier.hideable(
-                        importance = 4,
+                        importance = 3,
                         reducedWidth = reducedWidth,
                         hideWidth = hideWidth,
                     ),

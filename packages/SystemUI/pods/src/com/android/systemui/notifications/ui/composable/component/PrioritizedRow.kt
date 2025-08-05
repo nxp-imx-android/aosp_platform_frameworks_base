@@ -136,6 +136,10 @@ public fun PrioritizedRow(
         init {
             check(hideWidth <= reducedWidth) { "hideWidth must be smaller than reducedWidth" }
         }
+
+        fun shrinkable(): Boolean = !isSeparator && (reducedWidth < currentWidth)
+
+        fun hideable(): Boolean = canHide && isVisible && (hideWidth < currentWidth)
     }
 
     fun List<LayoutCandidate>.previousVisibleChild(index: Int): LayoutCandidate? {
@@ -199,56 +203,116 @@ public fun PrioritizedRow(
 
             // SHRINK: The content doesn't fit, start shrinking elements down to their reduced width
             // based on priority
-            for (i in sortedContent.indices) {
-                val shrinkCandidate = sortedContent[i]
+            var i = 0
+            while (i < sortedContent.size) {
+                if (!sortedContent[i].shrinkable()) {
+                    i++
+                    continue
+                }
 
-                // TODO: b/431222735 - Shrink elements with the same importance simultaneously.
-                val shrinkableSpace = shrinkCandidate.currentWidth - shrinkCandidate.reducedWidth
-                if (shrinkableSpace <= 0) continue
-                val shrinkAmount = minOf(overflow, shrinkableSpace)
-                shrinkCandidate.currentWidth -= shrinkAmount
+                // Take all candidates with the same importance, and shrink them simultaneously
+                val importance = sortedContent[i].importance
+                var shrinkableCnt = 1
+                var lastShrinkableIdx = i
+                for (j in i + 1 until sortedContent.size) {
+                    if (sortedContent[j].importance != importance) break
+                    if (sortedContent[j].shrinkable()) {
+                        lastShrinkableIdx = j
+                        shrinkableCnt++
+                    }
+                }
 
-                overflow -= shrinkAmount
+                var remainingShrinkables = shrinkableCnt
+                for (j in i..lastShrinkableIdx) {
+                    val shrinkCandidate = sortedContent[j]
+                    if (!shrinkCandidate.shrinkable()) continue
+
+                    // Distribute the space needed across all remaining candidates
+                    val wantedSpace =
+                        (overflow / remainingShrinkables) +
+                            minOf(1, overflow % remainingShrinkables)
+                    remainingShrinkables--
+
+                    val shrinkableSpace =
+                        shrinkCandidate.currentWidth - shrinkCandidate.reducedWidth
+                    val shrinkAmount = minOf(wantedSpace, shrinkableSpace, overflow)
+                    shrinkCandidate.currentWidth -= shrinkAmount
+
+                    overflow -= shrinkAmount
+                }
+
                 if (overflow <= 0) break
+                i = lastShrinkableIdx + 1
             }
 
             // HIDE: Content still doesn't fit, so we need to shrink elements further, and maybe
             // even hide them.
             var somethingWasHidden = false
             if (overflow > 0) {
-                for (i in sortedContent.indices) {
-                    val hideCandidate = sortedContent[i]
-                    if (!hideCandidate.canHide || !hideCandidate.isVisible) continue
-
-                    // One last attempt to shrink this element further
-                    val shrinkableSpace = hideCandidate.currentWidth - hideCandidate.hideWidth
-                    if (shrinkableSpace >= overflow) {
-                        hideCandidate.currentWidth -= overflow
-                        overflow = 0
-                        break
+                i = 0
+                while (i < sortedContent.size) {
+                    if (!sortedContent[i].hideable()) {
+                        i++
+                        continue
                     }
 
-                    // Shrinking wouldn't be enough, so let's hide it
-                    var spaceToReclaim = hideCandidate.currentWidth
-                    hideCandidate.isVisible = false
-                    somethingWasHidden = true
-
-                    // Find and hide an adjacent, visible separator
-                    val contentIndex = hideCandidate.index // get the position in the layout
-                    val prev = candidates.previousVisibleChild(contentIndex)
-                    if (prev != null && prev.isSeparator) {
-                        prev.isVisible = false
-                        spaceToReclaim += prev.currentWidth
-                    } else {
-                        val next = candidates.nextVisibleChild(contentIndex)
-                        if (next != null && next.isSeparator) {
-                            next.isVisible = false
-                            spaceToReclaim += next.currentWidth
+                    // Take all hideable candidates with the same importance, and try to shrink them
+                    // proportionally before hiding them
+                    val importance = sortedContent[i].importance
+                    var hideableCnt = 1
+                    var lastHideableIdx = i
+                    for (j in i + 1 until sortedContent.size) {
+                        if (sortedContent[j].importance != importance) break
+                        if (sortedContent[j].hideable()) {
+                            lastHideableIdx = j
+                            hideableCnt++
                         }
                     }
 
-                    overflow -= spaceToReclaim
+                    var remainingHideables = hideableCnt
+                    for (j in i..lastHideableIdx) {
+                        val hideCandidate = sortedContent[j]
+                        if (!hideCandidate.hideable()) continue
+
+                        // Distribute the space needed across all remaining candidates
+                        val wantedSpace =
+                            (overflow / remainingHideables) +
+                                minOf(1, overflow % remainingHideables)
+                        remainingHideables--
+
+                        // One last attempt to shrink this element further
+                        val shrinkableSpace = hideCandidate.currentWidth - hideCandidate.hideWidth
+                        if (shrinkableSpace >= wantedSpace) {
+                            hideCandidate.currentWidth -= wantedSpace
+                            overflow -= wantedSpace
+                            continue
+                        }
+
+                        // Shrinking wouldn't be enough, so let's hide it
+                        var spaceToReclaim = hideCandidate.currentWidth
+                        hideCandidate.isVisible = false
+                        somethingWasHidden = true
+
+                        // Find and hide an adjacent, visible separator
+                        val contentIndex = hideCandidate.index // get the position in the layout
+                        val prev = candidates.previousVisibleChild(contentIndex)
+                        if (prev != null && prev.isSeparator) {
+                            prev.isVisible = false
+                            spaceToReclaim += prev.currentWidth
+                        } else {
+                            val next = candidates.nextVisibleChild(contentIndex)
+                            if (next != null && next.isSeparator) {
+                                next.isVisible = false
+                                spaceToReclaim += next.currentWidth
+                            }
+                        }
+
+                        overflow -= spaceToReclaim
+                        if (overflow <= 0) break
+                    }
+
                     if (overflow <= 0) break
+                    i = lastHideableIdx + 1
                 }
             }
 
