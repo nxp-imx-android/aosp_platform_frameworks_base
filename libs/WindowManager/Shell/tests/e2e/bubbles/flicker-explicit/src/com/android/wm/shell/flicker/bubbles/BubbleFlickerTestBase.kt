@@ -51,7 +51,6 @@ import org.junit.runners.Parameterized
  * - System Bars tests: checks the visibility of navigation and status bar
  * - Verify all tests with both gestural and 3-button navigation mode
  */
-@RunWith(Parameterized::class)
 abstract class BubbleFlickerTestBase : BubbleFlickerSubjects {
 
     @get:Rule
@@ -262,9 +261,5 @@ abstract class BubbleFlickerTestBase : BubbleFlickerSubjects {
 
 // endregion
 
-    companion object : FlickerPropertyInitializer() {
-        @Parameterized.Parameters(name = "{0}")
-        @JvmStatic
-        fun data(): List<NavBar> = listOf(NavBar.MODE_GESTURAL, NavBar.MODE_3BUTTON)
-    }
+    companion object : FlickerPropertyInitializer()
 }

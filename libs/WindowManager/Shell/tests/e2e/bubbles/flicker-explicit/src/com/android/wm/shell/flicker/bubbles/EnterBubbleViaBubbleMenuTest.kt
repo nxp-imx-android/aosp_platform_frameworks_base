@@ -29,7 +29,9 @@ import com.android.wm.shell.flicker.bubbles.utils.FlickerPropertyInitializer
 import com.android.wm.shell.flicker.bubbles.utils.RecordTraceWithTransitionRule
 import org.junit.FixMethodOrder
 import org.junit.Rule
+import org.junit.runner.RunWith
 import org.junit.runners.MethodSorters
+import org.junit.runners.Parameterized
 
 /**
  * Test entering bubble via clicking bubble menu.
@@ -49,6 +51,7 @@ import org.junit.runners.MethodSorters
 @RequiresDevice
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 @Presubmit
+@RunWith(Parameterized::class)
 open class EnterBubbleViaBubbleMenuTest(navBar: NavBar) : BubbleFlickerTestBase(),
     EnterBubbleTestCases {
 
@@ -57,6 +60,10 @@ open class EnterBubbleViaBubbleMenuTest(navBar: NavBar) : BubbleFlickerTestBase(
             transition = { launchBubbleViaBubbleMenu(testApp, tapl, wmHelper) },
             tearDownAfterTransition = { testApp.exit(wmHelper) }
         )
+
+        @Parameterized.Parameters(name = "{0}")
+        @JvmStatic
+        fun data(): List<NavBar> = listOf(NavBar.MODE_GESTURAL, NavBar.MODE_3BUTTON)
     }
 
     @get:Rule

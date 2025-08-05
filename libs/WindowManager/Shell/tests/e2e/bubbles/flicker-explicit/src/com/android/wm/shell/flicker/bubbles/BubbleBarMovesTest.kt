@@ -36,7 +36,9 @@ import org.junit.Before
 import org.junit.FixMethodOrder
 import org.junit.Rule
 import org.junit.Test
+import org.junit.runner.RunWith
 import org.junit.runners.MethodSorters
+import org.junit.runners.Parameterized
 
 /**
  * Test clicking bubble to expand a bubble that was in collapsed state.
@@ -62,6 +64,7 @@ import org.junit.runners.MethodSorters
 @RequiresDevice
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 @Presubmit
+@RunWith(Parameterized::class)
 class BubbleBarMovesTest(navBar: NavBar) : BubbleFlickerTestBase(), ExpandBubbleTestCases {
     companion object : FlickerPropertyInitializer() {
 
@@ -85,6 +88,10 @@ class BubbleBarMovesTest(navBar: NavBar) : BubbleFlickerTestBase(), ExpandBubble
             },
             tearDownAfterTransition = { testApp.exit(wmHelper) }
         )
+
+        @Parameterized.Parameters(name = "{0}")
+        @JvmStatic
+        fun data(): List<NavBar> = listOf(NavBar.MODE_GESTURAL, NavBar.MODE_3BUTTON)
     }
 
     @get:Rule
