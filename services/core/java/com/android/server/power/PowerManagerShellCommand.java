@@ -226,17 +226,31 @@ class PowerManagerShellCommand extends ShellCommand {
         }
 
         int displayId = Display.INVALID_DISPLAY;
-        String displayOption = getNextArg();
-        if ("-d".equals(displayOption)) {
-            String idStr = getNextArg();
-            displayId = Integer.parseInt(idStr);
-            if (displayId < 0) {
-                pw.println("Error: Specified displayId (" + idStr + ") must a non-negative int.");
-                return -1;
+        String opt;
+        while ((opt = getNextOption()) != null) {
+            switch (opt) {
+                case "-d" -> {
+                    String idStr = getNextArgRequired();
+                    displayId = Integer.parseInt(idStr);
+                    if (displayId < 0) {
+                        pw.println(
+                                "Error: Specified displayId ("
+                                        + idStr
+                                        + ") must be a non-negative int.");
+                        return -1;
+                    }
+                }
+                default -> {
+                    pw.println("Error: Unknown option: " + opt);
+                    return -1;
+                }
             }
         }
-        String wakelockTypeString = proxForLegacy ? PowerManagerInternal.getLockLevelString(
-                PowerManager.PROXIMITY_SCREEN_OFF_WAKE_LOCK) : getNextArg().toUpperCase(Locale.US);
+        String wakelockTypeString =
+                proxForLegacy
+                        ? PowerManagerInternal.getLockLevelString(
+                                PowerManager.PROXIMITY_SCREEN_OFF_WAKE_LOCK)
+                        : getNextArgRequired().toUpperCase(Locale.US);
         WakeLock wakelock = getWakelock(displayId, wakelockTypeString);
 
         if (acquire) {
