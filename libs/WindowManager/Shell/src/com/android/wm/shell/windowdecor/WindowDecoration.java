@@ -88,7 +88,10 @@ import java.util.function.Supplier;
  * the window captions.
  *
  * @param <T> The type of the root view
+ * @deprecated This class's logic is now split between {@link WindowDecoration2} and
+ * {@link CaptionController}.
  */
+@Deprecated
 public abstract class WindowDecoration<T extends View & TaskFocusStateConsumer>
         implements AutoCloseable {
 

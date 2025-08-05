@@ -141,7 +141,11 @@ import java.util.function.Supplier;
  * {@link DesktopModeWindowDecorViewModel}.
  *
  * The shadow's thickness is 20dp when the window is in focus and 5dp when the window isn't.
+ *
+ * @deprecated This class's logic is now split between {@link DefaultWindowDecoration},
+ * {@link AppHeaderController}, and {@link AppHandleController}.
  */
+@Deprecated
 public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLinearLayout>
         implements HandleMenuController, ManageWindowsMenuController, MaximizeMenuController {
     private static final String TAG = "DesktopModeWindowDecoration";
