@@ -1445,6 +1445,16 @@ flag {
 }
 
 flag {
+    name: "enable_upscaling_size_compat_on_exiting_desktop_bugfix"
+    namespace: "lse_desktop_experience"
+    description: "Enables upscaling of size-compat apps in fullscreen after they exit desktop mode."
+    bug: "432329483"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "enable_visual_indicator_in_transition_bugfix"
     namespace: "lse_desktop_experience"
     description: "Enables bugfix to move visual drop-zone indicator to transition root, so it can't be shown after the transition."
