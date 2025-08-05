@@ -7274,13 +7274,6 @@ public class PackageParser {
             return applicationInfo.isUpdatedSystemApp();
         }
 
-        /** @hide */
-        public boolean canHaveOatDir() {
-            // Nobody should be calling this method ever, but we can't rely on this.
-            // Thus no logic here and a reasonable return value.
-            return true;
-        }
-
         public boolean isMatch(int flags) {
             if ((flags & PackageManager.MATCH_SYSTEM_ONLY) != 0) {
                 return isSystem();
