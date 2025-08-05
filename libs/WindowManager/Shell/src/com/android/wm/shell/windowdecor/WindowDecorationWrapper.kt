@@ -76,6 +76,7 @@ private constructor(
             when {
                 defaultWindowDecor != null -> requireDefaultWindowDecor().taskSurface
                 desktopWindowDecor != null -> requireDesktopWindowDecor().mTaskSurface
+                captionWindowDecoration != null -> requireCaptionWindowDecor().mTaskSurface
                 else -> error("Expected Non-null window decoration")
             }
 
@@ -85,6 +86,7 @@ private constructor(
             when {
                 defaultWindowDecor != null -> requireDefaultWindowDecor().user
                 desktopWindowDecor != null -> requireDesktopWindowDecor().user
+                captionWindowDecoration != null -> requireCaptionWindowDecor().mUserContext.user
                 else -> error("Expected Non-null default or desktop window decoration")
             }
 
@@ -114,6 +116,7 @@ private constructor(
             when {
                 defaultWindowDecor != null -> requireDefaultWindowDecor().display
                 desktopWindowDecor != null -> requireDesktopWindowDecor().mDisplay
+                captionWindowDecoration != null -> requireCaptionWindowDecor().mDisplay
                 else -> error("Expected Non-null default or desktop window decoration")
             }
 
@@ -133,6 +136,7 @@ private constructor(
             when {
                 defaultWindowDecor != null -> requireDefaultWindowDecor().context
                 desktopWindowDecor != null -> requireDesktopWindowDecor().mContext
+                captionWindowDecoration != null -> requireCaptionWindowDecor().mContext
                 else -> error("Expected Non-null default or desktop window decoration")
             }
 
@@ -142,6 +146,7 @@ private constructor(
             when {
                 defaultWindowDecor != null -> requireDefaultWindowDecor().hasGlobalFocus
                 desktopWindowDecor != null -> requireDesktopWindowDecor().isFocused
+                captionWindowDecoration != null -> requireCaptionWindowDecor().mHasGlobalFocus
                 else -> error("Expected Non-null default or desktop window decoration")
             }
 
