@@ -2212,7 +2212,6 @@ public class TaskTests extends WindowTestsBase {
         assertFalse(task.isForceExcludedFromRecents());
     }
 
-    @EnableFlags(Flags.FLAG_UPDATE_TASK_MIN_DIMENSIONS_WITH_ROOT_ACTIVITY)
     @Test
     public void testAllowRelingquish_updateMinDimensions() {
         // r0 allows relingquish
@@ -2237,7 +2236,6 @@ public class TaskTests extends WindowTestsBase {
         assertEquals(500, task.mMinHeight);
     }
 
-    @EnableFlags(Flags.FLAG_UPDATE_TASK_MIN_DIMENSIONS_WITH_ROOT_ACTIVITY)
     @Test
     public void testDisallowRelingquish_notUpdateMinDimensions() {
         // r0 disallows relingquish

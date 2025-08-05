@@ -121,16 +121,6 @@ flag {
 
 flag {
     namespace: "windowing_sdk"
-    name: "update_task_min_dimensions_with_root_activity"
-    description: "Update minWidth/Height when the root activity is changed."
-    bug: "416987720"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
-    namespace: "windowing_sdk"
     name: "fallback_to_focused_display"
     description: "Use the focused display as the fallback"
     bug: "406967985"
