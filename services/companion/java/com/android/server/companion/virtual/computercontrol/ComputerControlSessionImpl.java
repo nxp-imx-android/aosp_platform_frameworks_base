@@ -56,10 +56,12 @@ import java.util.concurrent.atomic.AtomicInteger;
  * A computer control session that encapsulates a {@link IVirtualDevice}. The device is created and
  * managed by the system, but it is still owned by the caller.
  */
-final class ComputerControlSessionImpl extends IComputerControlSession.Stub {
+final class ComputerControlSessionImpl extends IComputerControlSession.Stub
+        implements IBinder.DeathRecipient {
 
     private final IBinder mAppToken;
     private final ComputerControlSessionParams mParams;
+    private final OnClosedListener mOnClosedListener;
     private final IVirtualDevice mVirtualDevice;
     private final int mVirtualDisplayId;
     private final IVirtualInputDevice mVirtualTouchscreen;
@@ -69,9 +71,11 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub {
 
     ComputerControlSessionImpl(IBinder appToken, ComputerControlSessionParams params,
             AttributionSource attributionSource, PackageManager packageManager,
-            ComputerControlSessionProcessor.VirtualDeviceFactory virtualDeviceFactory) {
+            ComputerControlSessionProcessor.VirtualDeviceFactory virtualDeviceFactory,
+            OnClosedListener onClosedListener) {
         mAppToken = appToken;
         mParams = params;
+        mOnClosedListener = onClosedListener;
         VirtualDeviceParams virtualDeviceParams = new VirtualDeviceParams.Builder()
                 .setName(mParams.name)
                 .setDevicePolicy(VirtualDeviceParams.POLICY_TYPE_RECENTS,
@@ -146,6 +150,7 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub {
             mVirtualTouchscreen = mVirtualDevice.createVirtualTouchscreen(
                     virtualTouchscreenConfig, new Binder(touchscreenName));
 
+            mAppToken.linkToDeath(this, 0);
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }
@@ -191,6 +196,17 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub {
     @Override
     public void close() throws RemoteException {
         mVirtualDevice.close();
+        mAppToken.unlinkToDeath(this, 0);
+        mOnClosedListener.onClosed(asBinder());
+    }
+
+    @Override
+    public void binderDied() {
+        try {
+            close();
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
     }
 
     private static class ComputerControlActivityListener
@@ -212,5 +228,10 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub {
 
         @Override
         public void onSecureWindowHidden(int displayId) {}
+    }
+
+    /** Interface for listening for closing of sessions. */
+    interface OnClosedListener {
+        void onClosed(IBinder token);
     }
 }
