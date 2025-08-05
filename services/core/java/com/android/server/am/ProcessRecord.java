@@ -608,7 +608,7 @@ class ProcessRecord extends ProcessRecordInternal implements WindowProcessListen
         mProfile = new ProcessProfileRecord(this);
         mServices = new ProcessServiceRecord(this);
         mProviders = new ProcessProviderRecord(this);
-        mReceivers = new ProcessReceiverRecord(this);
+        mReceivers = new ProcessReceiverRecord(mService);
         mErrorState = new ProcessErrorStateRecord(this);
         mWindowProcessController = new WindowProcessController(
                 mService.mActivityTaskManager, info, processName, uid, userId, this, this);
@@ -1174,6 +1174,11 @@ class ProcessRecord extends ProcessRecordInternal implements WindowProcessListen
     @Override
     public ProcessProviderRecord getProviders() {
         return mProviders;
+    }
+
+    @Override
+    public ProcessReceiverRecord getReceivers() {
+        return mReceivers;
     }
 
     @Override

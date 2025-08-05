@@ -4935,7 +4935,6 @@ public class MockingOomAdjusterTests {
             app.setPid(mPid);
             final ProcessRecordInternal state = app;
             final ProcessServiceRecord services = app.mServices;
-            final ProcessReceiverRecord receivers = app.mReceivers;
             final ProcessProfileRecord profile = app.mProfile;
             final ProcessProviderRecord providers = app.mProviders;
             app.makeActive(mock(ApplicationThreadDeferred.class), mService.mProcessStats);

@@ -302,7 +302,7 @@ public final class ProcessList implements ProcessStateController.ProcessLruUpdat
     static final int PAGE_SIZE = (int) Os.sysconf(OsConstants._SC_PAGESIZE);
 
     // Activity manager's version of an undefined schedule group
-    static final int SCHED_GROUP_UNDEFINED = Integer.MIN_VALUE;
+    public static final int SCHED_GROUP_UNDEFINED = Integer.MIN_VALUE;
     // Activity manager's version of Process.THREAD_GROUP_BACKGROUND
     public static final int SCHED_GROUP_BACKGROUND = 0;
       // Activity manager's version of Process.THREAD_GROUP_RESTRICTED

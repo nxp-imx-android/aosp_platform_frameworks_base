@@ -221,6 +221,9 @@ public abstract class ProcessRecordInternal {
     /** Returns the internal content provider related record for this process. */
     public abstract ProcessProviderRecordInternal getProviders();
 
+    /** Returns the internal broadcast receiver related record for this process. */
+    public abstract ProcessReceiverRecordInternal getReceivers();
+
     // Enable this to trace all OomAdjuster state transitions
     private static final boolean TRACE_OOM_ADJ = false;
 

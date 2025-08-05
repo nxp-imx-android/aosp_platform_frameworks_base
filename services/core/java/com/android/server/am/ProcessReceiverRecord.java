@@ -19,46 +19,20 @@ package com.android.server.am;
 import android.util.ArraySet;
 
 import com.android.internal.annotations.GuardedBy;
+import com.android.server.am.psc.ProcessReceiverRecordInternal;
 
 import java.io.PrintWriter;
 
 /**
  * The state info of all broadcast receivers in the process.
  */
-final class ProcessReceiverRecord {
-    final ProcessRecord mApp;
+final class ProcessReceiverRecord extends ProcessReceiverRecordInternal {
     private final ActivityManagerService mService;
-
-    @GuardedBy("mService")
-    private boolean mIsReceivingBroadcast;
-
-    @GuardedBy("mService")
-    private int mBroadcastReceiverSchedGroup = ProcessList.SCHED_GROUP_UNDEFINED;
 
     /**
      * All IIntentReceivers that are registered from this process.
      */
     private final ArraySet<ReceiverList> mReceivers = new ArraySet<>();
-
-    @GuardedBy("mService")
-    boolean isReceivingBroadcast() {
-        return mIsReceivingBroadcast;
-    }
-
-    @GuardedBy("mService")
-    void setIsReceivingBroadcast(boolean receivingBroadcast) {
-        mIsReceivingBroadcast = receivingBroadcast;
-    }
-
-    @GuardedBy("mService")
-    public void setBroadcastReceiverSchedGroup(int priority) {
-        mBroadcastReceiverSchedGroup = priority;
-    }
-
-    @GuardedBy("mService")
-    public int getBroadcastReceiverSchedGroup() {
-        return mBroadcastReceiverSchedGroup;
-    }
 
     int numberOfReceivers() {
         return mReceivers.size();
@@ -72,9 +46,10 @@ final class ProcessReceiverRecord {
         mReceivers.remove(receiver);
     }
 
-    ProcessReceiverRecord(ProcessRecord app) {
-        mApp = app;
-        mService = app.mService;
+    ProcessReceiverRecord(ActivityManagerService service) {
+        super(service);
+
+        mService = service;
     }
 
     @GuardedBy("mService")
@@ -89,11 +64,11 @@ final class ProcessReceiverRecord {
     void dump(PrintWriter pw, String prefix, long nowUptime) {
         pw.print(prefix);
         pw.print("mIsReceivingBroadcast=");
-        pw.println(mIsReceivingBroadcast);
+        pw.println(isReceivingBroadcast());
 
         pw.print(prefix);
         pw.print("mBroadcastReceiverSchedGroup=");
-        pw.println(mBroadcastReceiverSchedGroup);
+        pw.println(getBroadcastReceiverSchedGroup());
         if (mReceivers.size() > 0) {
             pw.print(prefix); pw.println("mReceivers:");
             for (int i = 0, size = mReceivers.size(); i < size; i++) {
