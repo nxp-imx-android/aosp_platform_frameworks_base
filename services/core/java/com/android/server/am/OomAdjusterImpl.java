@@ -970,9 +970,6 @@ public class OomAdjusterImpl extends OomAdjuster {
 
         for (int size = reachables.size(); i < size; i++) {
             final ProcessRecord reachable = reachables.get(i);
-            final int prevProcState = reachable.getCurProcState();
-            final int prevAdj = reachable.getCurRawAdj();
-
             args.mApp = reachable;
             computeOomAdjIgnoringReachablesLSP(args);
 
@@ -994,7 +991,6 @@ public class OomAdjusterImpl extends OomAdjuster {
         final ProcessRecord app = args.mApp;
         final ProcessRecord topApp = args.mTopApp;
         final long now = args.mNow;
-        final @OomAdjReason int oomAdjReason = args.mOomAdjReason;
 
         computeOomAdjLSP(app, topApp, false, now);
 
