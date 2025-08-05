@@ -17,15 +17,21 @@
 package com.android.systemui.lifecycle
 
 import android.view.View
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.LifecycleRegistry
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.ui.viewmodel.FakeSysUiViewModel
 import com.android.systemui.util.Assert
 import com.google.common.truth.Truth.assertThat
+import com.google.common.truth.Truth.assertWithMessage
 import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.runCurrent
@@ -79,7 +85,7 @@ class SysUiViewModelTest : SysuiTestCase() {
             // return Unit instead of FakeSysUiViewModel. It might be an issue with the compose
             // compiler.
             val unused: FakeSysUiViewModel =
-                rememberViewModel("test", key) {
+                rememberViewModel("test", key = key) {
                     when (key) {
                         1 ->
                             FakeSysUiViewModel(
@@ -107,6 +113,78 @@ class SysUiViewModelTest : SysuiTestCase() {
         composeRule.waitForIdle()
         assertThat(isActive1).isTrue()
         assertThat(isActive2).isFalse()
+    }
+
+    @Test
+    fun rememberActivated_minActiveState_CREATED() {
+        assertActivationThroughAllLifecycleStates(Lifecycle.State.CREATED)
+    }
+
+    @Test
+    fun rememberActivated_minActiveState_STARTED() {
+        assertActivationThroughAllLifecycleStates(Lifecycle.State.STARTED)
+    }
+
+    @Test
+    fun rememberActivated_minActiveState_RESUMED() {
+        assertActivationThroughAllLifecycleStates(Lifecycle.State.RESUMED)
+    }
+
+    private fun assertActivationThroughAllLifecycleStates(minActiveState: Lifecycle.State) {
+        var isActive = false
+        val lifecycleOwner =
+            composeRule.runOnUiThread {
+                object : LifecycleOwner {
+                    override val lifecycle = LifecycleRegistry(this)
+
+                    init {
+                        lifecycle.currentState = Lifecycle.State.CREATED
+                    }
+                }
+            }
+        composeRule.setContent {
+            CompositionLocalProvider(LocalLifecycleOwner provides lifecycleOwner) {
+                // Need to explicitly state the type to avoid a weird issue where the factory seems
+                // to return Unit instead of FakeSysUiViewModel. It might be an issue with the
+                // compose compiler.
+                val unused: FakeSysUiViewModel =
+                    rememberViewModel(traceName = "test", minActiveState = minActiveState) {
+                        FakeSysUiViewModel(
+                            onActivation = { isActive = true },
+                            onDeactivation = { isActive = false },
+                        )
+                    }
+            }
+        }
+
+        // Increase state, step-by-step, all the way to RESUMED, the maximum state and then, reverse
+        // course and decrease the state, step-by-step, all the way back down to CREATED. Lastly,
+        // move to DESTROYED to finish up.
+        //
+        // In each step along the way, verify that our Activatable is active or not, based on the
+        // minActiveState that we received. The Activatable should be active only if the current\
+        // lifecycle state is equal to or "greater" than the minActiveState.
+        listOf(
+                Lifecycle.State.CREATED,
+                Lifecycle.State.STARTED,
+                Lifecycle.State.RESUMED,
+                Lifecycle.State.STARTED,
+                Lifecycle.State.CREATED,
+                Lifecycle.State.DESTROYED,
+            )
+            .forEachIndexed { index, lifecycleState ->
+                composeRule.runOnUiThread { lifecycleOwner.lifecycle.currentState = lifecycleState }
+                composeRule.waitForIdle()
+                val expectedIsActive = lifecycleState.isAtLeast(minActiveState)
+                assertWithMessage(
+                        "isActive=$isActive but expected to be $expectedIsActive when" +
+                            " lifecycleState=$lifecycleState because $lifecycleState is" +
+                            " ${if (expectedIsActive) "equal to or greater" else "less"} than" +
+                            " minActiveState=$minActiveState (iteration #$index)"
+                    )
+                    .that(isActive)
+                    .isEqualTo(expectedIsActive)
+            }
     }
 
     @Test
