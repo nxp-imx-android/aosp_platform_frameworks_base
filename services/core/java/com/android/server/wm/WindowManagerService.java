@@ -2635,6 +2635,7 @@ public class WindowManagerService extends IWindowManager.Stub
             }
 
             final int oldVisibility = win.mViewVisibility;
+            final int oldBufferSeqId = win.mBufferSeqId;
 
             // If the window is becoming visible, visibleOrAdding may change which may in turn
             // change the IME layering target.
@@ -2863,6 +2864,11 @@ public class WindowManagerService extends IWindowManager.Stub
                             : -1;
                     win.markRedrawForSyncReported();
                 } else {
+                    if (win.mBufferSeqId > oldBufferSeqId) {
+                        // A sync was started so this current layout is invalid until subsequent
+                        // reportResized.
+                        result |= RELAYOUT_RES_CANCEL_AND_REDRAW;
+                    }
                     outRelayoutResult.syncSeqId = -1;
                 }
             }
