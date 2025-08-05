@@ -295,13 +295,9 @@ public class HistoricalRegistry implements HistoricalRegistryInterface {
         if (modeValue != null) {
             int oldMode = mMode;
             mMode = AppOpsManager.parseHistoricalMode(modeValue);
-            if (oldMode != mMode && mMode == AppOpsManager.HISTORICAL_MODE_ENABLED_ACTIVE) {
-                mIsReady = true;
-            }
             if (oldMode != mMode && mMode == AppOpsManager.HISTORICAL_MODE_DISABLED) {
                 Slog.i(TAG, "Historical registry mode is disabled, clearing history.");
                 clearAllHistory();
-                mIsReady = false;
             }
         }
     }
@@ -377,7 +373,7 @@ public class HistoricalRegistry implements HistoricalRegistryInterface {
 
     @Override
     public void shutdown() {
-        if (!mIsReady || mMode == AppOpsManager.HISTORICAL_MODE_DISABLED) {
+        if (isNotReadyOrDisabled()) {
             return;
         }
         mShortIntervalHistoryHelper.shutdown();
@@ -389,7 +385,7 @@ public class HistoricalRegistry implements HistoricalRegistryInterface {
             @Nullable String filterAttributionTag, int filterOp, int filter,
             @NonNull SimpleDateFormat sdf, @NonNull Date date, boolean includeDiscreteOps,
             int limit, boolean dumpHistory) {
-        if (!mIsReady || mMode == AppOpsManager.HISTORICAL_MODE_DISABLED) {
+        if (isNotReadyOrDisabled()) {
             return;
         }
         pw.println();
@@ -483,7 +479,7 @@ public class HistoricalRegistry implements HistoricalRegistryInterface {
     public void increaseOpAccessDuration(int op, int uid, @NonNull String packageName,
             @NonNull String deviceId, @Nullable String attributionTag, int uidState, int flags,
             long accessTime, long duration, int attributionFlags, int attributionChainId) {
-        if (!mIsReady || mMode != AppOpsManager.HISTORICAL_MODE_ENABLED_ACTIVE) {
+        if (isNotReadyOrDisabled()) {
             return;
         }
         if (DEBUG) {
@@ -518,7 +514,7 @@ public class HistoricalRegistry implements HistoricalRegistryInterface {
             @NonNull String deviceId, @Nullable String attributionTag, int uidState, int flags,
             long accessTime, int attributionFlags, int attributionChainId, int accessCount,
             boolean isStartOrResume) {
-        if (!mIsReady || mMode != AppOpsManager.HISTORICAL_MODE_ENABLED_ACTIVE) {
+        if (isNotReadyOrDisabled()) {
             return;
         }
         if (DEBUG) {
@@ -553,7 +549,7 @@ public class HistoricalRegistry implements HistoricalRegistryInterface {
     public void incrementOpRejectedCount(int op, int uid, @NonNull String packageName,
             @NonNull String deviceId, @Nullable String attributionTag, int uidState,
             int flags, long rejectTime, int rejectCount) {
-        if (!mIsReady || mMode != AppOpsManager.HISTORICAL_MODE_ENABLED_ACTIVE) {
+        if (isNotReadyOrDisabled()) {
             return;
         }
         if (DEBUG) {
@@ -611,7 +607,7 @@ public class HistoricalRegistry implements HistoricalRegistryInterface {
                     new AppOpsManager.HistoricalOps(beginTimeMillis, endTimeMillis);
             final Bundle payload = new Bundle();
 
-            if (!mIsReady || mMode != AppOpsManager.HISTORICAL_MODE_ENABLED_ACTIVE) {
+            if (isNotReadyOrDisabled()) {
                 payload.putParcelable(AppOpsManager.KEY_HISTORICAL_OPS, result);
                 callback.sendResult(payload);
                 return;
@@ -635,7 +631,7 @@ public class HistoricalRegistry implements HistoricalRegistryInterface {
 
     @Override
     public void clearHistory(int uid, String packageName) {
-        if (!mIsReady || mMode == AppOpsManager.HISTORICAL_MODE_DISABLED) {
+        if (isNotReadyOrDisabled()) {
             return;
         }
         mShortIntervalHistoryHelper.clearHistory(uid, packageName);
@@ -644,7 +640,7 @@ public class HistoricalRegistry implements HistoricalRegistryInterface {
 
     @Override
     public void clearAllHistory() {
-        if (!mIsReady || mMode == AppOpsManager.HISTORICAL_MODE_DISABLED) {
+        if (isNotReadyOrDisabled()) {
             return;
         }
         mShortIntervalHistoryHelper.clearHistory();
@@ -681,7 +677,7 @@ public class HistoricalRegistry implements HistoricalRegistryInterface {
 
     @Override
     public void persistPendingHistory() {
-        if (!mIsReady || mMode == AppOpsManager.HISTORICAL_MODE_DISABLED) {
+        if (isNotReadyOrDisabled()) {
             return;
         }
         mLongIntervalHistoryHelper.shutdown();
@@ -697,9 +693,6 @@ public class HistoricalRegistry implements HistoricalRegistryInterface {
         }
         if (mode == AppOpsManager.HISTORICAL_MODE_DISABLED) {
             clearAllHistory();
-            mIsReady = false;
-        } else {
-            mIsReady = true;
         }
         mMode = mode;
     }
@@ -707,7 +700,6 @@ public class HistoricalRegistry implements HistoricalRegistryInterface {
     @Override
     public void resetHistoryParameters() {
         mMode = AppOpsManager.HISTORICAL_MODE_ENABLED_ACTIVE;
-        mIsReady = true;
     }
 
 
@@ -774,6 +766,10 @@ public class HistoricalRegistry implements HistoricalRegistryInterface {
             Slog.d(TAG, "History retention millis: " + historyRetentionMillis);
         }
         return historyRetentionMillis;
+    }
+
+    private boolean isNotReadyOrDisabled() {
+        return !mIsReady || mMode != AppOpsManager.HISTORICAL_MODE_ENABLED_ACTIVE;
     }
 
     @NonNull
