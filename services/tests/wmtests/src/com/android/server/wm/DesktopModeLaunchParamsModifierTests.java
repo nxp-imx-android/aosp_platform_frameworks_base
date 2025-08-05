@@ -2068,6 +2068,24 @@ public class DesktopModeLaunchParamsModifierTests extends
     @Test
     @EnableFlags({Flags.FLAG_ENABLE_DESKTOP_FIRST_POLICY_IN_LPM,
             Flags.FLAG_ENABLE_FREEFORM_DISPLAY_LAUNCH_PARAMS})
+    public void testCalculate_desktopFirstPolicy_taskNull_requestFullscreen_bypassesPolicy() {
+        setupDesktopModeLaunchParamsModifier();
+        when(mTarget.isEnteringDesktopMode(any(), any(), any(), any(), any())).thenCallRealMethod();
+
+        final DisplayContent dc = createDisplayContent(ORIENTATION_LANDSCAPE,
+                LANDSCAPE_DISPLAY_BOUNDS, WINDOWING_MODE_FREEFORM);
+        final ActivityOptions options = ActivityOptions.makeBasic();
+        options.setLaunchDisplayId(dc.getDisplayId());
+        options.setLaunchWindowingMode(WINDOWING_MODE_FULLSCREEN);
+
+        assertEquals(RESULT_DONE,
+                new CalculateRequestBuilder().setTask(null).setOptions(options).calculate());
+        assertEquals(WINDOWING_MODE_FULLSCREEN, mResult.mWindowingMode);
+    }
+
+    @Test
+    @EnableFlags({Flags.FLAG_ENABLE_DESKTOP_FIRST_POLICY_IN_LPM,
+            Flags.FLAG_ENABLE_FREEFORM_DISPLAY_LAUNCH_PARAMS})
     public void testCalculate_desktopFirstPolicy_requestFullscreen_bypassesPolicy() {
         setupDesktopModeLaunchParamsModifier();
         when(mTarget.isEnteringDesktopMode(any(), any(), any(), any(), any())).thenCallRealMethod();
