@@ -66,7 +66,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.Executor;
 import java.util.function.Function;
@@ -140,8 +139,6 @@ public abstract class InfoMediaManager {
     private MediaController mMediaController;
     private PlaybackInfo mLastKnownPlaybackInfo;
     private final LocalBluetoothManager mBluetoothManager;
-    private final Map<String, RouteListingPreference.Item> mPreferenceItemMap =
-            new ConcurrentHashMap<>();
     @GuardedBy("mLock")
     private final Map<String, List<SuggestedDeviceInfo>> mSuggestedDeviceMap = new HashMap<>();
     @GuardedBy("mLock")
@@ -216,15 +213,6 @@ public abstract class InfoMediaManager {
     public void startScan() {
         Log.i(TAG, "startScan()");
         startScanOnRouter();
-    }
-
-    private void updateRouteListingPreference() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-            RouteListingPreference routeListingPreference =
-                    getRouteListingPreference();
-            Api34Impl.onRouteListingPreferenceUpdated(routeListingPreference,
-                    mPreferenceItemMap);
-        }
     }
 
     public final void stopScan() {
@@ -310,7 +298,18 @@ public abstract class InfoMediaManager {
     @RequiresApi(34)
     protected final void notifyRouteListingPreferenceUpdated(
             RouteListingPreference routeListingPreference) {
-        Api34Impl.onRouteListingPreferenceUpdated(routeListingPreference, mPreferenceItemMap);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+            if (DEBUG) {
+                if (routeListingPreference != null) {
+                    Log.d(TAG, "RouteListingPreference. useSystemOrder = "
+                            + routeListingPreference.getUseSystemOrdering());
+                    for (RouteListingPreference.Item rlpItem : routeListingPreference.getItems()) {
+                        Log.d(TAG, rlpItem.toString());
+                    }
+                }
+            }
+        }
+        // TODO: b/435500030 - update the device list whenever RLP changes.
     }
 
     @VisibleForTesting
@@ -358,7 +357,6 @@ public abstract class InfoMediaManager {
             if (mMediaController != null) {
                 mMediaController.registerCallback(mMediaControllerCallback, callbackHandler);
             }
-            updateRouteListingPreference();
             refreshDevices();
         }
     }
@@ -822,12 +820,13 @@ public abstract class InfoMediaManager {
     // MediaRoute2Info.getType was made public on API 34, but exists since API 30.
     @SuppressWarnings("NewApi")
     private void buildAvailableRoutes() {
+        Map<String, RouteListingPreference.Item> rlpItemMap = getRouteListingPreferenceMap();
         synchronized (mLock) {
             mMediaDevices.clear();
             RoutingSessionInfo activeSession = getActiveRoutingSession();
 
             for (MediaRoute2Info route : getAvailableRoutes(activeSession)) {
-                addMediaDeviceLocked(route, activeSession);
+                addMediaDeviceLocked(route, activeSession, rlpItemMap.get(route.getId()));
             }
 
             // In practice, mMediaDevices should always have at least one route.
@@ -836,6 +835,18 @@ public abstract class InfoMediaManager {
                 mCurrentConnectedDevice = mMediaDevices.get(0);
             }
         }
+    }
+
+    @NonNull
+    private Map<String, RouteListingPreference.Item> getRouteListingPreferenceMap() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+            RouteListingPreference routeListingPreference = getRouteListingPreference();
+            if (routeListingPreference != null) {
+                return routeListingPreference.getItems().stream().collect(
+                        Collectors.toMap(RouteListingPreference.Item::getRouteId, item -> item));
+            }
+        }
+        return new HashMap<>();
     }
 
     private List<MediaRoute2Info> getAvailableRoutes(
@@ -877,33 +888,17 @@ public abstract class InfoMediaManager {
     @GuardedBy("mLock")
     @VisibleForTesting
     void addMediaDeviceLocked(@NonNull MediaRoute2Info route,
-            @NonNull RoutingSessionInfo activeSession) {
+            @NonNull RoutingSessionInfo activeSession,
+            @Nullable RouteListingPreference.Item rlpItem) {
         DynamicRouteAttributes dynamicRouteAttributes =
                 getDynamicRouteAttributes(activeSession, route);
-        MediaDevice mediaDevice = createMediaDeviceFromRouteLocked(route, dynamicRouteAttributes);
-        if (mediaDevice != null) {
-            if (mediaDevice.isSelected()) {
-                mediaDevice.setState(STATE_SELECTED);
-            } else if (route.getConnectionState() == CONNECTION_STATE_CONNECTING) {
-                mediaDevice.setState(STATE_CONNECTING);
-            }
-            mMediaDevices.add(mediaDevice);
-        }
-    }
-
-    @GuardedBy("mLock")
-    @Nullable
-    private MediaDevice createMediaDeviceFromRouteLocked(@NonNull MediaRoute2Info route,
-            @NonNull DynamicRouteAttributes dynamicRouteAttributes) {
         final int deviceType = route.getType();
         MediaDevice mediaDevice = null;
         if (isInfoMediaDevice(deviceType)) {
-            mediaDevice = new InfoMediaDevice(mContext, route, dynamicRouteAttributes,
-                    mPreferenceItemMap.get(route.getId()));
+            mediaDevice = new InfoMediaDevice(mContext, route, dynamicRouteAttributes, rlpItem);
 
         } else if (isPhoneMediaDevice(deviceType)) {
-            mediaDevice = new PhoneMediaDevice(mContext, route, dynamicRouteAttributes,
-                    mPreferenceItemMap.getOrDefault(route.getId(), null));
+            mediaDevice = new PhoneMediaDevice(mContext, route, dynamicRouteAttributes, rlpItem);
 
         } else if (isBluetoothMediaDevice(deviceType)) {
             if (route.getAddress() == null) {
@@ -915,19 +910,23 @@ public abstract class InfoMediaManager {
                         mBluetoothManager.getCachedDeviceManager().findDevice(device);
                 if (cachedDevice != null) {
                     mediaDevice = new BluetoothMediaDevice(mContext, cachedDevice, route,
-                            dynamicRouteAttributes,
-                            mPreferenceItemMap.getOrDefault(route.getId(), null));
+                            dynamicRouteAttributes, rlpItem);
                 }
             }
         } else if (isComplexMediaDevice(deviceType)) {
-            mediaDevice = new ComplexMediaDevice(mContext, route, dynamicRouteAttributes,
-                    mPreferenceItemMap.get(route.getId()));
-
+            mediaDevice = new ComplexMediaDevice(mContext, route, dynamicRouteAttributes, rlpItem);
         } else {
             Log.w(TAG, "createRouteToMediaDevice() unknown device type : " + deviceType);
         }
 
-        return mediaDevice;
+        if (mediaDevice != null) {
+            if (mediaDevice.isSelected()) {
+                mediaDevice.setState(STATE_SELECTED);
+            } else if (route.getConnectionState() == CONNECTION_STATE_CONNECTING) {
+                mediaDevice.setState(STATE_CONNECTING);
+            }
+            mMediaDevices.add(mediaDevice);
+        }
     }
 
     @NonNull
@@ -1060,28 +1059,6 @@ public abstract class InfoMediaManager {
                 RouteListingPreference routeListingPreference) {
             return routeListingPreference == null ? null
                     : routeListingPreference.getLinkedItemComponentName();
-        }
-
-        @DoNotInline
-        static void onRouteListingPreferenceUpdated(
-                RouteListingPreference routeListingPreference,
-                Map<String, RouteListingPreference.Item> preferenceItemMap) {
-            Log.i(TAG, "onRouteListingPreferenceUpdated(), hasRLP: " + (routeListingPreference
-                    != null));
-            if (DEBUG) {
-                if (routeListingPreference != null) {
-                    Log.d(TAG, "RouteListingPreference. useSystemOrder = "
-                            + routeListingPreference.getUseSystemOrdering());
-                    for (RouteListingPreference.Item rlpItem : routeListingPreference.getItems()) {
-                        Log.d(TAG, rlpItem.toString());
-                    }
-                }
-            }
-            preferenceItemMap.clear();
-            if (routeListingPreference != null) {
-                routeListingPreference.getItems().forEach((item) ->
-                        preferenceItemMap.put(item.getRouteId(), item));
-            }
         }
     }
 

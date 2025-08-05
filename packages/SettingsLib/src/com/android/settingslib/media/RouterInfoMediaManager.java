@@ -71,6 +71,10 @@ public final class RouterInfoMediaManager extends InfoMediaManager {
     @VisibleForTesting
     final Consumer<RouteListingPreference> mRouteListingPreferenceCallback =
             (preference) -> {
+                if (DEBUG) {
+                    Log.d(TAG,
+                            "onRouteListingPreferenceUpdated(), hasRLP: " + (preference != null));
+                }
                 notifyRouteListingPreferenceUpdated(preference);
                 refreshDevices();
             };
