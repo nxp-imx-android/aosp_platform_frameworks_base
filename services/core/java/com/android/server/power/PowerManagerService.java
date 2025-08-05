@@ -6460,8 +6460,10 @@ public final class PowerManagerService extends SystemService
                 groupIds = mDisplayManagerInternal.getDisplayGroupIds();
             } else {
                 DisplayInfo displayInfo = mDisplayManagerInternal.getDisplayInfo(displayId);
-                Preconditions.checkArgument(displayInfo != null, "display ID(%d) doesn't exist",
-                        displayId);
+                if (displayInfo == null) {
+                    Slog.w(TAG, "Can not sleep non-existent display ID " + displayId);
+                    return;
+                }
                 int groupId = displayInfo.displayGroupId;
                 if (groupId == Display.INVALID_DISPLAY_GROUP) {
                     throw new IllegalArgumentException("invalid display group ID");
