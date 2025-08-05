@@ -137,6 +137,16 @@ flag {
 
 flag {
     namespace: "windowing_sdk"
+    name: "fix_bubble_trampoline_animation"
+    description: "Fix the animation for Bubble Task Trampoline"
+    bug: "417848405"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
+    namespace: "windowing_sdk"
     name: "return_all_visible_activities_for_vis"
     description: "Return all visible activities in multi-tasking feature to VIS"
     bug: "434114340"
