@@ -333,13 +333,31 @@ internal object BubbleFlickerTestHelper {
     }
 
     /**
+     * Dismisses the collapsed bubble bar or floating stack.
+     *
+     * @param tapl the [LauncherInstrumentation]
+     * @param wmHelper the [WindowManagerStateHelper]
+     */
+    fun dismissAllBubbles(
+        tapl: LauncherInstrumentation,
+        wmHelper: WindowManagerStateHelper,
+    ) {
+        Root.get().verifyNoBubbleIsVisible()
+        if (tapl.isTablet) {
+            Root.get().bubbleBar.dragToDismiss()
+        } else {
+            Root.get().selectedBubble.dismiss()
+        }
+        waitAndVerifyBubbleGone(wmHelper)
+    }
+
+    /**
      * Waits and verifies the bubble (represented as bubble icon or bubble bar) is gone.
      */
     fun waitAndVerifyBubbleGone(wmHelper: WindowManagerStateHelper) {
         wmHelper
             .StateSyncBuilder()
             .add(ConditionsFactory.isWMStateComplete())
-            .withAppTransitionIdle()
             .withBubbleGone()
             .waitForAndVerify()
     }
@@ -447,7 +465,6 @@ internal object BubbleFlickerTestHelper {
         wmHelper
             .StateSyncBuilder()
             .add(ConditionsFactory.isWMStateComplete())
-            .withAppTransitionIdle()
             .withTopVisibleApp(testApp)
             .withBubbleShown()
             .waitForAndVerify()
@@ -465,7 +482,6 @@ internal object BubbleFlickerTestHelper {
         wmHelper
             .StateSyncBuilder()
             .add(ConditionsFactory.isWMStateComplete())
-            .withAppTransitionIdle()
             .withWindowSurfaceDisappeared(testApp)
             .withBubbleShown()
             .waitForAndVerify()

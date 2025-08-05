@@ -57,6 +57,7 @@ test_module_config {
         "com.android.wm.shell.flicker.bubbles.BubbleBarVisibilityTest",
         "com.android.wm.shell.flicker.bubbles.CollapseBubbleAppViaBackTest",
         "com.android.wm.shell.flicker.bubbles.CollapseBubbleAppViaTouchOutsideTest",
+        "com.android.wm.shell.flicker.bubbles.DismissAllCollapsedBubbleAppsTest",
         "com.android.wm.shell.flicker.bubbles.DismissExpandedBubbleViaBubbleBarTest",
         "com.android.wm.shell.flicker.bubbles.DismissExpandedBubbleViaBubbleBarHandleTest",
         "com.android.wm.shell.flicker.bubbles.DismissExpandedBubbleViaBubbleViewTest",
@@ -92,6 +93,13 @@ test_module_config {
     base: "WMShellExplicitFlickerTestsBubbles",
     test_suites: ["device-tests"],
     include_filters: ["com.android.wm.shell.flicker.bubbles.CollapseBubbleAppViaBackTest"],
+}
+
+test_module_config {
+    name: "WMShellExplicitFlickerTestsBubbles-DismissAllCollapsedBubbleAppsTest",
+    base: "WMShellExplicitFlickerTestsBubbles",
+    test_suites: ["device-tests"],
+    include_filters: ["com.android.wm.shell.flicker.bubbles.DismissAllCollapsedBubbleAppsTest"],
 }
 
 test_module_config {
