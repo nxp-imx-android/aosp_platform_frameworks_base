@@ -390,19 +390,25 @@ public class MediaQualityService extends SystemService {
                     // Keep cache in sync with database, and check for profile id and handle of the
                     // updated picture profile, because user might call this with a picture profile
                     // without handle or profileId.
-                    PictureProfile cachedPp = mOriginalHandleToCurrentPictureProfile.get(dbId);
-                    if (cachedPp != null) {
-                        if (pp.getProfileId() == null
-                                || pp.getHandle() == PictureProfileHandle.NONE) {
-                            cachedPp = new PictureProfile.Builder(cachedPp)
-                                    .setProfileId(cachedPp.getProfileId())
-                                    .setParameters(pp.getParameters())
-                                    .build();
-                            mOriginalHandleToCurrentPictureProfile.put(dbId, cachedPp);
-                        } else {
-                            mOriginalHandleToCurrentPictureProfile.put(dbId, pp);
+                    Long originalHandle = mCurrentPictureHandleToOriginal.getValue(dbId);
+                    if (originalHandle != null) {
+                        PictureProfile cachedPp = mOriginalHandleToCurrentPictureProfile
+                                .get(originalHandle);
+                        if (cachedPp != null) {
+                            if (pp.getProfileId() == null
+                                    || pp.getHandle() == PictureProfileHandle.NONE) {
+                                cachedPp = new PictureProfile.Builder(cachedPp)
+                                        .setProfileId(cachedPp.getProfileId())
+                                        .setParameters(pp.getParameters())
+                                        .build();
+                                mOriginalHandleToCurrentPictureProfile
+                                        .put(originalHandle, cachedPp);
+                            } else {
+                                mOriginalHandleToCurrentPictureProfile.put(originalHandle, pp);
+                            }
                         }
                     }
+
                     if (isPackageDefaultPictureProfile(pp)) {
                         if (DEBUG) {
                             Slog.d(TAG, "updatePictureProfile: "
