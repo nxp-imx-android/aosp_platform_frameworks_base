@@ -1321,8 +1321,7 @@ public class WindowProcessController extends ConfigurationContainer<Configuratio
         if (hasResumedFreeform
                 // Exclude task layer 1 because it is already the top most.
                 && minTaskLayer > 1) {
-            if (com.android.window.flags.Flags.bgPriorityForOccludedFreeformTasks()
-                    && nonOccludedRatio == 0) {
+            if (nonOccludedRatio == 0) {
                 stateFlags |= ACTIVITY_STATE_FLAG_OCCLUDED_FREEFORM;
             } else if (minTaskLayer <= 1 + MAX_NUM_PERCEPTIBLE_FREEFORM
                     || nonOccludedRatio >= PERCEPTIBLE_FREEFORM_VISIBLE_RATIO) {
