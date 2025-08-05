@@ -628,43 +628,10 @@ static jint ImageReader_imageSetup(JNIEnv* env, jobject thiz, jobject image) {
             ALOGV("%s: Producer buffer size: %dx%d, doesn't match ImageReader configured size: %dx%d",
                     __FUNCTION__, outputWidth, outputHeight, imageReaderWidth, imageReaderHeight);
         }
-        if (imgReaderHalFmt != bufferFormat) {
-            if (imgReaderHalFmt == HAL_PIXEL_FORMAT_YCbCr_420_888 &&
-                    isPossiblyYUV(bufferFormat)) {
-                // Treat formats that are compatible with flexible YUV
-                // (HAL_PIXEL_FORMAT_YCbCr_420_888) as HAL_PIXEL_FORMAT_YCbCr_420_888.
-                ALOGV("%s: Treat buffer format to 0x%x as HAL_PIXEL_FORMAT_YCbCr_420_888",
-                        __FUNCTION__, bufferFormat);
-            } else if (imgReaderHalFmt == HAL_PIXEL_FORMAT_YCBCR_P010 &&
-                    isPossibly10BitYUV(bufferFormat)) {
-                // Treat formats that are compatible with flexible 10-bit YUV
-                // (HAL_PIXEL_FORMAT_YCBCR_P010) as HAL_PIXEL_FORMAT_YCBCR_P010.
-                ALOGV("%s: Treat buffer format to 0x%x as HAL_PIXEL_FORMAT_YCBCR_P010",
-                        __FUNCTION__, bufferFormat);
-            } else if (imgReaderHalFmt == HAL_PIXEL_FORMAT_BLOB &&
-                    bufferFormat == HAL_PIXEL_FORMAT_RGBA_8888) {
-                // Using HAL_PIXEL_FORMAT_RGBA_8888 Gralloc buffers containing JPEGs to get around
-                // SW write limitations for (b/17379185).
-                ALOGV("%s: Receiving JPEG in HAL_PIXEL_FORMAT_RGBA_8888 buffer.", __FUNCTION__);
-            } else {
-                // Return the buffer to the queue. No need to provide fence, as this buffer wasn't
-                // used anywhere yet.
-                bufferConsumer->releaseBuffer(*buffer);
-                ctx->returnBufferItem(buffer);
 
-                // Throw exception
-                ALOGE("Producer output buffer format: 0x%x, ImageReader configured format: 0x%x",
-                        bufferFormat, ctx->getBufferFormat());
-                String8 msg;
-                msg.appendFormat("The producer output buffer format 0x%x doesn't "
-                        "match the ImageReader's configured buffer format 0x%x.",
-                        bufferFormat, ctx->getBufferFormat());
-                jniThrowException(env, "java/lang/UnsupportedOperationException",
-                        msg.c_str());
-                return -1;
-            }
-        }
-
+        ALOGV_IF(imgReaderHalFmt != bufferFormat,
+                "%s: reader format(0x%x) and buffer format(0x%x) are not same" ,
+                __FUNCTION__, imgReaderHalFmt, bufferFormat);
     }
 
     // Set SurfaceImage instance member variables
