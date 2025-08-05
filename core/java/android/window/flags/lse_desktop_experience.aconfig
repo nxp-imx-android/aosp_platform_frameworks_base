@@ -1528,6 +1528,16 @@ flag {
 }
 
 flag {
+    name: "fix_leaking_visual_indicator"
+    namespace: "lse_desktop_experience"
+    description: "Fixes a visual indicator leak that blocked input to non-top apps"
+    bug: "418225224"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "force_close_top_transparent_fullscreen_task"
     namespace: "lse_desktop_experience"
     description: "If a top transparent fullscreen task is on top of desktop mode, force it to /n"

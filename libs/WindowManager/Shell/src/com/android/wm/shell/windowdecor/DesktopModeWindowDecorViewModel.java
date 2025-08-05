@@ -1643,18 +1643,29 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
                 case MotionEvent.ACTION_UP:
                 case MotionEvent.ACTION_CANCEL: {
                     final boolean wasDragging = mIsDragging;
-                    if (!wasDragging) {
+                    if (!DesktopExperienceFlags.ENABLE_FIX_LEAKING_VISUAL_INDICATOR.isTrue()
+                            && !wasDragging) {
                         debugLogD("handleFreeformMotionEvent(%s) action=%s "
                                         + "was not dragging, ignore",
                                 viewName, MotionEvent.actionToString(e.getAction()));
                         return false;
                     }
-                    mDesktopModeUiEventLogger.log(taskInfo,
-                            DesktopUiEventEnum.DESKTOP_WINDOW_MOVE_BY_HEADER_DRAG);
+                    if (wasDragging) {
+                        mDesktopModeUiEventLogger.log(taskInfo,
+                                DesktopUiEventEnum.DESKTOP_WINDOW_MOVE_BY_HEADER_DRAG);
+                    }
                     if (e.findPointerIndex(mDragPointerId) == -1) {
                         mDragPointerId = e.getPointerId(0);
                     }
                     final int dragPointerIdx = e.findPointerIndex(mDragPointerId);
+                    if (DesktopExperienceFlags.ENABLE_FIX_LEAKING_VISUAL_INDICATOR.isTrue()
+                            && !dragAllowed) {
+                        debugLogD("handleFreeformMotionEvent(%s) action=%s "
+                                        + "drag is not allowed, ignore",
+                                viewName, MotionEvent.actionToString(e.getAction()));
+                        return false;
+                    }
+
                     final Rect newTaskBounds = mDragPositioningCallback.onDragPositioningEnd(
                             e.getDisplayId(),
                             e.getRawX(dragPointerIdx), e.getRawY(dragPointerIdx));
@@ -1671,9 +1682,9 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
                         if (!mShellDesktopState
                                 .isEligibleWindowDropTarget(e.getDisplayId())) {
                             newTaskBounds.set(mOnDragStartInitialBounds);
-                            debugLogD("handleFreeformMotionEvent(%s) action=%s "
-                                            + "pointer in non-desktop display(%d), "
-                                            + "reverted to initial bounds=%s",
+                            debugLogD(
+                                    "handleFreeformMotionEvent(%s) action=%s pointer in non-desktop"
+                                            + " display(%d), reverted to initial bounds=%s",
                                     viewName, MotionEvent.actionToString(e.getAction()),
                                     e.getDisplayId(), newTaskBounds);
                         }
@@ -1703,7 +1714,13 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
                                     mTransactionFactory.get());
                         }
                     }
-
+                    if (DesktopExperienceFlags.ENABLE_FIX_LEAKING_VISUAL_INDICATOR.isTrue()
+                            && !wasDragging) {
+                        debugLogD("handleFreeformMotionEvent(%s) action=%s "
+                                        + "was not dragging, ignore",
+                                viewName, MotionEvent.actionToString(e.getAction()));
+                        return false;
+                    }
                     if (touchingButton) {
                         // We need the input event to not be consumed here to end the ripple
                         // effect on the touched button. We will reset drag state in the ensuing
