@@ -422,6 +422,13 @@ flag {
 }
 
 flag {
+     name: "hsu_device_provisioner"
+     namespace: "multiuser"
+     description: "Use new HsuDeviceProvisioner class for all device provisioning related activities when booting device in HSUM"
+     bug: "424203846"
+}
+
+flag {
     name: "setupwizard_username_population"
     namespace: "multiuser"
     description: "Ensures the user's account name is correctly populated and persisted during the Android Setup Wizard across all flows."
