@@ -17,7 +17,7 @@ com.android.hoststubgen.test.tinyframework
   <init>()V
   1
   Keep
-  class-wide in com/android/hoststubgen/test/tinyframework/IPretendingAidl$Stub [inner-reason: class-wide in com/android/hoststubgen/test/tinyframework/IPretendingAidl [inner-reason: file-override (special-class AIDL)]]
+  class-wide in com/android/hoststubgen/test/tinyframework/IPretendingAidl$Stub [inner-reason: class-wide in com/android/hoststubgen/test/tinyframework/IPretendingAidl [inner-reason: file-override [special-class: AIDL - 'keepclass']]]
   1
   1
 com.android.hoststubgen.test.tinyframework
@@ -28,7 +28,7 @@ com.android.hoststubgen.test.tinyframework
   addOne(I)I
   1
   Keep
-  class-wide in com/android/hoststubgen/test/tinyframework/IPretendingAidl$Stub [inner-reason: class-wide in com/android/hoststubgen/test/tinyframework/IPretendingAidl [inner-reason: file-override (special-class AIDL)]]
+  class-wide in com/android/hoststubgen/test/tinyframework/IPretendingAidl$Stub [inner-reason: class-wide in com/android/hoststubgen/test/tinyframework/IPretendingAidl [inner-reason: file-override [special-class: AIDL - 'keepclass']]]
   1
   1
 com.android.hoststubgen.test.tinyframework
@@ -39,7 +39,7 @@ com.android.hoststubgen.test.tinyframework
   <init>()V
   1
   Keep
-  class-wide in com/android/hoststubgen/test/tinyframework/IPretendingAidl$Stub$Proxy [inner-reason: class-wide in com/android/hoststubgen/test/tinyframework/IPretendingAidl$Stub [inner-reason: class-wide in com/android/hoststubgen/test/tinyframework/IPretendingAidl [inner-reason: file-override (special-class AIDL)]]]
+  class-wide in com/android/hoststubgen/test/tinyframework/IPretendingAidl$Stub$Proxy [inner-reason: class-wide in com/android/hoststubgen/test/tinyframework/IPretendingAidl$Stub [inner-reason: class-wide in com/android/hoststubgen/test/tinyframework/IPretendingAidl [inner-reason: file-override [special-class: AIDL - 'keepclass']]]]
   1
   1
 com.android.hoststubgen.test.tinyframework
@@ -50,7 +50,7 @@ com.android.hoststubgen.test.tinyframework
   addTwo(I)I
   1
   Keep
-  class-wide in com/android/hoststubgen/test/tinyframework/IPretendingAidl$Stub$Proxy [inner-reason: class-wide in com/android/hoststubgen/test/tinyframework/IPretendingAidl$Stub [inner-reason: class-wide in com/android/hoststubgen/test/tinyframework/IPretendingAidl [inner-reason: file-override (special-class AIDL)]]]
+  class-wide in com/android/hoststubgen/test/tinyframework/IPretendingAidl$Stub$Proxy [inner-reason: class-wide in com/android/hoststubgen/test/tinyframework/IPretendingAidl$Stub [inner-reason: class-wide in com/android/hoststubgen/test/tinyframework/IPretendingAidl [inner-reason: file-override [special-class: AIDL - 'keepclass']]]]
   1
   1
 com.android.hoststubgen.test.tinyframework
@@ -61,7 +61,7 @@ com.android.hoststubgen.test.tinyframework
   <init>()V
   1
   Keep
-  class-wide in com/android/hoststubgen/test/tinyframework/R [inner-reason: file-override (special-class R file)]
+  class-wide in com/android/hoststubgen/test/tinyframework/R [inner-reason: file-override [special-class: R - 'keepclass']]
   1
   1
 com.android.hoststubgen.test.tinyframework
@@ -72,7 +72,7 @@ com.android.hoststubgen.test.tinyframework
   <clinit>()V
   1
   Keep
-  class-wide in com/android/hoststubgen/test/tinyframework/R$Nested [inner-reason: file-override (special-class R file)]
+  class-wide in com/android/hoststubgen/test/tinyframework/R$Nested [inner-reason: file-override [special-class: R - 'keepclass']]
   1
   1
 com.android.hoststubgen.test.tinyframework
@@ -83,7 +83,7 @@ com.android.hoststubgen.test.tinyframework
   <init>()V
   1
   Keep
-  class-wide in com/android/hoststubgen/test/tinyframework/R$Nested [inner-reason: file-override (special-class R file)]
+  class-wide in com/android/hoststubgen/test/tinyframework/R$Nested [inner-reason: file-override [special-class: R - 'keepclass']]
   1
   1
 com.android.hoststubgen.test.tinyframework
@@ -325,7 +325,7 @@ com.android.hoststubgen.test.tinyframework
   <init>()V
   0
   Experimental
-  class-wide in com/android/hoststubgen/test/tinyframework/TinyFrameworkExperimental [inner-reason: file-override]
+  class-wide in com/android/hoststubgen/test/tinyframework/TinyFrameworkExperimental [inner-reason: file-override [class - 'experimental']]
   0
   0
 com.android.hoststubgen.test.tinyframework
@@ -369,7 +369,7 @@ com.android.hoststubgen.test.tinyframework
   simple()V
   0
   Experimental
-  class-wide in com/android/hoststubgen/test/tinyframework/TinyFrameworkExperimental [inner-reason: file-override]
+  class-wide in com/android/hoststubgen/test/tinyframework/TinyFrameworkExperimental [inner-reason: file-override [class - 'experimental']]
   0
   0
 com.android.hoststubgen.test.tinyframework
@@ -380,7 +380,7 @@ com.android.hoststubgen.test.tinyframework
   unsupported()V
   0
   Experimental
-  file-override
+  file-override [method - 'experimental']
   0
   0
 com.android.hoststubgen.test.tinyframework
@@ -391,7 +391,7 @@ com.android.hoststubgen.test.tinyframework
   <clinit>()V
   1
   Keep
-  file-override (Keep static initializer)
+  file-override [method - 'keep'] (#Keep static initializer)
   1
   1
 com.android.hoststubgen.test.tinyframework
@@ -402,7 +402,7 @@ com.android.hoststubgen.test.tinyframework
   <init>()V
   1
   Keep
-  file-override (Keep implicit ctor)
+  file-override [method - 'keep'] (#Keep implicit ctor)
   1
   1
 com.android.hoststubgen.test.tinyframework
@@ -413,7 +413,7 @@ com.android.hoststubgen.test.tinyframework
   foo(Ljava/lang/String;Ljava/lang/Object;)V
   1
   Keep
-  file-override (keep multi-arg method)
+  file-override [method - 'keep'] (#keep multi-arg method)
   0
   2
 com.android.hoststubgen.test.tinyframework
@@ -424,7 +424,7 @@ com.android.hoststubgen.test.tinyframework
   bar()V
   1
   Keep
-  file-override
+  file-override [method - 'keep']
   0
   2
 com.android.hoststubgen.test.tinyframework
@@ -435,7 +435,7 @@ com.android.hoststubgen.test.tinyframework
   baz()V
   1
   Keep
-  file-override
+  file-override [method - 'keep']
   0
   2
 com.android.hoststubgen.test.tinyframework
@@ -446,7 +446,7 @@ com.android.hoststubgen.test.tinyframework
   <init>()V
   1
   Keep
-  file-override (test keep policy on ctor)
+  file-override [method - 'keep'] (#test keep policy on ctor)
   1
   1
 com.android.hoststubgen.test.tinyframework
@@ -457,7 +457,7 @@ com.android.hoststubgen.test.tinyframework
   addFour(I)I
   0
   Experimental
-  file-override
+  file-override [method - 'experimental']
   0
   0
 com.android.hoststubgen.test.tinyframework
@@ -468,7 +468,7 @@ com.android.hoststubgen.test.tinyframework
   addOne(I)I
   1
   Keep
-  file-override (test keep policy on method)
+  file-override [method - 'keep'] (#test keep policy on method)
   0
   2
 com.android.hoststubgen.test.tinyframework
@@ -479,7 +479,7 @@ com.android.hoststubgen.test.tinyframework
   nativeAddThree(I)I
   1
   Keep
-  file-override
+  in-class-replace - file-override [method - '@addThree_host']
   0
   2
 com.android.hoststubgen.test.tinyframework
@@ -490,7 +490,7 @@ com.android.hoststubgen.test.tinyframework
   addTwo(I)I
   1
   Substitute
-  file-override
+  file-override [method - '@addTwo_host']
   0
   2
 com.android.hoststubgen.test.tinyframework
@@ -501,7 +501,7 @@ com.android.hoststubgen.test.tinyframework
   addTwo(I)I
   1
   Keep
-  file-override
+  in-class-replace - file-override [method - '@addTwo_host']
   0
   2
 com.android.hoststubgen.test.tinyframework
@@ -512,7 +512,7 @@ com.android.hoststubgen.test.tinyframework
   nativeAddThree(I)I
   1
   Substitute
-  file-override
+  file-override [method - '@addThree_host']
   0
   2
 com.android.hoststubgen.test.tinyframework
@@ -523,7 +523,7 @@ com.android.hoststubgen.test.tinyframework
   toBeIgnoredB()B
   0
   Ignore
-  file-override
+  file-override [method - 'ignore']
   0
   0
 com.android.hoststubgen.test.tinyframework
@@ -534,7 +534,7 @@ com.android.hoststubgen.test.tinyframework
   toBeIgnoredC()C
   0
   Ignore
-  file-override
+  file-override [method - 'ignore']
   0
   0
 com.android.hoststubgen.test.tinyframework
@@ -545,7 +545,7 @@ com.android.hoststubgen.test.tinyframework
   toBeIgnoredD()D
   0
   Ignore
-  file-override
+  file-override [method - 'ignore']
   0
   0
 com.android.hoststubgen.test.tinyframework
@@ -556,7 +556,7 @@ com.android.hoststubgen.test.tinyframework
   toBeIgnoredF()F
   0
   Ignore
-  file-override
+  file-override [method - 'ignore']
   0
   0
 com.android.hoststubgen.test.tinyframework
@@ -567,7 +567,7 @@ com.android.hoststubgen.test.tinyframework
   toBeIgnoredI()I
   0
   Ignore
-  file-override
+  file-override [method - 'ignore']
   0
   0
 com.android.hoststubgen.test.tinyframework
@@ -578,7 +578,7 @@ com.android.hoststubgen.test.tinyframework
   toBeIgnoredObj()Ljava/lang/String;
   0
   Ignore
-  file-override
+  file-override [method - 'ignore']
   0
   0
 com.android.hoststubgen.test.tinyframework
@@ -589,7 +589,7 @@ com.android.hoststubgen.test.tinyframework
   toBeIgnoredS()S
   0
   Ignore
-  file-override
+  file-override [method - 'ignore']
   0
   0
 com.android.hoststubgen.test.tinyframework
@@ -600,7 +600,7 @@ com.android.hoststubgen.test.tinyframework
   toBeIgnoredV()V
   0
   Ignore
-  file-override (test ignore policy)
+  file-override [method - 'ignore'] (#test ignore policy)
   0
   0
 com.android.hoststubgen.test.tinyframework
@@ -611,7 +611,7 @@ com.android.hoststubgen.test.tinyframework
   toBeIgnoredZ()Z
   0
   Ignore
-  file-override
+  file-override [method - 'ignore']
   0
   0
 com.android.hoststubgen.test.tinyframework
@@ -622,7 +622,7 @@ com.android.hoststubgen.test.tinyframework
   unsupportedMethod()Ljava/lang/String;
   0
   Throw
-  file-override
+  file-override [method - 'throw']
   0
   0
 com.android.hoststubgen.test.tinyframework
@@ -1282,7 +1282,7 @@ com.android.hoststubgen.test.tinyframework.exp
   <init>()V
   0
   Experimental
-  class-wide in com/android/hoststubgen/test/tinyframework/exp/A [inner-reason: file-override (test-package-policy)]
+  class-wide in com/android/hoststubgen/test/tinyframework/exp/A [inner-reason: file-override [package - 'experimental'] (#test-package-policy)]
   0
   0
 com.android.hoststubgen.test.tinyframework.exp
@@ -1293,7 +1293,7 @@ com.android.hoststubgen.test.tinyframework.exp
   foo()V
   0
   Experimental
-  class-wide in com/android/hoststubgen/test/tinyframework/exp/A [inner-reason: file-override (test-package-policy)]
+  class-wide in com/android/hoststubgen/test/tinyframework/exp/A [inner-reason: file-override [package - 'experimental'] (#test-package-policy)]
   0
   0
 com.android.hoststubgen.test.tinyframework.exp
@@ -1326,7 +1326,7 @@ com.android.hoststubgen.test.tinyframework.exp.sub
   <init>()V
   0
   Experimental
-  class-wide in com/android/hoststubgen/test/tinyframework/exp/sub/A [inner-reason: file-override (test-package-policy)]
+  class-wide in com/android/hoststubgen/test/tinyframework/exp/sub/A [inner-reason: file-override [package - 'experimental'] (#test-package-policy)]
   0
   0
 com.android.hoststubgen.test.tinyframework.exp.sub
@@ -1337,7 +1337,7 @@ com.android.hoststubgen.test.tinyframework.exp.sub
   foo()V
   0
   Experimental
-  class-wide in com/android/hoststubgen/test/tinyframework/exp/sub/A [inner-reason: file-override (test-package-policy)]
+  class-wide in com/android/hoststubgen/test/tinyframework/exp/sub/A [inner-reason: file-override [package - 'experimental'] (#test-package-policy)]
   0
   0
 com.android.hoststubgen.test.tinyframework.packagetest
@@ -1348,7 +1348,7 @@ com.android.hoststubgen.test.tinyframework.packagetest
   <init>()V
   1
   Keep
-  class-wide in com/android/hoststubgen/test/tinyframework/packagetest/A [inner-reason: file-override (test-package-policy)]
+  class-wide in com/android/hoststubgen/test/tinyframework/packagetest/A [inner-reason: file-override [package - 'keepclass'] (#test-package-policy)]
   1
   1
 com.android.hoststubgen.test.tinyframework.packagetest
@@ -1359,7 +1359,7 @@ com.android.hoststubgen.test.tinyframework.packagetest
   foo()V
   1
   Keep
-  class-wide in com/android/hoststubgen/test/tinyframework/packagetest/A [inner-reason: file-override (test-package-policy)]
+  class-wide in com/android/hoststubgen/test/tinyframework/packagetest/A [inner-reason: file-override [package - 'keepclass'] (#test-package-policy)]
   0
   2
 com.android.hoststubgen.test.tinyframework.packagetest
@@ -1392,7 +1392,7 @@ com.android.hoststubgen.test.tinyframework.packagetest.sub
   <init>()V
   1
   Keep
-  class-wide in com/android/hoststubgen/test/tinyframework/packagetest/sub/A [inner-reason: file-override (test-package-policy)]
+  class-wide in com/android/hoststubgen/test/tinyframework/packagetest/sub/A [inner-reason: file-override [package - 'keepclass'] (#test-package-policy)]
   1
   1
 com.supported
