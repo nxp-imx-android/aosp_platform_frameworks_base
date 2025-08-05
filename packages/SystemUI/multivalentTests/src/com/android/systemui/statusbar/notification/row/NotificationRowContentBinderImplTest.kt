@@ -57,6 +57,7 @@ import com.android.systemui.statusbar.notification.row.NotificationRowContentBin
 import com.android.systemui.statusbar.notification.row.NotificationRowContentBinder.FLAG_CONTENT_VIEW_PUBLIC_SINGLE_LINE
 import com.android.systemui.statusbar.notification.row.NotificationRowContentBinder.InflationCallback
 import com.android.systemui.statusbar.notification.row.NotificationRowContentBinder.InflationFlag
+import com.android.systemui.statusbar.notification.row.NotificationRowContentBinderImpl.InflationTaskTracker
 import com.android.systemui.statusbar.notification.row.shared.HeadsUpStatusBarModel
 import com.android.systemui.statusbar.notification.row.shared.LockscreenOtpRedaction
 import com.android.systemui.statusbar.notification.row.shared.NewRemoteViews
@@ -247,7 +248,7 @@ class NotificationRowContentBinderImplTest(flags: FlagsParameterization) : Sysui
             parentLayout = row.privateLayout,
             existingView = null,
             existingWrapper = null,
-            runningInflations = HashMap(),
+            runningInflations = InflationTaskTracker(),
             applyCallback =
                 object : NotificationRowContentBinderImpl.ApplyCallback() {
                     override fun setResultView(v: View) {}
