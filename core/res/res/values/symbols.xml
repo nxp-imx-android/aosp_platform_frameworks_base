@@ -6099,6 +6099,9 @@
   <!-- Whether the home screen should be shown behind freeform tasks in desktop mode. -->
   <java-symbol type="bool" name="config_showHomeBehindDesktop" />
 
+  <!-- List of packages which should be exempt from desktop mode. -->
+  <java-symbol type="array" name="config_desktopExemptPackages" />
+
   <!-- Frame rate compatibility value for Wallpaper -->
   <java-symbol type="integer" name="config_wallpaperFrameRateCompatibility" />
 

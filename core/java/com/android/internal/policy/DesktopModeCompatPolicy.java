@@ -31,7 +31,9 @@ import android.window.DesktopModeFlags;
 import com.android.internal.R;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.Supplier;
@@ -41,6 +43,8 @@ public class DesktopModeCompatPolicy {
     private final Context mContext;
     @NonNull
     private final String mSystemUiPackage;
+    @NonNull
+    private final List<String> mConfigExemptPackages;
     private final Map<String, Boolean> mPackageInfoCache = new HashMap<>();
     private PackageManager mPackageManager = null;
 
@@ -49,6 +53,8 @@ public class DesktopModeCompatPolicy {
     public DesktopModeCompatPolicy(@NonNull Context context) {
         mContext = context;
         mSystemUiPackage = context.getResources().getString(R.string.config_systemUi);
+        mConfigExemptPackages = Arrays.asList(context.getResources().getStringArray(
+                R.array.config_desktopExemptPackages));
     }
 
     public void setDefaultHomePackageSupplier(
@@ -113,6 +119,11 @@ public class DesktopModeCompatPolicy {
         if (isTopActivityNoDisplay) {
             return false;
         }
+        // TODO: b/434943016 - Replace with permission.
+        // If activity belongs to package exempt via device config, force out of desktop.
+        if (isPackageExemptViaConfig(packageName) && !isActivityStackTransparent) {
+            return true;
+        }
         // If activity belongs to system ui package, safe to force out of desktop.
         if (isSystemUiTask(packageName)) {
             return true;
@@ -162,6 +173,11 @@ public class DesktopModeCompatPolicy {
         if (isPartOfDefaultHomePackageOrNoHomeAvailable(packageName)) {
             return true;
         }
+        // TODO: b/434943016 - Replace with permission.
+        // If activity belongs to package exempt via device config, hide desktop entry point.
+        if (isPackageExemptViaConfig(packageName)) {
+            return true;
+        }
         // If all activities in task stack are transparent AND package has the relevant fullscreen
         // transparent permission, safe to force out of desktop.
         return isTransparentTask(isActivityStackTransparent, numActivities);
@@ -195,6 +211,10 @@ public class DesktopModeCompatPolicy {
 
     private boolean isSystemUiTask(@Nullable String packageName) {
         return Objects.equals(packageName, mSystemUiPackage);
+    }
+
+    private boolean isPackageExemptViaConfig(@Nullable String packageName) {
+        return mConfigExemptPackages.contains(packageName);
     }
 
     // Checks if the app for the given package has the SYSTEM_ALERT_WINDOW permission.
