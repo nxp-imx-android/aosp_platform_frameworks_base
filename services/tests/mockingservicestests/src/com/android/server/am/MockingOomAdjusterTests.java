@@ -4553,6 +4553,8 @@ public class MockingOomAdjusterTests {
         doCallRealMethod().when(record).setLastActivity(any(long.class));
         doCallRealMethod().when(record).getForegroundServiceType();
         doCallRealMethod().when(record).setForegroundServiceType(any(int.class));
+        doCallRealMethod().when(record).getHostProcess();
+        doCallRealMethod().when(record).getIsolationHostProcess();
 
         setFieldValue(ServiceRecord.class, record, "connections",
                 new ArrayMap<IBinder, ArrayList<ConnectionRecord>>());
