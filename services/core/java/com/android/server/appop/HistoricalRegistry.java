@@ -680,8 +680,8 @@ public class HistoricalRegistry implements HistoricalRegistryInterface {
         if (isNotReadyOrDisabled()) {
             return;
         }
-        mLongIntervalHistoryHelper.shutdown();
-        mShortIntervalHistoryHelper.shutdown();
+        mLongIntervalHistoryHelper.persistPendingHistory();
+        mShortIntervalHistoryHelper.persistPendingHistory();
     }
 
     @Override
