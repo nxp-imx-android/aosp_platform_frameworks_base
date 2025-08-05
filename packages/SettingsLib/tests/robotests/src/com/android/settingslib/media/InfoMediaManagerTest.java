@@ -865,19 +865,19 @@ public class InfoMediaManagerTest {
 
         when(route2Info.getType()).thenReturn(TYPE_REMOTE_SPEAKER);
         when(route2Info.getId()).thenReturn(TEST_ID);
-        mInfoMediaManager.addMediaDeviceLocked(route2Info, TEST_SYSTEM_ROUTING_SESSION);
+        mInfoMediaManager.addMediaDeviceLocked(route2Info, TEST_SYSTEM_ROUTING_SESSION, null);
         assertThat(mInfoMediaManager.mMediaDevices.get(0) instanceof InfoMediaDevice).isTrue();
 
         when(route2Info.getType()).thenReturn(TYPE_USB_DEVICE);
         when(route2Info.getId()).thenReturn(TEST_ID);
         mInfoMediaManager.mMediaDevices.clear();
-        mInfoMediaManager.addMediaDeviceLocked(route2Info, TEST_SYSTEM_ROUTING_SESSION);
+        mInfoMediaManager.addMediaDeviceLocked(route2Info, TEST_SYSTEM_ROUTING_SESSION, null);
         assertThat(mInfoMediaManager.mMediaDevices.get(0) instanceof PhoneMediaDevice).isTrue();
 
         when(route2Info.getType()).thenReturn(TYPE_WIRED_HEADSET);
         when(route2Info.getId()).thenReturn(TEST_ID);
         mInfoMediaManager.mMediaDevices.clear();
-        mInfoMediaManager.addMediaDeviceLocked(route2Info, TEST_SYSTEM_ROUTING_SESSION);
+        mInfoMediaManager.addMediaDeviceLocked(route2Info, TEST_SYSTEM_ROUTING_SESSION, null);
         assertThat(mInfoMediaManager.mMediaDevices.get(0) instanceof PhoneMediaDevice).isTrue();
 
         when(route2Info.getType()).thenReturn(TYPE_BLUETOOTH_A2DP);
@@ -888,12 +888,12 @@ public class InfoMediaManagerTest {
         when(cachedBluetoothDeviceManager.findDevice(any(BluetoothDevice.class)))
                 .thenReturn(cachedDevice);
         mInfoMediaManager.mMediaDevices.clear();
-        mInfoMediaManager.addMediaDeviceLocked(route2Info, TEST_SYSTEM_ROUTING_SESSION);
+        mInfoMediaManager.addMediaDeviceLocked(route2Info, TEST_SYSTEM_ROUTING_SESSION, null);
         assertThat(mInfoMediaManager.mMediaDevices.get(0) instanceof BluetoothMediaDevice).isTrue();
 
         when(route2Info.getType()).thenReturn(TYPE_BUILTIN_SPEAKER);
         mInfoMediaManager.mMediaDevices.clear();
-        mInfoMediaManager.addMediaDeviceLocked(route2Info, TEST_SYSTEM_ROUTING_SESSION);
+        mInfoMediaManager.addMediaDeviceLocked(route2Info, TEST_SYSTEM_ROUTING_SESSION, null);
         assertThat(mInfoMediaManager.mMediaDevices.get(0) instanceof PhoneMediaDevice).isTrue();
     }
 
@@ -903,7 +903,7 @@ public class InfoMediaManagerTest {
         when(route2Info.getConnectionState()).thenReturn(CONNECTION_STATE_CONNECTING);
         when(route2Info.getType()).thenReturn(TYPE_REMOTE_SPEAKER);
         when(route2Info.getId()).thenReturn(TEST_ID);
-        mInfoMediaManager.addMediaDeviceLocked(route2Info, TEST_SYSTEM_ROUTING_SESSION);
+        mInfoMediaManager.addMediaDeviceLocked(route2Info, TEST_SYSTEM_ROUTING_SESSION, null);
 
         assertThat(mInfoMediaManager.mMediaDevices.get(0).getState()).isEqualTo(STATE_CONNECTING);
     }
@@ -922,7 +922,7 @@ public class InfoMediaManagerTest {
                 .thenReturn(null);
 
         mInfoMediaManager.mMediaDevices.clear();
-        mInfoMediaManager.addMediaDeviceLocked(route2Info, TEST_SYSTEM_ROUTING_SESSION);
+        mInfoMediaManager.addMediaDeviceLocked(route2Info, TEST_SYSTEM_ROUTING_SESSION, null);
 
         assertThat(mInfoMediaManager.mMediaDevices.size()).isEqualTo(0);
     }
@@ -939,7 +939,7 @@ public class InfoMediaManagerTest {
         when(cachedBluetoothDeviceManager.findDevice(any(BluetoothDevice.class))).thenReturn(null);
 
         mInfoMediaManager.mMediaDevices.clear();
-        mInfoMediaManager.addMediaDeviceLocked(bluetoothRoute, TEST_SYSTEM_ROUTING_SESSION);
+        mInfoMediaManager.addMediaDeviceLocked(bluetoothRoute, TEST_SYSTEM_ROUTING_SESSION, null);
 
         assertThat(mInfoMediaManager.mMediaDevices.size()).isEqualTo(0);
     }
