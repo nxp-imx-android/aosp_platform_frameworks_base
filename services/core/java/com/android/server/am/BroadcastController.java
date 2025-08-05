@@ -614,11 +614,13 @@ class BroadcastController {
                         sticky = broadcast.intent;
                     }
                     BroadcastQueue queue = mBroadcastQueue;
-                    BroadcastRecord r = new BroadcastRecord(queue, broadcast.intent, null,
-                            null, null, -1, -1, false, null, null, null, null, OP_NONE,
+                    BroadcastRecord r = new BroadcastRecord(queue, broadcast.intent, null, null,
+                            null, -1  /*callingPid*/, -1 /*callingUid*/, false, null, null, null,
+                            null, OP_NONE,
                             BroadcastOptions.makeWithDeferUntilActive(broadcast.deferUntilActive),
-                            receivers, null, null, 0, null, null, false, true, true, -1,
-                            originalStickyCallingUid, BackgroundStartPrivileges.NONE,
+                            receivers, null, null, 0, null, null, false, true, true, -1 /*userId*/,
+                            originalStickyCallingUid, -1 /*realCallingPid*/,
+                            BackgroundStartPrivileges.NONE,
                             false /* only PRE_BOOT_COMPLETED should be exempt, no stickies */,
                             null /* filterExtrasForReceiver */,
                             broadcast.originalCallingAppProcessState, mService.mPlatformCompat);
@@ -1665,8 +1667,8 @@ class BroadcastController {
             BroadcastRecord r = new BroadcastRecord(queue, intent, callerApp, callerPackage,
                     callerFeatureId, callingPid, callingUid, callerInstantApp, resolvedType,
                     requiredPermissions, excludedPermissions, excludedPackages, appOp, brOptions,
-                    receivers, resultToApp, resultTo, resultCode, resultData, resultExtras,
-                    ordered, sticky, false, userId,
+                    receivers, resultToApp, resultTo, resultCode, resultData, resultExtras, ordered,
+                    sticky, false, userId, -1 /* originalStickyCallingUid */, realCallingUid,
                     backgroundStartPrivileges, timeoutExempt, filterExtrasForReceiver,
                     callerAppProcessState, mService.mPlatformCompat);
             broadcastSentEventRecord.setBroadcastRecord(r);

@@ -99,6 +99,7 @@ final class BroadcastRecord extends Binder {
 
     final int originalStickyCallingUid;
             // if this is a sticky broadcast, the Uid of the original sender
+    final int realCallingUid; // the UID of the actual process triggering the broadcast
     final boolean callerInstantApp; // caller is an Instant App?
     final boolean callerInstrumented; // caller is being instrumented?
     final boolean ordered;  // serialize the send to receivers?
@@ -296,6 +297,7 @@ final class BroadcastRecord extends Binder {
                 pw.print(callerApp != null ? callerApp.toShortString() : "null");
                 pw.print(" pid="); pw.print(callingPid);
                 pw.print(" uid="); pw.println(callingUid);
+                pw.print(" realCallingUid="); pw.println(realCallingUid);
         if ((requiredPermissions != null && requiredPermissions.length > 0)
                 || appOp != AppOpsManager.OP_NONE) {
             pw.print(prefix); pw.print("requiredPermissions=");
@@ -439,8 +441,8 @@ final class BroadcastRecord extends Binder {
                 callingUid, callerInstantApp, resolvedType, requiredPermissions,
                 excludedPermissions, excludedPackages, appOp, options, receivers, resultToApp,
                 resultTo, resultCode, resultData, resultExtras, serialized, sticky,
-                initialSticky, userId, -1, backgroundStartPrivileges, timeoutExempt,
-                filterExtrasForReceiver, callerAppProcessState, platformCompat);
+                initialSticky, userId, -1, -1, backgroundStartPrivileges,
+                timeoutExempt, filterExtrasForReceiver, callerAppProcessState, platformCompat);
     }
 
     BroadcastRecord(BroadcastQueue _queue,
@@ -452,7 +454,7 @@ final class BroadcastRecord extends Binder {
             BroadcastOptions _options, List _receivers,
             ProcessRecord _resultToApp, IIntentReceiver _resultTo, int _resultCode,
             String _resultData, Bundle _resultExtras, boolean _serialized, boolean _sticky,
-            boolean _initialSticky, int _userId, int originalStickyCallingUid,
+            boolean _initialSticky, int _userId, int originalStickyCallingUid, int realCallingUid,
             @NonNull BackgroundStartPrivileges backgroundStartPrivileges,
             boolean timeoutExempt,
             @Nullable BiFunction<Integer, Bundle, Bundle> filterExtrasForReceiver,
@@ -508,6 +510,7 @@ final class BroadcastRecord extends Binder {
         shareIdentity = options != null && options.isShareIdentityEnabled();
         this.filterExtrasForReceiver = filterExtrasForReceiver;
         this.originalStickyCallingUid = originalStickyCallingUid;
+        this.realCallingUid = realCallingUid;
     }
 
     /**
@@ -574,6 +577,7 @@ final class BroadcastRecord extends Binder {
         urgent = from.urgent;
         filterExtrasForReceiver = from.filterExtrasForReceiver;
         originalStickyCallingUid = from.originalStickyCallingUid;
+        realCallingUid = from.realCallingUid;
     }
 
     /**
