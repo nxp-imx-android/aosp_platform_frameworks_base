@@ -34,6 +34,7 @@ import com.android.settingslib.flags.Flags.enableLeAudioSharing
 import com.android.settingslib.media.LocalMediaManager
 import com.android.settingslib.media.MediaDevice
 import com.android.settingslib.media.PhoneMediaDevice
+import com.android.settingslib.media.SuggestedDeviceManager
 import com.android.settingslib.media.SuggestedDeviceState
 import com.android.settingslib.media.flags.Flags
 import com.android.systemui.Flags.enableSuggestedDeviceUi
@@ -46,6 +47,7 @@ import com.android.systemui.media.controls.shared.model.SuggestedMediaDeviceData
 import com.android.systemui.media.controls.shared.model.SuggestionData
 import com.android.systemui.media.controls.util.LocalMediaManagerFactory
 import com.android.systemui.media.controls.util.MediaControllerFactory
+import com.android.systemui.media.controls.util.SuggestedDeviceManagerFactory
 import com.android.systemui.media.muteawait.MediaMuteAwaitConnectionManager
 import com.android.systemui.media.muteawait.MediaMuteAwaitConnectionManagerFactory
 import com.android.systemui.res.R
@@ -66,6 +68,7 @@ constructor(
     private val context: Context,
     private val controllerFactory: MediaControllerFactory,
     private val localMediaManagerFactory: LocalMediaManagerFactory,
+    private val suggestedDeviceManagerFactory: SuggestedDeviceManagerFactory,
     private val mr2manager: Lazy<MediaRouter2Manager>,
     private val muteAwaitConnectionManagerFactory: MediaMuteAwaitConnectionManagerFactory,
     private val configurationController: ConfigurationController,
@@ -136,6 +139,7 @@ constructor(
                 localMediaManagerFactory.create(data.packageName, controller?.sessionToken)
             val muteAwaitConnectionManager =
                 muteAwaitConnectionManagerFactory.create(localMediaManager)
+            val suggestedDeviceManager = suggestedDeviceManagerFactory.create(localMediaManager)
             entry =
                 Entry(
                     key,
@@ -143,6 +147,7 @@ constructor(
                     controller,
                     localMediaManager,
                     muteAwaitConnectionManager,
+                    suggestedDeviceManager,
                     data.resumption,
                 )
             entries[key] = entry
@@ -203,8 +208,12 @@ constructor(
         val controller: MediaController?,
         val localMediaManager: LocalMediaManager,
         val muteAwaitConnectionManager: MediaMuteAwaitConnectionManager,
+        val suggestedDeviceManager: SuggestedDeviceManager,
         val isResumption: Boolean,
-    ) : LocalMediaManager.DeviceCallback, MediaController.Callback() {
+    ) :
+        LocalMediaManager.DeviceCallback,
+        SuggestedDeviceManager.Listener,
+        MediaController.Callback() {
 
         val token
             get() = controller?.sessionToken
@@ -213,7 +222,7 @@ constructor(
         private var playbackType = PLAYBACK_TYPE_UNKNOWN
         private var playbackVolumeControlId: String? = null
         private val requestSuggestionRunnable = Runnable {
-            bgExecutor.execute { localMediaManager.requestDeviceSuggestion() }
+            bgExecutor.execute { suggestedDeviceManager.requestDeviceSuggestion() }
         }
         private var current: MediaDeviceData? = null
 
@@ -243,9 +252,10 @@ constructor(
                     playbackVolumeControlId = controller?.playbackInfo?.volumeControlId
                     controller?.registerCallback(this)
                     if (enableSuggestedDeviceUi() && !isResumption) {
+                        suggestedDeviceManager.addListener(this)
                         updateCurrent(notifyListeners = false)
                         updateSuggestion(
-                            localMediaManager.getSuggestedDevice(),
+                            suggestedDeviceManager.getSuggestedDevice(),
                             notifyListeners = false,
                         )
                         fgExecutor.execute {
@@ -274,6 +284,7 @@ constructor(
                         localMediaManager.stopScan()
                     }
                     localMediaManager.unregisterCallback(this)
+                    suggestedDeviceManager.removeListener(this)
                     muteAwaitConnectionManager.stopListening()
                     configurationController.removeCallback(configListener)
                 }
@@ -317,7 +328,7 @@ constructor(
             bgExecutor.execute { updateCurrent() }
         }
 
-        override fun onSuggestedDeviceUpdated(state: SuggestedDeviceState?) {
+        override fun onSuggestedDeviceStateUpdated(state: SuggestedDeviceState?) {
             if (!enableSuggestedDeviceUi() || isResumption) {
                 return
             }
@@ -362,7 +373,7 @@ constructor(
                                 icon = it.getIcon(context),
                                 connectionState = it.connectionState,
                                 connect = {
-                                    localMediaManager.connectSuggestedDevice(
+                                    suggestedDeviceManager.connectSuggestedDevice(
                                         it,
                                         RoutingChangeInfo(
                                             ENTRY_POINT_SYSTEM_MEDIA_CONTROLS,
