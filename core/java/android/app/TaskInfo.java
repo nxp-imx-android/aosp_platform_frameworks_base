@@ -571,8 +571,7 @@ public class TaskInfo {
                 && appCompatTaskInfo.equalsForTaskOrganizer(that.appCompatTaskInfo)
                 && Objects.equals(topActivityMainWindowFrame, that.topActivityMainWindowFrame)
                 && isAppBubble == that.isAppBubble
-                && (!com.android.window.flags.Flags.updateTaskMinDimensionsWithRootActivity()
-                || (minWidth == that.minWidth && minHeight == that.minHeight));
+                && minWidth == that.minWidth && minHeight == that.minHeight;
     }
 
     /**
