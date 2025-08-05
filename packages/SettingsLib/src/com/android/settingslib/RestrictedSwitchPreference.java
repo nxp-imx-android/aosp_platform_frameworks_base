@@ -23,6 +23,7 @@ import static com.android.settingslib.RestrictedLockUtils.EnforcedAdmin;
 
 import android.app.AppOpsManager;
 import android.app.admin.DevicePolicyManager;
+import android.app.admin.EnforcingAdmin;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.os.Build;
@@ -254,7 +255,7 @@ public class RestrictedSwitchPreference extends SwitchPreferenceCompat implement
     public void setEnabled(boolean enabled) {
         boolean changed = false;
         if (enabled && isDisabledByAdmin()) {
-            mHelper.setDisabledByAdmin(null);
+            mHelper.setDisabledByEnforcingAdmin(null);
             changed = true;
         }
         if (enabled && isDisabledByEcm()) {
@@ -268,6 +269,16 @@ public class RestrictedSwitchPreference extends SwitchPreferenceCompat implement
 
     public void setDisabledByAdmin(EnforcedAdmin admin) {
         if (mHelper.setDisabledByAdmin(admin)) {
+            notifyChanged();
+        }
+    }
+
+    /**
+     * Sets the preference to be disabled by the given admin. If {@code admin} is null, it'll set
+     * the preference enabled.
+     */
+    public void setDisabledByAdmin(@Nullable EnforcingAdmin admin) {
+        if (mHelper.setDisabledByEnforcingAdmin(admin)) {
             notifyChanged();
         }
     }
