@@ -2022,7 +2022,15 @@ public class DisplayPolicy {
 
     /** The latest insets and frames for screen configuration calculation. */
     static class DecorInsets {
+        static final int OVERRIDE_CONFIG_TYPES = WindowInsets.Type.displayCutout()
+                | WindowInsets.Type.statusBars() | WindowInsets.Type.navigationBars();
+        static final int OVERRIDE_DECOR_TYPES = WindowInsets.Type.displayCutout()
+                | WindowInsets.Type.navigationBars();
+
         static class Info {
+            // TODO(b/409608996):
+            //  Remove mNonDecorInsets, mConfigInsets -> always empty
+            //  Remove mNonDecorFrame, mConfigFrame -> always the same as display frame
             /**
              * The insets for the areas that could never be removed, i.e. display cutout and
              * navigation bar. Note that its meaning is actually "decor insets". The "non" is just
@@ -2068,45 +2076,29 @@ public class DisplayPolicy {
 
             private boolean mNeedUpdate = true;
 
-            InsetsState update(DisplayContent dc, int rotation, int w, int h) {
+            void update(DisplayContent dc, int rotation, int w, int h) {
                 final DisplayFrames df = new DisplayFrames();
                 dc.updateDisplayFrames(df, rotation, w, h);
                 dc.getDisplayPolicy().simulateLayoutDisplay(df);
                 final InsetsState insetsState = df.mInsetsState;
                 final Rect displayFrame = insetsState.getDisplayFrame();
-                final Insets decor = insetsState.calculateInsets(displayFrame, displayFrame,
-                        dc.mWmService.mDecorTypes, true /* ignoreVisibility */);
-                final Insets configInsets = dc.mWmService.mConfigTypes == dc.mWmService.mDecorTypes
-                        ? decor
-                        : insetsState.calculateInsets(displayFrame, displayFrame,
-                                dc.mWmService.mConfigTypes, true /* ignoreVisibility */);
-                final Insets overrideConfigInsets = dc.mWmService.mConfigTypes
-                        == dc.mWmService.mOverrideConfigTypes
-                        ? configInsets
-                        : insetsState.calculateInsets(displayFrame, displayFrame,
-                                dc.mWmService.mOverrideConfigTypes, true /* ignoreVisibility */);
-                final Insets overrideDecorInsets = dc.mWmService.mDecorTypes
-                        == dc.mWmService.mOverrideDecorTypes
-                        ? decor
-                        : insetsState.calculateInsets(displayFrame, displayFrame,
-                                dc.mWmService.mOverrideDecorTypes, true /* ignoreVisibility */);
-                mNonDecorInsets.set(decor.left, decor.top, decor.right, decor.bottom);
-                mConfigInsets.set(configInsets.left, configInsets.top, configInsets.right,
-                        configInsets.bottom);
+                final Insets overrideConfigInsets =
+                        insetsState.calculateInsets(displayFrame, displayFrame,
+                                OVERRIDE_CONFIG_TYPES, true /* ignoreVisibility */);
+                final Insets overrideDecorInsets =
+                        insetsState.calculateInsets(displayFrame, displayFrame,
+                                OVERRIDE_DECOR_TYPES, true /* ignoreVisibility */);
                 mOverrideConfigInsets.set(overrideConfigInsets.left, overrideConfigInsets.top,
                         overrideConfigInsets.right, overrideConfigInsets.bottom);
                 mOverrideNonDecorInsets.set(overrideDecorInsets.left, overrideDecorInsets.top,
                         overrideDecorInsets.right, overrideDecorInsets.bottom);
                 mNonDecorFrame.set(displayFrame);
-                mNonDecorFrame.inset(mNonDecorInsets);
                 mConfigFrame.set(displayFrame);
-                mConfigFrame.inset(mConfigInsets);
                 mOverrideConfigFrame.set(displayFrame);
                 mOverrideConfigFrame.inset(mOverrideConfigInsets);
                 mOverrideNonDecorFrame.set(displayFrame);
                 mOverrideNonDecorFrame.inset(mOverrideNonDecorInsets);
                 mNeedUpdate = false;
-                return insetsState;
             }
 
             void set(Info other) {
@@ -2175,29 +2167,6 @@ public class DisplayPolicy {
             }
         }
 
-        static boolean hasInsetsFrameDiff(InsetsState s1, InsetsState s2, int insetsTypes) {
-            int insetsCount1 = 0;
-            for (int i = s1.sourceSize() - 1; i >= 0; i--) {
-                final InsetsSource source1 = s1.sourceAt(i);
-                if ((source1.getType() & insetsTypes) == 0) {
-                    continue;
-                }
-                insetsCount1++;
-                final InsetsSource source2 = s2.peekSource(source1.getId());
-                if (source2 == null || !source2.getFrame().equals(source1.getFrame())) {
-                    return true;
-                }
-            }
-            int insetsCount2 = 0;
-            for (int i = s2.sourceSize() - 1; i >= 0; i--) {
-                final InsetsSource source2 = s2.sourceAt(i);
-                if ((source2.getType() & insetsTypes) != 0) {
-                    insetsCount2++;
-                }
-            }
-            return insetsCount1 != insetsCount2;
-        }
-
         private static class Cache {
             static final int TYPE_REGULAR_BARS = WindowInsets.Type.statusBars()
                     | WindowInsets.Type.navigationBars();
@@ -2254,26 +2223,11 @@ public class DisplayPolicy {
         final int dw = displayFrames.mWidth;
         final int dh = displayFrames.mHeight;
         final DecorInsets.Info newInfo = mDecorInsets.mTmpInfo;
-        final InsetsState newInsetsState = newInfo.update(mDisplayContent, rotation, dw, dh);
+        newInfo.update(mDisplayContent, rotation, dw, dh);
         final DecorInsets.Info currentInfo = getDecorInsetsInfo(rotation, dw, dh);
         final boolean sameConfigFrame = newInfo.mConfigFrame.equals(currentInfo.mConfigFrame);
         if (sameConfigFrame
                 && newInfo.mOverrideConfigFrame.equals(currentInfo.mOverrideConfigFrame)) {
-            // Even if the config frame is not changed in current rotation, it may change the
-            // insets in other rotations if the frame of insets source is changed.
-            final InsetsState currentInsetsState = mDisplayContent.mDisplayFrames.mInsetsState;
-            if (DecorInsets.hasInsetsFrameDiff(
-                    newInsetsState, currentInsetsState, mService.mConfigTypes)) {
-                for (int i = mDecorInsets.mInfoForRotation.length - 1; i >= 0; i--) {
-                    if (i != rotation) {
-                        final boolean flipSize = (i + rotation) % 2 == 1;
-                        final int w = flipSize ? dh : dw;
-                        final int h = flipSize ? dw : dh;
-                        mDecorInsets.mInfoForRotation[i].update(mDisplayContent, i, w, h);
-                    }
-                }
-                mDecorInsets.mInfoForRotation[rotation].set(newInfo);
-            }
             return false;
         }
         if (mCachedDecorInsets != null && !mCachedDecorInsets.canPreserve() && mScreenOnFully) {

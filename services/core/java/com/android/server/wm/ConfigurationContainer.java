@@ -220,11 +220,9 @@ public abstract class ConfigurationContainer<E extends ConfigurationContainer> {
             return;
         }
         final boolean useOverrideInsetsForConfig =
-                displayContent.mWmService.mFlags.mInsetsDecoupledConfiguration
-                        ? !appInfo.isChangeEnabled(INSETS_DECOUPLED_CONFIGURATION_ENFORCED)
-                                && !appInfo.isChangeEnabled(
-                                        OVERRIDE_ENABLE_INSETS_DECOUPLED_CONFIGURATION)
-                        : appInfo.isChangeEnabled(OVERRIDE_ENABLE_INSETS_DECOUPLED_CONFIGURATION);
+                !appInfo.isChangeEnabled(INSETS_DECOUPLED_CONFIGURATION_ENFORCED)
+                        && !appInfo.isChangeEnabled(
+                                OVERRIDE_ENABLE_INSETS_DECOUPLED_CONFIGURATION);
         final int parentWindowingMode =
                 newParentConfiguration.windowConfiguration.getWindowingMode();
         final boolean isFloating = isFloating(parentWindowingMode)

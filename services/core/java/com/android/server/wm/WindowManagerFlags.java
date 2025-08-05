@@ -43,11 +43,6 @@ class WindowManagerFlags {
 
     /* Start Available Flags */
 
-    final boolean mAllowsScreenSizeDecoupledFromStatusBarAndCutout =
-            Flags.allowsScreenSizeDecoupledFromStatusBarAndCutout();
-
-    final boolean mInsetsDecoupledConfiguration = Flags.insetsDecoupledConfiguration();
-
     final boolean mAodTransition = Flags.aodTransition();
 
     /* End Available Flags */
