@@ -181,6 +181,7 @@ fun ContentScope.HeadsUpNotificationSpace(
 fun ContentScope.SnoozeableHeadsUpNotificationSpace(
     stackScrollView: NotificationScrollView,
     viewModel: NotificationsPlaceholderViewModel,
+    modifier: Modifier = Modifier,
 ) {
 
     val isSnoozable by viewModel.isHeadsUpOrAnimatingAway.collectAsStateWithLifecycle(false)
@@ -227,7 +228,8 @@ fun ContentScope.SnoozeableHeadsUpNotificationSpace(
         stackScrollView = stackScrollView,
         viewModel = viewModel,
         modifier =
-            Modifier.absoluteOffset {
+            modifier
+                .absoluteOffset {
                     IntOffset(
                         x = 0,
                         y =
