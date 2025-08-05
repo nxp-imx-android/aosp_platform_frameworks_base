@@ -81,7 +81,7 @@ class DragToBubbleController(
             return
         }
         isDropHandled = false
-        val draggedObject = LauncherIcon(bubbleBarHasBubbles = true) {}
+        val draggedObject = LauncherIcon(bubbleBarHasBubbles = true)
         val dragZones = dragZoneFactory.createSortedDragZones(draggedObject)
         dropTargetManager.onDragStarted(draggedObject, dragZones)
     }
@@ -125,7 +125,7 @@ class DragToBubbleController(
 
     private fun createDragZoneFactory(): DragZoneFactory {
         val deviceConfig =
-            DeviceConfig.create(context, context.getSystemService(WindowManager::class.java))
+            DeviceConfig.create(context, context.getSystemService(WindowManager::class.java)!!)
         return DragZoneFactory(
             context,
             deviceConfig,

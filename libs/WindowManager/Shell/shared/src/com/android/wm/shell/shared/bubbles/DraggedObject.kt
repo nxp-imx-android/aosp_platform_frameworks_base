@@ -25,10 +25,9 @@ sealed interface DraggedObject {
 
     data class ExpandedView(val initialLocation: BubbleBarLocation) : DraggedObject
 
-    // TODO(b/411505605) Remove onDropAction and move showDropTarget up
+    // TODO(b/411505605) Refactor drop targets variable
     data class LauncherIcon(
         val bubbleBarHasBubbles: Boolean,
         val showDropTarget: Boolean = true,
-        val onDropAction: Runnable
     ) : DraggedObject
 }
