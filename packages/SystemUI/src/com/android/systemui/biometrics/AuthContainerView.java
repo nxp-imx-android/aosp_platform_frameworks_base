@@ -17,6 +17,7 @@
 package com.android.systemui.biometrics;
 
 import static android.hardware.biometrics.BiometricAuthenticator.TYPE_FACE;
+import static android.view.WindowInsetsController.APPEARANCE_LIGHT_NAVIGATION_BARS;
 import static android.view.WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS;
 
 import static com.android.internal.jank.InteractionJankMonitor.CUJ_BIOMETRIC_PROMPT_TRANSITION;
@@ -47,6 +48,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowInsets;
+import android.view.WindowInsetsController;
 import android.view.WindowManager;
 import android.view.animation.Interpolator;
 import android.widget.FrameLayout;
@@ -505,6 +507,15 @@ public class AuthContainerView extends LinearLayout
     @Override
     public void onAttachedToWindow() {
         super.onAttachedToWindow();
+
+        final WindowInsetsController insetsController = getWindowInsetsController();
+        if (insetsController != null) {
+            if ((getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK)
+                    != Configuration.UI_MODE_NIGHT_YES) {
+                insetsController.setSystemBarsAppearance(
+                        APPEARANCE_LIGHT_NAVIGATION_BARS, APPEARANCE_LIGHT_NAVIGATION_BARS);
+            }
+        }
 
         if (mContainerState == STATE_ANIMATING_OUT) {
             return;
