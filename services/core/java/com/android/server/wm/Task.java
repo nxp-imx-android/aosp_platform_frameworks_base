@@ -3347,6 +3347,7 @@ class Task extends TaskFragment {
         return "Task=" + mTaskId + (mName != null ? "(" + mName + ")" : "");
     }
 
+    // It is replaced by WindowState#getDimController().
     @Deprecated
     @Override
     Dimmer getDimmer() {

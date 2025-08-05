@@ -5140,7 +5140,7 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
         }
         RootDisplayArea displayArea = getRootDisplayArea();
         if (displayArea != null) {
-            return displayArea.getDimmer();
+            return displayArea.mDimmer;
         }
         return null;
     }

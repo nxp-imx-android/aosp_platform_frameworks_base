@@ -91,7 +91,6 @@ import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
 import android.util.DisplayMetrics;
 import android.util.Xml;
-import android.view.Display;
 import android.view.DisplayInfo;
 import android.view.SurfaceControl;
 import android.view.WindowInsetsController;
@@ -1695,16 +1694,6 @@ public class TaskTests extends WindowTestsBase {
         assertEquals(SCREEN_ORIENTATION_LANDSCAPE, task.getOrientation());
         assertEquals(SCREEN_ORIENTATION_LANDSCAPE, display.getLastOrientation());
         assertEquals(Configuration.ORIENTATION_LANDSCAPE, display.getConfiguration().orientation);
-    }
-
-    @Test
-    public void testGetNonNullDimmerOnUntrustedDisplays() {
-        final DisplayInfo untrustedDisplayInfo = new DisplayInfo(mDisplayInfo);
-        untrustedDisplayInfo.flags &= ~Display.FLAG_TRUSTED;
-        final DisplayContent untrustedDisplay = createNewDisplay(untrustedDisplayInfo);
-        final ActivityRecord activity = createActivityRecord(untrustedDisplay);
-        activity.setOccludesParent(false);
-        assertNotNull(activity.getTask().getDimmer());
     }
 
     @Test
