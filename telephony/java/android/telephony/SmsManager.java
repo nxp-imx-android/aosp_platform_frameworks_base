@@ -3837,7 +3837,7 @@ public final class SmsManager {
 
             // Apps with a current companion device association often need to relay all sms
             // messages to the companion device
-            for (AssociationInfo info : getAllCdmAssociations(context)) {
+            for (AssociationInfo info : getAllCdmAssociations(userContext)) {
                 if (Objects.equals(info.getPackageName(), packageName)) {
                     return true;
                 }
