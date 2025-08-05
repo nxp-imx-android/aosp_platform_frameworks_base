@@ -65,6 +65,9 @@ class PreferenceScreenBindingHelper(
 
     internal val preferenceLifecycleContext =
         object : PreferenceLifecycleContext(fragment.requireContext()) {
+            override val lifecycleOwner
+                get() = fragment
+
             override val lifecycleScope
                 get() = coroutineScope
 
