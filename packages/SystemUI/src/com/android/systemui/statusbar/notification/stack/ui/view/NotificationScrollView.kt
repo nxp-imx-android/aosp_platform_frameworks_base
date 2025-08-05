@@ -21,6 +21,7 @@ import android.view.View
 import com.android.systemui.statusbar.notification.stack.shared.model.AccessibilityScrollEvent
 import com.android.systemui.statusbar.notification.stack.shared.model.ShadeScrimShape
 import com.android.systemui.statusbar.notification.stack.shared.model.ShadeScrollState
+import com.android.systemui.util.state.ObservableState
 import java.util.function.Consumer
 
 /**
@@ -46,6 +47,9 @@ interface NotificationScrollView {
      * underlying view.
      */
     fun asView(): View
+
+    /** An Observable State representing [View.getLeft] for this scroll view. */
+    val observableLeft: ObservableState<Int>
 
     /** Max alpha for this view */
     fun setMaxAlpha(alpha: Float)

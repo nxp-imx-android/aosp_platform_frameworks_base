@@ -20,16 +20,17 @@ import android.content.res.Configuration
 import android.content.testableContext
 import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
-import android.testing.TestableLooper
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.authentication.data.repository.FakeAuthenticationRepository
 import com.android.systemui.authentication.domain.interactor.AuthenticationResult
 import com.android.systemui.authentication.domain.interactor.authenticationInteractor
-import com.android.systemui.coroutines.collectLastValue
 import com.android.systemui.flags.EnableSceneContainer
+import com.android.systemui.kosmos.Kosmos
+import com.android.systemui.kosmos.collectLastValue
 import com.android.systemui.kosmos.runCurrent
+import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
 import com.android.systemui.lifecycle.activateIn
@@ -47,16 +48,13 @@ import com.android.systemui.shade.domain.interactor.enableSingleShade
 import com.android.systemui.shade.domain.interactor.enableSplitShade
 import com.android.systemui.shade.domain.interactor.shadeInteractor
 import com.android.systemui.statusbar.core.StatusBarForDesktop
+import com.android.systemui.statusbar.notification.stack.domain.interactor.notificationStackAppearanceInteractor
 import com.android.systemui.statusbar.notification.stack.shared.model.ShadeScrimBounds
 import com.android.systemui.statusbar.notification.stack.shared.model.ShadeScrimShape
-import com.android.systemui.statusbar.notification.stack.ui.viewmodel.notificationScrollViewModel
 import com.android.systemui.statusbar.policy.configurationController
 import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.test.TestScope
-import kotlinx.coroutines.test.runCurrent
-import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -64,7 +62,6 @@ import org.junit.runner.RunWith
 @OptIn(ExperimentalCoroutinesApi::class)
 @SmallTest
 @RunWith(AndroidJUnit4::class)
-@TestableLooper.RunWithLooper
 @EnableSceneContainer
 class QuickSettingsShadeOverlayContentViewModelTest : SysuiTestCase() {
 
@@ -73,21 +70,20 @@ class QuickSettingsShadeOverlayContentViewModelTest : SysuiTestCase() {
             usingMediaInComposeFragment = false // This is not for the compose fragment
         }
 
-    private val testScope = kosmos.testScope
-    private val sceneInteractor by lazy { kosmos.sceneInteractor }
-    private val underTest by lazy { kosmos.quickSettingsShadeOverlayContentViewModel }
+    private val Kosmos.underTest by Kosmos.Fixture { quickSettingsShadeOverlayContentViewModel }
 
     @Before
-    fun setUp() {
-        kosmos.sceneContainerStartable.start()
-        kosmos.enableDualShade()
-        kosmos.runCurrent()
-        underTest.activateIn(testScope)
-    }
+    fun setUp() =
+        with(kosmos) {
+            sceneContainerStartable.start()
+            enableDualShade()
+            runCurrent()
+            underTest.activateIn(testScope)
+        }
 
     @Test
     fun onScrimClicked_hidesShade() =
-        testScope.runTest {
+        kosmos.runTest {
             val currentOverlays by collectLastValue(sceneInteractor.currentOverlays)
             sceneInteractor.showOverlay(Overlays.QuickSettingsShade, "test")
             assertThat(currentOverlays).contains(Overlays.QuickSettingsShade)
@@ -99,7 +95,7 @@ class QuickSettingsShadeOverlayContentViewModelTest : SysuiTestCase() {
 
     @Test
     fun deviceLocked_hidesShade() =
-        testScope.runTest {
+        kosmos.runTest {
             val currentOverlays by collectLastValue(sceneInteractor.currentOverlays)
             unlockDevice()
             sceneInteractor.showOverlay(Overlays.QuickSettingsShade, "test")
@@ -112,7 +108,7 @@ class QuickSettingsShadeOverlayContentViewModelTest : SysuiTestCase() {
 
     @Test
     fun shadeNotTouchable_hidesShade() =
-        testScope.runTest {
+        kosmos.runTest {
             val currentOverlays by collectLastValue(sceneInteractor.currentOverlays)
             val isShadeTouchable by collectLastValue(kosmos.shadeInteractor.isShadeTouchable)
             assertThat(isShadeTouchable).isTrue()
@@ -126,17 +122,17 @@ class QuickSettingsShadeOverlayContentViewModelTest : SysuiTestCase() {
 
     @Test
     fun shadeModeChanged_single_switchesToQuickSettingsScene() =
-        testScope.runTest {
+        kosmos.runTest {
             val currentScene by collectLastValue(sceneInteractor.currentScene)
             val currentOverlays by collectLastValue(sceneInteractor.currentOverlays)
 
-            kosmos.enableDualShade()
-            kosmos.shadeInteractor.expandQuickSettingsShade("test")
+            enableDualShade()
+            shadeInteractor.expandQuickSettingsShade("test")
             runCurrent()
             assertThat(currentScene).isEqualTo(Scenes.Lockscreen)
             assertThat(currentOverlays).contains(Overlays.QuickSettingsShade)
 
-            kosmos.enableSingleShade()
+            enableSingleShade()
             runCurrent()
             assertThat(currentScene).isEqualTo(Scenes.QuickSettings)
             assertThat(currentOverlays).doesNotContain(Overlays.QuickSettingsShade)
@@ -144,17 +140,17 @@ class QuickSettingsShadeOverlayContentViewModelTest : SysuiTestCase() {
 
     @Test
     fun shadeModeChanged_split_switchesToShadeScene() =
-        testScope.runTest {
+        kosmos.runTest {
             val currentScene by collectLastValue(sceneInteractor.currentScene)
             val currentOverlays by collectLastValue(sceneInteractor.currentOverlays)
 
-            kosmos.enableDualShade()
-            kosmos.shadeInteractor.expandQuickSettingsShade("test")
+            enableDualShade()
+            shadeInteractor.expandQuickSettingsShade("test")
             runCurrent()
             assertThat(currentScene).isEqualTo(Scenes.Lockscreen)
             assertThat(currentOverlays).contains(Overlays.QuickSettingsShade)
 
-            kosmos.enableSplitShade()
+            enableSplitShade()
             runCurrent()
             assertThat(currentScene).isEqualTo(Scenes.Shade)
             assertThat(currentOverlays).doesNotContain(Overlays.QuickSettingsShade)
@@ -162,9 +158,12 @@ class QuickSettingsShadeOverlayContentViewModelTest : SysuiTestCase() {
 
     @Test
     fun onPanelShapeChanged() =
-        testScope.runTest {
+        kosmos.runTest {
             var actual: ShadeScrimShape? = null
-            kosmos.notificationScrollViewModel.setQsScrimShapeConsumer { shape -> actual = shape }
+            val disposable =
+                notificationStackAppearanceInteractor.qsPanelShapeInWindow.observe { shape ->
+                    actual = shape
+                }
 
             val expected =
                 ShadeScrimShape(
@@ -173,14 +172,16 @@ class QuickSettingsShadeOverlayContentViewModelTest : SysuiTestCase() {
                     bottomRadius = 100,
                 )
 
-            underTest.onPanelShapeChanged(expected)
+            underTest.onPanelShapeInWindowChanged(expected)
 
             assertThat(actual).isEqualTo(expected)
+
+            disposable.dispose()
         }
 
     @Test
     fun showHeader_desktopFeatureSetDisabled_true() =
-        testScope.runTest {
+        kosmos.runTest {
             setEnableDesktopFeatureSet(false)
             assertThat(underTest.showHeader).isTrue()
         }
@@ -188,7 +189,7 @@ class QuickSettingsShadeOverlayContentViewModelTest : SysuiTestCase() {
     @Test
     @EnableFlags(StatusBarForDesktop.FLAG_NAME)
     fun showHeader_desktopFeatureSetEnabled_statusBarForDesktopEnabled_false() =
-        testScope.runTest {
+        kosmos.runTest {
             setEnableDesktopFeatureSet(true)
             assertThat(underTest.showHeader).isFalse()
         }
@@ -196,36 +197,32 @@ class QuickSettingsShadeOverlayContentViewModelTest : SysuiTestCase() {
     @Test
     @DisableFlags(StatusBarForDesktop.FLAG_NAME)
     fun showHeader_desktopFeatureSetEnabled_statusBarForDesktopDisabled_true() =
-        testScope.runTest {
+        kosmos.runTest {
             setEnableDesktopFeatureSet(true)
             assertThat(underTest.showHeader).isTrue()
         }
 
-    private fun setEnableDesktopFeatureSet(enable: Boolean) {
-        kosmos.testableContext.orCreateTestableResources.addOverride(
+    private fun Kosmos.setEnableDesktopFeatureSet(enable: Boolean) {
+        testableContext.orCreateTestableResources.addOverride(
             R.bool.config_enableDesktopFeatureSet,
             enable,
         )
-        kosmos.configurationController.onConfigurationChanged(Configuration())
+        configurationController.onConfigurationChanged(Configuration())
     }
 
-    private fun TestScope.lockDevice() {
+    private fun Kosmos.lockDevice() {
         val currentScene by collectLastValue(sceneInteractor.currentScene)
-        kosmos.powerInteractor.setAsleepForTest()
+        powerInteractor.setAsleepForTest()
         runCurrent()
 
         assertThat(currentScene).isEqualTo(Scenes.Lockscreen)
     }
 
-    private suspend fun TestScope.unlockDevice() {
+    private suspend fun Kosmos.unlockDevice() {
         val currentScene by collectLastValue(sceneInteractor.currentScene)
-        kosmos.powerInteractor.setAwakeForTest()
+        powerInteractor.setAwakeForTest()
         runCurrent()
-        assertThat(
-                kosmos.authenticationInteractor.authenticate(
-                    FakeAuthenticationRepository.DEFAULT_PIN
-                )
-            )
+        assertThat(authenticationInteractor.authenticate(FakeAuthenticationRepository.DEFAULT_PIN))
             .isEqualTo(AuthenticationResult.SUCCEEDED)
 
         assertThat(currentScene).isEqualTo(Scenes.Gone)

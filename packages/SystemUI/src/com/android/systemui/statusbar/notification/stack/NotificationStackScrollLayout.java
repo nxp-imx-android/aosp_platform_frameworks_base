@@ -138,10 +138,15 @@ import com.android.systemui.util.Assert;
 import com.android.systemui.util.ColorUtilKt;
 import com.android.systemui.util.DumpUtilsKt;
 import com.android.systemui.util.ListenerSet;
+import com.android.systemui.util.state.DownstreamObservableState;
+import com.android.systemui.util.state.ObservableState;
 
 import com.google.errorprone.annotations.CompileTimeConstant;
 
-import org.jetbrains.annotations.NotNull;
+import kotlin.Unit;
+import kotlin.jvm.functions.Function1;
+
+import kotlinx.coroutines.DisposableHandle;
 
 import java.io.PrintWriter;
 import java.lang.annotation.Retention;
@@ -1228,6 +1233,30 @@ public class NotificationStackScrollLayout
         return this;
     }
 
+    private final ObservableState<Integer> mObservableLeft = new DownstreamObservableState<>() {
+        @NonNull
+        @Override
+        protected DisposableHandle subscribeUpstream(
+                @NonNull Function1<? super Integer, Unit> onUpstreamChange) {
+            OnLayoutChangeListener listener =
+                    (v, left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom) ->
+                            onUpstreamChange.invoke(getLeft());
+            addOnLayoutChangeListener(listener);
+            return () -> removeOnLayoutChangeListener(listener);
+        }
+
+        @Override
+        protected Integer pollValue() {
+            return getLeft();
+        }
+    };
+
+    @NonNull
+    @Override
+    public ObservableState<Integer> getObservableLeft() {
+        return mObservableLeft;
+    }
+
     @Override
     public void setMaxAlpha(float alpha) {
         mController.setMaxAlphaFromView(alpha);
@@ -1296,7 +1325,7 @@ public class NotificationStackScrollLayout
     }
 
     @Override
-    public void updateDrawBounds(@NotNull RectF drawBounds) {
+    public void updateDrawBounds(@NonNull RectF drawBounds) {
         if (SceneContainerFlag.isUnexpectedlyInLegacyMode()) return;
         // The received drawBounds are relative to the Window, but NSSL  expects a rect relative to
         // its own position, so we need to offset it in case the NSSL has some horizontal margins.
