@@ -14,18 +14,16 @@
  * limitations under the License.
  */
 
-package com.android.systemui.screencapture.record.domain.interactor
+package com.android.systemui.screencapture.sharescreen.largescreen.ui.compose
 
-import android.content.res.mainResources
-import com.android.systemui.kosmos.Kosmos
-import com.android.systemui.kosmos.backgroundScope
-import com.android.systemui.statusbar.policy.configurationController
+import androidx.compose.runtime.Composable
+import com.android.systemui.screencapture.common.ui.compose.ScreenCaptureContent
+import javax.inject.Inject
 
-val Kosmos.screenCaptureRecordFeaturesInteractor: ScreenCaptureRecordFeaturesInteractor by
-    Kosmos.Fixture {
-        ScreenCaptureRecordFeaturesInteractor(
-            resources = mainResources,
-            scope = backgroundScope,
-            configurationController = configurationController,
-        )
+class LargeScreenCaptureShareScreenContent @Inject constructor() : ScreenCaptureContent {
+
+    @Composable
+    override fun Content() {
+        TODO("NOT_IMPLEMENTED")
     }
+}

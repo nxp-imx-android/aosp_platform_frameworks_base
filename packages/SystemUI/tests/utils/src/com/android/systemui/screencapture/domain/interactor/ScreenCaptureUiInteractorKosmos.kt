@@ -16,8 +16,18 @@
 
 package com.android.systemui.screencapture.domain.interactor
 
+import android.content.res.mainResources
 import com.android.systemui.kosmos.Kosmos
+import com.android.systemui.kosmos.backgroundScope
 import com.android.systemui.screencapture.data.repository.screenCaptureUiRepository
+import com.android.systemui.statusbar.policy.configurationController
 
 val Kosmos.screenCaptureUiInteractor: ScreenCaptureUiInteractor by
-    Kosmos.Fixture { ScreenCaptureUiInteractor(screenCaptureUiRepository) }
+    Kosmos.Fixture {
+        ScreenCaptureUiInteractor(
+            resources = mainResources,
+            scope = backgroundScope,
+            configurationController = configurationController,
+            screenCaptureUiRepository,
+        )
+    }
