@@ -44,10 +44,6 @@ public interface SecurityController extends CallbackController<SecurityControlle
 
     /** Device owner component even if not on this user. **/
     ComponentName getDeviceOwnerComponentOnAnyUser();
-    // TODO(b/259908270): remove
-    /** Device owner type for a device owner. **/
-    @Deprecated
-    int getDeviceOwnerType(ComponentName admin);
     boolean isNetworkLoggingEnabled();
     /** @deprecated Use {@link VpnRepository#getVpnState()} instead. */
     @Deprecated

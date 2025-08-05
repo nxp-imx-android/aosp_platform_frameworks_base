@@ -16,8 +16,6 @@
 
 package com.android.systemui.statusbar;
 
-import static android.app.admin.DevicePolicyManager.DEVICE_OWNER_TYPE_DEFAULT;
-
 import static com.android.systemui.keyguard.KeyguardIndicationRotateTextViewController.INDICATION_TYPE_TRANSIENT;
 import static com.android.systemui.keyguard.ScreenLifecycle.SCREEN_ON;
 
@@ -105,9 +103,8 @@ import org.mockito.MockitoAnnotations;
 public class KeyguardIndicationControllerBaseTest extends SysuiTestCase {
     protected static final String ORGANIZATION_NAME = "organization";
 
-    protected static final ComponentName DEVICE_OWNER_COMPONENT = new ComponentName(
-            "com.android.foo",
-            "bar");
+    private static final ComponentName DEVICE_OWNER_COMPONENT =
+            new ComponentName("com.android.foo", "bar");
 
     protected static final int TEST_STRING_RES = R.string.keyguard_indication_trust_unlocked;
 
@@ -243,9 +240,6 @@ public class KeyguardIndicationControllerBaseTest extends SysuiTestCase {
         when(mDevicePolicyManager.getDeviceOwnerComponentOnAnyUser())
                 .thenReturn(DEVICE_OWNER_COMPONENT);
         when(mDevicePolicyManager.isFinancedDevice()).thenReturn(false);
-        // TODO(b/259908270): remove
-        when(mDevicePolicyManager.getDeviceOwnerType(DEVICE_OWNER_COMPONENT))
-                .thenReturn(DEVICE_OWNER_TYPE_DEFAULT);
 
         when(mDevicePolicyResourcesManager.getString(anyString(), any()))
                 .thenReturn(mDisclosureGeneric);
